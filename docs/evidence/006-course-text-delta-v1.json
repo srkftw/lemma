@@ -282,5 +282,117 @@
     "native": "build/native/task006-package-delta-a1",
     "browser": "build/browser/task006-package-delta-a1"
   },
-  "original_whole_a2": "FAIL before compilation: unused-output guard rejected old dynamic initializer-a1 suffix; source seal passed/no survivors; a3 uses exact predeclared outputs map"
+  "original_whole_a2": "FAIL before compilation: unused-output guard rejected old dynamic initializer-a1 suffix; source seal passed/no survivors; a3 uses exact predeclared outputs map",
+  "actual_native_final": {
+    "status": "FAIL",
+    "error": "ValueError('prospective phase/aggregate resourcebound exceeded in COURSEreadCRCexactEOFandactualbody')",
+    "elapsed_seconds": 4657.523875390063,
+    "consumed_host_current_equal": true,
+    "phases": [
+      {
+        "name": "canonicalcoldReady",
+        "initial_cycle": 0,
+        "final_cycle": 802000000,
+        "clocks": 802000000,
+        "retired": 415848643,
+        "host_seconds": 2581.5129400169244
+      },
+      {
+        "name": "guestpublicationedition3",
+        "initial_cycle": 802000000,
+        "final_cycle": 870000000,
+        "clocks": 68000000,
+        "retired": 35954760,
+        "host_seconds": 234.9122618159745
+      },
+      {
+        "name": "immutableduplicateedition3",
+        "initial_cycle": 870000000,
+        "final_cycle": 880000000,
+        "clocks": 10000000,
+        "retired": 5262879,
+        "host_seconds": 33.741977541008964
+      }
+    ],
+    "supervision": {
+      "status": "FAIL",
+      "seconds": 4658.5805838730885,
+      "owned_peak_rss_bytes": 254009344
+    },
+    "retained_cut": {
+      "status": "PASS_READ_ONLY_RETAINED_CUT_OBSERVATION",
+      "cycle": 1280000000,
+      "checkpoint_sha256": "a2af5b2ad4fdf251cc1c0a5b09c1080a02b485042eb182c34ad1093c4a25aef7",
+      "reader": {
+        "0": 98,
+        "8": 3392000,
+        "16": 3391744,
+        "24": 1,
+        "32": 1,
+        "40": 1,
+        "48": 3350528,
+        "56": 32768,
+        "64": 44,
+        "72": 3,
+        "80": 0,
+        "88": 4040,
+        "96": 4040,
+        "104": 0,
+        "112": 76,
+        "120": 0
+      },
+      "package_state": {
+        "0": 4040,
+        "8": 0,
+        "16": 1,
+        "24": 0,
+        "32": 2,
+        "40": 405634480,
+        "48": 1,
+        "56": 1,
+        "64": 0,
+        "72": 1,
+        "80": 0,
+        "88": 0,
+        "96": 4,
+        "104": 0,
+        "112": 0,
+        "120": 1,
+        "128": 1,
+        "136": 1,
+        "144": 1,
+        "152": 0,
+        "160": 0,
+        "168": 0,
+        "176": 0
+      },
+      "global_state": {
+        "104": 0,
+        "112": 0,
+        "136": 0,
+        "144": 0,
+        "160": 0,
+        "336": 65535,
+        "344": 65535,
+        "352": 0,
+        "360": 0,
+        "432": 0,
+        "456": 0,
+        "464": 153,
+        "472": 153,
+        "480": 0,
+        "512": 1,
+        "536": 0,
+        "752": 12
+      },
+      "actual_controller_body": false,
+      "actual_controller_title": false
+    },
+    "meaning": "ActualReady802M/install68M/duplicate10M; original400M COURSE cap FAIL at1280M. All4040B read/validated, no pending I/O/checker, text rendering unfinished; neither body nor title atcontroller. No CPU rerun/restore/drain/fence or timeout reinterpretation."
+  },
+  "terminal_receipts": {
+    "build/courses/task006-native-package-delta-a1/actor/result.json": "5170e9d332cbb30469e1ebec52b37ca354867f6e8a8019bf13ef98233cb52f12",
+    "build/courses/task006-native-package-delta-a1/actor/retained-cut-observation.json": "1f80f82d5cb559d526a78e3b2638f4b13725389b0551d839fc403aefe54ff340",
+    "build/courses/task006-native-package-delta-supervision-a1/result.json": "d2aa4a29fe77bc27114b97031494b8288171e9c1b394b3ccca31b7f4820bf2ea"
+  }
 }

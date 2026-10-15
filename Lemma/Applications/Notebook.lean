@@ -2989,9 +2989,7 @@ private def pumpOpenPackageCourse : Action :=
         Lemma.Courses.PackageWorkspace.validate mathematicsSave ns page
       else
         .bind (recordGet 16) fun s length => if statusFailed s = true then .done s 0 else
-        .bind (Lemma.Courses.WorkspaceCodec.decode mathematicsSave length packageBytes ns page) fun s _ =>
-        if statusFailed s = true then .done s 0 else
-        .bind (Lemma.Services.Store.Format.copy packageBytes mathematicsSave Lemma.Courses.PackageWorkspace.bytes) fun s copied =>
+        .bind (Lemma.Courses.WorkspaceCodec.restore mathematicsSave length packageBytes mathematicsSave ns page) fun s copied =>
         if statusFailed s = true then .done s 0 else
         if copied = Lemma.Courses.PackageWorkspace.bytes then .done 0 0 else .done 240 0)
         fun s _ => if statusFailed s = true then packageCourseError s else finishOpenPackageCourse 0

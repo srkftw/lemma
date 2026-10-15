@@ -245,6 +245,102 @@
       ],
       "failure": "tests/courses/Render.lean:1:0: error: object file '/home/runner/work/lemma/lemma/.lake/build/lib/lean/Lemma/Courses/Package.olean' of module Lemma.Courses.Package does not exist",
       "repair": "Add explicit Lemma.Courses.Package to the fresh CI lake build; exact workflow dependency assertion and local actual renderer fixtures pass. Original failure and skipped steps retained."
+    },
+    {
+      "source_commit": "9b18756dc27212263834edfc3ebbf366767254c2",
+      "run": {
+        "id": 38691692243,
+        "name": "Lemma pinned acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 101,
+        "jobs_url": "https://api.github.com/repos/srkftw/lemma/actions/runs/38691692243/jobs",
+        "logs_url": "https://api.github.com/repos/srkftw/lemma/actions/runs/38691692243/logs",
+        "workflow_id": 378152075
+      },
+      "jobs": [
+        {
+          "id": 116278813188,
+          "name": "Metadata and host-only suites",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 17,
+          "skipped": []
+        },
+        {
+          "id": 116278813392,
+          "name": "Task 003 Buffer service RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813394,
+          "name": "Task 003 architectural containment RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813465,
+          "name": "Task 003 source-negative RV64 qualification",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813470,
+          "name": "Foundation Gates 1-9 and clean qualification",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813553,
+          "name": "Task 003 Gates F-I RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813571,
+          "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 10,
+          "skipped": []
+        },
+        {
+          "id": 116278813617,
+          "name": "Task 003 implemented Gates A-E RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813625,
+          "name": "Legacy Core0 RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 8,
+          "skipped": []
+        },
+        {
+          "id": 116278813660,
+          "name": "RTL device and digital power conformance with literal host stimuli",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 11,
+          "skipped": []
+        }
+      ],
+      "scope": "Actual CI is separate from source5 extended guest course reopen, which failed220. Local software6 fixes are not qualified by this candidate."
     }
   ]
 }

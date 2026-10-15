@@ -1967,3 +1967,51 @@ cancellation condition. The guest now cancels/consumes that actual transaction
 before rawink; the unchanged live workspace and exact two-syscall cancellation
 pass the maintained Action fixture. Complete genuine source qualification was
 regenerated in workspace-codec-component-a2; previous component receipts remain.
+
+Source9b18756 software5 full fresh388-input pair PASSES ordinary audits:
+initializer2610a832694896B (123.151s build/225.093s audit), notebookebad760c694888B
+(119.317s/221.777s),689.543s pair/694.131s final supervisor print,1933017088B
+peak/no survivors. JSON elapsed691.907s is the earlier pre-final-receipt measurement;
+retain both actual timing fields. Source seal8fd1fd7e/current/archive all equal.
+Prepared source5 native/static task006-workspace-codec-a1 use unchanged qualified
+cores and are retained with the functional limitation below.
+
+Actual source5 fast39 phases reach inkSaved2.171000226B (versus4's2.607000370B),
+Close2.423000234B. NewCPUcoldReady274000007 and all acknowledged objects/pixels
+pass at2.697000241B aggregate. Encoded workspaces272/440/768/696/1008/1256B
+retain3712 decoded bytes. FirstCOURSE147M versus4's178M; original100M diagnostic
+stillFAIL. Final actual course reopening FAILS220, not a timeout: Notebook used
+Store.Format.copy with3712 bytes although its valid limit is512. This is a real
+integration defect, not a stale observer. Original result and all41 completed
+phases/cold observations remain (312.907s actor/314.500s supervised/495648768B).
+No full course-save-reopen PASS. Its planned actual partial-pwrite workspace
+failure case was not launched because that reopen precondition fails.
+
+Software3 canonical RTL original400M COURSE cap is now terminalFAIL at1280M,
+4657.524s actor/4658.581s supervised/254009344B peak, consumed hosts unchanged/
+no survivors. Passive original snapshot a2af5b2a (no CPU/restore/drain/fence)
+finds4040/4040 read/validated bytes, readererror0, role1/body, textpending1 and
+no pending I/O/checker. Neither body nor title reaches controller. Ready802M,
+installation68M and duplicate10M remain distinct passes. Evidence updated in
+006-course-text-delta-v1.json; do not rerun the unchanged prefix.
+
+Software6 repairs the3712B staging copy with dedicated bounded464-word restore,
+without broadening the valid Store512B helper. Private decode completes before
+in-place compressedsource replacement; overlap/fault prefixes are checked. The
+actual Notebook opener fixture now runs through full decode/staging/adoption
+and stops at the next visible flag, catching this exact512B regression. New pure
+packed glyph rows stitch two48-bit cells instead of per-pixel divisions. Same
+memory effects/controller work, raw/Doc8/evidence/journal/barrier semantics.
+All15360 row/start/highbit comparisons,1,474,560 scalar mathpixels, canonical/
+oddstride/fault Actions and full restore pass. Genuine837-function export adds4
+helpers and changes only2 shared preIR bodies; other831 unchanged. Six exact
+historical/current pre/post/readonly/Surface cohorts pass;4 valid LLVM mutants
+and6 partial/mixed cohorts reject.433 kernel/18 scaffold pass. Original mutation
+literal setup failure retained. Contracts/evidence006-course-packed-row-v1 and
+006-course-packed-row-restore preserve source5 failure; corrected fullpair,
+actual reopening and unsuccessful workspaceSave/retry are NEXT. No source/HEAD
+hold is active until the next explicitly sealed producer begins.
+
+Actual9b18756 CI38691692243 is now terminalSUCCESS10/10 with no skipped steps.
+This does not qualify its separately observed extended course reopen, which
+failed220, or local software6. The corrected candidate needs its ownCI/guest run.

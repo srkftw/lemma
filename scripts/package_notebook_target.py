@@ -90,8 +90,9 @@ def contract(unit):
     delta = delta_selected(unit)
     sparse = sparse_selected(unit)
     workspace = workspace_selected(unit)
-    return {'contract_version': WORKSPACE_VERSION if workspace else SPARSE_VERSION if sparse else DELTA_VERSION if delta else VERSION if corrected else LEGACY_VERSION, 'root': ROOT,
-            'private_layout': WORKSPACE_LAYOUT if workspace else SPARSE_LAYOUT if sparse else DELTA_LAYOUT if delta else PRIVATE_LAYOUT if corrected else {**PRIVATE_LAYOUT, 'allocation_count_state_offset': 768},
+    packed = packed_selected(unit)
+    return {'contract_version': PACKED_VERSION if packed else WORKSPACE_VERSION if workspace else SPARSE_VERSION if sparse else DELTA_VERSION if delta else VERSION if corrected else LEGACY_VERSION, 'root': ROOT,
+            'private_layout': PACKED_LAYOUT if packed else WORKSPACE_LAYOUT if workspace else SPARSE_LAYOUT if sparse else DELTA_LAYOUT if delta else PRIVATE_LAYOUT if corrected else {**PRIVATE_LAYOUT, 'allocation_count_state_offset': 768},
             'owned_functions': len(signature_set(unit))}
 
 def _bodies(ir):
@@ -171,6 +172,10 @@ def validate(ir, unit, *, optimized):
         pins = {phase: {**values, **WORKSPACE_PINS[phase]} for phase, values in pins.items()}
         callers = {phase: {**values, **WORKSPACE_CALLERS[phase]} for phase, values in callers.items()}
         layout, version = WORKSPACE_LAYOUT, WORKSPACE_VERSION
+    if packed_selected(unit):
+        pins = {phase: {**values, **PACKED_PINS[phase]} for phase, values in pins.items()}
+        callers = {phase: {**values, **PACKED_CALLERS[phase]} for phase, values in callers.items()}
+        layout, version = PACKED_LAYOUT, PACKED_VERSION
     return _validate_bodies(ir, unit, optimized=optimized, pins=pins,
                            callers=callers, layout=layout, version=version,
                            signatures=signature_set(unit))
@@ -1498,6 +1503,8 @@ def signature_set(unit):
         signatures = {**signatures, **SPARSE_SIGNATURES}
     if workspace_selected(unit):
         signatures = {**signatures, **WORKSPACE_SIGNATURES}
+    if packed_selected(unit):
+        signatures = {**signatures, **RESTORE_SIGNATURES, **PACKED_SIGNATURES}
     return signatures
 
 # Derived from the separately qualified genuine complete pre/post export.
@@ -1774,7 +1781,8 @@ def workspace_selected(unit):
     found = {source for source in rows if source.startswith('Lemma.Courses.WorkspaceCodec.')}
     if not found:
         return False
-    require(found == set(WORKSPACE_SIGNATURES) and sparse_selected(unit),
+    require(found in (set(WORKSPACE_SIGNATURES), set(WORKSPACE_SIGNATURES) | set(RESTORE_SIGNATURES))
+            and sparse_selected(unit),
             'Package Notebook mixed/incomplete workspace-envelope cohort')
     return True
 
@@ -1983,6 +1991,144 @@ WORKSPACE_CALLERS = {'post': {'Lemma.Courses.PackageWorkspace.object': ['Lemma.A
          'Lemma.Courses.WorkspaceCodec.version': ['Lemma.Courses.WorkspaceCodec.encode',
                                                   'Lemma.Courses.WorkspaceCodec.recordLength'],
          'Lemma.Courses.WorkspaceCodec.write': ['Lemma.Courses.WorkspaceCodec.clearStep',
+                                                'Lemma.Courses.WorkspaceCodec.decodeStep',
+                                                'Lemma.Courses.WorkspaceCodec.encode',
+                                                'Lemma.Courses.WorkspaceCodec.encodeStep']}}
+
+# Packed glyph rows change only the pure font operation; all effects stay exact.
+PACKED_VERSION = 'lemma-installed-package-notebook/6'
+PACKED_LAYOUT = {**WORKSPACE_LAYOUT, 'packed_row_contract': 'lemma-course-packed-row/1',
+                 'workspace_restore_words': 464, 'workspace_restore_bytes': 3712}
+RESTORE_SIGNATURES = {
+    'Lemma.Courses.WorkspaceCodec.copyDecodedStep': (['u32', 'u32'] + ['u64'] * 5,
+                                                   ['checked-access', 'virtual-read', 'virtual-write']),
+    'Lemma.Courses.WorkspaceCodec.restore': (['u64'] * 6,
+                                           ['checked-access', 'virtual-read', 'virtual-write']),
+}
+PACKED_SIGNATURES = {
+    'Lemma.Courses.PackageRender.packedCellRow': (['u64', 'u64'], []),
+    'Lemma.Courses.PackageRender.packedPanelWord': (['u64'] * 4, []),
+}
+
+def packed_selected(unit):
+    rows = _rows(unit)
+    found = set(rows) & set(PACKED_SIGNATURES)
+    if not found:
+        require(not set(rows) & set(RESTORE_SIGNATURES),
+                'Package Notebook restore repair escaped its complete software6 cohort')
+        return False
+    require(found == set(PACKED_SIGNATURES) and set(RESTORE_SIGNATURES) <= set(rows)
+            and workspace_selected(unit),
+            'Package Notebook mixed/incomplete packed-row cohort')
+    return True
+
+# Exact ordinary Lean packed-row cohort; only one existing pure operation changes.
+PACKED_PINS = {'post': {'Lemma.Applications.Notebook.packageControlCharacter': '21f09cf6e60badb301a8a8e4a6f51a7760e3596fb068567333806271e9265d45',
+          'Lemma.Applications.Notebook.pumpOpenPackageCourse': '5af43e6e105bf81524a7011233650241500220db09ba89e3694c02728f523262',
+          'Lemma.Courses.PackageBinding.captureField': '764b1328c6a931fb3af6bc557ebd70c6732630dcfd9659acada5dfa131f42a0d',
+          'Lemma.Courses.PackageRender.packedCellRow': '04cfc0eef329b473d37d0178d02d38bf3da2736d89f149fa545baf05a8e5aa1d',
+          'Lemma.Courses.PackageRender.packedPanelWord': '8aca550247f2f2c06e6b149b59bf4d2053fddb92eaa732c1d454adeaa7b6f287',
+          'Lemma.Courses.PackageRender.sparsePanelWord': 'b275eaa38f5bba73e97586d996fbdcb9926c6f24defffd24769f317f93cc5efd',
+          'Lemma.Courses.WorkspaceCodec.copyDecodedStep': '9fd1b98ccd5cc7e3683d4b596d7c637b23483b857586a628cf29ecdf04199a26',
+          'Lemma.Courses.WorkspaceCodec.restore': 'ad06d9ad254a68b71ac98e840bb78c0811a311d415486dfa2f26cad62bb1a509'},
+ 'pre': {'Lemma.Applications.Notebook.pumpOpenPackageCourse': '2d7e2c953232bdec66338c9cba3d28560fad6f9e15842ad9e00d5646a6e3acfc',
+         'Lemma.Courses.PackageRender.packedCellRow': '67d5cbd86214507e25aaa6fce52c1820a5601cc8d1f8b78788f4db54a362e02c',
+         'Lemma.Courses.PackageRender.packedPanelWord': '14a4b9192fac3f20599ae524258cf7c13fb4567299add07370acbf0131cf8c33',
+         'Lemma.Courses.PackageRender.sparsePanelWord': '9e775d74ea9ee8d6dc0a254419ad0e18ea1581bc37481f4b6818d321fb6d4919',
+         'Lemma.Courses.WorkspaceCodec.copyDecodedStep': 'e15e2d04a8d97e1f33fe5140673f161a6b68f56bf9954605c50c06cc697adaaa',
+         'Lemma.Courses.WorkspaceCodec.restore': '86a87debdf7fff385de21638b8f67f30fda607808c3f6980f9e5751c345d1035'}}
+PACKED_CALLERS = {'post': {'Lemma.Courses.PackageRender.packedCellRow': ['Lemma.Courses.PackageRender.packedPanelWord'],
+          'Lemma.Courses.PackageRender.packedPanelWord': ['Lemma.Courses.PackageRender.sparsePanelWord'],
+          'Lemma.Courses.PackageRender.panelWord': ['Lemma.Courses.PackageRender.packedPanelWord'],
+          'Lemma.Courses.WorkspaceCodec.copyDecodedStep': ['Lemma.Courses.WorkspaceCodec.restore'],
+          'Lemma.Courses.WorkspaceCodec.decode': ['Lemma.Courses.WorkspaceCodec.restore'],
+          'Lemma.Courses.WorkspaceCodec.read': ['Lemma.Courses.WorkspaceCodec.copyDecodedStep',
+                                                'Lemma.Courses.WorkspaceCodec.countStep',
+                                                'Lemma.Courses.WorkspaceCodec.decode',
+                                                'Lemma.Courses.WorkspaceCodec.decodeStep',
+                                                'Lemma.Courses.WorkspaceCodec.encodeStep',
+                                                'Lemma.Courses.WorkspaceCodec.recordLength'],
+          'Lemma.Courses.WorkspaceCodec.restore': ['Lemma.Applications.Notebook.pumpOpenPackageCourse'],
+          'Lemma.Courses.WorkspaceCodec.separate': ['Lemma.Courses.WorkspaceCodec.decode',
+                                                    'Lemma.Courses.WorkspaceCodec.encode',
+                                                    'Lemma.Courses.WorkspaceCodec.restore'],
+          'Lemma.Courses.WorkspaceCodec.write': ['Lemma.Courses.WorkspaceCodec.clearStep',
+                                                 'Lemma.Courses.WorkspaceCodec.copyDecodedStep',
+                                                 'Lemma.Courses.WorkspaceCodec.decodeStep',
+                                                 'Lemma.Courses.WorkspaceCodec.encode',
+                                                 'Lemma.Courses.WorkspaceCodec.encodeStep']},
+ 'pre': {'Lemma.Courses.PackageFormat.malformed': ['Lemma.Courses.PackageBinding.capture',
+                                                   'Lemma.Courses.PackageBinding.fieldsValid',
+                                                   'Lemma.Courses.PackageBinding.validate',
+                                                   'Lemma.Courses.PackageFormat.referenceStatus',
+                                                   'Lemma.Courses.PackageReader.accept',
+                                                   'Lemma.Courses.PackageReader.beginPiece',
+                                                   'Lemma.Courses.PackageReader.cancel',
+                                                   'Lemma.Courses.PackageReader.configuration',
+                                                   'Lemma.Courses.PackageReader.finish',
+                                                   'Lemma.Courses.PackageReader.pollPiece',
+                                                   'Lemma.Courses.PackageReader.start',
+                                                   'Lemma.Courses.PackageReader.step',
+                                                   'Lemma.Courses.PackageRender.prepare',
+                                                   'Lemma.Courses.PackageRender.prepareHeader',
+                                                   'Lemma.Courses.PackageRender.renderDelta',
+                                                   'Lemma.Courses.PackageRender.renderHeaderSelectedDelta',
+                                                   'Lemma.Courses.PackageRender.renderSelectedDelta',
+                                                   'Lemma.Courses.PackageTarget.reservedStep',
+                                                   'Lemma.Courses.PackageTarget.validate',
+                                                   'Lemma.Courses.PackageTarget.validateBody',
+                                                   'Lemma.Courses.PackageTarget.validateEntry',
+                                                   'Lemma.Courses.PackageTarget.validateSpan',
+                                                   'Lemma.Courses.PackageWorkspace.captureSelection',
+                                                   'Lemma.Courses.PackageWorkspace.create',
+                                                   'Lemma.Courses.PackageWorkspace.equalEventsStep',
+                                                   'Lemma.Courses.PackageWorkspace.equalHistoryStep',
+                                                   'Lemma.Courses.PackageWorkspace.equalSubmissionStep',
+                                                   'Lemma.Courses.PackageWorkspace.equalWordsStep',
+                                                   'Lemma.Courses.PackageWorkspace.snapshotSelection',
+                                                   'Lemma.Courses.PackageWorkspace.stageCompleted',
+                                                   'Lemma.Courses.PackageWorkspace.stageCompletedUnknown',
+                                                   'Lemma.Courses.PackageWorkspace.stageRefresh',
+                                                   'Lemma.Courses.PackageWorkspace.stageUnknownSelection',
+                                                   'Lemma.Courses.PackageWorkspace.transitionBase',
+                                                   'Lemma.Courses.PackageWorkspace.validate',
+                                                   'Lemma.Courses.PackageWorkspace.validateAttempt',
+                                                   'Lemma.Courses.PackageWorkspace.validateSelection',
+                                                   'Lemma.Courses.PackageWorkspace.zeroCheck',
+                                                   'Lemma.Courses.WorkspaceCodec.decode',
+                                                   'Lemma.Courses.WorkspaceCodec.decodeStep',
+                                                   'Lemma.Courses.WorkspaceCodec.encode',
+                                                   'Lemma.Courses.WorkspaceCodec.recordLength',
+                                                   'Lemma.Courses.WorkspaceCodec.restore'],
+         'Lemma.Courses.PackageRender.packedCellRow': ['Lemma.Courses.PackageRender.packedPanelWord'],
+         'Lemma.Courses.PackageRender.packedPanelWord': ['Lemma.Courses.PackageRender.sparsePanelWord'],
+         'Lemma.Courses.PackageRender.panelWord': ['Lemma.Courses.PackageRender.packedPanelWord'],
+         'Lemma.Courses.PackageWorkspace.bytes': ['Lemma.Applications.Notebook.pumpOpenPackageCourse',
+                                                  'Lemma.Courses.PackageWorkspace.captureSelection',
+                                                  'Lemma.Courses.PackageWorkspace.create',
+                                                  'Lemma.Courses.PackageWorkspace.shape',
+                                                  'Lemma.Courses.PackageWorkspace.snapshotSelection',
+                                                  'Lemma.Courses.PackageWorkspace.stageCompleted',
+                                                  'Lemma.Courses.PackageWorkspace.transitionBase',
+                                                  'Lemma.Courses.PackageWorkspace.validate',
+                                                  'Lemma.Courses.WorkspaceCodec.decode',
+                                                  'Lemma.Courses.WorkspaceCodec.encode',
+                                                  'Lemma.Courses.WorkspaceCodec.recordLength',
+                                                  'Lemma.Courses.WorkspaceCodec.restore'],
+         'Lemma.Courses.WorkspaceCodec.copyDecodedStep': ['Lemma.Courses.WorkspaceCodec.restore'],
+         'Lemma.Courses.WorkspaceCodec.decode': ['Lemma.Courses.WorkspaceCodec.restore'],
+         'Lemma.Courses.WorkspaceCodec.read': ['Lemma.Courses.WorkspaceCodec.copyDecodedStep',
+                                               'Lemma.Courses.WorkspaceCodec.countStep',
+                                               'Lemma.Courses.WorkspaceCodec.decode',
+                                               'Lemma.Courses.WorkspaceCodec.decodeStep',
+                                               'Lemma.Courses.WorkspaceCodec.encodeStep',
+                                               'Lemma.Courses.WorkspaceCodec.recordLength'],
+         'Lemma.Courses.WorkspaceCodec.restore': ['Lemma.Applications.Notebook.pumpOpenPackageCourse'],
+         'Lemma.Courses.WorkspaceCodec.separate': ['Lemma.Courses.WorkspaceCodec.decode',
+                                                   'Lemma.Courses.WorkspaceCodec.encode',
+                                                   'Lemma.Courses.WorkspaceCodec.restore'],
+         'Lemma.Courses.WorkspaceCodec.write': ['Lemma.Courses.WorkspaceCodec.clearStep',
+                                                'Lemma.Courses.WorkspaceCodec.copyDecodedStep',
                                                 'Lemma.Courses.WorkspaceCodec.decodeStep',
                                                 'Lemma.Courses.WorkspaceCodec.encode',
                                                 'Lemma.Courses.WorkspaceCodec.encodeStep']}}

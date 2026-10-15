@@ -1,6 +1,13 @@
 # Course workspace envelope 2
 
-`lemma-installed-package-notebook/5` stores a lossless envelope of the existing
+Software5 introduced this stored envelope. Software6 repairs its complete
+workspace staging copy; the stored bytes and version do not change. The original
+software5 guest saved valid records and recovered all bytes/controller pixels,
+but actual course reopen failed220 because it used the existing sector-copy
+helper for3712 bytes. That helper correctly rejects lengths above512. The failure
+is retained; software5 is not a qualified complete envelope reader.
+
+`lemma-installed-package-notebook/6` stores a lossless envelope of the existing
 `lemma-course-workspace/1` object. Its decoded3712 bytes, Doc8, object key,
 ownership, revision/provenance/history validation and Store journal format are
 unchanged. This is an explicit stored-object migration, not a new journal.
@@ -21,6 +28,11 @@ reads the complete bounded object and independently reads EOF. Header admission
 alone never publishes a workspace. Envelope validation checks exact length,
 bitmap bounds/count and canonical nonzero data, reconstructs privately, then
 runs the complete original workspace and Doc8 validators before adoption.
+A dedicated bounded464-word restore then copies all3712 bytes from validated
+private scratch into publication staging, including when that staging replaces
+the compressed source. Source decoding finishes before the first such copy.
+Scratch/output overlap rejects before access; actual copy errors retain their
+private prefix. The Store sector-copy limit remains512.
 Raw1 reads retain their original full validation and exact EOF. Only a missing
 workspace at the initial read permits the existing legacy Doc8 import path;
 malformed, unsupported or subsequently missing records never trigger formatting.

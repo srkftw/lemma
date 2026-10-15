@@ -1239,9 +1239,14 @@ bundle paths. This is development preload; the browser course workflow and
 fast pipeline timing parity remain open. See
 [the white-word receipt](docs/evidence/006-course-white-word-v1.json).
 
-The next guest increment reads legacy raw workspaces and saves a lossless
-compact workspace envelope through the existing journal/barrier path. Its
-complete checked source cohort and component tests pass; full RV64 execution
-is still required. Older development images cannot reopen the new envelope.
-Its migration and staging rules are explicit in
+The compact workspace guest saves every3712 decoded bytes using272–1256 stored
+bytes through the existing journal/barrier path. Source5's complete fresh ELF
+audits and actual saves/cold byte-and-pixel recovery pass, but actual course
+reopen fails220 because it used a512-byte sector-copy helper for3712 bytes.
+That retained failure is repaired by a dedicated464-word private restore in
+source6, alongside a pure packed-row renderer. Complete source/component checks
+pass; corrected linked RV64 execution remains required. Source5 bundles at
+`build/{native,browser}/task006-workspace-codec-a1` retain this known defect.
+Older development images cannot reopen the new envelope. Migration and staging
+rules are explicit in
 [the envelope contract](docs/contracts/006-course-workspace-envelope-v2.md).

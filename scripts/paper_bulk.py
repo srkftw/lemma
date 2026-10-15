@@ -83,13 +83,14 @@ def validate(ir,unit,*,optimized):
    from package_notebook_target import validate as validate_package
    package = validate_package(ir, unit, optimized=False)
    if package is None: raise Core0Error('Surface-v2 Package root lacks complete source cohort')
-   # Text-delta3/white-word4 and workspace-envelope5 retain the Surface path. The full
+   # Presentation3/4/6 and workspace-envelope5 retain the Surface path. The full
    # cohort gate above and the exact unchanged layout2 boot root below remain
    # mandatory; a version label alone cannot authorize a new Surface path.
    if package['contract_version'] in ('lemma-installed-package-notebook/2',
                                        'lemma-installed-package-notebook/3',
                                        'lemma-installed-package-notebook/4',
-                                       'lemma-installed-package-notebook/5'):
+                                       'lemma-installed-package-notebook/5',
+                                       'lemma-installed-package-notebook/6'):
     selected['Lemma.Applications.Notebook.mainPackageClosureBulk']='4d65240a23cc144f0ecd618284855d5b2b8361688ba8eed82b00e6d5f9bbcb7f'
    elif package['contract_version'] == 'lemma-installed-package-notebook/1':
     selected['Lemma.Applications.Notebook.mainPackageClosureBulk']='0318d48be82d75b41e30cbb2034da5e6f2ea22f6bea86d344f70747d9ff1b5ea'

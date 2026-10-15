@@ -1,5 +1,4 @@
 import Lemma.Courses.PackageWorkspace
-import Lemma.Services.Store.Format
 
 /-! Lossless workspace envelope2. The original3712-byte workspace/Doc8 remains
 byte-for-byte unchanged in RAM. Eight bitmap words name its464 nonzero words;
@@ -108,5 +107,22 @@ def decode (source storedBytes output ns page : UInt64) : Action :=
   else .done malformed 0 else .done s 0 else .done malformed 0 else .done s 0
   else .done unsupported 0 else .done s 0
   else .done malformed 0 else .done malformed 0 else .done malformed 0
+
+private def copyDecodedStep (i _ : UInt32) (copied source output _ _ : UInt64) : Action :=
+  .bind (read source (i.toUInt64 * 8)) fun s value => if s = 0 then
+  .bind (write output (i.toUInt64 * 8) value) fun s _ =>
+  if s = 0 then .done 0 (copied + 8) else .done s 0 else .done s 0
+
+/-- Decode/validate completely in private disjoint scratch, then copy all464
+words into the caller's private publication staging. Output may replace the
+compressed source only after decode no longer needs it. This is not the Store
+sector-copy primitive, whose512-byte bound remains unchanged. Live workspace
+adoption and any actual journal/barrier acknowledgement remain caller duties. -/
+def restore (source storedBytes scratch output ns page : UInt64) : Action :=
+  if separate scratch PackageWorkspace.bytes output PackageWorkspace.bytes = 1 then
+  .bind (decode source storedBytes scratch ns page) fun s _ => if s = 0 then
+  .boundedFoldU64 464 copyDecodedStep 464 0 scratch output 0 0 fun s copied =>
+  if s = 0 then if copied = PackageWorkspace.bytes then .done 0 copied else .done malformed 0
+  else .done s 0 else .done s 0 else .done malformed 0
 
 end Lemma.Courses.WorkspaceCodec

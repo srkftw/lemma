@@ -1,0 +1,176 @@
+{
+  "schema": "lemma-course-packed-row-restore/1",
+  "status": "PASS_COMPONENT_GENUINE_SOFTWARE6_AND_FULL_RESTORE_ACTIONS",
+  "producer_parent": "9b18756dc27212263834edfc3ebbf366767254c2",
+  "uncommitted_source_at_component_observation": true,
+  "contract": "docs/contracts/006-course-packed-row-v1.md",
+  "scope": "Genuine837-function User2 export, pure packed-row calculation plus complete464-word decode publication staging repair; full fresh ELF audits/actual corrected reopen NEXT",
+  "target_sources": {
+    "Lemma/Courses/PackageRender.lean": "8c95b4e36ab7885e63126652a289b69f85dbb5bcdd3068f85e0f9634efc69085",
+    "Lemma/Courses/WorkspaceCodec.lean": "45bfc579cf7cc6a6c2733c6d8f02f2e6ea1501c706e99a825a798e044452c003",
+    "Lemma/Applications/Notebook.lean": "0843c5fb719b579d7e9b170a1465352aa9b8494641b40f5d72e0c1250a2dc9c6"
+  },
+  "complete_source_relation": {
+    "status": "PASS_GENUINE_PACKED_ROW_COMPLETE_COHORT_AND_EXACT_PURE_CALLEE_CHANGE",
+    "scope": "genuine complete User2 pre/post source/body/caller software6 cohort; independent pixels/effects and real target performance separate",
+    "old_functions": 833,
+    "new_functions": 837,
+    "added": [
+      "Lemma.Courses.PackageRender.packedCellRow",
+      "Lemma.Courses.PackageRender.packedPanelWord",
+      "Lemma.Courses.WorkspaceCodec.copyDecodedStep",
+      "Lemma.Courses.WorkspaceCodec.restore"
+    ],
+    "removed": []
+  },
+  "phases": {
+    "pre": {
+      "changed": [
+        "Lemma.Applications.Notebook.pumpOpenPackageCourse",
+        "Lemma.Courses.PackageRender.sparsePanelWord"
+      ],
+      "unchanged_complete_bodies": 831
+    },
+    "post": {
+      "changed": [
+        "Lemma.Applications.Notebook.packageControlCharacter",
+        "Lemma.Applications.Notebook.pumpOpenPackageCourse",
+        "Lemma.Courses.PackageBinding.captureField",
+        "Lemma.Courses.PackageRender.sparsePanelWord"
+      ],
+      "unchanged_complete_bodies": 827
+    }
+  },
+  "semantic_checks": {
+    "finite_row_start_highbits": 15360,
+    "independent_mathematics_pixels": 1474560,
+    "actual_canonical_oddstride_header_fault_FramebufferActions": "PASS",
+    "full_private_restore": "PASS all3712 bytes, in-place compressedsource replacement after complete private decode; real fault prefix and scratch alias rejection",
+    "actual_notebook_fullopener": "PASS decode/full staging/adoption, intentionally stops at following visible flag; no controller or CPU claim",
+    "legacy_512_byte_Store_copy_bound": "unchanged; real software5 actual220 reopening defect retained"
+  },
+  "host_tests": {
+    "kernel": 433,
+    "scaffold": 18
+  },
+  "mutations": {
+    "status": "PASS_FOUR_VALID_LLVM_PACKED_ROW_RESTORE_MUTANTS_AND_SIX_INCOMPLETE_MIXED_COHORTS_REJECT",
+    "scope": "actual verifier-valid pure row and full restore LLVM mutations; complete mixed-cohort rejection; no target execution claim",
+    "negative": [
+      {
+        "name": "wrong-pixel-mask",
+        "valid_llvm": true,
+        "sha256": "7c79c1d6c3e2af0b884af6a6ebabeefff162373f1edf8ac944ba4585ca4369ea",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.packedCellRow/post"
+      },
+      {
+        "name": "wrong-white-row",
+        "valid_llvm": true,
+        "sha256": "4a6147cd50eaa304d7ad5d38b113b0707493b31bfe5b6866324011fc133fe03f",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.packedCellRow/post"
+      },
+      {
+        "name": "wrong-stitch",
+        "valid_llvm": true,
+        "sha256": "1d487c42a5060fb2b9ba7ce04c9a16b8d49bb517380ca053b77668aea2f610ef",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.packedPanelWord/post"
+      },
+      {
+        "name": "missing-last-word",
+        "valid_llvm": true,
+        "sha256": "a9949afc52cde16c0477ad9cd1e29e513fce270a014000dd2107c1d2e77263b2",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.WorkspaceCodec.restore/post"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.copyDecodedStep",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.restore",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.PackageRender.packedCellRow",
+        "reason": "Package Notebook mixed/incomplete packed-row cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.PackageRender.packedPanelWord",
+        "reason": "Package Notebook mixed/incomplete packed-row cohort"
+      },
+      {
+        "name": "mixed-family-['Lemma.Courses.WorkspaceCodec.copyDecodedStep', 'Lemma.Courses.WorkspaceCodec.restore']",
+        "reason": "Package Notebook mixed/incomplete packed-row cohort"
+      },
+      {
+        "name": "mixed-family-['Lemma.Courses.PackageRender.packedCellRow', 'Lemma.Courses.PackageRender.packedPanelWord']",
+        "reason": "Package Notebook restore repair escaped its complete software6 cohort"
+      }
+    ]
+  },
+  "all_six_cohorts": [
+    {
+      "path": "build/kernel/task006-package-closure-notebook-a1/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/1",
+        "post": "lemma-installed-package-notebook/1"
+      }
+    },
+    {
+      "path": "build/kernel/task006-descriptor-direct-notebook-a3/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/2",
+        "post": "lemma-installed-package-notebook/2"
+      }
+    },
+    {
+      "path": "build/courses/task006-package-delta-component-a1/users/notebook/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/3",
+        "post": "lemma-installed-package-notebook/3"
+      }
+    },
+    {
+      "path": "build/courses/task006-package-sparse-component-a1/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/4",
+        "post": "lemma-installed-package-notebook/4"
+      }
+    },
+    {
+      "path": "build/courses/task006-workspace-codec-component-a2/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/5",
+        "post": "lemma-installed-package-notebook/5"
+      }
+    },
+    {
+      "path": "build/courses/task006-packed-row-component-a2/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/6",
+        "post": "lemma-installed-package-notebook/6"
+      }
+    }
+  ],
+  "new_helpers_require_language_or_runtime_extension": false,
+  "physical_timing_or_fast_timing_parity": false,
+  "whole_corrected_target_workflow": "NEXT",
+  "receipts": {
+    "build/courses/task006-packed-row-component-a2/export.log": "0b445282539808a638b97ba0ca28a7339af6a16bf9fb7a5dbc029ae5376d9aca",
+    "build/courses/task006-packed-row-component-a2/cohort-generation.json": "a023fe7427a6ca0a54d67cc5498a3d57cb98001c9aacdd8468316940f0e9ff76",
+    "build/courses/task006-packed-row-component-a2/all-cohorts.json": "d5a82f8998c4718bebaa61028afb527b9bef7cefbbb3956cb4b8539003e3b2bc",
+    "build/courses/task006-packed-row-component-a2/mutations.json": "66eebf15ccf667ff6129af35643138c44ae8dc71dd175d6b801eaab069d0cea5",
+    "build/courses/task006-packed-row-component-a2/mutations-a1-failure.json": "349221cbdc82853216bfce42bfc42a7fa2e35422f7c8192c9a4b05c3689f8c4b",
+    "build/courses/task006-packed-row-component-a2/kernel-host.log": "0ee2ca83880f7a1efa50bb6b6f5265b5e4c82c99f4dd3c60b325481d0970a352",
+    "build/courses/task006-packed-row-component-a2/scaffold.log": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c",
+    "build/courses/task006-packed-row-component-a2/scaffold-tests.log": "352f0bc4a6fe1807ad7bda5e9b22d0a32d87cc75d6507364fde162ebb065072e",
+    "build/courses/task006-packed-row-component-a2/users/notebook/unit.json": "0a0cd0428bcac53b53038b95a009ccfde5309ed606093594eb1aa563cc870cea",
+    "build/courses/task006-packed-row-component-a2/users/notebook/program.ll": "68d3c95a1e909ed22abf76f680f19b34ae0a7f12c7c79fe270091bc5f616e6c7",
+    "build/courses/task006-packed-row-component-a2/users/notebook/program.opt.ll": "e45ed1f555509361f7a6df21d34ee07c20f11731ac6e402e7347b8f359bcffae",
+    "build/courses/task006-packed-row-component-a2/users/notebook/program.o": "f4ca49d25e9fdf09fa76fe8679dae822febf686f75d03795ef052e98a32d61e7",
+    "build/courses/task006-packed-row-component-a2/users/notebook/program.s": "58543703824d8fc4ce590d3c97ac3775be3f439ad048021cc1d3d8e8a420e1ad",
+    "build/courses/task006-packed-row-component-a1/render.log": "2a3229ef942019559b9729b849ec4b6b2b8da551ada12be8f75ce4f2dd60949e",
+    "build/courses/task006-packed-row-component-a1/mathematics-pixels.log": "254cb6d59a090bb2958b0018b55dccef4fdb640c0978346c7d2524e35caa8ea7",
+    "build/courses/task006-packed-row-component-a1/restore-test-a1.log": "1f873c4eeb67ecf769f8531fb4eb91ec0be3a64ef6afa90a8dab4e045b52e201",
+    "build/courses/task006-packed-row-component-a1/restore-notebook-actions-a1.log": "64c68f904c7ffda61d4ca57a6e1ad6f20e78982b1904d89721d8338d3080775d"
+  }
+}

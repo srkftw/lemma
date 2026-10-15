@@ -97,12 +97,27 @@ private def observe (before : Model) (action : Action) : IO ((UInt8 × UInt64) �
   return (result, ← state.get)
 
 def check : IO Unit := do
+  -- Exhaust every observable pair of three-bit glyph rows, every line row
+  -- and every start modulo12; poison unused/high bits independently. Original
+  -- panelWord remains the separate per-pixel oracle, including fallback starts.
+  for y in [:20] do
+    for a in [:8] do
+      for b in [:8] do
+        let shift := if y < 15 then (12-(y/3)*3).toUInt64 else 0
+        let first := (a.toUInt64 <<< shift) ||| 0xffff000000000000
+        let second := (b.toUInt64 <<< shift) ||| 0x8000000000000000
+        for x in [:12] do
+          if PackageRender.packedPanelWord x.toUInt64 y.toUInt64 first second !=
+              PackageRender.panelWord x.toUInt64 y.toUInt64 first second then
+            throw <| IO.userError "packed row changed a glyph bit/row/start/high-bit pixel"
   for x in (#[(0 : UInt64),16,32,368,0xffffffffffffffff]) do
     for y in (#[(0 : UInt64),14,15,19,20,319,0xffffffffffffffff]) do
       for (first,second) in #[(0,0),(0,0x2bed),(0x6bae,0),
           (0x7fff,0x7fff),(0x8000000000000000,0),(0,0xffffffffffffffff)] do
         if PackageRender.sparsePanelWord x y first second != PackageRender.panelWord x y first second then
           throw <| IO.userError "pure sparse word changed blank/nonblank/spacing/high-bit pixels"
+        if PackageRender.packedPanelWord x y first second != PackageRender.panelWord x y first second then
+          throw <| IO.userError "packed row changed boundary or arbitrary UInt64 pixels"
   let image ← encode "a\nB! jz?$"
   let before : Model := {package := image}
   let (result,prepared) ← observe before (PackageRender.prepare source image.size.toUInt64 0 1 0 cache)

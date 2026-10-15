@@ -227,6 +227,18 @@ def check : IO Unit := do
       "new opening phase failed to cancel/consume its actual transaction before ink"
     expect ((← r.get).memory.extract (workspace-0x10000).toNat (workspace-0x10000+3712).toNat == immutable)
       "opening cancellation published or damaged active workspace"
+    if compact then
+      -- Run the actual full-record branch through decode, all3712 staging
+      -- bytes and live adoption. Stop at its following course-visible flag so
+      -- this fixture does not substitute for controller/render execution.
+      set r (app+96) 5
+      set r (context+128+56) 4
+      r.modify fun m => {m with fault := some (stateBase+512),calls := #[],returns := #[]}
+      let restored ← run r (notebookAction% "pumpOpenPackageCourse")
+      expect (restored.1 == 17 && (← word r (app+96)) == 4 && (← r.get).calls.isEmpty &&
+          (← r.get).memory.extract (saved-0x10000).toNat (saved-0x10000+3712).toNat == immutable &&
+          (← r.get).memory.extract (workspace-0x10000).toNat (workspace-0x10000+3712).toNat == immutable)
+        "actual full compact opener failed before complete workspace adoption (sector-copy limit regression)"
   IO.println "NOTEBOOK_PACKAGE_ACTIONS:PASS actual private EOF/framing/sequence/wait/fault/cancel/partial-allocation/checker/header/busy guards; no CPU or durability claim"
 end NotebookPackageTests
 

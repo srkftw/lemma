@@ -101,6 +101,22 @@ def check : IO Unit := do
     expect ((← raw r restored) == values) "roundtrip lost original workspace/Doc8/history bytes"
     expect ((← ok r (WorkspaceCodec.recordLength source)) == 3712) "legacy raw header not admitted"
     let good ← r.get
+    -- Exercise the actual complete restore path, including in-place replacement
+    -- of the compressed source after private validation. The Store sector-copy
+    -- helper intentionally admits at most512 bytes and is never used here.
+    let restoredBytes ← ok r (WorkspaceCodec.restore packed length restored packed 1 1)
+    expect (restoredBytes == 3712 && (← raw r packed) == values && (← raw r source) == values)
+      "complete3712-byte staging restore failed or changed the live source"
+    r.set {good with reads := #[], writes := #[], writeFault := packed+24}
+    let failedRestore ← run r (WorkspaceCodec.restore packed length restored packed 1 1)
+    expect (failedRestore.1 == 18 && ((← r.get).writes.filter (fun a => packed ≤ a && a < packed+3712)) ==
+        #[packed,packed+8,packed+16] && (← raw r source) == values)
+      "full staging restore lost actual copy fault prefix or changed live source"
+    r.set {good with reads := #[], writes := #[]}
+    let overlapRestore ← run r (WorkspaceCodec.restore packed length restored restored 1 1)
+    expect (overlapRestore.1 == 240 && (← r.get).reads.isEmpty && (← r.get).writes.isEmpty)
+      "restore accepted scratch/output alias"
+    r.set good
     for (offset,value,status) in #[(0,0,241),(8,3,241),(16,3704,240),(24,88,240),
         (24,length+8,240),(88,65536,240),(96,0,240)] do
       r.set {good with reads := #[], writes := #[]}

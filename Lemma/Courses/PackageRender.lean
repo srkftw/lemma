@@ -157,12 +157,38 @@ namespace Lemma.Courses.PackageRender
 open Lemma.Core0.Memory
 open Lemma.Courses.PackageFormat
 
+/-- One12-pixel glyph row in six little-endian Gray4 bytes. Each authored bit
+is three black pixels; the final three pixels stay white. Only the selected
+three pattern bits contribute, including when other/high bits are nonzero.
+The sole caller supplies a row below15 after its ordinary line-space guard. -/
+private def packedCellRow (pattern row : UInt64) : UInt64 :=
+  let bits := pattern >>> (12 - row / 3 * 3)
+  let a := if bits &&& 4 = 0 then (0 : UInt64) else 0xf0ff
+  let b := if bits &&& 2 = 0 then (0 : UInt64) else 0xff0f00
+  let c := if bits &&& 1 = 0 then (0 : UInt64) else 0xf0ff000000
+  0xffffffffffff ^^^ (a ||| b ||| c)
+
+/-- Same sixteen pixels as panelWord. Normal16-pixel word starts have cell
+offset0/4/8; stitch their two six-byte rows without a per-pixel division/call.
+All other starts retain the original operation, preserving the full public
+UInt64 input domain. This pure operation reads/writes no cache or device. -/
+def packedPanelWord (x y first second : UInt64) : UInt64 :=
+  let row := y % 20
+  if 15 ≤ row then 0xffffffffffffffff else
+  let start := x % 12
+  if (if start = 0 then (1 : UInt64) else if start = 4 then 1 else if start = 8 then 1 else 0) = 1 then
+    let a := packedCellRow first row
+    let b := packedCellRow second row
+    if start = 0 then a ||| (b <<< 48) else
+    if start = 4 then (a >>> 16) ||| (b <<< 32) else (a >>> 32) ||| (b <<< 16)
+  else panelWord x y first second
+
 /-- Pure presentation shortcut: blank glyphs and the five inter-line rows
 have exactly the same sixteen white pixels as panelWord. No memory or cache
 state is consulted, and nonblank words retain the original font operation. -/
 def sparsePanelWord (x y first second : UInt64) : UInt64 :=
   if 15 ≤ y % 20 then 0xffffffffffffffff else
-  if first ||| second = 0 then 0xffffffffffffffff else panelWord x y first second
+  if first ||| second = 0 then 0xffffffffffffffff else packedPanelWord x y first second
 
 private def readByteStep (i _ : UInt32) (acc address _ _ _ : UInt64) : Action :=
   .bind (Lemma.User.Memory.read8 (address + i.toUInt64)) fun s byte =>
