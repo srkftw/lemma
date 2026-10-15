@@ -2641,9 +2641,9 @@ private def renderPackageText : Action :=
   .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
   .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
    .bind (if role < 8 then
-    Lemma.Courses.PackageRender.renderSelectedDelta packageBytes length ordinal role position packageGlyphs width height
+    Lemma.Courses.PackageRender.renderAlignedSelectedDelta packageBytes length ordinal role position packageGlyphs width height
     else if role < 12 then
-    Lemma.Courses.PackageRender.renderHeaderSelectedDelta packageBytes length (role - 8) position packageGlyphs width height
+    Lemma.Courses.PackageRender.renderAlignedHeaderSelectedDelta packageBytes length (role - 8) position packageGlyphs width height
     else .done 241 0)
     fun s next => if statusFailed s = true then .done s 0 else
   let changed := next >>> 32

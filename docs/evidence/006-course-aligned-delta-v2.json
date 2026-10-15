@@ -1,0 +1,83 @@
+{
+  "schema": "lemma-course-aligned-delta2-evidence/1",
+  "status": "PASS_ACTIONS_GENUINE_NOTEBOOK_ARTIFACTS_LINKED_CPU_NOT_RUN",
+  "contract": "docs/contracts/006-course-aligned-delta-v2.md",
+  "scope": "Current same-machine Notebook source uses the alignment-aware byte-prefix/aligned-word/byte-suffix renderer. Full linked/source audits, actual400M canonical controller completion and browser execution remain pending.",
+  "genuine_captures": {
+    "canonical": {
+      "functions": 837,
+      "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+      "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-aligned-notebook-component-a2/canonical/users/notebook"
+    },
+    "canonical-init": {
+      "functions": 837,
+      "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+      "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-aligned-notebook-component-a2/canonical-init/users/notebook"
+    },
+    "companion": {
+      "functions": 875,
+      "configuration": "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook",
+      "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-aligned-notebook-component-a2/companion/users/notebook"
+    },
+    "companion-init": {
+      "functions": 875,
+      "configuration": "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize",
+      "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-aligned-notebook-component-a2/companion-init/users/notebook"
+    }
+  },
+  "genuine_result": {
+    "path": "build/courses/task006-aligned-notebook-component-a2/result.json",
+    "sha256": "30f46c26dd91991e84e9d7d8eec69c2ac8d617ba575ff6cf6c9bda85b4e21459",
+    "seconds": 387.4839554949431
+  },
+  "original_stale_capture": {
+    "status": "FAIL_SOURCE_TO_COMPILED_CONFORMANCE",
+    "diagnosis": "build/courses/task006-aligned-notebook-component-a1/stale-olean-diagnosis.json",
+    "sha256": "92a7efa9e4fe25412dba2734af8bf2991d82da2b610d1b1bf0ac97b3838cfaf9",
+    "repair": "Explicitly lake-build actual Notebook module and require all new renderer names before export/object generation; old exports unused for authority"
+  },
+  "generic_qualification": {
+    "path": "build/courses/task006-aligned-notebook-artifacts-a1/result.json",
+    "sha256": "cfb10e691ca2984c34aa26da990786c76f1056a4f26088cff7257ba338fb8bbc",
+    "seconds": 268.7610472040251,
+    "all4_actual_catalog_pre_post_IR": true,
+    "both_normal_RV64_readonly_jump_objects": true,
+    "both_initializer_IR_and_object_bytes_exact_to_their_normal": true,
+    "semantic_mutants": [
+      {
+        "name": "wrong-third-glyph-shift",
+        "valid_llvm": true,
+        "reason": "Aligned renderer complete body/global/caller corpus differs: canonical/pre",
+        "sha256": "6d6300e9c7d5a846c0fd92e923343c268fd9f773fb1f1af9387b6b739f04b68a"
+      },
+      {
+        "name": "wrong-row-chunks",
+        "valid_llvm": true,
+        "reason": "Aligned renderer complete body/global/caller corpus differs: canonical/pre",
+        "sha256": "b8b48e8d2bd4d82237c171c6a702c734ddd6fa1d20177703260e22ee5e952333"
+      },
+      {
+        "name": "missing-last-chunk",
+        "valid_llvm": true,
+        "reason": "Aligned renderer complete body/global/caller corpus differs: canonical/pre",
+        "sha256": "5575b7a29f12fa14f3fc6c8351850f0593552be261d2788e60bf3e014bc3fabf"
+      }
+    ],
+    "source_inputs_unchanged_during_qualification": true
+  },
+  "postqualification_metadata_followup": "Contract diagnostic root now reports its exact catalog root for both hardware deployments; all4 declared-root metadata checks passed. IR/object admission unchanged.",
+  "actual_actions": {
+    "log": "build/courses/task006-aligned-notebook-draft-a1/selected-actions-a1.log",
+    "sha256": "9322820a1934e3b36331c0dabb52ae4da83f7636b92cc5e8e14d628d1039fc83",
+    "full_framebuffer_reference": "original scalar pixel renderer,1650/1651/1663 widths; every footprint and neighbouring byte",
+    "canonical_framebuffer_reads": 9640,
+    "canonical_full_difference_writes": 9640,
+    "exact_row_bytes_total": 61440,
+    "previous_decomposition_reads": 54720,
+    "reduction_percent": 82.383,
+    "selected_body_header_CRC_pagination": true,
+    "unchanged_repair_real_fault_prefixes": true,
+    "not_claimed": "Target cycle/host performance speedup until real guest/controller workload executes"
+  },
+  "prior_controller_deadlines": "Source6 native original400M and source4 browser original400M both FAIL with complete RAM body and incomplete controller pixels; retained separately. No bound changed."
+}

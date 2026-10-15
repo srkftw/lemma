@@ -816,7 +816,7 @@
     "build/browser/task006-package-sparse-a1"
   ],
   "pending_browser": {
-    "status": "RUNNING",
+    "status": "COMPLETED_COLD_READY_PASS_SEPARATE_COURSE_DEADLINE_FAIL",
     "origin": "http://127.0.0.1:8795/",
     "medium": "task006_whiteword_course_cold_a1",
     "actual_new_cpu_zero_observed": true,
@@ -824,7 +824,7 @@
       "cycles": 1000000000,
       "host_seconds": 7200
     },
-    "scope": "Actual importedopaque two-package medium and newCPU; no restore, input, Ready or course PASS yet"
+    "scope": "Original actual cold Ready passes separately; subsequent declared400M course endpoint fails. Original owner remains paused with its two admitted observational cuts consumed."
   },
   "original_failures_retained": [
     "build/courses/task006-package-sparse-fast-a1/result.json"
@@ -903,6 +903,25 @@
       "backing_call_seconds_during_run": 0.009205000281333925,
       "heap_bytes": 201326592
     },
-    "subsequent_course_open": "RUNNING separate original400M/3600s at same owner; one remaining observational checkpoint cut; not inferred from coldReady"
+    "subsequent_course_open": "FAIL original400M/3600s at1201150000: Saved5 and complete guest framebuffer body, incomplete actual controller body; no timeout enlargement or successful browser-course claim"
+  },
+  "browser_course_original400M": {
+    "status": "FAIL_COMPLETE_BODY_NOT_PRESENT_ON_CONTROLLER",
+    "result": "build/browser/task006-package-sparse-cold-a1/course-result.json",
+    "sha256": "36f04126c922f9c072bbc2698d0a0da01563ad1f936d65a990e044c8ab8af2e3",
+    "endpoint_cycle": 1201150000,
+    "guest_saved_sequence": 5,
+    "simulation_call_seconds_for_course": 2573.921445007597,
+    "heap_bytes": 201326592,
+    "passive_diagnosis": "build/courses/task006-packed-row-cut-diagnosis-a1/browser4.json",
+    "passive_diagnosis_sha256": "e468ed6f75e66910b906dae10b262fc0d3e53be5f97be1c46e158397157295bd",
+    "full_guest_framebuffer_body": true,
+    "full_controller_body": false,
+    "remaining_dirty_tiles": 130,
+    "not_inferred": [
+      "full workspace/backing qualification after course; original observer stopped at pixel failure",
+      "browser mathematics/learner/ink/cold-reopen acceptance",
+      "source6/source7 browser execution"
+    ]
   }
 }

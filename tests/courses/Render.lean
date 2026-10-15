@@ -296,6 +296,23 @@ def check : IO Unit := do
       prefixPartial.framebuffer[offset]! != differential.framebuffer[offset]! ||
       prefixPartial.framebuffer[offset+1]! != damaged.framebuffer[offset+1]! then
     throw <| IO.userError "aligned prefix write failure lost ordered partial effects"
+  let (alignedSelection,alignedSelected) ← observe before
+    (PackageRender.renderAlignedSelectedDelta source image.size.toUInt64 0 1 0 cache width height)
+  if alignedSelection.1 != 0 || alignedSelection.2 &&& 0xffffffff != 9 ||
+      alignedSelected.framebuffer != rendered.framebuffer || alignedSelected.glyphs != prepared.glyphs ||
+      alignedSelected.package != image then
+    throw <| IO.userError "aligned selected source/pagination/cache/full framebuffer changed"
+  let (alignedHeader,alignedHeaderPixels) ← observe differential
+    (PackageRender.renderAlignedHeaderSelectedDelta source image.size.toUInt64 0 0 cache width height)
+  if alignedHeader.1 != 0 || alignedHeader.2 &&& 0xffffffff != 4 ||
+      alignedHeaderPixels.framebuffer != originalHeader.framebuffer ||
+      alignedHeaderPixels.glyphs != originalHeader.glyphs then
+    throw <| IO.userError "aligned selected header changed complete title pixels/pagination/cache"
+  let (alignedBad,alignedNoWrite) ← observe corrupt
+    (PackageRender.renderAlignedSelectedDelta source image.size.toUInt64 0 1 0 cache width height)
+  if alignedBad != (243,0) || !alignedNoWrite.writes.isEmpty ||
+      alignedNoWrite.framebuffer != corrupt.framebuffer then
+    throw <| IO.userError "aligned selected corrupt package reached display/cache writes"
   IO.println "COURSE_ALIGNED_DELTA2:PASS exact scalar full pixels/all footprint bytes/strides/9640 canonical reads and writes versus54720 original reads; unchanged/repair/fault prefixes; component only"
   IO.println "COURSE_RENDER_ACTIONS:PASS actual immutable package text, explicit pagination, independent glyph/cell and528000-byte Gray4 oracle,CRC/authority/fault/partial-effect guards; component only"
   IO.println "COURSE_RENDER_DELTA:PASS all actual pixels/pagination, changed-tile coverage, no unchanged framebuffer writes, crossed-tile repair and real read/write fault prefixes; component only"

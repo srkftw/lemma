@@ -2064,3 +2064,49 @@ Source551628d CI38695753991 is terminal SUCCESS10/10/every step complete,
 no skips. PR9 body updated to observed outcomes and retained failures;
 new local companion composition is not qualified by this CI. PR remains draft,
 unmerged, with no authorization to merge PR9.
+
+## October15 companion recovery4 composition and aligned-delta2
+
+The four-role Clocked13 package/Workspace/Store-recovery composition now has
+complete ordinary linked initializer/normal audits and native schema9. Read
+[recovery4 evidence](../evidence/006-package-companion-recovery4.json). Original
+firmware/catalog/Objects/installer-ABI audit failures remain retained. The exact
+393-input original compiler archive produced the normal image in a private
+compiler workspace; the retained initializer bytes were unchanged. Current
+host observers are identified separately. The recovered child finished in
+578.044s; external resource observation580.972s/3.664GB peak passed the original
+bounds. The inherited supervisor's wrong host-versus-compiler archive relation
+remains FAIL; its passive correction checks both distinct source sets and all
+consumed artifacts without another build or machine run.
+
+`build/native/task006-usb-package-recovery-a1` is prepared, not a completed
+companion acceptance result. Its actual independent-peer scenario is running at
+`build/usb/task006-package-companion-connected-a1` with a21600s/10B-clock ceiling,
+no automatic restart, private Saved11 source copy and no snapshot cold shortcut.
+It loses the first persisted workspace WRITE reply, not the final-barrier
+known+1 case. Do not infer Ready/Save/reconciliation/cold success from its code.
+
+Source6 canonical RTL Ready802M/install68M/dedup10M passed, then the original
+400M COURSE limit failed at1280M. Source4 browser coldReady801.15M passed, then
+its original400M course endpoint failed at1201.15M. Passive complete-CRC/owned
+Sv39 observations show complete body framebuffer bytes but incomplete controller
+pixels:7 dirty native tiles versus130 browser tiles. Both owners/results and
+their original deadlines retain those failure meanings.
+
+The current same Notebook now uses aligned-delta2: exact192-byte row footprints,
+byte prefixes/suffixes and aligned words;9640 canonical framebuffer reads versus
+54720 for the previous decomposition. No display/pool shrink, hidden dirty flush
+or cache change. Selected body/header/pagination/CRC, full scalar pixels at three
+strides, unchanged repair/fault prefixes pass. Genuine four-catalog Notebook
+exports and complete IR/readonly/RV64 jump checks pass with three valid LLVM
+mutants rejected. The first exporter-only capture used stale imports and remains
+a source-conformance failure; explicit Notebook builds and marker guards repair
+it. [Aligned2 evidence](../evidence/006-course-aligned-delta-v2.json) keeps this
+separate from pending linked/canonical400M/browser execution.
+
+Actual CI07e7171 run38714540020 failed9/10 at A-E's kernel-host setup; later check
+was skipped. The [actual-log and deterministic repair](../evidence/006-ci-mutation-fixture-path.json)
+identifies a fixture full-path O0 substring bug and keeps production evidence
+validation unchanged. The next candidate must receive its own full CI result.
+DraftPR9 remains unmerged. Digital completion, fast cached/timing parity,
+distribution and full physical closure remain separate unfinished obligations.

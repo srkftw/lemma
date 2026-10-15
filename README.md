@@ -1275,3 +1275,25 @@ records the full build identities, retained failures and functional limits.
   --wasm-input-bundle build/AN_UNUSED_PACKED_NATIVE_BUNDLE \
   --output-dir build/AN_UNUSED_PACKED_BROWSER_BUNDLE
 ```
+
+The installed-package notebook also has an explicitly selected Clocked13
+companion recovery4 development bundle, `build/native/task006-usb-package-recovery-a1`.
+It adds the separately isolated guest installer to the existing recoverable USB
+Store, notebook and closure checker. This pair passes linked artifact audits;
+its real install/lost-reply/offline-ink/retry/cold scenario is still running.
+Use `--workload usb-clocked-package-retry-bulk-notebook --usb-recovery` with this
+bundle and the same prepared USB host/peer/outbox session arguments shown above.
+The old three-process recovery names remain distinct. The normal course command
+now admits this exact four-process profile:
+
+```sh
+./scripts/lemmasim course-install --session-dir build/usb/your-session \
+  --package build/courses/your-package/arithmetic.lcp --transaction 65537
+```
+
+This sends raw UART bytes. Only the actual guest/peer barrier can produce an
+Installed or Saved receipt. See [recovery4 contracts](docs/contracts/006-package-companion-recovery-v1.md)
+and [source-bound evidence](docs/evidence/006-package-companion-recovery4.json).
+The current aligned course renderer has passed source/Action/object qualification;
+its linked canonical/native/browser timing acceptance is pending. The previous
+source6 native and source4 browser400M course failures remain failures.

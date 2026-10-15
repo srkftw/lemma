@@ -387,3 +387,45 @@ def renderAlignedDelta (cache width height : UInt64) : Action :=
   else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0
 
 end Lemma.Courses.PackageRender
+
+/-! Explicit package entry points for text-aligned-delta2. The earlier
+renderers and their source-bound historical artifacts keep their bodies. -/
+namespace Lemma.Courses.PackageRender
+open Lemma.Core0.Memory
+open Lemma.Courses.PackageFormat
+
+def renderAlignedSelectedDelta (address bytes ordinal role position cache width height : UInt64) : Action :=
+  if 416 ≤ width then if width ≤ 4096 then if 640 ≤ height then if height ≤ 4096 then
+  if address ≤ 0xffffffffffffffff - bytes then
+  let framebufferBytes := ((width + 1) / 2) * height
+  if separate address bytes Lemma.Ink.Surface.framebuffer framebufferBytes = 1 then
+  if cache % 8 = 0 then if cache ≤ 0xffffffffffffffff - cacheBytes then
+  if separate cache cacheBytes Lemma.Ink.Surface.framebuffer framebufferBytes = 1 then
+  .bind (prepare address bytes ordinal role position cache) fun s next => if s = 0 then
+  if next ≤ 0xffffffff then
+  .bind (renderAlignedDelta cache width height) fun s changed =>
+  if s = 0 then .done 0 (next ||| (changed <<< 32)) else .done s 0
+  else .done resourceLimit 0 else .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done malformed 0 else .done malformed 0
+  else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0
+
+
+def renderAlignedHeaderSelectedDelta (address bytes field position cache width height : UInt64) : Action :=
+  if 416 ≤ width then if width ≤ 4096 then if 640 ≤ height then if height ≤ 4096 then
+  if address ≤ 0xffffffffffffffff - bytes then
+  let framebufferBytes := ((width + 1) / 2) * height
+  if separate address bytes Lemma.Ink.Surface.framebuffer framebufferBytes = 1 then
+  if cache % 8 = 0 then if cache ≤ 0xffffffffffffffff - cacheBytes then
+  if separate cache cacheBytes Lemma.Ink.Surface.framebuffer framebufferBytes = 1 then
+  .bind (prepareHeader address bytes field position cache) fun s next => if s = 0 then
+  if next ≤ 0xffffffff then
+  .bind (renderAlignedDelta cache width height) fun s changed =>
+  if s = 0 then .done 0 (next ||| (changed <<< 32)) else .done s 0
+  else .done resourceLimit 0 else .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done malformed 0 else .done malformed 0
+  else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0
+
+
+end Lemma.Courses.PackageRender

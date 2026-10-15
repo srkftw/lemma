@@ -63,6 +63,10 @@ def _rows(unit):
     return rows
 
 def contract(unit):
+    from aligned_notebook_target import candidate as aligned_candidate, contract as aligned_contract
+    if aligned_candidate(unit):
+        scope,wanted=aligned_contract(unit)
+        return {'contract_version':'lemma-installed-package-notebook/7','root':unit['roots'][0]['source'],'private_layout':{**PACKED_LAYOUT,'text_delta_contract':'lemma-course-text-aligned-delta/2'},'owned_functions':wanted['pre_function_count']}
     rows = _rows(unit)
     has_family = any(source in OWNED_NOTEBOOK for source in rows)
     if not has_family and not selected(unit):
@@ -151,6 +155,8 @@ def _validate_bodies(ir, unit, *, optimized, pins, callers, layout=None, version
             'contract_version': version if version is not None else VERSION}
 
 def validate(ir, unit, *, optimized):
+    from aligned_notebook_target import candidate as aligned_candidate, validate as validate_aligned
+    if aligned_candidate(unit):return validate_aligned(ir,unit,optimized=optimized)
     from package_companion_deployment import CONFIGURATIONS as JOINED
     if unit.get("configuration") in JOINED:
         from package_companion_target import validate as validate_joined

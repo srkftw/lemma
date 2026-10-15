@@ -74,6 +74,8 @@ def complete_corpus(ir,unit,*,optimized):
  return actual
 
 def validate(ir,unit,*,optimized):
+ from aligned_notebook_target import candidate as aligned_candidate, validate as validate_aligned
+ if aligned_candidate(unit):return validate_aligned(ir,unit,optimized=optimized)
  found=contract(unit)
  if found is None:return None
  key,wanted=found;phase='post' if optimized else 'pre';actual=complete_corpus(ir,unit,optimized=optimized)

@@ -4,7 +4,7 @@
   "producer_parent": "9b18756dc27212263834edfc3ebbf366767254c2",
   "uncommitted_source_at_component_observation": true,
   "contract": "docs/contracts/006-course-packed-row-v1.md",
-  "scope": "Source551628d fresh388-input matched pair, full ordinary RV64 audits, actual42-phase fast course/checker/learner/ink/Close/independentcold/fullreopen, real POSIX partial-write/cold/retry/ink. Exact canonical RTL workflow running; no fast pipeline timing or arbitrary checkpoint claim.",
+  "scope": "Source551628d fresh388-input matched pair, full ordinary RV64 audits, actual42-phase fast course/checker/learner/ink/Close/independentcold/fullreopen, real POSIX partial-write/cold/retry/ink. Exact canonical RTL original400M course deadline failed; no fast pipeline timing or arbitrary checkpoint claim.",
   "target_sources": {
     "Lemma/Courses/PackageRender.lean": "8c95b4e36ab7885e63126652a289b69f85dbb5bcdd3068f85e0f9634efc69085",
     "Lemma/Courses/WorkspaceCodec.lean": "45bfc579cf7cc6a6c2733c6d8f02f2e6ea1501c706e99a825a798e044452c003",
@@ -414,10 +414,25 @@
     }
   },
   "canonical_RTL": {
-    "status": "RUNNING_NO_RESULT_INFERRED",
+    "status": "FAIL_ORIGINAL_400M_COURSE_DEADLINE",
     "plan": "build/courses/task006-packed-row-integration-a1/native-plan.json",
     "result": "build/courses/task006-native-packed-row-a1/actor/result.json",
-    "original_source3_400M_course_failure": "build/courses/task006-native-package-delta-a1/actor/result.json"
+    "original_source3_400M_course_failure": "build/courses/task006-native-package-delta-a1/actor/result.json",
+    "source": "551628d6e050239325b387e4fe5d4e77e0e29a4e",
+    "result_sha256": "b387cca2a700798c386a4d574e212909c83941921b18bb008922c0a18941c8ed",
+    "supervision_sha256": "56b6e32ba83e608af63b232721a2e5b0e6c79b27d378fac067c8b13fee9dd5a0",
+    "elapsed_host_seconds": 4464.114042737,
+    "peak_owned_RSS_bytes": 267620352,
+    "endpoint_cycle": 1280000000,
+    "original_open_cap": 400000000,
+    "passive_diagnosis": {
+      "path": "build/courses/task006-packed-row-cut-diagnosis-a1/native6.json",
+      "sha256": "bfe8019ff6e7d34c166b675001e2521282856ffe64bed2a6cae8e611cb07d35c",
+      "full_guest_framebuffer_body": true,
+      "full_controller_body": false,
+      "remaining_dirty_tiles": 7,
+      "scope": "Full original snapshot CRC, owned frame/generation/permissions and Sv39 walks; no execution, restore, fence or drain"
+    }
   },
   "candidate_ci": {
     "commit": "551628d6e050239325b387e4fe5d4e77e0e29a4e",
