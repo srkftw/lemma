@@ -4,6 +4,7 @@ This observer never supplies machine state or pixels. Literal 3x5 glyph rows,
 12x20 cells and 32x16 clipping follow the selected public text layout.
 """
 from check_live_notebook import require, visible_pixels
+from check_canonical_pen_pixels import coverage, endpoint
 
 ROWS = {' ': ('000', '000', '000', '000', '000'),
  '!': ('010', '010', '010', '000', '010'),
@@ -102,3 +103,43 @@ def label_matches(path, text, x=24, y=132):
             if pixels[at:at + 3] != bytes([0 if black else 255]) * 3:
                 return False
     return True
+
+
+def annotation_pixels(baseline, samples, brush_q8):
+    """Offline expectation: completed course pixels plus one raw three-sample stroke.
+
+    The entire returned plane is compared, including pixels outside the stroke.
+    Neither this expectation nor its integer geometry is supplied to the machine.
+    """
+    width, height, pixels = baseline
+    require((width, height) == (1650, 2200) and len(pixels) == width * height * 3,
+            "annotation oracle requires complete canonical pixels")
+    require(type(brush_q8) is int and brush_q8 in (256, 512, 1024, 2048),
+            "unsupported acknowledged brush")
+    require(len(samples) == 3 and all(len(row) == 9 and
+            all(type(value) is int and 0 <= value < 1 << 64 for value in row)
+            for row in samples), "annotation oracle requires three unsigned raw samples")
+    require([row[5] for row in samples] == [3, 3, 2] and
+            all(tuple(row[6:8]) == (1, 0) for row in samples) and
+            all(row[4] <= 4095 and all(value <= 65535 for value in row[2:4])
+                for row in samples) and
+            tuple(samples[2][2:4]) == tuple(samples[1][2:4]) and samples[2][4] == 0 and
+            all(samples[i + 1][0] == samples[i][0] + 1 and
+                samples[i + 1][1] > samples[i][1] and
+                samples[i + 1][8] == samples[i][8] for i in range(2)),
+            "annotation raw stroke outside declared scope")
+    first, last = (endpoint(row, width, height) for row in samples[:2])
+    margin = brush_q8 // 512 + 2
+    expected = bytearray(pixels)
+    covered = 0
+    for y in range(max(160, min(first[1], last[1]) - margin),
+                   min(height, max(first[1], last[1]) + margin + 1)):
+        for x in range(max(0, min(first[0], last[0]) - margin),
+                       min(width, max(first[0], last[0]) + margin + 1)):
+            if (coverage((x, y), first, first, samples[0][4], samples[0][4], nominal=brush_q8) or
+                    coverage((x, y), first, last, samples[0][4], samples[1][4], nominal=brush_q8)):
+                at = (y * width + x) * 3
+                expected[at:at + 3] = bytes(3)
+                covered += 1
+    require(covered > 0, "annotation oracle did not cover any pixel")
+    return width, height, bytes(expected)

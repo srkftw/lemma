@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "conformance/lemmasim"))
 from check_live_notebook import Checker, Input, guest_events, idle, require, visible_pixels
 from course_package import decode
-from course_pixel_oracle import course_body_matches, label_matches
+from course_pixel_oracle import annotation_pixels, course_body_matches, label_matches
 from inspect_notebook import MAGIC
 from store_oracle import recover
 
@@ -62,6 +62,11 @@ class CourseSave(Checker):
         self.censuses = []
         self.frozen = {}
         self.body = decode(args.package.read_bytes())["nodes"][0]["body"]
+        _, _, records = recover(args.disk.read_bytes())
+        root = records[(1, 1)].payload
+        require(len(root) == 64 and struct.unpack_from("<3Q", root) == (MAGIC, 1, 1),
+                "source notebook root format")
+        self.brush_q8 = struct.unpack_from("<Q", root, 32)[0]
         self.report.update(scope=__doc__, phases=[], source_medium_sha256=sha(args.disk),
                            package_sha256=sha(args.package),
                            claims="Fast functional units or exact RTL clocks by backend; "
@@ -200,8 +205,13 @@ class CourseSave(Checker):
         stream.tick = session.inspect()["machine"]["ticks"] + 10000
         stream.stroke("course annotation", 1, 1, 3, 1400)
         raw = stream.events[first:]
+        expected_annotation = annotation_pixels(
+            visible_pixels(self.directory / "opened-course.ppm"), raw, self.brush_q8)
+        self.report["independent_annotation"] = dict(
+            brush_q8=self.brush_q8, all_pixels=1650 * 2200,
+            expected_rgb_sha256=hashlib.sha256(expected_annotation[2]).hexdigest())
         session.admit(raw)
-        rendered = self.rendered(session, "annotated-course")
+        rendered = self.rendered(session, "annotated-course", expected_annotation)
         self.until(session, "annotation-ack-and-SAVED-course", 200000000, 1800 if rtl else 180,
                    lambda state: state["ticks"] >= raw[-1][1] + 200000 and
                    any(row[0] == 0x421 for row in self.rows(session)[before_ack:]) and rendered(state))
@@ -219,7 +229,8 @@ class CourseSave(Checker):
         self.report["actual_raw_samples"] = raw
         first_ack = len(self.rows(session))
         save_rows = self.tap(session, stream, 1372, 64)
-        expected = visible_pixels(before_panel)
+        expected = expected_annotation
+        require(visible_pixels(before_panel) == expected, "independent complete annotation pixels")
         rendered = self.rendered(session, "explicit-save-controller", expected)
         self.until(session, "idle-explicit-Save-detail0-identical-course", 60000000, 600 if rtl else 120,
                    lambda state: state["ticks"] >= save_rows[-1][1] + 200000 and
