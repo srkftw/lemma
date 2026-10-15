@@ -235,6 +235,19 @@ def bundle(args):
     import lemmasim_fast as fast
     from build_kernel import source_inputs
     name=args.profile
+    if getattr(args,'refresh_fast',False):
+        conflicts=('notebook_build','initializer_build','rtl_build','rtl_source_root',
+                   'guest_source_root','initializer_guest_source_root',
+                   'usb_recovery_deployment','usb_closure_recovery_deployment')
+        if name!='lemma-silicon-dev/0.3.0' or getattr(args,'base_bundle',None) is None or \
+           not getattr(args,'expected_fast_sha256',None) or any(getattr(args,k,None) for k in conflicts):
+            raise ValueError('Fast refresh requires canonical base, exact runtime identity and no guest/RTL replacement')
+        from refresh_native_fast import refresh
+        result=refresh(args.base_bundle,args.output_dir,args.expected_fast_sha256)
+        print(result)
+        return result
+    if getattr(args,'expected_fast_sha256',None):
+        raise ValueError('Expected fast identity requires --refresh-fast')
     if getattr(args,'usb_recovery_deployment',False) and name!=USB_CLOCKED_PROFILE:
         raise ValueError('Recovery native package requires Clocked13 and schema7')
     if getattr(args,'usb_closure_recovery_deployment',False) and name!=USB_CLOCKED_PROFILE:

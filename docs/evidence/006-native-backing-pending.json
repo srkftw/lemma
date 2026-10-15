@@ -153,7 +153,7 @@
       "path": "build/native/task006-package-layout2-fsize-a4/bundle.json",
       "sha256": "8ee36995e3313b124d221631fc4a5b6cfe4c424d5a31fc0c1fbb14f9867dbf9c"
     },
-    "bundle_fast_scope": "This native bundle updates RTL only; its archived QEMU remains2874932d. Standalone current prepared QEMU188e5447 has the signal repair and separately observed guest scenario. Do not inherit native/fast equivalence or updated archived-fast claims.",
+    "bundle_fast_scope": "Historical fsize-a4 still archives2874932d. New matched-fsize-a5 cc85a026 archives repaired188e5447 with the same audited guest pair and repaired RTL8e5ce4ee. Real public paused startup and independent wrong-binary/different-guest rejection pass; the already observed guest scenario remains separately source-bound.",
     "new_fast_binary": "188e544730915c0c781f22a1937c0b758fd5931a65e995c8eb69df3fad0fd674",
     "actual_guest_scenario": {
       "status": "PASS_RETAINED_SCENARIO_WITH_CORRECT_TYPED_OBSERVER",
@@ -366,7 +366,6 @@
     },
     "gaps": [
       "New RTL guest-issued real POSIX failure/cold case not run",
-      "Native bundle archived fast runtime still2874932d; standalone prepared fast188e5447 separately qualifies actual guest failure/cold/Save",
       "New repaired browser bundle cold package/course workflow not run; original Layout2 cold remains separately active",
       "General fast timing/cached-state, complete USB/radio, production trust, proof-kernel and physical storage qualification remain open"
     ],
@@ -459,6 +458,80 @@
       },
       "scaffold": "checkerPASS and18 testsPASS7.268s",
       "scope": "Host regressions; no additional target, timing, cold or physical claim."
+    },
+    "matched_native_runtime_refresh": {
+      "status": "PASS",
+      "scope": "actual unchanged-guest runtime packaging, independent invalid-input rejection and public paused startup; no target cycles or cold/workflow claim",
+      "rejections": [
+        {
+          "case": "wrong-binary",
+          "error": "unexpected prepared fast binary",
+          "no_output": true
+        },
+        {
+          "case": "different-audited-guest",
+          "error": "fast preparation changes the audited notebook guest closure",
+          "no_output": true
+        }
+      ],
+      "launches": [
+        {
+          "backend": "rtl",
+          "identity": {
+            "backend": "rtl",
+            "profile": "lemma-silicon-dev/0.3.0",
+            "runtime": "8e5ce4ee293f0c7fb6c17f4bb905d14e2ef80de6db1c7110e5b3fb56ef389488",
+            "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+            "guest": "a20c6530c845a69a6b9d521c491ab0abdee1b406210b763762d0b92d3313f370",
+            "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+            "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a"
+          },
+          "cycle": 0,
+          "scope": "actual public paused startup only"
+        },
+        {
+          "backend": "qemu",
+          "identity": {
+            "backend": "qemu",
+            "profile": "lemma-silicon-dev/0.3.0",
+            "runtime": "188e544730915c0c781f22a1937c0b758fd5931a65e995c8eb69df3fad0fd674",
+            "adapter": "lemmasim-fast-adapter/4",
+            "derivation": "7639fa5fe6162f6060d820e5a0fae28406edd63be8503253428722ab3fa85ecc",
+            "guest": "a20c6530c845a69a6b9d521c491ab0abdee1b406210b763762d0b92d3313f370",
+            "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+            "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+            "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+            "icount_shift": 3
+          },
+          "cycle": 0,
+          "scope": "actual public paused startup only"
+        }
+      ],
+      "bundle": {
+        "path": "build/native/task006-package-layout2-matched-fsize-a5/bundle.json",
+        "sha256": "cc85a0265a05bc241e399879576ebfe00b0a9f0465330474376a428ea09030e2"
+      },
+      "builder_sha256": "7589fdba3b0c109ff304e78b18c8c025eb58cf0e5d78c7aafd16bf22b7718adb",
+      "host_seconds": 4.339876850950532,
+      "result": {
+        "path": "build/lemmasim/task006-native-fast-refresh-a1/result.json",
+        "sha256": "afd56ca24a941dee3ebe507eda4562c7b8efc50c9238acedcfb8d39514a54962"
+      },
+      "preserves": "every existing guest/RTL file, consumed source version, original dependency notice and base artifact; new fast input versions have separate archive entries",
+      "format": "existing canonical native bundle schema3; public launch validator checks all four backend/role pairs",
+      "public_command": "./scripts/lemmasim native-bundle-build --refresh-fast --base-bundle build/native/task006-package-layout2-fsize-a4 --expected-fast-sha256 188e544730915c0c781f22a1937c0b758fd5931a65e995c8eb69df3fad0fd674 --output-dir build/AN_UNUSED_MATCHED_NATIVE_BUNDLE",
+      "public_cli_bundle": {
+        "path": "build/native/task006-package-layout2-matched-fsize-a6/bundle.json",
+        "sha256": "cc85a0265a05bc241e399879576ebfe00b0a9f0465330474376a428ea09030e2",
+        "same_manifest_as_direct_helper": true
+      },
+      "public_cli_guard_tests": {
+        "status": "PASS",
+        "tests": 14,
+        "seconds": 0.335,
+        "log_sha256": "0b260367715f51e8ad1a3c6b42e5da6e0b2ce202415096ef620f00069b70d4a9",
+        "scope": "real CLI missing/mixed selection rejects before output; existing package boundaries retained"
+      }
     }
   }
 }

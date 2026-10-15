@@ -6,10 +6,28 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+import subprocess
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
 from silicon_guest_bundle import inventory, read_json, development_configuration, ARITHMETIC_LAB_CONFIGURATIONS, origin_destination, SCHEMA, SCHEMA_WITH_SOURCE_VERSIONS, SCHEMA_WITH_SOFTWARE_DEPLOYMENT, MANAGED_DEPLOYMENT, MANAGED_CONFIGURATIONS, SUMS_DEPLOYMENT, SUMS_CONFIGURATIONS, SOFTWARE_DEPLOYMENTS, bundle_configurations
 
 class NativeBundleBoundary(unittest.TestCase):
+    def test_fast_refresh_rejects_mixed_or_implicit_selection_before_output(self):
+        root=Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as directory:
+            output=Path(directory)/'must-not-be-created'
+            base=[str(root/'scripts/lemmasim'),'native-bundle-build',
+                  '--base-bundle',str(Path(directory)/'nonexistent-base'),
+                  '--output-dir',str(output)]
+            for options,message in [
+                (['--refresh-fast'],'Fast refresh requires canonical base'),
+                (['--refresh-fast','--expected-fast-sha256','0'*64,'--rtl-build','unused'],
+                 'Fast refresh requires canonical base'),
+                (['--expected-fast-sha256','0'*64],'Expected fast identity requires --refresh-fast')]:
+                result=subprocess.run(base+options,cwd=root,capture_output=True,text=True,timeout=20)
+                self.assertNotEqual(result.returncode,0)
+                self.assertIn(message,result.stderr+result.stdout)
+                self.assertFalse(output.exists())
+
     def test_versioned_managed_deployment_cannot_be_mixed_or_injected_into_legacy(self):
         manifest={'profile':'lemma-silicon-dev/0.3.0','schema':SCHEMA_WITH_SOFTWARE_DEPLOYMENT,
                   'software_deployment':{'contract_version':MANAGED_DEPLOYMENT,

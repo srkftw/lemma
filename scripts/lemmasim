@@ -818,6 +818,8 @@ def main():
     p=sub.add_parser('native-bundle-build',help='Pack exact source-validated native RTL/QEMU development artifacts')
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--output-dir',type=Path,required=True)
     p.add_argument('--base-bundle',type=Path,help='Validate and retain these immutable backends with freshly audited replacement guests')
+    p.add_argument('--refresh-fast',action='store_true',help='Retain the complete audited native bundle and replace only its current prepared fast runtime')
+    p.add_argument('--expected-fast-sha256',help='Required exact fast binary identity for --refresh-fast')
     p.add_argument('--notebook-build',type=Path);p.add_argument('--initializer-build',type=Path)
     p.add_argument('--rtl-build',type=Path,help='Replace the archived canonical RTL backend with an exact current-source build')
     p.add_argument('--rtl-source-root',type=Path,help='USB8 package: complete explicitly validated original native source archive')

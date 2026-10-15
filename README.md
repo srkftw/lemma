@@ -1131,7 +1131,7 @@ Launch the prepared native machine on a privately backed existing medium:
 
 ```sh
 ./scripts/lemmasim session --backend rtl --profile lemma-silicon-dev/0.3.0 \
-  --native-bundle build/native/task006-package-layout2-fsize-a4 \
+  --native-bundle build/native/task006-package-layout2-matched-fsize-a5 \
   --workload notebook --mode developer --paused \
   --session-dir build/AN_UNUSED_PACKAGE_SESSION --disk YOUR_PRIVATE_MEDIUM.raw
 ./scripts/lemmasim session-control --session-dir build/AN_UNUSED_PACKAGE_SESSION \
@@ -1150,6 +1150,21 @@ result after Store publication. Use the existing course authoring path; keep
 the original transaction for reconciliation after an uncertain outcome.
 Run installation after the machine displays Ready. The1B-clock request is
 bounded execution; other media and workloads require their own observed Ready.
+
+The same prepared package supports `--backend qemu` with repaired runtime188e5447.
+Its instruction-clock behavior remains distinct from exact RTL timing. To pack
+the currently prepared fast runtime with an unchanged, fully audited native
+guest pair, use the native build helper below. It validates both roles before
+creating output, preserves every old consumed version and records the new
+binary, derivation, sources and external Nix libraries. It does not compile or
+execute the guest, change the base bundle or touch user media.
+
+```sh
+./scripts/lemmasim native-bundle-build --refresh-fast \
+  --base-bundle build/native/task006-package-layout2-fsize-a4 \
+  --expected-fast-sha256 188e544730915c0c781f22a1937c0b758fd5931a65e995c8eb69df3fad0fd674 \
+  --output-dir build/AN_UNUSED_MATCHED_NATIVE_BUNDLE
+```
 
 The prepared browser runs the same audited guest on the existing RTL/Wasm core:
 
