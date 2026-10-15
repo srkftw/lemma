@@ -1414,9 +1414,19 @@ forwards the usual course/raw-input/replay controls; `COMMAND --help` shows
 their arguments. Explicit development guest overrides may need their original
 build/source environment. This version does not package product boot/update
 or optional companion/radio adapters. The prepared local archive is
-`build/distribution/task006-control-native-a3.tar.gz` (28,413,664 bytes including
+`build/distribution/task006-control-native-a4.tar.gz` (28,413,646 bytes including
 a49,253,648-byte offline runtime export). The
 [native distribution contract](docs/contracts/006-local-native-distribution-v1.md)
 and [actual qualification](docs/evidence/006-local-native-distribution-v1.json)
 separate artifact admission, real RTL transport, private runtime import and
 restored suffix equality from full workflow and clean-host installation.
+
+The extracted native command has also exercised the installed-course/checker/
+learner/ink/Save workflow and independent cold/reopen:2,615,000,279 instruction
+clocks within the original3B/900s bounds. The original live harness census FAIL
+and its independently corrected missing-only cold observer remain distinct.
+Actual guest initialization without `--session-dir`, both subcommand help pages
+and unchanged package integrity pass on A4. Initializer logs default beside the
+external medium as `new.raw.initialize`. Exact RTL/browser workflow deadlines,
+new-host installation, fast timing/cached-state continuation and permissioned
+tutor transport remain separate.

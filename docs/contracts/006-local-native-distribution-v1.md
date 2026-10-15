@@ -30,6 +30,12 @@ environment; their checkpoint identity is not silently removed for portability.
 Product ROM/authentication/update and optional companion/radio adapters are
 not included by this distribution version.
 
+Without an explicit initialization log directory, `init --disk PATH` uses
+`PATH.initialize` outside the package. Session/init subcommand help forwards
+without creating a view or requiring a mutable path. A successful ordinary
+initialization leaves every packaged file unchanged; formatting still occurs
+through the actual separately audited guest initializer and backing barrier.
+
 Optional `--include-nix-runtime` exports the complete existing Nix requisites
 of both backend host-library inventories. Each dependency is checked before
 export. Bounds:256 store paths,512MiB source/export,60s query,180s export;

@@ -1,20 +1,20 @@
 {
   "schema": "lemma-local-native-distribution-evidence/1",
-  "status": "PASS_EXTRACTED_ADMISSION_RTL_TRANSPORT_PRIVATE_IMPORT_AND_PREPARED_SUFFIX_ONLY",
-  "scope": "New reusable extracted native command package. Unchanged canonical guest/ROM/backends; no new full workflow, new-host execution, arbitrary-boundary continuation or licensing claim.",
+  "status": "PASS_EXTRACTED_NATIVE_COURSE_MATH_INK_COLD_WITH_CENSUS_OBSERVER_CORRECTION_AND_REAL_INIT",
+  "scope": "Reusable extracted native command package. Actual source8 guest/42phase functional workflow through packaged commands with independently qualified missing-only cold/source observer; original harness failures retained. New ordinary initializer/help repair separately exercised. No fast timing/arbitrary cached-state or new-host/license claim.",
   "implementation_inputs": {
     "scripts/package_native.py": "5474ccc0c0f1a70a58d212592a73230404151680f0e0556df1b7ead1191daf4d",
     "scripts/native_bundle_relocation.py": "411a2b9471746c2cd5bb4e3155340fbdc960c2bd77846f1f80a1886d9974bc73",
-    "sim/native/run_local.py": "7cecc67bae6b4a045aa17e8eab5701af2058243792bfca8e6b3850f1a7216e46",
+    "sim/native/run_local.py": "787ff1d5a99bd8a5c49bc7167d778fb704137eecbd07b73e23183c28486e0f39",
     "tests/silicon/test_native_bundle_relocation.py": "c7ce0ca9e710a7f5d0eff51534388bbaefabd2cda52384156ddfdd1c6e3de0da"
   },
   "package": {
     "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
-    "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-native-a3",
-    "manifest_sha256": "239d93ce35a42aea650996442345c1ecacd495ece0457b8580705e7e09ac0c35",
+    "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-native-a4",
+    "manifest_sha256": "a9abd3d84e27a937bcc2dfa3d4c64a4cd29f754f0f51f9b0c8615ae761c93b57",
     "source_bundle_sha256": "ffe65b762e4b928fd89f0d33e77e05749e0d08cc847e479bbe0f4a3ac7dc7b16",
     "files": 1568,
-    "bytes": 137943103,
+    "bytes": 137943444,
     "ordinary_both_backend_both_guest_admission": true,
     "host_dependencies": "Exact external Nix files retained as prerequisites",
     "guest_execution": "NOT_EXERCISED_BY_PACKAGING",
@@ -53,11 +53,11 @@
       "scope": "Existing host runtime files only; no import, download, trust change or guest runtime linkage"
     },
     "archive": {
-      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-native-a3.tar.gz",
-      "sha256": "9c17854317afbb3ccf30e70cf8546a9317f8b83bd6f0d8e2f4ac7fe64dbec5ab",
-      "bytes": 28413664
+      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-native-a4.tar.gz",
+      "sha256": "ff3f1d882b65d5f3a4704b522392dd690362c28a4e88f797b7c06b7d01643b4d",
+      "bytes": 28413646
     },
-    "seconds": 30.993326577940024
+    "seconds": 30.51501711504534
   },
   "qualified_platform": "Actual Linux x86-64 with inventoried Nix runtime and isolated Python -I from /tmp",
   "actual_transport": {
@@ -114,14 +114,146 @@
       "sha256": "aecad2f1b19cbff136a874368a187c9d63f7b0eece508e0392ce73f314e353c5",
       "status": "FAIL",
       "cause": "Explicit development guest override invokes genuine capacity/build helper, which needs original build environment. Original branch ran1M clocks; extracted branch failed before CPU. No Ready-suffix equivalence claimed and no identity field removed. Ordinary prepared-session successor uses no overrides."
+    },
+    {
+      "path": "build/distribution/task006-native-connected-supervision-a1/result.json",
+      "sha256": "d6652130fc9c550ad6c5236c27957bbdd4f13881b6ee96e8c255914176faf851",
+      "status": "FAIL",
+      "cause": "Harness parent oracle constructor dereferenced null source archive before CPU. Keep declared oracle input while ordinary prepared launcher selects its own admitted guest; no guest override option sent."
+    },
+    {
+      "path": "build/distribution/task006-native-connected-supervision-a2/result.json",
+      "sha256": "a33c14be6d5ddf3591918b47e354c5ddb78947d962dacb5ad5cd99533b9cb06b",
+      "status": "FAIL",
+      "cause": "Completed live40phases then census guard caught late wrapper-only source entry before newCPU cold launch. Missing-only independently qualified correction and2cold phases are separate."
     }
   ],
   "remaining": [
     "New-host runtime installation/execution; universal native installer",
     "Portable explicit development-override checkpoint identities/build closure",
     "Packaged product ROM/authentication/update and optional companion/radio adapter commands",
-    "Full canonical course/mathematics/ink/cold workflow on current8 still running",
     "Complete browser workflow, browser-local compiler and distribution permission",
-    "Exact fast timing/cached-state checkpoint continuation and physical closure"
-  ]
+    "Exact fast timing/cached-state checkpoint continuation and physical closure",
+    "Current8 exact RTL/browser fullcourse/Save/cold remain running; extracted QEMU functional results do not qualify their deadlines"
+  ],
+  "previous_package": {
+    "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
+    "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-native-a3",
+    "manifest_sha256": "239d93ce35a42aea650996442345c1ecacd495ece0457b8580705e7e09ac0c35",
+    "source_bundle_sha256": "ffe65b762e4b928fd89f0d33e77e05749e0d08cc847e479bbe0f4a3ac7dc7b16",
+    "files": 1568,
+    "bytes": 137943103,
+    "ordinary_both_backend_both_guest_admission": true,
+    "host_dependencies": "Exact external Nix files retained as prerequisites",
+    "guest_execution": "NOT_EXERCISED_BY_PACKAGING",
+    "host_runtime_archive": {
+      "format": "nix-store-export",
+      "path": "runtime-closure.nar",
+      "sha256": "17d6dda95ff936f788902e3ab6b69146b69fb827bf8b1401cc1e7fd55ae91245",
+      "bytes": 49253648,
+      "store_roots": [
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib"
+      ],
+      "complete_requisites": [
+        "/nix/store/g60m3aky9f59wgy1gi0y06xwmbw19d6m-xgcc-16.2.0-libgcc",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib",
+        "/nix/store/jp8ql2fnd61xhvb4vsfp0bqwrzf16qrp-libunistring-1.4.2",
+        "/nix/store/q0lbdx5yv93a3md74kjhm0v2kljjii89-libidn2-2.3.8",
+        "/nix/store/q2mkz6ca1alqfqf750dygvakmq8kjrwz-gcc-16.2.0-libgcc"
+      ],
+      "dependency_files": {
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2": "e2e9975273f65f7cb730f4fcc8a9a5aae62763b6263de877a8b896311819d7b6",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libc.so.6": "ef3843ed24108fc3cfde4095cdb12e0643b9953f4b902bad8152d002fc0cbbe3",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libm.so.6": "935fd3fa15c35746041cfa475003571dc51b9ce0c395034ac9d50bb8e1583919",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libpthread.so.0": "244961bf4e6c9211890bf0fe41689e3d7e7ee4eb3d6c58c3eb3841178384f529",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib64/ld-linux-x86-64.so.2": "e2e9975273f65f7cb730f4fcc8a9a5aae62763b6263de877a8b896311819d7b6",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libatomic.so.1": "f6e57bb416b74bdc6a0c7c61efd2c6670f666e53a658092b68414668640416d0",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libgcc_s.so.1": "e80a9d87e1a0b8249700f459767b257b01969c79bee3c8fb15e35e1e9c4da055",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libstdc++.so.6": "47c4e32721428eb2078bb9fb0670805f94821b21601f2b191bea4a1f1b223e2d"
+      },
+      "tool": {
+        "path": "/run/current-system/sw/bin/nix-store",
+        "binary": "/nix/store/yhbbi1pjdkxss2f6k5pgg4gv0r8fva7f-nix-2.31.2/bin/nix",
+        "sha256": "6bd632acf71ef7bcb98c61019e557fea959f2d8c1b2d9918702dfc8e5c66fdf0"
+      },
+      "scope": "Existing host runtime files only; no import, download, trust change or guest runtime linkage"
+    },
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-native-a3.tar.gz",
+      "sha256": "9c17854317afbb3ccf30e70cf8546a9317f8b83bd6f0d8e2f4ac7fe64dbec5ab",
+      "bytes": 28413664
+    },
+    "seconds": 30.993326577940024
+  },
+  "actual_extracted_workflow": {
+    "package_manifest_sha256": "239d93ce35a42aea650996442345c1ecacd495ece0457b8580705e7e09ac0c35",
+    "machine_command": "python3 -I extracted/run.py ... (census wrapper only, working directory/tmp)",
+    "original_live": {
+      "path": "build/distribution/task006-native-connected-a2/result.json",
+      "sha256": "7e22d909a2aabe33c715dfd53af06abfe9570adcf73ab2b5cd74d5d888d1a28a",
+      "status": "FAIL"
+    },
+    "original_supervision": {
+      "path": "build/distribution/task006-native-connected-supervision-a2/result.json",
+      "sha256": "a33c14be6d5ddf3591918b47e354c5ddb78947d962dacb5ad5cd99533b9cb06b",
+      "status": "FAIL"
+    },
+    "missing_only_cold": {
+      "path": "build/distribution/task006-native-connected-cold-a3/result.json",
+      "sha256": "fa5092d62dc1d989be227909e7d7de302aa23acaf9e949fe8e59a88b7ec5d93b",
+      "status": "PASS_EXTRACTED_MISSING_COLD_WITH_FROZEN_OBSERVER_CORRECTION"
+    },
+    "missing_only_supervision": {
+      "path": "build/distribution/task006-native-connected-cold-supervision-a3/result.json",
+      "sha256": "c8df112349a5fd0e900d7b9fe4dabd427df93ec09827753b48e076f24fb44cbc",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED"
+    },
+    "live_completed_phases": 40,
+    "cold_completed_phases": 2,
+    "combined_instruction_clocks": 2615000279,
+    "original_limits": {
+      "instruction_clocks": 3000000000,
+      "absolute_host_seconds": 900
+    },
+    "original_absolute_deadline_met": true,
+    "actor_seconds": [
+      302.4815018919762,
+      65.39665275102016
+    ],
+    "supervised_seconds": [
+      303.68921254901215,
+      66.72462348104455
+    ],
+    "peak_owned_rss_bytes": [
+      400891904,
+      364601344
+    ],
+    "machine_imports_from_checkout": false,
+    "live_behavior": "Actual installed course/source/edition/rights/lesson/worked exercise, genuine isolated5/6 Verified and5/7 Invalid, authored localhint, durable learner/review events, Unsupported, budget0Indeterminate, six raw ink samples and acknowledged Save, close",
+    "cold_behavior": {
+      "new_cpu": true,
+      "all_controller_pixels_exact": true,
+      "all_acknowledged_objects_exact": true
+    },
+    "cold_reopen": {
+      "actual_body_pixels": true,
+      "exact_workspace_and_all_objects": true,
+      "all_medium_bytes_exact": true,
+      "no_new_checker_request": true
+    },
+    "observer_repair": "Original live completed40phases, then valid source guard caught the already-declared census wrapper being added only at process exit. Original plan/census/current wrapper hashes independently match and every original frozen input is unchanged. Original terminalFAIL retained; run only missing2cold/reopen phases under original absolute900s/3B aggregate, no live rerun or guard disable.",
+    "limits": "QEMU instruction-clock functional qualification. Authored localhint is not permissioned tutor transport. This does not close proof-kernel/generalmanagedruntime/fasttiming/cache parity. Latest A4 launcher only adds outside-package init log default and forwards subcommandhelp; unchanged guest, frontend/backend files and source aliases retain prior exact identities."
+  },
+  "actual_initializer_and_help": {
+    "path": "build/distribution/task006-native-init-a4/result.json",
+    "sha256": "afca7cd3a58e69a3006a3b179d64216c75706baefcd6748c4800ac73458d7e56",
+    "status": "PASS_EXTRACTED_HELP_REAL_GUEST_INIT_AND_IMMUTABLE_PACKAGE",
+    "seconds": 19.827138829044998,
+    "guest_instruction_clocks": 25000001,
+    "guest_seconds": 0.9569003699580207,
+    "guest_sha256": "0ace19d4884cf3e5dc8240a41f3b2cb9e128c2ad997bca520731c632e1e9bd5a",
+    "source_scope": "CurrentA4 only; actual initializerguest/barrier, independent sequence0/noobjects; no host formatter; no explicit session-dir. Session/init --help pass and entire package remains exactly inventoried after operation."
+  }
 }

@@ -2363,3 +2363,64 @@ PR9 remains draft/unmerged. Wider digital functions, general managed runtime,
 proof kernel, permissioned tutor, full radio/USB, fast/checkpoint semantics,
 browser course/cold completion, new-host distribution and physical closure
 remain separate open obligations.
+
+### Extracted connected workflow, initialization repair and changed pen attempt
+
+The actual extracted native A3 command completes the40 live course/math/
+learner/rawink/Save/Close phases, then the original source-census guard fails
+before cold launch because the declared census wrapper only appears at atexit.
+Original FAIL/result/process cleanup are retained at build/distribution/
+task006-native-connected-a2 and its supervision sibling (302.482s actor,
+303.689s supervised,400,891,904B peak). The wrapper was already an exact hashed
+input in the original plan: the frozen/current/atexit bytes all agree, and all
+original frozen inputs remain unchanged. A missing-only observer fixes initial
+wrapper enumeration and runs only the2 missing newCPUcold/reopen phases from
+the actual acknowledged closed-final.raw. It does not rerun the live prefix or
+strip a source guard. build/distribution/task006-native-connected-cold-a3 and
+cold-supervision-a3 pass65.397s/66.725s/364,601,344B. Exact total instruction
+clocks2,615,000,279, original3B and original absolute900s deadline both met.
+Cold274,000,006/32.781s, reopen140,000,019/21.500s; all controller pixels,
+all package/Doc8/learner/raw records and whole medium exact, no rechecking old
+evidence. Every machine CLI uses isolated Python from/tmp and its actual import
+census contains no checkout scripts/conformance. Host oracles stay independent.
+The original null oracle-archive constructor failureA1 is also retained.
+
+The documented init path exposed a real launcher defect: without an explicit
+session-dir the original front end would put logs under the extracted source
+root. Current launcher defaults beside the external raw medium as
+PATH.initialize and forwards session/init --help without a view/path. NewA4
+archive build/distribution/task006-control-native-a4.tar.gz is28,413,646B
+SHAff3f1d88...,30.515s preparation, same original guest/ROM/backends/runtime
+export. Actual Python-I init from/tmp creates a new private256MiB medium through
+the audited initializer0ace19d4:25,000,001 instruction clocks/0.957s guest,
+real durability acknowledgment, independent empty-store sequence0. Both help
+pages and full package integrity after init pass (19.827s whole observer).
+No host formatter or current-tree build runs. Read the expanded native
+distribution evidence for actual reports, retained failures and source scopes.
+18 scaffold checks/metadata pass again; current5-line launcher repair needs
+its own candidate CI. Native9ab CI38759753901 was inprogress when first found.
+
+Physical work has one new bounded candidate, with maintained pen still2bab7e33.
+build/silicon/pen-empty-head-owner-a1/lemma_pen.sv SHA3ec9ae08... captures the
+private head while count0 and masks empty MMIO head fields to0; accepted count
+publishes the same first-edge payload. Full256/bank/first-head/ACK/watchdog and
+every-edge old/new corpus pass; compiled missing-empty-mask and overwrite-one-
+head mutants fail at edges17/647. Actual mapped181 head D cones have invalid
+high sample ancestors181->0, maximum stages17->8. Mapping passes with all
+cells accounted for. This is not timing or adoption. One exact mapping-reused
+100MHz/IHP-TT physical attempt runs in physical/pen-empty-head-a1, supervised
+from its owner under original900s flow/1000s outer/8GiB RSS/2GiB available/
+12GiB output bounds. Source/tool/flow hashes are sealed. Do not start an unchanged
+retry, modify its sources or adopt it before actual timing is observed. Complete
+route/rule coverage/DRC/LVS/PEX/postroute/fullchip remain separate obligations.
+
+A diagnostic-only200k native suffix of the retained source7 COURSE failure is
+under build/rtl-profile/task006-course-failed-suffix-a2. It produces a real
+nonempty trace:81,213/200,000 cycles in kernelWFI, no sampledU cycles, remaining
+work mainly IPCStorage/descriptor/scheduler polling. This boundary is already
+waiting for display progress; it does not profile the earlier400M renderer or
+justify a deadline extension. OriginalA1 failed file-size limit because private
+backing itself is256MiB; A2 has an independently sufficient384MiB bound and
+the same200k/60s. Its original report labels the normal CLI bounded-nonfinished
+exit3 FAIL; main.cpp and the separate nonempty census qualify the diagnostic
+only, no guest-success reclassification. No further prefix was run.

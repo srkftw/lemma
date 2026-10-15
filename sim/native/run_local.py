@@ -64,13 +64,17 @@ def main():
             return
         if args[0] not in allowed or '--native-bundle' in args:
             raise ValueError('Use a supported prepared command; the packaged bundle is selected automatically')
-        if args[0] in ('session', 'init'):
+        if args[0] in ('session', 'init') and '--help' not in args:
             option = '--session-dir' if '--session-dir' in args else '--disk' if args[0] == 'init' else None
             if option is None or args.count(option) != 1 or args.index(option) + 1 >= len(args):
                 raise ValueError('A session directory (or init disk) selects the persistent bundle view')
             owner = Path(args[args.index(option) + 1]).absolute()
             if owner.is_relative_to(root):
                 raise ValueError('Keep mutable sessions/media outside the immutable package')
+            if args[0] == 'init' and '--session-dir' not in args:
+                # The ordinary front end defaults under its own source root.
+                # An extracted package must stay immutable after initialization.
+                args += ['--session-dir', str(owner.with_name(owner.name + '.initialize'))]
             view = owner.with_name(owner.name + '.bundle')
             from native_bundle_relocation import create_view
             create_view(root / 'bundle', view, root / 'host')

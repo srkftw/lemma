@@ -849,10 +849,10 @@
     },
     {
       "path": "docs/evidence/006-local-native-distribution-v1.json",
-      "sha256": "916eac577e4b1ff144026ea1359796e7f4852cc967c64a997442c8e60c510b72",
-      "status": "PASS_EXTRACTED_ADMISSION_RTL_TRANSPORT_PRIVATE_IMPORT_AND_PREPARED_SUFFIX_ONLY",
-      "bytes": 8373,
-      "scope": "New reusable extracted native command package. Unchanged canonical guest/ROM/backends; no new full workflow, new-host execution, arbitrary-boundary continuation or licensing claim."
+      "sha256": "fc06eb9a0bdb85119e1e6b2d81c88d4312ae97cd2979236c26a7f5557994622a",
+      "status": "PASS_EXTRACTED_NATIVE_COURSE_MATH_INK_COLD_WITH_CENSUS_OBSERVER_CORRECTION_AND_REAL_INIT",
+      "bytes": 16694,
+      "scope": "Reusable extracted native command package. Actual source8 guest/42phase functional workflow through packaged commands with independently qualified missing-only cold/source observer; original harness failures retained. New ordinary initializer/help repair separately exercised. No fast timing/arbitrary cached-state or new-host/license claim."
     },
     {
       "path": "docs/evidence/006-local-browser-distribution-v1.json",
@@ -892,7 +892,7 @@
     "model_rtl": "Source8 actual canonical coldReady802M/4161.268s; unchanged400M firstCOURSE acceptance stillrunning. Source7 original400MFAIL retained at1280M. Source7 same-Wasm failedsuffix400M exactarchive replayPASS3590.528s/original3600s.",
     "guest_artifacts": "Fresh ordinary406-input canonical source8 pair/full audits PASS1007.149s actor/1012.052s supervised, peak1,917,239,296B. Notebook2e6f3d1c/initializer0ace19d4. New alignedControl1 exact partialfailure/repair component qualified.",
     "guest_execution": "Source8 full42phasefastPASS2,615,000,279clocks/336.152s;0.91% fewer clocks than source7, no hostspeedupclaim. Real2byte pwrite/EFBIG Failed/noSaved/newcold exactfullbytes/pixels/workspace/retry+3rawSavedPASS191.142s. Canonical source8 course/fullcold stillrunning.",
-    "distribution": "Actual extracted static browser package/no-checkout server and native command package/4wayadmission/realRTL1000clock/privateNiximport/exact1MsuffixPASS. Source8 browser1B/7200s cold and fullcourse remainrunning; new-host native install, development-override portability, optionaladapters and redistribution unresolved.",
+    "distribution": "Native extractedsource8 actualcourse/math/learner/rawSaved/liveclosed40phases plus missing-onlynewCPUcold/reopen2phases qualify2,615,000,279instructionclocks within originalabsolute900s, with retained censusFAIL and independent declared-wrapper correction. CurrentA4 realguestinitializer/help/immutablepackagePASS. Staticbrowser extractedserverPASS; fullbrowser and exactRTL course/Save/cold stillrunning. New-hostexecution, optionaladapters, license and cachetiming remainopen.",
     "fast_checkpoint": "no new fasttiming/arbitrarycached-continuation claim",
     "physical": "unchanged unresolved fullphysical closure",
     "evidence": "docs/evidence/006-course-text-delta-v1.json; docs/evidence/006-course-white-word-v1.json; docs/evidence/006-registry-course-performance.json; docs/evidence/006-course-packed-row-restore.json; docs/evidence/006-course-aligned-delta-v2.json; docs/evidence/006-course-control-aligned-v1.json; docs/evidence/006-local-native-distribution-v1.json; docs/evidence/006-local-browser-distribution-v1.json",
