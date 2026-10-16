@@ -3320,3 +3320,41 @@ a1's complete failure. Only docs/tests/build scratch may change during this
 hold. Scaffold metadata and18 tests PASS7.121s. ExactRTL helper is finalized;
 commit this milestone then launch its bounded complete case. Do not claim its
 cold prefix or native/browser13 completion as the whole-machine result.
+
+
+### Native distribution acceptance and browser transform repair
+
+Host30ff69f is pushed; actual candidate CI38853668347 initiallypending. Its
+complete22-phase numeric RTL case is running under5B/36000s at
+`build/courses/task006-number-entry-rtl-a1`, outer supervision
+`...number-entry-rtl-supervision-a1`, exec89551. Initial progress identifies
+supervisor2167546/start69341049 and actor2167549/start69341061. Actual imported
+34-file host source set is fixed; see consumed-host-inputs.json. This includes
+build_kernel/core0_common/CLI and shared number/math workflow, but NOT physical
+silicon_synth.py or browser JS. Preserve those34 files through end/cleanup;
+other lanes may proceed independently. No cold Ready or full numeric result yet.
+
+New native extracted a2 PASS actual440000070 functional units/369.438s,
+supervised375.411s/416915456B peak owned RSS. All host script bytes unchanged,
+all owned children reaped by supervisor. Actual phases173M cold/32M install/
+177M independentcold/26M ordinaryLoad, plus exact pending-UART suffix/private
+fork, actual barriers and full opaque bytes/pixels. Original a1 FAIL retained.
+Native source hold is released; the separate34-file exactRTL hold remains.
+
+Browser app raw-transform defect reproduced independently: after resize a held
+pen emitted new contact at changed coordinates; flags3 were observed instead
+of cancellation. Actual app now retains admitted rect/pixel geometry; viewport
+change cancels once at last valid point, point guard catches position/scroll
+changes, invalid layout admits no phantom contact, cancellation ignores invalid
+notification coordinates.15 host browser checks PASS1.613s. Original failure,
+original app/fixture and secondary fixture missing-window failure retained in
+`build/browser/task006-pointer-transform-a1`. The secondary VM now supplies the
+real browser window registration and keeps all assertions. No RV64/browser
+gesture or physical-input success inferred from fixtures.
+
+New immutable static bundle:`build/browser/task006-number-entry-transform-a1`;
+new extracted archive:`build/distribution/task006-number-entry-transform-browser-a1.tar.gz`.
+Same audited13 pair/Wasmfb15, changed app only. Result/bytes/source hashes in
+pointer-transform-a1/result.json. Browser32 cold remains original13 UI/8801;
+do not reload or relabel its consumed app. Browser31 review200M/2400s still runs;
+old30/dirty29 and all16..32 remain protected. Product is incomplete.

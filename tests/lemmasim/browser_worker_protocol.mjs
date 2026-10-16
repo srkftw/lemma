@@ -315,12 +315,13 @@ for(const [storageFault,expected] of [['truncate',['truncate','close']],['flush'
 }
 // Actual app handlers transmit input strings and make one explicit download.
 {
- const nodes=new Map(),sent=[],downloads=[];let appWorker;
+ const nodes=new Map(),sent=[],downloads=[],viewportListeners=new Map();let appWorker;
  const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},getContext:()=>({}),setPointerCapture(){}});return nodes.get(id);};
  const actions=['pause','resume','snapshot','export','capture-outcomes','events','bind','inspect','close'].map(action=>({...node('action-'+action),dataset:{action}}));
  const document={querySelector:node,querySelectorAll:()=>actions,createElement:()=>({click(){downloads.push(this.download);}})};
- const context=vm.createContext({document,navigator:{},Worker:class{constructor(){appWorker=this;}postMessage(m){sent.push(m);}},URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console});
+ const context=vm.createContext({document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{},Worker:class{constructor(){appWorker=this;}postMessage(m){sent.push(m);}},URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console});
  const app=new vm.SourceTextModule(await fs.readFile('sim/browser/app.js','utf8'),{context});await app.link(()=>{throw Error('unexpected app import');});await app.evaluate();
+ assert.equal(typeof viewportListeners.get('resize'),'function');
  node('#run-cycles').value='18446744073709551615';node('#stop-ready').checked=true;node('#stop-panel').checked=true;node('#run-bounded').onclick();
  assert.equal(sent.at(-1).action,'run');assert.equal(sent.at(-1).cycles,String(MAX));assert.equal(typeof sent.at(-1).cycles,'string');assert.equal(sent.at(-1).stopOnReady,true);
  assert.equal(sent.at(-1).stopOnPanel,true);

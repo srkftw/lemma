@@ -1825,11 +1825,11 @@ The prepared archives are`build/distribution/task006-number-entry-native-a1.tar.
 `build/distribution/task006-number-entry-browser-a1.tar.gz` (2067808B).
 Extract into an unused directory, then run `python3 -I /path/to/lemmasim-native/run.py`
 or `python3 -I /path/to/lemmasim-browser/serve.py --port 8801`. Both archives
-pass extracted admission. The first new native run completes its guest
-init/UART/fork/cold-Load checks but fails the valid broad source-integrity check
-because an unconsumed observer file was edited during execution. The unchanged
-600s/3B qualification is rerunning with all host scripts held fixed; its whole
-result and browser13 cold/workflow remain pending. The native launcher still
+pass extracted admission. The actual extracted native Init/UART/private-fork/
+install/barrier/newCPUcold/Load case passes440000070 functional units/369.438s
+(375.411s supervised,416915456B peak). Its first whole failure, caused by an
+observer file changing during the valid source hold, remains retained. Browser13
+cold/workflow and clean-host installation remain separate. The native launcher still
 requires compatible Nix host libraries or explicit import of its included
 runtime archive. New-host installation and redistribution rights remain open.
 This remains development ELF preload; the existing product ROM/update,
@@ -1859,3 +1859,18 @@ until actual cold, keypad/checking and durable reload complete. The current
 browser Verified/hint/exact-suffix results belong to the retained11/ingress2
 guest. Full managed Lean, proof-kernel/tutor closure and all unfinished device,
 checkpoint, distribution and physical gates remain open.
+
+
+The browser raw-input adapter now cancels a held contact before using a changed
+canvas transform. Viewport resize, scrolling/layout movement and invalid geometry
+cannot create a line between different coordinate systems; cancellation retains
+the last valid point. The existing actual-app host fixtures expose the old
+continued-contact defect and pass the repair, including a fresh gesture after
+loss. They are host protocol checks, not physical pen or RV64 evidence.
+The new prepared static bundle is`build/browser/task006-number-entry-transform-a1`
+and its extracted archive is
+`build/distribution/task006-number-entry-transform-browser-a1.tar.gz`. It uses
+the same13 guest and exact Wasm machine as the original number-entry bundle.
+Use the same `browser-serve --bundle` command with this new path. The currently
+running13 cold qualification remains on its original immutable UI bundle;
+actual gestures with the new UI still need their own execution check.

@@ -260,6 +260,32 @@
     "native_archive_bytes": 28698333,
     "browser_archive_bytes": 2067808,
     "native_runtime": "Complete existing6-path Nix runtime closure included; compatible Nix host import/prerequisites remain. No fresh-host qualification or new redistribution license.",
-    "qualification": "Prepared immutable artifacts, extraction and standalone admission PASS. Actual extracted native a1 completed guest checks but whole case FAILS valid host-source hold; a2 reruns unchanged bounds/check with every host-script byte frozen. New browser13 cold1B/7200s running from actual acknowledged raw medium; no checkpoint input or Ready claim."
+    "qualification": "Native a2 real Init/raw4090pending/privatefork/install/barrier/newCPUcold/ordinaryLoad PASS440000070 functional units/369.438s; supervised375.411s/416915456B, all source bytes unchanged. First a1 wholeFAIL due root source edit retained. Browser13 cold/full workflow still running; no Ready claim.",
+    "actual_native": {
+      "path": "build/distribution/task006-number-entry-native-uart-a2/result.json",
+      "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD",
+      "functional_units": 440000070,
+      "seconds": 369.43829636997543,
+      "supervised_seconds": 375.41071006900165,
+      "owned_peak_rss_bytes": 416915456,
+      "host_sources_unchanged": true
+    },
+    "pointer_transform_adapter": {
+      "status": "PASS_PREPARED_EXTRACTED_UI_TRANSFORM_BUNDLE",
+      "scope": "New raw-input app source, same validated Notebook13/RV64 artifacts and same exact MachineWasmfb15. Host fixture and packaging/admission only; actual numeric browser cold continues original UI source on tab32.",
+      "app_sha256": "a289aa80502d6d27d8d1298033a194c200aa2b803546eaa214da915ceb0c13e7",
+      "fixture_sha256": "f83df9a9f0081d4467027882ff1f588beac46f7faccd7f8c7c8441a5d780266f",
+      "host_checks": "15 PASS1.613s; earlier missing window in secondary actual-app fixture corrected without changing assertions.",
+      "initial_negative": "build/browser/task006-pointer-transform-a1/original-failure.log",
+      "retained_old_app": "build/browser/task006-pointer-transform-a1/original-app.js",
+      "retained_initial_fixture": "build/browser/task006-pointer-transform-a1/original-negative-fixture.mjs",
+      "fixture_environment_failure": "build/browser/task006-pointer-transform-a1/browser-host-tests.log",
+      "archive": {
+        "path": "build/distribution/task006-number-entry-transform-browser-a1.tar.gz",
+        "sha256": "85f01a11b26508351d499b6b1cc629513b48dd3107500e2a1237e0ea9eaa5eec",
+        "bytes": 2068293
+      },
+      "extracted": "build/distribution/task006-number-entry-transform-browser-extracted-a1"
+    }
   }
 }

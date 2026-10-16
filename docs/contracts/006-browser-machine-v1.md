@@ -272,3 +272,22 @@ identities and dependency notices remain included. Packaging/extraction/HTTP
 checks establish prepared distribution only. They do not establish Ready,
 course checking, cold saved-document recovery or physical qualification.
 The native prepared bundle's Nix runtime/checkout relocation remains separate.
+
+
+## Raw contact across layout changes
+
+A held browser contact retains its admitted canvas rectangle and controller
+pixel geometry. A viewport resize that changes that transform sends one raw
+loss/cancel sample, flags10 and pressure0, at the last accepted coordinates.
+Before forwarding another point, the same guard catches scrolling or other
+layout movement without a resize event. Zero, negative or nonfinite dimensions
+cannot start a contact. A pointer-cancel notification also uses the last valid
+point, rather than interpreting possibly invalid cancellation coordinates.
+An unchanged transform does not cancel. A new gesture may begin after loss.
+
+These are raw input-adapter operations. They create no ink, document revision,
+Saved receipt, CPU clock or controller pixels. Every accepted event still passes
+through the existing worker and modeled pen controller; replay uses recorded
+admitted words. Host DOM/device fixtures qualify this boundary separately from
+real browser gestures and RV64/controller execution. Existing bundles retain
+their recorded app source; a source change requires a new immutable bundle.

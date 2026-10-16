@@ -2,7 +2,7 @@
 const worker=new Worker('./worker.js',{type:'module'}),status=document.querySelector('#status'),commitStatus=document.querySelector('#commit-status');
 let canvas=document.querySelector('canvas'),lastPlane=null;
 let displayedMediumName=null;
-let active=null,activeTool=0,last={x:0,y:0};
+let active=null,activeTool=0,activeTransform=null,last={x:0,y:0};
 // WebGPU only presents controller-produced Gray4 bytes. Device loss selects
 // a fresh 2D canvas presenting the identical plane; it never fabricates ink.
 // Controls and worker observation always start with a usable 2D canvas.
@@ -14,7 +14,7 @@ function modeControls(){document.querySelectorAll('[data-developer]').forEach(co
 sessionMode.onchange=modeControls;modeControls();
 function scaleDisplay(){const factor=({'1':1,'1.5':1.5,'2':2})[displayScale.value]||0;
  canvas.style.width=factor?`${canvas.width*factor}px`:'';}
-function cancelContact(){if(active===null)return;const pointer=active;active=null;
+function cancelContact(){if(active===null)return;const pointer=active;active=null;activeTransform=null;
  send('pen',{...last,pressure:0,flags:10,tool:activeTool});
  try{canvas.releasePointerCapture(pointer);}catch(e){} }
 // Zoom presents the existing controller plane. Cancel an active contact before
@@ -71,15 +71,27 @@ function cancelPower(){if(powerPointer===null)return;const pointer=powerPointer;
  send('button',{level:0});try{power.releasePointerCapture(pointer);}catch(e){} }
 power.onpointerdown=e=>{if(powerPointer!==null)return;power.setPointerCapture(e.pointerId);powerPointer=e.pointerId;send('button',{level:1});};
 power.onpointerup=power.onpointercancel=power.onlostpointercapture=e=>{if(e.pointerId===powerPointer)cancelPower();};
-function point(e,contact,cancel=false){const r=canvas.getBoundingClientRect();
+function pointerTransform(){const r=canvas.getBoundingClientRect();
+ const result={left:r.left,top:r.top,width:r.width,height:r.height,pixelsX:canvas.width,pixelsY:canvas.height};
+ return Object.values(result).every(Number.isFinite)&&r.width>0&&r.height>0&&canvas.width>0&&canvas.height>0?result:null;}
+function sameTransform(next){return next!==null&&activeTransform!==null&&
+ Object.keys(activeTransform).every(key=>activeTransform[key]===next[key]);}
+// Resizing or scrolling must not join points from two coordinate systems.
+// Cancellation uses the last accepted raw point, including on invalid layout;
+// it never constructs ink or changes virtual time in the presentation thread.
+window.addEventListener('resize',()=>{if(active!==null&&!sameTransform(pointerTransform()))cancelContact();});
+function point(e,contact,cancel=false){const r=pointerTransform();
+ if(!sameTransform(r)||!Number.isFinite(e.clientX)||!Number.isFinite(e.clientY)){cancelContact();return;}
  last={x:Math.max(0,Math.min(65535,Math.round((e.clientX-r.left)/r.width*65535))),y:Math.max(0,Math.min(65535,Math.round((e.clientY-r.top)/r.height*65535)))};
  // Pressure is a raw browser device capability. A mouse is explicitly a
  // synthetic-pressure source; cancellation supplies a loss/resync flag.
  send('pen',{...last,pressure:contact?Math.round((e.pointerType==='pen'?e.pressure:0.5)*4095):0,flags:cancel?10:contact?3:2,tool:e.pointerType==='pen'?1:0});}
-function bindPointer(){canvas.onpointerdown=e=>{if(active!==null)return;active=e.pointerId;activeTool=e.pointerType==='pen'?1:0;canvas.setPointerCapture(active);point(e,true);};
+function bindPointer(){canvas.onpointerdown=e=>{if(active!==null)return;const transform=pointerTransform();
+ if(transform===null||!Number.isFinite(e.clientX)||!Number.isFinite(e.clientY))return;
+ active=e.pointerId;activeTool=e.pointerType==='pen'?1:0;activeTransform=transform;canvas.setPointerCapture(active);point(e,true);};
 canvas.onpointermove=e=>{if(e.pointerId===active)point(e,true);};
-canvas.onpointerup=e=>{if(e.pointerId===active){point(e,false);active=null;}};
-canvas.onpointercancel=e=>{if(e.pointerId===active){point(e,false,true);active=null;}};
+canvas.onpointerup=e=>{if(e.pointerId===active){point(e,false);active=null;activeTransform=null;}};
+canvas.onpointercancel=e=>{if(e.pointerId===active)cancelContact();};
 // Capture can disappear independently of pointerup/cancel (for example when
 // the browser moves focus). End the raw contact and admit the next gesture.
 canvas.onlostpointercapture=e=>{if(e.pointerId===active)cancelContact();};}bindPointer();

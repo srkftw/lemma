@@ -1031,7 +1031,12 @@
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
     "scope": "Real local browser source9 pointer -> guest raw ink -> barrier-backed automatic Saved8; exact55M native/Wasm suffix and18 actual I/O outcomes. Explicit idle Save subsequently fails and is fixed locally in11, guest11 execution pending.",
-    "evidence": "docs/evidence/006-canonical-native-browser-suffix.json"
+    "evidence": "docs/evidence/006-canonical-native-browser-suffix.json",
+    "transform_cancellation": {
+      "status": "IMPLEMENTED_HOST_FIXTURE_AND_PREPARED_BUNDLE_PASS",
+      "result": "build/browser/task006-pointer-transform-a1/result.json",
+      "scope": "Viewport/layout/invalid geometry and raw cancellation at last admitted point; no new controller/guest conformance inferred."
+    }
   },
   "course_preserving_save_milestone": {
     "behavior": "IMPLEMENTED",
@@ -1073,7 +1078,7 @@
     "compiler": "PASS genuine864pre862post/842 original bodies exact, both-config exports and actual RV64 character relation",
     "RTL_guest": "NOT_RUN numeric; additive shared exactRTL adapter, separate5B/36000s predeclared workload, same guest/oracles.",
     "fast_guest": "PASS actual22-phase raw numeric/check/hint/ink/Save/newCPUcold/fullpixels/allmedia/reopen/realflags8repaint;1.494B functional units/190.783s,192.314s supervised. Same900s/3B/500M bounds; changed shared observer regression also PASS.",
-    "distribution": "Prepared native/static13 pair and extracted admission PASS; pinned Nix runtime closure included. Native a1 actual guest phases complete but whole FAIL due root editing an unconsumed observer during valid broad source hold. Same600s/3B/100M a2 running with all script bytes frozen. Browser13 cold1B/7200s running; no Ready claim.",
+    "distribution": "Native/static13 prepared and extracted admission PASS. Actual native init/UART/fork/install/barrier/newCPUcold/ordinaryLoad PASS440M units/375.411s supervised. Original source-hold FAIL retained. New browser13 cold1B/7200s active; complete numeric RTL5B/36000s active. New raw-transform UI fix15 host checks/extracted bundle PASS, actual UI gestures separate.",
     "physical": "UNVERIFIED",
     "contract": "docs/contracts/006-number-entry-v1.md",
     "evidence": "docs/evidence/006-number-entry-v1.json"

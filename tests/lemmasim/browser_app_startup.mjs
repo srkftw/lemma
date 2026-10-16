@@ -8,7 +8,7 @@ const source=await fs.readFile('sim/browser/app.js','utf8');
 const deferred=()=>{let resolve;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};};
 const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 async function appFixture(gpu){
- const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[];let worker,current,rect={left:0,top:0,width:100,height:100};
+ const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[],viewportListeners=new Map();let worker,current,rect={left:0,top:0,width:100,height:100};
  const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},setPointerCapture(){},releasePointerCapture(){}});return nodes.get(id);};
  function canvas(){const c={width:3,height:1,style:{},setPointerCapture(){},releasePointerCapture(){},getBoundingClientRect:()=>rect,
   cloneNode:()=>canvas(),replaceWith(next){assert.equal(current,this);current=next;},getContext(kind){if(kind==='2d')return {createImageData:(w,h)=>({data:new Uint8Array(w*h*4)}),putImageData:image=>images.push(Array.from(image.data))};
@@ -16,7 +16,7 @@ async function appFixture(gpu){
  current=canvas();const actions=['pause','resume','snapshot','export','capture-outcomes','events','bind','inspect','close'].map(action=>({dataset:{action}}));
  node('#session-mode').value='student';
  const document={querySelector:id=>id==='canvas'?current:node(id),querySelectorAll:()=>actions,createElement:()=>({click(){}})};
- const context=vm.createContext({document,navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
+ const context=vm.createContext({document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
  const module=new vm.SourceTextModule(source,{context});await module.link(()=>{throw Error('unexpected app import');});
  let watchdog;try{await Promise.race([module.evaluate(),new Promise((_resolve,reject)=>{watchdog=setTimeout(()=>reject(Error('renderer initialization blocked actual app registration')),250);})]);}finally{clearTimeout(watchdog);}
  function exercise(){node('#medium').value='owned';node('#open').onclick();assert.equal(sent.at(-1).action,'open');assert.equal(sent.at(-1).name,'owned');assert.equal(sent.at(-1).mode,'student');
@@ -28,7 +28,7 @@ async function appFixture(gpu){
   worker.onmessage({data:{type:'panel',pixels:new Uint8Array([0,8,15]),width:3,height:1}});
   assert.deepEqual(images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
  }
- exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,actions,setRect:r=>rect=r};
+ exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,actions,setRect:r=>rect=r,resize:()=>viewportListeners.get('resize')?.()};
 }
 {
  const f=await appFixture(undefined);
@@ -122,6 +122,32 @@ async function appFixture(gpu){
  assert.equal(f.canvas().style.width,'');
  assert.equal(Object.keys(f.sent.at(-1)).sort().join(','),'action,flags,pressure,tool,x,y');
  assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{action:'pen',x:16384,y:49151,pressure:0,flags:10,tool:0});
+}
+// A viewport/container transform change ends the old raw contact before any
+// new coordinates are sent. No new contact or fabricated controller pixels.
+{
+ const f=await appFixture(undefined),down=id=>f.canvas().onpointerdown({pointerId:id,pointerType:'pen',pressure:.25,clientX:20,clientY:30});
+ down(61);const first=f.sent.at(-1),pixels=f.images.at(-1);
+ f.setRect({left:0,top:0,width:200,height:150});f.resize();
+ f.canvas().onpointermove({pointerId:61,pointerType:'pen',pressure:.5,clientX:25,clientY:35});
+ assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{...first,pressure:0,flags:10});
+ assert.equal(f.images.at(-1),pixels);const end=f.sent.length;
+ f.canvas().onpointerup({pointerId:61,pointerType:'pen',clientX:25,clientY:35});assert.equal(f.sent.length,end);
+ down(62);assert.equal(f.sent.at(-1).flags,3);const second=f.sent.at(-1),same=f.sent.length;
+ f.resize();assert.equal(f.sent.length,same,'unchanged transform cancels contact');
+ // Scrolling/repositioning may not dispatch resize. The point guard must
+ // notice the changed transform before forwarding the next raw sample.
+ f.setRect({left:10,top:15,width:200,height:150});
+ f.canvas().onpointermove({pointerId:62,pointerType:'pen',pressure:.75,clientX:28,clientY:39});
+ assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{...second,pressure:0,flags:10});
+ const cancelled=f.sent.length;
+ for(const rect of [{left:0,top:0,width:0,height:150},{left:0,top:0,width:200,height:NaN}]){
+  f.setRect(rect);down(63);assert.equal(f.sent.length,cancelled,'invalid geometry admitted raw input');
+ }
+ f.setRect({left:0,top:0,width:200,height:150});down(64);
+ assert.equal(f.sent.at(-1).flags,3,'bad geometry retained a phantom contact');
+ const accepted=f.sent.at(-1);f.canvas().onpointercancel({pointerId:64,pointerType:'pen',clientX:NaN,clientY:NaN});
+ assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{...accepted,pressure:0,flags:10});
 }
 // A GPU implementation may leave either capability promise pending forever.
 for(const phase of ['adapter','device']){
