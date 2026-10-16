@@ -1,8 +1,8 @@
 {
   "schema": "lemma-number-entry-evidence/1",
-  "status": "REAL_BASE_WORKFLOW_PASS_DISCONNECT_FAIL_REPAIR_ARTIFACT_PASS_CPU_PENDING",
+  "status": "PASS_NOTEBOOK13_FAST_CHECKING_SAVE_COLD_DISCONNECT_NATIVE_STATIC_PREPARED",
   "contract": "docs/contracts/006-number-entry-v1.md",
-  "scope": "Additive canonical Notebook12; machine0.3/User2, Store format, raw ink, isolated checker and original Notebook roots retained. Companion root unchanged.",
+  "scope": "Canonical Notebook13 number-entry path; unchanged machine0.3/User2, durable formats and historical roots. Actual fast connected workflow and failed-FLUSH/cold pass. RTL numeric and new browser13 execution remain separately pending; companion root unchanged.",
   "component": {
     "result": "build/courses/task006-number-entry-component-a2/result.json",
     "result_sha256": "404fb5d3e1d64961b739f9265b53152ce8c300fad3a68a1101228156414c317c",
@@ -39,6 +39,10 @@
     {
       "path": "build/courses/task006-number-entry-fast-a2/result.json",
       "reason": "Corrected observer reaches actual flags8 disconnect; course/keypad disappear after generic redraw. All real numeric/checking/ink/Save/cold/reopen checks preceding disconnect pass. Original500M/3B/900s bounds retained."
+    },
+    {
+      "path": "build/distribution/task006-number-entry-native-uart-a1/result.json",
+      "reason": "All actual init/pending UART/privatefork/install/cold/Load checks complete, but valid full-glob host integrity fails because root edited the unconsumed RTL observer report scope during execution. Whole case remains FAIL. Freeze all host-script bytes for same unchanged600s/3B/100M qualification a2; no check weakened."
     }
   ],
   "checks": {
@@ -48,9 +52,11 @@
     "workflow": "14 PASS; new Action/pixel commands retained in exact pipeline inventory",
     "kernel_provenance": "442 PASS8.560s, includes three exact old/new root/role/field/profile regressions",
     "repaint_kernel_host": "442 PASS7.920s",
-    "repaint_scaffold": "18 PASS6.420s and metadata PASS"
+    "repaint_scaffold": "18 PASS6.420s and metadata PASS",
+    "shared_RTL_backend": "446 kernel host tests PASS9.945s;4 final focused observation/bound negatives PASS. Actual RTL numeric execution NOT_RUN at this checkpoint.",
+    "final_metadata": "Scaffold metadata PASS;18 scaffold tests PASS7.121s after current source/docs."
   },
-  "next": "Compile/audit changed Notebook13 normal under prospective same2500s/300s resource bounds, retaining compatible original audited initializer/Notebook12 pins; repeat the same actual numeric/cold/disconnect case with unchanged3B/900s and500M repaint cap.",
+  "next": "Run the shared complete numeric case on exact canonical RTL with predeclared5B/36000s aggregate bounds; finish new browser13 cold/full-pixel/keypad/check/save/reload. Complete whole-machine, timing/checkpoint, distribution and physical obligations remain separate.",
   "initializer": {
     "source_commit": "20e6d54fdb4aa847d15f8a128d4ef3d3b1532144",
     "build_seconds": 230.86640238994732,
@@ -82,12 +88,92 @@
     "functions_post": 862,
     "unchanged_original_functions": 842,
     "behavior": "Guest reconstructs active course overlays after original cancellation redraw; no Store or Saved authority added. Partial reader remains cancelled.",
-    "state": "Genuine both-config artifact and exact RV64 character relation PASS; fresh normal image and actual unchanged-bound whole workflow NOT_RUN",
+    "state": "PASS fresh fully audited normal13 and matching initializer13; complete actual unchanged-bound fast workflow, including realflags8 disconnect, PASS. Exact RTL/browser13 qualification separate.",
     "target_sources": {
       "Lemma/Applications/Notebook.lean": "4f02813d8cf51fb8d749b0051c5717be1e46e602002414ed6b72851366d1b4de",
       "Lemma/Documents/MathematicsEntry.lean": "25218480fd20566e012c17ef4d9348cbc72a23d93997f8ef0dd643d4fe176163",
       "Lemma/Courses/NumberPad.lean": "f36d54937de76354d1d66d1c5d2c70a3213d8527f51f84cb8bb21b6971bfffec",
       "Lemma/Compiler/DeploymentCatalog.lean": "63eb51e6a87c6b622871db5a09077795b76db50056aff8608a7ec18f58f862e7"
+    },
+    "whole_images": {
+      "guest_source_commit": "71be51a2984e107bf31677885880fc4a1ab7ff75",
+      "source_count": 410,
+      "source_inventory_sha256": "ea848f985cf086b843b417da0ae692808ce2b8bbf9de63ca6b54af397ba46cbe",
+      "normal": {
+        "audit_seconds": 239.94950276601594,
+        "audit_sha256": "6e8c57b625d7ad4a0ac58cf581c8eb4fc8f28426f6c49e311e4d2863cdf868ae",
+        "audit_status": "PASS",
+        "build_seconds": 203.7203122919891,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-number-entry-repaint-notebook-a1",
+        "image_bytes": 708688,
+        "image_sha256": "3baf7a1181b0a6f4df10646e7f246466a2f6b8c5f91d7456dcd412c3bc534274",
+        "provenance_sha256": "28cfde5a6b548134d378a434ef986b76128a66ebb79b8bc2ce7a429eeb19b1a3"
+      },
+      "initializer": {
+        "audit_seconds": 230.35414443700574,
+        "audit_sha256": "7aa24314c72a4f720fd231b709526f495200a213714eb79a06f034d58be8883d",
+        "audit_status": "PASS",
+        "build_seconds": 280.38272974302527,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-number-entry-repaint-initializer-a1",
+        "image_bytes": 708696,
+        "image_sha256": "6f3dddb8e636fffa03742975f0f606ed938b90aaa023060ad97dd247caca938e",
+        "provenance_sha256": "f77f203f4503aa116da47699f84c6599fcc5d83befd5a7069725248b8d00fcb2"
+      },
+      "normal_supervision": {
+        "path": "build/courses/task006-number-entry-repaint-normal-whole-supervision-a1/result.json",
+        "sha256": "5ca6dde10dae8e58c60c805070ab0e7155626977d2688585de58120fef94a623"
+      },
+      "initializer_supervision": {
+        "path": "build/courses/task006-number-entry-repaint-initializer-whole-supervision-a1/result.json",
+        "sha256": "977d1d6aa503f1c62eee085bcba12422e6766060b405cd7889bc43343066cab3"
+      },
+      "initializer_build_reason": "Changed complete Notebook13 closure and matched distribution-pair contract require a new source-matched role. Original initializer12/its corrected audit remain retained and were not rebuilt for the observer correction."
+    },
+    "connected_fast": {
+      "path": "build/courses/task006-number-entry-fast-a3/result.json",
+      "sha256": "cf5b4d5b99c6b8ee953d1ca0e08ebfd611c8dd115662bdd98acfff84a7ed7374",
+      "status": "PASS_GUEST_NUMBER_ENTRY_CHECKING_COLD",
+      "phases": 22,
+      "functional_units": 1494000115,
+      "host_seconds": 190.78317670093384,
+      "supervised_seconds": 192.31392165494617,
+      "owned_peak_rss_bytes": 392196096,
+      "disconnect_functional_units": 183000008,
+      "disconnect": {
+        "real_flags8_input": true,
+        "course_and_keypad_pixels": true,
+        "acknowledged_bytes_unchanged": true
+      },
+      "cold": {
+        "all_controller_pixels_exact": true,
+        "all_medium_bytes_exact": true,
+        "all_objects_exact": true
+      },
+      "scope": "Actual raw5/0Invalid,5/6Verified,5/69Invalid,overflow/noSave,BACK/Verified,hint,newrawink,acknowledged Save,newCPUcold/fullpixels/allmedia/selected-exercise reopen/disconnect. Original3B/900s/500M repaint bounds unchanged. No RTL timing/cached-state claim."
+    },
+    "changed_shared_observer_regression": {
+      "path": "build/courses/task006-number-entry-fast-a4/result.json",
+      "sha256": "60f24402b3faf4876ef4af6a86bb789f6016709a0b0fa4c526a5ee1e9f0219a8",
+      "status": "PASS_GUEST_NUMBER_ENTRY_CHECKING_COLD",
+      "functional_units": 1494000115,
+      "host_seconds": 192.06608952896204,
+      "supervised_seconds": 198.9864996849792,
+      "owned_peak_rss_bytes": 497311744,
+      "scope": "Necessary one connected regression after shared backend idle/session/UART interface change; same unchanged audited target/runtime and fast bounds."
+    },
+    "unsuccessful_save": {
+      "path": "build/courses/task006-number-entry-failed-save-a1/result.json",
+      "sha256": "699a7c8ba0871bf98b5a22a5946024f6d2cb2277738558b45c4471fc130045f7",
+      "status": "PASS_REAL_FAILED_FLUSH_COURSE_INK_COLD",
+      "functional_units": 567000028,
+      "host_seconds": 56.12506774603389,
+      "supervised_seconds": 58.16186082200147,
+      "owned_peak_rss_bytes": 555352064,
+      "scope": "Existing maintained raw-annotation/failed-FLUSH/noSaved/newCPUcold/original allpixels/allmedium case on current13. Explicit injected fail-before-writeback only; actual OS failure rollback is not claimed."
     }
   },
   "initial_component_target_sources": {
@@ -114,6 +200,66 @@
     "attempts": 1,
     "known_package_node": 3,
     "actual_isolated_request": 345,
-    "scope": "Actual raw CHECK and guest Store barrier; independent Doc8/package/execution identity observation. Controller glyph/text observation in progress."
+    "scope": "Actual raw CHECK/guest Store barrier; independent Doc8/package/execution identity and controller VERIFIED glyph/selected original text PASS. Label/text region is independently predicted; not every changed pixel.",
+    "pixel_result": {
+      "path": "build/browser/task006-idle2-mathematics-plan-a1/verified-pixels-result.json",
+      "sha256": "8f895b2ef37302d3db40338432d949c6bd4a4f43e542d87f3238abba0597d269"
+    },
+    "hint": {
+      "path": "build/browser/task006-idle2-mathematics-plan-a1/hint-result.json",
+      "sha256": "e7c37cbf250f9ce8523325b07dcd0fa14e07bc3ec957511cd62ac19f9da1cde2",
+      "status": "PASS_ACTUAL_BROWSER_DURABLE_AUTHORED_HINT",
+      "cycle": 1507850000,
+      "clocks": 64000000,
+      "durable_sequence": 22,
+      "revision": 12,
+      "hints": 1,
+      "understanding": "uncertain",
+      "baseline": "practice: assisted",
+      "scope": "Actual authored hint, preserved Verified goal/revision/package/history; not a tutor/model provider. Five real review controls running separately."
+    },
+    "exact_hint_suffix": {
+      "path": "build/browser/task006-idle2-hint-replay-a1/result.json",
+      "sha256": "57548a71995312febbe62c1d6803dc42187f9f8550b89c9afb01f0970230e987",
+      "status": "PASS",
+      "input": {
+        "bundleSha256": "777119d1e62c228fb14514fc20ec804f671ab47b95c5a055b36434697e77059c",
+        "prefixSha256": "3d359d0c2a6f3de57de9880b8aedd5fe35e9e401d3c9d52d7130856caebe4fd8",
+        "suffixSha256": "7ed0b0b6ba9a23c5691c4fddb6558d94ce66b424fb6f538e5ad8ccb568db7035",
+        "firstCycle": "1475850000",
+        "lastCycle": "1507850000",
+        "cycles": "32000000",
+        "outcomesSha256": "ebb22ca88af2d1c8704b80ce1f2e46b0b00b1467d8ec753c1922b4e361862689"
+      },
+      "seconds": 238.735716344,
+      "process_peak_rss_bytes": 1842143232,
+      "exact_archive_sha256": "7ed0b0b6ba9a23c5691c4fddb6558d94ce66b424fb6f538e5ad8ccb568db7035",
+      "scope": "Same compiledWasm on browser/Node; actual pending guest hint Save through accepted barrier into an in-flight panel phase,32M clocks/private store. No flush/drain/fence/original file or peer. Not C++migration, cold recovery or QEMUcached-state closure."
+    }
+  },
+  "distribution": {
+    "guest_commit": "71be51a2984e107bf31677885880fc4a1ab7ff75",
+    "native_bundle": "build/native/task006-number-entry-notebook-a1",
+    "browser_bundle": "build/browser/task006-number-entry-a1",
+    "native_archive": {
+      "status": "PASS_EXACT_ARCHIVE_EXTRACTION",
+      "archive": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-entry-native-a1.tar.gz",
+      "sha256": "0a56c92715482d773006b4f4b6940b9772a42ad7cd69589d46edaf90c8e591b4",
+      "members": 1596,
+      "logical_bytes": 140245532,
+      "output": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-entry-native-extracted-a1"
+    },
+    "browser_archive": {
+      "status": "PASS_EXACT_ARCHIVE_EXTRACTION",
+      "archive": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-entry-browser-a1.tar.gz",
+      "sha256": "4310e23bdabbbbdd938986d75d22d7616b5299f6348eac8415bdc7008e133071",
+      "members": 287,
+      "logical_bytes": 17469970,
+      "output": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-entry-browser-extracted-a1"
+    },
+    "native_archive_bytes": 28698333,
+    "browser_archive_bytes": 2067808,
+    "native_runtime": "Complete existing6-path Nix runtime closure included; compatible Nix host import/prerequisites remain. No fresh-host qualification or new redistribution license.",
+    "qualification": "Prepared immutable artifacts, extraction and standalone admission PASS. Actual extracted native a1 completed guest checks but whole case FAILS valid host-source hold; a2 reruns unchanged bounds/check with every host-script byte frozen. New browser13 cold1B/7200s running from actual acknowledged raw medium; no checkpoint input or Ready claim."
   }
 }

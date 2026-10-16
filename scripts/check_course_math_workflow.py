@@ -38,6 +38,10 @@ class Session(PublicSession):
 
 class CourseMathWorkflow(MathChecker):
     backend = 'qemu'
+    session_type = Session
+
+    def idle(self, state):
+        return idle(state)
 
     def __init__(self, args):
         super().__init__(args)
@@ -116,7 +120,7 @@ class CourseMathWorkflow(MathChecker):
         panel = self.directory / 'observed-panel.ppm'
 
         def completed(state):
-            if not idle(state) or state['ticks'] < tick + 200000 or state['panel_completed'] <= before['panel_completed']:
+            if not self.idle(state) or state['ticks'] < tick + 200000 or state['panel_completed'] <= before['panel_completed']:
                 return False
             rows = self.rows(s)
             if mutation and (len([r for r in rows if r[0] == 1057]) <= oldacks or not self.saved(s)):
@@ -168,7 +172,7 @@ class CourseMathWorkflow(MathChecker):
                 return False
             require(r[-1][3:] == (0, outcome), 'actual checker status/outcome differs')
             require((1117, q[-1][1], 0, 0, 0) in rows, 'actual closuregraph notreclaimed')
-            return idle(state) and self.saved(s) and (len([r for r in rows if r[0] == 1057]) > oldacks) and (state['ticks'] >= tick + 200000)
+            return self.idle(state) and self.saved(s) and (len([r for r in rows if r[0] == 1057]) > oldacks) and (state['ticks'] >= tick + 200000)
         self.phase(s, name, CAPS['check'], done)
         rows = self.rows(s)
         q = [r for r in rows if r[0] == 1113][-1]
@@ -177,7 +181,7 @@ class CourseMathWorkflow(MathChecker):
         return self.checkpoint_record(s, name)
 
     def session(self, name, disk, fail_flush=None):
-        result = Session(self, name, disk, fail_flush)
+        result = self.session_type(self, name, disk, fail_flush)
         self.sessions.append(result)
         if not self.frozen:
             until = time.monotonic() + 5
@@ -190,7 +194,7 @@ class CourseMathWorkflow(MathChecker):
         return result
 
     def rows(self, s):
-        return guest_events(s.directory / 'uart-0.bin')
+        return guest_events(s.directory / ('uart.bin' if self.backend == 'rtl' else 'uart-0.bin'))
 
     def phase(self, s, name, cap, predicate):
         before = s.inspect()['machine']
@@ -243,7 +247,7 @@ class CourseMathWorkflow(MathChecker):
         zero = live.inspect()['machine']
         require(zero['cycle'] == 0 and zero['ticks'] == 0, 'actual new fast CPU not reset')
         self.report['identity'] = live.identity
-        self.phase(live, 'new-instruction-clock-cold-Ready', 1000000000, lambda st: idle(st) and st['panel_completed'] >= 1 and any((r[0] == 1056 for r in self.rows(live))))
+        self.phase(live, 'new-instruction-clock-cold-Ready', 1000000000, lambda st: self.idle(st) and st['panel_completed'] >= 1 and any((r[0] == 1056 for r in self.rows(live))))
         stream = Input(1650, 2200, live.inspect()['machine']['ticks'] + 10000, 100000, 0)
         p1 = decode(self.packages[0])
         self.click(live, stream, 'COURSEactualpackage', 320, 140, text=p1['nodes'][0]['body'])
@@ -299,7 +303,7 @@ class CourseMathWorkflow(MathChecker):
         stream.stroke('actual-postmath-ink', 1, 1, 6, 1900)
         live.admit(stream.events[first:])
         before = len([r for r in self.rows(live) if r[0] == 1057])
-        self.phase(live, 'actual-raw-ink-Saved', 300000000, lambda st: idle(st) and self.saved(live) and (len([r for r in self.rows(live) if r[0] == 1057]) > before) and (st['ticks'] >= stream.events[-1][1] + 200000))
+        self.phase(live, 'actual-raw-ink-Saved', 300000000, lambda st: self.idle(st) and self.saved(live) and (len([r for r in self.rows(live) if r[0] == 1057]) > before) and (st['ticks'] >= stream.events[-1][1] + 200000))
         _, ink_medium = live.export('postmath-ink')
         _, _, ink_records, _ = self.record(ink_medium)
         samples = []
@@ -310,7 +314,7 @@ class CourseMathWorkflow(MathChecker):
         require(all((tuple(row) in samples for row in stream.events[first:])), 'actual raw fields missing from guest durable chunks')
         _, tick = self.raw(live, stream, 320, 140)
         old = live.inspect()['machine']['panel_completed']
-        self.phase(live, 'close-course-controller-work', 500000000, lambda st: idle(st) and self.saved(live) and (st['panel_completed'] > old) and (st['ticks'] >= tick + 25000000))
+        self.phase(live, 'close-course-controller-work', 500000000, lambda st: self.idle(st) and self.saved(live) and (st['panel_completed'] > old) and (st['ticks'] >= tick + 25000000))
         panel, medium = live.export('closed-final')
         payload, record, records, sequence = self.record(medium)
         live.close()
@@ -323,7 +327,7 @@ class CourseMathWorkflow(MathChecker):
         observed = self.directory / 'cold-wait.ppm'
 
         def recovered(st):
-            if not idle(st) or not any((r[0] == 1056 for r in self.rows(cold))):
+            if not self.idle(st) or not any((r[0] == 1056 for r in self.rows(cold))):
                 return False
             cold.control({'action': 'panel', 'path': str(observed)})
             return visible_pixels(observed) == expected

@@ -6,7 +6,7 @@ Fast functional units do not establish canonical RTL timing or cached-state pari
 """
 import argparse,filecmp,json,os,resource,shutil,struct
 from pathlib import Path
-from check_course_math_workflow import CourseMathWorkflow,Input,decode,idle,require,visible_pixels,T,sha
+from check_course_math_workflow import CourseMathWorkflow,Input,decode,require,visible_pixels,T,sha
 from number_pad_reference import pad_matches
 
 class NumberEntryWorkflow(CourseMathWorkflow):
@@ -15,7 +15,7 @@ class NumberEntryWorkflow(CourseMathWorkflow):
         live=self.session('live',disk)
         require(live.inspect()['machine']['cycle']==0,'new CPU must start at reset')
         self.report.update(schema='lemma-number-entry-workflow/1',scope=__doc__,identity=live.identity)
-        self.phase(live,'new-cold-Ready',1000000000,lambda st:idle(st)and st['panel_completed']>=1 and any(r[0]==1056 for r in self.rows(live)))
+        self.phase(live,'new-cold-Ready',1000000000,lambda st:self.idle(st)and st['panel_completed']>=1 and any(r[0]==1056 for r in self.rows(live)))
         stream=Input(1650,2200,live.inspect()['machine']['ticks']+10000,100000,0)
         package=decode(self.packages[0])
         panel=self.click(live,stream,'COURSEactualpackage',320,140,text=package['nodes'][0]['body'])
@@ -59,7 +59,7 @@ class NumberEntryWorkflow(CourseMathWorkflow):
         first=len(stream.events);stream.tick=live.inspect()['machine']['ticks']+10000
         stream.stroke('numeric-postcheck-ink',1,1,6,1900);live.admit(stream.events[first:])
         oldacks=len([r for r in self.rows(live)if r[0]==1057])
-        self.phase(live,'actual-postcheck-raw-ink-Saved',300000000,lambda st:idle(st)and self.saved(live)and len([r for r in self.rows(live)if r[0]==1057])>oldacks and st['ticks']>=stream.events[-1][1]+200000)
+        self.phase(live,'actual-postcheck-raw-ink-Saved',300000000,lambda st:self.idle(st)and self.saved(live)and len([r for r in self.rows(live)if r[0]==1057])>oldacks and st['ticks']>=stream.events[-1][1]+200000)
         ink=self.checkpoint_record(live,'postcheck-ink');samples=[]
         for record in ink[4].values():
             if len(record.payload)>=128 and struct.unpack_from('<Q',record.payload)[0]==3552018807646930252 and struct.unpack_from('<Q',record.payload,16)[0]==3:
@@ -67,14 +67,14 @@ class NumberEntryWorkflow(CourseMathWorkflow):
                 samples.extend(struct.unpack_from('<9Q',record.payload,128+i*72)for i in range(count))
         require(all(tuple(row)in samples for row in stream.events[first:]),'postcheck raw fields absent from guest durable ink')
         _,tick=self.raw(live,stream,320,140);old=live.inspect()['machine']['panel_completed']
-        self.phase(live,'close-course',500000000,lambda st:idle(st)and self.saved(live)and st['panel_completed']>old and st['ticks']>=tick+25000000)
+        self.phase(live,'close-course',500000000,lambda st:self.idle(st)and self.saved(live)and st['panel_completed']>old and st['ticks']>=tick+25000000)
         panel,medium=live.export('closed-final');payload,record,records,sequence=self.record(medium)
         expected=visible_pixels(panel);live.close();self.sessions.remove(live)
         cold_disk=self.directory/'cold-input.raw';shutil.copyfile(medium,cold_disk)
         cold=self.session('cold',cold_disk);require(cold.inspect()['machine']['cycle']==0,'independent cold CPU not atreset')
         observed=self.directory/'cold-observed.ppm'
         def recovered(st):
-            if not idle(st)or not any(r[0]==1056 for r in self.rows(cold)):return False
+            if not self.idle(st)or not any(r[0]==1056 for r in self.rows(cold)):return False
             cold.control({'action':'panel','path':str(observed)})
             return visible_pixels(observed)==expected
         self.phase(cold,'independent-new-CPU-cold-all-pixels',1000000000,recovered)
@@ -100,7 +100,7 @@ class NumberEntryWorkflow(CourseMathWorkflow):
         stream.sample(950,1900,0,False,flags=8);stream.sample(950,1900,0,False)
         cold.admit(stream.events[first:]);observed=self.directory/'disconnect-observed.ppm'
         def restored_course(st):
-            if not idle(st)or st['ticks']<stream.events[-1][1]+200000 or st['panel_completed']<=before['panel_completed']:return False
+            if not self.idle(st)or st['ticks']<stream.events[-1][1]+200000 or st['panel_completed']<=before['panel_completed']:return False
             cold.control({'action':'panel','path':str(observed)})
             return pad_matches(observed,False)and __import__('course_pixel_oracle').course_body_matches(observed,reopen_body)
         self.phase(cold,'disconnect-preserves-visible-course-and-keypad',500000000,restored_course)

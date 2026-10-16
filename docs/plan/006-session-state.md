@@ -3241,3 +3241,82 @@ exact arithmetic, not full Lean proof-kernel closure. Continue actual hint,
 review/edit/error paths and durable-only reopen; no snapshot as cold input.
 New20e6 candidate CI38847208539 has11/109 SUCCESS, no skips; local40fe/repaint
 changes do not inherit it. PR9 remains draft/unmerged.
+
+
+### October16 Notebook13 connected native and prepared distribution milestone
+
+Guest source71be51a (410 exact inputs) is now fully compiled/audited for both
+roles. Normal708688B/3baf7a1181b0a6f4...,203.720s build/239.950s audit,
+supervised447.310s/1868034048B peak. Matching initializer708696B/6f3dddb8...,
+280.383s/230.354s, supervised512.607s/1867325440B peak. Both independent
+source seals/owned cleanup PASS. New initializer is required by the changed
+complete13 closure and matched-pair packaging contract; original12 initializer
+and its observer correction remain separately preserved.
+
+Actual complete22-phase raw numeric/check/Save/newCPUcold/reopen/flags8disconnect
+PASS:`build/courses/task006-number-entry-fast-a3`,1,494,000,115 functional units/
+190.783s; supervised192.314s/392196096B. Disconnect uses183000008 within the
+unchanged500M cap and preserves acknowledged bytes. All prior FAILs remain.
+Maintained failed-FLUSH/noSaved/full-pixels/newCPUcold-original-allbytes case
+also PASS567000028/56.125s, supervised58.162s/555352064B:
+`build/courses/task006-number-entry-failed-save-a1`. Fail-before-writeback model
+only. Shared backend idle/session/UART dispatch added; actual unchanged-guest
+connected fast regression a4 PASS1.494B/192.066s, supervised198.986s/497311744B.
+Kernel446 PASS9.945s;4 final backend/pending/bound tests PASS. No target recompile
+was needed for this host observer interface. New exactRTL adapter is
+`scripts/check_rtl_number_entry.py`, sharing all raw input and byte/pixel
+oracles, with independent5B/36000s aggregate bounds. Its complete case NOT_RUN
+at this report; launch after committed host source, retain actual prefix and
+original deadlines. Read README for the actual command. Fast timing and cached
+QEMU continuation remain open.
+
+Prepared native13:`build/native/task006-number-entry-notebook-a1`; static:
+`build/browser/task006-number-entry-a1`. Exact oldRTL8e5/fast97ab/ROM and
+Wasmfb15 retained; no new emulator. Actual archives native28698333B/0a56c927...
+and browser2067808B/4310e23b..., under`build/distribution/task006-number-entry-*`.
+Native includes the exact existing6-path49,253,648B Nix closure; compatible host
+import/prerequisites and rights remain unresolved. Both extraction/admission
+PASS. Actual extracted native Init/UART/pending4090/privatefork/install/cold-Load
+is running at`build/distribution/task006-number-entry-native-uart-a1` under600s/
+3B. Do not infer terminal PASS. Extracted browser server runs at127.0.0.1:8801
+(exec70014); tab32 imports actual a3/closed-final.raw undernumeric13-cold-a1 and
+starts a fresh CPU atcycle0, then1B/7200s cold run. Plan:
+`build/browser/task006-number-entry-cold-plan-a1`; expected complete controller
+plane a3/closed-final.ppm. No snapshot input. Ready/keypad/browser math/reload
+remain pending. Preserve tab32 together with16..31.
+
+Actual browser31 originald2 hint PASS Saved22 at1507850000, revision/evidence12,
+5/6Verified/history/knownpackage unchanged, hints1 and ordered assistance event,
+uncertain baseline practice:assisted. Independent result in
+`build/browser/task006-idle2-mathematics-plan-a1/hint-result.json`. Its actual
+32M prefix ends Pending22 at1475850000; the32M suffix captures real writes/
+barrier and an unfinished panel scan. Same-compiledWasm private Node replay
+PASS every archive byte7ed0b0b6...,238.736s/1842143232B process peak,
+supervised239.928s/no survivors. No drain/fence/state edit/original backing;
+not C++ migration, QEMUcached-state parity or cold recovery. Inputs/results:
+`build/browser/task006-idle2-hint-replay-a1` and replay-plan-a1. Browser31 now
+runs five raw REVIEW contacts,40M spacing,200M/2400s, requiring actual mode1/2/3/
+4/0 events, unchanged proof binding and visible assisted baseline explanation.
+Plan remains underits original6B/43200s overall bound. Old browser30 Saved11cold
+FAIL7200s/831.65M/noReady and dirty29 remain untouched.
+
+Pushed guest candidate71be51a CI38851844687 is IN_PROGRESS at the last actual
+fetch:7 jobs success,4 running,no skipped steps; foundation host step succeeds.
+Earlier20e6 CI38847208539 all11/109 success remains bound to that older source.
+New host RTL adapter changes do not inherit either CI result. PR9 draft/unmerged;
+no merge authorization. Digital/fast-checkpoint/distribution/physical closure
+remain separate and incomplete; capability inventory keeps the original gaps.
+
+
+Distribution qualification correction: native-uart-a1 completed all actual
+Init/pendingUART/privatefork/install/barrier/newCPUcold/Load checks (four phases
+173M/32M/177M/26M;325.484s), but whole FAIL327.033s because the root edited
+scripts/check_rtl_number_entry.py report scope while its valid broad glob
+source hold was active. Only that unconsumed file changed:10e9b526...->35207432... .
+No check is weakened or old FAIL relabeled. Same extracted bytes/checker and
+600s/3B/100M bounds rerun atnative-uart-a2 (exec49915), with ALL scripts/*.py,
+lemmasim/course and conformance/lemmasim/*.py frozen until cleanup. Preserve
+a1's complete failure. Only docs/tests/build scratch may change during this
+hold. Scaffold metadata and18 tests PASS7.121s. ExactRTL helper is finalized;
+commit this milestone then launch its bounded complete case. Do not claim its
+cold prefix or native/browser13 completion as the whole-machine result.

@@ -1019,13 +1019,14 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "20e6d54fdb4aa847d15f8a128d4ef3d3b1532144",
-    "run": 38847208539,
-    "conclusion": "ALL_11_JOBS_SUCCESS",
+    "commit": "71be51a2984e107bf31677885880fc4a1ab7ff75",
+    "run": 38851844687,
+    "conclusion": "IN_PROGRESS",
     "jobs": 11,
-    "reported_steps": 109,
+    "completed_success": 7,
+    "running": 4,
     "skipped_steps": 0,
-    "scope": "Notebook12 source candidate, excludes provenance observer fix40fe and local Notebook13 loss repair; no inference that actual disconnect case passes"
+    "scope": "Actual observed candidate before additive shared RTL workflow adapter; excludes later host adapter changes. Prior20e6 all11/109 SUCCESS retained in checkpoint."
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1068,20 +1069,21 @@
     "unfinished": "Independent cold stopped at650M before Ready; original failure and cold-failed snapshot retained. No cold acceptance. Observer snapshot request near cutoff timed out; no additional snapshot is claimed."
   },
   "number_entry_component_milestone": {
-    "behavior": "IMPLEMENTED13_GUEST_REPAINT_REPAIR",
+    "behavior": "IMPLEMENTED13_GUEST_ENTRY_AND_LOSS_REPAINT",
     "compiler": "PASS genuine864pre862post/842 original bodies exact, both-config exports and actual RV64 character relation",
-    "RTL_guest": "NOT_RUN",
-    "fast_guest": "Notebook12 actual numeric/check/ink/Save/cold/reopen base PASS; full case FAILS actual disconnect. Notebook13 repair CPU NOT_RUN.",
-    "distribution": "NOT_RUN_FOR_NUMBER_ENTRY",
+    "RTL_guest": "NOT_RUN numeric; additive shared exactRTL adapter, separate5B/36000s predeclared workload, same guest/oracles.",
+    "fast_guest": "PASS actual22-phase raw numeric/check/hint/ink/Save/newCPUcold/fullpixels/allmedia/reopen/realflags8repaint;1.494B functional units/190.783s,192.314s supervised. Same900s/3B/500M bounds; changed shared observer regression also PASS.",
+    "distribution": "Prepared native/static13 pair and extracted admission PASS; pinned Nix runtime closure included. Native a1 actual guest phases complete but whole FAIL due root editing an unconsumed observer during valid broad source hold. Same600s/3B/100M a2 running with all script bytes frozen. Browser13 cold1B/7200s running; no Ready claim.",
     "physical": "UNVERIFIED",
     "contract": "docs/contracts/006-number-entry-v1.md",
     "evidence": "docs/evidence/006-number-entry-v1.json"
   },
   "browser_actual_mathematics": {
-    "behavior": "PASS real raw5/6CHECK -> revision12/goal1/Verified -> guest barrier Saved21",
+    "behavior": "PASS real5/6Verified revision12/Saved21; authored hint durably Saved22 with revision/evidence/package/history retained, uncertain assisted baseline. Review controls running.",
     "guest": "Notebook11/ingress2 originald2",
     "distribution": "EXISTING_BROWSER_LOCAL_MACHINE",
     "cold_math_reopen": "NOT_RUN",
-    "evidence": "build/browser/task006-idle2-mathematics-plan-a1/verified-result.json"
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "exact_checkpoint": "PASS same compiledWasm pending-hint-Save32M suffix with actual accepted outcomes/private backing, in-flight panel at final boundary. Not C++/QEMUcached-state or cold closure."
   }
 }

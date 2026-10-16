@@ -1593,7 +1593,8 @@ The course-preserving Save guest is prepared as
 Save now publishes Pending and waits for the real status reply while retaining
 the authored text and annotation pixels. The fast machine has executed annotation,
 explicit Saved/detail0 and an independent cold reopening with exact full display
-and medium bytes. Its RTL and browser qualifications remain separate running cases.
+and medium bytes. Its canonical RTL campaign later passed. Browser11 Saved11 cold reopening
+failed its original7200s host bound; that failure remains separate and retained.
 Launch the ordinary native session with the prepared bundle, or serve the static
 Wasm machine locally:
 
@@ -1713,8 +1714,8 @@ imports no scratch implementation from
 Its local hint is authored course material; permissioned tutor transport, the
 general managed runtime and the Lean proof-kernel port remain unfinished.
 
-The shared failed-first-FLUSH scenario also has an exact RTL adapter, currently
-running its first full case. It uses the same guest, raw input and independent
+The shared failed-first-FLUSH scenario also passes on exact canonical RTL:
+1.402B clocks/6960.542s, supervised6970.054s/605880320B peak RSS. It uses the same guest, raw input and independent
 failed/provisional-pixel and cold-recovery observer as the fast command above:
 
 ```sh
@@ -1730,15 +1731,23 @@ nix develop --no-write-lock-file --command python3 scripts/check_rtl_course_fail
 Its bounds are3B clocks/21600s aggregate,1B/7200s per cold,400M/3600s per
 course opening and200M/1800s for the unsuccessful save. This is the explicitly
 injected fail-before-writeback model, not an assumption that OS failure rolls
-back persisted bytes. The first full RTL result is still pending.
+back persisted bytes. The full result requires actual Failed/no Saved and independent cold equality
+of every medium byte and the complete expected controller plane.
 
 The actual browser11 path now includes cold saved-ink recovery, complete
 authored course, pressure annotation with real Saved11, and an explicit
 Pending/Saved-detail0 Save preserving every pixel and medium byte. Its new
-Close/Open cold recovery is running. The current idle2 browser has separately
-passed cold Ready and its complete authored course, and is navigating the
-mathematical material. Browser-local mathematics/complete durable reload and
-useful interaction latency remain unfinished.
+Close/Open cold recovery failed7200s at831.65M/noReady (the UI reported7222.648s
+when observed); the original failure and prefix remain retained. The current
+idle2 browser separately runs the authored course and actual5/6 checker through
+Saved21, revision12/goal1/evidence12, with independent durable bytes and controller
+VERIFIED/selected-exercise pixels. An authored hint reaches Saved22 and preserves
+that evidence while recording assistance and an uncertain baseline estimate.
+Its32M pending-save suffix also reproduces every checkpoint byte on a private
+same-compiled-Wasm replay, including accepted backing outcomes and an in-flight
+panel phase. It takes238.736s/1,842,143,232B process peak RSS. This is neither
+C++native migration nor QEMU cached-state closure. Actual review controls and
+new13 browser cold/reload remain in progress; useful browser latency remains open.
 
 The existing exact same-Wasm suffix command executed successfully against
 actual queued pen input, controller scans, writes and a barrier:
@@ -1761,3 +1770,92 @@ before machine creation; corrected supervision allowed32GiB virtual/4GiB
 resident memory while retaining the original600s absolute deadline. The
 original failure is retained. C++ native admission rejects the distinct Wasm
 implementation identity; no ID rewriting or admission bypass is supported.
+
+
+## Bounded number entry on the canonical machine
+
+The prepared Notebook13 pair adds a guest-rendered 0–99 keypad to the existing
+course view. N/D/P0/P1/P2 select a field; digits append, CLR clears and BACK
+backspaces. LIMIT99 rejects overflow without changing durable state. A real
+edit creates one revision and invalidates current evidence while preserving its
+history. The actual guest checker rejects 5/0, verifies 5/6 and rejects 5/69.
+Backspace, rechecking, authored hint, new raw ink, Save, independent cold/full
+pixels/all medium bytes and selected-exercise reopening pass. A modeled pen
+disconnect now reconstructs the course and keypad. The complete22-phase fast
+case uses 1,494,000,115 functional units/190.783s (192.314s supervised,392196096B
+peak owned RSS). Fast units do not establish RTL timing. The current13
+failed-FLUSH/noSaved/independent-cold case also passes 567000028 units/56.125s,
+with all original bytes and expected pixels. Original failed observers and the
+real12 disconnect failure remain in [the evidence](docs/evidence/006-number-entry-v1.json).
+
+The source-matched roles compile through ordinary pinned Lean/LLVM. Use unused
+outputs and audit each completed build:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --stage supervisor --opt-level O2 --configuration lemmasim-silicon-package-closure-entry2-bulk-notebook \
+  --output-dir build/kernel/AN_UNUSED_NUMBER_NOTEBOOK --timeout 300
+nix develop --no-write-lock-file --command ./scripts/audit-kernel.sh   build/kernel/AN_UNUSED_NUMBER_NOTEBOOK --timeout 300
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --stage supervisor --opt-level O2 --configuration lemmasim-silicon-package-closure-entry2-bulk-initialize \
+  --output-dir build/kernel/AN_UNUSED_NUMBER_INITIALIZER --timeout 300
+nix develop --no-write-lock-file --command ./scripts/audit-kernel.sh   build/kernel/AN_UNUSED_NUMBER_INITIALIZER --timeout 300
+```
+
+The prepared native bundle is`build/native/task006-number-entry-notebook-a1`.
+Launch an existing medium, or initialize an unused one through the real guest:
+
+```sh
+./scripts/lemmasim init --backend qemu --native-bundle build/native/task006-number-entry-notebook-a1 \
+  --disk /your/NEW_NUMBER_NOTEBOOK.raw
+./scripts/lemmasim session --backend qemu --native-bundle build/native/task006-number-entry-notebook-a1 \
+  --disk /your/NUMBER_NOTEBOOK.raw --session-dir build/AN_UNUSED_NUMBER_SESSION --mode student
+./scripts/lemmasim browser-serve --bundle build/browser/task006-number-entry-a1 --port 8801
+```
+
+Use the existing paused Developer/Laboratory `lemmasim-course install/load`
+and snapshot/private-restore commands with this native bundle. Raw transport
+admission does not acknowledge installation or Save. The reference package,
+source/edition/rights anchors and guest permissions are unchanged. In the
+browser, import an acknowledged raw medium under a new name for cold recovery;
+checkpoint restore is a separate private continuation.
+
+The prepared archives are`build/distribution/task006-number-entry-native-a1.tar.gz`
+(28698333B, including the existing six-path Nix host-runtime closure) and
+`build/distribution/task006-number-entry-browser-a1.tar.gz` (2067808B).
+Extract into an unused directory, then run `python3 -I /path/to/lemmasim-native/run.py`
+or `python3 -I /path/to/lemmasim-browser/serve.py --port 8801`. Both archives
+pass extracted admission. The first new native run completes its guest
+init/UART/fork/cold-Load checks but fails the valid broad source-integrity check
+because an unconsumed observer file was edited during execution. The unchanged
+600s/3B qualification is rerunning with all host scripts held fixed; its whole
+result and browser13 cold/workflow remain pending. The native launcher still
+requires compatible Nix host libraries or explicit import of its included
+runtime archive. New-host installation and redistribution rights remain open.
+This remains development ELF preload; the existing product ROM/update,
+companion and snapshot interfaces above retain their own profiles and scope.
+
+The connected numeric check reuses actual raw pen, isolated checking, Store,
+controller pixels and independent cold observers:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_number_entry_workflow.py \
+  --disk build/courses/task006-course-ipc-guest-a1/durable.raw \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --package build/courses/task006-package-qualified-a5/author-package/arithmetic.lcp \
+  --native-bundle build/native/task006-number-entry-notebook-a1 \
+  --guest-build build/kernel/task006-number-entry-repaint-notebook-a1 \
+  --guest-source-root build/courses/task006-number-entry-repaint-normal-whole-a1/consumed-source-root \
+  --work-dir build/courses/AN_UNUSED_NUMBER_CHECK
+```
+
+For exact canonical RTL use the same arguments with
+`scripts/check_rtl_number_entry.py` and a fresh work directory. Its separate
+prospective bound is5B clocks/36000s; per-control/check/cold/repaint caps remain
+explicit in the shared workflow and RTL adapter. This command is implemented;
+its complete RTL result is pending. It does not inherit fast execution evidence.
+The new13 browser is likewise only qualified for packaging/extracted admission
+until actual cold, keypad/checking and durable reload complete. The current
+browser Verified/hint/exact-suffix results belong to the retained11/ingress2
+guest. Full managed Lean, proof-kernel/tutor closure and all unfinished device,
+checkpoint, distribution and physical gates remain open.
