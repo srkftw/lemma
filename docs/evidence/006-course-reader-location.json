@@ -339,7 +339,24 @@
     "reported_Wasm_heap_bytes": 201326592,
     "actual_barrier": 168,
     "second_origin": "Close/Open actualSaved38 OPFS, new CPU0, no snapshot;1B/7200 and original absolute22:25:15Z unchanged",
-    "scope": "Every original native/browser accepted outcome matches after predeclared64-byte tape identity; allpixels/all256MiB exact at fixed cuts. No native first-microstate equality claimed; no full browser18 cold PASS yet."
+    "scope": "Every original native/browser accepted outcome matches after predeclared64-byte tape identity; allpixels/all256MiB exact at fixed cuts. No native first-microstate equality claimed; no full browser18 cold PASS yet.",
+    "second_independent_cold": {
+      "status": "PASS_SECOND_COLD38_ALL_HOME_PIXELS_MEDIA_READ_OUTCOMES",
+      "ready_cycle": 571950000,
+      "fixed_cut": 572000000,
+      "reported_Wasm_heap_bytes": 201326592,
+      "observed_ready_UI_elapsed_seconds": 5188.2,
+      "observed_ready_UI_simulation_seconds": 5107.9,
+      "receipt": {
+        "path": "build/browser/task006-reader18-local-plan-a1/second-cold-result-a1.json",
+        "bytes": 944,
+        "sha256": "04e68960e85f0de1ca97b73f414d292b66a79959c745452fb03c0cf0c7aebed1"
+      },
+      "all_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "READ_outcomes": 153,
+      "scope": "Actual independent Close/Open CPU0 from first browser Saved38/OPFS barrier168. No snapshot cold input; full native second microstate absent. Exact2 native raw COURSE rows admitted at572M;227M suffix to799M running under original22:25:15.630042Z absolute deadline."
+    }
   },
   "original_failures_retained": [
     "build/courses/task006-reader18-component-a1 (pre-close-edge repair, unadopted)",

@@ -77,8 +77,21 @@ def native(build,archive=None,profile=PROFILE):
   path=origin/p
   if path.is_symlink() or not path.is_file() or sha(path)!=h:
    raise ValueError('Changed/missing native consumed input: '+p)
- for item in (m['runtime_identity_header'],{'path':str(build/'obj/lemma-rtl'),'sha256':m['binary_sha256']}):
-  if sha(item['path'])!=item['sha256']:raise ValueError('Changed native executable/generated identity')
+ identity=m['runtime_identity_header'];header=Path(identity['path'])
+ if archive is not None:
+  # Generated output belongs to this explicit build, not the old checkout.
+  # Its original path remains metadata; never consult it during admission.
+  relative(header,original_root)
+  if not header.is_absolute() or header.parts[-2:]!=('generated','lemma_runtime_identity.h'):
+   raise ValueError('Archived native generated identity path malformed')
+  header=build/'generated/lemma_runtime_identity.h'
+ if header.is_symlink() or not header.is_file() or sha(header)!=identity['sha256']:
+  raise ValueError('Changed/missing native generated identity')
+ if archive is not None and header.read_text()!=('#pragma once\n#define LEMMA_RUNTIME_IDENTITY "'+m['snapshot_identity']+'"\n'):
+  raise ValueError('Archived native generated identity differs from implementation')
+ binary=build/'obj/lemma-rtl'
+ if binary.is_symlink() or sha(binary)!=m['binary_sha256']:
+  raise ValueError('Changed native executable')
  return {'manifest':m,'binary':build/'obj/lemma-rtl','validation':receipt}
 
 def rom(build,archive=None,profile=PROFILE):

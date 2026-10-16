@@ -48,5 +48,70 @@
   ],
   "limitations": [
     "This focused host observer result does not replace the retained complete foundation failure or establish a fresh complete-suite or CI PASS."
-  ]
+  ],
+  "candidate_1c35_repair": {
+    "candidate_commit": "1c35b9df6ca9658c3480ddf7d40acb9f7b88819d",
+    "run": 38964568408,
+    "run_status": "IN_PROGRESS_WITH_OBSERVED_FAILURES",
+    "failed_jobs": {
+      "metadata": {
+        "job": 117187711075,
+        "cause": "Exact logged pipeline inventory omitted product-reader and recovery-entry2 selector logs. Actual473 tests/1 failure; later metadata work skipped.",
+        "log": {
+          "path": "build/ci/task006-38964568408-a1/metadata-job.log",
+          "bytes": 220661,
+          "sha256": "09661e654fb17b44dc14a80b54ecfd11abf6fffdab8cccc281ac6ed26f2fc29c"
+        }
+      },
+      "kernel_A_E": {
+        "job": 117187711405,
+        "cause": "Exact arithmetic deployment name inventory omitted the three new Product reader/Clocked EntryV2 configurations. Actual461 tests/1 failure; A-E guest acceptance never ran.",
+        "job_log": {
+          "path": "build/ci/task006-38964568408-a1/kernel-A-E-job.log",
+          "bytes": 97850,
+          "sha256": "96d00606d5059240e8dda97abcb7b8eeeea80b493d1d3d37eaf63a86323e5962"
+        },
+        "artifact_zip": {
+          "path": "build/ci/task006-38964568408-a1/kernel-A-E.zip",
+          "bytes": 823914,
+          "sha256": "1047aceeba97cbee7b1d9a4be198ba4d3d3696b20a5c0152203793103ee6027e"
+        }
+      }
+    },
+    "correction": "Only exact expected paths/names extended. No check, job, timeout or production admission changed. Existing role, ownership, provenance, pipeline and negative checks preserved.",
+    "local_corrected": {
+      "foundation": {
+        "tests": 473,
+        "seconds": 41.384,
+        "log": {
+          "path": "build/ci/task006-host-repair-1c35-a1/foundation.log",
+          "bytes": 75606,
+          "sha256": "baf8ad405ec0500cfec68fb9dd4dd21f8769ddaacbce072cec61c8092eb78243"
+        }
+      },
+      "kernel": {
+        "tests": 461,
+        "seconds": 11.125,
+        "log": {
+          "path": "build/ci/task006-host-repair-1c35-a1/kernel.log",
+          "bytes": 79111,
+          "sha256": "b798cb83c193a54fca735456b2b62a0c299f49591c61fc0e9a95e58ec94e04c0"
+        }
+      },
+      "scaffold": {
+        "tests": 18,
+        "log": {
+          "path": "build/ci/task006-host-repair-1c35-a1/scaffold.log",
+          "bytes": 1811,
+          "sha256": "5da758ddd382010c6bd271ef364dc73a5375f394cd1b1c6f00f85dda95f90db8"
+        }
+      },
+      "metadata": {
+        "path": "build/ci/task006-host-repair-1c35-a1/metadata.log",
+        "bytes": 185,
+        "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+      }
+    },
+    "scope": "Host expectation repair only; corrected candidate CI not yet launched. Original failures retained."
+  }
 }

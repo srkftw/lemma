@@ -1354,9 +1354,9 @@ nix develop --no-write-lock-file --command python3 scripts/build_development_aut
 
 The original notebook observation used prepared instance
 `build/boot/task006-development-auth-prepared-a6`. The current source-validated
-instance is `build/boot/task006-development-auth-prepared-a10`, using the same
+instance is `build/boot/task006-development-auth-prepared-a11`, using the same
 audited ROM and a corrected native UART/reset-release boundary. Its commands
-are `create-medium`, `launch`, `install`, `install-resume`, `tag`, `publish`,
+are `archive`, `create-medium`, `launch`, `install`, `install-resume`, `tag`, `publish`,
 `status`, `boot`, `capacity` and `key-info`; use each command's `--help`. Installation
 requires a source-validated opaque product package and a slot-specific tag made
 with`scripts/package_development_auth_tag.py --public-development-key`. No host
@@ -1374,7 +1374,7 @@ beacon first; `--continue-recovery` applies only to an already observed beacon.
 ```sh
 # Launch with private copies of existing media; this never formats documents.
 ./scripts/lemmasim-auth --public-development-key launch \
-  --prepared build/boot/task006-development-auth-prepared-a10 \
+  --prepared build/boot/task006-development-auth-prepared-a11 \
   --boot-medium /absolute/PRIVATE_BOOT.raw --disk /absolute/PRIVATE_NOTEBOOK.raw \
   --session-dir build/boot/UNUSED_RECOVERY_SESSION --recovery --paused \
   --mode developer --headless
@@ -1402,13 +1402,33 @@ independent authenticated cold recovery now pass separately:2,377.2M clocks,
 preserved. That observation uses its recorded intermediate a09 native runtime,
 prepared-a8 and older724-sector notebook image; it does not qualify the newer
 four-role course image or current319 runtime. The current host-validated
-preparation is now`build/boot/task006-development-auth-prepared-a10` after the
-archive portability change; it reuses the same current319 runtime and audited
-ROM as a9. Public development keys remain separate from production trust.
+preparation is now`build/boot/task006-development-auth-prepared-a11` after the
+generated-header relocation repair; it reuses the same current319 runtime and
+audited ROM as a9/a10. Public development keys remain separate from production trust.
+
+
+The local component archive command retains the native executable, immutable
+ROM, complete consumed-source archives and digital discovery in one directory:
+
+```sh
+./scripts/lemmasim-auth --public-development-key archive \
+  --prepared build/boot/task006-development-auth-prepared-a11 \
+  --output-dir build/native/UNUSED_PRODUCT_COMPONENT_ARCHIVE
+# Use that output directory as --prepared for ordinary launch.
+```
+
+The actual prepared output`build/native/task006-product10-auth-components-a1`
+contains678 files/10,734,790B. Public launch from it reaches the real ROM recovery
+beacon and executes1M clocks. It excludes boot/notebook media. Keep media outside
+it. This archives components for the current host commands; the exact external
+Nix audit tools, dtc and runtime libraries remain required. It is not a standalone
+fresh-host product distribution. Existing outputs are refused. Generated native
+identity headers are checked inside the selected build; validation cannot fall
+back to the old checkout when a local header is missing.
 
 ```sh
 python3 scripts/check_development_install_resume.py --public-development-key \
-  --prepared build/boot/task006-development-auth-prepared-a10 \
+  --prepared build/boot/task006-development-auth-prepared-a11 \
   --package build/boot/task006-development-auth-probe-package-a1 \
   --tag build/boot/task006-install-resume-plan-a4/slot1.tag \
   --boot-medium build/boot/task006-development-auth-connected-a4/acknowledged-boot.raw \

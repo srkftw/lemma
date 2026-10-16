@@ -30,7 +30,8 @@ class ProductNativeArchive(unittest.TestCase):
         for n,raw in payloads.items():
             p=self.archive/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(raw)
         binary=b'NONEXECUTABLE HOST VALIDATION FIXTURE';(self.build/'obj/lemma-rtl').write_bytes(binary)
-        identity=b'identity fixture';(self.build/'identity.h').write_bytes(identity)
+        identity=('#pragma once\n#define LEMMA_RUNTIME_IDENTITY "'+'1'*64+'"\n').encode()
+        (self.build/'generated').mkdir();(self.build/'generated/lemma_runtime_identity.h').write_bytes(identity)
         self.manifest={'profile':native.EXECUTED_PROFILE,'configuration':'external-ram-128MiB','top':'lemma_soc',
           'sources':[str(self.old/'sim/rtl/lemma_soc.sv')],
           'sha256':{'sim/rtl/lemma_soc.sv':self.inputs['sim/rtl/lemma_soc.sv']},
@@ -42,7 +43,7 @@ class ProductNativeArchive(unittest.TestCase):
           'host_binding_sha256':self.inputs['build/deps/binding/lemma_silicon_binding.h'],
           'profile_sha256':self.inputs['sim/profiles/lemma-silicon-dev-0.10.0.json'],
           'snapshot_identity':'1'*64,'binary_sha256':digest(binary),
-          'runtime_identity_header':{'path':str(self.build/'identity.h'),'sha256':digest(identity)}}
+          'runtime_identity_header':{'path':str(self.old/'build/native/generated/lemma_runtime_identity.h'),'sha256':digest(identity)}}
         for key,n in [('host_adapter','sim/rtl/host/main.cpp'),('build_driver','scripts/silicon_compute.py'),('upstream_patch','tooling/core.patch')]:
             self.manifest[key]={'path':n,'sha256':self.inputs[n]}
         self.publish()
@@ -64,6 +65,16 @@ class ProductNativeArchive(unittest.TestCase):
     def test_missing_archive_member_never_falls_back_to_current_checkout(self):
         n='sim/rtl/lemma_soc.sv';p=self.current/n;p.parent.mkdir(parents=True);p.write_bytes((self.archive/n).read_bytes());(self.archive/n).unlink()
         with self.assertRaisesRegex(ValueError,'Changed/missing'):self.admit()
+    def test_removed_local_identity_never_uses_still_present_original(self):
+        old=Path(self.manifest['runtime_identity_header']['path']);old.parent.mkdir(parents=True)
+        local=self.build/'generated/lemma_runtime_identity.h';old.write_bytes(local.read_bytes());local.unlink()
+        with self.assertRaisesRegex(ValueError,'Changed/missing native generated identity'):self.admit()
+    def test_relocated_identity_cannot_relabel_implementation(self):
+        self.manifest['snapshot_identity']='2'*64;self.publish()
+        with self.assertRaisesRegex(ValueError,'differs from implementation'):self.admit()
+    def test_identity_path_cannot_escape_original_checkout(self):
+        self.manifest['runtime_identity_header']['path']=str(self.base/'sibling/generated/lemma_runtime_identity.h');self.publish()
+        with self.assertRaises(ValueError):self.admit()
     def test_changed_archive_member_rejects(self):
         (self.archive/'sim/rtl/lemma_soc.sv').write_bytes(b'changed')
         with self.assertRaisesRegex(ValueError,'Changed/missing'):self.admit()

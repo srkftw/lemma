@@ -163,6 +163,8 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/reader-location-actions.log",
                          "metadata/notebook-reader-actions.log",
                          "metadata/reader-deployment-actions.log",
+                         "metadata/product-reader-deployment-actions.log",
+                         "metadata/recovery-entry2-deployment-actions.log",
                          "metadata/arithmetic-aligned-actions.log",
                          "metadata/llvm-name-sets.log",
                          "metadata/kernel-host-unittest.log",

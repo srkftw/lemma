@@ -64,4 +64,22 @@ python3 -m unittest discover -s tests/lemmasim -p test_rtl_source_archive.py -v
 These are source/artifact admission checks. They do not qualify arbitrary USB
 checkpoint continuation, USB PHY conformance, notebook Save or cold recovery.
 
+The separate Product10 validator also retains the original logical checkout
+prefix for consumed source paths. Its generated runtime identity is a build
+output: an archived build must contain `generated/lemma_runtime_identity.h`,
+with the original manifest digest and exact declared implementation identity.
+The original absolute header path is metadata and must never be opened as a
+fallback. A missing local header rejects even if the original still exists.
+
+`lemmasim-auth --public-development-key archive --prepared PREPARED --output-dir
+UNUSED` retains the exact native/ROM components, both complete source archives,
+and discovery artifacts, then revalidates the copied prepared instance. It
+copies no boot medium, notebook medium or live session. Selection is bounded
+to8192 files/64MiB per file/256MiB total; outputs must be unused. The manifest,
+executable, ROM artifacts, source identities, external dependencies and public
+test-key scope remain load-bearing. This is local component retention for the
+maintained host commands, requiring their exact external Nix tools/libraries;
+it does not promise relocation after another manual move, fresh-host execution,
+product identity, a preinstalled running image or a new guest execution result.
+
 -->

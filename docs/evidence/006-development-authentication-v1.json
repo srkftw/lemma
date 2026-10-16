@@ -385,5 +385,51 @@
       "reason": "Observer guessed a nonexistent scripts helper path; zero CPU clocks/no machine before failure. Actual-imported-module census repairs source observer only."
     },
     "source_scope": "Frozen intermediatea09/nativea2/prepareda8, exact archive identity; fullnotebook update has no safety-release UART pulse. Its observed results cannot be relabeled final319/prepareda9 execution."
+  },
+  "local_component_archive": {
+    "status": "PASS_LOCAL_COMPONENT_RETENTION_AND_REAL_ROM_LAUNCH",
+    "code_base": "1c35b9df6ca9658c3480ddf7d40acb9f7b88819d plus current host-only increment",
+    "prepared": "build/boot/task006-development-auth-prepared-a11",
+    "archive": "build/native/task006-product10-auth-components-a1",
+    "command": "./scripts/lemmasim-auth --public-development-key archive --prepared build/boot/task006-development-auth-prepared-a11 --output-dir build/native/AN_UNUSED_COMPONENT_ARCHIVE",
+    "native_relocation": {
+      "path": "build/boot/task006-auth-native-relocation-a1/result.json",
+      "bytes": 1088,
+      "sha256": "b1c4305d97d6ee7517dced44cf823a7e70fa63b2b607e8ee6f2c14b5d92c79f1"
+    },
+    "archive_manifest": {
+      "path": "build/native/task006-product10-auth-components-a1/archive.json",
+      "bytes": 99607,
+      "sha256": "ca827c595959721ff4f95a4757e3e09c46802afbbd5a65b322ec81159febf53b"
+    },
+    "actual_public_launch": {
+      "path": "build/boot/task006-auth-archive-launch-a1/result.json",
+      "bytes": 1913,
+      "sha256": "f70d976ec52b18fa871146fc1beb8623ab42b4bb5e1675c5bbf0890e916f8490"
+    },
+    "files": 678,
+    "bytes": 10734790,
+    "actual_clocks": 1000000,
+    "rom_beacon": {
+      "transaction": 0,
+      "status": 0,
+      "value": 8590000136
+    },
+    "unchanged_runtime_identity": "ebb973f8dc5871e1df9335ce19a23b9475b124650c257e23e7904601b4837451",
+    "unchanged_rom_sha256": "8a853ef5ef9fa3414c1db85afb22f10835b054e02fd912b1f3262d56280aa5a4",
+    "no_original_header_fallback": true,
+    "user_media_included": false,
+    "boot_host_tests": {
+      "count": 30,
+      "log": {
+        "path": "build/ci/task006-host-repair-1c35-a1/boot-archive.log",
+        "bytes": 4750,
+        "sha256": "fe600d48fd54e2d07397df9949a647e66de40118065606aa34eacc4ddd435985"
+      }
+    },
+    "limits": [
+      "Local retained components for maintained host commands; external exact Nix audit tools/dtc/runtime libraries still required.",
+      "Not a standalone or manually movable product bundle, fresh-host import, new target build, notebook Ready, update or production-key qualification."
+    ]
   }
 }

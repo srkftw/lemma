@@ -4435,3 +4435,53 @@ evidence/checkpoint updates are pending a separate report commit, referencing
 only after committing reports, inspect actual new CI once, update draft PR9;
 never merge under PR8 authorization. No report-only recompilation/retest loop.
 -->
+
+<!--
+Continuation after pushed1c35b9df6ca9658c3480ddf7d40acb9f7b88819d (01b12f3 code).
+Draft PR9 metadata updated; remains unmerged. Actual candidate run38964568408
+is still running but has2 failed jobs: metadata473 tests/1 stale exact workflow
+log inventory failure and kernel A-E461 tests/1 stale arithmetic configuration
+inventory failure. Actual logs and823914B ZIP retained at
+build/ci/task006-38964568408-a1 (ZIP SHA1047aceeba97cbee7b1d9a4be198ba4d3d3696b20a5c0152203793103ee6027e).
+Only the two new log paths and three exact new deployment names were added to
+expectations. No pipeline, job, authority, timeout or valid check removed.
+Current local473foundation/461kernel/304LemmaSim/30boot/18scaffold and metadata
+pass; detailed logs at build/ci/task006-host-repair-1c35-a1. No corrected CI yet.
+Do not infer success for skipped metadata work or unexecuted A-E guest cases.
+
+A real Product native relocation defect was found and fixed: validation still
+opened the generated identity header at its original absolute path. Archived
+builds now require the selected build's generated/lemma_runtime_identity.h,
+exact original digest and implementation identity. Actual253-input copied
+native admits with reads confined to that private copy; the old validator
+attempts an original read. Removed local header rejects despite intact original.
+Receipt build/boot/task006-auth-native-relocation-a1/result.json;0.254s.
+
+New ordinary command: lemmasim-auth --public-development-key archive --prepared
+PREPARED --output-dir UNUSED. Copies only exact native/ROM/artifacts, complete
+consumed-source archives and discovery; no boot/notebook/session media. Revalidates
+both components after copy.8192 files/64MiB file/256MiB total maximum. Exact host
+sources/external Nix audit tools/dtc/libraries remain required; not standalone,
+fresh-host or another manually movable package. Current Root preparation a11
+and archive build/native/task006-product10-auth-components-a1 pass:678files/
+10734790B. Actual public launch from it produces Lean ROM recovery beacon and
+executes1M clocks in5.956s, owner reaped. Current319/8a853 target bytes unchanged;
+this is no new full boot/update/Ready qualification. a10 is stale after host
+source changes. README and source-archive contract document the exact command.
+
+Browser18 second independent OPFS CPU now reaches actualReady571.95M (UI elapsed
+5188.2s/simulation5107.9s; reported Wasm heap192MiB), fixed572M. Passive all3.63M
+pixels/all256MiB/153READ bytes/errors/order/cycles match native;32.294s observer.
+Artifacts browser/second-cold572M.{bin,raw,io}, second-cold-result-a1.json under
+build/browser/task006-reader18-local-plan-a1. No snapshot cold input or full
+native second microstate claim. Exact native two COURSE rows admitted at572M,
+227M suffix now running to799M, same original22:25:15.630042Z deadline. No course
+reopen pass yet. Browser35/8806 must survive; browser33/8804 remains deliverable.
+
+Current frozen Product course actor session53123 and Entry2 actor33174 continue
+at their original bounds. One read-only observation: Product trial1059.7M,
+664442747retired, supervisor PC0x802224a8 (Task.findStep); Entry2 cold200M,
+103145926retired. These isolated samples do not establish hot-path proportions.
+No executor/prepared/bundle mutation or deadline extension. Keep BUILD worktree
+and artifacts while the Entry2 case still references them.
+-->

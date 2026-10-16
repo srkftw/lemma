@@ -45,7 +45,7 @@ def prepare(args):
   'image_compatibility':0x000a000300010001,'rom_configuration':CONFIG,'recovery_version':2,
   'paper_contract':{'version':3,'staging_offset':3584,'staging_bytes':512,'executed_refresh_offsets':[192,200,208,216,224,232]},
   'host_dependencies':host_dependencies(n['binary']),
-  'host_scripts':{str(p.relative_to(ROOT)):inputs.sha(p) for p in (Path(__file__),ROOT/'scripts/development_install.py',ROOT/'scripts/lemmasim_product.py',ROOT/'scripts/product_native.py',ROOT/'scripts/lemmasim_session.py',ROOT/'scripts/build_development_auth_boot.py',ROOT/'scripts/check_crypto.py')},
+  'host_scripts':{str(p.relative_to(ROOT)):inputs.sha(p) for p in (Path(__file__),ROOT/'scripts/development_install.py',ROOT/'scripts/lemmasim_product.py',ROOT/'scripts/product_native.py',ROOT/'scripts/product_archive.py',ROOT/'scripts/lemmasim_session.py',ROOT/'scripts/build_development_auth_boot.py',ROOT/'scripts/check_crypto.py')},
   'qualification':'prepared exact components; actual MAC rejection/install/handoff/recovery separate'}
  out.mkdir(parents=True);data['digital_discovery']=product.profile_discovery(data,out,args.dtc);sessions.write_json(out/'prepared.json',data)
  (out/'DEPENDENCIES.txt').write_text('Local source-bound development machine using PUBLIC TEST KEY00..1f. No production identity/anti-rollback or redistribution license. Existing CVW/Verilator/Nix dependency notices and physical gaps remain applicable. All image/MAC/selection/update policy executes in the Lean ROM.\n')
@@ -100,6 +100,7 @@ class RecoveryClient(product.RecoveryClient):
 def main(argv=None):
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--public-development-key',action='store_true',required=True);sub=p.add_subparsers(dest='command',required=True)
  a=sub.add_parser('prepare');a.add_argument('--native-build',type=Path,required=True);a.add_argument('--native-source-archive',type=Path);a.add_argument('--rom-build',type=Path,required=True);a.add_argument('--rom-source-archive',type=Path);a.add_argument('--output-dir',type=Path,required=True);a.add_argument('--dtc')
+ a=sub.add_parser('archive');a.add_argument('--prepared',type=Path,required=True);a.add_argument('--output-dir',type=Path,required=True)
  a=sub.add_parser('create-medium');a.add_argument('--boot-medium',type=Path,required=True)
  a=sub.add_parser('launch');a.add_argument('--prepared',type=Path,required=True);a.add_argument('--session-dir',type=Path,required=True);a.add_argument('--boot-medium',type=Path);a.add_argument('--disk',type=Path);a.add_argument('--restore',type=Path);a.add_argument('--recovery',action='store_true');a.add_argument('--mode',choices=['student','developer','laboratory'],default='developer');a.add_argument('--paused',action='store_true');a.add_argument('--headless',action='store_true');a.add_argument('--timeout',type=int,default=120);a.add_argument('--quantum',type=int,default=1000000);a.add_argument('--tablet',type=Path);a.add_argument('--trace-limit',type=int,default=0);a.add_argument('--host-threads',type=int,default=1)
  for name in ('capacity','key-info','install','install-resume','tag','publish','status','boot'):
@@ -107,6 +108,9 @@ def main(argv=None):
  args=p.parse_args(argv)
  try:
   if args.command=='prepare':result=prepare(args)
+  elif args.command=='archive':
+   from product_archive import create
+   result=create(args.prepared,args.output_dir,prepared)
   elif args.command=='create-medium':
    args.boot_medium.parent.mkdir(parents=True,exist_ok=True)
    with args.boot_medium.open('xb') as f:f.truncate(product.BOOT_BYTES);f.flush();os.fsync(f.fileno())
