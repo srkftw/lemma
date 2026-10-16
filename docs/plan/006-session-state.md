@@ -4528,3 +4528,12 @@ that module; source/standalone checks remain intact, failures retained in
 bundle.log/package-a2.log. Active8806 cases retain their original old app assets.
 Keep browser35/reader18Tab,36/freshCourseTab handoff;33/pad15Tab deliverable.
 -->
+
+<!--
+Actual1c35 candidate38964568408 is now COMPLETED_FAILURE:9jobsSUCCESS/2FAILURE;
+101stepsSUCCESS/2FAILURE/13SKIPPED. Real notebook O0/O2 writing/cold recovery
+passed. Two stale host inventory failures remain failed, and skipped metadata/
+A-E work is not passed. Complete actual job receipt build/ci/task006-1c35-complete.json.
+Corrected local247558a+d033baf are ready for publication and their own CI; no
+merge. No identical target builds were rerun for these report changes.
+-->

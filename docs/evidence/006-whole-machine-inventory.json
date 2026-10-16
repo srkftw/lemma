@@ -1,5 +1,5 @@
 {
-  "implementation_commit": "01b12f35fe8d84e7766ebb21477f4acfa52f1d85",
+  "implementation_commit": "d033baf1e5a2607cb463a1993c818a9374c1a7d6",
   "merged_baseline": "abd9920d54df04ce52da9386170e99012c39bdfb",
   "baseline_tree": "7c30f469592f2c2a1bef6aab11f31d30a8a3ee28",
   "scope": "compact inventory of actual local artifacts; original execution/source identities and failures remain distinct; not a completion certificate",
@@ -1021,11 +1021,10 @@
   "latest_observed_candidate_ci": {
     "commit": "1c35b9df6ca9658c3480ddf7d40acb9f7b88819d",
     "run": 38964568408,
-    "status": "IN_PROGRESS_WITH_OBSERVED_FAILURES",
+    "status": "COMPLETED_FAILURE",
     "observed_jobs": {
-      "success": 4,
       "failure": 2,
-      "in_progress": 5
+      "success": 9
     },
     "failed_jobs": [
       "Metadata and host-only suites: foundation workflow-log exact inventory",
@@ -1035,7 +1034,7 @@
       "path": "docs/evidence/006-foundation-workflow-observer.json",
       "sha256": "fb107c386c68e08d7f2a0f6c3ec772152b163ebe7c8bf88021b17266389abd2e"
     },
-    "scope": "Current run remains incomplete. Metadata later steps/A-E guest acceptance skipped; no skipped work passed. Corrected local473foundation/461kernel pass, but corrected source has no new candidate CI.",
+    "scope": "Actual1c35 completed9jobsSUCCESS/2FAILURE. All real notebookO0/O2 and eight other jobs passed except the two retained host inventories; skipped13steps are not passed. Local corrected commits247558a/d033baf await their new candidate CI.",
     "prior_complete": {
       "commit": "3226f155d173ae8d2ab076526c24f58e8295dc9f",
       "run": 38939333316,
@@ -1081,6 +1080,15 @@
         "status": "NOT_RUN_YET",
         "scope": "Parent3226 successful CI remains its own result; source increment is committed locally and publication pending."
       }
+    },
+    "step_counts": {
+      "success": 101,
+      "failure": 2,
+      "skipped": 13
+    },
+    "final_receipt": {
+      "path": "build/ci/task006-1c35-complete.json",
+      "sha256": "5f0551e6082b339a2d759a16378e3338b6b69cf76ed4f10a9fbbe8787be29b5b"
     }
   },
   "browser_pointer_ink_milestone": {

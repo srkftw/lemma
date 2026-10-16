@@ -52,7 +52,7 @@
   "candidate_1c35_repair": {
     "candidate_commit": "1c35b9df6ca9658c3480ddf7d40acb9f7b88819d",
     "run": 38964568408,
-    "run_status": "IN_PROGRESS_WITH_OBSERVED_FAILURES",
+    "run_status": "COMPLETED_FAILURE",
     "failed_jobs": {
       "metadata": {
         "job": 117187711075,
@@ -112,6 +112,19 @@
         "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
       }
     },
-    "scope": "Host expectation repair only; corrected candidate CI not yet launched. Original failures retained."
+    "scope": "Host expectation repair only; corrected candidate CI not yet launched. Original failures retained.",
+    "job_counts": {
+      "failure": 2,
+      "success": 9
+    },
+    "step_counts": {
+      "success": 101,
+      "failure": 2,
+      "skipped": 13
+    },
+    "actual_final_receipt": {
+      "path": "build/ci/task006-1c35-complete.json",
+      "sha256": "5f0551e6082b339a2d759a16378e3338b6b69cf76ed4f10a9fbbe8787be29b5b"
+    }
   }
 }
