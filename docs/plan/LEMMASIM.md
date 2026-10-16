@@ -215,3 +215,22 @@ early controller-label assertion with37 dirty tiles pending. Its private remaini
 budget suffix displays VERIFIED with unchanged bytes; the full original campaign
 remainsFAIL/incomplete. See the existing
 [dirty-batch/course Save evidence](../evidence/006-notebook-dirty-batch-v1.json).
+
+The same guest product lane now includes ingress-idle policy2: only the empty
+installer-header boundary backs off, preserving original partial-input handling.
+Fresh canonical whole builds/audits and fast course/annotation/idle-Save/newcold
+pass with an independent complete annotation plane. Comparable cold Ready falls
+from249M to185M fast units; the6phase case from762M to576M. Extracted native
+UART/install/pending-fork/newcold/Load also passes. The actual failed-first-FLUSH
+case preserves visible provisional ink, reports Failed without Saved and cold
+recovers prior acknowledged full display/bytes. This known injected failure does
+not establish rollback after actual OS failures.
+
+Source11 exact RTL has completed cold Ready, course/raw annotation and explicit
+Save at1.197B clocks; its independent second cold remains running. New policy2
+RTL and Wasm cold runs retain their original bounds. Companion compilation
+succeeded but its full audit rejected the new171-function installer against the
+historical169 catalog. The versioned authority repair retains the original pins,
+independently compares every common preIR function and rejects a valid LLVM cap
+mutation; corrected whole companion acceptance remains required. G2/G4-G7,
+S4-S6, fast/checkpoint, distribution/rights and physical status stay separate.

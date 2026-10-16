@@ -11,6 +11,7 @@ from usb_recovery_target import corpus
 from package_companion_deployment import CONFIGURATIONS,SOFTWARE_DEPLOYMENT,BOOT_ROOTS,DISPATCH_ROOT,USER_ROOTS
 
 VERSION='lemma-package-clocked-recovery4-target/1'
+INGRESS_IDLE_VERSION='lemma-package-clocked-recovery4-course-ingress/2'
 AUTHORITY=Path(__file__).resolve().parents[1]/'tooling/package-companion-target-authority.json'
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 def selected(unit):return unit.get('configuration') in CONFIGURATIONS
@@ -32,7 +33,25 @@ def contract(unit):
    raise Core0Error('Package recovery requires both exact genuine user configuration catalogs')
   expected=catalogs[unit['configuration']]
  else:expected=wanted['catalog_sha256']
- if digest(unit)!=expected:raise Core0Error('Package recovery complete typed/effect/root catalog differs: '+key)
+ if digest(unit)!=expected:
+  # Historical169-function course catalogs retain the original authority.
+  # Policy2 is a separately captured, exact171-function successor; it grants
+  # no additional effects and does not relax the complete body/caller pins.
+  variant=authority.get('course_ingress_idle2')
+  if key!='course' or not isinstance(variant,dict):raise Core0Error('Package recovery complete typed/effect/root catalog differs: '+key)
+  if (variant.get('schema')!=INGRESS_IDLE_VERSION or variant.get('policy')!='lemma-course-ingress-idle/2'
+      or variant.get('previous_role_sha256')!=digest(wanted)):
+   raise Core0Error('Package recovery ingress2 version/previous authority differs')
+  successor=variant.get('role')
+  if not isinstance(successor,dict) or set(successor)!=set(wanted):raise Core0Error('Package recovery ingress2 exact role schema differs')
+  catalogs=successor.get('catalog_sha256_by_configuration')
+  if (not isinstance(catalogs,dict) or set(catalogs)!=set(CONFIGURATIONS)
+      or catalogs[CONFIGURATIONS[0]]!=successor.get('catalog_sha256')
+      or any(successor.get(field)!=171 for field in ('function_count','pre_function_count','post_function_count'))
+      or unit.get('used_loops')!=[{'stable_id':'action.loop','callback':'Lemma.Courses.PackageInstaller.stepIdle'}]
+      or digest(unit)!=catalogs[unit['configuration']]):
+   raise Core0Error('Package recovery ingress2 complete typed/effect/root catalog differs')
+  wanted={**successor,'artifact_contract_version':INGRESS_IDLE_VERSION}
  return key,wanted
 
 def semantic_guards(ir,unit):
@@ -80,7 +99,7 @@ def validate(ir,unit,*,optimized):
  if found is None:return None
  key,wanted=found;phase='post' if optimized else 'pre';actual=complete_corpus(ir,unit,optimized=optimized)
  if len(actual['functions'])!=wanted.get(phase+'_function_count',wanted['function_count']) or digest(actual)!=wanted[phase+'_sha256']:raise Core0Error('Package recovery complete body/global/caller corpus differs: '+key+'/'+phase)
- return {'contract_version':VERSION,'role':key,'phase':phase,'function_count':len(actual['functions']),'complete_corpus_sha256':digest(actual),'globals_sha256':actual['globals_sha256'],'callers_sha256':actual['callers_sha256'],'semantics':None if optimized else semantic_guards(ir,unit),'scope':'Actual complete artifact authority; no linked-image/CPU/USB-conformance claim'}
+ return {'contract_version':wanted.get('artifact_contract_version',VERSION),'role':key,'phase':phase,'function_count':len(actual['functions']),'complete_corpus_sha256':digest(actual),'globals_sha256':actual['globals_sha256'],'callers_sha256':actual['callers_sha256'],'semantics':None if optimized else semantic_guards(ir,unit),'scope':'Actual complete artifact authority; no linked-image/CPU/USB-conformance claim'}
 
 
 def readonly_request_kinds(ir,unit):

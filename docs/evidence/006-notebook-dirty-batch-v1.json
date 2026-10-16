@@ -379,13 +379,17 @@
     "execution": "NOT_YET_RUN with new9 companion guests; original Saved12 recovery actor uses unchanged older6 bundle and keeps its own meaning"
   },
   "candidate_ci": {
-    "commit": "86f132de844bce28069373be860c1b5f77a15ed9",
-    "run": 38813364210,
-    "conclusion": "SUCCESS",
-    "jobs": 11,
-    "all_reported_steps": "SUCCESS",
-    "skipped_steps": 0,
-    "scope": "Committed Lean course-preserving Save and literal CI addition; excludes next maintained host-command increment"
+    "commit": "af8b714cfe8d20675b367138911486e43f0d6656",
+    "run": 38824586834,
+    "status": "IN_PROGRESS",
+    "scope": "Pushed idle2 target and independent annotation observer; excludes next companion-authority/failed-save-command increment",
+    "previous_96afbc8": {
+      "run": 38818754788,
+      "conclusion": "SUCCESS",
+      "jobs": 11,
+      "all_reported_steps": "SUCCESS",
+      "skipped_steps": 0
+    }
   },
   "browser_cold_ready": {
     "status": "PASS_ACTUAL_COLD_INITIAL_NOTEBOOK_READY_AND_NATIVE_STATE_EQUAL",
@@ -1012,6 +1016,40 @@
         "corrected_work_dir": "build/usb/task006-course-save-companion-cold-a2",
         "corrected_plan": "build/usb/task006-course-save-companion-cold-plan-a2/plan.json",
         "correction": "Hosted Lean peer aborted under inherited4GiB AS. Corrected16GiB virtual AS retains4GiB owned RSS and original absolute deadline2026-10-16T00:33:57.348922Z, with1.565B remaining clocks after failed35M. No original failure relabeled."
+      },
+      "canonical11_live_milestone": {
+        "scope": "Actual first cold/course/rawannotation/idleexplicitSave phases completed; second independent cold still running, whole case not passed",
+        "observed_phases": [
+          {
+            "name": "independent-cold-from-browser-Saved8",
+            "initial_cycle": 0,
+            "final_cycle": 828000000,
+            "clock_units": 828000000,
+            "host_seconds": 3220.9739831449697
+          },
+          {
+            "name": "actual-course-body",
+            "initial_cycle": 828000000,
+            "final_cycle": 1112000000,
+            "clock_units": 284000000,
+            "host_seconds": 1419.6941492860205
+          },
+          {
+            "name": "annotation-ack-and-SAVED-course",
+            "initial_cycle": 1112000000,
+            "final_cycle": 1176000000,
+            "clock_units": 64000000,
+            "host_seconds": 480.2727457389701
+          },
+          {
+            "name": "idle-explicit-Save-detail0-and-identical-course",
+            "initial_cycle": 1176000000,
+            "final_cycle": 1197000000,
+            "clock_units": 21000000,
+            "host_seconds": 142.01107062003575
+          }
+        ],
+        "path": "build/courses/task006-course-preserving-save-rtl-a1/progress.json"
       }
     },
     "native_distribution": {
@@ -1020,7 +1058,20 @@
       "archive_sha256": "13660dea69d16a0ae27805c3bd8c70c18055b98b6f6b34f6c48a014caf633219",
       "archive_bytes": 11567160,
       "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
-      "scope": "Ordinary both-backend/both-role admission; packaging only, actual extracted latest-image execution and clean-host/license qualification remain separate."
+      "scope": "Prepared guest11 archive plus actual extracted initializer/pendingUART/privatefork/install/independentcold/Load PASS. Clean-host installation and rights remain separate.",
+      "actual_extracted_uart": {
+        "path": "build/distribution/task006-course-save-native-uart-a1/result.json",
+        "sha256": "e9de1717f8f95466a2c44bee44fee146fd1112a50aaa223605b380ad4b2993e1",
+        "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD",
+        "seconds": 235.9393579289317
+      },
+      "actual_extracted_uart_supervision": {
+        "path": "build/distribution/task006-course-save-native-uart-supervision-a1/result.json",
+        "sha256": "890b15222ea662d1c7a99a23581b26288ecb3aba2c370101511d9efce2cea446",
+        "status": "PASS_EXTRACTED_LATEST_GUEST_UART_COLD_SUPERVISED",
+        "seconds": 241.2878363459604,
+        "owned_peak_rss_bytes": 480710656
+      }
     },
     "canonical9_retained_failure": {
       "path": "build/courses/task006-native-dirty-batch-notebook-a1/actor/result.json",
@@ -1110,7 +1161,7 @@
       "diff_check": "PASS"
     },
     "ingress_idle_policy2": {
-      "status": "PASS_LITERAL_GENUINE_COMPONENT_FULL_LINK_EXECUTION_PENDING",
+      "status": "PASS_CANONICAL_WHOLE_FAST_COURSE_SAVE_COLD_UART_FAILURE_COMPANION_AUDIT_REPAIR_PENDING_WHOLE",
       "contract": "docs/contracts/006-course-ingress-idle-v2.md",
       "policy": "Guest empty-header sleep backoff1,2,4,8,16,32,64,100ms requested; first successful byte resets, partial header/body use existing1ms receiver and original timeout. Scheduler quantum, ownership/registry checks, formats and hardware unchanged.",
       "target_sha256": "47718773f191942c6afb31452403d80d094235a9f3c8b93671b75b0c5010074d",
@@ -1127,13 +1178,161 @@
       },
       "retained_failures": [
         "build/courses/task006-ingress-idle-component-a1/literal-original-failure.json",
-        "build/courses/task006-ingress-idle-component-a2/run.log"
+        "build/courses/task006-ingress-idle-component-a2/run.log",
+        "build/courses/task006-ingress-idle-course-failure-supervision-a1/result.json"
       ],
       "remaining": [
-        "Fresh whole linked pair/full audits/source seals",
-        "Comparable actual guest Ready/course/Save/cold and raw UART install/backpressure",
-        "Independent exact RTL/native/browser timing/execution as applicable"
-      ]
+        "Corrected companion whole linked pair/full audits and actual independent peer cold recovery",
+        "Canonical new-idle2 exactRTL and browser cold/complete workflow; source11 exactRTL secondcold remains running",
+        "General managed recursion/proof kernel/tutor and full device workflows",
+        "Fast timing/arbitrary cached-state continuation, clean-host distribution/rights and physical closure remain separate"
+      ],
+      "canonical_whole": {
+        "path": "build/courses/task006-ingress-idle-notebook-whole-a1/result.json",
+        "sha256": "3ef334e8056c66f1355bbcfee85dced27d90ee0ab4371cdc649a7542e48f80c3",
+        "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+        "wall_seconds": 1041.0348888060544
+      },
+      "canonical_whole_supervision": {
+        "path": "build/courses/task006-ingress-idle-notebook-whole-supervision-a1/result.json",
+        "sha256": "b474d4115a8094bae7c43146af575d79bdcdd608bfc64e3c7f6859ffe77b8998",
+        "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+        "elapsed_seconds": 1044.6752551809186,
+        "seconds": 1045.702480672975,
+        "peak_owned_rss_bytes": 1926385664
+      },
+      "actual_fast_course_save_cold": {
+        "path": "build/courses/task006-ingress-idle-course-fast-a1/result.json",
+        "sha256": "e4a25ab70b071a255b42466ba89702b9d8f0cb7aaf596f067a13cc0dd747b28f",
+        "status": "PASS_REAL_COURSE_ANNOTATION_IDLE_SAVE_COLD_REOPEN",
+        "elapsed_seconds": 51.656657771905884,
+        "total_clock_units": 576000030
+      },
+      "actual_fast_supervision": {
+        "path": "build/courses/task006-ingress-idle-course-fast-supervision-a1/result.json",
+        "sha256": "e5a118c5b55212fe66de8064749c512aeb4aed79df3d7d90c1d977d4c2a101e3",
+        "status": "PASS_COURSE_PRESERVING_SAVE_SUPERVISED",
+        "seconds": 56.51068267901428,
+        "owned_peak_rss_bytes": 496279552
+      },
+      "comparable_workload": {
+        "path": "build/courses/task006-ingress-idle-course-qualification-a1/comparison.json",
+        "sha256": "01a1d9258c1180575abd2d559ee89bd5c37021caf7cacb7432d71dea166da372",
+        "status": "PASS_COMPARABLE_FAST_FUNCTIONAL_WORKLOAD"
+      },
+      "performance": {
+        "scope": "same raw97 fast backend/CPU/profile/dtb/descriptor, Saved8 medium, package, raw geometry/pressure/order/relative times and6phase caps; only PackageInstaller differs among408 consumed build inputs. Absolute sample times follow actual phase boundaries. Stronger independent complete annotation oracle; no host speedup or exact RTL timing inference.",
+        "cold_ready_old_units": 249000006,
+        "cold_ready_new_units": 185000001,
+        "all6_old_units": 762000035,
+        "all6_new_units": 576000030,
+        "observed_actor_seconds": 51.656657771905884,
+        "observed_supervised_seconds": 56.51068267901428,
+        "peak_owned_rss_bytes": 496279552
+      },
+      "extracted_native_uart": {
+        "path": "build/distribution/task006-ingress-idle-native-uart-a1/result.json",
+        "sha256": "802833ffdbfaef2ef62ffccfa88118894afbb785df4920c87b100d5f8a87e424",
+        "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD",
+        "seconds": 412.0522352330154
+      },
+      "extracted_native_uart_supervision": {
+        "path": "build/distribution/task006-ingress-idle-native-uart-supervision-a1/result.json",
+        "sha256": "9d406540fb318f062ecc99f949168bef8e66bfaff703654ba6037ed74f34efdf",
+        "status": "PASS_EXTRACTED_LATEST_GUEST_UART_COLD_SUPERVISED",
+        "seconds": 417.2828043020563,
+        "owned_peak_rss_bytes": 417251328
+      },
+      "maintained_failed_save": {
+        "path": "build/courses/task006-course-failed-save-command-a1/result.json",
+        "sha256": "0b2211dd3e82d98226c132f85809d76bc8c292169b519e4e06c58bce1e2e5814",
+        "status": "PASS_REAL_FAILED_FLUSH_COURSE_INK_COLD",
+        "elapsed_seconds": 55.26182286895346,
+        "total_clock_units": 559000028
+      },
+      "maintained_failed_save_supervision": {
+        "path": "build/courses/task006-course-failed-save-command-supervision-a1/result.json",
+        "sha256": "a0b9629bccf243c6ccb135d72388d216bda1c2ee29a6a1b750785611ff18dd37",
+        "status": "PASS_FAILED_FLUSH_COURSE_SUPERVISED",
+        "seconds": 60.18378224002663,
+        "owned_peak_rss_bytes": 657444864
+      },
+      "failed_save_scope": "Actual raw annotation -> first injected fail-before-writeback FLUSH -> guestFailed/noSaved/full independent failed-course-and-ink pixels -> newCPU/cold complete original acknowledged course/ink/allmedium. This knob is not an actual OS failure or a general rollback guarantee. No snapshots/host recovery.",
+      "companion_original_whole_failure": {
+        "path": "build/courses/task006-ingress-idle-companion-whole-a1/result.json",
+        "sha256": "6aef27d74f8cf2afd733f05af33b2fe5b94e09ef10a6622f1bef9c6289867e66",
+        "status": "FAIL",
+        "wall_seconds": 782.7562454879517
+      },
+      "companion_original_whole_failure_supervision": {
+        "path": "build/courses/task006-ingress-idle-companion-whole-supervision-a1/result.json",
+        "sha256": "93ca746def6bd3eb0be99135e04977c4875231054aaa649385a12bd952b10eea",
+        "status": "FAIL_PAIR_COMMAND",
+        "elapsed_seconds": 782.4718567810487,
+        "seconds": 784.7988131629536,
+        "peak_owned_rss_bytes": 1900056576
+      },
+      "companion_authority_comparison": {
+        "path": "build/courses/task006-ingress-idle-companion-course-authority-a1/comparison.json",
+        "sha256": "00d91d13e39205d5b7423ac70b16af409da521be5ca500daf2da4782edbf11ba",
+        "status": "PASS_GENUINE_IDLE2_ONLY_SELECTED_MAIN_AND_TWO_HELPERS"
+      },
+      "companion_authority_qualification": {
+        "path": "build/courses/task006-ingress-idle-companion-course-authority-a1/qualification.json",
+        "sha256": "91a694b5a19e724803eba3df6128a31f1885fe026015ad46a33a8f22275450bc",
+        "status": "PASS_HISTORICAL_AND_SUCCESSOR_GENERIC_IR_AUTHORITY",
+        "seconds": 8.50120669498574
+      },
+      "companion_object_reuse": {
+        "path": "build/courses/task006-ingress-idle-companion-course-authority-a1/object-reuse.json",
+        "sha256": "9df36c659341a17e3ad7bc1391e5ad50231460cf8f83af0746d6a116dec1f861",
+        "status": "PASS_EXACT_ALREADY_FULL_AUDITED_COURSE_CODE_BYTES"
+      },
+      "companion_repair_scope": "Preserve original169 role pins, add explicitly versioned171 course ingress authority with two genuine catalogs/full bodies/globals/callers. Every common preIR function unchanged exceptmainAwait;2 declared helpers added. Separate genuine normal/init pre/post/object exact; valid LLVM changed cap rejects. Whole initial compilation/auditFAIL retained; corrected fresh pair pending.",
+      "prepared": {
+        "native_bundle": "build/native/task006-ingress-idle-notebook-a1",
+        "browser_bundle": "build/browser/task006-ingress-idle-a1",
+        "native_archive": {
+          "path": "build/distribution/task006-ingress-idle-native-a1.tar.gz",
+          "sha256": "82265670bf8cad342cd6423699c2014678772decd2ec18de1d7dab5de66c4b76",
+          "bytes": 11574821
+        },
+        "browser_archive": {
+          "path": "build/distribution/task006-ingress-idle-browser-a1.tar.gz",
+          "sha256": "b3452218bf9a5eb561198f63ba6eba72d6e85de5030cc888f48342b4452da025",
+          "bytes": 2061094
+        },
+        "scope": "Same immutable raw97/native8e5/Wasmfb15 backends; new genuine idle2 canonical guest pair. Actual extracted native UART/install/fork/newcold/Load PASS; browser local cold tab31 still running. Clean-host install/rights remain open."
+      },
+      "host_checks": {
+        "foundation": {
+          "tests": 473,
+          "seconds": 43.476,
+          "status": "PASS"
+        },
+        "kernel": {
+          "tests": 439,
+          "seconds": 11.364,
+          "status": "PASS"
+        },
+        "scaffold": {
+          "tests": 18,
+          "seconds": 8.944,
+          "status": "PASS"
+        },
+        "metadata": "PASS",
+        "selector_fixture_correction": "Initial wrong-loop test accidentally reproduced the exact valid historical catalog; corrected fixture adds a distinct nonce, preserving valid original acceptance. Genuine body mutation independently rejects.",
+        "final_foundation": {
+          "status": "PASS",
+          "tests": 473,
+          "seconds": 38.961
+        },
+        "final_scaffold": {
+          "status": "PASS",
+          "tests": 18,
+          "seconds": 7.849
+        }
+      }
     }
   }
 }

@@ -2841,3 +2841,83 @@ Reusable Save command/evidence commit96afbc8e15bbe1d95794fe2e73a84038da71498c
 is pushed; actual CI38818754788 is running at last inspection. PR9 stays draft
 and unmerged. The next idle-policy source increment is local and must receive
 its own whole builds/actual observations; do not cancel that CI for a report edit.
+
+October15 idle-policy integration milestone:af8b714cfe8d20675b367138911486e43f0d6656
+is pushed (idle2 target plus independent full-annotation observer).
+CI38824586834 is IN_PROGRESS at last actual inspection. Prior96afbc8
+CI38818754788 is terminalSUCCESS11/11, every reported step success/no skips.
+PR9 remains draft/unmerged; PR8 merge authorization is not PR9 authorization.
+
+Fresh canonical idle2 whole pair/audits/source seals PASS1041.035s;
+supervision1044.675s,1,926,385,664B peak/no survivors/all408 sources equal.
+Initializer be17fb35c2931f7357b4d454dc2a14bc2a946762350c6605eabd3f67d0da21fa;
+notebook d2d809074d6bed03c672a56d9659c669f25bf5c35b2f5215027c8824b31cb6de.
+See`build/courses/task006-ingress-idle-notebook-whole-a1/result.json`.
+Its source hold is released. Prepared native/browsers use the unchanged
+raw97/native8e5/Wasmfb15 cores. Bundles:`build/native/task006-ingress-idle-notebook-a1`
+and`build/browser/task006-ingress-idle-a1`; native/browser local archives use
+`build/distribution/task006-ingress-idle-{native,browser}-a1.tar.gz`.
+
+Actual maintained course Save case PASS51.657s/56.511s supervised,
+496,279,552B peak/576,000,030 fast units. Full independent annotation pixels,
+Pending/Saved detail0, exact medium and second cold course/ink all pass.
+`build/courses/task006-ingress-idle-course-fast-a1/result.json` and
+`...course-qualification-a1/comparison.json` bind the comparison: same medium,
+package, raw geometry/pressure/order/relative spacing, raw97, CPU/dtb/descriptor,
+and6phase caps. Only PackageInstaller differs among408 consumed build inputs.
+Cold Ready185,000,001 versus249,000,006;6phase576,000,030 versus762,000,035.
+Absolute raw times follow actual phase boundaries; no host speedup/exact RTL
+timing inference. The complete annotation oracle is stronger than baseline.
+
+Extracted native idle2 actual init/pending4090UART/privatefork/install/newcold/
+Load PASS417.283s supervised,417,251,328B peak/no survivors, original600s/3B.
+`build/distribution/task006-ingress-idle-native-uart-a1/result.json`.
+Source11 extracted archive independently passed235.939s/241.288s supervised,
+480,710,656B peak. Clean-host installation/Nix prerequisites/rights remain open.
+
+The new maintained`check_course_failed_save.py` command passes actual raw ink,
+first injected FLUSH failure, guestFailed/noSaved, independent full course+ink
+pixels and newCPU/cold original acknowledged full display/bytes. Final receipt:
+`build/courses/task006-course-failed-save-command-a1/result.json`; supervisor
+`...command-supervision-a1/result.json` PASS60.184s. No snapshots/host recovery.
+Fault scope is specifically fail-before-writeback, not general OS rollback.
+Prototype PASS559,000,028 units/61.932s retained separately. Its first invocation
+rejected an omitted parser flag before creating a machine; corrected prototype
+passed within the original absolute900s deadline. New maintained entrypoint
+discovery/main guard were independently exercised by the final command.
+
+Companion idle2 initial whole attempt is terminalFAIL: compilation succeeded,
+full audit rejected course171 against the original169 catalog. Retain
+`build/courses/task006-ingress-idle-companion-whole-a1/result.json` and supervisor
+(784.799s/1,900,056,576B peak, no survivors; exact source seals PASS). Hold released.
+The repair adds `lemma-package-clocked-recovery4-course-ingress/2` to the existing
+authority; no original role pin is replaced. Actual normal/init catalogs were
+separately genuinely elaborated; pre/post/object bytes match exactly. Among169
+common preIR functions onlymainAwait changes, exactly2 declared helpers added.
+All four historical/new normal/init generic IR/complete-authority checks PASS;
+valid LLVM changed sleep cap rejects. Existing full-audited canonical course
+LLVM/RV64 object bytes are identical. Receipts:`build/courses/task006-ingress-idle-companion-course-authority-a1`.
+Kernel439 PASS11.364s; the initial wrong-loop host fixture accidentally reproduced
+the exact valid old catalog and was corrected with a distinct fixture nonce.
+Foundation473 PASS43.476s; scaffold18 PASS8.944s/metadata/diff PASS.
+Corrected fresh companion pair and real peer cold remain required.
+
+Source11 exactRTL completed coldReady828M/3220.974s, course284M/1419.694s,
+rawannotation+Saved64M/480.273s and idleexplicitSave21M/142.011s, total1.197B.
+Second independent cold is RUNNING in the existing source11 case/session25255;
+whole case not yet PASS. New idle2 RTL full six-phase case runs at
+`build/courses/task006-ingress-idle-course-rtl-a1`, session35612,3B/21600s.
+Preserve both actual loaded Python source maps; do not edit their held modules.
+
+Browser11 tab30 retains original1B/7200s, last734.5M/5718.3s, stillBooting.
+Browser idle2 tab31 at http://127.0.0.1:8800 imports actual Saved8 into private
+OPFS`idle12-a1`; fresh cycle0 confirmed, original1B/7200s cold run now active.
+Plan:`build/browser/task006-ingress-idle-plan-a1/plan.json`; server session54054.
+Last88.5M/899.2s/192MiB. No browser Ready claim. Preserve tabs16..31, especially
+source9 failure tab29; do not reload/reset running machines.
+Companion11 corrected AS16GiB cold session6851 remains within original absolute
+2026-10-16T00:33:57.348922Z/remaining1.565B; no deadline extension or new success.
+
+Final local increment checks:foundation473 PASS38.961s, kernel439 PASS11.364s,
+scaffold18 PASS7.849s, selector6 PASS, metadata/py_compile/diff PASS. The maintained
+failed-save actor is PASS55.262s/559,000,028 units,60.184s supervised/no survivors.

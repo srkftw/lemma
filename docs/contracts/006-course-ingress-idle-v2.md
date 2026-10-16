@@ -45,3 +45,21 @@ only `mainAwait` changed from the previous installer. The two new functions are
 `lemma_exec_syscall` external. These are component results; full linked audits,
 actual UART installation/backpressure, notebook Ready/Save/cold and comparative
 performance remain separate acceptance work.
+
+The Clocked13 companion artifact audit retains its historical169-function
+course authority. `lemma-package-clocked-recovery4-course-ingress/2` adds a
+separate exact171-function authority for policy2, with both genuinely emitted
+normal/initializer catalogs, complete pre/post bodies, globals and callers.
+The predecessor role digest, exact function counts and selected `stepIdle`
+loop are checked. Unknown versions, missing configuration pins and changed
+catalogs reject. Historical catalogs still select the original authority.
+
+The first new companion whole build succeeded in compilation and then failed
+its full audit against the historical catalog. That failure is retained.
+Independent comparison establishes that only `mainAwait` changes among169
+common unoptimized functions and exactly the two declared helpers are added.
+Separately elaborated normal/initializer components have byte-identical LLVM
+and RV64 objects; their catalogs differ only by configuration. A valid LLVM
+mutation of the requested sleep cap is rejected by the complete-body check.
+These component results do not replace a corrected whole linked audit or
+actual companion cold recovery.

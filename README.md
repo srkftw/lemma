@@ -1631,5 +1631,49 @@ Pending/Saved receipt, with complete pixel/medium equality. Fast units do not
 establish RTL pipeline timing or arbitrary cached-state checkpoint continuation.
 The prepared native distribution2 archive for this guest is
 `build/distribution/task006-course-preserving-save-native-a1.tar.gz`. Use its
-extracted `run.py` as above; packaging admission passes, while extracted latest
-image execution, clean-host installation and redistribution rights remain separate.
+extracted `run.py` as above. Its actual extracted initializer, queued UART/private
+fork, installation, independent cold recovery and Load pass. Clean-host
+installation and redistribution rights remain separate.
+
+The newer empty-ingress policy2 guest is prepared in
+`build/native/task006-ingress-idle-notebook-a1` and
+`build/browser/task006-ingress-idle-a1`. It backs off only empty installer
+reads before the first header byte. On the same fast machine and Saved8 medium,
+cold Ready uses185,000,001 units versus249,000,006; the complete course annotation,
+explicit Save and independent cold/reopen case uses576,000,030 versus762,000,035.
+The comparison retains the full display/pool and strengthens the independent
+annotation expectation. These are fast functional units; exact RTL and browser
+qualification remain separate running cases.
+
+```sh
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/task006-ingress-idle-notebook-a1 \
+  --disk /your/notebook.raw --session-dir build/AN_UNUSED_IDLE2_SESSION --mode student
+./scripts/lemmasim browser-serve --bundle build/browser/task006-ingress-idle-a1 --port 8800
+```
+
+Use the same `check_course_save.py` command with the idle2 bundle,
+`--guest-build build/kernel/task006-ingress-idle-notebook-notebook-a1` and
+`--guest-source-root build/courses/task006-ingress-idle-notebook-whole-a1/consumed-source-root`.
+The new ordinary failed-save check uses those same arguments and inputs:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_course_failed_save.py \
+  --backend qemu --disk build/browser/task006-pointer-ink-save-browser-export-a1/medium.raw \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --native-bundle build/native/task006-ingress-idle-notebook-a1 \
+  --guest-build build/kernel/task006-ingress-idle-notebook-notebook-a1 \
+  --guest-source-root build/courses/task006-ingress-idle-notebook-whole-a1/consumed-source-root \
+  --work-dir build/courses/AN_UNUSED_FAILED_COURSE_SAVE_CHECK
+```
+
+It requires actual Failed/no Saved, independently computed complete course/ink
+pixels and a new cold CPU recovering the original acknowledged display/bytes.
+Its injected first-FLUSH failure occurs before writeback; it does not establish
+rollback for actual OS failures. The native and static browser archives are
+`build/distribution/task006-ingress-idle-native-a1.tar.gz` and
+`build/distribution/task006-ingress-idle-browser-a1.tar.gz`. The extracted native
+archive passes initialization/UART/install/fork/cold-Load; browser cold is running.
+The native archive retains the documented Python/Nix prerequisites and rights
+limitations. Use the browser archive's extracted stdlib launcher as documented
+above; it serves the same local machine without compiling a guest.

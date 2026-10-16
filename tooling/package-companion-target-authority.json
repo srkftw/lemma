@@ -159,5 +159,27 @@
       }
     },
     "scope": "Actual separately compiled initializer catalogs; no catalog field is erased or normalized. All original preIR/postIR/object bytes match normal genuine captured components exactly."
+  },
+  "course_ingress_idle2": {
+    "schema": "lemma-package-clocked-recovery4-course-ingress/2",
+    "policy": "lemma-course-ingress-idle/2",
+    "previous_role_sha256": "b10a3e8eb41d0684003c8ef35e2a1debfd4f26b2c55fd6a6c6daff59bae988c8",
+    "role": {
+      "catalog_sha256": "9d9da47f7e3c4ea4106a457d62b5ba4f2853fa5abbd23e4e3a80b32fd8466eb0",
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "9d9da47f7e3c4ea4106a457d62b5ba4f2853fa5abbd23e4e3a80b32fd8466eb0",
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "2e36552a88cccd41eb1ed04ad37064e15406ef29c7fdcaf59580d538657f30a9"
+      },
+      "function_count": 171,
+      "pre_function_count": 171,
+      "pre_sha256": "dac182aa4ad54fce985e9973f32a3727dd222602adf78d71a32e0490e9167c17",
+      "post_function_count": 171,
+      "post_sha256": "fdffc01f9c1c46cb06365e1ce8d4af7e3321bde420294004cc3aed68750998a9"
+    },
+    "genuine_comparison": {
+      "path": "build/courses/task006-ingress-idle-companion-course-authority-a1/comparison.json",
+      "sha256": "00d91d13e39205d5b7423ac70b16af409da521be5ca500daf2da4782edbf11ba"
+    },
+    "scope": "Independent whole169 common preIR function args/effects/body comparison; old169 remain except mainAwait. Actual separately genuine normal171 and initializer171 differ only configuration in catalog and have byte-identical complete preIR/postIR/RV64 object. No hand-fabricated catalog, weakening, runtime or guest execution claim."
   }
 }
