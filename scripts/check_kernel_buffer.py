@@ -783,9 +783,11 @@ class ServiceTrace(Trace):
         """Validate every newly captured complete frame before terminal stop.
 
         The peer may wake after the live receive/sleep observation but before
-        SIGSTOP. This is bounded test termination, not a machine checkpoint:
-        pending effects must actually finish, and the full final wire remains
-        subject to the independent post-cleanup replay.
+        SIGSTOP. This is bounded test termination, not a machine checkpoint.
+        Every observed page release must finish. A continuous service may
+        already have accepted its next request; its scheduler state need not
+        repeat the earlier receive/sleep milestone. The full final wire still
+        undergoes the unchanged independent post-cleanup replay.
         """
         events, tail = decode_uart(raw)
         if tail or events[:len(self.session.events)] != self.session.events:
@@ -801,7 +803,9 @@ class ServiceTrace(Trace):
                 self.session.responses.append(event["value"])
                 self.client(event["value"])
         self.session.report["service_progress"] = self.snapshot()
-        return self.service_quiescent(self.role("peer"))
+        return (self.pending_expiry is None
+                and all(r["confirmed"] for r in self.actual_buffer_releases)
+                and not self.unsettled_frame_samples())
 
     def snapshot(self):
         return {"protocol": "buffer-service-J-v1", "configuration": self.configuration,

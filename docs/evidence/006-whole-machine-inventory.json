@@ -1019,17 +1019,31 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "84bcb67c2538a7d8306140643ea884c178b2cf51",
-    "run": 38859905648,
-    "conclusion": "FAILURE",
+    "commit": "c1ed159d122f9bece0616b043766d59bdae6d527",
+    "run": 38865225818,
+    "status": "in_progress_at_last_fetch_with_failed_job",
+    "conclusion": null,
     "jobs": 11,
-    "completed_success": 9,
+    "completed_success": 8,
     "failed_jobs": [
-      "Metadata and host-only suites",
       "Task003 source-negative RV64 qualification"
     ],
-    "skipped_steps": 8,
-    "scope": "Foundation exact-log list missed added arithmetic pipeline; corrected exact entry, pipefail retained. Source-negative terminal capture froze a later real release before completion; stricter semantic terminal capture under same5s/64-stop bound. New real retained-control execution306commands passes; original failed capture still rejects. New candidate CI required.984 prior11/109 success retained."
+    "in_progress_jobs": 2,
+    "skipped_steps": 1,
+    "scope": "Metadata/host PASS; appendO2 control FAIL64 terminal stops. Corrected terminal predicate matches original strict page-effect check; actual C1 bytes pass unchanged full replay,84 unmatched release still rejects; fresh306commands PASS. Uncontrolled-progress prototype failed and stays unadopted. New candidate CI required.",
+    "prior": {
+      "commit": "84bcb67c2538a7d8306140643ea884c178b2cf51",
+      "run": 38859905648,
+      "conclusion": "FAILURE",
+      "jobs": 11,
+      "completed_success": 9,
+      "failed_jobs": [
+        "Metadata and host-only suites",
+        "Task003 source-negative RV64 qualification"
+      ],
+      "skipped_steps": 8,
+      "scope": "Foundation exact-log list missed added arithmetic pipeline; corrected exact entry, pipefail retained. Source-negative terminal capture froze a later real release before completion; stricter semantic terminal capture under same5s/64-stop bound. New real retained-control execution306commands passes; original failed capture still rejects. New candidate CI required.984 prior11/109 success retained."
+    }
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1077,15 +1091,15 @@
     "unfinished": "Independent cold stopped at650M before Ready; original failure and cold-failed snapshot retained. No cold acceptance. Observer snapshot request near cutoff timed out; no additional snapshot is claimed."
   },
   "number_entry_component_milestone": {
-    "behavior": "IMPLEMENTED13_GUEST_ENTRY_AND_LOSS_REPAINT",
-    "compiler": "PASS genuine864pre862post/842 original bodies exact, both-config exports and actual RV64 character relation",
+    "behavior": "IMPLEMENTED15_STATIC_PAD_REUSE_RAW_OVERDRAW_REPAIR",
+    "compiler": "15 normal full linked audit PASS/411 source archive at6d002a2; genuine871pre869post/25RV64 cells. Initializer genuine export300.202s timeout; matched pairFAIL.",
     "RTL_guest": "RUNNING actual13 cold Ready473M/1905.962s; course212M/1022.169s, two authored views43M each observed. Full5B/36000s numeric/check/save/cold/repaint not yet complete.",
-    "fast_guest": "PASS actual22-phase raw numeric/check/hint/ink/Save/newCPUcold/fullpixels/allmedia/reopen/realflags8repaint;1.494B functional units/190.783s,192.314s supervised. Same900s/3B/500M bounds; changed shared observer regression also PASS.",
-    "distribution": "Prepared/extracted native and static13. Actual native Init/UART/fork/install/barrier/newcold/Load PASS. Extracted browser CPU0 cold531.5M/4105.313s/192MiB/all3.63M pixels/all256MiB bytes PASS; guest course reopen running. Transform UI fixture/admission remains separate.",
+    "fast_guest": "PASS15 actual27 phases incl22-prefix, raw overdraw/key repair/retained underlying ink/thirdCPUcold/allpixels/allbytes/allobjects/reopen.2077000130 units/371.508s,374.884s supervised/515133440B peak. Comparable22prefix1439000106 vs14 1492000115,3.5523% fewer; no RTL timing claim.",
+    "distribution": "Matched14 native/static tarballs prepared/extracted; actual native Init/rawUART/privatefork/install/barrier/newcold/Load PASS456.814s/463.450s supervised/417247232B peak.13 browser cold/fullplane/allbytes/node3/keypad/math history reopenPASS.15 pair NOT prepared.",
     "physical": "UNVERIFIED",
     "contract": "docs/contracts/006-number-entry-v1.md",
     "evidence": "docs/evidence/006-number-entry-v1.json",
-    "aligned_presentation": "Notebook14 actual full pair audits/411 source seals/owned cleanup PASS1422.313s/1826054144B.22-phase fast PASS1492000115 units/216.161s, same goals/bytes/pixels/cold/disconnect.13 baseline1494000115; only2M total units saved. Matched native/static14 bundles/tarballs prepared; extracted launch separate. New15 cache candidate is uncommitted, not this result."
+    "aligned_presentation": "Notebook14 actual full pair audits/411 source seals/owned cleanup PASS1422.313s/1826054144B.22-phase fast PASS1492000115 units/216.161s, same goals/bytes/pixels/cold/disconnect.13 baseline1494000115; only2M total units saved. Matched native/static14 bundles/tarballs prepared; actual extracted native launch PASS.15 normal/connected case separately qualified;15 pair remainsFAIL."
   },
   "browser_actual_mathematics": {
     "behavior": "PASS actual5/6Verified rev12 isolated closure, assistance Saved22, deliberate Auto Saved27 and independent displayed assisted/practice/uncertain labels. Quick200M review batch FAIL: one tap not applied; no-input58.55M finishes Saved26, then new deliberate91.85M contact Saved27. Edited-answer test running; full acceptance OPEN.",
@@ -1093,7 +1107,12 @@
     "distribution": "EXISTING_BROWSER_LOCAL_MACHINE",
     "cold_math_reopen": "NOT_RUN",
     "evidence": "docs/evidence/006-number-entry-v1.json",
-    "exact_checkpoint": "PASS same compiledWasm pending-hint-Save32M suffix with actual accepted outcomes/private backing, in-flight panel at final boundary. Not C++/QEMUcached-state or cold closure."
+    "exact_checkpoint": "PASS same compiledWasm pending-hint-Save32M suffix with actual accepted outcomes/private backing, in-flight panel at final boundary. Not C++/QEMUcached-state or cold closure.",
+    "numeric_exact_continuation": {
+      "status": "PASS_SAME_COMPILED_WASM_32M",
+      "evidence": "docs/evidence/006-number-entry-v1.json",
+      "scope": "Actual13 queued numeric0\u2192pendingSave21/unfinished display; isolated recorded outcomes, all archive bytes exact. NoC++ migration/cachedQEMU claim."
+    }
   },
   "latest_bounded_physical_attempt": {
     "source": "2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3",

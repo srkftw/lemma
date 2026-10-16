@@ -1854,10 +1854,16 @@ For exact canonical RTL use the same arguments with
 prospective bound is5B clocks/36000s; per-control/check/cold/repaint caps remain
 explicit in the shared workflow and RTL adapter. This command is implemented;
 its complete RTL result is pending. It does not inherit fast execution evidence.
-The new13 browser is likewise only qualified for packaging/extracted admission
-until actual cold, keypad/checking and durable reload complete. The current
-browser Verified/hint/exact-suffix results belong to the retained11/ingress2
-guest. Full managed Lean, proof-kernel/tutor closure and all unfinished device,
+The extracted13 browser has completed actual CPU0 durable-only cold at531.5M,
+with all3,630,000 controller pixels and256MiB of medium bytes matching the
+acknowledged native result. Raw COURSE reopening reconstructs the original
+selected exercise, full keypad, verified5/6 revision7, four attempts and hint1
+within its original400M bound. A subsequent raw numeric0 edit reaches Saved21
+and a completed controller frame in118.55M of its150M bound:5/60 revision8,
+Unchecked, all keypad/body pixels and retained attempt/source history pass.
+Actual checking of that edited answer remains running.
+The earlier browser Verified/hint results belong to retained11/ingress2.
+Full managed Lean, proof-kernel/tutor closure and all unfinished device,
 checkpoint, distribution and physical gates remain open.
 
 
@@ -1874,3 +1880,48 @@ the same13 guest and exact Wasm machine as the original number-entry bundle.
 Use the same `browser-serve --bundle` command with this new path. The currently
 running13 cold qualification remains on its original immutable UI bundle;
 actual gestures with the new UI still need their own execution check.
+
+Notebook14 is the latest prepared matched normal/initializer pair. It uses
+aligned stores for numeric-key arithmetic redraws. Both full linked audits and
+the complete22-phase functional workflow pass. Its safely extracted native
+archive also passes actual initialization, raw-UART pending/private-fork input,
+guest package installation/barrier and independent cold/Load under600seconds.
+The new archives are:
+
+- `build/distribution/task006-number-entry-aligned-native-a1.tar.gz` (28733029B).
+- `build/distribution/task006-number-entry-aligned-browser-a1.tar.gz` (2074164B).
+
+Use the ordinary commands above with
+`build/native/task006-number-entry-aligned-notebook-a1` or
+`build/browser/task006-number-entry-aligned-a1`. The extracted native command is
+`python3 -I build/distribution/task006-number-entry-aligned-native-extracted-a1/lemmasim-native/run.py`;
+append `init`, `session`, `snapshot`, `restore` or the other advertised command
+and its ordinary arguments. The extracted static command is
+`python3 -I build/distribution/task006-number-entry-aligned-browser-extracted-a1/lemmasim-browser/serve.py --port 8802`.
+Actual new browser cold execution of14 remains separate from its prepared
+bundle. Existing host prerequisites and redistribution limitations remain.
+
+Notebook15 additionally reuses an intact static keypad. Raw strokes mark
+overdraw in private guest memory, so the next key repairs it; closing the
+course reveals the retained raw ink underneath. Its audited normal image and
+27-phase actual functional case pass, including another independent cold
+recovery of every pixel, byte and object. The comparable22-phase prefix uses
+1,439,000,106 fast functional units versus14's1,492,000,115 (3.55% fewer).
+The expanded case takes371.508seconds; that longer workload is not a host-speed
+comparison. Canonical RTL timing remains separate. Reproduce with:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_keypad_repaint.py \
+  --disk build/courses/task006-course-ipc-guest-a1/durable.raw \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --package build/courses/task006-package-qualified-a5/author-package/arithmetic.lcp \
+  --native-bundle build/native/task006-ingress-idle-notebook-a1 \
+  --guest-build build/kernel/task006-number-pad-repaint-notebook-a1 \
+  --guest-source-root build/courses/task006-number-pad-repaint-whole-a1/consumed-source-root \
+  --work-dir build/courses/AN_UNUSED_PAD_REPAINT_CHECK
+```
+
+The15 matched-pair attempt remains FAIL: the initializer's genuine Lean export
+hit its existing300second command limit. No prepared15 pair or production-boot
+claim is inferred from the independently qualified normal image. All failures,
+source identities and exact observations remain in the Task006 checkpoint.

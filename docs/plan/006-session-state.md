@@ -3468,3 +3468,55 @@ retained, current binding Unknown, isolated closure request433/status0.
 Independent label/body/workspace observer PASS31.281403s. Neither result
 closes general proof checking or full browser workflow; zero-budget case and
 new writing/save/reload are still in progress under original aggregate bounds.
+
+Notebook15 normal at6d002a2/411 inputs builds398.393562s/audits358.071562s.
+710944B/ebbc3f19e96a64cc0de0d83f12b451c7b1dbcaaa6b4f496b86f6a1c949554ca6.
+Matched pair FAIL: initializer genuine Notebook export300.202s timeout. Whole
+1196.295912s; source/HEAD/index seals PASS, no owned survivors. Original2500/
+300s limits unchanged. Pair source hold released; older RTL34 hold remains.
+Actual normal15 connected27-phase PASS2077000130units/371.508386s; supervisor
+PASS374.884109s/515133440B peak/source hold/cleanup. Comparable22-prefix
+1439000106 vs14 1492000115,53000009 fewer/3.552279%. No host-speed/RTL claim.
+Actual raw controller3/4/5 epoch2 after flags8 persists exactly; all expected
+writing-plane overdraw, key repair/denominator6→60/Unchecked/history, closing
+reveals retained ink, thirdCPUcold allpixels/allmedium/allobjects/reopen PASS.
+Paths build/courses/task006-keypad-repaint-fast-a1 and matching supervision.
+
+Matched14 native/static archives safely extract. Actual extracted native
+Init/rawUART pending/privatefork/install/barrier/newCPUcold/Load PASS456.814482s,
+supervised463.450426s/417247232B peak/all host sources unchanged. Native
+28733029B/ad52137c32f469c031617304273507884df5982f6297498b27d7b4a2a01e2ea6;
+static2074164B/2c39b89945f9e7007d2e6fe78a81095a3c9ba500042e84bd458bf53a3e8bfbdd.
+Actual14 browser CPU/clean-host/rights qualification separate;15 pair unprepared.
+
+Actual13 browser queued numeric0 prefix910700000→942700000 exact32M replay
+PASS all archive bytes454.989067s/supervised456.648159s/process peak1820917760B,
+346030080B Wasm heap; private recorded outcomes, no original file/peer consulted.
+Wrong package-root a1 fails beforeCPU and is retained; observed inner-bundle a2
+passes. Save21 is PENDING at suffix; later visible control qualified separately.
+No checkpoint used for earlier cold. NoC++ migration or cachedQEMU claim.
+
+C1 CI38865225818 last fetch8successful/1source-negativeFAIL/2running,1skipped
+step. Metadata/foundation host PASS; appendO2-control-observe FAIL64 terminal
+stops. Artifact12031371786 ZIP11ef08689218e062aefacb93893bc552eb0c3fbeb5c457b474c911c2ce416f53.
+Actual3592-frame capture passes unchanged full replay with all releases confirmed;
+continuous server has accepted next request. New terminal predicate overrequired
+re-entry to earlier receive/sleep milestone. Correction retains that milestone
+and full final replay, requiring all observed release/expiry/frame effects settled
+at terminal capture. Actual C1 capture accepts;84 unmatched release still rejects.
+449 kernel tests PASS10.387s; retained7ebfe7c6 real306commands complete replay/
+cleanup PASS50.948861s. Qualification-only archive build/ci/task006-c1-terminal-effects-a2;
+no fresh compilation claimed. Live-frame-progress prototypea1 fails bounded
+read/truncated suffix and is rejected, never applied to maintained source.
+New candidate CI required; original failures remain. No job/check weakened.
+
+Browser13 actual numeric0 visible completion at1029250000,118550000 clocks
+of original150M/1800s: Saved21/frame4,5/60/rev8/Unchecked, full keypad and
+original node3 body, original four attempts/hint1/execution/source history;
+unrelated durable object payloads unchanged. Observer PASS25.041886s. Retained
+d2 browser actual zero-budget completion2459500000,82.8M of150M: Saved33/
+frame17,goal1/rev17/budget0/Unchecked, two old attempts and original verified
+source history retained, current package Unknown. Observer PASS30.160249s.
+Both subsequent real CHECKs are prospectively200M/2400s and remain NOT_RUN
+at declaration; no checker outcome inferred from the control. Passive observer
+a1 syntax error is retained, corrected before interpreting these same exports.

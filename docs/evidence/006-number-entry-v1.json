@@ -1,8 +1,8 @@
 {
   "schema": "lemma-number-entry-evidence/1",
-  "status": "PASS_13_BROWSER_COLD_COURSE_REOPEN_14_FULL_AUDITS_FAST_15_PENDING",
+  "status": "PASS_15_NORMAL_FULL_AUDIT_CONNECTED_RAW_REPAIR_COLD_MATCHED_INITIALIZER_FAIL",
   "contract": "docs/contracts/006-number-entry-v1.md",
-  "scope": "Notebook13 complete functional/native workflow and actual extracted browser cold/course/reopen/keypad qualified; numeric RTL remains running. Notebook14 whole linked audits, complete functional workflow and prepared bundles pass. Additive Notebook15 static-pad reuse has component/whole LLVM/machine admission; full linked audits and actual raw-overdraw/cold scenario pending.",
+  "scope": "Notebook15 normal fully audited and actual27-phase raw/key/overdraw/repair/underlying ink/newCPUcold/reopen PASS.15 matched pair FAIL initializer300s genuine export timeout. Matched14 prepared/native launch qualified;13 extracted browser cold/course/keypad and32M exact sameWasm suffix qualified. Full numeric RTL/browser workflow and whole-machine obligations remain open.",
   "component": {
     "result": "build/courses/task006-number-entry-component-a2/result.json",
     "result_sha256": "404fb5d3e1d64961b739f9265b53152ce8c300fad3a68a1101228156414c317c",
@@ -54,9 +54,10 @@
     "repaint_kernel_host": "442 PASS7.920s",
     "repaint_scaffold": "18 PASS6.420s and metadata PASS",
     "shared_RTL_backend": "446 kernel host tests PASS9.945s;4 final focused observation/bound negatives PASS. Actual RTL numeric execution NOT_RUN at this checkpoint.",
-    "final_metadata": "Scaffold metadata PASS;18 scaffold tests PASS7.121s after current source/docs."
+    "final_metadata": "Scaffold metadata PASS;18 scaffold tests PASS7.121s after current source/docs.",
+    "terminal_correction_kernel_host": "449 PASS10.387s; earlier quiet milestone unchanged; terminal requires original settled page/frame effects. Actual3592-frame C1 full replay passes, original84 incomplete release still rejects; fresh real306command control PASS50.948861s."
   },
-  "next": "Run the shared complete numeric case on exact canonical RTL with predeclared5B/36000s aggregate bounds; finish new browser13 cold/full-pixel/keypad/check/save/reload. Complete whole-machine, timing/checkpoint, distribution and physical obligations remain separate.",
+  "next": "Canonical13 numeric RTL and actual browser workflows remain active;15 matched initializer failed. General managed/proof kernel, full digital, timing/cached state, distribution and physical obligations remain separate.",
   "initializer": {
     "source_commit": "20e6d54fdb4aa847d15f8a128d4ef3d3b1532144",
     "build_seconds": 230.86640238994732,
@@ -333,7 +334,24 @@
     "fast_seconds": 216.161460392992,
     "fast_supervised_seconds": 222.91190527903382,
     "fast_owned_peak_rss_bytes": 453496832,
-    "distribution": "Matched14 native/static bundles and archives prepared; no new extracted launch claim."
+    "distribution": {
+      "previous_scope": "Matched14 native/static bundles and archives prepared; no new extracted launch claim.",
+      "extracted_native": {
+        "path": "build/distribution/task006-number-entry-aligned-native-uart-a1/result.json",
+        "sha256": "257ac13adf3217110336b3186e056681b01a8766ffda5cb67f748c2d5685b4b3",
+        "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD"
+      },
+      "extracted_native_supervision": {
+        "path": "build/distribution/task006-number-entry-aligned-native-uart-supervision-a1/result.json",
+        "sha256": "8f30feb4e6a55dc0464ef2ddea98ab564066c5b3e4a68e5063c8fe9d5400a32b",
+        "status": "PASS_EXTRACTED_LATEST_GUEST_UART_COLD_SUPERVISED"
+      },
+      "safe_extraction": {
+        "path": "build/distribution/task006-number-entry-aligned-extraction-a1.json",
+        "sha256": "2c3c95edd2e876c68dd95a8a968f0405e67a8b0d5969d03d2a2d89254c8ea68e",
+        "status": "PASS_NOTEBOOK14_ARCHIVES_SAFE_EXTRACTION"
+      }
+    }
   },
   "browser_number_entry_cold": {
     "path": "build/browser/task006-number-entry-cold-plan-a1/cold-result.json",
@@ -397,6 +415,105 @@
       "NumberPad.repaintNeeded"
     ],
     "component": "Actual number-entry Actions and16 valid/4 malformed repaint-policy states PASS; source admission is separate from whole-image/CPU qualification",
-    "next": "Fresh matched full linked normal/initializer audits, then check_keypad_repaint.py including full base workflow and extra raw overdraw/repair/independent cold. Original3B/900s retained."
+    "next": "Diagnose initializer export resource/time contribution; complete canonical numeric RTL/browser and remaining machine obligations.",
+    "implementation_commit": "6d002a2f9a710817b93202022dbf10b3a2ddee2a",
+    "normal_full_audit": {
+      "path": "build/kernel/task006-number-pad-repaint-notebook-a1/audit.json",
+      "sha256": "9e35a2c8c08f1e70542b8a95cd5af3e5d0a4be573c68030e4af7b83fb53b4861",
+      "status": "PASS"
+    },
+    "normal_image_bytes": 710944,
+    "normal_image_sha256": "ebbc3f19e96a64cc0de0d83f12b451c7b1dbcaaa6b4f496b86f6a1c949554ca6",
+    "normal_build_seconds": 398.3935624320293,
+    "normal_audit_seconds": 358.0715622800635,
+    "pair": {
+      "path": "build/courses/task006-number-pad-repaint-whole-a1/result.json",
+      "sha256": "74083da285029b6049a0d6962701d7d33eb215ff67b0ca4a2957f6de03e1dc99",
+      "status": "FAIL"
+    },
+    "pair_supervision": {
+      "path": "build/courses/task006-number-pad-repaint-whole-supervision-a1/result.json",
+      "sha256": "78b542648fd7f5467676ee858ea6946f342af46a35299ccfa7a90b79a0eb0bd7",
+      "status": "FAIL_PAIR_COMMAND"
+    },
+    "pair_failure": "Initializer notebook genuine export timed out300.202s; whole1196.295912s FAIL. Source/HEAD/index seals PASS, no owned survivors. No timeout change or matched pair inferred.",
+    "connected": {
+      "path": "build/courses/task006-keypad-repaint-fast-a1/result.json",
+      "sha256": "20030272a435e76826e4ba44921cedb3f4c1f33d5c27d10193d135f67f37fd98",
+      "status": "PASS_GUEST_KEYPAD_STATIC_DIRTY_INK_COLD"
+    },
+    "connected_supervision": {
+      "path": "build/courses/task006-keypad-repaint-fast-supervision-a1/result.json",
+      "sha256": "a03f7e26d4fdea4d311397f023a17658e710f4b17d17a284f0ccbf75f7792c30",
+      "status": "PASS_GUEST_KEYPAD_REPAINT_SUPERVISED"
+    },
+    "phases": 27,
+    "aggregate_functional_units": 2077000130,
+    "host_seconds": 371.508386207046,
+    "supervised_seconds": 374.8841092160437,
+    "owned_peak_rss_bytes": 515133440,
+    "comparable_prefix": {
+      "phases": 22,
+      "before_14_units": 1492000115,
+      "after_15_units": 1439000106,
+      "fewer_units": 53000009,
+      "percent": 3.5522791497908166,
+      "scope": "Same functional workload/oracles; no host-speed/RTL timing claim."
+    }
+  },
+  "browser_numeric_exact_continuation": {
+    "actor": {
+      "path": "build/browser/task006-number-entry-numeric-replay-a2/result.json",
+      "sha256": "72040b4cf99b6dcfa489dec175606fc9729966535cf4cfd4a498f41057ad0115",
+      "status": "PASS"
+    },
+    "supervision": {
+      "path": "build/browser/task006-number-entry-numeric-replay-plan-a2/result.json",
+      "sha256": "8cb0c46e9b2bbf1cc7fdf5337eea554ec1eb5d0714b009ad06fad838f107dcc9",
+      "status": "PASS_EXACT_SAME_WASM_NUMBER_ENTRY_SUFFIX_SUPERVISED"
+    },
+    "first_cycle": 910700000,
+    "last_cycle": 942700000,
+    "clocks": 32000000,
+    "host_seconds": 454.98906709799996,
+    "supervised_seconds": 456.64815911697224,
+    "process_peak_rss_bytes": 1820917760,
+    "owned_peak_rss_bytes": 1496309760,
+    "wasm_heap_bytes": 346030080,
+    "scope": "Actual queued numeric0 after13 cold/course reopen through pending Save21/unfinished presentation, identical compiledWasm/private recorded outcomes/all archive bytes. Not cold, C++ migration or QEMU cached-state closure. Wrong package-root a1 failed beforeCPU; retained."
+  },
+  "browser_numeric_visible": {
+    "path": "build/browser/task006-number-entry-cold-plan-a1/numeric-visible-result.json",
+    "status": "PASS_BROWSER_ACTUAL_NUMERIC_EDIT_ACK_PIXELS_HISTORY",
+    "cycle": 1029250000,
+    "control_clocks": 118550000,
+    "sequence": 21,
+    "revision": 8,
+    "answer": [
+      5,
+      60,
+      0,
+      0,
+      0
+    ],
+    "budget": 8,
+    "scope": "Actual Saved and complete required label/body/keypad pixels/history; no subsequent checker or cold claimed."
+  },
+  "browser_zero_budget_control": {
+    "path": "build/browser/task006-idle2-mathematics-plan-a1/zero-budget-result.json",
+    "status": "PASS_BROWSER_ACTUAL_ZERO_BUDGET_CONTROL_HISTORY",
+    "cycle": 2459500000,
+    "control_clocks": 82800000,
+    "sequence": 33,
+    "revision": 17,
+    "answer": [
+      5,
+      7,
+      0,
+      0,
+      0
+    ],
+    "budget": 0,
+    "scope": "Actual Saved and complete required label/body/keypad pixels/history; no subsequent checker or cold claimed."
   }
 }
