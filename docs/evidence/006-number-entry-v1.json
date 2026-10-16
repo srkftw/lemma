@@ -1,8 +1,8 @@
 {
   "schema": "lemma-number-entry-evidence/1",
-  "status": "PASS_15_NORMAL_FULL_AUDIT_CONNECTED_RAW_REPAIR_COLD_MATCHED_INITIALIZER_FAIL",
+  "status": "PASS_15_MATCHED_FULL_AUDIT_CONNECTED_REPAIR_COLD_EXTRACTED_NATIVE",
   "contract": "docs/contracts/006-number-entry-v1.md",
-  "scope": "Notebook15 normal fully audited and actual27-phase raw/key/overdraw/repair/underlying ink/newCPUcold/reopen PASS.15 matched pair FAIL initializer300s genuine export timeout. Matched14 prepared/native launch qualified;13 extracted browser cold/course/keypad and32M exact sameWasm suffix qualified. Full numeric RTL/browser workflow and whole-machine obligations remain open.",
+  "scope": "Notebook15 source9c25 matched fully audited normal/initializer; unchanged normalELF reuses actual27-phase raw/key/overdraw/repair/underlying ink/newCPUcold/reopen PASS. Prepared native/static archives, actual extracted native Init/rawUART/privatefork/install/barrier/newCPUcold/Load PASS. Original6d initializer300s timeout remainsFAIL.13 actual browser edited5/60Invalid and retained11 zero-budgetIndeterminate qualified; new pointer/cold and full canonical13 case still active. Whole digital/timing/distribution/physical obligations remain open.",
   "component": {
     "result": "build/courses/task006-number-entry-component-a2/result.json",
     "result_sha256": "404fb5d3e1d64961b739f9265b53152ce8c300fad3a68a1101228156414c317c",
@@ -60,7 +60,7 @@
     "compiler_final_foundation_host": "473 PASS44.845s in Nix after cached graph change",
     "compiler_final_scaffold": "18 PASS9.747s; metadata PASS"
   },
-  "next": "Canonical13 numeric RTL and actual browser workflows remain active;15 matched initializer failed. General managed/proof kernel, full digital, timing/cached state, distribution and physical obligations remain separate.",
+  "next": "Complete original canonical13 final disconnect/recovery extension and actual browser ordinary-pointer/save/durable-only cold/reopen under original bounds; qualify bounded host-only framebuffer index candidate separately. No whole-machine completion inferred.",
   "initializer": {
     "source_commit": "20e6d54fdb4aa847d15f8a128d4ef3d3b1532144",
     "build_seconds": 230.86640238994732,
@@ -521,10 +521,204 @@
   },
   "compiler_validation_candidate": {
     "evidence": "build/courses/task006-llvm-name-sets-owner-a1/result.json",
-    "status": "PASS_COMPONENT_GENUINE_EXPORT_WHOLE_BUILD_PENDING",
+    "status": "PASS_GENUINE_IDENTICAL_EXPORT_FULL_MATCHED_AUDITS_LEGACY_TARGET_AND_CANDIDATE_CI",
     "same_genuine_initializer_bytes": true,
     "membership_only_export_seconds": 254.269656228018,
     "cached_graph_export_seconds": 183.58118594402913,
-    "scope": "Host Lean compiler validation optimization only; maintained target language, ISA/effects/runtime/durable formats unchanged. Indexed sets preserve relation/order; cached predecessor/label tables preserve fixed-point update order and errors. Full fresh matched images/audits and historical target acceptance remain pending."
+    "scope": "Host Lean compiler optimization; exact old name-set relation, stable intersection, fixed-point traversal/fuel/errors retained. Same4 genuine export files byte-identical, new whole normal/initializer linked audits PASS under original300s-per-command/2500s aggregate. Actual23 historical O0/O2 RV64 boots,10 differential cases,13 expected rejections/repro/source mutation/audit regression PASS. Actual9c25 CI11jobs/111stepsSUCCESS. No target language/runtime/ISA/effect or durable format extension.",
+    "full_pair": {
+      "path": "build/courses/task006-number-pad-repaint-whole-a2/result.json",
+      "sha256": "86d957b60bdefb20639562dc4521c4e7f8fdc1ddd036765019c0e11701547a15",
+      "status": "PASS_FRESH_NUMBER_PAD_REPAINT_PAIR_FULL_AUDIT"
+    },
+    "supervision": {
+      "path": "build/courses/task006-number-pad-repaint-whole-supervision-a2/result.json",
+      "sha256": "36dfc04ec0b4fc79768ef4e2242e7285f8bfd013366cfe009e0eb47804d45606",
+      "status": "PASS_FRESH_PAD_REPAINT_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP"
+    },
+    "legacy": {
+      "path": "build/core0/task006-indexed-validator-legacy-a1/check-results.json",
+      "sha256": "b68179dc98233d5428a18f0b5a6b5c956ca2f4f5aa76855868d50af41fe55f65",
+      "status": "pass"
+    },
+    "legacy_supervision": {
+      "path": "build/courses/task006-llvm-validator-legacy-supervision-a1/result.json",
+      "sha256": "698656c7f03b5a83d4c188245b4af271880554e7329947747d1b3dccf318f2fb",
+      "status": "PASS_INDEXED_VALIDATOR_HISTORICAL_TARGET_ACCEPTANCE_SUPERVISED"
+    }
+  },
+  "matched15_current": {
+    "source_commit": "9c25d949c5d6c1d1753611cbc33f5287f41a5970",
+    "source_count": 412,
+    "source_inventory_sha256": "3d9f7f6ffc92555d2792fd4e10f42ad5687524885f53e5c76361c77963dede9c",
+    "roles": {
+      "initializer": {
+        "audit_seconds": 277.605449597002,
+        "audit_sha256": "91b3be1bb67a28ca57bdbd68b77e413c1300a086b48fb05285a27acdf1cd2b2a",
+        "audit_status": "PASS",
+        "build_seconds": 181.67576073505916,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-number-pad-repaint-initializer-a2",
+        "image_bytes": 710952,
+        "image_sha256": "b695dbb6cfb0fa14034b0da5aac5461ebbf19dc81a58c025adf48fd2e4c28098",
+        "provenance_sha256": "cb8f0df16ceb23752ba564f1ee0f8e80c83a6cf8788b98e1ab73c583b4c42a1f"
+      },
+      "notebook": {
+        "audit_seconds": 249.57006495201495,
+        "audit_sha256": "0612721dbe832c1e64c072c367a9b1a48b3ffe6b05c160c9343c2358fe8c56ae",
+        "audit_status": "PASS",
+        "build_seconds": 197.06751618802082,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-number-pad-repaint-notebook-a2",
+        "image_bytes": 710944,
+        "image_sha256": "ebbc3f19e96a64cc0de0d83f12b451c7b1dbcaaa6b4f496b86f6a1c949554ca6",
+        "provenance_sha256": "bac0cbc93d384bf9c94007d4f1a185bc10295fb14a5b14a0b24fb8e647bd2c29"
+      }
+    },
+    "whole_seconds": 906.0981084280647,
+    "supervised_seconds": 911.5768083879957,
+    "peak_owned_rss_bytes": 1926250496,
+    "source_and_git_seals_pass": true,
+    "normal_same_as_actual27_phase_image": true,
+    "reused_execution": {
+      "path": "build/courses/task006-keypad-repaint-fast-a1/result.json",
+      "sha256": "20030272a435e76826e4ba44921cedb3f4c1f33d5c27d10193d135f67f37fd98",
+      "status": "PASS_GUEST_KEYPAD_STATIC_DIRTY_INK_COLD"
+    },
+    "original_pair_fail_retained": {
+      "path": "build/courses/task006-number-pad-repaint-whole-a1/result.json",
+      "sha256": "74083da285029b6049a0d6962701d7d33eb215ff67b0ca4a2957f6de03e1dc99",
+      "status": "FAIL"
+    },
+    "bounds_scope": "Original300s individual command,2500s aggregate; no post-hoc extension. Some old scope strings inside raw actor reports say14; exact15 source/corpus/image identities and actual repaint workflow are authoritative."
+  },
+  "prepared15": {
+    "native_bundle": "build/native/task006-number-pad-repaint-notebook-a1",
+    "static_bundle": "build/browser/task006-number-pad-repaint-a1",
+    "archives": {
+      "native": {
+        "archive": "build/distribution/task006-number-pad-repaint-native-a1.tar.gz",
+        "bytes": 28745372,
+        "sha256": "74cbe8309188c3b33b8cd32664b6acfd39dab323a71dc793e9dac3cf44e102c3",
+        "extracted": "build/distribution/task006-number-pad-repaint-native-extracted-a1"
+      },
+      "browser": {
+        "archive": "build/distribution/task006-number-pad-repaint-browser-a1.tar.gz",
+        "bytes": 2075139,
+        "sha256": "ccc329c676bc70cb091174a4ed72df7315605c3834d2a24e18f0b594bc4fa0c6",
+        "extracted": "build/distribution/task006-number-pad-repaint-browser-extracted-a1"
+      }
+    },
+    "actual_native": {
+      "path": "build/distribution/task006-number-pad-repaint-native-uart-a1/result.json",
+      "sha256": "c91f01410bffe3ec9c15802ad5ba6a0fca68ca480760f777f065ddbc254fb35e",
+      "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD"
+    },
+    "supervision": {
+      "path": "build/distribution/task006-number-pad-repaint-native-uart-supervision-a1/result.json",
+      "sha256": "b28333d08298c5b28a526cd1147aff0319f20a8e69a66ea889250a6877b1e9d6",
+      "status": "PASS_EXTRACTED_LATEST_GUEST_UART_COLD_SUPERVISED"
+    },
+    "seconds": 389.69764802395366,
+    "functional_units": 440000070,
+    "supervised_seconds": 391.369258575025,
+    "owned_peak_rss_bytes": 395472896,
+    "host_sources_unchanged": true,
+    "scope": "New matched15 initializer actually executes. Native ELF preload/qemu functional units; not production boot, exact RTL timing, new15 browser CPU, clean-host/runtime installation or redistribution-rights qualification."
+  },
+  "browser_actual_invalid": {
+    "path": "build/browser/task006-number-entry-cold-plan-a1/checked-invalid-result-a2.json",
+    "sha256": "52c50bad574ab53b0131903192c1e3958a4662d5c2da0965992321d2680272e0",
+    "status": "PASS_BROWSER_REAL_INVALID_REVISION_BOUND",
+    "cycle": 1229250000,
+    "check_clocks": 200000000,
+    "sequence": 22,
+    "actual_request": [
+      1113,
+      298,
+      8,
+      1,
+      74
+    ],
+    "actual_reply": [
+      1109,
+      298,
+      8,
+      0,
+      2
+    ],
+    "actual_graph_reclaimed": true,
+    "document": {
+      "revision": 8,
+      "goal": 1,
+      "answer": [
+        5,
+        60,
+        0,
+        0,
+        0
+      ],
+      "outcome": 2,
+      "evidence_revision": 8,
+      "budget": 8,
+      "attempts": 5,
+      "hints": 1
+    },
+    "scope": "Actual guest-isolated checker, revision-bound exact outcome, prior evidence/source/learner history and original authored body retained. Numeric13 also complete keypad. Original wrong observer assumed request fifth word was budget; actual fifth word is IPC transaction. Wrong observer/result retained, corrected independently from compiled source; no guest rerun or changed predicate outcome."
+  },
+  "browser_actual_indeterminate": {
+    "path": "build/browser/task006-idle2-mathematics-plan-a1/checked-Indeterminate-result-a2.json",
+    "sha256": "6438bd4c2e590709b5fea9bd0bde728e2eeec9a774e21404d7b778d1c1f27a62",
+    "status": "PASS_BROWSER_REAL_ZERO_BUDGET_INDETERMINATE",
+    "cycle": 2659500000,
+    "check_clocks": 200000000,
+    "sequence": 34,
+    "actual_request": [
+      1113,
+      462,
+      17,
+      1,
+      238
+    ],
+    "actual_reply": [
+      1109,
+      462,
+      17,
+      0,
+      5
+    ],
+    "actual_graph_reclaimed": true,
+    "document": {
+      "revision": 17,
+      "goal": 1,
+      "answer": [
+        5,
+        7,
+        0,
+        0,
+        0
+      ],
+      "outcome": 5,
+      "evidence_revision": 17,
+      "budget": 0,
+      "attempts": 3,
+      "hints": 1
+    },
+    "scope": "Actual guest-isolated checker, revision-bound exact outcome, prior evidence/source/learner history and original authored body retained. Numeric13 also complete keypad. Original wrong observer assumed request fifth word was budget; actual fifth word is IPC transaction. Wrong observer/result retained, corrected independently from compiled source; no guest rerun or changed predicate outcome."
+  },
+  "latest_candidate_ci": {
+    "path": "build/ci/task006-9c25-complete.json",
+    "sha256": "2b30fcdc34d7cdf484d2ff105bd14c5e7eb9e5fe984b40a5ea97d2d69e452850",
+    "status": "completed",
+    "commit": "9c25d949c5d6c1d1753611cbc33f5287f41a5970",
+    "run_id": 38873521466,
+    "url": "https://github.com/srkftw/lemma/actions/runs/38873521466",
+    "conclusion": "success",
+    "jobs_success": 11,
+    "steps_success": 111,
+    "skipped": 0,
+    "scope": "Exact published compiler candidate. Original CI failures retained separately; no full-machine or physical closure."
   }
 }

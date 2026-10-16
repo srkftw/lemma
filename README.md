@@ -1861,7 +1861,10 @@ selected exercise, full keypad, verified5/6 revision7, four attempts and hint1
 within its original400M bound. A subsequent raw numeric0 edit reaches Saved21
 and a completed controller frame in118.55M of its150M bound:5/60 revision8,
 Unchecked, all keypad/body pixels and retained attempt/source history pass.
-Actual checking of that edited answer remains running.
+Actual isolated checking of that edited answer reaches Invalid/revision8,
+Saved22; five attempts, hint1 and earlier evidence/source history remain.
+The retained11 browser also returns Indeterminate for a zero-budget request,
+Saved34/revision17, preserving its original Verified and Unsupported history.
 The earlier browser Verified/hint results belong to retained11/ingress2.
 Full managed Lean, proof-kernel/tutor closure and all unfinished device,
 checkpoint, distribution and physical gates remain open.
@@ -1881,7 +1884,7 @@ Use the same `browser-serve --bundle` command with this new path. The currently
 running13 cold qualification remains on its original immutable UI bundle;
 actual gestures with the new UI still need their own execution check.
 
-Notebook14 is the latest prepared matched normal/initializer pair. It uses
+The retained Notebook14 prepared matched normal/initializer pair uses
 aligned stores for numeric-key arithmetic redraws. Both full linked audits and
 the complete22-phase functional workflow pass. Its safely extracted native
 archive also passes actual initialization, raw-UART pending/private-fork input,
@@ -1921,7 +1924,42 @@ nix develop --no-write-lock-file --command python3 scripts/check_keypad_repaint.
   --work-dir build/courses/AN_UNUSED_PAD_REPAINT_CHECK
 ```
 
-The15 matched-pair attempt remains FAIL: the initializer's genuine Lean export
-hit its existing300second command limit. No prepared15 pair or production-boot
-claim is inferred from the independently qualified normal image. All failures,
-source identities and exact observations remain in the Task006 checkpoint.
+The original15 matched-pair attempt remains FAIL at its300second initializer
+export limit. Compiler validation now indexes membership and cached graph
+lookups while preserving validation order and diagnostics. The new source9c25d94
+normal/initializer pair passes both complete linked audits in906.098seconds
+(911.577 supervised;1.93GB peak owned RSS), under the original bounds. The
+normal ELF is byte-identical to the qualified27-phase image above. Historical
+Core0 acceptance passes23 real O0/O2 RV64 boots, and actual candidate CI
+[38873521466](https://github.com/srkftw/lemma/actions/runs/38873521466) passes
+all11jobs/all111steps. These are separate from canonical RTL timing.
+
+Notebook15 is now the latest prepared pair:
+
+- Native bundle: `build/native/task006-number-pad-repaint-notebook-a1`.
+- Static bundle: `build/browser/task006-number-pad-repaint-a1`.
+- Native archive: `build/distribution/task006-number-pad-repaint-native-a1.tar.gz` (28745372B).
+- Browser archive: `build/distribution/task006-number-pad-repaint-browser-a1.tar.gz` (2075139B).
+
+The safely extracted native launcher is
+`python3 -I build/distribution/task006-number-pad-repaint-native-extracted-a1/lemmasim-native/run.py`;
+append the advertised `init`, `session`, `snapshot`, `restore`, `course-install`
+or `course-load` command and its ordinary arguments. Actual Init/rawUART pending/
+private fork/install/barrier/newCPUcold/Load passes389.698seconds. The extracted
+static launcher is
+`python3 -I build/distribution/task006-number-pad-repaint-browser-extracted-a1/lemmasim-browser/serve.py --port 8803`.
+It serves the same exact RTL Wasm with the matched15 images and repaired input
+transform adapter. New15 browser CPU execution, clean-host qualification,
+production boot and redistribution rights remain separate. Original failures
+and exact source identities remain in the Task006 checkpoint.
+
+The shared native/Wasm runtime now avoids an unnecessary in-range framebuffer
+remainder while retaining every port value, including inactive out-of-range
+reads. Four retained-state suffix pairs match all authoritative bytes; summed
+Node process CPU is17.97% lower for that bounded workload. An earlier contended
+wall-time comparison was slower and remains recorded. Native held-memory/private-
+fork regression also passes. This is host execution cost, with unchanged guest
+cycles. The prepared15 bundles above keep their previously qualified runtime
+identities; full notebook/browser qualification of the new runtime remains
+separate. Exact sources, bounds and commands are in
+[the runtime evidence](docs/evidence/006-framebuffer-port-index.json).

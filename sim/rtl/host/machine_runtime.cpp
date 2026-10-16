@@ -443,7 +443,13 @@ void Machine::tick(){auto&soc=*model;uint64_t c=s.cycle;
   if(soc.mem_valid){uint64_t addr=soc.mem_addr;if(addr>=RAM_BASE&&addr-RAM_BASE<=RAM_SIZE-8)ram_pointer=s.ram.data()+addr-RAM_BASE;else if(addr>=ROM_BASE&&addr-ROM_BASE<=s.rom.size()-8)ram_pointer=s.rom.data()+addr-ROM_BASE;else soc.mem_error=1;
    if(addr&7)soc.mem_error=1;
    if(ram_pointer){std::memcpy(&soc.mem_rdata,ram_pointer,8);if(soc.mem_write&&addr<ROM_BASE+s.rom.size())soc.mem_error=1;}}
-  soc.fb_error=soc.fb_valid&&soc.fb_addr>=s.framebuffer.size();soc.fb_rdata=soc.fb_error?0:s.framebuffer[soc.fb_addr%s.framebuffer.size()];
+  const uint64_t framebuffer_size=s.framebuffer.size(),framebuffer_address=soc.fb_addr;
+  soc.fb_error=soc.fb_valid&&framebuffer_address>=framebuffer_size;
+  // The ordinary in-range port needs no remainder. Retain the original
+  // wrapped read value even for an invalid, inactive address: generated
+  // combinational state and arbitrary-boundary checkpoints still observe it.
+  soc.fb_rdata=soc.fb_error?0:s.framebuffer[framebuffer_address<framebuffer_size?
+    framebuffer_address:framebuffer_address%framebuffer_size];
   soc.media_error=0;for(int i=0;i<128;i++)soc.media_rdata[i]=0;
   if(soc.media_valid&&!domain_reset&&!s.backing_orphan){
    uint64_t sector=soc.media_sector;if(!s.media_active){s.media_active=1;s.media_kind=soc.media_kind;s.media_sector=sector;s.media_requests++;}

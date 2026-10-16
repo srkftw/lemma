@@ -3544,3 +3544,63 @@ PASS, no skipped/cancelled work. This qualifies the15 keypad/terminal repair
 candidate only. Later local compiler-index changes have52CFG/449kernel12.000s/
 473foundation44.845s/40core0host/18scaffold9.747s PASS and exact genuine export
 bytes; fresh matched full images/audits and legacy target acceptance still pending.
+
+Compiler9c25d94 now passes its actual published CI38873521466: all11jobs/
+111stepsSUCCESS, no skips/cancels. Fresh412-source matched15 pair PASS906.098108s;
+supervisor911.576808s/1926250496B peak, source/current/archive/HEAD/index seals
+and owned cleanup pass. Normal710944B/ebbc3f19 unchanged from actual27-phase6d
+case; reuse is explicit, no duplicate execution claim. Init710952B/b695dbb6 full
+auditPASS; builds197.067516/181.675761s, audits249.570065/277.605450s. Original
+a1 initializer300.202sFAIL remains. Historical Core0 target acceptance23 real
+boots/10cases/13rejections/repro/mutation/audit-regression PASS75.474243s supervised.
+Matched15 native/static archives prepare and safely extract. Actual extracted
+native Init/rawUART pending/privatefork/install/barrier/newCPUcold/Load PASS
+440000070functional units/389.697648s,391.369259s supervised/395472896B owned
+peak/all host sources unchanged. That source hold is released; canonical13
+34-file hold persists through its final extension. New15 browser CPU/cleanhost/
+productionboot/redistribution rights unqualified. Native28745372B/74cbe8309188c3b33b8cd32664b6acfd39dab323a71dc793e9dac3cf44e102c3;
+static2075139B/ccc329c676bc70cb091174a4ed72df7315605c3834d2a24e18f0b594bc4fa0c6.
+
+Actual browser13 CHECK at1229250000 returns5/60Invalid/rev8/evidence8,
+Saved22/five attempts/hint1. Retained11 CHECK at2659500000 returns zero-budget
+Indeterminate/rev17/evidence17, Saved34/three attempts/hint1. Each uses its
+original200M/2400s; closure graph actually reclaimed, full prior source/learner
+history and authored body retained;13 all keypad pixels retained. Passive
+observers corrected a false fifth-request-word-as-budget expectation from
+compiled reportArithmeticRequest: fifth word is IPC transaction. Original
+failed observer/results retained, no guest rerun or semantic outcome change.
+Actual original canvas mouse gestures are captured before target execution in
+both pointer-cold-plan-a1 folders: same device time down/up,tool0/pressure2048
+explicitlysynthetic, expected exact2rawrecords and dot(825,1099) independently
+predicted before guest run. Ink300M/3600s, cold1B/7200s, reopen400M/3600s,
+2B/14400s aggregate retained. Retained11 also retains absolute13:47:22.617578Z
+originalmathdeadline/6B. These new writing/cold outcomes remain pending.
+
+Canonical13 original RTL base numeric/check/rawink/Save/independentcold/allpixels/
+allmedium/selectedbody-keypad reopen completed; final disconnect/recovery
+extension still running under original5B/36000s and same34hostsourcehold.
+Host-only framebuffer remainder shortcut prospectively declared separately in
+build/wasm/task006-framebuffer-index-plan-a1; same circuit/guest/timing/state,
+full out-of-range inactive-port read value must remain unchanged. Baseline
+actualscalarbuildPASS122.429s. Candidate/comparison still pending; no speed claim.
+
+Host framebuffer index candidate adopted after original state/performance gates.
+Only host in-range remainder shortcut changes; active fault/zero and inactive
+out-of-range wrapped byte preserved. Same circuit/tool/flags/current manifests
+differ only in one CPP digest (portable253 source closure). Baseline81392953,
+candidatec53d4f6a. Actual4cut10M genuine initializer-prefix all authoritative
+wrapper/model/CRC bytes and UART exact,222.065148s supervised. Sequential wall
+comparison was SLOWER86.002663→109.811069s under overlapping native compilation;
+retained, no speed inference. Prospective4 balanced private1M suffix pairs from
+each own10M cut all authoritative bytes exact; process CPU51.479627→42.226181s,
+17.974967% less,128.602812s total/1227608064B peak. Shared-load processCPU measure,
+not isolated benchmark/fullcold/user latency/target cycle claim. Actual fresh
+native ab88c4e9/binary62389833 captures254-source v2 archive and unchanged15
+ebbc3f19 guest:8 complete checkpoint pairs, real3-clock heldRAM and private
+1000003 suffix PASS202.690790s; whole272.859698s/869228544B owned peak/cleanup.
+299lemmasim host tests PASS85.430s,18scaffold9.351s/metadataPASS. Failed initial
+package source selection (new profile generator absent from old browser archive)
+and optional-key observer are retained; correct native archive resolver supplies
+exact old CPP, unchanged current inputs checked. Neither failed attempt executed
+a CPU. Full changed-runtime notebook/browser remains separate; existing prepared
+15 functional qualification still uses native8e5/Wasmfb15. See006-framebuffer-port-index.json.

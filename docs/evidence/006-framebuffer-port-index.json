@@ -1,0 +1,120 @@
+{
+  "schema": "lemma-framebuffer-port-index-evidence/1",
+  "status": "PASS_HOST_SHORTCUT_EXACT_STATE_BALANCED_CPU_NATIVE_PENDING_SUFFIX",
+  "scope": "Host-only portable/native Machine index shortcut; same circuitry, real guest work, clocks, ports and serialized state. Prefix and1M suffix checks are deliberately bounded compiler/runtime qualification, not full changed-runtime notebook, browser cold, general fast timing or QEMU cache continuation. Existing prepared15 full workflows retain old runtime identities.",
+  "source": {
+    "path": "sim/rtl/host/machine_runtime.cpp",
+    "sha256": "a6d58ada364e4b80a8e70329a50dd6c089ceef61f451c10dc7907ffc73ec2f3d",
+    "original_sha256": "58d59a1d106a2696586f8ad00bc8ac6f2e49ee5b7767d3d0b7843547540f7d78"
+  },
+  "semantics": "For nonempty fixed framebuffer, address<size gives exactly address%size without division. Active out-of-range still returns error/zero. Inactive out-of-range still returns the original wrapped byte. No new state, cache, side effect or device latency; all memory/ownership/controller transactions retained.",
+  "source_relation": {
+    "path": "build/wasm/task006-framebuffer-index-plan-a1/source-relation.json",
+    "sha256": "f47d4a81ce709e56cb0c93ea77f5f2ac3dd295609d6f41ca03915b0c8cd2c962",
+    "status": "PASS_PRECOMPARISON_SAME_CIRCUIT_GUEST_TOOL_FLAGS_ONLY_CPP_INDEX_CHANGED"
+  },
+  "source_count_portable": 253,
+  "portable_baseline_identity": "81392953231df199bda0151077693cd47b6cd83b007ad8b77301346f6cfdb1d9",
+  "portable_candidate_identity": "c53d4f6a2c43ce40ff3429dc5f043357fb1ff08b2a37ac7b13d582ea3ef9a148",
+  "builds": [
+    {
+      "path": "build/wasm/task006-framebuffer-index-plan-a1/baseline-supervision/result.json",
+      "sha256": "e4da85d77ef088bb9e821d8b73cc5613b39688bc1ea5e7671a5dcaff109746e0",
+      "status": "PASS_FRAMEBUFFER_BASELINE_BUILD"
+    },
+    {
+      "path": "build/wasm/task006-framebuffer-index-plan-a1/candidate-supervision/result.json",
+      "sha256": "29f9f4e96c675a104e5a55ee89fb4f82ccf0b210bce93dec11bd7fe6f2d7be0b",
+      "status": "PASS_FRAMEBUFFER_CANDIDATE_BUILD"
+    }
+  ],
+  "prefix": {
+    "path": "build/wasm/task006-framebuffer-index-comparison-a1/result.json",
+    "sha256": "e98fbace8ecc68ffe4e2283ddd58d8c0074c64ce4e0a0e56aeaaffd5b48dcc76",
+    "status": "PASS"
+  },
+  "prefix_supervision": {
+    "path": "build/wasm/task006-framebuffer-index-plan-a1/comparison-supervision/result.json",
+    "sha256": "fcf938d40cafbcc68665528c60ab8f39848ffdc94782eaf48fc7fdc0158fdfde",
+    "status": "PASS_FRAMEBUFFER_EXACT_AUTHORITATIVE_COMPARISON_SUPERVISED"
+  },
+  "exact_observation_relation": "Implementation metadata16..79 independently checked against each build. Every authoritative wrapper/model byte, both complete component CRCs, remaining container bytes and guest output exact. Original predeclared relation; no mismatching state field removed. Each suffix restores its own compatible cut into a private fork, no cross-identity restore.",
+  "prefix_cuts": [
+    9,
+    32,
+    1000000,
+    10000000
+  ],
+  "retained_slower_wall_result": {
+    "baseline_simulation_seconds": 86.00266280200002,
+    "candidate_simulation_seconds": 109.81106895200026,
+    "speedup": 0.7831875567989673,
+    "context": "Unbalanced sequential order with native compilation overlapping candidate; slower observation retained. No performance improvement inferred from this run."
+  },
+  "balanced_cpu": {
+    "path": "build/wasm/task006-framebuffer-index-cpu-a1/result.json",
+    "sha256": "41769667a4837e1c901d87ff029565aca73a557a0a1b5c8b94f194c2ce03c8ab",
+    "status": "PASS_EXACT_BALANCED_SUFFIX_CPU_OBSERVATION",
+    "plan": {
+      "path": "build/wasm/task006-framebuffer-index-plan-a1/paired-cpu-plan.json",
+      "sha256": "020665fa90c82cb79325c9f9140ee5ac1c8d05236d44611f415d65b8dea5a289",
+      "status": "PREDECLARED_NOT_RUN"
+    },
+    "pairs": 4,
+    "suffix_clocks_each": 1000000,
+    "baseline_process_cpu_seconds": 51.479627,
+    "candidate_process_cpu_seconds": 42.226181000000004,
+    "cpu_reduction_percent": 17.974967068040325,
+    "host_seconds": 128.602811948,
+    "process_peak_rss_bytes": 1227608064,
+    "adoption_gate": "prospective>=1percent summed synchronous processCPU improvement plus exact states and native pending regression; passed",
+    "limits": "ProcessCPU includes Node/V8 work during synchronous run calls. Four balanced order pairs under shared load; not an isolated general benchmark, full cold performance, user latency or target cycle improvement."
+  },
+  "native": {
+    "path": "build/wasm/task006-framebuffer-index-native-a1/execution/result.json",
+    "sha256": "1d4e39ec6e88b38b33c661b1b2f85022aa1ac8cb27e3f6d1f5f27534a0f8dab6",
+    "status": "PASS_FULL_STATE_AND_PENDING_SUFFIX",
+    "supervision": {
+      "path": "build/wasm/task006-framebuffer-index-plan-a1/native-supervision/result.json",
+      "sha256": "c47311ebbe4c635c7cfcff93967635611c66ab34936320d91cf7aa741be4fe5e",
+      "status": "PASS_FRAMEBUFFER_NATIVE_FULL_STATE_PENDING_SUFFIX_SUPERVISED"
+    },
+    "runtime_identity": "ab88c4e90448474738ead33dffb7005398ed03ef616a723369ee4633e659d5c8",
+    "guest_sha256": "ebbc3f19e96a64cc0de0d83f12b451c7b1dbcaaa6b4f496b86f6a1c949554ca6",
+    "complete_source_archive": "build/wasm/task006-framebuffer-index-native-a1/native/consumed-source-root",
+    "source_count": 254,
+    "full_checkpoint_pairs": 8,
+    "cold_prefix_clocks": 10000000,
+    "held_RAM_extra_latency": 3,
+    "suffix_clocks": 1000003,
+    "host_seconds": 202.69079036498442,
+    "supervised_seconds": 272.85969826602377,
+    "peak_owned_rss_bytes": 869228544,
+    "meaning": "Unchanged existing native disabledUSB reference fixture is full-state/restore regression of the new runtime, not a framebuffer baseline performance comparison."
+  },
+  "checks": {
+    "lemmasim_host": "299 PASS85.430s in Nix",
+    "scaffold_metadata": "PASS",
+    "scaffold_suite": "18PASS9.351s"
+  },
+  "retained_observer_admission_failures": [
+    {
+      "path": "build/wasm/task006-framebuffer-index-plan-a1/baseline-package-original-failure.json",
+      "sha256": "8e122e80634a1e15c0399361711f1801d9641331a491a62ac2c8e1319eddff6e",
+      "status": "FAIL_SOURCE_ADMISSION_BEFORE_PACKAGING"
+    },
+    {
+      "path": "build/wasm/task006-framebuffer-index-plan-a1/precomparison-original-observer-failure.json",
+      "sha256": "268a51aec3d4bee528abf79ad56152c65cf6bce3ccaea8af6ea36afe76fbd937",
+      "status": "FAIL_OBSERVER_BEFORE_RUNTIME_EXECUTION"
+    }
+  ],
+  "commands": {
+    "portable_control": "nix develop --no-write-lock-file --command python3 scripts/silicon_wasm.py --profile lemma-silicon-dev/0.3.0 --output-dir build/wasm/task006-framebuffer-index-baseline-a1",
+    "portable_candidate": "nix develop --no-write-lock-file --command python3 scripts/silicon_wasm.py --profile lemma-silicon-dev/0.3.0 --output-dir build/wasm/task006-framebuffer-index-candidate-a1",
+    "exact_comparison": "nix-shell tooling/silicon/wasm.nix --run 'node --expose-gc scripts/check_wasm_compilation.mjs build/browser/task006-framebuffer-index-baseline-a1 build/browser/task006-framebuffer-index-candidate-a1 build/wasm/task006-framebuffer-index-comparison-a1'",
+    "native_build": "nix develop --no-write-lock-file --command python3 scripts/silicon_compute.py build --profile lemma-silicon-dev/0.3.0 --jobs 2 --output-dir build/wasm/task006-framebuffer-index-native-a1/native",
+    "native_pending": "nix develop --no-write-lock-file --command python3 scripts/check_native_evaluation.py --native-build build/wasm/task006-framebuffer-index-native-a1/native --capture-current-source --guest-bundle build/native/task006-number-pad-repaint-notebook-a1 --disk build/courses/task006-course-ipc-guest-a1/durable.raw --work-dir build/wasm/task006-framebuffer-index-native-a1/execution"
+  },
+  "remaining": "Full changed-runtime browser/native notebook workflow, exact fast timing/cachedQEMU continuation, all outstanding digital/product/distribution/physical gates remain distinct."
+}

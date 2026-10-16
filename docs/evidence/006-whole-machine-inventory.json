@@ -1019,42 +1019,17 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "0a41c9d97894e29828d083f434f98a60224eb521",
-    "run": 38869197675,
+    "path": "build/ci/task006-9c25-complete.json",
+    "sha256": "2b30fcdc34d7cdf484d2ff105bd14c5e7eb9e5fe984b40a5ea97d2d69e452850",
     "status": "completed",
-    "conclusion": "SUCCESS",
-    "jobs": 11,
-    "successful_steps": 110,
-    "skipped_steps": 0,
-    "cancelled_jobs": 0,
-    "scope": "Actual published15 keypad/terminal repair candidate. Later local compiler-index optimization is not qualified by this CI. Complete canonical numeric RTL, initializer pair, browser and physical obligations stay separate.",
-    "prior": {
-      "commit": "c1ed159d122f9bece0616b043766d59bdae6d527",
-      "run": 38865225818,
-      "status": "in_progress_at_last_fetch_with_failed_job",
-      "conclusion": null,
-      "jobs": 11,
-      "completed_success": 8,
-      "failed_jobs": [
-        "Task003 source-negative RV64 qualification"
-      ],
-      "in_progress_jobs": 2,
-      "skipped_steps": 1,
-      "scope": "Metadata/host PASS; appendO2 control FAIL64 terminal stops. Corrected terminal predicate matches original strict page-effect check; actual C1 bytes pass unchanged full replay,84 unmatched release still rejects; fresh306commands PASS. Uncontrolled-progress prototype failed and stays unadopted. New candidate CI required.",
-      "prior": {
-        "commit": "84bcb67c2538a7d8306140643ea884c178b2cf51",
-        "run": 38859905648,
-        "conclusion": "FAILURE",
-        "jobs": 11,
-        "completed_success": 9,
-        "failed_jobs": [
-          "Metadata and host-only suites",
-          "Task003 source-negative RV64 qualification"
-        ],
-        "skipped_steps": 8,
-        "scope": "Foundation exact-log list missed added arithmetic pipeline; corrected exact entry, pipefail retained. Source-negative terminal capture froze a later real release before completion; stricter semantic terminal capture under same5s/64-stop bound. New real retained-control execution306commands passes; original failed capture still rejects. New candidate CI required.984 prior11/109 success retained."
-      }
-    }
+    "commit": "9c25d949c5d6c1d1753611cbc33f5287f41a5970",
+    "run_id": 38873521466,
+    "url": "https://github.com/srkftw/lemma/actions/runs/38873521466",
+    "conclusion": "success",
+    "jobs_success": 11,
+    "steps_success": 111,
+    "skipped": 0,
+    "scope": "Exact published compiler candidate. Original CI failures retained separately; no full-machine or physical closure."
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1103,15 +1078,15 @@
   },
   "number_entry_component_milestone": {
     "behavior": "IMPLEMENTED15_STATIC_PAD_REUSE_RAW_OVERDRAW_REPAIR",
-    "compiler": "15 normal full linked audit PASS/411 source archive at6d002a2; genuine871pre869post/25RV64 cells. Initializer genuine export300.202s timeout; matched pairFAIL.",
-    "RTL_guest": "RUNNING actual13 cold Ready473M/1905.962s; course212M/1022.169s, two authored views43M each observed. Full5B/36000s numeric/check/save/cold/repaint not yet complete.",
+    "compiler": "PASS_GENUINE_MATCHED15_FULL_AUDITS_412_SOURCE_SEALS: 9c25d94, normal/init710944/710952B; original6d initializer300.202sFAIL retained.",
+    "RTL_guest": "RUNNING canonical13 original5B/36000s: complete base numeric checks, raw ink acknowledged, independent cold allpixels/allmedium and original body/keypad reopen pass. Final disconnect/recovery extension not yet complete.",
     "fast_guest": "PASS15 actual27 phases incl22-prefix, raw overdraw/key repair/retained underlying ink/thirdCPUcold/allpixels/allbytes/allobjects/reopen.2077000130 units/371.508s,374.884s supervised/515133440B peak. Comparable22prefix1439000106 vs14 1492000115,3.5523% fewer; no RTL timing claim.",
-    "distribution": "Matched14 native/static tarballs prepared/extracted; actual native Init/rawUART/privatefork/install/barrier/newcold/Load PASS456.814s/463.450s supervised/417247232B peak.13 browser cold/fullplane/allbytes/node3/keypad/math history reopenPASS.15 pair NOT prepared.",
+    "distribution": "Matched15 native/static archives prepared/extracted; actual extracted native Init/rawUART/privatefork/install/barrier/newCPUcold/Load PASS389.698s/391.369s supervised/395472896B peak.15browser CPU/clean-host/redistribution rights separate.",
     "physical": "UNVERIFIED",
     "contract": "docs/contracts/006-number-entry-v1.md",
     "evidence": "docs/evidence/006-number-entry-v1.json",
     "aligned_presentation": "Notebook14 actual full pair audits/411 source seals/owned cleanup PASS1422.313s/1826054144B.22-phase fast PASS1492000115 units/216.161s, same goals/bytes/pixels/cold/disconnect.13 baseline1494000115; only2M total units saved. Matched native/static14 bundles/tarballs prepared; actual extracted native launch PASS.15 normal/connected case separately qualified;15 pair remainsFAIL.",
-    "compiler_export_optimization": "COMPONENT_PASS_LOCAL: indexed sets/cached graph validation, genuine15 initializer export183.581s vs254.270s comparable preceding variant, all four files identical/412-source archives.52CFG/449kernel/473foundation/40core0host/18scaffold PASS; new full pair and target acceptance pending."
+    "compiler_export_optimization": "PASS_COMPONENT_FULL_PAIR_LEGACY_CANDIDATE_CI: same-j2 export183.581s vs254.270s, all4files identical. Fresh412-source normal/init pair fullaudit906.098s/911.577supervised/1926250496B owned.23 historical target boots PASS. Actual9cCI11jobs/111stepsSUCCESS."
   },
   "browser_actual_mathematics": {
     "behavior": "PASS actual5/6Verified rev12 isolated closure, assistance Saved22, deliberate Auto Saved27 and independent displayed assisted/practice/uncertain labels. Quick200M review batch FAIL: one tap not applied; no-input58.55M finishes Saved26, then new deliberate91.85M contact Saved27. Edited-answer test running; full acceptance OPEN.",
@@ -1124,6 +1099,88 @@
       "status": "PASS_SAME_COMPILED_WASM_32M",
       "evidence": "docs/evidence/006-number-entry-v1.json",
       "scope": "Actual13 queued numeric0\u2192pendingSave21/unfinished display; isolated recorded outcomes, all archive bytes exact. NoC++ migration/cachedQEMU claim."
+    },
+    "latest_checked_outcomes": {
+      "browser_actual_invalid": {
+        "path": "build/browser/task006-number-entry-cold-plan-a1/checked-invalid-result-a2.json",
+        "sha256": "52c50bad574ab53b0131903192c1e3958a4662d5c2da0965992321d2680272e0",
+        "status": "PASS_BROWSER_REAL_INVALID_REVISION_BOUND",
+        "cycle": 1229250000,
+        "check_clocks": 200000000,
+        "sequence": 22,
+        "actual_request": [
+          1113,
+          298,
+          8,
+          1,
+          74
+        ],
+        "actual_reply": [
+          1109,
+          298,
+          8,
+          0,
+          2
+        ],
+        "actual_graph_reclaimed": true,
+        "document": {
+          "revision": 8,
+          "goal": 1,
+          "answer": [
+            5,
+            60,
+            0,
+            0,
+            0
+          ],
+          "outcome": 2,
+          "evidence_revision": 8,
+          "budget": 8,
+          "attempts": 5,
+          "hints": 1
+        },
+        "scope": "Actual guest-isolated checker, revision-bound exact outcome, prior evidence/source/learner history and original authored body retained. Numeric13 also complete keypad. Original wrong observer assumed request fifth word was budget; actual fifth word is IPC transaction. Wrong observer/result retained, corrected independently from compiled source; no guest rerun or changed predicate outcome."
+      },
+      "browser_actual_indeterminate": {
+        "path": "build/browser/task006-idle2-mathematics-plan-a1/checked-Indeterminate-result-a2.json",
+        "sha256": "6438bd4c2e590709b5fea9bd0bde728e2eeec9a774e21404d7b778d1c1f27a62",
+        "status": "PASS_BROWSER_REAL_ZERO_BUDGET_INDETERMINATE",
+        "cycle": 2659500000,
+        "check_clocks": 200000000,
+        "sequence": 34,
+        "actual_request": [
+          1113,
+          462,
+          17,
+          1,
+          238
+        ],
+        "actual_reply": [
+          1109,
+          462,
+          17,
+          0,
+          5
+        ],
+        "actual_graph_reclaimed": true,
+        "document": {
+          "revision": 17,
+          "goal": 1,
+          "answer": [
+            5,
+            7,
+            0,
+            0,
+            0
+          ],
+          "outcome": 5,
+          "evidence_revision": 17,
+          "budget": 0,
+          "attempts": 3,
+          "hints": 1
+        },
+        "scope": "Actual guest-isolated checker, revision-bound exact outcome, prior evidence/source/learner history and original authored body retained. Numeric13 also complete keypad. Original wrong observer assumed request fifth word was budget; actual fifth word is IPC transaction. Wrong observer/result retained, corrected independently from compiled source; no guest rerun or changed predicate outcome."
+      }
     }
   },
   "latest_bounded_physical_attempt": {
@@ -1137,5 +1194,16 @@
     "hold_global_wns_ns": -0.437743,
     "adopted": false,
     "disposition": "Clock branch-buffer change reverted; exact PID/start cleanup finds no survivors; closure OPEN. ABC-D10000 mapped bytes identical to baseline; no timing claim for that mapping."
+  },
+  "portable_host_index_milestone": {
+    "behavior": "Unchanged fixed-framebuffer port values, including inactive out-of-range wrap",
+    "model": "PASS exact4cuts and4balanced private1M suffix pairs, all authoritative bytes/guest outputs",
+    "RTL": "Circuit sources/profile unchanged; canonical13 ongoing run retains8e5 identity",
+    "guest": "Unchanged fully audited15 ebbc3f19 RV64",
+    "distribution": "New candidate static bundle prepared; old full-workflow-qualified15 bundles remain native8e5/Wasmfb15",
+    "physical": "No physical effect or qualification",
+    "evidence": "docs/evidence/006-framebuffer-port-index.json",
+    "process_cpu_reduction_percent": 17.974967068040325,
+    "full_changed_runtime_browser_workflow": "NOT_RUN"
   }
 }
