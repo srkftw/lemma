@@ -73,6 +73,9 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("scripts/check_scaffold.py", self.metadata)
         self.assertIn("lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel", self.metadata)
         self.assertIn("Lemma.Courses.Arithmetic Lemma.Courses.Package", self.metadata)
+        self.assertIn("Lemma.Courses.PackageInstaller", self.metadata)
+        self.assertLess(self.metadata.index("Lemma.Courses.PackageInstaller"),
+                        self.metadata.index("tests/courses/IngressIdle.lean"))
         self.assertLess(self.metadata.index("lake build"), self.metadata.index("tests/foundation"))
         self.assertIn("Lemma.Applications.Notebook", self.metadata)
         self.assertLess(self.metadata.index("Lemma.Applications.Notebook"),

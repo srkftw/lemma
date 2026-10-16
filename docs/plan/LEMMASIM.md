@@ -232,5 +232,8 @@ RTL and Wasm cold runs retain their original bounds. Companion compilation
 succeeded but its full audit rejected the new171-function installer against the
 historical169 catalog. The versioned authority repair retains the original pins,
 independently compares every common preIR function and rejects a valid LLVM cap
-mutation; corrected whole companion acceptance remains required. G2/G4-G7,
+mutation. Both corrected companion whole linked audits/source seals now pass;
+actual new peer cold remains required. Browser11 also cold-opens the saved-ink
+medium to Ready827.8M/6677.447s,192MiB heap, with independently exact complete
+notebook/ink pixels; course/Save/reload and useful latency remain open. G2/G4-G7,
 S4-S6, fast/checkpoint, distribution/rights and physical status stay separate.

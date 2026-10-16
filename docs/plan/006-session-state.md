@@ -2921,3 +2921,54 @@ Companion11 corrected AS16GiB cold session6851 remains within original absolute
 Final local increment checks:foundation473 PASS38.961s, kernel439 PASS11.364s,
 scaffold18 PASS7.849s, selector6 PASS, metadata/py_compile/diff PASS. The maintained
 failed-save actor is PASS55.262s/559,000,028 units,60.184s supervised/no survivors.
+
+
+October16 follow-up:corrected companion idle2 whole pair is PASS at f7ee71b
+in`build/courses/task006-ingress-idle-companion-whole-a2/result.json`:
+1242.640s actor/1248.045s supervised,1,947,799,552B peak/no survivors,
+all408 current/archive inputs match. Both full linked audits PASS; originala1
+build/auditFAIL retained. The f7ee HEAD/index/input hold is released.
+Images:initializer2d6ab3709c85e3e75e656dbbbca737749044b3499cb65110d6ad5d33363f4b97,
+notebooked437a67565fb3d49f7d75dbaeb7c9d42dc5b9e70b7d451eee96be127903c1b8.
+Role archives:`build/usb/task006-ingress-idle-companion-guest-archives-a1`;
+normal/initializer preparation against original6cbd/64d source succeeded.
+New immutable`build/native/task006-ingress-idle-companion-a1` is preparing
+(session44552); next actual newCPU peer cold must use this changed guest,
+AS16GiB/RSS4GiB, own predeclared1.6B/7200s, private original Saved16 peer/outbox.
+Do not extend the distinct source11 a2 absolute deadline00:33:57.348922Z.
+
+Browser11 actual coldReady is PASS827,800,000/6677.44661s under original1B/7200s,
+192MiB heap. Entire3630000 controller pixels match independent complete notebook
+and original Saved8 mouse-contact geometry. Snapshot is an output observation
+only, never cold input. Receipt:`build/browser/task006-course-preserving-save-ready-a1/result.json`,
+full pixels:`.../cold-pixels-result-a2.json`. Original observer rejected strictly
+increasing times, while the preexisting pen RTL rejects only decreasing times;
+actual original seq4/5 both time110699999. OriginalFAIL retained; correction
+admits that exact existing contract, with identical snapshot/source/raw bytes
+and hash-bound completed CRC-stage reuse. No machine execution/drain/field mask.
+The actual raster contact is825,1099 in both retained live and current cold pixels;
+legacy contact825,1100 names the raw screen point. No display migration defect.
+
+Observed Ready checkpoint`browser-ready.bin` SHA
+f167f931cf3f1e82bc66af580725072cd38bfcf8237759e37956f70d86b00bb7,
+145672862B, actual downloaded`/home/sreekumaar/Downloads/lemma-checkpoint (66).bin`
+left intact. It is the new continuation anchor, not a recovery input.
+Browser11 tab30 now opens the course from827.8M under original400M/3600s.
+`.../course-tap.rows` records actual3 public raw events admitted without clocks;
+Ready-stop was unchecked before boundedRun. Preserve this run and tab31 idle2 cold.
+
+Actual af8b714 CI38824586834 is terminalFAIL:metadata step Observe checked
+memory copying/power fails at IngressIdle import, PackageInstaller.olean absent.
+Other10 jobs pass;6 subsequent metadata steps skipped, not passed. Actual job
+log116728932888 and exact error excerpt are retained in
+`build/ci/task006-ingress-host-dependency-a1/ci-failure-excerpt.log`.
+Fresh isolated host workspace first builds the already declared Package module,
+reproduces exact missing Installer olean, explicitly builds Installer, then
+unchanged IngressIdle fixture passes27.953s within original420s absolute bound.
+`build/ci/task006-ingress-host-dependency-a3/result.json`. Initiala1 source copier
+refused a same-file absolute entry before writing it; initiala2 empty cache had
+no Lemma prefix. Both setup failures retained; root sources untouched.
+The maintained CI fix adds only PackageInstaller to explicit Lake build targets;
+existing workflow source test requires it before IngressIdle. All14 workflow
+checks and scaffold18 PASS8.976s, metadata/diff PASS. Do not blindly rerun failed
+CI or call its skipped steps passed; publish the actual corrected candidate.

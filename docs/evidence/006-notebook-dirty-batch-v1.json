@@ -381,8 +381,21 @@
   "candidate_ci": {
     "commit": "af8b714cfe8d20675b367138911486e43f0d6656",
     "run": 38824586834,
-    "status": "IN_PROGRESS",
-    "scope": "Pushed idle2 target and independent annotation observer; excludes next companion-authority/failed-save-command increment",
+    "status": "COMPLETED",
+    "conclusion": "FAILURE",
+    "failed_job": "Metadata and host-only suites",
+    "failed_step": "Observe checked memory copying and power authority in Lean",
+    "failed_job_id": 116728932888,
+    "actual_diagnostic": "tests/courses/IngressIdle.lean:1:0: PackageInstaller.olean does not exist",
+    "other_completed_jobs_success": 10,
+    "skipped_steps": 6,
+    "scope": "Fresh CI lacked the explicitly required PackageInstaller host artifact. Foundation473 had passed. Subsequent metadata steps skipped, never passed. The explicit build target repair and source assertion are local until the next candidate push.",
+    "fresh_dependency_reproduction": {
+      "path": "build/ci/task006-ingress-host-dependency-a3/result.json",
+      "sha256": "640ca0faa85819c02ebd18453b7f66e70ffa8bcc725523d942d7d2e9deba2996",
+      "status": "PASS_CLEAN_HOST_DEPENDENCY_REALIZATION_AND_UNCHANGED_FIXTURE",
+      "seconds": 27.95306588592939
+    },
     "previous_96afbc8": {
       "run": 38818754788,
       "conclusion": "SUCCESS",
@@ -1161,7 +1174,7 @@
       "diff_check": "PASS"
     },
     "ingress_idle_policy2": {
-      "status": "PASS_CANONICAL_WHOLE_FAST_COURSE_SAVE_COLD_UART_FAILURE_COMPANION_AUDIT_REPAIR_PENDING_WHOLE",
+      "status": "PASS_FRESH_CANONICAL_COMPANION_AUDITS_FAST_COURSE_SAVE_COLD_UART_FAILURE_EXACT_CASES_RUNNING",
       "contract": "docs/contracts/006-course-ingress-idle-v2.md",
       "policy": "Guest empty-header sleep backoff1,2,4,8,16,32,64,100ms requested; first successful byte resets, partial header/body use existing1ms receiver and original timeout. Scheduler quantum, ownership/registry checks, formats and hardware unchanged.",
       "target_sha256": "47718773f191942c6afb31452403d80d094235a9f3c8b93671b75b0c5010074d",
@@ -1182,7 +1195,7 @@
         "build/courses/task006-ingress-idle-course-failure-supervision-a1/result.json"
       ],
       "remaining": [
-        "Corrected companion whole linked pair/full audits and actual independent peer cold recovery",
+        "New idle2 actual independent companion peer cold and connected fullC acceptance",
         "Canonical new-idle2 exactRTL and browser cold/complete workflow; source11 exactRTL secondcold remains running",
         "General managed recursion/proof kernel/tutor and full device workflows",
         "Fast timing/arbitrary cached-state continuation, clean-host distribution/rights and physical closure remain separate"
@@ -1288,7 +1301,7 @@
         "sha256": "9df36c659341a17e3ad7bc1391e5ad50231460cf8f83af0746d6a116dec1f861",
         "status": "PASS_EXACT_ALREADY_FULL_AUDITED_COURSE_CODE_BYTES"
       },
-      "companion_repair_scope": "Preserve original169 role pins, add explicitly versioned171 course ingress authority with two genuine catalogs/full bodies/globals/callers. Every common preIR function unchanged exceptmainAwait;2 declared helpers added. Separate genuine normal/init pre/post/object exact; valid LLVM changed cap rejects. Whole initial compilation/auditFAIL retained; corrected fresh pair pending.",
+      "companion_repair_scope": "Versioned exact successor; both corrected fresh whole linked audits/source seals PASS. Original wholeFAIL remains retained. Actual new peer cold still required.",
       "prepared": {
         "native_bundle": "build/native/task006-ingress-idle-notebook-a1",
         "browser_bundle": "build/browser/task006-ingress-idle-a1",
@@ -1332,7 +1345,33 @@
           "tests": 18,
           "seconds": 7.849
         }
+      },
+      "companion_corrected_whole": {
+        "path": "build/courses/task006-ingress-idle-companion-whole-a2/result.json",
+        "sha256": "a2a492f1b68cf308ff0020c9b053341af26a179027b71bd0a79fa3252f96180b",
+        "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+        "wall_seconds": 1242.6400311730104
+      },
+      "companion_corrected_whole_supervision": {
+        "path": "build/courses/task006-ingress-idle-companion-whole-supervision-a2/result.json",
+        "sha256": "193193cf6b11829ce0ec6207891ccbc37ded2131835369a01bad936327b2f0e6",
+        "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+        "seconds": 1248.0446543910075,
+        "elapsed_seconds": 1246.0729898350546,
+        "peak_owned_rss_bytes": 1947799552
       }
-    }
+    },
+    "browser11_cold_ready": {
+      "path": "build/browser/task006-course-preserving-save-ready-a1/result.json",
+      "sha256": "15d2942ce1b11b5c4fe09ed4879229f50d59d0e21d348c546b41ddda437282c6",
+      "status": "PASS_BROWSER11_COLD_READY_ONLY"
+    },
+    "browser11_independent_cold_pixels": {
+      "path": "build/browser/task006-course-preserving-save-ready-a1/cold-pixels-result-a2.json",
+      "sha256": "68f15d286ffddbfe6431e825113ee0b88966909aea21bba5b8b4bd06edb53be8",
+      "status": "PASS_BROWSER11_ACTUAL_COLD_COMPLETE_INDEPENDENT_INK_PIXELS",
+      "seconds": 2.5814253609860316
+    },
+    "browser11_cold_scope": "Actual source11 new CPU cold0 -> guestReady827.8M/6677.447s original1B/7200s,192MiB heap, all3630000 controller pixels match independent full notebook plus original Saved8 raw contact geometry. Snapshot was output observation only, never cold input. Original strict-time observerFAIL retained; admitted equal timestamps verified by pen RTL bad_sample<last_time and original seq4/5 actualpointer record. Hash-bound completed CRC stage reused; no clocks/input in corrected observer. Previous live/current cold ink both825,1099; old contact825,1100 field denotes raw screen point. Course opening now RUNNING original400M/3600s; no complete browser workflow or usable latency claim."
   }
 }
