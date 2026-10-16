@@ -1441,6 +1441,19 @@ and [actual qualification](docs/evidence/006-local-native-distribution-v1.json)
 separate artifact admission, real RTL transport, private runtime import and
 restored suffix equality from full workflow and clean-host installation.
 
+For the audited Notebook17 guest and optimized native RTL core, the prepared
+runtime-inclusive archive is
+`build/distribution/task006-number-pad-browse17-runtime-a1.tar.gz`
+(149,970,067 bytes). It includes the 403,043,616-byte registered emulator
+runtime export. Current packaging includes the real QEMU output behind its
+compiled launcher; the earlier launcher-only `ldd` inventory omitted it. The
+old inventory fails an actual isolated-visibility launch; the complete
+120-path runtime launches QEMU and the real RTL guest. These are runtime and
+artifact checks, with independent notebook workflow results recorded separately.
+Use the extraction/import/launch commands above with this archive, or prepare
+another copy using `--bundle build/native/task006-number-pad-browse17-index-a1`.
+No NAR import or fresh-host installation is claimed by the visibility check.
+
 The extracted native command has also exercised the installed-course/checker/
 learner/ink/Save workflow and independent cold/reopen:2,615,000,279 instruction
 clocks within the original3B/900s bounds. The original live harness census FAIL

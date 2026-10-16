@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import resource
+import re
 import shutil
 import subprocess
 import sys
@@ -64,6 +65,55 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def qemu_output_for_launcher(outputs, launcher_sha256, store_root=Path('/nix/store')):
+    """Select one exact launcher in the bounded declared output set."""
+    if not 1 <= len(outputs) <= 8 or len(set(outputs)) != len(outputs):
+        raise ValueError('Invalid QEMU output set')
+    matches = []
+    for name in outputs:
+        path = Path(name)
+        if path.parent != store_root:
+            raise ValueError('Invalid QEMU output store path')
+        candidate = path / 'bin/qemu-system-riscv64'
+        if candidate.is_file() and sha(candidate) == launcher_sha256:
+            matches.append(path)
+    if len(matches) != 1:
+        raise ValueError('Exact QEMU launcher lacks a unique original output')
+    return matches[0]
+
+
+def qemu_launch_root(bundle, manifest, tool):
+    """Resolve the copied launcher through its original, hash-bound derivation.
+
+    Nix makeCWrapper is itself a small ELF. Its ldd set does not include the
+    executable it starts, GUI modules, schemas or other referenced runtime data.
+    Export the original output's complete registered closure instead of treating
+    the wrapper's loader as the full QEMU runtime.
+    """
+    backend = manifest['backends']['qemu']
+    launcher = bundle / backend['qemu']['path']
+    derivation = bundle / backend['derivation']['path']
+    if (sha(launcher) != backend['qemu']['sha256'] or
+            sha(derivation) != backend['derivation']['sha256'] or
+            not re.fullmatch(r'[0-9a-z]{32}-[^/]+\.drv', derivation.name)):
+        raise ValueError('QEMU launcher/derivation identity differs')
+    original = Path('/nix/store') / derivation.name
+    if not original.is_file() or sha(original) != sha(derivation):
+        raise ValueError('Original QEMU derivation is unavailable or changed')
+    query = subprocess.run([tool, '--query', '--outputs', str(original)],
+                           capture_output=True, timeout=30, check=True)
+    if len(query.stdout) > 65536 or query.stderr:
+        raise ValueError('Unexpected QEMU derivation output query')
+    outputs = query.stdout.decode().splitlines()
+    selected = qemu_output_for_launcher(outputs, sha(launcher))
+    return str(selected), {
+        'launcher_sha256': sha(launcher),
+        'derivation': str(original), 'derivation_sha256': sha(derivation),
+        'output': str(selected),
+        'scope': 'Complete registered runtime output, including wrapped executable and data; not wrapper-only ldd',
+    }
+
+
 def runtime_export(bundle, output):
     """Export only the existing host runtime's complete Nix store closure."""
     manifest = json.loads((bundle / 'bundle.json').read_text())
@@ -82,6 +132,8 @@ def runtime_export(bundle, output):
     # Nix selects nix-store's CLI through argv[0]; resolving its multicall
     # symlink to `nix` changes the command rather than merely its location.
     tool = str(Path(tool).absolute())
+    qemu_root, launch_closure = qemu_launch_root(bundle, manifest, tool)
+    roots.add(qemu_root)
     query = subprocess.run([tool, '--query', '--requisites', *sorted(roots)],
                            capture_output=True, timeout=60, check=True)
     if len(query.stdout) > 65536 or query.stderr:
@@ -109,6 +161,7 @@ def runtime_export(bundle, output):
     return {'format': 'nix-store-export', 'path': destination.name,
             'sha256': sha(destination), 'bytes': destination.stat().st_size,
             'store_roots': sorted(roots), 'complete_requisites': paths,
+            'qemu_launch_closure': launch_closure,
             'dependency_files': dependencies, 'tool': {'path': tool, 'binary': str(Path(tool).resolve()), 'sha256': sha(tool)},
             'scope': 'Existing host runtime files only; no import, download, trust change or guest runtime linkage'}
 

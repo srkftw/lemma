@@ -3957,3 +3957,40 @@ All132fixedchecks passafterrepair, generatedminima/2x3/cellgeometry checked;
 sevenfocusedadversarialtests PASS. OriginalPDK/routeflow unchanged. Tool,
 profile, contract/evidence006-sg13g2-enclosure-preflight retain fullsource/tool
 identities. ActualTritonRoute enforcement andcompleteprocesscoverage stillopen.
+
+Enclosure/PenBanks increment committed/pushed8c37fbf07118c10311a30e76811e13765bf09610.
+Actual224siliconhost tests PASS2.702s,18scaffoldPASS9.023s/metadataPASS;
+source-boundpreflighta2PASS1.832558s. NewincrementCI remainsunobserved here.
+
+Next coherent host distribution repair is implemented: package_native now
+selects the exact originalQEMU runtimeoutput through the copied/host .drv hash
+and exactlauncher bytes, thenexports its completeNixrequisites alongsideRTL
+dependencies. Actual16,552BmakeCWrapper's ldd lists onlyloaderlibs; it omits
+the real .wrapped executable andruntime data. Registeredclosure120paths,
+403043616B NAR/1c38e3734c519165927368382de3d4cbb3a1a5f5dc27ad3fcf054a59a944c983
+exports2.827695s with original512MiB/256path bounds, no settings/import change.
+
+Actualnewnative17/index runtime-inclusivepreparedarchive:
+build/distribution/task006-number-pad-browse17-runtime-a1.tar.gz,
+149970067B/f98edd006eb494142a0059edc4baf3f7c8e496a42292a018479ef6b331c17bbc.
+Preparation89.913381s/supervisor90.002618s;1613files/494354458B;
+sourcebundle9f0278bf/guest43f7/nativeab88 unchanged. Safetar extractionactual
+four-wayPython-IadmissionPASS11.453878s, noCPUfromthatcheck. Runtimechecker
+privateuser/mountnamespace exposesonlylistedreadonlyNixpaths:old3rootinventory
+QEMUreturn255, complete120pathQEMUversion11.1.1 returns0 andactualRTLruns
+genuineguestexact1M/499970retired (6.688604swhole). No notebookReady/cold/NAR
+import/freshhost/Python-Tk/rights claim. Originalstoreflagsprotected/aliasremoved;
+no host setting/security change. Tests226hostPASS2.593s +2outputselectiontests
+(includingunrealisedunuseddebug)PASS;18scaffoldPASS8.783s/metadataPASS.
+Evidenceextended006-local-native-distribution-v1/whole-machineinventory.
+Archive retains exactactualproducer source; currentpublisher additionally
+acceptsunrealisedunuseddebugoutput (no target/backendrebuild required).
+
+Runtimevisibility originalFAILa1wrongmanifestkey, a2unnecessaryreadonlybind
+remountEPERM, a3missingrequiredUARToutput remainretained. Correctdriver verifies
+inheritedreadonly/nosuid/nodev/noexecflags, normalUART/DTB/descriptorargs;
+actualcorrectedpassa4 andcurrentpackagedpassa1 separate. Alloriginalfailed
+sourcebytes reconstructedandhashmatchedtotheiractualproducerreceipts under
+build/distribution/task006-native-runtime-closure-owner-a1; none relabelled.
+Native/browser17 wholecomparison and15secondCOURSE/companion16 originalbounds
+stillrunning, preserveowners/checkpoints/media. No wholemissioncompletion.

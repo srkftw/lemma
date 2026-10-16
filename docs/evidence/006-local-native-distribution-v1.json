@@ -398,5 +398,113 @@
       "scaffold": "18 tests PASS10.071s, build/uart/task006-raw-uart-native-v2-plan-a1/scaffold-host.log",
       "metadata": "PASS seven gates/56 software/six physical units; metadata only"
     }
+  },
+  "wrapped_runtime_closure_repair": {
+    "status": "PASS_REAL_WRAPPED_OUTPUT_EXPORT_VISIBILITY_AND_ARCHIVE_ADMISSION",
+    "scope": "Correct host-runtime packaging, no target image/ROM/controller/lowering change. Does not close freshhost import, externalPython/Tk, rights, completeproductworkflow or QEMUcachedcontinuation.",
+    "implementation": "scripts/package_native.py",
+    "current_producer_sha256": "556443ead4a2665626f80fdfd18aa27c6033044826ee0a4d46a939dc7f34678b",
+    "archive_producer_sha256": "c6ec6374c6b2a44175004ac96bfa313f8f26d399212508e998a792497242494f",
+    "archive_producer_source": "Inside prepared/extracted archive host/scripts/package_native.py; original exact bytes retained. Current source additionally admits an unrealised unused debug output; focused regression tests pass without rebuilding unchanged emulators/guests.",
+    "defect": "ldd of16,552-byte compiledmakeCWrapper launcher omits actual .qemu-system-riscv64-wrapped program and runtime data. Original3-root inventory actuallyfails withthosepaths onlyvisible.",
+    "authority": {
+      "launcher_sha256": "97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7",
+      "derivation": "/nix/store/0gkh4mxn9cksrwp549qlxy37qwm1aqcg-lemmasim-qemu-raw-uart-v1-11.1.1.drv",
+      "derivation_sha256": "7ae35b58ef6a976779394f1ee52edbc322345df4125ae646accfa97f422de745",
+      "output": "/nix/store/b16yg2x2wyjblw63x5kln24z9n6m2s2r-lemmasim-qemu-raw-uart-v1-11.1.1",
+      "scope": "Complete registered runtime output, including wrapped executable and data; not wrapper-only ldd"
+    },
+    "runtime": {
+      "format": "nix-store-export",
+      "sha256": "1c38e3734c519165927368382de3d4cbb3a1a5f5dc27ad3fcf054a59a944c983",
+      "bytes": 403043616,
+      "store_roots": [
+        "/nix/store/b16yg2x2wyjblw63x5kln24z9n6m2s2r-lemmasim-qemu-raw-uart-v1-11.1.1",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib",
+        "/nix/store/xx7cm72qy2c0643cm1ipngd87aqwkcdp-glibc-2.40-66"
+      ],
+      "tool": {
+        "path": "/run/current-system/sw/bin/nix-store",
+        "binary": "/nix/store/yhbbi1pjdkxss2f6k5pgg4gv0r8fva7f-nix-2.31.2/bin/nix",
+        "sha256": "6bd632acf71ef7bcb98c61019e557fea959f2d8c1b2d9918702dfc8e5c66fdf0"
+      }
+    },
+    "complete_requisite_count": 120,
+    "prepared_package": {
+      "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-pad-browse17-runtime-a1",
+      "manifest_sha256": "c7a953a0079c2de05aa8b0992153466d0d6f6f58e4c0fa94e317ea13d7eeaf5b",
+      "source_bundle_sha256": "9f0278bf2cf08106f289b286f5966f71c4256026836eca34bc98d97a13d83612",
+      "files": 1613,
+      "bytes": 494354458,
+      "ordinary_both_backend_both_guest_admission": true,
+      "host_dependencies": "Exact external Nix files retained as prerequisites",
+      "guest_execution": "NOT_EXERCISED_BY_PACKAGING",
+      "archive": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-pad-browse17-runtime-a1.tar.gz",
+        "sha256": "f98edd006eb494142a0059edc4baf3f7c8e496a42292a018479ef6b331c17bbc",
+        "bytes": 149970067
+      },
+      "seconds": 89.91338084894232
+    },
+    "preparation_supervision": {
+      "status": "PASS_BOUNDED_PREPARED_NATIVE17_WITH_COMPLETE_RUNTIME",
+      "returncode": 0,
+      "seconds": 90.00261849199887
+    },
+    "actual_safe_extraction_admission": {
+      "status": "PASS_ACTUAL_NATIVE17_RUNTIME_ARCHIVE_EXTRACTION_ADMISSION_NO_CPU",
+      "members": 1614,
+      "unpacked_bytes": 494682119,
+      "command": [
+        "/run/current-system/sw/bin/python3",
+        "-I",
+        "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-pad-browse17-runtime-extracted-a1/lemmasim-native/run.py",
+        "--verify-only",
+        "--view-dir",
+        "/home/sreekumaar/Downloads/lemma/build/distribution/task006-native-runtime-closure-owner-a1/extracted-view-a1"
+      ],
+      "seconds": 11.453878419008106
+    },
+    "actual_namespace_visibility": {
+      "result": "build/distribution/task006-native-runtime-visibility-package-a1/result.json",
+      "result_sha256": "45edd4ffee19e35309e8c18627a553dfd6dbc475a7185e756d5931716fec102d",
+      "producer_sha256": "73da6f38bb6a3a951af93496cb9d866ca31cae3df52ac808e80d9417a1c6bcb1",
+      "status": "PASS_ACTUAL_RUNTIME_VISIBILITY_OLD_CLOSURE_REJECTED",
+      "seconds": 6.688604125985876,
+      "old_paths": 3,
+      "old_QEMU_returncode": 255,
+      "complete_paths": 120,
+      "complete_QEMU_returncode": 0,
+      "genuine_RTL_clocks": 1000000,
+      "actual_retired": 499970,
+      "source_guest_sha256": "43f7fa569474614c6e473ee40c6ac9ed911b2e0752c5568c5520c3190cabe789",
+      "limitation": "Namespace visibility uses the existing listed store contents; no NAR import, fresh host, notebook Ready or cold-recovery claim."
+    },
+    "checker_command": "python3 conformance/lemmasim/check_native_runtime_closure.py --bundle build/distribution/task006-number-pad-browse17-runtime-a1/bundle --export-result build/distribution/task006-number-pad-browse17-runtime-a1/package.json --output-dir build/distribution/task006-native-runtime-visibility-package-a1",
+    "checks": {
+      "silicon_host_tests": 226,
+      "silicon_host_seconds": 2.593,
+      "exact_output_selection_tests": 2,
+      "current_unused_debug_regression": "PASS sameactualwrapper matchingbytes withunrealised debugoutput; wrong/ambiguous/duplicate/traversing/outsideoutputs reject",
+      "logs": "build/distribution/task006-native-runtime-closure-owner-a1"
+    },
+    "retained_failures": [
+      {
+        "result": "build/distribution/task006-native-runtime-visibility-a1/result.json",
+        "reason": "Wrong observerkey elf instead of manifestimage; beforeCPU"
+      },
+      {
+        "result": "build/distribution/task006-native-runtime-visibility-a2/result.json",
+        "reason": "UnnecessarybindremountfailedEPERM becauseoriginalstoremountflagsarelocked. Correctedbyverifyinginheritedreadonly/nosuid/nodev/noexecprotections, no protection weakened."
+      },
+      {
+        "result": "build/distribution/task006-native-runtime-visibility-a3/result.json",
+        "reason": "ActualadapterrejectedmissingrequiredUARToutput beforeCPU. AddednormalpubliclaunchUART/DTB/descriptorargs."
+      }
+    ],
+    "original_failed_source_archive": "build/distribution/task006-native-runtime-closure-owner-a1/visibility-source-a{1,2,3}.py; each exactlymatchesoriginalreportproducerhash",
+    "remaining": "The existing-readonly-path namespace is not a NAR import or freshhostinstallation; Python/Tk/userNixpermissions and redistribution rights remain prerequisites. Runtime-inclusive export corrected; historicallegacyhost_dependencies alone stilldoesnotdescribecompleteQEMUwrapperclosure."
   }
 }
