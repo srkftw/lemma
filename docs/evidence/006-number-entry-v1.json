@@ -720,5 +720,125 @@
     "steps_success": 111,
     "skipped": 0,
     "scope": "Exact published compiler candidate. Original CI failures retained separately; no full-machine or physical closure."
+  },
+  "canonical_rtl_number_entry": {
+    "actor": {
+      "path": "build/courses/task006-number-entry-rtl-a1/result.json",
+      "sha256": "32bd3f39bad5886e71f9c80fe9507dca1ad7050e240ee7f1981ffe96f1e521a2",
+      "status": "PASS_EXACT_RTL_NUMBER_ENTRY_CHECKING_COLD"
+    },
+    "supervision": {
+      "path": "build/courses/task006-number-entry-rtl-supervision-a1/result.json",
+      "sha256": "5661500ce63cd3cad87d0df76ccf835765120bfc126557f9bffaf22c5a5615e5",
+      "status": "PASS_EXACT_RTL_NUMBER_ENTRY_SUPERVISED"
+    },
+    "identity": {
+      "backend": "rtl",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "8e5ce4ee293f0c7fb6c17f4bb905d14e2ef80de6db1c7110e5b3fb56ef389488",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "guest": "3baf7a1181b0a6f4df10646e7f246466a2f6b8c5f91d7456dcd412c3bc534274",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+      "development_guest_source_archive": {
+        "inventory": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-number-entry-repaint-normal-whole-a1/consumed-source-root/source-inputs.json",
+          "sha256": "ea848f985cf086b843b417da0ae692808ce2b8bbf9de63ca6b54af397ba46cbe"
+        },
+        "build": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-number-entry-repaint-notebook-a1/build.json",
+          "sha256": "261e90a8fa0cc8a8600d4adada691486716740777496426793cbdd266b44b9dc"
+        },
+        "provenance": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-number-entry-repaint-notebook-a1/provenance.json",
+          "sha256": "28cfde5a6b548134d378a434ef986b76128a66ebb79b8bc2ce7a429eeb19b1a3"
+        },
+        "audit": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-number-entry-repaint-notebook-a1/audit.json",
+          "sha256": "6e8c57b625d7ad4a0ac58cf581c8eb4fc8f28426f6c49e311e4d2863cdf868ae"
+        },
+        "image": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-number-entry-repaint-notebook-a1/image.elf",
+          "sha256": "3baf7a1181b0a6f4df10646e7f246466a2f6b8c5f91d7456dcd412c3bc534274"
+        },
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "source_commit": "71be51a2984e107bf31677885880fc4a1ab7ff75",
+        "dirty_paths": [],
+        "inputs": 410,
+        "scope": "unchanged fully audited canonical notebook; complete original source/tool/object closure"
+      }
+    },
+    "phases": 22,
+    "exact_rtl_clocks": 3357000000,
+    "host_seconds": 16586.544859546004,
+    "supervised_seconds": 16593.535353403073,
+    "peak_owned_rss_bytes": 497819648,
+    "limits_unchanged": {
+      "aggregate_clocks": 5000000000,
+      "aggregate_host_seconds": 36000,
+      "phase_caps": {
+        "view": 100000000,
+        "control": 150000000,
+        "check": 200000000,
+        "cold": 1000000000,
+        "course": 400000000,
+        "ink": 300000000,
+        "close": 500000000
+      }
+    },
+    "cold_ready": {
+      "name": "new-cold-Ready",
+      "initial_cycle": 0,
+      "final_cycle": 473000000,
+      "rtl_clocks": 473000000,
+      "host_seconds": 1905.9619807150448,
+      "clock_cap": 1000000000,
+      "host_cap": 7200
+    },
+    "independent_cold": {
+      "name": "independent-new-CPU-cold-all-pixels",
+      "initial_cycle": 0,
+      "final_cycle": 532000000,
+      "rtl_clocks": 532000000,
+      "host_seconds": 2219.4206807139562,
+      "clock_cap": 1000000000,
+      "host_cap": 7200
+    },
+    "disconnect": {
+      "name": "disconnect-preserves-visible-course-and-keypad",
+      "initial_cycle": 760000000,
+      "final_cycle": 1219000000,
+      "rtl_clocks": 459000000,
+      "host_seconds": 2437.8700844560517,
+      "clock_cap": 500000000,
+      "host_cap": 3600
+    },
+    "scope": "Actual canonical13 numeric5/0 Invalid,5/6 Verified,5/69 Invalid, overflow rejection without Save, BACK then Verified, authored local hint, raw ink Save, independent CPUcold complete pixels/medium/objects and course/body/keypad/history reopen, actual flags8 disconnect with complete repaint preserving acknowledged media. Source13/410 files and original8e5 runtime. No15/full-new-runtime or RTL partial-pwrite failure claim. Original34hostfile source hold released after supervised terminalPASS."
+  },
+  "ssa_validation_candidate": {
+    "status": "PASS_COMPONENT_EXACT_DIAGNOSTICS_AND_GENUINE_EXPORT_FULL_PAIR_LEGACY_CI_PENDING",
+    "source_commit_before": "3504185cb9915a9fcc6432b83feee985885cb826",
+    "sources": {
+      "Lemma/Compiler/LLVMValidate.lean": "b9495ab1a4e931ecf0bd6e78f3afc89718806a3e3456d254dd0e06c665aa9cc2",
+      "Lemma/Compiler/Test/CFGValidation.lean": "db5c8686849b4a4699868c64638b84c4a0a3a9176862d262aabc700cb73c84da"
+    },
+    "tests": "54CFG; direct retained-validator comparison37 function+12 module results compares exact Except constructor/full error strings including2 duplicate-before-type cases",
+    "differential_log": "build/courses/task006-ssa-index-owner-a1/differential-a3.log",
+    "export": {
+      "path": "build/courses/task006-notebook15-export-ssa-a1/result.json",
+      "sha256": "10a8d64ddba8a62ab475587afe0bc6b25c2b479d3fe4c4db16fdc36faceff345",
+      "status": "PASS_PROFILED_GENUINE_EXPORT_SAME_BYTES"
+    },
+    "same_emitted_files": [
+      "unit.json",
+      "program.ll",
+      "normalized.txt",
+      "symbols.txt"
+    ],
+    "previous_same_cli_export_seconds": 183.58118594402913,
+    "candidate_export_seconds": 104.14654235600028,
+    "candidate_peak_owned_rss_bytes": 1774149632,
+    "host_suites": "40core0/473foundation/449kernel PASS",
+    "scope": "Unique SSA map and final dominance-membership index only. Duplicate rejection before insertion, traversal/error order and fixed-point solver retained. Shared host performance observation, not general compiler proof or target cycle change. Full matched linked audits, legacy target and new candidate CI pending. Failed first differential harness elaboration retained."
   }
 }

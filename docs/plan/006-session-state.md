@@ -3604,3 +3604,29 @@ and optional-key observer are retained; correct native archive resolver supplies
 exact old CPP, unchanged current inputs checked. Neither failed attempt executed
 a CPU. Full changed-runtime notebook/browser remains separate; existing prepared
 15 functional qualification still uses native8e5/Wasmfb15. See006-framebuffer-port-index.json.
+
+
+Canonical13 final numeric RTL campaign is now terminalPASS, not running:
+`build/courses/task006-number-entry-rtl-a1/result.json`22phases,
+3,357,000,000 real RTL clocks/16,586.544860s. SupervisorPASS16,593.535353s,
+497,819,648B peak/owned cleanup/source hold all passed. Original5B/36000s and
+phase caps unchanged. ColdReady473M/1905.961981s; independent cold532M/
+2219.420681s; final actual flags8 disconnect/repaint459M/2437.870084s within
+original500M/3600s. Full actual numeric Invalid/Verified/overflow/noSave/BACK,
+authored hint/raw ink Save and independent cold complete pixels/media/objects,
+course body/keypad/check history reopen complete. Source13/71be51a/410files,
+guest3baf7a11/runtime8e5; not later15/newruntime qualification. Original34host
+source hold is RELEASED. Historical timeouts and separate unsuccessful Save
+evidence retain their identities.
+
+Next compiler-host candidate indexes uniqueSSA definitions and final dominance
+memberships. Fixed-point algorithm/order/fuel and validation traversal/errors
+unchanged. New54CFG cases include duplicate-before-type precedence. Temporary
+retained-validator namespace differential37function+12module compares exact
+Exceptconstructor/fullstrings; PASS. Initial harness elaborationFAIL retained
+under006-ssa-index-owner-a1. Genuine initializer15 export all4files identical,
+explicit-j2 observed104.146542s vs prior183.581186s; peak1,774,149,632B,
+mainCPU102.65s. Shared host observation only.40core0/473foundation/449kernel
+hosts pass. Full matched linked pair/legacy target/new candidate CI pending.
+New standalone export archive captures412sources before2fixture additions;
+new full pair must bind final current two-file change independently.

@@ -1205,5 +1205,12 @@
     "evidence": "docs/evidence/006-framebuffer-port-index.json",
     "process_cpu_reduction_percent": 17.974967068040325,
     "full_changed_runtime_browser_workflow": "NOT_RUN"
+  },
+  "canonical_number_entry_rtl_milestone": {
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "status": "PASS_22_PHASE_CANONICAL13_RTL_NUMERIC_MATH_INK_SAVE_COLD_DISCONNECT",
+    "rtl_clocks": 3357000000,
+    "host_seconds": 16586.544859546004,
+    "scope": "Canonical0.3 fullresolution/capacity; actual guest service mathematics and retained notebook. Unsuccessful Save remains separately qualified, not inferred here; later15 runtime/browser and unfinishedG2/G4-G7 remain open."
   }
 }
