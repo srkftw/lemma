@@ -4201,7 +4201,7 @@ def mainRecoverablePackageClosureBulk (bootArgument : UInt64) : Action :=
 
 
 /-! Number-pad deployment1. Historical Notebook roots remain unchanged.
-Only packageState+184 (painted) and+192 (limit message) are new transient words;
+The keypad uses packageState+184 (painted),+192 (limit) and+200 (raw overdraw);
 the existing reader uses its separate context0..88, package UI0..176. These
 words are not durable document fields and confer no checking authority. -/
 private def numericTileStep (i _ : UInt32) (acc width _ _ _ : UInt64) : Action :=
@@ -4225,7 +4225,8 @@ private def numericPumpPad : Action :=
   .bind (packageGet 192) fun s limited => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Courses.NumberPad.render width height limited) fun s _ => if statusFailed s = true then .done s 0 else
   .boundedFoldU64 84 numericTileStep 84 0 width 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (dirty 448 160 832 360) fun s _ => if statusFailed s = true then .done s 0 else packagePut 184 1
+  .bind (dirty 448 160 832 360) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 200 0) fun s _ => if statusFailed s = true then .done s 0 else packagePut 184 1
   else .done 0 0 else .done 0 0
   else packagePut 184 0 else .done 0 0
 
@@ -4264,8 +4265,13 @@ private def numericPadPress (key : UInt64) : Action :=
   .bind (Lemma.Documents.Mathematics.copyCurrent mathematics packageDocumentStage) fun s copied => if statusFailed s = true then .done s 0 else
   if copied = Lemma.Documents.Mathematics.currentBytes then
   .bind (Lemma.Documents.MathematicsEntry.press packageDocumentStage key) fun s changed => if statusFailed s = true then courseError s else
-  .bind (packagePut 192 (if changed = 2 then 1 else 0)) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (packagePut 184 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 184) fun s painted => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 192) fun s prior => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 200) fun s damaged => if statusFailed s = true then .done s 0 else
+  let limited := if changed = 2 then (1 : UInt64) else 0
+  .bind (packagePut 192 limited) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if Lemma.Courses.NumberPad.repaintNeeded painted prior limited damaged = 1 then
+    packagePut 184 0 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   if changed = 1 then
   .bind (Lemma.Courses.PackageWorkspace.stageRefresh packageWorkspace packageDocumentStage mathematicsSave)
     fun s _ => if statusFailed s = true then courseError s else
@@ -4288,6 +4294,13 @@ where
         Lemma.Courses.PackageWorkspace.captureSelection mathematicsSave packageBytes length (node - 1) packageBindingScratch
       else .done 240 0 else .done 0 0 else .done 0 0
     else .done 0 0
+
+/-- A raw stroke can cross the keypad even when both endpoints are outside.
+Mark conservatively once at admission. Keep the existing overdraw visible until
+the next key; only the completed full pad render clears this transient word. -/
+private def numericMarkPadOverdraw : Action :=
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
+  if allocated = 12 then packagePut 200 1 else .done 0 0
 
 private def numericInputSample : Action :=
   .bind (Memory.read64 raw) fun s sequence => if statusFailed s = true then .done s 0 else
@@ -4339,6 +4352,7 @@ where
       if 640 ≤ py then if py < 700 then if 24 ≤ px then if px < 408 then packageControlPress px py else write else write else write else write
     else write
   write : Action :=
+    .bind numericMarkPadOverdraw fun s _ => if statusFailed s = true then failWriting s else
     .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
 
 private def drainNumericInput (input : UInt64) : Action :=

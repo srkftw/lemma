@@ -2,6 +2,7 @@ import Lemma.Courses.PackageWorkspace
 import Lemma.Courses.WorkspaceCodec
 import Lemma.Documents.MathematicsEntry
 import Lemma.Courses.Arithmetic
+import Lemma.Courses.NumberPad
 
 /-! Independent bounded RAM fixture executing the imported guest Actions.
 Prepared negative records are fixture inputs, never published guest evidence.
@@ -128,4 +129,16 @@ def check : IO Unit := do
   IO.println "NUMBER_ENTRY1:PASS actual Actions/5fields/clear/backspace/idempotence/overflow/stale-evidence/history/zero-denominator/rejections; component only"
 end NumberEntryTests
 
-def main : IO Unit := NumberEntryTests.check
+def main : IO Unit := do
+  NumberEntryTests.check
+  for painted in #[(0 : UInt64),1] do
+    for prior in #[(0 : UInt64),1] do
+      for limited in #[(0 : UInt64),1] do
+        for damaged in #[(0 : UInt64),1] do
+          let skip := painted == 1 && prior == limited && damaged == 0
+          unless Lemma.Courses.NumberPad.repaintNeeded painted prior limited damaged == (if skip then 0 else 1) do
+            throw <| IO.userError "static keypad skipped required reconstruction"
+  for (painted,prior,limited,damaged) in (#[((2 : UInt64),0,0,0),(1,2,2,0),(1,0,0,2),(1,0xffffffffffffffff,0xffffffffffffffff,0)] : Array (UInt64 × UInt64 × UInt64 × UInt64)) do
+    unless Lemma.Courses.NumberPad.repaintNeeded painted prior limited damaged == 1 do
+      throw <| IO.userError "malformed transient pad state avoided reconstruction"
+  IO.println "NUMBER_PAD_REPAINT1:PASS actual pure policy/16states/4malformed; complete guest/raw overdraw qualification separate"

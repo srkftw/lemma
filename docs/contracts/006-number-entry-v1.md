@@ -78,3 +78,25 @@ This store-count reduction alone is not target-cycle or host-speed evidence.
 The exact14 catalog, complete pre/post LLVM corpus and actual machine-code
 control tables have separate admissions; whole-image execution remains a
 separate qualification. Historical12/13 artifacts retain their exact pins.
+
+Notebook15 adds conservative reuse of the static keypad. The existing painted
+word at packageState+184 and limit header at+192 are joined by transient raw
+overdraw at+200. A key reuses the pad only when it was completely painted, both
+old and new limit headers are valid and equal, and overdraw is zero. Malformed
+state forces reconstruction. Mathematical publication, checking and Save retain
+their ordinary guest paths.
+
+Admission of any new raw stroke marks overdraw once, before stroke creation,
+when the private twelve-page package context exists. Active strokes may cross
+the keypad regardless of their endpoints. This marker leaves existing visible
+ink in place until the next key. A complete pad render and dirty marking clear
+it; partial failure does not claim a reconstructed pad. Cold opening and loss
+repaint retain their existing full reconstruction. This is transient software
+presentation state, not a processor cache or a new durable document field.
+
+The additive15 authority binds the genuine whole pre/post LLVM artifact and
+predecessor14. Its focused integration case first runs the complete original
+number-entry workflow, then draws real raw ink across the keypad, edits through
+an actual key, checks all independently expected writing-plane pixels, closes
+the overlay to reveal retained ink, and starts another independent cold CPU.
+Until those observations pass, source admission alone does not qualify reuse.

@@ -3444,3 +3444,27 @@ passes306 ordinary commands/full raw replay/live kill/reap at56.092409s.
 No fresh target compilation is claimed. Reports/logs/archive are under
 build/ci/task006-ci84-{failures,terminal-repro-a1}. New candidate CI must run;
 no blind rerun or waiver.15 keypad-cache work is uncommitted and separate.
+
+Notebook15 implementation checkpoint: static keypad reuse now binds only valid
+painted/equal-header/no-overdraw state. New raw strokes conservatively mark the
+private+200 transient word; complete render clears it. Ordinary mathematical
+publication, Save and checking remain guest-owned. Genuine normal/initializer
+exports871/869 and866 unchanged14 bodies, exact additive predecessor/corpus,
+actual25 RV64 cells and actual marker/cell mutations pass. Initial component
+semantic observer incorrectly searched a scalar i64 policy call as an Action
+aggregate call and failed closed; corrected typed-call observer passes. Original
+failed command retained. Full linked audits/CPU qualification are still pending.
+New check_keypad_repaint.py retains the complete22-phase original workflow, then
+actual raw stroke/key repair/underlying ink/newCPUcold/reopen in the original
+3B functional-unit/900s envelope. No old RTL timing claim is inherited.
+
+Actual extracted Notebook13 browser durable-only cold has now also reopened
+the original selected node3 body, all76800 keypad pixels, verified5/6/rev7, four
+attempts, hint1 and exact package/execution history. Original400M bound:
+531.5M→910.7M; medium all268435456B unchanged/sequence20. Passive observer
+PASS32.450709s. Separate d2 browser CHECK of goal3 is actually Unsupported/rev15,
+Saved31 after196.1M of the original200M cap; original verified history/source
+retained, current binding Unknown, isolated closure request433/status0.
+Independent label/body/workspace observer PASS31.281403s. Neither result
+closes general proof checking or full browser workflow; zero-budget case and
+new writing/save/reload are still in progress under original aggregate bounds.

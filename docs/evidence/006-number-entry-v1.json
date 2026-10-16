@@ -1,8 +1,8 @@
 {
   "schema": "lemma-number-entry-evidence/1",
-  "status": "PASS_NOTEBOOK13_FAST_CHECKING_SAVE_COLD_DISCONNECT_NATIVE_STATIC_PREPARED",
+  "status": "PASS_13_BROWSER_COLD_COURSE_REOPEN_14_FULL_AUDITS_FAST_15_PENDING",
   "contract": "docs/contracts/006-number-entry-v1.md",
-  "scope": "Canonical Notebook13 number-entry path; unchanged machine0.3/User2 and durable formats. Fast connected workflow/failed-FLUSH/cold, extracted native workflow and extracted browser cold/all pixels/bytes PASS. Full numeric RTL and browser course reopen remain running. Additive Notebook14 aligned key-path candidate has component/LLVM/machine admission only until full linked audits/execution.",
+  "scope": "Notebook13 complete functional/native workflow and actual extracted browser cold/course/reopen/keypad qualified; numeric RTL remains running. Notebook14 whole linked audits, complete functional workflow and prepared bundles pass. Additive Notebook15 static-pad reuse has component/whole LLVM/machine admission; full linked audits and actual raw-overdraw/cold scenario pending.",
   "component": {
     "result": "build/courses/task006-number-entry-component-a2/result.json",
     "result_sha256": "404fb5d3e1d64961b739f9265b53152ce8c300fad3a68a1101228156414c317c",
@@ -334,5 +334,69 @@
     "fast_supervised_seconds": 222.91190527903382,
     "fast_owned_peak_rss_bytes": 453496832,
     "distribution": "Matched14 native/static bundles and archives prepared; no new extracted launch claim."
+  },
+  "browser_number_entry_cold": {
+    "path": "build/browser/task006-number-entry-cold-plan-a1/cold-result.json",
+    "sha256": "3ee9eda450fdd135d49179778e6dad2ce625f391d34f0a306c0046aa39f462ac",
+    "status": "PASS_EXTRACTED_BROWSER_COLD_ALL_PIXELS_AND_DURABLE_BYTES"
+  },
+  "browser_number_entry_reopen": {
+    "path": "build/browser/task006-number-entry-cold-plan-a1/reopen-result.json",
+    "sha256": "367d7af7dba659bf58276044a561404e72342c2d0039b153c155cf927d7983ad",
+    "status": "PASS_EXTRACTED_BROWSER_COLD_REOPEN_MATH_COURSE_KEYPAD",
+    "cycle": 910700000,
+    "clocks_after_cold": 379200000,
+    "complete_keypad_pixels": 76800,
+    "complete_selected_body_pixels": 122880,
+    "all_medium_bytes": 268435456,
+    "medium_unchanged": true,
+    "revision": 7,
+    "answer": [
+      5,
+      6
+    ],
+    "attempts": 4,
+    "hints": 1,
+    "selected_package_node": 3
+  },
+  "browser_actual_unsupported": {
+    "path": "build/browser/task006-idle2-mathematics-plan-a1/unsupported-result.json",
+    "sha256": "741231c84a6a676f55d17e07c0e96916dc43153733831eaeda112dd516108eed",
+    "status": "PASS_BROWSER_ACTUAL_UNSUPPORTED_PRESERVES_PRIOR_EVIDENCE",
+    "cycle": 2301600000,
+    "check_clocks": 196100000,
+    "revision": 15,
+    "goal": 3,
+    "outcome": 4,
+    "attempts": 2,
+    "hints": 1,
+    "prior_verified_history_retained": true
+  },
+  "pad_reuse_candidate": {
+    "contract_version": "lemma-installed-package-notebook/15",
+    "artifact": {
+      "path": "build/courses/task006-number-pad-repaint-component-a1/artifact-result.json",
+      "sha256": "004fbb17d382ef3dd7d6356f5bcdd00b2a9371cae9697f1a40b0a73004e41459",
+      "status": "PASS_GENUINE_PAD_REPAINT_NUMBER_ENTRY_ARTIFACT"
+    },
+    "machine": {
+      "path": "build/courses/task006-number-pad-repaint-component-a1/machine-result.json",
+      "sha256": "318665e3cb669ceab88582c28219bfa9d4537438f8493019526c4f6f248a4174",
+      "status": "PASS_ACTUAL_RV64_NUMBER_CONTROL_CELLS"
+    },
+    "functions_pre": 871,
+    "functions_post": 869,
+    "unchanged_common": 866,
+    "changed_common": [
+      "numericInputSample.write",
+      "numericPadPress",
+      "numericPumpPad"
+    ],
+    "new": [
+      "numericMarkPadOverdraw",
+      "NumberPad.repaintNeeded"
+    ],
+    "component": "Actual number-entry Actions and16 valid/4 malformed repaint-policy states PASS; source admission is separate from whole-image/CPU qualification",
+    "next": "Fresh matched full linked normal/initializer audits, then check_keypad_repaint.py including full base workflow and extra raw overdraw/repair/independent cold. Original3B/900s retained."
   }
 }

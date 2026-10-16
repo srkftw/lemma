@@ -14,6 +14,14 @@ def key (x y : UInt64) : UInt64 :=
   if row < 3 then row * 3 + column + 1 else
   if column = 0 then 10 else if column = 1 then 0 else 11
 
+/-- The pad's only dynamic asset is the limit header. Raw ink may overdraw it;
+that separately tracked damage forces the same reconstruction as a header
+change. No damaged or unpainted span is treated as an authoritative cache. -/
+def repaintNeeded (painted prior limited damaged : UInt64) : UInt64 :=
+  if prior ≤ 1 then if limited ≤ 1 then
+  if painted = 1 then if prior = limited then if damaged = 0 then 0 else 1 else 1 else 1
+  else 1 else 1
+
 def character (row column limited : UInt64) : UInt64 :=
   if row = 0 then
     let packed : UInt64 := if limited = 1 then 0x39392054494d494c else 0x39392d3045505954

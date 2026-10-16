@@ -102,7 +102,10 @@ def numeric_contract(unit):
   if a.get('schema')!='lemma-number-entry-repaint-artifact/1' or a.get('package_notebook_version')!=13 or a.get('previous_artifact_sha256')!=numeric_digest(previous) or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS):raise Core0Error('Number entry repaint exact predecessor differs')
   if a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):
    previous=a;a=master.get('number_entry_aligned_v1',{})
-   if a.get('schema')!='lemma-number-entry-aligned-artifact/1' or a.get('package_notebook_version')!=14 or a.get('previous_artifact_sha256')!=numeric_digest(previous) or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS)or a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):raise Core0Error('Number entry aligned exact predecessor/catalog differs')
+   if a.get('schema')!='lemma-number-entry-aligned-artifact/1' or a.get('package_notebook_version')!=14 or a.get('previous_artifact_sha256')!=numeric_digest(previous) or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS):raise Core0Error('Number entry aligned exact predecessor differs')
+   if a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):
+    previous=a;a=master.get('number_entry_pad_repaint_v1',{})
+    if a.get('schema')!='lemma-number-entry-pad-repaint-artifact/1' or a.get('package_notebook_version')!=15 or a.get('previous_artifact_sha256')!=numeric_digest(previous) or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS)or a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):raise Core0Error('Number entry pad repaint exact predecessor/catalog differs')
  if {r.get('stable_id')for r in unit.get('used_execution_ops',[])}!={'execution.virtual-read8','execution.virtual-read64','execution.virtual-write8','execution.virtual-write64','execution.syscall'}:raise Core0Error('Number entry execution authority differs')
  return 'canonical',a
 
@@ -114,7 +117,7 @@ def numeric_semantics(ir,unit):
   if owner not in rows or target not in rows:raise Core0Error('Number entry semantic owner absent')
   return re.findall(r'call \{ i64, i64 \} @'+re.escape(rows[target]['symbol'])+r'\(([^\n]*)\)',_ir_definition_body(ir,rows[owner]['symbol']))
  version=numeric_contract(unit)[1]['package_notebook_version']
- publisher='numericPublishAligned'if version==14 else'publishPackageWorkspace'
+ publisher='numericPublishAligned'if version>=14 else'publishPackageWorkspace'
  for owner,target in [('numericInputSample.acceptSample','numericPadPress'),('numericPadPress',publisher),('numericStep','numericPumpPad'),('numericStep','pumpRefreshRestoredBatched'),('publishPackageWorkspace','savePackageWorkspace'),('savePackageWorkspace','startSave'),('packageToolbar','packageRequestSave'),('uploadDirtyBatch','consumeDirtyIndexStep'),('pumpRefreshRestoredBatched','restorePaperBatch'),('restorePaperBatch','Lemma.Ink.Surface.uploadIndexedBulk')]:
   target=target if target.startswith('Lemma.')else prefix+target
   if len(calls(prefix+owner,target))!=1:raise Core0Error('Number entry disconnected ordinary path: '+owner+'/'+target)
@@ -124,10 +127,20 @@ def numeric_semantics(ir,unit):
   repair=prefix+'numericPumpCancelledRedraw'
   if len(calls(prefix+'numericStep',repair))!=1 or len(calls(repair,prefix+'pumpCancelledRedraw'))!=1 or len(calls(repair,prefix+'renderPackageCourse'))!=1:raise Core0Error('Number entry loss recovery lost its actual guest repaint path')
   if calls(repair,prefix+'startSave')or calls(repair,prefix+'reportCommitState'):raise Core0Error('Number entry loss repaint acquired persistence/acknowledgment authority')
- if version==14:
+ if version>=14:
   for target in ('adoptPackageWorkspace','reportCourse','savePackageWorkspace'):
    if len(calls(prefix+publisher,prefix+target))!=1:raise Core0Error('Aligned number entry changed ordinary publication/report/Save')
   if len(calls(prefix+publisher,'Lemma.Courses.ArithmeticAligned.render'))!=1 or calls(prefix+publisher,prefix+'renderPackageCourse'):raise Core0Error('Aligned number entry lost its actual selected renderer')
+ if version>=15:
+  mark=prefix+'numericMarkPadOverdraw'
+  policy='Lemma.Courses.NumberPad.repaintNeeded'
+  if policy not in rows:raise Core0Error('Static keypad repaint policy absent')
+  policy_calls=re.findall(r'call i64 @'+re.escape(rows[policy]['symbol'])+r'\(([^\n]*)\)',_ir_definition_body(ir,rows[prefix+'numericPadPress']['symbol']))
+  if len(calls(prefix+'numericInputSample.write',mark))!=1 or len(policy_calls)!=1:raise Core0Error('Static keypad lost conservative raw-ink invalidation')
+  if calls(mark,prefix+'packagePut')!=['i64 200, i64 1']:raise Core0Error('Raw ink lost transient pad-overdraw marker')
+  if 'i64 200, i64 0'not in calls(prefix+'numericPumpPad',prefix+'packagePut'):raise Core0Error('Completed pad reconstruction lost damage clearing')
+  for target in ('startSave','reportCommitState','numericPublishAligned','packageCheck'):
+   if prefix+target in rows and calls(mark,prefix+target):raise Core0Error('Raw pad marker acquired document/checking/Save authority')
  if calls(prefix+'packageRequestSave',prefix+'issue')!=['i64 8, i64 0, i64 0, i64 0']:raise Core0Error('Number entry explicit Save differs')
  return {'ordinary_guest_entry_and_storage_connected':True,'numeric_bounds':'0..99; overflow is unchanged bytes, explicit limit message','scope':'Complete source/IR authority; CPU/Store/controller qualification separate'}
 

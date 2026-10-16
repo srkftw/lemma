@@ -145,5 +145,23 @@
     "pre_sha256": "55d64dbb9650a9fc2bc053a696e667c2e6a13d53424c5074f3ae82afdb73d70d",
     "post_function_count": 867,
     "post_sha256": "138fd9d52cdfc550b75facf1e2308e19d4c16370a0e5fc5da69b1d60e431e2de"
+  },
+  "number_entry_pad_repaint_v1": {
+    "schema": "lemma-number-entry-pad-repaint-artifact/1",
+    "package_notebook_version": 15,
+    "previous_artifact_sha256": "d670e69d576fb7835465a7a22128da2f744ee46626a6f0cb6904be967b40624c",
+    "catalog_sha256_by_configuration": {
+      "lemmasim-silicon-package-closure-entry2-bulk-notebook": "e9078cc9a55e8f303631b03b068c6a1d804231dea42db1f92436d51010d87aa4",
+      "lemmasim-silicon-package-closure-entry2-bulk-initialize": "29fff62ce9da402698b36d7ac364e39df358a04530a03a12c4de31126fc209a3"
+    },
+    "surface_root_sha256_by_phase": {
+      "pre": "031afd789bc886f3b60fe6f1389f147867e5209656b4b55fb3153c6704c01bd4",
+      "post": "c89e2665a6ff63bf70f56091fa7aba34a98b84babd333b5dc99b736573cca1c7"
+    },
+    "character_machine_sha256": "0b1d6e186cf1d243c837656ee09aaa40907473c2babf7d4e4f1f8b348f5b1fff",
+    "pre_function_count": 871,
+    "pre_sha256": "5ed49de7cacc0e6b56107ba6bcb8a054d98e803b2f08933ae5cd66aa4e95d3b4",
+    "post_function_count": 869,
+    "post_sha256": "0ba19736b706fca47cb4c4092de87b6fe047662224df9dd6f65fe932bad2f08b"
   }
 }
