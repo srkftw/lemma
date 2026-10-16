@@ -128,5 +128,39 @@
     "scaffold_host_seconds": 9.023,
     "scaffold_metadata": "PASS metadataonly; no G1/target claim",
     "logs": "build/silicon/enclosure-class-owner-a1/final-{silicon-host,scaffold-host,scaffold-metadata}.log"
+  },
+  "actual_fixed_via_router_probe": {
+    "status": "GAP_CONFIRMED_KNOWN_FIXED_VIA_ENCLOSURE_NOT_REPORTED",
+    "scope": "Tiny1-net/2-port fixed-via fixture; original5nm lowerMetal1edge and repaired10nm edge, samequalifiedCUTCLASS/enclosurerules. NeitheractualDRT report detectsoriginalknownviolation. Thisdoesnotqualifyrouterenforcement or completeprocessDRC.",
+    "actual_result": "build/silicon/enclosure-drt-fixed-a3/result.json",
+    "actual_result_sha256": "913c7a4795152feb714864f5432b00b0bfa9b1a30deb4809c1ce3b53119a6dbe",
+    "source": "build/silicon/enclosure-class-owner-a1/drt-fixed-layers-a3.py",
+    "source_sha256": "1c9ba6dd2f0e698d7d280491d3c959cd5ca7e1fb0d8f978982270e9b0991d3dc",
+    "host_seconds": 0.6890647880500183,
+    "bounds": {
+      "each_tool_seconds": 90,
+      "whole_seconds": 240,
+      "AS_bytes": 2147483648,
+      "file_bytes": 1073741824,
+      "threads": 1
+    },
+    "host_thread_environment": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1"
+    },
+    "original_output": "actual.drc empty; outputDEF retains Via1_DC2L at(5000,5000), onlyMetal2 connectingwire, no additionalMetal1wiregeometry",
+    "repaired_output": "actual.drc empty; samefixedDEF topology, sourceviaMetal1minX -105nm",
+    "negative_oracle": "IndependentintegergeometryandoriginalMagicdeck alreadyshoworiginalVia1_DC2L lowerenclosurefailure and repairedpass; originalbelowMetal1geometry remainsinactualfixedDEF technology. Emptyrouterreport cannotstandinforprocessDRC.",
+    "retained_failures": [
+      {
+        "result": "build/silicon/enclosure-drt-fixed-a1/result.json",
+        "reason": "OpenBLASthreadinitializationfailed2GiBASbeforeDEF; originalsamebound/source retained"
+      },
+      {
+        "result": "build/silicon/enclosure-drt-fixed-a2/result.json",
+        "reason": "Actualtoolrejects deprecated-bottom_routing_layer; samegeometry/bounds retained, supportedset_routing_layers usedfora3"
+      }
+    ],
+    "adoption": "UNADOPTED; no productionPDK/routeflow change andno timeoutcause assigned"
   }
 }

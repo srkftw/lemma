@@ -3994,3 +3994,46 @@ sourcebytes reconstructedandhashmatchedtotheiractualproducerreceipts under
 build/distribution/task006-native-runtime-closure-owner-a1; none relabelled.
 Native/browser17 wholecomparison and15secondCOURSE/companion16 originalbounds
 stillrunning, preserveowners/checkpoints/media. No wholemissioncompletion.
+
+Native-runtime increment committed7d97db6 locally; push deferreduntilpreceding
+8cCIterminaltoavoidcancellingit. Actual8c run38912862964 nowcompletedSUCCESS,
+all11jobs/all113steps, noskips/cancellations; receiptbuild/ci/task006-8c37-complete.json.
+
+Browser15/index connectedcase nowcompletedPASS at846.15M secondCPU boundary:
+secondCOURSE243.7M,all3.63Mpixels/all256MiB/8objects/seq29/149actualREADs
+(14new), exactVerified5/6rev9/current/source/execution/evidence/learnerhistory
+equalsactualcheckedworkspace, noSave/check/format. Passive22.622929s.
+build/browser/task006-pad15-index-cold-plan-a1/result.json terminalPASS;
+second-reopen-result.json/actualcontrollerPNG retained. Aggregatebrowser2.00745B
+plusseparate32MprivateexactWasm suffix <original4B/28800/17:29:51Z. Actual
+mouseinkandcoldhistory qualification, not freshbrowserinstall/liveprovider/
+generalproofkernel/browsercompiler/physicalpowerloss/eviction. Original64M
+CHECKdisplayFAIL retained; finalqualified129.1M displaywaswithinoriginalbound.
+Browser33pausedwithqualifiedcourse; preserveOPFSpad15-index-a1.
+
+Companion16closecompleted1580M,430M/2897.812260s,allhomepixelswithoriginal+
+offlineink. ItsseparatecoldCPU/peer copyisnowbootingunderoriginalbounds.
+An attemptedreadonlyinspectofoldliveownerfoundsocketalreadyremovedbecause
+actorcorrectlycloseditbeforestartingcold; no extra machine input was admitted.
+
+Originaloptimizednative17fixed-eventreferencea1 FAIL at571M/2646.126001s:
+myobserverusedgenericrtl_idle,requiringevent_queue0 despitepredeclaredtwo
+futureevents(first571099990>571M). OriginalFAILEDreport/source/log/571Mcost
+remainretained; no coldcutarchive was captured beforethatguard. No native/Wasm
+bytecomparison mismatchwasobserved atthatcut; originalresetfullbytematch remains.
+Correctedseparatea2plan/actor atbuild/browser/task006-browse17-native-match-plan-a2
+nowrunningexec89229 (nativePID2302802), monitor67138. Itrequiresliteral2future
+eventsplusallotheridle/backingchecks andcapturescoldcutbeforeguard. Fullbyte
+relation unchanged/no masks/tolerances/drain/fences; originalabsolute16:49:22Z
+kept, perattempt788M, episode571Mfailed+788Mcorrectedprospective1.359B. Browser34
+sameoriginalCPU0continuesfixed571Mcut withoutrestart. No correctedwholepassyet.
+Originalnativea1/supervisionexec97591/34151reaped; monitorPASSisbounds-only,
+notmachineacceptance. Newmonitorcountsold/newownedoutputs,8GiB ceiling.
+
+Actualfixed-viaDRTnegativea3completed0.689065s withsame2GiB/90s/one-thread
+bounds. QualifiedCUTCLASS+enclosureclausesstillgiveemptyreportsforbothknownbad
+andrepairedVia1_DC2L. OutputDEFretainsbadfixedviaandonlyMetal2wire, lower
+enclosureviolationunreported: GAP_CONFIRMED,notrouterenforcementPASS. Adaptation
+unadopted; sourcePDK/routeunchanged. Originala1OpenBLASinitmemoryFAIL and
+a2deprecatedroutinglayerAPI FAIL retained; environment1thread andsupported
+set_routing_layers correctdriverwithoutclock/rulewaiver ordeadlineextension.

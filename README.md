@@ -1464,6 +1464,17 @@ external medium as `new.raw.initialize`. Exact RTL/browser workflow deadlines,
 new-host installation, fast timing/cached-state continuation and permissioned
 tutor transport remain separate.
 
+The Notebook15/index browser has also completed actual course reopen, keypad
+editing, isolated exact checking of5/6, revision9 Verified evidence, ordinary
+pointer ink, acknowledged Save29, and another independent CPU cold recovery
+and course reopen. Every recovered controller pixel/backing byte and complete
+workspace/source/assistance history matches. Browser clocks total2,007,450,000;
+the separately recorded32M same-Wasm pending-save suffix also passes. See
+[the recorded browser workflow](docs/evidence/006-number-entry-v1.json).
+This uses an existing guest-installed course, not a fresh browser installation
+or live tutor. Browser-origin persistence, long interaction times and the
+general runtime/proof-kernel/distribution gaps retain their stated limits.
+
 The current dirty-batch9 guest keeps the same canonical machine and submits up
 to four queued dirty tiles in one owned Surface packet. Both fresh full image
 audits, the42-phase fast course/math/learner/ink/cold/reopen workflow and real

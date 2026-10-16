@@ -1019,12 +1019,12 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "ce29179c9786a5ba7457eb711b569f420fc8c66f",
-    "run": 38905353094,
+    "commit": "8c37fbf07118c10311a30e76811e13765bf09610",
+    "run": 38912862964,
     "status": "SUCCESS",
     "jobs": 11,
     "steps": 113,
-    "scope": "Actual candidate; laterenclosure/PenBanks changes needtheirownCI. Originalfailuresretained."
+    "scope": "Actualparent; laternative-runtime/localreport needsownCI. Originalfailuresretained."
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1246,7 +1246,7 @@
     "behavior": "IMPLEMENTED_JOINED_NUMERIC_AND_RECOVERY_ACTIONS_COMPONENT_PASS",
     "model": "Actual imported Actions retain provisional9-fieldrawink/pixels; pinnedpayload/doc/history immutable, no storage/checkerIPC/Saved; markerfault/fullbuffer checksPASS",
     "guest_compilation": "PASS bothfreshcomplete normal/init linkedartifacts833.365s;415source/ownedcleanup839.305s,1.923GBpeak, literal910/908corpora, oldsemanticguards/tablecells retained.",
-    "RTL_guest": "RUNNING boundedcase:actualcoldReady665M/3469.019s,lostpersistedWRITE/guestFailed720M,offlineink730M,reconciliationSaved16at1150M/3079.383s; homeclose/newcold/math/thirdcold remainpending.",
+    "RTL_guest": "RUNNING:lostpersistedWRITE/Failed/offlineink/reconciliationSaved16at1150M,fullhomeeverypixelclosed1580M(430M/2897.812s),independentcoldpeerCPUcurrentlybooting. Math/thirdcold remainpending underoriginal28800s/10B.",
     "distribution": "PREPARED schema9/native415sources877files; actualguest6c331985/runtime6cbd CPU0 cold started fromprivateSaved12peer/outbox. Connectedcasepending.",
     "physical": "UNVERIFIED",
     "evidence": "docs/evidence/006-number-entry-v1.json"
@@ -1256,7 +1256,7 @@
     "model": "Readonly actual Lean Actions pass fullvalidation/Unknownhistory/currentprecedence/no-source/fault/unchangedbytes cases",
     "guest": "Bothgenuine17wholeRV64imagesandfullauditsPASS786.792s,416sources/1.907GB/ownedcleanup;875pre/873postcorpora,3validartifactnegativesreject. ActualfastCPU0/rawCOURSE/allhomepixels/allmedia/history/body/keypadPASS304Mfunctionalunits.",
     "RTL": "PASS actualnewCPU cold571M/2437.464s andrawCOURSE216M/908.366s;787M/3351.818s total, everyhomepixel/allmedia/history/body/keypad/Unknownauthority unchanged",
-    "distribution": "PREPARED native/static17 actualstandalonevalidators; newwholeoptimizednative/WasmfixedeventcaseRUNNING. Resetfullcomponentmatch only, no completedbrowser17cold/suffix claim.",
+    "distribution": "PREPARED native/static17. Originalfixed-eventnativea1FAIL genericidleobserver demandedqueue0 despite2pre-admittedfutureevents; initialfullbyte resetmatchretained. Correctedseparatenativea2RUNNING withliteral2futureevents/sameallotheridlechecks/capturebeforeguard, exactbytecomparison unchanged andoriginal16:49deadline. Existingbrowser34continuesoriginalbounds, no coldrestart. No wholecomparisonPASSyet.",
     "physical": "UNVERIFIED; no change to hardware/physicalclosure",
     "evidence": "docs/evidence/006-number-entry-v1.json"
   },
@@ -1264,7 +1264,7 @@
     "behavior": "PASS actualBACK\u21925/6\u2192isolatedCHECK/rev9Verified\u2192OPFSbarrier143/Saved26\u2192ordinarycanvasink\u2192barrier161/Saved29",
     "model": "Same exactc53RTL/Wasmcore;32M PendingSave suffixreplays allarchivebytes usingactualoutcomes/privatebacking",
     "guest": "Actualread/annotate/check/history/uncertainreview preserved; wholekeypad/body/requiredmathlabels andwholeinkplane exact",
-    "distribution": "Actual192MiB browserinitialcold582.7M/4891.234s; afterCHECK/inkSaved29 independentClose/Opencold602.45M/4358.606s PASSallpixels/allmedia/8objects/135READs. SecondreadonlyVerifiedrev9historyreopenRUNNING.",
+    "distribution": "PASS actual192MiB localbrowser15:initialcold582.7M/4891.234s,BACK/isolatedCHECK/Verifiedrev9/OPFS143Saved26/ordinarypointerink161Saved29,newCPUcold602.45M/4358.606s,actualcourse243.7M/all3.63Mpixels/all256MiB/8objects/149READs/current+history+learnerexact. 2.00745Bbrowserclocks plus32MsameWasmprivatesuffix withinoriginal4B/globalbound.",
     "physical": "No physical pressure/powerloss/eviction claim",
     "evidence": "docs/evidence/006-number-entry-v1.json"
   },
@@ -1274,7 +1274,7 @@
     "RTL": "UNCHANGED; penlocalcountercandidate remainsUNADOPTED",
     "guest": "No targetcode orruntimechange",
     "distribution": "OptionalhostCLI generatescandidateLEF; sourcePDK/maintainedrouteflow unchanged",
-    "physical": "Magicisolatedoriginal1/repaired0;132fixedchecks,7classes,10qualified+10originalnativeOpenDBrulesPASS1.833s. ActualDRTenforcement/fullprocessrules/controllerDRC/LVS/PEX/timing/fullchipremainUNQUALIFIED",
+    "physical": "Magicisolatedoriginal1/repaired0;132fixedchecks,7classes,10qualified+10originalnativeOpenDBrulesPASS. Actualtinyfixed-viaDRTnegative:bothknownbadandrepairyieldemptyreports; unchangedbadVia1DC2LfixedDEFretained. GAP_CONFIRMED enforcement, adaptationUNADOPTED. Fullprocess/controllerDRC/LVS/PEX/timing/fullchip remainUNQUALIFIED.",
     "evidence": "docs/evidence/006-sg13g2-enclosure-preflight.json"
   },
   "native_wrapped_runtime_distribution": {

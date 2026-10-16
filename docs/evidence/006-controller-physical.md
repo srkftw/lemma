@@ -408,3 +408,14 @@ full-chip closure. The command, identities and limitations are in the
 [preflight receipt](006-sg13g2-enclosure-preflight.json) and
 [contract](../contracts/006-sg13g2-enclosure-preflight-v1.md). No timeout cause
 is assigned to the rule-coverage gap.
+
+An actual tiny fixed-via TritonRoute negative now demonstrates why admission
+cannot stand in for enforcement. With the qualified clauses present, both the
+known-bad original via and the repaired via yield empty DRC reports; the output
+DEF retains Via1_DC2L and adds only the Metal2 connecting wire, leaving the
+known bad lower enclosure unchanged. This is **GAP_CONFIRMED**, not routed
+process DRC. The complete two-case run takes0.689065s with one host thread and
+unchanged2GiB/90s tool bounds. Earlier OpenBLAS-initialization and deprecated
+API driver failures remain retained. The preflight receipt records the exact
+source/output hashes. The adaptation remains unadopted; no maintained rule or
+route is changed and no historical timeout cause is inferred.

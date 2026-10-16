@@ -757,16 +757,16 @@
     }
   },
   "latest_candidate_ci": {
-    "commit": "ce29179c9786a5ba7457eb711b569f420fc8c66f",
-    "run_id": 38905353094,
+    "commit": "8c37fbf07118c10311a30e76811e13765bf09610",
+    "run_id": 38912862964,
     "status": "completed",
     "conclusion": "success",
     "jobs": 11,
     "successful_steps": 113,
     "skipped_steps": 0,
     "cancelled_steps": 0,
-    "receipt": "build/ci/task006-ce291-complete.json",
-    "scope": "Actual previouscommittedcandidate; excludeslaterenclosure/PenBankscase; no laterheadCIinferred"
+    "receipt": "build/ci/task006-8c37-complete.json",
+    "scope": "Actualparentcandidate; laternative-runtime code/localreport needsownCI"
   },
   "canonical_rtl_number_entry": {
     "actor": {
@@ -1295,7 +1295,31 @@
       "objects": 8,
       "exact_cold_READ_outcomes": 135,
       "input": "Actual same acknowledged OPFS via Close/OpenCPU0; no snapshot/import/format",
-      "course_reopen": "RUNNING original400M/3600/global17:29:51.932571Z; fullcourse-plus-dot/evidencehistory expected"
+      "course_reopen": {
+        "status": "PASS_BROWSER_COLD_COURSE_REOPEN_ALL_PIXELS_BYTES_HISTORY",
+        "result": "build/browser/task006-pad15-index-cold-plan-a1/second-reopen-result.json",
+        "clocks": 243700000,
+        "cycle": 846150000,
+        "all_pixels": 3630000,
+        "all_medium_bytes": 268435456,
+        "read_outcomes": 149,
+        "new_READs": 14,
+        "workspace": "Exact sameVerified5/6/revision9/current/source/evidence/execution/learner history asactualcheck-visible, everybackingbyte unchanged, no newSave/check",
+        "passive_seconds": 22.622929029050283,
+        "pixels_sha256": "6d3389bf07052c965711c22a9c703d8dbfafc92494635f1bac4f69ec97fbb6f4",
+        "image": "build/browser/task006-pad15-index-cold-plan-a1/second-reopen.png"
+      }
     }
+  },
+  "browser_pad15_connected_terminal": {
+    "status": "PASS_BROWSER15_COLD_EDIT_ISOLATED_CHECK_INK_SAVED_SECOND_COLD_COURSE_REOPEN",
+    "result": "build/browser/task006-pad15-index-cold-plan-a1/result.json",
+    "result_sha256": "cf25b14cabc42aa06768f0b2f46d076f597d7ff0f47f11e006bdfd4300840a9f",
+    "aggregate_browser_clocks": 2007450000,
+    "separate_sameWasm_suffix_clocks": 32000000,
+    "original_parent_limit_clocks": 4000000000,
+    "original_parent_deadline": "2026-10-16T17:29:51.932571+00:00",
+    "scope": "Existingguest-installedopaqueacknowledgedsource; actualbrowserBACK/CHECK/ordinarypointerink/barriers/twonewCPUcold/fullcoursepixels/historyreopen. Initialhint/history preserved; no newbrowserpackageinstallation/livetutor/genericproofkernel/Pythonbrowsercompiler/physicalpowerloss/eviction inferred.",
+    "retained_failures": "Earlier64M displaystillUnchecked observerFAILretained. FinalactualVerifieddisplay completedwithinoriginal200M/2400; not reclassified."
   }
 }
