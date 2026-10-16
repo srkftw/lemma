@@ -514,6 +514,7 @@ class ServiceTrace(Trace):
             self.session.report["service_failure_settlement"] = {
                 "status": "PASS", "events_before": before, "events_after": len(self.session.events),
                 "input_actions": inputs, "quiescent": True}
+            self.session.terminal_boundary = self.terminal_boundary
         except (Core0Error, OSError, ValueError, TypeError, KeyError) as error:
             self.session.report["service_failure_settlement"] = {
                 "status": "FAIL", "events_before": before, "events_after": len(self.session.events),
@@ -777,6 +778,30 @@ class ServiceTrace(Trace):
         else: self.client(event["value"])
         self.session.report["service_progress"] = self.snapshot()
         return event
+
+    def terminal_boundary(self, raw):
+        """Validate every newly captured complete frame before terminal stop.
+
+        The peer may wake after the live receive/sleep observation but before
+        SIGSTOP. This is bounded test termination, not a machine checkpoint:
+        pending effects must actually finish, and the full final wire remains
+        subject to the independent post-cleanup replay.
+        """
+        events, tail = decode_uart(raw)
+        if tail or events[:len(self.session.events)] != self.session.events:
+            raise Core0Error("terminal service capture differs from its observed prefix")
+        if len(events) > MAX_EVENTS:
+            raise Core0Error("terminal service capture exceeds its finite event bound")
+        for event in events[len(self.session.events):]:
+            self.session.events.append(event)
+            if event["kind"] == "kernel":
+                self.session.records.append(event["value"])
+                self.observe(tuple(event["value"])); self.events.append(event["value"])
+            else:
+                self.session.responses.append(event["value"])
+                self.client(event["value"])
+        self.session.report["service_progress"] = self.snapshot()
+        return self.service_quiescent(self.role("peer"))
 
     def snapshot(self):
         return {"protocol": "buffer-service-J-v1", "configuration": self.configuration,
@@ -1056,6 +1081,8 @@ def check(session):
                 trace.until(lambda id=id: trace.tasks[id]["reaped"])
             trace.diagnostic(0x31, 0)
         checked = qualification(trace)
+        if trace.configuration == "service-normal":
+            session.terminal_boundary = trace.terminal_boundary
         result = {**trace.snapshot(), "startup": initial_facts, "qualification": checked,
                   "lifetime": "continuous ordinary User service; explicit host stop after observed protocol"}
         session.report["service_progress"] = result

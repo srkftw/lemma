@@ -307,7 +307,7 @@
     }
   },
   "aligned_key_presentation_candidate": {
-    "status": "PASS_COMPONENT_GENUINE_LLVM_MACHINE_CELLS_WHOLE_LINK_NOT_RUN",
+    "status": "PASS_FULL_LINKED_PAIR_AND22_PHASE_FAST",
     "notebook_version": 14,
     "actual_action_log": "build/courses/task006-arithmetic-aligned-a1/action-check-a2.log",
     "artifact_result": "build/courses/task006-arithmetic-aligned-a1/artifact-result.json",
@@ -322,7 +322,17 @@
     "canonical_stores_after": 4820,
     "same_framebuffer_bytes": 30720,
     "semantics": "Exact rectangle/neighbors, scalar spans, document-read failure, ordered write failure prefix and historical odd-stride fallback; ordinary staged adoption/report/Store path preserved. Other math/control redraw paths unchanged.",
-    "speed_scope": "Memory operation count only; new target cycle/functional-unit/host comparison NOT_RUN",
-    "checks": "Kernel446 PASS10.838s; scaffold18 PASS8.241s plus metadata. Original12/13 exact artifact admissions retained."
+    "speed_scope": "Pane stores4820vs27360; complete same22-phase fast units1492000115vs1494000115. Only2M fewer units, no RTL timing or host speedup claim. Host loads differed and host time increased.",
+    "checks": "Kernel446 PASS10.838s; scaffold18 PASS8.241s plus metadata. Original12/13 exact artifact admissions retained.",
+    "whole": "build/courses/task006-number-entry-aligned-whole-a1/result.json",
+    "supervision": "build/courses/task006-number-entry-aligned-whole-supervision-a1/result.json",
+    "whole_seconds": 1422.3131345070433,
+    "owned_peak_rss_bytes": 1826054144,
+    "fast": "build/courses/task006-number-entry-aligned-fast-a1/result.json",
+    "fast_units": 1492000115,
+    "fast_seconds": 216.161460392992,
+    "fast_supervised_seconds": 222.91190527903382,
+    "fast_owned_peak_rss_bytes": 453496832,
+    "distribution": "Matched14 native/static bundles and archives prepared; no new extracted launch claim."
   }
 }

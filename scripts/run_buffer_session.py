@@ -58,7 +58,7 @@ def _known_complete_prefix(events: list[dict], captured_bytes: int) -> int:
 
 
 def _quiesce_uart(process, capture, deadline, record, *, budget=5, max_cycles=64,
-                  known_complete_bytes=0):
+                  known_complete_bytes=0, boundary_ready=None):
     """Freeze an owned process group at a fully captured UART boundary.
 
     Stop notifications are consumed, never child exits. Partial frames are
@@ -71,6 +71,8 @@ def _quiesce_uart(process, capture, deadline, record, *, budget=5, max_cycles=64
             or type(known_complete_bytes) is not int
             or not 0 <= known_complete_bytes <= len(capture.received)):
         raise Core0Error("UART quiescence bounds must be finite, at most five seconds and 64 cycles")
+    if boundary_ready is not None and not callable(boundary_ready):
+        raise Core0Error("UART semantic boundary must be a callable observer")
     started = time.monotonic()
     finish_by = min(deadline, started + budget)
     record.update(status="RUNNING", process_group=process.pid, budget_seconds=budget,
@@ -116,7 +118,14 @@ def _quiesce_uart(process, capture, deadline, record, *, budget=5, max_cycles=64
         events, tail = decode_uart(bytes(capture.received[validated:]), allow_partial=True)
         validated += sum(event["bytes"] for event in events)
         remaining()
-        if not tail:
+        semantic_ready = True
+        if not tail and boundary_ready is not None:
+            semantic_ready = boundary_ready(bytes(capture.received))
+            if type(semantic_ready) is not bool:
+                raise Core0Error("UART semantic boundary did not return an actual Boolean")
+            record["semantic_checks"] = record.get("semantic_checks", 0) + 1
+            record["semantic_ready"] = semantic_ready
+        if not tail and semantic_ready:
             record.update(status="PASS", final_group_stop_observed=True,
                           stop_code=stopped.si_code, stop_signal=stopped.si_status,
                           frozen_boundary_bytes=len(capture.received), partial_bytes=0,
@@ -124,7 +133,10 @@ def _quiesce_uart(process, capture, deadline, record, *, budget=5, max_cycles=64
                           frozen_stdout_sha256=hashlib.sha256(capture.received).hexdigest(),
                           frozen_stderr_sha256=hashlib.sha256(capture.stderr).hexdigest())
             return
-        needed = _partial_frame_needed(tail)
+        # A complete UART frame can still end in the middle of a legitimate
+        # service release/reply/actor-confirmation sequence. Observe real guest
+        # progress within the same five-second/64-stop bound; send no input.
+        needed = _partial_frame_needed(tail) if tail else 1
         if not 0 < needed <= 200:
             raise Core0Error("partial UART frame lacks a bounded exact remainder")
         if cycle == max_cycles:
@@ -132,7 +144,7 @@ def _quiesce_uart(process, capture, deadline, record, *, budget=5, max_cycles=64
         os.killpg(process.pid, signal.SIGCONT)
         record["resumes"] += 1
         transport._read_exact(process, needed, deadline=finish_by, capture=capture,
-                              context="completing an actual UART frame before cleanup")
+                              context="completing an actual UART frame or service boundary before cleanup")
     raise Core0Error("UART cleanup stop-cycle budget exhausted")
 
 
@@ -165,6 +177,11 @@ def validate_quiescence(report: dict, rawstdout: bytes, rawstderr: bytes) -> dic
             or facts["effective_deadline"] != min(facts["original_deadline"], facts["started_monotonic"] + facts["budget_seconds"])
             or not facts["started_monotonic"] <= facts["frozen_monotonic"] < facts["effective_deadline"]):
         raise Core0Error("Buffer report lacks its bounded unchanged frozen UART boundary")
+    if "semantic_checks" in facts or "semantic_ready" in facts:
+        if (type(facts.get("semantic_checks")) is not int
+                or not 0 < facts["semantic_checks"] <= facts["cycles"]
+                or facts.get("semantic_ready") is not True):
+            raise Core0Error("Buffer terminal semantic boundary is unconfirmed")
     stops = facts.get("observed_stops")
     expected = {"pid": report["pid"], "code": os.CLD_STOPPED, "signal": signal.SIGSTOP}
     if (not isinstance(stops, list) or len(stops) != facts["cycles"]
@@ -257,7 +274,8 @@ class BufferSession(Session):
                 quiescence = self.report.setdefault("uart_quiescence", {})
                 parsed_prefix = _known_complete_prefix(self.events, len(self.capture.received))
                 _quiesce_uart(self.process, self.capture, self.deadline, quiescence,
-                              known_complete_bytes=parsed_prefix)
+                              known_complete_bytes=parsed_prefix,
+                              boundary_ready=getattr(self, "terminal_boundary", None))
                 frozen = (bytes(self.capture.received), bytes(self.capture.stderr))
         except BaseException as error:
             quiescence_failure = error

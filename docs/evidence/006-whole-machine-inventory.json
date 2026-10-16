@@ -1019,14 +1019,17 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "984379952d770677f24e23f5f372b3860979a179",
-    "run": 38856183803,
-    "conclusion": "SUCCESS",
+    "commit": "84bcb67c2538a7d8306140643ea884c178b2cf51",
+    "run": 38859905648,
+    "conclusion": "FAILURE",
     "jobs": 11,
-    "completed_success": 11,
-    "steps": 109,
-    "skipped_steps": 0,
-    "scope": "Actual prior pushed candidate; includes numeric RTL adapter, prepared distributions, transform cancellation and explicit ABC delay interface. New aligned arithmetic candidate is separate.71be run38851844687 ended9success/2cancelled/1skipped step;30ff run38853668347 ended10success/1cancelled/1skipped step; no complete pass for either."
+    "completed_success": 9,
+    "failed_jobs": [
+      "Metadata and host-only suites",
+      "Task003 source-negative RV64 qualification"
+    ],
+    "skipped_steps": 8,
+    "scope": "Foundation exact-log list missed added arithmetic pipeline; corrected exact entry, pipefail retained. Source-negative terminal capture froze a later real release before completion; stricter semantic terminal capture under same5s/64-stop bound. New real retained-control execution306commands passes; original failed capture still rejects. New candidate CI required.984 prior11/109 success retained."
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1082,7 +1085,7 @@
     "physical": "UNVERIFIED",
     "contract": "docs/contracts/006-number-entry-v1.md",
     "evidence": "docs/evidence/006-number-entry-v1.json",
-    "aligned_presentation": "Notebook14 candidate: same canonical30720bytes,4820 vs27360stores; actual Actions/failures and genuine869/867 pre/post LLVM plus25RV64 cells pass. Full linked audits, new execution and target speed remain pending."
+    "aligned_presentation": "Notebook14 actual full pair audits/411 source seals/owned cleanup PASS1422.313s/1826054144B.22-phase fast PASS1492000115 units/216.161s, same goals/bytes/pixels/cold/disconnect.13 baseline1494000115; only2M total units saved. Matched native/static14 bundles/tarballs prepared; extracted launch separate. New15 cache candidate is uncommitted, not this result."
   },
   "browser_actual_mathematics": {
     "behavior": "PASS actual5/6Verified rev12 isolated closure, assistance Saved22, deliberate Auto Saved27 and independent displayed assisted/practice/uncertain labels. Quick200M review batch FAIL: one tap not applied; no-input58.55M finishes Saved26, then new deliberate91.85M contact Saved27. Edited-answer test running; full acceptance OPEN.",

@@ -3408,3 +3408,39 @@ physical actor pen-branch-clock-a1. Mapping-D10000 alone was byte-identical to
 baseline. Prefix-counter candidate26 conelevels vsbaseline18 was also rejected
 before route. Pen2bab7e33, full256 entries and previous flow improvements stay.
 No physical pass, processDRC/LVS/PEX or rule-coverage closure inferred.
+
+Notebook14 now has both full linked audits and an actual22-phase fast pass.
+Normal710600B SHA1487c256dfd4b8c80404d20a45313625914d0fab59459c37fb8a07811ddaccd7,
+initializer710608B SHAc2d501e7ab47aa373d7591613e119b42681d5605eacfb54b028bb3dd985f03ce.
+Source84bcb67/411 files, both archive/current seals and HEAD/index sealed;
+whole1422.313135s/1826054144B peak owned RSS, no survivors. The411-file hold is
+released. The separate canonical13 live34-file hold remains unchanged.
+Fast14 PASS1492000115 units/216.161460s,222.911905s supervised/453496832B peak.
+Same22-phase inputs/oracles/bounds;13 used1494000115 units. Only2M fewer total
+functional units: do not turn the82% pane-store reduction into an82% workload
+speed claim. Host loads differed and host time increased. New matched14 bundles
+are build/native/task006-number-entry-aligned-notebook-a1 and
+build/browser/task006-number-entry-aligned-a1. Native/static tarballs are
+build/distribution/task006-number-entry-aligned-{native,browser}-a1.tar.gz;
+packaging PASS, new extracted launch remains separate.
+
+Actual84 CI38859905648 is FAILURE:9 jobs succeeded, metadata and source-negative
+failed. Foundation's exact retained-log list omitted the new arithmetic Actions
+log; the single exact entry is added, pipefail checks retained.473 foundation
+and448 kernel host tests pass locally. Metadata's later checks were skipped,
+including the new arithmetic step; no skipped result is called passed.
+
+Source-negative append-O2 control failed after its valid live finish: the UART
+stop retained a later real page release and response before reply/peer-confirm.
+The strict unmatched-release rejection remains. Terminal capture now validates
+all new complete frames and waits for actual receive/sleep/effect closure
+within the SAME5s/64-stop/original guest bounds. This is test termination, not
+checkpoint continuation. Generic real-child tests force complete-frame but
+semantically pending progress and reject error/truthy-nonbool callbacks.
+The original CI capture still fails independent replay. Exact retained CI
+controlELF7ebfe7c6878f556d5d249940270cfd326b55adfe8e0b7e95f9fe527c7f497a9d,
+with411 byte-equal target inputs and only the two changed host observers,
+passes306 ordinary commands/full raw replay/live kill/reap at56.092409s.
+No fresh target compilation is claimed. Reports/logs/archive are under
+build/ci/task006-ci84-{failures,terminal-repro-a1}. New candidate CI must run;
+no blind rerun or waiver.15 keypad-cache work is uncommitted and separate.
