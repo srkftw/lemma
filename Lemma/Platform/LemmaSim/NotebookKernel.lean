@@ -1456,4 +1456,120 @@ def siliconUSBPackageRecoveryInitializeMedium : Action := bootPackageRecovery 1
 def dispatchUSBPackageRecoveryBulk (frame cause value : UInt64) : Action :=
   dispatchRecoveryBulk 13 frame cause value
 
+/-- Product10 course software prepares all four real isolated images through
+the product address-space/loader path. Ordinary boot never formats the Store.
+Only the installer receives Console Read; neither User receives the NV alias.
+Historical three-role Product10 and four-role preload roots remain unchanged. -/
+private def constructProductCourseReader : Action :=
+  .bind (AddressSpace.configureProductExecuted 10) fun s _ => if s = 0 then
+  .bind Process.initProduct fun s _ => if s = 0 then
+  .bind Task.init fun s _ => if s = 0 then
+  .bind Objects.initArithmetic fun s _ => if s = 0 then
+  .bind (Task.prepareManagedProduct 0 0) fun s store => if s = 0 then
+  .bind (Task.prepareManagedProduct 1 2) fun s notebook => if s = 0 then
+  .bind (Task.prepareManagedProduct 2 0) fun s arithmetic => if s = 0 then
+  .bind (Task.prepareManagedProduct 3 0) fun s installer => if s = 0 then
+  .bind (Objects.createEndpoint notebook) fun s surface => if s = 0 then
+  .bind (Objects.createEndpoint notebook) fun s input => if s = 0 then
+  .bind (Objects.createEndpoint store) fun s block => if s = 0 then
+  .bind (Objects.createEndpoint store) fun s documents => if s = 0 then
+  .bind (Objects.createEndpoint notebook) fun s power => if s = 0 then
+  .bind (Objects.createEndpoint arithmetic) fun s checking => if s = 0 then
+  .bind (DeviceService.configure surface input block) fun s _ => if s = 0 then
+  .bind (grant store block CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant store documents CapabilityABI.endpointReceive) fun s _ => if s = 0 then
+  .bind (grant store Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
+  .bind (grant notebook surface CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant notebook input CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant notebook documents CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant notebook Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
+  .bind (grant notebook power CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant notebook checking CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant arithmetic checking CapabilityABI.endpointReceive) fun s _ => if s = 0 then
+  .bind (grant arithmetic Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
+  .bind (grant installer Objects.consoleKey (CapabilityABI.consoleRead ||| CapabilityABI.consoleWrite)) fun s _ => if s = 0 then
+  .bind (grant installer documents CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (PowerControl.configureSafety 1 power) fun s _ => if s = 0 then
+  .bind (Task.activateManaged store) fun s _ => if s = 0 then
+  .bind (Task.activateManaged arithmetic) fun s _ => if s = 0 then
+  .bind (Task.activateManaged installer) fun s _ => if s = 0 then
+  .bind (Task.activateManaged notebook) fun s _ => if s = 0 then
+  .bind (BootHealthExecuted.configure store notebook) fun s _ => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x410 store notebook documents 8192) fun s _ => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x4b4 installer documents 0 0) fun s _ => if s = 0 then
+  configureIsolation 0 documents
+  else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal
+
+private def productCourseReaderStep : Action :=
+  .bind (acceptPendingModernExecuted 10) fun s _ => if s = 0 then
+  .bind DeviceService.deferred fun s _ => if s = 0 then
+  .bind PowerControl.step fun s suspended => if s = 0 then
+  if suspended = 1 then .done 0 0 else
+  .bind BootHealthExecuted.step fun s _ => if s = 0 then
+  .bind Scheduler.stepEntryV2 fun s reason => if s = 0 then
+  .bind observeReaped fun s _ => if s = 0 then .done 0 reason
+  else fatal else fatal else fatal else fatal else fatal else fatal
+
+/-- Closed Product10 successor for Reader18/Closure7 plus the owned installer.
+ROM supplies image/context/discovery through NV transactions. This definition
+does not itself qualify a linked deployment or any boot/update observation. -/
+def siliconProductCourseReaderBoot : Action :=
+  .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
+  .bind BootInfo.validate fun status value =>
+  .bind (observedStage 1 status value) fun s _ => if s = 0 then
+  .bind (Descriptor.validateBindingExecuted 10) fun status value =>
+  .bind (observedStage 2 status value) fun s _ => if s = 0 then
+  .bind MachineServices.validateSilicon fun status value =>
+  .bind (observedStage 3 status value) fun s _ => if s = 0 then
+  .bind Frames.init fun s _ => if s = 0 then
+  .bind Lemma.Drivers.PLIC.initializePower fun s _ => if s = 0 then
+  .bind Lemma.Drivers.VirtIOBlock.initialize fun s capacity => if s = 0 then
+  .bind Lemma.Drivers.Paper.initializeExecuted fun s geometry => if s = 0 then
+  .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
+  .bind constructProductCourseReader fun s _ => if s = 0 then
+  .loop productCourseReaderStep
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0
+
+
+/-- Same Clocked13 recovery and four-role constructor; entry authority is
+borrowed only inside the existing checked Scheduler EntryV2 Action. The old
+recovery roots keep their exact callback and source bodies. -/
+private def packageRecoveryEntry2Step : Action :=
+  .bind (acceptPendingRecovery 13) fun s _ => if s = 0 then
+  .bind DeviceService.deferredUSBRecovery fun s _ => if s = 0 then
+  .bind PowerControl.stepUSB fun s suspended => if s = 0 then
+  if suspended = 1 then .done 0 0 else Scheduler.stepEntryV2
+  else fatal else fatal else fatal
+
+private def bootPackageRecoveryEntry2 (initialization : UInt64) : Action :=
+  .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
+  .bind BootInfo.validate fun status value =>
+  .bind (observedStage 1 status value) fun s _ => if s = 0 then
+  .bind (Descriptor.validateBindingClocked 13) fun status value =>
+  .bind (observedStage 2 status value) fun s _ => if s = 0 then
+  .bind Lemma.Platform.LemmaSim.MachineServices.validateSilicon fun status value =>
+  .bind (observedStage 3 status value) fun s _ => if s = 0 then
+  .bind Frames.init fun s _ => if s = 0 then
+  .bind Lemma.Drivers.PLIC.initializeUSB fun s _ => if s = 0 then
+  .bind Lemma.USB.Block.initializeRecovery fun s capacity => if s = 0 then
+  .bind Lemma.Drivers.Paper.initializeExecuted fun s geometry => if s = 0 then
+  .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
+  .bind (constructPackageRecovery initialization) fun s _ => if s = 0 then
+  .loop packageRecoveryEntry2Step
+  else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+def siliconUSBPackageRecoveryEntry2Boot : Action := bootPackageRecoveryEntry2 0
+def siliconUSBPackageRecoveryEntry2InitializeMedium : Action := bootPackageRecoveryEntry2 1
+
 end Lemma.Platform.LemmaSim.NotebookKernel

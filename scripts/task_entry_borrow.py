@@ -28,7 +28,7 @@ DESCRIPTOR_DIRECT_PINS={
  'pre':'f389f57d3cd9daf05376a18c69b312a5187aa775d0857777158d6717a15d549f',
  'post':'3f8dc57b0359e4208f1bb033f3a9baa8681968b0b8c038c89b40a033c43d4966'}
 
-def validate_registry_borrow(ir,rows,names,phase):
+def validate_registry_borrow(ir,rows,names,phase,unit=None):
  """A complete genuine count-borrow cohort; old artifacts keep their old pins."""
  from audit_kernel import _ir_definition_body,_local_call_arguments
  present=set(REGISTRY_BORROW_SOURCES)&set(rows)
@@ -38,7 +38,9 @@ def validate_registry_borrow(ir,rows,names,phase):
   row=rows[source];require(row['args']==args and row['effects']==['checked-access','physical-read'],
       'registry-count borrow changed signature or acquired mutation effects')
   body=_ir_definition_body(ir,row['symbol'])
-  require(body is not None and hashlib.sha256(normalized_body(body,names).encode()).hexdigest()==REGISTRY_BORROW_PINS[phase][source],
+  from product_reader_target import post_helper_pin
+  pin=post_helper_pin(unit or {},source,REGISTRY_BORROW_PINS[phase][source]) if phase=='post' else REGISTRY_BORROW_PINS[phase][source]
+  require(body is not None and hashlib.sha256(normalized_body(body,names).encode()).hexdigest()==pin,
       'complete owned registry-count body differs: '+source+'/'+phase)
  validator='Lemma.Kernel.Memory.AddressSpace.validateRegistry'
  require(validator in rows and rows[validator]['args']==['u64']*4 and
@@ -142,17 +144,24 @@ def checked_entry_data_flow(body,rows,*,optimized):
 
 def validate_component(ir,unit,*,optimized):
  from audit_kernel import _ir_definition_body,_local_call_arguments
- require(unit.get('role')=='kernel' and unit.get('contract_version',unit.get('profile'))=='core0-kernel-v0.4',
+ from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
+ product=unit.get('configuration') in PRODUCT_READER_CONFIGURATIONS
+ from package_entry2_deployment import CONFIGURATIONS as PACKAGE_ENTRY2_CONFIGURATIONS
+ companion=unit.get('configuration') in PACKAGE_ENTRY2_CONFIGURATIONS
+ require(unit.get('role')=='kernel' and unit.get('contract_version',unit.get('profile'))==('core0-kernel-v0.7' if product else 'core0-kernel-v0.6' if companion else 'core0-kernel-v0.4'),
          'Entry2 borrowed authority escaped Kernel4')
  entries=unit.get('functions',[]);rows={canonical(x['source']):x for x in entries}
  require(len(rows)==len(entries) and set(SIGNATURES)<=set(rows),'Entry2 complete authority family missing/duplicated')
  names={x['symbol']:s for s,x in rows.items()};require(len(names)==len(rows),'Entry2 duplicate symbols')
  phase='post' if optimized else 'pre';bodies={};direct_descriptor=False
- registry=validate_registry_borrow(ir,rows,names,phase)
+ registry=validate_registry_borrow(ir,rows,names,phase,unit=unit)
  for source,(args,effects) in SIGNATURES.items():
   require(rows[source]['args']==args and rows[source]['effects']==effects,'Entry2 exact signature/effects differ')
   body=_ir_definition_body(ir,rows[source]['symbol']);require(body is not None,'Entry2 actual body missing')
   expected=REGISTRY_BORROW_PINS[phase].get(source,PINS[phase][source]) if registry else PINS[phase][source]
+  if optimized:
+   from product_reader_target import post_helper_pin
+   expected=post_helper_pin(unit,source,expected)
   observed=hashlib.sha256(normalized_body(body,names).encode()).hexdigest()
   if source=='Lemma.Kernel.Memory.AddressSpace.base' and registry and observed==DESCRIPTOR_DIRECT_PINS[phase]:
    expected=DESCRIPTOR_DIRECT_PINS[phase];direct_descriptor=True
@@ -180,6 +189,10 @@ def validate_component(ir,unit,*,optimized):
          'scope':'Component only; actual production boot/cfg admission separately required'}
 
 def validate_if_present(ir,unit,*,optimized):
+ from package_entry2_target import selected as companion_selected, validate_entry as companion_entry
+ if companion_selected(unit) and unit.get("role")=="kernel":return companion_entry(ir,unit,optimized=optimized)
+ from product_reader_target import selected, validate_entry
+ if selected(unit) and unit.get("role")=="kernel":return validate_entry(ir,unit,optimized=optimized)
  sources={canonical(row.get('source','')) for row in unit.get('functions',[])}
  selected=unit.get('role')=='kernel' and unit.get('configuration') in CONFIGURATIONS
  if not selected and not sources.intersection(set(FAMILY)|BOOT_FAMILY):return None

@@ -15,20 +15,43 @@ def sha(path):
   for part in iter(lambda:f.read(1048576),b''):h.update(part)
  return h.hexdigest()
 
-def relative(path):
+def relative(path,original_root=None):
  p=Path(path)
- if p.is_absolute():p=p.relative_to(ROOT)
+ if '..' in p.parts:raise ValueError('Unmapped product native input')
+ if p.is_absolute():p=p.relative_to(ROOT if original_root is None else original_root)
  if not p.parts or '..' in p.parts:raise ValueError('Unmapped product native input')
  return p.as_posix()
+
+def archived_original_root(manifest):
+ """Logical checkout prefix from the original top source; never read it.
+
+ The complete archive/manifest/binary identities remain mandatory. All absolute
+ consumed paths must use this one prefix; suffix guessing and filesystem
+ fallback are forbidden.
+ """
+ sources=manifest.get('sources')
+ if manifest.get('top')!='lemma_soc' or not isinstance(sources,list) or not sources or any(not isinstance(s,str) for s in sources):
+  raise ValueError('Archived native top/source inventory malformed')
+ anchors=[Path(s) for s in sources if Path(s).is_absolute() and Path(s).parts[-3:]==('sim','rtl','lemma_soc.sv')]
+ if len(anchors)!=1 or '..' in anchors[0].parts:raise ValueError('Archived native original checkout prefix is not unique')
+ return anchors[0].parents[2]
 
 def native(build,archive=None,profile=PROFILE):
  """Require current inputs or the explicit complete original consumed archive."""
  build=Path(build).resolve();m=json.loads((build/'build.json').read_text())
  if profile not in PROFILES or m.get('profile')!=profile or m.get('configuration')!='external-ram-128MiB':
   raise ValueError('Product requires the selected canonical versioned native core')
+ a=None;original_root=ROOT
+ if archive is not None:
+  archive=Path(archive).resolve();a=json.loads((archive.parent/'consumed-source-archive.json').read_text())
+  if (a.get('schema')!='lemma-consumed-native-source-archive/1' or a.get('original_manifest_sha256')!=sha(build/'build.json') or
+      a.get('snapshot_identity')!=m.get('snapshot_identity') or a.get('binary_sha256')!=m.get('binary_sha256') or
+      not isinstance(a.get('inputs'),dict) or not a['inputs']):
+   raise ValueError('Native archive identity/inventory differs')
+  original_root=archived_original_root(m)
  expected={}
  def add(p,h):
-  p=relative(p)
+  p=relative(p,original_root)
   if p in expected and expected[p]!=h:raise ValueError('Conflicting native input identity')
   if not isinstance(h,str) or len(h)!=64 or any(c not in '0123456789abcdef' for c in h):
    raise ValueError('Malformed native input identity')
@@ -49,7 +72,7 @@ def native(build,archive=None,profile=PROFILE):
    raise ValueError('Native archive differs from the complete original manifest')
   origin=archive;receipt={'kind':'explicit-consumed-source-archive','inputs':len(expected),
    'archive_manifest_sha256':sha(archive.parent/'consumed-source-archive.json'),
-   'original_manifest_sha256':sha(build/'build.json')}
+   'original_manifest_sha256':sha(build/'build.json'),'original_source_root':str(original_root)}
  for p,h in expected.items():
   path=origin/p
   if path.is_symlink() or not path.is_file() or sha(path)!=h:

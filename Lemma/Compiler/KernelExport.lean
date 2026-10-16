@@ -83,7 +83,15 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if isUSBPackageRecoveryNotebookConfiguration configuration then
+  | "kernel" => if isUSBPackageRecoveryEntry2NotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if configuration == "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook" then
+          "siliconUSBPackageRecoveryEntry2Boot" else "siliconUSBPackageRecoveryEntry2InitializeMedium"),
+        "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBPackageRecoveryBulk"]
+    else if isProductCourseReaderNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.siliconProductCourseReaderBoot",
+        "Lemma.Platform.LemmaSim.NotebookKernel.dispatchProductExecutedBulk"]
+    else if isUSBPackageRecoveryNotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
         (if configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook" then "siliconUSBPackageRecoveryBoot" else "siliconUSBPackageRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBPackageRecoveryBulk"]
     else if isPackageClosureNotebookConfiguration configuration then
@@ -467,7 +475,8 @@ private def closedInlineFields (configuration : String) (lowered : LoweredAction
   if !closedInlineFor configuration then [] else
   [("checked_inline", Json.mkObj ([
     ("literal_contract", .str "lemma-closed-literals-v1"),
-    ("wrapper_contract", .str "lemma-checked-primitive-wrapper-v1"),
+    ("wrapper_contract", .str (if isProductCourseReaderNotebookConfiguration configuration && !lowered.inlineWrappers.isEmpty then
+        "lemma-checked-product-physical-wrapper-v1" else "lemma-checked-primitive-wrapper-v1")),
     ("literals", .arr (lowered.inlineLiterals.map fun row => Json.mkObj [
       ("source", .str row.source.toString), ("symbol", .str row.symbol),
       ("type", .str row.ty.render), ("value", toJson row.value)])),
@@ -890,7 +899,15 @@ this name as a FILE symbol; deployment identity remains in every manifest. All
 historical configurations and non-User roles keep their original source name. -/
 def llvmModuleSourceName (configuration role : String)
     (image? : Option UserImageSpec := none) : String :=
-  if role == "user" && (configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+  if role == "user" && isUSBPackageRecoveryEntry2NotebookConfiguration configuration then
+    match image? with
+    | some image => "Lemma lemma-silicon-dev/0.13.0 user " ++ image.root.toString
+    | none => "Lemma " ++ configuration ++ " " ++ role
+  else if role == "user" && isProductCourseReaderNotebookConfiguration configuration then
+    match image? with
+    | some image => "Lemma lemma-silicon-dev/0.10.0 user " ++ image.root.toString
+    | none => "Lemma " ++ configuration ++ " " ++ role
+  else if role == "user" && (configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
       isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) then
     match image? with
     | some image => "Lemma lemma-silicon-dev/0.3.0 user " ++ image.root.toString
@@ -966,7 +983,8 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution profile suite {
     preserveCalls := preserved, symbolPrefix := image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_"),
     inlineLiteralConstants := closedInlineFor configuration,
-    inlinePrimitiveWrappers := closedInlineFor configuration && role == "kernel" && !isProductNotebookConfiguration configuration,
+    inlinePrimitiveWrappers := closedInlineFor configuration && role == "kernel" &&
+      (!isProductNotebookConfiguration configuration || isProductCourseReaderNotebookConfiguration configuration),
     inlineUserWordWrappers := (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && role == "user" && (profile == .user_v0_2 || profile == .user_v0_3 || profile == .user_v0_4 || profile == .user_v0_5 || profile == .user_v0_6 || profile == .user_v0_7) }
   trace s!"lowered functions={lowered.functions.size}"
   let mut declarations : Array LLVM.Declaration := #[]

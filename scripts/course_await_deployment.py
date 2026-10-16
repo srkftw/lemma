@@ -10,12 +10,16 @@ STORE_ROOT='Lemma.Services.Store.ServerAwait.main'
 INSTALLER_ROOT='Lemma.Courses.PackageInstaller.mainAwait'
 from package_closure_deployment import (CONFIGURATIONS as PACKAGE_CONFIGURATIONS,
  SOFTWARE_DEPLOYMENT as PACKAGE_SOFTWARE_DEPLOYMENT)
-from package_companion_deployment import CONFIGURATIONS as JOINED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as JOINED_SOFTWARE_DEPLOYMENT, USER_ROOTS
+from package_companion_deployment import ALL_CONFIGURATIONS as JOINED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as JOINED_SOFTWARE_DEPLOYMENT, USER_ROOTS
 from reader_deployment import CONFIGURATIONS as READER_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as READER_SOFTWARE_DEPLOYMENT
-ALL_CONFIGURATIONS=CONFIGURATIONS+PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS
+from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as PRODUCT_READER_SOFTWARE_DEPLOYMENT
+ALL_CONFIGURATIONS=CONFIGURATIONS+PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS+PRODUCT_READER_CONFIGURATIONS
 def software_deployment_for(configuration):
+ if configuration in PRODUCT_READER_CONFIGURATIONS:return PRODUCT_READER_SOFTWARE_DEPLOYMENT
  if configuration in READER_CONFIGURATIONS:return READER_SOFTWARE_DEPLOYMENT
- if configuration in JOINED_CONFIGURATIONS:return JOINED_SOFTWARE_DEPLOYMENT
+ if configuration in JOINED_CONFIGURATIONS:
+  from package_companion_deployment import software_deployment_for as package_software
+  return package_software(configuration)
  if configuration in CONFIGURATIONS:return SOFTWARE_DEPLOYMENT
  if configuration in PACKAGE_CONFIGURATIONS:return PACKAGE_SOFTWARE_DEPLOYMENT
  raise ValueError('Unknown exact Await software tuple')
@@ -88,7 +92,7 @@ def validate_mount_reply(ir,unit,*,optimized):
  if numeric_candidate(unit):
   numeric_contract(unit)
   package_root=numeric_root(unit)
- package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS and
+ package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS+PRODUCT_READER_CONFIGURATIONS and
      unit.get('image_key')=='notebook' and type(unit.get('image_id')) is int and
      unit['image_id']==2 and unit.get('contract_version')=='core0-user-v0.2' and
      unit.get('boot_role')=='notebook' and

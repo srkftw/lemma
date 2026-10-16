@@ -23,3 +23,19 @@ USER_ROOTS = {
                    'Lemma.Services.Arithmetic.ServerV7.main'),
     'course': ('Lemma.Courses.PackageInstaller', 'Lemma.Courses.PackageInstaller.mainAwait'),
 }
+
+# Historical selectors/catalogs above are immutable. These additive unions are
+# used only by the shared build/device registry; exact artifact gates select
+# their own complete versioned authority.
+from package_entry2_deployment import (CONFIGURATIONS as ENTRY2_CONFIGURATIONS,
+    SOFTWARE_DEPLOYMENT as ENTRY2_SOFTWARE_DEPLOYMENT, BOOT_ROOTS as ENTRY2_BOOT_ROOTS)
+ALL_CONFIGURATIONS = CONFIGURATIONS + ENTRY2_CONFIGURATIONS
+ALL_BOOT_ROOTS = {**BOOT_ROOTS, **ENTRY2_BOOT_ROOTS}
+def software_deployment_for(configuration):
+    if configuration in ENTRY2_CONFIGURATIONS: return ENTRY2_SOFTWARE_DEPLOYMENT
+    if configuration in CONFIGURATIONS: return SOFTWARE_DEPLOYMENT
+    raise ValueError('Unknown exact package companion software deployment')
+def boot_source_for(configuration):
+    if configuration in ENTRY2_CONFIGURATIONS: return 'bootPackageRecoveryEntry2'
+    if configuration in CONFIGURATIONS: return 'bootPackageRecovery'
+    raise ValueError('Unknown exact package companion boot source')

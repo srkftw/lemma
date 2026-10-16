@@ -33,6 +33,8 @@ def candidate(unit):
 def contract(unit):
     if not candidate(unit):
         return None
+    from package_entry2_target import selected as entry2_selected, notebook_contract
+    if entry2_selected(unit): return notebook_contract(unit)
     if (unit.get('configuration') not in CONFIGURATIONS or unit.get('role') != 'user' or
             unit.get('image_key') != 'notebook' or unit.get('image_id') != 2 or
             unit.get('contract_version') != 'core0-user-v0.2' or unit.get('used_device_ops') != [] or

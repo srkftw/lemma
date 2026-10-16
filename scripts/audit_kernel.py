@@ -31,14 +31,15 @@ from course_deployment import CONFIGURATIONS as LEGACY_COURSE_NOTEBOOK_CONFIGURA
 from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_AWAIT_SOFTWARE_DEPLOYMENT, library_source_allowed as course_await_library_source_allowed
 from package_closure_deployment import CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS
 from reader_deployment import CONFIGURATIONS as READER_NOTEBOOK_CONFIGURATIONS, NOTEBOOK_ROOT as READER_NOTEBOOK_ROOT
-AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS
+from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_NOTEBOOK_CONFIGURATIONS
+AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS
 COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+AWAIT_NOTEBOOK_CONFIGURATIONS
 from closure_deployment import (KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS,
                                 ENTRY2_CONFIGURATIONS,
                                 software_deployment_for as closure_software_deployment_for)
 from build_kernel import USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS, USB_RECOVERY_NOTEBOOK_CONFIGURATIONS, NEXT_NOTEBOOK_CONFIGURATIONS, USB_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS, USB_WIRE_NOTEBOOK_CONFIGURATIONS, USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
 from usb_closure_recovery_deployment import SOFTWARE_DEPLOYMENT as USB_CLOSURE_RECOVERY_SOFTWARE_DEPLOYMENT
-from package_companion_deployment import CONFIGURATIONS as USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as PACKAGE_RECOVERY_SOFTWARE_DEPLOYMENT
+from package_companion_deployment import ALL_CONFIGURATIONS as USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as PACKAGE_RECOVERY_SOFTWARE_DEPLOYMENT
 USB_RECOVERY_FAMILIES = USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
@@ -292,7 +293,10 @@ MULTI_USER_CONFIGURATIONS.update({configuration:PACKAGE_CLOSURE_NOTEBOOK_IMAGES 
 READER_NOTEBOOK_IMAGES=(PACKAGE_CLOSURE_NOTEBOOK_IMAGES[0],
     {**PACKAGE_CLOSURE_NOTEBOOK_IMAGES[1],"source":READER_NOTEBOOK_ROOT},
     *PACKAGE_CLOSURE_NOTEBOOK_IMAGES[2:])
-MULTI_USER_CONFIGURATIONS.update({configuration:READER_NOTEBOOK_IMAGES for configuration in READER_NOTEBOOK_CONFIGURATIONS})
+MULTI_USER_CONFIGURATIONS.update({configuration:READER_NOTEBOOK_IMAGES for configuration in READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS})
+PRODUCT_NOTEBOOK_CONFIGURATIONS |= frozenset(PRODUCT_READER_NOTEBOOK_CONFIGURATIONS)
+PRODUCT_CONFIGURATIONS |= frozenset(PRODUCT_READER_NOTEBOOK_CONFIGURATIONS)
+MODERN_NOTEBOOK_CONFIGURATIONS |= frozenset(PRODUCT_READER_NOTEBOOK_CONFIGURATIONS)
 
 RECOVERY_NOTEBOOK_IMAGES=({**NOTEBOOK_USER_IMAGES[0], 'module':'Lemma.Services.Store.ServerRecovery','source':'Lemma.Services.Store.ServerRecovery.mainRecoveryCourse'},
     {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainRecoverableSumsBulk'},SUMS_NOTEBOOK_IMAGES[2])
@@ -308,7 +312,8 @@ MULTI_USER_CONFIGURATIONS.update({configuration:PACKAGE_RECOVERY_NOTEBOOK_IMAGES
 
 def software_deployment_fields(configuration):
     if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
-        return {"software_deployment":PACKAGE_RECOVERY_SOFTWARE_DEPLOYMENT}
+        from package_companion_deployment import software_deployment_for as package_software
+        return {"software_deployment":package_software(configuration)}
     if configuration in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
         return {'software_deployment':USB_CLOSURE_RECOVERY_SOFTWARE_DEPLOYMENT}
     if configuration in USB_RECOVERY_NOTEBOOK_CONFIGURATIONS:
@@ -1720,9 +1725,9 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     recovery_binding=unit.get('configuration') in USB_RECOVERY_FAMILIES
     clocked_binding=recovery_binding or unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
     wire_binding=unit.get('configuration') in USB_WIRE_NOTEBOOK_CONFIGURATIONS
-    executed_binding=unit.get('configuration') in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS
+    executed_binding=unit.get('configuration') in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS
     next_binding=unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
-    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructPackageRecovery' if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructCourse' if unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if recovery_binding else 'constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
+    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructProductCourseReader' if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS else 'constructPackageRecovery' if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructCourse' if unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if recovery_binding else 'constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
     selected=o+('initArithmetic' if arithmetic else 'initPower')
     for source,symbol in names.items():
         other=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(other)[2]
@@ -1748,13 +1753,29 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         if len(admitted)!=1:raise Core0Error('Objects power initializer lacks the exact binding3 selection')
         binding_gates.extend(admitted[0]);callers.append(source)
     if selected in names and callers!=[construct]:raise Core0Error('Objects power initializer has no exact constructor')
-    if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
+    if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
+        from product_reader_deployment import BOOT_ROOT
+        from product_reader_target import kernel_semantics
+        kernel_semantics(pre_ir,unit)
+        constructor_callers=[];boot_callers=[]
+        for source,symbol in names.items():
+            body=_ir_definition_body(pre_ir,symbol)
+            if names[construct] in parse_definitions_and_calls(body)[2]:
+                constructor_callers.append(source)
+                if source!=BOOT_ROOT or _local_call_arguments(body,names[construct])!=['']:
+                    raise Core0Error('Product course constructor lost its unique zero-argument boot gate')
+            if names[BOOT_ROOT] in parse_definitions_and_calls(body)[2]:boot_callers.append(source)
+        if constructor_callers!=[BOOT_ROOT] or boot_callers:
+            raise Core0Error('Product course constructor/reset root incoming authority differs')
+        binding_gates.append({'selected_binding':10,'initialization':0,'boot_root':BOOT_ROOT,'constructor_caller':BOOT_ROOT})
+    elif unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
         boot='Lemma.Platform.LemmaSim.NotebookKernel.'+('bootPackageRecovery' if package_recovery_binding else 'bootRecovery' if recovery_binding else 'bootClocked' if clocked_binding else 'bootWire' if wire_binding else 'bootModernExecuted' if executed_binding else 'bootModernNext' if next_binding else 'bootModern')
         binding=13 if clocked_binding else 11 if wire_binding else 10 if executed_binding else (9 if unit['configuration'] in PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS else 8) if next_binding else 7 if unit['configuration'] in PRODUCT_CONFIGURATIONS else 6
         wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+('siliconUSBClosureRecoveryInitializeMedium' if unit['configuration'] in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS and unit['configuration'].endswith('-initialize') else 'siliconUSBClosureRecoveryBoot' if unit['configuration'] in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'siliconUSBRecoveryInitializeMedium' if recovery_binding and unit['configuration'].endswith('-initialize') else 'siliconUSBRecoveryBoot' if recovery_binding else 'siliconUSBClockedInitializeMedium' if binding==13 and unit['configuration'].endswith('-initialize') else 'siliconUSBClockedBoot' if binding==13 else 'siliconUSBWireInitializeMedium' if binding==11 and unit['configuration'].endswith('-initialize') else 'siliconUSBWireBoot' if binding==11 else 'siliconProductExecutedBoot' if binding==10 else 'siliconProductNextBoot' if binding==9 else 'siliconUSBNextInitializeMedium' if binding==8 and unit['configuration'].endswith('-initialize') else 'siliconUSBNextBoot' if binding==8 else 'siliconProductBoot' if binding==7 else 'siliconUSBInitializeMedium' if unit['configuration'].endswith('-initialize') else 'siliconUSBBoot')
         if package_recovery_binding:
-            from package_companion_deployment import BOOT_ROOTS
-            wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+BOOT_ROOTS[unit['configuration']]
+            from package_companion_deployment import ALL_BOOT_ROOTS, boot_source_for
+            boot='Lemma.Platform.LemmaSim.NotebookKernel.'+boot_source_for(unit['configuration'])
+            wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+ALL_BOOT_ROOTS[unit['configuration']]
         constructor_arguments=['i64 %arg0'] if package_recovery_binding else ['i64 %arg0, i64 %arg1']
         if boot not in names or wrapper not in names:
             raise Core0Error('modern Objects-v3 selection omits its genuine boot wrapper')
@@ -4127,6 +4148,15 @@ def validate_usb_descriptor_lookup(ir: str, unit: dict) -> tuple[set[int], list[
         return set(), [], set()
     if unit.get('contract_version')!=kernel_contract(unit['configuration']):
         raise Core0Error('USB descriptor kernel profile authority differs')
+    if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
+        # This direct local-Store boot contains no USB initializer. Historical
+        # Product boots retain a generic binding8 branch, hence their closed
+        # descriptor corpus. Do not invent that unreachable branch here.
+        from product_reader_target import authority
+        authority(unit,'kernel')
+        if any(r['source'].startswith('Lemma.USB.Control.') for r in unit['functions']):
+            raise Core0Error('local Product course acquired undeclared USB-control initialization')
+        return set(),[],set()
     rows=[r for r in unit['functions'] if r['source']=='Lemma.USB.Control.descriptorWord']
     if len(rows)!=1 or rows[0]['args']!=['u64','u64'] or rows[0]['effects']:
         raise Core0Error('USB descriptor lookup source/signature/effects differs')
@@ -4800,7 +4830,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
                 hoisted={'instruction':'li a5,8','definition_instruction':0,
                          'preserved_register':'a5','normalized_index_register':'a1'}
         elif (source=='Lemma.Courses.PackageReader.step'
-              and configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
+              and configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
               and count==6 and minimum==0 and len(code)==48 and use==21 and i==17
               and index==scaled==address=='a0' and base==target=='a2'
               and code[:4]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)']),
@@ -4888,7 +4918,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
         from package_notebook_target import (CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS,
                                             readonly_lookup as package_readonly_lookup)
         package_literals=[]
-        if unit.get('configuration') in set(PACKAGE_NOTEBOOK_CONFIGURATIONS) | set(READER_NOTEBOOK_CONFIGURATIONS) | set(USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS):
+        if unit.get('configuration') in set(PACKAGE_NOTEBOOK_CONFIGURATIONS) | set(READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS) | set(USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS):
             _, package_literals, _ = package_readonly_lookup(optimized_ir,unit)
         package_literal_keys={
             (re.sub(r'^_private\..*?\.[0-9]+\.','',table['source']),
@@ -4932,11 +4962,11 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 # This exact24-byte pool comes only from the independently
                 # content/bound/use-checked post-LLVM Paper2 owner. No generic
                 # readonly pool or historical declaration authority is added.
-                return (unit.get('configuration') in set(NEXT_NOTEBOOK_CONFIGURATIONS) | set(PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS) | set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(USB_CLOCKED_NOTEBOOK_CONFIGURATIONS) | set(USB_RECOVERY_FAMILIES)
+                return (unit.get('configuration') in set(NEXT_NOTEBOOK_CONFIGURATIONS) | set(PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS) | set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(USB_CLOCKED_NOTEBOOK_CONFIGURATIONS) | set(USB_RECOVERY_FAMILIES)
                         and unit['role']=='kernel' and unit.get('contract_version')==kernel_contract(unit['configuration'])
                         and (row['values'],row['bytes'])==([0x74732c616d6d656c,0x666f2d676e696761,0x74657366],24))
             if source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordExecuted':
-                return (unit.get('configuration') in set(PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS) | set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(USB_CLOCKED_NOTEBOOK_CONFIGURATIONS) | set(USB_RECOVERY_FAMILIES)
+                return (unit.get('configuration') in set(PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS) | set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(USB_CLOCKED_NOTEBOOK_CONFIGURATIONS) | set(USB_RECOVERY_FAMILIES)
                         and unit['role']=='kernel' and unit.get('contract_version')==kernel_contract(unit['configuration'])
                         and (row['values'],row['bytes'])==([0x78652c616d6d656c,0x722d646574756365,0x687365726665],24))
             if source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordWire':
@@ -5004,7 +5034,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             source_row=by_symbol.get(owner['name']);source=re.sub(r'^_private\..*?\.[0-9]+\.','',source_row.get('source','') if source_row else '')
             next_token=(unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
                         and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepNext')
-            executed_token=(unit.get('configuration') in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS
+            executed_token=(unit.get('configuration') in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS
                             and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepExecuted')
             wire_specs={
                 'Lemma.Platform.LemmaSim.DescriptorDTB.literalLengthWire':('kernel',17,['u64'],[],[65,66,67,68,81]),
@@ -5252,14 +5282,17 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
         boot = normalized.get("Lemma.Platform.Silicon.Development."+("WiFiCommonReadProbe.boot" if unit["configuration"]=="lemmasim-silicon-wifi-common-read-probe" else "WiFiCommonProbe.boot")) if unit["configuration"] in COMMON_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootRecovery") if unit["configuration"] in USB_RECOVERY_FAMILIES else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootClocked") if unit["configuration"] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootWire") if unit["configuration"] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernExecuted") if unit["configuration"] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernNext") if unit["configuration"] in NEXT_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModern") if unit["configuration"] in MODERN_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.USBLink.boot") if unit["configuration"] in USB_PROBE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
-        if unit['configuration'] in COURSE_NOTEBOOK_CONFIGURATIONS:
+        if unit['configuration'] in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
+            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.siliconProductCourseReaderBoot')
+        elif unit['configuration'] in COURSE_NOTEBOOK_CONFIGURATIONS:
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelected')
         if unit['configuration'] in ENTRY2_CONFIGURATIONS:
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2')
         if unit['configuration'] in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS:
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelectedEntryV2')
         if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
-            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootPackageRecovery')
+            from package_companion_deployment import boot_source_for
+            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.'+boot_source_for(unit['configuration']))
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -5296,7 +5329,7 @@ def validate_modern_power_selection(ir: str, unit: dict, *, optimized: bool) -> 
         return
     names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
     by={source:symbol for symbol,source in names.items()}
-    required=['Lemma.Platform.LemmaSim.NotebookKernel.'+('constructPackageRecovery' if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if unit['configuration'] in USB_RECOVERY_FAMILIES else 'constructClocked' if unit['configuration'] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else 'constructWire' if unit['configuration'] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else 'constructModernExecuted' if unit['configuration'] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else 'constructModernNext' if unit['configuration'] in NEXT_NOTEBOOK_CONFIGURATIONS else 'constructModern'),
+    required=['Lemma.Platform.LemmaSim.NotebookKernel.'+('constructProductCourseReader' if unit['configuration'] in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS else 'constructPackageRecovery' if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if unit['configuration'] in USB_RECOVERY_FAMILIES else 'constructClocked' if unit['configuration'] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else 'constructWire' if unit['configuration'] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else 'constructModernExecuted' if unit['configuration'] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else 'constructModernNext' if unit['configuration'] in NEXT_NOTEBOOK_CONFIGURATIONS else 'constructModern'),
         'Lemma.Platform.LemmaSim.PowerControl.configureSafety','Lemma.Drivers.PowerSafety.initialize',
         'Lemma.Kernel.Task.activateManaged','Lemma.Kernel.Objects.createEndpoint']
     if not all(source in by for source in required):raise Core0Error('Modern Power-v2 constructor source closure missing')

@@ -80,9 +80,14 @@ def isUSBNextNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-next-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-next-bulk-initialize"
 
+/-- Exact four-role Clocked13 software selection using the checked EntryV2 path. -/
+def isUSBPackageRecoveryEntry2NotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize"
+
 /-- Explicit four-role installed-package/recovery4 composition on Clocked13. -/
 def isUSBPackageRecoveryNotebookConfiguration (configuration : String) : Bool :=
-  configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook" ||
+  isUSBPackageRecoveryEntry2NotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize"
 
 /-- Exact software successor joins Closure7/Doc8 to existing Clocked13 recovery. -/
@@ -105,6 +110,11 @@ def isUSBWireNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-wire-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-wire-bulk-initialize"
 
+/-- Four-role installed-course software on Product10; ordinary ROM boot only.
+There is deliberately no initializer variant that could format user media. -/
+def isProductCourseReaderNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-product-course-reader-bulk-notebook"
+
 /-- Product10/Paper3 executed-refresh authority has a distinct deployment. -/
 def isProductExecutedNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-product-executed-bulk-notebook"
@@ -121,6 +131,7 @@ def isUSBNotebookConfiguration (configuration : String) : Bool :=
 
 /-- Product7 uses immutable ROM/NV boot; this does not format user media. -/
 def isProductNotebookConfiguration (configuration : String) : Bool :=
+  isProductCourseReaderNotebookConfiguration configuration ||
   isProductExecutedNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-product-notebook" ||
     configuration == "lemmasim-silicon-product-bulk-notebook"
 
@@ -130,7 +141,7 @@ def isPackageReaderNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-package-reader-bulk-initialize"
 
 def isPackageClosureNotebookConfiguration (configuration : String) : Bool :=
-  isPackageReaderNotebookConfiguration configuration ||
+  isProductCourseReaderNotebookConfiguration configuration || isPackageReaderNotebookConfiguration configuration ||
     configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" ||
     configuration == "lemmasim-silicon-package-closure-entry2-bulk-initialize"
 
@@ -140,7 +151,8 @@ def isClosureEntry2NotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-closure-entry2-bulk-initialize"
 
 /-- Ordinary captured closures have a distinct isolated User7 authority.
-Only the exact four deployments admit Protocol7/document8; hardware stays0.3. -/
+Closed software selectors admit Protocol7/document8 on their declared hardware;
+historical canonical0.3 and Clocked13 selections remain unchanged. -/
 def isClosureNotebookConfiguration (configuration : String) : Bool :=
   isUSBPackageRecoveryNotebookConfiguration configuration || isPackageClosureNotebookConfiguration configuration || isClosureEntry2NotebookConfiguration configuration || #["lemmasim-silicon-closure-bulk-notebook", "lemmasim-silicon-closure-bulk-initialize",
     "lemmasim-silicon-closure-arithmetic-oom-development",
@@ -192,7 +204,24 @@ def isSumsNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-sums-arithmetic-oom-development"
 
 def softwareDeploymentFields (configuration : String) : List (String × Json) :=
-  if isPackageReaderNotebookConfiguration configuration then
+  if isUSBPackageRecoveryEntry2NotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-clocked-recovery4-entry2-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.13.0"),
+    ("entry_contract", .str "lemma-scheduler-entry-borrow-v2"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.2"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isProductCourseReaderNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-reader-product10-deployment-v1"),
+    ("kernel_lowering", .str "lemma-product-course-checked-physical-inline/1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.10.0"),
+    ("reader_contract", .str "lemma-course-reader-location/1"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isPackageReaderNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
     ("contract_version", .str "lemma-package-reader-bulk-deployment-v1"),
     ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
@@ -516,7 +545,8 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if isPackageReaderNotebookConfiguration configuration then .ok packageReaderNotebookImages
+  if isProductCourseReaderNotebookConfiguration configuration then .ok packageReaderNotebookImages
+  else if isPackageReaderNotebookConfiguration configuration then .ok packageReaderNotebookImages
   else if isUSBPackageRecoveryNotebookConfiguration configuration then .ok packageRecoveryNumberPadNotebookImages
   else if isPackageClosureNotebookConfiguration configuration then .ok packageNumberPadBrowseNotebookImages
   else if isUSBClosureRecoveryNotebookConfiguration configuration then .ok closureRecoveryNotebookImages

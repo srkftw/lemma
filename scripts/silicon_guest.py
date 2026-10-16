@@ -11,7 +11,7 @@ PREPARED=ROOT/'build/lemmasim/rtl-prepared.json'
 MAX_RUN_SECONDS=7200
 CONFIGURATIONS={'service':'silicon-service-development', 'notebook':'lemmasim-silicon-notebook',
                 'initializer':'lemmasim-silicon-initialize','devices':'lemmasim-silicon-devices'}
-NOTEBOOK_WORKLOADS=frozenset({'notebook','managed-notebook','usb-bulk-notebook','usb-next-bulk-notebook','usb-wire-bulk-notebook','usb-clocked-bulk-notebook','usb-clocked-retry-bulk-notebook','usb-clocked-closure-retry-bulk-notebook','usb-clocked-package-retry-bulk-notebook'})
+NOTEBOOK_WORKLOADS=frozenset({'notebook','managed-notebook','usb-bulk-notebook','usb-next-bulk-notebook','usb-wire-bulk-notebook','usb-clocked-bulk-notebook','usb-clocked-retry-bulk-notebook','usb-clocked-closure-retry-bulk-notebook','usb-clocked-package-retry-bulk-notebook','usb-clocked-package-entry2-bulk-notebook'})
 POWER_CONFIGURATIONS={'managed-notebook':'lemmasim-silicon-managed-notebook','managed-initializer':'lemmasim-silicon-managed-initialize','notebook':'lemmasim-silicon-power-notebook','initializer':'lemmasim-silicon-power-initialize','power':'lemmasim-silicon-power-probe'}
 FULL_CONFIGURATIONS={'notebook':'lemmasim-silicon-full-notebook', 'initializer':'lemmasim-silicon-full-initialize'}
 BLE_CONFIGURATIONS={'ble':'lemmasim-silicon-ble-link-probe'}
@@ -35,9 +35,12 @@ USB_PACKAGE_RECOVERY_CONFIGURATIONS={'usb-clocked-package-retry-bulk-notebook':'
 USB_CLOCKED_PROFILE_NAME='lemma-silicon-dev/0.13.0'
 USB_CLOCKED_PROFILE_FILE='sim/profiles/lemma-silicon-dev-0.13.0.json'
 SAFETY_CONFIGURATIONS={'power':'lemmasim-silicon-power-safety-probe'}
+USB_PACKAGE_ENTRY2_CONFIGURATIONS={'usb-clocked-package-entry2-bulk-notebook':'lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook',
+                                  'usb-clocked-package-entry2-bulk-initializer':'lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize'}
+
 def configurations(name=None):
     if name!=USB_CLOCKED_PROFILE_NAME:profile(name)
-    if name==USB_CLOCKED_PROFILE_NAME:return {**USB_CLOCKED_CONFIGURATIONS,**USB_RECOVERY_CONFIGURATIONS,**USB_CLOSURE_RECOVERY_CONFIGURATIONS,**USB_PACKAGE_RECOVERY_CONFIGURATIONS}
+    if name==USB_CLOCKED_PROFILE_NAME:return {**USB_CLOCKED_CONFIGURATIONS,**USB_RECOVERY_CONFIGURATIONS,**USB_CLOSURE_RECOVERY_CONFIGURATIONS,**USB_PACKAGE_RECOVERY_CONFIGURATIONS,**USB_PACKAGE_ENTRY2_CONFIGURATIONS}
     return USB_CLOCKED_CONFIGURATIONS if name=='lemma-silicon-dev/0.13.0' else USB_WIRE_CONFIGURATIONS if name=='lemma-silicon-dev/0.11.0' else PRODUCT_EXECUTED_CONFIGURATIONS if name=='lemma-silicon-dev/0.10.0' else PRODUCT_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.9.0' else USB_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.8.0' else USB_CONFIGURATIONS if name=='lemma-silicon-dev/0.6.0' else BLE_CONFIGURATIONS if name=='lemma-silicon-dev/0.5.0' else SAFETY_CONFIGURATIONS if name=='lemma-silicon-dev/0.4.0' else POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
 def prepared_path(name=None):
     if name!=USB_CLOCKED_PROFILE_NAME:profile(name)
@@ -75,10 +78,11 @@ def _read_unique_json(path):
         return result
     return json.loads(Path(path).read_text(),object_pairs_hook=pairs)
 
-def _native_relative(path):
+def _native_relative(path, original_root=None):
     value=Path(path)
+    if '..' in value.parts:raise ValueError('Escaping native source input')
     if value.is_absolute():
-        try:value=value.relative_to(ROOT)
+        try:value=value.relative_to(ROOT if original_root is None else original_root)
         except ValueError:raise ValueError('Native input is outside the declared source root') from None
     if not value.parts or any(part in ('..','.') for part in value.parts):
         raise ValueError('Escaping native source input')
@@ -107,9 +111,13 @@ def native_source_archive(build,source_root,name):
         raise ValueError('Clocked native archive requires its separately bound selected profile input')
     if not clocked and m.get('profile_sha256')!=sha(profile_path(name)):
         raise ValueError('Native archive selected profile changed')
+    original_root=ROOT
+    if clocked:
+        from product_native import archived_original_root
+        original_root=archived_original_root(m)
     expected={}
     def add(path,digest):
-        path=_native_relative(path)
+        path=_native_relative(path, original_root)
         if not isinstance(digest,str) or len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest):
             raise ValueError('Malformed native source digest')
         if path in expected and expected[path]!=digest:raise ValueError('Conflicting native source digest')
@@ -126,17 +134,27 @@ def native_source_archive(build,source_root,name):
     add(Path(m['host_include_dir'])/'lemma_silicon_binding.h',m['host_binding_sha256'])
     if not isinstance(receipt.get('rtl_sources'),dict) or not receipt['rtl_sources']:
         raise ValueError('Original native preparation input inventory missing')
-    original={_native_relative(path):digest for path,digest in receipt['rtl_sources'].items()}
+    original={_native_relative(path,original_root):digest for path,digest in receipt['rtl_sources'].items()}
     if len(original)!=len(receipt['rtl_sources']):raise ValueError('Duplicate normalized original native source input')
     receipt_paths=set(expected)|{'tooling/silicon/dependencies.json'}
     if clocked and USB_CLOCKED_PROFILE_FILE in original:
         if original[USB_CLOCKED_PROFILE_FILE]!=m['profile_sha256']:
             raise ValueError('Original native receipt selected profile differs')
         receipt_paths.add(USB_CLOCKED_PROFILE_FILE)
+    receipt_manifest=Path(receipt.get('rtl_build',{}).get('path',''))
+    if clocked:
+        if (not receipt_manifest.is_absolute() or '..' in receipt_manifest.parts or
+                receipt_manifest.name!='build.json' or not receipt_manifest.is_relative_to(original_root)):
+            raise ValueError('Original Clocked native build path is outside its source prefix')
+        expected_receipt_manifest=str(receipt_manifest)
+        expected_receipt_binary=str(receipt_manifest.parent/'obj/lemma-rtl')
+    else:
+        expected_receipt_manifest=str(manifest_path)
+        expected_receipt_binary=str(build/'obj/lemma-rtl')
     if (receipt.get('schema_version')!=1 or receipt.get('profile')!=name or
         receipt.get('profile_sha256')!=m['profile_sha256'] or
-        receipt.get('rtl_build')!={'path':str(manifest_path),'sha256':sha(manifest_path)} or
-        receipt.get('binary')!={'path':str(build/'obj/lemma-rtl'),'sha256':m.get('binary_sha256')} or
+        receipt.get('rtl_build')!={'path':expected_receipt_manifest,'sha256':sha(manifest_path)} or
+        receipt.get('binary')!={'path':expected_receipt_binary,'sha256':m.get('binary_sha256')} or
         set(original)!=receipt_paths or
         any(original.get(path)!=digest for path,digest in expected.items())):
         raise ValueError('Original native preparation receipt differs from the full consumed manifest')
@@ -156,11 +174,11 @@ def native_source_archive(build,source_root,name):
     identity={k:v for k,v in m.items() if k not in
               ('sources','include_dirs','host_include_dir','runtime_identity_header','build_argv','build_jobs','binary_sha256','snapshot_identity')}
     identity['identity_schema']='lemmasim-rtl-implementation/2'
-    core=ROOT/'build/silicon/deps/cvw';generated=Path(m['host_include_dir'])/'lemma_silicon_binding.sv'
+    core=original_root/'build/silicon/deps/cvw';generated=Path(m['host_include_dir'])/'lemma_silicon_binding.sv'
     def logical(path):
         path=Path(path)
         if path==generated:return 'generated/lemma_silicon_binding.sv'
-        for base,prefix in ((core,'core/'),(core.parent/'cvw-patched','patched-core/'),(ROOT,'repository/')):
+        for base,prefix in ((core,'core/'),(core.parent/'cvw-patched','patched-core/'),(original_root,'repository/')):
             try:return prefix+path.relative_to(base).as_posix()
             except ValueError:pass
         raise ValueError('Unmapped native implementation input')
@@ -186,8 +204,9 @@ def native_source_archive(build,source_root,name):
         dependency.get('core',{}).get('repository')!=m.get('core_repository') or
         dependency.get('core',{}).get('revision')!=m.get('core_revision')):
         raise ValueError('Archived tool/core dependency declaration differs')
-    validate(m['runtime_identity_header'])
-    if validate(m['runtime_identity_header']).read_text()!='#pragma once\n#define LEMMA_RUNTIME_IDENTITY "'+m['snapshot_identity']+'"\n':
+    header=(source_root/_native_relative(m['runtime_identity_header']['path'],original_root)) if clocked else validate(m['runtime_identity_header'])
+    if sha(header)!=m['runtime_identity_header']['sha256']:raise ValueError('Native archived compiled identity header changed')
+    if header.read_text()!='#pragma once\n#define LEMMA_RUNTIME_IDENTITY "'+m['snapshot_identity']+'"\n':
         raise ValueError('Native executable identity header differs')
     binary=validate({'path':str(build/'obj/lemma-rtl'),'sha256':m['binary_sha256']})
     evidence={'schema':'lemma-explicit-rtl-source-archive/1','source_root':str(source_root),
@@ -196,7 +215,7 @@ def native_source_archive(build,source_root,name):
               'binary':identified(binary),'inputs':len(expected),
               'scope':('unchanged archived native USB6 machine; newly prepared guests retain their own source and audit identities' if name=='lemma-silicon-dev/0.6.0' else 'unchanged archived native USB8 machine; newly prepared guests retain their own source and audit identities' if name=='lemma-silicon-dev/0.8.0' else 'unchanged archived native USBWire11 machine; newly prepared guests retain their own source and audit identities' if name=='lemma-silicon-dev/0.11.0' else 'unchanged archived native USBClocked13 machine; newly prepared guests retain their own source and audit identities')}
     if clocked:evidence.update(schema='lemma-explicit-rtl-source-archive/2',selected_profile=identified(source_root/USB_CLOCKED_PROFILE_FILE))
-    return m,{str(ROOT/path):digest for path,digest in expected.items()},evidence
+    return m,{str(original_root/path):digest for path,digest in expected.items()},evidence
 
 def prepared_profile(data):
     """Read the bound Clocked profile, never substitute a mutable ROOT copy."""

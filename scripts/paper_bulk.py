@@ -66,7 +66,8 @@ def validate(ir,unit,*,optimized):
  if role=='kernel' and unit['configuration'] in WIRE_CONFIGURATIONS:
   from paper_wire import validate as validate_wire
   return validate_wire(ir,unit,optimized=optimized)
- if role=='kernel' and unit['configuration']==EXECUTED_CONFIGURATION:
+ from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
+ if role=='kernel' and unit['configuration'] in (EXECUTED_CONFIGURATION,)+PRODUCT_READER_CONFIGURATIONS:
   from paper_executed import validate as validate_executed
   return validate_executed(ir,unit,optimized=optimized)
  if role=='kernel' and unit['configuration'] in NEXT_CONFIGURATIONS:
@@ -80,7 +81,7 @@ def validate(ir,unit,*,optimized):
    special='ModernBulk' in source or 'ProductBulk' in source or 'USBBulk' in source
    if special!=modern or special and ('ProductBulk' in source or 'USBBulk' in source) and not source.endswith('.'+wrapper):del selected[source]
  else:
-  if unit['configuration'] in PACKAGE_CONFIGURATIONS + READER_CONFIGURATIONS:
+  if unit['configuration'] in PACKAGE_CONFIGURATIONS + READER_CONFIGURATIONS + PRODUCT_READER_CONFIGURATIONS:
    from package_notebook_target import validate as validate_package
    package = validate_package(ir, unit, optimized=False)
    if package is None: raise Core0Error('Surface-v2 Package root lacks complete source cohort')

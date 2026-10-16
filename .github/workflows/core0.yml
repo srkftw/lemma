@@ -367,6 +367,18 @@ jobs:
                 lake env lean -j2 tests/courses/ReaderDeployment.lean \
             2>&1 | tee build/ci/metadata/reader-deployment-actions.log
           grep -F 'PASS closed Reader18 and preserved history17 deployment selection' build/ci/metadata/reader-deployment-actions.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake env lean -j2 tests/courses/ProductReaderDeployment.lean \
+            2>&1 | tee build/ci/metadata/product-reader-deployment-actions.log
+          grep -F 'PRODUCT_COURSE_READER_DEPLOYMENT:PASS' build/ci/metadata/product-reader-deployment-actions.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake env lean -j2 tests/courses/RecoveryEntry2Deployment.lean \
+            2>&1 | tee build/ci/metadata/recovery-entry2-deployment-actions.log
+          grep -F 'RECOVERY_ENTRY2_DEPLOYMENT:PASS' build/ci/metadata/recovery-entry2-deployment-actions.log
 
       - name: Check actual aligned arithmetic presentation Actions
         run: |

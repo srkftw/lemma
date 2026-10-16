@@ -193,6 +193,9 @@ def validate(ir, unit, *, optimized, optimization=None):
         normalized = ' '.join(re.sub(r'@([^ (]+)', lambda m: '@'+names.get(m[1], m[1]), body(source)).split())
         digest = hashlib.sha256(normalized.encode()).hexdigest()
         expected=KERNEL3_O0_POST[suffix] if o0_post else KERNEL3_POST.get(suffix,PINS[phase][suffix]) if kernel3 and optimized else PINS[phase][suffix]
+        if optimized:
+            from product_reader_target import post_helper_pin
+            expected=post_helper_pin(unit,source,expected)
         if digest != expected:
             raise Core0Error('page-word complete checked body differs: '+source+'/'+phase)
         observed[source] = digest

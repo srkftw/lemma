@@ -135,6 +135,8 @@ def _successor(source):
  return 'executed' in source.lower() and source.startswith(('Lemma.Platform.LemmaSim.','Lemma.Platform.Silicon.Binding','Lemma.Drivers.Paper.','Lemma.Kernel.Memory.AddressSpace.','Lemma.Boot.Product'))
 
 def validate(ir,unit,*,optimized):
+ from product_reader_target import selected, validate_kernel
+ if selected(unit) and unit.get("role")=="kernel":return validate_kernel(ir,unit,optimized=optimized)
  rows={canonical(row['source']):row for row in unit.get('functions',[])}
  reached={source for source in rows if _successor(source)}
  if unit.get('configuration')!=CONFIGURATION or unit.get('role')!='kernel':

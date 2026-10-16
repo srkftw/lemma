@@ -66,7 +66,7 @@ def notebook_profile_allowed(unit):
   unit.get('configuration') in MANAGED_NOTEBOOK_CONFIGURATIONS | SUMS_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS | frozenset(CLOSURE_CONFIGURATIONS))
 
 def recovery_store_profile_allowed(unit):
- from package_companion_deployment import CONFIGURATIONS as PACKAGE_RECOVERY_CONFIGURATIONS
+ from package_companion_deployment import ALL_CONFIGURATIONS as PACKAGE_RECOVERY_CONFIGURATIONS
  from managed_sums import RECOVERY_USB
  return unit.get('role')=='user' and unit.get('image_key')=='store' and unit.get('configuration') in RECOVERY_USB | frozenset(RECOVERY3_CONFIGURATIONS) | frozenset(PACKAGE_RECOVERY_CONFIGURATIONS)
 

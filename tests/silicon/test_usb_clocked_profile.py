@@ -77,7 +77,7 @@ class USBClockedProfile(unittest.TestCase):
         self.assertEqual(bundle.USB_CLOCKED_CONFIGURATIONS, normal)
         self.assertEqual(bundle.USB_RECOVERY_CONFIGURATIONS, recovery)
         self.assertEqual(bundle.USB_CLOSURE_RECOVERY_CONFIGURATIONS, closure_recovery)
-        self.assertEqual(guest.configurations(p['profile']), {**normal, **recovery, **closure_recovery, **bundle.USB_PACKAGE_RECOVERY_CONFIGURATIONS})
+        self.assertEqual(guest.configurations(p['profile']), {**normal, **recovery, **closure_recovery, **bundle.USB_PACKAGE_RECOVERY_CONFIGURATIONS, **bundle.USB_PACKAGE_ENTRY2_CONFIGURATIONS})
         self.assertNotEqual(guest.prepared_path(p['profile']), guest.prepared_path(bundle.USB_WIRE_PROFILE))
         for key, value in [('usb_clocked_enabled', 0), ('usb_clocked_quantum_hz', 100000000),
                            ('usb_clocked_ppm_bound', 0), ('usb_clocked_cdc_version', 0),

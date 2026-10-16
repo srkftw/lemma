@@ -39,6 +39,12 @@ def contract(unit):
     if not candidate(unit):
         return None
     configuration = unit.get("configuration")
+    from product_reader_target import selected, authority
+    if selected(unit):
+        wanted = authority(unit, "notebook")
+        if (unit.get("role"),unit.get("image_key"),unit.get("image_id"),unit.get("contract_version")) != ("user","notebook",2,"core0-user-v0.2"):
+            raise Core0Error("Product Reader18 escaped exact Notebook User2")
+        return "product10", wanted
     if (configuration not in CONFIGURATIONS or unit.get("role") != "user" or
             unit.get("image_key") != "notebook" or unit.get("image_id") != 2 or
             unit.get("contract_version") != "core0-user-v0.2" or
@@ -146,7 +152,7 @@ def validate(ir, unit, *, optimized):
     if found is None:
         return None
     from package_companion_target import complete_corpus
-    _, wanted = found
+    scope, wanted = found
     phase = "post" if optimized else "pre"
     actual = complete_corpus(ir, unit, optimized=optimized)
     if (len(actual["functions"]) != wanted[phase + "_function_count"] or
@@ -154,7 +160,7 @@ def validate(ir, unit, *, optimized):
         raise Core0Error("Reader18 complete body/global/caller corpus differs: " + phase)
     return {
         "contract_version": "lemma-installed-package-notebook/18",
-        "artifact_contract_version": VERSION, "software_scope": "canonical",
+        "artifact_contract_version": VERSION, "software_scope": scope,
         "package_notebook_version": 18, "phase": phase,
         "function_count": len(actual["functions"]), "complete_corpus_sha256": digest(actual),
         "semantics": None if optimized else semantics(ir, unit),

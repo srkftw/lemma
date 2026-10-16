@@ -21,6 +21,8 @@ def role_key(unit):
  if unit.get('role')=='user' and unit.get('image_key') in USER_ROOTS:return unit['image_key']
  raise Core0Error('Package recovery role outside exact firmware/kernel/four-user artifact authority')
 def contract(unit):
+ from package_entry2_target import selected as entry2_selected, contract as entry2_contract
+ if entry2_selected(unit):return entry2_contract(unit)
  if not selected(unit):return None
  if unit.get('software_deployment')!=SOFTWARE_DEPLOYMENT:raise Core0Error('Package recovery hardware/software tuple differs')
  if not AUTHORITY.is_file():raise Core0Error('Package recovery complete genuine authority missing')
@@ -63,7 +65,8 @@ def semantic_guards(ir,unit):
   return re.findall(r'call\s+\{ i64, i64 \} @'+re.escape(rows[target]['symbol'])+r'\(([^\n]*)\)',body)
  if unit['role']=='kernel':
   root='Lemma.Platform.LemmaSim.NotebookKernel.';init=int(unit['configuration'].endswith('-initialize'))
-  if calls(root+BOOT_ROOTS[unit['configuration']],root+'bootPackageRecovery')!=['i64 '+str(init)]:raise Core0Error('Package recovery boot initialization differs')
+  from package_companion_deployment import ALL_BOOT_ROOTS, boot_source_for
+  if calls(root+ALL_BOOT_ROOTS[unit['configuration']],root+boot_source_for(unit['configuration']))!=['i64 '+str(init)]:raise Core0Error('Package recovery boot initialization differs')
   if calls(root+DISPATCH_ROOT,root+'dispatchRecoveryBulk')!=['i64 13, i64 %arg0, i64 %arg1, i64 %arg2']:raise Core0Error('Package recovery exact Clocked13 dispatch differs')
   if len(calls(root+'constructPackageRecovery','Lemma.Platform.LemmaSim.DeviceService.configureUSBRecovery'))!=1:raise Core0Error('Package recovery missing real USB recovery controller setup')
   if any(x.startswith(('Lemma.Boot.Product','Lemma.Platform.LemmaSim.BootHealth')) for x in rows):raise Core0Error('Package recovery acquired undeclared Product/NV authority')
@@ -108,7 +111,8 @@ def readonly_request_kinds(ir,unit):
  Exact complete optimized bodies/globals are required before inspecting these
  pointer/load sites. Physical request-header reads keep ordinary access guards.
  """
- if unit.get('configuration') not in CONFIGURATIONS or unit.get('role')!='kernel':return set(),[],set()
+ from package_companion_deployment import ALL_CONFIGURATIONS
+ if unit.get('configuration') not in ALL_CONFIGURATIONS or unit.get('role')!='kernel':return set(),[],set()
  validate(ir,unit,optimized=True)
  from audit_kernel import _ir_definition_body,_line_functions,_structured_ir_blocks,_structured_successors,_structured_reachable
  source='Lemma.USB.Block.recoveryRequestValid'

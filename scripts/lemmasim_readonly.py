@@ -15,7 +15,7 @@ COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 
 from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_CONFIGURATIONS
-from package_companion_deployment import CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
+from package_companion_deployment import ALL_CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
 
 COMMON_CONFIGURATIONS={'lemmasim-silicon-wifi-common-probe','lemmasim-silicon-wifi-common-read-probe'}
 CONFIGURATIONS = {'lemmasim-silicon-power-safety-probe','lemmasim-silicon-power-probe', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize', 'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize'}
@@ -198,6 +198,9 @@ def usb_specs():
 
 PRODUCT_CONFIGURATIONS = {'lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-notebook',
     'lemmasim-silicon-product-initialize','lemmasim-silicon-product-boot-probe'}
+from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
+PRODUCT_CONFIGURATIONS |= set(PRODUCT_READER_CONFIGURATIONS)
+PAPER_NEXT_CONFIGURATIONS |= set(PRODUCT_READER_CONFIGURATIONS)
 CONFIGURATIONS |= PRODUCT_CONFIGURATIONS
 # All selected Notebook roots share this bounded scalar fetch. Historical
 # main selects Protocol2 and still rejects document4 in Mathematics.validate;
@@ -321,7 +324,7 @@ def lookup_schema(ir: str, unit: dict):
         # consists of two immediate words; it introduces no readonly table.
         specs[PREFIX+'DescriptorDTB.literalWordNext']=('kernel',['u64','u64'],[],
             [[0x74732c616d6d656c,0x666f2d676e696761,0x74657366]])
-    if unit.get('configuration')=='lemmasim-silicon-product-executed-bulk-notebook' or unit.get('configuration') in PAPER_WIRE_CONFIGURATIONS | PAPER_CLOCKED_CONFIGURATIONS | COMMON_CONFIGURATIONS:
+    if unit.get('configuration') in ('lemmasim-silicon-product-executed-bulk-notebook',)+PRODUCT_READER_CONFIGURATIONS or unit.get('configuration') in PAPER_WIRE_CONFIGURATIONS | PAPER_CLOCKED_CONFIGURATIONS | COMMON_CONFIGURATIONS:
         specs=dict(specs)
         # Independent UTF-8 bytes for the exact Paper3 executed-refresh property.
         specs[PREFIX+'DescriptorDTB.literalWordExecuted']=('kernel',['u64','u64'],[],

@@ -11,7 +11,7 @@ from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATION
 COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 from closure_deployment import ALL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_CONFIGURATIONS
-from package_companion_deployment import CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
+from package_companion_deployment import ALL_CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
 from core0_common import Core0Error
 
 CONFIGURATIONS={'lemmasim-silicon-product-notebook','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize',
@@ -39,6 +39,18 @@ USER_WORD={
 FIELD='checked_inline'
 LITERAL='lemma-closed-literals-v1'
 WRAPPER='lemma-checked-primitive-wrapper-v1'
+PRODUCT_WRAPPER='lemma-checked-product-physical-wrapper-v1'
+# Exact previously audited Product10 guards, compared byte-for-byte with its
+# maintained non-inline export. Only the additive course Kernel7 may inline them.
+PRODUCT_PHYSICAL_PREIMAGE={
+ 'read64':'1f88a51583f9f53f697ac6266c751ca495035544176493c68c2e6017305fac35',
+ 'read8':'0ac63a8f7fa57ae7ff6b0ca1bf85af219f92b7d5023b47dc582e4ec63bbb83a5',
+ 'write64':'594838366a55065256c2bdde3ee1d8c03a987b0baf3b8e7b85cf3214738d5417',
+ 'write8':'2a776ffdb37ebed3fc9caf313d15dc293647ef456a9ec035d481e111575a7002'}
+def product_physical(unit):
+ from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER, SOFTWARE_DEPLOYMENT as PRODUCT_SOFTWARE
+ return unit.get('configuration') in PRODUCT_READER and unit.get('role')=='kernel' and unit.get('contract_version')=='core0-kernel-v0.7' and unit.get('software_deployment')==PRODUCT_SOFTWARE
+def physical_preimages(unit):return PRODUCT_PHYSICAL_PREIMAGE if product_physical(unit) else PHYSICAL_PREIMAGE
 TYPES={'u8':('i8','zeroext ',8),'u32':('i32','signext ',32),'u64':('i64','',64)}
 PHYSICAL={
  'execution.physical-read8':('read8',['u64'],['checked-access','physical-read']),
@@ -72,7 +84,7 @@ def catalog(unit):
  c=unit.get(FIELD)
  keys={'literal_contract','wrapper_contract','literals','wrappers'}
  if unit.get('configuration') in USER_CONFIGURATIONS:keys|={'user_wrapper_contract','user_wrappers'}
- require(isinstance(c,dict) and set(c)==keys and c['literal_contract']==LITERAL and c['wrapper_contract']==WRAPPER,
+ require(isinstance(c,dict) and set(c)==keys and c['literal_contract']==LITERAL and c['wrapper_contract']==(PRODUCT_WRAPPER if product_physical(unit) else WRAPPER),
   'checked-inline contract/catalog absent or malformed')
  if 'user_wrappers' in c:
   require(c['user_wrapper_contract']==USER_WRAPPER and isinstance(c['user_wrappers'],list),
@@ -89,7 +101,9 @@ def catalog(unit):
  for r in c['wrappers']:
   require(isinstance(r,dict) and set(r)=={'source','symbol','operation'},'wrapper catalog row keys differ')
   f=by.get(r.get('symbol'));op=PHYSICAL.get(r.get('operation'))
-  require(unit['role']=='kernel' and unit['contract_version'] in {'core0-kernel-v0.4','core0-kernel-v0.6'} and
+  from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as PRODUCT_READER_SOFTWARE
+  product_reader=(unit.get('configuration') in PRODUCT_READER_CONFIGURATIONS and unit.get('software_deployment')==PRODUCT_READER_SOFTWARE)
+  require(unit['role']=='kernel' and (unit['contract_version'] in {'core0-kernel-v0.4','core0-kernel-v0.6'} or unit['contract_version']=='core0-kernel-v0.7' and product_reader) and
    f is not None and op is not None and r['source']==f['source'] and (f['args'],f['effects'])==op[1:],
    'wrapper source/signature/effects/authority differs')
   require(any(o['stable_id']==r['operation'] and o['primitive_symbol'] is None and o['returnkind']=='word'
@@ -129,7 +143,7 @@ def validate(ir,unit,*,optimized):
   # The trusted preIR audit qualified eligibility and complete guard preimages.
   # The ordinary artifact auditor still checks every optimized memory operation,
   # executable provenance, closed calls and dependency/stack obligations.
-  return {'contracts':[] if c is None else [LITERAL,WRAPPER],
+  return {'contracts':[] if c is None else [LITERAL,c['wrapper_contract']],
     'literal_functions':0 if c is None else len(c['literals']),
     'physical_wrappers':0 if c is None else len(c['wrappers']),
     'scope':'ordinary pinned LLVM optimization of independently audited preIR; no compiler correctness or cycle proof'}
@@ -154,7 +168,7 @@ def validate(ir,unit,*,optimized):
  if unit['role']=='kernel':
   for f in unit['functions']:
    if any((f['args'],f['effects'])==op[1:] for op in PHYSICAL.values()) and \
-       hashlib.sha256(_body(ir,f['symbol']).encode()).hexdigest() in PHYSICAL_PREIMAGE.values():
+       hashlib.sha256(_body(ir,f['symbol']).encode()).hexdigest() in physical_preimages(unit).values():
     wrapper_expected.add(f['symbol'])
  require({r['symbol'] for r in c['wrappers']}==wrapper_expected,'wrapper catalog omitted or invented a checked one-operation body')
  for r in c['wrappers']:
@@ -162,7 +176,7 @@ def validate(ir,unit,*,optimized):
   require(headers.get(sym)=='define { i64, i64 } @'+sym+'('+', '.join('i64 %arg'+str(i) for i in range(len(args)))+') nounwind alwaysinline {',
    'wrapper ABI/attribute differs')
   digest=hashlib.sha256(_body(ir,sym).encode()).hexdigest()
-  require(digest==PHYSICAL_PREIMAGE[op],'wrapper changed complete physical interval/alignment/error/volatile/result guard')
+  require(digest==physical_preimages(unit)[op],'wrapper changed complete physical interval/alignment/error/volatile/result guard')
  user_expected=set()
  if unit['role']=='user' and (unit['contract_version'] in {'core0-user-v0.2','core0-user-v0.3'} or unit['contract_version']=='core0-user-v0.4' and unit.get('configuration') in BYTES_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.5' and unit.get('configuration') in ARRAY_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.6' and unit.get('configuration') in STRING_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.7' and unit.get('configuration') in CLOSURE_CONFIGURATIONS + USB_CLOSURE_RECOVERY_CONFIGURATIONS) and unit.get('configuration') in USER_CONFIGURATIONS:
   for f in unit['functions']:
@@ -184,7 +198,7 @@ def validate(ir,unit,*,optimized):
     require(header==surface_inline['headers'][sym], 'catalogued Surface callback internal header differs')
    else:require(' nounwind noinline "disable-tail-calls"="true" {' in header,
     'noneligible policy/body acquired changed call-boundary attributes')
- result={'contracts':[LITERAL,WRAPPER],'literal_functions':len(c['literals']),
-  'physical_wrappers':len(c['wrappers']),'complete_physical_preimages':PHYSICAL_PREIMAGE}
+ result={'contracts':[LITERAL,c['wrapper_contract']],'literal_functions':len(c['literals']),
+  'physical_wrappers':len(c['wrappers']),'complete_physical_preimages':physical_preimages(unit)}
  if 'user_wrappers' in c:result.update(user_word_wrappers=len(c['user_wrappers']),user_word_contract=USER_WRAPPER)
  return result

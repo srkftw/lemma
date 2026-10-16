@@ -48,7 +48,8 @@ def package(guest,out,identity,source_archive=None):
  if out.exists():raise ValueError('output directory must be unused')
  build=json.loads((guest/'build.json').read_text());audit=json.loads((guest/'audit.json').read_text())
  binding=json.loads((guest/'binding.json').read_text())
- executed_profile=build.get('configuration')=='lemmasim-silicon-product-executed-bulk-notebook'
+ from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
+ executed_profile=build.get('configuration') in ('lemmasim-silicon-product-executed-bulk-notebook',)+PRODUCT_READER_CONFIGURATIONS
  next_profile=build.get('configuration')==NEXT_CONFIGURATION
  if build.get('status')!='BUILT' or audit.get('status')!='PASS' or (not next_profile and not executed_profile and build.get('configuration') not in CONFIGURATIONS) or audit.get('configuration')!=build['configuration'] or binding.get('profile')!=('lemma-silicon-dev/0.10.0' if executed_profile else 'lemma-silicon-dev/0.9.0' if next_profile else 'lemma-silicon-dev/0.7.0'):raise ValueError('packaging requires a strictly audited selected product7 guest')
  for name in ('image.elf','platform.dtb'):

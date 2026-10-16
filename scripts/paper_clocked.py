@@ -11,7 +11,7 @@ from core0_common import Core0Error
 from paper_next import canonical, normalized
 
 from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_CONFIGURATIONS
-from package_companion_deployment import CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
+from package_companion_deployment import ALL_CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
 
 CONFIGURATIONS = frozenset(('lemmasim-silicon-usb-clocked-bulk-notebook',
                            'lemmasim-silicon-usb-clocked-bulk-initialize'))

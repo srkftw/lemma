@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Guest A/B installation -> actual trial notebook -> guest health confirmation
 -> independent authenticated cold recovery, preserving every document byte.
-Reuses the audited Product10 notebook; no fresh compilation/latest-course,
-interrupted confirmation, watchdog, production-key or browser claim.
+The original Saved14 case remains fixed. The additive Saved38 Reader18 case
+uses an audited four-role image and raw COURSE input after independent cold.
+Neither case claims interrupted confirmation, production keys or browser boot.
 """
 import argparse
 import filecmp
@@ -41,7 +42,20 @@ def main():
                  'tag', 'boot-medium', 'disk', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--public-development-key', action='store_true', required=True)
+    parser.add_argument('--case',choices=('saved14-notebook','saved38-course-reader'),default='saved14-notebook')
+    parser.add_argument('--expected-home',type=Path)
+    parser.add_argument('--expected-course',type=Path)
     args = parser.parse_args()
+    reader = args.case == 'saved38-course-reader'
+    require(not reader or args.expected_home is not None and args.expected_course is not None,
+            'Reader18 requires independent complete home/course references')
+    whole_seconds = 32400 if reader else 21600
+    total_cap = 4_300_000_000 if reader else 3_500_000_000
+    install_cap, install_seconds = (900_000_000,7200) if reader else (600_000_000,3600)
+    handoff_cap, handoff_seconds = (300_000_000,3600) if reader else (200_000_000,1800)
+    ready_cap, ready_seconds = (1_200_000_000,9000) if reader else (1_100_000_000,7200)
+    cold_cap, cold_seconds = (1_500_000_000,11200) if reader else (1_300_000_000,7200)
+    sectors, sequence_expected = (1056,38) if reader else (724,14)
     out = args.work_dir.resolve()
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
     out.mkdir()
@@ -49,23 +63,28 @@ def main():
     resource.setrlimit(resource.RLIMIT_FSIZE, (1 << 30, 1 << 30))
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     began = time.monotonic()
-    deadline = began + 21600
+    deadline = began + whole_seconds
     used = 0
     processes = []
     report = {'status': 'RUNNING', 'scope': __doc__, 'phases': [],
-              'bounds': {'whole_seconds': 21600, 'clocks': 3_500_000_000,
-                         'install_clocks': 600_000_000, 'install_seconds': 3600,
-                         'handoff_clocks': 200_000_000, 'handoff_seconds': 1800,
-                         'ready_clocks': 1_100_000_000, 'ready_seconds': 7200,
-                         'cold_clocks': 1_300_000_000, 'cold_seconds': 7200,
-                         'automatic_restart': False}}
+              'case':args.case,
+              'bounds': {'whole_seconds': whole_seconds, 'clocks': total_cap,
+                         'install_clocks': install_cap, 'install_seconds': install_seconds,
+                         'handoff_clocks': handoff_cap, 'handoff_seconds': handoff_seconds,
+                         'ready_clocks': ready_cap, 'ready_seconds': ready_seconds,
+                         'cold_clocks': cold_cap, 'cold_seconds': cold_seconds,
+                         'course_clocks':400_000_000 if reader else 0,
+                         'course_seconds':3600 if reader else 0,
+                         'automatic_restart': False},
+              'bound_basis': ('New1056-sector payload versus original724; installation ceiling900M is the prior600M ceiling scaled1.5, handoff300M scaled1.5; four real processes and Source38 recovery get explicit1.2B/1.5B bounds. Whole4.3B/32400s uses the observed final319 runtime16M/118.192s lower throughput as a prospective host allowance. No earlier failure is reclassified.' if reader else 'Original fixed Saved14/724-sector case')}
+
 
     def save():
         report.update(seconds=time.monotonic() - began, clocks=used)
         (out / 'progress.json').write_text(json.dumps(report, indent=2) + '\n')
 
     def guard():
-        require(time.monotonic() < deadline and used <= 3_500_000_000, 'original whole bound')
+        require(time.monotonic() < deadline and used <= total_cap, 'original whole bound')
         require(all(sha(ROOT / p) == h for p, h in report['host_inputs'].items()), 'consumed host changed')
 
     def call(live, value):
@@ -106,7 +125,7 @@ def main():
             guard()
             state = call(live, {'action': 'inspect'})['machine']
             delta = state['cycle'] - initial
-            require(0 <= delta <= cap and time.monotonic() - started <= 7200,
+            require(0 <= delta <= cap and time.monotonic() - started <= (ready_seconds if confirm else cold_seconds),
                     'original cold/Ready clock or host bound: ' + name)
             rows = guest_events(live / 'uart.bin')
             health = [r for r in rows if r[0] == 0x473]
@@ -123,8 +142,8 @@ def main():
                         'seconds': time.monotonic() - started, 'health_records': health})
                     save()
                     return state
-            require(delta < cap and used < 3_500_000_000, 'original clock ceiling: ' + name)
-            quantum = min(1_000_000, cap - delta, 3_500_000_000 - used)
+            require(delta < cap and used < total_cap, 'original clock ceiling: ' + name)
+            quantum = min(1_000_000, cap - delta, total_cap - used)
             call(live, {'action': 'run', 'cycles': quantum})
             used += quantum
             with (out / 'progress.jsonl').open('a') as stream:
@@ -140,7 +159,7 @@ def main():
         report['prepared_sha256'] = sha(args.prepared / 'prepared.json')
         old = json.loads((args.package / 'package.json').read_text())
         fresh = validate_package(args.guest_build, out / 'revalidated-package', old['identity'], args.guest_source_archive)
-        require(fresh['configuration'] == 'lemmasim-silicon-product-executed-bulk-notebook'
+        require(fresh['configuration'] == ('lemmasim-silicon-product-course-reader-bulk-notebook' if reader else 'lemmasim-silicon-product-executed-bulk-notebook')
                 and fresh['image_sha256'] == old['image_sha256'] == sha(args.package / 'image.bin'),
                 'original genuine audited notebook package changed')
         report['compiled_package'] = fresh
@@ -164,28 +183,32 @@ def main():
         known = metadata(original_boot)
         require(known[3:5] == (0, 1001), 'declared known-good confirmed source required')
         _, sequence, records = recover(disk.read_bytes())
-        require(sequence == 14, 'declared genuine Saved14 source required')
-        expected = expected_home(records)
+        require(sequence == sequence_expected, 'declared genuine source sequence required')
+        if reader:
+            width,height,expected = visible_pixels(args.expected_home)
+            require((width,height)==(1650,2200),'canonical complete home reference required')
+            report['original_inputs'].update({str(p.resolve()):sha(p) for p in (args.expected_home,args.expected_course)})
+        else: expected = expected_home(records)
         report.update(source_store_sequence=sequence, expected_home_sha256=hashlib.sha256(expected).hexdigest())
         live = launch('trial', boot, disk, True)
         command = [sys.executable, str(ROOT / 'scripts/lemmasim-auth'), '--public-development-key',
                    'install-resume', '--session-dir', str(live), '--package', str(args.package.resolve()),
                    '--tag', str(args.tag.resolve()), '--slot', '1', '--transaction', '2000',
-                   '--cycles', '600000000', '--timeout', '3600', '--quantum', '100000']
+                   '--cycles', str(install_cap), '--timeout', str(install_seconds), '--quantum', '100000']
         started = time.monotonic()
         with (out / 'install.stdout').open('xb') as log, (out / 'install.stderr').open('xb') as errors:
-            completed = subprocess.run(command, cwd=ROOT, stdout=log, stderr=errors, timeout=3605)
+            completed = subprocess.run(command, cwd=ROOT, stdout=log, stderr=errors, timeout=install_seconds+5)
         used = call(live, {'action': 'inspect'})['machine']['cycle']
-        require(completed.returncode == 0 and used <= 600_000_000 and time.monotonic() - started <= 3600,
+        require(completed.returncode == 0 and used <= install_cap and time.monotonic() - started <= install_seconds,
                 'actual bounded resumable notebook installation failed')
         result = json.loads((out / 'install.stdout').read_text())
-        require(result['state'] == 'installed-trial' and result['sectors_sent'] == 724,
+        require(result['state'] == 'installed-trial' and result['sectors_sent'] == sectors,
                 'notebook trial publication receipt absent')
         report['phases'].append({'name': 'actual-resumable-notebook-installation', 'clocks': used,
                                  'seconds': time.monotonic() - started, 'receipt': result})
         save()
-        client = auth.RecoveryClient(SimpleNamespace(session_dir=live, timeout=1800,
-                         cycles=200_000_000, quantum=100_000, transaction=4000))
+        client = auth.RecoveryClient(SimpleNamespace(session_dir=live, timeout=handoff_seconds,
+                         cycles=handoff_cap, quantum=100_000, transaction=4000))
         started = time.monotonic()
         handoff = client.send(3)
         used += client.used
@@ -193,7 +216,7 @@ def main():
         report['phases'].append({'name': 'guest-attempt-publication-authenticated-trial-handoff',
                                  'clocks': client.used, 'seconds': time.monotonic() - started, 'receipt': handoff})
         save()
-        ready(live, 'trial-Ready-guest-confirmation', 1_100_000_000, True)
+        ready(live, 'trial-Ready-guest-confirmation', ready_cap, True)
         confirmed = out / 'confirmed.raw'
         call(live, {'action': 'export-boot-medium', 'path': str(confirmed)})
         row = metadata(confirmed.read_bytes())
@@ -206,16 +229,40 @@ def main():
         shutil.copyfile(confirmed, cold_boot)
         shutil.copyfile(disk, cold_disk)
         cold = launch('independent-cold', cold_boot, cold_disk, False)
-        ready(cold, 'confirmed-new-CPU-cold-all-pixels', 1_300_000_000, False)
+        ready(cold, 'confirmed-new-CPU-cold-all-pixels', cold_cap, False)
         final_boot = out / 'cold-observed-boot.raw'
         call(cold, {'action': 'export-boot-medium', 'path': str(final_boot)})
         require(filecmp.cmp(confirmed, final_boot, shallow=False)
                 and filecmp.cmp(args.disk, cold_disk, shallow=False),
                 'independent confirmed cold changed boot/document bytes')
+        if reader:
+            initial=call(cold,{'action':'inspect'})['machine'];started=time.monotonic()
+            tick=initial['ticks']+10000
+            for at,pressure,flags in ((tick,2048,3),(tick+100000,0,2)):
+                call(cold,{'action':'inject','kind':'pen','cycle':at*10,
+                           'words':[at,12718,4173,pressure,flags,1,0]})
+            expected_course=visible_pixels(args.expected_course)
+            require(expected_course[:2]==(1650,2200),'canonical complete course reference required')
+            while True:
+                guard();state=call(cold,{'action':'inspect'})['machine'];delta=state['cycle']-initial['cycle']
+                require(0<=delta<=400_000_000 and time.monotonic()-started<=3600,'original Reader18 COURSE bound')
+                rows=guest_events(cold/'uart.bin')
+                require(not state['finished'] and not any(r[0]in(0x41f,0xd4,0xf4,0x424,0x454)for r in rows),'actual course/guest failure')
+                idle=all(state[k]==0 for k in('event_queue','pen_queue','paper_busy','panel_pending_pixels','block_state','dma_outstanding'))
+                if idle and state['panel_completed']>initial['panel_completed']:
+                    panel=out/'cold-reader-example5.ppm';call(cold,{'action':'panel','path':str(panel)})
+                    if visible_pixels(panel)==expected_course:break
+                require(delta<400_000_000 and used<total_cap,'original Reader18 COURSE clock ceiling')
+                quantum=min(1_000_000,400_000_000-delta,total_cap-used)
+                call(cold,{'action':'run','cycles':quantum});used+=quantum
+            require(filecmp.cmp(args.disk,cold_disk,shallow=False),'read-only course open changed any original document byte')
+            report['phases'].append({'name':'authenticated-cold-raw-COURSE-saved-example5','clocks':delta,
+                'seconds':time.monotonic()-started,'all_controller_pixels':3630000,'raw_samples':2})
+            report['reader_scope']='Actual guest Reader18/Store/course decoding and saved node5; no new arithmetic check, tutor or third cold claimed'
         close(cold)
         guard()
         require(all(sha(p) == h for p, h in report['original_inputs'].items()), 'original input changed')
-        report.update(status='PASS_AUTHENTICATED_NOTEBOOK_AB_UPDATE_GUEST_CONFIRMATION_COLD',
+        report.update(status=('PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER' if reader else 'PASS_AUTHENTICATED_NOTEBOOK_AB_UPDATE_GUEST_CONFIRMATION_COLD'),
             all_expected_pixels=True, all_document_bytes_unchanged=True, snapshot_cold_input=False,
             confirmed_metadata=list(row[:9]), confirmed_boot_sha256=sha(confirmed))
     except BaseException as error:
@@ -232,7 +279,7 @@ def main():
                 os.killpg(process.pid, signal.SIGKILL)
                 process.wait(timeout=5)
         report.update(seconds=time.monotonic() - began, clocks=used)
-        if report['seconds'] > 21600 or used > 3_500_000_000:
+        if report['seconds'] > whole_seconds or used > total_cap:
             report.update(status='FAIL', bound_error=True)
         (out / 'result.json').write_text(json.dumps(report, indent=2) + '\n')
     print(report['status'], report.get('error'), flush=True)
