@@ -419,3 +419,16 @@ unchanged2GiB/90s tool bounds. Earlier OpenBLAS-initialization and deprecated
 API driver failures remain retained. The preflight receipt records the exact
 source/output hashes. The adaptation remains unadopted; no maintained rule or
 route is changed and no historical timeout cause is inferred.
+
+The first changed-source readiness-FF route subsequently met the8GiB launch
+precondition and actually ran at100MHz with the original constraints/rules. It
+failed the original900-second OpenROAD deadline during detailed pin access;
+owned supervision completed in906.223s at4,495,138,816B peak and reaped every
+owned child. Global-route estimated setup WNS is **-2.073945ns**, worse than
+the maintained-1.732748ns; hold is+0.032945ns. The candidate is rejected and
+remains unadopted. Removing the mapped refill ancestor did not establish a
+routed timing improvement. Full result and source/tool identities remain in
+`build/silicon/physical/pen-sequence-ready-route-a1/result.json`; original failed
+attempts and rule-coverage gaps retain their meanings. Detailed routing,
+complete process-rule enforcement, DRC/LVS/PEX/post-route and full-chip closure
+remain open. No unchanged route was rerun and no deadline was extended.

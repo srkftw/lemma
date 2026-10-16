@@ -1,5 +1,5 @@
 {
-  "implementation_commit": "d8d7b0cc306a91a113b5a95e964a2a19313f457d",
+  "implementation_commit": "01b12f35fe8d84e7766ebb21477f4acfa52f1d85",
   "merged_baseline": "abd9920d54df04ce52da9386170e99012c39bdfb",
   "baseline_tree": "7c30f469592f2c2a1bef6aab11f31d30a8a3ee28",
   "scope": "compact inventory of actual local artifacts; original execution/source identities and failures remain distinct; not a completion certificate",
@@ -967,7 +967,7 @@
       "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
     }
   ],
-  "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
+  "prior_implementation_commit": "d8d7b0cc306a91a113b5a95e964a2a19313f457d",
   "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
   "continuation_note": "New ordinary dirtybatch9 compiled full canonical pair/audits PASS and actual42phasefast plus real partialpwrite/failure/newcold/retry PASS;2,615,000,279->2,302,000,127 instructionclocks(11.97%), not RTLtiming. Same newguest paired native/browser and extracted local packages; real extracted initializer passes. Canonical RTL and browser retained-medium cold/workflows running under originalbounds. Older Product10 authenticatedfullcold PASS; companionSaved12 scenario still owned/running. Digital, fast/checkpoint, distribution and physical completion remain separate. New opt-in rawUART1 now enables actual fresh guestcourseinstallation in same fastmachine; full44phase math/ink/cold, nonemptyUART/queue privatefork and offline13outcome replay pass. See fast_uart_milestone; timing/cache/fullproduct gates stayopen.",
   "package_closure_milestone": {
@@ -1019,31 +1019,49 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "da13e7630022247f190b98a739d922fbf6ef7ab2",
-    "run": 38933635691,
-    "status": "FAILURE",
-    "observed_jobs": {
-      "success": 10,
-      "failure": 1,
-      "in_progress": 0
-    },
-    "failed_job": 117083551917,
-    "failed_step": "Compile, audit and observe real O0/O2 guest ink and cold recovery",
-    "actual_cause": "Preceding tests/lemmasim host suite fails on stale ordinary-mode expectation for newly restricted Reader18 installer; O0/O2 guest workload never starts and following validation is skipped. Production authorization is correct. Explicit two-name expectation repaired, stronger role/mode checks and full299 pinned tests pass.",
-    "failure_log": {
-      "path": "build/ci/task006-da13-writing-host-tests.log",
-      "sha256": "6aaae50edb25905bd9c0a15de2343fe76f6915215c8732ae2514fbb43c75efa2"
-    },
-    "failure_artifact_zip": {
-      "path": "build/ci/task006-da13-writing-failure.zip",
-      "sha256": "28def2cd4d9845d7e9353e17850d440d60504f710fa841c85a99a7f69292b253"
-    },
-    "scope": "Actual da13 run only; current dirty command/runtime/observer fixes need own candidateCI. No skipped RV64 work passed.",
-    "steps": 114,
-    "skipped_steps": 1,
+    "commit": "3226f155d173ae8d2ab076526c24f58e8295dc9f",
+    "run": 38939333316,
+    "status": "SUCCESS",
+    "jobs": 11,
+    "steps": 116,
+    "skipped_steps": 0,
     "final_receipt": {
-      "path": "build/ci/task006-da13-complete.json",
-      "sha256": "188b57238756a931a2bea4417f409c2f2640f502d087c2db11d45c283455dd39"
+      "path": "build/ci/task006-3226-complete.json",
+      "sha256": "4c46a4f5b87b223bca2bcdb16b0e536de86452d28fb38e676a652ae0f2b457fd"
+    },
+    "scope": "Exact published3226 only. New uncommitted Product course/Entry2/archive work has no candidateCI yet. PR9 remains draft/unmerged.",
+    "prior_candidate_failure": {
+      "commit": "da13e7630022247f190b98a739d922fbf6ef7ab2",
+      "run": 38933635691,
+      "status": "FAILURE",
+      "observed_jobs": {
+        "success": 10,
+        "failure": 1,
+        "in_progress": 0
+      },
+      "failed_job": 117083551917,
+      "failed_step": "Compile, audit and observe real O0/O2 guest ink and cold recovery",
+      "actual_cause": "Preceding tests/lemmasim host suite fails on stale ordinary-mode expectation for newly restricted Reader18 installer; O0/O2 guest workload never starts and following validation is skipped. Production authorization is correct. Explicit two-name expectation repaired, stronger role/mode checks and full299 pinned tests pass.",
+      "failure_log": {
+        "path": "build/ci/task006-da13-writing-host-tests.log",
+        "sha256": "6aaae50edb25905bd9c0a15de2343fe76f6915215c8732ae2514fbb43c75efa2"
+      },
+      "failure_artifact_zip": {
+        "path": "build/ci/task006-da13-writing-failure.zip",
+        "sha256": "28def2cd4d9845d7e9353e17850d440d60504f710fa841c85a99a7f69292b253"
+      },
+      "scope": "Actual da13 run only; current dirty command/runtime/observer fixes need own candidateCI. No skipped RV64 work passed.",
+      "steps": 114,
+      "skipped_steps": 1,
+      "final_receipt": {
+        "path": "build/ci/task006-da13-complete.json",
+        "sha256": "188b57238756a931a2bea4417f409c2f2640f502d087c2db11d45c283455dd39"
+      }
+    },
+    "new_code_candidate": {
+      "implementation_commit": "01b12f35fe8d84e7766ebb21477f4acfa52f1d85",
+      "status": "NOT_RUN_YET",
+      "scope": "Parent3226 successful CI remains its own result; source increment is committed locally and publication pending."
     }
   },
   "browser_pointer_ink_milestone": {
@@ -1199,16 +1217,16 @@
     }
   },
   "latest_bounded_physical_attempt": {
-    "source": "2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3",
-    "status": "FAIL_DETAILED_ROUTE_DEADLINE_REJECTED",
-    "result": "build/silicon/physical/pen-branch-clock-a1/result.json",
-    "supervision": "build/silicon/pen-branch-clock-supervision-a1/result.json",
-    "seconds": 904.860616496997,
-    "owned_peak_rss_bytes": 4630405120,
-    "setup_global_wns_ns": -1.540876,
-    "hold_global_wns_ns": -0.437743,
+    "source": "57e5c681165869e9b33a6da1ab069d36a7e47f2ae9eda13311a8b5a2d399a1cc",
+    "status": "FAIL_CHANGED_SOURCE_DETAILED_ROUTE_DEADLINE_REJECTED",
+    "result": "build/silicon/physical/pen-sequence-ready-route-a1/result.json",
+    "supervision": "build/silicon/pen-sequence-ready-route-supervision-a1/result.json",
+    "seconds": 906.2231761869043,
+    "owned_peak_rss_bytes": 4495138816,
+    "setup_global_wns_ns": -2.073945,
+    "hold_global_wns_ns": 0.032945,
     "adopted": false,
-    "disposition": "Clock branch-buffer change reverted; exact PID/start cleanup finds no survivors; closure OPEN. ABC-D10000 mapped bytes identical to baseline; no timing claim for that mapping."
+    "disposition": "Changed-source readiness FF candidate rejected after actual900s detailed-route timeout and worse setup WNS. All256entries retained; maintained RTL/clock/rules unchanged. No processDRC/LVS/PEX/timing/full-chip acceptance."
   },
   "portable_host_index_milestone": {
     "behavior": "Unchanged fixed-framebuffer port values, including inactive out-of-range wrap",
@@ -1267,10 +1285,99 @@
     "behavior": "IMPLEMENTED_JOINED_NUMERIC_AND_RECOVERY_ACTIONS_COMPONENT_PASS",
     "model": "Actual imported Actions retain provisional9-fieldrawink/pixels; pinnedpayload/doc/history immutable, no storage/checkerIPC/Saved; markerfault/fullbuffer checksPASS",
     "guest_compilation": "PASS bothfreshcomplete normal/init linkedartifacts833.365s;415source/ownedcleanup839.305s,1.923GBpeak, literal910/908corpora, oldsemanticguards/tablecells retained.",
-    "RTL_guest": "RUNNING:lostpersistedWRITE/Failed/offlineink/reconciliationSaved16at1150M,fullhomeeverypixelclosed1580M(430M/2897.812s),independentcoldpeerCPUcurrentlybooting. Math/thirdcold remainpending underoriginal28800s/10B.",
+    "RTL_guest": "FAIL original200M close-after-mathematics bound at1835M coldCPU after actuallostACK/reconcileSaved16/independentcold/isolated5over6Verified22/authoredhintSaved23. Thirdcold notrun; no extension/restart. Allownedprocesses reaped. Retained40PCsamples implicate registry/stack validation but are not cycle proportions.",
     "distribution": "PREPARED schema9/native415sources877files; actualguest6c331985/runtime6cbd CPU0 cold started fromprivateSaved12peer/outbox. Connectedcasepending.",
     "physical": "UNVERIFIED",
-    "evidence": "docs/evidence/006-number-entry-v1.json"
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "new_source_investigation": "Additive Clocked13 Kernel6 EntryV2 roots/selectors genuinelyelaborate.43.155s genuineLLVM/RV64object has alloriginal19 EntryV2 body/caller/registry/entry-lifetime gates PASS. Fullimage/audit/runtime/200M-close performance notqualified. ActiveRootLean only; frozen buildcheckout integration stillrequired.",
+    "entry2_successor": {
+      "status": "FULL_NORMAL_INITIALIZER_AUDITS_AND_CURRENT_NATIVE_BUNDLE_PASS_COLD_CASE_RUNNING",
+      "source_checkout": "/home/sreekumaar/.codex/worktrees/task006-product-course-build/lemma",
+      "configuration": "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook",
+      "software_deployment": "lemma-package-clocked-recovery4-entry2-deployment-v1",
+      "hardware": "lemma-silicon-dev/0.13.0",
+      "compiler_exports": "build/entry2-artifacts-a4/result.json",
+      "complete_predecessor_comparison": "build/entry2-artifact-comparison-a2/result.json",
+      "shared_kernel_pre_functions_unchanged": 1279,
+      "all_firmware_and_four_user_pre_post_corpora_unchanged": true,
+      "normal_build_seconds": 172.97520497697406,
+      "normal_audit_seconds": 454.4396743029356,
+      "normal_audit": "build/kernel/task006-companion-entry2-pair-a2/notebook/audit.json",
+      "pair_supervision": "build/entry2-whole-supervision-a2/result.json",
+      "pair_status": "PASS",
+      "native_schema": 10,
+      "native_current_runtime_status": "PASS",
+      "native_current_runtime_owner": "build/entry2-current13-supervision-a1/result.json",
+      "scope": "Additive ordinary Lean four-role boot selects original checked Scheduler EntryV2; same original19 body/caller/registry/lifetime gates. No observed close-cycle gain or original campaign completion yet. New read-only cold23/open/close200M checker prepared, not run.",
+      "retained_failures": [
+        "a1 export runner omitted existing host-stack policy",
+        "a2 copied Entry2 block outside Lean namespace; fixed placement",
+        "a3 omitted fresh StoreRecoveryAwait build prerequisite; exact completed prefix reused in a4",
+        "passive predecessor observer a1 queried omitted optimized callback through throwing body lookup; corrected presence inspection only",
+        "whole a1 omitted mandatory original NumberPad machine-owner field; independently matched original f708bdf8 pin and restored it; full FAIL retained",
+        "public preparation a1 normal and initializer PASS; bundle failed before output creation on str/Path API mismatch. Fixed only argument type; a2 reused completed exact preparations/archive and passed bundle, no target/native rebuild."
+      ],
+      "host_regressions": {
+        "foundation": {
+          "tests": 473,
+          "status": "PASS",
+          "log": "build/entry2-host-plan-a2/foundation.log"
+        },
+        "lemmasim": {
+          "tests": 304,
+          "status": "PASS",
+          "log": "build/entry2-host-plan-a3/lemmasim.log"
+        },
+        "silicon": {
+          "tests": 226,
+          "status": "PASS",
+          "log": "build/entry2-host-plan-a3/silicon.log"
+        },
+        "boot": {
+          "tests": 24,
+          "status": "PASS",
+          "log": "build/entry2-host-plan-a3/boot.log"
+        },
+        "scaffold": {
+          "tests": 18,
+          "status": "PASS"
+        },
+        "original_failures": "Host a1 all23 failures were actual Lean thread creation under observer8GiB AS without required existing stack env; a2 corrected runner env, preserved every assertion. a2 silicon one exact workload-list FAIL corrected only by adding the two genuinely exported selectors; boot was then not run."
+      },
+      "native_archive_portability": {
+        "status": "PASS_EXACT_255_INPUT_RELOCATION_AND_NO_FALLBACK",
+        "real_archive_result": "build/entry2-native-relocation-a2/result.json",
+        "old_native_snapshot_identity": "64d7d234d5fe35401de2ebfb4e2b2e5cd3699ff7451cdbbd0c992c1b5c525962",
+        "new_host_regression_tests": 2,
+        "format": "schema10 binds original native and guest source roots independently; full source/manifests/receipts/header/binary identities remain required"
+      },
+      "implementation_commit": "01b12f35fe8d84e7766ebb21477f4acfa52f1d85",
+      "artifact_root": "/home/sreekumaar/.codex/worktrees/task006-product-course-build/lemma",
+      "initializer_build_seconds": 214.43678129289765,
+      "initializer_audit_seconds": 364.95512548997067,
+      "pair_actor_seconds": 1206.9385091649601,
+      "pair_supervised_seconds": 1211.4888656630646,
+      "pair_owned_peak_rss_bytes": 1920413696,
+      "native_build_seconds": 65.29293782601599,
+      "native_snapshot_identity": "5381d37a7abd0ac8c7e448d85df2278b5ad8f1ae16c798772bc2a2a04e596135",
+      "native_binary_sha256": "60bd2f275f72386ce952f1d5572aee041217918d64cbf45a7fb33aad101732da",
+      "prepared_bundle": "/home/sreekumaar/Downloads/lemma/build/native/task006-entry2-current13-a2",
+      "bundle_files": 891,
+      "bundle_bytes": 83121627,
+      "root_relocation": "build/integration/task006-product-reader-entry2-a1/relocated-bundle.json",
+      "focused_cold_case": {
+        "status": "RUNNING",
+        "plan": "build/usb/task006-entry2-cold23-close-plan-a1/plan.json",
+        "supervision": "build/usb/task006-entry2-cold23-close-supervision-a1/result.json",
+        "actor": "build/usb/e2exec-a1/build/c1/result.json",
+        "scope": "Independent CPU0 from acknowledged actual Saved23 peer/outbox, original fraction5/6 Verified/hint, raw close under original200M cap. All home pixels/all medium bytes required. No new check/save or original-campaign completion claim.",
+        "frozen_executor": "build/usb/e2exec-a1",
+        "sources": 828,
+        "source_bytes": 11207785,
+        "whole_seconds": 14400,
+        "aggregate_cycles": 1600000000
+      }
+    }
   },
   "course_browse_history17": {
     "behavior": "PASS_READER_HISTORY_LOCATION_CURRENT_AUTHORITY_UNCHANGED",
@@ -1309,9 +1416,9 @@
   "course_reader_location18": {
     "behavior": "PASS realguest example5 nodeSave38 and independent coldreopen; failedFLUSH227/noSaved and observed38/node5 cold recovery",
     "model": "Actual Lean codec/Save/cancel/EOF/busy Actions and genuine902/900 complete artifacts; old profiles and authority unchanged",
-    "RTL": "RUNNING original2.8B/21600s, not accepted",
+    "RTL": "PASS actual1.691Bclocks/8134.657s; nativeownedpeak244453376B; rawnode5Save38 andindependentCPU0 cold/reopen allpixels/media; original2.8B/21600s bounds",
     "guest": "Actual fast functional661M/76.828s and failure647M/75.525s; same maintained RV64 artifacts, all original authority/history/learner/ink/packages preserved",
-    "distribution": "Prepared/extracted native150081390B with complete wrapped runtime NAR and static2077396B; newbrowserCPU0 cold running on same C53 core, no completed18 browser claim",
+    "distribution": "Prepared native/static bundles retained. Actualbrowsercold/node3/node4/example5/Saved38 allpixels/media/168outcomes pass at892M; independentClosed/Open source38 cold running under originalbounds, notcomplete.",
     "physical": "UNVERIFIED, no changed circuit or physical qualification",
     "evidence": "docs/evidence/006-course-reader-location.json",
     "state": "No host-state format extension: reader staging/live words use existing owned guest RAM and record store. Separate Reader18 checkpoint suffix is not yet qualified; general QEMU cached-state gap remains."
@@ -1361,6 +1468,38 @@
     ],
     "derived_state": "event_payload_bytes is exactly the sum of retained input payload text lengths; rebuilding it from the serialized event vector is semantically valid under this maintained invariant. Literal rawcurrent/futureUART and futureadmission original/restored fullarchive equality expose the earlier omission; no field masking/draining/flush or arbitrarycachedstate claim.",
     "CI": "Existing literalRTLjob now builds exactcurrent Product10native with2jobs/900s bound and runs maintained native regression under3m/4GiBAS/1GiBfile bounds; strict pipefail and exact log inventory extended. Job20m bound unchanged. Actual candidateCI still required.",
-    "evidence": "docs/evidence/006-development-authentication-v1.json"
+    "evidence": "docs/evidence/006-development-authentication-v1.json",
+    "whole_notebook_update": "Older4f43/a09 exact16-sector-family source currentA/B updatecase a2 has actual358.1M resumable install,88.1M authenticatedhandoff,922M trialReady/allpixels/guestconfirmation; independentnormalcold RUNNING. Notfinal319 or latestcourse.",
+    "course_product_image": {
+      "behavior": "IMPLEMENTED_NEW_FOUR_ROLE_PRODUCT10_PATH_EXECUTION_PENDING",
+      "guest": "PASS fresh six-role build/wholeaudit411.012s,425consumedinputs,1.898541056GB supervisedpeak; Reader18/Closure7/localStoreAwait/courseInstaller, realPaper3/health andcheckedEntryV2; no defaultformat",
+      "model": "Exact new software/checkedProduct physical-wrapper policies on unchanged hardware0.10; previousprofiles unchanged",
+      "distribution": "Opaque1056sector imageID0xa000000000012/publicdevelopmenttag, new frozen710file host executor prevents unrelatedsource edits changing longrun. Native319/ROM8a85 unchanged. No fresh-host/browser productionboot claim.",
+      "execution": "RUNNING newactualROM1056sectorinstall ->trialconfirm ->newCPUcold ->rawCOURSEsavednode5; prospective4.3B/32400s. Initial output-path/prepare/source-root/output-parent setup failures retained before any CPU.",
+      "physical": "UNVERIFIED",
+      "source_archive": {
+        "path": "build/boot/task006-product-course-reader-source-a1/consumed-source-archive.json",
+        "sha256": "2330d6fa869915bc63dfc183deb788d5be35886659047c5f87e762557987db8a"
+      },
+      "compiled_guest_sha256": "56f1b5faef0157fb2cad7efcaa14d605e1ca879026267c5e38422db78e8522eb",
+      "package_sha256": "5a7efb8a65e40825cf6a1a81630c663080a3dd68231ceda1aca5a808725574fd",
+      "plan": "build/boot/task006-product-course-connected-plan-a2/plan.json"
+    },
+    "full_notebook_AB": {
+      "status": "PASS_AUTHENTICATED_NOTEBOOK_AB_UPDATE_GUEST_CONFIRMATION_COLD",
+      "result": "build/boot/task006-notebook-update-a2/result.json",
+      "supervision": "build/boot/task006-notebook-update-supervision-a2/result.json",
+      "clocks": 2377200000,
+      "actor_seconds": 12246.04865178105,
+      "supervised_seconds": 12247.06118006003,
+      "owned_peak_rss_bytes": 322347008,
+      "source_store_sequence": 14,
+      "all_expected_pixels": true,
+      "all_document_bytes_unchanged": true,
+      "snapshot_cold_input": false,
+      "identity_scope": "Exact intermediate a09 native / prepared-a8, older724-sector image ELF4f4383... and public development HMAC ROM; not current319/new four-role course qualification."
+    },
+    "current_root_prepared": "build/boot/task006-development-auth-prepared-a10",
+    "current_root_prepared_scope": "Same current319 native/8a853 ROM, refreshed exact7 host-script identities after archive portability fix. Metadata preparation, not a rerun of full A/B."
   }
 }

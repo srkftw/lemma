@@ -165,7 +165,7 @@
     "negative_a1": "Mutantwithoutlocalreadyguard survivedoldcorpus; originalnegativeFAIL retained. Newheld-inputcase exposesactualcounterdifference; no expectedfailurewidening."
   },
   "physical": {
-    "status": "NOT_RUN_MEMORY_PRECONDITION_UNMET",
+    "status": "FAIL_CHANGED_SOURCE_DETAILED_ROUTE_DEADLINE_REJECTED",
     "minimum_available_bytes_before_launch": 8589934592,
     "currently_available_bytes": 5848862720,
     "basis": "Recorded fullcontroller route peak4,630,405,120B plus3GiB machineavailablefloor is7,851,630,592B; roundprospectively to8GiB. CurrentactiveUSB/native/browser machines retain2GiB ownfloors. Do notlaunch a fullroute that can cancel those sessions.",
@@ -180,6 +180,36 @@
       "cleanup_seconds": 30
     },
     "constraint_policy": "Same100MHz, IO/load/uncertainty, WNS_PATH andoriginalrules; no falsepaths/loweredclock/waivers/estimatedroutedSPEFsubstitution. No baselineunchanged route.",
-    "remaining": "Detailedroute/layout/rulecoverage/processDRC/LVS/routedPEX/postrouteelectricaltiming/fullchip remainopen."
+    "remaining": "Detailedroute/layout/rulecoverage/processDRC/LVS/routedPEX/postrouteelectricaltiming/fullchip remainopen.",
+    "prior_launch_block": "NOT_RUN_MEMORY_PRECONDITION_UNMET",
+    "actual_result": "build/silicon/physical/pen-sequence-ready-route-a1/result.json",
+    "supervision": "build/silicon/pen-sequence-ready-route-supervision-a1/result.json",
+    "seconds": 906.2231761869043,
+    "owned_peak_rss_bytes": 4495138816,
+    "actual_bounds": {
+      "host_seconds": 1000,
+      "cleanup_seconds": 30,
+      "owned_rss_bytes": 6442450944,
+      "minimum_available_bytes": 3221225472,
+      "output_bytes": 12884901888,
+      "file_bytes": 1073741824
+    },
+    "global_route_checkpoint": {
+      "cell_area_um2": 5109330.4416,
+      "core_area_um2": 17401157.424,
+      "utilization_percent": 29.362014934438307,
+      "instances": 237718,
+      "clock_period_ns": 10.0,
+      "timing_model": "global-route RC estimate before detailed signal routing",
+      "power_grid": "NOT_IMPLEMENTED",
+      "process_drc": "NOT_RUN",
+      "lvs": "NOT_RUN",
+      "setup_worst_slack_ns": -2.073945,
+      "setup_timing": "VIOLATED",
+      "hold_worst_slack_ns": 0.032945,
+      "hold_timing": "MET"
+    },
+    "adopted": false,
+    "disposition": "900-second actual OpenROAD deadline at detailed pin access. Same100MHz setup WNS -2.073945ns is worse than maintained -1.732748ns; hold +0.032945ns. Candidate remains unadopted; no survivors. No rule-gap/timeout causal claim."
   }
 }

@@ -1295,7 +1295,11 @@ The installed-package notebook also has an explicitly selected Clocked13
 companion recovery4 development bundle, `build/native/task006-usb-package-recovery-a1`.
 It adds the separately isolated guest installer to the existing recoverable USB
 Store, notebook and closure checker. This pair passes linked artifact audits;
-its real install/lost-reply/offline-ink/retry/cold scenario is still running.
+connected acceptance remains separate from those audits. The recorded Source6
+Saved12-based campaign failed its21600s deadline before independent cold Ready;
+its completed installation/lost-reply/offline-ink/reconciliation observations do
+not confer an overall pass. Later recovery16 and EntryV2 results have their own
+source and execution identities.
 Use `--workload usb-clocked-package-retry-bulk-notebook --usb-recovery` with this
 bundle and the same prepared USB host/peer/outbox session arguments shown above.
 The old three-process recovery names remain distinct. The normal course command
@@ -1350,7 +1354,7 @@ nix develop --no-write-lock-file --command python3 scripts/build_development_aut
 
 The original notebook observation used prepared instance
 `build/boot/task006-development-auth-prepared-a6`. The current source-validated
-instance is `build/boot/task006-development-auth-prepared-a9`, using the same
+instance is `build/boot/task006-development-auth-prepared-a10`, using the same
 audited ROM and a corrected native UART/reset-release boundary. Its commands
 are `create-medium`, `launch`, `install`, `install-resume`, `tag`, `publish`,
 `status`, `boot`, `capacity` and `key-info`; use each command's `--help`. Installation
@@ -1370,7 +1374,7 @@ beacon first; `--continue-recovery` applies only to an already observed beacon.
 ```sh
 # Launch with private copies of existing media; this never formats documents.
 ./scripts/lemmasim-auth --public-development-key launch \
-  --prepared build/boot/task006-development-auth-prepared-a9 \
+  --prepared build/boot/task006-development-auth-prepared-a10 \
   --boot-medium /absolute/PRIVATE_BOOT.raw --disk /absolute/PRIVATE_NOTEBOOK.raw \
   --session-dir build/boot/UNUSED_RECOVERY_SESSION --recovery --paused \
   --mode developer --headless
@@ -1392,12 +1396,19 @@ byte and the known-good image remain unchanged. The original adapter lost UART
 recovery bytes during pen resynchronization; its two failures and independent
 negative regression are retained. The final adapter also preserves retained-event
 quota; future admission and one native snapshot suffix match exactly. Full
-notebook A/B health confirmation/cold
-recovery is a separate running campaign, not a result of this small-image check.
+notebook A/B installation, actual trial Ready, guest health confirmation and
+independent authenticated cold recovery now pass separately:2,377.2M clocks,
+12,246.049 actor seconds, every expected pixel and every Saved14 document byte
+preserved. That observation uses its recorded intermediate a09 native runtime,
+prepared-a8 and older724-sector notebook image; it does not qualify the newer
+four-role course image or current319 runtime. The current host-validated
+preparation is now`build/boot/task006-development-auth-prepared-a10` after the
+archive portability change; it reuses the same current319 runtime and audited
+ROM as a9. Public development keys remain separate from production trust.
 
 ```sh
 python3 scripts/check_development_install_resume.py --public-development-key \
-  --prepared build/boot/task006-development-auth-prepared-a9 \
+  --prepared build/boot/task006-development-auth-prepared-a10 \
   --package build/boot/task006-development-auth-probe-package-a1 \
   --tag build/boot/task006-install-resume-plan-a4/slot1.tag \
   --boot-medium build/boot/task006-development-auth-connected-a4/acknowledged-boot.raw \
@@ -2127,8 +2138,12 @@ The real fast guest passed history3 → example5 → Saved38 → independent col
 Save case passed Failed227/no Saved → independent cold of the actual observed
 medium, recovering the previous acknowledged node5. It does not assume that
 failed barriers roll storage back. Both RV64 images pass full artifact audits.
-Exact RTL and browser18 workflow runs remain separately bounded and running;
-they are not yet accepted. See [the scoped results](docs/evidence/006-course-reader-location.json).
+The canonical RTL case now passes the same Save38 and independent cold reopen,
+including every expected display pixel and medium byte:1,691M total clocks in
+8,134.657 actor seconds. Its first cold Ready takes570M clocks; its second cold
+Ready takes572M. Browser18 has completed the same actual Save38 and exact
+native pixel/media/I/O comparisons; its independent OPFS cold reopen is still
+running under the original bound. See [the scoped results](docs/evidence/006-course-reader-location.json).
 
 Build new instances of the explicit software successor without changing the
 historical17 selection. Use unused output paths:
@@ -2196,3 +2211,47 @@ fault qualification. Use `--backend rtl` with the new prepared native bundle for
 exact circuit clocks; the full2.8B/21600s campaign is distinct from fast
 functional units. Existing snapshot/private-fork/replay commands retain their
 contracts and limitations.
+
+
+### Product course image and checked companion entry
+
+The four-role Product10 course-reader image now builds and passes the complete
+RV64 audit as`lemmasim-silicon-product-course-reader-bulk-notebook`. It uses the
+existing installed course, revision-bound mathematics and Reader18 Save path.
+Its immutable-ROM installation and authenticated trial handoff have executed;
+trial Ready, confirmation and independent cold course reopen are still running.
+There is no normal-media initializer for this product configuration.
+
+The separate current Clocked13 companion bundle is
+`build/native/task006-entry2-current13-a2`. Both normal and explicit new-medium
+images pass complete audits. This software selects the existing checked
+Scheduler EntryV2 path and retains the original four guest services, USB
+transactions, recovery and durable peer semantics. It includes the current
+shared native runtime, not the earlier64d host adapter. Its focused independent
+cold Saved23 → verified course/hint → close-under200M check is running; no
+speedup or repair of the older failed end-to-end campaign is claimed yet.
+
+Use the same independent peer command and USB host arguments shown above, with
+`--native-bundle build/native/task006-entry2-current13-a2` and
+`--workload usb-clocked-package-entry2-bulk-notebook`. The paired workload
+`usb-clocked-package-entry2-bulk-initializer` is exclusively for new empty media.
+These remain Developer/Laboratory ELF-preload launches. The bundle records its
+exact compiler inputs, separate native source origin and dependency notices;
+Nix host dependencies and unresolved redistribution limits remain applicable.
+
+Complete source archival and bundle selection are ordinary reusable commands:
+
+```sh
+python3 scripts/archive_guest_sources.py --build /absolute/AUDITED_GUEST_BUILD \
+  --source-root /absolute/ITS_CONSUMED_CHECKOUT --output-dir build/UNUSED_GUEST_ARCHIVE
+./scripts/lemmasim native-bundle-build --profile lemma-silicon-dev/0.13.0 \
+  --usb-package-entry2-deployment --rtl-source-root /absolute/COMPLETE_NATIVE_ARCHIVE \
+  --guest-source-root /absolute/NORMAL_GUEST_ARCHIVE \
+  --initializer-guest-source-root /absolute/INITIALIZER_GUEST_ARCHIVE \
+  --output-dir build/native/UNUSED_ENTRY2_BUNDLE
+```
+
+Bundle construction consumes the exact pair already registered by the normal
+`lemmasim build` commands; it does not substitute a guest image. Missing or
+changed archived files reject even when the original checkout remains present.
+The independently persistent peer and guest journal continue to own durability.

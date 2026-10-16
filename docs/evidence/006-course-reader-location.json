@@ -224,18 +224,122 @@
     "browser_capability": "Actual bundle preserves course-install contract; corrected explicit Reader18 consumer tuple passes. Earlier incorrect helper-name diagnostic attempts failed before validation; exact old consumer tuple was reconstructed and actually rejects the same original bundle, retained in owner."
   },
   "RTL": {
-    "status": "RUNNING_NOT_ACCEPTED",
-    "plan": "build/courses/task006-reader18-rtl-plan-a1/plan.json",
-    "owner": "build/courses/task006-reader18-rtl-supervision-a1",
-    "bounds": "2.8B exact RTL clocks/21600s, cold1B/7200each, course400M/3600each, node/Save150Meach,4GiB ownedRSS/2GiB available/12GiB outputs; cleanup30s. No snapshot cold input."
+    "status": "PASS_REAL_GUEST_NODE_SAVE_INDEPENDENT_COLD_REOPEN",
+    "result": {
+      "path": "build/courses/task006-reader18-rtl-a1/result.json",
+      "sha256": "aa92e6d775b05e278e9d4014796723f2d075b9bcb5e8e4bf53335efd2e47648e"
+    },
+    "owner": {
+      "path": "build/courses/task006-reader18-rtl-supervision-a1/result.json",
+      "sha256": "fa67cd24d3b0555aae8dfdb03c7b4ec98c8b7a9e78e1685d94c066319980913b"
+    },
+    "actual_RTL_clocks": 1691000000,
+    "actor_seconds": 8134.656768694986,
+    "supervised_seconds": 8135.194039754919,
+    "owned_peak_rss_bytes": 244453376,
+    "phases": [
+      {
+        "name": "first-cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 570000000,
+        "clocks": 570000000,
+        "host_seconds": 2416.264309435035,
+        "clock_cap": 1000000000,
+        "host_cap": 7200
+      },
+      {
+        "name": "history3",
+        "initial_cycle": 570000000,
+        "final_cycle": 790000000,
+        "clocks": 220000000,
+        "host_seconds": 1134.4309357029852,
+        "clock_cap": 400000000,
+        "host_cap": 3600
+      },
+      {
+        "name": "browse4",
+        "initial_cycle": 790000000,
+        "final_cycle": 834000000,
+        "clocks": 44000000,
+        "host_seconds": 236.9028012539493,
+        "clock_cap": 150000000,
+        "host_cap": 3600
+      },
+      {
+        "name": "browse-example5",
+        "initial_cycle": 834000000,
+        "final_cycle": 877000000,
+        "clocks": 43000000,
+        "host_seconds": 201.472353512072,
+        "clock_cap": 150000000,
+        "host_cap": 3600
+      },
+      {
+        "name": "explicit-reader-Save",
+        "initial_cycle": 877000000,
+        "final_cycle": 892000000,
+        "clocks": 15000000,
+        "host_seconds": 73.35717380803544,
+        "clock_cap": 150000000,
+        "host_cap": 3600
+      },
+      {
+        "name": "second-cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 572000000,
+        "clocks": 572000000,
+        "host_seconds": 2830.3988664819626,
+        "clock_cap": 1000000000,
+        "host_cap": 7200
+      },
+      {
+        "name": "saved-example5-reopened",
+        "initial_cycle": 572000000,
+        "final_cycle": 799000000,
+        "clocks": 227000000,
+        "host_seconds": 1224.7207014539745,
+        "clock_cap": 400000000,
+        "host_cap": 3600
+      }
+    ],
+    "all_home_pixels": 3630000,
+    "all_medium_bytes": 268435456,
+    "source_sequence": 37,
+    "saved_sequence": 38,
+    "reader_node": 5,
+    "snapshot_cold_input": false,
+    "consumed_host_current_equal": true,
+    "scope": "Actual canonical1650x2200/8192frames same RV64 Reader18, rawnavigation/Save, independent cold; separate from fast or cached continuation"
   },
   "browser": {
-    "status": "RUNNING_NOT_ACCEPTED",
+    "status": "PASS_FIRST_COLD_BROWSE_SAVED38_SECOND_COLD_RUNNING_NOT_ACCEPTED",
     "plan": "build/browser/task006-reader18-local-plan-a1/plan.json",
     "url": "http://127.0.0.1:8806/",
     "medium": "reader18-source37-a1",
     "origin": "Actual CPU0/ticks0/retired0/panels0/queues0, nonprivate freshly imported opaque source37; no snapshot/initialized application state.",
-    "bounds": "2.8B/21600s, original absolute22:25:15.630042Z; firstcold1B/7200autoReady stop. No completed browser18 claim."
+    "bounds": "2.8B/21600s, original absolute22:25:15.630042Z; firstcold1B/7200autoReady stop. No completed browser18 claim.",
+    "first_cold": {
+      "path": "build/browser/task006-reader18-local-plan-a1/cold-result-a1.json",
+      "sha256": "5b2312b10a90766e01cc12fb93f1fd0d8aa450a1c04042cc50665c9a8e6ae052"
+    },
+    "browse": {
+      "path": "build/browser/task006-reader18-local-plan-a1/browse-result-a2.json",
+      "sha256": "2a392a676364af6efaf0c3496543e1ad18651ecb5009b7827b02ebbfcf2b6102"
+    },
+    "saved": {
+      "path": "build/browser/task006-reader18-local-plan-a1/save-result-a2.json",
+      "sha256": "45b65e6ce6e800024ce8d9e5cde2e8a0825a7fb7a5cf7063e0fd37db489cc48c"
+    },
+    "cold_native_outcomes": {
+      "path": "build/browser/task006-reader18-local-plan-a1/cold-outcome-comparison-a1.json",
+      "sha256": "a9764ba8d91576f49e5a13b7c4a928dce28df3185cb3e31c2cb28f3191d4fcd5"
+    },
+    "first_actual_clocks": 892000000,
+    "first_simulation_call_seconds": 7341.193929998477,
+    "reported_Wasm_heap_bytes": 201326592,
+    "actual_barrier": 168,
+    "second_origin": "Close/Open actualSaved38 OPFS, new CPU0, no snapshot;1B/7200 and original absolute22:25:15Z unchanged",
+    "scope": "Every original native/browser accepted outcome matches after predeclared64-byte tape identity; allpixels/all256MiB exact at fixed cuts. No native first-microstate equality claimed; no full browser18 cold PASS yet."
   },
   "original_failures_retained": [
     "build/courses/task006-reader18-component-a1 (pre-close-edge repair, unadopted)",
@@ -245,7 +349,9 @@
     "build/courses/task006-reader18-corrected-ir-a1/result.json (missed exact Surface root selector)",
     "build/courses/task006-reader18-host-suites-a1/result.json (malformed-map errors and two-name inventory expectation)",
     "build/courses/task006-reader18-host-suites-a2/result.json (owned foundation interrupted for host-environment diagnosis)",
-    "build/courses/task006-reader18-foundation-host-probe-a1/result.json (same fixture/thread failure vs exact expected rejection with policy2)"
+    "build/courses/task006-reader18-foundation-host-probe-a1/result.json (same fixture/thread failure vs exact expected rejection with policy2)",
+    "Browser18 browse observer a1 missingPillow after first cut; a2 standard-library PNG preserves all original comparisons andpasses.",
+    "Browser18 Save observer a1 incorrectly required READ kinds for writes/barriers; a2 checks exact162READ/4WRITE/2barrier sequence, every errno/transfer/time and unchanged full native tape/pixel/medium relation."
   ],
   "checks": {
     "actual_lean_codec": "tests/courses/ReaderLocation.lean, all8actualnodes/exactbytes/readonly/stale/invalid/faults; genuine User2 component13,328B no undefined symbols",

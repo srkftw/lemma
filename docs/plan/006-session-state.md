@@ -4228,3 +4228,210 @@ qualifiedpad15Tab33Deliverable. Companion16 remainsRUNNING under original
 barrier phase, no whole-pass claim. No physical reroute: availableRAM remains
 below its8GiBprecondition. Whole digital, fast/cache exactness, distribution,
 G2/G4-G7/proof/tutor/radio and physical obligations remain open.
+
+<!--
+October16 continuation, observed19:28UTC; notwhole-machine completion.
+
+Reader18 canonical RTL isPASS at`build/courses/task006-reader18-rtl-a1/result.json`:
+1.691B actualclocks/8134.657s actor/8135.194s supervised,244453376B peak.
+Cold570M ->history3/node4/example5 ->guestSaved38 at892M ->independentCPU0
+cold572M ->savedexample5 at799M; allhome/media/course/keypad andpreserved
+originalauthority checks pass under original2.8B/21600s. No snapshotcold input.
+Browser18 firstcold569.55M/fixed570M,790M/834M/877M views andSaved38 at892M
+pass allpixels/all256MiB/exactnative outcomes, except thepredeclared64-byte
+tapeimplementation identity. Actual168outcomes are162READ/4WRITE/2barriers;
+finalbarrier168,192MiB reportedWasmheap,7341.194s firstsimulationcalls. Original
+observerFAILs (missingPillow; wrongly requiringREADs duringSave) remain; corrected
+standardPNG/boundedkindchecks preserve originalbyte/error/order/cycle equality.
+No fullnativefirst-microstate comparison isclaimed. Tab35/8806 actualClose/Open
+source38 newCPU0 cold isRUNNING under1B/7200 and originalabsolute22:25:15.630042Z;
+thenrawCOURSE/reopen5 remains. Do notuse a snapshotorreset thedeadline. Tab33/
+8804 remainsqualifiedmath/ink deliverable. Keep both tabsmarked eachturn.
+
+Published3226f155 CI38939333316 isSUCCESS11jobs/116steps, zero skipped; actual
+receipt`build/ci/task006-3226-complete.json`. PR9draft/unmerged. Da13failure/skip
+andlogs retained. Newdirty workhasnoCI. No newmerge authorization.
+
+Attached BUILD checkout`/home/sreekumaar/.codex/worktrees/task006-product-course-build/lemma`
+continues thesameMachine from3226. Its newProduct10 four-role Reader18/Closure7/
+StoreAwait/courseInstaller image passed normalfresh six-role build/wholeELF
+audit411.012s;supervised412.684s/1898541056B,425consumedinputs. Image
+`build/kernel/task006-product-course-reader-a1` ELF56f1b5fa...; complete source
+archive atRoot`build/boot/task006-product-course-reader-source-a1`, opaque1056
+sectors5a7efb8a..., imageID0xa000000000012/publicdevelopmenttag. Versioned
+ProductKernel7 physical-wrapper inlining retains exact previousProduct10 guard
+bodies andalloriginal prebody/ownership/copy/entry-lifetime checks. LocalStore,
+Paper3/realBootHealth/checkedEntryV2 and4realimages; no ordinaryformat path.
+Product USB/companion join, newactual mathcheck andbrowserROM remainunqualified.
+Setup/noninline/helper/authority/preview failures are retained, notmasked.
+
+Actual newproductROM/install/confirm/cold/rawCOURSE case isRUNNING from frozen
+710file/10.27MB hostsource`build/boot/task006-product-course-executor-a2`:
+`.../build/connected-a2`, plan`build/boot/task006-product-course-connected-plan-a2`,
+owner`...connected-supervision-a2`. Samefinalnative319b73/ROM8a853, actualopaque
+Saved38 andknown-good0. Prospective4.3B/32400s:1056/724payloadratio justifies900M
+install/300Mhandoff; Ready1.2B/cold1.5B/course400M bounds fixed. Initial outputpath,
+sourceprefix/prepare andmissingoutputparent failures wereBEFOREanyCPU and remain.
+Complete nativearchive mappingnow derives one originaltop prefix, requires all
+253inputs/manifest/binary identities andforbids checkoutfallback;8focused tests
+and24boot tests pass. Actual frozenexecutor allows laterimplementation edits
+without changing liveimported hostcode. Its a1sourcecopy remainsfailed evidence.
+
+Original Rootolder4f43/a09 authenticatedupdate a2 isstillRUNNING independently:
+358.1Minstall/88.1Mhandoff/922MtrialReady+guestconfirmation passed; independent
+normalcold pending. This isnot final319/latestcourse. RootPython muststay
+unchanged untilits actor isterminal; RootLean/docs mayadvance. Buildcheckout
+Python isfree now; preserve its complete425-source imagearchive before edits.
+Root currentlyhas olderProductprototype plus newerCompanionEntry2 Lean changes;
+integrate finalProduct code frombuildcheckout WITHOUT losing eitherdelta.
+
+Companion16 wholecase isFAIL, original200Mclose-after-math ceiling atcoldCPU
+1835M,22477.698s total, allowned processesreaped. Actual lostACK/reconcileSaved16,
+fullhome/independentcold, isolated5/6 VerifiedSaved22/authoredhintSaved23 preceded
+failure; thirdcold NOTRUN.40 retained5M PC samples implicateregistry/stack/frame
+validation butarenot cycleproportions. No restartedcold/boundextension.
+RootLean nowhas additiveClocked13 Kernel6 EntryV2 normal+initializer roots and
+selectors;source labelcorrected to0.13. Genuinecomponent
+`build/usb/task006-companion-entry2-kernel-a1` passes everyoriginal19
+body/caller/registry/borrow-lifetime gate before/afterLLVM, RV64object and helper
+closure in43.155s. No completeimage/runtime/cyclegain claim. FrozenoldRootPython
+cannot yetadmit its config; buildcheckout integration remains. Preserve
+`...companion-entry2-source-a1/before-catalog` and`entry2-source-block.lean`.
+
+Memoryrecovered above8GiB. Firstchanged-source penreadinessFF route isRUNNING:
+`build/silicon/pen-sequence-ready-route-plan-a1`,owner`...route-supervision-a1`,
+output`build/silicon/physical/pen-sequence-ready-route-a1`;source57e5c6, exact
+map-a2reuse, same100MHz/originalrules/constraints/WNS_PATH. Inner900/outer1000s,
+6GiBownedRSS/3GiBavailablefloor/12GiBoutputs/cleanup30s. No adoption or completed
+route/DRC/LVS/PEX/postroute/fullchip claim. Inspect terminalresult before anyaction.
+Digital completeness, fast/QEMUcached continuation, distribution/G2/G4-G7/proof/
+tutor/radios andphysical closure remain separate OPEN obligations.
+-->
+
+<!--
+Continuation on October 16: the BUILD checkout now joins the additive Product10
+reader and Clocked13 EntryV2 selections without changing historical roots.
+Root Python is still frozen by the older authenticated notebook update a2;
+Root branch remains3226f155 / PR9 draft, with its actual CI38939333316 SUCCESS.
+Do not overwrite Root Lean Entry2 additions when integrating final BUILD files.
+
+Clocked13 EntryV2 normal/initializer genuine exports completed in292.014s under
+owned supervision. Reused only the exact source-bound completed normal firmware/
+kernel prefix from a3; every other selected role was freshly exported. Complete
+comparison a2 finds all1279 shared kernel pre-bodies unchanged and all firmware/
+four-user pre/post body/global/caller corpora unchanged. New19-entry obligations
+retain their original pins and independent borrowed-context/root/caller gates.
+Artifacts: BUILD/build/entry2-artifacts-a4 and entry2-artifact-comparison-a2.
+Original export/observer setup failures remain retained.
+
+Normal complete linked RV64 build/audit PASSES at
+BUILD/build/kernel/task006-companion-entry2-pair-a2/notebook: build172.975s,
+audit454.440s. Initializer build214.437s passes; its full audit is RUNNING.
+Owner BUILD/build/entry2-whole-supervision-a2; original2400s/4GiB RSS/2GiB
+available/12GiB outputs/1GiB file/cleanup30s, session99551. Do not mutate its
+consumed compiler/Lean/authority/contract files until terminal. Whole a1 FAIL
+is retained: new authority omitted the mandatory original keypad machine pin.
+Actual normalized RV64 owner/guards/calls match original f708bdf8 exactly;
+restored that field and kept the full check. No valid check was weakened.
+
+Pinned host results: foundation473 PASS (host-plan-a2), LemmaSim304/silicon226/
+boot24 PASS (host-plan-a3), scaffold metadata and18 tests PASS. Host a1's23
+foundation failures all contain actual thread-creation failures under its8GiB
+AS limit: runner lacked the existing64MiB stack env. Corrected runner env only.
+Host a2's single silicon FAIL was its closed workload list missing precisely the
+two new genuine selectors; added those entries, preserved all clock/CDC facts.
+Skipped boot was not reported passed. Foundation was not rerun unchanged in a3.
+
+Schema10 bundle/launch selection, three rejection tests, and new maintained
+scripts/check_guest_usb_package_entry2.py are present. The latter is NOT_RUN:
+new cold CPU from actual acknowledged Saved23 peer/outbox, original fraction/
+Verified/hint retained, raw COURSE open then close under200M clocks, independent
+all-home-pixel oracle and all-medium-byte equality. Cold1B/7200s, open400M/3600s,
+close200M/3600s, aggregate1.6B/14400s; no new check/save, no comparable-speedup or
+original failed campaign-completion claim. Native bundle preparation remains.
+
+Actual old64d native255-input archive failed from BUILD because original absolute
+paths were tied to caller ROOT. Explicit Clocked archives now derive one original
+prefix from the unique top source, retain original receipt paths, validate the
+complete source/header/binary/implementation closure, and never consult original
+files as fallback. Real255-input relocation and removed-input negative pass in
+BUILD/build/entry2-native-relocation-a2; two original-checkout-absent fixtures pass.
+Schema10 records separate original native/guest roots; older schemas retain their
+old origin behavior. This is host archive portability, not guest timing parity.
+
+A maintained-source Clocked13 runtime build is RUNNING, session4767, owner
+BUILD/build/entry2-current13-supervision-a1. Scope: current shared Machine code,
+unchanged circuitry, preserving newer UART/reset behavior. Only machine_runtime.cpp
+differs among sim/rtl inputs from old64d; do not ship old64d as current. New local
+shared pinned CVW dependency checkout is under BUILD/build/silicon/deps/cvw; Root
+dependency/Task branch are untouched. Current runtime output
+BUILD/build/silicon/task006-entry2-current13-a1. Original1900s outer/1800s build,
+jobs2/4GiB RSS/2GiB available/12GiB outputs/1GiB file/cleanup30s; launch required
+6GiB available. Inspect actual result before preparation.
+
+Browser18 second CPU is still cold-running from its actual OPFS Saved38; last
+observed295.5M clocks,2793s UI elapsed,192MiB reported Wasm heap. Original absolute
+deadline22:25:15.630042Z remains. Finish fixed572M then exact native two raw COURSE
+events and227M to799M; compare complete pixels/media/outcomes. No snapshot cold
+input or full first-CPU microstate claim. Earlier checked-in instructions retain
+all artifact paths. Older Product update and new Product course ROM campaigns
+remain running at original bounds; no newer success claim.
+-->
+
+<!--
+Code milestone committed on the active Task006 branch as
+01b12f35fe8d84e7766ebb21477f4acfa52f1d85 (47 files). Root Python freeze is
+RELEASED: old full authenticated notebook update a2 actually PASSES. Result
+`build/boot/task006-notebook-update-a2/result.json`: install358.1M/2245.136s;
+authenticated trial handoff88.1M/449.223s; actual Ready/guest confirmation
+922M/4302.264s; independent normal CPU0 cold/all pixels1009M/5243.406s. Total
+2377.2M/12246.049s, owner12247.061s/322347008B, no survivors. All Saved14 bytes
+and known-good image preserved; no snapshot cold input. Exact intermediate a09
+native/prepared-a8 and older724-sector image, not current319/new course evidence.
+
+Integrated46 owned source/test/contract files from BUILD after that terminal
+PASS. Prior Root versions are retained at
+`build/integration/task006-product-reader-entry2-a1/previous-source`. Root
+compiler inputs exactly match all429 compiled EntryV2 inputs. Existing Root
+evidence/checkpoint edits were preserved. Two genuine Root selector tests pass,
+and CI's existing reader-selector step now runs both. No merge or branch reset.
+
+Both complete EntryV2 image audits PASS: normal build172.975s/audit454.440s;
+initializer214.437s/audit364.955s. Pair actor1206.939s, owner1211.489s/1920413696B.
+The current shared-runtime Clocked13 build also PASSES in65.293s (owner72.376s),
+implementation5381d37a7abd0ac8c7e448d85df2278b5ad8f1ae16c798772bc2a2a04e596135,
+binary60bd2f275f72386ce952f1d5572aee041217918d64cbf45a7fb33aad101732da.
+The two ordinary CLI preparations pass in10.950s and7.739s. Bundle a1 failed
+before output creation on the new origin reader's str/Path mismatch; fixed only
+the argument, reused those preparations, and bundle-only a2 PASSES. Current
+Root bundle `build/native/task006-entry2-current13-a2`:891 files/83121627B. Both
+workloads independently validate from Root after copy. BUILD artifacts remain
+needed; do not archive the build worktree or delete its dependency checkout yet.
+
+The focused actual cold23/open/close200M case is RUNNING, session33174. Plan
+`build/usb/task006-entry2-cold23-close-plan-a1/plan.json`; owner
+`build/usb/task006-entry2-cold23-close-supervision-a1`; actor
+`build/usb/e2exec-a1/build/c1`. Frozen executor828 files/11207785B. Do not edit
+that executor; current Root can advance independently. It uses the current5381
+native and exact EntryV2 image, not old64d. Actual copied Source23 preflight:
+answer5/6, Verified, revision/evidence5, hint1, node3, uncertain learner. No
+new check/save/third cold or original failed campaign-completion claim. Original
+1B/7200 cold +400M/3600 open +200M/3600 close; aggregate1.6B/14400s,4GiB RSS/
+2GiB available/12GiB outputs/1GiB file/cleanup30s. New CPU0/unconfigured USB
+origin verified; actual cold instructions/USB traffic are progressing.
+
+Root `build/boot/task006-development-auth-prepared-a10` now validates current
+host scripts with unchanged319 native/8a853 ROM/2973B discovery. a9 host metadata
+is stale after product_native.py changed; use a10 for current Root commands.
+The separate new four-role course ROM case continues in its immutable executor
+(session53123): installation519.5M/3301.228s and real authenticated trial
+handoff127.2M/838.907s PASS; Ready/confirmation/cold/reopen remain RUNNING at
+original4.3B/32400s bounds. Preserve its executor/prepared-a2. Browser18 second
+OPFS cold still runs with absolute22:25:15.630042Z bound and no snapshot input.
+
+All current Root source changes are in the implementation commit; README and
+evidence/checkpoint updates are pending a separate report commit, referencing
+01b12f3. Last remote candidate CI remains3226 SUCCESS, not this new code. Push
+only after committing reports, inspect actual new CI once, update draft PR9;
+never merge under PR8 authorization. No report-only recompilation/retest loop.
+-->
