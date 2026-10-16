@@ -3655,3 +3655,47 @@ outcome/completiontime/error, raw/UART/allpixels/allbacking exact; endpoint
 argv/requestparserFAIL beforemachine retained. This doesnotclose arbitrary
 cachedQEMU continuation orRTLfailedSave/physicalpowerloss. See existing
 006-fast-backing-replay.json and maintained conformance check_partial_write*.py.
+
+
+Compiler817a8ec actualfullmatched15pair nowPASS974.440231s; supervisor
+980.058476s/1,924,005,888B ownedpeak,412sources/HEAD/index/current/archive
+seals and cleanup pass. Both fullELFs unchanged ebbc3f19/b695dbb6; existing
+27phase15 execution reuse is byte-bound, no duplicate execution claim.
+Normal222.848938s/audit324.158213s; init181.598697s/audit245.519318s. Whole
+is slower than preceding906.098108s under sharedload; only singleexport has
+measured183.581→104.147s reduction. Original300s per subprocess/2500swhole
+bounds unchanged. Legacyqueuea1 retainedFAIL900.357160s:875.10s before first
+flockchild,~25sO0construction/audit thenownedkill/reap; no fullpass. After
+fullpair releasesactualsame mutex, unuseda2 under same900s passes complete
+23RV64boots/10cases/13rejects/repro/mutation/auditregression,51.273126s
+supervised. 817CI38886767596 still IN_PROGRESS atlastmeaningfulfetch.
+412sourcehold released. New hostexportpolicy implementation below is dirty
+and not partof817qualification; preserve originalartifact/source identities.
+
+Both originalcanvaspointer/Save/newCPUcold cases nowPASS fullindependent
+observers: number-entry551.1M/4709.132855s/192MiB, everypixel/all256MiB/
+119exactreadoutcomes; idle2 570.35M/4770.496575s/192MiB, allpixels/bytes/
+150exactreads. Ackseq25/37 andallpriorworkspace/source/history/ink preserved.
+Owners browser/task006-{number-entry,idle2}-pointer-cold-plan-a1. No snapshot
+as coldinput; GUIexport afterReady is observational machine state. Public
+ReadyAt is separate from guestObservation=boot originlabel. Bothactual raw
+COURSE reopen now running original400M/3600s, noReady orpanel earlystop,
+noreset/restore. Idle2 originalabsolute13:47:22.617578Z remains. Tab33new15/
+index runtime cold continues original1B/7200. Its diagnostic snapshot at
+401.6M visiblypausedscheduler; original no-pauseassumption is retainedfailed
+in pad15-boot-profile-a1/presentation-pause.json. Samecoldmachine resumes
+onlyremaining598.4M/3600s, stricter originalwall budget. No reset/restore/
+fence/drain. Private sameartifact2MPCsamplecase a2PASS20.240934s/567918592B,
+1000systematic2000clock samples: S847/U131/M22, registryvalidation68, IPCget64,
+rowlookup46. Selectedwindow, notwholebootfractions; externalI/O unchanged.
+Initialwrongouterpackageroot a1failsbeforemachine; correctedbundle/subdir
+uses samecut/no rerun of originalcoldprefix.
+
+Next hostbuild fix lemma-lean-export-host/1 adds explicit-j2 to5direct
+kernel/userexport sites; strict source-bound policy/provenance/argv audit.
+Oldsource archives retain oldcommands even through new archivedworkspace;
+missingcurrenthelper cannotdowngrade. Core0builderunchanged.5focusedpolicy
+checks and actual817 normal/init oldcommandcorpora PASS.454kernel/473foundation/
+40core0/299lemmasim/18scaffold hostchecks pass (counts/log identities separate).
+New wholecompile/audits/resourcequalification stillpending. Alltarget language,
+LLVM/runtime/link andtiming semantics remainunchanged. Contract006-lean-export-host-v1.

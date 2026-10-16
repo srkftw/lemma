@@ -666,7 +666,26 @@
       "attempts": 5,
       "hints": 1
     },
-    "scope": "Actual guest-isolated checker, revision-bound exact outcome, prior evidence/source/learner history and original authored body retained. Numeric13 also complete keypad. Original wrong observer assumed request fifth word was budget; actual fifth word is IPC transaction. Wrong observer/result retained, corrected independently from compiled source; no guest rerun or changed predicate outcome."
+    "scope": "Actual guest-isolated checker, revision-bound exact outcome, prior evidence/source/learner history and original authored body retained. Numeric13 also complete keypad. Original wrong observer assumed request fifth word was budget; actual fifth word is IPC transaction. Wrong observer/result retained, corrected independently from compiled source; no guest rerun or changed predicate outcome.",
+    "ordinary_pointer_ink_then_independent_cold": {
+      "ink": {
+        "path": "build/browser/task006-number-entry-pointer-cold-plan-a1/ink-result.json",
+        "sha256": "abce64a411fb6f5fe15a79afb6b77a6536363af938e19f820735bd37786c3cab",
+        "status": "PASS_BROWSER_ORDINARY_POINTER_GUEST_INK_SAVED"
+      },
+      "cold": {
+        "path": "build/browser/task006-number-entry-pointer-cold-plan-a1/cold-result.json",
+        "sha256": "f038e6bd885eb764550701c3fd9de2f1bfcb65a1b6f62580419c3766c1fa9f82",
+        "status": "PASS_BROWSER_COLD_AFTER_ACTUAL_ACKNOWLEDGED_RAW_INK"
+      },
+      "cold_cycle": 551100000,
+      "cold_host_seconds": 4709.1328549999,
+      "cold_heap_bytes": 201326592,
+      "full_pixels": 3630000,
+      "all_backing_bytes": 268435456,
+      "read_outcomes_exact": 119,
+      "reopen": "RUNNING original400M/3600s; actual coldCPU fromsameOPFS backing, no snapshot as cold input. Full revision/source/history course display qualification pending."
+    }
   },
   "browser_actual_indeterminate": {
     "path": "build/browser/task006-idle2-mathematics-plan-a1/checked-Indeterminate-result-a2.json",
@@ -706,7 +725,26 @@
       "attempts": 3,
       "hints": 1
     },
-    "scope": "Actual guest-isolated checker, revision-bound exact outcome, prior evidence/source/learner history and original authored body retained. Numeric13 also complete keypad. Original wrong observer assumed request fifth word was budget; actual fifth word is IPC transaction. Wrong observer/result retained, corrected independently from compiled source; no guest rerun or changed predicate outcome."
+    "scope": "Actual guest-isolated checker, revision-bound exact outcome, prior evidence/source/learner history and original authored body retained. Numeric13 also complete keypad. Original wrong observer assumed request fifth word was budget; actual fifth word is IPC transaction. Wrong observer/result retained, corrected independently from compiled source; no guest rerun or changed predicate outcome.",
+    "ordinary_pointer_ink_then_independent_cold": {
+      "ink": {
+        "path": "build/browser/task006-idle2-pointer-cold-plan-a1/ink-result.json",
+        "sha256": "bfc50d2f8f26a1659fdce3ebae53b9b0d8a406fc0c7a917bdb0ac45c8fbcd202",
+        "status": "PASS_BROWSER_ORDINARY_POINTER_GUEST_INK_SAVED"
+      },
+      "cold": {
+        "path": "build/browser/task006-idle2-pointer-cold-plan-a1/cold-result.json",
+        "sha256": "dee51559b4817821b26d17b3f41bff1234113d00c67881db0abde6e31f785a9f",
+        "status": "PASS_BROWSER_COLD_AFTER_ACTUAL_ACKNOWLEDGED_RAW_INK"
+      },
+      "cold_cycle": 570350000,
+      "cold_host_seconds": 4770.496575000047,
+      "cold_heap_bytes": 201326592,
+      "full_pixels": 3630000,
+      "all_backing_bytes": 268435456,
+      "read_outcomes_exact": 150,
+      "reopen": "RUNNING original400M/3600s; actual coldCPU fromsameOPFS backing, no snapshot as cold input. Full revision/source/history course display qualification pending."
+    }
   },
   "latest_candidate_ci": {
     "path": "build/ci/task006-9c25-complete.json",
@@ -816,7 +854,7 @@
     "scope": "Actual canonical13 numeric5/0 Invalid,5/6 Verified,5/69 Invalid, overflow rejection without Save, BACK then Verified, authored local hint, raw ink Save, independent CPUcold complete pixels/medium/objects and course/body/keypad/history reopen, actual flags8 disconnect with complete repaint preserving acknowledged media. Source13/410 files and original8e5 runtime. No15/full-new-runtime or RTL partial-pwrite failure claim. Original34hostfile source hold released after supervised terminalPASS."
   },
   "ssa_validation_candidate": {
-    "status": "PASS_COMPONENT_EXACT_DIAGNOSTICS_AND_GENUINE_EXPORT_FULL_PAIR_LEGACY_CI_PENDING",
+    "status": "PASS_COMPONENT_FULL_MATCHED_LINKED_AUDITS_AND_LEGACY_TARGET_CI_PENDING",
     "source_commit_before": "3504185cb9915a9fcc6432b83feee985885cb826",
     "sources": {
       "Lemma/Compiler/LLVMValidate.lean": "b9495ab1a4e931ecf0bd6e78f3afc89718806a3e3456d254dd0e06c665aa9cc2",
@@ -839,6 +877,66 @@
     "candidate_export_seconds": 104.14654235600028,
     "candidate_peak_owned_rss_bytes": 1774149632,
     "host_suites": "40core0/473foundation/449kernel PASS",
-    "scope": "Unique SSA map and final dominance-membership index only. Duplicate rejection before insertion, traversal/error order and fixed-point solver retained. Shared host performance observation, not general compiler proof or target cycle change. Full matched linked audits, legacy target and new candidate CI pending. Failed first differential harness elaboration retained."
+    "scope": "Unique SSA map and final dominance-membership index only. Duplicate rejection before insertion, traversal/error order and fixed-point solver retained. Shared host performance observation, not general compiler proof or target cycle change. Full matched linked audits, legacy target and new candidate CI pending. Failed first differential harness elaboration retained.",
+    "full_pair": {
+      "path": "build/courses/task006-ssa-validator-whole-a1/result.json",
+      "sha256": "1906c9303fffd95ed2323346dd26ed7c2df779fe7c959e2ffdce46fa01423cb9",
+      "status": "PASS_FRESH_SSA_INDEX_PAIR_FULL_AUDIT"
+    },
+    "supervision": {
+      "path": "build/courses/task006-ssa-validator-whole-supervision-a1/result.json",
+      "sha256": "dabac3cf13cbc1805afd55e01f5813a1d159d75005e4e112df319aeb7ac9e479",
+      "status": "PASS_FRESH_SSA_INDEX_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP"
+    },
+    "legacy": {
+      "path": "build/core0/task006-ssa-validator-legacy-a2/check-results.json",
+      "sha256": "a5e91b0ed85ba94d38498b0635e8529b28503bd10892f2ec1f27a60935266c86",
+      "status": "pass"
+    },
+    "legacy_supervision": {
+      "path": "build/courses/task006-ssa-validator-legacy-supervision-a2/result.json",
+      "sha256": "25cd18fa2af9f857e82bca11e20da371f7eadbcc45ce73ec4d576b3ee714cd83",
+      "status": "PASS_INDEXED_VALIDATOR_HISTORICAL_TARGET_ACCEPTANCE_SUPERVISED"
+    },
+    "retained_wait_deadline_failure": {
+      "path": "build/courses/task006-ssa-validator-legacy-supervision-a1/result.json",
+      "sha256": "f089c1992168508e05668b77387ec9dad52f2f43cc448febc7c987ac5c298316",
+      "status": "FAIL"
+    }
+  },
+  "ssa_matched15": {
+    "source_commit": "817a8ecda2fff1ef6c07090190369da5522f7cbd",
+    "source_count": 412,
+    "roles": {
+      "initializer": {
+        "audit_seconds": 245.51931818993762,
+        "audit_sha256": "bab39c33a07e253958e5315d4c72d99003df497515503007f7db3c7bdb701a74",
+        "audit_status": "PASS",
+        "build_seconds": 181.59869672893547,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-ssa-validator-initializer-a1",
+        "image_bytes": 710952,
+        "image_sha256": "b695dbb6cfb0fa14034b0da5aac5461ebbf19dc81a58c025adf48fd2e4c28098",
+        "provenance_sha256": "b1dfa560d5de9b48377f5fce108afefbaddab8d2ee0172d39504c289ee88b7c8"
+      },
+      "notebook": {
+        "audit_seconds": 324.15821290994063,
+        "audit_sha256": "255d117c5c37dba412c35d6b21dfdef1d0a6e98dfe9d6d296e200213c931395b",
+        "audit_status": "PASS",
+        "build_seconds": 222.8489379310049,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-ssa-validator-notebook-a1",
+        "image_bytes": 710944,
+        "image_sha256": "ebbc3f19e96a64cc0de0d83f12b451c7b1dbcaaa6b4f496b86f6a1c949554ca6",
+        "provenance_sha256": "6783fccac410c147fa84a03d9faf136776d6e4162c53c28da66624eba5ad925a"
+      }
+    },
+    "whole_seconds": 974.4402311029844,
+    "supervised_seconds": 980.0584764870582,
+    "owned_peak_rss_bytes": 1924005888,
+    "same_normal_and_initializer_ELFs_as_prior": true,
+    "scope": "Complete source/HEAD/index seals and cleanup PASS. Normal222.848938s/audit324.158213s, init181.598697s/audit245.519318s. Whole974.440231s versus preceding906.098108s is slower under shared host load; single-export183.581\u2192104.147s component result is separate, no whole-build speedup claimed. Original300s is each subprocess limit, not whole audit duration. New hostworkerpolicy remains separate pending source successor."
   }
 }

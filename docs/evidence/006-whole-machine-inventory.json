@@ -1215,5 +1215,31 @@
     "evidence": "docs/evidence/006-fast-backing-replay.json",
     "status": "PASS_ACTUAL_PARTIAL_WRITE_GUEST_FAILED_SAVE_COLD_RECORDED_SUFFIX",
     "scope": "Real128/EFBIG actualLinux failure, guestFailed/provisionalink, prioracknowledgedrecords preserved and isolated tape replay exact. Originalobserverfailures retained. No arbitrarycachedstate/RTLtiming/physicalpowerloss claim."
+  },
+  "browser_pointer_math_cold_milestone": {
+    "status": "PASS_REAL_BROWSER_POINTER_SAVED_AND_NEW_CPU_COLD_REOPEN_PENDING",
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "cases": [
+      {
+        "software": "13",
+        "cycle": 551100000,
+        "host_seconds": 4709.1328549999,
+        "read_outcomes": 119,
+        "sequence": 25
+      },
+      {
+        "software": "11/ingress2",
+        "cycle": 570350000,
+        "host_seconds": 4770.496575000047,
+        "read_outcomes": 150,
+        "sequence": 37
+      }
+    ],
+    "scope": "Ordinary canvasmouse -> rawdevice -> realguestink -> successfulOPFSworkerbarrier ->newCPUcold fromsamebacking. Exact3.63Mpixels/all256MiB/acknowledgedobjects and complete reads. Full course/math/source/history display reopen400M/3600s currently running. Browser-origin persistence only; no unconditionaleviction/physicalpowerloss, fullnewruntime15 or generalfaststateclosure."
+  },
+  "host_export_resource_candidate": {
+    "contract": "docs/contracts/006-lean-export-host-v1.md",
+    "status": "IMPLEMENTED_HOST_CHECKS_PASS_WHOLE_CURRENT_ARTIFACTS_PENDING",
+    "scope": "Explicitrecorded-j2 onkernel/userexports, strictpolicy/argv/source audit, legacyarchivecommands retained. No targetlanguage/runtime/LLVM extension. Whole413source build/audit/resource andcandidateCI pending."
   }
 }

@@ -5834,7 +5834,8 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
 
 def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, images: list[dict],
                             optimization: str, roles: dict, standalone: bool, configuration: str = "tasks-development",
-                            compiler_source_workspace: dict | None = None, source_root: Path | None = None) -> None:
+                            compiler_source_workspace: dict | None = None, source_root: Path | None = None,
+                            host_export_policy: dict | None = None) -> None:
     rows = _array(rows, "multi-image construction commands")
     if not rows or any(not isinstance(row, dict) or type(row.get("returncode")) is not int or row["returncode"] != 0
                        or not isinstance(row.get("argv"), list) or not row["argv"]
@@ -5912,6 +5913,9 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
     for path, contents in consumers.items():
         if (output_dir / path).read_text() != contents:
             raise Core0Error("genuine Lean export consumer differs from its exact selected roots")
+    from lean_export_host import arguments as host_arguments, validate_commands as validate_export_commands
+    export_arguments = host_arguments(host_export_policy)
+    validate_export_commands(rows, host_export_policy)
     exports = [row for row in rows if Path(row["argv"][0]).name == "lake" and row["argv"][1:3] == ["env", "lean"]]
     expected_exports = [base + "/CatalogExport.lean", *(base + "/" + role + "/Export.lean" for role in roles),
                         *(base + "/" + image["directory"] + "/Export.lean" for image in images),
@@ -5922,12 +5926,12 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
         build_modules = [*configuration_modules(configuration).values(),
                          *(image["module"] for image in images), "Lemma.Compiler.KernelExport"]
         expected_lake = [["build", "Lemma.Compiler.KernelExport"],
-                         ["env", "lean", expected_exports[0]], ["build", *build_modules],
-                         *(["env", "lean", path] for path in expected_exports[1:])]
+                         ["env", "lean", *export_arguments, expected_exports[0]], ["build", *build_modules],
+                         *(["env", "lean", *export_arguments, path] for path in expected_exports[1:])]
         if ([row["argv"][1:] for row in lake_rows] != expected_lake or
                 any(row["cwd"] != "." for row in lake_rows)):
             raise Core0Error("archived complete Lake build/elaboration closure differs")
-    if [row["argv"][3:] for row in exports] != [[path] for path in expected_exports] or any(row["cwd"] != "." for row in exports):
+    if [row["argv"][3:] for row in exports] != [[*export_arguments, path] for path in expected_exports] or any(row["cwd"] != "." for row in exports):
         raise Core0Error("genuine Lean elaboration invocation/working-directory evidence differs")
 
 
@@ -5964,6 +5968,8 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         source_snapshot = source_inputs(root)
         if provenance.get("source_inputs") != source_snapshot:
             raise Core0Error("independent user complete source inventory is missing/stale")
+        from lean_export_host import validate_provenance as validate_export_policy
+        export_policy = validate_export_policy(provenance.get("host_export_policy"), source_snapshot)
         closure = user_module_closure(root, image, configuration)
         if configuration in MANAGED_POLICIES and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for path in closure):
             raise Core0Error("managed user target dependency closure contains privileged/compiler code")
@@ -5993,7 +5999,7 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         expected.update(uint_source=str(uint_source), uint_source_sha256=LEAN_UINT_SOURCE_SHA256)
         if realization != expected or build.get("lean_source_realization") != expected or not uint_source.is_file() or sha256(uint_source) != LEAN_UINT_SOURCE_SHA256:
             raise Core0Error("independent user immutable Lean source evidence differs")
-        validate_multi_commands(provenance.get("commands"), root=root, output_dir=output_dir, images=[image], optimization=optimization, roles={}, standalone=True, configuration=configuration)
+        validate_multi_commands(provenance.get("commands"), root=root, output_dir=output_dir, images=[image], optimization=optimization, roles={}, standalone=True, configuration=configuration, host_export_policy=export_policy)
         observed = audit_user_image(root=root, output_dir=output_dir / directory, catalog=catalog, image_key=key,
                                     optimization=optimization, timeout_seconds=timeout_seconds)
         logs.extend(observed["commands"])
@@ -6122,6 +6128,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60, source_r
             path = source_origin / name
             if not path.is_file() or sha256(path) != digest:
                 raise Core0Error(f"current source differs from built input: {name}")
+        from lean_export_host import validate_provenance as validate_export_policy, validate_commands as validate_export_commands
+        export_policy = validate_export_policy(provenance.get("host_export_policy"), source_hashes)
         for role, module in configuration_modules(configuration).items():
             allowed = development_modules(configuration, role)
             closure = module_closure(source_origin, module, allow_development=bool(allowed), development_modules=allowed,
@@ -6142,6 +6150,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60, source_r
         command_rows = _array(provenance.get("commands"), "build commands")
         if not command_rows or any(not isinstance(row, dict) or row.get("returncode") != 0 for row in command_rows):
             raise Core0Error("build command corpus empty, malformed or failed")
+        validate_export_commands(command_rows, export_policy)
         lake_commands = [row["argv"][0] for row in command_rows if isinstance(row.get("argv"), list)
                          and row["argv"] and Path(row["argv"][0]).name == "lake"]
         if not lake_commands or any(not path.startswith(lean_pin["store_path"] + "/") for path in lake_commands):
@@ -6195,7 +6204,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60, source_r
                               [*STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"],
                               ["-m", "elf64lriscv", "--no-relax", "-T", "link.ld", "-Map=image.map", *BOOT_OBJECTS, "-o", "image.elf"]]
         if multi:
-            validate_multi_commands(command_rows, root=root, output_dir=output_dir, images=images, optimization=optimization, roles=roles, standalone=False, configuration=configuration, compiler_source_workspace=workspace, source_root=source_origin if workspace is not None else None)
+            validate_multi_commands(command_rows, root=root, output_dir=output_dir, images=images, optimization=optimization, roles=roles, standalone=False, configuration=configuration, compiler_source_workspace=workspace, source_root=source_origin if workspace is not None else None, host_export_policy=export_policy)
         if compile_commands != expected_commands:
             raise Core0Error("actual compiler/link command closure differs")
         for map_file, allowed in ((("image.map", BOOT_OBJECTS),) if multi else (("image.map", BOOT_OBJECTS), ("user/image.map", USER_OBJECTS))):

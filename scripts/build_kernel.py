@@ -25,6 +25,7 @@ from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGU
 from build_core0 import (LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS,
                         capture_platform_dtb, prepare_output_directory)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
+from lean_export_host import command as export_command, for_source as export_host_policy
 
 ROLE_ROOTS = {
     "firmware": (("Lemma.Platform.RiscV.Firmware.dispatch", ("u64", "u64", "u64")),),
@@ -365,6 +366,9 @@ def source_inputs(root: Path) -> dict[str, str]:
     if dirty_helper.is_file():inputs.append(dirty_helper)
     dirty_authority=root / 'tooling/dirty-batch-notebook-target-authority.json'
     if dirty_authority.is_file():inputs.append(dirty_authority)
+    export_host_policy(root)  # Missing current helper must not downgrade to a historical command.
+    export_host = root / "scripts/lean_export_host.py"
+    if export_host.is_file():inputs.append(export_host)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 
@@ -453,7 +457,7 @@ def export_user_catalog(root: Path, output_dir: Path, configuration: str, invoke
     consumer = output_dir / "CatalogExport.lean"
     consumer.write_text("import Lemma.Compiler.KernelExport\n\n#lemma_export_user_catalog\n")
     env = {**os.environ, "LEMMA_KERNEL_OUT": str(output_dir), "LEMMA_KERNEL_CONFIGURATION": configuration}
-    invoke(("lake", "env", "lean", str(consumer.relative_to(root))), root, env)
+    invoke(export_command(consumer.relative_to(root), source_root=root), root, env)
     return validate_user_image_catalog(load_json(output_dir / "user-image-catalog.json"))
 
 
@@ -467,7 +471,7 @@ def export_user_image(root: Path, output_dir: Path, configuration: str, image: d
     consumer.write_text(f'import {image["module"]}\nimport Lemma.Compiler.KernelExport\n\n'
                         f'#lemma_export_user_image "{image["key"]}" [{image["source"]}]\n')
     env = {**os.environ, "LEMMA_KERNEL_OUT": str(output_dir), "LEMMA_KERNEL_CONFIGURATION": configuration}
-    invoke(("lake", "env", "lean", str(consumer.relative_to(root))), root, env)
+    invoke(export_command(consumer.relative_to(root), source_root=root), root, env)
     _nonempty(directory, UNIT_FILES)
     unit = validate_unit(load_json(directory / "unit.json"), "user", configuration=configuration, image_key=image["key"])
     invoke(("opt", "-S", f"-passes={OPT_PASSES[opt_level]}", "program.ll", "-o", "program.opt.ll"), directory)
@@ -479,7 +483,7 @@ def export_user_files(root: Path, output_dir: Path, configuration: str, image: d
     consumer = output_dir / "UserFilesExport.lean"
     consumer.write_text(f'import Lemma.Compiler.KernelExport\n\n#lemma_export_user_files "{image["key"]}"\n')
     env = {**os.environ, "LEMMA_KERNEL_OUT": str(output_dir), "LEMMA_KERNEL_CONFIGURATION": configuration}
-    invoke(("lake", "env", "lean", str(consumer.relative_to(root))), root, env)
+    invoke(export_command(consumer.relative_to(root), source_root=root), root, env)
     _nonempty(output_dir / image["directory"], USER_IMAGE_FILES)
 
 
@@ -631,7 +635,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
             consumer.write_text(f"import {module}\nimport Lemma.Compiler.KernelExport\n\n"
                                 f'#lemma_export_unit "{role}" [' + ", ".join(name for name, _ in roots[role]) + "]\n")
             env = {**os.environ, "LEMMA_KERNEL_OUT": str(directory), "LEMMA_KERNEL_CONFIGURATION": configuration}
-            invoke(("lake", "env", "lean", str(consumer.relative_to(root))), root, env)
+            invoke(export_command(consumer.relative_to(root), source_root=root), root, env)
             _nonempty(directory, UNIT_FILES)
             units[role] = validate_unit(load_json(directory / "unit.json"), role, configuration=configuration)
             invoke(("opt", "-S", f"-passes={OPT_PASSES[opt_level]}", "program.ll", "-o", "program.opt.ll"), directory)
@@ -642,7 +646,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
         consumer = output_dir / "BootExport.lean"
         consumer.write_text("import Lemma.Compiler.KernelExport\n\n#lemma_export_boot_files\n")
         env = {**os.environ, "LEMMA_KERNEL_OUT": str(output_dir), "LEMMA_KERNEL_STAGE": stage, "LEMMA_KERNEL_CONFIGURATION": configuration}
-        invoke(("lake", "env", "lean", str(consumer.relative_to(root))), root, env)
+        invoke(export_command(consumer.relative_to(root), source_root=root), root, env)
         generated_files = list(MULTI_BOOT_FILES if images else BOOT_FILES)
         _nonempty(output_dir, generated_files)
         if images:
@@ -703,7 +707,8 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
                       "lean_source_realization": source_realization,
                       "stage": stage, "optimization": opt_level, "source_commit": commit, "dirty_paths": dirty,
                       **({"compiler_source_workspace": workspace} if workspace is not None else {}),
-                      "source_inputs": source_before, "target_module_closures": dependencies, "tools": versions,
+                      "source_inputs": source_before, "host_export_policy": export_host_policy(root),
+                      "target_module_closures": dependencies, "tools": versions,
                       "commands": commands, "generated_by_lean": generated_files,
                       "linked_inputs": linked_inputs, "artifacts": artifacts, "unit_contracts": unit_contracts}
         write_json(output_dir / "provenance.json", provenance)

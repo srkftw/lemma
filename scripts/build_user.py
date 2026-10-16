@@ -12,6 +12,7 @@ from build_kernel import (INDEPENDENT_IMAGE_KEYS, MULTI_CONFIGURATIONS, USER_IMA
                           export_user_files, export_user_image, link_user_image,
                           managed_policy, user_module_closure, user_artifact_category, realize_toolchain, source_inputs)
 from core0_common import Core0Error, repo_root, require_tools, sha256, write_json
+from lean_export_host import for_source as export_host_policy
 
 
 def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
@@ -59,6 +60,7 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
         if managed_policy(configuration) is not None:
             common.update(managed_policy=managed_policy(configuration), boot_role=image["boot_role"])
         provenance = {**common, "source_commit": commit, "dirty_paths": dirty, "source_inputs": before,
+                      "host_export_policy": export_host_policy(root),
                       "target_module_closures": {"users": {image_key: dependencies}}, "tools": versions, "commands": commands,
                       "generated_by_lean": ["user-image-catalog.json", *(f'{image["directory"]}/{name}' for name in USER_IMAGE_FILES)],
                       "linked_inputs": {"users": {image_key: [f'{image["directory"]}/startup.o', f'{image["directory"]}/program.o']}},
