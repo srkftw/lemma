@@ -3630,3 +3630,28 @@ mainCPU102.65s. Shared host observation only.40core0/473foundation/449kernel
 hosts pass. Full matched linked pair/legacy target/new candidate CI pending.
 New standalone export archive captures412sources before2fixture additions;
 new full pair must bind final current two-file change independently.
+
+
+Published3504185 actualCI38880227320 now terminalSUCCESS: all11jobs/111steps,
+zero skips/cancels. New compiler aec1956 remains local pending full matched
+linked audit/legacy/currentCI; do not infer from predecessor.
+Actual15 real partialwrite case a4 executes both independentcolds, guestFailed
+provisionalink and captured128/EFBIG at55808, no laterbarrier/Saved. The actor
+retainsFAIL because final export cold.raw collides with its actualcold backing.
+Passive independently bound observer-result underreal-partial-save-plan-a4
+PASS2.702564s: actualcoldReadyUART, full3.63Mpixels/all256MiB/seq24/all7objects/
+originalmediaunchanged and exactly128unackprefix. NoCPUrerun; originalfailed
+actor91.027904s/452000007functionalunits retainsfailure. Futuremaintainedexport
+label cold-recovered fixes onlythecollision. Earliera1runningELF identity,
+a2PathJSON and a3mappedPixman guard failures allbeforefault retained.
+ActualrunningELF298840d9 vslauncher97ab independently pinned including embedded
+wrapperpath/argv0/ancestry/startticks; fixedpreallocated/inode-mapped display
+surfaces explicitlyqualified withnoresize/unchangedsizes, capturegrowthguards
+retained. Separateoffline recordedguest suffixreal-partial-replay-a2 PASS
+26,000,004functionalunits/4.239391s, supervisor6.655666s/cleanup. Same public
+3raw+26run requests, same selected originallyrestoredReadycut; everyI/O request/
+outcome/completiontime/error, raw/UART/allpixels/allbacking exact; endpoint
+239000005. Nolivefault/originalmedium/peer suppliesreplayI/O. Replaya1mixed
+argv/requestparserFAIL beforemachine retained. This doesnotclose arbitrary
+cachedQEMU continuation orRTLfailedSave/physicalpowerloss. See existing
+006-fast-backing-replay.json and maintained conformance check_partial_write*.py.

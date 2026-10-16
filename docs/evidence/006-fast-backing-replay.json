@@ -204,5 +204,115 @@
     "Pending/poisoned external snapshots/export/restore still reject; arbitrary pending fork continuation remains open",
     "LMIOLOG2 lacks peer retry-ready transitions, so explicit companion retry controls are excluded from fast replay",
     "No RTL timing parity, USB, radio, product boot/update or fresh target compilation claim"
-  ]
+  ],
+  "notebook15_real_partial_write": {
+    "status": "PASS_RETAINED_GUEST_FAILED_SAVE_COLD_AND_ISOLATED_RECORDED_SUFFIX",
+    "identity": {
+      "backend": "qemu",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7",
+      "adapter": "lemmasim-fast-adapter/5",
+      "derivation": "7ae35b58ef6a976779394f1ee52edbc322345df4125ae646accfa97f422de745",
+      "guest": "ebbc3f19e96a64cc0de0d83f12b451c7b1dbcaaa6b4f496b86f6a1c949554ca6",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+      "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+      "icount_shift": 3
+    },
+    "actual_fault_case": {
+      "path": "build/courses/task006-real-partial-save-a4/result.json",
+      "sha256": "fa506c4f36527d0cbd9d9aca0caf3436661c5658be6147526e564f68a56d0673",
+      "status": "FAIL"
+    },
+    "passive_cold_qualification": {
+      "path": "build/courses/task006-real-partial-save-plan-a4/observer-result.json",
+      "sha256": "4e0cdc9ac9683a6b585aad606aa94565a085bc042e25cb1d9e00850dd22a66f1",
+      "status": "PASS_RETAINED_REAL_PARTIAL_PWRITE_FAILED_SAVE_COLD"
+    },
+    "replay": {
+      "path": "build/courses/task006-real-partial-replay-a2/result.json",
+      "sha256": "66e4688d1cd9d32e6d1f97270d5ac9e9e282231a879c1878ebbc2236425902c0",
+      "status": "PASS_RECORDED_REAL_PARTIAL_PWRITE_GUEST_SUFFIX"
+    },
+    "replay_supervision": {
+      "path": "build/courses/task006-real-partial-replay-supervision-a2/result.json",
+      "sha256": "1786279e47f70776498d9da55c33243fd8df0875a853521a5d0d84f42d4447d8",
+      "status": "PASS_RECORDED_PARTIAL_PWRITE_GUEST_SUFFIX_SUPERVISED"
+    },
+    "actual_fault": {
+      "outcome": [
+        [
+          114,
+          2212291604,
+          1,
+          55808,
+          512,
+          128,
+          27
+        ],
+        2212291604
+      ],
+      "observed_changed_prefix_bytes": 128,
+      "sequence": 24,
+      "objects_unchanged": 7,
+      "guest_failed": [
+        [
+          1060,
+          227,
+          1,
+          1,
+          65561
+        ]
+      ],
+      "guest_saved_after_fault": false,
+      "medium_sha256": "0611b5da6a16f2bad5d0bd5918e2325851dcfbdfd255784b2e21053ff1cc69a9"
+    },
+    "functional_units": 452000007,
+    "actual_actor_seconds": 91.02790396497585,
+    "cold_all_pixels": 3630000,
+    "cold_all_medium_bytes": 268435456,
+    "sequence": 24,
+    "objects": 7,
+    "replay_units": 26000004,
+    "replay_seconds": 4.239391493028961,
+    "replay_supervised_seconds": 6.655666403006762,
+    "replay_peak_owned_rss_bytes": 505651200,
+    "original_plan": "build/courses/task006-real-partial-save-plan-a4/plan.json",
+    "bounds": "900s/3B aggregate,1B per independentcold,300M combined actualfault+completeFailedpixels,4GiBRSS/2GiBavailable floor/8GiB outputs; replay300s/100M/4GiB. No cap extended.",
+    "observed_relation": "Actual OS RLIMIT_FSIZE55936 produces128bytepwrite prefix at55808 thenEFBIG27; guest Failed/provisional ink, noSaved/laterbarrier. Independent CPUcold Ready preserves original2strokes/workspace/history/allpixels/allbytes with unacknowledged partial header retained. Replay identical public raw/run requests from selected originally restored Ready cut, exact accepted request/completion tape/error/time/raw/UART/pixels/allbacking and finalcycle239000005. No originalmedium/peer supplied to replayadapter.",
+    "observer_repair": "a4 remainsFAIL because cold.raw export collided with actualnewCPU backing. Passive2.702564s observer binds sessionargv to retained cold.raw then validates alloriginalpostconditions without rerunningCPU. Maintained futureexport label only fixed to cold-recovered.",
+    "ownership": "Running executable298840d9 differs from packaged launcher97ab. Both pinned independently; launcher embeds actualNixwrapped target; argv0/descendant/startticks/secondprelimitidentity retained. Only exactfixed984k/14.52MB named/inode/rw-shared Pixman surfaces exempt from file-growth guard; no resizing, allsizes unchanged.",
+    "source_scope": "Same existing genuine15ebbc RV64image, no fresh compilation or target policy change. Host fault/observer tooling only. Selected suffix does not qualify arbitrary cached-QEMU state, exactRTL failed Save or physical powerloss.",
+    "retained_observer_failures": [
+      {
+        "path": "build/courses/task006-real-partial-save-a1/result.json",
+        "sha256": "3b3726ea15f6882daeb27b6708b96095bfe72791c836292e1e33944398f0f87d",
+        "status": "FAIL"
+      },
+      {
+        "path": "build/courses/task006-real-partial-save-a3/result.json",
+        "sha256": "87d901d6efc248bbe737546f6f680d7ebf710e475a0e5f4d18890464d167cd73",
+        "status": "FAIL"
+      },
+      {
+        "path": "build/courses/task006-real-partial-save-a4/result.json",
+        "sha256": "fa506c4f36527d0cbd9d9aca0caf3436661c5658be6147526e564f68a56d0673",
+        "status": "FAIL"
+      },
+      {
+        "path": "build/courses/task006-real-partial-save-supervision-a2/result.json",
+        "sha256": "9c93d4e387f09519e86e0d367e0923c0b9646900dd739e90e61c93db0a1319d4",
+        "status": "FAIL"
+      },
+      {
+        "path": "build/courses/task006-real-partial-replay-a1/result.json",
+        "sha256": "8077dfa48db67452e8025e93d6dd678d06ee1ad470d8d194d4fb3d3d192262f1",
+        "status": "FAIL"
+      }
+    ],
+    "commands": [
+      "nix develop --no-write-lock-file --command python3 conformance/lemmasim/check_partial_write_save.py --disk build/courses/task006-keypad-repaint-fast-a1/overdraw-closed.raw --reference-pixels build/browser/task006-pad15-index-cold-plan-a1/cold-expected.ppm --native-bundle build/native/task006-number-pad-repaint-notebook-a1 --backend-executable /nix/store/b16yg2x2wyjblw63x5kln24z9n6m2s2r-lemmasim-qemu-raw-uart-v1-11.1.1/bin/.qemu-system-riscv64-wrapped --backend-executable-sha256 298840d9388c59ba93050f0fa9d4be905619b2d1cc5e14bc044ad6a2a7731090 --work-dir build/UNUSED_PARTIAL_SAVE --deadline 900",
+      "nix develop --no-write-lock-file --command python3 conformance/lemmasim/check_partial_write_replay.py --source-case build/courses/task006-real-partial-save-a4 --source-observer build/courses/task006-real-partial-save-plan-a4/observer-result.json --native-bundle build/native/task006-number-pad-repaint-notebook-a1 --work-dir build/UNUSED_PARTIAL_REPLAY --deadline 300"
+    ]
+  }
 }

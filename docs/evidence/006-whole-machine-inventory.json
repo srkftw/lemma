@@ -1019,17 +1019,15 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "path": "build/ci/task006-9c25-complete.json",
-    "sha256": "2b30fcdc34d7cdf484d2ff105bd14c5e7eb9e5fe984b40a5ea97d2d69e452850",
-    "status": "completed",
-    "commit": "9c25d949c5d6c1d1753611cbc33f5287f41a5970",
-    "run_id": 38873521466,
-    "url": "https://github.com/srkftw/lemma/actions/runs/38873521466",
-    "conclusion": "success",
+    "commit": "3504185cb9915a9fcc6432b83feee985885cb826",
+    "run": 38880227320,
+    "status": "COMPLETED_SUCCESS",
     "jobs_success": 11,
     "steps_success": 111,
     "skipped": 0,
-    "scope": "Exact published compiler candidate. Original CI failures retained separately; no full-machine or physical closure."
+    "evidence": "build/ci/task006-350-complete.json",
+    "url": "https://github.com/srkftw/lemma/actions/runs/38880227320",
+    "scope": "Published350 hostruntime candidate; localaec compiler/fullpair/currentCI stillpending."
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1212,5 +1210,10 @@
     "rtl_clocks": 3357000000,
     "host_seconds": 16586.544859546004,
     "scope": "Canonical0.3 fullresolution/capacity; actual guest service mathematics and retained notebook. Unsuccessful Save remains separately qualified, not inferred here; later15 runtime/browser and unfinishedG2/G4-G7 remain open."
+  },
+  "notebook15_real_partial_io_milestone": {
+    "evidence": "docs/evidence/006-fast-backing-replay.json",
+    "status": "PASS_ACTUAL_PARTIAL_WRITE_GUEST_FAILED_SAVE_COLD_RECORDED_SUFFIX",
+    "scope": "Real128/EFBIG actualLinux failure, guestFailed/provisionalink, prioracknowledgedrecords preserved and isolated tape replay exact. Originalobserverfailures retained. No arbitrarycachedstate/RTLtiming/physicalpowerloss claim."
   }
 }
