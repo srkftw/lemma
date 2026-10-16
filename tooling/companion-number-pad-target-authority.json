@@ -1,0 +1,17 @@
+{
+  "schema": "lemma-companion-number-entry-artifact/1",
+  "package_notebook_version": 16,
+  "predecessors": {
+    "canonical15": "fe7dcc4f8ad6a0f544dd6d3663e5ce3078d66051d970601e510248ea1e474586",
+    "companion11": "6e9d67dc1075518b52f7ec47c6ac4202ac361493ed8017c64182b5a867d1953c"
+  },
+  "catalog_sha256_by_configuration": {
+    "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "2d709f839befd8c587cf26c35816fbbb24264d352eee889c2e0f8f88e27be050",
+    "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "c3e16294ba53ec624085f1caeb8409a579969cc22e9aa259f4c3f4d518fdff92"
+  },
+  "pre_function_count": 910,
+  "pre_sha256": "0684a344bf9867d1ebf363bc6ab8be81be1d1875f4f844c731805ede73b34ba3",
+  "post_function_count": 908,
+  "post_sha256": "a2ba235da85f2dba048879491fab20580766d5c3cc3b639bb060dcf7a4ce915e",
+  "character_machine_sha256": "f708bdf8245fa4b9f217d3e7c7eaf283cfa340b9789f6e09c3424eaf63b306df"
+}

@@ -4477,4 +4477,129 @@ def mainPackageNumberPad (bootArgument : UInt64) : Action :=
   if statusFailed s = true then .done s 0 else .loop numericStep
 
 
+/-! Number-pad recovery successor. The existing recovery4 publication and
+receipt reconciliation remain authoritative; healthy input uses the same15
+number pad. Failed/unreconciled saves retain the bounded offline ink policy.
+Historical normal and recovery roots retain their bodies. -/
+private def numericRecoverableInputSample : Action :=
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  .bind (get 648) fun s retained => if statusFailed s = true then .done s 0 else
+  if status < 2 then if retained = 0 then numericInputSample else retainedInput
+  else retainedInput
+where
+  retainedInput : Action :=
+    -- Retained recovery admits offline ink and explicit Save only. Any such
+    -- sample conservatively marks the pad before the original guarded path.
+    .bind numericMarkPadOverdraw fun s _ => if statusFailed s = true then .done s 0 else
+    packageRetainedInputSample
+
+private def drainNumericRecoverableInput (input : UInt64) : Action :=
+  .boundedFoldU64 8 drainStep 8 0 input 0 0 0 fun s consumed =>
+    if s = Status.iterationStop then .done 0 consumed else .done s consumed
+where
+  drainStep (_ _ : UInt32) (consumed input _ _ _ : UInt64) : Action :=
+    .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
+    .bind (get 648) fun s retained => if statusFailed s = true then .done s consumed else
+    if (if count = 384 then if retained = 0 then (1 : UInt64) else 0 else 0) = 1 then .done Status.iterationStop consumed else
+    .bind (Syscall.call 65 input 1 raw 0 0) fun s _ =>
+    if s = 174 then .done Status.iterationStop consumed else
+    if s = 175 then
+      .bind retryCancelInput fun s _ =>
+      if statusFailed s = true then .done s consumed else .done Status.iterationStop consumed
+    else if statusFailed s = true then .done s consumed else
+    .bind numericRecoverableInputSample fun s _ => if statusFailed s = true then .done s consumed else
+    .bind (get 104) fun s active => if statusFailed s = true then .done s consumed else
+    if active = 0 then .done Status.iterationStop (consumed + 1) else
+    .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
+    if count = 384 then .done Status.iterationStop (consumed + 1) else
+    .done 0 (consumed + 1)
+
+private def numericRecoverableStep : Action :=
+  .bind packageRecoverablePumpSave fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 648) fun s retained => if statusFailed s = true then .done s 0 else
+  .bind (if retained = 0 then pumpPackageArithmetic else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if retained = 0 then pumpPackageWork else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if retained = 0 then numericPumpCancelledRedraw else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if retained = 0 then numericPumpPad else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+  .bind (get 664) fun s overflow => if statusFailed s = true then .done s 0 else
+  .bind (if overflow = 1 then .done 0 0 else if retained = 1 then .done 0 0 else if count = 384 then enqueue else if active = 0 then enqueue else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  if (if count = 384 then if retained = 0 then (1 : UInt64) else 0 else 0) = 1 then Syscall.sleep 10000 else
+  .bind (get 8) fun s input => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  .bind (if retained = 0 then packageBusy else .done 0 0) fun s work => if statusFailed s = true then .done s 0 else
+  if (if work = 0 then if checking = 0 then if pending = 0 then if recovery = 0 then if dirtyX = 0xffff then true else false else false else false else false else false) = true then
+    .bind (Syscall.call 65 input 2 raw 0 0) fun s _ =>
+    if s = 175 then retryCancelInput else if s = 174 then Syscall.sleep 10000 else
+    if statusFailed s = true then .done s 0 else numericRecoverableInputSample
+  else .bind (drainNumericRecoverableInput input) fun s consumed =>
+    if statusFailed s = true then .done s 0 else
+    if consumed = 0 then Syscall.sleep 10000 else .done 0 consumed
+
+def mainRecoverablePackageNumberPad (bootArgument : UInt64) : Action :=
+  if (if bootArgument = 2 then (1 : UInt64) else if bootArgument = 3 then 1 else 0) = 0 then failed else
+  .boundedFoldU64 96 clearStep 96 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 592 Lemma.Notebook.RetryWorkspacePolicy.version) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 packageAllocationAddress 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 576 7) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 584 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 0) fun s surface => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 1) fun s input => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 2) fun s documents => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 3) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (put 0 surface) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 8 input) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 16 documents) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 24 console) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if 2 ≤ bootArgument then Capability.bootGrant 5 else .done 0 0) fun s arithmetic => if statusFailed s = true then .done s 0 else
+  .bind (put 528 arithmetic) fun s _ => if statusFailed s = true then .done s 0 else
+  if bootArgument = 3 then
+    .bind waitForMount fun s _ => if statusFailed s = true then .done s 0 else initializeMedium
+  else
+  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.PackageAwaitClient.call documents outgoing incoming 1 0 request) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Services.Store.Client.responseField incoming 40) fun s floor => if statusFailed s = true then .done s 0 else
+  .bind (put 128 floor) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.geometry surface) fun s geometry => if statusFailed s = true then .done s 0 else
+  let width := geometry &&& 0xffffffff
+  let height := geometry >>> 32
+  if width < 832 then failed else if 4096 < width then failed else
+  if height < 760 then failed else if 4096 < height then failed else
+  .bind (put 32 width) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 40 height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 3 0 0 0) fun s maxX => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 4 0 0 0) fun s maxY => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 0 0 0 0) fun s pressure => if statusFailed s = true then .done s 0 else
+  .bind (put 48 maxX) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 56 maxY) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 64 pressure) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 80 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 120 ink0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 272 512) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 336 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 344 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 41 allocateStep 41 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind Surface.allocateBulk fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.allocate width height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (loadNotebook 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 128) fun s floor => if statusFailed s = true then .done s 0 else
+  .bind (put 672 floor) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 416) fun s create => if statusFailed s = true then .done s 0 else
+  .bind (if create = 1 then savePage 1 else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
+  if statusFailed s = true then .done s 0 else .loop numericRecoverableStep
+
+
+
+
 end Lemma.Applications.Notebook

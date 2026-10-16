@@ -465,6 +465,14 @@ def packageRecoveryNotebookImages : Array UserImageSpec := #[
     root := `Lemma.Applications.Notebook.mainRecoverablePackageClosureBulk, bootRole? := some .notebook},
   closureNotebookImages[2]!, courseAwaitNotebookImages[3]!]
 
+/-- Recovery successor16 joins the existing recoverable Store policy with
+ordinary bounded number entry. Historical recovery image specs remain above. -/
+def packageRecoveryNumberPadNotebookImages : Array UserImageSpec := #[
+  packageRecoveryNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainRecoverablePackageNumberPad, bootRole? := some .notebook},
+  packageRecoveryNotebookImages[2]!, packageRecoveryNotebookImages[3]!]
+
 /-- Ordinary store/notebook specifications are byte-for-byte the selected
 production peers; only this closed deployment admits the third User fixture. -/
 def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
@@ -481,7 +489,7 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if isUSBPackageRecoveryNotebookConfiguration configuration then .ok packageRecoveryNotebookImages
+  if isUSBPackageRecoveryNotebookConfiguration configuration then .ok packageRecoveryNumberPadNotebookImages
   else if isPackageClosureNotebookConfiguration configuration then .ok packageNumberPadNotebookImages
   else if isUSBClosureRecoveryNotebookConfiguration configuration then .ok closureRecoveryNotebookImages
   else if isUSBRecoveryNotebookConfiguration configuration then .ok recoveryNotebookImages

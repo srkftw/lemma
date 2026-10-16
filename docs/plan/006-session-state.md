@@ -3699,3 +3699,82 @@ checks and actual817 normal/init oldcommandcorpora PASS.454kernel/473foundation/
 40core0/299lemmasim/18scaffold hostchecks pass (counts/log identities separate).
 New wholecompile/audits/resourcequalification stillpending. Alltarget language,
 LLVM/runtime/link andtiming semantics remainunchanged. Contract006-lean-export-host-v1.
+
+Published3f67a04 hostpolicy1 fullmatched15 qualification is now complete:
+whole918.814559s/supervisor924.099600s/1,938,644,992B peak,413source/current/
+archive/HEAD/index/ownedcleanup PASS. Allsixunits' four emittedfiles andboth
+ELFs exactlymatch817 qualified15. Independent exact `.lean-wrapped` sidecar
+observes5OSthreads; originalsupervisor's0 ispreserved observermismatch.
+3f actualCI38890500531 latesttenjobsSUCCESS/notebookjobRUNNING;817 actual
+CI38886767596 terminal11jobs/all111stepsSUCCESS/no skips. DraftPR9 updated3f;
+unmerged, noPR9 mergeauthorization inferred from oldPR8.
+
+Joinedcompanion16 is local newwork, not finished connectedacceptance. Ordinary
+Lean `mainRecoverablePackageNumberPad` combines existing15 numericinput/pad
+repair with original recovery4 receipt/retained-source machinery. Allhistorical
+roots preserved. Actual imported Actionfixture passes healthy/busy path and
+retained rawpress/release/raster/all9fields; pinnedfailedpayload/document/history
+unchanged, storage/checkerIPC andSaved rejected; markerfault/fullbuffer checked.
+Genuinebothnormal/init component a2PASS270.831474s (supervised276.837508s),
+910pre/908post functions/wholecatalog/body/global/callercorpora andtypedunit
+checksPASS. Onlytwo previouslyvalidatedSurface callbacks elided. Newexact
+RV64characterowner derivedfromactual16 assembly; unchanged table/cell guards
+remain required. Fullfresh linkednormal/init audits running at
+build/courses/task006-companion-number-pad16-whole-a1, session71290;
+415sources+HEAD/index held through2500s/300percommand/8GiBAS/4GiBownedRSS/
+12GiBoutputs andownedcleanup. Do noteditconsumed source/stage/commit duringhold.
+Tests/docs outside415inventory allowed. USB/peer/new16nativebundle acceptance
+NOT_RUN untilfullaudits; no coldresult inherited from failedoldSaved12campaign.
+
+Original16componenta1 FAILbeforeexport(-6threadcreation), retained. Diagnostic
+a1 provedworker2env andliteralchild-j2 present, VmSizeapproaches8GiBcap.
+Pinnedruntime defaults1GiBperthread. Diagnostic a2 changesonlydocumented
+LEAN_STACK_SIZE_KB=65536, sameresourcecaps, dependencybuildPASS10.923931s;
+Lake peakVmSize8,142,852,096→3,244,695,552B. Hostpolicy2 nowrecords/appliesexact
+worker/stackenv onallLakebuild/exportcommands. Exactv1helperhash andprehelper
+archives retainoldpolicy/commands; unknownhelper/policy/env rejects. No target
+stack/language/runtime/LLVM/timingchange.459kernelhostPASS11.110s, new actual
+ActionfixturePASS; fullversion2/16artifacts stillrunning. Seecontractv2 and
+existing006-number-entry-v1 evidence; no newcompeting completionroadmap.
+
+Browsernew15/indexruntime actualindependentcold nowPASS582.7M/4891.233835s/
+192MiB: all3.63Mpixels/all256MiB/all7objects/seq24 and113exactREADoutcomes.
+Ownerpad15-index-cold-plan-a1; original1B/7200bounds retained. Threeactual
+courseopens/reopens continueoriginal400M/3600 perphase (tabs31/32/33), idle2
+absolute13:47:22.617578Z unchanged. New15 fullmath/ink/replay/secondcold pending.
+
+Joined16 fullpair nowPASS833.365063s; supervisor839.304754s/1,922,629,632B peak/
+415source/current/archive/HEAD/index/cleanup,5actualLeanthreads, nokilled/
+survivors. Originalhold RELEASED. Normal189.366401s/audit260.706514s,765448B/
+6c331985; init145.903680s/audit237.032822s,765456B/6b10ebce. Bothnotebook units
+matchgenuine16component exactly. Threeactual genuine-inputnegatives pass:
+validLLVM reversal ofretained guard, lostpadmarker, wrongcanonicalroot allreject.
+Native13schema9 bundle nowprepared415sources/877files at
+build/native/task006-companion-number-pad16-a1. Exactold6cbdruntime/source64d
+androle-specific strictguestarchives are explicit, not claimed currentruntime.
+Wrong1613nativearchive andbarewhole-source archive lackingstrictsidecar both
+failedbeforeCPU, retainedlogs. Correctexact64d/source andcomplete415files
+withactualperrole provenance/build/image sidecars pass ordinaryadmission.
+No guestCPU/peer16result yet. Actual3fCI38890500531 nowSUCCESS all11jobs/111steps,
+zero skips/cancels; savedbuild/ci/task006-3f-complete.json, PR9 updated/unmerged.
+
+Browser13 pointer/cold/course nowPASS entire3.63Mpixel plane/all256MiB/seq25/
+workspace/5checks/hint/history at951.1M afteroriginal400Mreopen. Originalobserver
+FAIL retained: priorinkSavedPPMstillPENDINGfooter, whileindependentcold/reopen
+correctlySAVED; exactly522pixels[x24..104,y132..146]. Independentexistingfont
+andcompiledstatusCharacter verifybothlabels. Correctedobservera2 usespredeclared
+SAVEDcoldexpected top160rows +originalcourse-plus-dotexpectedrest; noactual
+newpixelinput/oraclemask/CPUrerun. Result22.747430s ispassiveobserverduration,
+NOTinteractionlatency. New15/indexcourse alsoPASS allpixels/media/history at
+843.7M (261Mafter582.7Mcold, original400M/3600). Actualidle/WFI/3completepanels
+boundary stoppedearly; no boundenlargement. PredeclaredBACK30523/10133rows
+admitted2events atsame843.7M; actual200M/2400numericphase nowrunning, starting
+publichost7522.391735s/sim6774.894005s,192MiB. NeedactualSave/doc9/5over6Unchecked
+beforeCHECK, thenordinarypointerink/private32M/secondcold. Original4B/28800 caps.
+
+Idle2 originalreopen FAIL at970.35M/400M; noextension. ActualIndeterminate5/7/
+rev17/budget0/history/allbacking37 preserved, butcurrentUnknownsourcebinding
+causesexistingfinishOpenPackageCourse fallbacknode1, originalexpectednode3.
+Originalnode3 bodypriorinkref wasalsoPENDINGfooter. This doesnotloseoldproof/
+learnerhistory, butindependent durable browsingposition remains missing; do not
+relabel aspassednode3 recovery. Tab31nowpaused beforeoriginal13:47deadline.

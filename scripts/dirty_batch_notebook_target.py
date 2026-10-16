@@ -92,6 +92,8 @@ def numeric_candidate(unit):
  if not isinstance(rows,list)or any(not isinstance(r,dict)or not isinstance(r.get('source'),str)for r in rows):raise Core0Error('Number entry candidate function map malformed')
  return any(canonical(r['source'])==NUMERIC_ROOT or canonical(r['source']).startswith(('Lemma.Courses.NumberPad.','Lemma.Documents.MathematicsEntry.'))for r in rows)
 def numeric_contract(unit):
+ from companion_number_pad_target import candidate as recovery_candidate, contract as recovery_contract
+ if recovery_candidate(unit):return recovery_contract(unit)
  if not numeric_candidate(unit):return None
  if unit.get('configuration')not in NUMERIC_CONFIGURATIONS or unit.get('role')!='user'or unit.get('image_key')!='notebook'or unit.get('image_id')!=2 or unit.get('contract_version')!='core0-user-v0.2' or unit.get('used_device_ops')!=[] or unit.get('software_deployment')!=NUMERIC_SOFTWARE:raise Core0Error('Number entry escaped exact canonical Notebook deployment')
  if [{k:r.get(k)for k in ('source','id','args')}for r in unit.get('roots',[])]!=[{'source':NUMERIC_ROOT,'id':1,'args':['u64']}]:raise Core0Error('Number entry root/ABI differs')
@@ -145,6 +147,8 @@ def numeric_semantics(ir,unit):
  return {'ordinary_guest_entry_and_storage_connected':True,'numeric_bounds':'0..99; overflow is unchanged bytes, explicit limit message','scope':'Complete source/IR authority; CPU/Store/controller qualification separate'}
 
 def numeric_validate(ir,unit,*,optimized):
+ from companion_number_pad_target import candidate as recovery_candidate, validate as recovery_validate
+ if recovery_candidate(unit):return recovery_validate(ir,unit,optimized=optimized)
  found=numeric_contract(unit)
  if found is None:return None
  _,w=found

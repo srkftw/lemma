@@ -684,7 +684,17 @@
       "full_pixels": 3630000,
       "all_backing_bytes": 268435456,
       "read_outcomes_exact": 119,
-      "reopen": "RUNNING original400M/3600s; actual coldCPU fromsameOPFS backing, no snapshot as cold input. Full revision/source/history course display qualification pending."
+      "reopen": {
+        "path": "build/browser/task006-number-entry-pointer-cold-plan-a1/reopen-result-a2.json",
+        "sha256": "82c8d8c92f735c612b09baf91a189ed8bf8468265f66182d7b1c779feb1523a2",
+        "status": "PASS_BROWSER_COLD_COURSE_REOPEN_ALL_PIXELS_BYTES_HISTORY",
+        "original_failed_observer": {
+          "path": "build/browser/task006-number-entry-pointer-cold-plan-a1/reopen-result.json",
+          "sha256": "a218596cd522b23f6fea261a5bd44b5fa09cc3e4b16c7a997abad612edd5481c",
+          "status": "FAIL"
+        },
+        "scope": "All3.63Mpixels andall256MiB/ackseq25/fullworkspace/history, no newcheck/save. Original reference held PENDING footer despitepriorack; independentcorrected expectation uses predeclared SAVEDcold toolbar+predeclaredcourse/ink body, noCPUrerun/ignoredpixels."
+      }
     }
   },
   "browser_actual_indeterminate": {
@@ -747,17 +757,16 @@
     }
   },
   "latest_candidate_ci": {
-    "path": "build/ci/task006-9c25-complete.json",
-    "sha256": "2b30fcdc34d7cdf484d2ff105bd14c5e7eb9e5fe984b40a5ea97d2d69e452850",
-    "status": "completed",
-    "commit": "9c25d949c5d6c1d1753611cbc33f5287f41a5970",
-    "run_id": 38873521466,
-    "url": "https://github.com/srkftw/lemma/actions/runs/38873521466",
-    "conclusion": "success",
-    "jobs_success": 11,
-    "steps_success": 111,
+    "path": "build/ci/task006-3f-complete.json",
+    "sha256": "6a909646d266eaead819338b7d664e28b1a1e3f5ffecd714e752e4d2fa5d8f24",
+    "status": "SUCCESS",
+    "head": "3f67a0435b22e342d748d4c76fa3e2b3433d32e1",
+    "run_id": 38890500531,
+    "jobs": 11,
+    "steps": 111,
     "skipped": 0,
-    "scope": "Exact published compiler candidate. Original CI failures retained separately; no full-machine or physical closure."
+    "cancelled": 0,
+    "scope": "Published predecessor3f only; new local16/hostpolicy2 candidateCI notyetstarted."
   },
   "canonical_rtl_number_entry": {
     "actor": {
@@ -938,5 +947,145 @@
     "owned_peak_rss_bytes": 1924005888,
     "same_normal_and_initializer_ELFs_as_prior": true,
     "scope": "Complete source/HEAD/index seals and cleanup PASS. Normal222.848938s/audit324.158213s, init181.598697s/audit245.519318s. Whole974.440231s versus preceding906.098108s is slower under shared host load; single-export183.581\u2192104.147s component result is separate, no whole-build speedup claimed. Original300s is each subprocess limit, not whole audit duration. New hostworkerpolicy remains separate pending source successor."
+  },
+  "host_export_policy1_qualification": {
+    "status": "PASS_FULL_MATCHED15_SOURCE_RESOURCES_OWNED_CLEANUP",
+    "implementation_commit": "3f67a0435b22e342d748d4c76fa3e2b3433d32e1",
+    "whole": {
+      "path": "build/courses/task006-lean-export-policy-whole-a1/result.json",
+      "sha256": "a6bc20cd663bed85844d80ae3d2ab857c5e3330ca03e787ef3315e5a265bac36",
+      "status": "PASS_FRESH_HOST_EXPORT_POLICY_PAIR_FULL_AUDIT"
+    },
+    "supervision": {
+      "path": "build/courses/task006-lean-export-policy-whole-supervision-a1/result.json",
+      "sha256": "c8fc01b7a2330d0c6bc4a306058a12b4d20902113e636810e4fee50502b3ddaf",
+      "status": "PASS_FRESH_HOST_EXPORT_POLICY_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP"
+    },
+    "threads": {
+      "path": "build/courses/task006-lean-export-policy-whole-a1/thread-observation.json",
+      "sha256": "d54aeb343116a85c2e721e884302b9d1c662711499d04055f93a36eb8b64566b",
+      "status": "OBSERVED_OWNED_PINNED_LEAN_EXPLICIT_J2_THREAD_COUNTS"
+    },
+    "source_count": 413,
+    "whole_seconds": 918.8145586,
+    "supervised_seconds": 924.099600173,
+    "owned_peak_rss_bytes": 1938644992,
+    "source_seal": "PASS complete current/archive/HEAD/index/cleanup; no owned survivors",
+    "same_six_unit_emissions_and_both_ELFs": true,
+    "scope": "Host worker policy only; byte-bound reuse of preceding actual15 guest execution. No new target language/ISA/device or fast timing claim. Original supervisor threadcount0 retained; independent exact-executable sidecar observes5OSthreads."
+  },
+  "companion_number_entry16_candidate": {
+    "status": "GENUINE_BOTH_LINKED_ROOTS_FULL_AUDITS_SOURCE_RESOURCES_AND_NATIVE_PREPARATION_PASS_CONNECTED_PENDING",
+    "behavior": "Joins existing15 numeric entry/rendering to recovery4 lost-receipt policy. Healthy input uses numeric Actions; Failed/unreconciled contact remains bounded provisional raw ink and conservative pad invalidation; no mathematical mutation or Saved before reconciliation. Original roots preserved.",
+    "component": {
+      "path": "build/courses/task006-companion-number-pad16-a2/component-result.json",
+      "sha256": "1d4b5c52c8d7931c45fd569ba9945331b7928518afa952c1445d4ac9b25937e5",
+      "status": "GENUINE_LEAN_EXPORT_LLVM_VERIFY_CODEGEN_COMPLETE_ARTIFACT_AUDIT_PENDING"
+    },
+    "supervision": {
+      "path": "build/courses/task006-companion-number-pad16-component-supervision-a2/result.json",
+      "sha256": "abdeb3bd38769526bfd5238ffdbdb0f5bbb164459dc81527e0c40545a06fe9da",
+      "status": "GENUINE_RECOVERY16_EXPORTS_LLVM_CODEGEN_SUPERVISED_AUDIT_PENDING"
+    },
+    "authority_observer": {
+      "path": "build/courses/task006-companion-number-pad16-a2/authority-observation.json",
+      "sha256": "75a15b77cc85a5b21900398e3783d130ea14c844d6fdbe6a13e3fcf325368a8a",
+      "status": "ACTUAL_GENUINE_COMPONENT_AUTHORITY_CAPTURED_FULL_IMAGE_AUDIT_PENDING"
+    },
+    "genuine_pre_post_functions": [
+      910,
+      908
+    ],
+    "component_seconds": 270.831473954,
+    "host_tests": "459kernel PASS11.110s; actual imported joined Action fixture PASS; complete both pre/post/catalog validators PASS",
+    "authority": "tooling/companion-number-pad-target-authority.json",
+    "full_pair": {
+      "path": "build/courses/task006-companion-number-pad16-whole-a1/result.json",
+      "sha256": "79c0228159c1c026d82434a0ec91d144b39a582e3c6858a9039ad2c662b25214",
+      "status": "PASS_FRESH_RECOVERY16_PAIR_FULL_AUDIT"
+    },
+    "guest_RV64_USB_peer": "NOT_RUN new16",
+    "distribution": {
+      "native_bundle": "build/native/task006-companion-number-pad16-a1",
+      "native_bundle_sha256": "60504036dda9b764cefa2fa985de88c852c3d14277d4ed8a2e0c4db111d5cf14",
+      "schema": "lemmasim-native-bundle/9",
+      "profile": "lemma-silicon-dev/0.13.0",
+      "files": 877,
+      "source_count": 415,
+      "runtime": "6cbd9cad4b208909aefe62e151a83fb02c3042a2b1b3efa86c8594b681159e63",
+      "runtime_source_archive": "build/usb/native64d-original-source-a1/consumed-source-root",
+      "guest_archives": "build/usb/task006-companion-number-pad16-guest-archives-a1/{notebook,initializer}/source",
+      "scope": "Actual strict preparation and role/runtime admission pass; connectedCPU/peer and universal packaging remain pending. Earlier wrong native archive and missing role-specific strict sidecars failed beforeCPU and remain in prepare logs."
+    },
+    "physical": "UNVERIFIED",
+    "original_failure": {
+      "path": "build/courses/task006-companion-number-pad16-a1/component-result.json",
+      "sha256": "7dab9927f144a3dbdb4fa79db0aa0a3168c72a63a58c73c5e4b0822782d611cc",
+      "status": "FAIL"
+    },
+    "thread_diagnostics": [
+      {
+        "path": "build/courses/task006-companion-number-pad16-thread-diagnostic-a1/result.json",
+        "sha256": "82b0c3e3fbe8566664d02d3775eb66ccaa70b23147e79ac589de6b81362bbb5b",
+        "status": "OBSERVED_VERBOSE_BUILD_COMMANDS_AND_OWNED_THREADS"
+      },
+      {
+        "path": "build/courses/task006-companion-number-pad16-thread-diagnostic-a2/result.json",
+        "sha256": "fb602768c0417af9cb8879f58855bdfc42306e2231ded7c597dfb43817f2e0ce",
+        "status": "OBSERVED_VERBOSE_BUILD_COMMANDS_AND_OWNED_THREADS"
+      }
+    ],
+    "host_fix": "docs/contracts/006-lean-export-host-v2.md; documented64MiBhoststackreservation under unchanged8GiBAS/4GiBownedRSS. Originaldefault-stack failure retained.",
+    "whole_supervision": {
+      "path": "build/courses/task006-companion-number-pad16-whole-supervision-a1/result.json",
+      "sha256": "660f89cbf25128e0c97dc7ad725c769f00550b6fb65086c990f916d93392f832",
+      "status": "PASS_FRESH_RECOVERY16_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP"
+    },
+    "full_pair_seconds": 833.365063229,
+    "supervised_seconds": 839.304753519,
+    "owned_peak_rss_bytes": 1922629632,
+    "source_count": 415,
+    "source_seal": "PASS complete current/archive/HEAD/index; hold released, no killed/surviving owned processes",
+    "normal": {
+      "path": "build/kernel/task006-companion-number-pad16-notebook-a1",
+      "bytes": 765448,
+      "sha256": "6c331985bff84a7d3ef7d2a61b12b37d475b328b4cb0b8ad3d2ac527689957cd"
+    },
+    "initializer": {
+      "path": "build/kernel/task006-companion-number-pad16-initializer-a1",
+      "bytes": 765456,
+      "sha256": "6b10ebce3881a0238fe893b36f44252f4bcd3319e12a45a0f797cd362d1c14b1"
+    },
+    "actual_artifact_negatives": {
+      "path": "build/courses/task006-companion-number-pad16-artifact-negatives-a1/result.json",
+      "sha256": "878b268be5e0691e5e7f1acafa9a460271110796602eb471ecac3c06cbc0b468",
+      "status": "PASS_ACTUAL_GENUINE16_VALID_LLVM_AND_ROOT_MUTANTS_REJECTED"
+    }
+  },
+  "browser_pad15_index_runtime_cold": {
+    "path": "build/browser/task006-pad15-index-cold-plan-a1/cold-result.json",
+    "sha256": "cf60c781c19ae79793c8d99fd56b54ae022a4c4a5b2739aba8acb08f189fba5a",
+    "status": "PASS_BROWSER_COLD_AFTER_ACTUAL_ACKNOWLEDGED_RAW_INK",
+    "cold_cycles": 582700000,
+    "host_seconds": 4891.233835,
+    "heap_bytes": 201326592,
+    "read_outcomes": 113,
+    "scope": "Actual new CPU0 from opaque acknowledged sequence24 medium, all3.63Mpixels/all256MiB/all7objects. New15/index runtime identity c53d4f6a. Course, numeric/check/ink/private replay and secondcold remain pending; firstcold is not fullworkflow.",
+    "course_reopen": {
+      "path": "build/browser/task006-pad15-index-cold-plan-a1/reopen-result.json",
+      "sha256": "73e80d1ce7c11fed342f2baa596e8f8209e323e0fa6a3b9f74efec7229e7d185",
+      "status": "PASS_BROWSER_COLD_COURSE_REOPEN_ALL_PIXELS_BYTES_HISTORY",
+      "cycle": 843700000,
+      "clocks": 261000000,
+      "scope": "Stopped at observed idle within original400M/3600s; everycontrollerpixel/mediumbyte/source/history exact. NextBACK queued and200M/2400phase running; CHECK/ink/private replay/newcold pending."
+    }
+  },
+  "browser_idle2_reopen_terminal": {
+    "path": "build/browser/task006-idle2-pointer-cold-plan-a1/reopen-result.json",
+    "sha256": "39741527e19980f546f70fe0e12cd83516e697477863236cb0c7b23ff217e189",
+    "status": "FAIL",
+    "cycle": 970350000,
+    "clocks": 400000000,
+    "scope": "FAIL originalcompletecourseplane/node3 expectation. Actualexistingpolicy opensnode1 aftera manuallyeditedgoal detaches currentpackagebinding; allmediumbytes andIndeterminate/earlierhistory survive. Independent browseposition persistence remains missing. Originalfailure notweakened/relabelled; original13:47globaldeadline unchanged, machine nowpaused."
   }
 }

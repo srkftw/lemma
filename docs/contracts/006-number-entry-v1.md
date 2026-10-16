@@ -100,3 +100,19 @@ number-entry workflow, then draws real raw ink across the keypad, edits through
 an actual key, checks all independently expected writing-plane pixels, closes
 the overlay to reveal retained ink, and starts another independent cold CPU.
 Until those observations pass, source admission alone does not qualify reuse.
+
+The companion16 artifact joins the same numeric Actions to the existing
+Clocked13 recovery4 deployment. Its ordinary Lean root is
+`mainRecoverablePackageNumberPad`; the original canonical and recovery roots
+remain available to their historical authorities. Healthy input uses the
+numeric path. Failed or unreconciled saves admit only the existing bounded raw
+ink and explicit Save reconciliation; contact over the keypad does not edit a
+submission. Such ink conservatively invalidates the transient keypad paint
+marker. Marker failure propagates before input admission. The original receipt,
+source-comparison and full-publication guards remain authoritative.
+
+This is an application artifact successor, not a new ISA, language subset,
+durable format or USB conformance claim. Both normal/initializer linked images
+and complete pre/post catalogs/corpora pass ordinary audits, and the native
+bundle is prepared. Actual connected16 peer/math/lost-reply/cold acceptance is
+still required. See the existing evidence record for exact images and failures.

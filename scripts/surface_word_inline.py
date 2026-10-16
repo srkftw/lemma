@@ -35,7 +35,8 @@ def catalog(unit):
     from dirty_batch_notebook_target import numeric_candidate, numeric_contract, NUMERIC_ROOT
     if numeric_candidate(unit):
         numeric_contract(unit)
-        selected_root=NUMERIC_ROOT
+        from companion_number_pad_target import candidate as recovery_number_candidate, ROOT as RECOVERY_NUMBER_ROOT
+        selected_root=RECOVERY_NUMBER_ROOT if recovery_number_candidate(unit) else NUMERIC_ROOT
     selected_software=JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
     require(unit.get('configuration') in CONFIGURATIONS + JOINED and
             unit.get('role') == 'user' and unit.get('contract_version') == 'core0-user-v0.2' and

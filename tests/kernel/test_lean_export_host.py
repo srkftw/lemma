@@ -1,5 +1,6 @@
 """The host worker policy cannot silently rewrite an archived export command."""
 import copy
+import hashlib
 import sys
 import unittest
 import tempfile
@@ -9,23 +10,23 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from core0_common import Core0Error
 from lean_export_host import (SOURCE, arguments, command, policy,
-                              validate_commands, validate_provenance, for_source)
+                              validate_commands, validate_provenance, for_source, environment, V1_SOURCE_SHA256)
 
 
 class ExportHostPolicy(unittest.TestCase):
     def test_current_source_requires_literal_version_and_historical_source_forbids_it(self):
-        record = {'schema': 'lemma-lean-export-host/1', 'workers': 2,
-                  'argument': '-j2', 'scope': 'host Lean export worker pool only'}
-        self.assertEqual(validate_provenance(record, {SOURCE: 'bound-by-source-audit'}), record)
+        record = policy()
+        source_digest = hashlib.sha256((ROOT / SOURCE).read_bytes()).hexdigest()
+        self.assertEqual(validate_provenance(record, {SOURCE: source_digest}), record)
         self.assertIsNone(validate_provenance(None, {'historical-source': 'old'}))
         with self.assertRaises(Core0Error):
-            validate_provenance(None, {SOURCE: 'bound-by-source-audit'})
+            validate_provenance(None, {SOURCE: source_digest})
         with self.assertRaises(Core0Error):
             validate_provenance(record, {'historical-source': 'old'})
 
     def test_unknown_worker_schema_and_extra_field_cannot_enter_audit(self):
         for change in ({'workers': 4}, {'workers': 2.0}, {'workers': '2'},
-                       {'schema': 'lemma-lean-export-host/2'},
+                       {'schema': 'lemma-lean-export-host/3'},
                        {'argument': '-j4'}, {'extra': 'ignored'}):
             with self.subTest(change=change), self.assertRaises(Core0Error):
                 arguments(policy() | change)
@@ -34,7 +35,7 @@ class ExportHostPolicy(unittest.TestCase):
 
     def test_current_and_historical_invocations_are_exact_and_not_interchangeable(self):
         old = [{'argv': ['/pinned/bin/lake', 'env', 'lean', 'Export.lean']}]
-        current = [{'argv': ['/pinned/bin/lake', 'env', 'lean', '-j2', 'Export.lean']}]
+        current = [{'argv': ['/pinned/bin/lake', 'env', 'lean', '-j2', 'Export.lean'], 'host_environment': environment(policy())}]
         validate_commands(old, None)
         validate_commands(current, policy())
         self.assertEqual(command(Path('Export.lean'), source_root=ROOT),
@@ -70,3 +71,47 @@ class ExportHostPolicy(unittest.TestCase):
                      [{'argv': ['/pinned/bin/lake', 'build', 'Module']} ]):
             with self.subTest(rows=rows), self.assertRaises(Core0Error):
                 validate_commands(rows, policy())
+
+    def test_v1_source_policy_and_commands_remain_exact(self):
+        old = policy(1)
+        self.assertEqual(validate_provenance(old, {SOURCE: V1_SOURCE_SHA256}), old)
+        validate_commands([{'argv': ['/pin/lake', 'env', 'lean', '-j2', 'Export.lean']}], old)
+        with self.assertRaises(Core0Error):
+            validate_provenance(policy(), {SOURCE: V1_SOURCE_SHA256})
+        with self.assertRaises(Core0Error):
+            validate_provenance(old, {SOURCE: 'unknown'})
+
+    def test_stack_and_worker_environment_are_exact_for_all_lake_commands(self):
+        rows = [{'argv': ['/pin/lake', 'env', 'lean', '-j2', 'Export.lean'],
+                 'host_environment': environment(policy())},
+                {'argv': ['/pin/lake', 'build', 'Module'],
+                 'host_environment': environment(policy())}]
+        validate_commands(rows, policy())
+        for changed in (None, {}, {'LEAN_NUM_THREADS': '2'},
+                        environment(policy()) | {'LEAN_STACK_SIZE_KB': '1048576'}):
+            bad = copy.deepcopy(rows)
+            if changed is None:
+                del bad[1]['host_environment']
+            else:
+                bad[1]['host_environment'] = changed
+            with self.subTest(changed=changed), self.assertRaises(Core0Error):
+                validate_commands(bad, policy())
+        with self.assertRaises(Core0Error):
+            validate_commands(rows, policy(1))
+
+    def test_invoker_applies_and_records_override_without_recording_other_environment(self):
+        from unittest.mock import patch
+        from types import SimpleNamespace
+        from build_kernel import command_invoker
+        rows = []
+        with tempfile.TemporaryDirectory(dir=ROOT / 'build') as temporary:
+            out = Path(temporary)
+            with patch('build_kernel.run_bounded', return_value=SimpleNamespace(
+                    returncode=0, elapsed_seconds=.01, stdout=b'actual', stderr=b'')) as invoke:
+                run = command_invoker(ROOT, out, {'lake': '/pinned/bin/lake'}, 3, rows)
+                self.assertEqual(run(('lake', 'build', 'Module'), ROOT,
+                    {'LEAN_NUM_THREADS': '128', 'LEAN_STACK_SIZE_KB': '1048576', 'OTHER': 'kept'}), b'actual')
+                self.assertEqual(invoke.call_args.kwargs['env'],
+                    environment(policy()) | {'OTHER': 'kept'})
+            self.assertEqual(rows[0]['host_environment'], environment(policy()))
+            self.assertNotIn('OTHER', str(rows))

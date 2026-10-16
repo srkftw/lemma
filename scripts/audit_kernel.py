@@ -396,6 +396,10 @@ def validate_managed_provenance(build: dict, provenance: dict, *, configuration:
                 isinstance(row,dict) and row.get("source")=="Lemma.Applications.Notebook.mainPackageNumberPad" for row in images):
             selected=tuple({**row,"source":"Lemma.Applications.Notebook.mainPackageNumberPad"}
                            if row["key"]=="notebook" else row for row in selected)
+        if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and isinstance(images, list) and any(
+                isinstance(row, dict) and row.get("source") == "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad" for row in images):
+            selected = tuple({**row, "source": "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad"}
+                             if row["key"] == "notebook" else row for row in selected)
         expected = {"managed_policy": MANAGED_POLICIES[configuration], "boot_roles": {row["key"]: row["boot_role"] for row in selected}}
         if (images != list(selected) or any("boot_role" in record for record in (build, provenance))
                 or any(record.get(key) != value for record in (build, provenance) for key, value in expected.items())):
@@ -463,6 +467,13 @@ def validate_user_image_catalog(value: object, *, configuration: str | None = No
             row.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPad"
             for row in catalog.get("images", []) if isinstance(row, dict)):
         images = tuple({**row, "source": "Lemma.Applications.Notebook.mainPackageNumberPad"}
+                       if row["key"] == "notebook" else row for row in images)
+    # Recovery16 is a fixed additive root on the existing USB13/four-role tuple.
+    # Its complete genuine catalog/body authority is independently required.
+    if selected in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and isinstance(catalog.get("images"), list) and any(
+            row.get("source") == "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad"
+            for row in catalog.get("images", []) if isinstance(row, dict)):
+        images = tuple({**row, "source": "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad"}
                        if row["key"] == "notebook" else row for row in images)
     expected = {"schema_version": 1, "contract_version": "lemma-user-image-catalog-v1",
                 "configuration": selected, "stage": "supervisor", "image_count": len(images),
@@ -3286,7 +3297,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         from dirty_batch_notebook_target import numeric_candidate, numeric_contract, NUMERIC_ROOT
         if numeric_candidate(unit):
             numeric_contract(unit)
-            image = {**image, "source": NUMERIC_ROOT}
+            from companion_number_pad_target import candidate as recovery_number_candidate, ROOT as RECOVERY_NUMBER_ROOT
+            image = {**image, "source": RECOVERY_NUMBER_ROOT if recovery_number_candidate(unit) else NUMERIC_ROOT}
     if multi_user and image is None:
         raise Core0Error("unknown per-image user unit selection")
     keys = {"schema_version", "artifact_category", "contract_version", "configuration", "role", "roots", "functions",
@@ -3603,6 +3615,8 @@ def validate_catalog(value: object, *, configuration: str, stage: str) -> set[st
 def validate_user_primitive_catalog(value: object, image: dict, *, configuration: str = "tasks-development") -> dict:
     expected_image = image_spec(configuration, image.get("key"))
     if configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and image.get("key") == "notebook" and image.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPad":
+        expected_image = {**expected_image, "source": image["source"]}
+    if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and image.get("key") == "notebook" and image.get("source") == "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad":
         expected_image = {**expected_image, "source": image["source"]}
     if image != expected_image:
         raise Core0Error("per-image primitive authority differs from the closed selected image")

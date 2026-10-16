@@ -25,7 +25,7 @@ from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGU
 from build_core0 import (LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS,
                         capture_platform_dtb, prepare_output_directory)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
-from lean_export_host import command as export_command, for_source as export_host_policy
+from lean_export_host import command as export_command, for_source as export_host_policy, environment as export_host_environment
 
 ROLE_ROOTS = {
     "firmware": (("Lemma.Platform.RiscV.Firmware.dispatch", ("u64", "u64", "u64")),),
@@ -367,6 +367,9 @@ def source_inputs(root: Path) -> dict[str, str]:
     dirty_authority=root / 'tooling/dirty-batch-notebook-target-authority.json'
     if dirty_authority.is_file():inputs.append(dirty_authority)
     export_host_policy(root)  # Missing current helper must not downgrade to a historical command.
+    for additive in ("scripts/companion_number_pad_target.py", "tooling/companion-number-pad-target-authority.json"):
+        path = root / additive
+        if path.is_file():inputs.append(path)
     export_host = root / "scripts/lean_export_host.py"
     if export_host.is_file():inputs.append(export_host)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
@@ -434,16 +437,21 @@ def command_invoker(root: Path, output_dir: Path, tools: dict, timeout_seconds: 
     """Shared bounded command recording for boot and independent user builds."""
     def invoke(argv: Sequence[str], cwd: Path = output_dir, env: dict[str, str] | None = None) -> bytes:
         actual = [tools.get(argv[0], argv[0]), *argv[1:]]
+        host_environment = (export_host_environment(export_host_policy(root))
+                            if Path(actual[0]).name == "lake" else {})
+        recorded_environment = {"host_environment": host_environment} if host_environment else {}
+        if host_environment:
+            env = {**(os.environ if env is None else env), **host_environment}
         try:
             result = run_bounded(actual, cwd=cwd, timeout_seconds=timeout_seconds, env=env)
         except (Core0Error, OSError) as error:
             commands.append({"argv": list(actual), "cwd": str(cwd.relative_to(root)), "returncode": None,
-                             "error": str(error), "completed": False})
+                             "error": str(error), "completed": False, **recorded_environment})
             write_json(output_dir / "commands.json", commands)
             raise
         commands.append({"argv": list(actual), "cwd": str(cwd.relative_to(root)), "returncode": result.returncode,
                          "elapsed_seconds": result.elapsed_seconds,
-                         "stdout": result.stdout.decode(errors="replace"), "stderr": result.stderr.decode(errors="replace")})
+                         "stdout": result.stdout.decode(errors="replace"), "stderr": result.stderr.decode(errors="replace"), **recorded_environment})
         write_json(output_dir / "commands.json", commands)
         if result.returncode != 0:
             raise Core0Error(f"command failed ({result.returncode}): {' '.join(argv)}\n"

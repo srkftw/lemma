@@ -1019,15 +1019,16 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "3504185cb9915a9fcc6432b83feee985885cb826",
-    "run": 38880227320,
-    "status": "COMPLETED_SUCCESS",
-    "jobs_success": 11,
-    "steps_success": 111,
+    "path": "build/ci/task006-3f-complete.json",
+    "sha256": "6a909646d266eaead819338b7d664e28b1a1e3f5ffecd714e752e4d2fa5d8f24",
+    "status": "SUCCESS",
+    "head": "3f67a0435b22e342d748d4c76fa3e2b3433d32e1",
+    "run_id": 38890500531,
+    "jobs": 11,
+    "steps": 111,
     "skipped": 0,
-    "evidence": "build/ci/task006-350-complete.json",
-    "url": "https://github.com/srkftw/lemma/actions/runs/38880227320",
-    "scope": "Published350 hostruntime candidate; localaec compiler/fullpair/currentCI stillpending."
+    "cancelled": 0,
+    "scope": "Published predecessor3f only; new local16/hostpolicy2 candidateCI notyetstarted."
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1077,7 +1078,7 @@
   "number_entry_component_milestone": {
     "behavior": "IMPLEMENTED15_STATIC_PAD_REUSE_RAW_OVERDRAW_REPAIR",
     "compiler": "PASS_GENUINE_MATCHED15_FULL_AUDITS_412_SOURCE_SEALS: 9c25d94, normal/init710944/710952B; original6d initializer300.202sFAIL retained.",
-    "RTL_guest": "RUNNING canonical13 original5B/36000s: complete base numeric checks, raw ink acknowledged, independent cold allpixels/allmedium and original body/keypad reopen pass. Final disconnect/recovery extension not yet complete.",
+    "RTL_guest": "PASS canonical13 exact22phases3357Mclocks/16586.544860s, actual numeric checks/inkSave/newCPUcold/allpixels/bytes/body/keypad/history anddisconnect complete. Later15/16 andunsuccessfulSave retain independent identities.",
     "fast_guest": "PASS15 actual27 phases incl22-prefix, raw overdraw/key repair/retained underlying ink/thirdCPUcold/allpixels/allbytes/allobjects/reopen.2077000130 units/371.508s,374.884s supervised/515133440B peak. Comparable22prefix1439000106 vs14 1492000115,3.5523% fewer; no RTL timing claim.",
     "distribution": "Matched15 native/static archives prepared/extracted; actual extracted native Init/rawUART/privatefork/install/barrier/newCPUcold/Load PASS389.698s/391.369s supervised/395472896B peak.15browser CPU/clean-host/redistribution rights separate.",
     "physical": "UNVERIFIED",
@@ -1202,7 +1203,7 @@
     "physical": "No physical effect or qualification",
     "evidence": "docs/evidence/006-framebuffer-port-index.json",
     "process_cpu_reduction_percent": 17.974967068040325,
-    "full_changed_runtime_browser_workflow": "NOT_RUN"
+    "full_changed_runtime_browser_workflow": "PARTIAL new15 coldReady andwholecourse/keypad/historyreopenPASS261M, no newchecks/save duringopen; actualBACK200M/2400phase running. RemainingCHECK/ink/private replay/secondcold pending."
   },
   "canonical_number_entry_rtl_milestone": {
     "evidence": "docs/evidence/006-number-entry-v1.json",
@@ -1225,21 +1226,33 @@
         "cycle": 551100000,
         "host_seconds": 4709.1328549999,
         "read_outcomes": 119,
-        "sequence": 25
+        "sequence": 25,
+        "reopen": "PASS everypixel/allbytes/history; originalfooterobserverFAIL retained, independentlycorrectedexpectation noCPUrerun"
       },
       {
         "software": "11/ingress2",
         "cycle": 570350000,
         "host_seconds": 4770.496575000047,
         "read_outcomes": 150,
-        "sequence": 37
+        "sequence": 37,
+        "reopen": "FAIL expectedretainednode3; existingUnknownbinding fallback opensnode1; allbytes andmathhistory preserved; independentbrowseposition missing"
       }
     ],
     "scope": "Ordinary canvasmouse -> rawdevice -> realguestink -> successfulOPFSworkerbarrier ->newCPUcold fromsamebacking. Exact3.63Mpixels/all256MiB/acknowledgedobjects and complete reads. Full course/math/source/history display reopen400M/3600s currently running. Browser-origin persistence only; no unconditionaleviction/physicalpowerloss, fullnewruntime15 or generalfaststateclosure."
   },
   "host_export_resource_candidate": {
     "contract": "docs/contracts/006-lean-export-host-v1.md",
-    "status": "IMPLEMENTED_HOST_CHECKS_PASS_WHOLE_CURRENT_ARTIFACTS_PENDING",
-    "scope": "Explicitrecorded-j2 onkernel/userexports, strictpolicy/argv/source audit, legacyarchivecommands retained. No targetlanguage/runtime/LLVM extension. Whole413source build/audit/resource andcandidateCI pending."
+    "status": "PASS_3f_FULL_MATCHED15_413_SOURCE_RESOURCES_CLEANUP",
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "scope": "Explicit-j2 new actualexports/provenance/argv. BothcompleteELFs/sixunits unchanged; 918.814559s/1.939GBpeak. Version2 documented hoststack successor andjoined16fullpair running separately; no targetsemantic extension."
+  },
+  "companion_number_entry16_candidate": {
+    "behavior": "IMPLEMENTED_JOINED_NUMERIC_AND_RECOVERY_ACTIONS_COMPONENT_PASS",
+    "model": "Actual imported Actions retain provisional9-fieldrawink/pixels; pinnedpayload/doc/history immutable, no storage/checkerIPC/Saved; markerfault/fullbuffer checksPASS",
+    "guest_compilation": "PASS bothfreshcomplete normal/init linkedartifacts833.365s;415source/ownedcleanup839.305s,1.923GBpeak, literal910/908corpora, oldsemanticguards/tablecells retained.",
+    "RTL_guest": "NOT_RUN new16",
+    "distribution": "PREPARED schema9/native415source877files, exactUSB13oldruntime6cbd sourcearchive qualified; new16connectedCPU/peer NOT_RUN yet",
+    "physical": "UNVERIFIED",
+    "evidence": "docs/evidence/006-number-entry-v1.json"
   }
 }
