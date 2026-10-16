@@ -127,5 +127,23 @@
       "post": "c89e2665a6ff63bf70f56091fa7aba34a98b84babd333b5dc99b736573cca1c7"
     },
     "character_machine_sha256": "0b1d6e186cf1d243c837656ee09aaa40907473c2babf7d4e4f1f8b348f5b1fff"
+  },
+  "number_entry_aligned_v1": {
+    "schema": "lemma-number-entry-aligned-artifact/1",
+    "package_notebook_version": 14,
+    "previous_artifact_sha256": "0b8837918ecb67561db21f027f21276a15701d78e6269f144ec5382cf33aeaff",
+    "catalog_sha256_by_configuration": {
+      "lemmasim-silicon-package-closure-entry2-bulk-notebook": "6e1bfcfa7ae5cca10b76ddcbf17afb500accf915dbbfb38152aaad740ed8b264",
+      "lemmasim-silicon-package-closure-entry2-bulk-initialize": "fe7920a0e41013054522ba5bb40f8a0270d1e6775731eee9c1105e6685ed6449"
+    },
+    "surface_root_sha256_by_phase": {
+      "pre": "031afd789bc886f3b60fe6f1389f147867e5209656b4b55fb3153c6704c01bd4",
+      "post": "c89e2665a6ff63bf70f56091fa7aba34a98b84babd333b5dc99b736573cca1c7"
+    },
+    "character_machine_sha256": "0b1d6e186cf1d243c837656ee09aaa40907473c2babf7d4e4f1f8b348f5b1fff",
+    "pre_function_count": 869,
+    "pre_sha256": "55d64dbb9650a9fc2bc053a696e667c2e6a13d53424c5074f3ae82afdb73d70d",
+    "post_function_count": 867,
+    "post_sha256": "138fd9d52cdfc550b75facf1e2308e19d4c16370a0e5fc5da69b1d60e431e2de"
   }
 }

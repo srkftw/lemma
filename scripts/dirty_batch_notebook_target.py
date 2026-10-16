@@ -99,7 +99,10 @@ def numeric_contract(unit):
  if a.get('schema')!=NUMERIC_VERSION or a.get('package_notebook_version')!=12 or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS):raise Core0Error('Number entry original artifact schema differs')
  if a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):
   previous=a;a=master.get('number_entry_repaint_v1',{})
-  if a.get('schema')!='lemma-number-entry-repaint-artifact/1' or a.get('package_notebook_version')!=13 or a.get('previous_artifact_sha256')!=numeric_digest(previous) or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS)or a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):raise Core0Error('Number entry repaint exact predecessor/catalog differs')
+  if a.get('schema')!='lemma-number-entry-repaint-artifact/1' or a.get('package_notebook_version')!=13 or a.get('previous_artifact_sha256')!=numeric_digest(previous) or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS):raise Core0Error('Number entry repaint exact predecessor differs')
+  if a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):
+   previous=a;a=master.get('number_entry_aligned_v1',{})
+   if a.get('schema')!='lemma-number-entry-aligned-artifact/1' or a.get('package_notebook_version')!=14 or a.get('previous_artifact_sha256')!=numeric_digest(previous) or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS)or a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):raise Core0Error('Number entry aligned exact predecessor/catalog differs')
  if {r.get('stable_id')for r in unit.get('used_execution_ops',[])}!={'execution.virtual-read8','execution.virtual-read64','execution.virtual-write8','execution.virtual-write64','execution.syscall'}:raise Core0Error('Number entry execution authority differs')
  return 'canonical',a
 
@@ -110,15 +113,21 @@ def numeric_semantics(ir,unit):
  def calls(owner,target):
   if owner not in rows or target not in rows:raise Core0Error('Number entry semantic owner absent')
   return re.findall(r'call \{ i64, i64 \} @'+re.escape(rows[target]['symbol'])+r'\(([^\n]*)\)',_ir_definition_body(ir,rows[owner]['symbol']))
- for owner,target in [('numericInputSample.acceptSample','numericPadPress'),('numericPadPress','publishPackageWorkspace'),('numericStep','numericPumpPad'),('numericStep','pumpRefreshRestoredBatched'),('publishPackageWorkspace','savePackageWorkspace'),('savePackageWorkspace','startSave'),('packageToolbar','packageRequestSave'),('uploadDirtyBatch','consumeDirtyIndexStep'),('pumpRefreshRestoredBatched','restorePaperBatch'),('restorePaperBatch','Lemma.Ink.Surface.uploadIndexedBulk')]:
+ version=numeric_contract(unit)[1]['package_notebook_version']
+ publisher='numericPublishAligned'if version==14 else'publishPackageWorkspace'
+ for owner,target in [('numericInputSample.acceptSample','numericPadPress'),('numericPadPress',publisher),('numericStep','numericPumpPad'),('numericStep','pumpRefreshRestoredBatched'),('publishPackageWorkspace','savePackageWorkspace'),('savePackageWorkspace','startSave'),('packageToolbar','packageRequestSave'),('uploadDirtyBatch','consumeDirtyIndexStep'),('pumpRefreshRestoredBatched','restorePaperBatch'),('restorePaperBatch','Lemma.Ink.Surface.uploadIndexedBulk')]:
   target=target if target.startswith('Lemma.')else prefix+target
   if len(calls(prefix+owner,target))!=1:raise Core0Error('Number entry disconnected ordinary path: '+owner+'/'+target)
  for owner,target in [('numericPadPress','Lemma.Documents.MathematicsEntry.press'),('numericPumpPad','Lemma.Courses.NumberPad.render'),('numericPadPress.recapture','Lemma.Courses.PackageWorkspace.captureSelection')]:
   if len(calls(prefix+owner,target))!=1:raise Core0Error('Number entry lost actual guest operation')
- if numeric_contract(unit)[1]['package_notebook_version']==13:
+ if version>=13:
   repair=prefix+'numericPumpCancelledRedraw'
   if len(calls(prefix+'numericStep',repair))!=1 or len(calls(repair,prefix+'pumpCancelledRedraw'))!=1 or len(calls(repair,prefix+'renderPackageCourse'))!=1:raise Core0Error('Number entry loss recovery lost its actual guest repaint path')
   if calls(repair,prefix+'startSave')or calls(repair,prefix+'reportCommitState'):raise Core0Error('Number entry loss repaint acquired persistence/acknowledgment authority')
+ if version==14:
+  for target in ('adoptPackageWorkspace','reportCourse','savePackageWorkspace'):
+   if len(calls(prefix+publisher,prefix+target))!=1:raise Core0Error('Aligned number entry changed ordinary publication/report/Save')
+  if len(calls(prefix+publisher,'Lemma.Courses.ArithmeticAligned.render'))!=1 or calls(prefix+publisher,prefix+'renderPackageCourse'):raise Core0Error('Aligned number entry lost its actual selected renderer')
  if calls(prefix+'packageRequestSave',prefix+'issue')!=['i64 8, i64 0, i64 0, i64 0']:raise Core0Error('Number entry explicit Save differs')
  return {'ordinary_guest_entry_and_storage_connected':True,'numeric_bounds':'0..99; overflow is unchanged bytes, explicit limit message','scope':'Complete source/IR authority; CPU/Store/controller qualification separate'}
 

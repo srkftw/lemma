@@ -2,7 +2,7 @@
   "schema": "lemma-number-entry-evidence/1",
   "status": "PASS_NOTEBOOK13_FAST_CHECKING_SAVE_COLD_DISCONNECT_NATIVE_STATIC_PREPARED",
   "contract": "docs/contracts/006-number-entry-v1.md",
-  "scope": "Canonical Notebook13 number-entry path; unchanged machine0.3/User2, durable formats and historical roots. Actual fast connected workflow and failed-FLUSH/cold pass. RTL numeric and new browser13 execution remain separately pending; companion root unchanged.",
+  "scope": "Canonical Notebook13 number-entry path; unchanged machine0.3/User2 and durable formats. Fast connected workflow/failed-FLUSH/cold, extracted native workflow and extracted browser cold/all pixels/bytes PASS. Full numeric RTL and browser course reopen remain running. Additive Notebook14 aligned key-path candidate has component/LLVM/machine admission only until full linked audits/execution.",
   "component": {
     "result": "build/courses/task006-number-entry-component-a2/result.json",
     "result_sha256": "404fb5d3e1d64961b739f9265b53152ce8c300fad3a68a1101228156414c317c",
@@ -260,7 +260,7 @@
     "native_archive_bytes": 28698333,
     "browser_archive_bytes": 2067808,
     "native_runtime": "Complete existing6-path Nix runtime closure included; compatible Nix host import/prerequisites remain. No fresh-host qualification or new redistribution license.",
-    "qualification": "Native a2 real Init/raw4090pending/privatefork/install/barrier/newCPUcold/ordinaryLoad PASS440000070 functional units/369.438s; supervised375.411s/416915456B, all source bytes unchanged. First a1 wholeFAIL due root source edit retained. Browser13 cold/full workflow still running; no Ready claim.",
+    "qualification": "Native a2 real Init/raw4090pending/privatefork/install/barrier/newCPUcold/ordinaryLoad PASS440000070 functional units/369.438s, supervised375.411s/416915456B. Browser13 actual CPU0 cold Ready531.5M/4105.313s/192MiB and all3.63M pixels/all256MiB durable bytes PASS; course reopen pending. Original native source-hold FAIL and browser passive-observer failures retained.",
     "actual_native": {
       "path": "build/distribution/task006-number-entry-native-uart-a2/result.json",
       "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD",
@@ -286,6 +286,43 @@
         "bytes": 2068293
       },
       "extracted": "build/distribution/task006-number-entry-transform-browser-extracted-a1"
+    },
+    "actual_browser_cold": {
+      "status": "PASS_EXTRACTED_BROWSER_COLD_ALL_PIXELS_AND_DURABLE_BYTES",
+      "scope": "Actual extracted Notebook13 browser bundle, CPU reset plus opaque durable medium only; checkpoint is observation after cold Ready, never boot input",
+      "cycle": 531500000,
+      "cold_host_seconds": 4105.313389999986,
+      "heap_bytes": 201326592,
+      "simulation_call_seconds": 4034.8768199976726,
+      "backing_call_seconds_during_run": 0.005664999604225155,
+      "guest_sha256": "3baf7a1181b0a6f4df10646e7f246466a2f6b8c5f91d7456dcd412c3bc534274",
+      "all_controller_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "medium_sha256": "908661770cc40c4a4e9d8e4bcbc5d548430227323f9a980670956d08dae0ba59",
+      "sequence": 20,
+      "scope_limit": "Initial notebook cold display; course reopen, new input and native/Wasm suffix comparison remain separate. Browser origin persistence is not unconditional power-loss/eviction durability.",
+      "seconds": 23.538921636994928,
+      "result": "build/browser/task006-number-entry-cold-plan-a1/cold-result.json",
+      "result_sha256": "3ee9eda450fdd135d49179778e6dad2ce625f391d34f0a306c0046aa39f462ac"
     }
+  },
+  "aligned_key_presentation_candidate": {
+    "status": "PASS_COMPONENT_GENUINE_LLVM_MACHINE_CELLS_WHOLE_LINK_NOT_RUN",
+    "notebook_version": 14,
+    "actual_action_log": "build/courses/task006-arithmetic-aligned-a1/action-check-a2.log",
+    "artifact_result": "build/courses/task006-arithmetic-aligned-a1/artifact-result.json",
+    "machine_result": "build/courses/task006-arithmetic-aligned-a1/machine-result.json",
+    "pre_functions": 869,
+    "post_functions": 867,
+    "unchanged_notebook13_common_functions": 863,
+    "changed_common": [
+      "Lemma.Applications.Notebook.numericPadPress"
+    ],
+    "canonical_stores_before": 27360,
+    "canonical_stores_after": 4820,
+    "same_framebuffer_bytes": 30720,
+    "semantics": "Exact rectangle/neighbors, scalar spans, document-read failure, ordered write failure prefix and historical odd-stride fallback; ordinary staged adoption/report/Store path preserved. Other math/control redraw paths unchanged.",
+    "speed_scope": "Memory operation count only; new target cycle/functional-unit/host comparison NOT_RUN",
+    "checks": "Kernel446 PASS10.838s; scaffold18 PASS8.241s plus metadata. Original12/13 exact artifact admissions retained."
   }
 }

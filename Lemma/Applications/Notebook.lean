@@ -16,6 +16,7 @@ import Lemma.Documents.Ink
 import Lemma.Services.Store.Client
 import Lemma.User.CapabilityConsole
 import Lemma.Courses.Arithmetic
+import Lemma.Courses.ArithmeticAligned
 import Lemma.Services.Arithmetic.ClientV2
 import Lemma.Services.Arithmetic.ClientV3
 import Lemma.Services.Arithmetic.ClientV5
@@ -4238,6 +4239,21 @@ private def numericToggleCourse : Action :=
   .bind (if allocated = 12 then packagePut 184 0 else .done 0 0) fun s _ =>
   if statusFailed s = true then .done s 0 else togglePackageCourse
 
+/-- Number-entry presentation successor: the same staged publication, report,
+controls and Store transaction, with aligned stores for the arithmetic pane.
+Historical package publishers and their source-bound artifacts stay intact. -/
+private def numericPublishAligned : Action :=
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  if pending = 0 then
+  .bind adoptPackageWorkspace fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.ArithmeticAligned.render mathematics width) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 65 courseTileStep 65 0 width 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (dirty 0 160 416 320) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 144 1) fun s _ => if statusFailed s = true then .done s 0 else savePackageWorkspace
+  else .done 231 0
+
 private def numericPadPress (key : UInt64) : Action :=
   if key = 12 then .done 0 0 else
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
@@ -4253,7 +4269,7 @@ private def numericPadPress (key : UInt64) : Action :=
   if changed = 1 then
   .bind (Lemma.Courses.PackageWorkspace.stageRefresh packageWorkspace packageDocumentStage mathematicsSave)
     fun s _ => if statusFailed s = true then courseError s else
-  .bind recapture fun s _ => if statusFailed s = true then courseError s else publishPackageWorkspace
+  .bind recapture fun s _ => if statusFailed s = true then courseError s else numericPublishAligned
   else .done 0 0
   else .done 240 0 else .done 0 0
 where

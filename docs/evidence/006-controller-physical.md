@@ -338,3 +338,28 @@ candidate, strengthened observers, proof, actual timing failure and supervision
 gap. Maintained full256 private-ingress source2bab7e33 remains unchanged.
 
 -->
+
+October16 changed-source trials preserve maintained full-depth pen2bab7e33.
+A private precomputed-prefix counter candidate passes a public protocol miter
+and independent64-bit modulo-increment SAT check, but its actual mapped worst
+cone is26 levels versus18 for maintained RTL; it is unadopted and not routed.
+The explicit ABC10000ps mapping interface produces byte-identical generic and
+mapped JSON to the maintained baseline (mappedSHA
+c36e69edcd422acfcd9960d449494d4d4ec1a57cfb686f736f70e0d4c83750ae);
+this is no timing improvement and did not justify a route by itself.
+
+A separate branch-buffer CTS trial follows actual DB evidence:128 intermediate
+clock buffers each drive16 other clock buffers, above library fanout8. Pinned
+OpenROAD26Q2 branch-end buffering is tried at the same10ns clock, with every
+constraint and existing WNS_PATH repair preserved. The completed global-route
+estimated-RC reports show setup WNS-1.540876ns (maintained-1.732748) and hold
+WNS-0.437743ns. The hold regression rejects adoption. Detailed pin access times
+out under its original900s bound, the overall actor fails, and the supervisor
+finishes904.860616s with4630405120B peak owned RSS and equal source/flow seals.
+An independent saved PID/start audit finds no owned survivors. The CTS change
+is reverted; its exact source/patch/plan/results remain under
+`build/silicon/pen-branch-clock-owner-a1`, actor
+`build/silicon/physical/pen-branch-clock-a1`, and supervision
+`build/silicon/pen-branch-clock-supervision-a1`. No timeout cause is assigned to
+rule coverage. Completed detailed routing, processDRC/LVS, routed extraction,
+postroute timing and full-chip physical closure remain open.

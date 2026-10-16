@@ -3358,3 +3358,53 @@ Same audited13 pair/Wasmfb15, changed app only. Result/bytes/source hashes in
 pointer-transform-a1/result.json. Browser32 cold remains original13 UI/8801;
 do not reload or relabel its consumed app. Browser31 review200M/2400s still runs;
 old30/dirty29 and all16..32 remain protected. Product is incomplete.
+
+October16 continuation: actual pushed9843799 CI38856183803 completed SUCCESS,
+all11 jobs/all109 steps, no skipped/cancelled step. Older71be CI ended9success/
+2cancelled/1skipped;30ff ended10success/1cancelled/1skipped. Neither is a full
+pass. PR9 remains draft/unmerged; no PR9 merge authorization inferred.
+
+Extracted browser13, tab32/8801, actual CPU0 durable-only cold Ready531.5M/
+4105.313390s,192MiB heap,4034.876820s simulation calls. Passive corrected
+observer PASS every3.63M controller pixel and all268435456 medium bytes vs
+actual acknowledged native20, SHA908661770cc40c4a4e9d8e4bcbc5d548430227323f9a980670956d08dae0ba59.
+No checkpoint boot. Original passive UART parser failures are retained; the
+actual machine was not rerun. `build/browser/task006-number-entry-cold-plan-a1`
+has cold-result.json and source/code/logs. Raw COURSE reopen starts531.5M,
+400M/3600s, currently running. Complete browser mathematics acceptance is open.
+
+Browser31/8800 originald2: real Auto Saved27 at1858.25M,91.85M after deliberate
+REVIEW contact. Independent durable Doc8/workspace plus actual displayed
+ASSISTED ATTEMPT PRACTICE/AUTO PRACTICE UNCERTAIN and selected source body PASS;
+revision12/5/6/Verified/history/isolated closure identity retained. Original
+quick200M review batch FAIL remains: four overrides persisted, fifth tap not
+applied. No-input58.55M finishes Pending26; the new deliberate contact alone
+returns Auto. `...idle2-mathematics-plan-a1/review-auto-result.json` records it.
+Edited-answer plus tap starts1858.25M with150M/1800s, currently running.
+
+Numeric13 fullRTL exec89551 remains active under original5B/36000s. Actual
+cold Ready473M/1905.961981s, course212M/1022.168627s and two authored views43M
+observed. Installed-course seed differs from old Saved8; no controlled493->473M
+speed claim. Continue holding its actual34 imported host files through cleanup.
+
+New Notebook14 candidate connects only numeric key publication to aligned
+arithmetic pane stores. Actual maintained Actions preserve30720-byte output,
+all neighbors/scalar spans/read faults/write-prefix faults/odd-stride fallback;
+4820 stores vs27360. No target-cycle speed claim. Genuine both-config exports,
+869pre/867post full-body/global corpus,863 unchanged13 bodies/one changed key
+publisher call,25 actual RV64 control cells and changed-cell/row mutation reject
+PASS. Historical12/13 exact artifact admissions remain. Kernel446 PASS10.838s,
+scaffold18 PASS8.241s plus metadata. Evidence/component in
+`build/courses/task006-arithmetic-aligned-a1`; full linked audit/execution and
+new distribution are next, not implied. No new memory operation/runtime/durable
+format/machine profile. Immutable prepared13 bundles remain the runnable pair.
+
+Changed CTS experiment completed FAIL904.860616s, peak owned4630405120B,
+source/flow seals equal; original900s detailed-route deadline, no survivors by
+exact saved PID/start audit. Global estimated-RC setup WNS-1.540876ns versus
+maintained-1.732748, but hold-0.437743ns is a regression. Reverted just this CTS
+change, patch/source/result retained at build/silicon/pen-branch-clock-owner-a1;
+physical actor pen-branch-clock-a1. Mapping-D10000 alone was byte-identical to
+baseline. Prefix-counter candidate26 conelevels vsbaseline18 was also rejected
+before route. Pen2bab7e33, full256 entries and previous flow improvements stay.
+No physical pass, processDRC/LVS/PEX or rule-coverage closure inferred.

@@ -53,3 +53,28 @@ no Store write, checking request or Saved transition. It does not change the
 acknowledged goal, revision, attempts, assistance or raw ink. Historical
 Notebook12 artifact pins remain separate; its missing overlay reconstruction
 is retained as an observed failure, rather than relabeled as conformance.
+
+Notebook14 is the additive aligned arithmetic presentation cohort. Its number
+keys use `numericPublishAligned`: the existing staged workspace adoption,
+revision-bound course report, control repaint and Store save remain in the same
+order. Only that key path selects `ArithmeticAligned.render`; the historical
+package publisher and the other course/check/recovery paths retain their bodies.
+This scoped change does not claim that every mathematics redraw was accelerated.
+
+For the canonical1650-pixel width, each192-byte arithmetic row at(24,160)
+uses its exact1..8-byte prefix,23 aligned words and0..7-byte suffix. A zero
+suffix performs no access. Three adjacent packed glyph rows produce any
+unaligned source span; no destination access is rounded outside the rectangle.
+Each of the30720 bytes is still written once. Full words are actual aligned
+64-bit stores; partial edges are ordered byte stores. Access errors propagate
+without rollback, retaining completed stores. Other widths call the historical
+sparse renderer with its existing admission and error behavior. The same
+owned virtual-memory checks and dirty-tile/controller path remain required.
+
+The actual Action component observes4820 canonical stores versus27360 for the
+historical sparse renderer, with identical complete framebuffer bytes, scalar
+pixel spans, neighbors, document-read failure and partial-store failure cases.
+This store-count reduction alone is not target-cycle or host-speed evidence.
+The exact14 catalog, complete pre/post LLVM corpus and actual machine-code
+control tables have separate admissions; whole-image execution remains a
+separate qualification. Historical12/13 artifacts retain their exact pins.
