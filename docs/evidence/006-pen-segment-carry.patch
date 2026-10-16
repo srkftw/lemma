@@ -1,0 +1,36 @@
+--- a/sim/rtl/lemma_pen.sv
++++ b/sim/rtl/lemma_pen.sv
+@@ -48,6 +48,10 @@
+   logic [PTR-1:0] head, tail;
+   logic [PTR:0] count;
+   logic [63:0] epoch, head_epoch, next_sequence, losses, fault;
++  // Invariant: each bit says that the current low16/32/48 bits are all ones.
++  // Independent16-bit increments keep acceptance control out of a64-bit
++  // carry chain. The flags advance only with the exact existing acceptance.
++  logic [2:0] sequence_carry;
+   logic [63:0] last_time, contact_deadline;
+   logic loss, resync, release_seen, bad_sample;
+   logic access_ok, lose;
+@@ -144,6 +148,7 @@
+       refill <= 0; refill_select <= '0;
+       epoch <= 1; head_epoch <= 1; next_sequence <= 1;
+       losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0;
++      sequence_carry <= 0;
+       loss <= 0; resync <= 0; release_seen <= 0;
+     end else if (refill == 2) begin
+       refill_select <= {{(BANKS-1){1'b0}},1'b1} << head[BANK_BITS-1:0];
+@@ -178,7 +183,13 @@
+           head_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
+             sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
+         tail <= tail + 1'b1; count <= count + 1'b1;
+-        next_sequence <= next_sequence + 1;
++        next_sequence[15:0] <= next_sequence[15:0] + 16'd1;
++        next_sequence[31:16] <= next_sequence[31:16] + {15'b0,sequence_carry[0]};
++        next_sequence[47:32] <= next_sequence[47:32] + {15'b0,sequence_carry[1]};
++        next_sequence[63:48] <= next_sequence[63:48] + {15'b0,sequence_carry[2]};
++        sequence_carry[0] <= next_sequence[15:0] == 16'hfffe;
++        sequence_carry[1] <= next_sequence[31:0] == 32'hfffffffe;
++        sequence_carry[2] <= next_sequence[47:0] == 48'hfffffffffffe;
+         head_epoch <= epoch; last_time <= sample_time;
+         contact_deadline <= sample_flags[0] ? sample_time + 10000000 : 0;
+         resync <= 0; sample_accepted <= 1;

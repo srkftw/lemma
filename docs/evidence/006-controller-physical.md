@@ -306,4 +306,35 @@ CUTCLASS coverage gap is separate and not established as the timeout cause.
 failure. Maintained full256 source2bab7e33 remains unchanged; no unchanged
 retry or constraint/rule waiver was used.
 
+The later segmented-sequence-counter experiment is also **unadopted**. Four
+16-bit lanes and three maintained carry flags preserve the full public counter.
+The strengthened every-edge/full256 corpus drains all frontier entries across
+16/32/48-bit carries and retains64-bit saturation. Missing low/high carry
+mutants fail the public comparison, with the private invariant observer omitted.
+A modular combinational SAT property proves increment/invariant preservation
+under its declared incoming invariant; this is not full-controller equivalence.
+The first formal driver failed on Yosys $check cells; supported chformal -lower
+preserves assertions and passes the unchanged property. Original failures remain.
+
+Mapping adds three FFs:184269 cells/50105FF/4355692.525798um2, with no unresolved
+cells, latches or memory macros. The actual maximum counter D-cone cell depth
+increases18->19. Original100MHz global-route setup WNS is **-4.568173ns FAIL**,
+2.835425ns worse than maintained-1.732748ns; hold is+0.037022ns. The worst path
+is sample_y53->sequence_carry1. All128 clock-buffer fanout violations remain
+unwaived. This is global-route estimated RC, not routed extraction.
+
+The original900s flow times out in detailed pin access at60000 groups;
+OpenROAD returns-15 after the runner waits for it. Outer supervision separately
+exits143 without a terminal accounting receipt. An independent exact command/
+path audit finds no scoped processes alive, but final peak RSS/resource and
+complete supervisor cleanup accounting are unavailable. The observed stdout
+prefix through817.544s has at least4203438080B RSS. No resource PASS is inferred.
+The signal's origin is not established. Source/flow hashes remain equal at the
+independent exit observation. No unchanged route is rerun. Process DRC, LVS,
+routed PEX, postroute timing and full-chip closure remain unreached; enclosure/
+CUTCLASS coverage is separate and not established as the timeout cause.
+[The retained source patch and receipt](006-pen-segment-carry.json) preserve the
+candidate, strengthened observers, proof, actual timing failure and supervision
+gap. Maintained full256 private-ingress source2bab7e33 remains unchanged.
+
 -->

@@ -257,3 +257,25 @@ reference course; it does not close general managed-runtime, Lean proof-kernel,
 permissioned tutor or learning-policy effectiveness obligations. Original
 companion11 cold deadlineFAIL remains retained; changed-source idle2 cold has
 its own original bound. The versioned inventory identifiers retain their scopes.
+
+The current idle2 canonical RTL six-phase course/annotation/explicit-Save/newcold/
+reopen case now passes1.446B clocks/9088.949s, versus prior11's separately passed
+2.325B/12181.543s. Original bounds and full capacity remain intact; both complete
+annotation planes have independent geometry checks. Host load/observer versions
+differ, so only target work has a controlled workload comparison. The separate
+current exact-RTL unsuccessful-save case is running, not passed.
+
+Browser11 now has real Saved11 pressure annotation and Pending/Saved-detail0
+explicit Save, preserving every controller pixel and medium byte. Same-Wasm
+browser/Node32M queued-input/scans/writes/barrier replay matches every archive
+byte. It is separate from C++ native admission, QEMU parity and cold recovery.
+Actual Close/Open cold is still running. Current idle2 browser passes cold and
+complete authored course, then a worked-material text view; full browser math/
+durable reopen and useful latency remain unfinished.
+
+Current companion idle2 actual cold recovers the earlier real reconciled Saved16
+peer at720M/6286.632s with exact pixels/bytes. Its outer supervisor143/missing
+terminal accounting remains a separate failure; this is not a newly completed
+whole lost-ACK campaign. The pen counter candidate is rejected: original100MHz
+global setup regresses to−4.568173ns; no maintained RTL adoption or physical
+closure follows. Its timeout and independent supervision gap remain retained.

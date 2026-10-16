@@ -1436,6 +1436,158 @@
       },
       "prior_companion11_scope": "FAIL at original absolute00:33:57.348922Z with no Ready. All29 tracked PID/start identities independently reaped, actor5250.824s/supervised5252.611s/365719552B. No terminal machine boundary after cancellation; no extension or relabel. Changed-source idle2 companion independent cold remains running under its own original1.6B/7200s.",
       "candidate_ci": {
+        "head": "3c1482ee609e5c79210c7a00318308e3a415a9e1",
+        "run": 38834820937,
+        "attempt1": "FAILURE",
+        "successful_jobs": 10,
+        "failed_job": "Task003 source-negative RV64 qualification",
+        "failed_job_id": 116761466646,
+        "failed_step": "Build fresh controls and qualify both mutations at O0 and O2",
+        "skip": "Require complete controls and retained actual negative evidence",
+        "actual_error": "Pinned Nix cache transfer200/curl Failed sending data, resume1946550 thenHTTP416; host dependency realization fails before source-negative execution",
+        "fresh_exact_cache_check": {
+          "path": "build/ci/task006-candidate3c-cache-a1/verified.json",
+          "sha256": "ff6dda7fbf1c6b0f37eff3661c361d338341a2dd58f6dc3ed7004dae17b92e3d",
+          "status": "PASS_FRESH_EXACT_CACHE_RETRIEVAL_COMPRESSED_AND_NAR_HASHES"
+        },
+        "failed_job_only_retry": "requested once after complete fresh compressed/NAR hash validation; still running",
+        "scope": "Normal Nix trust verification unchanged. Original failure/skipped check retained; no pass inferred from artifact retrieval or predecessor CI."
+      },
+      "browser11_raw_annotation_save": {
+        "path": "build/browser/task006-browser11-annotation-suffix-a1/ack-result.json",
+        "sha256": "8c9c7f0931cc82fbaed35d98c45edb5ca378f333fcaaca38af6757c47417df02",
+        "status": "PASS_BROWSER_ACTUAL_ANNOTATION_SAVED11_ALL_PIXELS"
+      },
+      "browser11_explicit_save": {
+        "path": "build/browser/task006-browser11-explicit-save-a1/result.json",
+        "sha256": "d091c01b72dcabd96e70adba05bec208273d8467566415e9ee0d242cd72acc98",
+        "status": "PASS_BROWSER_EXPLICIT_SAVE_PRESERVES_COMPLETE_COURSE"
+      },
+      "browser11_same_wasm_suffix": {
+        "path": "build/browser/task006-browser11-annotation-replay-a2/result.json",
+        "sha256": "5b741c13f3903ceed7e11057473fd1dcbce5c05070a1b1ccb663caae46b07506",
+        "status": "PASS"
+      },
+      "browser11_same_wasm_suffix_supervision": {
+        "path": "build/browser/task006-browser11-annotation-replay-plan-a2/result.json",
+        "sha256": "b0411ee893becce2e2a2c70e2e2451217ef823d518ce1615dbff1d88802d0c56",
+        "status": "PASS_EXACT_SAME_WASM_ANNOTATION_SUFFIX_SUPERVISED"
+      },
+      "browser11_same_wasm_preexecution_failure": {
+        "path": "build/browser/task006-browser11-annotation-replay-a1/result.json",
+        "sha256": "4eae8ddeeaf72ca691ee7b92ba440dcf844dfa1f757896f7fe89afe6ee3f96fc",
+        "status": "FAIL"
+      },
+      "browser11_connected_observation": {
+        "annotation_clocks": 64000000,
+        "annotation_host_export_upper_seconds": 804.3204324245453,
+        "explicit_save_clocks": 32000000,
+        "explicit_save_host_export_upper_seconds": 385.6166887283325,
+        "all_pixels_each": 3630000,
+        "all_acknowledged_medium_bytes": 268435456,
+        "acknowledged_sequence": 11,
+        "medium_sha256": "27c90ff29a9637f5c616b8bc72fbba202dd252bdf5d99aaf2f5641654333864c",
+        "scope": "Same actual cold browser session -> real authored course -> raw pressure annotation -> independent complete pixels/durable samples -> Pending/Saved-detail0 explicit Save preserving every pixel/medium byte. Second actual cold UI Close/Open at reset is running, not yet qualified."
+      },
+      "browser11_same_wasm_scope": {
+        "first_cycle": 1180400000,
+        "last_cycle": 1212400000,
+        "cycles": 32000000,
+        "first_queued_events": 3,
+        "first_panel_completed": 3,
+        "last_panel_completed": 5,
+        "first_completed_io": 58,
+        "last_completed_io": 64,
+        "last_durable_barrier": 64,
+        "last_observed_write": 63,
+        "all_archive_bytes_exact": true,
+        "host_seconds": 372.578405333,
+        "node_peak_rss_bytes": 1695174656,
+        "sampled_owned_peak_rss_bytes": 1508589568,
+        "restored_wasm_heap_bytes": 346030080,
+        "original_failure": "V8 cannot reserve Wasm memory under6GiB AS; failed before machine creation. Supported host reservation32GiB with4GiB sampled owned RSS and original600s absolute deadline; no state, tolerance or target bound changed.",
+        "limitations": "Same compiled Wasm browser/Node only. C++ native snapshot admission rejects distinct implementation identity. Not arbitrary QEMU exact cached continuation, cross-backend timing parity or cold recovery."
+      },
+      "browser_saved11_cold_plan": {
+        "path": "build/browser/task006-browser11-saved11-cold-plan-a1/plan.json",
+        "status": "RUNNING_NO_RESULT",
+        "same_backing_name": "course-save11-a1",
+        "fresh_cpu_observed_cycle": 0,
+        "fresh_cpu_observed_retired": 0,
+        "snapshot_input": false,
+        "bounds": "original1B/7200s cold then400M/3600s explicit course reopen; original5B/28800s aggregate remains binding"
+      },
+      "exact_rtl_complete_case": {
+        "path": "build/courses/task006-ingress-idle-course-rtl-a1/result.json",
+        "sha256": "8dcf931178cdb5afaab3925889a7780c83b50c0d4e61d1e00358e63dc5bdf15d",
+        "status": "PASS_REAL_COURSE_ANNOTATION_IDLE_SAVE_COLD_REOPEN"
+      },
+      "exact_rtl_complete_supervision": {
+        "path": "build/courses/task006-ingress-idle-course-rtl-supervision-a1/result.json",
+        "sha256": "647eb31fbdc60996fe7682a62e4280b28d4d59b248d415e2ba9845f4b1dd9c3b",
+        "status": "PASS_COURSE_PRESERVING_SAVE_SUPERVISED"
+      },
+      "exact_rtl_complete_comparison": {
+        "path": "build/courses/task006-ingress-idle-course-rtl-qualification-a1/complete-comparison.json",
+        "sha256": "ec4a305e82f70ef623228dca5dfd4d9ba56992a336d66778b9c36be6a59fffd7",
+        "status": "PASS_COMPARABLE_EXACT_RTL_COMPLETE_COURSE_SAVE_COLD_CASE"
+      },
+      "prior11_exact_rtl_complete": {
+        "path": "build/courses/task006-course-preserving-save-rtl-a1/result.json",
+        "sha256": "4565a9496291c2beeadaf9c8a5075866349e14b61ff39c1265bcdc72e8932883",
+        "status": "PASS_REAL_COURSE_ANNOTATION_IDLE_SAVE_COLD_REOPEN"
+      },
+      "prior11_exact_rtl_supervision": {
+        "path": "build/courses/task006-course-preserving-save-rtl-supervision-a1/result.json",
+        "sha256": "074c18777cba57cde2e4a8d7bedbe584bb05a3154a8c733547e2eb8faa983f03",
+        "status": "PASS_COURSE_PRESERVING_SAVE_SUPERVISED"
+      },
+      "prior11_independent_cold_pixels": {
+        "path": "build/courses/task006-course-preserving-save-rtl-independent-a1/result.json",
+        "sha256": "fa47f95a5927df8df607a10ebcedb2b248529cb810f8a39d78b73aafed49f980",
+        "status": "PASS_EXACT_RTL_COLD_REOPEN_ALL_INDEPENDENT_ANNOTATION_PIXELS"
+      },
+      "exact_rtl_complete_performance": {
+        "before_clocks": 2325000000,
+        "after_clocks": 1446000000,
+        "target_clock_reduction": 879000000,
+        "target_clock_reduction_percent": 37.806451612903224,
+        "before_host_seconds": 12181.542536818073,
+        "after_host_seconds": 9088.948889876949,
+        "current_supervised_seconds": 9090.50135699904,
+        "current_owned_peak_rss_bytes": 806739968,
+        "scope": "Same actual rawSaved8 input and source-bound runtime/profile/workload. Absolute raw times follow changed target phase times; relative raw fields/timing equal. Host load and observer versions differ; no controlled host speedup claim."
+      },
+      "exact_rtl_failed_save_case": {
+        "status": "RUNNING_NO_RESULT",
+        "command": "scripts/check_rtl_course_failed_save.py",
+        "actor": "build/courses/task006-ingress-idle-failed-course-rtl-a1",
+        "predeclared": "build/courses/task006-ingress-idle-failed-course-rtl-plan-a1/plan.json",
+        "scope": "Shared existing failed-course observer with exact RTL budgets; no held helper edited. Same3B/21600 aggregate,1B/7200 cold,400M/3600 course,200M/1800 failure; no snapshot."
+      },
+      "companion_idle2_actual_cold": {
+        "path": "build/usb/task006-ingress-idle-companion-cold-a1/result.json",
+        "sha256": "f18990c1ae8a71f1119156ecc6799edf148988edccae367e6e4554c117f37f21",
+        "status": "PASS"
+      },
+      "companion_idle2_supervision_gap": {
+        "path": "build/usb/task006-ingress-idle-companion-cold-plan-a1/supervision-exit-observation.json",
+        "sha256": "1b03ebdc74ceeb8c44f128b7bd973bd1dd982ec6884d2815aaa602922801786b",
+        "status": "FAIL_SUPERVISOR_SIGNAL_NO_TERMINAL_ACCOUNTING"
+      },
+      "companion_idle2_cold_scope": "Actual new source/device CPU cold recovers prior real reconciled Saved16 peer720M/6286.632s, every controller pixel and medium byte exact, sources unchanged. Outer supervisor143/missing terminal accounting retained; no sampled peak/RSS pass claimed. No scoped processes remain. This does not turn the original old-source failed wholeC/lost-ACK campaign into a passing new whole campaign.",
+      "browser_current_course": {
+        "path": "build/browser/task006-idle2-mathematics-plan-a1/course-start-result.json",
+        "sha256": "a50087c2cbdb8379a46b0c35f2456ca13e86c0d2deb15c6984bd5e403f9cce1b",
+        "status": "PASS_CURRENT_BROWSER_AUTHORED_COURSE_ALL_PIXELS"
+      },
+      "browser_current_worked_material": {
+        "path": "build/browser/task006-idle2-mathematics-plan-a1/worked-material-result.json",
+        "sha256": "f0e560837dd8ed4215dcab3cf70d89774a2d0f543f13fee06183a19fcf8b99dc",
+        "status": "PASS_CURRENT_BROWSER_WORKED_MATERIAL_BODY"
+      },
+      "browser_mathematics_scope": "Current idle2 actual cold/course all pixels pass; worked-material view passes independent384x320 text-region check after64M clocks within900s active window. Full snapshot CRC/domain is validated, not every new worked-view pixel independently predicted. Actual exercise navigation continues. No mathematical submission result claimed yet.",
+      "previous_successful_ci": {
         "head": "568d9cec8f0b40544f9a3aae1cd2dac1efa06710",
         "run": 38829709111,
         "status": "completed",

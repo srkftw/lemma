@@ -1647,7 +1647,10 @@ Ready at493M clocks versus828M, with the full display and8192-frame pool.
 The browser also reaches actual cold Ready at493M clocks/4759.683s using192MiB
 of Wasm heap; every controller pixel matches the independent retained-ink
 expectation. Host durations under different concurrent loads are not a simulator
-speed comparison. The complete RTL Save/cold-reopen case remains running.
+speed comparison. The complete RTL Save/cold-reopen case also passes:1.446B
+clocks/9088.949s versus2.325B/12181.543s for the prior guest. Both retain their
+original3B/21600s bounds; the current observer independently checks the complete
+annotation plane.
 
 ```sh
 ./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
@@ -1709,3 +1712,52 @@ imports no scratch implementation from
 `build/`. It never installs packages or documents on the guest's behalf.
 Its local hint is authored course material; permissioned tutor transport, the
 general managed runtime and the Lean proof-kernel port remain unfinished.
+
+The shared failed-first-FLUSH scenario also has an exact RTL adapter, currently
+running its first full case. It uses the same guest, raw input and independent
+failed/provisional-pixel and cold-recovery observer as the fast command above:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_rtl_course_failed_save.py \
+  --disk build/browser/task006-pointer-ink-save-browser-export-a1/medium.raw \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --native-bundle build/native/task006-ingress-idle-notebook-a1 \
+  --guest-build build/kernel/task006-ingress-idle-notebook-notebook-a1 \
+  --guest-source-root build/courses/task006-ingress-idle-notebook-whole-a1/consumed-source-root \
+  --work-dir build/courses/AN_UNUSED_RTL_FAILED_COURSE_CHECK
+```
+
+Its bounds are3B clocks/21600s aggregate,1B/7200s per cold,400M/3600s per
+course opening and200M/1800s for the unsuccessful save. This is the explicitly
+injected fail-before-writeback model, not an assumption that OS failure rolls
+back persisted bytes. The first full RTL result is still pending.
+
+The actual browser11 path now includes cold saved-ink recovery, complete
+authored course, pressure annotation with real Saved11, and an explicit
+Pending/Saved-detail0 Save preserving every pixel and medium byte. Its new
+Close/Open cold recovery is running. The current idle2 browser has separately
+passed cold Ready and its complete authored course, and is navigating the
+mathematical material. Browser-local mathematics/complete durable reload and
+useful interaction latency remain unfinished.
+
+The existing exact same-Wasm suffix command executed successfully against
+actual queued pen input, controller scans, writes and a barrier:
+
+```sh
+nix develop --no-write-lock-file --command timeout 600s node \
+  conformance/lemmasim/check_wasm_browser_suffix.mjs \
+  build/browser/task006-course-preserving-save-a1 \
+  build/browser/task006-browser11-annotation-suffix-a1/prefix.bin \
+  build/browser/task006-browser11-annotation-suffix-a1/suffix.bin \
+  build/browser/AN_UNUSED_SAME_WASM_REPLAY \
+  build/browser/task006-browser11-annotation-suffix-a1/outcomes.io
+```
+
+It reproduces all archive bytes over32M clocks in isolated backing; this is
+the identical Wasm core on browser and Node, not C++ native migration or cold
+recovery. The measured Node peak is1.695GB, restored Wasm heap330MiB. V8 also
+needs virtual address reservation: an initial6GiB address-space limit failed
+before machine creation; corrected supervision allowed32GiB virtual/4GiB
+resident memory while retaining the original600s absolute deadline. The
+original failure is retained. C++ native admission rejects the distinct Wasm
+implementation identity; no ID rewriting or admission bypass is supported.

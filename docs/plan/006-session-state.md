@@ -3031,3 +3031,118 @@ before machine creation because6GiB AS cannot reserve V8 Wasm memory. Corrected
 host preparation a2 allows32GiB virtual/4GiB owned resident memory, preserving
 the original600s absolute ceiling. This is not C++ native conformance, cold
 recovery or a new timing-parity claim. Preserve its terminal result honestly.
+
+Browser11 continuation now passes real annotation and explicit Save. At1.2444B,
+actual Saved11 follows backing barrier76. Independent complete course+pressure
+geometry pixels and all three original durable raw samples PASS; annotation64M,
+804.321s conservative export upper bound under original200M/1800s. Explicit
+toolbar Save at1.2764B has new Pending/Saved11-detail0 and completed scan7,
+all3.63M pixels and268435456 medium bytes unchanged. Observed32M/385.617s upper
+bound under original60M/600s. Actual medium SHA
+27c90ff29a9637f5c616b8bc72fbba202dd252bdf5d99aaf2f5641654333864c.
+Receipts:`build/browser/task006-browser11-annotation-suffix-a1/ack-result.json`
+and`build/browser/task006-browser11-explicit-save-a1/result.json`.
+
+Same-Wasm queued-input replay a2 is terminalPASS: actual prefix1.1804B has3
+queued events; exact32M suffix reaches5 scans, completedIO64/barrier64/write63.
+Every archive byte equals actual browser output, no masks, original outcome
+tape and isolated POSIX backing. Node372.578s/1695174656B process peak RSS,
+346030080B restored Wasm heap. Supervised374.158s/1508589568B sampled aggregate
+RSS, original600s absolute bound retained; these distinct peak measurements
+need not agree. All owned processes reaped. Initial AS6GiB pre-machine failure
+remainsFAIL. Receipt:`build/browser/task006-browser11-annotation-replay-a2/result.json`
+and`...-replay-plan-a2/result.json`. This is same-Wasm browser/Node continuation;
+the separately rejected C++ native implementation identity is not bypassed.
+
+Tab30 has now actually Close/Open-ed its own OPFS Saved11 medium, observed new
+CPUcycle0/retired0, then started original1B/7200s stop-at-Ready cold run. No
+snapshot was supplied. Plan:`build/browser/task006-browser11-saved11-cold-plan-a1/plan.json`.
+Keep this cold distinct from replay. Tab31 continues current idle2 course opening.
+Preserve both and dirty tab29; never reload them as an inspection shortcut.
+Current pushed3c1482ee609e5c79210c7a00318308e3a415a9e1 candidate CI38834820937
+is running; predecessor568 has actual successful11-job/109-step CI, not an
+inherited pass for the new candidate.
+
+Bounded new pen prototype remains private under
+`build/silicon/pen-segment-carry-owner-a1`. Maintained2bab7e33 is unchanged.
+It replaces the measured acceptance-to-high-sequence enabled64-bit increment
+with16-bit lanes and3 maintained carry flags. Every-edge interface miter28725
+edges, independent full256/two-wrap/refill/watchdog cases and explicit16/32/48/
+64-bit frontier/saturation cases pass. A missing low carry with the private
+invariant observer removed fails the public miter at edge2645. Modular
+combinational SAT proves increment equivalence and preservation of the incoming
+carry invariant for all64-bit values/reset/acceptance; it is not a full-controller
+equivalence proof. Initial Yosys $check admission failed; documented chformal
+-lower repairs the driver without removing an assertion, unchanged propertyPASS.
+Mapped184269 cells/50105FF/4355692.525798um2, no unresolved/latch/memory cells.
+Map55.159s supervised/1048690688B. One changed-source900s physical attempt with
+exact mapping reuse, unchanged100MHz/corner/constraints/repair and requested
+process checks is running under1000s outer/8GiB RSS/2GiB available floor.
+Do not infer physical improvement or adopt the source before the actual result.
+
+Terminal milestone: current idle2 complete canonical RTL6phase case PASS
+1,446,000,000 clocks/9088.949s,9090.501s supervised/806739968B peak, all owned
+processes reaped and consumed Python unchanged. Its phases are493M cold,194M
+course,45M annotation+Saved,14M explicit Save,506M independent cold and194M
+reopened complete course/annotation. Every expected pixel is independently
+computed from acknowledged brush/raw pressure geometry. Prior11 separately
+passes2.325B/12181.543s,12182.718s supervised/778924032B, with its newly completed
+cold plane independently checked after execution. No snapshot in either case.
+The paired current comparison binds both actual guest images to the earlier
+one-of408 source delta, same input medium/runtime/profile and relative input
+fields/times. Absolute raw times follow actual phase clocks; host load/observer
+versions differ. Target work falls879M/37.806%, not a controlled host speedup.
+`build/courses/task006-ingress-idle-course-rtl-qualification-a1/complete-comparison.json`.
+
+The shared exact-RTL unsuccessful-save adapter is now maintained at
+`scripts/check_rtl_course_failed_save.py`. It selects declared RTL phase budgets
+before calling the existing failed-course observer; no imported/held helper
+changes. Its first full case is running under original3B/21600 aggregate,
+1B/7200 each cold,400M/3600 each course,200M/1800 failure. First actor:
+`build/courses/task006-ingress-idle-failed-course-rtl-a1`; supervision/plan siblings
+retain original limits. Syntax/help and scaffold18/metadata/diff pass; whole
+execution is not yet passed. It is fail-before-writeback injection, not OS
+failure rollback. Retain all active Python source holds until terminal teardown.
+
+New companion idle2 actual cold is PASS720M/6286.632s under its original
+1.6B/7200s and absolute02:31:22.610297Z limit: actual reconciled Saved16 peer,
+complete pixels/medium exact and all original peer/outbox/source bytes unchanged.
+`build/usb/task006-ingress-idle-companion-cold-a1/result.json`. Outer supervisor
+65159 separately exits143 with no terminal accounting file. Exact scoped
+command/path audit finds none alive; no final RSS/resource-supervision PASS is
+claimed. Gap receipt:`...-cold-plan-a1/supervision-exit-observation.json`.
+Signal origin is not established. Do not reconstruct a passing supervisor or
+turn the original old-source wholeC failure into a current whole campaign pass.
+
+Physical segmented-counter candidate is rejected. Current100MHz global setup
+WNS-4.568173ns/hold+0.037022ns; worst path sample_y53->sequence_carry1, all128
+clock-buffer fanout violations retained. Original900s flow reaches60000 pin-
+access groups then times out, waits for OpenROAD return-15 and writes FAIL.
+Outer92780 exits143 without terminal supervisor accounting; independent scoped
+audit finds no processes alive. Final resource peak/cleanup accounting unavailable,
+not PASS. Mapped counter D-cone depth18->19. Strengthened frontier observer
+drains every queued entry; missing high48 carry fails public edge570, missing
+low16 carry edge2645 without private-invariant checks. All source/flow hashes
+match at independent exit observation. No unchanged reroute; maintained2bab7e33
+remains. [Compact receipt/patch](../evidence/006-pen-segment-carry.json).
+
+Candidate3c1482e CI38834820937 attempt1 is FAILURE: other10 jobs pass, source-
+negative job116761466646 fails during Nix realization before tests; its require-
+results step is skipped. Actual transfer200/curl error resumes1946550 and gets
+HTTP416. Fresh exact artifact retrieval is1946550 bytes, matching FileHash,
+and decompressed7546056-byte NarHash also matches pinned cache metadata.
+`build/ci/task006-candidate3c-cache-a1/verified.json`; actual error excerpt nearby.
+One failed-job-only retry was requested after this independent check; normal
+Nix trust verification unchanged. Retry is running, not passed. Do not push a
+new head merely to cancel it or call predecessor568 success a current pass.
+
+Browser idle2 actual authored course all3.63M pixels PASS at689.2M. First worked-
+material view uses64M clocks, stops on cycle-limit753.2M within900s active run;
+its independent384x320 text region passes with full snapshot CRC/domain checked.
+No independent prediction of every changed worked-view pixel is claimed.
+Tab31 is now navigating to exercise node2 under another64M/900s segment.
+`build/browser/task006-idle2-mathematics-plan-a1` retains real outputs, raw rows
+and new prospective connected-math bounds; no checking result yet. Tab30 still
+runs real Saved11 Close/Open cold under original1B/7200s; no snapshot input.
+Retained task tabs16..31 were all observed paused except these active two and
+marked for handoff; dirty tab29 stays untouched. Preserve all of them.

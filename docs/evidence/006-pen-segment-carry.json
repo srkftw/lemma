@@ -1,0 +1,103 @@
+{
+  "schema": "lemma-pen-segment-carry-experiment/1",
+  "status": "UNADOPTED_COMPONENT_PASS_PHYSICAL_REGRESSION_SUPERVISION_INCOMPLETE",
+  "scope": "One changed-source standalone256-entry pen candidate. Maintained RTL unchanged; no guest, complete routing, DRC/LVS, extracted timing or full-chip claim.",
+  "decision": "Reject: setup WNS regresses by2.835425ns at original100MHz. No unchanged retry.",
+  "maintained_sha256": "2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3",
+  "prototype_sha256": "8312b2a666228382b643c5bedccfd8ef8e31b0a3304aff1d44aa8aa4b4aa9c6b",
+  "reconstructible_patch": {
+    "path": "docs/evidence/006-pen-segment-carry.patch",
+    "sha256": "15b316de609d40e366998d3f9baf4ecb3f4e9bd7b3f7f69ef10bc24336028335"
+  },
+  "change": "Four16-bit sequence lanes with3 maintained carry flags; public acceptance, timing, widths,256entries/181bits/16banks unchanged.",
+  "positive": {
+    "path": "build/silicon/pen-segment-carry-qualification-a2/result.json",
+    "sha256": "b12be0bc48d03f2213f57fabb6699ccfbb5720f9458907e625c3785a040e46b5",
+    "status": "PASS"
+  },
+  "earlier_positive": {
+    "path": "build/silicon/pen-segment-carry-qualification-a1/result.json",
+    "sha256": "14ed9a3e171a58ca0fa3a1c6d37d97e0376c329cf313674b6100179c2a687288",
+    "status": "PASS"
+  },
+  "coverage_correction": "First short16/32/48/64-frontier case checked acceptance/counts without draining. Strengthened a2 independently reads every field of every queued frontier entry. Original result retained; no full equivalence proof claimed.",
+  "negatives": {
+    "missing_low16_carry": {
+      "receipt": {
+        "path": "build/silicon/pen-segment-carry-negative-a1/result.json",
+        "sha256": "f1b32eff9907abee922cfedccda262ba2c704f4d72a429e81f380636e6b1b450",
+        "status": "FAIL"
+      },
+      "public_difference_edge": 2645
+    },
+    "missing_high48_carry": {
+      "receipt": {
+        "path": "build/silicon/pen-segment-carry-negative-a2/result.json",
+        "sha256": "d42df38534dc7a5e70dc45217ad8c3e72939f77a1c9f2166bcff16501b437617",
+        "status": "FAIL"
+      },
+      "public_difference_edge": 570
+    },
+    "scope": "Both public-interface negative fixtures omit the private flag-invariant observer; actual external comparisons fail."
+  },
+  "counter_proof": {
+    "path": "build/silicon/pen-segment-carry-owner-a1/carry-property-a2.log",
+    "sha256": "4b06943f99643b33db0c960f23dbb0dd3488d785ff1fa0beb96a1a610678a607",
+    "scope": "Modular combinational SAT: all64-bit counter values/reset/acceptance, assuming declared incoming carry invariant; increment equivalence and invariant preservation. Not a full-controller proof.",
+    "initial_driver_failure": "Initial Yosys $check is unsupported by sat; documented chformal -lower converts checks to asserts without removing them. Initial failed log retained."
+  },
+  "mapped_cones": {
+    "path": "build/silicon/pen-segment-carry-owner-a1/mapped-cone-result.json",
+    "sha256": "555b016bbf79ffbf11d53392742a09141336003fef2ee8839e06cd476f512185",
+    "status": "PASS_ALL64_ACTUAL_MAPPED_COUNTER_D_CONES_OBSERVED"
+  },
+  "cone_scope": "Actual64 counter D cones; max cell stages18->19. Static graph property, no timing improvement implied.",
+  "mapping": {
+    "path": "build/silicon/physical/pen-segment-carry-map-a1/result.json",
+    "sha256": "b91ece02f027dbca9f01f4dc2610ee7a9f96f7a257cb6c03a5390daab4b28f1d",
+    "status": "PASS"
+  },
+  "mapping_supervision": {
+    "path": "build/silicon/pen-segment-carry-map-supervision-a1/result.json",
+    "sha256": "ea6c406e81b9031546029a1ed10d456a2d9f677e2812e582f47ee6a76d982d3f",
+    "status": "PASS_PEN_SEGMENT_CARRY_MAP_SUPERVISED"
+  },
+  "mapped": {
+    "cells": 184269,
+    "flip_flops": 50105,
+    "cell_area_um2": 4355692.525798,
+    "unresolved_cells": 0,
+    "latches": 0,
+    "residual_memories": 0
+  },
+  "physical": {
+    "path": "build/silicon/physical/pen-segment-carry-a1/result.json",
+    "sha256": "fcf7c823d8037494c2453650998d4f4032f934b06fdc28659d3679e29b071118",
+    "status": "FAIL"
+  },
+  "outer_supervision": {
+    "path": "build/silicon/pen-segment-carry-owner-a1/physical-exit-observation.json",
+    "sha256": "70ae5062d143100b45eba00b04bbc58336ef35f9fc2284703e69757c7aa67a85",
+    "status": "FAIL_SUPERVISOR_SIGNAL_NO_TERMINAL_ACCOUNTING"
+  },
+  "global_route": {
+    "clock_period_ns": 10,
+    "setup_wns_ns": -4.568173,
+    "hold_wns_ns": 0.037022,
+    "maintained_setup_wns_ns": -1.732748,
+    "timing_model": "global-route RC estimate; not routed PEX",
+    "worst_path": "sample_y[53] -> mapped_263928_ / sequence_carry[1]",
+    "instances": 237616,
+    "cell_area_um2": 5110148.736,
+    "core_area_um2": 17401157.424,
+    "electrical": "128 actual clock-buffer fanout violations, limit8/fanout16/slack-8; unwaived"
+  },
+  "routing": "Actual OpenROAD command timed out after897.453s within original900s flow deadline; SIGTERM return-15 follows wait. Detailed routing reaches60000 pin-access groups, not completed.",
+  "supervision_gap": "Outer supervisor exits143 without final accounting. Exact scoped process audit finds none alive. Final peak RSS/available memory and complete supervisor cleanup accounting unavailable; observed prefix through817.544s has at least4203438080B. No PASS resource claim.",
+  "flow_inputs_equal_at_independent_exit_observation": true,
+  "separate_gaps": [
+    "SG13G2 enclosure/CUTCLASS coverage not qualified or established as timeout cause",
+    "router/process DRC,LVS,routed PEX/postroute setup/hold/electrical not reached",
+    "full SoC/core/memory/pads/CDC/power/analog/RF/panel closure unfinished"
+  ]
+}
