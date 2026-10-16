@@ -44,3 +44,12 @@ Component Action tests and independently predicted framebuffer bytes qualify
 these local properties. They are separate from genuine checked LLVM/RV64,
 whole-image audit, actual guest checking, durable Save/cold reopen, RTL timing
 and browser execution. None is implied by this contract.
+
+Notebook13 adds the loss-repaint repair to the same entry interface. After the
+ordinary cancellation redraw, an active course reconstructs its mathematical
+panel, controls and keypad. Already validated cached package bytes reconstruct
+the selected text; a cancelled partial reader stays cancelled. This path issues
+no Store write, checking request or Saved transition. It does not change the
+acknowledged goal, revision, attempts, assistance or raw ink. Historical
+Notebook12 artifact pins remain separate; its missing overlay reconstruction
+is retained as an observed failure, rather than relabeled as conformance.

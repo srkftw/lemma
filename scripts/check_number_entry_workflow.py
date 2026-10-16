@@ -83,12 +83,30 @@ class NumberEntryWorkflow(CourseMathWorkflow):
         require({k:r.payload for k,r in self.record(cm)[2].items()}=={k:r.payload for k,r in records.items()},'cold lost acknowledged objects')
         stream=Input(1650,2200,cold.inspect()['machine']['ticks']+10000,100000,0)
         prior_checks=len([r for r in self.rows(cold)if r[0]==1113])
-        panel=self.click(cold,stream,'cold-reopen-installed-body',320,140,text=package['nodes'][0]['body'])
+        selected=assisted[3]['current']
+        reopen_node=selected['node']-1 if selected['origin']=='InstalledPackage' else 0
+        reopen_body=package['nodes'][reopen_node]['body']
+        panel=self.click(cold,stream,'cold-reopen-installed-body',320,140,text=reopen_body)
         require(pad_matches(panel,False),'cold keypad was not reconstructed by guest')
         reopened=self.checkpoint_record(cold,'cold-reopened')
         require(reopened[2]==payload and filecmp.cmp(medium,reopened[1],shallow=False),'reopen changed acknowledged mathematics/history')
         require(len([r for r in self.rows(cold)if r[0]==1113])==prior_checks,'reopen manufactured a checking attempt')
         require(sha(self.args.disk)==self.original_medium_sha256,'original user medium changed')
+        self.report['base_number_entry_complete']={'actual_checks':['Invalid5/0','Verified5/6','Invalid5/69','Verified5/6'],'raw_ink_saved':True,'cold_all_pixels_and_medium_exact':True,'reopened_package_and_keypad':True}
+        self.progress()
+        # A real modeled disconnect must cancel contact without leaving an
+        # invisible-but-active course/keypad after the ordinary redraw.
+        before=cold.inspect()['machine'];stream.tick=before['ticks']+10000;first=len(stream.events)
+        stream.sample(950,1900,0,False,flags=8);stream.sample(950,1900,0,False)
+        cold.admit(stream.events[first:]);observed=self.directory/'disconnect-observed.ppm'
+        def restored_course(st):
+            if not idle(st)or st['ticks']<stream.events[-1][1]+200000 or st['panel_completed']<=before['panel_completed']:return False
+            cold.control({'action':'panel','path':str(observed)})
+            return pad_matches(observed,False)and __import__('course_pixel_oracle').course_body_matches(observed,reopen_body)
+        self.phase(cold,'disconnect-preserves-visible-course-and-keypad',500000000,restored_course)
+        after_disconnect=self.checkpoint_record(cold,'after-disconnect')
+        require(after_disconnect[2]==payload and filecmp.cmp(medium,after_disconnect[1],shallow=False),'disconnect mutated acknowledged mathematics/history/media')
+        self.report['disconnect_repaint']={'real_flags8_input':True,'course_and_keypad_pixels':True,'acknowledged_bytes_unchanged':True}
         self.report.update(status='PASS_GUEST_NUMBER_ENTRY_CHECKING_COLD',numeric_entry=True,real_isolated_checks=['Invalid5/0','Verified5/6','Invalid5/69','Verified5/6'],overflow='unchanged durable bytes/no checking/no Saved',independent_cold={'all_controller_pixels_exact':True,'all_medium_bytes_exact':True,'all_objects_exact':True},hint_scope='authored local material; not live tutor')
 
 def main():

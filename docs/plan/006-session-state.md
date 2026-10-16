@@ -3203,3 +3203,41 @@ observer, within the remaining original2500s budget. Original failed whole-pair
 result remains FAIL; normal and initializer consumed-source identities are
 separate and must be reported honestly. Actual NumberEntry CPU workflow remains
 NOT_RUN. Original campaign start/deadline is retained in its supervision launch.
+
+### NumberEntry13 loss-repaint repair and actual browser verification
+
+40fe7ef normal build/full audit PASS216.491s/204.501s, supervised425.769s;
+`build/courses/task006-number-entry-normal-whole-a1` plus supervision, original
+04:27:34Z compile deadline retained. Reused original20e6 initializer separately.
+Native actual raw keypad returns5/0Invalid,5/6Verified,5/69Invalid,overflow/noSave,
+BACK->5/6Verified,hint,newrawink and exact newCPUcold/allpixels/allmedium. First
+case fails a new observer mistake at reopen: persisted Known node3 correctly
+reopens exercise3, not initial node1. Independent actual captured pixels prove
+that correction; original case remains FAIL. Original actor reconstructed and
+SHA-checked in its supervision folder. Corrected actor case a2 reaches actual
+flags8 disconnect and FAILS500M repaint cap: course/keypad vanish. Its base
+numeric/cold/reopen prefix is explicitly complete; whole case remains FAIL.
+`build/courses/task006-number-entry-fast-a1/a2`, corresponding supervisions.
+
+Actual repair is in Lean numericPumpCancelledRedraw: existing ink redraw first,
+then active math/controls/keypad; only validated cached text is scheduled,
+partial reader remains cancelled; no Store write/check/Saved. New artifact13
+preserves12 authority. Both genuine configs864pre862post,842 original bodies
+exact and actual25RV64 cells PASS at
+`build/courses/task006-number-entry-cancel-component-a1/result.json`. Kernel442,
+scaffold18/metadata PASS. Commit then fresh normal-only whole build/audit under
+new prospective same2500s/300s caps for this changed guest; original campaign and
+both failed guest cases retain their meanings. Reuse compatible original audited
+initializer/its own source and artifact12 pins; do not call that freshly compiled.
+Next rerun identical actor/bounds (3B/900s,500M disconnect) with repaired image.
+
+Browser31 actual originald2 now REALLY VERIFIED5/6: raw CHECK, isolated closure
+request345, Doc8goal1/revision12/evidence12,attempt1,Known package node3, Saved21
+through actual backing barrier. Independent durable bytes/execution/goal binding
+PASS at`build/browser/task006-idle2-mathematics-plan-a1/verified-result.json`.
+Paused1443850000 after98.65M checker clocks within original200M/2400s. Full
+checkpoint/medium exported; label/text pixel observer runs. This is restricted
+exact arithmetic, not full Lean proof-kernel closure. Continue actual hint,
+review/edit/error paths and durable-only reopen; no snapshot as cold input.
+New20e6 candidate CI38847208539 has11/109 SUCCESS, no skips; local40fe/repaint
+changes do not inherit it. PR9 remains draft/unmerged.

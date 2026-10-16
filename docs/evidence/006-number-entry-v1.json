@@ -1,14 +1,8 @@
 {
   "schema": "lemma-number-entry-evidence/1",
-  "status": "INITIALIZER_BUILD_AND_FULL_AUDIT_PASS_NORMAL_AND_CPU_PENDING",
+  "status": "REAL_BASE_WORKFLOW_PASS_DISCONNECT_FAIL_REPAIR_ARTIFACT_PASS_CPU_PENDING",
   "contract": "docs/contracts/006-number-entry-v1.md",
   "scope": "Additive canonical Notebook12; machine0.3/User2, Store format, raw ink, isolated checker and original Notebook roots retained. Companion root unchanged.",
-  "target_sources": {
-    "Lemma/Documents/MathematicsEntry.lean": "25218480fd20566e012c17ef4d9348cbc72a23d93997f8ef0dd643d4fe176163",
-    "Lemma/Courses/NumberPad.lean": "f36d54937de76354d1d66d1c5d2c70a3213d8527f51f84cb8bb21b6971bfffec",
-    "Lemma/Applications/Notebook.lean": "940bf5c2d005dfeb178d84ed614520e469d4ab5370ee0a58358d4f5bd6f52f91",
-    "Lemma/Compiler/DeploymentCatalog.lean": "63eb51e6a87c6b622871db5a09077795b76db50056aff8608a7ec18f58f862e7"
-  },
   "component": {
     "result": "build/courses/task006-number-entry-component-a2/result.json",
     "result_sha256": "404fb5d3e1d64961b739f9265b53152ce8c300fad3a68a1101228156414c317c",
@@ -37,6 +31,14 @@
     {
       "path": "build/courses/task006-number-entry-whole-a1/result.json",
       "reason": "Fresh initializer built; full audit rejected old source-selected image-list expectation. Corrected observer preserves exact full rows and admits only the new canonical root. Initializer bytes reused, original failure retained."
+    },
+    {
+      "path": "build/courses/task006-number-entry-fast-a1/result.json",
+      "reason": "New test expected initial node1 on reopen despite acknowledged Known node3 selection. Independent actual exported pixels match node3 and full keypad. Complete original case remains FAIL; disconnect was not reached."
+    },
+    {
+      "path": "build/courses/task006-number-entry-fast-a2/result.json",
+      "reason": "Corrected observer reaches actual flags8 disconnect; course/keypad disappear after generic redraw. All real numeric/checking/ink/Save/cold/reopen checks preceding disconnect pass. Original500M/3B/900s bounds retained."
     }
   ],
   "checks": {
@@ -44,9 +46,11 @@
     "foundation_host": "473 PASS,36.409s",
     "scaffold": "18 PASS final,6.898s; metadata PASS",
     "workflow": "14 PASS; new Action/pixel commands retained in exact pipeline inventory",
-    "kernel_provenance": "442 PASS8.560s, includes three exact old/new root/role/field/profile regressions"
+    "kernel_provenance": "442 PASS8.560s, includes three exact old/new root/role/field/profile regressions",
+    "repaint_kernel_host": "442 PASS7.920s",
+    "repaint_scaffold": "18 PASS6.420s and metadata PASS"
   },
-  "next": "Fresh normal build/full audit, reusing the independently audited original initializer. Retain failed whole-pair result; use remaining original2500s aggregate budget. Actual raw-device number entry/checking/cold remains NOT_RUN.",
+  "next": "Compile/audit changed Notebook13 normal under prospective same2500s/300s resource bounds, retaining compatible original audited initializer/Notebook12 pins; repeat the same actual numeric/cold/disconnect case with unchanged3B/900s and500M repaint cap.",
   "initializer": {
     "source_commit": "20e6d54fdb4aa847d15f8a128d4ef3d3b1532144",
     "build_seconds": 230.86640238994732,
@@ -55,5 +59,61 @@
     "corrected_full_audit": "build/courses/task006-number-entry-initializer-observer-a1/result.json",
     "audit_seconds": 227.4479304079432,
     "scope": "unchanged original target objects, corrected separately bound observer; no CPU/durability claim"
+  },
+  "normal": {
+    "source_commit": "40fe7ef1127b80c248efa97b78001b00fa0a96ca",
+    "build": "build/courses/task006-number-entry-normal-whole-a1/result.json",
+    "build_seconds": 216.49057215207722,
+    "full_audit_seconds": 204.5008531960193,
+    "supervised_seconds": 425.768967016018,
+    "scope": "Original normal Notebook12 fully linked/audited, within the retained original absolute compile deadline; reused original audited initializer separately."
+  },
+  "real_base_workflow": {
+    "path": "build/courses/task006-number-entry-fast-a2/result.json",
+    "scope": "Actual raw keypad5/0Invalid,5/6Verified,5/69Invalid,overflow noSave/backspaceVerified, localhint,newrawink,newCPUcold/allpixels/allmedium and selected-exercise reopen; complete case FAILS later disconnect",
+    "base_number_entry_complete": true,
+    "full_case_status": "FAIL",
+    "host_seconds": 214.13991497003008
+  },
+  "repair": {
+    "contract_version": "lemma-installed-package-notebook/13",
+    "artifact": "build/courses/task006-number-entry-cancel-component-a1/result.json",
+    "functions_pre": 864,
+    "functions_post": 862,
+    "unchanged_original_functions": 842,
+    "behavior": "Guest reconstructs active course overlays after original cancellation redraw; no Store or Saved authority added. Partial reader remains cancelled.",
+    "state": "Genuine both-config artifact and exact RV64 character relation PASS; fresh normal image and actual unchanged-bound whole workflow NOT_RUN",
+    "target_sources": {
+      "Lemma/Applications/Notebook.lean": "4f02813d8cf51fb8d749b0051c5717be1e46e602002414ed6b72851366d1b4de",
+      "Lemma/Documents/MathematicsEntry.lean": "25218480fd20566e012c17ef4d9348cbc72a23d93997f8ef0dd643d4fe176163",
+      "Lemma/Courses/NumberPad.lean": "f36d54937de76354d1d66d1c5d2c70a3213d8527f51f84cb8bb21b6971bfffec",
+      "Lemma/Compiler/DeploymentCatalog.lean": "63eb51e6a87c6b622871db5a09077795b76db50056aff8608a7ec18f58f862e7"
+    }
+  },
+  "initial_component_target_sources": {
+    "Lemma/Documents/MathematicsEntry.lean": "25218480fd20566e012c17ef4d9348cbc72a23d93997f8ef0dd643d4fe176163",
+    "Lemma/Courses/NumberPad.lean": "f36d54937de76354d1d66d1c5d2c70a3213d8527f51f84cb8bb21b6971bfffec",
+    "Lemma/Applications/Notebook.lean": "940bf5c2d005dfeb178d84ed614520e469d4ab5370ee0a58358d4f5bd6f52f91",
+    "Lemma/Compiler/DeploymentCatalog.lean": "63eb51e6a87c6b622871db5a09077795b76db50056aff8608a7ec18f58f862e7"
+  },
+  "browser_actual_math": {
+    "bundle": "build/browser/task006-ingress-idle-a1",
+    "guest": "Notebook11/ingress2 originald2, not new keypad image",
+    "result": "build/browser/task006-idle2-mathematics-plan-a1/verified-result.json",
+    "status": "PASS_ACTUAL_BROWSER_REVISION_BOUND_VERIFIED",
+    "cycle": 1443850000,
+    "check_clocks": 98650000,
+    "durable_sequence": 21,
+    "goal": 1,
+    "answer": [
+      5,
+      6
+    ],
+    "revision": 12,
+    "evidence_revision": 12,
+    "attempts": 1,
+    "known_package_node": 3,
+    "actual_isolated_request": 345,
+    "scope": "Actual raw CHECK and guest Store barrier; independent Doc8/package/execution identity observation. Controller glyph/text observation in progress."
   }
 }

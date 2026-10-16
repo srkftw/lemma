@@ -1019,13 +1019,13 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "0a83e8f95482876b41a436961ff844de30046fa1",
-    "run": 38841246343,
+    "commit": "20e6d54fdb4aa847d15f8a128d4ef3d3b1532144",
+    "run": 38847208539,
     "conclusion": "ALL_11_JOBS_SUCCESS",
     "jobs": 11,
     "reported_steps": 109,
     "skipped_steps": 0,
-    "scope": "Committed preceding implementation, excludes local NumberEntry12 changes"
+    "scope": "Notebook12 source candidate, excludes provenance observer fix40fe and local Notebook13 loss repair; no inference that actual disconnect case passes"
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1068,13 +1068,20 @@
     "unfinished": "Independent cold stopped at650M before Ready; original failure and cold-failed snapshot retained. No cold acceptance. Observer snapshot request near cutoff timed out; no additional snapshot is claimed."
   },
   "number_entry_component_milestone": {
-    "behavior": "IMPLEMENTED_IN_LEAN_NOT_CPU_QUALIFIED",
-    "compiler": "PASS actual selectors/checked User2/863pre861post/full artifact/25RV64cells",
+    "behavior": "IMPLEMENTED13_GUEST_REPAINT_REPAIR",
+    "compiler": "PASS genuine864pre862post/842 original bodies exact, both-config exports and actual RV64 character relation",
     "RTL_guest": "NOT_RUN",
-    "fast_guest": "NOT_RUN",
-    "distribution": "NOT_RUN",
+    "fast_guest": "Notebook12 actual numeric/check/ink/Save/cold/reopen base PASS; full case FAILS actual disconnect. Notebook13 repair CPU NOT_RUN.",
+    "distribution": "NOT_RUN_FOR_NUMBER_ENTRY",
     "physical": "UNVERIFIED",
     "contract": "docs/contracts/006-number-entry-v1.md",
     "evidence": "docs/evidence/006-number-entry-v1.json"
+  },
+  "browser_actual_mathematics": {
+    "behavior": "PASS real raw5/6CHECK -> revision12/goal1/Verified -> guest barrier Saved21",
+    "guest": "Notebook11/ingress2 originald2",
+    "distribution": "EXISTING_BROWSER_LOCAL_MACHINE",
+    "cold_math_reopen": "NOT_RUN",
+    "evidence": "build/browser/task006-idle2-mathematics-plan-a1/verified-result.json"
   }
 }

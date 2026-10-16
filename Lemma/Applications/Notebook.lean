@@ -4344,10 +4344,28 @@ where
     .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
     if count = 384 then .done Status.iterationStop (consumed + 1) else .done 0 (consumed + 1)
 
+/-- The generic loss recovery reconstructs the committed ink page. Repaint
+its active course overlays afterwards, using only already validated package
+bytes. A cancelled partial reader stays cancelled; it cannot publish prose or
+mathematical evidence. No Store write or Saved transition occurs here. -/
+private def numericPumpCancelledRedraw : Action :=
+  .bind (get 432) fun s needed => if statusFailed s = true then .done s 0 else
+  if needed = 0 then .done 0 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  if pending = 0 then
+  .bind pumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  if course = 1 then
+  .bind renderPackageCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 72 (if phase = 2 then 1 else 0)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 144 1) fun s _ => if statusFailed s = true then .done s 0 else packagePut 184 0
+  else .done 0 0 else .done 0 0
+
 private def numericStep : Action :=
   .bind pumpSave fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpPackageArithmetic fun s _ => if statusFailed s = true then .done s 0 else
-  .bind pumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
+  .bind numericPumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpPackageWork fun s _ => if statusFailed s = true then .done s 0 else
   .bind numericPumpPad fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else

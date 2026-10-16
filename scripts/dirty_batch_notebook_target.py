@@ -95,8 +95,11 @@ def numeric_contract(unit):
  if not numeric_candidate(unit):return None
  if unit.get('configuration')not in NUMERIC_CONFIGURATIONS or unit.get('role')!='user'or unit.get('image_key')!='notebook'or unit.get('image_id')!=2 or unit.get('contract_version')!='core0-user-v0.2' or unit.get('used_device_ops')!=[] or unit.get('software_deployment')!=NUMERIC_SOFTWARE:raise Core0Error('Number entry escaped exact canonical Notebook deployment')
  if [{k:r.get(k)for k in ('source','id','args')}for r in unit.get('roots',[])]!=[{'source':NUMERIC_ROOT,'id':1,'args':['u64']}]:raise Core0Error('Number entry root/ABI differs')
- a=json.loads(NUMERIC_AUTHORITY.read_text()).get('number_entry_v1',{})
- if a.get('schema')!=NUMERIC_VERSION or a.get('package_notebook_version')!=12 or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS)or a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):raise Core0Error('Number entry complete typed/effect/root catalog differs')
+ master=json.loads(NUMERIC_AUTHORITY.read_text());a=master.get('number_entry_v1',{})
+ if a.get('schema')!=NUMERIC_VERSION or a.get('package_notebook_version')!=12 or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS):raise Core0Error('Number entry original artifact schema differs')
+ if a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):
+  previous=a;a=master.get('number_entry_repaint_v1',{})
+  if a.get('schema')!='lemma-number-entry-repaint-artifact/1' or a.get('package_notebook_version')!=13 or a.get('previous_artifact_sha256')!=numeric_digest(previous) or set(a.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS)or a['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit):raise Core0Error('Number entry repaint exact predecessor/catalog differs')
  if {r.get('stable_id')for r in unit.get('used_execution_ops',[])}!={'execution.virtual-read8','execution.virtual-read64','execution.virtual-write8','execution.virtual-write64','execution.syscall'}:raise Core0Error('Number entry execution authority differs')
  return 'canonical',a
 
@@ -112,6 +115,10 @@ def numeric_semantics(ir,unit):
   if len(calls(prefix+owner,target))!=1:raise Core0Error('Number entry disconnected ordinary path: '+owner+'/'+target)
  for owner,target in [('numericPadPress','Lemma.Documents.MathematicsEntry.press'),('numericPumpPad','Lemma.Courses.NumberPad.render'),('numericPadPress.recapture','Lemma.Courses.PackageWorkspace.captureSelection')]:
   if len(calls(prefix+owner,target))!=1:raise Core0Error('Number entry lost actual guest operation')
+ if numeric_contract(unit)[1]['package_notebook_version']==13:
+  repair=prefix+'numericPumpCancelledRedraw'
+  if len(calls(prefix+'numericStep',repair))!=1 or len(calls(repair,prefix+'pumpCancelledRedraw'))!=1 or len(calls(repair,prefix+'renderPackageCourse'))!=1:raise Core0Error('Number entry loss recovery lost its actual guest repaint path')
+  if calls(repair,prefix+'startSave')or calls(repair,prefix+'reportCommitState'):raise Core0Error('Number entry loss repaint acquired persistence/acknowledgment authority')
  if calls(prefix+'packageRequestSave',prefix+'issue')!=['i64 8, i64 0, i64 0, i64 0']:raise Core0Error('Number entry explicit Save differs')
  return {'ordinary_guest_entry_and_storage_connected':True,'numeric_bounds':'0..99; overflow is unchanged bytes, explicit limit message','scope':'Complete source/IR authority; CPU/Store/controller qualification separate'}
 
@@ -122,7 +129,7 @@ def numeric_validate(ir,unit,*,optimized):
  from package_companion_target import complete_corpus
  phase='post'if optimized else'pre';actual=complete_corpus(ir,unit,optimized=optimized)
  if len(actual['functions'])!=w[phase+'_function_count']or numeric_digest(actual)!=w[phase+'_sha256']:raise Core0Error('Number entry complete body/global/caller corpus differs: '+phase)
- return {'contract_version':'lemma-installed-package-notebook/12','artifact_contract_version':NUMERIC_VERSION,'software_scope':'canonical','package_notebook_version':12,'phase':phase,'function_count':len(actual['functions']),'complete_corpus_sha256':numeric_digest(actual),'semantics':None if optimized else numeric_semantics(ir,unit),'scope':'Genuine complete artifact; CPU/durability/timing qualification separate'}
+ return {'contract_version':'lemma-installed-package-notebook/'+str(w['package_notebook_version']),'artifact_contract_version':w['schema'],'software_scope':'canonical','package_notebook_version':w['package_notebook_version'],'phase':phase,'function_count':len(actual['functions']),'complete_corpus_sha256':numeric_digest(actual),'semantics':None if optimized else numeric_semantics(ir,unit),'scope':'Genuine complete artifact; CPU/durability/timing qualification separate'}
 
 NUMERIC_CHARACTER='Lemma.Courses.NumberPad.character'
 NUMERIC_COLUMNS={3:67,4:76,5:82,15:48,24:66,25:65,26:67,27:75}
