@@ -74,7 +74,7 @@ def contract(unit):
     return "canonical", wanted
 
 
-def semantics(ir, unit):
+def semantics(ir, unit, *, step="bookmarkStep", work="pumpPackageBookmarkWork"):
     from audit_kernel import _ir_definition_body
     rows = {canonical(row["source"]): row for row in unit["functions"]}
 
@@ -85,11 +85,11 @@ def semantics(ir, unit):
                           r"\(([^\n]*)\)", _ir_definition_body(ir, rows[owner]["symbol"]))
 
     edges = [
-        ("bookmarkStep", "pumpBookmarkSave"),
-        ("bookmarkStep", "pumpPackageBookmarkWork"),
-        ("bookmarkStep", "numericPumpPad"),
-        ("bookmarkStep", "pumpRefreshRestoredBatched"),
-        ("bookmarkStep", "bookmarkBusy"),
+        (step, "pumpBookmarkSave"),
+        (step, work),
+        (step, "numericPumpPad"),
+        (step, "pumpRefreshRestoredBatched"),
+        (step, "bookmarkBusy"),
         ("bookmarkInputSample.acceptSample", "bookmarkToolbar"),
         ("bookmarkInputSample.acceptSample", "numericPadPress"),
         ("bookmarkInputSample.acceptSample", "cancelBookmarkWork"),
@@ -98,9 +98,9 @@ def semantics(ir, unit):
         ("bookmarkRequestSave", "startSave"),
         ("pumpBookmarkSave", "pumpSave"),
         ("pumpBookmarkSave", "adoptBookmark"),
-        ("pumpPackageBookmarkWork", "pumpBookmarkOpen"),
-        ("pumpPackageBookmarkWork", "validateBookmarkPackage"),
-        ("pumpPackageBookmarkWork", "renderPackageText"),
+        (work, "pumpBookmarkOpen"),
+        (work, "validateBookmarkPackage"),
+        (work, "renderPackageText"),
         ("pumpBookmarkOpen", "pumpBrowseOpenCourse"),
         ("pumpBookmarkOpen", "pumpPackageRecord"),
         ("pumpBookmarkOpen", "startPackageRecord"),

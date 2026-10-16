@@ -127,7 +127,8 @@ class CiWorkflowTests(unittest.TestCase):
                 r"^\s+timeout-minutes:\s+(\d+)$", self.task002, re.MULTILINE
             )
         ]
-        self.assertEqual(timeouts, [45, 45, 60])
+        # Three original job ceilings plus the narrower Reader19 Action step.
+        self.assertEqual(timeouts, [45, 12, 45, 60])
 
     def test_every_logged_pipeline_fails_closed_with_explicit_pipefail(self):
         expected = {
@@ -160,6 +161,10 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/browse-history-build.log",
                          "metadata/browse-history-package.log",
                          "metadata/browse-history-actions.log",
+                         "metadata/reader-retry5-shapes.log",
+                         "metadata/companion-reader-recovery5-actions.log",
+                         "metadata/companion-reader-deployment19.log",
+                         "metadata/chooser-reader-deployment20.log",
                          "metadata/reader-location-actions.log",
                          "metadata/notebook-reader-actions.log",
                          "metadata/reader-deployment-actions.log",

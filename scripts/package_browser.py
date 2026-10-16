@@ -82,6 +82,8 @@ def package(source, destination, archive=None):
                                 ('scripts/usb_closure_recovery_deployment.py', 'tools/usb_closure_recovery_deployment.py'),
                                 ('scripts/package_companion_deployment.py', 'tools/package_companion_deployment.py'),
                                 ('scripts/package_entry2_deployment.py', 'tools/package_entry2_deployment.py'),
+                                ('scripts/companion_reader_deployment.py', 'tools/companion_reader_deployment.py'),
+                                ('scripts/chooser_reader_deployment.py', 'tools/chooser_reader_deployment.py'),
                                 ('sim/browser/serve_local.py', 'serve.py')]:
         inputs[original] = digest(ROOT / original)
         shutil.copyfile(ROOT / original, destination / installed)

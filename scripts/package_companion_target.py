@@ -21,6 +21,8 @@ def role_key(unit):
  if unit.get('role')=='user' and unit.get('image_key') in USER_ROOTS:return unit['image_key']
  raise Core0Error('Package recovery role outside exact firmware/kernel/four-user artifact authority')
 def contract(unit):
+ from companion_reader_target import selected as reader_selected, contract as reader_contract
+ if reader_selected(unit):return reader_contract(unit)
  from package_entry2_target import selected as entry2_selected, contract as entry2_contract
  if entry2_selected(unit):return entry2_contract(unit)
  if not selected(unit):return None

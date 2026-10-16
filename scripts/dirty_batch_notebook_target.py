@@ -91,6 +91,12 @@ NUMERIC_BROWSE_ROOT='Lemma.Applications.Notebook.mainPackageNumberPadBrowse'
 NUMERIC_BROWSE_POLICY='Lemma.Courses.BrowseHistory.location'
 
 def numeric_root(unit):
+ from chooser_reader_target import candidate as chooser_candidate
+ from chooser_reader_deployment import NOTEBOOK_ROOT as CHOOSER_ROOT
+ if chooser_candidate(unit):return CHOOSER_ROOT
+ from companion_reader_target import candidate as companion_reader_candidate
+ from companion_reader_deployment import NOTEBOOK_ROOT as COMPANION_READER_ROOT
+ if companion_reader_candidate(unit):return COMPANION_READER_ROOT
  from reader_notebook_target import candidate as reader_candidate
  from reader_deployment import NOTEBOOK_ROOT as READER_ROOT
  if reader_candidate(unit):return READER_ROOT
@@ -105,6 +111,10 @@ def numeric_candidate(unit):
  if not isinstance(rows,list)or any(not isinstance(r,dict)or not isinstance(r.get('source'),str)for r in rows):raise Core0Error('Number entry candidate function map malformed')
  return any(canonical(r['source']) in (NUMERIC_ROOT,NUMERIC_BROWSE_ROOT,NUMERIC_BROWSE_POLICY) or canonical(r['source']).startswith(('Lemma.Courses.NumberPad.','Lemma.Documents.MathematicsEntry.'))for r in rows)
 def numeric_contract(unit):
+ from chooser_reader_target import candidate as chooser_candidate, contract as chooser_contract
+ if chooser_candidate(unit):return chooser_contract(unit)
+ from companion_reader_target import candidate as companion_reader_candidate, notebook_contract
+ if companion_reader_candidate(unit):return notebook_contract(unit)
  from reader_notebook_target import candidate as reader_candidate, contract as reader_contract
  if reader_candidate(unit):return reader_contract(unit)
  from companion_number_pad_target import candidate as recovery_candidate, contract as recovery_contract
@@ -182,6 +192,10 @@ def numeric_semantics(ir,unit):
  return {'ordinary_guest_entry_and_storage_connected':True,'numeric_bounds':'0..99; overflow is unchanged bytes, explicit limit message','scope':'Complete source/IR authority; CPU/Store/controller qualification separate'}
 
 def numeric_validate(ir,unit,*,optimized):
+ from chooser_reader_target import candidate as chooser_candidate, validate as chooser_validate
+ if chooser_candidate(unit):return chooser_validate(ir,unit,optimized=optimized)
+ from companion_reader_target import candidate as companion_reader_candidate, validate_notebook
+ if companion_reader_candidate(unit):return validate_notebook(ir,unit,optimized=optimized)
  from reader_notebook_target import candidate as reader_candidate, validate as reader_validate
  if reader_candidate(unit):return reader_validate(ir,unit,optimized=optimized)
  from companion_number_pad_target import candidate as recovery_candidate, validate as recovery_validate

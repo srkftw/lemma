@@ -57,7 +57,9 @@ class NativeBundleBoundary(unittest.TestCase):
                   'lemmasim-silicon-package-closure-entry2-bulk-notebook',
                   'lemmasim-silicon-package-closure-entry2-bulk-initialize',
                   'lemmasim-silicon-package-reader-bulk-notebook',
-                  'lemmasim-silicon-package-reader-bulk-initialize'}
+                  'lemmasim-silicon-package-reader-bulk-initialize',
+                  'lemmasim-silicon-package-chooser-bulk-notebook',
+                  'lemmasim-silicon-package-chooser-bulk-initialize'}
         for role,configuration in [item for configurations in SOFTWARE_DEPLOYMENTS.values() for item in configurations.items()]:
             if configuration in course:
                 for mode in ('student', None):

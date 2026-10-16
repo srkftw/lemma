@@ -2240,9 +2240,13 @@ contracts and limitations.
 The four-role Product10 course-reader image now builds and passes the complete
 RV64 audit as`lemmasim-silicon-product-course-reader-bulk-notebook`. It uses the
 existing installed course, revision-bound mathematics and Reader18 Save path.
-Its immutable-ROM installation, authenticated trial handoff, actual trial Ready
-and guest health confirmation have executed. The Ready/confirmation phase uses
-623M RTL clocks/3211.269s. Independent cold boot and course reopen remain running.
+Its complete immutable-ROM installation, authenticated trial handoff, actual
+trial Ready/guest confirmation, independent cold and raw-pen reopening of saved
+node5 now pass. All home/course pixels and every acknowledged document byte
+match:2,251.7M RTL clocks/12,066.574 actor seconds,338,010,112B owned peak RSS.
+Independent cold takes749M clocks and the course reopening233M. This uses the
+declared public development key and modeled boot nonvolatile transactions;
+production trust and interrupted confirmation remain separate.
 There is no normal-media initializer for this product configuration.
 
 The separate current Clocked13 companion bundle is

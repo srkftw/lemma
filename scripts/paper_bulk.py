@@ -10,6 +10,7 @@ from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
 from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 from package_closure_deployment import CONFIGURATIONS as PACKAGE_CONFIGURATIONS
 from reader_deployment import CONFIGURATIONS as READER_CONFIGURATIONS
+from chooser_reader_deployment import CONFIGURATIONS as CHOOSER_CONFIGURATIONS
 import re
 from core0_common import Core0Error
 CONFIGURATIONS=frozenset({'lemmasim-silicon-bulk-notebook',
@@ -81,14 +82,14 @@ def validate(ir,unit,*,optimized):
    special='ModernBulk' in source or 'ProductBulk' in source or 'USBBulk' in source
    if special!=modern or special and ('ProductBulk' in source or 'USBBulk' in source) and not source.endswith('.'+wrapper):del selected[source]
  else:
-  if unit['configuration'] in PACKAGE_CONFIGURATIONS + READER_CONFIGURATIONS + PRODUCT_READER_CONFIGURATIONS:
+  if unit['configuration'] in PACKAGE_CONFIGURATIONS + READER_CONFIGURATIONS + PRODUCT_READER_CONFIGURATIONS + CHOOSER_CONFIGURATIONS:
    from package_notebook_target import validate as validate_package
    package = validate_package(ir, unit, optimized=False)
    if package is None: raise Core0Error('Surface-v2 Package root lacks complete source cohort')
    # Presentation3/4/6/7 and workspace-envelope5 retain the Surface path. The full
    # cohort gate above and the exact unchanged layout2 boot root below remain
    # mandatory; a version label alone cannot authorize a new Surface path.
-   if package['contract_version'] in ('lemma-installed-package-notebook/12','lemma-installed-package-notebook/13','lemma-installed-package-notebook/14','lemma-installed-package-notebook/15','lemma-installed-package-notebook/17','lemma-installed-package-notebook/18'):
+   if package['contract_version'] in ('lemma-installed-package-notebook/12','lemma-installed-package-notebook/13','lemma-installed-package-notebook/14','lemma-installed-package-notebook/15','lemma-installed-package-notebook/17','lemma-installed-package-notebook/18','lemma-installed-package-notebook/20'):
     from dirty_batch_notebook_target import numeric_contract,numeric_root
     _, authority=numeric_contract(unit)
     selected[numeric_root(unit)]=authority['surface_root_sha256_by_phase']['post' if optimized else 'pre']

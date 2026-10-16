@@ -38,10 +38,11 @@ def catalog(unit):
         selected_root=numeric_root(unit)
     from reader_deployment import CONFIGURATIONS as READER, SOFTWARE_DEPLOYMENT as READER_SOFTWARE
     from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER, SOFTWARE_DEPLOYMENT as PRODUCT_READER_SOFTWARE
+    from chooser_reader_deployment import CONFIGURATIONS as CHOOSER, SOFTWARE_DEPLOYMENT as CHOOSER_SOFTWARE
     from package_companion_deployment import software_deployment_for as package_software
     if joined: JOINED_SOFTWARE=package_software(unit['configuration'])
-    selected_software=PRODUCT_READER_SOFTWARE if unit.get('configuration') in PRODUCT_READER else READER_SOFTWARE if unit.get('configuration') in READER else JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
-    require(unit.get('configuration') in CONFIGURATIONS + JOINED + READER + PRODUCT_READER and
+    selected_software=CHOOSER_SOFTWARE if unit.get('configuration') in CHOOSER else PRODUCT_READER_SOFTWARE if unit.get('configuration') in PRODUCT_READER else READER_SOFTWARE if unit.get('configuration') in READER else JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
+    require(unit.get('configuration') in CONFIGURATIONS + JOINED + READER + PRODUCT_READER + CHOOSER and
             unit.get('role') == 'user' and unit.get('contract_version') == 'core0-user-v0.2' and
             type(unit.get('schema_version')) is int and unit.get('schema_version') == 2 and unit.get('artifact_category') == 'development-user-unit' and
             unit.get('managed_policy') == 'lemma-notebook-arithmetic-v1' and

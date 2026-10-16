@@ -4681,3 +4681,209 @@ companion16 terminal200M-close FAIL. No processes or user media removed.
 All larger digital, fast timing/QEMU cached continuation, browserliveUSB/product
 boot, managed/proof-kernel/tutor/learning, distribution and physical gaps remain.
 -->
+
+
+<!--
+New actual connected milestones after6b publication (reports pending next
+coherent publication; avoid cancelling valid6b CI for report-only edits).
+Product course actor53123 is COMPLETE PASS. Exact result
+build/boot/task006-product-course-executor-a2/build/connected-a2/result.json,
+PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER:
+2,251,700,000 RTL clocks/12066.573871s, owner12068.274168s/338010112B/no survivors.
+Five phases: install519.5M/3301.228051s; authenticated trialhandoff127.2M/
+838.906819s; real trialReady+guest confirmation623M/3211.268888s;
+independent CPU0 cold749M/3564.070406s; rawCOURSE->savednode5 fullpixels233M/
+1147.203547s. Every old document byte and complete3.63M home/course pixels
+preserved; no ELFpreload at Product launch and no snapshot cold input.
+Preparedshaeb9cd68f..., actual runtimeebb973f8dc5871e1df9335ce19a23b9475b124650c257e23e7904601b4837451,
+ROM8a853ef5ef9fa3414c1db85afb22f10835b054e02fd912b1f3262d56280aa5a4.
+All original4.3B/32400s and perphasebounds unchanged. Publicdevelopmentkey only;
+interrupted large-image confirmation, productiontrust/entropy/antirollback,
+browser Product and physical NV remain open. Current Root archived components
+build/native/task006-product10-auth-components-a1 pass current6b prepared
+admission. This did not execute a second CPU. Controller-produced PNG retained
+outside frozen actor at build/boot/task006-product-course-connected-plan-a2/
+cold-reader-example5.png. No process left from completed Product actor.
+
+Fresh browser36 C53 actual INSTALL PASS at535.65M, using77.25M since458.4MReady
+and606.685905s simulation calls. Actual compiled K1/4b1 installedidentity1,
+edition3/sequence3/CRC2699972611 after realOPFS barrier28. Every submitted4063B,
+all earlier root/page payloads, all3.63M home pixels, full snapshot component
+CRCs and all28 externaloutcomes independently checked. Result
+build/browser/task006-reader18-fresh-course-plan-a1/installation-result-a2.json,
+54.907008s passiveobserver. Adhoc first observer wrongly assumed Clocked13
+container10/packedframebuffer; retained failure separately. Actual consumed
+C53 source and unchanged existing canonical exported() require schema2 and
+7260000Bframebuffer. No mask/oracle data relaxed, no guest changed.
+
+At535.65M original install run explicitlypaused/exported (remaining322.75M of
+original400M unused). Install complete, no retry sent. Exports browser/
+install-diagnostic535M.bin,installed3-535M.{raw,io},installed3-events535M.json;
+only37UARTrows atcycle458.4M, packet/header/package exact. Then rawCourse:
+535749990 pen53574999 x12718 y4173 pressure2048 flags3 tool1 reserved0;
+536749990 pen53674999 x12718 y4173 pressure0 flags2 tool1 reserved0.
+New coursephase starts535.65M, cap400M/3600, stopPanel=true,
+stopReady=false. Last UI610.5M/running, actualSaved4 during courseworkspace
+construction; first actual coursepanel still pending. Do not send another raw
+button until this transaction/scan completes. Original whole6B/12h deadline
+2026-10-17T09:03:02.922042Z unchanged. Need node1->node2->node3 USE, type5/6,
+realisolatedcheck/hint/ink/save, then independentcold. No fresh whole PASS yet.
+
+Current shared-package FULL case newly running, independent of C53 qualification:
+native actor23994 owner build/browser/task006-current-native-whole-supervision-a3,
+plan build/browser/task006-current-native-whole-plan-a3. Native distribution3
+from6b actual600e runtime, retained genuineReader18/acknowledgedSaved38 private
+medium. CPU0 fixed572Mhome ->exact2COURSE rows (same olddeclared572099990 and
+573099990) ->fixed799Msavednode5 ->1Msuffix800M, full snapshots for later84d
+comparison. Whole800M/9500s, cold572M/6000,course227M/3000,4GiBownedRSS/
+2GiBminimumavailable/12GiBoutput/1GiBfile/cleanup30. Logs intentionallyquiet
+between preflight and fixed cuts; use exact ownedstate if needed, no stalled
+inference merely from quietlog. preflight.json PASSactualCPU0/uart.bin/backing.io.
+Originala1 deliberatelycanceled10M/60.736s for wrong read-only observerUART
+filename, allownersreaped. a2 rejectedbeforeCPU because diagnosticcancelhelper
+wrote ONE unlisted taskcreated host/scripts/__pycache__/lemmasim_session.cpython-313.pyc
+into the new immutablepackage. Correct packageguard retained. Cache moved to
+retainedfailureartifacts; all1636inventoriedfiles hashverified unchanged.
+a3 explicitlydisablesbytecode before packagedimport. No target, cap or expected
+state/pixel/media/outcome changed. Failures and plans retained, no coldPASS.
+
+Current browser38 currentWholeTab at8808 from actualstatic distribution
+build/distribution/task006-reader18-current-browser-a2 (server toolsession6261).
+Mediumreader18-current38-a1 imported actualacknowledged reader-saved.raw through
+visiblefilechooser/OPFSflush, no snapshot or runningELF preload. Openpaused
+actualCPU0/retired0/noI/O/192MiB/impl84d52d...; exact currentnative/Wasm plans use
+same sources/medium. Browserbound572M/7200 withstopReady true, then fixed572M
+export; exact2rawCourse to799M,1Msuffix800M under original14,400s/800M whole.
+Absolute2026-10-17T02:34:43.520615Z; reportheap1GiB/2GiBavailable/12GiBoutput.
+Do not reset/extend ifReady misses fixed572M. Full authoritativewrapper/model
+and complete outputs/outcomes relation predeclared in build/browser/
+task006-current-browser-whole-plan-a1/plan.json; header implID remainsdistinct.
+Lastactual4.5M running, no Ready/newcurrentwhole claim. Keep tab38handoff,
+36handoff,35+33deliverable. Servers8806/8804 unchanged and usermedia retained.
+
+Entry2 actor33174 has passed coldReady745M/5744.477404s and read-only rawCourse
+open (all required body/keypad/Verified regions, not completecourseplane).
+Now close200M is RUNNING, starts990M, original finalcap1190M; last1075M.
+Wholeoriginal1.6B/14400s remains. Current compiledStepEntryV2 and source23 case
+is independent of originalcompanion16 terminalclose200MFAIL. Do not claim speedup,
+newSave, lostACKcampaigncompletion or new cold yet. Keep frozen e2exec and BUILD.
+
+Published head6b3c4d0b32b0fbfc8a60d840790da631297cd5b1 has actual terminal
+CI38975206359/run144 SUCCESS: all11jobs/all116steps SUCCESS, zero skipped or
+cancelled. Complete actual receipt build/ci/task006-6b3-complete.json. Parent57ceb
+and historical1c35 failures retain their separate identities. PR9 draft/unmerged.
+No new compiler/image builds for these report changes. All larger runtime,
+proofkernel, tutor/learning, fast/QEMUcache, radiodigital and physicalgaps remain.
+-->
+
+
+## October16 continuation: joined reader recovery and fresh edition selection
+
+Published baseline remains6b3c4d0b32b0fbfc8a60d840790da631297cd5b1, actual
+CI38975206359 SUCCESS/all11jobs/all116steps, zero skipped. New Reader19/20
+implementation is the next source increment; it needs its own candidate CI.
+PR9 stays draft/unmerged. PR8 authorization is not inherited by PR9.
+
+The completed Product course-image case is a real PASS:2,251,700,000 RTL clocks,
+12066.573871s actor,12068.274168s supervised,338010112B peak/no survivors.
+Actual guest resumable installation519.5M, authenticated trial127.2M,
+Ready/health confirmation623M, independent CPU0 cold749M, raw COURSE233M to
+saved node5 with every expected pixel and all256MiB preserved. Source/key/
+prepared identity and actual runtimeebb973f8... remain in the existing Product
+and reader evidence. No Product browser or production-key/trust closure claim.
+
+New ordinary guest source is mainRecoverablePackageReader/Notebook19 with
+Recovery5 on unchanged Clocked13, and mainPackageReaderChooser/Notebook20
+on unchanged canonical0.3. Original Reader18/Recovery16 roots remain exact.
+Recovery5 holds the separate128-byte reader record, original failure ticket,
+known sequence and source binding. Explicit Save/new epoch/remount barrier
+then exact READ plus EOF reconciles known+1 without another PUT; known sequence
+permits an ordinary resubmission. Component checks cover pending, COMMIT,
+lostACK, immutable bytes, wrong owner/package, access faults, byte/sequence/tail/
+epoch rejection, retry/navigation suppression and explicit fresh selection.
+
+The actual fresh browser edition3 installation passed at sequence3/barrier28.
+Its subsequent400M course-open phase FAILED at935.65M. Actual retained full
+snapshot CRCs, all installed payloads and barrier34/sequence4 validate. Original
+Reader18 implicitly requests absent edition1, then courseError closes the view
+and redraws. A separate no-input25M diagnostic completed the already pending
+panel after5.25M; it does not rescue the failure. Retain browser36 and its OPFS
+medium and exports. New readerPackageWork calls readerPrepareSelection after
+bookmark lookup, before automatic loading. With no current source, bookmark or
+usable history, it keeps the existing EDIT+/LOAD chooser open instead of
+requesting edition1. Actual imported Action fixture proves no implicit IPC,
+publication or workspace/math change; saved contexts retain automatic loading.
+Canonical20 shares this exact guest fix; it is not blocked on browser USB.
+
+Genuine selected exports/LLVM/RV64 objects:
+- Reader19 current2notebook exports: build/kernel/task006-companion-reader19-capture-a3/result.json,
+ 199.147721s,1671476KiB child peak. Earlier complete unchanged other roles are
+ separately retained in capture-a2/417.242077s. Complete role/corpus authority
+ and explicit old-body comparison: build/courses/task006-companion-reader19-authority-a3/result.json,
+ 19.121877s. All other full role pre/post corpora match original EntryV2;
+ 895 shared Reader18 and896 shared Recovery16 pre bodies unchanged. Notebook955/953
+ pre/post functions; tooling/companion-reader-target-authority.json.
+- Canonical20: build/kernel/task006-chooser-reader20-capture-a1/result.json,
+ 204.446678s,1672204KiB child peak. build/courses/task006-chooser-reader20-authority-a1/result.json,
+ 15.834457s;903/901pre/post functions,898 shared Reader18 pre bodies unchanged.
+ Complete authority tooling/chooser-reader-target-authority.json.
+- Component logs build/courses/task006-reader-recovery5-components-a1/:
+ reader-actions-selection-a3.log,shapes.log,companion-deployment-final.log,
+ chooser-deployment20.log. These are not linked-image or connected CPU claims.
+
+Native public current distribution3 FULL functional case passed800M clocks/
+4004.630637s: real cold Ready/fixed572M2992.345263s, identical raw COURSE to
+fixed799M/savednode5/all3.63Mpixels/all256MiB/167actualREADrows1006.897849s,
+then1Msuffix. Three actual observational full checkpoints retained in
+build/browser/task006-current-native-whole-a3. Original supervisor disappeared;
+its resource supervision is NOT passed. Same actor/machine continued under
+build/browser/task006-current-native-whole-rebound-supervision-a4 guard,
+conservatively earlier original deadline, no restart or cycle/phase cap change;
+no survivors,221724672B rebound peak. Separate guard interruption retained.
+
+Current browser38/8808 reached actual Ready571.95M/4001.3s simulation calls,
+then fixed572M/4001.5s. Full145739254-byte native/Wasm archives match EXCEPT
+predeclared implementation header[16,80); every other byte, both component
+CRCs, complete generated model/RAM/controller/counter state match. Receipt
+build/browser/task006-current-browser-whole-plan-a1/cold572M-native-comparison-a1.json.
+Cold media/I/O/CRC passive qualification PASSED21.135159s: cold-result-a1.json;
+all256MiB,153READoutcomes/returnedbytes/errors/order/acceptedcycles and no
+external guest input; all component CRCs independently valid. Exact
+2raw rows572099990/573099990 admitted; original227M/3600 fixed799M course
+suffix RUNNING. Original800M/14400 whole and absolute02:34:43UTC deadline
+unchanged; no full browser suffix/replay PASS yet. Keep38handoff,36handoff,
+35and33deliverable. Static servers and user media preserved.
+
+EntryV2 cold23 case is terminal FAIL at original close200M cap1190M. ColdReady
+745M/5744.477404s and read-only course open990M/1747.851969s passed their
+specified regions; final Close missed the deadline. Owner9037.427816s/
+499462144B peak, processes reaped. Retained result build/usb/e2exec-a1/build/c1/result.json.
+Original failed companion16 campaign remains FAIL. RAM diagnosis shows actual
+course flag0 and close-down sequence3 accepted, still in redraw; no speedup or
+newSave/math/cold claim. Do not extend/reclassify this case.
+
+First new full-image build driver exited143 before linked image/build.json.
+Retain build/kernel/task006-companion-reader19-workspace-a1/build/kernel/notebook/driver-interruption.json;
+external signal source unestablished, partial exports not a build PASS. Its
+source archive remains immutable. Prepare new COMPLETE builds using detached
+owned supervision and unchanged bounded compiler/audit interfaces; do not
+reuse it as completed. Current source selectors and native schema11/canonical
+bundle3 routes are wired, but successor linked pairs/bundles/connected cases
+remain pending. No synthetic Ready or host document recovery was introduced.
+
+Focused local checks: foundation473 PASS37.619s, kernel461 PASS8.286s,
+boot30 PASS0.074s, silicon229 PASS, scaffold18 PASS8.634s, metadataPASS.
+Final pinned LemmaSim310 PASS46.004s after exact expectation additions.
+Retain wrong-environment host failure (missing cc/C++/lake), original2foundation
+inventory failures, originalkernel4-name inventory failure and original
+LemmaSim2-name installer expectation failure. Exact added log/timeout/config/
+mode expectations were updated, with negative role/mode/mixing guards intact.
+No CI or valid acceptance check was disabled. Fresh candidate CI remains needed.
+
+Next concrete work: complete/audit both new four-role pairs, prepare actual
+same-runtime bundles, run canonical20 real fresh edition3 chooser/load/check/
+hint/save/cold and Reader19 actual peer reader lostACK/reconciliation/cold.
+Finish current38 fixed799M/800M and full native relation/same-Wasm suffix.
+All managed runtime/proof kernel, broader boot/power/analog-control digital
+coverage, processor/fast/QEMU caches, live browser USB, full radio digital,
+distribution licensing/fresh host/compiler, and physical closure gaps remain.

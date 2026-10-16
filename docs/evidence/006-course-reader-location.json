@@ -376,6 +376,31 @@
       "sum_worker_simulation_call_seconds": 14436.849330006138,
       "performance_note": "Reported Wasm simulation-call scopes; not comparable directly with native whole actor duration or Chrome RSS. No cross-backend full second snapshot exists.",
       "display": "build/browser/task006-reader18-local-plan-a1/browser/second-reopen799M.png"
+    },
+    "fresh_origin_installation": {
+      "status": "PASS_INITIALIZER_NORMAL_READY_GUEST_INSTALLATION",
+      "plan": {
+        "path": "build/browser/task006-reader18-fresh-course-plan-a1/plan.json",
+        "sha256": "0fdc6c7aebd56bf1ac61b416467c239d17d81614fc7a5f582fe8bde92c15e663",
+        "bytes": 2505
+      },
+      "first_ready": {
+        "path": "build/browser/task006-reader18-fresh-course-plan-a1/first-ready-result-a1.json",
+        "sha256": "178e6b6f4fdaffbde3cb27062ed0436babc47857ed8d152880245c75b33fd012",
+        "bytes": 1478
+      },
+      "installation": {
+        "path": "build/browser/task006-reader18-fresh-course-plan-a1/installation-result-a2.json",
+        "sha256": "2d3b24f598d8fa1193366053645817e98505cb2cc466c69ed05811d363e081f9",
+        "bytes": 1910
+      },
+      "retained_observer_failure": {
+        "path": "build/browser/task006-reader18-fresh-course-plan-a1/installation-observer-failure-a1.json",
+        "sha256": "5cd9e16187950265aea95332dab88291d5bf3fd9174a8470cc780bf32f5fa395",
+        "bytes": 475
+      },
+      "course_mathematics_assistance_cold": "RUNNING_ORIGINAL_BOUNDS",
+      "scope": "C53 original exact worker, new unique blankOPFS, no imported/preinstalled course/documents and no snapshotcoldinput. Real guest package validation/publication/barrier; passive observers never supply recovery, ink or mathematics."
     }
   },
   "original_failures_retained": [
@@ -406,5 +431,50 @@
     "Canonical ELF development preload remains explicit; product boot/update/owner trust and full reset domains are separate.",
     "No exact fast timing/arbitrary QEMU cached continuation, general managed Lean/proof kernel, full G2/G4-G7/tutor/learning authority, complete USB/radios or physical closure.",
     "Prepared packages preserve unresolved redistribution/license, fresh-host NAR import/Python-Tk, browser compiler/usability/power-loss/eviction gaps."
-  ]
+  ],
+  "reader19_20_successors": {
+    "status": "IMPLEMENTED_GENUINE_ARTIFACTS_AND_ACTION_COMPONENTS_FULL_IMAGES_PENDING",
+    "contract": "docs/contracts/006-companion-course-reader-deployment-v1.md",
+    "companion": {
+      "version": 19,
+      "recovery": 5,
+      "configuration": "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook",
+      "native_bundle_schema": 11,
+      "authority": "tooling/companion-reader-target-authority.json",
+      "result": "build/courses/task006-companion-reader19-authority-a3/result.json",
+      "genuine_notebook_exports": "build/kernel/task006-companion-reader19-capture-a3/result.json",
+      "predecessor_reader_shared_bodies": 895,
+      "predecessor_recovery_shared_bodies": 896,
+      "unchanged_other_role_corpora": true
+    },
+    "canonical": {
+      "version": 20,
+      "configuration": "lemmasim-silicon-package-chooser-bulk-notebook",
+      "authority": "tooling/chooser-reader-target-authority.json",
+      "result": "build/courses/task006-chooser-reader20-authority-a1/result.json",
+      "genuine_notebook_exports": "build/kernel/task006-chooser-reader20-capture-a1/result.json",
+      "unchanged_reader18_shared_bodies": 898
+    },
+    "actual_component_log": "build/courses/task006-reader-recovery5-components-a1/reader-actions-selection-a3.log",
+    "properties": [
+      "exact128-byte reader record retained separately from workspace envelope",
+      "known+1 remount requires newer epoch, exact READ and exact EOF before Saved; no repeated PUT",
+      "known sequence resubmits same immutable bytes; explicit maximum3 attempts",
+      "old live bookmark and mathematical/workspace bytes preserved during uncertainty",
+      "fresh no-source/no-reader/no-history chooser performs no implicit edition1 read or publication",
+      "actual joined work callback checked, not merely pure shape helper"
+    ],
+    "observed_original_failures": {
+      "fresh_browser400M": "build/browser/task006-reader18-fresh-course-plan-a1/course-open-failure-a1.json",
+      "valid_failed_cut": "build/browser/task006-reader18-fresh-course-plan-a1/course-failure-qualified-a1.json",
+      "first_full_driver": "build/kernel/task006-companion-reader19-workspace-a1/build/kernel/notebook/driver-interruption.json"
+    },
+    "remaining": [
+      "complete ordinary boot/initializer ELF link and artifact audits",
+      "real companion reader lostACK/restart/reconciliation/cold scenario",
+      "real canonical20 fresh-edition browser/native workflow",
+      "prepared successor bundles and actual launch qualification"
+    ],
+    "scope": "Same existing native/RTL/Wasm machine and guest services. No new ISA/runtime/physical profile. Artifact and component results are not full guest workflow acceptance."
+  }
 }

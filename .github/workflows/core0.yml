@@ -344,6 +344,34 @@ jobs:
             2>&1 | tee build/ci/metadata/browse-history-actions.log
           grep -F 'BROWSE_HISTORY1:PASS' build/ci/metadata/browse-history-actions.log
 
+      - name: Check joined companion reader recovery Actions and deployment
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/ink/NotebookRetryReaderPolicy.lean \
+            2>&1 | tee build/ci/metadata/reader-retry5-shapes.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                LEMMA_COURSE_PACKAGE_FILE=build/courses/ci-browse-history/package/arithmetic.lcp \
+                lake env lean -j2 tests/courses/NotebookReaderRecovery.lean \
+            2>&1 | tee build/ci/metadata/companion-reader-recovery5-actions.log
+          grep -F 'READER_RECOVERY5_ACTIONS:PASS' build/ci/metadata/companion-reader-recovery5-actions.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake env lean -j2 tests/courses/CompanionReaderDeployment.lean \
+            2>&1 | tee build/ci/metadata/companion-reader-deployment19.log
+          grep -F 'COMPANION_READER19_DEPLOYMENT:PASS' build/ci/metadata/companion-reader-deployment19.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake env lean -j2 tests/courses/ChooserReaderDeployment.lean \
+            2>&1 | tee build/ci/metadata/chooser-reader-deployment20.log
+          grep -F 'PASS closed Reader20 chooser and preserved Reader18/history17 deployment selection' build/ci/metadata/chooser-reader-deployment20.log
+
       - name: Check separate course reader Save and cancellation Actions
         run: |
           set -euo pipefail

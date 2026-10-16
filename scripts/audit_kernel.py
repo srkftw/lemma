@@ -294,6 +294,10 @@ READER_NOTEBOOK_IMAGES=(PACKAGE_CLOSURE_NOTEBOOK_IMAGES[0],
     {**PACKAGE_CLOSURE_NOTEBOOK_IMAGES[1],"source":READER_NOTEBOOK_ROOT},
     *PACKAGE_CLOSURE_NOTEBOOK_IMAGES[2:])
 MULTI_USER_CONFIGURATIONS.update({configuration:READER_NOTEBOOK_IMAGES for configuration in READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS})
+from chooser_reader_deployment import CONFIGURATIONS as CHOOSER_READER_CONFIGURATIONS, NOTEBOOK_ROOT as CHOOSER_READER_ROOT
+MULTI_USER_CONFIGURATIONS.update({configuration:tuple(
+    {**row,"source":CHOOSER_READER_ROOT} if row["key"]=="notebook" else row
+    for row in READER_NOTEBOOK_IMAGES) for configuration in CHOOSER_READER_CONFIGURATIONS})
 PRODUCT_NOTEBOOK_CONFIGURATIONS |= frozenset(PRODUCT_READER_NOTEBOOK_CONFIGURATIONS)
 PRODUCT_CONFIGURATIONS |= frozenset(PRODUCT_READER_NOTEBOOK_CONFIGURATIONS)
 MODERN_NOTEBOOK_CONFIGURATIONS |= frozenset(PRODUCT_READER_NOTEBOOK_CONFIGURATIONS)
@@ -309,6 +313,10 @@ PACKAGE_RECOVERY_NOTEBOOK_IMAGES=({**NOTEBOOK_USER_IMAGES[0], 'module':'Lemma.Se
     {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainRecoverablePackageClosureBulk'},
     CLOSURE_NOTEBOOK_IMAGES[2], COURSE_AWAIT_NOTEBOOK_IMAGES[3])
 MULTI_USER_CONFIGURATIONS.update({configuration:PACKAGE_RECOVERY_NOTEBOOK_IMAGES for configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS})
+from companion_reader_deployment import CONFIGURATIONS as COMPANION_READER_CONFIGURATIONS, NOTEBOOK_ROOT as COMPANION_READER_ROOT
+MULTI_USER_CONFIGURATIONS.update({configuration:tuple(
+    {**row,"source":COMPANION_READER_ROOT} if row["key"]=="notebook" else row
+    for row in PACKAGE_RECOVERY_NOTEBOOK_IMAGES) for configuration in COMPANION_READER_CONFIGURATIONS})
 
 def software_deployment_fields(configuration):
     if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
@@ -5288,7 +5296,7 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelected')
         if unit['configuration'] in ENTRY2_CONFIGURATIONS:
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2')
-        if unit['configuration'] in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS:
+        if unit['configuration'] in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS + CHOOSER_READER_CONFIGURATIONS:
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelectedEntryV2')
         if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
             from package_companion_deployment import boot_source_for

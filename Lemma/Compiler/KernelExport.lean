@@ -83,9 +83,9 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if isUSBPackageRecoveryEntry2NotebookConfiguration configuration then
+  | "kernel" => if isUSBPackageRecoveryEntry2NotebookConfiguration configuration || isUSBPackageReaderNotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
-        (if configuration == "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook" then
+        (if configuration.endsWith "-notebook" then
           "siliconUSBPackageRecoveryEntry2Boot" else "siliconUSBPackageRecoveryEntry2InitializeMedium"),
         "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBPackageRecoveryBulk"]
     else if isProductCourseReaderNotebookConfiguration configuration then
@@ -96,7 +96,7 @@ private def rootIdentities (configuration role : String) : Array String :=
         (if configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook" then "siliconUSBPackageRecoveryBoot" else "siliconUSBPackageRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBPackageRecoveryBulk"]
     else if isPackageClosureNotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
-        (if configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" || configuration == "lemmasim-silicon-package-reader-bulk-notebook" then "siliconPackageClosureEntry2Boot" else "siliconPackageClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+        (if configuration.endsWith "-notebook" then "siliconPackageClosureEntry2Boot" else "siliconPackageClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
     else if isClosureEntry2NotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
         (if configuration == "lemmasim-silicon-closure-entry2-bulk-notebook" then "siliconClosureEntry2Boot" else "siliconClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
@@ -899,7 +899,7 @@ this name as a FILE symbol; deployment identity remains in every manifest. All
 historical configurations and non-User roles keep their original source name. -/
 def llvmModuleSourceName (configuration role : String)
     (image? : Option UserImageSpec := none) : String :=
-  if role == "user" && isUSBPackageRecoveryEntry2NotebookConfiguration configuration then
+  if role == "user" && (isUSBPackageRecoveryEntry2NotebookConfiguration configuration || isUSBPackageReaderNotebookConfiguration configuration) then
     match image? with
     | some image => "Lemma lemma-silicon-dev/0.13.0 user " ++ image.root.toString
     | none => "Lemma " ++ configuration ++ " " ++ role
