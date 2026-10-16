@@ -475,6 +475,20 @@
       "real canonical20 fresh-edition browser/native workflow",
       "prepared successor bundles and actual launch qualification"
     ],
-    "scope": "Same existing native/RTL/Wasm machine and guest services. No new ISA/runtime/physical profile. Artifact and component results are not full guest workflow acceptance."
+    "scope": "Same existing native/RTL/Wasm machine and guest services. No new ISA/runtime/physical profile. Artifact and component results are not full guest workflow acceptance.",
+    "first_complete_image_attempt": {
+      "status": "LINKED_THEN_AUDIT_FAIL_COURSE_REGISTRY",
+      "result": "build/courses/task006-reader19-20-full-pair-plan-a1/result.json",
+      "configuration": "lemmasim-silicon-package-chooser-bulk-notebook",
+      "build_seconds": 131.18878544704057,
+      "audit_seconds": 31.675735975964926,
+      "actual_error": "Objects power initializer escapes the selected machine constructor",
+      "independent_original_kernel_relation": "build/courses/task006-reader19-20-full-pair-plan-a1/canonical-kernel-original-relation.json",
+      "unchanged_complete_kernel_functions": 1208,
+      "both_pre_and_post_corpora_equal_original_reader18": true,
+      "corrected_actual_constructor_observer": "build/courses/task006-reader19-20-full-pair-plan-a1/corrected-constructor-observer-a1.json",
+      "cause": "Audit AWAIT/COURSE configuration union omitted the exact two canonical chooser names; it selected the wrong expected constructor despite the original valid constructCourse body/callers. Narrow registry fix retains ownership/header/ordering and other guards.",
+      "scope": "Original FAIL retained; no target algorithm or threshold changed, no full image audit PASS inferred."
+    }
   }
 }

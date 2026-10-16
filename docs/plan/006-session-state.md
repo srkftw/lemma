@@ -4887,3 +4887,15 @@ Finish current38 fixed799M/800M and full native relation/same-Wasm suffix.
 All managed runtime/proof kernel, broader boot/power/analog-control digital
 coverage, processor/fast/QEMU caches, live browser USB, full radio digital,
 distribution licensing/fresh host/compiler, and physical closure gaps remain.
+
+First clean dfcb full canonical20 image linked in131.188785s, then FAILED its
+mandatory audit31.675736s: Objects power initializer escapes selected machine
+constructor. Full1208-function pre AND post kernel corpora independently equal
+the accepted Reader18 kernel. The auditor's top-level AWAIT/COURSE union omitted
+exactly the two new canonical chooser configurations, causing the wrong
+expected constructor. Adding those exact names makes the ACTUAL existing
+constructor/header/ownership/ordering observer pass on retained genuine IR;
+no caller check, body, tolerance or target algorithm is changed. Original
+full-pair-plan-a1/result.json and audit-failure remain FAIL. Next bounded
+complete pair attempt uses a new output path and same4800s resource bounds.
+This is corrected host admission, not a target performance fix or guest PASS.
