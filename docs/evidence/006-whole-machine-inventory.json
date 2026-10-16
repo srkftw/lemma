@@ -1019,30 +1019,41 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "c1ed159d122f9bece0616b043766d59bdae6d527",
-    "run": 38865225818,
-    "status": "in_progress_at_last_fetch_with_failed_job",
-    "conclusion": null,
+    "commit": "0a41c9d97894e29828d083f434f98a60224eb521",
+    "run": 38869197675,
+    "status": "completed",
+    "conclusion": "SUCCESS",
     "jobs": 11,
-    "completed_success": 8,
-    "failed_jobs": [
-      "Task003 source-negative RV64 qualification"
-    ],
-    "in_progress_jobs": 2,
-    "skipped_steps": 1,
-    "scope": "Metadata/host PASS; appendO2 control FAIL64 terminal stops. Corrected terminal predicate matches original strict page-effect check; actual C1 bytes pass unchanged full replay,84 unmatched release still rejects; fresh306commands PASS. Uncontrolled-progress prototype failed and stays unadopted. New candidate CI required.",
+    "successful_steps": 110,
+    "skipped_steps": 0,
+    "cancelled_jobs": 0,
+    "scope": "Actual published15 keypad/terminal repair candidate. Later local compiler-index optimization is not qualified by this CI. Complete canonical numeric RTL, initializer pair, browser and physical obligations stay separate.",
     "prior": {
-      "commit": "84bcb67c2538a7d8306140643ea884c178b2cf51",
-      "run": 38859905648,
-      "conclusion": "FAILURE",
+      "commit": "c1ed159d122f9bece0616b043766d59bdae6d527",
+      "run": 38865225818,
+      "status": "in_progress_at_last_fetch_with_failed_job",
+      "conclusion": null,
       "jobs": 11,
-      "completed_success": 9,
+      "completed_success": 8,
       "failed_jobs": [
-        "Metadata and host-only suites",
         "Task003 source-negative RV64 qualification"
       ],
-      "skipped_steps": 8,
-      "scope": "Foundation exact-log list missed added arithmetic pipeline; corrected exact entry, pipefail retained. Source-negative terminal capture froze a later real release before completion; stricter semantic terminal capture under same5s/64-stop bound. New real retained-control execution306commands passes; original failed capture still rejects. New candidate CI required.984 prior11/109 success retained."
+      "in_progress_jobs": 2,
+      "skipped_steps": 1,
+      "scope": "Metadata/host PASS; appendO2 control FAIL64 terminal stops. Corrected terminal predicate matches original strict page-effect check; actual C1 bytes pass unchanged full replay,84 unmatched release still rejects; fresh306commands PASS. Uncontrolled-progress prototype failed and stays unadopted. New candidate CI required.",
+      "prior": {
+        "commit": "84bcb67c2538a7d8306140643ea884c178b2cf51",
+        "run": 38859905648,
+        "conclusion": "FAILURE",
+        "jobs": 11,
+        "completed_success": 9,
+        "failed_jobs": [
+          "Metadata and host-only suites",
+          "Task003 source-negative RV64 qualification"
+        ],
+        "skipped_steps": 8,
+        "scope": "Foundation exact-log list missed added arithmetic pipeline; corrected exact entry, pipefail retained. Source-negative terminal capture froze a later real release before completion; stricter semantic terminal capture under same5s/64-stop bound. New real retained-control execution306commands passes; original failed capture still rejects. New candidate CI required.984 prior11/109 success retained."
+      }
     }
   },
   "browser_pointer_ink_milestone": {
@@ -1099,7 +1110,8 @@
     "physical": "UNVERIFIED",
     "contract": "docs/contracts/006-number-entry-v1.md",
     "evidence": "docs/evidence/006-number-entry-v1.json",
-    "aligned_presentation": "Notebook14 actual full pair audits/411 source seals/owned cleanup PASS1422.313s/1826054144B.22-phase fast PASS1492000115 units/216.161s, same goals/bytes/pixels/cold/disconnect.13 baseline1494000115; only2M total units saved. Matched native/static14 bundles/tarballs prepared; actual extracted native launch PASS.15 normal/connected case separately qualified;15 pair remainsFAIL."
+    "aligned_presentation": "Notebook14 actual full pair audits/411 source seals/owned cleanup PASS1422.313s/1826054144B.22-phase fast PASS1492000115 units/216.161s, same goals/bytes/pixels/cold/disconnect.13 baseline1494000115; only2M total units saved. Matched native/static14 bundles/tarballs prepared; actual extracted native launch PASS.15 normal/connected case separately qualified;15 pair remainsFAIL.",
+    "compiler_export_optimization": "COMPONENT_PASS_LOCAL: indexed sets/cached graph validation, genuine15 initializer export183.581s vs254.270s comparable preceding variant, all four files identical/412-source archives.52CFG/449kernel/473foundation/40core0host/18scaffold PASS; new full pair and target acceptance pending."
   },
   "browser_actual_mathematics": {
     "behavior": "PASS actual5/6Verified rev12 isolated closure, assistance Saved22, deliberate Auto Saved27 and independent displayed assisted/practice/uncertain labels. Quick200M review batch FAIL: one tap not applied; no-input58.55M finishes Saved26, then new deliberate91.85M contact Saved27. Edited-answer test running; full acceptance OPEN.",

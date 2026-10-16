@@ -55,7 +55,10 @@
     "repaint_scaffold": "18 PASS6.420s and metadata PASS",
     "shared_RTL_backend": "446 kernel host tests PASS9.945s;4 final focused observation/bound negatives PASS. Actual RTL numeric execution NOT_RUN at this checkpoint.",
     "final_metadata": "Scaffold metadata PASS;18 scaffold tests PASS7.121s after current source/docs.",
-    "terminal_correction_kernel_host": "449 PASS10.387s; earlier quiet milestone unchanged; terminal requires original settled page/frame effects. Actual3592-frame C1 full replay passes, original84 incomplete release still rejects; fresh real306command control PASS50.948861s."
+    "terminal_correction_kernel_host": "449 PASS10.387s; earlier quiet milestone unchanged; terminal requires original settled page/frame effects. Actual3592-frame C1 full replay passes, original84 incomplete release still rejects; fresh real306command control PASS50.948861s.",
+    "compiler_final_kernel_host": "449 PASS12.000s after cached graph change",
+    "compiler_final_foundation_host": "473 PASS44.845s in Nix after cached graph change",
+    "compiler_final_scaffold": "18 PASS9.747s; metadata PASS"
   },
   "next": "Canonical13 numeric RTL and actual browser workflows remain active;15 matched initializer failed. General managed/proof kernel, full digital, timing/cached state, distribution and physical obligations remain separate.",
   "initializer": {
@@ -515,5 +518,13 @@
     ],
     "budget": 0,
     "scope": "Actual Saved and complete required label/body/keypad pixels/history; no subsequent checker or cold claimed."
+  },
+  "compiler_validation_candidate": {
+    "evidence": "build/courses/task006-llvm-name-sets-owner-a1/result.json",
+    "status": "PASS_COMPONENT_GENUINE_EXPORT_WHOLE_BUILD_PENDING",
+    "same_genuine_initializer_bytes": true,
+    "membership_only_export_seconds": 254.269656228018,
+    "cached_graph_export_seconds": 183.58118594402913,
+    "scope": "Host Lean compiler validation optimization only; maintained target language, ISA/effects/runtime/durable formats unchanged. Indexed sets preserve relation/order; cached predecessor/label tables preserve fixed-point update order and errors. Full fresh matched images/audits and historical target acceptance remain pending."
   }
 }

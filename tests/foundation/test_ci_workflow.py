@@ -157,6 +157,7 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/control-render.log", "metadata/number-entry-actions.log",
                          "metadata/number-pad-reference.log", "metadata/number-pad-actions.log",
                          "metadata/arithmetic-aligned-actions.log",
+                         "metadata/llvm-name-sets.log",
                          "metadata/kernel-host-unittest.log",
                          "metadata/silicon-host-unittest.log"),
             "crypto-rv64": ("crypto-rv64.log", "development-auth-rom.log", "development-auth-layout.log"),

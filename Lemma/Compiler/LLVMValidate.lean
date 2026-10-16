@@ -1,4 +1,6 @@
 import Lemma.Compiler.LLVMIR
+import Lemma.Compiler.LLVMNameSets
+import Std.Data.HashMap.Basic
 
 /-!
 Fail-closed validation for Lemma's structured LLVM subset.
@@ -32,11 +34,10 @@ private def insertName (names : Array String) (name : String) : Array String :=
   if names.contains name then names else names.push name
 
 private def sameNameSet (lhs rhs : Array String) : Bool :=
-  lhs.size == rhs.size && lhs.all rhs.contains && rhs.all lhs.contains
+  NameSets.equal lhs rhs
 
 private def intersectNames (lhs rhs : Array String) : Array String :=
-  lhs.foldl (init := #[]) fun result name =>
-    if rhs.contains name then insertName result name else result
+  NameSets.intersect lhs rhs
 
 private def integerWidth? : Ty → Option Nat
   | .i1 => some 1
@@ -134,6 +135,14 @@ private def computeDominators (fn : Function) : Except String (Array DominatorEn
   let some entry := fn.blocks[0]?
     | failAt fn "has no entry block"
   let labels := fn.blocks.map (·.label)
+  -- Block structure has already established unique labels and closed edges.
+  -- Keep its original predecessor and update order, indexing only lookups.
+  let positions : Std.HashMap String Nat :=
+    (labels.mapIdx fun index label => (label, index)).foldl
+      (fun result entry => result.insert entry.1 entry.2) {}
+  let predecessorsByIndex := labels.map (predecessorLabels fn.blocks)
+  let lookup (values : Array DominatorEntry) (label : String) : Option (Array String) :=
+    (positions[label]?).bind fun index => (values[index]?).map (·.dominators)
   let mut entries := labels.map fun label =>
     ({
       label
@@ -146,24 +155,24 @@ private def computeDominators (fn : Function) : Except String (Array DominatorEn
       failAt fn "internal dominance iteration did not converge"
     fuel := fuel - 1
     changed := false
-    for label in labels do
+    for h : index in [:labels.size] do
+      let label := labels[index]
       unless label == entry.label do
-        let predecessors := predecessorLabels fn.blocks label
+        let predecessors := predecessorsByIndex[index]!
         let some first := predecessors[0]?
           | failIn fn label "reachable non-entry block has no predecessor"
-        let some firstDominators := lookupDominators? entries first
+        let some firstDominators := lookup entries first
           | failIn fn label s!"internal missing dominator state for predecessor `%{first}`"
         let mut common := firstDominators
         for predecessor in predecessors.extract 1 predecessors.size do
-          let some predecessorDominators := lookupDominators? entries predecessor
+          let some predecessorDominators := lookup entries predecessor
             | failIn fn label s!"internal missing dominator state for predecessor `%{predecessor}`"
           common := intersectNames common predecessorDominators
         let updated := insertName common label
-        let some current := entries.find? fun candidate => candidate.label == label
+        let some current := entries[index]?
           | failIn fn label "internal missing dominator entry"
         unless sameNameSet current.dominators updated do
-          entries := entries.map fun candidate =>
-            if candidate.label == label then { label, dominators := updated } else candidate
+          entries := entries.set! index { label, dominators := updated }
           changed := true
   pure entries
 

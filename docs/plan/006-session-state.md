@@ -3520,3 +3520,27 @@ source history retained, current package Unknown. Observer PASS30.160249s.
 Both subsequent real CHECKs are prospectively200M/2400s and remain NOT_RUN
 at declaration; no checker outcome inferred from the control. Passive observer
 a1 syntax error is retained, corrected before interpreting these same exports.
+
+Compiler validation implementation now uses indexed membership/stable intersection,
+cached predecessors and label positions, indexed row updates, unchanged order/fuel
+and error checks. Name-array comparison14641pairs+large cases PASS; all52 existing
+CFG tests,40core0host and473foundation tests PASS. Foundation first outsideNix
+invocation correctly failed23 missing-lake cases; retained, corrected command inNix.
+Genuine initializer15 export-only a2/a3 both PASS and every unit.json/program.ll/
+normalized.txt/symbols.txt byte equals earlier genuine export. Same-j2/trace/300s
+workload: membership-only254.269656s versus cached graph183.581186s. Lowered
+128.074→87.717s, module validation end245.329→175.810s. Actual412source archives
+retained separately for both variants; owner result records exact identities/RSS/CPU.
+This is compiler-host performance, not guest cycles. Whole matched images/audits
+remain pending. Original full initializer300.202s FAIL is retained. Diagnostic a1
+publishes250.726s then exits134/thread failure, remainsFAIL. Actual tiny hostLean
+thread diagnostic under8GiB: envLEAN_NUM_THREADS2/noCLI-j2 fails134; explicit-j2
+succeeds5 total process threads. Not proof of original timeout cause. Shared build
+launchers stay unchanged under ongoing RTL34-source hold. New helper is host-only;
+no target language/runtime/effect/ISA extension or weaker validator admitted.
+
+Published0a41c9d CI38869197675 actually completes SUCCESS: all11jobs/all110steps
+PASS, no skipped/cancelled work. This qualifies the15 keypad/terminal repair
+candidate only. Later local compiler-index changes have52CFG/449kernel12.000s/
+473foundation44.845s/40core0host/18scaffold9.747s PASS and exact genuine export
+bytes; fresh matched full images/audits and legacy target acceptance still pending.
