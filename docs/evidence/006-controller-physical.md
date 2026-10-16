@@ -363,3 +363,48 @@ is reverted; its exact source/patch/plan/results remain under
 `build/silicon/pen-branch-clock-supervision-a1`. No timeout cause is assigned to
 rule coverage. Completed detailed routing, processDRC/LVS, routed extraction,
 postroute timing and full-chip physical closure remain open.
+
+A later isolated local counter-readiness candidate targets the actual maintained
+refill[2]→sequence[63] path. Every-edge/full256/64-bit frontier observations pass;
+a newly queued raw sample across both refill clocks exposes a previously
+surviving missing-readiness mutant. The independent maintained PenBanks case
+now also requires literal sequence3 and rejects the mutant's sequence5. A
+declared one-step readiness/acceptance invariant passes modular SAT; it is not
+full-controller equivalence. Modern $check lowering and a declaration-order
+frontend failure remain separately retained.
+
+Same-tool/library/10000ps mapping passes in51.442s supervised,1,046,249,472B
+peak. Global refill Q ancestors of the64 counter D cones fall64→0, but maximum
+cell depth remains18; mapped cells184159→184254 and FF50102→50103. These are
+netlist observations, not delay or routing improvement. RTL is **unadopted**.
+A new full route is NOT_RUN: current available memory is below the prospectively
+declared8GiB launch floor (the retained full-controller4.63GB peak plus3GiB
+available reserve). Active product machines keep their bounds. No clock/rule
+waiver, unchanged route or timeout reinterpretation is used. The source patch,
+exact observations, original failed negatives and bounded resume command are in
+[the local counter-readiness receipt](006-pen-sequence-ready.json). Detailed
+routing, complete rule coverage, processDRC/LVS, routed extraction/post-route
+timing and full-chip closure remain open.
+
+The separate pinned enclosure preflight now executes real Magic and OpenDB
+checks. Integer rectangle-union geometry finds one original fixed-via failure
+among 132 side checks: Via1_DC2L Metal1 minimum X needs -105 nm rather than
+-100 nm for the first cut's original BELOW enclosure. The explicitly requested
+copied-LEF repair clears that same isolated violation in Magic (original1,
+repaired0), with the original PDK and process deck untouched. All 132 repaired
+fixed checks, generated minimum/2-by-3 checks and the complete pinned cell cut
+corpus pass. Seven focused tests reject short edges, holes, swapped sides,
+insufficient generator minima, malformed GDS and source drift.
+
+The candidate retains all ten original clauses and adds measured square
+CUTCLASS definitions plus the same enclosure bounds. Actual native OpenDB
+import reports seven classes, ten qualified and ten retained original rules
+with exact flags/bounds. The complete source/tool-bound preflight takes
+1.832558s; this is parsing and independent geometry evidence, not TritonRoute
+enforcement or complete process rule coverage. It is not wired into the
+maintained route flow. Actual router enforcement and fixed/generated/routed-pin
+qualification remain open, as do complete controller DRC/LVS/PEX/timing and
+full-chip closure. The command, identities and limitations are in the
+[preflight receipt](006-sg13g2-enclosure-preflight.json) and
+[contract](../contracts/006-sg13g2-enclosure-preflight-v1.md). No timeout cause
+is assigned to the rule-coverage gap.

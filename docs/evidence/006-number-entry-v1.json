@@ -757,14 +757,16 @@
     }
   },
   "latest_candidate_ci": {
-    "head": "338ebd0cd476a68ce98d150a68a955a1a0735246",
-    "run": 38902680382,
-    "status": "IN_PROGRESS_WITH_FAILED_METADATA_JOB",
-    "metadata_job": 116979027720,
-    "failure": "Actual companion Actions passed; post-pipeline marker command rg failed127 because runner has no rg. Foundation exactlogrepair passed; subsequent metadata steps skipped. Same mandatory marker nowusesgrep-F.",
-    "actual_log": "build/ci/task006-338-metadata-failed.log",
-    "previous_failure": "740eaa3/38895782765 foundationexactloggedpipeline fixture mismatch retainedseparately",
-    "qualification": "Newhead/CIneeded forone-lineportablemarkerfix; no weakening/skip/timeoutchange."
+    "commit": "ce29179c9786a5ba7457eb711b569f420fc8c66f",
+    "run_id": 38905353094,
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": 11,
+    "successful_steps": 113,
+    "skipped_steps": 0,
+    "cancelled_steps": 0,
+    "receipt": "build/ci/task006-ce291-complete.json",
+    "scope": "Actual previouscommittedcandidate; excludeslaterenclosure/PenBankscase; no laterheadCIinferred"
   },
   "canonical_rtl_number_entry": {
     "actor": {
@@ -1117,7 +1119,7 @@
     "scope": "Exact32M same compiled Wasm archive suffix from Pending26 to real barrier143/Saved26, unfinished display retained. Captured actual outcomes and new private backing only. Not native/Wasm migration, QEMU hidden-cache closure or cold recovery."
   },
   "course_browse_history17": {
-    "status": "PASS_COMPLETE_FRESH_GENUINE_PAIR_AND_REAL_FAST_COLD_RTL_PENDING",
+    "status": "PASS_GENUINE_PAIR_FAST_AND_EXACT_RTL_COLD_HISTORY",
     "contract": "lemma-course-browse-history/1",
     "root": "Lemma.Applications.Notebook.mainPackageNumberPadBrowse",
     "component": "build/courses/task006-number-pad-browse17-component-a1/component-result.json",
@@ -1239,7 +1241,39 @@
         },
         "seconds": 2.704056918970309
       }
-    }
+    },
+    "exact_RTL_status": "PASS_REAL_GUEST_HISTORY_BROWSE_COLD",
+    "exact_RTL_result": "build/courses/task006-browse17-rtl-a1/result.json",
+    "exact_RTL_clocks": 787000000,
+    "exact_RTL_host_seconds": 3351.8178792999825,
+    "exact_RTL_phases": [
+      {
+        "name": "newCPU-cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 571000000,
+        "clocks": 571000000,
+        "host_seconds": 2437.46388004208,
+        "clock_cap": 1000000000,
+        "host_cap": 7200
+      },
+      {
+        "name": "raw-COURSE-history-location",
+        "initial_cycle": 571000000,
+        "final_cycle": 787000000,
+        "clocks": 216000000,
+        "host_seconds": 908.365934115951,
+        "clock_cap": 400000000,
+        "host_cap": 3600
+      }
+    ],
+    "exact_RTL_supervision": {
+      "result": "build/courses/task006-browse17-rtl-supervision-a1/result.json",
+      "host_seconds": 3352.880046473001,
+      "peak_owned_RSS_bytes": 249589760,
+      "owned_survivors": 0,
+      "consumed_source_seal": true
+    },
+    "portable_whole_case": "RUNNING newfixed0/571M/787M/788M exactnativeab88/browserc53 event relation; build/browser/task006-browse17-native-match-plan-a1/plan.json; original16:49:22.155307Z deadline. Resetall145732188bytesmatch exceptpredeclaredidentityheader only; no wholecasePASSyet."
   },
   "browser_pad15_actual_ordinary_ink": {
     "status": "PASS_BROWSER_ORDINARY_POINTER_GUEST_INK_SAVED",
@@ -1250,6 +1284,18 @@
     "barrier": 161,
     "latency_observation": "build/browser/task006-pad15-index-cold-plan-a1/ink-observation.json",
     "scope": "Ordinary canvasmouse2rawsamples, syntheticpressure2048/tool0; actualguest272Byterawobject/oldmathallbytes preserved; actualSaved29/barrier161 andfull3.63Mcontrollerpixels exact.25.564s ispassiveobserverduration. Observeduppercompletion426.067s includesUI/inspection;414.638s simulationcalls, notfirstACKlatency.",
-    "second_cold": "RUNNING CPU0 sameOPFS no snapshot/import/format, original1B/7200 and4B/28800bounds unchanged"
+    "second_cold": {
+      "status": "PASS_BROWSER_COLD_AFTER_ACTUAL_ACKNOWLEDGED_RAW_INK",
+      "result": "build/browser/task006-pad15-index-cold-plan-a1/second-cold-result.json",
+      "clocks": 602450000,
+      "host_seconds": 4358.60648999989,
+      "all_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "sequence": 29,
+      "objects": 8,
+      "exact_cold_READ_outcomes": 135,
+      "input": "Actual same acknowledged OPFS via Close/OpenCPU0; no snapshot/import/format",
+      "course_reopen": "RUNNING original400M/3600/global17:29:51.932571Z; fullcourse-plus-dot/evidencehistory expected"
+    }
   }
 }

@@ -1,0 +1,185 @@
+{
+  "schema": "lemma-pen-sequence-ready-investigation/1",
+  "status": "UNADOPTED_PROTOCOL_MAPPING_PASS_ROUTE_MEMORY_PRECONDITION_UNMET",
+  "observed_utc": "2026-10-16T13:12:45.798771+00:00",
+  "maintained_source_sha256": "2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3",
+  "candidate_source_sha256": "57e5c681165869e9b33a6da1ab069d36a7e47f2ae9eda13311a8b5a2d399a1cc",
+  "candidate_patch": "--- a/sim/rtl/lemma_pen.sv\n+++ b/sim/rtl/lemma_pen.sv\n@@ -45,12 +45,33 @@\n   // A completed pop advances the public FIFO once.  The next head is fetched\n   // synchronously in two bounded stages; MMIO and ingress wait meanwhile.\n   logic [1:0] refill;\n+  // Local counter admission mirrors readiness. Retain this independent flop\n+  // so the wide storage refill fanout need not drive the counter hold/carry\n+  // cone. This changes no public ready/accept edge or sequence value.\n+  (* keep = 1 *) logic sequence_ready;\n   logic [PTR-1:0] head, tail;\n   logic [PTR:0] count;\n   logic [63:0] epoch, head_epoch, next_sequence, losses, fault;\n   logic [63:0] last_time, contact_deadline;\n   logic loss, resync, release_seen, bad_sample;\n   logic access_ok, lose;\n+\n+  always @(posedge clk) begin\n+    if (!reset_n) sequence_ready <= 1;\n+    else if (refill == 2) sequence_ready <= 0;\n+    else if (refill == 1) sequence_ready <= 1;\n+    else if (!lose && valid && write && access_ok && addr == 88 &&\n+             count > 1 && head_entry.sequence_id == wdata)\n+      sequence_ready <= 0;\n+  end\n+  always @(posedge clk) begin\n+    if (!reset_n) next_sequence <= 1;\n+    else if (sequence_ready && sample_valid && !(valid && write) &&\n+      !(contact_deadline != 0 && now_ticks >= contact_deadline) && !loss &&\n+      !bad_sample && !sample_flags[3] && next_sequence != 64'hffffffffffffffff &&\n+      (resync || count != FIFO_DEPTH) && (!resync || (release_seen && sample_flags[0])))\n+      next_sequence <= next_sequence + 1;\n+  end\n \n   // Separate bank memories give synthesis one local write and one local read\n   // port per bank instead of a flattened array with BANKS competing writers.\n@@ -142,7 +163,7 @@\n       head <= 0; tail <= 0; count <= 0;\n       head_entry <= '0; ingress_entry <= '0; ingress_index <= 0;\n       refill <= 0; refill_select <= '0;\n-      epoch <= 1; head_epoch <= 1; next_sequence <= 1;\n+      epoch <= 1; head_epoch <= 1;\n       losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0;\n       loss <= 0; resync <= 0; release_seen <= 0;\n     end else if (refill == 2) begin\n@@ -178,7 +199,6 @@\n           head_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],\n             sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};\n         tail <= tail + 1'b1; count <= count + 1'b1;\n-        next_sequence <= next_sequence + 1;\n         head_epoch <= epoch; last_time <= sample_time;\n         contact_deadline <= sample_flags[0] ? sample_time + 10000000 : 0;\n         resync <= 0; sample_accepted <= 1;\n",
+  "candidate_patch_sha256": "bbe06ed1b2dd643f9bcd11cc4cf44f37e5b26c7e86cdf9658971330b8100edae",
+  "basis": "Actual unchangedmaintained globalSTA refill[2](_264212_)->next_sequence[63](_263733_) worst path crosses longbufferchain. Localcounterreadiness FF mirrors actualrefill state; counteradmission usesexplicit same-edgeguards andholds full64bitcounter. No publictiming/ready/capacity/field/ordering change.",
+  "sources": {
+    "baseline_report": "build/silicon/physical/pen-task006-private-ingress-a1/global-setup.rpt",
+    "baseline_report_sha256": "07d4e57f1c26e1713a5f9eeac1cc3d10dfa9ce49a58fd7900202aa0d4a717b9f",
+    "candidate": "build/silicon/pen-sequence-ready-owner-a1/lemma_pen.sv",
+    "original_forward_reference_source": "build/silicon/pen-sequence-ready-owner-a1/declaration-order-original.sv"
+  },
+  "public": {
+    "status": "PASS",
+    "result": "build/silicon/pen-sequence-ready-public-a3/result.json",
+    "observations": [
+      "PEN-PREFIX64 all16/32/48/64 frontiers and saturation PASS",
+      "PEN-EMPTY-HEAD unaccepted and invalid empty fields remain zero PASS",
+      "PEN-INGRESS literal full256 fields high64 sequence/time consecutive/wrap PASS",
+      "PEN-INGRESS first-edge all-fields immediate-next-edge ACK PASS",
+      "PEN-INGRESS watchdog wins immediate ACK and recovery clears head PASS",
+      "PEN-INGRESS every-edge old/new invalid full ACK reset collision PASS edges",
+      "PEN-BANKS full-capacity all-fields two-wrap and ingress bypass PASS",
+      "PEN-BANKS refill backpressure reset cancellation and watchdog head PASS"
+    ],
+    "negative_status": "PASS_ACTUAL_MUTANT_REJECTED_BY_PUBLIC_EDGE_MITER",
+    "negative_result": "build/silicon/pen-sequence-ready-negative-a2/result.json",
+    "negative_exact": "external-interface difference atedge64",
+    "maintained_case": "PASS_MAINTAINED_CANDIDATE_AND_EXACT_BACKPRESSURE_MUTANT",
+    "maintained_result": "build/silicon/pen-sequence-ready-maintained-a1/result.json",
+    "new_maintained_fixture": "conformance/silicon/PenBanks.sv",
+    "fixture_sha256": "b215e02f7da01af0bbafc00dfb36aefdfb7baee0469b169b88ce55412c444ebd",
+    "literal_negative": "sequenceactual5 expected3 afterheldrawacrossrefill; no hierarchicalstate read",
+    "miter_base_sha256": "c01c4b3a5d2da9aa405a6945d3b2b004899d3f2f9cba3336405cce98dfafad2b",
+    "miter_patch": "--- a/conformance/silicon/PenIngress.sv\n+++ b/conformance/silicon/PenIngress.sv\n@@ -57,8 +57,54 @@\n     expect_word(288,64'(identity*53%4096));expect_word(296,2);\n     expect_word(304,64'(identity%3));expect_word(312,64'(identity%8));\n   endtask\n+  task automatic seed_counter(input logic[63:0] value);\n+    pen.next_sequence=value;prior.next_sequence=value;\n+  endtask\n   logic [63:0] seed=64'h11223344ffffffe0;\n   initial begin\n+    // Hold a real raw sample throughout both backpressured refill edges.\n+    // It is accepted exactly once afterward; unaccepted clocks must not\n+    // consume sequence IDs. Only public fields/literal expectations follow.\n+    reset_machine();\n+    for(int i=0;i<2;i++)begin\n+      @(negedge clk);sample_valid=1;fields(i);tick();\n+    end\n+    clear_bus();put(88,1);\n+    sample_valid=1;fields(2);#1;\n+    if(ready || sample_ready)$fatal(1,\"queued sample did not start during refill\");\n+    while(!sample_ready)tick();\n+    tick();clear_bus();\n+    expect_word(32,2);expect_head(1,2);put(88,2);expect_head(2,3);\n+    $display(\"PEN-SEQUENCE-READY queued raw across both refill edges consumes one ID PASS\");\n+    for(int boundary=1;boundary<=4;boundary++)begin\n+      reset_machine();@(negedge clk);\n+      seed_counter(boundary==4?64'hfffffffffffffffd:(64'd1<<(boundary*16))-3);\n+      for(int index=0;index<5;index++)begin\n+        @(negedge clk);sample_valid=1;fields(index);tick();\n+      end\n+      clear_bus();\n+      if(boundary==4)begin\n+        expect_word(16,7);expect_word(32,1);\n+        expect_head(0,64'hfffffffffffffffd);\n+      end else begin\n+        expect_word(32,5);\n+        for(int entry=0;entry<5;entry++)begin\n+          expect_head(entry,(64'd1<<(boundary*16))-3+64'(entry));\n+          put(88,(64'd1<<(boundary*16))-3+64'(entry));\n+        end\n+        expect_word(32,0);\n+      end\n+    end\n+    $display(\"PEN-PREFIX64 all16/32/48/64 frontiers and saturation PASS\");\n+    reset_machine();\n+    // Empty capture must never publish even valid-looking, unaccepted data.\n+    @(negedge clk);sample_valid=0;fields(19);tick(3);\n+    for(int field=0;field<8;field++)expect_word(256+field*8,0);\n+    // An invalid empty sample latches a loss/fault but no public head bytes.\n+    @(negedge clk);sample_valid=1;fields(20);sy=64'h8000000000000000;\n+    tick();clear_bus();expect_word(32,0);expect_word(24,1);\n+    for(int field=0;field<8;field++)expect_word(256+field*8,0);\n+    $display(\"PEN-EMPTY-HEAD unaccepted and invalid empty fields remain zero PASS\");\n     reset_machine();\n     // Observe every first-head field within the first accepted edge, then\n     // ACK at the immediately following edge. A delayed private head must\n@@ -84,7 +130,7 @@\n     reset_machine();\n     // An explicit white-box seed exercises upper sequence bits and the 32-bit\n     // carry. All observations afterward use external MMIO and literal values.\n-    @(negedge clk);pen.next_sequence=seed;prior.next_sequence=seed;\n+    @(negedge clk);seed_counter(seed);\n     for(int lap=0;lap<2;lap++)begin\n       // Keep valid asserted: every following edge admits the next payload.\n       for(int i=lap*256;i<(lap+1)*256;i++)begin\n@@ -98,7 +144,7 @@\n       expect_word(32,1);expect_head(lap*256,seed+64'(lap*256));\n       // Loss intentionally retains only its immutable head. Reset and repeat\n       // the full corpus below before performing the complete wrap traversal.\n-      reset_machine();@(negedge clk);pen.next_sequence=seed+64'(lap*256);prior.next_sequence=seed+64'(lap*256);\n+      reset_machine();@(negedge clk);seed_counter(seed+64'(lap*256));\n       for(int i=lap*256;i<(lap+1)*256;i++)begin\n         @(negedge clk);sample_valid=1;fields(i);tick();\n       end\n"
+  },
+  "modular_property": {
+    "status": "PASS_EXPLICIT_INCOMING_READINESS_INVARIANT_AND_ACCEPT_ENABLE",
+    "property": "build/silicon/pen-sequence-ready-owner-a1/SequenceReadyProperty.sv",
+    "property_sha256": "d6278d539ece46faf13c9b35dc749eec63c6ce1471ab7376c49a2341b845b1b6",
+    "positive_log": "build/silicon/pen-sequence-ready-owner-a1/local-ready-property-a2.log",
+    "negative_log": "build/silicon/pen-sequence-ready-owner-a1/local-ready-property-negative.log",
+    "scope": "One-stepBooleaninductiveproperty under declaredlegalrefill/localreadyinvariant; notfullcontroller equivalence orsiliconsignoff. Booleanexternaldecisions arbitrary. Actualpublicmiter separatelybindsRTLbehavior."
+  },
+  "mapping": {
+    "result": "build/silicon/physical/pen-sequence-ready-map-a2/result.json",
+    "status": "PASS",
+    "parent": {
+      "cells": 184159,
+      "cell_types": {
+        "sg13g2_inv_1": 3763,
+        "sg13g2_nor2b_1": 203,
+        "sg13g2_nand2b_1": 177,
+        "sg13g2_nor2_1": 4373,
+        "sg13g2_nand2_1": 561,
+        "sg13g2_or3_1": 18,
+        "sg13g2_nor3_1": 143,
+        "sg13g2_mux2_1": 49278,
+        "sg13g2_and2_1": 249,
+        "sg13g2_or2_1": 222,
+        "sg13g2_nand3_1": 202,
+        "sg13g2_nor4_1": 217,
+        "sg13g2_mux4_1": 11679,
+        "sg13g2_o21ai_1": 3334,
+        "sg13g2_a21oi_1": 4019,
+        "sg13g2_a22oi_1": 4565,
+        "sg13g2_a221oi_1": 77,
+        "sg13g2_a21o_1": 40,
+        "sg13g2_xnor2_1": 73,
+        "sg13g2_and4_1": 50,
+        "sg13g2_xor2_1": 52,
+        "sg13g2_or4_1": 17,
+        "sg13g2_nand3b_1": 11,
+        "sg13g2_nand4_1": 520,
+        "sg13g2_and3_1": 112,
+        "sg13g2_dfrbpq_1": 50102,
+        "sg13g2_tiehi": 50102
+      },
+      "inferred_memory_bits": 0,
+      "unresolved_cells": [],
+      "latches": 0,
+      "storage_scope": "Any RTL arrays have been lowered into included register cells",
+      "cell_area_um2": 4354753.951798,
+      "memory_implementation": "Explicit register logic; no RAM black boxes"
+    },
+    "candidate": {
+      "cells": 184254,
+      "cell_types": {
+        "sg13g2_inv_1": 3783,
+        "sg13g2_nor2b_1": 248,
+        "sg13g2_nand2b_1": 196,
+        "sg13g2_nor2_1": 4251,
+        "sg13g2_nand2_1": 512,
+        "sg13g2_or3_1": 9,
+        "sg13g2_nor3_1": 183,
+        "sg13g2_mux2_1": 49288,
+        "sg13g2_and2_1": 226,
+        "sg13g2_or2_1": 231,
+        "sg13g2_nand3_1": 203,
+        "sg13g2_nor4_1": 248,
+        "sg13g2_mux4_1": 11678,
+        "sg13g2_o21ai_1": 3392,
+        "sg13g2_a21oi_1": 4150,
+        "sg13g2_a22oi_1": 4529,
+        "sg13g2_a221oi_1": 79,
+        "sg13g2_a21o_1": 33,
+        "sg13g2_xnor2_1": 68,
+        "sg13g2_and4_1": 49,
+        "sg13g2_nand3b_1": 18,
+        "sg13g2_and3_1": 115,
+        "sg13g2_nand4_1": 511,
+        "sg13g2_or4_1": 17,
+        "sg13g2_xor2_1": 31,
+        "sg13g2_dfrbpq_1": 50103,
+        "sg13g2_tiehi": 50103
+      },
+      "inferred_memory_bits": 0,
+      "unresolved_cells": [],
+      "latches": 0,
+      "storage_scope": "Any RTL arrays have been lowered into included register cells",
+      "cell_area_um2": 4355771.376598,
+      "memory_implementation": "Explicit register logic; no RAM black boxes"
+    },
+    "same_explicit_abc_ps": 10000,
+    "supervision": {
+      "result": "build/silicon/pen-sequence-ready-map-supervision-a2/result.json",
+      "status": "PASS_NEW_PEN_SEQUENCE_READY_MAPPING_SUPERVISED",
+      "seconds": 51.44245478301309,
+      "owned_peak_rss_bytes": 1046249472
+    },
+    "cones": {
+      "status": "PASS_ACTUAL_MAPPED_CONE_OBSERVATIONS",
+      "scope": "Same source/tool/library-bound mapped gate graphs, all64 sequence D cones; FF traversal cut. Cell stages are not delay, RC or routed physical timing.",
+      "observations": [
+        {
+          "tag": "parent",
+          "path": "build/silicon/physical/pen-delay-target-map-a1/mapped.json",
+          "sha256": "c36e69edcd422acfcd9960d449494d4d4ec1a57cfb686f736f70e0d4c83750ae",
+          "counter_D_with_global_refill_Q_ancestor": 64,
+          "all_leaf_max": 18,
+          "invalid_high_sample_max": 13,
+          "sample_y53_max": 13
+        },
+        {
+          "tag": "candidate",
+          "path": "build/silicon/physical/pen-sequence-ready-map-a2/mapped.json",
+          "sha256": "23fba818dc1fe3bf5273e2602d2e8241e4203508ce469079bf43b543fee547a7",
+          "counter_D_with_global_refill_Q_ancestor": 0,
+          "all_leaf_max": 18,
+          "invalid_high_sample_max": 13,
+          "sample_y53_max": 13
+        }
+      ],
+      "complete_rows": "build/silicon/pen-sequence-ready-owner-a1/mapped-cones.json",
+      "complete_rows_sha256": "367792edf2d4556f70928e49d5871adeba6a3c24a59148bb7f7d0b9c42c0a04e"
+    },
+    "interpretation": "64/64oldcounterDcones globalrefillQancestor ->0/64candidate;maxcellstages18->18. Notdelay/RC orroutingmeasurement; no setupimprovementclaimed."
+  },
+  "retained_failures": {
+    "map_a1": "read_slang15 forwardreferenceerrors beforemapping; originalsource retained; unchangedalwaysblocks movedafterdeclarations for a2. Verilator acceptedoriginalorder.",
+    "formal_a1": "Yosys SAT cannotmodel modern$check; supportedchformal-lower driverfix passesunchangedproperty, a1logretained.",
+    "negative_a1": "Mutantwithoutlocalreadyguard survivedoldcorpus; originalnegativeFAIL retained. Newheld-inputcase exposesactualcounterdifference; no expectedfailurewidening."
+  },
+  "physical": {
+    "status": "NOT_RUN_MEMORY_PRECONDITION_UNMET",
+    "minimum_available_bytes_before_launch": 8589934592,
+    "currently_available_bytes": 5848862720,
+    "basis": "Recorded fullcontroller route peak4,630,405,120B plus3GiB machineavailablefloor is7,851,630,592B; roundprospectively to8GiB. CurrentactiveUSB/native/browser machines retain2GiB ownfloors. Do notlaunch a fullroute that can cancel those sessions.",
+    "prospective_command": "nix-shell tooling/silicon/eda.nix --run \"python3 scripts/silicon_synth.py --top lemma_pen --source build/silicon/pen-sequence-ready-owner-a1/lemma_pen.sv --map --abc-delay-ps 10000 --layout --clock-ns 10 --reuse build/silicon/physical/pen-sequence-ready-map-a2 --output-dir build/silicon/physical/AN_UNUSED_SEQUENCE_READY_ROUTE --deadline 900\"",
+    "prospective_bounds": {
+      "inner_seconds": 900,
+      "outer_seconds": 1000,
+      "owned_rss_bytes": 6442450944,
+      "minimum_available_bytes": 3221225472,
+      "outputs_bytes": 12884901888,
+      "file_bytes": 1073741824,
+      "cleanup_seconds": 30
+    },
+    "constraint_policy": "Same100MHz, IO/load/uncertainty, WNS_PATH andoriginalrules; no falsepaths/loweredclock/waivers/estimatedroutedSPEFsubstitution. No baselineunchanged route.",
+    "remaining": "Detailedroute/layout/rulecoverage/processDRC/LVS/routedPEX/postrouteelectricaltiming/fullchip remainopen."
+  }
+}

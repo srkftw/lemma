@@ -1019,11 +1019,12 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "338ebd0cd476a68ce98d150a68a955a1a0735246",
-    "run": 38902680382,
-    "status": "IN_PROGRESS_WITH_METADATA_FAILED",
-    "scope": "Foundationrepair passed; realjoinedActions markerprintedPASS, thenrunner rg notfound127. Latermetadata skipped. Portablerepair grep-F preservesmandatorytext/exit. No latestCIpassinferred.",
-    "evidence": "docs/evidence/006-number-entry-v1.json"
+    "commit": "ce29179c9786a5ba7457eb711b569f420fc8c66f",
+    "run": 38905353094,
+    "status": "SUCCESS",
+    "jobs": 11,
+    "steps": 113,
+    "scope": "Actual candidate; laterenclosure/PenBanks changes needtheirownCI. Originalfailuresretained."
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1245,7 +1246,7 @@
     "behavior": "IMPLEMENTED_JOINED_NUMERIC_AND_RECOVERY_ACTIONS_COMPONENT_PASS",
     "model": "Actual imported Actions retain provisional9-fieldrawink/pixels; pinnedpayload/doc/history immutable, no storage/checkerIPC/Saved; markerfault/fullbuffer checksPASS",
     "guest_compilation": "PASS bothfreshcomplete normal/init linkedartifacts833.365s;415source/ownedcleanup839.305s,1.923GBpeak, literal910/908corpora, oldsemanticguards/tablecells retained.",
-    "RTL_guest": "RUNNING newactual16cold; nochanged/lostACK/check/coldpassyet",
+    "RTL_guest": "RUNNING boundedcase:actualcoldReady665M/3469.019s,lostpersistedWRITE/guestFailed720M,offlineink730M,reconciliationSaved16at1150M/3079.383s; homeclose/newcold/math/thirdcold remainpending.",
     "distribution": "PREPARED schema9/native415sources877files; actualguest6c331985/runtime6cbd CPU0 cold started fromprivateSaved12peer/outbox. Connectedcasepending.",
     "physical": "UNVERIFIED",
     "evidence": "docs/evidence/006-number-entry-v1.json"
@@ -1254,8 +1255,8 @@
     "behavior": "PASS_READER_HISTORY_LOCATION_CURRENT_AUTHORITY_UNCHANGED",
     "model": "Readonly actual Lean Actions pass fullvalidation/Unknownhistory/currentprecedence/no-source/fault/unchangedbytes cases",
     "guest": "Bothgenuine17wholeRV64imagesandfullauditsPASS786.792s,416sources/1.907GB/ownedcleanup;875pre/873postcorpora,3validartifactnegativesreject. ActualfastCPU0/rawCOURSE/allhomepixels/allmedia/history/body/keypadPASS304Mfunctionalunits.",
-    "RTL": "RUNNING two-phasecanonicalcold/historycase1.4B/10800s; no pass inferred",
-    "distribution": "PREPARED native+static17/actual standalone validators; exactoldRTL/Wasmcore reused. Browser17CPU andcleanhost runtimeclosure notqualified.",
+    "RTL": "PASS actualnewCPU cold571M/2437.464s andrawCOURSE216M/908.366s;787M/3351.818s total, everyhomepixel/allmedia/history/body/keypad/Unknownauthority unchanged",
+    "distribution": "PREPARED native/static17 actualstandalonevalidators; newwholeoptimizednative/WasmfixedeventcaseRUNNING. Resetfullcomponentmatch only, no completedbrowser17cold/suffix claim.",
     "physical": "UNVERIFIED; no change to hardware/physicalclosure",
     "evidence": "docs/evidence/006-number-entry-v1.json"
   },
@@ -1263,8 +1264,17 @@
     "behavior": "PASS actualBACK\u21925/6\u2192isolatedCHECK/rev9Verified\u2192OPFSbarrier143/Saved26\u2192ordinarycanvasink\u2192barrier161/Saved29",
     "model": "Same exactc53RTL/Wasmcore;32M PendingSave suffixreplays allarchivebytes usingactualoutcomes/privatebacking",
     "guest": "Actualread/annotate/check/history/uncertainreview preserved; wholekeypad/body/requiredmathlabels andwholeinkplane exact",
-    "distribution": "Actual192MiB browsercold582.7M/4891.234s; secondCPU0 coldnowrunning, new17bundleCPU notqualified",
+    "distribution": "Actual192MiB browserinitialcold582.7M/4891.234s; afterCHECK/inkSaved29 independentClose/Opencold602.45M/4358.606s PASSallpixels/allmedia/8objects/135READs. SecondreadonlyVerifiedrev9historyreopenRUNNING.",
     "physical": "No physical pressure/powerloss/eviction claim",
     "evidence": "docs/evidence/006-number-entry-v1.json"
+  },
+  "physical_enclosure_preflight1": {
+    "behavior": "PASS closedoriginalgeometry + explicit isolatedviarepair",
+    "model": "Integerrectangle-union/allorientations/side-specificcutandgeneratorminima;sevenadversarialhosttests",
+    "RTL": "UNCHANGED; penlocalcountercandidate remainsUNADOPTED",
+    "guest": "No targetcode orruntimechange",
+    "distribution": "OptionalhostCLI generatescandidateLEF; sourcePDK/maintainedrouteflow unchanged",
+    "physical": "Magicisolatedoriginal1/repaired0;132fixedchecks,7classes,10qualified+10originalnativeOpenDBrulesPASS1.833s. ActualDRTenforcement/fullprocessrules/controllerDRC/LVS/PEX/timing/fullchipremainUNQUALIFIED",
+    "evidence": "docs/evidence/006-sg13g2-enclosure-preflight.json"
   }
 }

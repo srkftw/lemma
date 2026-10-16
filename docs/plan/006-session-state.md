@@ -3886,3 +3886,74 @@ Companion16 actualcoldReady665M/3469.018790s; lostWRITEeffect86persisted at
 noSaved. Offlineink/reconnect/reconciliation running, notcompletedacceptance.
 Oldcompletedbrowser32/31workers nowclosedviaUI afterallfullsnapshots/raw/outcome
 exports; tabs/OPFSmedia retained. New15browser33secondcold continuesunchanged.
+
+Isolatedphysical candidate underbuild/silicon/pen-sequence-ready-owner-a1
+remainsUNADOPTED; maintainedRTL2bab unchanged. ActualSTA worstrefill[2]→
+next_sequence[63] target: localcounterreadyFF removesglobalrefillQ from64/64
+counterDcones, stages18→18; mappedcells184159→184254/FF50102→50103. Mapping
+a2PASS51.442455s/1,046,249,472Bpeak/ownedcleanup. Map a1read_slang15forward
+referenceerrors retained; identicalblocks movedafterdeclarations, fullpublic
+a2/a3PASS. Modularreadiness/enableSAT underexplicitincominginvariant PASS
+a2afterchformal-lower; original$checkdriverFAILretained. Originalmissingready
+mutant survivedoldcorpus (negativea1FAIL), newheldrawacrossbothrefilledges
+publiccase detectsactualexternaldifferenceedge64/negativea2PASS24.259809s.
+MaintainedPenBanks newcase passesactualmaintained/candidate andexactmutant
+sequence5vs3 failure62.985207s. Conformance/silicon/PenBanks.sv nowWIP; this
+isonefocusedcoveragefix, no currentRTLadoption. Receipt006-pen-sequence-ready
+containsreconstructiblepatch/sourcehashes/modernformal/test/cell/clockbounds.
+Route NOT_RUN launchprecondition8GiBavailable unmet (~5.4GiB); needsrecorded
+4.63GBpeak +3GiBreserve soactiveproductfloors2GiBcannotbejeopardized. Resume
+onlychangedcandidateat100MHz/900sinner/1000souter, originalrules/WNS_PATH,
+newunusedoutput; fullDRC/LVS/routedPEX/postroute/fullchip remainopen.
+
+CIportablemarkerfix publishedce29179c9786a5ba7457eb711b569f420fc8c66f; actual
+run38905353094 IN_PROGRESS, PR9updateddraft/unmerged. No newCIpass. Readonly
+canonical17progress inspection13:10:39Z shows420M/220356813retired/Smode,
+no completedpanel/Ready yet. Owner/clockbounds unchanged, no coldrestart.
+
+Later actual observation supersedes that running status: exact ce29179 candidate
+CI38905353094 completed SUCCESS, all11jobs/all113steps, no skipped/cancelled
+steps. Actual API receipt build/ci/task006-ce291-complete.json. Original740 and
+338 metadata failures remain retained. This CI excludes subsequent uncommitted
+PenBanks/enclosure additions; no later-head CI is inferred.
+
+Canonical17 exact RTL cold/history COURSE completed PASS, source-sealed and
+owned cleanup complete: build/courses/task006-browse17-rtl-a1/result.json,
+787Mclocks/3351.817879s; cold571M/2437.463880s and rawCOURSE216M/908.365934s.
+Every homepixel/all256MiB/objects/workspace/history/body/keypad/Indeterminate
+checked, currentUnknown unchanged, no Save/check/format. Supervisor3352.880046s,
+249589760Bpeak/no survivors. Originalbrowser11wrongnodeFAIL staysFAIL.
+
+Browser15/index actualordinarypointer Saved29/barrier161 now independently
+cold-recovers via realClose/Open CPU0:602.45M/4358.606490s,192MiBheap,
+every3.63Mpixel/all256MiB/8objects/seq29/135exactcoldREADoutcomes PASS;
+build/browser/task006-pad15-index-cold-plan-a1/second-cold-result.json.
+No snapshot/import/format as coldinput. SecondreadonlyCOURSE nowrunning
+original400M/3600/global17:29:51.932571Z, initial602.45M; predeclared
+second-reopen-plan.json expects course-plus-dot pixels and Verifiedrev9/history.
+
+New17 optimizednativeab88/Wasmc53 fixed-event relation is separatelyRUNNING:
+build/browser/task006-browse17-native-match-plan-a1/plan.json; absolute aggregate
+16:49:22.155307Z,10800s/788Mclocks, cuts0/571M/787M/788M. Identicalaudited17
+guest43f7 and opaqueSaved37 source, exacttwofutureevents queuedCPU0. Actual
+originalreset snapshots match all145732188bytes except predeclared identity
+header[16,80); bothCRCcomponents validated. Initial observer incorrectly read
+scalar10(flushes) as queuedinput andfailed; correctedseparatepassiveobserver
+usescursor/retired/panels plusactualrawcapture, no CPUrerun or ignoredstate.
+Browser34 local8805 mediumbrowse17-native-match-a1 runsfixed571M/7200 cut.
+Nativeactor exec97591, monitor34151 (attachedafterreset, native-onlyRSS/owned
+cleanup, no retrospectivepeak/browserprocessassertion). No completedwholecold
+or exactsuffix/native-Wasm result yet; no crossrestore/QEMUcacheclosureclaim.
+
+Companion16 reconciled actualpersistedlostWRITE afterFailed/offlineink/restart:
+Saved16at1150M,420M/3079.382915s sinceofflinecut. Exactreceipt/dedup/guest
+scope remains actor's continuingboundedscenario; homeclose/newcold/math/third
+cold stillpending. Original28800s/10B and ownedRSS/output bounds unchanged.
+
+Optional host enclosure preflight1 added separately; original34PDKsourcehashes,
+integergeometry, explicitVia1_DC2L-5nmleftMetal1repair, realMagicoriginal1/
+repaired0, actualOpenDB7classes/10qualified+10originalrules pass1.832558s.
+All132fixedchecks passafterrepair, generatedminima/2x3/cellgeometry checked;
+sevenfocusedadversarialtests PASS. OriginalPDK/routeflow unchanged. Tool,
+profile, contract/evidence006-sg13g2-enclosure-preflight retain fullsource/tool
+identities. ActualTritonRoute enforcement andcompleteprocesscoverage stillopen.

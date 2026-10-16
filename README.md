@@ -455,6 +455,21 @@ RTL is slower than the native notebook and does not claim physical conformance
 or a physical nonvolatile boot solution. Open synthesis/layout recipes are in
 [tooling/silicon](tooling/silicon/README.md).
 
+The optional enclosure preflight independently checks the pinned cut geometry,
+tests an explicit isolated fixed-via repair in Magic, and imports a candidate
+cut-class LEF into OpenDB. Use an unused output directory:
+
+```sh
+nix-shell tooling/silicon/eda.nix --run 'python3 scripts/silicon_enclosure.py \
+  --pdk-root build/silicon/deps/ihp-open-pdk \
+  --output-dir build/silicon/enclosure-preflight-new \
+  --repair-known-via --timeout 180'
+```
+
+This leaves the PDK and maintained route flow unchanged. See the
+[preflight contract](docs/contracts/006-sg13g2-enclosure-preflight-v1.md) for
+its exact subset and remaining router/process qualification.
+
 ## Task006 persistent machine sessions
 
 The `lemma-silicon-dev/0.3.0` successor retains the canonical 1650×2200 notebook
