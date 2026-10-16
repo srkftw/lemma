@@ -4145,3 +4145,86 @@ fast timing/arbitraryQEMUcache continuation, native/browser distribution,
 managed proof-kernel/G2/G4-G7/tutor/learning and physical closure remain separate
 open obligations. Full physical route still lacks its8GiB available precondition;
 latest observed available5.85GiB. No unchanged route flow was relaunched.
+
+
+October16 authenticated recovery/resume milestone (publication followsda13e76):
+Normal `lemmasim-auth --public-development-key install-resume` now obtains a
+fresh authenticated ROM status before staging. Existing confirmed/trial receipt
+sends zero writes; only recovery215/nonmatching217 permit opaque sectors/tag/
+publication and final actual barrier/status. One original cumulative host/clock
+budget; no automatic reset/retry or false durable result. Partial UART frames
+require re-entering announced recovery. No guest policy moves into the host.
+
+Actual partial-transfer brownout exposed native pen-resync cancellation of UART.
+Original e8cc38 fails the independent raw-byte regression. Intermediatea09 retains
+bytes but fails the strengthened quota invariant; its data-only functional case
+16M/95.483s is retained separately. Final319b73a5 retains bytes AND quota, future
+admission and a complete original/restored native suffix agree byte-for-byte.
+`event_payload_bytes` is derived from the serialized retained vector; the old
+intermediate zeroing made future admission diverge. No field mask, flush, drain,
+or guest mutation. This selected suffix is not arbitrarycached continuation.
+Current-native build/three-way fixture75.487s,78.155s supervised/982536192B peak.
+Maintained reusable checker7.460s (max completed child701072KiB), one exactsuffix.
+Same profile10 capacities/clocks, new implementationidentity; all253consumed
+native inputs archived. No new target compilation or speedup claim.
+
+Final selected runtime:build/silicon/task006-product-executed-runtime-a3,
+binary319b73a57921bd65ac0867395b5d7bf0925bf27f1a7a0c9cc796d6721de5c970,
+stateidentityebb973f8dc5871e1df9335ce19a23b9475b124650c257e23e7904601b4837451.
+Prepareda9 combines it with unchanged genuine authenticatedROMa3. Historical
+native/browser binaries and archives are unchanged. Current README has actual
+launch/resume/native-state commands. New literalRTL CI step builds current
+Product10/2jobs and runs maintained UART/quota/exactsuffix regression. Existing
+20m job bound and pipefail remain; strict log inventory includes both new logs.
+
+Terminal actual `build/boot/task006-install-resume-rtl-a4/result.json` PASS:
+7of22inactive sectors ->brownout/cause5/new boot origin ->literal8safeclocks
+->fresh ROM recovery beacon ->actual command/authenticated trial receipt
+->newindependent recovery CPU/status-only reconciliation.16,000,040RTL clocks,
+118.191979actor/119.558666supervisedseconds,375648256B peak. Every confirmed
+image and entireSaved14document-medium byte unchanged, zero retry payload/tag/
+metadata writes. Earlier original byte-loss failuresa1/a2 and intermediate
+quota defect remain retained. This small ordinary Lean image result is not full
+notebook update/health/watchdog/lostUARTpacket/productiontrust acceptance.
+Evidence:docs/evidence/006-development-authentication-v1.json.
+
+Pinned full host checks (existingpolicy2/8GiBAS):16boot/299LemmaSim/473foundation/
+226silicon/18scaffold/metadata PASS,132.035768s. Localharnessa1 omitted Nix and
+failed on missinglean/cc/c++; laterlanesNOT_RUN, failure retained. No expectations
+changed for that pinned rerun. Final added CI pipelines:14strictworkflow tests
+PASS. CI da13 actualrun38933635691 completedFAILURE,10jobsSUCCESS/1FAIL,
+114steps/1skipped. Notebook job117083551917 fails in host tests before O0/O2guest:
+its ordinary-mode expectation omitted two restricted Reader18 configurations.
+Production Student denial is correct and unchanged. Explicit two-name expectation
+repaired with stronger denial/Developer-Laboratory/wrongrole checks; all299PASS.
+Actual ZIP30371B/SHA28def2cd4d9845d7e9353e17850d440d60504f710fa841c85a99a7f69292b253,
+fulljob log/hostlog/finalreceipt retained underbuild/ci. New source needs own CI.
+
+Fullnotebook A/B update/health/newcold campaign RUNNING, NOT accepted:
+build/boot/task006-notebook-update-a2, supervisorowner
+build/boot/task006-notebook-update-supervision-a2, immutableplan
+build/boot/task006-notebook-update-plan-a2, toolexec99369. Uses frozen intermediate
+nativea2/a09/prepareda8, original audited Product10 notebook724sectors/guest
+4f4383f5/complete310sourcearchive, actualSaved14and known-good bytes. This campaign
+has no safety-release UART event; its results cannot be relabeled final319/a9.
+Actual install-resume ->ROMtrial attempt/authenticatedhandoff ->canonicalReady/
+fullpixels/realguest0x473confirmationbarrier ->independent normalcold/allpixels/
+everydocumentbyte. No fresh target compilation/latestcourse/browsertrust claim.
+Original3.5B/21600s,install600M/3600,handoff200M/1800,Ready1.1B/7200,cold1.3B/7200,
+4GiBownedRSS/2GiBavailable,12GiBoutput/1GiBfile and30scleanup. Do not restart/extend
+or edit actual consumed Python modules/compiled artifacts. Its firstobservera1
+failed on a guessed helper path before any machine/CPU; archivedFAIL retained.
+a2 discovers actual module paths. Initial install writes progress.json only on
+completion: inspect supervisor/actual UART transport tape. Latest670opaque
+frames/133.8M clocks, still no acceptance. Actual selection/authentication/
+installation/confirmation policy is Lean.
+
+Reader18 RTL owner/exec67598 remainsRUNNING under original2.8B/21600/1B7200cold
+bounds; unchanged compiled18guest and nativeab88. Browser35/8806 stillrawsource37
+cold, latest336.5M/2535.6simulationseconds/192MiB andBooting, notReady. Original
+absolute22:25:15.630Z/allinitialbounds unchanged. Keepreader18TabHandoff and
+qualifiedpad15Tab33Deliverable. Companion16 remainsRUNNING under original
+19:47:19Z/28800/10B: after independentcold it is in actualisolated5/6 check/peer
+barrier phase, no whole-pass claim. No physical reroute: availableRAM remains
+below its8GiBprecondition. Whole digital, fast/cache exactness, distribution,
+G2/G4-G7/proof/tutor/radio and physical obligations remain open.

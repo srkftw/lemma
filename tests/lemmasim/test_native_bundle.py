@@ -55,9 +55,19 @@ class NativeBundleBoundary(unittest.TestCase):
                   'lemmasim-silicon-course-await-bulk-notebook',
                   'lemmasim-silicon-course-await-bulk-initialize',
                   'lemmasim-silicon-package-closure-entry2-bulk-notebook',
-                  'lemmasim-silicon-package-closure-entry2-bulk-initialize'}
+                  'lemmasim-silicon-package-closure-entry2-bulk-initialize',
+                  'lemmasim-silicon-package-reader-bulk-notebook',
+                  'lemmasim-silicon-package-reader-bulk-initialize'}
         for role,configuration in [item for configurations in SOFTWARE_DEPLOYMENTS.values() for item in configurations.items()]:
             if configuration in course:
+                for mode in ('student', None):
+                    with self.assertRaises(ValueError):
+                        development_configuration('lemma-silicon-dev/0.3.0',role,configuration,mode)
+                for mode in ('developer', 'laboratory'):
+                    self.assertEqual(development_configuration('lemma-silicon-dev/0.3.0',role,configuration,mode),configuration)
+                other='initializer' if role=='notebook' else 'notebook'
+                with self.assertRaises(ValueError):
+                    development_configuration('lemma-silicon-dev/0.3.0',other,configuration,'developer')
                 continue
             for mode in ('student','developer','laboratory'):
                 self.assertEqual(development_configuration('lemma-silicon-dev/0.3.0',role,configuration,mode),configuration)

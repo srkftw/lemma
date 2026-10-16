@@ -72,6 +72,12 @@ future button/supply/reset input remains scheduled so a power-good release or
 wake is reachable. A Power-v2-only release pulse invokes the existing pen
 FORCE_LOSS/resynchronization boundary before ingress resumes. Held contact
 cannot bypass the required acknowledgment, release and subsequent new contact.
+After reset qualification releases the domain, that pen-only pulse must retain
+UART bytes and future UART events admitted in the running domain. It does not
+cancel an owner recovery request. Cooperative suspend continues canceling its
+queued UART input. The old native adapter incorrectly shared the UART purge
+with pen resynchronization; implementation identities distinguish that failure
+from the corrected adapter. Historical captures/binaries remain unchanged.
 
 No reset manufactures a storage barrier. A submitted external operation cannot
 be undone by resetting a guest. It becomes orphaned: its actual returned bytes,

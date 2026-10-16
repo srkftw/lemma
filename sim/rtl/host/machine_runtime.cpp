@@ -393,9 +393,12 @@ void Machine::usb_after_edge(){
 }
 void Machine::tick(){auto&soc=*model;uint64_t c=s.cycle;
   if(soc.power_cancel_pen){
-   s.samples.clear();s.rx.clear();std::vector<Event> pending;
-   for(size_t i=s.event_index;i<s.input.size();i++)if(s.input[i].kind=="button"||s.input[i].kind=="reset"||s.input[i].kind=="pgood"||s.input[i].kind=="brownout")pending.push_back(std::move(s.input[i]));
-   s.input=std::move(pending);s.event_index=0;s.event_payload_bytes=0;
+   // Safety reset release forces the pen loss handshake while other domains
+   // are running. It must not erase a newly admitted owner recovery byte.
+   // Cooperative suspend still cancels UART ingress and its queued events.
+   s.samples.clear();if(soc.power_suspended)s.rx.clear();std::vector<Event> pending;
+   for(size_t i=s.event_index;i<s.input.size();i++)if(s.input[i].kind=="button"||s.input[i].kind=="reset"||s.input[i].kind=="pgood"||s.input[i].kind=="brownout"||(s.input[i].kind=="uart"&&!soc.power_suspended))pending.push_back(std::move(s.input[i]));
+   s.input=std::move(pending);s.event_index=0;s.event_payload_bytes=0;for(auto&e:s.input)s.event_payload_bytes+=e.payload.size();
   }
   while(s.event_index<s.input.size()&&s.input[s.event_index].cycle<=c){auto e=s.input[s.event_index++];if(e.kind=="button"){s.button_level=e.words[0];}else if(e.kind=="pgood"){s.power_good=e.words[0];}else if(e.kind=="brownout"){s.brownout=e.words[0];}else if(e.kind=="wifi-coex"){s.wifi_coex=e.words[0];}else if(e.kind=="wifi-rx"){if(s.wifi_raw_valid)throw std::runtime_error("multiple CommonOFDM samples at one boundary");s.wifi_raw_valid=1;s.wifi_raw_i=e.words[0];s.wifi_raw_q=e.words[1];}else if(e.kind=="wifi-peer-pio"){if(s.wifi_pio.size()>=32)throw std::runtime_error("CommonOFDM raw peer PIO queue exhausted");s.wifi_pio.push_back({e.words[0],e.words[1]});}else if(e.kind=="ble-coex"){s.ble_coex=e.words[0];}else if(e.kind=="ble-rx"){if(s.ble_raw_valid)throw std::runtime_error("multiple BLE samples at one boundary");s.ble_raw_valid=1;s.ble_raw_bit=e.words[0];}else if(e.kind=="uart"){if(soc.power_suspended||(BINDING_POWER_SAFETY&&(soc.power_domain_reset||!s.power_good||s.brownout)))continue;auto b=hexbytes(e.payload);if(b.size()>MAX_UART-s.rx.size())throw std::runtime_error("UART queue full");s.rx.insert(s.rx.end(),b.begin(),b.end());}else if(e.kind=="reset"){s.reset_until=c+e.words[0];s.power_reset_cause=3;abandon_media();s.overlay.clear();s.optical_pending.clear();}else {if(soc.power_suspended||(BINDING_POWER_SAFETY&&(soc.power_domain_reset||!s.power_good||s.brownout)))continue;if(s.samples.size()>=65536)throw std::runtime_error("pen adapter queue full");s.samples.push_back(e);}}
   soc.clk=0;soc.reset=c<s.reset_until;

@@ -877,8 +877,8 @@
     },
     {
       "path": "docs/evidence/006-development-authentication-v1.json",
-      "sha256": "66edb1089cc4ed1830ff48faebfcc3494f1037138d159d3551f188b014a3949a",
-      "bytes": 11156,
+      "sha256": "2e3d0852a5a001b39dc54319e90a7b76056e8214b7e15e4e9c9e5885f99ce2c1",
+      "bytes": 20284,
       "status": "PASS_ACTUAL_AUTHENTICATED_NOTEBOOK_RAW_SAVE_AND_INDEPENDENT_COLD",
       "scope": "Genuine Lean SHA/HMAC and immutable public-development-key ROM on reusable Product10RTL. This is executable integrity/authentication policy with a published test key, not production owner identity or wholeboot/update acceptance."
     },
@@ -1019,12 +1019,32 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "8c37fbf07118c10311a30e76811e13765bf09610",
-    "run": 38912862964,
-    "status": "SUCCESS",
-    "jobs": 11,
-    "steps": 113,
-    "scope": "Actualparent; laternative-runtime/localreport needsownCI. Originalfailuresretained."
+    "commit": "da13e7630022247f190b98a739d922fbf6ef7ab2",
+    "run": 38933635691,
+    "status": "FAILURE",
+    "observed_jobs": {
+      "success": 10,
+      "failure": 1,
+      "in_progress": 0
+    },
+    "failed_job": 117083551917,
+    "failed_step": "Compile, audit and observe real O0/O2 guest ink and cold recovery",
+    "actual_cause": "Preceding tests/lemmasim host suite fails on stale ordinary-mode expectation for newly restricted Reader18 installer; O0/O2 guest workload never starts and following validation is skipped. Production authorization is correct. Explicit two-name expectation repaired, stronger role/mode checks and full299 pinned tests pass.",
+    "failure_log": {
+      "path": "build/ci/task006-da13-writing-host-tests.log",
+      "sha256": "6aaae50edb25905bd9c0a15de2343fe76f6915215c8732ae2514fbb43c75efa2"
+    },
+    "failure_artifact_zip": {
+      "path": "build/ci/task006-da13-writing-failure.zip",
+      "sha256": "28def2cd4d9845d7e9353e17850d440d60504f710fa841c85a99a7f69292b253"
+    },
+    "scope": "Actual da13 run only; current dirty command/runtime/observer fixes need own candidateCI. No skipped RV64 work passed.",
+    "steps": 114,
+    "skipped_steps": 1,
+    "final_receipt": {
+      "path": "build/ci/task006-da13-complete.json",
+      "sha256": "188b57238756a931a2bea4417f409c2f2640f502d087c2db11d45c283455dd39"
+    }
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1295,5 +1315,52 @@
     "physical": "UNVERIFIED, no changed circuit or physical qualification",
     "evidence": "docs/evidence/006-course-reader-location.json",
     "state": "No host-state format extension: reader staging/live words use existing owned guest RAM and record store. Separate Reader18 checkpoint suffix is not yet qualified; general QEMU cached-state gap remains."
+  },
+  "authenticated_resume_and_UART_reset_release": {
+    "status": "PASS_RTL_BROWNOUT_PARTIAL_INSTALL_RESUME_RECONNECT",
+    "source_origin": "da13e76 plus exact recorded dirty command/runtime sources; publication commit is separate",
+    "behavior": "Explicit bounded install-resume obtains actual authenticated guest status first, stages only on guest recovery/nonmatching receipt, then requires real tag/publication/final barrier/status. Existing confirmed/trial results send zero writes. Partial failure is not rollback.",
+    "model": "Maintained native UART cancellation now distinguishes pen-only reset-release pulse from cooperative suspend. Profile10 core/clock/capacity unchanged; implementation identity changes. Retained UART encoded-payload quota is recomputed too; intermediate data-only repair is independently rejected.",
+    "RTL": "Same specified Power-v2 eight safe edges and pen resync; literal original-runtime negative detects lost current/future UART. Current-source Product10 rebuild includes the complete independently recorded newer source closure.",
+    "guest": "Unchanged genuinely elaborated/audited ROMa3 and22sector ordinary Lean CryptoProbe installed through actual NV transactions; no host boot metadata/doc mutation.",
+    "distribution": "Normal lemmasim-auth install-resume command; source-validated local prepareda8, not fresh-host product bundle/auth browser qualification.",
+    "physical": "Not qualified; no rule/clock/signoff change.",
+    "actual": {
+      "RTL_clocks": 16000040,
+      "actor_seconds": 118.19197935797274,
+      "supervised_seconds": 119.55866553809028,
+      "owned_peak_rss_bytes": 375648256,
+      "partial_sectors": 7,
+      "total_image_sectors": 22,
+      "brownout_cause": 5,
+      "safe_qualification_clocks": 8,
+      "fresh_ROM_beacons": true,
+      "independent_CPU_reconcile_sectors_sent": 0,
+      "all_document_and_confirmed_image_bytes_unchanged": true,
+      "native_build_fixture_seconds": 75.4871476739645,
+      "native_supervised_peak_rss_bytes": 982536192,
+      "no_performance_gain_claim": true,
+      "derived_payload_quota_retained": true,
+      "one_exact_native_snapshot_suffix": true
+    },
+    "identities": {
+      "native_sha256": "319b73a57921bd65ac0867395b5d7bf0925bf27f1a7a0c9cc796d6721de5c970",
+      "runtime_identity": "ebb973f8dc5871e1df9335ce19a23b9475b124650c257e23e7904601b4837451",
+      "ROM_sha256": "8a853ef5ef9fa3414c1db85afb22f10835b054e02fd912b1f3262d56280aa5a4",
+      "prepared": "build/boot/task006-development-auth-prepared-a9",
+      "complete_native_source_archive_inputs": 253
+    },
+    "open": [
+      "fullnotebook interrupted update/confirmation/watchdog/brownout acceptance",
+      "latest course product image",
+      "production owner identity/entropy/trust/antirollback",
+      "lost UART packet campaign",
+      "browser authenticated boot",
+      "fast timing/arbitrary cached continuation",
+      "full distribution and physical closure"
+    ],
+    "derived_state": "event_payload_bytes is exactly the sum of retained input payload text lengths; rebuilding it from the serialized event vector is semantically valid under this maintained invariant. Literal rawcurrent/futureUART and futureadmission original/restored fullarchive equality expose the earlier omission; no field masking/draining/flush or arbitrarycachedstate claim.",
+    "CI": "Existing literalRTLjob now builds exactcurrent Product10native with2jobs/900s bound and runs maintained native regression under3m/4GiBAS/1GiBfile bounds; strict pipefail and exact log inventory extended. Job20m bound unchanged. Actual candidateCI still required.",
+    "evidence": "docs/evidence/006-development-authentication-v1.json"
   }
 }

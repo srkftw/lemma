@@ -82,3 +82,33 @@ The host tag authoring tool writes a new ordinary file, never a live medium,
 guest state, configured flag or verification result. Authenticated boot/update,
 independent cold recovery, checkpoints and browser distribution need their own
 observed results; component digests and successful ROM linking are insufficient.
+
+`lemmasim-auth --public-development-key install-resume` is an additive owner
+transport command over the unchanged version2 protocol. It first requests
+operation4 for the supplied slot/image. A successful confirmed1 or trial2
+receipt ends the command without sending image, tag or metadata writes. The
+receipt still requires the ROM's actual fresh backing barrier and complete
+load/MAC validation. It is not inferred from medium bytes, a previous command
+result or a matching transaction number in an old transcript.
+An image identity names immutable contents in the owner registry. Changed image
+contents require a new identity. This receipt binds the requested slot/identity,
+compatibility and actual authenticated medium image; it is not a host-file hash
+comparison or a guarantee against an owner reusing an identity.
+
+Only the ROM's recovery215 or nonmatching-receipt217, with value0, permit
+staging. The command retransmits complete opaque sectors from the beginning,
+then the tag and publication request, then obtains a new authenticated status
+receipt. The ROM enforces inactive-slot ownership and all installation policy.
+No host cursor marks a partially transferred image complete. Barrier failure,
+corruption, conflicting metadata, authentication denial, timeout and unknown
+status stop the command. They never become durable success. Observed partial
+writes remain possible; the command does not roll back backing bytes.
+
+Every phase shares one original cumulative host/cycle budget and monotonically
+assigned transaction IDs. A timeout does not automatically retry or reboot.
+The owner may explicitly reconnect and issue a new bounded command. That new
+command reconciles through fresh guest transactions before attempting writes.
+An interrupted partial UART frame may still be owned by the old ROM receiver;
+re-enter the announced recovery path before retrying that case. The command
+does not silently drain/reset a live machine or claim transport resynchronization.
+Ordinary `install`, `tag`, `publish`, `status` and `boot` remain available.

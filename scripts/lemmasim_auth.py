@@ -7,6 +7,7 @@ import argparse,fcntl,json,os,selectors,struct,subprocess,time,zlib
 from pathlib import Path
 import lemmasim_product as product
 import lemmasim_session as sessions
+import development_install
 import product_native as inputs
 from build_development_auth_boot import audit,CONFIG,KEY_ID,LITERALS
 from check_crypto import audit_elf
@@ -44,7 +45,7 @@ def prepare(args):
   'image_compatibility':0x000a000300010001,'rom_configuration':CONFIG,'recovery_version':2,
   'paper_contract':{'version':3,'staging_offset':3584,'staging_bytes':512,'executed_refresh_offsets':[192,200,208,216,224,232]},
   'host_dependencies':host_dependencies(n['binary']),
-  'host_scripts':{str(p.relative_to(ROOT)):inputs.sha(p) for p in (Path(__file__),ROOT/'scripts/lemmasim_product.py',ROOT/'scripts/product_native.py',ROOT/'scripts/lemmasim_session.py',ROOT/'scripts/build_development_auth_boot.py',ROOT/'scripts/check_crypto.py')},
+  'host_scripts':{str(p.relative_to(ROOT)):inputs.sha(p) for p in (Path(__file__),ROOT/'scripts/development_install.py',ROOT/'scripts/lemmasim_product.py',ROOT/'scripts/product_native.py',ROOT/'scripts/lemmasim_session.py',ROOT/'scripts/build_development_auth_boot.py',ROOT/'scripts/check_crypto.py')},
   'qualification':'prepared exact components; actual MAC rejection/install/handoff/recovery separate'}
  out.mkdir(parents=True);data['digital_discovery']=product.profile_discovery(data,out,args.dtc);sessions.write_json(out/'prepared.json',data)
  (out/'DEPENDENCIES.txt').write_text('Local source-bound development machine using PUBLIC TEST KEY00..1f. No production identity/anti-rollback or redistribution license. Existing CVW/Verilator/Nix dependency notices and physical gaps remain applicable. All image/MAC/selection/update policy executes in the Lean ROM.\n')
@@ -82,8 +83,8 @@ class AuthRTL(product.ProductRTL):
    if self.checkpoint_identity!=data['runtime_identity']:raise ValueError('actual runtime identity differs')
   except BaseException:self.close();raise
 def frame(transaction,operation,slot=0,relative=0,identity=0,payload=b''):
- if payload and len(payload)!=512:raise ValueError('exact opaque sector required')
  if not all(type(n)==int and 0<=n<1<<64 for n in (transaction,operation,slot,relative,identity)):raise ValueError('UInt64 frame fields required')
+ if transaction==0 or operation not in range(7) or (operation in (1,5) and len(payload)!=512) or (operation not in (1,5) and payload):raise ValueError('Invalid bounded version2 recovery request')
  words=[product.REQUEST,2,transaction,operation,slot,relative,identity,0,zlib.crc32(payload) if payload else 0];header=struct.pack('<9Q',*words)
  return header+struct.pack('<Q',zlib.crc32(header))+payload
 class RecoveryClient(product.RecoveryClient):
@@ -101,7 +102,7 @@ def main(argv=None):
  a=sub.add_parser('prepare');a.add_argument('--native-build',type=Path,required=True);a.add_argument('--native-source-archive',type=Path);a.add_argument('--rom-build',type=Path,required=True);a.add_argument('--rom-source-archive',type=Path);a.add_argument('--output-dir',type=Path,required=True);a.add_argument('--dtc')
  a=sub.add_parser('create-medium');a.add_argument('--boot-medium',type=Path,required=True)
  a=sub.add_parser('launch');a.add_argument('--prepared',type=Path,required=True);a.add_argument('--session-dir',type=Path,required=True);a.add_argument('--boot-medium',type=Path);a.add_argument('--disk',type=Path);a.add_argument('--restore',type=Path);a.add_argument('--recovery',action='store_true');a.add_argument('--mode',choices=['student','developer','laboratory'],default='developer');a.add_argument('--paused',action='store_true');a.add_argument('--headless',action='store_true');a.add_argument('--timeout',type=int,default=120);a.add_argument('--quantum',type=int,default=1000000);a.add_argument('--tablet',type=Path);a.add_argument('--trace-limit',type=int,default=0);a.add_argument('--host-threads',type=int,default=1)
- for name in ('capacity','key-info','install','tag','publish','status','boot'):
+ for name in ('capacity','key-info','install','install-resume','tag','publish','status','boot'):
   a=sub.add_parser(name);a.add_argument('--session-dir',type=Path,required=True);a.add_argument('--timeout',type=int,default=120);a.add_argument('--cycles',type=int,default=10000000);a.add_argument('--quantum',type=int,default=100000);a.add_argument('--transaction',type=lambda x:int(x,0),default=time.time_ns());a.add_argument('--continue-recovery',action='store_true');a.add_argument('--slot',type=int,choices=[0,1],default=0);a.add_argument('--image-id',type=lambda x:int(x,0),default=0);a.add_argument('--package',type=Path);a.add_argument('--tag',type=Path)
  args=p.parse_args(argv)
  try:
@@ -115,7 +116,16 @@ def main(argv=None):
    args.backend='rtl';args.workload='product';args.profile=inputs.EXECUTED_PROFILE;sessions.serve(args,AuthRTL,product.ProductSession);return 0
   else:
    if not 1<=args.quantum<=1000000 or not 1<=args.cycles<=2000000000 or not 1<=args.timeout<=7200:raise ValueError('bounded recovery required')
+   resume_inputs=None
+   if args.command=='install-resume':
+    if args.package is None or args.tag is None:raise ValueError('install-resume requires opaque package and slot-specific tag')
+    resume_inputs=development_install.load_package(args.package,args.tag,inputs.sha)
    c=RecoveryClient(args);beacon=None if args.continue_recovery else c.beacon();rows=[]
+   if args.command=='install-resume':
+    package,wire,tag=resume_inputs;product.install_extent(package,wire,c.call({'action':'inspect'})['identity'])
+    result=development_install.resume(c,package,wire,tag,args.slot)
+    result.update(beacon=beacon,cycles=c.used,key_scope='PUBLIC DEVELOPMENT KEY ONLY')
+    print(json.dumps(result,indent=2));return 0
    if args.command=='install':
     if args.package is None or args.tag is None:raise ValueError('install requires opaque package and slot-specific tag')
     package=json.loads((args.package/'package.json').read_text());image=args.package/'image.bin'

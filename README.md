@@ -1348,12 +1348,64 @@ nix develop --no-write-lock-file --command python3 scripts/build_development_aut
 ./scripts/lemmasim-auth --public-development-key --help
 ```
 
-The retained prepared instance is`build/boot/task006-development-auth-prepared-a6`.
-Its normal commands are`create-medium`, `launch`, `install`, `tag`, `publish`,
-`status`, `boot`, `capacity` and`key-info`; use each command's`--help`. Installation
+The original notebook observation used prepared instance
+`build/boot/task006-development-auth-prepared-a6`. The current source-validated
+instance is `build/boot/task006-development-auth-prepared-a9`, using the same
+audited ROM and a corrected native UART/reset-release boundary. Its commands
+are `create-medium`, `launch`, `install`, `install-resume`, `tag`, `publish`,
+`status`, `boot`, `capacity` and `key-info`; use each command's `--help`. Installation
 requires a source-validated opaque product package and a slot-specific tag made
 with`scripts/package_development_auth_tag.py --public-development-key`. No host
 preinstallation of a running image is part of this path.
+
+For a partial or interrupted installation, `install-resume` first asks the ROM
+for a fresh authenticated receipt. A matching confirmed/trial image needs no
+rewrites. Otherwise the guest must authorize staging into the inactive slot;
+the command transfers complete sectors, the tag and publication request, then
+requires another real barrier/status receipt. Timeout or error leaves the
+operation unacknowledged. Reconnect and retry explicitly under a new budget.
+After an interrupted partial UART frame, re-enter recovery and observe its new
+beacon first; `--continue-recovery` applies only to an already observed beacon.
+
+```sh
+# Launch with private copies of existing media; this never formats documents.
+./scripts/lemmasim-auth --public-development-key launch \
+  --prepared build/boot/task006-development-auth-prepared-a9 \
+  --boot-medium /absolute/PRIVATE_BOOT.raw --disk /absolute/PRIVATE_NOTEBOOK.raw \
+  --session-dir build/boot/UNUSED_RECOVERY_SESSION --recovery --paused \
+  --mode developer --headless
+./scripts/lemmasim-auth --public-development-key install-resume \
+  --session-dir build/boot/UNUSED_RECOVERY_SESSION \
+  --package /absolute/OPAQUE_PRODUCT_PACKAGE --tag /absolute/SLOT1.tag \
+  --slot 1 --cycles 600000000 --timeout 3600
+# After the recovery beacon was already consumed, add --continue-recovery.
+./scripts/lemmasim-auth --public-development-key boot \
+  --session-dir build/boot/UNUSED_RECOVERY_SESSION --continue-recovery \
+  --cycles 200000000 --timeout 1800
+```
+
+The new actual ROM check interrupts a seven-sector inactive transfer with
+brownout, resumes all22 authenticated sectors, and reconciles from an independent
+recovery CPU without rewriting backing bytes. It takes16,000,040 RTL clocks and
+118.192 actor seconds (375,648,256B supervised peak). Every attached notebook
+byte and the known-good image remain unchanged. The original adapter lost UART
+recovery bytes during pen resynchronization; its two failures and independent
+negative regression are retained. The final adapter also preserves retained-event
+quota; future admission and one native snapshot suffix match exactly. Full
+notebook A/B health confirmation/cold
+recovery is a separate running campaign, not a result of this small-image check.
+
+```sh
+python3 scripts/check_development_install_resume.py --public-development-key \
+  --prepared build/boot/task006-development-auth-prepared-a9 \
+  --package build/boot/task006-development-auth-probe-package-a1 \
+  --tag build/boot/task006-install-resume-plan-a4/slot1.tag \
+  --boot-medium build/boot/task006-development-auth-connected-a4/acknowledged-boot.raw \
+  --disk build/boot/task006-development-auth-notebook-a2/acknowledged-user.raw \
+  --work-dir build/boot/AN_UNUSED_RESUME_CHECK
+nix-shell tooling/silicon/sim.nix --run \
+  'python3 scripts/check_native_pen_uart_resync.py --rtl-build build/silicon/task006-product-executed-runtime-a3 --native-source-archive build/silicon/task006-product-executed-runtime-a3/consumed-source-root --work-dir build/silicon/AN_UNUSED_UART_CHECK'
+```
 
 
 The current control-spans1 pair is prepared at

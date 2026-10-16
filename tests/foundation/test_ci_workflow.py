@@ -68,7 +68,7 @@ class CiWorkflowTests(unittest.TestCase):
             r"^  ([a-z0-9-]+):$", self.source.split("jobs:\n", 1)[1], re.MULTILINE
         )
         self.assertEqual(jobs, list(JOBS))
-        for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/kernel", "tests/silicon"):
+        for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/boot", "tests/kernel", "tests/silicon"):
             self.assertIn(suite, self.metadata)
         self.assertIn("scripts/check_scaffold.py", self.metadata)
         self.assertIn("lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel", self.metadata)
@@ -134,7 +134,7 @@ class CiWorkflowTests(unittest.TestCase):
             "lemmasim-writing-rv64": ("lemmasim-host-build.log", "lemmasim-writing.log"),
             "metadata": ("metadata/check-scaffold.log", "metadata/scaffold-unittest.log",
                          "metadata/core0-host-unittest.log", "metadata/lake-build.log",
-                         "metadata/foundation-host-unittest.log", "metadata/user-copy-scans.log",
+                         "metadata/foundation-host-unittest.log", "metadata/boot-host-unittest.log", "metadata/user-copy-scans.log",
                          "metadata/loader-copy.log", "metadata/course-save.log", "metadata/course-ingress-idle.log", "metadata/power-authority.log",
                          "metadata/power-object-budget.log", "metadata/power-compiler.log",
                          "metadata/frame-index.log", "metadata/owned-table-prefix.log",
@@ -176,7 +176,8 @@ class CiWorkflowTests(unittest.TestCase):
             "kernel-source-negatives-rv64": ("kernel-source-negatives-rv64.log",),
             "kernel-architecture-rv64": ("kernel-architecture-rv64.log",),
             "silicon-devices-rtl": ("silicon-devices-rtl.log", "silicon-bus-lanes-rtl.log",
-                                    "silicon-power-rtl.log"),
+                                    "silicon-power-rtl.log", "silicon-reset-runtime-build.log",
+                                    "silicon-pen-uart-resync.log"),
         }
         for job, names in expected.items():
             with self.subTest(job=job):

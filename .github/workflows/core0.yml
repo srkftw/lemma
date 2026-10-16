@@ -157,6 +157,14 @@ jobs:
               python3 -m unittest discover -s tests/foundation -v \
             2>&1 | tee build/ci/metadata/foundation-host-unittest.log
 
+      - name: Check bounded product recovery transport
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 -m unittest discover -s tests/boot -v \
+            2>&1 | tee build/ci/metadata/boot-host-unittest.log
+
       - name: Observe checked memory copying and power authority in Lean
         run: |
           set -euo pipefail
@@ -914,6 +922,19 @@ jobs:
               --work-dir build/silicon/ci-power --timeout 240 --jobs 2 \
             2>&1 | tee build/ci/silicon-power-rtl.log
 
+      - name: Preserve UART admission and exact suffix across pen resynchronization
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 16m \
+            python3 scripts/silicon_compute.py build \
+              --profile lemma-silicon-dev/0.10.0 --jobs 2 \
+              --output-dir build/silicon/ci-product-reset-runtime \
+            2>&1 | tee build/ci/silicon-reset-runtime-build.log
+          timeout --foreground --signal=TERM --kill-after=10s 3m \
+            nix-shell tooling/silicon/sim.nix --run \
+              'python3 scripts/check_native_pen_uart_resync.py --rtl-build build/silicon/ci-product-reset-runtime --work-dir build/silicon/ci-pen-uart-resync' \
+            2>&1 | tee build/ci/silicon-pen-uart-resync.log
+
       - name: Require exact-source nonempty literal RTL observations
         run: |
           python3 - <<'PY'
@@ -1024,9 +1045,13 @@ jobs:
             build/silicon/ci-devices/
             build/silicon/ci-bus-lanes/
             build/silicon/ci-power/
+            build/silicon/ci-product-reset-runtime/build.json
+            build/silicon/ci-pen-uart-resync/
             build/ci/silicon-devices-rtl.log
             build/ci/silicon-bus-lanes-rtl.log
             build/ci/silicon-power-rtl.log
+            build/ci/silicon-reset-runtime-build.log
+            build/ci/silicon-pen-uart-resync.log
           if-no-files-found: error
           retention-days: 14
           compression-level: 6

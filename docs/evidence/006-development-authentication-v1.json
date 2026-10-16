@@ -89,8 +89,7 @@
     "latest managedcourse/kernel integration on Product10",
     "browserauthenticatedboot",
     "same-backend arbitrarycached continuation/fastRTL timing",
-    "full device/radio/distribution/physicalclosure",
-    "fullnotebook independent authenticatedcold after newSaved14 remains RUNNING; cryptoprobe confirmedfallback separatelyPASS"
+    "full device/radio/distribution/physicalclosure"
   ],
   "verification": {
     "lake": {
@@ -246,5 +245,145 @@
       "latest managed course/checking image",
       "browser authenticated boot"
     ]
+  },
+  "resumable_recovery": {
+    "status": "PASS_RTL_BROWNOUT_PARTIAL_INSTALL_RESUME_RECONNECT",
+    "source_origin": "da13e76 plus exact recorded dirty command/runtime sources; publication commit is separate",
+    "behavior": "Explicit bounded install-resume obtains actual authenticated guest status first, stages only on guest recovery/nonmatching receipt, then requires real tag/publication/final barrier/status. Existing confirmed/trial results send zero writes. Partial failure is not rollback.",
+    "model": "Maintained native UART cancellation now distinguishes pen-only reset-release pulse from cooperative suspend. Profile10 core/clock/capacity unchanged; implementation identity changes. Retained UART encoded-payload quota is recomputed too; intermediate data-only repair is independently rejected.",
+    "RTL": "Same specified Power-v2 eight safe edges and pen resync; literal original-runtime negative detects lost current/future UART. Current-source Product10 rebuild includes the complete independently recorded newer source closure.",
+    "guest": "Unchanged genuinely elaborated/audited ROMa3 and22sector ordinary Lean CryptoProbe installed through actual NV transactions; no host boot metadata/doc mutation.",
+    "distribution": "Normal lemmasim-auth install-resume command; source-validated local prepareda8, not fresh-host product bundle/auth browser qualification.",
+    "physical": "Not qualified; no rule/clock/signoff change.",
+    "actual": {
+      "RTL_clocks": 16000040,
+      "actor_seconds": 118.19197935797274,
+      "supervised_seconds": 119.55866553809028,
+      "owned_peak_rss_bytes": 375648256,
+      "partial_sectors": 7,
+      "total_image_sectors": 22,
+      "brownout_cause": 5,
+      "safe_qualification_clocks": 8,
+      "fresh_ROM_beacons": true,
+      "independent_CPU_reconcile_sectors_sent": 0,
+      "all_document_and_confirmed_image_bytes_unchanged": true,
+      "native_build_fixture_seconds": 75.4871476739645,
+      "native_supervised_peak_rss_bytes": 982536192,
+      "no_performance_gain_claim": true,
+      "derived_payload_quota_retained": true,
+      "one_exact_native_snapshot_suffix": true
+    },
+    "identities": {
+      "native_sha256": "319b73a57921bd65ac0867395b5d7bf0925bf27f1a7a0c9cc796d6721de5c970",
+      "runtime_identity": "ebb973f8dc5871e1df9335ce19a23b9475b124650c257e23e7904601b4837451",
+      "ROM_sha256": "8a853ef5ef9fa3414c1db85afb22f10835b054e02fd912b1f3262d56280aa5a4",
+      "prepared": "build/boot/task006-development-auth-prepared-a9",
+      "complete_native_source_archive_inputs": 253
+    },
+    "reports": [
+      {
+        "path": "build/boot/task006-install-resume-rtl-a4/result.json",
+        "sha256": "075bd0b2052aee7f3859b6b8b374e251ac61ddb30362e112403e0af0f74e202e"
+      },
+      {
+        "path": "build/boot/task006-install-resume-supervision-a4/result.json",
+        "sha256": "daa238a7c7e5629e88c1c60d4d6050cdd1ab7848b6b594d506f2dc747a1363f4"
+      },
+      {
+        "path": "build/silicon/task006-pen-uart-resync-a2/result.json",
+        "sha256": "3b62e637845d84b22322fcb872a059cef88b5409257517ffb7243b6fcde227f5"
+      },
+      {
+        "path": "build/silicon/task006-pen-uart-resync-supervision-a2/result.json",
+        "sha256": "edb3836765f6a7f1f4f9dd0fb474528ba5c6c2b81b4fd5cd3c10f319cfcbab81"
+      },
+      {
+        "path": "build/silicon/task006-pen-uart-maintained-check-a1/result.json",
+        "sha256": "bae3cfd616fe65ecef80af2eb6dd5f71c1f9829616c9bedd07ac37dbede9d990"
+      },
+      {
+        "path": "build/boot/task006-install-resume-host-checks-a2/result.json",
+        "sha256": "667a4fc4cdd225591f6061ee9fd0122644c6e9b03e72bccb36f3970f3ac4dd26"
+      }
+    ],
+    "retained_failures": [
+      {
+        "report": {
+          "path": "build/boot/task006-install-resume-rtl-a1/result.json",
+          "sha256": "2d8674a5739ee776f819ddb96afbbcf38750fdb8a00fbc322a9f6201ccfb74e3"
+        },
+        "reason": "Queued future owner recovery byte dropped by old pen-only reset resync purge. Initial late-byte hypothesis was incorrect; actual original runtime regression exposes shared cancellation defect."
+      },
+      {
+        "report": {
+          "path": "build/boot/task006-install-resume-rtl-a2/result.json",
+          "sha256": "08676aa3f6427ef182a4400ecd9cebc18be98fefb993cb66ad67f99702724603"
+        },
+        "reason": "Same actual implementation defect with current-byte at literal8edge release. New runtime repairs UART ownership, not observer acceptance."
+      },
+      {
+        "report": {
+          "path": "build/boot/task006-install-resume-host-checks-a1/result.json",
+          "sha256": "51c17c15501fadd533edafedae9aea9bad29c20e8b5e89ebcc7a13d27c27c8b6"
+        },
+        "reason": "Local harness omitted pinned Nix environment; missinglean/cc/c++ failures retained, later lanes not run. Full same-code a2 pinned rerun passes."
+      }
+    ],
+    "host_suites": {
+      "boot": 16,
+      "lemmasim": 299,
+      "foundation": 473,
+      "silicon": 226,
+      "scaffold": 18,
+      "metadata": "PASS",
+      "whole_seconds": 132.03576774301473,
+      "scope": "Host only; no RV64 job result inferred."
+    },
+    "commands": {
+      "resume": "./scripts/lemmasim-auth --public-development-key install-resume --session-dir RECOVERY_SESSION --package OPAQUE_PRODUCT_PACKAGE --tag SLOT_SPECIFIC_TAG --slot 1 --cycles 600000000 --timeout 3600",
+      "actual_reproduction": "python3 scripts/check_development_install_resume.py --public-development-key --prepared build/boot/task006-development-auth-prepared-a9 --package build/boot/task006-development-auth-probe-package-a1 --tag build/boot/task006-install-resume-plan-a4/slot1.tag --boot-medium build/boot/task006-development-auth-connected-a4/acknowledged-boot.raw --disk build/boot/task006-development-auth-notebook-a2/acknowledged-user.raw --work-dir build/boot/AN_UNUSED_RESUME_CHECK",
+      "native_state_regression": "nix-shell tooling/silicon/sim.nix --run \"python3 scripts/check_native_pen_uart_resync.py --rtl-build build/silicon/task006-product-executed-runtime-a3 --native-source-archive build/silicon/task006-product-executed-runtime-a3/consumed-source-root --work-dir build/silicon/AN_UNUSED_UART_CHECK\""
+    },
+    "open": [
+      "fullnotebook interrupted update/confirmation/watchdog/brownout acceptance",
+      "latest course product image",
+      "production owner identity/entropy/trust/antirollback",
+      "lost UART packet campaign",
+      "browser authenticated boot",
+      "fast timing/arbitrary cached continuation",
+      "full distribution and physical closure"
+    ],
+    "intermediate": {
+      "report": {
+        "path": "build/boot/task006-install-resume-rtl-a3/result.json",
+        "sha256": "a7c6bbf729b674fb87e98a3eb9593b30e26e98ac5c4600dbdbdefe23f50a2258"
+      },
+      "scope": "Real16M/95.483s functionalROM success on intermediatea09 runtime; final runtime additionally repairs retained-event quota. It is not final-source or snapshot qualification.",
+      "native_report": {
+        "path": "build/silicon/task006-pen-uart-resync-a1/result.json",
+        "sha256": "b0583f82bfecaeec7acbf05efa6089b7499ff26bec1b70e9ac76bb4790bd12fb"
+      },
+      "exposed_failure": "Strengthened fixture independently rejects intermediatea09 at event_payload_bytes==4; source/accounting corrected, no assertion removed."
+    },
+    "derived_state": "event_payload_bytes is exactly the sum of retained input payload text lengths; rebuilding it from the serialized event vector is semantically valid under this maintained invariant. Literal rawcurrent/futureUART and futureadmission original/restored fullarchive equality expose the earlier omission; no field masking/draining/flush or arbitrarycachedstate claim.",
+    "CI": "Existing literalRTLjob now builds exactcurrent Product10native with2jobs/900s bound and runs maintained native regression under3m/4GiBAS/1GiBfile bounds; strict pipefail and exact log inventory extended. Job20m bound unchanged. Actual candidateCI still required."
+  },
+  "notebook_trial_confirmation_campaign": {
+    "status": "RUNNING_NOT_ACCEPTED",
+    "plan": {
+      "path": "build/boot/task006-notebook-update-plan-a2/plan.json",
+      "sha256": "c0c39234c22eac3743252d3d9eb522b0e2f6be8df98772371ea6aad4f057e276"
+    },
+    "work_dir": "build/boot/task006-notebook-update-a2",
+    "supervision": "build/boot/task006-notebook-update-supervision-a2",
+    "scope": "Same audited older Product10 notebook into inactive slot ->actualROM trial attempt->realguest healthconfirmation->independent normalcold all3.63Mpixels/allSaved14bytes. No fresh compilation/latestcourse; original3.5B/21600s bounds.",
+    "retained_startup_failure": {
+      "report": {
+        "path": "build/boot/task006-notebook-update-a1/result.json",
+        "sha256": "016eb823f3e1c8d1ce5d215f730c11495302255f62b8041ff85b7944ce708d4e"
+      },
+      "reason": "Observer guessed a nonexistent scripts helper path; zero CPU clocks/no machine before failure. Actual-imported-module census repairs source observer only."
+    },
+    "source_scope": "Frozen intermediatea09/nativea2/prepareda8, exact archive identity; fullnotebook update has no safety-release UART pulse. Its observed results cannot be relabeled final319/prepareda9 execution."
   }
 }
