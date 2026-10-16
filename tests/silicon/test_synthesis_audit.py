@@ -13,6 +13,29 @@ import silicon_synth
 
 
 class SynthesisAuditTests(unittest.TestCase):
+    def test_explicit_abc_delay_preserves_default_command_and_picosecond_unit(self):
+        lib = Path('/actual/library.lib')
+        self.assertEqual(silicon_synth.normal_abc_command(lib),
+                         'abc -liberty "/actual/library.lib"\n')
+        self.assertEqual(silicon_synth.normal_abc_command(lib, 10000),
+                         'abc -liberty "/actual/library.lib" -D 10000\n')
+        self.assertEqual(silicon_synth.mapping_selection('normal'),
+                         {'mapping_profile': 'sg13g2-register-cells-ties/0.1.0'})
+        for value in (0, -1, True, 10000.0, '10000', 1000000001):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                silicon_synth.mapping_selection('normal', value)
+        with self.assertRaisesRegex(ValueError, 'bounded script'):
+            silicon_synth.mapping_selection('bounded', 10000)
+
+    def test_mapping_cache_cannot_alias_different_or_untyped_delay_targets(self):
+        current = silicon_synth.mapping_selection('normal', 10000)
+        self.assertTrue(silicon_synth.same_mapping_selection(dict(current), current))
+        for previous in ({'mapping_profile': current['mapping_profile']},
+                         silicon_synth.mapping_selection('normal', 20000),
+                         silicon_synth.mapping_selection('normal'),
+                         {**current, 'abc_delay_target_ps': 10000.0}):
+            self.assertFalse(silicon_synth.same_mapping_selection(previous, current))
+
     def inspect(self, cells, *, memories=None, mapped=False, library=None):
         modules = {"slice": {"cells": cells}}
         if memories is not None:
