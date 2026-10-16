@@ -72,5 +72,26 @@
       "first_bundle": "bundle.log:incompatible earlierWasmbuild rejected before output. Selected exactC53manifest for a2; no validation weakened.",
       "first_package": "package-a2.log:standalone launch failed missing package_entry2_deployment. Producer now copies that imported module; package-a3 passes."
     }
+  },
+  "current_shared_runtime_package": {
+    "browser_manifest": {
+      "path": "build/distribution/task006-reader18-current-browser-a2/package.json",
+      "sha256": "6f21b808af6b1e1e89841b9bf1a7106b6509151a76636a12d5b22c986e590726",
+      "bytes": 52837
+    },
+    "browser_archive": {
+      "path": "build/distribution/task006-reader18-current-browser-a2.tar.gz",
+      "sha256": "d982984908398f4f4bebce7f4cdf90a9103af8dbeb15926cb06b3460deff94f2",
+      "bytes": 2082185
+    },
+    "browser_files": 287,
+    "browser_bytes": 17681963,
+    "status": "PASS_CURRENT_STATIC_PACKAGE_STANDALONE_VERIFICATION_NO_CPU",
+    "prepared_result": {
+      "path": "build/browser/task006-current-distribution-result-a2/result.json",
+      "sha256": "912c207c2b6dbd806b30e065e6ea2dc9826318374b06e8b9a3c98684b9544e8e",
+      "bytes": 975
+    },
+    "scope": "Current84d5 Wasm and exact retained Reader18 guests; static standalone verification only. Complete browser C53 workflow remains separately source-bound; current84d5 fullCold/mathematics not inferred."
   }
 }

@@ -312,12 +312,12 @@
     "scope": "Actual canonical1650x2200/8192frames same RV64 Reader18, rawnavigation/Save, independent cold; separate from fast or cached continuation"
   },
   "browser": {
-    "status": "PASS_FIRST_COLD_BROWSE_SAVED38_SECOND_COLD_RUNNING_NOT_ACCEPTED",
+    "status": "PASS_READER18_BROWSER_SAVED38_INDEPENDENT_COLD_SAVED_NODE5_REOPEN",
     "plan": "build/browser/task006-reader18-local-plan-a1/plan.json",
     "url": "http://127.0.0.1:8806/",
     "medium": "reader18-source37-a1",
     "origin": "Actual CPU0/ticks0/retired0/panels0/queues0, nonprivate freshly imported opaque source37; no snapshot/initialized application state.",
-    "bounds": "2.8B/21600s, original absolute22:25:15.630042Z; firstcold1B/7200autoReady stop. No completed browser18 claim.",
+    "bounds": "Original2.8B/21600s, absolute22:25:15.630042Z, completed within bound; all perphase caps unchanged.",
     "first_cold": {
       "path": "build/browser/task006-reader18-local-plan-a1/cold-result-a1.json",
       "sha256": "5b2312b10a90766e01cc12fb93f1fd0d8aa450a1c04042cc50665c9a8e6ae052"
@@ -339,7 +339,7 @@
     "reported_Wasm_heap_bytes": 201326592,
     "actual_barrier": 168,
     "second_origin": "Close/Open actualSaved38 OPFS, new CPU0, no snapshot;1B/7200 and original absolute22:25:15Z unchanged",
-    "scope": "Every original native/browser accepted outcome matches after predeclared64-byte tape identity; allpixels/all256MiB exact at fixed cuts. No native first-microstate equality claimed; no full browser18 cold PASS yet.",
+    "scope": "Actual C53 prepared local browser. First CPU cold/browse5/guestSave38/OPFS barrier168 -> Close/Open independent CPU0 -> coldReady -> rawCOURSE -> savednode5. Full pixels/media/outcome bytes/errors/order/accepted cycles match native. Existing source course was already guest-installed before this scenario; fresh browser installation remains a separate running case. No snapshot cold input or full native second microstate claim.",
     "second_independent_cold": {
       "status": "PASS_SECOND_COLD38_ALL_HOME_PIXELS_MEDIA_READ_OUTCOMES",
       "ready_cycle": 571950000,
@@ -355,7 +355,27 @@
       "all_pixels": 3630000,
       "all_medium_bytes": 268435456,
       "READ_outcomes": 153,
-      "scope": "Actual independent Close/Open CPU0 from first browser Saved38/OPFS barrier168. No snapshot cold input; full native second microstate absent. Exact2 native raw COURSE rows admitted at572M;227M suffix to799M running under original22:25:15.630042Z absolute deadline."
+      "scope": "Actual independent Close/Open CPU0 from first browser Saved38/OPFS barrier168. No snapshot cold input; full native second microstate absent. Exact2 native raw COURSE rows admitted at572M;227M suffix reached fixed799M within original absolute22:25:15.630042Z."
+    },
+    "aggregate_two_CPU_clocks": 1691000000,
+    "second_reopen": {
+      "result": {
+        "path": "build/browser/task006-reader18-local-plan-a1/second-reopen-result-a1.json",
+        "sha256": "94e87b0b97e5bbb3ab54d4da4d34bc7e7a730de5cc98c2ee60f815d02d3dfc09"
+      },
+      "fixed_cycle": 799000000,
+      "actual_panels": 3,
+      "all_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "exact_native_READ_outcomes": 167,
+      "scope": "Original fixed572M->799M rawCOURSE suffix on the second independent OPFS CPU. All controller pixels, medium bytes and recorded READ outcomes against completed native case; no native full second snapshot or cross-restore claim.",
+      "raw_event_count": 2,
+      "reported_Wasm_heap_bytes": 201326592,
+      "second_worker_simulation_call_seconds": 7095.655400007662,
+      "first_worker_simulation_call_seconds": 7341.193929998477,
+      "sum_worker_simulation_call_seconds": 14436.849330006138,
+      "performance_note": "Reported Wasm simulation-call scopes; not comparable directly with native whole actor duration or Chrome RSS. No cross-backend full second snapshot exists.",
+      "display": "build/browser/task006-reader18-local-plan-a1/browser/second-reopen799M.png"
     }
   },
   "original_failures_retained": [
@@ -378,10 +398,10 @@
     "silicon_host": "226 PASS2.534s final current browser producer/consumer sources; build/courses/task006-reader18-silicon-host-final.log",
     "foundation_host": "473 PASS33.653s with same8GiB harness AS and existing policy2; no test/source expectations weakened",
     "scaffold_host": "18 PASS8.114s final + scaffold metadata PASS; strict CI pipeline inventory14 PASS0.007s",
-    "CI_note": "Published0c CI38917694317 SUCCESS11jobs/113steps; new implementation publication CI is not yet observed."
+    "CI_note": "Published57ceb CI38968703132 COMPLETED_SUCCESS11jobs/116steps/0skipped. Earlier1c35 failure9success/2failed/13skipped remains retained; new portability source changes need their own candidate CI."
   },
   "remaining": [
-    "Exact RTL and browser18 complete user workflow still running; older native/Wasm17 whole-state fixed-suffix PASS has its own source identity.",
+    "Reader18 native/browser Save38 and independent cold savednode5 are complete for their stated sources; fresh browser guest installation, current shared source full workflow and general performance remain separate.",
     "Bookmark stores node only. Save requires completed validated open; a canceled open can be reopened normally.",
     "Canonical ELF development preload remains explicit; product boot/update/owner trust and full reset domains are separate.",
     "No exact fast timing/arbitrary QEMU cached continuation, general managed Lean/proof kernel, full G2/G4-G7/tutor/learning authority, complete USB/radios or physical closure.",

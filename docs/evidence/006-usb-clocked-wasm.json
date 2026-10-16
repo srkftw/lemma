@@ -273,5 +273,71 @@
     "new native cold prefix",
     "full browser presentation/backing workflow"
   ],
-  "prefix_execution_scope": "No long CPU prefix was rerun to reach the retained cuts. The startup cut is cycle0 and explicitly executes its declared5000-cycle captured suffix; eight other cuts execute their declared3000/5000-cycle suffixes. This is not a new whole notebook boot or cold recovery."
+  "prefix_execution_scope": "No long CPU prefix was rerun to reach the retained cuts. The startup cut is cycle0 and explicitly executes its declared5000-cycle captured suffix; eight other cuts execute their declared3000/5000-cycle suffixes. This is not a new whole notebook boot or cold recovery.",
+  "current_entry2_source_port": {
+    "status": "PASS_CURRENT_CLOCKED13_ARCHIVE_PORT_AND_FINITE_RECORDED_SUFFIXES",
+    "source_port_schema": "lemma-wasm-native-source-port/2",
+    "native_identity": {
+      "native": "60bd2f275f72386ce952f1d5572aee041217918d64cbf45a7fb33aad101732da",
+      "implementation": "5381d37a7abd0ac8c7e448d85df2278b5ad8f1ae16c798772bc2a2a04e596135",
+      "guest": "5f98614da1b1324f5c813441c5d426392109a2d35e5a30f55de118f74e4ad69f",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "dtb": "eb244f1009f709c86af9880871c55e34ebceb509be9085e61cfcddc04709a6b6",
+      "descriptor": "5bfc34263f44cd265e5b0e9960b372aafd066b6b9bb5323d8f4601309f574e12"
+    },
+    "portable_identity": "759aeb97615a33e45275450aa94eb826d8fa4f14415b894d431f3580b99e86ed",
+    "original_repository_root": "/home/sreekumaar/.codex/worktrees/task006-product-course-build/lemma",
+    "logical_build_root": "/home/sreekumaar/Downloads/lemma",
+    "source_count": 255,
+    "original_failure": {
+      "path": "build/browser/task006-clocked-origin-port-a1/original-failure.json",
+      "sha256": "81f310b9ebf38769964f7a007c134a5da9a81df3d06123ebabff47388629d80e",
+      "bytes": 427
+    },
+    "corrected_admission": {
+      "path": "build/browser/task006-clocked-origin-port-a1/corrected-admission.json",
+      "sha256": "fba03560d4f7717854aa4ee51b5c980f66f32377546cbbcc7e34dc5577bf36ee",
+      "bytes": 644
+    },
+    "build": {
+      "path": "build/wasm/task006-clocked13-current-origin-a1/build.json",
+      "sha256": "02f4e3b7f897b1fac59f6bca936e7484397662d840b9a6d71e1b1839dba6c319",
+      "bytes": 123752
+    },
+    "build_owner": {
+      "path": "build/browser/task006-clocked-current-port-supervision-a1/result.json",
+      "sha256": "16b780f71def2cd7be9e16be2c3b34461d69127deae950607adcac3e6e89b3d3",
+      "bytes": 1635
+    },
+    "supervised_build_seconds": 118.98655767401215,
+    "build_owned_peak_rss_bytes": 1156268032,
+    "native_pending": {
+      "path": "build/usb/task006-current13-entry2-pending-a2/result.json",
+      "sha256": "948dad6d0edd05dc554312cb2870194cccec717ebd6e69d4dd438b9ef0110f41",
+      "bytes": 28535
+    },
+    "native_actor_seconds": 161.40669505205005,
+    "portable_gate": {
+      "path": "build/usb/task006-current13-entry2-wasm-pending-a1/result.json",
+      "sha256": "82c8c2d778c42a60dc057f797ef12b5721a7f003dbaa9fed65e4e17c5ba8de32",
+      "bytes": 1072
+    },
+    "portable_actual": {
+      "path": "build/usb/task006-current13-entry2-wasm-pending-a1/actual/result.json",
+      "sha256": "3677eb67c95c81228051f20fb56eaeaacc82181186934fe8119bf1c2529933b4",
+      "bytes": 4996
+    },
+    "portable_owner": {
+      "path": "build/browser/task006-current13-portable-pending-supervision-a1/result.json",
+      "sha256": "bb1438d8a6d627423993e0666e61b63b713a549520062a73ef79ad6b688cc7be",
+      "bytes": 716
+    },
+    "portable_actor_seconds": 59.699934867,
+    "portable_owner_seconds": 71.40186995803379,
+    "portable_peak_rss_kib": 1353968,
+    "total_suffix_clocks": 41000,
+    "cases": 9,
+    "relation": "Same original predeclared identity fields only; all remaining full snapshot bytes/component CRCs, tape rows, actual guest UART and selected suffixes exact. Production foreign-identity rejection unchanged.",
+    "scope": "Actual current5381 and genuine EntryV2 initializer; full notebook/browser live peer, fast timing and QEMU cached state remain separate. No long cold prefix was rerun for these cuts."
+  }
 }

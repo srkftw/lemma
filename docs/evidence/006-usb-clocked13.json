@@ -488,5 +488,37 @@
       "replay": "package and explicit native+guest archives each fully revalidated then stopped before capture; no CPU/medium/replay result claimed"
     },
     "scope": "Separate selected-profile archive correction; patched unavailable ROOT, complete native/package/guest authority, no new CPU or replay result."
+  },
+  "entry2_guest_pending": {
+    "result": "build/usb/task006-current13-entry2-pending-a2/result.json",
+    "sha256": "948dad6d0edd05dc554312cb2870194cccec717ebd6e69d4dd438b9ef0110f41",
+    "status": "PASS",
+    "workload": "usb-clocked-package-entry2-bulk-initializer",
+    "identity": {
+      "native": "60bd2f275f72386ce952f1d5572aee041217918d64cbf45a7fb33aad101732da",
+      "implementation": "5381d37a7abd0ac8c7e448d85df2278b5ad8f1ae16c798772bc2a2a04e596135",
+      "guest": "5f98614da1b1324f5c813441c5d426392109a2d35e5a30f55de118f74e4ad69f",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "dtb": "eb244f1009f709c86af9880871c55e34ebceb509be9085e61cfcddc04709a6b6",
+      "descriptor": "5bfc34263f44cd265e5b0e9960b372aafd066b6b9bb5323d8f4601309f574e12"
+    },
+    "host_seconds": 161.40669505205005,
+    "bounds": {
+      "target_cycles": 70000000,
+      "fixture_host_seconds": 1800,
+      "external_host_response_timeout_ms": 60000,
+      "maximum_fixture_tree_rss_kib": 4194304,
+      "maximum_owned_apparent_bytes": 12000000000
+    },
+    "scope": "Fresh actual current5381 and genuine EntryV2 initializer nine Pending cuts. Original older guest_pending corpus remains unchanged. No full Ready, notebook or browser peer claim.",
+    "supervision": {
+      "path": "build/browser/task006-clocked-entry2-pending-supervision-a2/result.json",
+      "sha256": "21ca69473b230ba122b0b86e8851ef7eb8d6ed7f6ecb3b992fb6f46a72d0158d"
+    },
+    "original_environment_failure": {
+      "path": "build/usb/task006-current13-entry2-pending-a1/result.json",
+      "sha256": "9f8191096020aa5d1361a10fca6250106ebc0503232e99a77a49030060cef9c1",
+      "cause": "Default Lean shell lacked Verilator. Actual peer was ready and was reaped; no CPU or expectation changed."
+    }
   }
 }

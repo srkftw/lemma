@@ -94,3 +94,22 @@ archive passed installation/load from the retained pending-input cut. The
 first prototype archive retained a version1 label and is recorded separately;
 it is not relabeled as version2. These observations qualify the specified
 functional path, not general QEMU cached-state continuation or fast timing.
+
+`lemma-local-native-distribution/3` explicitly permits current host launch
+tools alongside an older, complete compiled-source archive. Select it with
+`scripts/package_native.py --current-host-tools`. Without that option an
+overlapping tool with different bytes still rejects. The original compiled
+closure stays unchanged in `bundle/source`; only the separate `host/` launch
+environment receives current tools. `host_tool_versions` records every overlap
+with its original source path/digest and current host digest. The launcher
+requires the complete difference set, verifies both copies against the regular
+file inventory and original bundle source map, and performs the same four-way
+guest/backend admission before execution. Missing originals, contradictory
+digests and version metadata on historical schema1/2 reject.
+
+This separates build provenance from the host program interpreting archived
+admission records. It does not describe a fresh target compilation or replace
+an earlier compiler/audit result. Version3 retains version2 course dispatch,
+permissions, immutable-package rules and runtime prerequisites. Its Nix export
+still contains host dependencies only. Actual Ready, cold recovery, checkpoint
+completeness and new-host installation require their own observations.

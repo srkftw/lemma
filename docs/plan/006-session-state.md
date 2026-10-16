@@ -4537,3 +4537,147 @@ A-E work is not passed. Complete actual job receipt build/ci/task006-1c35-comple
 Corrected local247558a+d033baf are ready for publication and their own CI; no
 merge. No identical target builds were rerun for these report changes.
 -->
+
+<!--
+Published57ceb5b91f98c30e5fcb2ac5bb608c342b060a3f. Actual candidate CI
+38968703132/run143 IN_PROGRESS on first inspection; PR9 draft/unmerged updated.
+No CI success inferred. Preserve terminal parent1c35 failures/13skipped steps.
+
+C53 Browser18 COMPLETE PASS at original bounds: build/browser/task006-reader18-local-plan-a1/
+second-reopen-result-a1.json,28.086s passive observer. Actual secondCPU fixed799M,
+panels3,388500280retired, all3.63M pixels/all256MiB/167READ bytes/errors/order/
+accepted cycles and exacttwo rawCOURSE events match native saved-example5.
+No new Save/math check in coldCPU. Capture binds572M eventCount0 and799M eventCount2.
+All exports browser/second-reopen799M.{bin,raw,io,png}, second-events.json.
+Second worker7095.655400s simulation calls; first7341.193930s; sum14436.849330s,
+reportedWasmheap192MiB. Not native whole-actor or ChromeRSS comparison. Aggregate
+1691M same two-CPU workload clocks; no full native second microstate snapshot.
+No snapshot cold input. ActualReady571.95M at worker host5187.816265s; earlier
+UI-rounded5188.2s remains its own observation. FinalUI paused(cycle-limit),
+used=requested227M, remaining0, original host cap3600. No budget extension.
+Browser35 is now a completed user deliverable (saved node5), not a running case;
+keep medium/worker or explicitly Close only if needed. Browser33 remains old
+pad15 verified-mathematics deliverable. Fresh browser36 still runs its own real
+initializer under original1.4B/7200 cap and12h whole deadline; no installation
+or mathematical result inferred there.
+
+Product course actor53123 now passed trial-Ready-guest-confirmation phase623M/
+3211.268888s. Earlier install519.5M and handoff127.2M unchanged. Independent
+normalCPU0 authenticated cold/course reopen is now running at original bounds.
+Entry2 actor33174 cold23/open/close remains running at original bounds.
+
+Next shared-runtime port is RUNNING, tool session81618. Source-bound current
+native+Wasm canonical builds with same audited Reader18 pair, no new guest
+compilation or Ready/checkpoint claim from compilation. Actor
+build/browser/task006-current-shared-runtime-a1; plan
+build/browser/task006-current-shared-runtime-plan-a1/plan.json; supervisor
+build/browser/task006-current-shared-runtime-supervision-a1. Native1800s,
+Wasm2400s, whole4200s, jobs2/EMCC_CORES2,4GiB ownedRSS/2GiB minimumavailable/
+12GiB outputs/1GiB file/cleanup30s; launch available8971137024B. Keep consumed
+RTL/C++/binding/build-driver files unchanged until it ends. C53 remains an
+accepted older source-bound artifact. Exact actual diff in Machine::tick is
+newer native pen-resynchronization UART preservation/quota accounting; C53 is
+not silently called the current runtime. Fresh builds must get their own
+execution/parity results. Complete browser ProductROM, USBpeer and other gaps
+remain separate. Do not port through current archived-native BUILD origin yet:
+inspection found silicon_wasm.archived_native_build still assumes callerROOT;
+canonical current-tree build does not use that path. No portability closure
+claim for it and no source validator weakened.
+-->
+
+
+<!--
+Continuation milestone: current shared runtime portability and prepared launch.
+Parent57ceb5b actual CI38968703132/run143 is now COMPLETED_SUCCESS:11jobs,
+116steps,0skipped/cancelled. Receipt build/ci/task006-57ceb-complete.json.
+PR9 body updated to the actual terminal result; remains draft/unmerged.
+Original1c35 failure and skipped work remain retained. No PR8 merge authority
+is inherited by PR9.
+
+Current canonical native600e93eb1981b3eb5432840c0fd8e169b4d5cfd04f89e8164450d1c70b159bba
+and Wasm84d52d610d2819e294b1c130b362e1289c48dfe31285225140029e9168c8e5a5
+build PASS. Owner build/browser/task006-current-shared-runtime-supervision-a1,
+159.461866s/899944448B peak/no survivors. Actual source diff from C53 is only
+shared Machine UART retention/quota repair; RTL and retained audited Reader18
+artifacts unchanged. Direct current native/Wasm1M+1M and sameWasm exact restore
+PASS: build/browser/task006-current-runtime-prefix-a1/result.json,44.128266s;
+owner51.712697s/2092748800B. Observer now compares full generated prefix too,
+all archive bytes before/after corrupt restore rejection and full sameWasm
+suffix archive. No new mask/tolerance. This is not Ready/cold/generalcache.
+
+Actual Clocked13 archived port failed because callerROOT was assumed for the
+original BUILD prefix. Retained original-failure.json in build/browser/
+task006-clocked-origin-port-a1. Source-port2 now derives the original prefix
+from admitted native metadata, aliases paths into the private support tree,
+retains all255 original inputs/digests, resolves only archive bytes and derives
+unique CVW dependency prefix. Missing archived header rejects even an identical
+current shadow.7 focused host tests PASS. Actual fresh current5381 archived
+port -> Wasm759aeb97615a33e45275450aa94eb826d8fa4f14415b894d431f3580b99e86ed
+PASS114.057995s; owner118.986558s/1156268032B/no survivors. Build
+build/wasm/task006-clocked13-current-origin-a1. Native source still belongs to
+BUILD/build/silicon/task006-entry2-current13-a1 and complete archive at
+BUILD/build/entry2-prepared-results-a1/native-source/consumed-source-root.
+
+New current genuine EntryV2 initializer nine-cut Pending corpus PASS,
+build/usb/task006-current13-entry2-pending-a2/result.json,161.406695s.
+Originala1 default-shell missingVerilator failure3.874364s/peer reaped retained;
+a2 uses pinned sim.nix, no circuit/expectation changes. Existing native capture
+has one explicit Clocked13-only EntryV2 workload flag. Existing portable
+qualifier selects separately hash-pinned entry2_guest_pending; original default
+historical corpus unchanged. Actual native/Wasm9cuts/41000suffix clocks PASS:
+build/usb/task006-current13-entry2-wasm-pending-a1/actual/result.json,
+59.699935s/1353968KiB; owner71.401870s/no survivors. Every other full snapshot
+byte/component CRC, tape row, guestUART exact under original predeclared header
+identity relation only. No live external peer in restored forks, no cold
+prefix rerun, public crossrestore or general cached-state claim.
+
+Current ordinary native bundle build/native/task006-reader18-current-runtime-a1
+and static package build/distribution/task006-reader18-current-runtime-a1 PASS.
+Actual archive preparation then exposed current host-tool vs older compiled
+source overlap (audit_kernel.py), retained build/browser/
+task006-current-distribution-result-a1. New explicit --current-host-tools
+keeps immutable bundle/source and separate current host/, records every20
+changed tool versions and verifies complete differences/digests in version3.
+Default overlap rejection and historical version1/2 semantics preserved.
+3 new meaningful retained-source/contradiction unit tests PASS; complete229
+silicon tests PASS2.693s. Full307LemmaSim PASS79.547s;18scaffold PASS8.505s,
+metadata PASS. Logs build/browser/task006-clocked-origin-port-a1/.
+
+Prepared archives:
+build/distribution/task006-reader18-current-native-a2.tar.gz
+build/distribution/task006-reader18-current-browser-a2.tar.gz
+Native1636files/462617356B,138982635B archive, complete actual wrappedQEMU NAR;
+browser287files/17681963B,2082185B archive. Owner build/browser/
+task006-current-distribution-supervision-a2 PASS100.021618s/440299520B.
+Actual native Python-I launch from unrelated working directory ->1M->2M
+PASS19.364143s, owner20.025918s, no survivors. BOTH complete public snapshots
+match independent direct same-current-native archives byte-for-byte, snapshot
+inspection unchanged. build/browser/task006-current-native-launch-a1/result.json.
+No new full current Ready, QEMUcache, fresh-host NAR import, Tk/rights closure.
+Actual full C53 browser Save38/cold/savednode5 remains its own accepted source.
+
+Fresh browser36 real initializer COMPLETE44.2M, then independent normal CPU
+Ready458.4M/Saved2/panel1; combined502.6M, including explicit2.2M oldUI auto-run
+prefix. Worker simulation calls4126.252095s,192MiB reportedheap, actualReadyAt
+3729.439115s in the displayed per-run timing scope. Original12h/6B whole and
+1.4B/7200 phase bounds unchanged. No snapshot or imported/preinstalled objects.
+Exports first-ready458M.{bin,raw,io} and first-ready-result-a1.json under
+build/browser/task006-reader18-fresh-course-plan-a1/. Read-only independent
+journal sees sequence2/only root+page/no course. Then visible filechooser admits
+actual4063B edition3 sha9928c0acac9567f227f8346a0b193f08c7467ab24ac9fd15564e515b91e37f5a,
+transaction1 through guest raw installer. Run400M/3600, no stopReady/stopPanel.
+Installation still pending at last visible487.5M; no Installed/math claim.
+Keep freshCourseTab36 on8806 markedhandoff, reader18Tab35 andpad15Tab33
+markeddeliverable. No new8808 server yet. Full current bundles aren't silently
+substituted into these older bound C53 cases.
+
+Product four-role actor53123 and EntryV2 cold23/open/close33174 still retain
+original caps. Product trialReady/confirmation623M PASS; independent cold
+running, last logged749M. Owned native PID2402778 is executing, no new cold
+PASS inferred. Entry2 actual coldReady745M/5744.477404s passed; rawCourse open
+running, last logged860M; close200M not yet run. Keep frozen executors and BUILD
+sources/bundles unchanged. Neither case is repair/completion of original
+companion16 terminal200M-close FAIL. No processes or user media removed.
+All larger digital, fast timing/QEMU cached continuation, browserliveUSB/product
+boot, managed/proof-kernel/tutor/learning, distribution and physical gaps remain.
+-->

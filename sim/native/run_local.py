@@ -12,7 +12,8 @@ def verify(root):
     if any(p.is_symlink() for p in (root, *root.parents)):
         raise ValueError('Symlinked native package path')
     data = json.loads((root / 'package.json').read_text())
-    if data.get('schema') not in ('lemma-local-native-distribution/1', 'lemma-local-native-distribution/2'):
+    if data.get('schema') not in ('lemma-local-native-distribution/1', 'lemma-local-native-distribution/2',
+                                'lemma-local-native-distribution/3'):
         raise ValueError('Unsupported native distribution')
     files = data.get('files')
     if not isinstance(files, dict) or not 8 <= len(files) <= 8192:
@@ -33,13 +34,35 @@ def verify(root):
             raise ValueError('Native distribution byte bound/identity failed')
     required = {'run.py', 'bundle/bundle.json', 'host/scripts/lemmasim',
                 'host/scripts/native_bundle_relocation.py', 'NOTICE.txt', 'README.md'}
-    if data['schema'] == 'lemma-local-native-distribution/2':
+    if data['schema'] in ('lemma-local-native-distribution/2', 'lemma-local-native-distribution/3'):
         required |= {'host/scripts/lemmasim-course', 'host/scripts/lemmasim_course_fast.py'}
     actual = {p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
     if (not required <= files.keys() or actual != files.keys() | {'package.json'}
             or any(p.is_symlink() for p in root.rglob('*'))
             or data.get('source_bundle_sha256') != files['bundle/bundle.json']['sha256']):
         raise ValueError('Incomplete or contradictory native distribution')
+    if data['schema'] == 'lemma-local-native-distribution/3':
+        versions = data.get('host_tool_versions', {})
+        differences = versions.get('differences')
+        if (versions.get('schema') != 'lemma-native-host-tool-versions/1'
+                or not isinstance(differences, dict) or not 1 <= len(differences) <= 8192):
+            raise ValueError('Missing separate host tool versions')
+        compiled = json.loads((root / 'bundle/bundle.json').read_text()).get('sources', {})
+        for relative, row in differences.items():
+            if (not isinstance(row, dict) or set(row) != {'compiled_source', 'compiled_sha256', 'host_sha256'}
+                    or row['compiled_source'] != 'bundle/source/' + relative
+                    or row['compiled_sha256'] == row['host_sha256']
+                    or compiled.get(relative) != row['compiled_sha256']
+                    or files.get(row['compiled_source'], {}).get('sha256') != row['compiled_sha256']
+                    or files.get('host/' + relative, {}).get('sha256') != row['host_sha256']
+                    or data.get('host_inputs', {}).get(relative) != row['host_sha256']):
+                raise ValueError('Contradictory compiled/host tool versions')
+        expected = {name for name, digest in compiled.items()
+                    if name in data.get('host_inputs', {}) and digest != data['host_inputs'][name]}
+        if set(differences) != expected:
+            raise ValueError('Incomplete separate host tool versions')
+    elif 'host_tool_versions' in data:
+        raise ValueError('Separate host tools require native distribution3')
     return data
 
 
@@ -83,7 +106,7 @@ def main():
             args += ['--native-bundle', str(view)]
         course = {'course-install': 'install', 'course-load': 'load',
                   'course-delete-probe': 'delete-probe'}
-        if distribution['schema'] == 'lemma-local-native-distribution/2' and args[0] in course:
+        if distribution['schema'] in ('lemma-local-native-distribution/2', 'lemma-local-native-distribution/3') and args[0] in course:
             args = [course[args[0]], *args[1:]]
             script = root / 'host/scripts/lemmasim-course'
         else:

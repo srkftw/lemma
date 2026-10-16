@@ -87,6 +87,7 @@ def archived_native_build(build, source_root, selected_profile):
     if not canonical and selected_profile != USB_CLOCKED_PROFILE_NAME:
         raise ValueError('Native-to-portable source admission is canonical0.3 or Clocked13 only')
     source_root = Path(source_root).resolve()
+    original_prefix = ROOT
     if canonical:
         # This validator checks the exact compiler inventory, identity header,
         # binary and selected JSON from the original native producer. A v1
@@ -110,26 +111,55 @@ def archived_native_build(build, source_root, selected_profile):
             'scope':'unchanged complete canonical native producer; selected JSON archived; execution separate'}
     else:
         manifest, inputs, evidence = native_source_archive(build, source_root, selected_profile)
+        from product_native import archived_original_root
+        original_prefix = archived_original_root(manifest)
+    def relative(path):
+        path = Path(path)
+        if path.is_absolute():
+            try: path = path.relative_to(original_prefix)
+            except ValueError: raise ValueError('Unarchived native portable input: '+str(path))
+        if not path.parts or '..' in path.parts:
+            raise ValueError('Escaping native portable input')
+        return path.as_posix()
+    normalized = {relative(name): want for name, want in inputs.items()}
+    if len(normalized) != len(inputs):
+        raise ValueError('Duplicate native portable input alias')
     def resolve(path):
         path = Path(path)
         if not path.is_absolute(): path = ROOT/path
-        try: relative = path.relative_to(ROOT).as_posix()
+        try: name = path.relative_to(ROOT).as_posix()
         except ValueError: raise ValueError('Unarchived native portable input: '+str(path))
-        expected = inputs.get(str(ROOT/relative))
-        if expected is None: raise ValueError('Missing native portable input: '+relative)
-        actual = source_root/relative
-        if digest(actual) != expected: raise ValueError('Changed native portable input: '+relative)
+        if '..' in Path(name).parts: raise ValueError('Escaping native portable input')
+        expected = normalized.get(name)
+        if expected is None: raise ValueError('Missing native portable input: '+name)
+        actual = source_root/name
+        if digest(actual) != expected: raise ValueError('Changed native portable input: '+name)
         return actual
-    header = resolve(Path(manifest['host_include_dir'])/'lemma_silicon_binding.h').read_text()
-    if digest(resolve(Path(manifest['host_include_dir'])/'lemma_silicon_binding.h')) != manifest['host_binding_sha256']:
-        raise ValueError('Original native host binding differs')
     original = {key:value for key,value in manifest.items() if key not in
                 ('runtime_identity_header','build_argv','build_jobs','binary_sha256','snapshot_identity')}
+    # Build-path aliases describe locations in the private support tree. They
+    # never select current checkout bytes; resolve always reads the complete
+    # validated archive. Original paths/digests remain in the native receipt.
+    for key in ('sources', 'include_dirs'):
+        original[key] = [str(ROOT/relative(name)) for name in manifest[key]]
+    original['host_include_dir'] = str(ROOT/relative(manifest['host_include_dir']))
+    for key in ('sha256', 'configuration_includes'):
+        original[key] = {str(ROOT/relative(name)): value for name,value in manifest[key].items()}
+        if len(original[key]) != len(manifest[key]): raise ValueError('Duplicate portable source alias')
+    for key in ('host_runtime', 'host_toolchain_inputs', 'binding_generator_inputs'):
+        original[key] = {relative(name): value for name,value in manifest[key].items()}
+        if len(original[key]) != len(manifest[key]): raise ValueError('Duplicate portable host alias')
+    header_path = Path(original['host_include_dir'])/'lemma_silicon_binding.h'
+    header = resolve(header_path).read_text()
+    if digest(resolve(header_path)) != manifest['host_binding_sha256']:
+        raise ValueError('Original native host binding differs')
     return original, resolve, header, {
-        'schema':'lemma-wasm-native-source-port/1',
+        'schema':'lemma-wasm-native-source-port/2' if original_prefix != ROOT else 'lemma-wasm-native-source-port/1',
         'native':evidence,
         'original_snapshot_identity':manifest['snapshot_identity'],
         'native_source_inputs':inputs,
+        **({'original_repository_root':str(original_prefix),
+            'logical_build_root':str(ROOT)} if original_prefix != ROOT else {}),
         'scope':'fresh portable host compilation of the complete original '+
             ('canonical0.3' if canonical else 'Clocked13')+' circuit and Machine; no fresh guest compilation'}
 
@@ -154,6 +184,10 @@ def main():
     if a.native_build:
         m,resolve,archived_header,recompilation=archived_native_build(a.native_build,a.native_source_root,a.profile)
         m['source_recompilation']=recompilation
+        cores=[Path(name).parents[1] for name in m['sources']
+               if Path(name).parts[-2:]==('src','cvw.sv')]
+        if len(cores)!=1: raise ValueError('Native portable dependency prefix is not unique')
+        dep=cores[0]
         source_paths=[resolve(name) for name in m['sources']]
         include_paths=[resolve(next(name for name in m['configuration_includes']
                                     if Path(name).parent==Path(directory))).parent

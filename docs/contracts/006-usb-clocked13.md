@@ -206,6 +206,16 @@ separately declared inputs. Explicit native admission is Clocked13 only and
 never substitutes current profile or RTL files. Original native tool and source
 maps, selected JSON and generated header remain checked before and after build.
 
+The additive source-port receipt `lemma-wasm-native-source-port/2` handles an
+original native checkout at a different absolute prefix. That prefix is derived
+from the admitted native top-module path; all source/include/host aliases are
+normalized into the private portable build tree. Every alias resolves only to
+the complete original archive and its recorded digest. No original checkout or
+current-source fallback is used. The receipt retains original absolute inputs
+and records both original and logical prefixes. A unique archived `src/cvw.sv`
+anchor selects the dependency prefix for build identity. Historical same-prefix
+receipts retain source-port1 and their original identities.
+
 The two additive C ABI methods `lemma_create_usb_private` and
 `lemma_usb_outcomes` create an unused Clocked Machine without a guest load or
 external backing, then bind recorded outcomes through the normal runtime API.
@@ -220,6 +230,14 @@ standalone observer also checks exactly nine named cuts and all module, snapshot
 tape and UART hashes. Empty corpora and changed modules reject before Machine
 creation. Bounds are 1800 seconds, 70M suffix cycles, 4GiB RSS and 12GB output,
 with owned-child reaping and no automatic restart.
+
+The explicit `--native-evidence-key entry2_guest_pending` selection admits the
+separately captured current EntryV2 initializer corpus recorded in the existing
+Clocked13 evidence. Its complete result hash, implementation, guest role,
+bundle and all captured files must match before execution. The default remains
+the historical `guest_pending` corpus. The native capture command selects
+`--workload usb-clocked-package-entry2-bulk-initializer` only with Clocked13;
+neither flag changes the nine required boundaries or observation relation.
 
 This conformance fixture predeclares exactly one identity adaptation: snapshot
 header bytes [16,80) and the tape's first-line implementation identity. Normal

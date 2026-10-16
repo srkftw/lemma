@@ -166,7 +166,7 @@ def runtime_export(bundle, output):
             'scope': 'Existing host runtime files only; no import, download, trust change or guest runtime linkage'}
 
 
-def package(bundle, output, archive=None, include_nix_runtime=False):
+def package(bundle, output, archive=None, include_nix_runtime=False, current_host_tools=False):
     bundle, output = Path(bundle).absolute(), Path(output).absolute()
     if output.exists() or output.is_relative_to(bundle) or any(p.is_symlink() for p in output.parents):
         raise ValueError('Unused non-symlinked output outside the source bundle required')
@@ -184,7 +184,7 @@ def package(bundle, output, archive=None, include_nix_runtime=False):
     # Start with the exact compiled-source archive, then add host transport/
     # presentation tools. An overlap may never silently change a consumed input.
     shutil.copytree(bundle / 'source', output / 'host')
-    inputs = {}
+    inputs, host_differences = {}, {}
     selected = [p for p in (ROOT / 'scripts').rglob('*')
                 if p.is_file() and (p.suffix == '.py' or p.name in ('lemmasim', 'lemmasim-course'))]
     selected += list((ROOT / 'conformance/lemmasim').rglob('*.py'))
@@ -196,7 +196,16 @@ def package(bundle, output, archive=None, include_nix_runtime=False):
         destination = output / 'host' / relative
         digest = sha(source)
         if destination.exists() and sha(destination) != digest:
-            raise ValueError('Current host tool contradicts the compiled archive: ' + relative)
+            if not current_host_tools:
+                raise ValueError('Current host tool contradicts the compiled archive: ' + relative)
+            # The compiled closure remains immutable in bundle/source. Only
+            # the separately inventoried host launcher receives current code.
+            archived = output / 'bundle/source' / relative
+            old_digest = sha(destination)
+            if not archived.is_file() or sha(archived) != old_digest:
+                raise ValueError('Host replacement lacks the exact retained compiled source: ' + relative)
+            host_differences[relative] = {'compiled_source': 'bundle/source/' + relative,
+                                        'compiled_sha256': old_digest, 'host_sha256': digest}
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, destination)
         if sha(destination) != digest:
@@ -214,6 +223,11 @@ def package(bundle, output, archive=None, include_nix_runtime=False):
             '`nix-store --import < /path/to/extracted/runtime-closure.nar`.\n'
             'The launcher never imports or downloads automatically. Normal Nix import\n'
             'permissions are required; no trust settings or signatures are added.')
+    if host_differences:
+        readme += ('\nThis package explicitly selects current host launch tools. package.json\n'
+                   'records every difference from the original compiled source closure.\n'
+                   'The exact compiled versions remain in bundle/source; host/ is a\n'
+                   'separate launch environment. No target compilation or runtime changes.\n')
     (output / 'README.md').write_text(readme)
     (output / 'NOTICE.txt').write_text((bundle / 'DEPENDENCIES.txt').read_text() +
         ('\nThe included Nix export preserves the original host runtime closure and notices.' if runtime else
@@ -223,10 +237,14 @@ def package(bundle, output, archive=None, include_nix_runtime=False):
              for p in sorted(output.rglob('*')) if p.is_file()}
     if len(files) > 8192 or sum(row['bytes'] for row in files.values()) > 2 << 30:
         raise ValueError('Native package exceeds declared file/byte bound')
-    manifest = {'schema': 'lemma-local-native-distribution/2',
+    manifest = {'schema': 'lemma-local-native-distribution/3' if host_differences else 'lemma-local-native-distribution/2',
                 'scope': 'Prepared canonical machine, extracted host front end and exact source-location aliases; external Nix libraries required',
                 'source_bundle_sha256': sha(bundle / 'bundle.json'),
                 'producer_sha256': sha(Path(__file__)), 'host_inputs': inputs, 'files': files}
+    if host_differences:
+        manifest['host_tool_versions'] = {'schema': 'lemma-native-host-tool-versions/1',
+            'scope': 'Current host launcher only; every original compiled source remains in the immutable bundle',
+            'differences': host_differences}
     if runtime is not None:
         manifest['host_runtime_archive'] = runtime
     (output / 'package.json').write_text(json.dumps(manifest, indent=2) + '\n')
@@ -269,9 +287,12 @@ def main():
     parser.add_argument('--archive', type=Path)
     parser.add_argument('--include-nix-runtime', action='store_true',
                         help='Include a bounded offline export of the exact existing Nix host-library closure')
+    parser.add_argument('--current-host-tools', action='store_true',
+                        help='Separately retain/version current host launch tools and every overlapping original compiled source')
     args = parser.parse_args()
     try:
-        print(json.dumps(package(args.bundle, args.output_dir, args.archive, args.include_nix_runtime), indent=2))
+        print(json.dumps(package(args.bundle, args.output_dir, args.archive, args.include_nix_runtime,
+                                 args.current_host_tools), indent=2))
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         parser.exit(1, 'Native packaging failed: ' + str(error) + '\n')
 

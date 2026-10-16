@@ -2161,9 +2161,11 @@ failed barriers roll storage back. Both RV64 images pass full artifact audits.
 The canonical RTL case now passes the same Save38 and independent cold reopen,
 including every expected display pixel and medium byte:1,691M total clocks in
 8,134.657 actor seconds. Its first cold Ready takes570M clocks; its second cold
-Ready takes572M. Browser18 has completed the same actual Save38 and exact
-native pixel/media/I/O comparisons; its independent OPFS cold reopen is still
-running under the original bound. See [the scoped results](docs/evidence/006-course-reader-location.json).
+Ready takes572M. Browser18 now passes the same actual Save38, independent OPFS cold and
+saved-example5 reopen:1,691M total clocks. Every expected pixel, all256MiB and
+all167 final READ outcomes match native, including bytes/errors/order/cycles.
+Its two worker simulation-call totals sum14,436.849s with192MiB reported Wasm
+heap; that measurement scope differs from native actor time and Chrome RSS. See [the scoped results](docs/evidence/006-course-reader-location.json).
 
 Build new instances of the explicit software successor without changing the
 historical17 selection. Use unused output paths:
@@ -2238,8 +2240,9 @@ contracts and limitations.
 The four-role Product10 course-reader image now builds and passes the complete
 RV64 audit as`lemmasim-silicon-product-course-reader-bulk-notebook`. It uses the
 existing installed course, revision-bound mathematics and Reader18 Save path.
-Its immutable-ROM installation and authenticated trial handoff have executed;
-trial Ready, confirmation and independent cold course reopen are still running.
+Its immutable-ROM installation, authenticated trial handoff, actual trial Ready
+and guest health confirmation have executed. The Ready/confirmation phase uses
+623M RTL clocks/3211.269s. Independent cold boot and course reopen remain running.
 There is no normal-media initializer for this product configuration.
 
 The separate current Clocked13 companion bundle is
@@ -2258,6 +2261,35 @@ Use the same independent peer command and USB host arguments shown above, with
 These remain Developer/Laboratory ELF-preload launches. The bundle records its
 exact compiler inputs, separate native source origin and dependency notices;
 Nix host dependencies and unresolved redistribution limits remain applicable.
+
+Current canonical shared-runtime archives are prepared at
+`build/distribution/task006-reader18-current-native-a2.tar.gz` and
+`build/distribution/task006-reader18-current-browser-a2.tar.gz`. Native
+distribution3 retains the complete original guest compiler sources alongside
+the current host launcher; all20 differing host-tool files have both versions
+inventoried. It includes the exact wrapped QEMU runtime closure. The ordinary
+standalone RTL launcher executes1M+1M clocks and produces complete snapshots
+identical to direct execution of the same current native runtime. The current
+native/Wasm pair also passes its selected full-state1M+1M/restore comparison.
+These bounded checks do not replace the separately completed C53 browser
+Save38/cold/course workflow or establish current-runtime cold Ready.
+
+After extracting either archive, run from any working directory:
+
+```sh
+python3 -I /path/to/lemmasim-native/run.py session --backend rtl \
+  --profile lemma-silicon-dev/0.3.0 --mode developer --paused --headless \
+  --disk /absolute/path/to/YOUR_EXISTING.raw --session-dir /outside/package/UNUSED_SESSION
+python3 -I /path/to/lemmasim-browser/serve.py --port 8808
+```
+
+Both use the same retained genuine Reader18 RV64 artifacts. Native session
+controls, snapshots/replay, raw input and course commands above remain the
+ordinary command surface. To package an archived guest with current host tools,
+explicitly add `--current-host-tools` to `scripts/package_native.py`; the default
+still rejects conflicting tool versions. Browser persistence retains its
+qualified OPFS barrier and origin-eviction limits. No compiler runs in the
+browser, and distribution rights/fresh-host installation remain unresolved.
 
 Complete source archival and bundle selection are ordinary reusable commands:
 

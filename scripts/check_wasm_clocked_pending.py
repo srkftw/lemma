@@ -21,6 +21,8 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ('wasm-build','rtl-build','rtl-source-root','native-bundle','native-result','work-dir'):
         parser.add_argument('--'+name,type=Path,required=True)
+    parser.add_argument('--native-evidence-key',choices=('guest_pending','entry2_guest_pending'),
+                        default='guest_pending',help='independently recorded native capture; original corpus stays pinned')
     args=parser.parse_args();out=args.work_dir.resolve()
     require(not out.exists() and out.is_relative_to(ROOT/'build'),'unused owned qualifier output')
     out.mkdir();report={'schema':'lemma-clocked-portable-pending-qualification/1','status':'FAIL','scope':__doc__}
@@ -39,17 +41,22 @@ def main():
             require(sha(path)==digest,'portable host input changed: '+name)
         for name,digest in build['verilator_runtime_inputs'].items():require(sha(name)==digest,'pinned Verilator runtime changed')
         filtered={key:value for key,value in build.items() if key not in ('status','scope','snapshot_identity','wall_seconds','outputs')}
-        identity=hashlib.sha256(json.dumps(snapshot_inputs(filtered,ROOT/'build/silicon/deps/cvw'),sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        cores=[Path(name).parents[1] for name in manifest['sources'] if Path(name).parts[-2:]==('src','cvw.sv')]
+        require(len(cores)==1,'portable dependency prefix is not unique')
+        identity=hashlib.sha256(json.dumps(snapshot_inputs(filtered,cores[0]),sort_keys=True,separators=(',',':')).encode()).hexdigest()
         require(identity==build['snapshot_identity'],'portable implementation identity differs from complete producer')
-        bundle=prepared(args.native_bundle,'rtl','usb-clocked-bulk-initializer','lemma-silicon-dev/0.13.0')
+        workload=('usb-clocked-package-entry2-bulk-initializer' if args.native_evidence_key=='entry2_guest_pending'
+                  else 'usb-clocked-bulk-initializer')
+        bundle=prepared(args.native_bundle,'rtl',workload,'lemma-silicon-dev/0.13.0')
         actual_path=args.native_result.resolve();actual=json.loads(actual_path.read_text())
-        qualified=json.loads((ROOT/'docs/evidence/006-usb-clocked13.json').read_text())['guest_pending']
+        qualified=json.loads((ROOT/'docs/evidence/006-usb-clocked13.json').read_text())[args.native_evidence_key]
         require(sha(actual_path)==qualified['sha256'] and actual['status']=='PASS' and actual['profile']=='lemma-silicon-dev/0.13.0',
                 'input is not the independently qualified actual native Pending result')
         require(actual['identity']['native']==bundle['binary']['sha256']==origin['native']['binary']['sha256'] and
                 actual['identity']['implementation']==origin['original_snapshot_identity'] and
-                actual['identity']['guest']==bundle['workloads']['usb-clocked-bulk-initializer']['image']['sha256'],
+                actual['identity']['guest']==bundle['workloads'][workload]['image']['sha256'],
                 'actual native guest/implementation association differs')
+        require(actual.get('workload','usb-clocked-bulk-initializer')==workload,'native workload role differs')
         require({case['case'] for case in actual['cases']}==CASES and len(actual['cases'])==9,'actual nine-cut corpus differs')
         cases=[];total=0
         for case in actual['cases']:

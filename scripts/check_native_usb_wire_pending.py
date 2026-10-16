@@ -122,9 +122,15 @@ def main():
                  'formatted-peer', 'formatted-outbox', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--profile', choices=(PROFILE, 'lemma-silicon-dev/0.13.0'), default=PROFILE)
+    parser.add_argument('--workload', choices=('usb-clocked-package-entry2-bulk-initializer',),
+                        help='explicit current EntryV2 initializer; Clocked13 only')
     args = parser.parse_args()
     selected_profile = args.profile
     workload = 'usb-clocked-bulk-initializer' if selected_profile == 'lemma-silicon-dev/0.13.0' else WORKLOAD
+    if args.workload:
+        if selected_profile != 'lemma-silicon-dev/0.13.0':
+            parser.error('EntryV2 initializer requires Clocked13')
+        workload = args.workload
     out = args.work_dir.resolve()
     if out.exists() or not out.is_relative_to(ROOT / 'build'):
         parser.error('unused owned output under build required')
@@ -138,6 +144,7 @@ def main():
                    'maximum_fixture_tree_rss_kib': 4194304,
                    'maximum_owned_apparent_bytes': 12000000000},
         'profile': selected_profile,
+        'workload': workload,
         'fixed_phy_clocks': ({'host_ppm':2500,'chip_ppm':-2500,'host_phase':7,'chip_phase':38}
                              if selected_profile == 'lemma-silicon-dev/0.13.0' else None),
         'external_process_policy': 'restored forks have no USB process; strict implementation-bound checksum/prefix/horizon tape only'}

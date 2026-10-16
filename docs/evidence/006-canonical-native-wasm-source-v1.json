@@ -85,5 +85,36 @@
     "python3 -c \"import sys;sys.path.insert(0,'scripts');from pathlib import Path;from check_native_evaluation import capture_current_source;capture_current_source(Path('build/silicon/canonical-NEW'))\"",
     "python3 scripts/silicon_wasm.py --profile lemma-silicon-dev/0.3.0 --native-build build/silicon/canonical-NEW --native-source-root build/silicon/canonical-NEW/consumed-source-root --host-optimization simd-lto --output-dir build/wasm/canonical-NEW"
   ],
-  "remaining": "Actualnewguestexecution and fullcoldnotebook/math/course/newnative-Wasmsuffix remain separate. Generalbrowsercompiler,productionboot/browserradio/USBpeers, distribution rights and arbitrarycachedstate fullparity remain open. SIMD requires hostWebAssemblySIMD; scalar compilation remains selectable."
+  "remaining": "Actualnewguestexecution and fullcoldnotebook/math/course/newnative-Wasmsuffix remain separate. Generalbrowsercompiler,productionboot/browserradio/USBpeers, distribution rights and arbitrarycachedstate fullparity remain open. SIMD requires hostWebAssemblySIMD; scalar compilation remains selectable.",
+  "current_shared_runtime": {
+    "status": "PASS_CURRENT_CANONICAL_NATIVE_WASM_BUILDS_AND_SELECTED_FULL_STATE_RESTORE",
+    "build_result": {
+      "path": "build/browser/task006-current-shared-runtime-a1/result.json",
+      "sha256": "16b06e3ac219f010ec1ca924cc2fd841896758964fd245cec3a110e1bc75058d",
+      "bytes": 5857
+    },
+    "build_owner": {
+      "path": "build/browser/task006-current-shared-runtime-supervision-a1/result.json",
+      "sha256": "9bb7139da3c1fc1d12825cc4711a6b8dcdba8d64d6235df9ba020271035e74c9",
+      "bytes": 3011
+    },
+    "prefix_restore_result": {
+      "path": "build/browser/task006-current-runtime-prefix-a1/result.json",
+      "sha256": "1550ee2391d74a163e3734422725e8c5f83946d76848ee1566a55b53fb8e02ff",
+      "bytes": 4478
+    },
+    "prefix_restore_owner": {
+      "path": "build/browser/task006-current-runtime-prefix-supervision-a1/result.json",
+      "sha256": "6d3bfa744f814ea74bb84bd0f735aed0b0b4e3e694d6bb366427678bc03e1ed7",
+      "bytes": 662
+    },
+    "native_identity": "600e93eb1981b3eb5432840c0fd8e169b4d5cfd04f89e8164450d1c70b159bba",
+    "Wasm_identity": "84d52d610d2819e294b1c130b362e1289c48dfe31285225140029e9168c8e5a5",
+    "source_difference_from_C53": "Only shared host Machine pen-resynchronization UART retention/quota repair; circuitry/guest artifacts unchanged. C53 whole workflow keeps its own identity.",
+    "observer_change": "Now checks full generated state at prefix, all archive bytes around rejected restore and complete same-Wasm suffix archive. No masks or tolerances added.",
+    "actual_seconds": 44.128266441,
+    "host_peak_rss_bytes": 2048552960,
+    "rejected_restore_archive_sha256": "dfbf00aef76e248bc6250cbc77f1f030bd9f5ac81c7531b9a7f5e67cb405c625",
+    "scope": "Real CPU0->1M->2M, full wrapper/model native/Wasm relation and same-Wasm1M restore/repeated1M; no Ready, cold recovery or arbitrary-boundary cached-state claim."
+  }
 }

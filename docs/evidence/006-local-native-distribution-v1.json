@@ -506,5 +506,66 @@
     ],
     "original_failed_source_archive": "build/distribution/task006-native-runtime-closure-owner-a1/visibility-source-a{1,2,3}.py; each exactlymatchesoriginalreportproducerhash",
     "remaining": "The existing-readonly-path namespace is not a NAR import or freshhostinstallation; Python/Tk/userNixpermissions and redistribution rights remain prerequisites. Runtime-inclusive export corrected; historicallegacyhost_dependencies alone stilldoesnotdescribecompleteQEMUwrapperclosure."
+  },
+  "current_host_versions3": {
+    "status": "PASS_CURRENT_DISTRIBUTION3_PREPARATION_AND_REAL_NATIVE_LAUNCH",
+    "schema": "lemma-local-native-distribution/3",
+    "prepared_result": {
+      "path": "build/browser/task006-current-distribution-result-a2/result.json",
+      "sha256": "912c207c2b6dbd806b30e065e6ea2dc9826318374b06e8b9a3c98684b9544e8e",
+      "bytes": 975
+    },
+    "prepared_owner": {
+      "path": "build/browser/task006-current-distribution-supervision-a2/result.json",
+      "sha256": "d0f95ed2c730f20d208fef622df5b4145b4edc23548e418d6867ce958d93596d",
+      "bytes": 738
+    },
+    "owner_seconds": 100.0216177480761,
+    "owned_peak_rss_bytes": 440299520,
+    "native_manifest": {
+      "path": "build/distribution/task006-reader18-current-native-a2/package.json",
+      "sha256": "5cef9aad914b229eb60d1853f70f1cdb764df00cb7a370b59e5c9ef070478be1",
+      "bytes": 339222
+    },
+    "native_archive": {
+      "path": "build/distribution/task006-reader18-current-native-a2.tar.gz",
+      "sha256": "cbf003161ee7a622d213da604ffd25cd0f6b3b2c6a0fbee5f4ab75d33154d481",
+      "bytes": 138982635
+    },
+    "native_files": 1636,
+    "native_bytes": 462617356,
+    "explicit_host_difference_count": 20,
+    "compiled_source_retention": "Every original consumed compiler/source byte remains immutable in bundle/source; current host/ separately inventoried. Original guard still rejects without --current-host-tools.",
+    "actual_standalone_launch": {
+      "path": "build/browser/task006-current-native-launch-a1/result.json",
+      "sha256": "9aa62a03393138b8fba6c2b57f54515322d19e07bed47244d5513ea608d5ff6b",
+      "bytes": 1667
+    },
+    "actual_launch_owner": {
+      "path": "build/browser/task006-current-native-launch-supervision-a1/result.json",
+      "sha256": "2cc335f83b54e177492959ca08fe49fe0c23efc6921f938831d97c8101ed3c49",
+      "bytes": 661
+    },
+    "actual_launch_seconds": 19.364143087994307,
+    "actual_launch_cycles": 2000000,
+    "actual_launch_relation": "CPU0->1M->2M through ordinary Python-I prepared CLI. Each complete public snapshot archive exactly equals independently captured same-native direct runtime archive; both snapshots observational.",
+    "browser_manifest": {
+      "path": "build/distribution/task006-reader18-current-browser-a2/package.json",
+      "sha256": "6f21b808af6b1e1e89841b9bf1a7106b6509151a76636a12d5b22c986e590726",
+      "bytes": 52837
+    },
+    "browser_archive": {
+      "path": "build/distribution/task006-reader18-current-browser-a2.tar.gz",
+      "sha256": "d982984908398f4f4bebce7f4cdf90a9103af8dbeb15926cb06b3460deff94f2",
+      "bytes": 2082185
+    },
+    "browser_files": 287,
+    "browser_bytes": 17681963,
+    "original_failure": {
+      "path": "build/browser/task006-current-distribution-result-a1/result.json",
+      "sha256": "d274463f6469376a1ba28840016fd64cd1b45799364f76a3ca9bcb075aa77d65",
+      "bytes": 142
+    },
+    "scope": "Prepared current600e native/84d5 Wasm and retained genuine Reader18 artifacts. No new target build, current fullReady, fresh-host runtime import, live browserUSBpeer, redistribution license or universal durability claim."
   }
 }

@@ -31,19 +31,21 @@ try{
  await rpc('snapshot '+path.resolve(output,'native-prefix.bin'));
  const nativePrefix=fs.readFileSync(path.join(output,'native-prefix.bin'));
  if(!wrapper(prefix).equals(wrapper(nativePrefix)))throw Error('Native/Wasm authoritative wrapper mismatch');
+ if(!model(prefix).equals(model(nativePrefix)))throw Error('Native/Wasm generated logical-state prefix mismatch');
  for(let i=0;i<20;i++)call('lemma_run',['number'],[50000]);await rpc('run 1000000');
  const suffix=snap('wasm-original.bin');await rpc('snapshot '+path.resolve(output,'native-final.bin'));
  const nativeFinal=fs.readFileSync(path.join(output,'native-final.bin'));
  if(!wrapper(suffix).equals(wrapper(nativeFinal)))throw Error('Native/Wasm suffix wrapper mismatch');
  if(!model(suffix).equals(model(nativeFinal)))throw Error('Native/Wasm generated logical-state suffix mismatch');
  if(!Buffer.from(core.FS.readFile('/uart.bin')).equals(fs.readFileSync(path.join(output,'native-uart.bin'))))throw Error('Native/Wasm UART mismatch');
- const beforeReject=core.ccall('lemma_inspect','string',[],[]),bad=Buffer.from(prefix);bad[112]^=1;core.FS.writeFile('/bad.bin',bad);
+ const beforeReject=core.ccall('lemma_inspect','string',[],[]),beforeRejectArchive=snap('wasm-before-reject.bin'),bad=Buffer.from(prefix);bad[112]^=1;core.FS.writeFile('/bad.bin',bad);
  if(core.ccall('lemma_restore','number',['string'],['/bad.bin'])===0)throw Error('Corrupt checkpoint accepted');
  if(core.ccall('lemma_inspect','string',[],[])!==beforeReject)throw Error('Rejected restore altered live state');core.FS.unlink('/bad.bin');
+ if(!snap('wasm-after-reject.bin').equals(beforeRejectArchive))throw Error('Rejected restore altered authoritative wrapper or generated state');
  core.FS.writeFile('/restore.bin',prefix);call('lemma_restore',['string'],['/restore.bin']);core.FS.unlink('/restore.bin');
  for(let i=0;i<20;i++)call('lemma_run',['number'],[50000]);const fork=snap('wasm-fork.bin');
- if(!wrapper(suffix).equals(wrapper(fork))||!model(suffix).equals(model(fork)))throw Error('Same-Wasm exact fork mismatch');
+ if(!suffix.equals(fork))throw Error('Same-Wasm exact archive fork mismatch');
  result.status='PASS';result.prefixCycle='1000000';result.finalCycle='2000000';result.final=parse(core.ccall('lemma_inspect','string',[],[]));
- result.snapshotBytes=prefix.length;result.wrapperSha256=sha(wrapper(suffix));result.sameWasmModelSha256=sha(model(suffix));result.wasmHeapBytes=core.HEAPU8.byteLength;result.hostPeakRssBytes=process.resourceUsage().maxRSS*1024;
+ result.snapshotBytes=prefix.length;result.rejectedRestoreExactArchiveSha256=sha(beforeRejectArchive);result.wrapperSha256=sha(wrapper(suffix));result.sameWasmModelSha256=sha(model(suffix));result.wasmHeapBytes=core.HEAPU8.byteLength;result.hostPeakRssBytes=process.resourceUsage().maxRSS*1024;
  result.acceptanceComplete=true;fs.writeFileSync(path.join(output,'result.json'),JSON.stringify(result,null,2)+'\n');await rpc('destroy');child.stdin.end();core.ccall('lemma_destroy',null,[],[]);core=null;fs.closeSync(fd);fd=null;
 }catch(e){result.error=String(e);process.exitCode=1;}finally{try{core?.ccall('lemma_destroy',null,[],[]);}catch(e){result.cleanupError=String(e);result.status='FAIL';process.exitCode=1;}if(fd!==undefined&&fd!==null)fs.closeSync(fd);if(child&&child.exitCode===null&&child.signalCode===null){child.kill('SIGTERM');await Promise.race([new Promise(resolve=>child.once('exit',resolve)),new Promise(resolve=>setTimeout(resolve,3000))]);if(child.exitCode===null&&child.signalCode===null){child.kill('SIGKILL');await new Promise(resolve=>child.once('exit',resolve));}}result.wallSeconds=(performance.now()-start)/1000;fs.writeFileSync(path.join(output,'result.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));}
