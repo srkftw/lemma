@@ -2013,8 +2013,8 @@ history and all storage bytes. This fixes the retained resource-case reopen
 that previously showed node1 instead of its historical exercise3. It does not
 persist an arbitrary browsing position. Both genuine RV64 images pass complete
 artifact audits; actual fast cold/reopen passes every home pixel and backing
-byte plus the expected course body, keypad and evidence label. Exact RTL
-qualification is running separately.
+byte plus the expected course body, keypad and evidence label. Canonical RTL
+also passed cold Ready at the571M cut and the216M raw course-opening suffix.
 
 The prepared native and static machine bundles are
 `build/native/task006-number-pad-browse17-a1` and
@@ -2030,8 +2030,12 @@ an existing medium, preserving the ordinary guest recovery path:
 ```
 
 The browser bundle uses the same retained exact RTL Wasm core and newly audited
-17 guests. Packaging validation is separate from browser17 CPU execution, which
-is not yet qualified. The browser offers raw input, OPFS-backed Save, exported
+17 guests. A separate fixed-event comparison now passes reset, cold571M,
+course787M and the exact1M suffix to788M between nativeab88 and Wasmc53: all
+authoritative state bytes, original CRCs, actual I/O outcomes, full medium,
+UART and controller pixels match except predeclared implementation identity
+headers. This is scoped RTL execution, not QEMU cache closure or checkpoint
+interchange. The browser offers raw input, OPFS-backed Save, exported
 backup, private checkpoint forks and recorded-outcome replay with the existing
 storage limitations. Native compilation remains the explicitly labeled build
 helper. Distribution does not grant redistribution rights or close clean-host
@@ -2054,3 +2058,89 @@ Add `--backend rtl` for exact circuit execution with the predeclared1B/7200s
 cold and400M/3600s course ceilings. The default fast case is bounded900s and
 reports functional units, not pipeline timing. A timeout remains a failure.
 The original browser11 resource-case reopen failure is retained independently.
+
+### Save an installed course node
+
+Reader18 adds an explicit node bookmark. Open a course, browse with **NODE+**,
+and press the ordinary toolbar **Save**. Reopening restores that node, including
+an explanation, example or review node. The guest writes a separate128-byte
+record through the existing Store transaction and durability barrier. It keeps
+raw ink, current mathematical goal/evidence, source history and learner state
+unchanged. This version records a node; text role and intra-node offset are
+not stored. Save requires a completed validated open; a canceled open can be
+reopened normally.
+
+The real fast guest passed history3 → example5 → Saved38 → independent cold
+→ example5, preserving every old object and all home pixels. The unsuccessful
+Save case passed Failed227/no Saved → independent cold of the actual observed
+medium, recovering the previous acknowledged node5. It does not assume that
+failed barriers roll storage back. Both RV64 images pass full artifact audits.
+Exact RTL and browser18 workflow runs remain separately bounded and running;
+they are not yet accepted. See [the scoped results](docs/evidence/006-course-reader-location.json).
+
+Build new instances of the explicit software successor without changing the
+historical17 selection. Use unused output paths:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --opt-level O2 --stage supervisor \
+  --configuration lemmasim-silicon-package-reader-bulk-notebook \
+  --output-dir build/kernel/AN_UNUSED_READER_NOTEBOOK --timeout 300
+nix develop --no-write-lock-file --command ./scripts/audit-kernel.sh \
+  build/kernel/AN_UNUSED_READER_NOTEBOOK --timeout 300
+```
+
+The initializer configuration is
+`lemmasim-silicon-package-reader-bulk-initialize`; build/audit it in a different
+unused directory. Initialization is for new media only. This remains explicit
+ELF development boot; product ROM/update commands and their qualifications are
+separate.
+
+Prepared native and static browser archives are
+`build/distribution/task006-reader18-native-a1.tar.gz` and
+`build/distribution/task006-reader18-browser-a1.tar.gz`. After extraction, their
+launchers need no checkout or target compilation:
+
+```sh
+python3 -I /path/to/lemmasim-native/run.py session --backend qemu \
+  --profile lemma-silicon-dev/0.3.0 --mode developer \
+  --disk /absolute/path/to/YOUR_EXISTING.raw --session-dir /outside/package/UNUSED_SESSION
+python3 -I /path/to/lemmasim-browser/serve.py --port 8806
+```
+
+Use `--headless` when Tk is unavailable. The native archive contains the complete
+wrapped QEMU runtime closure; explicit Nix import, Python/Tk prerequisites and
+redistribution limits remain documented in its README/NOTICE. The browser uses
+the same RTL Wasm core and guest artifacts, OPFS worker barriers and controller
+pixels. Browser-origin eviction/power-loss guarantees, a browser-local compiler
+and finished interactive performance remain open. Import an exported raw medium
+under a new name and Open for cold recovery; restoring a checkpoint is a
+different operation.
+
+The reusable connected checks execute raw input and actual guest transactions:
+
+```sh
+python3 conformance/lemmasim/check_course_reader_recovery.py \
+  --disk build/browser/task006-idle2-pointer-cold-plan-a1/ink-saved.raw \
+  --expected-home build/browser/task006-idle2-pointer-cold-plan-a1/closed-plus-dot-expected.ppm \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --native-bundle build/native/task006-number-pad-browse17-index-a1 \
+  --guest-build build/kernel/task006-reader18-notebook-a2 \
+  --guest-source-root build/courses/task006-reader18-whole-a2/consumed-source-root \
+  --work-dir build/courses/AN_UNUSED_READER_CHECK
+python3 conformance/lemmasim/check_course_reader_failed_save.py \
+  --disk build/courses/task006-reader18-fast-a1/reader-saved.raw \
+  --expected-home build/browser/task006-idle2-pointer-cold-plan-a1/closed-plus-dot-expected.ppm \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --native-bundle build/native/task006-number-pad-browse17-index-a1 \
+  --guest-build build/kernel/task006-reader18-notebook-a2 \
+  --guest-source-root build/courses/task006-reader18-whole-a2/consumed-source-root \
+  --work-dir build/courses/AN_UNUSED_READER_FAILURE_CHECK
+```
+
+The second command uses actual acknowledged Saved38 output from the first
+qualified case and injects a modeled first-FLUSH failure. It is not a new POSIX
+fault qualification. Use `--backend rtl` with the new prepared native bundle for
+exact circuit clocks; the full2.8B/21600s campaign is distinct from fast
+functional units. Existing snapshot/private-fork/replay commands retain their
+contracts and limitations.

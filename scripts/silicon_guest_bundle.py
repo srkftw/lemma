@@ -128,7 +128,10 @@ CLOSURE_ENTRY2_CONFIGURATIONS={"notebook":"lemmasim-silicon-closure-entry2-bulk-
 PACKAGE_CLOSURE_DEPLOYMENT="lemma-package-closure-entry2-bulk-deployment-v1"
 PACKAGE_CLOSURE_CONFIGURATIONS={"notebook":"lemmasim-silicon-package-closure-entry2-bulk-notebook",
                                "initializer":"lemmasim-silicon-package-closure-entry2-bulk-initialize"}
-SOFTWARE_DEPLOYMENTS={PACKAGE_CLOSURE_DEPLOYMENT:PACKAGE_CLOSURE_CONFIGURATIONS,COURSE_AWAIT_DEPLOYMENT:COURSE_AWAIT_CONFIGURATIONS,CLOSURE_ENTRY2_DEPLOYMENT:CLOSURE_ENTRY2_CONFIGURATIONS,CLOSURE_DEPLOYMENT:CLOSURE_CONFIGURATIONS,COURSE_DEPLOYMENT:COURSE_CONFIGURATIONS,STRING_DEPLOYMENT:STRING_CONFIGURATIONS,ARRAY_DEPLOYMENT:ARRAY_CONFIGURATIONS,BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
+READER_DEPLOYMENT="lemma-package-reader-bulk-deployment-v1"
+READER_CONFIGURATIONS={"notebook":"lemmasim-silicon-package-reader-bulk-notebook",
+                       "initializer":"lemmasim-silicon-package-reader-bulk-initialize"}
+SOFTWARE_DEPLOYMENTS={READER_DEPLOYMENT:READER_CONFIGURATIONS,PACKAGE_CLOSURE_DEPLOYMENT:PACKAGE_CLOSURE_CONFIGURATIONS,COURSE_AWAIT_DEPLOYMENT:COURSE_AWAIT_CONFIGURATIONS,CLOSURE_ENTRY2_DEPLOYMENT:CLOSURE_ENTRY2_CONFIGURATIONS,CLOSURE_DEPLOYMENT:CLOSURE_CONFIGURATIONS,COURSE_DEPLOYMENT:COURSE_CONFIGURATIONS,STRING_DEPLOYMENT:STRING_CONFIGURATIONS,ARRAY_DEPLOYMENT:ARRAY_CONFIGURATIONS,BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
                       SUMS_DEPLOYMENT:SUMS_CONFIGURATIONS,BULK_DEPLOYMENT:BULK_CONFIGURATIONS}
 MAX_FILES=2048
 MAX_BYTES=1024*1024*1024
@@ -827,7 +830,7 @@ def development_configuration(profile,workload,configuration,mode):
     if workload not in selected:raise ValueError('Workload is not admitted by the selected hardware profile')
     ordinary=selected[workload]
     if configuration==ordinary:return ordinary
-    if configuration in (*COURSE_CONFIGURATIONS.values(),*COURSE_AWAIT_CONFIGURATIONS.values(),*PACKAGE_CLOSURE_CONFIGURATIONS.values()) and mode not in ("developer","laboratory"):
+    if configuration in (*COURSE_CONFIGURATIONS.values(),*COURSE_AWAIT_CONFIGURATIONS.values(),*PACKAGE_CLOSURE_CONFIGURATIONS.values(),*READER_CONFIGURATIONS.values()) and mode not in ("developer","laboratory"):
         raise ValueError("Course installer deployment requires Developer or Laboratory mode")
     if (profile=='lemma-silicon-dev/0.3.0' and
             any(configuration==configurations.get(workload) for configurations in SOFTWARE_DEPLOYMENTS.values())

@@ -91,15 +91,22 @@ NUMERIC_BROWSE_ROOT='Lemma.Applications.Notebook.mainPackageNumberPadBrowse'
 NUMERIC_BROWSE_POLICY='Lemma.Courses.BrowseHistory.location'
 
 def numeric_root(unit):
+ from reader_notebook_target import candidate as reader_candidate
+ from reader_deployment import NOTEBOOK_ROOT as READER_ROOT
+ if reader_candidate(unit):return READER_ROOT
  from companion_number_pad_target import candidate as recovery_candidate,ROOT as RECOVERY_ROOT
  if recovery_candidate(unit):return RECOVERY_ROOT
  return NUMERIC_BROWSE_ROOT if any(canonical(r.get('source','')) in (NUMERIC_BROWSE_ROOT,NUMERIC_BROWSE_POLICY)for r in unit.get('functions',[]))else NUMERIC_ROOT
 
 def numeric_candidate(unit):
+ from reader_notebook_target import candidate as reader_candidate
+ if reader_candidate(unit):return True
  rows=unit.get('functions',[])
  if not isinstance(rows,list)or any(not isinstance(r,dict)or not isinstance(r.get('source'),str)for r in rows):raise Core0Error('Number entry candidate function map malformed')
  return any(canonical(r['source']) in (NUMERIC_ROOT,NUMERIC_BROWSE_ROOT,NUMERIC_BROWSE_POLICY) or canonical(r['source']).startswith(('Lemma.Courses.NumberPad.','Lemma.Documents.MathematicsEntry.'))for r in rows)
 def numeric_contract(unit):
+ from reader_notebook_target import candidate as reader_candidate, contract as reader_contract
+ if reader_candidate(unit):return reader_contract(unit)
  from companion_number_pad_target import candidate as recovery_candidate, contract as recovery_contract
  if recovery_candidate(unit):return recovery_contract(unit)
  if not numeric_candidate(unit):return None
@@ -175,6 +182,8 @@ def numeric_semantics(ir,unit):
  return {'ordinary_guest_entry_and_storage_connected':True,'numeric_bounds':'0..99; overflow is unchanged bytes, explicit limit message','scope':'Complete source/IR authority; CPU/Store/controller qualification separate'}
 
 def numeric_validate(ir,unit,*,optimized):
+ from reader_notebook_target import candidate as reader_candidate, validate as reader_validate
+ if reader_candidate(unit):return reader_validate(ir,unit,optimized=optimized)
  from companion_number_pad_target import candidate as recovery_candidate, validate as recovery_validate
  if recovery_candidate(unit):return recovery_validate(ir,unit,optimized=optimized)
  found=numeric_contract(unit)

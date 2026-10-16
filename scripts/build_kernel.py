@@ -19,7 +19,8 @@ from course_deployment import CONFIGURATIONS as LEGACY_COURSE_NOTEBOOK_CONFIGURA
 from course_await_deployment import (CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS,
                                      library_source_allowed as course_await_library_source_allowed)
 from package_closure_deployment import CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS
-AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS
+from reader_deployment import CONFIGURATIONS as READER_NOTEBOOK_CONFIGURATIONS
+AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS
 COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+AWAIT_NOTEBOOK_CONFIGURATIONS
 from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS, KERNEL_ENTRIES as CLOSURE_KERNEL_ENTRIES
 from build_core0 import (LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS,
@@ -362,6 +363,9 @@ def source_inputs(root: Path) -> dict[str, str]:
     if aligned_authority.is_file():inputs.append(aligned_authority)
     control_authority=root / 'tooling/control-notebook-target-authority.json'
     if control_authority.is_file():inputs.append(control_authority)
+    for additive in ("scripts/reader_deployment.py", "scripts/reader_notebook_target.py", "tooling/reader-notebook-target-authority.json"):
+        path = root / additive
+        if path.is_file():inputs.append(path)
     dirty_helper=root / 'scripts/dirty_batch_notebook_target.py'
     if dirty_helper.is_file():inputs.append(dirty_helper)
     dirty_authority=root / 'tooling/dirty-batch-notebook-target-authority.json'

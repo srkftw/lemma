@@ -88,7 +88,7 @@ private def rootIdentities (configuration role : String) : Array String :=
         (if configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook" then "siliconUSBPackageRecoveryBoot" else "siliconUSBPackageRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBPackageRecoveryBulk"]
     else if isPackageClosureNotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
-        (if configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" then "siliconPackageClosureEntry2Boot" else "siliconPackageClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+        (if configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" || configuration == "lemmasim-silicon-package-reader-bulk-notebook" then "siliconPackageClosureEntry2Boot" else "siliconPackageClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
     else if isClosureEntry2NotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
         (if configuration == "lemmasim-silicon-closure-entry2-bulk-notebook" then "siliconClosureEntry2Boot" else "siliconClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
@@ -396,8 +396,7 @@ private def closedInlineFor (configuration : String) : Bool :=
 
 
 private def surfaceWordInlineSelected (configuration role : String) (image? : Option UserImageSpec) : Bool :=
-  (#["lemmasim-silicon-package-closure-entry2-bulk-notebook",
-    "lemmasim-silicon-package-closure-entry2-bulk-initialize"].contains configuration ||
+  (isPackageClosureNotebookConfiguration configuration ||
     isUSBPackageRecoveryNotebookConfiguration configuration) &&
     role == "user" && image?.any (·.key == "notebook")
 

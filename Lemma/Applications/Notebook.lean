@@ -5,6 +5,7 @@ import Lemma.Courses.PackageRender
 import Lemma.Courses.ControlRender
 import Lemma.Courses.PackageWorkspace
 import Lemma.Courses.BrowseHistory
+import Lemma.Courses.ReaderLocation
 import Lemma.Courses.WorkspaceCodec
 import Lemma.Courses.PackageAwaitClient
 import Lemma.Services.Store.RecoveryClient
@@ -4749,6 +4750,358 @@ def mainPackageNumberPadBrowse (bootArgument : UInt64) : Action :=
   .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
   if statusFailed s = true then .done s 0 else .loop numericBrowseStep
+
+
+/-! Node-bookmark successor. Explicit Save in an open installed course appends
+one separate reader record through the existing Store transaction/barrier.
+Workspace, goal/evidence/history and raw ink are untouched. Reopen reads the
+record through the existing cooperative exact-length/EOF reader; only a
+validated matching immutable package can supply displayed text. Historical
+entry roots retain their input, save and open functions.
+
+Private package words208/216/224 are lookup phase/acknowledged reader revision/
+pending reader publication. Reader staging uses128 bytes at offset3840 of the
+owned mathematicsSave page, beyond the old codec's3808-byte maximum. The live copy
+occupies128 bytes after the unchanged3712-byte workspace in its owned page.
+This first record preserves a node, not text role or an intra-node offset. -/
+private def bookmarkStaging : UInt64 := mathematicsSave + 3840
+private def bookmarkLive : UInt64 := packageWorkspace + Lemma.Courses.PackageWorkspace.bytes
+
+private def bookmarkCourseError (status : UInt8) : Action :=
+  .bind (packagePut 208 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 72 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 152 0) fun s _ => if statusFailed s = true then .done s 0 else packageCourseError status
+
+private def copyBookmarkStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  let offset := 8 + i.toUInt64 * 8
+  .bind (Memory.read64 (bookmarkStaging + offset)) fun s value => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (bookmarkLive + offset) value) fun s _ => .done s acc
+
+private def adoptBookmark : Action :=
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.ReaderLocation.validate bookmarkStaging ns page) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 bookmarkLive 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 15 copyBookmarkStep 15 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 bookmarkLive Lemma.Courses.ReaderLocation.magic) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (bookmarkLive + 72)) fun s revision => if statusFailed s = true then .done s 0 else packagePut 216 revision
+
+private def pumpBookmarkSave : Action :=
+  .bind pumpSave fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
+  if allocated = 12 then
+  .bind (packageGet 224) fun s readerSave => if statusFailed s = true then .done s 0 else
+  if readerSave = 1 then
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  if pending = 0 then
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  .bind (if status < 2 then adoptBookmark else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  packagePut 224 0
+  else .done 0 0 else .done 0 0 else .done 0 0
+
+private def bookmarkRequestSave : Action :=
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  if pending ||| rawCount ||| rawPending ||| checking = 0 then
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  if status < 2 then
+  .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 208) fun s lookup => if statusFailed s = true then .done s 0 else
+  if phase = 2 then if 3 ≤ lookup then
+  .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 8) fun s ordinal => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 216) fun s revision => if statusFailed s = true then .done s 0 else
+  if Lemma.Courses.ReaderLocation.maximumRevision ≤ revision then .done 242 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.ReaderLocation.capture bookmarkStaging packageBytes length ordinal ns page (revision + 1))
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (startSave bookmarkStaging Lemma.Courses.ReaderLocation.bytes (Lemma.Courses.ReaderLocation.object page) 3)
+    fun s _ => if statusFailed s = true then saveFailure s else
+  .bind (packagePut 224 1) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
+  else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0
+
+private def bookmarkToolbar (button : UInt64) : Action :=
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  if button = 7 then if course = 1 then bookmarkRequestSave else numericToolbar button
+  else numericToolbar button
+
+private def cancelBookmarkWork : Action :=
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
+  if allocated = 12 then
+  .bind (packageGet 96) fun s phase => if statusFailed s = true then .done s 0 else
+  .bind (if phase = 8 then
+    .bind cancelPackageRecord fun s _ => if s = IPCABI.canceled then .done 0 0 else .done s 0
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if phase = 8 then
+    .bind (packagePut 208 0) fun s _ => if statusFailed s = true then .done s 0 else packagePut 96 0
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  cancelPackageWork
+  else .done 0 0
+
+private def cancelBookmarkInput : Action :=
+  .bind cancelBookmarkWork fun s _ => if statusFailed s = true then .done s 0 else packageCancelInput
+
+private def finishBookmarkLookup : Action :=
+  .bind adoptBookmark fun s _ => if statusFailed s = true then bookmarkCourseError s else
+  .bind (Memory.read64 (bookmarkLive + 32)) fun s identity => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (bookmarkLive + 40)) fun s edition => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (bookmarkLive + 48)) fun s crc => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (bookmarkLive + 56)) fun s node => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 128 identity) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 136 edition) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 160 crc) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 176 (node - 1)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 208 4) fun s _ => if statusFailed s = true then .done s 0 else packagePut 96 4
+
+private def pumpBookmarkOpen : Action :=
+  .bind (packageGet 96) fun s before => if statusFailed s = true then .done s 0 else
+  if before = 8 then
+    .bind pumpPackageRecord fun result _ =>
+    if result = 230 then
+      .bind (packagePut 208 3) fun s _ => if statusFailed s = true then .done s 0 else packagePut 96 4
+    else if statusFailed result = true then bookmarkCourseError result else
+    .bind (recordGet 56) fun s phase => if statusFailed s = true then .done s 0 else
+    if phase = 4 then finishBookmarkLookup else .done 0 0
+  else
+  .bind pumpBrowseOpenCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 96) fun s after => if statusFailed s = true then .done s 0 else
+  if before = 4 then if after = 4 then
+    .bind (packageGet 208) fun s lookup => if statusFailed s = true then .done s 0 else
+    if lookup = 1 then
+      .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+      .bind (startPackageRecord (Lemma.Courses.ReaderLocation.object page) bookmarkStaging Lemma.Courses.ReaderLocation.bytes 0)
+        fun s _ => if statusFailed s = true then bookmarkCourseError s else
+      .bind (packagePut 208 2) fun s _ => if statusFailed s = true then .done s 0 else packagePut 96 8
+    else .done 0 0
+  else .done 0 0 else if after = 4 then
+    .bind (packagePut 216 0) fun s _ => if statusFailed s = true then .done s 0 else packagePut 208 1
+  else .done 0 0
+
+private def validateBookmarkPackage : Action :=
+  .bind (packageGet 208) fun s lookup => if statusFailed s = true then .done s 0 else
+  if lookup = 4 then
+  .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 2 then
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.ReaderLocation.resolve bookmarkLive ns page packageBytes length) fun s _ =>
+  if statusFailed s = true then bookmarkCourseError s else packagePut 208 5
+  else .done 0 0 else .done 0 0
+
+private def bookmarkBusy : Action :=
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
+  if allocated = 12 then
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  if course = 1 then
+  .bind (packageGet 208) fun s lookup => if statusFailed s = true then .done s 0 else
+  if lookup = 1 then .done 0 1 else if lookup = 2 then .done 0 1 else packageBusy
+  else packageBusy else packageBusy
+
+
+
+private def bookmarkInputSample : Action :=
+  .bind (Memory.read64 raw) fun s sequence => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 8)) fun s time => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 16)) fun s x => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 24)) fun s y => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 40)) fun s flags => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 64)) fun s epoch => if statusFailed s = true then .done s 0 else
+  .bind (get 288) fun s previousEpoch => if statusFailed s = true then .done s 0 else
+  .bind (get 296) fun s previousSequence => if statusFailed s = true then .done s 0 else
+  .bind (get 304) fun s previousTime => if statusFailed s = true then .done s 0 else
+  if different previousSequence 0 = true then
+    if (if different epoch previousEpoch = true then true else if different sequence (previousSequence + 1) = true then true else if time < previousTime then true else false) = true then
+      cancelBookmarkInput
+    else acceptSample sequence time x y flags epoch
+  else acceptSample sequence time x y flags epoch
+where
+  acceptSample (sequence time x y flags epoch : UInt64) : Action :=
+    .bind (put 288 epoch) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 296 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 304 time) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (get 408) fun s previousContact => if statusFailed s = true then .done s 0 else
+    .bind (put 408 (flags &&& 1)) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+    if different active 0 = true then appendRaw else
+    if flags &&& 1 = 0 then .done 0 0 else if previousContact = 1 then .done 0 0 else
+    .bind (get 432) fun s cancelled => if statusFailed s = true then .done s 0 else
+    if cancelled = 1 then .done 0 0 else
+    .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+    if 2 ≤ status then .done 0 0 else
+    .bind (get 112) fun s queued => if statusFailed s = true then .done s 0 else
+    if different queued 0 = true then .done 0 0 else
+    .bind cancelBookmarkWork fun s _ => if statusFailed s = true then courseError s else
+    .bind cancelArithmetic fun s _ => if statusFailed s = true then courseError s else
+    .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+    .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
+    .bind (get 48) fun s maxX => if statusFailed s = true then .done s 0 else
+    .bind (get 56) fun s maxY => if statusFailed s = true then .done s 0 else
+    let px := Geometry.pixel (Geometry.normalized x maxX) width
+    let py := Geometry.pixel (Geometry.normalized y maxY) height
+    if py < 128 then bookmarkToolbar (minimum 8 (px / (width / 9))) else
+    if py < 160 then if 132 ≤ py then if 288 ≤ px then if px < 360 then numericToggleCourse else .done 0 0
+      else .done 0 0 else .done 0 0 else
+    .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+    if course = 1 then
+      if 448 ≤ px then if px < 832 then if 160 ≤ py then if py < 360 then
+        numericPadPress (Lemma.Courses.NumberPad.key (px - 448) (py - 160)) else write else write else write else
+      if py < 320 then if 24 ≤ px then if px < 408 then packageCoursePress px py else write else write else
+      if 640 ≤ py then if py < 700 then if 24 ≤ px then if px < 408 then packageControlPress px py else write else write else write else write
+    else write
+  write : Action :=
+    .bind numericMarkPadOverdraw fun s _ => if statusFailed s = true then failWriting s else
+    .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
+
+
+private def drainBookmarkInput (input : UInt64) : Action :=
+  .boundedFoldU64 8 drainStep 8 0 input 0 0 0 fun s consumed =>
+    if s = Status.iterationStop then .done 0 consumed else .done s consumed
+where
+  drainStep (_ _ : UInt32) (consumed input _ _ _ : UInt64) : Action :=
+    .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
+    if count = 384 then .done Status.iterationStop consumed else
+    .bind (Syscall.call 65 input 1 raw 0 0) fun s _ =>
+    if s = 174 then .done Status.iterationStop consumed else
+    if s = 175 then
+      .bind cancelBookmarkInput fun s _ => if statusFailed s = true then .done s consumed else .done Status.iterationStop consumed
+    else if statusFailed s = true then .done s consumed else
+    .bind bookmarkInputSample fun s _ => if statusFailed s = true then .done s consumed else
+    if count = 383 then .done Status.iterationStop (consumed + 1) else
+    .bind (get 104) fun s active => if statusFailed s = true then .done s consumed else
+    if active = 0 then .done Status.iterationStop (consumed + 1) else
+    .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
+    if count = 384 then .done Status.iterationStop (consumed + 1) else .done 0 (consumed + 1)
+
+
+private def pumpPackageBookmarkWork : Action :=
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
+  if allocated = 12 then
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  if pending ||| rawCount ||| rawPending ||| stroke ||| checking = 0 then
+  .bind pumpBookmarkOpen fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 208) fun s lookup => if statusFailed s = true then .done s 0 else
+  if lookup = 1 then .done 0 0 else if lookup = 2 then .done 0 0 else
+  .bind (get 160) fun s openedSave => if statusFailed s = true then .done s 0 else
+  if openedSave = 0 then
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  if course = 1 then
+  .bind (packageGet 152) fun s automatic => if statusFailed s = true then .done s 0 else
+  .bind (if automatic = 1 then
+    .bind (packagePut 152 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 128) fun s identity => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 136) fun s edition => if statusFailed s = true then .done s 0 else
+    beginPackageRead identity edition else .done 0 0) fun s _ => if statusFailed s = true then bookmarkCourseError s else
+  .bind pumpPackageRead fun result _ =>
+  if statusFailed result = true then
+    .bind cancelPackageRead fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packagePut 32 4) fun s _ => if statusFailed s = true then .done s 0 else courseError result
+  else
+  .bind validateBookmarkPackage fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 72) fun s text => if statusFailed s = true then .done s 0 else
+  .bind (if text = 1 then
+    .bind renderPackageText fun s _ => if statusFailed s = true then courseError s else packagePut 72 0
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 144) fun s controls => if statusFailed s = true then .done s 0 else
+  if controls = 1 then
+    .bind renderPackageControls fun s _ => if statusFailed s = true then courseError s else packagePut 144 0
+  else .done 0 0
+  else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0
+
+
+
+private def bookmarkStep : Action :=
+  .bind pumpBookmarkSave fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpPackageArithmetic fun s _ => if statusFailed s = true then .done s 0 else
+  .bind numericPumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpPackageBookmarkWork fun s _ => if statusFailed s = true then .done s 0 else
+  .bind numericPumpPad fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+  .bind (if count = 384 then enqueue else if active = 0 then enqueue else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  if count = 384 then Syscall.sleep 10000 else
+  .bind (get 8) fun s input => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  .bind bookmarkBusy fun s work => if statusFailed s = true then .done s 0 else
+  if work = 0 then
+    if (if checking = 0 then if pending = 0 then if recovery = 0 then if dirtyX = 0xffff then true else false else false else false else false) = true then
+      .bind (Syscall.call 65 input 2 raw 0 0) fun s _ =>
+      if s = 175 then cancelBookmarkInput else if s = 174 then Syscall.sleep 10000 else
+      if statusFailed s = true then .done s 0 else bookmarkInputSample
+    else drain input
+  else drain input
+where
+  drain (input : UInt64) : Action :=
+    .bind (drainBookmarkInput input) fun s consumed =>
+    if statusFailed s = true then .done s 0 else if consumed = 0 then Syscall.sleep 10000 else .done 0 consumed
+
+
+def mainPackageNumberPadBookmark (bootArgument : UInt64) : Action :=
+  if (if bootArgument = 2 then (1 : UInt64) else if bootArgument = 3 then 1 else 0) = 0 then failed else
+  .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 packageAllocationAddress 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 576 7) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 584 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 0) fun s surface => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 1) fun s input => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 2) fun s documents => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 3) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (put 0 surface) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 8 input) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 16 documents) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 24 console) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if 2 ≤ bootArgument then Capability.bootGrant 5 else .done 0 0) fun s arithmetic => if statusFailed s = true then .done s 0 else
+  .bind (put 528 arithmetic) fun s _ => if statusFailed s = true then .done s 0 else
+  if bootArgument = 3 then
+    .bind waitForMount fun s _ => if statusFailed s = true then .done s 0 else initializeMedium
+  else
+  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.PackageAwaitClient.call documents outgoing incoming 1 0 request) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Services.Store.Client.responseField incoming 40) fun s floor => if statusFailed s = true then .done s 0 else
+  .bind (put 128 floor) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.geometry surface) fun s geometry => if statusFailed s = true then .done s 0 else
+  let width := geometry &&& 0xffffffff
+  let height := geometry >>> 32
+  if width < 832 then failed else if 4096 < width then failed else
+  if height < 760 then failed else if 4096 < height then failed else
+  .bind (put 32 width) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 40 height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 3 0 0 0) fun s maxX => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 4 0 0 0) fun s maxY => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 0 0 0 0) fun s pressure => if statusFailed s = true then .done s 0 else
+  .bind (put 48 maxX) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 56 maxY) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 64 pressure) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 80 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 120 ink0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 272 512) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 336 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 344 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 41 allocateStep 41 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind Surface.allocateBulk fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.allocate width height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (loadNotebook 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 416) fun s create => if statusFailed s = true then .done s 0 else
+  .bind (if create = 1 then savePage 1 else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
+  if statusFailed s = true then .done s 0 else .loop bookmarkStep
+
 
 
 end Lemma.Applications.Notebook

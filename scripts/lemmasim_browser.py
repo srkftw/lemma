@@ -149,9 +149,9 @@ def bundle(args):
         destination=out/'wasm-sources'/name;destination.parent.mkdir(parents=True,exist_ok=True)
         shutil.copyfile(item['path'],destination)
         if sha(destination)!=item['sha256']:raise ValueError('Wasm consumed input changed while archiving: '+name)
-    from silicon_guest_bundle import SOFTWARE_DEPLOYMENTS,COURSE_DEPLOYMENT,COURSE_AWAIT_DEPLOYMENT,PACKAGE_CLOSURE_DEPLOYMENT
+    from silicon_guest_bundle import SOFTWARE_DEPLOYMENTS,COURSE_DEPLOYMENT,COURSE_AWAIT_DEPLOYMENT,PACKAGE_CLOSURE_DEPLOYMENT,READER_DEPLOYMENT
     deployment=prepared['notebook'].get('native_bundle',{}).get('software_deployment',{})
-    if deployment.get('contract_version') in (COURSE_DEPLOYMENT,COURSE_AWAIT_DEPLOYMENT,PACKAGE_CLOSURE_DEPLOYMENT):
+    if deployment.get('contract_version') in (COURSE_DEPLOYMENT,COURSE_AWAIT_DEPLOYMENT,PACKAGE_CLOSURE_DEPLOYMENT,READER_DEPLOYMENT):
         selected=deployment['contract_version']
         if deployment.get('configurations')!=SOFTWARE_DEPLOYMENTS[selected]:raise ValueError('Course bundle deployment differs')
         result['course_install_contract']='lemma-course-console-command/1'
@@ -218,7 +218,7 @@ def validated_bundle(directory):
                 raise ValueError('Unbound browser guest '+workload+'/'+kind)
     course_contract=m.get('course_install_contract')
     if course_contract is not None:
-        from silicon_guest_bundle import SOFTWARE_DEPLOYMENTS,COURSE_DEPLOYMENT,COURSE_AWAIT_DEPLOYMENT,PACKAGE_CLOSURE_DEPLOYMENT
+        from silicon_guest_bundle import SOFTWARE_DEPLOYMENTS,COURSE_DEPLOYMENT,COURSE_AWAIT_DEPLOYMENT,PACKAGE_CLOSURE_DEPLOYMENT,READER_DEPLOYMENT
         if course_contract!='lemma-course-console-command/1' or 'course_transport.js' not in files:
             raise ValueError('Unsupported/incomplete browser course transport')
         configurations={}
@@ -227,7 +227,7 @@ def validated_bundle(directory):
             if item.get('path') not in files or files[item['path']]!=item.get('sha256'):
                 raise ValueError('Unbound course installer deployment')
             configurations[workload]=read_json(directory/item['path']).get('configuration')
-        if configurations not in [SOFTWARE_DEPLOYMENTS[name] for name in (COURSE_DEPLOYMENT,COURSE_AWAIT_DEPLOYMENT,PACKAGE_CLOSURE_DEPLOYMENT)]:
+        if configurations not in [SOFTWARE_DEPLOYMENTS[name] for name in (COURSE_DEPLOYMENT,COURSE_AWAIT_DEPLOYMENT,PACKAGE_CLOSURE_DEPLOYMENT,READER_DEPLOYMENT)]:
             raise ValueError('Browser course transport requires the complete exact guest deployment')
     if m.get('rom',{}).get('path')!='boot.bin' or m['rom'].get('sha256')!=files['boot.bin']:raise ValueError('Unbound browser boot artifact')
     wasm=directory/'wasm-build.json'

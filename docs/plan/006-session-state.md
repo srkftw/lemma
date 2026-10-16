@@ -4037,3 +4037,111 @@ enclosureviolationunreported: GAP_CONFIRMED,notrouterenforcementPASS. Adaptation
 unadopted; sourcePDK/routeunchanged. Originala1OpenBLASinitmemoryFAIL and
 a2deprecatedroutinglayerAPI FAIL retained; environment1thread andsupported
 set_routing_layers correctdriverwithoutclock/rulewaiver ordeadlineextension.
+
+
+## October16 Reader18 and complete fixed native/Wasm17 comparison
+
+The actual optimized native17 referencea2 completed788M clocks/3430.351125s;
+owned process tree reaped. Native phase costs were cold571M/2312.778199s,
+course216M/1103.613666s and1M suffix/3.983013s. Browser34 reached the same cuts
+from its original CPU0 and two queued events, without a cold restart. Original
+CRC and every authoritative byte match except predeclared implementation
+identity header[16,80); actual150 cold/162 course+suffix READ outcomes match
+bytes/errors/order/accepted cycles, all256MiB media/UART/controller pixels match.
+The final suffix retires319752 instructions and takes4 timer traps. Browser
+simulation calls total6136.390710s, heap192MiB; this differs from the native
+whole-actor measurement scope and is not a whole-workflow speedup claim.
+Result:build/browser/task006-browse17-native-match-plan-a2/comparison-result-a1.json.
+Original nativea1 idle-queue failure and passivecoldobservera1 wrong cycle-field
+failure remain retained; corrected scalar1 follows actual STATE_SCALARS.
+This is canonical RTL execution, not crossrestore or QEMU cached continuation.
+Browser34 was closed after all original exports and exact comparison; its OPFS
+browse17-native-match-a1 medium remains. Actual controller PNG is retained at
+build/browser/task006-browse17-native-match-plan-a1/browser/suffix788M.png.
+PR9 description now records this qualification and actual0c CI38917694317
+SUCCESS11jobs/113steps; PR stays OPEN/DRAFT/UNMERGED at0c22ae6 before publication.
+
+Reader18 is an explicit additive software selection, not a changed history17
+catalog or managed-language extension. New actual Lean ReaderLocation codec
+captures128 bytes for node/package/edition/CRC/source-anchor/revision in a
+separate object. Notebook Save uses real Store BEGIN/WRITE/COMMIT and adopts
+only after acknowledged commit. Reopen needs exact body+EOF and full current
+package resolution. Math/current applicability/history/learner/raw ink are
+unchanged. It records a node only; canceled opens can be reopened normally.
+Actual Action tests cover pending/begin/write/commit/failure, a second actual
+transaction after ACK, private authority, EOF, cancellation consumption and
+open/closed busy. A closed-course deferred-lookup busy defect was independently
+reproduced and fixed; old componenta1 and failed fixture remain unadopted.
+
+Repaired genuine componenta2:902pre/900post,198.234870s, full source seal and
+owned203.999393s/1844277248B peak. Two real LLVM-valid mutations and wrongroot
+reject. Full paira1 FAIL195.756524s on an omitted exact kernel FIFO owner;
+corrected full-IR checka1 then exposed omitted Surface-root selection. Exact
+Reader18 configurations now select the unchanged FIFO/literal/Surface owners;
+no guards were disabled. Actual fullpre/post IR then PASS62.528825s.
+Fresh matched paira2 PASS775.894134s; external source/resources/owned cleanup
+PASS781.016210s,421source archive,1882705920B owned peak. Paths:
+build/kernel/task006-reader18-{notebook,initializer}-a2;
+build/courses/task006-reader18-whole-a2/consumed-source-root. All target helpers,
+objects, stack/provenance and linked code passed the ordinary complete audit.
+
+Actual fast guest whole positive PASS661000036 functional units/76.828176s:
+source37 CPU0->history3->node4->authored example5->Saved38->independent CPU0
+cold->sameexample5. Full old workspace/goal/evidence/history/learner/ink/package
+payloads remain byte-identical, all3.63M homepixels/256MiB medium checked.
+Actual failure PASS647000031/75.524545s: source38 cold->example5->node6->first
+modeled FLUSH failure->Failed227/noSaved->independent cold of observed bytes,
+recovered38/node5. No rollback assumed and no new realPOSIXfailure claim.
+Reusable checkers:conformance/lemmasim/check_course_reader_recovery.py and
+check_course_reader_failed_save.py. Results under build/courses/task006-reader18-
+fast-a1 and failed-save-a1. Complete scopes/hashes/commands are in
+ docs/evidence/006-course-reader-location.json and README Reader18 section.
+
+Current host checks:461kernel/226silicon/473foundation/18scaffold PASS, metadata
+PASS; strict CI pipeline inventory14PASS. Initialkernel tests exposed malformed
+Reader candidate maps and an omitted two-name expectation; fixed fail-closed
+Core0Error and exact names. Local foundationa2 lacked the existing host policy
+under my8GiB AS bound: owned run was interrupted, remainsFAIL, later lanes
+skipped. One unchanged actual fixture without env aborts134/thread creation;
+with existing policy2 it produces its exact required Core0 rejection. Same8GiB
+bound+policy2 full foundation473PASS33.653s; no test expectations weakened.
+
+Prepared native/browser bundles:build/{native,browser}/task006-reader18-a1.
+Prepared extracted distributions:build/distribution/task006-reader18-{native,
+browser}-extracted-a1/lemmasim-{native,browser}. Native archive150081390B,
+SHAe4375aa55e56c762094e12365fb89ae25f962dbcff988b631de754b543070569,
+complete wrapped runtime NAR; static2077396B,
+SHA4c8bc93bb54a53e056e737880f665bb5689917c387fce7fe14243e8641cc470c.
+Actual safe tar extraction + Python-I nativefourway/browser admission PASS
+10.136100s; no fresh-host NAR import/rights or browser18 CPU qualification.
+Browser producer+consumer now both admit the exact Reader18 course-install
+capability; actual unchanged bundle passes, reconstructed exact old consumer
+rejects. Wrong helper-name diagnostic attempts failed before validation;
+original producer/consumer issue is not called a machine failure.
+
+Active Reader18 exact RTL case:exec67598, supervisorPID2323782/start73421083,
+actorPID2323784. Owner:build/courses/task006-reader18-rtl-supervision-a1;
+immutable plan:build/courses/task006-reader18-rtl-plan-a1. Original2.8B/21600s,
+1B/7200each cold,400M/3600each course,150Meach node/Save,4GiB RSS/2GiB available,
+12GiB output/1GiB file and30s cleanup. This is RUNNING, not accepted. Do not
+restart/extend or edit its consumed Python sources. Compiled guest18 and
+nativeab88 are immutable; later Lean work must not alter these artifacts.
+
+Active Reader18 browser:tab35 reader18Tab, extracted serverexec39169 on8806,
+medium reader18-source37-a1. Actual new origin imported source37 once, Open
+paused CPU0/ticks0/retired0/panels0/emptyqueues/nonprivate; no snapshot. Started
+firstcold with1B/7200 and autoReady stop; observed59.5M/424.8simulationseconds,
+notReady,192MiB. Original global2.8B/21600, absolute22:25:15.630042Z;
+plan:build/browser/task006-reader18-local-plan-a1. Capture/validate realcold
+Ready/home/media before COURSE; later nodeSave and independent cold remain
+required. Preserve OPFS. Browser33 pad15Tab remains the qualified Verified5/6/
+inkSaved29 deliverable; keep it. Oldcomparison34 is closed, its media intact.
+
+Companion16 remains under its original19:47:19Z/28800/10B caps. It passed its
+independent cold16 and is now in actual authored-node/numeric mathematics;
+latest observedcold990M/node2. No whole-scenario pass yet. All frozen actor,
+transport and oracle files remain unchanged. General digital completeness,
+fast timing/arbitraryQEMUcache continuation, native/browser distribution,
+managed proof-kernel/G2/G4-G7/tutor/learning and physical closure remain separate
+open obligations. Full physical route still lacks its8GiB available precondition;
+latest observed available5.85GiB. No unchanged route flow was relaunched.

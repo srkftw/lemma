@@ -1,0 +1,19 @@
+{
+  "schema": "lemma-course-reader-notebook-artifact/1",
+  "package_notebook_version": 18,
+  "previous_artifact_sha256": "699393cffd19db94f1d98160848de5ce515b34aff865c366bff5c6a6d49eb599",
+  "reader_contract": "lemma-course-reader-location/1",
+  "catalog_sha256_by_configuration": {
+    "lemmasim-silicon-package-reader-bulk-initialize": "93a6c126f47a17eadcf88bb3cb104346653d2cf3f418d01848e128fee5e47cb2",
+    "lemmasim-silicon-package-reader-bulk-notebook": "da1a63bdf3b70576178269f2409e645055f68b9061ceeab20f82f38978ba69b2"
+  },
+  "pre_function_count": 902,
+  "pre_sha256": "9fd71bb6d11ca23a28058954b2f72f72f7ecb9514d496380bf4f961003f983cc",
+  "surface_root_sha256_by_phase": {
+    "pre": "080581b7582c74029a7c2371e709f6277684b4351f9f67d759f9341a9b029681",
+    "post": "775ba1e0c77d8fbf66589f945b18daf9caae997ff6651562503597dce65a85bf"
+  },
+  "post_function_count": 900,
+  "post_sha256": "51c02bf380fecacb16371c3ab16e4161f8cdcb8a70f90477f0ecdd2cad9d7bc3",
+  "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
+}

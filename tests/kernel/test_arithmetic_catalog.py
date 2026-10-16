@@ -52,6 +52,8 @@ class ArithmeticCatalog(unittest.TestCase):
             'lemmasim-silicon-closure-entry2-bulk-initialize',
             'lemmasim-silicon-package-closure-entry2-bulk-notebook',
             'lemmasim-silicon-package-closure-entry2-bulk-initialize',
+            'lemmasim-silicon-package-reader-bulk-notebook',
+            'lemmasim-silicon-package-reader-bulk-initialize',
             'lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook',
             'lemmasim-silicon-usb-clocked-closure-retry-bulk-initialize',
             'lemmasim-silicon-usb-clocked-package-retry-bulk-notebook',

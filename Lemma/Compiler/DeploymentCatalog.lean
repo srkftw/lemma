@@ -125,8 +125,13 @@ def isProductNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-product-bulk-notebook"
 
 /-- Installed immutable packages and the Closure7 checker use four guest roles. -/
+def isPackageReaderNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-package-reader-bulk-notebook" ||
+    configuration == "lemmasim-silicon-package-reader-bulk-initialize"
+
 def isPackageClosureNotebookConfiguration (configuration : String) : Bool :=
-  configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" ||
+  isPackageReaderNotebookConfiguration configuration ||
+    configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" ||
     configuration == "lemmasim-silicon-package-closure-entry2-bulk-initialize"
 
 /-- One fresh validated task-entry borrow; historical Closure roots remain unchanged. -/
@@ -187,7 +192,15 @@ def isSumsNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-sums-arithmetic-oom-development"
 
 def softwareDeploymentFields (configuration : String) : List (String × Json) :=
-  if isUSBPackageRecoveryNotebookConfiguration configuration then
+  if isPackageReaderNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-reader-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("reader_contract", .str "lemma-course-reader-location/1"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isUSBPackageRecoveryNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
     ("contract_version", .str "lemma-package-clocked-recovery4-deployment-v1"),
     ("silicon_profile", .str "lemma-silicon-dev/0.13.0"),
@@ -463,6 +476,13 @@ def packageNumberPadBrowseNotebookImages : Array UserImageSpec := #[
     root := `Lemma.Applications.Notebook.mainPackageNumberPadBrowse, bootRole? := some .notebook},
   packageNumberPadNotebookImages[2]!, packageNumberPadNotebookImages[3]!]
 
+/-- Reader18 adds an explicit node bookmark without changing the history17 roots. -/
+def packageReaderNotebookImages : Array UserImageSpec := #[
+  packageNumberPadBrowseNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainPackageNumberPadBookmark, bootRole? := some .notebook},
+  packageNumberPadBrowseNotebookImages[2]!, packageNumberPadBrowseNotebookImages[3]!]
+
 /-- Composes the genuine mounted/recovery Store, package UI, isolated checker
 and installer. No host role parses or recovers documents. -/
 def packageRecoveryNotebookImages : Array UserImageSpec := #[
@@ -496,7 +516,8 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if isUSBPackageRecoveryNotebookConfiguration configuration then .ok packageRecoveryNumberPadNotebookImages
+  if isPackageReaderNotebookConfiguration configuration then .ok packageReaderNotebookImages
+  else if isUSBPackageRecoveryNotebookConfiguration configuration then .ok packageRecoveryNumberPadNotebookImages
   else if isPackageClosureNotebookConfiguration configuration then .ok packageNumberPadBrowseNotebookImages
   else if isUSBClosureRecoveryNotebookConfiguration configuration then .ok closureRecoveryNotebookImages
   else if isUSBRecoveryNotebookConfiguration configuration then .ok recoveryNotebookImages

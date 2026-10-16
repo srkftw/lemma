@@ -116,5 +116,75 @@
     "native_build": "nix develop --no-write-lock-file --command python3 scripts/silicon_compute.py build --profile lemma-silicon-dev/0.3.0 --jobs 2 --output-dir build/wasm/task006-framebuffer-index-native-a1/native",
     "native_pending": "nix develop --no-write-lock-file --command python3 scripts/check_native_evaluation.py --native-build build/wasm/task006-framebuffer-index-native-a1/native --capture-current-source --guest-bundle build/native/task006-number-pad-repaint-notebook-a1 --disk build/courses/task006-course-ipc-guest-a1/durable.raw --work-dir build/wasm/task006-framebuffer-index-native-a1/execution"
   },
-  "remaining": "Full changed-runtime browser/native notebook workflow, exact fast timing/cachedQEMU continuation, all outstanding digital/product/distribution/physical gates remain distinct."
+  "remaining": "The original prefix measurements retain their scope; full15 browser mathematics/ink/Save/two-cold workflow and full17 fixed native/Wasm relation now have separate PASS receipts. Exact fast timing/arbitrary QEMU cached continuation, broader digital/product/distribution/physical gates remain open.",
+  "whole_machine17_fixed_relation": {
+    "status": "PASS_SAME_RTL_NATIVE_WASM_COLD_COURSE_AND_EXACT_SUFFIX",
+    "guest_sha256": "43f7fa569474614c6e473ee40c6ac9ed911b2e0752c5568c5520c3190cabe789",
+    "native_identity": "ab88c4e90448474738ead33dffb7005398ed03ef616a723369ee4633e659d5c8",
+    "wasm_identity": "c53d4f6a2c43ce40ff3429dc5f043357fb1ff08b2a37ac7b13d582ea3ef9a148",
+    "relation": "Original complete state bytes with CRC, except predeclared implementation identity header[16,80); actual outcome headers[8,72) only. No other masks/tolerances, restore, drain or guest fences.",
+    "cuts": {
+      "course787M": {
+        "cycle": 787000000,
+        "bytes_each": 145734036,
+        "native_sha256": "5a767e7183a24c93f2a52c4fb6158f275ea900d91daabacd769fe1f110151ab7",
+        "wasm_sha256": "eed7c631062913d500c4ac12ebdb00627bf8fec019a6173f8e416601c4c226dc",
+        "only_excluded_state_bytes": [
+          16,
+          80
+        ],
+        "original_CRC_valid": true,
+        "retired": 382418088,
+        "panels": 3,
+        "all_controller_pixels": 3630000,
+        "actual_outcome_count": 162,
+        "outcome_bytes_each": 108936,
+        "only_excluded_tape_bytes": [
+          8,
+          72
+        ],
+        "medium_sha256": "d0c0a0b4625c64bb77bf35394a2e76ad4c9e3217bc2836e5ec8faf8674d3c45b",
+        "all_medium_bytes": 268435456,
+        "uart_sha256": "aea8f30a2db11880cf9627c673f86e66c8a58c0e56817284168ba69bd3c4b30e"
+      },
+      "suffix788M": {
+        "cycle": 788000000,
+        "bytes_each": 145734036,
+        "native_sha256": "5fe2effbd782aea47320577f628865023bd8eedf656a231f857da9331b9894bf",
+        "wasm_sha256": "b895a7b82cc10214e82875da7404a0e1fcb97d4e39f8681382a1478408a92191",
+        "only_excluded_state_bytes": [
+          16,
+          80
+        ],
+        "original_CRC_valid": true,
+        "retired": 382737840,
+        "panels": 3,
+        "all_controller_pixels": 3630000,
+        "actual_outcome_count": 162,
+        "outcome_bytes_each": 108936,
+        "only_excluded_tape_bytes": [
+          8,
+          72
+        ],
+        "medium_sha256": "d0c0a0b4625c64bb77bf35394a2e76ad4c9e3217bc2836e5ec8faf8674d3c45b",
+        "all_medium_bytes": 268435456,
+        "uart_sha256": "aea8f30a2db11880cf9627c673f86e66c8a58c0e56817284168ba69bd3c4b30e"
+      }
+    },
+    "cold_relation": "build/browser/task006-browse17-native-match-plan-a2/cold571M-comparison-a2.json",
+    "cold_outcomes": "build/browser/task006-browse17-native-match-plan-a2/cold571M-outcomes-comparison-a1.json",
+    "result": "build/browser/task006-browse17-native-match-plan-a2/comparison-result-a1.json",
+    "result_sha256": "fa8b69a1460b916e8ed3fa78cfb2caed4bf99ca3ea9115258542ef5989a72492",
+    "native_host_seconds": 3430.351125244051,
+    "browser_simulation_call_seconds": 6136.390709997771,
+    "browser_wasm_heap_bytes": 201326592,
+    "performance_scope": "Same fixed guest/events/clocks; native whole owned actor and browser simulation-call time have different host measurement scopes. No whole-workflow speedup claim. Original slower wall result remains.",
+    "suffix_clocks": 1000000,
+    "suffix_retired": 319752,
+    "original_failures_retained": [
+      "build/browser/task006-browse17-native-match-a1/result.json",
+      "build/browser/task006-browse17-native-match-plan-a2/cold571M-comparison-a1.json"
+    ],
+    "scope": "Same canonical RTL portable/native execution through actual cold/course/interrupt-bearing suffix. No crossrestore, general fast timing or QEMU cached-state closure."
+  }
 }

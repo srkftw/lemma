@@ -62,6 +62,10 @@ BOOT_PINS={'pre': {'Lemma.Platform.LemmaSim.NotebookKernel.powerStepEntryV2': '1
 BOOT_FAMILY=set(BOOT_SIGNATURES)
 from package_closure_deployment import (CONFIGURATIONS as PACKAGE_CONFIGURATIONS,
  SOFTWARE_DEPLOYMENT as PACKAGE_SOFTWARE_DEPLOYMENT, BOOT_ROOTS as PACKAGE_BOOT_ROOTS)
+from reader_deployment import (CONFIGURATIONS as READER_CONFIGURATIONS,
+ SOFTWARE_DEPLOYMENT as READER_SOFTWARE_DEPLOYMENT, BOOT_ROOTS as READER_BOOT_ROOTS)
+PACKAGE_CONFIGURATIONS=PACKAGE_CONFIGURATIONS+READER_CONFIGURATIONS
+PACKAGE_BOOT_ROOTS={**PACKAGE_BOOT_ROOTS, **READER_BOOT_ROOTS}
 CONFIGURATIONS.update({c:'Lemma.Platform.LemmaSim.NotebookKernel.'+root for c,root in PACKAGE_BOOT_ROOTS.items()})
 PACKAGE_BOOT='Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelectedEntryV2'
 PACKAGE_SIGNATURES={PACKAGE_BOOT:BOOT_SIGNATURES['Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2'],
@@ -183,7 +187,7 @@ def validate_if_present(ir,unit,*,optimized):
          unit.get('managed_policy')=='lemma-notebook-arithmetic-v1' and unit.get('artifact_category')=='development-kernel-unit',
          'Entry2 exact selected configuration/profile/metadata authority differs')
  from closure_deployment import ENTRY2_SOFTWARE_DEPLOYMENT
- deployment=PACKAGE_SOFTWARE_DEPLOYMENT if unit.get('configuration') in PACKAGE_CONFIGURATIONS else ENTRY2_SOFTWARE_DEPLOYMENT
+ deployment=READER_SOFTWARE_DEPLOYMENT if unit.get('configuration') in READER_CONFIGURATIONS else PACKAGE_SOFTWARE_DEPLOYMENT if unit.get('configuration') in PACKAGE_CONFIGURATIONS else ENTRY2_SOFTWARE_DEPLOYMENT
  require(unit.get('software_deployment')==deployment,
          'Entry2 exact software/hardware/user profile tuple differs')
  require([(canonical(x['source']),x['id'],x['args']) for x in unit.get('roots',[])]==

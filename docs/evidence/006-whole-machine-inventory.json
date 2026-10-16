@@ -1199,7 +1199,8 @@
     "physical": "No physical effect or qualification",
     "evidence": "docs/evidence/006-framebuffer-port-index.json",
     "process_cpu_reduction_percent": 17.974967068040325,
-    "full_changed_runtime_browser_workflow": "PARTIAL new15 coldReady andwholecourse/keypad/historyreopenPASS261M, no newchecks/save duringopen; actualBACK200M/2400phase running. RemainingCHECK/ink/private replay/secondcold pending."
+    "full_changed_runtime_browser_workflow": "PASS actual15 CPU0/cold course->BACK revision9->isolated5/6 Verified/reclaimed->OPFS Saved26->actualpointer ink Saved29->independentsecondcold->completeworkspace/history/source/Verifiedbody/keypad reopen. 2.00745B clocks plus separate32M private exactWasm replay, original4B/28800 bounds; no general proof-kernel/browser-compiler/eviction guarantee.",
+    "whole_machine17_fixed_relation": "PASS_SAME_RTL_NATIVE_WASM_COLD_COURSE_AND_EXACT_SUFFIX"
   },
   "canonical_number_entry_rtl_milestone": {
     "evidence": "docs/evidence/006-number-entry-v1.json",
@@ -1256,7 +1257,7 @@
     "model": "Readonly actual Lean Actions pass fullvalidation/Unknownhistory/currentprecedence/no-source/fault/unchangedbytes cases",
     "guest": "Bothgenuine17wholeRV64imagesandfullauditsPASS786.792s,416sources/1.907GB/ownedcleanup;875pre/873postcorpora,3validartifactnegativesreject. ActualfastCPU0/rawCOURSE/allhomepixels/allmedia/history/body/keypadPASS304Mfunctionalunits.",
     "RTL": "PASS actualnewCPU cold571M/2437.464s andrawCOURSE216M/908.366s;787M/3351.818s total, everyhomepixel/allmedia/history/body/keypad/Unknownauthority unchanged",
-    "distribution": "PREPARED native/static17. Originalfixed-eventnativea1FAIL genericidleobserver demandedqueue0 despite2pre-admittedfutureevents; initialfullbyte resetmatchretained. Correctedseparatenativea2RUNNING withliteral2futureevents/sameallotheridlechecks/capturebeforeguard, exactbytecomparison unchanged andoriginal16:49deadline. Existingbrowser34continuesoriginalbounds, no coldrestart. No wholecomparisonPASSyet.",
+    "distribution": "PASS prepared native/static17, plus independent original CPU0 fixed event nativeab88/Wasmc53 fullstate relation at reset/cold571M/course787M and exact1M suffix to788M (319752 retired). Actual150cold/162course+suffix read outcomes exact, allmedia/pixels/UART/caches authoritative; only predeclared identity headers differ. Original nativea1 idle observer FAIL and passivecoldwrongcyclefield FAIL retained. No crossrestore/QEMU cache/timing closure.",
     "physical": "UNVERIFIED; no change to hardware/physicalclosure",
     "evidence": "docs/evidence/006-number-entry-v1.json"
   },
@@ -1284,5 +1285,15 @@
     "distribution": "149970067B archive includes403043616B complete registeredemulatorruntimeNAR; no cleanhostimport/Python/Tk/rights closure claim",
     "physical": "No physicalclaim/change",
     "evidence": "docs/evidence/006-local-native-distribution-v1.json"
+  },
+  "course_reader_location18": {
+    "behavior": "PASS realguest example5 nodeSave38 and independent coldreopen; failedFLUSH227/noSaved and observed38/node5 cold recovery",
+    "model": "Actual Lean codec/Save/cancel/EOF/busy Actions and genuine902/900 complete artifacts; old profiles and authority unchanged",
+    "RTL": "RUNNING original2.8B/21600s, not accepted",
+    "guest": "Actual fast functional661M/76.828s and failure647M/75.525s; same maintained RV64 artifacts, all original authority/history/learner/ink/packages preserved",
+    "distribution": "Prepared/extracted native150081390B with complete wrapped runtime NAR and static2077396B; newbrowserCPU0 cold running on same C53 core, no completed18 browser claim",
+    "physical": "UNVERIFIED, no changed circuit or physical qualification",
+    "evidence": "docs/evidence/006-course-reader-location.json",
+    "state": "No host-state format extension: reader staging/live words use existing owned guest RAM and record store. Separate Reader18 checkpoint suffix is not yet qualified; general QEMU cached-state gap remains."
   }
 }

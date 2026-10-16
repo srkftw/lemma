@@ -36,8 +36,9 @@ def catalog(unit):
     if numeric_candidate(unit):
         numeric_contract(unit)
         selected_root=numeric_root(unit)
-    selected_software=JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
-    require(unit.get('configuration') in CONFIGURATIONS + JOINED and
+    from reader_deployment import CONFIGURATIONS as READER, SOFTWARE_DEPLOYMENT as READER_SOFTWARE
+    selected_software=READER_SOFTWARE if unit.get('configuration') in READER else JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
+    require(unit.get('configuration') in CONFIGURATIONS + JOINED + READER and
             unit.get('role') == 'user' and unit.get('contract_version') == 'core0-user-v0.2' and
             type(unit.get('schema_version')) is int and unit.get('schema_version') == 2 and unit.get('artifact_category') == 'development-user-unit' and
             unit.get('managed_policy') == 'lemma-notebook-arithmetic-v1' and
