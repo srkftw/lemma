@@ -3870,3 +3870,19 @@ runningoriginal1B/7200/global4B/28800, deadline17:29:51.932571Z unchanged.
 Ownerpad15-index-cold-plan-a1/second-cold-plan.json; newexpectedhomeallpixels
 plusactualpoint, backingink-saved.raw. NeedsecondcoldReady/allpixels/allbytes
 thenCOURSEVerifiedrev9/historyreopen. Do notrestartcoldprefix/reportReadyearly.
+
+Published17 targetincrement65df83acc41aa2cb0b0449c09da20aabf06194d8 initially
+omittedalready-auditedauthority JSON fromstage; caughtgitstatus andpublished
+follow-up338ebd0cd476a68ce98d150a68a955a1a0735246 withidenticaltestedbytes.
+Original65dfCI isnotcompleteincrementqualification. Current338CI38902680382
+IN_PROGRESS withmetadataFAIL: foundationloginventoryrepair passed; actual
+CompanionNumberEntryActions PASS markerprinted, thenpostcheck rg notfound127.
+Actualjob116979027720 decodedlogretainedbuild/ci/task006-338-metadata-failed.log.
+Latermetadata SKIPPED. One-linegrep-F portabilityrepair keepsmandatorymarker/
+pipefail/exitchecks. Newhead/actualCIrequired, neverblindlyrerunorcallskippedPASS.
+
+Companion16 actualcoldReady665M/3469.018790s; lostWRITEeffect86persisted at
+699M/request29614, replylost/ownedEOF; guestFailed at720M after55M/369.581850s,
+noSaved. Offlineink/reconnect/reconciliation running, notcompletedacceptance.
+Oldcompletedbrowser32/31workers nowclosedviaUI afterallfullsnapshots/raw/outcome
+exports; tabs/OPFSmedia retained. New15browser33secondcold continuesunchanged.

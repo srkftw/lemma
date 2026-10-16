@@ -1019,10 +1019,10 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "740eaa3f4c3dbff30ab1b6c625c289c19e9cc192",
-    "run": 38895782765,
-    "status": "FAILURE",
-    "scope": "Actualmetadatafoundation exactlogfixture omittednewcompanionActionslog.10otherjobs passed; latermetadata skipped. Localpreciserepair473testsPASS39.777s, notcandidateCI. Originalactualjoblog retained.",
+    "commit": "338ebd0cd476a68ce98d150a68a955a1a0735246",
+    "run": 38902680382,
+    "status": "IN_PROGRESS_WITH_METADATA_FAILED",
+    "scope": "Foundationrepair passed; realjoinedActions markerprintedPASS, thenrunner rg notfound127. Latermetadata skipped. Portablerepair grep-F preservesmandatorytext/exit. No latestCIpassinferred.",
     "evidence": "docs/evidence/006-number-entry-v1.json"
   },
   "browser_pointer_ink_milestone": {

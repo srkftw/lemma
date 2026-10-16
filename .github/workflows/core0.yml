@@ -314,7 +314,7 @@ jobs:
             nix develop --no-write-lock-file --command \
               lake env lean -j2 --run tests/courses/CompanionNumberEntry.lean \
             2>&1 | tee build/ci/metadata/companion-number-entry-actions.log
-          rg -F 'COMPANION_NUMBER_ENTRY16:PASS' build/ci/metadata/companion-number-entry-actions.log
+          grep -F 'COMPANION_NUMBER_ENTRY16:PASS' build/ci/metadata/companion-number-entry-actions.log
 
       - name: Check read-only course location recovery from source history
         run: |

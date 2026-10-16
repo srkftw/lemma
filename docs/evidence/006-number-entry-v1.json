@@ -757,13 +757,14 @@
     }
   },
   "latest_candidate_ci": {
-    "head": "740eaa3f4c3dbff30ab1b6c625c289c19e9cc192",
-    "run": 38895782765,
-    "status": "FAILURE",
-    "other_jobs_successful": 10,
-    "metadata_failure": "Exact logged-pipeline fixture omitted companion-number-entry-actions.log. Original actual job log retained. Later metadata steps skipped. Independently reproduced; local precise expectation repair now473tests PASS39.777s. No new candidateCI result.",
-    "log": "build/ci/task006-740-metadata-failed.log",
-    "local_corrected_log": "build/ci/task006-740-foundation-corrected-a1.log"
+    "head": "338ebd0cd476a68ce98d150a68a955a1a0735246",
+    "run": 38902680382,
+    "status": "IN_PROGRESS_WITH_FAILED_METADATA_JOB",
+    "metadata_job": 116979027720,
+    "failure": "Actual companion Actions passed; post-pipeline marker command rg failed127 because runner has no rg. Foundation exactlogrepair passed; subsequent metadata steps skipped. Same mandatory marker nowusesgrep-F.",
+    "actual_log": "build/ci/task006-338-metadata-failed.log",
+    "previous_failure": "740eaa3/38895782765 foundationexactloggedpipeline fixture mismatch retainedseparately",
+    "qualification": "Newhead/CIneeded forone-lineportablemarkerfix; no weakening/skip/timeoutchange."
   },
   "canonical_rtl_number_entry": {
     "actor": {
