@@ -42,7 +42,7 @@ async function initializeGPU(){if(!navigator.gpu)return;
 function send(action,rest={},transfer=[]){worker.postMessage({action,...rest},transfer);}
 function download(name,bytes){const u=URL.createObjectURL(new Blob([bytes])),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 document.querySelector('#open').onclick=()=>send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,paused:document.querySelector('#open-paused').checked});
-document.querySelector('#initialize').onclick=()=>send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,initialize:true});
+document.querySelector('#initialize').onclick=()=>send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,initialize:true,paused:document.querySelector('#open-paused').checked});
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{
  if(b.dataset.action==='close'){cancelContact();cancelPower();}send(b.dataset.action);});
 document.querySelector('#run-bounded').onclick=()=>send('run',{cycles:document.querySelector('#run-cycles').value,stopOnReady:document.querySelector('#stop-ready').checked,stopOnPanel:document.querySelector('#stop-panel').checked,hostSeconds:document.querySelector('#run-seconds').value||null});

@@ -4485,3 +4485,46 @@ at their original bounds. One read-only observation: Product trial1059.7M,
 No executor/prepared/bundle mutation or deadline extension. Keep BUILD worktree
 and artifacts while the Entry2 case still references them.
 -->
+
+<!--
+Host/component archive milestone committed locally at
+247558af81257edae8ea7548b9221202c5c3036e; not pushed yet while the prior candidate
+CI finishes. Latest actual1c35 jobs:8SUCCESS/2FAILURE/1notebookIN_PROGRESS.
+No new candidate CI yet. The two original failures remain independently retained.
+
+New separate browser fresh-install case: tab36/freshCourseTab, same8806 server,
+new unique OPFS reader18-fresh-course-a1. Plan
+build/browser/task006-reader18-fresh-course-plan-a1/plan.json:6B/43200s whole,
+absolute2026-10-17T09:03:02.922042Z; combined initializer+firstcold1.4B/7200s,
+install400M/3600s, course400M/3600s, nav150M/1800s, keypad100M/1800s,
+check/hint/save150M/2400s, independent secondcold1B/7200s;1GiB reportedWasm/
+2GiB minimum available/12GiB outputs. Source-bound sameC53/Reader18 pair, real
+initializer, no imported/preinstalled course/documents. Intended package is
+build/courses/task006-package-edition3-a1/arithmetic.lcp (4063B/SHA9928c0acac9567f227f8346a0b193f08c7467ab24ac9fd15564e515b91e37f5a).
+Do not send it until actualReady. Then file chooser via #course-package,
+transaction1 and Send to guest installer; actual guest installation/barrier
+receipt required before course/mathematics. File-upload docs already read.
+
+The existing8806 app ignored Open paused on Create new medium. It actually
+started; explicit Pause stopped the initializer at2.2M,19.7UI elapsed/18.8sim.
+No CPU0pause is claimed. That2.2M is charged to the original1.4B phase cap;
+subsequent bounded run requests1397800000/7000s/stopOnReady, carrying remainder
+across real initializer→notebook CPU restart. Initial observation retained at
+initialization-observation-a1.json. Never restart/extend/reclassify a timeout.
+
+Maintained app now forwards paused for creation too. Existing actual-app host
+fixture checks both values for creation/open;2worker/UI tests and3distribution
+tests PASS. New static distribution build/distribution/task006-reader18-create-paused-a3
+passes isolated stdlib launch verification (287files/17642288B). Same exact
+C53machine.mjs/wasm, bothRV64ELFs and worker.js; no recompile. Actual browser37
+8807 Create+Openpaused stayscycle0/retired0/noI/O, paused(opened-paused). Scope
+onlycontrol admission, not initialized/Ready. Worker closed, temporarytab closed,
+owned8807server SIGINT/reaped; private blank origin medium retained, no usermedia
+deleted. Receipt build/browser/task006-create-paused-a1/result.json.
+Original wrong-Wasm source selection failed before output; exactC53 build was
+selected only after manifest equality. First real standalone packaging then
+failed missing newly imported package_entry2_deployment. Producer now includes
+that module; source/standalone checks remain intact, failures retained in
+bundle.log/package-a2.log. Active8806 cases retain their original old app assets.
+Keep browser35/reader18Tab,36/freshCourseTab handoff;33/pad15Tab deliverable.
+-->

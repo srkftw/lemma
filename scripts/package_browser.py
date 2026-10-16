@@ -81,6 +81,7 @@ def package(source, destination, archive=None):
                                 ('scripts/silicon_guest_bundle.py', 'tools/silicon_guest_bundle.py'),
                                 ('scripts/usb_closure_recovery_deployment.py', 'tools/usb_closure_recovery_deployment.py'),
                                 ('scripts/package_companion_deployment.py', 'tools/package_companion_deployment.py'),
+                                ('scripts/package_entry2_deployment.py', 'tools/package_entry2_deployment.py'),
                                 ('sim/browser/serve_local.py', 'serve.py')]:
         inputs[original] = digest(ROOT / original)
         shutil.copyfile(ROOT / original, destination / installed)

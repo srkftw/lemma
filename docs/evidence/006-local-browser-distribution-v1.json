@@ -46,5 +46,31 @@
     "Browser-local compiler",
     "Project-wide redistribution permission remains unresolved; no license changed",
     "Exact fast timing/cached-state parity and physical closure"
-  ]
+  ],
+  "create_paused_and_entry2_dependency": {
+    "status": "PASS_REAL_STATIC_NEW_MEDIUM_OPEN_PAUSED",
+    "receipt": {
+      "path": "build/browser/task006-create-paused-a1/result.json",
+      "sha256": "5fea5604162355cbe0ab3b830cee25099f42253e4d77be4c3f721e05be7e7874"
+    },
+    "distribution": "build/distribution/task006-reader18-create-paused-a3",
+    "scope": "Actual corrected packaged app, real C53 worker with initializer ELF selected. Zero-clock creation/control property only; not guest initialization/Ready or new machine compilation.",
+    "actual_UI": {
+      "URL": "http://127.0.0.1:8807/",
+      "medium": "reader18-paused-create-a1",
+      "action": "Create new medium with Open paused checked",
+      "cycle": "0",
+      "retired": "0",
+      "running": false,
+      "pauseReason": "opened-paused",
+      "backing_completed": "0",
+      "reported_Wasm_heap_bytes": 201326592,
+      "guest_commit": null,
+      "guest_course": null
+    },
+    "retained_packaging_failures": {
+      "first_bundle": "bundle.log:incompatible earlierWasmbuild rejected before output. Selected exactC53manifest for a2; no validation weakened.",
+      "first_package": "package-a2.log:standalone launch failed missing package_entry2_deployment. Producer now copies that imported module; package-a3 passes."
+    }
+  }
 }

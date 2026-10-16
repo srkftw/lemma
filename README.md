@@ -2275,3 +2275,25 @@ Bundle construction consumes the exact pair already registered by the normal
 `lemmasim build` commands; it does not substitute a guest image. Missing or
 changed archived files reject even when the original checkout remains present.
 The independently persistent peer and guest journal continue to own durability.
+
+The prepared static Reader18 package with corrected new-medium pause control is
+`build/distribution/task006-reader18-create-paused-a3`. Launch it locally with:
+
+```sh
+python3 -I /home/sreekumaar/Downloads/lemma/build/distribution/task006-reader18-create-paused-a3/serve.py --port 8807
+```
+
+Select **Open paused** before **Create new medium** to admit the actual
+initializer at cycle zero. Run a bounded budget to execute initialization and
+notebook boot. The same budget carries its unused cycles across the initializer's
+handoff. Creating a medium refuses an existing name. The course file picker sends
+an immutable package to the guest installer; only its actual durable receipt
+establishes installation. The separate fresh-medium browser course campaign is
+still running and is not an accepted installation/math/recovery result.
+
+This package reuses the exact C53 Wasm machine, both audited Reader18 RV64 images
+and worker. Its new checks establish isolated static launch and zero-clock
+initializer admission. Whole notebook results keep their original package and
+observation identities. The extracted launcher includes its EntryV2 catalog
+module; the retained first standalone packaging failure exposed that missing
+host dependency. Existing dependency notices and redistribution limits apply.

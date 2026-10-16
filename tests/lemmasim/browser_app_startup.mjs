@@ -34,6 +34,12 @@ async function appFixture(gpu){
  const f=await appFixture(undefined);
  f.node('#session-mode').value='developer';f.node('#session-mode').onchange();
  f.node('#open').onclick();assert.equal(f.sent.at(-1).mode,'developer');
+ for(const paused of [true,false]){
+  f.node('#open-paused').checked=paused;
+  f.node('#initialize').onclick();assert.equal(f.sent.at(-1).initialize,true);
+  assert.equal(f.sent.at(-1).paused,paused,'new-medium creation must honor Open paused');
+  f.node('#open').onclick();assert.equal(f.sent.at(-1).paused,paused);
+ }
  f.worker.onmessage({data:{type:'state',mode:'developer',state:{cycle:'0'},running:false,
   guestObservation:'boot',readyAt:null,heapBytes:1048576,pauseReason:'opened-paused',
   timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});

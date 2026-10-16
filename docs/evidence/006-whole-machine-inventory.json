@@ -1538,5 +1538,13 @@
     "files": 678,
     "bytes": 10734790,
     "scope": "Same immutable ROM/native machine, no media; requires maintained host commands and exact external dependencies. Fresh-host/standalone product distribution remains open."
+  },
+  "browser_new_medium_control": {
+    "status": "PASS_REAL_STATIC_NEW_MEDIUM_OPEN_PAUSED",
+    "evidence": {
+      "path": "docs/evidence/006-local-browser-distribution-v1.json",
+      "sha256": "954aca8ff7b2f68c6cf8573afbd609e396e17df4c1d0955ebf47660ef36434d1"
+    },
+    "fresh_course_case": "RUNNING:browser36/8806 reader18-fresh-course-a1; real initializer with2.2M prefix charged to1.4B combined initialization/cold cap. No initialization/installation/math/cold pass yet."
   }
 }
