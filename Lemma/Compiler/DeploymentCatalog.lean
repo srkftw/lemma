@@ -456,6 +456,13 @@ def packageNumberPadNotebookImages : Array UserImageSpec := #[
     root := `Lemma.Applications.Notebook.mainPackageNumberPad, bootRole? := some .notebook},
   packageClosureNotebookImages[2]!, packageClosureNotebookImages[3]!]
 
+/-- History-browse17 changes only the reader's initial location policy. -/
+def packageNumberPadBrowseNotebookImages : Array UserImageSpec := #[
+  packageNumberPadNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainPackageNumberPadBrowse, bootRole? := some .notebook},
+  packageNumberPadNotebookImages[2]!, packageNumberPadNotebookImages[3]!]
+
 /-- Composes the genuine mounted/recovery Store, package UI, isolated checker
 and installer. No host role parses or recovers documents. -/
 def packageRecoveryNotebookImages : Array UserImageSpec := #[
@@ -490,7 +497,7 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
   if isUSBPackageRecoveryNotebookConfiguration configuration then .ok packageRecoveryNumberPadNotebookImages
-  else if isPackageClosureNotebookConfiguration configuration then .ok packageNumberPadNotebookImages
+  else if isPackageClosureNotebookConfiguration configuration then .ok packageNumberPadBrowseNotebookImages
   else if isUSBClosureRecoveryNotebookConfiguration configuration then .ok closureRecoveryNotebookImages
   else if isUSBRecoveryNotebookConfiguration configuration then .ok recoveryNotebookImages
   else if isClosureNotebookConfiguration configuration then .ok closureNotebookImages

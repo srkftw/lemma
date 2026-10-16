@@ -757,16 +757,13 @@
     }
   },
   "latest_candidate_ci": {
-    "path": "build/ci/task006-3f-complete.json",
-    "sha256": "6a909646d266eaead819338b7d664e28b1a1e3f5ffecd714e752e4d2fa5d8f24",
-    "status": "SUCCESS",
-    "head": "3f67a0435b22e342d748d4c76fa3e2b3433d32e1",
-    "run_id": 38890500531,
-    "jobs": 11,
-    "steps": 111,
-    "skipped": 0,
-    "cancelled": 0,
-    "scope": "Published predecessor3f only; new local16/hostpolicy2 candidateCI notyetstarted."
+    "head": "740eaa3f4c3dbff30ab1b6c625c289c19e9cc192",
+    "run": 38895782765,
+    "status": "FAILURE",
+    "other_jobs_successful": 10,
+    "metadata_failure": "Exact logged-pipeline fixture omitted companion-number-entry-actions.log. Original actual job log retained. Later metadata steps skipped. Independently reproduced; local precise expectation repair now473tests PASS39.777s. No new candidateCI result.",
+    "log": "build/ci/task006-740-metadata-failed.log",
+    "local_corrected_log": "build/ci/task006-740-foundation-corrected-a1.log"
   },
   "canonical_rtl_number_entry": {
     "actor": {
@@ -1087,5 +1084,171 @@
     "cycle": 970350000,
     "clocks": 400000000,
     "scope": "FAIL originalcompletecourseplane/node3 expectation. Actualexistingpolicy opensnode1 aftera manuallyeditedgoal detaches currentpackagebinding; allmediumbytes andIndeterminate/earlierhistory survive. Independent browseposition persistence remains missing. Originalfailure notweakened/relabelled; original13:47globaldeadline unchanged, machine nowpaused."
+  },
+  "browser_pad15_actual_check": {
+    "status": "PASS_BROWSER15_ACTUAL_FRACTION_VERIFIED_REV9_SAVED26",
+    "result": "build/browser/task006-pad15-index-cold-plan-a1/check-visible-result.json",
+    "retained_incomplete_display_failure": "build/browser/task006-pad15-index-cold-plan-a1/check64M-result.json",
+    "cycle": 1111950000,
+    "check_clocks": 129100000,
+    "sequence": 26,
+    "backing_barrier_id": 143,
+    "actual_guest_request": [
+      1113,
+      302,
+      9,
+      1,
+      78
+    ],
+    "actual_guest_reply": [
+      1109,
+      302,
+      9,
+      0,
+      1
+    ],
+    "scope": "Real raw CHECK -> isolated Lean closure -> revision9 Verified5/6 -> OPFSbarrier143 -> Saved26 -> completed controller body/keypad/labels. Whole mathematical pane not independently reconstructed. Earlier64M snapshot genuinely still UNCHECKED and retained FAIL; final129.1M is within original200M/2400."
+  },
+  "browser_pad15_check_pending_suffix": {
+    "status": "PASS_EXACT_SAME_WASM15_CHECK_PENDING_SAVE_SUFFIX_SUPERVISED",
+    "supervision_result": "build/browser/task006-pad15-check-replay-plan-a1/result.json",
+    "result": "build/browser/task006-pad15-check-replay-a1/result.json",
+    "scope": "Exact32M same compiled Wasm archive suffix from Pending26 to real barrier143/Saved26, unfinished display retained. Captured actual outcomes and new private backing only. Not native/Wasm migration, QEMU hidden-cache closure or cold recovery."
+  },
+  "course_browse_history17": {
+    "status": "PASS_COMPLETE_FRESH_GENUINE_PAIR_AND_REAL_FAST_COLD_RTL_PENDING",
+    "contract": "lemma-course-browse-history/1",
+    "root": "Lemma.Applications.Notebook.mainPackageNumberPadBrowse",
+    "component": "build/courses/task006-number-pad-browse17-component-a1/component-result.json",
+    "full_pair": "build/courses/task006-number-pad-browse17-whole-a1/result.json",
+    "real_guest": "build/courses/task006-browse17-connected-a1/result.json",
+    "guest_status": "PASS_REAL_GUEST_HISTORY_BROWSE17_COLD",
+    "fast_functional_units": 304000013,
+    "host_seconds": 46.925157731049694,
+    "phases": [
+      {
+        "name": "newCPU-cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 210000001,
+        "instruction_clock_cycles": 210000001,
+        "host_seconds": 22.65418297809083
+      },
+      {
+        "name": "raw-COURSE-history-node3",
+        "initial_cycle": 210000001,
+        "final_cycle": 304000013,
+        "instruction_clock_cycles": 94000012,
+        "host_seconds": 12.66496827499941
+      }
+    ],
+    "all_home_pixels": 3630000,
+    "all_medium_bytes": 268435456,
+    "body_pixels": 122880,
+    "keypad_pixels": 76800,
+    "source_sequence": 37,
+    "revision": 17,
+    "current_applicability": "Unknown unchanged",
+    "evidence_scope": "Originalresourcefailure retainsIndeterminate5/7,budget0,allattempt/source/learnerhistory; readonlyreopen restoreslastknowninstallednode3, no newcheck/Save. Actualfastunits notRTLtiming; arbitrarydurablebrowseposition stillmissing. Original11browsernode3reopenFAILretained.",
+    "action_fixture": "tests/courses/BrowseHistory.lean",
+    "action_result": "build/courses/task006-number-pad-browse17-component-a1/ci-browse-actions.log",
+    "checks": "461kernelhost PASS8.508s; genuinefreshLeanpublisher4040bytes/8nodes and actualreadonlyActions PASS; both17typed/fullprepostIR guards PASS; retained16corpora still PASS",
+    "full_pair_status": "PASS_FRESH_BROWSE17_PAIR_FULL_AUDIT",
+    "full_pair_seconds": 786.7921411350835,
+    "source_count": 416,
+    "source_inventory_sha256": "cc5e87c29ba67f802eea8c84e09c864d2b4c0595cadca4d3d4ce9d8cc8d4bbd8",
+    "normal": {
+      "audit_seconds": 235.54648573196027,
+      "audit_sha256": "bde50eb304f8ce7b83d2421c62e1ad1b68f6934a325c4b08e34b6974bac70248",
+      "audit_status": "PASS",
+      "build_seconds": 133.91350451204926,
+      "build_status": "BUILT",
+      "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-number-pad-browse17-notebook-a1",
+      "image_bytes": 712248,
+      "image_sha256": "43f7fa569474614c6e473ee40c6ac9ed911b2e0752c5568c5520c3190cabe789",
+      "provenance_sha256": "0b081cf6156a8e3129651f6f2aa4a6b7eec0d952bff1f6a806ca6e08277d6e21",
+      "same_genuine_component_notebook": true
+    },
+    "initializer": {
+      "audit_seconds": 250.04810918297153,
+      "audit_sha256": "40b941f355fb9a3a8e5e8a7832a6b69f3b0848fd0f8ec244e5a4a597ac1706ce",
+      "audit_status": "PASS",
+      "build_seconds": 166.92769551603124,
+      "build_status": "BUILT",
+      "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-number-pad-browse17-initializer-a1",
+      "image_bytes": 712256,
+      "image_sha256": "53bc880ecde2e760792575069b8e51559123fb33e787b4dd2b1c4ee255e709da",
+      "provenance_sha256": "44e542bf628efb8fcd2a34d2b4b020107e2b2b6d2a6d95442f7fe6042b10e59b",
+      "same_genuine_component_notebook": true
+    },
+    "supervised_seconds": 788.553786743083,
+    "owned_peak_rss_bytes": 1906851840,
+    "minimum_available_bytes": 4397379584,
+    "owned_cleanup": {
+      "reason": "normal orphan reap",
+      "killed": [],
+      "survivors": {}
+    },
+    "source_seal": {
+      "archive_files_match": true,
+      "current_equal_original": true,
+      "original_inventory_sha256": "cc5e87c29ba67f802eea8c84e09c864d2b4c0595cadca4d3d4ce9d8cc8d4bbd8",
+      "source_count": 416,
+      "status": "PASS_SOURCE_SEAL"
+    },
+    "source_scope": "Actual build producer740eaa3 dirty17targetinputs; complete416-fileoriginalarchive/current/HEAD/index stable throughwholeaudits. Newreadonly checker is hostonly and added aftertargetbuild; nottargetdependency.",
+    "artifact_negatives": "build/courses/task006-browse17-artifact-negatives-a1/result.json",
+    "reusable_fast": "build/courses/task006-browse17-reusable-fast-a2/result.json",
+    "reusable_fast_seconds": 34.33306840399746,
+    "retained_reusable_preCPU_failure": "build/courses/task006-browse17-reusable-fast-a1/result.json",
+    "reusable_preCPU_repair": "CLI archive flag requires explicit guestoverride; checker now rejects unpairedflags beforelaunch. Nativebundle needs neither overrideflag. Originalfailure retained.",
+    "exact_RTL": "RUNNING separate10800s/1.4B newcanonical17 cold/historycase; no result inferred",
+    "exact_RTL_plan": "build/courses/task006-browse17-rtl-plan-a1/plan.json",
+    "distribution": {
+      "native": {
+        "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-pad-browse17-native-a1",
+        "manifest_sha256": "46e1d912197ecbad2ccb47c6ed7387a8f685706e875ed4571a188fa1dfd3e8a8",
+        "source_bundle_sha256": "cc5a0b1cd9fb1225bd615840e91a1e80dbd3af0ec7c66b931699028ca5bd330b",
+        "files": 1610,
+        "bytes": 91360399,
+        "ordinary_both_backend_both_guest_admission": true,
+        "host_dependencies": "Exact external Nix files retained as prerequisites",
+        "guest_execution": "NOT_EXERCISED_BY_PACKAGING",
+        "archive": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-pad-browse17-native-a1.tar.gz",
+          "sha256": "8e945a40eae91cbd0dc55e983d51ed6a1343b2cbd6b29766f81cf060e583e1ec",
+          "bytes": 11826585
+        },
+        "seconds": 18.83147613692563
+      },
+      "browser": {
+        "status": "PASS_PREPARED_LOCAL_BROWSER_DISTRIBUTION",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-pad-browse17-browser-a1",
+        "manifest_sha256": "2336255dc6599835dd0f506ce401abf1f0ab03517e52dfe19e4006a583f58f52",
+        "source_bundle_sha256": "499bdbc791b09f48a361bf1e4ee126bc8f14f2707df36611e09e8c86911fe25b",
+        "files": 286,
+        "bytes": 17470484,
+        "standalone_verification": "PASS_LOCAL_BROWSER_DISTRIBUTION_BYTES",
+        "archive": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-pad-browse17-browser-a1.tar.gz",
+          "sha256": "9a3a91d28287c90bf10966e63bd765d7b7cba7707d1ee6a9b99603a5d77302cc",
+          "bytes": 2067017
+        },
+        "seconds": 2.704056918970309
+      }
+    }
+  },
+  "browser_pad15_actual_ordinary_ink": {
+    "status": "PASS_BROWSER_ORDINARY_POINTER_GUEST_INK_SAVED",
+    "result": "build/browser/task006-pad15-index-cold-plan-a1/ink-result.json",
+    "clocks": 49350000,
+    "sequence": 29,
+    "all_pixels": 3630000,
+    "barrier": 161,
+    "latency_observation": "build/browser/task006-pad15-index-cold-plan-a1/ink-observation.json",
+    "scope": "Ordinary canvasmouse2rawsamples, syntheticpressure2048/tool0; actualguest272Byterawobject/oldmathallbytes preserved; actualSaved29/barrier161 andfull3.63Mcontrollerpixels exact.25.564s ispassiveobserverduration. Observeduppercompletion426.067s includesUI/inspection;414.638s simulationcalls, notfirstACKlatency.",
+    "second_cold": "RUNNING CPU0 sameOPFS no snapshot/import/format, original1B/7200 and4B/28800bounds unchanged"
   }
 }

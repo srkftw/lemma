@@ -316,6 +316,26 @@ jobs:
             2>&1 | tee build/ci/metadata/companion-number-entry-actions.log
           rg -F 'COMPANION_NUMBER_ENTRY16:PASS' build/ci/metadata/companion-number-entry-actions.log
 
+      - name: Check read-only course location recovery from source history
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake build Lemma.Courses.PackagePublishMain Lemma.Courses.BrowseHistory \
+            2>&1 | tee build/ci/metadata/browse-history-build.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean -j2 --run Lemma/Courses/PackagePublishMain.lean \
+                --output-dir build/courses/ci-browse-history/package \
+            2>&1 | tee build/ci/metadata/browse-history-package.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEMMA_COURSE_PACKAGE_FILE=build/courses/ci-browse-history/package/arithmetic.lcp \
+                lake env lean -j2 --run tests/courses/BrowseHistory.lean \
+            2>&1 | tee build/ci/metadata/browse-history-actions.log
+          grep -F 'BROWSE_HISTORY1:PASS' build/ci/metadata/browse-history-actions.log
+
       - name: Check actual aligned arithmetic presentation Actions
         run: |
           set -euo pipefail

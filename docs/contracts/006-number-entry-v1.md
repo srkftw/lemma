@@ -116,3 +116,19 @@ durable format or USB conformance claim. Both normal/initializer linked images
 and complete pre/post catalogs/corpora pass ordinary audits, and the native
 bundle is prepared. Actual connected16 peer/math/lost-reply/cold acceptance is
 still required. See the existing evidence record for exact images and failures.
+
+Canonical Notebook17 adds `lemma-course-browse-history/1`. After complete
+workspace validation, an explicit current installed-source binding takes
+precedence. When that binding is Unknown, the latest known installed source in
+the bounded eight-attempt history supplies the initial reader location. With
+no known source, the original default remains. The normal package reader still
+validates the installed identity, edition, CRC and node before presentation.
+
+The selector only reads owned workspace memory. The notebook copies its result
+into private reader metadata after reading every required source field. It
+does not rewrite the Unknown selection, the submitted goal, revisions, evidence,
+attempts or learner events, and opening issues no Save or checking request.
+This recovers a location from submitted-source history; it does not persist an
+independent arbitrary browsing position. Historical15 and companion16 roots
+retain their original artifact authorities. No durable-format migration or
+language/runtime extension is introduced.

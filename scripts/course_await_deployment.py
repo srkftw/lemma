@@ -82,11 +82,10 @@ def validate_mount_reply(ir,unit,*,optimized):
      [{k:r.get(k) for k in ('source','id','args')} for r in unit.get('roots',[])]==
        [{'source':INSTALLER_ROOT,'id':1,'args':['u64']}])
  package_root=USER_ROOTS['notebook'][1] if unit.get('configuration') in JOINED_CONFIGURATIONS else 'Lemma.Applications.Notebook.mainPackageClosureBulk'
- from dirty_batch_notebook_target import numeric_candidate,numeric_contract,NUMERIC_ROOT
+ from dirty_batch_notebook_target import numeric_candidate,numeric_contract,numeric_root
  if numeric_candidate(unit):
   numeric_contract(unit)
-  from companion_number_pad_target import candidate as recovery_number_candidate, ROOT as RECOVERY_NUMBER_ROOT
-  package_root=RECOVERY_NUMBER_ROOT if recovery_number_candidate(unit) else NUMERIC_ROOT
+  package_root=numeric_root(unit)
  package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS and
      unit.get('image_key')=='notebook' and type(unit.get('image_id')) is int and
      unit['image_id']==2 and unit.get('contract_version')=='core0-user-v0.2' and

@@ -1019,16 +1019,11 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "path": "build/ci/task006-3f-complete.json",
-    "sha256": "6a909646d266eaead819338b7d664e28b1a1e3f5ffecd714e752e4d2fa5d8f24",
-    "status": "SUCCESS",
-    "head": "3f67a0435b22e342d748d4c76fa3e2b3433d32e1",
-    "run_id": 38890500531,
-    "jobs": 11,
-    "steps": 111,
-    "skipped": 0,
-    "cancelled": 0,
-    "scope": "Published predecessor3f only; new local16/hostpolicy2 candidateCI notyetstarted."
+    "commit": "740eaa3f4c3dbff30ab1b6c625c289c19e9cc192",
+    "run": 38895782765,
+    "status": "FAILURE",
+    "scope": "Actualmetadatafoundation exactlogfixture omittednewcompanionActionslog.10otherjobs passed; latermetadata skipped. Localpreciserepair473testsPASS39.777s, notcandidateCI. Originalactualjoblog retained.",
+    "evidence": "docs/evidence/006-number-entry-v1.json"
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1250,9 +1245,26 @@
     "behavior": "IMPLEMENTED_JOINED_NUMERIC_AND_RECOVERY_ACTIONS_COMPONENT_PASS",
     "model": "Actual imported Actions retain provisional9-fieldrawink/pixels; pinnedpayload/doc/history immutable, no storage/checkerIPC/Saved; markerfault/fullbuffer checksPASS",
     "guest_compilation": "PASS bothfreshcomplete normal/init linkedartifacts833.365s;415source/ownedcleanup839.305s,1.923GBpeak, literal910/908corpora, oldsemanticguards/tablecells retained.",
-    "RTL_guest": "NOT_RUN new16",
-    "distribution": "PREPARED schema9/native415source877files, exactUSB13oldruntime6cbd sourcearchive qualified; new16connectedCPU/peer NOT_RUN yet",
+    "RTL_guest": "RUNNING newactual16cold; nochanged/lostACK/check/coldpassyet",
+    "distribution": "PREPARED schema9/native415sources877files; actualguest6c331985/runtime6cbd CPU0 cold started fromprivateSaved12peer/outbox. Connectedcasepending.",
     "physical": "UNVERIFIED",
+    "evidence": "docs/evidence/006-number-entry-v1.json"
+  },
+  "course_browse_history17": {
+    "behavior": "PASS_READER_HISTORY_LOCATION_CURRENT_AUTHORITY_UNCHANGED",
+    "model": "Readonly actual Lean Actions pass fullvalidation/Unknownhistory/currentprecedence/no-source/fault/unchangedbytes cases",
+    "guest": "Bothgenuine17wholeRV64imagesandfullauditsPASS786.792s,416sources/1.907GB/ownedcleanup;875pre/873postcorpora,3validartifactnegativesreject. ActualfastCPU0/rawCOURSE/allhomepixels/allmedia/history/body/keypadPASS304Mfunctionalunits.",
+    "RTL": "RUNNING two-phasecanonicalcold/historycase1.4B/10800s; no pass inferred",
+    "distribution": "PREPARED native+static17/actual standalone validators; exactoldRTL/Wasmcore reused. Browser17CPU andcleanhost runtimeclosure notqualified.",
+    "physical": "UNVERIFIED; no change to hardware/physicalclosure",
+    "evidence": "docs/evidence/006-number-entry-v1.json"
+  },
+  "browser_pad15_mathematics_ink": {
+    "behavior": "PASS actualBACK\u21925/6\u2192isolatedCHECK/rev9Verified\u2192OPFSbarrier143/Saved26\u2192ordinarycanvasink\u2192barrier161/Saved29",
+    "model": "Same exactc53RTL/Wasmcore;32M PendingSave suffixreplays allarchivebytes usingactualoutcomes/privatebacking",
+    "guest": "Actualread/annotate/check/history/uncertainreview preserved; wholekeypad/body/requiredmathlabels andwholeinkplane exact",
+    "distribution": "Actual192MiB browsercold582.7M/4891.234s; secondCPU0 coldnowrunning, new17bundleCPU notqualified",
+    "physical": "No physical pressure/powerloss/eviction claim",
     "evidence": "docs/evidence/006-number-entry-v1.json"
   }
 }

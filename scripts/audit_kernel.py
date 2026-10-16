@@ -400,6 +400,10 @@ def validate_managed_provenance(build: dict, provenance: dict, *, configuration:
                 isinstance(row, dict) and row.get("source") == "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad" for row in images):
             selected = tuple({**row, "source": "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad"}
                              if row["key"] == "notebook" else row for row in selected)
+        if configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and isinstance(images, list) and any(
+                isinstance(row, dict) and row.get("key") == "notebook" and row.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPadBrowse" for row in images):
+            selected = tuple({**row, "source": "Lemma.Applications.Notebook.mainPackageNumberPadBrowse"}
+                             if row["key"] == "notebook" else row for row in selected)
         expected = {"managed_policy": MANAGED_POLICIES[configuration], "boot_roles": {row["key"]: row["boot_role"] for row in selected}}
         if (images != list(selected) or any("boot_role" in record for record in (build, provenance))
                 or any(record.get(key) != value for record in (build, provenance) for key, value in expected.items())):
@@ -475,6 +479,10 @@ def validate_user_image_catalog(value: object, *, configuration: str | None = No
             for row in catalog.get("images", []) if isinstance(row, dict)):
         images = tuple({**row, "source": "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad"}
                        if row["key"] == "notebook" else row for row in images)
+    if selected in PACKAGE_NOTEBOOK_CONFIGURATIONS and isinstance(catalog.get("images"), list) and any(
+            isinstance(row, dict) and row.get("key") == "notebook" and row.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPadBrowse" for row in catalog.get("images")):
+        images = tuple({**row, "source": "Lemma.Applications.Notebook.mainPackageNumberPadBrowse"}
+                         if row["key"] == "notebook" else row for row in images)
     expected = {"schema_version": 1, "contract_version": "lemma-user-image-catalog-v1",
                 "configuration": selected, "stage": "supervisor", "image_count": len(images),
                 "images": list(images), **managed_fields(selected), **software_deployment_fields(selected)}
@@ -3294,11 +3302,10 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         raise Core0Error("per-image unit selection differs from its configuration/role")
     image = image_spec(configuration, image_key) if multi_user else None
     if multi_user:
-        from dirty_batch_notebook_target import numeric_candidate, numeric_contract, NUMERIC_ROOT
+        from dirty_batch_notebook_target import numeric_candidate, numeric_contract, numeric_root
         if numeric_candidate(unit):
             numeric_contract(unit)
-            from companion_number_pad_target import candidate as recovery_number_candidate, ROOT as RECOVERY_NUMBER_ROOT
-            image = {**image, "source": RECOVERY_NUMBER_ROOT if recovery_number_candidate(unit) else NUMERIC_ROOT}
+            image = {**image, "source": numeric_root(unit)}
     if multi_user and image is None:
         raise Core0Error("unknown per-image user unit selection")
     keys = {"schema_version", "artifact_category", "contract_version", "configuration", "role", "roots", "functions",
@@ -3617,6 +3624,8 @@ def validate_user_primitive_catalog(value: object, image: dict, *, configuration
     if configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and image.get("key") == "notebook" and image.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPad":
         expected_image = {**expected_image, "source": image["source"]}
     if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and image.get("key") == "notebook" and image.get("source") == "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad":
+        expected_image = {**expected_image, "source": image["source"]}
+    if configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and image.get("key") == "notebook" and image.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPadBrowse":
         expected_image = {**expected_image, "source": image["source"]}
     if image != expected_image:
         raise Core0Error("per-image primitive authority differs from the closed selected image")

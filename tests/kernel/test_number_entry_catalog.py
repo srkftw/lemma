@@ -74,5 +74,37 @@ class CompanionNumberEntryCatalog(unittest.TestCase):
         with self.assertRaises(Core0Error):
             validate_user_image_catalog(wrong)
 
+
+class BrowseHistoryCatalog(unittest.TestCase):
+    ROOT = 'Lemma.Applications.Notebook.mainPackageNumberPadBrowse'
+
+    def test_only_fixed_canonical_notebook_root_changes(self):
+        from audit_kernel import (validate_user_image_catalog, managed_fields,
+                                  software_deployment_fields)
+        for config in (CONFIG, 'lemmasim-silicon-package-closure-entry2-bulk-initialize'):
+            images = copy.deepcopy(list(image_specs(config)))
+            next(row for row in images if row['key'] == 'notebook')['source'] = self.ROOT
+            catalog = {'schema_version': 1, 'contract_version': 'lemma-user-image-catalog-v1',
+                       'configuration': config, 'stage': 'supervisor', 'image_count': len(images),
+                       'images': images, **managed_fields(config), **software_deployment_fields(config)}
+            validate_user_image_catalog(catalog)
+            metadata = {'managed_policy': MANAGED_POLICIES[config],
+                        'boot_roles': {row['key']: row['boot_role'] for row in images}}
+            validate_managed_provenance(metadata, metadata, configuration=config, images=images)
+            for key, value in [('source', self.ROOT+'Other'), ('id', 99),
+                               ('module', 'Lemma.Courses.Arithmetic'), ('directory', 'users/store')]:
+                bad = copy.deepcopy(catalog)
+                next(row for row in bad['images'] if row['key'] == 'notebook')[key] = value
+                with self.subTest(key=key), self.assertRaises(Core0Error):
+                    validate_user_image_catalog(bad)
+
+    def test_companion_does_not_silently_acquire_canonical_browse_root(self):
+        from audit_kernel import validate_user_image_catalog
+        helper = CompanionNumberEntryCatalog()
+        catalog = helper.fixture(helper.CONFIGURATIONS[0], False)
+        next(row for row in catalog['images'] if row['key'] == 'notebook')['source'] = self.ROOT
+        with self.assertRaises(Core0Error):
+            validate_user_image_catalog(catalog)
+
 if __name__ == "__main__":
     unittest.main()

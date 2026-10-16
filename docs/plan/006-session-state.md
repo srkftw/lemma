@@ -3778,3 +3778,95 @@ causesexistingfinishOpenPackageCourse fallbacknode1, originalexpectednode3.
 Originalnode3 bodypriorinkref wasalsoPENDINGfooter. This doesnotloseoldproof/
 learnerhistory, butindependent durable browsingposition remains missing; do not
 relabel aspassednode3 recovery. Tab31nowpaused beforeoriginal13:47deadline.
+
+Published joined16 increment740eaa3f4c3dbff30ab1b6c625c289c19e9cc192; draftPR9
+updated/current CI38895782765 IN_PROGRESS (exactfullSHA lookup; abbreviatedSHA
+returnednoruns andisnotCIabsence). Newconnectedcase running:
+`PYTHONPYCACHEPREFIX=$PWD/build/usb/task006-companion-number-pad16-connected-pycache-a1
+python3 build/usb/task006-companion-number-pad16-connected-plan-a1/supervise.py`.
+Supervisor2267586/start71773220, owner
+build/usb/task006-companion-number-pad16-connected-a1(.supervision).
+Predeclared28800s/10B aggregate/newworkload, original1.6B/7200cold/action caps;
+addedrealnumeric/check/hint/thirdcold phases400Mview/200Mcontrol/3600s, bound
+checkedbeforecompletion. Newworkloadprospectivelyadds~1B toold3066M/21600FAIL,
+usingobserved~7us/clock +inspection/IO headroom; notextensionofoldcase.
+InitialSaved12source/opaquepeer/outbox copiedprivately, no directdocmutation.
+ActualsessionCPU0 identity guest6c331985/native6cbd verified; livecoldcurrently
+RUNNING65M/323.46s, realUART1320bytes. NoReady/Save16/check/coldpassyet.
+Actor/sourceplan/supervisor andselectedinheritedtransport/oraclefiles are frozen
+by supervisionmanifest. Do notedittheseactivefiles. Originalfailedcasesintact.
+
+New15/browserBACK passiveobserverPASS21.270190s (notlatency): actual139.15M
+clocks, Saved25/newdoc9/5over6Unchecked, alloldcheck/source/learnerhistory,
+wholekeypad/body andactualchangedlabels; oldink/packageobjects unchanged,
+actualbarrier134. Capture982.85M; publichost8270.405950 vsbefore7522.391735,
+upperobservedcompletion748.014215s includingUI/capturegap; sim718.427535s.
+NotfirstSavedlatency orwholemathpaneindependentpixelclaim.
+CHECKnowrunning from982.85M, predeclaredhardparent200M/2400seconds inclusive
+ofUI/captures, deadline2026-10-16T12:32:25.720351Z. Threechunks32M/600,
+32M/600,136M/900; original4B/28800globalunchanged. First32Mends1014.85M.
+At1003M actualguestPending26 whilelastcompletedbarrier134stillSave25; preserve
+in-flightcut for32Mprivate samecompiledc53 suffix usingactualrecordedtape only.
+Needexportcheckpoint/backing/outcomes atfirst32M, runsecond32M underoriginal
+parentdeadline, export endpoint, launch bounded1200sprivate replay, resume
+remaining136M withabsoluteparenttimeguard. No hiddenflush/drain/fence/guestedit.
+NoVerified26 yet; ordinarypointerink/secondcold stillpending.
+
+Browser15 CHECK now PASS: actual5/6 Verified revision9, request1113/reply1109/
+reclaimed graph1117, Saved26 only after actualOPFSbarrier143.129.1Mclocks
+within original200M/2400; final1111.95M. Original64M displayFAIL staysFAIL
+(acknowledgedbytes alreadyVerified but completedpixels stillUNCHECKED). Final
+body/keypad/labels pass; notwholemathpane reconstruction. Actual32M private
+samec53Wasm suffix Pending26→barrier143/Saved26 reproduces everyarchivebyte,
+226.663838s/1,568,567,296B peak/ownedcleanup. Offlinecapturedoutcomes only; no
+originalOPFS/peer. NotQEMUhidden-cache closure/native-Wasm migration/cold.
+Ownerpad15-check-replay-a1 andsupervisionpad15-check-replay-plan-a1.
+
+Actual740CI38895782765 FAILURE: foundationhost exactloggedpipelineexpectation
+omittednewcompanionActionslog.10otherjobs PASS; latermetadata SKIPPED. Actual
+decodedjob116955790275 retainedbuild/ci/task006-740-metadata-failed.log. Local
+reproduction failedsameassertion; precisefixture inventory addscompanion plus
+new17browsehistorybuild/package/Actionslogs, pipefailchecksunchanged.473full
+foundationhosttests PASS39.777s, notnewcandidateCI. PR9statuscorrected/unmerged.
+
+Newcanonical17 actualreadonlyhistoryreader target has normalfullauditPASS;
+initializer/fullpair stillrunning with416source+HEAD/indexhold, no edits/stage/
+commitofconsumedsources untilcleanup. Newgenuine17component190.980s/875pre/
+873post; all typed/fullIRguards passnormal+init. Historical15/16 authority
+unchanged. GoalUnknown remainsUnknown: onlyprivate reader location recovers
+latestknown submittedsource; no newevidence/Save orarbitrarybrowseposition
+persistenceclaim. NewfastcoldSaved37/rev17resourcecase running fromopaque
+oldactualraw, never snapshot/hostdocumentinput. Old11browserreopenFAILintact.
+
+New17 realfastguest cold/reopen PASS at304000013functionalunits/46.925158s:
+CPU0→Ready210000001/22.654183s; actualrawCOURSE→historynode3 at94000012/
+12.664968s. All3.63Mhomepixels/all256MiB/seq37/workspace/oldhistory/learner
+exact; wholebody/keypad +Indeterminatelabel independent. Unknowncurrentbinding
+remainsUnknown, no newchecker/Save/format. Ownerbrowse17-connected-a1, original
+old11browserFAILretained. This isfastfunctionalexecution, notnewRTLtiming.
+
+New17 fullpair/supervision PASS786.792141s,1,906,851,840Bpeak/minavailable
+4,397,379,584B;416source/archive/current/HEAD/index seals andownedcleanup
+complete, holdRELEASED. Normal133.913505s/audit235.546486s/712248B/43f7fa56;
+init166.927696s/audit250.048109s/712256B (fullSHAinevidence). Threeactual
+validLLVM/rootmutants reject4.149427s.461kernelhost PASS9.463s,18scaffold
+PASS9.814s/metadata; retained16actualActions PASSnew17imports. Native/static17
+bundlesprepared; native11826585B/8e945a40 archive (externalNixdeps) andbrowser
+2067017B/9a3a91d2, standalonevalidators PASS; no cleanhost/browser17CPUclaim.
+Reusablechecker conformance/lemmasim/check_course_browse_recovery.py passes
+newbundle304000013fastunits/34.333068s. OriginalunpairedarchiveCLIflagsfailed
+beforeCPU/a1retained; parser nowrequirespairedoverrideflags, bundledcaseomits
+both. NewexactRTL10800s/1.4B two-phasecase nowrunning, no resultinferred.
+Ownerbrowse17-rtl-a1, supervisorbrowse17-rtl-supervision-a1, plan/supervise.py
+inbrowse17-rtl-plan-a1. Actualhostimports/checker fixeduntilresult/cleanup.
+
+Browser15 ordinarycanvasmouse inkPASS49.35M→1161.3M/Saved29/barrier161,
+272Brawstroke27/object65563, exact9fields/syntheticpressure2048/tool0, every
+3.63Mpixel/oldworkspace/history/objectbyte. Observer25.564249s NOTlatency;
+publicobserveduppercompletion426.067025s inclUI/inspection, actualsimdelta
+414.638050s, nofirstACK claim. SameOPFSpad15-index-a1 actualClose/Open CPU0/
+retired0/panel0/queue0/nonprivate; no snapshot/import/format. Secondcoldnow
+runningoriginal1B/7200/global4B/28800, deadline17:29:51.932571Z unchanged.
+Ownerpad15-index-cold-plan-a1/second-cold-plan.json; newexpectedhomeallpixels
+plusactualpoint, backingink-saved.raw. NeedsecondcoldReady/allpixels/allbytes
+thenCOURSEVerifiedrev9/historyreopen. Do notrestartcoldprefix/reportReadyearly.

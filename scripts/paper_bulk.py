@@ -86,10 +86,10 @@ def validate(ir,unit,*,optimized):
    # Presentation3/4/6/7 and workspace-envelope5 retain the Surface path. The full
    # cohort gate above and the exact unchanged layout2 boot root below remain
    # mandatory; a version label alone cannot authorize a new Surface path.
-   if package['contract_version'] in ('lemma-installed-package-notebook/12','lemma-installed-package-notebook/13','lemma-installed-package-notebook/14','lemma-installed-package-notebook/15'):
-    from dirty_batch_notebook_target import numeric_contract,NUMERIC_ROOT
+   if package['contract_version'] in ('lemma-installed-package-notebook/12','lemma-installed-package-notebook/13','lemma-installed-package-notebook/14','lemma-installed-package-notebook/15','lemma-installed-package-notebook/17'):
+    from dirty_batch_notebook_target import numeric_contract,numeric_root
     _, authority=numeric_contract(unit)
-    selected[NUMERIC_ROOT]=authority['surface_root_sha256_by_phase']['post' if optimized else 'pre']
+    selected[numeric_root(unit)]=authority['surface_root_sha256_by_phase']['post' if optimized else 'pre']
    elif package['contract_version'] in ('lemma-installed-package-notebook/2',
                                        'lemma-installed-package-notebook/3',
                                        'lemma-installed-package-notebook/4',

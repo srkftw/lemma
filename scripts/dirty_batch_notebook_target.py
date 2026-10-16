@@ -87,14 +87,31 @@ NUMERIC_VERSION='lemma-number-entry-notebook-artifact/1'
 NUMERIC_ROOT='Lemma.Applications.Notebook.mainPackageNumberPad'
 NUMERIC_AUTHORITY=Path(__file__).resolve().parents[1]/'tooling/dirty-batch-notebook-target-authority.json'
 def numeric_digest(v):return hashlib.sha256(json.dumps(v,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+NUMERIC_BROWSE_ROOT='Lemma.Applications.Notebook.mainPackageNumberPadBrowse'
+NUMERIC_BROWSE_POLICY='Lemma.Courses.BrowseHistory.location'
+
+def numeric_root(unit):
+ from companion_number_pad_target import candidate as recovery_candidate,ROOT as RECOVERY_ROOT
+ if recovery_candidate(unit):return RECOVERY_ROOT
+ return NUMERIC_BROWSE_ROOT if any(canonical(r.get('source','')) in (NUMERIC_BROWSE_ROOT,NUMERIC_BROWSE_POLICY)for r in unit.get('functions',[]))else NUMERIC_ROOT
+
 def numeric_candidate(unit):
  rows=unit.get('functions',[])
  if not isinstance(rows,list)or any(not isinstance(r,dict)or not isinstance(r.get('source'),str)for r in rows):raise Core0Error('Number entry candidate function map malformed')
- return any(canonical(r['source'])==NUMERIC_ROOT or canonical(r['source']).startswith(('Lemma.Courses.NumberPad.','Lemma.Documents.MathematicsEntry.'))for r in rows)
+ return any(canonical(r['source']) in (NUMERIC_ROOT,NUMERIC_BROWSE_ROOT,NUMERIC_BROWSE_POLICY) or canonical(r['source']).startswith(('Lemma.Courses.NumberPad.','Lemma.Documents.MathematicsEntry.'))for r in rows)
 def numeric_contract(unit):
  from companion_number_pad_target import candidate as recovery_candidate, contract as recovery_contract
  if recovery_candidate(unit):return recovery_contract(unit)
  if not numeric_candidate(unit):return None
+ if numeric_root(unit)==NUMERIC_BROWSE_ROOT:
+  a=json.loads(NUMERIC_AUTHORITY.read_text());previous=a['number_entry_pad_repaint_v1'];wanted=a.get('number_entry_browse_history_v1',{})
+  if (unit.get('configuration')not in NUMERIC_CONFIGURATIONS or unit.get('role')!='user'or unit.get('image_key')!='notebook'or unit.get('image_id')!=2 or unit.get('contract_version')!='core0-user-v0.2' or unit.get('used_device_ops')!=[] or unit.get('software_deployment')!=NUMERIC_SOFTWARE):raise Core0Error('History browse escaped exact canonical Notebook deployment')
+  if [{k:r.get(k)for k in ('source','id','args')}for r in unit.get('roots',[])]!=[{'source':NUMERIC_BROWSE_ROOT,'id':1,'args':['u64']}]:raise Core0Error('History browse exact root/ABI differs')
+  if (wanted.get('schema')!='lemma-number-entry-browse-history-artifact/1'or wanted.get('package_notebook_version')!=17 or wanted.get('previous_artifact_sha256')!=numeric_digest(previous)or wanted.get('browse_policy')!='lemma-course-browse-history/1'or set(wanted.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS)or wanted['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit)):raise Core0Error('History browse complete genuine authority/predecessor/catalog absent or changed')
+  loops=unit.get('used_loops',[])
+  if len(loops)!=1 or loops[0].get('stable_id')!='action.loop'or canonical(loops[0].get('callback',''))!='Lemma.Applications.Notebook.numericBrowseStep':raise Core0Error('History browse guest loop differs')
+  if {r.get('stable_id')for r in unit.get('used_execution_ops',[])}!={'execution.virtual-read8','execution.virtual-read64','execution.virtual-write8','execution.virtual-write64','execution.syscall'}:raise Core0Error('History browse acquired execution authority')
+  return 'canonical',wanted
  if unit.get('configuration')not in NUMERIC_CONFIGURATIONS or unit.get('role')!='user'or unit.get('image_key')!='notebook'or unit.get('image_id')!=2 or unit.get('contract_version')!='core0-user-v0.2' or unit.get('used_device_ops')!=[] or unit.get('software_deployment')!=NUMERIC_SOFTWARE:raise Core0Error('Number entry escaped exact canonical Notebook deployment')
  if [{k:r.get(k)for k in ('source','id','args')}for r in unit.get('roots',[])]!=[{'source':NUMERIC_ROOT,'id':1,'args':['u64']}]:raise Core0Error('Number entry root/ABI differs')
  master=json.loads(NUMERIC_AUTHORITY.read_text());a=master.get('number_entry_v1',{})
@@ -119,15 +136,16 @@ def numeric_semantics(ir,unit):
   if owner not in rows or target not in rows:raise Core0Error('Number entry semantic owner absent')
   return re.findall(r'call \{ i64, i64 \} @'+re.escape(rows[target]['symbol'])+r'\(([^\n]*)\)',_ir_definition_body(ir,rows[owner]['symbol']))
  version=numeric_contract(unit)[1]['package_notebook_version']
+ step='numericBrowseStep'if version==17 else'numericStep'
  publisher='numericPublishAligned'if version>=14 else'publishPackageWorkspace'
- for owner,target in [('numericInputSample.acceptSample','numericPadPress'),('numericPadPress',publisher),('numericStep','numericPumpPad'),('numericStep','pumpRefreshRestoredBatched'),('publishPackageWorkspace','savePackageWorkspace'),('savePackageWorkspace','startSave'),('packageToolbar','packageRequestSave'),('uploadDirtyBatch','consumeDirtyIndexStep'),('pumpRefreshRestoredBatched','restorePaperBatch'),('restorePaperBatch','Lemma.Ink.Surface.uploadIndexedBulk')]:
+ for owner,target in [('numericInputSample.acceptSample','numericPadPress'),('numericPadPress',publisher),(step,'numericPumpPad'),(step,'pumpRefreshRestoredBatched'),('publishPackageWorkspace','savePackageWorkspace'),('savePackageWorkspace','startSave'),('packageToolbar','packageRequestSave'),('uploadDirtyBatch','consumeDirtyIndexStep'),('pumpRefreshRestoredBatched','restorePaperBatch'),('restorePaperBatch','Lemma.Ink.Surface.uploadIndexedBulk')]:
   target=target if target.startswith('Lemma.')else prefix+target
   if len(calls(prefix+owner,target))!=1:raise Core0Error('Number entry disconnected ordinary path: '+owner+'/'+target)
  for owner,target in [('numericPadPress','Lemma.Documents.MathematicsEntry.press'),('numericPumpPad','Lemma.Courses.NumberPad.render'),('numericPadPress.recapture','Lemma.Courses.PackageWorkspace.captureSelection')]:
   if len(calls(prefix+owner,target))!=1:raise Core0Error('Number entry lost actual guest operation')
  if version>=13:
   repair=prefix+'numericPumpCancelledRedraw'
-  if len(calls(prefix+'numericStep',repair))!=1 or len(calls(repair,prefix+'pumpCancelledRedraw'))!=1 or len(calls(repair,prefix+'renderPackageCourse'))!=1:raise Core0Error('Number entry loss recovery lost its actual guest repaint path')
+  if len(calls(prefix+step,repair))!=1 or len(calls(repair,prefix+'pumpCancelledRedraw'))!=1 or len(calls(repair,prefix+'renderPackageCourse'))!=1:raise Core0Error('Number entry loss recovery lost its actual guest repaint path')
   if calls(repair,prefix+'startSave')or calls(repair,prefix+'reportCommitState'):raise Core0Error('Number entry loss repaint acquired persistence/acknowledgment authority')
  if version>=14:
   for target in ('adoptPackageWorkspace','reportCourse','savePackageWorkspace'):
@@ -143,6 +161,16 @@ def numeric_semantics(ir,unit):
   if 'i64 200, i64 0'not in calls(prefix+'numericPumpPad',prefix+'packagePut'):raise Core0Error('Completed pad reconstruction lost damage clearing')
   for target in ('startSave','reportCommitState','numericPublishAligned','packageCheck'):
    if prefix+target in rows and calls(mark,prefix+target):raise Core0Error('Raw pad marker acquired document/checking/Save authority')
+ if version==17:
+  for owner,target in [('numericBrowseStep','pumpPackageBrowseWork'),('pumpPackageBrowseWork','pumpBrowseOpenCourse'),('pumpBrowseOpenCourse','pumpOpenPackageCourse'),('pumpBrowseOpenCourse','restoreBrowseLocation'),('restoreBrowseLocation',NUMERIC_BROWSE_POLICY)]:
+   destination=target if target.startswith('Lemma.')else prefix+target
+   if len(calls(prefix+owner,destination))!=1:raise Core0Error('History browse disconnected actual reader path: '+owner+'/'+target)
+  if len(calls(NUMERIC_BROWSE_POLICY,'Lemma.Courses.PackageWorkspace.validate'))!=1 or rows[NUMERIC_BROWSE_POLICY]['effects']!=['checked-access','virtual-read']:raise Core0Error('History browse lost full validation/readonly authority')
+  updates=calls(prefix+'restoreBrowseLocation',prefix+'packagePut')
+  if len(updates)!=4 or [re.match(r'i64 (\d+),',a).group(1)if re.match(r'i64 (\d+),',a)else None for a in updates]!=['128','136','160','176']:raise Core0Error('History browse writes outside private reader fields')
+  for owner in (prefix+'restoreBrowseLocation',NUMERIC_BROWSE_POLICY):
+   for target in ('startSave','reportCommitState','numericPublishAligned','packageCheck'):
+    if prefix+target in rows and calls(owner,prefix+target):raise Core0Error('Browsing acquired mathematical/persistence authority')
  if calls(prefix+'packageRequestSave',prefix+'issue')!=['i64 8, i64 0, i64 0, i64 0']:raise Core0Error('Number entry explicit Save differs')
  return {'ordinary_guest_entry_and_storage_connected':True,'numeric_bounds':'0..99; overflow is unchanged bytes, explicit limit message','scope':'Complete source/IR authority; CPU/Store/controller qualification separate'}
 

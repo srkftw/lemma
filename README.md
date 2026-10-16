@@ -1934,7 +1934,7 @@ Core0 acceptance passes23 real O0/O2 RV64 boots, and actual candidate CI
 [38873521466](https://github.com/srkftw/lemma/actions/runs/38873521466) passes
 all11jobs/all111steps. These are separate from canonical RTL timing.
 
-Notebook15 is now the latest prepared pair:
+The historical Notebook15 prepared pair is:
 
 - Native bundle: `build/native/task006-number-pad-repaint-notebook-a1`.
 - Static bundle: `build/browser/task006-number-pad-repaint-a1`.
@@ -1949,8 +1949,9 @@ private fork/install/barrier/newCPUcold/Load passes389.698seconds. The extracted
 static launcher is
 `python3 -I build/distribution/task006-number-pad-repaint-browser-extracted-a1/lemmasim-browser/serve.py --port 8803`.
 It serves the same exact RTL Wasm with the matched15 images and repaired input
-transform adapter. New15 browser CPU execution, clean-host qualification,
-production boot and redistribution rights remain separate. Original failures
+transform adapter. Actual15 browser cold Ready, number entry, isolated checking and raw ink Save
+now have their own observations; a second durable-only cold is still running.
+Clean-host qualification, production boot and redistribution rights remain separate. Original failures
 and exact source identities remain in the Task006 checkpoint.
 
 The shared native/Wasm runtime now avoids an unnecessary in-range framebuffer
@@ -1960,6 +1961,57 @@ Node process CPU is17.97% lower for that bounded workload. An earlier contended
 wall-time comparison was slower and remains recorded. Native held-memory/private-
 fork regression also passes. This is host execution cost, with unchanged guest
 cycles. The prepared15 bundles above keep their previously qualified runtime
-identities; full notebook/browser qualification of the new runtime remains
-separate. Exact sources, bounds and commands are in
+identities; actual15 browser cold/check/ink and exact32M same-Wasm pending-Save suffix now
+pass separately; a second cold and native/Wasm whole-workflow comparison remain
+open. Exact sources, bounds and commands are in
 [the runtime evidence](docs/evidence/006-framebuffer-port-index.json).
+
+
+Canonical Notebook17 recovers the course reader's initial location from the
+latest known submitted source when the current selection is Unknown. It keeps
+that current selection Unknown and preserves the submission, evidence, learner
+history and all storage bytes. This fixes the retained resource-case reopen
+that previously showed node1 instead of its historical exercise3. It does not
+persist an arbitrary browsing position. Both genuine RV64 images pass complete
+artifact audits; actual fast cold/reopen passes every home pixel and backing
+byte plus the expected course body, keypad and evidence label. Exact RTL
+qualification is running separately.
+
+The prepared native and static machine bundles are
+`build/native/task006-number-pad-browse17-a1` and
+`build/browser/task006-number-pad-browse17-a1`. Launch the native machine with
+an existing medium, preserving the ordinary guest recovery path:
+
+```sh
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/task006-number-pad-browse17-a1 \
+  --disk /absolute/path/to/YOUR_EXISTING.raw --session-dir build/AN_UNUSED_SESSION
+./scripts/lemmasim browser-serve \
+  --bundle build/browser/task006-number-pad-browse17-a1 --port 8805
+```
+
+The browser bundle uses the same retained exact RTL Wasm core and newly audited
+17 guests. Packaging validation is separate from browser17 CPU execution, which
+is not yet qualified. The browser offers raw input, OPFS-backed Save, exported
+backup, private checkpoint forks and recorded-outcome replay with the existing
+storage limitations. Native compilation remains the explicitly labeled build
+helper. Distribution does not grant redistribution rights or close clean-host
+runtime dependency qualification.
+
+The reusable readonly recovery checker accepts an actual opaque medium and an
+independently qualified complete home-display expectation. It never installs a
+course, constructs a document or submits an answer for the guest:
+
+```sh
+python3 conformance/lemmasim/check_course_browse_recovery.py \
+  --disk build/browser/task006-idle2-pointer-cold-plan-a1/ink-saved.raw \
+  --expected-home build/browser/task006-idle2-pointer-cold-plan-a1/closed-plus-dot-expected.ppm \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --native-bundle build/native/task006-number-pad-browse17-a1 \
+  --work-dir build/courses/AN_UNUSED_HISTORY_CHECK
+```
+
+Add `--backend rtl` for exact circuit execution with the predeclared1B/7200s
+cold and400M/3600s course ceilings. The default fast case is bounded900s and
+reports functional units, not pipeline timing. A timeout remains a failure.
+The original browser11 resource-case reopen failure is retained independently.

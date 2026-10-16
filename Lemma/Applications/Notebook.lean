@@ -4,6 +4,7 @@ import Lemma.Courses.PackageReader
 import Lemma.Courses.PackageRender
 import Lemma.Courses.ControlRender
 import Lemma.Courses.PackageWorkspace
+import Lemma.Courses.BrowseHistory
 import Lemma.Courses.WorkspaceCodec
 import Lemma.Courses.PackageAwaitClient
 import Lemma.Services.Store.RecoveryClient
@@ -4600,6 +4601,154 @@ def mainRecoverablePackageNumberPad (bootArgument : UInt64) : Action :=
   if statusFailed s = true then .done s 0 else .loop numericRecoverableStep
 
 
+
+
+/-! Display-location successor. Source history guides the package reader only;
+current submission applicability and checker/Save authorities stay separate.
+Historical roots retain their bodies and existing open policy. -/
+private def restoreBrowseLocation : Action :=
+  .bind (Memory.read64 (packageWorkspace + 48)) fun s mask => if statusFailed s = true then .done s 0 else
+  if (mask >>> 8) &&& 1 = 1 then .done 0 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.BrowseHistory.location packageWorkspace ns page) fun s location =>
+  if statusFailed s = true then .done s 0 else
+  if location = 0 then .done 0 0 else
+  -- All source fields are read before changing private reader metadata. The
+  -- actual installed package still must pass its ordinary edition/CRC checks.
+  .bind (Memory.read64 (location + 16)) fun s identity => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (location + 24)) fun s edition => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (location + 32)) fun s crc => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (location + 40)) fun s node => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 128 identity) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 136 edition) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 160 crc) fun s _ => if statusFailed s = true then .done s 0 else packagePut 176 (node - 1)
+
+private def pumpBrowseOpenCourse : Action :=
+  .bind (packageGet 96) fun s before => if statusFailed s = true then .done s 0 else
+  .bind pumpOpenPackageCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 96) fun s after => if statusFailed s = true then .done s 0 else
+  if before = 4 then .done 0 0 else if after = 4 then restoreBrowseLocation else .done 0 0
+
+private def pumpPackageBrowseWork : Action :=
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
+  if allocated = 12 then
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  if pending ||| rawCount ||| rawPending ||| stroke ||| checking = 0 then
+  .bind pumpBrowseOpenCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s openedSave => if statusFailed s = true then .done s 0 else
+  if openedSave = 0 then
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  if course = 1 then
+  .bind (packageGet 152) fun s automatic => if statusFailed s = true then .done s 0 else
+  .bind (if automatic = 1 then
+    .bind (packagePut 152 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 128) fun s identity => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 136) fun s edition => if statusFailed s = true then .done s 0 else
+    beginPackageRead identity edition else .done 0 0) fun s _ => if statusFailed s = true then packageCourseError s else
+  .bind pumpPackageRead fun result _ =>
+  if statusFailed result = true then
+    .bind cancelPackageRead fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packagePut 32 4) fun s _ => if statusFailed s = true then .done s 0 else courseError result
+  else
+  .bind (packageGet 72) fun s text => if statusFailed s = true then .done s 0 else
+  .bind (if text = 1 then
+    .bind renderPackageText fun s _ => if statusFailed s = true then courseError s else packagePut 72 0
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 144) fun s controls => if statusFailed s = true then .done s 0 else
+  if controls = 1 then
+    .bind renderPackageControls fun s _ => if statusFailed s = true then courseError s else packagePut 144 0
+  else .done 0 0
+  else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0
+
+
+private def numericBrowseStep : Action :=
+  .bind pumpSave fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpPackageArithmetic fun s _ => if statusFailed s = true then .done s 0 else
+  .bind numericPumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpPackageBrowseWork fun s _ => if statusFailed s = true then .done s 0 else
+  .bind numericPumpPad fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+  .bind (if count = 384 then enqueue else if active = 0 then enqueue else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  if count = 384 then Syscall.sleep 10000 else
+  .bind (get 8) fun s input => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  .bind packageBusy fun s work => if statusFailed s = true then .done s 0 else
+  if work = 0 then
+    if (if checking = 0 then if pending = 0 then if recovery = 0 then if dirtyX = 0xffff then true else false else false else false else false) = true then
+      .bind (Syscall.call 65 input 2 raw 0 0) fun s _ =>
+      if s = 175 then packageCancelInput else if s = 174 then Syscall.sleep 10000 else
+      if statusFailed s = true then .done s 0 else numericInputSample
+    else drain input
+  else drain input
+where
+  drain (input : UInt64) : Action :=
+    .bind (drainNumericInput input) fun s consumed =>
+    if statusFailed s = true then .done s 0 else if consumed = 0 then Syscall.sleep 10000 else .done 0 consumed
+
+def mainPackageNumberPadBrowse (bootArgument : UInt64) : Action :=
+  if (if bootArgument = 2 then (1 : UInt64) else if bootArgument = 3 then 1 else 0) = 0 then failed else
+  .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 packageAllocationAddress 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 576 7) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 584 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 0) fun s surface => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 1) fun s input => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 2) fun s documents => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 3) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (put 0 surface) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 8 input) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 16 documents) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 24 console) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if 2 ≤ bootArgument then Capability.bootGrant 5 else .done 0 0) fun s arithmetic => if statusFailed s = true then .done s 0 else
+  .bind (put 528 arithmetic) fun s _ => if statusFailed s = true then .done s 0 else
+  if bootArgument = 3 then
+    .bind waitForMount fun s _ => if statusFailed s = true then .done s 0 else initializeMedium
+  else
+  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.PackageAwaitClient.call documents outgoing incoming 1 0 request) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Services.Store.Client.responseField incoming 40) fun s floor => if statusFailed s = true then .done s 0 else
+  .bind (put 128 floor) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.geometry surface) fun s geometry => if statusFailed s = true then .done s 0 else
+  let width := geometry &&& 0xffffffff
+  let height := geometry >>> 32
+  if width < 832 then failed else if 4096 < width then failed else
+  if height < 760 then failed else if 4096 < height then failed else
+  .bind (put 32 width) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 40 height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 3 0 0 0) fun s maxX => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 4 0 0 0) fun s maxY => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 0 0 0 0) fun s pressure => if statusFailed s = true then .done s 0 else
+  .bind (put 48 maxX) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 56 maxY) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 64 pressure) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 80 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 120 ink0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 272 512) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 336 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 344 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 41 allocateStep 41 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind Surface.allocateBulk fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.allocate width height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (loadNotebook 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 416) fun s create => if statusFailed s = true then .done s 0 else
+  .bind (if create = 1 then savePage 1 else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
+  if statusFailed s = true then .done s 0 else .loop numericBrowseStep
 
 
 end Lemma.Applications.Notebook
