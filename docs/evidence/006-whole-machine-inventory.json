@@ -1019,13 +1019,13 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "a4217e6b97346e070c453e662e7223ffd800531d",
-    "run": 38805996213,
-    "conclusion": "SUCCESS",
+    "commit": "0a83e8f95482876b41a436961ff844de30046fa1",
+    "run": 38841246343,
+    "conclusion": "ALL_11_JOBS_SUCCESS",
     "jobs": 11,
+    "reported_steps": 109,
     "skipped_steps": 0,
-    "all_reported_steps": "SUCCESS",
-    "scope": "Committed restored Surface milestone, excludes local11 course Save change"
+    "scope": "Committed preceding implementation, excludes local NumberEntry12 changes"
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1035,9 +1035,9 @@
   "course_preserving_save_milestone": {
     "behavior": "IMPLEMENTED",
     "compiler": "PASS_GENUINE59_AND_COMPLETE850_888_ARTIFACTS",
-    "RTL_guest": "NOT_RUN",
-    "fast_guest": "NOT_RUN",
-    "distribution": "NOT_RUN",
+    "RTL_guest": "PASS Notebook11/ingress2 canonical Save/cold1.446B; failed-FLUSH/cold1.402B. Original bounds retained.",
+    "fast_guest": "PASS current ingress2 course Save/cold576000030 units; connected53phase mathematics2.162B units. Functional clock only.",
+    "distribution": "PREPARED native/static browser; current browser coldReady493M/allpixels and course PASS; old11 actualSaved11cold FAIL at7200s/noReady,831.65M. Browser mathematics in progress.",
     "physical": "UNVERIFIED",
     "contract": "docs/contracts/006-course-preserving-save-v1.md"
   },
@@ -1066,5 +1066,15 @@
       "full original+offline controller pixels at2416M"
     ],
     "unfinished": "Independent cold stopped at650M before Ready; original failure and cold-failed snapshot retained. No cold acceptance. Observer snapshot request near cutoff timed out; no additional snapshot is claimed."
+  },
+  "number_entry_component_milestone": {
+    "behavior": "IMPLEMENTED_IN_LEAN_NOT_CPU_QUALIFIED",
+    "compiler": "PASS actual selectors/checked User2/863pre861post/full artifact/25RV64cells",
+    "RTL_guest": "NOT_RUN",
+    "fast_guest": "NOT_RUN",
+    "distribution": "NOT_RUN",
+    "physical": "UNVERIFIED",
+    "contract": "docs/contracts/006-number-entry-v1.md",
+    "evidence": "docs/evidence/006-number-entry-v1.json"
   }
 }

@@ -1,0 +1,45 @@
+{
+  "schema": "lemma-number-entry-evidence/1",
+  "status": "COMPONENT_PASS_WHOLE_IMAGE_AND_CPU_PENDING",
+  "contract": "docs/contracts/006-number-entry-v1.md",
+  "scope": "Additive canonical Notebook12; machine0.3/User2, Store format, raw ink, isolated checker and original Notebook roots retained. Companion root unchanged.",
+  "target_sources": {
+    "Lemma/Documents/MathematicsEntry.lean": "25218480fd20566e012c17ef4d9348cbc72a23d93997f8ef0dd643d4fe176163",
+    "Lemma/Courses/NumberPad.lean": "f36d54937de76354d1d66d1c5d2c70a3213d8527f51f84cb8bb21b6971bfffec",
+    "Lemma/Applications/Notebook.lean": "940bf5c2d005dfeb178d84ed614520e469d4ab5370ee0a58358d4f5bd6f52f91",
+    "Lemma/Compiler/DeploymentCatalog.lean": "63eb51e6a87c6b622871db5a09077795b76db50056aff8608a7ec18f58f862e7"
+  },
+  "component": {
+    "result": "build/courses/task006-number-entry-component-a2/result.json",
+    "result_sha256": "404fb5d3e1d64961b739f9265b53152ce8c300fad3a68a1101228156414c317c",
+    "status": "PASS_CORRECTED_GENUINE_ENTRY_COMPONENT",
+    "functions_pre": 863,
+    "functions_post": 861,
+    "unchanged_original_functions": 842,
+    "actual_selectors": "Arithmetic.press writes default0 or actual offsets56/64/72/80/88; all five executed by the corrected fixture",
+    "negative_checks": [
+      "root ABI",
+      "unchanged typed catalog with changed actual field bound"
+    ],
+    "pixel_scope": "Independent whole framebuffer at three strides; exact footprint, partial failure/repair and hit boundaries. Actual Actions, not a CPU run.",
+    "machine_cells": "build/courses/task006-number-entry-component-a2/character-machine-result.json",
+    "machine_scope": "All25 actual pinned-RV64 control cells/holes; dominating row8/unsigned column guard; changed-hole mutation rejected with unchanged owner and LLVM."
+  },
+  "original_failures": [
+    {
+      "path": "build/courses/task006-number-entry-component-a1/result.json",
+      "reason": "Initial tests prepared incorrect selected-field indices. Integration source review caught actual selector offset mismatch before deployment. Corrected tests invoke real selectors."
+    },
+    {
+      "path": "build/courses/task006-number-entry-component-a2/kernel-host-tests.log",
+      "reason": "439-test suite reported2 malformed-map exceptions in the added audit selector. Fixed fail-closed Core0Error handling; checks unchanged."
+    }
+  ],
+  "checks": {
+    "kernel_host": "439 PASS final,8.843s",
+    "foundation_host": "473 PASS,36.409s",
+    "scaffold": "18 PASS final,6.898s; metadata PASS",
+    "workflow": "14 PASS; new Action/pixel commands retained in exact pipeline inventory"
+  },
+  "next": "Bounded2500s whole normal/initializer compile and full audits from committed source, followed by actual raw-device number entry/checking/cold workflow. No CPU, durability, browser or canonical timing claim for Notebook12 yet."
+}

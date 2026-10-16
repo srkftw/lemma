@@ -448,6 +448,14 @@ def packageClosureNotebookImages : Array UserImageSpec := #[
     root := `Lemma.Applications.Notebook.mainPackageClosureBulk, bootRole? := some .notebook},
   closureNotebookImages[2]!, courseAwaitNotebookImages[3]!]
 
+/-- Additive number-entry deployment12. The historical image specification
+above remains available for its source-bound profiles and artifact authority. -/
+def packageNumberPadNotebookImages : Array UserImageSpec := #[
+  packageClosureNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainPackageNumberPad, bootRole? := some .notebook},
+  packageClosureNotebookImages[2]!, packageClosureNotebookImages[3]!]
+
 /-- Composes the genuine mounted/recovery Store, package UI, isolated checker
 and installer. No host role parses or recovers documents. -/
 def packageRecoveryNotebookImages : Array UserImageSpec := #[
@@ -474,7 +482,7 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
   if isUSBPackageRecoveryNotebookConfiguration configuration then .ok packageRecoveryNotebookImages
-  else if isPackageClosureNotebookConfiguration configuration then .ok packageClosureNotebookImages
+  else if isPackageClosureNotebookConfiguration configuration then .ok packageNumberPadNotebookImages
   else if isUSBClosureRecoveryNotebookConfiguration configuration then .ok closureRecoveryNotebookImages
   else if isUSBRecoveryNotebookConfiguration configuration then .ok recoveryNotebookImages
   else if isClosureNotebookConfiguration configuration then .ok closureNotebookImages

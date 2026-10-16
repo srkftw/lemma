@@ -32,6 +32,10 @@ def catalog(unit):
     from package_companion_deployment import CONFIGURATIONS as JOINED, SOFTWARE_DEPLOYMENT as JOINED_SOFTWARE, USER_ROOTS
     joined=unit.get('configuration') in JOINED
     selected_root=USER_ROOTS['notebook'][1] if joined else NOTEBOOK_ROOT
+    from dirty_batch_notebook_target import numeric_candidate, numeric_contract, NUMERIC_ROOT
+    if numeric_candidate(unit):
+        numeric_contract(unit)
+        selected_root=NUMERIC_ROOT
     selected_software=JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
     require(unit.get('configuration') in CONFIGURATIONS + JOINED and
             unit.get('role') == 'user' and unit.get('contract_version') == 'core0-user-v0.2' and

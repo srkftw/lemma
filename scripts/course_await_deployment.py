@@ -81,12 +81,17 @@ def validate_mount_reply(ir,unit,*,optimized):
      unit.get('boot_role')=='course-installer' and
      [{k:r.get(k) for k in ('source','id','args')} for r in unit.get('roots',[])]==
        [{'source':INSTALLER_ROOT,'id':1,'args':['u64']}])
+ package_root=USER_ROOTS['notebook'][1] if unit.get('configuration') in JOINED_CONFIGURATIONS else 'Lemma.Applications.Notebook.mainPackageClosureBulk'
+ from dirty_batch_notebook_target import numeric_candidate,numeric_contract,NUMERIC_ROOT
+ if numeric_candidate(unit):
+  numeric_contract(unit)
+  package_root=NUMERIC_ROOT
  package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS and
      unit.get('image_key')=='notebook' and type(unit.get('image_id')) is int and
      unit['image_id']==2 and unit.get('contract_version')=='core0-user-v0.2' and
      unit.get('boot_role')=='notebook' and
      [{k:r.get(k) for k in ('source','id','args')} for r in unit.get('roots',[])]==
-       [{'source':USER_ROOTS['notebook'][1] if unit.get('configuration') in JOINED_CONFIGURATIONS else 'Lemma.Applications.Notebook.mainPackageClosureBulk','id':1,'args':['u64']}])
+       [{'source':package_root,'id':1,'args':['u64']}])
  if (len(actual)!=1 or unit.get('configuration') not in ALL_CONFIGURATIONS or
      unit.get('role')!='user' or not (installer or package_notebook) or
      type(unit.get('schema_version')) is not int or unit['schema_version']!=2 or

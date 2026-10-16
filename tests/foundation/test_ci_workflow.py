@@ -80,6 +80,9 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("Lemma.Applications.Notebook", self.metadata)
         self.assertLess(self.metadata.index("Lemma.Applications.Notebook"),
                         self.metadata.index("tests/courses/NotebookPackage.lean"))
+        for source in ("tests/courses/NumberEntry.lean", "tests/courses/NumberPad.lean"):
+            self.assertIn(source, self.metadata)
+            self.assertLess(self.metadata.index("Lemma.Applications.Notebook"), self.metadata.index(source))
         self.assertIn("Lemma.Compiler.KernelExport", self.metadata)
         self.assertLess(self.metadata.index("Lemma.Compiler.KernelExport"),
                         self.metadata.index("tests/kernel/ManagedNotebookDeployment.lean"))
@@ -151,7 +154,9 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/user-word-inline.log",
                          "metadata/arithmetic-execution-identity.log",
                          "metadata/ipc-poll-borrow.log",
-                         "metadata/control-render.log", "metadata/kernel-host-unittest.log",
+                         "metadata/control-render.log", "metadata/number-entry-actions.log",
+                         "metadata/number-pad-reference.log", "metadata/number-pad-actions.log",
+                         "metadata/kernel-host-unittest.log",
                          "metadata/silicon-host-unittest.log"),
             "crypto-rv64": ("crypto-rv64.log", "development-auth-rom.log", "development-auth-layout.log"),
             "legacy-rv64": ("legacy-rv64.log",),

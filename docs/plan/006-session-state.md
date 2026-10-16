@@ -3146,3 +3146,45 @@ and new prospective connected-math bounds; no checking result yet. Tab30 still
 runs real Saved11 Close/Open cold under original1B/7200s; no snapshot input.
 Retained task tabs16..31 were all observed paused except these active two and
 marked for handoff; dirty tab29 stays untouched. Preserve all of them.
+
+### October16 NumberEntry source milestone; full-image execution next
+
+Preceding0a83e8f candidate CI38841246343 has all11 jobs/109 steps SUCCESS, no
+skips. The3c retry also finished11/109 success with new job IDs; its original
+Nix transfer/resume416 failure remains retained. No PR9 merge authorization.
+
+Canonical current Notebook11/ingress2 failed-save case now PASS:
+`build/courses/task006-ingress-idle-failed-course-rtl-a1/result.json`,1.402B
+clocks/6960.542s; supervised6970.054s/605880320B peak. Five phases493M/194M/
+28M/493M/194M. Actual FAILED course+annotation plane, no Saved after injected
+fail-before-writeback FLUSH, independent cold original bytes/all pixels exact.
+Host sources equal and owned processes reaped. This is not an actual OS partial-
+write rollback claim. Its previous host-source hold is released.
+
+New Lean `MathematicsEntry`/`NumberPad` and canonical `mainPackageNumberPad`
+are source-connected to the existing staging/source-recapture/Store/checker
+path. Historical roots remain. Contract/evidence:006-number-entry-v1. Corrected
+actual-selector Actions PASS; initial index/offset mistake is retained as FAIL
+before deployment.863pre/861post genuine functions,842 original bodies exact;
+normal/initializer exports differ only in catalog configuration. All25 actual
+RV64 control-table cells/holes and unsigned guard pass; changed-hole mutation
+rejects independently of unchanged owner/body. Kernel439/foundation473/scaffold18
+PASS; original malformed-map host-suite errors retained and corrected without
+changing checks. New CI Actions/reference/pixel commands have retained logs.
+Whole images, CPU, durability and distribution for Notebook12 remain pending.
+Prepared next build:`build/courses/task006-number-entry-whole-a1`, same2500s/
+300s command bounds/resource supervisor. Seal against the new clean commit,
+then run its supervisor; freeze compiler/target/helpers until complete. Next
+connected command:`scripts/check_number_entry_workflow.py` with the new audited
+guest/source archive and unchanged native idle2 bundle. Do not claim this passes
+before real raw keys/checker replies and independent cold execute.
+
+Browser31 current d2 math reaches durable5/1 revision7, Saved14, after actual
+four-contact160M/1800s numerator batch; independent exported-byte PASS. Now runs
+D selection +five PLUS contacts,240M/2700s,40M spacing, expected5/6rev12. Original
+6B/43200s overall plan retained; no checking attempt yet. Tab30 old11 actual
+Saved11 Close/Open cold FAILS7200s at831.65M/noReady; UI reports7222.648s at stop.
+Failure/prefix retained in`build/browser/task006-browser11-saved11-cold-plan-a1`.
+Do not continue/reclassify it as a passing cold acceptance or reset/drop it.
+Dirty tab29 and all16..31 task tabs remain protected. Current31 denominator
+plan/actual outputs:`build/browser/task006-idle2-mathematics-plan-a1`.

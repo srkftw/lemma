@@ -453,6 +453,13 @@ def validate_user_image_catalog(value: object, *, configuration: str | None = No
     catalog = _object(value, "user image catalog")
     selected = catalog.get("configuration") if configuration is None else configuration
     images = image_specs(selected)
+    # Notebook12 is an exact additive source cohort. Its actual unit/body/IR
+    # authority remains mandatory; this admits only its fixed catalog root.
+    if selected in PACKAGE_NOTEBOOK_CONFIGURATIONS and isinstance(catalog.get("images"), list) and any(
+            row.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPad"
+            for row in catalog.get("images", []) if isinstance(row, dict)):
+        images = tuple({**row, "source": "Lemma.Applications.Notebook.mainPackageNumberPad"}
+                       if row["key"] == "notebook" else row for row in images)
     expected = {"schema_version": 1, "contract_version": "lemma-user-image-catalog-v1",
                 "configuration": selected, "stage": "supervisor", "image_count": len(images),
                 "images": list(images), **managed_fields(selected), **software_deployment_fields(selected)}
@@ -3271,6 +3278,11 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     if (image_key is not None) != multi_user:
         raise Core0Error("per-image unit selection differs from its configuration/role")
     image = image_spec(configuration, image_key) if multi_user else None
+    if multi_user:
+        from dirty_batch_notebook_target import numeric_candidate, numeric_contract, NUMERIC_ROOT
+        if numeric_candidate(unit):
+            numeric_contract(unit)
+            image = {**image, "source": NUMERIC_ROOT}
     if multi_user and image is None:
         raise Core0Error("unknown per-image user unit selection")
     keys = {"schema_version", "artifact_category", "contract_version", "configuration", "role", "roots", "functions",
@@ -3585,7 +3597,10 @@ def validate_catalog(value: object, *, configuration: str, stage: str) -> set[st
 
 
 def validate_user_primitive_catalog(value: object, image: dict, *, configuration: str = "tasks-development") -> dict:
-    if image != image_spec(configuration, image.get("key")):
+    expected_image = image_spec(configuration, image.get("key"))
+    if configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and image.get("key") == "notebook" and image.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPad":
+        expected_image = {**expected_image, "source": image["source"]}
+    if image != expected_image:
         raise Core0Error("per-image primitive authority differs from the closed selected image")
     expected = {"schema_version": 1, "contract_version": "lemma-user-execution-v1", "configuration": configuration,
                 "image_key": image["key"], "image_id": image["id"], "startup_case": image["startup_case"],
