@@ -1359,6 +1359,91 @@
         "seconds": 1248.0446543910075,
         "elapsed_seconds": 1246.0729898350546,
         "peak_owned_rss_bytes": 1947799552
+      },
+      "exact_rtl_cold_ready_comparison": {
+        "path": "build/courses/task006-ingress-idle-course-rtl-qualification-a1/cold-ready-comparison.json",
+        "sha256": "0b798cbbf97bd7782aca80bc339f0a9dd90bb1198c44d7e9ad6bd84007502476",
+        "status": "PASS_COMPARABLE_EXACT_RTL_COLD_READY_ONLY"
+      },
+      "exact_rtl_cold_ready_performance": {
+        "before_clocks": 828000000,
+        "after_clocks": 493000000,
+        "reduction_clocks": 335000000,
+        "reduction_percent": 40.45893719806764,
+        "before_host_seconds": 3220.9739831449697,
+        "after_host_seconds": 3228.0902819479816,
+        "scope": "Same raw Saved8 medium/runtime/ROM/dtb/descriptor/profile. Different concurrent host load; no simulator speed claim. Entire RTL six-phase case remains running."
+      },
+      "actual_fast_mathematics42": {
+        "path": "build/courses/task006-ingress-idle-math-fast-a1/result.json",
+        "sha256": "0c13f564846536346d9d209c229666f5a57c9ac4e6bab3a28d3a891234b11226",
+        "status": "PASS_FAST_FUNCTIONAL_COURSE_MATH_LEARNER_INK_COLD"
+      },
+      "actual_fast_mathematics42_supervision": {
+        "path": "build/courses/task006-ingress-idle-math-fast-supervision-a1/result.json",
+        "sha256": "149cd0023d388985809289779cb2cb202f51095c113cfd533e99ecf50e3dd004",
+        "status": "PASS_FUNCTIONAL_FAST_SUPERVISED"
+      },
+      "maintained_course_math53": {
+        "path": "build/courses/task006-maintained-course-math-a1/result.json",
+        "sha256": "7cffa79c8ff4f24b5fc7a919e4c5dd006da8da8e938b6c9235b48d6f6fa42483",
+        "status": "PASS_COURSE_MATH_WORKFLOW_COLD_REOPEN"
+      },
+      "maintained_course_math53_supervision": {
+        "path": "build/courses/task006-maintained-course-math-supervision-a1/result.json",
+        "sha256": "28ad92a197e22bcfd317b6a9a7f182619dcbf594d6efb186203b22b7e5c8db17",
+        "status": "PASS_MAINTAINED_COURSE_MATH_SUPERVISED"
+      },
+      "maintained_course_math53_scope": {
+        "command": "scripts/check_course_math_workflow.py",
+        "phases": 53,
+        "fast_functional_units": 2162000204,
+        "actor_seconds": 310.78009132901207,
+        "supervised_seconds": 312.5130968389567,
+        "owned_peak_rss_bytes": 425246720,
+        "actual_outcomes": [
+          "rational Verified5/6",
+          "edited rational Invalid5/7",
+          "installed exercise Q[x] Verified with coefficients1,2,1",
+          "Unsupported",
+          "zero-budget Indeterminate"
+        ],
+        "independent_cold": [
+          "all controller pixels exact",
+          "all acknowledged objects exact",
+          "all medium bytes exact",
+          "reopened actual authored body",
+          "no new checker request"
+        ],
+        "ordinary_imports_only": true,
+        "open": "Full proof kernel, general managed recursion/runtime, permissioned tutor transport and learning-gain evidence remain separate unfinished gates."
+      },
+      "browser_current_cold_ready": {
+        "path": "build/browser/task006-ingress-idle-ready-a1/result.json",
+        "sha256": "b05e8225dcfd112e1c98d94591d2ae7ae5d800fbecc97d1f9c11257bcec4759a",
+        "status": "PASS_BROWSER_IDLE2_ACTUAL_COLD_READY_ALL_PIXELS"
+      },
+      "browser_course_and_cold_pixels": {
+        "path": "build/browser/task006-browser11-course-observation-a1/result.json",
+        "sha256": "99be0582cfe2542821718059303eb9405c6ee1b36399452c9c479ab5ca02e360",
+        "status": "PASS_BROWSER_COURSE_AND_CURRENT_COLD_COMPLETE_PIXELS"
+      },
+      "browser_scope": "Current idle2 actual cold493M/4759.683s/192MiB with independently exact Saved8 ink pixels. Prior11 authored course all3.63M pixels exact by352.6M course clocks/3357.812s conservative exported host upper bound under original400M/3600. Snapshot outputs only. Annotation, explicit Save and cold reload are separate active work.",
+      "prior_companion11_terminal_deadline_failure": {
+        "path": "build/usb/task006-course-save-companion-cold-supervision-a2/result.json",
+        "sha256": "22db9bc2d98a5af901ee6739588cf6eacfd9d2886d8efbeb537a3806aa1c3708",
+        "status": "FAIL"
+      },
+      "prior_companion11_scope": "FAIL at original absolute00:33:57.348922Z with no Ready. All29 tracked PID/start identities independently reaped, actor5250.824s/supervised5252.611s/365719552B. No terminal machine boundary after cancellation; no extension or relabel. Changed-source idle2 companion independent cold remains running under its own original1.6B/7200s.",
+      "candidate_ci": {
+        "head": "568d9cec8f0b40544f9a3aae1cd2dac1efa06710",
+        "run": 38829709111,
+        "status": "completed",
+        "conclusion": "success",
+        "jobs": 11,
+        "steps": 109,
+        "skipped_steps": 0,
+        "scope": "Actual corrected candidate. Original af8 failure and skipped steps retained separately."
       }
     },
     "browser11_cold_ready": {

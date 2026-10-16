@@ -1642,8 +1642,12 @@ reads before the first header byte. On the same fast machine and Saved8 medium,
 cold Ready uses185,000,001 units versus249,000,006; the complete course annotation,
 explicit Save and independent cold/reopen case uses576,000,030 versus762,000,035.
 The comparison retains the full display/pool and strengthens the independent
-annotation expectation. These are fast functional units; exact RTL and browser
-qualification remain separate running cases.
+annotation expectation. On exact native RTL, the same cold input now reaches
+Ready at493M clocks versus828M, with the full display and8192-frame pool.
+The browser also reaches actual cold Ready at493M clocks/4759.683s using192MiB
+of Wasm heap; every controller pixel matches the independent retained-ink
+expectation. Host durations under different concurrent loads are not a simulator
+speed comparison. The complete RTL Save/cold-reopen case remains running.
 
 ```sh
 ./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
@@ -1673,7 +1677,35 @@ Its injected first-FLUSH failure occurs before writeback; it does not establish
 rollback for actual OS failures. The native and static browser archives are
 `build/distribution/task006-ingress-idle-native-a1.tar.gz` and
 `build/distribution/task006-ingress-idle-browser-a1.tar.gz`. The extracted native
-archive passes initialization/UART/install/fork/cold-Load; browser cold is running.
+archive passes initialization/UART/install/fork/cold-Load; browser cold Ready and
+complete retained-ink pixels pass separately.
 The native archive retains the documented Python/Nix prerequisites and rights
 limitations. Use the browser archive's extracted stdlib launcher as documented
 above; it serves the same local machine without compiling a guest.
+
+The maintained connected mathematics command uses ordinary raw pen controls to
+read the installed reference course and its source/edition/rights anchors,
+submit5/6, edit it to5/7, request an authored local hint and override review,
+then submit the polynomial coefficients1,2,1 for `(x+1)^2`. It requires actual
+isolated checker replies, revision-bound durable evidence, Unsupported and
+Indeterminate outcomes, new raw ink, and an independent cold/reopen with exact
+pixels and acknowledged bytes. The first package is the reference edition; any
+additional `--package` supplies independently observed immutable edition bytes.
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_course_math_workflow.py \
+  --disk build/courses/task006-course-ipc-guest-a1/durable.raw \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --package build/courses/task006-package-qualified-a5/author-package/arithmetic.lcp \
+  --native-bundle build/native/task006-ingress-idle-notebook-a1 \
+  --guest-build build/kernel/task006-ingress-idle-notebook-notebook-a1 \
+  --guest-source-root build/courses/task006-ingress-idle-notebook-whole-a1/consumed-source-root \
+  --work-dir build/courses/AN_UNUSED_COURSE_MATH_CHECK
+```
+
+The maintained53-phase case passes at2,162,000,204 fast units/310.780s
+(312.513s supervised,425,246,720B peak owned RSS). This900s/3B-unit case
+imports no scratch implementation from
+`build/`. It never installs packages or documents on the guest's behalf.
+Its local hint is authored course material; permissioned tutor transport, the
+general managed runtime and the Lean proof-kernel port remain unfinished.

@@ -2972,3 +2972,62 @@ The maintained CI fix adds only PackageInstaller to explicit Lake build targets;
 existing workflow source test requires it before IngressIdle. All14 workflow
 checks and scaffold18 PASS8.976s, metadata/diff PASS. Do not blindly rerun failed
 CI or call its skipped steps passed; publish the actual corrected candidate.
+
+Continuation milestone: candidate568d9cec8f0b40544f9a3aae1cd2dac1efa06710 has
+actual successful CI38829709111,11 jobs/109 steps, no skips. PR9 remains draft
+and unmerged; this does not extend the earlier PR8 merge authorization.
+
+Idle2 exact native RTL cold Ready is493M clocks/3228.090s versus prior11
+828M/3220.974s on the same actual Saved8 medium/runtime/ROM/dtb/descriptor.
+That removes335M/40.459% real target clocks. Concurrent host load differs;
+these durations do not establish a host speedup. Entire6phase RTL cases remain
+running under their original bounds: new idle2 completed actual course194M,
+annotation45M and explicit Pending/Saved-detail0 Save14M, then starts independent
+cold at746M cumulative. Prior11 starts its independent cold at1.197B.
+Receipt:`build/courses/task006-ingress-idle-course-rtl-qualification-a1/cold-ready-comparison.json`.
+Keep their actual imported Python source maps frozen until terminal teardown.
+
+Current browser idle2 fresh cold reaches Ready493M/4759.683s within original
+1B/7200s,192MiB heap. Its complete3.63M pixels equal the independent original
+Saved8 raw-ink expectation. Prior11 browser course reaches independently exact
+authored body/status and every native reference pixel by1.1804B:352.6M course
+clocks,3357.812s conservative exported host upper bound, within original400M/3600s.
+Both checkpoints are passive outputs, never cold-boot inputs. FullCRC/vector/
+Gray4 checks and all pixels PASS54.690s:
+`build/browser/task006-browser11-course-observation-a1/result.json`.
+Tab30 now executes real raw annotation in bounded32M/600s segments under the
+original aggregate200M/1800s; tab31 opens the course on current idle2.
+
+Existing42phase fast course workflow passes1,822,000,158 units/259.622s,
+264.587s supervised/417181696B. That case checks rational results; it does not
+submit a polynomial. The new maintained command
+`scripts/check_course_math_workflow.py` removes all scratch implementation
+imports and adds actual installed polynomial exercise selection, raw coefficient
+editing to1,2,1 and a real isolated Verified reply. Its53phase ordinary course/
+rational edit/polynomial/hint/review/Unsupported/Indeterminate/raw ink/newCPU
+cold/reopen case PASS2,162,000,204 units/310.780s,312.513s supervised/425246720B,
+all owned processes reaped. Complete pixels, acknowledged objects and medium
+bytes match; reopen issues no checker request. Receipts:
+`build/courses/task006-maintained-course-math-a1/result.json` and
+`...-supervision-a1/result.json`. README has the actual command. Hints remain
+authored local material. General managed runtime, full Lean proof kernel,
+permissioned tutor transport and learning-gain evidence remain unfinished.
+
+Original source11 companion corrected cold a2 is terminalFAIL at the original
+absolute00:33:57.348922Z with no Ready. Actor5250.824s/supervised5252.611s,
+365719552B; all29 owned PID/start identities independently confirmed reaped.
+After cancellation the socket refuses connection, so no exact terminal target
+boundary is claimed. Retain peer/outbox/media and original failure. New idle2
+companion cold uses its own1.6B/7200s deadline2026-10-16T02:31:22.610297Z;
+do not extend or conflate either run. Its actor result begins with FAIL while
+running; only terminal supervisor teardown establishes an outcome.
+
+Browser11 C++ native import preflights a1/a2 fail before execution on observer
+setup; a3 reaches real restore and rejects implementation identity, zero clocks.
+Preserve all failures; do not edit checkpoint IDs or bypass admission. A distinct
+same-Wasm browser/Node32M annotation replay uses queued-input prefix69, suffix70
+and actual captured backing31.io in isolated storage. Initial replay a1 fails
+before machine creation because6GiB AS cannot reserve V8 Wasm memory. Corrected
+host preparation a2 allows32GiB virtual/4GiB owned resident memory, preserving
+the original600s absolute ceiling. This is not C++ native conformance, cold
+recovery or a new timing-parity claim. Preserve its terminal result honestly.

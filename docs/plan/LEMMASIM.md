@@ -237,3 +237,23 @@ actual new peer cold remains required. Browser11 also cold-opens the saved-ink
 medium to Ready827.8M/6677.447s,192MiB heap, with independently exact complete
 notebook/ink pixels; course/Save/reload and useful latency remain open. G2/G4-G7,
 S4-S6, fast/checkpoint, distribution/rights and physical status stay separate.
+
+The policy2 canonical cold observation is now493M real RTL clocks,335M fewer
+than prior11 with the same input/runtime/profile. Current browser cold also
+reaches493M/4759.683s at192MiB with independently exact complete retained-ink
+pixels. Prior11 browser authored course reaches an exact complete reference
+plane within its original400M/3600s bounds. Browser annotation/explicit Save/
+durable reopen and the complete new native RTL cold suffix are still separate
+active cases. Host durations under different concurrent loads do not establish
+simulator acceleration or a usable writing-latency target.
+
+G2/G4-G7 now have a maintained53phase public raw-input mathematical workflow,
+including installed rational and polynomial exercise submissions, real isolated
+checker outcomes, edit-invalidated evidence/history, local authored assistance,
+review override, Unsupported/resource failure, new ink and exact independent
+cold/reopen. It passes2.162B fast units/310.780s under900s/3B, with no scratch
+implementation imports. This remains the admitted bounded exact checker and
+reference course; it does not close general managed-runtime, Lean proof-kernel,
+permissioned tutor or learning-policy effectiveness obligations. Original
+companion11 cold deadlineFAIL remains retained; changed-source idle2 cold has
+its own original bound. The versioned inventory identifiers retain their scopes.
