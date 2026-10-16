@@ -3188,3 +3188,18 @@ Failure/prefix retained in`build/browser/task006-browser11-saved11-cold-plan-a1`
 Do not continue/reclassify it as a passing cold acceptance or reset/drop it.
 Dirty tab29 and all16..31 task tabs remain protected. Current31 denominator
 plan/actual outputs:`build/browser/task006-idle2-mathematics-plan-a1`.
+
+NumberEntry20e6d54 is pushed; PR9 updated, candidate CI38847208539 running.
+First whole-pair attempt FAIL235.396s with all owned children reaped/source seals
+PASS. Initializer really built230.866s/708368B,e20d6d66..., then the full audit
+rejected the old exact image-list source expectation. No target fix was needed.
+Corrected observer narrowly admits the actual new canonical root with all other
+rows/roles unchanged; three positive/negative regressions and full kernel442
+PASS. Retained initializer full audit PASS227.448s at
+`build/courses/task006-number-entry-initializer-observer-a1/result.json`, original
+objects/source archive unchanged. Do not rebuild that initializer just for the
+observer fix. Build/audit the still-missing normal image from the new committed
+observer, within the remaining original2500s budget. Original failed whole-pair
+result remains FAIL; normal and initializer consumed-source identities are
+separate and must be reported honestly. Actual NumberEntry CPU workflow remains
+NOT_RUN. Original campaign start/deadline is retained in its supervision launch.

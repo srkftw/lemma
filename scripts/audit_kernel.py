@@ -392,6 +392,10 @@ def managed_fields(configuration: str, image: dict | None = None) -> dict:
 def validate_managed_provenance(build: dict, provenance: dict, *, configuration: str, images: list[dict]) -> None:
     if configuration in MANAGED_POLICIES:
         selected=image_specs(configuration)
+        if configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and isinstance(images,list) and any(
+                isinstance(row,dict) and row.get("source")=="Lemma.Applications.Notebook.mainPackageNumberPad" for row in images):
+            selected=tuple({**row,"source":"Lemma.Applications.Notebook.mainPackageNumberPad"}
+                           if row["key"]=="notebook" else row for row in selected)
         expected = {"managed_policy": MANAGED_POLICIES[configuration], "boot_roles": {row["key"]: row["boot_role"] for row in selected}}
         if (images != list(selected) or any("boot_role" in record for record in (build, provenance))
                 or any(record.get(key) != value for record in (build, provenance) for key, value in expected.items())):

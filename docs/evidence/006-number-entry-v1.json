@@ -1,6 +1,6 @@
 {
   "schema": "lemma-number-entry-evidence/1",
-  "status": "COMPONENT_PASS_WHOLE_IMAGE_AND_CPU_PENDING",
+  "status": "INITIALIZER_BUILD_AND_FULL_AUDIT_PASS_NORMAL_AND_CPU_PENDING",
   "contract": "docs/contracts/006-number-entry-v1.md",
   "scope": "Additive canonical Notebook12; machine0.3/User2, Store format, raw ink, isolated checker and original Notebook roots retained. Companion root unchanged.",
   "target_sources": {
@@ -33,13 +33,27 @@
     {
       "path": "build/courses/task006-number-entry-component-a2/kernel-host-tests.log",
       "reason": "439-test suite reported2 malformed-map exceptions in the added audit selector. Fixed fail-closed Core0Error handling; checks unchanged."
+    },
+    {
+      "path": "build/courses/task006-number-entry-whole-a1/result.json",
+      "reason": "Fresh initializer built; full audit rejected old source-selected image-list expectation. Corrected observer preserves exact full rows and admits only the new canonical root. Initializer bytes reused, original failure retained."
     }
   ],
   "checks": {
     "kernel_host": "439 PASS final,8.843s",
     "foundation_host": "473 PASS,36.409s",
     "scaffold": "18 PASS final,6.898s; metadata PASS",
-    "workflow": "14 PASS; new Action/pixel commands retained in exact pipeline inventory"
+    "workflow": "14 PASS; new Action/pixel commands retained in exact pipeline inventory",
+    "kernel_provenance": "442 PASS8.560s, includes three exact old/new root/role/field/profile regressions"
   },
-  "next": "Bounded2500s whole normal/initializer compile and full audits from committed source, followed by actual raw-device number entry/checking/cold workflow. No CPU, durability, browser or canonical timing claim for Notebook12 yet."
+  "next": "Fresh normal build/full audit, reusing the independently audited original initializer. Retain failed whole-pair result; use remaining original2500s aggregate budget. Actual raw-device number entry/checking/cold remains NOT_RUN.",
+  "initializer": {
+    "source_commit": "20e6d54fdb4aa847d15f8a128d4ef3d3b1532144",
+    "build_seconds": 230.86640238994732,
+    "image_bytes": 708368,
+    "image_sha256": "e20d6d66550f8fb42f4cabc0547495176e04fa393eca798c52373bf41cb45516",
+    "corrected_full_audit": "build/courses/task006-number-entry-initializer-observer-a1/result.json",
+    "audit_seconds": 227.4479304079432,
+    "scope": "unchanged original target objects, corrected separately bound observer; no CPU/durability claim"
+  }
 }
