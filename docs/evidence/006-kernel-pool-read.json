@@ -1,6 +1,6 @@
 {
   "schema": "lemma-kernel-pool-read-refinement-evidence/1",
-  "scope": "Actual Lean metadata getter refinement, complete canonical builds/audits, exact additive authority for11older selectors, expanded fast workflow and new canonical RTL coldReady. Complete new RTL/browser cases remain running; no full machine or fast timing/checkpoint claim.",
+  "scope": "Actual Lean metadata getter refinement, complete canonical builds/audits, fast and canonical RTL six-outcome course/ink/Save/independent-cold workflow, Product10 authenticated update/confirmation/cold reader. Full machine, browser new-kernel execution, fast timing and arbitrary checkpoint closure remain unfinished.",
   "tested_guest_commit": "d9be0fce8d7b31b018318d38fff8336abb89161d",
   "profile": "lemma-silicon-dev/0.3.0",
   "target_sources": {
@@ -329,7 +329,8 @@
     "original20": "build/courses/task006-fresh-chooser20-rtl-plan-a3",
     "new_expanded": "build/courses/task006-pool-read-expanded-rtl-plan-a1",
     "original_reader19_companion": "build/usb/task006-reader19-connected-a1",
-    "status": "RUNNING_ORIGINAL_BOUNDS_NO_FULL_SCENARIO_RESULT"
+    "status": "BOTH_CANONICAL_CASES_PASS_ORIGINAL_READER19_COMPANION_FAIL_RETAINED_CORRECTED_UNIQUE_INK_CASE_RUNNING",
+    "corrected_reader19_companion": "build/usb/task006-reader19-unique-offline-a2"
   },
   "browser_fresh20": {
     "LOAD3": {
@@ -420,21 +421,21 @@
       "comparison_scope": "Same actual source3 medium/canonical Machine. Reduced guest/RTL work; host durations are separately observed under different contention, no host-speedup claim.",
       "observer_seconds": 1.779053768957965
     },
-    "sampling_scope": "Ready cut sampled each1Mclocks; complete6outcome/ink/Save/independent cold still running"
+    "sampling_scope": "Ready cut sampled each1M clocks; complete six-outcome/ink/Save/independent cold case now separately PASS."
   },
   "candidate_ci": {
-    "commit": "7480632c81487d556592d2cea7f48bf5a99ff748",
-    "run": 38996796033,
+    "commit": "34a3a59b81a19dcd27a08bb3307bf5713377db70",
+    "run": 39001737838,
     "status": "COMPLETED_SUCCESS",
     "jobs": 11,
     "steps": 117,
     "skipped": 0,
     "receipt": {
-      "path": "build/ci/task006-748-complete.json",
-      "sha256": "0d98ccbc099d52c7ba708ead36906650b6aedfd97cff8df463122d9a166f78da",
-      "bytes": 25680
+      "path": "build/ci/task006-34a-complete.json",
+      "sha256": "d0fb8b66cb1dadd7f71a6f481cf42a3b508a7a97a6de94cdf0033f5ed8f83c15",
+      "bytes": 25722
     },
-    "scope": "Committed kernel/authority source only; subsequent browser controls require separate candidate CI."
+    "scope": "Committed kernel, browser controls and Product archive source. New Laboratory/companion observer files need their own candidate CI."
   },
   "product10": {
     "scope": "New optimized getter kernel joined to full existing four-role Reader18 product image. Same immutable Lean ROM/RTL10; no full live update result inferred.",
@@ -502,7 +503,7 @@
       "bytes": 359
     },
     "live_case": {
-      "status": "RUNNING_NOT_QUALIFIED",
+      "status": "PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER",
       "case": "saved38-course-reader-pool-read",
       "plan": {
         "path": "build/boot/task006-pool-read-product-connected-plan-a1/plan.json",
@@ -511,7 +512,52 @@
       },
       "output": "build/boot/task006-pool-read-product-connected-a1",
       "supervision": "build/boot/task006-pool-read-product-connected-supervision-a1",
-      "bounds": "Original Reader18 32400s/4.3B clocks; same install/handoff/Ready/cold/course ceilings; no deadline increase"
+      "bounds": "Original Reader18 32400s/4.3B clocks; same install/handoff/Ready/cold/course ceilings; no deadline increase",
+      "result": {
+        "path": "build/boot/task006-pool-read-product-connected-a1/result.json",
+        "sha256": "450fd007d1c642b040621f70f92011bbdf17b237dd96d85baa8819d965cac597",
+        "bytes": 157148
+      },
+      "supervision_result": {
+        "path": "build/boot/task006-pool-read-product-connected-supervision-a1/result.json",
+        "sha256": "a281d8b41fc2f5aa7056544df8c2cca255b17d7dd317274584a3d7d66d971862",
+        "bytes": 743
+      },
+      "clocks": 2223000000,
+      "seconds": 10821.853624581941,
+      "owned_peak_RSS_bytes": 369885184,
+      "phases": [
+        {
+          "name": "actual-resumable-notebook-installation",
+          "clocks": 519800000,
+          "seconds": 3345.278202481102
+        },
+        {
+          "name": "guest-attempt-publication-authenticated-trial-handoff",
+          "clocks": 127200000,
+          "seconds": 798.8082803119905
+        },
+        {
+          "name": "trial-Ready-guest-confirmation",
+          "clocks": 611000000,
+          "seconds": 2846.567997314967
+        },
+        {
+          "name": "confirmed-new-CPU-cold-all-pixels",
+          "clocks": 737000000,
+          "seconds": 2974.9071297349874
+        },
+        {
+          "name": "authenticated-cold-raw-COURSE-saved-example5",
+          "clocks": 228000000,
+          "seconds": 851.1160693949787
+        }
+      ],
+      "source_store_sequence": 38,
+      "all_document_bytes_unchanged": true,
+      "all_expected_pixels": true,
+      "snapshot_cold_input": false,
+      "scope": "Guest A/B installation -> actual trial notebook -> guest health confirmation\n-> independent authenticated cold recovery, preserving every document byte.\nThe original Saved14 case remains fixed. The additive Saved38 Reader18 case\nuses an audited four-role image and raw COURSE input after independent cold.\nNeither case claims interrupted confirmation, production keys or browser boot.\n"
     },
     "host_checks": {
       "metadata": {
@@ -529,5 +575,254 @@
         "seconds": 8.637
       }
     }
+  },
+  "canonical_RTL_connected": {
+    "original20": {
+      "result": {
+        "path": "build/courses/task006-fresh-chooser20-rtl-plan-a3/consumed-host-source-root/build/connected/result.json",
+        "sha256": "f616cbc401aebc9100215b9e36e3970587ab772bf0920527d8a96b1b84b8b4f1",
+        "bytes": 44787
+      },
+      "supervision": {
+        "path": "build/courses/task006-fresh-chooser20-rtl-plan-a3/result.json",
+        "sha256": "0598da9cd15bddab8c6a46def2f425687e03ddefbf24b37018148614f689bb98",
+        "bytes": 1734
+      },
+      "status": "PASS_FRESH_EDITION3_CHOOSER_CHECK_EDIT_HINT_SAVE_INDEPENDENT_COLD_READER",
+      "clocks": 2675000000,
+      "seconds": 13340.083742638002,
+      "sampled_owned_peak_RSS_bytes": 469250048,
+      "owned_survivors": {},
+      "phases": [
+        {
+          "name": "cold-Ready",
+          "initial_cycle": 0,
+          "final_cycle": 471000000,
+          "execution_units": 471000000,
+          "clock_scope": "canonical RTL clocks",
+          "host_seconds": 2048.141868556966,
+          "phase_clock_cap": 1000000000,
+          "phase_host_cap": 7200
+        },
+        {
+          "name": "actual-raw-annotation-Saved",
+          "initial_cycle": 1536000000,
+          "final_cycle": 1574000000,
+          "execution_units": 38000000,
+          "clock_scope": "canonical RTL clocks",
+          "host_seconds": 182.00823930604383,
+          "phase_clock_cap": 300000000,
+          "phase_host_cap": 3600
+        },
+        {
+          "name": "Close-course",
+          "initial_cycle": 1574000000,
+          "final_cycle": 1934000000,
+          "execution_units": 360000000,
+          "clock_scope": "canonical RTL clocks",
+          "host_seconds": 1587.9923453379888,
+          "phase_clock_cap": 500000000,
+          "phase_host_cap": 3600
+        },
+        {
+          "name": "second-cold-Ready",
+          "initial_cycle": 0,
+          "final_cycle": 513000000,
+          "execution_units": 513000000,
+          "clock_scope": "canonical RTL clocks",
+          "host_seconds": 2778.948184706969,
+          "phase_clock_cap": 1000000000,
+          "phase_host_cap": 7200
+        },
+        {
+          "name": "cold-reader-edition3-node3",
+          "initial_cycle": 513000000,
+          "final_cycle": 741000000,
+          "execution_units": 228000000,
+          "clock_scope": "canonical RTL clocks",
+          "host_seconds": 1272.748990227934,
+          "phase_clock_cap": 400000000,
+          "phase_host_cap": 3600
+        }
+      ],
+      "raw_annotation": {
+        "samples": [
+          [
+            35,
+            153609999,
+            13115,
+            56625,
+            1024,
+            3,
+            1,
+            0,
+            1
+          ],
+          [
+            36,
+            153709999,
+            13513,
+            56684,
+            1216,
+            3,
+            1,
+            0,
+            1
+          ],
+          [
+            37,
+            153809999,
+            13513,
+            56684,
+            0,
+            2,
+            1,
+            0,
+            1
+          ]
+        ],
+        "independent_black_pixels": 11,
+        "sequence": 18,
+        "workspace_and_reader_unchanged": true
+      },
+      "final_sequence": 18,
+      "all_controller_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "source_medium_unchanged": true,
+      "scope": "Actual canonical RTL guest execution; no browser/fast-parity/full proof-kernel claim"
+    },
+    "new_kernel_six_outcomes": {
+      "result": {
+        "path": "build/courses/task006-pool-read-expanded-rtl-plan-a1/consumed-host-source-root/build/connected/result.json",
+        "sha256": "2570a707fc97e47f3205538eb46c291454191eadba1d3e1ad012c583cd6ac99c",
+        "bytes": 108487
+      },
+      "supervision": {
+        "path": "build/courses/task006-pool-read-expanded-rtl-plan-a1/result.json",
+        "sha256": "291afa08688cce84f152b58d8dff0518f8059a17e542ac86402e3fea5bfce884",
+        "bytes": 1765
+      },
+      "status": "PASS_FRESH_EDITION3_CHOOSER_CHECK_EDIT_HINT_SAVE_INDEPENDENT_COLD_READER",
+      "clocks": 3496000000,
+      "seconds": 16385.257197057013,
+      "sampled_owned_peak_RSS_bytes": 492208128,
+      "owned_survivors": {},
+      "phases": [
+        {
+          "name": "cold-Ready",
+          "initial_cycle": 0,
+          "final_cycle": 460000000,
+          "execution_units": 460000000,
+          "clock_scope": "canonical RTL clocks",
+          "host_seconds": 2551.9755303550046,
+          "phase_clock_cap": 1000000000,
+          "phase_host_cap": 7200
+        },
+        {
+          "name": "actual-raw-annotation-Saved",
+          "initial_cycle": 2339000000,
+          "final_cycle": 2377000000,
+          "execution_units": 38000000,
+          "clock_scope": "canonical RTL clocks",
+          "host_seconds": 149.8299457039684,
+          "phase_clock_cap": 300000000,
+          "phase_host_cap": 3600
+        },
+        {
+          "name": "Close-course",
+          "initial_cycle": 2377000000,
+          "final_cycle": 2727000000,
+          "execution_units": 350000000,
+          "clock_scope": "canonical RTL clocks",
+          "host_seconds": 1333.1269901100313,
+          "phase_clock_cap": 500000000,
+          "phase_host_cap": 3600
+        },
+        {
+          "name": "second-cold-Ready",
+          "initial_cycle": 0,
+          "final_cycle": 541000000,
+          "execution_units": 541000000,
+          "clock_scope": "canonical RTL clocks",
+          "host_seconds": 2073.806705735973,
+          "phase_clock_cap": 1000000000,
+          "phase_host_cap": 7200
+        },
+        {
+          "name": "cold-reader-edition3-node3",
+          "initial_cycle": 541000000,
+          "final_cycle": 769000000,
+          "execution_units": 228000000,
+          "clock_scope": "canonical RTL clocks",
+          "host_seconds": 910.2019951340044,
+          "phase_clock_cap": 400000000,
+          "phase_host_cap": 3600
+        }
+      ],
+      "raw_annotation": {
+        "samples": [
+          [
+            59,
+            233909999,
+            13115,
+            56625,
+            1024,
+            3,
+            1,
+            0,
+            1
+          ],
+          [
+            60,
+            234009999,
+            13513,
+            56684,
+            1216,
+            3,
+            1,
+            0,
+            1
+          ],
+          [
+            61,
+            234109999,
+            13513,
+            56684,
+            0,
+            2,
+            1,
+            0,
+            1
+          ]
+        ],
+        "independent_black_pixels": 11,
+        "sequence": 30,
+        "workspace_and_reader_unchanged": true
+      },
+      "final_sequence": 30,
+      "all_controller_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "source_medium_unchanged": true,
+      "scope": "Actual canonical RTL guest execution; no browser/fast-parity/full proof-kernel claim",
+      "controlled_failure_outcomes": {
+        "division_by_zero": 2,
+        "unsupported": 4,
+        "invalid_input_precedes_budget": 2,
+        "valid_input_zero_semantic_budget": 5,
+        "workspace_preserved_for_annotation_and_Save": true
+      }
+    }
+  },
+  "browser_fresh20_observed_check": {
+    "result": {
+      "path": "build/browser/task006-reader20-fresh-course-plan-a1/check5over6-result-a1.json",
+      "sha256": "5c3d47c6bc0af4d82db2394c2d394763fcbd06dfe3936daaba434a6153c46330",
+      "bytes": 5171
+    },
+    "status": "PASS_ACTUAL_BROWSER_EDITION3_REVISION5_5OVER6_VERIFIED",
+    "cycle": 1365550000,
+    "actual_check_clocks": 66700000,
+    "simulation_call_seconds": 478.2200450010405,
+    "scope": "Original Reader20 audited guest on shared RTL Wasm84d5; full edited/hint/ink/Save/cold browser case and new d9 browser execution remain unfinished."
   }
 }

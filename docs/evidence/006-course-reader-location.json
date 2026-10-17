@@ -433,7 +433,7 @@
     "Prepared packages preserve unresolved redistribution/license, fresh-host NAR import/Python-Tk, browser compiler/usability/power-loss/eviction gaps."
   ],
   "reader19_20_successors": {
-    "status": "CANONICAL20_PRESENTED_FAST_WORKFLOW_AND_BOTH_IMAGE_PAIRS_AUDITED_COMPANION_AND_FRESH_BROWSER_RUNNING",
+    "status": "CANONICAL20_FULL_COURSE_INK_SAVE_COLD_PASS_READER19_OBSERVER_FAILURE_REOBSERVED_FRESH_UNIQUE_INK_CASE_RUNNING",
     "contract": "docs/contracts/006-companion-course-reader-deployment-v1.md",
     "companion": {
       "version": 19,
@@ -904,6 +904,52 @@
         },
         "scope": "Actual subprocess runpy cleanup and late exit-handler import now recorded; nonzero CLI status preserved; metadata write failure must return nonzero. Host-only accounting, no target execution claim."
       }
-    }
+    },
+    "reader19_record_observer_repair": {
+      "original_failure": {
+        "path": "build/usb/task006-reader19-connected-a1/result.json",
+        "sha256": "d2c549c8aecb95f8f9f7af35205a682c2961f7dda30b739e08bfe10ec326e3da",
+        "bytes": 82297
+      },
+      "original_error": "ValueError('real reader24 plus exact offline raw/page durability')",
+      "cause": "Old observer expected26 and omitted required root27. Production Notebook.finishRecord actually emits raw25/page26/root27; source unchanged. Original offline stroke also overlapped source ink, so no new-pixel responsiveness claim from that case.",
+      "independent_reobservation": {
+        "path": "build/usb/task006-reader19-reobserve-a1/result.json",
+        "sha256": "103019d89d871b1845505b7b05770d1e24c2f11631b7ddcb8a63440b83b82a3c",
+        "bytes": 2635
+      },
+      "required_sequences": [
+        24,
+        25,
+        26,
+        27
+      ],
+      "actual_record_corruptions_rejected": 8,
+      "new_guest_execution_or_cold_claim": false,
+      "new_case": "build/usb/task006-reader19-unique-offline-a2",
+      "new_plan": {
+        "path": "build/usb/task006-reader19-unique-offline-plan-a2/plan.json",
+        "sha256": "299b96f1a56e798989bc2dcaea8f3e19ed80428f359a8beab08f0b4bed35674c",
+        "bytes": 3412
+      },
+      "new_case_status": "RUNNING_NO_COMPLETE_PASS_CLAIM",
+      "new_white_to_black_row": 1800,
+      "source_oracle": {
+        "path": "conformance/lemmasim/reader_reconciliation_oracle.py",
+        "sha256": "d1b8dc3bb752586eaa3f4d763a5ad7649e95a3cb0d3daf859775c377172b936b",
+        "bytes": 3789
+      },
+      "source_checker": {
+        "path": "scripts/check_reader19_companion.py",
+        "sha256": "6abfbbe730b39a0717d44a92e36851a73893fd444aec28f30fd2d35c14e045dc",
+        "bytes": 16659
+      },
+      "retained_interrupted_case": {
+        "path": "build/usb/task006-reader19-unique-offline-plan-a1/interruption.json",
+        "sha256": "808f71bc83caab7b8eb93e038ec40d1d5e3288b60a3292b2e42ee4280d2862ec",
+        "bytes": 546
+      }
+    },
+    "canonical_RTL_connected_evidence": "docs/evidence/006-kernel-pool-read.json"
   }
 }

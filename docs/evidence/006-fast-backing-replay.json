@@ -314,5 +314,157 @@
       "nix develop --no-write-lock-file --command python3 conformance/lemmasim/check_partial_write_save.py --disk build/courses/task006-keypad-repaint-fast-a1/overdraw-closed.raw --reference-pixels build/browser/task006-pad15-index-cold-plan-a1/cold-expected.ppm --native-bundle build/native/task006-number-pad-repaint-notebook-a1 --backend-executable /nix/store/b16yg2x2wyjblw63x5kln24z9n6m2s2r-lemmasim-qemu-raw-uart-v1-11.1.1/bin/.qemu-system-riscv64-wrapped --backend-executable-sha256 298840d9388c59ba93050f0fa9d4be905619b2d1cc5e14bc044ad6a2a7731090 --work-dir build/UNUSED_PARTIAL_SAVE --deadline 900",
       "nix develop --no-write-lock-file --command python3 conformance/lemmasim/check_partial_write_replay.py --source-case build/courses/task006-real-partial-save-a4 --source-observer build/courses/task006-real-partial-save-plan-a4/observer-result.json --native-bundle build/native/task006-number-pad-repaint-notebook-a1 --work-dir build/UNUSED_PARTIAL_REPLAY --deadline 300"
     ]
+  },
+  "canonical_reader20_actual_partial_write": {
+    "scope": "Canonical exact RTL and actual guest Save failure; prefix continuation explicitly separate from independent cold and finite recorded-outcome replay. Native600e/c15f, original Reader20 kernel086 guest; no QEMU cached-state/timing or general checkpoint closure claim.",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "native_snapshot_identity": "600e93eb1981b3eb5432840c0fd8e169b4d5cfd04f89e8164450d1c70b159bba",
+    "plan": {
+      "path": "build/courses/task006-canonical-negative-fork-plan-a1/partial-write-plan.json",
+      "sha256": "f6a23e5d6c4de429c1e5909d19dfe15c7a8398438ef452ed5d0e0410ae0de0f9",
+      "bytes": 1433
+    },
+    "consumed_fault_helper": {
+      "path": "build/courses/task006-canonical-negative-fork-plan-a1/actual-consumed-file-limit.py",
+      "sha256": "1825a7db66fbcedeb918e2cd4765a456953a812283af97202bf0f4442eb5d5db",
+      "bytes": 6427
+    },
+    "failed_Save": {
+      "result": {
+        "path": "build/courses/task006-canonical-negative-fork-plan-a1/partial-write-result-a2.json",
+        "sha256": "21aa413d055ee1f4b24cd2053d1a93f5031e0f6471258d156a9dfe790c86583e",
+        "bytes": 10031
+      },
+      "status": "PASS_ACTUAL_PARTIAL_PWRITE_GUEST_FAILED_ALL_PIXELS_ACK18_UNCHANGED",
+      "clocks": 30000000,
+      "seconds": 157.95607954496518,
+      "guest_failure": [
+        1060,
+        227,
+        1,
+        1,
+        65555
+      ],
+      "all_medium_bytes": 268435456,
+      "changed_bytes": 93,
+      "new_black_pixels": 11,
+      "all_controller_pixels": 3630000,
+      "captured_operations": [
+        {
+          "fields": [
+            76,
+            568399586,
+            1,
+            37888,
+            512,
+            512,
+            0
+          ],
+          "accepted_cycle": 568399586
+        },
+        {
+          "fields": [
+            77,
+            568399586,
+            1,
+            38400,
+            512,
+            256,
+            27
+          ],
+          "accepted_cycle": 568399586
+        }
+      ],
+      "failure_model": "Header512 succeeds, payload transfers256 then actual EFBIG27 during native sector-overlay writeback in one guest barrier callback; no backing sync is falsely reported successful. Unacknowledged persisted prefix retained; committed sequence18 unchanged."
+    },
+    "independent_cold": {
+      "result": {
+        "path": "build/courses/task006-canonical-partial-cold-a1/result.json",
+        "sha256": "fc6643d4c0237e8c71361d8720d67ac963a6150cb091bec1d5f98eea9d6926d4",
+        "bytes": 1637
+      },
+      "status": "PASS_ACTUAL_PARTIAL_WRITE_INDEPENDENT_COLD_ALL_PIXELS_AND_GUEST_SAVE18",
+      "Ready": {
+        "cycle": 515000000,
+        "seconds": 2329.913812133018,
+        "all_controller_pixels": 3630000
+      },
+      "final_cycle": 521000000,
+      "actual_host_seconds": 2491.02167121,
+      "guest_save": [
+        1057,
+        18,
+        1,
+        1,
+        0
+      ],
+      "provisional_ink_absent": true,
+      "all_medium_bytes": 268435456,
+      "all_controller_pixels": 3630000,
+      "snapshot_input": false
+    },
+    "exact_finite_replay": {
+      "result": {
+        "path": "build/courses/task006-canonical-partial-replay-a1/result.json",
+        "sha256": "1a765c54e8776716ead920c127f724e938363be7c646bd1020815db9bd20f2b0",
+        "bytes": 3643
+      },
+      "status": "PASS_ACTUAL_PARTIAL_PWRITE_ISOLATED_REPLAY_ALL_NATIVE_STATE_BYTES",
+      "plan": {
+        "path": "build/courses/task006-canonical-partial-replay-a1/plan.json",
+        "sha256": "91483667aa0f0ef5b67b0a45e2036a40e2e495d4db1dd38382d996a7966f0efc",
+        "bytes": 1290
+      },
+      "clocks": 89000000,
+      "seconds": 359.34226768894587,
+      "host_seconds_from_plan": 389.682820036,
+      "all_native_checkpoint_bytes": 145702871,
+      "checkpoint_sha256": "0c452332ad315bbd32fd6cd981940b3ed1342d476d9c6600e8d9e32595de8a32",
+      "all_medium_bytes": 268435456,
+      "all_controller_pixels": 3630000,
+      "UART_exact": true,
+      "private_backing_distinct": true,
+      "observation_clocks": 0,
+      "no_field_masks": true,
+      "future_unrecorded_io_qualified": false
+    },
+    "laboratory_command": {
+      "source": {
+        "path": "scripts/lemmasim_file_limit.py",
+        "sha256": "5c498ec4e08e118d71fdc8de7ca3763ff666043460c40e9fe523fe5337845939",
+        "bytes": 7092
+      },
+      "contract": "docs/contracts/006-backing-io-v1.md",
+      "actual_final_source_control": {
+        "path": "build/courses/task006-native-file-limit-control-a3/result.json",
+        "sha256": "9cfe70d2ad5e7df63fbcdd799fbd379a3852a0d51ff2fd020b6cdf93f1c3a4bc",
+        "bytes": 1300
+      },
+      "actual_replay_rejection": {
+        "path": "build/courses/task006-canonical-partial-replay-a1/file-limit-negative.json",
+        "sha256": "a4c92b66f5063d5b1bda397ee5dddfd323330983e7c2e9b5d74cdce37b9598ec",
+        "bytes": 857
+      },
+      "unit_scope": "Five host ownership/cleanup tests; synthetic RPC observations are not guest evidence."
+    },
+    "retained_observer_failures": [
+      {
+        "path": "build/courses/task006-canonical-negative-fork-plan-a1/ready-observer-interruption.json",
+        "sha256": "2674e3a5aee2454522f43119ff468afa1d430f6884d7c168fc43fdcb99b8e8a1",
+        "bytes": 613
+      },
+      {
+        "path": "build/courses/task006-canonical-negative-fork-plan-a1/partial-write-observer-a1.py",
+        "sha256": "76f5da3a654b10d25fd5db949103a59a2ac4a90b8f25192bcc3334bd36c112f0",
+        "bytes": 7267
+      },
+      {
+        "path": "build/courses/task006-canonical-negative-fork-plan-a1/partial-write-result.json",
+        "sha256": "e143e4a17f279636d83630ba3309a8e39b617df4614d7d2dcebcbfe945ede8c7",
+        "bytes": 1815,
+        "status": "FAIL"
+      }
+    ],
+    "original_partial_prefix_not_repaired": true
   }
 }

@@ -965,6 +965,55 @@
       "bytes": 693,
       "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
       "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/courses/task006-fresh-chooser20-rtl-plan-a3/result.json",
+      "sha256": "0598da9cd15bddab8c6a46def2f425687e03ddefbf24b37018148614f689bb98",
+      "bytes": 1734,
+      "status": "PASS",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/courses/task006-pool-read-expanded-rtl-plan-a1/result.json",
+      "sha256": "291afa08688cce84f152b58d8dff0518f8059a17e542ac86402e3fea5bfce884",
+      "bytes": 1765,
+      "status": "PASS",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/boot/task006-pool-read-product-connected-a1/result.json",
+      "sha256": "450fd007d1c642b040621f70f92011bbdf17b237dd96d85baa8819d965cac597",
+      "bytes": 157148,
+      "status": "PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/courses/task006-canonical-partial-cold-a1/result.json",
+      "sha256": "fc6643d4c0237e8c71361d8720d67ac963a6150cb091bec1d5f98eea9d6926d4",
+      "bytes": 1637,
+      "status": "PASS_ACTUAL_PARTIAL_WRITE_INDEPENDENT_COLD_ALL_PIXELS_AND_GUEST_SAVE18",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/courses/task006-canonical-partial-replay-a1/result.json",
+      "sha256": "1a765c54e8776716ead920c127f724e938363be7c646bd1020815db9bd20f2b0",
+      "bytes": 3643,
+      "status": "PASS_ACTUAL_PARTIAL_PWRITE_ISOLATED_REPLAY_ALL_NATIVE_STATE_BYTES",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/courses/task006-native-file-limit-control-a3/result.json",
+      "sha256": "9cfe70d2ad5e7df63fbcdd799fbd379a3852a0d51ff2fd020b6cdf93f1c3a4bc",
+      "bytes": 1300,
+      "status": "PASS_ACTUAL_NATIVE_FILE_LIMIT_PENDING_TOKEN_CLEANUP_ZERO_CLOCKS",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/usb/task006-reader19-reobserve-a1/result.json",
+      "sha256": "103019d89d871b1845505b7b05770d1e24c2f11631b7ddcb8a63440b83b82a3c",
+      "bytes": 2635,
+      "status": "PASS_REOBSERVED_READER24_RAW25_PAGE26_ROOT27",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
     }
   ],
   "prior_implementation_commit": "d8d7b0cc306a91a113b5a95e964a2a19313f457d",
@@ -1019,8 +1068,8 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "7480632c81487d556592d2cea7f48bf5a99ff748",
-    "run": 38996796033,
+    "commit": "34a3a59b81a19dcd27a08bb3307bf5713377db70",
+    "run": 39001737838,
     "status": "COMPLETED_SUCCESS",
     "observed_jobs": {
       "success": 11
@@ -1030,14 +1079,14 @@
     },
     "skipped_steps": 0,
     "final_receipt": {
-      "path": "build/ci/task006-748-complete.json",
-      "sha256": "0d98ccbc099d52c7ba708ead36906650b6aedfd97cff8df463122d9a166f78da",
-      "bytes": 25680
+      "path": "build/ci/task006-34a-complete.json",
+      "sha256": "d0fb8b66cb1dadd7f71a6f481cf42a3b508a7a97a6de94cdf0033f5ed8f83c15",
+      "bytes": 25722
     },
-    "scope": "Committed kernel/authority source; subsequent browser controls require own candidate CI. PR9 remains draft/unmerged.",
+    "scope": "Committed34a only; new Laboratory/observer source requires own candidate CI. PR9 draft/unmerged.",
     "preceding_source": {
-      "commit": "2dc2d64b00b02421151f6419ff921ca18ffcdcd1",
-      "run": 38990300822,
+      "commit": "7480632c81487d556592d2cea7f48bf5a99ff748",
+      "run": 38996796033,
       "status": "COMPLETED_SUCCESS",
       "observed_jobs": {
         "success": 11
@@ -1047,114 +1096,132 @@
       },
       "skipped_steps": 0,
       "final_receipt": {
-        "path": "build/ci/task006-2dc-complete.json",
-        "sha256": "4d025c0608638591a69a014b90103cb8f03c5d61e61405b296e60b7a30874242",
-        "bytes": 22234
+        "path": "build/ci/task006-748-complete.json",
+        "sha256": "0d98ccbc099d52c7ba708ead36906650b6aedfd97cff8df463122d9a166f78da",
+        "bytes": 25680
       },
-      "scope": "Published preceding source only. New kernel/authority/CI increment requires its own candidate run; PR9 remains draft/unmerged.",
-      "prior_complete": {
-        "commit": "57ceb5b91f98c30e5fcb2ac5bb608c342b060a3f",
-        "run": 38968703132,
+      "scope": "Committed kernel/authority source; subsequent browser controls require own candidate CI. PR9 remains draft/unmerged.",
+      "preceding_source": {
+        "commit": "2dc2d64b00b02421151f6419ff921ca18ffcdcd1",
+        "run": 38990300822,
         "status": "COMPLETED_SUCCESS",
         "observed_jobs": {
           "success": 11
         },
         "step_counts": {
-          "success": 116
+          "success": 117
         },
         "skipped_steps": 0,
         "final_receipt": {
-          "path": "build/ci/task006-57ceb-complete.json",
-          "sha256": "29495f4ddc6fa7ea92a91dfba75ef6b32c177c731bd21cc97498cd95d3b39fbf"
+          "path": "build/ci/task006-2dc-complete.json",
+          "sha256": "4d025c0608638591a69a014b90103cb8f03c5d61e61405b296e60b7a30874242",
+          "bytes": 22234
         },
-        "scope": "Exact published57ceb only, including real O0/O2 notebook, foundation and guest acceptance. New current portability/evidence changes remain uncommitted and require their own candidate CI. PR9 stays draft/unmerged.",
-        "prior_candidate_failure": {
-          "commit": "1c35b9df6ca9658c3480ddf7d40acb9f7b88819d",
-          "run": 38964568408,
-          "status": "COMPLETED_FAILURE",
+        "scope": "Published preceding source only. New kernel/authority/CI increment requires its own candidate run; PR9 remains draft/unmerged.",
+        "prior_complete": {
+          "commit": "57ceb5b91f98c30e5fcb2ac5bb608c342b060a3f",
+          "run": 38968703132,
+          "status": "COMPLETED_SUCCESS",
           "observed_jobs": {
-            "failure": 2,
-            "success": 9
-          },
-          "failed_jobs": [
-            "Metadata and host-only suites: foundation workflow-log exact inventory",
-            "Task003 A-E: kernel-host arithmetic deployment exact inventory"
-          ],
-          "failure_evidence": {
-            "path": "docs/evidence/006-foundation-workflow-observer.json",
-            "sha256": "fb107c386c68e08d7f2a0f6c3ec772152b163ebe7c8bf88021b17266389abd2e"
-          },
-          "scope": "Actual1c35 completed9jobsSUCCESS/2FAILURE. All real notebookO0/O2 and eight other jobs passed except the two retained host inventories; skipped13steps are not passed. Local corrected commits247558a/d033baf await their new candidate CI.",
-          "prior_complete": {
-            "commit": "3226f155d173ae8d2ab076526c24f58e8295dc9f",
-            "run": 38939333316,
-            "status": "SUCCESS",
-            "jobs": 11,
-            "steps": 116,
-            "skipped_steps": 0,
-            "final_receipt": {
-              "path": "build/ci/task006-3226-complete.json",
-              "sha256": "4c46a4f5b87b223bca2bcdb16b0e536de86452d28fb38e676a652ae0f2b457fd"
-            },
-            "scope": "Exact published3226 only. New uncommitted Product course/Entry2/archive work has no candidateCI yet. PR9 remains draft/unmerged.",
-            "prior_candidate_failure": {
-              "commit": "da13e7630022247f190b98a739d922fbf6ef7ab2",
-              "run": 38933635691,
-              "status": "FAILURE",
-              "observed_jobs": {
-                "success": 10,
-                "failure": 1,
-                "in_progress": 0
-              },
-              "failed_job": 117083551917,
-              "failed_step": "Compile, audit and observe real O0/O2 guest ink and cold recovery",
-              "actual_cause": "Preceding tests/lemmasim host suite fails on stale ordinary-mode expectation for newly restricted Reader18 installer; O0/O2 guest workload never starts and following validation is skipped. Production authorization is correct. Explicit two-name expectation repaired, stronger role/mode checks and full299 pinned tests pass.",
-              "failure_log": {
-                "path": "build/ci/task006-da13-writing-host-tests.log",
-                "sha256": "6aaae50edb25905bd9c0a15de2343fe76f6915215c8732ae2514fbb43c75efa2"
-              },
-              "failure_artifact_zip": {
-                "path": "build/ci/task006-da13-writing-failure.zip",
-                "sha256": "28def2cd4d9845d7e9353e17850d440d60504f710fa841c85a99a7f69292b253"
-              },
-              "scope": "Actual da13 run only; current dirty command/runtime/observer fixes need own candidateCI. No skipped RV64 work passed.",
-              "steps": 114,
-              "skipped_steps": 1,
-              "final_receipt": {
-                "path": "build/ci/task006-da13-complete.json",
-                "sha256": "188b57238756a931a2bea4417f409c2f2640f502d087c2db11d45c283455dd39"
-              }
-            },
-            "new_code_candidate": {
-              "implementation_commit": "01b12f35fe8d84e7766ebb21477f4acfa52f1d85",
-              "status": "NOT_RUN_YET",
-              "scope": "Parent3226 successful CI remains its own result; source increment is committed locally and publication pending."
-            }
+            "success": 11
           },
           "step_counts": {
-            "success": 101,
-            "failure": 2,
-            "skipped": 13
+            "success": 116
           },
+          "skipped_steps": 0,
           "final_receipt": {
-            "path": "build/ci/task006-1c35-complete.json",
-            "sha256": "5f0551e6082b339a2d759a16378e3338b6b69cf76ed4f10a9fbbe8787be29b5b"
+            "path": "build/ci/task006-57ceb-complete.json",
+            "sha256": "29495f4ddc6fa7ea92a91dfba75ef6b32c177c731bd21cc97498cd95d3b39fbf"
+          },
+          "scope": "Exact published57ceb only, including real O0/O2 notebook, foundation and guest acceptance. New current portability/evidence changes remain uncommitted and require their own candidate CI. PR9 stays draft/unmerged.",
+          "prior_candidate_failure": {
+            "commit": "1c35b9df6ca9658c3480ddf7d40acb9f7b88819d",
+            "run": 38964568408,
+            "status": "COMPLETED_FAILURE",
+            "observed_jobs": {
+              "failure": 2,
+              "success": 9
+            },
+            "failed_jobs": [
+              "Metadata and host-only suites: foundation workflow-log exact inventory",
+              "Task003 A-E: kernel-host arithmetic deployment exact inventory"
+            ],
+            "failure_evidence": {
+              "path": "docs/evidence/006-foundation-workflow-observer.json",
+              "sha256": "fb107c386c68e08d7f2a0f6c3ec772152b163ebe7c8bf88021b17266389abd2e"
+            },
+            "scope": "Actual1c35 completed9jobsSUCCESS/2FAILURE. All real notebookO0/O2 and eight other jobs passed except the two retained host inventories; skipped13steps are not passed. Local corrected commits247558a/d033baf await their new candidate CI.",
+            "prior_complete": {
+              "commit": "3226f155d173ae8d2ab076526c24f58e8295dc9f",
+              "run": 38939333316,
+              "status": "SUCCESS",
+              "jobs": 11,
+              "steps": 116,
+              "skipped_steps": 0,
+              "final_receipt": {
+                "path": "build/ci/task006-3226-complete.json",
+                "sha256": "4c46a4f5b87b223bca2bcdb16b0e536de86452d28fb38e676a652ae0f2b457fd"
+              },
+              "scope": "Exact published3226 only. New uncommitted Product course/Entry2/archive work has no candidateCI yet. PR9 remains draft/unmerged.",
+              "prior_candidate_failure": {
+                "commit": "da13e7630022247f190b98a739d922fbf6ef7ab2",
+                "run": 38933635691,
+                "status": "FAILURE",
+                "observed_jobs": {
+                  "success": 10,
+                  "failure": 1,
+                  "in_progress": 0
+                },
+                "failed_job": 117083551917,
+                "failed_step": "Compile, audit and observe real O0/O2 guest ink and cold recovery",
+                "actual_cause": "Preceding tests/lemmasim host suite fails on stale ordinary-mode expectation for newly restricted Reader18 installer; O0/O2 guest workload never starts and following validation is skipped. Production authorization is correct. Explicit two-name expectation repaired, stronger role/mode checks and full299 pinned tests pass.",
+                "failure_log": {
+                  "path": "build/ci/task006-da13-writing-host-tests.log",
+                  "sha256": "6aaae50edb25905bd9c0a15de2343fe76f6915215c8732ae2514fbb43c75efa2"
+                },
+                "failure_artifact_zip": {
+                  "path": "build/ci/task006-da13-writing-failure.zip",
+                  "sha256": "28def2cd4d9845d7e9353e17850d440d60504f710fa841c85a99a7f69292b253"
+                },
+                "scope": "Actual da13 run only; current dirty command/runtime/observer fixes need own candidateCI. No skipped RV64 work passed.",
+                "steps": 114,
+                "skipped_steps": 1,
+                "final_receipt": {
+                  "path": "build/ci/task006-da13-complete.json",
+                  "sha256": "188b57238756a931a2bea4417f409c2f2640f502d087c2db11d45c283455dd39"
+                }
+              },
+              "new_code_candidate": {
+                "implementation_commit": "01b12f35fe8d84e7766ebb21477f4acfa52f1d85",
+                "status": "NOT_RUN_YET",
+                "scope": "Parent3226 successful CI remains its own result; source increment is committed locally and publication pending."
+              }
+            },
+            "step_counts": {
+              "success": 101,
+              "failure": 2,
+              "skipped": 13
+            },
+            "final_receipt": {
+              "path": "build/ci/task006-1c35-complete.json",
+              "sha256": "5f0551e6082b339a2d759a16378e3338b6b69cf76ed4f10a9fbbe8787be29b5b"
+            }
           }
-        }
-      },
-      "recent_prior_successes": [
-        {
-          "commit": "ccab8fe01d1af40376fdfada607317bb8d15fecf",
-          "run": 38987140485,
-          "receipt": "build/ci/task006-ccab-complete.json"
         },
-        {
-          "commit": "3070a4baed455af62fe35bdd64ac1c3b3aa45dc3",
-          "run": 38985222491,
-          "status": "success",
-          "receipt": "build/ci/task006-3070-complete.json"
-        }
-      ]
+        "recent_prior_successes": [
+          {
+            "commit": "ccab8fe01d1af40376fdfada607317bb8d15fecf",
+            "run": 38987140485,
+            "receipt": "build/ci/task006-ccab-complete.json"
+          },
+          {
+            "commit": "3070a4baed455af62fe35bdd64ac1c3b3aa45dc3",
+            "run": 38985222491,
+            "status": "success",
+            "receipt": "build/ci/task006-3070-complete.json"
+          }
+        ]
+      }
     }
   },
   "browser_pointer_ink_milestone": {
@@ -1865,18 +1932,18 @@
   "kernel_metadata_read1": {
     "evidence": {
       "path": "docs/evidence/006-kernel-pool-read.json",
-      "sha256": "ff3f6b597dad8bc50f84d4880c7dfd0bc300ff9fd18cb92fea7a145a4d94eb21",
-      "bytes": 23228
+      "sha256": "40ec5f01d106831cb0720b70dec09f7b5930bd0dc604f36d43afae790eb9e2bc",
+      "bytes": 33189
     },
     "tested_guest_commit": "d9be0fce8d7b31b018318d38fff8336abb89161d",
     "gate_scope": "G1 performance and bounded existing G2/G4-G7 workflow regression; no full gate closed",
     "behavior": "PASS48productionActionboundary/errorobservations",
     "model": "Original production Objects v1/v2/v3 model PASS; no policy/owner/quota changes",
-    "RTL": "PASSnewkernelcoldReady460M/all3.63Mhomepixels/all256MiB; complete6outcome/ink/Save/cold stillRUNNING",
+    "RTL": "PASS460MfirstReady; full six-outcome/course/11pixelink/Saved30/Close/independentcold/all3.63Mpixels/all256MiB/reopen3:3.496Bclocks/16385.257s/492208128Bpeak",
     "guest": "PASSsixoutcomes/hint/ink/Saved30/independentcold on fast backend; matched oldbytes reopen98Mwithin100M",
     "distribution": "Prepared same native/Wasm core, new audited canonical pair; full new browser execution pending",
     "physical": "UNCHANGED_UNCLOSED",
-    "product": "PASSnewfullProduct10Reader18compile/audit/archive440inputs/package1057sectors; realA/Bconfirm/coldcase RUNNINGunderoriginalceilings"
+    "product": "PASSsameimmutableLeanROMandRTL10 actual1057sectorA/Binstall/authenticatedtrial/guestconfirm/independentcold/home+course/alluserbytes:2.223B/10821.854s; no interrupted-confirmation/trust/browser-product claim"
   },
   "browser_controller_image1": {
     "contract": "lemma-controller-gray4-image/1",
@@ -1901,5 +1968,34 @@
     "distribution": "Prepared440inputProductarchive,541184Bimage/publicdevtag; originalcase1056 remains strict",
     "physical": "UNCHANGED_UNCLOSED",
     "evidence": "docs/evidence/006-kernel-pool-read.json"
+  },
+  "canonical_reader20_live_partial_IO": {
+    "gates": [
+      "G1",
+      "S"
+    ],
+    "behavior": "PASSactualLinuxpartialpwrite/EFBIG ->guestFailed227/noSaved19/offline11pixels",
+    "model": "Recorded exact returned/changed prefixes and accepted operation boundary; observed persistence separated from acknowledged sequence18",
+    "RTL": "PASS30Mfailedsuffix plus515McoldReady/6MguestSave18; all3.63Mpixels/all256MiB",
+    "guest": "Real compiled journal recovery ignores incomplete19; actualSave confirms18 without host repair",
+    "distribution": "Qualified native Laboratory file-limit command; browser live POSIX fault is not claimed",
+    "physical": "UNCHANGED_UNCLOSED",
+    "evidence": {
+      "path": "docs/evidence/006-fast-backing-replay.json",
+      "sha256": "9dad37c05ade9f4ff85c40995c1add54299b374592add67240f8f81fd6f73797",
+      "bytes": 23163
+    },
+    "same_native_finite_replay": "PASS_ACTUAL_PARTIAL_PWRITE_ISOLATED_REPLAY_ALL_NATIVE_STATE_BYTES",
+    "general_fast_cached_checkpoint": "GAP_CONFIRMED_UNCHANGED"
+  },
+  "reader19_reconciliation_observer": {
+    "evidence": {
+      "path": "docs/evidence/006-course-reader-location.json",
+      "sha256": "f055e41e6794522e094f0e91eefa5f4c7e004eeffc3f0e5877475c1aee96b22d",
+      "bytes": 49188
+    },
+    "original_status": "FAIL_RETAINED",
+    "passive_record_reobservation": "PASS8corruptionsrejected;reader24/raw25/page26/root27; no new cold/offlinepixel claim",
+    "new_case": "RUNNING_UNDER_ORIGINAL_BOUNDS:build/usb/task006-reader19-unique-offline-a2"
   }
 }

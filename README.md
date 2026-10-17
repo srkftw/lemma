@@ -582,6 +582,27 @@ of 100 MHz controller clocks. RTL replay uses `--until-cycle` instead. There is
 no exact QEMU/RTL microstate migration. `--trace-limit N` selects bounded detailed
 tracing; ordinary sessions avoid it. Laboratory sessions may select an actual
 failed barrier with `--fail-flush 1`; inspection retains failed operations.
+For an actual Linux backing failure, the Laboratory file-limit command applies
+`RLIMIT_FSIZE` to the owned native process of a paused, private canonical RTL
+fork. It currently admits the qualified `600e93eb` implementation only. Use
+exclusive control of that session, retain the token, and restore the limit
+before resuming ordinary work:
+
+```sh
+python3 scripts/lemmasim_file_limit.py apply --session-dir build/PRIVATE_RTL_LAB_FORK \
+  --bytes 38656 --token build/UNUSED_FILE_LIMIT_TOKEN.json
+python3 scripts/lemmasim_file_limit.py restore --token build/UNUSED_FILE_LIMIT_TOKEN.json
+```
+
+The byte value is an example, not a journal address. A real write that crosses
+the limit can persist a partial prefix before returning `EFBIG`. The machine
+captures those bytes and the actual error; the guest decides whether Save
+succeeded. The token names one process and retains the previous limits. Its
+pending on-disk form also permits cleanup after an interrupted command. Restore
+rejects a replacement process or a superseding resource policy. Outcome-replay
+sessions reject live fault admission. This external OS condition is not portable
+checkpoint state; replay consumes the captured outcomes on private backing.
+
 RTL model serialization includes its caches/TLBs. QEMU migration flushes its
 software TLB; cached Sv39 mappings and TCG translation blocks are not serialized.
 The tested fast guest suffixes continue identically, but arbitrary cached-state

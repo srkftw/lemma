@@ -119,6 +119,21 @@ interference is bounded to16 interruptions; an unknown host failure poisons the
 operation through the existing exception path. I/O `EINTR` is still captured.
 Emscripten uses its existing virtual-file path without these Unix signal calls.
 
+`scripts/lemmasim_file_limit.py` supplies a Linux Laboratory environment control
+for the qualified canonical native implementation600e93eb. It requires a paused
+private fork and verifies the actual executable, process start time and medium
+ownership. Before changing the soft `RLIMIT_FSIZE`, it fsyncs a new pending token
+and its parent directory. The token records the previous limits and exact
+process; cleanup accepts either the pending or applied form, rejects a replaced
+process or superseding limits, and remains available after capture uncertainty.
+Neither admission nor cleanup advances machine clocks. Clients must exclusively
+control the paused session while changing the host policy. New faults are
+rejected for uncertain capture, external adapters and recorded-outcome replay.
+The OS limit is external environment, not serialized machine state. Restored
+live branches must explicitly select their own environment; recorded replay
+applies the captured prefixes/errors to private bytes without recreating the
+original POSIX fault. See README for actual command arguments.
+
 The original default-disposition child terminated with signal25. The repaired
 real-syscall regression preserves a128-byte prefix, `EFBIG`, default disposition,
 original mask and an independently preexisting pending signal. The rebuilt

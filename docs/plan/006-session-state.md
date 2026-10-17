@@ -5359,3 +5359,113 @@ unmerged. Original canonical and expanded RTL/companion/browser cases remain
 active with their source-bound limits. Browser39 denominator selection completed
 at1176.4M with actualSaved8/panel13; CLEAR is now running from that cut under
 150M/1800s. Stored answer/evidence will be observed independently before CHECK.
+
+Canonical connected RTL, Product update and real partial-write recovery (2026-10-17)
+
+The original Reader20 canonical case is now complete: actual cold Ready,
+installed edition3 chooser/USE, 5/6 Verified, edited5/7 Invalid, authored hint,
+raw annotation/11 independent black pixels, acknowledged Saved18, Close,
+independent CPU0 cold/all3,630,000 home pixels/all268,435,456 medium bytes,
+and edition3/node3 reopen. It used2,675,000,000 RTL clocks/13,340.083743s,
+sampled owned peak469250048B. Supervisor PASS/exit0/no owned survivors.
+Receipt: build/courses/task006-fresh-chooser20-rtl-plan-a3/consumed-host-source-
+root/build/connected/result.json. Original a1/a2 setup failures remain.
+
+The d9 getter kernel's separate expanded canonical case also completed under
+its original bounds: six outcomes [Verified,Invalid,Invalid,Unsupported,Invalid,
+Indeterminate], hint, exact preserved revision/evidence/learner bytes,11-pixel
+raw annotation, Saved30, Close and independent CPU0 cold/full display/backing/
+reader3. It used3,496,000,000 RTL clocks/16,385.257197s; sampled owned peak
+492208128B. Supervisor PASS/exit0/no owned survivors. Its first Ready was460M/
+2551.975530s; old matched source3 input471M/2048.141869s, sampled each1Mclocks.
+Guest work decreased11M sampled clocks; host contention differed and no host
+speedup is claimed. Expanded workload is larger than original Reader20.
+Close350M/1333.126990s, independent cold541M/2073.806706s, reader reopen228M/
+910.201995s. Receipt: build/courses/task006-pool-read-expanded-rtl-plan-a1/
+consumed-host-source-root/build/connected/result.json. Zero semantic budget is
+not heap OOM/verifier death; local authored hint is not a live tutor.
+
+New Product10 kernel image also passes actual A/B installation, authenticated
+trial handoff, guest confirmation, independent CPU0 authenticated cold and saved
+course-node5 reopening, preserving every user-medium byte. Same immutable Lean
+ROM/ebb9RTL10; no ELF preload/snapshot cold input. Actual1057 sectors/image
+0x000a000000000013, source notebook sequence38. Total2,223,000,000clocks/
+10821.853625s, owned peak369885184B; all tracked process identities reaped.
+Phases519.8M/3345.278202s install,127.2M/798.808280s handoff,611M/2846.567997s
+trialReady/confirmation,737M/2974.907130s independent cold,228M/851.116069s
+course. Original32400s/4.3B and every phase ceiling retained. Receipt:
+build/boot/task006-pool-read-product-connected-a1/result.json. Interrupted
+confirmation, production keys/entropy/durable trust and browser Product boot
+remain unqualified. Existing 006-kernel-pool-read evidence records both cases.
+
+A canonical RTL actual POSIX fault now has guest failure, cold recovery and
+exact finite replay. Observational original positive-case snapshot494M was
+restored privately, then continued59M to independently checked Ready553M.
+The first UART-only suffix observer was stopped as stale: Ready was already
+inside the archive. Its interruption is retained; corrected observer checks
+retained authoritative UART plus suffix and every independent pixel, adding
+zero clocks. This is explicitly prefix continuation, not cold Ready.
+
+The new Laboratory scripts/lemmasim_file_limit.py applies real RLIMIT_FSIZE to
+one verified paused/private native600e process. A real raw stroke under38656B
+limit produced header512 persisted, payload256 persisted then Linux EFBIG27
+at the original guest FLUSH writeback boundary568399586. Guest reported
+Failed227/noSaved19;11 new disjoint black pixels remained. Every backing byte
+matches captured changed prefixes;93 bytes differ from old backing, committed
+objects remain18 and no failed-operation rollback is assumed. No successful
+backing sync is claimed. Limit restored without clocks before snapshot/export.
+Failed suffix30M/157.956080s, endpoint583M, all3.63M FAILED pixels exact.
+
+Independent new CPU0 from the actual observed partial backing (no checkpoint)
+recovered18 at515M/2329.913812s; actual guest Save confirmed18 at521M, all
+3.63M pixels/all256MiB exact and provisional ink absent. Unacknowledged partial
+bytes remain in the backing. Whole2491.021671s within original1B/7200s.
+Receipt: build/courses/task006-canonical-partial-cold-a1/result.json.
+
+Copied external events/outcomes replayed494M->583M into another private medium,
+without consulting original file/peer or reapplying the POSIX fault. All
+145702871 native checkpoint bytes equal with NO masks, plus all256MiB backing,
+3.63M controller pixels and UART.89Mclocks/359.342268s checker/389.682820s from
+predeclared plan, within1800s. Finite two-outcome suffix only, not future unknown
+I/O or general checkpoint closure. Receipt: build/courses/task006-canonical-
+partial-replay-a1/result.json. Original failed fork, replay and zero-clock
+control servers are closed/reaped; all media remain. Source helper used for
+the actual failure is archived beside its report. Final helper adds durable
+pending intent, replay rejection, capture-error cleanup and symlink rejection;
+actual final-source apply/pending-token restore0clocks/145702871 unchanged bytes
+passes6.664562s, at build/courses/task006-native-file-limit-control-a3. Real
+replay admission rejects before prlimit/token change. Five focused host tests
+pass; preceding whole LemmaSim318 tests pass68.331s. These host tests do not
+substitute for the real guest observations in 006-fast-backing-replay evidence.
+
+Original Reader19 companion case terminal FAIL is preserved at
+build/usb/task006-reader19-connected-a1/result.json. Its seq26 observer omitted
+mandatory root27 after reader24/raw25/page26. Actual production finishRecord
+body is unchanged. Independent retained-data reobservation passes every source
+record, exact three samples/page history/root and peer receipt ordering; eight
+actual-record corruptions reject. Original offline row1900 overlapped source
+ink, so no novel offline-pixel or original cold claim is made. Corrected case
+scripts/check_reader19_companion.py uses disjoint actual-white row1800 and
+requires all three normal ink publications plus independent cold. Casea1 was
+stopped/reaped on a host list/set bug before reaching it; source/interruption
+retained. Corrected a2 remains running under original5B/43200s/phase bounds:
+build/usb/task006-reader19-unique-offline-a2, plan-a2/plan.json, supervisor2497404.
+Do not edit its maintained actor/oracle/shared S module while it runs.
+
+Fresh browser39/origin8810 remains original Reader20 guest/Wasm84d5. CHECK5/6
+passed at1365.55M, real Saved11/revision5/IsolatedClosure resultVerified and
+installed edition3/node3 provenance.66.7M/478.220045simcall seconds, cached host
+upper486s within3600. Raw edit5/7 passed at1432.75M/Saved12/revision6, current
+outcome/evidence cleared while exact Verified revision5 history persists.
+67.2M/402.681350simcall seconds, cached host upper411s within1800. CHECK5/7 is
+now running from1432.75M under300M/3600; no final Invalid/hint/cold result yet.
+Never reload/reset/rebind this tab. Original global deadline remains
+2026-10-17T12:18:08.271910Z/6B. Full D and new d9 browser execution remain open.
+
+Actual committed34a3a59 CI39001737838/run153 COMPLETED_SUCCESS11jobs/117steps/
+zero skips. Superseded0d run152 was8success/3cancelled, not full pass. New
+Laboratory/companion observer increment requires its own candidate CI. PR9 is
+draft/unmerged; successor merge not authorized. Existing failures, profiles,
+user media, settings/license and USGCE are preserved. Digital functionality,
+fast timing/arbitrary QEMU cached continuation, distribution and physical
+closure remain separate unfinished obligations; no unchanged EDA reruns.
