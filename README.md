@@ -2364,8 +2364,10 @@ raw backing. In Developer mode, the course file picker sends
 `build/courses/task006-package-edition3-a1/arithmetic.lcp` to the guest installer.
 After its durable receipt, COURSE opens the chooser: EDIT+ twice, LOAD, NODE+
 to exercise3, then USE. Teacher package installation does not grant verifier
-or assessment authority. The new fully fresh browser39 case is still running;
-its initializer/boot prefix is not a completed browser workflow.
+or assessment authority. The new fully fresh browser39 case passes actual
+initializer handoff and normal Ready458.55M, all3.63M initial pixels and valid
+initial storage. It is now running the guest installation. Its complete
+course/mathematics/save/cold workflow remains pending.
 
 The reusable connected functional check executes ordinary public commands and
 raw pen input. It requires the actual guest-installed edition3/sequence3 medium
@@ -2381,14 +2383,29 @@ nix develop --no-write-lock-file --command python3 scripts/check_fresh_course_re
 ```
 
 Its actual presented case passes1,085,000,068 fast functional units/154.189s;
-those units do not establish RTL timing parity. Current Reader18's separate
+those units do not establish RTL timing parity. Add `--with-ink` to retain a
+real three-sample annotation and verify its controller pixels before the same
+independent cold reopen. This connected case passes1,111,000,088 functional
+units/140.968s, Saved18, with mathematical and reader bytes unchanged.
+Add `--backend rtl --with-ink` for the canonical circuit path. Its fixed12h/6B
+campaign is running; the new RTL course workflow has no PASS yet.
+Current Reader18's separate
 full800M RTL/native-Wasm comparison now passes at572M/799M/800M under the
 predeclared implementation-ID relation, including all167 actual read outcomes.
 The same-Wasm idle1M suffix matches every machine and backing byte. The first
 whole-history capture comparison failed and remains retained; the existing
 contract requires the applicable suffix, which has zero I/O operations here.
-A separate meaningful227M recorded course replay is running, not passed.
-Reader19/Recovery5's full companion image links, but its mandatory recovery-pump
-table audit exposed missing exact backend admission; its full pair and actual
-lost-ACK reader workflow remain pending. All earlier failed bounds retain their
-original meanings. See the existing reader evidence and session checkpoint.
+A separate meaningful227M recorded course replay now passes: two raw COURSE
+events and14 actual READ outcomes reproduce every145,739,700 authoritative
+archive byte, all256MiB and all3.63M controller pixels in a private origin.
+It takes1308.1s of simulation calls and330MiB Wasm heap, within its original
+bounds. This is same-Wasm continuation from an explicit checkpoint; it is
+separate from cold recovery and QEMU cached-state continuation.
+
+Reader19/Recovery5's complete notebook/initializer pair now passes all mandatory
+audits atccab8fe. The prepared native bundle is
+`build/native/task006-companion-reader19-a1`, schema11, using the existing
+Clocked13 machine. Its real final-reader-barrier lost-ACK/offline-ink/restart/
+reconciliation/cold case is running under its original12h/5B limits. It has no
+connected PASS yet. Earlier audit failures and failed execution bounds retain
+their original meanings. See the existing reader evidence and session checkpoint.

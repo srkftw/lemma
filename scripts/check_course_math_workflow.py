@@ -39,6 +39,7 @@ class Session(PublicSession):
 class CourseMathWorkflow(MathChecker):
     backend = 'qemu'
     session_type = Session
+    phase_caps = CAPS
 
     def idle(self, state):
         return idle(state)
@@ -135,7 +136,7 @@ class CourseMathWorkflow(MathChecker):
             return True
         self.expected_course_error = expected_error
         try:
-            self.phase(s, name, CAPS['view'] if text is not None else CAPS['control'], completed)
+            self.phase(s, name, self.phase_caps['view'] if text is not None else self.phase_caps['control'], completed)
         finally:
             self.expected_course_error = None
         self.report['interactions'].append({'name': name, 'pixel': [x, y], 'first_raw_sequence': first + 1, 'last_raw_sequence': len(stream.events)})
@@ -173,7 +174,7 @@ class CourseMathWorkflow(MathChecker):
             require(r[-1][3:] == (0, outcome), 'actual checker status/outcome differs')
             require((1117, q[-1][1], 0, 0, 0) in rows, 'actual closuregraph notreclaimed')
             return self.idle(state) and self.saved(s) and (len([r for r in rows if r[0] == 1057]) > oldacks) and (state['ticks'] >= tick + 200000)
-        self.phase(s, name, CAPS['check'], done)
+        self.phase(s, name, self.phase_caps['check'], done)
         rows = self.rows(s)
         q = [r for r in rows if r[0] == 1113][-1]
         r = [r for r in rows if r[0] == 1109][-1]

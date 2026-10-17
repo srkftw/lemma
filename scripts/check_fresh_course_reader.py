@@ -9,26 +9,48 @@ package already installed by the guest in an otherwise fresh acknowledged
 sequence3 medium; it never installs or constructs a document on the host.
 """
 from pathlib import Path
-import argparse,json,time,shutil,filecmp,hashlib,os
+import argparse,json,time,shutil,filecmp,hashlib,os,signal,struct
 import sys
 sys.dont_write_bytecode=True
 ROOT=Path(__file__).resolve().parents[1]
 sys.path[:0]=[str(ROOT/'scripts'),str(ROOT/'conformance/lemmasim')]
 from check_course_math_workflow import CourseMathWorkflow,Input,require,decode,visible_pixels
+from check_live_notebook import PublicSession
+from check_course_save import rtl_idle
 from store_oracle import recover
 from course_pixel_oracle import label_matches
+from check_canonical_pen_pixels import expected_stroke
 import workspace_transition_oracle as T
 class FreshChooser(CourseMathWorkflow):
+ def __init__(self,args):
+  self.backend=args.backend
+  if self.backend=='rtl':self.session_type=PublicSession
+  # Existing canonical reader observations bound cold/open at1B/400M. The
+  # common course checker already budgets500M for a complete Close redraw.
+  # These limits select a new workload prospectively; none changes a retained
+  # fast or browser run. Ordinary controls keep their existing150M ceiling.
+  self.phase_caps={'view':400_000_000,'control':150_000_000,'check':300_000_000} if self.backend=='rtl' else {'view':100_000_000,'control':150_000_000,'check':200_000_000}
+  self.aggregate_cap=6_000_000_000 if self.backend=='rtl' else 4_000_000_000
+  self.clock_scope='canonical RTL clocks' if self.backend=='rtl' else 'fast functional instruction-clock units; no RTL timing parity'
+  super().__init__(args)
+  self.report.update(backend=self.backend,aggregate_cycles=self.aggregate_cap,clock_scope=self.clock_scope,phase_caps=self.phase_caps|{'cold':1_000_000_000,'close':500_000_000 if self.backend=='rtl' else 150_000_000,'presentation':100_000_000},phase_host_seconds={'cold':7200,'other':3600} if self.backend=='rtl' else {'all':600})
+  self.progress()
+ def idle(self,state):
+  return rtl_idle(state) if self.backend=='rtl' else super().idle(state)
  def phase(self,s,name,cap,predicate):
+  if self.backend=='rtl' and name=='Close-course':cap=500_000_000
+  seconds=(7200 if name in ('cold-Ready','second-cold-Ready') else 3600) if self.backend=='rtl' else 600
   before=s.inspect()['machine']['cycle'];began=time.monotonic()
   while True:
    self.check_sources();state=s.inspect()['machine'];used=state['cycle']-before
-   require(0<=used<=cap and self.cycles<=4_000_000_000 and time.monotonic()<self.deadline and time.monotonic()-began<=600,'predeclared phase/whole bound: '+name)
+   require(0<=used<=cap and self.cycles<=self.aggregate_cap and time.monotonic()<self.deadline and time.monotonic()-began<=seconds,'predeclared phase/whole bound: '+name)
    rows=self.rows(s);require(not state['finished'] and not any(r[0] in (1055,1060,1108,212,244)for r in rows),'actual guest fault: '+name+repr(rows[-8:]))
    if predicate(state):break
-   require(used<cap and self.cycles<4_000_000_000,'predeclared clock ceiling: '+name)
-   s.run(min(1_000_000,cap-used,4_000_000_000-self.cycles));after=s.inspect()['machine']['cycle'];require(after>state['cycle'],'fast functional progress');self.cycles+=after-state['cycle']
-  r={'name':name,'initial_cycle':before,'final_cycle':state['cycle'],'functional_units':used,'host_seconds':time.monotonic()-began,'phase_clock_cap':cap};self.report['phases'].append(r);self.progress();print(json.dumps(r),flush=True);return state
+   require(used<cap and self.cycles<self.aggregate_cap,'predeclared clock ceiling: '+name)
+   quantum=min(1_000_000,cap-used,self.aggregate_cap-self.cycles);s.run(quantum);after=s.inspect()['machine']['cycle'];require(after-state['cycle']==quantum if self.backend=='rtl' else after>state['cycle'],'actual execution progress');self.cycles+=after-state['cycle']
+   if self.cycles//5_000_000!=(self.cycles-(after-state['cycle']))//5_000_000:
+    self.report['running_phase']={'name':name,'cycle':after,'used':after-before,'host_seconds':time.monotonic()-began};self.progress()
+  r={'name':name,'initial_cycle':before,'final_cycle':state['cycle'],'execution_units':used,'clock_scope':self.clock_scope,'host_seconds':time.monotonic()-began,'phase_clock_cap':cap,'phase_host_cap':seconds};self.report['phases'].append(r);self.progress();print(json.dumps(r),flush=True);return state
  def presentation(self,s,name,workspace,*,hint=False):
   document=workspace['document'];answer=document['answer'];outcome=document['outcome']
   labels=('UNCHECKED','VERIFIED Q EXACT','INVALID','NEEDS CLARIFICATION','UNSUPPORTED','INDETERMINATE RESOURCE LIMIT')
@@ -67,9 +89,24 @@ class FreshChooser(CourseMathWorkflow):
   self.click(s,stream,'authored-local-hint',172,245,mutation=True);hint=self.checkpoint_record(s,'hint');require(hint[3]['document']['hints']==1,'assistance absent');self.presentation(s,'hint-pixels',hint[3],hint=True)
   self.click(s,stream,'explicit-reader-Save',1370,64,mutation=True);panel,raw=s.export('reader-saved');payload,workspace,records,seq=self.record(raw)
   key=(1,0x5244000000000001);require(key in records and len(records[key].payload)==128,'actual acknowledged reader record absent')
-  import struct
   fields=struct.unpack('<16Q',records[key].payload);require(fields[4:8]==(pkg['identity'],3,struct.unpack_from('<Q',self.args.package[0].read_bytes(),80)[0],3),'reader edition3/node3 binding differs')
   require(all(records[k].payload==v.payload for k,v in original.items()),'original package/root/page bytes changed')
+  if self.args.with_ink:
+   stream.tick=s.inspect()['machine']['ticks']+10000;first=len(stream.events);oldacks=len([r for r in self.rows(s) if r[0]==1057]);stream.stroke('postmath-raw-annotation',1,1,3,1900);samples=stream.events[first:];s.admit(samples)
+   points=expected_stroke(samples)[1];ink_panel=self.directory/'annotation-wait.ppm'
+   def annotated(state):
+    if not(self.idle(state) and self.saved(s) and len([r for r in self.rows(s) if r[0]==1057])>oldacks and state['ticks']>=samples[-1][1]+200000):return False
+    s.control({'action':'panel','path':str(ink_panel)});width,_,pixels=visible_pixels(ink_panel)
+    return all(pixels[(y*width+x)*3:(y*width+x)*3+3]==bytes(3) for x,y in points)
+   self.phase(s,'actual-raw-annotation-Saved',300_000_000,annotated)
+   _,ink=s.export('annotation');_,ink_workspace,ink_records,seq=self.record(ink)
+   chunks=[]
+   for record in ink_records.values():
+    p=record.payload
+    if len(p)>=128 and struct.unpack_from('<3Q',p)==(0x314b4e49414d454c,1,3):
+     n=struct.unpack_from('<Q',p,48)[0];require(len(p)==128+72*n,'raw chunk extent');chunks.append([struct.unpack_from('<9Q',p,128+72*i) for i in range(n)])
+   require(chunks.count(samples)==1 and ink_workspace==workspace and ink_records[key].payload==records[key].payload,'exact raw annotation absent/duplicated or mathematical/reader bytes changed')
+   self.report['raw_annotation']={'samples':[list(x) for x in samples],'independent_black_pixels':len(points),'sequence':seq,'workspace_and_reader_unchanged':True};self.progress()
   self.click(s,stream,'Close-course',320,140);home,saved=s.export('closed');saved_records=self.record(saved)[2]
   s.close();self.sessions.remove(s);cold_disk=self.directory/'cold-input.raw';shutil.copyfile(saved,cold_disk);c=self.session('second',cold_disk);require(c.inspect()['machine']['cycle']==0,'independent secondCPU0')
   self.phase(c,'second-cold-Ready',1_000_000_000,lambda st:self.idle(st)and st['panel_completed']>=1 and any(r[0]==1056 for r in self.rows(c)))
@@ -77,7 +114,7 @@ class FreshChooser(CourseMathWorkflow):
   stream2=Input(1650,2200,c.inspect()['machine']['ticks']+10000,100000,0);self.click(c,stream2,'cold-reader-edition3-node3',320,140,text=pkg['nodes'][2]['body']);rp,rm=c.export('reopened');after=self.record(rm)
   require(after[0]==payload and after[1]==workspace and filecmp.cmp(saved,rm,shallow=False),'cold reader changed applicability/evidence/learner/medium')
   require(sha(self.args.disk)==self.original_medium_sha256,'original browser medium changed')
-  self.report.update(status='PASS_FRESH_EDITION3_CHOOSER_CHECK_EDIT_HINT_SAVE_INDEPENDENT_COLD_READER',whole_functional_units=self.cycles,all_cold_home_pixels=3630000,all_medium_bytes=268435456,source_sequence=3,final_sequence=seq,reader_node=3,reader_edition=3,qualification='Fast guest functional execution only; no RTL timing/browser/QEMU cached continuation/full proof-kernel claim')
+  self.report.update(status='PASS_FRESH_EDITION3_CHOOSER_CHECK_EDIT_HINT_SAVE_INDEPENDENT_COLD_READER',whole_execution_units=self.cycles,all_cold_home_pixels=3630000,all_medium_bytes=268435456,source_sequence=3,final_sequence=seq,reader_node=3,reader_edition=3,qualification=('Actual canonical RTL guest execution; no browser/fast-parity/full proof-kernel claim' if self.backend=='rtl' else 'Fast guest functional execution only; no RTL timing/browser/QEMU cached continuation/full proof-kernel claim'))
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 def main():
@@ -85,14 +122,18 @@ def main():
  for name in ('disk','package','native-bundle','work-dir'):parser.add_argument('--'+name,type=Path,required=True)
  parser.add_argument('--guest-build',type=Path)
  parser.add_argument('--guest-source-root',type=Path)
+ parser.add_argument('--backend',choices=('qemu','rtl'),default='qemu')
+ parser.add_argument('--with-ink',action='store_true',help='Also retain three raw samples and verify actual pixels before independent cold recovery')
  args=parser.parse_args()
  if bool(args.guest_build)!=bool(args.guest_source_root):parser.error('guest override requires its complete original audited source archive')
  if args.work_dir.exists() or not args.work_dir.resolve().is_relative_to(ROOT/'build'):parser.error('unused owned build output required')
  args.disk=args.disk.resolve();args.package=[args.package.resolve()];args.native_bundle=str(args.native_bundle.resolve())
  if args.guest_build:args.guest_build=str(args.guest_build.resolve())
- args.timeout=120;args.deadline=1800;args.checkpoint_relation='independent cold only';args.durable_suffix_from=None
+ args.timeout=120;args.deadline=43200 if args.backend=='rtl' else 1800;args.checkpoint_relation='independent cold only';args.durable_suffix_from=None
+ def terminate(sig,_frame):raise SystemExit(128+sig)
+ signal.signal(signal.SIGTERM,terminate);signal.signal(signal.SIGINT,terminate)
  actor=FreshChooser(args)
- actor.report.update(aggregate_cycles=4_000_000_000,phase_host_seconds=600,presentation_units=100_000_000,clock_scope='fast functional instruction-clock units; no RTL timing parity',scope=__doc__,observer_sha256=sha(__file__))
+ actor.report.update(scope=__doc__,observer_sha256=sha(__file__))
  actor.progress()
  try:actor.execute()
  except BaseException as error:actor.report.update(status='FAIL',error=repr(error));raise

@@ -4976,3 +4976,94 @@ normal READ outcomes, no pending external operation. Receipt
 build/browser/task006-reader20-fresh-course-plan-a1/initial-handoff-observation-a1.json.
 Normal continues with944.25M/6000s remaining cap inside original1B/7200s; noReady
 or full fresh workflow PASS. Do not confuse this with completed800M browser38.
+
+Reader19-only fresh complete pair a4 now PASS atccab8fe: notebook build/audit
+134.554456/251.430693s, initializer135.164070/240.638117s. All mandatory
+component/user/linked provenance audits completed, whole761.957537s and
+1,890,299,904B sampled owned peak/no survivors. Original a3 rejection remains
+FAIL. Preparation-a3 now PASS schema11 bundle
+build/native/task006-companion-reader19-a1 on the unchanged5381/60bd2 Clocked13
+runtime, with complete original native archive255 independently validated.
+Do not rebuild unchanged canonical20 or replay historical accepted campaigns.
+
+Real Reader19 peer recovery is RUNNING, not accepted:
+build/usb/task006-reader19-connected-plan-a1/{connected.py,plan.json}, output
+build/usb/task006-reader19-connected-a1, supervisorPID2450680/start76493832.
+Absolute original deadline1792241645151193432ns, whole12h/5B clocks,
+4GiB ownedRSS/min2GiB available/output12GiB/file1GiB. This privately clones the
+actual Saved23 source and runs a newCPU/USB enumeration. It will exercise actual
+final reader barrier6 persistence/lostreply, real owned WAIT-child EOF, failed
+provisional Save/offline rawink, public unconfigured reattach/re-enumeration,
+exact128B reader reconciliation, acknowledged ink and independent cold. No
+step beyond the observed first cold is passed yet. Original16 FAIL retained.
+
+Browser38 meaningful recorded-only course replay now PASS at
+build/browser/task006-current-browser-whole-plan-a1/offline-course-replay-result-a1.json:
+572M->799M,227M clocks,2 actualrawCOURSE events and14 actual suffixREADs from the
+167-row input tape. Every145,739,700 authoritative archive byte,256MiB and
+3.63M controllerpixels exact against the original same-Wasm suffix; no masks,
+original backing/peer access, guest mutation, drain or fences. Original4200s
+whole/3600s run bounds passed:1308.1s simulationcalls,1330.3s run elapsed,
+2418.342539s wholeobserver/330MiB heap. Explicitcheckpoint replay is distinct
+from cold recovery and general QEMU cached-state continuation.
+
+Actual ccab8fe CI38987140485/run149 is COMPLETED SUCCESS:11jobs/117steps,
+zero skips, receipt build/ci/task006-ccab-complete.json. This result belongs to
+ccab before the next backend/ink checker additions. PR9 remains draft/unmerged.
+The new native20 observer first attempt failed atcycle0: it used QEMU's
+devices.paper inspection shape. Retain
+build/courses/task006-fresh-chooser20-rtl-a1/result.json and its3.128354s
+supervision result/no survivors. Correct by using the existing native
+PublicSession/rtl_idle adapter, not by changing target checks or bounds.
+
+New connected raw-annotation functional case PASS:
+build/courses/task006-fresh-chooser20-ink-fast-a1/result.json,
+1,111,000,088fastunits/140.968475s, Saved18. Three actual raw samples produce
+11 independently expected black pixels and exactly one retained raw chunk;
+mathematical/reader bytes stay unchanged. Full presented mathematics/edit/hint,
+Save/close/independentCPU0/all3.63Mhomepixels/all256MiB/reader3 reopen pass.
+Different host duration is not an algorithm/performance improvement claim.
+The same maintained checker now accepts --backend rtl --with-ink, with fixed
+canonical cold1B/7200s, view400M/3600s, control150M/3600s, check300M/3600s,
+presentation100M/3600s, ink300M/3600s, close500M/3600s and whole12h/6B limits.
+Close500M is the existing common course-checker redraw budget; no failed run's
+deadline is changed. Delta must equal each admitted native clock quantum.
+
+Corrected native20 full case RUNNING under owned supervisorPID2454302/start
+76594950, absolute deadline1792242657121174562ns:
+build/courses/task006-fresh-chooser20-rtl-plan-a3/{plan,supervision}.json;
+actual output consumed-host-source-root/build/connected. Complete1830-file
+host source is copied/bound, same600e native Machine and original audited guest.
+The existing validated relocation adds only exact digest/source-location aliases
+and preserves every original origin/version/guard. Preserve second pre-CPU
+failure at plan-a2: direct copied ROOT lacked its source-origin aliases.
+No cold/Ready/full native20 workflow acceptance yet. Do not alter archived
+source or reset its bounds; repository work may continue independently.
+
+Browser39 first Ready now independently PASS at
+build/browser/task006-reader20-fresh-course-plan-a1/first-ready-result-a2.json:
+actual44.25M initializer+458.55M normalCPU=502.8M aggregate clocks,
+2662.8s cumulative simulationcalls/192MiB Wasm heap, all3.63M initialhomepixels,
+actual sequence2/root+page,15 successful backing outcomes, full component CRCs.
+Retain first-ready-result-a1 FAIL: it compared declared0..15 Gray4 archive bytes
+directly against0..255 reference pixels. Exact declared gray*17 conversion makes
+every pixel agree; no pixels/machine/bounds masked or changed. Actual4063B
+edition3 package admitted through the UI/guest UART at458.55M. First100M/900s
+of original200M/1800s installation budget is RUNNING. Wait for actual durable
+receipt before any course/check/save/cold claim. Keep tab39 handoff and server
+8810/session59301; original12h/6B whole plan remains unchanged.
+
+Host import-census defect independently reproduced: immediate ordinary runpy
+completion returned0 while its exit callback raised NameError(__file__) and
+produced no report. Original result retained at
+build/courses/task006-host-census-exit-a1/result.json. Capture observer path in
+the main closure and publish in finally, retaining the exit callback for late
+exit-handler imports. Three actual subprocess tests pass: late import captured,
+CLI exit7 preserved, failed publication must return nonzero. Host-only fix,
+no target runtime or execution policy changes. Original running native20 source
+archive retains its original complete bytes; do not patch live qualification
+sources to inherit a later observer fix.
+
+Final local host313 PASS70.450s, scaffold18 PASS8.509s and metadataPASS.
+Logs are in build/courses/task006-fresh-chooser20-rtl-plan-a3. No CI result for
+these later source changes is inferred from ccab's successful run149.

@@ -1515,15 +1515,16 @@
       "scope": "Original fixed572M->799M rawCOURSE suffix on the second independent OPFS CPU. All controller pixels, medium bytes and recorded READ outcomes against completed native case; no native full second snapshot or cross-restore claim."
     },
     "reader19_20_successors": {
-      "status": "CANONICAL20_COMPLETE_AUDITS_PRESENTED_FAST_WORKFLOW_AND_PREPARED_BUNDLES_PASS_COMPANION19_PENDING",
+      "status": "CANONICAL20_PRESENTED_FAST_WORKFLOW_AND_BOTH_IMAGE_PAIRS_AUDITED_COMPANION_AND_FRESH_BROWSER_RUNNING",
       "evidence": "docs/evidence/006-course-reader-location.json",
-      "behavior": "Fresh edition3 explicit chooser, actual5/6Verified, edit invalidation/Invalid, hint, readerSave15, independentcold/allhomepixels/allmedia/reopen node3; fast functional case",
+      "behavior": "Fresh edition3 explicit chooser, actual5/6Verified, edit invalidation/Invalid, hint, readerSave15, independentcold/allhomepixels/allmedia/reopen node3; fast functional case; separate raw-annotation case1111000088units/140.968s/Saved18/fullcold passed",
       "model": "same maintained Machine/controllers",
-      "RTL": "Existing0.3 andClocked13 circuitry unchanged. New39/8810 fresh browser init/notebook running; no new canonical20 fullReady/workflow PASS yet.",
-      "guest": "Canonical20 complete two-image link/audits and presented1085000068-unit/154.189145s case PASS; Reader19 full link passes, mandatory recovery-pump table audit FAIL retained and narrowed observer under repair",
-      "distribution": "Canonical20 native/static bundles prepared on existing600e/84d5 machines, complete existing Nix runtime export included in native-a2. Fresh-host import/rights remain open.",
+      "RTL": "Unchanged0.3/Clocked13. Fresh39 browser genuine init+normalReady458.55M/all3.63M pixels passes; native20 and companion19 still first cold. New canonical20 full workflow not accepted yet.",
+      "guest": "Reader20 complete presented fast workflow passed; Reader19 complete genuine normal/initializer pair audits passed atccab. Live companion/fresh-browser cases running, not accepted.",
+      "distribution": "Prepared Reader20 native/static browser and Reader19 schema11 same-runtime bundle; clean fresh-host import/rights remain separate. Fresh browser39 actual guest package input now admitted; installation/course/math/cold continuation pending.",
       "physical": "unchanged unresolved physical obligations",
-      "connected_result": "build/courses/task006-fresh-chooser20-presented-a1/result.json"
+      "connected_result": "build/courses/task006-fresh-chooser20-presented-a1/result.json",
+      "scope": "No full machine, fast timing/cache, proof-kernel or physical closure claim."
     }
   },
   "authenticated_resume_and_UART_reset_release": {
@@ -1781,7 +1782,25 @@
       "reported_Wasm_heap_bytes": 201326592,
       "same_Wasm_suffix": "build/browser/task006-current-browser-whole-plan-a1/private-suffix-qualified-a1.json",
       "retained_capture_history_observer_FAIL": "build/browser/task006-current-browser-whole-plan-a1/private-suffix-result-a1.json",
-      "offline_course_replay": "RUNNING under offline-course-replay-plan-a1.json; no pass yet"
+      "offline_course_replay": {
+        "status": "PASS_CURRENT_WASM_RECORDED_COURSE_REPLAY_EXACT_FULL_STATE_AND_BACKING",
+        "result": {
+          "path": "build/browser/task006-current-browser-whole-plan-a1/offline-course-replay-result-a1.json",
+          "sha256": "a94d3a88d561daf350e46032f81fb444cf8a2b7b501c77910557e22c31d1a76e",
+          "bytes": 1037
+        },
+        "suffix_clocks": 227000000,
+        "all_authoritative_archive_bytes_exact": 145739700,
+        "all_medium_bytes_exact": 268435456,
+        "all_controller_pixels": 3630000,
+        "actual_suffix_READs": 14,
+        "raw_events": 2,
+        "reported_simulation_call_seconds": 1308.1,
+        "reported_Wasm_heap_bytes": 346030080,
+        "whole_observer_seconds": 2418.342539,
+        "scope": "Actual same-Wasm recorded-only checkpoint572M ->2rawCOURSE rows/14suffixREADs ->799M, isolated origin, no live original backing/peer. Every authoritative archive byte and every backing byte required exact; no masks/drain/fences.",
+        "qualification": "Meaningful recorded guest I/O and full controller scan suffix, separate from cold recovery and general QEMU/fast timing/cache continuation."
+      }
     }
   },
   "fresh_browser_course_installation": {

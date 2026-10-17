@@ -13,6 +13,10 @@ import time
 
 def main():
     output, cli = Path(sys.argv[1]), Path(sys.argv[2]).resolve()
+    # run_path temporarily replaces __main__, including __file__. Its cleanup
+    # can remove our module's __file__ before the registered exit callback.
+    # Keep the actual observer identity in the closure, not in that namespace.
+    observer = Path(__file__).resolve()
     arguments = sys.argv[3:]
     root = cli.parent.parent
     sys.path.insert(0, str(cli.parent))
@@ -21,7 +25,7 @@ def main():
     write_lock = threading.Lock()
 
     def collect():
-        paths = {cli, Path(__file__).resolve()}
+        paths = {cli, observer}
         for module in list(sys.modules.values()):
             filename = getattr(module, "__file__", None)
             if filename:
@@ -52,7 +56,13 @@ def main():
                 time.sleep(0.05)
 
         threading.Thread(target=startup, daemon=True).start()
-    runpy.run_path(str(cli), run_name="__main__")
+    try:
+        runpy.run_path(str(cli), run_name="__main__")
+    finally:
+        # Publishing before interpreter exit also makes a write failure an
+        # ordinary nonzero process result, instead of an ignored atexit error.
+        # The exit callback still includes imports from later exit handlers.
+        write()
 
 
 if __name__ == "__main__":
