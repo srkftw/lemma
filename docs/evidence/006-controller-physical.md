@@ -470,3 +470,15 @@ negative results and both completed routing failures are in the
 [contract](../contracts/006-pen-sram-v1.md). This is not a physical128MiB RAM
 solution, process DRC/LVS/PEX, macro power/test/PVT, post-route timing or
 full-chip closure. No new native/Wasm SRAM state profile is admitted.
+
+A subsequent maintained range-cone change follows the actual a4 worst path
+(sample_x[30] through wide range/timestamp factoring to sequence D). It retains
+six full-width comparison outputs through mapping without clocks/state/width
+changes. The same full256/default/real four-state SRAM and actual mutation
+corpus passes7.871752s. Mapping uses6,623 rather than6,820 cells with the same
+866 flip-flops/three SRAMs; timestamp depth is18 rather than17, within the
+original20-cell limit. No delay improvement is inferred. Actual changed-netlist
+macro geometry matches a4. The new route attempt fails before OpenROAD because
+available RAM is below the unchanged8GiB launch floor;900s/1000s/100MHz/rules
+remain unchanged. Details are in the existing SRAM receipt. Original completed
+routing failures and all full-chip/process/PVT/PEX gaps remain.

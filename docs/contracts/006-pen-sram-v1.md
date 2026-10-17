@@ -24,6 +24,18 @@ documented delay setting1, all write-mask bits1, and disabled BIST inputs. The
 pure sequence increment has a retained hierarchy boundary through technology
 mapping and is flattened afterward; no sequential state or clock is added.
 
+The physical option also retains a combinational hierarchy boundary around
+the six original full-width sample-range comparisons. Their independent
+outputs remain separate through mapping and are flattened afterward, so the
+mapper cannot factor them into the routed timestamp/control cone. Parameter
+promotion and four-state comparisons remain unchanged; no state, extra edge
+or reduced sample width is introduced. Literal default/SRAM protocols and
+real storage mutants retain the same checks and existing20-cell graph bound.
+The changed map has6,623 cells versus6,820, the same866 flip-flops/three SRAMs,
+and timestamp-to-sequence graph depth18 versus17. This is a cell-count change,
+not a timing improvement. Its first route attempt rejected the unchanged8GiB
+available-memory launch floor before OpenROAD, so no new routed result exists.
+
 The host qualification command consumes existing Git objects from public PDK
 revision `5e6d592e4002946a4616f798c357f0f3c06cf3b6`; it does not fetch, modify
 the PDK or synthesize a replacement memory. It retains the original license,

@@ -7,6 +7,18 @@ module lemma_pen_sequence_increment(input wire [63:0] value,
   assign incremented = value + 64'd1;
 endmodule
 
+// Keep independent input-validation cones apart during physical mapping.
+// The routed sample_x -> sequence-D path previously crossed a single wide
+// factored range/timestamp cone. These outputs retain the original full-width
+// comparisons, including parameter promotion and four-state semantics.
+module lemma_pen_sample_ranges #(parameter int PRESSURE_MAX = 4095) (
+  input wire [63:0] x, y, pressure, flags, tool, buttons,
+  output wire [5:0] invalid
+);
+  assign invalid = {x > 65535, y > 65535, pressure > PRESSURE_MAX,
+                    flags > 15, tool > 2, buttons > 7};
+endmodule
+
 module lemma_pen #(
   parameter int FIFO_DEPTH = 256,
   parameter int PRESSURE_MAX = 4095,
@@ -66,6 +78,15 @@ module lemma_pen #(
   logic [63:0] last_time, contact_deadline;
   logic loss, resync, release_seen, bad_sample;
   logic access_ok, lose;
+  wire [5:0] range_errors;
+  if (IHP_SRAM) begin : physical_validation
+    (* keep_hierarchy = 1 *) lemma_pen_sample_ranges #(.PRESSURE_MAX(PRESSURE_MAX)) ranges(
+      .x(sample_x), .y(sample_y), .pressure(sample_pressure), .flags(sample_flags),
+      .tool(sample_tool), .buttons(sample_buttons), .invalid(range_errors));
+  end else begin : register_validation
+    assign range_errors = {sample_x > 65535, sample_y > 65535,
+      sample_pressure > PRESSURE_MAX, sample_flags > 15, sample_tool > 2, sample_buttons > 7};
+  end
 
   if (IHP_SRAM) begin : physical_storage
     // Actual pinned SG13G2 one-port macros, not synthesis blackbox substitutes.
@@ -122,8 +143,7 @@ module lemma_pen #(
   assign sample_ready = ready && !(valid && write) &&
                         !(contact_deadline != 0 && now_ticks >= contact_deadline);
   assign bad_sample = sample_time < last_time || sample_time > 64'hffffffff_ff67697f ||
-    sample_x > 65535 || sample_y > 65535 || sample_pressure > PRESSURE_MAX ||
-    sample_flags > 15 || sample_tool > 2 || sample_buttons > 7;
+    (|range_errors);
   assign lose = (contact_deadline != 0 && now_ticks >= contact_deadline) ||
     (sample_valid && sample_ready && !loss &&
       (bad_sample || sample_flags[3] || next_sequence == 64'hffffffffffffffff ||

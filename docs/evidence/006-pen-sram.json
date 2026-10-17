@@ -498,7 +498,7 @@
       "adopted": false
     }
   ],
-  "maintained_option_routing": "NOT_RUN: experimental route candidates use separately retained pre-integration source/identities; maintained option protocol/mapping does not inherit those physical observations.",
+  "maintained_option_routing": "New changed maintained range-cone candidate failed before OpenROAD at unchanged8GiB launch floor. Actual macro geometry preflight passes. No new route/timing/DRC claim; original prototype route failures remain.",
   "checkpoint": "Not enabled in any native/Wasm SoC profile; no new SRAM logical-state/checkpoint admission. Existing exact source-bound archives retained.",
   "physical_open": [
     "actual setup/hold/electrical/router violations",
@@ -541,5 +541,32 @@
     "peak_owned_RSS_bytes": 369401856,
     "failure": "GRT-0232 routing congestion too high before detailed routing; no detailed-route/DRC/timing success.",
     "scope": "Changed private prototype floorplan only; original10ns constraints/rules/3-iteration900s cap and full SRAM/circuit unchanged. Not adopted by maintained simulation/physical profile."
+  },
+  "maintained_range_cones": {
+    "status": "PASS_MAINTAINED_PEN_PROTOCOL_AND_THREE_REAL_SRAM_MAPPING",
+    "result": "build/silicon/pen-sram-range-cones-a1/result.json",
+    "result_sha256": "566b9cf95fecc48bee4e1188fdfa701e3dd06630889fe5b8e2ef81bf901c5530",
+    "seconds": 7.871752339997329,
+    "source_sha256": "f51a90d5a70434ab15afbeafb3920a957ef74957d9ae644fb3b2eb4fb94cdf01",
+    "change": "Physical-only kept hierarchy for six original full-width range comparisons; timestamp comparisons/control/FIFO/181bits/reset/refill unchanged, no new state or clocks. Default circuit uses same comparisons.",
+    "baseline_mapping": "build/silicon/pen-sram-maintained-map-a2/result.json",
+    "old_cells": 6820,
+    "new_cells": 6623,
+    "old_flip_flops": 866,
+    "new_flip_flops": 866,
+    "real_SRAM_macros": 3,
+    "old_timestamp_to_sequence_depth": 17,
+    "new_timestamp_to_sequence_depth": 18,
+    "unchanged_depth_ceiling": 20,
+    "route": {
+      "status": "FAIL_BEFORE_OPENROAD_LAUNCH_RAM_FLOOR",
+      "plan": "build/silicon/pen-sram-range-route-plan-a1/plan.json",
+      "result": "build/silicon/physical/pen-sram-range-route-a1/result.json",
+      "supervision": "build/silicon/pen-sram-range-route-supervision-a1/result.json",
+      "geometry_preflight": "PASS_ACTUAL_ODB_THREE_MACRO_ORIENTATIONS_EXTENTS_BOUNDS_NONOVERLAP",
+      "unchanged_bounds": "8GiB available launch floor,6GiB owned RSS,900s inner/1000s outer,10ns clock/3 route iterations/original rules",
+      "reason": "Actual available RAM below independently retained8GiB launch floor; no OpenROAD routing invoked, no timing/DRC result."
+    },
+    "qualification": "Literal full256 default/real four-state vendor SRAM plus sequence/address mutants passed. Fewer mapped cells is not a routed timing improvement; timestamp depth increases by1 within original20 bound."
   }
 }
