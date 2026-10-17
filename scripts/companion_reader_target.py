@@ -5,6 +5,7 @@ package parsing, mathematical policy, ink construction or durability receipt.
 """
 import hashlib
 import json
+import re
 from pathlib import Path
 from core0_common import Core0Error
 from paper_next import canonical
@@ -14,6 +15,72 @@ VERSION = 'lemma-companion-reader-target/1'
 AUTHORITY = Path(__file__).resolve().parents[1] / 'tooling/companion-reader-target-authority.json'
 PREDECESSORS = ('package-entry2-target-authority.json', 'reader-notebook-target-authority.json')
 PREFIX = 'Lemma.Applications.Notebook.'
+RECOVERY_PUMP = PREFIX + 'readerRecoverableTransactionPump'
+RECOVERY_CASES = [0, 1, 2, 3, 8, 9, 10, 11]
+RECOVERY_MACHINE_SHA256 = '0c787246e10ddeecd2f160982d1de44aec1271d2a3b18f6102d6550dee2faad9'
+
+
+def recovery_jump_spec(ir, unit, source, symbol):
+    if source != RECOVERY_PUMP:
+        return None
+    require(selected(unit) and unit.get('role') == 'user' and unit.get('image_key') == 'notebook',
+            'Reader19 recovery table escaped its selected User2 deployment')
+    validate_notebook(ir, unit, optimized=True)
+    from audit_kernel import _ir_definition_body
+    rows = {canonical(row['source']): row for row in unit['functions']}
+    row = rows[source]
+    effects = ['checked-access', 'io-order', 'virtual-read', 'virtual-write', 'user-syscall', 'privilege-transition']
+    require(row['symbol'] == symbol and row['args'] == [] and row['effects'] == effects,
+            'Reader19 recovery table source signature/effects differ')
+    body = _ir_definition_body(ir, symbol)
+    switches = re.findall(r'switch i64 [^\n]+\[([^]]+)\]', body, re.S)
+    require(len(switches) == 1 and sorted(int(v) for v in re.findall(r'i64 (\d+), label', switches[0])) == RECOVERY_CASES,
+            'Reader19 recovery table source phase domain differs')
+    # Independently bind every admitted source phase to its actual Action.
+    from package_notebook_target import _readonly_cfg
+    blocks = _readonly_cfg(body)[0]
+    targets = {int(v): target for v, target in re.findall(r'i64 (\d+), label %([^\s]+)', switches[0])}
+    for phase, callee in ((8, 'readerRecoverablePollControl'), (9, 'readerRecoverablePollControl'),
+                          (10, 'readerRecoverablePollRead'), (11, 'readerRecoverablePollRead')):
+        require(sum('@' + rows[PREFIX + callee]['symbol'] + '()' in line for line in blocks[targets[phase]]) == 1,
+                'Reader19 recovery source phase invokes another poll')
+    transaction = rows[RECOVERY_PUMP + '.transaction']['symbol']
+    for phase in (1, 2, 3):
+        require(sum('@' + transaction + '(i64 ' + str(phase) + ')' in line for line in blocks[targets[phase]]) == 1,
+                'Reader19 recovery source phase changes its transaction argument')
+    return ('user', 12, [], effects, RECOVERY_CASES)
+
+
+def recovery_jump_relation(ir, unit, assembly, symbol, table, targets, code, labels):
+    recovery_jump_spec(ir, unit, RECOVERY_PUMP, symbol)
+    from audit_kernel import _jump_assembly_function
+    from package_notebook_target import _normalized_jump_code
+    require((code, labels) == _jump_assembly_function(assembly, symbol),
+            'Reader19 recovery table supplied foreign machine instructions')
+    declarations = re.findall(r'(?m)^' + re.escape(table) + r':\n((?:\s*\.quad\s+\.LBB\d+_\d+\s*\n)+)', assembly)
+    require(len(declarations) == 1 and re.findall(r'\.quad\s+(\S+)', declarations[0]) == targets and
+            len(targets) == 12 and all(target in labels for target in targets),
+            'Reader19 recovery actual table declaration/cell extent differs')
+    names = {row['symbol']: canonical(row['source']) for row in unit['functions']}
+    actual = _normalized_jump_code(code, labels, table, names)
+    require(hashlib.sha256(repr(actual).encode()).hexdigest() == RECOVERY_MACHINE_SHA256,
+            'Reader19 recovery complete machine owner/guard/calls differ')
+    require(actual[10:19] == [('li', ['a0', '11']), ('bltu', ['a0', 's1', '@23']),
+            ('slli', ['a0', 's1', '3']), ('auipc', ['a1', '%TABLE']),
+            ('addi', ['a1', 'a1', '%LOW13']), ('add', ['a0', 'a0', 'a1']),
+            ('ld', ['a0', '0(a0)']), ('mv', ['s0', 's1']), ('jr', ['a0'])],
+            'Reader19 recovery unsigned bound/load/return-state relation differs')
+    require([labels[target] for target in targets] == [33, 26, 28, 30, 23, 23, 23, 23, 19, 19, 21, 21],
+            'Reader19 recovery actual phase/call/hole table mapping differs')
+    require(actual[19:33] == [('call', ['@' + PREFIX + 'readerRecoverablePollControl']), ('j', ['@32']),
+            ('call', ['@' + PREFIX + 'readerRecoverablePollRead']), ('j', ['@32']),
+            ('li', ['a0', '234']), ('call', ['@' + PREFIX + 'saveFailure']), ('j', ['@32']),
+            ('li', ['a0', '1']), ('j', ['@31']), ('li', ['a0', '2']), ('j', ['@31']),
+            ('li', ['a0', '3']), ('call', ['@' + RECOVERY_PUMP + '.transaction']), ('mv', ['s0', 'a0'])],
+            'Reader19 recovery machine poll/transaction/error semantics differ')
+    return {'schema': 'lemma-reader19-recovery-backend-cells/1', 'source': RECOVERY_PUMP,
+            'all_phase_targets': [labels[target] for target in targets], 'error_holes': [4, 5, 6, 7],
+            'other_state_error': 234, 'machine_sha256': RECOVERY_MACHINE_SHA256}
 
 
 def require(value, message):

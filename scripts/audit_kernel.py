@@ -4775,10 +4775,22 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     reload = None
     literal = None
     mask = None
+    state_copy = None
     if jump==use+5:
         intervening=code[use+4]
         if intervening[0]=='li' and intervening[1][0]!=target:
             pass
+        elif (source=='Lemma.Applications.Notebook.readerRecoverableTransactionPump'
+              and configuration in COMPANION_READER_CONFIGURATIONS and image_key=='notebook'
+              and count==12 and minimum==0 and index=='s1'
+              and scaled==address==target=='a0' and base=='a1' and use==13
+              and code[:4]==[('addi',['sp','sp','-32']),('sd',['ra','24(sp)']),
+                            ('sd',['s0','16(sp)']),('sd',['s1','8(sp)'])]
+              and intervening==('mv',['s0','s1'])):
+            # The separately closed Reader19 owner preserves phase0 as its
+            # return value. This exact copy cannot overwrite loaded target a0.
+            state_copy={'instruction':'mv s0,s1','phase_register':'s1',
+                        'return_register':'s0','preserved_target_register':'a0'}
         elif (source=='Lemma.Courses.Arithmetic.panelCharacter'
               and configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
               and count==8 and minimum==0 and index==scaled==address=='a0' and base==target=='a5'
@@ -4895,6 +4907,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
                 **({'target_preserving_reload':reload} if reload is not None else {}),
                 **({'target_preserving_literal':literal} if literal is not None else {}),
                 **({'target_preserving_mask':mask} if mask is not None else {}),
+                **({'target_preserving_state_copy':state_copy} if state_copy is not None else {}),
                 **({'bounded_index_rebind':index_rebind} if index_rebind is not None else {}),
                 **({'hoisted_entry_bound':hoisted} if hoisted is not None else {}))
 

@@ -380,6 +380,9 @@ JUMP_MACHINE_PINS = {
 
 
 def notebook_jump_spec(ir, unit, source, symbol):
+    from companion_reader_target import RECOVERY_PUMP, recovery_jump_spec
+    if source == RECOVERY_PUMP:
+        return recovery_jump_spec(ir, unit, source, symbol)
     from dirty_batch_notebook_target import NUMERIC_CHARACTER,numeric_jump_spec
     if source==NUMERIC_CHARACTER:return numeric_jump_spec(ir,unit,source,symbol)
     if source not in NOTEBOOK_JUMPS:
@@ -451,6 +454,9 @@ def validate_jump_relation(ir, unit, assembly, symbol, table, targets, code, lab
     """
     rows = _rows(unit); names = {row['symbol']: source for source, row in rows.items()}
     source = names.get(symbol)
+    from companion_reader_target import RECOVERY_PUMP, recovery_jump_relation
+    if source == RECOVERY_PUMP:
+        return recovery_jump_relation(ir, unit, assembly, symbol, table, targets, code, labels)
     from dirty_batch_notebook_target import NUMERIC_CHARACTER,numeric_jump_relation
     if source==NUMERIC_CHARACTER:return numeric_jump_relation(ir,unit,assembly,symbol,table,targets,code,labels)
     spec = notebook_jump_spec(ir, unit, source, symbol)

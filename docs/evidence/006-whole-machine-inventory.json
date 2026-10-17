@@ -1515,14 +1515,15 @@
       "scope": "Original fixed572M->799M rawCOURSE suffix on the second independent OPFS CPU. All controller pixels, medium bytes and recorded READ outcomes against completed native case; no native full second snapshot or cross-restore claim."
     },
     "reader19_20_successors": {
-      "status": "IMPLEMENTED_ARTIFACTS_QUALIFIED_CONNECTED_TARGET_PENDING",
+      "status": "CANONICAL20_COMPLETE_AUDITS_PRESENTED_FAST_WORKFLOW_AND_PREPARED_BUNDLES_PASS_COMPANION19_PENDING",
       "evidence": "docs/evidence/006-course-reader-location.json",
-      "behavior": "Recovery5 plus explicit empty-context chooser",
+      "behavior": "Fresh edition3 explicit chooser, actual5/6Verified, edit invalidation/Invalid, hint, readerSave15, independentcold/allhomepixels/allmedia/reopen node3; fast functional case",
       "model": "same maintained Machine/controllers",
-      "RTL": "unchanged canonical0.3 and Clocked13",
-      "guest": "genuine elaborated User2/RV64 objects; linked boot and execution pending",
-      "distribution": "closed native schema11 and canonical bundle3 selector implemented; new bundles unqualified",
-      "physical": "unchanged unresolved physical obligations"
+      "RTL": "Existing0.3 andClocked13 circuitry unchanged. New39/8810 fresh browser init/notebook running; no new canonical20 fullReady/workflow PASS yet.",
+      "guest": "Canonical20 complete two-image link/audits and presented1085000068-unit/154.189145s case PASS; Reader19 full link passes, mandatory recovery-pump table audit FAIL retained and narrowed observer under repair",
+      "distribution": "Canonical20 native/static bundles prepared on existing600e/84d5 machines, complete existing Nix runtime export included in native-a2. Fresh-host import/rights remain open.",
+      "physical": "unchanged unresolved physical obligations",
+      "connected_result": "build/courses/task006-fresh-chooser20-presented-a1/result.json"
     }
   },
   "authenticated_resume_and_UART_reset_release": {
@@ -1726,12 +1727,12 @@
       "path": "docs/evidence/006-local-browser-distribution-v1.json",
       "sha256": "954aca8ff7b2f68c6cf8573afbd609e396e17df4c1d0955ebf47660ef36434d1"
     },
-    "fresh_course_case": "RUNNING:browser36/8806 reader18-fresh-course-a1; real initializer with2.2M prefix charged to1.4B combined initialization/cold cap. No initialization/installation/math/cold pass yet."
+    "fresh_course_case": "Original36 guest init/Ready/install3 pass, first course-open FAIL400M; newReader20/39 fresh source-bound case running, no accepted result yet."
   },
   "current_shared_runtime_port": {
     "behavior": "IMPLEMENTED_SHARED_UART_RETENTION_AND_QUOTA",
-    "RTL_guest": "Only existing source-bound C53 fullReader18 workflow complete; current600e direct/standalone exact2M qualification passes; fullcurrentReady remains separate.",
-    "browser": "Current84d5 portable build and exact selected native/Wasm1M+1M/rejected-restore/sameWasm suffix pass. C53 fullSave38/cold/node5 remains own identity.",
+    "RTL_guest": "Current600e actual800M full cold572M/course799M/suffix800M passes; original continuous supervision interrupted, distinct functional result retained. HistoricalC53 fullReader18 retains own identity.",
+    "browser": "Current84d5 actual800M/fullnative relation at572M/799M/800M, all controller pixels/media/167actualREADoutcomes, and all-byte sameWasm idle suffix PASS. Separate meaningful227M recordedcourse replay RUNNING; no QEMU cache/timing claim.",
     "distribution": "Current native distribution3 and static browser archives prepared; native standalone public snapshots exact against direct current runtime at1M/2M. Complete fresh-host installation and rights open.",
     "Clocked13": "Current5381->759aeb archive-only source-port2 compiles complete255inputs, genuineEntryV2 Pending9cut native/Wasm exact41000 suffix passes. Full browser live peer remains open.",
     "evidence": [
@@ -1748,7 +1749,7 @@
       "all_pixels": 3630000,
       "all_medium_bytes": 268435456,
       "retained_checkpoint": "build/browser/task006-current-native-whole-a3/cold572M/machine.chk",
-      "scope": "Actual public current distribution3 CPU0 cold Ready, raw COURSE to saved node5, all3.63M pixels/all256MiB/167 actual READ outcomes, and1Msuffix; three observational full checkpoints. Original owner disappeared; continuous resource supervision is not qualified. Actor completed under original cycle/phase/whole ceilings and conservative reattached guard. Native/Wasm full comparison remains pending.",
+      "scope": "Actual public current distribution3 CPU0 cold Ready, raw COURSE to saved node5, all3.63M pixels/all256MiB/167 actual READ outcomes, and1Msuffix; three observational full checkpoints. Original owner disappeared; continuous resource supervision is not qualified. Actor completed under original cycle/phase/whole ceilings and conservative reattached guard. Full native/Wasm relation at572M/799M/800M now passes under the predeclared implementation header exception.",
       "guard": "build/browser/task006-current-native-whole-rebound-supervision-a4/started.json",
       "whole_result": "build/browser/task006-current-native-whole-a3/result.json",
       "whole_clocks": 800000000,
@@ -1769,7 +1770,18 @@
       "all_medium_bytes": 268435456,
       "reported_simulation_call_seconds": 4001.5,
       "reported_Wasm_heap_bytes": 201326592,
-      "scope": "Real CPU0 durable-only cold using current public static bundle; all complete model/wrapper bytes and component CRCs match native except original implementation-ID header relation. Full course/suffix and same-Wasm replay still running/not qualified."
+      "scope": "Full800M cold/course/suffix completed; all authoritative archive bytes at threecuts, controllerpixels/media and167READoutcomes exact under predeclared implementation-ID relation. SameWasm idle suffix exact allbytes; general caches/pending-I/O coverage separate."
+    },
+    "current_wasm_whole_relation": {
+      "status": "PASS_CURRENT_FULL800M_NATIVE_OBSERVATION_RELATION",
+      "course_result": "build/browser/task006-current-browser-whole-plan-a1/course-result-a1.json",
+      "suffix_relation": "build/browser/task006-current-browser-whole-plan-a1/suffix800M-native-comparison-a1.json",
+      "whole_clocks": 800000000,
+      "reported_simulation_call_seconds": 5143.9,
+      "reported_Wasm_heap_bytes": 201326592,
+      "same_Wasm_suffix": "build/browser/task006-current-browser-whole-plan-a1/private-suffix-qualified-a1.json",
+      "retained_capture_history_observer_FAIL": "build/browser/task006-current-browser-whole-plan-a1/private-suffix-result-a1.json",
+      "offline_course_replay": "RUNNING under offline-course-replay-plan-a1.json; no pass yet"
     }
   },
   "fresh_browser_course_installation": {

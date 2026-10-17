@@ -4908,3 +4908,71 @@ full bodies/callers/roots/table relations. Actual retained genuine pre/post moun
 checks and six readonly tables pass; wrong image/configuration reject. Kernel
 host461 PASS. Original full-pair-plan-a2 result remains FAIL; next complete
 source-bound pair attempt retains the same4800s limits and unused outputs.
+
+
+Reader20 connected milestone after3070, canonical consumed-source086dfe7:
+- Complete normal/initializer builds145.975181/115.522248s and mandatory
+ audits206.162392/247.638906s PASS. Original source437 archived in bundle and
+ build/courses/task006-reader20-source-a1. Do not rebuild this unchanged pair
+ merely for the Reader19-only observer repair.
+- Actual guarded fresh-edition3 case PASS1,065,000,067fast units/141.330123s,
+ 445984768B sampled owned peak, no survivors. First no-disk-change observer
+ FAIL retained: ordinary initial Unknown/Unchecked workspace is the sole added
+ record/sequence4; every original payload preserved, no selection/evidence/hint.
+- Maintained scripts/check_fresh_course_reader.py actual prepared-bundle case
+ PASS1,085,000,068fast units/154.189145s. Explicit independent controller labels
+ now verify5/6Verified rev5, edit5/7Unchecked rev6, Invalid and actual hint pixels.
+ A durable checker receipt precedes the next completed panel; immediate old
+ exports are not a displayed-Verified claim. ReaderSave15; independentCPU0
+ cold/all3.63Mhomepixels/all256MiB/reopen edition3 node3; original objects intact.
+- Canonical native bundle build/native/task006-chooser-reader20-a1;
+ static build/distribution/task006-chooser-reader20-a1 (server8810/session59301,
+ tab39 handoff), build/distribution/task006-chooser-reader20-native-a2 and tar139042536B
+ SHA dcfcad918c663ee1f5e672a95a6d8c54dd71ef4e38a6a925079774a732e1c0b1.
+ Actual packaging/source closure qualification only; clean fresh-host import,
+ full new browser workflow/RTL timing and redistribution remain open.
+- Browser39 medium reader20-fresh-course-a1 really created blank, initializer
+ cycle0 paused, then100M aggregate/1800s budget. Normal CPU has started; budget
+ rebase demonstrates44.25M initializer clocks. At normal54.5M budget98.75M used,
+ noReady yet. Preserve original12h/6B plan; no imports or snapshot cold input.
+ Current browser38 independently replays recorded572M->799M course suffix in
+ private fork from full167-outcome tape and2raw rows, original227M/3600s.
+- Current84d5 browser full800M completed5143.9s reported simulation calls/192MiB.
+ Full native relation at572M/799M/800M and167reads/allbytes/errors/order/cycles
+ pass. SameWasm799->800M all machine/backing bytes exact;330MiB afterrestore.
+ Retain original whole-history I/O comparison FAIL: new fork capture has zero
+ suffix operations, not historical167rows. Independent applicable-suffix
+ qualification passes with no archive masks, drain, fence or mutation.
+
+Full-pair-plan-a3 aggregate is FAIL, retained. Canonical pair PASS separately;
+Reader19 normal links153.35s but mandatory audit310.46s rejects unregistered
+12cell readerRecoverableTransactionPump table. Source phases0/1/2/3/8/9/10/11,
+error234 holes4..7; exact source/body/caller, 40instruction machine, everycell,
+unsigned bound and target-preserving phase copy now undergo focused admission.
+Original valid rejection is preserved; no target body or authority fingerprint
+was changed. Prepare a fresh Reader19-only pair after committing the observer
+repair; do not repeat canonical20 builds. Native schema11 and real reader
+lostACK/reconciliation/cold remain unqualified. Queued preparation-a1 was
+cancelled before any artifact to remove an unnecessary serial dependency;
+preparation-a2 prepared canonical bundles then failed closed on Reader19 audit.
+
+Focused Reader19 actual-table qualification now PASS4.515240s with all12 cells,
+LLVM source phase/callee/transaction arguments, complete40instruction machine
+SHA0c787246..., ordinary unsigned guard and exact target-preserving mv s0,s1.
+Changed actual declaration/cells and wrong historical deployment reject. Narrow
+post-load guard only admits Reader19's exact source/two configs/User2/count12/
+minimum0/registers/frame. Three new meaningful guard fixtures pass; kernel464
+PASS8.336s; scaffold18 PASS6.367s/metadataPASS. Full pair still needs new source-
+bound Reader19-only rebuild/audits; original full audit not reclassified.
+Extracted native-a2 Python-I frontend versus repository public command actual2M
+clocks each PASS22.795751s, all145672150 snapshot bytes exact, both destroyed.
+This qualifies packaging/launch; not RTL Ready. No unchanged guest replay or
+historical campaign rerun was used to claim a new target behavior.
+
+New browser39 first100M aggregate finished: actual initializer44.25M then normal
+CPU55.75M;613.3s simulation calls/192MiB, normal already running after real
+handoff. Passive raw observation shows valid sequence0/no records and three
+normal READ outcomes, no pending external operation. Receipt
+build/browser/task006-reader20-fresh-course-plan-a1/initial-handoff-observation-a1.json.
+Normal continues with944.25M/6000s remaining cap inside original1B/7200s; noReady
+or full fresh workflow PASS. Do not confuse this with completed800M browser38.

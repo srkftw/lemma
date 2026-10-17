@@ -433,7 +433,7 @@
     "Prepared packages preserve unresolved redistribution/license, fresh-host NAR import/Python-Tk, browser compiler/usability/power-loss/eviction gaps."
   ],
   "reader19_20_successors": {
-    "status": "IMPLEMENTED_GENUINE_ARTIFACTS_AND_ACTION_COMPONENTS_FULL_IMAGES_PENDING",
+    "status": "CANONICAL20_LINK_AUDITS_FAST_PRESENTED_WORKFLOW_AND_BUNDLES_PASS_READER19_TABLE_REPAIR_IN_PROGRESS",
     "contract": "docs/contracts/006-companion-course-reader-deployment-v1.md",
     "companion": {
       "version": 19,
@@ -445,7 +445,53 @@
       "genuine_notebook_exports": "build/kernel/task006-companion-reader19-capture-a3/result.json",
       "predecessor_reader_shared_bodies": 895,
       "predecessor_recovery_shared_bodies": 896,
-      "unchanged_other_role_corpora": true
+      "unchanged_other_role_corpora": true,
+      "full_link_attempt": {
+        "status": "LINK_PASS_AUDIT_FAIL_UNREGISTERED_RECOVERY_PUMP_TABLE",
+        "result": "build/courses/task006-reader19-20-full-pair-plan-a3/result.json",
+        "build_seconds": 153.3501079690177,
+        "audit_seconds": 310.4612107439898,
+        "actual_error": "unknown backend table owner/count/source signature/effects: readerRecoverableTransactionPump,12cells,User2",
+        "scope": "Original fail retained. New exact complete artifact/source/case/machine/cell/unsigned-guard relation under repair; no target body, authority fingerprint, timing or valid check weakened.",
+        "focused_relation": {
+          "status": "PASS_ACTUAL_READER19_RECOVERY_TABLE_RELATION_AND_NEGATIVES",
+          "result": "build/courses/task006-reader19-20-full-pair-plan-a3/corrected-recovery-table-observer-a1.json",
+          "machine_sha256": "0c787246e10ddeecd2f160982d1de44aec1271d2a3b18f6102d6550dee2faad9",
+          "source_phases": [
+            0,
+            1,
+            2,
+            3,
+            8,
+            9,
+            10,
+            11
+          ],
+          "error_holes": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "other_state_error": 234,
+          "actual_cell_offsets": [
+            33,
+            26,
+            28,
+            30,
+            23,
+            23,
+            23,
+            23,
+            19,
+            19,
+            21,
+            21
+          ],
+          "target_preserving_instruction": "mv s0,s1; loaded a0 untouched",
+          "negative": "Changed actual table declaration/cell mapping and wrong deployment reject. Original full audit still FAIL; fresh Reader19-only pair required."
+        }
+      }
     },
     "canonical": {
       "version": 20,
@@ -453,7 +499,123 @@
       "authority": "tooling/chooser-reader-target-authority.json",
       "result": "build/courses/task006-chooser-reader20-authority-a1/result.json",
       "genuine_notebook_exports": "build/kernel/task006-chooser-reader20-capture-a1/result.json",
-      "unchanged_reader18_shared_bodies": 898
+      "unchanged_reader18_shared_bodies": 898,
+      "complete_pair": {
+        "status": "PASS_BOTH_COMPLETE_IMAGES_AND_MANDATORY_AUDITS",
+        "source_commit": "086dfe77faafc0f2cd60a2abe63cb864b1b8032a",
+        "consumed_sources": 437,
+        "build_seconds": [
+          145.97518098691944,
+          115.52224804298021
+        ],
+        "audit_seconds": [
+          206.16239179600962,
+          247.6389064739924
+        ],
+        "roles": {
+          "notebook": {
+            "build.json": {
+              "path": "build/kernel/task006-reader19-20-pair-a3/canonical/notebook/build.json",
+              "sha256": "b176e8ee6882fb120942e129619c4d5c6afd1459e8d345f7218ed466e4540e86"
+            },
+            "audit.json": {
+              "path": "build/kernel/task006-reader19-20-pair-a3/canonical/notebook/audit.json",
+              "sha256": "3705f53b19ef000bcc3c5ccca6cbecad877dad721a8f2e7692320e163b4c3117"
+            },
+            "image.elf": {
+              "path": "build/kernel/task006-reader19-20-pair-a3/canonical/notebook/image.elf",
+              "sha256": "eba0bc89ebb0133e9a63f1ba0ea6773e2c01be27cce72d8e23842eeb0e87ed35"
+            },
+            "provenance.json": {
+              "path": "build/kernel/task006-reader19-20-pair-a3/canonical/notebook/provenance.json",
+              "sha256": "b98661d37ee7843ad380c99076454ef5b9190e8c667ce88e47a588166edb07d9"
+            }
+          },
+          "initializer": {
+            "build.json": {
+              "path": "build/kernel/task006-reader19-20-pair-a3/canonical/initializer/build.json",
+              "sha256": "6dc11ae86a72aa5953b02bed14526edd702a93ed71d56fee73a25acbab301e37"
+            },
+            "audit.json": {
+              "path": "build/kernel/task006-reader19-20-pair-a3/canonical/initializer/audit.json",
+              "sha256": "8375b25005c4e3b670a1a2caeee9d30d9cac3be4a42630c2bb5eeb8ab528fd83"
+            },
+            "image.elf": {
+              "path": "build/kernel/task006-reader19-20-pair-a3/canonical/initializer/image.elf",
+              "sha256": "a9f6caae948dbc901e3eb077c786b2338d10d7863641bcb965d1f69bbd404fc4"
+            },
+            "provenance.json": {
+              "path": "build/kernel/task006-reader19-20-pair-a3/canonical/initializer/provenance.json",
+              "sha256": "368692fc3dccf080ffe3fc36c119650cb5b633dac90c7b80dc1317e87011d180"
+            }
+          }
+        },
+        "scope": "Original fully audited canonical pair retained independently of later Reader19-only observer repairs; complete original source bytes archived in native bundle."
+      },
+      "connected": {
+        "status": "PASS_FRESH_EDITION3_CHOOSER_CHECK_EDIT_HINT_SAVE_INDEPENDENT_COLD_READER",
+        "result": "build/courses/task006-fresh-chooser20-presented-a1/result.json",
+        "result_sha256": "844999fb5f0700ab69fc603e813ff3286039704689cb66f1eb83e284ba5d9988",
+        "observer": "scripts/check_fresh_course_reader.py",
+        "observer_sha256": "65b3073a967e15e3a56a17871ef228ce07e4ff91347de652b3e2a08b4f918043",
+        "whole_fast_functional_units": 1085000068,
+        "seconds": 154.1891453139251,
+        "final_sequence": 15,
+        "reader_edition": 3,
+        "reader_node": 3,
+        "controller_labels": [
+          "5/6 Verified at revision5",
+          "5/7 Unchecked after edit revision6",
+          "5/7 Invalid",
+          "authored local hint"
+        ],
+        "all_cold_home_pixels": 3630000,
+        "all_medium_bytes": 268435456,
+        "source": "Actual browser guest-installed edition3 at sequence3; opaque private copy, only raw pen inputs; no host document construction.",
+        "scope": "Real QEMU functional guest and controller execution; no RTL timing parity, fresh browser, new proof-kernel, live tutor or QEMU cached-state continuation claim."
+      },
+      "earlier_guarded_case": {
+        "result": "build/courses/task006-fresh-chooser20-fast-a2/result.json",
+        "seconds": 141.3301228589844,
+        "functional_units": 1065000067,
+        "supervision": "build/courses/task006-fresh-chooser20-supervision-a2/result.json",
+        "sampled_owned_peak_RSS_bytes": 445984768,
+        "scope": "Actual semantics/Save/cold case; subsequent maintained checker additionally waits for visible answer/outcome/hint pixels. Immediate result export may precede completed panel; not an all-math-pixel claim."
+      },
+      "retained_first_observer_failure": {
+        "result": "build/courses/task006-fresh-chooser20-fast-a1/result.json",
+        "reason": "Incorrect no-disk-change expectation on opening a fresh course. Independent observation proves exactly one ordinary initial Unknown/Unchecked revision1 workspace, sequence4, no reader/evidence/assistance, and every original object unchanged.",
+        "qualification": "build/courses/task006-fresh-chooser20-fast-a1/chooser-initial-workspace-observation-a1.json"
+      },
+      "distribution": {
+        "native_bundle": "build/native/task006-chooser-reader20-a1",
+        "static_browser": "build/distribution/task006-chooser-reader20-a1",
+        "static_archive": "build/distribution/task006-chooser-reader20-a1.tar.gz",
+        "native_with_complete_existing_Nix_runtime_export": "build/distribution/task006-chooser-reader20-native-a2",
+        "native_archive": "build/distribution/task006-chooser-reader20-native-a2.tar.gz",
+        "native_archive_sha256": "dcfcad918c663ee1f5e672a95a6d8c54dd71ef4e38a6a925079774a732e1c0b1",
+        "native_archive_bytes": 139042536,
+        "native_pack_seconds": 94.00226008100435,
+        "guest_and_machine": "Same two genuine audited RV64 images and existing600e native/84d5Wasm; ELF-preload development boot. No rebuilt emulator.",
+        "scope": "Prepared local packages, original notices and unresolved redistribution rights retained; clean fresh-host import unqualified.",
+        "actual_extracted_frontend": {
+          "status": "PASS_READER20_EXTRACTED_PYTHON_I_NATIVE_FRONTEND_EXACT_FULL_2M_STATE",
+          "result": "build/courses/task006-chooser20-native-frontend-a1/result.json",
+          "clocks_per_machine": 2000000,
+          "all_archive_bytes_exact": 145672150,
+          "seconds": 22.795751155004837,
+          "scope": "Actual source-bound Reader20/native600e under extracted Python-I frontend and repository public command; no claim of whole RTL Ready from this packaging check."
+        }
+      },
+      "fresh_browser": {
+        "status": "RUNNING_NOT_ACCEPTED",
+        "plan": "build/browser/task006-reader20-fresh-course-plan-a1/plan.json",
+        "URL": "http://127.0.0.1:8810/",
+        "tab": 39,
+        "medium": "reader20-fresh-course-a1",
+        "start": "New blankOPFS/genuine initializer cycle0 paused; no raw-medium import or snapshot cold input",
+        "bounds": "Original prospective12h/6B remain; normal CPU has started after actual initializer handoff, no Ready/course/install/math/cold pass yet."
+      }
     },
     "actual_component_log": "build/courses/task006-reader-recovery5-components-a1/reader-actions-selection-a3.log",
     "properties": [
@@ -470,10 +632,9 @@
       "first_full_driver": "build/kernel/task006-companion-reader19-workspace-a1/build/kernel/notebook/driver-interruption.json"
     },
     "remaining": [
-      "complete ordinary boot/initializer ELF link and artifact audits",
-      "real companion reader lostACK/restart/reconciliation/cold scenario",
-      "real canonical20 fresh-edition browser/native workflow",
-      "prepared successor bundles and actual launch qualification"
+      "Reader19 new recovery-table full companion pair audit and actual peer lostACK/restart/reconciliation/cold",
+      "Reader20 fresh canonical/browser full workflow still running",
+      "general proof-kernel, full digital machine, timing/checkpoint, distribution and physical obligations remain separate"
     ],
     "scope": "Same existing native/RTL/Wasm machine and guest services. No new ISA/runtime/physical profile. Artifact and component results are not full guest workflow acceptance.",
     "first_complete_image_attempt": {
@@ -502,6 +663,28 @@
       "actual_positive_and_negative_observation": "Both genuine pre/post mount observers pass; wrong image/configuration reject; all six readonly tables retain the exact ordinary relation.",
       "kernel_host_suite": "build/courses/task006-reader19-20-full-pair-plan-a2/kernel-observer-suite-a1.log",
       "scope": "Retained original full audit FAIL. No target body, artifact pin, tolerance or deadline changed; no CPU or complete audit PASS inferred."
+    },
+    "checks": {
+      "kernel_host": {
+        "tests": 464,
+        "seconds": 8.336,
+        "result": "PASS",
+        "log": "build/courses/task006-reader19-20-full-pair-plan-a3/kernel-recovery-table-final-a2.log"
+      },
+      "scaffold": {
+        "tests": 18,
+        "seconds": 6.367,
+        "result": "PASS",
+        "log": "build/courses/task006-reader19-20-full-pair-plan-a3/scaffold-milestone-a1.log"
+      },
+      "metadata": "PASS",
+      "full_presented_guest": "PASS independent bound4B/1800s; actual154.189145s",
+      "lemmasim_host": {
+        "tests": 310,
+        "seconds": 51.179,
+        "result": "PASS",
+        "log": "build/courses/task006-reader19-20-full-pair-plan-a3/lemmasim-milestone-a1.log"
+      }
     }
   }
 }

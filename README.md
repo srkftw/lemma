@@ -2324,8 +2324,9 @@ initializer at cycle zero. Run a bounded budget to execute initialization and
 notebook boot. The same budget carries its unused cycles across the initializer's
 handoff. Creating a medium refuses an existing name. The course file picker sends
 an immutable package to the guest installer; only its actual durable receipt
-establishes installation. The separate fresh-medium browser course campaign is
-still running and is not an accepted installation/math/recovery result.
+establishes installation. The original fresh-medium Reader18 campaign completed installation but failed its
+first course-open bound. Its failure is retained; the Reader20 successor is
+qualified separately below.
 
 This package reuses the exact C53 Wasm machine, both audited Reader18 RV64 images
 and worker. Its new checks establish isolated static launch and zero-clock
@@ -2333,3 +2334,61 @@ initializer admission. Whole notebook results keep their original package and
 observation identities. The extracted launcher includes its EntryV2 catalog
 module; the retained first standalone packaging failure exposed that missing
 host dependency. Existing dependency notices and redistribution limits apply.
+
+The prepared Reader20 successor keeps EDIT+/LOAD available when a fresh course
+has no selected source, reader record or history. Edition3 can be selected
+explicitly instead of requesting absent edition1. The actual fast guest case
+loads the installed course, checks5/6, displays Verified, invalidates applicability
+after editing to5/7, displays Unchecked then Invalid, records/displays a local
+hint, saves the reader location, and independently cold-reopens edition3/node3.
+It preserves every original object and compares all cold home pixels and all
+backing bytes. This is bounded exact arithmetic and an authored offline hint;
+full proof-kernel, permissioned tutor and learning-gain claims remain open.
+
+Both canonical Reader20 images pass full artifact audits. Prepared local
+packages reuse the existing600e native and84d5 Wasm machines:
+
+```sh
+python3 -I /home/sreekumaar/Downloads/lemma/build/distribution/task006-chooser-reader20-native-a2/run.py session \
+  --backend rtl --profile lemma-silicon-dev/0.3.0 --mode developer --headless --paused \
+  --disk /absolute/YOUR_EXISTING.raw --session-dir /absolute/UNUSED_SESSION
+python3 -I /home/sreekumaar/Downloads/lemma/build/distribution/task006-chooser-reader20-a1/serve.py --port 8810
+```
+
+The native archive includes the complete existing Nix runtime export. Its
+README explains offline import; a clean fresh-host import remains unqualified.
+Both archives retain dependency notices and unresolved redistribution rights.
+The browser is local and uses OPFS flush with the existing origin/eviction
+limits. Create a new medium through the genuine initializer or open existing
+raw backing. In Developer mode, the course file picker sends
+`build/courses/task006-package-edition3-a1/arithmetic.lcp` to the guest installer.
+After its durable receipt, COURSE opens the chooser: EDIT+ twice, LOAD, NODE+
+to exercise3, then USE. Teacher package installation does not grant verifier
+or assessment authority. The new fully fresh browser39 case is still running;
+its initializer/boot prefix is not a completed browser workflow.
+
+The reusable connected functional check executes ordinary public commands and
+raw pen input. It requires the actual guest-installed edition3/sequence3 medium
+retained by the earlier browser installation, and never installs a document on
+the host:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_fresh_course_reader.py \
+  --native-bundle build/native/task006-chooser-reader20-a1 \
+  --disk build/browser/task006-reader18-fresh-course-plan-a1/browser/installed3-535M.raw \
+  --package build/courses/task006-package-edition3-a1/arithmetic.lcp \
+  --work-dir build/courses/UNUSED_FRESH_READER_CHECK
+```
+
+Its actual presented case passes1,085,000,068 fast functional units/154.189s;
+those units do not establish RTL timing parity. Current Reader18's separate
+full800M RTL/native-Wasm comparison now passes at572M/799M/800M under the
+predeclared implementation-ID relation, including all167 actual read outcomes.
+The same-Wasm idle1M suffix matches every machine and backing byte. The first
+whole-history capture comparison failed and remains retained; the existing
+contract requires the applicable suffix, which has zero I/O operations here.
+A separate meaningful227M recorded course replay is running, not passed.
+Reader19/Recovery5's full companion image links, but its mandatory recovery-pump
+table audit exposed missing exact backend admission; its full pair and actual
+lost-ACK reader workflow remain pending. All earlier failed bounds retain their
+original meanings. See the existing reader evidence and session checkpoint.

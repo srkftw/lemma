@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""Actual fresh edition3 chooser, exact checking, reader Save and cold reopen.
+
+Host-only stimulus and independent observations. The maintained Lean guest owns
+course loading, revisions, checking, assistance, reader records and durability.
+QEMU functional units do not establish canonical RTL timing or cached-state
+continuation. This bounded case requires the original reference edition3
+package already installed by the guest in an otherwise fresh acknowledged
+sequence3 medium; it never installs or constructs a document on the host.
+"""
+from pathlib import Path
+import argparse,json,time,shutil,filecmp,hashlib,os
+import sys
+sys.dont_write_bytecode=True
+ROOT=Path(__file__).resolve().parents[1]
+sys.path[:0]=[str(ROOT/'scripts'),str(ROOT/'conformance/lemmasim')]
+from check_course_math_workflow import CourseMathWorkflow,Input,require,decode,visible_pixels
+from store_oracle import recover
+from course_pixel_oracle import label_matches
+import workspace_transition_oracle as T
+class FreshChooser(CourseMathWorkflow):
+ def phase(self,s,name,cap,predicate):
+  before=s.inspect()['machine']['cycle'];began=time.monotonic()
+  while True:
+   self.check_sources();state=s.inspect()['machine'];used=state['cycle']-before
+   require(0<=used<=cap and self.cycles<=4_000_000_000 and time.monotonic()<self.deadline and time.monotonic()-began<=600,'predeclared phase/whole bound: '+name)
+   rows=self.rows(s);require(not state['finished'] and not any(r[0] in (1055,1060,1108,212,244)for r in rows),'actual guest fault: '+name+repr(rows[-8:]))
+   if predicate(state):break
+   require(used<cap and self.cycles<4_000_000_000,'predeclared clock ceiling: '+name)
+   s.run(min(1_000_000,cap-used,4_000_000_000-self.cycles));after=s.inspect()['machine']['cycle'];require(after>state['cycle'],'fast functional progress');self.cycles+=after-state['cycle']
+  r={'name':name,'initial_cycle':before,'final_cycle':state['cycle'],'functional_units':used,'host_seconds':time.monotonic()-began,'phase_clock_cap':cap};self.report['phases'].append(r);self.progress();print(json.dumps(r),flush=True);return state
+ def presentation(self,s,name,workspace,*,hint=False):
+  document=workspace['document'];answer=document['answer'];outcome=document['outcome']
+  labels=('UNCHECKED','VERIFIED Q EXACT','INVALID','NEEDS CLARIFICATION','UNSUPPORTED','INDETERMINATE RESOURCE LIMIT')
+  wanted=f'N {answer[0]:02d} D {answer[1]:02d} C0 {answer[2]:02d} C1 {answer[3]:02d} C2 {answer[4]:02d}'
+  panel=self.directory/(name+'.ppm')
+  def complete(state):
+   if not self.idle(state):return False
+   s.control({'action':'panel','path':str(panel)})
+   return label_matches(panel,wanted,24,200) and label_matches(panel,labels[outcome],24,260) and (not hint or label_matches(panel,'HINT USE COMMON DENOMINATOR',24,280))
+  self.phase(s,name,100_000_000,complete)
+  self.report.setdefault('controller_presentations',[]).append({'name':name,'revision':document['revision'],'answer':answer,'outcome':outcome,'all_answer_and_outcome_label_pixels':True,'hint_pixels':hint})
+  self.progress()
+ def check(self,s,stream,name,outcome):
+  result=super().check(s,stream,name,outcome)
+  self.presentation(s,name+'-controller-pixels',result[3])
+  return result
+ def execute(self):
+  pkg=decode(self.args.package[0].read_bytes());_,seq,original=recover(self.args.disk.read_bytes());require(seq==3 and len(original)==3 and pkg['edition']==3,'actual installed3/no-workspace input')
+  disk=self.directory/'private.raw';shutil.copyfile(self.args.disk,disk);s=self.session('first',disk);require(s.inspect()['machine']['cycle']==0,'actual coldCPU0')
+  self.phase(s,'cold-Ready',1_000_000_000,lambda st:self.idle(st)and st['panel_completed']>=1 and any(r[0]==1056 for r in self.rows(s)))
+  _,raw=s.export('cold-ready');require(filecmp.cmp(self.args.disk,raw,shallow=False),'cold backing changed')
+  stream=Input(1650,2200,s.inspect()['machine']['ticks']+10000,100000,0)
+  self.click(s,stream,'fresh-COURSE-chooser',320,140)
+  panel,raw=s.export('chooser');require(label_matches(panel,'EDIT+',120,660)and label_matches(panel,'LOAD',216,660),'actual explicit edition chooser absent');_,initial_sequence,initial_records=recover(raw.read_bytes());workspace_key=(1,5785718146287534081)
+  require(initial_sequence==4 and set(initial_records)==set(original)|{workspace_key} and all(initial_records[k].payload==v.payload for k,v in original.items()),'fresh chooser changed original objects or wrote an unexpected key')
+  initial=self.record(raw)[1];require(initial['current']=={'origin':'Unknown'} and initial['document']['revision']==1 and initial['document']['outcome']==0 and initial['document']['attempts']==initial['document']['hints']==0 and initial['document']['answer']==[0,1,0,0,0] and not initial['applicable_package_selection'],'initial workspace manufactured selection/evidence/assistance')
+  self.click(s,stream,'edition2',168,670);self.click(s,stream,'edition3',168,670)
+  self.click(s,stream,'explicit-LOAD3',264,670,text=pkg['nodes'][0]['body'])
+  self.click(s,stream,'node2',72,650,text=pkg['nodes'][1]['body']);self.click(s,stream,'exercise3',72,650,text=pkg['nodes'][2]['body'])
+  self.click(s,stream,'USE-actual-edition3-goal',360,650,mutation=True)
+  self.click(s,stream,'select-numerator',100,225,mutation=True);self.click(s,stream,'type5',640,250,mutation=True)
+  self.click(s,stream,'select-denominator',124,225,mutation=True);self.click(s,stream,'clear-denominator',512,330,mutation=True);self.click(s,stream,'type6',768,250,mutation=True)
+  before=self.checkpoint_record(s,'before-check');verified=self.check(s,stream,'actual-rational-Verified',1);require(verified[3]['document']['answer'][:2]==[5,6],'actual answer5/6');T.observe_transition(before[3],verified[3],'known-check')
+  self.click(s,stream,'edit-to5over7',364,225,mutation=True);edited=self.checkpoint_record(s,'edited');T.observe_transition(verified[3],edited[3],'edit');self.presentation(s,'edited-unchecked-pixels',edited[3])
+  invalid=self.check(s,stream,'actual-Invalid',2);T.observe_transition(edited[3],invalid[3],'known-check')
+  self.click(s,stream,'authored-local-hint',172,245,mutation=True);hint=self.checkpoint_record(s,'hint');require(hint[3]['document']['hints']==1,'assistance absent');self.presentation(s,'hint-pixels',hint[3],hint=True)
+  self.click(s,stream,'explicit-reader-Save',1370,64,mutation=True);panel,raw=s.export('reader-saved');payload,workspace,records,seq=self.record(raw)
+  key=(1,0x5244000000000001);require(key in records and len(records[key].payload)==128,'actual acknowledged reader record absent')
+  import struct
+  fields=struct.unpack('<16Q',records[key].payload);require(fields[4:8]==(pkg['identity'],3,struct.unpack_from('<Q',self.args.package[0].read_bytes(),80)[0],3),'reader edition3/node3 binding differs')
+  require(all(records[k].payload==v.payload for k,v in original.items()),'original package/root/page bytes changed')
+  self.click(s,stream,'Close-course',320,140);home,saved=s.export('closed');saved_records=self.record(saved)[2]
+  s.close();self.sessions.remove(s);cold_disk=self.directory/'cold-input.raw';shutil.copyfile(saved,cold_disk);c=self.session('second',cold_disk);require(c.inspect()['machine']['cycle']==0,'independent secondCPU0')
+  self.phase(c,'second-cold-Ready',1_000_000_000,lambda st:self.idle(st)and st['panel_completed']>=1 and any(r[0]==1056 for r in self.rows(c)))
+  cp,cm=c.export('second-ready');require(visible_pixels(cp)==visible_pixels(home),'all3.63M cold home pixels');require(filecmp.cmp(saved,cm,shallow=False),'all256MiB cold bytes')
+  stream2=Input(1650,2200,c.inspect()['machine']['ticks']+10000,100000,0);self.click(c,stream2,'cold-reader-edition3-node3',320,140,text=pkg['nodes'][2]['body']);rp,rm=c.export('reopened');after=self.record(rm)
+  require(after[0]==payload and after[1]==workspace and filecmp.cmp(saved,rm,shallow=False),'cold reader changed applicability/evidence/learner/medium')
+  require(sha(self.args.disk)==self.original_medium_sha256,'original browser medium changed')
+  self.report.update(status='PASS_FRESH_EDITION3_CHOOSER_CHECK_EDIT_HINT_SAVE_INDEPENDENT_COLD_READER',whole_functional_units=self.cycles,all_cold_home_pixels=3630000,all_medium_bytes=268435456,source_sequence=3,final_sequence=seq,reader_node=3,reader_edition=3,qualification='Fast guest functional execution only; no RTL timing/browser/QEMU cached continuation/full proof-kernel claim')
+def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+def main():
+ parser=argparse.ArgumentParser(description=__doc__,allow_abbrev=False)
+ for name in ('disk','package','native-bundle','work-dir'):parser.add_argument('--'+name,type=Path,required=True)
+ parser.add_argument('--guest-build',type=Path)
+ parser.add_argument('--guest-source-root',type=Path)
+ args=parser.parse_args()
+ if bool(args.guest_build)!=bool(args.guest_source_root):parser.error('guest override requires its complete original audited source archive')
+ if args.work_dir.exists() or not args.work_dir.resolve().is_relative_to(ROOT/'build'):parser.error('unused owned build output required')
+ args.disk=args.disk.resolve();args.package=[args.package.resolve()];args.native_bundle=str(args.native_bundle.resolve())
+ if args.guest_build:args.guest_build=str(args.guest_build.resolve())
+ args.timeout=120;args.deadline=1800;args.checkpoint_relation='independent cold only';args.durable_suffix_from=None
+ actor=FreshChooser(args)
+ actor.report.update(aggregate_cycles=4_000_000_000,phase_host_seconds=600,presentation_units=100_000_000,clock_scope='fast functional instruction-clock units; no RTL timing parity',scope=__doc__,observer_sha256=sha(__file__))
+ actor.progress()
+ try:actor.execute()
+ except BaseException as error:actor.report.update(status='FAIL',error=repr(error));raise
+ finally:
+  actor.close()
+  (actor.directory/'result.json').write_text(json.dumps(actor.report,default=str,indent=2)+'\n')
+ print(actor.report['status'],actor.cycles,actor.report['elapsed_seconds'],flush=True)
+
+if __name__=='__main__':main()
