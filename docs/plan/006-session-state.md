@@ -5793,3 +5793,57 @@ Retain a1 supervision. New1849-input frozen a2 actual ROM session runs under
 build/boot/task006-hint-publication-product-connected-plan-a2; supervision at
 ...product-connected-supervision-a2. Target/software/runtime images unchanged by
 that host fix. No update/confirmation/cold result inferred yet. Tool91933.
+
+2026-10-17 continuation milestone: bbce92d CI39033583422 SUCCESS11jobs/117steps,
+zero skips. Da504 CI39032447274 CANCELLED109success/3cancelled/5skipped; not PASS.
+Actual receipts build/ci/task006-{bbce-complete,da504-cancelled}.json. New source
+below needs own CI. PR9 remains draft/unmerged; all original failures retained.
+
+A newer invalid file/Send previously left an older deferred restore live behind
+its error. Actual original app fixture FAIL retained; fix cancels before local
+validation on restore/outcomes/import/course/replay. Five paths PASS; full324
+host tests PASS68.446s,229 silicon host tests PASS2.617s,18 scaffold PASS8.127s
+and metadata PASS. Source-bound receipt at
+build/browser/task006-rejected-selection-plan-a1/result.json. Static package
+...hint-publication-selection-browser-a2 PASS2087340B/
+SHAa5491a041597b5c385c256452f86234a0687fe5cc4bcfad9a9f9cb7fa958db29.
+Live8816 worker retains its previous immutable UI; no reload.
+
+Current a877 guest browser cold Ready PASS548M RTL clocks,3763.401115s actual
+simulation calls/3882.139160s conservative opened-session upper,192MiB heap.
+All3.63M home pixels/all256MiB/Saved32 match independent actual fast cold;
+no snapshot cold input, writes or fabricated receipt. Fixed600M full checkpoint
+145736316B/SHA39a7f841fc6ad32a6070fdc9f8780da52cafa84105deca0e3fca8261aa71c9f8:
+original CRC/allpixels/backing/UART/raw futurequeue2 PASS; observational state
+equal. Original passive observer FAIL compared bytes with a parsed-image tuple;
+corrected complete parsed comparison PASS41.636830s, no machine rerun. Both
+reports at ...hint32-native-match-plan-a2. Browser600->900M runs original3600s,
+then planned1Mto901M. Whole12h/6B end2026-10-18T00:26:11.452097Z unchanged.
+IAB2/tab22/origin8816/hint-publication-save32-a1; actual progress-ui.png saved.
+Native outputs build/compare/hint32-native-a2, absolute end16:24:24.879521Z.
+Native full relation, full current browserD and current strong RTL workflow are
+still running, not passed. Current authenticated Product install520.3M and
+trial handoff127.4M passed; confirmation and independent cold remain active.
+
+New optional maintained lemma_pen.IHP_SRAM=1 selects three real pinned IHP256x64
+macros with shared controller control, all256 entries/181bits; default banked
+path retained. scripts/check_pen_sram.py plus pinned pen-sram.nix execute actual
+published four-state models, historical every-edge and literal fullfield/reset/
+refill/watchdog checks, actual truncation/address-alias mutants and invalid128
+rejection. --map PASS5.150655s:6820cells/866FF/3macros,373985.394600um2 typical
+library area, exact constants/widths, no unknown cells/arrays/latches. Frontend
+keep-hierarchy retains pure increment; raw-time->all64sequenceD graph depth17
+versus earlier28/27, below predeclared20 gate. Default literal RTL devices PASS.
+No native/Wasm execution profile enables this option; state/checkpoint and SoC
+physical integration remain open. Contract/evidence:006-pen-sram-v1.md/json.
+
+Private real-SRAM changed-source routes complete original900s inner attempts:
+a3 OpenROAD782.287s/2144router violations/setup-3.120831/hold+.030859ns/3electrical;
+a4 wider pin channels/mirroredtop actualgeometryPASS420.827s/314violations/
+setup-4.218564/hold-.182969ns/2electrical. OverallFAIL retained; supervision
+a4 421.676926s/peak1357991936B/no owned survivors. Neither is an adopted routed
+solution; maintained option has independent protocol/mapping only. Source/views/
+actual failures and geometry preserved under build/silicon/pen-sram-*. Seven
+proven owned ABCscratch dirs moved under build/silicon/pen-sram-owned-abc-scratch
+with script/library identities; no unrelated work/media deleted. No unchanged
+route repeated. ProcessDRC/LVS/routedPEX/timing/macroPVT/power/test/fullchip open.

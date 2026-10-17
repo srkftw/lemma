@@ -1068,51 +1068,60 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "d85d7ae4540ebaeb120fe83f2891ba25359cfd7e",
-    "run": 39018528698,
+    "commit": "bbce92dc724ded15814543181c09f72f6256a8e2",
+    "run": 39033583422,
     "status": "COMPLETED_SUCCESS",
     "jobs": 11,
     "steps": 117,
     "skipped": 0,
     "receipt": {
-      "path": "build/ci/task006-d85-complete.json",
-      "sha256": "78ea9e41baa444e245e5bb22f6d8123edd969c6d1a4f295ac8f9deb78d770030",
-      "bytes": 21710
+      "path": "build/ci/task006-bbce-complete.json",
+      "sha256": "d3cc0b7f40d97ac9c464c62f8c439880217d22eefc61d3d9889c8a153a49bfaf",
+      "bytes": 22623
     },
-    "scope": "Exact pushed d85 launcher source; uncommitted revision-bound hint implementation remains independently unqualified until its new linked-image/execution checks. PR9 draft/unmerged.",
+    "scope": "Actual bbce only; subsequent browser/physical changes require own candidate CI. Draft PR9 unmerged.",
+    "cancelled_predecessor": {
+      "commit": "da50458d1d82b6339866b800ba6663a0d658213b",
+      "run": 39032447274,
+      "status": "COMPLETED_CANCELLED",
+      "successful_steps": 109,
+      "cancelled_steps": 3,
+      "skipped_steps": 5,
+      "receipt": {
+        "path": "build/ci/task006-da504-cancelled.json",
+        "sha256": "c38d576b574271d6b376ea1337b9128dc55cca35faaf439a6858c55a281aa3d2",
+        "bytes": 22679
+      }
+    },
     "preceding_observation": {
-      "commit": "e934d1abc6f37d2224621412c1fb45fe5515b87f",
-      "run": 39015059089,
+      "commit": "d85d7ae4540ebaeb120fe83f2891ba25359cfd7e",
+      "run": 39018528698,
       "status": "COMPLETED_SUCCESS",
       "jobs": 11,
       "steps": 117,
       "skipped": 0,
       "receipt": {
-        "path": "build/ci/task006-e934-complete.json",
-        "sha256": "9cdbc365bff2b134cf24a947e672feecb72413284b36000f420811b380ca4998",
-        "bytes": 22241
+        "path": "build/ci/task006-d85-complete.json",
+        "sha256": "78ea9e41baa444e245e5bb22f6d8123edd969c6d1a4f295ac8f9deb78d770030",
+        "bytes": 21710
       },
-      "scope": "Committed e934 source; new launcher increment needs own candidate CI. PR9 draft/unmerged.",
-      "preceding_source": {
-        "commit": "34a3a59b81a19dcd27a08bb3307bf5713377db70",
-        "run": 39001737838,
+      "scope": "Exact pushed d85 launcher source; uncommitted revision-bound hint implementation remains independently unqualified until its new linked-image/execution checks. PR9 draft/unmerged.",
+      "preceding_observation": {
+        "commit": "e934d1abc6f37d2224621412c1fb45fe5515b87f",
+        "run": 39015059089,
         "status": "COMPLETED_SUCCESS",
-        "observed_jobs": {
-          "success": 11
+        "jobs": 11,
+        "steps": 117,
+        "skipped": 0,
+        "receipt": {
+          "path": "build/ci/task006-e934-complete.json",
+          "sha256": "9cdbc365bff2b134cf24a947e672feecb72413284b36000f420811b380ca4998",
+          "bytes": 22241
         },
-        "step_counts": {
-          "success": 117
-        },
-        "skipped_steps": 0,
-        "final_receipt": {
-          "path": "build/ci/task006-34a-complete.json",
-          "sha256": "d0fb8b66cb1dadd7f71a6f481cf42a3b508a7a97a6de94cdf0033f5ed8f83c15",
-          "bytes": 25722
-        },
-        "scope": "Committed34a only; new Laboratory/observer source requires own candidate CI. PR9 draft/unmerged.",
+        "scope": "Committed e934 source; new launcher increment needs own candidate CI. PR9 draft/unmerged.",
         "preceding_source": {
-          "commit": "7480632c81487d556592d2cea7f48bf5a99ff748",
-          "run": 38996796033,
+          "commit": "34a3a59b81a19dcd27a08bb3307bf5713377db70",
+          "run": 39001737838,
           "status": "COMPLETED_SUCCESS",
           "observed_jobs": {
             "success": 11
@@ -1122,14 +1131,14 @@
           },
           "skipped_steps": 0,
           "final_receipt": {
-            "path": "build/ci/task006-748-complete.json",
-            "sha256": "0d98ccbc099d52c7ba708ead36906650b6aedfd97cff8df463122d9a166f78da",
-            "bytes": 25680
+            "path": "build/ci/task006-34a-complete.json",
+            "sha256": "d0fb8b66cb1dadd7f71a6f481cf42a3b508a7a97a6de94cdf0033f5ed8f83c15",
+            "bytes": 25722
           },
-          "scope": "Committed kernel/authority source; subsequent browser controls require own candidate CI. PR9 remains draft/unmerged.",
+          "scope": "Committed34a only; new Laboratory/observer source requires own candidate CI. PR9 draft/unmerged.",
           "preceding_source": {
-            "commit": "2dc2d64b00b02421151f6419ff921ca18ffcdcd1",
-            "run": 38990300822,
+            "commit": "7480632c81487d556592d2cea7f48bf5a99ff748",
+            "run": 38996796033,
             "status": "COMPLETED_SUCCESS",
             "observed_jobs": {
               "success": 11
@@ -1139,114 +1148,132 @@
             },
             "skipped_steps": 0,
             "final_receipt": {
-              "path": "build/ci/task006-2dc-complete.json",
-              "sha256": "4d025c0608638591a69a014b90103cb8f03c5d61e61405b296e60b7a30874242",
-              "bytes": 22234
+              "path": "build/ci/task006-748-complete.json",
+              "sha256": "0d98ccbc099d52c7ba708ead36906650b6aedfd97cff8df463122d9a166f78da",
+              "bytes": 25680
             },
-            "scope": "Published preceding source only. New kernel/authority/CI increment requires its own candidate run; PR9 remains draft/unmerged.",
-            "prior_complete": {
-              "commit": "57ceb5b91f98c30e5fcb2ac5bb608c342b060a3f",
-              "run": 38968703132,
+            "scope": "Committed kernel/authority source; subsequent browser controls require own candidate CI. PR9 remains draft/unmerged.",
+            "preceding_source": {
+              "commit": "2dc2d64b00b02421151f6419ff921ca18ffcdcd1",
+              "run": 38990300822,
               "status": "COMPLETED_SUCCESS",
               "observed_jobs": {
                 "success": 11
               },
               "step_counts": {
-                "success": 116
+                "success": 117
               },
               "skipped_steps": 0,
               "final_receipt": {
-                "path": "build/ci/task006-57ceb-complete.json",
-                "sha256": "29495f4ddc6fa7ea92a91dfba75ef6b32c177c731bd21cc97498cd95d3b39fbf"
+                "path": "build/ci/task006-2dc-complete.json",
+                "sha256": "4d025c0608638591a69a014b90103cb8f03c5d61e61405b296e60b7a30874242",
+                "bytes": 22234
               },
-              "scope": "Exact published57ceb only, including real O0/O2 notebook, foundation and guest acceptance. New current portability/evidence changes remain uncommitted and require their own candidate CI. PR9 stays draft/unmerged.",
-              "prior_candidate_failure": {
-                "commit": "1c35b9df6ca9658c3480ddf7d40acb9f7b88819d",
-                "run": 38964568408,
-                "status": "COMPLETED_FAILURE",
+              "scope": "Published preceding source only. New kernel/authority/CI increment requires its own candidate run; PR9 remains draft/unmerged.",
+              "prior_complete": {
+                "commit": "57ceb5b91f98c30e5fcb2ac5bb608c342b060a3f",
+                "run": 38968703132,
+                "status": "COMPLETED_SUCCESS",
                 "observed_jobs": {
-                  "failure": 2,
-                  "success": 9
-                },
-                "failed_jobs": [
-                  "Metadata and host-only suites: foundation workflow-log exact inventory",
-                  "Task003 A-E: kernel-host arithmetic deployment exact inventory"
-                ],
-                "failure_evidence": {
-                  "path": "docs/evidence/006-foundation-workflow-observer.json",
-                  "sha256": "fb107c386c68e08d7f2a0f6c3ec772152b163ebe7c8bf88021b17266389abd2e"
-                },
-                "scope": "Actual1c35 completed9jobsSUCCESS/2FAILURE. All real notebookO0/O2 and eight other jobs passed except the two retained host inventories; skipped13steps are not passed. Local corrected commits247558a/d033baf await their new candidate CI.",
-                "prior_complete": {
-                  "commit": "3226f155d173ae8d2ab076526c24f58e8295dc9f",
-                  "run": 38939333316,
-                  "status": "SUCCESS",
-                  "jobs": 11,
-                  "steps": 116,
-                  "skipped_steps": 0,
-                  "final_receipt": {
-                    "path": "build/ci/task006-3226-complete.json",
-                    "sha256": "4c46a4f5b87b223bca2bcdb16b0e536de86452d28fb38e676a652ae0f2b457fd"
-                  },
-                  "scope": "Exact published3226 only. New uncommitted Product course/Entry2/archive work has no candidateCI yet. PR9 remains draft/unmerged.",
-                  "prior_candidate_failure": {
-                    "commit": "da13e7630022247f190b98a739d922fbf6ef7ab2",
-                    "run": 38933635691,
-                    "status": "FAILURE",
-                    "observed_jobs": {
-                      "success": 10,
-                      "failure": 1,
-                      "in_progress": 0
-                    },
-                    "failed_job": 117083551917,
-                    "failed_step": "Compile, audit and observe real O0/O2 guest ink and cold recovery",
-                    "actual_cause": "Preceding tests/lemmasim host suite fails on stale ordinary-mode expectation for newly restricted Reader18 installer; O0/O2 guest workload never starts and following validation is skipped. Production authorization is correct. Explicit two-name expectation repaired, stronger role/mode checks and full299 pinned tests pass.",
-                    "failure_log": {
-                      "path": "build/ci/task006-da13-writing-host-tests.log",
-                      "sha256": "6aaae50edb25905bd9c0a15de2343fe76f6915215c8732ae2514fbb43c75efa2"
-                    },
-                    "failure_artifact_zip": {
-                      "path": "build/ci/task006-da13-writing-failure.zip",
-                      "sha256": "28def2cd4d9845d7e9353e17850d440d60504f710fa841c85a99a7f69292b253"
-                    },
-                    "scope": "Actual da13 run only; current dirty command/runtime/observer fixes need own candidateCI. No skipped RV64 work passed.",
-                    "steps": 114,
-                    "skipped_steps": 1,
-                    "final_receipt": {
-                      "path": "build/ci/task006-da13-complete.json",
-                      "sha256": "188b57238756a931a2bea4417f409c2f2640f502d087c2db11d45c283455dd39"
-                    }
-                  },
-                  "new_code_candidate": {
-                    "implementation_commit": "01b12f35fe8d84e7766ebb21477f4acfa52f1d85",
-                    "status": "NOT_RUN_YET",
-                    "scope": "Parent3226 successful CI remains its own result; source increment is committed locally and publication pending."
-                  }
+                  "success": 11
                 },
                 "step_counts": {
-                  "success": 101,
-                  "failure": 2,
-                  "skipped": 13
+                  "success": 116
                 },
+                "skipped_steps": 0,
                 "final_receipt": {
-                  "path": "build/ci/task006-1c35-complete.json",
-                  "sha256": "5f0551e6082b339a2d759a16378e3338b6b69cf76ed4f10a9fbbe8787be29b5b"
+                  "path": "build/ci/task006-57ceb-complete.json",
+                  "sha256": "29495f4ddc6fa7ea92a91dfba75ef6b32c177c731bd21cc97498cd95d3b39fbf"
+                },
+                "scope": "Exact published57ceb only, including real O0/O2 notebook, foundation and guest acceptance. New current portability/evidence changes remain uncommitted and require their own candidate CI. PR9 stays draft/unmerged.",
+                "prior_candidate_failure": {
+                  "commit": "1c35b9df6ca9658c3480ddf7d40acb9f7b88819d",
+                  "run": 38964568408,
+                  "status": "COMPLETED_FAILURE",
+                  "observed_jobs": {
+                    "failure": 2,
+                    "success": 9
+                  },
+                  "failed_jobs": [
+                    "Metadata and host-only suites: foundation workflow-log exact inventory",
+                    "Task003 A-E: kernel-host arithmetic deployment exact inventory"
+                  ],
+                  "failure_evidence": {
+                    "path": "docs/evidence/006-foundation-workflow-observer.json",
+                    "sha256": "fb107c386c68e08d7f2a0f6c3ec772152b163ebe7c8bf88021b17266389abd2e"
+                  },
+                  "scope": "Actual1c35 completed9jobsSUCCESS/2FAILURE. All real notebookO0/O2 and eight other jobs passed except the two retained host inventories; skipped13steps are not passed. Local corrected commits247558a/d033baf await their new candidate CI.",
+                  "prior_complete": {
+                    "commit": "3226f155d173ae8d2ab076526c24f58e8295dc9f",
+                    "run": 38939333316,
+                    "status": "SUCCESS",
+                    "jobs": 11,
+                    "steps": 116,
+                    "skipped_steps": 0,
+                    "final_receipt": {
+                      "path": "build/ci/task006-3226-complete.json",
+                      "sha256": "4c46a4f5b87b223bca2bcdb16b0e536de86452d28fb38e676a652ae0f2b457fd"
+                    },
+                    "scope": "Exact published3226 only. New uncommitted Product course/Entry2/archive work has no candidateCI yet. PR9 remains draft/unmerged.",
+                    "prior_candidate_failure": {
+                      "commit": "da13e7630022247f190b98a739d922fbf6ef7ab2",
+                      "run": 38933635691,
+                      "status": "FAILURE",
+                      "observed_jobs": {
+                        "success": 10,
+                        "failure": 1,
+                        "in_progress": 0
+                      },
+                      "failed_job": 117083551917,
+                      "failed_step": "Compile, audit and observe real O0/O2 guest ink and cold recovery",
+                      "actual_cause": "Preceding tests/lemmasim host suite fails on stale ordinary-mode expectation for newly restricted Reader18 installer; O0/O2 guest workload never starts and following validation is skipped. Production authorization is correct. Explicit two-name expectation repaired, stronger role/mode checks and full299 pinned tests pass.",
+                      "failure_log": {
+                        "path": "build/ci/task006-da13-writing-host-tests.log",
+                        "sha256": "6aaae50edb25905bd9c0a15de2343fe76f6915215c8732ae2514fbb43c75efa2"
+                      },
+                      "failure_artifact_zip": {
+                        "path": "build/ci/task006-da13-writing-failure.zip",
+                        "sha256": "28def2cd4d9845d7e9353e17850d440d60504f710fa841c85a99a7f69292b253"
+                      },
+                      "scope": "Actual da13 run only; current dirty command/runtime/observer fixes need own candidateCI. No skipped RV64 work passed.",
+                      "steps": 114,
+                      "skipped_steps": 1,
+                      "final_receipt": {
+                        "path": "build/ci/task006-da13-complete.json",
+                        "sha256": "188b57238756a931a2bea4417f409c2f2640f502d087c2db11d45c283455dd39"
+                      }
+                    },
+                    "new_code_candidate": {
+                      "implementation_commit": "01b12f35fe8d84e7766ebb21477f4acfa52f1d85",
+                      "status": "NOT_RUN_YET",
+                      "scope": "Parent3226 successful CI remains its own result; source increment is committed locally and publication pending."
+                    }
+                  },
+                  "step_counts": {
+                    "success": 101,
+                    "failure": 2,
+                    "skipped": 13
+                  },
+                  "final_receipt": {
+                    "path": "build/ci/task006-1c35-complete.json",
+                    "sha256": "5f0551e6082b339a2d759a16378e3338b6b69cf76ed4f10a9fbbe8787be29b5b"
+                  }
                 }
-              }
-            },
-            "recent_prior_successes": [
-              {
-                "commit": "ccab8fe01d1af40376fdfada607317bb8d15fecf",
-                "run": 38987140485,
-                "receipt": "build/ci/task006-ccab-complete.json"
               },
-              {
-                "commit": "3070a4baed455af62fe35bdd64ac1c3b3aa45dc3",
-                "run": 38985222491,
-                "status": "success",
-                "receipt": "build/ci/task006-3070-complete.json"
-              }
-            ]
+              "recent_prior_successes": [
+                {
+                  "commit": "ccab8fe01d1af40376fdfada607317bb8d15fecf",
+                  "run": 38987140485,
+                  "receipt": "build/ci/task006-ccab-complete.json"
+                },
+                {
+                  "commit": "3070a4baed455af62fe35bdd64ac1c3b3aa45dc3",
+                  "run": 38985222491,
+                  "status": "success",
+                  "receipt": "build/ci/task006-3070-complete.json"
+                }
+              ]
+            }
           }
         }
       }
@@ -1405,16 +1432,37 @@
     }
   },
   "latest_bounded_physical_attempt": {
-    "source": "57e5c681165869e9b33a6da1ab069d36a7e47f2ae9eda13311a8b5a2d399a1cc",
-    "status": "FAIL_CHANGED_SOURCE_DETAILED_ROUTE_DEADLINE_REJECTED",
-    "result": "build/silicon/physical/pen-sequence-ready-route-a1/result.json",
-    "supervision": "build/silicon/pen-sequence-ready-route-supervision-a1/result.json",
-    "seconds": 906.2231761869043,
-    "owned_peak_rss_bytes": 4495138816,
-    "setup_global_wns_ns": -2.073945,
-    "hold_global_wns_ns": 0.032945,
-    "adopted": false,
-    "disposition": "Changed-source readiness FF candidate rejected after actual900s detailed-route timeout and worse setup WNS. All256entries retained; maintained RTL/clock/rules unchanged. No processDRC/LVS/PEX/timing/full-chip acceptance."
+    "status": "FAIL_COMPLETED_SRAM_SIGNAL_ROUTE_ROUTER_SETUP_HOLD_ELECTRICAL",
+    "result": "build/silicon/physical/pen-sram-route-a4/result.json",
+    "supervision": "build/silicon/pen-sram-route-supervision-a4/result.json",
+    "seconds": 421.676925662905,
+    "owned_peak_rss_bytes": 1357991936,
+    "router_violations": 314,
+    "estimated_setup_wns_ns": -4.218564,
+    "estimated_hold_wns_ns": -0.182969,
+    "electrical_violations": 2,
+    "routed_solution_adopted": false,
+    "evidence": "docs/evidence/006-pen-sram.json",
+    "separate_maintained_option": {
+      "behavior": "Same controller, opt-in IHP_SRAM=1/full256/all181bits; default banks retained.",
+      "RTL": "Real vendor fullfield/miter/mutants PASS; default devices PASS. Mapped6820cells/866FF/3realmacros,17cell raw-time to all64 sequenceD,5.150655s.",
+      "guest": "Target unchanged; prior archived guest/runtime cases keep their identities.",
+      "state": "Not enabled in native/Wasm profiles; SRAM logical-state/checkpoint admission open.",
+      "distribution": "Reproducible host qualification command, pinned existing public PDK objects; no physical device or rights closure.",
+      "physical": "Private route candidates FAIL. Maintained option routing/processDRC/LVS/PEX/PVT/power/test/fullSoC remain open."
+    },
+    "previous_attempt": {
+      "source": "57e5c681165869e9b33a6da1ab069d36a7e47f2ae9eda13311a8b5a2d399a1cc",
+      "status": "FAIL_CHANGED_SOURCE_DETAILED_ROUTE_DEADLINE_REJECTED",
+      "result": "build/silicon/physical/pen-sequence-ready-route-a1/result.json",
+      "supervision": "build/silicon/pen-sequence-ready-route-supervision-a1/result.json",
+      "seconds": 906.2231761869043,
+      "owned_peak_rss_bytes": 4495138816,
+      "setup_global_wns_ns": -2.073945,
+      "hold_global_wns_ns": 0.032945,
+      "adopted": false,
+      "disposition": "Changed-source readiness FF candidate rejected after actual900s detailed-route timeout and worse setup WNS. All256entries retained; maintained RTL/clock/rules unchanged. No processDRC/LVS/PEX/timing/full-chip acceptance."
+    }
   },
   "portable_host_index_milestone": {
     "behavior": "Unchanged fixed-framebuffer port values, including inactive out-of-range wrap",
@@ -1988,7 +2036,16 @@
     "guest": "Unchanged original Reader20 continuation; actualall3630000pixels match; newguestexecution not inferred",
     "distribution": "Preparednewd9gueststaticbundle and archive2085277B; fullnewkernelbrowser pending",
     "physical": "UNCHANGED_UNCLOSED; no optical claim",
-    "selected_file_ownership": "PASS actual deferred-file app fixture/current full324host tests and prepared static package. Machine switches/new selections cancel unfinished file submissions; selected names and transaction strings stay exact. No worker/core/guest state change or new full browser acceptance."
+    "selected_file_ownership": {
+      "prior_record": "PASS actual deferred-file app fixture/current full324host tests and prepared static package. Machine switches/new selections cancel unfinished file submissions; selected names and transaction strings stay exact. No worker/core/guest state change or new full browser acceptance.",
+      "rejected_newer_input": {
+        "evidence": "docs/evidence/006-browser-controller-image.json",
+        "behavior": "New invalid selection/Send cancels obsolete file read before validation; five actualapp paths PASS, no invalid reads/submissions.",
+        "host_suite": "324 PASS68.446s, not guest/browser durability qualification",
+        "distribution": "build/distribution/task006-hint-publication-selection-browser-a2.tar.gz",
+        "archive_sha256": "a5491a041597b5c385c256452f86234a0687fe5cc4bcfad9a9f9cb7fa958db29"
+      }
+    }
   },
   "product_source_archive1": {
     "behavior": "PASSactualProduct10sourcearchive and originalUSBReader19archive; changed source rejected",
@@ -2079,7 +2136,19 @@
       "sha256": "cd1445aca4790be62373bdc4f1b227a4e812e822def4311e7da5b74a8390e7a7",
       "bytes": 65391
     },
-    "scope": "All3 actual course publishers use existing revision-bound aligned renderer. Same tile/dirty/framebuffer/error semantics; no new language/runtime/checker authority. Historical authority and generic raw corpus pins retained. Only post ControlRender.character local own-symbol SSA-name alpha-renaming independently compared; actual raw complete successor corpus pins are exact."
+    "scope": "All3 actual course publishers use existing revision-bound aligned renderer. Same tile/dirty/framebuffer/error semantics; no new language/runtime/checker authority. Historical authority and generic raw corpus pins retained. Only post ControlRender.character local own-symbol SSA-name alpha-renaming independently compared; actual raw complete successor corpus pins are exact.",
+    "current_browser_cold": {
+      "status": "PASS_CURRENT_GUEST_COLD_READY_ALL_HOME_PIXELS_BACKING32",
+      "RTL_clocks": 548000000,
+      "simulation_call_seconds": 3763.4011149957173,
+      "opened_session_host_upper_seconds": 3882.1391599999665,
+      "Wasm_heap_bytes": 201326592,
+      "all_pixels": 3630000,
+      "all_backing_bytes": 268435456,
+      "snapshot_cold_input": false,
+      "fixed600M": "Original full CRC/allhome/backing/UART/raw futurequeue2 PASS; observational state unchanged. Native comparison/fullD remain running under original ceilings.",
+      "evidence": "docs/evidence/006-browser-controller-image.json"
+    }
   },
   "qualified_fast_file_limit_control": {
     "behavior": "Actual OS partial write/EFBIG, guestFailed/noSaved, observed prefix retained, independent coldSaved32",

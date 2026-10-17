@@ -432,3 +432,41 @@ routed timing improvement. Full result and source/tool identities remain in
 attempts and rule-coverage gaps retain their meanings. Detailed routing,
 complete process-rule enforcement, DRC/LVS/PEX/post-route and full-chip closure
 remain open. No unchanged route was rerun and no deadline was extended.
+
+The explicit SRAM workstream now has a maintained optional storage path inside
+the same `lemma_pen` controller. Default banked storage remains selected. Three
+actual pinned IHP256x64 macros retain all256 entries and181 bits, including full
+64-bit time/sequence, with the existing delayed write and two-edge refill.
+Published four-state functional models pass every-edge comparison against the
+historical banked controller and the independent full-field literal corpus.
+Actual upper-sequence truncation and128-row alias mutants are rejected; an
+enabled128-entry configuration rejects. Default Verilator devices also pass.
+
+Pinned technology mapping of the maintained option passes in5.150655s:
+6,820 cells,866 FF and three real SRAM macros,373,985.394600um2 typical library
+area, no unknown cells/latches/residual arrays, and checked delay/mask/BIST pins.
+These are library/netlist observations, not routed area or timing closure.
+The mapping boundary initially disappeared because read_slang flattens before
+ordinary Yosys hierarchy handling. Its documented keep-hierarchy option retains
+the pure increment through mapping, reducing timestamp-to-all64-sequence-D
+graph depth28→17; the predeclared threshold was20. No clock/state was added.
+The earlier27-cell failure and metadata-cell observer failure remain retained.
+
+Two changed-source experimental routes actually complete under the original
+900-second inner bound at100MHz, with original rules and timing constraints.
+The first takes782.287s and has2,144 router violations, estimated setup
+WNS-3.120831ns/hold+0.030859ns and three electrical slew violations. Wider
+measured bottom/intermacro channels and a LEF-permitted mirrored top macro,
+with independently checked actual ODB geometry, reduce router violations to314
+in420.827s. That route still fails: estimated setup-4.218564ns, hold-0.182969ns
+and two electrical violations. Supervision peaks at1,357,991,936B and reaps all
+owned children. Neither experiment is adopted as a timing or routing solution.
+The maintained optional path has its own protocol/mapping qualification; it
+does not inherit physical results from those separately identified prototypes.
+
+The reproducible command, exact public collateral/tool identities, actual
+negative results and both completed routing failures are in the
+[SRAM receipt](006-pen-sram.json) and
+[contract](../contracts/006-pen-sram-v1.md). This is not a physical128MiB RAM
+solution, process DRC/LVS/PEX, macro power/test/PVT, post-route timing or
+full-chip closure. No new native/Wasm SRAM state profile is admitted.

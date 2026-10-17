@@ -1,8 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // Circuit implementation of Lemma pen v1. Host input is raw sample transport.
+// Keep arithmetic separate through physical technology mapping. The final
+// netlist is flattened after mapping; this adds no clock or architectural state.
+module lemma_pen_sequence_increment(input wire [63:0] value,
+  output wire [63:0] incremented);
+  assign incremented = value + 64'd1;
+endmodule
+
 module lemma_pen #(
   parameter int FIFO_DEPTH = 256,
-  parameter int PRESSURE_MAX = 4095
+  parameter int PRESSURE_MAX = 4095,
+  parameter bit IHP_SRAM = 0
 ) (
   input logic clk, reset_n,
   input logic valid, write,
@@ -48,10 +56,45 @@ module lemma_pen #(
   logic [PTR-1:0] head, tail;
   logic [PTR:0] count;
   logic [63:0] epoch, head_epoch, next_sequence, losses, fault;
+  wire [63:0] sequence_incremented;
+  if (IHP_SRAM) begin : physical_increment
+    (* keep_hierarchy = 1 *) lemma_pen_sequence_increment incrementer(
+      .value(next_sequence), .incremented(sequence_incremented));
+  end else begin : register_increment
+    assign sequence_incremented = next_sequence + 64'd1;
+  end
   logic [63:0] last_time, contact_deadline;
   logic loss, resync, release_seen, bad_sample;
   logic access_ok, lose;
 
+  if (IHP_SRAM) begin : physical_storage
+    // Actual pinned SG13G2 one-port macros, not synthesis blackbox substitutes.
+    // Existing refill edges serialize reads against delayed ingress writes.
+    // All181 entry bits occupy three64-bit field banks; upper11 bits are zero.
+    if (FIFO_DEPTH != 256) initial $fatal(1, "IHP SRAM requires full256 FIFO");
+    wire [191:0] input_words = {{(192-$bits(ingress_entry)){1'b0}},ingress_entry};
+    wire [191:0] output_words;
+    wire read_rows = reset_n && refill == 2;
+    wire write_rows = reset_n && ingress_pending;
+    wire [7:0] row_address = write_rows ? ingress_index : head;
+    for (genvar lane = 0; lane < 3; lane++) begin : field_bank
+      RM_IHPSG13_1P_256x64_c2_bm_bist memory (
+        .A_CLK(clk), .A_MEN(read_rows || write_rows),
+        .A_WEN(write_rows), .A_REN(read_rows), .A_ADDR(row_address),
+        .A_DIN(input_words[lane*64 +: 64]), .A_BM(64'hffffffffffffffff),
+        .A_DLY(1'b1), .A_DOUT(output_words[lane*64 +: 64]),
+        .A_BIST_CLK(1'b0), .A_BIST_EN(1'b0), .A_BIST_MEN(1'b0),
+        .A_BIST_WEN(1'b0), .A_BIST_REN(1'b0), .A_BIST_ADDR(8'b0),
+        .A_BIST_DIN(64'b0), .A_BIST_BM(64'b0));
+    end
+    for (genvar bank = 0; bank < BANKS; bank++) begin : head_alias
+      assign bank_entry[bank] = output_words[$bits(ingress_entry)-1:0];
+    end
+`ifndef SYNTHESIS
+    always @(posedge clk) if (read_rows && write_rows)
+      $fatal(1, "pen SRAM single-port collision");
+`endif
+  end else begin : register_storage
   // Separate bank memories give synthesis one local write and one local read
   // port per bank instead of a flattened array with BANKS competing writers.
   for (genvar bank = 0; bank < BANKS; bank++) begin : storage
@@ -62,6 +105,7 @@ module lemma_pen #(
       if (reset_n && refill == 2)
         bank_entry[bank] <= rows[head >> BANK_BITS];
     end
+  end
   end
 
   always_comb begin
@@ -178,7 +222,7 @@ module lemma_pen #(
           head_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
             sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
         tail <= tail + 1'b1; count <= count + 1'b1;
-        next_sequence <= next_sequence + 1;
+        next_sequence <= sequence_incremented;
         head_epoch <= epoch; last_time <= sample_time;
         contact_deadline <= sample_flags[0] ? sample_time + 10000000 : 0;
         resync <= 0; sample_accepted <= 1;

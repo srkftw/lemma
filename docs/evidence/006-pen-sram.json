@@ -1,0 +1,534 @@
+{
+  "schema": "lemma-pen-physical-sram-evidence/1",
+  "status": "PASS_OPTIONAL_MAINTAINED_STORAGE_PROTOCOL_MAPPING_PHYSICAL_FAIL",
+  "scope": "One maintained pen controller, default banked and opt-in provisional real SRAM storage. Protocol/mapping finite observations separate from failed signal routes and unimplemented full-chip/process closure.",
+  "contract": "docs/contracts/006-pen-sram-v1.md",
+  "written_at": "2026-10-17T13:58:14.452886+00:00",
+  "sources": {
+    "sim/rtl/lemma_pen.sv": {
+      "path": "sim/rtl/lemma_pen.sv",
+      "sha256": "31a98f82fa9d0b2de703d1994264515faae313471690ae9ad4ab21c4c41b1b46",
+      "bytes": 9845
+    },
+    "scripts/check_pen_sram.py": {
+      "path": "scripts/check_pen_sram.py",
+      "sha256": "2e105bdc96a3c66dbe2108fcff7fc8157299a04504151e840e5461531b5713f8",
+      "bytes": 15972
+    },
+    "tooling/silicon/pen-sram.nix": {
+      "path": "tooling/silicon/pen-sram.nix",
+      "sha256": "e3eadde3e9d8816ac638f99e92c5a8e27c7b3868a4d4bcf4181bb8c43a5dfd0b",
+      "bytes": 507
+    }
+  },
+  "functional_and_mapping": {
+    "receipt": {
+      "path": "build/silicon/pen-sram-maintained-map-a2/result.json",
+      "sha256": "3ec336da322071fc355c88cc9ad44f15d1d88dac76abec4cd1db5064b2e956b0",
+      "bytes": 24597
+    },
+    "status": "PASS_MAINTAINED_PEN_PROTOCOL_AND_THREE_REAL_SRAM_MAPPING",
+    "seconds": 5.150655266013928,
+    "pdk_revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "reference_commit": "bbce92dc724ded15814543181c09f72f6256a8e2",
+    "tools": {
+      "iverilog": {
+        "path": "/nix/store/d66hg1vhaqd0ij8iznymb79s4h4ach7c-iverilog-13.0/bin/iverilog",
+        "sha256": "07e3cdf0f8fa412c4f04494b9502dbbf31f466fd2568a818cf93471f05875b23",
+        "version": "Icarus Verilog version 13.0 (stable) (v13_0)"
+      },
+      "vvp": {
+        "path": "/nix/store/d66hg1vhaqd0ij8iznymb79s4h4ach7c-iverilog-13.0/bin/vvp",
+        "sha256": "ac70c49c4329131326c0661a0b6705739d7db89215d007bd40cc230867ec31fc",
+        "version": "Icarus Verilog runtime version 13.0 (stable) (v13_0)"
+      },
+      "yosys": {
+        "path": "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+        "sha256": "aaa6f93f2b56b05370f008388a2a7531e74892907082aaa2bce223a37d8c782f",
+        "version": "Yosys 0.69+post (git sha1 v0.69, Release, GNU /nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++ 16.2.0)"
+      },
+      "yosys-abc": {
+        "path": "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys-abc",
+        "sha256": "d0c8bc6c2822f258e6d83868ef83159b945aa1ec1f8a625e3c3a608f4783dc0a"
+      },
+      "bash": {
+        "path": "/nix/store/35yc81pz0q5yba14lxhn5r3jx5yg6c3l-bash-interactive-5.3p3/bin/bash",
+        "sha256": "754e2bd37d7d478fc0c08de1956c16e5065732860ed76395d4b966cf3fae3d25"
+      }
+    },
+    "collateral": {
+      "LICENSE": {
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "bytes": 11357
+      },
+      "ihp-sg13g2/libs.ref/sg13g2_sram/doc/RM_IHPSG13_1P_256x64_c2_bm_bist.txt": {
+        "sha256": "ebaa229f676bdbb2b63bf83059b703af28ab207bc9548d1d6988c04e04686e42",
+        "bytes": 18905
+      },
+      "ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x64_c2_bm_bist.v": {
+        "sha256": "20262f659479a070330efc277eaf4fd62e73a7f5b671a238d203f1e4344c20fa",
+        "bytes": 7473
+      },
+      "ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_core_behavioral_bm_bist.v": {
+        "sha256": "d0a6258f8e9c93d1d5b1f78c0a1d66f30d28b1ad8037e5e07f53d1a4e3670b12",
+        "bytes": 3951
+      },
+      "ihp-sg13g2/libs.ref/sg13g2_sram/lef/RM_IHPSG13_1P_256x64_c2_bm_bist.lef": {
+        "sha256": "246405148ef9df63af32d955f20491c4d087678d03cbfec3eb3ad6653fc8d4c3",
+        "bytes": 246220
+      },
+      "ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_256x64_c2_bm_bist_typ_1p20V_25C.lib": {
+        "sha256": "d117d4d86a07afd2d5302740fef0f9d1a12277490c600e1f1f7ba4633ca6e50a",
+        "bytes": 48967
+      },
+      "ihp-sg13g2/libs.ref/sg13g2_sram/gds/RM_IHPSG13_1P_256x64_c2_bm_bist.gds": {
+        "sha256": "3e069a7f0011eef53f69f8f2015497b123837e4be7d3102a2f9412920e5989d4",
+        "bytes": 517552
+      },
+      "ihp-sg13g2/libs.ref/sg13g2_sram/cdl/RM_IHPSG13_1P_256x64_c2_bm_bist.cdl": {
+        "sha256": "2418a6da4dce973b751ba0cd296ecd1482b7cf6bcd67b12b13fa99bc49f85563",
+        "bytes": 482869
+      },
+      "ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib": {
+        "sha256": "7677a8918689f452e80405ad16a83e744709342574f2aedcc507c2758986b396",
+        "bytes": 1720231
+      }
+    },
+    "mapping": {
+      "cells": 6820,
+      "cell_types": {
+        "sg13g2_inv_1": 480,
+        "sg13g2_nor3_1": 140,
+        "sg13g2_nand4_1": 244,
+        "sg13g2_nor2b_1": 165,
+        "sg13g2_nand2b_1": 130,
+        "sg13g2_and2_1": 391,
+        "sg13g2_nand2_1": 310,
+        "sg13g2_nor2_1": 373,
+        "sg13g2_nor4_1": 234,
+        "sg13g2_a22oi_1": 511,
+        "sg13g2_nand3_1": 75,
+        "sg13g2_or2_1": 24,
+        "sg13g2_a221oi_1": 36,
+        "sg13g2_a21oi_1": 470,
+        "sg13g2_and4_1": 35,
+        "sg13g2_or3_1": 5,
+        "sg13g2_mux2_1": 6,
+        "sg13g2_o21ai_1": 507,
+        "sg13g2_a21o_1": 38,
+        "sg13g2_xor2_1": 54,
+        "sg13g2_xnor2_1": 115,
+        "sg13g2_nand3b_1": 10,
+        "sg13g2_or4_1": 13,
+        "sg13g2_and3_1": 90,
+        "sg13g2_dfrbpq_1": 866,
+        "sg13g2_tiehi": 1061,
+        "sg13g2_tielo": 434,
+        "RM_IHPSG13_1P_256x64_c2_bm_bist": 3
+      },
+      "timestamp_to_sequence_D_max_cells": 17,
+      "all64depths": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ],
+      "mapped_verilog_sha256": "4a0f359fdd03624fe1b59193e02c12d851395ecc11906753e35144b1d54bc390",
+      "mapped_json_sha256": "c5e9a5e6752b88d3eedaec6b9a2580ff538566d085d70ab7542d221f60a390cc",
+      "scope": "Real physical leaf admission and graph depth only; no timing or route qualification",
+      "typical_library_area_um2": 373985.3946
+    },
+    "actual_cases": [
+      "sram-PenIngress",
+      "sram-PenBanks",
+      "default-register",
+      "upper-sequence-zeroed",
+      "address-alias128",
+      "reject-depth128"
+    ],
+    "case_source_hashes": {
+      "sram-PenIngress": {
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/candidate.sv": "31a98f82fa9d0b2de703d1994264515faae313471690ae9ad4ab21c4c41b1b46",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/PenIngress.sv": "2cbca69b1fedf1896d02347318be453fedb6c4e98f6d3583edf0d4ee705ca110",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/reference.sv": "9c0a34f3591afb1ceae9e8335300a50b9e3f6adfe2eac919d9285a63f5b7cde8",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x64_c2_bm_bist.v": "20262f659479a070330efc277eaf4fd62e73a7f5b671a238d203f1e4344c20fa",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_core_behavioral_bm_bist.v": "d0a6258f8e9c93d1d5b1f78c0a1d66f30d28b1ad8037e5e07f53d1a4e3670b12"
+      },
+      "sram-PenBanks": {
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/candidate.sv": "31a98f82fa9d0b2de703d1994264515faae313471690ae9ad4ab21c4c41b1b46",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/PenBanks.sv": "8f6bb644b3fa2482ba5c4a6219f1fa0f591758afb031288d5cae4fc7382e9578",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/reference.sv": "9c0a34f3591afb1ceae9e8335300a50b9e3f6adfe2eac919d9285a63f5b7cde8",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x64_c2_bm_bist.v": "20262f659479a070330efc277eaf4fd62e73a7f5b671a238d203f1e4344c20fa",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_core_behavioral_bm_bist.v": "d0a6258f8e9c93d1d5b1f78c0a1d66f30d28b1ad8037e5e07f53d1a4e3670b12"
+      },
+      "default-register": {
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/candidate.sv": "31a98f82fa9d0b2de703d1994264515faae313471690ae9ad4ab21c4c41b1b46",
+        "/home/sreekumaar/Downloads/lemma/conformance/silicon/PenIngress.sv": "c01c4b3a5d2da9aa405a6945d3b2b004899d3f2f9cba3336405cce98dfafad2b",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/reference.sv": "9c0a34f3591afb1ceae9e8335300a50b9e3f6adfe2eac919d9285a63f5b7cde8",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x64_c2_bm_bist.v": "20262f659479a070330efc277eaf4fd62e73a7f5b671a238d203f1e4344c20fa",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_core_behavioral_bm_bist.v": "d0a6258f8e9c93d1d5b1f78c0a1d66f30d28b1ad8037e5e07f53d1a4e3670b12"
+      },
+      "upper-sequence-zeroed": {
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/upper-sequence-zeroed.sv": "4ee7fd7c0708378ac96797d89516f14ecd7cba90c103ac02de908750cd2998bd",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/PenIngress.sv": "2cbca69b1fedf1896d02347318be453fedb6c4e98f6d3583edf0d4ee705ca110",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/reference.sv": "9c0a34f3591afb1ceae9e8335300a50b9e3f6adfe2eac919d9285a63f5b7cde8",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x64_c2_bm_bist.v": "20262f659479a070330efc277eaf4fd62e73a7f5b671a238d203f1e4344c20fa",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_core_behavioral_bm_bist.v": "d0a6258f8e9c93d1d5b1f78c0a1d66f30d28b1ad8037e5e07f53d1a4e3670b12"
+      },
+      "address-alias128": {
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/address-alias128.sv": "842abd34738fd4b2cf88e6a220d8b5414f17b69ff47af027a317cee7008357f9",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/PenIngress.sv": "2cbca69b1fedf1896d02347318be453fedb6c4e98f6d3583edf0d4ee705ca110",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/reference.sv": "9c0a34f3591afb1ceae9e8335300a50b9e3f6adfe2eac919d9285a63f5b7cde8",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x64_c2_bm_bist.v": "20262f659479a070330efc277eaf4fd62e73a7f5b671a238d203f1e4344c20fa",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_core_behavioral_bm_bist.v": "d0a6258f8e9c93d1d5b1f78c0a1d66f30d28b1ad8037e5e07f53d1a4e3670b12"
+      },
+      "reject-depth128": {
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/candidate.sv": "31a98f82fa9d0b2de703d1994264515faae313471690ae9ad4ab21c4c41b1b46",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/bad-depth.sv": "5e75c4c09449fe173824f929f0b5fc0a67160043c3f52e573f14cc90a72f24cf",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/reference.sv": "9c0a34f3591afb1ceae9e8335300a50b9e3f6adfe2eac919d9285a63f5b7cde8",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x64_c2_bm_bist.v": "20262f659479a070330efc277eaf4fd62e73a7f5b671a238d203f1e4344c20fa",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-maintained-map-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_core_behavioral_bm_bist.v": "d0a6258f8e9c93d1d5b1f78c0a1d66f30d28b1ad8037e5e07f53d1a4e3670b12"
+      }
+    },
+    "bounds": {
+      "whole_seconds": 300,
+      "compile_seconds": 60,
+      "simulation_seconds": 30,
+      "process_AS_bytes": 4294967296,
+      "file_bytes": 1073741824
+    }
+  },
+  "default_devices": {
+    "receipt": {
+      "path": "build/silicon/pen-sram-default-devices-a1/result.json",
+      "sha256": "7a26fc1a4fbd9cf603a0b9b26beefefe6af69f5c635febe571ad6a06b1e36a4d",
+      "bytes": 15960
+    },
+    "status": "PASS",
+    "source_commit": "bbce92d plus exact dirty source_inputs in actual receipt"
+  },
+  "experimental_routes": [
+    {
+      "source": {
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-owner-a2/lemma_pen.sv": "1509e4cecb3875de72137ef1bbff3c21c3762f564d1a8512ce576da83226ba2e",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-owner-a2/result.json": "8e6a0fc5d09ce296bb0794a59fee22e50e965db9f1e24de8690943ed77aa5c41",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-owner-a2/negatives-a2/result.json": "25d6af699e6b151d30c30a9b2c82366d2344e13e3834d2ba2f3bca0a34d5a0fc",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-sram-map-a4/mapped.v": "413d76d9322e01f5e575cb075986cf7a640c89f45be1119714a40931e953aab1",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-sram-map-a4/mapped.json": "541d16552cb40dc4731fc24436311e315916f522861f1290394d0959084e3d92",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-sram-map-a4/result.json": "57c219ee21eaacee676cdd632a812eea23ceda9e33d798ca5964cacb9e66ece7",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/deps/ihp-open-pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_tech.lef": "054f5b7b24d72365b4b1088be1331e04c1c2e3805de9f99c37e71938ed231efc",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/deps/ihp-open-pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef": "c9bbc02d0c2cba3b15cd89a208750d25de882f02a2927ae78ba6422109fb01d0",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/deps/ihp-open-pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib": "7677a8918689f452e80405ad16a83e744709342574f2aedcc507c2758986b396",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-owner-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/lef/RM_IHPSG13_1P_256x64_c2_bm_bist.lef": "246405148ef9df63af32d955f20491c4d087678d03cbfec3eb3ad6653fc8d4c3",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-owner-a2/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_256x64_c2_bm_bist_typ_1p20V_25C.lib": "d117d4d86a07afd2d5302740fef0f9d1a12277490c600e1f1f7ba4633ca6e50a",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-route-plan-a3/layout.tcl": "1f8a699038ece53c948ca507e61aa92897e6ddf0d63827894996b7e7170ed25e",
+        "/nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad": "2d49fb4cc8b03f39d089090015e24b8a783d08949491200e119048b158b6649d",
+        "/home/sreekumaar/Downloads/lemma/tooling/silicon/layout.tcl": "e703a8f8dcaa7c2ead503c5512d2b377e664034b8669e1b3e1fe0a0980b9f87b",
+        "/home/sreekumaar/Downloads/lemma/scripts/silicon_synth.py": "df2f2e6aeec6c06ea91365184ed9286d69c1a089ac9ac2b4bd0be9a9af339c2c",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-route-plan-a3/route.py": "bab5a0962c16882ee4576fbaedf4a4ea99e65f136b2a9206f6c7c489161b0cb3"
+      },
+      "receipt": {
+        "path": "build/silicon/physical/pen-sram-route-a3/result.json",
+        "sha256": "a6efc7115346dddc8c90ee6ccb0e03be1bc27f40d8398738666b9a63fe40178e",
+        "bytes": 5969
+      },
+      "supervision": {
+        "path": "build/silicon/pen-sram-route-supervision-a3/result.json",
+        "sha256": "374e5c61ac8668468eb22f798b835561d4a40870a6727472b4dcae77d34a7150",
+        "bytes": 652
+      },
+      "actual_status": "FAIL",
+      "actual_error": "AssertionError('actual router geometry violations')",
+      "OpenROAD_exit": 0,
+      "OpenROAD_seconds": 782.287,
+      "supervised_seconds": 782.846622752957,
+      "owned_peak_RSS_bytes": 1347489792,
+      "owned_survivors": {},
+      "clock_ns": 10,
+      "signal_route_completed": true,
+      "geometry_check": "PASS_EXACT_THREE_MACRO_EXTENTS_CORE_BOUNDS_NONOVERLAP",
+      "actual_placement": {
+        "units": 1000,
+        "macros": [
+          {
+            "name": "pen_sram_lane0",
+            "master": "RM_IHPSG13_1P_256x64_c2_bm_bist",
+            "rect": [
+              120000,
+              60000,
+              904480,
+              178780
+            ]
+          },
+          {
+            "name": "pen_sram_lane1",
+            "master": "RM_IHPSG13_1P_256x64_c2_bm_bist",
+            "rect": [
+              120000,
+              260000,
+              904480,
+              378780
+            ]
+          },
+          {
+            "name": "pen_sram_lane2",
+            "master": "RM_IHPSG13_1P_256x64_c2_bm_bist",
+            "rect": [
+              120000,
+              460000,
+              904480,
+              578780
+            ]
+          }
+        ]
+      },
+      "after_route_ESTIMATED_RC": {
+        "cell_area_um2": 390122.0256,
+        "core_area_um2": 711328.2624,
+        "utilization_percent": 54.84416214305054,
+        "instances": 7845,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -3.120831,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": 0.030859,
+        "hold_timing": "MET"
+      },
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 2144,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "router_violation_types": {
+        "Short": 1633,
+        "Metal Spacing": 509,
+        "Cut Short": 2
+      },
+      "router_violation_layers": {
+        "Metal2": 1516,
+        "Metal3": 287,
+        "Metal4": 315,
+        "Metal5": 24,
+        "Via2": 2
+      },
+      "actual_electrical_violations": {
+        "global-electrical.rpt": 3,
+        "electrical.rpt": 3
+      },
+      "source_seal_equal": true,
+      "adopted": false
+    },
+    {
+      "source": {
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-owner-a4/lemma_pen.sv": "b95ff4fd53f023b5e53d56eacbad1131224c38fc6d0e58c946c9ee18f3daf969",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-owner-a4/result.json": "dc488d0ff2e2e1d2d5737e16f4a2ad193fe9123c64104e01753b541e349581ce",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-owner-a4/negatives-a2/result.json": "da73b7576d3b3ed8bb92e83049e6e39f522ff480472db9069882608872f0dac8",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-sram-map-a8/mapped.v": "71cbf20acdea9eef2129298f7de79977be7cdf1c634e50b451b1dc334cecca94",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-sram-map-a8/mapped.json": "d869774e1edfafc3938ee290f86d5705796f1369faf8bde7df312e11c1cd334b",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-sram-map-a8/result.json": "dba4381cb0703d770135567b97db103db7092d8855734592e1ced0aea5754c20",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/deps/ihp-open-pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_tech.lef": "054f5b7b24d72365b4b1088be1331e04c1c2e3805de9f99c37e71938ed231efc",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/deps/ihp-open-pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef": "c9bbc02d0c2cba3b15cd89a208750d25de882f02a2927ae78ba6422109fb01d0",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/deps/ihp-open-pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib": "7677a8918689f452e80405ad16a83e744709342574f2aedcc507c2758986b396",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-owner-a4/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/lef/RM_IHPSG13_1P_256x64_c2_bm_bist.lef": "246405148ef9df63af32d955f20491c4d087678d03cbfec3eb3ad6653fc8d4c3",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-owner-a4/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_256x64_c2_bm_bist_typ_1p20V_25C.lib": "d117d4d86a07afd2d5302740fef0f9d1a12277490c600e1f1f7ba4633ca6e50a",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-route-plan-a4/layout.tcl": "75ecce925a3290046c22b4df63f0d5e2ec7b1013cec6867a787216718e8c9101",
+        "/nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad": "2d49fb4cc8b03f39d089090015e24b8a783d08949491200e119048b158b6649d",
+        "/home/sreekumaar/Downloads/lemma/tooling/silicon/layout.tcl": "e703a8f8dcaa7c2ead503c5512d2b377e664034b8669e1b3e1fe0a0980b9f87b",
+        "/home/sreekumaar/Downloads/lemma/scripts/silicon_synth.py": "df2f2e6aeec6c06ea91365184ed9286d69c1a089ac9ac2b4bd0be9a9af339c2c",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-route-plan-a4/route.py": "837f341766f25af514cb206219f2eda871498c03650c369c2db3a3011107e077",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-map-plan-a8/sample-time-depth.json": "70fbb4b1ccdf86d41daa858dd5ab4c2505d7332dda1e0ccc77ea6ea7b2131c7b",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-route-plan-a4/geometry-preflight/result.json": "ab979e9fb1242b33742d00ac1e6af95899406cbad533cc313c659a37d215ed5b",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-route-plan-a4/geometry-preflight/placement.json": "b77e130c88228511edcd9845aaaea60952a043e7c6ad58a3687054cd71c9a4b4",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-route-plan-a4/geometry-preflight/placement.tcl": "df4fa4233e6e149e401535881c144175a128daa702492aa3421746634c17c79b",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/pen-sram-route-plan-a4/geometry-preflight/mapped.v": "874a58610fc8cebd04709037c1b8b1b9ff18bdcf4ee2056503784c5f86516e3f"
+      },
+      "receipt": {
+        "path": "build/silicon/physical/pen-sram-route-a4/result.json",
+        "sha256": "5c90dde2adeb7159d3e70383cca5e8427174480ae7e147b12a3e5be6fb937464",
+        "bytes": 6990
+      },
+      "supervision": {
+        "path": "build/silicon/pen-sram-route-supervision-a4/result.json",
+        "sha256": "8e8709b541f03d8f961db73f5e7071714b237629ec7a24bf5fcf9a158443df6c",
+        "bytes": 652
+      },
+      "actual_status": "FAIL",
+      "actual_error": "AssertionError('actual router geometry violations')",
+      "OpenROAD_exit": 0,
+      "OpenROAD_seconds": 420.827,
+      "supervised_seconds": 421.676925662905,
+      "owned_peak_RSS_bytes": 1357991936,
+      "owned_survivors": {},
+      "clock_ns": 10,
+      "signal_route_completed": true,
+      "geometry_check": "PASS_EXACT_THREE_MACRO_EXTENTS_CORE_BOUNDS_NONOVERLAP",
+      "actual_placement": {
+        "units": 1000,
+        "macros": [
+          {
+            "name": "pen_sram_lane0",
+            "master": "RM_IHPSG13_1P_256x64_c2_bm_bist",
+            "rect": [
+              120000,
+              100000,
+              904480,
+              218780
+            ]
+          },
+          {
+            "name": "pen_sram_lane1",
+            "master": "RM_IHPSG13_1P_256x64_c2_bm_bist",
+            "rect": [
+              120000,
+              350000,
+              904480,
+              468780
+            ]
+          },
+          {
+            "name": "pen_sram_lane2",
+            "master": "RM_IHPSG13_1P_256x64_c2_bm_bist",
+            "rect": [
+              120000,
+              600000,
+              904480,
+              718780
+            ]
+          }
+        ]
+      },
+      "after_route_ESTIMATED_RC": {
+        "cell_area_um2": 392585.9808,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 45.201310235800484,
+        "instances": 8139,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -4.218564,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": -0.182969,
+        "hold_timing": "VIOLATED"
+      },
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 314,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "router_violation_types": {
+        "Short": 266,
+        "Metal Spacing": 48
+      },
+      "router_violation_layers": {
+        "Metal2": 129,
+        "Metal3": 17,
+        "Metal4": 159,
+        "Metal5": 9
+      },
+      "actual_electrical_violations": {
+        "global-electrical.rpt": 2,
+        "electrical.rpt": 2
+      },
+      "source_seal_equal": true,
+      "adopted": false
+    }
+  ],
+  "maintained_option_routing": "NOT_RUN: experimental route candidates use separately retained pre-integration source/identities; maintained option protocol/mapping does not inherit those physical observations.",
+  "checkpoint": "Not enabled in any native/Wasm SoC profile; no new SRAM logical-state/checkpoint admission. Existing exact source-bound archives retained.",
+  "physical_open": [
+    "actual setup/hold/electrical/router violations",
+    "complete process rule enforcement (known enclosure enforcement gap retained)",
+    "macro power/test/PVT qualification",
+    "layout export/LVS/routed PEX/post-route timing",
+    "full-chip memory/pads/CDC/power/analog/RF/panel closure"
+  ],
+  "mapping_investigation": {
+    "retained_27_cell_failure": {
+      "path": "build/silicon/pen-sram-map-plan-a6/sample-time-depth.json",
+      "sha256": "61e67e80ec62c5dbe263bcec0f79b29c7e7786be276d33a4ead71e817919e5df",
+      "bytes": 2022
+    },
+    "corrected_frontend_17_cell_gate": {
+      "path": "build/silicon/pen-sram-map-plan-a8/sample-time-depth.json",
+      "sha256": "70fbb4b1ccdf86d41daa858dd5ab4c2505d7332dda1e0ccc77ea6ea7b2131c7b",
+      "bytes": 754
+    },
+    "retained_scopeinfo_observer_failure": {
+      "path": "build/silicon/physical/pen-sram-map-a7/result.json",
+      "sha256": "7e459b9258d900a09859a80ec88214efe5dc4d50ba36ac253709b31fcab4630f",
+      "bytes": 1020
+    },
+    "correction": "Installed read_slang defaults to frontend flattening; documented --keep-hierarchy retains pure increment. Final flatten -noscopeinfo omits only zero-port source metadata, preserving src attributes; strict cell check stays unchanged.",
+    "prior_batch_stall": "a3 actual mapping180s pipe/read-select timeout retained; exact same pinned ABC binary via documented batch -exe passes. Underlying interactive stall cause not established.",
+    "retained_timeout": {
+      "path": "build/silicon/pen-sram-map-supervision-a3/result.json",
+      "sha256": "eb095449f1707d385d97cb4ffd45fa082bc04dc85a45586856fa1f8d1538012a",
+      "bytes": 701
+    }
+  }
+}

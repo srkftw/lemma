@@ -2630,3 +2630,22 @@ Archive: `build/distribution/task006-hint-publication-selection-browser-a1.tar.g
 standalone launcher verifies the prepared package. These checks qualify local
 submission and cancellation, separately from the active corrected-guest cold
 run on the immutable earlier UI bundle at port 8816. Keep that origin intact.
+
+
+An explicit provisional physical pen-memory option now selects three actual
+IHP256x64 SRAM macros inside the same maintained full256-entry controller.
+The default banked machine is retained. Run its published functional-model,
+historical public-port, literal-field and negative checks, optionally including
+real technology mapping, with:
+
+```sh
+nix-shell tooling/silicon/pen-sram.nix --run \
+  'python3 scripts/check_pen_sram.py --pdk build/silicon/deps/ihp-open-pdk \
+    --work-dir build/silicon/AN_UNUSED_PEN_SRAM_CHECK --map'
+```
+
+This consumes already present pinned PDK Git objects. See the
+[physical SRAM option contract](docs/contracts/006-pen-sram-v1.md) for state,
+capacity, source/tool admission and explicit physical limitations. Completed
+experimental routing still fails; the option does not close timing, process
+DRC/LVS/PEX, full-SoC memory or native/browser checkpoint support.
