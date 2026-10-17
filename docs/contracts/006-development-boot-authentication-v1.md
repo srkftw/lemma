@@ -69,7 +69,7 @@ for the capability beacon. Operations are:
 | Operation | Meaning |
 | --- | --- |
 | 0 | Capacity/version capability |
-| 1 | Opaque image-sector installation, existing inactive-slot enforcement |
+| 1 | Opaque sector staging/write response, existing inactive-slot enforcement; no durability/installation acknowledgment |
 | 2 | Load/MAC validation followed by existing transactional image publication |
 | 3 | Authenticated boot and checked handoff |
 | 4 | Existing fresh-barrier image receipt plus independent load/MAC validation |

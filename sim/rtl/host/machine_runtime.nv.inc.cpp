@@ -1,5 +1,6 @@
 // Host-only independent raw nonvolatile boot-medium ownership. No image policy.
 void Machine::initialize_boot_io(){
+ if(options.boot_write_limit&&(!BINDING_BOOT_NV_ENABLED||options.host_threads!=1||!options.boot_replay_path.empty()))throw std::runtime_error("boot write limit requires single-thread native live product backing");
  if((!options.boot_capture_path.empty()||!options.boot_replay_path.empty())&&!BINDING_BOOT_NV_ENABLED)throw std::runtime_error("boot backing requires profile7");
  if(!options.boot_capture_path.empty()&&!options.boot_replay_path.empty())throw std::runtime_error("boot capture and replay are exclusive");
  if(!options.boot_replay_path.empty())boot_replay=read_backing_replay(options.boot_replay_path,"LMNVLOG2");
@@ -16,9 +17,14 @@ void Machine::attach_boot_backing(std::shared_ptr<BackingPlatform>platform){
  for(uint64_t offset=0;offset<platform->capacity();){auto count=std::min<uint64_t>(chunk.size(),platform->capacity()-offset);platform->passive_read(offset,chunk.data(),count);for(uint64_t i=0;i<count;i+=512)if(std::any_of(chunk.begin()+i,chunk.begin()+i+512,[](uint8_t b){return b!=0;})){std::array<uint8_t,512>sector{};std::memcpy(sector.data(),chunk.data()+i,512);initial[(offset+i)/512]=sector;}offset+=count;}
  s.accepted_boot_medium=std::move(initial);boot_platform=std::move(platform);s.boot_medium_present=1;
 }
+std::shared_ptr<BackingPlatform> Machine::boot_posix_platform(int fd){
+ auto platform=std::make_shared<PosixBacking>(fd);
+ if(options.boot_write_limit){auto span=*options.boot_write_limit;platform->limit_write_span(span[0],span[1],span[2]);}
+ return platform;
+}
 void Machine::open_boot_medium(const std::string&path){
  if(boot_medium>=0||boot_platform)throw std::runtime_error("boot medium already attached");int fd=open(path.c_str(),O_RDWR);if(fd<0)throw std::runtime_error("cannot open boot medium");
- try{attach_boot_backing(std::make_shared<PosixBacking>(fd));}catch(...){close(fd);throw;}boot_medium=fd;
+ try{attach_boot_backing(boot_posix_platform(fd));}catch(...){close(fd);throw;}boot_medium=fd;
 }
 void Machine::capture_boot(uint64_t tag,const std::vector<uint8_t>&wire){
  if(boot_capture<0)return;if(wire.size()+16>MAX_BACKING_LOG-boot_capture_bytes)throw std::runtime_error("boot outcome capture full");uint8_t header[16];for(unsigned i=0;i<8;i++){header[i]=tag>>(8*i);header[8+i]=uint64_t(wire.size())>>(8*i);}

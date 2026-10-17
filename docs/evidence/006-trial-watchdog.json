@@ -1,6 +1,6 @@
 {
   "schema": "lemma-task006-trial-watchdog-evidence/1",
-  "status": "PASS_STALLED_TRIAL_WATCHDOG_BROWNOUT_FALLBACK_HEALTHY_COLD_RUNNING",
+  "status": "PASS_STALLED_TRIAL_FALLBACK_AND_SEPARATE_CONFIRMED_COLD_CURRENT_IMAGE16_RUNNING",
   "implementation_parent": "052e4675d170fbacc7cea7f2ce607d0aef602e01",
   "contract": "docs/contracts/006-trial-boot-watchdog-v1.md",
   "ROM": {
@@ -19,7 +19,7 @@
     "notebook_functions_post": 902,
     "authority_sha256": "1136a8d43f3de98ca2908e8cec8f961ffd1ee2297d4ad3c388d614ed147c64d2",
     "linked_image": "PASS_CORRECTED_STRICT_LINKED_OBSERVER_EXACT_ORIGINAL_SOURCE",
-    "healthy_trial_disarm": "NOT_RUN"
+    "healthy_trial_disarm": "OBSERVED_ORIGINAL_IMAGE15_CAMPAIGN_BEFORE_RETAINED_OBSERVER_FAILURE"
   },
   "actual_recovery": {
     "status": "PASS_GUEST_AUTHENTICATED_TRIAL_WATCHDOG_BROWNOUT_FALLBACK_NOTEBOOK",
@@ -460,7 +460,7 @@
     "build/boot/task006-trial-watchdog-kernel-host-a1.log"
   ],
   "limitations": [
-    "Stalled-trial full fallback now passes. Original healthy image15 full campaign remains FAIL at its independently demonstrated cold0 observer; actual separate confirmed cold and current image16 full trial/cold are running. General boot/update failure matrix remains open.",
+    "Stalled-trial fallback and separate image15 confirmed cold/reader pass. Original image15 full campaign remains FAIL; current image16 full trial/cold is running. General failure matrix remains open.",
     "Original lake host C-generation run hit pinned Lean LCNF assertion; direct genuine ordinary elaboration/checked export passes, underlying host C-generation issue unresolved.",
     "Loader/ROM-stage hang supervision, confirmation interruption matrix, production identity/entropy and durable antirollback remain open.",
     "Whole-machine digital completeness, QEMU cached continuation, distribution rights and physical signoff remain separate and open."
@@ -533,14 +533,35 @@
     ],
     "seconds": 1.2269112239591777,
     "repair": "Only clock0/pc0/retired0/unarmed/zero remaining counters admits pre-first-edge cause0; every later clock still requires cause1/epoch0. Three focused tests and complete33 boot-host tests pass. No machine/controller change.",
-    "confirmed_cold_status": "RUNNING_SEPARATE_ORIGINAL_BOUNDS"
+    "confirmed_cold_status": "PASS_AUTHENTICATED_CONFIRMED_IMAGE15_COLD_READER"
   },
   "partial_notebook_update": {
-    "status": "RUNNING_ORIGINAL_BOUNDS",
+    "status": "PASS_PARTIAL_NOTEBOOK_UPDATE_BROWNOUT_INDEPENDENT_CONFIRMED_COLD",
     "checker": "scripts/check_interrupted_notebook_update.py",
-    "scope": "16 actual inactive payload sectors/real barrier receipts, no tag/publication, real brownout200clocks, independentCPU0normal ROM selects known confirmed13, all3.63Mhome/all256MiB preserved. Between sector barriers only; no full interruption matrix claim.",
+    "scope": "Actual16 staging WRITE responses, then one fresh STATUS barrier before status217/incomplete image, real brownout200clocks, independentCPU0normalROM/known13/allhome/all256MiB. Between-barrier staging interruption only; no full failure matrix.",
     "bounds": "1.8B/14400s; partial300M/2400s, originalcold1.5B/11200s",
-    "plan": "build/boot/task006-interrupted-notebook-update-plan-a1/plan.json"
+    "plan": "build/boot/task006-interrupted-notebook-update-plan-a1/plan.json",
+    "result": "build/boot/task006-interrupted-notebook-update-plan-a1/consumed-host-source-root/build/connected/result.json",
+    "result_sha256": "816dcb537e2ec2e932d06e5339c498581ae68b6e26fd2bf3b0793051895443a4",
+    "seconds": 5176.76310339605,
+    "RTL_clocks": 730400200,
+    "all_home_pixels": 3630000,
+    "all_user_bytes": 268435456,
+    "supervisor_seconds": 5177.961468458059,
+    "sampled_owned_peak_RSS_bytes": 388214784,
+    "owned_survivors": {},
+    "independent_durability_observation": {
+      "source": "build/boot/task006-interrupted-notebook-update-plan-a1/consumed-host-source-root/build/connected/partial/boot.nvio",
+      "sha256": "29689b1a833001ad19c0bfebb44e05dcff2ef43f0016320f26cbe0ef554e0ce7",
+      "actual_IO_rows": 51,
+      "writes": 16,
+      "barriers": 1,
+      "last_write_id": 48,
+      "barrier_id": 49,
+      "pending": false,
+      "all_errors_zero": true,
+      "clarification": "Original WRITE/BARRIER phrasing did not state the actual granularity. Sixteen transport write responses precede the single STATUS barrier; no per-sector durable receipt claim. Original completed report remains untouched."
+    }
   },
   "current_control_backlog_product": {
     "status": "GENUINE_WHOLE_LINKED_PASS_CONNECTED_EXECUTION_PENDING",
@@ -561,5 +582,49 @@
     "connected_status": "RUNNING_ORIGINAL_BOUNDS",
     "connected_plan": "build/boot/task006-control-backlog-home-product-connected-plan-a1/plan.json",
     "connected_source": "358b452"
+  },
+  "confirmed_image15_cold": {
+    "status": "PASS_AUTHENTICATED_CONFIRMED_IMAGE15_COLD_READER",
+    "result": "build/boot/task006-trial-watchdog-confirmed-cold-plan-a1/consumed-host-source-root/build/connected/result.json",
+    "sha256": "790abeb8d0068c6d5a71a7cedeab0125874c4672e1c9cdd1f5f5cd3c780b8393",
+    "seconds": 6947.4089807770215,
+    "RTL_clocks": 961000000,
+    "phases": [
+      {
+        "name": "confirmed-new-CPU-cold-all-pixels",
+        "initial_cycle": 0,
+        "final_cycle": 724000000,
+        "clocks": 724000000,
+        "seconds": 5243.557239799993,
+        "health_records": []
+      },
+      {
+        "name": "authenticated-cold-raw-COURSE-saved-example3",
+        "clocks": 237000000,
+        "seconds": 1699.8223191880388,
+        "all_controller_pixels": 3630000,
+        "raw_samples": 2
+      }
+    ],
+    "all_expected_pixels": true,
+    "all_document_bytes_unchanged": true,
+    "snapshot_cold_input": false,
+    "supervisor_seconds": 6948.520826962078,
+    "owned_peak_rss_bytes": 347623424,
+    "owned_survivors": {},
+    "scope": "Separate normal-ROM CPU0 cold/reader from the retained actual confirmed image15. Original full healthy campaign remains FAIL."
+  },
+  "scoped_metadata_fault": {
+    "status": "IMPLEMENTED_COMPONENT_TESTED_CONNECTED_NOT_RUN",
+    "runtime_identity": "677aacbc0c1dc2cea5658357e7ad992b0d91ca63a4504c69a43e42ead097bd4d",
+    "binary_sha256": "0606235b79b603c43a35f59274c3d625ed227e5fb3f0289f5511d3d8e78fde68",
+    "prepared": "build/boot/task006-scoped-boot-write-prepared-a3",
+    "host_tests": {
+      "backing": 5,
+      "lemmasim": 329,
+      "boot": 39,
+      "scaffold": 18
+    },
+    "scope": "Real Linux scoped write limit and independently observed returned byte prefix. Full1059-sector guest metadata case remains a separate required execution."
   }
 }

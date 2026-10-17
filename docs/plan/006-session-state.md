@@ -6234,3 +6234,109 @@ geometry preflightPASS; route rejects unchanged8GiB available launch floor
 before OpenROAD (0.659414s supervisionFAIL), preserved at
 build/silicon/pen-sram-range-route-plan-a1 and ...range-route-supervision-a1.
 No deadline/memory/clock/rule relaxation or new route/DRC/timing PASS.
+
+Published8e3506cf0ca0a94bec5aef9151b4b7565a5942c8, actualCIrun168/39062035567
+IN_PROGRESS on first observation. PR9 actual open/draft/unmerged/head8e; body
+updated with completed watchdog fallback/active Native-Wasm/finite executable
+cache and physical resource-floor failure. No merge.
+
+New separate current-v2 browser case is NOW ACTUALLY RUNNING from trueCPU0:
+* Static prepared distribution server8818, exec tool82659; browser2/tab23
+  backlogBrowser. Keep23 as well as22/20 across turns. No old8816 replacement.
+* Plan build/browser/task006-control-backlog-home-browser-plan-a1/plan.json,
+  declared before import/open/clock; whole deadline 2026-10-18T07:22:19.564549+00:00/6B.
+* actual opaque installed3 backing imported via ordinary UI into origin8818
+  medium control-backlog-home-v2-a1, then Open paused cycle0/pc0/retired0.
+  Zero visible state retained in .../browser/cold-zero-visible.json.
+* First cold1B/7200s, Ready checkbox true, panel false; developer heap192MiB.
+  No snapshot/initializer cold input. Source guest724b3407..., genuine v2 pair.
+* After Ready independently compare all3.63M emptyhome/all256MiB installed3;
+  actual COURSE chooser x320y140 -> NEXTedition twice x168y670 -> OPEN264y670
+  -> node2/node3 x72y650 -> USE360y650 -> numerator100y225 -> digit5 640y250;
+  then original4 consecutive controls (124,225)/(512,330)/(768,250)/(40,245)
+  + raw3 ink y1900 in ONE admission. Genuine Verified/reclaimed/raw11pixels/
+  Save, declared242overflow12HINT1000ticks, immediateordinaryraw3y1800/Save
+  and independent sameOPFS Close/Open cold/fullhome/allbytes/course still
+  require actual execution; do not infer from native fast/RTL prefixes.
+* Use each phase ceiling in plan; no live test continuation after deadline
+  failure or posthoc enlargement. Fresh current v2 browser acceptance pending.
+
+Older22 remains real Saved48 durable-only cold running at8816, original
+00:26:11.452097Z deadline; execute actual fullhome/fullbytes then rawCOURSE
+reopen400M/3600s and full savedcourse/evidence/history. Preserve old four-tap/
+bookmark observer FAILs. Tool names/current browser helpers retained in runtime.
+
+Next completed actual recovery milestone:
+Partial16 payload/brownout/normal confirmed13 cold PASS5176.763103s/730400200
+RTLclocks, all3.63Mpixels/all256MiB. Supervision5177.961468s/peak388214784B/
+no survivors. Original ...interrupted-notebook-update-plan-a1 receipt untouched.
+Independent actual BootNV tape decode51 rows reveals16 staging writes plus
+ONE STATUS barrier (id49 after finalwrite48), not16 per-sector barriers.
+STATUS217 refuses installation while its actual barrier acknowledges staged
+bytes before brownout. Existing recovery contract's blanket 'a receipt' wording
+was overbroad for capacity/staging/key-info. Clarified transport versus durable
+publication receipts; new observer explicitly requires actual16WRITE/one later
+STATUS barrier. This is a corrected description/stronger observer, no guest
+format/protocol change, new claim of sector durability or report rewriting.
+
+In-progress IMPLEMENTATION (uncommitted; do not lose): scoped Linux POSIX
+write-span RLIMIT_FSIZE, real pwrite/SIGXFSZ/partial bytes, restored process
+limit BEFORE capture/UART logs; reject concurrent native threads; replay only
+materializes recorded bytes without live fault configuration. Actual5 backing
+checks PASS19.738s initially. Added actual pre/post-write verification;
+unrepresented effects poison before guest completion instead of assuming no
+unreported bytes changed. Initial compile missed <algorithm>, retained5-error
+FAIL17.186s at scoped-write-limit-host-a2.log; include fixed and actual5PASS
+20.308s at ...host-a3.log. Root public Laboratory-only Auth launch flag
+--boot-write-limit first:past:ceiling, decimal bounds, singlethread cold launch;
+Student/Developer/multithread/restore admission rejected before serve. Native
+Machine Options retain external condition across its own private restores,
+not in portable authoritative state; relaunch needs explicit environment or
+recorded outcomes. Guest policy remains Lean.
+
+Actual shared Product10 profile is lemma-silicon-dev/0.10.0 (NOT0.4). First
+new native runtime buildA1 PASS75.729116s/peak981299200B; retained original
+253-input full consumed-source archive at ...runtime-a1/consumed-source-root.
+A1 predates pre/post-write observation. Current runtimeA2 builds that fix,
+PASS88.562373s/peak973299712B at build/boot/
+task006-scoped-boot-write-runtime-supervision-a2/result.json; no survivors.
+Builds have original900s/1000s,4GiB RSS/2GiB available/12GiB output/1GiB file
+bounds and2jobs. No guest execution inferred. Native dirs are
+build/silicon/task006-scoped-boot-write-runtime-a1 and -a2. PreparedA1 is
+stale to current source but archived original remains; new preparedA2 command
+is running in exec50633, then37+newbounds boot-host suite. ROM reused at
+...trial-watchdog-rom-plan-a2/consumed-host-source-root/build/rom with its
+complete original frozen source archive; no fresh ROM/target compilation.
+
+Metadata failure case is IMPLEMENTED_NOT_RUN in existing
+scripts/check_interrupted_notebook_update.py --cut metadata. Original --cut
+payload remains16/300M2400s/1.8B14400s unchanged. New fixed1059-sector full
+payload/tag/authentication case prospectively900M7200s + unchanged1.5B11200s
+cold,2.4B21600s whole. Choose the opposite actual current metadata sector
+from original known13, fault byte range0:1024 with ceiling(destination*512+256).
+Source ProductNext.ioFailure=212. Require real captured lastWRITE512→256/
+EFBIG27, one successful finishInstall payload/tag barrier BEFORE that failed
+write, no metadata barrier after it; status212/value0. Check expected metadata
+generation+1/confirmed13/trial15 prefix, retained old CRC/other good peer and
+no changes outside actual payload/tag/256-byte metadata prefix. Actual
+brownout200clocks then independentnormalROMknown13 cold/allhome/alluserbytes.
+The C++ scopedfault only spans selected pwrite, so capture and UART remain
+writable even at metadata byte ceilings. All host/guest policy separation kept.
+Next: complete focused/host tests, nativeA2 original-source archive and prepare,
+actual zero-clock/scoped CLI admission; commit coherent feature; freeze all
+host inputs and run the full new metadata case with same established product
+package15/tag/boot13/userSaved32/fullhome inputs. No snapshot cold input, host
+image installation or claim of in-flight-brownout/full failure-matrix closure.
+
+
+Next continuation update: explicit preparedA3 completed PASS with nativeA2's
+253-input original source archive and original frozen ROM archive. Complete
+pinned lemmasim329/80.133s, boot39/0.057s, scaffold18/8.694s plus metadata PASS.
+Separate confirmed15 cold/reader now terminal PASS6947.408981s/961M RTLclocks;
+CPU0 cold724M/5243.557240s and rawCOURSE reopen237M/1699.822319s, complete
+pixels/user media. Supervisor6948.520827s/peak347623424B/no survivors. Original
+healthy full campaign FAIL is preserved. Expired browser20 owner was closed
+through its UI after validating all original archive CRCs/145716300 bytes;
+no resumed clocks. Browser22 Saved48 and currentv2 browser23 cold are still
+running within their original bounds. Retained browser20 OPFS and failure
+prefix remain intact. See original expired-archive-owner-close-validation.json.

@@ -10,6 +10,21 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class BackingIO(unittest.TestCase):
+    def test_scoped_real_write_failure_keeps_capture_and_replay_usable(self):
+        compiler = shutil.which('c++')
+        self.assertIsNotNone(compiler, 'The backing-I/O check requires a host C++ compiler')
+        with tempfile.TemporaryDirectory() as directory:
+            executable = Path(directory) / 'scoped-write-limit'
+            subprocess.run([compiler, '-std=c++17', '-Wall', '-Wextra', '-Werror', '-pthread',
+                            str(ROOT/'sim/host/backing_io.cpp'),
+                            str(ROOT/'sim/host/backing_io_posix.cpp'),
+                            str(ROOT/'tests/lemmasim/backing_scoped_write_limit.cpp'),
+                            '-o', str(executable)], check=True, timeout=60)
+            result = subprocess.run([str(executable), directory], capture_output=True,
+                                    text=True, timeout=20)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn('PASS actual scoped partial pwrite/EFBIG', result.stdout)
+
     def test_default_file_limit_signal_is_captured_without_global_policy_change(self):
         compiler = shutil.which('c++')
         self.assertIsNotNone(compiler, 'The backing-I/O check requires a host C++ compiler')

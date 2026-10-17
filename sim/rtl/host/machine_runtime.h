@@ -37,6 +37,10 @@ struct Options {
  uint32_t usb_host_clock_phase=0,usb_chip_clock_phase=0;
  std::string usb_peer_executable,usb_capture_path;
  std::string boot_capture_path,boot_replay_path;
+ // Native Laboratory environment; actual OS outcome is captured, never a
+ // guest error injection. Reapplied to each private POSIX fork in this owner.
+ // Relaunch requires explicit configuration or recorded outcomes.
+ std::optional<std::array<uint64_t,3>> boot_write_limit;
  std::vector<std::string> usb_peer_arguments;
  uint64_t ble_drop_packets=0;
  std::string ble_peer_executable,ble_capture_path,ble_replay_path,ble_wire_path;
@@ -174,6 +178,7 @@ class Machine {
  std::optional<BackingOutcome> poll_boot();
  void observe_boot(const BackingRecord&);
  void initialize_boot_io();
+ std::shared_ptr<BackingPlatform> boot_posix_platform(int);
  int medium=-1,backing_capture=-1;
  std::shared_ptr<BackingPlatform> backing;
  std::vector<TimedBackingRecord> backing_replay;

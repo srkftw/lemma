@@ -3,7 +3,7 @@
 Host code validates build provenance, transports opaque sectors and presents
 actual receipts. MAC checking, selection, loading and installation are Lean.
 """
-import argparse,fcntl,json,os,selectors,struct,subprocess,time,zlib
+import argparse,fcntl,json,os,re,selectors,struct,subprocess,time,zlib
 from pathlib import Path
 import lemmasim_product as product
 import lemmasim_session as sessions
@@ -15,6 +15,13 @@ ROOT=Path(__file__).resolve().parents[1]
 SCHEMA='lemma-development-auth-prepared/1'
 WATCHDOG_SCHEMA='lemma-development-auth-prepared/2'
 CAPABILITY=(2<<32)|65544
+def boot_write_limit(value,mode,threads,restoring=False):
+ if value is None:return None
+ if mode!='laboratory' or threads!=1 or restoring:raise ValueError('boot write limit requires a single-thread Laboratory cold launch')
+ if not isinstance(value,str) or not re.fullmatch(r'[0-9]{1,20}:[0-9]{1,20}:[0-9]{1,20}',value):raise ValueError('boot write limit requires decimal first:past:ceiling')
+ first,past,ceiling=map(int,value.split(':'))
+ if not 0<=first<past<=product.BOOT_BYTES or not 0<=ceiling<=product.BOOT_BYTES:raise ValueError('boot write limit outside actual raw backing')
+ return f'{first}:{past}:{ceiling}'
 def watchdog_policy(data):
  if data.get('schema')==SCHEMA and data.get('rom_configuration')==CONFIG:
   if 'boot_watchdog_contract' in data or 'trial_watchdog_clocks' in data:raise ValueError('legacy preparation cannot claim trial watchdog authority')
@@ -86,6 +93,9 @@ class AuthRTL(product.ProductRTL):
   if medium is None or medium.stat().st_size!=product.BOOT_BYTES:raise ValueError('exact blank/existing BootNV capacity required')
   self.boot_lock=medium.open('r+b');fcntl.flock(self.boot_lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
   command=[str(n['binary']),'--rom',str(r['binary']),'--boot-medium',str(medium.resolve()),'--descriptor',str((Path(args.prepared)/'descriptor.bin').resolve()),'--host-threads',str(args.host_threads),'--session','--quiet-uart','--uart-output',str(directory/'uart.bin'),'--input-capture',str(directory/'input.events'),'--boot-io-capture',str(directory/'boot.nvio'),'--backing-capture',str(directory/'backing.io'),'--fork-directory',str(directory),'--trace-limit',str(args.trace_limit),'--deadline',str(args.timeout)]
+  fault=None
+  if getattr(args,'boot_write_limit',None) is not None:fault=boot_write_limit(args.boot_write_limit,args.mode,args.host_threads,bool(args.restore))
+  if fault is not None:command+=['--boot-write-limit',fault]
   if args.disk is not None:command+=['--medium',str(args.disk.resolve())]
   if args.recovery:
    (directory/'initial-uart').write_bytes(b'R');command+=['--uart-input',str(directory/'initial-uart')]
@@ -118,6 +128,7 @@ def main(argv=None):
  a=sub.add_parser('archive');a.add_argument('--prepared',type=Path,required=True);a.add_argument('--output-dir',type=Path,required=True)
  a=sub.add_parser('create-medium');a.add_argument('--boot-medium',type=Path,required=True)
  a=sub.add_parser('launch');a.add_argument('--prepared',type=Path,required=True);a.add_argument('--session-dir',type=Path,required=True);a.add_argument('--boot-medium',type=Path);a.add_argument('--disk',type=Path);a.add_argument('--restore',type=Path);a.add_argument('--recovery',action='store_true');a.add_argument('--mode',choices=['student','developer','laboratory'],default='developer');a.add_argument('--paused',action='store_true');a.add_argument('--headless',action='store_true');a.add_argument('--timeout',type=int,default=120);a.add_argument('--quantum',type=int,default=1000000);a.add_argument('--tablet',type=Path);a.add_argument('--trace-limit',type=int,default=0);a.add_argument('--host-threads',type=int,default=1)
+ a.add_argument('--boot-write-limit',help='Laboratory Linux only: real scoped RLIMIT_FSIZE for writes intersecting first:past, ceiling in raw bytes; requires a supporting native build')
  for name in ('capacity','key-info','install','install-resume','tag','publish','status','boot'):
   a=sub.add_parser(name);a.add_argument('--session-dir',type=Path,required=True);a.add_argument('--timeout',type=int,default=120);a.add_argument('--cycles',type=int,default=10000000);a.add_argument('--quantum',type=int,default=100000);a.add_argument('--transaction',type=lambda x:int(x,0),default=time.time_ns());a.add_argument('--continue-recovery',action='store_true');a.add_argument('--slot',type=int,choices=[0,1],default=0);a.add_argument('--image-id',type=lambda x:int(x,0),default=0);a.add_argument('--package',type=Path);a.add_argument('--tag',type=Path)
  args=p.parse_args(argv)
@@ -132,6 +143,7 @@ def main(argv=None):
    result={'state':'blank raw backing; no payload/metadata/tag preinstalled','bytes':product.BOOT_BYTES}
   elif args.command=='launch':
    if not 1<=args.quantum<=1000000 or not 1<=args.timeout<=7200 or not 1<=args.host_threads<=64:raise ValueError('bounded launch required')
+   args.boot_write_limit=boot_write_limit(args.boot_write_limit,args.mode,args.host_threads,bool(args.restore))
    args.backend='rtl';args.workload='product';args.profile=inputs.EXECUTED_PROFILE;sessions.serve(args,AuthRTL,product.ProductSession);return 0
   else:
    if not 1<=args.quantum<=1000000 or not 1<=args.cycles<=2000000000 or not 1<=args.timeout<=7200:raise ValueError('bounded recovery required')

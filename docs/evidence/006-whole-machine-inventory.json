@@ -1014,10 +1014,34 @@
       "bytes": 2635,
       "status": "PASS_REOBSERVED_READER24_RAW25_PAGE26_ROOT27",
       "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "docs/evidence/006-canonical-native-browser-suffix.json",
+      "bytes": 25226,
+      "sha256": "0b6a09ed350eb6e2084886748df69572621753949607964b2d55d6c60141e279",
+      "scope": "Separate finite source/tool/result-bound milestone; retained failures and wider gaps explicit."
+    },
+    {
+      "path": "docs/evidence/006-trial-watchdog.json",
+      "bytes": 20336,
+      "sha256": "8c46ad38d5fbb2a95c2d9011fe2c49ec3db190546c57848cb0fa1c54227d4239",
+      "scope": "Separate finite source/tool/result-bound milestone; retained failures and wider gaps explicit."
+    },
+    {
+      "path": "docs/evidence/006-qemu-logical-softtlb.json",
+      "bytes": 25211,
+      "sha256": "8acb2fb6099cfed73c3f4b836b50aef8eef18617969becfdcf6257d8f82e4cb3",
+      "scope": "Separate finite source/tool/result-bound milestone; retained failures and wider gaps explicit."
+    },
+    {
+      "path": "docs/evidence/006-pen-sram.json",
+      "bytes": 30395,
+      "sha256": "a4d90da869580ab1c891c61ff66b00e18f90a07e733d07ebdfaeee638b938abb",
+      "scope": "Separate finite source/tool/result-bound milestone; retained failures and wider gaps explicit."
     }
   ],
   "prior_implementation_commit": "d8d7b0cc306a91a113b5a95e964a2a19313f457d",
-  "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
+  "fast_checkpoint_limit": "GAP_CONFIRMED: default QEMU omits logical soft TLB/TB/jump contents. Opt-in sidecar now qualifies finite data and two executable/modification/fence states; broader cache/interrupt/pending-work and public session adoption remain open.",
   "continuation_note": "New ordinary dirtybatch9 compiled full canonical pair/audits PASS and actual42phasefast plus real partialpwrite/failure/newcold/retry PASS;2,615,000,279->2,302,000,127 instructionclocks(11.97%), not RTLtiming. Same newguest paired native/browser and extracted local packages; real extracted initializer passes. Canonical RTL and browser retained-medium cold/workflows running under originalbounds. Older Product10 authenticatedfullcold PASS; companionSaved12 scenario still owned/running. Digital, fast/checkpoint, distribution and physical completion remain separate. New opt-in rawUART1 now enables actual fresh guestcourseinstallation in same fastmachine; full44phase math/ink/cold, nonemptyUART/queue privatefork and offline13outcome replay pass. See fast_uart_milestone; timing/cache/fullproduct gates stayopen.",
   "package_closure_milestone": {
     "implementation_source": "ad897e1d5ceb3e64936c7ffa4cda805bb3c3922b",
@@ -1068,31 +1092,54 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "source": "Actual GitHub fetch_commit_workflow_runs and fetch_workflow_run_jobs tool observations, October17. No local test inference.",
-    "commit": "e2b27c79a029898c4376d7eeebaf0653a60f746b",
-    "workflow_run_id": 39050548744,
-    "run_number": 164,
+    "source": "Actual GitHub workflow tool results, October17; no local test inference.",
+    "commit": "8e3506cf0ca0a94bec5aef9151b4b7565a5942c8",
+    "workflow_run_id": 39062035567,
+    "run_number": 168,
     "status": "completed",
     "conclusion": "success",
+    "url": "https://github.com/srkftw/lemma/actions/runs/39062035567",
+    "scope": "Actual complete published8e workflow; later scoped-I/O changes require their own candidate run.",
+    "previous99": {
+      "commit": "99e27ce8ff814fda92c29f4beefe687cf17429ce",
+      "run_id": 39057257719,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": 11,
+      "steps": 117,
+      "skipped_steps": 0
+    },
+    "retained_previous_observation": {
+      "source": "Actual GitHub fetch_commit_workflow_runs and fetch_workflow_run_jobs tool observations, October17. No local test inference.",
+      "commit": "e2b27c79a029898c4376d7eeebaf0653a60f746b",
+      "workflow_run_id": 39050548744,
+      "run_number": 164,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": 11,
+      "steps": 117,
+      "skipped_steps": 0,
+      "failed_steps": 0,
+      "successful_step_counts_in_actual_returned_job_order": [
+        25,
+        8,
+        12,
+        10,
+        8,
+        9,
+        9,
+        9,
+        9,
+        9,
+        9
+      ],
+      "url": "https://github.com/srkftw/lemma/actions/runs/39050548744",
+      "scope": "Published e2 backlog-v1 candidate only; local post-overflow ink FAIL and later uncommitted home-ink successor remain separate."
+    },
     "jobs": 11,
     "steps": 117,
     "skipped_steps": 0,
-    "failed_steps": 0,
-    "successful_step_counts_in_actual_returned_job_order": [
-      25,
-      8,
-      12,
-      10,
-      8,
-      9,
-      9,
-      9,
-      9,
-      9,
-      9
-    ],
-    "url": "https://github.com/srkftw/lemma/actions/runs/39050548744",
-    "scope": "Published e2 backlog-v1 candidate only; local post-overflow ink FAIL and later uncommitted home-ink successor remain separate."
+    "failed_steps": 0
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1260,11 +1307,11 @@
     "evidence": "docs/evidence/006-pen-sram.json",
     "separate_maintained_option": {
       "behavior": "Same controller, opt-in IHP_SRAM=1/full256/all181bits; default banks retained.",
-      "RTL": "Real vendor fullfield/miter/mutants PASS; default devices PASS. Mapped6820cells/866FF/3realmacros,17cell raw-time to all64 sequenceD,5.150655s.",
+      "RTL": "Current full256/default/real4state SRAM/mutations PASS7.871752s; original full-width sample-range cones isolated during mapping,6623cells vs6820/same866FF/3SRAMs, timestamp depth18vs17 within unchanged20.",
       "guest": "Target unchanged; prior archived guest/runtime cases keep their identities.",
       "state": "Not enabled in native/Wasm profiles; SRAM logical-state/checkpoint admission open.",
       "distribution": "Reproducible host qualification command, pinned existing public PDK objects; no physical device or rights closure.",
-      "physical": "Private route candidates FAIL. Maintained option routing/processDRC/LVS/PEX/PVT/power/test/fullSoC remain open."
+      "physical": "Changed range-cone route FAIL before OpenROAD due actual available RAM below unchanged8GiB launch floor; prior prototype failures retained. No new delay/routing/process/PEX/PVT claim."
     },
     "previous_attempt": {
       "source": "57e5c681165869e9b33a6da1ab069d36a7e47f2ae9eda13311a8b5a2d399a1cc",
@@ -1277,6 +1324,14 @@
       "hold_global_wns_ns": 0.032945,
       "adopted": false,
       "disposition": "Changed-source readiness FF candidate rejected after actual900s detailed-route timeout and worse setup WNS. All256entries retained; maintained RTL/clock/rules unchanged. No processDRC/LVS/PEX/timing/full-chip acceptance."
+    },
+    "new_changed_maintained_attempt": {
+      "status": "FAIL_BEFORE_OPENROAD_LAUNCH_RAM_FLOOR",
+      "plan": "build/silicon/pen-sram-range-route-plan-a1/plan.json",
+      "supervision": "build/silicon/pen-sram-range-route-supervision-a1/result.json",
+      "geometry_preflight": "PASS actual three macros/nonoverlap/a4 rectangles",
+      "original_launch_floor_bytes": 8589934592,
+      "route_executed": false
     }
   },
   "portable_host_index_milestone": {
@@ -1962,7 +2017,16 @@
       "all_backing_bytes": 268435456,
       "snapshot_cold_input": false,
       "fixed600M": "PASS complete600M/900M/901M native/Wasm relation; idle WFI1M suffix with zero retired instructions. Full current browserD pending.",
-      "evidence": "docs/evidence/006-browser-controller-image.json"
+      "evidence": "docs/evidence/006-browser-controller-image.json",
+      "later_saved48_close": {
+        "status": "PASS_BROWSER_CLOSED_HOME_ALL_PIXELS_AND_SAVED48_BACKING",
+        "receipt": "build/browser/task006-hint-publication-save32-plan-a1/actual-closed-home-a1.json",
+        "sha256": "508a5e652f305c6b46bc1712232505b9cc060888f589f7929ef0a16b22fd55d3",
+        "phase_clocks": 354550000,
+        "all_home_pixels": 3630000,
+        "all_medium_bytes": 268435456,
+        "durable_only_reopen": "RUNNING same OPFS medium/observedCPU0/no import or snapshot; original00:26:11.452097Z whole deadline retained"
+      }
     }
   },
   "qualified_fast_file_limit_control": {
@@ -1981,15 +2045,17 @@
   },
   "trial_boot_watchdog1": {
     "behavior": "Versioned ROM arms independent20s trial watchdog; separate kernel disarms after actual durable confirmation",
-    "model": "Existing Power-v2 retained; exact reset-edge continuation currently running",
-    "RTL": "Three actual authenticated arms and two brownout reboots observed; expiry/fallback still running",
-    "guest": "Genuine ROM PASS76.72s; complete451-input RV64 image passes corrected strict linked re-audit335.68s; original552.45s whole audit failure retained. Healthy-disarm and stalled2B expiry/fallback still running.",
+    "model": "Existing Power-v2; actual private64-clock watchdog reset suffix PASS.",
+    "RTL": "Three authenticated stalled trials/two brownouts/2B watchdog clocks with zero retired delta; exact expiry/reset and confirmed13 full notebook fallback PASS14263.804878s.",
+    "guest": "Genuine ROM and original451-input image strict re-audit pass. Actual image15 healthy trial arm/durable confirmation/disarm observed, original full campaign FAIL at unclocked reset observer retained; separate confirmed cold running. Actual stalled-trial fallback preserves all3.63Mhome/all256MiB. Current v2 product16 complete457-input audit passes; actual full update running.",
     "distribution": "Explicit prepared schema2 with exact ROM/source/artifact validation; production trust open",
     "physical": "No new physical qualification",
     "evidence": {
       "path": "docs/evidence/006-trial-watchdog.json",
-      "sha256": "8048b6eab07bc5ac1bd375e88b7e31aebf11f973e0dd7d7a8ed95f107c5cde27"
-    }
+      "sha256": "7a5acb158437c6d81d86bcab5998dfc1c52ddeb76099d3a9e9257a31baf6a0ad",
+      "bytes": 23359
+    },
+    "confirmed_image15_cold": "PASS_SEPARATE_NORMAL_ROM_COLD_READER_961M_6947s_ORIGINAL_FULL_CAMPAIGN_FAIL_RETAINED"
   },
   "control_backlog_component_milestone": {
     "status": "LINKED_V1_PAIR_PASS_WITH_RETAINED_POST_OVERFLOW_INK_FAIL",
@@ -2112,7 +2178,15 @@
         "browser": "build/distribution/task006-control-backlog-home-browser-a1",
         "browser_archive_bytes": 2096227,
         "browser_archive_sha256": "0ec8dfb6216f21742cbf07e0285338af979a8fb3816d4b79ebaa350cd12d482c",
-        "scope": "Prepared validated bundles; same original native/RTL/Wasm cores with genuine new guest pair. Packaging does not qualify browser execution, clean-host install or redistribution rights."
+        "scope": "Prepared validated bundles; same original native/RTL/Wasm cores with genuine new guest pair. Packaging does not qualify browser execution, clean-host install or redistribution rights.",
+        "browser_execution": {
+          "status": "RUNNING_ACTUAL_CURRENT_GUEST_CPU0_COLD",
+          "plan": "build/browser/task006-control-backlog-home-browser-plan-a1/plan.json",
+          "origin": "http://127.0.0.1:8818/",
+          "browser_tab": 23,
+          "source_medium": "actual installed3, opaque privately imported; no snapshot cold input",
+          "bounds": "Prospective12h/6B/2GiB worker heap/3GiB retained output; first cold1B/7200s; no deadline transfer from older tab22."
+        }
       },
       "real_failed_save": {
         "status": "PASS_REAL_FAST_PWRITE_FAILURE_REPLAY_INDEPENDENT_COLD_SAVE32",
@@ -2126,5 +2200,44 @@
         "owned_survivors": {}
       }
     }
+  },
+  "latest_increment_implementation": "8e3506cf0ca0a94bec5aef9151b4b7565a5942c8",
+  "active_native_wasm_math_suffix": {
+    "behavior": "Same existing RTL Machine and old current-hint guest execute actual numeric/checker/Store suffix; original snapshots restored only into their own private backend.",
+    "model": "No new emulator or timing scaling.",
+    "RTL": "437250000 clocks/204137514 retired; full authoritative bytes/CRCs/UART/pixels/media and54 I/O outcomes exact under original identity-header-only relation.",
+    "guest": "Actual isolated check and durable authored hint publication; all18 original raw controls at six recorded admission boundaries.",
+    "state": "Finite selected active suffix PASS3122.077395s; no QEMU/arbitrary-boundary/full-ISA/crossrestore claim.",
+    "distribution": "Same existing native and Wasm cores; no new bundle or clean-host import claim.",
+    "physical": "Not a physical claim.",
+    "evidence": "docs/evidence/006-canonical-native-browser-suffix.json"
+  },
+  "logical_executable_cache_suffix": {
+    "behavior": "Guest-issued stale executable PTE/SFENCE, actual compiled-code copy without/with FENCE.I.",
+    "model": "Opt-in logical SoftTLB experimental binding; corrected legal private incoming lifecycle. Default adapter unchanged.",
+    "RTL": "No RTL change in this experiment.",
+    "guest": "44 fresh genuine Lean modules -> checked kernel-v0.4 -> LLVM -> audited RV64 leafs, PASS165.713594s.",
+    "state": "Two actual selected caches/private fork suffixes PASS10.126189s; all declared logical state/observed architectural/device state and applicable UART exact. Capture5JIT counters unchanged; broad continuation GAP_CONFIRMED.",
+    "distribution": "Separate retained ceabdf19 host executable, actual guarded8-file preparation PASS; no new full Nix package/adoption claim.",
+    "physical": "Not a physical claim.",
+    "evidence": "docs/evidence/006-qemu-logical-softtlb.json"
+  },
+  "scoped_boot_write_fault": {
+    "status": "IMPLEMENTED_COMPONENT_TESTED_CONNECTED_METADATA_NOT_RUN",
+    "evidence": "docs/evidence/006-trial-watchdog.json",
+    "contract": "docs/contracts/006-backing-io-v1.md",
+    "public_command": "lemmasim-auth launch --boot-write-limit FIRST:PAST:CEILING; Laboratory/single-thread/cold only",
+    "native_runtime_identity": "677aacbc0c1dc2cea5658357e7ad992b0d91ca63a4504c69a43e42ead097bd4d",
+    "guest_semantics": "Unchanged Lean image installation/authentication/journal; host scopes real POSIX syscall failure and verifies byte effects.",
+    "host_tests": {
+      "lemmasim": 329,
+      "boot": 39,
+      "scaffold": 18
+    },
+    "limitations": [
+      "New fixed full-image/torn-metadata guest recovery case not yet executed.",
+      "External Linux environment is not portable authoritative snapshot state.",
+      "Full interrupted update matrix and production trust remain open."
+    ]
   }
 }

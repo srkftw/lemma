@@ -721,7 +721,8 @@ void Machine::restore(const std::string&path){if(usb_capture_failed)throw std::r
  }
  if(replacement.boot_pending&&!replacement.boot_orphan&&(!restored->boot_media_valid||restored->boot_media_id!=replacement.boot_request_id||restored->boot_media_origin!=replacement.boot_request_origin||restored->boot_media_kind!=replacement.boot_request_kind||restored->boot_media_sector!=replacement.boot_request_sector))throw std::runtime_error("boot wrapper/generated controller ownership mismatch");
  PrivateMedium boot_fork;if(replacement.boot_medium_present)boot_fork.create(options.fork_directory,replacement.accepted_boot_medium,BINDING_BOOT_NV_CAPACITY_SECTORS,"boot-medium-fork-");
- std::shared_ptr<BackingPlatform>replacement_boot=boot_fork.fd>=0?std::make_shared<PosixBacking>(boot_fork.fd):nullptr;
+ if(options.boot_write_limit&&!replacement.boot_medium_present)throw std::runtime_error("configured boot write fault requires restored backing");
+ std::shared_ptr<BackingPlatform>replacement_boot=boot_fork.fd>=0?boot_posix_platform(boot_fork.fd):nullptr;
  PrivateCapture boot_branch;if(boot_capture>=0){if(boot_capture_branch==UINT64_MAX)throw std::runtime_error("boot capture branch exhausted");boot_branch.create(options.boot_capture_path,boot_capture_branch+1,replacement.boot_pending,"LMNVLOG2");}
  PrivateMedium fork;if(replacement.medium_present)fork.create(options.fork_directory,replacement.accepted_medium);
  std::shared_ptr<BackingPlatform>replacement_backing=fork.fd>=0?std::make_shared<PosixBacking>(fork.fd):nullptr;

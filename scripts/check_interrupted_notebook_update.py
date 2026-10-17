@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Partial inactive notebook payload -> real brownout -> independent ROM cold
-boot of the confirmed notebook, preserving every acknowledged document byte.
+"""Guest update interruption followed by independent immutable-ROM cold recovery.
 
-Sixteen actual WRITE/BARRIER transactions precede interruption. No tag or trial
-metadata is published. This qualifies an interruption between sector barriers,
-not an in-flight write, metadata/confirmation interruption or production trust.
+The original payload case stages sixteen sectors, obtains a fresh STATUS
+barrier, then brownouts before tag/publication. The metadata case transfers the
+complete fixed image/tag and captures a real partial metadata pwrite/EFBIG
+before brownout. Neither qualifies in-flight brownout, confirmation interruption
+or production trust. Both compare every acknowledged document byte/home pixel.
 """
 import argparse
 import filecmp
@@ -14,6 +15,7 @@ from pathlib import Path
 import resource
 import shutil
 import signal
+import struct
 import subprocess
 import sys
 import time
@@ -25,6 +27,7 @@ import lemmasim_session as sessions
 from check_development_install_resume import metadata
 from check_live_notebook import guest_events, visible_pixels
 from product_native import sha
+from check_companion_pending import timed_records
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -34,12 +37,25 @@ def require(value, message):
         raise RuntimeError(message)
 
 
+def interruption_spec(cut):
+    # Distinct prospectively fixed workloads. The original sixteen-sector
+    # case keeps every original ceiling. Metadata needs the whole1059-sector
+    # payload and real authentication, bounded by prior observed full installs.
+    if cut == 'payload':
+        return 16, 300000000, 2400, 1800000000, 14400
+    if cut == 'metadata':
+        return 1059, 900000000, 7200, 2400000000, 21600
+    raise ValueError('unknown interruption workload')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     for name in ('prepared', 'known-package', 'package', 'tag', 'boot-medium',
                  'disk', 'expected-home', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--public-development-key', action='store_true', required=True)
+    parser.add_argument('--cut',choices=('payload','metadata'),default='payload',
+                        help='metadata: complete actual payload/tag, failed real partial metadata pwrite, then brownout/cold')
     args = parser.parse_args()
     for number in (signal.SIGTERM, signal.SIGINT):
         signal.signal(number, lambda code, frame: (_ for _ in ()).throw(SystemExit(128 + code)))
@@ -50,13 +66,14 @@ def main():
                         (resource.RLIMIT_CORE, 0)):
         resource.setrlimit(key, (amount, amount))
     began = time.monotonic()
-    deadline = began + 14400
+    sectors, transfer_clocks, transfer_seconds, aggregate, whole_seconds = interruption_spec(args.cut)
+    deadline = began + whole_seconds
     used = 0
     processes = []
     report = {'schema': 'lemma-interrupted-notebook-update/1', 'status': 'RUNNING',
-              'scope': __doc__, 'phases': [], 'bounds': {'whole_seconds': 14400,
-              'aggregate_RTL_clocks': 1800000000, 'partial_clocks': 300000000,
-              'partial_seconds': 2400, 'cold_clocks': 1500000000,
+              'scope': __doc__, 'cut':args.cut, 'phases': [], 'bounds': {'whole_seconds': whole_seconds,
+              'aggregate_RTL_clocks': aggregate, 'partial_clocks': transfer_clocks,
+              'partial_seconds': transfer_seconds, 'cold_clocks': 1500000000,
               'cold_seconds': 11200, 'per_process_AS_bytes': 4 << 30,
               'file_bytes': 1 << 30, 'automatic_restart': False}}
 
@@ -65,7 +82,7 @@ def main():
         (out / 'progress.json').write_text(json.dumps(report, indent=2) + '\n')
 
     def guard():
-        require(time.monotonic() < deadline and used <= 1800000000, 'prospective whole bound')
+        require(time.monotonic() < deadline and used <= aggregate, 'prospective whole bound')
         require(all(sha(ROOT / path) == digest for path, digest in report['host_inputs'].items()),
                 'consumed host source changed')
 
@@ -82,6 +99,7 @@ def main():
                 '--host-threads', '1']
         if recovery:
             argv.append('--recovery')
+            if args.cut=='metadata':argv+=['--boot-write-limit',report['fault_environment']]
         with (out / (name + '.log')).open('xb') as stream:
             process = subprocess.Popen(argv, cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT,
                                        start_new_session=True)
@@ -123,6 +141,13 @@ def main():
                 'fixed previously qualified confirmed notebook13 package required')
         original = args.boot_medium.read_bytes()
         old_metadata = metadata(original)
+        if args.cut=='metadata':
+            chosen=[i for i in (0,1) if struct.unpack_from('<64Q',original,i*512)==old_metadata]
+            require(len(chosen)==1,'unique actual current metadata sector required')
+            destination=1-chosen[0]
+            report.update(schema='lemma-interrupted-notebook-update/2',
+                scope='Complete actual1059-sector inactive payload/tag, real scoped partial metadata pwrite/EFBIG, no publication receipt, brownout and independent normal ROM known13 cold. In-flight brownout/barrier/confirmation matrix and production trust remain open.',
+                fault_environment=f'0:1024:{destination*512+256}',metadata_destination=destination)
         require(old_metadata[3:8] == (1, known['identity'], 2, 0, 0)
                 and original[32776 * 512:32776 * 512 + len(known_wire)] == known_wire,
                 'actual confirmed/no-trial source differs')
@@ -148,32 +173,80 @@ def main():
         shutil.copyfile(args.boot_medium, out / 'boot.raw')
         shutil.copyfile(args.disk, out / 'user.raw')
         live = launch('partial', True)
-        client = auth.RecoveryClient(SimpleNamespace(session_dir=live, timeout=2400,
-            cycles=299999800, quantum=100000, transaction=100))
+        client = auth.RecoveryClient(SimpleNamespace(session_dir=live, timeout=transfer_seconds,
+            cycles=transfer_clocks-200, quantum=100000, transaction=100))
         report['beacon'] = client.beacon()
         auth.product.install_extent(package, wire, client.call({'action': 'inspect'})['identity'])
         receipts = []
-        for index in range(16):
+        for index in range(sectors):
             row = client.send(1, 0, index, package['identity'], wire[index * 512:(index + 1) * 512])
-            require(row['status'] == 0, 'actual inactive payload WRITE/BARRIER failed')
+            require(row['status'] == 0, 'actual inactive payload staging WRITE failed')
             receipts.append(row)
-        status = client.send(4, 0, identity=package['identity'])
-        require(status['status'] == 217 and status['value'] == 0,
-                'incomplete untagged payload obtained an installation receipt')
+        if args.cut=='payload':
+            status = client.send(4, 0, identity=package['identity'])
+            require(status['status'] == 217 and status['value'] == 0,
+                    'incomplete untagged payload obtained an installation receipt')
+            tape=live/'boot.nvio'
+            require(tape.read_bytes()[8:72].decode()==prepared['runtime_identity'],'actual BootNV capture identity')
+            io,pending=timed_records(tape,b'LMNVLOG2')
+            writes=[r for r,t in io if r[2]==1]
+            barriers=[r for r,t in io if r[2]==2]
+            require(pending is None and len(writes)==16 and len(barriers)==1 and
+                    all(r[6]==0 for r,t in io) and barriers[0][0]>writes[-1][0],
+                    'staging writes lack actual later successful STATUS barrier')
+            report['staging_durability']={'write_operations':16,'status_barriers':1,
+                'barrier_id':barriers[0][0],'last_write_id':writes[-1][0],
+                'semantics':'Sector transport responses alone are not durable installation receipts.'}
+        else:
+            tag=client.send(5,0,identity=package['identity'],payload=args.tag.read_bytes())
+            require(tag['status']==0,'actual complete candidate tag receipt failed')
+            before_publish=call(live,{'action':'inspect'})['machine']['boot_backing']
+            status=client.send(2,0,identity=package['identity'])
+            require(status['status']==212 and status['value']==0,'torn metadata obtained a publication receipt')
+            after_publish=call(live,{'action':'inspect'})['machine']['boot_backing']
+            tape=live/'boot.nvio'
+            require(tape.read_bytes()[8:72].decode()==prepared['runtime_identity'],'actual BootNV capture identity')
+            io,pending=timed_records(tape,b'LMNVLOG2')
+            failed=[r for r,t in io if r[6]]
+            publication=[r for r,t in io if r[0]>=before_publish['next_id']]
+            # finishInstall first barriers payload/tag, then verifies image
+            # bytes. That success cannot make the later torn metadata durable.
+            barriers=[r for r in publication if r[2]==2]
+            require(pending is None and len(failed)==1 and
+                    failed[0][2:]==(1,destination*512,512,256,27) and
+                    failed[0][0]==after_publish['completed'] and
+                    len(barriers)==1 and barriers[0][6]==0 and barriers[0][0]<failed[0][0] and
+                    after_publish['durable_barrier']==barriers[0][0] and
+                    [r for r in publication if r[2]==1]==failed and
+                    io[-1][0]==failed[0], 'actual partial metadata pwrite/error/barrier capture differs')
+            report['metadata_failure']={'tag':tag,'publish':status,'actual_failed_IO':list(failed[0]),
+                'durable_barrier_before':before_publish['durable_barrier'],
+                'payload_tag_barrier_during_validation':barriers[0][0],
+                'durable_barrier_after':after_publish['durable_barrier']}
         used += client.used
-        require(used <= 300000000 and time.monotonic() - began <= 2400,
+        require(used <= transfer_clocks and time.monotonic() - began <= transfer_seconds,
                 'prospective partial-transfer bound')
         partial = boot_bytes(live, 'actual-partial')
-        start, end = 8 * 512, (8 + 16) * 512
-        require(partial[:start] == original[:start] and partial[start:end] == wire[:16 * 512]
-                and partial[end:] == original[end:] and metadata(partial) == old_metadata,
-                'actual partial staging altered metadata, known image or bytes outside16sectors')
+        start, end = 8 * 512, (8 + sectors) * 512
+        expected=bytearray(original);expected[start:end]=wire[:sectors*512]
+        if args.cut=='metadata':
+            expected[2*512:3*512]=args.tag.read_bytes()
+            at=destination*512
+            header=struct.unpack_from('<9Q',partial,at)
+            require(header[:5]==old_metadata[:2]+(old_metadata[2]+1,)+old_metadata[3:5] and
+                    header[5:]==(0,package['identity'],0,3), 'actual torn metadata header differs')
+            # Only the independently recorded partial256-byte write may differ.
+            # These observed bytes never enter a machine or medium as input.
+            expected[at:at+256]=partial[at:at+256]
+            require(partial[at:at+256]!=original[at:at+256], 'failed write was silently rolled back')
+        require(partial==bytes(expected) and metadata(partial)==old_metadata,
+                'actual staging changed known image, authoritative metadata or bytes outside admitted effects')
         before = call(live, {'action': 'inspect'})['machine']
         call(live, {'action': 'inject', 'kind': 'brownout', 'level': 1})
         call(live, {'action': 'run', 'cycles': 200})
         used += 200
         unsafe = call(live, {'action': 'inspect'})['machine']
-        require(used <= 300000000 and time.monotonic() - began <= 2400,
+        require(used <= transfer_clocks and time.monotonic() - began <= transfer_seconds,
                 'prospective partial-transfer/reset bound')
         require(unsafe['cycle'] == before['cycle'] + 200 and unsafe['power']['domain_reset'] == 1
                 and unsafe['power']['reset_cause'] == 5 and unsafe['power']['watchdog_armed'] == 0
@@ -182,7 +255,7 @@ def main():
         require(boot_bytes(live, 'actual-brownout') == partial,
                 'brownout changed acknowledged staging or confirmed metadata')
         report['partial'] = {'receipts': receipts, 'uninstalled_status': status,
-                             'before': before, 'brownout': unsafe, 'sectors': 16}
+                             'before': before, 'brownout': unsafe, 'sectors': sectors}
         save()
         close(live)
         require((out / 'boot.raw').read_bytes() == partial and
@@ -225,9 +298,12 @@ def main():
         guard()
         require(all(sha(Path(path)) == digest for path, digest in report['original_inputs'].items()),
                 'original immutable inputs changed')
-        report.update(status='PASS_PARTIAL_NOTEBOOK_UPDATE_BROWNOUT_INDEPENDENT_CONFIRMED_COLD',
+        report.update(status=('PASS_PARTIAL_NOTEBOOK_UPDATE_BROWNOUT_INDEPENDENT_CONFIRMED_COLD' if args.cut=='payload'
+                             else 'PASS_REAL_TORN_METADATA_PUBLISH_BROWNOUT_INDEPENDENT_CONFIRMED_COLD'),
                       all_home_pixels=3630000, all_user_bytes=268435456,
-                      qualification='Between-barrier payload interruption only; no full update-interruption matrix or production trust claim')
+                      qualification=('Between-barrier payload interruption only' if args.cut=='payload' else
+                                     'Real partial-pwrite metadata publication failure then brownout')+
+                                    '; no full update-interruption matrix or production trust claim')
     except BaseException as error:
         report.update(status='FAIL', error=repr(error))
     finally:

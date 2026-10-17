@@ -2666,7 +2666,9 @@ trial; `lemmasim-silicon-product-course-watchdog-bulk-notebook` disarms after th
 original durable health confirmation. Old boot configurations remain available.
 The current genuine451-input image passes the complete linked audit after a
 new-deployment NumberPad observer repair; its original failure is retained.
-Actual healthy-disarm and stalled-watchdog/fallback campaigns remain running.
+The stalled-trial watchdog/fallback campaign passed. The original healthy
+image15 campaign retains its cold-reset observer failure; a separate confirmed
+cold/reader run now passes without rerunning installation.
 This still uses the public development key and has no production trust claim.
 
 ```sh
@@ -2723,7 +2725,8 @@ checks remain strict. Its `--confirmed-from /absolute/RETAINED_CAMPAIGN` option
 performs a separately labeled confirmed-cold/course qualification from the
 retained actual medium, without rerunning installation or erasing the FAIL.
 `scripts/check_interrupted_notebook_update.py --help` describes the new bounded
-partial-payload/brownout/known-notebook cold scenario; its execution is pending.
+partial-payload/brownout/known-notebook cold scenario; it passed with every
+acknowledged document byte and complete controller home recovered.
 
 The same home-ink source also passes the complete ProductWatchdog image build
 and linked audit. Its457-input archive and1068-sector image16 preserve the
@@ -2753,3 +2756,27 @@ Start with private copies of the confirmed boot and user media. Omit
 `--recovery` on a subsequent launch to execute the immutable ROM's normal
 selection/loading path. Production identity, loader-stage supervision and the
 full interrupted-update matrix remain open.
+
+
+For native Laboratory boot-medium faults, the public development launcher
+accepts `--boot-write-limit FIRST:PAST:CEILING` on a single-thread cold launch.
+It scopes an actual Linux file-size limit only around overlapping backing
+writes, preserving outcome and UART capture. For example, `0:1024:768` permits
+only256 bytes of a512-byte metadata-sector1 write. The resulting bytes and
+`EFBIG` are captured before guest completion; an error is not rollback. This
+flag requires the new source-bound native runtime/preparation and is rejected
+in Student/Developer modes or restore/replay launches.
+
+```sh
+./scripts/lemmasim-auth --public-development-key launch \
+  --prepared build/boot/task006-scoped-boot-write-prepared-a3 \
+  --boot-medium /absolute/PRIVATE_BOOT.raw --disk /absolute/PRIVATE_NOTEBOOK.raw \
+  --session-dir /absolute/UNUSED_SESSION --recovery --mode laboratory \
+  --host-threads 1 --paused --headless --boot-write-limit 0:1024:768
+```
+
+The existing `install-resume` command sends opaque image/tag transactions to
+that guest recovery session. `scripts/check_interrupted_notebook_update.py
+--cut metadata --help` exposes the bounded connected partial-metadata-write,
+brownout and independent known-good cold-recovery check; its result is separate
+from the passing partial-payload check and full interrupted-update matrix.

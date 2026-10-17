@@ -127,8 +127,12 @@ and fresh image-status reconciliation 4 (confirmed 1 / trial 2). Responses have
 magic `0x3154504345524d4c`, transaction, actual status, value and CRC32 of the
 first 32 bytes. UART polls have 100,000-iteration bounds; synchronization and
 the command loop each have 65,536-step bounds. Corrupt/partial frames produce
-no installation effects and synchronize on a fresh magic. A receipt follows
-the relevant actual barrier, never an in-memory write alone. Status opcode4
+no installation effects and synchronize on a fresh magic. Opcode1 returns a
+staging/transport response after its actual sector write; that response alone
+does not acknowledge durability or image installation. Durable publication
+and reconciliation receipts follow their relevant actual barriers, never an
+in-memory write alone. (The earlier blanket phrase "a receipt" was overbroad;
+capacity, staging and key-info responses do not claim durability.) Status opcode4
 performs a fresh barrier, selects fresh metadata and verifies the entire matching
 image and discovery bytes before returning confirmed/trial. An earlier failed
 barrier or corrupt image cannot be reconciled by a metadata read alone. Status

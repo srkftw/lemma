@@ -16,8 +16,9 @@ from check_live_notebook import (Input, ROOT, committed_bytes, generate,
                                 sha, visible_pixels)
 
 
-def timed_records(path):
-    raw=Path(path).read_bytes();require(raw[:8]==b'LMIOLOG2' and len(raw)>=72,'missing timed capture')
+def timed_records(path,expected_magic=b'LMIOLOG2'):
+    require(expected_magic in (b'LMIOLOG2',b'LMNVLOG2'),'unknown timed backing kind')
+    raw=Path(path).read_bytes();require(raw[:8]==expected_magic and len(raw)>=72,'missing timed capture')
     position=72;pending=None;rows=[]
     while position<len(raw):
         require(position+16<=len(raw),'timed entry header truncated')

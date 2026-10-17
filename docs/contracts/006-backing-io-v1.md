@@ -211,3 +211,31 @@ private VM; the corrected workflow clears the limit with zero guest clocks,
 then requires the complete Failed display and absence of Saved. Actual partial
 bytes/errors are replayed without recreating the OS fault. A new CPU then cold
 recovers the acknowledged bytes from the observed partial medium.
+
+
+The native Linux POSIX implementation independently reads the selected extent
+before and after each buffered write. It verifies the returned prefix against
+actual bytes, without issuing a barrier. A failed preflight precedes any write;
+a failed post-observation or bytes outside the reported prefix poison the owner
+before completion. This does not assume an error rolled back the medium, and
+does not claim persistence across physical host failure.
+
+The public-development-auth launcher adds Laboratory-only
+`--boot-write-limit FIRST:PAST:CEILING` for a cold, single-thread native session.
+For actual BootNV writes overlapping the half-open byte range, the POSIX adapter
+scopes the real soft `RLIMIT_FSIZE` to CEILING; the hard limit is unchanged. It
+restores the prior policy before returning the outcome or writing capture/UART
+logs. Reads, barriers and unrelated writes retain their ordinary behavior. The
+adapter checks that exactly one host thread exists at each selected operation;
+restoration failure terminates instead of leaking policy into the logger.
+Student/Developer, multithreaded, restore and live replay admissions reject.
+This is an explicit external Linux environment, not portable snapshot state.
+The same owner's private fork retains its configured condition; a new owner
+requires explicit configuration or recorded outcomes. Recorded replay applies
+only captured byte effects to private backing, without applying the live limit.
+
+Focused tests exercise real partial256/EFBIG, unchanged signal/process policy,
+unaffected unrelated writes/logging, recorded private replay and concurrent
+thread rejection. These component results do not establish guest boot recovery;
+`check_interrupted_notebook_update.py --cut metadata` performs that separate
+fixed1059-sector image15 workload under its prospectively declared bounds.
