@@ -51,6 +51,9 @@ Developer/Laboratory expose raw input, inspection, bounded runs, checkpoint
 export/restore into private forks and offline outcome replay. Restoring a
 checkpoint is continuation; Open from raw backing is cold recovery. A bounded
 prefix or a packaging check is not Notebook Ready or complete course acceptance.
+Changing machines while a selected file loads cancels that selection; choose it
+again in the new machine. Import destinations and installation transactions
+belong to the original selection, even if their fields are edited during loading.
 Stop the server with Ctrl-C. The server does not send documents or other data
 to a remote service. See NOTICE.txt and bundle/DEPENDENCIES.txt for limitations.
 '''

@@ -307,3 +307,27 @@ through the existing worker and modeled pen controller; replay uses recorded
 admitted words. Host DOM/device fixtures qualify this boundary separately from
 real browser gestures and RV64/controller execution. Existing bundles retain
 their recorded app source; a source change requires a new immutable bundle.
+
+## Selected files and machine lifetime
+
+File reading precedes worker admission. Only the latest selected file operation
+may submit its bytes. Open, Create, Close, Warm reset, Cold cycle, mode changes and an observed
+backing-machine replacement cancel unfinished selections. A canceled read sends
+no operation to the worker, advances no virtual clock and does not flush or
+alter the machine. It is distinct from canceling an already admitted device or
+backing request. Such requests retain the existing machine/controller policy.
+
+Import/replay destination and mode, and the course installation transaction,
+are captured before reading. Editing a field cannot pair earlier bytes with a
+later destination or transaction. Transaction strings stay exact across the
+JavaScript boundary. A newer checkpoint selection supersedes an older read,
+including when reads finish out of order. Replay stops reading later files when
+superseded. Current read failures are reported locally; obsolete read failures
+cannot replace a newer operation's status. Auto-submit controls still clear
+their consumed selection so the identical file can be chosen again.
+
+This is presentation/transport admission behavior in the maintained app. It
+does not validate a checkpoint, grant guest permissions or acknowledge storage;
+the worker and real machine retain those responsibilities. Deferred-file DOM
+fixtures qualify the actual app's submission/cancellation behavior separately
+from RV64 execution and browser persistence.

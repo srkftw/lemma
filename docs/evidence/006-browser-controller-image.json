@@ -219,5 +219,26 @@
       },
       "status": "PASS"
     }
+  },
+  "asynchronous_file_selection_ownership": {
+    "status": "PASS_ACTUAL_APP_SELECTION_OWNERSHIP_PREPARED_STATIC_BUNDLE",
+    "receipt": {
+      "path": "build/browser/task006-file-selection-ownership-plan-a1/result.json",
+      "sha256": "59826d882fbb8f19227ce3b3171c531c97c6d11f450f43779f0b3c04bfc456dc",
+      "bytes": 3912
+    },
+    "scope": "Actual maintained app with deferred File/DOM/worker fixtures and prepared static validation. No new RV64 execution, browser persistence or full workflow pass from these host checks.",
+    "prepared_distribution": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-hint-publication-selection-browser-a1",
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-hint-publication-selection-browser-a1.tar.gz",
+      "sha256": "05d876e45fee2abaa26fe0c01c4f5342b6e3cb3e6bf882d5f1eb87765099f17a",
+      "bytes": 2087352
+    },
+    "retained_failure": {
+      "path": "build/browser/task006-file-selection-ownership-plan-a1/original-failure.log",
+      "sha256": "23a5cbecdb8513ac651357ac6c5a95d584058f8291a5e295a3c775ae776deeda",
+      "bytes": 441
+    },
+    "ordinary_behavior": "A slow file cannot restore/install/replay into a later selected machine. Names and transaction strings remain bound to selection. No guest or runtime change."
   }
 }

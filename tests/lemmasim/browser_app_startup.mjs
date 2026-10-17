@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
 const source=await fs.readFile('sim/browser/app.js','utf8');
-const deferred=()=>{let resolve;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};};
+const deferred=()=>{let resolve,reject;const promise=new Promise((r,e)=>{resolve=r;reject=e;});return {promise,resolve,reject};};
 const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 async function appFixture(gpu){
  const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[],viewportListeners=new Map();let worker,current,rect={left:0,top:0,width:100,height:100};
@@ -72,6 +72,69 @@ async function appFixture(gpu){
  f.node('#medium').value='fork_123';f.worker.onmessage({data:{type:'closed'}});
  assert.equal(f.node('#medium').value,'fork_123');assert.equal(f.node('#retry-private').disabled,true);
  f.node('#open').onclick();assert.equal(f.sent.at(-1).name,'fork_123');
+}
+// Slow selected files belong to the machine/action where they were selected.
+// Resolve actual app reads after a newer lifecycle intent; no stale message
+// may reach the worker or replace the newer operation's status.
+{
+ for(const transition of ['open','close','reset']){
+  const f=await appFixture(undefined),read=deferred();
+  const input={files:[{size:512,arrayBuffer:()=>read.promise}],value:'checkpoint'};
+  const pending=f.node('#restore').onchange({target:input});
+  if(transition==='open')f.node('#open').onclick();
+  if(transition==='close')f.actions.find(n=>n.dataset.action==='close').onclick();
+  if(transition==='reset')f.node('#warm').onclick();
+  const count=f.sent.length;read.resolve(new ArrayBuffer(512));await pending;
+  assert.equal(f.sent.length,count,`stale restore crossed ${transition}`);
+  assert.equal(input.value,'','same file remains selectable after cancellation');
+ }
+}
+// An explicit newer restore wins even when its file read finishes first.
+{
+ const f=await appFixture(undefined),a=deferred(),b=deferred();
+ const first=f.node('#restore').onchange({target:{files:[{size:512,arrayBuffer:()=>a.promise}],value:'a'}});
+ const second=f.node('#restore').onchange({target:{files:[{size:512,arrayBuffer:()=>b.promise}],value:'b'}});
+ const newest=new ArrayBuffer(512);b.resolve(newest);await second;
+ const count=f.sent.length;a.resolve(new ArrayBuffer(512));await first;
+ assert.equal(f.sent.length,count,'older restore overtook selected newer checkpoint');
+ assert.equal(f.sent.at(-1).action,'restore');assert.equal(f.sent.at(-1).bytes,newest);
+}
+// Transaction IDs and destination names are selection-time inputs. Editing
+// fields during a read must not pair the old bytes with the new fields.
+{
+ const f=await appFixture(undefined),read=deferred();
+ f.node('#course-package').files=[{size:128,arrayBuffer:()=>read.promise}];
+ f.node('#course-transaction').value='9007199254740993';
+ const pending=f.node('#install-course').onclick();
+ f.node('#course-transaction').value='9007199254740994';read.resolve(new ArrayBuffer(128));await pending;
+ assert.equal(f.sent.at(-1).transaction,'9007199254740993');
+ const imported=deferred();f.node('#medium').value='selected-destination';
+ const selecting=f.node('#import').onchange({target:{files:[{size:268435456,arrayBuffer:()=>imported.promise}],value:'source'}});
+ f.node('#medium').value='next-destination';imported.resolve(new ArrayBuffer(16));await selecting;
+ assert.equal(f.sent.at(-1).name,'selected-destination');
+}
+// Read failures are visible for the current selection. An obsolete failure
+// cannot overwrite the newer machine's status or become an unhandled rejection.
+{
+ const f=await appFixture(undefined),failure=deferred();
+ const pending=f.node('#restore').onchange({target:{files:[{size:512,arrayBuffer:()=>failure.promise}],value:'one'}});
+ const before=f.sent.length;failure.reject(Error('permission denied'));await pending;
+ assert.equal(f.sent.length,before);assert.match(f.node('#status').textContent,/permission denied/);
+ const stale=deferred(),old=f.node('#restore').onchange({target:{files:[{size:512,arrayBuffer:()=>stale.promise}],value:'two'}});
+ f.node('#open').onclick();f.node('#status').textContent='new machine status';
+ stale.reject(Error('obsolete read error'));await old;
+ assert.equal(f.node('#status').textContent,'new machine status');
+}
+// Multipart replay stops reading later files after cancellation; no selected
+// outcome source or raw event stream is consulted for the superseded machine.
+{
+ const f=await appFixture(undefined),read=deferred();let laterReads=0;
+ f.node('#replay-checkpoint').files=[{size:512,arrayBuffer:()=>read.promise}];
+ f.node('#replay-io').files=[{size:128,arrayBuffer:()=>{laterReads++;return Promise.resolve(new ArrayBuffer(128));}}];
+ f.node('#replay-events').files=[{size:2,text:()=>{laterReads++;return Promise.resolve('[]');}}];
+ const pending=f.node('#replay').onclick();f.actions.find(n=>n.dataset.action==='close').onclick();
+ const count=f.sent.length;read.resolve(new ArrayBuffer(512));await pending;
+ assert.equal(laterReads,0);assert.equal(f.sent.length,count);
 }
 // An implicit capture loss ends exactly the held raw contact. A stale loss
 // after pointerup cannot cancel a new pointer, and lifecycle controls release

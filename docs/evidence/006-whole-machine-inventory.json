@@ -1978,8 +1978,8 @@
     "contract": "lemma-controller-gray4-image/1",
     "evidence": {
       "path": "docs/evidence/006-browser-controller-image.json",
-      "sha256": "1a351add0e2ab1efcb0df52871df07f3e701eb3b6737a20131195332f00fe673",
-      "bytes": 11018
+      "sha256": "44434cdb08f6887cc216b888bd51d735d3826352b4e494dbbac169ef4474b271",
+      "bytes": 12351
     },
     "gate_scope": "S/H distribution and G4 developer observation; no whole gate closed",
     "behavior": "PASSactualworkerfixtures; invalid export preserves active run; identical file selection accepted twice",
@@ -1987,7 +1987,8 @@
     "RTL": "Same84d5realRTL/Wasm; actual5Mwith/withoutimage full145676708archivebytes equal",
     "guest": "Unchanged original Reader20 continuation; actualall3630000pixels match; newguestexecution not inferred",
     "distribution": "Preparednewd9gueststaticbundle and archive2085277B; fullnewkernelbrowser pending",
-    "physical": "UNCHANGED_UNCLOSED; no optical claim"
+    "physical": "UNCHANGED_UNCLOSED; no optical claim",
+    "selected_file_ownership": "PASS actual deferred-file app fixture/current full324host tests and prepared static package. Machine switches/new selections cancel unfinished file submissions; selected names and transaction strings stay exact. No worker/core/guest state change or new full browser acceptance."
   },
   "product_source_archive1": {
     "behavior": "PASSactualProduct10sourcearchive and originalUSBReader19archive; changed source rejected",

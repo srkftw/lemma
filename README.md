@@ -2613,3 +2613,20 @@ The archive is `build/distribution/task006-fast-file-limit-native-a2.tar.gz`
 the launcher neither imports nor downloads dependencies. Packaged fast launch,
 fault admission and cleanup passed without advancing guest clocks. Clean-host
 installation and redistribution rights remain unqualified.
+
+The current static package also cancels file reads when another selection or
+machine switch supersedes them. A slow checkpoint read cannot restore into a
+newly opened machine, and a course read retains its selected transaction ID.
+Import destination names are captured with their files. Current read errors
+are shown locally; stale errors cannot overwrite the new machine's status.
+
+```sh
+python3 -I build/distribution/task006-hint-publication-selection-browser-a1/serve.py --verify-only
+python3 -I build/distribution/task006-hint-publication-selection-browser-a1/serve.py --port 8817
+```
+
+Archive: `build/distribution/task006-hint-publication-selection-browser-a1.tar.gz`
+(2087352 bytes). Deferred-file checks exercise the maintained app and the
+standalone launcher verifies the prepared package. These checks qualify local
+submission and cancellation, separately from the active corrected-guest cold
+run on the immutable earlier UI bundle at port 8816. Keep that origin intact.

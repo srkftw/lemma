@@ -5762,3 +5762,34 @@ accurately describes fast/RTL fault scope. Actual packaged-control-a2 PASS
 private fast launch/admit/restore/all machine state unchanged/serverexit0;
 no duplicate full guest run. Existing a1 control/package receipt retained.
 No clean-host Nix import, licensing closure or cached-state closure inferred.
+
+Current host follow-on (uncommitted): browser selected-file lifetime repair.
+Actual app deferred-file fixture first FAILs stale restore crossed Open;
+retained build/browser/task006-file-selection-ownership-plan-a1/original-failure.log
+and exact old app at da50458. New app cancels pending selections on lifecycle/
+newer selection/observed machine replacement, captures names/modes/transaction
+strings at selection, stops obsolete multipart reads, surfaces current read
+errors and suppresses obsolete errors. No worker/core/guest changes. Full324
+host tests PASS63.026s. New immutable static bundle/distribution
+...hint-publication-selection-browser-a1 standalone verify PASS; archive2087352B/
+SHA05d876e45fee2abaa26fe0c01c4f5342b6e3cb3e6bf882d5f1eb87765099f17a.
+This is host submission qualification, not a new browser workflow PASS.
+
+Corrected guest's new browser worker runs at8816/IAB2/tab22 under plan
+build/browser/task006-hint-publication-save32-plan-a1 (whole12h/6B,
+cold1B/7200). Opaque imported actual guest Saved32 medium, public inspected
+CPU0/retired0, no checkpoint input. New UI not loaded into that live worker.
+Plan identity-label correction is separate:84d5 is snapshot_identity, actual
+machine.wasm SHA7c1b4c298d36070736eae3e5601a716dc3c8a8f8d31e2901250e65807aa46857.
+Original strict bundle file hashes already validate the actual Wasm; no bounds,
+validation or bytes changed. Original plan retained with additive correction.
+
+New ProductReader package1058 sectors, image0x000a000000000014, genuine446-input
+archive, public development tag only. Additive fixed saved32-course-hint-publication
+case preserves strict724/1056/1057 cases and all original Reader18 bounds.
+First frozen a1 actor FAIL before machine launch: missing output parent; source
+checker now creates parent dirs under existing unused ignored-output guard.
+Retain a1 supervision. New1849-input frozen a2 actual ROM session runs under
+build/boot/task006-hint-publication-product-connected-plan-a2; supervision at
+...product-connected-supervision-a2. Target/software/runtime images unchanged by
+that host fix. No update/confirmation/cold result inferred yet. Tool91933.

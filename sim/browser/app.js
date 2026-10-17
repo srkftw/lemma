@@ -2,6 +2,14 @@
 const worker=new Worker('./worker.js',{type:'module'}),status=document.querySelector('#status'),commitStatus=document.querySelector('#commit-status');
 let canvas=document.querySelector('canvas'),lastPlane=null;
 let displayedMediumName=null;
+// File reads finish outside the worker queue. A later selection or machine
+// lifecycle intent cancels their authority to submit into that queue.
+let selectionEpoch=0n,selectionMachineName=null;
+function beginSelection(){return ++selectionEpoch;}
+async function selectionBytes(file,selection,errorTarget=status){
+ try{const bytes=await file.arrayBuffer();return selection===selectionEpoch?bytes:null;}
+ catch(e){if(selection===selectionEpoch)errorTarget.textContent=String(e);return null;}
+}
 let active=null,activeTool=0,activeTransform=null,last={x:0,y:0};
 // WebGPU only presents controller-produced Gray4 bytes. Device loss selects
 // a fresh 2D canvas presenting the identical plane; it never fabricates ink.
@@ -11,7 +19,7 @@ let context=canvas.getContext('2d'),gpu=null,pipeline=null,device=null;
 const displayScale=document.querySelector('#display-scale');
 const sessionMode=document.querySelector('#session-mode');
 function modeControls(){document.querySelectorAll('[data-developer]').forEach(control=>{control.hidden=sessionMode.value==='student';});}
-sessionMode.onchange=modeControls;modeControls();
+sessionMode.onchange=()=>{beginSelection();modeControls();};modeControls();
 function scaleDisplay(){const factor=({'1':1,'1.5':1.5,'2':2})[displayScale.value]||0;
  canvas.style.width=factor?`${canvas.width*factor}px`:'';}
 function cancelContact(){if(active===null)return;const pointer=active;active=null;activeTransform=null;
@@ -41,35 +49,40 @@ async function initializeGPU(){if(!navigator.gpu)return;
 }
 function send(action,rest={},transfer=[]){worker.postMessage({action,...rest},transfer);}
 function download(name,bytes){const u=URL.createObjectURL(new Blob([bytes])),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
-document.querySelector('#open').onclick=()=>send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,paused:document.querySelector('#open-paused').checked});
-document.querySelector('#initialize').onclick=()=>send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,initialize:true,paused:document.querySelector('#open-paused').checked});
+document.querySelector('#open').onclick=()=>{beginSelection();send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,paused:document.querySelector('#open-paused').checked});};
+document.querySelector('#initialize').onclick=()=>{beginSelection();send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,initialize:true,paused:document.querySelector('#open-paused').checked});};
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{
- if(b.dataset.action==='close'){cancelContact();cancelPower();}send(b.dataset.action);});
+ if(b.dataset.action==='close'){beginSelection();cancelContact();cancelPower();}send(b.dataset.action);});
 document.querySelector('#run-bounded').onclick=()=>send('run',{cycles:document.querySelector('#run-cycles').value,stopOnReady:document.querySelector('#stop-ready').checked,stopOnPanel:document.querySelector('#stop-panel').checked,hostSeconds:document.querySelector('#run-seconds').value||null});
 document.querySelector('#admit-raw').onclick=()=>send('raw',{row:document.querySelector('#raw-event').value});
 document.querySelector('#admit-batch').onclick=()=>send('raw-batch',{rows:document.querySelector('#raw-batch').value});
-document.querySelector('#warm').onclick=()=>{cancelContact();send('reset',{cold:false});};
-document.querySelector('#cold').onclick=()=>{cancelContact();send('reset',{cold:true});};
+document.querySelector('#warm').onclick=()=>{beginSelection();cancelContact();send('reset',{cold:false});};
+document.querySelector('#cold').onclick=()=>{beginSelection();cancelContact();send('reset',{cold:true});};
 document.querySelector('#install-course').onclick=async()=>{
  const file=document.querySelector('#course-package').files[0];
  if(!file||file.size<128||file.size>32768){document.querySelector('#course-admission').textContent='Choose a course package containing 128 to32768 bytes.';return;}
- try{const bytes=await file.arrayBuffer();send('course-install',{bytes,transaction:document.querySelector('#course-transaction').value},[bytes]);}
- catch(e){document.querySelector('#course-admission').textContent=String(e);}
+ const selection=beginSelection(),transaction=document.querySelector('#course-transaction').value;
+ const bytes=await selectionBytes(file,selection,document.querySelector('#course-admission'));
+ if(bytes!==null)send('course-install',{bytes,transaction},[bytes]);
 };
 // Auto-submitting file controls consume a selection, allowing the same file
 // to be chosen again for a retry or another private restore. Explicit Send
 // controls (course/replay) retain their selected files until the user sends.
 function selectedFile(input){const file=input.files[0];input.value='';return file;}
-document.querySelector('#restore').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('restore',{bytes},[bytes]);};
-document.querySelector('#pending-outcomes').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size>268435456){status.textContent='Outcome tape exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('outcomes',{bytes},[bytes]);};
-document.querySelector('#import').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size!==268435456){status.textContent='Expected a 256 MiB raw medium';return;}const bytes=await file.arrayBuffer();send('import',{name:document.querySelector('#medium').value,mode:sessionMode.value,bytes},[bytes]);};
-document.querySelector('#replay').onclick=async()=>{try{
+document.querySelector('#restore').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await selectionBytes(file,beginSelection());if(bytes!==null)send('restore',{bytes},[bytes]);};
+document.querySelector('#pending-outcomes').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size>268435456){status.textContent='Outcome tape exceeds the machine bound';return;}const bytes=await selectionBytes(file,beginSelection());if(bytes!==null)send('outcomes',{bytes},[bytes]);};
+document.querySelector('#import').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size!==268435456){status.textContent='Expected a 256 MiB raw medium';return;}const name=document.querySelector('#medium').value,mode=sessionMode.value,bytes=await selectionBytes(file,beginSelection());if(bytes!==null)send('import',{name,mode,bytes},[bytes]);};
+document.querySelector('#replay').onclick=async()=>{let selection=selectionEpoch;try{
  const c=document.querySelector('#replay-checkpoint').files[0],io=document.querySelector('#replay-io').files[0],raw=document.querySelector('#replay-events').files[0];
  if(!c||!io||!raw)throw Error('Select checkpoint, backing outcomes and raw event capture');
  if(c.size>805306368||io.size>268435456||raw.size>268435456)throw Error('Replay input exceeds its bound');
- const checkpoint=await c.arrayBuffer(),replayLog=await io.arrayBuffer(),events=JSON.parse(await raw.text());
- send('replay',{name:document.querySelector('#medium').value,mode:sessionMode.value,checkpoint,replayLog,events},[checkpoint,replayLog]);
- }catch(e){status.textContent=String(e);}};
+ const name=document.querySelector('#medium').value,mode=sessionMode.value;
+ selection=beginSelection();
+ const checkpoint=await selectionBytes(c,selection);if(checkpoint===null)return;
+ const replayLog=await selectionBytes(io,selection);if(replayLog===null)return;
+ const events=JSON.parse(await raw.text());if(selection!==selectionEpoch)return;
+ send('replay',{name,mode,checkpoint,replayLog,events},[checkpoint,replayLog]);
+ }catch(e){if(selection===selectionEpoch)status.textContent=String(e);}};
 const power=document.querySelector('#power');let powerPointer=null;
 function cancelPower(){if(powerPointer===null)return;const pointer=powerPointer;powerPointer=null;
  send('button',{level:0});try{power.releasePointerCapture(pointer);}catch(e){} }
@@ -108,7 +121,7 @@ function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.te
  else if(context){const image=context.createImageData(m.width,m.height);for(let i=0;i<m.pixels.length;i++){const gray=m.pixels[i]*17;image.data[4*i]=image.data[4*i+1]=image.data[4*i+2]=gray;image.data[4*i+3]=255;}context.putImageData(image,0,0);}}
 worker.onmessage=({data:m})=>{
  if(m.type==='error')status.textContent=m.error;
- if(m.type==='closed'){displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
+ if(m.type==='closed'){beginSelection();selectionMachineName=null;displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
  if(m.type==='course-admission')document.querySelector('#course-admission').textContent=m.error?`Admitted ${m.accepted} of ${m.total} raw events; rejected remainder: ${m.error}. The accepted prefix remains queued. Close and cold-open backing before retrying.`:`Admitted ${m.bytes} package bytes to the guest. See the guest installation result below.`;
  if(m.type==='raw-admission')document.querySelector('#raw-result').textContent=m.error?`Accepted ${m.accepted} of ${m.total} events; rejected remainder: ${m.error}`:`Admitted ${m.accepted} raw events.`;
@@ -117,6 +130,7 @@ worker.onmessage=({data:m})=>{
   document.querySelector('#course-result').textContent=course===null?'No installation result observed in this guest launch.':course.state==='installed'?`Guest reports installed package ${course.identity}, edition ${course.edition}, durable sequence ${course.sequence}.`:`Guest reports installation failure (${course.status}) for package ${course.identity}, edition ${course.edition}.`;
   const backing=m.backingMedium;
   if(backing&&typeof backing.name==='string'){
+   if(backing.name!==selectionMachineName){beginSelection();selectionMachineName=backing.name;}
    document.querySelector('#retry-private').disabled=backing.ready;
    document.querySelector('#backing-status').textContent=backing.ready?`Active ${backing.private?'private ':''}medium: ${backing.name}. Close/Open runs guest recovery from this backing.`:`Private backing is incomplete. Keep this machine open to retry binding or export its bytes.`;
    // Adopt a newly opened/bound medium once. Later periodic observations do
