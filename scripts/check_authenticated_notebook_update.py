@@ -37,6 +37,25 @@ def require(value, message):
         raise RuntimeError(message)
 
 
+def require_original_power_origin(state):
+    """The real RTL registers receive their first reset edge at clock1.
+
+    At the admitted CPU0 boundary Verilator's initialized outputs are still0.
+    This sole unclocked boundary must have no executed instruction or watchdog
+    activity. Every later observation requires the actual cold-reset cause1;
+    watchdog, brownout and warm-reset origins remain failures.
+    """
+    power = state['power']
+    cause = 1
+    if state['cycle'] == 0:
+        cause = 0
+        require(state['pc'] == 0 and state['retired'] == 0 and
+                power['watchdog_armed'] == power['watchdog_remaining'] ==
+                power['reset_remaining'] == 0, 'invalid unclocked RTL cold boundary')
+    require(power['reset_cause'] == cause and power['reset_epoch'] == 0,
+            'healthy image reset before confirmation/disarm')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('prepared', 'guest-build', 'guest-source-archive', 'package',
@@ -49,8 +68,12 @@ def main():
                         default='saved14-notebook')
     parser.add_argument('--expected-home',type=Path)
     parser.add_argument('--expected-course',type=Path)
+    parser.add_argument('--confirmed-from', type=Path,
+                        help='Separate cold-only qualification from a retained image15 campaign whose sole failure was the unclocked reset observer; never reclassifies that FAIL')
     args = parser.parse_args()
     supervised_trial = args.case == 'saved32-course-trial-watchdog'
+    require(args.confirmed_from is None or supervised_trial,
+            'retained confirmed qualification supports only the fixed watchdog image15 case')
     hint_publication = supervised_trial or args.case == 'saved32-course-hint-publication'
     reader = hint_publication or args.case in ('saved38-course-reader','saved38-course-reader-pool-read')
     pool_read = args.case == 'saved38-course-reader-pool-read'
@@ -106,6 +129,15 @@ def main():
             'Require observed actual arm, durable health before actual disarm and independent confirmed cold. '
             'Original724/1056/1057/1058-sector cases stay strict.')
 
+    if args.confirmed_from is not None:
+        whole_seconds, total_cap = 14800, 1900000000
+        deadline = began + whole_seconds
+        report.update(execution_scope='independent-confirmed-cold-only',
+                      bound_basis='Retain the original1.5B/11200s confirmed-cold and400M/3600s course ceilings; no installation/handoff/trial execution in this separate campaign')
+        report['bounds'].update(whole_seconds=whole_seconds, clocks=total_cap,
+                               install_clocks=0, install_seconds=0, handoff_clocks=0,
+                               handoff_seconds=0, ready_clocks=0, ready_seconds=0)
+
 
     def save():
         report.update(seconds=time.monotonic() - began, clocks=used)
@@ -160,8 +192,7 @@ def main():
             disarmed = [r for r in rows if r[0] == 0x47b]
             if supervised_trial:
                 power = state['power']
-                require(power['reset_cause'] == 1 and power['reset_epoch'] == 0,
-                        'healthy image reset before confirmation/disarm')
+                require_original_power_origin(state)
                 if confirm:
                     observation = report['watchdog_supervision']
                     if power['watchdog_armed']:
@@ -249,42 +280,72 @@ def main():
             report['original_inputs'].update({str(p.resolve()):sha(p) for p in (args.expected_home,args.expected_course)})
         else: expected = expected_home(records)
         report.update(source_store_sequence=sequence, expected_home_sha256=hashlib.sha256(expected).hexdigest())
-        live = launch('trial', boot, disk, True)
-        command = [sys.executable, str(ROOT / 'scripts/lemmasim-auth'), '--public-development-key',
-                   'install-resume', '--session-dir', str(live), '--package', str(args.package.resolve()),
-                   '--tag', str(args.tag.resolve()), '--slot', str(target_slot), '--transaction', '2000',
-                   '--cycles', str(install_cap), '--timeout', str(install_seconds), '--quantum', '100000']
-        started = time.monotonic()
-        with (out / 'install.stdout').open('xb') as log, (out / 'install.stderr').open('xb') as errors:
-            completed = subprocess.run(command, cwd=ROOT, stdout=log, stderr=errors, timeout=install_seconds+5)
-        used = call(live, {'action': 'inspect'})['machine']['cycle']
-        require(completed.returncode == 0 and used <= install_cap and time.monotonic() - started <= install_seconds,
-                'actual bounded resumable notebook installation failed')
-        result = json.loads((out / 'install.stdout').read_text())
-        require(result['state'] == 'installed-trial' and result['sectors_sent'] == sectors,
-                'notebook trial publication receipt absent')
-        report['phases'].append({'name': 'actual-resumable-notebook-installation', 'clocks': used,
-                                 'seconds': time.monotonic() - started, 'receipt': result})
-        save()
-        client = auth.RecoveryClient(SimpleNamespace(session_dir=live, timeout=handoff_seconds,
-                         cycles=handoff_cap, quantum=100_000, transaction=4000))
-        started = time.monotonic()
-        handoff = client.send(3)
-        used += client.used
-        require(handoff['status'] == 0 and handoff['value'] == 0x80000000, 'authenticated trial handoff failed')
-        report['phases'].append({'name': 'guest-attempt-publication-authenticated-trial-handoff',
-                                 'clocks': client.used, 'seconds': time.monotonic() - started, 'receipt': handoff})
-        save()
-        ready(live, 'trial-Ready-guest-confirmation', ready_cap, True)
         confirmed = out / 'confirmed.raw'
-        call(live, {'action': 'export-boot-medium', 'path': str(confirmed)})
+        if args.confirmed_from is not None:
+            prior = args.confirmed_from.resolve()
+            original_report = prior / 'result.json'
+            previous = json.loads(original_report.read_text())
+            require(previous['status'] == 'FAIL' and previous.get('error') ==
+                    "RuntimeError('healthy image reset before confirmation/disarm')" and
+                    previous['case'] == args.case and previous['source_store_sequence'] == 32 and
+                    previous['watchdog_supervision'] ==
+                        {'armed_observed': True, 'durable_disarm_observed': True} and
+                    [phase['name'] for phase in previous['phases']] ==
+                        ['actual-resumable-notebook-installation',
+                         'guest-attempt-publication-authenticated-trial-handoff',
+                         'trial-Ready-guest-confirmation'],
+                    'retained campaign must contain actual installation, durable disarm and trial Ready before its sole unclocked observer failure')
+            require(previous['compiled_package']['image_sha256'] == fresh['image_sha256'] and
+                    previous['compiled_package']['identity'] == fresh['identity'] and
+                    previous['compiled_package']['configuration'] == fresh['configuration'] and
+                    previous['prepared_sha256'] == report['prepared_sha256'] and
+                    previous['original_inputs'] == report['original_inputs'] and
+                    filecmp.cmp(args.disk, prior / 'user.raw', shallow=False),
+                    'retained genuine target, preparation or acknowledged documents differ')
+            shutil.copyfile(prior / 'confirmed.raw', confirmed)
+            report['prior_campaign'] = {'result': str(original_report),
+                'sha256': sha(original_report), 'status': previous['status'],
+                'error': previous['error'], 'confirmed_sha256': sha(confirmed),
+                'qualification': 'Original FAIL retained; prior installed/trial/health observations reused, not rerun or relabeled'}
+            report['watchdog_supervision'] = {'armed_observed': False, 'durable_disarm_observed': False,
+                'scope': 'This separate confirmed-cold run must never arm or disarm a trial watchdog'}
+            save()
+        else:
+            live = launch('trial', boot, disk, True)
+            command = [sys.executable, str(ROOT / 'scripts/lemmasim-auth'), '--public-development-key',
+                       'install-resume', '--session-dir', str(live), '--package', str(args.package.resolve()),
+                       '--tag', str(args.tag.resolve()), '--slot', str(target_slot), '--transaction', '2000',
+                       '--cycles', str(install_cap), '--timeout', str(install_seconds), '--quantum', '100000']
+            started = time.monotonic()
+            with (out / 'install.stdout').open('xb') as log, (out / 'install.stderr').open('xb') as errors:
+                completed = subprocess.run(command, cwd=ROOT, stdout=log, stderr=errors, timeout=install_seconds+5)
+            used = call(live, {'action': 'inspect'})['machine']['cycle']
+            require(completed.returncode == 0 and used <= install_cap and time.monotonic() - started <= install_seconds,
+                    'actual bounded resumable notebook installation failed')
+            result = json.loads((out / 'install.stdout').read_text())
+            require(result['state'] == 'installed-trial' and result['sectors_sent'] == sectors,
+                    'notebook trial publication receipt absent')
+            report['phases'].append({'name': 'actual-resumable-notebook-installation', 'clocks': used,
+                                     'seconds': time.monotonic() - started, 'receipt': result})
+            save()
+            client = auth.RecoveryClient(SimpleNamespace(session_dir=live, timeout=handoff_seconds,
+                             cycles=handoff_cap, quantum=100_000, transaction=4000))
+            started = time.monotonic()
+            handoff = client.send(3)
+            used += client.used
+            require(handoff['status'] == 0 and handoff['value'] == 0x80000000, 'authenticated trial handoff failed')
+            report['phases'].append({'name': 'guest-attempt-publication-authenticated-trial-handoff',
+                                     'clocks': client.used, 'seconds': time.monotonic() - started, 'receipt': handoff})
+            save()
+            ready(live, 'trial-Ready-guest-confirmation', ready_cap, True)
+            call(live, {'action': 'export-boot-medium', 'path': str(confirmed)})
+            close(live)
         row = metadata(confirmed.read_bytes())
         require(row[2] == known[2] + 3 and row[3:8] == (target_slot, old['identity'], 2, 0, 0)
                 and confirmed.read_bytes()[(32776 if supervised_trial else 8)*512:(65544 if supervised_trial else 32776)*512]
                     == original_boot[(32776 if supervised_trial else 8)*512:(65544 if supervised_trial else 32776)*512],
                 'guest confirmation did not preserve known-good image or exact attempt/confirm generations')
         require(filecmp.cmp(args.disk, disk, shallow=False), 'updated notebook changed any document byte')
-        close(live)
         cold_boot, cold_disk = out / 'cold-boot.raw', out / 'cold-user.raw'
         shutil.copyfile(confirmed, cold_boot)
         shutil.copyfile(disk, cold_disk)
@@ -324,7 +385,7 @@ def main():
         close(cold)
         guard()
         require(all(sha(p) == h for p, h in report['original_inputs'].items()), 'original input changed')
-        report.update(status=('PASS_AUTHENTICATED_TRIAL_WATCHDOG_UPDATE_DISARM_COLD_READER' if supervised_trial else 'PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER' if reader else 'PASS_AUTHENTICATED_NOTEBOOK_AB_UPDATE_GUEST_CONFIRMATION_COLD'),
+        report.update(status=('PASS_AUTHENTICATED_CONFIRMED_IMAGE15_COLD_READER' if args.confirmed_from is not None else 'PASS_AUTHENTICATED_TRIAL_WATCHDOG_UPDATE_DISARM_COLD_READER' if supervised_trial else 'PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER' if reader else 'PASS_AUTHENTICATED_NOTEBOOK_AB_UPDATE_GUEST_CONFIRMATION_COLD'),
             all_expected_pixels=True, all_document_bytes_unchanged=True, snapshot_cold_input=False,
             confirmed_metadata=list(row[:9]), confirmed_boot_sha256=sha(confirmed))
     except BaseException as error:

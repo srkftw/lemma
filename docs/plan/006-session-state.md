@@ -6053,3 +6053,53 @@ presentation cap100M/3600; inspect and record, then admit actual3raw ink at
 row1800 (old stored annotation is at1900). Continue Save/Close/newCPU cold and
 reopen within original whole deadline00:26:11.452097Z. No original-state flush
 or checkpoint comparison is involved in this functional settling. Keep22/20.
+
+2026-10-17 next milestone, implementation4f234cf250d94ccaf87836ef40090f0c5fcc7b70:
+Complete home-ink v2 canonical notebook/initializer pair and every mandatory
+linked audit PASS762.088211s/peak1833889792B,457 consumed sources. Formal normal
+and initializer archives at ...control-backlog-home-{notebook,initializer}-source-a1.
+New frozen native complete case PASS1005000078functional units/145.193900s,
+peak486957056B/no survivors, actual Save19. Four consecutive controls plus raw
+ink/Verified/reclaimed, controlled242overflow, immediate ordinary ink138000007
+units within ORIGINAL300M cap, independentCPU0cold/all3.63Mhome/all256MiB/course/
+evidence/history reopen. Real oldv1 FAIL and authority remain immutable.
+Canonical RTL full counterpart RUNNING at
+build/courses/task006-control-backlog-home-rtl-plan-a1, tool40721. Same6B/43200s;
+post-error existing500Mhome+300Mink composition declared before first execution.
+No prefix or fast functional units qualify exact RTL timing/cached continuation.
+
+Prepared new same-core native/static distributions:
+build/distribution/task006-control-backlog-home-native-a1,139241806B archive/
+SHA810d149926de3aa6981b4665d9b890e93ef6ef99f33da1b1088736f68bbefa55,
+complete370209440B existing pinned Nix export; static ...home-browser-a1,
+2096227B/SHA0ec8dfb6216f21742cbf07e0285338af979a8fb3816d4b79ebaa350cd12d482c.
+Both preparation/admission pass. New guest browser execution and clean-host
+installation/redistribution remain unqualified. Active8816 assets untouched.
+
+Healthy watchdog positive original campaign now terminalFAIL6886.995521s/
+1246400000RTL clocks: real install520.9M, handoff127.5M, trialReady598M,
+actual arm/durable health/disarm all observed. Independent cold failed on its
+first observation atCPU0: stale host assertion required reset cause1 before
+first clock edge. Actual independent0/1/8/9-clock probe takes1.226911s and shows
+causes0/1/1/1 with zero retired/epoch/watchdog state. No target/core change.
+OriginalFAIL retained. Narrow observer repair requires exact unexecuted/unarmed
+clock0 for cause0, still rejects every later non-cold cause/epoch. New explicit
+--confirmed-from mode validates exact retained failed campaign/compiled package/
+prepared/media identities and performs separately labeled cold/course only,
+original1.5B/11200s+400M/3600s; never reclassifies originalFAIL or reruns installation.
+Three focused/complete33 boot-host checks PASS0.046s. New partial-notebook update
+checker stages actual16of1059 inactive sectors, status217, brownout200clocks,
+then independentCPU0normalROM/known13/fullhome/alluserbytes; IMPLEMENTED_NOT_RUN.
+Between-barrier interruption only, not in-flight/meta/confirmation matrix.
+
+Stalled-trial recovery still RUNNING: actual watchdog expiry observed, cause4/
+reset_epoch3, unarmed fallback executing at2283229403clocks/170687564retired
+in read-only wait-live-observation-a4.json at17:57Z. Check terminal receipt for
+exact64-clock reset fork and completed known-notebook recovery; not yet PASS.
+CI4f actual run165/39054718000 still IN_PROGRESS, seven jobs completed success
+when observed; zero final-candidate PASS inferred. PR9 draft/unmerged.
+Browser22 original workflow ink3raw row1800 accepted; after two real panel scans
+actual pending root47 at1826650000. Another10M within original300M stroke cap
+running. Continue actualSaved/raw/pixels -> explicitSave -> Close500M -> Close/
+Open SAME OPFSmedium CPU0cold1B7200/fullhome/all256MiB/course400M before original
+2026-10-18T00:26:11.452097Z whole deadline. No new snapshot cold input. Keep22/20.

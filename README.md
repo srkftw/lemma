@@ -2686,3 +2686,34 @@ private copies of media. The connected checker adds the explicit
 its actual1059-sector image installs in slot0 and preserves confirmed notebook13
 in slot1. Commands, original failures and unfinished outcomes are retained in
 `docs/evidence/006-trial-watchdog.json` and `docs/plan/006-session-state.md`.
+
+The home-publication input repair now passes the complete native functional
+workflow, including four consecutive mathematical controls with concurrent ink,
+controlled queue overflow, subsequent ordinary ink/Save19, and independent cold
+recovery of every medium byte and the complete home/course display. Canonical
+RTL qualification is running separately. The new prepared local packages use
+the same maintained machine cores and the audited replacement guest pair:
+
+```sh
+python3 -I build/distribution/task006-control-backlog-home-native-a1/run.py session \
+  --backend qemu --profile lemma-silicon-dev/0.3.0 --mode developer --paused --headless \
+  --disk /absolute/EXISTING_PRIVATE_MEDIUM --session-dir /absolute/UNUSED_SESSION
+python3 -I build/distribution/task006-control-backlog-home-browser-a1/serve.py --verify-only
+python3 -I build/distribution/task006-control-backlog-home-browser-a1/serve.py --port 8818
+```
+
+Create a new private medium with the native package's `init` command, or the
+browser's guest initializer. Browser Open performs cold recovery from its named
+OPFS backing. New guest browser execution, clean-host native installation and
+redistribution rights remain separate from these prepared package checks.
+
+The image15 trial campaign actually reached Ready and durably disarmed its
+watchdog, then failed an observer that incorrectly required clocked reset
+outputs at clock0. An independent real0/1/8/9-clock observation establishes that
+the first reset edge publishes cause1 at clock1. The corrected observer admits
+cause0 only at the wholly unexecuted, unarmed clock0 boundary; all later reset
+checks remain strict. Its `--confirmed-from /absolute/RETAINED_CAMPAIGN` option
+performs a separately labeled confirmed-cold/course qualification from the
+retained actual medium, without rerunning installation or erasing the FAIL.
+`scripts/check_interrupted_notebook_update.py --help` describes the new bounded
+partial-payload/brownout/known-notebook cold scenario; its execution is pending.

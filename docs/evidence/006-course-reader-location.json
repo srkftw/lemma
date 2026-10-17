@@ -1481,7 +1481,7 @@
       ]
     },
     "pending_successor": {
-      "status": "COMPONENTS_QUALIFIED_FULL_LINKED_AND_CONNECTED_EXECUTION_PENDING",
+      "status": "FULL_LINKED_AND_FAST_CONNECTED_PASS_RTL_RUNNING",
       "contract": "docs/contracts/006-notebook-control-backlog-v2.md",
       "authority": "tooling/notebook-control-backlog-target-authority-v2.json",
       "authority_sha256": "730ee1cfb472c226a00bba36d323be13b7b4b3e29342b141dd65a574f7f7fce1",
@@ -1522,6 +1522,45 @@
           "status": "PASS",
           "scope": "Includes four new toolchain workspace checks; target artifact tests separate."
         }
+      },
+      "implementation": "4f234cf250d94ccaf87836ef40090f0c5fcc7b70",
+      "whole_linked": {
+        "result": "build/courses/task006-control-backlog-home-whole-plan-a1/result.json",
+        "sha256": "ada8f95a2aeb321ad2da2ab2bcb17215876de183ae63d4f9009445331d518c28",
+        "status": "PASS_COMPLETE_CONTROL_BACKLOG_HOME_CANONICAL_PAIR",
+        "seconds": 762.0882108520018,
+        "sampled_owned_peak_RSS_bytes": 1833889792,
+        "consumed_sources": 457
+      },
+      "fast_connected": {
+        "result": "build/courses/task006-control-backlog-home-fast-plan-a1/consumed-host-source-root/build/connected/result.json",
+        "sha256": "92c28caadec28ed2ba033aeb13016cc54b545ddbda8b6a78c8879c0c64a0865a",
+        "status": "PASS_QUEUED_GUEST_CONTROLS_CONCURRENT_INK_CHECK_SAVE_INDEPENDENT_COLD",
+        "functional_units": 1005000078,
+        "supervisor_result": "build/courses/task006-control-backlog-home-fast-plan-a1/result.json",
+        "seconds": 145.19390045001637,
+        "sampled_owned_peak_RSS_bytes": 486957056,
+        "owned_survivors": {},
+        "sequence": 19,
+        "complete_cold_home_pixels": 3630000,
+        "complete_medium_bytes": 268435456,
+        "post_overflow_ink_units": 138000007,
+        "original_unchanged_fast_ink_ceiling": 300000000,
+        "scope": "Four consecutive real controls plus concurrent raw ink/Verified/reclaimed, explicitSave, actual242overflow, immediate ordinary raw ink/11pixels/Save19, independentCPU0cold/fullhome/allmedium/exactmath/history/course reopen. No timing or cached continuation claim."
+      },
+      "RTL": {
+        "status": "RUNNING",
+        "plan": "build/courses/task006-control-backlog-home-rtl-plan-a1/plan.json",
+        "bounds": "6B/43200s; full connected case, never prefix acceptance; post-error500Mhome+300Mink composition declared before execution"
+      },
+      "distribution": {
+        "native": "build/distribution/task006-control-backlog-home-native-a1",
+        "native_archive_bytes": 139241806,
+        "native_archive_sha256": "810d149926de3aa6981b4665d9b890e93ef6ef99f33da1b1088736f68bbefa55",
+        "browser": "build/distribution/task006-control-backlog-home-browser-a1",
+        "browser_archive_bytes": 2096227,
+        "browser_archive_sha256": "0ec8dfb6216f21742cbf07e0285338af979a8fb3816d4b79ebaa350cd12d482c",
+        "scope": "Prepared validated bundles; same original native/RTL/Wasm cores with genuine new guest pair. Packaging does not qualify browser execution, clean-host install or redistribution rights."
       }
     }
   }
