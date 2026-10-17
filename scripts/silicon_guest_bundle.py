@@ -1010,8 +1010,8 @@ def development_guest(data,workload,directory,guest_build,mode=None,*,source_roo
         ('audit','audit.json'),('dtb','platform.dtb'),('descriptor','descriptor.bin'))}
     if workload in guest.NOTEBOOK_WORKLOADS:
         capacity=directory/'guest-override-capacity.json'
-        guest.run_command(['nix','develop','--no-write-lock-file','--command','python3',
-            'scripts/audit_lemmasim_capacity.py','--build',base,'--output',capacity],
+        from capacity_toolchain_workspace import command as capacity_command
+        guest.run_command(capacity_command(ROOT,directory,build,base,capacity),
             timeout=120,log=directory/'guest-override-capacity.log')
         receipt=read_json(capacity)
         if receipt.get('status')!='PASS' or receipt.get('configuration')!=build['configuration']:
