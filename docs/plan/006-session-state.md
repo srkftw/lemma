@@ -6340,3 +6340,52 @@ through its UI after validating all original archive CRCs/145716300 bytes;
 no resumed clocks. Browser22 Saved48 and currentv2 browser23 cold are still
 running within their original bounds. Retained browser20 OPFS and failure
 prefix remain intact. See original expired-archive-owner-close-validation.json.
+
+
+Load-bearing next implementation at350debc (pushed, PR9draft/unmerged):
+actual scoped metadata case now RUNNING from1881 frozen host inputs at
+build/boot/task006-torn-metadata-update-plan-a1, tool25097. It launched actual
+ROM CPU0 with runtime677aacbc/binary0606235b and fault0:1024:256, targeting
+metadata0 opposite the selected actual peer. Original2.4B/21600s whole,
+900M/7200s transfer,1.5B/11200s cold/4GiB RSS/min2GiB/file1GiB/output12GiB.
+RuntimeA2/preparedA3 full original native/ROM archives remain fixed. Do not edit
+frozen consumed sources or extend clocks/deadlines. ActualCI350debc run169/
+39065254797 was IN_PROGRESS; complete8e run168 is SUCCESS11jobs117steps0skips,
+retained actual tool outputs at build/ci/task006-8e-complete.json.
+
+One new physical retry is RUNNING, tool6727, after actual8.29GiB availability
+passed the unchanged8GiB launch floor. New immutable plan-a2/supervision-a2/
+physical pen-sram-range-route-a2 reuse the6623-cell range-cone mapping and exact
+a4 geometry/rules/10ns/900inner1000outer/6GiB RSS/min3GiB; no remapping/waivers.
+Original prelaunch failure remains. Real DRT reached optimization iterations;
+partial global-RC setup-3.031467ns/hold-.184124ns are violations, never routed
+PEX or signoff. Await final/timeout and reap; do not infer PASS from progress.
+
+New actual ordinary Product10 distribution functionality (staged):
+product_bundle.py and normal `lemmasim product-bundle`/`product-auth` commands.
+No second machine; full exact component/source archives plus the original host
+validators and relocated temporary preparation. Explicitly external pinned
+Nix libraries/audit tools/Python; no media/kernel preload/rights/clean-host claim.
+Bounded file inventory rejects unindexed or altered code, symlinks/traversal.
+Actual42,106,436-byte/2610-file local archive passed fresh Python-I verification,
+then moved directory and from /tmp launched actualROM CPU0, ran200000 RTLclocks/
+85178 instructions and got real Lean capacity0x200010008 with unchanged boot
+bytes. Full immutable bundle still verifies after destroy. Actual PASS20.947512s
+at build/boot/task006-scoped-rom-local-relocation-a2/result.json, tool14025reaped.
+Original a1observerFAIL5.711767s omitted8reserved sectors BEFORE CPU launch;
+actual65544-sector creation was correct; original failure retained. Artifact
+build/distribution/task006-scoped-rom-local-a1.tar.gz contains moved directory
+...scoped-rom-local-relocated-a2, no user media. Source350debc plus fully indexed
+staged new host files; do not call it a clean committed build. Boot43/.182s,
+scaffold18/15.600s/metadata and four boundary isolation tests pass. Bundle command
+allows original bounded auth actions and Session JSON control; actual new-bundle
+notebook and checkpoint/cold qualifications remain separate.
+
+
+Physical range route-a2 is now terminal FAIL, tool6727reaped. Completed detailed
+routing504.830586s/supervision505.391593s/peak1339625472B, exact source/geometry.
+388 actual router violations273Short/115MetalSpacing; global-route-RC setup
+-3.031467ns/hold-.184124ns/oneelectrical violation. Actual worst path sample_time[1]
+through time comparison/high fanout to _09936_/D. Earlier a4 is a different
+pre-integration source; no isolated gain claim. Not process DRC/LVS/PEX/PVT.
+No unchanged EDA retry is scheduled. Preserve all earlier failures/artifacts.

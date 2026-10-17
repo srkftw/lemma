@@ -482,3 +482,17 @@ macro geometry matches a4. The new route attempt fails before OpenROAD because
 available RAM is below the unchanged8GiB launch floor;900s/1000s/100MHz/rules
 remain unchanged. Details are in the existing SRAM receipt. Original completed
 routing failures and all full-chip/process/PVT/PEX gaps remain.
+
+
+After validated task-owned worker closure and other completed jobs, actual
+8.29GiB availability satisfied the unchanged8GiB launch floor. The same changed
+maintained netlist completed detailed signal routing in504.830586s; supervisor
+505.391593s/peak1,339,625,472B, processes reaped. It **FAILS**388 router violations
+(273short/115spacing), estimated setup-3.031467ns/hold-0.184124ns and one electrical
+violation. Exact macro geometry and every source seal pass. The actual worst
+path now starts sample_time[1], traverses the wide time comparator and several
+high-fanout buffers to _09936_/D. These are global-route RC estimates retained
+after detailed routing, not routed extraction. Earlier a4 uses a different
+pre-integration source; no isolated six-comparison timing gain is claimed.
+Original8GiB prelaunchFAIL and earlier route failures remain. No process
+DRC/LVS/PEX/PVT, rule-coverage or full-chip closure follows.

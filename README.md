@@ -2780,3 +2780,57 @@ that guest recovery session. `scripts/check_interrupted_notebook_update.py
 --cut metadata --help` exposes the bounded connected partial-metadata-write,
 brownout and independent known-good cold-recovery check; its result is separate
 from the passing partial-payload check and full interrupted-update matrix.
+
+
+The normal command surface now exposes the same development-authenticated ROM
+path as `./scripts/lemmasim product-auth`. A local relocatable ROM bundle carries
+its exact native/ROM component archives and host sources, with external user
+media. It uses the existing machine and Lean recovery protocol. It requires
+host Python and the inventoried Nix-store audit tools/runtime libraries; it does
+not yet provide clean-host installation or redistribution permission.
+
+```sh
+./scripts/lemmasim product-auth --help
+./scripts/lemmasim product-bundle \
+  --prepared build/boot/task006-scoped-boot-write-prepared-a3 \
+  --output-dir build/distribution/UNUSED_ROM_BUNDLE
+# Existing prepared local bundle, verified after actually moving its directory:
+python3 -I build/distribution/task006-scoped-rom-local-relocated-a2/run.py --verify-only
+python3 -I build/distribution/task006-scoped-rom-local-relocated-a2/run.py --help
+```
+
+From any working directory, use the absolute path to that bundle's `run.py`:
+
+```sh
+python3 -I /absolute/BUNDLE/run.py --public-development-key create-medium \
+  --boot-medium /absolute/UNUSED_PRIVATE_BOOT.raw
+python3 -I /absolute/BUNDLE/run.py --public-development-key launch \
+  --boot-medium /absolute/PRIVATE_BOOT.raw --disk /absolute/PRIVATE_NOTEBOOK.raw \
+  --session-dir /absolute/UNUSED_SESSION --mode developer --paused --headless --recovery
+python3 -I /absolute/BUNDLE/run.py --public-development-key install-resume \
+  --session-dir /absolute/SESSION --package /absolute/AUDITED_IMAGE_PACKAGE \
+  --tag /absolute/AUDITED_IMAGE_PACKAGE/slot0.tag --slot 0 \
+  --cycles 900000000 --timeout 7200
+python3 -I /absolute/BUNDLE/run.py --public-development-key boot \
+  --session-dir /absolute/SESSION --slot 0 --image-id 0x000a000000000016 \
+  --continue-recovery --cycles 300000000 --timeout 3600
+python3 -I /absolute/BUNDLE/run.py control --session-dir /absolute/SESSION \
+  --request '{"action":"inspect"}'
+python3 -I /absolute/BUNDLE/run.py control --session-dir /absolute/SESSION \
+  --request '{"action":"snapshot","path":"/absolute/UNUSED_CHECKPOINT"}'
+python3 -I /absolute/BUNDLE/run.py control --session-dir /absolute/SESSION \
+  --request '{"action":"destroy"}'
+```
+
+Use the package's actual identity/slot-specific tag. Existing private notebook
+media must come from the guest initializer or prior acknowledged saves; boot
+installation never formats it. After destruction, launch with the same media
+and omit `--recovery` for normal ROM selection/cold loading. A private checkpoint
+launch instead uses `launch --restore /absolute/CHECKPOINT` without media or
+`--recovery`; it is continuation, not cold recovery. Bundle validation retains
+all original component/audit checks. Only four preparation locations are rebound
+in a temporary private descriptor directory; moving/launching never edits the
+bundle. Its local gzip artifact is
+`build/distribution/task006-scoped-rom-local-a1.tar.gz`; no user media is included.
+Actual moved CLI CPU0/capacity is qualified; full new-bundle notebook, clean-host
+and redistribution qualifications remain separate.

@@ -1093,13 +1093,13 @@
   },
   "latest_observed_candidate_ci": {
     "source": "Actual GitHub workflow tool results, October17; no local test inference.",
-    "commit": "8e3506cf0ca0a94bec5aef9151b4b7565a5942c8",
-    "workflow_run_id": 39062035567,
-    "run_number": 168,
-    "status": "completed",
-    "conclusion": "success",
-    "url": "https://github.com/srkftw/lemma/actions/runs/39062035567",
-    "scope": "Actual complete published8e workflow; later scoped-I/O changes require their own candidate run.",
+    "commit": "350debcc497856b9eb4aa6a768c0c7dc50d40c0e",
+    "workflow_run_id": 39065254797,
+    "run_number": 169,
+    "status": "in_progress",
+    "conclusion": null,
+    "url": "https://github.com/srkftw/lemma/actions/runs/39065254797",
+    "scope": "Actual initial350debc run observation. New local-ROM distribution increment is not covered.",
     "previous99": {
       "commit": "99e27ce8ff814fda92c29f4beefe687cf17429ce",
       "run_id": 39057257719,
@@ -1136,10 +1136,15 @@
       "url": "https://github.com/srkftw/lemma/actions/runs/39050548744",
       "scope": "Published e2 backlog-v1 candidate only; local post-overflow ink FAIL and later uncommitted home-ink successor remain separate."
     },
-    "jobs": 11,
-    "steps": 117,
-    "skipped_steps": 0,
-    "failed_steps": 0
+    "previous8e": {
+      "commit": "8e3506cf0ca0a94bec5aef9151b4b7565a5942c8",
+      "run_id": 39062035567,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": 11,
+      "steps": 117,
+      "skipped_steps": 0
+    }
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1294,45 +1299,15 @@
     }
   },
   "latest_bounded_physical_attempt": {
-    "status": "FAIL_COMPLETED_SRAM_SIGNAL_ROUTE_ROUTER_SETUP_HOLD_ELECTRICAL",
-    "result": "build/silicon/physical/pen-sram-route-a4/result.json",
-    "supervision": "build/silicon/pen-sram-route-supervision-a4/result.json",
-    "seconds": 421.676925662905,
-    "owned_peak_rss_bytes": 1357991936,
-    "router_violations": 314,
-    "estimated_setup_wns_ns": -4.218564,
-    "estimated_hold_wns_ns": -0.182969,
-    "electrical_violations": 2,
-    "routed_solution_adopted": false,
+    "status": "FAIL_COMPLETED_SIGNAL_ROUTE_ROUTER_TIMING_ELECTRICAL",
     "evidence": "docs/evidence/006-pen-sram.json",
-    "separate_maintained_option": {
-      "behavior": "Same controller, opt-in IHP_SRAM=1/full256/all181bits; default banks retained.",
-      "RTL": "Current full256/default/real4state SRAM/mutations PASS7.871752s; original full-width sample-range cones isolated during mapping,6623cells vs6820/same866FF/3SRAMs, timestamp depth18vs17 within unchanged20.",
-      "guest": "Target unchanged; prior archived guest/runtime cases keep their identities.",
-      "state": "Not enabled in native/Wasm profiles; SRAM logical-state/checkpoint admission open.",
-      "distribution": "Reproducible host qualification command, pinned existing public PDK objects; no physical device or rights closure.",
-      "physical": "Changed range-cone route FAIL before OpenROAD due actual available RAM below unchanged8GiB launch floor; prior prototype failures retained. No new delay/routing/process/PEX/PVT claim."
-    },
-    "previous_attempt": {
-      "source": "57e5c681165869e9b33a6da1ab069d36a7e47f2ae9eda13311a8b5a2d399a1cc",
-      "status": "FAIL_CHANGED_SOURCE_DETAILED_ROUTE_DEADLINE_REJECTED",
-      "result": "build/silicon/physical/pen-sequence-ready-route-a1/result.json",
-      "supervision": "build/silicon/pen-sequence-ready-route-supervision-a1/result.json",
-      "seconds": 906.2231761869043,
-      "owned_peak_rss_bytes": 4495138816,
-      "setup_global_wns_ns": -2.073945,
-      "hold_global_wns_ns": 0.032945,
-      "adopted": false,
-      "disposition": "Changed-source readiness FF candidate rejected after actual900s detailed-route timeout and worse setup WNS. All256entries retained; maintained RTL/clock/rules unchanged. No processDRC/LVS/PEX/timing/full-chip acceptance."
-    },
-    "new_changed_maintained_attempt": {
-      "status": "FAIL_BEFORE_OPENROAD_LAUNCH_RAM_FLOOR",
-      "plan": "build/silicon/pen-sram-range-route-plan-a1/plan.json",
-      "supervision": "build/silicon/pen-sram-range-route-supervision-a1/result.json",
-      "geometry_preflight": "PASS actual three macros/nonoverlap/a4 rectangles",
-      "original_launch_floor_bytes": 8589934592,
-      "route_executed": false
-    }
+    "result": "build/silicon/physical/pen-sram-range-route-a2/result.json",
+    "seconds": 504.83058635203633,
+    "router_violations": 388,
+    "estimated_setup_slack_ns": -3.031467,
+    "estimated_hold_slack_ns": -0.184124,
+    "electrical_violations": 1,
+    "scope": "Changed maintained range cones,3realSRAM/full256/10ns; global-route RC after detailed routing, not PEX or process/fullchip closure."
   },
   "portable_host_index_milestone": {
     "behavior": "Unchanged fixed-framebuffer port values, including inactive out-of-range wrap",
@@ -2052,8 +2027,8 @@
     "physical": "No new physical qualification",
     "evidence": {
       "path": "docs/evidence/006-trial-watchdog.json",
-      "sha256": "7a5acb158437c6d81d86bcab5998dfc1c52ddeb76099d3a9e9257a31baf6a0ad",
-      "bytes": 23359
+      "sha256": "dae9c559fd59eaecbcb354d7209d159a0b3b00ea78885099784f8211cdde6783",
+      "bytes": 23795
     },
     "confirmed_image15_cold": "PASS_SEPARATE_NORMAL_ROM_COLD_READER_961M_6947s_ORIGINAL_FULL_CAMPAIGN_FAIL_RETAINED"
   },
@@ -2223,7 +2198,7 @@
     "evidence": "docs/evidence/006-qemu-logical-softtlb.json"
   },
   "scoped_boot_write_fault": {
-    "status": "IMPLEMENTED_COMPONENT_TESTED_CONNECTED_METADATA_NOT_RUN",
+    "status": "RUNNING_FROZEN_FULL_GUEST_METADATA_CASE",
     "evidence": "docs/evidence/006-trial-watchdog.json",
     "contract": "docs/contracts/006-backing-io-v1.md",
     "public_command": "lemmasim-auth launch --boot-write-limit FIRST:PAST:CEILING; Laboratory/single-thread/cold only",
@@ -2238,6 +2213,19 @@
       "New fixed full-image/torn-metadata guest recovery case not yet executed.",
       "External Linux environment is not portable authoritative snapshot state.",
       "Full interrupted update matrix and production trust remain open."
-    ]
+    ],
+    "plan": "build/boot/task006-torn-metadata-update-plan-a1/plan.json"
+  },
+  "local_rom_distribution": {
+    "status": "PASS_RELOCATED_BUNDLED_ROM_CLI_CPU0_AND_GUEST_CAPACITY",
+    "evidence": "docs/evidence/006-local-native-distribution-v1.json",
+    "source_scope": "350debc plus fully indexed staged host additions. No clean committed-source claim.",
+    "archive": "build/distribution/task006-scoped-rom-local-a1.tar.gz",
+    "bytes": 42106436,
+    "files": 2610,
+    "actual_RTL_clocks": 200000,
+    "actual_retired_instructions": 85178,
+    "seconds": 20.94751155306585,
+    "limitations": "Exact external pinned Nix tools/libraries/Python required; public development key; no user media/kernel preload; full new-bundle notebook/checkpoint, clean-host and redistribution qualifications separate."
   }
 }

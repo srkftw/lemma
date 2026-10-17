@@ -567,6 +567,34 @@
       "unchanged_bounds": "8GiB available launch floor,6GiB owned RSS,900s inner/1000s outer,10ns clock/3 route iterations/original rules",
       "reason": "Actual available RAM below independently retained8GiB launch floor; no OpenROAD routing invoked, no timing/DRC result."
     },
-    "qualification": "Literal full256 default/real four-state vendor SRAM plus sequence/address mutants passed. Fewer mapped cells is not a routed timing improvement; timestamp depth increases by1 within original20 bound."
+    "qualification": "Literal full256 default/real four-state vendor SRAM plus sequence/address mutants passed. Fewer mapped cells is not a routed timing improvement; timestamp depth increases by1 within original20 bound.",
+    "completed_route_a2": {
+      "status": "FAIL_COMPLETED_SIGNAL_ROUTE_ROUTER_TIMING_ELECTRICAL",
+      "result": "build/silicon/physical/pen-sram-range-route-a2/result.json",
+      "sha256": "4d0657a7ad672875ecb5249a15e5d8cbd33c0ef217eff4a977c1ef8c5ec8b909",
+      "seconds": 504.83058635203633,
+      "supervisor": "build/silicon/pen-sram-range-route-supervision-a2/result.json",
+      "supervisor_seconds": 505.39159300597385,
+      "owned_peak_rss_bytes": 1339625472,
+      "source_seal_equal": true,
+      "signal_route_completed": true,
+      "router_DRC": {
+        "status": "FAIL",
+        "violations": 388,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "independent_DRC_types": {
+        "Short": 273,
+        "Metal Spacing": 115
+      },
+      "estimated_setup_slack_ns": -3.031467,
+      "estimated_hold_slack_ns": -0.184124,
+      "electrical": {
+        "global-electrical.rpt": 1,
+        "electrical.rpt": 1
+      },
+      "worst_path": "sample_time[1] through NAND4/NOR3/NAND4 comparator and high-fanout buffers to _09936_/D; actual setup.rpt retained.",
+      "scope": "Same maintained6623-cell mapped source/three real SRAMs/10ns/a4 macro geometry/rules. Actual8.29GiB satisfied unchanged8GiB launch floor after task-owned work release. Original prelaunchFAIL retained. Global-route RC estimate after detailed route, not extracted PEX; no DRC/LVS/PVT/fullchip or causal per-comparison timing improvement claim."
+    }
   }
 }

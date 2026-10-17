@@ -670,5 +670,41 @@
         "bytes": 13234
       }
     }
+  },
+  "local_rom_machine_bundle": {
+    "schema": "lemma-local-auth-machine-bundle/1",
+    "status": "PASS_RELOCATED_BUNDLED_ROM_CLI_CPU0_AND_GUEST_CAPACITY",
+    "path": "build/distribution/task006-scoped-rom-local-relocated-a2",
+    "manifest_sha256": "e5cf5f984820302ed8733da89e0caccc1a54d662e04e7819f52a607b97bc3eaa",
+    "files": 2610,
+    "bytes": 42106436,
+    "archive": "build/distribution/task006-scoped-rom-local-a1.tar.gz",
+    "archive_bytes": 9366171,
+    "archive_sha256": "ed33404cf6c55bb14ad78aa3765c338b13835a9a6f8e90db6f33ea1b8e1703e5",
+    "result": "build/boot/task006-scoped-rom-local-relocation-a2/result.json",
+    "result_sha256": "14b75e9bf1f35d446f0c97b9cabf1539cb342e09e492d000d0b940185013bd9b",
+    "seconds": 20.94751155306585,
+    "actual_RTL_clocks": 200000,
+    "actual_retired_instructions": 85178,
+    "actual_capacity": 8590000136,
+    "boot_unchanged": true,
+    "original_bundle_manifest_unchanged": true,
+    "user_media_included": false,
+    "component_runtime_identity": "677aacbc0c1dc2cea5658357e7ad992b0d91ca63a4504c69a43e42ead097bd4d",
+    "retained_observer_failure": "build/boot/task006-scoped-rom-local-relocation-a1/result.json",
+    "failure_reason": "Host expected2*32768 sectors, omitting8 reserved sectors. Real launcher correctly created65544sectors. Original failure before launch retained; corrected independent capacity expectation only.",
+    "host_checks": {
+      "boot": 43,
+      "seconds": 0.182,
+      "scaffold": 18,
+      "scaffold_seconds": 15.6,
+      "metadata": "PASS"
+    },
+    "source_scope": "350debc plus explicit staged product_bundle/root-command/test additions, all2610 immutable file identities retained; not clean committed source.",
+    "limitations": [
+      "Exact existing Nix-store tools/runtime libraries and Python are required. No clean-host or redistribution claim.",
+      "Actual moved package CPU0 and compiled Lean recovery capacity only; full notebook and new bundle checkpoint/replay remain separate.",
+      "Public development key only. No user media or running kernel preload included."
+    ]
   }
 }

@@ -113,3 +113,32 @@ an earlier compiler/audit result. Version3 retains version2 course dispatch,
 permissions, immutable-package rules and runtime prerequisites. Its Nix export
 still contains host dependencies only. Actual Ready, cold recovery, checkpoint
 completeness and new-host installation require their own observations.
+
+
+The separate `lemma-local-auth-machine-bundle/1` packages Product10 ROM/NV
+execution, not the canonical ELF-preload guest bundle. `product-bundle` reuses
+`product_archive.create`, includes the exact indexed host checkout and copies
+the maintained `product_bundle.py` as its launcher. The bounded inventory is
+8192 files/64MiB per file/256MiB total, with a4MiB manifest and a4096file/64MiB
+host-source cap. Unknown files, missing/changed files, path traversal and
+symlink components reject before importing host validators or starting a CPU.
+Hashes supply source integrity/compatibility, not an authentication root.
+
+A moved launcher rebinds exactly native_build, native_source_archive, rom_build
+and rom_source_archive into a private temporary prepared directory. Descriptor
+and notice copies live there for the complete synchronous session lifetime;
+original immutable component/host archives stay unchanged. Original source,
+LLVM/ELF, profile/discovery and native-library checks remain load-bearing.
+The bundle owns its preparation; user override and build/prepare commands are
+not admitted. Actual ordinary auth/recovery commands and bounded JSON control
+requests use the maintained guest transport and Session permissions. Source
+revision/status are recorded alongside every exact indexed input; a dirty
+host build is never mislabeled as clean committed source.
+
+No user media or running kernel payload is bundled. New blank BootNV creation,
+image installation/authentication, live user medium ownership, private restore
+and cold selection retain their existing distinct semantics. Pinned Nix audit
+tools/libraries and Python remain external requirements. This local format has
+no clean-host, Nix export, browser-ROM, general checkpoint or redistribution
+closure claim. Actual relocation CPU0/protocol execution and complete notebook
+execution retain separate observations.

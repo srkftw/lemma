@@ -615,7 +615,7 @@
     "scope": "Separate normal-ROM CPU0 cold/reader from the retained actual confirmed image15. Original full healthy campaign remains FAIL."
   },
   "scoped_metadata_fault": {
-    "status": "IMPLEMENTED_COMPONENT_TESTED_CONNECTED_NOT_RUN",
+    "status": "RUNNING_FROZEN_FULL_GUEST_METADATA_CASE_ORIGINAL_BOUNDS",
     "runtime_identity": "677aacbc0c1dc2cea5658357e7ad992b0d91ca63a4504c69a43e42ead097bd4d",
     "binary_sha256": "0606235b79b603c43a35f59274c3d625ed227e5fb3f0289f5511d3d8e78fde68",
     "prepared": "build/boot/task006-scoped-boot-write-prepared-a3",
@@ -625,6 +625,18 @@
       "boot": 39,
       "scaffold": 18
     },
-    "scope": "Real Linux scoped write limit and independently observed returned byte prefix. Full1059-sector guest metadata case remains a separate required execution."
+    "scope": "Real Linux scoped write limit and independently observed returned byte prefix. Full1059-sector guest metadata case remains a separate required execution.",
+    "plan": "build/boot/task006-torn-metadata-update-plan-a1/plan.json",
+    "source_commit": "350debcc497856b9eb4aa6a768c0c7dc50d40c0e",
+    "host_source_count": 1881,
+    "actual_fault": "0:1024:256",
+    "bounds": {
+      "aggregate_RTL_clocks": 2400000000,
+      "whole_seconds": 21600,
+      "transfer_clocks": 900000000,
+      "transfer_seconds": 7200,
+      "cold_clocks": 1500000000,
+      "cold_seconds": 11200
+    }
   }
 }
