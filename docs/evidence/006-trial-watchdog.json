@@ -528,5 +528,22 @@
     "checker": "scripts/check_interrupted_notebook_update.py",
     "scope": "16 actual inactive payload sectors/real barrier receipts, no tag/publication, real brownout200clocks, independentCPU0normal ROM selects known confirmed13, all3.63Mhome/all256MiB preserved. Between sector barriers only; no full interruption matrix claim.",
     "bounds": "1.8B/14400s; partial300M/2400s, originalcold1.5B/11200s"
+  },
+  "current_control_backlog_product": {
+    "status": "GENUINE_WHOLE_LINKED_PASS_CONNECTED_EXECUTION_PENDING",
+    "result": "build/courses/task006-control-backlog-home-product-plan-a1/result.json",
+    "result_sha256": "3df8ab04fa00806e942b5ec42a9a146e292bc458f1bc8ff49624f0bc50407bf4",
+    "implementation": "99e27ce8ff814fda92c29f4beefe687cf17429ce",
+    "seconds": 677.4032500759931,
+    "peak_RSS_bytes": 1834790912,
+    "consumed_sources": 457,
+    "configuration": "lemmasim-silicon-product-course-watchdog-bulk-notebook",
+    "package": "build/boot/task006-control-backlog-home-product-package-a1",
+    "identity": 2814749767106582,
+    "sectors": 1068,
+    "image_sha256": "ef45db4e516475e6c51cd38899147bd8358a33fa15f0ff52f5e8ae7c08080442",
+    "source_archive": "build/boot/task006-control-backlog-home-product-source-a1/consumed-source-root",
+    "tag_sha256": "eaca78b622be9ec6979a8fb4030e3fc14036982185457a541b53faf43405ce8b",
+    "scope": "Same current sharedNotebook v2 source as the passing canonical pair; actual ROM/kernel watchdog path unchanged. Packaging is not install/trial/cold execution. New fixed Saved19 case retains old1059/Saved32 case and every original4.3B/32400s phase/whole ceiling."
   }
 }

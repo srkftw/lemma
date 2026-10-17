@@ -4,6 +4,8 @@
 The original Saved14 case remains fixed. The additive Saved38 Reader18 case
 uses an audited four-role image and raw COURSE input after independent cold.
 The fixed Saved32 case adds the corrected revision-bound hint publication image.
+Saved19 adds the current shared control-backlog/home-ink source on the same
+supervised product boot path, preserving the separate old image15 case.
 These cases do not claim interrupted confirmation, production keys or browser boot.
 """
 import argparse
@@ -64,15 +66,16 @@ def main():
     parser.add_argument('--public-development-key', action='store_true', required=True)
     parser.add_argument('--case',choices=('saved14-notebook','saved38-course-reader',
                         'saved38-course-reader-pool-read','saved32-course-hint-publication',
-                        'saved32-course-trial-watchdog'),
+                        'saved32-course-trial-watchdog','saved19-course-control-backlog-watchdog'),
                         default='saved14-notebook')
     parser.add_argument('--expected-home',type=Path)
     parser.add_argument('--expected-course',type=Path)
     parser.add_argument('--confirmed-from', type=Path,
                         help='Separate cold-only qualification from a retained image15 campaign whose sole failure was the unclocked reset observer; never reclassifies that FAIL')
     args = parser.parse_args()
-    supervised_trial = args.case == 'saved32-course-trial-watchdog'
-    require(args.confirmed_from is None or supervised_trial,
+    control_backlog = args.case == 'saved19-course-control-backlog-watchdog'
+    supervised_trial = control_backlog or args.case == 'saved32-course-trial-watchdog'
+    require(args.confirmed_from is None or args.case == 'saved32-course-trial-watchdog',
             'retained confirmed qualification supports only the fixed watchdog image15 case')
     hint_publication = supervised_trial or args.case == 'saved32-course-hint-publication'
     reader = hint_publication or args.case in ('saved38-course-reader','saved38-course-reader-pool-read')
@@ -91,6 +94,8 @@ def main():
     sectors, sequence_expected = (1057 if pool_read else 1056,38) if reader else (724,14)
     if hint_publication:
         sectors, sequence_expected = (1059 if supervised_trial else 1058), 32
+    if control_backlog:
+        sectors, sequence_expected = 1068, 19
     out = args.work_dir.resolve()
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
     out.mkdir(parents=True)
@@ -128,6 +133,13 @@ def main():
             'All original Reader clock, host and resource ceilings retained. '
             'Require observed actual arm, durable health before actual disarm and independent confirmed cold. '
             'Original724/1056/1057/1058-sector cases stay strict.')
+
+    if control_backlog:
+        report['bound_basis'] = ('Separately audited1068-sector current sharedNotebook v2 image16 '
+            'and actual complete queued-controls/overflow/post-error-ink Saved19 medium. '
+            'Known confirmed13 remains in slot1. Same original900M installation,300M handoff, '
+            '1.2B trialReady,1.5B cold,400M course and4.3B/32400s whole ceilings. '
+            'No existing fixed case, failure or bound changes.')
 
     if args.confirmed_from is not None:
         whole_seconds, total_cap = 14800, 1900000000
@@ -251,6 +263,10 @@ def main():
                 'original genuine audited notebook package changed')
         report['compiled_package'] = fresh
         require(fresh['sectors'] == sectors, 'declared audited payload sector count differs')
+        if control_backlog:
+            require(fresh['identity'] == 0x000a000000000016 and fresh['image_sha256'] ==
+                    'ef45db4e516475e6c51cd38899147bd8358a33fa15f0ff52f5e8ae7c08080442',
+                    'fixed current audited image16 differs')
         # Bind the modules actually imported by the package/pixel observers,
         # including lazily loaded validators. Do not guess their directories.
         for module in list(sys.modules.values()):
@@ -272,6 +288,8 @@ def main():
         target_slot = 0 if supervised_trial else 1
         require(known[3:5] == ((1,0x000a000000000013) if supervised_trial else (0,1001)),
                 'declared confirmed source required; supervised trial retains actual known-good notebook13')
+        if control_backlog:
+            require(known[5:8] == (2, 0, 0), 'current update requires confirmed/no-trial source')
         _, sequence, records = recover(disk.read_bytes())
         require(sequence == sequence_expected, 'declared genuine source sequence required')
         if reader:
@@ -385,7 +403,7 @@ def main():
         close(cold)
         guard()
         require(all(sha(p) == h for p, h in report['original_inputs'].items()), 'original input changed')
-        report.update(status=('PASS_AUTHENTICATED_CONFIRMED_IMAGE15_COLD_READER' if args.confirmed_from is not None else 'PASS_AUTHENTICATED_TRIAL_WATCHDOG_UPDATE_DISARM_COLD_READER' if supervised_trial else 'PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER' if reader else 'PASS_AUTHENTICATED_NOTEBOOK_AB_UPDATE_GUEST_CONFIRMATION_COLD'),
+        report.update(status=('PASS_AUTHENTICATED_CONTROL_BACKLOG_WATCHDOG_UPDATE_DISARM_COLD_READER' if control_backlog else 'PASS_AUTHENTICATED_CONFIRMED_IMAGE15_COLD_READER' if args.confirmed_from is not None else 'PASS_AUTHENTICATED_TRIAL_WATCHDOG_UPDATE_DISARM_COLD_READER' if supervised_trial else 'PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER' if reader else 'PASS_AUTHENTICATED_NOTEBOOK_AB_UPDATE_GUEST_CONFIRMATION_COLD'),
             all_expected_pixels=True, all_document_bytes_unchanged=True, snapshot_cold_input=False,
             confirmed_metadata=list(row[:9]), confirmed_boot_sha256=sha(confirmed))
     except BaseException as error:

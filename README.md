@@ -2717,3 +2717,32 @@ performs a separately labeled confirmed-cold/course qualification from the
 retained actual medium, without rerunning installation or erasing the FAIL.
 `scripts/check_interrupted_notebook_update.py --help` describes the new bounded
 partial-payload/brownout/known-notebook cold scenario; its execution is pending.
+
+The same home-ink source also passes the complete ProductWatchdog image build
+and linked audit. Its457-input archive and1068-sector image16 preserve the
+existing ROM, public development key, boot compatibility and journal formats.
+The following bounded command performs actual ROM installation, supervised
+trial/health confirmation, independent cold boot and complete home/course/media
+comparison; preparation alone does not establish that execution result:
+
+```sh
+nix develop --no-write-lock-file --command python3 -B scripts/check_authenticated_notebook_update.py \
+  --public-development-key --case saved19-course-control-backlog-watchdog \
+  --prepared build/boot/task006-trial-watchdog-prepared-a1 \
+  --guest-build build/kernel/task006-control-backlog-home-product-a1/product/notebook \
+  --guest-source-archive build/boot/task006-control-backlog-home-product-source-a1/consumed-source-root \
+  --package build/boot/task006-control-backlog-home-product-package-a1 \
+  --tag build/boot/task006-control-backlog-home-product-package-a1/slot0.tag \
+  --boot-medium build/boot/task006-pool-read-product-connected-a1/confirmed.raw \
+  --disk build/courses/task006-control-backlog-home-fast-plan-a1/consumed-host-source-root/build/connected/closed.raw \
+  --expected-home build/courses/task006-control-backlog-home-fast-plan-a1/consumed-host-source-root/build/connected/second-ready.ppm \
+  --expected-course build/courses/task006-control-backlog-home-fast-plan-a1/consumed-host-source-root/build/connected/reopened.ppm \
+  --work-dir build/UNUSED_CURRENT_PRODUCT_UPDATE
+```
+
+For ordinary recovery commands use the existing `lemmasim-auth launch`,
+`install-resume` with that package/tag in slot0, and `boot` commands above.
+Start with private copies of the confirmed boot and user media. Omit
+`--recovery` on a subsequent launch to execute the immutable ROM's normal
+selection/loading path. Production identity, loader-stage supervision and the
+full interrupted-update matrix remain open.

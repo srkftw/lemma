@@ -6103,3 +6103,55 @@ actual pending root47 at1826650000. Another10M within original300M stroke cap
 running. Continue actualSaved/raw/pixels -> explicitSave -> Close500M -> Close/
 Open SAME OPFSmedium CPU0cold1B7200/fullhome/all256MiB/course400M before original
 2026-10-18T00:26:11.452097Z whole deadline. No new snapshot cold input. Keep22/20.
+
+Next genuine product milestone at clean99e27ce8ff814fda92c29f4beefe687cf17429ce:
+Same shared v2 Notebook on ProductWatchdog complete four-role build/all linked
+audits PASS677.403250s/peak1834790912B/457 consumed sources at
+build/courses/task006-control-backlog-home-product-plan-a1/result.json.
+Archive ...control-backlog-home-product-source-a1; package
+build/boot/task006-control-backlog-home-product-package-a1/image.bin:
+ID0x000a000000000016,1068sectors/SHAef45db4e516475e6c51cd38899147bd8358a33fa15f0ff52f5e8ae7c08080442.
+Slot0 public-development-key tag SHAeaca78b622be9ec6979a8fb4030e3fc14036982185457a541b53faf43405ce8b.
+No boot medium is host-installed. New fixed Saved19 control-backlog-watchdog
+case uses actual new fast closed/second-ready/reopened artifacts, retains
+known13 in slot1 and every original4.3B/32400s/phase ceiling. Old1059-sector
+Saved32 image15 case and original FAIL remain strict. Actual installation/
+trial/cold result not inferred from this compilation. README gives exactcommand.
+Complete33boot-host PASS0.076s,18scaffold PASS9.352s, metadataPASS.
+
+New v2 real OS failed-save regression PASS58.307523s/442000006 functionalunits:
+build/courses/task006-control-backlog-home-file-limit-plan-a1/consumed-host-source-root/build/connected/result.json.
+Actual256-byte partialpwrite/EFBIG27/guestFailed227/noSaved,93 observed changed
+unacknowledged bytes, isolated captured-outcome replay and independentCPU0cold/
+all3.63Mpixels/all256MiB/explicitSave32. Original fixture/bounds/oracle unchanged;
+new genuine guest pair. Supervision59.621576s/peak1103511552B/no survivors.
+This does not qualify timing or omitted QEMU cached continuation.
+
+Browser22 actual3raw row1800 retained once, full3.366M writingpixels/mathematical
+workspace/history exact, Saved47 at1836650000 after43.95M clocks. Explicit
+readerSave48 at1851750000 advances only readerrevision1->2; every other object
+payload exact. Initial observer FAIL wrongly required identical readerpayload/
+frame; contract-correct a2 confirms exact128-byte bookmark revision and matches
+all3.63M actual first-panel pixels including still-PENDING footer. Do not call
+that first frame a completed Saved footer. ActualClose-course then admitted at
+1852750000, original500M/3600s fullhome phase running. Current raw/Save receipts
+at ...hint-publication-save32-plan-a1/actual-{raw-ink,explicit-save-a2}.json.
+Continue fullhome -> UI Close/Open SAME OPFSmedium CPU0cold/allhome/all256MiB/
+course3 before original00:26:11.452097Z. Original failed observer retaineda1.
+
+Maintained active native/Wasm suffix checker adds no field exclusions. First
+preflight FAIL28.535720s beforeCPU: cumulative20capture rows were incorrectly
+treated as the machine queuecursor. Real snapshotCRC/cycle/retired are correct;
+the machine prunes consumed events on admission and retains lastHINTqueue2.
+Corrected source99 uses six original observed browser admission boundaries,
+all18 raw controls, fixed901M->1338250000, exact complete state/CRC/UART/pixels/
+media and54 outcomes(42WRITE/12barriers). Own native restore only, no crossrestore,
+flush/drain/fence or QEMU/arbitrary-boundary claim. RUNNING under ORIGINALa1
+absolute9000s deadline at build/browser/task006-hint-active-native-wasm-plan-a2,
+tool54261. Native at1001800000/420791623retired in last progress; no PASS yet.
+
+CI4f actualrun165/39054718000 SUCCESS11jobs/117steps/zero skipped; full original
+job receipt build/ci/task006-4f-complete.json. Current public99 actualrun167/
+39057257719 IN_PROGRESS at first observation. PR9 draft/unmerged and updated.
+Subsequent local image16-case observer/docs changes require their own CI; do
+not inherit99's pending result. Preserve all existing long live machines.

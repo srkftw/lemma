@@ -1561,6 +1561,17 @@
         "browser_archive_bytes": 2096227,
         "browser_archive_sha256": "0ec8dfb6216f21742cbf07e0285338af979a8fb3816d4b79ebaa350cd12d482c",
         "scope": "Prepared validated bundles; same original native/RTL/Wasm cores with genuine new guest pair. Packaging does not qualify browser execution, clean-host install or redistribution rights."
+      },
+      "real_failed_save": {
+        "status": "PASS_REAL_FAST_PWRITE_FAILURE_REPLAY_INDEPENDENT_COLD_SAVE32",
+        "result": "build/courses/task006-control-backlog-home-file-limit-plan-a1/consumed-host-source-root/build/connected/result.json",
+        "result_sha256": "6c0461027c65abf45c3e4fb0a5f0afd5e2510f00d7fb59202120ea206f3a4eca",
+        "seconds": 58.30752318596933,
+        "functional_units": 442000006,
+        "scope": "Same existing real OS partialpwrite/EFBIG/noSaved, captured private I/O replay and independentCPU0cold/allhome/all256MiB case on genuine v2 guest; originalSaved32fixture/checks/bounds unchanged. Not QEMU cached-state or RTL timing qualification.",
+        "observed_changed_unacknowledged_bytes": 93,
+        "sampled_owned_peak_RSS_bytes": 1103511552,
+        "owned_survivors": {}
       }
     }
   }
