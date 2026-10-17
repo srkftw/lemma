@@ -251,4 +251,21 @@ Unrepresented queued CPU work rejects rather than being drained. The actual
 data suffix establishes only its stated property; total QEMU continuation,
 public adapter adoption and cross-backend microstate migration remain absent.
 
+The separate executable successor `ceabdf19b191de8bca717cf089e8dee8310ea7faf68b91b205fcaa958165db40`
+now qualifies two finite genuine Lean instruction-stream states: warmed stale
+executable translation before SFENCE and actual compiled-code modification
+before/after FENCE.I. Original and both own private restored forks match actual
+111/222/111/111 results, complete observed architectural/device state and every
+declared logical SoftTLB field at1Bns. Captures change no observed cache flush/
+invalidation counters. The private destination additionally uses the legal
+PRELAUNCH->INMIGRATE->PAUSED host lifecycle, with no CPU or device notification.
+The original host-status mismatch and failed direct transition remain failures.
+
+These finite observations do not serialize TB/jump caches or establish their
+semantic irrelevance for all admitted states. Broader instruction visibility,
+actual interrupt delivery/pending work and public session integration remain
+GAP_CONFIRMED. See the exact new source/build/result identities and executable
+commands in [the logical-cache contract](../../docs/contracts/006-qemu-logical-softtlb-v1.md)
+and [its retained receipt](../../docs/evidence/006-qemu-logical-softtlb.json).
+
 -->

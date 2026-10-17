@@ -609,13 +609,20 @@ RTL model serialization includes its caches/TLBs. QEMU migration flushes its
 software TLB; cached Sv39 mappings and TCG translation blocks are not serialized.
 The tested fast guest suffixes continue identically, but arbitrary cached-state
 continuation remains unfinished. See the source audit in the checkpoint/evidence.
+An opt-in logical-cache experiment additionally preserves data and selected
+executable translation/modification/fence suffixes using genuine Lean guests.
+Its private restore lifecycle and build/run commands are documented in the
+[logical-cache contract](docs/contracts/006-qemu-logical-softtlb-v1.md). It is
+separate from ordinary session snapshots; total QEMU continuation remains open.
 
 For RTL development, prepare the initializer and notebook with `build --backend rtl`
 and the same profile, then select `--backend rtl` on the lifecycle commands. The
 processor runs every hardware cycle; report its observed speed without a
 real-time claim. `--memory-latency N` adds admitted external-memory backpressure.
-The larger RTL notebook cold path remains a performance blocker; the original
-Task005 notebook evidence retains its different binding and execution identity.
+Canonical bulk RTL workloads have recorded cold Ready/edit/Save/independent
+cold recovery passes; host speed remains a usability constraint. Each source-
+bound workload retains its result, including earlier deadline failures and
+Task005's different binding and execution identity.
 Both backends still use explicitly named ELF-preload development boot. USB
 enumeration, digital Wi-Fi/Bluetooth, production power/recovery and a managed
 mathematical runtime remain unfinished in the

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "006-whole-machine-lemmasim",
-  "status": "PARTIAL_PASS_LOGICAL_SOFTTLB_DATA_SUFFIX",
+  "status": "PARTIAL_PASS_LOGICAL_DATA_AND_EXECUTABLE_SUFFIXES",
   "full_qemu_continuation": "GAP_CONFIRMED",
   "scope": "Local opt-in QEMU logical software data-translation preservation under a paused single-CPU pair; test-only genuine Lean kernel-v0.4 RV64IM guest. No notebook, cross-backend, timing-parity, physical-conformance or total continuation claim.",
   "source_review_head": "e451bb1b558d2ed8fc881528476f3de3bf35f432",
@@ -460,5 +460,160 @@
     "path": "build/task006-softtlb-a1/logical-guest-a4/coredump-info.txt",
     "bytes": 11307,
     "sha256": "04d3bb695e6204709b3e1309d553fb90527d4384f59a9e9818658b65fd900521"
+  },
+  "executable_experiment": {
+    "status": "PASS_LOGICAL_EXECUTABLE_TRANSLATION_MODIFICATION_FENCE_SUFFIXES",
+    "result": "build/lemmasim/task006-softtlb-exec-suffix-a5/result.json",
+    "result_sha256": "1bdb0c765dabae90c59c6c14460237af418c2d16da670511a4cc44003ff06ba2",
+    "seconds": 10.126188779016957,
+    "plan": {
+      "first_ns": 1000000,
+      "modified_search_limit_ns": 400000000,
+      "modified_search_step_ns": 1000000,
+      "end_ns": 1000000000,
+      "whole_seconds": 600,
+      "interval_seconds": 120,
+      "process_AS_bytes": 4294967296,
+      "file_bytes": 1073741824,
+      "external_events": [],
+      "storage": "absent, private per machine"
+    },
+    "modified_cut_ns": 129000000,
+    "results": [
+      {
+        "name": "original",
+        "words": {
+          "stale_exec": 111,
+          "fenced_exec": 222,
+          "unfenced_code": 111,
+          "fenced_code": 111
+        },
+        "uart_hex": "574e464d5549"
+      },
+      {
+        "name": "fork-warmed",
+        "words": {
+          "stale_exec": 111,
+          "fenced_exec": 222,
+          "unfenced_code": 111,
+          "fenced_code": 111
+        },
+        "uart_hex": "4e464d5549"
+      },
+      {
+        "name": "fork-modified",
+        "words": {
+          "stale_exec": 111,
+          "fenced_exec": 222,
+          "unfenced_code": 111,
+          "fenced_code": 111
+        },
+        "uart_hex": "5549"
+      }
+    ],
+    "owners_reaped": true,
+    "first_actual_executable_mapping": {
+      "virtual": "0x82050000",
+      "physical": "0x82103000",
+      "mode": 1,
+      "slot": 80
+    },
+    "second_actual_executable_mapping": {
+      "virtual": "0x82050000",
+      "physical": "0x82104000"
+    },
+    "capture_observational": {
+      "first_capture": {
+        "before": {
+          "TB flush count": 0,
+          "TB invalidate count": 0,
+          "TLB full flushes": 0,
+          "TLB partial flushes": 6,
+          "TLB elided flushes": 282
+        },
+        "after": {
+          "TB flush count": 0,
+          "TB invalidate count": 0,
+          "TLB full flushes": 0,
+          "TLB partial flushes": 6,
+          "TLB elided flushes": 282
+        }
+      },
+      "second_capture": {
+        "before": {
+          "TB flush count": 0,
+          "TB invalidate count": 1,
+          "TLB full flushes": 0,
+          "TLB partial flushes": 7,
+          "TLB elided flushes": 297
+        },
+        "after": {
+          "TB flush count": 0,
+          "TB invalidate count": 1,
+          "TLB full flushes": 0,
+          "TLB partial flushes": 7,
+          "TLB elided flushes": 297
+        }
+      }
+    },
+    "final_comparison": "Exact complete declared logical SoftTLB semantic fields, full observed registers/device state, actual four result words and applicable UART suffixes. Container SHA/decoder wire offsets remain separate metadata. TB/jump contents are not serialized; their broad semantic irrelevance is unqualified.",
+    "instruction_visibility": "Guest copies actual8-byte LLVM-generated A leaf into B, observes111 before and after actual FENCE.I. Immediate visibility is this selected model observation; no architectural stale-code promise.",
+    "scope_limit": "Two finite states only; total QEMU continuation remains GAP_CONFIRMED",
+    "genuine_guest_build": {
+      "result": "build/lemmasim/task006-softtlb-exec-target-a4/result.json",
+      "sha256": "342677979cb7f4ec38cb1b4fa27ee72af5af8b52e0171cb2cbb9745dae957f79",
+      "status": "PASS_GENUINE_LEAN_EXECUTABLE_SOFTTLB_TEST_IMAGE",
+      "seconds": 165.71359396900516,
+      "peak_RSS_bytes": 1836195840,
+      "fresh_elaborated_modules": 44,
+      "ELF_sha256": "1dff877ef2c52a17726343d9047c51f7cb50045fe74dc47cdf3eddc6ad1612c9",
+      "leafs": {
+        ".alias_a": {
+          "virtual": 2181365760,
+          "physical": 2182098944,
+          "bytes": 8,
+          "sha256": "0840b955e5bb10ea6655916f5522bf626bdcf86d8a808b8afd131c31dc91e506",
+          "compiler_symbol": "lemma_probe_core0_scalar_1"
+        },
+        ".alias_b": {
+          "virtual": 2182103040,
+          "physical": 2182103040,
+          "bytes": 8,
+          "sha256": "ba00643ddc4d9041c781f179cf1e85cf417fe90ca4fd6ea1c1394273359cd832",
+          "compiler_symbol": "lemma_probe_core0_scalar_0"
+        }
+      },
+      "bounds": {
+        "whole_seconds": 600,
+        "command_seconds": 300,
+        "process_AS_bytes": 17179869184,
+        "process_RSS_bytes": 4294967296,
+        "file_bytes": 1073741824
+      }
+    },
+    "host_binary": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/task006-softtlb-a1/qualified-a12/qemu-system-riscv64",
+      "sha256": "ceabdf19b191de8bca717cf089e8dee8310ea7faf68b91b205fcaa958165db40"
+    },
+    "host_rebuild": "build/task006-softtlb-a1/rebuild-a12.json",
+    "host_rebuild_seconds": 13.3657161379233,
+    "guarded_installer": {
+      "result": "build/task006-softtlb-a1/guarded-patch-a2/result.json",
+      "sha256": "b36a7f252c217978053a6871ea9ad1001b853071fe357f395644668173b3cbfc",
+      "status": "PASS_EXACT_TESTED_SOURCE_PREPARATION",
+      "seconds": 12.573836097028106,
+      "exact_files": 8
+    },
+    "lifecycle_repair": "After validated logical preparation, private destination follows legal PRELAUNCH->INMIGRATE->PAUSED host lifecycle. No CPU/device/cache operation, no ordinary stop/block drain, no new comparison exclusion. Failed destination remains disposable.",
+    "retained_failures": [
+      "build/lemmasim/task006-softtlb-exec-target-a1/result.json",
+      "build/lemmasim/task006-softtlb-exec-target-a2/result.json",
+      "build/lemmasim/task006-softtlb-exec-target-a3/result.json",
+      "build/lemmasim/task006-softtlb-exec-suffix-a1/result.json",
+      "build/lemmasim/task006-softtlb-exec-suffix-a2/result.json",
+      "build/lemmasim/task006-softtlb-exec-suffix-a3/result.json"
+    ],
+    "host_resource_measurement": "build/lemmasim/task006-lean-virtual-reservation-a2/result.json",
+    "full_qemu_continuation": "GAP_CONFIRMED; broader TB/jump/instruction-visibility, interrupt/pending-work and public session integration unfinished"
   }
 }

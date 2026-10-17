@@ -141,9 +141,16 @@ void qmp_lemma_load_machine_softtlb(const char *filename,
     }
     void *logical = lemma_softtlb_prepare(first_cpu, cache_filename, filename, errp);
     if (!logical) { return; }
+    /* Use the legal private incoming lifecycle; PRELAUNCH -> PAUSED is not
+     * an upstream runstate edge. This changes no CPU/device execution state. */
+    if (runstate_check(RUN_STATE_PRELAUNCH)) { runstate_set(RUN_STATE_INMIGRATE); }
     qmp_lemma_load_machine(filename, errp);
     if (*errp) { lemma_softtlb_discard(logical); return; }
-    lemma_softtlb_adopt(first_cpu, logical, errp);
+    if (!lemma_softtlb_adopt(first_cpu, logical, errp)) { return; }
+    /* The exclusively owned fresh destination starts in PRELAUNCH. Complete
+     * successful adoption as PAUSED without running a CPU, notifying devices,
+     * flushing caches or entering the ordinary block-draining stop path. */
+    runstate_set(RUN_STATE_PAUSED);
 }
 ''')
 

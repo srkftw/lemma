@@ -1,7 +1,7 @@
 <!--
 # QEMU logical SoftTLB experiment, version 1
 
-Status: actual narrowly qualified data-translation/SFENCE increment. The original
+Status: finite data and executable translation/modification/fence suffixes qualified. The original
 `GAP_CONFIRMED` observation in `conformance/lemmasim/QEMU_STATE_EQUIVALENCE.md`
 remains. This contract does not establish total exact QEMU continuation.
 
@@ -81,6 +81,46 @@ predeclared 300,000,000 ns boundary within 120 s per interval. Every final decla
 logical slot/metadata field agreed exactly. The sidecar retains the actual
 stopped/running/work witness and pending interrupt-request 2/exception-index -1.
 This does not qualify interrupt delivery or handler continuation.
+
+A subsequent executable test genuinely compiles44 project modules from source
+with the same kernel-v0.4 checker and LLVM20.1.8. Ordinary Lean valueA/valueB
+functions produce the independently audited8-byte leafs. Guest-issued calls
+warm the actual executable comparator at VA0x82050000 -> PA0x82103000, then
+change its PTE without SFENCE. At the1Mns cut the original/fork still execute111;
+actual SFENCE then selects222. The guest copies the actual compiled A leaf to B,
+and the second checkpoint is the first fixed1Mns boundary after that real store
+(at129Mns, within the predeclared400Mns search limit). Original and both private
+forks reach1Bns with exact111/222/111/111 result words, applicable UART suffixes,
+all observed architectural/device state and every declared logical cache field.
+Five actual JIT flush/invalidation counters remain unchanged across each
+capture. This selected model exposes modified code immediately before FENCE.I;
+no RISC-V requirement to retain stale instructions is invented. These two
+finite states do not close arbitrary executable/TB/jump/interrupt continuation.
+
+The selected host successor has SHA256
+`ceabdf19b191de8bca717cf089e8dee8310ea7faf68b91b205fcaa958165db40`.
+It repairs the private destination's host lifecycle using the legal
+PRELAUNCH -> INMIGRATE -> PAUSED sequence after validation. The original binary
+left a loaded fork labeled prelaunch; an initial attempted direct transition
+was rejected by QEMU's runstate graph. Both failures remain. The corrected
+transition runs no CPU, notifies no device and enters no stop/drain/cache path;
+all original equality checks remain. Fresh guarded preparation reproduces all
+eight consumed derivative files exactly. The new result is recorded separately
+from the original data-only binary and historical failed builds.
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/build_softtlb_exec_probe.py \
+  --output-dir build/lemmasim/UNUSED_EXEC_TARGET
+python3 conformance/lemmasim/run_softtlb_exec_probe.py \
+  --qemu build/task006-softtlb-a1/qualified-a12/qemu-system-riscv64 \
+  --guest-build build/lemmasim/UNUSED_EXEC_TARGET \
+  --dtb build/native/task006-bytes-bulk-a1/workloads/notebook/platform.dtb \
+  --work-dir build/lemmasim/UNUSED_EXEC_SUFFIX
+```
+
+These retained local inputs must exist and match their build manifests. A
+fresh host build uses the opt-in derivation in tooling/lemmasim/qemu.nix.
+The new test is not an ordinary session snapshot command or a distribution.
 
 The initial completed host build used a kept pinned Nix-configured tree and
 finished in 563.135 s within 1,200 s. Later bounded host increments preserve their own
