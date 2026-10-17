@@ -6407,3 +6407,41 @@ original consumed-checker.py/result/prefix retained. Corrected independent
 contract literal/LE/CRC decoder; original600s/10M/2GiBoutput ceilings retained.
 This adds reusable actual check code, no target/source/runtime changes. No new
 full notebook/crossbackend/cache/timing/distribution-rights claim follows.
+
+
+Current-v2 actual browser23 cold reached terminal phaseReady459550000clocks,
+no snapshot/initializer cold input. Independent literal full3.63Mhome/all256MiB
+installed3 backing match PASS at build/browser/
+task006-control-backlog-home-browser-plan-a1/cold-ready-result-a1.json.
+4063.996385 simulation-call seconds/4117.354790 opened-session Ready seconds/
+201326592-byte Wasm heap. Native sameguest/installed3 observes460M with1M
+quantum; browser50k quantum, no claimed algorithm speedup. Full current-v2
+browser workflow remains RUNNING. Actual two rawCOURSE events admitted with
+zero clock advance at459550000. Chooser150M/3600s, original absolute phase
+1792272782364ms (21:33:02Z), endcycle609550000. Two brief UI budget pauses
+conservatively clamp residual host/cycles INCLUDING setup time; final clamp-a2
+adds120s admission margin. Original whole6B/12h/07:22Z unchanged. Currentphase
+running; do not restart its ceiling/deadline. exportBacklogCut(roleName,name)
+persistentCUA helper performs real button/download into backlogWorkflowRoot;
+raw controls now expanded. Real full controller screenshot is
+.../browser/cold-ready-controller-view.png. Full-page capture failed, normal
+viewport screenshot succeeds; no synthetic/composited image.
+
+Browser22 Saved48 durable-only cold is still running, original1B/7200s and
+whole00:26:11.452097Z. At603.5M read-only inspection:231completed backing reads,
+no writes/barriers, panelbusy1/panelcompleted0, PC802001d0/priv1/289364910retired.
+It is doing first display work, not coldReady yet. Retained observation JSON at
+...hint-publication-save32-plan-a1/browser/saved48-cold-live-observation-a1.json.
+Next onReady: export allactual controller/backing; compare all3.63Mhome/all256M
+against actual closed-home.pgm/raw; record CPU0 cold PASS only after it matches.
+Then rawCOURSE320,140, original400M/3600s reopen; allsaved48workspace/history/
+body/course pixels. Snapshot/import never used as coldinput.
+
+Actual scoped-I/O candidate350debc CIrun169/39065254797 now COMPLETE SUCCESS,
+all11jobs/117steps/zero skips or failures. Full actual tool results retained
+build/ci/task006-350-complete.json. New localROM bundle15fe349/checker1d530a9
+still need final-candidate publication/CI. Actual compressed bundle extraction
+also passes2.530436s from /tmp with PATH=/usr/bin:/bin, outside nix develop,
+2809archive members; this does NOT remove external exactNix-store/Python need.
+Receipt build/distribution/task006-scoped-rom-extract-a1/result.json. No new
+user media or target clocks. Both original bundle observerFAILs retained.

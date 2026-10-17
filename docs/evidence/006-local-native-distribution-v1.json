@@ -736,6 +736,19 @@
       "retained_observer_failure": "build/boot/task006-rom-bundle-pending-a1/result.json",
       "original_failure": "Actual original suffix completed, but observer referenced nonexistent RESPONSE constant. Original33sFAIL/consumed-checker.py retained. Corrected decoder uses independent contract literal/LE/CRC; no guest/runtime or bound change.",
       "scope": "Bundled original/live partial37of80-byte real guest parser state plus queued remaining43UART bytes. Same-backend exact200k suffix/full145202004-byte machine checkpoint/UART/session authority+cursor/privateBootNV. No drain/fence/flush, original mutation, crossbackend or arbitrary-boundary completion claim."
+    },
+    "actual_archive_extraction": {
+      "status": "PASS_EXTRACTED_RELOCATED_ARTIFACT_MINIMAL_PATH_VALIDATION",
+      "archive": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-scoped-rom-local-a1.tar.gz",
+      "archive_sha256": "ed33404cf6c55bb14ad78aa3765c338b13835a9a6f8e90db6f33ea1b8e1703e5",
+      "PATH": "/usr/bin:/bin",
+      "target_cycles": 0,
+      "scope": "Actual gzip extraction to a new directory then validation from /tmp with PATH=/usr/bin:/bin, outside nix develop. Exact existing Nix-store tools/libraries remain required; no fresh-host or target-clock claim.",
+      "archive_members": 2809,
+      "returncode": 0,
+      "seconds": 2.5304361939197406,
+      "result": "build/distribution/task006-scoped-rom-extract-a1/result.json",
+      "result_sha256": "06f4f9d0feffb095a4fc6a47f91b50b00c538e1340aea7e9c4f72cf4154a3af0"
     }
   }
 }

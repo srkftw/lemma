@@ -1096,10 +1096,10 @@
     "commit": "350debcc497856b9eb4aa6a768c0c7dc50d40c0e",
     "workflow_run_id": 39065254797,
     "run_number": 169,
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "url": "https://github.com/srkftw/lemma/actions/runs/39065254797",
-    "scope": "Actual initial350debc run observation. New local-ROM distribution increment is not covered.",
+    "scope": "Actual complete350debc scoped-I/O candidate. Later15fe349/1d530a9 local-ROM bundle/checker increments still require their own candidate run.",
     "previous99": {
       "commit": "99e27ce8ff814fda92c29f4beefe687cf17429ce",
       "run_id": 39057257719,
@@ -1144,7 +1144,11 @@
       "jobs": 11,
       "steps": 117,
       "skipped_steps": 0
-    }
+    },
+    "jobs": 11,
+    "steps": 117,
+    "skipped_steps": 0,
+    "failed_steps": 0
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -2173,10 +2177,22 @@
         "observed_changed_unacknowledged_bytes": 93,
         "sampled_owned_peak_RSS_bytes": 1103511552,
         "owned_survivors": {}
+      },
+      "browser_cold": {
+        "status": "PASS_CURRENT_V2_WASM_COLD_READY_ALL_LITERAL_HOME_PIXELS_INSTALLED3_BYTES",
+        "RTL_clocks": 459550000,
+        "all_pixels": 3630000,
+        "all_medium_bytes": 268435456,
+        "simulation_call_seconds": 4063.996385000469,
+        "opened_session_seconds": 4117.354790000081,
+        "heap_bytes": 201326592,
+        "snapshot_cold_input": false,
+        "result": "build/browser/task006-control-backlog-home-browser-plan-a1/cold-ready-result-a1.json",
+        "whole_connected_status": "RUNNING_ORIGINAL_BOUNDS; actualrawCOURSE chooser phase now running"
       }
     }
   },
-  "latest_increment_implementation": "8e3506cf0ca0a94bec5aef9151b4b7565a5942c8",
+  "latest_increment_implementation": "1d530a9",
   "active_native_wasm_math_suffix": {
     "behavior": "Same existing RTL Machine and old current-hint guest execute actual numeric/checker/Store suffix; original snapshots restored only into their own private backend.",
     "model": "No new emulator or timing scaling.",
@@ -2237,6 +2253,7 @@
       "suffix_clocks": 200000,
       "complete_checkpoint_bytes": 145202004,
       "scope": "Original snapshot unchanged; exact fullsamebackend checkpoint+applicableUART+session authority/eventcursor+privateBootNV. Finite ROM protocol case, no arbitrary/cache/crossbackend claim."
-    }
+    },
+    "actual_extraction": "PASS_ACTUAL_GZIP_EXTRACTION_RELOCATED_VALIDATION_FROM_TMP_MINIMAL_PATH_OUTSIDE_NIX_DEVELOP; exact existing Nix-store dependencies remain"
   }
 }

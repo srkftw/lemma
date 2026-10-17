@@ -410,5 +410,28 @@
     "original_queued_input_failure": "Four tightly queued taps consumed but only first applied; retained actualSaved34 with unchanged document. Single-step path succeeds. New target backlog implementation is unqualified WIP, not retroactively applied to this immutable browser.",
     "whole_deadline_unchanged": "2026-10-18T00:26:11.452097+00:00",
     "full_D": "PENDING"
+  },
+  "current_v2_actual_browser_cold": {
+    "status": "PASS_CURRENT_V2_WASM_COLD_READY_ALL_LITERAL_HOME_PIXELS_INSTALLED3_BYTES",
+    "scope": "Actual source-bound current-v2 Wasm coldCPU0 from guest-installed3 backing, no snapshot/initializer cold input. Full independent literal empty home and all256MiB match. Complete subsequent browser workflow remains pending.",
+    "RTL_clocks": 459550000,
+    "all_pixels": 3630000,
+    "all_medium_bytes": 268435456,
+    "simulation_call_seconds": 4063.996385000469,
+    "opened_session_seconds": 4117.354790000081,
+    "heap_bytes": 201326592,
+    "pixel_sha256": "5775ed3a29cce0226c38012f1cb5df33c1fb24eaee4374e97ea6eb8b184d63d2",
+    "backing_sha256": "adb1a7288f0c55e5b8ff41af2729fd2e33e80399088a1b6e83ed9951446af885",
+    "snapshot_cold_input": false,
+    "observer_seconds": 1.969268967048265,
+    "result": "build/browser/task006-control-backlog-home-browser-plan-a1/cold-ready-result-a1.json",
+    "result_sha256": "39e78bffaaf31acc05e773d0b5848b48b9507940a3364b1c16855dca77ed3396",
+    "plan": "build/browser/task006-control-backlog-home-browser-plan-a1/plan.json",
+    "guest_ELF_sha256": "724b3407728d6461e544e26c606f479a0d49bab2e3568a997fe1b50905f41815",
+    "Wasm_core_identity": "84d52d610d2819e294b1c130b362e1289c48dfe31285225140029e9168c8e5a5",
+    "actual_source_backing": "build/browser/task006-reader18-fresh-course-plan-a1/browser/installed3-535M.raw",
+    "controller_screenshot": "build/browser/task006-control-backlog-home-browser-plan-a1/browser/cold-ready-controller-view.png",
+    "next_phase": "Two actual raw COURSE events admitted at459550000 with zero clock advancement; chooser150M/3600s running. Conservative residual budgets include UI pauses and retain original absolute phase deadline1792272782364ms and whole07:22Z deadline.",
+    "native_comparison": "Same installed3/current-v2 guest native RTL Ready observation460M with1M quantum; browser459.55M uses50k quantum. Different host load/timing scopes; no algorithm speedup or full new-guest crossbackend state claim."
   }
 }
