@@ -1174,7 +1174,7 @@
     "failure": "Real correct division-zero Invalid revision7 still displays prior revision6 rational hint; retained100M panel deadline FAIL. Three real shared publication paths bypassed the filter."
   },
   "authored_hint_publication2": {
-    "status": "COMPLETE_ARTIFACTS_AND_MACHINE_GUARDS_PASS_FRESH_LINKED_REPAIR_PENDING",
+    "status": "PASS_COMPLETE_LINKED_CANONICAL_COMPANION_PRODUCT_AND_CONNECTED_FAST_PREPARED_DISTRIBUTIONS_RTL_RUNNING",
     "contract": "docs/contracts/006-authored-hint-publication-v2.md",
     "actual_Lean_change": {
       "path": "Lemma/Applications/Notebook.lean",
@@ -1208,9 +1208,9 @@
       "bytes": 6760
     },
     "remaining": [
-      "Complete linked pair/audits",
-      "Actual connected RV64 context/hint/Save/independentcold",
-      "Exact RTL and updated prepared native/browser distribution"
+      "Actual corrected guest complete canonical RTL connected result",
+      "Actual corrected guest browser workflow; original browser Saved25 cold recovery PASS, reopened first panel incomplete at whole deadline, known old hint defect retained",
+      "Complete processor/checkpoint/runtime/proof-kernel/tutor/radio/distribution/physical gaps unchanged"
     ],
     "machine_alpha_capture": {
       "path": "build/courses/task006-hint-publication-machine-alpha-plan-a1/capture-result.json",
@@ -1234,6 +1234,64 @@
         "bytes": 52242
       }
     ],
-    "machine_observer_repair": "Two own-function LCPI names shifted with declaration ordinal; exact actual13 old/new assembly comparisons preserve all67 instructions and2 header words. Explicit version2 mapping retains old complete machine pin and25 cells. Three actual data/branch/relocation corruptions rejected. Generic normalizer/historical pins unchanged."
+    "machine_observer_repair": "Two own-function LCPI names shifted with declaration ordinal; exact actual13 old/new assembly comparisons preserve all67 instructions and2 header words. Explicit version2 mapping retains old complete machine pin and25 cells. Three actual data/branch/relocation corruptions rejected. Generic normalizer/historical pins unchanged.",
+    "implementation_commit": "a87750107339de4fe4592dbd5c6dc2906aa58e1c",
+    "complete_linked": {
+      "canonical": {
+        "path": "build/courses/task006-hint-publication-whole-plan-a2/result.json",
+        "sha256": "2d744fddce77857b2d43bd59b9163be988e094ba4442c6cb09414e704f126955",
+        "bytes": 54139
+      },
+      "companion": {
+        "path": "build/courses/task006-hint-publication-companion-whole-plan-a2/result.json",
+        "sha256": "00547348f7128821d06030b7d22349e410710822597effa006c8d75df8eab916",
+        "bytes": 54274
+      },
+      "product": {
+        "path": "build/courses/task006-hint-publication-product-whole-plan-a1/result.json",
+        "sha256": "97fd5dae779dfc694d3d722c9042ef7f2304702bab2274ec0dcf65e2d26a3e3e",
+        "bytes": 52154
+      }
+    },
+    "actual_fast": {
+      "path": "build/courses/task006-hint-publication-fast-plan-a3/connected/result.json",
+      "sha256": "4e5bb87ddcdb11298b9b395fa33e6d6d98d7b941f61571fa530d276936693266",
+      "bytes": 142124
+    },
+    "fast_supervision": {
+      "path": "build/courses/task006-hint-publication-fast-plan-a3/result.json",
+      "sha256": "af5b6a7cb2132a2934cbb01930c90212b0b4fa8c846ee0f15e8c777d6f05d56d",
+      "bytes": 1918
+    },
+    "fast_measured": {
+      "functional_units": 1519000143,
+      "seconds": 241.62865712796338,
+      "peak_RSS_bytes": 444502016,
+      "Saved": 32,
+      "all_controller_home_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "reader_edition": 3,
+      "reader_node": 3,
+      "timing_scope": "Fast functional units; no canonical pipeline timing parity"
+    },
+    "prepared_distributions": {
+      "path": "build/courses/task006-hint-publication-distribution-plan-a1/resumed-result-a2.json",
+      "sha256": "5c2316c61b0cd35111461f8d5488c48f60631b58a4ae4f48470922bf331028e2",
+      "bytes": 2148
+    },
+    "rtl_scope": "Running original6B/12h canonical connected case with hint-context, immutable1848-file a877 host source archive and ordinary validated native-view. Not a PASS yet.",
+    "candidate_ci": {
+      "source": "a87750107339de4fe4592dbd5c6dc2906aa58e1c",
+      "run": 39027715502,
+      "status": "SUCCESS",
+      "jobs": 11,
+      "steps": 117,
+      "skipped": 0,
+      "receipt": {
+        "path": "build/ci/task006-a877-complete.json",
+        "sha256": "c7ddad91fd6d3ab861b3cf84178b7a0e7d06112b11b69db83b8097db057d0718",
+        "bytes": 22580
+      }
+    }
   }
 }

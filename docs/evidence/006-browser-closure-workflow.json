@@ -762,5 +762,40 @@
     "host_checks": "tests/lemmasim/browser_worker_protocol.mjs: corrupt/type/range rejection while actively scheduled preserves timer keys, rawcursor and exact budget; validrestore/privateflushfailure clears old Ready/Saved beforeretry",
     "scope": "PublicUI valid Saved29 private restore,1 realcycle, observational snapshot, corrupt32byte archive rejection; no newcold/Ready claim",
     "remaining": "Live active-run corruption rejected by real publicmachine not separately exercised; active scheduling exactness qualified by worker boundary fixture. Validrestore actual OPFS quota/failure NOT_RUN in browser."
+  },
+  "reader20_fresh_course_durable_cold": {
+    "status": "COLD_RECOVERY_PASS_REOPEN_FIRST_PANEL_INCOMPLETE_WHOLE_DEADLINE_FAIL",
+    "scope": "Original browser Reader20 guest and OPFS origin8810; known cross-goal hint defect remains. No full D acceptance.",
+    "cold": {
+      "path": "build/browser/task006-reader20-fresh-course-plan-a1/cold2-result-a1.json",
+      "sha256": "4b1bf496fdfb0a9b21d619233d3afcecfdd2ae238e7a3343d321935cdbd29d5e",
+      "bytes": 681
+    },
+    "reopen_observer": {
+      "path": "build/browser/task006-reader20-fresh-course-plan-a1/cold2-reopen-result-a1.json",
+      "sha256": "395a837b57c4f533a5ef14b95f1b64b7e5ccb1d2e9e1290587e621688df4a0a4",
+      "bytes": 145
+    },
+    "prospective_reopen": {
+      "path": "build/browser/task006-reader20-fresh-course-plan-a1/cold2-reopen-pre-run-a1.json",
+      "sha256": "32de499cddeb5556d61412bba32eb099ec01021821c8ff3c9f05ec56bbf3e937",
+      "bytes": 249
+    },
+    "visible_paused_state": {
+      "path": "build/browser/task006-reader20-fresh-course-plan-a1/browser/cold2-paused-deadline-dom.txt",
+      "sha256": "8786cebae57a25324d4d239835d8c9f2dd02c2982a109a914a63f88dda113371",
+      "bytes": 4637
+    },
+    "cold_clocks": 534300000,
+    "simulation_call_seconds": 3518.735099993368,
+    "conservative_host_upper_seconds": 3608.987,
+    "all_home_pixels": 3630000,
+    "all_backing_bytes": 268435456,
+    "sequence": 25,
+    "reopen_clock": 680050000,
+    "reopen_executed_clocks": 145750000,
+    "whole_deadline_utc": "2026-10-17T12:18:08.271910Z",
+    "whole_failure": "First completed reopened panel lacked complete edition3/node3 body. No completed reopen within original whole deadline. Paused machine retained; no deadline extension or cold-Ready-as-whole-PASS.",
+    "screenshot_limitation": "Both supported screenshot APIs returned zero viewport width; visible DOM and actual controller exports retained."
   }
 }

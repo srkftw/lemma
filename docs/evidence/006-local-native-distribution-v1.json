@@ -630,5 +630,45 @@
       }
     },
     "prior_helper_qualification": "docs/evidence/006-fast-backing-replay.json"
+  },
+  "qualified_fast_file_limit_command2": {
+    "status": "PASS_PACKAGED_FAST_FAULT_ADMISSION_CLEANUP_ZERO_CLOCKS",
+    "package": {
+      "path": "build/courses/task006-fast-real-file-limit-plan-a3/native-distribution-a2.log",
+      "sha256": "aae8eddd7c99d46a36f26f5fc0b386d9eaec2b056e46e858ddff5f80def70329",
+      "bytes": 11627
+    },
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-fast-file-limit-native-a2.tar.gz",
+      "sha256": "6344decce4a5f58318fd975d468fbecd8200b07b5d0f14b14d485142ad3b9f5d",
+      "bytes": 139094629
+    },
+    "actual_command_control": {
+      "path": "build/courses/task006-fast-file-limit-packaged-control-a2/result.json",
+      "sha256": "d2a2b68147dade1c7f4130136dd75f5fdb0a0be2a92b0c7dcc101a36ab3e0666",
+      "bytes": 997
+    },
+    "runtime_closure_bytes": 370209440,
+    "runtime_export_seconds_bound": 180,
+    "runtime_export_bytes_bound": 536870912,
+    "preparation_seconds": 58.50505203497596,
+    "scope": "Prepared Linux x86-64 package with pinned runtime closure; actual packaged private fast migration launch/control/cleanup at zero clocks. Full guest failure/replay/cold qualified separately. No clean-host import, redistribution-rights or arbitrary cached-state claim.",
+    "sources": {
+      "scripts/lemmasim_file_limit.py": {
+        "path": "scripts/lemmasim_file_limit.py",
+        "sha256": "0982e64b58d6fe0b7d7f5028863198f7537406feb83de2454b4703adae0ba230",
+        "bytes": 10414
+      },
+      "scripts/package_native.py": {
+        "path": "scripts/package_native.py",
+        "sha256": "05ffabe2a62689eec8610186fb8330fcb9fade3b7e8f66300e1ec5789b752ff9",
+        "bytes": 18194
+      },
+      "scripts/check_fast_file_limit_workflow.py": {
+        "path": "scripts/check_fast_file_limit_workflow.py",
+        "sha256": "a521ab5ecff0ec7a5526a731369f93fbde58145d5e86ec31faad4d67acbb157f",
+        "bytes": 13234
+      }
+    }
   }
 }

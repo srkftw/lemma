@@ -53,11 +53,14 @@ raw UART1 bundle. Pause a Developer/Laboratory session first. Admission is not
 Installed/Saved; only the actual guest receipt after its backing barrier counts.
 
 file-limit applies an actual Linux process file-size limit to a verified paused
-private Laboratory RTL fork with qualified implementation600e93eb. Keep its
-cleanup token outside this package, retain exclusive paused control and restore
-the previous limit afterward. Actual partial writes/errors are captured by the
-machine; the OS condition itself is not portable checkpoint state. Outcome
-replay rejects live fault admission. Run file-limit apply/restore --help.
+private Laboratory fork: RTL implementation600e93eb, or canonical fast launcher
+97ab475e with executor298840d9 and its actual private migration medium/FD. Keep
+its cleanup token outside this package, retain exclusive paused control and
+restore the previous limit before large exports. The limit covers every regular
+output file in the VM process. Actual partial backing writes/errors are captured;
+the OS condition itself is not portable checkpoint state. Outcome replay rejects
+live fault admission. Fast migration retains its documented cached-state gap.
+Run file-limit apply/restore --help.
 
 Restoring a checkpoint creates a private continuation, not cold recovery. For a
 new restored session omit --disk and supply --restore /path/to/cut. Guest Saved

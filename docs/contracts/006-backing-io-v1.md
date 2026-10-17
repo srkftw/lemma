@@ -191,3 +191,23 @@ python3 scripts/check_wasm_backing_pending.py \
   --native-result build/lemmasim/task006-fsize-signal-native-boundary-a8/result.json \
   --work-dir build/AN_UNUSED_PORTABLE_FAULT_CHECK
 ```
+
+The additive fast Laboratory control admits only launcher97ab475e and actual
+executor298840d9 from the pinned raw-UART QEMU derivation. It checks both hashes,
+the current owned process/start time, actual command-line local medium and its
+open writable FD inode. The medium must be a single-link private migration copy
+under that session. It rejects peer adapters, recorded replay, capture poison,
+noncanonical profiles and running sessions. Initial owner argv may precede a
+QEMU restore; it never substitutes that stale medium path for the actual VM FD.
+This is a functional migration branch. The cached-state limitation in
+QEMU_STATE_EQUIVALENCE remains open, and no RTL timing parity is inferred.
+
+The real OS limit covers every regular file written by that process. Clear it
+after observing the desired backing failure and before large display, medium
+or checkpoint exports. The backing adapter's per-thread signal guard does not
+change the default disposition for other output operations. The retained first
+fast observer attempted a large screendump under the limit and terminated its
+private VM; the corrected workflow clears the limit with zero guest clocks,
+then requires the complete Failed display and absence of Saved. Actual partial
+bytes/errors are replayed without recreating the OS fault. A new CPU then cold
+recovers the acknowledged bytes from the observed partial medium.

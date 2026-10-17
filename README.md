@@ -2537,3 +2537,79 @@ existing connected checker is `--with-limits --with-hint-context`: it requires
 complete current-context hint rows and separately requests/checks a polynomial
 hint while retaining historical assistance. This is a local authored provider;
 permissioned live tutor transport and the proof kernel remain unfinished.
+
+The current authored-hint publication correction routes opening, checker replies
+and loss repaint through the same revision-bound renderer as numeric edits.
+Actual fast execution checks stale/wrong-goal suppression, a requested polynomial
+hint through a same-revision check, all six outcomes, raw ink, Saved32 and
+independent cold recovery/reopen. Complete canonical/companion pairs and the
+ProductReader image are audited at a877501; the new complete RTL scenario is
+running separately. This is an authored local hint, not a live tutor.
+
+The prepared local native and static browser distributions for this guest are:
+
+```sh
+python3 -I build/distribution/task006-hint-publication-native-a1/run.py session \
+  --backend qemu --disk /absolute/PRIVATE_EXISTING_MEDIUM.raw \
+  --session-dir /absolute/UNUSED_SESSION
+python3 -I build/distribution/task006-hint-publication-browser-a2/serve.py --verify-only
+python3 -I build/distribution/task006-hint-publication-browser-a2/serve.py --port 8816
+```
+
+The native a1 package needs its pinned external Nix files. The static bundle
+reuses the complete source-bound RTL/Wasm machine with the new audited guest;
+preparation is separate from a new browser workflow pass. The original live
+browser's known cross-goal hint failure is retained.
+
+The public source-archive command now also admits the existing exact canonical
+notebook/initializer roles through their unchanged complete validator:
+
+```sh
+python3 scripts/archive_guest_sources.py --build /absolute/AUDITED_CANONICAL_ROLE \
+  --source-root /absolute/ORIGINAL_COMPLETE_SOURCES --output-dir build/UNUSED_SOURCES
+```
+
+Laboratory file limits now also support the qualified canonical fast runtime's
+private migration forks. Create a snapshot, restore it into an isolated session,
+then use the same command as for RTL:
+
+```sh
+./scripts/lemmasim file-limit apply --session-dir /absolute/PRIVATE_FAST_LAB_FORK \
+  --bytes 74496 --token build/UNUSED_FAST_LIMIT.json
+./scripts/lemmasim file-limit restore --token build/UNUSED_FAST_LIMIT.json
+```
+
+The number 74496 is the qualified Saved32 fixture's partial-write boundary;
+choose a boundary for the actual medium being tested. The limit affects all
+regular output files in the owned VM process. Clear it before large exports.
+The actual new guest test is reproducible with the acknowledged32 medium:
+
+```sh
+nix develop --no-write-lock-file --command python3 -B scripts/check_fast_file_limit_workflow.py \
+  --disk build/courses/task006-hint-publication-fast-plan-a3/connected/closed.raw \
+  --native-bundle build/native/task006-hint-publication-reader20-a1 \
+  --work-dir build/UNUSED_FAST_FILE_LIMIT_CHECK
+```
+
+It observed a512-byte header and256-byte payload prefix before actualEFBIG27,
+guestFailed227, all3.63M Failed pixels and all256MiB backing bytes. Recorded
+outcomes reproduce input/UART/pixels/medium on private backing; independentCPU0
+cold recovery and explicit Save retain sequence32. This qualifies that functional
+I/O relation, not arbitrary QEMU cached-state continuation or processor timing.
+
+The standalone native package includes the same fault control and an explicitly
+exported pinned Nix runtime closure:
+
+```sh
+python3 -I build/distribution/task006-fast-file-limit-native-a2/run.py session \
+  --backend qemu --profile lemma-silicon-dev/0.3.0 --mode laboratory \
+  --headless --paused --restore /absolute/EXISTING_CHECKPOINT \
+  --session-dir /absolute/UNUSED_SESSION
+python3 -I build/distribution/task006-fast-file-limit-native-a2/run.py file-limit --help
+```
+
+The archive is `build/distribution/task006-fast-file-limit-native-a2.tar.gz`
+(139094629 bytes). Its README explains explicit Nix import on a compatible host;
+the launcher neither imports nor downloads dependencies. Packaged fast launch,
+fault admission and cleanup passed without advancing guest clocks. Clean-host
+installation and redistribution rights remain unqualified.

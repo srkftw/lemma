@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Laboratory POSIX file-size fault for a paused, private canonical RTL fork.
+"""Laboratory POSIX file-size fault for a paused, private canonical fork.
 
 This changes the owned native host process's soft RLIMIT_FSIZE. Actual pwrite
 outcomes still pass through BackingPlatform capture; no guest result is forced.
@@ -11,16 +11,66 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import resource
 import sys
 
 from lemmasim_session import request
 from supervise_usb_notebook import descendants, identity
 
+# Launcher wrapper -> actual executable. Both belong to the same pinned Nix
+# derivation. Matching a process name or only the wrapper is insufficient.
+QUALIFIED_QEMU = {
+    '97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7': frozenset({
+        '298840d9388c59ba93050f0fa9d4be905619b2d1cc5e14bc044ad6a2a7731090',
+    }),
+}
+
 
 def require(ok, message):
     if not ok:
         raise ValueError(message)
+
+
+def qemu_private_medium(session, native):
+    """Read the current owned VM's actual arguments and writable backing FD.
+
+    The live owner's initial argv can predate a QEMU restore, which replaces
+    the VM process. Only its actual privately copied migration medium is
+    admitted. This does not qualify cached-state continuation.
+    """
+    proc = Path('/proc', str(native['pid']))
+    argv = (proc / 'cmdline').read_bytes().decode().split('\0')
+    require(not any(arg.startswith(('lemma-fast-block.backing-replay=',
+                                   'lemma-fast-block.companion-')) for arg in argv),
+            'certain live local backing without outcome replay required')
+    values = [argv[i + 1].removeprefix('lemma-fast-block.medium=')
+              for i in range(len(argv) - 1) if argv[i] == '-global' and
+              argv[i + 1].startswith('lemma-fast-block.medium=')]
+    require(len(values) == 1, 'one actual QEMU local medium required')
+    medium = Path(values[0])
+    require(not medium.is_symlink(), 'private backing path must not be a symlink')
+    medium = medium.resolve()
+    require(medium.parent.parent == session and
+            re.fullmatch(r'machine-fork-[1-9][0-9]*-[0-9]+', medium.parent.name) and
+            medium.name == 'durable.raw', 'owned QEMU migration fork required')
+    stat = medium.stat()
+    require(medium.is_file() and stat.st_uid == os.getuid() and stat.st_nlink == 1,
+            'own regular private backing without hard links required')
+    writable = False
+    for fd in (proc / 'fd').iterdir():
+        try:
+            actual = fd.stat()
+            flags = re.search(r'(?m)^flags:\s+([0-7]+)$',
+                              (proc / 'fdinfo' / fd.name).read_text())
+            if ((actual.st_dev, actual.st_ino) == (stat.st_dev, stat.st_ino) and
+                    flags is not None and int(flags[1], 8) & os.O_ACCMODE == os.O_RDWR):
+                writable = True
+        except FileNotFoundError:
+            continue
+    require(writable and identity(native['pid']) == native,
+            'actual owned QEMU writable medium differs')
+    return medium
 
 
 def owned_native(session, *, restoring=False):
@@ -30,13 +80,13 @@ def owned_native(session, *, restoring=False):
     require(not manifest_path.is_symlink() and manifest_path.stat().st_uid == os.getuid(),
             'own session metadata required')
     manifest = json.loads(manifest_path.read_text())
-    require(manifest['mode'] == 'laboratory' and manifest['backend'] == 'rtl',
-            'native RTL Laboratory session required')
+    backend = manifest['backend']
+    require(manifest['mode'] == 'laboratory' and backend in ('rtl', 'qemu'),
+            'native Laboratory session required')
     observed = request(session, {'action': 'inspect'}, 120)
     state = observed['machine']
     require(observed['identity']['profile'] == 'lemma-silicon-dev/0.3.0' and
-            not observed['running'] and state['isolated_medium'],
-            'paused private canonical fork required')
+            not observed['running'], 'paused private canonical fork required')
     # Clearing a fault must remain possible after a capture error. Replaying a
     # tape bypasses live POSIX I/O, so admitting a new file fault there would
     # misleadingly claim an environment effect that cannot reach the device.
@@ -45,11 +95,20 @@ def owned_native(session, *, restoring=False):
                 not observed.get('external_adapters') and
                 '--backing-replay' not in manifest['argv'],
                 'certain live backing without external adapters or outcome replay required')
-    medium = Path(state['private_medium_path'])
-    require(not medium.is_symlink(), 'private backing path must not be a symlink')
-    medium = medium.resolve()
-    require(medium.is_relative_to(session) and medium.is_file(),
-            'own private backing required')
+    if backend == 'rtl':
+        require(state['isolated_medium'], 'paused private canonical fork required')
+        medium = Path(state['private_medium_path'])
+        require(not medium.is_symlink(), 'private backing path must not be a symlink')
+        medium = medium.resolve()
+        require(medium.is_relative_to(session) and medium.is_file(),
+                'own private backing required')
+    else:
+        require(observed['identity']['runtime'] in QUALIFIED_QEMU and
+                state['storage']['backend'] == 'lemma-fast-block/3',
+                'fast file-limit capture implementation is not qualified')
+        if not restoring:
+            require(state['storage']['backing_poisoned'] == 0,
+                    'certain live backing without capture poison required')
     expected = Path(manifest['argv'][0]).resolve()
     matches = []
     for child in descendants(manifest['pid']):
@@ -58,15 +117,22 @@ def owned_native(session, *, restoring=False):
             executable = (path / 'exe').resolve(strict=True)
         except FileNotFoundError:
             continue
-        if executable == expected and path.stat().st_uid == os.getuid():
-            matches.append(child)
+        if path.stat().st_uid == os.getuid():
+            if backend == 'rtl' and executable == expected:
+                matches.append(child)
+            elif backend == 'qemu' and hashlib.sha256(executable.read_bytes()).hexdigest() in \
+                    QUALIFIED_QEMU[observed['identity']['runtime']]:
+                matches.append(child)
     require(len(matches) == 1, 'one owned native process required')
     native = matches[0]
     require(hashlib.sha256(expected.read_bytes()).hexdigest() == observed['identity']['runtime'],
             'actual native executable differs from live identity')
     # The immutable runtime used for this operation must be the version with
     # per-thread SIGXFSZ capture. Other runtimes are not silently admitted.
-    require(state['snapshot_identity'] ==
+    if backend == 'qemu':
+        qemu_private_medium(session, native)
+    else:
+        require(state['snapshot_identity'] ==
             '600e93eb1981b3eb5432840c0fd8e169b4d5cfd04f89e8164450d1c70b159bba',
             'file-limit capture implementation is not qualified')
     return session, native, observed

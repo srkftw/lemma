@@ -2011,8 +2011,8 @@
     "physical": "UNCHANGED_UNCLOSED",
     "evidence": {
       "path": "docs/evidence/006-fast-backing-replay.json",
-      "sha256": "9dad37c05ade9f4ff85c40995c1add54299b374592add67240f8f81fd6f73797",
-      "bytes": 23163
+      "sha256": "7e54bdda26ad962b1db877ce1d0247f25b1d092573c9bf9afda82aff10e61a52",
+      "bytes": 26080
     },
     "same_native_finite_replay": "PASS_ACTUAL_PARTIAL_PWRITE_ISOLATED_REPLAY_ALL_NATIVE_STATE_BYTES",
     "general_fast_cached_checkpoint": "GAP_CONFIRMED_UNCHANGED"
@@ -2020,8 +2020,8 @@
   "reader19_reconciliation_observer": {
     "evidence": {
       "path": "docs/evidence/006-course-reader-location.json",
-      "sha256": "a5502623a2de8301086283eedef131e618ea28db6c7ff968759233c788e748ad",
-      "bytes": 58669
+      "sha256": "cd1445aca4790be62373bdc4f1b227a4e812e822def4311e7da5b74a8390e7a7",
+      "bytes": 65391
     },
     "original_status": "FAIL_RETAINED",
     "passive_record_reobservation": "PASS8corruptionsrejected;reader24/raw25/page26/root27; no new cold/offlinepixel claim",
@@ -2038,8 +2038,8 @@
   "native_laboratory_file_limit_command1": {
     "evidence": {
       "path": "docs/evidence/006-local-native-distribution-v1.json",
-      "sha256": "e6ee6538bec14af9c05cecef96f73801ccfc8480118621074d37d0459ac367c3",
-      "bytes": 36942
+      "sha256": "452753bd17050d4fe0a812f6a41bfee8f84b5b4038bdd423869e0579bbbc4157",
+      "bytes": 38876
     },
     "behavior": "PASSactualpackagedCLIapply/pendingtokenrestore/zeroClocks/all145702871bytes",
     "model": "No changed native/guest/device policy; qualified600e remains mandatory",
@@ -2060,8 +2060,8 @@
     "status": "COMPONENT_AND_LINKED_PAIR_PASS_ACTUAL_GUEST_STALE_HINT_FAIL",
     "evidence": {
       "path": "docs/evidence/006-course-reader-location.json",
-      "sha256": "7dc77b013eb0e2c782ff6eb673e1f7cd0aade21672d6a88367734320b097c7c3",
-      "bytes": 62747
+      "sha256": "cd1445aca4790be62373bdc4f1b227a4e812e822def4311e7da5b74a8390e7a7",
+      "bytes": 65391
     },
     "qualified_scope": "Strict revision/goal local proposal filter; same read-only2 helpers added, only existing render body changes, all26 pre/post complete artifacts plus5 actual corruptions. No deployed guest fix claimed.",
     "retained_failures": "Actual stale compiled helper200 rejected by corrected208 fixture; first qualifier i8 mutation-site observer failure retained and source-bound positive work reused.",
@@ -2072,12 +2072,26 @@
     }
   },
   "authored_hint_publication2": {
-    "status": "COMPLETE_ARTIFACTS_AND_MACHINE_GUARDS_PASS_FRESH_LINKED_REPAIR_PENDING",
+    "status": "PASS_COMPLETE_LINKED_CANONICAL_COMPANION_PRODUCT_AND_CONNECTED_FAST_PREPARED_DISTRIBUTIONS_RTL_RUNNING",
     "evidence": {
       "path": "docs/evidence/006-course-reader-location.json",
-      "sha256": "7dc77b013eb0e2c782ff6eb673e1f7cd0aade21672d6a88367734320b097c7c3",
-      "bytes": 62747
+      "sha256": "cd1445aca4790be62373bdc4f1b227a4e812e822def4311e7da5b74a8390e7a7",
+      "bytes": 65391
     },
     "scope": "All3 actual course publishers use existing revision-bound aligned renderer. Same tile/dirty/framebuffer/error semantics; no new language/runtime/checker authority. Historical authority and generic raw corpus pins retained. Only post ControlRender.character local own-symbol SSA-name alpha-renaming independently compared; actual raw complete successor corpus pins are exact."
+  },
+  "qualified_fast_file_limit_control": {
+    "behavior": "Actual OS partial write/EFBIG, guestFailed/noSaved, observed prefix retained, independent coldSaved32",
+    "model": "Qualified launcher97ab/executor2988; captured two outcomes and exact admitted replay suffix PASS",
+    "RTL": "Existing600e actual partial-write/cold/replay evidence retained; no new circuitry",
+    "guest": "Unchanged audited a877 target software; real new functional workflow PASS442000004units/50.010969s",
+    "distribution": "Prepared standalone fast/RTL native package with pinned Nix runtime closure; actual packaged fast admission/cleanup at zero guest clocks PASS. Clean-host import and redistribution rights open; browser OPFS model separate.",
+    "physical": "Host environment control; no physical qualification",
+    "checkpoint": "Functional QEMU migration branch only; cached-state hole remains open",
+    "evidence": {
+      "path": "docs/evidence/006-fast-backing-replay.json",
+      "sha256": "7e54bdda26ad962b1db877ce1d0247f25b1d092573c9bf9afda82aff10e61a52",
+      "bytes": 26080
+    }
   }
 }

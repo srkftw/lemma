@@ -466,5 +466,80 @@
       }
     ],
     "original_partial_prefix_not_repaired": true
+  },
+  "qualified_fast_file_limit": {
+    "status": "PASS_REAL_FAST_PWRITE_FAILURE_REPLAY_INDEPENDENT_COLD_SAVE32",
+    "helper": {
+      "path": "scripts/lemmasim_file_limit.py",
+      "sha256": "0982e64b58d6fe0b7d7f5028863198f7537406feb83de2454b4703adae0ba230",
+      "bytes": 10414
+    },
+    "checker": {
+      "path": "scripts/check_fast_file_limit_workflow.py",
+      "sha256": "a521ab5ecff0ec7a5526a731369f93fbde58145d5e86ec31faad4d67acbb157f",
+      "bytes": 13234
+    },
+    "result": {
+      "path": "build/courses/task006-fast-real-file-limit-a3/result.json",
+      "sha256": "c4c02d631daf7bfb3a9d76da001e26eb6532070071c70217ed0c2faff417196e",
+      "bytes": 4227
+    },
+    "passive_closed_medium_qualification": {
+      "path": "build/courses/task006-fast-real-file-limit-a3/passive-final-qualification.json",
+      "sha256": "90da942097bd91d065e9481dcb8081b31be508b0817d58503fe76d23ea02396f",
+      "bytes": 620
+    },
+    "launcher_sha256": "97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7",
+    "actual_executor_sha256": "298840d9388c59ba93050f0fa9d4be905619b2d1cc5e14bc044ad6a2a7731090",
+    "source_guest_commit": "a87750107339de4fe4592dbd5c6dc2906aa58e1c",
+    "functional_units": 442000004,
+    "seconds": 50.01096942496952,
+    "partial_write": {
+      "operations": 2,
+      "error": [
+        147,
+        2065470396,
+        1,
+        74240,
+        512,
+        256,
+        27
+      ],
+      "all_medium_bytes": 268435456,
+      "changed_bytes": 93,
+      "all_controller_pixels": 3630000,
+      "Saved": false,
+      "token_cycle": 199000002
+    },
+    "retained_failures": [
+      {
+        "path": "build/courses/task006-fast-real-file-limit-a1/result.json",
+        "sha256": "82a09cd5c1b28805c2a975188cb8156edda2a9cd254326cab1ad85b824c2df30",
+        "bytes": 2442
+      },
+      {
+        "path": "build/courses/task006-fast-real-file-limit-a2/result.json",
+        "sha256": "40847cc7ac40cf194f041df83241a3cd4d4b1a3018f341a1d814ce36e478ac93",
+        "bytes": 4402
+      }
+    ],
+    "scope": "Actual Linux pwrite error on private fast migration branch; exact I/O/raw/UART/allpixels/backing replay and independent cold. No new guest policy, target compiler/runtime or emulator implementation; no cached-state/timing parity claim.",
+    "packaged_control": {
+      "path": "build/courses/task006-fast-file-limit-packaged-control-a2/result.json",
+      "sha256": "d2a2b68147dade1c7f4130136dd75f5fdb0a0be2a92b0c7dcc101a36ab3e0666",
+      "bytes": 997
+    },
+    "verification": {
+      "LemmaSim_tests": 324,
+      "LemmaSim_seconds": 62.683,
+      "scaffold_tests": 18,
+      "scaffold_seconds": 8.175,
+      "metadata": "PASS",
+      "full_host_suite_log": {
+        "path": "build/courses/task006-fast-real-file-limit-plan-a3/host-suite.log",
+        "sha256": "d34128d1fb7d6a279baf51918a1cc7181769270f3e29a52d3d9d999c4306c484",
+        "bytes": 57299
+      }
+    }
   }
 }

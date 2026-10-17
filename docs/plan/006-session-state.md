@@ -5671,3 +5671,94 @@ Frozen prospective RTL-a1 source9e is superseded/unexecuted; use a new a2 root.
 Browser worker survived control reconnection (old browser2 unavailable; existing
 IAB4/tab20 at8810 reattached with no reload). Original CPU0 cold run continues
 with its original1B/7200 and global12:18:08Z deadlines.
+
+Publication2 milestone (2026-10-17, a877501 clean target implementation):
+Canonical pair/audits PASS1124.309s/peak1836433408B; companion pair PASS1159.678s/
+peak1823379456B; ProductReader single image PASS576.832s/peak1839489024B. All446
+consumed inputs; source unchanged through final audits. Product supervisor's
+reused prose mentions canonical pair: actual commands/configuration and final
+status qualify ONLY the single ProductReader image, not a product execution.
+Real strong fast case ...hint-publication-fast-plan-a3 PASS1519000143functional
+units/241.628657s/peak444502016B, Saved32, currentpolynomialhint acrosssame-rev
+check, stale/wrong-goal hints absent, six outcomes/raw11pixels/allcold3.63M
+home/all256MiB/reopen3 exact; no survivors. Original6ba stale-hintFAIL retained.
+A2 fast wait helper superseded BEFORE execution because actual normal full
+audit was ready and initialized source medium doesn't consume initializer.
+Native bundle build/native/task006-hint-publication-reader20-a1 validated; local
+package build/distribution/task006-hint-publication-native-a1 (external pinned
+Nix prerequisites, archive12081855B/SHA79f7ae2619e4f33e189d194bec750668970656c5db13432e02978178390b787a).
+First static packaging FAIL retained: minimal reuse dir omitted2 portable
+Verilator patches. Exact old hashes supplied, no machine/guest rebuild.
+Resumed static ...hint-publication-browser-a2 verify-onlyPASS, archive2086994B/
+SHA7a8a65d3b7a704059d1a512caa8c07ea9fe80bc6dd501c69ca4c31b7edfeb9c1.
+Receipt ...hint-publication-distribution-plan-a1/resumed-result-a2.json; no new
+browser guest pass from preparation. New exactRTL connected case runs at
+build/courses/task006-hint-publication-rtl-plan-a2; frozen host root1848files,
+new exact native-view, original6B/43200s and phase limits, owned nice10. Tool73858.
+Original browser IAB4/tab20 (old2/tab39) remains at8810, no reload. Close357M
+PASS allhome/backing, CPU0 cold now528.5M and still booting at11:54Z. HARDwhole
+deadline12:18:08.271910Z, no extension. Qualify export/cold2, then immediately
+reopen with remaining global time; old guest hint defect remains. New current
+static guest bundle is separate and not loaded into this worker.
+CI a877 run158/39027715502: last observed10jobsSUCCESS, real notebookO0/O2 still
+running, no failure/skips observed; do not call completed. PR9 draft/unmerged.
+
+Worktree next developer feature: file-limit now supports ONLY qualified QEMU
+launcher97ab475e/actualexecutor298840d9 (both pinned, sameNixderivation), private
+migration medium under ownedSession/machine-fork-N-time/durable.raw, actual
+writableFD inode/nohardlinks, pausedLab canonical0.3, no peer/replay/poison.
+Original native600e branch retained. Realhost10 ownership/cleanup testsPASS.
+New scripts/check_fast_file_limit_workflow.py fixed900s/1Bfunctional/180sphase/
+4GiBAS/1GiBfile bounds; realSaved32 guest source a877. a1 FAILbeforefault because
+wrapper path differsfromexecutor; both nowpinned, originalguardretained. a2
+actually captured partial256/EFBIG27+GuestFailed227, but observer's largescreen
+dump underwholeprocess74496Bcap triggeredSIGXFSZ; cleanup error maskedprimary.
+A3 clearslimit after observedFailed BEFORElargeexports (zero clocks), preserves
+primaryerror, countsReplayunits too; actualcase RUNNING tool77558 at
+build/courses/task006-fast-real-file-limit-plan-a3/actor.log. No runtimeC++ or
+newguest changes. Keep bothFAILs. QEMU cached-state hole remains explicitlyopen;
+only functional migration branch/I-O suffix/cold relation intended. Finishreal
+fault/replay/coldqualification before committing/publishing broadened command.
+
+Fastfilelimit-a3 PASS442000004functionalunits/50.010969s, limit74496, twoactual
+operations(header512, payload256+EFBIG27),93 changedbytes, Failed227/noSaved,
+all3.63M Failedpixels/all256MiB, exactcapturedI/O/raw/UART/pixels/mediumreplay,
+independentCPU0 cold/explicitSaved32. Passiveclosedcoldfile unchanged afterSave,
+allcapturedcoldrequestsREAD. Retainedoutput3034665618B; perprocessAS4GiB/file1GiB
+enforced, combinedRSS notsampled. Keepa1/a2FAILs. NoQEMUcached-state closure.
+Browser cold2 now PASS534300000/all3.63M home/all256MiB/seq25, no snapshotinput,
+allworkspace/history/learner/reader/rawrecordsunchanged. ControllerUI/CDP clicks
+timedout/resetcontroltwice; existingworker survived. AXclicksworked without
+reload. Active IAB2/tab20 handle retainedReader. ColdReady export136/backing104
+moved tobrowser/cold2-ready.{bin,raw}; qualifier .../cold2-result-a1.json PASS.
+Reopenraw admitted534399990/535399990 fromCold534300000. Runstarted11:59Z with
+400M cap andREDUCED1147s host allowance (remainingGLOBAL12:18:08.271910Z minus5s),
+stop-next-paneltrue. Noextension. Wholeoriginalcase remainsunfinished and known
+hintdefect; donotclaimDpass. Ifearlypanelincomplete continueONLYremainingphase/
+globalcaps. IfdeadlinehitsretainactualFAIL; donotreclassifycoldReadyaswholepass.
+
+
+2026-10-17 12:23Z: original browser cold2 qualifier PASS534.3M clocks,
+3518.7351 simulation-call seconds/3608.987 conservative host upper, all3.63M
+home pixels/all256MiB/Saved25 and every workspace/history/reader/learner/raw
+object unchanged. No checkpoint input. Reopen stopped at the next completed
+panel680.05M (145.75M suffix), but complete edition3/node3 body absent. Whole
+12:18:08.271910Z deadline expired: FAIL retained in cold2-reopen-result-a1.json.
+Worker paused and retained at original8810/IAB2/tab20; no cap extension and no
+wholeD claim. Any further continuation is a separately declared suffix case.
+DOM proof retained; both screenshot APIs reported zero viewport width. New
+current guest static bundle remains a separate prepared artifact.
+
+A877 candidate CI39027715502 completedSUCCESS:11 jobs/117 steps,0 skips.
+Receipt build/ci/task006-a877-complete.json. This belongs to a877; the next
+host-only fault-control commit has its own CI status. Full324 LemmaSim tests,
+18 scaffold and metadata PASS after actual fast failure/replay/cold workflow;
+no target rebuild is needed for host-only control/documentation changes.
+
+Prepared current host package build/distribution/task006-fast-file-limit-native-a2
+PASS58.505052s, archive139094629B/SHA6344decce4a5f58318fd975d468fbecd8200b07b5d0f14b14d485142ad3b9f5d.
+Runtime closure370209440B exported under original180s/512MiB caps. README now
+accurately describes fast/RTL fault scope. Actual packaged-control-a2 PASS
+private fast launch/admit/restore/all machine state unchanged/serverexit0;
+no duplicate full guest run. Existing a1 control/package receipt retained.
+No clean-host Nix import, licensing closure or cached-state closure inferred.
