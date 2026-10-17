@@ -489,6 +489,19 @@
       "corrected_actual_constructor_observer": "build/courses/task006-reader19-20-full-pair-plan-a1/corrected-constructor-observer-a1.json",
       "cause": "Audit AWAIT/COURSE configuration union omitted the exact two canonical chooser names; it selected the wrong expected constructor despite the original valid constructCourse body/callers. Narrow registry fix retains ownership/header/ordering and other guards.",
       "scope": "Original FAIL retained; no target algorithm or threshold changed, no full image audit PASS inferred."
+    },
+    "second_complete_image_attempt": {
+      "status": "LINKED_THEN_AUDIT_FAIL_MOUNT_OWNER_REGISTRY",
+      "result": "build/courses/task006-reader19-20-full-pair-plan-a2/result.json",
+      "source_commit": "9894ae506ec1a9ff291e71452261953775123813",
+      "build_seconds": 129.82247373904102,
+      "audit_seconds": 114.68854871799704,
+      "actual_error": "mount-result owner escapes exact installer/Package notebook authority",
+      "corrected_observer": "build/courses/task006-reader19-20-full-pair-plan-a2/corrected-reader-observers-a1.json",
+      "cause": "Exact chooser configurations were already in ALL_CONFIGURATIONS/software selection but missing from mount owner, PackageReader index-rebind and readonly-table configuration guards. Add only the exact closed pair; preserve full genuine body/caller/root/table validation.",
+      "actual_positive_and_negative_observation": "Both genuine pre/post mount observers pass; wrong image/configuration reject; all six readonly tables retain the exact ordinary relation.",
+      "kernel_host_suite": "build/courses/task006-reader19-20-full-pair-plan-a2/kernel-observer-suite-a1.log",
+      "scope": "Retained original full audit FAIL. No target body, artifact pin, tolerance or deadline changed; no CPU or complete audit PASS inferred."
     }
   }
 }

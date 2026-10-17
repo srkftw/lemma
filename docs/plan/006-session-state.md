@@ -4899,3 +4899,12 @@ no caller check, body, tolerance or target algorithm is changed. Original
 full-pair-plan-a1/result.json and audit-failure remain FAIL. Next bounded
 complete pair attempt uses a new output path and same4800s resource bounds.
 This is corrected host admission, not a target performance fix or guest PASS.
+
+Second clean9894 complete canonical20 image linked129.822474s, mandatory audit
+FAILED114.688549s at exact mount-result owner registry. Exact chooser names
+were present in ALL/software selection but missing from owner, PackageReader
+index-rebind and readonly-table guards. Narrow configuration additions preserve
+full bodies/callers/roots/table relations. Actual retained genuine pre/post mount
+checks and six readonly tables pass; wrong image/configuration reject. Kernel
+host461 PASS. Original full-pair-plan-a2 result remains FAIL; next complete
+source-bound pair attempt retains the same4800s limits and unused outputs.

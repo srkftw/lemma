@@ -80,7 +80,11 @@ def guard(assembly=ASSEMBLY,**changed):
 class PackageReaderJumpGuard(unittest.TestCase):
     def test_selected_bound_rebind_and_dominating_guard(self):
         for configuration in ('lemmasim-silicon-package-closure-entry2-bulk-notebook',
-                              'lemmasim-silicon-package-closure-entry2-bulk-initialize'):
+                              'lemmasim-silicon-package-closure-entry2-bulk-initialize',
+                              'lemmasim-silicon-package-chooser-bulk-notebook',
+                              'lemmasim-silicon-package-chooser-bulk-initialize',
+                              'lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook',
+                              'lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize'):
             report=guard(configuration=configuration)
             self.assertTrue(report['guard_dominates_load'])
             self.assertEqual(report['bounded_index_rebind'],{'instruction':'mv a0,a1',

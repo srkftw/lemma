@@ -94,7 +94,7 @@ def validate_mount_reply(ir,unit,*,optimized):
  if numeric_candidate(unit):
   numeric_contract(unit)
   package_root=numeric_root(unit)
- package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS+PRODUCT_READER_CONFIGURATIONS and
+ package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS+PRODUCT_READER_CONFIGURATIONS+CHOOSER_CONFIGURATIONS and
      unit.get('image_key')=='notebook' and type(unit.get('image_id')) is int and
      unit['image_id']==2 and unit.get('contract_version')=='core0-user-v0.2' and
      unit.get('boot_role')=='notebook' and
