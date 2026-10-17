@@ -235,6 +235,8 @@ def numeric_jump_relation(ir,unit,assembly,symbol,table,targets,code,labels):
  if len(rows)!=1 or re.findall(r'\.quad\s+(\.LBB\d+_\d+)',rows[0])!=targets or len(targets)!=25 or any(t not in labels for t in targets):raise Core0Error('Number pad actual table declarations/local cells differ')
  names={r['symbol']:canonical(r['source'])for r in unit['functions']}
  normalized=_normalized_jump_code(code,labels,table,names)
+ from authored_hint_target import number_pad_machine
+ normalized=number_pad_machine(normalized,unit,assembly,symbol)
  w=numeric_contract(unit)[1]
  actual=hashlib.sha256(repr(normalized).encode()).hexdigest()
  if actual!=w.get('character_machine_sha256'):raise Core0Error('Number pad complete machine owner/guards/calls differ')

@@ -5657,3 +5657,17 @@ the existing strict canonical role validator and internal source inventory;
 actual444-input old6ba archive command-a2 PASS. Product/USB validators unchanged.
 Component milestones recorded in existing course evidence/inventory; actualv1
 connected failure remains explicit. Version2 linked/guest/distribution pending.
+
+9e77412 normal and companion first full linked audits both FAIL at NumberPad
+complete machine pin, retained ...hint-publication{,-companion}-whole-plan-a1.
+Actual67-instruction owners differ ONLY in2 LCPI ordinal names, with identical
+64bit header words. No target defect or call/ownership change there. Added
+exactv2 old/new symbol mappings and source-bound2-name rebind guard; generic
+normalizer and historical machine pins unchanged. Machine-alpha capture PASS
+all13 old/new assemblies26.771684s; full26 corpus/13 complete machine/3 actual
+negative checks PASS46.326851s. New canonical/companion whole-a2 still required.
+First fast-after-audits correctly stops on real prerequisite FAIL, no CPU run.
+Frozen prospective RTL-a1 source9e is superseded/unexecuted; use a new a2 root.
+Browser worker survived control reconnection (old browser2 unavailable; existing
+IAB4/tab20 at8810 reattached with no reload). Original CPU0 cold run continues
+with its original1B/7200 and global12:18:08Z deadlines.

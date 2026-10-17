@@ -26,7 +26,11 @@
         "character_machine_sha256": "0b1d6e186cf1d243c837656ee09aaa40907473c2babf7d4e4f1f8b348f5b1fff"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "50451fabdd5e0c0abe8a44778183f07ca2b8a333cd22719dd2d77295118b7f14"
+      "previous_hint_role_sha256": "50451fabdd5e0c0abe8a44778183f07ca2b8a333cd22719dd2d77295118b7f14",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_290",
+        "new_symbol": "lemma_user_notebook_core0_scalar_291"
+      }
     },
     "lemmasim-silicon-package-closure-entry2-bulk-initialize": {
       "predecessor_authority": "dirty-batch-notebook-target-authority.json",
@@ -53,7 +57,11 @@
         "character_machine_sha256": "0b1d6e186cf1d243c837656ee09aaa40907473c2babf7d4e4f1f8b348f5b1fff"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "50451fabdd5e0c0abe8a44778183f07ca2b8a333cd22719dd2d77295118b7f14"
+      "previous_hint_role_sha256": "50451fabdd5e0c0abe8a44778183f07ca2b8a333cd22719dd2d77295118b7f14",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_290",
+        "new_symbol": "lemma_user_notebook_core0_scalar_291"
+      }
     },
     "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": {
       "predecessor_authority": "companion-number-pad-target-authority.json",
@@ -78,7 +86,11 @@
         "character_machine_sha256": "f708bdf8245fa4b9f217d3e7c7eaf283cfa340b9789f6e09c3424eaf63b306df"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "3847130670d4779d05ba2ee59faed05c8fab2edd7e8e884e30a2bfea375dd6d6"
+      "previous_hint_role_sha256": "3847130670d4779d05ba2ee59faed05c8fab2edd7e8e884e30a2bfea375dd6d6",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_301",
+        "new_symbol": "lemma_user_notebook_core0_scalar_302"
+      }
     },
     "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": {
       "predecessor_authority": "companion-number-pad-target-authority.json",
@@ -103,7 +115,11 @@
         "character_machine_sha256": "f708bdf8245fa4b9f217d3e7c7eaf283cfa340b9789f6e09c3424eaf63b306df"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "3847130670d4779d05ba2ee59faed05c8fab2edd7e8e884e30a2bfea375dd6d6"
+      "previous_hint_role_sha256": "3847130670d4779d05ba2ee59faed05c8fab2edd7e8e884e30a2bfea375dd6d6",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_301",
+        "new_symbol": "lemma_user_notebook_core0_scalar_302"
+      }
     },
     "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": {
       "predecessor_authority": "package-entry2-target-authority.json",
@@ -125,7 +141,11 @@
         "character_machine_sha256": "f708bdf8245fa4b9f217d3e7c7eaf283cfa340b9789f6e09c3424eaf63b306df"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "c7d27920d8817277bace2dc3340661f25268c81d0cffb90131667508620f6761"
+      "previous_hint_role_sha256": "c7d27920d8817277bace2dc3340661f25268c81d0cffb90131667508620f6761",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_301",
+        "new_symbol": "lemma_user_notebook_core0_scalar_302"
+      }
     },
     "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": {
       "predecessor_authority": "package-entry2-target-authority.json",
@@ -147,7 +167,11 @@
         "character_machine_sha256": "f708bdf8245fa4b9f217d3e7c7eaf283cfa340b9789f6e09c3424eaf63b306df"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "c7d27920d8817277bace2dc3340661f25268c81d0cffb90131667508620f6761"
+      "previous_hint_role_sha256": "c7d27920d8817277bace2dc3340661f25268c81d0cffb90131667508620f6761",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_301",
+        "new_symbol": "lemma_user_notebook_core0_scalar_302"
+      }
     },
     "lemmasim-silicon-package-reader-bulk-notebook": {
       "predecessor_authority": "reader-notebook-target-authority.json",
@@ -174,7 +198,11 @@
         "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "1afaab2166347511ed974481b6f0871264b9f31c7eead210d8f61b7f46c47dd0"
+      "previous_hint_role_sha256": "1afaab2166347511ed974481b6f0871264b9f31c7eead210d8f61b7f46c47dd0",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_298",
+        "new_symbol": "lemma_user_notebook_core0_scalar_299"
+      }
     },
     "lemmasim-silicon-package-reader-bulk-initialize": {
       "predecessor_authority": "reader-notebook-target-authority.json",
@@ -201,7 +229,11 @@
         "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "1afaab2166347511ed974481b6f0871264b9f31c7eead210d8f61b7f46c47dd0"
+      "previous_hint_role_sha256": "1afaab2166347511ed974481b6f0871264b9f31c7eead210d8f61b7f46c47dd0",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_298",
+        "new_symbol": "lemma_user_notebook_core0_scalar_299"
+      }
     },
     "lemmasim-silicon-package-chooser-bulk-notebook": {
       "predecessor_authority": "chooser-reader-target-authority.json",
@@ -227,7 +259,11 @@
         "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "524e45de2d0196809f0a2f9eea973dba89d4cc798cc5484acce1ab918bac6bb4"
+      "previous_hint_role_sha256": "524e45de2d0196809f0a2f9eea973dba89d4cc798cc5484acce1ab918bac6bb4",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_298",
+        "new_symbol": "lemma_user_notebook_core0_scalar_299"
+      }
     },
     "lemmasim-silicon-package-chooser-bulk-initialize": {
       "predecessor_authority": "chooser-reader-target-authority.json",
@@ -253,7 +289,11 @@
         "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "524e45de2d0196809f0a2f9eea973dba89d4cc798cc5484acce1ab918bac6bb4"
+      "previous_hint_role_sha256": "524e45de2d0196809f0a2f9eea973dba89d4cc798cc5484acce1ab918bac6bb4",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_298",
+        "new_symbol": "lemma_user_notebook_core0_scalar_299"
+      }
     },
     "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook": {
       "predecessor_authority": "companion-reader-target-authority.json",
@@ -279,7 +319,11 @@
         "character_machine_sha256": "046cc1e5b2b53a56ed4765d0e49fefa38fa7b179211a2f848735e9f151602866"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "a2f6b6fec46cc42e6145b05982a283a3b93d638af9391bd0dcbafe5c73ea6f0b"
+      "previous_hint_role_sha256": "a2f6b6fec46cc42e6145b05982a283a3b93d638af9391bd0dcbafe5c73ea6f0b",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_310",
+        "new_symbol": "lemma_user_notebook_core0_scalar_311"
+      }
     },
     "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize": {
       "predecessor_authority": "companion-reader-target-authority.json",
@@ -305,7 +349,11 @@
         "character_machine_sha256": "046cc1e5b2b53a56ed4765d0e49fefa38fa7b179211a2f848735e9f151602866"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "a2f6b6fec46cc42e6145b05982a283a3b93d638af9391bd0dcbafe5c73ea6f0b"
+      "previous_hint_role_sha256": "a2f6b6fec46cc42e6145b05982a283a3b93d638af9391bd0dcbafe5c73ea6f0b",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_310",
+        "new_symbol": "lemma_user_notebook_core0_scalar_311"
+      }
     },
     "lemmasim-silicon-product-course-reader-bulk-notebook": {
       "predecessor_authority": "product-reader-target-authority.json",
@@ -327,7 +375,11 @@
         "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
       },
       "previous_hint_authority_sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
-      "previous_hint_role_sha256": "96696449732dff17e124822837871b6df4392939ae3b63abad597bb7aac510b2"
+      "previous_hint_role_sha256": "96696449732dff17e124822837871b6df4392939ae3b63abad597bb7aac510b2",
+      "number_pad_pool_alpha": {
+        "old_symbol": "lemma_user_notebook_core0_scalar_298",
+        "new_symbol": "lemma_user_notebook_core0_scalar_299"
+      }
     }
   }
 }

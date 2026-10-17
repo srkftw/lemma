@@ -1174,7 +1174,7 @@
     "failure": "Real correct division-zero Invalid revision7 still displays prior revision6 rational hint; retained100M panel deadline FAIL. Three real shared publication paths bypassed the filter."
   },
   "authored_hint_publication2": {
-    "status": "GENUINE_COMPONENTS_PASS_LINKED_AND_CONNECTED_PENDING",
+    "status": "COMPLETE_ARTIFACTS_AND_MACHINE_GUARDS_PASS_FRESH_LINKED_REPAIR_PENDING",
     "contract": "docs/contracts/006-authored-hint-publication-v2.md",
     "actual_Lean_change": {
       "path": "Lemma/Applications/Notebook.lean",
@@ -1198,8 +1198,8 @@
     },
     "authority": {
       "path": "tooling/authored-hint-publication-target-authority-v2.json",
-      "sha256": "234cb0801b572f99f38ef937796ccc89ea2317fb83a646f8a53dbfd13428fcc2",
-      "bytes": 21463
+      "sha256": "34043ccdacd626a01f4cce47a3daeadfbef1c02406cbebaa879bfb90752e7789",
+      "bytes": 23608
     },
     "scope": "All3 actual course publishers use existing revision-bound aligned renderer. Same tile/dirty/framebuffer/error semantics; no new language/runtime/checker authority. Historical authority and generic raw corpus pins retained. Only post ControlRender.character local own-symbol SSA-name alpha-renaming independently compared; actual raw complete successor corpus pins are exact.",
     "canonical_archive_command": {
@@ -1211,6 +1211,29 @@
       "Complete linked pair/audits",
       "Actual connected RV64 context/hint/Save/independentcold",
       "Exact RTL and updated prepared native/browser distribution"
-    ]
+    ],
+    "machine_alpha_capture": {
+      "path": "build/courses/task006-hint-publication-machine-alpha-plan-a1/capture-result.json",
+      "sha256": "316faab8517be733ace1e9d3133f5239c00bd20ab3f442888917f634803db555",
+      "bytes": 11995
+    },
+    "machine_alpha_qualification": {
+      "path": "build/courses/task006-hint-publication-machine-alpha-plan-a1/result.json",
+      "sha256": "a99d7774a5726a20d7c3135ec75fdf3a39254ffb4946bf46acfc1655c641a8b5",
+      "bytes": 9049
+    },
+    "retained_linked_audit_failures": [
+      {
+        "path": "build/courses/task006-hint-publication-whole-plan-a1/result.json",
+        "sha256": "6f2b570bc1dfb2a3a579a6fda248b8d4499a004131fe0c7929beda632fee7edf",
+        "bytes": 52162
+      },
+      {
+        "path": "build/courses/task006-hint-publication-companion-whole-plan-a1/result.json",
+        "sha256": "db03860c208a9a296281a48e1ecf509da467ed957d25b5ea404151b0d2a3f82d",
+        "bytes": 52242
+      }
+    ],
+    "machine_observer_repair": "Two own-function LCPI names shifted with declaration ordinal; exact actual13 old/new assembly comparisons preserve all67 instructions and2 header words. Explicit version2 mapping retains old complete machine pin and25 cells. Three actual data/branch/relocation corruptions rejected. Generic normalizer/historical pins unchanged."
   }
 }

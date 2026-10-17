@@ -47,3 +47,15 @@ initializer configuration sets, copies the complete consumed inventory and
 then runs `canonical_guest_archive`. USB and Product retain their separate
 validators. This produces source bytes for reuse; it never runs recovery or
 writes user media.
+
+The v2 authority also binds the old/new `NumberPad.character` symbols for two
+LLVM private constant-pool names. Changing declaration discovery moves their
+ordinal; the first linked audits correctly rejected the stale raw-name pin.
+For each exact v2 catalog, the auditor requires the two literal 64-bit header
+words and their exact `auipc` reference positions, rebinds only those two local
+names, then applies the unchanged complete 67-instruction predecessor pin,
+unsigned dispatch guard, load path and all 25 table cells. The generic machine
+normalizer and historical authorities are unchanged. Independent old/new
+assembly comparison covers all 13 configurations; corrupt data, branch and
+relocation fixtures fail. This is a qualified observer correction, not a
+change to target instructions or a waiver of the original audit failures.

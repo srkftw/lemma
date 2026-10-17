@@ -71,7 +71,7 @@ def refined(unit, previous, authority_path, role_key=''):
     fields = {'predecessor_authority', 'predecessor_authority_sha256',
               'role_key', 'previous_role_sha256', 'role'}
     if scoped:
-        fields |= {'previous_hint_authority_sha256', 'previous_hint_role_sha256'}
+        fields |= {'previous_hint_authority_sha256', 'previous_hint_role_sha256', 'number_pad_pool_alpha'}
         old = json.loads(AUTHORITY.read_text())
         if (old.get('schema') != VERSION or set(old.get('configurations', {})) != set(CONFIGURATIONS) or
                 entry.get('previous_hint_authority_sha256') != hashlib.sha256(AUTHORITY.read_bytes()).hexdigest() or
@@ -134,3 +134,38 @@ def semantics(ir, unit, *, optimized):
                 body = _ir_definition_body(ir, rows[source]['symbol'])
                 if len(_local_call_arguments(body, rows[PUBLICATION]['symbol'])) != 1:
                     raise Core0Error('Actual course publisher disconnected from scoped renderer: ' + source)
+
+
+def number_pad_machine(normalized, unit, assembly, symbol):
+    """Rebind only two source-bound local constant names to the old machine pin.
+
+    LLVM numbers these private labels by the declaration's ordinal. The v2
+    complete catalog fixes the new owner; the authority fixes both old/new
+    names. Literal data, every instruction and the old complete owner pin are
+    still checked. Historical machine normalization is unchanged.
+    """
+    if not scoped_publication(unit):
+        return normalized
+    authority = json.loads(AUTHORITY2.read_text())
+    entry = authority['configurations'][unit['configuration']]['number_pad_pool_alpha']
+    if (set(entry) != {'old_symbol', 'new_symbol'} or entry['new_symbol'] != symbol or
+            any(re.fullmatch(r'lemma_user_notebook_core0_scalar_\d+', entry[k]) is None
+                for k in ('old_symbol', 'new_symbol'))):
+        raise Core0Error('Number pad local constant owner differs')
+    old, new = (entry[k].rsplit('_', 1)[1] for k in ('old_symbol', 'new_symbol'))
+    pools = tuple('.LCPI' + new + '_' + str(i) for i in range(2))
+    words = (4123376619178973524, 4123362480213543244)
+    if set(re.findall(r'(?m)^(\.LCPI' + new + r'_\d+):', assembly)) != set(pools):
+        raise Core0Error('Number pad local constant inventory differs')
+    result = [(operation, list(arguments)) for operation, arguments in normalized]
+    for i, (label, value) in enumerate(zip(pools, words)):
+        if re.findall(r'(?m)^' + re.escape(label) + r':\n\s*\.quad\s+(\d+)\b', assembly) != [str(value)]:
+            raise Core0Error('Number pad authored header constant differs')
+        operand = '%pcrel_hi(' + label + ')'
+        sites = [(at, arg) for at, (_, args) in enumerate(result)
+                 for arg, text in enumerate(args) if text == operand]
+        if sites != [(20 if i == 0 else 25, 1)] or result[sites[0][0]][0] != 'auipc':
+            raise Core0Error('Number pad local constant reference differs')
+        at, arg = sites[0]
+        result[at][1][arg] = '%pcrel_hi(.LCPI' + old + '_' + str(i) + ')'
+    return result
