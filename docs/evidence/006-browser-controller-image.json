@@ -1,0 +1,223 @@
+{
+  "schema": "lemma-browser-controller-image-evidence/1",
+  "scope": "Ordinary actual controller image export and reusable same-path private restore; no guest policy moves into the host. Real browser tests use original unchanged Reader20; new optimized guest distribution is prepared only.",
+  "source_files": {
+    "sim/browser/app.js": {
+      "path": "sim/browser/app.js",
+      "sha256": "6a3882b7a1eebf5ae74f15151a59fe4740bebb4674f913bb1661f26f5969c455",
+      "bytes": 15300
+    },
+    "sim/browser/worker.js": {
+      "path": "sim/browser/worker.js",
+      "sha256": "aa247f517d861f735dd6b7b7d43ce1007e76b1ee11ccf4fdd231af87a9d98d00",
+      "bytes": 23482
+    },
+    "sim/browser/index.html": {
+      "path": "sim/browser/index.html",
+      "sha256": "6b591db69ac4525df7e38041abf50cb362a271267a3fff13970cdf97504ca53d",
+      "bytes": 6602
+    },
+    "scripts/lemmasim_browser.py": {
+      "path": "scripts/lemmasim_browser.py",
+      "sha256": "dc19e316615b1a81a36883fc6f3e99364621b5a5f94d310c17bba349f42f83c0",
+      "bytes": 21508
+    },
+    "tests/lemmasim/browser_worker_protocol.mjs": {
+      "path": "tests/lemmasim/browser_worker_protocol.mjs",
+      "sha256": "a2b11185d88e8b8cd674d70bf3319511c75611c117c7efd19abbf4ddef39ab03",
+      "bytes": 36092
+    },
+    "tests/lemmasim/test_browser_bundle.py": {
+      "path": "tests/lemmasim/test_browser_bundle.py",
+      "sha256": "99bd0e1ea0e4aa6f0c895ba34aa4077565e6fb84e1abaf38d321fa0ee13e64fc",
+      "bytes": 13480
+    }
+  },
+  "contract": "docs/contracts/006-browser-machine-v1.md",
+  "actual_browser": {
+    "paused_prototype": {
+      "receipt": {
+        "path": "build/browser/task006-controller-image-plan-a1/result.json",
+        "sha256": "edfced076f87753bd7746b5d4707cca461282a09b8d59962a7eb9e563aca0f22",
+        "bytes": 1298
+      },
+      "observed": {
+        "status": "PASS_ACTUAL_BROWSER_CONTROLLER_IMAGE_AND_UNCHANGED_AUTHORITATIVE_STATE",
+        "scope": "Actual browser visible-controller image export at an explicit private continuation. No cold recovery, new d9 browser execution or general checkpoint/cache claim.",
+        "whole_host_seconds": 383.614196855,
+        "all_equal_archive_bytes": 145676708,
+        "all_controller_pixels": 3630000,
+        "image_bytes": 3630017,
+        "cycle": "917100000",
+        "guest_clock_advance": 0,
+        "source_medium": "Actual guest-installed edition3, snapshot917.1M into isolated private OPFS fork",
+        "guest_saved_receipt": null,
+        "reported_Wasm_heap_bytes": 345964544,
+        "owned_output_bytes": 295089436,
+        "maximum_owned_file_bytes": 145676708,
+        "available_host_bytes_observed": 6909149184,
+        "resource_scope": "Wasm linear heap and owned files bounded; no separate continuous browser-process RSS claim.",
+        "image_sha256": "7091056fd5950e1a2f75e87eda3a633826a44805d5284b53685dfbd62a25253d",
+        "snapshot_relation": "Exact same private machine before/after the observational image control; no masks, advance, drain or guest mutation. Both snapshot calls and the image control remain separate from cold recovery.",
+        "machine_source": "Unchanged canonical84d5 real RTL Wasm; original086dfe7 Reader20 artifacts; new host exporter only"
+      }
+    },
+    "running_image_exact_suffix": {
+      "receipt": {
+        "path": "build/browser/task006-controller-image-running-plan-a1/result.json",
+        "sha256": "1d32c9a0259836774a1a2401385b063681b17995d0d3babf78f69d1d5d10d1e8",
+        "bytes": 1404
+      },
+      "observed": {
+        "status": "PASS_ACTUAL_RUNNING_CONTROLLER_IMAGE_AND_EXACT_5M_SUFFIX",
+        "scope": "Actual image export during a running real RTL/Wasm guest; exact5Mwith/withoutcontrol suffix from the same private checkpoint. Explicit continuation, not cold recovery or general cached-state closure.",
+        "all_equal_archive_bytes": 145676708,
+        "all_exact_controller_pixels": 3630000,
+        "image_cycle": 917900000,
+        "initial_cycle": 917100000,
+        "final_cycle": 922100000,
+        "each_actual_suffix_clocks": 5000000,
+        "export_did_not_cancel_run": true,
+        "export_did_not_advance_guest_clocks_or_change_applicable_suffix": true,
+        "remaining_after_export": "3000000",
+        "actual_final_remaining": "0",
+        "reported_Wasm_heap_bytes": 345964544,
+        "with_image_simulation_call_seconds": 45.0,
+        "without_image_simulation_call_seconds": 36.4,
+        "source_bundle": "build/browser/task006-controller-image-reader20-a2",
+        "source_checkpoint": "build/browser/task006-controller-image-plan-a1/observed/before.bin",
+        "same_file_restore_issue": "Original picker did not dispatch identical filename. Zero-copy hardlink alias of the exact same inode invoked the same starting archive; no cache drain, fence, clock or input mutation. Separate UI fix required.",
+        "observed_io_scope": "No new guest backing calls reported in either suffix; no live peer attached.",
+        "whole_host_seconds": 1026.324238953,
+        "owned_output_bytes": 440755531
+      }
+    },
+    "same_exact_file_again": {
+      "receipt": {
+        "path": "build/browser/task006-repeat-restore-plan-a1/result.json",
+        "sha256": "473a35096f27669c89df3decaf836826798d095f18015ecb4653daf5c7ef7eab",
+        "bytes": 1367
+      },
+      "observed": {
+        "status": "PASS_ACTUAL_IDENTICAL_PATH_PRIVATE_RESTORE_AND_CONTROLLER_IMAGE",
+        "scope": "Same original Reader20 checkpoint; not cold recovery, new optimized kernel browser qualification or general QEMU checkpoint proof.",
+        "first_cycle": "917100000",
+        "first_private_medium": "fork_aa832b1fe19944d3afce7d0a8eefa40d",
+        "actual_suffix_clocks": 50000,
+        "after_run_cycle": "917150000",
+        "run_pause": "cycle-limit",
+        "run_remaining": "0",
+        "second_cycle": "917100000",
+        "second_private_medium": "fork_e720bec8e47844c89252f94688444365",
+        "same_exact_selected_path": "build/browser/task006-controller-image-plan-a1/observed/before.bin",
+        "rename_or_hardlink_workaround": false,
+        "restore_file_input_after_each_selection": "",
+        "both_private_copies_ready": true,
+        "guest_saved_or_ready_manufactured": false,
+        "reported_Wasm_heap_bytes": 345964544,
+        "actual_simulation_call_seconds": 0.4304599999189377,
+        "all_controller_pixels_equal": 3630000,
+        "whole_host_seconds_upper_bound": 136.176330685,
+        "image_bytes": 3630017,
+        "source_files": {
+          "sim/browser/app.js": "6a3882b7a1eebf5ae74f15151a59fe4740bebb4674f913bb1661f26f5969c455",
+          "sim/browser/worker.js": "aa247f517d861f735dd6b7b7d43ce1007e76b1ee11ccf4fdd231af87a9d98d00",
+          "tests/lemmasim/browser_worker_protocol.mjs": "a2b11185d88e8b8cd674d70bf3319511c75611c117c7efd19abbf4ddef39ab03"
+        }
+      }
+    }
+  },
+  "retained_failures": [
+    {
+      "receipt": {
+        "path": "build/browser/task006-controller-image-plan-a1/browser-host-a1.log",
+        "sha256": "c5ddd1caf7178bb1aa77fc2bf5158490c5c9ec66d25f9352927eb44b7ee6fe88",
+        "bytes": 5699
+      },
+      "reason": "Actual fixture exposed invalid image canceling active run through generic catch; local export error handling corrected, check retained."
+    },
+    {
+      "receipt": {
+        "path": "build/browser/task006-controller-image-running-plan-a1/same-file-restore-observation.json",
+        "sha256": "8e7d4d0597ca790e139487de7adea5693ba4fd13d5d2715dbaee8d6e7bf14bd0",
+        "bytes": 642
+      },
+      "reason": "Identical file selection did not dispatch change; retained actual no-restore. Separate final UI consumes selection and actual identical pathname now restores privately."
+    }
+  ],
+  "remaining": {
+    "digital": "Fresh complete course/check/hint/ink/cold case still running; no whole proof kernel/tutor/USB/radio/power/processor closure",
+    "fast_and_checkpoint": "Exact5MRTL/Wasm observer suffix only; arbitrary QEMU cached continuation remains open",
+    "distribution": "Prepared origin-qualified OPFS development bundle; no full new kernel browser execution, browser-local compiler, clean-host runtime import or redistribution rights",
+    "physical": "No new physical result; controller plane is digital, not optical qualification"
+  },
+  "prepared_distribution": {
+    "receipt": {
+      "path": "build/browser/task006-repeat-restore-plan-a1/package.json",
+      "sha256": "9c70ca5604a56f5f9aad26ff5017de3a016657e08d3f1f6a7bd4031d6b56bbb0",
+      "bytes": 741
+    },
+    "observed": {
+      "status": "PASS_PREPARED_LOCAL_BROWSER_DISTRIBUTION",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-pool-read-controller-image-browser-a1",
+      "manifest_sha256": "5213ef2227f304803f840fa972cfb3a0b0a9af96f4e0b1b61e140bab7c56e156",
+      "source_bundle_sha256": "eebcaaecde0e0362f028b0df5184d32052dbfbd1651547781c905011ee7f4100",
+      "files": 289,
+      "bytes": 17717086,
+      "standalone_verification": "PASS_LOCAL_BROWSER_DISTRIBUTION_BYTES",
+      "archive": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-pool-read-controller-image-browser-a1.tar.gz",
+        "sha256": "7e544642c95909f7eff9e7fc9b50aee964557aaaabe068523435f062d994afa5",
+        "bytes": 2085277
+      },
+      "seconds": 2.5569299559574574
+    },
+    "verify": {
+      "path": "build/browser/task006-repeat-restore-plan-a1/distribution-verify.log",
+      "sha256": "0c572231160e0f2fa682889872094fb47fbdcb5773f33c8393fe8eb8d250640d",
+      "bytes": 38
+    },
+    "guest": "d9be0fce8d7b31b018318d38fff8336abb89161d; audited pair from build/native/task006-pool-read-reader20-a1",
+    "Wasm": "unchanged84d52d610d2819e294b1c130b362e1289c48dfe31285225140029e9168c8e5a5"
+  },
+  "focused_host": {
+    "receipt": {
+      "path": "build/browser/task006-controller-image-plan-a1/browser-host-a4.log",
+      "sha256": "b00129b45f1e6aae9f57415ea1c0bf975b58416d4324d6fd73b06bb256469860",
+      "bytes": 4423
+    },
+    "count": 16,
+    "seconds": 1.881,
+    "scope": "Actual worker/app source with bounded host fixtures; not RV64 execution"
+  },
+  "regressions": {
+    "lemmasim": {
+      "receipt": {
+        "path": "build/browser/task006-controller-image-host-a1/lemmasim.log",
+        "sha256": "8005fc136a062f76df364f7dd80c76bc21a25cab359908d9179e825e81003576",
+        "bytes": 55652
+      },
+      "tests": 314,
+      "seconds": 79.89,
+      "status": "PASS"
+    },
+    "scaffold": {
+      "receipt": {
+        "path": "build/browser/task006-controller-image-host-a1/scaffold.log",
+        "sha256": "de644256bb72f1fe9d64a51bb626fcb9621ed29e41e2e53d675c3e26881c1cbc",
+        "bytes": 1873
+      },
+      "tests": 18,
+      "seconds": 9.609,
+      "status": "PASS"
+    },
+    "metadata": {
+      "receipt": {
+        "path": "build/browser/task006-controller-image-host-a1/metadata.log",
+        "sha256": "c2056e7047613eb50b7959fdf3707c051a802892eef1abb91be2c1117388d049",
+        "bytes": 247
+      },
+      "status": "PASS"
+    }
+  }
+}

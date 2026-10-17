@@ -2437,3 +2437,25 @@ scenario, a new complete browser workflow, exact fast timing, production boot,
 clean-host runtime import or redistribution permission. The earlier fresh
 browser installation and explicit course workflow continue on their original
 source/bundle and origin8810; keep that origin for its OPFS media.
+
+The current prepared browser adds **Export controller image** in every mode.
+It downloads the real visible controller plane as Gray4-derived PGM, with the
+exact cycle in its filename. It works while running and preserves the run
+budget. Restore/import/outcome file controls accept the identical file again;
+each successful restore still owns a separate durable fork. These are host
+presentation controls; checking, ink and recovery remain in the RV64 guest.
+
+```sh
+python3 -I build/distribution/task006-pool-read-controller-image-browser-a1/serve.py --verify-only
+python3 -I build/distribution/task006-pool-read-controller-image-browser-a1/serve.py --port 8815
+```
+
+Open `http://127.0.0.1:8815/`. The matching archive is
+`build/distribution/task006-pool-read-controller-image-browser-a1.tar.gz`
+(2085277 bytes). This prepares the new kernel guest with the unchanged exact
+RTL/Wasm core; it does not qualify a full new-kernel browser workflow. Actual
+original-Reader20 browser qualification includes all3630000 image pixels,
+unchanged145676708-byte snapshots and an exact5M-clock with/without-image
+suffix. Same-file private restore passed separately. See
+`docs/evidence/006-browser-controller-image.json`. OPFS durability limits,
+native build-helper dependency and unresolved redistribution rights still apply.

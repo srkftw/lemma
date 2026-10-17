@@ -56,9 +56,13 @@ document.querySelector('#install-course').onclick=async()=>{
  try{const bytes=await file.arrayBuffer();send('course-install',{bytes,transaction:document.querySelector('#course-transaction').value},[bytes]);}
  catch(e){document.querySelector('#course-admission').textContent=String(e);}
 };
-document.querySelector('#restore').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('restore',{bytes},[bytes]);};
-document.querySelector('#pending-outcomes').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>268435456){status.textContent='Outcome tape exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('outcomes',{bytes},[bytes]);};
-document.querySelector('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size!==268435456){status.textContent='Expected a 256 MiB raw medium';return;}const bytes=await file.arrayBuffer();send('import',{name:document.querySelector('#medium').value,mode:sessionMode.value,bytes},[bytes]);};
+// Auto-submitting file controls consume a selection, allowing the same file
+// to be chosen again for a retry or another private restore. Explicit Send
+// controls (course/replay) retain their selected files until the user sends.
+function selectedFile(input){const file=input.files[0];input.value='';return file;}
+document.querySelector('#restore').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('restore',{bytes},[bytes]);};
+document.querySelector('#pending-outcomes').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size>268435456){status.textContent='Outcome tape exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('outcomes',{bytes},[bytes]);};
+document.querySelector('#import').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size!==268435456){status.textContent='Expected a 256 MiB raw medium';return;}const bytes=await file.arrayBuffer();send('import',{name:document.querySelector('#medium').value,mode:sessionMode.value,bytes},[bytes]);};
 document.querySelector('#replay').onclick=async()=>{try{
  const c=document.querySelector('#replay-checkpoint').files[0],io=document.querySelector('#replay-io').files[0],raw=document.querySelector('#replay-events').files[0];
  if(!c||!io||!raw)throw Error('Select checkpoint, backing outcomes and raw event capture');

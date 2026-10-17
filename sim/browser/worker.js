@@ -11,7 +11,7 @@ let guestOutputStart=0;
 let guestObservation='boot';
 let sessionMode='student';
 const SESSION_CONTROL_CONTRACT='lemma-browser-session-modes/2';
-const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','restore','bind','close']);
+const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','export-panel','restore','bind','close']);
 const developerActions=new Set(['replay','run','raw','raw-batch','course-install','inspect','outcomes','events','capture','capture-outcomes']);
 function admission(message){
  if(!message||typeof message!=='object'||typeof message.action!=='string')throw Error('Invalid browser request');
@@ -49,6 +49,18 @@ function observeReady(data=core.FS.readFile('/uart.bin')){if(readyAt===null&&gue
  readyAt={cycle:state().cycle,hostSeconds:(performance.now()-started)/1000};return readyAt!==null;}
 function exportEvents(){const log={schema:'lemmasim-browser-raw-capture/1',events:capture.slice(),checkpoints,until:state().cycle};
  const raw=new TextEncoder().encode(JSON.stringify(log));postMessage({type:'export',name:'lemma-events.json',bytes:raw},[raw.buffer]);}
+function exportPanel(){
+ if(manifest.controller_image_contract!=='lemma-controller-gray4-image/1')throw Error('Unsupported controller image export');
+ const cycle=uint64(state().cycle),p=core.ccall('lemma_pixels','number',[],[]),n=core.ccall('lemma_pixel_count','number',[],[]);
+ if(!Number.isSafeInteger(n)||n<=0||n>3630000||n!==manifest.width*manifest.height||
+    !Number.isSafeInteger(p)||p<0||p>core.HEAPU8.byteLength-n)throw Error('Invalid controller pixel plane');
+ const header=new TextEncoder().encode(`P5\n${manifest.width} ${manifest.height}\n255\n`),bytes=new Uint8Array(header.length+n);
+ bytes.set(header);for(let i=0;i<n;i++){const gray=core.HEAPU8[p+i];
+  if(gray>15)throw Error('Invalid controller Gray4 sample');bytes[header.length+i]=gray*17;}
+ // Read the actual visible controller plane. No CPU step, scan completion,
+ // backing operation, ink construction or GPU/canvas readback is involved.
+ postMessage({type:'export',name:`lemma-controller-${cycle}.pgm`,bytes},[bytes.buffer]);sendState();
+}
 function panel(force=false){const s=state();if(force||s.panel_completed!==panelSequence){panelSequence=s.panel_completed;
  const p=core.ccall('lemma_pixels','number',[],[]),n=core.ccall('lemma_pixel_count','number',[],[]);
  const pixels=core.HEAPU8.slice(p,p+n);postMessage({type:'panel',pixels,width:manifest.width,height:manifest.height},[pixels.buffer]);}}
@@ -220,6 +232,9 @@ onmessage=async({data:m})=>{
   postMessage({type:'export',name:'lemma-checkpoint.bin',bytes:b},[b.buffer]);sendState();}
  else if(m.action==='export'){pause('export');const path='/durable-'+loops+'.raw';check('lemma_export',['string'],[path]);
   const b=core.FS.readFile(path);core.FS.unlink(path);postMessage({type:'export',name:'lemma-backing.raw',bytes:b},[b.buffer]);sendState();}
+ else if(m.action==='export-panel'){
+  try{exportPanel();}catch(error){postMessage({type:'error',error:String(error)});return;}
+ }
  else if(m.action==='restore'){
   // The machine validates before replacing authoritative state. Reject an
   // incompatible/corrupt archive without cancelling the live run or budget.

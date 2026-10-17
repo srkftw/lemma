@@ -8,17 +8,17 @@ import {webcrypto} from 'node:crypto';
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const MAX=18446744073709551615n;
 const record=(kind,sequence=0n)=>`K1 ${kind.toString(16).padStart(16,'0')} ${sequence.toString(16).padStart(16,'0')} 0000000000000001 0000000000000001 0000000000000000\n`;
-async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false,controlContract='lemma-browser-session-modes/2',courseContract=null}={}){
+async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false,controlContract='lemma-browser-session-modes/2',courseContract=null,imageContract=null,pixelPlane=new Uint8Array([0]),pixelCount=pixelPlane.length}={}){
  let now=0,nextTimer=0,generation=0,finished=false,isolated=false,current=cycle,paper={completed:'0',accepted:'0'},uart=initialUART;
  const files=new Map([['/capture.io',encoder.encode('literal captured outcome bytes')]]),messages=[],timers=new Map(),calls=[],events=[];
  const bytes=encoder.encode('hash-validated fake ELF/descriptor/ROM');
  const digest=Buffer.from(await webcrypto.subtle.digest('SHA-256',bytes)).toString('hex');
- const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',session_control_contract:controlContract,course_install_contract:courseContract,width:1,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}}};
+ const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',session_control_contract:controlContract,course_install_contract:courseContract,controller_image_contract:imageContract,width:pixelPlane.length,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}}};
  const mediumCalls=[];const fault=name=>{mediumCalls.push(name);if(storageFault===name)throw Error('injected '+name+' failure');};
  const medium={read(b){now+=2;return b.length;},write(b){now+=3;return b.length;},flush(){fault('flush');now+=4;},getSize(){fault('getSize');return mediumSize;},close(){mediumCalls.push('close');if(closeFault)throw Error('secondary close failure');},truncate(){fault('truncate');}};
  const mediumNames=new Set(initialize?[]:['test.raw']);
  const root={async getFileHandle(name,options={}){if(!mediumNames.has(name)&&!options.create){const e=Error('missing');e.name='NotFoundError';throw e;}mediumNames.add(name);return {async createSyncAccessHandle(){return medium;}};}};
- const core={HEAPU8:new Uint8Array(16),FS:{mkdir(){},writeFile(p,b){files.set(p,new Uint8Array(b));},readFile(p){if(p==='/uart.bin')return encoder.encode(uart);if(!files.has(p))throw Error('missing '+p);return new Uint8Array(files.get(p));},unlink(p){files.delete(p);},stat(){return {size:268435456};},open(){return {};},read(_stream,_chunk,_offset,length){return length;},close(){}},
+ const core={HEAPU8:new Uint8Array(Math.max(16,pixelPlane.length)),FS:{mkdir(){},writeFile(p,b){files.set(p,new Uint8Array(b));},readFile(p){if(p==='/uart.bin')return encoder.encode(uart);if(!files.has(p))throw Error('missing '+p);return new Uint8Array(files.get(p));},unlink(p){files.delete(p);},stat(){return {size:268435456};},open(){return {};},read(_stream,_chunk,_offset,length){return length;},close(){}},
  ccall(name,_return,_types,args=[]){calls.push([name,...args]);switch(name){
   case 'lemma_create':case 'lemma_create_mode':{const cold=generation++!==0;current=cold?0n:cycle;isolated=false;if(cold)uart='';finished=false;return 0;}
   case 'lemma_destroy':return undefined;
@@ -27,7 +27,7 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
   case 'lemma_run':{const n=BigInt(args[0]);assert(n>0n&&n<=50000n);current+=n;now+=5;core.backing.read(new Uint8Array(1),{at:0});return onRun?.({n,current,generation,setUART:x=>{uart=x;},setPaper:x=>{paper=x;},setCycle:x=>{current=x;},finish:()=>{finished=true;}})??0;}
   case 'lemma_event':{const error=onEvent?.(args[0])??0;if(!error)events.push(args[0]);return error;}
   case 'lemma_pixels':return 0;
-  case 'lemma_pixel_count':return 1;
+  case 'lemma_pixel_count':return pixelCount;
   case 'lemma_capture_path':return '/capture.io';
   case 'lemma_snapshot':files.set(args[0],encoder.encode(String(current)));return 0;
   case 'lemma_restore':{const archive=decoder.decode(files.get(args[0]));if(!/^\d+$/.test(archive))return 1;
@@ -38,6 +38,7 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
   case 'lemma_error':return 'fake machine error';
   default:throw Error('unimplemented fixture call '+name);
  }} };
+ core.HEAPU8.set(pixelPlane);
  const context=vm.createContext({Uint8Array,ArrayBuffer,TextEncoder,TextDecoder,BigInt,console,crypto:webcrypto,
   performance:{now:()=>now},navigator:{storage:{getDirectory:async()=>root}},
   fetch:async path=>path==='./bundle.json'?{json:async()=>manifest}:{ok:true,arrayBuffer:async()=>bytes.buffer},
@@ -54,6 +55,31 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  const state=()=>messages.filter(m=>m.type==='state').at(-1),exports=()=>messages.filter(m=>m.type==='export');
  await send('open',{name:'test',initialize,paused,mode});if(!paused)await send('pause');
  return {send,tick,drain,state,exports,messages,timers,calls,events,mediumCalls,mediumNames,setStorageFault:x=>{storageFault=x;},cycle:()=>current,advanceWall:n=>{now+=n;},setUART:x=>{uart=x;},setPaper:x=>{paper=x;}};
+}
+// Controller export reads actual worker plane bytes only, including every
+// Gray4 level and a clock above2^53. It never advances or writes the machine.
+for(const mode of ['student','developer','laboratory']){
+ const f=await fixture({cycle:MAX,paused:true,mode,imageContract:'lemma-controller-gray4-image/1',pixelPlane:Uint8Array.from({length:16},(_,i)=>i)});
+ const before=f.calls.length,backing=[...f.mediumCalls],events=[...f.events];
+ await f.send('export-panel');const image=f.exports().at(-1),header=encoder.encode('P5\n16 1\n255\n');
+ assert.equal(image.name,`lemma-controller-${MAX}.pgm`);assert.deepEqual(image.bytes.slice(0,header.length),header);
+ assert.deepEqual([...image.bytes.slice(header.length)],Array.from({length:16},(_,i)=>i*17));
+ assert.equal(f.cycle(),MAX);assert.deepEqual(f.events,events);assert.deepEqual(f.mediumCalls,backing);assert.equal(f.timers.size,0);
+ assert(f.calls.slice(before).every(([name])=>['lemma_inspect','lemma_pixels','lemma_pixel_count'].includes(name)));
+}
+// A successful image read also preserves a running budget and its next quantum.
+{
+ const f=await fixture({paused:true,imageContract:'lemma-controller-gray4-image/1'});
+ const initial=f.cycle();await f.send('run',{cycles:'50000'});const timers=[...f.timers.keys()];
+ await f.send('export-panel');assert.deepEqual([...f.timers.keys()],timers);assert.equal(f.state().running,true);
+ assert.equal(f.cycle(),initial);await f.drain();assert.equal(f.cycle(),initial+50000n);
+ assert.equal(f.state().pauseReason,'cycle-limit');
+}
+// Invalid/unsupported output cannot publish partial bytes or cancel a live run.
+for(const options of [{imageContract:null},{imageContract:'future'},{imageContract:'lemma-controller-gray4-image/1',pixelCount:17},{imageContract:'lemma-controller-gray4-image/1',pixelPlane:new Uint8Array([16])}]){
+ const f=await fixture({paused:true,...options});await f.send('run',{cycles:'50000'});
+ const timers=[...f.timers.keys()],before=f.exports().length;await f.send('export-panel');
+ assert.equal(f.messages.at(-1).type,'error');assert.equal(f.exports().length,before);assert.deepEqual([...f.timers.keys()],timers);assert.equal(f.cycle(),9007199254740993n);
 }
 // A fork publishes its actual persistent name only after copy/flush/rebind.
 // Closing and opening that name creates a fresh CPU, never a state restore.
@@ -327,6 +353,12 @@ for(const [storageFault,expected] of [['truncate',['truncate','close']],['flush'
  assert.equal(sent.at(-1).stopOnPanel,true);
  assert.equal(sent.at(-1).hostSeconds,null);node('#run-seconds').value='7200';node('#run-bounded').onclick();assert.equal(sent.at(-1).hostSeconds,'7200');
  for(const action of ['events','capture-outcomes']){actions.find(n=>n.dataset.action===action).onclick();assert.equal(sent.at(-1).action,action);}
+ // Every auto-submitting chooser can repeat the identical file selection.
+ for(const [id,size,action]of [['#restore',2,'restore'],['#pending-outcomes',2,'outcomes'],['#import',268435456,'import']]){
+  const input=node(id);input.files=[{size,arrayBuffer:async()=>encoder.encode('17').buffer}];
+  for(let attempt=0;attempt<2;attempt++){input.value='same-file';await input.onchange({target:input});
+   assert.equal(input.value,'');assert.equal(sent.at(-1).action,action);assert.equal(decoder.decode(sent.at(-1).bytes),'17');}
+ }
  appWorker.onmessage({data:{type:'export',name:'lemma-events.json',bytes:encoder.encode('{}')}});assert.deepEqual(downloads,['lemma-events.json']);
  appWorker.onmessage({data:{type:'state',state:{cycle:String(MAX)},running:false,pauseReason:'cycle-limit',readyAt:null,heapBytes:1048576,guestObservation:'continuation',hostSeconds:100,
   timing:{elapsedSeconds:100,simulationCallSeconds:2,backingCallSecondsDuringRun:1}}});

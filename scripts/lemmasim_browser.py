@@ -129,6 +129,7 @@ def bundle(args):
             'boot':'ELF-preload development boot','compiler':'native pinned Lean/LLVM helper; no browser compiler',
             'persistence':'OPFS SyncAccessHandle.flush; origin eviction and physical power loss unqualified',
             'session_control_contract':'lemma-browser-session-modes/2',
+            'controller_image_contract':'lemma-controller-gray4-image/1',
             'wasm_build_sha256':sha(source/'build.json'),'wasm_project_root':str(ROOT),'workloads':{}}
     if guest_archive is not None:
         result['guest_archive']={'manifest_sha256':sha(guest_archive/'bundle.json'),
@@ -197,6 +198,8 @@ def validated_bundle(directory):
         raise ValueError('Unsupported browser machine bundle')
     if m.get('session_control_contract') not in (None, 'lemma-browser-session-modes/1', 'lemma-browser-session-modes/2'):
         raise ValueError('Unsupported browser control contract')
+    if 'controller_image_contract' in m and m['controller_image_contract']!='lemma-controller-gray4-image/1':
+        raise ValueError('Unsupported controller image export contract')
     files=m.get('files')
     if not isinstance(files,dict) or not 1<=len(files)<=2048:raise ValueError('Invalid browser inventory')
     total=0

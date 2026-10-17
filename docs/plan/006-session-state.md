@@ -5226,3 +5226,76 @@ Digital completeness, fast timing/arbitrary QEMU cached continuation, local
 product distribution/fresh-host/browser compilation/rights and full physical
 closure are still separate unfinished obligations. New getter work closes none
 of the processor/boot/power/USB/radio/proof-kernel/tutor or physical gaps.
+
+
+Browser controller image export and repeated private restore (2026-10-17)
+
+The ordinary Export controller image control now reads the actual Machine
+visible Gray4 plane to P5 PGM (sample*17), exactUInt64cycle filename. It neither
+pauses/cancels a run nor clocks the guest, completes a scan, touches backing or
+reads GPU/canvas. Strict geometry/count/range/sample/version validation rejects
+without a partial image or cancelling a live budget. New optional contract
+lemma-controller-gray4-image/1; older bundles stay accepted without it.
+
+Real originalReader20 browser continuation qualification:
+- Paused prototype: all145676708before/afterarchivebytes identical; all3630000
+  imagepixels exact vs independently retained exercise3plane, zero guestclocks.
+  Whole383.614197s/original1200, reportedheap345964544B. Prototype paused by
+  design; final exporter was changed to preserve running input/budgets.
+- Final running implementation: image at917900000strictlyinside917100000→
+  922100000suffix. Run remainedactive with3000000remaining; finalzero remaining.
+  Restore same startingarchive in separateprivatefork, run5Mwithoutimage:
+  every145676708resultingarchivebyte identical, no masks/tolerances; all3630000
+  exportedpixels exact. Whole1026.324239s/original1200; reported330MiBheap;
+  with-image45.0andcontrol36.4actualsimulationcallseconds, different contention.
+  No livepeer/newguestbackingcalls in this suffix. This is a scoped sameRTL/Wasm
+  observer property, not general QEMU arbitrary cached continuation/cold proof.
+- Actual UI exposed identicalfilename restore doing nothing (nochange event).
+  Original observation retained. Final app consumes restore/import/outcome
+  selection immediately, including rejections; explicit course/replay retains
+  selection untilSend. Actual finalUI restored917100000→ran50000clocks→chose
+  EXACTsameoriginalpathname→restored917100000into a differentprivateOPFSfork.
+  Bothcopiesready, fileinputcleared, noSaved/Readyinferred. FinalPGMallpixels
+  exact. Whole136.176331s/original1200,0.430460simulationcalls,330MiBheap.
+  Tab42/origin8814is finalUI deliverable. Completedtesttabs40/41andtheir owned
+  servers47984/93312closed; allbackingmedia andevidence preserved.
+
+Receipts: build/browser/task006-controller-image{,-running}-plan-a1/result.json
+andbuild/browser/task006-repeat-restore-plan-a1/result.json. First16testfixture
+run FAILED when an invalidimage cancelledthelive budget through genericcatch;
+real localerrorhandling repaired, original log retained. Final16PASS1.881s;
+fullLemmaSim314PASS79.890s,scaffold18PASS9.609s,metadataPASS. See
+ docs/evidence/006-browser-controller-image.json and actual screenshots.
+
+Preparednewd9guestbrowserbundlebuild/browser/task006-pool-read-controller-image-
+a1reuses completeoriginal84d5RTL/Wasm closure withaudited canonicalnormal/init
+pair frombuild/native/task006-pool-read-reader20-a1. Staticprepared distribution
+build/distribution/task006-pool-read-controller-image-browser-a1 (archive2085277B,
+SHA7e544642c95909f7eff9e7fc9b50aee964557aaaabe068523435f062d994afa5),
+verify-onlyPASS. READMEhas actuallaunch. Actualbrowserimage/restoreruns use
+originalReader20, NOTfullnewd9browserqualification. Native distribution unchanged;
+notices/licensing/originqualifiedOPFS/nativecompilerlimitations remain.
+
+Newd9canonicalRTLcoldReady now PASS460Mcut/2551.975530s,all3630000homepixels and
+all268435456backingbytes exact. Oldsameinput/machine471Mcut/2048.141869s:
+11Mless sampledtargetclocks (1Msampling), hostcontentiondiffers and observed
+hosttimegrew; nohostspeedupclaim. Fullsixoutcome/ink/Save/independentcoldstill
+RUNNINGoriginal12h/6Bplan. OriginalReader20canonicalcasehaspassed actualchecks,
+hint,rawannotation11independentblackpixels,Saved18,ReaderSave andClose; independent
+secondCPUcold nowrunning. FullPASSnotyetobserved. CompanionReader19 remains
+in originalrealremount/EOF/reconcileSaved24/offlineinkcommitphase, original800M/
+7200bounds. Labelsare intendedpredicates, not observedcompletion.
+
+Freshbrowser39/origin8810 remains originalReader20, no reload/reset/bundlechange.
+Exercise3fullbody/allmedium/CRC PASS917.1M; USEselectededition3node3goal1 and
+actualSaved5PASS988.35M withrevision2/applicableprovenance/noevidenceorassistance.
+NumeratorselectionactualSaved6/panel11at1051.9M; key5runningfromthere under
+original150M/1800bound. Its completecourse/check/edit/hint/ink/Save/coldcase remains
+unfinished, absolute12hdeadline2026-10-17T12:18:08.271910Z. Keep allownednative
+campaigns and browser39untouched; do notreplacea case with a clean continuation.
+
+Committed7480632 CI38996796033/run151 COMPLETED_SUCCESS11jobs/117steps/0skips,
+receiptbuild/ci/task006-748-complete.json. It qualifies committedkernel/authority
+source, not this laterbrowserincrement. PR9 remains draft/unmerged; successor
+merge notauthorized. Digital,fastparity/arbitraryQEMUcheckpoint,distribution
+andphysical obligations remain separate and unfinished.

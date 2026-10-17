@@ -89,6 +89,17 @@ class BrowserBundleBoundary(unittest.TestCase):
                 (root/'bundle.json').write_text(json.dumps(m))
                 with self.subTest(version=version),self.assertRaises(ValueError):validated_bundle(root)
 
+    def test_controller_image_contract_is_additive_and_rejects_unknown_formats(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);m=fixture(root)
+            (root/'bundle.json').write_text(json.dumps(m));validated_bundle(root)
+            m['controller_image_contract']='lemma-controller-gray4-image/1'
+            (root/'bundle.json').write_text(json.dumps(m));validated_bundle(root)
+            for version in (None,2,'lemma-controller-gray4-image/2'):
+                m['controller_image_contract']=version
+                (root/'bundle.json').write_text(json.dumps(m))
+                with self.subTest(version=version),self.assertRaises(ValueError):validated_bundle(root)
+
     def test_reuse_checks_generator_policy_and_portable_runtime_not_only_outputs(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);source=root/'built';source.mkdir()

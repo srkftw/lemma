@@ -18,6 +18,22 @@ same-byte 2D fallback. Device loss replaces the presentation canvas only.
 Mouse pressure is explicitly synthetic. Pointer cancellation supplies loss/
 resynchronization flags. Coordinate conversion has bounded integer results.
 
+`lemma-controller-gray4-image/1` adds ordinary **Export controller image**.
+The worker reads the existing visible controller plane, validates every Gray4
+sample and exports P5 PGM with each value multiplied by17. The exact UInt64
+cycle is retained in the filename. This action neither pauses a running budget
+nor clocks the machine, completes a scan, accesses backing storage or reads a
+canvas/GPU. A rejected image produces no partial download and retains scheduling.
+The image may show a partial panel scan; it is not a physical optical claim or
+a Saved receipt. Older bundles without this optional contract remain valid;
+unknown contract versions reject.
+
+Restore, opaque-medium import and pending-outcome inputs consume their selected
+file immediately, including a rejected selection. Choosing the same pathname
+again therefore starts another explicitly requested operation. Each successful
+restore still creates its own private backing fork. Course/replay selections
+retain their files until the explicit Send control is used.
+
 ## Time and observational state
 
 `lemma-browser-session-modes/2` preserves contract1's guest authority and adds

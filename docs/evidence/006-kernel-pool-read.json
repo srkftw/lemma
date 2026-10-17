@@ -1,6 +1,6 @@
 {
   "schema": "lemma-kernel-pool-read-refinement-evidence/1",
-  "scope": "Actual ordinary Lean metadata getter refinement, complete canonical builds/audits, exact additive authority for11older selectors, expanded fast guest checking/ink/Save/independent cold. Separate native RTL/browser campaigns remain running; no total machine completion or fast timing/checkpoint claim.",
+  "scope": "Actual Lean metadata getter refinement, complete canonical builds/audits, exact additive authority for11older selectors, expanded fast workflow and new canonical RTL coldReady. Complete new RTL/browser cases remain running; no full machine or fast timing/checkpoint claim.",
   "tested_guest_commit": "d9be0fce8d7b31b018318d38fff8336abb89161d",
   "profile": "lemma-silicon-dev/0.3.0",
   "target_sources": {
@@ -377,5 +377,58 @@
     "fast_and_checkpoint": "QEMU functional clock is not exact RTL timing; general arbitrary cached continuation remains GAP_CONFIRMED. No new cached-state or cross-backend microstate claim.",
     "distribution": "Prepared development bundles, native build helper, origin-qualified OPFS, unresolved fresh-host import/browser compiler/redistribution rights; fresh full browser case remains pending.",
     "physical": "No new routing/signoff result. Detailed routing/rule coverage/DRC/LVS/PEX/post-route/full-SoC and analog/panel qualification remain open."
+  },
+  "canonical_RTL_first_ready": {
+    "receipt": {
+      "path": "build/courses/task006-pool-read-expanded-rtl-plan-a1/first-ready-result-a1.json",
+      "sha256": "a7b6f983515af520f4114df808c670c491654f400d08770b3d28a9713702d43a",
+      "bytes": 1195
+    },
+    "observed": {
+      "status": "PASS_NEW_KERNEL_CANONICAL_RTL_COLD_READY_ALL_PIXELS_AND_BACKING",
+      "scope": "Only actual canonical RTL first coldReady and all initial controller pixels/backing. The complete6outcome/ink/Save/independent cold case is still running.",
+      "actual_phase": {
+        "name": "cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 460000000,
+        "execution_units": 460000000,
+        "clock_scope": "canonical RTL clocks",
+        "host_seconds": 2551.9755303550046,
+        "phase_clock_cap": 1000000000,
+        "phase_host_cap": 7200
+      },
+      "all_home_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "old_phase": {
+        "name": "cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 471000000,
+        "execution_units": 471000000,
+        "clock_scope": "canonical RTL clocks",
+        "host_seconds": 2048.141868556966,
+        "phase_clock_cap": 1000000000,
+        "phase_host_cap": 7200
+      },
+      "old_clocks": 471000000,
+      "new_clocks": 460000000,
+      "target_clocks_reduced": 11000000,
+      "comparison_scope": "Same actual source3 medium/canonical Machine. Reduced guest/RTL work; host durations are separately observed under different contention, no host-speedup claim.",
+      "observer_seconds": 1.779053768957965
+    },
+    "sampling_scope": "Ready cut sampled each1Mclocks; complete6outcome/ink/Save/independent cold still running"
+  },
+  "candidate_ci": {
+    "commit": "7480632c81487d556592d2cea7f48bf5a99ff748",
+    "run": 38996796033,
+    "status": "COMPLETED_SUCCESS",
+    "jobs": 11,
+    "steps": 117,
+    "skipped": 0,
+    "receipt": {
+      "path": "build/ci/task006-748-complete.json",
+      "sha256": "0d98ccbc099d52c7ba708ead36906650b6aedfd97cff8df463122d9a166f78da",
+      "bytes": 25680
+    },
+    "scope": "Committed kernel/authority source only; subsequent browser controls require separate candidate CI."
   }
 }
