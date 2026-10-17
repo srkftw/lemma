@@ -164,12 +164,14 @@ def numeric_semantics(ir,unit):
   if len(calls(prefix+owner,target))!=1:raise Core0Error('Number entry lost actual guest operation')
  if version>=13:
   repair=prefix+'numericPumpCancelledRedraw'
-  if len(calls(prefix+step,repair))!=1 or len(calls(repair,prefix+'pumpCancelledRedraw'))!=1 or len(calls(repair,prefix+'renderPackageCourse'))!=1:raise Core0Error('Number entry loss recovery lost its actual guest repaint path')
+  from authored_hint_target import scoped_publication
+  course_renderer='renderPackageCourseScoped'if scoped_publication(unit)else'renderPackageCourse'
+  if len(calls(prefix+step,repair))!=1 or len(calls(repair,prefix+'pumpCancelledRedraw'))!=1 or len(calls(repair,prefix+course_renderer))!=1:raise Core0Error('Number entry loss recovery lost its actual guest repaint path')
   if calls(repair,prefix+'startSave')or calls(repair,prefix+'reportCommitState'):raise Core0Error('Number entry loss repaint acquired persistence/acknowledgment authority')
  if version>=14:
   for target in ('adoptPackageWorkspace','reportCourse','savePackageWorkspace'):
    if len(calls(prefix+publisher,prefix+target))!=1:raise Core0Error('Aligned number entry changed ordinary publication/report/Save')
-  if len(calls(prefix+publisher,'Lemma.Courses.ArithmeticAligned.render'))!=1 or calls(prefix+publisher,prefix+'renderPackageCourse'):raise Core0Error('Aligned number entry lost its actual selected renderer')
+  if len(calls(prefix+publisher,'Lemma.Courses.ArithmeticAligned.render'))!=1 or calls(prefix+publisher,prefix+course_renderer):raise Core0Error('Aligned number entry lost its actual selected renderer')
  if version>=15:
   mark=prefix+'numericMarkPadOverdraw'
   policy='Lemma.Courses.NumberPad.repaintNeeded'

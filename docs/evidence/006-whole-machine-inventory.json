@@ -2057,13 +2057,27 @@
     "scope": "Correct Unsupported/history do not qualify cross-goal hint applicability. Fix must be Lean-authored; active browser and original cold cases remain unchanged."
   },
   "authored_hint_visibility1": {
-    "status": "HOST_AND_GENUINE_COMPLETE_ARTIFACTS_PASS_LINKED_IMAGE_AND_GUEST_PENDING",
+    "status": "COMPONENT_AND_LINKED_PAIR_PASS_ACTUAL_GUEST_STALE_HINT_FAIL",
     "evidence": {
       "path": "docs/evidence/006-course-reader-location.json",
-      "sha256": "a5502623a2de8301086283eedef131e618ea28db6c7ff968759233c788e748ad",
-      "bytes": 58669
+      "sha256": "8a7c429ee674fc8d92ccc9304b656d7e56efe7ad3b1f4a07d6e2d01632d7f5aa",
+      "bytes": 61411
     },
     "qualified_scope": "Strict revision/goal local proposal filter; same read-only2 helpers added, only existing render body changes, all26 pre/post complete artifacts plus5 actual corruptions. No deployed guest fix claimed.",
-    "retained_failures": "Actual stale compiled helper200 rejected by corrected208 fixture; first qualifier i8 mutation-site observer failure retained and source-bound positive work reused."
+    "retained_failures": "Actual stale compiled helper200 rejected by corrected208 fixture; first qualifier i8 mutation-site observer failure retained and source-bound positive work reused.",
+    "actual_connected_failure": {
+      "path": "build/courses/task006-hint-context-fast-plan-a1/connected/result.json",
+      "sha256": "6b22330deb452e3dcb951d60598cdd0457d470b14b5f6080a9ce5c508d91cd0d",
+      "bytes": 60076
+    }
+  },
+  "authored_hint_publication2": {
+    "status": "GENUINE_COMPONENTS_PASS_LINKED_AND_CONNECTED_PENDING",
+    "evidence": {
+      "path": "docs/evidence/006-course-reader-location.json",
+      "sha256": "8a7c429ee674fc8d92ccc9304b656d7e56efe7ad3b1f4a07d6e2d01632d7f5aa",
+      "bytes": 61411
+    },
+    "scope": "All3 actual course publishers use existing revision-bound aligned renderer. Same tile/dirty/framebuffer/error semantics; no new language/runtime/checker authority. Historical authority and generic raw corpus pins retained. Only post ControlRender.character local own-symbol SSA-name alpha-renaming independently compared; actual raw complete successor corpus pins are exact."
   }
 }

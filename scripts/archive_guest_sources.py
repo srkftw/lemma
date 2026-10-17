@@ -43,19 +43,35 @@ def archive(build, source_root, output):
             if sha(target) != digest: raise ValueError('copied input differs: ' + name)
         from product_reader_deployment import CONFIGURATIONS as PRODUCT_READERS
         product = metadata['configuration'] in PRODUCT_READERS
+        from silicon_guest_bundle import SOFTWARE_DEPLOYMENTS, canonical_guest_archive
+        from silicon_guest import configurations
+        profile = configuration_profile(metadata['configuration'])
+        canonical_role = None
+        if profile == 'lemma-silicon-dev/0.3.0':
+            for role in ('notebook', 'initializer'):
+                admitted = {configurations(profile)[role]}
+                admitted.update(pair[role] for pair in SOFTWARE_DEPLOYMENTS.values())
+                if metadata['configuration'] in admitted:
+                    canonical_role = role
+                    break
         sidecar = {'schema':'lemma-usb-guest-source-archive/1', 'source_inputs':expected,
             **{key:provenance.get(key) for key in ('source_commit','dirty_paths','tools','lean_source_realization')},
             'provenance_sha256':sha(build/'provenance.json'), 'build_sha256':sha(build/'build.json'),
             'image_sha256':sha(build/'image.elf')}
-        if product:
-            # Product packaging has a separate existing source contract. Its
+        if product or canonical_role is not None:
+            # Canonical/Product packaging has a separate existing source contract. Its
             # validator checks the complete audited ELF/DTB and source closure;
             # it neither installs an image nor writes a boot/user medium.
             sidecar = {'schema':'lemma-consumed-guest-source-archive/1',
                        'original_manifest_sha256':sha(build/'provenance.json'),
                        'inputs':expected}
         (output/'consumed-source-archive.json').write_text(json.dumps(sidecar,indent=2)+'\n')
-        if product:
+        if canonical_role is not None:
+            # The canonical validator owns the exact ordinary role and complete
+            # compiler/tool/object closure. Keep USB/Product admission separate.
+            (source/'source-inputs.json').write_text(json.dumps(expected,indent=2)+'\n')
+            checked = canonical_guest_archive(build,source,profile,canonical_role)
+        elif product:
             from package_product_image import package
             with tempfile.TemporaryDirectory(prefix='validate-product-',dir=output) as tmp:
                 admitted = package(build,Path(tmp)/'package',1,source)

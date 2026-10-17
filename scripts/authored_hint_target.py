@@ -14,6 +14,12 @@ from paper_next import canonical
 
 VERSION = 'lemma-authored-hint-artifact/1'
 AUTHORITY = Path(__file__).resolve().parents[1] / 'tooling/authored-hint-target-authority.json'
+VERSION2 = 'lemma-authored-hint-publication-artifact/2'
+AUTHORITY2 = AUTHORITY.with_name('authored-hint-publication-target-authority-v2.json')
+PUBLICATION = 'Lemma.Applications.Notebook.renderPackageCourseScoped'
+PREVIOUS_PUBLICATION = 'Lemma.Applications.Notebook.renderPackageCourse'
+PUBLISHERS = tuple('Lemma.Applications.Notebook.' + name for name in (
+    'publishPackageWorkspace', 'finishOpenPackageCourse', 'numericPumpCancelledRedraw'))
 PREFIX = 'Lemma.Courses.HintVisibility.'
 HELPERS = frozenset(PREFIX + name for name in ('current', 'eventStep'))
 CONFIGURATIONS = {
@@ -41,6 +47,10 @@ def present(unit):
     return HELPERS & {canonical(row['source']) for row in unit.get('functions', [])}
 
 
+def scoped_publication(unit):
+    return any(canonical(row['source']) == PUBLICATION for row in unit.get('functions', []))
+
+
 def refined(unit, previous, authority_path, role_key=''):
     found = present(unit)
     if not found:
@@ -52,13 +62,22 @@ def refined(unit, previous, authority_path, role_key=''):
             (unit.get('role'), unit.get('image_key'), unit.get('image_id'), unit.get('contract_version')) !=
             ('user', 'notebook', 2, 'core0-user-v0.2')):
         raise Core0Error('Authored hint refinement escaped its exact Notebook User2 deployment')
-    authority = json.loads(AUTHORITY.read_text())
-    if (set(authority) != {'schema', 'configurations'} or authority['schema'] != VERSION or
+    scoped = scoped_publication(unit)
+    authority = json.loads((AUTHORITY2 if scoped else AUTHORITY).read_text())
+    if (set(authority) != {'schema', 'configurations'} or authority['schema'] != (VERSION2 if scoped else VERSION) or
             set(authority['configurations']) != set(CONFIGURATIONS)):
         raise Core0Error('Authored hint complete configuration inventory differs')
     entry = authority['configurations'][configuration]
-    if (set(entry) != {'predecessor_authority', 'predecessor_authority_sha256',
-                       'role_key', 'previous_role_sha256', 'role'} or
+    fields = {'predecessor_authority', 'predecessor_authority_sha256',
+              'role_key', 'previous_role_sha256', 'role'}
+    if scoped:
+        fields |= {'previous_hint_authority_sha256', 'previous_hint_role_sha256'}
+        old = json.loads(AUTHORITY.read_text())
+        if (old.get('schema') != VERSION or set(old.get('configurations', {})) != set(CONFIGURATIONS) or
+                entry.get('previous_hint_authority_sha256') != hashlib.sha256(AUTHORITY.read_bytes()).hexdigest() or
+                entry.get('previous_hint_role_sha256') != digest(old['configurations'][configuration]['role'])):
+            raise Core0Error('Authored hint publication exact first artifact predecessor differs')
+    if (set(entry) != fields or
             entry['predecessor_authority'] != Path(authority_path).name or
             entry['predecessor_authority_sha256'] != hashlib.sha256(Path(authority_path).read_bytes()).hexdigest() or
             entry['previous_role_sha256'] != digest(previous) or entry['role_key'] != role_key):
@@ -104,3 +123,14 @@ def semantics(ir, unit, *, optimized):
         render = _ir_definition_body(ir, rows['Lemma.Courses.ArithmeticAligned.render']['symbol'])
         if len(_local_call_arguments(render, rows[PREFIX + 'current']['symbol'])) != 1:
             raise Core0Error('Authored hint filter disconnected from actual renderer')
+        if scoped_publication(unit):
+            if PREVIOUS_PUBLICATION in rows or not all(source in rows for source in PUBLISHERS):
+                raise Core0Error('Scoped course publication exact declaration/caller inventory differs')
+            publication = _ir_definition_body(ir, rows[PUBLICATION]['symbol'])
+            if (len(_local_call_arguments(publication, rows['Lemma.Courses.ArithmeticAligned.render']['symbol'])) != 1 or
+                    _local_call_arguments(publication, rows['Lemma.Courses.Arithmetic.renderSparse']['symbol'])):
+                raise Core0Error('Course publication bypassed the revision-bound aligned renderer')
+            for source in PUBLISHERS:
+                body = _ir_definition_body(ir, rows[source]['symbol'])
+                if len(_local_call_arguments(body, rows[PUBLICATION]['symbol'])) != 1:
+                    raise Core0Error('Actual course publisher disconnected from scoped renderer: ' + source)

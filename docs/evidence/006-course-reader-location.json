@@ -1084,7 +1084,7 @@
     "canonical_RTL_connected_evidence": "docs/evidence/006-kernel-pool-read.json"
   },
   "authored_hint_visibility1": {
-    "status": "PASS_HOST_ACTIONS_AND_GENUINE_COMPLETE_ARTIFACTS_LINKED_IMAGES_AND_RV64_PENDING",
+    "status": "COMPONENT_AND_LINKED_PAIR_PASS_ACTUAL_GUEST_STALE_HINT_FAIL",
     "contract": "lemma-authored-hint-visibility/1",
     "artifact_contract": "lemma-authored-hint-artifact/1",
     "target_sources": [
@@ -1160,6 +1160,57 @@
       "Actual RV64 hint-context/no-borrowed-hint and current polynomial hint after check, Save/ink/cold tests",
       "Updated prepared distributions and actual browser guest execution",
       "All existing broader mathematical/proof-kernel/tutor/runtime/learning/fast-state/physical gaps remain open"
+    ],
+    "complete_linked_pair": {
+      "path": "build/courses/task006-hint-visibility-whole-plan-a1/result.json",
+      "sha256": "a95d13167cd277ce9c2027841385da3716ab67a238c4db68b348e1b42dfc381e",
+      "bytes": 53882
+    },
+    "actual_connected_failure": {
+      "path": "build/courses/task006-hint-context-fast-plan-a1/connected/result.json",
+      "sha256": "6b22330deb452e3dcb951d60598cdd0457d470b14b5f6080a9ce5c508d91cd0d",
+      "bytes": 60076
+    },
+    "failure": "Real correct division-zero Invalid revision7 still displays prior revision6 rational hint; retained100M panel deadline FAIL. Three real shared publication paths bypassed the filter."
+  },
+  "authored_hint_publication2": {
+    "status": "GENUINE_COMPONENTS_PASS_LINKED_AND_CONNECTED_PENDING",
+    "contract": "docs/contracts/006-authored-hint-publication-v2.md",
+    "actual_Lean_change": {
+      "path": "Lemma/Applications/Notebook.lean",
+      "sha256": "d244e3bc9b0acc3a0fa427754356156ace01dcdfaa45ba77435d155d18e07289",
+      "bytes": 393101
+    },
+    "genuine13_exports": {
+      "path": "build/courses/task006-hint-publication-capture-plan-a1/result.json",
+      "sha256": "1745cc472411b0a3be53bdb0508e83aa5fb368f40e573d0e25cd90123b234af2",
+      "bytes": 67755
+    },
+    "complete26_checks_four_actual_negatives": {
+      "path": "build/courses/task006-hint-publication-admission-plan-a2/result.json",
+      "sha256": "b0f46de005ab800b2a9555de49921cdc87ec2073c857186f464ace81d4cc3685",
+      "bytes": 23036
+    },
+    "retained_initial_post_SSA_observer_failure": {
+      "path": "build/courses/task006-hint-publication-admission-plan-a1/result.json",
+      "sha256": "f8f4bb721f7958205c1ba490621384005c6be1575d019d26954c0052c9ebfa6f",
+      "bytes": 3732
+    },
+    "authority": {
+      "path": "tooling/authored-hint-publication-target-authority-v2.json",
+      "sha256": "234cb0801b572f99f38ef937796ccc89ea2317fb83a646f8a53dbfd13428fcc2",
+      "bytes": 21463
+    },
+    "scope": "All3 actual course publishers use existing revision-bound aligned renderer. Same tile/dirty/framebuffer/error semantics; no new language/runtime/checker authority. Historical authority and generic raw corpus pins retained. Only post ControlRender.character local own-symbol SSA-name alpha-renaming independently compared; actual raw complete successor corpus pins are exact.",
+    "canonical_archive_command": {
+      "path": "build/courses/task006-canonical-source-command-a2/result.json",
+      "sha256": "d4b77feae2b475bf9bcaeb024d60d014c27b3553df7d899e0ae2509518b86e1d",
+      "bytes": 6760
+    },
+    "remaining": [
+      "Complete linked pair/audits",
+      "Actual connected RV64 context/hint/Save/independentcold",
+      "Exact RTL and updated prepared native/browser distribution"
     ]
   }
 }

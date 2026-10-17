@@ -5585,3 +5585,75 @@ are versioned; complete linked images/audits and actual guest execution remain
 pending. Corrected read208 and all existing allocator/driver/runtime contracts
 are unchanged during qualification. Next complete canonical pair uses
 build/courses/task006-hint-visibility-whole-plan-a1, original2400s/1200s/4GiB bounds.
+
+Publication cohort2 continuation (2026-10-17)
+
+Pushed6ba504dba253018a49e45d42e1d2c51c45949919; CI39023210235/run156 is SUCCESS,
+11jobs/117steps/zero skipped (build/ci/task006-6ba-complete.json). PR9 draft/
+unmerged, actual local stronger failure disclosed. Complete6ba canonical pair
+build/audit PASS569.778927s/peak1831129088B. Canonical444-input source archive
+build/courses/task006-hint-visibility-notebook-source-a2 passes existing strict
+canonical validator. Wrong USB/Product archive command a1 correctly FAILs and
+is retained; no validator relaxed. Public canonical archive producer is still
+an ordinary-tooling gap. Actual fast connected case ...hint-context-fast-plan-a1
+is terminal FAIL at100M presentation ceiling: correct zero-denominator Invalid
+revision7 retains revision6's rational hint. This is a real missed publication
+path, not harmless observer error or permitted tolerance. Original source,
+complete images/archives and failed connected receipt remain intact.
+
+Worktree publication2 adds private renderPackageCourseScoped using the existing
+aligned/filter renderer, same65 tile marks/dirty rectangle/owned framebuffer.
+All3 actual publishers (publishPackageWorkspace,finishOpenPackageCourse,
+numericPumpCancelledRedraw) route through it; original sparse declaration stays
+in source. Both genuine first export and same-ABI aligned-to-sparse mutation
+check correctly. Separate additive artifact authority-v2 (NOT GENERATED YET)
+chains immutable first authority; old/source archive acceptance is preserved.
+No language/runtime or hardware changes. Capture
+build/courses/task006-hint-publication-capture-plan-a1, tool65297, output
+build/kernel/task006-hint-publication-capture-a1 is active with nice19 and
+original1800/300s/4GiB bounds. ALL production Lean/frontend inputs remain frozen.
+Qualifier ...hint-publication-admission-plan-a1/qualify.py/plan.json is prepared;
+run only after terminal genuine capture PASS. It requires same total function
+count, exact old/new publisher swap, only3 existing caller bodies changed,
+all other pre/post functions/globals unchanged, all26 complete validators and
+4 actual negatives. New linked images and execution remain pending.
+
+Browser39 originalReader20/Wasm84d5 now has actual Saved25 raw annotation.
+All9 raw fields49/50/51 and complete3.63M controller pixels pass (old qualified
+math/course pixels plus11 new black pixels and independently specified SAVED
+footer). Ink-result-a1/a2 failures are retained: wrong UART root-object assumption
+(actual finishRecord reports stroke23), then wrong unchanged-footer assumption
+(pre-ink snapshot still PENDING; final is SAVED). Correct source-bound observer
+ink-result-a3 retains exact checks; conservative1064s/45.3M under original limits.
+Current original browser Close runs from2118200000,400M/3600 before independent
+OPFS CPU0 cold/reopen. Prospective close addendum precedes first Close and binds
+actual same oldReader20 native360M workload,40M margin; original12:18:08Z/6B whole
+and all ordinary150M/1800 controls unchanged. Do not reload/rebind origin8810.
+
+New-kernel USB independent cold actor completes actual1.010B/5861.127554s,
+peak306585600B: cold760M/4771.234875, reader5 250M/1079.444845, all256MiB/all3.63M
+home pixels and history unchanged. Actor status PASS_NEW_KERNEL_REAL_USB_...
+but generic supervisor exact status=='PASS' yields FAIL despite exit0/no
+survivors. Keep this supervisor failure; diagnose/correct the result observer
+separately, never claim original wrapper PASS. Original full lostACK C case
+remains terminal PASS2.637B/16930s and has its own successful supervision.
+
+Publication2 genuine capture completed PASS1007.915385s/peak2062618624B,
+zero owned survivors. Admission-a1 FAIL retained: post-LLVM ControlRender.character
+local SSA switch-table name changed with the declaration's ordinal. A2 independently
+compares that entire body after only this own-symbol SSA alpha-renaming; globals,
+instructions, bindings, all other bodies and raw complete corpus pins remain exact.
+Admission-a2 PASS26 complete phases/4 actual negatives,99.549422s/peak115019776B.
+No historical authority or generic corpus normalization changed. Mandatory linked
+pair and actual connected workflow remain pending. Metadata/scaffold18 pass;
+initial host-suite invocation FAILs without host C/C++ compiler, pinned environment
+rerun is separate and pending. Browser Close PASS357M cycles: all3.63M home pixels
+and256MiB backing exact, Saved25; public Close/Open verified CPU0/retired0 and
+new independent cold run1B/7200 starts on same OPFS backing, no checkpoint import.
+
+Pinned host-suite now PASS321 tests (separate original missing-tool FAIL retained),
+scaffold18 and metadata PASS. Public canonical archive command corrected to use
+the existing strict canonical role validator and internal source inventory;
+actual444-input old6ba archive command-a2 PASS. Product/USB validators unchanged.
+Component milestones recorded in existing course evidence/inventory; actualv1
+connected failure remains explicit. Version2 linked/guest/distribution pending.

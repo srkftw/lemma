@@ -2902,11 +2902,20 @@ private def renderPackageCourse : Action :=
   .boundedFoldU64 65 courseTileStep 65 0 width 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
   dirty 0 160 416 320
 
+/- All current course publications, including checker replies and restored
+selections, use the same revision-bound renderer as numeric input. Keep the
+historical sparse declaration for predecessor source/artifact identities. -/
+private def renderPackageCourseScoped : Action :=
+  .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.ArithmeticAligned.render mathematics width) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 65 courseTileStep 65 0 width 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  dirty 0 160 416 320
+
 private def publishPackageWorkspace : Action :=
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
   if pending = 0 then
   .bind adoptPackageWorkspace fun s _ => if statusFailed s = true then .done s 0 else
-  .bind renderPackageCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind renderPackageCourseScoped fun s _ => if statusFailed s = true then .done s 0 else
   .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 144 1) fun s _ => if statusFailed s = true then .done s 0 else savePackageWorkspace
   else .done 231 0
@@ -3093,7 +3102,7 @@ private def finishOpenPackageCourse (migration : UInt64) : Action :=
   .bind (packagePut 120 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 96 4) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 512 1) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind renderPackageCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind renderPackageCourseScoped fun s _ => if statusFailed s = true then .done s 0 else
   .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else
   .bind (if migration = 1 then savePackageWorkspace else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (packageWorkspace + 48)) fun s mask => if statusFailed s = true then .done s 0 else
@@ -4389,7 +4398,7 @@ private def numericPumpCancelledRedraw : Action :=
   .bind pumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
   if course = 1 then
-  .bind renderPackageCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind renderPackageCourseScoped fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
   .bind (packagePut 72 (if phase = 2 then 1 else 0)) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 144 1) fun s _ => if statusFailed s = true then .done s 0 else packagePut 184 0
