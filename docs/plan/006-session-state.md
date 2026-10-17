@@ -5123,3 +5123,106 @@ last observed IN_PROGRESS; earlier ccab11/117 SUCCESS remains separate. PR9
 draft/unmerged. Do not patch or restart the original active native20/Reader19
 owned campaigns: their complete source archives intentionally retain prior
 kernel code. New candidate guest code must receive separate artifacts/results.
+
+Kernel pool-read milestone afterd9be0fc: both genuine canonical images now pass
+full builds/linked audits. Normal build175.609s/audit318.109s/whole494.114s,
+peak3299192832B; initializer182.476/300.979/483.639s, peak1837346816B. Both
+original2400s/command1200s/4GiB/min2GiB bounds hold, no owned survivors.
+Complete437-input source archive is
+build/courses/task006-pool-read-source-a1/consumed-source-root. Original normal
+a1 missing-Nix failure remains FAIL; a2 actually runs in pinned Nix. Production
+Objects v1/v2/v3 model and48productionActionboundary/error observations pass;
+full new kernel464 PASS13.863s/scaffold18 PASS11.597s. CI now executes the48
+fixture and requires its actual nonempty PASS receipt. Foundation first473
+suite failed only because the exact log inventory omitted that new log; add
+one expected filename, retain pipefail/ordered inventory. Full473 rerun PASS
+45.001s. Both original/corrected logs remain in
+build/courses/task006-pool-read-host-a1. Kernel text246152->246376B (+224B).
+
+Actual new expanded fast case
+build/courses/task006-pool-read-limits-ink-fast-a1/result.json is PASS:
+1,470,000,143functional instruction-clockunits/219.400253s, six exact outcomes
+[1,2,2,4,2,5], authored hint, actual raw3sample annotation, Saved30, independent
+CPU0 cold/all3.63M homepixels/all256MiB, reader3 reopened98M under ORIGINAL100M.
+Budget0 is not heapOOM/verifier-death qualification; hint is authored locally.
+Separate byte-identical oldSaved30 comparison at
+build/courses/task006-pool-read-matched-reopen-a1/execution/result.json PASS:
+medium88b19dff..., same QEMU/machine/raw relative timing, cold204->197M and
+reader103000013->98000018 units, allold homepixels/backing. Observed old/new
+reader13.696544/12.065144s are contended-host observations, not a causal host
+speedup. Old whole100M FAIL, wrong division/resource observer FAILs and diagnostic
+103M retain their actual meanings; no deadline was raised.
+
+Shared getters exposed stale complete kernel authorities. Preserve all six
+historical authority files and their predecessor hashes. Add exact version1
+successor authority for11selectors; seven add only2getGeneric helpers, four
+older USB selectors also predate the already-qualified registry-count borrow
+and descriptor direct loads (two prior helpers). Frame/AddressSpace source
+hashes exactly match those original qualified algorithms. Genuine preceding
+2dc source archive/components isolate the earlier change. New same-source
+exports preserve every other pre-body/signature/effect/global, original fallback
+bodies are exact; only LLVM local symbol-label renaming changes additional
+post-bodies. Admission pins actual entire corpora, not the explanatory alpha
+comparison. Capture11roles632.203s/1824514048B; preceding-source4roles367.263s/
+3594948608B, no survivors. Setup failure and unconstrained first Lake-build
+4GiB failure remain FAIL; corrected build uses the existing two-worker policy.
+Product helper hashes use the original normalized_body method, not the first
+candidate's wrong normalization; failed candidates were never admitted.
+
+All22complete pre/post IR admissions and4actual-body/catalog mutations now
+pass as a stateless two-worker partition WITHIN original600s:550.636975s,
+conservative sum-of-process-maxima RSS upper bound220393472B. Original serial
+producer interrupted after16 actual phase reports; its FAIL/KeyboardInterrupt
+is retained, not renamed PASS. Separate joined receipt contains all22 actual
+reports plus4rejections, exact source/authority consistency and original absolute
+bound. Tail producer independently validates remaining6phases. See
+build/courses/task006-pool-read-authority-capture-a1/joined-result.json,
+parallel-plan.json, validator-source-observation.json and comparisons.json.
+These are complete component IR checks; new full linked Product/USB images and
+connected scenarios remain separate. Existing canonical d9 pair is fully audited.
+
+Prepared new native bundle build/native/task006-pool-read-reader20-a1 uses
+same600e/c15f hardware binaries and the audited d9 pair. Browser
+build/browser/task006-pool-read-reader20-a2 retains same84d5 Wasm. First browser
+packaging attempt copied only3outputs and correctly failed missing adapted
+Verilator header; a2 validates the complete original Wasm build. Prepared local
+native/browser distributions are build/distribution/task006-pool-read-reader20-
+{native,browser}-a1 (native139035936B archive; browser2084739B), native includes
+existing Nix runtime export. Static verify-only and isolated native --help pass;
+clean-host import and full new browser execution remain unqualified. README
+contains actual launch commands; notices/rights unchanged. Detailed milestone
+is docs/evidence/006-kernel-pool-read.json; existing inventory gains one scoped
+entry, not a replacement roadmap or completed gates.
+
+New optimized six-outcome canonical RTL case is RUNNING under same existing
+12h/6B bounds at build/courses/task006-pool-read-expanded-rtl-plan-a1,
+consumed-host-source-root/build/connected, tool session74566. Complete1832-file
+host archive plus validated exact native source-location aliases; no new machine
+implementation. Supervisor absolute deadline1792247013296788003ns. Last observed
+cold220M/1406.382s; no new RTL Ready yet. Original native20 run under its original
+archive now has actual cold471M, explicit LOAD3 164M/830.719s, USE and number
+entry; latest type6 at1190M. Original Reader19 connected run completed firstcold
+and source3 and is now browse4 at1010M. Both original owned campaigns/deadlines
+continue unchanged; do not restart or patch them. No complete new RTL/companion
+scenario PASS is inferred from these prefixes.
+
+Fresh browser39/origin8810 remains original Reader20, NOT new d9 kernel.
+Explicit LOAD3 PASS at832.6M (+163.85M), entire first-node body/REQ+READ edition3
+pixels, every backing byte unchanged and full archive CRCs. Host elapsed upper
+bound2021.496s is within original3600. Original unique-glyph decoder falsely
+rejected shared0/O font cells; preserved a1 FAIL, corrected pixel-exact existing
+oracle a2 PASS, no target/tolerance change. Actual node2 body PASS874.85M
+(+42.25M), full CRCs. Exercise3 NODE+ is now running from874.85M, original150M/
+1800s; raw rows are in exercise3-raw-a1.json. Browser plan directory
+build/browser/task006-reader20-fresh-course-plan-a1 has exports/receipts. Do not
+reload/reset or change bundle/origin. Exercise/USE/check/hint/ink/Save and actual
+independent cold remain unfinished; mark browser handles each turn.
+
+Published2dc CI38990300822/run150 COMPLETED_SUCCESS11jobs/117steps/0skips;
+receipt build/ci/task006-2dc-complete.json. ccab run149 and3070 run148 successful
+receipts remain separately retained. This new source increment needs its own
+candidate CI. PR9 remains draft/unmerged; no successor merge authorization.
+Digital completeness, fast timing/arbitrary QEMU cached continuation, local
+product distribution/fresh-host/browser compilation/rights and full physical
+closure are still separate unfinished obligations. New getter work closes none
+of the processor/boot/power/USB/radio/proof-kernel/tutor or physical gaps.

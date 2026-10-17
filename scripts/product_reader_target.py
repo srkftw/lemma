@@ -53,7 +53,8 @@ def authority(unit,key):
     require(wanted.get('schema')==VERSION and set(wanted.get('roles',{}))=={'kernel','notebook'} and
             wanted.get('reader_artifact_sha256')==hashlib.sha256(AUTHORITY.with_name('reader-notebook-target-authority.json').read_bytes()).hexdigest(),
             'Product course authority schema/complete predecessor differs')
-    row=wanted['roles'][key]
+    from kernel_pool_read_target import refined_role
+    row=refined_role(unit,wanted['roles'][key],AUTHORITY,key)
     require(row.get('catalog_sha256')==digest(unit),'Product course complete original catalog differs: '+key)
     return row
 

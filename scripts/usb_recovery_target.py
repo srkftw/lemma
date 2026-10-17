@@ -82,7 +82,8 @@ def validate(ir,unit,*,optimized):
  if not path.is_file():raise Core0Error('complete genuine recovery authority missing')
  authority=json.loads(path.read_text())
  if authority.get('schema')!='lemma-usb-recovery-target-authority/1' or set(authority.get('roles',{}))!={'kernel','kernel-init','store','notebook'}:raise Core0Error('recovery authority schema/role inventory differs')
- wanted=authority['roles'][role];actual=corpus(ir,unit);phase='post' if optimized else 'pre'
+ from kernel_pool_read_target import refined_role
+ wanted=refined_role(unit,authority['roles'][role],path,role);actual=corpus(ir,unit);phase='post' if optimized else 'pre'
  digest=hashlib.sha256(json.dumps(actual,sort_keys=True,separators=(',',':')).encode()).hexdigest()
  if wanted.get('contract_version')!=version or len(actual['functions'])!=wanted.get('function_count') or digest!=wanted.get(phase+'_sha256'):raise Core0Error('recovery complete signature/effect/body/global/caller inventory differs: '+role+'/'+phase)
  if unit['role']=='kernel' and any(s.startswith(('Lemma.Boot.Product','Lemma.Platform.LemmaSim.BootHealth')) or s.endswith(('.initProduct','.prepareManagedProduct','.configureProduct')) for s in rows):raise Core0Error('recovery acquired product/NV authority')

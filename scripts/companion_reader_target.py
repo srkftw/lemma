@@ -123,7 +123,8 @@ def contract(unit):
         'Reader19 complete role authority differs')
     require(authority.get('predecessors') == {name: hashlib.sha256(AUTHORITY.with_name(name).read_bytes()).hexdigest()
             for name in PREDECESSORS}, 'Reader19 immutable predecessors differ')
-    wanted = authority['roles'][key]
+    from kernel_pool_read_target import refined_role
+    wanted = refined_role(unit, authority['roles'][key], AUTHORITY, key)
     catalogs = wanted.get('catalog_sha256_by_configuration')
     require(isinstance(catalogs, dict) and set(catalogs) == (set(CONFIGURATIONS) if role == 'user' else {unit['configuration']})
             and catalogs.get(unit['configuration']) == digest(unit),

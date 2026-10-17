@@ -2409,3 +2409,31 @@ Clocked13 machine. Its real final-reader-barrier lost-ACK/offline-ink/restart/
 reconciliation/cold case is running under its original12h/5B limits. It has no
 connected PASS yet. Earlier audit failures and failed execution bounds retain
 their original meanings. See the existing reader evidence and session checkpoint.
+
+
+The checked kernel metadata-read refinement preserves all owner/generation,
+quota and physical-access checks and the real32MiB pool. Both new canonical
+images pass full genuine compilation/linked audits. The expanded fast course
+case now completes six checking outcomes, authored hint, raw ink, Save30 and an
+independent cold reopen in1,470,000,143 instruction-clock units/219.400seconds.
+With exactly the old Saved30 backing bytes and same machine, reader reopen is
+98M units instead of103M, inside the unchanged100M bound. This measures reduced
+guest work; host loading differs and QEMU does not establish RTL timing.
+See [the refinement contract](docs/contracts/006-kernel-pool-read-v1.md) and
+[exact observations](docs/evidence/006-kernel-pool-read.json).
+
+The prepared updated packages retain the same600e native/84d5 Wasm machines:
+
+```sh
+python3 -I build/distribution/task006-pool-read-reader20-native-a1/run.py session \
+  --backend rtl --profile lemma-silicon-dev/0.3.0 --mode developer --headless --paused \
+  --disk /absolute/YOUR_EXISTING.raw --session-dir /absolute/UNUSED_SESSION
+python3 -I build/distribution/task006-pool-read-reader20-browser-a1/serve.py --port 8811
+```
+
+Open `http://127.0.0.1:8811/` for local browser execution. The source-bound new
+RTL expanded scenario is running separately. Packaging does not claim that
+scenario, a new complete browser workflow, exact fast timing, production boot,
+clean-host runtime import or redistribution permission. The earlier fresh
+browser installation and explicit course workflow continue on their original
+source/bundle and origin8810; keep that origin for its OPFS media.

@@ -70,7 +70,8 @@ def validate(ir,unit,*,optimized):
  authority=json.loads(path.read_text())
  if authority.get('schema')!='lemma-usb-closure-recovery-target-authority/1' or set(authority.get('roles',{}))!={'kernel','kernel-init','store','notebook'}:
   raise Core0Error('Closure recovery exact authority schema/role inventory differs')
- wanted=authority['roles'][role];actual=corpus(ir,unit);phase='post' if optimized else 'pre'
+ from kernel_pool_read_target import refined_role
+ wanted=refined_role(unit,authority['roles'][role],path,role);actual=corpus(ir,unit);phase='post' if optimized else 'pre'
  digest=hashlib.sha256(json.dumps(actual,sort_keys=True,separators=(',',':')).encode()).hexdigest()
  if wanted.get('contract_version')!=version or len(actual['functions'])!=wanted.get('function_count') or digest!=wanted.get(phase+'_sha256'):
   raise Core0Error('Closure recovery complete signature/effect/body/global/caller inventory differs: '+role+'/'+phase)

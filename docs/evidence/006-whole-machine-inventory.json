@@ -1019,21 +1019,22 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "6b3c4d0b32b0fbfc8a60d840790da631297cd5b1",
-    "run": 38975206359,
+    "commit": "2dc2d64b00b02421151f6419ff921ca18ffcdcd1",
+    "run": 38990300822,
     "status": "COMPLETED_SUCCESS",
     "observed_jobs": {
       "success": 11
     },
     "step_counts": {
-      "success": 116
+      "success": 117
     },
     "skipped_steps": 0,
     "final_receipt": {
-      "path": "build/ci/task006-6b3-complete.json",
-      "sha256": "1470720aea32d56cc2b1aac416c4be5acf6c768c8f04140e851d925e44007c09"
+      "path": "build/ci/task006-2dc-complete.json",
+      "sha256": "4d025c0608638591a69a014b90103cb8f03c5d61e61405b296e60b7a30874242",
+      "bytes": 22234
     },
-    "scope": "Exact published6b only. New Reader19/20 source changes require their own candidate CI. PR9 stays draft/unmerged.",
+    "scope": "Published preceding source only. New kernel/authority/CI increment requires its own candidate run; PR9 remains draft/unmerged.",
     "prior_complete": {
       "commit": "57ceb5b91f98c30e5fcb2ac5bb608c342b060a3f",
       "run": 38968703132,
@@ -1123,7 +1124,20 @@
           "sha256": "5f0551e6082b339a2d759a16378e3338b6b69cf76ed4f10a9fbbe8787be29b5b"
         }
       }
-    }
+    },
+    "recent_prior_successes": [
+      {
+        "commit": "ccab8fe01d1af40376fdfada607317bb8d15fecf",
+        "run": 38987140485,
+        "receipt": "build/ci/task006-ccab-complete.json"
+      },
+      {
+        "commit": "3070a4baed455af62fe35bdd64ac1c3b3aa45dc3",
+        "run": 38985222491,
+        "status": "success",
+        "receipt": "build/ci/task006-3070-complete.json"
+      }
+    ]
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1829,5 +1843,20 @@
     "course_open_failure": "build/browser/task006-reader18-fresh-course-plan-a1/course-open-failure-a1.json",
     "failed_cut_qualification": "build/browser/task006-reader18-fresh-course-plan-a1/course-failure-qualified-a1.json",
     "retained_panel_diagnosis": "build/browser/task006-reader18-fresh-course-plan-a1/panel-diagnostic-result-a1.json"
+  },
+  "kernel_metadata_read1": {
+    "evidence": {
+      "path": "docs/evidence/006-kernel-pool-read.json",
+      "sha256": "a8e23794d11b2f90eaada25f6049e1ac1a8fef4f225ca029a998ff57827b8088",
+      "bytes": 16583
+    },
+    "tested_guest_commit": "d9be0fce8d7b31b018318d38fff8336abb89161d",
+    "gate_scope": "G1 performance and bounded existing G2/G4-G7 workflow regression; no full gate closed",
+    "behavior": "PASS48productionActionboundary/errorobservations",
+    "model": "Original production Objects v1/v2/v3 model PASS; no policy/owner/quota changes",
+    "RTL": "RUNNINGnewexpandedcanonicalcase; prior original20/Reader19 continue unchanged",
+    "guest": "PASSsixoutcomes/hint/ink/Saved30/independentcold on fast backend; matched oldbytes reopen98Mwithin100M",
+    "distribution": "Prepared same native/Wasm core, new audited canonical pair; full new browser execution pending",
+    "physical": "UNCHANGED_UNCLOSED"
   }
 }

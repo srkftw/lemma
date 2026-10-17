@@ -380,6 +380,9 @@ def source_inputs(root: Path) -> dict[str, str]:
     for additive in ("scripts/companion_number_pad_target.py", "tooling/companion-number-pad-target-authority.json", "tooling/package-entry2-target-authority.json", "docs/contracts/006-package-entry2-deployment-v1.md"):
         path = root / additive
         if path.is_file():inputs.append(path)
+    for additive in ('scripts/kernel_pool_read_target.py', 'tooling/kernel-pool-read-target-authority.json', 'docs/contracts/006-kernel-pool-read-v1.md'):
+        path = root / additive
+        if path.is_file():inputs.append(path)
     export_host = root / "scripts/lean_export_host.py"
     if export_host.is_file():inputs.append(export_host)
     inputs += sorted((root / "Lemma").rglob("*.lean"))

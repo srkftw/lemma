@@ -30,7 +30,9 @@ def contract(unit):
  if not AUTHORITY.is_file():raise Core0Error('Package recovery complete genuine authority missing')
  authority=json.loads(AUTHORITY.read_text())
  if authority.get('schema')!=VERSION or set(authority.get('roles',{}))!={'firmware','firmware-init','kernel','kernel-init',*USER_ROOTS}:raise Core0Error('Package recovery authority schema/roles differ')
- key=role_key(unit);wanted=authority['roles'][key]
+ key=role_key(unit)
+ from kernel_pool_read_target import refined_role
+ wanted=refined_role(unit,authority['roles'][key],AUTHORITY,key)
  catalogs=wanted.get('catalog_sha256_by_configuration')
  if unit.get('role')=='user':
   if not isinstance(catalogs,dict) or set(catalogs)!=set(CONFIGURATIONS) or catalogs[CONFIGURATIONS[0]]!=wanted['catalog_sha256']:
