@@ -62,6 +62,9 @@ def authority(unit, key):
                                        for name in PREDECESSORS},
             'Trial watchdog complete predecessor/role authority differs')
     row = wanted['roles'][key]
+    if key == 'notebook':
+        from notebook_control_backlog_target import refined
+        row = refined(unit, row, AUTHORITY)
     require(row.get('catalog_sha256') == digest(unit),
             'Trial watchdog complete typed/effect/root catalog differs: ' + key)
     return row

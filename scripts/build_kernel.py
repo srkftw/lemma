@@ -382,7 +382,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     for additive in ("scripts/companion_number_pad_target.py", "tooling/companion-number-pad-target-authority.json", "tooling/package-entry2-target-authority.json", "docs/contracts/006-package-entry2-deployment-v1.md"):
         path = root / additive
         if path.is_file():inputs.append(path)
-    for additive in ('scripts/authored_hint_target.py', 'tooling/authored-hint-target-authority.json', 'docs/contracts/006-authored-hint-visibility-v1.md', 'tooling/authored-hint-publication-target-authority-v2.json', 'docs/contracts/006-authored-hint-publication-v2.md', 'scripts/kernel_pool_read_target.py', 'tooling/kernel-pool-read-target-authority.json', 'docs/contracts/006-kernel-pool-read-v1.md'):
+    for additive in ('scripts/notebook_control_backlog_target.py', 'tooling/notebook-control-backlog-target-authority.json', 'docs/contracts/006-notebook-control-backlog-v1.md', 'scripts/authored_hint_target.py', 'tooling/authored-hint-target-authority.json', 'docs/contracts/006-authored-hint-visibility-v1.md', 'tooling/authored-hint-publication-target-authority-v2.json', 'docs/contracts/006-authored-hint-publication-v2.md', 'scripts/kernel_pool_read_target.py', 'tooling/kernel-pool-read-target-authority.json', 'docs/contracts/006-kernel-pool-read-v1.md'):
         path = root / additive
         if path.is_file():inputs.append(path)
     export_host = root / "scripts/lean_export_host.py"

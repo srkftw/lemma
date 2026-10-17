@@ -13,6 +13,7 @@ import Lemma.Notebook.RetryPolicy
 import Lemma.Notebook.RetryClosurePolicy
 import Lemma.Notebook.RetryWorkspacePolicy
 import Lemma.Notebook.RetryReaderPolicy
+import Lemma.Notebook.ControlBacklog
 import Lemma.Ink.Surface
 import Lemma.Ink.Rasterizer
 import Lemma.Documents.Ink
@@ -4852,6 +4853,7 @@ private def cancelBookmarkWork : Action :=
   else .done 0 0
 
 private def cancelBookmarkInput : Action :=
+  .bind Lemma.Notebook.ControlBacklog.reset fun s _ => if statusFailed s = true then .done s 0 else
   .bind cancelBookmarkWork fun s _ => if statusFailed s = true then .done s 0 else packageCancelInput
 
 private def finishBookmarkLookup : Action :=
@@ -4913,6 +4915,106 @@ private def bookmarkBusy : Action :=
 
 
 
+-- Mathematical taps arriving during owned publication are provisional FIFO
+-- actions, never host edits or durable events. Bind the immutable displayed
+-- package and node; a changed page/edition cancels the backlog before replay.
+private def bookMathTap (x y : UInt64) : Bool :=
+  if 160 ≤ y then
+    if 448 ≤ x then if x < 832 then y < 360 else false
+    else if 24 ≤ x then if x < 408 then y < 320 else false else false
+  else false
+
+private def bookInkTap (x y : UInt64) : Bool :=
+  if y < 160 then false else
+  if bookMathTap x y = true then false else
+  if 640 ≤ y then if y < 700 then
+    if 24 ≤ x then if x < 408 then false else true else true
+  else true else true
+
+private def bufferedBookInk : Action :=
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  if status < 2 then
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  if count = 0 then
+  .bind numericMarkPadOverdraw fun s _ => if statusFailed s = true then failWriting s else
+  .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
+  else .done 0 0 else .done 0 0
+
+private def queueBookTap (x y : UInt64) : Action :=
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  if course = 1 then
+  .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+  .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
+  .bind (get 48) fun s maxX => if statusFailed s = true then .done s 0 else
+  .bind (get 56) fun s maxY => if statusFailed s = true then .done s 0 else
+  let px := Geometry.pixel (Geometry.normalized x maxX) width
+  let py := Geometry.pixel (Geometry.normalized y maxY) height
+  if bookMathTap px py = true then
+  .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 2 then
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes + 24)) fun s identity => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes + 32)) fun s edition => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 160) fun s crc => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 8) fun s node => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Notebook.ControlBacklog.push px py ns page identity edition crc node) fun status _ =>
+    if status = 0 then .done 0 0 else Lemma.Notebook.ControlBacklog.deferFailure status
+  else Lemma.Notebook.ControlBacklog.deferFailure 243
+  else (if bookInkTap px py = true then bufferedBookInk else .done 0 0) else .done 0 0
+
+private def applyBookTap (x y : UInt64) : Action :=
+  if bookMathTap x y = false then .done 243 0 else
+  if 448 ≤ x then numericPadPress (Lemma.Courses.NumberPad.key (x - 448) (y - 160))
+  else packageCoursePress x y
+
+private def pumpBookTap : Action :=
+  .bind Lemma.Notebook.ControlBacklog.front fun status row =>
+  if status = 0 then if row = 0 then .done 0 0 else
+  .bind (Memory.read64 row) fun s x => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (row + 8)) fun s y => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (row + 16)) fun s expectedNS => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (row + 24)) fun s expectedPage => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (row + 32)) fun s expectedIdentity => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (row + 40)) fun s expectedEdition => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (row + 48)) fun s expectedCRC => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (row + 56)) fun s expectedNode => if statusFailed s = true then .done s 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes + 24)) fun s identity => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes + 32)) fun s edition => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 160) fun s crc => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 8) fun s node => if statusFailed s = true then .done s 0 else
+  if ns = expectedNS then if page = expectedPage then if identity = expectedIdentity then
+  if edition = expectedEdition then if crc = expectedCRC then if node = expectedNode then
+    .bind Lemma.Notebook.ControlBacklog.pop fun status _ =>
+      if status = 0 then applyBookTap x y else Lemma.Notebook.ControlBacklog.deferFailure status
+  else changed else changed else changed else changed else changed else changed
+  else Lemma.Notebook.ControlBacklog.deferFailure status
+where
+  changed : Action := Lemma.Notebook.ControlBacklog.deferFailure 243
+
+private def pumpBookControlBacklog : Action :=
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
+  if pending ||| rawCount ||| rawPending ||| stroke ||| checking ||| recovery = 0 then
+  if status < 2 then if dirtyX = 0xffff then
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  if course = 1 then
+  .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 2 then
+  .bind Lemma.Notebook.ControlBacklog.takeFailure fun s failure => if statusFailed s = true then .done s 0 else
+  if failure = 0 then pumpBookTap else courseError failure.toUInt8
+  else .done 0 0
+  else Lemma.Notebook.ControlBacklog.reset
+  else .done 0 0 else .done 0 0 else .done 0 0
+
 private def bookmarkInputSample : Action :=
   .bind (Memory.read64 raw) fun s sequence => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (raw + 8)) fun s time => if statusFailed s = true then .done s 0 else
@@ -4941,9 +5043,16 @@ where
     .bind (get 432) fun s cancelled => if statusFailed s = true then .done s 0 else
     if cancelled = 1 then .done 0 0 else
     .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
-    if 2 ≤ status then .done 0 0 else
+    .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+    .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+    .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
+    .bind Lemma.Notebook.ControlBacklog.count fun queueStatus waiting =>
+    if queueStatus = 0 then
+    if different (pending ||| checking ||| waiting) 0 = true then queueBookTap x y else
+    if 2 ≤ status then queueBookTap x y else
+    if different dirtyX 0xffff = true then queueBookTap x y else
     .bind (get 112) fun s queued => if statusFailed s = true then .done s 0 else
-    if different queued 0 = true then .done 0 0 else
+    if different queued 0 = true then queueBookTap x y else
     .bind cancelBookmarkWork fun s _ => if statusFailed s = true then courseError s else
     .bind cancelArithmetic fun s _ => if statusFailed s = true then courseError s else
     .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
@@ -4962,6 +5071,7 @@ where
       if py < 320 then if 24 ≤ px then if px < 408 then packageCoursePress px py else write else write else
       if 640 ≤ py then if py < 700 then if 24 ≤ px then if px < 408 then packageControlPress px py else write else write else write else write
     else write
+    else Lemma.Notebook.ControlBacklog.deferFailure queueStatus
   write : Action :=
     .bind numericMarkPadOverdraw fun s _ => if statusFailed s = true then failWriting s else
     .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
@@ -5034,6 +5144,7 @@ private def bookmarkStep : Action :=
   .bind pumpPackageBookmarkWork fun s _ => if statusFailed s = true then .done s 0 else
   .bind numericPumpPad fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpBookControlBacklog fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
   .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
   .bind (if count = 384 then enqueue else if active = 0 then enqueue else .done 0 0)
@@ -5463,6 +5574,7 @@ private def readerRecoverableStep : Action :=
   .bind (if retained = 0 then numericPumpCancelledRedraw else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (if retained = 0 then numericPumpPad else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpBookControlBacklog fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
   .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
   .bind (get 664) fun s overflow => if statusFailed s = true then .done s 0 else
@@ -5552,6 +5664,7 @@ private def chooserReaderStep : Action :=
   .bind readerPackageWork fun s _ => if statusFailed s = true then .done s 0 else
   .bind numericPumpPad fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpBookControlBacklog fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
   .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
   .bind (if count = 384 then enqueue else if active = 0 then enqueue else .done 0 0)

@@ -1383,5 +1383,57 @@
       ],
       "scope": "Public development key; immutable ROM/NV guest install/health-confirmation/newCPU cold/fullhome/course node3. New supervised image15 and full interrupted-update/power trust matrix separate."
     }
+  },
+  "control_backlog_component_milestone": {
+    "status": "COMPONENTS_QUALIFIED_LINKED_AND_CONNECTED_EXECUTION_PENDING",
+    "contract": "docs/contracts/006-notebook-control-backlog-v1.md",
+    "authority": "tooling/notebook-control-backlog-target-authority.json",
+    "authority_sha256": "c052370ae431f78b9d5a86ceb5cc051ec25f938c0dbf2f2b9b40958f712a4ddb",
+    "target_sources": {
+      "Lemma/Notebook/ControlBacklog.lean": "a2a47b6a0f0ec5dddd7624c75e54037c6a45814895282492fefc2f80ef79bfa1",
+      "Lemma/Applications/Notebook.lean": "a78b1c18ede28a691482e0e9f4cf9fe7972c8bf0ece2c21716ee9883f3e58d72"
+    },
+    "capture": {
+      "path": "build/courses/task006-control-backlog-capture-plan-a2/result.json",
+      "status": "PASS_GENUINE_CONTROL_BACKLOG_USER2_COMPONENT_EXPORTS",
+      "seconds": 810.8840030969586,
+      "frontend_inputs": 344,
+      "peak_RSS_bytes": 1845018624,
+      "owned_survivors": {}
+    },
+    "full_artifact_qualification": {
+      "path": "build/courses/task006-control-backlog-qualification-a1/result.json",
+      "complete_phases": 16,
+      "machine_owners": 8,
+      "seconds": 762.5783826250117,
+      "peak_RSS_bytes": 417214464,
+      "observer_inputs_equal": true
+    },
+    "corrected_independent_semantic_negatives": {
+      "path": "build/courses/task006-control-backlog-semantic-negatives-a2/result.json",
+      "status": "PASS_BACKLOG4_SCOPED_OWNER_LLVM_NEGATIVES_AND_DEPLOYMENT_REJECTION",
+      "seconds": 6.740781465079635,
+      "actual_scoped_LLVM_owners": 4,
+      "deployment_rejection": true,
+      "original_observer_limitation": "Original constant mutation replaced the first text-identical scalar body, so it exercised the unchanged-body guard rather than the intended capacity getter. Original receipt retained. Corrected receipt verifies exactly one named owner differs for every LLVM mutant; no target, authority or valid check weakened."
+    },
+    "behavior": "Eight guest-owned provisional mathematical taps in existing private User BSS20d00..20f20. Six captured view-context fields must still match. Existing numeric/check/Store/rendering paths execute each action after owned work settles. Free existing raw-ink buffer remains guest-owned. No new hardware/language/managed runtime authority.",
+    "bounds_and_limits": "Queue overflow242 and malformed/context243 are deferred controlled course errors. General navigation queuing and unlimited throughput are not implemented. Actual FIFO/overflow/reset-context/ink/cold execution and whole linked audit remain separate pending checks.",
+    "whole_build_source_count": 455,
+    "host_checks": {
+      "kernel_suite": {
+        "tests": 465,
+        "seconds": 9.704,
+        "status": "PASS",
+        "log": "build/courses/task006-control-backlog-authority-a1/kernel-host.log"
+      },
+      "scaffold_suite": {
+        "tests": 18,
+        "seconds": 8.162,
+        "status": "PASS",
+        "log": "build/courses/task006-control-backlog-authority-a1/scaffold.log"
+      },
+      "metadata": "PASS; planning only"
+    }
   }
 }

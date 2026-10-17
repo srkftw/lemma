@@ -5929,21 +5929,45 @@ No full current browserD/cold-after-new-edit claim yet. New exportWorkflowCut
 CUA helper writes main browser directory explicitly. Current-hint.bin is original
 observational full snapshot; UART parsed, independent complete CRC still pending.
 
-New target work UNCOMMITTED: Lemma/Notebook/ControlBacklog.lean and Notebook.lean
-changes add8 mathematical taps in private existing User BSS20d00..20f20, bound to
-NS/page/package/edition/CRC/node; ordinary original numeric controls replay only
-when idle. Overflow/context mismatch defers controlled course error. Original
-writing-region guard prevents busy header/navigation taps becoming ink; existing
-free ink buffer may record raw writing during publication. Core0 User2 unchanged.
-All3 Reader/Chooser/companion loops use helper; original non-Reader roots remain
-unchanged. Initial genuine export103.5989s passes; same-root pre904->925 has
-exact3 old input/cancel/loop owners changed+21 added. Final source adds explicit
-bookInkTap guard (22 additions); fresh8-profile capture now RUNNING at
-build/courses/task006-control-backlog-capture-plan-a2 (tool session50190), source
-344 frontend inputs frozen,1800s/4GiB bounds. Do not edit Lean sources until it
-finishes. Full artifact refinement/semantic audits, linked pair and actual queued
-4-tap/ink/overflow/context cases remain NOT_RUN; no working queue claim yet.
-Contract006-notebook-control-backlog-v1.md also uncommitted. Preserve this work.
+ControlBacklog component milestone (October17): all8 genuine existing Reader,
+Chooser, companion and Product/watchdog User2 exports PASS. Final actual corpus
+adds22 declarations and changes exactly3 old input/cancel/selected-loop owners;
+every other old pre-body/signature/effect remains exact. Original344 frontend
+inputs frozen, capture result ...control-backlog-capture-plan-a2/result.json.
+All16 complete pre/post LLVM phases and8 existing67-instruction/25-table-cell
+NumberPad machine relations PASS762.578383s, original observer inputs equal.
+Four corrected actual LLVM-owner semantic mutants plus out-of-deployment catalog
+reject independently6.740781s. Original constant mutation replaced a text-identical
+old getter; its retained full receipt still has valid16-phase/8-machine results,
+but that one original negative did not exercise the named capacity owner. The
+corrected check verifies exactly one named function differs for every mutant.
+No target/authority/valid-check relaxation. New authority/helper/contract are
+included in complete build source inputs. Full linked pair and actual queued
+controls/concurrent raw ink/overflow/cold remain pending; no working FIFO claim.
+Maintained artifact command: scripts/check_notebook_control_backlog_target.py
+--capture build/kernel/task006-control-backlog-capture-a2 --work-dir an unused
+build path (inside pinned Nix). Connected checker: scripts/check_notebook_control_backlog.py
+--backend qemu|rtl with existing installed3 disk/package, qualified native bundle,
+complete audited guest/source archive and unused output; optional --with-overflow
+adds explicit Laboratory pressure and ordinary writing before independent cold.
+Whole canonical pair prospectively planned2400s/4GiB in
+build/courses/task006-control-backlog-whole-plan-a1. Preserve pending work.
+
+Browser22 edit PASS Saved39/revision16/5over7/Unchecked/evidence0; all old history
+and assistance3 retained, complete stale-hint row suppressed. Actual REVIEW1
+PASS Saved40, manual practice/uncertain with complete explanation and policy row
+pixels. REVIEW2 now running; continue3/4/5 to restore explainable AUTO baseline,
+then raw ink/Save/Close/independent durable-only cold/full home/course. Original
+whole end00:26:11.452097Z/6B remains unchanged. Current screenshot
+...hint-publication-save32-plan-a1/browser/actual-controller-review-ui-a2.png
+shows the real controller-produced course with manual explanation, not host ink.
+
+Last read-only watchdog observation: negativecycle1057600416, stillretired12808278,
+remaining965628924/cause5/resetEpoch2. Positive actual install finished520.9M
+clocks/3158.698014s; authenticated handoff/health/disarm/cold still running.
+Head1f18b275ee8de466c64decac75c5c3595a11d596 pushed. Actual candidateCI163/
+39048917010 IN_PROGRESS when last observed; predecessor9fCI162 SUCCESS11jobs/
+117steps/zero skipped. PR9 draft/unmerged. No new merge authorization used.
 
 Changed private pen SRAM outer-channel attempta5 actualODB geometry PASS,
 OpenROAD FAIL56.437057s/GRT-0232 excessive congestion before detailed routing;

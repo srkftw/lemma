@@ -86,10 +86,12 @@ def refined(unit, previous, authority_path, role_key=''):
     if (not isinstance(successor, dict) or set(successor) != set(previous) or
             any(successor[k] != previous[k] for k in previous if k not in CHANGED_FIELDS)):
         raise Core0Error('Authored hint changed an unrelated historical contract field')
-    if ('catalog_sha256' in previous and successor['catalog_sha256'] != digest(unit)) or (
+    from notebook_control_backlog_target import present as backlog_present, refined as backlog_refined
+    backlog = backlog_present(unit)
+    if not backlog and (('catalog_sha256' in previous and successor['catalog_sha256'] != digest(unit)) or (
             'catalog_sha256_by_configuration' in previous and
             (set(successor['catalog_sha256_by_configuration']) != set(previous['catalog_sha256_by_configuration']) or
-             successor['catalog_sha256_by_configuration'].get(configuration) != digest(unit))):
+             successor['catalog_sha256_by_configuration'].get(configuration) != digest(unit)))):
         raise Core0Error('Authored hint complete typed/effect/root catalog differs')
     for phase in ('pre', 'post'):
         if (type(previous.get(phase + '_function_count')) is not int or
@@ -99,7 +101,7 @@ def refined(unit, previous, authority_path, role_key=''):
             raise Core0Error('Authored hint complete corpus pins/counts differ')
     if 'function_count' in previous and successor['function_count'] != previous['function_count'] + 2:
         raise Core0Error('Authored hint complete source function count differs')
-    return successor
+    return backlog_refined(unit, successor, AUTHORITY2) if backlog else successor
 
 
 def semantics(ir, unit, *, optimized):
@@ -115,6 +117,8 @@ def semantics(ir, unit, *, optimized):
         if rows[source]['args'] != args or rows[source]['effects'] != ['checked-access', 'virtual-read']:
             raise Core0Error('Authored hint helper acquired write/foreign authority')
     if not optimized:
+        from notebook_control_backlog_target import semantics as backlog_semantics
+        backlog_semantics(ir, unit)
         current = _ir_definition_body(ir, rows[PREFIX + 'current']['symbol'])
         if _local_call_arguments(current, rows['Lemma.Documents.Mathematics.field']['symbol']) != [
                 'i64 %arg0, i64 208', 'i64 %arg0, i64 192',
@@ -147,7 +151,10 @@ def number_pad_machine(normalized, unit, assembly, symbol):
     if not scoped_publication(unit):
         return normalized
     from product_reader_deployment import WATCHDOG_CONFIGURATION
-    if unit.get('configuration') == WATCHDOG_CONFIGURATION:
+    from notebook_control_backlog_target import present as backlog_present, entry as backlog_entry
+    if backlog_present(unit):
+        entry = backlog_entry(unit)['number_pad_pool_alpha']
+    elif unit.get('configuration') == WATCHDOG_CONFIGURATION:
         from trial_watchdog_target import authority as watchdog_authority
         entry = watchdog_authority(unit, 'notebook')['number_pad_pool_alpha']
     else:
