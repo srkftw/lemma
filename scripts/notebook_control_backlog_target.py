@@ -14,6 +14,8 @@ from paper_next import canonical
 
 VERSION = 'lemma-notebook-control-backlog-artifact/1'
 AUTHORITY = Path(__file__).resolve().parents[1] / 'tooling/notebook-control-backlog-target-authority.json'
+VERSION2 = 'lemma-notebook-control-backlog-artifact/2'
+AUTHORITY2 = AUTHORITY.with_name('notebook-control-backlog-target-authority-v2.json')
 HINT = 'authored-hint-publication-target-authority-v2.json'
 WATCHDOG = 'trial-watchdog-target-authority.json'
 CONFIGURATIONS = frozenset(
@@ -30,6 +32,7 @@ FAMILY = frozenset(PREFIX + name for name in (
 ADDED = FAMILY | frozenset(NOTEBOOK + name for name in (
     'applyBookTap', 'bookMathTap', 'bookInkTap', 'bufferedBookInk',
     'pumpBookControlBacklog', 'pumpBookTap', 'pumpBookTap.changed', 'queueBookTap'))
+HOME_INK = NOTEBOOK + 'bufferHomeInk'
 PIN_FIELDS = frozenset(('catalog_sha256', 'catalog_sha256_by_configuration',
                        'pre_function_count', 'post_function_count', 'function_count',
                        'pre_sha256', 'post_sha256'))
@@ -49,6 +52,14 @@ def present(unit):
             if canonical(row['source']).startswith(PREFIX)}
 
 
+def home_ink(unit):
+    return any(canonical(row['source']) == HOME_INK for row in unit.get('functions', []))
+
+
+def added(unit):
+    return ADDED | ({HOME_INK} if home_ink(unit) else set())
+
+
 def changed(unit):
     loops = unit.get('used_loops', [])
     require(len(loops) == 1 and loops[0]['stable_id'] == 'action.loop',
@@ -66,16 +77,27 @@ def entry(unit):
             (unit.get('role'), unit.get('image_key'), unit.get('image_id'), unit.get('contract_version')) ==
             ('user', 'notebook', 2, 'core0-user-v0.2'),
             'Control backlog escaped its exact eight Notebook User2 deployments')
-    authority = json.loads(AUTHORITY.read_text())
-    require(set(authority) == {'schema', 'configurations'} and authority['schema'] == VERSION and
+    successor = home_ink(unit)
+    authority = json.loads((AUTHORITY2 if successor else AUTHORITY).read_text())
+    require(set(authority) == {'schema', 'configurations'} and authority['schema'] == (VERSION2 if successor else VERSION) and
             set(authority['configurations']) == CONFIGURATIONS,
             'Control backlog complete configuration inventory differs')
     item = authority['configurations'][unit['configuration']]
-    require(set(item) == {'predecessor_authority', 'predecessor_authority_sha256',
+    fields = {'predecessor_authority', 'predecessor_authority_sha256',
                          'previous_role_sha256', 'role', 'number_pad_pool_alpha',
                          'changed_functions', 'added_functions',
-                         'shared_pre_function_count', 'shared_pre_functions_sha256'} and
-            set(item['changed_functions']) == changed(unit) and set(item['added_functions']) == ADDED,
+                         'shared_pre_function_count', 'shared_pre_functions_sha256'}
+    if successor:
+        fields |= {'previous_backlog_authority_sha256', 'previous_backlog_role_sha256',
+                   'shared_v1_pre_function_count', 'shared_v1_pre_functions_sha256', 'v1_changed_functions'}
+        previous = json.loads(AUTHORITY.read_text())
+        require(previous.get('schema') == VERSION and set(previous.get('configurations', {})) == CONFIGURATIONS and
+                item.get('previous_backlog_authority_sha256') == hashlib.sha256(AUTHORITY.read_bytes()).hexdigest() and
+                item.get('previous_backlog_role_sha256') == digest(previous['configurations'][unit['configuration']]['role']) and
+                item.get('v1_changed_functions') == [NOTEBOOK + 'queueBookTap'],
+                'Home ink exact backlog-v1 predecessor differs')
+    require(set(item) == fields and
+            set(item['changed_functions']) == changed(unit) and set(item['added_functions']) == added(unit),
             'Control backlog exact declaration delta differs')
     return item
 
@@ -95,11 +117,11 @@ def refined(unit, previous, predecessor):
             all(successor[k] == previous[k] for k in previous if k not in PIN_FIELDS),
             'Control backlog changed unrelated historical contract fields')
     for phase in ('pre', 'post'):
-        require(successor[phase + '_function_count'] == previous[phase + '_function_count'] + len(ADDED) and
+        require(successor[phase + '_function_count'] == previous[phase + '_function_count'] + len(added(unit)) and
                 re.fullmatch('[0-9a-f]{64}', successor[phase + '_sha256']) is not None,
                 'Control backlog complete corpus count/pin differs')
     if 'function_count' in previous:
-        require(successor['function_count'] == previous['function_count'] + len(ADDED),
+        require(successor['function_count'] == previous['function_count'] + len(added(unit)),
                 'Control backlog complete source count differs')
     catalogs = successor.get('catalog_sha256_by_configuration')
     require((catalogs is None or set(catalogs) == set(previous['catalog_sha256_by_configuration'])) and
@@ -117,11 +139,17 @@ def semantics(ir, unit):
     wanted = entry(unit)
     actual = corpus(ir, unit)
     shared = {name: row for name, row in actual['functions'].items()
-              if name not in ADDED and name not in changed(unit)}
-    require(ADDED <= actual['functions'].keys() and
+              if name not in added(unit) and name not in changed(unit)}
+    require(added(unit) <= actual['functions'].keys() and
             len(shared) == wanted['shared_pre_function_count'] and
             digest(shared) == wanted['shared_pre_functions_sha256'],
             'Control backlog changed an existing body/signature/effect outside three input owners')
+    if home_ink(unit):
+        shared_v1 = {name: row for name, row in actual['functions'].items()
+                     if name not in (HOME_INK, NOTEBOOK + 'queueBookTap')}
+        require(len(shared_v1) == wanted['shared_v1_pre_function_count'] and
+                digest(shared_v1) == wanted['shared_v1_pre_functions_sha256'],
+                'Home ink changed a backlog-v1 body/signature/effect outside its one busy-input owner')
     rows = {canonical(row['source']): row for row in unit['functions']}
 
     def body(name):
@@ -197,7 +225,21 @@ def semantics(ir, unit):
             body(loop).index('@' + rows[NOTEBOOK + 'pumpRefreshRestoredBatched']['symbol'] + '(') <
             body(loop).index('@' + rows[NOTEBOOK + 'pumpBookControlBacklog']['symbol'] + '('),
             'Control backlog must settle the old refresh before applying one queued action')
-    return {'unchanged_pre_functions': len(shared), 'added_functions': len(ADDED),
+    if home_ink(unit):
+        require(rows[HOME_INK]['args'] == ['u64', 'u64'] and
+                calls(NOTEBOOK + 'queueBookTap', HOME_INK) == ['i64 %arg0, i64 %arg1'] and
+                calls(HOME_INK, NOTEBOOK + 'get') == ['i64 40', 'i64 56'] and
+                calls(HOME_INK, ink) == [''],
+                'Home ink bypassed queried geometry or the existing free raw buffer')
+        px = re.findall(r'(%[-\w.]+) = call i64 @' +
+                        re.escape(rows['Lemma.Ink.Geometry.pixel']['symbol']) + r'\([^\n]*\)', body(HOME_INK))
+        require(len(px) == 1, 'Home ink lacks its actual calibrated screen coordinate')
+        guard = re.findall(r'(%[-\w.]+) = icmp ule i64 160, ' + re.escape(px[0]) + r'$', body(HOME_INK), re.M)
+        require(len(guard) == 1, 'Home ink writing/header boundary differs')
+        validate_boolean_gate(body(HOME_INK), guard[0], rows[ink]['symbol'])
+        incoming = {source for source in rows if calls(source, HOME_INK)}
+        require(incoming == {NOTEBOOK + 'queueBookTap'}, 'Home ink acquired another caller')
+    return {'unchanged_pre_functions': len(shared), 'added_functions': len(added(unit)),
             'changed_input_owners': sorted(changed(unit)), 'capacity': 8,
             'BSS_extent': [0x20d00, 0x20f20],
             'scope': 'Actual LLVM/caller guards; connected raw-input execution remains separate'}

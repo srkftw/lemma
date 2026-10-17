@@ -1068,14 +1068,31 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "9f138fff2d46c4c3d0ad0e5fd8322d46ed14c030",
-    "run": 39044187299,
+    "source": "Actual GitHub fetch_commit_workflow_runs and fetch_workflow_run_jobs tool observations, October17. No local test inference.",
+    "commit": "e2b27c79a029898c4376d7eeebaf0653a60f746b",
+    "workflow_run_id": 39050548744,
+    "run_number": 164,
     "status": "completed",
     "conclusion": "success",
     "jobs": 11,
     "steps": 117,
-    "skipped": 0,
-    "receipt": "build/ci/task006-9f-complete.json"
+    "skipped_steps": 0,
+    "failed_steps": 0,
+    "successful_step_counts_in_actual_returned_job_order": [
+      25,
+      8,
+      12,
+      10,
+      8,
+      9,
+      9,
+      9,
+      9,
+      9,
+      9
+    ],
+    "url": "https://github.com/srkftw/lemma/actions/runs/39050548744",
+    "scope": "Published e2 backlog-v1 candidate only; local post-overflow ink FAIL and later uncommitted home-ink successor remain separate."
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1975,7 +1992,7 @@
     }
   },
   "control_backlog_component_milestone": {
-    "status": "COMPONENTS_QUALIFIED_LINKED_AND_CONNECTED_EXECUTION_PENDING",
+    "status": "LINKED_V1_PAIR_PASS_WITH_RETAINED_POST_OVERFLOW_INK_FAIL",
     "contract": "docs/contracts/006-notebook-control-backlog-v1.md",
     "authority": "tooling/notebook-control-backlog-target-authority.json",
     "authority_sha256": "c052370ae431f78b9d5a86ceb5cc051ec25f938c0dbf2f2b9b40958f712a4ddb",
@@ -2012,6 +2029,52 @@
         "log": "build/courses/task006-control-backlog-authority-a1/scaffold.log"
       },
       "metadata": "PASS; planning only"
+    },
+    "v1_connected_failure": "build/courses/task006-control-backlog-fast-plan-a3/retained-failure-observation-a1.json",
+    "v2_status": "UNCOMMITTED; eight genuine exports passed, exact predecessor capture complete, full artifact qualification running; no repaired guest result yet",
+    "pending_successor": {
+      "status": "COMPONENTS_QUALIFIED_FULL_LINKED_AND_CONNECTED_EXECUTION_PENDING",
+      "contract": "docs/contracts/006-notebook-control-backlog-v2.md",
+      "authority": "tooling/notebook-control-backlog-target-authority-v2.json",
+      "authority_sha256": "730ee1cfb472c226a00bba36d323be13b7b4b3e29342b141dd65a574f7f7fce1",
+      "genuine_capture": {
+        "result": "build/courses/task006-control-backlog-home-capture-plan-a1/result.json",
+        "seconds": 785.8718689979287,
+        "frontend_inputs": 344,
+        "owned_survivors": {}
+      },
+      "artifact_qualification": {
+        "result": "build/courses/task006-control-backlog-home-qualification-a1/result.json",
+        "seconds": 790.302828961052,
+        "peak_RSS_bytes": 416919552,
+        "phases": 16,
+        "machine_owners": 8,
+        "independent_negatives": 6,
+        "observer_inputs_equal": true
+      },
+      "source_relation": "Only bufferHomeInk added relative to v1; every v1 pre-body/signature/effect unchanged except queueBookTap home dispatch. Original pre-backlog relation unchanged outside its three input owners. All v1 authorities/failures retained.",
+      "semantic_negative": "Actual sole-owner LLVM header-boundary mutant159 rejects. Four old-owner mutants reject through exact v1 body preservation; foreign deployment rejects.",
+      "new_target_source_sha256": "fec5e5e96dd8368c8633d81bbc140efd11c9f31b996a797cfdc078df4a57b325",
+      "whole_build_source_count": 457,
+      "host_checks": {
+        "kernel": {
+          "tests": 465,
+          "seconds": 7.515,
+          "status": "PASS"
+        },
+        "scaffold": {
+          "tests": 18,
+          "seconds": 6.317,
+          "status": "PASS"
+        },
+        "metadata": "PASS; planning only",
+        "lemmasim_launcher": {
+          "tests": 328,
+          "seconds": 71.033,
+          "status": "PASS",
+          "scope": "Includes four new toolchain workspace checks; target artifact tests separate."
+        }
+      }
     }
   }
 }

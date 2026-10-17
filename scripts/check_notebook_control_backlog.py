@@ -98,10 +98,16 @@ class BacklogWorkflow(FreshChooser):
             width, _, pixels = visible_pixels(panel)
             return all(pixels[(y * width + x) * 3:(y * width + x) * 3 + 3] == bytes(3) for x, y in points)
 
-        self.phase(session, 'ordinary-ink-after-overflow-Saved', 300_000_000, written)
+        # The overflow observer sees the error and next completed panel, while
+        # the full home upload may still be pending. Fast retains the original
+        # failed300M ceiling. Before any RTL execution, compose its existing
+        #500M full-home and300M ink bounds for this concurrent workload.
+        post_overflow_cap = 800_000_000 if self.backend == 'rtl' else 300_000_000
+        self.phase(session, 'ordinary-ink-after-overflow-Saved', post_overflow_cap, written)
         self.click(session, stream, 'explicit-Save-after-overflow', 1370, 64, mutation=True)
         self.report['controlled_overflow'] = {'declared_error': 242, 'twelve_original_taps': True,
                                                'laboratory_pressure_interval_ticks': 1000,
+                                               'post_overflow_ink_cap': post_overflow_cap,
                                                'completed_math_history_unchanged': True,
                                                'only_first_hint_applied': True,
                                                'new_ordinary_ink_samples': [list(x) for x in samples],

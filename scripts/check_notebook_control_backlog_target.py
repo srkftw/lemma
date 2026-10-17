@@ -106,6 +106,9 @@ def main():
              '@' + rows[B.PREFIX + 'pop']['symbol'] + '(',
              '@' + rows[B.PREFIX + 'count']['symbol'] + '('),
         ]
+        if B.home_ink(unit):
+            mutations.append(('home-writing-header-boundary', B.HOME_INK,
+                              'icmp ule i64 160,', 'icmp ule i64 159,'))
         for name, owner, old, new in mutations:
             body = _ir_definition_body(ir, rows[owner]['symbol'])
             B.require(body.count(old) == 1, 'actual mutation site absent: ' + name)
@@ -139,9 +142,9 @@ def main():
         else:
             raise Core0Error('backlog authority escaped its exact deployments')
         bound()
-        report['status'] = ('PASS_BACKLOG4_SCOPED_OWNER_LLVM_NEGATIVES_AND_DEPLOYMENT_REJECTION'
+        report['status'] = ('PASS_BACKLOG_SCOPED_OWNER_LLVM_NEGATIVES_AND_DEPLOYMENT_REJECTION'
                             if args.semantic_only else
-                            'PASS_BACKLOG16_COMPLETE_PHASES8_MACHINE_OWNERS5_INDEPENDENT_NEGATIVES')
+                            'PASS_BACKLOG16_COMPLETE_PHASES8_MACHINE_OWNERS_AND_INDEPENDENT_NEGATIVES')
     except BaseException as error:
         report['error'] = repr(error)
         raise

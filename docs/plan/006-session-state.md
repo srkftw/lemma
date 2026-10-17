@@ -5973,3 +5973,83 @@ Changed private pen SRAM outer-channel attempta5 actualODB geometry PASS,
 OpenROAD FAIL56.437057s/GRT-0232 excessive congestion before detailed routing;
 supervised57.184894s/peak369401856B, original10ns/rules/900s3iterations retained.
 No adoption, route/DRC/timing success or rule waiver. Current failures preserved.
+
+
+October17 continuation after e2b27c7: complete v1 canonical normal/initializer
+pair PASS890.433644s/peak1835233280B, both mandatory linked audits pass. Normal
+ELF2c73be96bb670f653670575f806c9b2514c09bfd0ba9a46b0dc6e8103d06b70b,
+455-input exact original archive ...control-backlog-notebook-source-a1. Actual
+fast-a1 fails before CPU on missing frozen native origin aliases; a2 exact
+relocation fixes that but capacity audit's nested Nix Git-path lookup fails
+before CPU. Both failures/no survivors retained. Main clean e2 checkout a3
+executes genuine four-control burst+concurrent3raw/11pixels/Verified request319
+in118000017functional units/15.958096s; explicit readerSave15, firsthintSave16,
+controlled242 overflow26M pass. Following ordinary ink FAILS original300M with
+no new Save/raw chunk, whole124.247693s; all58actual input records retained.
+Source-backed diagnosis: courseError sets course0 before home upload finishes;
+busy input goes to queueBookTap, whose v1 course0 branch drops it. Do not call
+v1 full FIFO/overflow/independent-cold acceptance passed. Receipt:
+build/courses/task006-control-backlog-fast-plan-a3/retained-failure-observation-a1.json.
+
+UNCOMMITTED v2 adds genuine bufferHomeInk and that queue home dispatch only.
+Lean sources are FROZEN during eight-profile generation in
+build/courses/task006-control-backlog-home-capture-plan-a1 (tool20449), output
+build/kernel/task006-control-backlog-home-capture-a1. Do not edit Lean until it
+finishes. Front344 inputs/1800s/4GiB unchanged. Host artifact helper now selects
+v2 by the real additional owner, preserves v1 authority and canonical v1
+pre/post backward admission (both PASS). New v2 authority is NOT YET generated;
+prepared actual capture script:
+build/courses/task006-control-backlog-home-authority-a1/capture.py.
+It requires real producer PASS, all original v1 bodies unchanged except queue,
+and pins both original and v1 shared corpora. Then full16-phase/8-machine/new
+header-boundary negative, clean linked pair and identical fast300M failure case
+must pass before an ink-repair claim. No new RTL case has started. Prospective
+RTL post-error concurrent home-upload+ink cap800M=existing500M+300M; fast300M
+retained, wholeRTL6B/12h unchanged. Newcontract006-notebook-control-backlog-v2.
+
+UNCOMMITTED native capacity portability fix uses original build-identified
+provenance to copy exactly3 pin files into a tiny explicit path-flake, then
+runs the SAME capacity audit from the frozen source. First helper incorrectly
+looked for pins directly in build.json; pre-command failure retaineda1. Correct
+real ignored-root Nix/LLVM capacity audit PASS6.647344s,12443inputbytes, no CPU
+at build/courses/task006-relocated-capacity-flake-a2/result.json. Four focused
+pin/provenance/symlink/copy-boundary tests and complete328LemmaSim host tests
+PASS71.033s. A future full frozen connected run must qualify integrated launch;
+no target-runtime change/large machine input copied to Nix. Preserve sourcework.
+
+CIe2 actual run164/39050548744 was IN_PROGRESS when observed. Parent1f CI163
+CANCELLED, notPASS. Last full predecessor9f CI162 SUCCESS11/117/zero skips.
+PR9 draft/unmerged. Browser22 REVIEW3 completed Saved42 at1633250000; REVIEW4
+active. Exported review1/2/3 raw/controller files in current browser workflow
+root. Onlyreview1 independently observed so far. Continue4then5 toAUTO and
+finish raw ink/Save/Close/independentCPU0durable-onlycold/fullhome/course before
+original00:26:11.452097Z whole deadline. Keep22and20 markedhandoff eachturn.
+
+
+Home-ink successor component qualification complete: actual8 exports
+PASS785.871869s; every v1 pre-function unchanged except queueBookTap, exactly
+one real bufferHomeInk owner added. Complete16 pre/post phases/8 unchanged
+NumberPad machine owners/6 independent negatives PASS790.302829s,
+peak416919552B, original observer inputs equal. Exact v2 authority730ee1cf...
+at tooling/notebook-control-backlog-target-authority-v2.json preserves v1
+c052370a... authority unchanged. New header159 mutant is sole-owner verified
+and rejects independently. Both canonical old-v1 pre/post backward checks pass.
+Kernel465/7.515s, scaffold18/6.317s and metadata pass. New full linked pair and
+same original fast300M post-overflow case still required; no ink-repair claim.
+Source manifest now457 consumed inputs. Current source code is ready for a
+clean commit/build. All target code genuinely elaborated; no language/runtime/
+hardware extension or journal change. Source docs/evidence remain separate
+from their original tested compilation receipts. CIe2 run164 completedSUCCESS
+11jobs/117steps/zero skipped, saved build/ci/task006-e2-complete.json; does not
+qualify the newer code or erase e2's functional failure. PR9 stays draft.
+
+Browser22 REVIEW5 PASS Saved44/revision16/5over7/outcome0/evidence0,
+AUTO practice/assisted/uncertain with complete two policy/explanation rows.
+Review2/3/4 independently checked too; all mathematical/evidence histories
+unchanged. One1M actual presentation step retired386616 then reached PC
+0x802001d0 (actual ELF lemma_exec_wait_interrupt). A further10M bounded step
+is running/possibly complete with panel-pause unchecked. Original predeclared
+presentation cap100M/3600; inspect and record, then admit actual3raw ink at
+row1800 (old stored annotation is at1900). Continue Save/Close/newCPU cold and
+reopen within original whole deadline00:26:11.452097Z. No original-state flush
+or checkpoint comparison is involved in this functional settling. Keep22/20.

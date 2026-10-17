@@ -4940,6 +4940,15 @@ private def bufferedBookInk : Action :=
   .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
   else .done 0 0 else .done 0 0
 
+-- Closing a course (including a controlled queue error) may leave the home
+-- controller upload in flight. The free raw buffer is still writable there;
+-- otherwise a complete pen stroke can disappear before that upload finishes.
+private def bufferHomeInk (x y : UInt64) : Action :=
+  .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
+  .bind (get 56) fun s maxY => if statusFailed s = true then .done s 0 else
+  let py := Geometry.pixel (Geometry.normalized y maxY) height
+  if 160 ≤ py then bufferedBookInk else .done 0 x
+
 private def queueBookTap (x y : UInt64) : Action :=
   .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
   if course = 1 then
@@ -4961,7 +4970,7 @@ private def queueBookTap (x y : UInt64) : Action :=
   .bind (Lemma.Notebook.ControlBacklog.push px py ns page identity edition crc node) fun status _ =>
     if status = 0 then .done 0 0 else Lemma.Notebook.ControlBacklog.deferFailure status
   else Lemma.Notebook.ControlBacklog.deferFailure 243
-  else (if bookInkTap px py = true then bufferedBookInk else .done 0 0) else .done 0 0
+  else (if bookInkTap px py = true then bufferedBookInk else .done 0 0) else bufferHomeInk x y
 
 private def applyBookTap (x y : UInt64) : Action :=
   if bookMathTap x y = false then .done 243 0 else

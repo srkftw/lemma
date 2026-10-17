@@ -1385,7 +1385,7 @@
     }
   },
   "control_backlog_component_milestone": {
-    "status": "COMPONENTS_QUALIFIED_LINKED_AND_CONNECTED_EXECUTION_PENDING",
+    "status": "LINKED_PAIR_PASS_WITH_RETAINED_POST_OVERFLOW_INK_FAIL",
     "contract": "docs/contracts/006-notebook-control-backlog-v1.md",
     "authority": "tooling/notebook-control-backlog-target-authority.json",
     "authority_sha256": "c052370ae431f78b9d5a86ceb5cc051ec25f938c0dbf2f2b9b40958f712a4ddb",
@@ -1434,6 +1434,95 @@
         "log": "build/courses/task006-control-backlog-authority-a1/scaffold.log"
       },
       "metadata": "PASS; planning only"
+    },
+    "connected_v1": {
+      "status": "RETAINED_REAL_POST_OVERFLOW_INK_FAILURE",
+      "source_commit": "e2b27c79a029898c4376d7eeebaf0653a60f746b",
+      "whole_image_sha256": "2c73be96bb670f653670575f806c9b2514c09bfd0ba9a46b0dc6e8103d06b70b",
+      "linked_pair": {
+        "result": "build/courses/task006-control-backlog-whole-plan-a1/result.json",
+        "status": "PASS_COMPLETE_CONTROL_BACKLOG_CANONICAL_PAIR",
+        "seconds": 890.4336442049826,
+        "peak_RSS_bytes": 1835233280
+      },
+      "actual_working_prefix": {
+        "four_controls_plus_raw_ink_units": 118000017,
+        "host_seconds": 15.958095666952431,
+        "isolated_request": 319,
+        "answer": [
+          5,
+          6
+        ],
+        "outcome": "Verified",
+        "revision": 5,
+        "raw_samples": 3,
+        "raw_black_pixels": 11,
+        "explicit_reader_save": 15,
+        "first_hint_save": 16,
+        "controlled_overflow_error": 242,
+        "overflow_units": 26000001
+      },
+      "failure": {
+        "result": "build/courses/task006-control-backlog-fast-plan-a3/connected/result.json",
+        "whole_seconds": 124.24769286403898,
+        "phase_original_units": 300000000,
+        "new_raw_device_samples": 3,
+        "no_following_Save": true,
+        "durable_sequence_remains": 16,
+        "first_raw_chunk_only": true,
+        "source_diagnosis": "courseError clears course before redraw. bookmarkInputSample routes busy samples to queueBookTap; v1 queueBookTap returns without raw construction when course is not1. The already-present paper refresh can still be publishing when the host device-idle/next-panel observer returns. No private guest-state value is claimed observed. A real guest home-writing fallback is being added; the original test and limit remain load-bearing."
+      },
+      "not_claimed": [
+        "complete FIFO acceptance",
+        "post-overflow writing",
+        "independent cold recovery",
+        "RTL timing",
+        "QEMU cached continuation"
+      ]
+    },
+    "pending_successor": {
+      "status": "COMPONENTS_QUALIFIED_FULL_LINKED_AND_CONNECTED_EXECUTION_PENDING",
+      "contract": "docs/contracts/006-notebook-control-backlog-v2.md",
+      "authority": "tooling/notebook-control-backlog-target-authority-v2.json",
+      "authority_sha256": "730ee1cfb472c226a00bba36d323be13b7b4b3e29342b141dd65a574f7f7fce1",
+      "genuine_capture": {
+        "result": "build/courses/task006-control-backlog-home-capture-plan-a1/result.json",
+        "seconds": 785.8718689979287,
+        "frontend_inputs": 344,
+        "owned_survivors": {}
+      },
+      "artifact_qualification": {
+        "result": "build/courses/task006-control-backlog-home-qualification-a1/result.json",
+        "seconds": 790.302828961052,
+        "peak_RSS_bytes": 416919552,
+        "phases": 16,
+        "machine_owners": 8,
+        "independent_negatives": 6,
+        "observer_inputs_equal": true
+      },
+      "source_relation": "Only bufferHomeInk added relative to v1; every v1 pre-body/signature/effect unchanged except queueBookTap home dispatch. Original pre-backlog relation unchanged outside its three input owners. All v1 authorities/failures retained.",
+      "semantic_negative": "Actual sole-owner LLVM header-boundary mutant159 rejects. Four old-owner mutants reject through exact v1 body preservation; foreign deployment rejects.",
+      "new_target_source_sha256": "fec5e5e96dd8368c8633d81bbc140efd11c9f31b996a797cfdc078df4a57b325",
+      "whole_build_source_count": 457,
+      "host_checks": {
+        "kernel": {
+          "tests": 465,
+          "seconds": 7.515,
+          "status": "PASS"
+        },
+        "scaffold": {
+          "tests": 18,
+          "seconds": 6.317,
+          "status": "PASS"
+        },
+        "metadata": "PASS; planning only",
+        "lemmasim_launcher": {
+          "tests": 328,
+          "seconds": 71.033,
+          "status": "PASS",
+          "scope": "Includes four new toolchain workspace checks; target artifact tests separate."
+        }
+      }
     }
   }
 }
