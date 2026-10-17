@@ -52,8 +52,20 @@ def queueSlotPacketOffset : UInt64 := 64
 
 def failed (status : UInt8) : Bool := if status = 0 then false else true
 def fatal : Action := .done 255 0
-def get (address : UInt64) : Action :=
+private def getGeneric (address : UInt64) : Action :=
   .bind (Access.read64 address) fun s value => if failed s = true then fatal else .done 0 value
+
+/-- Same aligned physical read and fatal error mapping as getGeneric. The
+minimum kernel pool interval gives LLVM a local bound for the common owned
+metadata case; all other inputs retain the complete original checked path. -/
+def get (address : UInt64) : Action :=
+  if 0x82000000 ≤ address then
+    if address ≤ 0x82200000 - 8 then
+      if address % 8 = 0 then
+        .bind (Access.read64 address) fun s value => if failed s = true then fatal else .done 0 value
+      else getGeneric address
+    else getGeneric address
+  else getGeneric address
 def put (address value : UInt64) : Action :=
   .bind (Access.write64 address value) fun s _ => if failed s = true then fatal else .done 0 value
 private def equalWord (address expected : UInt64) : Action :=

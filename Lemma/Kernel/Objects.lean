@@ -52,8 +52,22 @@ def replyLimitFor (version : UInt64) : UInt64 :=
   if version = 1 then replyCapacity else if version = 2 then replyCapacity else
   if version = 3 then arithmeticReplyCapacity else 0
 
-def get (address : UInt64) : Action :=
+private def getGeneric (address : UInt64) : Action :=
   .bind (Access.read64 address) fun s value => if failed s = true then fatal else .done 0 value
+
+/-- The first2MiB pool interval is admitted by every kernel execution profile.
+Expose this exact aligned eight-byte interval to checked lowering. The access
+still uses the same primitive and maps every error to fatal. Arbitrary, wrapped,
+misaligned and expanded-pool addresses retain the original checked fallback;
+this is neither a new alias nor a replacement for object/ownership validation. -/
+def get (address : UInt64) : Action :=
+  if 0x82000000 ≤ address then
+    if address ≤ 0x82200000 - 8 then
+      if address % 8 = 0 then
+        .bind (Access.read64 address) fun s value => if failed s = true then fatal else .done 0 value
+      else getGeneric address
+    else getGeneric address
+  else getGeneric address
 def put (address value : UInt64) : Action :=
   .bind (Access.write64 address value) fun s _ => if failed s = true then fatal else .done 0 value
 def row (base index : UInt64) : UInt64 := base + rows + index * stride

@@ -5067,3 +5067,59 @@ sources to inherit a later observer fix.
 Final local host313 PASS70.450s, scaffold18 PASS8.509s and metadataPASS.
 Logs are in build/courses/task006-fresh-chooser20-rtl-plan-a3. No CI result for
 these later source changes is inferred from ccab's successful run149.
+
+Continuation after2dc2d64: browser39 installation now independently PASS at
+build/browser/task006-reader20-fresh-course-plan-a1/installation-result-a1.json.
+Observed535.75M, +77.2M/528.5s simulationcalls; exact4063B package/37rawUARTrows,
+all original objects/homepixels and actual barrier28 at524567336. Chooser also
+PASS at630.1M (+94.35M/660.9s): exact EDIT+/LOAD pixels, only ordinary initial
+Unknown/Unchecked revision1 workspace/sequence4; no automatic source/evidence/
+hint. Receipt chooser-result-a1.json. Actual EDIT+ to edition2 is now running
+from630.1M under original150M/1800s, stop-next-panel; raw rows are retained in
+edition2-raw-a1.json. Still no full new browser math/ink/readerSave/cold PASS.
+Keep tab39/server8810 and its original12h/6B deadline; other accepted tabs remain.
+
+New --with-limits --with-ink full fast case a3 is FAIL at its original100M
+cold-reader reopen ceiling. Earlier genuine displayed5/6Verified, editedInvalid,
+zero-denominatorInvalid, Unsupported, invalid-input-before-zero-budgetInvalid,
+valid-positive-denominator/budget0Indeterminate, hint, raw annotation/Saved30,
+Close and independentCPU0 cold/all3.63Mhomepixels/all256MiB passed separately.
+Whole198.697400s, not a complete workflow PASS. First a1 wrongly expected
+NeedsClarification for denominator0; actual/pinned exact1 saysInvalid2. Second
+a2 incorrectly expected resource5 while retaining denominator0; contract gives
+Invalid precedence. Both retained FAILs independently match unchanged source
+Exact.rational and managed-closure contract; no target check/semantic changed.
+The corrected a3 bound failure remains meaningful and is not rescued below.
+
+Independent Saved30 diagnostic at
+build/courses/task006-reader20-limits-reopen-profile-a1/execution/result.json
+reaches cold204M/21.181121s, reader103M/13.696544s. This is observation-only,
+not an extension/reclassification of a3.104 read-only samples show no pending
+block phase, two panel completions and substantial kernel metadata/registry
+work. linked-symbol-pc-samples-a2.json uses actual LINKED image extents/source
+manifest; the retained first object-relative symbol mapping omitted startup
+placement and is invalid. Sample counts are not instruction counts/proofs.
+
+Candidate kernel optimization exposes the exact aligned first2MiB frame-pool
+interval, admitted by every kernel profile, inside Objects.get/IPCStorage.get.
+Each still executes checked Access.read64 with identical fatal mapping. All
+other/wrapped/misaligned/expanded-pool inputs use the unchanged original generic
+fallback. Ownership, generation, purpose, quota, zeroing and actual pool size
+remain checked. Two private getGeneric helpers are genuine Lean target code;
+no runtime/ISA/language extension or foreign helper.48 independent production
+Action boundary/injected-error observations PASS in PoolReadRefinement.lean.
+Genuine checked LLVM with the actual closed literal/primitive inline options
+retains three numeric guards then the original volatile read in the common
+path; complete generic checks remain in fallback. The first probe lacked those
+production inline options and is a separate nonrepresentative artifact.
+No RV64 full-image audit or measured target speedup has passed yet. Next:
+complete normal image build/audit under clean source and the existing machine,
+then qualify actual performance within the UNCHANGED failed100M bound. Do not
+raise that bound or claim compiler-only branch reduction is a runtime result.
+
+Latest host313 PASS69.231s/scaffold18 PASS9.583s precede the kernel candidate;
+kernel/target regressions remain required. Actual2dc CI38990300822/run150 was
+last observed IN_PROGRESS; earlier ccab11/117 SUCCESS remains separate. PR9
+draft/unmerged. Do not patch or restart the original active native20/Reader19
+owned campaigns: their complete source archives intentionally retain prior
+kernel code. New candidate guest code must receive separate artifacts/results.
