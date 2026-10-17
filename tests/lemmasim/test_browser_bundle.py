@@ -32,7 +32,7 @@ def fixture(root):
 
 class BrowserBundleBoundary(unittest.TestCase):
     def test_course_control_requires_exact_complete_guest_deployment(self):
-        from silicon_guest_bundle import SOFTWARE_DEPLOYMENTS, COURSE_DEPLOYMENT, COURSE_AWAIT_DEPLOYMENT, PACKAGE_CLOSURE_DEPLOYMENT
+        from silicon_guest_bundle import SOFTWARE_DEPLOYMENTS, COURSE_DEPLOYMENT, COURSE_AWAIT_DEPLOYMENT, PACKAGE_CLOSURE_DEPLOYMENT, READER_DEPLOYMENT, CHOOSER_READER_DEPLOYMENT
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
             def course(version):
@@ -48,9 +48,19 @@ class BrowserBundleBoundary(unittest.TestCase):
                     m['workloads'][role]['qualification']={'build':{'path':name,'sha256':digest}}
                 (root/'bundle.json').write_text(json.dumps(m))
                 return m
-            for version in (COURSE_DEPLOYMENT, COURSE_AWAIT_DEPLOYMENT, PACKAGE_CLOSURE_DEPLOYMENT):
+            for version in (COURSE_DEPLOYMENT, COURSE_AWAIT_DEPLOYMENT, PACKAGE_CLOSURE_DEPLOYMENT, READER_DEPLOYMENT, CHOOSER_READER_DEPLOYMENT):
                 course(version)
                 validated_bundle(root)
+            # A chooser notebook never grants its installer transport to a
+            # historical initializer, even when both artifacts are inventoried.
+            m=course(CHOOSER_READER_DEPLOYMENT)
+            name='initializer/build.json'
+            (root/name).write_text(json.dumps({'configuration':SOFTWARE_DEPLOYMENTS[READER_DEPLOYMENT]['initializer']}))
+            digest=hashlib.sha256((root/name).read_bytes()).hexdigest()
+            m['files'][name]=digest
+            m['workloads']['initializer']['qualification']['build']['sha256']=digest
+            (root/'bundle.json').write_text(json.dumps(m))
+            with self.assertRaises(ValueError):validated_bundle(root)
             for mutation in ('unknown-contract','missing-module','missing-build','unbound-build','mixed-roles','lookalike'):
                 m=course(PACKAGE_CLOSURE_DEPLOYMENT)
                 if mutation=='unknown-contract':m['course_install_contract']='lemma-course-console-command/2'
