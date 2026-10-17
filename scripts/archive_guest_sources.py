@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Archive an audited USB guest's complete consumed source bytes for reuse.
+"""Archive an audited guest's complete consumed source bytes for reuse.
 
 Copies build inputs only. Never installs software into a running device or
 interprets/reconstructs user documents. Existing outputs fail closed.
@@ -8,6 +8,7 @@ import argparse
 import json
 from pathlib import Path
 import shutil
+import tempfile
 import time
 from build_kernel import source_inputs
 from silicon_guest import guest_source_archive, sha, identified
@@ -40,13 +41,32 @@ def archive(build, source_root, output):
             target = source / path; target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(original, target)
             if sha(target) != digest: raise ValueError('copied input differs: ' + name)
+        from product_reader_deployment import CONFIGURATIONS as PRODUCT_READERS
+        product = metadata['configuration'] in PRODUCT_READERS
         sidecar = {'schema':'lemma-usb-guest-source-archive/1', 'source_inputs':expected,
             **{key:provenance.get(key) for key in ('source_commit','dirty_paths','tools','lean_source_realization')},
             'provenance_sha256':sha(build/'provenance.json'), 'build_sha256':sha(build/'build.json'),
             'image_sha256':sha(build/'image.elf')}
+        if product:
+            # Product packaging has a separate existing source contract. Its
+            # validator checks the complete audited ELF/DTB and source closure;
+            # it neither installs an image nor writes a boot/user medium.
+            sidecar = {'schema':'lemma-consumed-guest-source-archive/1',
+                       'original_manifest_sha256':sha(build/'provenance.json'),
+                       'inputs':expected}
         (output/'consumed-source-archive.json').write_text(json.dumps(sidecar,indent=2)+'\n')
-        checked = guest_source_archive(build,source,metadata['configuration'],metadata['optimization'],
-                                       configuration_profile(metadata['configuration']))
+        if product:
+            from package_product_image import package
+            with tempfile.TemporaryDirectory(prefix='validate-product-',dir=output) as tmp:
+                admitted = package(build,Path(tmp)/'package',1,source)
+            checked = {'kind':'product-image-source-archive',
+                       'configuration':metadata['configuration'],
+                       'profile':configuration_profile(metadata['configuration']),
+                       'inputs':len(expected),'image_sha256':sha(build/'image.elf'),
+                       'source_validation':admitted['source_validation']}
+        else:
+            checked = guest_source_archive(build,source,metadata['configuration'],metadata['optimization'],
+                                           configuration_profile(metadata['configuration']))
         report.update(status='PASS_COMPLETE_ORIGINAL_GUEST_SOURCE_ARCHIVE',inputs=len(expected),admission=checked)
     except BaseException as error:
         report['error']=repr(error)

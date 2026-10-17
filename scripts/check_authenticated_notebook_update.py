@@ -42,11 +42,13 @@ def main():
                  'tag', 'boot-medium', 'disk', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--public-development-key', action='store_true', required=True)
-    parser.add_argument('--case',choices=('saved14-notebook','saved38-course-reader'),default='saved14-notebook')
+    parser.add_argument('--case',choices=('saved14-notebook','saved38-course-reader',
+                        'saved38-course-reader-pool-read'),default='saved14-notebook')
     parser.add_argument('--expected-home',type=Path)
     parser.add_argument('--expected-course',type=Path)
     args = parser.parse_args()
-    reader = args.case == 'saved38-course-reader'
+    reader = args.case in ('saved38-course-reader','saved38-course-reader-pool-read')
+    pool_read = args.case == 'saved38-course-reader-pool-read'
     require(not reader or args.expected_home is not None and args.expected_course is not None,
             'Reader18 requires independent complete home/course references')
     whole_seconds = 32400 if reader else 21600
@@ -55,7 +57,10 @@ def main():
     handoff_cap, handoff_seconds = (300_000_000,3600) if reader else (200_000_000,1800)
     ready_cap, ready_seconds = (1_200_000_000,9000) if reader else (1_100_000_000,7200)
     cold_cap, cold_seconds = (1_500_000_000,11200) if reader else (1_300_000_000,7200)
-    sectors, sequence_expected = (1056,38) if reader else (724,14)
+    # Separate fixed workloads retain the original payload-size checks. The
+    # audited getter refinement adds exactly one sector to the Product image;
+    # it receives the same original Reader18 execution/deadline ceilings.
+    sectors, sequence_expected = (1057 if pool_read else 1056,38) if reader else (724,14)
     out = args.work_dir.resolve()
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
     out.mkdir()
@@ -77,6 +82,10 @@ def main():
                          'course_seconds':3600 if reader else 0,
                          'automatic_restart': False},
               'bound_basis': ('New1056-sector payload versus original724; installation ceiling900M is the prior600M ceiling scaled1.5, handoff300M scaled1.5; four real processes and Source38 recovery get explicit1.2B/1.5B bounds. Whole4.3B/32400s uses the observed final319 runtime16M/118.192s lower throughput as a prospective host allowance. No earlier failure is reclassified.' if reader else 'Original fixed Saved14/724-sector case')}
+    if pool_read:
+        report['bound_basis'] = ('Separate audited1057-sector getter-refinement image; '
+            'all original Reader18/Saved38 clock, host and resource ceilings retained. '
+            'The original1056-sector case remains unchanged; no deadline increase.')
 
 
     def save():
@@ -163,6 +172,7 @@ def main():
                 and fresh['image_sha256'] == old['image_sha256'] == sha(args.package / 'image.bin'),
                 'original genuine audited notebook package changed')
         report['compiled_package'] = fresh
+        require(fresh['sectors'] == sectors, 'declared audited payload sector count differs')
         # Bind the modules actually imported by the package/pixel observers,
         # including lazily loaded validators. Do not guess their directories.
         for module in list(sys.modules.values()):

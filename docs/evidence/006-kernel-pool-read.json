@@ -370,7 +370,12 @@
     "build/courses/task006-pool-read-authority-capture-a1/generate-a2.log",
     "build/courses/task006-pool-read-authority-capture-a1/generate-a3.log",
     "build/browser/task006-reader20-fresh-course-plan-a1/load3-result-a1.json",
-    "build/courses/task006-pool-read-whole-plan-a2/browser-bundle-a1.log"
+    "build/courses/task006-pool-read-whole-plan-a2/browser-bundle-a1.log",
+    "build/boot/task006-pool-read-product-source-a1/result.json",
+    "build/boot/task006-pool-read-product-whole-plan-a1/package.log",
+    "build/boot/task006-pool-read-product-whole-plan-a1/tag.log",
+    "build/boot/task006-pool-read-product-qualification-a1/wrong-original-case/result.json",
+    "build/boot/task006-pool-read-product-qualification-a1/wrong-original-case-a2/result.json"
   ],
   "remaining_obligations": {
     "digital": "Whole processor/MMU/CSR/reset/deadline coverage, complete boot/power domains/USB/radios, managed Lean/proof kernel, complete mathematical/course/learner/tutor and developer workflows remain partial.",
@@ -430,5 +435,99 @@
       "bytes": 25680
     },
     "scope": "Committed kernel/authority source only; subsequent browser controls require separate candidate CI."
+  },
+  "product10": {
+    "scope": "New optimized getter kernel joined to full existing four-role Reader18 product image. Same immutable Lean ROM/RTL10; no full live update result inferred.",
+    "whole_image": {
+      "receipt": {
+        "path": "build/boot/task006-pool-read-product-whole-plan-a1/result.json",
+        "sha256": "1055c19c63f717c016f07a47a2de248ba624f27fd425758bde74d6027b066d72",
+        "bytes": 51574
+      },
+      "status": "PASS_COMPLETE_KERNEL_POOL_READ_PRODUCT_READER_IMAGE",
+      "build_seconds": 182.04981147998478,
+      "audit_seconds": 288.98170740599744,
+      "whole_seconds": 471.2440486320993,
+      "sampled_owned_peak_RSS_bytes": 1845305344,
+      "source_commit": "0d842890cf754e06ceb3ee4351e7702c7c8cac5f",
+      "cleanup": {
+        "path": "build/boot/task006-pool-read-product-whole-plan-a1/cleanup-observation.json",
+        "sha256": "18a94ae6f9f259a48164798aa9f50fe99d81db86c6fa07e33a6db0aae777c418",
+        "bytes": 196
+      }
+    },
+    "archive": {
+      "receipt": {
+        "path": "build/boot/task006-pool-read-product-source-a2/result.json",
+        "sha256": "10a2e6fb81219be4833fb7105aff88dcd8546730ac2b74540340433c41887f33",
+        "bytes": 1027
+      },
+      "source_inputs": 440,
+      "source_root": "build/boot/task006-pool-read-product-source-a2/consumed-source-root"
+    },
+    "package": {
+      "receipt": {
+        "path": "build/boot/task006-pool-read-product-package-a2/package.json",
+        "sha256": "fc1e7b56e8fedcfc8323ba8f02cd3cb91e75e08930268c8ae29060ede4700f21",
+        "bytes": 2802
+      },
+      "image_id": 2814749767106579,
+      "sectors": 1057,
+      "bytes": 541184,
+      "tag": {
+        "path": "build/boot/task006-pool-read-product-package-a2/slot1.tag",
+        "sha256": "5661bd20e0725a0d818152cf88317e8eb668603f8f261137aa6856c0cb94b1be",
+        "bytes": 512
+      },
+      "authentication": "PUBLIC DEVELOPMENT KEY ONLY; tag authoring is not live guest authentication"
+    },
+    "prepared": {
+      "path": "build/boot/task006-pool-read-product-prepared-a1/prepared.json",
+      "sha256": "0702c515ce2ef4be43e5c9d57160aa5f6eb59052ded8627af5bb624c10a43631",
+      "bytes": 4683
+    },
+    "archive_compatibility": {
+      "path": "build/boot/task006-pool-read-product-qualification-a1/usb-regression/result.json",
+      "sha256": "ba7a55c1e60ac64d394e9897e347a86c35addaf527bdb3335f696a97bebfceb1",
+      "bytes": 6974
+    },
+    "actual_negative_source_bytes": {
+      "path": "build/boot/task006-pool-read-product-qualification-a1/source-negatives.json",
+      "sha256": "63c97eddf39d210f7dc487a498abe454b93f35d6a81a32187e9d7d5198aca48e",
+      "bytes": 522
+    },
+    "original_case_size": {
+      "path": "build/boot/task006-pool-read-product-qualification-a1/wrong-original-case-expected-rejection.json",
+      "sha256": "788e132f4855f1363a271b3b3faba0bfce54e303162330ca49443566b6edf580",
+      "bytes": 359
+    },
+    "live_case": {
+      "status": "RUNNING_NOT_QUALIFIED",
+      "case": "saved38-course-reader-pool-read",
+      "plan": {
+        "path": "build/boot/task006-pool-read-product-connected-plan-a1/plan.json",
+        "sha256": "818c59eb53c657e530111e2e7d7f08595fcdf49bc28c3929f8c501f6d72d104d",
+        "bytes": 3690
+      },
+      "output": "build/boot/task006-pool-read-product-connected-a1",
+      "supervision": "build/boot/task006-pool-read-product-connected-supervision-a1",
+      "bounds": "Original Reader18 32400s/4.3B clocks; same install/handoff/Ready/cold/course ceilings; no deadline increase"
+    },
+    "host_checks": {
+      "metadata": {
+        "path": "build/boot/task006-pool-read-product-qualification-a1/metadata.log",
+        "sha256": "c2056e7047613eb50b7959fdf3707c051a802892eef1abb91be2c1117388d049",
+        "bytes": 247
+      },
+      "scaffold": {
+        "receipt": {
+          "path": "build/boot/task006-pool-read-product-qualification-a1/scaffold.log",
+          "sha256": "d2c3eebf782d2585c17c39c51121e38e980ddd7006bd1908bc56c860ae8a8c90",
+          "bytes": 1873
+        },
+        "tests": 18,
+        "seconds": 8.637
+      }
+    }
   }
 }

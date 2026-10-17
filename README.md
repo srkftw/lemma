@@ -2459,3 +2459,43 @@ unchanged145676708-byte snapshots and an exact5M-clock with/without-image
 suffix. Same-file private restore passed separately. See
 `docs/evidence/006-browser-controller-image.json`. OPFS durability limits,
 native build-helper dependency and unresolved redistribution rights still apply.
+
+The optimized kernel also has a fully compiled and audited four-role Product10
+course image. The same immutable Lean ROM and BootNV controller load this image;
+the host packages opaque bytes and a visibly public development-key tag. The
+new image is541184 bytes/1057 sectors. Its live A/B install, guest confirmation
+and independent cold-recovery case is running; compilation is not that result.
+
+Product source archives now use the existing complete Product provenance
+contract, while USB archives retain their original contract. For another unused
+output, the actual archive interface is:
+
+```sh
+nix develop --no-write-lock-file --command python3 -B scripts/archive_guest_sources.py \
+  --build build/kernel/task006-pool-read-product-whole-a1/product/notebook \
+  --output-dir build/UNUSED_PRODUCT_SOURCES
+```
+
+Prepared inputs are `build/boot/task006-pool-read-product-prepared-a1`,
+`build/boot/task006-pool-read-product-package-a2` and the complete source archive
+`build/boot/task006-pool-read-product-source-a2/consumed-source-root`. The separate
+new-payload qualification command copies both original media before execution:
+
+```sh
+nix develop --no-write-lock-file --command python3 -B scripts/check_authenticated_notebook_update.py \
+  --public-development-key --case saved38-course-reader-pool-read \
+  --prepared build/boot/task006-pool-read-product-prepared-a1 \
+  --guest-build build/kernel/task006-pool-read-product-whole-a1/product/notebook \
+  --guest-source-archive build/boot/task006-pool-read-product-source-a2/consumed-source-root \
+  --package build/boot/task006-pool-read-product-package-a2 \
+  --tag build/boot/task006-pool-read-product-package-a2/slot1.tag \
+  --boot-medium build/boot/task006-development-auth-connected-a4/acknowledged-boot.raw \
+  --disk build/courses/task006-reader18-rtl-a1/reader-saved.raw \
+  --expected-home build/courses/task006-reader18-rtl-a1/second-ready.ppm \
+  --expected-course build/courses/task006-reader18-rtl-a1/saved-example5-reopened.ppm \
+  --work-dir build/UNUSED_PRODUCT_UPDATE_CHECK
+```
+
+The original1056-sector case remains strict; the new case retains all original
+Reader18 time, clock and resource ceilings. No production trust/entropy,
+anti-rollback guarantee or browser product-boot result is claimed.

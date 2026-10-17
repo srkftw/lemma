@@ -5299,3 +5299,63 @@ receiptbuild/ci/task006-748-complete.json. It qualifies committedkernel/authorit
 source, not this laterbrowserincrement. PR9 remains draft/unmerged; successor
 merge notauthorized. Digital,fastparity/arbitraryQEMUcheckpoint,distribution
 andphysical obligations remain separate and unfinished.
+
+
+Optimized kernel joined to Product10 (2026-10-17)
+
+The existing Product10 four-role Reader18 image now has a genuine complete
+build and audit using the d9 getter refinement and exact748 authorities.
+Source0d842890cf754e06ceb3ee4351e7702c7c8cac5f; build182.049811s,
+audit288.981707s, whole471.244049s; sampled owned peak1845305344B under the
+original2400s/1200s-command/4GiB/minimum2GiB/output12GiB/file1GiB bounds.
+Actual postcompletion process-start-time check found no owned survivors.
+No new ROM, host emulator, target language or guest policy was introduced.
+
+Complete440-input source archive is build/boot/task006-pool-read-product-source-
+a2/consumed-source-root. The maintained archive command now recognizes the
+existing Product Reader configuration and validates its actual audited ELF/DTB
+and every original source through package_product_image. It uses the existing
+lemma-consumed-guest-source-archive/1 contract. USB behavior/sidecar remain
+unchanged: actual original Reader19 USB archive437 inputs passes. Private
+changed Objects.lean source bytes reject in both archive and image packaging.
+No medium is installed, interpreted or authenticated by the host archiver.
+
+First archiver attempt incorrectly used its USB-only branch and failed closed;
+its result and consequent package/tag errors remain retained. First static
+wrong-case check also failed on original prepared-host drift at zero clocks.
+A fresh current-command preparation validates the COMPLETE original unchanged
+RTL10 and immutable authenticated ROM archives, rather than editing metadata.
+It is build/boot/task006-pool-read-product-prepared-a1. The corrected static
+negative then rejects actual1057-sector image with original1056-sector case
+BEFORE guest launch or private user-medium creation. Its FAIL stays a separate
+retained expected rejection; the qualification receipt records that property.
+
+Opaque new image is541184B/1057 sectors, identity0x000a000000000013, at
+build/boot/task006-pool-read-product-package-a2 with slot1.tag. Public development
+key only; authoring is not target authentication. The separate maintained
+saved38-course-reader-pool-read case adds the exact new payload expectation;
+all original Reader18/Saved38 clock/time/resource ceilings remain unchanged.
+Original1056-sector case retains its exact size and is now checked before launch.
+README includes actual archive and full update/confirmation/cold commands.
+
+Real new case is RUNNING under original32400s/4.3B clocks, with install900M/7200s,
+handoff300M/3600s, Ready1.2B/9000s, independent cold1.5B/11200s, course400M/3600s.
+Plan: build/boot/task006-pool-read-product-connected-plan-a1/plan.json.
+Actor: build/boot/task006-pool-read-product-connected-a1.
+Supervisor: build/boot/task006-pool-read-product-connected-supervision-a1.
+Tool session33744. Same immutable Lean ROM and ebb9 RTL10, real NV operations;
+no running ELF preload or snapshot cold input. Do not edit the maintained
+check_authenticated_notebook_update.py or its loaded host modules during this
+owned campaign. All original media, binaries and earlier results stay intact.
+New source archive/build/package receipts are recorded in the existing
+006-kernel-pool-read evidence and capability inventory. No new live Product
+PASS is inferred. Metadata and18 scaffold tests pass (8.637s); actual source
+and old-case rejection checks pass. No unchanged whole campaign was rerun.
+
+Current pushed head remains0d84289 (browser image/repeated restore); its actual
+CI39000652624/run152 was last observed IN_PROGRESS. The new Product host-tool
+increment requires its own candidate CI after publication. PR9 stays draft and
+unmerged. Original canonical and expanded RTL/companion/browser cases remain
+active with their source-bound limits. Browser39 denominator selection completed
+at1176.4M with actualSaved8/panel13; CLEAR is now running from that cut under
+150M/1800s. Stored answer/evidence will be observed independently before CHECK.

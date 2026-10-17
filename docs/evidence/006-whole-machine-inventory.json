@@ -1865,8 +1865,8 @@
   "kernel_metadata_read1": {
     "evidence": {
       "path": "docs/evidence/006-kernel-pool-read.json",
-      "sha256": "497d3605f176053be1f5a9077d6f29a0ab6d9f5a134ddbe27322e961fd741805",
-      "bytes": 18752
+      "sha256": "ff3f6b597dad8bc50f84d4880c7dfd0bc300ff9fd18cb92fea7a145a4d94eb21",
+      "bytes": 23228
     },
     "tested_guest_commit": "d9be0fce8d7b31b018318d38fff8336abb89161d",
     "gate_scope": "G1 performance and bounded existing G2/G4-G7 workflow regression; no full gate closed",
@@ -1875,7 +1875,8 @@
     "RTL": "PASSnewkernelcoldReady460M/all3.63Mhomepixels/all256MiB; complete6outcome/ink/Save/cold stillRUNNING",
     "guest": "PASSsixoutcomes/hint/ink/Saved30/independentcold on fast backend; matched oldbytes reopen98Mwithin100M",
     "distribution": "Prepared same native/Wasm core, new audited canonical pair; full new browser execution pending",
-    "physical": "UNCHANGED_UNCLOSED"
+    "physical": "UNCHANGED_UNCLOSED",
+    "product": "PASSnewfullProduct10Reader18compile/audit/archive440inputs/package1057sectors; realA/Bconfirm/coldcase RUNNINGunderoriginalceilings"
   },
   "browser_controller_image1": {
     "contract": "lemma-controller-gray4-image/1",
@@ -1891,5 +1892,14 @@
     "guest": "Unchanged original Reader20 continuation; actualall3630000pixels match; newguestexecution not inferred",
     "distribution": "Preparednewd9gueststaticbundle and archive2085277B; fullnewkernelbrowser pending",
     "physical": "UNCHANGED_UNCLOSED; no optical claim"
+  },
+  "product_source_archive1": {
+    "behavior": "PASSactualProduct10sourcearchive and originalUSBReader19archive; changed source rejected",
+    "model": "Host-only complete original provenance/ELF/DTB checks; no guest boot or auth policy",
+    "RTL": "Same immutableebb9Product10machine/LeanROM; no circuitry change",
+    "guest": "Newfour-roleProductimage build/auditPASS; liveA/Binstall/confirm/coldRUNNING",
+    "distribution": "Prepared440inputProductarchive,541184Bimage/publicdevtag; originalcase1056 remains strict",
+    "physical": "UNCHANGED_UNCLOSED",
+    "evidence": "docs/evidence/006-kernel-pool-read.json"
   }
 }
