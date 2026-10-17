@@ -2226,6 +2226,17 @@
     "actual_RTL_clocks": 200000,
     "actual_retired_instructions": 85178,
     "seconds": 20.94751155306585,
-    "limitations": "Exact external pinned Nix tools/libraries/Python required; public development key; no user media/kernel preload; full new-bundle notebook/checkpoint, clean-host and redistribution qualifications separate."
+    "limitations": "Exact external pinned Nix tools/libraries/Python required; public development key; no user media/kernel preload; full new-bundle notebook/checkpoint, clean-host and redistribution qualifications separate.",
+    "pending_protocol_checkpoint": {
+      "status": "PASS_BUNDLED_ROM_PARTIAL_FRAME_QUEUED_UART_EXACT_PRIVATE_SUFFIX",
+      "result": "build/boot/task006-rom-bundle-pending-a2/result.json",
+      "seconds": 49.71308900602162,
+      "actual_cut": 300000,
+      "pending_guest_frame_bytes": 37,
+      "queued_future_bytes": 43,
+      "suffix_clocks": 200000,
+      "complete_checkpoint_bytes": 145202004,
+      "scope": "Original snapshot unchanged; exact fullsamebackend checkpoint+applicableUART+session authority/eventcursor+privateBootNV. Finite ROM protocol case, no arbitrary/cache/crossbackend claim."
+    }
   }
 }

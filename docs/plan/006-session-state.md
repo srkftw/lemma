@@ -6389,3 +6389,21 @@ routing504.830586s/supervision505.391593s/peak1339625472B, exact source/geometry
 through time comparison/high fanout to _09936_/D. Earlier a4 is a different
 pre-integration source; no isolated gain claim. Not process DRC/LVS/PEX/PVT.
 No unchanged EDA retry is scheduled. Preserve all earlier failures/artifacts.
+
+
+The new bundle's snapshot/restore control now has real pending-protocol
+qualification, not only CPU0 launch. scripts/check_product_bundle.py A2 actual
+PASS49.713089s, tool54128reaped. At300kcycles/125425retired, the compiled Lean
+ROM holds37of80 request bytes and one future raw event contains remaining43.
+Snapshot leaves complete inspection unchanged; original/private suffix200k
+clocks matches every145202004 machine.chk byte,40byteCRC-valid response,
+session identity/boundary/automatic/quantum/external_event_cursor/virtualcycle/
+virtualns/medium policy/files and all33558528 privateBootNV bytes. No original
+flush/drain/fence/mutation; this is same-backend finite pending protocol only.
+Sampled owned RSS/resource bounds and exact imported observer source hashes
+are in build/boot/task006-rom-bundle-pending-a2/result.json. A1 actual FAIL
+32.909537s was a nonexistent host RESPONSE constant after original execution;
+original consumed-checker.py/result/prefix retained. Corrected independent
+contract literal/LE/CRC decoder; original600s/10M/2GiBoutput ceilings retained.
+This adds reusable actual check code, no target/source/runtime changes. No new
+full notebook/crossbackend/cache/timing/distribution-rights claim follows.

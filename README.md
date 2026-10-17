@@ -2834,3 +2834,17 @@ bundle. Its local gzip artifact is
 `build/distribution/task006-scoped-rom-local-a1.tar.gz`; no user media is included.
 Actual moved CLI CPU0/capacity is qualified; full new-bundle notebook, clean-host
 and redistribution qualifications remain separate.
+
+
+The bundled snapshot path also passes an actual pending-protocol check: a guest
+partly receives37of80 request bytes, the remaining43bytes are queued at a future
+cycle, and snapshot leaves the original unchanged. Original and private restore
+then match every145,202,004 checkpoint byte after200,000clocks, the applicable
+UART response, session authority/event cursor and complete private BootNV bytes.
+This finite ROM case does not establish general cached-state continuation.
+
+```sh
+nix develop --no-write-lock-file --command python3 -B scripts/check_product_bundle.py \
+  --bundle build/distribution/task006-scoped-rom-local-relocated-a2 \
+  --work-dir build/boot/UNUSED_ROM_BUNDLE_PENDING
+```
