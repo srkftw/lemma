@@ -6155,3 +6155,82 @@ job receipt build/ci/task006-4f-complete.json. Current public99 actualrun167/
 39057257719 IN_PROGRESS at first observation. PR9 draft/unmerged and updated.
 Subsequent local image16-case observer/docs changes require their own CI; do
 not inherit99's pending result. Preserve all existing long live machines.
+
+Completed milestones observed 2026-10-17T19:08Z; no deadline changes:
+* Stalled authenticated trial recovery terminal PASS14263.804878s at
+  build/boot/task006-trial-watchdog-recovery-plan-a1/consumed-host-source-root/build/connected/result.json.
+  Actual3 trials/two brownouts/2B watchdog clocks with zero retired delta;
+  exact64-clock observational private reset suffix; confirmed13 fallback727M
+  clocks and all3.63M home/all256MiB user bytes. Supervisor14264.951991s/
+  peak501800960B. Original healthy15 campaign FAIL remains; separate healthy
+  confirmed cold and16sector partial-update independent cold still running.
+* Active native/Wasm terminal PASS3122.077395s/437250000RTLclocks/204137514
+  retired instructions; full original CRC/state/UART/all3.63Mpixels/all256MiB/
+  54 actual outcomes, only predeclared implementation identity headers differ.
+  build/browser/task006-hint-active-native-wasm-plan-a2/consumed-host-source-root/build/connected/result.json.
+  Supervision3122.521577s/peak946442240B/no survivors. Originala1 preflight
+  FAIL retained; no QEMU or arbitrary-boundary/allISA claim.
+* Browser22 actualClose fullhome at2207300000 (354550000phaseclocks), all
+  3.63Mpixels independently match literal home plus both actual raw3 strokes;
+  all256MiB unchanged from explicitSaved48. ActualClosedHome observerPASS at
+  build/browser/task006-hint-publication-save32-plan-a1/actual-closed-home-a1.json.
+  UI Close/Open SAME existing OPFSmedium observed cycle0/pc0/retired0, no
+  snapshot/import/initialization; original1B/7200s coldReady now running.
+  Keep tab22/20, unchanged whole00:26:11.452097Z/6B deadline.
+* Public99 actualCI run167/39057257719 SUCCESS11jobs/117steps/zero skipped.
+  Local358 and subsequent executable-checkpoint test changes need own CI.
+  PR9 draft/unmerged. Current image16 actual full update remains running.
+
+New cached-execution test work in progress: ordinary Lean valueA/valueB,
+actual guest stale executable PTE/SFENCE, compiler-generated leaf copy and
+actual FENCE.I; no host instruction/PTE generation. Initial4GiB host-AS
+thread-creation failuresa1/a2 retained. Independent actual pinned-Lean IR
+module measurementa2: 9.104089088GB virtual reservation/1.673793536GB RSS,
+4.971736s. Builder uses16GiB virtual plus enforced4GiB resident cap, same
+600s/300s time ceilings and hashes actual .lean-wrapped. Fresh44-module
+elaborationa3 succeeded, then genuine checker rejected generic bne; FAIL
+172.670337s/peak1834606592B retained. Ordinary admitted equality corrected;
+fresh a4 build running. No fixture execution or cache-completeness PASS yet.
+
+New executable logical-checkpoint milestone completed on the same branch:
+* Genuine44-module fresh Lean elaboration/checked kernel-v0.4 export -> pinned
+  LLVM/ELF audit PASS165.713594s/peak1836195840B at
+  build/lemmasim/task006-softtlb-exec-target-a4/result.json.
+  ELF1dff877ef2c52a17726343d9047c51f7cb50045fe74dc47cdf3eddc6ad1612c9.
+  Two ordinary Lean leafs only; host audits their emitted8-byte extent/code,
+  never generates instructions/PTEs. Generic bne rejectiona3 retained.
+* Test revealed fresh QEMU fork label prelaunch rather than paused (a1/a2
+  FAIL), with all observed registers/devices/time equal. Initial direct
+  PRELAUNCH->PAUSED repair correctly aborteda3; no retry/tolerance hid it.
+  Actual legal PRELAUNCH->INMIGRATE->PAUSED private lifecycle now follows
+  validated preparation/adoption without CPU/device notifications, cache
+  flushes or ordinary stop/block drain. Incremental pinned host build13.365716s,
+  binaryceabdf19b191de8bca717cf089e8dee8310ea7faf68b91b205fcaa958165db40
+  retained at build/task006-softtlb-a1/qualified-a12. Old4503 binary/source
+  preserved at qualified-a10. Fresh current guarded installer reconstructs
+  all8 consumed derivative files exactly in12.573836s; no fresh full Nix
+  package-build claim.
+* Actual test PASS10.126189s, all3 owners reaped:
+  build/lemmasim/task006-softtlb-exec-suffix-a5/result.json. Actual warmed
+  executable A->PTEB cut1Mns, actual compiled-code store cut129Mns, fixed
+  end1Bns; original and both private forks111/222/111/111 through stale
+  execution/SFENCE/unfenced-modification/FENCE.I. Same exact complete declared
+  logical cache semantics/observed registers/devices/UART suffixes. Capture
+  leaves5 actual JIT flush/invalidation counters unchanged. Selected model
+  shows immediate modified-code visibility before FENCE.I; no stale-code
+  architecture promise. Broad TB/jump/interrupt/pending-work continuation,
+  public adapter adoption and full QEMU exactness remain GAP_CONFIRMED.
+* Whole host suite invoked outside Nix failed319tests/4failures/9errors due
+  missing cc/C++/host Lean tools; actual failed log retained as
+  ...softtlb-exec-host-a1.log. Correct pinned run ...host-a2.log passes328tests/78.139s.
+  Scaffold18PASS11.082s and metadataPASS; no failed run relabeled.
+
+Physical candidate: original routed a4 sample_x[30] critical path motivated
+physical-only kept hierarchy for six existing full-width sample comparisons.
+Maintained default/SRAM full256 protocol and real mutants PASS7.871752s;
+new map6623cells vs6820/same866FF/three actual SRAMs, timestamp-depth18vs17
+within original20. Fewer cells is not a delay claim. Actual same-floorplan
+geometry preflightPASS; route rejects unchanged8GiB available launch floor
+before OpenROAD (0.659414s supervisionFAIL), preserved at
+build/silicon/pen-sram-range-route-plan-a1 and ...range-route-supervision-a1.
+No deadline/memory/clock/rule relaxation or new route/DRC/timing PASS.

@@ -1,6 +1,6 @@
 {
   "schema": "lemma-task006-trial-watchdog-evidence/1",
-  "status": "PASS_GENUINE_ROM_AND_WHOLE_LINKED_IMAGE_CONNECTED_CASES_RUNNING",
+  "status": "PASS_STALLED_TRIAL_WATCHDOG_BROWNOUT_FALLBACK_HEALTHY_COLD_RUNNING",
   "implementation_parent": "052e4675d170fbacc7cea7f2ce607d0aef602e01",
   "contract": "docs/contracts/006-trial-boot-watchdog-v1.md",
   "ROM": {
@@ -22,9 +22,9 @@
     "healthy_trial_disarm": "NOT_RUN"
   },
   "actual_recovery": {
-    "status": "EXACT_WATCHDOG_RESET_SUFFIX_PASS_NOTEBOOK_FALLBACK_RUNNING",
-    "path": "build/boot/task006-trial-watchdog-recovery-plan-a1/consumed-host-source-root/build/connected/progress.json",
-    "observed": "Three real authenticated CryptoProbe trials; actual watchdog arm each time, zero-retirement WFI and exact independent countdown. Two actual brownouts/reboots. Third2B-clock expiry/fallback/document preservation and exact reset-edge fork still running under original bounds.",
+    "status": "PASS_GUEST_AUTHENTICATED_TRIAL_WATCHDOG_BROWNOUT_FALLBACK_NOTEBOOK",
+    "path": "build/boot/task006-trial-watchdog-recovery-plan-a1/consumed-host-source-root/build/connected/result.json",
+    "observed": "Three authenticated stalled Lean trials, two actual brownouts, full2B-clock watchdog expiry with zero retired delta, exact private64-clock reset suffix, attempt-limit fallback to confirmed notebook13 and complete home/user-media recovery.",
     "known_good_image": "confirmed notebook0x000a000000000013",
     "unhealthy_trial": "genuine Lean CryptoProbe1001; WFI after cryptographic self-test is not OS health",
     "user_media": "private actual Saved32 copy; no host document mutation",
@@ -420,7 +420,19 @@
       "wait_seconds": 9902.275721487938,
       "quiescent_retired_delta": 0
     },
-    "scope": "Real stalled Lean CryptoProbe counted down through2B clocks with zero retired delta. Exact1/7/1 reset edge plus whole-authoritative64-clock private fork suffix PASS. Known-notebook fallback still executing; no terminal functional PASS yet."
+    "scope": "Unhealthy authenticated trial only; healthy watchdog confirmation, loader-hang supervision, full interruption matrix, production identity/entropy/antirollback remain open.",
+    "receipt_sha256": "8a0308faac0857596b87d9e8530b5ecbb6e17b86c34d0b4e21b0fcaef4764ea0",
+    "seconds": 14263.804877807037,
+    "fallback_clocks": 727000000,
+    "all_home_pixels": 3630000,
+    "all_user_bytes": 268435456,
+    "functional_status": "PASS",
+    "supervisor": {
+      "status": "PASS_AUTHENTICATED_PRODUCT_COURSE_CONNECTED_SUPERVISED",
+      "seconds": 14264.951991135953,
+      "returncode": 0,
+      "owned_peak_rss_bytes": 501800960
+    }
   },
   "host_checks": {
     "boot_tests": 30,
@@ -448,7 +460,7 @@
     "build/boot/task006-trial-watchdog-kernel-host-a1.log"
   ],
   "limitations": [
-    "Corrected whole linked artifact audit passes; actual healthy new-kernel disarm and stalled2B-clock expiry/fallback are still running. Later uncommitted ControlBacklog target work is not part of this451-input ELF.",
+    "Stalled-trial full fallback now passes. Original healthy image15 full campaign remains FAIL at its independently demonstrated cold0 observer; actual separate confirmed cold and current image16 full trial/cold are running. General boot/update failure matrix remains open.",
     "Original lake host C-generation run hit pinned Lean LCNF assertion; direct genuine ordinary elaboration/checked export passes, underlying host C-generation issue unresolved.",
     "Loader/ROM-stage hang supervision, confirmation interruption matrix, production identity/entropy and durable antirollback remain open.",
     "Whole-machine digital completeness, QEMU cached continuation, distribution rights and physical signoff remain separate and open."
@@ -521,13 +533,14 @@
     ],
     "seconds": 1.2269112239591777,
     "repair": "Only clock0/pc0/retired0/unarmed/zero remaining counters admits pre-first-edge cause0; every later clock still requires cause1/epoch0. Three focused tests and complete33 boot-host tests pass. No machine/controller change.",
-    "confirmed_cold_status": "NOT_RUN; separate --confirmed-from qualification must preserve original FAIL and original cold/course bounds"
+    "confirmed_cold_status": "RUNNING_SEPARATE_ORIGINAL_BOUNDS"
   },
   "partial_notebook_update": {
-    "status": "IMPLEMENTED_NOT_RUN",
+    "status": "RUNNING_ORIGINAL_BOUNDS",
     "checker": "scripts/check_interrupted_notebook_update.py",
     "scope": "16 actual inactive payload sectors/real barrier receipts, no tag/publication, real brownout200clocks, independentCPU0normal ROM selects known confirmed13, all3.63Mhome/all256MiB preserved. Between sector barriers only; no full interruption matrix claim.",
-    "bounds": "1.8B/14400s; partial300M/2400s, originalcold1.5B/11200s"
+    "bounds": "1.8B/14400s; partial300M/2400s, originalcold1.5B/11200s",
+    "plan": "build/boot/task006-interrupted-notebook-update-plan-a1/plan.json"
   },
   "current_control_backlog_product": {
     "status": "GENUINE_WHOLE_LINKED_PASS_CONNECTED_EXECUTION_PENDING",
@@ -544,6 +557,9 @@
     "image_sha256": "ef45db4e516475e6c51cd38899147bd8358a33fa15f0ff52f5e8ae7c08080442",
     "source_archive": "build/boot/task006-control-backlog-home-product-source-a1/consumed-source-root",
     "tag_sha256": "eaca78b622be9ec6979a8fb4030e3fc14036982185457a541b53faf43405ce8b",
-    "scope": "Same current sharedNotebook v2 source as the passing canonical pair; actual ROM/kernel watchdog path unchanged. Packaging is not install/trial/cold execution. New fixed Saved19 case retains old1059/Saved32 case and every original4.3B/32400s phase/whole ceiling."
+    "scope": "Same current sharedNotebook v2 source as the passing canonical pair; actual ROM/kernel watchdog path unchanged. Packaging is not install/trial/cold execution. New fixed Saved19 case retains old1059/Saved32 case and every original4.3B/32400s phase/whole ceiling.",
+    "connected_status": "RUNNING_ORIGINAL_BOUNDS",
+    "connected_plan": "build/boot/task006-control-backlog-home-product-connected-plan-a1/plan.json",
+    "connected_source": "358b452"
   }
 }

@@ -522,5 +522,33 @@
     "suffix_retired": 0,
     "scope": "Original full CRC/state/media/controller/outcome comparisons; only predeclared implementation identity bytes excluded. Idle WFI/timer1M suffix; course interval112518469 retired. No crossrestore/QEMU/cache/allISA claim. Full current browserD remains open.",
     "original_failures_retained": true
+  },
+  "current_hint32_active_relation": {
+    "status": "PASS_NATIVE_WASM_ACTIVE_MATH_STORE_EXACT_SUFFIX",
+    "receipt": "build/browser/task006-hint-active-native-wasm-plan-a2/consumed-host-source-root/build/connected/result.json",
+    "receipt_sha256": "7035e2a7e021a7f863cc19ae6c501b12d1d64ea7bfd82bb04439cd16e8ddb48a",
+    "implementation": "99e27ce8ff814fda92c29f4beefe687cf17429ce",
+    "start_cycle": 901000000,
+    "end_cycle": 1338250000,
+    "RTL_clocks": 437250000,
+    "retired_in_suffix": 204137514,
+    "exact_IO_outcomes": 54,
+    "all_controller_pixels": 3630000,
+    "all_medium_bytes": 268435456,
+    "seconds": 3122.077395334025,
+    "active_seconds": 3091.9403581919614,
+    "observer_seconds": 44.339584377012216,
+    "sampled_owned_peak_RSS_bytes": 946442240,
+    "owned_survivors": {},
+    "only_excluded_state_bytes": [
+      16,
+      80
+    ],
+    "only_excluded_tape_bytes": [
+      8,
+      72
+    ],
+    "scope": "A finite active native/Wasm continuation from their separately qualified\nown901M archives. Raw controls execute the real arithmetic/checker/Store path.\nEvery authoritative byte remains load-bearing except the two already declared\nimplementation-identity headers. No cross-restore, QEMU cached continuation,\nall-ISA coverage or arbitrary-boundary completeness is claimed.\n",
+    "original_failed_preflight_retained": "build/browser/task006-hint-active-native-wasm-plan-a1"
   }
 }
