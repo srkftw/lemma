@@ -88,6 +88,9 @@ private def rootIdentities (configuration role : String) : Array String :=
         (if configuration.endsWith "-notebook" then
           "siliconUSBPackageRecoveryEntry2Boot" else "siliconUSBPackageRecoveryEntry2InitializeMedium"),
         "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBPackageRecoveryBulk"]
+    else if isTrialWatchdogNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.TrialWatchdogKernel.boot",
+        "Lemma.Platform.LemmaSim.TrialWatchdogKernel.dispatch"]
     else if isProductCourseReaderNotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconProductCourseReaderBoot",
         "Lemma.Platform.LemmaSim.NotebookKernel.dispatchProductExecutedBulk"]

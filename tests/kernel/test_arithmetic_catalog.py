@@ -59,6 +59,7 @@ class ArithmeticCatalog(unittest.TestCase):
             'lemmasim-silicon-usb-clocked-package-retry-bulk-notebook',
             'lemmasim-silicon-usb-clocked-package-retry-bulk-initialize',
             'lemmasim-silicon-product-course-reader-bulk-notebook',
+            'lemmasim-silicon-product-course-watchdog-bulk-notebook',
         'lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook',
         'lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize',
         'lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook',
@@ -75,6 +76,24 @@ class ArithmeticCatalog(unittest.TestCase):
                 self.assertEqual(managed_fields(config)['managed_policy'],'lemma-notebook-arithmetic-v1')
                 self.assertEqual(configuration_profile(config),f'lemma-silicon-dev/0.{profile}.0')
                 self.assertEqual(kernel_contract(config),f'core0-kernel-v0.{kernel}')
+    def test_trial_watchdog_keeps_four_roles_and_separate_privileged_roots(self):
+        config = 'lemmasim-silicon-product-course-watchdog-bulk-notebook'
+        legacy = 'lemmasim-silicon-product-course-reader-bulk-notebook'
+        self.assertEqual(image_specs(config), image_specs(legacy))
+        self.assertEqual([row['key'] for row in image_specs(config)],
+                         ['store', 'notebook', 'arithmetic', 'course'])
+        self.assertEqual(configuration_profile(config), 'lemma-silicon-dev/0.10.0')
+        self.assertEqual(kernel_contract(config), 'core0-kernel-v0.7')
+        self.assertEqual(configuration_roots(config)['kernel'], (
+            ('Lemma.Platform.LemmaSim.TrialWatchdogKernel.boot', ()),
+            ('Lemma.Platform.LemmaSim.TrialWatchdogKernel.dispatch', ('u64', 'u64', 'u64'))))
+        previous = software_deployment_fields(legacy)['software_deployment']
+        actual = software_deployment_fields(config)['software_deployment']
+        self.assertEqual(actual, {**previous,
+            'contract_version': 'lemma-package-reader-product10-watchdog-deployment-v1'})
+        with self.assertRaises(Core0Error):
+            configuration_roots('lemmasim-silicon-product-course-watchdog-bulk-initialize')
+
     def test_exact_course_names_select_guarded_store_and_independent_installer(self):
         deployment={'contract_version':'lemma-course-array-bulk-deployment-v1',
             'silicon_profile':'lemma-silicon-dev/0.3.0','user_profiles':{

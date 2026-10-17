@@ -31,7 +31,7 @@ from course_deployment import CONFIGURATIONS as LEGACY_COURSE_NOTEBOOK_CONFIGURA
 from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_AWAIT_SOFTWARE_DEPLOYMENT, library_source_allowed as course_await_library_source_allowed
 from package_closure_deployment import CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS
 from reader_deployment import CONFIGURATIONS as READER_NOTEBOOK_CONFIGURATIONS, NOTEBOOK_ROOT as READER_NOTEBOOK_ROOT
-from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_NOTEBOOK_CONFIGURATIONS
+from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_NOTEBOOK_CONFIGURATIONS
 from chooser_reader_deployment import CONFIGURATIONS as CHOOSER_NOTEBOOK_CONFIGURATIONS
 AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS+CHOOSER_NOTEBOOK_CONFIGURATIONS
 COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+AWAIT_NOTEBOOK_CONFIGURATIONS
@@ -1774,7 +1774,9 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
                 if source!=BOOT_ROOT or _local_call_arguments(body,names[construct])!=['']:
                     raise Core0Error('Product course constructor lost its unique zero-argument boot gate')
             if names[BOOT_ROOT] in parse_definitions_and_calls(body)[2]:boot_callers.append(source)
-        if constructor_callers!=[BOOT_ROOT] or boot_callers:
+        from product_reader_deployment import WATCHDOG_CONFIGURATION, WATCHDOG_BOOT_ROOT
+        expected_boot_callers = [WATCHDOG_BOOT_ROOT] if unit['configuration'] == WATCHDOG_CONFIGURATION else []
+        if constructor_callers!=[BOOT_ROOT] or boot_callers != expected_boot_callers:
             raise Core0Error('Product course constructor/reset root incoming authority differs')
         binding_gates.append({'selected_binding':10,'initialization':0,'boot_root':BOOT_ROOT,'constructor_caller':BOOT_ROOT})
     elif unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:

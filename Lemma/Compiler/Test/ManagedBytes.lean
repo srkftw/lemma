@@ -90,7 +90,7 @@ run_elab do
     throwError "actual ByteArray profile/source/User effect closure differs"
   for profile in #[Lemma.Core0.Profile.v0_1,.v0_2,.v0_3,.v0_4,.v0_5,.v0_6,.v0_7,
       .user_v0_1,.user_v0_2,.user_v0_3,.firmware_v0_1,.firmware_v0_2,
-      .kernel_v0_1,.kernel_v0_2,.kernel_v0_3,.kernel_v0_4,.kernel_v0_5,.kernel_v0_6,.kernel_v0_7,.boot_v0_1] do
+      .kernel_v0_1,.kernel_v0_2,.kernel_v0_3,.kernel_v0_4,.kernel_v0_5,.kernel_v0_6,.kernel_v0_7,.boot_v0_1,.boot_v0_2] do
     match Lemma.Core0.checkAndLowerActionSuiteForProfile env profile #[``entry] with
     | .ok _ => throwError m!"unadmitted profile acquired ByteArray authority: {profile.contractVersion}"
     | .error error =>

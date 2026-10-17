@@ -120,8 +120,12 @@ def isUSBWireNotebookConfiguration (configuration : String) : Bool :=
 
 /-- Four-role installed-course software on Product10; ordinary ROM boot only.
 There is deliberately no initializer variant that could format user media. -/
+def isTrialWatchdogNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-product-course-watchdog-bulk-notebook"
+
 def isProductCourseReaderNotebookConfiguration (configuration : String) : Bool :=
-  configuration == "lemmasim-silicon-product-course-reader-bulk-notebook"
+  configuration == "lemmasim-silicon-product-course-reader-bulk-notebook" ||
+    isTrialWatchdogNotebookConfiguration configuration
 
 /-- Product10/Paper3 executed-refresh authority has a distinct deployment. -/
 def isProductExecutedNotebookConfiguration (configuration : String) : Bool :=
@@ -241,7 +245,8 @@ def softwareDeploymentFields (configuration : String) : List (String × Json) :=
       ("course", .str "core0-user-v0.1")])])]
   else if isProductCourseReaderNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
-    ("contract_version", .str "lemma-package-reader-product10-deployment-v1"),
+    ("contract_version", .str (if isTrialWatchdogNotebookConfiguration configuration then
+      "lemma-package-reader-product10-watchdog-deployment-v1" else "lemma-package-reader-product10-deployment-v1")),
     ("kernel_lowering", .str "lemma-product-course-checked-physical-inline/1"),
     ("silicon_profile", .str "lemma-silicon-dev/0.10.0"),
     ("reader_contract", .str "lemma-course-reader-location/1"),

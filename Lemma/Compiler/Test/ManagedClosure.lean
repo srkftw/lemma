@@ -117,7 +117,7 @@ run_elab do
   let old := #[Lemma.Core0.Profile.v0_1,.v0_2,.v0_3,.v0_4,.v0_5,.v0_6,.v0_7,
     .firmware_v0_1,.firmware_v0_2,.kernel_v0_1,.kernel_v0_2,.kernel_v0_3,.kernel_v0_4,
     .kernel_v0_5,.kernel_v0_6,.kernel_v0_7,.kernel_v0_8,.counter_su_v0_1,
-    .user_v0_1,.user_v0_2,.user_v0_3,.user_v0_4,.user_v0_5,.user_v0_6,.boot_v0_1]
+    .user_v0_1,.user_v0_2,.user_v0_3,.user_v0_4,.user_v0_5,.user_v0_6,.boot_v0_1,.boot_v0_2]
   for profile in old do
     match Lemma.Core0.checkAndLowerActionSuiteForProfile env profile #[``Lemma.Compiler.Test.ManagedClosure.selected] with
     | .ok _ => throwError "historical profile acquired closure bridge: {profile.contractVersion}"

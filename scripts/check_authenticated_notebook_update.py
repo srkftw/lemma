@@ -3,7 +3,8 @@
 -> independent authenticated cold recovery, preserving every document byte.
 The original Saved14 case remains fixed. The additive Saved38 Reader18 case
 uses an audited four-role image and raw COURSE input after independent cold.
-Neither case claims interrupted confirmation, production keys or browser boot.
+The fixed Saved32 case adds the corrected revision-bound hint publication image.
+These cases do not claim interrupted confirmation, production keys or browser boot.
 """
 import argparse
 import filecmp
@@ -43,11 +44,13 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--public-development-key', action='store_true', required=True)
     parser.add_argument('--case',choices=('saved14-notebook','saved38-course-reader',
-                        'saved38-course-reader-pool-read'),default='saved14-notebook')
+                        'saved38-course-reader-pool-read','saved32-course-hint-publication'),
+                        default='saved14-notebook')
     parser.add_argument('--expected-home',type=Path)
     parser.add_argument('--expected-course',type=Path)
     args = parser.parse_args()
-    reader = args.case in ('saved38-course-reader','saved38-course-reader-pool-read')
+    hint_publication = args.case == 'saved32-course-hint-publication'
+    reader = hint_publication or args.case in ('saved38-course-reader','saved38-course-reader-pool-read')
     pool_read = args.case == 'saved38-course-reader-pool-read'
     require(not reader or args.expected_home is not None and args.expected_course is not None,
             'Reader18 requires independent complete home/course references')
@@ -61,9 +64,11 @@ def main():
     # audited getter refinement adds exactly one sector to the Product image;
     # it receives the same original Reader18 execution/deadline ceilings.
     sectors, sequence_expected = (1057 if pool_read else 1056,38) if reader else (724,14)
+    if hint_publication:
+        sectors, sequence_expected = 1058, 32
     out = args.work_dir.resolve()
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
-    out.mkdir()
+    out.mkdir(parents=True)
     resource.setrlimit(resource.RLIMIT_AS, (4 << 30, 4 << 30))
     resource.setrlimit(resource.RLIMIT_FSIZE, (1 << 30, 1 << 30))
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
@@ -86,6 +91,11 @@ def main():
         report['bound_basis'] = ('Separate audited1057-sector getter-refinement image; '
             'all original Reader18/Saved38 clock, host and resource ceilings retained. '
             'The original1056-sector case remains unchanged; no deadline increase.')
+    if hint_publication:
+        report['bound_basis'] = ('Separate audited1058-sector hint-publication image and actual '
+            'Saved32 medium; all original Reader18 clock, host and resource ceilings retained. '
+            'Original724/1056/1057-sector cases stay strict. Complete home/course references '
+            'come from the qualified current guest fast cold/reopen; no snapshot cold input.')
 
 
     def save():
@@ -260,15 +270,17 @@ def main():
                 require(not state['finished'] and not any(r[0]in(0x41f,0xd4,0xf4,0x424,0x454)for r in rows),'actual course/guest failure')
                 idle=all(state[k]==0 for k in('event_queue','pen_queue','paper_busy','panel_pending_pixels','block_state','dma_outstanding'))
                 if idle and state['panel_completed']>initial['panel_completed']:
-                    panel=out/'cold-reader-example5.ppm';call(cold,{'action':'panel','path':str(panel)})
+                    panel=out/('cold-reader-example3.ppm' if hint_publication else 'cold-reader-example5.ppm');call(cold,{'action':'panel','path':str(panel)})
                     if visible_pixels(panel)==expected_course:break
                 require(delta<400_000_000 and used<total_cap,'original Reader18 COURSE clock ceiling')
                 quantum=min(1_000_000,400_000_000-delta,total_cap-used)
                 call(cold,{'action':'run','cycles':quantum});used+=quantum
             require(filecmp.cmp(args.disk,cold_disk,shallow=False),'read-only course open changed any original document byte')
-            report['phases'].append({'name':'authenticated-cold-raw-COURSE-saved-example5','clocks':delta,
+            report['phases'].append({'name':'authenticated-cold-raw-COURSE-saved-example3' if hint_publication else 'authenticated-cold-raw-COURSE-saved-example5','clocks':delta,
                 'seconds':time.monotonic()-started,'all_controller_pixels':3630000,'raw_samples':2})
             report['reader_scope']='Actual guest Reader18/Store/course decoding and saved node5; no new arithmetic check, tutor or third cold claimed'
+            if hint_publication:
+                report['reader_scope']='Actual corrected guest/Store/course decoding and saved node3; full current fast frame reference. No new arithmetic submission, live tutor or third cold claimed.'
         close(cold)
         guard()
         require(all(sha(p) == h for p, h in report['original_inputs'].items()), 'original input changed')

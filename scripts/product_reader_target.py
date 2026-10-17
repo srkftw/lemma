@@ -10,7 +10,7 @@ import re
 from pathlib import Path
 from core0_common import Core0Error
 from paper_next import canonical, normalized
-from product_reader_deployment import CONFIGURATIONS, SOFTWARE_DEPLOYMENT, BOOT_ROOT, DISPATCH_ROOT
+from product_reader_deployment import ALL_CONFIGURATIONS as CONFIGURATIONS, SOFTWARE_DEPLOYMENT, BOOT_ROOT, DISPATCH_ROOT, WATCHDOG_CONFIGURATION, roots_for
 
 VERSION='lemma-product-course-reader-target/1'
 AUTHORITY=Path(__file__).resolve().parents[1]/'tooling/product-reader-target-authority.json'
@@ -47,6 +47,9 @@ def digest(value):
 def selected(unit):return unit.get('configuration') in CONFIGURATIONS
 
 def authority(unit,key):
+    if unit.get('configuration') == WATCHDOG_CONFIGURATION:
+        from trial_watchdog_target import authority as supervised_authority
+        return supervised_authority(unit, key)
     require(selected(unit) and unit.get('software_deployment')==SOFTWARE_DEPLOYMENT,
             'Product course exact software/hardware tuple differs')
     wanted=json.loads(AUTHORITY.read_text())
@@ -99,7 +102,7 @@ def validate_kernel(ir,unit,*,optimized):
     from paper_executed import EXPECTED,POST_BODIES
     require(unit.get('role')=='kernel' and unit.get('contract_version')=='core0-kernel-v0.7' and
             [(canonical(x['source']),x['id'],x['args'])for x in unit.get('roots',[])]==[
-                (BOOT_ROOT,1,[]),(DISPATCH_ROOT,2,['u64']*3)],
+                (roots_for(unit['configuration'])[0],1,[]),(roots_for(unit['configuration'])[1],2,['u64']*3)],
             'Product course exact Kernel7 root/dispatch differs')
     require(len(unit.get('checked_inline',{}).get('wrappers',[]))==4,
             'Product course requires all four checked physical wrapper catalog entries')
@@ -119,6 +122,10 @@ def validate_kernel(ir,unit,*,optimized):
         expected=(wanted['physical_inline_token_post_sha256'] if source.endswith('.tokenStepExecuted') else POST_BODIES[source]) if optimized else pin
         require(hashlib.sha256(normalized(ir,rows[source],names).encode()).hexdigest()==expected,
                 'Product course changed shared Paper3/health body: '+source)
+    if unit['configuration'] == WATCHDOG_CONFIGURATION and not optimized:
+        from trial_watchdog_target import semantics, validate_shared_pre
+        validate_shared_pre(actual, wanted)
+        semantics(ir, unit)
     return {'contract_version':VERSION,'phase':phase,'functions':len(actual['functions']),
             'complete_corpus_sha256':digest(actual),'shared_paper3_declarations':len(shared),
             'semantics':None if optimized else kernel_semantics(ir,unit),

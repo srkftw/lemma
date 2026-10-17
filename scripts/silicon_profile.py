@@ -94,7 +94,7 @@ def profile_path(name=None):
     raise ValueError('unsupported silicon binding')
 
 def configuration_profile(configuration):
-    from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
+    from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
     if configuration in PRODUCT_READER_CONFIGURATIONS:return "lemma-silicon-dev/0.10.0"
     from package_companion_deployment import ALL_CONFIGURATIONS as PACKAGE_RECOVERY_CONFIGURATIONS
     if configuration in PACKAGE_RECOVERY_CONFIGURATIONS:return "lemma-silicon-dev/0.13.0"

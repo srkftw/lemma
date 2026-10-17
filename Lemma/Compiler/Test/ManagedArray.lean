@@ -143,7 +143,7 @@ run_elab do
           ("mutation",toJson which),("changed_genuine_nodes",toJson changed),("rejected",toJson error)]
   let profiles := #[Lemma.Core0.Profile.v0_1,.v0_2,.v0_3,.v0_4,.v0_5,.v0_6,.v0_7,
     .firmware_v0_1,.firmware_v0_2,.kernel_v0_1,.kernel_v0_2,.kernel_v0_3,.kernel_v0_4,
-    .kernel_v0_5,.kernel_v0_6,.kernel_v0_7,.user_v0_1,.user_v0_2,.user_v0_3,.user_v0_4,.boot_v0_1]
+    .kernel_v0_5,.kernel_v0_6,.kernel_v0_7,.user_v0_1,.user_v0_2,.user_v0_3,.user_v0_4,.boot_v0_1,.boot_v0_2]
   for profile in profiles do
     match Lemma.Core0.checkAndLowerActionSuiteForProfile env profile #[``Lemma.Compiler.Test.ManagedArray.actionEntry] with
       | .ok _ => throwError "legacy profile acquired the Array bridge: {profile.contractVersion}"

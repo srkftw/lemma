@@ -20,7 +20,7 @@ from course_await_deployment import (CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIO
                                      library_source_allowed as course_await_library_source_allowed)
 from package_closure_deployment import CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS
 from reader_deployment import CONFIGURATIONS as READER_NOTEBOOK_CONFIGURATIONS
-from product_reader_deployment import (CONFIGURATIONS as PRODUCT_READER_NOTEBOOK_CONFIGURATIONS,
+from product_reader_deployment import (ALL_CONFIGURATIONS as PRODUCT_READER_NOTEBOOK_CONFIGURATIONS,
  BOOT_ROOT as PRODUCT_READER_BOOT_ROOT, DISPATCH_ROOT as PRODUCT_READER_DISPATCH_ROOT)
 from chooser_reader_deployment import CONFIGURATIONS as CHOOSER_NOTEBOOK_CONFIGURATIONS
 AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS+CHOOSER_NOTEBOOK_CONFIGURATIONS
@@ -135,8 +135,10 @@ def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
     if configuration in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
+        from product_reader_deployment import roots_for
+        boot, dispatch = roots_for(configuration)
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": (
-            (PRODUCT_READER_BOOT_ROOT, ()), (PRODUCT_READER_DISPATCH_ROOT, ("u64", "u64", "u64")))}
+            (boot, ()), (dispatch, ("u64", "u64", "u64")))}
     if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": (
             ("Lemma.Platform.LemmaSim.NotebookKernel."+PACKAGE_RECOVERY_BOOT_ROOTS[configuration], ()),
@@ -369,7 +371,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     if aligned_authority.is_file():inputs.append(aligned_authority)
     control_authority=root / 'tooling/control-notebook-target-authority.json'
     if control_authority.is_file():inputs.append(control_authority)
-    for additive in ("scripts/chooser_reader_deployment.py", "scripts/chooser_reader_target.py", "tooling/chooser-reader-target-authority.json", "scripts/companion_reader_deployment.py", "scripts/companion_reader_target.py", "tooling/companion-reader-target-authority.json", "docs/contracts/006-companion-course-reader-deployment-v1.md", "scripts/product_reader_deployment.py", "scripts/product_reader_target.py", "tooling/product-reader-target-authority.json", "docs/contracts/006-product-course-reader-deployment-v1.md", "scripts/reader_deployment.py", "scripts/reader_notebook_target.py", "tooling/reader-notebook-target-authority.json"):
+    for additive in ("scripts/trial_watchdog_target.py", "tooling/trial-watchdog-target-authority.json", "docs/contracts/006-trial-boot-watchdog-v1.md", "scripts/chooser_reader_deployment.py", "scripts/chooser_reader_target.py", "tooling/chooser-reader-target-authority.json", "scripts/companion_reader_deployment.py", "scripts/companion_reader_target.py", "tooling/companion-reader-target-authority.json", "docs/contracts/006-companion-course-reader-deployment-v1.md", "scripts/product_reader_deployment.py", "scripts/product_reader_target.py", "tooling/product-reader-target-authority.json", "docs/contracts/006-product-course-reader-deployment-v1.md", "scripts/reader_deployment.py", "scripts/reader_notebook_target.py", "tooling/reader-notebook-target-authority.json"):
         path = root / additive
         if path.is_file():inputs.append(path)
     dirty_helper=root / 'scripts/dirty_batch_notebook_target.py'

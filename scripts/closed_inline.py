@@ -48,8 +48,8 @@ PRODUCT_PHYSICAL_PREIMAGE={
  'write64':'594838366a55065256c2bdde3ee1d8c03a987b0baf3b8e7b85cf3214738d5417',
  'write8':'2a776ffdb37ebed3fc9caf313d15dc293647ef456a9ec035d481e111575a7002'}
 def product_physical(unit):
- from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER, SOFTWARE_DEPLOYMENT as PRODUCT_SOFTWARE
- return unit.get('configuration') in PRODUCT_READER and unit.get('role')=='kernel' and unit.get('contract_version')=='core0-kernel-v0.7' and unit.get('software_deployment')==PRODUCT_SOFTWARE
+ from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER, software_deployment_for as product_software
+ return unit.get('configuration') in PRODUCT_READER and unit.get('role')=='kernel' and unit.get('contract_version')=='core0-kernel-v0.7' and unit.get('software_deployment')==product_software(unit['configuration'])
 def physical_preimages(unit):return PRODUCT_PHYSICAL_PREIMAGE if product_physical(unit) else PHYSICAL_PREIMAGE
 TYPES={'u8':('i8','zeroext ',8),'u32':('i32','signext ',32),'u64':('i64','',64)}
 PHYSICAL={
@@ -101,8 +101,8 @@ def catalog(unit):
  for r in c['wrappers']:
   require(isinstance(r,dict) and set(r)=={'source','symbol','operation'},'wrapper catalog row keys differ')
   f=by.get(r.get('symbol'));op=PHYSICAL.get(r.get('operation'))
-  from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as PRODUCT_READER_SOFTWARE
-  product_reader=(unit.get('configuration') in PRODUCT_READER_CONFIGURATIONS and unit.get('software_deployment')==PRODUCT_READER_SOFTWARE)
+  from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS, software_deployment_for as product_reader_software
+  product_reader=(unit.get('configuration') in PRODUCT_READER_CONFIGURATIONS and unit.get('software_deployment')==product_reader_software(unit['configuration']))
   require(unit['role']=='kernel' and (unit['contract_version'] in {'core0-kernel-v0.4','core0-kernel-v0.6'} or unit['contract_version']=='core0-kernel-v0.7' and product_reader) and
    f is not None and op is not None and r['source']==f['source'] and (f['args'],f['effects'])==op[1:],
    'wrapper source/signature/effects/authority differs')

@@ -5847,3 +5847,37 @@ actual failures and geometry preserved under build/silicon/pen-sram-*. Seven
 proven owned ABCscratch dirs moved under build/silicon/pen-sram-owned-abc-scratch
 with script/library identities; no unrelated work/media deleted. No unchanged
 route repeated. ProcessDRC/LVS/routedPEX/timing/macroPVT/power/test/fullchip open.
+
+
+2026-10-17 continuation: actual052e CI161/39038954755 SUCCESS11jobs/117steps,
+zero skipped. Full current a877 native/Wasm600M/900M/901M relation PASS52.3815s
+observer; native4798.6301s. Original full145736580B states/CRCs,3.63M pixels,
+256MiB and161 accepted I/O records equal except predeclared IDs. The1M suffix
+is idle WFI/time with zero retirement; course interval112518469 instructions.
+No crossrestore/QEMU timing or arbitrary cached-state claim. Currentbrowser22
+continues original12h/6B plan. Budget8 actualSaved33; tightly queued four taps
+consume input but only field selection takes effect, actualSaved34/rev13/5/1.
+Retained FAIL_QUEUED_NUMBER_INPUT_DID_NOT_EXECUTE_ALL_ACTIONS. Single-step clear
+now running under same aggregate1722800000 math cap/end16:00:09.113254Z;
+whole end00:26:11.452097Z unchanged. Trace points to bookmark busy/drain and
+status gating; no completed queued-input repair or full browserD claim.
+
+Additive authenticated trial watchdog: core0-boot-v0.2 adds only checked aligned
+Power-v2 MMIO to old boot1 authority; five genuine managed-family boot2 rejection
+fixtures PASS17.2889s. Genuine ROM build a2 PASS76.7218s/451inputs after exact
+five binding constants/body pins; old profiles unchanged. First producer path
+failure/unaccounted-constant failure and pinned Lean LCNF host C-generation
+assertion retained. Direct ordinary Lean fixture/checked export passes, no host
+C backend fix claimed. Prepared schema2 and real immutable ROM remain separate
+from old schema1. New TrialWatchdogKernel product configuration has four original
+roles/Kernel7/Product10 and no initializer. All1302 old pre-function bodies equal;
+15 actual new declarations, notebook904pre/902post identical code. Exact new
+catalog/full corpus and existing helper normalizers pinned; original capture
+failures retained. Exploratory four complete pre/post audits PASS136.1276s,
+465kernel/30boot host checks PASS; final stable whole linked image is pending.
+New evidence docs/evidence/006-trial-watchdog.json and contract006-trial-boot-watchdog-v1.
+Actual negative recovery runs privately with confirmed notebook13/Saved32 and
+real guest-installed Lean CryptoProbe1001. Three actual arms, zero-retirementWFI,
+exact countdown and two brownout reboots observed;2B-clocks expiry, exact reset
+edge/fork and known-good fallback still RUNNING under original32400s/4B bounds.
+Positive healthy-trial disarm and full failure/trust matrix remain unqualified.

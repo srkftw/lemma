@@ -1,0 +1,57 @@
+{
+  "schema": "lemma-task006-trial-watchdog-evidence/1",
+  "status": "IMPLEMENTED_GENUINE_ROM_AND_KERNEL_ARTIFACTS_RECOVERY_RUNNING",
+  "implementation_parent": "052e4675d170fbacc7cea7f2ce607d0aef602e01",
+  "contract": "docs/contracts/006-trial-boot-watchdog-v1.md",
+  "ROM": {
+    "path": "build/boot/task006-trial-watchdog-rom-plan-a2/consumed-host-source-root/build/rom/build.json",
+    "status": "PASS_GENUINE_TRIAL_WATCHDOG_AUTH_ROM",
+    "seconds": 76.72183660394512,
+    "inputs": 451,
+    "authority": "core0-boot-v0.2; explicit public development key only"
+  },
+  "kernel_capture": {
+    "path": "build/boot/task006-trial-watchdog-kernel-capture-a1",
+    "status": "GENUINE_ELABORATION_AND_PINNED_LLVM_CAPTURE_PASS",
+    "old_pre_functions_unchanged": 1302,
+    "added_pre_functions": 15,
+    "notebook_functions_pre": 904,
+    "notebook_functions_post": 902,
+    "authority_sha256": "02870d5f97d0f4bcea8b616fe052614c86ff38818692e4fc841f82bc86f2475c",
+    "linked_image": "NOT_RUN",
+    "healthy_trial_disarm": "NOT_RUN"
+  },
+  "actual_recovery": {
+    "status": "RUNNING",
+    "path": "build/boot/task006-trial-watchdog-recovery-plan-a1/consumed-host-source-root/build/connected/progress.json",
+    "observed": "Three real authenticated CryptoProbe trials; actual watchdog arm each time, zero-retirement WFI and exact independent countdown. Two actual brownouts/reboots. Third2B-clock expiry/fallback/document preservation and exact reset-edge fork still running under original bounds.",
+    "known_good_image": "confirmed notebook0x000a000000000013",
+    "unhealthy_trial": "genuine Lean CryptoProbe1001; WFI after cryptographic self-test is not OS health",
+    "user_media": "private actual Saved32 copy; no host document mutation"
+  },
+  "host_checks": {
+    "boot_tests": 30,
+    "kernel_tests": 465,
+    "managed_boot2_denial_families": 5,
+    "managed_denial_seconds": 17.28894645103719,
+    "real_export_negative_health_gates": [
+      "premature phase2",
+      "nonzero confirmation status"
+    ],
+    "scope": "Component/host results, not linked guest recovery acceptance"
+  },
+  "retained_failures": [
+    "build/boot/task006-trial-watchdog-rom-plan-a1",
+    "build/boot/task006-trial-watchdog-managed-a2-launch.log",
+    "build/boot/task006-trial-watchdog-kernel-capture-a1/capture-result.json",
+    "build/boot/task006-trial-watchdog-kernel-capture-a1/capture-result-a2.json",
+    "build/boot/task006-trial-watchdog-kernel-capture-a1/capture-result-a3.json",
+    "build/boot/task006-trial-watchdog-kernel-host-a1.log"
+  ],
+  "limitations": [
+    "Final stable-source whole linked audit pending. Exploratory complete pre/post audit136.1276s passed after helper capture normalization repair; not the final source-sealed candidate.",
+    "Original lake host C-generation run hit pinned Lean LCNF assertion; direct genuine ordinary elaboration/checked export passes, underlying host C-generation issue unresolved.",
+    "Loader/ROM-stage hang supervision, confirmation interruption matrix, production identity/entropy and durable antirollback remain open.",
+    "Whole-machine digital completeness, QEMU cached continuation, distribution rights and physical signoff remain separate and open."
+  ]
+}

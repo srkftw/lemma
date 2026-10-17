@@ -41,7 +41,7 @@ def archive(build, source_root, output):
             target = source / path; target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(original, target)
             if sha(target) != digest: raise ValueError('copied input differs: ' + name)
-        from product_reader_deployment import CONFIGURATIONS as PRODUCT_READERS
+        from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READERS
         product = metadata['configuration'] in PRODUCT_READERS
         from silicon_guest_bundle import SOFTWARE_DEPLOYMENTS, canonical_guest_archive
         from silicon_guest import configurations

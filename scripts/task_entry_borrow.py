@@ -146,7 +146,7 @@ def checked_entry_data_flow(body,rows,*,optimized):
 
 def validate_component(ir,unit,*,optimized):
  from audit_kernel import _ir_definition_body,_local_call_arguments
- from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
+ from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
  product=unit.get('configuration') in PRODUCT_READER_CONFIGURATIONS
  from package_entry2_deployment import CONFIGURATIONS as PACKAGE_ENTRY2_CONFIGURATIONS
  from companion_reader_deployment import CONFIGURATIONS as COMPANION_READER_CONFIGURATIONS

@@ -198,7 +198,7 @@ def usb_specs():
 
 PRODUCT_CONFIGURATIONS = {'lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-notebook',
     'lemmasim-silicon-product-initialize','lemmasim-silicon-product-boot-probe'}
-from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
+from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
 PRODUCT_CONFIGURATIONS |= set(PRODUCT_READER_CONFIGURATIONS)
 PAPER_NEXT_CONFIGURATIONS |= set(PRODUCT_READER_CONFIGURATIONS)
 CONFIGURATIONS |= PRODUCT_CONFIGURATIONS

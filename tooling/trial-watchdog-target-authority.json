@@ -1,0 +1,73 @@
+{
+  "predecessors": {
+    "authored-hint-publication-target-authority-v2.json": "34043ccdacd626a01f4cce47a3daeadfbef1c02406cbebaa879bfb90752e7789",
+    "kernel-pool-read-target-authority.json": "20f9c9362ecee0eeb177f2402652e6ca6b589b3f86b973ea6ed51c7b64c486cb",
+    "product-reader-target-authority.json": "c942768f0f2fb8cfccc40ec1ed9989916d8e6853b2952027b0b9b49c4f4382cb"
+  },
+  "roles": {
+    "kernel": {
+      "added_functions": [
+        "Lemma.Boot.TrialWatchdog.contextPolicy",
+        "Lemma.Boot.TrialWatchdog.contextTimeout",
+        "Lemma.Boot.TrialWatchdog.invalidContext",
+        "Lemma.Boot.TrialWatchdog.policyMagic",
+        "Lemma.Boot.TrialWatchdog.timeoutClocks",
+        "Lemma.Drivers.PowerSafety.command",
+        "Lemma.Drivers.PowerSafety.disarm",
+        "Lemma.Drivers.PowerSafety.result",
+        "Lemma.Drivers.PowerSafety.write",
+        "Lemma.Platform.LemmaSim.TrialWatchdogKernel.boot",
+        "Lemma.Platform.LemmaSim.TrialWatchdogKernel.completed",
+        "Lemma.Platform.LemmaSim.TrialWatchdogKernel.disarmIfHealthy",
+        "Lemma.Platform.LemmaSim.TrialWatchdogKernel.dispatch",
+        "Lemma.Platform.LemmaSim.TrialWatchdogKernel.finish",
+        "Lemma.Platform.Silicon.BindingSafety.power_watchdog_command_offset"
+      ],
+      "catalog_sha256": "445004356ae9f0dece6c7f75c3ea018d6a8f7b68b137596d43b41283f5cb7d95",
+      "physical_inline_helper_post_sha256": {
+        "Lemma.Kernel.Loader.validateExpandedStackAt": "b89a16b9dc8625024824f4e46265adb166e24ed9976651a8cdf2803e8e2c04ff",
+        "Lemma.Kernel.Memory.AddressSpace.base": "127224e9641e0ba8814407200a844fdd895bfa3f4a98b9245d48142885374517",
+        "Lemma.Kernel.Memory.AddressSpace.validateRegistry8192Step": "9a408d9c3e416ab39c5d607df8fbc78bfa298fb5577f9471069bbb9cf99e009f",
+        "Lemma.Kernel.Memory.AddressSpace.validateRegistryGenericStep": "6fa0e6dfdb16e54b24eedbecd389062d01920309165e7eff8bb060fa9ffd2af0",
+        "Lemma.Kernel.Memory.AddressSpace.validateRegistryStep": "4a527cdceabce934306d67de26a15ef91f5ff0b14b6f6f02d0b7c207c220e463",
+        "Lemma.Kernel.Memory.Frames.resolve": "dc6bad0a972cf3df0d9f6d01f6b2a5322d0593f8797ed1fd26f48acbc014b672",
+        "Lemma.Kernel.Memory.Frames.resolvePurpose": "c3800b7de56f567a13f39ee75ccfb3cb6a7726d3c5889a649aedce6239f1a453",
+        "Lemma.Kernel.Memory.Frames.resolveRegistry8192": "21b84b0fd31747b8df0cd38034991be2acbd9a43a46023c954b3f7fdd81fdb95",
+        "Lemma.Kernel.Memory.UserCopy.copyWord": "170eea0968fc14eda86be2c63efa9cf59620fc2eea7a98801efd14abc709e554",
+        "Lemma.Kernel.Memory.UserCopy.copyWordBlockStep": "0943b3cb9ce18926c6853393be6f856f26ffeac1c7b71955a5935858ba17c63a",
+        "Lemma.Kernel.Memory.UserCopy.copyWordGenericBlockStep": "b5fc3003b554c19a7cd868354dafa5f7ca3e9fa1b07cb6ae5a4d7c67aa103939",
+        "Lemma.Kernel.Process.validateStackAt": "67e389454db1b43e1be76fedfdbc806a735f9979f7b0b8ea13b24f92a61a569c",
+        "Lemma.Kernel.Scheduler.entryV2": "b46b98d7fbc2922f628ac4d684f92a1f1343b3b952556f72f2040cc9ac809da4",
+        "Lemma.Kernel.Task.entryContextV2": "8df46041dfc63d88d139783368c0a6e29d849337f762c9817532c1298bccc4f3",
+        "Lemma.Kernel.Task.entryDispatchesV2": "10f0ae9b9882da83b1fd01f0256a473f861c0c79bfe3dad4a0da4059d2ee9892",
+        "Lemma.Kernel.Task.findStep": "7f0b820e022d83f2bf1262822b32aac7ad54c6f478619ae9e350cce9b7f2c8f6",
+        "Lemma.Kernel.Task.table": "06055192affb6ec62f7d541c1e3d3615d1709e427bbee265b93568334c9ee1d9"
+      },
+      "physical_inline_token_post_sha256": "631654ec6b18f590141c85c6630a9c22aecf6efdd6913a745fd99ab89cf50402",
+      "post_function_count": 1317,
+      "post_sha256": "9aa086c74c7e4c2ef2cc43687088cfc313398fdee458d42196996779790e9915",
+      "pre_function_count": 1317,
+      "pre_sha256": "2361b01ddb56a0eea1d0aac5bba690b733b617338f29048898f8038ea48b780b",
+      "shared_pre_function_count": 1302,
+      "shared_pre_functions_sha256": "0d320fa62179e7c4894d1a6d0a1738718811a2ce879452f16269440bfab4100b"
+    },
+    "notebook": {
+      "added_functions": [],
+      "catalog_sha256": "be57c8acb878a067439a4404365cc5e0f4e82c9ca5bd67238e6e69542130d0bd",
+      "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa",
+      "package_notebook_version": 18,
+      "post_function_count": 902,
+      "post_sha256": "927152eae8c10fd092c7e528eae2f547673cf4aa76c7aac4f1d52d378e2cae15",
+      "pre_function_count": 904,
+      "pre_sha256": "c3e0cb51f1a09818e3e1ddd8880469c10f225549b07aae0ec2f985169372595b",
+      "reader_contract": "lemma-course-reader-location/1",
+      "shared_pre_function_count": 904,
+      "shared_pre_functions_sha256": "0e17fc7990c583e6956ff2fc1732c294a1f35389f95f3cb60cfdea4d1aa2f20d",
+      "surface_root_sha256_by_phase": {
+        "post": "775ba1e0c77d8fbf66589f945b18daf9caae997ff6651562503597dce65a85bf",
+        "pre": "080581b7582c74029a7c2371e709f6277684b4351f9f67d759f9341a9b029681"
+      }
+    }
+  },
+  "schema": "lemma-product-trial-watchdog-target/1"
+}

@@ -282,7 +282,10 @@ retains its inherited semantics and exact exclusive bounds. -/
 def deviceRegionsFor (profile : Profile) (operation : Op) : Array MemoryRegion :=
   if profile.isBoot then
     if operation == .deviceRead64 || operation == .deviceWrite64 then
-      #[⟨"boot-nv-controller", 0x10012000, 0x10012400, true⟩]
+      let nv := #[⟨"boot-nv-controller", 0x10012000, 0x10012400, true⟩]
+      if profile == .boot_v0_2 then
+        nv.push ⟨"boot-trial-power-controller", 0x10010500, 0x100105a0, true⟩
+      else nv
     else #[]
   else if profile == .kernel_v0_8 then
     let inherited := (deviceRegions operation).map fun region =>
@@ -324,7 +327,7 @@ def kernelMemoryRegions : Array MemoryRegion := #[
         Lemma.Platform.LemmaVM.Layout.dtbReserveLimit, false⟩]
 
 def memoryRegions : Profile → Array MemoryRegion
-  | .boot_v0_1 => #[
+  | .boot_v0_1 | .boot_v0_2 => #[
       ⟨"boot-loaded-image", 0x80000000, 0x81f00000, true⟩,
       ⟨"boot-private-scratch", 0x81fc0000, 0x81fc4000, true⟩,
       ⟨"boot-loaded-discovery", 0x87e00000, 0x87e00c00, true⟩]

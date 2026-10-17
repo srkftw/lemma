@@ -67,7 +67,7 @@ def validate(ir,unit,*,optimized):
  if role=='kernel' and unit['configuration'] in WIRE_CONFIGURATIONS:
   from paper_wire import validate as validate_wire
   return validate_wire(ir,unit,optimized=optimized)
- from product_reader_deployment import CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
+ from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
  if role=='kernel' and unit['configuration'] in (EXECUTED_CONFIGURATION,)+PRODUCT_READER_CONFIGURATIONS:
   from paper_executed import validate as validate_executed
   return validate_executed(ir,unit,optimized=optimized)

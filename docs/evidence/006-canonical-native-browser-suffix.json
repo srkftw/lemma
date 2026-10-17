@@ -507,5 +507,20 @@
       "diagnostic_browser_checkpoint": "build/browser/task006-explicit-save-after-pointer-plan-a1/browser-failed-prefix.chk",
       "implementation_cause": "Old packageToolbar calls the ordinary toolbar, which closes/redraws the course before Save. Cohort11 fixes this path; actual guest11 acceptance remains pending."
     }
+  },
+  "current_hint32_fixed_relation": {
+    "status": "PASS_SAME_RTL_NATIVE_WASM_COLD_COURSE_AND_EXACT_SUFFIX",
+    "receipt": "build/browser/task006-hint32-native-match-plan-a2/full-comparison-result-a1.json",
+    "receipt_sha256": "00eb41e0feb54278f1bf3a5d772d6cc07381469a578d6582e7f949a1bee6558c",
+    "guest_sha256": "3c3fb8c5ceefcaaadf042666e34c1e9270b05a02f1833b618a4134e5682ff743",
+    "cuts": [
+      600000000,
+      900000000,
+      901000000
+    ],
+    "native_host_seconds": 4798.630101473071,
+    "suffix_retired": 0,
+    "scope": "Original full CRC/state/media/controller/outcome comparisons; only predeclared implementation identity bytes excluded. Idle WFI/timer1M suffix; course interval112518469 retired. No crossrestore/QEMU/cache/allISA claim. Full current browserD remains open.",
+    "original_failures_retained": true
   }
 }
