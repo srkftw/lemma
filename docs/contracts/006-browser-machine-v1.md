@@ -114,6 +114,21 @@ The original source closures and each implementation identity remain recorded.
 This does not establish all possible architectural/cache/device boundaries or
 QEMU timing parity. QEMU's untranslated-cache checkpoint hole remains open.
 
+`scripts/check_native_wasm_active_suffix.py` extends that same observation
+relation with a fixed current-hint workload. It admits the separately qualified
+own native901M archive and its original complete comparison receipt, then
+supplies the actual18 subsequent raw control events. The native private branch
+runs to the existing browser1338250000-clock cut. Complete original CRCs,
+wrapper/generated RTL bytes, UART, all3.63M controller pixels, all256MiB medium
+bytes and the54 actual I/O outcomes (42writes/12barriers) remain load-bearing.
+Only the already declared implementation identity headers differ. Captured
+outcome windows retain original entries and CRCs, and reject an omitted
+operation already admitted at the selected cut. No original machine is flushed,
+drained, fenced or mutated for comparison. This tool's existence is not a PASS;
+its separate terminal receipt must establish actual active execution. Its start
+is the qualified fixed boundary, so it does not close arbitrary cached-state,
+in-flight device, cross-restore or all-ISA obligations.
+
 The public worker `run` action accepts a positive additional cycle budget as a
 literal unsigned decimal string or BigInt; a JavaScript Number and UInt64
 overflow are rejected. Each scheduled machine call is at most50000 cycles,
