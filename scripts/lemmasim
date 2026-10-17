@@ -790,6 +790,9 @@ def archive_acceptance(args):
 
 
 def main():
+    if len(sys.argv)>1 and sys.argv[1]=='file-limit':
+        import lemmasim_file_limit
+        return lemmasim_file_limit.main(sys.argv[2:])
     if len(sys.argv)>1 and sys.argv[1]=='usb-pending':
         import lemmasim_usb_pending
         result = lemmasim_usb_pending.main(sys.argv[2:])
@@ -803,6 +806,7 @@ def main():
         result = lemmasim_companion.main(sys.argv[2:])
         return result if isinstance(result,int) else 0
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='command',required=True)
+    sub.add_parser('file-limit',help='Actual Linux backing fault on a paused private Laboratory fork; use file-limit --help')
     sub.add_parser('usb-pending',help='Opt-in hosted Lean policy4 with bounded receipt Pending; use usb-pending --help')
     sub.add_parser('companion',help='Hosted Lean persistent opaque backing development transport; use companion --help')
     sub.add_parser('product',help='Immutable Lean ROM, real NV boot and owner-local recovery; use product --help')

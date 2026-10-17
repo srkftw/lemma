@@ -122,19 +122,20 @@ def restore(token):
     return {'restored': True, 'cycle': after['machine']['cycle'], 'native': native}
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='action', required=True)
     a = sub.add_parser('apply'); a.add_argument('--session-dir', type=Path, required=True)
     a.add_argument('--bytes', type=int, required=True); a.add_argument('--token', type=Path, required=True)
     a = sub.add_parser('restore'); a.add_argument('--token', type=Path, required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
         result = (apply(args.session_dir, args.bytes, args.token) if args.action == 'apply'
                   else restore(json.loads(args.token.read_text())))
     except (OSError, ValueError, KeyError) as error:
         parser.error(str(error))
     print(json.dumps(result, indent=2))
+    return 0
 
 
 if __name__ == '__main__':

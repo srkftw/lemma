@@ -82,7 +82,7 @@ def main():
             print('PASS_NATIVE_DISTRIBUTION_BOTH_BACKENDS_AND_GUESTS_NO_CPU', flush=True)
             return
         allowed = {'session', 'init', 'session-control', 'snapshot', 'restore',
-                   'session-replay', 'button', 'course-install', 'course-load', 'course-delete-probe'}
+                   'session-replay', 'button', 'course-install', 'course-load', 'course-delete-probe', 'file-limit'}
         if not args or args == ['--help']:
             print('python3 -I run.py COMMAND [ordinary LemmaSim arguments]\nCommands: ' + ', '.join(sorted(allowed)) +
                   '\nExact external Nix libraries and optional Tk remain host prerequisites.\nSession/init create a persistent sibling .bundle view; keep it with the session.')

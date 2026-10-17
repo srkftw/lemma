@@ -589,9 +589,9 @@ exclusive control of that session, retain the token, and restore the limit
 before resuming ordinary work:
 
 ```sh
-python3 scripts/lemmasim_file_limit.py apply --session-dir build/PRIVATE_RTL_LAB_FORK \
+./scripts/lemmasim file-limit apply --session-dir build/PRIVATE_RTL_LAB_FORK \
   --bytes 38656 --token build/UNUSED_FILE_LIMIT_TOKEN.json
-python3 scripts/lemmasim_file_limit.py restore --token build/UNUSED_FILE_LIMIT_TOKEN.json
+./scripts/lemmasim file-limit restore --token build/UNUSED_FILE_LIMIT_TOKEN.json
 ```
 
 The byte value is an example, not a journal address. A real write that crosses
@@ -602,6 +602,8 @@ pending on-disk form also permits cleanup after an interrupted command. Restore
 rejects a replacement process or a superseding resource policy. Outcome-replay
 sessions reject live fault admission. This external OS condition is not portable
 checkpoint state; replay consumes the captured outcomes on private backing.
+The prepared standalone launcher also accepts `run.py file-limit`; keep the
+token outside the immutable package. The direct Python helper remains available.
 
 RTL model serialization includes its caches/TLBs. QEMU migration flushes its
 software TLB; cached Sv39 mappings and TCG translation blocks are not serialized.

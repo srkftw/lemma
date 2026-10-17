@@ -132,7 +132,9 @@ rejected for uncertain capture, external adapters and recorded-outcome replay.
 The OS limit is external environment, not serialized machine state. Restored
 live branches must explicitly select their own environment; recorded replay
 applies the captured prefixes/errors to private bytes without recreating the
-original POSIX fault. See README for actual command arguments.
+original POSIX fault. `lemmasim file-limit` and the standalone native `run.py
+file-limit` forward the same bounded arguments to this helper; neither adds a
+machine or changes its fault semantics. See README for actual arguments.
 
 The original default-disposition child terminated with signal25. The repaired
 real-syscall regression preserves a128-byte prefix, `EFBIG`, default disposition,

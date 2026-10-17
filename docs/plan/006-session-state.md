@@ -5469,3 +5469,59 @@ draft/unmerged; successor merge not authorized. Existing failures, profiles,
 user media, settings/license and USGCE are preserved. Digital functionality,
 fast timing/arbitrary QEMU cached continuation, distribution and physical
 closure remain separate unfinished obligations; no unchanged EDA reruns.
+
+Native command integration and companion kernel pair (2026-10-17)
+
+lemmasim file-limit and standalone run.py file-limit now forward the same
+qualified Laboratory helper. No new machine/fault policy/target image is used.
+Prepared standalone package build/distribution/task006-file-limit-native-a1,
+archive139049662B/SHA6a597c5189501da650c1ba38a94e8b5d5cf90764cbc67489b2d089a7aa85e55e,
+passes full ordinary four-role/backend admission and actual command apply38656/
+pending-token cleanup with zero clocks/all145702871 native state bytes equal.
+Control5.388887s; server exits0. Package67.544207s/467636224Bpeak. Includes
+existing exact Nix runtime export; clean-host import/rights remain open.
+321LemmaSim tests pass58.498s,8native-host tests.025s,7focused fault tests.030s.
+Exact code/commands/receipts are in existing local-native-distribution evidence.
+
+Same d9 kernel now has a complete current Reader19/Clocked13 pair: build150.927761s,
+audit254.188762s, initializer156.856557s/audit256.548274s; whole818.750001s,
+peak1847234560B. Sourcee934d1a; both complete440-input archives pass. Public
+normal preparation/schema11 packaging validates original unchanged255-input
+native5381/60bd and both new audited images. New bundle:
+build/native/task006-pool-read-companion-reader19-a1. Preparation31.498112s/
+1744891904Bpeak. The original prep FAIL is retained: a mistaken4GiB address-space
+limit blocked Lean threads at114MB RSS; controlled same-command cases prove
+7GB virtual with only114.7MB RSS succeeds. Monitored preparation preserves the
+original4GiB owned RSS/1200s whole/300s command/2GiB available/disk bounds.
+An earlier direct archived-USB override attempt correctly rejects at zero CPU;
+the normal current-source override passes, with no validator weakened.
+
+New independent changed-kernel USB cold case RUNNING:
+build/usb/task006-pool-read-reader19-cold-a1, plan ...cold-plan-a1/plan.json,
+supervision ...cold-a1.supervision. Tool70911. It clones the now-closed first
+peer/outbox of original unique-offline a2, actual acknowledged27, then new CPU0/
+real enumeration/full home/all backing/reader5. Uses old immutable native bundle
+plus explicit strict current-source --guest-build. Original1B/7200cold and400M/
+3600reader, whole10800s/1.4B,4GiB/min2GiB/output12GiB/file1GiB. Not a snapshot
+cold or repeated lost-ACK case. Original unique-offline Reader19 a2 also remains
+in its independent second cold. Do not edit either actor or shared S module.
+
+Browser39/origin8810: original Reader20/Wasm84d5 remains active; no reload/reset.
+Verified5/6rev5/Saved11, edit5/7rev6/Saved12, Invalid/Saved13, authored hint/Saved14,
+NEXTgoal2rev7/Saved15, NEXTgoal3rev8/Saved16, actual Unsupported/Saved17 all have
+real bytes/guest replies/controller observations. Old chronological-history-index
+and AUTO REVIEW PRACTICE label observer failures remain retained; correct exact
+source/pixel observations are separate. Actual controller at1779.6M exposes a
+REAL guest UI defect: aggregate old goal1 hint count causes goal3 to display
+HINT MULTIPLY EACH TERM without any goal3 hint request. Correct Unsupported and
+history do not excuse it. Receipt unsupported-controller-and-hint-defect-a1.json.
+Fix must remain Lean-authored, retain historical counts/events, and suppress
+hints lacking applicable context. Existing bounded passes retain their own
+scope; no general hint-applicability/full D closure. Browser is now running
+NEXT-back-rational from1779.6M, original150M/1800s; then zero budget/check,
+review/ink/Save/Close/independent cold remain. Global deadline still12:18:08Z/6B.
+
+Committed e934 CI39015059089/run154 completedSUCCESS11jobs/117steps/zero skips,
+including foundation host suite. Receipt build/ci/task006-e934-complete.json;
+PR9 body updated to actual result, remains draft/unmerged. New launcher source
+requires its own candidate CI after commit. No merge authorization inferred.

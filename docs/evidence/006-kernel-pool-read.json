@@ -824,5 +824,85 @@
     "actual_check_clocks": 66700000,
     "simulation_call_seconds": 478.2200450010405,
     "scope": "Original Reader20 audited guest on shared RTL Wasm84d5; full edited/hint/ink/Save/cold browser case and new d9 browser execution remain unfinished."
+  },
+  "companion13": {
+    "scope": "Maintained d9 kernel refinement joined to same Reader19/Clocked13 application and initializer, without new hardware/software policy implementation. New-kernel cold USB execution still RUNNING, not inferred from compile/audit or packaging.",
+    "whole_pair": {
+      "path": "build/usb/task006-pool-read-reader19-whole-plan-a1/result.json",
+      "sha256": "f9fd73844ad1dac798b74395ee2eca1780e4b39eb9604316ccd871da22f77711",
+      "bytes": 53592
+    },
+    "source_commit": "e934d1abc6f37d2224621412c1fb45fe5515b87f",
+    "seconds": 818.7500005940674,
+    "owned_peak_RSS_bytes": 1847234560,
+    "commands": [
+      {
+        "label": "companion-notebook-build",
+        "seconds": 150.92776066297665,
+        "returncode": 0
+      },
+      {
+        "label": "companion-notebook-audit",
+        "seconds": 254.18876181798987,
+        "returncode": 0
+      },
+      {
+        "label": "companion-initializer-build",
+        "seconds": 156.85655685397796,
+        "returncode": 0
+      },
+      {
+        "label": "companion-initializer-audit",
+        "seconds": 256.54827410099097,
+        "returncode": 0
+      }
+    ],
+    "source_archives": [
+      {
+        "path": "build/usb/task006-pool-read-reader19-notebook-source-a1/result.json",
+        "sha256": "43a9f36de9b748a7be66193157c3c9b9ef96143d020002a1fcb732074f04ef39",
+        "bytes": 6847
+      },
+      {
+        "path": "build/usb/task006-pool-read-reader19-initializer-source-a1/result.json",
+        "sha256": "9842a4898d19a115430564e6771450872f053e2e74c6b0f06a8abde8f5ae76a2",
+        "bytes": 6868
+      }
+    ],
+    "native_bundle": "build/native/task006-pool-read-companion-reader19-a1",
+    "bundle_result": {
+      "path": "build/usb/task006-pool-read-reader19-bundle-plan-a2/result.json",
+      "sha256": "76c1a96d9ed322fa7134b01f243aaad4b55f1a04ed55006e9eb1759d856ce205",
+      "bytes": 53145
+    },
+    "bundle_seconds": 31.498112355009653,
+    "unchanged_native_identity": "5381d37a7abd0ac8c7e448d85df2278b5ad8f1ae16c798772bc2a2a04e596135",
+    "new_cold_case": "build/usb/task006-pool-read-reader19-cold-a1",
+    "new_cold_plan": {
+      "path": "build/usb/task006-pool-read-reader19-cold-plan-a1/plan.json",
+      "sha256": "21fe825a6cd00c891c737733e08182308bce1f93c16d9d996963c57c1435d5f6",
+      "bytes": 1484
+    },
+    "retained_preparation_failure": {
+      "path": "build/usb/task006-pool-read-reader19-bundle-plan-a1/result.json",
+      "sha256": "08a57d413eb0d21ac7b9538975039acd889d5ba16be82286b7401578b0705b5f",
+      "bytes": 1207
+    },
+    "actual_resource_diagnosis": {
+      "path": "build/usb/task006-pool-read-reader19-bundle-limit-diagnosis-a1/result.json",
+      "sha256": "cba3458d09b8f9e3c3d231449617c6312668c71b7381bd990e244c7197cd2eba",
+      "bytes": 1019
+    },
+    "correction": "4GiB owned RSS retained. Mistaken4GiB virtual cap demonstrably prevented host Lean thread creation at114MB RSS/7GB virtual. New monitored preparation passes same1200s/300s and memory/disk bounds.",
+    "unsupported_archived_override_retained": {
+      "path": "build/usb/task006-pool-read-reader19-override-a1/result.json",
+      "sha256": "7bfd5af857c1adbe8c3a59124947b04794602194aea7923ac6a5773b626290bc",
+      "bytes": 279
+    },
+    "valid_current_source_override": {
+      "path": "build/usb/task006-pool-read-reader19-override-a2/result.json",
+      "sha256": "a96cec62a24660f433520c2a82224827058442bca2179e606c048d44bb990f2c",
+      "bytes": 1253
+    }
   }
 }

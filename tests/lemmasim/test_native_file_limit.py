@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import resource
+import runpy
 import sys
 import tempfile
 import unittest
@@ -80,6 +81,24 @@ class NativeFileLimitTests(unittest.TestCase):
         with patch.object(resource, 'prlimit', return_value=(-1, -1)) as syscall:
             self.assertTrue(fault.restore(token)['restored'])
             syscall.assert_called_once_with(self.native['pid'], resource.RLIMIT_FSIZE)
+
+
+class NativeFileLimitCommandTests(unittest.TestCase):
+    def test_normal_launcher_forwards_bounded_fault_arguments(self):
+        launcher = runpy.run_path(str(Path(__file__).resolve().parents[2] / 'scripts/lemmasim'))
+        args = ['apply', '--session-dir', '/private/session', '--bytes', '38656',
+                '--token', '/private/pending.json']
+        with patch.object(sys, 'argv', ['lemmasim', 'file-limit', *args]), \
+                patch.object(fault, 'main', return_value=0) as command:
+            self.assertEqual(launcher['main'](), 0)
+            command.assert_called_once_with(args)
+
+    def test_fault_cli_rejects_incomplete_input_before_process_lookup(self):
+        with patch.object(fault, 'owned_native') as lookup, \
+                patch('sys.stderr'), self.assertRaises(SystemExit) as raised:
+            fault.main(['apply', '--bytes', '38656'])
+        self.assertEqual(raised.exception.code, 2)
+        lookup.assert_not_called()
 
 
 if __name__ == '__main__':

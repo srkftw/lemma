@@ -567,5 +567,68 @@
       "bytes": 142
     },
     "scope": "Prepared current600e native/84d5 Wasm and retained genuine Reader18 artifacts. No new target build, current fullReady, fresh-host runtime import, live browserUSBpeer, redistribution license or universal durability claim."
+  },
+  "laboratory_file_limit_command1": {
+    "status": "PASS_PACKAGED_FILE_LIMIT_COMMAND_ZERO_CLOCKS_ALL_NATIVE_BYTES",
+    "implementation": "Current host source over unchanged audited canonical guest/native600e/QEMU images; no fresh target compilation or clean-host import claim",
+    "package": {
+      "path": "build/distribution/task006-file-limit-native-plan-a1/result.json",
+      "sha256": "71d3c3a843ef1552b8ef5715272ae03e992afb8a2e285824556ad2b4dfd36052",
+      "bytes": 50151
+    },
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-file-limit-native-a1.tar.gz",
+      "sha256": "6a597c5189501da650c1ba38a94e8b5d5cf90764cbc67489b2d089a7aa85e55e",
+      "bytes": 139049662
+    },
+    "actual_command_control": {
+      "path": "build/courses/task006-native-file-limit-command-a1/result.json",
+      "sha256": "e9c1e8d6634504c6c1bdfdebed0e331f692ce9e2cb3997192661f2de7cda2f15",
+      "bytes": 1400
+    },
+    "actual_command_transcripts": {
+      "path": "build/courses/task006-native-file-limit-command-a1/actual-commands.json",
+      "sha256": "8d4dbd5352cc4db86650baf037c9e9e92504734a401c8ed93d5ce7d6a2eb8f7a",
+      "bytes": 1623
+    },
+    "zero_clocks": true,
+    "all_native_checkpoint_bytes_equal": 145702871,
+    "tests": {
+      "LemmaSim": {
+        "count": 321,
+        "seconds": 58.498
+      },
+      "native_host": {
+        "count": 8,
+        "seconds": 0.025
+      },
+      "focused_file_limit": {
+        "count": 7,
+        "seconds": 0.03
+      }
+    },
+    "sources": {
+      "scripts/lemmasim": {
+        "path": "scripts/lemmasim",
+        "sha256": "e07a23294312bb8d070fd9a1db6e308619a9c4fe670cc25a97b191d8f0372c32",
+        "bytes": 90848
+      },
+      "scripts/lemmasim_file_limit.py": {
+        "path": "scripts/lemmasim_file_limit.py",
+        "sha256": "afaecae48c1770d6f709e6c5046896bd2fc9923631c20f44f9ce0557aa4677ca",
+        "bytes": 7118
+      },
+      "scripts/package_native.py": {
+        "path": "scripts/package_native.py",
+        "sha256": "30906d7a598fed7f6f93fd0f02d0e8469de32505991b09be14a5731017a3a240",
+        "bytes": 17984
+      },
+      "sim/native/run_local.py": {
+        "path": "sim/native/run_local.py",
+        "sha256": "b1694a20ff15d9358bfae530a5f8378e1013bd9e893dc673dee7c26057542e25",
+        "bytes": 7395
+      }
+    },
+    "prior_helper_qualification": "docs/evidence/006-fast-backing-replay.json"
   }
 }

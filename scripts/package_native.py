@@ -38,6 +38,7 @@ python3 -I /path/to/extracted/run.py session --backend rtl --profile lemma-silic
 python3 -I /path/to/extracted/run.py session-control --session-dir /outside/package/live --request '{"action":"run","cycles":1000000}'
 python3 -I /path/to/extracted/run.py snapshot --session-dir /outside/package/live --to /outside/package/cut
 python3 -I /path/to/extracted/run.py course-install --session-dir /outside/package/live --package /outside/package/course.lcp --transaction 1
+python3 -I /path/to/extracted/run.py file-limit --help
 ```
 
 Session/init creates a persistent sibling .bundle directory and .relocation.json
@@ -50,6 +51,13 @@ arguments; run COMMAND --help for details. No compile/build command is provided.
 Course commands select the exact RTL guest path or a negotiated canonical fast
 raw UART1 bundle. Pause a Developer/Laboratory session first. Admission is not
 Installed/Saved; only the actual guest receipt after its backing barrier counts.
+
+file-limit applies an actual Linux process file-size limit to a verified paused
+private Laboratory RTL fork with qualified implementation600e93eb. Keep its
+cleanup token outside this package, retain exclusive paused control and restore
+the previous limit afterward. Actual partial writes/errors are captured by the
+machine; the OS condition itself is not portable checkpoint state. Outcome
+replay rejects live fault admission. Run file-limit apply/restore --help.
 
 Restoring a checkpoint creates a private continuation, not cold recovery. For a
 new restored session omit --disk and supply --restore /path/to/cut. Guest Saved
