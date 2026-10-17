@@ -60,7 +60,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     for name in ('native-bundle', 'native-start', 'origin-plan', 'origin-proof',
                  'browser-end', 'browser-state', 'browser-medium', 'browser-pixels',
-                 'browser-outcomes', 'raw-capture', 'work-dir'):
+                 'browser-outcomes', 'raw-capture', 'browser-workflow', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
     args = parser.parse_args()
     for number in (signal.SIGTERM, signal.SIGINT):
@@ -123,10 +123,39 @@ def main():
                 'original first two events or actual eighteen new controls differ')
         require(all(901000000 < int(line.split()[0]) <= endpoint for line in events[2:]),
                 'selected new control outside actual suffix')
+        workflow = args.browser_workflow
+        def document(name):
+            return json.loads((workflow / name).read_text())
+        # Admission prunes the machine's consumed queue prefix. The exported
+        # cumulative raw history is not that authoritative queue. Replay the
+        # actual browser admission boundaries, not just the scheduled samples.
+        ledger = [
+            (901000000, (workflow / 'restore-budget-input-a1.events').read_text().splitlines()),
+            (document('number-check-batch-a1.json')['start_cycle'],
+             document('number-check-batch-a1.json')['raw_batch'].splitlines()),
+            (int(document('browser/number-batch-first-frame-visible.json')['state']['cycle']),
+             document('clear-denominator-admission-a1.json')['batch'].splitlines()),
+            (int(document('browser/denominator-clear-visible.json')['state']['cycle']),
+             document('digit6-admission-a1.json')['batch'].splitlines()),
+            (int(document('browser/denominator6-visible.json')['state']['cycle']),
+             document('check-rational-admission-a1.json')['batch'].splitlines()),
+            (int(document('browser/checked-rational-visible.json')['state']['cycle']),
+             document('hint-admission-a1.json')['batch'].splitlines())]
+        require([line for _, batch in ledger for line in batch] == events[2:] and
+                [at for at, _ in ledger] == sorted(set(at for at, _ in ledger)) and
+                all(at < int(line.split()[0]) <= endpoint for at, batch in ledger for line in batch),
+                'actual admission ledger differs from raw capture or control ordering')
+        ledger_sources = ['restore-budget-input-a1.events', 'number-check-batch-a1.json',
+            'browser/number-batch-first-frame-visible.json', 'clear-denominator-admission-a1.json',
+            'browser/denominator-clear-visible.json', 'digit6-admission-a1.json',
+            'browser/denominator6-visible.json', 'check-rational-admission-a1.json',
+            'browser/checked-rational-visible.json', 'hint-admission-a1.json']
         report['input_files'] = {str(path.resolve()): sha(path) for path in
             (args.origin_plan, args.origin_proof, args.native_start / 'machine.chk',
              args.browser_end, args.browser_state, args.browser_medium, args.browser_pixels,
              args.browser_outcomes, args.raw_capture)}
+        report['input_files'].update({str((workflow / name).resolve()): sha(workflow / name)
+                                      for name in ledger_sources})
         report['host_inputs'] = {}
         for module in list(sys.modules.values()):
             file = getattr(module, '__file__', None)
@@ -138,10 +167,11 @@ def main():
                         report['host_inputs'][str(relative)] = sha(source)
         report['host_inputs']['scripts/lemmasim'] = sha(ROOT / 'scripts/lemmasim')
         report.update(origin_proof_sha256=sha(args.origin_proof), start_cycle=901000000,
-                      endpoint=endpoint, raw_suffix=events[2:], scope_limit=__doc__)
+                      endpoint=endpoint, raw_suffix=events[2:], actual_admission_ledger=ledger,
+                      scope_limit=__doc__)
         preflight = time.monotonic()
         wf, wu, wv = exported(args.browser_end, WASM)
-        require(wf[1] == endpoint and wf[0] == 20 and wf[7] == int(state['retired']),
+        require(wf[1] == endpoint and wf[0] == len(ledger[-1][1]) and wf[7] == int(state['retired']),
                 'browser original CRC/state disagrees with its actual visible cut')
         report['browser_preflight_seconds'] = time.monotonic() - preflight
         save()
@@ -160,27 +190,31 @@ def main():
         require(initial['cycle'] == 901000000 and initial['snapshot_identity'] == NATIVE and
                 initial['retired'] == start['retired'] and initial['event_queue'] == 0 and
                 initial['isolated_medium'] is True, 'exact own-backend private starting state')
-        for line in events[2:]:
-            fields = line.split()
-            call({'action': 'inject', 'kind': 'pen', 'cycle': int(fields[0]),
-                  'words': [int(word) for word in fields[2:]]})
         active_started = time.monotonic()
-        while True:
-            current = call({'action': 'inspect'})['machine']
-            require(time.monotonic() - active_started <= 7200 and not current['finished'],
-                    'active execution host/guest bound')
-            if current['cycle'] == endpoint:
-                break
-            amount = min(1000000, endpoint - current['cycle'])
-            require(amount > 0, 'fixed RTL endpoint exceeded')
-            call({'action': 'run', 'cycles': amount})
-            after = call({'action': 'inspect'})['machine']
-            require(after['cycle'] == current['cycle'] + amount, 'exact actual RTL clocks')
-            used += amount
-            if used % 50000000 == 0:
+        def advance(boundary):
+            nonlocal used
+            while True:
+                current = call({'action': 'inspect'})['machine']
+                require(time.monotonic() - active_started <= 7200 and not current['finished'],
+                        'active execution host/guest bound')
+                if current['cycle'] == boundary:
+                    return current
+                amount = min(1000000, boundary - current['cycle'])
+                require(amount > 0, 'fixed RTL admission/endpoint exceeded')
+                call({'action': 'run', 'cycles': amount})
+                after = call({'action': 'inspect'})['machine']
+                require(after['cycle'] == current['cycle'] + amount, 'exact actual RTL clocks')
+                used += amount
                 report['active_progress'] = {'cycle': after['cycle'], 'retired': after['retired'],
                                               'seconds': time.monotonic() - active_started}
                 save()
+        for boundary, batch in ledger:
+            advance(boundary)
+            for line in batch:
+                fields = line.split()
+                call({'action': 'inject', 'kind': 'pen', 'cycle': int(fields[0]),
+                      'words': [int(word) for word in fields[2:]]})
+        current = advance(endpoint)
         require(current['retired'] == int(state['retired']) and current['retired'] > initial['retired'],
                 'actual nonempty instruction suffix differs')
         checkpoint = out / 'native-end'

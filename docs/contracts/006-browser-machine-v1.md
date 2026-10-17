@@ -117,7 +117,9 @@ QEMU timing parity. QEMU's untranslated-cache checkpoint hole remains open.
 `scripts/check_native_wasm_active_suffix.py` extends that same observation
 relation with a fixed current-hint workload. It admits the separately qualified
 own native901M archive and its original complete comparison receipt, then
-supplies the actual18 subsequent raw control events. The native private branch
+supplies the actual18 subsequent raw control events at their recorded browser
+admission boundaries. Each admission prunes consumed machine events; cumulative
+input-capture length is not the serialized queue cursor. The native private branch
 runs to the existing browser1338250000-clock cut. Complete original CRCs,
 wrapper/generated RTL bytes, UART, all3.63M controller pixels, all256MiB medium
 bytes and the54 actual I/O outcomes (42writes/12barriers) remain load-bearing.
