@@ -46,6 +46,8 @@ def contract(unit):
     if not AUTHORITY.is_file():
         raise Core0Error('Number-entry recovery complete genuine artifact authority missing')
     authority = json.loads(AUTHORITY.read_text())
+    from authored_hint_target import refined as hint_refined
+    authority = hint_refined(unit, authority, AUTHORITY)
     previous = json.loads(PREVIOUS.read_text())
     expected_predecessors = {
         'canonical15': digest(previous['number_entry_pad_repaint_v1']),

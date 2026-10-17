@@ -2522,3 +2522,18 @@ nix develop --no-write-lock-file --command python3 -B scripts/check_authenticate
 The original1056-sector case remains strict; the new case retains all original
 Reader18 time, clock and resource ceilings. No production trust/entropy,
 anti-rollback guarantee or browser product-boot result is claimed.
+
+The Reader19 companion lost-reply case now completes reconciliation and independent
+cold reopening of the acknowledged reader. It retains the original seq26 observer
+failure separately. The new run verifies reader24/raw25/page26/root27, eleven new
+offline ink pixels, all backing bytes and all cold home pixels; see
+`docs/evidence/006-course-reader-location.json`. The peer restarts before receipt;
+this case restarts the guest CPU after reconciliation.
+
+The revision-bound local-hint correction is implemented in Lean and has passed
+host actions and complete genuine component artifact checks. Whole linked-image
+and actual guest qualification are still pending. The focused extension to the
+existing connected checker is `--with-limits --with-hint-context`: it requires
+complete current-context hint rows and separately requests/checks a polynomial
+hint while retaining historical assistance. This is a local authored provider;
+permissioned live tutor transport and the proof kernel remain unfinished.

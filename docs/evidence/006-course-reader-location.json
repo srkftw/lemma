@@ -932,7 +932,7 @@
         "sha256": "299b96f1a56e798989bc2dcaea8f3e19ed80428f359a8beab08f0b4bed35674c",
         "bytes": 3412
       },
-      "new_case_status": "RUNNING_NO_COMPLETE_PASS_CLAIM",
+      "new_case_status": "PASS_READER19_CONNECTED_LOST_ACK_OFFLINE_INK_RECONCILIATION_COLD_READER5",
       "new_white_to_black_row": 1800,
       "source_oracle": {
         "path": "conformance/lemmasim/reader_reconciliation_oracle.py",
@@ -948,8 +948,218 @@
         "path": "build/usb/task006-reader19-unique-offline-plan-a1/interruption.json",
         "sha256": "808f71bc83caab7b8eb93e038ec40d1d5e3288b60a3292b2e42ee4280d2862ec",
         "bytes": 546
+      },
+      "complete_connected_result": {
+        "status": "PASS_READER19_CONNECTED_LOST_ACK_OFFLINE_INK_RECONCILIATION_COLD_READER5",
+        "result": {
+          "path": "build/usb/task006-reader19-unique-offline-a2/result.json",
+          "sha256": "d5ab2176ec1c4938738615ccf32aac58b541e3a1ab7af946d06d580352ff7880",
+          "bytes": 134993
+        },
+        "supervision": {
+          "path": "build/usb/task006-reader19-unique-offline-a2.supervision/supervision.json",
+          "sha256": "977ba6a1109c45daad391af978f612a9a0531c86cd30d6ec7fd822261082ac5d",
+          "bytes": 2624
+        },
+        "actual_cycles": 2637000000,
+        "observer_host_seconds": 16930.065369374002,
+        "supervised_host_seconds": 16931.559749903,
+        "sampled_owned_peak_RSS_bytes": 570056704,
+        "identity": {
+          "backend": "rtl",
+          "profile": "lemma-silicon-dev/0.13.0",
+          "runtime": "60bd2f275f72386ce952f1d5572aee041217918d64cbf45a7fb33aad101732da",
+          "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+          "guest": "47039fb9394c3339461d6b018a1759449dd61b5f09fae23180092bd94dab574c",
+          "dtb": "eb244f1009f709c86af9880871c55e34ebceb509be9085e61cfcddc04709a6b6",
+          "descriptor": "5bfc34263f44cd265e5b0e9960b372aafd066b6b9bb5323d8f4601309f574e12",
+          "usb_recovery_contract": "lemma-usb-live-recovery/1"
+        },
+        "source_archives": {
+          "native_bundle": "/home/sreekumaar/Downloads/lemma/build/native/task006-companion-reader19-a1",
+          "manifest_sha256": "4c2446de9a265e127c10c47b9ed7ed53f58e82b554907e8e945656c46048fca8"
+        },
+        "actor_sha256": "6abfbbe730b39a0717d44a92e36851a73893fd444aec28f30fd2d35c14e045dc",
+        "milestones": {
+          "first/cold-ready": {
+            "cycle": 765000000,
+            "target_cycles": 765000000,
+            "host_seconds": 6563.73872614908
+          },
+          "first/source3": {
+            "cycle": 1015000000,
+            "target_cycles": 250000000,
+            "host_seconds": 1500.524056185037
+          },
+          "first/browse4": {
+            "cycle": 1060000000,
+            "target_cycles": 45000000,
+            "host_seconds": 200.2840882660821
+          },
+          "first/browse5": {
+            "cycle": 1105000000,
+            "target_cycles": 45000000,
+            "host_seconds": 167.89705595595296
+          },
+          "first/lost-reader-barrier-real-EOF-noSaved": {
+            "cycle": 1142000000,
+            "target_cycles": 37000000,
+            "host_seconds": 171.6230995610822
+          },
+          "first/offline-raw-ink-withoutSaved": {
+            "cycle": 1167000000,
+            "target_cycles": 25000000,
+            "host_seconds": 84.07669612800237
+          },
+          "first/real-remount-readEOF-readerSaved24-and-offline-ink-commit": {
+            "cycle": 1582000000,
+            "target_cycles": 415000000,
+            "host_seconds": 1955.892104613944
+          },
+          "second/cold-ready": {
+            "cycle": 795000000,
+            "target_cycles": 795000000,
+            "host_seconds": 4282.217235560995
+          },
+          "second/cold-saved-reader5": {
+            "cycle": 1055000000,
+            "target_cycles": 260000000,
+            "host_seconds": 1979.9386002010433
+          }
+        },
+        "lost_final_barrier_cycle": 1130000000,
+        "lost_reply_result": "Independent peer persists transaction83/barrier161 then its reply is lost; actual owned WAIT child reaches EOF. Guest reports Failed227 without Saved24. No durable receipt is invented.",
+        "offline_pixels": {
+          "source_white_pixels": 11,
+          "row": 1800,
+          "disjoint_from_source": true
+        },
+        "reconciliation": {
+          "reader_sequence": 24,
+          "final_sequence": 27,
+          "exact128_reader": true,
+          "exact_offline_raw": true,
+          "no_duplicate_final_barrier": true
+        },
+        "independent_records": {
+          "reader_sequence": 24,
+          "raw_sequence": 25,
+          "page_sequence": 26,
+          "root_sequence": 27,
+          "exact_raw_samples": 3,
+          "all_original_nonpage_objects_equal": true,
+          "root_content_equal": true,
+          "exact_appended_page_and_history": true
+        },
+        "all_cold_home_pixels": 3630000,
+        "all_cold_medium_bytes": 268435456,
+        "cold_reader_node": 5,
+        "all_owned_processes_reaped": true,
+        "unchanged_original_bounds": {
+          "aggregate_cycles": 5000000000,
+          "whole_seconds": 43200,
+          "cold_cycles_each": 1000000000,
+          "cold_seconds_each": 7200,
+          "course_cycles_each": 400000000,
+          "course_seconds_each": 3600,
+          "navigation_cycles_each": 150000000,
+          "navigation_seconds_each": 1800,
+          "failure_cycles": 200000000,
+          "failure_seconds": 3600,
+          "offline_ink_cycles": 200000000,
+          "offline_ink_seconds": 1800,
+          "retry_cycles": 800000000,
+          "retry_seconds": 7200,
+          "owned_RSS_bytes": 4294967296,
+          "minimum_available_bytes": 2147483648,
+          "output_bytes": 12884901888
+        },
+        "scope_limits": [
+          "Peer restarts in the lost-ACK window; this case cold-restarts the CPU after reconciliation, not before acknowledgment. A guest crash in the lost-ACK window is not newly qualified here.",
+          "No new mathematical check, Product boot, browser peer, full USB/radio/authentication, timing parity, general checkpoint or physical closure.",
+          "Original seq26 observer FAIL and overlapping-ink limitation remain retained; this new case uses independent corrected seq24/25/26/27 observations and11 originally white pixels."
+        ]
       }
     },
     "canonical_RTL_connected_evidence": "docs/evidence/006-kernel-pool-read.json"
+  },
+  "authored_hint_visibility1": {
+    "status": "PASS_HOST_ACTIONS_AND_GENUINE_COMPLETE_ARTIFACTS_LINKED_IMAGES_AND_RV64_PENDING",
+    "contract": "lemma-authored-hint-visibility/1",
+    "artifact_contract": "lemma-authored-hint-artifact/1",
+    "target_sources": [
+      {
+        "path": "Lemma/Courses/HintVisibility.lean",
+        "sha256": "18b2ff039006b9325126e9fca8baaa7dc3465d715a9657116e2eb3601d531016",
+        "bytes": 2157
+      },
+      {
+        "path": "Lemma/Courses/ArithmeticAligned.lean",
+        "sha256": "f106a3ee8a2f83eb2ed53d5ebe3fc264bcd8899823bb3d3d7c038db0a840e2c5",
+        "bytes": 3897
+      }
+    ],
+    "actual_action_fixture": {
+      "path": "tests/courses/ArithmeticAligned.lean",
+      "sha256": "3b0462577940512af4f2f3ef6384160e77df091cd75caa99424ff9d230423f74",
+      "bytes": 8972
+    },
+    "host_action_log": {
+      "path": "build/courses/task006-hint-visibility-capture-plan-a3/corrected-actions.log",
+      "sha256": "f6be128ce2c1ded4fca70a1072044a0b3357f37164f5605dfe54990844213792",
+      "bytes": 212
+    },
+    "actual_stale_compiled_helper_negative": {
+      "path": "build/courses/task006-hint-visibility-admission-plan-a1/stale-offset-negative.log",
+      "sha256": "537c1a516ce29ac82dd8436a08e23ad1111d362fa483df18d80d11635ebc88a3",
+      "bytes": 144
+    },
+    "genuine13_exports": {
+      "path": "build/courses/task006-hint-visibility-capture-plan-a3/result.json",
+      "sha256": "87b972facded38212733e7c5acc810062006c740505631e5f2d108fa01e9e5f3",
+      "bytes": 67609
+    },
+    "complete_source_bound_qualification": {
+      "path": "build/courses/task006-hint-visibility-admission-plan-a2/resumed-result-a1.json",
+      "sha256": "5f57f3fcf860345b098d9d08c81b8c39928f8d2d341cc25e262f0ae806ece00c",
+      "bytes": 24240
+    },
+    "retained_original_qualifier_failure": {
+      "path": "build/courses/task006-hint-visibility-admission-plan-a2/result.json",
+      "sha256": "d644fd31309e3ae57d500f4782aa7476fae23950fa54f1921dd75d9fa5373c0b",
+      "bytes": 23218
+    },
+    "qualifier_failure_reason": "After all26 positive checks and3 negative checks, mutation observer incorrectly expected literal i64 235. Actual status235 is an incoming phi i8 value. Source-bound positives reused; real error235-to234 instructions and old200 helper separately reject. Original FAIL retained.",
+    "authority": {
+      "path": "tooling/authored-hint-target-authority.json",
+      "sha256": "0bf3843818ba65b7be64a75d6229989fd19d22be1305af6264507669cca462a8",
+      "bytes": 18708
+    },
+    "audit_helper": {
+      "path": "scripts/authored_hint_target.py",
+      "sha256": "17549d12067cbcd5c061733bb93bb247395a5fcd7d0212f28f76abbf144827af",
+      "bytes": 6157
+    },
+    "all_existing_declarations_except_render_exact_pre_post": true,
+    "all_global_data_unchanged": true,
+    "two_added_readonly_declarations": [
+      "Lemma.Courses.HintVisibility.current",
+      "Lemma.Courses.HintVisibility.eventStep"
+    ],
+    "independent_ordered_metadata_reads": [
+      208,
+      192,
+      40,
+      48
+    ],
+    "history_and_review_policy_unchanged": true,
+    "new_language_or_runtime_extension": false,
+    "connected_case_option": "scripts/check_fresh_course_reader.py --with-limits --with-hint-context",
+    "remaining": [
+      "Fresh complete linked normal/initializer pair and mandatory audits",
+      "Actual RV64 hint-context/no-borrowed-hint and current polynomial hint after check, Save/ink/cold tests",
+      "Updated prepared distributions and actual browser guest execution",
+      "All existing broader mathematical/proof-kernel/tutor/runtime/learning/fast-state/physical gaps remain open"
+    ]
   }
 }

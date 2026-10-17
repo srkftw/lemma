@@ -55,6 +55,8 @@ def authority(unit,key):
             'Product course authority schema/complete predecessor differs')
     from kernel_pool_read_target import refined_role
     row=refined_role(unit,wanted['roles'][key],AUTHORITY,key)
+    from authored_hint_target import refined as hint_refined
+    if key == 'notebook': row=hint_refined(unit,row,AUTHORITY,key)
     require(row.get('catalog_sha256')==digest(unit),'Product course complete original catalog differs: '+key)
     return row
 

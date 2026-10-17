@@ -55,13 +55,21 @@ class FreshChooser(CourseMathWorkflow):
   document=workspace['document'];answer=document['answer'];outcome=document['outcome']
   labels=('UNCHECKED','VERIFIED Q EXACT','INVALID','NEEDS CLARIFICATION','UNSUPPORTED','INDETERMINATE RESOURCE LIMIT')
   wanted=f'N {answer[0]:02d} D {answer[1]:02d} C0 {answer[2]:02d} C1 {answer[3]:02d} C2 {answer[4]:02d}'
+  hint_label=None
+  if self.args.with_hint_context:
+   learner=document['learner']
+   require(not learner['show_reason'],'hint context case unexpectedly selected review explanation')
+   applicable=document['goal'] in (1,2) and any(
+    (event['revision'],event['goal'],event['kind'],event['value'])==
+    (document['revision'],document['goal'],2,1)for event in learner['events'])
+   hint_label=('HINT USE COMMON DENOMINATOR'if document['goal']==1 else'HINT MULTIPLY EACH TERM')if applicable else'READ ADD FRACTIONS THEN EXPAND'
   panel=self.directory/(name+'.ppm')
   def complete(state):
    if not self.idle(state):return False
    s.control({'action':'panel','path':str(panel)})
-   return label_matches(panel,wanted,24,200) and label_matches(panel,labels[outcome],24,260) and (not hint or label_matches(panel,'HINT USE COMMON DENOMINATOR',24,280))
+   return label_matches(panel,wanted,24,200) and label_matches(panel,labels[outcome],24,260) and (not hint or label_matches(panel,'HINT USE COMMON DENOMINATOR',24,280)) and (hint_label is None or label_matches(panel,hint_label.ljust(32),24,280))
   self.phase(s,name,100_000_000,complete)
-  self.report.setdefault('controller_presentations',[]).append({'name':name,'revision':document['revision'],'answer':answer,'outcome':outcome,'all_answer_and_outcome_label_pixels':True,'hint_pixels':hint})
+  self.report.setdefault('controller_presentations',[]).append({'name':name,'revision':document['revision'],'answer':answer,'outcome':outcome,'all_answer_and_outcome_label_pixels':True,'hint_pixels':hint,'complete_hint_row':hint_label})
   self.progress()
  def check(self,s,stream,name,outcome):
   result=super().check(s,stream,name,outcome)
@@ -91,7 +99,15 @@ class FreshChooser(CourseMathWorkflow):
    self.click(s,stream,'zero-denominator-field',124,225,mutation=True);self.click(s,stream,'clear-denominator-to-zero',512,330,mutation=True)
    zero=self.checkpoint_record(s,'zero-denominator-unchecked');require(zero[3]['document']['answer'][:2]==[5,0] and zero[3]['document']['outcome']==0,'actual division-by-zero submission')
    rejected=self.check(s,stream,'actual-division-zero-Invalid',2);T.observe_transition(zero[3],rejected[3],'known-check')
-   self.click(s,stream,'NEXT-polynomial-template',112,245,mutation=True);self.click(s,stream,'NEXT-unsupported-template',112,245,mutation=True)
+   self.click(s,stream,'NEXT-polynomial-template',112,245,mutation=True)
+   if self.args.with_hint_context:
+    next_goal=self.checkpoint_record(s,'polynomial-before-request');require(next_goal[3]['document']['hints']==1,'historical assistance was erased')
+    self.presentation(s,'polynomial-no-borrowed-rational-hint',next_goal[3])
+    self.click(s,stream,'authored-polynomial-hint',172,245,mutation=True)
+    polynomial_hint=self.checkpoint_record(s,'polynomial-hint');require(polynomial_hint[3]['document']['hints']==2,'new actual polynomial assistance absent')
+    self.presentation(s,'polynomial-current-authored-hint',polynomial_hint[3])
+    self.check(s,stream,'polynomial-check-retains-same-revision-hint',2)
+   self.click(s,stream,'NEXT-unsupported-template',112,245,mutation=True)
    unsupported=self.check(s,stream,'actual-Unsupported',4);require(unsupported[3]['current']=={'origin':'Unknown'} and unsupported[3]['document']['goal']==3,'unsupported template manufactured package authority')
    self.click(s,stream,'NEXT-back-to-rational',112,245,mutation=True);self.click(s,stream,'zero-checker-resource-budget',232,245,mutation=True)
    priority=self.check(s,stream,'zero-denominator-precedes-zero-budget',2);require(priority[3]['document']['answer'][1]==0 and priority[3]['document']['budget']==0,'actual invalid-input/resource precedence')
@@ -137,7 +153,9 @@ def main():
  parser.add_argument('--backend',choices=('qemu','rtl'),default='qemu')
  parser.add_argument('--with-ink',action='store_true',help='Also retain three raw samples and verify actual pixels before independent cold recovery')
  parser.add_argument('--with-limits',action='store_true',help='Also exercise displayed zero-denominator Invalid, Unsupported and zero-budget Indeterminate before ink/Save/cold reopen')
+ parser.add_argument('--with-hint-context',action='store_true',help='With limits, require exact current-revision/goal hint rows, retaining historical assistance and exercising a separate polynomial hint')
  args=parser.parse_args()
+ if args.with_hint_context and not args.with_limits:parser.error('hint-context scenario requires --with-limits')
  if bool(args.guest_build)!=bool(args.guest_source_root):parser.error('guest override requires its complete original audited source archive')
  if args.work_dir.exists() or not args.work_dir.resolve().is_relative_to(ROOT/'build'):parser.error('unused owned build output required')
  args.disk=args.disk.resolve();args.package=[args.package.resolve()];args.native_bundle=str(args.native_bundle.resolve())

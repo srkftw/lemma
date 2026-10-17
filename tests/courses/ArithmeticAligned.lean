@@ -14,17 +14,27 @@ structure State where
   failRead : UInt64 := 0
   width : UInt64 := 1650
   goal : UInt64 := 1
+  revision : UInt64 := 12
+  hintGoal : UInt64 := 1
+  hintRevision : UInt64 := 12
+  hintKind : UInt64 := 2
+  eventCount : UInt64 := 2
+  eventVersion : UInt64 := 1
+  hintCount : UInt64 := 1
+  showReason : UInt64 := 1
   outcome : UInt64 := 1
   mode : UInt64 := 0
 
 def field (m : State) (offset : UInt64) : UInt64 :=
-  if offset = 40 then 12 else if offset = 48 then m.goal else
+  if offset = 40 then m.revision else if offset = 48 then m.goal else
   if offset = 56 then 5 else if offset = 64 then 6 else
   if offset = 72 then 1 else if offset = 80 then 2 else if offset = 88 then 1 else
-  if offset = 96 then m.outcome else if offset = 144 then 1 else if offset = 152 then 1 else
-  if offset = 184 then m.mode else if offset = 192 then 2 else if offset = 216 then 1 else
+  if offset = 96 then m.outcome else if offset = 144 then 1 else if offset = 152 then m.hintCount else
+  if offset = 184 then m.mode else if offset = 192 then m.eventCount else
+  if offset = 200 then 1 else if offset = 208 then m.eventVersion else if offset = 216 then m.showReason else
+  if offset = 832 then m.revision else if offset = 848 then m.hintRevision else
   if offset = 840 then (1 : UInt64) ||| (m.goal <<< 8) ||| (m.outcome <<< 16) else
-  if offset = 856 then (2 : UInt64) ||| (m.goal <<< 8) ||| ((1 : UInt64) <<< 16) else 0
+  if offset = 856 then m.hintKind ||| (m.hintGoal <<< 8) ||| ((1 : UInt64) <<< 16) else 0
 
 partial def run (ref : IO.Ref State) : Action → IO (UInt8 × UInt64)
   | .done s v => pure (s,v)
@@ -104,6 +114,33 @@ def check : IO Unit := do
       unless failed == (71,0) && cut.writes.isEmpty && cut.pixels == initial.pixels do
         throw <| IO.userError "document access failure touched framebuffer"
     else unless actual.writes == baseline.writes do throw <| IO.userError "noncanonical fallback changed memory semantics"
+  -- Real retained browser case: the only hint belongs to revision6/goal1,
+  -- while revision8/goal3 must not invent a new polynomial proposal. Matching
+  -- current contexts retain their historical exact pixels and aggregate data.
+  let initial : State := {pixels := ByteArray.mk (Array.replicate (825*320) 0xa5),showReason := 0}
+  for (state,expected) in #[(initial,1),
+      ({initial with goal := 2,hintGoal := 2},1),
+      ({initial with goal := 2},0),
+      ({initial with revision := 13},0),
+      ({initial with goal := 3,revision := 8,hintGoal := 1,hintRevision := 6},0),
+      ({initial with goal := 3,hintGoal := 3},0),
+      ({initial with hintKind := 6},0),
+      ({initial with eventVersion := 0},0),
+      ({initial with eventCount := 0},0)] do
+    let (result,untouched) ← observe state (HintVisibility.current document)
+    unless result == (0,expected) && untouched.writes.isEmpty && untouched.pixels == state.pixels do
+      throw <| IO.userError "hint proposal escaped its revision/goal or changed a document"
+    let (_,baseline) ← observe {state with hintCount := if expected = 1 then state.hintCount else 0}
+      (Arithmetic.renderSparse document 1650)
+    let (rendered,actual) ← observe state (ArithmeticAligned.render document 1650)
+    unless rendered == (0,0) && actual.pixels == baseline.pixels && actual.writes.size == 4820 do
+      throw <| IO.userError "actual context-qualified hint pixels differ from independent scalar expectation"
+  let (badCount,untouched) ← observe {initial with eventCount := 65} (ArithmeticAligned.render document 1650)
+  unless badCount == (235,0) && untouched.writes.isEmpty do
+    throw <| IO.userError "invalid event count reached the framebuffer"
+  let (badRead,untouched) ← observe {initial with failRead := document+848} (ArithmeticAligned.render document 1650)
+  unless badRead == (71,0) && untouched.writes.isEmpty do
+    throw <| IO.userError "hint event read error was swallowed or rendered a partial proposal"
   IO.println "ARITHMETIC_ALIGNED1:PASS scalar spans/all30720bytes/neighbors/4820vs27360stores/writefaultprefixes/readfailure/oddstridefallback; host component only"
 end ArithmeticAlignedTests
 

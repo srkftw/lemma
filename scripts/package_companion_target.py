@@ -88,6 +88,8 @@ def semantic_guards(ir,unit):
  return {'exact_source_semantics':True,'scope':'Complete body/caller pins plus explicit Action/IR guards; not a compiler proof or connected durability result'}
 
 def complete_corpus(ir,unit,*,optimized):
+ from authored_hint_target import semantics as hint_semantics
+ hint_semantics(ir,unit,optimized=optimized)
  from surface_word_inline import validate as validate_surface_inline
  inline=validate_surface_inline(ir,unit,optimized=optimized)
  removed=set(inline['removed_symbols']) if inline is not None and optimized else set()

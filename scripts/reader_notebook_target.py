@@ -64,6 +64,8 @@ def contract(unit):
             "execution.virtual-write8", "execution.virtual-write64", "execution.syscall"}:
         raise Core0Error("Reader18 acquired execution authority")
     wanted = json.loads(AUTHORITY.read_text())
+    from authored_hint_target import refined as hint_refined
+    wanted = hint_refined(unit, wanted, AUTHORITY)
     predecessor = json.loads(PREDECESSOR.read_text())["number_entry_browse_history_v1"]
     catalogs = wanted.get("catalog_sha256_by_configuration", {})
     if (wanted.get("schema") != VERSION or wanted.get("package_notebook_version") != 18 or

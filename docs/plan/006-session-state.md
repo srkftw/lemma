@@ -5525,3 +5525,63 @@ Committed e934 CI39015059089/run154 completedSUCCESS11jobs/117steps/zero skips,
 including foundation host suite. Receipt build/ci/task006-e934-complete.json;
 PR9 body updated to actual result, remains draft/unmerged. New launcher source
 requires its own candidate CI after commit. No merge authorization inferred.
+
+Reader19 full connected result and authored-hint correction (2026-10-17)
+
+The original unique-offline a2 case is terminal PASS, supervisor exit0/no owned
+survivors. Actual2.637B RTL cycles/16930.065369s, supervised16931.559750s,
+sampled owned peak570056704B. Final reader barrier persists on independent peer,
+reply is lost, real WAIT child EOF yields Failed227/noSaved24, eleven disjoint
+white-to-black pixels remain responsive offline. Real reconnect/remount reconciles
+reader24/raw25/page26/root27 without duplicate barrier161. New CPU0 cold795M/
+4282.217236s recovers all3.63M home pixels/all256MiB bytes; reader5 opens in260M/
+1979.938600s with the exact prior Verified workspace/history/assistance unchanged.
+First cold765M/6563.738726s; original ceilings unchanged. Existing reader-location
+evidence/inventory hold complete source/tool/model identities and original FAILs.
+The peer restarts before acknowledgment; this case cold-restarts the CPU after
+reconciliation, so a guest crash in the lost-ACK window is not newly qualified.
+The separate new-kernel independent USB cold case remains active and bounded.
+
+Browser39 reached actual resource Indeterminate revision10/budget0/attempt4,
+isolated request401/status0/roots0/Saved20, and manual review mode1/reasonmanual/
+uncertain/Saved21. Full CRC/controller/backing resource receipt passes. Reader
+Save is now active. The original guest's cross-goal hint defect remains open;
+this session never reloads it. One conservative host-clock origin reconciliation
+retains old receipts and adds352s to prior bounds where either origin was possible;
+all remain under original phase budgets. New observations use UI elapsed origins.
+Global browser deadline remains12:18:08Z/6B; ink/Close/independent cold remain.
+
+Uncommitted HintVisibility.current plus ArithmeticAligned integration now filter
+local hints by exact revision/goal/kind2/value1, preserving all historical events
+and review. Host actual-action tests pass. Independent source review caught the
+initial new filter/fixture using uncertainty200 as event version; corrected208
+fixture rejects the real stale compiled helper, and corrected actions pass.
+Capture a2's13 genuine exports remain retained/unqualified. Corrected capture
+build/courses/task006-hint-visibility-capture-plan-a3 is active (tool92001), all
+production Lean/frontend inputs frozen. New independent pre-LLVM guard rejects
+actual old200 instructions and accepts ordered208/192/40/48 reads and real renderer
+call. Complete corpus admission, whole linked images/audits and RV64 execution
+remain pending; no deployed hint fix is claimed. Admission plan-a2 is prospective
+and its1200s execution clock starts only when the qualifier is launched.
+
+Committed d85d7ae CI39018528698/run155 completedSUCCESS11jobs/117steps/zero skips;
+receipt build/ci/task006-d85-complete.json. PR9 body matches actual result and stays
+draft/unmerged. New hint code needs its own candidate CI. Physical/digital/fast
+parity/checkpoint/distribution gaps remain separate; no new EDA or merge action.
+
+Authored-hint component admission completed (2026-10-17)
+
+Corrected capture a3 completes13 genuine exports in1187.139388s, peak2083618816B,
+zero owned survivors. Exact old/new comparisons retain every old declaration
+except ArithmeticAligned.render, add only two read-only helpers, and preserve
+all global data. All26 existing pre/post complete validators pass. Qualifier-a2
+then FAILs at its observer mutation-site assertion (i64 235 versus actual phi i8
+incoming235); that FAIL and all completed results remain. Source-bound reuse
+checks both old/new actual input hashes and every authority/catalog/count/pin,
+then rejects actual235-to234 i8 instructions and the actual old200 helper via
+independent ordered-field guard. New resumed-result-a1 is PASS26phases/5negatives.
+No frontend/CPU rerun was used to repair this observer. New authority and fixture
+are versioned; complete linked images/audits and actual guest execution remain
+pending. Corrected read208 and all existing allocator/driver/runtime contracts
+are unchanged during qualification. Next complete canonical pair uses
+build/courses/task006-hint-visibility-whole-plan-a1, original2400s/1200s/4GiB bounds.

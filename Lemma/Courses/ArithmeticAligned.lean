@@ -1,4 +1,5 @@
 import Lemma.Courses.Arithmetic
+import Lemma.Courses.HintVisibility
 
 /-! Additive aligned arithmetic presentation. The historical scalar and sparse
 renderers retain their bodies. Only ordinary owned virtual framebuffer stores
@@ -50,11 +51,12 @@ def render (buffer width : UInt64) : Action :=
   .bind (Mathematics.field buffer 40) fun s revision => if s = 0 then
   .bind (Mathematics.field buffer 144) fun s attempts => if s = 0 then
   .bind (Lemma.Courses.Review.summary buffer) fun s review => if s = 0 then
+  .bind (HintVisibility.current buffer) fun s visibleHint => if s = 0 then
   .boundedFoldU64 4000 renderStep 4000 0 width goal
     (n ||| (d <<< 7) ||| (p0 <<< 14) ||| (p1 <<< 21) ||| (p2 <<< 28))
-    (outcome ||| (hints <<< 3) ||| ((revision % 100) <<< 9) ||| (attempts <<< 16) ||| (review <<< 24)) fun s _ => .done s 0
+    (outcome ||| ((if visibleHint = 1 then hints else 0) <<< 3) ||| ((revision % 100) <<< 9) ||| (attempts <<< 16) ||| (review <<< 24)) fun s _ => .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else Arithmetic.renderSparse buffer width
 
 end Lemma.Courses.ArithmeticAligned

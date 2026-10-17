@@ -41,6 +41,8 @@ def contract(unit):
             canonical(loops[0].get('callback', '')) == 'Lemma.Applications.Notebook.chooserReaderStep',
             'Reader20 selected loop differs')
     wanted = json.loads(AUTHORITY.read_text())
+    from authored_hint_target import refined as hint_refined
+    wanted = hint_refined(unit, wanted, AUTHORITY)
     catalogs = wanted.get('catalog_sha256_by_configuration', {})
     require(wanted.get('schema') == VERSION and wanted.get('package_notebook_version') == 20 and
             wanted.get('predecessor_sha256') == hashlib.sha256(PREDECESSOR.read_bytes()).hexdigest() and

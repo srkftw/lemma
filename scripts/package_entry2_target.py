@@ -50,6 +50,8 @@ def contract(unit):
         'Package Entry2 immutable predecessor authorities differ')
     from kernel_pool_read_target import refined_role
     wanted = refined_role(unit, authority['roles'][key], AUTHORITY, key)
+    from authored_hint_target import refined as hint_refined
+    if key == 'notebook': wanted = hint_refined(unit, wanted, AUTHORITY, key)
     catalogs = wanted.get('catalog_sha256_by_configuration')
     expected_configs = set(CONFIGURATIONS) if role == 'user' else {unit['configuration']}
     require(isinstance(catalogs, dict) and set(catalogs) == expected_configs and

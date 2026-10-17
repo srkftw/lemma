@@ -122,6 +122,8 @@ def numeric_contract(unit):
  if not numeric_candidate(unit):return None
  if numeric_root(unit)==NUMERIC_BROWSE_ROOT:
   a=json.loads(NUMERIC_AUTHORITY.read_text());previous=a['number_entry_pad_repaint_v1'];wanted=a.get('number_entry_browse_history_v1',{})
+  from authored_hint_target import refined as hint_refined
+  wanted=hint_refined(unit,wanted,NUMERIC_AUTHORITY,'number_entry_browse_history_v1')
   if (unit.get('configuration')not in NUMERIC_CONFIGURATIONS or unit.get('role')!='user'or unit.get('image_key')!='notebook'or unit.get('image_id')!=2 or unit.get('contract_version')!='core0-user-v0.2' or unit.get('used_device_ops')!=[] or unit.get('software_deployment')!=NUMERIC_SOFTWARE):raise Core0Error('History browse escaped exact canonical Notebook deployment')
   if [{k:r.get(k)for k in ('source','id','args')}for r in unit.get('roots',[])]!=[{'source':NUMERIC_BROWSE_ROOT,'id':1,'args':['u64']}]:raise Core0Error('History browse exact root/ABI differs')
   if (wanted.get('schema')!='lemma-number-entry-browse-history-artifact/1'or wanted.get('package_notebook_version')!=17 or wanted.get('previous_artifact_sha256')!=numeric_digest(previous)or wanted.get('browse_policy')!='lemma-course-browse-history/1'or set(wanted.get('catalog_sha256_by_configuration',{}))!=set(NUMERIC_CONFIGURATIONS)or wanted['catalog_sha256_by_configuration'][unit['configuration']]!=numeric_digest(unit)):raise Core0Error('History browse complete genuine authority/predecessor/catalog absent or changed')

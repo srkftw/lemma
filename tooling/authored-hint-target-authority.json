@@ -1,0 +1,307 @@
+{
+  "schema": "lemma-authored-hint-artifact/1",
+  "configurations": {
+    "lemmasim-silicon-package-closure-entry2-bulk-notebook": {
+      "predecessor_authority": "dirty-batch-notebook-target-authority.json",
+      "predecessor_authority_sha256": "944f7323dde0f341fcbecf2ce5e1bf9dd97007791ce99312d1c382673f37e165",
+      "role_key": "number_entry_browse_history_v1",
+      "previous_role_sha256": "699393cffd19db94f1d98160848de5ce515b34aff865c366bff5c6a6d49eb599",
+      "role": {
+        "schema": "lemma-number-entry-browse-history-artifact/1",
+        "package_notebook_version": 17,
+        "previous_artifact_sha256": "fe7dcc4f8ad6a0f544dd6d3663e5ce3078d66051d970601e510248ea1e474586",
+        "browse_policy": "lemma-course-browse-history/1",
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-closure-entry2-bulk-initialize": "18d22965497d2e685ef469577c52f0e78e9cc8ef3208d5b8c846354b521e7e17",
+          "lemmasim-silicon-package-closure-entry2-bulk-notebook": "a97d88fe89a056d3e782a58f9ed2eb901ad65c96939666d5d5bfc7df7173b6ef"
+        },
+        "pre_function_count": 877,
+        "pre_sha256": "79e2cc38a8ee182fca31df1f13fa86bb2af86288a95aaaf9d484d3d5be5e6208",
+        "surface_root_sha256_by_phase": {
+          "pre": "22b61ab1961e1762f8c6b63ecb058b501a8d76bebfd1c3f3971e3a4bbc0e564a",
+          "post": "8385ac273e282a43a273d34eb2a5f4f62dec70e38e2854a81322f9c64c61a07a"
+        },
+        "post_function_count": 875,
+        "post_sha256": "2244336987643a0e2b1ceedca79337ffaec5ea18fdb47743a9b79387877b5058",
+        "character_machine_sha256": "0b1d6e186cf1d243c837656ee09aaa40907473c2babf7d4e4f1f8b348f5b1fff"
+      }
+    },
+    "lemmasim-silicon-package-closure-entry2-bulk-initialize": {
+      "predecessor_authority": "dirty-batch-notebook-target-authority.json",
+      "predecessor_authority_sha256": "944f7323dde0f341fcbecf2ce5e1bf9dd97007791ce99312d1c382673f37e165",
+      "role_key": "number_entry_browse_history_v1",
+      "previous_role_sha256": "699393cffd19db94f1d98160848de5ce515b34aff865c366bff5c6a6d49eb599",
+      "role": {
+        "schema": "lemma-number-entry-browse-history-artifact/1",
+        "package_notebook_version": 17,
+        "previous_artifact_sha256": "fe7dcc4f8ad6a0f544dd6d3663e5ce3078d66051d970601e510248ea1e474586",
+        "browse_policy": "lemma-course-browse-history/1",
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-closure-entry2-bulk-initialize": "18d22965497d2e685ef469577c52f0e78e9cc8ef3208d5b8c846354b521e7e17",
+          "lemmasim-silicon-package-closure-entry2-bulk-notebook": "a97d88fe89a056d3e782a58f9ed2eb901ad65c96939666d5d5bfc7df7173b6ef"
+        },
+        "pre_function_count": 877,
+        "pre_sha256": "79e2cc38a8ee182fca31df1f13fa86bb2af86288a95aaaf9d484d3d5be5e6208",
+        "surface_root_sha256_by_phase": {
+          "pre": "22b61ab1961e1762f8c6b63ecb058b501a8d76bebfd1c3f3971e3a4bbc0e564a",
+          "post": "8385ac273e282a43a273d34eb2a5f4f62dec70e38e2854a81322f9c64c61a07a"
+        },
+        "post_function_count": 875,
+        "post_sha256": "2244336987643a0e2b1ceedca79337ffaec5ea18fdb47743a9b79387877b5058",
+        "character_machine_sha256": "0b1d6e186cf1d243c837656ee09aaa40907473c2babf7d4e4f1f8b348f5b1fff"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": {
+      "predecessor_authority": "companion-number-pad-target-authority.json",
+      "predecessor_authority_sha256": "ba44cb4d3c1231fef40073f5a8368f82d2712fbf401ed352ae25e977f3211658",
+      "role_key": "",
+      "previous_role_sha256": "670487202a167a9e4f7b278114d25e064a0867c525353d8489837f7211261e4d",
+      "role": {
+        "schema": "lemma-companion-number-entry-artifact/1",
+        "package_notebook_version": 16,
+        "predecessors": {
+          "canonical15": "fe7dcc4f8ad6a0f544dd6d3663e5ce3078d66051d970601e510248ea1e474586",
+          "companion11": "6e9d67dc1075518b52f7ec47c6ac4202ac361493ed8017c64182b5a867d1953c"
+        },
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "b547fec9d774b8ff0666c53f55cd2d3f407e37ac990585e3e44202703a158b80",
+          "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "60c1d0e9e8a02f87255fb0e2eb38d47a7ee4cca17804b3920ed87c72739c70ef"
+        },
+        "pre_function_count": 912,
+        "pre_sha256": "52f4a860868a322d2a48596a78d39fbd2303352f9754c3bc4f8f6a0a141da0ce",
+        "post_function_count": 910,
+        "post_sha256": "7ce3948ce2cd8f1cfe93393c47edcc4ba24352c6bc8bcc67a3dab257942d74ac",
+        "character_machine_sha256": "f708bdf8245fa4b9f217d3e7c7eaf283cfa340b9789f6e09c3424eaf63b306df"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": {
+      "predecessor_authority": "companion-number-pad-target-authority.json",
+      "predecessor_authority_sha256": "ba44cb4d3c1231fef40073f5a8368f82d2712fbf401ed352ae25e977f3211658",
+      "role_key": "",
+      "previous_role_sha256": "670487202a167a9e4f7b278114d25e064a0867c525353d8489837f7211261e4d",
+      "role": {
+        "schema": "lemma-companion-number-entry-artifact/1",
+        "package_notebook_version": 16,
+        "predecessors": {
+          "canonical15": "fe7dcc4f8ad6a0f544dd6d3663e5ce3078d66051d970601e510248ea1e474586",
+          "companion11": "6e9d67dc1075518b52f7ec47c6ac4202ac361493ed8017c64182b5a867d1953c"
+        },
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "b547fec9d774b8ff0666c53f55cd2d3f407e37ac990585e3e44202703a158b80",
+          "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "60c1d0e9e8a02f87255fb0e2eb38d47a7ee4cca17804b3920ed87c72739c70ef"
+        },
+        "pre_function_count": 912,
+        "pre_sha256": "52f4a860868a322d2a48596a78d39fbd2303352f9754c3bc4f8f6a0a141da0ce",
+        "post_function_count": 910,
+        "post_sha256": "7ce3948ce2cd8f1cfe93393c47edcc4ba24352c6bc8bcc67a3dab257942d74ac",
+        "character_machine_sha256": "f708bdf8245fa4b9f217d3e7c7eaf283cfa340b9789f6e09c3424eaf63b306df"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": {
+      "predecessor_authority": "package-entry2-target-authority.json",
+      "predecessor_authority_sha256": "ac57b94268a6e47a11f351c7421593dee21cdc570b64e5c933a5f257feea0ab2",
+      "role_key": "notebook",
+      "previous_role_sha256": "d4405dd959254d4d54be082bd5e74c4c28225544a21fb110e76886e02802d6fa",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": "647809bc9e3070d0e46366af2da13254e8268c48684658a26085e8ea61d64c2c",
+          "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": "81d4b968bf49dbf70d82ae23eb9b611bb511a9cb06d293912fc9d0a645ac9d1a"
+        },
+        "pre_function_count": 912,
+        "pre_sha256": "52f4a860868a322d2a48596a78d39fbd2303352f9754c3bc4f8f6a0a141da0ce",
+        "post_function_count": 910,
+        "post_sha256": "7ce3948ce2cd8f1cfe93393c47edcc4ba24352c6bc8bcc67a3dab257942d74ac",
+        "function_count": 912,
+        "package_notebook_version": 16,
+        "artifact_contract_version": "lemma-package-clocked-entry2-target/1",
+        "character_machine_sha256": "f708bdf8245fa4b9f217d3e7c7eaf283cfa340b9789f6e09c3424eaf63b306df"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": {
+      "predecessor_authority": "package-entry2-target-authority.json",
+      "predecessor_authority_sha256": "ac57b94268a6e47a11f351c7421593dee21cdc570b64e5c933a5f257feea0ab2",
+      "role_key": "notebook",
+      "previous_role_sha256": "d4405dd959254d4d54be082bd5e74c4c28225544a21fb110e76886e02802d6fa",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": "647809bc9e3070d0e46366af2da13254e8268c48684658a26085e8ea61d64c2c",
+          "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": "81d4b968bf49dbf70d82ae23eb9b611bb511a9cb06d293912fc9d0a645ac9d1a"
+        },
+        "pre_function_count": 912,
+        "pre_sha256": "52f4a860868a322d2a48596a78d39fbd2303352f9754c3bc4f8f6a0a141da0ce",
+        "post_function_count": 910,
+        "post_sha256": "7ce3948ce2cd8f1cfe93393c47edcc4ba24352c6bc8bcc67a3dab257942d74ac",
+        "function_count": 912,
+        "package_notebook_version": 16,
+        "artifact_contract_version": "lemma-package-clocked-entry2-target/1",
+        "character_machine_sha256": "f708bdf8245fa4b9f217d3e7c7eaf283cfa340b9789f6e09c3424eaf63b306df"
+      }
+    },
+    "lemmasim-silicon-package-reader-bulk-notebook": {
+      "predecessor_authority": "reader-notebook-target-authority.json",
+      "predecessor_authority_sha256": "37454b80a0a95ab4a03a6b3f8870eeaae6efa5f767dfc99db226851155c18a9e",
+      "role_key": "",
+      "previous_role_sha256": "39a013da79e2a91277d4be971efde91b398efcaebbaf49af880638eb6472fe99",
+      "role": {
+        "schema": "lemma-course-reader-notebook-artifact/1",
+        "package_notebook_version": 18,
+        "previous_artifact_sha256": "699393cffd19db94f1d98160848de5ce515b34aff865c366bff5c6a6d49eb599",
+        "reader_contract": "lemma-course-reader-location/1",
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-reader-bulk-initialize": "441f678479f7f6ba66560061f728913145c0ed7efa957d0c2a0a73c053cd222b",
+          "lemmasim-silicon-package-reader-bulk-notebook": "650829b86d63726b51f4ae2a87fbfb4e4f42f5fad948c8f6a7569f7c12b80397"
+        },
+        "pre_function_count": 904,
+        "pre_sha256": "aaf4dc5008e7bb0e520aea552d8248d6397abb700718d4757c10278b598c2803",
+        "surface_root_sha256_by_phase": {
+          "pre": "080581b7582c74029a7c2371e709f6277684b4351f9f67d759f9341a9b029681",
+          "post": "775ba1e0c77d8fbf66589f945b18daf9caae997ff6651562503597dce65a85bf"
+        },
+        "post_function_count": 902,
+        "post_sha256": "804e88cb8a971b08d58a41c13c3a4090b7f747252a1c92bb5078dafae899cf96",
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
+      }
+    },
+    "lemmasim-silicon-package-reader-bulk-initialize": {
+      "predecessor_authority": "reader-notebook-target-authority.json",
+      "predecessor_authority_sha256": "37454b80a0a95ab4a03a6b3f8870eeaae6efa5f767dfc99db226851155c18a9e",
+      "role_key": "",
+      "previous_role_sha256": "39a013da79e2a91277d4be971efde91b398efcaebbaf49af880638eb6472fe99",
+      "role": {
+        "schema": "lemma-course-reader-notebook-artifact/1",
+        "package_notebook_version": 18,
+        "previous_artifact_sha256": "699393cffd19db94f1d98160848de5ce515b34aff865c366bff5c6a6d49eb599",
+        "reader_contract": "lemma-course-reader-location/1",
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-reader-bulk-initialize": "441f678479f7f6ba66560061f728913145c0ed7efa957d0c2a0a73c053cd222b",
+          "lemmasim-silicon-package-reader-bulk-notebook": "650829b86d63726b51f4ae2a87fbfb4e4f42f5fad948c8f6a7569f7c12b80397"
+        },
+        "pre_function_count": 904,
+        "pre_sha256": "aaf4dc5008e7bb0e520aea552d8248d6397abb700718d4757c10278b598c2803",
+        "surface_root_sha256_by_phase": {
+          "pre": "080581b7582c74029a7c2371e709f6277684b4351f9f67d759f9341a9b029681",
+          "post": "775ba1e0c77d8fbf66589f945b18daf9caae997ff6651562503597dce65a85bf"
+        },
+        "post_function_count": 902,
+        "post_sha256": "804e88cb8a971b08d58a41c13c3a4090b7f747252a1c92bb5078dafae899cf96",
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
+      }
+    },
+    "lemmasim-silicon-package-chooser-bulk-notebook": {
+      "predecessor_authority": "chooser-reader-target-authority.json",
+      "predecessor_authority_sha256": "bb90f1ddc6fe5836f135719233ce5efca60d13a87bf33ff1b9cd0f73ca845aa1",
+      "role_key": "",
+      "previous_role_sha256": "3bac83d8c31cbcc6b1b9aca821b3df45b3b4c6e09f7290b20a0499700bdef350",
+      "role": {
+        "schema": "lemma-course-chooser-notebook-artifact/1",
+        "package_notebook_version": 20,
+        "predecessor_sha256": "37454b80a0a95ab4a03a6b3f8870eeaae6efa5f767dfc99db226851155c18a9e",
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-chooser-bulk-initialize": "4a0c62109e2eac332bb7dd931d2edef9660d0db25c919baec19be02f7d8ed0fc",
+          "lemmasim-silicon-package-chooser-bulk-notebook": "db0d3c017d2c4bb42346e6c4af27c6b483cf459471318ca8c5c4f24f9f0070a8"
+        },
+        "pre_function_count": 905,
+        "pre_sha256": "def65cb18c6badf873f13477a037de2094e8efa1c02324a4ccb52d3a7af221c4",
+        "surface_root_sha256_by_phase": {
+          "pre": "9e1204c0afa6f544372172556e0f4979f24a7aeb47227b70df1872d83b876c85",
+          "post": "55ccef7d73862222aa0b65ef38fe409bb47f80bdba34c448f130bb5aa29dfd51"
+        },
+        "post_function_count": 903,
+        "post_sha256": "9b743faa2099dce6b2b47ef80a55dde08992911d9500fcb0e4e237fbd755b414",
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
+      }
+    },
+    "lemmasim-silicon-package-chooser-bulk-initialize": {
+      "predecessor_authority": "chooser-reader-target-authority.json",
+      "predecessor_authority_sha256": "bb90f1ddc6fe5836f135719233ce5efca60d13a87bf33ff1b9cd0f73ca845aa1",
+      "role_key": "",
+      "previous_role_sha256": "3bac83d8c31cbcc6b1b9aca821b3df45b3b4c6e09f7290b20a0499700bdef350",
+      "role": {
+        "schema": "lemma-course-chooser-notebook-artifact/1",
+        "package_notebook_version": 20,
+        "predecessor_sha256": "37454b80a0a95ab4a03a6b3f8870eeaae6efa5f767dfc99db226851155c18a9e",
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-chooser-bulk-initialize": "4a0c62109e2eac332bb7dd931d2edef9660d0db25c919baec19be02f7d8ed0fc",
+          "lemmasim-silicon-package-chooser-bulk-notebook": "db0d3c017d2c4bb42346e6c4af27c6b483cf459471318ca8c5c4f24f9f0070a8"
+        },
+        "pre_function_count": 905,
+        "pre_sha256": "def65cb18c6badf873f13477a037de2094e8efa1c02324a4ccb52d3a7af221c4",
+        "surface_root_sha256_by_phase": {
+          "pre": "9e1204c0afa6f544372172556e0f4979f24a7aeb47227b70df1872d83b876c85",
+          "post": "55ccef7d73862222aa0b65ef38fe409bb47f80bdba34c448f130bb5aa29dfd51"
+        },
+        "post_function_count": 903,
+        "post_sha256": "9b743faa2099dce6b2b47ef80a55dde08992911d9500fcb0e4e237fbd755b414",
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook": {
+      "predecessor_authority": "companion-reader-target-authority.json",
+      "predecessor_authority_sha256": "82b4a6b4c052d19c646946ed4e54151b314360c60f64eb557d01189a45d8fd2a",
+      "role_key": "notebook",
+      "previous_role_sha256": "0ab8cfcc563b78d4140a32b0a4f6b1ced25b3fdbf8ca8520aaa20ca51244fd40",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook": "849c1dab98a3eecc59aeb0b2a93cdfb0dc9b968c430d6685c81c37f7c8f39fb5",
+          "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize": "c4dcc45f06dd0c37ab81557f83c1d741cbe7076cb390f5398b80ab86aeabf88b"
+        },
+        "package_notebook_version": 19,
+        "artifact_contract_version": "lemma-companion-reader-target/1",
+        "pre_sha256": "153675478dbb2127c099da0c3023de2c29d703ff186490818756a2679d8ce48f",
+        "pre_function_count": 957,
+        "function_count": 957,
+        "surface_root_sha256_by_phase": {
+          "pre": "01e621102cc4b491fec2a618a3c90e7a6d23dfbe59a0ee5152ab18b8f7f26d95",
+          "post": "c1681913c5b264c5d6e4b052dbd31ea68224c53f0534a5b651b2e38893a552cf"
+        },
+        "post_sha256": "ddfb2c0f47e4e54e322a47c77596f0395aef10f646e4cd6f17d91a02a293eeeb",
+        "post_function_count": 955,
+        "character_machine_sha256": "046cc1e5b2b53a56ed4765d0e49fefa38fa7b179211a2f848735e9f151602866"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize": {
+      "predecessor_authority": "companion-reader-target-authority.json",
+      "predecessor_authority_sha256": "82b4a6b4c052d19c646946ed4e54151b314360c60f64eb557d01189a45d8fd2a",
+      "role_key": "notebook",
+      "previous_role_sha256": "0ab8cfcc563b78d4140a32b0a4f6b1ced25b3fdbf8ca8520aaa20ca51244fd40",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook": "849c1dab98a3eecc59aeb0b2a93cdfb0dc9b968c430d6685c81c37f7c8f39fb5",
+          "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize": "c4dcc45f06dd0c37ab81557f83c1d741cbe7076cb390f5398b80ab86aeabf88b"
+        },
+        "package_notebook_version": 19,
+        "artifact_contract_version": "lemma-companion-reader-target/1",
+        "pre_sha256": "153675478dbb2127c099da0c3023de2c29d703ff186490818756a2679d8ce48f",
+        "pre_function_count": 957,
+        "function_count": 957,
+        "surface_root_sha256_by_phase": {
+          "pre": "01e621102cc4b491fec2a618a3c90e7a6d23dfbe59a0ee5152ab18b8f7f26d95",
+          "post": "c1681913c5b264c5d6e4b052dbd31ea68224c53f0534a5b651b2e38893a552cf"
+        },
+        "post_sha256": "ddfb2c0f47e4e54e322a47c77596f0395aef10f646e4cd6f17d91a02a293eeeb",
+        "post_function_count": 955,
+        "character_machine_sha256": "046cc1e5b2b53a56ed4765d0e49fefa38fa7b179211a2f848735e9f151602866"
+      }
+    },
+    "lemmasim-silicon-product-course-reader-bulk-notebook": {
+      "predecessor_authority": "product-reader-target-authority.json",
+      "predecessor_authority_sha256": "c942768f0f2fb8cfccc40ec1ed9989916d8e6853b2952027b0b9b49c4f4382cb",
+      "role_key": "notebook",
+      "previous_role_sha256": "9625b9ad95da920ccd8fbc27c0923b0e0c8439a8d1ca3f3dee146d0ee9828dbd",
+      "role": {
+        "catalog_sha256": "977b2fb9d9f9908ebba649289da6691b25aeb2a0bedfb4dede64ecb082d4c636",
+        "pre_sha256": "aaf4dc5008e7bb0e520aea552d8248d6397abb700718d4757c10278b598c2803",
+        "pre_function_count": 904,
+        "post_sha256": "804e88cb8a971b08d58a41c13c3a4090b7f747252a1c92bb5078dafae899cf96",
+        "post_function_count": 902,
+        "package_notebook_version": 18,
+        "reader_contract": "lemma-course-reader-location/1",
+        "surface_root_sha256_by_phase": {
+          "pre": "080581b7582c74029a7c2371e709f6277684b4351f9f67d759f9341a9b029681",
+          "post": "775ba1e0c77d8fbf66589f945b18daf9caae997ff6651562503597dce65a85bf"
+        },
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
+      }
+    }
+  }
+}
