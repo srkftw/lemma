@@ -59,9 +59,9 @@ document.querySelector('#admit-batch').onclick=()=>send('raw-batch',{rows:docume
 document.querySelector('#warm').onclick=()=>{beginSelection();cancelContact();send('reset',{cold:false});};
 document.querySelector('#cold').onclick=()=>{beginSelection();cancelContact();send('reset',{cold:true});};
 document.querySelector('#install-course').onclick=async()=>{
- const file=document.querySelector('#course-package').files[0];
+ const selection=beginSelection(),file=document.querySelector('#course-package').files[0];
  if(!file||file.size<128||file.size>32768){document.querySelector('#course-admission').textContent='Choose a course package containing 128 to32768 bytes.';return;}
- const selection=beginSelection(),transaction=document.querySelector('#course-transaction').value;
+ const transaction=document.querySelector('#course-transaction').value;
  const bytes=await selectionBytes(file,selection,document.querySelector('#course-admission'));
  if(bytes!==null)send('course-install',{bytes,transaction},[bytes]);
 };
@@ -69,15 +69,14 @@ document.querySelector('#install-course').onclick=async()=>{
 // to be chosen again for a retry or another private restore. Explicit Send
 // controls (course/replay) retain their selected files until the user sends.
 function selectedFile(input){const file=input.files[0];input.value='';return file;}
-document.querySelector('#restore').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await selectionBytes(file,beginSelection());if(bytes!==null)send('restore',{bytes},[bytes]);};
-document.querySelector('#pending-outcomes').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size>268435456){status.textContent='Outcome tape exceeds the machine bound';return;}const bytes=await selectionBytes(file,beginSelection());if(bytes!==null)send('outcomes',{bytes},[bytes]);};
-document.querySelector('#import').onchange=async e=>{const file=selectedFile(e.target);if(!file)return;if(file.size!==268435456){status.textContent='Expected a 256 MiB raw medium';return;}const name=document.querySelector('#medium').value,mode=sessionMode.value,bytes=await selectionBytes(file,beginSelection());if(bytes!==null)send('import',{name,mode,bytes},[bytes]);};
-document.querySelector('#replay').onclick=async()=>{let selection=selectionEpoch;try{
+document.querySelector('#restore').onchange=async e=>{const selection=beginSelection(),file=selectedFile(e.target);if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await selectionBytes(file,selection);if(bytes!==null)send('restore',{bytes},[bytes]);};
+document.querySelector('#pending-outcomes').onchange=async e=>{const selection=beginSelection(),file=selectedFile(e.target);if(!file)return;if(file.size>268435456){status.textContent='Outcome tape exceeds the machine bound';return;}const bytes=await selectionBytes(file,selection);if(bytes!==null)send('outcomes',{bytes},[bytes]);};
+document.querySelector('#import').onchange=async e=>{const selection=beginSelection(),file=selectedFile(e.target);if(!file)return;if(file.size!==268435456){status.textContent='Expected a 256 MiB raw medium';return;}const name=document.querySelector('#medium').value,mode=sessionMode.value,bytes=await selectionBytes(file,selection);if(bytes!==null)send('import',{name,mode,bytes},[bytes]);};
+document.querySelector('#replay').onclick=async()=>{const selection=beginSelection();try{
  const c=document.querySelector('#replay-checkpoint').files[0],io=document.querySelector('#replay-io').files[0],raw=document.querySelector('#replay-events').files[0];
  if(!c||!io||!raw)throw Error('Select checkpoint, backing outcomes and raw event capture');
  if(c.size>805306368||io.size>268435456||raw.size>268435456)throw Error('Replay input exceeds its bound');
  const name=document.querySelector('#medium').value,mode=sessionMode.value;
- selection=beginSelection();
  const checkpoint=await selectionBytes(c,selection);if(checkpoint===null)return;
  const replayLog=await selectionBytes(io,selection);if(replayLog===null)return;
  const events=JSON.parse(await raw.text());if(selection!==selectionEpoch)return;

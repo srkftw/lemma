@@ -1,6 +1,6 @@
 {
   "schema": "lemma-browser-controller-image-evidence/1",
-  "scope": "Ordinary actual controller image export and reusable same-path private restore; no guest policy moves into the host. Real browser tests use original unchanged Reader20; new optimized guest distribution is prepared only.",
+  "scope": "Ordinary controller image export, reusable private restore and selected-file submission ownership. Historical browser executions and current guest cold observations retain separate source identities; full current browser workflow remains pending.",
   "source_files": {
     "sim/browser/app.js": {
       "path": "sim/browser/app.js",
@@ -240,5 +240,140 @@
       "bytes": 441
     },
     "ordinary_behavior": "A slow file cannot restore/install/replay into a later selected machine. Names and transaction strings remain bound to selection. No guest or runtime change."
+  },
+  "rejected_new_selection": {
+    "receipt": {
+      "path": "build/browser/task006-rejected-selection-plan-a1/result.json",
+      "sha256": "344edf32849da19ca4f5749252bfd3c1e3469bf9691f04ebd041c35f4ce87754",
+      "bytes": 2921
+    },
+    "observed": {
+      "status": "PASS_REJECTED_NEW_SELECTION_CANCELS_OLDER_FILE_SUBMISSION",
+      "scope": "Actual maintained app deferred-file/DOM/worker fixture and prepared static distribution. No new guest or browser-persistence qualification from these host checks.",
+      "written_at": "2026-10-17T13:57:31.343028+00:00",
+      "original_source_commit": "bbce92dc724ded15814543181c09f72f6256a8e2",
+      "original_app": {
+        "path": "build/browser/task006-rejected-selection-plan-a1/original-app.js",
+        "sha256": "c7f6cee816419f96483aa4153e6847ae746adaca6f1ffedc97627c16225d06d4",
+        "bytes": 16440
+      },
+      "original_failure": {
+        "path": "build/browser/task006-rejected-selection-plan-a1/original-failure.log",
+        "sha256": "a4a0baf9007f9aed7985caa43a7c3ce13fc587d0c4635126eaf9e08f31c60e4b",
+        "bytes": 453
+      },
+      "observed_defect": "Actual new oversized restore selection reports its error, then obsolete pending restore submits4th rather than3 worker messages.",
+      "changed_behavior": "Begin selection cancellation before validation for restore, pending outcomes, import and explicit course/replay Send. Invalid input is not read or submitted; the previous delayed restore cannot follow its error.",
+      "controls": [
+        "restore",
+        "pending-outcomes",
+        "import",
+        "install-course",
+        "replay"
+      ],
+      "sources": {
+        "sim/browser/app.js": {
+          "path": "sim/browser/app.js",
+          "sha256": "2f1072423bbaa174a8fc86ec62ca45cf2e0377f4caf22cd996292785efbce488",
+          "bytes": 16475
+        },
+        "tests/lemmasim/browser_app_startup.mjs": {
+          "path": "tests/lemmasim/browser_app_startup.mjs",
+          "sha256": "83cf0a8bd846209dd7346313007def79d5a8aa7239ef5f9bbd706666bcb0fac8",
+          "bytes": 23265
+        }
+      },
+      "host_suite": {
+        "status": "PASS",
+        "tests": 324,
+        "seconds": 68.446,
+        "log": {
+          "path": "build/browser/task006-rejected-selection-plan-a1/final-host-suite.log",
+          "sha256": "a0d4760ccf5df3c8c9e4c6c38e946c1652f412791b3d835b0359bc8242e41934",
+          "bytes": 57299
+        }
+      },
+      "static_package": {
+        "status": "PASS_PREPARED_LOCAL_BROWSER_DISTRIBUTION",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-hint-publication-selection-browser-a2",
+        "manifest_sha256": "319b94a396ac385a4c885f63d2fbd2680eebee44a4820ec700d7fe2ff2ed73a6",
+        "source_bundle_sha256": "195b86c415c78a5c8dadc95e3774a688d8485c2370767b0b67e23919cf633ee4",
+        "files": 289,
+        "bytes": 17731776,
+        "standalone_verification": "PASS_LOCAL_BROWSER_DISTRIBUTION_BYTES",
+        "archive": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-hint-publication-selection-browser-a2.tar.gz",
+          "sha256": "a5491a041597b5c385c256452f86234a0687fe5cc4bcfad9a9f9cb7fa958db29",
+          "bytes": 2087340
+        },
+        "seconds": 2.6676253110636026
+      },
+      "active_worker": "Original immutable origin8816 worker continues current guest; this prepared UI has not been loaded there."
+    }
+  },
+  "current_hint_publication_browser_cold": {
+    "receipt": {
+      "path": "build/browser/task006-hint-publication-save32-plan-a1/cold-result-a1.json",
+      "sha256": "f668836d0efef33c1eb6449c37ec65b62d9de53600b972214378126de1f9e2de",
+      "bytes": 821
+    },
+    "observed": {
+      "status": "PASS_CURRENT_GUEST_BROWSER_COLD_READY_ALL_HOME_PIXELS_BACKING32",
+      "scope": "Actual independent browser CPU0 cold from opaque acknowledged32 backing; full controller plane and every backing byte. No snapshot cold input or full course/hint workflow claim.",
+      "cycle": 548000000,
+      "all_controller_pixels": 3630000,
+      "all_backing_bytes": 268435456,
+      "sequence": 32,
+      "worker_elapsed_to_ready_seconds": 3882.1391599999665,
+      "simulation_call_seconds": 3763.4011149957173,
+      "heap_bytes": 201326592,
+      "pending_IO": false,
+      "observed_guest_writes": 0,
+      "snapshot_used_for_cold": false,
+      "backing_sha256": "ca3200aea99e7b276c2d6e7a84d5210b3bfb66d172d6b757930dc3e3557f2373",
+      "pixel_sha256": "656d51bae46fdc3ce876dc617d30fcae85f7cab008331e9fdaa9ef4fe0b236ce",
+      "observer_seconds": 0.6828850709134713
+    },
+    "fixed600M_archive": {
+      "receipt": {
+        "path": "build/browser/task006-hint32-native-match-plan-a2/browser600M-result-a2.json",
+        "sha256": "e1f6ee2b060250943823906fcb80e0ea7185425a653818a974fbc28862955e13",
+        "bytes": 623
+      },
+      "observed": {
+        "status": "PASS_BROWSER_FIXED600M_OBSERVATIONAL_ARCHIVE_PIXEL_BACKING_QUEUE",
+        "scope": "Actual observational browser600M full archive CRC, all controller pixels/backing bytes, accepted future raw inputs. Native comparison remains pending.",
+        "cycle": 600000000,
+        "retired": 259887303,
+        "snapshot_bytes": 145736316,
+        "original_full_CRCs_valid": true,
+        "snapshot_sha256": "39a7f841fc6ad32a6070fdc9f8780da52cafa84105deca0e3fca8261aa71c9f8",
+        "all_controller_pixels": 3630000,
+        "all_backing_bytes": 268435456,
+        "event_queue": 2,
+        "raw_events": 2,
+        "native_relation": "PENDING",
+        "seconds": 41.63683001301251
+      },
+      "before": {
+        "path": "build/browser/task006-hint32-native-match-plan-a2/browser/cold600M-visible.json",
+        "sha256": "3eff46d9f5dc53a29eb00280cdc41fb6ed8509303ee5e3272cee08cb84f846e1",
+        "bytes": 4253
+      },
+      "after": {
+        "path": "build/browser/task006-hint32-native-match-plan-a2/browser/cold600M-after-snapshot-visible.json",
+        "sha256": "a4c75184470ffdddf3722428ace81397827c0b43006f52458a3e5cf453f2fe40",
+        "bytes": 4251
+      },
+      "authoritative_state_equal": true
+    },
+    "retained_observer_failure": {
+      "path": "build/browser/task006-hint32-native-match-plan-a2/browser600M-result.json",
+      "sha256": "db67713d282d971abfceaac2c639462af1483a9b4579debece630d6a99323040",
+      "bytes": 276
+    },
+    "observer_correction": "The first passive600M observer incorrectly compared raw PGM bytes with a(width,height,RGB) tuple. Corrected observer compares both complete parsed images; archive CRCs, full payload, original bytes and fixed boundary are unchanged. No machine rerun.",
+    "native_relation": "Current fixed600M/900M/901M native comparison pending; every original load-bearing state byte and event remains required.",
+    "remaining": "Actual complete course/edit/check/hint/save and independent durable-only browser reopen pending under original12h/6B plan."
   }
 }

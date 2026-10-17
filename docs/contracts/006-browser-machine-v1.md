@@ -326,6 +326,11 @@ superseded. Current read failures are reported locally; obsolete read failures
 cannot replace a newer operation's status. Auto-submit controls still clear
 their consumed selection so the identical file can be chosen again.
 
+A newer file selection or explicit course/replay Send cancels the older read
+before local validation, even when the new input is oversized, incomplete or
+otherwise rejected. Rejecting that input cannot later submit an older restore
+behind its error message. Invalid input is never read or sent to the worker.
+
 This is presentation/transport admission behavior in the maintained app. It
 does not validate a checkpoint, grant guest permissions or acknowledge storage;
 the worker and real machine retain those responsibilities. Deferred-file DOM

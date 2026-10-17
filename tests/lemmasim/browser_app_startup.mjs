@@ -99,6 +99,25 @@ async function appFixture(gpu){
  assert.equal(f.sent.length,count,'older restore overtook selected newer checkpoint');
  assert.equal(f.sent.at(-1).action,'restore');assert.equal(f.sent.at(-1).bytes,newest);
 }
+// Rejecting a newer file/Send must also cancel the old asynchronous selection.
+// Otherwise the error would be followed by an unexpected older restore.
+{
+ for(const control of ['restore','pending-outcomes','import','install-course','replay']){
+  const f=await appFixture(undefined),read=deferred();let invalidReads=0;
+  const pending=f.node('#restore').onchange({target:{files:[{size:512,arrayBuffer:()=>read.promise}],value:'old'}});
+  const invalid={size:805306369,arrayBuffer:()=>{invalidReads++;throw Error('invalid file read');}};
+  if(control==='install-course'){
+   f.node('#course-package').files=[invalid];await f.node('#install-course').onclick();
+  }else if(control==='replay')await f.node('#replay').onclick();
+  else await f.node('#'+control).onchange({target:{files:[invalid],value:'invalid'}});
+  const target=f.node(control==='install-course'?'#course-admission':'#status');
+  const message=target.textContent,count=f.sent.length;
+  assert.ok(message.length,'rejected input must remain visible');
+  read.resolve(new ArrayBuffer(512));await pending;
+  assert.equal(f.sent.length,count,`old restore followed rejected ${control}`);
+  assert.equal(target.textContent,message);assert.equal(invalidReads,0);
+ }
+}
 // Transaction IDs and destination names are selection-time inputs. Editing
 // fields during a read must not pair the old bytes with the new fields.
 {
