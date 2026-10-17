@@ -375,5 +375,40 @@
     "observer_correction": "The first passive600M observer incorrectly compared raw PGM bytes with a(width,height,RGB) tuple. Corrected observer compares both complete parsed images; archive CRCs, full payload, original bytes and fixed boundary are unchanged. No machine rerun.",
     "native_relation": "Current fixed600M/900M/901M native comparison pending; every original load-bearing state byte and event remains required.",
     "remaining": "Actual complete course/edit/check/hint/save and independent durable-only browser reopen pending under original12h/6B plan."
+  },
+  "current_hint_publication_mathematics": {
+    "status": "PASS_ACTUAL_CHECK_AND_CURRENT_HINT_EDIT_SAVE_COLD_PENDING",
+    "evidence": [
+      "build/browser/task006-hint-publication-save32-plan-a1/actual-math-completion-a1.json",
+      "build/browser/task006-hint-publication-save32-plan-a1/checked-rational-pixels-a1.json",
+      "build/browser/task006-hint-publication-save32-plan-a1/actual-current-hint-a1.json"
+    ],
+    "actual_submission": {
+      "goal": 1,
+      "answer": [
+        5,
+        6,
+        0,
+        0,
+        0
+      ],
+      "revision": 15,
+      "outcome": "Verified",
+      "evidence_revision": 15,
+      "request": 345,
+      "execution": "Real isolated Closure7 guest service; actual reply/reclamation in original checkpoint UART",
+      "durable_sequence": 37
+    },
+    "hint": {
+      "revision": 15,
+      "goal": 1,
+      "durable_sequence": 38,
+      "assistance_count": 3,
+      "full32_label_cells_match": true,
+      "provider": "authored local proposal; not live tutor"
+    },
+    "original_queued_input_failure": "Four tightly queued taps consumed but only first applied; retained actualSaved34 with unchanged document. Single-step path succeeds. New target backlog implementation is unqualified WIP, not retroactively applied to this immutable browser.",
+    "whole_deadline_unchanged": "2026-10-18T00:26:11.452097+00:00",
+    "full_D": "PENDING"
   }
 }

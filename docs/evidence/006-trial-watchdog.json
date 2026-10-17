@@ -1,6 +1,6 @@
 {
   "schema": "lemma-task006-trial-watchdog-evidence/1",
-  "status": "IMPLEMENTED_GENUINE_ROM_AND_KERNEL_ARTIFACTS_RECOVERY_RUNNING",
+  "status": "PASS_GENUINE_ROM_AND_WHOLE_LINKED_IMAGE_CONNECTED_CASES_RUNNING",
   "implementation_parent": "052e4675d170fbacc7cea7f2ce607d0aef602e01",
   "contract": "docs/contracts/006-trial-boot-watchdog-v1.md",
   "ROM": {
@@ -17,8 +17,8 @@
     "added_pre_functions": 15,
     "notebook_functions_pre": 904,
     "notebook_functions_post": 902,
-    "authority_sha256": "02870d5f97d0f4bcea8b616fe052614c86ff38818692e4fc841f82bc86f2475c",
-    "linked_image": "NOT_RUN",
+    "authority_sha256": "1136a8d43f3de98ca2908e8cec8f961ffd1ee2297d4ad3c388d614ed147c64d2",
+    "linked_image": "PASS_CORRECTED_STRICT_LINKED_OBSERVER_EXACT_ORIGINAL_SOURCE",
     "healthy_trial_disarm": "NOT_RUN"
   },
   "actual_recovery": {
@@ -38,7 +38,13 @@
       "premature phase2",
       "nonzero confirmation status"
     ],
-    "scope": "Component/host results, not linked guest recovery acceptance"
+    "scope": "Component/host results, not linked guest recovery acceptance",
+    "final_lemmasim_host_tests": {
+      "count": 324,
+      "seconds": 71.407,
+      "status": "PASS",
+      "path": "build/boot/task006-trial-watchdog-final-lemmasim-host-a1.log"
+    }
   },
   "retained_failures": [
     "build/boot/task006-trial-watchdog-rom-plan-a1",
@@ -49,9 +55,34 @@
     "build/boot/task006-trial-watchdog-kernel-host-a1.log"
   ],
   "limitations": [
-    "Final stable-source whole linked audit pending. Exploratory complete pre/post audit136.1276s passed after helper capture normalization repair; not the final source-sealed candidate.",
+    "Corrected whole linked artifact audit passes; actual healthy new-kernel disarm and stalled2B-clock expiry/fallback are still running. Later uncommitted ControlBacklog target work is not part of this451-input ELF.",
     "Original lake host C-generation run hit pinned Lean LCNF assertion; direct genuine ordinary elaboration/checked export passes, underlying host C-generation issue unresolved.",
     "Loader/ROM-stage hang supervision, confirmation interruption matrix, production identity/entropy and durable antirollback remain open.",
     "Whole-machine digital completeness, QEMU cached continuation, distribution rights and physical signoff remain separate and open."
-  ]
+  ],
+  "whole_linked": {
+    "original": "build/boot/task006-trial-watchdog-whole-plan-a1/result.json",
+    "original_status": "FAIL",
+    "original_seconds": 552.4459250940708,
+    "original_peak_RSS_bytes": 3458781184,
+    "original_reason": "New deployment absent from existing NumberPad constant-label lookup; actual host audit KeyError after genuine successful RV64 build.",
+    "corrected": "build/boot/task006-trial-watchdog-linked-reaudit-plan-a1/result.json",
+    "corrected_status": "PASS_REAUDITED_TRIAL_WATCHDOG_PRODUCT_IMAGE_EXACT_ORIGINAL_INPUTS",
+    "corrected_seconds": 335.6754126199521,
+    "corrected_peak_RSS_bytes": 267067392,
+    "ELF_sha256": "e45e3d6d1f2a4bbebf37504b1f957922c3065454d93801539d01fbfb450edce7",
+    "original_consumed_inputs": 451,
+    "target_recompiled": false,
+    "observer_change": "Exact new tuple only; same complete67instruction/13guard/25table/2constant check. Existing identities and failed report preserved."
+  },
+  "positive_connected": {
+    "status": "RUNNING",
+    "plan": "build/boot/task006-trial-watchdog-positive-plan-a1/plan.json",
+    "plan_clarification": "build/boot/task006-trial-watchdog-positive-plan-a1/plan-clarification-a1.json",
+    "source_files": 1861,
+    "package_sectors": 1059,
+    "image_identity": 2814749767106581,
+    "image_sha256": "db89cf1549d4b04894079c49c103151da327b1192386ebf5f2b8c9eb4c0998ca",
+    "scope": "Actual guest install into slot0; retain known-good13 in slot1 and Saved32. Require actual arm, earlier durable health then disarm, independent CPU0 confirmed cold and complete pixels/media. No success claimed until terminal result."
+  }
 }

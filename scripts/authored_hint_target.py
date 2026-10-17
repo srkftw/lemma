@@ -146,8 +146,13 @@ def number_pad_machine(normalized, unit, assembly, symbol):
     """
     if not scoped_publication(unit):
         return normalized
-    authority = json.loads(AUTHORITY2.read_text())
-    entry = authority['configurations'][unit['configuration']]['number_pad_pool_alpha']
+    from product_reader_deployment import WATCHDOG_CONFIGURATION
+    if unit.get('configuration') == WATCHDOG_CONFIGURATION:
+        from trial_watchdog_target import authority as watchdog_authority
+        entry = watchdog_authority(unit, 'notebook')['number_pad_pool_alpha']
+    else:
+        authority = json.loads(AUTHORITY2.read_text())
+        entry = authority['configurations'][unit['configuration']]['number_pad_pool_alpha']
     if (set(entry) != {'old_symbol', 'new_symbol'} or entry['new_symbol'] != symbol or
             any(re.fullmatch(r'lemma_user_notebook_core0_scalar_\d+', entry[k]) is None
                 for k in ('old_symbol', 'new_symbol'))):

@@ -1068,14 +1068,14 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "052e4675d170fbacc7cea7f2ce607d0aef602e01",
-    "run": 39038954755,
+    "commit": "9f138fff2d46c4c3d0ad0e5fd8322d46ed14c030",
+    "run": 39044187299,
     "status": "completed",
     "conclusion": "success",
     "jobs": 11,
     "steps": 117,
     "skipped": 0,
-    "receipt": "build/ci/task006-052-complete.json"
+    "receipt": "build/ci/task006-9f-complete.json"
   },
   "browser_pointer_ink_milestone": {
     "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
@@ -1928,11 +1928,11 @@
     }
   },
   "authored_hint_publication2": {
-    "status": "PASS_COMPLETE_LINKED_CANONICAL_COMPANION_PRODUCT_AND_CONNECTED_FAST_PREPARED_DISTRIBUTIONS_RTL_RUNNING",
+    "status": "PASS_LINKED_CANONICAL_COMPANION_PRODUCT_CONNECTED_FAST_RTL_AND_AUTHENTICATED_PRODUCT14_BROWSER_D_PENDING",
     "evidence": {
       "path": "docs/evidence/006-course-reader-location.json",
-      "sha256": "cd1445aca4790be62373bdc4f1b227a4e812e822def4311e7da5b74a8390e7a7",
-      "bytes": 65391
+      "sha256": "27bc727e7082925da428d73d907c9140c67fc69d8b65385d9c36f9f512147b49",
+      "bytes": 69076
     },
     "scope": "All3 actual course publishers use existing revision-bound aligned renderer. Same tile/dirty/framebuffer/error semantics; no new language/runtime/checker authority. Historical authority and generic raw corpus pins retained. Only post ControlRender.character local own-symbol SSA-name alpha-renaming independently compared; actual raw complete successor corpus pins are exact.",
     "current_browser_cold": {
@@ -1966,12 +1966,12 @@
     "behavior": "Versioned ROM arms independent20s trial watchdog; separate kernel disarms after actual durable confirmation",
     "model": "Existing Power-v2 retained; exact reset-edge continuation currently running",
     "RTL": "Three actual authenticated arms and two brownout reboots observed; expiry/fallback still running",
-    "guest": "Genuine boot2 ROM PASS76.72s; genuine Kernel7/Notebook2 exports and pre/post audit; whole linked candidate pending",
+    "guest": "Genuine ROM PASS76.72s; complete451-input RV64 image passes corrected strict linked re-audit335.68s; original552.45s whole audit failure retained. Healthy-disarm and stalled2B expiry/fallback still running.",
     "distribution": "Explicit prepared schema2 with exact ROM/source/artifact validation; production trust open",
     "physical": "No new physical qualification",
     "evidence": {
       "path": "docs/evidence/006-trial-watchdog.json",
-      "sha256": "9f10c085bfd1eb6a2e40d54e5ed6f7cc4d35ad4c6778165309f3fde4dc25aeaa"
+      "sha256": "8048b6eab07bc5ac1bd375e88b7e31aebf11f973e0dd7d7a8ed95f107c5cde27"
     }
   }
 }

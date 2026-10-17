@@ -530,5 +530,16 @@
       "sha256": "eb095449f1707d385d97cb4ffd45fa082bc04dc85a45586856fa1f8d1538012a",
       "bytes": 701
     }
+  },
+  "outer_channel_attempt_a5": {
+    "status": "FAIL",
+    "geometry": "PASS actual ODB macro extents/orientations/nonoverlap at x250, die1350x850",
+    "basis": "Actual a4 router314markers:125left/9right/180between macros; actual sample_x30 guard critical path retained.",
+    "result": "build/silicon/physical/pen-sram-route-a5/result.json",
+    "actor_seconds": 56.43705675704405,
+    "supervised_seconds": 57.18489400704857,
+    "peak_owned_RSS_bytes": 369401856,
+    "failure": "GRT-0232 routing congestion too high before detailed routing; no detailed-route/DRC/timing success.",
+    "scope": "Changed private prototype floorplan only; original10ns constraints/rules/3-iteration900s cap and full SRAM/circuit unchanged. Not adopted by maintained simulation/physical profile."
   }
 }

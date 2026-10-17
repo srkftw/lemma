@@ -44,12 +44,14 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--public-development-key', action='store_true', required=True)
     parser.add_argument('--case',choices=('saved14-notebook','saved38-course-reader',
-                        'saved38-course-reader-pool-read','saved32-course-hint-publication'),
+                        'saved38-course-reader-pool-read','saved32-course-hint-publication',
+                        'saved32-course-trial-watchdog'),
                         default='saved14-notebook')
     parser.add_argument('--expected-home',type=Path)
     parser.add_argument('--expected-course',type=Path)
     args = parser.parse_args()
-    hint_publication = args.case == 'saved32-course-hint-publication'
+    supervised_trial = args.case == 'saved32-course-trial-watchdog'
+    hint_publication = supervised_trial or args.case == 'saved32-course-hint-publication'
     reader = hint_publication or args.case in ('saved38-course-reader','saved38-course-reader-pool-read')
     pool_read = args.case == 'saved38-course-reader-pool-read'
     require(not reader or args.expected_home is not None and args.expected_course is not None,
@@ -65,7 +67,7 @@ def main():
     # it receives the same original Reader18 execution/deadline ceilings.
     sectors, sequence_expected = (1057 if pool_read else 1056,38) if reader else (724,14)
     if hint_publication:
-        sectors, sequence_expected = 1058, 32
+        sectors, sequence_expected = (1059 if supervised_trial else 1058), 32
     out = args.work_dir.resolve()
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
     out.mkdir(parents=True)
@@ -96,6 +98,13 @@ def main():
             'Saved32 medium; all original Reader18 clock, host and resource ceilings retained. '
             'Original724/1056/1057-sector cases stay strict. Complete home/course references '
             'come from the qualified current guest fast cold/reopen; no snapshot cold input.')
+
+    if supervised_trial:
+        report['bound_basis'] = ('Separate audited1059-sector supervised Product10 image on exact schema2 ROM; '
+            'actual confirmed notebook13 retained in the other slot and real Saved32 user medium. '
+            'All original Reader clock, host and resource ceilings retained. '
+            'Require observed actual arm, durable health before actual disarm and independent confirmed cold. '
+            'Original724/1056/1057/1058-sector cases stay strict.')
 
 
     def save():
@@ -148,11 +157,35 @@ def main():
                     'original cold/Ready clock or host bound: ' + name)
             rows = guest_events(live / 'uart.bin')
             health = [r for r in rows if r[0] == 0x473]
+            disarmed = [r for r in rows if r[0] == 0x47b]
+            if supervised_trial:
+                power = state['power']
+                require(power['reset_cause'] == 1 and power['reset_epoch'] == 0,
+                        'healthy image reset before confirmation/disarm')
+                if confirm:
+                    observation = report['watchdog_supervision']
+                    if power['watchdog_armed']:
+                        require(0 < power['watchdog_remaining'] <= 2000000000,
+                                'actual independent trial timeout differs')
+                        observation['armed_observed'] = True
+                    if disarmed:
+                        require(observation['armed_observed'] and disarmed == [(0x47b,1,2000000000,0,0)] and
+                                health and health[-1][1] == 0 and
+                                rows.index(health[-1]) < rows.index(disarmed[0]) and
+                                not power['watchdog_armed'] and power['watchdog_remaining'] == 0 and
+                                state['boot_backing']['durable_barrier'] > 0,
+                                'watchdog disarm lacks actual earlier arm/durable health/command')
+                        observation['durable_disarm_observed'] = True
+                else:
+                    require(not power['watchdog_armed'] and not disarmed,
+                            'confirmed cold boot unexpectedly arms trial watchdog')
+
             require(not state['finished'] and not any(r[0] in (0x41f, 0xd4, 0xf4, 0x424) for r in rows)
                     and all(r[1] == 0 for r in health), 'actual guest/confirmation failure')
             idle = all(state[k] == 0 for k in ('event_queue', 'pen_queue', 'uart_queue',
                        'paper_busy', 'panel_pending_pixels', 'block_state', 'dma_outstanding'))
-            if idle and state['panel_completed'] and any(r[0] == 0x420 for r in rows) and (health or not confirm):
+            if idle and state['panel_completed'] and any(r[0] == 0x420 for r in rows) and (health or not confirm) and (not supervised_trial or not confirm or
+                    report['watchdog_supervision']['durable_disarm_observed']):
                 panel = out / (name + '.ppm')
                 call(live, {'action': 'panel', 'path': str(panel)})
                 if visible_pixels(panel) == (1650, 2200, expected):
@@ -171,6 +204,10 @@ def main():
 
     try:
         prepared, _, _ = auth.prepared(args.prepared)
+        require(not supervised_trial or auth.watchdog_policy(prepared),
+                'supervised trial requires exact prepared schema2 watchdog ROM')
+        if supervised_trial:
+            report['watchdog_supervision'] = {'armed_observed':False, 'durable_disarm_observed':False}
         report['host_inputs'] = {**prepared['host_scripts']}
         for name in ('scripts/lemmasim-auth', str(Path(__file__).relative_to(ROOT)),
                      'scripts/package_product_image.py'):
@@ -178,7 +215,7 @@ def main():
         report['prepared_sha256'] = sha(args.prepared / 'prepared.json')
         old = json.loads((args.package / 'package.json').read_text())
         fresh = validate_package(args.guest_build, out / 'revalidated-package', old['identity'], args.guest_source_archive)
-        require(fresh['configuration'] == ('lemmasim-silicon-product-course-reader-bulk-notebook' if reader else 'lemmasim-silicon-product-executed-bulk-notebook')
+        require(fresh['configuration'] == ('lemmasim-silicon-product-course-watchdog-bulk-notebook' if supervised_trial else 'lemmasim-silicon-product-course-reader-bulk-notebook' if reader else 'lemmasim-silicon-product-executed-bulk-notebook')
                 and fresh['image_sha256'] == old['image_sha256'] == sha(args.package / 'image.bin'),
                 'original genuine audited notebook package changed')
         report['compiled_package'] = fresh
@@ -201,7 +238,9 @@ def main():
         shutil.copyfile(args.disk, disk)
         original_boot = boot.read_bytes()
         known = metadata(original_boot)
-        require(known[3:5] == (0, 1001), 'declared known-good confirmed source required')
+        target_slot = 0 if supervised_trial else 1
+        require(known[3:5] == ((1,0x000a000000000013) if supervised_trial else (0,1001)),
+                'declared confirmed source required; supervised trial retains actual known-good notebook13')
         _, sequence, records = recover(disk.read_bytes())
         require(sequence == sequence_expected, 'declared genuine source sequence required')
         if reader:
@@ -213,7 +252,7 @@ def main():
         live = launch('trial', boot, disk, True)
         command = [sys.executable, str(ROOT / 'scripts/lemmasim-auth'), '--public-development-key',
                    'install-resume', '--session-dir', str(live), '--package', str(args.package.resolve()),
-                   '--tag', str(args.tag.resolve()), '--slot', '1', '--transaction', '2000',
+                   '--tag', str(args.tag.resolve()), '--slot', str(target_slot), '--transaction', '2000',
                    '--cycles', str(install_cap), '--timeout', str(install_seconds), '--quantum', '100000']
         started = time.monotonic()
         with (out / 'install.stdout').open('xb') as log, (out / 'install.stderr').open('xb') as errors:
@@ -240,8 +279,9 @@ def main():
         confirmed = out / 'confirmed.raw'
         call(live, {'action': 'export-boot-medium', 'path': str(confirmed)})
         row = metadata(confirmed.read_bytes())
-        require(row[2] == known[2] + 3 and row[3:8] == (1, old['identity'], 2, 0, 0)
-                and confirmed.read_bytes()[8 * 512:32776 * 512] == original_boot[8 * 512:32776 * 512],
+        require(row[2] == known[2] + 3 and row[3:8] == (target_slot, old['identity'], 2, 0, 0)
+                and confirmed.read_bytes()[(32776 if supervised_trial else 8)*512:(65544 if supervised_trial else 32776)*512]
+                    == original_boot[(32776 if supervised_trial else 8)*512:(65544 if supervised_trial else 32776)*512],
                 'guest confirmation did not preserve known-good image or exact attempt/confirm generations')
         require(filecmp.cmp(args.disk, disk, shallow=False), 'updated notebook changed any document byte')
         close(live)
@@ -284,7 +324,7 @@ def main():
         close(cold)
         guard()
         require(all(sha(p) == h for p, h in report['original_inputs'].items()), 'original input changed')
-        report.update(status=('PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER' if reader else 'PASS_AUTHENTICATED_NOTEBOOK_AB_UPDATE_GUEST_CONFIRMATION_COLD'),
+        report.update(status=('PASS_AUTHENTICATED_TRIAL_WATCHDOG_UPDATE_DISARM_COLD_READER' if supervised_trial else 'PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER' if reader else 'PASS_AUTHENTICATED_NOTEBOOK_AB_UPDATE_GUEST_CONFIRMATION_COLD'),
             all_expected_pixels=True, all_document_bytes_unchanged=True, snapshot_cold_input=False,
             confirmed_metadata=list(row[:9]), confirmed_boot_sha256=sha(confirmed))
     except BaseException as error:

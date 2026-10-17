@@ -5881,3 +5881,71 @@ real guest-installed Lean CryptoProbe1001. Three actual arms, zero-retirementWFI
 exact countdown and two brownout reboots observed;2B-clocks expiry, exact reset
 edge/fork and known-good fallback still RUNNING under original32400s/4B bounds.
 Positive healthy-trial disarm and full failure/trust matrix remain unqualified.
+
+
+2026-10-17 16:12Z milestone: head9f138fff2d46c4c3d0ad0e5fd8322d46ed14c030,
+CI162/39044187299 SUCCESS11jobs/117steps/zero skipped. Current a877 canonical
+RTL full scenario PASS3,620,000,000clocks/16665.953755s/peak453144576B/no owned
+survivors. First coldReady460M1790.024s; independent cold548M3000.815s; complete
+reopen230M1148.384s. Six real math outcomes and current/wrong-goal hint handling,
+raw11pixels/Saved32/all3.63M home/all256MiB/edition3node3/source-at-close equal.
+Actual product14 authenticated install/confirmation/newCPU cold/course PASS
+2,215,700,000clocks/12147.458694s: install520.3M, handoff127.4M, confirmation601M,
+cold728M, reopen239M; every original Saved32 user byte preserved. Exact receipts
+remain in their original ...hint-publication-rtl-plan-a2/... and
+...hint-publication-product-connected-plan-a2/... output directories.
+
+New supervised image15 genuine clean9f whole build succeeded but original linked
+observer FAILED on absent new-config NumberPad alpha-label lookup. Original
+whole FAIL552.445925s/peak3458781184B retained. Exact new tuple lookup now uses
+its copied predecessor alpha data; no instruction/guard/table/constant check
+weakened. Current strict re-audit PASS335.675413s/peak267067392B of unchanged
+ELFe45e3d6d1f2a4bbebf37504b1f957922c3065454d93801539d01fbfb450edce7,
+complete original451-input source archive; no target recompile. Formal source
+archive task006-trial-watchdog-product-source-a1 PASS. Ordinary Product10 package
+1059sectors/db89cf1549d4b04894079c49c103151da327b1192386ebf5f2b8c9eb4c0998ca,
+identity0x000a000000000015/slot0.tag. Actual new positive checker runs in frozen
+1861-file ...trial-watchdog-positive-plan-a1/consumed-host-source-root; known-good
+notebook13/slot1 and actual Saved32 are private copies. Original32400s/4.3B caps.
+plan-clarification-a1.json retains/corrects unused predecessor1058/count1849/prose;
+original argv/checker/observer_scope already declared1059 before admission, no
+bound/source/oracle/rerun change. Provisional geometry hash used old default7
+compatibility only for size; actual ordinary packager uses existing Product10
+compatibility. Corrected full package/tag identity above is authoritative.
+Healthy arm/disarm/cold and negative2B expiry/64-clock fork/fallback still running.
+Negative live read-only observation486600416clocks: stalled12,808,278retired,
+watchdog remaining1,536,628,924, cause5/epoch2; no clock advance by observer.
+
+Browser22 current immutable a877 worker: real budget8, denominatorclear/6/CHECK
+PASS Saved37, revision15/evidence15/5over6/Verified through actual isolated
+closure345; original checkpoint UART includes matching reply/reclamation.
+Independent exact arithmetic/workspace and every answer/outcome/hint-row glyph
+pixel match. Real authored local hint Saved38/assistance3/revision15 complete
+32-cell label PASS at1338250000. Current raw PLUS edit to5over7/rev16 running
+original150M/3600; must hide applicable hint/evidence, retain history. Whole12h/6B
+end00:26:11.452097Z unchanged. Files ...hint-publication-save32-plan-a1/browser;
+earlier math raw/PGM exports remain under ...hint32-native-match-plan-a2/browser.
+No full current browserD/cold-after-new-edit claim yet. New exportWorkflowCut
+CUA helper writes main browser directory explicitly. Current-hint.bin is original
+observational full snapshot; UART parsed, independent complete CRC still pending.
+
+New target work UNCOMMITTED: Lemma/Notebook/ControlBacklog.lean and Notebook.lean
+changes add8 mathematical taps in private existing User BSS20d00..20f20, bound to
+NS/page/package/edition/CRC/node; ordinary original numeric controls replay only
+when idle. Overflow/context mismatch defers controlled course error. Original
+writing-region guard prevents busy header/navigation taps becoming ink; existing
+free ink buffer may record raw writing during publication. Core0 User2 unchanged.
+All3 Reader/Chooser/companion loops use helper; original non-Reader roots remain
+unchanged. Initial genuine export103.5989s passes; same-root pre904->925 has
+exact3 old input/cancel/loop owners changed+21 added. Final source adds explicit
+bookInkTap guard (22 additions); fresh8-profile capture now RUNNING at
+build/courses/task006-control-backlog-capture-plan-a2 (tool session50190), source
+344 frontend inputs frozen,1800s/4GiB bounds. Do not edit Lean sources until it
+finishes. Full artifact refinement/semantic audits, linked pair and actual queued
+4-tap/ink/overflow/context cases remain NOT_RUN; no working queue claim yet.
+Contract006-notebook-control-backlog-v1.md also uncommitted. Preserve this work.
+
+Changed private pen SRAM outer-channel attempta5 actualODB geometry PASS,
+OpenROAD FAIL56.437057s/GRT-0232 excessive congestion before detailed routing;
+supervised57.184894s/peak369401856B, original10ns/rules/900s3iterations retained.
+No adoption, route/DRC/timing success or rule waiver. Current failures preserved.

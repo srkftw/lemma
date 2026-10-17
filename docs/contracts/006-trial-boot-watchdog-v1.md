@@ -1,7 +1,8 @@
 # Authenticated trial boot watchdog policy v1
 
-Implementation in progress; execution, interrupted confirmation, fallback and
-document-preservation acceptance are not yet qualified.
+The genuine ROM and complete linked four-role kernel image are qualified.
+Connected healthy disarm and stalled-watchdog/brownout/fallback runs are active;
+interrupted confirmation and their document-preservation acceptance remain open.
 
 `core0-boot-v0.2` inherits exactly the scalar language, calls, checked physical
 RAM, UART and nonvolatile I/O of `core0-boot-v0.1`. It adds aligned64-bit device

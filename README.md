@@ -1364,8 +1364,10 @@ It uses the same native RTL machine and guest recovery transactions. The key
 open. Actual MAC rejection, authenticated canonical Ready, raw ink/Save and
 independent authenticated cold recovery pass on the older Product10 notebook.
 Installation plus both boots and Save take 2.3308 billion RTL clocks and
-12,123.862 host seconds. The latest course image and interrupted authenticated
-update/power acceptance remain separate open results.
+12,123.862 host seconds. The current hint-publication course image14 now passes actual guest installation,
+confirmation, independent authenticated cold and complete home/course reopening:
+2.2157 billion RTL clocks/12,147.459 host seconds, preserving every Saved32 user
+byte. Interrupted authenticated update/power acceptance remains separate.
 
 ```sh
 nix develop --no-write-lock-file --command python3 scripts/check_crypto.py \
@@ -2649,3 +2651,38 @@ This consumes already present pinned PDK Git objects. See the
 capacity, source/tool admission and explicit physical limitations. Completed
 experimental routing still fails; the option does not close timing, process
 DRC/LVS/PEX, full-SoC memory or native/browser checkpoint support.
+
+
+The additive supervised trial path uses `core0-boot-v0.2` and the explicit
+`--trial-watchdog` preparation flag. The ROM arms Power-v2 after validating a
+trial; `lemmasim-silicon-product-course-watchdog-bulk-notebook` disarms after the
+original durable health confirmation. Old boot configurations remain available.
+The current genuine451-input image passes the complete linked audit after a
+new-deployment NumberPad observer repair; its original failure is retained.
+Actual healthy-disarm and stalled-watchdog/fallback campaigns remain running.
+This still uses the public development key and has no production trust claim.
+
+```sh
+# Use a clean corresponding implementation or its explicit consumed sources.
+nix develop --no-write-lock-file --command python3 scripts/build_trial_watchdog_boot.py \
+  --public-development-key --work-dir build/boot/UNUSED_TRIAL_WATCHDOG_ROM
+nix develop --no-write-lock-file --command python3 scripts/build_kernel.py \
+  --configuration lemmasim-silicon-product-course-watchdog-bulk-notebook \
+  --stage supervisor --opt-level O2 --output-dir build/kernel/UNUSED_TRIAL_KERNEL
+nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py \
+  build/kernel/UNUSED_TRIAL_KERNEL --timeout 300
+./scripts/lemmasim-auth --public-development-key prepare --trial-watchdog \
+  --native-build build/silicon/task006-product-executed-runtime-a3 \
+  --native-source-archive build/silicon/task006-product-executed-runtime-a3/consumed-source-root \
+  --rom-build build/boot/task006-trial-watchdog-rom-plan-a2/consumed-host-source-root/build/rom \
+  --rom-source-archive build/boot/task006-trial-watchdog-rom-plan-a2/consumed-host-source-root \
+  --output-dir build/boot/UNUSED_TRIAL_PREPARED
+```
+
+The ordinary `launch`, `install-resume`, `boot`, snapshot and private restore
+commands above apply to this prepared instance. Use a slot-specific tag and
+private copies of media. The connected checker adds the explicit
+`--case saved32-course-trial-watchdog` alongside the existing strict cases;
+its actual1059-sector image installs in slot0 and preserves confirmed notebook13
+in slot1. Commands, original failures and unfinished outcomes are retained in
+`docs/evidence/006-trial-watchdog.json` and `docs/plan/006-session-state.md`.

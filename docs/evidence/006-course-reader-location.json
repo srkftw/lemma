@@ -1292,6 +1292,96 @@
         "sha256": "c7ddad91fd6d3ab861b3cf84178b7a0e7d06112b11b69db83b8097db057d0718",
         "bytes": 22580
       }
+    },
+    "actual_canonical_RTL": {
+      "status": "PASS_FRESH_EDITION3_CHOOSER_CHECK_EDIT_HINT_SAVE_INDEPENDENT_COLD_READER",
+      "result": "build/courses/task006-hint-publication-rtl-plan-a2/consumed-host-source-root/build/connected/result.json",
+      "result_sha256": "77752c18ca2f7d940d16b7a543e9cc6d009dccb9f6cd8d56ef1081de260d732d",
+      "RTL_clocks": 3620000000,
+      "host_seconds": 16665.953755368013,
+      "sampled_owned_peak_RSS_bytes": 453144576,
+      "cold_Ready": {
+        "name": "cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 460000000,
+        "execution_units": 460000000,
+        "clock_scope": "canonical RTL clocks",
+        "host_seconds": 1790.0242742879782,
+        "phase_clock_cap": 1000000000,
+        "phase_host_cap": 7200
+      },
+      "independent_cold_Ready": {
+        "name": "second-cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 548000000,
+        "execution_units": 548000000,
+        "clock_scope": "canonical RTL clocks",
+        "host_seconds": 3000.815145545057,
+        "phase_clock_cap": 1000000000,
+        "phase_host_cap": 7200
+      },
+      "independent_reopen": {
+        "name": "cold-reader-edition3-node3",
+        "initial_cycle": 548000000,
+        "final_cycle": 778000000,
+        "execution_units": 230000000,
+        "clock_scope": "canonical RTL clocks",
+        "host_seconds": 1148.3836442569736,
+        "phase_clock_cap": 400000000,
+        "phase_host_cap": 3600
+      },
+      "all_cold_home_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "sequence": 32,
+      "raw_ink_pixels": 11,
+      "controlled_failure_outcomes": {
+        "division_by_zero": 2,
+        "unsupported": 4,
+        "invalid_input_precedes_budget": 2,
+        "valid_input_zero_semantic_budget": 5,
+        "workspace_preserved_for_annotation_and_Save": true
+      },
+      "source_at_close_equal": true,
+      "owned_survivors": {},
+      "scope": "Actual1650x2200/128MiB/8192-frame canonical0.3 guest, all six exact math outcomes/current-wrong-goal hints/edit/Save/rawink/independent cold/course. No browser, full proof kernel, physical or QEMU timing claim."
+    },
+    "authenticated_product14": {
+      "status": "PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER",
+      "result": "build/boot/task006-hint-publication-product-connected-plan-a2/consumed-host-source-root/build/connected/result.json",
+      "result_sha256": "943cd13f51667a5ed05e76632964befecd749f3e53d58ae3d5c3fbb686c0265f",
+      "image_identity": 2814749767106580,
+      "RTL_clocks": 2215700000,
+      "host_seconds": 12147.458693790017,
+      "all_pixels": true,
+      "all_document_bytes_unchanged": true,
+      "phases": [
+        {
+          "name": "actual-resumable-notebook-installation",
+          "clocks": 520300000,
+          "seconds": 2714.357100079069
+        },
+        {
+          "name": "guest-attempt-publication-authenticated-trial-handoff",
+          "clocks": 127400000,
+          "seconds": 823.1119782520691
+        },
+        {
+          "name": "trial-Ready-guest-confirmation",
+          "clocks": 601000000,
+          "seconds": 3477.292624298949
+        },
+        {
+          "name": "confirmed-new-CPU-cold-all-pixels",
+          "clocks": 728000000,
+          "seconds": 3780.5529027360026
+        },
+        {
+          "name": "authenticated-cold-raw-COURSE-saved-example3",
+          "clocks": 239000000,
+          "seconds": 1348.089044864988
+        }
+      ],
+      "scope": "Public development key; immutable ROM/NV guest install/health-confirmation/newCPU cold/fullhome/course node3. New supervised image15 and full interrupted-update/power trust matrix separate."
     }
   }
 }
