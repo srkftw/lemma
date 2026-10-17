@@ -1,3 +1,4 @@
+<!--
 # Selected 0.3 pen hardware reset and watchdog state
 
 The selected fast successor resets the entire pen controller on completed
@@ -55,3 +56,5 @@ were reaped.
 This closes the observed fast pen reset/watchdog bugs. Paper reset parity,
 RTL/QEMU reset-duration parity and full architectural equivalence remain
 unqualified; same-backend snapshots do not permit microstate migration.
+
+-->

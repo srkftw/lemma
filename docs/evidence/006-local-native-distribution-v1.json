@@ -1,0 +1,754 @@
+{
+  "schema": "lemma-local-native-distribution-evidence/1",
+  "status": "PASS_EXTRACTED_NATIVE_COURSE_MATH_INK_COLD_WITH_CENSUS_OBSERVER_CORRECTION_AND_REAL_INIT",
+  "scope": "Reusable extracted native command package. Actual source8 guest/42phase functional workflow through packaged commands with independently qualified missing-only cold/source observer; original harness failures retained. New ordinary initializer/help repair separately exercised. No fast timing/arbitrary cached-state or new-host/license claim.",
+  "implementation_inputs": {
+    "scripts/package_native.py": "5474ccc0c0f1a70a58d212592a73230404151680f0e0556df1b7ead1191daf4d",
+    "scripts/native_bundle_relocation.py": "411a2b9471746c2cd5bb4e3155340fbdc960c2bd77846f1f80a1886d9974bc73",
+    "sim/native/run_local.py": "787ff1d5a99bd8a5c49bc7167d778fb704137eecbd07b73e23183c28486e0f39",
+    "tests/silicon/test_native_bundle_relocation.py": "c7ce0ca9e710a7f5d0eff51534388bbaefabd2cda52384156ddfdd1c6e3de0da"
+  },
+  "package": {
+    "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
+    "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-native-a4",
+    "manifest_sha256": "a9abd3d84e27a937bcc2dfa3d4c64a4cd29f754f0f51f9b0c8615ae761c93b57",
+    "source_bundle_sha256": "ffe65b762e4b928fd89f0d33e77e05749e0d08cc847e479bbe0f4a3ac7dc7b16",
+    "files": 1568,
+    "bytes": 137943444,
+    "ordinary_both_backend_both_guest_admission": true,
+    "host_dependencies": "Exact external Nix files retained as prerequisites",
+    "guest_execution": "NOT_EXERCISED_BY_PACKAGING",
+    "host_runtime_archive": {
+      "format": "nix-store-export",
+      "path": "runtime-closure.nar",
+      "sha256": "17d6dda95ff936f788902e3ab6b69146b69fb827bf8b1401cc1e7fd55ae91245",
+      "bytes": 49253648,
+      "store_roots": [
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib"
+      ],
+      "complete_requisites": [
+        "/nix/store/g60m3aky9f59wgy1gi0y06xwmbw19d6m-xgcc-16.2.0-libgcc",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib",
+        "/nix/store/jp8ql2fnd61xhvb4vsfp0bqwrzf16qrp-libunistring-1.4.2",
+        "/nix/store/q0lbdx5yv93a3md74kjhm0v2kljjii89-libidn2-2.3.8",
+        "/nix/store/q2mkz6ca1alqfqf750dygvakmq8kjrwz-gcc-16.2.0-libgcc"
+      ],
+      "dependency_files": {
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2": "e2e9975273f65f7cb730f4fcc8a9a5aae62763b6263de877a8b896311819d7b6",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libc.so.6": "ef3843ed24108fc3cfde4095cdb12e0643b9953f4b902bad8152d002fc0cbbe3",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libm.so.6": "935fd3fa15c35746041cfa475003571dc51b9ce0c395034ac9d50bb8e1583919",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libpthread.so.0": "244961bf4e6c9211890bf0fe41689e3d7e7ee4eb3d6c58c3eb3841178384f529",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib64/ld-linux-x86-64.so.2": "e2e9975273f65f7cb730f4fcc8a9a5aae62763b6263de877a8b896311819d7b6",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libatomic.so.1": "f6e57bb416b74bdc6a0c7c61efd2c6670f666e53a658092b68414668640416d0",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libgcc_s.so.1": "e80a9d87e1a0b8249700f459767b257b01969c79bee3c8fb15e35e1e9c4da055",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libstdc++.so.6": "47c4e32721428eb2078bb9fb0670805f94821b21601f2b191bea4a1f1b223e2d"
+      },
+      "tool": {
+        "path": "/run/current-system/sw/bin/nix-store",
+        "binary": "/nix/store/yhbbi1pjdkxss2f6k5pgg4gv0r8fva7f-nix-2.31.2/bin/nix",
+        "sha256": "6bd632acf71ef7bcb98c61019e557fea959f2d8c1b2d9918702dfc8e5c66fdf0"
+      },
+      "scope": "Existing host runtime files only; no import, download, trust change or guest runtime linkage"
+    },
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-native-a4.tar.gz",
+      "sha256": "ff3f1d882b65d5f3a4704b522392dd690362c28a4e88f797b7c06b7d01643b4d",
+      "bytes": 28413646
+    },
+    "seconds": 30.51501711504534
+  },
+  "qualified_platform": "Actual Linux x86-64 with inventoried Nix runtime and isolated Python -I from /tmp",
+  "actual_transport": {
+    "path": "build/distribution/task006-native-package-runtime-a2/result.json",
+    "sha256": "92dc1c98e5a5e6ba4a3bbfc1a4cfb12d86ac81747edee70bad48ec22a6f68202",
+    "status": "PASS_EXTRACTED_NATIVE_CONTROL_AND_GENUINE_TRANSPORT_ONLY",
+    "seconds": 11.424217818072066,
+    "clocks": 1000,
+    "scope": "Existing real machine controller inspection plus new extracted RTL session, exact guest/runtime identity, real retirement and observational snapshot. Private copied raw medium; not Ready."
+  },
+  "offline_runtime": {
+    "path": "build/distribution/task006-native-package-qualification-a1/closure-import-a1/result.json",
+    "sha256": "e4379963c6f231d04bf98b37d08c29d7da3c20cf324ba88d76ba1e296d6acd06",
+    "status": "PASS_OFFLINE_PRIVATE_STORE_IMPORT_AND_EXACT_HOST_DEPENDENCY_BYTES"
+  },
+  "exact_suffix": {
+    "path": "build/distribution/task006-native-prepared-relocation-a2/result.json",
+    "sha256": "8d54234448ea63a14b251ca2248a6eaeee5906e9522e8e6ce01a5414cf07b5e4",
+    "status": "PASS_EXACT_NATIVE_PREPARED_RELOCATION_SUFFIX",
+    "seconds": 23.76147538109217,
+    "source_cycle": 1000,
+    "cycles_per_instance": 1000000,
+    "final_checkpoint_sha256": "356fadeeb237b44b575de52296baa3fa1acaac121eaa8d1cbe012b320c43f952",
+    "panel_sha256": "5244ade4397123ee2bbc3d22951fc89bf731f8a4781d75fa1f484678fd50b43c",
+    "uart_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scope": "Same runtime, actual prepared-session checkpoint and3 raw pen events, original CLI vs extracted CLI; complete resulting archive, UART and controller pixels identical; private media and original snapshot unchanged; children reaped. Both branches restore; omitted state completeness is not established."
+  },
+  "checks": {
+    "location_alias_cases": 3,
+    "full_silicon_host_cases": 211,
+    "full_silicon_host_seconds": 2.793,
+    "scaffold_cases": 18,
+    "logs": [
+      "build/distribution/task006-native-package-qualification-a1/unit.log",
+      "build/distribution/task006-native-package-qualification-a1/silicon-host-a3.log",
+      "build/distribution/task006-native-package-qualification-a1/scaffold.log",
+      "build/distribution/task006-native-package-qualification-a1/scaffold-tests.log"
+    ]
+  },
+  "retained_failures": [
+    {
+      "path": "build/distribution/task006-native-package-qualification-a1/package-a2.log",
+      "source": "build/distribution/task006-native-package-qualification-a1/consumed-package-producer-a2.py",
+      "cause": "Resolving nix-store multicall symlink selected nix CLI, which rejects --query. Preserve original invocation name; actual correctedA3 export/import succeeds."
+    },
+    {
+      "path": "build/distribution/task006-native-package-runtime-a1/result.json",
+      "sha256": "63add7cbfda650994847b27c2fc927f7c0d564531328d93101ecdd9efcaef493",
+      "status": "FAIL",
+      "cause": "Smoke omitted required raw medium and failed before CPU. A2 uses an independent private copy; normal guard unchanged."
+    },
+    {
+      "path": "build/distribution/task006-native-ready-relocation-a1/result.json",
+      "sha256": "aecad2f1b19cbff136a874368a187c9d63f7b0eece508e0392ce73f314e353c5",
+      "status": "FAIL",
+      "cause": "Explicit development guest override invokes genuine capacity/build helper, which needs original build environment. Original branch ran1M clocks; extracted branch failed before CPU. No Ready-suffix equivalence claimed and no identity field removed. Ordinary prepared-session successor uses no overrides."
+    },
+    {
+      "path": "build/distribution/task006-native-connected-supervision-a1/result.json",
+      "sha256": "d6652130fc9c550ad6c5236c27957bbdd4f13881b6ee96e8c255914176faf851",
+      "status": "FAIL",
+      "cause": "Harness parent oracle constructor dereferenced null source archive before CPU. Keep declared oracle input while ordinary prepared launcher selects its own admitted guest; no guest override option sent."
+    },
+    {
+      "path": "build/distribution/task006-native-connected-supervision-a2/result.json",
+      "sha256": "a33c14be6d5ddf3591918b47e354c5ddb78947d962dacb5ad5cd99533b9cb06b",
+      "status": "FAIL",
+      "cause": "Completed live40phases then census guard caught late wrapper-only source entry before newCPU cold launch. Missing-only independently qualified correction and2cold phases are separate."
+    }
+  ],
+  "remaining": [
+    "New-host runtime installation/execution; universal native installer",
+    "Portable explicit development-override checkpoint identities/build closure",
+    "Packaged product ROM/authentication/update and optional companion/radio adapter commands",
+    "Complete browser workflow, browser-local compiler and distribution permission",
+    "Exact fast timing/cached-state checkpoint continuation and physical closure",
+    "Current8 exact RTL/browser fullcourse/Save/cold remain running; extracted QEMU functional results do not qualify their deadlines"
+  ],
+  "previous_package": {
+    "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
+    "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-native-a3",
+    "manifest_sha256": "239d93ce35a42aea650996442345c1ecacd495ece0457b8580705e7e09ac0c35",
+    "source_bundle_sha256": "ffe65b762e4b928fd89f0d33e77e05749e0d08cc847e479bbe0f4a3ac7dc7b16",
+    "files": 1568,
+    "bytes": 137943103,
+    "ordinary_both_backend_both_guest_admission": true,
+    "host_dependencies": "Exact external Nix files retained as prerequisites",
+    "guest_execution": "NOT_EXERCISED_BY_PACKAGING",
+    "host_runtime_archive": {
+      "format": "nix-store-export",
+      "path": "runtime-closure.nar",
+      "sha256": "17d6dda95ff936f788902e3ab6b69146b69fb827bf8b1401cc1e7fd55ae91245",
+      "bytes": 49253648,
+      "store_roots": [
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib"
+      ],
+      "complete_requisites": [
+        "/nix/store/g60m3aky9f59wgy1gi0y06xwmbw19d6m-xgcc-16.2.0-libgcc",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib",
+        "/nix/store/jp8ql2fnd61xhvb4vsfp0bqwrzf16qrp-libunistring-1.4.2",
+        "/nix/store/q0lbdx5yv93a3md74kjhm0v2kljjii89-libidn2-2.3.8",
+        "/nix/store/q2mkz6ca1alqfqf750dygvakmq8kjrwz-gcc-16.2.0-libgcc"
+      ],
+      "dependency_files": {
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2": "e2e9975273f65f7cb730f4fcc8a9a5aae62763b6263de877a8b896311819d7b6",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libc.so.6": "ef3843ed24108fc3cfde4095cdb12e0643b9953f4b902bad8152d002fc0cbbe3",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libm.so.6": "935fd3fa15c35746041cfa475003571dc51b9ce0c395034ac9d50bb8e1583919",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libpthread.so.0": "244961bf4e6c9211890bf0fe41689e3d7e7ee4eb3d6c58c3eb3841178384f529",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib64/ld-linux-x86-64.so.2": "e2e9975273f65f7cb730f4fcc8a9a5aae62763b6263de877a8b896311819d7b6",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libatomic.so.1": "f6e57bb416b74bdc6a0c7c61efd2c6670f666e53a658092b68414668640416d0",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libgcc_s.so.1": "e80a9d87e1a0b8249700f459767b257b01969c79bee3c8fb15e35e1e9c4da055",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libstdc++.so.6": "47c4e32721428eb2078bb9fb0670805f94821b21601f2b191bea4a1f1b223e2d"
+      },
+      "tool": {
+        "path": "/run/current-system/sw/bin/nix-store",
+        "binary": "/nix/store/yhbbi1pjdkxss2f6k5pgg4gv0r8fva7f-nix-2.31.2/bin/nix",
+        "sha256": "6bd632acf71ef7bcb98c61019e557fea959f2d8c1b2d9918702dfc8e5c66fdf0"
+      },
+      "scope": "Existing host runtime files only; no import, download, trust change or guest runtime linkage"
+    },
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-native-a3.tar.gz",
+      "sha256": "9c17854317afbb3ccf30e70cf8546a9317f8b83bd6f0d8e2f4ac7fe64dbec5ab",
+      "bytes": 28413664
+    },
+    "seconds": 30.993326577940024
+  },
+  "actual_extracted_workflow": {
+    "package_manifest_sha256": "239d93ce35a42aea650996442345c1ecacd495ece0457b8580705e7e09ac0c35",
+    "machine_command": "python3 -I extracted/run.py ... (census wrapper only, working directory/tmp)",
+    "original_live": {
+      "path": "build/distribution/task006-native-connected-a2/result.json",
+      "sha256": "7e22d909a2aabe33c715dfd53af06abfe9570adcf73ab2b5cd74d5d888d1a28a",
+      "status": "FAIL"
+    },
+    "original_supervision": {
+      "path": "build/distribution/task006-native-connected-supervision-a2/result.json",
+      "sha256": "a33c14be6d5ddf3591918b47e354c5ddb78947d962dacb5ad5cd99533b9cb06b",
+      "status": "FAIL"
+    },
+    "missing_only_cold": {
+      "path": "build/distribution/task006-native-connected-cold-a3/result.json",
+      "sha256": "fa5092d62dc1d989be227909e7d7de302aa23acaf9e949fe8e59a88b7ec5d93b",
+      "status": "PASS_EXTRACTED_MISSING_COLD_WITH_FROZEN_OBSERVER_CORRECTION"
+    },
+    "missing_only_supervision": {
+      "path": "build/distribution/task006-native-connected-cold-supervision-a3/result.json",
+      "sha256": "c8df112349a5fd0e900d7b9fe4dabd427df93ec09827753b48e076f24fb44cbc",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED"
+    },
+    "live_completed_phases": 40,
+    "cold_completed_phases": 2,
+    "combined_instruction_clocks": 2615000279,
+    "original_limits": {
+      "instruction_clocks": 3000000000,
+      "absolute_host_seconds": 900
+    },
+    "original_absolute_deadline_met": true,
+    "actor_seconds": [
+      302.4815018919762,
+      65.39665275102016
+    ],
+    "supervised_seconds": [
+      303.68921254901215,
+      66.72462348104455
+    ],
+    "peak_owned_rss_bytes": [
+      400891904,
+      364601344
+    ],
+    "machine_imports_from_checkout": false,
+    "live_behavior": "Actual installed course/source/edition/rights/lesson/worked exercise, genuine isolated5/6 Verified and5/7 Invalid, authored localhint, durable learner/review events, Unsupported, budget0Indeterminate, six raw ink samples and acknowledged Save, close",
+    "cold_behavior": {
+      "new_cpu": true,
+      "all_controller_pixels_exact": true,
+      "all_acknowledged_objects_exact": true
+    },
+    "cold_reopen": {
+      "actual_body_pixels": true,
+      "exact_workspace_and_all_objects": true,
+      "all_medium_bytes_exact": true,
+      "no_new_checker_request": true
+    },
+    "observer_repair": "Original live completed40phases, then valid source guard caught the already-declared census wrapper being added only at process exit. Original plan/census/current wrapper hashes independently match and every original frozen input is unchanged. Original terminalFAIL retained; run only missing2cold/reopen phases under original absolute900s/3B aggregate, no live rerun or guard disable.",
+    "limits": "QEMU instruction-clock functional qualification. Authored localhint is not permissioned tutor transport. This does not close proof-kernel/generalmanagedruntime/fasttiming/cache parity. Latest A4 launcher only adds outside-package init log default and forwards subcommandhelp; unchanged guest, frontend/backend files and source aliases retain prior exact identities."
+  },
+  "actual_initializer_and_help": {
+    "path": "build/distribution/task006-native-init-a4/result.json",
+    "sha256": "afca7cd3a58e69a3006a3b179d64216c75706baefcd6748c4800ac73458d7e56",
+    "status": "PASS_EXTRACTED_HELP_REAL_GUEST_INIT_AND_IMMUTABLE_PACKAGE",
+    "seconds": 19.827138829044998,
+    "guest_instruction_clocks": 25000001,
+    "guest_seconds": 0.9569003699580207,
+    "guest_sha256": "0ace19d4884cf3e5dc8240a41f3b2cb9e128c2ad997bca520731c632e1e9bd5a",
+    "source_scope": "CurrentA4 only; actual initializerguest/barrier, independent sequence0/noobjects; no host formatter; no explicit session-dir. Session/init --help pass and entire package remains exactly inventoried after operation."
+  },
+  "successor_v2": {
+    "status": "PASS_EXTRACTED_RAW_UART_GUEST_INSTALL_PENDING_FORK_COLD_LOAD_AND_FINAL_V2_RETAINED_SUFFIX",
+    "scope": "Actual Linux x86-64 Python-I launches from /tmp. Unchanged genuine dirtybatch9 RV64 pair and opt-in rawUART1. Prototype full fresh/cold qualification and final format2 retained-suffix qualification are distinct.",
+    "implementation_inputs": {
+      "scripts/package_native.py": "04edb338f7b552f110b824ab42e872f78a18fe3f754a12c2fb713753a7461806",
+      "sim/native/run_local.py": "a554b48585311d7af93b5a62496cebcafe3301d994082d6fb9afdcdba663a259",
+      "conformance/lemmasim/check_fast_uart_ingress.py": "d999a2ef83e6e1f455f4101f3b056a6300f7ea441c6c9ab6495613a576ccca47"
+    },
+    "final_package": {
+      "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-raw-uart-native-a2",
+      "manifest_sha256": "3b733265b2051f287574e24cb4661fc50421b6940f022e4720edf719ea6ab9b1",
+      "source_bundle_sha256": "e82b6ed5414dbedb4199de90bf4bdfe65fddb3002f1f660cde7bfca6ade2b7d1",
+      "files": 1584,
+      "bytes": 138630806,
+      "ordinary_both_backend_both_guest_admission": true,
+      "host_dependencies": "Exact external Nix files retained as prerequisites",
+      "guest_execution": "NOT_EXERCISED_BY_PACKAGING",
+      "host_runtime_archive": {
+        "format": "nix-store-export",
+        "path": "runtime-closure.nar",
+        "sha256": "17d6dda95ff936f788902e3ab6b69146b69fb827bf8b1401cc1e7fd55ae91245",
+        "bytes": 49253648,
+        "store_roots": [
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+          "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib"
+        ],
+        "complete_requisites": [
+          "/nix/store/g60m3aky9f59wgy1gi0y06xwmbw19d6m-xgcc-16.2.0-libgcc",
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+          "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib",
+          "/nix/store/jp8ql2fnd61xhvb4vsfp0bqwrzf16qrp-libunistring-1.4.2",
+          "/nix/store/q0lbdx5yv93a3md74kjhm0v2kljjii89-libidn2-2.3.8",
+          "/nix/store/q2mkz6ca1alqfqf750dygvakmq8kjrwz-gcc-16.2.0-libgcc"
+        ],
+        "dependency_files": {
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2": "e2e9975273f65f7cb730f4fcc8a9a5aae62763b6263de877a8b896311819d7b6",
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libc.so.6": "ef3843ed24108fc3cfde4095cdb12e0643b9953f4b902bad8152d002fc0cbbe3",
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libm.so.6": "935fd3fa15c35746041cfa475003571dc51b9ce0c395034ac9d50bb8e1583919",
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libpthread.so.0": "244961bf4e6c9211890bf0fe41689e3d7e7ee4eb3d6c58c3eb3841178384f529",
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib64/ld-linux-x86-64.so.2": "e2e9975273f65f7cb730f4fcc8a9a5aae62763b6263de877a8b896311819d7b6",
+          "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libatomic.so.1": "f6e57bb416b74bdc6a0c7c61efd2c6670f666e53a658092b68414668640416d0",
+          "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libgcc_s.so.1": "e80a9d87e1a0b8249700f459767b257b01969c79bee3c8fb15e35e1e9c4da055",
+          "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libstdc++.so.6": "47c4e32721428eb2078bb9fb0670805f94821b21601f2b191bea4a1f1b223e2d"
+        },
+        "tool": {
+          "path": "/run/current-system/sw/bin/nix-store",
+          "binary": "/nix/store/yhbbi1pjdkxss2f6k5pgg4gv0r8fva7f-nix-2.31.2/bin/nix",
+          "sha256": "6bd632acf71ef7bcb98c61019e557fea959f2d8c1b2d9918702dfc8e5c66fdf0"
+        },
+        "scope": "Existing host runtime files only; no import, download, trust change or guest runtime linkage"
+      },
+      "archive": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-raw-uart-native-a2.tar.gz",
+        "sha256": "4090c81a0386271b7c66e4dfd48134c826c78e9c017cefef115d5610bff95c3d",
+        "bytes": 28513435
+      },
+      "seconds": 27.444050058024004
+    },
+    "prototype_full_guest_case": {
+      "path": "build/uart/task006-raw-uart-native-conformance-a1/result.json",
+      "sha256": "ea5706584dbb5abc020255af6eddfaec4a4d0e3d3ff4bc832ae6a966e1a37c7c",
+      "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD",
+      "seconds": 208.20094437210355,
+      "phases": [
+        {
+          "name": "cold-Ready",
+          "clocks": 236000006,
+          "seconds": 70.73962481494527
+        },
+        {
+          "name": "actual-raw-guest-installation",
+          "clocks": 26000001,
+          "seconds": 13.865415925974958
+        },
+        {
+          "name": "independent-cold-Ready",
+          "clocks": 239000005,
+          "seconds": 74.12928139104042
+        },
+        {
+          "name": "cold-guest-package-load",
+          "clocks": 21000001,
+          "seconds": 7.470555732026696
+        }
+      ]
+    },
+    "prototype_supervision": {
+      "path": "build/uart/task006-raw-uart-native-conformance-supervision-a1/result.json",
+      "sha256": "989746a00699be0ae8831e99421134e85293a5880598163a88ab6ec7177e64fc",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "seconds": 214.54657334205694,
+      "owned_peak_rss_bytes": 417026048
+    },
+    "final_v2_actual_suffix": {
+      "path": "build/uart/task006-raw-uart-native-v2-a1/result.json",
+      "sha256": "ef6b60468d7ca6b76dc46933a1af45664a2bdc8fdc95ff7a8cfbb4d4bdaf8359",
+      "status": "PASS_ACTUAL_EXTRACTED_V2_INSTALL_LOAD_FROM_RETAINED_CUT",
+      "seconds": 34.2466647910187,
+      "phases": [
+        {
+          "name": "retained-actual-package1-publication",
+          "clocks": 26000001,
+          "seconds": 9.337365385028534
+        },
+        {
+          "name": "packaged-actual-edition2-install",
+          "clocks": 26000000,
+          "seconds": 8.488136733998545
+        },
+        {
+          "name": "packaged-actual-edition2-load",
+          "clocks": 21000001,
+          "seconds": 3.6174129699356854
+        }
+      ]
+    },
+    "final_v2_supervision": {
+      "path": "build/uart/task006-raw-uart-native-v2-supervision-a1/result.json",
+      "sha256": "8b4cf73d60c62e73593b6229ee3d3348d5f690b6f04de3b554fee1c05d05e3f6",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "seconds": 36.22915817901958,
+      "owned_peak_rss_bytes": 215801856
+    },
+    "historical_v1_reader": {
+      "path": "build/uart/task006-raw-uart-native-v2-plan-a1/legacy-v1-reader.json",
+      "sha256": "b6d744ee26e5fa0362f8bb1455308611e3004a50fc63719107fe593a8c776204",
+      "status": "PASS_HISTORICAL_NATIVE_V1_INVENTORY_READER"
+    },
+    "prototype_note": "Prototype a1 genuinely ran all init/session/course commands from the extracted package, but retained the format1 label. Final a2 explicitly emits format2 and has its own actual retained pending-cut installation/load; no new cold run is claimed for final a2.",
+    "limits": [
+      "Fast instruction-clock functional scope; no pipeline timing parity",
+      "General softTLB/TB/jump-cache/instruction-visibility continuation remains open",
+      "Existing-runtime export is not new-host installation qualification",
+      "Project/upstream redistribution obligations remain unresolved",
+      "Optional product-boot/companion/radio adapters are not packaged"
+    ],
+    "host_checks": {
+      "silicon": "215 tests PASS, build/uart/task006-raw-uart-native-v2-plan-a1/silicon-host.log",
+      "scaffold": "18 tests PASS10.071s, build/uart/task006-raw-uart-native-v2-plan-a1/scaffold-host.log",
+      "metadata": "PASS seven gates/56 software/six physical units; metadata only"
+    }
+  },
+  "wrapped_runtime_closure_repair": {
+    "status": "PASS_REAL_WRAPPED_OUTPUT_EXPORT_VISIBILITY_AND_ARCHIVE_ADMISSION",
+    "scope": "Correct host-runtime packaging, no target image/ROM/controller/lowering change. Does not close freshhost import, externalPython/Tk, rights, completeproductworkflow or QEMUcachedcontinuation.",
+    "implementation": "scripts/package_native.py",
+    "current_producer_sha256": "556443ead4a2665626f80fdfd18aa27c6033044826ee0a4d46a939dc7f34678b",
+    "archive_producer_sha256": "c6ec6374c6b2a44175004ac96bfa313f8f26d399212508e998a792497242494f",
+    "archive_producer_source": "Inside prepared/extracted archive host/scripts/package_native.py; original exact bytes retained. Current source additionally admits an unrealised unused debug output; focused regression tests pass without rebuilding unchanged emulators/guests.",
+    "defect": "ldd of16,552-byte compiledmakeCWrapper launcher omits actual .qemu-system-riscv64-wrapped program and runtime data. Original3-root inventory actuallyfails withthosepaths onlyvisible.",
+    "authority": {
+      "launcher_sha256": "97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7",
+      "derivation": "/nix/store/0gkh4mxn9cksrwp549qlxy37qwm1aqcg-lemmasim-qemu-raw-uart-v1-11.1.1.drv",
+      "derivation_sha256": "7ae35b58ef6a976779394f1ee52edbc322345df4125ae646accfa97f422de745",
+      "output": "/nix/store/b16yg2x2wyjblw63x5kln24z9n6m2s2r-lemmasim-qemu-raw-uart-v1-11.1.1",
+      "scope": "Complete registered runtime output, including wrapped executable and data; not wrapper-only ldd"
+    },
+    "runtime": {
+      "format": "nix-store-export",
+      "sha256": "1c38e3734c519165927368382de3d4cbb3a1a5f5dc27ad3fcf054a59a944c983",
+      "bytes": 403043616,
+      "store_roots": [
+        "/nix/store/b16yg2x2wyjblw63x5kln24z9n6m2s2r-lemmasim-qemu-raw-uart-v1-11.1.1",
+        "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+        "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib",
+        "/nix/store/xx7cm72qy2c0643cm1ipngd87aqwkcdp-glibc-2.40-66"
+      ],
+      "tool": {
+        "path": "/run/current-system/sw/bin/nix-store",
+        "binary": "/nix/store/yhbbi1pjdkxss2f6k5pgg4gv0r8fva7f-nix-2.31.2/bin/nix",
+        "sha256": "6bd632acf71ef7bcb98c61019e557fea959f2d8c1b2d9918702dfc8e5c66fdf0"
+      }
+    },
+    "complete_requisite_count": 120,
+    "prepared_package": {
+      "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-pad-browse17-runtime-a1",
+      "manifest_sha256": "c7a953a0079c2de05aa8b0992153466d0d6f6f58e4c0fa94e317ea13d7eeaf5b",
+      "source_bundle_sha256": "9f0278bf2cf08106f289b286f5966f71c4256026836eca34bc98d97a13d83612",
+      "files": 1613,
+      "bytes": 494354458,
+      "ordinary_both_backend_both_guest_admission": true,
+      "host_dependencies": "Exact external Nix files retained as prerequisites",
+      "guest_execution": "NOT_EXERCISED_BY_PACKAGING",
+      "archive": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-pad-browse17-runtime-a1.tar.gz",
+        "sha256": "f98edd006eb494142a0059edc4baf3f7c8e496a42292a018479ef6b331c17bbc",
+        "bytes": 149970067
+      },
+      "seconds": 89.91338084894232
+    },
+    "preparation_supervision": {
+      "status": "PASS_BOUNDED_PREPARED_NATIVE17_WITH_COMPLETE_RUNTIME",
+      "returncode": 0,
+      "seconds": 90.00261849199887
+    },
+    "actual_safe_extraction_admission": {
+      "status": "PASS_ACTUAL_NATIVE17_RUNTIME_ARCHIVE_EXTRACTION_ADMISSION_NO_CPU",
+      "members": 1614,
+      "unpacked_bytes": 494682119,
+      "command": [
+        "/run/current-system/sw/bin/python3",
+        "-I",
+        "/home/sreekumaar/Downloads/lemma/build/distribution/task006-number-pad-browse17-runtime-extracted-a1/lemmasim-native/run.py",
+        "--verify-only",
+        "--view-dir",
+        "/home/sreekumaar/Downloads/lemma/build/distribution/task006-native-runtime-closure-owner-a1/extracted-view-a1"
+      ],
+      "seconds": 11.453878419008106
+    },
+    "actual_namespace_visibility": {
+      "result": "build/distribution/task006-native-runtime-visibility-package-a1/result.json",
+      "result_sha256": "45edd4ffee19e35309e8c18627a553dfd6dbc475a7185e756d5931716fec102d",
+      "producer_sha256": "73da6f38bb6a3a951af93496cb9d866ca31cae3df52ac808e80d9417a1c6bcb1",
+      "status": "PASS_ACTUAL_RUNTIME_VISIBILITY_OLD_CLOSURE_REJECTED",
+      "seconds": 6.688604125985876,
+      "old_paths": 3,
+      "old_QEMU_returncode": 255,
+      "complete_paths": 120,
+      "complete_QEMU_returncode": 0,
+      "genuine_RTL_clocks": 1000000,
+      "actual_retired": 499970,
+      "source_guest_sha256": "43f7fa569474614c6e473ee40c6ac9ed911b2e0752c5568c5520c3190cabe789",
+      "limitation": "Namespace visibility uses the existing listed store contents; no NAR import, fresh host, notebook Ready or cold-recovery claim."
+    },
+    "checker_command": "python3 conformance/lemmasim/check_native_runtime_closure.py --bundle build/distribution/task006-number-pad-browse17-runtime-a1/bundle --export-result build/distribution/task006-number-pad-browse17-runtime-a1/package.json --output-dir build/distribution/task006-native-runtime-visibility-package-a1",
+    "checks": {
+      "silicon_host_tests": 226,
+      "silicon_host_seconds": 2.593,
+      "exact_output_selection_tests": 2,
+      "current_unused_debug_regression": "PASS sameactualwrapper matchingbytes withunrealised debugoutput; wrong/ambiguous/duplicate/traversing/outsideoutputs reject",
+      "logs": "build/distribution/task006-native-runtime-closure-owner-a1"
+    },
+    "retained_failures": [
+      {
+        "result": "build/distribution/task006-native-runtime-visibility-a1/result.json",
+        "reason": "Wrong observerkey elf instead of manifestimage; beforeCPU"
+      },
+      {
+        "result": "build/distribution/task006-native-runtime-visibility-a2/result.json",
+        "reason": "UnnecessarybindremountfailedEPERM becauseoriginalstoremountflagsarelocked. Correctedbyverifyinginheritedreadonly/nosuid/nodev/noexecprotections, no protection weakened."
+      },
+      {
+        "result": "build/distribution/task006-native-runtime-visibility-a3/result.json",
+        "reason": "ActualadapterrejectedmissingrequiredUARToutput beforeCPU. AddednormalpubliclaunchUART/DTB/descriptorargs."
+      }
+    ],
+    "original_failed_source_archive": "build/distribution/task006-native-runtime-closure-owner-a1/visibility-source-a{1,2,3}.py; each exactlymatchesoriginalreportproducerhash",
+    "remaining": "The existing-readonly-path namespace is not a NAR import or freshhostinstallation; Python/Tk/userNixpermissions and redistribution rights remain prerequisites. Runtime-inclusive export corrected; historicallegacyhost_dependencies alone stilldoesnotdescribecompleteQEMUwrapperclosure."
+  },
+  "current_host_versions3": {
+    "status": "PASS_CURRENT_DISTRIBUTION3_PREPARATION_AND_REAL_NATIVE_LAUNCH",
+    "schema": "lemma-local-native-distribution/3",
+    "prepared_result": {
+      "path": "build/browser/task006-current-distribution-result-a2/result.json",
+      "sha256": "912c207c2b6dbd806b30e065e6ea2dc9826318374b06e8b9a3c98684b9544e8e",
+      "bytes": 975
+    },
+    "prepared_owner": {
+      "path": "build/browser/task006-current-distribution-supervision-a2/result.json",
+      "sha256": "d0f95ed2c730f20d208fef622df5b4145b4edc23548e418d6867ce958d93596d",
+      "bytes": 738
+    },
+    "owner_seconds": 100.0216177480761,
+    "owned_peak_rss_bytes": 440299520,
+    "native_manifest": {
+      "path": "build/distribution/task006-reader18-current-native-a2/package.json",
+      "sha256": "5cef9aad914b229eb60d1853f70f1cdb764df00cb7a370b59e5c9ef070478be1",
+      "bytes": 339222
+    },
+    "native_archive": {
+      "path": "build/distribution/task006-reader18-current-native-a2.tar.gz",
+      "sha256": "cbf003161ee7a622d213da604ffd25cd0f6b3b2c6a0fbee5f4ab75d33154d481",
+      "bytes": 138982635
+    },
+    "native_files": 1636,
+    "native_bytes": 462617356,
+    "explicit_host_difference_count": 20,
+    "compiled_source_retention": "Every original consumed compiler/source byte remains immutable in bundle/source; current host/ separately inventoried. Original guard still rejects without --current-host-tools.",
+    "actual_standalone_launch": {
+      "path": "build/browser/task006-current-native-launch-a1/result.json",
+      "sha256": "9aa62a03393138b8fba6c2b57f54515322d19e07bed47244d5513ea608d5ff6b",
+      "bytes": 1667
+    },
+    "actual_launch_owner": {
+      "path": "build/browser/task006-current-native-launch-supervision-a1/result.json",
+      "sha256": "2cc335f83b54e177492959ca08fe49fe0c23efc6921f938831d97c8101ed3c49",
+      "bytes": 661
+    },
+    "actual_launch_seconds": 19.364143087994307,
+    "actual_launch_cycles": 2000000,
+    "actual_launch_relation": "CPU0->1M->2M through ordinary Python-I prepared CLI. Each complete public snapshot archive exactly equals independently captured same-native direct runtime archive; both snapshots observational.",
+    "browser_manifest": {
+      "path": "build/distribution/task006-reader18-current-browser-a2/package.json",
+      "sha256": "6f21b808af6b1e1e89841b9bf1a7106b6509151a76636a12d5b22c986e590726",
+      "bytes": 52837
+    },
+    "browser_archive": {
+      "path": "build/distribution/task006-reader18-current-browser-a2.tar.gz",
+      "sha256": "d982984908398f4f4bebce7f4cdf90a9103af8dbeb15926cb06b3460deff94f2",
+      "bytes": 2082185
+    },
+    "browser_files": 287,
+    "browser_bytes": 17681963,
+    "original_failure": {
+      "path": "build/browser/task006-current-distribution-result-a1/result.json",
+      "sha256": "d274463f6469376a1ba28840016fd64cd1b45799364f76a3ca9bcb075aa77d65",
+      "bytes": 142
+    },
+    "scope": "Prepared current600e native/84d5 Wasm and retained genuine Reader18 artifacts. No new target build, current fullReady, fresh-host runtime import, live browserUSBpeer, redistribution license or universal durability claim."
+  },
+  "laboratory_file_limit_command1": {
+    "status": "PASS_PACKAGED_FILE_LIMIT_COMMAND_ZERO_CLOCKS_ALL_NATIVE_BYTES",
+    "implementation": "Current host source over unchanged audited canonical guest/native600e/QEMU images; no fresh target compilation or clean-host import claim",
+    "package": {
+      "path": "build/distribution/task006-file-limit-native-plan-a1/result.json",
+      "sha256": "71d3c3a843ef1552b8ef5715272ae03e992afb8a2e285824556ad2b4dfd36052",
+      "bytes": 50151
+    },
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-file-limit-native-a1.tar.gz",
+      "sha256": "6a597c5189501da650c1ba38a94e8b5d5cf90764cbc67489b2d089a7aa85e55e",
+      "bytes": 139049662
+    },
+    "actual_command_control": {
+      "path": "build/courses/task006-native-file-limit-command-a1/result.json",
+      "sha256": "e9c1e8d6634504c6c1bdfdebed0e331f692ce9e2cb3997192661f2de7cda2f15",
+      "bytes": 1400
+    },
+    "actual_command_transcripts": {
+      "path": "build/courses/task006-native-file-limit-command-a1/actual-commands.json",
+      "sha256": "8d4dbd5352cc4db86650baf037c9e9e92504734a401c8ed93d5ce7d6a2eb8f7a",
+      "bytes": 1623
+    },
+    "zero_clocks": true,
+    "all_native_checkpoint_bytes_equal": 145702871,
+    "tests": {
+      "LemmaSim": {
+        "count": 321,
+        "seconds": 58.498
+      },
+      "native_host": {
+        "count": 8,
+        "seconds": 0.025
+      },
+      "focused_file_limit": {
+        "count": 7,
+        "seconds": 0.03
+      }
+    },
+    "sources": {
+      "scripts/lemmasim": {
+        "path": "scripts/lemmasim",
+        "sha256": "e07a23294312bb8d070fd9a1db6e308619a9c4fe670cc25a97b191d8f0372c32",
+        "bytes": 90848
+      },
+      "scripts/lemmasim_file_limit.py": {
+        "path": "scripts/lemmasim_file_limit.py",
+        "sha256": "afaecae48c1770d6f709e6c5046896bd2fc9923631c20f44f9ce0557aa4677ca",
+        "bytes": 7118
+      },
+      "scripts/package_native.py": {
+        "path": "scripts/package_native.py",
+        "sha256": "30906d7a598fed7f6f93fd0f02d0e8469de32505991b09be14a5731017a3a240",
+        "bytes": 17984
+      },
+      "sim/native/run_local.py": {
+        "path": "sim/native/run_local.py",
+        "sha256": "b1694a20ff15d9358bfae530a5f8378e1013bd9e893dc673dee7c26057542e25",
+        "bytes": 7395
+      }
+    },
+    "prior_helper_qualification": "docs/evidence/006-fast-backing-replay.json"
+  },
+  "qualified_fast_file_limit_command2": {
+    "status": "PASS_PACKAGED_FAST_FAULT_ADMISSION_CLEANUP_ZERO_CLOCKS",
+    "package": {
+      "path": "build/courses/task006-fast-real-file-limit-plan-a3/native-distribution-a2.log",
+      "sha256": "aae8eddd7c99d46a36f26f5fc0b386d9eaec2b056e46e858ddff5f80def70329",
+      "bytes": 11627
+    },
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-fast-file-limit-native-a2.tar.gz",
+      "sha256": "6344decce4a5f58318fd975d468fbecd8200b07b5d0f14b14d485142ad3b9f5d",
+      "bytes": 139094629
+    },
+    "actual_command_control": {
+      "path": "build/courses/task006-fast-file-limit-packaged-control-a2/result.json",
+      "sha256": "d2a2b68147dade1c7f4130136dd75f5fdb0a0be2a92b0c7dcc101a36ab3e0666",
+      "bytes": 997
+    },
+    "runtime_closure_bytes": 370209440,
+    "runtime_export_seconds_bound": 180,
+    "runtime_export_bytes_bound": 536870912,
+    "preparation_seconds": 58.50505203497596,
+    "scope": "Prepared Linux x86-64 package with pinned runtime closure; actual packaged private fast migration launch/control/cleanup at zero clocks. Full guest failure/replay/cold qualified separately. No clean-host import, redistribution-rights or arbitrary cached-state claim.",
+    "sources": {
+      "scripts/lemmasim_file_limit.py": {
+        "path": "scripts/lemmasim_file_limit.py",
+        "sha256": "0982e64b58d6fe0b7d7f5028863198f7537406feb83de2454b4703adae0ba230",
+        "bytes": 10414
+      },
+      "scripts/package_native.py": {
+        "path": "scripts/package_native.py",
+        "sha256": "05ffabe2a62689eec8610186fb8330fcb9fade3b7e8f66300e1ec5789b752ff9",
+        "bytes": 18194
+      },
+      "scripts/check_fast_file_limit_workflow.py": {
+        "path": "scripts/check_fast_file_limit_workflow.py",
+        "sha256": "a521ab5ecff0ec7a5526a731369f93fbde58145d5e86ec31faad4d67acbb157f",
+        "bytes": 13234
+      }
+    }
+  },
+  "local_rom_machine_bundle": {
+    "schema": "lemma-local-auth-machine-bundle/1",
+    "status": "PASS_RELOCATED_BUNDLED_ROM_CLI_CPU0_AND_GUEST_CAPACITY",
+    "path": "build/distribution/task006-scoped-rom-local-relocated-a2",
+    "manifest_sha256": "e5cf5f984820302ed8733da89e0caccc1a54d662e04e7819f52a607b97bc3eaa",
+    "files": 2610,
+    "bytes": 42106436,
+    "archive": "build/distribution/task006-scoped-rom-local-a1.tar.gz",
+    "archive_bytes": 9366171,
+    "archive_sha256": "ed33404cf6c55bb14ad78aa3765c338b13835a9a6f8e90db6f33ea1b8e1703e5",
+    "result": "build/boot/task006-scoped-rom-local-relocation-a2/result.json",
+    "result_sha256": "14b75e9bf1f35d446f0c97b9cabf1539cb342e09e492d000d0b940185013bd9b",
+    "seconds": 20.94751155306585,
+    "actual_RTL_clocks": 200000,
+    "actual_retired_instructions": 85178,
+    "actual_capacity": 8590000136,
+    "boot_unchanged": true,
+    "original_bundle_manifest_unchanged": true,
+    "user_media_included": false,
+    "component_runtime_identity": "677aacbc0c1dc2cea5658357e7ad992b0d91ca63a4504c69a43e42ead097bd4d",
+    "retained_observer_failure": "build/boot/task006-scoped-rom-local-relocation-a1/result.json",
+    "failure_reason": "Host expected2*32768 sectors, omitting8 reserved sectors. Real launcher correctly created65544sectors. Original failure before launch retained; corrected independent capacity expectation only.",
+    "host_checks": {
+      "boot": 43,
+      "seconds": 0.182,
+      "scaffold": 18,
+      "scaffold_seconds": 15.6,
+      "metadata": "PASS"
+    },
+    "source_scope": "350debc plus explicit staged product_bundle/root-command/test additions, all2610 immutable file identities retained; not clean committed source.",
+    "limitations": [
+      "Exact existing Nix-store tools/runtime libraries and Python are required. No clean-host or redistribution claim.",
+      "Actual moved package CPU0 and compiled Lean recovery capacity only; full notebook and new bundle checkpoint/replay remain separate.",
+      "Public development key only. No user media or running kernel preload included."
+    ],
+    "pending_protocol_checkpoint": {
+      "status": "PASS_BUNDLED_ROM_PARTIAL_FRAME_QUEUED_UART_EXACT_PRIVATE_SUFFIX",
+      "result": "build/boot/task006-rom-bundle-pending-a2/result.json",
+      "sha256": "edb1a773f4268d768a889c60028bc5b47d4b1dafebe0efd1634339a6a540a4f8",
+      "seconds": 49.71308900602162,
+      "cut_cycle": 300000,
+      "cut_event_queue": 1,
+      "cut_retired": 125425,
+      "original_RTL_clocks": 500000,
+      "fork_suffix_clocks": 200000,
+      "complete_checkpoint_bytes": 145202004,
+      "full_authoritative_checkpoint_equal": true,
+      "equal_session_envelope_keys": [
+        "identity",
+        "boundary",
+        "automatic",
+        "quantum",
+        "external_event_cursor",
+        "virtual_cycle",
+        "virtual_ns",
+        "medium_policy",
+        "files"
+      ],
+      "suffix_bytes": 40,
+      "sampled_owned_peak_RSS_bytes": 343085056,
+      "original_and_private_boot_equal": true,
+      "snapshot_observational": true,
+      "retained_observer_failure": "build/boot/task006-rom-bundle-pending-a1/result.json",
+      "original_failure": "Actual original suffix completed, but observer referenced nonexistent RESPONSE constant. Original33sFAIL/consumed-checker.py retained. Corrected decoder uses independent contract literal/LE/CRC; no guest/runtime or bound change.",
+      "scope": "Bundled original/live partial37of80-byte real guest parser state plus queued remaining43UART bytes. Same-backend exact200k suffix/full145202004-byte machine checkpoint/UART/session authority+cursor/privateBootNV. No drain/fence/flush, original mutation, crossbackend or arbitrary-boundary completion claim."
+    },
+    "actual_archive_extraction": {
+      "status": "PASS_EXTRACTED_RELOCATED_ARTIFACT_MINIMAL_PATH_VALIDATION",
+      "archive": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-scoped-rom-local-a1.tar.gz",
+      "archive_sha256": "ed33404cf6c55bb14ad78aa3765c338b13835a9a6f8e90db6f33ea1b8e1703e5",
+      "PATH": "/usr/bin:/bin",
+      "target_cycles": 0,
+      "scope": "Actual gzip extraction to a new directory then validation from /tmp with PATH=/usr/bin:/bin, outside nix develop. Exact existing Nix-store tools/libraries remain required; no fresh-host or target-clock claim.",
+      "archive_members": 2809,
+      "returncode": 0,
+      "seconds": 2.5304361939197406,
+      "result": "build/distribution/task006-scoped-rom-extract-a1/result.json",
+      "result_sha256": "06f4f9d0feffb095a4fc6a47f91b50b00c538e1340aea7e9c4f72cf4154a3af0"
+    }
+  }
+}

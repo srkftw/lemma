@@ -1,3 +1,4 @@
+<!--
 # Lemma Task 003 — A real supervisor kernel and isolated services
 
 ## Mission: build the software the device will keep
@@ -327,3 +328,4 @@ These are starting references, not a substitute for the exact repository-pinned 
 - QEMU RISC-V virt reference: https://www.qemu.org/docs/master/system/riscv/virt.html
 
 The QEMU master documentation is not the exact pinned implementation; use the repository's locked QEMU source/DTB for machine-specific addresses and behavior. Do not upgrade the toolchain just to match a documentation page.
+-->

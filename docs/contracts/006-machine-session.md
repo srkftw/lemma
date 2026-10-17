@@ -1,3 +1,4 @@
+<!--
 # Task006 machine sessions and matched development binding
 
 This increment implements resumable versions of the existing digital subset.
@@ -25,6 +26,19 @@ and destroy. Queues, request lengths, files, clients and interval resource
 deadlines are bounded. A failed automatic interval pauses and retains an
 inspectable error. Host time controls pacing/resource failure only.
 Pause/resume are simulator controls, not a guest suspend service.
+
+Short session paths retain their in-session `machine.sock` address and existing
+wire protocol. A session whose path exceeds the Unix-socket address bound owns
+a unique short control directory with mode0700 and a mode0600 socket. Its
+optional `lemmasim-live/1` manifest `control` binding has version1, the complete
+session path, private directory/address, owner PID/start ticks and random nonce.
+The owner file, live start time and endpoint permissions are checked before
+contact; both request and response carry the nonce. Cross-session redirection,
+stale/PID-reused owners, changed endpoint permissions/types and responses with
+another nonce fail closed. Machine construction failure and normal close remove
+only this owner's recorded directory/file/socket
+inodes. No shared static control address or change to medium/fork ownership is
+introduced.
 
 The read-only public `clock` action returns `machine` timing and the owner's
 `running` pacing flag. RTL timing contains mandatory `backend`, `cycle`, `ticks`
@@ -62,6 +76,19 @@ Subsequent guest barriers persist that file, not an ephemeral RAM-only base.
 Fast restore validates a paused candidate process before replacing the current
 machine. Export is exclusive creation of durable bytes, excluding volatile work.
 Different backend implementations cannot exchange exact checkpoints.
+
+The native event vector and cursor also determine its encoded-payload admission
+quota. `event_payload_bytes` must equal the sum of payload text lengths in the
+retained vector, including any consumed prefix until the next compaction.
+Restore reconstructs that value from the exact serialized vector. Filtering
+events during cancellation must maintain the same value; retaining UART events
+while resetting the quota to zero violates continuation even if snapshot bytes
+appear equal. The corrected pen-only reset-release path retains both UART input
+and its quota. A selected raw brownout/release, future admission and original/
+restored native suffix exposes the old byte-loss and intermediate quota defects.
+This adds no archive layout or raw host pointers; the changed implementation
+identity separates old binaries. It does not close the other cached-state or
+arbitrary-boundary qualification gaps.
 The RTL savable model includes its cache/TLB circuitry. QEMU11.1.1's common
 CPU post-load explicitly flushes the software TLB; cached Sv39 translations
 and TCG translation blocks are not serialized. The listed fast guest suffixes
@@ -162,3 +189,5 @@ Watchdog, electrical power sequencing, brownout and remaining controls,
 nonvolatile recovery boot, companion/USB/radio transport, browser/Wasm, managed
 runtime and G5–G7 applications remain completion requirements. Their absence
 is not physics.
+
+-->

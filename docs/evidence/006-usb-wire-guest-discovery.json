@@ -1,0 +1,216 @@
+{
+  "schema": "lemma-usb-wire-guest-discovery/1",
+  "status": "PASS_GENUINE_PAIR_AND_REAL_PENDING",
+  "scope": "Versioned profile11 guest discovery repair and strict artifact authority, associated with unchanged archived native11 and actual nine-cut Pending continuation. Notebook Ready/Save and standards-timed MAC/electrical conformance remain separate.",
+  "configurations": [
+    "lemmasim-silicon-usb-wire-bulk-notebook",
+    "lemmasim-silicon-usb-wire-bulk-initialize"
+  ],
+  "profile": "lemma-silicon-dev/0.11.0",
+  "language_profile": "core0-kernel-v0.6",
+  "descriptor": {
+    "binding": 11,
+    "abi": 12,
+    "features": 15,
+    "paper_version": 3,
+    "paper_staging_offset": 3584,
+    "staging_bytes": 512,
+    "phy_version": 1,
+    "sample_hz": 48000000,
+    "bit_hz": 12000000,
+    "development_mac": 1,
+    "guest_phy_register": "NONE; immutable DTB/source association only"
+  },
+  "repair": {
+    "source": "Lemma.Platform.LemmaSim.DescriptorDTB.leafPropertyWire",
+    "property_code": 58,
+    "old_flag": 128,
+    "new_flag": 256,
+    "reason": "Code57 already marks128; actual duplicate-mark guard rejects property58 before USB startup. The decoded-packet-boundary0 property owns independent256.",
+    "legacy_definitions_changed": false,
+    "original_cpu_failure": {
+      "path": "build/usb/wire-pending-a1/result.json",
+      "sha256": "a094fb404aefb3644af0f84e6c9c8b24cb47fec96534261f3e3e65ecd92c6c0b"
+    },
+    "actual_prepared_fdt_diagnosis": {
+      "path": "build/usb/wire-pending-a1/diagnosis-a1.json",
+      "sha256": "9af9ed2733f7107c2a73ef8edf1c018c737f48b4de9c2886b83589bfcb3b7715"
+    },
+    "genuine_raw_fdt_original": {
+      "path": "build/managed/wire-discovery-flags-a2/original.log",
+      "sha256": "5b44f61a18adc0472d80835eeb4bd41550db15fb7975593e1712dfbf269be89b"
+    },
+    "genuine_raw_fdt_corrected": {
+      "path": "build/managed/wire-discovery-flags-a2/corrected.log",
+      "sha256": "58f7afe7337ed94f5c1f9d96da03f865da0d087f0f90de936fab49fe32f92b43"
+    },
+    "negative_scope": [
+      "wrong boundary value",
+      "duplicate property",
+      "wrong cell width",
+      "all five ordered read-fault write prefixes"
+    ]
+  },
+  "genuine_pair": {
+    "status": "PASS_BUILD_AUDIT_EXACT_ARCHIVES",
+    "receipt": {
+      "path": "build/managed/usb-wire-current-cohort-a3.json",
+      "sha256": "5abba0f5b19e3b3474af7e46da6026bab3fc40f6949ea1e59a1e78e8d97b3040"
+    },
+    "input_count": 312,
+    "source_inputs_equal": true,
+    "roles": {
+      "notebook": {
+        "build": "build/kernel/task006-usb-wire-bulk-notebook-a3",
+        "archive": "build/kernel/task006-usb-wire-bulk-notebook-a3/consumed-source-root",
+        "configuration": "lemmasim-silicon-usb-wire-bulk-notebook",
+        "image_sha256": "d18880e20ecfd15d15de67eab122762fca2655b7e879fe9c45cea0666a7cda3c",
+        "archive_sidecar_sha256": "9b9215fdaa1c4293e3ed08eb372caa6f095da58c79512d3ec0a6669cbc023bd0"
+      },
+      "initialize": {
+        "build": "build/kernel/task006-usb-wire-bulk-initialize-a3",
+        "archive": "build/kernel/task006-usb-wire-bulk-initialize-a3/consumed-source-root",
+        "configuration": "lemmasim-silicon-usb-wire-bulk-initialize",
+        "image_sha256": "f46730799404d8f866ae3f3ba8d8c7294000669078088bbc73defd94bca4f261",
+        "archive_sidecar_sha256": "46543ae276ca52bad65a09728ef924e8d67e8107cf3085ab65639d5fd7f3e93c"
+      }
+    }
+  },
+  "independent_artifact_guards": {
+    "receipt": {
+      "path": "build/managed/usb-wire-component-artifacts-a2/result.json",
+      "sha256": "0ab5d98e896465728869fc83eecac3f368fefc705d0186899cc65bdb317d9d4e"
+    },
+    "authorities_per_role": 47,
+    "shared_pre_post_bodies": 46,
+    "actual_mutations_per_role": 17,
+    "readonly_pools_per_role": 49,
+    "scope": "Retained genuine a3 kernel objects; independent observer extension, not another target compilation.",
+    "kernel_object_observer": {
+      "path": "build/managed/usb-wire-component-command-attributes-a2.json",
+      "sha256": "54adb276680b9c9c17f751059e306ee78ef04582a99fae1e5a027fc65cd30201"
+    },
+    "kernel_object_attribute_mutations": 5,
+    "original_reusable_command_failure": {
+      "path": "build/managed/usb-wire-component-command-a1/result.json",
+      "sha256": "e9bd880baea42608c7966b0bb40264c29a9c0f7eaee7acc175cc889b8f030ca0"
+    },
+    "default_reusable_command_after_attribute_repair": "PASS_GENUINE_COMPONENT_AND_ARTIFACT_GUARDS; independent new output preserves original failure"
+  },
+  "real_pending": {
+    "receipt": {
+      "path": "build/usb/wire-pending-a2/result.json",
+      "sha256": "75ed005aa7bff894539a7268f452dec2e95d75e11a04986d061cf7cd0a781cce"
+    },
+    "status": "PASS",
+    "host_seconds": 137.630519918981,
+    "bounds": {
+      "target_cycles": 70000000,
+      "fixture_host_seconds": 1800,
+      "external_host_response_timeout_ms": 60000,
+      "maximum_fixture_tree_rss_kib": 4194304,
+      "maximum_owned_apparent_bytes": 12000000000
+    },
+    "cases": [
+      {
+        "case": "startup",
+        "snapshot_cycle": 0,
+        "suffix_cycles": 5000,
+        "host_seconds": 6.20801
+      },
+      {
+        "case": "reset",
+        "snapshot_cycle": 5000,
+        "suffix_cycles": 3000,
+        "host_seconds": 6.32601
+      },
+      {
+        "case": "physical-send",
+        "snapshot_cycle": 5002003,
+        "suffix_cycles": 5000,
+        "host_seconds": 7.06963
+      },
+      {
+        "case": "physical-receive",
+        "snapshot_cycle": 5009067,
+        "suffix_cycles": 5000,
+        "host_seconds": 6.78845
+      },
+      {
+        "case": "physical-guard",
+        "snapshot_cycle": 5017294,
+        "suffix_cycles": 5000,
+        "host_seconds": 8.09856
+      },
+      {
+        "case": "physical-chip-send",
+        "snapshot_cycle": 5025311,
+        "suffix_cycles": 5000,
+        "host_seconds": 7.8179
+      },
+      {
+        "case": "owned-submit",
+        "snapshot_cycle": 9360000,
+        "suffix_cycles": 5000,
+        "host_seconds": 7.1895
+      },
+      {
+        "case": "owned-receive",
+        "snapshot_cycle": 9372426,
+        "suffix_cycles": 5000,
+        "host_seconds": 6.24185
+      },
+      {
+        "case": "domain-reset",
+        "snapshot_cycle": 9477061,
+        "suffix_cycles": 3000,
+        "host_seconds": 6.04831
+      }
+    ],
+    "scope": "Actual audited RV64 Wire initializer and two independent generated PHYs; observational startup, reset, symbol, EOP guard, owned receive/submit cuts and private exact captured suffixes. No privately live peer continuation, standards-MAC timing, cross-backend or QEMU cache claim.",
+    "full_snapshot_suffixes_equal": true,
+    "original_adapter_contact_after_private_restore": false,
+    "all_owned_children_reaped": true
+  },
+  "host_checks": {
+    "kernel": {
+      "path": "build/managed/usb-wire-kernel-host-a3.log",
+      "sha256": "d190c7ce20b788daea863d73c826338ea5c1ff1977acc1cc785d3181164a0667",
+      "tests": 401,
+      "status": "PASS"
+    },
+    "scaffold": {
+      "path": "build/managed/usb-wire-scaffold-a3.log",
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c",
+      "status": "PASS_METADATA_ONLY"
+    },
+    "scaffold_host": {
+      "path": "build/managed/usb-wire-scaffold-host-a3.log",
+      "sha256": "87fc83686176435a4018319274c52778811d73f624fbd1ca99d3101b79f8ec5f",
+      "tests": 18,
+      "status": "PASS"
+    }
+  },
+  "remaining": [
+    "profile11 Notebook Ready, durable Save and full independent cold notebook workflow",
+    "standards-timed autonomous host MAC/device deadlines and USB source jitter envelope",
+    "electrical/physical USB conformance"
+  ],
+  "genuine_component_command": {
+    "receipt": {
+      "path": "build/managed/usb-wire-component-command-a2/result.json",
+      "sha256": "885cd28c0c39816195934aefac244b1eeedc333389ab033d647e2635c10f4785"
+    },
+    "status": "PASS_GENUINE_COMPONENT_AND_ARTIFACT_GUARDS",
+    "host_seconds": 230.44498242199188,
+    "predeclared_host_seconds": 420,
+    "source_inputs_equal": true,
+    "input_count": 315,
+    "shared_authorities_pre_post": 46,
+    "artifact_mutations_per_role": {
+      "notebook": 18,
+      "initializer": 18
+    },
+    "scope": "Bounded genuine USBWire kernel source lowering and artifact guard negatives.\n\nThis component command does not run a CPU or qualify a full linked image,\nphysical USB timing, Pending continuation, Ready or durable Save.\n"
+  }
+}

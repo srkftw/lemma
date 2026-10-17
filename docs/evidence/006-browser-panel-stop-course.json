@@ -1,0 +1,520 @@
+{
+  "schema": "lemma-browser-panel-stop-and-actual-course/1",
+  "status": "PASS_HOST_CONTROL_AND_ACTUAL_PRIVATE_ARRAY_COURSE_SAVED_NATIVE_COLD",
+  "scope": "New passive panel-stop UI over unchanged exact RTL Machine Wasm. Real old Array guest course/check/Saved in local OPFS private continuation; no browser cold acceptance or complete browser mathematics sequence, new CourseWord browser execution, full proof kernel or G5\u2013G7 claim.",
+  "implementation": {
+    "sim/browser/app.js": {
+      "path": "sim/browser/app.js",
+      "bytes": 8882,
+      "sha256": "15626eba5abb5756753272989bca53b0c27bb1584f5f9f81073f0d99e368488d"
+    },
+    "sim/browser/index.html": {
+      "path": "sim/browser/index.html",
+      "bytes": 3884,
+      "sha256": "7872d693a99f79017a30c0a7d9332269888b5dd12458b0ab28e31ba7c714bec4"
+    },
+    "sim/browser/run_budget.js": {
+      "path": "sim/browser/run_budget.js",
+      "bytes": 3009,
+      "sha256": "23be32346a6a6ed58ada03d1877689e5c8739245604d7d080e822604271438bc"
+    },
+    "sim/browser/worker.js": {
+      "path": "sim/browser/worker.js",
+      "bytes": 16568,
+      "sha256": "ee82959ad7809c01eb74cd3d19a5e72463d3972dd25cc9b7ef3dc7911470a003"
+    },
+    "tests/lemmasim/browser_worker_protocol.mjs": {
+      "path": "tests/lemmasim/browser_worker_protocol.mjs",
+      "bytes": 17433,
+      "sha256": "af228f2a378255155f7ecd3bd2221704f79774285a705bd673b63a65329e6956"
+    }
+  },
+  "behavior": "Stop only when actual panel-completed counter advances and paper_busy/panel_power are0. Counter boundary remains exactUInt64. Host deadline wins if late. No clock changes, controller drain or guest mutation.",
+  "host_tests": {
+    "worker": "PASS with actual worker and bounded mock machine; notRV64 evidence",
+    "test_file": {
+      "path": "tests/lemmasim/browser_worker_protocol.mjs",
+      "bytes": 17433,
+      "sha256": "af228f2a378255155f7ecd3bd2221704f79774285a705bd673b63a65329e6956"
+    },
+    "protocol_log": {
+      "path": "build/task006-store-checksum-words-a1/browser-panel-stop-host-a3.log",
+      "bytes": 421,
+      "sha256": "7ea4ef126413e059bba2d561a1c52b9bad3acfb3d6dec47c71d259f0a665d3c2"
+    },
+    "browser_host_suite": {
+      "path": "build/task006-store-checksum-words-a1/browser-panel-stop-host-suite-a1.log",
+      "bytes": 2324,
+      "sha256": "bb7c4f1d0064938962f64ed5ca6fa0efd4eead811ceefe0cca52bd2cdf651c69"
+    },
+    "suite_tests": 7
+  },
+  "actual_browser": {
+    "tab": 10,
+    "url": "http://127.0.0.1:8777/",
+    "bundle": {
+      "path": "build/browser/task006-array-panel-stop-a1/bundle.json",
+      "bytes": 90139,
+      "sha256": "89e0f93c75ca1dd16800d4961cd1844b32ff93422b82fd4a4616e9b732bb9cce"
+    },
+    "guest": "b85343bc867699dff1e1f88f6865cf78e3115f2d360518ac4dcde80af7106396",
+    "snapshot_identity": "c6f244138751f237c3676a5cccb441af664cd0796830b917de6aee9dcd151cc7",
+    "origin": "Actual private restored course-open boundary1059100000, itself from retained failed browser cold843850000 followed by qualified privateReady918600000. Original7200s cold FAIL unchanged.",
+    "predeclared_actions": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/course-plan.json",
+      "bytes": 998,
+      "sha256": "5393a3a66100e9a0018c8bcb4f6a2e4e9cbab666aabee7a8b3fe23b6f25999e4"
+    },
+    "submit_started": 1059100000,
+    "first_complete_course_scan": 1181050000,
+    "saved_footer_completed": 1200750000,
+    "delta_submit_and_saved": 141650000,
+    "simulation_call_seconds": 984.3644100005008,
+    "wall_upper_including_all_opened-session_pauses_at_snapshot": 3575.3832650000454,
+    "bounds_cycles": 650000000,
+    "bounds_host_seconds": 7200,
+    "wasm_heap_bytes": 345964544,
+    "observational_exports_no_cycle_advance": true,
+    "actual_saved_sequence": 38,
+    "actual_durable_barrier": 268,
+    "actual_isolated_reply": {
+      "request": 65,
+      "revision": 20,
+      "goal": 3,
+      "status": 0,
+      "outcome": 4
+    },
+    "current_durable_record": {
+      "format": "lemma-mathematical-submission/6",
+      "namespace": 1,
+      "page": 1,
+      "revision": 20,
+      "goal": 3,
+      "answer": [
+        5,
+        7,
+        1,
+        2,
+        1
+      ],
+      "outcome": 4,
+      "evidence_revision": 20,
+      "budget": 8,
+      "attempts": 7,
+      "hints": 1,
+      "history": [
+        {
+          "revision": 11,
+          "goal": 1,
+          "answer": [
+            5,
+            6,
+            0,
+            0,
+            0
+          ],
+          "outcome": 1,
+          "budget": 8
+        },
+        {
+          "revision": 12,
+          "goal": 1,
+          "answer": [
+            5,
+            7,
+            0,
+            0,
+            0
+          ],
+          "outcome": 2,
+          "budget": 8
+        },
+        {
+          "revision": 13,
+          "goal": 1,
+          "answer": [
+            5,
+            7,
+            0,
+            0,
+            0
+          ],
+          "outcome": 5,
+          "budget": 0
+        },
+        {
+          "revision": 19,
+          "goal": 2,
+          "answer": [
+            5,
+            7,
+            1,
+            2,
+            1
+          ],
+          "outcome": 1,
+          "budget": 8
+        },
+        {
+          "revision": 20,
+          "goal": 3,
+          "answer": [
+            5,
+            7,
+            1,
+            2,
+            1
+          ],
+          "outcome": 4,
+          "budget": 8
+        },
+        {
+          "revision": 20,
+          "goal": 3,
+          "answer": [
+            5,
+            7,
+            1,
+            2,
+            1
+          ],
+          "outcome": 4,
+          "budget": 8
+        },
+        {
+          "revision": 20,
+          "goal": 3,
+          "answer": [
+            5,
+            7,
+            1,
+            2,
+            1
+          ],
+          "outcome": 4,
+          "budget": 8
+        }
+      ],
+      "learner": {
+        "policy": "lemma-offline-review/1",
+        "mode": 0,
+        "understanding": "uncertain",
+        "recommendation": "support",
+        "reason": "unsupported-or-resource",
+        "show_reason": false,
+        "events": [
+          {
+            "revision": 11,
+            "goal": 1,
+            "kind": 1,
+            "value": 1,
+            "attempt_index": 0
+          },
+          {
+            "revision": 11,
+            "goal": 1,
+            "kind": 2,
+            "value": 1,
+            "attempt_index": 0
+          },
+          {
+            "revision": 12,
+            "goal": 1,
+            "kind": 1,
+            "value": 2,
+            "attempt_index": 1
+          },
+          {
+            "revision": 13,
+            "goal": 1,
+            "kind": 1,
+            "value": 5,
+            "attempt_index": 2
+          },
+          {
+            "revision": 14,
+            "goal": 2,
+            "kind": 4,
+            "value": 1,
+            "attempt_index": 0
+          },
+          {
+            "revision": 19,
+            "goal": 2,
+            "kind": 1,
+            "value": 1,
+            "attempt_index": 3
+          },
+          {
+            "revision": 20,
+            "goal": 3,
+            "kind": 4,
+            "value": 1,
+            "attempt_index": 0
+          },
+          {
+            "revision": 20,
+            "goal": 3,
+            "kind": 1,
+            "value": 4,
+            "attempt_index": 4
+          },
+          {
+            "revision": 20,
+            "goal": 3,
+            "kind": 1,
+            "value": 4,
+            "attempt_index": 5
+          },
+          {
+            "revision": 20,
+            "goal": 3,
+            "kind": 1,
+            "value": 4,
+            "attempt_index": 6
+          }
+        ]
+      },
+      "execution": {
+        "active": {
+          "origin": "IsolatedArray",
+          "request": 65,
+          "implementation": "lemma-isolated-arithmetic-array-v1",
+          "lowering": "core0-user-v0.5/lemma-managed-array-v1",
+          "runtime": "lemma-owned-arena-array-graph-v1",
+          "resources": "lemma-arithmetic-array-resource-v1",
+          "budget": 8,
+          "status": 0
+        },
+        "history": [
+          {
+            "origin": "IsolatedBytes",
+            "request": 291,
+            "implementation": "lemma-isolated-arithmetic-bytes-v1",
+            "lowering": "core0-user-v0.4/lemma-managed-bytes-v1",
+            "runtime": "lemma-owned-arena-bytes-cookie-v1",
+            "resources": "lemma-arithmetic-bytes-resource-v1",
+            "budget": 8,
+            "status": 0
+          },
+          {
+            "origin": "IsolatedBytes",
+            "request": 358,
+            "implementation": "lemma-isolated-arithmetic-bytes-v1",
+            "lowering": "core0-user-v0.4/lemma-managed-bytes-v1",
+            "runtime": "lemma-owned-arena-bytes-cookie-v1",
+            "resources": "lemma-arithmetic-bytes-resource-v1",
+            "budget": 8,
+            "status": 0
+          },
+          {
+            "origin": "IsolatedBytes",
+            "request": 403,
+            "implementation": "lemma-isolated-arithmetic-bytes-v1",
+            "lowering": "core0-user-v0.4/lemma-managed-bytes-v1",
+            "runtime": "lemma-owned-arena-bytes-cookie-v1",
+            "resources": "lemma-arithmetic-bytes-resource-v1",
+            "budget": 0,
+            "status": 0
+          },
+          {
+            "origin": "IsolatedBytes",
+            "request": 624,
+            "implementation": "lemma-isolated-arithmetic-bytes-v1",
+            "lowering": "core0-user-v0.4/lemma-managed-bytes-v1",
+            "runtime": "lemma-owned-arena-bytes-cookie-v1",
+            "resources": "lemma-arithmetic-bytes-resource-v1",
+            "budget": 8,
+            "status": 0
+          },
+          {
+            "origin": "IsolatedBytes",
+            "request": 669,
+            "implementation": "lemma-isolated-arithmetic-bytes-v1",
+            "lowering": "core0-user-v0.4/lemma-managed-bytes-v1",
+            "runtime": "lemma-owned-arena-bytes-cookie-v1",
+            "resources": "lemma-arithmetic-bytes-resource-v1",
+            "budget": 8,
+            "status": 0
+          },
+          {
+            "origin": "IsolatedArray",
+            "request": 81,
+            "implementation": "lemma-isolated-arithmetic-array-v1",
+            "lowering": "core0-user-v0.5/lemma-managed-array-v1",
+            "runtime": "lemma-owned-arena-array-graph-v1",
+            "resources": "lemma-arithmetic-array-resource-v1",
+            "budget": 8,
+            "status": 0
+          },
+          {
+            "origin": "IsolatedArray",
+            "request": 65,
+            "implementation": "lemma-isolated-arithmetic-array-v1",
+            "lowering": "core0-user-v0.5/lemma-managed-array-v1",
+            "runtime": "lemma-owned-arena-array-graph-v1",
+            "resources": "lemma-arithmetic-array-resource-v1",
+            "budget": 8,
+            "status": 0
+          },
+          {
+            "origin": "Unknown"
+          }
+        ],
+        "identity_kind": "closed implementation-version authority; not artifact digests"
+      }
+    },
+    "retained_pending_interpretation_correction": "0x423,38 means Pending transaction38, not failed38. Actual no0x424. Retained initial diagnostic is superseded by real0x421 and persisted record.",
+    "artifacts": {
+      "saved.raw": {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/unsupported-acknowledged-a1/saved.raw",
+        "bytes": 268435456,
+        "sha256": "2097610474a1e3b28710d3e0158d26dd120a7eae0ac3fb16d7436b3cd129bb2f"
+      },
+      "saved.io": {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/unsupported-acknowledged-a1/saved.io",
+        "bytes": 13960,
+        "sha256": "4079a30fc71ed846adfc0af9105dda4f601dfe4a0e2d7fbb7c5b1e747f1e4c29"
+      },
+      "saved.chk": {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/unsupported-acknowledged-a1/saved.chk",
+        "bytes": 145642109,
+        "sha256": "33f537ddbfc5c57524fec1cbafc8e58b3dde78fe74de336a490e4f4ea534847d"
+      },
+      "controller.ppm": {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/unsupported-acknowledged-a1/controller.ppm",
+        "bytes": 10890017,
+        "sha256": "051132369ab388935fae8af3173a41839ed686eb264714f43c8636b150d9c346"
+      },
+      "guest-uart.txt": {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/unsupported-acknowledged-a1/guest-uart.txt",
+        "bytes": 1848,
+        "sha256": "ef84247bb17f4479eecb414a3b59b0af0317a0ab787b4142ebae6a92361aa22f"
+      },
+      "result.json": {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/unsupported-acknowledged-a1/result.json",
+        "bytes": 520,
+        "sha256": "f08c7502bfde5189d4796b6e09acf46deb8d6a230c373bd65e5a570a60db03c8"
+      }
+    },
+    "edited_answer": {
+      "result": {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/edited-acknowledged-a1/result.json",
+        "bytes": 6811,
+        "sha256": "6a53ed10f0465c15829cbf04f02929becb27c6dde3fcb3ddedbd36b028f22eec"
+      },
+      "actual_saved_sequence": 39,
+      "revision": 21,
+      "goal": 1,
+      "outcome": 0,
+      "evidence_revision": 0,
+      "history_preserved": 7,
+      "durable_barrier": 278,
+      "completed_panel": 6,
+      "cycle": 1406200000,
+      "action_cycles": 205450000,
+      "scope": "Actualguesteditclearsactiveevidenceandpreserveshistory; savedOPFSrecord decoded independently. No newbrowsercoldclaim."
+    }
+  },
+  "independent_new_native_fast_reopen": {
+    "result": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/unsupported-acknowledged-a1/native-cold-a2/result.json",
+      "bytes": 11517,
+      "sha256": "c7fc36cf1d62593ce338e6b8bb1e4d659c317667f9b3afcbb0e582ec676a7947"
+    },
+    "status": "PASS",
+    "elapsed_seconds": 12.84723336395109,
+    "boot": {
+      "virtual_seconds": 3.550000008,
+      "host_seconds": 7.310257652017754,
+      "cycle": 355000001
+    },
+    "end_cycle": 404000005,
+    "complete_controller_pixels": 3630000,
+    "original_medium_unchanged": true,
+    "read_only": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/unsupported-acknowledged-a1/native-cold-a2/independent-read-only.json",
+      "bytes": 238,
+      "sha256": "2ae9bfe3869bc7c8985abaf0a05e7e0cc9902c3fbd2e999946048fc22bd73d24"
+    },
+    "actual_reads": 265,
+    "checker": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/unsupported-acknowledged-a1/native_reopen_a2.py",
+      "bytes": 2509,
+      "sha256": "c5e759cf3260eff2ce7c13e3c6c1c50d281432b151c531752e9ea5db5c314b0e"
+    },
+    "original_preCPU_wrong_digest_failure": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/unsupported-acknowledged-a1/native-cold-a1/result.json",
+      "bytes": 3476,
+      "sha256": "cc37bba408221fcb840fa9d1072e3fb97a798affeff84adaf5367603ae193268"
+    },
+    "scope": "New QEMU CPU, same audited b853 guest, actual cold Store/math recovery from exported OPFS bytes and raw course open. All3.63M pixels match actual browser controller. Instruction-clock timing only; this is not browser durable-only cold or exact native/Wasm suffix."
+  },
+  "remaining": "Next browser rational/edit/hint/review/resource/full Save and actual Wasm durable-only cold; new packed guest execution and exact applicable native/Wasm replay; full product permissions/runtime/proof/tutor and distribution.",
+  "private_mathematics_sequence": {
+    "status": "PASS_ACTUAL_PRIVATE_VERIFIED_HINT_EDIT_RESOURCE_REVIEW",
+    "scope": "Actual oldArray privatelyrestored continuation, not cold, repaired0c core, fullproofkernel or live/permissionedtutor. Original7200s failedcold retained.",
+    "milestone": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/math-sequence-milestone-a1.json",
+      "bytes": 2818,
+      "sha256": "d8bec4b0b241c059d363eba6ed43d03cf5cbbb1e5be37b5ffeb111941a502e15"
+    },
+    "receipts": [
+      {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/verified-rational-acknowledged-a1/result.json",
+        "bytes": 8284,
+        "sha256": "2a3b4cf720f4ef734f22eda066002f8f152e228bc5e106d5ac7c2d3357b3d9e5"
+      },
+      {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/hint-acknowledged-a1/result.json",
+        "bytes": 8158,
+        "sha256": "5d24fda3a218f7465cd3c7d51222203cd602082705e0703a58ba6539fae47dca"
+      },
+      {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/edited-verified-acknowledged-a1/result.json",
+        "bytes": 7945,
+        "sha256": "93d9cf8446938ee979028dbd5e9803c9f1a3af65e36aff6ddbc1fd6926373962"
+      },
+      {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/history-limit-acknowledged-a1/result.json",
+        "bytes": 8026,
+        "sha256": "135b60ce5c78b62122a5201c481d6c64117a9e1e4f301a751bd5518d36239769"
+      },
+      {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/review-override-acknowledged-a1/result.json",
+        "bytes": 8282,
+        "sha256": "2783e63def5387f65ed1098a43cc64a23bf0193a21641276e94d70842c9fb67e"
+      }
+    ],
+    "actual_saved_sequences": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "properties": [
+      "isolatedArray5/6 Verified atrevision22",
+      "authoredlocalhint durableassistance2",
+      "edit5/7revision23 invalidatescurrentapplicability, all8historicalchecks preserved",
+      "historycap Indeterminate5evidence23 withoutoverwritinghistory; notheapOOM",
+      "manualpracticeoverride preservesgoal/evidence/attempts; learnerunderstandinguncertain"
+    ],
+    "actual_controller": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/review-override-acknowledged-a1/controller-observation.json",
+      "bytes": 659,
+      "sha256": "6740f1ff66a7c190a6d0a181cdf101e35acb8bd7ef6e54b26e6c987febade92f"
+    },
+    "controller_png": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/review-override-acknowledged-a1/actual-controller.png",
+      "bytes": 12105,
+      "sha256": "865d4824698ff27a608223ff41a8af74e40424abfd4e2c181ac0fd05ddd5328c"
+    },
+    "observer_corrections": [
+      "first read-only reason stringmanual-override corrected to declaredmanual; retainedobserver-a1.json",
+      "PILmissing beforeparse; standardPythonPNG used; retainedcontroller-observer-initial-failure.json",
+      "first literalpolicylabel omitteddeclaredMANUALprefix; retainedcontroller-observer-label-failure.json"
+    ],
+    "remaining": "Newcold afterfinalSaved46 and completepermissionedtutor/learningpolicy/proofkernel/generalmanagedruntime remain separate."
+  }
+}

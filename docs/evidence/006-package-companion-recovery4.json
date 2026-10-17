@@ -1,0 +1,107 @@
+{
+  "schema": "lemma-package-companion-recovery4-evidence/1",
+  "status": "PASS_LINKED_AUDITS_NATIVE_PACKAGE_REAL_EXECUTION_RUNNING",
+  "contract": "docs/contracts/006-package-companion-recovery-v1.md",
+  "scope": "Four-role workspace/installer/recovery composition, complete original-source build/audit and native9 package. Actual lostACK/reconciliation/cold scenario is RUNNING; no Ready/Save/course PASS inferred.",
+  "committed_implementation": "65ed36e40b078c0a050144be24c92748513e24a9",
+  "target_software": {
+    "contract_version": "lemma-package-clocked-recovery4-deployment-v1",
+    "silicon_profile": "lemma-silicon-dev/0.13.0",
+    "user_profiles": {
+      "store": "core0-user-v0.2",
+      "notebook": "core0-user-v0.2",
+      "arithmetic": "core0-user-v0.7",
+      "course": "core0-user-v0.1"
+    },
+    "configurations": {
+      "usb-clocked-package-retry-bulk-notebook": "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook",
+      "usb-clocked-package-retry-bulk-initializer": "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize"
+    }
+  },
+  "target_source_inventory": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-package-companion-whole-a4/consumed-source-root",
+    "inputs": 393,
+    "sha256": "89493238c6da54e5474cac844299236d90ca9b2f5354859afee5b86f1c3d7572",
+    "distinction": "Original07e target/compiler inputs and separately identified65ed host observer; current uncommitted aligned-renderer source was not compiled into these images"
+  },
+  "linked_roles": {
+    "initializer": {
+      "audit_seconds": 180.99701769894455,
+      "audit_sha256": "5241b1945fe036f219173caf178b9a8c46f109f366761ea3ef6521be383c74c2",
+      "audit_status": "PASS",
+      "build_source_commit": "07e717194be5ab838e318a19f27a2c9705bcb89e",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-package-companion-initializer-a4",
+      "image_sha256": "234927c9f7524503d60a5f2c324233b585885232b17bdd96c48c74618c1fcfdd",
+      "mode": "REUSED_ORIGINAL_GENUINE_BUILD_WITH_CORRECTED_OBSERVER",
+      "provenance_sha256": "da492c511b9698d876cdcbc19a6d1eb9ed9d80d4b253d7a7f5af5116b0e98713"
+    },
+    "notebook": {
+      "audit_seconds": 178.68213522201404,
+      "audit_sha256": "2235a6ece0efaae6854f91ef7bee14f1e135f47fcbca73507127eaaa0fb9bcae",
+      "audit_status": "PASS",
+      "build_seconds": 218.18838257994503,
+      "build_status": "BUILT",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-package-companion-original-compiler-a1/build/kernel/notebook",
+      "image_bytes": 750096,
+      "image_sha256": "cd5e8e866061ddb57f260d1b21c4e1cce40391fdc05f072015da87971a134374",
+      "mode": "FRESH_GENUINE_EXACT_ORIGINAL_COMPILER_SOURCE_WORKSPACE",
+      "provenance_sha256": "c2d9c851f7ef72b1c085a96762d6b2633405bf7dcd498a31d497e214207b09cf"
+    }
+  },
+  "performance_resources": {
+    "observed_seconds": 580.9723176389234,
+    "peak_owned_RSS_bytes": 3664199680,
+    "minimum_available_bytes": 9346400256,
+    "peak_owned_output_bytes": 326404120
+  },
+  "corrected_observer": "Original supervisor FAIL_INDEPENDENT_SOURCE_SEAL retained: it compared296 host files with a nonexistent same-path compiler archive. Passive independent check verifies296 unchanged host files,393 original/private compiler files, all consumed artifacts, original resource bounds and cleanup. No command rerun for this correction.",
+  "native_runtime": {
+    "binary_sha256": "6cbd9cad4b208909aefe62e151a83fb02c3042a2b1b3efa86c8594b681159e63",
+    "binding": "lemma-silicon-dev/0.13.0",
+    "control": "lemma-usb-live-recovery/1",
+    "new_machine_implementation": false
+  },
+  "host_checks": {
+    "kernel": 433,
+    "foundation": 468,
+    "lemmasim_in_pinned_environment": 297,
+    "silicon": 205,
+    "scaffold": 18,
+    "note": "Original outside-Nix LemmaSim tool-missing failure retained; proper pinned suite passes"
+  },
+  "actual_scenario": {
+    "status": "RUNNING_NOT_READY_INFERRED",
+    "plan": "build/usb/task006-package-companion-connected-plan-a1/plan.json",
+    "actor": "build/usb/task006-package-companion-connected-plan-a1/connected.py",
+    "work": "build/usb/task006-package-companion-connected-a1",
+    "bounds": {
+      "seconds": 21600,
+      "aggregate_cycles": 10000000000
+    },
+    "fault_scope": "first completed persisted WRITE reply during workspace creation, known-prefix recovery; not known+1 final-barrier acceptance"
+  },
+  "retained_failures": [
+    "whole-a1 firmware role omitted from artifact authority",
+    "whole-a2 exact Objects boot wrapper not registered",
+    "whole-a3 stopped/reaped on separately demonstrated initializer catalog-name mismatch",
+    "whole-a4 installer ABI owner omitted",
+    "recovered supervisor wrong independent source relation",
+    "prepare-native-notebook-a1 missing required per-build USB source sidecar"
+  ],
+  "observations": {
+    "build/courses/task006-package-companion-component-a3/result.json": "66dd0f0882b1eb3e7318938824d5f9e0cebd4914229b3b6424357b336cc61c3e",
+    "build/kernel/task006-package-companion-source-draft-a1/build/courses/qualification-a4/result.json": "872dd3e73769af7431c642c394c6e5b12ac5ffb7db7c73c451bf61b05803405d",
+    "build/courses/task006-package-companion-recovered-pair-a1/result.json": "164c8d5b1e87f50209509da02f96ff3efa0399abd2f907c36acf0043890eb4a2",
+    "build/courses/task006-package-companion-recovered-supervision-a1/result.json": "ba6b8e3ea4e37a3c8e4d87005c1c86a0cd025e408a2035d5b8b07a65dd5ea928",
+    "build/courses/task006-package-companion-recovered-pair-a1/passive-supervision-correction-a1.json": "5a856713182be1ebf00b68da7d538cee23f0357a0ac2d6966b3e54689bfe2c8c",
+    "build/native/task006-usb-package-recovery-a1/bundle.json": "1b9ae507d6112b81d0b64b68bd206619dc3783fcba7daaaa32f5199ff1d08c50"
+  },
+  "remaining": [
+    "actual full companion install/workspace/lostACK/offline/retry/cold result",
+    "actual workspace known+1 final-barrier lostACK and full mathematics peer scenario",
+    "Product boot integration",
+    "owner authentication/full USB",
+    "browser peer and exact fast cached continuation",
+    "physical closure"
+  ]
+}

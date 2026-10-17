@@ -1,0 +1,84 @@
+{
+  "schema": "lemma-usb-device-evidence/1",
+  "status": "PASS",
+  "scope": "literal decoded-packet device + arbitrary partial RX/status-ACK exact circuit suffix; no whole machine/guest/PHY claim",
+  "source_inputs": {
+    "sim/rtl/lemma_usb_device.sv": "33b959fe80f1b92cbb0286ec395c765602f940c9ea1c74c107de5389b0cb4fd5",
+    "tests/usb/device.cpp": "a4eff03214061d7d86b09be9da97632579e856a8548042a55c0560f8b2c2a7e8",
+    "scripts/check_usb_device.py": "418b688a1b56b62d4811b0de57b937d4d2474223c21de27fd5698d2bb4e7d615",
+    "scripts/check_silicon.py": "692a4f51e7bb3e303682d6787c58712f2ec0c66ab4a0d3b3033b499b3fd3110f",
+    "tooling/silicon/sim.nix": "81cb84fdab6c36979c9b40d492840ba53e0076d3bbe5a93ecb7247cba0cd271c",
+    "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d"
+  },
+  "tool_inputs": {
+    "verilator": {
+      "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator",
+      "sha256": "f1f41487e2a6c18e55859658df8d2e3528b76fc5c7b5a95281794ded61c7b802",
+      "version": "Verilator 5.052 2026-09-05 rev v5.052"
+    },
+    "make": {
+      "path": "/nix/store/z565rgmn9vccv2h0g87z725pw610jmm8-gnumake-4.4.1/bin/make",
+      "sha256": "fee96a0fae52353d14f8d5be991366483d96f00800f8f707198af68ce47b8fea",
+      "version": "GNU Make 4.4.1"
+    },
+    "c++": {
+      "path": "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++",
+      "sha256": "c1a58806b7b7c5f038a81f94c27796764fc8cd9f8059aef62c5e83a761a56935",
+      "version": "g++ (GCC) 16.2.0"
+    },
+    "verilator_bin": {
+      "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator_bin",
+      "sha256": "7e75a7d71fec9faf87f2933b5a53040d474788ffd183f840c320a1aab228a3ae",
+      "version": "Verilator 5.052 2026-09-05 rev v5.052"
+    }
+  },
+  "compiled_binary_sha256": "2a28521d4d74977c4ac803372d0fbad452dc4cb71fb48fe3a6d9c8361791b3f3",
+  "observation": "USB_DEVICE_LITERAL_PASS cycles=1000400 rx=38 tx=20 errors=1",
+  "snapshots": {
+    "fork.state": {
+      "bytes": 1322,
+      "sha256": "62f6cb9a49d0392a9b4f4105ab2c4b5e322d2ffc0f29efbafcf96bc4db84d125"
+    },
+    "live.state": {
+      "bytes": 1322,
+      "sha256": "62f6cb9a49d0392a9b4f4105ab2c4b5e322d2ffc0f29efbafcf96bc4db84d125"
+    },
+    "partial-fork.state": {
+      "bytes": 1322,
+      "sha256": "aafdc14da75ab70094b2c099b29d7297ffad6600dc5224805050d68a2b43a4db"
+    },
+    "partial-live.state": {
+      "bytes": 1322,
+      "sha256": "aafdc14da75ab70094b2c099b29d7297ffad6600dc5224805050d68a2b43a4db"
+    },
+    "partial.state": {
+      "bytes": 1322,
+      "sha256": "779c293a6b20eb720465a80b32f905efcc8390f6a7136b0eace3c58ddb819c09"
+    },
+    "status.state": {
+      "bytes": 1322,
+      "sha256": "6648e6b30916febb1f0241d4b954e8d3907b17512c08b80d4e0d521df92f82cf"
+    }
+  },
+  "resources": {
+    "largest_reaped_child_peak_rss_kib": 345072,
+    "reaped_children_user_seconds": 33.839743,
+    "reaped_children_system_seconds": 2.072505
+  },
+  "host_seconds": 20.615816967969295,
+  "reproduce": "python3 scripts/check_usb_device.py --work-dir UNUSED_BUILD_PATH --jobs 2",
+  "retained_result": "build/usb/device-qualified-a1/result.json",
+  "retained_failures": [
+    "build/usb/lint-a1.log (tool absent in default shell)",
+    "build/usb/lint-a2.log (SV ternary syntax)",
+    "build/usb/lint-a3.log (strict width/temporary warnings)",
+    "build/usb/device-a1-build.log (missing output parent)",
+    "build/usb/device-a2-build.log plus run (context thread order)"
+  ],
+  "companion_policy": {
+    "prepared": "build/usb/companion-policy-a1/prepared.json",
+    "tests": "build/usb/companion-policy-tests-a1.log",
+    "observed": "9 actual hosted peer/native adapter tests passed in17.028s",
+    "scope": "unchanged extracted hosted policy; no USB guest claim"
+  }
+}

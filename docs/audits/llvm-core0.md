@@ -1,3 +1,4 @@
+<!--
 # LLVM/Core0 toolchain and upstream-emitter audit
 
 Status: host-tool and source audit for Task 001, captured 2026-10-07.
@@ -412,3 +413,5 @@ Lean managed ABI or all of G1 has been ported.
   intrinsics/helpers before and after optimization, and QEMU's reset trampoline
   and generated DTB.
 - No QEMU boot or UART result is asserted by this document.
+
+-->

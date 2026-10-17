@@ -142,6 +142,18 @@ class MultiImageAuditFailures(unittest.TestCase):
                      row('llvm-objcopy',['-O','binary','--only-section=.data',d+'/image.elf',d+'/data.bin'],base)]
             args=dict(root=ROOT,output_dir=out,images=[image],optimization='O2',roles={},standalone=True)
             validate_multi_commands(rows,**args)
+            # Same exact tool/root/object corpus under the additive host policy.
+            from lean_export_host import policy, environment
+            current = copy.deepcopy(rows)
+            for entry in current:
+                if entry['argv'][1:3] == ['env', 'lean']:
+                    entry['argv'].insert(3, '-j2')
+                    entry['host_environment'] = environment(policy())
+            validate_multi_commands(current, **args, host_export_policy=policy())
+            with self.assertRaises(Core0Error):
+                validate_multi_commands(rows, **args, host_export_policy=policy())
+            with self.assertRaises(Core0Error):
+                validate_multi_commands(current, **args)
             bads=[];bad=copy.deepcopy(rows);bad[5]['cwd']=base+'/users/busy';bads.append(bad)
             bad=copy.deepcopy(rows);bad[8]['argv'].insert(-2,'foreign.o');bads.append(bad)
             bad=copy.deepcopy(rows);bad.pop(6);bads.append(bad)

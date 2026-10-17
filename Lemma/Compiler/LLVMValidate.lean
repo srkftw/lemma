@@ -1,4 +1,6 @@
 import Lemma.Compiler.LLVMIR
+import Lemma.Compiler.LLVMNameSets
+import Std.Data.HashMap.Basic
 
 /-!
 Fail-closed validation for Lemma's structured LLVM subset.
@@ -32,11 +34,10 @@ private def insertName (names : Array String) (name : String) : Array String :=
   if names.contains name then names else names.push name
 
 private def sameNameSet (lhs rhs : Array String) : Bool :=
-  lhs.size == rhs.size && lhs.all rhs.contains && rhs.all lhs.contains
+  NameSets.equal lhs rhs
 
 private def intersectNames (lhs rhs : Array String) : Array String :=
-  lhs.foldl (init := #[]) fun result name =>
-    if rhs.contains name then insertName result name else result
+  NameSets.intersect lhs rhs
 
 private def integerWidth? : Ty → Option Nat
   | .i1 => some 1
@@ -91,6 +92,11 @@ private structure Definition where
   instructionIndex : Nat := 0
   deriving BEq
 
+-- These tables are host compiler indexes only. No hash traversal participates
+-- in validation order, diagnostics or emitted code.
+private abbrev Definitions := Std.HashMap String Definition
+private abbrev DominanceIndex := Std.HashMap String (Std.HashSet String)
+
 private structure DominatorEntry where
   label : String
   dominators : Array String
@@ -126,14 +132,22 @@ private def reachableLabels (blocks : Array Block) : Array String := Id.run do
                 work := work ++ [target]
   return reached
 
-private def lookupDominators? (entries : Array DominatorEntry) (label : String) :
-    Option (Array String) :=
-  (entries.find? fun entry => entry.label == label).map (·.dominators)
+private def lookupDominators? (entries : DominanceIndex) (label : String) :
+    Option (Std.HashSet String) :=
+  entries[label]?
 
 private def computeDominators (fn : Function) : Except String (Array DominatorEntry) := do
   let some entry := fn.blocks[0]?
     | failAt fn "has no entry block"
   let labels := fn.blocks.map (·.label)
+  -- Block structure has already established unique labels and closed edges.
+  -- Keep its original predecessor and update order, indexing only lookups.
+  let positions : Std.HashMap String Nat :=
+    (labels.mapIdx fun index label => (label, index)).foldl
+      (fun result entry => result.insert entry.1 entry.2) {}
+  let predecessorsByIndex := labels.map (predecessorLabels fn.blocks)
+  let lookup (values : Array DominatorEntry) (label : String) : Option (Array String) :=
+    (positions[label]?).bind fun index => (values[index]?).map (·.dominators)
   let mut entries := labels.map fun label =>
     ({
       label
@@ -146,34 +160,34 @@ private def computeDominators (fn : Function) : Except String (Array DominatorEn
       failAt fn "internal dominance iteration did not converge"
     fuel := fuel - 1
     changed := false
-    for label in labels do
+    for h : index in [:labels.size] do
+      let label := labels[index]
       unless label == entry.label do
-        let predecessors := predecessorLabels fn.blocks label
+        let predecessors := predecessorsByIndex[index]!
         let some first := predecessors[0]?
           | failIn fn label "reachable non-entry block has no predecessor"
-        let some firstDominators := lookupDominators? entries first
+        let some firstDominators := lookup entries first
           | failIn fn label s!"internal missing dominator state for predecessor `%{first}`"
         let mut common := firstDominators
         for predecessor in predecessors.extract 1 predecessors.size do
-          let some predecessorDominators := lookupDominators? entries predecessor
+          let some predecessorDominators := lookup entries predecessor
             | failIn fn label s!"internal missing dominator state for predecessor `%{predecessor}`"
           common := intersectNames common predecessorDominators
         let updated := insertName common label
-        let some current := entries.find? fun candidate => candidate.label == label
+        let some current := entries[index]?
           | failIn fn label "internal missing dominator entry"
         unless sameNameSet current.dominators updated do
-          entries := entries.map fun candidate =>
-            if candidate.label == label then { label, dominators := updated } else candidate
+          entries := entries.set! index { label, dominators := updated }
           changed := true
   pure entries
 
-private def dominates (entries : Array DominatorEntry) (definitionBlock useBlock : String) : Bool :=
+private def dominates (entries : DominanceIndex) (definitionBlock useBlock : String) : Bool :=
   match lookupDominators? entries useBlock with
   | some dominators => dominators.contains definitionBlock
   | none => false
 
-private def lookupDefinition? (definitions : Array Definition) (name : String) : Option Definition :=
-  definitions.find? fun definition => definition.name == name
+private def lookupDefinition? (definitions : Definitions) (name : String) : Option Definition :=
+  definitions[name]?
 
 private def validateLiteral (fn : Function) (block context : String) (ty : Ty)
     (value : Nat) : Except String Unit := do
@@ -183,7 +197,7 @@ private def validateLiteral (fn : Function) (block context : String) (ty : Ty)
     failIn fn block s!"{context} literal {value} is outside `{ty.render}`"
 
 private def validateOperandType (fn : Function) (block context : String)
-    (definitions : Array Definition) (operand : Operand) (expected : Ty) : Except String Unit := do
+    (definitions : Definitions) (operand : Operand) (expected : Ty) : Except String Unit := do
   match operand with
   | .local name =>
       let some definition := lookupDefinition? definitions name
@@ -207,7 +221,7 @@ private def validateOperandType (fn : Function) (block context : String)
         s!"{context} uses explicit `poison`; poison is only implicit in checked-result construction"
 
 private def validateOrdinaryDominance (fn : Function) (block : String) (instructionIndex : Nat)
-    (definitions : Array Definition) (dominators : Array DominatorEntry)
+    (definitions : Definitions) (dominators : DominanceIndex)
     (operand : Operand) (context : String) : Except String Unit := do
   if let .local name := operand then
     let some definition := lookupDefinition? definitions name
@@ -224,14 +238,14 @@ private def validateOrdinaryDominance (fn : Function) (block : String) (instruct
               s!"{context} uses `%{name}` from non-dominating block `%{definitionBlock}`"
 
 private def validateOrdinaryOperand (fn : Function) (block : String)
-    (instructionIndex : Nat) (definitions : Array Definition)
-    (dominators : Array DominatorEntry) (operand : Operand) (expected : Ty)
+    (instructionIndex : Nat) (definitions : Definitions)
+    (dominators : DominanceIndex) (operand : Operand) (expected : Ty)
     (context : String) : Except String Unit := do
   validateOperandType fn block context definitions operand expected
   validateOrdinaryDominance fn block instructionIndex definitions dominators operand context
 
 private def validatePhiOperand (fn : Function) (block predecessor : String)
-    (definitions : Array Definition) (dominators : Array DominatorEntry)
+    (definitions : Definitions) (dominators : DominanceIndex)
     (blocks : Array Block) (operand : Operand) (expected : Ty) (context : String) :
     Except String Unit := do
   validateOperandType fn block context definitions operand expected
@@ -259,7 +273,7 @@ private def validateAlignment (fn : Function) (block context : String)
     failIn fn block s!"{context} alignment {alignment} is not a positive power of two"
 
 private def validateInstruction (fn : Function) (block : Block) (instructionIndex : Nat)
-    (definitions : Array Definition) (dominators : Array DominatorEntry)
+    (definitions : Definitions) (dominators : DominanceIndex)
     (instruction : Instruction) : Except String Unit := do
   let operand := validateOrdinaryOperand fn block.label instructionIndex definitions dominators
   let context := s!"instruction #{instructionIndex}"
@@ -359,8 +373,8 @@ private def validateInstruction (fn : Function) (block : Block) (instructionInde
           s!"{context} returns void from function returning `{fn.returnType.render}`"
   | .unreachable => pure ()
 
-private def collectDefinitions (fn : Function) : Except String (Array Definition) := do
-  let mut definitions : Array Definition := #[]
+private def collectDefinitions (fn : Function) : Except String Definitions := do
+  let mut definitions : Definitions := {}
   for parameter in fn.parameters do
     unless !parameter.name.isEmpty do failAt fn "has an empty parameter name"
     if (lookupDefinition? definitions parameter.name).isSome then
@@ -368,7 +382,7 @@ private def collectDefinitions (fn : Function) : Except String (Array Definition
     unless parameter.ty != .void do failAt fn s!"parameter `%{parameter.name}` has void type"
     if parameter.ty == .checkedResult then
       failAt fn s!"parameter `%{parameter.name}` uses the non-parameter checked-result ABI type"
-    definitions := definitions.push {
+    definitions := definitions.insert parameter.name {
       name := parameter.name
       ty := parameter.ty
       block? := none
@@ -381,7 +395,7 @@ private def collectDefinitions (fn : Function) : Except String (Array Definition
           failIn fn block.label s!"instruction #{index} redefines SSA value `%{name}`"
         unless ty != .void do
           failIn fn block.label s!"instruction #{index} defines `%{name}` with void type"
-        definitions := definitions.push {
+        definitions := definitions.insert name {
           name
           ty
           block? := some block.label
@@ -423,8 +437,8 @@ private def validateBlockStructure (fn : Function) : Except String Unit := do
     let missing := labels.filter fun label => !reached.contains label
     failAt fn s!"contains unreachable blocks {repr missing}"
 
-private def validatePhis (fn : Function) (definitions : Array Definition)
-    (dominators : Array DominatorEntry) : Except String Unit := do
+private def validatePhis (fn : Function) (definitions : Definitions)
+    (dominators : DominanceIndex) : Except String Unit := do
   for block in fn.blocks do
     let predecessors := predecessorLabels fn.blocks block.label
     let mut sawNonPhi := false
@@ -489,10 +503,12 @@ def validateFunction (fn : Function) : Except String Unit := do
   validateUARTSites fn
   let definitions ← collectDefinitions fn
   let dominators ← computeDominators fn
-  validatePhis fn definitions dominators
+  let dominanceIndex : DominanceIndex := dominators.foldl (init := {}) fun result entry =>
+    result.insert entry.label (entry.dominators.foldl (fun names name => names.insert name) {})
+  validatePhis fn definitions dominanceIndex
   for block in fn.blocks do
     for h : index in [:block.instructions.size] do
-      validateInstruction fn block index definitions dominators block.instructions[index]
+      validateInstruction fn block index definitions dominanceIndex block.instructions[index]
 
 private structure Callable where
   name : String

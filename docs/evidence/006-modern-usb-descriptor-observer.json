@@ -1,0 +1,80 @@
+{
+  "schema": "lemma-modern-usb-descriptor-observer/1",
+  "status": "OBSERVER_PASS",
+  "scope": "Actual retained LLVM/object owner and mutation qualification of the current observer; not original full audit, USB transactions or compiler correctness",
+  "result": {
+    "path": "build/task006-modern-usb-descriptors-a1/result.json",
+    "sha256": "8e1cfe12c602725ad3fcb1c0631c688648b4887f5e0ebea1021f235e54f822ae"
+  },
+  "observer_sha256": "49411b27c2ba63186b789c57788b0adfa01843830a2c5eabf7d389121dbcebe3",
+  "qualifier_sha256": "23b052be37b8cd1fcdcbb413c6a611fabe262fa7c432f0b776b2e71cb4cc9c81",
+  "command": "nix develop --no-write-lock-file --command python3 scripts/check_modern_usb_descriptors.py build/kernel/task006-usb-initialize-a3/kernel build/kernel/task006-product-notebook-a1/kernel --work-dir build/task006-modern-usb-descriptors-a1",
+  "variants": [
+    {
+      "configuration": "lemmasim-silicon-usb-initialize",
+      "profile": "core0-kernel-v0.6",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-initialize-a3/kernel",
+      "artifacts": {
+        "unit.json": "66eb58768ec918db34f1f1a38e972cae5371424a754c27d9d9d4c19f124924c4",
+        "program.opt.ll": "d9c8d589f10dd0b0e0ab168e78e18e4cc5d79ec96f1f448978f709b9e2f99c9f",
+        "program.o": "1b502bc8df206d9595be6e7dd997af1fdb68bdbb8b45756f1f51558ad6f24739"
+      },
+      "suffix_rename": {
+        "status": "PASS",
+        "old": "switch.table.lemma_kernel_core0_scalar_110.35",
+        "new": "switch.table.lemma_kernel_core0_scalar_110.935",
+        "actual_object_and_regenerated_companion": true,
+        "code_sha256": "5ac329359961cab886e3b82b2a66f6ad0e8f48c13eeb06b1c3e08111d64a080d"
+      },
+      "actual_llvm_negative_count": 12,
+      "actual_object_negative_count": 8
+    },
+    {
+      "configuration": "lemmasim-silicon-product-notebook",
+      "profile": "core0-kernel-v0.7",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-product-notebook-a1/kernel",
+      "artifacts": {
+        "unit.json": "fc4335af3d2be140e16bd42b0378e21c1c9fd675e03a0fa06c4c9a8221a8e64a",
+        "program.opt.ll": "0a30414b520c262c196339ecb99a294f3a1ed685676ca107de136cbb3e64cf02",
+        "program.o": "79829541ae011d557f271e28631a18631ff1f559b2a5108a3d59c2b46d67f587"
+      },
+      "suffix_rename": {
+        "status": "PASS",
+        "old": "switch.table.lemma_kernel_core0_scalar_110.35",
+        "new": "switch.table.lemma_kernel_core0_scalar_110.935",
+        "actual_object_and_regenerated_companion": true,
+        "code_sha256": "402307e3cea9aee93592af65d65ad5bd29024875294dbe6038115d092aaad82e"
+      },
+      "actual_llvm_negative_count": 12,
+      "actual_object_negative_count": 8
+    }
+  ],
+  "host_regression": {
+    "command": "python3 -m unittest discover -s tests/kernel -p test_modern_usb_descriptors.py -v",
+    "count": 5,
+    "result": {
+      "path": "build/task006-modern-usb-descriptor-host-a2.log",
+      "sha256": "6bdb53d55cd71209051d7fb6553d0d4a473ce1ef49eb58392cdef1f056328be6"
+    }
+  },
+  "retained_failures": [
+    {
+      "path": "build/task006-modern-usb-descriptor-host-a1.log",
+      "sha256": "a397ae512ccf3d0646e0ca2a9f98fa9df39d32ebb3ccbe7a71773a53fae739f9"
+    },
+    {
+      "path": "build/kernel/task006-usb-initialize-a3/audit-failure.json",
+      "sha256": "b014c69b8bfc8c3a2bfa5c74a7dbab3b38e9830ea772563e19d8a275aa7e3542"
+    },
+    {
+      "path": "build/kernel/task006-product-notebook-a1/audit-failure.json",
+      "sha256": "26836bd45021dd568546ecbe2fb18dd39a2885643cd4499b3d256b469f475830"
+    }
+  ],
+  "retained_host_failure_reason": "Initial host fixture changed first non-descriptor row and assumed an undeclared Product initializer selector. Corrected stimuli identify the actual descriptor row and only registered modern configurations.",
+  "limitations": [
+    "This is separately identified corrected-observer qualification; retained full-image audit failures keep their actual meaning",
+    "No source manifest changed and no original object or LLVM overwritten",
+    "Descriptor bytes and local object provenance do not establish USB protocol transactions, enumeration or durable peer behavior"
+  ]
+}

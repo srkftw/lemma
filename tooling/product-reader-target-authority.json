@@ -1,0 +1,48 @@
+{
+  "schema": "lemma-product-course-reader-target/1",
+  "reader_artifact_sha256": "37454b80a0a95ab4a03a6b3f8870eeaae6efa5f767dfc99db226851155c18a9e",
+  "scope": "Exact genuinely elaborated additive Kernel7 and unchanged Reader18 User2 catalogs, complete pre/post caller/global/body corpora; full-image and execution separate",
+  "roles": {
+    "kernel": {
+      "catalog_sha256": "143b9662928fde3f6f67c58580c9f40d763b39efdc2c41240776522eaeb05345",
+      "pre_sha256": "d7b6e3914e9042d1b340b5ffa00409b6f4e29d1cac9b9ac714b789b65ea8a9fd",
+      "pre_function_count": 1300,
+      "post_sha256": "2645ea4a645e2cee8067ff1628a23e3eb4bad8f620dff0bdb9360a47b3a82b33",
+      "post_function_count": 1300,
+      "physical_inline_token_post_sha256": "631654ec6b18f590141c85c6630a9c22aecf6efdd6913a745fd99ab89cf50402",
+      "physical_inline_helper_post_sha256": {
+        "Lemma.Kernel.Loader.validateExpandedStackAt": "b89a16b9dc8625024824f4e46265adb166e24ed9976651a8cdf2803e8e2c04ff",
+        "Lemma.Kernel.Memory.AddressSpace.base": "127224e9641e0ba8814407200a844fdd895bfa3f4a98b9245d48142885374517",
+        "Lemma.Kernel.Memory.AddressSpace.validateRegistry8192Step": "9a408d9c3e416ab39c5d607df8fbc78bfa298fb5577f9471069bbb9cf99e009f",
+        "Lemma.Kernel.Memory.AddressSpace.validateRegistryGenericStep": "6fa0e6dfdb16e54b24eedbecd389062d01920309165e7eff8bb060fa9ffd2af0",
+        "Lemma.Kernel.Memory.AddressSpace.validateRegistryStep": "4a527cdceabce934306d67de26a15ef91f5ff0b14b6f6f02d0b7c207c220e463",
+        "Lemma.Kernel.Memory.Frames.resolve": "dc6bad0a972cf3df0d9f6d01f6b2a5322d0593f8797ed1fd26f48acbc014b672",
+        "Lemma.Kernel.Memory.Frames.resolvePurpose": "c3800b7de56f567a13f39ee75ccfb3cb6a7726d3c5889a649aedce6239f1a453",
+        "Lemma.Kernel.Memory.Frames.resolveRegistry8192": "21b84b0fd31747b8df0cd38034991be2acbd9a43a46023c954b3f7fdd81fdb95",
+        "Lemma.Kernel.Memory.UserCopy.copyWord": "d108a80b03b927ca3063580cd0f3bafb55d0629330982454df1cafb4f370ecac",
+        "Lemma.Kernel.Memory.UserCopy.copyWordBlockStep": "1b8514b582913ab0586323b34d01e60382e38ca9d01f96ec151cb685856ac5c2",
+        "Lemma.Kernel.Memory.UserCopy.copyWordGenericBlockStep": "59382437e8af67d7b61d3d0adc8467030e5da37c0404b34f93da0cd0e0482a69",
+        "Lemma.Kernel.Process.validateStackAt": "67e389454db1b43e1be76fedfdbc806a735f9979f7b0b8ea13b24f92a61a569c",
+        "Lemma.Kernel.Scheduler.entryV2": "93caf0922728e2a47bf0ae3066837f61b3719a8c9473ac35b3ceff8ace4fca8d",
+        "Lemma.Kernel.Task.entryContextV2": "56a0637a62a832bb07404de6618de09a55a391a07415d7f26c85edacb8e00055",
+        "Lemma.Kernel.Task.entryDispatchesV2": "10f0ae9b9882da83b1fd01f0256a473f861c0c79bfe3dad4a0da4059d2ee9892",
+        "Lemma.Kernel.Task.findStep": "7f0b820e022d83f2bf1262822b32aac7ad54c6f478619ae9e350cce9b7f2c8f6",
+        "Lemma.Kernel.Task.table": "06055192affb6ec62f7d541c1e3d3615d1709e427bbee265b93568334c9ee1d9"
+      }
+    },
+    "notebook": {
+      "catalog_sha256": "859fba91d7ca12bd8cf40c5db44901407b9fe0f7548990f99447001b06d02dfc",
+      "pre_sha256": "9fd71bb6d11ca23a28058954b2f72f72f7ecb9514d496380bf4f961003f983cc",
+      "pre_function_count": 902,
+      "post_sha256": "51c02bf380fecacb16371c3ab16e4161f8cdcb8a70f90477f0ecdd2cad9d7bc3",
+      "post_function_count": 900,
+      "package_notebook_version": 18,
+      "reader_contract": "lemma-course-reader-location/1",
+      "surface_root_sha256_by_phase": {
+        "pre": "080581b7582c74029a7c2371e709f6277684b4351f9f67d759f9341a9b029681",
+        "post": "775ba1e0c77d8fbf66589f945b18daf9caae997ff6651562503597dce65a85bf"
+      },
+      "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa"
+    }
+  }
+}

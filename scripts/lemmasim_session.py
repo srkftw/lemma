@@ -15,11 +15,14 @@ import os
 import re
 from pathlib import Path
 import selectors
+import secrets
 import shutil
 import signal
 import socket
+import stat
 import subprocess
 import sys
+import tempfile
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -89,7 +92,7 @@ def startup_restore_medium(args):
         raise ValueError('A restored fork owns its checkpoint backing; omit --disk')
     if args.workload == 'service':
         return False
-    if args.workload != 'power':
+    if args.workload not in ('power','ble','usb'):
         return True
     if args.backend == 'rtl':
         # Its exact container owns the optional backing, including its presence.
@@ -113,7 +116,7 @@ def startup_restore_medium(args):
 
 def external_command(value, current):
     if not isinstance(value,dict):raise ValueError('External request must be an object')
-    if value.get('action') in ('warm-reset','cold-cycle'):return value['action'],dict(value)
+    if value.get('action') in ('warm-reset','cold-cycle','companion-retry'):return value['action'],dict(value)
     if value.get('action')!='inject':raise ValueError('Unsupported external action')
     cycle=bounded(value.get('cycle',current),current,(1<<64)-1,'Event cycle')
     kind=value.get('kind')
@@ -128,6 +131,9 @@ def external_command(value, current):
         if not isinstance(payload,str) or not 2<=len(payload)<=8192 or len(payload)%2 or any(c not in '0123456789abcdefABCDEF' for c in payload):
             raise ValueError('UART requires1..4096 literal hex bytes')
         command=f'inject {cycle} uart {payload}'
+    elif kind in ('pgood','brownout','ble-rx','ble-coex'):
+        level=bounded(value.get('level'),0,1,'Supply digital level')
+        command=f'inject {cycle} {kind} {level}'
     elif kind=='button':
         level=bounded(value.get('level'),0,1,'Button level')
         command=f'inject {cycle} button {level}'
@@ -135,9 +141,137 @@ def external_command(value, current):
     return command,dict(value,cycle=cycle)
 
 
+def process_start_ticks(pid):
+    """Linux owner identity, including the start time that distinguishes PID reuse."""
+    bounded(pid, 1, (1 << 31) - 1, 'Control owner PID')
+    raw = (Path('/proc') / str(pid) / 'stat').read_text()
+    fields = raw[raw.rfind(') ') + 2:].split()
+    return int(fields[19])
+
+
+class ControlSocket:
+    """A session owns its socket, including a private short path when necessary.
+
+    The usual in-session address remains compatible with existing clients.
+    A long session gets one exclusively created0700 directory, never a shared
+    static socket. Its random token, full session path and live PID/start time
+    bind the published address to this exact owner.
+    """
+    def __init__(self, directory):
+        self.address = str(directory / 'machine.sock')
+        self.private = None
+        self.private_identity = None
+        self.binding = None
+        self.owner_identity = None
+        self.socket_identity = None
+        if len(os.fsencode(self.address)) < 104:
+            return
+        parent = Path('/tmp')
+        candidate = os.environ.get('XDG_RUNTIME_DIR')
+        if candidate:
+            path = Path(candidate)
+            try:
+                info = path.lstat()
+                if (path.is_absolute() and stat.S_ISDIR(info.st_mode) and
+                        info.st_uid == os.getuid() and stat.S_IMODE(info.st_mode) == 0o700 and
+                        len(os.fsencode(str(path))) < 60):
+                    parent = path
+            except OSError:
+                pass
+        self.private = Path(tempfile.mkdtemp(prefix='lm-', dir=parent))
+        os.chmod(self.private, 0o700)
+        info = self.private.lstat()
+        self.private_identity = (info.st_dev, info.st_ino)
+        self.address = str(self.private / 'machine.sock')
+        try:
+            if len(os.fsencode(self.address)) >= 104:
+                raise ValueError('Private control address exceeds Unix socket bound')
+            self.binding = {'version': 1, 'session': str(directory),
+                            'directory': str(self.private), 'socket': self.address,
+                            'pid': os.getpid(), 'start_ticks': process_start_ticks(os.getpid()),
+                            'nonce': secrets.token_hex(32)}
+            fd = os.open(self.private / 'owner.json', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            with os.fdopen(fd, 'w') as stream:
+                info = os.fstat(stream.fileno())
+                self.owner_identity = (info.st_dev, info.st_ino)
+                json.dump(self.binding, stream, separators=(',', ':'))
+                stream.write('\n')
+                stream.flush()
+                os.fsync(stream.fileno())
+        except BaseException:
+            self.close()
+            raise
+
+    def bound(self):
+        info = Path(self.address).lstat()
+        self.socket_identity = (info.st_dev, info.st_ino)
+
+    def close(self):
+        if self.private is not None:
+            try:
+                info = self.private.lstat()
+            except FileNotFoundError:
+                return
+            if self.private_identity != (info.st_dev, info.st_ino):
+                raise RuntimeError('Private control directory was replaced before cleanup')
+        path = Path(self.address)
+        try:
+            info = path.lstat()
+            if self.socket_identity == (info.st_dev, info.st_ino):
+                path.unlink()
+        except FileNotFoundError:
+            pass
+        if self.private is not None:
+            owner = self.private / 'owner.json'
+            try:
+                info = owner.lstat()
+                if self.owner_identity == (info.st_dev, info.st_ino):
+                    owner.unlink()
+            except FileNotFoundError:
+                pass
+            self.private.rmdir()
+
+
+def control_binding(directory, metadata):
+    """Reject a stale, replaced or cross-session private control address."""
+    binding = metadata.get('control')
+    if binding is None:
+        if metadata.get('socket') != str(directory / 'machine.sock'):
+            raise ValueError('Legacy control address does not identify this session')
+        return None  # Historical and ordinary short-path manifests.
+    keys = {'version', 'session', 'directory', 'socket', 'pid', 'start_ticks', 'nonce'}
+    if (not isinstance(binding, dict) or set(binding) != keys or type(binding['version']) is not int or binding['version'] != 1 or
+            binding['session'] != str(directory) or binding['socket'] != metadata.get('socket') or
+            binding['pid'] != metadata.get('pid') or type(binding['start_ticks']) is not int or
+            not isinstance(binding['nonce'], str) or len(binding['nonce']) != 64 or
+            any(c not in '0123456789abcdef' for c in binding['nonce'])):
+        raise ValueError('Private control manifest does not identify this session')
+    private = Path(binding['directory'])
+    if not private.is_absolute() or Path(binding['socket']) != private / 'machine.sock':
+        raise ValueError('Private control address is outside its owned directory')
+    info = private.lstat()
+    owner = (private / 'owner.json').lstat()
+    if (not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or
+            stat.S_IMODE(info.st_mode) != 0o700 or
+            not stat.S_ISREG(owner.st_mode) or owner.st_uid != os.getuid() or
+            stat.S_IMODE(owner.st_mode) != 0o600 or
+            json.loads((private / 'owner.json').read_text()) != binding):
+        raise ValueError('Private control directory/owner binding changed')
+    if process_start_ticks(binding['pid']) != binding['start_ticks']:
+        raise ValueError('Private control owner exited or its PID was reused')
+    endpoint = Path(binding['socket']).lstat()
+    if (not stat.S_ISSOCK(endpoint.st_mode) or endpoint.st_uid != os.getuid() or
+            stat.S_IMODE(endpoint.st_mode) != 0o600):
+        raise ValueError('Private control socket was replaced or changed')
+    return binding
+
+
 def request(directory, value, timeout=120):
     directory = Path(directory).resolve()
     metadata = json.loads((directory / 'session.json').read_text())
+    binding = control_binding(directory, metadata)
+    if binding is not None:
+        value = {**value, '_control_nonce': binding['nonce']}
     wire = json.dumps(value, separators=(',', ':')).encode() + b'\n'
     if len(wire) > MAX_REQUEST:
         raise ValueError('Session request exceeds 64 KiB')
@@ -154,6 +288,8 @@ def request(directory, value, timeout=120):
             if len(response) > MAX_REQUEST:
                 raise ValueError('Oversized session response')
     result = json.loads(response.split(b'\n', 1)[0])
+    if binding is not None and result.get('_control_nonce') != binding['nonce']:
+        raise RuntimeError('Private control response belongs to another owner')
     if result.get('ok') is not True:
         raise RuntimeError(result.get('error', 'Machine operation failed'))
     return result['result']
@@ -163,29 +299,108 @@ class RTL:
     """Machine owner; only byte/sample/lifecycle operations cross this boundary."""
     def __init__(self, args, directory):
         import silicon_guest
-        self.data = silicon_guest.prepared(args.workload, args.profile)
+        if getattr(args,'native_bundle',None):
+            import silicon_guest_bundle
+            self.data = silicon_guest_bundle.prepared(args.native_bundle,'rtl',args.workload,args.profile)
+            if getattr(args,'guest_build',None):
+                if getattr(args,'guest_source_root',None) is None:
+                    self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode)
+                else:
+                    self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode,
+                                                                   source_root=args.guest_source_root)
+        else:self.data = silicon_guest.prepared(args.workload, args.profile,rtl_source_root=getattr(args,'rtl_source_root',None),guest_source_root=getattr(args,'guest_source_root',None))
         self.identity = {'backend': 'rtl', 'profile': self.data['profile'],
                          'runtime': self.data['binary']['sha256'],
                          'rom': self.data['rom']['sha256'],
                          'guest': self.data['workloads'][args.workload]['image']['sha256'],
                          'dtb': self.data['workloads'][args.workload]['dtb']['sha256'],
                          'descriptor': self.data['workloads'][args.workload]['descriptor']['sha256']}
+        self.usb_recovery_spec = None
+        if getattr(args, 'usb_recovery', False):
+            from usb_recovery import CONTRACT
+            if self.data['profile'] != 'lemma-silicon-dev/0.13.0' or args.mode not in ('developer', 'laboratory'):
+                raise ValueError('USB recovery requires Clocked13 Developer or Laboratory mode')
+            manifest = json.loads(silicon_guest.validate(self.data['rtl_build']).read_text())
+            if manifest.get('runtime_control_contracts') != {'usb_recovery': CONTRACT}:
+                raise ValueError('Prepared native implementation does not admit USB recovery')
+            self.identity['usb_recovery_contract'] = CONTRACT
+        if self.data.get('rtl_source_archive') is not None:
+            self.identity['runtime_source_archive']={key:self.data['rtl_source_archive'][key] for key in ('archive','original_receipt','native_manifest','snapshot_identity','inputs','scope')}
+        override_archive=self.data.get('guest_override',{}).get('source_archive')
+        if override_archive is not None:
+            self.identity['development_guest_source_archive']={key:override_archive[key] for key in ('inventory','build','provenance','audit','image','configuration','source_commit','dirty_paths','inputs','scope')}
         entry = self.data['workloads'][args.workload]
+        if entry.get('guest_source_archive') is not None:
+            self.identity['guest_source_archive']={key:entry['guest_source_archive'][key] for key in ('archive','build','provenance','audit','source_commit','dirty_paths','inputs','scope')}
         self.log = (directory / 'machine.log').open('wb')
         command = [self.data['binary']['path'], '--image', entry['image']['path'],
                    '--rom', self.data['rom']['path'], '--load',
-                   f"0x{silicon_guest.profile(self.data['profile'])['dtb_base']:x}:{entry['dtb']['path']}",
+                   f"0x{silicon_guest.prepared_profile(self.data)['dtb_base']:x}:{entry['dtb']['path']}",
                    '--session', '--quiet-uart', '--uart-output', str(directory / 'uart.bin'),
                    '--input-capture', str(directory / 'input.events'),
                    '--fork-directory',str(directory),
                    '--trace-limit', str(args.trace_limit), '--deadline', str(args.timeout)]
+        replay = getattr(args, 'backing_replay', None)
+        if replay is not None:
+            if not args.restore:
+                raise ValueError('Backing outcome replay requires --restore into an isolated fork')
+            command += ['--backing-replay', str(replay.resolve())]
+        else:
+            command += ['--backing-capture', str(directory / 'backing.io')]
+        ble_peer = getattr(args,'ble_peer',None)
+        ble_replay = getattr(args,'ble_replay',None)
+        if self.data['profile']=='lemma-silicon-dev/0.5.0':
+            command += ['--ble-capture',str(directory/'ble.outcomes'),'--ble-wire-trace',str(directory/'ble-wire.csv')]
+            if ble_peer is not None:
+                command += ['--ble-peer',str(ble_peer.resolve()),'--ble-peer-timeout-ms',str(args.ble_peer_timeout_ms)]
+                for item in args.ble_peer_arg:command += ['--ble-peer-arg',item]
+                if args.ble_drop_packets:command += ['--ble-drop-packets',str(args.ble_drop_packets)]
+            if ble_replay is not None:command += ['--ble-replay',str(ble_replay.resolve())]
+        elif ble_peer is not None or ble_replay is not None:raise ValueError('BLE peer requires optional binding5')
+        usb_prepared=getattr(args,'usb_host_prepared',None)
+        if getattr(args, 'usb_recovery', False):
+            command += ['--usb-recovery']
+            if usb_prepared is None and not getattr(args, 'restore', None):
+                raise ValueError('Live USB recovery requires a validated host and durable peer namespace')
+        if self.data['profile'] in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') and getattr(args,'restore',None) and usb_prepared is not None:
+            raise ValueError('Restored USB raw fork cannot launch a live host')
+        if usb_prepared is not None:
+            if self.data['profile'] not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0'):raise ValueError('USB packet host requires binding6')
+            import lemmasim_usb
+            from lemmasim_companion import peer_info
+            if json.loads(usb_prepared.read_text()).get('schema') == 'lemma-usb-host-dev/4':
+                import lemmasim_usb_pending
+                host=lemmasim_usb_pending.validate(usb_prepared)
+            else:
+                host=lemmasim_usb.validate(usb_prepared)
+            peer=peer_info(args.usb_peer_directory)
+            if getattr(args, 'usb_recovery', False):
+                from usb_recovery import binding
+                self.usb_recovery_spec = (usb_prepared, args.usb_peer_directory,
+                    args.usb_peer_socket, args.usb_host_state, ROOT/'sim/companion/os_io.py')
+                digest, _ = binding(*self.usb_recovery_spec)
+                command += ['--usb-recovery-binding', digest]
+            command += ['--usb-peer',host['binary']['path'],'--usb-capture',str(directory/'usb.raw'),
+                        '--usb-peer-timeout-ms',str(args.usb_peer_timeout_ms)]
+            for item in (str(args.usb_peer_socket.resolve()),str(args.usb_host_state.resolve()),str(peer['writer']),str(ROOT/'sim/companion/os_io.py')):
+                command += ['--usb-peer-arg',item]
         if args.memory_latency:
             command += ['--memory-latency', str(args.memory_latency)]
         if args.fail_flush:
             command += ['--fail-flush', str(args.fail_flush)]
+        companion = getattr(args, 'companion', None)
+        if companion is not None:
+            import lemmasim_companion
+            peer = lemmasim_companion.peer_info(companion)
+            prepared = lemmasim_companion.validate(args.companion_prepared)
+            command += ['--companion-client', prepared['binaries']['companion-client']['path'],
+                        '--companion-socket', str(args.companion_socket.resolve()),
+                        '--companion-state', str(args.companion_state.resolve()),
+                        '--companion-writer', str(peer['writer']),
+                        '--companion-helper', str(ROOT/'sim/companion/os_io.py')]
         if args.workload != 'service':
-            if args.disk is None and args.workload != 'power':
-                raise ValueError('This workload requires an existing --disk')
+            if args.disk is None and companion is None and usb_prepared is None and args.workload not in ('power','ble','usb') and not (self.data['profile'] in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') and getattr(args,'restore',None)):
+                raise ValueError('This workload requires an existing --disk or companion backing')
             command += ['--descriptor', entry['descriptor']['path']]
             if args.disk is not None:
                 command += ['--medium', str(args.disk.resolve())]
@@ -199,7 +414,7 @@ class RTL:
         self.pending = bytearray()
         self.timeout = args.timeout
         self.argv = command
-        self.input_kinds={'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
+        self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'} if self.data['profile'] in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') else {'pen','uart','button','pgood','brownout'} if self.data['profile']=='lemma-silicon-dev/0.4.0' else {'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
         # The first operation validates that the actual executable supports the
         # runtime interface; an old prepared harness cannot become a session.
         try:self.checkpoint_identity=self.call('inspect')['snapshot_identity']
@@ -231,7 +446,16 @@ class RTL:
         return value.get('result', value)
 
     def preflight_checkpoint(self, path, expected_cycle):
-        # LMSSRTL1/v1's wrapper follows its 112-byte container header.
+        # Each selected binding admits only its declared container schema; the
+        # exact runtime identity and CRC/state checks still apply below.
+        identity=getattr(self,'identity',{})
+        profile=identity.get('profile')
+        versions=(10,) if profile=='lemma-silicon-dev/0.13.0' else (8,) if profile=='lemma-silicon-dev/0.11.0' else (6,) if profile in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') else (5,) if profile=='lemma-silicon-dev/0.5.0' else (3,) if profile=='lemma-silicon-dev/0.4.0' else (1,2)
+        if identity.get('usb_recovery_contract') == 'lemma-usb-live-recovery/1':
+            if profile != 'lemma-silicon-dev/0.13.0':
+                raise ValueError('USB recovery checkpoint profile differs')
+            versions = (11,)
+        # LMSSRTL1's wrapper follows its 112-byte container header.
         # event_index is the first u64; cycle is the second. Session has
         # already verified the complete file's length and SHA256 inventory.
         # The runtime performs CRC/state/model validation before adoption.
@@ -241,7 +465,7 @@ class RTL:
         with path.open('rb') as stream:
             header = stream.read(128)
         if (len(header) != 128 or header[:8] != b'LMSSRTL1' or
-                int.from_bytes(header[8:16], 'little') != 1 or
+                int.from_bytes(header[8:16], 'little') not in versions or
                 header[16:80] != self.checkpoint_identity.encode('ascii')):
             raise ValueError('Unsupported RTL checkpoint boundary format or identity')
         wrapper_bytes = int.from_bytes(header[80:88], 'little')
@@ -283,6 +507,7 @@ class Session:
         self.last_error = None
         self.capture_uncertain = False
         self.presentation_generation = 0
+        self.restored_parent = None
 
     def ensure_capture_certain(self):
         if self.capture_uncertain:
@@ -402,6 +627,7 @@ class Session:
         self.quantum = quantum
         self.event_cursor = cursor
         self.presentation_generation += 1
+        self.restored_parent = source
         return {'restored': str(source), 'machine': result,
                 'medium': 'isolated snapshot fork', 'external_event_cursor': manifest['external_event_cursor']}
 
@@ -514,7 +740,7 @@ class Session:
         if not isinstance(value, dict):
             raise ValueError('Session request must be an object')
         action = value.get('action')
-        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay'):
+        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes','usb-outcomes','export-usb-replay','usb-fault','usb-reconnect'):
             self.ensure_capture_certain()
         if value.get('source')=='tablet' and (not self.adapter or not self.adapter().get('tablet',{}).get('connected')):
             raise ValueError('Live tablet is disconnected; use recorded replay or reconnect explicitly')
@@ -553,6 +779,7 @@ class Session:
         if action == 'replay':
             return self.replay(value['snapshot'],value['capture'],value.get('until_cycle'),value.get('until_ns'))
         if action == 'inject':
+            if value.get('kind') in ('pgood','brownout','ble-coex') and self.mode!='laboratory':raise ValueError('Supply fault inputs require Laboratory mode')
             # Admission consumes only the exact current cycle and virtual
             # phase. Keep the full post-injection observer returned by call.
             state = self.machine.clock() if hasattr(self.machine, 'clock') else self.machine.call('inspect')
@@ -565,6 +792,69 @@ class Session:
             result = self.external(value, state, action)
             self.presentation_generation += 1
             return result
+        if action == 'usb-reconnect':
+            if (self.mode not in ('developer', 'laboratory') or self.automatic or
+                    self.restored_parent is not None or
+                    self.machine.identity.get('backend') != 'rtl' or
+                    self.machine.identity.get('profile') != 'lemma-silicon-dev/0.13.0' or
+                    self.machine.identity.get('usb_recovery_contract') != 'lemma-usb-live-recovery/1' or
+                    getattr(self.machine, 'usb_recovery_spec', None) is None):
+                raise ValueError('USB reconnect requires a paused original Clocked13 recovery owner')
+            if set(value) != {'action', 'epoch', 'next_request', 'binding'}:
+                raise ValueError('USB reconnect requires exact epoch/request/namespace binding')
+            epoch = bounded(value['epoch'], 2, (1 << 64)-1, 'USB connection epoch')
+            next_request = bounded(value['next_request'], 1, (1 << 64)-2, 'USB next request')
+            from usb_recovery import binding
+            digest, identity = binding(*self.machine.usb_recovery_spec)
+            if value['binding'] != digest:
+                raise ValueError('USB recovery process/namespace binding changed')
+            state = self.machine.call('inspect')
+            usb = state.get('usb', {})
+            if (not usb.get('recovery') or not usb.get('terminal') or
+                    usb.get('connection_epoch') != epoch-1 or
+                    usb.get('next_request') != next_request or
+                    usb.get('namespace_binding') != digest):
+                raise ValueError('USB reconnect state/epoch/request/binding differs')
+            result = self.external(value, state, f'usb-reconnect {epoch} {next_request}')
+            return {'machine': result, 'connection_binding': identity,
+                    'scope': 'new raw transport epoch only; real guest USB reset/control and receipt/journal recovery remain required'}
+        if action in ('usb-outcomes','export-usb-replay'):
+            if self.mode not in ('developer','laboratory') or self.machine.identity.get('backend')!='rtl' or self.machine.identity.get('profile') not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0'):raise ValueError('USB raw outcomes require USB6 RTL Developer or Laboratory mode')
+            path=Path(value['path']).resolve()
+            if any(c in str(path) for c in ('\n','\r')):raise ValueError('Outcome path contains a command delimiter')
+            result=self.machine.call(action+' '+str(path))
+            return {'machine':result,'outcome_tape':str(path),'scope':'captured native USB6 raw suffix only; no live peer resubmission or newly durable external commit'}
+        if action == 'usb-fault':
+            if self.mode != 'laboratory' or self.automatic or self.restored_parent is None:
+                raise ValueError('Injected USB fault requires a paused restored Laboratory fork')
+            from usb_fork_fault import validate as validate_usb_fault
+            state = self.machine.call('inspect')
+            fault, bridge = validate_usb_fault(value['path'], self.restored_parent,
+                                                state, self.machine.identity)
+            result = self.external(value, state, 'usb-outcomes ' + str(bridge))
+            return {'machine': result, 'fault': fault['fault'],
+                    'fault_sidecar': str(Path(value['path']).resolve()),
+                    'scope': 'injected disconnect fault fork; no historical outcome or external commit claim'}
+        if action=='ble-outcomes':
+            if self.mode not in ('developer','laboratory') or self.machine.identity.get('profile')!='lemma-silicon-dev/0.5.0':raise ValueError('BLE outcome binding requires binding5 Developer or Laboratory mode')
+            path=Path(value['path']).resolve()
+            if any(c in str(path) for c in ('\n','\r')):raise ValueError('Outcome path contains a command delimiter')
+            return {'machine':self.machine.call('ble-outcomes '+str(path)),'outcome_tape':str(path),'scope':'isolated resolved peer continuation from captured actual outcomes'}
+        if action=='backing-outcomes':
+            if self.mode not in ('developer','laboratory'):raise ValueError('Pending fork outcome binding requires Developer or Laboratory mode')
+            if self.machine.identity.get('backend')!='rtl':raise ValueError('Pending fork outcome binding requires the native RTL backend')
+            path=Path(value['path']).resolve()
+            if any(c in str(path) for c in ('\n','\r')):raise ValueError('Outcome path contains a command delimiter')
+            # Runtime validates the complete tape and inherited request before
+            # rebinding. This configures isolated replay ownership; it is not
+            # a raw guest input event and does not enter external.jsonl.
+            result=self.machine.call('backing-outcomes '+str(path))
+            return {'machine':result,'outcome_tape':str(path),
+                    'scope':'isolated Pending continuation from captured outcomes; no external resubmission'}
+        if action=='companion-retry':
+            if self.mode not in ('developer','laboratory'):raise ValueError('Explicit pending retry requires Developer or Laboratory mode')
+            state=self.machine.call('inspect')
+            return self.external(value,state,'companion-retry')
         if action == 'panel':
             return self.machine.call('panel ' + str(Path(value['path']).resolve()))
         if action == 'export-medium':
@@ -579,19 +869,18 @@ class Session:
         self.machine.close()
 
 
-def serve(args):
+def serve(args, machine_type=None, session_type=None):
     signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
     directory = args.session_dir.resolve()
     directory.mkdir(parents=True, exist_ok=False)
-    address = str(directory / 'machine.sock')
-    if len(os.fsencode(address)) >= 104:
-        raise ValueError('Session path too long for Unix socket (choose a shorter directory)')
+    control = ControlSocket(directory)
+    address = control.address
     lock = None
     machine = session = None
     viewer = None
     tablet = tablet_log = None
     try:
-        if startup_restore_medium(args):
+        if machine_type is None and startup_restore_medium(args):
             args=copy.copy(args)
             args.disk=directory/'startup-medium.raw'
             with args.disk.open('xb') as stream:
@@ -600,24 +889,33 @@ def serve(args):
         if args.disk is not None and args.backend == 'rtl':
             lock = args.disk.resolve().open('r+b')
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        if args.backend == 'rtl':
+        if machine_type is not None:
+            machine = machine_type(args, directory)
+        elif args.backend == 'rtl':
             machine = RTL(args, directory)
         else:
             from lemmasim_fast import Fast
             machine = Fast(args, directory)
-        session = Session(machine, directory, args)
+        session = (session_type or Session)(machine, directory, args)
         if args.restore:
             session.restore(args.restore)
+            if getattr(args,'usb_replay',None) is not None:
+                session.dispatch({'action':'usb-outcomes','path':str(args.usb_replay.resolve())})
+            if getattr(args,'profile',None) in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') and args.paused:session.automatic=False
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener, selectors.DefaultSelector() as ready:
             listener.bind(address)
+            control.bound()
             os.chmod(address, 0o600)
             listener.listen(8)
             listener.setblocking(False)
             ready.register(listener, selectors.EVENT_READ)
-            write_json(directory / 'session.json', {'schema': 'lemmasim-live/1', 'pid': os.getpid(),
+            metadata = {'schema': 'lemmasim-live/1', 'pid': os.getpid(),
                        'socket': address, 'backend': args.backend, 'mode': args.mode,
                        'identity': machine.identity, 'argv': machine.argv,
-                       'tablet': str(args.tablet) if args.tablet else None})
+                       'tablet': str(args.tablet) if args.tablet else None}
+            if control.binding is not None:
+                metadata['control'] = control.binding
+            write_json(directory / 'session.json', metadata)
             print(f'Persistent machine: {directory}', flush=True)
             if args.tablet:
                 tablet_log=(directory/'tablet.log').open('wb')
@@ -668,11 +966,18 @@ def serve(args):
                         continue
                     if b'\n' in buffer:
                         try:
-                            response = {'ok': True, 'result': session.dispatch(json.loads(buffer.split(b'\n', 1)[0]))}
+                            value = json.loads(buffer.split(b'\n', 1)[0])
+                            if control.binding is not None:
+                                if (not isinstance(value, dict) or
+                                        value.pop('_control_nonce', None) != control.binding['nonce']):
+                                    raise ValueError('Private control request belongs to another session')
+                            response = {'ok': True, 'result': session.dispatch(value)}
                         except Exception as error:
                             if not session.capture_uncertain:
                                 session.last_error=str(error)
                             response = {'ok': False, 'error': str(error)}
+                        if control.binding is not None:
+                            response['_control_nonce'] = control.binding['nonce']
                         client.settimeout(3)
                         try:
                             client.sendall(json.dumps(response, separators=(',', ':')).encode() + b'\n')
@@ -710,16 +1015,20 @@ def serve(args):
             machine.close()
         if lock is not None:
             lock.close()
-        Path(address).unlink(missing_ok=True)
+        control.close()
 
 
 def initialize(args):
     """Ordinary initialization utility through the same real guest runtime."""
     import silicon_guest
+    if args.backend=='qemu':import lemmasim_fast
     if args.force:raise ValueError('Matched initialization exclusively creates a new medium; --force is unsupported')
     if args.size_mib!=256:raise ValueError('The admitted development medium is exactly256MiB')
     # Fail before creating user data when preparation is stale or missing.
-    if args.backend=='rtl':silicon_guest.prepared('initializer',args.profile)
+    if getattr(args,'native_bundle',None):
+        import silicon_guest_bundle
+        silicon_guest_bundle.prepared(args.native_bundle,args.backend,'initializer',args.profile)
+    elif args.backend=='rtl':silicon_guest.prepared('initializer',args.profile)
     else:
         import lemmasim_fast
         lemmasim_fast.prepared('initializer',args.profile)
@@ -728,7 +1037,8 @@ def initialize(args):
     disk=args.disk.resolve();disk.parent.mkdir(parents=True,exist_ok=True)
     options=argparse.Namespace(backend=args.backend,profile=args.profile,workload='initializer',
         mode='developer',paused=True,quantum=1000000,timeout=min(args.timeout,120),
-        disk=disk,memory_latency=0,fail_flush=None,events=None,trace_limit=0)
+        disk=disk,memory_latency=0,fail_flush=None,events=None,trace_limit=0,
+        native_bundle=getattr(args,'native_bundle',None))
     machine=session=lock=None
     result={'status':'FAIL','scope':'guest initialization, not host formatting','medium':str(disk)}
     started=time.monotonic()

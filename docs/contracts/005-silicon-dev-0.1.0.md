@@ -1,3 +1,4 @@
+<!--
 # Lemma silicon development binding 0.1.0
 
 `lemma-silicon-dev/0.1.0` is a development backend of LemmaSim, subordinate to
@@ -162,3 +163,5 @@ change permitted transaction latency, not guest ink or storage policy.
 Synthetic display timings are not qualified physical waveforms. Analog pen,
 panel electrical compatibility, memory controller/macros, pads, packaging,
 RF/radios, fabrication acceptance and full-chip signoff remain unverified.
+
+-->

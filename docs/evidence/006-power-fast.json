@@ -1,0 +1,132 @@
+{
+  "schema": "task006-power-fast-evidence/1",
+  "scope": "Power-v2 probe functional fast relation; no general CPU timing parity or arbitrary cached-state continuation",
+  "profile": "lemma-silicon-dev/0.4.0",
+  "qemu": {
+    "path": "/nix/store/wp7i5plnj58pl6cbshk32hx5z23145s5-lemmasim-qemu-11.1.1/bin/qemu-system-riscv64",
+    "sha256": "599a271fe0319cfafaf96059abf2ff79cbbad03b35b2919095436cfd4e2c803b"
+  },
+  "derivation": {
+    "path": "/nix/store/vcnwn1cvmddj545c095cv7h6rwkak8zz-lemmasim-qemu-11.1.1.drv",
+    "sha256": "788ca4c5e075ab47c10b728fad161b151288d764555dc0413a9c244ea78c5fc9"
+  },
+  "guest_archive": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/power/task006-power-guest-archive-a1",
+    "manifest_sha256": "4ab3d0e85e137ad3bc312df1e0444b26b166de2465c61c47e40d07b127c4e2e6",
+    "scope": "unchanged archived genuine guest; new backend, not fresh target compilation"
+  },
+  "guest": {
+    "image": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/power/task006-power-guest-archive-a1/guest/image.elf",
+      "sha256": "a3394ef410907e1827dfe9834997c612f6e8e30b0dd96f76f5bfae96e00e45da"
+    },
+    "build": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/power/task006-power-guest-archive-a1/guest/build.json",
+      "sha256": "d87b23b8ed02be6d7ffcc3e982f4a4bbd0e9f7b4feec5e62f12fa3fde3bb74ea"
+    },
+    "provenance": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/power/task006-power-guest-archive-a1/guest/provenance.json",
+      "sha256": "c385410afb5260eb34605bf70ba2460aedc875237f6d32c45163e2a35eaf5f9e"
+    },
+    "audit": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/power/task006-power-guest-archive-a1/guest/audit.json",
+      "sha256": "e363b78ddaa80849f171871a948ef43e1322af2a3f4c4bb376b13ad1152fee11"
+    },
+    "dtb": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/power/task006-power-guest-archive-a1/guest/platform.dtb",
+      "sha256": "a40fe14fa1858a9d3e1b71c172a6202267a2d8405147840c0a67501dff2d7509"
+    },
+    "descriptor": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/power/task006-power-guest-archive-a1/guest/descriptor.bin",
+      "sha256": "966e12277e1d8f0b3db109f569df4cd16a3a3aaa8099ff40b1e9f7596e324864"
+    }
+  },
+  "consumed_host_sources": {
+    "tooling/lemmasim/qemu.nix": "fc79021a4fe8e925e8cc7f73a6e64ea01263b733cc7c5361df2059813091e436",
+    "tooling/lemmasim/apply_qemu.py": "4d2dd58c2a60ab8fe0901f3dcc80563a0b4fb60d36eabfa941fff9f25be7a1eb",
+    "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+    "sim/profiles/lemma-silicon-dev-0.4.0.json": "8b0ef65c0affe896a6a85a3f7fac61cb890a1c2ac303b1df7c9d4532e6ffe4da",
+    "tooling/lemmasim/patch_counter_clock.py": "a7f7978a25879dbeeb3d96773f236b3fd897fd342450a36864eb9241c8477a2f",
+    "tooling/lemmasim/patch_power_safety.py": "c72bed4a84856ffecebc0be51a80ca5b07792f5d8cb3632e1d951ce7bab01952",
+    "scripts/silicon_power_guest_archive.py": "fce3ea6563eb2e730b601156e1d6936dfd7280fd54dff60fa87a526cbc89ad75",
+    "sim/host/README.md": "94142e8ae9d2e7e94524fd6847e9f291f6ec158062d0f0ece1b9bfd6d215187b",
+    "sim/host/backing_io.cpp": "64a3f19c829adf568a41d3c3422d1a3fbab52dac185e80e4670cfb355b1afdf7",
+    "sim/host/backing_io.h": "25c1695d3c813bfbe5769a6acc27e0a3168cfa11a868739efbb1d1aa27ef560e",
+    "sim/host/backing_io_posix.cpp": "0689696842477eab598258c921b0d3c047e60152bf6cdd74768781fbf364f482",
+    "sim/host/backing_io_posix.h": "d4742c21a9b5054bbf4a67a4c4ef5718e5602e5275a168139f9846a7c98b0cb3",
+    "sim/host/check_fast_block.py": "7a22fe0000f1672ccc0417bfb47d94a86c805e67096ec87290ac5be47b57ecff",
+    "sim/host/check_fast_checkpoint.py": "872c24dd3573d4a5911036895650aa9bb726fc93379461dbdcea6fc5905c1e8d",
+    "sim/host/check_qemu_devices.py": "a180b11d4ef9b9aac9f2b2169d031f505dbe9c384e5426e26a8ed720579ffa54",
+    "sim/host/check_qemu_medium.py": "c5ab63c7a89ae8a4db8fcc49708f446ce75f530d4cc157877bb3767aed672907",
+    "sim/host/check_qemu_replay.py": "771bf9e222c66a87b0be47d9efa1c487bfb5535708864f5f7a66f0546ad85b99",
+    "sim/host/generate_constants.py": "1d4c608e18cab21e72dd4b062e4ad0580fd20e8102676a65b7bc025d48f37608",
+    "sim/host/lemma_device_abi.h": "ca96d153bed0acac81e4db76a2645bf9cfc78293d0266bd353a06e4bb77ce655",
+    "sim/host/lemma_durable.c": "cb04554d4488ee2c9968784a9d45896178d58372012c89f03f5f7a78113c7435",
+    "sim/host/lemma_fast_block.c": "31bb7d8c1eb3b601351dd73f6eded275693517fb419822f5434b7bd54da3e1fc",
+    "sim/host/lemma_model.c": "8eb19f45e07949abea192d20c3b08e364c36eab9e4f257c6bb0b970dec384e56",
+    "sim/host/lemma_model.h": "51daa300f3d05caea540806cd6ade2035379d8375ebe21ed5902b87886e7e9d9",
+    "sim/host/lemma_power_abi.h": "57231e6ef940c8b597daed5fb5ccb4179a83e50d860308488e0aac4f74d963e9",
+    "sim/host/lemma_power_clock.c": "5bb8879adf4a2aa8a3b3c1f25c6b1c3a8fbd1cc8f28d801287c8d46bc27f95b9",
+    "sim/host/lemma_power_clock.h": "d3ca030a46a779c2b4f2ad09e0d0ff69e72f4570cfcc11c41182dfc36a764da3",
+    "sim/host/lemma_power_qemu.inc.c": "0a85d4a61f4c23ccbcf6b46134780f2a65ebe18b2d65c4a4d4eb4fa420d7c27c",
+    "sim/host/lemma_power_safety.c": "20ff1b113eb219662e04781e881d4735fd780faed0c06f1f1cb5e5aa028637af",
+    "sim/host/lemma_power_safety.h": "95180988f9322defe3813a29a8a597865d6a186eec5b081add5102acee174025",
+    "sim/host/lemma_qemu.c": "82358469ea6f6a0378e983c4e923ab651c42c71a06a0daa227a993c1c3c83c33",
+    "sim/host/panel_pending.h": "b7b88f4b659b4234be18c0fc0a154ee722e9c38bc0ecb33b3e93fdd752d3c5e2",
+    "sim/companion/backing_c.cpp": "a9cfc994b301660661395aae60cd412119c3b08923c5d5e58e5212f33c640f3d",
+    "sim/companion/backing_c.h": "26861b5cc37fda3c09ff6726fa49fbaac4694ef33df1dbe6251c8cb01b17f726",
+    "sim/companion/backing_peer.cpp": "d5b9a796f9b4c07d03164648d50b4bb5ef1d52bf4ef589fe93c003f256849dac",
+    "sim/companion/backing_peer.h": "028e7131de53d3d1857d3480c532265acbc1b477782bf8b3cda46cdcccd6b8cb"
+  },
+  "receipts": [
+    {
+      "path": "build/power/task006-fast-safety-literal-a1/result.json",
+      "sha256": "24a246aefcd6e2802347d6899a81dd8e29c643c9b34df2c420d78969126858a9",
+      "status": "FAIL"
+    },
+    {
+      "path": "build/power/task006-fast-safety-literal-a2/result.json",
+      "sha256": "ed3c6208d13b1f736d21c7d8e41e5d794d93f3ac0df537c1be59567c1fdb79a5",
+      "status": "PASS"
+    },
+    {
+      "path": "build/power/task006-fast-safety-literal-a3/result.json",
+      "sha256": "20752b19048933e4787607952bc36af3143eff48e2444fab46628ae5c2e1c0d6",
+      "status": "PASS"
+    },
+    {
+      "path": "build/power/task006-fast-safety-guest-a1/result.json",
+      "sha256": "e89e150c2f72b76e8e5580b6dd2a11679d21a9c3fde9d1bf5b6f9300eb8ae94f",
+      "status": "PASS"
+    },
+    {
+      "path": "build/power/task006-fast-safety-phase-suffix-a1/result.json",
+      "sha256": "7428d8e5983a4f5ef10198b4d1d3dcceeb7b2cbe598dfecef18fab1b3de626af",
+      "status": "PASS"
+    },
+    {
+      "path": "build/power/task006-fast-safety-prototype-a1/archive-validation.json",
+      "sha256": "5a363db589c0e644e059ba3d7ef10787d1fcf5e2299eba918bec072858738fd1",
+      "status": "PASS"
+    }
+  ],
+  "build_logs": {
+    "build/power/task006-fast-safety-prototype-a1/qemu-build-a1.log": "a6f3fc27605195791f71409cc4ff6d4698d15e36850e4673c442c7ab9c6c9b42",
+    "build/power/task006-fast-safety-prototype-a1/qemu-build-a3.log": "11497b03822444074b7f9fde634a53f32c5b4948993169e1b5df34c77f7f8a73",
+    "build/power/task006-fast-safety-prototype-a1/qemu-build-a4.log": "c8d7ed430d03dafa26b58f727371b40385e824894af1b9b531b80e7d29bc2495"
+  },
+  "retained_failures": [
+    "a1 host compile MachineState cast",
+    "a3 wrong early ACLINT Ninja target; corrected actual target",
+    "literal a1 MTIME oracle addressed unmapped ACLINT under qtest; corrected scope proven by actual memory tree; real TCG guest phase qualified separately"
+  ],
+  "remaining": [
+    "general pipeline/bus/cache timing",
+    "second queued MMIO write bus stall",
+    "unprocessed host reset request checkpoints",
+    "fast external Pending checkpoints",
+    "QEMU guest-relevant cached-state continuation",
+    "Power-v2 notebook/product boot/update integration",
+    "physical reset/power/CDC qualification"
+  ]
+}

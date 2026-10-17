@@ -12,7 +12,7 @@ WORKFLOW = ROOT / ".github/workflows/core0.yml"
 
 JOBS = ("lemmasim-writing-rv64", "metadata", "kernel-managed-rv64", "kernel-services-rv64", "legacy-rv64",
         "foundation-rv64", "kernel-rv64", "kernel-source-negatives-rv64",
-        "kernel-architecture-rv64", "silicon-devices-rtl")
+        "kernel-architecture-rv64", "silicon-devices-rtl", "crypto-rv64")
 
 
 def job_block(source: str, job: str) -> str:
@@ -68,11 +68,29 @@ class CiWorkflowTests(unittest.TestCase):
             r"^  ([a-z0-9-]+):$", self.source.split("jobs:\n", 1)[1], re.MULTILINE
         )
         self.assertEqual(jobs, list(JOBS))
-        for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/kernel", "tests/silicon"):
+        for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/boot", "tests/kernel", "tests/silicon"):
             self.assertIn(suite, self.metadata)
         self.assertIn("scripts/check_scaffold.py", self.metadata)
         self.assertIn("lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel", self.metadata)
+        self.assertIn("Lemma.Courses.Arithmetic Lemma.Courses.Package", self.metadata)
+        self.assertIn("Lemma.Courses.PackageInstaller", self.metadata)
+        self.assertLess(self.metadata.index("Lemma.Courses.PackageInstaller"),
+                        self.metadata.index("tests/courses/IngressIdle.lean"))
         self.assertLess(self.metadata.index("lake build"), self.metadata.index("tests/foundation"))
+        self.assertIn("Lemma.Applications.Notebook", self.metadata)
+        self.assertLess(self.metadata.index("Lemma.Applications.Notebook"),
+                        self.metadata.index("tests/courses/NotebookPackage.lean"))
+        for source in ("tests/courses/NumberEntry.lean", "tests/courses/NumberPad.lean"):
+            self.assertIn(source, self.metadata)
+            self.assertLess(self.metadata.index("Lemma.Applications.Notebook"), self.metadata.index(source))
+        self.assertIn("Lemma.Compiler.KernelExport", self.metadata)
+        self.assertLess(self.metadata.index("Lemma.Compiler.KernelExport"),
+                        self.metadata.index("tests/kernel/ManagedNotebookDeployment.lean"))
+        self.assertIn("Lemma.Services.Arithmetic.ClientV2", self.metadata)
+        self.assertLess(self.metadata.index("Lemma.Services.Arithmetic.ClientV2"),
+                        self.metadata.index("tests/mathematics/ExecutionIdentity.lean"))
+        self.assertIn("test ! -e build/kernel/ci-user-word-inline", self.metadata)
+        self.assertIn("env LEMMA_WORD_INLINE_FIXTURE_DIR=build/kernel/ci-user-word-inline", self.metadata)
         for guest_marker in ("check-core0.sh", "check-foundation.sh", "qualify_foundation.py", "qemu"):
             self.assertNotIn(guest_marker, self.metadata.lower())
 
@@ -109,18 +127,55 @@ class CiWorkflowTests(unittest.TestCase):
                 r"^\s+timeout-minutes:\s+(\d+)$", self.task002, re.MULTILINE
             )
         ]
-        self.assertEqual(timeouts, [45, 45, 60])
+        # Three original job ceilings plus the narrower Reader19 Action step.
+        self.assertEqual(timeouts, [45, 12, 45, 60])
 
     def test_every_logged_pipeline_fails_closed_with_explicit_pipefail(self):
         expected = {
             "lemmasim-writing-rv64": ("lemmasim-host-build.log", "lemmasim-writing.log"),
             "metadata": ("metadata/check-scaffold.log", "metadata/scaffold-unittest.log",
                          "metadata/core0-host-unittest.log", "metadata/lake-build.log",
-                         "metadata/foundation-host-unittest.log", "metadata/user-copy-scans.log",
-                         "metadata/loader-copy.log", "metadata/power-authority.log",
+                         "metadata/foundation-host-unittest.log", "metadata/boot-host-unittest.log", "metadata/user-copy-scans.log",
+                         "metadata/loader-copy.log", "metadata/course-save.log", "metadata/course-ingress-idle.log", "metadata/power-authority.log",
                          "metadata/power-object-budget.log", "metadata/power-compiler.log",
+                         "metadata/frame-index.log", "metadata/owned-table-prefix.log",
+                         "metadata/exact-mathematics.log",
+                         "metadata/owned-arena.log", "metadata/arithmetic-ipc.log",
+                         "metadata/arithmetic-object-budget.log",
+                         "metadata/pool-read-refinement.log",
+                         "metadata/backing-io.log", "metadata/companion-peer.log",
+                         "metadata/descriptor-model.log",
+                         "metadata/descriptor-direct-loads.log",
+                         "metadata/notebook-package-state-layout.log",
+                         "metadata/course-workspace-codec.log",
+                         "metadata/workspace-retry-shapes.log",
+                         "metadata/workspace-reconciliation-actions.log",
+                         "metadata/course-render-delta.log",
+                         "metadata/course-packed-words.log",
+                         "metadata/managed-notebook-deployment.log",
+                         "metadata/user-word-inline.log",
+                         "metadata/arithmetic-execution-identity.log",
+                         "metadata/ipc-poll-borrow.log",
+                         "metadata/control-render.log", "metadata/number-entry-actions.log",
+                         "metadata/number-pad-reference.log", "metadata/number-pad-actions.log",
+                         "metadata/companion-number-entry-actions.log",
+                         "metadata/browse-history-build.log",
+                         "metadata/browse-history-package.log",
+                         "metadata/browse-history-actions.log",
+                         "metadata/reader-retry5-shapes.log",
+                         "metadata/companion-reader-recovery5-actions.log",
+                         "metadata/companion-reader-deployment19.log",
+                         "metadata/chooser-reader-deployment20.log",
+                         "metadata/reader-location-actions.log",
+                         "metadata/notebook-reader-actions.log",
+                         "metadata/reader-deployment-actions.log",
+                         "metadata/product-reader-deployment-actions.log",
+                         "metadata/recovery-entry2-deployment-actions.log",
+                         "metadata/arithmetic-aligned-actions.log",
+                         "metadata/llvm-name-sets.log",
                          "metadata/kernel-host-unittest.log",
                          "metadata/silicon-host-unittest.log"),
+            "crypto-rv64": ("crypto-rv64.log", "development-auth-rom.log", "development-auth-layout.log"),
             "legacy-rv64": ("legacy-rv64.log",),
             "foundation-rv64": ("foundation-gates1-9.log", "foundation-qualification.log"),
             "kernel-managed-rv64": ("kernel-managed-rv64.log",),
@@ -129,7 +184,8 @@ class CiWorkflowTests(unittest.TestCase):
             "kernel-source-negatives-rv64": ("kernel-source-negatives-rv64.log",),
             "kernel-architecture-rv64": ("kernel-architecture-rv64.log",),
             "silicon-devices-rtl": ("silicon-devices-rtl.log", "silicon-bus-lanes-rtl.log",
-                                    "silicon-power-rtl.log"),
+                                    "silicon-power-rtl.log", "silicon-reset-runtime-build.log",
+                                    "silicon-pen-uart-resync.log"),
         }
         for job, names in expected.items():
             with self.subTest(job=job):
@@ -159,6 +215,16 @@ class CiWorkflowTests(unittest.TestCase):
                          'if-no-files-found: error', 'retention-days: 14'):
             self.assertIn(required, lane)
         self.assertEqual(lane.count('timeout --foreground --signal=TERM --kill-after=30s'), 2)
+
+    def test_crypto_lane_requires_real_rv64_and_exact_rom_source(self):
+        lane = self.blocks['crypto-rv64']
+        for required in ('scripts/check_crypto.py', 'scripts/build_development_auth_boot.py',
+                         '--public-development-key', 'tests/boot/DevelopmentAuthentication.lean',
+                         'PASS_GENUINE_RV64_SHA256_HMAC_COMPONENT',
+                         'PASS_GENUINE_DEVELOPMENT_AUTH_ROM', "report['source_commit'] != head",
+                         "report['dirty_paths']", "report['source_inputs'].items()",
+                         'DEVELOPMENT_AUTH_LAYOUT:PASS', 'if-no-files-found: error'):
+            self.assertIn(required, lane)
 
     def test_job_slice_cannot_absorb_an_added_sibling(self):
         source = "jobs:\n  metadata:\n    run: host-only\n  new-job:\n    run: qemu\n  legacy-rv64:\n    run: guest\n"

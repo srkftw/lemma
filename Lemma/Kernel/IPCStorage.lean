@@ -52,8 +52,20 @@ def queueSlotPacketOffset : UInt64 := 64
 
 def failed (status : UInt8) : Bool := if status = 0 then false else true
 def fatal : Action := .done 255 0
-def get (address : UInt64) : Action :=
+private def getGeneric (address : UInt64) : Action :=
   .bind (Access.read64 address) fun s value => if failed s = true then fatal else .done 0 value
+
+/-- Same aligned physical read and fatal error mapping as getGeneric. The
+minimum kernel pool interval gives LLVM a local bound for the common owned
+metadata case; all other inputs retain the complete original checked path. -/
+def get (address : UInt64) : Action :=
+  if 0x82000000 ≤ address then
+    if address ≤ 0x82200000 - 8 then
+      if address % 8 = 0 then
+        .bind (Access.read64 address) fun s value => if failed s = true then fatal else .done 0 value
+      else getGeneric address
+    else getGeneric address
+  else getGeneric address
 def put (address value : UInt64) : Action :=
   .bind (Access.write64 address value) fun s _ => if failed s = true then fatal else .done 0 value
 private def equalWord (address expected : UInt64) : Action :=
@@ -99,11 +111,10 @@ def «initialize» (descriptor : UInt64) : Action :=
   if failed s = true then fatal else put address magic
   else fatal
 
-/-- The whole binding is checked before returning a metadata address. A zero
-legacy tail is not an IPC row and cannot silently acquire authority. -/
-def pending (descriptor : UInt64) : Action :=
-  .bind (AddressSpace.base descriptor) fun s base =>
-  if failed s = true then .done 80 0 else
+/-- Kernel-only borrowed base. The caller has checked this descriptor in the
+same nonpreemptible Action; every IPC metadata field remains freshly read.
+A zero legacy tail is not an IPC row and cannot silently acquire authority. -/
+def pendingAt (descriptor base : UInt64) : Action :=
   let address := base + metadataOffset
   .bind (equalWord address magic) fun s _ =>
   if failed s = true then fatal else
@@ -135,6 +146,11 @@ def pending (descriptor : UInt64) : Action :=
   else fatal else fatal else fatal else fatal else fatal
   else fatal else fatal
   else fatal
+
+/-- Public entry always establishes a fresh descriptor base. -/
+def pending (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then .done 80 0 else pendingAt descriptor base
 
 private def transactionRow (descriptor transaction : UInt64) : Action :=
   if transaction = 0 then .done IPCABI.invalidTransaction 0 else
@@ -573,5 +589,206 @@ def queueCancelReply (handle key replyKey transaction : UInt64) : Action :=
   if failed s = true then fatal else
   .boundedFoldU64 4 cancelQueueStep 4 0 base 0 replyKey transaction fun s count =>
   if failed s = true then fatal else .done 0 count
+
+/-! Borrowed IPC transaction helpers. A caller must obtain `base` from a fresh
+successful `AddressSpace.base` in the same single-hart nonpreemptible Action.
+Only IPC tail and disjoint object/queue/capability-row writes may intervene.
+All fields read by AddressSpace.base (descriptor identity/root/layout/leaf
+registry, frame ownership/generation/pins and page tables) remain unchanged.
+Capability grant/revocation rows are disjoint from that protected base closure;
+all capability headers/rows and object/queue fields are checked afresh by their
+ordinary operations. No alias may survive a mapping, frame or descriptor change. These helpers
+never retain an alias or cross a suspension boundary. Every mutable IPC field
+is freshly validated by pendingAt, and ordinary UserCopy validates both pages
+and the scratch handle afresh before any payload byte changes. Public legacy
+entries above retain their complete descriptor validation and error order. -/
+
+private def transactionRowAt (descriptor base transaction : UInt64) : Action :=
+  if transaction = 0 then .done IPCABI.invalidTransaction 0 else
+  .bind (pendingAt descriptor base) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + transactionOffset)) fun s actual =>
+  if failed s = true then fatal else
+  if actual = transaction then .done 0 address else .done IPCABI.invalidTransaction 0
+
+
+def packetAt (descriptor base transaction : UInt64) : Action :=
+  .bind (transactionRowAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else .done 0 (address + metadataBytes)
+
+def prepareAt (descriptor base operation endpoint userVA capacity deadline : UInt64) : Action :=
+  if operation = 0 then .done IPCABI.invalidArgument 0 else
+  if callOperation < operation then .done IPCABI.invalidArgument 0 else
+  if endpoint = 0 then .done 80 0 else
+  .bind (pendingAt descriptor base) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = stateIdle then
+  .bind (get (address + nextTransactionOffset)) fun s transaction =>
+  if failed s = true then fatal else
+  if transaction ≤ maxTransaction then
+  .bind (if operation = receiveOperation then
+    if capacity < IPCABI.headerBytes then .done IPCABI.invalidArgument 0 else
+    if maximumPacket < capacity then .done IPCABI.invalidArgument 0 else
+    UserCopy.validateWrite descriptor userVA capacity
+    else if capacity = 0 then if userVA = 0 then .done 0 0 else .done IPCABI.invalidArgument 0
+    else .done IPCABI.invalidArgument 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (put (address + operationOffset) operation) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + transactionOffset) transaction) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + endpointOffset) endpoint) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + userVAOffset) userVA) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + capacityOffset) capacity) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + deadlineOffset) deadline) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + stateOffset) stateReserved) fun s _ =>
+  if failed s = true then fatal else .done 0 transaction
+  else .done 91 0
+  else .done IPCABI.inFlight 0
+
+def stagePayloadAt (descriptor base transaction sourceVA length : UInt64) : Action :=
+  if maximumPayload < length then .done IPCABI.invalidArgument 0 else
+  .bind (transactionRowAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = stateReserved then
+    UserCopy.copyFromUser descriptor sourceVA descriptor payloadOffset length
+  else .done IPCABI.inFlight 0
+
+def setReplyAt (descriptor base transaction replyKey : UInt64) : Action :=
+  if replyKey = 0 then .done 80 0 else
+  .bind (transactionRowAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  .bind (get (address + operationOffset)) fun s operation =>
+  if failed s = true then fatal else
+  .bind (get (address + replyOffset)) fun s previous =>
+  if failed s = true then fatal else
+  if state = stateReserved then if operation = callOperation then
+    if previous = 0 then put (address + replyOffset) replyKey else fatal
+  else fatal else .done IPCABI.inFlight 0
+
+def commitWaitAt (descriptor base transaction : UInt64) : Action :=
+  .bind (transactionRowAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = stateReserved then
+  .bind (put (address + nextTransactionOffset) (transaction + 1)) fun s _ =>
+  if failed s = true then fatal else put (address + stateOffset) stateWaiting
+  else .done IPCABI.inFlight 0
+
+def queueEnqueueAt (handle key descriptor descriptorBase replyKey : UInt64) : Action :=
+  .bind (queueAvailable handle key) fun s available =>
+  if failed s = true then .done s 0 else
+  if available = 0 then .done IPCABI.queueFull 0 else
+  .bind (pendingAt descriptor descriptorBase) fun s metadata =>
+  if failed s = true then .done s 0 else
+  .bind (equalWord (metadata + endpointOffset) key) fun s _ =>
+  if failed s = true then fatal else
+  .bind (equalWord (metadata + replyOffset) replyKey) fun s _ =>
+  if failed s = true then fatal else
+  .bind (get (metadata + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = stateReserved then
+  .bind (get (metadata + transactionOffset)) fun s transaction =>
+  if failed s = true then fatal else
+  .bind (wire (metadata + metadataBytes) descriptor replyKey) fun s bytes =>
+  if failed s = true then fatal else
+  .bind (queue handle key) fun s base =>
+  if failed s = true then fatal else
+  .bind (get (base + 24)) fun s count =>
+  if failed s = true then fatal else
+  .bind (get (base + 32)) fun s serial =>
+  if failed s = true then fatal else
+  .boundedFoldU64 4 freeSlotStep 4 0 base 0 0 0 fun s address =>
+  if s = Status.iterationStop then
+  .bind (put address 2) fun s _ =>
+  if failed s = true then fatal else
+  .bind (copyBytes (metadata + metadataBytes) (address + queueSlotPacketOffset) bytes) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + queueSlotSerialOffset) serial) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + queueSlotSenderOffset) descriptor) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + queueSlotTransactionOffset) transaction) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + queueSlotReplyOffset) replyKey) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + queueSlotBytesOffset) bytes) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (base + 32) (serial + 1)) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (base + 24) (count + 1)) fun s _ =>
+  if failed s = true then fatal else put address 1
+  else fatal
+  else .done IPCABI.inFlight 0
+
+def abortAt (descriptor base transaction : UInt64) : Action :=
+  .bind (transactionRowAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = stateReserved then reset address else .done IPCABI.inFlight 0
+
+def completeAt (descriptor base transaction status bytes sender replyHandle : UInt64) : Action :=
+  if 255 < status then fatal else
+  if maximumPacket < bytes then fatal else
+  .bind (transactionRowAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = stateReady then .done IPCABI.alreadyCompleted 0 else
+  if state = stateWaiting then
+  .bind (put (address + resultStatusOffset) status) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + resultBytesOffset) bytes) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + resultSenderOffset) sender) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + resultReplyOffset) replyHandle) fun s _ =>
+  if failed s = true then fatal else put (address + stateOffset) stateReady
+  else .done IPCABI.inFlight 0
+
+private def takeAt (descriptor base transaction : UInt64) : Action :=
+  .bind (transactionRowAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = stateReady then .done 0 address else .done IPCABI.wouldBlock 0
+
+def finishAt (descriptor base transaction : UInt64) : Action :=
+  .bind (takeAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else reset address
+
+def queueCopyToUserAt (handle key descriptor receiverBase userVA capacity localReplyHandle : UInt64) : Action :=
+  if capacity < IPCABI.headerBytes then .done IPCABI.invalidArgument 0 else
+  if maximumPacket < capacity then .done IPCABI.invalidArgument 0 else
+  .bind (UserCopy.validateWrite descriptor userVA capacity) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (queuePeek handle key) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + queueSlotBytesOffset)) fun s bytes =>
+  if failed s = true then fatal else
+  if capacity < bytes then .done IPCABI.bufferTooSmall 0 else
+  .bind (get (address + queueSlotReplyOffset)) fun s replyKey =>
+  if failed s = true then fatal else
+  if (if replyKey = 0 then if localReplyHandle = 0 then true else false
+      else if 0 < localReplyHandle then true else false) = true then
+  .bind (copyBytes (address + queueSlotPacketOffset) (receiverBase + packetOffset) bytes) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (receiverBase + packetOffset + IPCABI.replyOffset) localReplyHandle) fun s _ =>
+  if failed s = true then fatal else
+  UserCopy.copyToUser descriptor userVA descriptor packetOffset bytes
+  else fatal
+
 
 end Lemma.Kernel.IPCStorage

@@ -1,0 +1,65 @@
+{
+  "schema": "lemma-laboratory-array-archive-evidence/1",
+  "status": "PASS",
+  "scope": "complete original source/tool/audit archive admission and independent read-only observations of actual retained guest OOM/ink/Save/cold; original campaign report FAILED serialization",
+  "admission": {
+    "path": "build/usb/laboratory-array-archive-a1/result.json",
+    "sha256": "bf4459c552496e40df2a7dd31f22823791921d1cfbb7abb037b35eccc0ff4f21",
+    "status": "PASS",
+    "seconds": 7.574952282011509,
+    "inputs": 269
+  },
+  "negatives": {
+    "path": "build/usb/laboratory-array-archive-negatives-a3/result.json",
+    "sha256": "5d024996b01e379909ff7ce28adc3657b1037645470c503055288c8bb13afff4",
+    "status": "PASS",
+    "cases": 16
+  },
+  "actual_retained": {
+    "path": "build/task006-array-oom-retained-a1/result.json",
+    "sha256": "a4aee8d25ba41fb383c3a706d4079d83fac932430419ad00a7cbe1e553e540c7",
+    "status": "PASS",
+    "actual_error": 237,
+    "actual_request": [
+      1113,
+      35,
+      1,
+      1,
+      35
+    ],
+    "actual_reply": [
+      1109,
+      35,
+      1,
+      237,
+      0
+    ],
+    "document": 6,
+    "protocol": 5,
+    "raw_ink_samples": 6,
+    "durable_sequences": {
+      "before-check": 3,
+      "after-error": 3,
+      "final": 6,
+      "cold-notebook": 6
+    },
+    "full_cold_pixels_equal": true,
+    "original_guest_medium_sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46",
+    "host_duration": "not recovered from lost in-memory report"
+  },
+  "original_report_failure": {
+    "path": "build/task006-array-oom-archive-a1/report-failure.json",
+    "sha256": "9f6ed128072cde32be5327f90bb1203349010c2a68d967fd428061b02b7b4012",
+    "status": "FAIL"
+  },
+  "retained_fixture_failures": [
+    "build/usb/laboratory-array-archive-negatives-a1/result.json",
+    "build/usb/laboratory-array-archive-negatives-a2/result.json"
+  ],
+  "not_claimed": [
+    "fresh compilation",
+    "arbitrary QEMU cached-state exact checkpoint continuation",
+    "general managed Lean runtime",
+    "proof kernel completion"
+  ]
+}

@@ -16,6 +16,7 @@ open Lemma.Kernel.Memory
 structure State where
   words : Std.HashMap UInt64 UInt64 := {}
   operations : Nat := 0
+  configurationReads : Nat := 0
   satp : UInt64 := 0
 
 def read64 (state : State) (address : UInt64) : UInt64 :=
@@ -58,6 +59,7 @@ partial def execute (state : IO.Ref State) (action : Action) : IO (UInt8 × UInt
       match op with
       | .physicalRead64 | .virtualRead64 =>
         if a % 8 ≠ 0 then throw <| IO.userError "unaligned fixture read64"
+        if a = 0x804006a0 then state.modify fun s => { s with configurationReads := s.configurationReads + 1 }
         execute state (next 0 (read64 (← state.get) a))
       | .physicalWrite64 | .virtualWrite64 =>
         if a % 8 ≠ 0 then throw <| IO.userError "unaligned fixture write64"
@@ -94,12 +96,47 @@ def checkFoldStatus : IO Unit := do
   require (status == 10 && value == 42) "boundedFold must preserve nonzero callback status"
   IO.println "OWNED_FIXTURE_FOLD_STATUS:PASS status10 preserved"
 
+def checkRegistry8192Borrow : IO Unit := do
+  -- Independent arithmetic and literal metadata locations, not the production
+  -- mask/shift helpers. The fixture is host-only; target cycles are separate.
+  for index in #[0, 511, 512, 8191] do
+    for generation in #[(1 : UInt64), 0x7ffffffffffff] do
+      let handle := generation * 8192 + index
+      let slot := 0x80401000 + index * 32
+      let state ← IO.mkRef (write64 (write64 (write64 (write64 ({} : State)
+        0x804006a0 8192) slot 2) (slot + 24) generation) (slot + 8) 1)
+      let original ← state.get
+      let ordinary ← execute state (Frames.resolvePurpose 2 handle 1)
+      state.set original
+      let borrowed ← execute state (Frames.resolveRegistry8192 2 handle)
+      require (ordinary == borrowed && borrowed == (0, 0x82000000 + index * 4096))
+        "count-borrow owner/generation/index exact arithmetic"
+      -- Preserve first-error precedence for simultaneous invalid authority.
+      for (offset, value, expected) in (#[
+        (0, 3, 34), (24, generation + 1, 34), (8, 2, 40)] : Array (UInt64 × UInt64 × UInt8)) do
+        let changed := write64 original (slot + offset) value
+        state.set changed
+        let a ← execute state (Frames.resolvePurpose 2 handle 1)
+        state.set changed
+        let b ← execute state (Frames.resolveRegistry8192 2 handle)
+        require (a == b && b.1 == expected) "count-borrow actual authority rejection"
+      state.set (write64 (write64 (write64 original slot 3) (slot + 24) 0) (slot + 8) 2)
+      require ((← execute state (Frames.resolveRegistry8192 2 handle)) == (34, 0))
+        "owner mismatch precedes generation and purpose"
+      for invalid in #[(0 : UInt64), 8191] do
+        require ((← execute state (Frames.resolveRegistry8192 2 invalid)) == (36, 0))
+          "invalid generation rejected before metadata"
+  IO.println "OWNED_REGISTRY_COUNT_BORROW:PASS exact values and authority failures"
+
 def checkExpanded : IO Unit := do
   let state ← IO.mkRef ({} : State)
   discard <| success state (Frames.configure 8192 8192 4)
   discard <| success state Frames.init
   let descriptor ← success state (AddressSpace.create 2)
+  let configurationBefore := (← state.get).configurationReads
   let address ← success state (AddressSpace.base descriptor)
+  require ((← state.get).configurationReads - configurationBefore == 3)
+    "8192 registry reads configuration once; descriptor and root still resolve independently"
   let memory ← state.get
   require (read64 memory (address + 8) == 2 && read64 memory (address + 80) == 1024 &&
     read64 memory (address + 1408) == 8) "expanded descriptor layout"
@@ -143,6 +180,17 @@ def checkExpanded : IO Unit := do
   let original ← state.get
   let registry0 := read64 original (address + 1424)
   let registryPA0 := read64 original (address + 1432)
+  let registrySlot := 0x80401000 + ((registryPA0 - 0x82000000) / 4096) * 32
+  for (offset, value, expected) in (#[
+    (0, 3, 34), (8, 2, 40), (16, 1, 70),
+    (24, registry0 / 8192 + 1, 34)] : Array (UInt64 × UInt64 × UInt8)) do
+    state.set (write64 original (registrySlot + offset) value)
+    require ((← execute state (AddressSpace.base descriptor)).1 == expected)
+      "whole descriptor retains live registry owner/purpose/pins/generation checks"
+  state.set (write64 (write64 original (address + 1488) registry0) (address + 1496) registryPA0)
+  require ((← execute state (AddressSpace.base descriptor)).1 == 70)
+    "registry duplicate across both four-entry groups"
+  state.set original
   state.modify fun s => write64 (write64 s (address + 1440) registry0) (address + 1448) registryPA0
   rejected state (AddressSpace.base descriptor)
   state.set original
@@ -319,6 +367,7 @@ end OwnedCapacityFixture
 open Lean Elab Command
 run_cmd do
   liftIO OwnedCapacityFixture.checkFoldStatus
+  liftIO OwnedCapacityFixture.checkRegistry8192Borrow
   liftIO OwnedCapacityFixture.checkExpanded
   liftIO OwnedCapacityFixture.checkLegacy
   liftIO OwnedCapacityFixture.checkCurrentLegacyStack

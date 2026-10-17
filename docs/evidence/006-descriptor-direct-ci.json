@@ -1,0 +1,346 @@
+{
+  "schema": "lemma-actual-candidate-ci/1",
+  "source_commit": "b137a35e845d6cbe214859a62d2c785ad428cfa9",
+  "run": {
+    "id": 38678923293,
+    "name": "Lemma pinned acceptance",
+    "status": "completed",
+    "conclusion": "success",
+    "run_number": 98,
+    "jobs_url": "https://api.github.com/repos/srkftw/lemma/actions/runs/38678923293/jobs",
+    "logs_url": "https://api.github.com/repos/srkftw/lemma/actions/runs/38678923293/logs",
+    "workflow_id": 378152075
+  },
+  "jobs": [
+    {
+      "id": 116238762473,
+      "name": "Foundation Gates 1-9 and clean qualification",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762645,
+      "name": "Legacy Core0 RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 8
+    },
+    {
+      "id": 116238762688,
+      "name": "RTL device and digital power conformance with literal host stimuli",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 11
+    },
+    {
+      "id": 116238762708,
+      "name": "Task 003 source-negative RV64 qualification",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762762,
+      "name": "Task 003 Buffer service RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762780,
+      "name": "Task 003 architectural containment RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762786,
+      "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 10
+    },
+    {
+      "id": 116238762810,
+      "name": "Task 003 implemented Gates A-E RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762826,
+      "name": "Task 003 Gates F-I RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762836,
+      "name": "Metadata and host-only suites",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 17
+    }
+  ],
+  "skipped_steps": 0,
+  "scope": "This exact candidate only; subsequent b851850 and later source changes require their own CI.",
+  "subsequent_actual_candidates": [
+    {
+      "source_commit": "85209b1fb6f7b74243a2b12f18037f6891921400",
+      "run_id": 38683626728,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 116253433472,
+          "name": "Foundation Gates 1-9 and clean qualification",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433618,
+          "name": "Metadata and host-only suites",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433632,
+          "name": "Task 003 implemented Gates A-E RV64 acceptance",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433727,
+          "name": "Task 003 Buffer service RV64 acceptance",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433741,
+          "name": "RTL device and digital power conformance with literal host stimuli",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433745,
+          "name": "Legacy Core0 RV64 acceptance",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433770,
+          "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433791,
+          "name": "Task 003 architectural containment RV64 acceptance",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433810,
+          "name": "Task 003 Gates F-I RV64 acceptance",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433852,
+          "name": "Task 003 source-negative RV64 qualification",
+          "conclusion": "success"
+        }
+      ],
+      "skipped_steps": 0,
+      "scope": "This candidate PR run only. Later software3/4 changes require a fresh candidate."
+    },
+    {
+      "source_commit": "470def4182f73eed523b5e4a753e91801d3a4aec",
+      "run": {
+        "id": 38687430744,
+        "name": "Lemma pinned acceptance",
+        "status": "completed",
+        "conclusion": "failure",
+        "run_number": 100,
+        "jobs_url": "https://api.github.com/repos/srkftw/lemma/actions/runs/38687430744/jobs",
+        "logs_url": "https://api.github.com/repos/srkftw/lemma/actions/runs/38687430744/logs",
+        "workflow_id": 378152075
+      },
+      "jobs": [
+        {
+          "id": 116265386013,
+          "name": "Task 003 implemented Gates A-E RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 116265386169,
+          "name": "Metadata and host-only suites",
+          "status": "completed",
+          "conclusion": "failure",
+          "failed_or_skipped_steps": [
+            {
+              "name": "Qualify IPC authority and managed notebook lowering",
+              "conclusion": "failure"
+            },
+            {
+              "name": "Run kernel host-harness suite",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run silicon host orchestration and observation suite",
+              "conclusion": "skipped"
+            }
+          ]
+        },
+        {
+          "id": 116265386193,
+          "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+          "status": "completed",
+          "conclusion": "success",
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 116265386202,
+          "name": "Task 003 Gates F-I RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 116265386276,
+          "name": "Task 003 architectural containment RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 116265386285,
+          "name": "Task 003 Buffer service RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 116265386298,
+          "name": "Task 003 source-negative RV64 qualification",
+          "status": "completed",
+          "conclusion": "success",
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 116265386315,
+          "name": "RTL device and digital power conformance with literal host stimuli",
+          "status": "completed",
+          "conclusion": "success",
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 116265386318,
+          "name": "Legacy Core0 RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 116265386322,
+          "name": "Foundation Gates 1-9 and clean qualification",
+          "status": "completed",
+          "conclusion": "success",
+          "failed_or_skipped_steps": []
+        }
+      ],
+      "failure": "tests/courses/Render.lean:1:0: error: object file '/home/runner/work/lemma/lemma/.lake/build/lib/lean/Lemma/Courses/Package.olean' of module Lemma.Courses.Package does not exist",
+      "repair": "Add explicit Lemma.Courses.Package to the fresh CI lake build; exact workflow dependency assertion and local actual renderer fixtures pass. Original failure and skipped steps retained."
+    },
+    {
+      "source_commit": "9b18756dc27212263834edfc3ebbf366767254c2",
+      "run": {
+        "id": 38691692243,
+        "name": "Lemma pinned acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 101,
+        "jobs_url": "https://api.github.com/repos/srkftw/lemma/actions/runs/38691692243/jobs",
+        "logs_url": "https://api.github.com/repos/srkftw/lemma/actions/runs/38691692243/logs",
+        "workflow_id": 378152075
+      },
+      "jobs": [
+        {
+          "id": 116278813188,
+          "name": "Metadata and host-only suites",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 17,
+          "skipped": []
+        },
+        {
+          "id": 116278813392,
+          "name": "Task 003 Buffer service RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813394,
+          "name": "Task 003 architectural containment RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813465,
+          "name": "Task 003 source-negative RV64 qualification",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813470,
+          "name": "Foundation Gates 1-9 and clean qualification",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813553,
+          "name": "Task 003 Gates F-I RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813571,
+          "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 10,
+          "skipped": []
+        },
+        {
+          "id": 116278813617,
+          "name": "Task 003 implemented Gates A-E RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 9,
+          "skipped": []
+        },
+        {
+          "id": 116278813625,
+          "name": "Legacy Core0 RV64 acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 8,
+          "skipped": []
+        },
+        {
+          "id": 116278813660,
+          "name": "RTL device and digital power conformance with literal host stimuli",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": 11,
+          "skipped": []
+        }
+      ],
+      "scope": "Actual CI is separate from source5 extended guest course reopen, which failed220. Local software6 fixes are not qualified by this candidate."
+    }
+  ]
+}

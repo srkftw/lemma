@@ -1,0 +1,135 @@
+{
+  "schema": "lemma-browser-original-rtl-host-compilation/1",
+  "status": "PASS_BUILD_SOURCE_ADMISSION_AND_EXACT_PREFIX_COMPARISON",
+  "scope": "OptionalSIMD/LTOfreshhostcompile ofcompleteoriginal maintainedRTLMachine; genuineCourseWordguestsunchanged. Prefixcomparison is not coldReady, wholebrowsermath, arbitrarycontinuation orUSB/radiobrowseracceptance. The actualnewcold reachedReady underoriginalbounds; independentlyqualifiedfullpixels/medium. Its outcome capture is malformed and remainsFAIL, so no replayclaim. See006-wasm-capture-portability.json foractual32-bitrepair/component andnewwholependingFAIL.",
+  "implementation": {
+    "scripts/silicon_wasm.py": {
+      "path": "scripts/silicon_wasm.py",
+      "bytes": 11648,
+      "sha256": "e6d5047872d4658540556de34b7b207c7046e49a39248b1496756632b739fdfe"
+    },
+    "scripts/lemmasim_browser.py": {
+      "path": "scripts/lemmasim_browser.py",
+      "bytes": 19169,
+      "sha256": "663401d252c67e61ddd0207caf15f9765498532a0798b7f5fe6d4996d9dc713d"
+    },
+    "scripts/check_wasm_compilation.mjs": {
+      "path": "scripts/check_wasm_compilation.mjs",
+      "bytes": 6746,
+      "sha256": "1d29b2ccaf62987da241d51b1adf1a0fa340e76d1231a50880b9675ac384f8d4"
+    },
+    "tests/lemmasim/test_wasm_recompile.py": {
+      "path": "tests/lemmasim/test_wasm_recompile.py",
+      "bytes": 3101,
+      "sha256": "53e97276db0bae35e39c45b68ff7116392bf3b3754a9adc8b8368504a5b79b06"
+    }
+  },
+  "build": {
+    "path": "build/wasm/task006-canonical-simd-lto-a2/build.json",
+    "bytes": 70463,
+    "sha256": "5011ff61498117e99c18cf69aa11c671657dfb3bfaa0f90a0d10cd3b22d60441"
+  },
+  "tools": {
+    "verilator": "Verilator 5.052 2026-09-05 rev v5.052\n",
+    "em++": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.9-git\nCopyright (C) 2026 the Emscripten authors (see AUTHORS.txt)\nThis is free and open source software under the MIT license.\nThere is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "node": "v24.21.0\n"
+  },
+  "original_source": {
+    "schema": "lemma-wasm-original-source-recompilation/1",
+    "bundle_sha256": "89e0f93c75ca1dd16800d4961cd1844b32ff93422b82fd4a4616e9b732bb9cce",
+    "build_sha256": "6a3d630d7740451668e5668e68336c7946d10b9d5c1a9ccb10625e3d705a9212",
+    "implementation": "c6f244138751f237c3676a5cccb441af664cd0796830b917de6aee9dcd151cc7",
+    "source_count": 239,
+    "scope": "fresh host compilation of complete original RTL and portable runtime; no fresh guest compilation"
+  },
+  "original_source_count": 239,
+  "host_options": {
+    "schema": "lemma-wasm-host-compilation/1",
+    "preset": "simd-lto",
+    "flags": [
+      "-msimd128",
+      "-flto"
+    ],
+    "scope": "integer SIMD and LLVM LTO; no fast-math, circuit or virtual-time changes"
+  },
+  "runtime_identity": "942e9e5c9d61a43120f6b6494f49065cc9dededffdd4267a156bc4f2a14a027f",
+  "outputs": {
+    "machine.mjs": "d527d606fdb521b08952128fe5d9b46c3492f6a32e2f4d0abb296d44f1b591d5",
+    "machine.wasm": "5cbc7b22b08f5707512f1a20f67af1e778e6d663c0b6f52dab28cf5d0be1c7ef"
+  },
+  "build_seconds": 83.74915042001521,
+  "wasm_bytes": 1291796,
+  "comparison": {
+    "path": "build/wasm/task006-host-optimization-compare-a1/result.json",
+    "bytes": 23609,
+    "sha256": "718a36821ad1214ee345f39d18f17997b412072c06e6d804ffaa9999fe0fee5d"
+  },
+  "observed": {
+    "boundary_cycles": [
+      "9",
+      "32",
+      "1000000",
+      "10000000"
+    ],
+    "authoritative_components": "allwrapper+generatedRTLbytesandCRCs exact. Independentlychecked64-byteimplementationmetadata differs bydesign. No incompatible checkpoint restore or archive rewriting.",
+    "scalar_simulation_seconds": 71.38138802900001,
+    "optimized_simulation_seconds": 58.02991621799976,
+    "time_reduction_percent": 18.704416066518583,
+    "speedup": 1.2300791157588966,
+    "host_seconds": 149.52067849300002,
+    "peak_rss_bytes": 1012174848,
+    "per_machine_wasm_heap_bytes": [
+      201326592,
+      201326592
+    ],
+    "context": "same10M realguestinitializerworkload, sharedhostcontended; not an isolatedgeneralbenchmark or reducedtargetcyclecount"
+  },
+  "source_negatives": {
+    "path": "build/wasm/task006-canonical-simd-lto-a2/source-admission-negatives.json",
+    "bytes": 640,
+    "sha256": "82737b36346a3e9efdeaa6ec4a979871e74c4d5127310c396a343a907cce0f89"
+  },
+  "host_tests": {
+    "read_only_import_missing_source": "1PASS",
+    "browser_host_suite": "7PASS",
+    "scaffold_metadata": "PASS",
+    "scaffold_suite": "18PASS"
+  },
+  "original_failure": {
+    "path": "build/wasm/task006-canonical-simd-lto-a1/archive-cache-defect.json",
+    "bytes": 461,
+    "sha256": "e993e6cbd068d2467e8ad420ee48ff5789fd7f4430e5e1d1ce91851d191b9f00"
+  },
+  "new_cold_plan": {
+    "path": "build/browser/task006-course-word-simd-lto-cold-a1/plan.json",
+    "bytes": 1248,
+    "sha256": "ccfaeaf737a886092c6a9f398f7070540b507a849ebdc38572b06bbe5fca984d"
+  },
+  "commands": {
+    "fresh_original_core": "./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 --wasm-source-bundle build/browser/task006-array-panel-stop-a1 --host-optimization simd-lto --guest-bundle build/native/task006-array-course-words-a1 --wasm-build build/wasm/original-core-NEW --output-dir build/browser/original-core-NEW",
+    "actual_build": "python3 scripts/silicon_wasm.py --profile lemma-silicon-dev/0.3.0 --source-bundle build/browser/task006-array-panel-stop-a1 --host-optimization simd-lto --output-dir build/wasm/task006-canonical-simd-lto-a2",
+    "actual_comparison": "nix-shell tooling/silicon/wasm.nix --run 'node --expose-gc scripts/check_wasm_compilation.mjs build/browser/task006-array-course-words-a1 build/browser/task006-course-word-simd-lto-a1 build/wasm/task006-host-optimization-compare-a1'"
+  },
+  "separate_gaps": [
+    "Fullchangedguest/browsercold/math/courseworkflow",
+    "SameoptimizedbackendPending/translation/instructionvisibilityfullsuffix qualification",
+    "FullUSB/radio/browserprofiles",
+    "Browsercompiler/installers/roles/redistribution",
+    "FastexacttimingandQEMUcachedcontinuation",
+    "Physicalrouting/process/memory/domain/RF/panelclosure"
+  ],
+  "later_actual_cold": {
+    "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+    "ready_cycle": 889750000,
+    "ready_host_seconds": 5535.346620000005,
+    "simulation_call_seconds": 5424.6398899987935,
+    "heap_bytes": 201326592,
+    "complete_pixels": 3630000,
+    "outcome_tape": {
+      "status": "FAIL",
+      "error": "timed entry bound",
+      "sha256": "5b0b607483d40d687b2dea73b2cacc06f9b094032b1c596376deacb359447d23",
+      "bytes": 168072
+    }
+  }
+}

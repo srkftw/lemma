@@ -537,4 +537,15 @@ def load (imageIndex owner argument : UInt64) : Action :=
   .bind (build descriptor address record owner imageIndex argument) fun s _ =>
   if failed s = true then abortLoad descriptor s else .done 0 descriptor
 
+/-- Product-only construction preserves the legacy load read/fault prefix. -/
+def loadProduct (imageIndex owner argument : UInt64) : Action :=
+  if Frames.ownerValid owner = false then .done Frames.badOwner 0 else
+  if owner = 1 then .done Frames.badOwner 0 else
+  .bind (validate imageIndex) fun s record => if failed s = true then .done s 0 else
+  .bind (AddressSpace.createProduct owner) fun s descriptor => if failed s = true then .done s 0 else
+  .bind (AddressSpace.base descriptor) fun s address =>
+  if failed s = true then abortLoad descriptor s else
+  .bind (build descriptor address record owner imageIndex argument) fun s _ =>
+  if failed s = true then abortLoad descriptor s else .done 0 descriptor
+
 end Lemma.Kernel.Loader

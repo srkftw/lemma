@@ -1,3 +1,4 @@
+<!--
 # Synthetic digital panel sequencer v1
 
 This compatible extension is enabled only by `PAPER_SEQUENCER=1` in the
@@ -77,3 +78,5 @@ independently: every phase/row/source clock, immutable accepted data despite
 later uploads, stalled reads, power-down ordering, invalid modes, reset during
 drive, retained visible state and memory-error cancellation. It is literal
 circuit simulation, separate from guest integration and physical closure.
+
+-->

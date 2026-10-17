@@ -1,0 +1,111 @@
+{
+  "schema": "lemma-surface-bulk-header-observer-evidence/1",
+  "status": "PASS_CORRECTED_OBSERVER",
+  "scope": "Exact conditional new header caller admission and complete ordinary artifact re-audit on original genuine371-source initializer. No target rebuild, matched pair, CPU, timing or connected workflow claim.",
+  "implementation_head": "f1da1e678bfa8394e08012e584fa007d7b827eb8",
+  "source_inputs": {
+    "scripts/audit_kernel.py": "50eeb5cc6905dad9898fe6ee709c3bd0fc9ecb2868c1706c5511da959761bc70",
+    "scripts/surface_bulk_borrow.py": "189baded7d6e1c77505fd0f8196bbab9b43fe65cdb662d53fd8d15191c045980",
+    "tests/kernel/surface_bulk_borrow_mutations.py": "1bf21897ea32705d3610c65d578da7840c3b2b565af909578c1707a4df74fbc5",
+    "docs/contracts/006-surface-bulk-critical-borrow-v1.md": "597693d6ca7337e25006eae44a8d5e5dc27e36680fa3e0ac285c31cde5cc0e89"
+  },
+  "original_whole_pair": {
+    "status": "FAIL",
+    "wall_seconds": 123.59117693803273,
+    "initializer_build_seconds": 89.81546528299805,
+    "source_count": 371,
+    "source_inventory_sha256": "182a947b81d1bda9fcb1c103fba5fe9850ba84fa79290f72db901729e522b085",
+    "image_sha256": "9187603ba2e12c38fd2daac30b3ec636596053036fb9b0c225e3f6d3139575b5",
+    "failure": "capability header helper has an unapproved caller",
+    "notebook_build": "NOT_RUN"
+  },
+  "corrected_observer": {
+    "status": "PASS",
+    "wall_seconds": 150.16252612508833,
+    "compiled_artifacts_unchanged": true,
+    "observer_source_unchanged": true,
+    "original_failure_retained": true
+  },
+  "qualification": {
+    "original_bulk_mutation_rejections": 274,
+    "additional_header_mutation_rejections": 46,
+    "total_actual_ir_rejections": 320,
+    "mutation_seconds": 43.63604628993198,
+    "genuine_positive_units": [
+      "original whole initializer",
+      "selected production",
+      "historical cf5250 legacy"
+    ],
+    "host_local_tests": 4,
+    "scaffold_tests": 18,
+    "fresh_compilation": "NOT_RUN",
+    "target_execution": "NOT_RUN"
+  },
+  "policy": "Original header/managed base checks remain unchanged; only complete strict Kernel4 Surface family admits exact requireActiveAt third caller/descriptor-base arguments. Exhaustive incoming headerAt set rejects any other caller.",
+  "retained_fixture_failures": [
+    "Whole audit of a copied directory correctly rejected original tool cwd provenance; original paths were retained for corrected observation.",
+    "First mutation driver used a nonexistent component unit filename and failed before inspecting IR; corrected driver selects actual dispatch-unit.json."
+  ],
+  "artifacts": [
+    {
+      "path": "build/managed/surface-bulk-closure-whole-pair-a1/result.json",
+      "bytes": 1678,
+      "sha256": "b14ae3a71e4016ac7baf3eb7ac6bcf0dd491a9025c0a198a544109190e6dc475"
+    },
+    {
+      "path": "build/managed/surface-bulk-closure-whole-pair-a1/source-seal.json",
+      "bytes": 362,
+      "sha256": "df10db2704dbfb55001e801d8be5a9cf41ef14e6a335e6979a5b7b1c8a743050"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/header-observer-a2/original-audit-failure.json",
+      "bytes": 128,
+      "sha256": "43f62cb6c82337d0708fa1240408f5d2b689dabba173163b10a8a54cd211acc2"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/header-observer-a2/result.json",
+      "bytes": 990,
+      "sha256": "89a996628b53c457aad50a07d9c74da24aeb69f026ee37b0257eba84088cb3b8"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/header-observer-a2/audit.json",
+      "bytes": 3873470,
+      "sha256": "58425ed0f1c287d217b90d4a3d3c855cbb3b68820d2adf7f558132fe50c3c03f"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/header-observer-a2/observer-source-inputs.json",
+      "bytes": 39918,
+      "sha256": "f0d75e55d03229cc2b8fdce350f9c2227a2e29a3907a1281ea04cedd0f8cb056"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/header-negatives-a3/result.json",
+      "bytes": 84692,
+      "sha256": "d62af405f8749da9e8a3b12a0face63465f4fa25ff8c1ca78ab9287170d1de20"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/header-local-host-a1.log",
+      "bytes": 794,
+      "sha256": "286bb66f932e893e45f6c7ade8e6a825bfccdf2b82aef9a6153ada8b5df3003a"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/header-scaffold-a1.log",
+      "bytes": 185,
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/header-scaffold-tests-a1.log",
+      "bytes": 1811,
+      "sha256": "7c79c82622dd1cfe20d77a45d3619fca13e8b5c0b7eb4ab8c5a34ce98494600b"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/header-observer-candidate-a1/reaudit-result.json",
+      "bytes": 643,
+      "sha256": "7096b7faa3b3414e031e399dc0b21abec902cf1e830f8a076793d478e98ee1e7"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/header-negatives-a2/result.json",
+      "bytes": 613,
+      "sha256": "4892bad295eba4320bcc0b0a5e52522ebd72785ec11196da01e5af723566d20f"
+    }
+  ]
+}

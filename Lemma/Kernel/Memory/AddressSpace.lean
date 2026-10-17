@@ -1,4 +1,5 @@
 import Lemma.Kernel.Memory.Batch
+import Lemma.Platform.LemmaSim.Descriptor
 
 /-! Single-hart Sv39 ownership. Every address space has independent 4 KiB
 tables, ASID zero and conservative full invalidation. Algorithms and metadata
@@ -130,7 +131,7 @@ private def packedMember (packed amount index : UInt64) : Bool :=
     else false
   else false
 
-private def validateRegistryStep (i _ : UInt32) (packed address owner first group : UInt64) : Action :=
+private def validateRegistryGenericStep (i _ : UInt32) (packed address owner first group : UInt64) : Action :=
   let ordinal := group + i.toUInt64
   .bind (get address (registryList + ordinal * 16)) fun s handle =>
   if failed s = true then .done s 0 else
@@ -151,6 +152,79 @@ private def validateRegistryStep (i _ : UInt32) (packed address owner first grou
   if pins = 0 then .done 0 (packed ||| (index <<< (i.toUInt64 * 13)))
   else .done invalidDescriptor 0
 
+
+/-- The complete directory entry sequence borrows only local numeric bounds,
+not retained authority. All owner/generation/purpose/pins and both duplicate
+checks still run on live values. Arbitrary descriptor/ordinal inputs use the
+original generic sequence, preserving its read and first-error behavior. -/
+private def validateRegistryStep (i count : UInt32) (packed address owner first group : UInt64) : Action :=
+  let ordinal := group + i.toUInt64
+  if Frames.pool ≤ address then
+  if address ≤ Frames.expandedPoolLimit - 4096 then
+  if address % 4096 = 0 then
+  if ordinal < 8 then
+    let cursor := address + registryList + ordinal * 16
+    .bind (Access.read64 cursor) fun s handle =>
+    if s = 0 then
+    .bind (Frames.resolvePurpose owner handle 1) fun s physical =>
+    if s = 0 then
+    .bind (Access.read64 (cursor + 8)) fun s recorded =>
+    if s = 0 then
+    if physical = recorded then
+    let index := (physical - Frames.pool) / Frames.bytes
+    if index < 8192 then
+    if (if group = 4 then packedMember first 4 index else false) = true then .done invalidDescriptor 0 else
+    if packedMember packed i.toUInt64 index = true then .done invalidDescriptor 0 else
+    let slot := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x1000 + index * 32 + 16
+    .bind (Access.read64 slot) fun s pins =>
+    if s = 0 then
+      if pins = 0 then .done 0 (packed ||| (index <<< (i.toUInt64 * 13)))
+      else .done invalidDescriptor 0
+    else .done s 0
+    else .done invalidDescriptor 0
+    else .done invalidDescriptor 0
+    else .done s 0
+    else .done s 0
+    else .done s 0
+  else validateRegistryGenericStep i count packed address owner first group
+  else validateRegistryGenericStep i count packed address owner first group
+  else validateRegistryGenericStep i count packed address owner first group
+  else validateRegistryGenericStep i count packed address owner first group
+
+/-- Canonical registry-count borrow. Only the admitted count8192 branch below
+calls this callback, after the same fresh configuration check as the generic
+path. Reads of every entry, live frame authority and pins retain their order;
+the count cannot change inside this single-hart nonpreemptible Action. -/
+private def validateRegistry8192Step (i _ : UInt32) (packed address owner first group : UInt64) : Action :=
+  let ordinal := group + i.toUInt64
+  if Frames.pool ≤ address then
+  if address ≤ Frames.expandedPoolLimit - 4096 then
+  if address % 4096 = 0 then
+  if ordinal < 8 then
+  let cursor := address + registryList + ordinal * 16
+  .bind (Access.read64 cursor) fun s handle =>
+  if failed s = true then .done s 0 else
+  .bind (Frames.resolveRegistry8192 owner handle) fun s physical =>
+  if failed s = true then .done s 0 else
+  .bind (Access.read64 (cursor + 8)) fun s recorded =>
+  if failed s = true then .done s 0 else
+  if physical = recorded then
+    let index := (physical - Frames.pool) / Frames.bytes
+    if index < 8192 then
+      if (if group = 4 then packedMember first 4 index else false) = true then .done invalidDescriptor 0 else
+      if packedMember packed i.toUInt64 index = true then .done invalidDescriptor 0 else
+      let slot := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x1000 + index * 32 + 16
+      .bind (Access.read64 slot) fun s pins =>
+      if failed s = true then .done s 0 else
+      if pins = 0 then .done 0 (packed ||| (index <<< (i.toUInt64 * 13)))
+      else .done invalidDescriptor 0
+    else .done invalidDescriptor 0
+  else .done invalidDescriptor 0
+  else validateRegistryGenericStep i 4 packed address owner first group
+  else validateRegistryGenericStep i 4 packed address owner first group
+  else validateRegistryGenericStep i 4 packed address owner first group
+  else validateRegistryGenericStep i 4 packed address owner first group
+
 private def validateRegistry (address owner version leafCapacity : UInt64) : Action :=
   .bind (get address registryCount) fun s amount => if failed s = true then .done s 0 else
   if version = 1 then
@@ -160,66 +234,95 @@ private def validateRegistry (address owner version leafCapacity : UInt64) : Act
         if frames = 512 then .done 0 0 else .done invalidDescriptor 0
       else .done invalidDescriptor 0
     else .done invalidDescriptor 0
-  else if version = 2 then
+  else if (if version = 2 then true else if version = 3 then true else false) = true then
     if leafCapacity = expandedCapacity then
       if amount = 8 then
         .bind Frames.runtimeCount fun s frames => if failed s = true then .done s 0 else
-        if Frames.expanded frames = true then
-          .boundedFoldU64 4 validateRegistryStep 4 0 address owner 0 0 fun s first =>
-          if failed s = true then .done s 0 else
-          .boundedFoldU64 4 validateRegistryStep 4 0 address owner first 4 fun s _ => .done s 0
+        if (if version = 3 then if frames = 8192 then true else false else Frames.expanded frames) = true then
+          if frames = 8192 then
+            .boundedFoldU64 4 validateRegistry8192Step 4 0 address owner 0 0 fun s first =>
+            if failed s = true then .done s 0 else
+            .boundedFoldU64 4 validateRegistry8192Step 4 0 address owner first 4 fun s _ => .done s 0
+          else
+            .boundedFoldU64 4 validateRegistryStep 4 0 address owner 0 0 fun s first =>
+            if failed s = true then .done s 0 else
+            .boundedFoldU64 4 validateRegistryStep 4 0 address owner first 4 fun s _ => .done s 0
         else .done invalidDescriptor 0
       else .done invalidDescriptor 0
     else .done invalidDescriptor 0
   else .done invalidDescriptor 0
 
 /-- Reject stale descriptors, altered ABI fields, and a root which no longer
-matches the live owned table frame. Loader state at +2400..+2559 is reserved. -/
+matches the live owned table frame. Loader state at +2400..+2559 is reserved.
+The first full frame/purpose/generation resolution bounds the aligned
+physical descriptor page. Expose that numeric fact in this Action so the same
+ordered Access reads lower directly; every registry/root/translation check and
+every returned failure status remains live. No unchecked alias is returned. -/
 def base (descriptor : UInt64) : Action :=
   .bind (Frames.resolvePurpose 1 descriptor 1) fun s address =>
-  if failed s = true then .done s 0 else
-  .bind (get address 0) fun s tag =>
-  if failed s = true then .done s 0 else
+  if s = 0 then
+  if Frames.pool ≤ address then
+  if address ≤ Frames.expandedPoolLimit - 4096 then
+  if address % 4096 = 0 then
+  .bind (Access.read64 (address + 0)) fun s tag =>
+  if s = 0 then
   if (if tag = magic then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 8) fun s version =>
-  if failed s = true then .done s 0 else
-  if (if version = 1 then false else if version = 2 then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 16) fun s self =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 8)) fun s version =>
+  if s = 0 then
+  if (if version = 1 then false else if version = 2 then false else if version = 3 then false else true) = true then .done invalidDescriptor 0 else
+  .bind (Access.read64 (address + 16)) fun s self =>
+  if s = 0 then
   if (if self = descriptor then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 24) fun s owner =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 24)) fun s owner =>
+  if s = 0 then
   if Frames.ownerValid owner = false then .done invalidDescriptor 0 else
-  .bind (get address 32) fun s state =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 32)) fun s state =>
+  if s = 0 then
   if (if state = 1 then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 40) fun s tables =>
-  if failed s = true then .done s 0 else
-  if tables < 11 then .done invalidDescriptor 0 else
+  .bind (Access.read64 (address + 40)) fun s tables =>
+  if s = 0 then
+  if tables < (if version = 3 then 14 else 11) then .done invalidDescriptor 0 else
   if 32 < tables then .done invalidDescriptor 0 else
-  .bind (get address 48) fun s leaves =>
-  if failed s = true then .done s 0 else
-  .bind (get address 80) fun s leafCapacity =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 48)) fun s leaves =>
+  if s = 0 then
+  .bind (Access.read64 (address + 80)) fun s leafCapacity =>
+  if s = 0 then
   if leafCapacity < leaves then .done invalidDescriptor 0 else
   .bind (validateRegistry address owner version leafCapacity) fun s _ =>
-  if failed s = true then .done s 0 else
-  .bind (get address 88) fun s tableCapacity =>
-  if failed s = true then .done s 0 else
-  if (if tableCapacity = 32 then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 56) fun s rootHandle =>
-  if failed s = true then .done s 0 else
-  .bind (get address tableList) fun s firstHandle =>
-  if failed s = true then .done s 0 else
+  if s = 0 then
+  .bind (Access.read64 (address + 88)) fun s tableCapacity =>
+  if s = 0 then
+  if (if tableCapacity = (if version = 3 then 0x3353415000000020 else 32) then false else true) = true then .done invalidDescriptor 0 else
+  .bind (Access.read64 (address + 56)) fun s rootHandle =>
+  if s = 0 then
+  .bind (Access.read64 (address + tableList)) fun s firstHandle =>
+  if s = 0 then
   if (if rootHandle = firstHandle then false else true) = true then .done invalidDescriptor 0 else
   .bind (Frames.resolvePurpose owner rootHandle 2) fun s rootPA =>
-  if failed s = true then .done s 0 else
-  .bind (get address 64) fun s recordedPA =>
-  if failed s = true then .done s 0 else
+  if s = 0 then
+  .bind (Access.read64 (address + 64)) fun s recordedPA =>
+  if s = 0 then
   if (if recordedPA = rootPA then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 72) fun s translation =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 72)) fun s translation =>
+  if s = 0 then
   if translation = satpWord rootPA then .done 0 address else .done invalidDescriptor 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done invalidDescriptor 0 else .done invalidDescriptor 0 else .done invalidDescriptor 0
+  else .done s 0
 
 def owner (descriptor : UInt64) : Action :=
   .bind (base descriptor) fun s address =>
@@ -241,15 +344,18 @@ private def tableAt (address index : UInt64) : Action :=
   else .done resourceLimit 0
 
 private def memberStep (i _ : UInt32) (acc address wanted _ _ : UInt64) : Action :=
-  if i < 8 then .done 0 acc else
-    .bind (tableAt address i.toUInt64) fun s table =>
-    if failed s = true then .done s 0 else
-    .done 0 (if table = wanted then 1 else acc)
+  .bind (tableAt address (i.toUInt64 + 8)) fun s table =>
+  if failed s = true then .done s 0 else
+  .done 0 (if table = wanted then 1 else acc)
 private def ownedTable (address table : UInt64) : Action :=
   .bind (get address 40) fun s amount =>
   if failed s = true then .done s 0 else
   if amount ≤ 32 then
-    .boundedFoldU64 32 memberStep amount.toUInt32 0 address table 0 0 fun s found =>
+    -- Slots0..7 are fixed supervisor tables and cannot be a user child.
+    -- Their former callbacks were pure. Enumerate the same complete dynamic
+    -- suffix, preserving every ordered read and every later-handle error.
+    if amount ≤ 8 then .done invalidPte 0 else
+    .boundedFoldU64 24 memberStep (amount - 8).toUInt32 0 address table 0 0 fun s found =>
     if failed s = true then .done s 0 else
     if found = 1 then .done 0 table else .done invalidPte 0
   else .done invalidDescriptor 0
@@ -478,7 +584,7 @@ private def findRowWordStep (i _ : UInt32) (acc physical wanted start _ : UInt64
 
 /-- Eight live rows per callback. Reads and duplicate/error checks retain the
 original increasing row order; a tail uses the original exact one-row step. -/
-private def findRowBlockStep (i _ : UInt32) (acc physical wanted start _ : UInt64) : Action :=
+private def findRowGenericBlockStep (i _ : UInt32) (acc physical wanted start _ : UInt64) : Action :=
   let offset := i.toUInt64 * 8
   .bind (Access.read64 (physical + (offset + 0) * 32)) fun s va0 =>
   if failed s = true then .done s 0 else
@@ -522,6 +628,69 @@ private def findRowBlockStep (i _ : UInt32) (acc physical wanted start _ : UInt6
   let found7 := if va7 = wanted then start + offset + 7 + 1 else found6
   .done 0 found7
 
+
+/-- Local bounds prove all eight checked reads remain within the frame pool.
+The full increasing read/duplicate/error sequence is unchanged. Other physical
+regions, boundary crossings and arbitrary modular callback inputs retain the
+generic checked path; no address-space row or ownership validation is cached. -/
+private def findRowBlockStep (i count : UInt32) (acc physical wanted start context : UInt64) : Action :=
+  let offset := i.toUInt64 * 8
+  let cursor := physical + offset * 32
+  if Frames.pool ≤ cursor then
+  if cursor ≤ Frames.expandedPoolLimit - 232 then
+  if cursor % 8 = 0 then
+  .bind (Access.read64 (cursor + 0)) fun s va0 =>
+  if s = 0 then
+  if (if va0 = wanted then if acc = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found0 := if va0 = wanted then start + offset + 0 + 1 else acc
+  .bind (Access.read64 (cursor + 32)) fun s va1 =>
+  if s = 0 then
+  if (if va1 = wanted then if found0 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found1 := if va1 = wanted then start + offset + 1 + 1 else found0
+  .bind (Access.read64 (cursor + 64)) fun s va2 =>
+  if s = 0 then
+  if (if va2 = wanted then if found1 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found2 := if va2 = wanted then start + offset + 2 + 1 else found1
+  .bind (Access.read64 (cursor + 96)) fun s va3 =>
+  if s = 0 then
+  if (if va3 = wanted then if found2 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found3 := if va3 = wanted then start + offset + 3 + 1 else found2
+  .bind (Access.read64 (cursor + 128)) fun s va4 =>
+  if s = 0 then
+  if (if va4 = wanted then if found3 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found4 := if va4 = wanted then start + offset + 4 + 1 else found3
+  .bind (Access.read64 (cursor + 160)) fun s va5 =>
+  if s = 0 then
+  if (if va5 = wanted then if found4 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found5 := if va5 = wanted then start + offset + 5 + 1 else found4
+  .bind (Access.read64 (cursor + 192)) fun s va6 =>
+  if s = 0 then
+  if (if va6 = wanted then if found5 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found6 := if va6 = wanted then start + offset + 6 + 1 else found5
+  .bind (Access.read64 (cursor + 224)) fun s va7 =>
+  if s = 0 then
+  if (if va7 = wanted then if found6 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found7 := if va7 = wanted then start + offset + 7 + 1 else found6
+  .done 0 found7
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else findRowGenericBlockStep i count acc physical wanted start context
+  else findRowGenericBlockStep i count acc physical wanted start context
+  else findRowGenericBlockStep i count acc physical wanted start context
 private def scanRows (physical wanted start amount initial : UInt64) : Action :=
   let blocks := amount / 8
   .boundedFoldU64 16 findRowBlockStep blocks.toUInt32 initial physical wanted start 0 fun s found =>
@@ -656,11 +825,14 @@ private def commitLeaf (address va oldTables index owner handle slot pte permiss
   .bind (put address 48 (index + 1)) fun s _ =>
   if failed s = true then abortLeaf address va oldTables index owner handle slot s else .done 0 handle
 
-def mapUser (descriptor va handle permissions : UInt64) : Action :=
+/-- Kernel-only mapping using the `base` result from this same nonpreemptible
+S Action. No scheduling, descriptor/table mutation, release or borrowed alias
+may intervene. Allocating a fresh owned frame cannot change an already owned
+descriptor or its directory. Every duplicate row and selected grant/PTE check,
+pinning, invalidation, publication and rollback still runs below. -/
+def mapUserAt (address va handle permissions : UInt64) : Action :=
   if alignedAddress va = false then .done invalidAddress 0 else
   if permissionsValid permissions = false then .done invalidPermission 0 else
-  .bind (base descriptor) fun s address =>
-  if failed s = true then .done s 0 else
   .bind (get address 80) fun s maximum => if failed s = true then .done s 0 else
   if bindingAddressValid va maximum = false then .done invalidAddress 0 else
   .bind (get address 24) fun s owner =>
@@ -689,6 +861,12 @@ def mapUser (descriptor va handle permissions : UInt64) : Action :=
   .bind (Frames.pin owner handle) fun s _ =>
   if failed s = true then rollbackLastTable address va oldTables s else
   commitLeaf address va oldTables index owner handle slot (leafEntry physical permissions) permissions
+
+def mapUser (descriptor va handle permissions : UInt64) : Action :=
+  if alignedAddress va = false then .done invalidAddress 0 else
+  if permissionsValid permissions = false then .done invalidPermission 0 else
+  .bind (base descriptor) fun s address =>
+  if failed s = true then .done s 0 else mapUserAt address va handle permissions
 
 /-- Kernel-only lookup within the same nonpreemptible S Action that obtained
 `address` from `base`. No descriptor mutation, scheduling boundary or borrowed
@@ -799,5 +977,80 @@ def destroy (descriptor : UInt64) : Action :=
   .bind (rollbackRegistry address 0) fun s _ => if failed s = true then .done invariantFailure 0 else
   .bind (rollbackTables address 0) fun s _ =>
   if failed s = true then .done invariantFailure 0 else releaseDescriptor descriptor 0
+
+/-- Kernel-only Product selection. A fresh bounded hardware/DTB validation
+precedes publication; no User syscall can select these supervisor aliases. -/
+def productSelection : UInt64 := 0x80400fc0
+def configureProduct (binding : UInt64) : Action :=
+  if binding = 0 then Access.write64 productSelection 0 else
+  if binding = 7 then
+    .bind Lemma.Platform.LemmaSim.Descriptor.validateSiliconProduct fun s _ =>
+    if failed s = true then .done s 0 else Access.write64 productSelection 7
+  else .done invalidDescriptor 0
+
+/-- Hardware Product9 admission, retaining the already versioned layout3
+policy and exact S-only aliases. No legacy construction path reads this selector. -/
+def configureProductNext (binding : UInt64) : Action :=
+  if binding = 9 then
+    .bind Lemma.Platform.LemmaSim.Descriptor.validateSiliconProductNext fun s _ =>
+    if failed s = true then .done s 0 else Access.write64 productSelection 7
+  else .done invalidDescriptor 0
+
+/-- Product10 uses the existing explicit layout3 aliases after fresh exact
+Paper3/ABI11 discovery. Historical Product selectors remain unchanged. -/
+def configureProductExecuted (binding : UInt64) : Action :=
+  if binding = 10 then
+    .bind Lemma.Platform.LemmaSim.Descriptor.validateSiliconProductExecuted fun s _ =>
+    if failed s = true then .done s 0 else Access.write64 productSelection 7
+  else .done invalidDescriptor 0
+
+private def buildProductKernel (address : UInt64) : Action :=
+  .bind (buildKernel address) fun s _ => if failed s = true then .done s 0 else
+  .bind (link address 1 15 13) fun s _ => if failed s = true then .done s 0 else
+  .bind (fillRange address 13 0x81fc0000 4 0xc7) fun s _ => if failed s = true then .done s 0 else
+  fillRange address 9 0x10012000 1 0xc7
+
+/-- Product-only layout3 adds one owned, pinned page table and supervisor
+RW/NX aliases for four ROM-context pages and the NV controller. Header+88
+encodes the layout witness with low32 capacity32. Legacy create is unchanged. -/
+def createProduct (owner : UInt64) : Action :=
+  .bind Frames.runtimeCount fun s amount => if failed s = true then .done s 0 else
+  if Frames.ownerValid owner = false then .done Frames.badOwner 0 else
+  if amount = 8192 then
+  .bind (Access.read64 productSelection) fun s selected => if failed s = true then .done s 0 else
+  if selected = 7 then
+  let initialTables : UInt64 := 14
+  .bind (Frames.allocate 1 1) fun s descriptor =>
+  if failed s = true then .done s 0 else
+  .bind (Frames.resolvePurpose 1 descriptor 1) fun s address =>
+  if failed s = true then releaseDescriptor descriptor s else
+  .bind (put address 24 owner) fun s _ =>
+  if failed s = true then releaseDescriptor descriptor s else
+  .bind (Batch.allocate owner 2 initialTables) fun s _ =>
+  if failed s = true then releaseDescriptor descriptor s else
+  .boundedFoldU64 14 copyTableStep initialTables.toUInt32 0 address 0 0 0 fun s _ =>
+  if failed s = true then
+    .bind (Batch.rollback owner initialTables s) fun rollbackStatus _ =>
+    if rollbackStatus = s then releaseDescriptor descriptor s else .done invariantFailure 0
+  else
+  .bind (get address tableList) fun s rootHandle =>
+  if failed s = true then abortCreate descriptor address s else
+  .bind (tableAt address 0) fun s rootPA =>
+  if failed s = true then abortCreate descriptor address s else
+  .bind (put address 8 3) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 16 descriptor) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 56 rootHandle) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 64 rootPA) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 72 (satpWord rootPA)) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 80 (if Frames.expanded amount = true then expandedCapacity else 32)) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 88 0x3353415000000020) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (buildRegistry address owner amount) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (buildProductKernel address) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .boundedFoldU64 14 pinTableStep initialTables.toUInt32 0 address owner 0 0 fun s _ =>
+  if failed s = true then abortCreate descriptor address s else
+  .bind (put address 32 1) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 0 magic) fun s _ =>
+  if failed s = true then abortCreate descriptor address s else .done 0 descriptor
+  else .done invalidDescriptor 0 else .done invalidDescriptor 0
 
 end Lemma.Kernel.Memory.AddressSpace

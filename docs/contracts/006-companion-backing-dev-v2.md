@@ -1,0 +1,103 @@
+<!--
+# Asynchronous opaque backing development binding v2
+
+This extends `006-companion-backing-dev-v1.md` with optional shared host byte-I/O
+submission/polling and `lemma-fast-block/3`. The packet format remains LMCMP001
+version1. The hosted Lean client keeps protocol, durable outbox, ordering and
+receipt policy; C/C++ and Python carry raw OS bytes only. No host runtime object
+is added to the RV64 image. This remains development backing transport, without
+the companion controller/driver, owned DMA protocol, USB, BLE or authentication.
+
+`BackingPlatform::submit` admits one immutable request. `poll` returns no value
+while Pending, then an actual prefix/error outcome. POSIX and browser platforms
+use the synchronous default and immediately expose their real result. The
+native RTL Machine retains its version1 synchronous execution path in this
+increment; the new fast controller consumes the asynchronous boundary.
+
+For the peer adapter, raw socket submission and reply polling are nonblocking.
+The ordinary hosted Lean client performs two bounded2-second sends. Unknown
+delivery/persistence emits PENDING; `--pending` keeps that client alive awaiting
+an explicit RETRY. It permits at most16 such requests for the current operation,
+each retrying its exact writer/sequence/frame. A response for an older outbox
+cannot be used as the new operation's acknowledgment. An actual successful
+receipt atomically advances/clears the durable outbox before reporting success.
+The historical client mode still exits2 with its outbox intact after PENDING.
+
+The fast controller accepts pending replies on a predeclared1ms virtual polling
+cadence. Virtual CPU execution, pen ingress and panel execution continue. The
+existing bounded Lean notebook buffers may hold provisional raw ink while its
+Store call waits. This is bounded writing; navigation/editing limits and full
+disconnected product policy remain separate. No host wall clock or animation
+frame advances authoritative virtual time. This cadence is a fast development
+model, not RTL pipeline/bus timing parity.
+
+Flush writes the copied stable sector order, maintaining a cursor, and returns
+success only after the actual backing barrier. An unsuccessful prefix/barrier
+does not clear volatile sectors or undo observed peer/file bytes. Reset cancels
+the original controller DMA completion. A submitted external operation cannot
+be assumed rolled back: its eventual actual outcome is captured as an orphan,
+without DMA into the canceled request's buffers. New queue notifications wait
+until that orphan resolves. Outstanding/orphan work keeps the existing Power-v1
+busy guard asserted. Complete reset/power domains and transaction cancellation
+across watchdog/brownout remain unfinished.
+
+The known unresolved remote operation retains Pending without poisoning the
+machine. A crashed client, invalid outcome or capture failure instead poisons
+the owner and stops execution; no prefix or success is invented. Pending or
+poisoned external snapshots/export are rejected observationally, without a
+hidden retry, drain or barrier. Arbitrary pending external checkpoint/fork
+continuation remains open. Completed restored archives use a private local
+medium and cannot rerun the original peer's irreversible actions. QEMU cached
+translation/instruction-visibility continuation remains open independently.
+
+## Actual external outcome capture
+
+LMIOLOG2 starts with8 magic bytes and64 bytes of exact backend SHA256 text.
+Each entry has a u64 tag and u64 length followed by checksummed bytes. Tag0
+is a submission: five LEu64 fields ID, submission boundary, kind, offset and
+length, optional requested Write bytes, then CRC64-ECMA. Tag1 is a completion:
+the version1 seven-field actual outcome record and its CRC, followed by the
+accepted boundary and an outer CRC over that record plus the boundary. IDs,
+request bytes and accepted boundaries must match exactly. Acceptance cannot
+precede submission. A pending capture contains the complete original request
+without a completion; it never claims a failed write was rolled back.
+
+QEMU boundaries are local virtual nanoseconds. The native RTL version1 log
+continues to use target cycles. The logs are distinct serialization contracts.
+Native version1 outcome replay remains available; the fast LMIOLOG2 replay
+consumer is still unfinished. Recording accepted external state does not claim
+an exact complete QEMU continuation or cross-backend microstate migration.
+
+## Development commands
+
+Build the hosted peer/client in a new directory as in version1. After preparing
+the fast backend, use the same ordinary `session --companion ...` command. A
+known pending operation exposes `storage.retry_ready`. Restart the independent
+peer, pause the machine, then request a real same-ID reconciliation:
+
+```sh
+scripts/lemmasim session-control --session-dir /absolute/path/to/session \
+  --request '{"action":"companion-retry"}'
+```
+
+This action is admitted only in Developer/Laboratory fast sessions, captured
+with its exact virtual boundary, and sends a raw RETRY to the Lean client. It
+never changes controller success, receipt state or notebook objects directly.
+The explicit transport recovery control is not a finished guest companion UI.
+
+For a new backend with an unchanged previously audited guest, use the immutable
+bundle's full source/artifact validator:
+
+```sh
+scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --workload notebook --guest-bundle build/native/task006-canonical-a1 \
+  --opt-level O2
+```
+
+Preparation and every normal launch validate the entire archive, its archived
+compiler/guest inputs and exact workload entries, and the current new backend
+sources/output. The preparation records the archive manifest hash and explicitly
+labels unchanged genuine guest reuse, never fresh target compilation. Ordinary
+builds without this option retain their strict current-tree guest checks.
+
+-->

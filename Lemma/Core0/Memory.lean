@@ -281,6 +281,39 @@ inductive Action where
   a direct top-level step constant. Status zero repeats; nonzero returns its
   exact status/value to the enclosing caller. No finite host model executes it. -/
   | loop (step : Action)
+  /-- Additive User-v0.2 bridge. The function must be a closed ordinary Lean
+  UInt64 entry; the frontend reads genuine compiler IR and checks every admitted
+  allocation/layout/borrow/release. The status is a real resource outcome.
+  Legacy profiles reject this constructor; finite scalar host models reject it.
+  No Action-valued implementation or fabricated AST is supplied by callers. -/
+  | managed2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
+  /-- User-v0.3 only: genuine ordinary scalar-entry sum constructors, exact
+  tag cases, borrowed projections and affine reclamation. Older profiles
+  reject this distinct bridge; no supplied Action implementation is admitted. -/
+  | managedSums2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
+  /-- User-v0.4 only: genuine ordinary bounded ByteArray code, using the real
+  owned Arena for payloads and exact retain/release from genuine upstream IR.
+  The direct source entry has scalar parameters/results; arrays never cross
+  this boundary as unchecked pointer words. Older profiles reject this bridge. -/
+  | managedBytes2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
+  /-- User-v0.5 only: genuinely elaborated ordinary Array UInt64, full64
+  scalar boxes and bounded parent/child graph ownership. Both out-of-bounds
+  ! operations use controlled-panic236; old profiles reject this bridge. -/
+  | managedArray2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
+  /-- User-v0.6 only: genuine ordinary bounded UTF8 String and exact Option
+  String cases, using real owned Arena allocation and typed child lifetime.
+  This bridge never evaluates a host function as target behavior. -/
+  | managedString2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
+  /-- User-v0.7 only: genuine ordinary unary UInt64 closures with owned scalar
+  captures, finite checked source-derived dispatch and real bounded lifetime.
+  No closure value escapes this scalar2 source entry. -/
+  | managedClosure2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
   /-- Read the fixed UART line-status register.  The byte is zero-extended into
   the standard Action value word. -/
   | uartReadStatus (next : UInt8 → UInt64 → Action)

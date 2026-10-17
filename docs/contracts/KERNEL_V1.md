@@ -1,3 +1,4 @@
+<!--
 # Kernel foundation contracts v1
 
 This additive contract preserves all historical Core0 profiles. New checked
@@ -226,3 +227,5 @@ three fresh generations, private mix results, complete reclamation, and ordinary
 CLI/Peer progress plus CPU arithmetic preemption between managed faults.
 These tests and byte/stack audits do not establish a whole-kernel proof or
 physical-board measurement.
+
+-->

@@ -1,0 +1,169 @@
+{
+  "schema": "lemma-array-document-migration-receipt/1",
+  "status": "PASS_PARTIAL",
+  "scope": "Actual Doc5\u21926 guest migration and mixed execution-history continuation.\n\nSupply a real acknowledged ByteArray course medium. The observer only copies\nopaque media, delivers raw pen samples and inspects outputs. The guest alone\nupgrades, checks and saves the document. QEMU instruction-clock functional\nscope; this does not qualify RTL timing or arbitrary cached-state snapshots.\n",
+  "target_identity": {
+    "backend": "qemu",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+    "adapter": "lemmasim-fast-adapter/4",
+    "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+    "guest": "b85343bc867699dff1e1f88f6865cf78e3115f2d360518ac4dcde80af7106396",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3
+  },
+  "actual_initial_migration": {
+    "original_status": "FAIL",
+    "original_error": "'learner'",
+    "sequence_before": 35,
+    "sequence_after": 36,
+    "exact_changed_word_offsets": [
+      8,
+      1864
+    ],
+    "acknowledged_medium_sha256": "93e383a087e9a929103cb3c5bca596e20da88e0b1aa89bb20d487c15c38c3d3c",
+    "old_math_results": [
+      1,
+      2,
+      5,
+      1,
+      4
+    ],
+    "old_execution_origins": "Five IsolatedBytes identities preserved exactly; no evidence upgraded to Array authority",
+    "learner_events": "Exact eight old events plus assistance preserved; v6 now receives strict independent validation"
+  },
+  "actual_new_continuation": {
+    "status": "PASS",
+    "elapsed_seconds": 63.59442456997931,
+    "boot": {
+      "virtual_seconds": 3.450000004,
+      "host_seconds": 6.711935489962343,
+      "cycle": 345000001
+    },
+    "new_request": [
+      1113,
+      81,
+      20,
+      3,
+      81
+    ],
+    "new_reply": [
+      1109,
+      81,
+      20,
+      0,
+      4
+    ],
+    "new_origin": "IsolatedArray",
+    "cold_boot": {
+      "virtual_seconds": 3.450000004,
+      "host_seconds": 6.655063861981034,
+      "cycle": 345000001
+    },
+    "cold_recovery": {
+      "status": "PASS",
+      "new_cpu": true,
+      "mixed_history_exact": true,
+      "all_controller_pixels_exact": true
+    },
+    "interaction_count": 6,
+    "original_medium_unchanged": true
+  },
+  "observer_corrections": [
+    "a1 omitted Doc6 from learner validation; retained exact guest migration independently reobserved",
+    "a2 incorrectly required a new acknowledgment when opening an already migrated record; no new publication is correct",
+    "a2 report serialization also failed for Path-valued migrated_from; original traces retained"
+  ],
+  "qualified_observer_sources": {
+    "scripts/check_array_document_migration.py": {
+      "path": "scripts/check_array_document_migration.py",
+      "bytes": 12169,
+      "sha256": "855e72a9a3a691141d0e0d1ce68a2e31fbb1a7ad46c62c29be44491d356e16e5"
+    },
+    "conformance/lemmasim/math_oracle.py": {
+      "path": "conformance/lemmasim/math_oracle.py",
+      "bytes": 10084,
+      "sha256": "44038ca44c965b325f695ef1251b94f7b6082a2c586f56f46acea9304a47b36c"
+    },
+    "tests/foundation/test_math_records.py": {
+      "path": "tests/foundation/test_math_records.py",
+      "bytes": 8263,
+      "sha256": "58edf675105d9614fed36eb8a4018b9d5baf2d4e6486407473a43e910d924540"
+    }
+  },
+  "reproduce": "nix develop --no-write-lock-file --command python3 scripts/check_array_document_migration.py --disk build/task006-bytes-math-a1/closed-course.raw --native-bundle build/native/task006-array-bulk-a1 --migrated-from build/task006-array-doc5-migration-a1 --work-dir build/array-doc5-migration-new --boot-seconds 60 --action-seconds 30 --deadline 1200",
+  "references": [
+    {
+      "path": "build/task006-array-doc5-migration-a1/result.json",
+      "bytes": 10862,
+      "sha256": "37f2b24694814983be27b8f441a8f69d938bb0ff58be3f71429746016da75de8"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a1/original-check_array_document_migration.py",
+      "bytes": 9542,
+      "sha256": "d134d1458040decdb199dfab03a793900c580dd64c4312a6b6b58523976ba1a0"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a1/original-math_oracle.py",
+      "bytes": 10082,
+      "sha256": "9a0e0421b469784259a9e1ce5f3538d4313ffe0688e27810d3bfd048c54c3841"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a1/guest-upgraded-course.raw",
+      "bytes": 268435456,
+      "sha256": "93e383a087e9a929103cb3c5bca596e20da88e0b1aa89bb20d487c15c38c3d3c"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a1/migration/uart-0.bin",
+      "bytes": 1496,
+      "sha256": "49394b635d616f9afff8ad52ad41797a73db8ea297377d83e5c4943cacf37d99"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a2.log",
+      "bytes": 2359,
+      "sha256": "d7d436b4dbde315c82cda1136ae9889a7ec7e7b4c808ecf781c307817d9860d8"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a2/original-check_array_document_migration.py",
+      "bytes": 11706,
+      "sha256": "970c3ebccf8d4d6d21f1244be3712b019e1ca8b507f2c466da4cf83d53e5c18a"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a3/result.json",
+      "bytes": 22225,
+      "sha256": "97b9771edfa9298df26649f2360f934f5917dc7d6921280b14d5fca4ddb915bc"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a3/migration/uart-0.bin",
+      "bytes": 2112,
+      "sha256": "9208fe860e1947ea40399d91bc7e23ff47e42590bf4685a99873bf465e189d09"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a3/cold/uart-0.bin",
+      "bytes": 1320,
+      "sha256": "d6276ee5707c6595e8352206bb59379b2db9fc8bea662fdbc5653a9ae465394b"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a3/cold-course.raw",
+      "bytes": 268435456,
+      "sha256": "027b26c9e6af04a6d03a97a051a52d1eed32f87c92f99663a94f2d0459f0e2db"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a3/cold-notebook.ppm",
+      "bytes": 10890017,
+      "sha256": "c134bd1591f44c3c8cc10a70908ce2ef63dd2640a26220532b34e556604d11aa"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a3/final-notebook.ppm",
+      "bytes": 10890017,
+      "sha256": "c134bd1591f44c3c8cc10a70908ce2ef63dd2640a26220532b34e556604d11aa"
+    }
+  ],
+  "remaining": [
+    "General managed runtime and proof kernel",
+    "RTL/browser execution of this Array guest",
+    "QEMU arbitrary cached-state exact continuation and RTL timing relation"
+  ]
+}

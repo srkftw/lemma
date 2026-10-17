@@ -1,0 +1,231 @@
+{
+  "schema": "lemma-course-control-aligned-evidence/1",
+  "status": "PASS_LINKED_FAST_WORKFLOW_AND_FAILURE_RTL_COURSE_BODY_PASS_HEADER_FAIL_BROWSER_HOST_LIMIT_FAIL",
+  "contract": "docs/contracts/006-course-control-aligned-v1.md",
+  "scope": "Same maintained source8 Notebook/full ordinary images and42-phase fast functionality plus real partial-pwrite failure/recovery pass. Canonical RTL first COURSE body reaches all expected pixels within398M; next title/header fails original100M. Browser cold fails original7200s host bound before Ready. No whole-machine completion.",
+  "reports": {
+    "component": {
+      "path": "build/courses/task006-control-qualified-a1/result.json",
+      "sha256": "e760211cd11aef086e52d0a530fb471271d0114c8ddf6c2efc3f25616bcac7ef",
+      "status": "PASS_GENUINE_CONTROL_ALIGNED_COMPONENT_ONLY",
+      "seconds": 63.809409386944026
+    },
+    "ordinary_capture": {
+      "path": "build/courses/task006-control-notebook-component-a1/result.json",
+      "sha256": "dc58aa82bc76951c2ddd411e19b2abc74ff58623eacf032988723c5626b11a7b",
+      "status": "PASS_GENUINE_NOTEBOOK_COMPONENTS_ONLY",
+      "seconds": 723.798245996004
+    },
+    "generic_prefix_retained_fail": {
+      "path": "build/courses/task006-control-notebook-artifacts-a2/result.json",
+      "sha256": "1a1cc3218f509050bb6b0ee23c7de21ff48d2df423452e54c0c43c7d675b6c1e",
+      "status": "FAIL",
+      "seconds": 345.1543727510143
+    },
+    "missing_only_mutation_qualification": {
+      "path": "build/courses/task006-control-notebook-mutations-a2/result.json",
+      "sha256": "ffe95945d32bc20db288cb4280557a8350230094c91abb285249a321df759386",
+      "status": "PASS_CONTROL_ARTIFACTS_CORRECTED_MUTATION_OBSERVER",
+      "seconds": 91.54622611100785
+    },
+    "historical_bundle_admission": {
+      "path": "build/courses/task006-control-aligned-a1/retained-bundle-admission-a1.json",
+      "sha256": "7bad31f2a1479edc39206ea4f8b7bc8c1909cb7ed2fc9eae15f94c9a4b6ac213",
+      "status": "PASS_RETAINED6_AND7_ADMISSION_WITH8_ROUTING",
+      "seconds": 1.3972866929834709
+    }
+  },
+  "operation_counts": {
+    "canonical_stores": 3615,
+    "previous_canonical_stores": 20520,
+    "reads": 0,
+    "exact_bytes": 23040,
+    "CPU_speedup": "NOT_YET_MEASURED"
+  },
+  "artifact_gate": {
+    "canonical_functions": 839,
+    "companion_functions": 877,
+    "initializer_IR_and_object_bytes_exact_to_each_normal": true,
+    "all4_full_catalog_pre_post_IR": true,
+    "normal_readonly_RV64_jump_objects": true,
+    "three_LLVM_valid_semantic_mutants_rejected": true
+  },
+  "observer_corrections": {
+    "original_generic_prefix": "FAIL at prospective mutation locator after all four roles passed; expected i64 640 but actual optimized layout uses a phi with [640,...]. Original report retained.",
+    "correction": "Literal-token locator corrected; missing-only supplement verifies unchanged original artifacts and all source identities, reproduces exact optimized IR and RV64 objects using pinned LLVM, then runs all three negatives. No original failure relabeled.",
+    "earlier_schema_and_argv_observer_failures_retained": true
+  },
+  "boundaries": {
+    "full_linked_images": "PASS_BOTH_ORDINARY_AUDITS",
+    "actual_guest_workflow": "PASS_FAST_42_PHASES_AND_ACTUAL_PARTIAL_WRITE_FAILURE",
+    "canonical_RTL_400M_course": "NEW_SOURCE8_RUNNING_ORIGINAL_SOURCE7_FAIL_RETAINED",
+    "cached_state_fast_parity": "OPEN",
+    "physical_closure": "OPEN",
+    "browser": "NEW_SOURCE8_COLD_RUNNING_SOURCE7_COLD_PASS_AND_400M_COURSE_FAIL_RETAINED"
+  },
+  "whole_pair": {
+    "path": "build/courses/task006-control-notebook-whole-a1/result.json",
+    "sha256": "454a498cb0b76205a8292a143294c4578d27514ea1904170ef4cf69eb07514a9",
+    "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+    "source_commit": "092bfc072fe87ee4cfb747280f115fce5a6be4e6",
+    "source_count": 406,
+    "seconds": 1007.1489209329011,
+    "source_seal": {
+      "path": "build/courses/task006-control-notebook-whole-a1/source-seal.json",
+      "sha256": "ae3e72b1cd34b1b5e4b7c669eec0c8d0f02e39d185b8c0411cc7c5734ee0baec",
+      "status": "PASS_SOURCE_SEAL"
+    },
+    "external_supervision": {
+      "path": "build/courses/task006-control-notebook-whole-supervision-a1/result.json",
+      "sha256": "df2ced32b0856fcf37960ae6a5104ac19ee9b863b6eef5ffbdcac0655f9e205b",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP"
+    },
+    "external_seconds": 1012.0521641439991,
+    "peak_owned_rss_bytes": 1917239296
+  },
+  "prepared_bundles": {
+    "native": {
+      "path": "build/native/task006-control-notebook-a1",
+      "manifest_sha256": "ffe65b762e4b928fd89f0d33e77e05749e0d08cc847e479bbe0f4a3ac7dc7b16"
+    },
+    "browser": {
+      "path": "build/browser/task006-control-notebook-a1",
+      "manifest_sha256": "297e524b2618c08b480b40bad7d1ae7eb7ab2e0a59a177a54ab165cc6d2f2952"
+    }
+  },
+  "fast_workflow": {
+    "path": "build/courses/task006-control-notebook-fast-a1/result.json",
+    "sha256": "bfac95fa20c8375d7c1518cf8a7a3412efd1684efb3078bd15a12b096d1b8057",
+    "status": "PASS_FAST_FUNCTIONAL_COURSE_MATH_LEARNER_INK_COLD",
+    "supervision": {
+      "path": "build/courses/task006-control-notebook-fast-supervision-a1/result.json",
+      "sha256": "6d77ae1568f62adab579841075a12cefce655e2a87612757ade39f25e15877df",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED"
+    },
+    "phases": 42,
+    "instruction_clocks": 2615000279,
+    "seconds": 336.15244676405564,
+    "supervised_seconds": 337.9968587079784,
+    "peak_owned_rss_bytes": 440803328,
+    "previous_same_input_and_runtime_instruction_clocks": 2639000287,
+    "reduction_percent": 0.9094355964350072,
+    "first_course_instruction_clocks": 135000020,
+    "previous_first_course_instruction_clocks": 136000021,
+    "host_duration_scope": "Concurrent host loads differ. Old306.845s versus new336.152s is not a controlled host speedup. QEMU instruction clocks do not establish RTL timing.",
+    "independent_cold": {
+      "new_cpu": true,
+      "all_controller_pixels_exact": true,
+      "all_acknowledged_objects_exact": true
+    },
+    "cold_reopen": {
+      "actual_body_pixels": true,
+      "exact_workspace_and_all_objects": true,
+      "all_medium_bytes_exact": true,
+      "no_new_checker_request": true
+    }
+  },
+  "actual_failed_write": {
+    "path": "build/courses/task006-control-notebook-failed-a2/result.json",
+    "sha256": "a0ee1bdc8e22876d19ca032413410590a34d488099392dd987cb5b6b0290f463",
+    "status": "PASS",
+    "supervision": {
+      "path": "build/courses/task006-control-notebook-failed-supervision-a2/result.json",
+      "sha256": "d1a58b83f0492a8d77e06ab22ebc728524c5cc7158cce8e96810b80936c8e56e",
+      "status": "PASS_REAL_FAILURE_SUPERVISED"
+    },
+    "seconds": 191.14186614903156,
+    "supervised_seconds": 193.3868291779654,
+    "actual_outcome": [
+      240,
+      4913777968,
+      1,
+      134237696,
+      512,
+      2,
+      27
+    ],
+    "failed_save": {
+      "no_new_saved": true,
+      "partial_bytes": 2,
+      "durable_barrier_unchanged": true,
+      "old_workspace_and_all_objects_exact": true
+    },
+    "independent_cold": {
+      "new_cpu": true,
+      "all_backing_bytes_exact": true,
+      "all_closed_controller_pixels_exact": true,
+      "actual_course_body": true,
+      "old_workspace_exact": true
+    },
+    "ordinary_retry": {
+      "one_durable_workspace_transaction": true,
+      "history_and_learner_prefixes_exact": true,
+      "raw_ink_samples": 3,
+      "no_new_checker_request": true
+    },
+    "original_prelaunch_harness_failure": {
+      "path": "build/courses/task006-control-notebook-failed-supervision-a1/result.json",
+      "sha256": "eab19720cc4073448cd8c0b6f763668ad605919cfc490abab75ef41cf5cb65fa",
+      "status": "FAIL"
+    },
+    "harness_repair": "Missing two identity environment values, before any guest launch. New supervisor passes declared audited guest/runtime values; actual identity checks unchanged."
+  },
+  "actual_native_terminal": {
+    "path": "build/courses/task006-native-control-notebook-a1/actor/result.json",
+    "sha256": "94ba887bed2c69bf215a033a2ea79f13f2cd663b170631e8de61805575d42d93",
+    "bytes": 14065,
+    "status": "FAIL",
+    "error": "ValueError('prospective phase/aggregate resourcebound exceeded in originalheader-title')",
+    "ready": {
+      "cycles": 802000000,
+      "seconds": 4161.267686432
+    },
+    "course_body": {
+      "cycles": 398000000,
+      "seconds": 2506.893663109,
+      "within_original_400M": true
+    },
+    "next_header": {
+      "cycles": 100000000,
+      "status": "FAIL_ORIGINAL_PHASE_BOUND"
+    },
+    "final_cycle": 1379000000,
+    "actor_seconds": 7508.51676937507,
+    "supervision": {
+      "path": "build/courses/task006-native-control-notebook-supervision-a1/result.json",
+      "sha256": "2790e45ab86fb01a31b7906adc4959e27f4bc04166cd0ddd0e76bfc20e903011",
+      "bytes": 803,
+      "status": "FAIL"
+    },
+    "cold_recovery": "NOT_REACHED",
+    "failure_checkpoint": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-native-control-notebook-a1/actor/failure-observational-checkpoint",
+      "observational": true,
+      "cycle": 1379000000
+    }
+  },
+  "actual_browser_terminal": {
+    "path": "build/browser/task006-control-notebook-cold-failure-a1/result.json",
+    "sha256": "f4103dd67135d604c7685206087bbe1ec85d633de3fa5d6b6c0a4b1b083ec464",
+    "bytes": 1941,
+    "status": "FAIL_ORIGINAL_BROWSER_HOST_LIMIT_BEFORE_READY",
+    "cycle": 796150000,
+    "ready_observed": false,
+    "ui_at_original_stop": {
+      "heap_mib": 192,
+      "elapsed_seconds": 7258.2,
+      "simulation_call_seconds": 7124.9,
+      "backing_seconds": 0.0,
+      "stop_reason": "host-limit"
+    },
+    "no_snapshot_used_for_cold": true,
+    "original_failure_retained": true,
+    "after_stop": "paused; observational exports only; no resumed cold claim",
+    "passive_missing_only_census": {
+      "path": "build/browser/task006-control-notebook-cold-failure-a1/passive-missing-only-a3.json",
+      "sha256": "095fc786913d285aef0f0f86d49e888d520c17a3690b358b6d156d4c41462f0a",
+      "status": "PASS_PASSIVE_FAILED_CUT_CRC_AND_CENSUS_ONLY"
+    },
+    "passive_census_scope": "Actual completeCRC pass retained from observerA2; corrected scalar field1 cycle and structured UART0x420/0x425: openedsequence1, panelcompleted0, so not controllerReady. Original A1Path/bytes and A2field0 observerFAILs retained; no CPU executed."
+  }
+}

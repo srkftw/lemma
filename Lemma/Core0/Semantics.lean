@@ -218,11 +218,25 @@ mutual
             program.contractVersion == Profile.v0_6.contractVersion ||
             program.contractVersion == Profile.v0_7.contractVersion ||
             program.contractVersion == Profile.firmware_v0_1.contractVersion ||
+            program.contractVersion == Profile.firmware_v0_2.contractVersion ||
+            program.contractVersion == Profile.counter_su_v0_1.contractVersion ||
             program.contractVersion == Profile.kernel_v0_1.contractVersion ||
             program.contractVersion == Profile.kernel_v0_2.contractVersion ||
             program.contractVersion == Profile.kernel_v0_3.contractVersion ||
             program.contractVersion == Profile.kernel_v0_4.contractVersion ||
-            program.contractVersion == Profile.user_v0_1.contractVersion do
+            program.contractVersion == Profile.kernel_v0_5.contractVersion ||
+            program.contractVersion == Profile.kernel_v0_6.contractVersion ||
+            program.contractVersion == Profile.kernel_v0_7.contractVersion ||
+            program.contractVersion == Profile.kernel_v0_8.contractVersion ||
+            program.contractVersion == Profile.user_v0_1.contractVersion ||
+            program.contractVersion == Profile.user_v0_2.contractVersion ||
+            program.contractVersion == Profile.user_v0_3.contractVersion ||
+            program.contractVersion == Profile.user_v0_4.contractVersion ||
+            program.contractVersion == Profile.user_v0_5.contractVersion ||
+            program.contractVersion == Profile.user_v0_6.contractVersion ||
+            program.contractVersion == Profile.user_v0_7.contractVersion ||
+            program.contractVersion == Profile.boot_v0_1.contractVersion ||
+            program.contractVersion == Profile.boot_v0_2.contractVersion do
           evalFail stack .invalidCheckedIR
             s!"bounded iteration is not available in {program.contractVersion}"
         unless budget ≤ Lemma.Core0.Bounded.maximumBudget do

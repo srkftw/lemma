@@ -1,3 +1,4 @@
+<!--
 # Core0 versioned semantics and lowering
 
 This document freezes the deliberately small profile implemented for Task 001.  It
@@ -190,3 +191,5 @@ This slice has no heap, managed Lean ABI/runtime, general memory API, exception 
 general recursion, user-mode isolation, scheduler, filesystem, or proof of compiler
 correctness.  Passing the corpus establishes one bounded scalar vertical slice and
 does not complete G1.
+
+-->

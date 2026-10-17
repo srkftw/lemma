@@ -1,0 +1,163 @@
+{
+  "schema": "lemma-native-evaluation-schedule/1",
+  "status": "PASS_SELECTED_FULL_STATE_RELATION_ORIGINAL_DEFAULT_RETAINED",
+  "scope": "Host-only developer comparison over real canonical generated RTL and audited437224 RV64 notebook. No CPU interpretation, guest-policy change, general speedup, full Ready or timing-parity claim.",
+  "source": {
+    "scripts/check_native_evaluation.py": {
+      "path": "scripts/check_native_evaluation.py",
+      "sha256": "af4b312dd18c835b4182ae93fd4fe45566206cc4ac7a8f9b09ed9a26ce61833a",
+      "bytes": 17599
+    },
+    "tests/lemmasim/native_disabled_eval.cpp": {
+      "path": "tests/lemmasim/native_disabled_eval.cpp",
+      "sha256": "5fe3fec0baf4d2f115d04c0a6af559752a32f04d6bf687423004fd7a5f7df3c3",
+      "bytes": 8802
+    }
+  },
+  "implementation": {
+    "original_compiled_candidate_runtime": "3c9dbe56966f4fd5f274e168a2a4222d1089ebea818a0f4520005b53008edc5d",
+    "candidate_default_reference_disabled_usb_eval": false,
+    "maintained_default_reference_disabled_usb_eval": true,
+    "source_bound_manifest": {
+      "path": "build/silicon/task006-canonical-eval-a1/build.json",
+      "sha256": "d7e8ee9fbca09972ca0b8de0779dcd4de3be0c8eb69984991c4b1c6adc640451",
+      "bytes": 76793
+    },
+    "archive": {
+      "path": "build/silicon/task006-canonical-eval-a1/consumed-source-archive.json",
+      "sha256": "f90c06910ef592bdfd8b40d4d8bbe0ebed0b1ec1982f2710c1f213cf0799bdff",
+      "bytes": 30809
+    },
+    "archive_inputs": 250,
+    "guest": "437224ddd541ce2b3e5acb3678f53a4ff43fcadb6dd39df234c9167b53d4ad63",
+    "input_medium": "027b26c9e6af04a6d03a97a051a52d1eed32f87c92f99663a94f2d0459f0e2db"
+  },
+  "behavior": "Alternative omits only one extra low-edge eval when USB/BLE/WiFi/NV/Safety domains are all absent. Actual clocks, tick, memory and required evals are retained; enabled domains always use the reference.",
+  "whole_state": {
+    "receipt": {
+      "path": "build/silicon/task006-disabled-eval-compare-a1/result.json",
+      "sha256": "52783b1b71ecc4e3f075f1e11c92d1197c9eb25f76a54af86dd63a7c50c030f2",
+      "bytes": 8383
+    },
+    "supervision": {
+      "path": "build/silicon/task006-disabled-eval-compare-a1/run.supervision.json",
+      "sha256": "f641e25457069ee5e2a286d046bd0a494fde724e1a63efede9b261888aa212ac",
+      "bytes": 388
+    },
+    "observed": {
+      "status": "PASS_FULL_STATE_AND_PENDING_SUFFIX",
+      "pending_cycle": 10000001,
+      "reference_run_seconds": 64.7996,
+      "optimized_run_seconds": 74.806,
+      "memory_latency": 3,
+      "suffix_clocks": 1000003,
+      "complete_checkpoint_pairs": 8,
+      "masked_fields": 0
+    },
+    "checkpoint_pairs": 8,
+    "masked_fields": 0,
+    "peak_tree_rss_kib": 698868,
+    "fixture_host_seconds": 164.39808898000047,
+    "whole_helper_host_seconds": 174.20790999400197,
+    "includes": "cycles0/9/32/1M/10M, first actual held RAM at10,000,001 with latency3, future wake/pen, both private1,000,003-cycle forks and11 warm-reset edges; all complete archives/checksums and actual UART exact"
+  },
+  "balanced_retained_suffix": {
+    "receipt": {
+      "path": "build/silicon/task006-disabled-eval-cpu-a1/result.json",
+      "sha256": "401eedb440d16d0bb6c8fef5db117d52ec0e0dc9db79cb141c300ac5d2af202f",
+      "bytes": 8183
+    },
+    "supervision": {
+      "path": "build/silicon/task006-disabled-eval-cpu-a1/run.supervision.json",
+      "sha256": "4596b30c2acfe907801d4121d35fd6e5c5804e1f6b175f081581c57d7376e1d3",
+      "bytes": 387
+    },
+    "samples": [
+      {
+        "reference_cpu_seconds": 5.32418,
+        "optimized_cpu_seconds": 4.70441,
+        "reference_wall_seconds": 5.34026,
+        "optimized_wall_seconds": 4.71953
+      },
+      {
+        "reference_cpu_seconds": 5.63168,
+        "optimized_cpu_seconds": 6.37533,
+        "reference_wall_seconds": 5.65257,
+        "optimized_wall_seconds": 6.39887
+      },
+      {
+        "reference_cpu_seconds": 6.00351,
+        "optimized_cpu_seconds": 6.08651,
+        "reference_wall_seconds": 6.08983,
+        "optimized_wall_seconds": 6.13161
+      },
+      {
+        "reference_cpu_seconds": 5.90125,
+        "optimized_cpu_seconds": 5.26689,
+        "reference_wall_seconds": 5.93517,
+        "optimized_wall_seconds": 5.28394
+      }
+    ],
+    "complete_pairs": 4,
+    "masked_fields": 0,
+    "whole_helper_host_seconds": 71.36947063001571,
+    "peak_tree_rss_kib": 739400,
+    "original_medium_consulted": false
+  },
+  "decision": {
+    "schema": "lemma-native-evaluation-default-decision/1",
+    "status": "ORIGINAL_DEFAULT_RETAINED",
+    "candidate_build_runtime": "3c9dbe56966f4fd5f274e168a2a4222d1089ebea818a0f4520005b53008edc5d",
+    "candidate_default": false,
+    "maintained_default_reference_disabled_usb_eval": true,
+    "candidate_byte_relation": "PASS_FULL_STATE_AND_PENDING_SUFFIX",
+    "initial_reference_wall_seconds": 64.7996,
+    "initial_alternative_wall_seconds": 74.806,
+    "retained_cut_balanced_samples": [
+      {
+        "reference_cpu_seconds": 5.32418,
+        "optimized_cpu_seconds": 4.70441,
+        "reference_wall_seconds": 5.34026,
+        "optimized_wall_seconds": 4.71953
+      },
+      {
+        "reference_cpu_seconds": 5.63168,
+        "optimized_cpu_seconds": 6.37533,
+        "reference_wall_seconds": 5.65257,
+        "optimized_wall_seconds": 6.39887
+      },
+      {
+        "reference_cpu_seconds": 6.00351,
+        "optimized_cpu_seconds": 6.08651,
+        "reference_wall_seconds": 6.08983,
+        "optimized_wall_seconds": 6.13161
+      },
+      {
+        "reference_cpu_seconds": 5.90125,
+        "optimized_cpu_seconds": 5.26689,
+        "reference_wall_seconds": 5.93517,
+        "optimized_wall_seconds": 5.28394
+      }
+    ],
+    "reference_cpu_sum": 22.86062,
+    "alternative_cpu_sum": 22.43314,
+    "aggregate_cpu_reduction_percent": 1.8699405352960645,
+    "reference_wall_sum": 23.01783,
+    "alternative_wall_sum": 22.53395,
+    "decision": "Eight exactfullstatecuts andfour exactretainedsuffixes pass. Initialcoldwalltime alternative slower; balancedretainedCPU samples have mixedresults and only1.87percentaggregate gain on sharedcontendedhost. Keep originalmaintaineddefault; alternative remains explicithostconformancemode, no ordinarysimulator speedup or fullReadyclaim. Compiledcandidate53.208s artifact retainsitsoriginaldefaultFalse/sourcehash; never relabeled as maintaineddefaultTrue."
+  },
+  "admission": {
+    "receipt": {
+      "path": "build/silicon/task006-native-eval-admission-a1/result.json",
+      "sha256": "a790c77c81f9300d4322d3bcf673703dc8a1932279a9e3e8c871ca5c6d94283c",
+      "bytes": 1127
+    },
+    "status": "PASS_ORIGINAL_SOURCE_SEAL_AND_FIVE_MUTANT_REJECTIONS",
+    "scope": "Current helper verifies the original250-input seal and recomputed runtime identity, rejects actual-manifest core/runtime/list/path/duplicate mutants. Execution receipts retain their original helper hash; no CPU rerun for this metadata extension."
+  },
+  "commands": [
+    "python3 scripts/check_native_evaluation.py --native-build build/silicon/task006-canonical-eval-a1 --guest-bundle build/native/task006-array-table-prefix-a2 --disk build/task006-array-doc5-migration-a3/cold-course.raw --work-dir build/silicon/eval-new",
+    "python3 scripts/check_native_evaluation.py --native-build build/silicon/task006-canonical-eval-a1 --guest-bundle build/native/task006-array-table-prefix-a2 --resume-from build/silicon/task006-disabled-eval-compare-a1 --work-dir build/silicon/eval-retained-new"
+  ],
+  "reusable_fresh_seal": "--capture-current-source admits only a previously unarchived canonical native build whose full consumed inputs still match. Schema2 additionally binds selected profile. Run uses archived sim.nix/flake.lock; no live-source fallback. Fresh current-source capture itself is not the above historical250-input execution receipt."
+}

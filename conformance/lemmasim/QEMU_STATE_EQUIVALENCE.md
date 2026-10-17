@@ -1,3 +1,4 @@
+<!--
 # Pinned QEMU checkpoint observation
 
 `check_fast_state_equivalence.py` compares complete saved machine files. The
@@ -208,3 +209,63 @@ python3 conformance/lemmasim/check_fast_lifecycle.py \
 This compares same-backend authoritative checkpoint state. It neither defines
 cross-backend microstate migration nor closes the unmatched timing/ISA or
 unfinished whole-machine capabilities.
+
+
+## Opt-in logical SoftTLB data increment
+
+The separately named experimental `lemma-silicon-fast-softtlb/0.1.0` binding
+retains the original full-continuation `GAP_CONFIRMED`. Its current narrow
+qualification is recorded in
+[`006-qemu-logical-softtlb.json`](../../docs/evidence/006-qemu-logical-softtlb.json)
+and the [versioned contract](../../docs/contracts/006-qemu-logical-softtlb-v1.md).
+Historical binaries, public Fast/Session adapters, profile 0.3 hardware and
+VMState 3 remain unchanged; actual default derivation equality passed.
+
+A genuinely elaborated Lean RV64IM guest warmed a data translation, changed its
+PTE without SFENCE and stopped at a predeclared 1,000,000 ns boundary. The saved
+logical cache actually retained old physical page A. Both the original and its
+fresh private restored fork subsequently read 111 without SFENCE and 222 after
+an actual guest SFENCE, reaching 300,000,000 ns within the 120 s bound. Every final
+logical cache slot, comparator/flag, mapping, capacity/eviction/resize field,
+flush/dirty counter and admitted pending CPU witness agreed exactly. Raw files
+retain their separate ordinary-file hashes and checksums. No whole-state
+byte-mask extension or new binary admission to this document's historical
+observer is made.
+
+This work also found that ordinary migration dirty-log setup commits the memory
+listener and flushes the **original** through `tcg_commit_cpu`. That actual
+failed observation remains retained. Only the new paired paused operation
+copies every initially-dirty RAM page without starting/stopping that logging
+transaction; it does not flush or restore the original cache to force a match.
+The selected derivative uses a side-effect-free precise icount resize clock,
+explicit nullable region identities and complete physical-page segment/hole
+hashes, with fresh host-reference rebinding. These are explicit experimental
+backend semantics. The first full host completion took 563.135 s within 1,200 s;
+guarded source preparation reproduces its tested latest source exactly.
+
+TB/jump-cache bypass, executable translation, self-modifying instruction
+visibility/code dirty tracking/FENCE.I, actual interrupt-handler suffixes and
+remaining acceleration pending state are still unqualified. A failed ordinary
+VMState load is not transactional and its private fork must be discarded.
+Unrepresented queued CPU work rejects rather than being drained. The actual
+data suffix establishes only its stated property; total QEMU continuation,
+public adapter adoption and cross-backend microstate migration remain absent.
+
+The separate executable successor `ceabdf19b191de8bca717cf089e8dee8310ea7faf68b91b205fcaa958165db40`
+now qualifies two finite genuine Lean instruction-stream states: warmed stale
+executable translation before SFENCE and actual compiled-code modification
+before/after FENCE.I. Original and both own private restored forks match actual
+111/222/111/111 results, complete observed architectural/device state and every
+declared logical SoftTLB field at1Bns. Captures change no observed cache flush/
+invalidation counters. The private destination additionally uses the legal
+PRELAUNCH->INMIGRATE->PAUSED host lifecycle, with no CPU or device notification.
+The original host-status mismatch and failed direct transition remain failures.
+
+These finite observations do not serialize TB/jump caches or establish their
+semantic irrelevance for all admitted states. Broader instruction visibility,
+actual interrupt delivery/pending work and public session integration remain
+GAP_CONFIRMED. See the exact new source/build/result identities and executable
+commands in [the logical-cache contract](../../docs/contracts/006-qemu-logical-softtlb-v1.md)
+and [its retained receipt](../../docs/evidence/006-qemu-logical-softtlb.json).
+
+-->

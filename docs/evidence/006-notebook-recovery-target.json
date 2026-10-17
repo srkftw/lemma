@@ -1,0 +1,670 @@
+{
+  "schema": "lemma-usb-recovery-target-evidence/1",
+  "status": "PASS_SCOPED_LIVE_LOST_ACK_RECOVERY_AND_INDEPENDENT_COLD",
+  "scope": "Separately selected Clocked13 Sums recovery software: genuine component and closed full-image audits, source-derived retained live observation of real lost receipt/EOF/offline ink/reattach/dedup/barrier/shadow remount, then one independent new-CPU Saved17 cold with all acknowledged bytes and controller pixels unchanged. The original live observer cancellation/failure is preserved.",
+  "configurations": [
+    "lemmasim-silicon-usb-clocked-retry-bulk-notebook",
+    "lemmasim-silicon-usb-clocked-retry-bulk-initialize"
+  ],
+  "historical_profiles_and_roots": "Preserved; old deployments and on-disk encodings unchanged.",
+  "genuine_component": {
+    "path": "build/usb/recovery-target-component-a4/result.json",
+    "sha256": "1e786a6aad94334b23e22b5da4c6ffd75b10b38659d563ddeff8ac7431d14418",
+    "host_seconds": 136.6558954109205,
+    "original_sources": 359,
+    "roles": {
+      "kernel": {
+        "functions": 1291,
+        "contract_role": "kernel"
+      },
+      "kernel-init": {
+        "functions": 1291,
+        "contract_role": "kernel"
+      },
+      "store": {
+        "functions": 275,
+        "contract_role": "user"
+      },
+      "notebook": {
+        "functions": 677,
+        "contract_role": "user"
+      }
+    }
+  },
+  "complete_qualification": {
+    "path": "build/usb/recovery-artifact-qualification-a4/result.json",
+    "sha256": "23e0603323303c25eec7c3a09fa1aee4f6c327f3e821db45e4593c8a64fdac9a",
+    "host_seconds": 93.20562239992432,
+    "prospective_bounds": {
+      "seconds": 420,
+      "virtual_memory_bytes": 17179869184
+    },
+    "qualification_sources": 368,
+    "rejected_actual_mutants": {
+      "kernel": 38,
+      "kernel-init": 38,
+      "store": 18,
+      "notebook": 14
+    },
+    "coverage": [
+      "all eight complete pre/post generic LLVM audits",
+      "all four RV64 object/read-only bytes/relocations/generated branch guards",
+      "all three actual GEP-derived request-kind bounds mutated independently",
+      "real driver Actions with fresh-owned-frame/generation/capability/receipt guards",
+      "real Engine36 READ shadow scan, pending/failed barrier and adoption-copy faults",
+      "Notebook exact retained bytes/EOF/ACK floor/stage completion, no duplicate confirmed PUT"
+    ]
+  },
+  "maintained_command": "python3 scripts/check_usb_recovery_target.py --component build/usb/recovery-target-component-a4 --medium build/usb/clocked-final-saved11-boundary-a1/acknowledged.raw --work-dir build/usb/UNUSED --timeout 420",
+  "authority": {
+    "path": "tooling/usb-recovery-target-authority.json",
+    "sha256": "5e1542db01b91cab56f4b2102c768573e435cd5093a5cb0879e54116db49f067"
+  },
+  "retained_results": [
+    {
+      "path": "build/usb/recovery-target-component-a1/result.json",
+      "sha256": "a951449f0bd65360dd4db914f3a50745e8c6406517b4e9f3454687d84ec6e192"
+    },
+    {
+      "path": "build/usb/recovery-target-component-a2/result.json",
+      "sha256": "e6cf7c1d198704f208dae005bcbaec8e909cc03347b23f6d39bac2135d490c96"
+    },
+    {
+      "path": "build/usb/recovery-target-component-a3/result.json",
+      "sha256": "f6d185f21507b5b20fbe283c211c534b98c5d0ef7531d4cb580d3057a8d91387"
+    },
+    {
+      "path": "build/usb/recovery-artifact-diagnostic-a1/result.json",
+      "sha256": "cce92805a76298a45df6f650b0687bca0ffed4f5fe793c33feaaf5ed8a9b9378"
+    },
+    {
+      "path": "build/usb/recovery-artifact-diagnostic-a2/result.json",
+      "sha256": "4b478032fe0a5ade6f65f6626a7e2e05e6c8a9b677ddaa002b7beb47fdc5a72b"
+    },
+    {
+      "path": "build/usb/recovery-object-diagnostic-a1/result.json",
+      "sha256": "d6fee740082f5dd835fb961b7014727bcb7d473a03d5c9dd7b37d27386886328"
+    },
+    {
+      "path": "build/usb/recovery-artifact-qualification-a1/result.json",
+      "sha256": "5deea86f0822d9a144c766249b76df3578714bc6dc3275d2a60d7ac233035e33"
+    },
+    {
+      "path": "build/usb/recovery-artifact-qualification-a2/result.json",
+      "sha256": "c3ddcc0df5b57084626c53a4026c6977ac4e0342ac2ec8370fae297c6b8ac647"
+    },
+    {
+      "path": "build/usb/recovery-artifact-qualification-a3/result.json",
+      "sha256": "6edb2f05265a01afdcd970fc9b402653f7c6df92de65366d00bfb31738de8e1f"
+    }
+  ],
+  "observational_correction": "Qualifier a3 PASS retains its executed fixture hash: named kind-bound negative actually mutated an earlier sector bound. Corrected a4 independently derives each of three real table indices and rejects unsigned/extent mutants at each; no target or captured artifact was changed.",
+  "limits": [
+    "Action receipts are explicitly posed boundary outcomes, not peer durability",
+    "complete artifact admission is not a compiler proof",
+    "no full USB MAC/electrical/physical conformance",
+    "Live success is a separate source-bound retained observation after the original frozen fixture was cancelled for independently demonstrated object/Saved-literal mismatches; no live prefix was rerun.",
+    "Recovery deployment is Sums3-only; Closure7/Doc8 mathematical storage/retry integration remains NOT_RUN.",
+    "Digital same-machine USB transport/PHY evidence does not establish full USB MAC/electrical timing or physical durability."
+  ],
+  "executed_checker": {
+    "path": "build/usb/recovery-artifact-qualification-a4/consumed-source-root/scripts/check_usb_recovery_target.py",
+    "sha256": "8a63eb384ac873bbdb8000f51482152ff79f5fc7f549fc686ae735cfc6cf6431"
+  },
+  "current_checker_observer_addition": {
+    "path": "scripts/check_usb_recovery_target.py",
+    "sha256": "077ccd7a6cf8573b857f298a2eb976de4dd3b0ef12fba4e2200f8d53489da64c",
+    "scope": "Only literal UserCopy observer addition and exact original arithmetic helper plus the two Recovery config names may reconcile original component provenance; no other target/helper/pin change admitted.",
+    "full_changed_command": "FAIL_SOURCE_INVENTORY",
+    "retained_current_result": {
+      "path": "build/usb/recovery-artifact-qualification-a5/result.json",
+      "sha256": "a7996ea43a5c6a37a43cb097ebe7f6acd627dd41e1480f79788e87b4b40cded2",
+      "seconds": 0.2518865199526772,
+      "reason": "Course saved new await modules after original whole362 seal, before separate checker hold; correct complete original inventory rejection. No unconsumed target exception granted."
+    }
+  },
+  "whole_pair": {
+    "path": "build/usb/recovery-whole-pair-a2/result.json",
+    "sha256": "42447f9133602625b7aee7cc369a77253e933c5fa3bfcbd90c38acb2901d99ee",
+    "host_seconds": 533.0122354179621,
+    "bounds": {
+      "aggregate_seconds": 900,
+      "audit_seconds": 180,
+      "build_seconds": 300
+    },
+    "source_count": 362,
+    "matched_source_inventories": true,
+    "roles": {
+      "initializer": {
+        "audit_seconds": 148.53731723804958,
+        "build_seconds": 103.89514189003967,
+        "configuration": "lemmasim-silicon-usb-clocked-retry-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-clocked-retry-bulk-initialize-a2",
+        "image_sha256": "95a4dc27268309861cc0363d2473e60b406912fa4abfa510a4b90ee271d6848a",
+        "source_archive_sha256": "40f0f846c40590160d14679d2da5b405051268b984fe408b1f9ff53b0fb374d2",
+        "source_inputs": 362,
+        "status": "PASS_BUILD_FULL_AUDIT_EXACT_ARCHIVE"
+      },
+      "notebook": {
+        "audit_seconds": 166.232765168068,
+        "build_seconds": 114.14955851098057,
+        "configuration": "lemmasim-silicon-usb-clocked-retry-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-clocked-retry-bulk-notebook-a2",
+        "image_sha256": "1aa1e715cac81d8ade7cca00d0e9c4db5727018b62532313c0b8a1232f8fefb4",
+        "source_archive_sha256": "22f5b52ba5b2c79978f1a9d647b2e8bbbd3bbb336064e6b256e4adc6ac9bec6a",
+        "source_inputs": 362,
+        "status": "PASS_BUILD_FULL_AUDIT_EXACT_ARCHIVE"
+      }
+    },
+    "prior_shared_cohort": "Original Closure/Course362 map remains sealed; Recovery fresh map differs only in the independently qualified arithmetic_sums_identity exact new pair registry."
+  },
+  "arithmetic_registry_correction": {
+    "original_failure": {
+      "path": "build/usb/recovery-whole-pair-a1/result.json",
+      "sha256": "5683cc8b98de60bfe81ba89cec6c5a26b8bb872f27d910d64377a5d80946ae17",
+      "seconds": 96.12500353704672,
+      "reason": "Genuine149-function Arithmetic3 emitter metadata rejected because execution-identity helper omitted exact new configuration pair"
+    },
+    "candidate": {
+      "path": "build/usb/recovery-arithmetic-registry-candidate-a1/result.json",
+      "sha256": "7c922e205b0e3148c61131ff288ea222da93d3e10009583f69fcf11f8240ec62",
+      "actual_mutants": 11,
+      "scope": "Complete existing registry/catalog/pre+post body pins retained; exact pair positive and wrong-role/config/profile/software/catalog/identity/body negatives"
+    },
+    "maintained_source_positive": {
+      "path": "build/usb/recovery-arithmetic-registry-candidate-a1/maintained-identical-source-check-a2.json",
+      "sha256": "84c3bba9b468e9ee8fb950307215af5d2fe9b021e9883868fd93878a65a55880"
+    },
+    "retained_host_receipt_failure": "build/usb/recovery-arithmetic-registry-candidate-a1/maintained-source-check-a1-failure.json"
+  },
+  "immutable_package": {
+    "path": "build/native/task006-usb-recovery-connected-a1",
+    "schema": "lemmasim-native-bundle/7",
+    "bundle_sha256": "71515671d1533f48ca6c19a2bb01c539b442faef5037df8d00318acbccd37381",
+    "native_original_inputs": 255,
+    "guest_original_inputs": 362,
+    "strict_validation": {
+      "path": "build/usb/notebook-retry-draft-a1/schema7-package-validation-a1.json",
+      "sha256": "be1036593107daeef4d88bdad5f3388e83f9e2b12cc879b6fd0f842a02688523"
+    },
+    "connected_guest": "PASS_SCOPED_RETAINED_LIVE_PLUS_NEW_CPU_COLD"
+  },
+  "connected_recovery": {
+    "native_core_identity": "64d7d234d5fe35401de2ebfb4e2b2e5cd3699ff7451cdbbd0c992c1b5c525962",
+    "native_binary_sha256": "6cbd9cad4b208909aefe62e151a83fb02c3042a2b1b3efa86c8594b681159e63",
+    "guest_image_sha256": "1aa1e715cac81d8ade7cca00d0e9c4db5727018b62532313c0b8a1232f8fefb4",
+    "original_fixture": {
+      "path": "build/usb/recovery-connected-a2/result.json",
+      "sha256": "bb418a81f17642ab24e72ff546920451833cc4dd2d48c0e955f14a6f81f4a5a7",
+      "status": "FAIL",
+      "error": "KeyboardInterrupt('original supervisor cancellation 15')",
+      "scope": "Original unchanged fixture cancelled at a completed public-command boundary after actual completed Saved17/full pixels; expected object65549 and tuple trailing0 were source errors, retained unchanged."
+    },
+    "source_diagnosis": {
+      "path": "build/usb/recovery-observer-source-diagnosis-a1/result.json",
+      "sha256": "1a889e686bbcbfbe2cb0f0f08b582fc3a343a1dcb56fa5b5d30f8a8d89d6dccd"
+    },
+    "retained_capture": {
+      "path": "build/usb/recovery-observer-correction-a1/result.json",
+      "sha256": "6bd4531255eafd13ef73ca9358a128a867ea2f3ad318ebe74f9525583f268762",
+      "first_completed_boundary_cycle": 1166000000,
+      "already_issued_quantum_cycles": 5000000,
+      "export_cycle": 1171000000,
+      "extra_export_clocks": 0,
+      "host_seconds": 52.69647552608512
+    },
+    "retained_observation": {
+      "path": "build/usb/recovery-retained-observation-a1/result.json",
+      "sha256": "ec67b9109819eaa076fcc1b722963aa0949855ddc188ca63d5694cf3c70ae887",
+      "status": "PASS_RETAINED_LIVE_RECOVERY_COLD_NOT_RUN",
+      "host_seconds": 23.646060354891233,
+      "source_sha256": "52f4fcc8e1a48e602a0a9d5b78f169d063e1736aac700cba948d3f6150015ec2",
+      "cpu_or_peer_actions": 0,
+      "actual_mutants": [
+        {
+          "case": "checksum-correct-wrong-raw-object",
+          "status": "REJECTED",
+          "reason": "source-derived raw/page/root object identities or revisions differ"
+        },
+        {
+          "case": "checksum-correct-wrong-inner-stroke",
+          "status": "REJECTED",
+          "reason": "exact raw envelope/stroke/calibration/every original sample differs"
+        },
+        {
+          "case": "wrong-Saved-inner-stroke-zero",
+          "status": "REJECTED",
+          "reason": "exact Saved17 innerstroke13/no fatal"
+        },
+        {
+          "case": "checksum-correct-duplicate-original-effect78",
+          "status": "REJECTED",
+          "reason": "full109 accepted effects, no duplicate/missing/extra effect"
+        },
+        {
+          "case": "checksum-correct-extra-effect110",
+          "status": "REJECTED",
+          "reason": "full109 accepted effects, no duplicate/missing/extra effect"
+        },
+        {
+          "case": "checksum-correct-missing-new-durability-barrier79",
+          "status": "REJECTED",
+          "reason": "full109 accepted effects, no duplicate/missing/extra effect"
+        },
+        {
+          "case": "checksum-correct-wrong-HELLO-writer",
+          "status": "REJECTED",
+          "reason": "actual HELLO identity"
+        },
+        {
+          "case": "actual-packet-CRC16-corruption",
+          "status": "REJECTED",
+          "reason": "data CRC16"
+        },
+        {
+          "case": "wrong-initial-HELLO-sequence-one",
+          "status": "REJECTED",
+          "reason": "actual initial retained outbox next73 differs"
+        }
+      ]
+    },
+    "failed_save": {
+      "cycle": 761000000,
+      "error": 227,
+      "full_failed_controller_pixels": true,
+      "no_new_saved": true,
+      "partial_persistence": "Exact original raw12 already persisted; failure is not rollback."
+    },
+    "offline_ink": {
+      "cycle": 786000000,
+      "samples": 3,
+      "peer_log_and_outbox_unchanged": true
+    },
+    "reattach": {
+      "cycle": 786000000,
+      "extra_clocks": 0,
+      "connection_epoch": 2,
+      "global_next_request": 33768,
+      "guest_configured_at_attach": 0,
+      "namespace_binding": "bf3a5f82dbda45be842be9299df0b77f57cfa1b2f9356d23e8e6ef9698cc61ba"
+    },
+    "durability": {
+      "lost_original_barrier_sequence": 78,
+      "exact_retransmission_sequence": 78,
+      "new_post_shadow_barrier_sequence": 79,
+      "unique_peer_effects": 109,
+      "outbox_next": 110,
+      "no_duplicate_original_record": true,
+      "shadow_read_durable_effects": 0
+    },
+    "saved_tuple": [
+      1057,
+      17,
+      1,
+      1,
+      13
+    ],
+    "source_derived_offline_raw": {
+      "object": 65551,
+      "journal_sequence": 15,
+      "inner_stroke": 13
+    },
+    "acknowledged_medium_sha256": "77341fd75d2939392ba99949ca491af0c6b5cd3b779fb827082665a61cab74a8",
+    "full_pixels_sha256": "6574a6451e6d793558ea79fb447473482f214a395205380722b731601503f618",
+    "all_pixels": 3630000,
+    "original_owned_children_reaped": true,
+    "pre_clock_identity_failure": {
+      "path": "build/usb/recovery-connected-a1/result.json",
+      "sha256": "d2def2b63744dc085c4d4cbf1ce19c34772d7c282a68119bf2c117882101fe72",
+      "status": "FAIL",
+      "error": "ValueError('actual reset/recovery/native authority')",
+      "scope": "Original observer confused native binary and core snapshot IDs before the first machine advance; later distinct IDs are checked separately."
+    }
+  },
+  "independent_cold": {
+    "path": "build/usb/recovery-corrected-final-cold-a1/result.json",
+    "sha256": "648dc856175dc37568976df8519d646c358ac468d63ddd5cde0db0a55ac79180",
+    "status": "PASS",
+    "new_cpu": true,
+    "restored": false,
+    "ready_cycles": 800000000,
+    "ready_host_seconds": 4030.7025530450046,
+    "whole_host_seconds": 4039.5893997800304,
+    "bounds": {
+      "cold_cycles": 1600000000,
+      "cold_host_seconds": 7200,
+      "ink_cycles": 200000000,
+      "redraw_save_cycles": 1600000000,
+      "action_host_seconds": 7200,
+      "maximum_owned_tree_rss_kib": 4194304,
+      "maximum_owned_disk_bytes": 12000000000
+    },
+    "read_transactions": 64,
+    "write_and_barrier_transactions": 0,
+    "hello": [
+      3544405832420773196,
+      83,
+      110,
+      268435456
+    ],
+    "peer_high_water": 109,
+    "outbox_next": 110,
+    "medium_sha256": "77341fd75d2939392ba99949ca491af0c6b5cd3b779fb827082665a61cab74a8",
+    "full_pixels_sha256": "6574a6451e6d793558ea79fb447473482f214a395205380722b731601503f618",
+    "original_boundary_unchanged": true,
+    "supervisor": {
+      "path": "build/usb/recovery-corrected-final-cold-a1.supervision/supervision.json",
+      "sha256": "95e3b43efb5c3d85c1e0f01e84903ba1c1966d715e9ee0c47347ed44859f5289",
+      "observer_exit_code": 0,
+      "owned_survivors": []
+    },
+    "actor_source_manifest": {
+      "path": "build/usb/recovery-corrected-final-cold-a1.supervision/manifest.json",
+      "sha256": "a02377ae96b897ed2d228c9a96681e30d3366f159eaff8409e0f72c8df36f33c"
+    },
+    "actor_source_sha256": "f142f314fdbb69618b293ffdeebeba934f4c0669e81890be906243ab79588d6c",
+    "inherited_base_checker_sha256": "5e3d138686d1e0704f3100dd26c978af622c7e813e1fbcccfb18762eb28fa869",
+    "source_identity_note": "The result inherits base checker observer_sha256; the frozen nine-file supervisor manifest separately binds the actual cold adapter. No original receipt was rewritten."
+  },
+  "closure_recovery3": {
+    "status": "PASS_SOURCE_ARTIFACT_DISTRIBUTION_REOBSERVED_LIVE_COLD_RUNNING",
+    "scope": "Append-only Closure7/Doc8 mathematical publication and retained retry on unchanged Clocked13/Kernel6/native live recovery1. Genuine linked pair/schema8 qualified. Original wrong-event-number workflow observer FAIL preserved; independent source-derived live observation PASS. One independent newCPU cold is RUNNING and remains required. Historical Sums evidence above is unchanged.",
+    "software_deployment": {
+      "contract_version": "lemma-usb-clocked-closure-recovery-deployment-v1",
+      "silicon_profile": "lemma-silicon-dev/0.13.0",
+      "user_profiles": {
+        "store": "core0-user-v0.2",
+        "notebook": "core0-user-v0.2",
+        "arithmetic": "core0-user-v0.7"
+      }
+    },
+    "configurations": [
+      "lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook",
+      "lemmasim-silicon-usb-clocked-closure-retry-bulk-initialize"
+    ],
+    "policy": {
+      "notebook_marker": 3,
+      "scalar_policy_version": 2,
+      "retained_math_bytes": 2496,
+      "retained_math_source": "0x32a000",
+      "math_object": "0x8000+page",
+      "known_plus_one": "full retained payload/EOF at same sequence after real barrier resumes original finish once; no duplicate PUT/math RPC/attempt",
+      "failed_mode_preserved_on_ambiguity": true,
+      "prior_ACK_floor_separate_from_Engine_sequence": true
+    },
+    "genuine_component": {
+      "original_partial_capture": {
+        "path": "build/usb/recovery-closure-target-component-a1/result.json",
+        "sha256": "077c37e2b8f5883cedb2d7da60694ad35db3cabbf6a3c71a9758f65cf6b31906",
+        "status": "FAIL"
+      },
+      "original_aggregate_seconds": 240,
+      "missing_three_role_suffix": {
+        "path": "build/usb/recovery-closure-target-component-suffix-a1/result.json",
+        "sha256": "b0c21b9e1fd9cfeeec03b94fe81fbf858df49191a4a9ce3fa615508378fb6885",
+        "status": "PASS_GENUINE_COMPONENT_COHORT_MISSING_ROLES_ONLY"
+      },
+      "suffix_seconds": 43.31577815010678,
+      "suffix_aggregate_seconds": 180,
+      "original_source_count": 376,
+      "reused_only_complete_original_kernel_roles": true,
+      "functions": {
+        "kernel": 1291,
+        "kernel-init": 1291,
+        "store": 275,
+        "notebook": 679,
+        "arithmetic": 169
+      }
+    },
+    "complete_qualification": {
+      "receipt": {
+        "path": "build/usb/recovery-closure-artifact-qualification-a1/result.json",
+        "sha256": "5e05101413e6be79620e7beca6ae10e4526ecd0d75feb1f178bda8de5dfb3a30",
+        "status": "PASS_COMPLETE_CLOSURE_RECOVERY_ARTIFACT_AND_ACTION_QUALIFICATION"
+      },
+      "seconds": 120.13575407397002,
+      "host_bound_seconds": 420,
+      "maximum_address_space_bytes": 17179869184,
+      "actual_mutations": {
+        "kernel": 42,
+        "kernel-init": 42,
+        "store": 20,
+        "notebook": 26,
+        "total": 130
+      },
+      "arithmetic": "Existing closed User7 complete authority/pre-post IR/object checks; no new mutation corpus claimed.",
+      "action_cases": {
+        "BlockRecovery": true,
+        "StoreRecovery": true,
+        "NotebookClosureRecoverable": true,
+        "RetryClosurePolicy": true
+      },
+      "authority": {
+        "path": "tooling/usb-closure-recovery-target-authority.json",
+        "sha256": "021439824bad5382476533b0448674c5708ab86dbbb10d55c36013a3358599cf"
+      }
+    },
+    "whole_pair": {
+      "receipt": {
+        "path": "build/usb/recovery-closure-whole-pair-a1/result.json",
+        "sha256": "06af1800205377b9ffbfb9a8cc5b1751dd6789b42c24f0d623a2fb3461f4105f",
+        "status": "PASS_FRESH_CLOSURE_RECOVERY_WHOLE_MATCHED_PAIR"
+      },
+      "independent_seal": {
+        "path": "build/usb/recovery-closure-whole-pair-a1/independent-source-seal.json",
+        "sha256": "8979a81e25904f65ae23577c27ebb562c4da00b8c14054e98737c4719dbb276a",
+        "status": "PASS_COMPLETE_MATCHED377_ARCHIVE_AND_ORIGINAL_DEADLINE"
+      },
+      "whole_after_lock_seconds": 395.2221650070278,
+      "supervisor_total_seconds": 397.6160954210209,
+      "original_bound_seconds": 900,
+      "build_seconds_bound": 300,
+      "audit_seconds_bound": 180,
+      "source_count": 377,
+      "current_inventory_sha256": "a178dcd5a135eaa9a8e25f305264968460e382b8a7229876118c32ebe76aa990",
+      "fresh_python_cache_before_startup": true,
+      "initializer_image_sha256": "900397182c1c35e1c468d287580e43f92a71e9232971adb20aa3338fa219d138",
+      "notebook_image_sha256": "2f684e547efa8664817d12d1d0cf906a7816dfdfa014dba3433cbae2f920b48e",
+      "all_original_inputs_tools_artifacts_role_provenance_match": true,
+      "owned_cleanup": true
+    },
+    "immutable_schema8_package": {
+      "receipt": {
+        "path": "build/usb/recovery-closure-package-a1/result.json",
+        "sha256": "707f22becd5f0722d7435a4fcc104a349618414d68030fc2c7a3978df1dc8d61",
+        "status": "PASS_ACTUAL_PREPARED_SCHEMA8_COMPLETE_PACKAGE"
+      },
+      "boundary": {
+        "path": "build/usb/recovery-closure-package-negatives-a1/result.json",
+        "sha256": "b72317f957247cb37e6d3312930dd7d63a89db192d7a0456589d7cca60e82129",
+        "status": "PASS_ACTUAL_SCHEMA8_PACKAGE_AND10_NEGATIVES"
+      },
+      "directory": "build/native/task006-usb-closure-recovery-connected-a1",
+      "bundle_sha256": "4141a1e8f9c33f19cdb16e41053dff8511e1587d21cd3a9ae6e1c48aa4bfe2a2",
+      "schema": "lemmasim-native-bundle/8",
+      "seconds": 27.623295273981057,
+      "bound_seconds": 600,
+      "native_identity": "64d7d234d5fe35401de2ebfb4e2b2e5cd3699ff7451cdbbd0c992c1b5c525962",
+      "native_original_source_count": 255,
+      "guest_original_source_count": 377,
+      "no_ROOT_guest_or_native_fallback": true,
+      "actual_package_negatives": 10,
+      "maintained_public_guard_receipt": {
+        "path": "build/usb/recovery-closure-public-actual-a1/qualification-a1.json",
+        "sha256": "d8e91db5eacbca39a19319be0d5bdf83af87028cd3274eac9e4f3c5e90eac152",
+        "status": "PASS_MAINTAINED_EXACT_SCHEMA8_PUBLIC_SELECTION_GUARDS"
+      },
+      "public_positive_vectors": 10,
+      "public_negative_vectors": 16
+    },
+    "connected_workflow": {
+      "status": "ORIGINAL_FIXTURE_FAIL_RETAINED_INDEPENDENT_LIVE_PASS_COLD_RUNNING",
+      "prospective_plan": {
+        "path": "build/usb/recovery-closure-connected-proposal-a1/plan-a3.json",
+        "sha256": "76578d52475b4ad55fa333eaa7d60465d23abf9702c9f005ca7d2f493266d361"
+      },
+      "scope": "Real single isolated Invalid2 attempt +Doc8 lost finalB129 receipt, actual EOF/Failed/offline raw/reattach, exact old129 dedup/newbarrier130/fullDoc8+EOF, original stage3 completion then offline raw20/page21/root22 and independent cold. No host document input.",
+      "predeclared_expected_final": {
+        "journal_sequence": 22,
+        "peer_high_water": 148,
+        "outbox_next": 149
+      },
+      "ready_action_cycles": 1600000000,
+      "ready_action_host_seconds": 7200,
+      "ink_cycles": 200000000,
+      "supervision": {
+        "manifest": "build/usb/recovery-closure-connected-a1.supervision/manifest.json",
+        "supervisor_pid": 1343948,
+        "supervisor_start_ticks": "57165844",
+        "absolute_deadline_unix_ns": 1792062966008801662,
+        "whole_host_ceiling_seconds": 57800,
+        "automatic_restart": false,
+        "startup_only_host_source_count": 284,
+        "startup_sources_equal": true,
+        "guest_image_sha256": "2f684e547efa8664817d12d1d0cf906a7816dfdfa014dba3433cbae2f920b48e"
+      },
+      "observed_scope": "Actual initial Ready800M, Doc8 Saved18, one Invalid2 request56, failed uncertain Doc8 publication19, responsive offline raw, epoch2 attach/exact old129 dedup/newB130, Saved19 and raw20/page21/root22 complete. Independent observation derives innerstroke19 from archived source; final tuple(0x421,22,1,1,19). Original fixture expected rawevent7 and was canceled after one already-issued5M command finished; unexecuted live close-course NOT_RUN. Single newCPU cold from independently copied acknowledged peer is RUNNING.",
+      "original_terminal": {
+        "path": "build/usb/recovery-closure-connected-a1/result.json",
+        "sha256": "b3a2d33e44ddbdeaef7c2917fd8710986864ff25e7e10f10d190e6adcd1fc6c6",
+        "status": "FAIL"
+      },
+      "original_supervisor_terminal": {
+        "path": "build/usb/recovery-closure-connected-a1.supervision/supervision.json",
+        "sha256": "e724612e19ec19cc67c333d4035c1f45f16523929ef22b5cd28ef0bf624f61ee",
+        "status": "FAIL"
+      },
+      "original_cleanup": {
+        "supervisor_observer_passive_owners_reaped": true,
+        "owned_survivors": []
+      },
+      "frozen_executed_actor_sha256": "927ae22793e2fb3063e2bf9c06f959bf5bff9f2119f6936cd8ce046e43e9abd3",
+      "inherited_close_report_observer_sha256": "5e3d138686d1e0704f3100dd26c978af622c7e813e1fbcccfb18762eb28fa869",
+      "zero_clock_capture": {
+        "path": "build/usb/recovery-closure-oracle-capture-a1/result.json",
+        "sha256": "84360dae50be1eee33212356d7f537c58f81e5ba8a3bce6e44920e8b76323f5c",
+        "status": "PASS_ZERO_CLOCK_OWNED_OBSERVATION"
+      },
+      "capture_scope": {
+        "cycle": 1719000000,
+        "already_issued_quantum_cycles": 5000000,
+        "export_cycles": 0,
+        "paused_observation_seconds": 18.900862738024443,
+        "paused_bound_seconds": 55
+      },
+      "independent_live_observation": {
+        "path": "build/usb/recovery-closure-retained-reobserver-a2/result.json",
+        "sha256": "9e25e19c1749dc19cc473733b23629934379f7984a027b0eee82a8bf1f89f00f",
+        "status": "PASS_RETAINED_LIVE_COLD_NOT_RUN"
+      },
+      "reobserver": {
+        "host_seconds": 6.956228794995695,
+        "host_bound_seconds": 180,
+        "actual_mutants_rejected": 8,
+        "source_inner_stroke": 19,
+        "original_expected_raw_event_number": 7,
+        "journal_sequence": 22,
+        "math_record_sequence": 19,
+        "math_payload_bytes": 2496,
+        "math_attempts": 1,
+        "math_request_reply_count": 1,
+        "old_uncertain_barrier": 129,
+        "deduplicated_old129_extra_effects": 0,
+        "new_durability_barrier": 130,
+        "peer_high_water": 148,
+        "outbox_next": 149,
+        "raw_object": 65556,
+        "raw_record_sequence": 20,
+        "page_record_sequence": 21,
+        "root_record_sequence": 22,
+        "acknowledged_medium_sha256": "8ad8c2898541ecfe165223a3ddbf615da02996c8e3d9a839223974bcb34c7e7e",
+        "full_course_controller_pixels_sha256": "d2df743c9be1559f486d8eefb28bcef0605705cef7b08aaadb74594f2ee045c7",
+        "pixel_relation": "Complete retained FAILED/INVALID controller frame, independently generated source-owned SAVED footer, exact offline raster; every other pixel identical",
+        "no_cpu_or_peer_actions": true
+      },
+      "retained_reobserver_failure": {
+        "path": "build/usb/recovery-closure-retained-reobserver-a1/result.json",
+        "sha256": "7cb73d613061c012b607c798168270ee04a150aaab8198f0b40c45ce9d2c84ac",
+        "status": "FAIL"
+      },
+      "reobserver_failure_scope": "Copied original peer.json correctly names original base path; generic live-peer materializer rejected archive relocation. Separate offline reconstruction uses immutable base+checksummed actual log without rewriting original peer metadata; first capture base.raw/base.img omission corrected separately after all original writers were reaped.",
+      "independent_cold": {
+        "status": "PASS",
+        "directory": "build/usb/recovery-closure-independent-cold-a1",
+        "plan": {
+          "path": "build/usb/recovery-closure-cold-proposal-a1/plan.json",
+          "sha256": "205f3ad3b9c68bea8d6b1ca83437328a73dd7466f63a7eda26ec081eaae16969"
+        },
+        "supervisor_pid": 1393564,
+        "supervisor_start_ticks": 58102961,
+        "absolute_deadline_unix_ns": 1792029137187188561,
+        "per_phase_cycles": 1600000000,
+        "per_phase_host_seconds": 7200,
+        "whole_host_seconds": 14600,
+        "raw_pixels": "independently derived complete original+offline canonical raw page",
+        "course_pixels": "raw COURSE toggle must equal full actual retained course controller frame",
+        "new_cpu": true,
+        "restored": false,
+        "live_close_course": "NOT_RUN",
+        "automatic_restart": false,
+        "timeout_extension": false,
+        "result": {
+          "path": "build/usb/recovery-closure-independent-cold-a1/result.json",
+          "sha256": "caf9de55cc512921622ce6d861bffc96a039fd9581acf4f0134692f7dc479f88"
+        },
+        "host_seconds": 5230.385533770081,
+        "source_medium_sha256": "8ad8c2898541ecfe165223a3ddbf615da02996c8e3d9a839223974bcb34c7e7e",
+        "journal_sequence": 22,
+        "math_record_sequence": 19,
+        "peer_high_water": 148,
+        "outbox_next": 149,
+        "no_write_barrier_or_math_rpc": true,
+        "full_Doc8_history_execution_exact": true,
+        "full_raw_pixels": true,
+        "full_course_pixels": true,
+        "raw_pixels_sha256": "eadbe91c48396df3e9ac10d8121f77b7cd60af59ef2895b627d1e47c217cd72e",
+        "course_pixels_sha256": "d2df743c9be1559f486d8eefb28bcef0605705cef7b08aaadb74594f2ee045c7",
+        "sampled_owned_peak_rss_kib": 342692,
+        "owned_final_apparent_bytes": 814050040,
+        "all_owned_processes_reaped": true,
+        "milestones": {
+          "cold/cold-ready": {
+            "cycle": 885000000,
+            "target_cycles": 885000000,
+            "host_seconds": 4413.963543271064
+          },
+          "cold/raw-COURSE-load-complete-original2496-and-controller": {
+            "cycle": 1005000000,
+            "target_cycles": 120000000,
+            "host_seconds": 806.0055489060469
+          }
+        }
+      }
+    },
+    "retained_observer_fixtures": {
+      "scope": "Read-only legacy retained Doc8/pixel/UART prefix host observation only; no new CPU claim",
+      "qualification": {
+        "path": "build/usb/recovery-closure-connected-proposal-a1/observer-qualification-a5.json",
+        "sha256": "7aedfada0fac72615222f85cced72380ae25e23e35831191f5fb04091188df5a",
+        "status": "PASS_READ_ONLY_OBSERVER_POSITIVE_AND12_NEGATIVES"
+      },
+      "actual_negatives": 12,
+      "original_import_prefix_history_and_glyph_failures": "Retained under build/usb/recovery-closure-connected-proposal-a1; no earlier receipt rewritten.",
+      "prospective_source_window_adaptation": {
+        "scope": "Separate actual per-session host source version/fresh cache; target/native/package unchanged",
+        "qualification": {
+          "path": "build/usb/recovery-closure-connected-proposal-a1/observer-qualification-a6.json",
+          "sha256": "b7d52b2788fa824704afab2b91a8532c686b6bda8a5b090960c9b0ca30522bc9",
+          "status": "PASS_READ_ONLY_OBSERVER_POSITIVE_AND12_NEGATIVES"
+        }
+      }
+    },
+    "limits": [
+      "General G5 mathematics/proof authority incomplete",
+      "Full USB MAC/electrical/physical conformance incomplete",
+      "No live historical-peer fork continuation",
+      "No QEMU/RTL cached-state migration",
+      "No browser-hosted companion claim"
+    ]
+  }
+}

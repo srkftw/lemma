@@ -1,3 +1,4 @@
+<!--
 # LemmaSim owned memory and stacks v1
 
 Task 004's `core0-kernel-v0.3` compilation floor permits the reserved 32 MiB
@@ -45,6 +46,54 @@ or exhaustion without releasing another owner's data, and requires zero pins
 before release. Four-page contiguous allocation validates all four generations
 and accounting before zeroing/publication. Failed unpublished metadata commits
 roll back all four records; this rollback is not exposed as a user operation.
+
+### Task006 private allocator index v1
+
+`lemma-frame-index/1` preserves the owner domain, quota/error precedence,
+lowest-slot/lowest-contiguous-run allocation, handles, final-generation
+retirement, zero-before-publication, pinning and release rules. It changes no
+user ABI, durable format, admitted language feature or physical capacity.
+Its private lower-bound cursor is the word at `0x80400108`, and exact counts
+for owner IDs1..64 are at `[0x80441000,0x80441200)`, immediately after the
+complete8192-frame ownership array and separate from all existing device state
+in the first metadata page. The ordinary kernel/task
+owners use those maintained counts; every larger valid owner ID still uses a
+complete configured-pool record scan. Owner0 and retired-owner diagnostic counts
+also keep their historical scan meaning. There is no new owner-ID restriction,
+finite lifetime-owner table, fabricated count or host initialization.
+
+Initialization clears all configured records, the cursor and all64 count cells.
+A search starts at the cursor and still examines each candidate record in
+increasing index order. A successful single-frame search advances the cursor past its chosen slot:
+every preceding candidate since the old bound was observed occupied. A
+successful pair/quad advances it only if its chosen run begins at the cursor.
+A pair/quad found after an earlier fragmented hole therefore leaves that lower
+bound in place. A nonretired release lowers the
+cursor to the released index when necessary. Retirement removes a live owner
+count but never puts that slot back into free supply. A cursor outside0..count
+or an indexed count above count rejects with invariant status39. The index is
+kernel metadata with the same trusted-write boundary as the ownership records;
+its invariants are independently tested against the literal record array.
+
+Each nonpreemptible allocator transaction snapshots the original count and
+cursor in private words at `0x80400110/+8`. Successful single/pair/quad publication
+updates records, global free accounting and the index together before returning
+handles. An unpublished metadata failure restores original generations, free
+records, global accounting and the index, and reports invariant failure even
+when cleanup succeeds. Failed release similarly restores the live owner/purpose,
+free accounting and index. No nested allocation, scheduling boundary or borrowed
+user alias may intervene in this construction transaction. Checked metadata
+writes cannot ordinarily fail on the admitted machine; finite-RAM fault fixtures
+exercise one failed write and successful cleanup independently. Repeated cleanup
+write failures remain invariant failures, never a successful grant or release.
+
+Complete page clearing still performs512 checked64-bit writes in increasing
+address order. Eight consecutive writes share one bounded callback, reducing
+callbacks from512 to64 without removing any write, bypassing guards or changing
+first-error order. A failed zeroing operation publishes no handle or ownership;
+already cleared bytes may remain changed in the still-free page. Host Action
+read/write/callback counts are algorithm-work observations, not target CPU
+cycles, compiler proofs or canonical notebook Ready evidence.
 
 Expanded address spaces use 13 initial page-table frames, compared with 11 in
 the historical configuration. The added frames hold S-only PLIC mappings.
@@ -165,6 +214,34 @@ all live-row read addresses, loop callbacks and complete two-page bytes against
 independent finite RAM; its literal duplicates/read errors span block, page and
 partial-tail cutpoints. These host Action counts do not establish CPU timing.
 
+`AddressSpace.mapUserAt` likewise borrows a freshly checked `base` only within
+the same nonpreemptible supervisor allocation transaction. Its caller cannot
+schedule, mutate a descriptor/directory, release authority, or retain that
+address across the transaction. `Syscall.allocate` allocates a new disjoint
+owned frame between validation and mapping; every mapping duplicate, live
+ownership/generation/purpose, permission, table, actual PTE, pin, publication,
+invalidation and rollback check still executes. Public `mapUser` retains its
+early argument checks and performs `base` before using this internal helper.
+`Task.table` reads pins from the ownership slot whose owner, purpose and
+generation it has just resolved, without resolving that same grant again.
+Literal finite-RAM tests compare complete final authority state and rejection
+precedence against the earlier implementation, including malformed registry,
+duplicate mappings and read/write/invalidation failures. This local reuse is
+not persistent authority caching or a reduction of isolation checks.
+
+`Capability.managed` borrows its fresh descriptor base for its private
+`headerAt` call in that same nonpreemptible S Action. The zero legacy-header
+path retains all eight zero reads. A managed header still rereads its tag,
+version, descriptor identity, state, capacity, used count, registry slot and
+reserved word, validates the live registered descriptor, and requires active
+state. Only the redundant descriptor/directory validation is removed. The
+public capability API and rejection precedence are unchanged. The compiled
+audit admits only `header` and `managed` as callers, requires their exact
+successful fresh descriptor/base result, and rejects writes, scheduling and
+unapproved helpers before this call. No authority survives syscall entry.
+Finite-RAM comparisons include malformed headers/descriptors, first read
+failures and complete authoritative RAM, separate from real guest execution.
+
 The workload checker can retain read-only allocator observations using
 `conformance/lemmasim/check_owned_memory.py`. Each physical read is at most
 64 KiB. Ready and final-before-reap observations read the bounded ownership
@@ -180,3 +257,87 @@ the maximum observed allocation is not a whole-run high-water proof. A selected
 real guest call-closure review checks that normal raw append and raster paths
 do not load complete page history or allocate pages. Toolbar/page-loading paths
 remain separate, and this review is not a whole-program memory proof.
+
+Surface upload may borrow a read-page alias only inside its one nonpreemptible
+supervisor Action. The metadata copy performs the ordinary complete descriptor,
+registry, duplicate, ownership, generation, PTE and read-permission checks,
+then returns its first checked physical alias. The pixel copy may derive a
+second alias only when its entire span is in that same 4096-byte user page;
+otherwise it runs the original validation path. The scratch frame must differ
+from the descriptor before metadata is copied, and its live generation, owner,
+purpose and bounds are checked again for the pixels. A changed scratch handle
+uses the ordinary path. No paper transaction precedes the completed pixel copy.
+The compiled audit binds both pointers, the exact checked alias result and
+handle equality; it rejects intervening authority mutation or scheduling.
+This interface is kernel-only and carries no pointer or authority across an
+entry, interrupt, process or checkpoint API.
+
+Trap capture retains the original `Process.validateFrame` checks on current
+descriptor, origin, privilege, SATP, owned stack, adjacency, pins, canaries and
+exact original frame address. It then resolves the same descriptor afresh,
+copies all36 checked words only into the disjoint saved context at+2048, and
+borrows that base plus `frame+288` for final sanitization. The live eight-row
+task scan, running-state check, translation comparison and all three checked
+sanitization stores remain after copying. The public `Task.lookup` still
+validates the descriptor after its row scan. Neither helper retains authority
+or skips a malformed live row. Canonical audits invoke the closed borrow guards
+from public `Task.capture`/surface reachability, require successful data/status
+bindings, original word addresses and exact context fields, and pin the four
+new/refactored helper lowering shapes to `local-borrow-shapes-v1`. Those shape
+checks supplement CFG/operand and independent finite-RAM checks; they do not
+establish general compiler correctness or real guest execution.
+
+The frame zero callback may select a local complete64-byte interval branch only
+when its computed modular start is aligned8 and lies between pool and
+pool-limit-minus64, inclusive. It still issues all eight ordinary checked
+physical word writes in increasing order, stopping at the same first error.
+Its last write retains the original returned accumulator even on failure.
+Direct status-zero tests replace equivalent predicate calls in this branch.
+LLVM may use the dominating source facts to discharge individual guards; the
+checked primitive lowering itself is unchanged. All other callback inputs use
+the original generic sequence, including arbitrary indices, wrapping arithmetic,
+read-only or unmapped intervals and cross-boundary partial writes. No new
+unchecked primitive, cached grant, pointer publication or heap capacity change
+is admitted. Full-frame admission, configured-pool bounds,512 checked writes,
+zero-before-publication, allocation choices and rollback semantics remain.
+Independent host traces exercise every status value and full-page first-error
+position; their success is separate from real guest performance and Ready.
+
+Frame resolution may select the local metadata branch only for indices below
+8192 after the unchanged runtime-count, owner, handle and generation-admission
+predicates. It performs the same live-owner and live-generation checked reads
+in that order. The explicit slot expression exposes the complete aligned
+metadata interval to LLVM; it does not cache ownership or replace a physical
+access primitive. The generic post-validation sequence remains for any index
+outside that interval, without rereading configuration. Successful configured
+counts are still exactly512,1024 and8192; invalid configuration still precedes
+owner/handle errors. Returned frame addresses, error values and attempted read
+prefixes are unchanged.
+
+An eight-row registry callback may select a local pool interval only when its
+computed modular cursor is aligned8 and lies between pool and pool-limit-minus232,
+inclusive. It still reads all eight virtual-address words in increasing row
+order, preserving duplicate detection, accumulator arithmetic and first-error
+priority. Every other physical interval or callback argument uses the original
+generic sequence. Complete descriptor/directory/owner/generation/purpose/pin,
+row/PTE/permission and duplicate validations by the surrounding address-space
+operations remain in place. LLVM can discharge each checked read's region and
+alignment branch from these local facts; no retained authority, new unchecked
+primitive or new admitted language form is involved. Independent host traces
+compare all eight-row match patterns and status values against historical source
+forms and the actual imported declarations; genuine LLVM/object qualification
+and real whole-machine timing remain distinct observations.
+
+The complete registry-directory callback may select a locally bounded branch
+when its descriptor address is a full aligned frame in the pool and its modular
+entry ordinal is below8. It performs the same directory-handle read, fresh
+owner/generation/purpose resolution, recorded-address read, resolved-index
+bound, both duplicate-pack predicates and pins read, in the same order. Pins
+must still be zero before the index is added to the local pack. Its directory
+and pins accesses remain ordinary checked physical reads. The generic callback
+is retained for all other descriptor/ordinal inputs. Direct status-zero tests
+and explicit numeric slot expressions permit LLVM to eliminate redundant
+helper calls and per-read interval checks; they do not retain descriptor
+validation or replace any live authority or duplicate check.
+
+-->

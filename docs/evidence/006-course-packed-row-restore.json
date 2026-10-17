@@ -1,0 +1,445 @@
+{
+  "schema": "lemma-course-packed-row-restore/1",
+  "status": "PASS_WHOLE_AUDITS_FAST_CONNECTED_REOPEN_AND_REAL_PARTIAL_WRITE_RECOVERY",
+  "producer_parent": "9b18756dc27212263834edfc3ebbf366767254c2",
+  "uncommitted_source_at_component_observation": true,
+  "contract": "docs/contracts/006-course-packed-row-v1.md",
+  "scope": "Source551628d fresh388-input matched pair, full ordinary RV64 audits, actual42-phase fast course/checker/learner/ink/Close/independentcold/fullreopen, real POSIX partial-write/cold/retry/ink. Exact canonical RTL original400M course deadline failed; no fast pipeline timing or arbitrary checkpoint claim.",
+  "target_sources": {
+    "Lemma/Courses/PackageRender.lean": "8c95b4e36ab7885e63126652a289b69f85dbb5bcdd3068f85e0f9634efc69085",
+    "Lemma/Courses/WorkspaceCodec.lean": "45bfc579cf7cc6a6c2733c6d8f02f2e6ea1501c706e99a825a798e044452c003",
+    "Lemma/Applications/Notebook.lean": "0843c5fb719b579d7e9b170a1465352aa9b8494641b40f5d72e0c1250a2dc9c6"
+  },
+  "complete_source_relation": {
+    "status": "PASS_GENUINE_PACKED_ROW_COMPLETE_COHORT_AND_EXACT_PURE_CALLEE_CHANGE",
+    "scope": "genuine complete User2 pre/post source/body/caller software6 cohort; independent pixels/effects and real target performance separate",
+    "old_functions": 833,
+    "new_functions": 837,
+    "added": [
+      "Lemma.Courses.PackageRender.packedCellRow",
+      "Lemma.Courses.PackageRender.packedPanelWord",
+      "Lemma.Courses.WorkspaceCodec.copyDecodedStep",
+      "Lemma.Courses.WorkspaceCodec.restore"
+    ],
+    "removed": []
+  },
+  "phases": {
+    "pre": {
+      "changed": [
+        "Lemma.Applications.Notebook.pumpOpenPackageCourse",
+        "Lemma.Courses.PackageRender.sparsePanelWord"
+      ],
+      "unchanged_complete_bodies": 831
+    },
+    "post": {
+      "changed": [
+        "Lemma.Applications.Notebook.packageControlCharacter",
+        "Lemma.Applications.Notebook.pumpOpenPackageCourse",
+        "Lemma.Courses.PackageBinding.captureField",
+        "Lemma.Courses.PackageRender.sparsePanelWord"
+      ],
+      "unchanged_complete_bodies": 827
+    }
+  },
+  "semantic_checks": {
+    "finite_row_start_highbits": 15360,
+    "independent_mathematics_pixels": 1474560,
+    "actual_canonical_oddstride_header_fault_FramebufferActions": "PASS",
+    "full_private_restore": "PASS all3712 bytes, in-place compressedsource replacement after complete private decode; real fault prefix and scratch alias rejection",
+    "actual_notebook_fullopener": "PASS decode/full staging/adoption, intentionally stops at following visible flag; no controller or CPU claim",
+    "legacy_512_byte_Store_copy_bound": "unchanged; real software5 actual220 reopening defect retained"
+  },
+  "host_tests": {
+    "kernel": 433,
+    "scaffold": 18
+  },
+  "mutations": {
+    "status": "PASS_FOUR_VALID_LLVM_PACKED_ROW_RESTORE_MUTANTS_AND_SIX_INCOMPLETE_MIXED_COHORTS_REJECT",
+    "scope": "actual verifier-valid pure row and full restore LLVM mutations; complete mixed-cohort rejection; no target execution claim",
+    "negative": [
+      {
+        "name": "wrong-pixel-mask",
+        "valid_llvm": true,
+        "sha256": "7c79c1d6c3e2af0b884af6a6ebabeefff162373f1edf8ac944ba4585ca4369ea",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.packedCellRow/post"
+      },
+      {
+        "name": "wrong-white-row",
+        "valid_llvm": true,
+        "sha256": "4a6147cd50eaa304d7ad5d38b113b0707493b31bfe5b6866324011fc133fe03f",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.packedCellRow/post"
+      },
+      {
+        "name": "wrong-stitch",
+        "valid_llvm": true,
+        "sha256": "1d487c42a5060fb2b9ba7ce04c9a16b8d49bb517380ca053b77668aea2f610ef",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.packedPanelWord/post"
+      },
+      {
+        "name": "missing-last-word",
+        "valid_llvm": true,
+        "sha256": "a9949afc52cde16c0477ad9cd1e29e513fce270a014000dd2107c1d2e77263b2",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.WorkspaceCodec.restore/post"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.copyDecodedStep",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.restore",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.PackageRender.packedCellRow",
+        "reason": "Package Notebook mixed/incomplete packed-row cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.PackageRender.packedPanelWord",
+        "reason": "Package Notebook mixed/incomplete packed-row cohort"
+      },
+      {
+        "name": "mixed-family-['Lemma.Courses.WorkspaceCodec.copyDecodedStep', 'Lemma.Courses.WorkspaceCodec.restore']",
+        "reason": "Package Notebook mixed/incomplete packed-row cohort"
+      },
+      {
+        "name": "mixed-family-['Lemma.Courses.PackageRender.packedCellRow', 'Lemma.Courses.PackageRender.packedPanelWord']",
+        "reason": "Package Notebook restore repair escaped its complete software6 cohort"
+      }
+    ]
+  },
+  "all_six_cohorts": [
+    {
+      "path": "build/kernel/task006-package-closure-notebook-a1/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/1",
+        "post": "lemma-installed-package-notebook/1"
+      }
+    },
+    {
+      "path": "build/kernel/task006-descriptor-direct-notebook-a3/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/2",
+        "post": "lemma-installed-package-notebook/2"
+      }
+    },
+    {
+      "path": "build/courses/task006-package-delta-component-a1/users/notebook/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/3",
+        "post": "lemma-installed-package-notebook/3"
+      }
+    },
+    {
+      "path": "build/courses/task006-package-sparse-component-a1/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/4",
+        "post": "lemma-installed-package-notebook/4"
+      }
+    },
+    {
+      "path": "build/courses/task006-workspace-codec-component-a2/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/5",
+        "post": "lemma-installed-package-notebook/5"
+      }
+    },
+    {
+      "path": "build/courses/task006-packed-row-component-a2/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/6",
+        "post": "lemma-installed-package-notebook/6"
+      }
+    }
+  ],
+  "new_helpers_require_language_or_runtime_extension": false,
+  "physical_timing_or_fast_timing_parity": false,
+  "whole_corrected_target_workflow": "PASS_FAST_FUNCTIONAL_COURSE_MATH_LEARNER_INK_COLD",
+  "receipts": {
+    "build/courses/task006-packed-row-component-a2/export.log": "0b445282539808a638b97ba0ca28a7339af6a16bf9fb7a5dbc029ae5376d9aca",
+    "build/courses/task006-packed-row-component-a2/cohort-generation.json": "a023fe7427a6ca0a54d67cc5498a3d57cb98001c9aacdd8468316940f0e9ff76",
+    "build/courses/task006-packed-row-component-a2/all-cohorts.json": "d5a82f8998c4718bebaa61028afb527b9bef7cefbbb3956cb4b8539003e3b2bc",
+    "build/courses/task006-packed-row-component-a2/mutations.json": "66eebf15ccf667ff6129af35643138c44ae8dc71dd175d6b801eaab069d0cea5",
+    "build/courses/task006-packed-row-component-a2/mutations-a1-failure.json": "349221cbdc82853216bfce42bfc42a7fa2e35422f7c8192c9a4b05c3689f8c4b",
+    "build/courses/task006-packed-row-component-a2/kernel-host.log": "0ee2ca83880f7a1efa50bb6b6f5265b5e4c82c99f4dd3c60b325481d0970a352",
+    "build/courses/task006-packed-row-component-a2/scaffold.log": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c",
+    "build/courses/task006-packed-row-component-a2/scaffold-tests.log": "352f0bc4a6fe1807ad7bda5e9b22d0a32d87cc75d6507364fde162ebb065072e",
+    "build/courses/task006-packed-row-component-a2/users/notebook/unit.json": "0a0cd0428bcac53b53038b95a009ccfde5309ed606093594eb1aa563cc870cea",
+    "build/courses/task006-packed-row-component-a2/users/notebook/program.ll": "68d3c95a1e909ed22abf76f680f19b34ae0a7f12c7c79fe270091bc5f616e6c7",
+    "build/courses/task006-packed-row-component-a2/users/notebook/program.opt.ll": "e45ed1f555509361f7a6df21d34ee07c20f11731ac6e402e7347b8f359bcffae",
+    "build/courses/task006-packed-row-component-a2/users/notebook/program.o": "f4ca49d25e9fdf09fa76fe8679dae822febf686f75d03795ef052e98a32d61e7",
+    "build/courses/task006-packed-row-component-a2/users/notebook/program.s": "58543703824d8fc4ce590d3c97ac3775be3f439ad048021cc1d3d8e8a420e1ad",
+    "build/courses/task006-packed-row-component-a1/render.log": "2a3229ef942019559b9729b849ec4b6b2b8da551ada12be8f75ce4f2dd60949e",
+    "build/courses/task006-packed-row-component-a1/mathematics-pixels.log": "254cb6d59a090bb2958b0018b55dccef4fdb640c0978346c7d2524e35caa8ea7",
+    "build/courses/task006-packed-row-component-a1/restore-test-a1.log": "1f873c4eeb67ecf769f8531fb4eb91ec0be3a64ef6afa90a8dab4e045b52e201",
+    "build/courses/task006-packed-row-component-a1/restore-notebook-actions-a1.log": "64c68f904c7ffda61d4ca57a6e1ad6f20e78982b1904d89721d8338d3080775d",
+    "build/courses/task006-packed-row-whole-a1/result.json": "3035d954c6d024359f97ca5f9bac905ec04952ff91492ec53ef633a5618fca82",
+    "build/courses/task006-packed-row-whole-a1/source-seal.json": "b3e846279e22201613b3437d1b50712a0cd8c63de0d71b9302601ff809f92514",
+    "build/courses/task006-packed-row-whole-supervision-a1/result.json": "5618baabc1daaf8036f3b67a7160dee768b09788313f983514d1a6e095db8abd",
+    "build/courses/task006-packed-row-fast-a1/result.json": "170b2c072410e11cf7b7ae59e4bd234f1d13e05de688aee94bfdee5329d58f3b",
+    "build/courses/task006-packed-row-fast-supervision-a1/result.json": "f265991fe9932868ebd79be757cd695ea6a143ea726c02ecfd607ab851c6e2be",
+    "build/courses/task006-packed-row-failed-a1/result.json": "f3aa3fab6500d1fa2b636d26b5032b9dcc0825f89de4d8d622290379903e8cb9",
+    "build/courses/task006-packed-row-failed-a2/result.json": "c122436d2981da49019ebae8d9249c499ded110127b371ffd324356e1ce40342",
+    "build/courses/task006-packed-row-failed-a3/result.json": "c5b7acc1216cf4fd99c06bd0e19347563e4c4ae3d5f4b3116a1c01e30116319a",
+    "build/courses/task006-packed-row-failed-supervision-a3/result.json": "042e5c69aacf6bc647f9042d5e6fff3f3c0481d7a920509b3cf2f45efa44c2ec",
+    "build/courses/task006-packed-row-failed-a1/passive-cold-failure-diagnosis.json": "653a822fe4321107bae26ad1f04a4daa2efbadd0114ee67fa9f25a8f8fc209de",
+    "build/courses/task006-packed-row-failed-a2/passive-course-reopen-diagnosis.json": "0e0611d7d558989245f69cf6e628c52792759819c7560b1448d132bb93b72ead",
+    "build/courses/task006-packed-row-integration-a1/native-plan.json": "2075451e231a3f9c6a0b89947bd5cc5ec4fd346a90be34a1dbd345ba57597c63"
+  },
+  "tested_implementation": "551628d6e050239325b387e4fe5d4e77e0e29a4e",
+  "whole_pair": {
+    "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+    "wall_seconds": 588.2362345809815,
+    "source_count": 388,
+    "source_inventory_sha256": "9fc2a377d89112396fe9751f48d710c2e68675dd31d37ed63fdf6af41525746b",
+    "roles": {
+      "initializer": {
+        "audit_seconds": 190.4866010650294,
+        "audit_sha256": "0570ce657e8588f60d0911f700606e5fad59523cf0bf926d4fab54717adb0e30",
+        "audit_status": "PASS",
+        "build_seconds": 102.37273341498803,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-packed-row-initializer-a1",
+        "image_bytes": 695672,
+        "image_sha256": "76fff07891b7d1ebace06df4d0f653e7c8a517cf18fc860a14dd39b2ad196bcb",
+        "provenance_sha256": "5e11b316f94cf6e6ca16a16d94f3ab8212d67f06f26ded11dcaf10ccc012a7d9"
+      },
+      "notebook": {
+        "audit_seconds": 191.19707872194704,
+        "audit_sha256": "dd5d843553522e4d162dd41c40c5f465d567af67bed094ef3453f96fbff865f0",
+        "audit_status": "PASS",
+        "build_seconds": 104.04930035793222,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-packed-row-notebook-a1",
+        "image_bytes": 695664,
+        "image_sha256": "d0dd2379add9e2ba51b8529ca8fe188ce26bf4597a1ff010b5622d4c17644037",
+        "provenance_sha256": "228e57fa1850c76776fed78eb0a6138be39e21f4f7bf921346aaa0231fdb3ef0"
+      }
+    },
+    "final_supervisor_seconds": 592.7303581279702,
+    "earlier_supervisor_measurement_seconds": 590.7866523410194,
+    "source_seal": {
+      "archive_files_match": true,
+      "current_equal_original": true,
+      "original_inventory_sha256": "9fc2a377d89112396fe9751f48d710c2e68675dd31d37ed63fdf6af41525746b",
+      "source_count": 388,
+      "status": "PASS_SOURCE_SEAL"
+    }
+  },
+  "fast_execution": {
+    "status": "PASS_FAST_FUNCTIONAL_COURSE_MATH_LEARNER_INK_COLD",
+    "phases": 42,
+    "aggregate_instruction_clock_cycles": 2649000283,
+    "actor_seconds": 218.99549770203885,
+    "supervisor_seconds": 220.609296109993,
+    "peak_owned_rss_bytes": 387461120,
+    "limits": {
+      "aggregate_cycles": 3000000000,
+      "host_seconds": 900
+    },
+    "selected_phases": [
+      {
+        "name": "new-instruction-clock-cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 239000006,
+        "instruction_clock_cycles": 239000006,
+        "host_seconds": 16.66052893199958
+      },
+      {
+        "name": "COURSEactualpackage",
+        "initial_cycle": 239000006,
+        "final_cycle": 376000025,
+        "instruction_clock_cycles": 137000019,
+        "host_seconds": 15.993072901037522
+      },
+      {
+        "name": "actual-raw-ink-Saved",
+        "initial_cycle": 1939000238,
+        "final_cycle": 1980000244,
+        "instruction_clock_cycles": 41000006,
+        "host_seconds": 2.7383597639854997
+      },
+      {
+        "name": "close-course-controller-work",
+        "initial_cycle": 1980000244,
+        "final_cycle": 2232000254,
+        "instruction_clock_cycles": 252000010,
+        "host_seconds": 18.13531801395584
+      },
+      {
+        "name": "independent-new-CPU-cold-all-pixels",
+        "initial_cycle": 0,
+        "final_cycle": 274000007,
+        "instruction_clock_cycles": 274000007,
+        "host_seconds": 21.84345803700853
+      },
+      {
+        "name": "cold-reopen-installed-body",
+        "initial_cycle": 274000007,
+        "final_cycle": 417000029,
+        "instruction_clock_cycles": 143000022,
+        "host_seconds": 13.265820536995307
+      }
+    ],
+    "cold": {
+      "new_cpu": true,
+      "all_controller_pixels_exact": true,
+      "all_acknowledged_objects_exact": true
+    },
+    "reopen": {
+      "actual_body_pixels": true,
+      "exact_workspace_and_all_objects": true,
+      "all_medium_bytes_exact": true,
+      "no_new_checker_request": true
+    },
+    "original_fast100M_view": {
+      "status": "FAIL_ORIGINAL100M",
+      "cycle": 339000018,
+      "scope": "separate original diagnostic; functional continuation prospectively bounded before launch"
+    },
+    "consumed_hosts_unchanged": true
+  },
+  "actual_posix_failure": {
+    "status": "PASS",
+    "actor_seconds": 119.38606097106822,
+    "supervisor_seconds": 120.70391077909153,
+    "peak_owned_rss_bytes": 788492288,
+    "captured_failure": [
+      240,
+      4942597880,
+      1,
+      134237696,
+      512,
+      2,
+      27
+    ],
+    "failed_save": {
+      "no_new_saved": true,
+      "partial_bytes": 2,
+      "durable_barrier_unchanged": true,
+      "old_workspace_and_all_objects_exact": true
+    },
+    "cold_recovery": {
+      "new_cpu": true,
+      "all_backing_bytes_exact": true,
+      "all_closed_controller_pixels_exact": true,
+      "actual_course_body": true,
+      "old_workspace_exact": true
+    },
+    "retry": {
+      "one_durable_workspace_transaction": true,
+      "history_and_learner_prefixes_exact": true,
+      "raw_ink_samples": 3,
+      "no_new_checker_request": true
+    },
+    "phases": [
+      {
+        "name": "newCPU-cold-Ready",
+        "start": 0,
+        "end": 274000007,
+        "cycles": 274000007,
+        "host_seconds": 20.13069139595609
+      },
+      {
+        "name": "actual-Compact-Saved",
+        "start": 274000007,
+        "end": 327000010,
+        "cycles": 53000003,
+        "host_seconds": 4.184979044017382
+      },
+      {
+        "name": "decode-compact-course-body",
+        "start": 327000010,
+        "end": 470000029,
+        "cycles": 143000019,
+        "host_seconds": 19.615304817911237
+      },
+      {
+        "name": "actual-workspace-save-Failed",
+        "start": 470000029,
+        "end": 496000034,
+        "cycles": 26000005,
+        "host_seconds": 1.9821496669901535
+      },
+      {
+        "name": "newCPU-cold-after-workspace-failure",
+        "start": 0,
+        "end": 250000007,
+        "cycles": 250000007,
+        "host_seconds": 18.80603582900949
+      },
+      {
+        "name": "cold-decode-old-acknowledged-workspace",
+        "start": 250000007,
+        "end": 393000028,
+        "cycles": 143000021,
+        "host_seconds": 22.599638290004805
+      },
+      {
+        "name": "ordinary-workspace-retry-Saved",
+        "start": 393000028,
+        "end": 420000032,
+        "cycles": 27000004,
+        "host_seconds": 2.8821828130166978
+      },
+      {
+        "name": "actual-ink-Saved-after-workspace-recovery",
+        "start": 420000032,
+        "end": 450000035,
+        "cycles": 30000003,
+        "host_seconds": 3.334532900014892
+      }
+    ],
+    "original_failures": [
+      "build/courses/task006-packed-row-failed-a1/result.json",
+      "build/courses/task006-packed-row-failed-a2/result.json"
+    ],
+    "passive_observer_diagnoses": [
+      "build/courses/task006-packed-row-failed-a1/passive-cold-failure-diagnosis.json",
+      "build/courses/task006-packed-row-failed-a2/passive-course-reopen-diagnosis.json"
+    ],
+    "unchanged_limits": {
+      "aggregate_instruction_clock_cycles": 1500000000,
+      "cold_cycles_each": 500000000,
+      "compact_cycles": 300000000,
+      "failed_ink_cycles": 100000000,
+      "host_seconds": 900,
+      "address_space_bytes": 4294967296,
+      "file_bytes": 1073741824,
+      "outputs_bytes": 4294967296,
+      "minimum_available_bytes": 2147483648,
+      "course_open_each": 400000000,
+      "workspace_retry": 150000000
+    }
+  },
+  "canonical_RTL": {
+    "status": "FAIL_ORIGINAL_400M_COURSE_DEADLINE",
+    "plan": "build/courses/task006-packed-row-integration-a1/native-plan.json",
+    "result": "build/courses/task006-native-packed-row-a1/actor/result.json",
+    "original_source3_400M_course_failure": "build/courses/task006-native-package-delta-a1/actor/result.json",
+    "source": "551628d6e050239325b387e4fe5d4e77e0e29a4e",
+    "result_sha256": "b387cca2a700798c386a4d574e212909c83941921b18bb008922c0a18941c8ed",
+    "supervision_sha256": "56b6e32ba83e608af63b232721a2e5b0e6c79b27d378fac067c8b13fee9dd5a0",
+    "elapsed_host_seconds": 4464.114042737,
+    "peak_owned_RSS_bytes": 267620352,
+    "endpoint_cycle": 1280000000,
+    "original_open_cap": 400000000,
+    "passive_diagnosis": {
+      "path": "build/courses/task006-packed-row-cut-diagnosis-a1/native6.json",
+      "sha256": "bfe8019ff6e7d34c166b675001e2521282856ffe64bed2a6cae8e611cb07d35c",
+      "full_guest_framebuffer_body": true,
+      "full_controller_body": false,
+      "remaining_dirty_tiles": 7,
+      "scope": "Full original snapshot CRC, owned frame/generation/permissions and Sv39 walks; no execution, restore, fence or drain"
+    }
+  },
+  "candidate_ci": {
+    "commit": "551628d6e050239325b387e4fe5d4e77e0e29a4e",
+    "run": 38695753991,
+    "status": "completed",
+    "conclusion": "success",
+    "jobs_passed": 10,
+    "steps_skipped": 0
+  }
+}

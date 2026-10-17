@@ -1,0 +1,722 @@
+{
+  "actual_RV64_codec": {
+    "ELF": {
+      "bytes": 13432,
+      "path": "build/silicon/task006-wifi-codec-guest-a3/target/image.elf",
+      "sha256": "c91e57c5586fd7851ea167096f762a2b0d1da433513b61b78a09d8b22b16784d"
+    },
+    "artifacts": {
+      "image.elf": "c91e57c5586fd7851ea167096f762a2b0d1da433513b61b78a09d8b22b16784d",
+      "image.map": "86371e0a105520f05d35786aecf528b3a4fbeb960db8d2d771e420d5f843f449",
+      "layout.json": "6af05ac90596a4201e007181cbcb1627eba214fee3c38f8864d8571bb9421c79",
+      "link.ld": "2c130400086e31c72c5df954a87aed6fcbbff63d7f209b0df5906471904f86f9",
+      "normalized.txt": "789351e61c9ce518ac81974f9a5b21c83438072357a8c568de438a33358685e6",
+      "program.ll": "89e654488ca0f97804a4e683e4e7fc66530fc1e307ff022e95d3cee16847c3c3",
+      "program.o": "afa076be23bb66c4b51d065f4b1711450e55fbc028db8718e4bc2c15c86ef85a",
+      "program.opt.ll": "595400d4a236de284704ec282c7b2898c4da869086603f24a16b0329203473b2",
+      "startup.S": "edbbe27567f6e69628f0e5472ff1cc4885aaa2d9130e6e4aeffbef503acf902e",
+      "startup.o": "c1dc7b2814803e9316a6785ea95bb0c1388341ede441eb8bd3474cbe94e6f586",
+      "symbols.txt": "0a8976cde3fd732a8c8492042b9d5e765faf9a985dda82c06b7b68a140a78a4d",
+      "unit.json": "e2dae9f04c47903909b67368515b0c9a5199d74a9f0b991911109090ded6f0b7"
+    },
+    "audit": {
+      "bytes": 61057,
+      "path": "build/silicon/task006-wifi-codec-guest-a3/audit.json",
+      "sha256": "4621b992ac1df47be5b91c1c55a7485a61e12562aa2033ea3ee7457eaf357cf5"
+    },
+    "exact_consumed_input_count": 304,
+    "finish_code": 21845,
+    "foreign_runtime": "none; complete function/symbol/IR/relocation/undefined/stack/ISA envelope audit",
+    "functions": 29,
+    "generated_payloads": {
+      "bytes": 32,
+      "path": "build/silicon/task006-wifi-codec-guest-a3/guest-payloads.bin",
+      "sha256": "ef49150b2c15cdf7c6db8f653111a7d9651c58dab66ade314aee2a3d7a3c85d3"
+    },
+    "linked_objects": [
+      "startup.o",
+      "program.o"
+    ],
+    "maximum_stack_chain_bytes": 272,
+    "native_bundle": {
+      "manifest_sha256": "ffe588f3c33f6efacb94230fd441a7bf8e7fdd80e1ea263fed050b4cc7aa6f7e",
+      "schema": "lemmasim-native-bundle/2",
+      "scope": "validated archived inputs; not current compilation",
+      "source_commit": "c1100df2f13cb558360aa25881bd7db8cc4040c1"
+    },
+    "native_clocks": 384185,
+    "post_execution_change": {
+      "current_sha256": "27dcb6dd4b204ac474cde90dcdd241a600c2ec95393d3aac5946ed8ca8a337d5",
+      "kind": "comment-only CSR\u2192Wi-Fi coding wording; original tested bytes retained in source archive",
+      "path": "Lemma/Compiler/WiFiCodecExport.lean",
+      "tested_sha256": "2765a33cebfaa7ade6df6b96dd15df1e2656a47d5794fa999b6d686c270a2b43"
+    },
+    "reachable_closure_manifest": {
+      "bytes": 4630,
+      "path": "build/silicon/task006-wifi-codec-guest-a3/consumed-source-root/closure.json",
+      "sha256": "4f4a7b7ae4009072ecbceb5cb0883795066d3f02096b092ef8ffb990bf26b87a"
+    },
+    "reachable_module_count": 45,
+    "records": {
+      "bytes": 1024,
+      "path": "build/silicon/task006-wifi-codec-guest-a3/native/records.bin",
+      "sha256": "4ba13e92c7f137d0a0c8feddf31057ee6879bc09533c7d7249d56c360a0dc6ec"
+    },
+    "records_values": [
+      6289635635293539329,
+      3421780262,
+      107374221366,
+      15691807658928,
+      70493993481622,
+      6289635635092213249,
+      0,
+      32,
+      696229061708188261,
+      449210708012086630,
+      1583374887456218234,
+      849633309465899730,
+      2284872148159546933,
+      2292404978784455884,
+      1022262420881773571,
+      1178351488154382744
+    ],
+    "result": {
+      "bytes": 3745,
+      "path": "build/silicon/task006-wifi-codec-guest-a3/result.json",
+      "sha256": "de8e6bc44d7a93b8b6287bfd4984fec9aab083a34b9c709571e9d850668ae011"
+    },
+    "retired": 241329,
+    "scope": "actual M-mode development ELF-preload purecodec execution on unchanged qualified native0.3; host transports resulting octets into leaf PIO only, not a guest-driven connected Wi-Fi driver",
+    "source_archive": "build/silicon/task006-wifi-codec-guest-a3/consumed-source-root",
+    "source_preservation_inventory": {
+      "bytes": 66397,
+      "path": "build/silicon/task006-wifi-codec-guest-a3/consumed-source-root/inventory-preservation.json",
+      "sha256": "9c263e7c7643bf5b5847838b9c261a616a6012e789828b2f6366a72f8c0a49e4"
+    },
+    "status": "PASS_RTL_GUEST",
+    "tools": {
+      "clang": {
+        "path": "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang-20",
+        "sha256": "e63da6f1ae63690861bab5e2981e72ead5a3a3245ce7b2853841d19646d0b23b",
+        "version_first_line": "clang version 20.1.8"
+      },
+      "dtc": {
+        "path": "/nix/store/7v9p68ylbqfcj7mapysfhff2vzwl75aw-dtc-1.8.1/bin/dtc",
+        "sha256": "77942b703e072eed3b9b490378b20feda506498ea8ae9b54dd41a26d1ded5900",
+        "version_first_line": "Version: DTC 1.8.1"
+      },
+      "lake": {
+        "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+        "sha256": "2bbf0d3a0077a8bddf11ad6987ebe930b2b3692eabe15fcd72f0aa069d6f8620",
+        "version_first_line": "Lake version 5.0.0-src (Lean version 4.34.1)"
+      },
+      "ld.lld": {
+        "path": "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld",
+        "sha256": "e8406185c307f68d7926eaa7570920eaf2aa0c1e52126d914c3a05c6107e7f58",
+        "version_first_line": "LLD 20.1.8 (compatible with GNU linkers)"
+      },
+      "lean": {
+        "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+        "sha256": "f70d0a2a69e99b5d99c0abf4310731c512489c801099111f367981f24439a863",
+        "version_first_line": "Lean (version 4.34.1, Release)"
+      },
+      "llc": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+        "sha256": "00ef7b72f35b21cb2ddfdb66db6217120d314b36bdbed2580a330846863660ac",
+        "version_first_line": "LLVM (http://llvm.org/):"
+      },
+      "opt": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt",
+        "sha256": "4e691ddfbf949e5cae605f4211aa687ff10cfc59c45e04090fc7eb7771f76725",
+        "version_first_line": "LLVM (http://llvm.org/):"
+      },
+      "qemu-system-riscv64": {
+        "path": "/nix/store/9ihv5zpj6l7fl12mdcxrbmiih3wgrmhw-qemu-11.1.1/bin/qemu-system-riscv64",
+        "sha256": "656a0a05684a478dc6295eebcd5df2e3f3e15f1e9135491d32890477430bae2d",
+        "version_first_line": "QEMU emulator version 11.1.1"
+      }
+    },
+    "upstream": {
+      "narHash": "sha256-JO1pCqWeotC4zjiIQZccEPXfVHnuDQC0DugyuJvIMRs=",
+      "narSize": 674782584,
+      "revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+      "source_path": "/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source",
+      "uint_source": "/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source/src/Init/Data/UInt/Basic.lean",
+      "uint_source_sha256": "d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94"
+    },
+    "wall_seconds": 7.23864140996011
+  },
+  "authority_limits": {
+    "access": "IEEE oldstandard and USPTO artifact returned403; no account agreement, paid access or outreach",
+    "annex_conflict": "Table8 full48coded bits +99/047r1 permutation yields401d2970b596; visible Table9 bit33=0. Table10 tone+11 contradicts this. Table9 clipped; no complete published Table9 assertion. Original a2FAIL preserved.",
+    "final80211ax2021": "catalog identified; normative text not obtained, mandatory/optional closure UNKNOWN",
+    "framework_r17": "May25,2016 provisional/TBD framework, not final normative authority",
+    "legacy_proposals": "common numerical/coding evidence only; historic SIGNAL/tail/seed differences prevent full packet compatibility claim",
+    "visual_table": {
+      "bytes": 232173,
+      "path": "build/task006-wifi-spec-a1/annex-page8.png",
+      "sha256": "941772cbbb5848a9b7843491036209fe0cf4c09bfb6182b770aaac5702b457f9"
+    }
+  },
+  "commands": [
+    "nix develop --no-write-lock-file --command env LEMMA_WIFI_CODEC_OUTPUT=<unused_absolute_path> flock build/task006-lake.lock lake env lean tests/radio/WiFiCodec.lean",
+    "nix develop --no-write-lock-file --command python3 scripts/check_guest_wifi_codec.py --work-dir build/silicon/<unused-guest> --native-bundle build/native/task006-arithmetic-a3",
+    "python3 scripts/check_wifi_ofdm.py --work-dir build/silicon/<unused-component> --guest-receipt build/silicon/<qualified-guest>/result.json",
+    "python3 -m unittest discover -s tests/radio -v",
+    "python3 scripts/check_scaffold.py",
+    "python3 -m unittest discover -s tests/scaffold -v"
+  ],
+  "contract": "docs/contracts/006-wifi-common-ofdm-data-v1.md",
+  "genuine_Lean": {
+    "host_LLVM": {
+      "bytes": 38760,
+      "path": "build/task006-wifi-lean-a3/codec/codec.ll",
+      "sha256": "d054f4ff44bacb2dab3ac7fcefcff255b20a07d32d3dd67b553d66f9a29881f0"
+    },
+    "host_fixture": {
+      "bytes": 255,
+      "path": "build/task006-wifi-lean-a3/fixture.log",
+      "sha256": "762c9efaed78ee4239a083f2bd071aea9be7deb9e9ae54ed23c8cdc3ca8b00df"
+    },
+    "scope": "genuine scalar/bounded-fold lowering under existing profile; host numerical fixture is not RV64 execution"
+  },
+  "host_checks": {
+    "radio": {
+      "count": 12,
+      "log": {
+        "bytes": 1598,
+        "path": "build/task006-wifi-plan-a1/host-tests.log",
+        "sha256": "ac97bc0a2e77fb242870fc09f76a9ff576ea66f6f8a35480cb173a76eb21ed42"
+      },
+      "new_wifi": 5
+    },
+    "scaffold": {
+      "bytes": 185,
+      "path": "build/task006-wifi-plan-a1/scaffold.log",
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+    },
+    "scaffold_tests": {
+      "count": 18,
+      "log": {
+        "bytes": 1811,
+        "path": "build/task006-wifi-plan-a1/scaffold-tests.log",
+        "sha256": "f82ed41d1ad9c82c2d3996d404c5e6890b923bafd014c502c4b7c37a5c5ce672"
+      }
+    }
+  },
+  "original_failures": [
+    {
+      "kind": "actual RTL component campaign",
+      "log": {
+        "bytes": 1837,
+        "path": "build/silicon/task006-wifi-ofdm-data-a1/build.log",
+        "sha256": "2f616f47e089a02c3c57dab335acb54c4f863c40ba62348c08ada7e612d0d32a"
+      },
+      "reason": "strict Verilator width warnings in distance helper",
+      "result": {
+        "bytes": 1489,
+        "path": "build/silicon/task006-wifi-ofdm-data-a1/result.json",
+        "sha256": "eb7529569122f2a4bc73f5674542c909f29fe2aaea914a57889479cd9a4a1157"
+      }
+    },
+    {
+      "kind": "actual RTL component campaign",
+      "log": {
+        "bytes": 70,
+        "path": "build/silicon/task006-wifi-ofdm-data-a2/simulation.log",
+        "sha256": "0d2da792273d6ff4600f628fc4bdb3170954ef55d787675c35c07798bbd1d8ec"
+      },
+      "reason": "IEEE99/107 Table10 tone+11 conflicts with Table8/permutation and visible Table9 bit33",
+      "result": {
+        "bytes": 5373,
+        "path": "build/silicon/task006-wifi-ofdm-data-a2/result.json",
+        "sha256": "4ad337b75bbd53e3260165112d7b5972ecb89fad4a5ef769b1ea910d0f6c5dc1"
+      }
+    },
+    {
+      "kind": "actual RTL component campaign",
+      "log": {
+        "bytes": 267,
+        "path": "build/silicon/task006-wifi-ofdm-data-a3/simulation.log",
+        "sha256": "19932dfd03dff00326b9157a4579c06626b529bf6ea2454de0171d7c9137e5dc"
+      },
+      "reason": "observer required cadence4 for missing first pre-acquisition sample; actual pilot9/no publication",
+      "result": {
+        "bytes": 5374,
+        "path": "build/silicon/task006-wifi-ofdm-data-a3/result.json",
+        "sha256": "58566b8a9d190e81cba33f30805c622a2ab7840dce6c47ddc06e9a0f077d9680"
+      }
+    },
+    {
+      "kind": "actual RTL component campaign",
+      "log": {
+        "bytes": 322,
+        "path": "build/silicon/task006-wifi-ofdm-data-a4/simulation.log",
+        "sha256": "920b810ef20d004c2f2d52e753e605cfb497ff975a8fc22fe6522e6f77b0c02b"
+      },
+      "reason": "same exact first-sample observer failure, now diagnostic packets0/head0/fault9",
+      "result": {
+        "bytes": 5372,
+        "path": "build/silicon/task006-wifi-ofdm-data-a4/result.json",
+        "sha256": "2ec07ab1b091cd9a7dcf021faa6db26f26d15acd0c111054e60c3c4742b0614f"
+      }
+    },
+    {
+      "kind": "actual RTL component campaign",
+      "log": {
+        "bytes": 587,
+        "path": "build/silicon/task006-wifi-ofdm-data-a5/simulation.log",
+        "sha256": "e27a3c608ddd3e349812f30cbe2299ded6f7589e674d8e8c5cc0c059b3329940"
+      },
+      "reason": "observer used ordinary successful read helper on intentionally disabled bus",
+      "result": {
+        "bytes": 5375,
+        "path": "build/silicon/task006-wifi-ofdm-data-a5/result.json",
+        "sha256": "3f2fdb5c2cb1e03abe0f66e43b3bd50d6a9555fec71f7783fd3110179986d5cc"
+      }
+    },
+    {
+      "commands": {
+        "bytes": 6723,
+        "path": "build/silicon/task006-wifi-codec-guest-a1/commands.json",
+        "sha256": "1d8f47c1b557cba16f964600a4c3ddf1004a11d297fd094cafa36377aade6345"
+      },
+      "kind": "actual genuine guest compile campaign",
+      "reason": "new draft used unadmitted Action-valued argument; frontend rejected without broadening",
+      "result": {
+        "bytes": 1069,
+        "path": "build/silicon/task006-wifi-codec-guest-a1/result.json",
+        "sha256": "0a1d9cd318b47c6376390aaac90770a4e77276b3ce639966426f7d67870c8c2a"
+      },
+      "source_preimage_scope": "original error/commands retained; failed draft source not separately archived"
+    },
+    {
+      "commands": {
+        "bytes": 6685,
+        "path": "build/silicon/task006-wifi-codec-guest-a2/commands.json",
+        "sha256": "ddebb7e3218f3767331e259c6bc746bd6e9925ac2733aa2145d05c62879801fb"
+      },
+      "kind": "actual genuine guest compile campaign",
+      "reason": "new exporter had not normalized Lean private source names before ownership check",
+      "result": {
+        "bytes": 892,
+        "path": "build/silicon/task006-wifi-codec-guest-a2/result.json",
+        "sha256": "dc2589863e32de2d91f762c7b7bff85ad7c2db7f0433583d814f43ad3550d3e6"
+      },
+      "source_preimage_scope": "original error/commands retained; failed draft source not separately archived"
+    },
+    {
+      "kind": "actual Lean module build",
+      "log": {
+        "bytes": 1416,
+        "path": "build/task006-wifi-lean-a1/build.log",
+        "sha256": "1c18cd3b6d5f18e07f76f3d83a2ced444b841fadd90b3a6d19f9d7e2bb985cdf"
+      },
+      "reason": "new draft used reserved identifier at"
+    },
+    {
+      "kind": "actual Lean module build",
+      "log": {
+        "bytes": 1897,
+        "path": "build/task006-wifi-lean-a2/build.log",
+        "sha256": "ee053c02ae5f36ed5fe5f09cdff6bb8e028ceeb4683be80889d5125ccc200a2c"
+      },
+      "reason": "new draft inferred unsupported literal/mixed Nat bitwise types"
+    }
+  ],
+  "plan": {
+    "build_jobs": 2,
+    "build_timeout_seconds": 300,
+    "component": "lemma-wifi-ofdm-data/1",
+    "data_symbols_max": 8,
+    "hardware_clock_hz": 100000000,
+    "he_normative_mandatory_closure": "UNVERIFIED: public framework is provisional, final standard access not obtained; no HE admission",
+    "native_guest_cycle_bound": 5000000,
+    "native_guest_timeout_seconds": 120,
+    "payload_max_bytes": 16,
+    "profile012": "reserved for later connected integration, not registered by this component",
+    "psdu_max_bytes": 20,
+    "sample_clock_hz": 20000000,
+    "scope": "Bounded common legacy20MHz BPSK r1/2 DATA coding and complex sample component; a Wi-Fi6 construction dependency, not HE PPDU or whole radio",
+    "simulation_timeout_seconds": 30
+  },
+  "profile012": "reserved, NOT_REGISTERED by this milestone",
+  "public_primary_inputs": [
+    {
+      "bytes": 1617368,
+      "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "final_url": "https://mentor.ieee.org/802.11/dcn/15/11-15-0132-17-00ax-spec-framework.docx",
+      "name": "framework-r17.docx",
+      "sha256": "0c1b2b15cdaad2a842c505b4f289889ff1d1c6beb7d252286d2319ae791a5a74",
+      "status": 200,
+      "url": "https://mentor.ieee.org/802.11/dcn/15/11-15-0132-17-00ax-spec-framework.docx"
+    },
+    {
+      "bytes": 41508,
+      "content_type": "application/pdf",
+      "final_url": "https://www.ieee802.org/11/Documents/DocumentArchives/1999_docs/90477r1A-Interleaver-Change.pdf",
+      "name": "interleaver-r1.pdf",
+      "sha256": "37885bc82352525f00663f2d5165dcd4040ee68c9c0bac5d31f23ee339ea260a",
+      "status": 200,
+      "url": "https://www.ieee802.org/11/Documents/DocumentArchives/1999_docs/90477r1A-Interleaver-Change.pdf"
+    },
+    {
+      "error": "<HTTPError 403: 'Forbidden'>",
+      "name": "ieee80211a-1999-uspto.pdf",
+      "url": "https://ptacts.uspto.gov/ptacts/public-informations/petitions/1557847/download-documents?artifactId=ArAkSUq3QPfKc2OjbL0C1sN8moxl-9rujAvEZj8awTqb6MRnXswDI0A"
+    },
+    {
+      "error": "<HTTPError 403: 'Forbidden'>",
+      "name": "legacy-official.pdf",
+      "url": "https://standards.ieee.org/getieee802/download/802.11a-1999.pdf"
+    },
+    {
+      "bytes": 187691,
+      "content_type": "application/pdf",
+      "final_url": "https://www.ieee802.org/11/Documents/DocumentArchives/1998_docs/807267A-OFDM-Physical-Layer.pdf",
+      "name": "ofdm-submission.pdf",
+      "sha256": "49653fd630646bbe1442639a63a69f258b6338f2a2eca5d68ed4ef0de8380e39",
+      "status": 200,
+      "url": "https://www.ieee802.org/11/Documents/DocumentArchives/1998_docs/807267A-OFDM-Physical-Layer.pdf"
+    },
+    {
+      "bytes": 280282,
+      "name": "annex-e-proposed.pdf",
+      "sha256": "e02206d69d1e453d83dae3ce8e43b883207b6ee1869b2c8e41bbbd606b8ce287",
+      "status": 200,
+      "url": "https://www.ieee802.org/11/Documents/DocumentArchives/1999_docs/91077a-Annex-E-proposed-text.pdf"
+    }
+  ],
+  "remaining": [
+    "final IEEE802.11ax mandatory/optional normative closure",
+    "HE20 SU242tone/HE-SIG/LTF/RU/OFDMA/LDPC capability requirements",
+    "complete legacy preamble/SIGNAL/acquisition/frequency/timing/channel estimation/equalization",
+    "MAC addressing/framing/CSMA/ACK/retry/security/association/power save",
+    "connected0.12 same-machine Lean driver/owned-buffer/queue/IRQ integration",
+    "RF/coexistence arbiter/physical STA/synthesis/DRC/LVS/regulatory/interoperability",
+    "whole-machine/public malformed snapshot admission"
+  ],
+  "rtl": {
+    "KAT_Q14_error": 0.997292,
+    "binary_sha256": "37e3a6c885447ccf54a692b56edd00298898a6f32e765f81a68c979eb6813307",
+    "build": {
+      "bytes": 10436,
+      "path": "build/silicon/task006-wifi-ofdm-data-a8/build.log",
+      "sha256": "633f341bf93a3fc91c1dce1e1afc19cc7c6512bba411809e52c9c518752ac2c2"
+    },
+    "build_seconds": 32.553094386996236,
+    "checks": [
+      "two separate RTL endpoints generate and decode real signed complex I/Q traffic",
+      "12 length1/2/15/16 \u00d7seed1/93/127 descriptors",
+      "one changed BPSK tone actually corrected by Viterbi, metric1; many changed tones rejected",
+      "clean BCC but wrong FCS rejected through CRC, metric0",
+      "six dropped samples: index0 pilot9, other acquired strobes cadence4; no head/packet publication",
+      "wrong seed,8192clock no-sample timeout, extra early strobe",
+      "immutable head overflow/ACK; new publication wins coincident ACK and W1C",
+      "busy staging, malformed widths/lengths, coex cancel, powerdisable bus rejection, in-flight reset",
+      "six6000-clock private fork suffixes compare every raw sample, public register/octet/IRQ/busy output and entire final generated state"
+    ],
+    "coding_state_boundaries": [
+      {
+        "cut": 19,
+        "pending_wire": false,
+        "phase": 0
+      },
+      {
+        "cut": 45,
+        "pending_wire": true,
+        "phase": 0,
+        "selection": "first live valid sample reached within predeclared64-clock seek"
+      },
+      {
+        "cut": 421,
+        "pending_wire": false,
+        "phase": 0
+      },
+      {
+        "cut": 3251,
+        "pending_wire": false,
+        "phase": 2
+      },
+      {
+        "cut": 3390,
+        "pending_wire": false,
+        "phase": 3
+      },
+      {
+        "cut": 3600,
+        "pending_wire": false,
+        "phase": 4
+      }
+    ],
+    "declared_clock_hz": 100000000,
+    "declared_sample_strobe_hz": 20000000,
+    "derived_Q14_bound": 1.5,
+    "guest_payload_source": {
+      "bytes": 32,
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-wifi-codec-guest-a3/guest-payloads.bin",
+      "receipt": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-wifi-codec-guest-a3/result.json",
+      "receipt_sha256": "de8e6bc44d7a93b8b6287bfd4984fec9aab083a34b9c709571e9d850668ae011",
+      "sha256": "ef49150b2c15cdf7c6db8f653111a7d9651c58dab66ade314aee2a3d7a3c85d3"
+    },
+    "independent_IFFT_max_Q14_error": 1.0298,
+    "known_answers": {
+      "BCC_input24": "00d064",
+      "BCC_output48": "0e45889f13b0",
+      "CRC32_ASCII_123456789": "cbf43926",
+      "derived_interleaved48": "401d2970b596",
+      "first16zero_scramble": "9836",
+      "scrambler_seed": 93
+    },
+    "observed_strobe_period_clocks": 5,
+    "peak_process_RSS": "NOT_MEASURED; allocated_MB is Verilator own allocator statistic, not process peak",
+    "physical_timing": "NOT_RUN/UNVERIFIED; clock is a digital protocol declaration",
+    "result": {
+      "bytes": 13282,
+      "path": "build/silicon/task006-wifi-ofdm-data-a8/result.json",
+      "sha256": "801fdab825adfab465e9acb827f8d6dc26a8a584d1074f3b045e73623760acac"
+    },
+    "simulation": {
+      "bytes": 1264,
+      "path": "build/silicon/task006-wifi-ofdm-data-a8/simulation.log",
+      "sha256": "d110cfac95c608295fd28ec219a999cdc00d33772a0d96c7af3dac5e5bc90a1b"
+    },
+    "simulation_seconds": 2.7707059099921025,
+    "snapshot_scope": "finite same-component continuation; no mask/flush/reset/clean-boundary requirement, no public corrupt-checkpoint admission or whole-machine integration",
+    "snapshots": {
+      "snapshots/cut-19-fork-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "91d6503f00f1b2f5e0cd0485fc902ba1cc0dcb7d6469f286e3c38e20fdefeed5"
+      },
+      "snapshots/cut-19-fork-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "b3349cb1f95f282bfe04413d22055e0e13c1a5a0b0af0ca3a27af9259cec7462"
+      },
+      "snapshots/cut-19-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "91d6503f00f1b2f5e0cd0485fc902ba1cc0dcb7d6469f286e3c38e20fdefeed5"
+      },
+      "snapshots/cut-19-rx.state": {
+        "bytes": 5519,
+        "sha256": "90a62213dd178c74dc9148178268b0e936b54209c1f578284e756c8cad9c2442"
+      },
+      "snapshots/cut-19-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "b3349cb1f95f282bfe04413d22055e0e13c1a5a0b0af0ca3a27af9259cec7462"
+      },
+      "snapshots/cut-19-tx.state": {
+        "bytes": 5519,
+        "sha256": "ef5eae5032193c2677426695268e23c62bf2331b1b8bb703d086ff0cff9ab1f0"
+      },
+      "snapshots/cut-19-wire.state": {
+        "bytes": 10,
+        "sha256": "01d448afd928065458cf670b60f5a594d735af0172c8d67f22a81680132681ca"
+      },
+      "snapshots/cut-3251-fork-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "4c10695fdf8f3d8a6a7de825d0620a79b605f4d1bd23bca5ed6cb152e491744f"
+      },
+      "snapshots/cut-3251-fork-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "30e65ae49f1ba1e52f6d0a190e377a94f299daff99bcd5f26aa73f90a28a0d73"
+      },
+      "snapshots/cut-3251-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "4c10695fdf8f3d8a6a7de825d0620a79b605f4d1bd23bca5ed6cb152e491744f"
+      },
+      "snapshots/cut-3251-rx.state": {
+        "bytes": 5519,
+        "sha256": "5413aae626db6a33073ac71cec0b32e6e18cc0e2556ce5248ac9a49be2e3a772"
+      },
+      "snapshots/cut-3251-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "30e65ae49f1ba1e52f6d0a190e377a94f299daff99bcd5f26aa73f90a28a0d73"
+      },
+      "snapshots/cut-3251-tx.state": {
+        "bytes": 5519,
+        "sha256": "fef0961145cb39737efe678cd73c08a312334a7dc945ecebdb2743ab3d3725c2"
+      },
+      "snapshots/cut-3251-wire.state": {
+        "bytes": 10,
+        "sha256": "733183c273734fb5857f81880990731810a100bc57d12111424c5926f4bb13a5"
+      },
+      "snapshots/cut-3390-fork-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "aebafcfcbd4a44de23d112a6e41c94608ce9fe04e55730a0df3b764d8e602fe6"
+      },
+      "snapshots/cut-3390-fork-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "8c626b0608de4ab3920def96ecbc5d4643a25b43cb7dd092ca8ffe1ba1755e3c"
+      },
+      "snapshots/cut-3390-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "aebafcfcbd4a44de23d112a6e41c94608ce9fe04e55730a0df3b764d8e602fe6"
+      },
+      "snapshots/cut-3390-rx.state": {
+        "bytes": 5519,
+        "sha256": "2a7c8b4a18690bfa5d7b322a46f41a1467872835fc4ad72b1ef05a1ee704e30d"
+      },
+      "snapshots/cut-3390-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "8c626b0608de4ab3920def96ecbc5d4643a25b43cb7dd092ca8ffe1ba1755e3c"
+      },
+      "snapshots/cut-3390-tx.state": {
+        "bytes": 5519,
+        "sha256": "d8e23105551ff950e1ab7f8b24867f20000b3029e365b8bc4c73bc9bd7b5feb6"
+      },
+      "snapshots/cut-3390-wire.state": {
+        "bytes": 10,
+        "sha256": "733183c273734fb5857f81880990731810a100bc57d12111424c5926f4bb13a5"
+      },
+      "snapshots/cut-3600-fork-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "784147d98da8f5d979ee9d7f42d8b73aa4a5a21427214d7f82a9aa36a4a758d3"
+      },
+      "snapshots/cut-3600-fork-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "ab03f85c5c783c8c4f82919a0115f6f8cc00cad5e14dd4fec279056aeeed1b80"
+      },
+      "snapshots/cut-3600-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "784147d98da8f5d979ee9d7f42d8b73aa4a5a21427214d7f82a9aa36a4a758d3"
+      },
+      "snapshots/cut-3600-rx.state": {
+        "bytes": 5519,
+        "sha256": "2344ad37d236420a474b2e03cc51e3ccd04ba0cdb4d650e5f87abad2502c3af6"
+      },
+      "snapshots/cut-3600-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "ab03f85c5c783c8c4f82919a0115f6f8cc00cad5e14dd4fec279056aeeed1b80"
+      },
+      "snapshots/cut-3600-tx.state": {
+        "bytes": 5519,
+        "sha256": "ee0d26293af889445359ef698ead8542a9cd63675cc2a4dff5f159841b4ee507"
+      },
+      "snapshots/cut-3600-wire.state": {
+        "bytes": 10,
+        "sha256": "733183c273734fb5857f81880990731810a100bc57d12111424c5926f4bb13a5"
+      },
+      "snapshots/cut-421-fork-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "0095d77ef3e3e78931f43904a58e8e0808da9750957fc32b1aec5dbc0ddd155f"
+      },
+      "snapshots/cut-421-fork-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "f98d61b1af1ce9ad4ef69880e02e421000cc1c749016b76fa1a1c750280a79ae"
+      },
+      "snapshots/cut-421-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "0095d77ef3e3e78931f43904a58e8e0808da9750957fc32b1aec5dbc0ddd155f"
+      },
+      "snapshots/cut-421-rx.state": {
+        "bytes": 5519,
+        "sha256": "d7eb00d0fa383d4baadbd11cbe4c5111ed28a8f21b6b019b0791b10a4bcc7467"
+      },
+      "snapshots/cut-421-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "f98d61b1af1ce9ad4ef69880e02e421000cc1c749016b76fa1a1c750280a79ae"
+      },
+      "snapshots/cut-421-tx.state": {
+        "bytes": 5519,
+        "sha256": "b0d7d6c1af0be9a45dc4774ee97e42683ae0493648cb81214f14b67963ebbb20"
+      },
+      "snapshots/cut-421-wire.state": {
+        "bytes": 10,
+        "sha256": "811d6c4c8dbfc3fe24d56a1a793697a80ddd58cab330c86878cd469c1196641d"
+      },
+      "snapshots/cut-45-fork-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "efe0b671ab3d8b2702cba2439a01b2a29daa7cf9cd0f2d79b917af05d3d4a902"
+      },
+      "snapshots/cut-45-fork-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "45af0a54a16516ae3e73d01ab26a5dc11ad54812739a17ee47fcfee7f0377860"
+      },
+      "snapshots/cut-45-rx-final.state": {
+        "bytes": 5519,
+        "sha256": "efe0b671ab3d8b2702cba2439a01b2a29daa7cf9cd0f2d79b917af05d3d4a902"
+      },
+      "snapshots/cut-45-rx.state": {
+        "bytes": 5519,
+        "sha256": "9228b3bfed1987e752cd20592b5e38a2f636c1ead69890ec81128cb95e88ed2f"
+      },
+      "snapshots/cut-45-tx-final.state": {
+        "bytes": 5519,
+        "sha256": "45af0a54a16516ae3e73d01ab26a5dc11ad54812739a17ee47fcfee7f0377860"
+      },
+      "snapshots/cut-45-tx.state": {
+        "bytes": 5519,
+        "sha256": "3f8eee86b90c0c483979980823cbae285995c7af56385b6f6e43907510a6628f"
+      },
+      "snapshots/cut-45-wire.state": {
+        "bytes": 10,
+        "sha256": "c9830726d14ff633a761225be5036d8088aef4d57654017ba634fce5bd05c955"
+      }
+    },
+    "source_inputs": {
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+      "scripts/check_silicon.py": "c9cdbbdc8314db379581a0263795b40227fcc9a3d7661e4fb693daa25228459a",
+      "scripts/check_wifi_ofdm.py": "934058df15cc7c62c1936e7228462764594907b02a010361646536ed7422de6d",
+      "sim/rtl/lemma_wifi_bcc_symbol.sv": "d24306ba0018e5a8318ba5e19b7e5dd20c895992ee8714ae98cd345458b3cef7",
+      "sim/rtl/lemma_wifi_math.sv": "8ec4cb7f22f18fd65dc38bb8350125ac097bbfb323c66dafd57bc8803cfafa60",
+      "sim/rtl/lemma_wifi_ofdm_data.sv": "7a8dafb2af073b7732574dc09fe531d3bfc5dc5f4b90337f4372ae5b2e48f073",
+      "tests/radio/WiFiDataProbe.sv": "b5e95a2372f14dfaa11cc310e6abc6c5760c008cb56254a6b4be1bfcd1a2720c",
+      "tests/radio/wifi_ofdm_data.cpp": "5fc67d1681f3b5529401c24cc50bc793fcbb77d41e0270a253aae53a4279d5bd",
+      "tooling/silicon/sim.nix": "81cb84fdab6c36979c9b40d492840ba53e0076d3bbe5a93ecb7247cba0cd271c"
+    },
+    "status": "PASS_RTL_COMPONENT",
+    "tools": {
+      "c++": {
+        "path": "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++",
+        "sha256": "c1a58806b7b7c5f038a81f94c27796764fc8cd9f8059aef62c5e83a761a56935",
+        "version": "g++ (GCC) 16.2.0"
+      },
+      "make": {
+        "path": "/nix/store/z565rgmn9vccv2h0g87z725pw610jmm8-gnumake-4.4.1/bin/make",
+        "sha256": "fee96a0fae52353d14f8d5be991366483d96f00800f8f707198af68ce47b8fea",
+        "version": "GNU Make 4.4.1"
+      },
+      "verilator": {
+        "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator",
+        "sha256": "f1f41487e2a6c18e55859658df8d2e3528b76fc5c7b5a95281794ded61c7b802",
+        "version": "Verilator 5.052 2026-09-05 rev v5.052"
+      },
+      "verilator_bin": {
+        "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator_bin",
+        "sha256": "7e75a7d71fec9faf87f2933b5a53040d474788ffd183f840c320a1aab228a3ae",
+        "version": "Verilator 5.052 2026-09-05 rev v5.052"
+      }
+    },
+    "two_endpoint_samples": {
+      "forward9bytes": 480,
+      "guest_generated16bytes_each_direction": 640,
+      "reverse16bytes": 640
+    },
+    "verilator_allocated_MB": 43.242,
+    "wall_seconds": 35.36276724899653
+  },
+  "schema": "lemma-wifi-common-ofdm-data/1",
+  "scope": "Bounded common legacy20MHz BPSK/r1/2 DATA coding and real complex-sample endpoint component, a Wi-Fi6 construction dependency; not final-standard conformance or a connected whole-machine radio",
+  "source_inputs": {
+    "Lemma/Compiler/WiFiCodecExport.lean": "27dcb6dd4b204ac474cde90dcdd241a600c2ec95393d3aac5946ed8ca8a337d5",
+    "Lemma/Platform/RiscV/Development/WiFiCodecPolicy.lean": "e8f7aea8b3d67dbd2edaf9e428e08c2319acf76cf5f0ab5a08462d904619e387",
+    "Lemma/Radio/WiFi/Codec.lean": "2b55f803a5b8967aa230967be03119f510324e4c595a48171516d4fca848004b",
+    "docs/contracts/006-wifi-common-ofdm-data-v1.md": "cf1b6e4a84fcf99fbced60b83d0a20988e4ad22c62ade6995ebcd4934d5884dc",
+    "scripts/check_guest_wifi_codec.py": "f3826e05d025cb6ddcf55feb58562ca2c942195ab34d0c5e59f64aee2c4bcb71",
+    "scripts/check_wifi_ofdm.py": "934058df15cc7c62c1936e7228462764594907b02a010361646536ed7422de6d",
+    "sim/rtl/lemma_wifi_bcc_symbol.sv": "d24306ba0018e5a8318ba5e19b7e5dd20c895992ee8714ae98cd345458b3cef7",
+    "sim/rtl/lemma_wifi_math.sv": "8ec4cb7f22f18fd65dc38bb8350125ac097bbfb323c66dafd57bc8803cfafa60",
+    "sim/rtl/lemma_wifi_ofdm_data.sv": "7a8dafb2af073b7732574dc09fe531d3bfc5dc5f4b90337f4372ae5b2e48f073",
+    "tests/radio/WiFiCodec.lean": "765b8cf00adc70956466887cc3244092c2b1c80180ad555fb42f571b395ab34e",
+    "tests/radio/WiFiDataProbe.sv": "b5e95a2372f14dfaa11cc310e6abc6c5760c008cb56254a6b4be1bfcd1a2720c",
+    "tests/radio/test_wifi_codec.py": "94a81a7ae7b613add7e95566c1b8e5d66b64936ec1050d6c41adc72473079f4b",
+    "tests/radio/wifi_ofdm_data.cpp": "5fc67d1681f3b5529401c24cc50bc793fcbb77d41e0270a253aae53a4279d5bd"
+  },
+  "source_revision_at_execution": "worktree on task/006-whole-machine-lemmasim; exact consumed identities below, not a clean committed build",
+  "status": "PASS_COMMON_OFDM_COMPONENT",
+  "unchanged": [
+    "historical profiles/default applications/CounterPrimitives",
+    "shared frontend/LLVM lowering/auditors",
+    "current SoC/runtime and active immutable owners"
+  ]
+}

@@ -93,6 +93,15 @@ class KernelAuditFailures(unittest.TestCase):
         linked_section=' [2] .data PROGBITS 0000000000020000 002000 000010 00 WA 0 0 4096\n'
         for name,section in [('user/startup.o',object_section),('user/image.elf',linked_section)]:
             self.assertEqual(validate_user_abi_data(section,USER_ABI_INITIAL_DATA,'',assembly,object_file=name)['words'],[0,1])
+        for configuration in ('lemmasim-silicon-usb-clocked-package-retry-bulk-notebook',
+                              'lemmasim-silicon-usb-clocked-package-retry-bulk-initialize'):
+            for name,section in [('users/course/startup.o',object_section),('users/course/image.elf',linked_section)]:
+                self.assertEqual(validate_user_abi_data(section,USER_ABI_INITIAL_DATA,'',assembly,
+                    object_file=name,configuration=configuration)['words'],[0,1])
+                with self.assertRaises(Core0Error):validate_user_abi_data(section,bytes(16),'',assembly,
+                    object_file=name,configuration=configuration)
+        with self.assertRaises(Core0Error):validate_user_abi_data(object_section,USER_ABI_INITIAL_DATA,'',assembly,
+            object_file='users/course/startup.o',configuration='lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook')
         for section,data,symbols,source,owner in [
             (object_section,USER_ABI_INITIAL_DATA,'',assembly,'user/program.o'),
             (object_section.replace('000010','000020'),USER_ABI_INITIAL_DATA,'',assembly,'user/startup.o'),

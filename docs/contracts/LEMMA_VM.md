@@ -1,3 +1,4 @@
+<!--
 # LemmaVM — boot-slice contract proposal
 
 Status: Task 001 executes and pins the bounded QEMU scalar-boot profile. Task 002
@@ -140,3 +141,5 @@ input corpus, model results, image hashes and relevant emulator metadata. Execut
 than one fresh boot and both unoptimized and optimized builds. No fabricated logs.
 
 See official QEMU references in `docs/SOURCES.md`.
+
+-->

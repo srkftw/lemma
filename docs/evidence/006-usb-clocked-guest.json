@@ -1,0 +1,455 @@
+{
+  "schema_version": 1,
+  "status": "PASS_CLOCKED13_GENUINE_GUEST_AND_NINE_PENDING_CUTS",
+  "scope": "Additive genuinely compiled Lean Clocked13 discovery/boot roots, exact complete artifact authority and two fresh full audited guest images. Actual audited initializer executes physical packet/owned-buffer/reset cuts and exact isolated captured continuations at opposite clock offsets. Clocked notebook Ready/Save and full standard/physical USB remain separate unfinished obligations.",
+  "profile": "lemma-silicon-dev/0.13.0",
+  "descriptor_abi": 14,
+  "kernel_profile": "core0-kernel-v0.6",
+  "software_deployment": "lemma-managed-sums-bulk-usb-clocked-deployment-v1",
+  "boundary": {
+    "features": 15,
+    "paper_version": 3,
+    "paper_stage_offset": 3584,
+    "phy_version": 2,
+    "phy_nominal_hz": 48000000,
+    "controller_nominal_hz": 100000000,
+    "cdc_version": 1,
+    "fifo_bytes": 128,
+    "packet_bytes": 67,
+    "pio_payload_bytes": 64,
+    "usb_irq": 16,
+    "usb_window": [
+      "0x10010a00",
+      "0x10010e00"
+    ],
+    "actual_readonly_offsets": [
+      176,
+      184,
+      192,
+      200,
+      208,
+      216
+    ],
+    "rates": "immutable nominal identity contracts, not measured oscillator values",
+    "product_nv_authority": false
+  },
+  "genuine_raw_fdt_and_faults": {
+    "source": {
+      "path": "tests/kernel/ClockedDiscoveryFlags.lean",
+      "bytes": 7310,
+      "sha256": "07cafd68d27802c8f2b4ba1f59f728bc4d850575b0e7df69e1adc461cd62a208"
+    },
+    "actual_dtb": {
+      "path": "build/managed/usb-clocked-discovery-facts-a1/platform.dtb",
+      "bytes": 2982,
+      "sha256": "eb244f1009f709c86af9880871c55e34ebceb509be9085e61cfcddc04709a6b6"
+    },
+    "log": {
+      "path": "build/managed/usb-clocked-qualified-component-a2/raw-fdt-action.log",
+      "bytes": 83,
+      "sha256": "26f8cca698c36dba15f7c3ebdf034612fcf42f23144422b3e152b1b00c0f1793"
+    },
+    "property_mask": 131071,
+    "distinct_fixed_cell_flags": [
+      256,
+      512,
+      1024,
+      2048,
+      4096,
+      8192,
+      16384,
+      32768,
+      65536
+    ],
+    "ordered_fault_prefixes": 30,
+    "readonly_identity_reads": 6,
+    "readonly_fault_and_mismatch_negatives": 12
+  },
+  "exact_artifact_authority": {
+    "helper": {
+      "path": "scripts/paper_clocked.py",
+      "bytes": 51083,
+      "sha256": "8e6373dad612cc7aec8bcbe78276f6411d7646133d552f81ab90cc28bd9dc267"
+    },
+    "checker": {
+      "path": "scripts/check_paper_clocked.py",
+      "bytes": 10774,
+      "sha256": "08e5f14b094e46596e844a445f6c21527f8277c848cb8c98b2c386cec8260ba5"
+    },
+    "quarantined_mutations": {
+      "path": "tests/kernel/paper_clocked_mutations.py",
+      "bytes": 6640,
+      "sha256": "5a04c189248ce2474d1df9d4326b3c61cbb6a0bb3500a16c432a84e5396ebf08"
+    },
+    "independent_reobserver": {
+      "path": "build/managed/usb-clocked-qualified-component-reobserver-a4/result.json",
+      "bytes": 876669,
+      "sha256": "df2d7ffc0fb39475fea60e17702d88ce7169f6760a28b81b7c73ac79225a2f42"
+    },
+    "genuine_original_archived_inputs": 329,
+    "recursive_target_modules": 64,
+    "recursive_exporter_modules": 50,
+    "pre_and_post_successor_body_authorities_per_role": 50,
+    "shared_actual_bodies": 49,
+    "typed_utf8_pools": 8,
+    "six_word_hardware_identity_pool": true,
+    "backend_switch_domains": [
+      32,
+      32,
+      64,
+      9
+    ],
+    "complete_generic_readonly_objects_per_role": 60,
+    "complete_backend_tables_per_role": 18,
+    "rejected_mutants_per_role": {
+      "notebook": 49,
+      "initializer": 49
+    }
+  },
+  "fresh_full_pair": {
+    "receipt": {
+      "path": "build/managed/usb-clocked-whole-pair-a2/result.json",
+      "bytes": 38393,
+      "sha256": "017bfb001bda4079290b867e28ed32e74a8e8c8d30d837fc98e94f7749650a91"
+    },
+    "roles": {
+      "initializer": {
+        "configuration": "lemmasim-silicon-usb-clocked-bulk-initialize",
+        "build": "build/kernel/task006-usb-clocked-bulk-initialize-a1",
+        "status": "PASS_BUILD_AUDIT_AND_EXACT_SOURCE_ARCHIVE",
+        "image_sha256": "ff750d21f03d152f2584008dca1180174c969b185585584cb6d295b00ccfd213",
+        "audit_sha256": "6e090b5b833129a6e847bc80e89eb6e4929e13ba809263408879ac48bdbf31b5",
+        "source_inputs": 326,
+        "source_archive_sha256": "01feb857c9dfbfa19f84e43c95c538e9c328da00930310fc7d6363619b174e56"
+      },
+      "notebook": {
+        "configuration": "lemmasim-silicon-usb-clocked-bulk-notebook",
+        "build": "build/kernel/task006-usb-clocked-bulk-notebook-a1",
+        "status": "PASS_BUILD_AUDIT_AND_EXACT_SOURCE_ARCHIVE",
+        "image_sha256": "c5bf79c3981a5cff321205d6d4ec2f6854508c65bf779a6295ca73c3eaf93473",
+        "audit_sha256": "915bc0839b4ed8af272fda4248014771e459c73cffeb81bed8b564743a5ca67d",
+        "source_inputs": 326,
+        "source_archive_sha256": "8b7a6b496890157c77a91500aaf6cfbfe0c5e35ddfac2c9fff05e0932633afd2"
+      }
+    },
+    "source_sets_equal": true,
+    "complete_original_inputs_per_role": 326,
+    "conservative_original_aggregate_host_seconds": 452.91380734829,
+    "original_aggregate_host_bound_seconds": 900,
+    "scope": "Actual fresh full image/ordinary artifact audits; initializer was sealed from its already-audited original artifacts after a wrapper schema correction, without recompile or changed source claims."
+  },
+  "legacy_preservation": {
+    "existing_definition_text": {
+      "path": "build/managed/usb-clocked-existing-target-text-a1.json",
+      "bytes": 482,
+      "sha256": "a13a9f6bdd2f2de4c21bfea5c404d2920c25c3ff4a32deca02c4f19c200b3144"
+    },
+    "all_existing_descriptor_dtb_notebook_definitions_exact": true,
+    "kernel_host_tests": {
+      "tests": 401,
+      "log": {
+        "path": "build/task006-usb-clocked-kernel-host-a1.log",
+        "bytes": 68895,
+        "sha256": "c4529f5073a344f3aaf332ac7b1963a58e2e7d3d646b855fceeecdc5b3764c18"
+      },
+      "scope": "host harness and retained artifact regression fixtures, not historical CPU reruns"
+    },
+    "scaffold_host_tests": {
+      "tests": 18,
+      "log": {
+        "path": "build/task006-usb-clocked-scaffold-host-a1.log",
+        "bytes": 1811,
+        "sha256": "67c995384e2e31168a54eac997e6373fafd17790139bad1237da71ddc467f672"
+      },
+      "metadata_only": true
+    }
+  },
+  "original_failures_retained": [
+    {
+      "receipt": {
+        "path": "build/managed/usb-clocked-full-ir-diagnostic-a1/result.json",
+        "bytes": 159,
+        "sha256": "15d2f0476d5d37a9097d286fc4a30939dfb9797c30a60466ee2a3d7379f51421"
+      },
+      "cause": "new exact USB/profile device selector absent"
+    },
+    {
+      "receipt": {
+        "path": "build/managed/usb-clocked-full-ir-diagnostic-a2/result.json",
+        "bytes": 380,
+        "sha256": "09b41ee3c73bbe1a52ffb469581a38dd6fee022c01b51ab0301c9deea0471c62"
+      },
+      "cause": "new exact readonly hardware identity coordinate absent"
+    },
+    {
+      "receipt": {
+        "path": "build/managed/usb-clocked-full-object-diagnostic-a1/result.json",
+        "bytes": 507,
+        "sha256": "de094c6ff4f3505376605bb8ce17068a18140c010e482d22ca99b7bb325642c3"
+      },
+      "cause": "new measured32-entry literal selector owner absent"
+    },
+    {
+      "receipt": {
+        "path": "build/managed/usb-clocked-qualified-component-a1/result.json",
+        "bytes": 39488,
+        "sha256": "a473dbd4436eaa4d793124b08f5058cfc158395c1617cb97acb15d4bfe251435"
+      },
+      "cause": "old320-input component inventory no longer matched the complete current repository; strict reuse rejected before qualification"
+    },
+    {
+      "receipt": {
+        "path": "build/managed/usb-clocked-qualified-component-a2/result.json",
+        "bytes": 52983,
+        "sha256": "0296d3176de1a0c714ab585784182efa25f3a246c2b651990f164468ebb994ac"
+      },
+      "cause": "fresh actual export/object/IR/negative checks completed, then broad inventory failed on unrelated package source edits; original329 archive and FAIL retained"
+    },
+    {
+      "receipt": {
+        "path": "build/managed/usb-clocked-qualified-component-reobserver-a3/result.json",
+        "bytes": 357,
+        "sha256": "f27f2182a3098a7b8efc22e12d3d963a133ed1283c687ab392ab801e707df449"
+      },
+      "cause": "prospective observer expected one unrelated package edit, actual source comparison found a second; rejected before artifact checks"
+    },
+    {
+      "receipt": {
+        "path": "build/managed/usb-clocked-whole-pair-a1/result.json",
+        "bytes": 36931,
+        "sha256": "b113a2861ea07eb56d999f5c4605a43c0d9a14d7adc1e8a1c2cbf2486b5007e5"
+      },
+      "cause": "cohort wrapper incorrectly expected build statusPASS instead of actualBUILT after successful genuine build/full audit; original artifacts sealed without recompile under original residual900s budget"
+    }
+  ],
+  "actual_guest_execution": {
+    "status": "PASS",
+    "receipt": {
+      "path": "build/usb/clocked-pending-a1/result.json",
+      "bytes": 26973,
+      "sha256": "580a6e9c4989e33bc81fa5bef3ec58ba87ec7265616715cc0d58d421eecd9e68"
+    },
+    "identity": {
+      "native": "90638d9213a153daaed48b343f0be7880143a286bc40f753b002d0f3836ac401",
+      "implementation": "1613b2347fad50b7874a8791e7088b48913284db9a839c3506941060daaaa3cb",
+      "guest": "ff750d21f03d152f2584008dca1180174c969b185585584cb6d295b00ccfd213",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "dtb": "eb244f1009f709c86af9880871c55e34ebceb509be9085e61cfcddc04709a6b6",
+      "descriptor": "5bfc34263f44cd265e5b0e9960b372aafd066b6b9bb5323d8f4601309f574e12"
+    },
+    "native_archive": {
+      "schema": "lemma-explicit-rtl-source-archive/1",
+      "source_root": "/home/sreekumaar/Downloads/lemma/build/usb/native13-consumed-source-archive-a2/source",
+      "archive": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/usb/native13-consumed-source-archive-a2/consumed-source-archive.json",
+        "sha256": "d46e47e953deeefb1fa8c0d7e27b14626a1529edd2c6c68ddbcde31df5f87c40"
+      },
+      "original_receipt": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/usb/native13-consumed-source-archive-a2/consumed-runtime-receipt.json",
+        "sha256": "68776dc46f93830481cdff76c0840f9ea6b68faeea547da944fe4de330bcd3af"
+      },
+      "native_manifest": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-clocked-runtime-a2/build.json",
+        "sha256": "29067696a956b0b09b19b7aba6bbba19520585cbc6670d72eab42741b159b2cc"
+      },
+      "snapshot_identity": "1613b2347fad50b7874a8791e7088b48913284db9a839c3506941060daaaa3cb",
+      "binary": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-clocked-runtime-a2/obj/lemma-rtl",
+        "sha256": "90638d9213a153daaed48b343f0be7880143a286bc40f753b002d0f3836ac401"
+      },
+      "inputs": 254,
+      "scope": "unchanged archived native USBClocked13 machine; newly prepared guests retain their own source and audit identities"
+    },
+    "guest_bundle": {
+      "schema": "lemmasim-native-bundle/6",
+      "manifest_sha256": "9e1cf43dbf083cefb9f814cf510e0ea930b4655717f3b7b8152423bc5166b500",
+      "source_commit": "02367b8a6b7a6858adaf38c33bfc899ff23b1f78",
+      "scope": "complete original consumed lemma-silicon-dev/0.13.0 sources and artifacts; RTL only",
+      "software_deployment": {
+        "contract_version": "lemma-managed-sums-bulk-usb-clocked-deployment-v1",
+        "configurations": {
+          "usb-clocked-bulk-notebook": "lemmasim-silicon-usb-clocked-bulk-notebook",
+          "usb-clocked-bulk-initializer": "lemmasim-silicon-usb-clocked-bulk-initialize"
+        }
+      }
+    },
+    "bounds": {
+      "target_cycles": 70000000,
+      "fixture_host_seconds": 1800,
+      "external_host_response_timeout_ms": 60000,
+      "maximum_fixture_tree_rss_kib": 4194304,
+      "maximum_owned_apparent_bytes": 12000000000
+    },
+    "fixed_phy_clocks": {
+      "host_ppm": 2500,
+      "chip_ppm": -2500,
+      "host_phase": 7,
+      "chip_phase": 38
+    },
+    "host_seconds": 119.17810277099488,
+    "cases": [
+      {
+        "case": "startup",
+        "snapshot_cycle": 0,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.40443,
+        "peak_rss_kib": 1023452,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 0,
+        "captured_incoming_bytes": 0,
+        "pending_command": 2
+      },
+      {
+        "case": "reset",
+        "snapshot_cycle": 5000,
+        "suffix_cycles": 3000,
+        "host_seconds": 4.88249,
+        "peak_rss_kib": 1023452,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 0,
+        "captured_incoming_bytes": 0,
+        "pending_command": 2
+      },
+      {
+        "case": "physical-send",
+        "snapshot_cycle": 5002017,
+        "suffix_cycles": 5000,
+        "host_seconds": 6.29203,
+        "peak_rss_kib": 1023452,
+        "captured_host_tx_state": 1,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 3,
+        "captured_incoming_bytes": 3,
+        "pending_command": 8
+      },
+      {
+        "case": "physical-receive",
+        "snapshot_cycle": 5009079,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.13471,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 2,
+        "captured_chip_rx_state": 2,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 3,
+        "captured_incoming_bytes": 3,
+        "pending_command": 0
+      },
+      {
+        "case": "physical-guard",
+        "snapshot_cycle": 5017304,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.59237,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 8,
+        "captured_cursor": 3,
+        "captured_incoming_bytes": 3,
+        "pending_command": 0
+      },
+      {
+        "case": "physical-chip-send",
+        "snapshot_cycle": 5025315,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.74413,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 1,
+        "captured_guard_samples": 1,
+        "captured_cursor": 3,
+        "captured_incoming_bytes": 3,
+        "pending_command": 0
+      },
+      {
+        "case": "owned-submit",
+        "snapshot_cycle": 9604000,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.1874,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 0,
+        "captured_incoming_bytes": 0,
+        "pending_command": 0
+      },
+      {
+        "case": "owned-receive",
+        "snapshot_cycle": 9616434,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.54945,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 7,
+        "captured_cursor": 35,
+        "captured_incoming_bytes": 35,
+        "pending_command": 3476
+      },
+      {
+        "case": "domain-reset",
+        "snapshot_cycle": 9721069,
+        "suffix_cycles": 3000,
+        "host_seconds": 7.83752,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 2,
+        "captured_chip_rx_state": 1,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 3,
+        "captured_incoming_bytes": 3,
+        "pending_command": 0
+      }
+    ],
+    "fixture_supervision": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-pending-a1/run.supervision.json",
+      "sha256": "7e8b6e942b6d5887e3a0139f38c73080c49e5f0c5f9140252580c6d009f78643"
+    },
+    "owned_disk": {
+      "apparent_bytes": 6822775177,
+      "allocated_bytes": 6554664960
+    },
+    "scope": "Nine actual RV64/PHY states and full checkpoint prefix/suffix equality, isolated captured outcomes without external peer contact, missing/horizon/corrupt/identity rejection and checksum-valid wrong actual SEND reply causes partial-period run/snapshot rejection; no new full notebook/standard USB conformance claim."
+  },
+  "open": [
+    "ordinary Clocked notebook Ready/Save/independent cold",
+    "complete standard USB MAC response timing and conformance",
+    "comprehensive asynchronous reset/CDC and analog metastability/MTBF",
+    "physical clock/electrical qualification"
+  ],
+  "selected_profile_archive_correction": {
+    "status": "PASS",
+    "receipt": {
+      "path": "build/usb/clocked-archive-boundary-a3/result.json",
+      "bytes": 7954,
+      "sha256": "5a6c8b84164fa1eb3e4c33f8cec03e812756838d68a6e0f8b85c0618f086ece0"
+    },
+    "original254_capture_and_actual119s_execution": "retained under original identities; original native source map omitted the selected13 JSON separately bound by native profile_sha256",
+    "corrected_archive": "build/usb/native13-consumed-source-archive-a3/source",
+    "schema": "lemma-usb-native-source-archive/2",
+    "inputs": 255,
+    "sidecar_sha256": "ff3a65bf4b3aa02206314c1eded7b9cb376a19eeba3bba26917c4b39295fa274",
+    "selected_profile_sha256": "431b5eeec21994c7be38ff1d00af8c9f409d645f4d11f425053c2760561a672f",
+    "corrected_package": "build/native/task006-usb-clocked-a4",
+    "scope": "Independent archival/public validation successor from already-bound exact original bytes; no native/target rebuild or CPU rerun. Native and prepared hashes/selected identities must agree; explicit archives/package execute/capture/replay use bound profile and complete source authority without ROOT fallback. Original direct and package paths and metadata differences have separate vectors.",
+    "actual_rejected_boundary_mutants": 9,
+    "original_failures_retained": [
+      "build/usb/clocked-prepare-a2/pack.log",
+      "build/usb/clocked-archive-boundary-a1/result.json"
+    ]
+  }
+}

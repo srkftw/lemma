@@ -1,3 +1,4 @@
+<!--
 # LemmaVM QEMU `virt` audit for Task 001
 
 The tested emulator is QEMU 11.1.1, upstream commit
@@ -92,3 +93,5 @@ The SiFive finisher encodes host status in the upper 16 bits.  Probes establishe
 `0x5555` exits successfully, while a failure write must use `0x00013333` (not merely
 `0x3333`) to make QEMU return nonzero.  Both writes are 32-bit volatile MMIO surrounded
 by the generated I/O fence primitive.
+
+-->

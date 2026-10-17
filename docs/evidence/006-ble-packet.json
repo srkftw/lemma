@@ -1,0 +1,142 @@
+{
+  "schema": "lemma-ble-packet-milestone/1",
+  "status": "SCOPED_PASS",
+  "scope": "Partial LE1M hard-decision packet circuitry, scalar Lean packet algorithms and finite privileged PIO routines. Not complete Bluetooth5.4, connected companion, real RV64 controller execution or RF qualification.",
+  "contract": "docs/contracts/006-ble-packet-v1.md",
+  "command": "python3 scripts/check_ble_packet.py --lane all --work-dir build/radio/ble-packet-all-a2 --timeout 300 --jobs 2",
+  "result": {
+    "path": "build/radio/ble-packet-all-a2/result.json",
+    "sha256": "7ac2e87b12983635ac76fed52f8bfca2648741be7825d167e236a332586377c8"
+  },
+  "source_inputs": {
+    "sim/rtl/lemma_ble_packet.sv": "1e064746908899235243c73b453a2d810db0015a60f99c9f7282adc5259d8f6f",
+    "tests/radio/ble_packets.cpp": "b7f9f1060b02cfeda575b37332a1203000c475e4966a3395a487c95b344ec8ce",
+    "scripts/check_ble_packet.py": "a8e6a76415dd6d5cd98b7acd12c5f1ffba68ec8a67e796a0764302d3decc1b2c",
+    "tests/radio/Packet.lean": "fe285580562c2c1df29238272dd467a687b41e2ad40683bf7dcb39b6541cdfc0",
+    "Lemma/Radio/BLE/Controller.lean": "a16ba3ecc53ee80518b198446d148276e3ab9d8fdff41f21325bfc3a69a621d5",
+    "Lemma/Radio/BLE/Packet.lean": "72de8bb4915e1b59bef2e68e510dbb7707860f400330200873ab80081b6bc89e"
+  },
+  "tool_inputs": {
+    "verilator": {
+      "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator",
+      "sha256": "f1f41487e2a6c18e55859658df8d2e3528b76fc5c7b5a95281794ded61c7b802",
+      "version": "Verilator 5.052 2026-09-05 rev v5.052"
+    },
+    "make": {
+      "path": "/nix/store/z565rgmn9vccv2h0g87z725pw610jmm8-gnumake-4.4.1/bin/make",
+      "sha256": "fee96a0fae52353d14f8d5be991366483d96f00800f8f707198af68ce47b8fea",
+      "version": "GNU Make 4.4.1"
+    },
+    "c++": {
+      "path": "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++",
+      "sha256": "c1a58806b7b7c5f038a81f94c27796764fc8cd9f8059aef62c5e83a761a56935",
+      "version": "g++ (GCC) 16.2.0"
+    },
+    "verilator_bin": {
+      "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator_bin",
+      "sha256": "7e75a7d71fec9faf87f2933b5a53040d474788ffd183f840c320a1aab228a3ae",
+      "version": "Verilator 5.052 2026-09-05 rev v5.052"
+    }
+  },
+  "lean_tool_inputs": {
+    "lean": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+      "sha256": "f70d0a2a69e99b5d99c0abf4310731c512489c801099111f367981f24439a863",
+      "version": "Lean (version 4.34.1, Release)"
+    },
+    "lake": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+      "sha256": "2bbf0d3a0077a8bddf11ad6987ebe930b2b3692eabe15fcd72f0aa069d6f8620",
+      "version": "Lake version 5.0.0-src (Lean version 4.34.1)"
+    },
+    "llvm-as": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-as",
+      "sha256": "8e2fd9eff5a77e2e24e068d5cf3bb2f9447f8fe94f6c43236531bd8490484bad",
+      "version": "LLVM (http://llvm.org/):"
+    },
+    "llc": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+      "sha256": "00ef7b72f35b21cb2ddfdb66db6217120d314b36bdbed2580a330846863660ac",
+      "version": "LLVM (http://llvm.org/):"
+    },
+    "llvm-nm": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
+      "sha256": "b93775666542ca37c59bae9b704e92ebbee38850715adf4ba04e2086843230e8",
+      "version": "llvm-nm, compatible with GNU nm"
+    },
+    "llvm-readelf": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-readobj",
+      "sha256": "5f581ba2b48160f3febaba5a05a0a145ba748b29a11a20503282e7771f3efb71",
+      "version": "LLVM (http://llvm.org/):"
+    },
+    "llvm-objdump": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objdump",
+      "sha256": "9d688cee37fcd514374a41d659da285cd2522a30500a5faf3287460f4c69c70c",
+      "version": "LLVM (http://llvm.org/):"
+    }
+  },
+  "observed": {
+    "official_data_vector": "Bluetooth Core5.4 Vol6C4.3.1 literal120 recovered bits, AA0xaa08192b CRCInit0xc4c181 channel16 header0x16 payload01..05, CRC register0xa20b4b.",
+    "two_endpoints": "Separate Verilated contexts and queues. A packet generated at endpointA is independently decoded at B;12-byte LMCMP001 opaque prefix generated at B is decoded at A. No shared success flag or document processing.",
+    "symbol_clocks": {
+      "first": 100,
+      "last": 12000,
+      "spacing": 100,
+      "clock_hz": 100000000
+    },
+    "bounds": "0..27 payload bytes, one immutable RX head, private active TX copy, maximum/empty/oversize and busy mutation checks.",
+    "faults": "Actual corrupted bit, omitted decision, wrong channel, full head, coexistence withdrawal, reset/disabled admission and W1C completion race.",
+    "checkpoint": "Four arbitrary live cuts, each exact30000-clock continuation of separate restored endpoints including CRC/whitening/dividers/buffers and pending wire decisions;12 retained state files. No original flush or drain.",
+    "genuine_lowering": "Elaborated maintained Packet/Controller declarations checked for scalar/fold effects. Ordinary test wrappers expose whitening; user/firmware PIO rejection checked. Emitted LLVM assembled and lowered to real RV64IM objects.",
+    "objects": {
+      "packet_undefined": [],
+      "controller_undefined": [
+        "core0_io_fence"
+      ],
+      "attributes": "Exact ELF64 little RISC-V relocatable rv64i2p1_m2p0_zmmul1p0; actual disassembly/relocations retained.",
+      "qualification": "Object generation and host semantic fixtures are separate from linking/running the future guest on the actual controller."
+    },
+    "negative_object_admission": "Four unittest cases cover wrong machine/width/type, added or absent ISA and duplicate fields; focused command python3 -m unittest discover -s tests/radio -p test_*.py -v PASS."
+  },
+  "llvm_artifacts": {
+    "llvm/controller.bc": "7c55760daa3ae50e6dcaf89bac35209e18388e813eb99a4bcb7fa5fb433dce36",
+    "llvm/controller.json": "9843a4db1d82017c0362fe1356f01aa5e2176f5db68dda89e4ddb2a7c1f08160",
+    "llvm/controller.ll": "6ee79edbedcfd0032cf05d343a7b23c6a63713fe0b299998bb31cf44299e7e74",
+    "llvm/controller.o": "04b0b930e5d120e3d489bfa96ecf9117f547bf0a118adab7ffe25f2c9a6c1675",
+    "llvm/controller.symbols": "cd784d865ce5b6342bb1ad693fda00251e9f54d7793ea1e294e215710305e0b4",
+    "llvm/packet.bc": "feb7cb951591dad1d13b94fc3cc95d9b9ffb45f75fbbf3b57f29f0c491350362",
+    "llvm/packet.json": "cff9f0842344e2f3961589abe114ca7cf30e498a47ed09f23e21dd26ce011c06",
+    "llvm/packet.ll": "3fe75c16447099bd80f0dca387c85f441347f8709440df81b23be0da4e7c92b3",
+    "llvm/packet.o": "45dbd5b6f18b3c4a7520fb5949dea42a1e446689381bbc691dd70c3716837bd9",
+    "llvm/packet.symbols": "4837782f1acd082e65c8f97254f806249bb9561be18dfe0924d9bb01c0887aaf"
+  },
+  "resources": {
+    "largest_reaped_child_peak_rss_kib": 1604088,
+    "reaped_children_user_seconds": 22.466929,
+    "reaped_children_system_seconds": 2.92707,
+    "scope": "Linux wait4 child statistics; largest child RSS is not summed concurrent machine memory"
+  },
+  "host_seconds": 20.13765362504637,
+  "retained_failures": [
+    {
+      "path": "build/radio/ble-packet-lean-a2/result.json",
+      "sha256": "f82905b0899f64e795c7bd82c17101aee62431855ad3fad5918f602d33f18c4f",
+      "reason": "Genuine closed frontend rejected Ne; ordinary explicit Eq branch preserves the header semantics."
+    },
+    {
+      "path": "build/radio/ble-packet-all-a1/result.json",
+      "sha256": "633408af815b20e514af4b8466d47e1417f431dafb1c3d7de791ee6b96bd5d32",
+      "reason": "Actual RV64 object admission failed on resolved llvm-readelf/llvm-readobj formatting. Pinned readobj fields are now checked exactly, with wrong/missing/duplicate ELF and ISA negatives."
+    }
+  ],
+  "remaining": [
+    "Explicit versioned SoC/descriptor/PLIC15 binding and actual guest controller/IRQ execution",
+    "Manual-context sequence/ACK/retry then connection establishment/control procedures",
+    "Opaque fragment service and durable companion receipts",
+    "GFSK/Gaussian filter/sample synchronization, digital calibration and coexistence scheduling",
+    "Applicable GAP/L2CAP/ATT/GATT/SM and full controller mandatory scope",
+    "Encryption/authentication/key/entropy policy",
+    "Fast model, whole-machine checkpoint/replay and native/Wasm radio execution",
+    "Wi-Fi6 implementation and physical/RF qualification"
+  ]
+}

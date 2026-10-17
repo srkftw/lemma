@@ -1,0 +1,342 @@
+{
+  "actual_action_comparison": {
+    "cases": 74,
+    "comparison": "Exact original/new results, finite RAM, ordered actual primitive operation prefix; callback counts alone may differ. Includes descriptor-as-scratch aliases, primitive status7/9/95/255 and injected global faults.",
+    "fault_prefixes": 10108,
+    "receipt": {
+      "bytes": 1459,
+      "path": "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/action-comparison.log",
+      "sha256": "e52e40f69f55e2be7333ae37e56eaf40a21eb3df9bcc2525f4f084b410f204ee"
+    },
+    "status": "PASS",
+    "work": {
+      "expanded_3840": {
+        "callbacks_after": 76,
+        "callbacks_before": 496,
+        "primitive_operations_unchanged": 1105
+      },
+      "expanded_two_page_4096": {
+        "callbacks_after": 88,
+        "callbacks_before": 536,
+        "primitive_operations_unchanged": 1231
+      }
+    }
+  },
+  "artifact_observer": {
+    "actual_post_block": "16 ordered volatile i64 accesses, align8, original read values",
+    "actual_pre_block": "8 ordered checked read64/write64 pairs, original values and64-block/7-word-tail bounds",
+    "common_borrow_gates": 11,
+    "genuine_inputs": {
+      "build/kernel/task006-closure-initializer-a2/kernel/program.ll": "623109609ffee004804cf5384bc5fc5951b4b1faebeaa301e4fed3d7426d5b24",
+      "build/kernel/task006-closure-initializer-a2/kernel/program.opt.ll": "9af5923cecec41d35af1104f6247e72a5071324b6799825c630dc04fd77d399b",
+      "build/kernel/task006-closure-initializer-a2/kernel/unit.json": "8769f9fa02e182a5af87687075797cf9c1e030e35ef5402e52f8bf3ab802f0e3",
+      "build/kernel/task006-usercopy-closure-initializer-a1/kernel/program.ll": "fd263c94cb94e8eaecf150583ec6c22a5293f8188023b7a76cb10bf051624ebd",
+      "build/kernel/task006-usercopy-closure-initializer-a1/kernel/program.opt.ll": "79fccbd56f6bfe8cfae70015da5e0f0e0f31583ec77e8613d1961e44dd69a647",
+      "build/kernel/task006-usercopy-closure-initializer-a1/kernel/unit.json": "c769072924f69a5354365c47a75b78b9d1f5f854567e0e2570531b5abe3cb47c"
+    },
+    "helper": {
+      "bytes": 11086,
+      "path": "scripts/usercopy_page_words.py",
+      "sha256": "a4134f130ddb7e417dcc50316b46c19f24d0e3555c20c4711fad9deb2bcd921c"
+    },
+    "legacy_callback_route_unchanged": true,
+    "mutation_fixture": {
+      "bytes": 7039,
+      "path": "tests/kernel/usercopy_page_words_mutations.py",
+      "sha256": "588c26dd583a7df206d4505517690de2d989e5c305448c3395860fdbf254afe9"
+    },
+    "new_pre_post_complete_shapes": 9,
+    "private_caller_closures": 7,
+    "receipt": {
+      "bytes": 27715,
+      "path": "build/managed/usercopy-hotpath-a1/page-word-observer-a1.json",
+      "sha256": "1c3e117134fd10b4e15e3a888585bcc8313bdea117d632bae181d9ebe0aa019b"
+    },
+    "rejected_actual_mutations": 43,
+    "scope": "Narrow artifact admission only; no target change, compiler-correctness or guest/native/browser acceptance claim",
+    "status": "PASS_ACTUAL_PAGE_WORD_OBSERVER_AND_LEGACY"
+  },
+  "contract": "docs/contracts/006-user-copy-page-words-v1.md",
+  "earlier_component_without_descriptor_alias_matrix": {
+    "bytes": 5889,
+    "path": "build/managed/usercopy-hotpath-a1/maintained-qualification-a2/result.json",
+    "sha256": "9832add0d169ab3f42f1760826336de4ee7c6bedef4753687df407efcfbee4d2"
+  },
+  "genuine_lowering": {
+    "assembly": {
+      "bytes": 211397,
+      "path": "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.s",
+      "sha256": "5195a837db959870bf61cd63d90483a07f7321ecd13ea3ead2839e1013bc1d5c"
+    },
+    "bytes": 98,
+    "functions": 124,
+    "llvm": {
+      "bytes": 401231,
+      "path": "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.ll",
+      "sha256": "e1ff7d411d3663ed8ce54d3ee08b138eee83e6d194e8765d069eed42a0c12342"
+    },
+    "optimized_llvm": {
+      "bytes": 320691,
+      "path": "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.opt.ll",
+      "sha256": "18931303ad325923f8d5019b4e435166e3aa292d083b71f216c15aff0616ee31"
+    },
+    "path": "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/source-lowering.log",
+    "rv64_object": {
+      "bytes": 33960,
+      "path": "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.o",
+      "sha256": "9cf251b46f280f96159888b6f82f4e21232e4bcf894a4f1a8d2da08dfeca0ca1"
+    },
+    "sha256": "af3f7e931f58a8f0d8292992c259d74a112363906b3f11b019669cd06d38f6fb",
+    "status": "PASS",
+    "undefined_symbols": {
+      "bytes": 0,
+      "path": "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/undefined.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "EMPTY"
+    }
+  },
+  "historical_scans": {
+    "bytes": 1179,
+    "path": "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/historical-scans.log",
+    "pools": [
+      "512/32quota",
+      "8192/8192quota"
+    ],
+    "scope": "Actual existing UserCopyScans; ordered complete VA rows/duplicates, frame ownership/generation/purpose, necessary-read faults, read-only second page/no preflight partial writes.",
+    "sha256": "95658869ababc8f2065fda50b825aea1d968a2d4c858ae0614a3d622e1dc4541",
+    "status": "PASS"
+  },
+  "preceding_commit": "fbd0bf3c02ba1c53f7b28aac4bbb77d6ce02f5cc",
+  "qualification": {
+    "bounds": {
+      "aggregate_seconds": 500,
+      "fixture_seconds": 180,
+      "lowering_seconds": 150,
+      "tool_seconds": 60
+    },
+    "bytes": 5891,
+    "commands": [
+      {
+        "argv": [
+          "lean",
+          "-o",
+          "/home/sreekumaar/Downloads/lemma/build/managed/usercopy-hotpath-a1/fixtures/tests/kernel/UserCopyPageBefore.olean",
+          "tests/kernel/UserCopyPageBefore.lean"
+        ],
+        "label": "before",
+        "returncode": 0,
+        "seconds": 1.1672532689990476
+      },
+      {
+        "argv": [
+          "lean",
+          "tests/kernel/UserCopyPageWords.lean"
+        ],
+        "label": "action-comparison",
+        "returncode": 0,
+        "seconds": 148.78313639597036
+      },
+      {
+        "argv": [
+          "lean",
+          "tests/kernel/UserCopyScans.lean"
+        ],
+        "label": "historical-scans",
+        "returncode": 0,
+        "seconds": 4.324669067980722
+      },
+      {
+        "argv": [
+          "lean",
+          "tests/kernel/UserCopyPageLower.lean"
+        ],
+        "label": "source-lowering",
+        "returncode": 0,
+        "seconds": 4.5750167990336195
+      },
+      {
+        "argv": [
+          "opt",
+          "-S",
+          "-passes=default<O2>",
+          "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.ll",
+          "-o",
+          "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.opt.ll"
+        ],
+        "label": "llvm-opt",
+        "returncode": 0,
+        "seconds": 0.11516234104055911
+      },
+      {
+        "argv": [
+          "llc",
+          "-mtriple=riscv64-unknown-elf",
+          "-mattr=+m,+zicsr,+zifencei,-a,-f,-d,-c,-v,-relax",
+          "-target-abi=lp64",
+          "-relocation-model=static",
+          "-code-model=medium",
+          "-filetype=obj",
+          "-filetype=obj",
+          "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.opt.ll",
+          "-o",
+          "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.o"
+        ],
+        "label": "rv64-object",
+        "returncode": 0,
+        "seconds": 0.1151112160878256
+      },
+      {
+        "argv": [
+          "llc",
+          "-mtriple=riscv64-unknown-elf",
+          "-mattr=+m,+zicsr,+zifencei,-a,-f,-d,-c,-v,-relax",
+          "-target-abi=lp64",
+          "-relocation-model=static",
+          "-code-model=medium",
+          "-filetype=obj",
+          "-filetype=asm",
+          "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.opt.ll",
+          "-o",
+          "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.s"
+        ],
+        "label": "rv64-assembly",
+        "returncode": 0,
+        "seconds": 0.1153913710732013
+      },
+      {
+        "argv": [
+          "llvm-nm",
+          "-u",
+          "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/lowered/production.o"
+        ],
+        "label": "undefined",
+        "returncode": 0,
+        "seconds": 0.032364626065827906
+      }
+    ],
+    "elapsed_seconds": 159.22994933801237,
+    "path": "build/managed/usercopy-hotpath-a1/maintained-qualification-a3/result.json",
+    "sha256": "9e7bd09cce49b85c7c526ab81992e96b2b1662e18674d2da0b3393183e549a24",
+    "source_sha256": {
+      "Lemma/Kernel/Memory/UserCopy.lean": "92ed64931fb7d4523f0e96aadbceb48dd819e9795970695738294b9d4d36a094",
+      "tests/kernel/UserCopyPageBefore.lean": "5f3203dab7926b693c8a5cddfb7c0545f0c404dd6e0d0f134f8c59c85e6534f6",
+      "tests/kernel/UserCopyPageLower.lean": "f445eb5f48195b290c80c68e8fa34d64d5616b6503ea96c7ee25177875bb18ed",
+      "tests/kernel/UserCopyPageWords.lean": "31850670aea2ccf25986c08f5701a163a0c8453f0392eb0368b5227359d2b679"
+    },
+    "status": "PASS",
+    "tools": {
+      "lean": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+      "llc": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+      "llvm-nm": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
+      "opt": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt"
+    }
+  },
+  "remaining": "Fresh source-bound canonical whole build/audit/native/browser integration pending; no general runtime, proof kernel, physical conformance or G2-G7 completion claim.",
+  "retained_browser_boundary_diagnosis": {
+    "cause": "Original475M boundary stack is readObject/Store.Client.call/redrawEntryStep. After exactly40M suffix the saved syscall is64/op5/count7/0x10a000 with uploadAllBulk/redraw return-address candidates; packet starts(1024,256). Full redraw has progressed but not reached refresh; original bounds remainFAIL.",
+    "observed": [
+      {
+        "actual_cycle": 2514950003,
+        "actual_guest_framebuffer_vs_visible_differing_pixels": 17351,
+        "label": "original",
+        "panel_completed": 20,
+        "snapshot_sha256": "7341fa719239f0066f3e242c6c2a5c75db3d726543896f14a1bf7b9e5fd68493"
+      },
+      {
+        "actual_cycle": 2554950003,
+        "actual_guest_framebuffer_vs_visible_differing_pixels": 15620,
+        "label": "suffix",
+        "panel_completed": 20,
+        "snapshot_sha256": "319a3ef89e2ed545802f4fd60495b079b43f2b976ff796dbbc615dcfcf2a894d"
+      }
+    ],
+    "receipt": {
+      "bytes": 21046,
+      "path": "build/managed/usercopy-hotpath-a1/boundary-comparison.json",
+      "sha256": "7e4a0212b4da82b7c6f1ba50261f80de440ca9939e1dbae461a4a666a3c87058"
+    },
+    "scope": "Read-only exact CRC-validated original old guest437/Wasm runtime0c snapshots; not outputs of this UserCopy implementation. No stale bulk packet phase inference."
+  },
+  "retained_failures": [
+    "build/managed/usercopy-hotpath-a1/action-comparison-a1.log",
+    "build/managed/usercopy-hotpath-a1/action-comparison-a2.log",
+    "build/managed/usercopy-hotpath-a1/lowering-a1.log",
+    "build/managed/usercopy-hotpath-a1/lowering-a2.log",
+    "build/managed/usercopy-hotpath-a1/lowering-a3.log",
+    "build/managed/usercopy-hotpath-a1/maintained-build-a1.log",
+    "build/managed/usercopy-hotpath-a1/maintained-qualification-a1/result.json"
+  ],
+  "retained_whole_a1_failure": {
+    "cause": "Existing Surface borrow observer required now-unreachable fromWordStep7-argument callback; new genuine source emits checked copyPageWords3-argument path. Complete361-source archive unchanged. Notebook/CPU not run.",
+    "genuine_initializer_build_seconds": 67.08586262504105,
+    "image_sha256": "f664bbe34818f35ed7ed71035530dbe738935bf948cf567a874ee2c9fc169b58",
+    "receipt": {
+      "bytes": 1485,
+      "path": "build/managed/usercopy-closure-whole-pair-a1/result.json",
+      "sha256": "c87c43afa019f043553ed3f25e2154a7dee910cd7825d820bbfbdef4e29ba83d"
+    },
+    "seconds": 144.56888097699266,
+    "source_inventory": {
+      "bytes": 38831,
+      "path": "build/managed/usercopy-closure-whole-pair-a1/consumed-source-root/source-inputs.json",
+      "sha256": "e730d01a36fa3a61433e0956c1b440899ee56ee63ec7e937db3834c9fb2d5839"
+    },
+    "source_seal": {
+      "bytes": 346,
+      "path": "build/managed/usercopy-closure-whole-pair-a1/source-seal.json",
+      "sha256": "864ae25ca4860985f13795fb79307a58342a192490b41a2b9a3df102a90b040d"
+    },
+    "status": "FAIL"
+  },
+  "rv64_static": {
+    "functions": [
+      {
+        "calls": 0,
+        "conditional_branches": 75,
+        "source": "_private.Lemma.Kernel.Memory.UserCopy.0.Lemma.Kernel.Memory.UserCopy.copyWordGenericBlockStep",
+        "static_assembly_instructions": 319,
+        "symbol": "copy_page_core0_action_29"
+      },
+      {
+        "calls": 1,
+        "conditional_branches": 6,
+        "source": "_private.Lemma.Kernel.Memory.UserCopy.0.Lemma.Kernel.Memory.UserCopy.copyWordBlockStep",
+        "static_assembly_instructions": 49,
+        "symbol": "copy_page_core0_action_30"
+      },
+      {
+        "calls": 0,
+        "conditional_branches": 13,
+        "source": "_private.tests.kernel.UserCopyPageBefore.0.UserCopyPageBefore.fromWordStep",
+        "static_assembly_instructions": 70,
+        "symbol": "copy_page_core0_action_44"
+      },
+      {
+        "calls": 0,
+        "conditional_branches": 13,
+        "source": "_private.tests.kernel.UserCopyPageBefore.0.UserCopyPageBefore.toWordStep",
+        "static_assembly_instructions": 70,
+        "symbol": "copy_page_core0_action_48"
+      }
+    ],
+    "scope": "Counts from actual maintained-source LLVM20 O2 RV64IM assembly, including failure/fallback function text. Not dynamic cycles or a new guest speed claim.",
+    "status": "PASS_STATIC_EMITTED_RV64_COMPARISON"
+  },
+  "scaffold_validation": {
+    "metadata": {
+      "bytes": 185,
+      "path": "build/managed/usercopy-hotpath-a1/scaffold-a1.log",
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c",
+      "status": "PASS"
+    },
+    "tests": {
+      "bytes": 1811,
+      "path": "build/managed/usercopy-hotpath-a1/scaffold-tests-a1.log",
+      "sha256": "f67b2d7cf3ac15ff5431439d9512ade4249c0c530590b1418eaedaf5b7bd4963",
+      "status": "PASS"
+    }
+  },
+  "schema": "lemma-user-copy-page-words-evidence/1",
+  "scope": "Maintained ordinary Lean UserCopy algorithm -> exact bounded actual Action comparison -> genuine checked CFG/LLVM -> LLVM20 O2 freestanding RV64IM object; no new machine, guest speed or full-frame workflow claim.",
+  "status": "PASS_COMPONENT_ONLY"
+}

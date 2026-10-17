@@ -1,5 +1,5 @@
 {
-  "implementation_commit": "d8d7b0cc306a91a113b5a95e964a2a19313f457d",
+  "implementation_commit": "d033baf1e5a2607cb463a1993c818a9374c1a7d6",
   "merged_baseline": "abd9920d54df04ce52da9386170e99012c39bdfb",
   "baseline_tree": "7c30f469592f2c2a1bef6aab11f31d30a8a3ee28",
   "scope": "compact inventory of actual local artifacts; original execution/source identities and failures remain distinct; not a completion certificate",
@@ -531,8 +531,1729 @@
       "scope": "final frozen code616 relevant pinned host tests+metadata,613 inputs unchanged; not target/physical acceptance",
       "status": "PASS",
       "source_commit": "de21f0c5ccc5e21a7c68082903dd7b585396a78d"
+    },
+    {
+      "path": "build/silicon/task006-managed-v3-canonical-a1/cold/result.json",
+      "bytes": 36539,
+      "sha256": "9a36db478af73c071d7f25cc0713137c25032e6bc73b754d2f94fbc6d479bf4c",
+      "status": "PASS_READY",
+      "scope": "actual canonical RTL cold guest Ready plus completed full refresh and acknowledged initial store commit; complete independent expected-pixel and connected workflow qualification remain separate"
+    },
+    {
+      "path": "build/silicon/task006-managed-v3-canonical-a1/workflow-reobserver-a2/result.json",
+      "bytes": 2790,
+      "sha256": "4cc73dceeedf74a61b747e59f1efe3e1861dfe7980c24c8b3d72974f827c1085",
+      "status": "PASS_PEN_SAVE_REOBSERVATION",
+      "scope": "Strict three-sample raw-byte recovery and all3.63M controller pixels from retained actualcanonicalRTL Save; no new machine execution/edit/navigation/cold/failure claim"
+    },
+    {
+      "path": "build/browser/task006-managed-v3-browser-cold-a1/result.json",
+      "bytes": 1878,
+      "sha256": "4a768c8f1704a7c91a77a37ebd31009a2797cfeaf004dc083fa264c8ec182deb",
+      "status": "FAIL_NOT_READY_DEADLINE",
+      "scope": "actual local browser canonical RTL cold prefix; no Ready, writing, course or durable reopen acceptance"
+    },
+    {
+      "path": "build/task006-sums-math-a1/result.json",
+      "bytes": 27101,
+      "sha256": "602023f80fdbd655baa60ba2be87e16250894cd75bb20d5ec18488e81d1abcac",
+      "status": "PASS",
+      "scope": "actual elaborated Lean RV64 bounded exact course/record/ink workflow; managed source language, proof kernel and complete G5\u2013G7 remain unfinished; isolated arithmetic is qualified only by an observed server path"
+    },
+    {
+      "path": "build/task006-sums-v3-migration-a1/result.json",
+      "bytes": 20609,
+      "sha256": "7bf6ce2a2065d9abceb60477d634c78992ccee7da5e9772f7aaed1cf8fc8a165",
+      "status": "PASS",
+      "scope": "guest historical migration and bounded original offline review with uncertain understanding; no learning-gain or complete learner/tutor claim"
+    },
+    {
+      "path": "build/task006-sums-oom-a1/result.json",
+      "bytes": 11261,
+      "sha256": "74876e681495eb2705aacb675278f7362373a74f44f03641bc5bde679dcec049",
+      "status": "PASS",
+      "scope": "actual ordinary Lean payload constructor OOM in isolated RV64 Arithmetic; bounded checked heap, pen/Save/cold recovery; general managed language/proof kernel remain unfinished"
+    },
+    {
+      "path": "build/boot/task006-product-install-a1/installation-observation.json",
+      "bytes": 933,
+      "sha256": "b2e979188bb551ba5fea59eae3b3107bd7de37f291df08f54681a27a233c312e",
+      "status": "PASS",
+      "scope": "actual Lean ROM stage/validate/publication, independent opaque payload and metadata CRC oracle; kernel boot/health not yet qualified"
+    },
+    {
+      "path": "build/boot/task006-product-install-a1/handoff-observation.json",
+      "bytes": 956,
+      "sha256": "ee9fe850cde7582473e2ed46eedc8afb0b317a66b7db31f80bcdf80055cc8d69",
+      "status": "PASS",
+      "scope": "independent observed RAM matches exact audited opaque PT_LOAD files, BSS zero and independently CRC-validated discovery after actual ROM/NV handoff; no full-kernel-health claim"
+    },
+    {
+      "path": "build/task006-modern-power-export-a1/qualification-a3.json",
+      "bytes": 1338,
+      "sha256": "8d9472e8aac5d4f515841fed0402939c242846a48d199e8d4d5da57ff839eb6d",
+      "status": "PASS",
+      "scope": "Actual emitted LLVM identity/owned endpoint/caller/gate observer; no target execution or Ready claim"
+    },
+    {
+      "path": "build/task006-array-math-a1/result.json",
+      "bytes": 25369,
+      "sha256": "04c074e2a8299f2922b3980769e11d1de8c57858c95905d8a5c665b42eed4a85",
+      "status": "PASS",
+      "scope": "Real isolated User5/course/ink/Save/new-cold/failure; QEMU instruction-clock functional scope"
+    },
+    {
+      "path": "build/task006-array-production-build-a5.json",
+      "bytes": 30908,
+      "sha256": "8939160649979835f685b83af9ffceee039a87aabd18571baba0203424257d26",
+      "status": "PASS_BUILD_AND_AUDIT",
+      "scope": "Three whole-image fresh builds and strict audits"
+    },
+    {
+      "path": "build/task006-surface-carry-a1/result.json",
+      "bytes": 7392,
+      "sha256": "303dddf1ac764b1c20c24abff52a0a10e1e4af00e2744a7eca27a116d5bf49fe",
+      "status": "PASS_COMPONENT_ONLY",
+      "scope": "Finite Surface semantics and real LLVM/object diagnostics; no target cycle improvement claim"
+    },
+    {
+      "path": "build/task006-paper-next-full-a4.json",
+      "bytes": 31908,
+      "sha256": "3bed27f044191e7be71056ec8d215a891be3e4cd68fafbe0fbbd8982a760f4c8",
+      "status": "PASS_BUILD_AND_AUDIT",
+      "scope": "Actual277-source-bound USB8 initialize/notebook and Product9 notebook, genuine elaboration/checked lowering/LLVM/audited RV64; no guest Ready claim"
+    },
+    {
+      "path": "build/usb/paper-staging-v2-a3/result.json",
+      "bytes": 3492,
+      "sha256": "f8b1fef5eea15b01c54b020157fb2b2728340c3cdf5ed10ad6ef22b11b4ef84b",
+      "status": "PASS",
+      "scope": "Actual USB8 circuitry512-byte staging/neighbor ownership/canonical clear/1024independent pixels; raw literal stimuli, not guest"
+    },
+    {
+      "path": "build/usb/paper-staging-product-v2-a1/result.json",
+      "bytes": 3524,
+      "sha256": "02a88f5e4acf0eb564da0141cae921cc1a54e112e2eae593483f77efc3c30eb8",
+      "status": "PASS",
+      "scope": "Actual Product9 circuitry same capacity/owned decode; separate boot/update acceptance required"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a3/result.json",
+      "bytes": 22225,
+      "sha256": "97b9771edfa9298df26649f2360f934f5917dc7d6921280b14d5fca4ddb915bc",
+      "status": "PASS",
+      "scope": "Actual Doc5 migration retained; strict Doc6 learner observation, mixed ByteArray/Array history and independent cold recovery; QEMU instruction-clock scope"
+    },
+    {
+      "path": "docs/evidence/006-store-checksum-words.json",
+      "bytes": 8211,
+      "sha256": "dba016065b23d86a92e9b5c68357b69c37666eb90d40ede0c5e2a43c5c1636fd",
+      "status": "PASS_COMPONENT_FAST_AND_ACTUAL_RTL_COLD_WITH_OBSERVER_CORRECTION",
+      "scope": "Real Lean Store checksum batching, unchanged durable v1 format; genuine source/LLVM/object and complete fast guest mathematics/ink/Save/newcold/failure qualification. Canonical RTL changed-source cold and new browser deployment are separate obligations."
+    },
+    {
+      "path": "docs/evidence/006-companion-acknowledged-boundary.json",
+      "bytes": 9736,
+      "sha256": "ba86a58716e1b4713b20e4e0244165974687265ddc79fa41c56d10904cfb4c14",
+      "status": "PASS",
+      "scope": "Independent policy4 USB8 cold680M/fullpixels; passive archive and actual both-side hosted write restart"
+    },
+    {
+      "path": "docs/evidence/006-guest-counter-su.json",
+      "bytes": 20780,
+      "sha256": "7741890b34ae739d83c3103829232b792ed0913a77d70344c4f87bc22a5c96c6",
+      "status": "PASS_ARCHITECTURAL_BOTH",
+      "scope": "Actual404S/U guest CSR cases, exact declared native U-mode suffix; no full processor/timing claim"
+    },
+    {
+      "path": "docs/evidence/006-ci-string-catalog-repair.json",
+      "bytes": 6912,
+      "sha256": "0efc0ac994a0e7fe78fcd907e295827f0061ce8d5fdaafa3c4339d175793a8b6",
+      "status": "OBSERVED_IN_SCOPED_RECEIPT",
+      "scope": "Original source/execution identities and qualified partial scopes; unfinished gates remain."
+    },
+    {
+      "path": "docs/evidence/006-canonical-checksum-cold.json",
+      "bytes": 4582,
+      "sha256": "e17e614163a5b1168f58375c9dcb36d4d5726d8598ee2e52cda1b1191c8c9f77",
+      "status": "PASS_ACTUAL_COLD_READY_MEDIA_AND_ALL_PIXELS_WITH_OBSERVER_CORRECTION",
+      "scope": "Fresh canonical128MiB/8192-frame/1650x2200 RTL CPU, development ELF preload and real guest recovery. No new RTL pen/edit/Save or product boot claim. Original observer FAIL retained; independent full pixels and process lifetime qualify that retained execution."
+    },
+    {
+      "path": "docs/evidence/006-course-word-rendering.json",
+      "bytes": 19549,
+      "sha256": "44b2578ade76b6a437cb6f864cbd0c1d8f27c08121747aa00897d9adb655e6e1",
+      "status": "PASS_GENUINE_COMPONENT_LIVE_FAST_COURSE_SAVE_INDEPENDENT_COLD_AND_FAILURE",
+      "scope": "Genuinely elaborated Lean Gray4 rendering; same records/raw ink/glyphs/checker authority. QEMU functional instruction-clock scope. No full language/runtime, proof kernel, G5\u2013G7, or new RTL/Wasm cold claim."
+    },
+    {
+      "path": "docs/evidence/006-browser-panel-stop-course.json",
+      "bytes": 18626,
+      "sha256": "4ff20dc1ff54323ce6acec2e4cbb266afbf1011094d514f75bc925854215a506",
+      "status": "PASS_HOST_CONTROL_AND_ACTUAL_PRIVATE_ARRAY_COURSE_SAVED_NATIVE_COLD",
+      "scope": "New passive panel-stop UI over unchanged exact RTL Machine Wasm. Real old Array guest course/check/Saved in local OPFS private continuation; no browser cold acceptance or complete browser mathematics sequence, new CourseWord browser execution, full proof kernel or G5\u2013G7 claim."
+    },
+    {
+      "path": "docs/evidence/006-usb8-final-saved11.json",
+      "bytes": 8646,
+      "sha256": "f7bab889a83bd53cf70cf5f9a77862f38d0e25f986d0f37270f47ced59317233",
+      "status": "LIVE_UI_FROZEN_WIRE_ARCHIVE_AND_INDEPENDENT_COLD_PASS",
+      "scope": "actual guest raw ink, Undo/Redo/navigation/explicit Save; retained original wire observer FAIL with independently corrected frozen wire; new CPU cold recovery through policy4 and independently persistent opaque peer. Decoded-packet USB8 only, not PHY/fullUSB or QEMU cache closure."
+    },
+    {
+      "path": "docs/evidence/006-paper-executed-v3.json",
+      "bytes": 9238,
+      "sha256": "cb38b180a420f2770673d4e32c28c2524960ae3ee9795413443e32c7475b44a4",
+      "status": "PASS_COMPONENT_AND_AUDITED_INPUTS_ORIGINAL_CALLBACK_DEFECT_RETAINED",
+      "scope": "Paper3 circuitry/health component and original audited Product10 inputs remain qualified in their stated scope. The original image3fdf has a copied callback argument9, so it is not trial-confirmation qualified. Initial real install/status/handoff passed; ordinary initial cold Ready is running. A genuine component-qualified callback10 repair requires a fresh full image and actual trial."
+    },
+    {
+      "path": "docs/evidence/006-wifi-common-ofdm-data.json",
+      "bytes": 32955,
+      "sha256": "98d90c6daa433e557adb1a589615894ce9a4466d5c216c30a09405cf2ccece27",
+      "status": "PASS_COMMON_OFDM_COMPONENT",
+      "scope": "Bounded common legacy20MHz BPSK/r1/2 DATA coding and real complex-sample endpoint component, a Wi-Fi6 construction dependency; not final-standard conformance or a connected whole-machine radio"
+    },
+    {
+      "path": "build/browser/task006-capture-u64-cold-a1/cold-result-a1.json",
+      "bytes": 8146,
+      "sha256": "2c3204a6653b9233fb3b28f9293ac5500b2cf76d9ea4dcb582cebbfaf2ff9562",
+      "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+      "scope": "Actualcanonicalcycle0browsercold Ready/all3.63Mpixels/unchangedDoc6medium; valid250READtape; no fullmath/save/reopen claim"
+    },
+    {
+      "path": "build/browser/task006-capture-u64-cold-a1/course-suffix-a1/replay/result.json",
+      "bytes": 7358,
+      "sha256": "d29d5bae36243f789e4779be20b7f4f1993730f1f6ad03ad8498395fa2277cb5",
+      "status": "PASS",
+      "scope": "Actualbrowserarbitrarycourseboundary and1,000,003-clock same-Wasm suffix; entirecontainerexact/nooriginalbacking/masks; notnewC++Wasm orcached-state wholequalification"
+    },
+    {
+      "path": "docs/evidence/006-browser-readable-paused.json",
+      "bytes": 4224,
+      "sha256": "29dc75192b13a5968d3e0c1cbab4b33f9019c4d381b1b94ee1ad957dfada2713",
+      "status": "PASS_REAL_BROWSER_UI_AND_HOST_PROTOCOL",
+      "scope": "Readable presentation and zero-clock opening over existing exact portable RTL Machine, auditedArray RV64, real controller output and isolated backing. No new emulator, cold result or managed checker claim."
+    },
+    {
+      "path": "build/browser/task006-capture-u64-cold-a1/verified-rational-saved41-a1/result.json",
+      "bytes": 7725,
+      "sha256": "37e194ade8bc50fa52de428d719dd50a98271c6ac56d6b705a0c2b770f762566",
+      "status": "PASS_ACTUAL_COLD_GUEST_ISOLATED_VERIFIED_SAVED41",
+      "scope": "ActualrepairedRTL/Wasm cold\u2192rawcourse/edit\u2192isolatedArray5/6 Verifiedrevision22\u2192realSaved41; nofinalnewcold/wholeproofkernel claim"
+    },
+    {
+      "path": "build/managed/task-entry2-saved29-cold-a3/cold/result.json",
+      "bytes": 10230,
+      "sha256": "6dfa8ad608bee0275db58f8230bea1bea19306c233f5c1c6200ae39040e19fbc",
+      "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+      "scope": "Original377-input Entry2/canonical0.3 guest/native3d: actual independent Saved29 cold or failedrawSave/missing-onlyobserver. Earlier Undo200MFAIL retained; not current Package compilation, fullmachine, timingparity or physical completion."
+    },
+    {
+      "path": "build/managed/task-entry2-failed-save-observer-suffix-a2/result.json",
+      "bytes": 1397,
+      "sha256": "a5298cd86cc08f80ff7dc52fd06d90d8bdeef333bac4850f2564a8b80dc21a65",
+      "status": "PASS_RAW_FAILED_NEW_SAVE_PRIOR_DURABILITY_AND_ALL_PIXELS",
+      "scope": "Original377-input Entry2/canonical0.3 guest/native3d: actual independent Saved29 cold or failedrawSave/missing-onlyobserver. Earlier Undo200MFAIL retained; not current Package compilation, fullmachine, timingparity or physical completion."
+    },
+    {
+      "path": "build/managed/task-entry2-failed-save-a4/result.json",
+      "bytes": 7951,
+      "sha256": "b3e36f5bb914eb5565147aceaaa3f45dd306c93401f66cf404f4e20cb923e999",
+      "status": "FAIL",
+      "scope": "Original377-input Entry2/canonical0.3 guest/native3d: actual independent Saved29 cold or failedrawSave/missing-onlyobserver. Earlier Undo200MFAIL retained; not current Package compilation, fullmachine, timingparity or physical completion."
+    },
+    {
+      "path": "build/courses/task006-package-closure-whole-a1/result.json",
+      "bytes": 2835,
+      "sha256": "4ac0714cade637e4e89cb0ec3c4545886c1ec7181010370547e7985412c21fe9",
+      "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+      "scope": "fresh genuinely compiled whole PackageClosure normal/initializer and full ordinary artifact audits; cold mountedReady/Load/Notebook integration NOT_RUN"
+    },
+    {
+      "path": "build/courses/task006-package-closure-whole-supervision-a1/result.json",
+      "bytes": 5861,
+      "sha256": "5fa7900514459702e2cf3a8d715dcfe73cca4dcfca65aa0f8709054c1f832766",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+      "scope": "bounded external whole-pair build/audit supervision; guest and physical acceptance separate"
+    },
+    {
+      "path": "build/courses/task006-package-closure-nativepack-a1/result.json",
+      "bytes": 15155,
+      "sha256": "30437721c87c60725d4f7402e42c784d51a1d2139c2f4076c703b523de49e3c7",
+      "status": "PASS_IMMUTABLE_NATIVE_BUNDLE_ADMISSION",
+      "scope": "validated existingcf76 backends/source identities plus fresh matched384-input Package guests; no CPU/backend recompilation/guest acceptance"
+    },
+    {
+      "path": "build/browser/task006-package-control-draft-a1/result.json",
+      "bytes": 3259,
+      "sha256": "2bbebf3d791694956b48fc9b2f44916ec2757fa65f6b113990c17aa51e57dab6",
+      "status": "PASS_HOST_CONTROL_AND_PREPARED_STATIC_BUNDLE",
+      "scope": "actual maintained browserworker/app/transport fixtures and immutable fourprocess staticpack; real newguestcold/install/course/browserrecovery/suffix unfinished"
+    },
+    {
+      "path": "build/courses/task006-native-installed-package-a1/cold-gate-result.json",
+      "bytes": 12363,
+      "sha256": "6ada45079f734ce2249c8197aedda73f85b64dfb12c24ae82ace674a13dd2171",
+      "status": "PASS_ACTUAL_ORIGINAL_COLD_READY_THEN_OBSERVATIONAL_CHECKPOINT",
+      "scope": "actual new4-role native resetCPU -> canonical cold Ready; suffix separate"
+    },
+    {
+      "path": "build/browser/task006-package-connected-owner-a1/cold-retained-closure.json",
+      "bytes": 908,
+      "sha256": "8e58442e42d66e37afa413ee60121b818939364a6a164bae7d3653d2b0d87541",
+      "status": "PASS_RETAINED_BYTE_ASSERTIONS_ONLY",
+      "scope": "actual browser coldReady; exact whole medium and controller equality, retained observer process failures explicit"
+    },
+    {
+      "path": "build/usb/recovery-closure-independent-cold-a1/result.json",
+      "bytes": 138596,
+      "sha256": "caf9de55cc512921622ce6d861bffc96a039fd9581acf4f0134692f7dc479f88",
+      "status": "PASS",
+      "scope": "newCPU copied independent companion peer/outbox cold: full raw/course/Doc8/READ-only"
+    },
+    {
+      "path": "build/managed/wfi-timer-native-retained-observer-a1/result.json",
+      "bytes": 22263,
+      "sha256": "a8e5591cca9725e7cc93ec2e8adab579368727657d17d19d17799bd8752bfab5",
+      "status": "FAIL_GUEST_REBOOT_COMPLETION_ORIGINAL_600K",
+      "scope": "real guest WFI/native private fork and reset edges qualify separately; original reboot completion windows fail"
+    },
+    {
+      "path": "build/silicon/task006-wfi-timer-fast-a3/result.json",
+      "bytes": 46845,
+      "sha256": "0d4b359d98e63afa602c0be0cf58fb95f9ab81cd96ca6ac20b624c82c7cca52d",
+      "status": "PASS_FAST_GUEST_WFI_IMMEDIATE_RESET_SCOPE",
+      "scope": "same genuine ELF fast guest records and immediate reset; no timing/cache parity"
+    },
+    {
+      "path": "build/boot/task006-development-auth-connected-a4/result.json",
+      "bytes": 8946,
+      "sha256": "7d24020cdffaab2291c83739e3be91a2ded47ef18d0e3198b263b819d042faef",
+      "status": "PASS_ACTUAL_RTL_DEVELOPMENT_AUTH_INSTALL_HANDOFF",
+      "scope": "Actual public-development-key immutableROM install, validCRC badMAC240, correctpublication/authenticatedhandoff and12computed digests; fullnotebook/cold/update separate"
+    },
+    {
+      "path": "build/courses/task006-native-aligned-notebook-a1/actor/result.json",
+      "bytes": 10493,
+      "sha256": "c9fe94a5ee2d2c96da644f16c51e80b3c33319c5e4f0bf94cbf8291672ff5ca7",
+      "status": "FAIL",
+      "scope": "Retained original400M COURSE FAIL at1.280B; model shows acceptedrefresh4stillWAIT_TIME, bodyRAM/staging/scan exact"
+    },
+    {
+      "path": "build/boot/task006-development-auth-connected-supervision-a4/result.json",
+      "bytes": 636,
+      "sha256": "6745c229e1e4dc3bd9a2f773c36332791ac56fc005ccbbaa1079e38e70378e7d",
+      "status": "PASS_AUTH_RTL_SUPERVISED",
+      "scope": "Owned resource/deadline/cleanup supervision of actual authenticatedROMcase"
+    },
+    {
+      "path": "docs/evidence/006-local-native-distribution-v1.json",
+      "sha256": "fc06eb9a0bdb85119e1e6b2d81c88d4312ae97cd2979236c26a7f5557994622a",
+      "status": "PASS_EXTRACTED_NATIVE_COURSE_MATH_INK_COLD_WITH_CENSUS_OBSERVER_CORRECTION_AND_REAL_INIT",
+      "bytes": 16694,
+      "scope": "Reusable extracted native command package. Actual source8 guest/42phase functional workflow through packaged commands with independently qualified missing-only cold/source observer; original harness failures retained. New ordinary initializer/help repair separately exercised. No fast timing/arbitrary cached-state or new-host/license claim."
+    },
+    {
+      "path": "docs/evidence/006-local-browser-distribution-v1.json",
+      "sha256": "eaad6b03f9f1a10955ebf82f5190b18547ecd57685ae890ac6955a0e59c856a5",
+      "status": "PASS_PREPARED_EXTRACTED_LOCAL_LAUNCH_ONLY",
+      "bytes": 3122,
+      "scope": "Reusable packaging of the existing exact static machine and standalone stdlib launcher. Original compiled guest/ROM/Wasm/controller files unchanged; no new full browser workflow, coldReady or distribution-license claim."
+    },
+    {
+      "path": "docs/evidence/006-course-control-aligned-v1.json",
+      "sha256": "1e98e8ee0e0ca823006d862b10d7c278911999bd2198d06a57186e99c9a0f80f",
+      "status": "PASS_LINKED_FAST_WORKFLOW_AND_FAILURE_RTL_COURSE_BODY_PASS_HEADER_FAIL_BROWSER_HOST_LIMIT_FAIL",
+      "bytes": 10412,
+      "scope": "Same maintained source8 Notebook/full ordinary images and42-phase fast functionality plus real partial-pwrite failure/recovery pass. Canonical RTL first COURSE body reaches all expected pixels within398M; next title/header fails original100M. Browser cold fails original7200s host bound before Ready. No whole-machine completion."
+    },
+    {
+      "path": "docs/evidence/006-course-aligned-delta-v2.json",
+      "sha256": "00f1b750d8de5c9ca0aa220c75e922d896ec2ecf0988f53d841c0b4da8fedcb7",
+      "status": "PASS_LINKED_FAST_WORKFLOW_AND_REAL_FAILURE_NATIVE_BROWSER_RUNNING",
+      "bytes": 13619,
+      "scope": "Current same-machine Notebook uses aligned-delta2. Both fresh canonical linked images/full audits and42phase fast workflow plus actual partial-pwrite/failure/cold/retry/ink pass. New native RTL and local browser cold/course campaigns are running; no new400M controller acceptance inferred."
+    },
+    {
+      "path": "docs/evidence/006-development-authentication-v1.json",
+      "sha256": "2e3d0852a5a001b39dc54319e90a7b76056e8214b7e15e4e9c9e5885f99ce2c1",
+      "bytes": 20284,
+      "status": "PASS_ACTUAL_AUTHENTICATED_NOTEBOOK_RAW_SAVE_AND_INDEPENDENT_COLD",
+      "scope": "Genuine Lean SHA/HMAC and immutable public-development-key ROM on reusable Product10RTL. This is executable integrity/authentication policy with a published test key, not production owner identity or wholeboot/update acceptance."
+    },
+    {
+      "path": "docs/evidence/006-pen-empty-head.json",
+      "sha256": "05f62160bb5b0505f1f7599db3a3d27bf52939589c617786a192d4746634a7b0",
+      "bytes": 3447,
+      "status": "UNADOPTED_RTL_COMPONENT_PASS_PHYSICAL_FAIL",
+      "scope": "Single changed-source standalone256-entry pen experiment; actual mapped cones and failed global/detailed route. Not signoff or full-chip closure."
+    },
+    {
+      "path": "docs/evidence/006-notebook-dirty-batch-v1.json",
+      "sha256": "5636a334b2bd309d0ebeee331ad74a07f49031494317e68e30b1ff4c6d7e0ba9",
+      "status": "PASS_FRESH_LINKED_FAST_WORKFLOW_AND_REAL_FAILURE_NATIVE_BROWSER_RUNNING",
+      "bytes": 17207,
+      "scope": "Same maintained Lean Notebook batches dirty FIFO tiles through existing owned Surface-v2. Fresh full audited images and42phase fast mathematical/course/learner/ink/newcold/reopen plus real partial-write failure/cold/retry pass. New exactRTL/browser campaigns remain running; no timing parity/whole-machine closure."
+    },
+    {
+      "path": "build/courses/task006-dirty-batch-companion-whole-a1/result.json",
+      "bytes": 2865,
+      "sha256": "fdfb166721af31e495dd1cfd103f3dc6ab0aa79c005d44436f1d5d99e8155e2e",
+      "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+      "scope": "Fresh408input complete companion9 initializer/notebook pair and full audits; same maintained Notebook/Surface batch. New immutable0.13 bundle prepared on unchanged original Clocked13RTL. New9 guest execution not yet run; old Saved12 actor separate."
+    },
+    {
+      "path": "build/courses/task006-dirty-batch-companion-whole-supervision-a1/result.json",
+      "bytes": 5713,
+      "sha256": "f1fbfcbcc436238127c352eaaa45aeaa3ee8b379322a3aed99dea97caf1547cf",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+      "scope": "Fresh408input complete companion9 initializer/notebook pair and full audits; same maintained Notebook/Surface batch. New immutable0.13 bundle prepared on unchanged original Clocked13RTL. New9 guest execution not yet run; old Saved12 actor separate."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-owner-a4/result.json",
+      "sha256": "37bd589965e68e6c01fcde25d67b2ee645059f1082a456df8a891d87358cba4e",
+      "bytes": 8285,
+      "status": "PASS_ACTUAL_CORRECTED_BACKEND_COMPILE_PREPARATION_ONLY",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-connected-a2/result.json",
+      "sha256": "569d6fa380decd5cbc3e0aae96b7c6b6000847357fd2e4687ec7c8d70c20c6e4",
+      "bytes": 101216,
+      "status": "PASS_RAW_UART_FRESH_COURSE_PENDING_FORK_MATH_INK_COLD",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-connected-supervision-a2/result.json",
+      "sha256": "dc3359d18054d3386fef25f3e5f0f02c3dc45045cee00290d2f1df28b6d8abe6",
+      "bytes": 919,
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-conformance-a2/result.json",
+      "sha256": "de7de49ab6d7b9283b833997cbf0524b87c5619aa7b913cbc684af4a7b36e09a",
+      "bytes": 50672,
+      "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-conformance-supervision-a2/result.json",
+      "sha256": "2d0234f8b1c3c3fe30ab34b6b936742366d4ea81333705a705a540672b409977",
+      "bytes": 817,
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-connected-derived-a2/result.json",
+      "sha256": "fa8c2c45c1bc08114edb662440d25e32db0e85d8813df4ade51178b9aca10028",
+      "bytes": 1463,
+      "status": "PASS_PASSIVE_ACTUAL_CLOCK_ACCOUNTING_ONLY",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-offline-replay-a1/result.json",
+      "sha256": "089e598f27d0b1dee2a42d582e3e60e2742df790435fafdf213ba8a9fdcc0597",
+      "bytes": 20345,
+      "status": "PASS_RETAINED_UART_OFFLINE_BACKING_REPLAY",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-offline-replay-supervision-a1/result.json",
+      "sha256": "6b9e0432bda5de2f7f21c5035edc36ebff43aebbf4dbb5bd5949fc4b10d6cc6d",
+      "bytes": 693,
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/courses/task006-fresh-chooser20-rtl-plan-a3/result.json",
+      "sha256": "0598da9cd15bddab8c6a46def2f425687e03ddefbf24b37018148614f689bb98",
+      "bytes": 1734,
+      "status": "PASS",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/courses/task006-pool-read-expanded-rtl-plan-a1/result.json",
+      "sha256": "291afa08688cce84f152b58d8dff0518f8059a17e542ac86402e3fea5bfce884",
+      "bytes": 1765,
+      "status": "PASS",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/boot/task006-pool-read-product-connected-a1/result.json",
+      "sha256": "450fd007d1c642b040621f70f92011bbdf17b237dd96d85baa8819d965cac597",
+      "bytes": 157148,
+      "status": "PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/courses/task006-canonical-partial-cold-a1/result.json",
+      "sha256": "fc6643d4c0237e8c71361d8720d67ac963a6150cb091bec1d5f98eea9d6926d4",
+      "bytes": 1637,
+      "status": "PASS_ACTUAL_PARTIAL_WRITE_INDEPENDENT_COLD_ALL_PIXELS_AND_GUEST_SAVE18",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/courses/task006-canonical-partial-replay-a1/result.json",
+      "sha256": "1a765c54e8776716ead920c127f724e938363be7c646bd1020815db9bd20f2b0",
+      "bytes": 3643,
+      "status": "PASS_ACTUAL_PARTIAL_PWRITE_ISOLATED_REPLAY_ALL_NATIVE_STATE_BYTES",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/courses/task006-native-file-limit-control-a3/result.json",
+      "sha256": "9cfe70d2ad5e7df63fbcdd799fbd379a3852a0d51ff2fd020b6cdf93f1c3a4bc",
+      "bytes": 1300,
+      "status": "PASS_ACTUAL_NATIVE_FILE_LIMIT_PENDING_TOKEN_CLEANUP_ZERO_CLOCKS",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "build/usb/task006-reader19-reobserve-a1/result.json",
+      "sha256": "103019d89d871b1845505b7b05770d1e24c2f11631b7ddcb8a63440b83b82a3c",
+      "bytes": 2635,
+      "status": "PASS_REOBSERVED_READER24_RAW25_PAGE26_ROOT27",
+      "scope": "Finite observed case only; other whole-machine obligations remain open"
+    },
+    {
+      "path": "docs/evidence/006-canonical-native-browser-suffix.json",
+      "bytes": 25226,
+      "sha256": "0b6a09ed350eb6e2084886748df69572621753949607964b2d55d6c60141e279",
+      "scope": "Separate finite source/tool/result-bound milestone; retained failures and wider gaps explicit."
+    },
+    {
+      "path": "docs/evidence/006-trial-watchdog.json",
+      "bytes": 20336,
+      "sha256": "8c46ad38d5fbb2a95c2d9011fe2c49ec3db190546c57848cb0fa1c54227d4239",
+      "scope": "Separate finite source/tool/result-bound milestone; retained failures and wider gaps explicit."
+    },
+    {
+      "path": "docs/evidence/006-qemu-logical-softtlb.json",
+      "bytes": 25211,
+      "sha256": "8acb2fb6099cfed73c3f4b836b50aef8eef18617969becfdcf6257d8f82e4cb3",
+      "scope": "Separate finite source/tool/result-bound milestone; retained failures and wider gaps explicit."
+    },
+    {
+      "path": "docs/evidence/006-pen-sram.json",
+      "bytes": 30395,
+      "sha256": "a4d90da869580ab1c891c61ff66b00e18f90a07e733d07ebdfaeee638b938abb",
+      "scope": "Separate finite source/tool/result-bound milestone; retained failures and wider gaps explicit."
     }
   ],
-  "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
-  "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation"
+  "prior_implementation_commit": "d8d7b0cc306a91a113b5a95e964a2a19313f457d",
+  "fast_checkpoint_limit": "GAP_CONFIRMED: default QEMU omits logical soft TLB/TB/jump contents. Opt-in sidecar now qualifies finite data and two executable/modification/fence states; broader cache/interrupt/pending-work and public session adoption remain open.",
+  "continuation_note": "New ordinary dirtybatch9 compiled full canonical pair/audits PASS and actual42phasefast plus real partialpwrite/failure/newcold/retry PASS;2,615,000,279->2,302,000,127 instructionclocks(11.97%), not RTLtiming. Same newguest paired native/browser and extracted local packages; real extracted initializer passes. Canonical RTL and browser retained-medium cold/workflows running under originalbounds. Older Product10 authenticatedfullcold PASS; companionSaved12 scenario still owned/running. Digital, fast/checkpoint, distribution and physical completion remain separate. New opt-in rawUART1 now enables actual fresh guestcourseinstallation in same fastmachine; full44phase math/ink/cold, nonemptyUART/queue privatefork and offline13outcome replay pass. See fast_uart_milestone; timing/cache/fullproduct gates stayopen.",
+  "package_closure_milestone": {
+    "implementation_source": "ad897e1d5ceb3e64936c7ffa4cda805bb3c3922b",
+    "behavior": "versioned installed-package reading/binding/workspace and existing Closure7 checking",
+    "model_rtl": "Exact source9 canonicalRTL/native/browser campaigns now running originalcaps; source8 body398MPASS/header100MFAIL/browserhost7200sFAIL preserved; source7 sameWasmfailed400Msuffix exact replay retains scope.",
+    "guest_artifacts": "Fresh ordinary406-input canonical source8 pair/full audits PASS1007.149s actor/1012.052s supervised, peak1,917,239,296B. Notebook2e6f3d1c/initializer0ace19d4. New alignedControl1 exact partialfailure/repair component qualified.",
+    "guest_execution": "Dirtybatch9 actual42phasefast course/math/learner/ink/newCPUcold/reopen PASS2,302,000,127clocks/246.444s;11.97% fewer clocks than source8 on same inputs/runtime. Real2byte partialpwrite/EFBIG/noSaved/newcoldallbytes/pixels/retry+3ink SavedPASS147.380s. Original new9 abort22.186s retained.",
+    "distribution": "Native extractedsource8 actualcourse/math/learner/rawSaved/liveclosed40phases plus missing-onlynewCPUcold/reopen2phases qualify2,615,000,279instructionclocks within originalabsolute900s, with retained censusFAIL and independent declared-wrapper correction. CurrentA4 realguestinitializer/help/immutablepackagePASS. Staticbrowser extractedserverPASS; fullbrowser and exactRTL course/Save/cold stillrunning. New-hostexecution, optionaladapters, license and cachetiming remainopen.",
+    "fast_checkpoint": "no new fasttiming/arbitrarycached-continuation claim",
+    "physical": "unchanged unresolved fullphysical closure",
+    "evidence": "docs/evidence/006-notebook-dirty-batch-v1.json",
+    "candidate_ci": "ad897e1,3912103 and53d1da9 terminalSUCCESS11/11/allreportedsteps/no skips. Latest local distribution2/restored-batch10 work not covered. Original failures/cancel/skips retained; PR9 draft/unmerged.",
+    "workspace_envelope": "All3712 decoded bytes retained in actual272\u20131256B envelope2. Full464-word restore, exact newcold/reopen and real partialwrite/cold/retry/ink qualified in6. Store/Doc8/rawink formats unchanged; old1\u20134 cannotread2.",
+    "companion_guest_artifacts": "Fresh complete408input companion9 pair/full audits PASS1074.274s actor/1080.066s supervised, peak1,928,642,560B; initializer cd9c4a7f..., notebook33351fbc.... Immutable build/native/task006-dirty-batch-companion-a1 reuses original validated Clocked13RTL6cbd9cad.../64d7d234.... New9 execution pending; original older6 Saved12 case not relabeled."
+  },
+  "fast_uart_milestone": {
+    "behavior": "New ordinary lemmasim-course install/load over negotiated rawUART1, exactguest/mode/queue admission; guest alone validates/installs/acknowledges. Same maintained course/math/learner/ink workflow and independentcold on genuinely empty input now pass.",
+    "guest": "Unchanged genuine dirtybatch9 pair8ab77/8b3e; no new target language or host notebook.",
+    "model": "Existing pinned QEMU core opt-in derived host transport97ab475e...; defaultderivation and historicalbundleidentities retained. Serial ordinary16550callback/FIFO/IRQ, no debuggerRBR/MMIO injection. RequireddeviceVMState4 retains raw ring/deadlines/timer/accounting and storedhostlifecycle.",
+    "rtl": "Existing exactRTL path unchanged; this is a fast functional port, not UART/core timing parity.",
+    "state": "Actual nonempty FIFO+4090externalpending, strict everyexposedfield/original-privatefork suffix/allbytes/pixels pass; validouterhash/missingrequiredversion3 rejects actualprivateVMState without live mutation. Offline13realoutcome rows match accepted boundaries with original mutable medium absent. GeneralQEMUcachedstate remains open.",
+    "distribution": "Extracted native format2 rawUART archive a2 now prepared and actual install/load from retained nonempty pending cut passes34.247s; prototype actual fresh/cold conformance passes208.201s actor. Current verifier preserves format1 archives. Optional adapters, new-host execution and licensing remain open. See local-native-distribution evidence.",
+    "performance": "Full44phase+pendingprefix/suffix2,615,000,200actualnominalfastclockunits/397.221sactor/399.444ssupervised,418.9MBpeak; originalactor requested-suffix accounting offby1 retained and independently corrected from actual phases/states. Separate maintainedconformance548,000,078clockunits+25Minitializer/216.671ssupervised,279.7MBpeak. Not RTL cycles or matched workload speedup.",
+    "physical": "No new physical claim.",
+    "evidence": "docs/evidence/006-fast-uart-ingress-v1.json"
+  },
+  "browser_cold_ready_milestone": {
+    "behavior": "Actual source9 packages-only cold boot creates initial notebook and Ready806MRTLcycles; not recovery of prior saved notebook/ink.",
+    "performance": "6999.819675s host/6894.836645s simulation calls,192MiBWasmheap within original1B/7200s.",
+    "native_relation": "All43wrapper scalars/fullRAM/ROM/UART/controller arrays/every pixel/generated model payload equal independently retained native806MReady cut. Different archive headers/identities retained.",
+    "evidence": "build/browser/task006-dirty-batch-cold-ready-export-a1/missing-only-result-a2.json",
+    "gaps": "Full browser course/math/ink/Save/durable-onlyreopen and broader continuation remain open; original source-description and passive-field10 observer errors retained."
+  },
+  "restored_surface_milestone": {
+    "status": "PASS_COMPLETE_LINKED_AND42_PHASE_FAST_FUNCTIONAL",
+    "contract": "docs/contracts/006-restored-surface-notebook-v1.md",
+    "evidence": "docs/evidence/006-notebook-dirty-batch-v1.json",
+    "guest_execution": "42-phase fast pass; exact RTL loss/recovery pending",
+    "distribution": "Two immutable native bundles prepared; static browser10 not prepared",
+    "physical": "UNVERIFIED"
+  },
+  "browser_course_body_milestone": {
+    "status": "PASS_REAL_BROWSER_COURSE_BODY_EXACT_APPLICABLE_NATIVE_SUFFIX",
+    "cycles": 301000000,
+    "host_seconds": 3595.635475,
+    "heap_bytes": 201326592,
+    "evidence": "docs/evidence/006-canonical-native-browser-suffix.json",
+    "whole_browser_workflow": "OPEN"
+  },
+  "latest_observed_candidate_ci": {
+    "source": "Actual GitHub workflow tool results, October17; no local test inference.",
+    "commit": "350debcc497856b9eb4aa6a768c0c7dc50d40c0e",
+    "workflow_run_id": 39065254797,
+    "run_number": 169,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/srkftw/lemma/actions/runs/39065254797",
+    "scope": "Actual complete350debc scoped-I/O candidate. Later15fe349/1d530a9 local-ROM bundle/checker increments still require their own candidate run.",
+    "previous99": {
+      "commit": "99e27ce8ff814fda92c29f4beefe687cf17429ce",
+      "run_id": 39057257719,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": 11,
+      "steps": 117,
+      "skipped_steps": 0
+    },
+    "retained_previous_observation": {
+      "source": "Actual GitHub fetch_commit_workflow_runs and fetch_workflow_run_jobs tool observations, October17. No local test inference.",
+      "commit": "e2b27c79a029898c4376d7eeebaf0653a60f746b",
+      "workflow_run_id": 39050548744,
+      "run_number": 164,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": 11,
+      "steps": 117,
+      "skipped_steps": 0,
+      "failed_steps": 0,
+      "successful_step_counts_in_actual_returned_job_order": [
+        25,
+        8,
+        12,
+        10,
+        8,
+        9,
+        9,
+        9,
+        9,
+        9,
+        9
+      ],
+      "url": "https://github.com/srkftw/lemma/actions/runs/39050548744",
+      "scope": "Published e2 backlog-v1 candidate only; local post-overflow ink FAIL and later uncommitted home-ink successor remain separate."
+    },
+    "previous8e": {
+      "commit": "8e3506cf0ca0a94bec5aef9151b4b7565a5942c8",
+      "run_id": 39062035567,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": 11,
+      "steps": 117,
+      "skipped_steps": 0
+    },
+    "jobs": 11,
+    "steps": 117,
+    "skipped_steps": 0,
+    "failed_steps": 0
+  },
+  "browser_pointer_ink_milestone": {
+    "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
+    "scope": "Real local browser source9 pointer -> guest raw ink -> barrier-backed automatic Saved8; exact55M native/Wasm suffix and18 actual I/O outcomes. Explicit idle Save subsequently fails and is fixed locally in11, guest11 execution pending.",
+    "evidence": "docs/evidence/006-canonical-native-browser-suffix.json",
+    "transform_cancellation": {
+      "status": "IMPLEMENTED_HOST_FIXTURE_AND_PREPARED_BUNDLE_PASS",
+      "result": "build/browser/task006-pointer-transform-a1/result.json",
+      "scope": "Viewport/layout/invalid geometry and raw cancellation at last admitted point; no new controller/guest conformance inferred."
+    }
+  },
+  "course_preserving_save_milestone": {
+    "behavior": "IMPLEMENTED",
+    "compiler": "PASS_GENUINE59_AND_COMPLETE850_888_ARTIFACTS",
+    "RTL_guest": "PASS Notebook11/ingress2 canonical Save/cold1.446B; failed-FLUSH/cold1.402B. Original bounds retained.",
+    "fast_guest": "PASS current ingress2 course Save/cold576000030 units; connected53phase mathematics2.162B units. Functional clock only.",
+    "distribution": "PREPARED native/static browser; current browser coldReady493M/allpixels and course PASS; old11 actualSaved11cold FAIL at7200s/noReady,831.65M. Browser mathematics in progress.",
+    "physical": "UNVERIFIED",
+    "contract": "docs/contracts/006-course-preserving-save-v1.md"
+  },
+  "companion_saved12_terminal": {
+    "status": "FAIL_AGGREGATE21600S_DEADLINE",
+    "source_cohort": 6,
+    "result": {
+      "path": "build/usb/task006-package-companion-saved12-a1/result.json",
+      "sha256": "c6cf2c821808ff592442cbf3fde0ee48512680d3479cd2a1e8c204739af1f1f3",
+      "status": "FAIL",
+      "host_seconds": 21627.854750051047,
+      "error": "KeyboardInterrupt('owned supervisor cancellation 15')"
+    },
+    "supervision": {
+      "path": "build/usb/task006-package-companion-saved12-a1.supervision/supervision.json",
+      "sha256": "95524976f345ac0d09b3510c7e2abf4d14c8b6dad00f829c6ca6c2e3e54532d4",
+      "status": "FAIL",
+      "cause": "predeclared absolute supervisor deadline",
+      "owned_survivors": []
+    },
+    "completed": [
+      "initial coldReady1045M",
+      "real lost first-WRITE reply/Failed",
+      "offline ink",
+      "peer restart reconciliation/Saved16",
+      "full original+offline controller pixels at2416M"
+    ],
+    "unfinished": "Independent cold stopped at650M before Ready; original failure and cold-failed snapshot retained. No cold acceptance. Observer snapshot request near cutoff timed out; no additional snapshot is claimed."
+  },
+  "number_entry_component_milestone": {
+    "behavior": "IMPLEMENTED15_STATIC_PAD_REUSE_RAW_OVERDRAW_REPAIR",
+    "compiler": "PASS_GENUINE_MATCHED15_FULL_AUDITS_412_SOURCE_SEALS: 9c25d94, normal/init710944/710952B; original6d initializer300.202sFAIL retained.",
+    "RTL_guest": "PASS canonical13 exact22phases3357Mclocks/16586.544860s, actual numeric checks/inkSave/newCPUcold/allpixels/bytes/body/keypad/history anddisconnect complete. Later15/16 andunsuccessfulSave retain independent identities.",
+    "fast_guest": "PASS15 actual27 phases incl22-prefix, raw overdraw/key repair/retained underlying ink/thirdCPUcold/allpixels/allbytes/allobjects/reopen.2077000130 units/371.508s,374.884s supervised/515133440B peak. Comparable22prefix1439000106 vs14 1492000115,3.5523% fewer; no RTL timing claim.",
+    "distribution": "Matched15 native/static archives prepared/extracted; actual extracted native Init/rawUART/privatefork/install/barrier/newCPUcold/Load PASS389.698s/391.369s supervised/395472896B peak.15browser CPU/clean-host/redistribution rights separate.",
+    "physical": "UNVERIFIED",
+    "contract": "docs/contracts/006-number-entry-v1.md",
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "aligned_presentation": "Notebook14 actual full pair audits/411 source seals/owned cleanup PASS1422.313s/1826054144B.22-phase fast PASS1492000115 units/216.161s, same goals/bytes/pixels/cold/disconnect.13 baseline1494000115; only2M total units saved. Matched native/static14 bundles/tarballs prepared; actual extracted native launch PASS.15 normal/connected case separately qualified;15 pair remainsFAIL.",
+    "compiler_export_optimization": "PASS_COMPONENT_FULL_PAIR_LEGACY_CANDIDATE_CI: same-j2 export183.581s vs254.270s, all4files identical. Fresh412-source normal/init pair fullaudit906.098s/911.577supervised/1926250496B owned.23 historical target boots PASS. Actual9cCI11jobs/111stepsSUCCESS."
+  },
+  "browser_actual_mathematics": {
+    "behavior": "PASS actual5/6Verified rev12 isolated closure, assistance Saved22, deliberate Auto Saved27 and independent displayed assisted/practice/uncertain labels. Quick200M review batch FAIL: one tap not applied; no-input58.55M finishes Saved26, then new deliberate91.85M contact Saved27. Edited-answer test running; full acceptance OPEN.",
+    "guest": "Notebook11/ingress2 originald2",
+    "distribution": "EXISTING_BROWSER_LOCAL_MACHINE",
+    "cold_math_reopen": "NOT_RUN",
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "exact_checkpoint": "PASS same compiledWasm pending-hint-Save32M suffix with actual accepted outcomes/private backing, in-flight panel at final boundary. Not C++/QEMUcached-state or cold closure.",
+    "numeric_exact_continuation": {
+      "status": "PASS_SAME_COMPILED_WASM_32M",
+      "evidence": "docs/evidence/006-number-entry-v1.json",
+      "scope": "Actual13 queued numeric0\u2192pendingSave21/unfinished display; isolated recorded outcomes, all archive bytes exact. NoC++ migration/cachedQEMU claim."
+    },
+    "latest_checked_outcomes": {
+      "browser_actual_invalid": {
+        "path": "build/browser/task006-number-entry-cold-plan-a1/checked-invalid-result-a2.json",
+        "sha256": "52c50bad574ab53b0131903192c1e3958a4662d5c2da0965992321d2680272e0",
+        "status": "PASS_BROWSER_REAL_INVALID_REVISION_BOUND",
+        "cycle": 1229250000,
+        "check_clocks": 200000000,
+        "sequence": 22,
+        "actual_request": [
+          1113,
+          298,
+          8,
+          1,
+          74
+        ],
+        "actual_reply": [
+          1109,
+          298,
+          8,
+          0,
+          2
+        ],
+        "actual_graph_reclaimed": true,
+        "document": {
+          "revision": 8,
+          "goal": 1,
+          "answer": [
+            5,
+            60,
+            0,
+            0,
+            0
+          ],
+          "outcome": 2,
+          "evidence_revision": 8,
+          "budget": 8,
+          "attempts": 5,
+          "hints": 1
+        },
+        "scope": "Actual guest-isolated checker, revision-bound exact outcome, prior evidence/source/learner history and original authored body retained. Numeric13 also complete keypad. Original wrong observer assumed request fifth word was budget; actual fifth word is IPC transaction. Wrong observer/result retained, corrected independently from compiled source; no guest rerun or changed predicate outcome."
+      },
+      "browser_actual_indeterminate": {
+        "path": "build/browser/task006-idle2-mathematics-plan-a1/checked-Indeterminate-result-a2.json",
+        "sha256": "6438bd4c2e590709b5fea9bd0bde728e2eeec9a774e21404d7b778d1c1f27a62",
+        "status": "PASS_BROWSER_REAL_ZERO_BUDGET_INDETERMINATE",
+        "cycle": 2659500000,
+        "check_clocks": 200000000,
+        "sequence": 34,
+        "actual_request": [
+          1113,
+          462,
+          17,
+          1,
+          238
+        ],
+        "actual_reply": [
+          1109,
+          462,
+          17,
+          0,
+          5
+        ],
+        "actual_graph_reclaimed": true,
+        "document": {
+          "revision": 17,
+          "goal": 1,
+          "answer": [
+            5,
+            7,
+            0,
+            0,
+            0
+          ],
+          "outcome": 5,
+          "evidence_revision": 17,
+          "budget": 0,
+          "attempts": 3,
+          "hints": 1
+        },
+        "scope": "Actual guest-isolated checker, revision-bound exact outcome, prior evidence/source/learner history and original authored body retained. Numeric13 also complete keypad. Original wrong observer assumed request fifth word was budget; actual fifth word is IPC transaction. Wrong observer/result retained, corrected independently from compiled source; no guest rerun or changed predicate outcome."
+      }
+    }
+  },
+  "latest_bounded_physical_attempt": {
+    "status": "FAIL_COMPLETED_SIGNAL_ROUTE_ROUTER_TIMING_ELECTRICAL",
+    "evidence": "docs/evidence/006-pen-sram.json",
+    "result": "build/silicon/physical/pen-sram-range-route-a2/result.json",
+    "seconds": 504.83058635203633,
+    "router_violations": 388,
+    "estimated_setup_slack_ns": -3.031467,
+    "estimated_hold_slack_ns": -0.184124,
+    "electrical_violations": 1,
+    "scope": "Changed maintained range cones,3realSRAM/full256/10ns; global-route RC after detailed routing, not PEX or process/fullchip closure."
+  },
+  "portable_host_index_milestone": {
+    "behavior": "Unchanged fixed-framebuffer port values, including inactive out-of-range wrap",
+    "model": "PASS exact4cuts and4balanced private1M suffix pairs, all authoritative bytes/guest outputs",
+    "RTL": "Circuit sources/profile unchanged; canonical13 ongoing run retains8e5 identity",
+    "guest": "Unchanged fully audited15 ebbc3f19 RV64",
+    "distribution": "New candidate static bundle prepared; old full-workflow-qualified15 bundles remain native8e5/Wasmfb15",
+    "physical": "No physical effect or qualification",
+    "evidence": "docs/evidence/006-framebuffer-port-index.json",
+    "process_cpu_reduction_percent": 17.974967068040325,
+    "full_changed_runtime_browser_workflow": "PASS actual15 CPU0/cold course->BACK revision9->isolated5/6 Verified/reclaimed->OPFS Saved26->actualpointer ink Saved29->independentsecondcold->completeworkspace/history/source/Verifiedbody/keypad reopen. 2.00745B clocks plus separate32M private exactWasm replay, original4B/28800 bounds; no general proof-kernel/browser-compiler/eviction guarantee.",
+    "whole_machine17_fixed_relation": "PASS_SAME_RTL_NATIVE_WASM_COLD_COURSE_AND_EXACT_SUFFIX"
+  },
+  "canonical_number_entry_rtl_milestone": {
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "status": "PASS_22_PHASE_CANONICAL13_RTL_NUMERIC_MATH_INK_SAVE_COLD_DISCONNECT",
+    "rtl_clocks": 3357000000,
+    "host_seconds": 16586.544859546004,
+    "scope": "Canonical0.3 fullresolution/capacity; actual guest service mathematics and retained notebook. Unsuccessful Save remains separately qualified, not inferred here; later15 runtime/browser and unfinishedG2/G4-G7 remain open."
+  },
+  "notebook15_real_partial_io_milestone": {
+    "evidence": "docs/evidence/006-fast-backing-replay.json",
+    "status": "PASS_ACTUAL_PARTIAL_WRITE_GUEST_FAILED_SAVE_COLD_RECORDED_SUFFIX",
+    "scope": "Real128/EFBIG actualLinux failure, guestFailed/provisionalink, prioracknowledgedrecords preserved and isolated tape replay exact. Originalobserverfailures retained. No arbitrarycachedstate/RTLtiming/physicalpowerloss claim."
+  },
+  "browser_pointer_math_cold_milestone": {
+    "status": "PASS_REAL_BROWSER_POINTER_SAVED_AND_NEW_CPU_COLD_REOPEN_PENDING",
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "cases": [
+      {
+        "software": "13",
+        "cycle": 551100000,
+        "host_seconds": 4709.1328549999,
+        "read_outcomes": 119,
+        "sequence": 25,
+        "reopen": "PASS everypixel/allbytes/history; originalfooterobserverFAIL retained, independentlycorrectedexpectation noCPUrerun"
+      },
+      {
+        "software": "11/ingress2",
+        "cycle": 570350000,
+        "host_seconds": 4770.496575000047,
+        "read_outcomes": 150,
+        "sequence": 37,
+        "reopen": "FAIL expectedretainednode3; existingUnknownbinding fallback opensnode1; allbytes andmathhistory preserved; independentbrowseposition missing"
+      }
+    ],
+    "scope": "Ordinary canvasmouse -> rawdevice -> realguestink -> successfulOPFSworkerbarrier ->newCPUcold fromsamebacking. Exact3.63Mpixels/all256MiB/acknowledgedobjects and complete reads. Full course/math/source/history display reopen400M/3600s currently running. Browser-origin persistence only; no unconditionaleviction/physicalpowerloss, fullnewruntime15 or generalfaststateclosure."
+  },
+  "host_export_resource_candidate": {
+    "contract": "docs/contracts/006-lean-export-host-v1.md",
+    "status": "PASS_3f_FULL_MATCHED15_413_SOURCE_RESOURCES_CLEANUP",
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "scope": "Explicit-j2 new actualexports/provenance/argv. BothcompleteELFs/sixunits unchanged; 918.814559s/1.939GBpeak. Version2 documented hoststack successor andjoined16fullpair running separately; no targetsemantic extension."
+  },
+  "companion_number_entry16_candidate": {
+    "behavior": "IMPLEMENTED_JOINED_NUMERIC_AND_RECOVERY_ACTIONS_COMPONENT_PASS",
+    "model": "Actual imported Actions retain provisional9-fieldrawink/pixels; pinnedpayload/doc/history immutable, no storage/checkerIPC/Saved; markerfault/fullbuffer checksPASS",
+    "guest_compilation": "PASS bothfreshcomplete normal/init linkedartifacts833.365s;415source/ownedcleanup839.305s,1.923GBpeak, literal910/908corpora, oldsemanticguards/tablecells retained.",
+    "RTL_guest": "FAIL original200M close-after-mathematics bound at1835M coldCPU after actuallostACK/reconcileSaved16/independentcold/isolated5over6Verified22/authoredhintSaved23. Thirdcold notrun; no extension/restart. Allownedprocesses reaped. Retained40PCsamples implicate registry/stack validation but are not cycle proportions.",
+    "distribution": "PREPARED schema9/native415sources877files; actualguest6c331985/runtime6cbd CPU0 cold started fromprivateSaved12peer/outbox. Connectedcasepending.",
+    "physical": "UNVERIFIED",
+    "evidence": "docs/evidence/006-number-entry-v1.json",
+    "new_source_investigation": "Additive Clocked13 Kernel6 EntryV2 roots/selectors genuinelyelaborate.43.155s genuineLLVM/RV64object has alloriginal19 EntryV2 body/caller/registry/entry-lifetime gates PASS. Fullimage/audit/runtime/200M-close performance notqualified. ActiveRootLean only; frozen buildcheckout integration stillrequired.",
+    "entry2_successor": {
+      "status": "FULL_NORMAL_INITIALIZER_AUDITS_AND_CURRENT_NATIVE_BUNDLE_PASS_COLD_CASE_RUNNING",
+      "source_checkout": "/home/sreekumaar/.codex/worktrees/task006-product-course-build/lemma",
+      "configuration": "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook",
+      "software_deployment": "lemma-package-clocked-recovery4-entry2-deployment-v1",
+      "hardware": "lemma-silicon-dev/0.13.0",
+      "compiler_exports": "build/entry2-artifacts-a4/result.json",
+      "complete_predecessor_comparison": "build/entry2-artifact-comparison-a2/result.json",
+      "shared_kernel_pre_functions_unchanged": 1279,
+      "all_firmware_and_four_user_pre_post_corpora_unchanged": true,
+      "normal_build_seconds": 172.97520497697406,
+      "normal_audit_seconds": 454.4396743029356,
+      "normal_audit": "build/kernel/task006-companion-entry2-pair-a2/notebook/audit.json",
+      "pair_supervision": "build/entry2-whole-supervision-a2/result.json",
+      "pair_status": "PASS",
+      "native_schema": 10,
+      "native_current_runtime_status": "PASS",
+      "native_current_runtime_owner": "build/entry2-current13-supervision-a1/result.json",
+      "scope": "Additive ordinary Lean four-role boot selects the original checked Scheduler EntryV2. Independent cold23/open passed; close missed its original200M ceiling and the whole case remains FAIL. No observed close-cycle gain or completion of the original lost-ACK campaign.",
+      "retained_failures": [
+        "a1 export runner omitted existing host-stack policy",
+        "a2 copied Entry2 block outside Lean namespace; fixed placement",
+        "a3 omitted fresh StoreRecoveryAwait build prerequisite; exact completed prefix reused in a4",
+        "passive predecessor observer a1 queried omitted optimized callback through throwing body lookup; corrected presence inspection only",
+        "whole a1 omitted mandatory original NumberPad machine-owner field; independently matched original f708bdf8 pin and restored it; full FAIL retained",
+        "public preparation a1 normal and initializer PASS; bundle failed before output creation on str/Path API mismatch. Fixed only argument type; a2 reused completed exact preparations/archive and passed bundle, no target/native rebuild."
+      ],
+      "host_regressions": {
+        "foundation": {
+          "tests": 473,
+          "status": "PASS",
+          "log": "build/entry2-host-plan-a2/foundation.log"
+        },
+        "lemmasim": {
+          "tests": 304,
+          "status": "PASS",
+          "log": "build/entry2-host-plan-a3/lemmasim.log"
+        },
+        "silicon": {
+          "tests": 226,
+          "status": "PASS",
+          "log": "build/entry2-host-plan-a3/silicon.log"
+        },
+        "boot": {
+          "tests": 24,
+          "status": "PASS",
+          "log": "build/entry2-host-plan-a3/boot.log"
+        },
+        "scaffold": {
+          "tests": 18,
+          "status": "PASS"
+        },
+        "original_failures": "Host a1 all23 failures were actual Lean thread creation under observer8GiB AS without required existing stack env; a2 corrected runner env, preserved every assertion. a2 silicon one exact workload-list FAIL corrected only by adding the two genuinely exported selectors; boot was then not run."
+      },
+      "native_archive_portability": {
+        "status": "PASS_EXACT_255_INPUT_RELOCATION_AND_NO_FALLBACK",
+        "real_archive_result": "build/entry2-native-relocation-a2/result.json",
+        "old_native_snapshot_identity": "64d7d234d5fe35401de2ebfb4e2b2e5cd3699ff7451cdbbd0c992c1b5c525962",
+        "new_host_regression_tests": 2,
+        "format": "schema10 binds original native and guest source roots independently; full source/manifests/receipts/header/binary identities remain required"
+      },
+      "implementation_commit": "01b12f35fe8d84e7766ebb21477f4acfa52f1d85",
+      "artifact_root": "/home/sreekumaar/.codex/worktrees/task006-product-course-build/lemma",
+      "initializer_build_seconds": 214.43678129289765,
+      "initializer_audit_seconds": 364.95512548997067,
+      "pair_actor_seconds": 1206.9385091649601,
+      "pair_supervised_seconds": 1211.4888656630646,
+      "pair_owned_peak_rss_bytes": 1920413696,
+      "native_build_seconds": 65.29293782601599,
+      "native_snapshot_identity": "5381d37a7abd0ac8c7e448d85df2278b5ad8f1ae16c798772bc2a2a04e596135",
+      "native_binary_sha256": "60bd2f275f72386ce952f1d5572aee041217918d64cbf45a7fb33aad101732da",
+      "prepared_bundle": "/home/sreekumaar/Downloads/lemma/build/native/task006-entry2-current13-a2",
+      "bundle_files": 891,
+      "bundle_bytes": 83121627,
+      "root_relocation": "build/integration/task006-product-reader-entry2-a1/relocated-bundle.json",
+      "focused_cold_case": {
+        "status": "FAIL_ORIGINAL_CLOSE200M_CEILING",
+        "plan": "build/usb/task006-entry2-cold23-close-plan-a1/plan.json",
+        "supervision": "build/usb/task006-entry2-cold23-close-supervision-a1/result.json",
+        "actor": "build/usb/e2exec-a1/build/c1/result.json",
+        "scope": "Independent CPU0 from acknowledged actual Saved23 peer/outbox, original fraction5/6 Verified/hint, raw close under original200M cap. All home pixels/all medium bytes required. No new check/save or original-campaign completion claim.",
+        "frozen_executor": "build/usb/e2exec-a1",
+        "sources": 828,
+        "source_bytes": 11207785,
+        "whole_seconds": 14400,
+        "aggregate_cycles": 1600000000
+      },
+      "cold23_close_observation": {
+        "status": "FAIL",
+        "result": "build/usb/e2exec-a1/build/c1/result.json",
+        "owner": "build/usb/task006-entry2-cold23-close-supervision-a1/result.json",
+        "cold_ready_cycle": 745000000,
+        "cold_ready_seconds": 5744.477404210018,
+        "course_open_cycle": 990000000,
+        "course_open_seconds": 1747.8519685639767,
+        "course_open_scope": "required body/keypad/Verified regions; not entire course plane",
+        "close_start_cycle": 990000000,
+        "close_limit_cycle": 1190000000,
+        "failed_cycle": 1190000000,
+        "error": "ValueError('close-all-original-home-pixels: predeclared cycle/host ceiling')",
+        "actor_seconds": 9031.593089550966,
+        "owner_seconds": 9037.427815592033,
+        "owner_peak_rss_bytes": 499462144,
+        "failed_snapshot_sha256": "a3e901a31b12a2777981109386ccfb3d00ac8fa4c980332e98a7f1119cf499d7",
+        "no_new_save_check_format_or_third_cold": true
+      }
+    }
+  },
+  "course_browse_history17": {
+    "behavior": "PASS_READER_HISTORY_LOCATION_CURRENT_AUTHORITY_UNCHANGED",
+    "model": "Readonly actual Lean Actions pass fullvalidation/Unknownhistory/currentprecedence/no-source/fault/unchangedbytes cases",
+    "guest": "Bothgenuine17wholeRV64imagesandfullauditsPASS786.792s,416sources/1.907GB/ownedcleanup;875pre/873postcorpora,3validartifactnegativesreject. ActualfastCPU0/rawCOURSE/allhomepixels/allmedia/history/body/keypadPASS304Mfunctionalunits.",
+    "RTL": "PASS actualnewCPU cold571M/2437.464s andrawCOURSE216M/908.366s;787M/3351.818s total, everyhomepixel/allmedia/history/body/keypad/Unknownauthority unchanged",
+    "distribution": "PASS prepared native/static17, plus independent original CPU0 fixed event nativeab88/Wasmc53 fullstate relation at reset/cold571M/course787M and exact1M suffix to788M (319752 retired). Actual150cold/162course+suffix read outcomes exact, allmedia/pixels/UART/caches authoritative; only predeclared identity headers differ. Original nativea1 idle observer FAIL and passivecoldwrongcyclefield FAIL retained. No crossrestore/QEMU cache/timing closure.",
+    "physical": "UNVERIFIED; no change to hardware/physicalclosure",
+    "evidence": "docs/evidence/006-number-entry-v1.json"
+  },
+  "browser_pad15_mathematics_ink": {
+    "behavior": "PASS actualBACK\u21925/6\u2192isolatedCHECK/rev9Verified\u2192OPFSbarrier143/Saved26\u2192ordinarycanvasink\u2192barrier161/Saved29",
+    "model": "Same exactc53RTL/Wasmcore;32M PendingSave suffixreplays allarchivebytes usingactualoutcomes/privatebacking",
+    "guest": "Actualread/annotate/check/history/uncertainreview preserved; wholekeypad/body/requiredmathlabels andwholeinkplane exact",
+    "distribution": "PASS actual192MiB localbrowser15:initialcold582.7M/4891.234s,BACK/isolatedCHECK/Verifiedrev9/OPFS143Saved26/ordinarypointerink161Saved29,newCPUcold602.45M/4358.606s,actualcourse243.7M/all3.63Mpixels/all256MiB/8objects/149READs/current+history+learnerexact. 2.00745Bbrowserclocks plus32MsameWasmprivatesuffix withinoriginal4B/globalbound.",
+    "physical": "No physical pressure/powerloss/eviction claim",
+    "evidence": "docs/evidence/006-number-entry-v1.json"
+  },
+  "physical_enclosure_preflight1": {
+    "behavior": "PASS closedoriginalgeometry + explicit isolatedviarepair",
+    "model": "Integerrectangle-union/allorientations/side-specificcutandgeneratorminima;sevenadversarialhosttests",
+    "RTL": "UNCHANGED; penlocalcountercandidate remainsUNADOPTED",
+    "guest": "No targetcode orruntimechange",
+    "distribution": "OptionalhostCLI generatescandidateLEF; sourcePDK/maintainedrouteflow unchanged",
+    "physical": "Magicisolatedoriginal1/repaired0;132fixedchecks,7classes,10qualified+10originalnativeOpenDBrulesPASS. Actualtinyfixed-viaDRTnegative:bothknownbadandrepairyieldemptyreports; unchangedbadVia1DC2LfixedDEFretained. GAP_CONFIRMED enforcement, adaptationUNADOPTED. Fullprocess/controllerDRC/LVS/PEX/timing/fullchip remainUNQUALIFIED.",
+    "evidence": "docs/evidence/006-sg13g2-enclosure-preflight.json"
+  },
+  "native_wrapped_runtime_distribution": {
+    "behavior": "PASS actualruntime-inclusive17package/preparedarchive/extractionadmission",
+    "model": "Unchanged exactnativeab88 andQEMUartifact; actualoriginal3-root negative255, corrected120-path QEMUlaunch0 andgenuineRTL1M/499970retired inprivatevisibilitynamespace",
+    "RTL_guest": "Runtime-linkageprobe only; coldReady/workflow remainseparateexistingresults",
+    "distribution": "149970067B archive includes403043616B complete registeredemulatorruntimeNAR; no cleanhostimport/Python/Tk/rights closure claim",
+    "physical": "No physicalclaim/change",
+    "evidence": "docs/evidence/006-local-native-distribution-v1.json"
+  },
+  "course_reader_location18": {
+    "behavior": "PASS realguest example5 nodeSave38 and independent coldreopen; failedFLUSH227/noSaved and observed38/node5 cold recovery",
+    "model": "Actual Lean codec/Save/cancel/EOF/busy Actions and genuine902/900 complete artifacts; old profiles and authority unchanged",
+    "RTL": "PASS actual1.691Bclocks/8134.657s; nativeownedpeak244453376B; rawnode5Save38 andindependentCPU0 cold/reopen allpixels/media; original2.8B/21600s bounds",
+    "guest": "Actual fast functional661M/76.828s and failure647M/75.525s; same maintained RV64 artifacts, all original authority/history/learner/ink/packages preserved",
+    "distribution": "Prepared native/static bundles retained. Actualbrowsercold/node3/node4/example5/Saved38 allpixels/media/168outcomes pass at892M; independentClosed/Open source38 cold running under originalbounds, notcomplete.",
+    "physical": "UNVERIFIED, no changed circuit or physical qualification",
+    "evidence": "docs/evidence/006-course-reader-location.json",
+    "state": "No host-state format extension: reader staging/live words use existing owned guest RAM and record store. Separate Reader18 checkpoint suffix is not yet qualified; general QEMU cached-state gap remains.",
+    "browser_second_cold": {
+      "status": "PASS_READER18_BROWSER_SAVED38_INDEPENDENT_COLD_SAVED_NODE5_REOPEN",
+      "evidence": {
+        "path": "build/browser/task006-reader18-local-plan-a1/second-reopen-result-a1.json",
+        "sha256": "94e87b0b97e5bbb3ab54d4da4d34bc7e7a730de5cc98c2ee60f815d02d3dfc09"
+      },
+      "aggregate_two_CPU_clocks": 1691000000,
+      "all_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "actual_READ_outcomes": 167,
+      "scope": "Original fixed572M->799M rawCOURSE suffix on the second independent OPFS CPU. All controller pixels, medium bytes and recorded READ outcomes against completed native case; no native full second snapshot or cross-restore claim."
+    },
+    "reader19_20_successors": {
+      "status": "CANONICAL20_PRESENTED_FAST_WORKFLOW_AND_BOTH_IMAGE_PAIRS_AUDITED_COMPANION_AND_FRESH_BROWSER_RUNNING",
+      "evidence": "docs/evidence/006-course-reader-location.json",
+      "behavior": "Fresh edition3 explicit chooser, actual5/6Verified, edit invalidation/Invalid, hint, readerSave15, independentcold/allhomepixels/allmedia/reopen node3; fast functional case; separate raw-annotation case1111000088units/140.968s/Saved18/fullcold passed",
+      "model": "same maintained Machine/controllers",
+      "RTL": "Unchanged0.3/Clocked13. Fresh39 browser genuine init+normalReady458.55M/all3.63M pixels passes; native20 and companion19 still first cold. New canonical20 full workflow not accepted yet.",
+      "guest": "Reader20 complete presented fast workflow passed; Reader19 complete genuine normal/initializer pair audits passed atccab. Live companion/fresh-browser cases running, not accepted.",
+      "distribution": "Prepared Reader20 native/static browser and Reader19 schema11 same-runtime bundle; clean fresh-host import/rights remain separate. Fresh browser39 actual guest package input now admitted; installation/course/math/cold continuation pending.",
+      "physical": "unchanged unresolved physical obligations",
+      "connected_result": "build/courses/task006-fresh-chooser20-presented-a1/result.json",
+      "scope": "No full machine, fast timing/cache, proof-kernel or physical closure claim."
+    }
+  },
+  "authenticated_resume_and_UART_reset_release": {
+    "status": "PASS_RTL_BROWNOUT_PARTIAL_INSTALL_RESUME_RECONNECT",
+    "source_origin": "da13e76 plus exact recorded dirty command/runtime sources; publication commit is separate",
+    "behavior": "Explicit bounded install-resume obtains actual authenticated guest status first, stages only on guest recovery/nonmatching receipt, then requires real tag/publication/final barrier/status. Existing confirmed/trial results send zero writes. Partial failure is not rollback.",
+    "model": "Maintained native UART cancellation now distinguishes pen-only reset-release pulse from cooperative suspend. Profile10 core/clock/capacity unchanged; implementation identity changes. Retained UART encoded-payload quota is recomputed too; intermediate data-only repair is independently rejected.",
+    "RTL": "Same specified Power-v2 eight safe edges and pen resync; literal original-runtime negative detects lost current/future UART. Current-source Product10 rebuild includes the complete independently recorded newer source closure.",
+    "guest": "Unchanged genuinely elaborated/audited ROMa3 and22sector ordinary Lean CryptoProbe installed through actual NV transactions; no host boot metadata/doc mutation.",
+    "distribution": "Normal lemmasim-auth install-resume command; source-validated local prepareda8, not fresh-host product bundle/auth browser qualification.",
+    "physical": "Not qualified; no rule/clock/signoff change.",
+    "actual": {
+      "RTL_clocks": 16000040,
+      "actor_seconds": 118.19197935797274,
+      "supervised_seconds": 119.55866553809028,
+      "owned_peak_rss_bytes": 375648256,
+      "partial_sectors": 7,
+      "total_image_sectors": 22,
+      "brownout_cause": 5,
+      "safe_qualification_clocks": 8,
+      "fresh_ROM_beacons": true,
+      "independent_CPU_reconcile_sectors_sent": 0,
+      "all_document_and_confirmed_image_bytes_unchanged": true,
+      "native_build_fixture_seconds": 75.4871476739645,
+      "native_supervised_peak_rss_bytes": 982536192,
+      "no_performance_gain_claim": true,
+      "derived_payload_quota_retained": true,
+      "one_exact_native_snapshot_suffix": true
+    },
+    "identities": {
+      "native_sha256": "319b73a57921bd65ac0867395b5d7bf0925bf27f1a7a0c9cc796d6721de5c970",
+      "runtime_identity": "ebb973f8dc5871e1df9335ce19a23b9475b124650c257e23e7904601b4837451",
+      "ROM_sha256": "8a853ef5ef9fa3414c1db85afb22f10835b054e02fd912b1f3262d56280aa5a4",
+      "prepared": "build/boot/task006-development-auth-prepared-a9",
+      "complete_native_source_archive_inputs": 253
+    },
+    "open": [
+      "fullnotebook interrupted update/confirmation/watchdog/brownout acceptance",
+      "latest course product image",
+      "production owner identity/entropy/trust/antirollback",
+      "lost UART packet campaign",
+      "browser authenticated boot",
+      "fast timing/arbitrary cached continuation",
+      "full distribution and physical closure"
+    ],
+    "derived_state": "event_payload_bytes is exactly the sum of retained input payload text lengths; rebuilding it from the serialized event vector is semantically valid under this maintained invariant. Literal rawcurrent/futureUART and futureadmission original/restored fullarchive equality expose the earlier omission; no field masking/draining/flush or arbitrarycachedstate claim.",
+    "CI": "Existing literalRTLjob now builds exactcurrent Product10native with2jobs/900s bound and runs maintained native regression under3m/4GiBAS/1GiBfile bounds; strict pipefail and exact log inventory extended. Job20m bound unchanged. Actual candidateCI still required.",
+    "evidence": "docs/evidence/006-development-authentication-v1.json",
+    "whole_notebook_update": "Older4f43/a09 exact16-sector-family source currentA/B updatecase a2 has actual358.1M resumable install,88.1M authenticatedhandoff,922M trialReady/allpixels/guestconfirmation; independentnormalcold RUNNING. Notfinal319 or latestcourse.",
+    "course_product_image": {
+      "behavior": "IMPLEMENTED_AND_CONNECTED",
+      "model": "Same consumed Product10 runtime ebb973f8dc5871e1df9335ce19a23b9475b124650c257e23e7904601b4837451",
+      "RTL": "PASS_AUTHENTICATED_COURSE_UPDATE_CONFIRM_INDEPENDENT_COLD_READER",
+      "guest": "Four real audited roles; guest health confirmation and savednode5 recovered through actualNV/Store/controller transactions",
+      "distribution": "Current local archived components admitted; source/tool/hostNix dependencies retained. Not a universal Product installer.",
+      "physical": "OPEN",
+      "actual": {
+        "status": "PASS_AUTHENTICATED_COURSE_IMAGE_UPDATE_CONFIRM_COLD_READER",
+        "result": {
+          "path": "build/boot/task006-product-course-executor-a2/build/connected-a2/result.json",
+          "sha256": "0aa8bf13a3b1acecb5009ffbf2b47d1e523ec5e0700445740a9d7c18793a30de",
+          "bytes": 156823
+        },
+        "supervision": {
+          "path": "build/boot/task006-product-course-connected-supervision-a2/result.json",
+          "sha256": "b3b168763f60bc17149c98623aa9ab69a94fa60c95c5ddf92605c2e0bb721de0",
+          "bytes": 743
+        },
+        "prepared_sha256": "eb9cd68f37a74583b25fab041bf1513d8d32c6ae2383df03233d89a55ecffe69",
+        "native_runtime_identity": "ebb973f8dc5871e1df9335ce19a23b9475b124650c257e23e7904601b4837451",
+        "profile": "lemma-silicon-dev/0.10.0",
+        "source_store_sequence": 38,
+        "compiled_configuration": "lemmasim-silicon-product-course-reader-bulk-notebook",
+        "image_elf": {
+          "path": "/home/sreekumaar/.codex/worktrees/task006-product-course-build/lemma/build/kernel/task006-product-course-reader-a1/image.elf",
+          "sha256": "56f1b5faef0157fb2cad7efcaa14d605e1ca879026267c5e38422db78e8522eb"
+        },
+        "image_payload_sha256": "5a7efb8a65e40825cf6a1a81630c663080a3dd68231ceda1aca5a808725574fd",
+        "consumed_source_inputs": 425,
+        "actual_image_sectors": 1056,
+        "clocks": 2251700000,
+        "actor_seconds": 12066.573871057946,
+        "owner_seconds": 12068.274168314994,
+        "owned_peak_rss_bytes": 338010112,
+        "phases": [
+          {
+            "name": "actual-resumable-notebook-installation",
+            "clocks": 519500000,
+            "seconds": 3301.2280511849094
+          },
+          {
+            "name": "guest-attempt-publication-authenticated-trial-handoff",
+            "clocks": 127200000,
+            "seconds": 838.906818796997
+          },
+          {
+            "name": "trial-Ready-guest-confirmation",
+            "initial_cycle": 646700000,
+            "final_cycle": 1269700000,
+            "clocks": 623000000,
+            "seconds": 3211.268887860002,
+            "health_records": [
+              [
+                1139,
+                0,
+                1,
+                1,
+                0
+              ]
+            ]
+          },
+          {
+            "name": "confirmed-new-CPU-cold-all-pixels",
+            "initial_cycle": 0,
+            "final_cycle": 749000000,
+            "clocks": 749000000,
+            "seconds": 3564.0704063329613,
+            "health_records": []
+          },
+          {
+            "name": "authenticated-cold-raw-COURSE-saved-example5",
+            "clocks": 233000000,
+            "seconds": 1147.2035474260338,
+            "all_controller_pixels": 3630000,
+            "raw_samples": 2
+          }
+        ],
+        "all_expected_pixels": true,
+        "all_document_bytes_unchanged": true,
+        "snapshot_cold_input": false,
+        "confirmed_metadata": [
+          3550047353233556812,
+          1,
+          4,
+          1,
+          2814749767106578,
+          2,
+          0,
+          0,
+          3
+        ],
+        "confirmed_boot_sha256": "e49a9bdce23645909ed57c10c885f567cb4ff89a42d242a6f0298ff68d8a2b54",
+        "bounds": {
+          "whole_seconds": 32400,
+          "clocks": 4300000000,
+          "install_clocks": 900000000,
+          "install_seconds": 7200,
+          "handoff_clocks": 300000000,
+          "handoff_seconds": 3600,
+          "ready_clocks": 1200000000,
+          "ready_seconds": 9000,
+          "cold_clocks": 1500000000,
+          "cold_seconds": 11200,
+          "course_clocks": 400000000,
+          "course_seconds": 3600,
+          "automatic_restart": false
+        },
+        "bound_basis": "New1056-sector payload versus original724; installation ceiling900M is the prior600M ceiling scaled1.5, handoff300M scaled1.5; four real processes and Source38 recovery get explicit1.2B/1.5B bounds. Whole4.3B/32400s uses the observed final319 runtime16M/118.192s lower throughput as a prospective host allowance. No earlier failure is reclassified.",
+        "public_root_component_admission": "Current6b Root lemmasim_auth.prepared(build/native/task006-product10-auth-components-a1) PASS; no CPU executed by this separate admission. Complete frozen campaign uses its own declared prepared/host source hashes.",
+        "scope": "Actual genuine Lean immutable resetROM reads modeledNV, guest A/B installation/authentication/selection/loading, actual four-role notebook confirmation, independent CPU0 cold and rawCOURSE savednode5. Complete3.63M home/course pixels and every notebook byte preserved; no kernel/application ELF preload at product launch. Public development key only; package format authenticationOPEN field remains raw packaging scope, actual slot-specific tag verified by guest ROM.",
+        "open": [
+          "Production key provisioning/entropy/durable antirollback trust",
+          "Interrupted large-course-image confirmation and every boot/power reset interleaving",
+          "Productbrowserboot, fast exacttiming/arbitrary QEMUcachedcontinuation",
+          "Full managed proofkernel/tutor/learning, radios and physicalnonvolatile/fullchip closure"
+        ],
+        "ROM_sha256": "8a853ef5ef9fa3414c1db85afb22f10835b054e02fd912b1f3262d56280aa5a4",
+        "native_binary_sha256": "319b73a57921bd65ac0867395b5d7bf0925bf27f1a7a0c9cc796d6721de5c970"
+      }
+    },
+    "full_notebook_AB": {
+      "status": "PASS_AUTHENTICATED_NOTEBOOK_AB_UPDATE_GUEST_CONFIRMATION_COLD",
+      "result": "build/boot/task006-notebook-update-a2/result.json",
+      "supervision": "build/boot/task006-notebook-update-supervision-a2/result.json",
+      "clocks": 2377200000,
+      "actor_seconds": 12246.04865178105,
+      "supervised_seconds": 12247.06118006003,
+      "owned_peak_rss_bytes": 322347008,
+      "source_store_sequence": 14,
+      "all_expected_pixels": true,
+      "all_document_bytes_unchanged": true,
+      "snapshot_cold_input": false,
+      "identity_scope": "Exact intermediate a09 native / prepared-a8, older724-sector image ELF4f4383... and public development HMAC ROM; not current319/new four-role course qualification."
+    },
+    "current_root_prepared": "build/boot/task006-development-auth-prepared-a10",
+    "current_root_prepared_scope": "Same current319 native/8a853 ROM, refreshed exact7 host-script identities after archive portability fix. Metadata preparation, not a rerun of full A/B."
+  },
+  "local_product_component_archive": {
+    "status": "PASS_REAL_LOCAL_COMPONENT_ARCHIVE_AND_ROM_BEACON",
+    "evidence": {
+      "path": "docs/evidence/006-development-authentication-v1.json",
+      "sha256": "e5127374400e34b3c9a3482b048cd37325933289e0a4f3bc62d171fcd5ef426a"
+    },
+    "files": 678,
+    "bytes": 10734790,
+    "scope": "Same immutable ROM/native machine, no media; requires maintained host commands and exact external dependencies. Fresh-host/standalone product distribution remains open."
+  },
+  "browser_new_medium_control": {
+    "status": "PASS_REAL_STATIC_NEW_MEDIUM_OPEN_PAUSED",
+    "evidence": {
+      "path": "docs/evidence/006-local-browser-distribution-v1.json",
+      "sha256": "954aca8ff7b2f68c6cf8573afbd609e396e17df4c1d0955ebf47660ef36434d1"
+    },
+    "fresh_course_case": "Original36 guest init/Ready/install3 pass, first course-open FAIL400M; newReader20/39 fresh source-bound case running, no accepted result yet."
+  },
+  "current_shared_runtime_port": {
+    "behavior": "IMPLEMENTED_SHARED_UART_RETENTION_AND_QUOTA",
+    "RTL_guest": "Current600e actual800M full cold572M/course799M/suffix800M passes; original continuous supervision interrupted, distinct functional result retained. HistoricalC53 fullReader18 retains own identity.",
+    "browser": "Current84d5 actual800M/fullnative relation at572M/799M/800M, all controller pixels/media/167actualREADoutcomes, and all-byte sameWasm idle suffix PASS. Separate meaningful227M recordedcourse replay RUNNING; no QEMU cache/timing claim.",
+    "distribution": "Current native distribution3 and static browser archives prepared; native standalone public snapshots exact against direct current runtime at1M/2M. Complete fresh-host installation and rights open.",
+    "Clocked13": "Current5381->759aeb archive-only source-port2 compiles complete255inputs, genuineEntryV2 Pending9cut native/Wasm exact41000 suffix passes. Full browser live peer remains open.",
+    "evidence": [
+      "docs/evidence/006-canonical-native-wasm-source-v1.json",
+      "docs/evidence/006-usb-clocked-wasm.json",
+      "docs/evidence/006-local-native-distribution-v1.json",
+      "docs/evidence/006-local-browser-distribution-v1.json"
+    ],
+    "physical": "No physical qualification implied.",
+    "current_native_cold_observation": {
+      "status": "PASS_FUNCTIONAL_FULL800M_ORIGINAL_SUPERVISION_INTERRUPTED",
+      "cycle": 572000000,
+      "actor_seconds": 2992.345262784045,
+      "all_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "retained_checkpoint": "build/browser/task006-current-native-whole-a3/cold572M/machine.chk",
+      "scope": "Actual public current distribution3 CPU0 cold Ready, raw COURSE to saved node5, all3.63M pixels/all256MiB/167 actual READ outcomes, and1Msuffix; three observational full checkpoints. Original owner disappeared; continuous resource supervision is not qualified. Actor completed under original cycle/phase/whole ceilings and conservative reattached guard. Full native/Wasm relation at572M/799M/800M now passes under the predeclared implementation header exception.",
+      "guard": "build/browser/task006-current-native-whole-rebound-supervision-a4/started.json",
+      "whole_result": "build/browser/task006-current-native-whole-a3/result.json",
+      "whole_clocks": 800000000,
+      "whole_actor_seconds": 4004.630636656075,
+      "course_cycle": 799000000,
+      "course_actor_seconds": 1006.8978488320718,
+      "course_READ_rows": 167
+    },
+    "current_wasm_cold_relation": {
+      "status": "PASS_FULL_CURRENT_COLD_READY_NATIVE_RELATION",
+      "result": "build/browser/task006-current-browser-whole-plan-a1/cold-result-a1.json",
+      "archive_relation": "build/browser/task006-current-browser-whole-plan-a1/cold572M-native-comparison-a1.json",
+      "cycle": 572000000,
+      "ready_cycle": 571950000,
+      "all_authoritative_archive_bytes_except_implementation_header_exact": 145739254,
+      "cold_READ_outcomes_exact": 153,
+      "all_pixels": 3630000,
+      "all_medium_bytes": 268435456,
+      "reported_simulation_call_seconds": 4001.5,
+      "reported_Wasm_heap_bytes": 201326592,
+      "scope": "Full800M cold/course/suffix completed; all authoritative archive bytes at threecuts, controllerpixels/media and167READoutcomes exact under predeclared implementation-ID relation. SameWasm idle suffix exact allbytes; general caches/pending-I/O coverage separate."
+    },
+    "current_wasm_whole_relation": {
+      "status": "PASS_CURRENT_FULL800M_NATIVE_OBSERVATION_RELATION",
+      "course_result": "build/browser/task006-current-browser-whole-plan-a1/course-result-a1.json",
+      "suffix_relation": "build/browser/task006-current-browser-whole-plan-a1/suffix800M-native-comparison-a1.json",
+      "whole_clocks": 800000000,
+      "reported_simulation_call_seconds": 5143.9,
+      "reported_Wasm_heap_bytes": 201326592,
+      "same_Wasm_suffix": "build/browser/task006-current-browser-whole-plan-a1/private-suffix-qualified-a1.json",
+      "retained_capture_history_observer_FAIL": "build/browser/task006-current-browser-whole-plan-a1/private-suffix-result-a1.json",
+      "offline_course_replay": {
+        "status": "PASS_CURRENT_WASM_RECORDED_COURSE_REPLAY_EXACT_FULL_STATE_AND_BACKING",
+        "result": {
+          "path": "build/browser/task006-current-browser-whole-plan-a1/offline-course-replay-result-a1.json",
+          "sha256": "a94d3a88d561daf350e46032f81fb444cf8a2b7b501c77910557e22c31d1a76e",
+          "bytes": 1037
+        },
+        "suffix_clocks": 227000000,
+        "all_authoritative_archive_bytes_exact": 145739700,
+        "all_medium_bytes_exact": 268435456,
+        "all_controller_pixels": 3630000,
+        "actual_suffix_READs": 14,
+        "raw_events": 2,
+        "reported_simulation_call_seconds": 1308.1,
+        "reported_Wasm_heap_bytes": 346030080,
+        "whole_observer_seconds": 2418.342539,
+        "scope": "Actual same-Wasm recorded-only checkpoint572M ->2rawCOURSE rows/14suffixREADs ->799M, isolated origin, no live original backing/peer. Every authoritative archive byte and every backing byte required exact; no masks/drain/fences.",
+        "qualification": "Meaningful recorded guest I/O and full controller scan suffix, separate from cold recovery and general QEMU/fast timing/cache continuation."
+      }
+    }
+  },
+  "fresh_browser_course_installation": {
+    "status": "PASS_GUEST_INSTALLATION_COURSE_MATH_WORKFLOW_STILL_RUNNING",
+    "first_ready_result": {
+      "path": "build/browser/task006-reader18-fresh-course-plan-a1/first-ready-result-a1.json",
+      "sha256": "178e6b6f4fdaffbde3cb27062ed0436babc47857ed8d152880245c75b33fd012",
+      "bytes": 1478
+    },
+    "initializer_clocks": 44200000,
+    "first_normal_ready_clocks": 458400000,
+    "aggregate_first_ready_clocks": 502600000,
+    "simulation_call_seconds": 4126.252095000622,
+    "reported_Wasm_heap_bytes": 201326592,
+    "scope": "Fresh real initializer and cold Ready, then real guest install3/barrier28 are passes. Subsequent first course-open hit400M bound: originalReader18 implicitly requested absent edition1 and closed the course. Separate5.25M retained-panel diagnosis does not rescue that failure. No new fresh mathematics/hint/cold workflow PASS.",
+    "installation_result": {
+      "path": "build/browser/task006-reader18-fresh-course-plan-a1/installation-result-a2.json",
+      "sha256": "2d3b24f598d8fa1193366053645817e98505cb2cc466c69ed05811d363e081f9",
+      "bytes": 1910
+    },
+    "actual_install_clocks": 77250000,
+    "actual_install_simulation_call_seconds": 606.6859050020003,
+    "actual_package_sequence": 3,
+    "actual_guest_barrier": 28,
+    "course_open_status": "FAIL_ORIGINAL400M_BOUND",
+    "course_open_failure": "build/browser/task006-reader18-fresh-course-plan-a1/course-open-failure-a1.json",
+    "failed_cut_qualification": "build/browser/task006-reader18-fresh-course-plan-a1/course-failure-qualified-a1.json",
+    "retained_panel_diagnosis": "build/browser/task006-reader18-fresh-course-plan-a1/panel-diagnostic-result-a1.json"
+  },
+  "kernel_metadata_read1": {
+    "evidence": {
+      "path": "docs/evidence/006-kernel-pool-read.json",
+      "sha256": "610f9eab1640511fa5222bce9ee58984d7c8458af3c5a3591a17f61b2d782196",
+      "bytes": 36671
+    },
+    "tested_guest_commit": "d9be0fce8d7b31b018318d38fff8336abb89161d",
+    "gate_scope": "G1 performance and bounded existing G2/G4-G7 workflow regression; no full gate closed",
+    "behavior": "PASS48productionActionboundary/errorobservations",
+    "model": "Original production Objects v1/v2/v3 model PASS; no policy/owner/quota changes",
+    "RTL": "PASS460MfirstReady; full six-outcome/course/11pixelink/Saved30/Close/independentcold/all3.63Mpixels/all256MiB/reopen3:3.496Bclocks/16385.257s/492208128Bpeak",
+    "guest": "PASSsixoutcomes/hint/ink/Saved30/independentcold on fast backend; matched oldbytes reopen98Mwithin100M",
+    "distribution": "Prepared same native/Wasm core, new audited canonical pair; full new browser execution pending",
+    "physical": "UNCHANGED_UNCLOSED",
+    "product": "PASSsameimmutableLeanROMandRTL10 actual1057sectorA/Binstall/authenticatedtrial/guestconfirm/independentcold/home+course/alluserbytes:2.223B/10821.854s; no interrupted-confirmation/trust/browser-product claim",
+    "companion": "PASScomplete440input notebook+initializer build/audit and normal schema11 bundle; actual new kernel USB cold reader case RUNNING"
+  },
+  "browser_controller_image1": {
+    "contract": "lemma-controller-gray4-image/1",
+    "evidence": {
+      "path": "docs/evidence/006-browser-controller-image.json",
+      "sha256": "44434cdb08f6887cc216b888bd51d735d3826352b4e494dbbac169ef4474b271",
+      "bytes": 12351
+    },
+    "gate_scope": "S/H distribution and G4 developer observation; no whole gate closed",
+    "behavior": "PASSactualworkerfixtures; invalid export preserves active run; identical file selection accepted twice",
+    "model": "Read existing Machine visible plane only; no clocks/backing/guestpolicy",
+    "RTL": "Same84d5realRTL/Wasm; actual5Mwith/withoutimage full145676708archivebytes equal",
+    "guest": "Unchanged original Reader20 continuation; actualall3630000pixels match; newguestexecution not inferred",
+    "distribution": "Preparednewd9gueststaticbundle and archive2085277B; fullnewkernelbrowser pending",
+    "physical": "UNCHANGED_UNCLOSED; no optical claim",
+    "selected_file_ownership": {
+      "prior_record": "PASS actual deferred-file app fixture/current full324host tests and prepared static package. Machine switches/new selections cancel unfinished file submissions; selected names and transaction strings stay exact. No worker/core/guest state change or new full browser acceptance.",
+      "rejected_newer_input": {
+        "evidence": "docs/evidence/006-browser-controller-image.json",
+        "behavior": "New invalid selection/Send cancels obsolete file read before validation; five actualapp paths PASS, no invalid reads/submissions.",
+        "host_suite": "324 PASS68.446s, not guest/browser durability qualification",
+        "distribution": "build/distribution/task006-hint-publication-selection-browser-a2.tar.gz",
+        "archive_sha256": "a5491a041597b5c385c256452f86234a0687fe5cc4bcfad9a9f9cb7fa958db29"
+      }
+    }
+  },
+  "product_source_archive1": {
+    "behavior": "PASSactualProduct10sourcearchive and originalUSBReader19archive; changed source rejected",
+    "model": "Host-only complete original provenance/ELF/DTB checks; no guest boot or auth policy",
+    "RTL": "Same immutableebb9Product10machine/LeanROM; no circuitry change",
+    "guest": "Newfour-roleProductimage build/auditPASS; liveA/Binstall/confirm/coldRUNNING",
+    "distribution": "Prepared440inputProductarchive,541184Bimage/publicdevtag; originalcase1056 remains strict",
+    "physical": "UNCHANGED_UNCLOSED",
+    "evidence": "docs/evidence/006-kernel-pool-read.json"
+  },
+  "canonical_reader20_live_partial_IO": {
+    "gates": [
+      "G1",
+      "S"
+    ],
+    "behavior": "PASSactualLinuxpartialpwrite/EFBIG ->guestFailed227/noSaved19/offline11pixels",
+    "model": "Recorded exact returned/changed prefixes and accepted operation boundary; observed persistence separated from acknowledged sequence18",
+    "RTL": "PASS30Mfailedsuffix plus515McoldReady/6MguestSave18; all3.63Mpixels/all256MiB",
+    "guest": "Real compiled journal recovery ignores incomplete19; actualSave confirms18 without host repair",
+    "distribution": "Qualified native Laboratory file-limit command; browser live POSIX fault is not claimed",
+    "physical": "UNCHANGED_UNCLOSED",
+    "evidence": {
+      "path": "docs/evidence/006-fast-backing-replay.json",
+      "sha256": "7e54bdda26ad962b1db877ce1d0247f25b1d092573c9bf9afda82aff10e61a52",
+      "bytes": 26080
+    },
+    "same_native_finite_replay": "PASS_ACTUAL_PARTIAL_PWRITE_ISOLATED_REPLAY_ALL_NATIVE_STATE_BYTES",
+    "general_fast_cached_checkpoint": "GAP_CONFIRMED_UNCHANGED"
+  },
+  "reader19_reconciliation_observer": {
+    "evidence": {
+      "path": "docs/evidence/006-course-reader-location.json",
+      "sha256": "cd1445aca4790be62373bdc4f1b227a4e812e822def4311e7da5b74a8390e7a7",
+      "bytes": 65391
+    },
+    "original_status": "FAIL_RETAINED",
+    "passive_record_reobservation": "PASS8corruptionsrejected;reader24/raw25/page26/root27; no new cold/offlinepixel claim",
+    "new_case": "PASS_READER19_CONNECTED_LOST_ACK_OFFLINE_INK_RECONCILIATION_COLD_READER5",
+    "actual_cycles": 2637000000,
+    "whole_host_seconds": 16931.559749903,
+    "sampled_owned_peak_RSS_bytes": 570056704,
+    "scope_limits": [
+      "Peer restarts in the lost-ACK window; this case cold-restarts the CPU after reconciliation, not before acknowledgment. A guest crash in the lost-ACK window is not newly qualified here.",
+      "No new mathematical check, Product boot, browser peer, full USB/radio/authentication, timing parity, general checkpoint or physical closure.",
+      "Original seq26 observer FAIL and overlapping-ink limitation remain retained; this new case uses independent corrected seq24/25/26/27 observations and11 originally white pixels."
+    ]
+  },
+  "native_laboratory_file_limit_command1": {
+    "evidence": {
+      "path": "docs/evidence/006-local-native-distribution-v1.json",
+      "sha256": "452753bd17050d4fe0a812f6a41bfee8f84b5b4038bdd423869e0579bbbc4157",
+      "bytes": 38876
+    },
+    "behavior": "PASSactualpackagedCLIapply/pendingtokenrestore/zeroClocks/all145702871bytes",
+    "model": "No changed native/guest/device policy; qualified600e remains mandatory",
+    "guest": "Actual failed Save/cold/replay qualification retained separately; command control adds zero clocks",
+    "distribution": "Prepared139049662B standalone native archive with exact Nix runtime export; clean-host import/rights still open",
+    "physical": "UNCHANGED_UNCLOSED"
+  },
+  "fresh_browser_cross_goal_hint_defect": {
+    "status": "OBSERVED_REAL_GUEST_UI_DEFECT",
+    "evidence": {
+      "path": "build/browser/task006-reader20-fresh-course-plan-a1/unsupported-controller-and-hint-defect-a1.json",
+      "sha256": "ae624d7c4905413b2f9ccb5b313d35513b35cb06d5ef23c504de8820fef2d9e9",
+      "bytes": 885
+    },
+    "scope": "Correct Unsupported/history do not qualify cross-goal hint applicability. Fix must be Lean-authored; active browser and original cold cases remain unchanged."
+  },
+  "authored_hint_visibility1": {
+    "status": "COMPONENT_AND_LINKED_PAIR_PASS_ACTUAL_GUEST_STALE_HINT_FAIL",
+    "evidence": {
+      "path": "docs/evidence/006-course-reader-location.json",
+      "sha256": "cd1445aca4790be62373bdc4f1b227a4e812e822def4311e7da5b74a8390e7a7",
+      "bytes": 65391
+    },
+    "qualified_scope": "Strict revision/goal local proposal filter; same read-only2 helpers added, only existing render body changes, all26 pre/post complete artifacts plus5 actual corruptions. No deployed guest fix claimed.",
+    "retained_failures": "Actual stale compiled helper200 rejected by corrected208 fixture; first qualifier i8 mutation-site observer failure retained and source-bound positive work reused.",
+    "actual_connected_failure": {
+      "path": "build/courses/task006-hint-context-fast-plan-a1/connected/result.json",
+      "sha256": "6b22330deb452e3dcb951d60598cdd0457d470b14b5f6080a9ce5c508d91cd0d",
+      "bytes": 60076
+    }
+  },
+  "authored_hint_publication2": {
+    "status": "PASS_LINKED_CANONICAL_COMPANION_PRODUCT_CONNECTED_FAST_RTL_AND_AUTHENTICATED_PRODUCT14_BROWSER_D_PENDING",
+    "evidence": {
+      "path": "docs/evidence/006-course-reader-location.json",
+      "sha256": "27bc727e7082925da428d73d907c9140c67fc69d8b65385d9c36f9f512147b49",
+      "bytes": 69076
+    },
+    "scope": "All3 actual course publishers use existing revision-bound aligned renderer. Same tile/dirty/framebuffer/error semantics; no new language/runtime/checker authority. Historical authority and generic raw corpus pins retained. Only post ControlRender.character local own-symbol SSA-name alpha-renaming independently compared; actual raw complete successor corpus pins are exact.",
+    "current_browser_cold": {
+      "status": "PASS_CURRENT_GUEST_COLD_READY_ALL_HOME_PIXELS_BACKING32",
+      "RTL_clocks": 548000000,
+      "simulation_call_seconds": 3763.4011149957173,
+      "opened_session_host_upper_seconds": 3882.1391599999665,
+      "Wasm_heap_bytes": 201326592,
+      "all_pixels": 3630000,
+      "all_backing_bytes": 268435456,
+      "snapshot_cold_input": false,
+      "fixed600M": "PASS complete600M/900M/901M native/Wasm relation; idle WFI1M suffix with zero retired instructions. Full current browserD pending.",
+      "evidence": "docs/evidence/006-browser-controller-image.json",
+      "later_saved48_close": {
+        "status": "PASS_BROWSER_CLOSED_HOME_ALL_PIXELS_AND_SAVED48_BACKING",
+        "receipt": "build/browser/task006-hint-publication-save32-plan-a1/actual-closed-home-a1.json",
+        "sha256": "508a5e652f305c6b46bc1712232505b9cc060888f589f7929ef0a16b22fd55d3",
+        "phase_clocks": 354550000,
+        "all_home_pixels": 3630000,
+        "all_medium_bytes": 268435456,
+        "durable_only_reopen": "RUNNING same OPFS medium/observedCPU0/no import or snapshot; original00:26:11.452097Z whole deadline retained"
+      }
+    }
+  },
+  "qualified_fast_file_limit_control": {
+    "behavior": "Actual OS partial write/EFBIG, guestFailed/noSaved, observed prefix retained, independent coldSaved32",
+    "model": "Qualified launcher97ab/executor2988; captured two outcomes and exact admitted replay suffix PASS",
+    "RTL": "Existing600e actual partial-write/cold/replay evidence retained; no new circuitry",
+    "guest": "Unchanged audited a877 target software; real new functional workflow PASS442000004units/50.010969s",
+    "distribution": "Prepared standalone fast/RTL native package with pinned Nix runtime closure; actual packaged fast admission/cleanup at zero guest clocks PASS. Clean-host import and redistribution rights open; browser OPFS model separate.",
+    "physical": "Host environment control; no physical qualification",
+    "checkpoint": "Functional QEMU migration branch only; cached-state hole remains open",
+    "evidence": {
+      "path": "docs/evidence/006-fast-backing-replay.json",
+      "sha256": "7e54bdda26ad962b1db877ce1d0247f25b1d092573c9bf9afda82aff10e61a52",
+      "bytes": 26080
+    }
+  },
+  "trial_boot_watchdog1": {
+    "behavior": "Versioned ROM arms independent20s trial watchdog; separate kernel disarms after actual durable confirmation",
+    "model": "Existing Power-v2; actual private64-clock watchdog reset suffix PASS.",
+    "RTL": "Three authenticated stalled trials/two brownouts/2B watchdog clocks with zero retired delta; exact expiry/reset and confirmed13 full notebook fallback PASS14263.804878s.",
+    "guest": "Genuine ROM and original451-input image strict re-audit pass. Actual image15 healthy trial arm/durable confirmation/disarm observed, original full campaign FAIL at unclocked reset observer retained; separate confirmed cold running. Actual stalled-trial fallback preserves all3.63Mhome/all256MiB. Current v2 product16 complete457-input audit passes; actual full update running.",
+    "distribution": "Explicit prepared schema2 with exact ROM/source/artifact validation; production trust open",
+    "physical": "No new physical qualification",
+    "evidence": {
+      "path": "docs/evidence/006-trial-watchdog.json",
+      "sha256": "dae9c559fd59eaecbcb354d7209d159a0b3b00ea78885099784f8211cdde6783",
+      "bytes": 23795
+    },
+    "confirmed_image15_cold": "PASS_SEPARATE_NORMAL_ROM_COLD_READER_961M_6947s_ORIGINAL_FULL_CAMPAIGN_FAIL_RETAINED"
+  },
+  "control_backlog_component_milestone": {
+    "status": "LINKED_V1_PAIR_PASS_WITH_RETAINED_POST_OVERFLOW_INK_FAIL",
+    "contract": "docs/contracts/006-notebook-control-backlog-v1.md",
+    "authority": "tooling/notebook-control-backlog-target-authority.json",
+    "authority_sha256": "c052370ae431f78b9d5a86ceb5cc051ec25f938c0dbf2f2b9b40958f712a4ddb",
+    "capture": {
+      "path": "build/courses/task006-control-backlog-capture-plan-a2/result.json",
+      "status": "PASS_GENUINE_CONTROL_BACKLOG_USER2_COMPONENT_EXPORTS",
+      "seconds": 810.8840030969586,
+      "frontend_inputs": 344,
+      "peak_RSS_bytes": 1845018624,
+      "owned_survivors": {}
+    },
+    "full_artifact_qualification": {
+      "path": "build/courses/task006-control-backlog-qualification-a1/result.json",
+      "complete_phases": 16,
+      "machine_owners": 8,
+      "seconds": 762.5783826250117,
+      "peak_RSS_bytes": 417214464,
+      "observer_inputs_equal": true
+    },
+    "behavior": "Eight guest-owned provisional mathematical taps in existing private User BSS20d00..20f20. Six captured view-context fields must still match. Existing numeric/check/Store/rendering paths execute each action after owned work settles. Free existing raw-ink buffer remains guest-owned. No new hardware/language/managed runtime authority.",
+    "bounds_and_limits": "Queue overflow242 and malformed/context243 are deferred controlled course errors. General navigation queuing and unlimited throughput are not implemented. Actual FIFO/overflow/reset-context/ink/cold execution and whole linked audit remain separate pending checks.",
+    "whole_build_source_count": 455,
+    "host_checks": {
+      "kernel_suite": {
+        "tests": 465,
+        "seconds": 9.704,
+        "status": "PASS",
+        "log": "build/courses/task006-control-backlog-authority-a1/kernel-host.log"
+      },
+      "scaffold_suite": {
+        "tests": 18,
+        "seconds": 8.162,
+        "status": "PASS",
+        "log": "build/courses/task006-control-backlog-authority-a1/scaffold.log"
+      },
+      "metadata": "PASS; planning only"
+    },
+    "v1_connected_failure": "build/courses/task006-control-backlog-fast-plan-a3/retained-failure-observation-a1.json",
+    "v2_status": "FULL_LINKED_AND_FAST_CONNECTED_PASS_RTL_RUNNING",
+    "pending_successor": {
+      "status": "FULL_LINKED_AND_FAST_CONNECTED_PASS_RTL_RUNNING",
+      "contract": "docs/contracts/006-notebook-control-backlog-v2.md",
+      "authority": "tooling/notebook-control-backlog-target-authority-v2.json",
+      "authority_sha256": "730ee1cfb472c226a00bba36d323be13b7b4b3e29342b141dd65a574f7f7fce1",
+      "genuine_capture": {
+        "result": "build/courses/task006-control-backlog-home-capture-plan-a1/result.json",
+        "seconds": 785.8718689979287,
+        "frontend_inputs": 344,
+        "owned_survivors": {}
+      },
+      "artifact_qualification": {
+        "result": "build/courses/task006-control-backlog-home-qualification-a1/result.json",
+        "seconds": 790.302828961052,
+        "peak_RSS_bytes": 416919552,
+        "phases": 16,
+        "machine_owners": 8,
+        "independent_negatives": 6,
+        "observer_inputs_equal": true
+      },
+      "source_relation": "Only bufferHomeInk added relative to v1; every v1 pre-body/signature/effect unchanged except queueBookTap home dispatch. Original pre-backlog relation unchanged outside its three input owners. All v1 authorities/failures retained.",
+      "semantic_negative": "Actual sole-owner LLVM header-boundary mutant159 rejects. Four old-owner mutants reject through exact v1 body preservation; foreign deployment rejects.",
+      "new_target_source_sha256": "fec5e5e96dd8368c8633d81bbc140efd11c9f31b996a797cfdc078df4a57b325",
+      "whole_build_source_count": 457,
+      "host_checks": {
+        "kernel": {
+          "tests": 465,
+          "seconds": 7.515,
+          "status": "PASS"
+        },
+        "scaffold": {
+          "tests": 18,
+          "seconds": 6.317,
+          "status": "PASS"
+        },
+        "metadata": "PASS; planning only",
+        "lemmasim_launcher": {
+          "tests": 328,
+          "seconds": 71.033,
+          "status": "PASS",
+          "scope": "Includes four new toolchain workspace checks; target artifact tests separate."
+        }
+      },
+      "implementation": "4f234cf250d94ccaf87836ef40090f0c5fcc7b70",
+      "whole_linked": {
+        "result": "build/courses/task006-control-backlog-home-whole-plan-a1/result.json",
+        "sha256": "ada8f95a2aeb321ad2da2ab2bcb17215876de183ae63d4f9009445331d518c28",
+        "status": "PASS_COMPLETE_CONTROL_BACKLOG_HOME_CANONICAL_PAIR",
+        "seconds": 762.0882108520018,
+        "sampled_owned_peak_RSS_bytes": 1833889792,
+        "consumed_sources": 457
+      },
+      "fast_connected": {
+        "result": "build/courses/task006-control-backlog-home-fast-plan-a1/consumed-host-source-root/build/connected/result.json",
+        "sha256": "92c28caadec28ed2ba033aeb13016cc54b545ddbda8b6a78c8879c0c64a0865a",
+        "status": "PASS_QUEUED_GUEST_CONTROLS_CONCURRENT_INK_CHECK_SAVE_INDEPENDENT_COLD",
+        "functional_units": 1005000078,
+        "supervisor_result": "build/courses/task006-control-backlog-home-fast-plan-a1/result.json",
+        "seconds": 145.19390045001637,
+        "sampled_owned_peak_RSS_bytes": 486957056,
+        "owned_survivors": {},
+        "sequence": 19,
+        "complete_cold_home_pixels": 3630000,
+        "complete_medium_bytes": 268435456,
+        "post_overflow_ink_units": 138000007,
+        "original_unchanged_fast_ink_ceiling": 300000000,
+        "scope": "Four consecutive real controls plus concurrent raw ink/Verified/reclaimed, explicitSave, actual242overflow, immediate ordinary raw ink/11pixels/Save19, independentCPU0cold/fullhome/allmedium/exactmath/history/course reopen. No timing or cached continuation claim."
+      },
+      "RTL": {
+        "status": "RUNNING",
+        "plan": "build/courses/task006-control-backlog-home-rtl-plan-a1/plan.json",
+        "bounds": "6B/43200s; full connected case, never prefix acceptance; post-error500Mhome+300Mink composition declared before execution"
+      },
+      "distribution": {
+        "native": "build/distribution/task006-control-backlog-home-native-a1",
+        "native_archive_bytes": 139241806,
+        "native_archive_sha256": "810d149926de3aa6981b4665d9b890e93ef6ef99f33da1b1088736f68bbefa55",
+        "browser": "build/distribution/task006-control-backlog-home-browser-a1",
+        "browser_archive_bytes": 2096227,
+        "browser_archive_sha256": "0ec8dfb6216f21742cbf07e0285338af979a8fb3816d4b79ebaa350cd12d482c",
+        "scope": "Prepared validated bundles; same original native/RTL/Wasm cores with genuine new guest pair. Packaging does not qualify browser execution, clean-host install or redistribution rights.",
+        "browser_execution": {
+          "status": "RUNNING_ACTUAL_CURRENT_GUEST_CPU0_COLD",
+          "plan": "build/browser/task006-control-backlog-home-browser-plan-a1/plan.json",
+          "origin": "http://127.0.0.1:8818/",
+          "browser_tab": 23,
+          "source_medium": "actual installed3, opaque privately imported; no snapshot cold input",
+          "bounds": "Prospective12h/6B/2GiB worker heap/3GiB retained output; first cold1B/7200s; no deadline transfer from older tab22."
+        }
+      },
+      "real_failed_save": {
+        "status": "PASS_REAL_FAST_PWRITE_FAILURE_REPLAY_INDEPENDENT_COLD_SAVE32",
+        "result": "build/courses/task006-control-backlog-home-file-limit-plan-a1/consumed-host-source-root/build/connected/result.json",
+        "result_sha256": "6c0461027c65abf45c3e4fb0a5f0afd5e2510f00d7fb59202120ea206f3a4eca",
+        "seconds": 58.30752318596933,
+        "functional_units": 442000006,
+        "scope": "Same existing real OS partialpwrite/EFBIG/noSaved, captured private I/O replay and independentCPU0cold/allhome/all256MiB case on genuine v2 guest; originalSaved32fixture/checks/bounds unchanged. Not QEMU cached-state or RTL timing qualification.",
+        "observed_changed_unacknowledged_bytes": 93,
+        "sampled_owned_peak_RSS_bytes": 1103511552,
+        "owned_survivors": {}
+      },
+      "browser_cold": {
+        "status": "PASS_CURRENT_V2_WASM_COLD_READY_ALL_LITERAL_HOME_PIXELS_INSTALLED3_BYTES",
+        "RTL_clocks": 459550000,
+        "all_pixels": 3630000,
+        "all_medium_bytes": 268435456,
+        "simulation_call_seconds": 4063.996385000469,
+        "opened_session_seconds": 4117.354790000081,
+        "heap_bytes": 201326592,
+        "snapshot_cold_input": false,
+        "result": "build/browser/task006-control-backlog-home-browser-plan-a1/cold-ready-result-a1.json",
+        "whole_connected_status": "RUNNING_ORIGINAL_BOUNDS; actualrawCOURSE chooser phase now running"
+      }
+    }
+  },
+  "latest_increment_implementation": "1d530a9",
+  "active_native_wasm_math_suffix": {
+    "behavior": "Same existing RTL Machine and old current-hint guest execute actual numeric/checker/Store suffix; original snapshots restored only into their own private backend.",
+    "model": "No new emulator or timing scaling.",
+    "RTL": "437250000 clocks/204137514 retired; full authoritative bytes/CRCs/UART/pixels/media and54 I/O outcomes exact under original identity-header-only relation.",
+    "guest": "Actual isolated check and durable authored hint publication; all18 original raw controls at six recorded admission boundaries.",
+    "state": "Finite selected active suffix PASS3122.077395s; no QEMU/arbitrary-boundary/full-ISA/crossrestore claim.",
+    "distribution": "Same existing native and Wasm cores; no new bundle or clean-host import claim.",
+    "physical": "Not a physical claim.",
+    "evidence": "docs/evidence/006-canonical-native-browser-suffix.json"
+  },
+  "logical_executable_cache_suffix": {
+    "behavior": "Guest-issued stale executable PTE/SFENCE, actual compiled-code copy without/with FENCE.I.",
+    "model": "Opt-in logical SoftTLB experimental binding; corrected legal private incoming lifecycle. Default adapter unchanged.",
+    "RTL": "No RTL change in this experiment.",
+    "guest": "44 fresh genuine Lean modules -> checked kernel-v0.4 -> LLVM -> audited RV64 leafs, PASS165.713594s.",
+    "state": "Two actual selected caches/private fork suffixes PASS10.126189s; all declared logical state/observed architectural/device state and applicable UART exact. Capture5JIT counters unchanged; broad continuation GAP_CONFIRMED.",
+    "distribution": "Separate retained ceabdf19 host executable, actual guarded8-file preparation PASS; no new full Nix package/adoption claim.",
+    "physical": "Not a physical claim.",
+    "evidence": "docs/evidence/006-qemu-logical-softtlb.json"
+  },
+  "scoped_boot_write_fault": {
+    "status": "RUNNING_FROZEN_FULL_GUEST_METADATA_CASE",
+    "evidence": "docs/evidence/006-trial-watchdog.json",
+    "contract": "docs/contracts/006-backing-io-v1.md",
+    "public_command": "lemmasim-auth launch --boot-write-limit FIRST:PAST:CEILING; Laboratory/single-thread/cold only",
+    "native_runtime_identity": "677aacbc0c1dc2cea5658357e7ad992b0d91ca63a4504c69a43e42ead097bd4d",
+    "guest_semantics": "Unchanged Lean image installation/authentication/journal; host scopes real POSIX syscall failure and verifies byte effects.",
+    "host_tests": {
+      "lemmasim": 329,
+      "boot": 39,
+      "scaffold": 18
+    },
+    "limitations": [
+      "New fixed full-image/torn-metadata guest recovery case not yet executed.",
+      "External Linux environment is not portable authoritative snapshot state.",
+      "Full interrupted update matrix and production trust remain open."
+    ],
+    "plan": "build/boot/task006-torn-metadata-update-plan-a1/plan.json"
+  },
+  "local_rom_distribution": {
+    "status": "PASS_RELOCATED_BUNDLED_ROM_CLI_CPU0_AND_GUEST_CAPACITY",
+    "evidence": "docs/evidence/006-local-native-distribution-v1.json",
+    "source_scope": "350debc plus fully indexed staged host additions. No clean committed-source claim.",
+    "archive": "build/distribution/task006-scoped-rom-local-a1.tar.gz",
+    "bytes": 42106436,
+    "files": 2610,
+    "actual_RTL_clocks": 200000,
+    "actual_retired_instructions": 85178,
+    "seconds": 20.94751155306585,
+    "limitations": "Exact external pinned Nix tools/libraries/Python required; public development key; no user media/kernel preload; full new-bundle notebook/checkpoint, clean-host and redistribution qualifications separate.",
+    "pending_protocol_checkpoint": {
+      "status": "PASS_BUNDLED_ROM_PARTIAL_FRAME_QUEUED_UART_EXACT_PRIVATE_SUFFIX",
+      "result": "build/boot/task006-rom-bundle-pending-a2/result.json",
+      "seconds": 49.71308900602162,
+      "actual_cut": 300000,
+      "pending_guest_frame_bytes": 37,
+      "queued_future_bytes": 43,
+      "suffix_clocks": 200000,
+      "complete_checkpoint_bytes": 145202004,
+      "scope": "Original snapshot unchanged; exact fullsamebackend checkpoint+applicableUART+session authority/eventcursor+privateBootNV. Finite ROM protocol case, no arbitrary/cache/crossbackend claim."
+    },
+    "actual_extraction": "PASS_ACTUAL_GZIP_EXTRACTION_RELOCATED_VALIDATION_FROM_TMP_MINIMAL_PATH_OUTSIDE_NIX_DEVELOP; exact existing Nix-store dependencies remain"
+  }
 }

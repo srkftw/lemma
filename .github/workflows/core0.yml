@@ -139,6 +139,14 @@ jobs:
           timeout --foreground --signal=TERM --kill-after=30s 20m \
             nix develop --no-write-lock-file --command \
               lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel \
+                Lemma.Applications.Notebook \
+                Lemma.Services.Store.ServerRecoveryAwait \
+                Lemma.Compiler.KernelExport \
+                Lemma.User.Runtime.Arena Lemma.Mathematics.OwnedSubmission \
+                Lemma.Courses.Arithmetic Lemma.Courses.Package \
+                Lemma.Courses.PackageInstaller \
+                Lemma.Services.Arithmetic.Server Lemma.Services.Arithmetic.Client \
+                Lemma.Services.Arithmetic.ClientV2 \
             2>&1 | tee build/ci/metadata/lake-build.log
 
       - name: Run foundation host-harness suite
@@ -148,6 +156,14 @@ jobs:
             nix develop --no-write-lock-file --command \
               python3 -m unittest discover -s tests/foundation -v \
             2>&1 | tee build/ci/metadata/foundation-host-unittest.log
+
+      - name: Check bounded product recovery transport
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 -m unittest discover -s tests/boot -v \
+            2>&1 | tee build/ci/metadata/boot-host-unittest.log
 
       - name: Observe checked memory copying and power authority in Lean
         run: |
@@ -162,6 +178,14 @@ jobs:
             2>&1 | tee build/ci/metadata/loader-copy.log
           timeout --foreground --signal=TERM --kill-after=10s 5m \
             nix develop --no-write-lock-file --command \
+              lake env lean tests/ink/CourseSave.lean \
+            2>&1 | tee build/ci/metadata/course-save.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/courses/IngressIdle.lean \
+            2>&1 | tee build/ci/metadata/course-ingress-idle.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
               lake env lean tests/lemmasim/PowerControl.lean \
             2>&1 | tee build/ci/metadata/power-authority.log
           timeout --foreground --signal=TERM --kill-after=10s 5m \
@@ -173,6 +197,238 @@ jobs:
               python3 scripts/check_power_compiler.py \
                 --work-dir build/lemmasim/compiler-power-ci \
             2>&1 | tee build/ci/metadata/power-compiler.log
+
+      - name: Check indexed frames, exact mathematics and external backing outcomes
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/kernel/FramesScans.lean \
+            2>&1 | tee build/ci/metadata/frame-index.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/kernel/OwnedTablePrefix.lean \
+            2>&1 | tee build/ci/metadata/owned-table-prefix.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/mathematics/ExactMath.lean \
+            2>&1 | tee build/ci/metadata/exact-mathematics.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/runtime/OwnedArena.lean \
+            2>&1 | tee build/ci/metadata/owned-arena.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/mathematics/ArithmeticIPC.lean \
+            2>&1 | tee build/ci/metadata/arithmetic-ipc.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/kernel/ObjectsV3.lean \
+            2>&1 | tee build/ci/metadata/arithmetic-object-budget.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/kernel/PoolReadRefinement.lean \
+            2>&1 | tee build/ci/metadata/pool-read-refinement.log
+          grep -Fq 'POOL_READ_REFINEMENT:PASS 48 production Action boundary/error observations' \
+            build/ci/metadata/pool-read-refinement.log
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 -m unittest discover -s tests/lemmasim -p test_backing_io.py -v \
+            2>&1 | tee build/ci/metadata/backing-io.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              python3 -m unittest discover -s tests/lemmasim -p test_companion_peer.py -v \
+            2>&1 | tee build/ci/metadata/companion-peer.log
+
+      - name: Qualify IPC authority and managed notebook lowering
+        run: |
+          set -euo pipefail
+          mkdir -p .lake/build/lib/lean/tests/kernel
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean -j2 \
+                -o .lake/build/lib/lean/tests/kernel/IPCCallBaseReuse.olean \
+                tests/kernel/IPCCallBaseReuse.lean \
+            2>&1 | tee build/ci/metadata/descriptor-model.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean -j2 tests/kernel/DescriptorDirectLoads.lean \
+            2>&1 | tee build/ci/metadata/descriptor-direct-loads.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/courses/NotebookPackage.lean \
+            2>&1 | tee build/ci/metadata/notebook-package-state-layout.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/courses/WorkspaceCodec.lean \
+            2>&1 | tee build/ci/metadata/course-workspace-codec.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/ink/NotebookRetryWorkspacePolicy.lean \
+            2>&1 | tee build/ci/metadata/workspace-retry-shapes.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/ink/NotebookClosureRecoverable.lean \
+            2>&1 | tee build/ci/metadata/workspace-reconciliation-actions.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/courses/Render.lean \
+            2>&1 | tee build/ci/metadata/course-render-delta.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/course/PackedRender.lean \
+            2>&1 | tee build/ci/metadata/course-packed-words.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/kernel/ManagedNotebookDeployment.lean \
+            2>&1 | tee build/ci/metadata/managed-notebook-deployment.log
+          test ! -e build/kernel/ci-user-word-inline
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEMMA_WORD_INLINE_FIXTURE_DIR=build/kernel/ci-user-word-inline \
+                lake env lean tests/kernel/UserWordInline.lean \
+            2>&1 | tee build/ci/metadata/user-word-inline.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/mathematics/ExecutionIdentity.lean \
+            2>&1 | tee build/ci/metadata/arithmetic-execution-identity.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_kernel_ipc_poll_borrow.py \
+                --work-dir build/kernel/ci-ipc-poll-borrow --timeout 180 \
+            2>&1 | tee build/ci/metadata/ipc-poll-borrow.log
+
+      - name: Qualify exact aligned course controls
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 10m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_control_render.py \
+                --work-dir build/courses/ci-control-render \
+            2>&1 | tee build/ci/metadata/control-render.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean -j2 --run tests/courses/NumberEntry.lean \
+            2>&1 | tee build/ci/metadata/number-entry-actions.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/number_pad_reference.py \
+                --output-dir build/courses/ci-number-pad/reference \
+            2>&1 | tee build/ci/metadata/number-pad-reference.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEMMA_NUMBER_PAD_REFERENCE=build/courses/ci-number-pad/reference \
+                lake env lean -j2 --run tests/courses/NumberPad.lean \
+            2>&1 | tee build/ci/metadata/number-pad-actions.log
+
+      - name: Check joined companion number-entry recovery Actions
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean -j2 --run tests/courses/CompanionNumberEntry.lean \
+            2>&1 | tee build/ci/metadata/companion-number-entry-actions.log
+          grep -F 'COMPANION_NUMBER_ENTRY16:PASS' build/ci/metadata/companion-number-entry-actions.log
+
+      - name: Check read-only course location recovery from source history
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake build Lemma.Courses.PackagePublishMain Lemma.Courses.BrowseHistory \
+            2>&1 | tee build/ci/metadata/browse-history-build.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean -j2 --run Lemma/Courses/PackagePublishMain.lean \
+                --output-dir build/courses/ci-browse-history/package \
+            2>&1 | tee build/ci/metadata/browse-history-package.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEMMA_COURSE_PACKAGE_FILE=build/courses/ci-browse-history/package/arithmetic.lcp \
+                lake env lean -j2 --run tests/courses/BrowseHistory.lean \
+            2>&1 | tee build/ci/metadata/browse-history-actions.log
+          grep -F 'BROWSE_HISTORY1:PASS' build/ci/metadata/browse-history-actions.log
+
+      - name: Check joined companion reader recovery Actions and deployment
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/ink/NotebookRetryReaderPolicy.lean \
+            2>&1 | tee build/ci/metadata/reader-retry5-shapes.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                LEMMA_COURSE_PACKAGE_FILE=build/courses/ci-browse-history/package/arithmetic.lcp \
+                lake env lean -j2 tests/courses/NotebookReaderRecovery.lean \
+            2>&1 | tee build/ci/metadata/companion-reader-recovery5-actions.log
+          grep -F 'READER_RECOVERY5_ACTIONS:PASS' build/ci/metadata/companion-reader-recovery5-actions.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake env lean -j2 tests/courses/CompanionReaderDeployment.lean \
+            2>&1 | tee build/ci/metadata/companion-reader-deployment19.log
+          grep -F 'COMPANION_READER19_DEPLOYMENT:PASS' build/ci/metadata/companion-reader-deployment19.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake env lean -j2 tests/courses/ChooserReaderDeployment.lean \
+            2>&1 | tee build/ci/metadata/chooser-reader-deployment20.log
+          grep -F 'PASS closed Reader20 chooser and preserved Reader18/history17 deployment selection' build/ci/metadata/chooser-reader-deployment20.log
+
+      - name: Check separate course reader Save and cancellation Actions
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                LEMMA_COURSE_PACKAGE_FILE=build/courses/ci-browse-history/package/arithmetic.lcp \
+                lake env lean -j2 --run tests/courses/ReaderLocation.lean \
+            2>&1 | tee build/ci/metadata/reader-location-actions.log
+          grep -F 'READER_LOCATION1:PASS' build/ci/metadata/reader-location-actions.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                LEMMA_COURSE_PACKAGE_FILE=build/courses/ci-browse-history/package/arithmetic.lcp \
+                lake env lean -j2 tests/courses/NotebookReader.lean \
+            2>&1 | tee build/ci/metadata/notebook-reader-actions.log
+          grep -F 'PASS actual Notebook reader Save/poll/failure/authority/component Actions' build/ci/metadata/notebook-reader-actions.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake env lean -j2 tests/courses/ReaderDeployment.lean \
+            2>&1 | tee build/ci/metadata/reader-deployment-actions.log
+          grep -F 'PASS closed Reader18 and preserved history17 deployment selection' build/ci/metadata/reader-deployment-actions.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake env lean -j2 tests/courses/ProductReaderDeployment.lean \
+            2>&1 | tee build/ci/metadata/product-reader-deployment-actions.log
+          grep -F 'PRODUCT_COURSE_READER_DEPLOYMENT:PASS' build/ci/metadata/product-reader-deployment-actions.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 \
+                lake env lean -j2 tests/courses/RecoveryEntry2Deployment.lean \
+            2>&1 | tee build/ci/metadata/recovery-entry2-deployment-actions.log
+          grep -F 'RECOVERY_ENTRY2_DEPLOYMENT:PASS' build/ci/metadata/recovery-entry2-deployment-actions.log
+
+      - name: Check actual aligned arithmetic presentation Actions
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean -j2 --run tests/courses/ArithmeticAligned.lean \
+            2>&1 | tee build/ci/metadata/arithmetic-aligned-actions.log
+
+      - name: Compare compiler name sets with historical relations
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              lake env lean -j2 --run tests/core0/LLVMNameSets.lean \
+            2>&1 | tee build/ci/metadata/llvm-name-sets.log
 
       - name: Run kernel host-harness suite
         run: |
@@ -214,6 +470,7 @@ jobs:
           path: |
             build/ci/metadata/
             build/lemmasim/compiler-power-ci/
+            build/kernel/ci-user-word-inline/
           if-no-files-found: warn
           retention-days: 14
           compression-level: 6
@@ -711,6 +968,19 @@ jobs:
               --work-dir build/silicon/ci-power --timeout 240 --jobs 2 \
             2>&1 | tee build/ci/silicon-power-rtl.log
 
+      - name: Preserve UART admission and exact suffix across pen resynchronization
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 16m \
+            python3 scripts/silicon_compute.py build \
+              --profile lemma-silicon-dev/0.10.0 --jobs 2 \
+              --output-dir build/silicon/ci-product-reset-runtime \
+            2>&1 | tee build/ci/silicon-reset-runtime-build.log
+          timeout --foreground --signal=TERM --kill-after=10s 3m \
+            nix-shell tooling/silicon/sim.nix --run \
+              'python3 scripts/check_native_pen_uart_resync.py --rtl-build build/silicon/ci-product-reset-runtime --work-dir build/silicon/ci-pen-uart-resync' \
+            2>&1 | tee build/ci/silicon-pen-uart-resync.log
+
       - name: Require exact-source nonempty literal RTL observations
         run: |
           python3 - <<'PY'
@@ -821,9 +1091,77 @@ jobs:
             build/silicon/ci-devices/
             build/silicon/ci-bus-lanes/
             build/silicon/ci-power/
+            build/silicon/ci-product-reset-runtime/build.json
+            build/silicon/ci-pen-uart-resync/
             build/ci/silicon-devices-rtl.log
             build/ci/silicon-bus-lanes-rtl.log
             build/ci/silicon-power-rtl.log
+            build/ci/silicon-reset-runtime-build.log
+            build/ci/silicon-pen-uart-resync.log
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+  crypto-rv64:
+    name: Public-development SHA/HMAC RV64 and authenticated ROM audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Execute genuine SHA/HMAC RV64 known answers
+        run: |
+          set -euo pipefail
+          mkdir -p build/ci
+          timeout --foreground --signal=TERM --kill-after=30s 10m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_crypto.py --work-dir build/boot/ci-crypto-rv64 \
+            2>&1 | tee build/ci/crypto-rv64.log
+      - name: Audit genuine authenticated development ROM and scratch admission
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 10m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/build_development_auth_boot.py --public-development-key \
+                --work-dir build/boot/ci-auth-rom \
+            2>&1 | tee build/ci/development-auth-rom.log
+          timeout --foreground --signal=TERM --kill-after=30s 2m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/boot/DevelopmentAuthentication.lean \
+            2>&1 | tee build/ci/development-auth-layout.log
+          python3 - <<'PY'
+          import hashlib, json, subprocess
+          from pathlib import Path
+          head = subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip()
+          for path, expected in [('build/boot/ci-crypto-rv64/result.json','PASS_GENUINE_RV64_SHA256_HMAC_COMPONENT'),
+                                 ('build/boot/ci-auth-rom/build.json','PASS_GENUINE_DEVELOPMENT_AUTH_ROM')]:
+              report = json.loads(Path(path).read_text())
+              if report['status'] != expected or report['source_commit'] != head or report['dirty_paths']:
+                  raise RuntimeError('Missing exact clean-source cryptographic observation')
+              for name, digest in report['source_inputs'].items():
+                  if hashlib.sha256(Path(name).read_bytes()).hexdigest() != digest:
+                      raise RuntimeError('Cryptographic source changed')
+          if 'DEVELOPMENT_AUTH_LAYOUT:PASS' not in Path('build/ci/development-auth-layout.log').read_text():
+              raise RuntimeError('Missing actual ROM scratch admission/disjointness result')
+          PY
+      - name: Retain cryptographic execution, ROM audits and failures
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: crypto-rv64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/boot/ci-crypto-rv64/
+            build/boot/ci-auth-rom/
+            build/ci/crypto-rv64.log
+            build/ci/development-auth-rom.log
+            build/ci/development-auth-layout.log
           if-no-files-found: error
           retention-days: 14
           compression-level: 6

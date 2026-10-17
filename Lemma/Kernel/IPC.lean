@@ -95,6 +95,13 @@ private def stage (descriptor transaction pointer length kind request applicatio
   .bind (IPCStorage.packet descriptor transaction) fun s packet =>
   if failed s = true then fatal else stamp packet kind descriptor request 0 length applicationStatus
 
+
+private def stageAt (descriptor base transaction pointer length kind request applicationStatus : UInt64) : Action :=
+  .bind (IPCStorage.stagePayloadAt descriptor base transaction pointer length) fun s _ =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.packetAt descriptor base transaction) fun s packet =>
+  if failed s = true then fatal else stamp packet kind descriptor request 0 length applicationStatus
+
 private def clear (descriptor transaction : UInt64) (status : UInt8) (value : UInt64) : Action :=
   .bind (IPCStorage.abort descriptor transaction) fun s _ =>
   if failed s = true then fatal else .done status value
@@ -130,7 +137,7 @@ def callBeginWithLimit (maximum descriptor handle pointer length request ticks :
   if failed s = true then .done s 0 else
   .bind (payload descriptor pointer length) fun s _ =>
   if failed s = true then .done s 0 else
-  .bind (idle descriptor) fun s _ =>
+  .bind (idle descriptor) fun s metadata =>
   if failed s = true then .done s 0 else
   .bind (queueRoom key) fun s queue =>
   if failed s = true then .done s 0 else
@@ -139,19 +146,20 @@ def callBeginWithLimit (maximum descriptor handle pointer length request ticks :
   if available = 0 then .done CapabilityABI.objectFull 0 else
   .bind (deadlineWithLimit ticks maximum) fun s expires =>
   if failed s = true then .done s 0 else
-  .bind (IPCStorage.prepare descriptor IPCStorage.callOperation key 0 0 expires) fun s transaction =>
+  let base := metadata - IPCStorage.metadataOffset
+  .bind (IPCStorage.prepareAt descriptor base IPCStorage.callOperation key 0 0 expires) fun s transaction =>
   if failed s = true then .done s 0 else
-  .bind (stage descriptor transaction pointer length IPCABI.callKind request 0) fun s _ =>
+  .bind (stageAt descriptor base transaction pointer length IPCABI.callKind request 0) fun s _ =>
   if failed s = true then fatal else
   .bind (Objects.createReply descriptor key transaction expires) fun s reply =>
   if failed s = true then fatal else
-  .bind (IPCStorage.setReply descriptor transaction reply) fun s _ =>
+  .bind (IPCStorage.setReplyAt descriptor base transaction reply) fun s _ =>
   if failed s = true then fatal else
-  .bind (IPCStorage.queueEnqueue queue key descriptor reply) fun s _ =>
+  .bind (IPCStorage.queueEnqueueAt queue key descriptor base reply) fun s _ =>
   if failed s = true then fatal else
   .bind (Objects.markReplyQueued reply) fun s _ =>
   if failed s = true then fatal else
-  .bind (IPCStorage.commitWait descriptor transaction) fun s _ =>
+  .bind (IPCStorage.commitWaitAt descriptor base transaction) fun s _ =>
   if failed s = true then fatal else .done 0 transaction
 
 private def checkedTransaction (descriptor transaction : UInt64) : Action :=
@@ -242,19 +250,106 @@ private def beginReceive (descriptor key pointer capacity expires mode : UInt64)
     if failed s = true then fatal else .done blockedStatus transaction
   else if status = 255 then fatal else clear descriptor transaction status 0
 
+private def clearAt (descriptor base transaction : UInt64) (status : UInt8) (value : UInt64) : Action :=
+  .bind (IPCStorage.abortAt descriptor base transaction) fun s _ =>
+  if failed s = true then fatal else .done status value
+
+private def finishAt (descriptor base transaction : UInt64) (status : UInt8) (value : UInt64) : Action :=
+  .bind (IPCStorage.finishAt descriptor base transaction) fun s _ =>
+  if failed s = true then fatal else .done status value
+
+private def copyHeadAt (descriptor base queue key slot pointer capacity localReply : UInt64) : Action :=
+  .bind (word slot IPCStorage.queueSlotSerialOffset) fun s serial =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.queueCopyToUserAt queue key descriptor base pointer capacity localReply) fun s bytes =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.queuePop queue key serial) fun s _ =>
+  if failed s = true then fatal else .done 0 bytes
+
+private def receiveHeadAt (descriptor transaction pointer capacity : UInt64) : Action :=
+  .bind (checkedTransaction descriptor transaction) fun s metadata =>
+  if failed s = true then fatal else
+  let base := metadata - IPCStorage.metadataOffset
+  .bind (word metadata IPCStorage.endpointOffset) fun s key =>
+  if failed s = true then fatal else
+  .bind (Objects.endpointQueue key) fun s queue =>
+  if failed s = true then .done s 0 else
+  .bind (IPCStorage.queuePeek queue key) fun s slot =>
+  if failed s = true then .done s 0 else
+  .bind (word slot IPCStorage.queueSlotBytesOffset) fun s bytes =>
+  if failed s = true then fatal else
+  if capacity < bytes then .done IPCABI.bufferTooSmall 0 else
+  .bind (destination descriptor pointer capacity) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (word slot IPCStorage.queueSlotReplyOffset) fun s reply =>
+  if failed s = true then fatal else
+  if reply = 0 then copyHeadAt descriptor base queue key slot pointer capacity 0 else
+  .bind (Objects.replyFields reply) fun s fields =>
+  if failed s = true then fatal else
+  .bind (word fields 80) fun s phase =>
+  if failed s = true then fatal else
+  if phase = 1 then
+  .bind (word fields 88) fun s expires =>
+  if failed s = true then fatal else
+  .bind MachineServices.time fun s now =>
+  if failed s = true then fatal else
+  if expires ≤ now then
+    .bind (Capability.retireReply reply IPCABI.timeout.toUInt64) fun s _ =>
+    if failed s = true then fatal else .done 0 0
+  else
+    .bind (Capability.grantReply descriptor reply) fun s localReply =>
+    if failed s = true then .done s 0 else
+    copyHeadAt descriptor base queue key slot pointer capacity localReply
+  else fatal
+
+private def receiveStepAt (_ _ : UInt32) (acc descriptor transaction pointer capacity : UInt64) : Action :=
+  .bind (receiveHeadAt descriptor transaction pointer capacity) fun s bytes =>
+  if failed s = true then .done s 0 else
+  if bytes = 0 then .done 0 acc else .done Status.iterationStop bytes
+
+private def receivePacketAt (descriptor transaction pointer capacity : UInt64) : Action :=
+  .boundedFoldU64 4 receiveStepAt 4 0 descriptor transaction pointer capacity fun s bytes =>
+  if s = Status.iterationStop then .done 0 bytes else
+  if failed s = true then .done s 0 else .done IPCABI.wouldBlock 0
+
+private def receiveResultAt (descriptor base transaction bytes : UInt64) : Action :=
+  .bind (IPCStorage.packetAt descriptor base transaction) fun s packet =>
+  if failed s = true then fatal else
+  .bind (word packet IPCABI.senderOffset) fun s sender =>
+  if failed s = true then fatal else
+  .bind (word packet IPCABI.replyOffset) fun s replyHandle =>
+  if failed s = true then fatal else
+  IPCStorage.completeAt descriptor base transaction 0 bytes sender replyHandle
+
+private def beginReceiveAt (descriptor base key pointer capacity expires mode : UInt64) : Action :=
+  .bind (IPCStorage.prepareAt descriptor base IPCStorage.receiveOperation key pointer capacity expires) fun s transaction =>
+  if failed s = true then .done s 0 else
+  .bind (receivePacketAt descriptor transaction pointer capacity) fun status bytes =>
+  if status = 0 then
+    .bind (IPCStorage.commitWaitAt descriptor base transaction) fun s _ =>
+    if failed s = true then fatal else
+    .bind (receiveResultAt descriptor base transaction bytes) fun s _ =>
+    if failed s = true then fatal else finishAt descriptor base transaction 0 bytes
+  else if status = IPCABI.wouldBlock then
+    if mode = IPCABI.nonblocking then clearAt descriptor base transaction status 0 else
+    .bind (IPCStorage.commitWaitAt descriptor base transaction) fun s _ =>
+    if failed s = true then fatal else .done blockedStatus transaction
+  else if status = 255 then fatal else clearAt descriptor base transaction status 0
+
 def receiveWithLimit (maximum descriptor handle pointer capacity ticks mode : UInt64) : Action :=
   .bind (Capability.lookup descriptor handle CapabilityABI.endpointType CapabilityABI.endpointReceive) fun s key =>
   if failed s = true then .done s 0 else
   .bind (destination descriptor pointer capacity) fun s _ =>
   if failed s = true then .done s 0 else
-  .bind (idle descriptor) fun s _ =>
+  .bind (idle descriptor) fun s metadata =>
   if failed s = true then .done s 0 else
+  let base := metadata - IPCStorage.metadataOffset
   if mode = IPCABI.nonblocking then
-    if ticks = 0 then beginReceive descriptor key pointer capacity 0 mode
+    if ticks = 0 then beginReceiveAt descriptor base key pointer capacity 0 mode
     else .done IPCABI.invalidArgument 0
   else if mode = IPCABI.blocking then
     .bind (deadlineWithLimit ticks maximum) fun s expires =>
-    if failed s = true then .done s 0 else beginReceive descriptor key pointer capacity expires mode
+    if failed s = true then .done s 0 else beginReceiveAt descriptor base key pointer capacity expires mode
   else .done IPCABI.invalidArgument 0
 
 /-- Internal suspension information is a checked metadata address, never a
@@ -316,8 +411,8 @@ private def pollWaiting (descriptor transaction metadata : UInt64) : Action :=
 /-- Ready completion wins subsequent deadline/cancellation events. Waiting
 transactions sample hardware time here; an earlier scheduler timestamp is not
 used to decide Reply publication or timeout. Idle is an ordinary no-work result. -/
-def poll (descriptor : UInt64) : Action :=
-  .bind (IPCStorage.pending descriptor) fun s metadata =>
+def pollAt (descriptor base : UInt64) : Action :=
+  .bind (IPCStorage.pendingAt descriptor base) fun s metadata =>
   if failed s = true then fatal else
   .bind (word metadata IPCStorage.stateOffset) fun s state =>
   if failed s = true then fatal else
@@ -326,6 +421,11 @@ def poll (descriptor : UInt64) : Action :=
   if failed s = true then fatal else
   if state = IPCStorage.stateReady then .done 0 metadata else
   if state = IPCStorage.stateWaiting then pollWaiting descriptor transaction metadata else fatal
+
+/-- Public polling establishes a fresh base before using the checked helper. -/
+def poll (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then fatal else pollAt descriptor base
 
 /-- Consume only after successful copy-out. A bad destination or insufficient
 capacity leaves a committed Call Reply intact so the caller can retry. Receive
@@ -437,6 +537,40 @@ def reply (descriptor handle pointer length applicationStatus : UInt64) : Action
   .bind (idle descriptor) fun s _ =>
   if failed s = true then .done s 0 else stageReply descriptor key fields pointer length applicationStatus
 
+private def stageReplyAt (server base key fields pointer length applicationStatus : UInt64) : Action :=
+  .bind (word fields 40) fun s caller =>
+  if failed s = true then fatal else
+  .bind (word fields 56) fun s endpoint =>
+  if failed s = true then fatal else
+  .bind (word fields 64) fun s transaction =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.packet caller transaction) fun s callerPacket =>
+  if failed s = true then fatal else
+  .bind (word callerPacket IPCABI.requestOffset) fun s request =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.prepareAt server base IPCStorage.sendOperation endpoint 0 0 0) fun s serverTransaction =>
+  if failed s = true then .done s 0 else
+  .bind (stageAt server base serverTransaction pointer length IPCABI.replyKind request applicationStatus) fun s _ =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.packetAt server base serverTransaction) fun s serverPacket =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.copyBytes serverPacket callerPacket (IPCABI.headerBytes + length)) fun s _ =>
+  if failed s = true then fatal else
+  commitReply server serverTransaction key fields caller transaction (IPCABI.headerBytes + length)
+
+def replyLocal (descriptor handle pointer length applicationStatus : UInt64) : Action :=
+  .bind (Capability.lookup descriptor handle CapabilityABI.replyType CapabilityABI.replyRight) fun s key =>
+  if failed s = true then .done s 0 else
+  .bind (replyCaller key descriptor) fun s fields =>
+  if failed s = true then .done s 0 else
+  if 255 < applicationStatus then .done IPCABI.invalidArgument 0 else
+  .bind (payload descriptor pointer length) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (idle descriptor) fun s metadata =>
+  if failed s = true then .done s 0 else
+  let base := metadata - IPCStorage.metadataOffset
+  stageReplyAt descriptor base key fields pointer length applicationStatus
+
 def cancel (descriptor transaction : UInt64) : Action :=
   .bind (checkedTransaction descriptor transaction) fun s metadata =>
   if failed s = true then .done s 0 else
@@ -543,7 +677,7 @@ def dispatchWithLimit (maximum descriptor number a b c d e : UInt64) : Action :=
   else if number = IPCABI.callWait then
     if d ||| e = 0 then callWait descriptor a b c else .done IPCABI.invalidArgument 0
   else if number = IPCABI.reply then
-    if e = 0 then reply descriptor a b c d else .done IPCABI.invalidArgument 0
+    if e = 0 then replyLocal descriptor a b c d else .done IPCABI.invalidArgument 0
   else if number = IPCABI.cancel then
     if b ||| c ||| d ||| e = 0 then cancel descriptor a else .done IPCABI.invalidArgument 0
   else .done Lemma.User.ABI.unsupported 0

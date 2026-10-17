@@ -2,8 +2,9 @@
 """Apply the narrow LemmaSim binding to the immutable pinned host QEMU source."""
 import argparse,shutil,json
 from pathlib import Path
-p=argparse.ArgumentParser();p.add_argument('source',type=Path);p.add_argument('--repository',type=Path,default=Path(__file__).resolve().parents[2]);p.add_argument('--host-source',type=Path);p.add_argument('--silicon-profile',type=Path);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('source',type=Path);p.add_argument('--repository',type=Path,default=Path(__file__).resolve().parents[2]);p.add_argument('--host-source',type=Path);p.add_argument('--companion-source',type=Path);p.add_argument('--silicon-profile',type=Path);a=p.parse_args()
 s=a.source;r=a.repository;host=a.host_source or r/'sim/host'
+companion=a.companion_source or r/'sim/companion'
 # Pinned QEMU's PPM exporter writes the padded RGB24 pixman stride. PPM rows
 # must contain exactly width*3 bytes, otherwise 1650-wide output is sheared.
 # Keep this host presentation correction confined to the derived binary.
@@ -12,6 +13,10 @@ f.write_text(text.replace(needle,'                                  width * 3, e
 for name in ['lemma_qemu.c','lemma_model.c','lemma_model.h','lemma_device_abi.h','lemma_power_abi.h','lemma_fast_block.c']:
     shutil.copyfile(host/name,s/'hw/riscv'/name)
 shutil.copyfile(host/'lemma_durable.c',s/'block/lemma-durable.c')
+for directory,origin,names in [('host',host,['backing_io.h','backing_io.cpp','backing_io_posix.h','backing_io_posix.cpp']),
+                             ('companion',companion,['backing_peer.h','backing_peer.cpp','backing_c.h','backing_c.cpp'])]:
+    (s/'hw/riscv'/directory).mkdir()
+    for name in names:shutil.copyfile(origin/name,s/'hw/riscv'/directory/name)
 profile=json.loads((a.silicon_profile or r/'sim/profiles/lemma-silicon-dev-0.1.0.json').read_text())
 fields={k:v for k,v in profile.items() if isinstance(v,int)}
 fields.update(width=profile['geometry'][0],height=profile['geometry'][1],paper_sequencer=profile.get('paper_sequencer',0),
@@ -19,6 +24,9 @@ fields.update(width=profile['geometry'][0],height=profile['geometry'][1],paper_s
 for dev,values in profile['devices'].items():
     fields.update({dev+'_'+key:value for key,value in values.items() if isinstance(value,int)})
 fields.update({'descriptor_'+key:value for key,value in profile['descriptor'].items()})
+if profile['profile']=='lemma-silicon-dev/0.4.0':
+    for name in ['lemma_power_safety.h','lemma_power_safety.c','lemma_power_clock.h','lemma_power_clock.c','lemma_power_qemu.inc.c']:
+        shutil.copyfile(host/name,s/'hw/riscv'/name)
 (s/'hw/riscv/lemma_silicon_fast.h').write_text('/* Generated from selected maintained silicon profile. Host only. */\n'+''.join(f'#define LS_{key.upper()} UINT64_C({value})\n' for key,value in fields.items()))
 
 f=s/'block/meson.build';text=f.read_text();needle="system_ss.add(files('block-ram-registrar.c'))";assert text.count(needle)==1
@@ -58,7 +66,10 @@ definition='''# @BlockdevOptionsLemmaDurable:
 '''
 text=text.replace(needle,definition+needle);f.write_text(text)
 f=s/'hw/riscv/meson.build';text=f.read_text();old="riscv_ss.add(when: 'CONFIG_RISCV_VIRT', if_true: files('virt.c'))";assert text.count(old)==1
-f.write_text(text.replace(old,"riscv_ss.add(when: 'CONFIG_RISCV_VIRT', if_true: files('virt.c', 'lemma_qemu.c', 'lemma_model.c', 'lemma_fast_block.c'))"))
+f.write_text(text.replace(old,"riscv_ss.add(when: 'CONFIG_RISCV_VIRT', if_true: files('virt.c', 'lemma_qemu.c', 'lemma_model.c', 'lemma_fast_block.c', 'host/backing_io.cpp', 'host/backing_io_posix.cpp', 'companion/backing_peer.cpp', 'companion/backing_c.cpp'))"))
+if profile['profile']=='lemma-silicon-dev/0.4.0':
+    f=s/'hw/riscv/meson.build';text=f.read_text();needle="'lemma_model.c', 'lemma_fast_block.c'";assert text.count(needle)==1
+    f.write_text(text.replace(needle,"'lemma_model.c', 'lemma_power_safety.c', 'lemma_power_clock.c', 'lemma_fast_block.c'"))
 f=s/'hw/riscv/virt.c';text=f.read_text();text=text.replace('#include \"qemu/osdep.h\"','#include \"qemu/osdep.h\"\n#include <libfdt.h>\n#include \"lemma_silicon_fast.h\"')
 anchor='static void virt_machine_done(Notifier *notifier, void *data)';assert text.count(anchor)==1
 text=text.replace(anchor,'void lemma_binding_create(MachineState *, DeviceState *);\nvoid lemma_binding_add_fdt(MachineState *);\nvoid lemma_binding_set_dtb(uint64_t, uint64_t);\nvoid lemma_fast_block_create(MachineState *, DeviceState *);\n\n'+anchor)

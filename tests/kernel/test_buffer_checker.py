@@ -511,6 +511,28 @@ class BufferCheckerFailures(unittest.TestCase):
                 elif variant=='allocation':trace.new_allocations[(512,0x40000)]={'claimed':False}
                 self.assertEqual(trace.service_quiescent(1536),variant=='valid')
 
+    def test_terminal_capture_closes_observed_pages_without_draining_continuous_service(self):
+        for variant in ('running-next-request','release','expiry','frame-sample'):
+            with self.subTest(variant=variant),tempfile.TemporaryDirectory() as tmp:
+                trace,_=self.fixture(Path(tmp))
+                trace.tasks[512]['state']=2
+                trace.tasks[1536]['state']=5
+                trace.active_accept[512]={'key':(512,99,1536)}
+                if variant=='release':trace.actual_buffer_releases.append({'confirmed':False})
+                elif variant=='expiry':trace.pending_expiry=[0x325,512,4,1536,100]
+                elif variant=='frame-sample':
+                    trace.diagnostic_frame_samples.append({'status':'deferred','reconciliation':None})
+                self.assertFalse(trace.service_quiescent(1536))
+                self.assertEqual(trace.terminal_boundary(b''),variant=='running-next-request')
+                if variant=='running-next-request':trace.require_settled_releases()
+                else:
+                    with self.assertRaises(Core0Error):trace.require_settled_releases()
+                # The earlier live milestone remains stronger; terminal
+                # capture still rejects any missing already observed frame.
+                trace.session.events.append({'kind':'kernel','value':[1,2,3,4,5]})
+                with self.assertRaisesRegex(Core0Error,'observed prefix'):
+                    trace.terminal_boundary(b'')
+
     def test_restart_requires_actual_cli_identity_and_unexpired_time(self):
         with tempfile.TemporaryDirectory() as tmp:
             trace,_=self.fixture(Path(tmp),'service-development')

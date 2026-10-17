@@ -1,3 +1,4 @@
+<!--
 # GitHub publication and Codex handoff
 
 ## Current repository
@@ -36,3 +37,5 @@ Its tests create temporary mock repositories and make no live GitHub requests.
 
 No project license has been selected. Do not change visibility, add a license,
 commit secrets/NDA material, or alter GitHub access controls as part of task 001.
+
+-->

@@ -69,6 +69,14 @@ class NotebookObservations(unittest.TestCase):
             path.write_bytes(b'P6\n2 1\n255\n' + bytes(5))
             with self.assertRaises(ValueError):
                 visible_pixels(path)
+            path.write_bytes(b'P5\n2 1\n255\n' + bytes([0, 221]))
+            self.assertEqual(visible_pixels(path), (2, 1, bytes([0, 0, 0, 221, 221, 221])))
+            for data in (b'P5\n2 1\n255\n' + bytes([0]),
+                         b'P5\n2 1\n255\n' + bytes([0, 221, 255]),
+                         b'P5\n0 1\n255\n', b'P5\n2 1\n15\n' + bytes([0, 13])):
+                path.write_bytes(data)
+                with self.assertRaises(ValueError):
+                    visible_pixels(path)
 
     def test_cold_boundary_requires_unchanged_bytes_and_fresh_refresh(self):
         # Literal observations test comparison logic only. They are not a

@@ -1,0 +1,211 @@
+{
+  "schema": "lemma-ci-arithmetic-catalog-repair/1",
+  "candidate": "2c215010c6ba72d9c357c4bf57d4a250d06d1d8d",
+  "run_id": 38455285333,
+  "original_status": "FAILURE",
+  "jobs": [
+    {
+      "id": 115496322364,
+      "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+      "conclusion": "success",
+      "skipped_steps": []
+    },
+    {
+      "id": 115496322825,
+      "name": "Task 003 Gates F-I RV64 acceptance",
+      "conclusion": "success",
+      "skipped_steps": []
+    },
+    {
+      "id": 115496322859,
+      "name": "Legacy Core0 RV64 acceptance",
+      "conclusion": "success",
+      "skipped_steps": []
+    },
+    {
+      "id": 115496322917,
+      "name": "RTL device and digital power conformance with literal host stimuli",
+      "conclusion": "success",
+      "skipped_steps": []
+    },
+    {
+      "id": 115496322938,
+      "name": "Task 003 source-negative RV64 qualification",
+      "conclusion": "success",
+      "skipped_steps": []
+    },
+    {
+      "id": 115496323012,
+      "name": "Foundation Gates 1-9 and clean qualification",
+      "conclusion": "success",
+      "skipped_steps": []
+    },
+    {
+      "id": 115496323016,
+      "name": "Task 003 Buffer service RV64 acceptance",
+      "conclusion": "success",
+      "skipped_steps": []
+    },
+    {
+      "id": 115496323075,
+      "name": "Task 003 implemented Gates A-E RV64 acceptance",
+      "conclusion": "failure",
+      "skipped_steps": [
+        "Require complete Task 003 acceptance evidence"
+      ]
+    },
+    {
+      "id": 115496323095,
+      "name": "Metadata and host-only suites",
+      "conclusion": "failure",
+      "skipped_steps": [
+        "Run silicon host orchestration and observation suite"
+      ]
+    },
+    {
+      "id": 115496323115,
+      "name": "Task 003 architectural containment RV64 acceptance",
+      "conclusion": "success",
+      "skipped_steps": []
+    }
+  ],
+  "actual_logs": {
+    "metadata-host.log": {
+      "path": "build/ci/task006-2c21501/metadata-host.log",
+      "bytes": 313399,
+      "sha256": "250b07c3c3f413c156696da3da238136e7c853c31cf234104c25d2c7fa08e6f2"
+    },
+    "kernel-prefix.log": {
+      "path": "build/ci/task006-2c21501/kernel-prefix.log",
+      "bytes": 97749,
+      "sha256": "9bbfa2dbf0183f3f3d0935528339bc28559b81498e02e55365b87b46f3f55e81"
+    },
+    "actual-kernel-host.log": {
+      "path": "build/ci/task006-2c21501/actual-kernel-host.log",
+      "bytes": 69741,
+      "sha256": "b865d1cb7b030c57d81ebf412f74657ca5692f60feae8f52ee69afc714078043"
+    },
+    "actual-result.json": {
+      "path": "build/ci/task006-2c21501/actual-result.json",
+      "bytes": 44694,
+      "sha256": "16ddcd5a1cc1da81ee5fecfc353f55d9aa232b53a1bfab9a298e52bac27c6ca7"
+    },
+    "jobs.json": {
+      "path": "build/ci/task006-2c21501/jobs.json",
+      "bytes": 18773,
+      "sha256": "3de7e03b1a8a36dcff00620332239bbb4ae204ef253098b1fbb2d86391ecf0d8"
+    }
+  },
+  "failure": "Both actual kernel-host suites failed exact catalog set equality: maintained admitted String notebook/initializer/OOM configurations were absent from independent expected table. A-E target matrix did not run; silicon-host job step skipped.",
+  "repair": "Add exact String ServerV6/Profile0.3/Kernel4 names; include independently implemented Product10 ServerV3/Profile0.10/Kernel7. Preserve exact set equality, image authority, managed-policy, profile/kernel checks and malformed names.",
+  "local_qualification": {
+    "log": {
+      "path": "build/ci/task006-2c21501/corrected-kernel-host-a1.log",
+      "bytes": 68957,
+      "sha256": "053ef19932b6f403c87f6bdc0710cec5e32362eb6b46176edf35b2cbefe5b545"
+    },
+    "test_count": 401,
+    "host_seconds": 10.568,
+    "status": "PASS",
+    "scope": "current complete kernel host suite only; not a new A-E target or CI pass"
+  },
+  "new_candidate_ci": {
+    "candidate": "9076a8dad7b0964ac9e329d6b2180af2477aaac5",
+    "synthetic_merge": "3de16a3045625312079e0a6514e6bce4857fc37e",
+    "run_id": 38467033782,
+    "status": "SUCCESS",
+    "url": "https://github.com/srkftw/lemma/actions/runs/38467033782",
+    "jobs": [
+      {
+        "id": 115536369906,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "conclusion": "success"
+      },
+      {
+        "id": 115536370070,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "conclusion": "success"
+      },
+      {
+        "id": 115536370213,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "conclusion": "success"
+      },
+      {
+        "id": 115536370219,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "conclusion": "success"
+      },
+      {
+        "id": 115536370230,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "conclusion": "success"
+      },
+      {
+        "id": 115536370236,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "conclusion": "success"
+      },
+      {
+        "id": 115536370248,
+        "name": "Task 003 source-negative RV64 qualification",
+        "conclusion": "success"
+      },
+      {
+        "id": 115536370274,
+        "name": "Metadata and host-only suites",
+        "conclusion": "success"
+      },
+      {
+        "id": 115536370318,
+        "name": "Legacy Core0 RV64 acceptance",
+        "conclusion": "success"
+      },
+      {
+        "id": 115536370322,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "conclusion": "success"
+      }
+    ],
+    "step_metadata_discrepancy": "A-E and notebook job API retained pending/in_progress steps despite completedSUCCESS. Actual complete logs execute qualification guards,20A-E images/24checker reports and O0/O2writingPASS, artifact publication and cleanup. No stale API pending step is relabeled reported success.",
+    "metadata_host_steps": "All reported host-suite steps completedSUCCESS, including kernel/silicon formerly failed/skipped.",
+    "qualified_logs": {
+      "runs.json": {
+        "path": "build/ci/task006-9076a8d/runs.json",
+        "bytes": 409,
+        "sha256": "b372ab3940e3dd0929b232b7bd96fdc43bd04b588215bcbaa5f7b9b757c9a445"
+      },
+      "jobs.json": {
+        "path": "build/ci/task006-9076a8d/jobs.json",
+        "bytes": 18430,
+        "sha256": "317d16ebd4482c41e844a6cad1880fa8eb0fdb15007998faf92cac193d3571c4"
+      },
+      "kernel-A-E.log": {
+        "path": "build/ci/task006-9076a8d/kernel-A-E.log",
+        "bytes": 106287,
+        "sha256": "3d942248ad385b3ec64cff5836075c5695280754469cc7f7746cc984745e306f"
+      },
+      "notebook.log": {
+        "path": "build/ci/task006-9076a8d/notebook.log",
+        "bytes": 140883,
+        "sha256": "049999fceb502895f3a18c00a1b75cb52e3cac184432fad36fba28edec196f73"
+      }
+    },
+    "later_local_changes": "Not qualified by this CI."
+  },
+  "check_source_sha256": "71095fc84eb63a6c9a7b3c1868a67307daee30bebd167b62a53669ae371c4acf",
+  "latest_complete_candidate": {
+    "commit": "4c4ffa773cfbce4ceab0c652bce11a2f4a032f5b",
+    "run_id": 38477948866,
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": 10,
+    "all_job_and_step_statuses": "completed/success; no skippedsteps",
+    "actual_api_receipt": {
+      "path": "build/ci/task006-4c4ffa7/actions.json",
+      "bytes": 11963,
+      "sha256": "99ce7f2f7232c0db785b245d3a202514df7c23c8c512ba5dd4adab2f9e6df947"
+    },
+    "scope": "qualifies4c4candidate only; laterWire/Common/Wasm changes separate"
+  }
+}

@@ -25,7 +25,23 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           SERVICE_CONFIGURATIONS, USER_INSTRUCTION_CONFIGURATIONS, SERVICE_INSTRUCTION_CONFIGURATIONS,
                           service_executable_module, user_module_closure, user_artifact_category,
                           validate_configuration_stage, validate_lean_source_realization,
-                          LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS)
+                          LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS,
+                          ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS, BULK_NOTEBOOK_CONFIGURATIONS, BYTES_NOTEBOOK_CONFIGURATIONS, ARRAY_NOTEBOOK_CONFIGURATIONS, STRING_NOTEBOOK_CONFIGURATIONS)
+from course_deployment import CONFIGURATIONS as LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_SOFTWARE_DEPLOYMENT
+from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_AWAIT_SOFTWARE_DEPLOYMENT, library_source_allowed as course_await_library_source_allowed
+from package_closure_deployment import CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS
+from reader_deployment import CONFIGURATIONS as READER_NOTEBOOK_CONFIGURATIONS, NOTEBOOK_ROOT as READER_NOTEBOOK_ROOT
+from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_NOTEBOOK_CONFIGURATIONS
+from chooser_reader_deployment import CONFIGURATIONS as CHOOSER_NOTEBOOK_CONFIGURATIONS
+AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS+CHOOSER_NOTEBOOK_CONFIGURATIONS
+COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+AWAIT_NOTEBOOK_CONFIGURATIONS
+from closure_deployment import (KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS,
+                                ENTRY2_CONFIGURATIONS,
+                                software_deployment_for as closure_software_deployment_for)
+from build_kernel import USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS, USB_RECOVERY_NOTEBOOK_CONFIGURATIONS, NEXT_NOTEBOOK_CONFIGURATIONS, USB_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS, USB_WIRE_NOTEBOOK_CONFIGURATIONS, USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
+from usb_closure_recovery_deployment import SOFTWARE_DEPLOYMENT as USB_CLOSURE_RECOVERY_SOFTWARE_DEPLOYMENT
+from package_companion_deployment import ALL_CONFIGURATIONS as USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as PACKAGE_RECOVERY_SOFTWARE_DEPLOYMENT
+USB_RECOVERY_FAMILIES = USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
@@ -165,6 +181,10 @@ NOTEBOOK_USER_IMAGES = tuple({"key": key, "id": index, "module": module, "source
                               "boot_role": role}
                              for index, (key, module, role) in enumerate((("store", "Lemma.Services.Store.Server", "store-server"),
                                  ("notebook", "Lemma.Applications.Notebook", "notebook")), 1))
+ARITHMETIC_NOTEBOOK_IMAGES = (*NOTEBOOK_USER_IMAGES, {"key": "arithmetic", "id": 3,
+    "module": "Lemma.Services.Arithmetic.Server", "source": "Lemma.Services.Arithmetic.Server.main",
+    "args": ["u64"], "symbol_prefix": "lemma_user_arithmetic_", "startup_case": "none",
+    "directory": "users/arithmetic", "boot_role": "arithmetic-server"})
 NOTEBOOK_ISOLATION_IMAGES = (*NOTEBOOK_USER_IMAGES, {"key": "isolation", "id": 3,
     "module": "Lemma.User.Development.NotebookIsolation", "source": "Lemma.User.Development.NotebookIsolation.main",
     "args": ["u64"], "symbol_prefix": "lemma_user_isolation_", "startup_case": "none",
@@ -173,19 +193,213 @@ MULTI_USER_CONFIGURATIONS.update({"lemmasim-notebook": NOTEBOOK_USER_IMAGES, "le
                                  "lemmasim-isolation-development": NOTEBOOK_ISOLATION_IMAGES})
 MULTI_USER_CONFIGURATIONS.update({"lemmasim-silicon-power-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-power-initialize": NOTEBOOK_USER_IMAGES, "silicon-service-development": SERVICE_DEVELOPMENT_USER_IMAGES,
                                  "lemmasim-silicon-full-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-full-initialize": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-initialize": NOTEBOOK_USER_IMAGES})
-LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-probe", "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-silicon-devices","lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-safety-probe", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-silicon-devices","lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
 LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
-POWER_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-probe", "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize"})
+POWER_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-safety-probe", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize"})
+
+# Explicit software deployment successor, preserving every legacy registry.
+MANAGED_POLICIES.update({configuration: "lemma-notebook-arithmetic-v1" for configuration in ARITHMETIC_CONFIGURATIONS})
+MULTI_USER_CONFIGURATIONS.update({configuration: ARITHMETIC_NOTEBOOK_IMAGES for configuration in ARITHMETIC_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS = LEMMASIM_NOTEBOOK_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
+POWER_CONFIGURATIONS = POWER_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
+COMMON_CONFIGURATIONS = frozenset({'lemmasim-silicon-wifi-common-probe','lemmasim-silicon-wifi-common-read-probe'})
+BLE_CONFIGURATIONS = frozenset({'lemmasim-silicon-ble-link-probe'})
+USB_PROBE_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-link-probe'})
+USB_NOTEBOOK_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-notebook',
+    'lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize','lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize'})
+USB_NOTEBOOK_CONFIGURATIONS |= frozenset(USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS) | frozenset(USB_RECOVERY_FAMILIES) | frozenset(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | frozenset(USB_CLOCKED_NOTEBOOK_CONFIGURATIONS) | set(USB_RECOVERY_FAMILIES)
+USB_CONFIGURATIONS = USB_PROBE_CONFIGURATIONS | USB_NOTEBOOK_CONFIGURATIONS
+PRODUCT_NOTEBOOK_CONFIGURATIONS=frozenset(('lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'))
+PRODUCT_CONFIGURATIONS = frozenset({'lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-notebook',
+    'lemmasim-silicon-product-initialize','lemmasim-silicon-product-boot-probe'})
+MODERN_NOTEBOOK_CONFIGURATIONS = USB_NOTEBOOK_CONFIGURATIONS | frozenset({
+    'lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook','lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook'})
+LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | COMMON_CONFIGURATIONS | BLE_CONFIGURATIONS | USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= MODERN_NOTEBOOK_CONFIGURATIONS
+MANAGED_POLICIES.update({configuration:'lemma-notebook-arithmetic-v1'
+    for configuration in MODERN_NOTEBOOK_CONFIGURATIONS})
+MULTI_USER_CONFIGURATIONS.update({configuration:ARITHMETIC_NOTEBOOK_IMAGES
+    for configuration in MODERN_NOTEBOOK_CONFIGURATIONS})
+
+MANAGED_NOTEBOOK_CONFIGURATIONS = frozenset({
+    'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'})
+SOFTWARE_DEPLOYMENT = {'contract_version':'lemma-managed-notebook-deployment-v1',
+    'silicon_profile':'lemma-silicon-dev/0.3.0',
+    'user_profiles':{'store':'core0-user-v0.1','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.2'}}
+LEMMASIM_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
+POWER_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
+
+SUMS_NOTEBOOK_IMAGES = (NOTEBOOK_USER_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainSums'},
+    {**ARITHMETIC_NOTEBOOK_IMAGES[2], 'module':'Lemma.Services.Arithmetic.ServerV3',
+      'source':'Lemma.Services.Arithmetic.ServerV3.main'})
+MULTI_USER_CONFIGURATIONS.update({configuration:SUMS_NOTEBOOK_IMAGES for configuration in SUMS_NOTEBOOK_CONFIGURATIONS})
+BULK_NOTEBOOK_IMAGES = (SUMS_NOTEBOOK_IMAGES[0],
+    {**SUMS_NOTEBOOK_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainSumsBulk'}, SUMS_NOTEBOOK_IMAGES[2])
+MULTI_USER_CONFIGURATIONS.update({configuration:BULK_NOTEBOOK_IMAGES for configuration in BULK_NOTEBOOK_CONFIGURATIONS if configuration not in BYTES_NOTEBOOK_CONFIGURATIONS + ARRAY_NOTEBOOK_CONFIGURATIONS + STRING_NOTEBOOK_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
+POWER_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
+
+BYTES_NOTEBOOK_IMAGES = (NOTEBOOK_USER_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainBytesBulk'},
+    {**ARITHMETIC_NOTEBOOK_IMAGES[2], 'module':'Lemma.Services.Arithmetic.ServerV4',
+      'source':'Lemma.Services.Arithmetic.ServerV4.main'})
+MULTI_USER_CONFIGURATIONS.update({configuration:BYTES_NOTEBOOK_IMAGES for configuration in BYTES_NOTEBOOK_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS |= frozenset(BYTES_NOTEBOOK_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(BYTES_NOTEBOOK_CONFIGURATIONS)
+POWER_CONFIGURATIONS |= frozenset(BYTES_NOTEBOOK_CONFIGURATIONS)
+
+ARRAY_NOTEBOOK_IMAGES = (NOTEBOOK_USER_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainArrayBulk'},
+    {**ARITHMETIC_NOTEBOOK_IMAGES[2], 'module':'Lemma.Services.Arithmetic.ServerV5',
+      'source':'Lemma.Services.Arithmetic.ServerV5.main'})
+MULTI_USER_CONFIGURATIONS.update({configuration:ARRAY_NOTEBOOK_IMAGES for configuration in ARRAY_NOTEBOOK_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS |= frozenset(ARRAY_NOTEBOOK_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(ARRAY_NOTEBOOK_CONFIGURATIONS)
+POWER_CONFIGURATIONS |= frozenset(ARRAY_NOTEBOOK_CONFIGURATIONS)
+
+STRING_NOTEBOOK_IMAGES = (NOTEBOOK_USER_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainStringBulk'},
+    {**ARITHMETIC_NOTEBOOK_IMAGES[2], 'module':'Lemma.Services.Arithmetic.ServerV6',
+      'source':'Lemma.Services.Arithmetic.ServerV6.main'})
+MULTI_USER_CONFIGURATIONS.update({configuration:STRING_NOTEBOOK_IMAGES for configuration in STRING_NOTEBOOK_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS |= frozenset(STRING_NOTEBOOK_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(STRING_NOTEBOOK_CONFIGURATIONS)
+POWER_CONFIGURATIONS |= frozenset(STRING_NOTEBOOK_CONFIGURATIONS)
+
+CLOSURE_NOTEBOOK_IMAGES=(NOTEBOOK_USER_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1],'source':'Lemma.Applications.Notebook.mainClosureBulk'},
+    {**ARITHMETIC_NOTEBOOK_IMAGES[2],'module':'Lemma.Services.Arithmetic.ServerV7',
+      'source':'Lemma.Services.Arithmetic.ServerV7.main'})
+MULTI_USER_CONFIGURATIONS.update({configuration:CLOSURE_NOTEBOOK_IMAGES for configuration in CLOSURE_NOTEBOOK_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS |= frozenset(CLOSURE_NOTEBOOK_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(CLOSURE_NOTEBOOK_CONFIGURATIONS)
+POWER_CONFIGURATIONS |= frozenset(CLOSURE_NOTEBOOK_CONFIGURATIONS)
+
+COURSE_NOTEBOOK_IMAGES=({**ARRAY_NOTEBOOK_IMAGES[0],"source":"Lemma.Services.Store.Server.courseMain"},
+    *ARRAY_NOTEBOOK_IMAGES[1:], {"key":"course","id":4,"module":"Lemma.Courses.PackageInstaller",
+    "source":"Lemma.Courses.PackageInstaller.main","args":["u64"],"symbol_prefix":"lemma_user_course_",
+    "startup_case":"none","directory":"users/course","boot_role":"course-installer"})
+MULTI_USER_CONFIGURATIONS.update({configuration:COURSE_NOTEBOOK_IMAGES for configuration in LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS})
+COURSE_AWAIT_NOTEBOOK_IMAGES=({**COURSE_NOTEBOOK_IMAGES[0],"module":"Lemma.Services.Store.ServerAwait","source":"Lemma.Services.Store.ServerAwait.main"},
+    *COURSE_NOTEBOOK_IMAGES[1:3], {**COURSE_NOTEBOOK_IMAGES[3],"source":"Lemma.Courses.PackageInstaller.mainAwait"})
+MULTI_USER_CONFIGURATIONS.update({configuration:COURSE_AWAIT_NOTEBOOK_IMAGES for configuration in COURSE_AWAIT_CONFIGURATIONS})
+PACKAGE_CLOSURE_NOTEBOOK_IMAGES=(COURSE_AWAIT_NOTEBOOK_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1],"source":"Lemma.Applications.Notebook.mainPackageClosureBulk"},
+    CLOSURE_NOTEBOOK_IMAGES[2],COURSE_AWAIT_NOTEBOOK_IMAGES[3])
+MULTI_USER_CONFIGURATIONS.update({configuration:PACKAGE_CLOSURE_NOTEBOOK_IMAGES for configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS})
+READER_NOTEBOOK_IMAGES=(PACKAGE_CLOSURE_NOTEBOOK_IMAGES[0],
+    {**PACKAGE_CLOSURE_NOTEBOOK_IMAGES[1],"source":READER_NOTEBOOK_ROOT},
+    *PACKAGE_CLOSURE_NOTEBOOK_IMAGES[2:])
+MULTI_USER_CONFIGURATIONS.update({configuration:READER_NOTEBOOK_IMAGES for configuration in READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS})
+from chooser_reader_deployment import CONFIGURATIONS as CHOOSER_READER_CONFIGURATIONS, NOTEBOOK_ROOT as CHOOSER_READER_ROOT
+MULTI_USER_CONFIGURATIONS.update({configuration:tuple(
+    {**row,"source":CHOOSER_READER_ROOT} if row["key"]=="notebook" else row
+    for row in READER_NOTEBOOK_IMAGES) for configuration in CHOOSER_READER_CONFIGURATIONS})
+PRODUCT_NOTEBOOK_CONFIGURATIONS |= frozenset(PRODUCT_READER_NOTEBOOK_CONFIGURATIONS)
+PRODUCT_CONFIGURATIONS |= frozenset(PRODUCT_READER_NOTEBOOK_CONFIGURATIONS)
+MODERN_NOTEBOOK_CONFIGURATIONS |= frozenset(PRODUCT_READER_NOTEBOOK_CONFIGURATIONS)
+
+RECOVERY_NOTEBOOK_IMAGES=({**NOTEBOOK_USER_IMAGES[0], 'module':'Lemma.Services.Store.ServerRecovery','source':'Lemma.Services.Store.ServerRecovery.mainRecoveryCourse'},
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainRecoverableSumsBulk'},SUMS_NOTEBOOK_IMAGES[2])
+MULTI_USER_CONFIGURATIONS.update({configuration:RECOVERY_NOTEBOOK_IMAGES for configuration in USB_RECOVERY_NOTEBOOK_CONFIGURATIONS})
+USB_CLOSURE_RECOVERY_NOTEBOOK_IMAGES=(RECOVERY_NOTEBOOK_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainRecoverableClosureBulk'}, CLOSURE_NOTEBOOK_IMAGES[2])
+MULTI_USER_CONFIGURATIONS.update({configuration:USB_CLOSURE_RECOVERY_NOTEBOOK_IMAGES for configuration in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS})
+
+PACKAGE_RECOVERY_NOTEBOOK_IMAGES=({**NOTEBOOK_USER_IMAGES[0], 'module':'Lemma.Services.Store.ServerRecoveryAwait','source':'Lemma.Services.Store.ServerRecoveryAwait.mainRecoveryAwait'},
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainRecoverablePackageClosureBulk'},
+    CLOSURE_NOTEBOOK_IMAGES[2], COURSE_AWAIT_NOTEBOOK_IMAGES[3])
+MULTI_USER_CONFIGURATIONS.update({configuration:PACKAGE_RECOVERY_NOTEBOOK_IMAGES for configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS})
+from companion_reader_deployment import CONFIGURATIONS as COMPANION_READER_CONFIGURATIONS, NOTEBOOK_ROOT as COMPANION_READER_ROOT
+MULTI_USER_CONFIGURATIONS.update({configuration:tuple(
+    {**row,"source":COMPANION_READER_ROOT} if row["key"]=="notebook" else row
+    for row in PACKAGE_RECOVERY_NOTEBOOK_IMAGES) for configuration in COMPANION_READER_CONFIGURATIONS})
+
+def software_deployment_fields(configuration):
+    if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+        from package_companion_deployment import software_deployment_for as package_software
+        return {"software_deployment":package_software(configuration)}
+    if configuration in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+        return {'software_deployment':USB_CLOSURE_RECOVERY_SOFTWARE_DEPLOYMENT}
+    if configuration in USB_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+        from managed_sums import software_deployment_for
+        return {'software_deployment':software_deployment_for(configuration)}
+    if configuration in CLOSURE_NOTEBOOK_CONFIGURATIONS:
+        return {"software_deployment":closure_software_deployment_for(configuration)}
+    if configuration in COURSE_AWAIT_CONFIGURATIONS:
+        return {"software_deployment":COURSE_AWAIT_SOFTWARE_DEPLOYMENT}
+    if configuration in LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS:
+        return {"software_deployment":COURSE_SOFTWARE_DEPLOYMENT}
+    if configuration in STRING_NOTEBOOK_CONFIGURATIONS:
+        from managed_string import software_deployment_for
+        return {"software_deployment":software_deployment_for(configuration)}
+    if configuration in ARRAY_NOTEBOOK_CONFIGURATIONS:
+        from managed_array import software_deployment_for
+        return {"software_deployment":software_deployment_for(configuration)}
+    if configuration in BYTES_NOTEBOOK_CONFIGURATIONS:
+        from managed_bytes import software_deployment_for
+        return {"software_deployment":software_deployment_for(configuration)}
+    if configuration in SUMS_NOTEBOOK_CONFIGURATIONS:
+        from managed_sums import software_deployment_for
+        return {'software_deployment':software_deployment_for(configuration)}
+    return {'software_deployment':SOFTWARE_DEPLOYMENT} if configuration in MANAGED_NOTEBOOK_CONFIGURATIONS else {}
+
 
 def kernel_contract(configuration: str) -> str:
-    return "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
+    return "core0-kernel-v0.8" if configuration in COMMON_CONFIGURATIONS else "core0-kernel-v0.7" if configuration in PRODUCT_CONFIGURATIONS else "core0-kernel-v0.6" if configuration in USB_CONFIGURATIONS else "core0-kernel-v0.5" if configuration in BLE_CONFIGURATIONS else "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
 
 
 def optimizer_intrinsics(unit: dict) -> set[str]:
     # LLVM's saturating unsigned subtraction and funnel shift lower to ordinary
     # RV64 integer code, with no foreign runtime boundary. Only the new profile's
     # genuine store/notebook consumer authorizes these observed optimizations.
-    return OPTIMIZER_INTRINSICS | ({"llvm.usub.sat.i64", "llvm.fshl.i64"} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else set())
+    return (OPTIMIZER_INTRINSICS
+            | ({"llvm.usub.sat.i64", "llvm.fshl.i64"} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else set())
+            | ({"llvm.bitreverse.i4"} if unit.get("configuration") in BLE_CONFIGURATIONS
+               and unit.get("role")=="kernel" else set()))
+
+
+BLE_HEADER_SHAPES = {
+    False: '9948d829801f423a94de257639db303304266aca273b192516426213087b2ecc',
+    True: '94965b0dcfc63e3b87df94fcf20867e327125e146682ac51f15ca4a7346c50d5',
+}
+
+
+def validate_ble_header_intrinsic(ir: str, unit: dict, *, optimized: bool,
+                                  optimization: str | None = None) -> dict:
+    """One actual LLVM20 i4 bit permutation; no general intrinsic admission."""
+    intrinsic='llvm.bitreverse.i4'; source='Lemma.Radio.BLE.Link.headerResult'
+    selected=unit.get('configuration') in BLE_CONFIGURATIONS and unit.get('role')=='kernel'
+    if not selected:
+        if '@'+intrinsic+'(' in ir:raise Core0Error('BLE header intrinsic escapes selected kernel')
+        return {}
+    sources=[re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']]
+    if len(sources)!=len(set(sources)):raise Core0Error('BLE header source inventory duplicates declarations')
+    rows=dict(zip(sources,unit['functions'])); row=rows.get(source)
+    if row is None or row.get('args')!=['u64']*3 or row.get('effects')!=[]:
+        raise Core0Error('BLE header lacks its pure three-word genuine declaration')
+    names={value['symbol']:key for key,value in rows.items()}
+    body=_ir_definition_body(ir,row['symbol'])
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+    normalized=' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines())
+    normalized=' '.join(normalized.split())
+    transformed=optimized and optimization!='O0'
+    digest=hashlib.sha256(normalized.encode()).hexdigest()
+    if digest!=BLE_HEADER_SHAPES[transformed]:raise Core0Error('BLE header differs from pinned checked bit-permutation body')
+    sites=[line.strip() for line in ir.splitlines() if '@'+intrinsic+'(' in line]
+    if transformed:
+        if (len(sites)!=2 or sites.count('%mask = call i4 @llvm.bitreverse.i4(i4 %0)')!=1
+            or not any(re.fullmatch(r'declare i4 @llvm\.bitreverse\.i4\(i4\)(?: #[0-9]+)?',line) for line in sites)
+            or '%mask = call i4 @llvm.bitreverse.i4(i4 %0)' not in body):
+            raise Core0Error('BLE intrinsic has an extra site or altered width/signature/owner')
+    elif sites:raise Core0Error('BLE intrinsic appears before the selected O2 optimization')
+    return {'source':source,'body_sha256':digest,'optimized':transformed,
+            'intrinsic':intrinsic if transformed else None,
+            'input_mask':3,'output_bits':[2,3],'foreign_runtime':False}
 
 
 def managed_fields(configuration: str, image: dict | None = None) -> dict:
@@ -197,6 +411,18 @@ def managed_fields(configuration: str, image: dict | None = None) -> dict:
 def validate_managed_provenance(build: dict, provenance: dict, *, configuration: str, images: list[dict]) -> None:
     if configuration in MANAGED_POLICIES:
         selected=image_specs(configuration)
+        if configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and isinstance(images,list) and any(
+                isinstance(row,dict) and row.get("source")=="Lemma.Applications.Notebook.mainPackageNumberPad" for row in images):
+            selected=tuple({**row,"source":"Lemma.Applications.Notebook.mainPackageNumberPad"}
+                           if row["key"]=="notebook" else row for row in selected)
+        if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and isinstance(images, list) and any(
+                isinstance(row, dict) and row.get("source") == "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad" for row in images):
+            selected = tuple({**row, "source": "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad"}
+                             if row["key"] == "notebook" else row for row in selected)
+        if configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and isinstance(images, list) and any(
+                isinstance(row, dict) and row.get("key") == "notebook" and row.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPadBrowse" for row in images):
+            selected = tuple({**row, "source": "Lemma.Applications.Notebook.mainPackageNumberPadBrowse"}
+                             if row["key"] == "notebook" else row for row in selected)
         expected = {"managed_policy": MANAGED_POLICIES[configuration], "boot_roles": {row["key"]: row["boot_role"] for row in selected}}
         if (images != list(selected) or any("boot_role" in record for record in (build, provenance))
                 or any(record.get(key) != value for record in (build, provenance) for key, value in expected.items())):
@@ -258,9 +484,27 @@ def validate_user_image_catalog(value: object, *, configuration: str | None = No
     catalog = _object(value, "user image catalog")
     selected = catalog.get("configuration") if configuration is None else configuration
     images = image_specs(selected)
+    # Notebook12 is an exact additive source cohort. Its actual unit/body/IR
+    # authority remains mandatory; this admits only its fixed catalog root.
+    if selected in PACKAGE_NOTEBOOK_CONFIGURATIONS and isinstance(catalog.get("images"), list) and any(
+            row.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPad"
+            for row in catalog.get("images", []) if isinstance(row, dict)):
+        images = tuple({**row, "source": "Lemma.Applications.Notebook.mainPackageNumberPad"}
+                       if row["key"] == "notebook" else row for row in images)
+    # Recovery16 is a fixed additive root on the existing USB13/four-role tuple.
+    # Its complete genuine catalog/body authority is independently required.
+    if selected in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and isinstance(catalog.get("images"), list) and any(
+            row.get("source") == "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad"
+            for row in catalog.get("images", []) if isinstance(row, dict)):
+        images = tuple({**row, "source": "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad"}
+                       if row["key"] == "notebook" else row for row in images)
+    if selected in PACKAGE_NOTEBOOK_CONFIGURATIONS and isinstance(catalog.get("images"), list) and any(
+            isinstance(row, dict) and row.get("key") == "notebook" and row.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPadBrowse" for row in catalog.get("images")):
+        images = tuple({**row, "source": "Lemma.Applications.Notebook.mainPackageNumberPadBrowse"}
+                         if row["key"] == "notebook" else row for row in images)
     expected = {"schema_version": 1, "contract_version": "lemma-user-image-catalog-v1",
                 "configuration": selected, "stage": "supervisor", "image_count": len(images),
-                "images": list(images), **managed_fields(selected)}
+                "images": list(images), **managed_fields(selected), **software_deployment_fields(selected)}
     # Exact equality also closes paths, IDs, per-image prefixes and source roots.
     if (type(catalog.get("schema_version")) is not int or type(catalog.get("image_count")) is not int
             or catalog != expected or any(type(row.get("id")) is not int for row in catalog.get("images", []))):
@@ -393,8 +637,46 @@ def validate_stack_entries(unit: dict, graph: dict, *, capacities: dict[str, int
     return entries
 
 
+def validate_usb_owned_buffers(unit: dict, pre_ir: str) -> dict:
+    if unit.get('configuration') not in USB_CONFIGURATIONS or unit.get('role')!='kernel':
+        raise Core0Error('USB owned buffer authority requires the exact selected kernel')
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+    rows={names[row['symbol']]:row for row in unit['functions']}
+    expected={
+        'Lemma.USB.Block.prepare':(['u64']*0,'ed6f2fbd9d9736ffe353cc56fa5d0246587aac00121f7cdefe2384da86040a87'),
+        'Lemma.USB.Controller.submitOwned':(['u64']*5,'8245015ec796b0b6b1eed2bfd9f8ded00d80ee3bdd6c5d6ea05f420b8df32295'),
+        'Lemma.USB.Controller.receiveOwned':(['u64']*5,'567fb8e532c6a34b97a60afb0382a32349af2ce285b7d61bbabf42d669e98812'),
+        'Lemma.Platform.Silicon.Development.USBLink.boot':([], '3b2b8c872ed6d979985cbba1e99ec87e21a2082ae9119e6c65877c4bea8549c6'),
+        'Lemma.Platform.Silicon.Development.USBLink.ownedNegative':([], 'a3189c5b2ad028aa611a00b68e443e195bb07631686a0ada47ac75f32266b2d3'),
+        'Lemma.Platform.Silicon.Development.USBLink.serviceCompletion':([], '6d14e8af5a9e6b66d0e6e730c3148136779d067d1a2906f86979b3ac6d51d482'),
+        'Lemma.Platform.Silicon.Development.USBLink.completionStep':(['u32']*2+['u64']*5, '6fe26c4cd05f18f7db6cc4859b417907fd6999b34c77e5880074b9910c965664'),
+    }
+    evidence=[]
+    for source,(args,expected_digest) in expected.items():
+        row=rows.get(source,{})
+        effects=['checked-access','mmio-read','io-order','physical-read','physical-write'] if source=='Lemma.USB.Block.prepare' else ['checked-access','mmio-read','mmio-write','io-order','physical-read'] if source.endswith('submitOwned') else ['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write']
+        if source.endswith('.boot') or source.endswith('.completionStep'):
+            effects=['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','wait-state']
+            if source.endswith('.boot'): effects.append('may-diverge')
+        if row.get('args')!=args or row.get('effects')!=effects:
+            raise Core0Error('USB owned buffer source/signature/effects differs: '+source)
+        body=_ir_definition_body(pre_ir,row['symbol'])
+        rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+        normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+        digest=hashlib.sha256(normalized.encode()).hexdigest()
+        if digest!=expected_digest:raise Core0Error('USB owned buffer allocation/generation/purpose/range/copy-before-POP body differs: '+source)
+        evidence.append({'source':source,'body_sha256':digest})
+    return {'owner':1,'purpose':1,'pages':1,'negative_fixture_pages':1,'negative_fixture_purpose':2,'page_bytes':4096,'payload_max':64,
+            'transport':'bounded owned-buffer PIO; no DMA',
+            'scope':'closed genuine checked source/lowering; live transaction qualification remains separate',
+            'bodies':evidence}
+
+
 def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
-    if unit.get('configuration') == 'lemmasim-silicon-power-probe':
+    if unit.get("configuration") in COMMON_CONFIGURATIONS:
+        from wifi_common import validate_boot_stack
+        return validate_boot_stack(layout,unit,pre_ir)
+    if unit.get('configuration') in ('lemmasim-silicon-power-probe','lemmasim-silicon-power-safety-probe','lemmasim-silicon-ble-link-probe','lemmasim-silicon-usb-link-probe'):
         # This selected S-mode probe links the ordinary dispatch boundary but
         # never constructs/enters a User task. Do not claim an allocation test
         # for absent construction; bind the actual boot call graph instead.
@@ -409,6 +691,37 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
             'Lemma.Drivers.PLIC.initializePower', 'Lemma.Kernel.Console.record',
             'Lemma.Platform.LemmaSim.PowerControl.step',
             'Lemma.Platform.LemmaSim.NotebookKernel.fatal'}
+        if unit['configuration']=='lemmasim-silicon-power-safety-probe':
+            root='Lemma.Platform.Silicon.Development.PowerSafety.boot'
+            expected={'Lemma.Platform.LemmaVM.ConsoleDevice.initialize14','Lemma.Kernel.BootInfo.validate',
+                'Lemma.Platform.LemmaSim.Descriptor.validateSiliconSafety','Lemma.Platform.LemmaSim.MachineServices.validateSilicon',
+                'Lemma.Drivers.PowerSafety.initialize','Lemma.Drivers.PowerSafety.resetEpoch','Lemma.Drivers.PowerSafety.arm',
+                'Lemma.Kernel.Console.record','Lemma.Platform.Silicon.Development.PowerSafety.waitStep',
+                'Lemma.Platform.Silicon.Development.PowerSafety.fatal'}
+        elif unit['configuration']=='lemmasim-silicon-ble-link-probe':
+            root='Lemma.Platform.Silicon.Development.BLELink.boot'
+            expected={'Lemma.Platform.LemmaVM.ConsoleDevice.initialize14','Lemma.Kernel.BootInfo.validate',
+                'Lemma.Platform.LemmaSim.Descriptor.validateBinding','Lemma.Platform.LemmaSim.MachineServices.validateSilicon',
+                'Lemma.Radio.BLE.Controller.initialize','Lemma.Radio.BLE.Controller.configure',
+                'Lemma.Platform.Silicon.Development.BLELink.base',
+                'Lemma.Platform.Silicon.Development.BLELink.configureIRQ',
+                'Lemma.Platform.Silicon.Development.BLELink.transaction',
+                'Lemma.Platform.Silicon.Development.BLELink.waitStep',
+                'Lemma.Platform.Silicon.Development.BLELink.fatal'}
+        elif unit['configuration']=='lemmasim-silicon-usb-link-probe':
+            root='Lemma.Platform.Silicon.Development.USBLink.boot'
+            expected={'Lemma.Platform.LemmaVM.ConsoleDevice.initialize14','Lemma.Kernel.BootInfo.validate',
+                'Lemma.Platform.LemmaSim.Descriptor.validateBinding','Lemma.Platform.LemmaSim.MachineServices.validateSilicon',
+                'Lemma.Kernel.Console.record','Lemma.Kernel.Memory.Frames.configure','Lemma.Kernel.Memory.Frames.init',
+                'Lemma.Kernel.Memory.Frames.allocate','Lemma.Kernel.Memory.Access.write64',
+                'Lemma.Platform.Silicon.Development.USBLink.fixtureState',
+                'Lemma.Platform.Silicon.Development.USBLink.configureIRQ','Lemma.USB.Block.initialize',
+                'Lemma.Platform.Silicon.Development.USBLink.transaction','Lemma.Platform.Silicon.Development.USBLink.waitStep',
+                'Lemma.Platform.Silicon.Development.USBLink.fatal'}
+        if unit['configuration']=='lemmasim-silicon-ble-link-probe':
+            address='Lemma.Platform.Silicon.Development.BLELink.base'
+            if address not in normalized or re.fullmatch(r'\s*entry:\s*ret i64 268502528\s*',_ir_definition_body(pre_ir,normalized[address])) is None:
+                raise Core0Error('BLE probe base differs from exact controller aperture')
         if root not in normalized or not expected <= normalized.keys():
             raise Core0Error('Power probe genuine boot/policy source closure missing')
         calls = {symbol: parse_definitions_and_calls(_ir_definition_body(pre_ir, symbol))[2]
@@ -424,12 +737,17 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
             'Lemma.Kernel.Loader.load', 'Lemma.Kernel.Loader.allocateStack',
             'Lemma.Kernel.Memory.AddressSpace.create', 'Lemma.Kernel.Memory.Frames.allocate',
             'Lemma.Kernel.Memory.Batch.allocate', 'Lemma.Kernel.Task.capture'}
+        usb_owned = None
+        if unit['configuration'] in USB_CONFIGURATIONS:
+            usb_owned=validate_usb_owned_buffers(unit,pre_ir)
+            forbidden=forbidden-{'Lemma.Kernel.Memory.Frames.allocate'}
         if any(normalized.get(name) in visited for name in forbidden):
             raise Core0Error('Power probe reached User construction, allocation or dispatch')
         if (layout['task_kernel_stack_pages'],layout['task_kernel_stack_bytes']) != (4,16384):
             raise Core0Error('Power probe linked dispatch stack layout differs')
-        return {'scope':'S-mode power probe; linked User dispatch is unreachable from this boot',
-                'owned_task_construction':'not executed or qualified', 'allocated_pages':0,
+        return {'scope':'S-mode device probe; linked User dispatch is unreachable from this boot',
+                'owned_task_construction':'not executed or qualified', 'allocated_pages':2 if usb_owned else 0,
+                'owned_transport_buffer':usb_owned,
                 'boot_source':root, 'reachable_source_functions':len(visited),
                 'linked_dispatch_stack_pages':4, 'linked_dispatch_stack_bytes':16384}
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
@@ -685,6 +1003,346 @@ def validate_fresh_descriptor_base_call(body: str, checked: str, protected: str,
     return {'validated_base':values[0],**gate}
 
 
+def validate_capability_base_borrow(body: str, checked: str, helper: str,
+                                     failed: str, failed_body: str,
+                                     readonly_calls: set[str]) -> dict:
+    """Closed two-argument capability helper, using this caller's fresh base.
+
+    The complete caller may only invoke the enumerated read-only helpers. This
+    rejects scheduling, writes and another descriptor, even on a success path.
+    It adds no target primitive or persisted authority cache.
+    """
+    variable=r'%[A-Za-z0-9_.$-]+'
+    calls=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(checked)+r'\(([^\n]*)\)',body)
+    if len(calls)!=1 or calls[0][1]!='i64 %arg0':
+        raise Core0Error('capability helper lacks one exact caller descriptor validation')
+    values=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(calls[0][0])+r', 1$',body,re.M)
+    arguments=re.findall(r'call \{ i64, i64 \} @'+re.escape(helper)+r'\(([^\n]*)\)',body)
+    if len(values)!=1 or arguments!=['i64 %arg0, i64 '+values[0]]:
+        raise Core0Error('capability helper does not borrow this exact descriptor/base pair')
+    actual=parse_definitions_and_calls(body)[2]
+    if not actual <= readonly_calls | {checked,helper} or re.search(r'\b(store|atomicrmw|cmpxchg|fence)\b',body):
+        raise Core0Error('capability base borrow has an intervening effect or unapproved helper')
+    return {'validated_base':values[0], 'readonly_calls':sorted(actual),
+            **validate_failed_call_gate(body,checked,helper,failed,failed_body)}
+
+
+def _local_checked_result(body: str, symbol: str, arguments: str) -> tuple[str,str]:
+    var=r'%[A-Za-z0-9_.$-]+'
+    calls=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(symbol)+r'\('+re.escape(arguments)+r'\)',body)
+    if len(calls)!=1: raise Core0Error('local borrow lacks one exact checked argument tuple')
+    values=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(calls[0])+r', 1$',body,re.M)
+    if len(values)!=1: raise Core0Error('local borrow lacks its exact checked value result')
+    return calls[0],values[0]
+
+
+def _local_call_arguments(body: str, symbol: str) -> list[str]:
+    return re.findall(r'call \{ i64, i64 \} @'+re.escape(symbol)+r'\(([^\n]*)\)',body)
+
+
+def _local_closed_calls(body: str, allowed: set[str]) -> None:
+    if not parse_definitions_and_calls(body)[2] <= allowed or re.search(r'\b(store|atomicrmw|cmpxchg|fence)\b',body):
+        raise Core0Error('local borrow contains an unapproved call or direct effect')
+
+
+def _local_callers(unit: dict, ir: str, helper: str, allowed: set[str], names: dict[str,str]) -> None:
+    observed={source for source,symbol in names.items() if names[helper] in
+              parse_definitions_and_calls(_ir_definition_body(ir,symbol))[2]}
+    if not observed or not observed <= allowed:
+        raise Core0Error('local borrow helper has an unapproved caller or no validated route')
+
+
+def _local_selected_failed_gate(body: str, checked: str, arguments: str, protected: str,
+                                failed: str, failed_body: str) -> dict:
+    selected=checked+'__selected_local_audit'
+    original='@'+checked+'('+arguments+')'
+    if body.count(original)!=1:raise Core0Error('local gate selected call is missing or duplicated')
+    rewritten=body.replace(original,'@'+selected+'('+arguments+')')
+    report=validate_failed_call_gate(rewritten,selected,protected,failed,failed_body)
+    report['checked']=checked;report['checked_arguments']=arguments
+    return report
+
+
+def _local_arithmetic(body: str, constants: dict[str,int]) -> dict[str,object]:
+    """Closed scalar operands for this emitted nonzero-literal arithmetic only."""
+    var=r'%[A-Za-z0-9_.$-]+';values=_ipc_scalar_operands(body,constants)
+    def value(operand):return values.get(operand,int(operand) if operand.isdecimal() else operand)
+    for line in body.splitlines():
+        m=re.fullmatch(r'\s*('+var+r') = (add|sub|mul|udiv|urem) i64 ([^,]+), ([^ ]+)',line)
+        if m:values[m[1]]=(m[2],value(m[3]),value(m[4]));continue
+        m=re.fullmatch(r'\s*('+var+r') = zext i32 ('+var+r') to i64',line)
+        if m:values[m[1]]=('zext32',m[2]);continue
+        m=re.fullmatch(r'\s*('+var+r') = phi i64 \[ ('+var+r'|[0-9]+), %[^ ]+ \], \[ ('+var+r'|[0-9]+), %[^ ]+ \]',line)
+        if m:
+            second=value(m[3])
+            if isinstance(second,tuple) and second[0] in {'udiv','urem'} and type(second[2])is int and second[2]!=0:
+                values[m[1]]=second
+    return values
+
+
+LOCAL_BORROW_SHAPES_V1 = {
+    # Closed emitted bodies for the four new/refactored local helpers. Names
+    # are rebound to their genuine source declarations before hashing, so a
+    # different reachability order cannot change authority. This is a narrow
+    # pinned lowering-shape audit, in addition to the independent CFG/operand
+    # checks below; it is not a claim of general compiler correctness.
+    'Lemma.Kernel.Task.findStep': '9670f690a926604dab388501d947d87b6b86e0d5d99792f1430f8efe5dc459a8',
+    'Lemma.Kernel.Task.lookupRecord': 'c37a6226e4724171df44737aaef87a59cbd4165048ecdaf86950dbc80628cf1e',
+    'Lemma.Kernel.Memory.UserCopy.copyFromUserResult': '76c50b4e2ef51923b87add161f46482645a01a802e40f46aaef9014c2754f1e2',
+    'Lemma.Kernel.Memory.UserCopy.copyFromUserReusingReadPage': 'e15e931ce16ea05ad270eccba2179d703a7ea647b705b2760a158f8f0884ade6',
+}
+
+
+def _local_pinned_shapes(ir: str, names: dict[str,str], sources: tuple[str,...]) -> dict:
+    reverse={symbol:source for source,symbol in names.items()};result={}
+    for source in sources:
+        body=_ir_definition_body(ir,names[source])
+        rebound=re.sub(r'@([^ (]+)',lambda m:'@'+reverse.get(m[1],m[1]),body)
+        digest=hashlib.sha256(' '.join(rebound.split()).encode()).hexdigest()
+        if digest!=LOCAL_BORROW_SHAPES_V1[source]:raise Core0Error('local helper differs from its pinned checked lowering shape: '+source)
+        result[source]=digest
+    return result
+
+
+def validate_task_capture_borrow(unit: dict, ir: str) -> dict:
+    """Closed fresh frame/descriptor/stack borrow in a single trap capture."""
+    rows={re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']):r for r in unit['functions']}
+    n={s:r['symbol'] for s,r in rows.items()};t='Lemma.Kernel.Task.';p='Lemma.Kernel.Process.'
+    a='Lemma.Kernel.Memory.AddressSpace.';x='Lemma.Kernel.Memory.Access.'
+    required={t+s for s in ('capture','contextAt','copyStep','lookupRecord','findStep','table','failed','fatal','stride','stateOffset','running','runnable','dying')}
+    required|={p+'validateFrame',a+'base',a+'userContextOffset',x+'read64',x+'write64','Lemma.Core0.Memory.Status.iterationStop'}
+    # Status is a scalar source constant and may retain its public spelling.
+    required.discard('Lemma.Core0.Memory.Status.iterationStop')
+    if unit.get('role')!='kernel' or not required<=n.keys():raise Core0Error('task capture borrow lacks its closed kernel inventory')
+    for s,args,effects in [(t+'contextAt',['u64']*3,{'checked-access','physical-read','physical-write'}),
+                            (t+'lookupRecord',['u64'],{'checked-access','physical-read'}),
+                            (t+'copyStep',['u32','u32']+['u64']*5,{'checked-access','physical-read','physical-write'})]:
+        if rows[s].get('args')!=args or set(rows[s].get('effects',[]))!=effects:raise Core0Error('task capture helper signature/effects differ')
+    _local_callers(unit,ir,t+'contextAt',{t+'capture'},n)
+    from ipc_poll_borrow import task_lookup_record_allowed_callers
+    _local_callers(unit,ir,t+'lookupRecord',task_lookup_record_allowed_callers(unit,ir),n)
+    body=_ir_definition_body(ir,n[t+'capture']);failed=_ir_definition_body(ir,n[t+'failed'])
+    _,actual=_local_checked_result(body,n[p+'validateFrame'],'i64 %arg1')
+    _,base=_local_checked_result(body,n[a+'base'],'i64 %arg0')
+    _local_closed_calls(body,{n[s] for s in (p+'validateFrame',a+'base',a+'userContextOffset',t+'failed',t+'fatal',t+'copyStep',t+'contextAt')})
+    comparisons=re.findall(r'(%[A-Za-z0-9_.$-]+) = icmp eq i64 '+re.escape(actual)+r', %arg0$',body,re.M)
+    if len(comparisons)!=1:raise Core0Error('capture substitutes the validated frame descriptor')
+    gates=[validate_failed_call_gate(body,n[p+'validateFrame'],n[a+'base'],n[t+'failed'],failed),
+           validate_boolean_gate(body,comparisons[0],n[a+'base']),
+           validate_failed_call_gate(body,n[a+'base'],n[t+'copyStep'],n[t+'failed'],failed),
+           validate_failed_call_gate(body,n[a+'base'],n[t+'contextAt'],n[t+'failed'],failed)]
+    if re.fullmatch(r'\s*entry:\s*ret i64 2048\s*',_ir_definition_body(ir,n[a+'userContextOffset'])) is None:
+        raise Core0Error('capture saved-context layout differs')
+    operands=_ipc_scalar_operands(body,{n[a+'userContextOffset']:2048})
+    calls=_local_call_arguments(body,n[t+'contextAt'])
+    if len(calls)!=1:raise Core0Error('capture lacks one closed sanitization call')
+    args=calls[0].split(', ')
+    if len(args)!=3 or args[:2]!=['i64 %arg0','i64 '+base] or operands.get(args[2][4:])!=('add','%arg1',288):
+        raise Core0Error('capture does not borrow this fresh descriptor/base/owned stack top')
+    loop=_local_call_arguments(body,n[t+'copyStep'])
+    var=r'%[A-Za-z0-9_.$-]+'
+    if len(loop)!=1 or re.fullmatch(r'i32 signext '+var+r', i32 signext 36, i64 '+var+r', i64 %arg1, i64 '+var+r', i64 0, i64 0',loop[0]) is None:
+        raise Core0Error('capture no longer copies exactly the original 36-word frame')
+    if operands.get(loop[0].split(', ')[4][4:])!=('add',base,2048):raise Core0Error('capture copy overlaps authority metadata')
+    if len(re.findall(r'icmp ule i32 36, 36$',body,re.M))!=1 or len(re.findall(r'icmp ult i32 '+var+r', 36$',body,re.M))!=1:
+        raise Core0Error('capture loop lost its exact bounded word count')
+    counts=re.findall(r'('+var+r') = icmp eq i64 ('+var+r'), 36$',body,re.M)
+    if len(counts)!=1:raise Core0Error('capture lacks its complete-copy publication check')
+    gates.append(validate_boolean_gate(body,counts[0][0],n[t+'contextAt']))
+    callback=_ir_definition_body(ir,n[t+'copyStep']);_local_closed_calls(callback,{n[s] for s in (x+'read64',x+'write64',t+'failed',t+'fatal')})
+    # Preserve one checked source word then one checked saved-context word.
+    if len(_local_call_arguments(callback,n[x+'read64']))!=1 or len(_local_call_arguments(callback,n[x+'write64']))!=1:
+        raise Core0Error('capture callback changed its one-read/one-write word path')
+    gates.append(validate_failed_call_gate(callback,n[x+'read64'],n[x+'write64'],n[t+'failed'],failed))
+    operands=_local_arithmetic(callback,{})
+    readarg=_local_call_arguments(callback,n[x+'read64'])[0]
+    reads=_local_checked_result(callback,n[x+'read64'],readarg)
+    writeargs=_local_call_arguments(callback,n[x+'write64'])[0].split(', ')
+    index=('mul',('zext32','%arg0'),8)
+    if operands.get(readarg[4:])!=('add','%arg3',index) or operands.get(writeargs[0][4:])!=('add','%arg4',index) or writeargs[1]!='i64 '+reads[1]:
+        raise Core0Error('capture callback substitutes original frame or disjoint saved word/value')
+    helper=_ir_definition_body(ir,n[t+'contextAt']);_local_closed_calls(helper,{n[s] for s in (t+'lookupRecord',t+'failed',t+'fatal',t+'stateOffset',t+'running',a+'userContextOffset',x+'read64',x+'write64')})
+    _local_checked_result(helper,n[t+'lookupRecord'],'i64 %arg0')
+    values=_ipc_scalar_operands(helper,{n[a+'userContextOffset']:2048,n[t+'stateOffset']:8,n[t+'running']:3})
+    writes=[(values.get(arg.split(', ')[0][4:],arg.split(', ')[0][4:]),arg.split(', ')[1]) for arg in _local_call_arguments(helper,n[x+'write64'])]
+    saved=('add','%arg1',2048)
+    if writes!=[(saved,'i64 0'),(('add',saved,264),'i64 8589934624'),(('add',saved,280),'i64 %arg2')]:
+        raise Core0Error('capture sanitization changed its exact disjoint context writes')
+    gates.append(validate_failed_call_gate(helper,n[t+'lookupRecord'],n[x+'write64'],n[t+'failed'],failed))
+    gates.append(validate_ipc_read_guard(helper,n[x+'read64'],{n[a+'userContextOffset']:2048,n[t+'stateOffset']:8,n[t+'running']:3},
+        ('add',_local_checked_result(helper,n[t+'lookupRecord'],'i64 %arg0')[1],8),3,n[x+'write64']))
+    translation_args=[arg for arg in _local_call_arguments(helper,n[x+'read64']) if values.get(arg[4:])==('add','%arg1',72)]
+    if len(translation_args)!=1:raise Core0Error('capture helper dropped its live translation load')
+    _,translation=_local_checked_result(helper,n[x+'read64'],translation_args[0])
+    gates.append(validate_ipc_read_guard(helper,n[x+'read64'],{n[a+'userContextOffset']:2048},('add',saved,272),translation,n[x+'write64']))
+    for arg in _local_call_arguments(helper,n[x+'read64']):
+        gates.append(_local_selected_failed_gate(helper,n[x+'read64'],arg,n[x+'write64'],n[t+'failed'],failed))
+    # The live task-row scanner retains state and descriptor checks, including
+    # first malformed/failing rows. No cached task pointer is admitted.
+    record=_ir_definition_body(ir,n[t+'lookupRecord']);_local_closed_calls(record,{n[s] for s in (t+'table',t+'findStep',t+'failed',t+'fatal',t+'stride')} |
+        {symbol for source,symbol in n.items() if source.endswith('Status.iterationStop')})
+    if len(_local_call_arguments(record,n[t+'findStep']))!=1 or not re.search(r'i32 signext 8, i64 '+var+r', i64 '+var+r', i64 %arg0, i64 0, i64 0',record):
+        raise Core0Error('capture live row lookup lost its eight-row descriptor scan')
+    return {'helper':t+'contextAt','copied_words':36,'saved_context_offset':2048,'stack_top_from_original_frame':288,
+            'gates':gates,'pinned_shapes':_local_pinned_shapes(ir,n,(t+'findStep',t+'lookupRecord')),'scope':'same nonpreemptible capture; original frame/stack and fresh descriptor checks retained; live row scan after copy'}
+
+
+def validate_surface_read_page_borrow(unit: dict, ir: str) -> dict:
+    """Only the surface metadata path may borrow a checked same-page read alias."""
+    rows={re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']):r for r in unit['functions']};n={s:r['symbol'] for s,r in rows.items()}
+    d='Lemma.Platform.LemmaSim.DeviceService.';u='Lemma.Kernel.Memory.UserCopy.';x='Lemma.Kernel.Memory.Access.'
+    f='Lemma.Kernel.Memory.Frames.resolvePurpose';paper='Lemma.Drivers.Paper.upload'
+    page_words=u+'copyPageWords' in n
+    word_callback=u+('copyPageWords' if page_words else 'fromWordStep')
+    required={d+s for s in ('upload','uploadOrdinary','uploadBorrowed','get','fatal')}|{u+s for s in ('copyFromUser','copyFromUserResult','copyFromUserReadPage','copyFromUserReusingReadPage','scratch','validRange','maximumLength','wordsAligned','fromStep')}|{word_callback,f,paper,x+'read64'}
+    if unit.get('role')!='kernel' or not required<=n.keys():raise Core0Error('surface read-page borrow lacks its closed kernel inventory')
+    page_word_report=None
+    if page_words:
+        if u+'fromWordStep' in n:raise Core0Error('surface read-page borrow mixes legacy and page-word callbacks')
+        from usercopy_page_words import validate as validate_page_words
+        page_word_report=validate_page_words(ir,unit,optimized=False)
+    for source,count in ((u+'copyFromUserReadPage',5),(u+'copyFromUserReusingReadPage',7),(u+'copyFromUserResult',6)):
+        if rows[source].get('args')!=['u64']*count or set(rows[source].get('effects',[]))!={'checked-access','physical-read','physical-write'}:
+            raise Core0Error('read-page copy helper signature/effects differ')
+    _local_callers(unit,ir,d+'uploadBorrowed',{d+'upload'},n)
+    _local_callers(unit,ir,u+'copyFromUserReadPage',{d+'uploadBorrowed'},n)
+    _local_callers(unit,ir,u+'copyFromUserReusingReadPage',{d+'uploadBorrowed'},n)
+    _local_callers(unit,ir,u+'copyFromUserResult',{u+'copyFromUser',u+'copyFromUserReadPage'},n)
+    for source,mode in ((u+'copyFromUser',0),(u+'copyFromUserReadPage',1)):
+        body=_ir_definition_body(ir,n[source]);_local_closed_calls(body,{n[u+'copyFromUserResult']})
+        if _local_call_arguments(body,n[u+'copyFromUserResult'])!=['i64 '+str(mode)+', '+', '.join('i64 %arg'+str(i) for i in range(5))]:
+            raise Core0Error('read-page wrapper lost its fixed ordinary/alias result mode')
+    result=_ir_definition_body(ir,n[u+'copyFromUserResult'])
+    base_checked=u+'checkedBase';lookup=u+'checkedLookupAt'
+    if base_checked not in n or lookup not in n:raise Core0Error('read-page producer lacks its original address-space checks')
+    _,base=_local_checked_result(result,n[base_checked],'i64 %arg1, i64 %arg2, i64 1')
+    _,first_value=_local_checked_result(result,n[lookup],'i64 '+base+', i64 %arg2, i64 1')
+    # Both word/byte success branches return this exact first checked leaf when
+    # the fixed alias-result wrapper selected mode1. Ordinary mode0 keeps count.
+    variable=r'%[A-Za-z0-9_.$-]+'
+    modes=re.findall(r'('+variable+r') = icmp eq i64 %arg0, 1$',result,re.M)
+    alias_phis=re.findall(r'('+variable+r') = phi i64 \[ '+re.escape(first_value)+r', %[^ ]+ \], \[ ('+variable+r'), %[^ ]+ \]',result)
+    if len(modes)!=2 or len(alias_phis)!=2:raise Core0Error('read-page producer substituted the checked first-leaf result')
+    validate_checked_call_gate(result,n[base_checked],n[lookup])
+    wrapper=_ir_definition_body(ir,n[d+'upload']);_,handle=_local_checked_result(wrapper,n[d+'get'],'i64 24')
+    _local_closed_calls(wrapper,{n[d+s] for s in ('get','fatal','uploadOrdinary','uploadBorrowed')})
+    if _local_call_arguments(wrapper,n[d+'uploadBorrowed'])!=['i64 %arg0, i64 %arg1, i64 %arg2, i64 '+handle]:
+        raise Core0Error('upload lost its fresh scratch handle argument')
+    neq=re.findall(r'(%[A-Za-z0-9_.$-]+) = icmp eq i64 '+re.escape(handle)+r', %arg0$',wrapper,re.M)
+    if len(neq)!=1:raise Core0Error('upload omitted the descriptor/scratch alias fallback')
+    gates=[validate_checked_call_gate(wrapper,n[d+'get'],n[d+'uploadBorrowed']),validate_boolean_gate(wrapper,neq[0],n[d+'uploadBorrowed'],success_when_true=False)]
+    body=_ir_definition_body(ir,n[d+'uploadBorrowed']);_,first=_local_checked_result(body,n[u+'copyFromUserReadPage'],'i64 %arg0, i64 %arg1, i64 %arg3, i64 1024, i64 32')
+    _,handle=_local_checked_result(body,n[d+'get'],'i64 24')
+    arguments=_local_call_arguments(body,n[u+'copyFromUserReusingReadPage'])
+    var=r'%[A-Za-z0-9_.$-]+'
+    if len(arguments)!=1 or re.fullmatch(re.escape('i64 %arg0, i64 %arg1, i64 '+first+', i64 %arg2, i64 '+handle+', i64 0, i64 ')+var,arguments[0]) is None:
+        raise Core0Error('upload does not reuse the exact successful descriptor/read-page alias')
+    same=re.findall(r'('+var+r') = icmp eq i64 '+re.escape(handle)+r', %arg3$',body,re.M)
+    if len(same)!=1:raise Core0Error('upload lost its second live scratch-handle equality')
+    gates.extend([validate_checked_call_gate(body,n[u+'copyFromUserReadPage'],n[u+'copyFromUserReusingReadPage']),
+                  validate_checked_call_gate(body,n[d+'get'],n[u+'copyFromUserReusingReadPage']),
+                  validate_boolean_gate(body,same[0],n[u+'copyFromUserReusingReadPage'])])
+    # Enumerate every call that can reach reuse; paper/DMA work occurs afterward.
+    blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+    sites={label for label,lines in blocks.items() if any('@'+n[u+'copyFromUserReusingReadPage']+'(' in line for line in lines)}
+    readonly={n[source] for source in (u+'copyFromUserReadPage',u+'copyFromUserReusingReadPage',d+'get',f,x+'read64')}
+    for label,lines in blocks.items():
+        if any(_structured_reachable(successors,label,site) for site in sites):
+            _local_closed_calls('\n'.join(lines),readonly)
+    reuse=_ir_definition_body(ir,n[u+'copyFromUserReusingReadPage'])
+    allowed={n[source] for source in (u+'copyFromUser',u+'scratch',u+'validRange',u+'maximumLength',u+'wordsAligned',u+'fromStep',word_callback)}
+    allowed|={symbol for source,symbol in n.items() if source.startswith('Lemma.User.ABI.')}
+    _local_closed_calls(reuse,allowed)
+    for callback in (u+'fromStep',word_callback):
+        gates.append(validate_checked_call_gate(reuse,n[u+'scratch'],n[callback]))
+    if len(re.findall(r'udiv i64 %arg1, 4096$',reuse,re.M))!=1 or len(re.findall(r'udiv i64 %arg3, 4096$',reuse,re.M))!=1:
+        raise Core0Error('read-page reuse changed its exact page equality')
+    quotient=re.findall(r'('+var+r') = phi i64 \[ 0, %[^ ]+ \], \[ ('+var+r'), %[^ ]+ \]',reuse)
+    divs=dict(re.findall(r'('+var+r') = udiv i64 (%arg[13]), 4096$',reuse,re.M))
+    pages={divs[v]:result for result,v in quotient if v in divs}
+    pagecmp=re.findall(r'('+var+r') = icmp eq i64 '+re.escape(pages.get('%arg1','NO_PAGE'))+', '+re.escape(pages.get('%arg3','NO_PAGE'))+r'$',reuse,re.M)
+    remaining=re.findall(r'('+var+r') = sub i64 4096, ('+var+r')$',reuse,re.M)
+    remainder=set(re.findall(r'('+var+r') = urem i64 %arg3, 4096$',reuse,re.M))
+    remainder_phis=[result for result,v in re.findall(r'('+var+r') = phi i64 \[ %arg3, %[^ ]+ \], \[ ('+var+r'), %[^ ]+ \]',reuse) if v in remainder]
+    bounds=[result for result,right in re.findall(r'('+var+r') = icmp ule i64 %arg6, ('+var+r')$',reuse,re.M) if any(address==right and rem in remainder_phis for address,rem in remaining)]
+    if len(pagecmp)!=1 or len(bounds)!=1:raise Core0Error('read-page reuse lost its exact whole-span page bound')
+    for callback in (u+'fromStep',word_callback):
+        gates.extend([validate_boolean_gate(reuse,pagecmp[0],n[callback]),validate_boolean_gate(reuse,bounds[0],n[callback])])
+    operands=_local_arithmetic(reuse,{})
+    source=('add',('sub','%arg2',('urem','%arg1',4096)),('urem','%arg3',4096))
+    _,destination=_local_checked_result(reuse,n[u+'scratch'],'i64 %arg4, i64 %arg5, i64 %arg6')
+    for callback in (u+'fromStep',word_callback):
+        args=_local_call_arguments(reuse,n[callback])
+        if len(args)!=1:raise Core0Error('read-page reuse changed the bounded copy callback count')
+        fields=args[0].split(', ')
+        correct=(len(fields)==3 and operands.get(fields[0][4:])==source and fields[1]=='i64 '+destination and fields[2]=='i64 %arg6') if page_words and callback==word_callback else (len(fields)==7 and operands.get(fields[3][4:])==source and fields[4]=='i64 0' and fields[5]=='i64 '+destination and fields[6]=='i64 %arg6')
+        if not correct:
+            raise Core0Error('read-page reuse substituted checked page arithmetic or scratch span')
+    if _local_call_arguments(reuse,n[u+'copyFromUser'])!=['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5, i64 %arg6']*2:
+        raise Core0Error('read-page fallback lost complete ordinary validation')
+    shapes=page_word_report['complete_shapes'] if page_words else _local_pinned_shapes(ir,n,(u+'copyFromUserResult',u+'copyFromUserReusingReadPage'))
+    return {'helper':u+'copyFromUserReusingReadPage','metadata_bytes':32,'metadata_scratch_offset':1024,'page_bytes':4096,
+            'gates':gates,'pinned_shapes':shapes,'scope':'same nonpreemptible surface upload; exact checked alias, distinct descriptor scratch, freshly owned destination; ordinary path outside checked page',
+            **({'page_word_successor':page_word_report} if page_words else {})}
+
+
+def validate_capability_header_helpers(unit: dict, pre_ir: str) -> dict:
+    """Keep the private same-Action header helper closed at every compiled use."""
+    rows={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row for row in unit['functions']}
+    names={source:row['symbol'] for source,row in rows.items()}
+    c='Lemma.Kernel.Capability.';o='Lemma.Kernel.Objects.'
+    a='Lemma.Kernel.Memory.AddressSpace.base';v='Lemma.User.CapabilityABI.invalidHandle'
+    helper=c+'headerAt';callers={c+'header',c+'managed'}
+    from surface_bulk_borrow import validate_if_present
+    surface_borrow=validate_if_present(pre_ir,unit,optimized=False)
+    borrowed_caller=c+'requireActiveAt'
+    if surface_borrow is not None: callers.add(borrowed_caller)
+    required={helper,*callers,a,v,c+'failed',o+'get',o+'registryDescriptor',c+'headerOffset',
+              c+'zeroHeaderStep',c+'fatal',c+'active',c+'magic',c+'constructing',c+'capacity',o+'registryCapacity'}
+    if unit.get('role')!='kernel' or not required <= names.keys():
+        raise Core0Error('capability header helper lacks its closed kernel source inventory')
+    if rows[helper].get('args')!=['u64','u64'] or set(rows[helper].get('effects',[]))!={'checked-access','physical-read'}:
+        raise Core0Error('capability header helper is not a read-only descriptor/base Action')
+    body=_ir_definition_body(pre_ir,names[helper])
+    if not re.search(r'^define \{ i64, i64 \} @'+re.escape(names[helper])+r'\(i64 %arg0, i64 %arg1\) nounwind noinline "disable-tail-calls"="true" \{',pre_ir,re.M):
+        raise Core0Error('capability header helper emitted signature differs')
+    constants={names[c+'headerOffset']:2560,names[c+'magic']:0x31504143414d454c,
+               names[c+'active']:1,names[c+'constructing']:2,names[c+'capacity']:16,names[o+'registryCapacity']:8}
+    for symbol,value in constants.items():
+        if re.fullmatch(r'\s*entry:\s*ret i64 '+str(value)+r'\s*',_ir_definition_body(pre_ir,symbol)) is None:
+            raise Core0Error('capability helper scalar metadata constant differs')
+    operands=_ipc_scalar_operands(body,constants)
+    addresses=[operands.get(operand,operand) for operand in re.findall(
+        r'call \{ i64, i64 \} @'+re.escape(names[o+'get'])+r'\(i64 ([^\n)]+)\)',body)]
+    root=('add','%arg1',2560)
+    if addresses!=[root,*[('add',root,offset) for offset in range(8,64,8)]]:
+        raise Core0Error('capability helper changed its eight exact live header fields')
+    if len(re.findall(r'call \{ i64, i64 \} @'+re.escape(names[o+'registryDescriptor'])+r'\(',body))!=1:
+        raise Core0Error('capability helper dropped its live registered descriptor check')
+    if not parse_definitions_and_calls(body)[2] <= {names[source] for source in required-{a,*callers,c+'zeroHeaderStep',helper}}:
+        raise Core0Error('capability header helper has an unapproved effect or call')
+    failed_body=_ir_definition_body(pre_ir,names[c+'failed']);observed=set();gates=[]
+    for source,symbol in names.items():
+        caller=_ir_definition_body(pre_ir,symbol)
+        if names[helper] not in parse_definitions_and_calls(caller)[2]: continue
+        if source not in callers: raise Core0Error('capability header helper has an unapproved caller')
+        observed.add(source)
+        if source==borrowed_caller:
+            if _local_call_arguments(caller,names[helper])!=['i64 %arg0, i64 %arg1']:
+                raise Core0Error('capability header borrow substituted descriptor/base operands')
+            gates.append({'source':source,'borrowed_fields':['descriptor_arg0','captured_base_arg1'],
+                          'complete_body_sha256':surface_borrow['body_identities'][source],
+                          'authority_contract':surface_borrow['contract_version']})
+            continue
+        allowed=({v,c+'failed'} if source==c+'header' else
+                 {c+'failed',o+'get',c+'headerOffset',c+'zeroHeaderStep',c+'fatal',c+'active'})
+        gates.append({'source':source,**validate_capability_base_borrow(caller,names[a],names[helper],names[c+'failed'],failed_body,{names[item] for item in allowed})})
+    if observed!=callers: raise Core0Error('capability header helper lacks every exact validated entry route')
+    return {'helper':helper,'borrowed_fields':['caller_descriptor','fresh_checked_base'],
+            'header_read_offsets':list(range(0,64,8)), 'checked_cfg_gates':gates,
+            'scope':'same nonpreemptible Action; no writes, scheduling or cross-entry cache'}
+
+
 def validate_fresh_descriptor_helpers(unit: dict, pre_ir: str) -> dict:
     """Closed kernel-only helper inventory for within-call stack validation."""
     names={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row['symbol'] for row in unit['functions']}
@@ -693,6 +1351,9 @@ def validate_fresh_descriptor_helpers(unit: dict, pre_ir: str) -> dict:
     process=p+'Process.validateStackAt';loader=p+'Loader.validateExpandedStackAt'
     allowed={process:{p+'Process.validateStack',p+'Process.validateFrame',p+'Task.context',p+'Task.savedContext'},
              loader:{p+'Loader.validateExpandedStack',process}}
+    from task_entry_borrow import validate_if_present as validate_entry2
+    entry2=validate_entry2(pre_ir,unit,optimized=False)
+    if entry2 is not None: allowed[process].add(p+'Task.entryContextV2')
     required={base,process,loader,p+'Process.failed'}
     required|={p+'Memory.Access.read64',p+'Loader.kernelStackPagesOffset'}
     if not required<=names.keys(): raise Core0Error('fresh stack helper closure is missing')
@@ -797,7 +1458,8 @@ def validate_h_endpoint_budget(body: str, by_source: dict[str,str], *, reply: bo
         raise Core0Error("endpoint count lacks exact checked fold outcome")
     value,exhausted,stopped,done=outcomes[0]
     outcome_status=re.findall(r"("+var+r") = phi i8 \[ 9, %"+re.escape(exhausted)+r" \], \[ "+re.escape(narrowed[0])+r", %"+re.escape(stopped)+r" \], \[ 0, %"+re.escape(done)+r" \]",body)
-    runtime = by_source.get(objects+"runtimeEndpointCapacity") if not reply else None
+    runtime = by_source.get(objects+("runtimeReplyCapacity" if reply else "runtimeEndpointCapacity"))
+    arithmetic = objects+"arithmeticEndpointCapacity" in by_source
     runtime_calls = [] if runtime is None else re.findall(
         r"("+var+r") = call \{ i64, i64 \} @"+re.escape(runtime)+r"\(\)",body)
     if runtime_calls:
@@ -827,14 +1489,14 @@ def validate_h_endpoint_budget(body: str, by_source: dict[str,str], *, reply: bo
         if runtime_calls:
             gates[-1]["capacity_status"]=validate_failed_call_gate(body,runtime,by_source[protected],
                 by_source[objects+"failed"],_ir_definition_body(pre_ir,by_source[objects+"failed"]))
-    return {"capacity":8 if reply else {"version1":4,"version2":5} if runtime_calls else 4,
-            "capacity_source":objects+"runtimeEndpointCapacity" if runtime_calls else objects+capacity,
+    return {"capacity":({"version1":8,"version2":8,"version3":7} if reply else {"version1":4,"version2":5,"version3":6}) if arithmetic and runtime_calls else 8 if reply else {"version1":4,"version2":5} if runtime_calls else 4,
+            "capacity_source":objects+("runtimeReplyCapacity" if reply else "runtimeEndpointCapacity") if runtime_calls else objects+capacity,
             "counted_rows":16,"counter_source":objects+counter,"base_operand":base,
             "count_result":value,"checked_outcome_status":outcome_status[0],"preallocation_gates":gates}
 
 
 def _object_scalar_cases(body: str, constants: dict[str,int], *, header: bool,
-                         version_only: bool = False, encoded: bool = False) -> list[dict]:
+                         version_only: bool = False, encoded: bool = False, arithmetic: bool = False, replies: bool = False) -> list[dict]:
     """Observe the closed equality/phi CFG over its complete input partitions.
 
     Version comparisons may only distinguish1/2; header-limit comparisons may
@@ -845,12 +1507,12 @@ def _object_scalar_cases(body: str, constants: dict[str,int], *, header: bool,
     blocks=_structured_ir_blocks(body)
     variable=r'%[A-Za-z0-9_.$-]+'
     observations=[];visited=set()
-    for version in (0,1,2,3,(1<<64)-1):
+    for version in ((0,1,2,3,4,(1<<64)-1) if arithmetic else (0,1,2,3,(1<<64)-1)):
       for limit in ((0,4,5,6,(1<<64)-1) if header and not version_only else (0,)):
         values={'%arg0':version,'%arg1':limit};label='entry';previous=None
         def operand(value):
             if value in values:return values[value]
-            if re.fullmatch(r'[0-9]+',value) and int(value) in {0,1,2,4,5}:return int(value)
+            if re.fullmatch(r'[0-9]+',value) and int(value) in ({0,1,2,3,4,5,6,7,8} if arithmetic else {0,1,2,4,5}):return int(value)
             raise Core0Error('Objects scalar guard has an unknown operand')
         for _ in range(64):
             if label not in blocks:raise Core0Error('Objects scalar guard has an unknown block')
@@ -859,7 +1521,7 @@ def _object_scalar_cases(body: str, constants: dict[str,int], *, header: bool,
                 match=re.fullmatch('('+variable+r') = icmp eq i64 (%arg[01]), ('+variable+r'|[0-9]+)',line)
                 if match:
                     result,arg,right=match.groups();bound=operand(right)
-                    if (arg=='%arg0' and bound not in {1,2}) or (arg=='%arg1' and (not header or version_only or bound not in {0,5})):
+                    if (arg=='%arg0' and bound not in ({1,2,3} if arithmetic else {1,2})) or (arg=='%arg1' and (not header or version_only or bound not in ({0,5,6} if arithmetic else {0,5}))):
                         raise Core0Error('Objects scalar guard comparison leaves its closed partitions')
                     values[result]=int(values[arg]==bound);continue
                 match=re.fullmatch('('+variable+r') = call i64 @([A-Za-z0-9_.$-]+)\(\)',line)
@@ -889,7 +1551,7 @@ def _object_scalar_cases(body: str, constants: dict[str,int], *, header: bool,
                 if match:returned=operand(match[1]);continue
                 raise Core0Error('Objects scalar guard has an unsupported instruction')
             if returned is not None:
-                expected=(int(version in {1,2}) if version_only else int((version,limit) in {(1,0),(2,5)})) if header else (5 if version==2 else 0) if encoded else 4 if version==1 else 5 if version==2 else 0
+                expected=(int(version in ({1,2,3} if arithmetic else {1,2})) if version_only else int((version,limit) in ({(1,0),(2,5),(3,6)} if arithmetic else {(1,0),(2,5)}))) if header else (5 if version==2 else 6 if arithmetic and version==3 else 0) if encoded else (8 if version in {1,2} else 7 if version==3 else 0) if replies else 4 if version==1 else 5 if version==2 else 6 if arithmetic and version==3 else 0
                 if returned!=expected:raise Core0Error('Objects scalar version/header quota semantics differ')
                 observations.append({'version':version,'encoded_limit':limit if header else None,'result':returned});break
             if next_label is None:raise Core0Error('Objects scalar guard has no terminator')
@@ -981,9 +1643,17 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     o='Lemma.Kernel.Objects.';f='Lemma.Kernel.Memory.Frames.';var=r'%[A-Za-z0-9_.$-]+'
     if o+'initFor' not in names:return {'scope':'initializer not reachable; historical direct initializer unchanged'}
     needed={o+s for s in ('init','initFor','initStep','powerEndpointCapacity','capacity','put','get','control','magic','failed')}
+    modern=unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS
+    if modern:needed.remove(o+'init')
     needed|={f+'allocate',f+'resolvePurpose','Lemma.User.CapabilityABI.invalidArgument'}
     if not needed<=names.keys():raise Core0Error('Objects versioned initializer closure missing')
-    wrappers={o+'init':1}
+    arithmetic=o+'initArithmetic' in names
+    # The shared initializer can admit the v3 header even when a legacy unit
+    # reaches only its fixed v1/v2 wrappers. Constructor authority still follows
+    # the actual wrapper closure below, independently of header semantics.
+    supports_arithmetic_header=o+'encodedLimitFor' in names
+    wrappers={} if modern and o+'init' not in names else {o+'init':1}
+    if arithmetic:wrappers[o+'initArithmetic']=3
     if o+'initPower' in names:wrappers[o+'initPower']=2
     expected='''entry:
   %action.call.result0 = call { i64, i64 } @INIT(i64 VERSION)
@@ -1005,7 +1675,7 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     if len(tests)!=1:raise Core0Error('Objects initializer lacks one closed version gate')
     comparison,predicate=tests[0]
     prefix=body[:body.index(comparison+' =')]+'ret i1 '+predicate+'\n'
-    version_cases=_object_scalar_cases(prefix,{},header=True,version_only=True)
+    version_cases=_object_scalar_cases(prefix,{},header=True,version_only=True,arithmetic=supports_arithmetic_header)
     gates=[validate_boolean_gate(body,comparison,names[source],success_when_true=False) for source in (f+'allocate',o+'get',o+'put')]
     _object_invalid_init_path(body,gates[0]['failure'],invalid)
     resolved=re.findall('('+var+r') = call \{ i64, i64 \} @'+re.escape(names[f+'resolvePurpose'])+r'\(i64 1, i64 ('+var+r'), i64 1\)',body)
@@ -1023,23 +1693,32 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     if locations['version'][2]!='%arg0' or operands.get(locations['magic'][2],locations['magic'][2])!=0x314a424f414d454c or locations['publish'][2]!=handle:
         raise Core0Error('Objects initializer header/global publication lost source values')
     encoded=locations['limit'][2]
-    phi=re.findall(re.escape(encoded)+r' = phi i64 \[ ('+var+r'), %([A-Za-z0-9_.$-]+) \], \[ 0, %([A-Za-z0-9_.$-]+) \]',body)
-    if len(phi)!=1:raise Core0Error('Objects initializer encoded limit is not version2/5 versus legacy0')
-    limit_value,yes,no=phi[0]
-    if re.findall(re.escape(limit_value)+r' = call i64 @'+re.escape(names[o+'powerEndpointCapacity'])+r'\(\)',body)!=[limit_value+' = call i64 @'+names[o+'powerEndpointCapacity']+'()']:
-        raise Core0Error('Objects initializer lost the exact successor capacity')
-    candidate=[]
-    for cmp in re.findall('('+var+r') = icmp eq i64 %arg0, 2$',body,re.M):
-        try:candidate.append(validate_boolean_gate(body,cmp,names[o+'powerEndpointCapacity']))
-        except Core0Error:pass
-    if len(candidate)!=1 or (candidate[0]['success'],candidate[0]['failure'])!=(yes,no):
-        raise Core0Error('Objects initializer limit branch is not exact version2')
-    bound=candidate[0];merge=re.findall(r'br label %([A-Za-z0-9_.$-]+)', '\n'.join(blocks[yes]))
-    if len(merge)!=1 or blocks[no]!=['br label %'+merge[0]]:
-        raise Core0Error('Objects initializer encoded-limit merge has other effects')
-    selected='entry:\n  '+bound['comparison']+' = icmp eq i64 %arg0, 2\n  br i1 '+bound['comparison']+', label %'+yes+', label %'+no+'\n'
-    selected+=yes+':\n  '+'\n  '.join(blocks[yes])+'\n'+no+':\n  '+'\n  '.join(blocks[no])+'\n'+merge[0]+':\n  '+encoded+' = phi i64 [ '+limit_value+', %'+yes+' ], [ 0, %'+no+' ]\n  ret i64 '+encoded+'\n'
-    encoded_cases=_object_scalar_cases(selected,{names[o+'powerEndpointCapacity']:5},header=False,encoded=True)
+    if supports_arithmetic_header:
+        helper=o+'encodedLimitFor'
+        if helper not in names or o+'arithmeticEndpointCapacity' not in names:
+            raise Core0Error('Objects-v3 initializer lacks its closed encoded-limit helper')
+        exact=re.findall('('+var+r') = call i64 @'+re.escape(names[helper])+r'\(i64 %arg0\)',body)
+        if exact!=[encoded]:raise Core0Error('Objects-v3 initializer substitutes its exact version encoding')
+        encoded_cases=_object_scalar_cases(_ir_definition_body(pre_ir,names[helper]),
+            {names[o+'powerEndpointCapacity']:5,names[o+'arithmeticEndpointCapacity']:6},header=False,encoded=True,arithmetic=True)
+    else:
+        phi=re.findall(re.escape(encoded)+r' = phi i64 \[ ('+var+r'), %([A-Za-z0-9_.$-]+) \], \[ 0, %([A-Za-z0-9_.$-]+) \]',body)
+        if len(phi)!=1:raise Core0Error('Objects initializer encoded limit is not version2/5 versus legacy0')
+        limit_value,yes,no=phi[0]
+        if re.findall(re.escape(limit_value)+r' = call i64 @'+re.escape(names[o+'powerEndpointCapacity'])+r'\(\)',body)!=[limit_value+' = call i64 @'+names[o+'powerEndpointCapacity']+'()']:
+            raise Core0Error('Objects initializer lost the exact successor capacity')
+        candidate=[]
+        for cmp in re.findall('('+var+r') = icmp eq i64 %arg0, 2$',body,re.M):
+            try:candidate.append(validate_boolean_gate(body,cmp,names[o+'powerEndpointCapacity']))
+            except Core0Error:pass
+        if len(candidate)!=1 or (candidate[0]['success'],candidate[0]['failure'])!=(yes,no):
+            raise Core0Error('Objects initializer limit branch is not exact version2')
+        bound=candidate[0];merge=re.findall(r'br label %([A-Za-z0-9_.$-]+)', '\n'.join(blocks[yes]))
+        if len(merge)!=1 or blocks[no]!=['br label %'+merge[0]]:
+            raise Core0Error('Objects initializer encoded-limit merge has other effects')
+        selected='entry:\n  '+bound['comparison']+' = icmp eq i64 %arg0, 2\n  br i1 '+bound['comparison']+', label %'+yes+', label %'+no+'\n'
+        selected+=yes+':\n  '+'\n  '.join(blocks[yes])+'\n'+no+':\n  '+'\n  '.join(blocks[no])+'\n'+merge[0]+':\n  '+encoded+' = phi i64 [ '+limit_value+', %'+yes+' ], [ 0, %'+no+' ]\n  ret i64 '+encoded+'\n'
+        encoded_cases=_object_scalar_cases(selected,{names[o+'powerEndpointCapacity']:5},header=False,encoded=True)
     aliased=body
     for field,(_,pointer,value) in locations.items():
         aliased=aliased.replace('@'+names[o+'put']+'(i64 '+pointer+', i64 '+value+')','@objects_init_'+field+'(i64 '+pointer+', i64 '+value+')')
@@ -1051,20 +1730,86 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         gates.append(validate_failed_call_gate(body,names[before],names[after],names[o+'failed'],failed_body))
     for before,after in (('version','limit'),('limit','magic'),('magic','publish')):
         gates.append(validate_failed_call_gate(aliased,'objects_init_'+before,'objects_init_'+after,names[o+'failed'],failed_body))
-    construct='Lemma.Platform.LemmaSim.NotebookKernel.construct';callers=[];binding_gates=[]
+    package_recovery_binding=unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS
+    recovery_binding=unit.get('configuration') in USB_RECOVERY_FAMILIES
+    clocked_binding=recovery_binding or unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
+    wire_binding=unit.get('configuration') in USB_WIRE_NOTEBOOK_CONFIGURATIONS
+    executed_binding=unit.get('configuration') in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS
+    next_binding=unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
+    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructProductCourseReader' if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS else 'constructPackageRecovery' if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructCourse' if unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if recovery_binding else 'constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
+    selected=o+('initArithmetic' if arithmetic else 'initPower')
     for source,symbol in names.items():
         other=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(other)[2]
         if names[o+'initFor'] in calls and source not in wrappers:
             raise Core0Error('Objects versioned initializer has a non-wrapper caller')
-        if o+'initPower' not in names or names[o+'initPower'] not in calls:continue
+        if selected not in names or names[selected] not in calls:continue
         if source!=construct:raise Core0Error('Objects power initializer escapes the selected machine constructor')
+        if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
+            if not arithmetic:
+                raise Core0Error('modern notebook requires the exact Objects-v3 wrapper')
+            if re.findall(r'call \{ i64, i64 \} @'+re.escape(names[selected])+r'\(([^\n]*)\)',other)!=['']:
+                raise Core0Error('modern notebook changes Objects-v3 initialization call')
+            task_init='Lemma.Kernel.Task.init'
+            if task_init not in names:
+                raise Core0Error('modern notebook omits checked task initialization')
+            binding_gates.append(validate_checked_call_gate(other,names[task_init],names[selected]))
+            callers.append(source)
+            continue
         admitted=[]
         for cmp in re.findall('('+var+r') = icmp eq i64 %arg2, 3$',other,re.M):
-            try:admitted.append((validate_boolean_gate(other,cmp,names[o+'initPower']),validate_boolean_gate(other,cmp,names[o+'init'],success_when_true=False)))
+            try:admitted.append((validate_boolean_gate(other,cmp,names[selected]),validate_boolean_gate(other,cmp,names[o+'init'],success_when_true=False)))
             except Core0Error:pass
         if len(admitted)!=1:raise Core0Error('Objects power initializer lacks the exact binding3 selection')
         binding_gates.extend(admitted[0]);callers.append(source)
-    if o+'initPower' in names and callers!=[construct]:raise Core0Error('Objects power initializer has no exact constructor')
+    if selected in names and callers!=[construct]:raise Core0Error('Objects power initializer has no exact constructor')
+    if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
+        from product_reader_deployment import BOOT_ROOT
+        from product_reader_target import kernel_semantics
+        kernel_semantics(pre_ir,unit)
+        constructor_callers=[];boot_callers=[]
+        for source,symbol in names.items():
+            body=_ir_definition_body(pre_ir,symbol)
+            if names[construct] in parse_definitions_and_calls(body)[2]:
+                constructor_callers.append(source)
+                if source!=BOOT_ROOT or _local_call_arguments(body,names[construct])!=['']:
+                    raise Core0Error('Product course constructor lost its unique zero-argument boot gate')
+            if names[BOOT_ROOT] in parse_definitions_and_calls(body)[2]:boot_callers.append(source)
+        from product_reader_deployment import WATCHDOG_CONFIGURATION, WATCHDOG_BOOT_ROOT
+        expected_boot_callers = [WATCHDOG_BOOT_ROOT] if unit['configuration'] == WATCHDOG_CONFIGURATION else []
+        if constructor_callers!=[BOOT_ROOT] or boot_callers != expected_boot_callers:
+            raise Core0Error('Product course constructor/reset root incoming authority differs')
+        binding_gates.append({'selected_binding':10,'initialization':0,'boot_root':BOOT_ROOT,'constructor_caller':BOOT_ROOT})
+    elif unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
+        boot='Lemma.Platform.LemmaSim.NotebookKernel.'+('bootPackageRecovery' if package_recovery_binding else 'bootRecovery' if recovery_binding else 'bootClocked' if clocked_binding else 'bootWire' if wire_binding else 'bootModernExecuted' if executed_binding else 'bootModernNext' if next_binding else 'bootModern')
+        binding=13 if clocked_binding else 11 if wire_binding else 10 if executed_binding else (9 if unit['configuration'] in PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS else 8) if next_binding else 7 if unit['configuration'] in PRODUCT_CONFIGURATIONS else 6
+        wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+('siliconUSBClosureRecoveryInitializeMedium' if unit['configuration'] in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS and unit['configuration'].endswith('-initialize') else 'siliconUSBClosureRecoveryBoot' if unit['configuration'] in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'siliconUSBRecoveryInitializeMedium' if recovery_binding and unit['configuration'].endswith('-initialize') else 'siliconUSBRecoveryBoot' if recovery_binding else 'siliconUSBClockedInitializeMedium' if binding==13 and unit['configuration'].endswith('-initialize') else 'siliconUSBClockedBoot' if binding==13 else 'siliconUSBWireInitializeMedium' if binding==11 and unit['configuration'].endswith('-initialize') else 'siliconUSBWireBoot' if binding==11 else 'siliconProductExecutedBoot' if binding==10 else 'siliconProductNextBoot' if binding==9 else 'siliconUSBNextInitializeMedium' if binding==8 and unit['configuration'].endswith('-initialize') else 'siliconUSBNextBoot' if binding==8 else 'siliconProductBoot' if binding==7 else 'siliconUSBInitializeMedium' if unit['configuration'].endswith('-initialize') else 'siliconUSBBoot')
+        if package_recovery_binding:
+            from package_companion_deployment import ALL_BOOT_ROOTS, boot_source_for
+            boot='Lemma.Platform.LemmaSim.NotebookKernel.'+boot_source_for(unit['configuration'])
+            wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+ALL_BOOT_ROOTS[unit['configuration']]
+        constructor_arguments=['i64 %arg0'] if package_recovery_binding else ['i64 %arg0, i64 %arg1']
+        if boot not in names or wrapper not in names:
+            raise Core0Error('modern Objects-v3 selection omits its genuine boot wrapper')
+        constructor_callers=[];boot_callers=[]
+        for source,symbol in names.items():
+            body=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(body)[2]
+            if names[construct] in calls:
+                constructor_callers.append(source)
+                if source!=boot or re.findall(r'call \{ i64, i64 \} @'+re.escape(names[construct])+r'\(([^\n]*)\)',body)!=constructor_arguments:
+                    raise Core0Error('modern Objects-v3 constructor has an undeclared binding caller')
+            if names[boot] in calls:
+                boot_callers.append(source)
+                initialization=1 if unit['configuration'].endswith('-initialize') else 0
+                boot_arguments=[f'i64 {initialization}'] if package_recovery_binding else [f'i64 {initialization}, i64 {binding}']
+                if source!=wrapper or re.findall(r'call \{ i64, i64 \} @'+re.escape(names[boot])+r'\(([^\n]*)\)',body)!=boot_arguments:
+                    raise Core0Error('modern Objects-v3 boot lacks its fixed selected binding')
+        if package_recovery_binding:
+            descriptor='Lemma.Platform.LemmaSim.Descriptor.validateBindingClocked'
+            if descriptor not in names or re.findall(r'call \{ i64, i64 \} @'+re.escape(names[descriptor])+r'\(([^\n]*)\)',_ir_definition_body(pre_ir,names[boot]))!=['i64 13']:
+                raise Core0Error('package Objects-v3 boot lost its exact Clocked13 descriptor validation')
+        if constructor_callers!=[boot] or boot_callers!=[wrapper]:
+            raise Core0Error('modern Objects-v3 constructor/boot caller closure differs')
+        binding_gates.append({'selected_binding':binding,'initialization':initialization,'boot_wrapper':wrapper,'constructor_caller':boot})
     return {'wrappers':wrappers,'version_cases':version_cases,'encoded_limit_cases':encoded_cases,
         'publication_status_gates':gates,'power_callers':callers,'binding3_gates':binding_gates}
 
@@ -1087,21 +1832,25 @@ def validate_object_budget(unit: dict, pre_ir: str) -> dict:
         return {'scope':'historical direct constant4; existing H/H_I obligations unchanged'}
     if unit.get('role')!='kernel':raise Core0Error('Objects successor requires kernel authority')
     required={o+s for s in ('headerAdmitted','endpointLimitFor','runtimeEndpointCapacity','endpointCapacity',
-        'powerEndpointCapacity','replyCapacity','capacity','table','get','failed','fatal','createEndpoint','freeObjectStep')}
+        'powerEndpointCapacity','replyCapacity','capacity','table','get','failed','fatal','createEndpoint','endpointCountStep','freeObjectStep')}
     required|={'Lemma.Kernel.Memory.Frames.allocate','Lemma.Kernel.Memory.Frames.resolvePurpose','Lemma.User.CapabilityABI.fatal'}
     if not required<=names.keys():raise Core0Error('Objects successor source closure missing')
+    arithmetic=o+'arithmeticEndpointCapacity' in names
+    if arithmetic:required|={o+t for t in ('arithmeticEndpointCapacity','arithmeticReplyCapacity','replyLimitFor','runtimeReplyCapacity','replyAvailable','replyCountStep')}
+    if not required<=names.keys():raise Core0Error('Objects-v3 endpoint/reply closure missing')
     bodies={s:_ir_definition_body(pre_ir,names[s]) for s in required}
     rows={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row for row in unit['functions']}
-    for tail,value in (('endpointCapacity',4),('powerEndpointCapacity',5),('replyCapacity',8),('capacity',16)):
+    for tail,value in (('endpointCapacity',4),('powerEndpointCapacity',5),('replyCapacity',8),('capacity',16),*((('arithmeticEndpointCapacity',6),('arithmeticReplyCapacity',7)) if arithmetic else ())):
         source=o+tail
         if rows[source]['args']!=[] or rows[source]['effects']!=[] or re.fullmatch(r'\s*entry:\s*ret i64 '+str(value)+r'\s*',bodies[source]) is None:
             raise Core0Error('Objects unchanged or successor capacity differs: '+tail)
-    for tail,args in (('headerAdmitted',['u64','u64']),('endpointLimitFor',['u64'])):
+    for tail,args in (('headerAdmitted',['u64','u64']),('endpointLimitFor',['u64']),*((('replyLimitFor',['u64']),) if arithmetic else ())):
         if rows[o+tail]['args']!=args or rows[o+tail]['effects']!=[]:
             raise Core0Error('Objects scalar quota signature/effects differ')
     scalar={names[o+'endpointCapacity']:4,names[o+'powerEndpointCapacity']:5}
-    header=_object_scalar_cases(bodies[o+'headerAdmitted'],{names[o+'powerEndpointCapacity']:5},header=True)
-    limits=_object_scalar_cases(bodies[o+'endpointLimitFor'],scalar,header=False)
+    if arithmetic:scalar[names[o+'arithmeticEndpointCapacity']]=6
+    header=_object_scalar_cases(bodies[o+'headerAdmitted'],scalar,header=True,arithmetic=arithmetic)
+    limits=_object_scalar_cases(bodies[o+'endpointLimitFor'],scalar,header=False,arithmetic=arithmetic)
     if re.fullmatch(r'\s*entry:\s*ret i8 255\s*',bodies['Lemma.User.CapabilityABI.fatal']) is None:
         raise Core0Error('Objects malformed-header failure status differs')
     expected_fatal='''entry:
@@ -1153,8 +1902,19 @@ def validate_object_budget(unit: dict, pre_ir: str) -> dict:
     table_gates=[validate_boolean_gate(aliased,comparisons[0],'objects_table_success')]
     table_gates += [validate_failed_call_gate(aliased,alias,'objects_table_success',names[o+'failed'],bodies[o+'failed']) for alias in read_results.values()]
     endpoint=validate_h_endpoint_budget(bodies[o+'createEndpoint'],names,pre_ir=pre_ir)
-    if endpoint['capacity']!={'version1':4,'version2':5}:raise Core0Error('Objects successor allocation bypasses runtime quota')
-    return {'scope':'volatile Objects-v2 quota; historical4, successor5, total16 and Replies8',
+    if endpoint['capacity']!=({'version1':4,'version2':5,'version3':6} if arithmetic else {'version1':4,'version2':5}):raise Core0Error('Objects successor allocation bypasses runtime quota')
+    reply_result={}
+    if arithmetic:
+        reply_limits=_object_scalar_cases(bodies[o+'replyLimitFor'],{names[o+'replyCapacity']:8,names[o+'arithmeticReplyCapacity']:7},header=False,arithmetic=True,replies=True)
+        reply_runtime=bodies[o+'runtimeReplyCapacity']
+        expected_runtime=runtime.replace(names[o+'endpointLimitFor'],names[o+'replyLimitFor'])
+        if reply_runtime.split()!=expected_runtime.split():
+            raise Core0Error('Objects-v3 reply capacity loses checked table/version/status/return')
+        reply_budget=validate_h_endpoint_budget(bodies[o+'replyAvailable'],names,reply=True,pre_ir=pre_ir)
+        if reply_budget['capacity']!={'version1':8,'version2':8,'version3':7}:
+            raise Core0Error('Objects-v3 reply allocation bypasses runtime quota')
+        reply_result={'reply_cases':reply_limits,'reply':reply_budget}
+    return {'scope':'volatile Objects-v3 quota; legacy Endpoints4/5 Replies8, v3 Endpoints6 Replies7, total16' if arithmetic else 'volatile Objects-v2 quota; historical4, successor5, total16 and Replies8',**reply_result,
         'header_cases':header,'limit_cases':limits,'runtime_status_gates':runtime_gates,
         'table_header_gates':table_gates,'endpoint':endpoint,
         'initialization':validate_object_initialization(unit,pre_ir,names)}
@@ -1337,8 +2097,9 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
         task+"reapOne":[task+"detachManaged","Lemma.Kernel.Loader.teardown"],
         task+"detachManaged":[caps+"detach"],
         caps+"attach":[address+"base",objects+"register"],
-        caps+"header":[address+"base",objects+"registryDescriptor"],
-        caps+"managed":[address+"base",caps+"header",caps+"zeroHeaderStep"],
+        caps+"header":[address+"base",caps+"headerAt"],
+        caps+"headerAt":[objects+"get",objects+"registryDescriptor"],
+        caps+"managed":[address+"base",caps+"headerAt",caps+"zeroHeaderStep"],
         caps+"requireActive":[caps+"header"],
         caps+"lookupEntry":[caps+"requireActive",objects+"resolve"],
         caps+"lookup":[caps+"lookupEntry",objects+"resolve",userabi+"rightsSubset"],
@@ -1417,7 +2178,7 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
         (entry+"configure",entry+"seedEndpoint",objects+"createEndpoint"),
         (entry+"createTamper",entry+"grant",alias+"install"),
         (entry+"createTamper",alias+"install",task+"activateManaged"),
-        (caps+"header",address+"base",objects+"get"),
+        (caps+"header",address+"base",caps+"headerAt"),
         (caps+"lookupEntry",caps+"requireActive",objects+"resolve"),
         (caps+"publish",objects+"reference",objects+"publishSerial"),
         (caps+"revokeKey",objects+"beginRevoke",objects+"destroy"),
@@ -1452,7 +2213,7 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
     pattern=r"call \{ i64, i64 \} @"+re.escape(by_source[task+"prepareManaged"])+r"\(i64 ([0-9]+),"
     if re.findall(pattern,launch_body)!=["0","1","2"] or re.findall(pattern,tamper_body)!=["3"]:
         raise Core0Error("managed image preparation differs from exact source-selected boot roles")
-    return {"selected_console_router":router_report,"endpoint_budget":endpoint_report,"alias":alias_report,"legacy_console_denial":denial_report,"managed_policy":MANAGED_POLICY,"storage":{"control":0x80400620,"header_offset":2560,"entries_offset":2624,"capacity":16,"entry_bytes":64,"object_capacity":16,"max_generation":0x0fffffffffffffff,"max_serial":0x0fffffffffffffff},
+    return {"capability_header_borrow":validate_capability_header_helpers(unit,pre_ir),"selected_console_router":router_report,"endpoint_budget":endpoint_report,"alias":alias_report,"legacy_console_denial":denial_report,"managed_policy":MANAGED_POLICY,"storage":{"control":0x80400620,"header_offset":2560,"entries_offset":2624,"capacity":16,"entry_bytes":64,"object_capacity":16,"max_generation":0x0fffffffffffffff,"max_serial":0x0fffffffffffffff},
             "source_constants":{source:{"symbol":by_source[source],"value":value} for source,value in sorted(constants.items())},
             "source_call_edges":observed_edges,"ordered_cfg_calls":ordered,"checked_cfg_gates":gates,
             "limitations":["Compiled call/CFG/storage binding, not a proof of authority semantics or guest execution."]}
@@ -1657,6 +2418,29 @@ def validate_current_ipc_saved_context(body: str, names: dict[str, str],
             'success_block':success,'saved_pointer':pointer[1],'scope':'exact current four-page blocked context; no cross-call cache'}
 
 
+def _ipc_poll_graph_edges(unit: dict, pre_ir: str, by_source: dict[str,str]) -> dict:
+    """Versioned graph edges after exact same-Action borrow qualification."""
+    i='Lemma.Kernel.IPC.';s='Lemma.Kernel.IPCStorage.'
+    t='Lemma.Kernel.Task.';a='Lemma.Kernel.Memory.AddressSpace.'
+    edges={}
+    # Additive helpers retain their exact body, caller, fresh-base and live-row
+    # obligations; presence alone never grants graph or pointer authority.
+    if i+'pollAt' in by_source or s+'pendingAt' in by_source:
+        from ipc_poll_borrow import validate_reachable_helpers
+        validate_reachable_helpers(unit, pre_ir)
+        if s+'pendingAt' in by_source:
+            edges[s+'pending']=[a+'base',s+'pendingAt']
+            edges[s+'pendingAt']=[s+'equalWord']
+        if i+'pollAt' in by_source:
+            edges[i+'poll']=[a+'base',i+'pollAt']
+            edges[i+'pollAt']=[s+'pendingAt',i+'pollWaiting']
+            if t+'pollIPCStep' in by_source:
+                task_calls=parse_definitions_and_calls(_ir_definition_body(pre_ir,by_source[t+'pollIPCStep']))[2]
+                if by_source[i+'pollAt'] in task_calls:
+                    edges[t+'pollIPCStep']=[t+'lookupRecord',a+'base',i+'pollAt',t+'completeBlocked']
+    return edges
+
+
 def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     """Bind the selected IPC policy to its genuine source/CFG/storage closure.
 
@@ -1687,8 +2471,9 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
       t+"checkedActivation":[c+"managed",c+"requireActive"],
       t+"abort":[t+"inactiveDescriptor",t+"detachManaged","Lemma.Kernel.Loader.teardown"],
       t+"reapOne":[t+"detachManaged","Lemma.Kernel.Loader.teardown"],t+"detachManaged":[i+"detach",c+"detach"],
-      c+"attach":[a+"base",o+"register",s+"initialize"],c+"header":[a+"base",o+"registryDescriptor"],
-      c+"managed":[a+"base",c+"header"],c+"requireActive":[c+"header"],
+      c+"attach":[a+"base",o+"register",s+"initialize"],c+"header":[a+"base",c+"headerAt"],
+      c+"headerAt":[o+"get",o+"registryDescriptor"],
+      c+"managed":[a+"base",c+"headerAt"],c+"requireActive":[c+"header"],
       c+"lookupEntry":[c+"requireActive",o+"resolve"],c+"lookup":[c+"lookupEntry",o+"resolve",v+"rightsSubset"],
       c+"grantBoot":[c+"header",c+"grant"],c+"grant":[o+"resolve",v+"rightsValid",c+"freeSlot",o+"nextSerial",c+"publish"],
       c+"publish":[o+"reference",o+"publishSerial"],c+"grantReply":[c+"requireActive",o+"replyFields",c+"grant",o+"deliverReply"],
@@ -1749,6 +2534,7 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
       t+"completeBlocked":[t+"savedContext",i+"completeWait",x+"write64"],
       t+"pollIPC":[t+"pollIPCStep"],t+"pollIPCStep":[t+"lookup",i+"poll",t+"completeBlocked"],
     }
+    edges.update(_ipc_poll_graph_edges(unit,pre_ir,by_source))
     constants={c+"headerOffset":2560,c+"entriesOffset":2624,c+"capacity":16,c+"stride":64,
        o+"capacity":16,o+"endpointCapacity":4,o+"replyCapacity":8,o+"registryCapacity":8,o+"rows":256,o+"stride":128,
        o+"maxGeneration":0x0fffffffffffffff,o+"maxSerial":0x0fffffffffffffff,
@@ -1965,6 +2751,7 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
         raise Core0Error('IPC saved context validation/wakeup mutates PC or registers unexpectedly')
     return {'managed_policy':BUFFER_POLICY if service else IPC_POLICY,'source_call_edges':observed,'source_constants':{source:{'symbol':by_source[source],'value':value} for source,value in sorted((constants|byte_constants).items())},
       'ordered_cfg_calls':ordered,'checked_cfg_gates':checked,'state_publications':publications,'loaded_field_gates':field_gates,'blocked_bridge':bridge,'initial_grants':grants,'endpoint_budget':endpoint,'reply_budget':reply_budget,'legacy_console_denial':denial,
+      'capability_header_borrow':validate_capability_header_helpers(unit,pre_ir),
       **({'current_saved_context':fresh_context} if fresh_context else {}),
       'storage':{'descriptor_metadata':3648,'descriptor_metadata_bytes':128,'packet':3776,'packet_bytes':256,'payload':3840,'payload_bytes':192,'queue_slots':4,'queue_header_bytes':128,'queue_slot_bytes':320,'reply_capacity':8},
       'limitations':['Genuine compiled source/CFG/storage binding; independent model, full ELF audit and guest execution remain separate evidence.']}
@@ -2485,7 +3272,11 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
     multi_file = re.fullmatch(r"users/(compute|sleeper|busy|fault|capabilities|peer|tamper|server|clienta|clientb|cli)/(startup\.o|image\.elf)", object_file)
     sim_file = (configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS and
                 re.fullmatch(r"users/(store|notebook|isolation)/(startup\.o|image\.elf)", object_file) is not None)
-    if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None and not sim_file:
+    arithmetic_file = (configuration in ARITHMETIC_CONFIGURATIONS and
+                re.fullmatch(r"users/arithmetic/(startup\.o|image\.elf)",object_file) is not None)
+    course_file = (configuration in COURSE_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and
+                re.fullmatch(r"users/course/(startup\.o|image\.elf)",object_file) is not None)
+    if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None and not sim_file and not arithmetic_file and not course_file:
         raise Core0Error("user ABI data lacks its exact startup-object ownership")
     linked = object_file.endswith("/image.elf")
     section, address, alignment = (".data", 0x20000, 4096) if linked else (".data.user_abi", 0, 8)
@@ -2547,20 +3338,47 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     if (image_key is not None) != multi_user:
         raise Core0Error("per-image unit selection differs from its configuration/role")
     image = image_spec(configuration, image_key) if multi_user else None
+    if multi_user:
+        from dirty_batch_notebook_target import numeric_candidate, numeric_contract, numeric_root
+        if numeric_candidate(unit):
+            numeric_contract(unit)
+            image = {**image, "source": numeric_root(unit)}
     if multi_user and image is None:
         raise Core0Error("unknown per-image user unit selection")
     keys = {"schema_version", "artifact_category", "contract_version", "configuration", "role", "roots", "functions",
             "used_execution_ops", "used_device_ops", "used_loops"}
     case_field = {"startup_case"} if multi_user and configuration in {"tasks-fault-development", *MANAGED_POLICIES} else set()
     expected_managed = managed_fields(configuration, image)
-    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed), "unit")
-    if any(unit.get(key) != value for key, value in expected_managed.items()):
+    from closed_inline import selected as inline_selected, FIELD as inline_field, catalog as inline_catalog
+    from managed_records import FIELD as records_field, allowed as records_allowed, profile_allowed as user_v2_allowed, contract as records_contract
+    from arithmetic_execution_identity import FIELD as execution_field, selected as execution_selected, contract as execution_contract
+    from managed_sums import FIELD as sums_field, allowed as sums_allowed, contract as sums_contract
+    from arithmetic_sums_identity import FIELD as sums_execution_field, selected as sums_execution_selected, contract as sums_execution_contract
+    from managed_bytes import FIELD as bytes_field, allowed as bytes_allowed, contract as bytes_contract
+    from arithmetic_bytes_identity import FIELD as bytes_execution_field, selected as bytes_execution_selected, contract as bytes_execution_contract
+    from managed_array import FIELD as array_field, allowed as array_allowed, contract as array_contract
+    from arithmetic_array_identity import FIELD as array_execution_field, selected as array_execution_selected, contract as array_execution_contract
+    from managed_string import FIELD as string_field, allowed as string_allowed, contract as string_contract
+    from arithmetic_string_identity import FIELD as string_execution_field, selected as string_execution_selected, contract as string_execution_contract
+    from arithmetic_closure_identity import FIELD as closure_execution_field, selected as closure_allowed, contract as closure_contract
+    from managed_closure import contract as managed_closure_contract
+    from surface_word_inline import FIELD as surface_inline_field, catalog as surface_inline_catalog
+    surface_inline=surface_inline_catalog(unit)
+    keys |= {surface_inline_field} if surface_inline is not None else set()
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()) | ({sums_field} if sums_field in unit and sums_allowed(unit) else set()) | ({sums_execution_field} if sums_execution_field in unit and sums_execution_selected(unit) else set()) | ({bytes_field} if bytes_field in unit and bytes_allowed(unit) else set()) | ({bytes_execution_field} if bytes_execution_field in unit and bytes_execution_selected(unit) else set()) | ({array_field} if array_field in unit and array_allowed(unit) else set()) | ({array_execution_field} if array_execution_field in unit and array_execution_selected(unit) else set()) | ({string_field} if string_field in unit and string_allowed(unit) else set()) | ({string_execution_field} if string_execution_field in unit and string_execution_selected(unit) else set()) | ({"managed_closure",closure_execution_field} if closure_allowed(unit) else set()), "unit")
+    if any(unit.get(key) != value for key, value in {**expected_managed, **software_deployment_fields(configuration)}.items()):
         raise Core0Error("unit managed policy/boot role differs")
     category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") !=
-                (kernel_contract(configuration) if role == "kernel" else CONTRACTS[role])):
+                (kernel_contract(configuration) if role == "kernel" else
+                 'core0-user-v0.7' if closure_allowed(unit) else
+                 'core0-user-v0.6' if string_allowed(unit) else
+                 'core0-user-v0.5' if array_allowed(unit) else
+                 'core0-user-v0.4' if bytes_allowed(unit) else
+                 'core0-user-v0.3' if sums_allowed(unit) else
+                 'core0-user-v0.2' if role == 'user' and (user_v2_allowed(unit) and (records_field in unit or image_key=='notebook' or configuration in USB_RECOVERY_FAMILIES and image_key=='store')) else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
         raise Core0Error("per-image user unit key/ID differs")
@@ -2590,8 +3408,10 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         if configuration in MANAGED_POLICIES and role == "user" and re.search(r"(?:^|\.[0-9]+\.)Lemma\.(?:Kernel|Compiler)\.", source):
             raise Core0Error("managed user source reaches privileged/compiler code")
         normalized_source = re.sub(r"^_private\..*?\.[0-9]+\.", "", source)
-        if configuration in SERVICE_CONFIGURATIONS and service_executable_module(normalized_source):
-            if role != "user" or not normalized_source.startswith(image["module"] + "."):
+        course_await_executable=(configuration in AWAIT_NOTEBOOK_CONFIGURATIONS and normalized_source.startswith("Lemma.Services.Store.ServerAwait."))
+        if configuration in (*SERVICE_CONFIGURATIONS, *COURSE_NOTEBOOK_CONFIGURATIONS) and (service_executable_module(normalized_source) or course_await_executable):
+            borrowed=(configuration in AWAIT_NOTEBOOK_CONFIGURATIONS and course_await_library_source_allowed(role,normalized_source,image))
+            if not borrowed and (role != "user" or not normalized_source.startswith(image["module"] + ".")):
                 raise Core0Error("service unit reaches another executable namespace")
         if ".Development." in source:
             allowed = (image["module"],) if multi_user else development_modules(configuration, role)
@@ -2608,6 +3428,20 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         effects = _array(row.get("effects"), "function effects")
         if any(not isinstance(effect, str) for effect in effects) or len(effects) != len(set(effects)) or not set(effects) <= ROLE_EFFECTS[role]:
             raise Core0Error("function effect catalog escapes role authority")
+    inline_catalog(unit)
+    surface_inline_catalog(unit)
+    records_contract(unit)
+    execution_contract(unit)
+    sums_contract(unit)
+    sums_execution_contract(unit)
+    array_contract(unit)
+    array_execution_contract(unit)
+    string_contract(unit)
+    string_execution_contract(unit)
+    closure_contract(unit)
+    managed_closure_contract(unit)
+    bytes_contract(unit)
+    bytes_execution_contract(unit)
     for root in roots:
         if not any(row["source"] == root["source"] and row["symbol"] == root["symbol"] and row["args"] == root["args"] for row in functions):
             raise Core0Error("root/function signature or symbol mismatch")
@@ -2653,7 +3487,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         "uart.write-byte": ("uartWriteByte", "uart.thr.write8", 0, "write", None),
         "uart.enable-reset-fifo": ("uartEnableAndResetFifo", "uart.fcr.enable-reset", 2, "write", 7),
     }
-    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4"}:
+    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4", "core0-kernel-v0.5", "core0-kernel-v0.6", "core0-kernel-v0.7", "core0-kernel-v0.8"}:
         expected_devices["uart.enable-reset-fifo-trigger14"] = (
             "uartEnableAndResetFifo14", "uart.fcr.enable-reset-trigger14", 2, "write", 199)
     for raw in device:
@@ -2823,7 +3657,14 @@ def validate_catalog(value: object, *, configuration: str, stage: str) -> set[st
 
 
 def validate_user_primitive_catalog(value: object, image: dict, *, configuration: str = "tasks-development") -> dict:
-    if image != image_spec(configuration, image.get("key")):
+    expected_image = image_spec(configuration, image.get("key"))
+    if configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and image.get("key") == "notebook" and image.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPad":
+        expected_image = {**expected_image, "source": image["source"]}
+    if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and image.get("key") == "notebook" and image.get("source") == "Lemma.Applications.Notebook.mainRecoverablePackageNumberPad":
+        expected_image = {**expected_image, "source": image["source"]}
+    if configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and image.get("key") == "notebook" and image.get("source") == "Lemma.Applications.Notebook.mainPackageNumberPadBrowse":
+        expected_image = {**expected_image, "source": image["source"]}
+    if image != expected_image:
         raise Core0Error("per-image primitive authority differs from the closed selected image")
     expected = {"schema_version": 1, "contract_version": "lemma-user-execution-v1", "configuration": configuration,
                 "image_key": image["key"], "image_id": image["id"], "startup_case": image["startup_case"],
@@ -2926,6 +3767,78 @@ def _raw_function(text: str, ranges: dict[str, tuple[int, int]], symbol: str) ->
     return b"".join(struct.pack("<I", words[address]) for address in sorted(words))
 
 
+def validate_product_pmp(assembly: str, raw_machine: str, ranges: dict, configuration: str) -> dict | None:
+    """Independent exact ninth-entry aperture/CSR/readback/fatal-path authority.
+
+    Ordinary historical PMP initialization remains byte/source-bound separately.
+    This adds only1 KiB RW/NX to the selected Product startup; no ninth entry
+    appears in a legacy profile or any other machine routine.
+    """
+    selected=configuration in PRODUCT_NOTEBOOK_CONFIGURATIONS
+    body=_assembly_function(assembly,"_start")
+    mentions=[line for line in assembly.splitlines() if re.search(r"\b(?:pmpaddr8|pmpcfg2)\b",line)]
+    if not selected:
+        if mentions:raise Core0Error("Historical startup acquired Product PMP authority")
+        return None
+    old=["csrw pmpcfg0, zero","csrw pmpcfg2, zero"]
+    addresses=[536879103,537141247,553648127,67108895,262655,51380223,67110399,67126271]
+    for index,value in enumerate(addresses):old += [f"li t0, {value}",f"csrw pmpaddr{index}, t0"]
+    old += ["li t0, 1953184666628331544","csrw pmpcfg0, t0"]
+    tail=["li t0, 67127423","csrw pmpaddr8, t0","csrr t1, pmpaddr8",
+          "bne t0, t1, lemma_machine_fatal","li t0, 27","csrw pmpcfg2, t0",
+          "csrr t1, pmpcfg2","bne t0, t1, lemma_machine_fatal","sfence.vma zero, zero"]
+    expected=old+tail
+    positions=[index for index in range(len(body)-len(expected)+1) if body[index:index+len(expected)]==expected]
+    if len(positions)!=1 or [x.strip() for x in mentions] != ["csrw pmpcfg2, zero","csrw pmpaddr8, t0","csrr t1, pmpaddr8","csrw pmpcfg2, t0","csrr t1, pmpcfg2"]:
+        raise Core0Error("Product complete PMP initialization/aperture/config/readback authority differs")
+    start,size=ranges.get("_start",(0,0))
+    words=list(struct.unpack("<"+str(size//4)+"I",_raw_function(raw_machine,ranges,"_start")))
+    csr=lambda word: ((word>>20)&4095) if word&127==0x73 and (word>>12)&7 else None
+    inventory=[(index,word) for index,word in enumerate(words) if csr(word) in {0x3a2,0x3b8}]
+    def encoding(number,funct,rd,rs):return (number<<20)|(rs<<15)|(funct<<12)|(rd<<7)|0x73
+    fixed=[encoding(0x3a2,1,0,0),encoding(0x3b8,1,0,5),encoding(0x3b8,2,6,0),encoding(0x3a2,1,0,5),encoding(0x3a2,2,6,0)]
+    if [word for _,word in inventory]!=fixed or words[inventory[0][0]-1]!=encoding(0x3a0,1,0,0):
+        raise Core0Error("Product actual CSR writes/reads/clear sequence differs")
+    at=inventory[1][0]
+    # Pinned LLVM expands a positive32-bit LI to LUI+ADDIW. A forward
+    # unresolved BNE is either direct or an exact BEQ skip8+JAL fatal pair;
+    # both forms are decoded without trusting disassembly branch labels.
+    if words[at-2:at]!=[0x040052b7,0x87f2829b] or inventory[2][0]!=at+1:
+        raise Core0Error("Product actual address/readback sequence differs")
+    fatal=ranges.get("lemma_machine_fatal",(None,None))[0]
+    def mismatch_gate(index):
+        word=words[index]
+        if word&127!=0x63 or (word>>15)&31!=5 or (word>>20)&31!=6:
+            raise Core0Error("Product actual WARL comparison lacks t0/t1 branch")
+        immediate=((word>>31)<<12)|(((word>>7)&1)<<11)|(((word>>25)&63)<<5)|(((word>>8)&15)<<1)
+        if immediate&4096:immediate-=8192
+        if (word>>12)&7==1 and start+index*4+immediate==fatal:return index+1
+        if (word>>12)&7!=0 or immediate!=8:
+            raise Core0Error("Product actual WARL mismatch does not reach machine fatal")
+        jump=words[index+1]
+        if jump&127!=0x6f or (jump>>7)&31:
+            raise Core0Error("Product long WARL mismatch lacks unconditional fatal JAL")
+        offset=((jump>>31)<<20)|(((jump>>12)&255)<<12)|(((jump>>20)&1)<<11)|(((jump>>21)&1023)<<1)
+        if offset&(1<<20):offset-=1<<21
+        if start+(index+1)*4+offset!=fatal:
+            raise Core0Error("Product long WARL mismatch escapes machine fatal")
+        return index+2
+    config=mismatch_gate(at+2)
+    if words[config]!=0x01b00293 or inventory[3][0]!=config+1 or inventory[4][0]!=config+2:
+        raise Core0Error("Product actual RW/NX configuration/readback sequence differs")
+    after=mismatch_gate(config+3)
+    if words[after]!=0x12000073:
+        raise Core0Error("Product verified grant lacks following global translation fence")
+    # Independent NAPOT decode and boundary/permission checks.
+    address=0x0400487f;bits=0
+    while address&(1<<bits):bits+=1
+    base=(address&~((1<<bits)-1))*4;extent=1<<(bits+3)
+    if base!=0x10012000 or extent!=1024 or (27&7)!=3 or (27>>3)&3!=3 or 27&128:
+        raise Core0Error("Product independently decoded aperture/permissions differ")
+    return {"contract_version":"lemma-product-pmp-v1","base":base,"bytes":extent,"permissions":"RW/NX","entry":8,
+            "csr_instructions":5,"readback_fatal_branches":2,"scope":"Actual narrow startup grant; supervisor guest boot qualification separate"}
+
+
 def validate_enter_user_machine(raw: bytes) -> dict:
     if len(raw) != 91 * 4 or hashlib.sha256(raw).hexdigest() != ENTER_USER_SHA256:
         raise Core0Error("actual caller context save/U restore machine bytes differ")
@@ -3012,7 +3925,7 @@ def validate_architecture_diagnostics(unit: dict, pre_ir: str) -> dict:
     p, q, t, x, c = "Lemma.Kernel.Process.", "Lemma.Kernel.Scheduler.", "Lemma.Kernel.Task.", "Lemma.Kernel.Memory.Access.", "Lemma.Kernel.Console."
     required = {p + "validateFrame", x + "read64", c + "record"}
     required |= ({q + "dispatch", q + "reportFault", q + "failed", q + "finish", q + "returnKernel", t + "capture", t + "failed",
-                  "Lemma.Kernel.Memory.AddressSpace.context"} if managed else
+                  ("Lemma.Kernel.Memory.AddressSpace.base" if any(re.sub(r"^_private\..*?\.[0-9]+\.","",r["source"])==t+"contextAt" for r in unit["functions"]) else "Lemma.Kernel.Memory.AddressSpace.context")} if managed else
                  {p + "dispatch", p + "userTrap", p + "failed", p + "finish"})
     if not required <= by.keys(): raise Core0Error("architecture diagnostic genuine source closure is incomplete")
     body = {source: _ir_definition_body(pre_ir, by[source]) for source in required}
@@ -3029,7 +3942,7 @@ def validate_architecture_diagnostics(unit: dict, pre_ir: str) -> dict:
         gates = [{"source": dispatch, **validate_failed_call_gate(body[dispatch], by[t + "capture"], by[report], by[failed], body[failed])}]
         capture_body = _ir_definition_body(pre_ir, by[t + "capture"])
         task_failed = by.get(t + "failed")
-        context = by.get("Lemma.Kernel.Memory.AddressSpace.context")
+        context = by.get("Lemma.Kernel.Memory.AddressSpace.base" if t+"contextAt" in by else "Lemma.Kernel.Memory.AddressSpace.context")
         if task_failed is None or context is None: raise Core0Error("capture ownership proof source closure is incomplete")
         gates.append({"source": t + "capture", **validate_failed_call_gate(capture_body, by[p + "validateFrame"], context, task_failed, _ir_definition_body(pre_ir, task_failed))})
         calls = re.findall(r"call \{ i64, i64 \} @" + re.escape(by[report]) + r"\(([^)]+)\)", body[dispatch])
@@ -3236,23 +4149,95 @@ def _validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tu
                          "guarded_loads": 1, "readonly": True}]
 
 
+def validate_usb_descriptor_lookup(ir: str, unit: dict) -> tuple[set[int], list[dict], set[str]]:
+    """Only the genuine USB6 EP0 descriptors, with both exact bound guards.
+
+    The two immutable tables are byte-level USB descriptors, not host supplied
+    state or authority to complete enumeration. Unknown tables still fail.
+    """
+    if unit.get('configuration') not in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS or unit.get('role')!='kernel':
+        return set(), [], set()
+    if unit.get('contract_version')!=kernel_contract(unit['configuration']):
+        raise Core0Error('USB descriptor kernel profile authority differs')
+    if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
+        # This direct local-Store boot contains no USB initializer. Historical
+        # Product boots retain a generic binding8 branch, hence their closed
+        # descriptor corpus. Do not invent that unreachable branch here.
+        from product_reader_target import authority
+        authority(unit,'kernel')
+        if any(r['source'].startswith('Lemma.USB.Control.') for r in unit['functions']):
+            raise Core0Error('local Product course acquired undeclared USB-control initialization')
+        return set(),[],set()
+    rows=[r for r in unit['functions'] if r['source']=='Lemma.USB.Control.descriptorWord']
+    if len(rows)!=1 or rows[0]['args']!=['u64','u64'] or rows[0]['effects']:
+        raise Core0Error('USB descriptor lookup source/signature/effects differs')
+    row=rows[0];symbol=row['symbol'];stem='switch.table.'+symbol
+    config_values=[0x8000010100200209,0x00ff020000040932,0x0040028105070000,0x0000400202050700]
+    config_table=stem+'.31'
+    if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
+        # Private table numbering belongs to the whole optimized module.
+        # Pin this owner's immutable contents and normalize only its name;
+        # complete body, bounds, sole-use and load checks remain below.
+        signed=[v if v<1<<63 else v-(1<<64) for v in config_values]
+        content='private unnamed_addr constant [4 x i64] ['+', '.join(f'i64 {v}' for v in signed)+'], align 8'
+        matches=re.findall(r'^@('+re.escape(stem)+r'\.[0-9]+) = '+re.escape(content)+r'$',ir,re.M)
+        if len(matches)!=1:raise Core0Error('USB descriptor owner table content/namespace differs')
+        config_table=matches[0]
+    specs=[(stem,[0x4000000002000112,0x0000010000000000,0x0100],'device'),
+           (config_table,config_values,'config')]
+    lines=ir.splitlines();removed=set();tables=[]
+    body=_ir_definition_body(ir,symbol)
+    for table,values,label in specs:
+        signed=[v if v<1<<63 else v-(1<<64) for v in values]
+        definition=f'@{table} = private unnamed_addr constant [{len(values)} x i64] ['+', '.join(f'i64 {v}' for v in signed)+'], align 8'
+        if lines.count(definition)!=1 or len(re.findall('@'+re.escape(table)+r'(?![A-Za-z0-9_.$-])',ir))!=2:
+            raise Core0Error('USB descriptor literal content/use inventory differs')
+        removed.add(definition)
+        body=body.replace('@'+table,'@usb.'+label) if label=='config' else body
+        tables.append({'source':row['source'],'function':symbol,'global':table,'values':values,
+                       'element_bits':64,'alignment_bytes':8,'index_bound':len(values),
+                       'default':0,'guarded_loads':1,'readonly':True,'literal_schema':'usb-ep0-descriptors-v1'})
+    body=body.replace('@'+stem,'@usb.device')
+    normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in body.splitlines()).split())
+    if hashlib.sha256(normalized.encode()).hexdigest()!='fe51949f3bee0830ffde11cebcc64c4d4905b779e2e33996b79b6ef1a4f2ad10':
+        raise Core0Error('USB descriptor lookup lacks exact dominating 3/4-word guards/default/body')
+    owners=_line_functions(lines)
+    sites={i for i,line in enumerate(lines) if owners[i]==symbol and re.fullmatch(r'\s*%switch\.load(?:3)? = load i64, ptr %switch\.gep(?:2)?, align 8\s*',line)}
+    if len(sites)!=2:raise Core0Error('USB descriptor exact guarded load inventory differs')
+    return sites,tables,removed
+
+
 def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
     """Preserve PMP admission; add only the two observed managed-policy lookups."""
     if optimized and unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         from lemmasim_readonly import validate_lookup
         sim_sites, sim_tables, removed = validate_lookup(ir, unit)
+        usb_sites,usb_tables,usb_removed=validate_usb_descriptor_lookup(ir,unit)
+        removed |= usb_removed
+        if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+            from package_companion_target import readonly_request_kinds
+        elif unit.get('configuration') in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+            from usb_closure_recovery_target import readonly_request_kinds
+        else:
+            from usb_recovery_target import readonly_request_kinds
+        recovery_sites,recovery_tables,recovery_removed=readonly_request_kinds(ir,unit)
+        removed |= recovery_removed
+        from package_notebook_target import readonly_lookup as package_readonly_lookup
+        package_sites,package_tables,package_removed=package_readonly_lookup(ir,unit)
+        removed |= package_removed
         filtered = "\n".join("" if line.strip() in removed else line for line in ir.splitlines())
         # Re-enter the unchanged historical policy with its closed admission.
         old_unit = {**unit, "configuration": "normal"}
         old_sites, old_tables = validate_readonly_pmp_lookup(filtered, old_unit, optimized=optimized)
-        return sim_sites | old_sites, [*old_tables, *sim_tables]
+        return sim_sites | old_sites | usb_sites | recovery_sites | package_sites, [*old_tables, *sim_tables, *usb_tables, *recovery_tables, *package_tables]
     if unit.get("role") != "kernel" or not optimized:
         return _validate_readonly_pmp_lookup(ir,unit,optimized=optimized)
     lines=ir.splitlines();globals_=[line.strip() for line in lines if re.match(r"^\s*@",line)]
     if not globals_:
         return _validate_readonly_pmp_lookup(ir,unit,optimized=optimized)
     by_source={re.sub(r"^_private\..*?\.[0-9]+\.","",row["source"]):row for row in unit["functions"]}
-    specs=[("Lemma.User.CapabilityABI.typeMask",[35,124,928,1056,1],["u64"],[]),
+    specs=[("Lemma.Kernel.Objects.replyLimitFor",[8,8,7],["u64"],[]),
+           ("Lemma.User.CapabilityABI.typeMask",[35,124,928,1056,1],["u64"],[]),
            ("Lemma.Kernel.Objects.initStep",[1,3,4],["u32","u32","u64","u64","u64","u64","u64"],["checked-access","physical-write"])]
     accepted_globals=[];sites=set();observed=[];owners=_line_functions(lines)
     from audit_memory import parse_ir_functions,_parse_blocks
@@ -3273,7 +4258,12 @@ def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tup
             raise Core0Error("H readonly lookup LLVM argument signature differs")
         body="\n".join(line.split(";",1)[0].rstrip() for line in function.body.splitlines())
         blocks=_parse_blocks(body,symbol);load="%switch.load = load i64, ptr %switch.gep, align 8"
-        if source=="Lemma.User.CapabilityABI.typeMask":
+        if source=="Lemma.Kernel.Objects.replyLimitFor":
+            expected_blocks={"entry":["%switch.tableidx = add i64 %arg0, -1","%0 = icmp ult i64 %switch.tableidx, 3","br i1 %0, label %switch.lookup, label %if.merge.2"],
+                "switch.lookup":[f"%switch.gep = getelementptr inbounds nuw [3 x i64], ptr @{table}, i64 0, i64 %switch.tableidx",load,"br label %if.merge.2"],
+                "if.merge.2":["%if.result8 = phi i64 [ 0, %entry ], [ %switch.load, %switch.lookup ]","ret i64 %if.result8"]}
+            if blocks!=expected_blocks:raise Core0Error("Objects-v3 optimized reply quota lacks exact version1..3 bound/default/load")
+        elif source=="Lemma.User.CapabilityABI.typeMask":
             expected_blocks={"entry":["%switch.tableidx = add i64 %arg0, -1","%0 = icmp ult i64 %switch.tableidx, 5","br i1 %0, label %switch.lookup, label %if.merge.2"],
                              "switch.lookup":[f"%switch.gep = getelementptr inbounds nuw [5 x i64], ptr @{table}, i64 0, i64 %switch.tableidx",load,"br label %if.merge.2"],
                              "if.merge.2":["%if.result19 = phi i64 [ %switch.load, %switch.lookup ], [ 0, %entry ]","ret i64 %if.result19"]}
@@ -3327,10 +4317,10 @@ def validate_h_readonly_sections(section_text: str, symbol_text: str, relocation
     """
     configuration_roots(configuration)
     pmp=[0x20001fff,0x20041fff,0x20ffffff,0x0400001f];masks=[35,124,928,1056,1];kinds=[1,3,4]
-    sources=["Lemma.Kernel.MachineServices.expectedPmp","Lemma.User.CapabilityABI.typeMask","Lemma.Kernel.Objects.initStep"]
-    canonical={source:values for source,values in zip(sources,[pmp,masks,kinds])}
+    sources=["Lemma.Kernel.MachineServices.expectedPmp","Lemma.Kernel.Objects.replyLimitFor","Lemma.User.CapabilityABI.typeMask","Lemma.Kernel.Objects.initStep"]
+    canonical={source:values for source,values in zip(sources,[pmp,[8,8,7],masks,kinds])}
     actual_sources=[re.sub(r"^_private\..*?\.[0-9]+\.","",row.get("source","")) for row in tables]
-    if object_file!="kernel/program.o" or not 1<=len(tables)<=3 or actual_sources!=[source for source in sources if source in actual_sources] or len(set(actual_sources))!=len(actual_sources) or actual_sources[0]!=sources[0]:
+    if object_file!="kernel/program.o" or not 1<=len(tables)<=4 or actual_sources!=[source for source in sources if source in actual_sources] or len(set(actual_sources))!=len(actual_sources) or actual_sources[0]!=sources[0]:
         raise Core0Error("immutable tables lack their exact reachable kernel object inventory")
     if any(source not in canonical or row.get("values")!=canonical[source] or row.get("readonly") is not True for row,source in zip(tables,actual_sources)):
         raise Core0Error("object immutable-table source/content provenance differs")
@@ -3374,6 +4364,7 @@ def validate_h_readonly_sections(section_text: str, symbol_text: str, relocation
 # Closed observed LLVM RV64 switch lowering, admitted by genuine source identity.
 # The counts are backend artifact facts, not a new Core0 source-language feature.
 BACKEND_JUMP_TABLES = {
+    'Lemma.USB.BlockProtocol.headerWord': ('kernel', 7, ['u64']*5, [], list(range(7))),
     'Lemma.Kernel.Syscall.memoryStatus': ('kernel', 77, ['u8'], [], [0,33,37,38,71,72,73,74,76]),
     'Lemma.Kernel.BootInfo.tokenStep': ('kernel', 9, ['u32','u32',*(['u64']*5)], ['checked-access','physical-read','physical-write'], [1,2,3,4,9]),
     'Lemma.Kernel.IPC.dispatch': ('kernel', 6, ['u64']*7, ['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'], list(range(20,26))),
@@ -3386,6 +4377,7 @@ BACKEND_JUMP_TABLES = {
     'Lemma.Services.Buffer.Server.existing': ('user', 5, ['u64']*9, ['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'], list(range(2,7))),
 }
 BACKEND_JUMP_TABLE_CONFIGURATIONS = {
+    'Lemma.USB.BlockProtocol.headerWord': USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS | frozenset({'lemmasim-silicon-wifi-common-read-probe'}),
     'Lemma.Kernel.Development.FramesEntry.operation': {'frames-development'},
     'Lemma.Kernel.Development.ServiceEntry.command': set(SERVICE_CONFIGURATIONS) - {'service-normal'},
     'Lemma.Services.Buffer.Protocol.requestShape': set(SERVICE_CONFIGURATIONS),
@@ -3396,13 +4388,17 @@ BACKEND_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Buffer.Server.existing': {'server'},
 }
 LEMMASIM_BACKEND_JUMP_TABLES = {
+    'Lemma.Platform.LemmaSim.Descriptor.geometry': ('kernel',5,['u64'],['checked-access','mmio-read','io-order','physical-read','physical-write'],list(range(1,6))),
+    # Pure descriptor identity selection for the five exact declared bindings.
+    'Lemma.Platform.LemmaSim.Descriptor.expectedBinding': ('kernel',5,['u64','u64'],[],list(range(1,6))),
     'Lemma.Platform.LemmaSim.DeviceService.surface': ('kernel',5,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(5))),
     'Lemma.Kernel.IPC.dispatchWithLimit': ('kernel',6,['u64']*8,['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'],list(range(20,26))),
     'Lemma.Kernel.Syscall.dispatchManagedWithIPCLimit': ('kernel',18,['u64']*8,['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'],[2,*range(9,20)]),
-    # The maintained discovery parser contains the additive Power node18 and
-    # compatible74 literals. Legacy bindings still reject that device role;
-    # this is literal provenance, not an MMIO authority extension.
-    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',73,['u64','u64'],[],[*range(2,19),*range(32,53),*range(64,75)]),
+    # The maintained discovery parser contains the additive Power and manual
+    # BLE literal inventories. Legacy bindings still reject
+    # undeclared device roles; this is exact literal provenance, not an MMIO
+    # authority extension. Older immutable artifacts retain their prior audit.
+    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',75,['u64','u64'],[],[*range(2,20),*range(32,56),*range(64,77)]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty': ('kernel',15,['u64']*4,['checked-access','physical-read','physical-write'],[36,45,47,48,49,50]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStep': ('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
     'Lemma.Services.Store.Protocol.shape': ('user',10,['u64']*7,[],list(range(1,11))),
@@ -3412,6 +4408,15 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Applications.Notebook.pumpSave': ('user',6,[],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],[1,2,3,4,6]),
     'Lemma.Ink.Surface.glyph': ('user',9,['u64'],[],list(range(9))),
     'Lemma.Applications.Notebook.statusCharacter': ('user',9,['u64']*5,[],[10,11,13,14,15,17,18]),
+    # Original course presentation is genuinely compiled scalar Lean. These
+    # exact pure owners/domains gain no memory, syscall or checker authority.
+    'Lemma.Courses.Arithmetic.character': ('user',33,['u64','u64'],[],list(range(33))),
+    'Lemma.Courses.Arithmetic.answerCharacter': ('user',25,['u64','u64'],[],[2,3,7,8,13,14,19,20,25,26]),
+    'Lemma.Courses.Arithmetic.panelCharacter': ('user',8,['u64']*5,[],list(range(8))),
+    # The v2 learner-event validator performs checked reads only. This is its
+    # exact kind2..6 dispatch; kind1 follows its separately checked attempt
+    # reference path. It cannot gain write/syscall or another image authority.
+    'Lemma.Documents.Mathematics.validateEventStep': ('user',5,['u32','u32',*(['u64']*5)],['checked-access','virtual-read'],[2,3,4,5,6]),
 }
 LEMMASIM_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Store.Protocol.shape': {'store','notebook','isolation'},
@@ -3421,6 +4426,10 @@ LEMMASIM_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Applications.Notebook.pumpSave': {'notebook'},
     'Lemma.Ink.Surface.glyph': {'notebook'},
     'Lemma.Applications.Notebook.statusCharacter': {'notebook'},
+    'Lemma.Courses.Arithmetic.character': {'notebook'},
+    'Lemma.Courses.Arithmetic.answerCharacter': {'notebook'},
+    'Lemma.Courses.Arithmetic.panelCharacter': {'notebook'},
+    'Lemma.Documents.Mathematics.validateEventStep': {'notebook'},
 }
 
 
@@ -3630,6 +4639,111 @@ def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
             'default_status':234,'default_value':0,'wait_split_phases':[0,5]}
 
 
+def validate_dtb_pair_body(ir: str, unit: dict, symbol: str) -> str:
+    source='Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty'
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+    if (unit.get('role')!='kernel' or unit.get('configuration') not in LEMMASIM_CONFIGURATIONS
+        or names.get(symbol)!=source):raise Core0Error('DTB paired body escapes exact kernel owner')
+    body=_ir_definition_body(ir,symbol)
+    body=re.sub(r'@switch\.table\.'+re.escape(symbol)+r'(?![A-Za-z0-9_.$-])',
+                '@switch.table.'+source,body)
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+    normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+    digest=hashlib.sha256(normalized.encode()).hexdigest()
+    if digest not in {'b259ebe10adb20c25ef1dc0e83cdc915789c742220633112f38267596185af1c',
+                       '4a27c1267b0888724f8ec68ff8837d56a768f9bd9469f44edf19f4bb3b80a8b2',
+                       '608b778cafe0dcd914a104169c10b56b02794396fef4d7c066ac08804b52b28d'}:
+        raise Core0Error('DTB paired owner differs from exact checked property/role body')
+    return digest
+
+
+def validate_sim_geometry_body(ir: str, unit: dict, symbol: str) -> str:
+    source='Lemma.Platform.LemmaSim.Descriptor.geometry'
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+    rows={row['symbol']:row for row in unit['functions']};row=rows.get(symbol,{})
+    if (unit.get('role')!='kernel' or unit.get('configuration') not in LEMMASIM_CONFIGURATIONS
+        or names.get(symbol)!=source or row.get('args')!=['u64']
+        or row.get('effects')!=['checked-access','mmio-read','io-order','physical-read','physical-write']):
+        raise Core0Error('geometry table escapes its closed checked kernel declaration')
+    body=_ir_definition_body(ir,symbol)
+    body=re.sub(r'@switch\.table\.'+re.escape(symbol)+r'(?![A-Za-z0-9_.$-])',
+                '@switch.table.'+source,body)
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+    normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+    digest=hashlib.sha256(normalized.encode()).hexdigest()
+    if digest not in {'57282f9401fcda2b06922f56f5b6fd3d480c89f10f94bff21ad18f5f3a34e150',
+                       '43264c64be87983f1354763a18f78bd3e0c0843203793f7a2511f13b6cfbc22b',
+                       '2df6496627c257026e01897b6b9cfacaa541249b1ca4c6e8e9c54e6b5c4695f3'}:
+        raise Core0Error('geometry table differs from a complete declared discovery body')
+    return digest
+
+
+def validate_sim_binding_body(ir: str, unit: dict, symbol: str) -> str:
+    """Closed new six-binding identity body; historical five-binding path is separate."""
+    source='Lemma.Platform.LemmaSim.Descriptor.expectedBinding'
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+    row=next((row for row in unit['functions'] if row['symbol']==symbol),{})
+    if (unit.get('role')!='kernel' or unit.get('configuration') not in LEMMASIM_CONFIGURATIONS
+        or names.get(symbol)!=source or row.get('args')!=['u64','u64'] or row.get('effects')!=[]):
+        raise Core0Error('six-binding identity escapes its pure checked kernel declaration')
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),_ir_definition_body(ir,symbol))
+    normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+    digest=hashlib.sha256(normalized.encode()).hexdigest()
+    if digest not in {'9d3b2bf8bc247f19885073361ecf10b1179727601e78248c9b3aeb5d9fcf3718',
+                      '9cbfb3e00b215a21afa68f0223e7d1125a3e72c653acd4e854fcc436ad3bf414'}:
+        raise Core0Error('six-binding identity differs from its complete checked ABI/pool/power body')
+    return digest
+
+
+def _jump_leaf_pair(assembly: str, symbol: str, source: str | None,
+                    configuration: str | None) -> dict[int,list[str]]:
+    """Closed DTB property/role pair, with distinct CFG edges per transfer."""
+    if source!='Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty' or configuration not in LEMMASIM_CONFIGURATIONS:
+        raise Core0Error('paired table escapes the exact LemmaSim DTB owner')
+    code,labels=_jump_assembly_function(assembly,symbol)
+    uses=[(i,re.fullmatch(r'%pcrel_hi\((\.LJTI[0-9]+_[0-9]+)\)',args[1]))
+          for i,(op,args) in enumerate(code) if op=='auipc' and len(args)==2 and args[1].startswith('%pcrel_hi(.LJTI')]
+    if len(uses) not in (2,3,4) or any(match is None for _,match in uses):raise Core0Error('DTB declared discovery has an extra or unparseable table use')
+    names=[match[1] for _,match in uses]
+    group=re.fullmatch(r'\.LJTI([0-9]+)_0',names[0])
+    if group is None or names!=['.LJTI'+group[1]+'_'+str(i) for i in range(len(uses))]:raise Core0Error('DTB discovery table labels/order differ')
+    result={};defaults=[]
+    shapes=((15,36,[1,2,3,4,5,6,7,8,10]),(9,1,[2,3,4,6])) if len(uses)==2 else (
+        (15,36,[1,2,3,4,5,6,7,8,10]),(13,1,[2,3,4,6,9,10,11]),
+        (21,38,[i for i in range(21) if i not in (0,15,18,19,20)]))
+    if len(uses)==4:
+        shapes=((15,36,[1,2,3,4,5,6,7,8,10]),(14,1,[2,3,4,6,9,10,11]),
+            (21,38,[i for i in range(21) if i not in (0,15,18,19,20)]),
+            (25,38,[i for i in range(25) if i not in (0,21,22,23,24)]))
+    for (use,_),name,(count,minimum,holes) in zip(uses,names,shapes):
+        declaration=re.search(r'(?m)^'+re.escape(name)+r':\n((?:\s*\.quad\s+\.LBB[0-9]+_[0-9]+\s*\n)+)',assembly)
+        targets=re.findall(r'\.quad\s+(\.LBB[0-9]+_[0-9]+)',declaration[1]) if declaration else []
+        if len(targets)!=count or any(label not in labels for label in targets):raise Core0Error('DTB pair local target count differs')
+        if use+4>=len(code) or code[use+3][0]!='ld' or code[use+4]!=('jr',[code[use+3][1][0]]):
+            raise Core0Error('DTB pair transfer is not the exact loaded target')
+        index=code[use+3][1][0];base=code[use][1][0]
+        guard=code[use-2] if use>=5 else ('invalid',[])
+        if (use<5 or guard[0]!='bltu' or len(guard[1])!=3 or guard[1][1]!=index
+            or code[use-5][0]!='addi' or code[use-5][1][0]!=index
+            or code[use-5][1][2]!=str(-minimum)
+            or code[use-4]!=('li',[guard[1][0],str(count-1)])
+            or code[use-3][0]!='li' or code[use-3][1][1]!='0'
+            or code[use-3][1][0] in {index,guard[1][0]}
+            or code[use-1]!=('slli',[index,index,'3']) or base==index
+            or code[use+2]!=('add',[index,index,base])
+            or code[use+3]!=('ld',[index,'0('+index+')'])):
+            raise Core0Error('DTB paired guard/index/load differs from its closed path')
+        result[use+4]=targets
+        denied=[i for i in range(max(0,use-4),use) if code[i][0]=='bltu']
+        if len(denied)!=1:raise Core0Error('DTB pair lacks its local unsigned guard')
+        default=code[denied[0]][1][-1]
+        if any(targets[index]!=default for index in holes):raise Core0Error('DTB pair hole does not target its checked default')
+        defaults.append(default)
+    if len(set(defaults))!=1 or set(result)!={i for i,(op,_args) in enumerate(code) if op=='jr'}:
+        raise Core0Error('DTB pair has a foreign transfer or divergent checked default')
+    return result
+
+
 def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[str], count: int, minimum: int,
                          *, source: str | None = None, configuration: str | None = None, image_key: str | None = None) -> dict:
     """Check the actual closed unsigned guard/scale/load/JR path and its CFG."""
@@ -3654,15 +4768,40 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     if load[0]!='ld' or load[1][1]!='0('+address+')':
         raise Core0Error('jump table target lacks one 64-bit table load')
     jumps=[i for i,(op,args) in enumerate(code) if op=='jr']
-    if len(jumps)!=1 or not use+4<=jumps[0]<=use+6 or code[jumps[0]]!=('jr',[target]):
+    paired = _jump_leaf_pair(assembly,symbol,source,configuration) if len(jumps) in (2,3,4) else {}
+    own_jumps=[i for i in jumps if use+4<=i<=use+6 and code[i]==('jr',[target])]
+    if (len(own_jumps)!=1 or (len(jumps)!=1 and not paired)
+        or (paired and paired.get(own_jumps[0])!=targets)):
         raise Core0Error('jump table has an unknown or unbound indirect transfer')
-    jump=jumps[0]
+    jump=own_jumps[0]
     reload = None
     literal = None
+    mask = None
+    state_copy = None
     if jump==use+5:
         intervening=code[use+4]
         if intervening[0]=='li' and intervening[1][0]!=target:
             pass
+        elif (source=='Lemma.Applications.Notebook.readerRecoverableTransactionPump'
+              and configuration in COMPANION_READER_CONFIGURATIONS and image_key=='notebook'
+              and count==12 and minimum==0 and index=='s1'
+              and scaled==address==target=='a0' and base=='a1' and use==13
+              and code[:4]==[('addi',['sp','sp','-32']),('sd',['ra','24(sp)']),
+                            ('sd',['s0','16(sp)']),('sd',['s1','8(sp)'])]
+              and intervening==('mv',['s0','s1'])):
+            # The separately closed Reader19 owner preserves phase0 as its
+            # return value. This exact copy cannot overwrite loaded target a0.
+            state_copy={'instruction':'mv s0,s1','phase_register':'s1',
+                        'return_register':'s0','preserved_target_register':'a0'}
+        elif (source=='Lemma.Courses.Arithmetic.panelCharacter'
+              and configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
+              and count==8 and minimum==0 and index==scaled==address=='a0' and base==target=='a5'
+              and code[:2]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)'])]
+              and intervening==('andi',['a0','a4','7'])):
+            # Only the course's pure row switch hoists its admitted display
+            # outcome mask here. The loaded a5 target remains untouched.
+            mask={'instruction':'andi a0,a4,7','value_register':'a0',
+                  'preserved_target_register':'a5'}
         elif (source=='Lemma.Services.Buffer.Server.existing' and configuration in SERVICE_CONFIGURATIONS and image_key=='server'
               and count==5 and minimum==2 and index==scaled==address==target=='a0' and base=='a2'
               and code[0]==('addi',['sp','sp','-112']) and intervening==('ld',['a2','112(sp)'])
@@ -3691,6 +4830,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
             raise Core0Error('jump table target is overwritten or has an unknown intervening instruction before transfer')
     guards=[]
     hoisted=None
+    index_rebind=None
     for i in range(max(0,use-8),use-1):
         op,args=code[i]
         if op=='bltu' and len(args)==3 and args[1]==index:
@@ -3712,10 +4852,27 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
                 guards.append(i)
                 hoisted={'instruction':'li a5,8','definition_instruction':0,
                          'preserved_register':'a5','normalized_index_register':'a1'}
+        elif (source=='Lemma.Courses.PackageReader.step'
+              and configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + CHOOSER_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
+              and count==6 and minimum==0 and len(code)==48 and use==21 and i==17
+              and index==scaled==address=='a0' and base==target=='a2'
+              and code[:4]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)']),
+                            ('sd',['s0','0(sp)']),('mv',['s0','a0'])]
+              and code[i-1]==('li',['a0','5']) and op=='bltu' and len(args)==3
+              and args[:2]==['a0','a1'] and labels.get(args[2])==45
+              and code[i+1:use-1]==[('mv',['a0','a1']),('li',['a1','0'])]):
+            # Only this selected reader's complete source/machine/cell relation
+            # admits rebinding the already bounded returned phase a1 to a0.
+            # The original phase, bound, sole transfer and CFG remain checked.
+            guards.append(i)
+            index_rebind={'instruction':'mv a0,a1','instruction_index':i+1,
+                          'bounded_register':'a1','scaled_register':'a0'}
     if len(guards)!=1: raise Core0Error('jump table lacks the exact unsigned index bound')
     guard=guards[0]
     # Every instruction between the guard and scale preserves the bounded index.
-    if any(args[:1]==[index] for _op,args in code[guard+1:use-1]):
+    if any(args[:1]==[index] and not (index_rebind is not None and
+           i==index_rebind['instruction_index'] and (op,args)==('mv',['a0','a1']))
+           for i,(op,args) in enumerate(code[guard+1:use-1],guard+1)):
         raise Core0Error('jump table bounded index is overwritten')
     if minimum:
         normalizations=[i for i in range(max(0,guard-5),guard) if code[i][0]=='addi' and len(code[i][1])==3 and code[i][1][0]==index and code[i][1][2]==str(-minimum)]
@@ -3732,8 +4889,9 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
             if args!=args[-1:] or args[0] not in labels or labels[args[0]]>=len(code): raise Core0Error('jump function has nonlocal/noninstruction branch')
             successors[i]=[labels[args[0]]]
         elif op=='jr':
-            if any(label not in labels for label in targets): raise Core0Error('jump table contains a foreign assembly block')
-            successors[i]=list({labels[label] for label in targets})
+            selected_targets=paired.get(i,targets)
+            if any(label not in labels for label in selected_targets): raise Core0Error('jump table contains a foreign assembly block')
+            successors[i]=list({labels[label] for label in selected_targets})
         elif op in {'ret','tail'}: successors[i]=[]
         else: successors[i]=following
     def reaches(graph,start,finish):
@@ -3746,9 +4904,13 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     denied={i:list(edges) for i,edges in successors.items()};denied[guard]=[labels[code[guard][1][-1]]]
     if any(reaches(denied,0,point) for point in (use-1,use,use+3,jump)) or not reaches(successors,0,jump):
         raise Core0Error('jump table load/transfer can bypass the unsigned guard')
-    return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=True,
+    return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=not bool(paired),
+                **({'closed_dtb_pair_transfers':len(paired),'each_transfer_uses_own_targets':True} if paired else {}),
                 **({'target_preserving_reload':reload} if reload is not None else {}),
                 **({'target_preserving_literal':literal} if literal is not None else {}),
+                **({'target_preserving_mask':mask} if mask is not None else {}),
+                **({'target_preserving_state_copy':state_copy} if state_copy is not None else {}),
+                **({'bounded_index_rebind':index_rebind} if index_rebind is not None else {}),
                 **({'hoisted_entry_bound':hoisted} if hoisted is not None else {}))
 
 
@@ -3762,17 +4924,93 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
     functions={s['name']:s for s in symbols.values() if s['type']=='FUNC' and s['section']!='UND'}
     tables=[s for s in symbols.values() if s['name'].startswith('.LJTI')]
     literal=[r for r in readonly_tables if r['section']=='.rodata']
-    literal_contracts={'Lemma.User.CapabilityABI.typeMask':[35,124,928,1056,1], 'Lemma.Kernel.Objects.initStep':[1,3,4]}
+    literal_contracts={'Lemma.Kernel.Objects.replyLimitFor':[8,8,7],'Lemma.User.CapabilityABI.typeMask':[35,124,928,1056,1], 'Lemma.Kernel.Objects.initStep':[1,3,4]}
     sim_literals = unit.get('configuration') in LEMMASIM_CONFIGURATIONS
     if sim_literals:
-        from lemmasim_readonly import canonical_specs
-        extra = canonical_specs()
+        from lemmasim_readonly import canonical_specs, ble_specs, usb_specs, product_specs, BLE_CONFIGURATIONS, USB_CONFIGURATIONS, PRODUCT_CONFIGURATIONS
+        if unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS:
+            from paper_clocked import validate as validate_clocked
+            validate_clocked(optimized_ir,unit,optimized=True)
+        if unit.get('configuration') in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+            from usb_closure_recovery_target import validate as validate_recovery
+            validate_recovery(optimized_ir,unit,optimized=True)
+        elif unit.get('configuration') in USB_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+            from usb_recovery_target import validate as validate_recovery
+            validate_recovery(optimized_ir,unit,optimized=True)
+        extra = usb_specs() if unit.get("configuration") in USB_CONFIGURATIONS else ble_specs() if unit.get("configuration") in BLE_CONFIGURATIONS else canonical_specs()
+        modern = ble_specs(); usb_modern = usb_specs(); product_modern=product_specs()
+        from package_notebook_target import (CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS,
+                                            readonly_lookup as package_readonly_lookup)
+        package_literals=[]
+        if unit.get('configuration') in set(PACKAGE_NOTEBOOK_CONFIGURATIONS) | set(READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + CHOOSER_NOTEBOOK_CONFIGURATIONS) | set(USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS):
+            _, package_literals, _ = package_readonly_lookup(optimized_ir,unit)
+        package_literal_keys={
+            (re.sub(r'^_private\..*?\.[0-9]+\.','',table['source']),
+             '.L'+table['global'],8*len(table['values']),tuple(table['values']))
+            for table in package_literals
+        }
         def admitted_literal(row):
             source=re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])
+            # The selected Package User2 helper first closes all189 complete
+            # bodies/callers and all six exact readonly CFG/content/uses. Keep
+            # each object's actual local symbol and extent bound to that row.
+            if package_literal_keys and (source,row.get('symbol'),row['bytes'],tuple(row['values'])) in package_literal_keys:
+                return True
+            if unit.get('configuration') in COMMON_CONFIGURATIONS:
+                from wifi_common import validate as validate_common, literal_values
+                validate_common(optimized_ir,unit,optimized=True)
+                family='Common' if source.endswith('DescriptorDTB.literalWordCommon') else 'Wire' if source.endswith('DescriptorDTB.literalWordWire') else None
+                if family is not None:
+                    codes=(22,82,91) if family=='Common' else (65,66,68,81)
+                    return unit['role']=='kernel' and row['values'] in [literal_values(family,c) for c in codes] and row['bytes']==len(row['values'])*8
+                if source.endswith('DescriptorDTB.literalWordNext'):
+                    return (row['values'],row['bytes'])==([0x74732c616d6d656c,0x666f2d676e696761,0x74657366],24)
+                if source.endswith('DescriptorDTB.literalWordExecuted'):
+                    return (row['values'],row['bytes'])==([0x78652c616d6d656c,0x722d646574756365,0x687365726665],24)
+            if source=='Lemma.Applications.Notebook.openCourse':
+                # These exact versioned objects are admitted only after the
+                # separate version2..8 bound/read/complete-owner LLVM check.
+                from lemmasim_readonly import DOCUMENT4_NOTEBOOK_PROFILES
+                return (unit.get('configuration') in DOCUMENT4_NOTEBOOK_PROFILES
+                        and unit['role']=='user' and unit.get('contract_version')==DOCUMENT4_NOTEBOOK_PROFILES[unit['configuration']]
+                        and unit.get('image_key')=='notebook'
+                        and (row['values'],row['bytes']) in [([1856,2496,2496],24),([1856,2496,2496,2496],32),([1856,2496,2496,2496,2496],40),([1856,2496,2496,2496,2496,2496],48),([1856,2496,2496,2496,2496,2496,2496],56)])
+            if source=='Lemma.USB.Block.recoveryRequestValid':
+                return (unit.get('configuration') in USB_RECOVERY_FAMILIES and unit['role']=='kernel' and unit.get('contract_version')=='core0-kernel-v0.6' and (row['values'],row['bytes'])==([0,1,3,3,2],40))
+            if source=='Lemma.USB.Control.descriptorWord':
+                return (unit.get('configuration') in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS and unit['role']=='kernel'
+                        and unit.get('contract_version')==kernel_contract(unit['configuration']) and row['values'] in
+                        [[0x4000000002000112,0x0000010000000000,0x0100],
+                         [0x8000010100200209,0x00ff020000040932,0x0040028105070000,0x0000400202050700]])
+            if source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordNext':
+                # This exact24-byte pool comes only from the independently
+                # content/bound/use-checked post-LLVM Paper2 owner. No generic
+                # readonly pool or historical declaration authority is added.
+                return (unit.get('configuration') in set(NEXT_NOTEBOOK_CONFIGURATIONS) | set(PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS) | set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(USB_CLOCKED_NOTEBOOK_CONFIGURATIONS) | set(USB_RECOVERY_FAMILIES)
+                        and unit['role']=='kernel' and unit.get('contract_version')==kernel_contract(unit['configuration'])
+                        and (row['values'],row['bytes'])==([0x74732c616d6d656c,0x666f2d676e696761,0x74657366],24))
+            if source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordExecuted':
+                return (unit.get('configuration') in set(PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS) | set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(USB_CLOCKED_NOTEBOOK_CONFIGURATIONS) | set(USB_RECOVERY_FAMILIES)
+                        and unit['role']=='kernel' and unit.get('contract_version')==kernel_contract(unit['configuration'])
+                        and (row['values'],row['bytes'])==([0x78652c616d6d656c,0x722d646574756365,0x687365726665],24))
+            if source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordWire':
+                from paper_wire import LITERALS, validate as validate_wire
+                if unit.get('configuration') not in USB_WIRE_NOTEBOOK_CONFIGURATIONS or unit['role']!='kernel' or unit.get('contract_version')!='core0-kernel-v0.6':return False
+                validate_wire(optimized_ir,unit,optimized=True)
+                return row['bytes']==24 and row['values'] in list(LITERALS.values())
+            if source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordClocked':
+                from paper_clocked import LITERALS
+                return (unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_FAMILIES
+                        and unit['role']=='kernel' and unit.get('contract_version')=='core0-kernel-v0.6'
+                        and row['values'] in list(LITERALS.values()) and row['bytes']==8*len(row['values']))
+            if source=='Lemma.Platform.LemmaSim.DescriptorDTB.clockedUSBIdentity':
+                return (unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_FAMILIES
+                        and unit['role']=='kernel' and unit.get('contract_version')=='core0-kernel-v0.6'
+                        and (row['values'],row['bytes'])==([2,48000000,100000000,1,128,67],48))
             if source in literal_contracts:
                 return unit['role']=='kernel' and literal_contracts[source]==row['values']
-            spec=extra.get(source)
-            return spec is not None and spec[0]==unit['role'] and row['values'] in [[0 if value is None else value for value in values] for values in spec[3]]
+            specs=[s[source] for s in (extra,modern,usb_modern,product_modern) if source in s]
+            return bool(specs) and all(s[0]==unit['role'] for s in specs) and row['values'] in [[0 if value is None else value for value in values] for spec in specs for values in spec[3]]
         valid_literals=all(admitted_literal(row) for row in literal)
     else:
         valid_literals=unit['role']=='kernel' and all(literal_contracts.get(re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']))==r['values'] for r in literal)
@@ -3803,7 +5041,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             raise Core0Error('actual and companion jump-table label inventories differ')
         by_symbol={r['symbol']:r for r in unit['functions']}
         for table in sorted(tables,key=lambda s:s['value']):
-            name=table['name'];match=re.fullmatch(r'\.LJTI(\d+)_0',name)
+            name=table['name'];match=re.fullmatch(r'\.LJTI(\d+)_([0123])',name)
             if match is None or table['type']!='NOTYPE' or table['binding']!='LOCAL' or table['section']!=section_id or table['size']!=0 or table['value']%8:
                 raise Core0Error('backend table label is not one local aligned readonly extent')
             declaration=re.search(r'(?m)^'+re.escape(name)+r':\n((?:\s*\.quad\s+\.LBB\d+_\d+\s*\n)+)',assembly)
@@ -3818,21 +5056,148 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             if owner['value']%4 or owner['size']%4 or references[0]['offset']%4:
                 raise Core0Error('jump table owner/address reference has invalid instruction alignment')
             source_row=by_symbol.get(owner['name']);source=re.sub(r'^_private\..*?\.[0-9]+\.','',source_row.get('source','') if source_row else '')
-            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and source in LEMMASIM_BACKEND_JUMP_TABLES
+            next_token=(unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
+                        and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepNext')
+            executed_token=(unit.get('configuration') in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS
+                            and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepExecuted')
+            wire_specs={
+                'Lemma.Platform.LemmaSim.DescriptorDTB.literalLengthWire':('kernel',17,['u64'],[],[65,66,67,68,81]),
+                'Lemma.Platform.LemmaSim.DescriptorDTB.literalWordWire':('kernel',17,['u64','u64'],[],[65,66,67,68,81]),
+                'Lemma.Platform.LemmaSim.DescriptorDTB.leafPropertyWire':('kernel',37,['u64']*4,['checked-access','physical-read','physical-write'],[32,58,65,66,67,68]),
+            }
+            wire_owner=unit.get('configuration') in set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(COMMON_CONFIGURATIONS) and source in wire_specs
+            wire_token=(unit.get('configuration') in set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(COMMON_CONFIGURATIONS)
+                        and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepWire')
+            clocked_specs={
+                'Lemma.Platform.LemmaSim.DescriptorDTB.literalLengthClocked':('kernel',32,['u64'],[],[65,66,67,68,92,93,94,95,96]),
+                'Lemma.Platform.LemmaSim.DescriptorDTB.literalWordClocked':('kernel',32,['u64','u64'],[],[65,66,67,68,92,93,94,95,96]),
+                'Lemma.Platform.LemmaSim.DescriptorDTB.leafPropertyClocked':('kernel',64,['u64']*4,['checked-access','physical-read','physical-write'],[32,58,65,66,67,68,92,93,94,95]),
+                'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepClocked':('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
+            }
+            clocked_owner=unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_FAMILIES and source in clocked_specs
+            common_specs={
+                'Lemma.Platform.LemmaSim.DescriptorDTB.leafPropertyCommon':('kernel',60,['u64']*4,['checked-access','physical-read','physical-write'],[32,33,34,35,38,53,90,91]),
+                'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepCommon':('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
+            }
+            common_owner=unit.get('configuration') in COMMON_CONFIGURATIONS and source in common_specs
+            from course_await_deployment import RESULT_SOURCE, result_jump_spec, validate_result_split
+            course_result_spec=result_jump_spec(optimized_ir,unit,source,owner['name'])
+            course_result_owner=course_result_spec is not None
+            from package_notebook_target import notebook_jump_spec as package_jump_spec, validate_jump_relation as validate_package_jump_relation
+            package_spec=package_jump_spec(optimized_ir,unit,source,owner['name'])
+            package_owner=package_spec is not None
+            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and (source in LEMMASIM_BACKEND_JUMP_TABLES or next_token or executed_token or wire_token or wire_owner or common_owner or clocked_owner or course_result_owner or package_owner)
             spec=(LEMMASIM_BACKEND_JUMP_TABLES if sim_source else BACKEND_JUMP_TABLES).get(source)
+            if course_result_owner:spec=course_result_spec
+            if package_owner:spec=package_spec
+            if clocked_owner:
+                # Complete actual pre/post owner/caller authority was checked
+                # before literal provenance above. These four measured domains
+                # still pass ordinary relocation/byte/case/unsigned guard checks.
+                spec=clocked_specs[source]
+            if unit.get('configuration') in LEMMASIM_NOTEBOOK_CONFIGURATIONS:
+                from arithmetic_string_identity import notebook_jump_spec
+                from arithmetic_closure_identity import notebook_jump_spec as closure_notebook_jump_spec
+                closure_spec=closure_notebook_jump_spec(optimized_ir,unit,source,owner['name'])
+                string_spec=None if closure_spec is not None else notebook_jump_spec(optimized_ir,unit,source,owner['name'])
+                if closure_spec is not None:spec=closure_spec
+                elif string_spec is not None:spec=string_spec
+            if executed_token:
+                from paper_executed import validate as validate_executed
+                validate_executed(optimized_ir,unit,optimized=True)
+            if common_owner or (unit.get('configuration') in COMMON_CONFIGURATIONS and (wire_token or wire_owner)):
+                from wifi_common import validate as validate_common
+                validate_common(optimized_ir,unit,optimized=True)
+                spec=common_specs[source] if common_owner else wire_specs[source] if wire_owner else spec
+            if (wire_token or wire_owner) and unit.get('configuration') not in COMMON_CONFIGURATIONS:
+                from paper_wire import validate as validate_wire
+                validate_wire(optimized_ir,unit,optimized=True)
+                if wire_owner:spec=wire_specs[source]
+            if next_token or executed_token or wire_token:
+                # Same admitted FDT token domain and exact typed callback;
+                # complete Next pre-body/discovery authority was checked above.
+                spec=('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9])
+            owner_tables=[candidate['name'] for candidate in tables
+                          if candidate['name'].startswith('.LJTI'+match[1]+'_')]
+            paired_leaf=(sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty'
+                         and sorted(owner_tables) in (['.LJTI'+match[1]+'_0','.LJTI'+match[1]+'_1'],
+                                                      ['.LJTI'+match[1]+'_'+str(i) for i in range(3)],
+                                                      ['.LJTI'+match[1]+'_'+str(i) for i in range(4)]))
+            if match[2]!='0' and not paired_leaf:raise Core0Error('second table escapes closed DTB pair')
+            if paired_leaf:
+                digest=validate_dtb_pair_body(optimized_ir,unit,owner['name'])
+                version_count={'b259ebe10adb20c25ef1dc0e83cdc915789c742220633112f38267596185af1c':2,
+                    '4a27c1267b0888724f8ec68ff8837d56a768f9bd9469f44edf19f4bb3b80a8b2':3,
+                    '608b778cafe0dcd914a104169c10b56b02794396fef4d7c066ac08804b52b28d':4}[digest]
+                if len(owner_tables)!=version_count:
+                    raise Core0Error('DTB discovery body/table version mismatch')
+                if match[2]=='1':spec=('kernel',14 if version_count==4 else 13 if version_count==3 else 9,['u64']*4,['checked-access','physical-read','physical-write'],[1,2,6,8,9,13,14] if version_count==4 else [1,2,6,8,9,13] if version_count==3 else [1,2,6,8,9])
+                if match[2]=='2':spec=('kernel',21,['u64']*4,['checked-access','physical-read','physical-write'],[38,53,56,57,58])
+                if match[2]=='3':spec=('kernel',25,['u64']*4,['checked-access','physical-read','physical-write'],[38,59,60,61,62])
+            if (sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWord'
+                    and len(targets)==74 and unit.get('configuration') not in BLE_CONFIGURATIONS):
+                # Exact historical Power literal domain; immutable old units
+                # and fixtures retain this version. The selected BLE probe
+                # requires the new domain including its five literal codes.
+                spec=('kernel',74,['u64','u64'],[],[*range(2,19),*range(32,53),*range(64,76)])
+            if sim_source and source in ('Lemma.Platform.LemmaSim.Descriptor.geometry','Lemma.Platform.LemmaSim.Descriptor.expectedBinding'):
+                if len(targets) in (6,7):
+                    spec=(*spec[:1],len(targets),*spec[2:4],list(range(1,len(targets)+1)))
+                    if source.endswith('expectedBinding'):validate_sim_binding_body(optimized_ir,unit,owner['name'])
+                elif unit.get('configuration') in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS:
+                    raise Core0Error('USB binding lacks complete six-binding identity/geometry selection')
+            if sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWord':
+                if len(targets)==76:
+                    spec=('kernel',76,['u64','u64'],[],[*range(2,21),*range(32,59),*range(64,78)])
+                elif len(targets)==77:
+                    spec=('kernel',77,['u64','u64'],[],[*range(2,22),*range(32,63),*range(64,79)])
+                elif unit.get('configuration') in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS:
+                    raise Core0Error('USB binding lacks complete decoded packet literal domain')
             if spec is None or (unit['role'],len(targets),source_row['args'],source_row['effects'])!=spec[:4]:
                 raise Core0Error('unknown backend table owner/count/source signature/effects: '+repr(dict(
                     table=name, source=source, role=unit['role'], count=len(targets),
                     args=source_row.get('args') if source_row else None,
                     effects=source_row.get('effects') if source_row else None,
                     configuration=unit.get('configuration'))))
+            if sim_source and source=='Lemma.Platform.LemmaSim.Descriptor.geometry':
+                validate_sim_geometry_body(optimized_ir,unit,owner['name'])
+            if source=='Lemma.USB.BlockProtocol.headerWord':
+                names={r['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']) for r in unit['functions']}
+                body=_ir_definition_body(optimized_ir,owner['name'])
+                body=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+                normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in body.splitlines()).split())
+                if hashlib.sha256(normalized.encode()).hexdigest()!='2fd677ca1564fb786fcf33f01ed0f3dc048d36ac0fb28788053d7756929ff9fc':
+                    raise Core0Error('USB protocol header exact seven-word body differs')
             if source in BACKEND_JUMP_TABLE_CONFIGURATIONS and unit.get('configuration') not in BACKEND_JUMP_TABLE_CONFIGURATIONS[source]:
                 raise Core0Error('diagnostic backend table escapes its exact selected configuration: '+source)
             image_authority=LEMMASIM_JUMP_TABLE_USER_IMAGES if sim_source else BACKEND_JUMP_TABLE_USER_IMAGES
+            if course_result_owner:
+                # result_jump_spec has already closed the complete unchanged
+                # result/caller bodies, exact software tuple and either the
+                # Installer User1 root or selected Package Notebook User2 root.
+                image_authority={**image_authority,RESULT_SOURCE:{unit['image_key']}}
+            if package_owner:image_authority={**image_authority,source:{'notebook'}}
+            if (unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and
+                    source == 'Lemma.Services.Store.Protocol.shape'):
+                image_authority={**image_authority,source:image_authority[source] | {'course'}}
+            if unit.get('configuration') in LEMMASIM_NOTEBOOK_CONFIGURATIONS:
+                from arithmetic_string_identity import NOTEBOOK_JUMPS
+                from arithmetic_closure_identity import NOTEBOOK_JUMPS as CLOSURE_NOTEBOOK_JUMPS
+                if source in set(NOTEBOOK_JUMPS) | set(CLOSURE_NOTEBOOK_JUMPS):image_authority={**image_authority,source:{'notebook'}}
             if unit['role']=='user' and (source not in image_authority or unit.get('image_key') not in image_authority[source]):
                 raise Core0Error('User backend table escapes its exact selected image: '+source)
             switch_sets=[sorted(int(value) for value in re.findall(r'i\d+ (-?\d+), label',block)) for block in re.findall(r'switch i\d+ [^\n]+\[([^]]+)\]',_ir_definition_body(optimized_ir,owner['name']),re.S)]
-            if switch_sets.count(spec[4])!=1 or max(spec[4])-min(spec[4])+1!=len(targets):raise Core0Error('backend table lacks its exact genuine LLVM switch domain')
+            split_common=(common_owner and source.endswith('.leafPropertyCommon'))
+            split_result_report=None
+            if course_result_owner:
+                code,labels=_jump_assembly_function(assembly,owner['name'])
+                split_result_report=validate_result_split(optimized_ir,unit,assembly,owner['name'],name,targets,code,labels)
+            elif package_owner:
+                code,labels=_jump_assembly_function(assembly,owner['name'])
+                split_result_report=validate_package_jump_relation(optimized_ir,unit,assembly,owner['name'],name,targets,code,labels)
+            elif split_common:
+                if switch_sets!=[[4,15],spec[4]] or len(targets)!=60:raise Core0Error('Common split switch escaped exact full domain/table extent')
+            elif switch_sets.count(spec[4])!=1 or max(spec[4])-min(spec[4])+1!=len(targets):raise Core0Error('backend table lacks its exact genuine LLVM switch domain')
             default = (_jump_switch_default(_ir_definition_body(optimized_ir,owner['name']), assembly,
                                            owner['name'], targets, spec[4])
                        if source == 'Lemma.Kernel.Development.FramesEntry.operation' else
@@ -3860,7 +5225,8 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             guard=_jump_assembly_guard(assembly,owner['name'],name,targets,len(targets),min(spec[4]),
                                        source=source,configuration=unit.get('configuration'),image_key=unit.get('image_key'))
             observed.append(dict(source=source_row['source'],function=owner['name'],symbol=name,offset=start,bytes=size,entries=entries,guard=guard,reference_pc=references[0]['offset'],function_base=owner['value'],function_bytes=owner['size'],
-                                 **({'switch_default': default} if default is not None else {})))
+                                 **({'switch_default': default} if default is not None else {}),
+                                 **({'course_mount_reply_split':split_result_report} if split_result_report is not None else {})))
             extents.append((start,start+size,'jump-table'))
     for row in literal:
         start=row['offset'];end=start+row['bytes']
@@ -3939,7 +5305,18 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
-        boot = normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
+        boot = normalized.get("Lemma.Platform.Silicon.Development."+("WiFiCommonReadProbe.boot" if unit["configuration"]=="lemmasim-silicon-wifi-common-read-probe" else "WiFiCommonProbe.boot")) if unit["configuration"] in COMMON_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootRecovery") if unit["configuration"] in USB_RECOVERY_FAMILIES else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootClocked") if unit["configuration"] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootWire") if unit["configuration"] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernExecuted") if unit["configuration"] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernNext") if unit["configuration"] in NEXT_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModern") if unit["configuration"] in MODERN_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.USBLink.boot") if unit["configuration"] in USB_PROBE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
+        if unit['configuration'] in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
+            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.siliconProductCourseReaderBoot')
+        elif unit['configuration'] in COURSE_NOTEBOOK_CONFIGURATIONS:
+            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelected')
+        if unit['configuration'] in ENTRY2_CONFIGURATIONS:
+            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2')
+        if unit['configuration'] in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS + CHOOSER_READER_CONFIGURATIONS:
+            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelectedEntryV2')
+        if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+            from package_companion_deployment import boot_source_for
+            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.'+boot_source_for(unit['configuration']))
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -3965,9 +5342,71 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
             raise Core0Error("compiled boot closure contains an additional FIFO reset")
 
 
+def validate_modern_power_selection(ir: str, unit: dict, *, optimized: bool) -> None:
+    """Modern USB/Product boot selects the actual Power-v2 identity driver.
+
+    Retain the exact cooperative constructor; only its identity callee differs
+    from the separately preserved Power-v1 constructor. This is a source/CFG
+    obligation, not evidence that a notebook reached Ready.
+    """
+    if optimized or unit.get('configuration') not in MODERN_NOTEBOOK_CONFIGURATIONS or unit.get('role')!='kernel':
+        return
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+    by={source:symbol for symbol,source in names.items()}
+    required=['Lemma.Platform.LemmaSim.NotebookKernel.'+('constructProductCourseReader' if unit['configuration'] in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS else 'constructPackageRecovery' if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if unit['configuration'] in USB_RECOVERY_FAMILIES else 'constructClocked' if unit['configuration'] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else 'constructWire' if unit['configuration'] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else 'constructModernExecuted' if unit['configuration'] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else 'constructModernNext' if unit['configuration'] in NEXT_NOTEBOOK_CONFIGURATIONS else 'constructModern'),
+        'Lemma.Platform.LemmaSim.PowerControl.configureSafety','Lemma.Drivers.PowerSafety.initialize',
+        'Lemma.Kernel.Task.activateManaged','Lemma.Kernel.Objects.createEndpoint']
+    if not all(source in by for source in required):raise Core0Error('Modern Power-v2 constructor source closure missing')
+    configure=by[required[1]]
+    body=_ir_definition_body(ir,configure)
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+    normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+    if hashlib.sha256(normalized.encode()).hexdigest()!='7c71aef20fefb55e4f468bb81dc052ff672bc16f36e582b501f18fe05cf65386':
+        raise Core0Error('Modern cooperative Power-v2 identity/status/record constructor differs')
+    owner=by[required[0]];constructor=_ir_definition_body(ir,owner)
+    endpoints=re.findall(r'(%[-A-Za-z0-9_.$]+) = call \{ i64, i64 \} @'+re.escape(by[required[4]])+r'\([^\n]*\)',constructor)
+    if len(endpoints)!=6:raise Core0Error('Modern power endpoint construction inventory differs')
+    values=re.findall(r'(%[-A-Za-z0-9_.$]+) = extractvalue \{ i64, i64 \} '+re.escape(endpoints[4])+r', 1',constructor)
+    if len(values)!=1 or len(re.findall(r'call \{ i64, i64 \} @'+re.escape(configure)+r'\(i64 1, i64 '+re.escape(values[0])+r'\)',constructor))!=1:
+        raise Core0Error('Modern Power-v2 configuration is not the actual owned power endpoint')
+    owners=_line_functions(ir.splitlines())
+    callers=[owners[i] for i,line in enumerate(ir.splitlines()) if re.search(r'\bcall\b[^\n]*@'+re.escape(configure)+r'\(',line)]
+    if callers!=[owner]:raise Core0Error('Modern Power-v2 configuration caller authority differs')
+    validate_checked_call_gate(constructor,configure,by[required[3]])
+
+
 def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | None = None) -> dict:
     if optimization is not None and optimization not in OPT_PASSES:
         raise Core0Error("IR audit optimization level differs from closed pipeline")
+    from usercopy_page_words import validate_if_present as validate_page_words
+    validate_page_words(ir,unit,optimized=optimized,optimization=optimization)
+    from task_entry_borrow import validate_if_present as validate_entry_borrow
+    entry_borrow_report=validate_entry_borrow(ir,unit,optimized=optimized)
+    from course_await_deployment import validate_mount_reply
+    validate_mount_reply(ir,unit,optimized=optimized)
+    from package_notebook_target import validate as validate_package_notebook
+    validate_package_notebook(ir,unit,optimized=optimized)
+    from paper_next import validate as validate_paper_next
+    from paper_executed import validate as validate_paper_executed
+    from paper_wire import validate as validate_paper_wire
+    from paper_clocked import validate as validate_paper_clocked
+    from wifi_common import validate as validate_common
+    if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+        from package_companion_target import validate as validate_recovery
+    elif unit.get('configuration') in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+        from usb_closure_recovery_target import validate as validate_recovery
+    else:
+        from usb_recovery_target import validate as validate_recovery
+    recovery_report=validate_recovery(ir,unit,optimized=optimized)
+    common_report=validate_common(ir,unit,optimized=optimized) if recovery_report is None else None
+    paper_clocked_report=validate_paper_clocked(ir,unit,optimized=optimized) if recovery_report is None else recovery_report
+    paper_wire_report=validate_paper_wire(ir,unit,optimized=optimized) if common_report is None and paper_clocked_report is None else None
+    paper_executed_report=validate_paper_executed(ir,unit,optimized=optimized) if paper_wire_report is None and common_report is None and paper_clocked_report is None else None
+    paper_next_report=validate_paper_next(ir,unit,optimized=optimized) if paper_executed_report is None and paper_wire_report is None and common_report is None and paper_clocked_report is None else None
+    validate_modern_power_selection(ir,unit,optimized=optimized)
+    from paper_bulk import validate as validate_surface_v2
+    validate_surface_v2(ir,unit,optimized=optimized)
+    ble_header = validate_ble_header_intrinsic(ir,unit,optimized=optimized,optimization=optimization)
     definitions, declarations, calls = parse_definitions_and_calls(ir)
     functions = {row["symbol"] for row in unit["functions"]}
     primitives = {row["primitive_symbol"] for row in unit["used_execution_ops"] if row["primitive_symbol"] is not None}
@@ -4007,6 +5446,34 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             raise Core0Error("LLVM execution primitive calling convention differs")
     if "core0_io_fence" in declarations and not _primitive_declaration_matches(ir, "declare void @core0_io_fence()"):
         raise Core0Error("LLVM IO fence calling convention differs")
+    from closed_inline import validate as validate_closed_inline
+    inline_report = validate_closed_inline(ir, unit, optimized=optimized)
+    from surface_word_inline import validate as validate_surface_word_inline
+    surface_inline_report = validate_surface_word_inline(ir,unit,optimized=optimized)
+    from managed_records import validate as validate_managed_records
+    records_report = validate_managed_records(ir, unit, optimized=optimized)
+    from arithmetic_execution_identity import validate as validate_execution_identity
+    execution_report = validate_execution_identity(ir, unit, optimized=optimized)
+    from managed_sums import validate as validate_managed_sums
+    sums_report = validate_managed_sums(ir, unit, optimized=optimized)
+    from arithmetic_sums_identity import validate as validate_sums_execution_identity
+    sums_execution_report = validate_sums_execution_identity(ir, unit, optimized=optimized)
+    from managed_bytes import validate as validate_managed_bytes
+    bytes_report = validate_managed_bytes(ir, unit, optimized=optimized)
+    from managed_array import validate as validate_managed_array
+    array_report = validate_managed_array(ir, unit, optimized=optimized)
+    from arithmetic_array_identity import validate as validate_array_execution_identity
+    array_execution_report = validate_array_execution_identity(ir, unit, optimized=optimized)
+    from managed_string import validate as validate_managed_string
+    string_report = validate_managed_string(ir, unit, optimized=optimized)
+    from arithmetic_string_identity import validate as validate_string_execution_identity
+    string_execution_report = validate_string_execution_identity(ir, unit, optimized=optimized)
+    from arithmetic_closure_identity import validate as validate_closure_execution_identity
+    closure_execution_report = validate_closure_execution_identity(ir,unit,optimized=optimized)
+    from managed_closure import validate as validate_managed_closure
+    closure_report=validate_managed_closure(ir,unit,optimized=optimized)
+    from arithmetic_bytes_identity import validate as validate_bytes_execution_identity
+    bytes_execution_report = validate_bytes_execution_identity(ir, unit, optimized=optimized)
     validate_kernel_uart_initialize(ir, unit, optimized=optimized)
     lines = ir.splitlines()
     # A post-pipeline O0 file still contains the untransformed genuine bodies.
@@ -4063,6 +5530,27 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     return {"definitions": sorted(definitions), "calls": sorted(calls), "declarations": sorted(declarations),
             "optimizer_intrinsics": sorted(declarations & intrinsic), "device_operations": actual_device_operations,
             "memory_access_counts": memory_access_counts, "readonly_optimizer_tables": readonly_tables,
+            "checked_inline": inline_report, "managed_records": records_report,
+            **({"surface_word_inline_v1":surface_inline_report} if surface_inline_report is not None else {}),
+            **({"task_entry_borrow_v2":entry_borrow_report} if entry_borrow_report is not None else {}),
+            **({"arithmetic_execution_identity":execution_report} if execution_report is not None else {}),
+            **({"managed_sums":sums_report} if sums_report is not None else {}),
+            **({"arithmetic_sums_execution_identity":sums_execution_report} if sums_execution_report is not None else {}),
+            **({"common_ofdm_kernel8_v1":common_report} if common_report is not None else {}),
+            **({"usb_fullspeed_discovery_v1":paper_wire_report} if paper_wire_report is not None else {}),
+            **({("usb_closure_recovery_v1" if unit.get('configuration') in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS else "usb_recovery_v1"):recovery_report} if recovery_report is not None else {}),
+            **({"usb_clocked_discovery_v1":paper_clocked_report} if paper_clocked_report is not None and recovery_report is None else {}),
+            **({"paper_executed_v3":paper_executed_report} if paper_executed_report is not None else {}),
+            **({"paper_staging_v2":paper_next_report} if paper_next_report is not None else {}),
+            **({"managed_array":array_report} if array_report is not None else {}),
+            **({"arithmetic_array_execution_identity":array_execution_report} if array_execution_report is not None else {}),
+            **({"managed_string":string_report} if string_report is not None else {}),
+            **({"arithmetic_string_execution_identity":string_execution_report} if string_execution_report is not None else {}),
+            **({"arithmetic_closure_execution_identity":closure_execution_report} if closure_execution_report is not None else {}),
+            **({"managed_closure":closure_report} if closure_report is not None else {}),
+            **({"managed_bytes":bytes_report} if bytes_report is not None else {}),
+            **({"arithmetic_bytes_execution_identity":bytes_execution_report} if bytes_execution_report is not None else {}),
+            **({"ble_header_intrinsic":ble_header} if ble_header else {}),
             **({"lemmasim_device_lowering":sim_devices} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else {})}
 
 
@@ -4155,6 +5643,9 @@ def validate_machine(text: str, *, user: bool = False,
         if instruction.startswith("csr"):
             names = re.findall(r"\b(?:[ms][a-z][a-z0-9]+|satp|pmp[a-z0-9]+)\b", operands)
             allowed = KNOWN_CSRS | ({"pmpaddr5", "pmpaddr6", "pmpaddr7"} if configuration in LEMMASIM_CONFIGURATIONS else set())
+            product_csrs={"pmpaddr8","pmpcfg2"}
+            product_start=configuration in PRODUCT_NOTEBOOK_CONFIGURATIONS | set(COMMON_CONFIGURATIONS) and ranges is not None and "_start" in ranges and ranges["_start"][0] <= address < sum(ranges["_start"])
+            if product_start:allowed |= product_csrs
             if not names or not set(names) <= allowed:
                 raise Core0Error("unknown CSR in platform code")
     if not found:
@@ -4299,6 +5790,21 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
         sections = alloc_section_names(section_text)
         allowed = ({".text", ".text.user_start", ".text.user_boundary", ".data.user_abi"}
                    | ({".text.user_adversarial"} if user_case != "none" else set())) if obj == "startup.o" else {".text", ".rodata", ".rodata.cst8", ".data", ".bss"}
+        if obj=="program.o" and ".rodata.cst32" in sections:
+            # Only the complete independently pinned course reader can
+            # introduce this actual32-byte merged constant table in User2.
+            # validate_object below closes every byte, flag, alignment,
+            # symbol extent and absence of relocations in the whole section.
+            from lemmasim_readonly import DOCUMENT4_NOTEBOOK_PROFILES
+            course32=[row for row in ir["optimized"]["readonly_optimizer_tables"]
+                if re.sub(r"^_private\..*?\.[0-9]+\.","",row.get("source",""))=="Lemma.Applications.Notebook.openCourse"
+                and row.get("values")==[1856,2496,2496,2496]
+                and row.get("literal_schema")=="document-v5-length-v1"
+                and row.get("index_bound")==4 and row.get("element_bits")==64
+                and row.get("alignment_bytes")==8 and row.get("guarded_loads")==1 and row.get("readonly") is True]
+            if (configuration in DOCUMENT4_NOTEBOOK_PROFILES and image_key=="notebook"
+                    and unit.get("role")=="user" and unit.get("contract_version")==DOCUMENT4_NOTEBOOK_PROFILES[configuration]
+                    and len(course32)==1):allowed.add(".rodata.cst32")
         if not sections <= allowed:
             raise Core0Error("unaccounted allocated per-image user object section")
         if ".rodata.cst8" in sections:
@@ -4412,23 +5918,45 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
 
 
 def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, images: list[dict],
-                            optimization: str, roles: dict, standalone: bool, configuration: str = "tasks-development") -> None:
+                            optimization: str, roles: dict, standalone: bool, configuration: str = "tasks-development",
+                            compiler_source_workspace: dict | None = None, source_root: Path | None = None,
+                            host_export_policy: dict | None = None) -> None:
     rows = _array(rows, "multi-image construction commands")
     if not rows or any(not isinstance(row, dict) or type(row.get("returncode")) is not int or row["returncode"] != 0
                        or not isinstance(row.get("argv"), list) or not row["argv"]
                        or any(not isinstance(arg, str) for arg in row["argv"]) or not isinstance(row.get("cwd"), str)
                        for row in rows):
         raise Core0Error("multi-image command corpus is empty, malformed or failed")
-    base = str(output_dir.relative_to(root))
+    construction_root, pin_origin = root, root
+    realization_expression, realization_cwds = LEAN_SOURCE_EXPRESSION, [".", "."]
+    if compiler_source_workspace is not None:
+        # This alternate CWD relation is admitted only with the same complete
+        # original inventory and bounded realization metadata checked by audit.
+        # It does not accept an arbitrary caller-provided expression or base.
+        if standalone or source_root is None:
+            raise Core0Error("archived multi-image commands require their complete original source root")
+        from kernel_source_workspace import PATH_SOURCE_EXPRESSION, validate_record
+        validate_record(compiler_source_workspace, source_origin=source_root,
+                        output_dir=output_dir, source_inputs=source_inputs)
+        if root.resolve() != Path(compiler_source_workspace["parent_git_root"]).resolve():
+            raise Core0Error("archived construction command parent differs")
+        construction_root = Path(compiler_source_workspace["source_workspace"]).resolve()
+        pin_origin = source_root
+        realization_expression = PATH_SOURCE_EXPRESSION
+        realization_cwds = [compiler_source_workspace["realization_cwd"], "."]
+    base = str(output_dir.relative_to(construction_root))
     def compile_unit(directory):
         return [("opt", ["-S", f"-passes={OPT_PASSES[optimization]}", "program.ll", "-o", "program.opt.ll"], base + "/" + directory),
                 ("llc", [*LLC_ARGUMENTS, "-stack-size-section", f"-{optimization}", "program.opt.ll", "-o", "program.o"], base + "/" + directory)]
     expected = [item for role in roles for item in compile_unit(role)]
     expected += [item for image in images for item in compile_unit(image["directory"])]
+    from lemmasim_readonly import course_literal_link_options, DOCUMENT4_NOTEBOOK_PROFILES
     for image in images:
         d = image["directory"]
+        literal_options = (course_literal_link_options(output_dir / d)
+                           if configuration in DOCUMENT4_NOTEBOOK_PROFILES and image["key"] == "notebook" else ())
         expected += [("clang", [*STARTUP_ARGUMENTS, d + "/startup.S", "-o", d + "/startup.o"], base),
-                     ("ld.lld", ["-m", "elf64lriscv", "--no-relax", "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"], base),
+                     ("ld.lld", ["-m", "elf64lriscv", "--no-relax", *literal_options, "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"], base),
                      ("llvm-objcopy", ["-O", "binary", "--only-section=.text", d + "/image.elf", d + "/text.bin"], base),
                      ("llvm-objcopy", ["-O", "binary", "--only-section=.data", d + "/image.elf", d + "/data.bin"], base)]
     if not standalone:
@@ -4442,7 +5970,7 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
               if tool_name(row["argv"][0]) in {"opt", "llc", "clang", "ld.lld", "llvm-objcopy"} and row["argv"][1:] != ["--version"]]
     if actual != expected:
         raise Core0Error("multi-image actual tool/arguments/working-directory closure differs")
-    pin = _object(load_json(root / "tooling/toolchain-lock.json"), "toolchain lock")
+    pin = _object(load_json(pin_origin / "tooling/toolchain-lock.json"), "toolchain lock")
     stores = {name: pin["tools"]["llvm"]["store_path"] for name in ("opt", "llc", "llvm-objcopy")}
     stores.update({"clang": pin["tools"]["llvm"]["outputs"]["clang_unwrapped"]["store_path"], "ld.lld": pin["tools"]["lld"]["store_path"],
                    "lean": pin["tools"]["lean"]["store_path"], "lake": pin["tools"]["lean"]["store_path"]})
@@ -4451,8 +5979,10 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
         if name in stores and not row["argv"][0].startswith(stores[name] + "/"):
             raise Core0Error("multi-image compiler executable differs from its pinned store")
     source_path = pin["tools"]["lean"]["source_path"]
-    nix = [row["argv"][1:] for row in rows if Path(row["argv"][0]).name == "nix"]
-    if nix != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", LEAN_SOURCE_EXPRESSION], ["path-info", "--json", source_path]]:
+    nix_rows = [row for row in rows if Path(row["argv"][0]).name == "nix"]
+    nix = [row["argv"][1:] for row in nix_rows]
+    if ([row["cwd"] for row in nix_rows] != realization_cwds or
+            nix != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", realization_expression], ["path-info", "--json", source_path]]):
         raise Core0Error("multi-image immutable Lean source realization commands differ")
     consumers = {"CatalogExport.lean": "import Lemma.Compiler.KernelExport\n\n#lemma_export_user_catalog\n"}
     for image in images:
@@ -4468,11 +5998,25 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
     for path, contents in consumers.items():
         if (output_dir / path).read_text() != contents:
             raise Core0Error("genuine Lean export consumer differs from its exact selected roots")
+    from lean_export_host import arguments as host_arguments, validate_commands as validate_export_commands
+    export_arguments = host_arguments(host_export_policy)
+    validate_export_commands(rows, host_export_policy)
     exports = [row for row in rows if Path(row["argv"][0]).name == "lake" and row["argv"][1:3] == ["env", "lean"]]
     expected_exports = [base + "/CatalogExport.lean", *(base + "/" + role + "/Export.lean" for role in roles),
                         *(base + "/" + image["directory"] + "/Export.lean" for image in images),
                         base + ("/UserFilesExport.lean" if standalone else "/BootExport.lean")]
-    if [row["argv"][3:] for row in exports] != [[path] for path in expected_exports] or any(row["cwd"] != "." for row in exports):
+    if compiler_source_workspace is not None:
+        lake_rows = [row for row in rows if Path(row["argv"][0]).name == "lake"
+                     and row["argv"][1:] != ["--version"]]
+        build_modules = [*configuration_modules(configuration).values(),
+                         *(image["module"] for image in images), "Lemma.Compiler.KernelExport"]
+        expected_lake = [["build", "Lemma.Compiler.KernelExport"],
+                         ["env", "lean", *export_arguments, expected_exports[0]], ["build", *build_modules],
+                         *(["env", "lean", *export_arguments, path] for path in expected_exports[1:])]
+        if ([row["argv"][1:] for row in lake_rows] != expected_lake or
+                any(row["cwd"] != "." for row in lake_rows)):
+            raise Core0Error("archived complete Lake build/elaboration closure differs")
+    if [row["argv"][3:] for row in exports] != [[*export_arguments, path] for path in expected_exports] or any(row["cwd"] != "." for row in exports):
         raise Core0Error("genuine Lean elaboration invocation/working-directory evidence differs")
 
 
@@ -4509,6 +6053,8 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         source_snapshot = source_inputs(root)
         if provenance.get("source_inputs") != source_snapshot:
             raise Core0Error("independent user complete source inventory is missing/stale")
+        from lean_export_host import validate_provenance as validate_export_policy
+        export_policy = validate_export_policy(provenance.get("host_export_policy"), source_snapshot)
         closure = user_module_closure(root, image, configuration)
         if configuration in MANAGED_POLICIES and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for path in closure):
             raise Core0Error("managed user target dependency closure contains privileged/compiler code")
@@ -4518,7 +6064,7 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         generated = ["user-image-catalog.json", *(directory + "/" + name for name in ("startup.S", "link.ld", "layout.json", "primitive-catalog.json"))]
         if (provenance.get("generated_by_lean") != generated
                 or provenance.get("linked_inputs") != {"users": {key: [directory + "/startup.o", directory + "/program.o"]}}
-                or provenance.get("unit_contracts") != {"users": {key: CONTRACTS["user"]}}):
+                or provenance.get("unit_contracts") != {"users": {key: validate_unit(load_json(output_dir / directory / 'unit.json'), 'user', configuration=configuration, image_key=key)['contract_version']}}):
             raise Core0Error("independent user selected generated/linked/contract inventory differs")
         artifacts = _object(provenance.get("artifacts"), "independent user artifacts")
         mandatory = set(generated) | {"CatalogExport.lean", "UserFilesExport.lean"} | {directory + "/" + name for name in
@@ -4538,7 +6084,7 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         expected.update(uint_source=str(uint_source), uint_source_sha256=LEAN_UINT_SOURCE_SHA256)
         if realization != expected or build.get("lean_source_realization") != expected or not uint_source.is_file() or sha256(uint_source) != LEAN_UINT_SOURCE_SHA256:
             raise Core0Error("independent user immutable Lean source evidence differs")
-        validate_multi_commands(provenance.get("commands"), root=root, output_dir=output_dir, images=[image], optimization=optimization, roles={}, standalone=True, configuration=configuration)
+        validate_multi_commands(provenance.get("commands"), root=root, output_dir=output_dir, images=[image], optimization=optimization, roles={}, standalone=True, configuration=configuration, host_export_policy=export_policy)
         observed = audit_user_image(root=root, output_dir=output_dir / directory, catalog=catalog, image_key=key,
                                     optimization=optimization, timeout_seconds=timeout_seconds)
         logs.extend(observed["commands"])
@@ -4554,7 +6100,11 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         write_json(output_dir / "audit-failure.json", {"schema_version": 2, "status": "FAIL", "error": str(error), "commands": logs})
         raise
 
-def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
+def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60, source_root: Path | None = None) -> dict:
+    # The workspace still owns every output and original command path. An
+    # explicit immutable source root changes only the exact consumed source,
+    # import-closure and tool-lock provider for a retained artifact re-audit.
+    source_origin = root if source_root is None else source_root.resolve()
     try:
         output_relative = output_dir.resolve().relative_to((root / "build/kernel").resolve())
     except ValueError as error:
@@ -4597,7 +6147,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         if (type(build.get("schema_version")) is not int or type(provenance.get("schema_version")) is not int
                 or build.get("schema_version") != (2 if multi else 1) or provenance.get("schema_version") != (2 if multi else 1)):
             raise Core0Error("build/provenance schema differs from selected configuration")
-        pin = _object(load_json(root / "tooling/toolchain-lock.json"), "toolchain lock")
+        pin = _object(load_json(source_origin / "tooling/toolchain-lock.json"), "toolchain lock")
         llvm_store = pin.get("tools", {}).get("llvm", {}).get("store_path")
         if pin.get("status") != "pinned" or not isinstance(llvm_store, str) or any(not path.startswith(llvm_store + "/") for path in tools.values()):
             raise Core0Error("artifact inspection tools differ from the immutable LLVM store output")
@@ -4627,7 +6177,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         linked = {"boot": list(BOOT_OBJECTS), **({"users": {image["key"]: [image["directory"] + "/startup.o", image["directory"] + "/program.o"] for image in images}} if multi else {"user": list(USER_OBJECTS)})}
         contracts = {role: kernel_contract(configuration) if role == "kernel" else CONTRACTS[role] for role in roles}
         if multi:
-            contracts["users"] = {image["key"]: CONTRACTS["user"] for image in images}
+            contracts["users"] = {image["key"]: validate_unit(load_json(output_dir / image['directory'] / 'unit.json'), 'user', configuration=configuration, image_key=image['key'])['contract_version'] for image in images}
         if provenance.get("unit_contracts") != contracts:
             raise Core0Error("exact selected per-unit contract inventory differs")
         if provenance.get("generated_by_lean") != generated or provenance.get("linked_inputs") != linked:
@@ -4649,40 +6199,64 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         if not mandatory <= set(artifacts):
             raise Core0Error("mandatory artifact hash inventory is incomplete")
         source_hashes = _object(provenance.get("source_inputs"), "source input hashes")
-        if source_hashes != source_inputs(root):
+        if source_root is not None:
+            archive_inventory = load_json(source_origin / 'source-inputs.json')
+            paths = set()
+            for path in source_origin.rglob('*'):
+                if path.is_symlink():raise Core0Error('retained source archive contains a symlink')
+                if path.is_file():paths.add(path.relative_to(source_origin).as_posix())
+            if archive_inventory != source_hashes or paths != set(source_hashes) | {'source-inputs.json'}:
+                raise Core0Error('retained source archive is not the exact complete original inventory')
+        if source_hashes != source_inputs(source_origin):
             raise Core0Error("complete current compiler/production source hash inventory differs")
         for name, digest in source_hashes.items():
-            path = root / name
+            path = source_origin / name
             if not path.is_file() or sha256(path) != digest:
                 raise Core0Error(f"current source differs from built input: {name}")
+        from lean_export_host import validate_provenance as validate_export_policy, validate_commands as validate_export_commands
+        export_policy = validate_export_policy(provenance.get("host_export_policy"), source_hashes)
         for role, module in configuration_modules(configuration).items():
             allowed = development_modules(configuration, role)
-            closure = module_closure(root, module, allow_development=bool(allowed), development_modules=allowed,
+            closure = module_closure(source_origin, module, allow_development=bool(allowed), development_modules=allowed,
                                      selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None)
             if any("/Development/" in path and path not in {selected.replace(".", "/") + ".lean" for selected in allowed} for path in closure):
                 raise Core0Error("dependency imports another configuration's development module")
             if closure != provenance.get("target_module_closures", {}).get(role):
                 raise Core0Error("production import closure missing/stale")
         if multi:
-            expected_users = {image["key"]: user_module_closure(root, image, configuration) for image in images}
+            expected_users = {image["key"]: user_module_closure(source_origin, image, configuration) for image in images}
             if configuration in MANAGED_POLICIES and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for closure in expected_users.values() for path in closure):
                 raise Core0Error("managed user target dependency closure contains privileged/compiler code")
             if any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean"
                    for image in images for path in expected_users[image["key"]]):
                 raise Core0Error("per-image dependency imports another development module")
-            if provenance.get("target_module_closures") != {**{role: module_closure(root, module, allow_development=development_role(configuration, role), development_modules=development_modules(configuration, role), selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None) for role, module in configuration_modules(configuration).items()}, "users": expected_users}:
+            if provenance.get("target_module_closures") != {**{role: module_closure(source_origin, module, allow_development=development_role(configuration, role), development_modules=development_modules(configuration, role), selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None) for role, module in configuration_modules(configuration).items()}, "users": expected_users}:
                 raise Core0Error("exact full per-image source dependency inventory differs")
         command_rows = _array(provenance.get("commands"), "build commands")
         if not command_rows or any(not isinstance(row, dict) or row.get("returncode") != 0 for row in command_rows):
             raise Core0Error("build command corpus empty, malformed or failed")
+        validate_export_commands(command_rows, export_policy)
         lake_commands = [row["argv"][0] for row in command_rows if isinstance(row.get("argv"), list)
                          and row["argv"] and Path(row["argv"][0]).name == "lake"]
         if not lake_commands or any(not path.startswith(lean_pin["store_path"] + "/") for path in lake_commands):
             raise Core0Error("genuine Lean elaboration must use the immutable pinned Lake executable")
-        nix_commands = [row["argv"][1:] for row in command_rows if isinstance(row.get("argv"), list)
-                        and row["argv"] and Path(row["argv"][0]).name == "nix"]
-        if nix_commands != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", LEAN_SOURCE_EXPRESSION],
-                            ["path-info", "--json", lean_pin["source_path"]]]:
+        nix_rows = [row for row in command_rows if isinstance(row.get("argv"), list)
+                    and row["argv"] and Path(row["argv"][0]).name == "nix"]
+        realization_expression = LEAN_SOURCE_EXPRESSION
+        workspace_report = None
+        workspace = provenance.get('compiler_source_workspace')
+        if workspace is not None:
+            if source_root is None:raise Core0Error('archived compiler workspace requires its explicit original source root')
+            from kernel_source_workspace import PATH_SOURCE_EXPRESSION, validate_record
+            workspace_report = validate_record(workspace,source_origin=source_origin,output_dir=output_dir,source_inputs=source_inputs)
+            if workspace['parent_git_head'] != provenance.get('source_commit'):
+                raise Core0Error('archive compiler Git observation was retagged')
+            realization_expression = PATH_SOURCE_EXPRESSION
+        expected_nix_cwds = [workspace['realization_cwd'] if workspace is not None else '.', '.']
+        nix_commands = [row['argv'][1:] for row in nix_rows]
+        if ([row.get('cwd') for row in nix_rows] != expected_nix_cwds or
+                nix_commands != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", realization_expression],
+                            ["path-info", "--json", lean_pin["source_path"]]]):
             raise Core0Error("Lean source realization command evidence is missing or differs")
         compile_commands = [row["argv"][1:] for row in command_rows if isinstance(row.get("argv"), list)
                             and row["argv"] and Path(row["argv"][0]).name in {"llc", "opt", "ld.lld", "clang", "clang-20", "llvm-objcopy"}
@@ -4697,8 +6271,10 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                                       [*LLC_ARGUMENTS, "-stack-size-section", f"-{optimization}", "program.opt.ll", "-o", "program.o"]]
             for image in images:
                 d = image["directory"]
+                from lemmasim_readonly import course_literal_link_options
+                literal_options = course_literal_link_options(output_dir / d)
                 expected_commands += [[*STARTUP_ARGUMENTS, d + "/startup.S", "-o", d + "/startup.o"],
-                                      ["-m", "elf64lriscv", "--no-relax", "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"],
+                                      ["-m", "elf64lriscv", "--no-relax", *literal_options, "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"],
                                       ["-O", "binary", "--only-section=.text", d + "/image.elf", d + "/text.bin"],
                                       ["-O", "binary", "--only-section=.data", d + "/image.elf", d + "/data.bin"]]
             expected_commands += [[*STARTUP_ARGUMENTS, "boot-package.S", "-o", "boot-package.o"],
@@ -4713,7 +6289,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                               [*STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"],
                               ["-m", "elf64lriscv", "--no-relax", "-T", "link.ld", "-Map=image.map", *BOOT_OBJECTS, "-o", "image.elf"]]
         if multi:
-            validate_multi_commands(command_rows, root=root, output_dir=output_dir, images=images, optimization=optimization, roles=roles, standalone=False, configuration=configuration)
+            validate_multi_commands(command_rows, root=root, output_dir=output_dir, images=images, optimization=optimization, roles=roles, standalone=False, configuration=configuration, compiler_source_workspace=workspace, source_root=source_origin if workspace is not None else None, host_export_policy=export_policy)
         if compile_commands != expected_commands:
             raise Core0Error("actual compiler/link command closure differs")
         for map_file, allowed in ((("image.map", BOOT_OBJECTS),) if multi else (("image.map", BOOT_OBJECTS), ("user/image.map", USER_OBJECTS))):
@@ -4732,6 +6308,20 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
         task_stack = validate_owned_task_stack(layout, units["kernel"], (output_dir / "kernel/program.ll").read_text())
         object_budget = validate_object_budget(units['kernel'], (output_dir/'kernel/program.ll').read_text())
+        # Canonical notebooks use their own device/boot authority closure,
+        # rather than the historical IPC-development graph. Every kernel unit
+        # that reaches managed dispatch must still audit this local borrow.
+        capability_header_borrow = (validate_capability_header_helpers(units['kernel'], (output_dir/'kernel/program.ll').read_text())
+            if any(re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])=='Lemma.Kernel.Capability.managed'
+                   for row in units['kernel']['functions']) else None)
+        from ipc_poll_borrow import validate_reachable_helpers
+        ipc_poll_borrow = validate_reachable_helpers(units['kernel'], (output_dir/'kernel/program.ll').read_text())
+        task_capture_borrow = (validate_task_capture_borrow(units['kernel'], (output_dir/'kernel/program.ll').read_text())
+            if any(re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])=='Lemma.Kernel.Task.capture'
+                   for row in units['kernel']['functions']) else None)
+        surface_read_page_borrow = (validate_surface_read_page_borrow(units['kernel'], (output_dir/'kernel/program.ll').read_text())
+            if any(re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])=='Lemma.Platform.LemmaSim.DeviceService.surface'
+                   for row in units['kernel']['functions']) else None)
         managed_capabilities = (validate_managed_capability_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
                                 if configuration == "capabilities-development" else None)
         managed_ipc = (validate_ipc_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
@@ -4847,7 +6437,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         startup = (output_dir / "startup.S").read_text()
         user_source = output_dir / (images[0]["directory"] + "/startup.S" if multi else "user-startup.S")
         user_startup = user_source.read_text()
-        user_audits = {image["key"]: audit_user_image(root=root, output_dir=output_dir / image["directory"], catalog=catalog,
+        user_audits = {image["key"]: audit_user_image(root=source_origin, output_dir=output_dir / image["directory"], catalog=catalog,
                                                    image_key=image["key"], optimization=optimization, timeout_seconds=timeout_seconds)
                        for image in images}
         for value in user_audits.values():
@@ -4895,6 +6485,11 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             if not user:
                 machine = (output_dir / "audit-boot-disassembly.txt").read_text()
                 info["startup"] = validate_startup_case(machine, ranges, case)
+                if configuration in COMMON_CONFIGURATIONS:
+                    from wifi_common import validate_pmp as validate_common_pmp
+                    info["common_pmp"] = validate_common_pmp(startup, raw_machine, ranges, configuration)
+                else:
+                    info["product_pmp"] = validate_product_pmp(startup, raw_machine, ranges, configuration)
                 root_symbol = (load_json(output_dir / images[0]["directory"] / "unit.json")["roots"][0]["symbol"] if multi else units["user"]["roots"][0]["symbol"])
                 info["context_abi"] = validate_context_abi(startup, raw_machine, ranges, user_startup, root_symbol, user_case)
             else:
@@ -4919,11 +6514,17 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                   "stage": stage, "optimization": optimization, "source_commit": provenance["source_commit"],
                   "dirty_paths": provenance["dirty_paths"], "image_sha256": sha256(output_dir / "image.elf"),
                   "lean_source_realization": realization,
+                  **({"compiler_source_workspace":workspace_report} if workspace_report is not None else {}),
                   "boot_package_sha256": sha256(output_dir / "audit-package.bin"),
                   "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "backend_readonly_objects": backend_objects, "elf": inspections, "commands": logs,
                   "stack_bounds": {"capacities": capacities, "roles": stacks, "dynamic_stack": False},
                   "task_kernel_stack": task_stack,
+                  **software_deployment_fields(configuration),
                   "object_budget": object_budget,
+                  **({"capability_header_borrow":capability_header_borrow} if capability_header_borrow is not None else {}),
+                  **({"ipc_poll_borrow":ipc_poll_borrow} if ipc_poll_borrow is not None else {}),
+                  **({"task_capture_borrow":task_capture_borrow} if task_capture_borrow is not None else {}),
+                  **({"surface_read_page_borrow":surface_read_page_borrow} if surface_read_page_borrow is not None else {}),
                   **({"architecture_diagnostics": architecture} if architecture is not None else {}),
                   "limitations": ["Artifact/source closure audit, not S/U execution or compiler-correctness proof.",
                                    ("bootstrap-m invokes maintained kernel code in M mode; separately linked user bytes are not yet a running task."
@@ -4949,7 +6550,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                               {'managed_service':managed_service} if configuration in SERVICE_CONFIGURATIONS else {'managed_ipc':managed_ipc})
         else:
             record["user_image_sha256"] = sha256(output_dir / "user/image.elf")
-        if source_inputs(root) != source_hashes:
+        if source_inputs(source_origin) != source_hashes:
             raise Core0Error("compiler/production source changed during artifact audit")
         write_json(result_path, record)
         return record
@@ -4962,16 +6563,19 @@ def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("output_dir", type=Path)
     parser.add_argument("--timeout", type=float, default=60)
+    parser.add_argument("--source-root",type=Path,help="Complete immutable original source archive for a retained boot build")
     ns = parser.parse_args()
     root = repo_root()
     try:
         directory = (root / ns.output_dir).resolve()
         if (directory / "user-build.json").exists():
+            if ns.source_root is not None:raise Core0Error('retained boot source archive is not an independent-user audit')
             if (directory / "build.json").exists():
                 raise Core0Error("ambiguous boot/independent-user build category")
             record = audit_standalone_user(root=root, output_dir=directory, timeout_seconds=ns.timeout)
         else:
-            record = audit(root=root, output_dir=directory, timeout_seconds=ns.timeout)
+            record = audit(root=root, output_dir=directory, timeout_seconds=ns.timeout,
+                           source_root=(root/ns.source_root).resolve() if ns.source_root is not None else None)
     except (Core0Error, OSError, ValueError, KeyError, TypeError) as error:
         print(f"KERNEL AUDIT FAIL: {error}", file=sys.stderr)
         return 1

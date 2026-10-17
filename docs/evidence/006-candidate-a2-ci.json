@@ -1,0 +1,1016 @@
+{
+  "schema": "lemma-task006-candidate-observation/1",
+  "source_commit": "a2a695f19c0f5976197421b0fad05a0f4cdcb492",
+  "actual_ci_run": 38577664110,
+  "actual_ci_status": "completed",
+  "actual_ci_conclusion": "failure",
+  "actual_checkout": "5fa5099092f7b56d28ac87d9190e4c43f7197b48",
+  "jobs_passed": 8,
+  "failed_jobs": [
+    {
+      "job_id": 115898926517,
+      "name": "Metadata and host-only suites",
+      "failed_step": "Run silicon host orchestration and observation suite",
+      "actual_tests": 198,
+      "actual_failures": 1,
+      "actual_test": "test_clock_cdc_and_readback_facts_are_closed",
+      "reason": "Original normal-only profile workload-map expectation excludes separately versioned opt-in Recovery selectors. Clock/CDC checks remain unchanged.",
+      "corrected_observer": {
+        "result": "PASS",
+        "actual_tests": 198,
+        "log_sha256": "52c501a6203d7b621d170ff41fac2351089c3128ce9099f777bd3a7fa8239144",
+        "independent_expected_map": "Four exact literal workload names; each prepared deployment still equals only its own two roles.",
+        "producer_runtime_changed": false
+      }
+    },
+    {
+      "job_id": 115898926664,
+      "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+      "failed_step": "Compile, audit and observe real O0/O2 guest ink and cold recovery",
+      "actual_error": "page-word complete checked body differs: Lemma.Kernel.Memory.UserCopy.copyWord/post",
+      "subsequent_acceptance_step": "skipped",
+      "artifact_id": 11902003996,
+      "artifact_sha256": "6abe33ae9d0bb66c52158f4108b537f6cdb77b6fca65e3a270ccf4e973e060af",
+      "diagnosis": "Genuine historical Kernel3 retains ordered checked Access calls; newer Kernel4 audit pins require inlined volatile operations. Separate profile/lowering authority and exact non-inlined bodies are being qualified; no calls normalized away.",
+      "correction_status": "Observer repair eff36fb4f54f93f82dfc894954eed7a7da10332f: original genuine CI ordinary unit+pre/postIR qualification26.672s, exact Kernel3/old+newKernel4 positives and140actual rejecting mutations. No target edit or archived compiled-artifact mutation; originalCI remainsFAIL.",
+      "correction_evidence": "docs/evidence/006-usercopy-kernel3-observer-v1.json"
+    }
+  ],
+  "scope": "Historical candidate terminal observation retained. Corrected host fixture is not an inherited CI pass; a later candidate requires its own actual result.",
+  "subsequent_candidate_415c": {
+    "source_commit": "415c4e5e11072844b9fcde0587373403b755da18",
+    "actual_ci_run": 38585591262,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "actual_checkout": "7be37fe30f6c45ac3e96945314944b2d94d9f246",
+    "jobs_passed": 9,
+    "jobs": [
+      {
+        "id": 115926607511,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926607512,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Compile, audit and observe real O0/O2 guest ink and cold recovery"
+        ],
+        "skipped_steps": [
+          "Require exact-candidate observations rather than a scoped empty pass"
+        ]
+      },
+      {
+        "id": 115926607553,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926607656,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926607695,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926652902,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926669689,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926745129,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926794400,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926864893,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      }
+    ],
+    "failure": {
+      "job_id": 115926607512,
+      "configuration": "lemmasim-initialize",
+      "contract": "core0-kernel-v0.3",
+      "managed_policy": "lemma-notebook-v1",
+      "root": "NotebookKernel.initializeMedium",
+      "actual_error": "page-word Kernel3 historical configuration/lowering authority differs",
+      "original_notebook_O2_audit": "PASS",
+      "subsequent_exact_candidate_step": "SKIPPED",
+      "artifact_id": 11906830937,
+      "artifact_sha256": "ff87b692a533307fe6b0f5d8b4a3a97a9f7a903c5bf594adc1aa012f7cfdbde0",
+      "retained_original": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-initialize-O2",
+      "correction_commit": "16c3846",
+      "correction_evidence": "docs/evidence/006-usercopy-kernel3-initializer-observer-v1.json",
+      "correction": "Exact closed cfg\u2192root notebook.boot and initializer.initializeMedium map. Body pins, authority/status/access checks and target artifacts unchanged. Both originalCI ordinary roles/pre-post and both Kernel4 profiles pass;280actual mutations reject.",
+      "new_ci": "NOT_RUN"
+    }
+  },
+  "subsequent_candidate_7cec": {
+    "source_commit": "7cec5096b282cd5cc8fd14c38a6ff5e271fd597d",
+    "actual_ci_run": 38598060895,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "actual_checkout": "c00a58d2384a7bd32aa9f2d379ba37b0456357b0",
+    "jobs_passed": 9,
+    "jobs": [
+      {
+        "id": 115969808693,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969808700,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969808777,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969808858,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969808861,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969808958,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969809119,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Compile, audit and observe real O0/O2 guest ink and cold recovery"
+        ],
+        "skipped_steps": [
+          "Require exact-candidate observations rather than a scoped empty pass"
+        ]
+      },
+      {
+        "id": 115969809144,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969809207,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969809446,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      }
+    ],
+    "failure": {
+      "job_id": 115969809119,
+      "artifact_id": 11913248984,
+      "artifact_bytes": 18063837,
+      "artifact_sha256": "f832ca7a1b472516cb0af96faae78124cd55a166a0afcd7d4f9bac602a5c765c",
+      "retained": "build/ci/task006-7cec-failures-a1/writing.zip",
+      "selective_extraction": "All893 bounded entries retained; eleven256MiB raw media entries remain inside the complete original ZIP, not extracted.",
+      "actual_error": "page-word complete checked body differs: Lemma.Kernel.Memory.UserCopy.copyWord/post",
+      "affected_configuration": "lemmasim-notebook",
+      "optimization": "O0",
+      "notebook_O2_audit": "PASS",
+      "initializer_O2_audit": "PASS",
+      "following_acceptance": "SKIPPED",
+      "diagnosis": "Actual O0 post differs in predecessor comments and typed i1 Boolean print spelling; strict independently qualified observer correction is being prepared. Original failure retained; no candidate rerun/pass inferred."
+    }
+  },
+  "subsequent_candidate_24b": {
+    "source_commit": "24b688d9447ca0faf602989c078df74351753f45",
+    "actual_ci_run": 38621272240,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "actual_checkout": "87ad70d1a84e3115bb4b26ffb57fec758074566c",
+    "jobs_passed": 9,
+    "jobs_total": 10,
+    "previous_real_notebook_O0_O2_and_foundation": "SUCCESS on this actual candidate; not inherited from older runs",
+    "failure": {
+      "job_id": 116049109600,
+      "name": "Metadata and host-only suites",
+      "actual_test": "test_clock_cdc_and_readback_facts_are_closed",
+      "actual_tests": 198,
+      "actual_failures": 1,
+      "retained_log": "build/ci/task006-24b-failures-a1/job-116049109600.log",
+      "retained_log_sha256": "3ecbcc358c7eb84e50bc1784ef04941e3516af8efb97976e730822cd03103175",
+      "reason": "Exact test map included normal and Sums Recovery2, but omitted the two committed Closure Recovery3 roles. Hardware/profile production checks were already correct."
+    },
+    "subsequent_host_observer": {
+      "result": "PASS",
+      "test_path": "tests/silicon/test_usb_clocked_profile.py",
+      "test_sha256": "9cc5638f0c78f3a1e6cd3fc922efc3efcef4293d2d1a899275bb15789e00c7af",
+      "original_test_sha256": "2c502af4f42e2af9e99e2760b6c6a34cd574eba26900abbbe069fae221b22fe1",
+      "change": "Adds two exact Closure Recovery3 workload/configuration literals and exact family-map equality. All clock/CDC/readback, historical bindings and malformed-profile guards retained.",
+      "focused_tests": 7,
+      "focused_seconds": 0.008,
+      "focused_log_sha256": "edd4536e96c38e6654865a83f7957f9d3fc5ba12ad688cd056372d7056252175",
+      "full_current_host_tests": 201,
+      "full_test_seconds": 1.639,
+      "full_subprocess_seconds": 2.4197731260210276,
+      "full_log": "build/usb/clocked-ci-configuration-expectation-a1/whole.log",
+      "full_log_sha256": "7ba0160ebcf2845132c3f6961a4184a051a0969ceb2a172c499e330897473ab3",
+      "result_path": "build/usb/clocked-ci-configuration-expectation-a1/whole-result.json",
+      "result_sha256": "638d906048d88abd26c11c36dc4d110e996536b8b4a6bc54df08f31b7206ee9c",
+      "fresh_python_cache": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-ci-configuration-expectation-a1/whole-python-cache",
+      "production_or_actor_changed": false,
+      "new_ci": "NOT_RUN",
+      "scope": "Local host tests only; original candidate remains actual FAIL, no new guest or circuit acceptance."
+    }
+  },
+  "subsequent_candidate_0b1": {
+    "head": "0b1f80ce92be0aa7c2b6416603b7830c409c63aa",
+    "run_id": 38636060344,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/srkftw/lemma/actions/runs/38636060344",
+    "jobs": [
+      {
+        "id": 116099415124,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415472,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415474,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415477,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415566,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415643,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415653,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415667,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415754,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415963,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      }
+    ],
+    "scope": "Actual published 0b1 candidate only; no qualification inherited by newer uncommitted Package/Surface integration; PR9 remains draft/unmerged."
+  },
+  "subsequent_candidate_494": {
+    "source_commit": "4948899c699868e253d9ab3658e73e3dd08683a0",
+    "actual_ci_run": 38644955941,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "actual_checkout": "6d80cdf0e481ac8207399867a7cdc30aa2f354e4",
+    "jobs_passed": 9,
+    "jobs": [
+      {
+        "id": 116129411242,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411377,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Compile, audit and observe real O0/O2 guest ink and cold recovery"
+        ],
+        "skipped_steps": [
+          "Require exact-candidate observations rather than a scoped empty pass"
+        ]
+      },
+      {
+        "id": 116129411450,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411475,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411521,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411564,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411565,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411571,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411611,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411713,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      }
+    ],
+    "failed_host_tests": 289,
+    "actual_failure": {
+      "job_id": 116129411377,
+      "test": "test_managed_guest_override_is_exact_and_available_in_ordinary_modes",
+      "error": "The literal owner-installer exclusion map omits exactly two new PackageClosure configurations; Student correctly rejects in maintained development_configuration.",
+      "artifact_id": 11932915765,
+      "zip_sha256": "2f41eaf64d8eaf6b59affb8897a5147ee19d8e57c4321aaf5133b13a31db226e",
+      "log_sha256": "11c6fc24bc2ceee5beddace3abd08d8a1763f1f091d846bb6dd164088fe4758a",
+      "job_log_sha256": "2c23664ce90dcc66bff3fc8b5573667ee68fdffabcca71021f11bce004426ae8",
+      "target_acceptance": "NOT_RUN_AFTER_HOST_FAILURE",
+      "subsequent_step": "skipped"
+    },
+    "corrected_fixture": {
+      "receipt": "build/ci/task006-494-native-fixture-repair-a1/result.json",
+      "receipt_sha256": "943313db4a544b177db19a0b752c5ffd60d02267c7481fbae42edbd2e395776e",
+      "focused_tests": 13,
+      "full_pinned_tests": 293,
+      "scope": "exact two literal exclusions plus explicit newpair owner-role/profile/lookalike rejection checks; production guard unchanged; no CI result inferred from local pass"
+    }
+  },
+  "subsequent_candidate_d64": {
+    "source_commit": "d64b7ab4f96c9f84b213d929b6f0404028eef1eb",
+    "actual_ci_run": 38648367594,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "success",
+    "jobs_passed": 10,
+    "failed_jobs": [],
+    "skipped_steps": [],
+    "observation": "GitHub workflow run and every job/step retrieved after terminal completion on 2026-10-14; original494 failure remains retained. Report-only successor da218 has no separate CI claim.",
+    "jobs": [
+      {
+        "id": 116140772624,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140772876,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140772941,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140772957,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140772964,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140773006,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140773014,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140773019,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140773045,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140773121,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "scope": "Exact pushed candidate CI; does not certify new installed-course/browser workflows or unfinished whole-machine gates."
+  },
+  "subsequent_candidate_454": {
+    "source_commit": "454e016e497c64f7e6bab922010c71b3499e43dc",
+    "actual_ci_run": 38657621454,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "success",
+    "jobs_passed": 10,
+    "failed_jobs": [],
+    "skipped_steps": [],
+    "jobs": [
+      {
+        "id": 116171031963,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032065,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032143,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032145,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032204,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032206,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032231,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032235,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032249,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032321,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "scope": "Terminal run and all steps observed. This does not qualify the separately repaired package counter or later observer source."
+  },
+  "subsequent_candidate_344": {
+    "source_commit": "344dfa382cc8a7f54ef15d81037d07ad76fa4fac",
+    "actual_ci_run": 38661101254,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "jobs_passed": 9,
+    "failed_jobs": [
+      {
+        "id": 116182278381,
+        "name": "Metadata and host-only suites",
+        "conclusion": "failure"
+      }
+    ],
+    "skipped_steps": [
+      {
+        "job": "Metadata and host-only suites",
+        "step": "Observe checked memory copying and power authority in Lean"
+      },
+      {
+        "job": "Metadata and host-only suites",
+        "step": "Check indexed frames, exact mathematics and external backing outcomes"
+      },
+      {
+        "job": "Metadata and host-only suites",
+        "step": "Qualify IPC authority and managed notebook lowering"
+      },
+      {
+        "job": "Metadata and host-only suites",
+        "step": "Run kernel host-harness suite"
+      },
+      {
+        "job": "Metadata and host-only suites",
+        "step": "Run silicon host orchestration and observation suite"
+      }
+    ],
+    "jobs": [
+      {
+        "id": 116182278096,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278265,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278300,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278307,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278321,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278328,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278334,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278360,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278381,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 116182278479,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "original_log": {
+      "path": "build/ci/task006-344-failure-a1/job-116182278381.log",
+      "sha256": "52b09064bacbf32694b7e2af1d271e69ea5994f6084e835186dfd6b102f35203"
+    },
+    "cause": "The exact logged-pipeline inventory in tests/foundation/test_ci_workflow.py omitted the new bounded NotebookPackage.lean regression log. Actual468 foundation tests ran; one static inventory assertion failed. Later five host steps were skipped. Nine other jobs passed.",
+    "repair": "Add only metadata/notebook-package-state-layout.log to the expected ordered inventory. The CI command, timeout, pipefail, retained logs and independent rejection tests remain enforced.",
+    "local_validation": {
+      "status": "PASS",
+      "tests": 468,
+      "seconds": 34.954,
+      "log": {
+        "path": "build/ci/task006-344-failure-a1/foundation-repaired.log",
+        "sha256": "2343a6d06db6617d9e4c48143a8314e991d227c5de943dd43efc63ba04079aa1"
+      }
+    },
+    "replacement_ci": "NOT_RUN for this unpushed repair; original candidate remains FAILURE."
+  },
+  "subsequent_candidate_f609": {
+    "source_commit": "f609fd054fdf59fbf1f9886c7d2361b35bfcd82f",
+    "actual_ci_run": 38664945609,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "jobs_passed": 9,
+    "jobs": [
+      {
+        "id": 116194624064,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Qualify IPC authority and managed notebook lowering"
+        ],
+        "skipped_steps": [
+          "Run kernel host-harness suite",
+          "Run silicon host orchestration and observation suite"
+        ]
+      },
+      {
+        "id": 116194624220,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624280,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624282,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624319,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624373,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624475,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624493,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624512,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624618,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      }
+    ],
+    "original_log": {
+      "path": "build/ci/task006-f609-failure-a1/metadata-job.log",
+      "sha256": "f28ab5eb86941de4d96b4b08c985e31c44a3704e8dad3c82b8b5609507a002fa"
+    },
+    "cause": "Fresh CI did not build Lemma.Applications.Notebook.olean before the actual NotebookPackage.lean import. Foundation passed; the subsequent kernel and silicon host steps were skipped. Nine other jobs passed, including actual notebook O0/O2 and cold recovery.",
+    "repair": "Build the explicitly imported Notebook module in the existing bounded Lake step, and assert that dependency ordering in the workflow guard. No test, timeout, pipefail or required observation is removed.",
+    "local_validation": {
+      "status": "PASS",
+      "workflow_guard_tests": 13,
+      "actual_Lean_module_and_regression": "65 Lake jobs plus actual NotebookPackage.lean regression",
+      "guard_log": {
+        "path": "build/ci/task006-f609-failure-a1/workflow-guard-repaired.log",
+        "sha256": "a83bb356d2b0f64768a62c7ae1cf49b4ce309b793d7832c01eec9ea33499a612"
+      },
+      "actual_Lean_log": {
+        "path": "build/ci/task006-f609-failure-a1/notebook-module-and-regression.log",
+        "sha256": "b17211810c2b7190723504c6023f4cb1d91e86a65bf1eec8e1c42051ff761d64"
+      }
+    },
+    "replacement_ci": "NOT_RUN for the unpushed dependency repair; original candidate remains FAILURE."
+  },
+  "subsequent_candidate_837": {
+    "source_commit": "83719afbd1fa7f51ff2ae3332b196863f57fddb3",
+    "actual_ci_run": 38672256215,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "success",
+    "jobs_passed": 10,
+    "skipped_steps": [],
+    "jobs": [
+      {
+        "id": 116217857503,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857562,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857566,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857592,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857621,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857676,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857751,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857772,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857786,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857826,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      }
+    ],
+    "scope": "Terminal actual job/step observation: both prior inventory and missing-Notebook-module repairs pass. Later native-refresh/registry-count changes require their own candidate; this is not their inherited CI pass."
+  },
+  "subsequent_candidate_552": {
+    "commit": "552d39ece2884224ec9564477057f98a0a59a460",
+    "tested_pr_merge": "927f7434fd60ea2e06dd83d6f7a19f6a6073f468",
+    "run_id": 38676442848,
+    "status": "completed",
+    "conclusion": "failure",
+    "jobs_success": 9,
+    "jobs_failure": 1,
+    "failed_job": "Task003 Gates F-I RV64 acceptance",
+    "failed_job_id": 116231026411,
+    "skipped": [
+      "Require all managed-kernel artifacts and actual sessions"
+    ],
+    "original_job_log": {
+      "path": "build/ci/task006-552-failure-a1/managed-job.log",
+      "sha256": "c46702459e2a04d324213d6c4e4baa8ff77a231e79010c123beb0997e1305f8b"
+    },
+    "retained_artifact": {
+      "path": "build/ci/task006-552-failure-a1/managed-artifact.zip",
+      "sha256": "ffc4a6022a145ca5cc25b7a4a62bdd5ad52bc561a1a8c31f26f1098f791b8bae"
+    },
+    "artifact_id": 11945799676,
+    "observed_failure": "I-O2 original observation rejected correct clientB192-byte payload after clientA preempted between separate Console packet/payload syscalls. Actual digest15530704513209412611 equals independent A5 reference; prior same task/request packet length256 is present. Original whole protocol remains FAIL, its unexecuted suffix is not passed.",
+    "repair": "Correlate one prior packet by full task/request instead of last global packet. Retain exact sender, size, digest, per-transaction order and payload uniqueness; additionally reject duplicate packet witnesses.",
+    "retained_observation": {
+      "path": "build/ci/task006-552-failure-a1/correlation-observation.json",
+      "sha256": "97e65888569a452068456f9aa7fa6726b2106dd4d3b0be1e220d9e5c004def99"
+    },
+    "negative_scope": "Six mutations of actual retained CI records reject: digest, length, request, missing/duplicate packet and sender.",
+    "host_tests": {
+      "path": "build/ci/task006-552-failure-a1/correlation-unit.log",
+      "sha256": "29a913317fb7742f997e4077d94f41ea1d9fb2555f346697fef473df73c579c9"
+    },
+    "fresh_full_protocol": {
+      "status": "PASS_FRESH_COMPLETE_I_O2_O0",
+      "source_commit": "b137a35e845d6cbe214859a62d2c785ad428cfa9",
+      "result": {
+        "path": "build/ci/task006-I-correlation-fresh-a1/result.json",
+        "sha256": "77f7fe91f8ce4e6c46db7128f7b2d952573824a2bb76df3e135e7bc6937d1bc1"
+      },
+      "seconds": 172.89109323907178,
+      "cases": [
+        {
+          "optimization": "O2",
+          "actual_payloads": 13,
+          "build_seconds": 48.39882495999336,
+          "audit_and_protocol_seconds": 37.32282090897206
+        },
+        {
+          "optimization": "O0",
+          "actual_payloads": 13,
+          "build_seconds": 45.408953684032895,
+          "audit_and_protocol_seconds": 41.52483323891647
+        }
+      ],
+      "scope": "New genuinely compiled and ordinarily audited I guests execute complete copied IPC, packet corpus, blocks, rollback, cancellation/death/reclamation and Busy continuation. No retained prefix relabeled; original failed I remainsFAIL. Subsequent audit-guard correction is separate."
+    }
+  }
+}

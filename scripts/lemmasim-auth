@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+"""Explicit public-development-key companion command for LemmaSim Product10."""
+from lemmasim_auth import main
+raise SystemExit(main())

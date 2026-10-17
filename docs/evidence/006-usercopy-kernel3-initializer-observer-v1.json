@@ -1,0 +1,214 @@
+{
+  "schema": "lemma-usercopy-kernel3-initializer-observer-evidence/1",
+  "status": "PASS_OBSERVER_ONLY",
+  "scope": "Exact historical Task004 Kernel3 configuration-to-root sibling correction. Original CI notebook audit passed; initializer audit failed. Genuine unchanged artifacts independently reobserved; no target/source body, pins, lowering or runtime change; no CI rerun or guest success claim.",
+  "original_ci": {
+    "run": 38585591262,
+    "candidate_commit": "415c4e5e11072844b9fcde0587373403b755da18",
+    "artifact_id": 11906830937,
+    "writing_zip_sha256": "ff87b692a533307fe6b0f5d8b4a3a97a9f7a903c5bf594adc1aa012f7cfdbde0",
+    "status": "FAIL",
+    "notebook_O2_audit": "PASS",
+    "initializer_O2_error": "page-word Kernel3 historical configuration/lowering authority differs",
+    "downstream_writing_step": "SKIPPED",
+    "roles": {
+      "lemmasim-notebook": {
+        "source_commit": "7be37fe30f6c45ac3e96945314944b2d94d9f246",
+        "consumed_inputs": 371,
+        "roots": [
+          {
+            "symbol": "lemma_kernel_core0_action_502",
+            "source": "Lemma.Platform.LemmaSim.NotebookKernel.boot",
+            "id": 1,
+            "args": []
+          },
+          {
+            "symbol": "lemma_kernel_core0_action_671",
+            "source": "Lemma.Platform.LemmaSim.NotebookKernel.dispatch",
+            "id": 2,
+            "args": [
+              "u64",
+              "u64",
+              "u64"
+            ]
+          }
+        ],
+        "function_count": 1188
+      },
+      "lemmasim-initialize": {
+        "source_commit": "7be37fe30f6c45ac3e96945314944b2d94d9f246",
+        "consumed_inputs": 371,
+        "roots": [
+          {
+            "symbol": "lemma_kernel_core0_action_502",
+            "source": "Lemma.Platform.LemmaSim.NotebookKernel.initializeMedium",
+            "id": 1,
+            "args": []
+          },
+          {
+            "symbol": "lemma_kernel_core0_action_671",
+            "source": "Lemma.Platform.LemmaSim.NotebookKernel.dispatch",
+            "id": 2,
+            "args": [
+              "u64",
+              "u64",
+              "u64"
+            ]
+          }
+        ],
+        "function_count": 1188
+      }
+    }
+  },
+  "admission": {
+    "profile": "core0-kernel-v0.3",
+    "role": "kernel",
+    "schema_version": 1,
+    "managed_policy": "lemma-notebook-v1",
+    "artifact_category": "development-kernel-unit",
+    "checked_inline": "ABSENT",
+    "root_dictionary": {
+      "lemmasim-notebook": "Lemma.Platform.LemmaSim.NotebookKernel.boot",
+      "lemmasim-initialize": "Lemma.Platform.LemmaSim.NotebookKernel.initializeMedium"
+    },
+    "dispatch": "Lemma.Platform.LemmaSim.NotebookKernel.dispatch",
+    "root_ids_args": [
+      [
+        1,
+        []
+      ],
+      [
+        2,
+        [
+          "u64",
+          "u64",
+          "u64"
+        ]
+      ]
+    ],
+    "body_pins": "All9PRE/3 existingPOST alternatives/remaining6POST unchanged; allKernel4 exactbody and volatile gates unchanged",
+    "semantics": "Exact original read64\u2192checked write64 pairs,8 increasing addresses/read values/zero-status success CFG/order/fatal255 and64-byte prefix accumulator; unknown configurations or crossed exact root pairs reject."
+  },
+  "qualification": {
+    "wall_seconds": 65.21407836792059,
+    "ordinary_both_roles_unit_pre_post": true,
+    "Kernel4_old_new_pre_post": true,
+    "actual_mutations_rejected": 280,
+    "mutations_per_role": 140,
+    "independent_operation_gate_layer": true,
+    "scaffold_tests": 18,
+    "no_rebuild": true,
+    "guest_execution": "NOT_RUN",
+    "fresh_CI": "NOT_RUN"
+  },
+  "source_review": {
+    "actual_artifact_source_commit": "7be37fe30f6c45ac3e96945314944b2d94d9f246",
+    "same_candidate_blob_sha256": {
+      "scripts/usercopy_page_words.py": "76ea511f2914234d65e80971786b39166292d88771319fbe05e6f5f5a5d421f2",
+      "Lemma/Kernel/Memory/UserCopy.lean": "ca7b54c4c23fa0d7a5f39883c029e6da4e025707f34c4777a9579b815f9d5a66"
+    }
+  },
+  "helper_delta": {
+    "old_sha256": "76ea511f2914234d65e80971786b39166292d88771319fbe05e6f5f5a5d421f2",
+    "new_sha256": "f9205e2be264220f13f740a858cdde95bcf0a3873e2a59c26901526624b71d65",
+    "target_inputs_unchanged": true,
+    "historical_closure_archive_origin": "3a56c8b",
+    "historical_closure_inventory_sha256": "f0d75e55d03229cc2b8fdce350f9c2227a2e29a3907a1281ea04cedd0f8cb056"
+  },
+  "current_sources": {
+    "scripts/usercopy_page_words.py": "f9205e2be264220f13f740a858cdde95bcf0a3873e2a59c26901526624b71d65",
+    "tests/kernel/usercopy_kernel3_mutations.py": "0eba37336c3e11f22fe8ce55f0255d9762418f32a24e81d6f3f0f215bfe7ae49"
+  },
+  "artifacts": [
+    {
+      "path": "build/ci/task006-415c-failures-a1/writing.zip",
+      "bytes": 10971924,
+      "sha256": "ff87b692a533307fe6b0f5d8b4a3a97a9f7a903c5bf594adc1aa012f7cfdbde0"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/pageword-initializer-observer-a1/result.json",
+      "bytes": 470,
+      "sha256": "2ee14d0acd386e13d0387a7e0593dc591efe8d7f1a5934c6c349c457fb8412b6"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/pageword-initializer-observer-a1/qualify-a2.py",
+      "bytes": 3107,
+      "sha256": "2697694d4fec12ae59894878e06523a71267fdcb9c00a2ff8ba24fa5415d0cf3"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/pageword-initializer-observer-a1/result-a2.json",
+      "bytes": 69031,
+      "sha256": "b9313f3baddd4e2a0e738e0ee62fcca0acee18f34b06e1419e104e66c078b04f"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/pageword-initializer-observer-a1/qualify-a2.log",
+      "bytes": 71,
+      "sha256": "7f049bf3dd5ea7a1f5434d5b97bc67b713d99b5f640d34afcd6bf19fa6a2d734"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/pageword-initializer-observer-a1/scaffold-a1.log",
+      "bytes": 185,
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/pageword-initializer-observer-a1/scaffold-tests-a1.log",
+      "bytes": 1811,
+      "sha256": "d8641ee1e65052c404178cf7bab5984ac8a716c8e9b3c8373086d9f799aa78cd"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/kernel/unit.json",
+      "bytes": 232998,
+      "sha256": "b660ea50c29952db934d3190030775fd1fcb6ef86b42673f2d5ab77c75254cbf"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/kernel/program.ll",
+      "bytes": 4615639,
+      "sha256": "315b80717ce2fee4787b7a289559a4cd586bd2df8546a16c19d8e129cee241ae"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/kernel/program.opt.ll",
+      "bytes": 3001416,
+      "sha256": "9205cd1b664cd0c3240cb9dc29e8bf9a0f6724a02f6bfa479fc466bbe6fe63e1"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/provenance.json",
+      "bytes": 88858,
+      "sha256": "d4cabbf69ede5cb4654e594ea114a525c1b064085b130c14234b9cdc7042c5f9"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/build.json",
+      "bytes": 6944,
+      "sha256": "48da462850cedbba10ccde224edd338e1398473af8ed7eb24e7178396835de2c"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-initialize-O2/kernel/unit.json",
+      "bytes": 233024,
+      "sha256": "64c21b1109246fbe1f4071ed35476046744444fca20569ad811b74c01c067193"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-initialize-O2/kernel/program.ll",
+      "bytes": 4615643,
+      "sha256": "d87103ebdc8cf68b29ab55b9aa63bc133b9bec6f989b8d80b3d1165a6c3f6008"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-initialize-O2/kernel/program.opt.ll",
+      "bytes": 3001418,
+      "sha256": "f16963404387fe74ef92ea6f53286595e6c25d831d4443dc19e44d80bf18723d"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-initialize-O2/provenance.json",
+      "bytes": 88651,
+      "sha256": "942e7e5f3fceb87541a08146300e345c1b9a12cf4b88a1c41555266c48be1931"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-initialize-O2/build.json",
+      "bytes": 6946,
+      "sha256": "1f71f581946629c937ae459ced6c0941776d7bd6ca3fec2fc074ebc917fad8fe"
+    },
+    {
+      "path": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-initialize-O2/audit-failure.json",
+      "bytes": 148,
+      "sha256": "b8f6aa12c0e1c823d888161b22781d6955246fab59239fd0f463deaaae7cf5a4"
+    }
+  ]
+}

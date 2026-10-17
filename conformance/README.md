@@ -1,3 +1,4 @@
+<!--
 # Lemma machine conformance
 
 **Status: suite scaffold; no conformance pass claimed.**
@@ -15,3 +16,5 @@ Required future suite categories:
 Each test must specify contract version, input/state, reference oracle, accepted trace relation, firmware image hash, simulator and device versions, result and source of evidence. Physical checks stay UNVERIFIED until executed on hardware. A host-only structural test must never be called a guest-device acceptance run.
 
 See [../LEMMA_MACHINE_CONTRACT.md](../LEMMA_MACHINE_CONTRACT.md).
+
+-->

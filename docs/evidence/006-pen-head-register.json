@@ -1,0 +1,239 @@
+{
+  "schema": "lemma-pen-head-register-experiments/1",
+  "status": "UNADOPTED_FINITE_RTL_PASS_PHYSICAL_FAIL",
+  "scope": "Two separately changed-source standalone full256 experiments; actual global-route estimates and resource-bounded failed detailed routing. Maintained pen is unchanged. Not guest, routed extraction or physical signoff.",
+  "source_commit": "705fa9d12149839ccfe670482312fe702161cff8",
+  "maintained_source_sha256": "2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3",
+  "decision": "Both setup results remain worse than maintained private ingress WNS -1.732748ns. Neither prototype is adopted; no clock/rule/timing waiver or follow-up unchanged route.",
+  "experiments": [
+    {
+      "name": "first-head-handoff",
+      "candidate": {
+        "path": "build/silicon/pen-head-handoff-owner-a1/lemma_pen.sv",
+        "bytes": 8594,
+        "sha256": "10175bf33868bb56db6c510fffae0402dc5e9cfc48bd0ac0d8409e3c3e71b930"
+      },
+      "patch": {
+        "path": "build/silicon/pen-head-handoff-owner-a1/candidate.patch",
+        "bytes": 4604,
+        "sha256": "ebf58df290a4c33595d4b332a14fc6b0a7524a6dfc3af3b0f863aba7acbe964a"
+      },
+      "plan": {
+        "path": "build/silicon/pen-head-handoff-owner-a1/qualified-plan.json",
+        "bytes": 1961,
+        "sha256": "49721ae5ff84ff719481f85027ded2b3c889c574cedf96d3435a12ad4421f7c4"
+      },
+      "rtl": {
+        "path": "build/silicon/pen-head-handoff-qualification-a1/result.json",
+        "bytes": 8956,
+        "sha256": "4049f3639ea03df06e2a9c790c26fdc68f6f0f188e5c375058eddadce7db5ad8"
+      },
+      "negative": {
+        "path": "build/silicon/pen-head-handoff-sensitivity-a1/result.json",
+        "bytes": 4240,
+        "sha256": "e8c89704c1ed978b032ad94ed3ad9ebc8ab66b08d2952221eb09bdad15dc39b6"
+      },
+      "negative_log": {
+        "path": "build/silicon/pen-head-handoff-sensitivity-a1/PenIngress-simulation.log",
+        "bytes": 211,
+        "sha256": "2e440efc269267b03f5df38d3f9fa816e6ef28115df4e580c06b367b0398cc12"
+      },
+      "physical_supervision": {
+        "path": "build/silicon/pen-head-handoff-owner-a1/physical-supervision.json",
+        "bytes": 724,
+        "sha256": "5f69b78f42897adbe291139b403c0ca18879727d5c58d0b485673107b87a1058"
+      },
+      "physical_status": "FAIL_RESOURCE_LIMIT",
+      "original_flow_seconds": 900,
+      "absolute_supervisor_seconds": 1000,
+      "tree_rss_ceiling_bytes": 4294967296,
+      "peak_tree_rss_bytes": 4329902080,
+      "elapsed_seconds": 498.6565910100471,
+      "owned_survivors": {},
+      "clock_ns": 10,
+      "setup_wns_ns": -3.519758,
+      "hold_wns_ns": 0.032611,
+      "setup": {
+        "path": "build/silicon/physical/pen-head-handoff-a1/global-setup.rpt",
+        "bytes": 27532,
+        "sha256": "b7581c87c110f47bae1862a0409b4e6183e43b714b9054f47fef9454af6a315d"
+      },
+      "global_route": {
+        "path": "build/silicon/physical/pen-head-handoff-a1/global-route-summary.json",
+        "bytes": 303,
+        "sha256": "55574ec790950e990e077efaf392543cb1496736417856f36160704dd5b5bd76"
+      },
+      "global_geometry": {
+        "cell_area_um2": 5054368.6368,
+        "core_area_um2": 17430955.3152,
+        "utilization_percent": 28.996509631302484,
+        "instances": 236566,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate before detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN"
+      },
+      "layout_log": {
+        "path": "build/silicon/physical/pen-head-handoff-a1/layout.log",
+        "bytes": 21754,
+        "sha256": "52e91507d27d032406d2e64aa575d2fe98d3ea7219fb54978075c457e04e332e"
+      },
+      "detail_routing": "Stopped in region-query initialization at declared4GiB RSS ceiling, before any completed router DRC result. Not a900s deadline timeout.",
+      "process_checks": "NOT_RUN",
+      "routed_extraction": "NOT_RUN",
+      "post_route_timing": "NOT_RUN",
+      "enclosure_cutclass_gap": "Unresolved and not established as resource-limit cause.",
+      "rejected_mutation": "ACK against stale retained head rather than public ingress bypass; actual RTL rejects atedge10",
+      "worst_path": "sample_y41 -> head_entry31; first handoff did not remove all raw control priority.",
+      "resumable_global_route": {
+        "status": "retained pre-detail-routing boundary; incomplete physical attempt",
+        "artifacts": {
+          "build/silicon/physical/pen-head-handoff-a1/global-route.odb": "3a5d7a4ac47227a3626625e6c21d0d6b4cbc18f5e70265e561cadc70da627a2d",
+          "build/silicon/physical/pen-head-handoff-a1/global-route.def": "c169b4417035dc9bf7c0f48956e9b1904ffaf739bf62d3b12d5130605d71e8ba",
+          "build/silicon/physical/pen-head-handoff-a1/global-route-estimated.spef": "cf031de88f24c10553ee61eb3a3171e86131469959f8dbecf82be4eae38641f5"
+        }
+      }
+    },
+    {
+      "name": "isolated-head-register",
+      "candidate": {
+        "path": "build/silicon/pen-head-register-owner-a1/lemma_pen.sv",
+        "bytes": 9129,
+        "sha256": "d51f7585c7a7fb3fd86ea58f04adc635de382545ef127382e65873309ce9633e"
+      },
+      "patch": {
+        "path": "build/silicon/pen-head-register-owner-a1/candidate.patch",
+        "bytes": 5783,
+        "sha256": "44ad78c8d97c55ebac28332ed70c0a363bf52bbc7f47220285941c98bd879719"
+      },
+      "plan": {
+        "path": "build/silicon/pen-head-register-owner-a1/qualified-plan.json",
+        "bytes": 2528,
+        "sha256": "29a4c7ad31b36bafa64479ba72375a1f34deeaacc7b6e93fabdfe15a2ac85364"
+      },
+      "rtl": {
+        "path": "build/silicon/pen-head-register-qualification-a2/result.json",
+        "bytes": 9050,
+        "sha256": "6efceba4b2751b6ed42007b2844320ded9c395739a6603191ffb5eaa9ab82ad0"
+      },
+      "negative": {
+        "path": "build/silicon/pen-head-register-sensitivity-a1/result.json",
+        "bytes": 4264,
+        "sha256": "53faadf23273802c38161de4f01d878082abb5ea071183379290c7cea44bc43e"
+      },
+      "negative_log": {
+        "path": "build/silicon/pen-head-register-sensitivity-a1/PenIngress-simulation.log",
+        "bytes": 359,
+        "sha256": "c95164ec8b5308cd9c5583eca4f5b483fc0de78a5c500cb664c57e59461cb62b"
+      },
+      "physical_supervision": {
+        "path": "build/silicon/pen-head-register-owner-a1/physical-supervision.json",
+        "bytes": 790,
+        "sha256": "b07c8fa61e927c9fc07a2993ce0a8495e0ee4846756d0e6bc20650d879df5537"
+      },
+      "physical_status": "FAIL_RESOURCE_LIMIT",
+      "original_flow_seconds": 900,
+      "absolute_supervisor_seconds": 1000,
+      "tree_rss_ceiling_bytes": 4294967296,
+      "peak_tree_rss_bytes": 4305465344,
+      "elapsed_seconds": 489.8391219169134,
+      "owned_survivors": {},
+      "clock_ns": 10,
+      "setup_wns_ns": -2.89679,
+      "hold_wns_ns": 0.034214,
+      "setup": {
+        "path": "build/silicon/physical/pen-head-register-a1/global-setup.rpt",
+        "bytes": 26160,
+        "sha256": "c308fd0dfd3e0ea69c8f90798f0099c1178b5963a2218f476d88e4a113c89583"
+      },
+      "global_route": {
+        "path": "build/silicon/physical/pen-head-register-a1/global-route-summary.json",
+        "bytes": 302,
+        "sha256": "988ad7f85ecdab0439cde213110eb86c77c05fa5b048ed063d1ef7b293795c03"
+      },
+      "global_geometry": {
+        "cell_area_um2": 5096321.1936,
+        "core_area_um2": 17401157.424,
+        "utilization_percent": 29.287254114321495,
+        "instances": 236919,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate before detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN"
+      },
+      "layout_log": {
+        "path": "build/silicon/physical/pen-head-register-a1/layout.log",
+        "bytes": 21446,
+        "sha256": "eba197fef6920ab11c1fbf684e31b30fd8ff37e6bf68ad207f7416ffd8e10cc9"
+      },
+      "detail_routing": "Stopped in region-query initialization at declared4GiB RSS ceiling, before any completed router DRC result. Not a900s deadline timeout.",
+      "process_checks": "NOT_RUN",
+      "routed_extraction": "NOT_RUN",
+      "post_route_timing": "NOT_RUN",
+      "enclosure_cutclass_gap": "Unresolved and not established as resource-limit cause.",
+      "static_cone": {
+        "path": "build/silicon/pen-head-register-owner-a1/mapped-cone-result.json",
+        "bytes": 2332454,
+        "sha256": "f264e632750683991c2f7bdc087fdeb55c3fd50d70b8757cf6167a57dc860267"
+      },
+      "guard": {
+        "path": "build/silicon/pen-head-register-owner-a1/guard-result.json",
+        "bytes": 361,
+        "sha256": "fbea3e18446cd7e0902c433d6adf0e00de470eeb0c28b1909c2da6d1d3eb406d"
+      },
+      "unchanged_mapping_reuse": {
+        "path": "build/silicon/pen-head-register-map-a1/result.json",
+        "bytes": 7753,
+        "sha256": "12fa2e4d7785c1c4b941643dad589ad8bd6d393d382ccb917df34df78afd9d6d"
+      },
+      "rejected_mutation": "Drop watchdog exclusion from clear_head; actual finite external comparison rejects atedge24389",
+      "worst_path": "first_head_pending FF -> head_entry123 FF; raw sample ancestors removed from all181 head D cones, but realsetupstillFAIL.",
+      "launcher_failure": {
+        "path": "build/silicon/pen-head-register-owner-a1/qualification-launcher-failure-a1.json",
+        "bytes": 287,
+        "sha256": "7ad64fcd23170e5e67cb4d6fe45c8a1aab8c78e5ffa190d71ef58c19022c69f5"
+      },
+      "resumable_global_route": {
+        "status": "retained pre-detail-routing boundary; incomplete physical attempt",
+        "artifacts": {
+          "build/silicon/physical/pen-head-register-a1/global-route.odb": "1a03dbe0f44471ab0cf3ca0d1162d40693744a979e8b13e1d0a646e7dec6f4d7",
+          "build/silicon/physical/pen-head-register-a1/global-route.def": "fdd62fca6b12fea2dd366bc92dc7095d0b84c0a9ce17ebb704135d9d61fcc356",
+          "build/silicon/physical/pen-head-register-a1/global-route-estimated.spef": "a51de0d0f2baa246f319f5a1d1f4778ab380d3ff7476702110e579cbc9d88eb7"
+        }
+      }
+    }
+  ],
+  "maintained_focused_check": {
+    "path": "build/silicon/pen-maintained-first-watchdog-a1/result.json",
+    "bytes": 8856,
+    "sha256": "37abd6b5847483f02faaee7c3850db5bb02d6ff657020dac6f7e7400f3e76c35"
+  },
+  "tool_pdk_recipe_identity": {
+    "mapping_tools": {
+      "yosys_path": "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+      "yosys_version": "Yosys 0.69+post (git sha1 v0.69, Release, GNU /nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++ 16.2.0)"
+    },
+    "pdk": {
+      "revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+      "collateral": {
+        "ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib": "7677a8918689f452e80405ad16a83e744709342574f2aedcc507c2758986b396",
+        "ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_tech.lef": "054f5b7b24d72365b4b1088be1331e04c1c2e3805de9f99c37e71938ed231efc",
+        "ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef": "c9bbc02d0c2cba3b15cd89a208750d25de882f02a2927ae78ba6422109fb01d0"
+      },
+      "corner": "typical 1.20 V 25 C"
+    },
+    "pinned_recipes": {
+      "recipe_sha256": "dcfe5afb5e702ae9db970541b145f94af7d9cc58a75a2f6e5776e1ce1d37f330",
+      "eda_recipe_sha256": "0158c908ff067cf45a90c40ce8fb6a6616b846a7a8059b4d0a6446f6afcac8ca",
+      "layout_recipe_sha256": "e703a8f8dcaa7c2ead503c5512d2b377e664034b8669e1b3e1fe0a0980b9f87b",
+      "process_recipe_sha256": "d5315c189ae13032d50cfa7f75a0ace0a4900baf3ae7eb5a32fbf9037ed66718",
+      "extract_recipe_sha256": "51b8563e25f76032a5c4f824ce43899e45e7b8ac6e0df0244fd3ce16e6567839",
+      "physical_lock_sha256": "13275a90aaf90b4d208125eb53f36be4c4a9920aaf4aa7d8893326432ff50a28"
+    },
+    "layout_banner": "OpenROAD 26Q2",
+    "layout_threads": 4,
+    "parasitics": "global-route estimated SPEF; no routed extraction result"
+  }
+}

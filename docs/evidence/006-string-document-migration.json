@@ -1,0 +1,167 @@
+{
+  "schema": "lemma-string-document-migration-evidence/1",
+  "status": "PASS",
+  "scope": "Real guest Doc6\u21927 migration, mixed ByteArray/Array/String execution history and independent cold recovery; QEMU instruction-clock functional scope, not RTL timing or cached-state continuation",
+  "qualified_guest": {
+    "backend": "qemu",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+    "adapter": "lemmasim-fast-adapter/4",
+    "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+    "guest": "edc7c0f23739dbc1d6bbbe8415a218b79197131e3721ccc492a1fff0b2f9b615",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3
+  },
+  "source_medium": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/task006-array-doc5-migration-a3/cold-course.raw",
+    "sha256": "027b26c9e6af04a6d03a97a051a52d1eed32f87c92f99663a94f2d0459f0e2db"
+  },
+  "original_attempts": 6,
+  "new_attempts": 7,
+  "migration": {
+    "status": "PASS",
+    "sequence": 38,
+    "source_version": 6,
+    "destination_version": 7,
+    "exact_changed_word_offsets": [
+      8,
+      1864
+    ],
+    "old_known_execution_preserved": true,
+    "history_assistance_and_other_objects_exact": true,
+    "document_sha256": "6b14c9e32e0fb5a970da0573b179069e9ded92dcae825dae33241591abf5134e"
+  },
+  "actual_request": [
+    1113,
+    103,
+    20,
+    3,
+    103
+  ],
+  "actual_reply": [
+    1109,
+    103,
+    20,
+    0,
+    4
+  ],
+  "new_result": "Unsupported for retained goal3; no false Verified",
+  "preserved_history_origins": [
+    "IsolatedBytes",
+    "IsolatedBytes",
+    "IsolatedBytes",
+    "IsolatedBytes",
+    "IsolatedBytes",
+    "IsolatedArray"
+  ],
+  "new_origin": "IsolatedString",
+  "all_older_history_assistance_other_objects_exact": true,
+  "complete_notebook_controller_pixels_exact": true,
+  "independent_cold": {
+    "virtual_seconds": 3.550000008,
+    "host_seconds": 7.824632918986026,
+    "cycle": 355000001
+  },
+  "cold_recovery": {
+    "status": "PASS",
+    "new_cpu": true,
+    "mixed_history_exact": true,
+    "all_controller_pixels_exact": true
+  },
+  "elapsed_seconds": 98.41007823200198,
+  "bounds": {
+    "disk": "/home/sreekumaar/Downloads/lemma/build/task006-array-doc5-migration-a3/cold-course.raw",
+    "native_bundle": "build/native/task006-array-bulk-a1",
+    "guest_build": "build/kernel/task006-string-bulk-notebook-a3",
+    "work_dir": "/home/sreekumaar/Downloads/lemma/build/task006-string-doc6-migration-a1",
+    "destination_runtime": "string",
+    "migrated_from": null,
+    "timeout": 300,
+    "boot_seconds": 60,
+    "action_seconds": 30,
+    "deadline": 1200,
+    "durable_suffix_from": null,
+    "checkpoint_relation": "not-exercised"
+  },
+  "references": [
+    {
+      "path": "build/task006-string-doc6-migration-a1/result.json",
+      "bytes": 23997,
+      "sha256": "1ed721dc0246ea6126486d1444a052ecd815a4c1c8ec2c5bee7b02b1fe33999d"
+    },
+    {
+      "path": "build/task006-string-doc6-migration-a1/commands.jsonl",
+      "bytes": 288909,
+      "sha256": "2e88cf03e2166c3795a75bfbe239175981acac78229af2ac28f07f83828ac5fc"
+    },
+    {
+      "path": "build/task006-string-doc6-migration-a1/migration/uart-0.bin",
+      "bytes": 2288,
+      "sha256": "2c5ae930a52d50d4db9428a66af45658a586a3fb48b23914b4763d5cf1e42cce"
+    },
+    {
+      "path": "build/task006-string-doc6-migration-a1/cold/uart-0.bin",
+      "bytes": 1320,
+      "sha256": "3e4302923f00ade6f3996f84c6d320d840dbc54120557cd0d2633c9a419fb7a6"
+    },
+    {
+      "path": "build/task006-string-doc6-migration-a1/guest-upgraded-course.raw",
+      "bytes": 268435456,
+      "sha256": "5498aee480392d1bb7cd139c5c13f74311f65056908a67a39c7361bbe1d19de8"
+    },
+    {
+      "path": "build/task006-string-doc6-migration-a1/mixed-execution-history.raw",
+      "bytes": 268435456,
+      "sha256": "d6b95e67baf8691b05847553026662256f93ee6289a398781a0614e6bb8167ca"
+    },
+    {
+      "path": "build/task006-string-doc6-migration-a1/cold-course.raw",
+      "bytes": 268435456,
+      "sha256": "d6b95e67baf8691b05847553026662256f93ee6289a398781a0614e6bb8167ca"
+    },
+    {
+      "path": "build/task006-string-doc6-migration-a1/initial-notebook.ppm",
+      "bytes": 10890017,
+      "sha256": "c134bd1591f44c3c8cc10a70908ce2ef63dd2640a26220532b34e556604d11aa"
+    },
+    {
+      "path": "build/task006-string-doc6-migration-a1/final-notebook.ppm",
+      "bytes": 10890017,
+      "sha256": "c134bd1591f44c3c8cc10a70908ce2ef63dd2640a26220532b34e556604d11aa"
+    },
+    {
+      "path": "build/task006-string-doc6-migration-a1/cold-notebook.ppm",
+      "bytes": 10890017,
+      "sha256": "c134bd1591f44c3c8cc10a70908ce2ef63dd2640a26220532b34e556604d11aa"
+    },
+    {
+      "path": "build/kernel/task006-string-bulk-notebook-a3/provenance.json",
+      "bytes": 89701,
+      "sha256": "b1bf28752360bd2a61edf952eda364af7c8a1c51d3f95ab6ff0a99aa49d006c8"
+    },
+    {
+      "path": "build/kernel/task006-string-bulk-notebook-a3/audit.json",
+      "bytes": 3744304,
+      "sha256": "263b0e3932027255783baf84b91b8fda3546b919fe9cc06e16e4f462e8fb8273"
+    },
+    {
+      "path": "build/kernel/task006-string-bulk-notebook-a3/image.elf",
+      "bytes": 601168,
+      "sha256": "edc7c0f23739dbc1d6bbbe8415a218b79197131e3721ccc492a1fff0b2f9b615"
+    }
+  ],
+  "observer_sources": {
+    "scripts/check_live_notebook.py": "827bb1cadfe775ceb05acb8703d2880da9ab7d1ccd1a9243d62645bc33d5e72e",
+    "conformance/lemmasim/check_notebook_workflow.py": "f1e6807034291f24ff482d569fc292e062a9e3046a2e542c5924a9a6d986fa96",
+    "conformance/lemmasim/inspect_notebook.py": "08d6eb39127d0c12d0a170afdbd0678b74704aa9e4d66918b92cb8606b9d60f7",
+    "conformance/lemmasim/notebook_input.py": "177621eb64769660cc6dbc08d625292455942dbdabc52ca64656ef8096652252",
+    "conformance/lemmasim/store_oracle.py": "d03b54bec2f8e2c1883f6b27a25ab3ebaa59062d6299aec1a81ce42835b5324c",
+    "scripts/check_math_session.py": "f2586009d1639a01cdf71cc324eac1e48cb76a60cbc692789cdbbad488ad1e57",
+    "conformance/lemmasim/math_oracle.py": "6331672b32aa439eab2d70b6da8687745be901d90a97239e64bc558147c31a31",
+    "scripts/check_array_document_migration.py": "2be407381e3e3745a242cbbb544619813823a7fec0fa4c0d2d8a9eb9315bc31f"
+  },
+  "reproduce": "nix develop --no-write-lock-file --command python3 scripts/check_array_document_migration.py --disk build/task006-array-doc5-migration-a3/cold-course.raw --native-bundle build/native/task006-array-bulk-a1 --guest-build build/kernel/task006-string-bulk-notebook-a3 --destination-runtime string --work-dir build/task006-string-doc6-migration-NEW --boot-seconds 60 --action-seconds 30 --deadline 1200",
+  "pending": "Full normal String workflow, OOM containment and native distribution are qualified separately by their own observations"
+}

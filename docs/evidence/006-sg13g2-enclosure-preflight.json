@@ -1,0 +1,166 @@
+{
+  "schema": "lemma-sg13g2-enclosure-evidence/1",
+  "status": "PASS_CLOSED_GEOMETRY_AND_NATIVE_ODB_IMPORT_NOT_ROUTED_DRC",
+  "scope": "Closed original fixed/generated/cell cut geometry, simple enclosure predicates and native OpenDB import. Not routed-controller/process DRC, LVS, parasitic or timing qualification.",
+  "implementation": "scripts/silicon_enclosure.py",
+  "implementation_sha256": "f3a7581d9a1ce6607b0004e452842ffb776df49e33143cf80b4eec96a25ae35f",
+  "profile": "tooling/silicon/enclosure-inputs-v1.json",
+  "profile_sha256": "90045107401fc42c7abe7a78e6272e4ce955d070ab4d50f8d5bbd269993d1723",
+  "contract": "docs/contracts/006-sg13g2-enclosure-preflight-v1.md",
+  "source_pdk_revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+  "command": "nix-shell tooling/silicon/eda.nix --run 'python3 scripts/silicon_enclosure.py --pdk-root build/silicon/deps/ihp-open-pdk --output-dir build/silicon/enclosure-class-preflight-a2 --repair-known-via --timeout 180'",
+  "actual_result": "build/silicon/enclosure-class-preflight-a2/result.json",
+  "actual_result_sha256": "0df675edef77600f55219c18eaa7b31a5917a8e723453b3a4c7a2b836a5f8afa",
+  "host_seconds": 1.8325580719392747,
+  "tools": {
+    "magic": {
+      "path": "/nix/store/g0n7zlrbf02035zi8fg120zzh8c4w1rh-magic-vlsi-8.3.681/bin/magic",
+      "sha256": "78c03f19772b107c25c2cfa317db6e86b39b2fa06f61bf46ef99906ce7b5912d"
+    },
+    "openroad": {
+      "path": "/nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad",
+      "sha256": "2d49fb4cc8b03f39d089090015e24b8a783d08949491200e119048b158b6649d"
+    }
+  },
+  "source_rule_count": 10,
+  "qualified_rule_count": 10,
+  "classes": [
+    [
+      "Cont",
+      "Lemma_Cont_160_160",
+      160,
+      160
+    ],
+    [
+      "Via1",
+      "Lemma_Via1_190_190",
+      190,
+      190
+    ],
+    [
+      "Via2",
+      "Lemma_Via2_190_190",
+      190,
+      190
+    ],
+    [
+      "Via3",
+      "Lemma_Via3_190_190",
+      190,
+      190
+    ],
+    [
+      "Via4",
+      "Lemma_Via4_190_190",
+      190,
+      190
+    ],
+    [
+      "TopVia1",
+      "Lemma_TopVia1_420_420",
+      420,
+      420
+    ],
+    [
+      "TopVia2",
+      "Lemma_TopVia2_900_900",
+      900,
+      900
+    ]
+  ],
+  "original_fixed_violation": [
+    {
+      "via": "Via1_DC2L",
+      "cut_index": 0,
+      "layer": "Via1",
+      "side": "lower",
+      "overhang_nm": [
+        10,
+        50
+      ],
+      "original_enclosure_met": false
+    }
+  ],
+  "repaired_fixed_checks": 132,
+  "generated_checks": 12,
+  "cell_GDS_cut_counts": {
+    "Cont": 5405,
+    "Via1": 3,
+    "Via2": 0,
+    "Via3": 0,
+    "Via4": 0,
+    "TopVia1": 0,
+    "TopVia2": 0
+  },
+  "cell_pin_cut_counts": {
+    "Cont": 0,
+    "Via1": 3,
+    "Via2": 0,
+    "Via3": 0,
+    "Via4": 0,
+    "TopVia1": 0,
+    "TopVia2": 0
+  },
+  "geometry_repair": "Via1_DC2L Metal1 minX -100\u2192-105nm only; independent Magic original1/repaired0",
+  "actual_Magic": {
+    "original_violations": 1,
+    "repaired_violations": 0,
+    "original_log_sha256": "44c8aeee702fb7d8aa36aa2c66d5f792642c569941394dc63369baaf5ea8f3ed",
+    "repaired_log_sha256": "74d01a0c051c963d9a9b8ab9dbeab1723f0ad8534ea9fa6a942f358d7fa011b4",
+    "scope": "Isolated original/repaired via fixtures under same original full-process deck, not controller DRC"
+  },
+  "generated_lef_sha256": "b4bfd5ecc8ddc0b6ab9fa823a09ad5771ebe9b610d010e765aa6335962a8ddd8",
+  "native_OpenDB_rules_sha256": "f13a22cb1df77e6528fe37abbf6f5081551406c8edcf046c3bd8943e3ba1f396",
+  "focused_tests": {
+    "command": "python3 -m unittest discover -s tests/silicon -p test_enclosure_geometry.py -v",
+    "count": 7,
+    "result": "PASS",
+    "source_sha256": "54b442c98ddbdc3a76881bc65c45ad750585333fb518353f57ec73e2ff5462fa",
+    "scope": "Independent adversarial integer geometry/side/array/input counterexamples; not EDA qualification"
+  },
+  "retained_failures": "Prototype nominal GDS unit equality and text magnification handling rejected original input; original source/logs retained under build/silicon/enclosure-class-owner-a1. A zero-padding diagnostic loop was terminated/reaped and replaced by bounded ENDLIB validation. No original failed observation is relabelled.",
+  "remaining": "Actual TritonRoute enforcement/fixed/generated/routed-pin suffix geometry and other rule coverage, complete-controller DRC/LVS/PEX/post-route timing/full-chip remain UNQUALIFIED. Original unsupported legacy clauses remain in the file; native duplicates do not erase warnings or establish process signoff.",
+  "production_flow": "UNCHANGED; generated candidate is not an adopted technology/routing override",
+  "checks": {
+    "silicon_host_tests": 224,
+    "silicon_host_seconds": 2.702,
+    "scaffold_tests": 18,
+    "scaffold_host_seconds": 9.023,
+    "scaffold_metadata": "PASS metadataonly; no G1/target claim",
+    "logs": "build/silicon/enclosure-class-owner-a1/final-{silicon-host,scaffold-host,scaffold-metadata}.log"
+  },
+  "actual_fixed_via_router_probe": {
+    "status": "GAP_CONFIRMED_KNOWN_FIXED_VIA_ENCLOSURE_NOT_REPORTED",
+    "scope": "Tiny1-net/2-port fixed-via fixture; original5nm lowerMetal1edge and repaired10nm edge, samequalifiedCUTCLASS/enclosurerules. NeitheractualDRT report detectsoriginalknownviolation. Thisdoesnotqualifyrouterenforcement or completeprocessDRC.",
+    "actual_result": "build/silicon/enclosure-drt-fixed-a3/result.json",
+    "actual_result_sha256": "913c7a4795152feb714864f5432b00b0bfa9b1a30deb4809c1ce3b53119a6dbe",
+    "source": "build/silicon/enclosure-class-owner-a1/drt-fixed-layers-a3.py",
+    "source_sha256": "1c9ba6dd2f0e698d7d280491d3c959cd5ca7e1fb0d8f978982270e9b0991d3dc",
+    "host_seconds": 0.6890647880500183,
+    "bounds": {
+      "each_tool_seconds": 90,
+      "whole_seconds": 240,
+      "AS_bytes": 2147483648,
+      "file_bytes": 1073741824,
+      "threads": 1
+    },
+    "host_thread_environment": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1"
+    },
+    "original_output": "actual.drc empty; outputDEF retains Via1_DC2L at(5000,5000), onlyMetal2 connectingwire, no additionalMetal1wiregeometry",
+    "repaired_output": "actual.drc empty; samefixedDEF topology, sourceviaMetal1minX -105nm",
+    "negative_oracle": "IndependentintegergeometryandoriginalMagicdeck alreadyshoworiginalVia1_DC2L lowerenclosurefailure and repairedpass; originalbelowMetal1geometry remainsinactualfixedDEF technology. Emptyrouterreport cannotstandinforprocessDRC.",
+    "retained_failures": [
+      {
+        "result": "build/silicon/enclosure-drt-fixed-a1/result.json",
+        "reason": "OpenBLASthreadinitializationfailed2GiBASbeforeDEF; originalsamebound/source retained"
+      },
+      {
+        "result": "build/silicon/enclosure-drt-fixed-a2/result.json",
+        "reason": "Actualtoolrejects deprecated-bottom_routing_layer; samegeometry/bounds retained, supportedset_routing_layers usedfora3"
+      }
+    ],
+    "adoption": "UNADOPTED; no productionPDK/routeflow change andno timeoutcause assigned"
+  }
+}

@@ -1,0 +1,260 @@
+import Lemma.Courses.PackageTarget
+import Lemma.Services.Store.Client
+
+/-! Dynamic package loading through the existing guest Store endpoint.
+The caller owns a dedicated staging buffer and an80-byte context: endpoint0,
+outgoing8(192 bytes), incoming16(256 bytes), namespace24, package identity32,
+edition40, staging48, capacity56, first request ID64; word72 is reserved zero.
+All spans must be disjoint. Failure leaves only unpublished staging bytes; the
+caller keeps its active package/document intact. No host journal parser is used.
+Installation below uses ordinary Store transactions and requires the explicitly
+selected course-store-guard/1 endpoint to enforce immutable editions. -/
+namespace Lemma.Courses.PackageStore
+open Lemma.Core0.Memory
+open Lemma.Courses.PackageFormat
+open Lemma.Services.Store
+
+private def field (context offset : UInt64) : Action := Lemma.User.Memory.read64 (context + offset)
+private def minimum (a b : UInt64) : UInt64 := if a < b then a else b
+private def separate (a n b m : UInt64) : UInt64 :=
+  if a + n ≤ b then 1 else if b + m ≤ a then 1 else 0
+
+private def contextValid (context outgoing incoming target capacity : UInt64) : UInt64 :=
+  if (context ||| outgoing ||| incoming ||| target) &&& 7 = 0 then
+  if context ≤ 0xffffffffffffffff - 80 then
+  if outgoing ≤ 0xffffffffffffffff - 192 then
+  if incoming ≤ 0xffffffffffffffff - 256 then
+  if target ≤ 0xffffffffffffffff - capacity then
+  if separate context 80 outgoing 192 = 1 then
+  if separate context 80 incoming 256 = 1 then
+  if separate context 80 target capacity = 1 then
+  if separate outgoing 192 incoming 256 = 1 then
+  if separate outgoing 192 target capacity = 1 then
+  if separate incoming 256 target capacity = 1 then 1 else 0
+  else 0 else 0 else 0 else 0 else 0 else 0 else 0 else 0 else 0 else 0
+
+private def readPiece (context offset count requestOffset : UInt64) : Action :=
+  .bind (field context 0) fun s endpoint => if s = 0 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 32) fun s identity => if s = 0 then
+  .bind (field context 40) fun s edition => if s = 0 then
+  .bind (field context 48) fun s target => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  .bind (Client.call endpoint outgoing incoming 5 ns (object identity edition) 0 offset count 0 (request + requestOffset))
+    fun s _ => if s = 0 then
+  .bind (Client.responseField incoming 56) fun s actualCount => if s = 0 then
+  if actualCount = count then
+  .bind (Format.copy (Client.responseData incoming) (target + offset) count) fun s _ => .done s count
+  else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def readStep (i _ : UInt32) (copied context length _ _ : UInt64) : Action :=
+  let offset := (i.toUInt64 + 1) * 128
+  let count := minimum 128 (length - offset)
+  .bind (readPiece context offset count (i.toUInt64 + 1)) fun s bytes =>
+  if s = 0 then .done 0 (copied + bytes) else .done s 0
+
+/-- Retrieve actual object bytes by bounded copied IPC, check the complete
+canonical package, and require the exact requested identity/edition. Success
+means a validated read, never a new Saved acknowledgement. The caller publishes
+a resident selection only after this Action succeeds. -/
+def load (context : UInt64) : Action :=
+  if context % 8 = 0 then if context ≤ 0xffffffffffffffff - 80 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 32) fun s identity => if s = 0 then
+  .bind (field context 40) fun s edition => if s = 0 then
+  .bind (field context 48) fun s target => if s = 0 then
+  .bind (field context 56) fun s capacity => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  .bind (field context 72) fun s reserved => if s = 0 then
+  if reserved = 0 then if Protocol.namespaceValid ns = 1 then
+  if identity = 0 then .done malformed 0 else if maximumIdentity < identity then .done malformed 0 else
+  if edition = 0 then .done malformed 0 else if maximumEdition < edition then .done malformed 0 else
+  if capacity < headerBytes then .done resourceLimit 0 else if maximumBytes < capacity then .done resourceLimit 0 else
+  if request = 0 then .done malformed 0 else if Format.maximumSequence - 256 < request then .done resourceLimit 0 else
+  if contextValid context outgoing incoming target capacity = 1 then
+  .bind (readPiece context 0 128 0) fun s copied => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (target + 16)) fun s length => if s = 0 then
+  if length < headerBytes then .done malformed 0 else if capacity < length then .done resourceLimit 0 else
+  .boundedFoldU64 255 readStep ((length - 128 + 127) / 128).toUInt32 copied context length 0 0 fun s actual => if s = 0 then
+  if actual = length then
+  .bind (PackageTarget.validate target length) fun s _ => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (target + 24)) fun s actualIdentity => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (target + 32)) fun s actualEdition => if s = 0 then
+  if actualIdentity = identity then if actualEdition = edition then .done 0 length else .done malformed 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done s 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done malformed 0
+
+private def uploadPiece (context offset count transaction requestOffset : UInt64) : Action :=
+  .bind (field context 0) fun s endpoint => if s = 0 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 32) fun s identity => if s = 0 then
+  .bind (field context 40) fun s edition => if s = 0 then
+  .bind (field context 48) fun s source => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  .bind (Client.call endpoint outgoing incoming 3 ns (object identity edition) transaction offset count (source + offset) (request + requestOffset))
+    fun s _ => if s = 0 then
+  .bind (Client.responseField incoming 48) fun s accepted => if s = 0 then
+  if accepted = offset + count then .done 0 count else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def uploadStep (i _ : UInt32) (copied context length transaction _ : UInt64) : Action :=
+  let offset := i.toUInt64 * 128
+  let count := minimum 128 (length - offset)
+  .bind (uploadPiece context offset count transaction (i.toUInt64 + 1)) fun s bytes =>
+  if s = 0 then .done 0 (copied + bytes) else .done s 0
+
+private def transactionCall (context operation transaction count requestOffset : UInt64) : Action :=
+  .bind (field context 0) fun s endpoint => if s = 0 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 32) fun s identity => if s = 0 then
+  .bind (field context 40) fun s edition => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  Client.call endpoint outgoing incoming operation ns (object identity edition) transaction 0 count 0 (request + requestOffset)
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def abortStage (context transaction : UInt64) (status : UInt8) : Action :=
+  -- Abort only an uncommitted staging upload. Its bounded result never
+  -- converts the primary error into success; a lost reply is not a retry.
+  .bind (transactionCall context 9 transaction 0 258) fun _ _ => .done status 0
+
+private def publish (context length transaction incoming : UInt64) : Action :=
+  .bind (transactionCall context 2 transaction length 0) fun s _ => if s = 0 then
+  .bind (Client.responseField incoming 48) fun s detail => if s = 0 then
+  if detail = 0 then
+  .boundedFoldU64 256 uploadStep ((length + 127) / 128).toUInt32 0 context length transaction 0 fun s copied =>
+  if s = 0 then if copied = length then
+    -- No abort/retry follows Commit: an error may have left persistence or
+    -- in-flight backing work. Only the ordinary Store durable reply warrants
+    -- Installed; a later load/recovery is a separately labelled observation.
+    .bind (transactionCall context 4 transaction 0 257) fun s sequence => if s = 0 then
+    .bind (Client.responseField incoming 48) fun s mode => if s = 0 then
+    if mode = 1 then if 0 < sequence then .done 0 sequence else .done malformed 0 else .done malformed 0
+    else .done s 0 else .done s 0
+  else abortStage context transaction malformed
+  else abortStage context transaction s
+  else abortStage context transaction malformed
+  else abortStage context transaction s
+  else .done s 0
+
+/-- Install a fully validated caller-owned package through ordinary Begin,
+ordered copied chunks and Commit. This requires the explicitly selected
+course-store-guard/1 endpoint; it does not confer a grant or change namespaces.
+The returned positive sequence is an actual Store durability receipt. No new
+receipt is manufactured after error, cancellation or an uncertain Commit. -/
+def install (context length transaction : UInt64) : Action :=
+  if context % 8 = 0 then if context ≤ 0xffffffffffffffff - 80 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 32) fun s identity => if s = 0 then
+  .bind (field context 40) fun s edition => if s = 0 then
+  .bind (field context 48) fun s source => if s = 0 then
+  .bind (field context 56) fun s capacity => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  .bind (field context 72) fun s reserved => if s = 0 then
+  if reserved = 0 then if Protocol.namespaceValid ns = 1 then
+  if identity = 0 then .done malformed 0 else if maximumIdentity < identity then .done malformed 0 else
+  if edition = 0 then .done malformed 0 else if maximumEdition < edition then .done malformed 0 else
+  if length < headerBytes then .done malformed 0 else if capacity < length then .done resourceLimit 0 else
+  if maximumBytes < capacity then .done resourceLimit 0 else
+  if transaction = 0 then .done malformed 0 else if Format.maximumSequence < transaction then .done malformed 0 else
+  if request = 0 then .done malformed 0 else if Format.maximumSequence - 258 < request then .done resourceLimit 0 else
+  if contextValid context outgoing incoming source capacity = 1 then
+  .bind (PackageTarget.validate source length) fun s _ => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (source + 24)) fun s actualIdentity => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (source + 32)) fun s actualEdition => if s = 0 then
+  if actualIdentity = identity then if actualEdition = edition then publish context length transaction incoming
+  else .done malformed 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done malformed 0
+
+/-! `lemma-course-mount-wait/1`: read-only status8 remains available while
+Store mounts. Each reply is ordinary copied IPC; mode0 yields this User task,
+mode1 admits loading, and unformatted/read-only modes fail without formatting.
+All6000 request IDs are reserved separately from later READ/Commit IDs. -/
+private def mountStatus (context requestOffset : UInt64) : Action :=
+  .bind (field context 0) fun s endpoint => if s = 0 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  Client.call endpoint outgoing incoming 8 ns 0 0 0 0 0 (request + requestOffset)
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def mountWaitStep (i _ : UInt32) (acc context deadline initialization pause : UInt64) : Action :=
+  .bind Lemma.User.Syscall.time fun s before => if s = 0 then
+  if deadline ≤ before then .done Lemma.User.IPCABI.timeout 0 else
+  .bind (mountStatus context i.toUInt64) fun s sequence => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (Client.responseField incoming 48) fun s mode => if s = 0 then
+  .bind Lemma.User.Syscall.time fun s after => if s = 0 then
+  if deadline ≤ after then .done Lemma.User.IPCABI.timeout 0 else
+  if mode = 0 then
+    .bind (Lemma.User.Syscall.sleep pause) fun s _ => .done s (acc + 1)
+  else if mode = 1 then .done Status.iterationStop sequence
+  else if mode = 2 then
+    if initialization = 1 then
+      .bind (Lemma.User.Syscall.sleep pause) fun s _ => .done s (acc + 1)
+    else .done Format.unformatted 0
+  else if mode = 3 then .done Format.readOnly 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+/-- Bounded guest readiness, not a host configured flag or durable receipt.
+The complete owned context is checked before the first actual status request;
+errors keep their original status and never restart a write/commit. -/
+private def awaitWithPolicy (context initialization pause : UInt64) : Action :=
+  if context % 8 = 0 then if context ≤ 0xffffffffffffffff - 80 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 48) fun s buffer => if s = 0 then
+  .bind (field context 56) fun s capacity => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  .bind (field context 72) fun s reserved => if s = 0 then
+  if reserved = 0 then if Protocol.namespaceValid ns = 1 then
+  if request = 0 then .done malformed 0 else if Format.maximumSequence - 6000 < request then .done resourceLimit 0 else
+  if capacity < headerBytes then .done resourceLimit 0 else if maximumBytes < capacity then .done resourceLimit 0 else
+  if contextValid context outgoing incoming buffer capacity = 1 then
+  .bind Lemma.User.Syscall.time fun s now => if s = 0 then
+  if now ≤ 0xffffffffffffffff - 6000000000 then
+  .boundedFoldU64 6000 mountWaitStep 6000 0 context (now + 6000000000) initialization pause fun s sequence =>
+  if s = Status.iterationStop then .done 0 sequence else if s = 0 then .done Lemma.User.IPCABI.timeout 0 else .done s 0
+  else .done resourceLimit 0 else .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done malformed 0
+
+/-- Historical Load readiness: unformatted mode reports its actual error and
+pending mounts yield100ms. Success is never a new durability receipt. -/
+def awaitReady (context : UInt64) : Action := awaitWithPolicy context 0 1000000
+
+/-- `lemma-course-installer-startup/2`: only the kernel-selected initializer
+may wait for another authorized task to format previously unformatted media.
+This Action performs status8 only. Both modes use the historical100ms pending
+pause, reserving6000 independent request IDs and the10-minute/time/fold ceilings.
+The longer interval gives the mounting Store worker time between status RPCs;
+the readiness predicate and every framed reply/failure check remain exact. -/
+def awaitPublished (context initialization : UInt64) : Action :=
+  if initialization ≤ 1 then awaitWithPolicy context initialization 1000000
+  else .done malformed 0
+
+end Lemma.Courses.PackageStore

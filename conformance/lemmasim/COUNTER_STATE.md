@@ -1,3 +1,4 @@
+<!--
 # Selected 0.3 counter clock and exact state checks
 
 The `lemma-silicon-dev/0.3.0` fast binding consumes the declared 100 MHz
@@ -81,3 +82,5 @@ primitive catalog does not admit guest-issued `mcycle`, `minstret` or
 operations remains unexecuted. RTL holds reset for eight actual clock edges;
 QEMU completes its paused reset immediately. Reset-duration parity and full
 architectural equivalence remain unqualified.
+
+-->

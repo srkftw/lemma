@@ -2,6 +2,12 @@ import Lean
 import Lemma.Compiler.CFGLower
 import Lemma.Compiler.Format
 import Lemma.Compiler.DeploymentCatalog
+import Lemma.Compiler.ManagedClosureMetadata
+import Lemma.Mathematics.ExecutionIdentity
+import Lemma.Mathematics.ExecutionIdentityV2
+import Lemma.Mathematics.ExecutionIdentityV4
+import Lemma.Mathematics.ExecutionIdentityV5
+import Lemma.Mathematics.ExecutionIdentityV3
 import Lemma.Platform.RiscV.ExecutionPrimitives
 import Lemma.Platform.Silicon.Binding
 import Lemma.Platform.Silicon.BindingFull
@@ -20,19 +26,29 @@ open Lemma.Compiler
 open Lemma.Platform.LemmaVM
 open DeploymentCatalog
 
-private def roleProfile (role : String) (configuration : String) : Except String Profile :=
+private def roleProfile (role : String) (configuration : String)
+    (image? : Option UserImageSpec := none) : Except String Profile :=
   match role with
   | "firmware" => .ok .firmware_v0_1
-  | "kernel" => .ok (if configuration == "lemmasim-silicon-power-probe" ||
-      configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize"
+  | "kernel" => .ok (if isWiFiCommonConfiguration configuration then .kernel_v0_8 else if isProductNotebookConfiguration configuration then .kernel_v0_7 else if configuration == "lemmasim-silicon-usb-link-probe" || isUSBNotebookConfiguration configuration then .kernel_v0_6 else
+      if configuration == "lemmasim-silicon-ble-link-probe" then .kernel_v0_5 else
+      if configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" ||
+      configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration
       then .kernel_v0_4 else if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
-  | "user" => .ok .user_v0_1
+  | "user" => .ok (if (isUSBPackageRecoveryNotebookConfiguration configuration || isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store") then .user_v0_2 else if (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "arithmetic") then .user_v0_7 else if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
+      if ((isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) &&
+      image?.any (fun image => image.key == "notebook" || image.key == "arithmetic")) ||
+      (image?.any (fun image => image.key == "arithmetic") &&
+       (configuration == "lemmasim-silicon-power-notebook" ||
+        configuration == "lemmasim-silicon-power-initialize" || isArithmeticDevelopmentConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration))
+      then .user_v0_2 else .user_v0_1)
   | _ => .error "production role must be firmware, kernel, or user"
 
 private def readConfiguration : IO String := do
   let some configuration ← IO.getEnv "LEMMA_KERNEL_CONFIGURATION"
     | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
-  unless configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-devices" || configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
+  unless isWiFiCommonConfiguration configuration || isProductNotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" || configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
       configuration == "lemmasim-initialize" || configuration == "normal" || configuration == "frames-development" ||
       configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
       configuration == "user-csr-development" || configuration == "user-nx-development" ||
@@ -55,7 +71,7 @@ private def userStartupCase (configuration : String) : Lemma.Platform.RiscV.Exec
   else (singletonInstructionCase? configuration).getD .none
 
 private def requiresSupervisor (configuration : String) : Bool :=
-  configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-devices" || configuration == "user-isolation-development" || configuration == "user-csr-development" ||
+  isWiFiCommonConfiguration configuration ||   configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" || configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "user-isolation-development" || configuration == "user-csr-development" ||
     configuration == "user-nx-development" || configuration == "user-kernel-fetch-development" ||
     configuration == "user-misaligned-development" || configuration == "user-syscall-development" ||
     (singletonInstructionCase? configuration).isSome || isMultiImageConfiguration configuration
@@ -67,13 +83,87 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if configuration == "lemmasim-silicon-devices" then
+  | "kernel" => if isUSBPackageRecoveryEntry2NotebookConfiguration configuration || isUSBPackageReaderNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if configuration.endsWith "-notebook" then
+          "siliconUSBPackageRecoveryEntry2Boot" else "siliconUSBPackageRecoveryEntry2InitializeMedium"),
+        "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBPackageRecoveryBulk"]
+    else if isTrialWatchdogNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.TrialWatchdogKernel.boot",
+        "Lemma.Platform.LemmaSim.TrialWatchdogKernel.dispatch"]
+    else if isProductCourseReaderNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.siliconProductCourseReaderBoot",
+        "Lemma.Platform.LemmaSim.NotebookKernel.dispatchProductExecutedBulk"]
+    else if isUSBPackageRecoveryNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook" then "siliconUSBPackageRecoveryBoot" else "siliconUSBPackageRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBPackageRecoveryBulk"]
+    else if isPackageClosureNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if configuration.endsWith "-notebook" then "siliconPackageClosureEntry2Boot" else "siliconPackageClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+    else if isClosureEntry2NotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if configuration == "lemmasim-silicon-closure-entry2-bulk-notebook" then "siliconClosureEntry2Boot" else "siliconClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+    else if isClosureNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if configuration == "lemmasim-silicon-closure-bulk-notebook" then "siliconClosureBoot"
+         else if configuration == "lemmasim-silicon-closure-bulk-initialize" then "siliconClosureInitializeMedium"
+         else if configuration == "lemmasim-silicon-closure-arithmetic-oom-development" then "siliconClosureOOMBoot"
+         else "siliconClosureFaultBoot"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+    else if configuration == "lemmasim-silicon-wifi-common-read-probe" then
+      #["Lemma.Platform.Silicon.Development.WiFiCommonReadProbe.boot", "Lemma.Platform.Silicon.Development.WiFiCommonReadProbe.dispatch"]
+    else if configuration == "lemmasim-silicon-wifi-common-probe" then
+      #["Lemma.Platform.Silicon.Development.WiFiCommonProbe.boot", "Lemma.Platform.Silicon.Development.WiFiCommonProbe.dispatch"]
+    else if configuration == "lemmasim-silicon-devices" then
       #["Lemma.Platform.Silicon.Development.DeviceEntry.boot", "Lemma.Platform.Silicon.Development.DeviceEntry.dispatch"]
+    else if configuration == "lemmasim-silicon-usb-link-probe" then
+      #["Lemma.Platform.Silicon.Development.USBLink.boot", "Lemma.Platform.Silicon.Development.USBLink.dispatch"]
+    else if configuration == "lemmasim-silicon-bytes-arithmetic-oom-development" || configuration == "lemmasim-silicon-array-arithmetic-oom-development" || configuration == "lemmasim-silicon-string-arithmetic-oom-development" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticOOMBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+    else if isBulkNotebookConfiguration configuration then
+      if isCourseAwaitNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-course-await-bulk-notebook" then "siliconCourseAwaitBoot" else "siliconCourseAwaitInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+      else if isCourseNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-course-bulk-notebook" then "siliconCourseBoot" else "siliconCourseInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+      else if isUSBClosureRecoveryNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook" then "siliconUSBClosureRecoveryBoot" else "siliconUSBClosureRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBClosureRecoveryBulk"]
+      else if isUSBRecoveryNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-clocked-retry-bulk-notebook" then "siliconUSBRecoveryBoot" else "siliconUSBRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBRecoveryBulk"]
+      else if isUSBClockedNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-clocked-bulk-notebook" then "siliconUSBClockedBoot" else "siliconUSBClockedInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBClockedBulk"]
+      else if isUSBWireNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-wire-bulk-notebook" then "siliconUSBWireBoot" else "siliconUSBWireInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBWireBulk"]
+      else if isUSBNextNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-next-bulk-notebook" then "siliconUSBNextBoot" else "siliconUSBNextInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBNextBulk"]
+      else if isProductExecutedNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel.siliconProductExecutedBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchProductExecutedBulk"]
+      else if isProductNextNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel.siliconProductNextBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchProductNextBulk"]
+      else if isUSBNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-bulk-notebook" then "siliconUSBBoot" else "siliconUSBInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBBulk"]
+      else if isProductNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel.siliconProductBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchProductBulk"]
+      else #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-bulk-notebook" || configuration == "lemmasim-silicon-bytes-bulk-notebook" || configuration == "lemmasim-silicon-array-bulk-notebook" || configuration == "lemmasim-silicon-string-bulk-notebook" then "siliconPowerBoot" else "siliconPowerInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+    else if isProductNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.siliconProductBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchProduct"]
+    else if configuration == "lemmasim-silicon-usb-notebook" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.siliconUSBBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSB"]
+    else if configuration == "lemmasim-silicon-usb-initialize" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.siliconUSBInitializeMedium", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSB"]
+    else if configuration == "lemmasim-silicon-ble-link-probe" then
+      #["Lemma.Platform.Silicon.Development.BLELink.boot", "Lemma.Platform.Silicon.Development.BLELink.dispatch"]
+    else if configuration == "lemmasim-silicon-power-safety-probe" then
+      #["Lemma.Platform.Silicon.Development.PowerSafety.boot", "Lemma.Platform.Silicon.Development.PowerSafety.dispatch"]
     else if configuration == "lemmasim-silicon-power-probe" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
-    else if configuration == "lemmasim-silicon-power-notebook" then
+    else if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-managed-notebook" || configuration == "lemmasim-silicon-sums-notebook" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
-    else if configuration == "lemmasim-silicon-power-initialize" then
+    else if configuration == "lemmasim-silicon-power-arithmetic-oom-development" || configuration == "lemmasim-silicon-sums-arithmetic-oom-development" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticOOMBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-silicon-power-arithmetic-fault-development" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticFaultBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-silicon-power-arithmetic-stall-development" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticStallBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-silicon-power-initialize" || configuration == "lemmasim-silicon-managed-initialize" || configuration == "lemmasim-silicon-sums-initialize" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerInitializeMedium", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-silicon-full-notebook" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconFullBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
@@ -143,6 +233,16 @@ private def developmentModules (configuration role : String) (image? : Option Us
     #["Lemma.Kernel.Development.ServiceEntry"]
   else if configuration == "frames-development" && role == "kernel" then
     #["Lemma.Kernel.Development.FramesEntry"]
+  else if configuration == "lemmasim-silicon-power-safety-probe" && role == "kernel" then
+    #["Lemma.Platform.Silicon.Development.PowerSafety"]
+  else if configuration == "lemmasim-silicon-usb-link-probe" && role == "kernel" then
+    #["Lemma.Platform.Silicon.Development.USBLink"]
+  else if configuration == "lemmasim-silicon-wifi-common-read-probe" && role == "kernel" then
+    #["Lemma.Platform.Silicon.Development.WiFiCommonReadProbe"]
+  else if configuration == "lemmasim-silicon-wifi-common-probe" && role == "kernel" then
+    #["Lemma.Platform.Silicon.Development.WiFiCommonProbe"]
+  else if configuration == "lemmasim-silicon-ble-link-probe" && role == "kernel" then
+    #["Lemma.Platform.Silicon.Development.BLELink"]
   else if configuration == "lemmasim-silicon-devices" && role == "kernel" then
     #["Lemma.Platform.Silicon.Development.DeviceEntry", "Lemma.Platform.Silicon.Development.DeviceProbe"]
   else if configuration == "user-isolation-development" && role == "kernel" then
@@ -205,6 +305,7 @@ private def managedUserSource (configuration role : String) (name : Name) : Bool
 /-- Application/service executable modules are independent linkage roots, not
 shared libraries. Gate J may import only the selected executable namespace. -/
 private def serviceExecutableSource (source : String) : Bool :=
+  source == "Lemma.Courses.PackageInstaller" || source.startsWith "Lemma.Courses.PackageInstaller." ||
   source.startsWith "Lemma.Applications." || source == "Lemma.Services.Store.Server" ||
     source.startsWith "Lemma.Services.Store.Server." || source == "Lemma.Services.Buffer.Server" ||
     source.startsWith "Lemma.Services.Buffer.Server." || source == "Lemma.User.Development.BufferFault" ||
@@ -212,7 +313,34 @@ private def serviceExecutableSource (source : String) : Bool :=
 
 private def selectedExecutableSource (configuration role source : String)
     (image? : Option UserImageSpec) : Bool :=
-  if !isServiceConfiguration configuration then true
+  if isUSBPackageRecoveryNotebookConfiguration configuration then
+    let executable := serviceExecutableSource source ||
+      source.startsWith "Lemma.Services.Store.ServerRecovery." ||
+      source.startsWith "Lemma.Services.Store.ServerAwait."
+    if !executable then true else
+    if role != "user" then false else
+    image?.any fun image =>
+      source == image.moduleName.toString || source.startsWith (image.moduleName.toString ++ ".") ||
+      (image.key == "store" && image.moduleName == `Lemma.Services.Store.ServerRecoveryAwait &&
+        (((source == "Lemma.Services.Store.ServerRecovery" || source.startsWith "Lemma.Services.Store.ServerRecovery.") &&
+          !#["Lemma.Services.Store.ServerRecovery.mainRecoveryCourse", "Lemma.Services.Store.ServerRecovery.step"].contains source) ||
+         ((source == "Lemma.Services.Store.ServerAwait" || source.startsWith "Lemma.Services.Store.ServerAwait.") &&
+          !#["Lemma.Services.Store.ServerAwait.main", "Lemma.Services.Store.ServerAwait.step"].contains source) ||
+         ((source == "Lemma.Services.Store.Server" || source.startsWith "Lemma.Services.Store.Server.") &&
+          !#["Lemma.Services.Store.Server.main", "Lemma.Services.Store.Server.step",
+            "Lemma.Services.Store.Server.courseMain", "Lemma.Services.Store.Server.courseStep"].contains source)))
+  else if isCourseAwaitNotebookConfiguration configuration || isPackageClosureNotebookConfiguration configuration then
+    let executable := serviceExecutableSource source ||
+      source == "Lemma.Services.Store.ServerAwait" || source.startsWith "Lemma.Services.Store.ServerAwait."
+    if !executable then true else
+    if role != "user" then false else
+    image?.any fun image =>
+      source == image.moduleName.toString || source.startsWith (image.moduleName.toString ++ ".") ||
+      (image.key == "store" && image.moduleName == `Lemma.Services.Store.ServerAwait &&
+        (source == "Lemma.Services.Store.Server" || source.startsWith "Lemma.Services.Store.Server.") &&
+        !#["Lemma.Services.Store.Server.main", "Lemma.Services.Store.Server.step",
+          "Lemma.Services.Store.Server.courseMain", "Lemma.Services.Store.Server.courseStep"].contains source)
+  else if !isServiceConfiguration configuration && !isCourseNotebookConfiguration configuration then true
   else if !serviceExecutableSource source then true
   else if role != "user" then false
   else image?.any fun image => source == image.moduleName.toString ||
@@ -270,7 +398,441 @@ private def deviceJson (lowered : LoweredActionSuite) (operation : Device.Op) : 
     ("volatile", .bool true), ("fence_before", .bool spec.fenceBefore),
     ("fence_after", .bool spec.fenceAfter), ("sites", .arr (deviceSites lowered operation))]
 
-private def unitManifest (configuration role : String) (suite : CheckedActionSuite)
+private def closedInlineFor (configuration : String) : Bool :=
+  isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration ||
+  #["lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize",
+    "lemmasim-silicon-power-arithmetic-oom-development",
+    "lemmasim-silicon-power-arithmetic-fault-development",
+    "lemmasim-silicon-power-arithmetic-stall-development"].contains configuration
+
+
+private def surfaceWordInlineSelected (configuration role : String) (image? : Option UserImageSpec) : Bool :=
+  (isPackageClosureNotebookConfiguration configuration ||
+    isUSBPackageRecoveryNotebookConfiguration configuration) &&
+    role == "user" && image?.any (·.key == "notebook")
+
+/-- Closed existing callback inlining. These are actual source-derived checked
+body preimages, not constructed compiler programs or target implementation strings.
+The two complete caller trees keep64 ordered iterations and their fault exits. -/
+private def surfaceWordInlineSources (configuration role : String) (suite : CheckedActionSuite)
+    (image? : Option UserImageSpec) : Except String (Array Name) := do
+  if !surfaceWordInlineSelected configuration role image? then return #[]
+  unless suite.contractVersion == Profile.user_v0_2.contractVersion do
+    throw "Surface-word inlining escaped Package Notebook User2"
+  let expected : Array (String × String) := #[
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.tileLoadWordStep", "(action.bind (action.call _private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.gatherWord [(bin add u64 (bin add u64 (bin add u64 (call Lemma.Ink.Surface.framebuffer u64 []) (bin mul u64 (bin add u64 (bin lshr u64 (var 4 u64) (lit u64 16)) (bin udiv u64 (cast zext u32 u64 (var 0 u32)) (lit u64 2))) (var 3 u64))) (bin udiv u64 (bin and u64 (var 4 u64) (lit u64 65535)) (lit u64 2))) (bin mul u64 (bin urem u64 (cast zext u32 u64 (var 0 u32)) (lit u64 2)) (lit u64 8)))]) (status %10) (value %11) (action.ite (cmp eq u8 (var 10 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (call Lemma.Ink.Surface.tile u64 []) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 8))) (var 11 u64)]) (status %12) (value %13) (action.done (var 12 u8) (var 2 u64))) (action.done (var 10 u8) (lit u64 0))))"),
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkCopyWord", "(action.bind (action.call Lemma.User.Memory.read64 [(bin add u64 (call Lemma.Ink.Surface.tile u64 []) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 8)))]) (status %7) (value %8) (action.ite (cmp eq u8 (var 7 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (var 3 u64) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 8))) (var 8 u64)]) (status %9) (value %10) (action.done (var 9 u8) (var 2 u64))) (action.done (var 7 u8) (lit u64 0))))"),
+    ("Lemma.Ink.Surface.loadTile", "(action.ite (cmp eq bool (call _private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.fullPackedTile bool [(var 0 u64) (var 1 u64) (var 2 u64) (var 3 u64)]) (bool true)) (action.bounded-fold-u64 budget=64 callback=_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.tileLoadWordStep count=(lit u32 64) initial=(lit u64 0) ctx=[(bin udiv u64 (bin add u64 (var 2 u64) (lit u64 1)) (lit u64 2)) (bin or u64 (var 0 u64) (bin shl u64 (var 1 u64) (lit u64 16))) (lit u64 0) (lit u64 0)] (status %4) (value %5) (action.done (var 4 u8) (lit u64 0))) (action.bounded-fold-u64 budget=512 callback=_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.tileLoadStep count=(lit u32 512) initial=(lit u64 0) ctx=[(bin or u64 (var 2 u64) (bin shl u64 (var 3 u64) (lit u64 16))) (bin or u64 (var 0 u64) (bin shl u64 (var 1 u64) (lit u64 16))) (lit u64 0) (lit u64 0)] (status %6) (value %7) (action.done (var 6 u8) (lit u64 0))))"),
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkPrepareStep", "(action.bind (action.call Lemma.Ink.Surface.loadTile [(bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)) (bin and u64 (var 3 u64) (lit u64 65535)) (bin lshr u64 (var 3 u64) (lit u64 16))]) (status %17) (value %18) (action.ite (cmp eq u8 (var 17 u8) (lit u8 0)) (action.bind (action.ite (cmp eq u64 (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32)) (action.done (lit u8 0) (lit u64 0)) (action.bounded-fold-u64 budget=512 callback=_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.compactStep count=(cast trunc u64 u32 (bin mul u64 (bin udiv u64 (bin add u64 (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 1)) (lit u64 2)) (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin lshr u64 (var 3 u64) (lit u64 16)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin lshr u64 (var 3 u64) (lit u64 16)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))))) initial=(lit u64 0) ctx=[(bin udiv u64 (bin add u64 (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 1)) (lit u64 2)) (lit u64 0) (lit u64 0) (lit u64 0)] (status %19) (value %20) (action.done (var 19 u8) (lit u64 0)))) (status %21) (value %22) (action.ite (cmp eq u8 (var 21 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (bin add u64 (call Lemma.Ink.Surface.bulkPacket u64 []) (lit u64 32)) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 32))) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32))]) (status %23) (value %24) (action.ite (cmp eq u8 (var 23 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (bin add u64 (bin add u64 (call Lemma.Ink.Surface.bulkPacket u64 []) (lit u64 32)) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 32))) (lit u64 8)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32))]) (status %25) (value %26) (action.ite (cmp eq u8 (var 25 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (bin add u64 (bin add u64 (call Lemma.Ink.Surface.bulkPacket u64 []) (lit u64 32)) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 32))) (lit u64 16)) (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32))))]) (status %27) (value %28) (action.ite (cmp eq u8 (var 27 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (bin add u64 (bin add u64 (call Lemma.Ink.Surface.bulkPacket u64 []) (lit u64 32)) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 32))) (lit u64 24)) (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin lshr u64 (var 3 u64) (lit u64 16)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin lshr u64 (var 3 u64) (lit u64 16)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32))))]) (status %29) (value %30) (action.ite (cmp eq u8 (var 29 u8) (lit u8 0)) (action.bounded-fold-u64 budget=64 callback=_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkCopyWord count=(lit u32 64) initial=(lit u64 0) ctx=[(bin add u64 (bin add u64 (call Lemma.Ink.Surface.bulkPacket u64 []) (lit u64 256)) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 512))) (lit u64 0) (lit u64 0) (lit u64 0)] (status %31) (value %32) (action.done (var 31 u8) (bin add u64 (var 2 u64) (lit u64 1)))) (action.done (var 29 u8) (lit u64 0)))) (action.done (var 27 u8) (lit u64 0)))) (action.done (var 25 u8) (lit u64 0)))) (action.done (var 23 u8) (lit u64 0)))) (action.done (var 21 u8) (lit u64 0)))) (action.done (var 17 u8) (lit u64 0))))"),
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.gatherWord", "(action.ite (cmp eq u64 (bin urem u64 (var 0 u64) (lit u64 8)) (lit u64 0)) (action.call Lemma.User.Memory.read64 [(var 0 u64)]) (action.bind (action.call Lemma.User.Memory.read64 [(bin sub u64 (var 0 u64) (bin urem u64 (var 0 u64) (lit u64 8)))]) (status %4) (value %5) (action.ite (cmp eq u8 (var 4 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.read64 [(bin add u64 (bin sub u64 (var 0 u64) (bin urem u64 (var 0 u64) (lit u64 8))) (lit u64 8))]) (status %6) (value %7) (action.ite (cmp eq u8 (var 6 u8) (lit u8 0)) (action.done (lit u8 0) (bin or u64 (bin lshr u64 (var 5 u64) (bin mul u64 (bin urem u64 (var 0 u64) (lit u64 8)) (lit u64 8))) (bin shl u64 (var 7 u64) (bin sub u64 (lit u64 64) (bin mul u64 (bin urem u64 (var 0 u64) (lit u64 8)) (lit u64 8)))))) (action.done (var 6 u8) (lit u64 0)))) (action.done (var 4 u8) (lit u64 0)))))")
+  ]
+  for (source, body) in expected do
+    let some function := suite.actionFunctions.find? (fun f => f.name.toString == source)
+      | throw "Surface-word inlining source missing"
+    unless function.body.renderNormalized == body do
+      throw s!"Surface-word inlining checked source body differs: {source}"
+  for (source, value) in #[
+      ("Lemma.Ink.Surface.framebuffer", "(lit u64 1114112)"),
+      ("Lemma.Ink.Surface.tile", "(lit u64 132352)"),
+      ("Lemma.Ink.Surface.bulkPacket", "(lit u64 1089536)")] do
+    let some function := suite.scalarFunctions.find? (fun f => f.name.toString == source)
+      | throw "Surface-word scalar source absent"
+    unless function.signature.args.isEmpty && function.signature.result == .u64 &&
+        function.body.renderNormalized == value do
+      throw "Surface-word scalar layout identity differs"
+  let mut selected : Array Name := #[]
+  for (source, caller) in #[
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.tileLoadWordStep", "Lemma.Ink.Surface.loadTile"),
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkCopyWord", "_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkPrepareStep")] do
+    let some function := suite.actionFunctions.find? (fun f => f.name.toString == source)
+      | throw "Surface-word callback absent"
+    unless function.signature.args == #[.u32, .u32, .u64, .u64, .u64, .u64, .u64] &&
+        function.effects.render == "[checked-access,virtual-read,virtual-write]" do
+      throw "Surface-word callback signature/effects differ"
+    let incoming := suite.actionFunctions.filter (fun f => f.actionDependencies.contains function.name)
+    unless incoming.size == 1 && incoming[0]!.name.toString == caller do
+      throw "Surface-word callback acquired a foreign caller"
+    selected := selected.push function.name
+  return selected
+
+private def surfaceWordInlineFields (configuration role : String) (suite : CheckedActionSuite)
+    (lowered : LoweredActionSuite) (image? : Option UserImageSpec) : Except String (List (String × Json)) := do
+  let selected ← surfaceWordInlineSources configuration role suite image?
+  if selected.isEmpty then return []
+  let mut callbacks : Array Json := #[]
+  for source in selected do
+    let some function := suite.actionFunctions.find? (·.name == source)
+      | throw "Surface-word callback disappeared"
+    let caller := if source.toString.endsWith ".tileLoadWordStep" then "Lemma.Ink.Surface.loadTile"
+      else "_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkPrepareStep"
+    callbacks := callbacks.push <| Json.mkObj [
+      ("source", .str source.toString), ("symbol", .str (← rootSymbol lowered source)),
+      ("args", argumentsJson function.signature.args), ("effects", effectsJson function.effects),
+      ("caller", .str caller), ("budget", toJson (64 : Nat)), ("count", toJson (64 : Nat))]
+  return [("surface_word_inline", Json.mkObj [
+    ("contract_version", .str "lemma-surface-word-inline-v1"),
+    ("policy", .str "two-checked-callbacks-internal-LLVM-O2"), ("callbacks", .arr callbacks)])]
+
+private def closedInlineFields (configuration : String) (lowered : LoweredActionSuite) :
+    List (String × Json) :=
+  if !closedInlineFor configuration then [] else
+  [("checked_inline", Json.mkObj ([
+    ("literal_contract", .str "lemma-closed-literals-v1"),
+    ("wrapper_contract", .str (if isProductCourseReaderNotebookConfiguration configuration && !lowered.inlineWrappers.isEmpty then
+        "lemma-checked-product-physical-wrapper-v1" else "lemma-checked-primitive-wrapper-v1")),
+    ("literals", .arr (lowered.inlineLiterals.map fun row => Json.mkObj [
+      ("source", .str row.source.toString), ("symbol", .str row.symbol),
+      ("type", .str row.ty.render), ("value", toJson row.value)])),
+    ("wrappers", .arr (lowered.inlineWrappers.map fun row => Json.mkObj [
+      ("source", .str row.source.toString), ("symbol", .str row.symbol),
+      ("operation", .str row.operation.stableId)]))] ++
+    (if !(isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) then [] else [
+      ("user_wrapper_contract", .str "lemma-checked-user-word-wrapper-v1"),
+      ("user_wrappers", .arr (lowered.inlineUserWrappers.map fun row => Json.mkObj [
+        ("source", .str row.source.toString), ("symbol", .str row.symbol),
+        ("operation", .str row.operation.stableId)]))])))]
+
+private def managedRecordFields (env : Environment) (configuration : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite)
+    (lowered : LoweredActionSuite) : Except String (List (String × Json)) := do
+  let mut entries : Array Name := #[]
+  for function in suite.actionFunctions do
+    if let some (root, _) := ManagedIR.generatedSource? function.name then
+      unless entries.contains root do entries := entries.push root
+  if suite.contractVersion != Profile.user_v0_2.contractVersion then
+    unless entries.isEmpty do throw "Managed closure crossed a legacy User profile"
+    return []
+  if (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "notebook") then
+    unless entries.isEmpty do throw "Notebook User-v0.2 may not acquire a managed record closure"
+    return []
+  if ((isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecovery.mainRecoveryCourse)) ||
+      (isUSBPackageRecoveryNotebookConfiguration configuration && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecoveryAwait.mainRecoveryAwait)) then
+    unless entries.isEmpty do throw "Recovery scalar Store may not acquire managed heap authority"
+    return []
+  unless entries == #[`Lemma.Mathematics.ManagedRational.compareFiveSix] do
+    throw "Production managed record entry differs from its versioned closed catalog"
+  let program ← ManagedIR.buildProgram env entries[0]!
+  let mut functions := #[]
+  for source in program.sourceNames do
+    let some declaration := Lean.IR.findEnvDecl env source | throw "Missing genuine managed compiler IR"
+    let generated := ManagedIR.genName program.root source
+    let some checked := suite.actionFunctions.find? (·.name == generated)
+      | throw "Genuine managed closure missing from checked unit"
+    functions := functions.push <| Json.mkObj [
+      ("source", .str source.toString), ("generated_source", .str generated.toString),
+      ("symbol", .str (← rootSymbol lowered generated)),
+      ("genuine_ir", .str (Lean.IR.formatDecl declaration).pretty),
+      ("checked_action", .str checked.body.renderNormalized)]
+  return [("managed_records", Json.mkObj [
+    ("contract_version", .str "lemma-managed-records-v1"),
+    ("compiler_revision", .str "5045d0056413266e57c625dcd7c365b10e377c52"),
+    ("allocator", .str "lemma-owned-arena-v1"),
+    ("entry", .str program.root.toString),
+    ("shapes", .arr (program.shapes.map fun shape => Json.mkObj [
+      ("source", .str shape.typeName.toString), ("constructor", .str shape.constructor.toString),
+      ("id", toJson shape.id), ("bytes", toJson shape.bytes)])),
+    ("functions", .arr functions)])]
+
+private def managedSumFields (env : Environment) (configuration : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite)
+    (lowered : LoweredActionSuite) : Except String (List (String × Json)) := do
+  let mut entries : Array Name := #[]
+  for function in suite.actionFunctions do
+    if let some (root, _) := ManagedSumsIR.generatedSource? function.name then
+      unless entries.contains root do entries := entries.push root
+  if suite.contractVersion != Profile.user_v0_3.contractVersion then
+    unless entries.isEmpty do throw "Sum closure crossed its explicit User3 profile"
+    return []
+  unless isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") &&
+      entries == #[`Lemma.Mathematics.ManagedResult.compareFiveSix] do
+    throw "Production sums source entry escaped its closed isolated deployment"
+  let program ← ManagedSumsIR.buildProgram env entries[0]!
+  let mut functions := #[]
+  for source in program.sourceNames do
+    let some declaration := Lean.IR.findEnvDecl env source | throw "Missing genuine sum compiler IR"
+    let generated := ManagedSumsIR.genName program.root source
+    let some checked := suite.actionFunctions.find? (·.name == generated)
+      | throw "Genuine sum closure missing from checked unit"
+    functions := functions.push <| Json.mkObj [
+      ("source", .str source.toString), ("generated_source", .str generated.toString),
+      ("symbol", .str (← rootSymbol lowered generated)),
+      ("genuine_ir", .str (Lean.IR.formatDecl declaration).pretty),
+      ("checked_action", .str checked.body.renderNormalized)]
+  return [("managed_sums", Json.mkObj [
+    ("contract_version", .str "lemma-managed-sums-v1"),
+    ("compiler_revision", .str "5045d0056413266e57c625dcd7c365b10e377c52"),
+    ("allocator", .str "lemma-owned-arena-v1"),
+    ("entry", .str program.root.toString),
+    ("shapes", .arr (program.shapes.map fun shape => Json.mkObj [
+      ("source", .str shape.typeName.toString), ("id", toJson shape.id),
+      ("constructors", .arr (shape.constructors.map fun constructor => Json.mkObj [
+        ("source", .str constructor.constructor.toString), ("tag", toJson constructor.tag), ("bytes", toJson constructor.bytes)]))])),
+    ("functions", .arr functions)])]
+
+private def managedBytesFields (env : Environment) (configuration : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite)
+    (lowered : LoweredActionSuite) : Except String (List (String × Json)) := do
+  let mut entries : Array Name := #[]
+  for function in suite.actionFunctions do
+    if let some (root, _) := ManagedBytesIR.generatedSource? function.name then
+      unless entries.contains root do entries := entries.push root
+  if suite.contractVersion != Profile.user_v0_4.contractVersion then
+    unless entries.isEmpty do throw "Bytes closure crossed its explicit User4 profile"
+    return []
+  unless isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") &&
+      entries == #[`Lemma.Mathematics.ManagedByteSubmission.compareFiveSix] do
+    throw "Production bytes source entry escaped its closed isolated deployment"
+  let program ← ManagedBytesIR.buildProgram env entries[0]!
+  let mut functions := #[]
+  for source in program.sourceNames do
+    let some declaration := Lean.IR.findEnvDecl env source | throw "Missing genuine bytes compiler IR"
+    let generated := ManagedBytesIR.genName program.root source
+    let some checked := suite.actionFunctions.find? (·.name == generated)
+      | throw "Genuine bytes closure missing from checked unit"
+    functions := functions.push <| Json.mkObj [
+      ("source", .str source.toString), ("generated_source", .str generated.toString),
+      ("symbol", .str (← rootSymbol lowered generated)),
+      ("genuine_ir", .str (Lean.IR.formatDecl declaration).pretty),
+      ("checked_action", .str checked.body.renderNormalized)]
+  return [("managed_bytes", Json.mkObj [
+    ("contract_version", .str "lemma-managed-bytes-v1"),
+    ("compiler_revision", .str "5045d0056413266e57c625dcd7c365b10e377c52"),
+    ("allocator", .str "lemma-owned-arena-v1"), ("entry", .str program.root.toString),
+    ("maximum_payload", toJson (48 : Nat)), ("slots", toJson (31 : Nat)),
+    ("functions", .arr functions)])]
+
+/-- Array metadata is emitted from the exact checked ordinary/derived IR
+closure. Production selection and execution authority are separate callers. -/
+private def managedArrayFields (env : Environment) (_configuration : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite)
+    (lowered : LoweredActionSuite) : Except String (List (String × Json)) := do
+  let mut entries : Array Name := #[]
+  for function in suite.actionFunctions do
+    if let some (root, _) := ManagedArrayIR.generatedSource? function.name then
+      unless entries.contains root do entries := entries.push root
+  if suite.contractVersion != Profile.user_v0_5.contractVersion then
+    unless entries.isEmpty do throw "Array closure crossed its explicit User5 profile"
+    return []
+  unless image?.any (fun image => image.key == "arithmetic") && entries.size == 1 do
+    throw "User5 Array metadata requires one genuine isolated arithmetic entry"
+  let program ← ManagedArrayIR.buildProgram env entries[0]!
+  let renderType : ManagedArrayIR.ValueTy → String := fun
+    | .scalar => "UInt64"
+    | .buffer => "Array UInt64"
+    | _ => "<unadmitted source type>"
+  let sourceSignature := fun source => do
+    let (parameters, result) ← ManagedArrayIR.signature env source
+    return String.intercalate " → " ((parameters.toList.map renderType) ++ [renderType result])
+  let mut functions := #[]
+  for source in program.sourceNames do
+    let some declaration := Lean.IR.findEnvDecl env source | throw "Missing genuine Array compiler IR"
+    let generated := ManagedArrayIR.genName program.root source
+    let some checked := suite.actionFunctions.find? (·.name == generated)
+      | throw "Genuine Array closure missing from checked unit"
+    functions := functions.push <| Json.mkObj [
+      ("source", .str source.toString), ("source_signature", .str (← sourceSignature source)),
+      ("generated_source", .str generated.toString), ("symbol", .str (← rootSymbol lowered generated)),
+      ("genuine_ir", .str (Lean.IR.formatDecl declaration).pretty),
+      ("checked_action", .str checked.body.renderNormalized)]
+  let mut initializers := #[]
+  for source in program.defaultInitializers do
+    unless ManagedArrayIR.defaultInitializer? env source == some 0 &&
+        program.sourceNames.contains source.getPrefix do
+      throw "Array derived initializer escaped its exact genuine owner closure"
+    let some declaration := Lean.IR.findEnvDecl env source | throw "Missing genuine Array default initializer IR"
+    initializers := initializers.push <| Json.mkObj [
+      ("source", .str source.toString), ("owner_source", .str source.getPrefix.toString),
+      ("owner_source_signature", .str (← sourceSignature source.getPrefix)),
+      ("genuine_ir", .str (Lean.IR.formatDecl declaration).pretty),
+      ("value_bits", toJson (64 : Nat)), ("literal_value", toJson (0 : Nat)),
+      ("use_policy", .str "unobservable borrowed-get default; controlled-panic236")]
+  return [("managed_array", Json.mkObj [
+    ("contract_version", .str "lemma-managed-array-v1"),
+    ("compiler_revision", .str "5045d0056413266e57c625dcd7c365b10e377c52"),
+    ("allocator", .str "lemma-owned-arena-v1"), ("entry", .str program.root.toString),
+    ("maximum_elements", toJson (6 : Nat)), ("element_bits", toJson (64 : Nat)),
+    ("slots", toJson (31 : Nat)), ("array_payload_bytes", toJson (64 : Nat)),
+    ("array_cookie", toJson Lemma.User.Runtime.ManagedArray.cookie),
+    ("element_layout", .str "owned generational boxTag1/length8/fullUInt64"),
+    ("get_out_of_bounds", .str "controlled-panic236; no mathematical default"),
+    ("set_out_of_bounds", .str "controlled-panic236; consume parent/element, preserve retained aliases"),
+    ("functions", .arr functions), ("default_initializers", .arr initializers)])]
+
+private def managedStringFields (env : Environment) (configuration : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite)
+    (lowered : LoweredActionSuite) : Except String (List (String × Json)) := do
+  let mut entries : Array Name := #[]
+  for function in suite.actionFunctions do
+    if let some (root, _) := ManagedStringIR.generatedSource? function.name then
+      unless entries.contains root do entries := entries.push root
+  if suite.contractVersion != Profile.user_v0_6.contractVersion then
+    unless entries.isEmpty do throw "String closure crossed its explicit User6 profile"
+    return []
+  unless isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") &&
+      entries == #[`Lemma.Mathematics.ManagedStringSubmission.compareFiveSix] do
+    throw "User6 String metadata requires one exact isolated arithmetic entry"
+  let program ← ManagedStringIR.buildProgram env entries[0]!
+  let renderType : ManagedStringIR.ValueTy → String := fun
+    | .scalar => "UInt64" | .byte => "UInt8" | .buffer => "ByteArray"
+    | .text => "String" | .optional => "Option String" | _ => "<unadmitted source type>"
+  let mut functions := #[]
+  for source in program.sourceNames do
+    let some declaration := Lean.IR.findEnvDecl env source | throw "Missing genuine String compiler IR"
+    let generated := ManagedStringIR.genName program.root source
+    let some checked := suite.actionFunctions.find? (·.name == generated)
+      | throw "Genuine String closure missing from checked unit"
+    let (parameters,result) ← ManagedStringIR.signature env source
+    let signature := String.intercalate " → " ((parameters.toList.map renderType) ++ [renderType result])
+    functions := functions.push <| Json.mkObj [
+      ("source", .str source.toString), ("source_signature", .str signature),
+      ("generated_source", .str generated.toString), ("symbol", .str (← rootSymbol lowered generated)),
+      ("genuine_ir", .str (Lean.IR.formatDecl declaration).pretty),
+      ("checked_action", .str checked.body.renderNormalized)]
+  return [("managed_string",Json.mkObj [
+    ("contract_version",.str "lemma-managed-string-v1"),
+    ("compiler_revision",.str "5045d0056413266e57c625dcd7c365b10e377c52"),
+    ("allocator",.str "lemma-owned-arena-v1"),("entry",.str program.root.toString),
+    ("maximum_utf8_bytes",toJson (40 : Nat)),("slots",toJson (31 : Nat)),
+    ("string_payload_bytes",toJson (64 : Nat)),("string_cookie",toJson Lemma.User.Runtime.ManagedString.cookie),
+    ("option_payload_bytes",toJson (16 : Nat)),("option_cookie",toJson Lemma.User.Runtime.ManagedString.optionCookie),
+    ("length",.str "Unicode scalars; NUL preserved; not grapheme clusters"),
+    ("utf8",.str "strict scalar UTF8; reject overlong/surrogate/truncated/aboveU10FFFF"),
+    ("lifetime",.str "generational String64; OptionSome16 owns String child; immediateNone0"),
+    ("to_bytes",.str "consume String; independent ByteArray copy; retained aliases survive"),
+    ("functions",.arr functions)])]
+
+private def arithmeticStringExecutionFields (configuration role : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite) : Except String (List (String × Json)) := do
+  if !image?.any (fun image => image.key == "arithmetic") then return []
+  let hasV6 := suite.actionFunctions.any fun function =>
+    ((Lean.privateToUserName? function.name).getD function.name).toString.startsWith
+      "Lemma.Services.Arithmetic.ProtocolV6."
+  if !hasV6 then return []
+  unless role == "user" && suite.contractVersion == Profile.user_v0_6.contractVersion &&
+      isStringNotebookConfiguration configuration &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV6.reply) &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV6.validateRequest) do
+    throw "String execution identity escaped its exact Protocol6 isolated deployment"
+  return [("arithmetic_string_execution_identity",Json.mkObj [
+    ("contract_version",.str "lemma-arithmetic-execution-identity-v5"),
+    ("implementation",Json.mkObj [("name",.str "lemma-isolated-arithmetic-string-v1"),
+      ("id",toJson Lemma.Mathematics.ExecutionIdentityV5.implementation.toNat)]),
+    ("lowering",Json.mkObj [("name",.str "core0-user-v0.6/lemma-managed-string-v1"),
+      ("id",toJson Lemma.Mathematics.ExecutionIdentityV5.lowering.toNat)]),
+    ("runtime",Json.mkObj [("name",.str "lemma-owned-arena-string-graph-v1"),
+      ("id",toJson Lemma.Mathematics.ExecutionIdentityV5.runtime.toNat)]),
+    ("resources",Json.mkObj [("name",.str "lemma-arithmetic-string-resource-v1"),
+      ("id",toJson Lemma.Mathematics.ExecutionIdentityV5.resources.toNat),
+      ("heap_objects",toJson (31 : Nat)),("maximum_utf8_bytes",toJson (40 : Nat)),
+      ("semantic_budgets",.arr #[toJson (0 : Nat),toJson (8 : Nat)]),
+      ("deadline_ticks",toJson (10000000 : Nat))])])]
+
+private def arithmeticArrayExecutionFields (configuration role : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite) : Except String (List (String × Json)) := do
+  if !image?.any (fun image => image.key == "arithmetic") then return []
+  let hasV5 := suite.actionFunctions.any fun function =>
+    ((Lean.privateToUserName? function.name).getD function.name).toString.startsWith
+      "Lemma.Services.Arithmetic.ProtocolV5."
+  if !hasV5 then return []
+  unless role == "user" && suite.contractVersion == Profile.user_v0_5.contractVersion &&
+      isArrayNotebookConfiguration configuration &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV5.reply) &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV5.validateRequest) do
+    throw "Array execution identity escaped its exact Protocol5 isolated deployment"
+  return [("arithmetic_array_execution_identity", Json.mkObj [
+    ("contract_version", .str "lemma-arithmetic-execution-identity-v4"),
+    ("implementation", Json.mkObj [("name", .str "lemma-isolated-arithmetic-array-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV4.implementation.toNat)]),
+    ("lowering", Json.mkObj [("name", .str "core0-user-v0.5/lemma-managed-array-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV4.lowering.toNat)]),
+    ("runtime", Json.mkObj [("name", .str "lemma-owned-arena-array-graph-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV4.runtime.toNat)]),
+    ("resources", Json.mkObj [("name", .str "lemma-arithmetic-array-resource-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV4.resources.toNat),
+      ("heap_objects", toJson (31 : Nat)), ("maximum_elements", toJson (6 : Nat)),
+      ("semantic_budgets", .arr #[toJson (0 : Nat), toJson (8 : Nat)]),
+      ("deadline_ticks", toJson (10000000 : Nat))])])]
+
+private def arithmeticBytesExecutionFields (configuration role : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite) : Except String (List (String × Json)) := do
+  if !image?.any (fun image => image.key == "arithmetic") then return []
+  let hasV4 := suite.actionFunctions.any fun function =>
+    ((Lean.privateToUserName? function.name).getD function.name).toString.startsWith
+      "Lemma.Services.Arithmetic.ProtocolV4."
+  if !hasV4 then return []
+  unless role == "user" && suite.contractVersion == Profile.user_v0_4.contractVersion &&
+      isBytesNotebookConfiguration configuration &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV4.reply) &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV4.validateRequest) do
+    throw "Bytes execution identity escaped its exact Protocol4 isolated deployment"
+  return [("arithmetic_bytes_execution_identity", Json.mkObj [
+    ("contract_version", .str "lemma-arithmetic-execution-identity-v3"),
+    ("implementation", Json.mkObj [("name", .str "lemma-isolated-arithmetic-bytes-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV3.implementation.toNat)]),
+    ("lowering", Json.mkObj [("name", .str "core0-user-v0.4/lemma-managed-bytes-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV3.lowering.toNat)]),
+    ("runtime", Json.mkObj [("name", .str "lemma-owned-arena-bytes-cookie-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV3.runtime.toNat)]),
+    ("resources", Json.mkObj [("name", .str "lemma-arithmetic-bytes-resource-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV3.resources.toNat),
+      ("heap_objects", toJson (31 : Nat)), ("maximum_payload", toJson (48 : Nat)),
+      ("semantic_budgets", .arr #[toJson (0 : Nat), toJson (8 : Nat)]),
+      ("deadline_ticks", toJson (10000000 : Nat))])])]
+
+private def arithmeticSumsExecutionFields (configuration role : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite) : Except String (List (String × Json)) := do
+  if !image?.any (fun image => image.key == "arithmetic") then return []
+  let hasV3 := suite.actionFunctions.any fun function =>
+    ((Lean.privateToUserName? function.name).getD function.name).toString.startsWith
+      "Lemma.Services.Arithmetic.ProtocolV3."
+  if !hasV3 then return []
+  unless role == "user" && suite.contractVersion == Profile.user_v0_3.contractVersion &&
+      isSumsNotebookConfiguration configuration &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV3.reply) &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV3.validateRequest) do
+    throw "Sums execution identity escaped its exact Protocol3 isolated deployment"
+  return [("arithmetic_sums_execution_identity", Json.mkObj [
+    ("contract_version", .str "lemma-arithmetic-execution-identity-v2"),
+    ("implementation", Json.mkObj [("name", .str "lemma-isolated-arithmetic-sums-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV2.implementation.toNat)]),
+    ("lowering", Json.mkObj [("name", .str "core0-user-v0.3/lemma-managed-sums-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV2.lowering.toNat)]),
+    ("runtime", Json.mkObj [("name", .str "lemma-owned-arena-sum-cookie-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV2.runtime.toNat)]),
+    ("resources", Json.mkObj [("name", .str "lemma-arithmetic-resource-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentityV2.resources.toNat),
+      ("heap_objects", toJson (31 : Nat)), ("semantic_budgets", .arr #[toJson (0 : Nat), toJson (8 : Nat)]),
+      ("deadline_ticks", toJson (10000000 : Nat))])])]
+
+private def arithmeticExecutionFields (configuration role : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite) : Except String (List (String × Json)) := do
+  if !image?.any (fun image => image.key == "arithmetic") then return []
+  let hasV2 := suite.actionFunctions.any fun function =>
+    ((Lean.privateToUserName? function.name).getD function.name).toString.startsWith
+      "Lemma.Services.Arithmetic.ProtocolV2."
+  if !hasV2 then return []
+  unless role == "user" && image?.any (fun image => image.key == "arithmetic") &&
+      suite.contractVersion == Profile.user_v0_2.contractVersion &&
+      (configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+       isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration ||
+       isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration) &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV2.reply) &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV2.validateRequest) do
+    throw "Arithmetic execution identity escaped its closed Protocol-v2 deployment"
+  return [("arithmetic_execution_identity", Json.mkObj [
+    ("contract_version", .str "lemma-arithmetic-execution-identity-v1"),
+    ("implementation", Json.mkObj [("name", .str "lemma-isolated-arithmetic-managed-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentity.implementation.toNat)]),
+    ("lowering", Json.mkObj [("name", .str "core0-user-v0.2/lemma-managed-records-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentity.lowering.toNat)]),
+    ("runtime", Json.mkObj [("name", .str "lemma-owned-arena-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentity.runtime.toNat)]),
+    ("resources", Json.mkObj [("name", .str "lemma-arithmetic-resource-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentity.resources.toNat),
+      ("heap_objects", toJson (31 : Nat)), ("semantic_budgets", .arr #[toJson (0 : Nat), toJson (8 : Nat)]),
+      ("deadline_ticks", toJson (10000000 : Nat))])])]
+
+private def unitManifest (env : Environment) (configuration role : String) (suite : CheckedActionSuite)
     (lowered : LoweredActionSuite) (image? : Option UserImageSpec := none) : Except String Json := do
   let mut roots := #[]
   for root in suite.roots do
@@ -297,7 +859,21 @@ private def unitManifest (configuration role : String) (suite : CheckedActionSui
     ("contract_version", .str suite.contractVersion), ("role", .str role), ("roots", .arr roots),
     ("functions", .arr functions), ("used_execution_ops", .arr (suite.usedExecutionOps.map executionJson)),
     ("used_device_ops", .arr devices), ("used_loops", .arr (suite.usedLoops.map fun use =>
-      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields ++ managedPolicyFields configuration)
+      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields ++ managedPolicyFields configuration ++ softwareDeploymentFields configuration ++ closedInlineFields configuration lowered ++
+      (← surfaceWordInlineFields configuration role suite lowered image?) ++
+      (← managedRecordFields env configuration image? suite lowered) ++
+      (← managedSumFields env configuration image? suite lowered) ++
+      (← managedBytesFields env configuration image? suite lowered) ++
+      (← managedArrayFields env configuration image? suite lowered) ++
+      (← managedStringFields env configuration image? suite lowered) ++
+      (← ManagedClosureMetadata.managedClosureFields env (image?.any (·.key == "arithmetic")) suite lowered) ++
+      (← ManagedClosureMetadata.executionFields (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration)
+        (image?.any (·.key == "arithmetic")) role suite) ++
+      (← arithmeticArrayExecutionFields configuration role image? suite) ++
+      (← arithmeticStringExecutionFields configuration role image? suite) ++
+      (← arithmeticBytesExecutionFields configuration role image? suite) ++
+      (← arithmeticSumsExecutionFields configuration role image? suite) ++
+      (← arithmeticExecutionFields configuration role image? suite))
 
 private def loopJson (use : ActionLoopUse) : Json :=
   Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]
@@ -326,7 +902,16 @@ this name as a FILE symbol; deployment identity remains in every manifest. All
 historical configurations and non-User roles keep their original source name. -/
 def llvmModuleSourceName (configuration role : String)
     (image? : Option UserImageSpec := none) : String :=
-  if role == "user" && (configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize") then
+  if role == "user" && (isUSBPackageRecoveryEntry2NotebookConfiguration configuration || isUSBPackageReaderNotebookConfiguration configuration) then
+    match image? with
+    | some image => "Lemma lemma-silicon-dev/0.13.0 user " ++ image.root.toString
+    | none => "Lemma " ++ configuration ++ " " ++ role
+  else if role == "user" && isProductCourseReaderNotebookConfiguration configuration then
+    match image? with
+    | some image => "Lemma lemma-silicon-dev/0.10.0 user " ++ image.root.toString
+    | none => "Lemma " ++ configuration ++ " " ++ role
+  else if role == "user" && (configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) then
     match image? with
     | some image => "Lemma lemma-silicon-dev/0.3.0 user " ++ image.root.toString
     | none => "Lemma " ++ configuration ++ " " ++ role
@@ -355,7 +940,21 @@ private def validateRoots (configuration role : String) (suite : CheckedActionSu
 
 private def exportUnit (env : Environment) (configuration role : String) (names : Array Name)
     (directory : System.FilePath) (image? : Option UserImageSpec := none) : IO Unit := do
-  let profile ← IO.ofExcept (roleProfile role configuration)
+  -- Host-only diagnostics; no catalog, accepted language or RV64 bytes change.
+  let traceEnabled := (← IO.getEnv "LEMMA_EXPORT_TRACE") == some "1"
+  let traceFile ← IO.getEnv "LEMMA_EXPORT_TRACE_FILE"
+  let traceStart ← IO.monoMsNow
+  let trace (phase : String) : IO Unit := do
+    if traceEnabled then
+      let line := s!"LEMMA_EXPORT {configuration} {role} {phase} elapsed_ms={(← IO.monoMsNow) - traceStart}"
+      IO.eprintln line
+      (← IO.getStderr).flush
+      if let some file := traceFile then
+        IO.FS.withFile file .append fun handle => do
+          handle.putStrLn line
+          handle.flush
+  trace "start"
+  let profile ← IO.ofExcept (roleProfile role configuration image?)
   IO.ofExcept <| validateSelectedRoots configuration role names image?
   for imported in env.header.moduleNames do
     unless selectedExecutableSource configuration role imported.toString image? do
@@ -369,6 +968,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   let suite ← match checkAndLowerActionSuiteForProfile env profile names with
     | .ok suite => pure suite
     | .error diagnostic => throw <| IO.userError diagnostic.render
+  trace s!"checked-suite scalars={suite.scalarFunctions.size} actions={suite.actionFunctions.size}"
   IO.ofExcept (validateRoots configuration role suite image?)
   for function in suite.scalarFunctions do
     unless productionName function.name && allowedDevelopmentSource configuration role function.name image? &&
@@ -380,9 +980,16 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
         managedUserSource configuration role function.name &&
         selectedExecutableSource configuration role ((Lean.privateToUserName? function.name).getD function.name).toString image? do
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
-  let preserved := suite.scalarFunctions.map (·.name) ++ suite.actionFunctions.map (·.name)
+  let surfaceInline ← IO.ofExcept <| surfaceWordInlineSources configuration role suite image?
+  let preserved := suite.scalarFunctions.map (·.name) ++
+    (suite.actionFunctions.filter (fun f => !surfaceInline.contains f.name)).map (·.name)
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution profile suite {
-    preserveCalls := preserved, symbolPrefix := image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_") }
+    preserveCalls := preserved, symbolPrefix := image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_"),
+    inlineLiteralConstants := closedInlineFor configuration,
+    inlinePrimitiveWrappers := closedInlineFor configuration && role == "kernel" &&
+      (!isProductNotebookConfiguration configuration || isProductCourseReaderNotebookConfiguration configuration),
+    inlineUserWordWrappers := (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && role == "user" && (profile == .user_v0_2 || profile == .user_v0_3 || profile == .user_v0_4 || profile == .user_v0_5 || profile == .user_v0_6 || profile == .user_v0_7) }
+  trace s!"lowered functions={lowered.functions.size}"
   let mut declarations : Array LLVM.Declaration := #[]
   for spec in suite.usedExecutionOps do
     if let some name := spec.primitiveSymbol? then
@@ -397,11 +1004,14 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
     declarations
     functions := lowered.functions }
   IO.ofExcept <| LLVM.validateModule module
-  let manifest ← IO.ofExcept <| unitManifest configuration role suite lowered image?
+  trace "validated-module"
+  let manifest ← IO.ofExcept <| unitManifest env configuration role suite lowered image?
+  trace "manifest"
   IO.FS.createDirAll directory
   for (filename, contents) in #[("program.ll", module.render), ("unit.json", manifest.pretty ++ "\n"),
       ("normalized.txt", normalized configuration role suite image?), ("symbols.txt", lowered.renderSymbolManifest)] do
     IO.FS.writeFile (directory / filename) contents
+  trace "published"
 
 private def userTextBaseFor (configuration : String) : Nat :=
   if configuration.startsWith "lemmasim-" then 0x1000000 else Layout.userTextBase
@@ -428,12 +1038,14 @@ private def bootClearFields (configuration : String) : List (String × Json) :=
     ("phase", .str "M-startup-before-boot-handoff")])] else []
 
 private def frameCountFor (configuration : String) : Nat :=
-  if configuration.startsWith "lemmasim-silicon-power-" then Lemma.Platform.Silicon.BindingPower.frame_count.toNat
+  if isWiFiCommonConfiguration configuration || configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" ||
+      isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then Lemma.Platform.Silicon.BindingPower.frame_count.toNat
   else if configuration.startsWith "lemmasim-silicon-full-" then Lemma.Platform.Silicon.BindingFull.frame_count.toNat
   else if configuration.startsWith "lemmasim-silicon-" then Lemma.Platform.Silicon.Binding.frame_count.toNat
   else if configuration.startsWith "lemmasim-" then 8192 else Layout.frameCount
 private def framePoolLimitFor (configuration : String) : Nat :=
-  if configuration.startsWith "lemmasim-silicon-power-" then
+  if isWiFiCommonConfiguration configuration || configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" ||
+      isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then
     (Lemma.Platform.Silicon.BindingPower.frame_pool_base + Lemma.Platform.Silicon.BindingPower.frame_pool_bytes).toNat
   else if configuration.startsWith "lemmasim-silicon-full-" then
     (Lemma.Platform.Silicon.BindingFull.frame_pool_base + Lemma.Platform.Silicon.BindingFull.frame_pool_bytes).toNat
@@ -534,7 +1146,7 @@ private def readRootSymbol (directory : System.FilePath) (configuration role : S
   let contract ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "contract_version").getStr?
   let category ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "artifact_category").getStr?
   let version ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "schema_version").getNat?
-  let profile ← IO.ofExcept <| roleProfile role configuration
+  let profile ← IO.ofExcept <| roleProfile role configuration image?
   unless actualRole == role && actualConfiguration == configuration &&
       contract == profile.contractVersion && version == (if image?.isSome then 2 else 1) &&
       category == unitCategory configuration role do
@@ -645,7 +1257,7 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
   let kernel ← readRootSymbol directory configuration "kernel" 0
   let dispatcher ← readRootSymbol directory configuration "kernel" 1
   let config : Lemma.Platform.RiscV.ExecutionPrimitives.Configuration := {
-    stage, lemmasim := configuration.startsWith "lemmasim-", startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
+    stage, lemmasim := configuration.startsWith "lemmasim-", productBoot := isProductNotebookConfiguration configuration, commonOFDM := isWiFiCommonConfiguration configuration, startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
     kernelMain := kernel, firmwareDispatcher := firmware, supervisorDispatcher := dispatcher }
   let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderStartup config
   if isMultiImageConfiguration configuration then
@@ -725,6 +1337,20 @@ elab_rules : command
         | .error error => throwError error
       let some output ← liftIO <| IO.getEnv "LEMMA_KERNEL_OUT"
         | throwError "LEMMA_KERNEL_OUT must name the deployment directory"
+      if key == "arithmetic" &&
+          (← liftIO <| IO.ofExcept (roleProfile "user" configuration (some image))) == .user_v0_2 then
+        -- Ordinary imported source declarations go through Lean's genuine
+        -- compiler before the checked managed IR bridge. No synthetic defs.
+        liftCoreM <| Lean.Compiler.compile #[`Lemma.Mathematics.ManagedRational.compareFiveSix]
+      if key == "arithmetic" &&
+          (← liftIO <| IO.ofExcept (roleProfile "user" configuration (some image))) == .user_v0_3 then
+        liftCoreM <| Lean.Compiler.compile #[`Lemma.Mathematics.ManagedResult.compareFiveSix]
+      if key == "arithmetic" &&
+          (← liftIO <| IO.ofExcept (roleProfile "user" configuration (some image))) == .user_v0_6 then
+        liftCoreM <| Lean.Compiler.compile #[`Lemma.Mathematics.ManagedStringSubmission.compareFiveSix]
+      if key == "arithmetic" &&
+          (← liftIO <| IO.ofExcept (roleProfile "user" configuration (some image))) == .user_v0_7 then
+        liftCoreM <| Lean.Compiler.compile #[`Lemma.Mathematics.ManagedClosureSubmission.compareFiveSix]
       liftIO <| exportUnit (← getEnv) configuration "user" names (System.FilePath.mk output / image.directory) (some image)
       logInfo m!"Lemma exported the genuine {configuration} user image {key}"
 

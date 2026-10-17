@@ -1,0 +1,42 @@
+{
+  "scope": "Product7 address-space/discovery/lowering and modern USB6/Product7 cooperative Power-v2 policy; artifact audit and actual notebook/storage acceptance are distinct",
+  "implementation": "Additive Product AS-v3 retains owner pins,14tables, rollback, supervisor-only NV/reset-scratch; modern constructor selects configureSafety; legacy constructor remains Power-v1",
+  "observed": [
+    {
+      "path": "build/task006-modern-power-export-a1/qualification-a3.json",
+      "sha256": "8d9472e8aac5d4f515841fed0402939c242846a48d199e8d4d5da57ff839eb6d",
+      "status": "PASS",
+      "source_commit": null
+    },
+    {
+      "path": "build/usb/store-initialize-a1/result.json",
+      "sha256": "19ac6221d83de3165ce0ba287ce4fe3f89306900ec69d59ac42e409d576abfb0",
+      "status": "FAIL",
+      "source_commit": null
+    },
+    {
+      "path": "build/kernel/task006-usb-initialize-a5/audit.json",
+      "sha256": "9f469337a52634d5fb5509aa5d8a7fcffdf228c16c40d614e15a63fa3942838e",
+      "status": "PASS",
+      "source_commit": "95f56af1df6e681ae745642f1157836c262e5550"
+    },
+    {
+      "path": "build/kernel/task006-product-notebook-a3/audit.json",
+      "sha256": "11316e40012183d4c6025866b879f69a5b8bc71b8778cdd40aa4619324aab5bd",
+      "status": "PASS",
+      "source_commit": "95f56af1df6e681ae745642f1157836c262e5550"
+    }
+  ],
+  "qualifier": "scripts/check_modern_power_selection.py uses actual emitted LLVM and six changed identity/owner/endpoint/caller/record authorities",
+  "retained_observer_failures": [
+    "build/task006-modern-power-export-a1/qualification-a1-failure.json",
+    "build/task006-modern-power-export-a1/qualification-a2-failure.json"
+  ],
+  "actual_workflow_scope": "Original USB Store initializer failed againstPower-v2 before guest activation; corrected image now passed that boundary, connected lost-ACK workflow still running. Product ROM installed/handedoff exactsegments then discovery launcher failure; interrupted update/healthy boot still pending.",
+  "unfinished": [
+    "Product health confirmation after actual fullReady",
+    "USB notebook Save/lostACK/cold acceptance",
+    "authenticated production trust",
+    "full architectural/timing/physical closure"
+  ]
+}

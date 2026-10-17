@@ -1,0 +1,545 @@
+{
+  "schema": "task006-fast-private-backing-replay/1",
+  "status": "PASS",
+  "scope": "Exact admitted LMIOLOG2 backing I/O and real guest user-output suffix; QEMU cached-state/arbitrary-boundary continuation unfinished",
+  "base_commit": "4ff907dfb5d0fb052b9807bb0d6a44d6c257b183",
+  "source_binding": "Base commit is not a clean candidate assertion; exact consumed backend/observer/profile hashes and immutable audited guest archive are authoritative",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "identity": {
+    "backend": "qemu",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "99ebddc7f6b323ef21582ac2bcd36d03526f3814dab9748770e1ae883e2b217c",
+    "adapter": "lemmasim-fast-adapter/4",
+    "derivation": "0673c35103fc84318395afbc41941158593a9a65f3365b49e62cc391985304cf",
+    "guest": "b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3
+  },
+  "backend": {
+    "binary": {
+      "path": "/nix/store/c34k6g1rli4mv0jslfrwyh7sc5i5fhng-lemmasim-qemu-11.1.1/bin/qemu-system-riscv64",
+      "sha256": "99ebddc7f6b323ef21582ac2bcd36d03526f3814dab9748770e1ae883e2b217c"
+    },
+    "derivation": {
+      "path": "/nix/store/pj721vwqvag6bxwd04bfr2r8zw9nw9c0-lemmasim-qemu-11.1.1.drv",
+      "sha256": "0673c35103fc84318395afbc41941158593a9a65f3365b49e62cc391985304cf"
+    },
+    "consumed_sources": {
+      "tooling/lemmasim/qemu.nix": "b4c69b52949600856806c56fc4858eb11ca40443e17fc9b8deaf5fbbe988e6a0",
+      "tooling/lemmasim/apply_qemu.py": "496848e8751a2ae2ce24033d66f222254a9fdb594206c40e64fdb13efa7edd2b",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+      "sim/profiles/lemma-silicon-dev-0.3.0.json": "ff2d02c122f0a0974d4591fc648b27ad1e3c0837be2d64d9ecaa0cd922f9e688",
+      "tooling/lemmasim/patch_counter_clock.py": "a7f7978a25879dbeeb3d96773f236b3fd897fd342450a36864eb9241c8477a2f",
+      "sim/host/README.md": "94142e8ae9d2e7e94524fd6847e9f291f6ec158062d0f0ece1b9bfd6d215187b",
+      "sim/host/backing_io.cpp": "64a3f19c829adf568a41d3c3422d1a3fbab52dac185e80e4670cfb355b1afdf7",
+      "sim/host/backing_io.h": "25c1695d3c813bfbe5769a6acc27e0a3168cfa11a868739efbb1d1aa27ef560e",
+      "sim/host/backing_io_posix.cpp": "0689696842477eab598258c921b0d3c047e60152bf6cdd74768781fbf364f482",
+      "sim/host/backing_io_posix.h": "d4742c21a9b5054bbf4a67a4c4ef5718e5602e5275a168139f9846a7c98b0cb3",
+      "sim/host/check_fast_block.py": "7a22fe0000f1672ccc0417bfb47d94a86c805e67096ec87290ac5be47b57ecff",
+      "sim/host/check_fast_checkpoint.py": "872c24dd3573d4a5911036895650aa9bb726fc93379461dbdcea6fc5905c1e8d",
+      "sim/host/check_qemu_devices.py": "a180b11d4ef9b9aac9f2b2169d031f505dbe9c384e5426e26a8ed720579ffa54",
+      "sim/host/check_qemu_medium.py": "c5ab63c7a89ae8a4db8fcc49708f446ce75f530d4cc157877bb3767aed672907",
+      "sim/host/check_qemu_replay.py": "771bf9e222c66a87b0be47d9efa1c487bfb5535708864f5f7a66f0546ad85b99",
+      "sim/host/generate_constants.py": "1d4c608e18cab21e72dd4b062e4ad0580fd20e8102676a65b7bc025d48f37608",
+      "sim/host/lemma_device_abi.h": "ca96d153bed0acac81e4db76a2645bf9cfc78293d0266bd353a06e4bb77ce655",
+      "sim/host/lemma_durable.c": "cb04554d4488ee2c9968784a9d45896178d58372012c89f03f5f7a78113c7435",
+      "sim/host/lemma_fast_block.c": "31bb7d8c1eb3b601351dd73f6eded275693517fb419822f5434b7bd54da3e1fc",
+      "sim/host/lemma_model.c": "8eb19f45e07949abea192d20c3b08e364c36eab9e4f257c6bb0b970dec384e56",
+      "sim/host/lemma_model.h": "51daa300f3d05caea540806cd6ade2035379d8375ebe21ed5902b87886e7e9d9",
+      "sim/host/lemma_power_abi.h": "57231e6ef940c8b597daed5fb5ccb4179a83e50d860308488e0aac4f74d963e9",
+      "sim/host/lemma_qemu.c": "82358469ea6f6a0378e983c4e923ab651c42c71a06a0daa227a993c1c3c83c33",
+      "sim/companion/backing_c.cpp": "a9cfc994b301660661395aae60cd412119c3b08923c5d5e58e5212f33c640f3d",
+      "sim/companion/backing_c.h": "26861b5cc37fda3c09ff6726fa49fbaac4694ef33df1dbe6251c8cb01b17f726",
+      "sim/companion/backing_peer.cpp": "d5b9a796f9b4c07d03164648d50b4bb5ef1d52bf4ef589fe93c003f256849dac",
+      "sim/companion/backing_peer.h": "028e7131de53d3d1857d3480c532265acbc1b477782bf8b3cda46cdcccd6b8cb"
+    }
+  },
+  "guest_archive": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1",
+    "manifest_sha256": "e4e93d83c7d29d5b02cb1d9d22dfc9d627b58df2ac7aaf836386f88feccac21f",
+    "scope": "unchanged archived genuine guest; new backend, not fresh target compilation"
+  },
+  "observer_sources": {
+    "scripts/check_live_notebook.py": "566e68fed80217d55fd08de93b6db372923d97689ab4ddd93a94dc89d2351e60",
+    "conformance/lemmasim/check_notebook_workflow.py": "f1e6807034291f24ff482d569fc292e062a9e3046a2e542c5924a9a6d986fa96",
+    "conformance/lemmasim/inspect_notebook.py": "08d6eb39127d0c12d0a170afdbd0678b74704aa9e4d66918b92cb8606b9d60f7",
+    "conformance/lemmasim/notebook_input.py": "177621eb64769660cc6dbc08d625292455942dbdabc52ca64656ef8096652252",
+    "conformance/lemmasim/store_oracle.py": "d03b54bec2f8e2c1883f6b27a25ab3ebaa59062d6299aec1a81ce42835b5324c",
+    "scripts/check_fast_backing_replay.py": "a223d7a3348608740a0dc61711173f386afab2b96598f12e5c22405f81640761"
+  },
+  "commands": [
+    "nix-build tooling/lemmasim/qemu.nix --arg siliconProfile ./sim/profiles/lemma-silicon-dev-0.3.0.json --cores 2 -o build/lemmasim/qemu-backing-replay-a1",
+    "python3 scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.3.0 --workload notebook --guest-bundle build/native/task006-canonical-a1",
+    "python3 scripts/check_fast_backing_replay.py --disk build/silicon/task006-canonical-cold-a2/medium.raw --work-dir build/companion/fast-backing-replay-a2 --timeout 120 --boot-seconds 40 --action-seconds 20 --deadline 600",
+    "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/lemmasim -v",
+    "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/lemmasim -p test_backing_io.py -v",
+    "python3 scripts/check_scaffold.py",
+    "python3 -m unittest discover -s tests/scaffold -v"
+  ],
+  "bounds": {
+    "disk": "build/silicon/task006-canonical-cold-a2/medium.raw",
+    "work_dir": "/home/sreekumaar/Downloads/lemma/build/companion/fast-backing-replay-a2",
+    "timeout": 120,
+    "boot_seconds": 40,
+    "action_seconds": 20,
+    "deadline": 600,
+    "durable_suffix_from": null,
+    "checkpoint_relation": "not-complete-cached-state-equivalence"
+  },
+  "boot": {
+    "virtual_seconds": 11.000000008,
+    "host_seconds": 22.394889764022082,
+    "cycle": 1100000001
+  },
+  "workflow": {
+    "status": "PASS",
+    "sequence": 8,
+    "generation": 1,
+    "raw_samples": 50,
+    "strokes": 2,
+    "pages": 1,
+    "documents": [
+      1
+    ],
+    "contact_points": [
+      [
+        "a",
+        330,
+        733,
+        true
+      ],
+      [
+        "b",
+        330,
+        1100,
+        true
+      ]
+    ],
+    "explicit_save": [
+      1057,
+      8,
+      1,
+      1,
+      0
+    ],
+    "committed_objects": 4
+  },
+  "suffix": {
+    "first_id": 16,
+    "outcomes": 42,
+    "start_ns": 11250000008,
+    "end_ns": 13200000028,
+    "log_sha256": "ddc2b2e24b0498fe4f33dcb6186d74036e4e29cd9d5850a54aa1c114683313c9",
+    "external_sha256": "5985da61ec93ce890b35bf87b33ccff88b61df1a789680d5071fe70fe87d726b"
+  },
+  "replay": {
+    "status": "PASS",
+    "host_seconds": 7.32856285199523,
+    "accepted_io_exact": true,
+    "guest_uart_suffix_exact": true,
+    "raw_ingress_suffix_exact": true,
+    "acknowledged_objects_exact": true,
+    "controller_pixels_exact": true,
+    "source_mutable_medium_removed": true,
+    "private_fork": "/home/sreekumaar/Downloads/lemma/build/companion/fast-backing-replay-a2/replay/machine-fork-2-1791841290620186896",
+    "capture_sha256": "ddc2b2e24b0498fe4f33dcb6186d74036e4e29cd9d5850a54aa1c114683313c9"
+  },
+  "live_resources": {
+    "pid": 123966,
+    "rss_kib": 100244,
+    "peak_rss_kib": 100244
+  },
+  "replay_resources": {
+    "pid": 124147,
+    "rss_kib": 93616,
+    "peak_rss_kib": 93616
+  },
+  "host_seconds": 43.24541252799099,
+  "allocated_artifact_bytes": 53264384,
+  "real_os_failure_check": {
+    "status": "PASS",
+    "scope": "actual partial pwrite/EFBIG and fsync/EBADF, exact retained prefix/timed outcomes, original medium removed before private replay; corrupt state/request/time fail closed",
+    "source": "tests/lemmasim/backing_timed_replay.cpp",
+    "sha256": "940d8f35f9dac2eb26f7e5ec0697a7d43336b798eb9805720b63f5894ad53667",
+    "tests": 3,
+    "host_seconds": 15.837
+  },
+  "host_suite": {
+    "status": "PASS",
+    "tests": 126,
+    "host_seconds": 62.932,
+    "log": "build/companion/host-fast-replay-a1.log"
+  },
+  "scaffold": {
+    "metadata": "PASS",
+    "tests": 18,
+    "host_seconds": 7.682
+  },
+  "result": {
+    "path": "build/companion/fast-backing-replay-a2/result.json",
+    "sha256": "82519710d1338c0d1a01171fde842c808e73a5d35f4c6d65395ad554fadd2b69"
+  },
+  "retained_failures": [
+    {
+      "path": "build/companion/fast-backing-replay-a1/result.json",
+      "status": "FAIL",
+      "sha256": "9303e5da24ea29e76181917bc2a667eacf909dcac89ee14b6b4f901afc4203c2",
+      "cause": "OS resource observer did not recognize actual pinned .qemu-system-riscv64-wrapped executable after real live Ready/edit/Save; independently exercised wrapper probe corrected observer only"
+    },
+    {
+      "path": "build/task006-isolated-arithmetic-math-a1/result.json",
+      "status": "FAIL",
+      "sha256": "facd1c24fe5ffc65479b62f208b38efc63ef17582bce6caef5dacdce8a1314c6",
+      "cause": "Transient wrapper ADAPTER5 edit then correction to unchanged layout ADAPTER4 caused real mathematics live/cold identity mismatch; valid exact identity check and failure preserved; new stable4 campaign required",
+      "live_adapter": "lemmasim-fast-adapter/5",
+      "cold_adapter": "lemmasim-fast-adapter/4",
+      "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+      "guest": "96cd211a1808e6601cf7f35f22997484b06f2404b77e71b20936621c9c170d78"
+    }
+  ],
+  "limitations": [
+    "No QEMU cached-translation/instruction-visibility migration qualification; no full saved-state equality claim",
+    "Pending/poisoned external snapshots/export/restore still reject; arbitrary pending fork continuation remains open",
+    "LMIOLOG2 lacks peer retry-ready transitions, so explicit companion retry controls are excluded from fast replay",
+    "No RTL timing parity, USB, radio, product boot/update or fresh target compilation claim"
+  ],
+  "notebook15_real_partial_write": {
+    "status": "PASS_RETAINED_GUEST_FAILED_SAVE_COLD_AND_ISOLATED_RECORDED_SUFFIX",
+    "identity": {
+      "backend": "qemu",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7",
+      "adapter": "lemmasim-fast-adapter/5",
+      "derivation": "7ae35b58ef6a976779394f1ee52edbc322345df4125ae646accfa97f422de745",
+      "guest": "ebbc3f19e96a64cc0de0d83f12b451c7b1dbcaaa6b4f496b86f6a1c949554ca6",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+      "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+      "icount_shift": 3
+    },
+    "actual_fault_case": {
+      "path": "build/courses/task006-real-partial-save-a4/result.json",
+      "sha256": "fa506c4f36527d0cbd9d9aca0caf3436661c5658be6147526e564f68a56d0673",
+      "status": "FAIL"
+    },
+    "passive_cold_qualification": {
+      "path": "build/courses/task006-real-partial-save-plan-a4/observer-result.json",
+      "sha256": "4e0cdc9ac9683a6b585aad606aa94565a085bc042e25cb1d9e00850dd22a66f1",
+      "status": "PASS_RETAINED_REAL_PARTIAL_PWRITE_FAILED_SAVE_COLD"
+    },
+    "replay": {
+      "path": "build/courses/task006-real-partial-replay-a2/result.json",
+      "sha256": "66e4688d1cd9d32e6d1f97270d5ac9e9e282231a879c1878ebbc2236425902c0",
+      "status": "PASS_RECORDED_REAL_PARTIAL_PWRITE_GUEST_SUFFIX"
+    },
+    "replay_supervision": {
+      "path": "build/courses/task006-real-partial-replay-supervision-a2/result.json",
+      "sha256": "1786279e47f70776498d9da55c33243fd8df0875a853521a5d0d84f42d4447d8",
+      "status": "PASS_RECORDED_PARTIAL_PWRITE_GUEST_SUFFIX_SUPERVISED"
+    },
+    "actual_fault": {
+      "outcome": [
+        [
+          114,
+          2212291604,
+          1,
+          55808,
+          512,
+          128,
+          27
+        ],
+        2212291604
+      ],
+      "observed_changed_prefix_bytes": 128,
+      "sequence": 24,
+      "objects_unchanged": 7,
+      "guest_failed": [
+        [
+          1060,
+          227,
+          1,
+          1,
+          65561
+        ]
+      ],
+      "guest_saved_after_fault": false,
+      "medium_sha256": "0611b5da6a16f2bad5d0bd5918e2325851dcfbdfd255784b2e21053ff1cc69a9"
+    },
+    "functional_units": 452000007,
+    "actual_actor_seconds": 91.02790396497585,
+    "cold_all_pixels": 3630000,
+    "cold_all_medium_bytes": 268435456,
+    "sequence": 24,
+    "objects": 7,
+    "replay_units": 26000004,
+    "replay_seconds": 4.239391493028961,
+    "replay_supervised_seconds": 6.655666403006762,
+    "replay_peak_owned_rss_bytes": 505651200,
+    "original_plan": "build/courses/task006-real-partial-save-plan-a4/plan.json",
+    "bounds": "900s/3B aggregate,1B per independentcold,300M combined actualfault+completeFailedpixels,4GiBRSS/2GiBavailable floor/8GiB outputs; replay300s/100M/4GiB. No cap extended.",
+    "observed_relation": "Actual OS RLIMIT_FSIZE55936 produces128bytepwrite prefix at55808 thenEFBIG27; guest Failed/provisional ink, noSaved/laterbarrier. Independent CPUcold Ready preserves original2strokes/workspace/history/allpixels/allbytes with unacknowledged partial header retained. Replay identical public raw/run requests from selected originally restored Ready cut, exact accepted request/completion tape/error/time/raw/UART/pixels/allbacking and finalcycle239000005. No originalmedium/peer supplied to replayadapter.",
+    "observer_repair": "a4 remainsFAIL because cold.raw export collided with actualnewCPU backing. Passive2.702564s observer binds sessionargv to retained cold.raw then validates alloriginalpostconditions without rerunningCPU. Maintained futureexport label only fixed to cold-recovered.",
+    "ownership": "Running executable298840d9 differs from packaged launcher97ab. Both pinned independently; launcher embeds actualNixwrapped target; argv0/descendant/startticks/secondprelimitidentity retained. Only exactfixed984k/14.52MB named/inode/rw-shared Pixman surfaces exempt from file-growth guard; no resizing, allsizes unchanged.",
+    "source_scope": "Same existing genuine15ebbc RV64image, no fresh compilation or target policy change. Host fault/observer tooling only. Selected suffix does not qualify arbitrary cached-QEMU state, exactRTL failed Save or physical powerloss.",
+    "retained_observer_failures": [
+      {
+        "path": "build/courses/task006-real-partial-save-a1/result.json",
+        "sha256": "3b3726ea15f6882daeb27b6708b96095bfe72791c836292e1e33944398f0f87d",
+        "status": "FAIL"
+      },
+      {
+        "path": "build/courses/task006-real-partial-save-a3/result.json",
+        "sha256": "87d901d6efc248bbe737546f6f680d7ebf710e475a0e5f4d18890464d167cd73",
+        "status": "FAIL"
+      },
+      {
+        "path": "build/courses/task006-real-partial-save-a4/result.json",
+        "sha256": "fa506c4f36527d0cbd9d9aca0caf3436661c5658be6147526e564f68a56d0673",
+        "status": "FAIL"
+      },
+      {
+        "path": "build/courses/task006-real-partial-save-supervision-a2/result.json",
+        "sha256": "9c93d4e387f09519e86e0d367e0923c0b9646900dd739e90e61c93db0a1319d4",
+        "status": "FAIL"
+      },
+      {
+        "path": "build/courses/task006-real-partial-replay-a1/result.json",
+        "sha256": "8077dfa48db67452e8025e93d6dd678d06ee1ad470d8d194d4fb3d3d192262f1",
+        "status": "FAIL"
+      }
+    ],
+    "commands": [
+      "nix develop --no-write-lock-file --command python3 conformance/lemmasim/check_partial_write_save.py --disk build/courses/task006-keypad-repaint-fast-a1/overdraw-closed.raw --reference-pixels build/browser/task006-pad15-index-cold-plan-a1/cold-expected.ppm --native-bundle build/native/task006-number-pad-repaint-notebook-a1 --backend-executable /nix/store/b16yg2x2wyjblw63x5kln24z9n6m2s2r-lemmasim-qemu-raw-uart-v1-11.1.1/bin/.qemu-system-riscv64-wrapped --backend-executable-sha256 298840d9388c59ba93050f0fa9d4be905619b2d1cc5e14bc044ad6a2a7731090 --work-dir build/UNUSED_PARTIAL_SAVE --deadline 900",
+      "nix develop --no-write-lock-file --command python3 conformance/lemmasim/check_partial_write_replay.py --source-case build/courses/task006-real-partial-save-a4 --source-observer build/courses/task006-real-partial-save-plan-a4/observer-result.json --native-bundle build/native/task006-number-pad-repaint-notebook-a1 --work-dir build/UNUSED_PARTIAL_REPLAY --deadline 300"
+    ]
+  },
+  "canonical_reader20_actual_partial_write": {
+    "scope": "Canonical exact RTL and actual guest Save failure; prefix continuation explicitly separate from independent cold and finite recorded-outcome replay. Native600e/c15f, original Reader20 kernel086 guest; no QEMU cached-state/timing or general checkpoint closure claim.",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "native_snapshot_identity": "600e93eb1981b3eb5432840c0fd8e169b4d5cfd04f89e8164450d1c70b159bba",
+    "plan": {
+      "path": "build/courses/task006-canonical-negative-fork-plan-a1/partial-write-plan.json",
+      "sha256": "f6a23e5d6c4de429c1e5909d19dfe15c7a8398438ef452ed5d0e0410ae0de0f9",
+      "bytes": 1433
+    },
+    "consumed_fault_helper": {
+      "path": "build/courses/task006-canonical-negative-fork-plan-a1/actual-consumed-file-limit.py",
+      "sha256": "1825a7db66fbcedeb918e2cd4765a456953a812283af97202bf0f4442eb5d5db",
+      "bytes": 6427
+    },
+    "failed_Save": {
+      "result": {
+        "path": "build/courses/task006-canonical-negative-fork-plan-a1/partial-write-result-a2.json",
+        "sha256": "21aa413d055ee1f4b24cd2053d1a93f5031e0f6471258d156a9dfe790c86583e",
+        "bytes": 10031
+      },
+      "status": "PASS_ACTUAL_PARTIAL_PWRITE_GUEST_FAILED_ALL_PIXELS_ACK18_UNCHANGED",
+      "clocks": 30000000,
+      "seconds": 157.95607954496518,
+      "guest_failure": [
+        1060,
+        227,
+        1,
+        1,
+        65555
+      ],
+      "all_medium_bytes": 268435456,
+      "changed_bytes": 93,
+      "new_black_pixels": 11,
+      "all_controller_pixels": 3630000,
+      "captured_operations": [
+        {
+          "fields": [
+            76,
+            568399586,
+            1,
+            37888,
+            512,
+            512,
+            0
+          ],
+          "accepted_cycle": 568399586
+        },
+        {
+          "fields": [
+            77,
+            568399586,
+            1,
+            38400,
+            512,
+            256,
+            27
+          ],
+          "accepted_cycle": 568399586
+        }
+      ],
+      "failure_model": "Header512 succeeds, payload transfers256 then actual EFBIG27 during native sector-overlay writeback in one guest barrier callback; no backing sync is falsely reported successful. Unacknowledged persisted prefix retained; committed sequence18 unchanged."
+    },
+    "independent_cold": {
+      "result": {
+        "path": "build/courses/task006-canonical-partial-cold-a1/result.json",
+        "sha256": "fc6643d4c0237e8c71361d8720d67ac963a6150cb091bec1d5f98eea9d6926d4",
+        "bytes": 1637
+      },
+      "status": "PASS_ACTUAL_PARTIAL_WRITE_INDEPENDENT_COLD_ALL_PIXELS_AND_GUEST_SAVE18",
+      "Ready": {
+        "cycle": 515000000,
+        "seconds": 2329.913812133018,
+        "all_controller_pixels": 3630000
+      },
+      "final_cycle": 521000000,
+      "actual_host_seconds": 2491.02167121,
+      "guest_save": [
+        1057,
+        18,
+        1,
+        1,
+        0
+      ],
+      "provisional_ink_absent": true,
+      "all_medium_bytes": 268435456,
+      "all_controller_pixels": 3630000,
+      "snapshot_input": false
+    },
+    "exact_finite_replay": {
+      "result": {
+        "path": "build/courses/task006-canonical-partial-replay-a1/result.json",
+        "sha256": "1a765c54e8776716ead920c127f724e938363be7c646bd1020815db9bd20f2b0",
+        "bytes": 3643
+      },
+      "status": "PASS_ACTUAL_PARTIAL_PWRITE_ISOLATED_REPLAY_ALL_NATIVE_STATE_BYTES",
+      "plan": {
+        "path": "build/courses/task006-canonical-partial-replay-a1/plan.json",
+        "sha256": "91483667aa0f0ef5b67b0a45e2036a40e2e495d4db1dd38382d996a7966f0efc",
+        "bytes": 1290
+      },
+      "clocks": 89000000,
+      "seconds": 359.34226768894587,
+      "host_seconds_from_plan": 389.682820036,
+      "all_native_checkpoint_bytes": 145702871,
+      "checkpoint_sha256": "0c452332ad315bbd32fd6cd981940b3ed1342d476d9c6600e8d9e32595de8a32",
+      "all_medium_bytes": 268435456,
+      "all_controller_pixels": 3630000,
+      "UART_exact": true,
+      "private_backing_distinct": true,
+      "observation_clocks": 0,
+      "no_field_masks": true,
+      "future_unrecorded_io_qualified": false
+    },
+    "laboratory_command": {
+      "source": {
+        "path": "scripts/lemmasim_file_limit.py",
+        "sha256": "5c498ec4e08e118d71fdc8de7ca3763ff666043460c40e9fe523fe5337845939",
+        "bytes": 7092
+      },
+      "contract": "docs/contracts/006-backing-io-v1.md",
+      "actual_final_source_control": {
+        "path": "build/courses/task006-native-file-limit-control-a3/result.json",
+        "sha256": "9cfe70d2ad5e7df63fbcdd799fbd379a3852a0d51ff2fd020b6cdf93f1c3a4bc",
+        "bytes": 1300
+      },
+      "actual_replay_rejection": {
+        "path": "build/courses/task006-canonical-partial-replay-a1/file-limit-negative.json",
+        "sha256": "a4c92b66f5063d5b1bda397ee5dddfd323330983e7c2e9b5d74cdce37b9598ec",
+        "bytes": 857
+      },
+      "unit_scope": "Five host ownership/cleanup tests; synthetic RPC observations are not guest evidence."
+    },
+    "retained_observer_failures": [
+      {
+        "path": "build/courses/task006-canonical-negative-fork-plan-a1/ready-observer-interruption.json",
+        "sha256": "2674e3a5aee2454522f43119ff468afa1d430f6884d7c168fc43fdcb99b8e8a1",
+        "bytes": 613
+      },
+      {
+        "path": "build/courses/task006-canonical-negative-fork-plan-a1/partial-write-observer-a1.py",
+        "sha256": "76f5da3a654b10d25fd5db949103a59a2ac4a90b8f25192bcc3334bd36c112f0",
+        "bytes": 7267
+      },
+      {
+        "path": "build/courses/task006-canonical-negative-fork-plan-a1/partial-write-result.json",
+        "sha256": "e143e4a17f279636d83630ba3309a8e39b617df4614d7d2dcebcbfe945ede8c7",
+        "bytes": 1815,
+        "status": "FAIL"
+      }
+    ],
+    "original_partial_prefix_not_repaired": true
+  },
+  "qualified_fast_file_limit": {
+    "status": "PASS_REAL_FAST_PWRITE_FAILURE_REPLAY_INDEPENDENT_COLD_SAVE32",
+    "helper": {
+      "path": "scripts/lemmasim_file_limit.py",
+      "sha256": "0982e64b58d6fe0b7d7f5028863198f7537406feb83de2454b4703adae0ba230",
+      "bytes": 10414
+    },
+    "checker": {
+      "path": "scripts/check_fast_file_limit_workflow.py",
+      "sha256": "a521ab5ecff0ec7a5526a731369f93fbde58145d5e86ec31faad4d67acbb157f",
+      "bytes": 13234
+    },
+    "result": {
+      "path": "build/courses/task006-fast-real-file-limit-a3/result.json",
+      "sha256": "c4c02d631daf7bfb3a9d76da001e26eb6532070071c70217ed0c2faff417196e",
+      "bytes": 4227
+    },
+    "passive_closed_medium_qualification": {
+      "path": "build/courses/task006-fast-real-file-limit-a3/passive-final-qualification.json",
+      "sha256": "90da942097bd91d065e9481dcb8081b31be508b0817d58503fe76d23ea02396f",
+      "bytes": 620
+    },
+    "launcher_sha256": "97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7",
+    "actual_executor_sha256": "298840d9388c59ba93050f0fa9d4be905619b2d1cc5e14bc044ad6a2a7731090",
+    "source_guest_commit": "a87750107339de4fe4592dbd5c6dc2906aa58e1c",
+    "functional_units": 442000004,
+    "seconds": 50.01096942496952,
+    "partial_write": {
+      "operations": 2,
+      "error": [
+        147,
+        2065470396,
+        1,
+        74240,
+        512,
+        256,
+        27
+      ],
+      "all_medium_bytes": 268435456,
+      "changed_bytes": 93,
+      "all_controller_pixels": 3630000,
+      "Saved": false,
+      "token_cycle": 199000002
+    },
+    "retained_failures": [
+      {
+        "path": "build/courses/task006-fast-real-file-limit-a1/result.json",
+        "sha256": "82a09cd5c1b28805c2a975188cb8156edda2a9cd254326cab1ad85b824c2df30",
+        "bytes": 2442
+      },
+      {
+        "path": "build/courses/task006-fast-real-file-limit-a2/result.json",
+        "sha256": "40847cc7ac40cf194f041df83241a3cd4d4b1a3018f341a1d814ce36e478ac93",
+        "bytes": 4402
+      }
+    ],
+    "scope": "Actual Linux pwrite error on private fast migration branch; exact I/O/raw/UART/allpixels/backing replay and independent cold. No new guest policy, target compiler/runtime or emulator implementation; no cached-state/timing parity claim.",
+    "packaged_control": {
+      "path": "build/courses/task006-fast-file-limit-packaged-control-a2/result.json",
+      "sha256": "d2a2b68147dade1c7f4130136dd75f5fdb0a0be2a92b0c7dcc101a36ab3e0666",
+      "bytes": 997
+    },
+    "verification": {
+      "LemmaSim_tests": 324,
+      "LemmaSim_seconds": 62.683,
+      "scaffold_tests": 18,
+      "scaffold_seconds": 8.175,
+      "metadata": "PASS",
+      "full_host_suite_log": {
+        "path": "build/courses/task006-fast-real-file-limit-plan-a3/host-suite.log",
+        "sha256": "d34128d1fb7d6a279baf51918a1cc7181769270f3e29a52d3d9d999c4306c484",
+        "bytes": 57299
+      }
+    }
+  }
+}

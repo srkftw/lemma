@@ -1,6 +1,7 @@
 name = "lemma"
 version = "0.1.0"
 defaultTargets = ["Lemma"]
+weakLeanArgs = ["-j2"]
 
 [[lean_lib]]
 name = "Lemma"

@@ -766,6 +766,29 @@ private def extensionMismatchModule : LLVM.Module := {
   functions := #[extendedTarget, omittedCallExtensions]
 }
 
+-- Index construction must reject a repeated name before replacing its first
+-- definition, preserving the earlier duplicate-before-type diagnostic order.
+private def duplicateParameterPrecedence : LLVM.Function := {
+  name := "validation_duplicate_parameter_precedence"
+  returnType := .void
+  parameters := #[{ ty := .i64, name := "arg" }, { ty := .void, name := "arg" }]
+  blocks := #[{ label := "entry", instructions := #[.retVoid] }]
+}
+
+private def duplicateResultPrecedence : LLVM.Function := {
+  name := "validation_duplicate_result_precedence"
+  returnType := .void
+  parameters := #[]
+  blocks := #[{
+    label := "entry"
+    instructions := #[
+      .bin "existing" .add .i64 (i64 1) (i64 2),
+      .bin "existing" .add .void (i64 3) (i64 4),
+      .retVoid
+    ]
+  }]
+}
+
 private def hasFragment (message fragment : String) : Bool :=
   fragment != "" && (message.splitOn fragment).length > 1
 
@@ -941,8 +964,13 @@ run_cmd do
   checks ← reject checks "v05-stale-device-effects" "stale direct device effects"
     (Lemma.Compiler.lowerActionSuiteV05 staleDeviceEffectsSuite |>.map fun _ => ())
 
-  unless checks == 52 do
-    throwError m!"CFG validator suite count changed: {checks} != 52"
+  checks ← reject checks "duplicate-parameter-before-void" "has duplicate SSA definition `%arg`"
+    (LLVM.validateFunction duplicateParameterPrecedence)
+  checks ← reject checks "duplicate-result-before-void" "redefines SSA value `%existing`"
+    (LLVM.validateFunction duplicateResultPrecedence)
+
+  unless checks == 54 do
+    throwError m!"CFG validator suite count changed: {checks} != 54"
   logInfo m!"CFG validator: {checks} compile-time checks passed"
 
 end Lemma.Compiler.Test.CFGValidation

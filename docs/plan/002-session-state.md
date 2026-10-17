@@ -1,3 +1,4 @@
+<!--
 # Task 002 session state
 
 - Repository: `/home/sreekumaar/Downloads/lemma`, origin
@@ -106,3 +107,5 @@ No G1/G2 or Stage II unit completion, supervisor entry/isolation, managed
 runtime/heap, scheduler, physical-board compatibility or compiler-correctness
 proof. Full history: `docs/evidence/002-machine-foundation.md` and
 `docs/plan/002-gates.json`.
+
+-->

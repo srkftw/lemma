@@ -1,0 +1,106 @@
+{
+  "schema": "lemma-owned-table-prefix/1",
+  "status": "PASS_COMPONENT_WHOLE_GUEST_AND_CANONICAL_COLD",
+  "scope": "MaintainedLean removes8 purefixed-supervisor callbacks perownedchildtable lookup; exactorderedreads/laterauthority checks retained. No framepool/display/recovery reduction.",
+  "implementation": {
+    "Lemma/Kernel/Memory/AddressSpace.lean": "83fa78cdb9be8cb9fc7fd468b0d15a49026774fb615d46773181ce74f04b4cf8",
+    "tests/kernel/OwnedTablePrefix.lean": "5c6cd173c22628caca35338494aaca3cdd7330bba9bf89ca0c3c6f7c407a6147",
+    ".github/workflows/core0.yml": "8af0009378942f5fd44a9f12107e0cae5f1431c31c8efff1e9d5ae46aaa57124"
+  },
+  "component": {
+    "status": "PASS_GENUINE_KERNEL3_COMPONENT_AND_EXACT_READ_FAULT_TRACES",
+    "scope": "ordinary maintainedownedTable partialcomponent; no measuredtargettiming orwholeguest claim",
+    "source_sha256": "83fa78cdb9be8cb9fc7fd468b0d15a49026774fb615d46773181ce74f04b4cf8",
+    "original_source_sha256": "dd9a310f6e930c0e9eedbc4a2ddd3b162ba7927b8e19e07b8dcb77de8ae71495",
+    "observer_sha256": "5c6cd173c22628caca35338494aaca3cdd7330bba9bf89ca0c3c6f7c407a6147",
+    "llvm_sha256": "a308cbd2da69d31353d86d957c4a97b6283eb57199450b320d99e3c8f548dbbb",
+    "optimized_llvm_sha256": "ad9d7ea905db176b31ef21948f79fa5e140a9487e3b152b3387cff5f92918960",
+    "object_sha256": "bca1469f222546878a5e03809e45788459ff6f3ced23a2c8d90af3cbb97d8517",
+    "genuine_functions": 35,
+    "closed_calls": true,
+    "undefined_symbols": [],
+    "host_observation": {
+      "domains": 24,
+      "read_fault_prefixes": 37,
+      "late_authority_corruptions": 5,
+      "callbacks_before": 14,
+      "callbacks_after": 6,
+      "complete_read_trace_count_unchanged": 37,
+      "explicit_expected_statuses_checked": true
+    },
+    "original_fixture_failure": "actual firstfixtureparseerror atline115 beforeelaboration/LLVM; failedfixture source retained",
+    "first_failed_fixture_sha256": "e076b06418954ddb1162256774f03040092a1f2c2dc3f01924caf5437488fc27",
+    "target_performance": "NOT_RUN",
+    "memory_model": "finitealignedRAMreads only; eachreadordinalfault including repeatedownerread andlaterhandlechecks; no new cache/epoch assumptions"
+  },
+  "full_ordinary_guests": {
+    "notebook": "build/kernel/task006-array-table-prefix-notebook-a1",
+    "initializer": "build/kernel/task006-array-table-prefix-initialize-a1",
+    "audit_both_roles": "PASS",
+    "consumed_sources": 312,
+    "archive": "build/task006-array-table-prefix-source-archive-a2",
+    "native_bundle": "build/native/task006-array-table-prefix-a2",
+    "kernel_bytes_before": 560192,
+    "kernel_bytes_after": 560184,
+    "all_user_and_startup_objects_equal_to_original_CourseWord_pair": true,
+    "build_note": "Bothrolebuilds overlappedLake on frozeninputs; wholeaudits sequential. Do notclaimserializedfirstbuild."
+  },
+  "actual_math": {
+    "path": "build/task006-array-table-prefix-math-a1/result.json",
+    "sha256": "80e781f8f2f6e6b74db04808da1f9df88c405206599f575bbaecf243a445183b",
+    "status": "PASS",
+    "host_seconds": 181.7311107449932,
+    "actions": 33,
+    "isolated_requests": 5,
+    "cold_full_pixels": true,
+    "unsuccessful_save": true
+  },
+  "matched_qemu_first30": {
+    "reference": "build/task006-array-course-words-math-a1/result.json",
+    "before_cycles": 1287000171,
+    "after_cycles": 1283000165,
+    "reduction_percent": 0.31080073570557437,
+    "before_host_seconds": 88.30036,
+    "after_host_seconds": 116.76796,
+    "scope": "instructioncountonly; candidatecontended/slowerhost, noRTLtiming/generalhostspeedup"
+  },
+  "canonical_cold": {
+    "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+    "identity": {
+      "backend": "rtl",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "32282772a5cc60a5b52abacd05ae3bf3a952167025a5bb6a787a94e852002e77",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "guest": "437224ddd541ce2b3e5acb3678f53a4ff43fcadb6dd39df234c9167b53d4ad63",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a"
+    },
+    "bounds": {
+      "cycles": 2000000000,
+      "deadline_seconds": 7200,
+      "quantum": 1000000,
+      "native_rss_limit_kib": 524288
+    },
+    "ready_cycle": 879000000,
+    "ready_host_seconds": 4325.293171566038,
+    "process_tree_peak_rss_kib": 189940,
+    "input_medium_sha256": "027b26c9e6af04a6d03a97a051a52d1eed32f87c92f99663a94f2d0459f0e2db",
+    "reference_pixels_sha256": "c134bd1591f44c3c8cc10a70908ce2ef63dd2640a26220532b34e556604d11aa",
+    "complete_pixels": 3630000,
+    "medium_unchanged": true
+  },
+  "cold_receipt_sha256": "f80d85f86812fe0d297e2a7867f8f5e33fe46a1b34d9acf17fd73d7ca1baab2f",
+  "retained_failures": [
+    "firstfixtureparse beforeelaboration",
+    "sourcearchivea1 malformedwrap rejectedbeforeCPU; correctbara2 preservesoriginalsource hashes"
+  ],
+  "remaining": [
+    "Exactnewguest wholeRTLpen/edit/Save scenario separate.",
+    "No QEMUprocessor-timing orcached-state equivalence claim.",
+    "No compiler correctness proof orphysicalclaim."
+  ],
+  "commands": [
+    "nix develop --no-write-lock-file --command lake env lean --run tests/kernel/OwnedTablePrefix.lean",
+    "python3 scripts/check_math_session.py --disk build/task006-string-prepared-launch-a1/notebook-corrected.raw --native-bundle build/native/task006-array-table-prefix-a2 --require-array-identity --work-dir build/task006-array-table-prefix-math-a1 --timeout 300 --boot-seconds 60 --action-seconds 30 --deadline 1200"
+  ]
+}

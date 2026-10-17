@@ -1,0 +1,141 @@
+{
+  "schema": "lemmasim-native-pending-checkpoint-observations/1",
+  "scope": "Real hosted-Lean opaque peer and actual POSIX failures; literal controller initialization plus genuine RV64 retirement/raw pen; not Ready, guest companion/USB or cold recovery",
+  "native": {
+    "binary_sha256": "ccd2e2898e1b564cffe79d04840d8c8fbcd911df05769c075448577ad0c74fbf",
+    "snapshot_identity": "264ea49dd62455f88dfae28a8ffd5e50b8e3fbd030b2161b61fabd7b0a5a6028",
+    "container_version": 2
+  },
+  "reports": {
+    "native_build": {
+      "path": "build/silicon/task006-backing-runtime-a6/build.json",
+      "sha256": "3d1a7146e92965e467340ad1f7a04e5ee8564be9ef65667d67c22568df82f0ed",
+      "status": "BUILD"
+    },
+    "literal_pending": {
+      "path": "build/silicon/native-pending-fork-a7/result.json",
+      "sha256": "a56e6b619ff5f8cefea52f2063702f13312572712cf04fe0e204965c874333b7",
+      "status": "PASS"
+    },
+    "actual_os_faults": {
+      "path": "build/silicon/native-fault-pending-a2/result.json",
+      "sha256": "0de490dc2d8eadedcdf6c28743faa6bf4cc6a86dd67c110edf941fffaa3a9744",
+      "status": "PASS"
+    },
+    "corrected_peer_observer": {
+      "path": "build/silicon/native-peer-pending-a4-observer/result.json",
+      "sha256": "cdc700e5d3bdde1c1e3aac7c25454f9c8fb564088cf998a203d4b0440a6b5876",
+      "status": "PASS"
+    },
+    "public_native_restore": {
+      "path": "build/silicon/native-peer-pending-restore-a1/result.json",
+      "sha256": "0a237d5e4b1106b34378a6243f492b8ace0b6cb1683d4246a3d538bda4edfad1",
+      "status": "PASS"
+    }
+  },
+  "sources": {
+    "sim/rtl/host/machine_runtime.h": "ec970194d1a153d80e1cea07f111c621f230b44d5981ec999fca8f64e3b77113",
+    "sim/rtl/host/machine_runtime.cpp": "fb8ffa1055ad85e88a2b00023f04960b0199b9a76c53338c7360a9aff55bf1e6",
+    "sim/rtl/host/main.cpp": "4641b3db8f2f65c8786e3939923157b38ccd5464d552c0188a52a1d6af9bc044",
+    "scripts/lemmasim_session.py": "695a1cc99f9c5d77b41f7e77d962f268238bbfc10c75baa6933bb7ad0cb42030",
+    "scripts/check_native_backing.py": "f948b172d5a535d83b7820125418709eae726f2580db026ab89c41975d3258c0",
+    "scripts/check_native_pending_fork.py": "9ddabde1e889eb6f8509cde90ba975689edc66c1b411258a5f8910d7bc91f206",
+    "scripts/check_native_pending_restore.py": "e2d9134fe6aef9d543e2e6b77713e8a66612579fd8bdbf22095c903eae585e59",
+    "tests/lemmasim/native_pending.cpp": "1b8133ae5fa18a3af031c7cfcbc9430fe3056ea5cbdedc1cb53f58615986b0ca",
+    "tests/lemmasim/native_peer_pending.cpp": "b553a5ae95c500659eaeb7e0837319285cc0c27bfe682d12949be1a5b75056bf",
+    "tests/lemmasim/native_fault_pending.cpp": "1f7b398b6e901071ac315987b18d9524b4fced2d2e2c3f8d5509b61498a20caf",
+    "tests/lemmasim/test_pending_outcomes.py": "4cec16edfeaa05d128c2443e0de1c90f4006f923b1eaace9b0ea67c19389934b"
+  },
+  "archived_genuine_guest": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/image.elf",
+    "sha256": "b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7"
+  },
+  "guest_archive": {
+    "schema": "lemmasim-native-bundle/1",
+    "manifest_sha256": "e4e93d83c7d29d5b02cb1d9d22dfc9d627b58df2ac7aaf836386f88feccac21f",
+    "source_commit": "8137ee78e82dcb467889f31195571d5bb72cdcc9",
+    "scope": "validated archived inputs; not current compilation"
+  },
+  "actual_peer_measurement": {
+    "initialize_seconds": 92.4353,
+    "snapshot_seconds": 0.882117,
+    "snapshot_cycle": 41128,
+    "final_cycle": 60128,
+    "passive_reads": 256,
+    "submissions": 2,
+    "retired": 30033,
+    "accepted_sectors": 1
+  },
+  "snapshot_bytes": 145423783,
+  "isolated_public_restore": {
+    "host_seconds": 3.4583700509974733,
+    "restore_with_startup_validation_seconds": 1.8145091359619983,
+    "first_inspect_including_native_restore_seconds": 0.7970849300036207,
+    "peak_native_rss_kib": 289808,
+    "exact_authoritative_suffix": true
+  },
+  "original_failures": [
+    {
+      "path": "build/silicon/native-pending-fork-a6/result.json",
+      "sha256": "13a616820afa149916ccccdd38e2d071ed80cf3754b1f052d6cd9387c8614026",
+      "error": "[Errno 2] No such file or directory: '/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/build.json'"
+    },
+    {
+      "path": "build/silicon/native-peer-pending-a1/result.json",
+      "sha256": "c59f1e530b555d88b49bec5325283347069c7b122ef05ec94364a2a48366af7e",
+      "error": "Command '['c++', '-O2', '-std=c++17', '-I', PosixPath('/home/sreekumaar/Downloads/lemma/sim/rtl/host'), '-I', PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/obj'), '-I', PosixPath('/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/share/verilator/include'), '-I', PosixPath('/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/share/verilator/include/vltstd'), PosixPath('/home/sreekumaar/Downloads/lemma/tests/lemmasim/native_peer_pending.cpp'), PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/obj/machine_runtime.o'), PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/obj/backing_io.o'), PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/obj/backing_io_posix.o'), PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/obj/backing_peer.o'), PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/obj/verilated.o'), PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/obj/verilated_save.o'), PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/obj/verilated_threads.o'), PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/obj/verilated_dpi.o'), PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a6/obj/Vlemma_soc__ALL.a'), '-pthread', '-o', PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/native-peer-pending-a1/test')]' returned non-zero exit status 1."
+    },
+    {
+      "path": "build/silicon/native-peer-pending-a2/result.json",
+      "sha256": "28d7550603f286018328bce548031b6c383eec9003ec0eb58ca3c20c0d710100",
+      "error": "Native fixture exited before result: -6"
+    },
+    {
+      "path": "build/silicon/native-peer-pending-a3/result.json",
+      "sha256": "d76185452df00aa988b7066cb07229aff89735f85ca4e32d9532259512552f32",
+      "error": "Expected exactly one opaque write and one barrier receipt"
+    },
+    {
+      "path": "build/silicon/native-fault-pending-a1/result.json",
+      "sha256": "cb028239b98bca145fbb62fece2cc8e9cb532eaadf75a7d4a8d2ad40c32ea570",
+      "error": "Command '[PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/native-fault-pending-a1/test'), PosixPath('/home/sreekumaar/Downloads/lemma/build/silicon/native-fault-pending-a1'), '/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/image.elf', '/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/runtime/rtl/boot.bin', '/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/platform.dtb', '/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/descriptor.bin', '0x87e00000']' died with <Signals.SIGABRT: 6>."
+    }
+  ],
+  "observer_repair": {
+    "original": "build/silicon/native-peer-pending-a3/result.json",
+    "cause": "Independent report decoded frame version at offset8 as kind; existing primary receipt oracle decodes kind at offset 16 with CRC",
+    "qualification": "Unchanged actually executed C++ fixture binary reproduced exactly from validated native object closure; corrected independent observer; separate actual public native fork commands also matched"
+  },
+  "host_checks": [
+    {
+      "path": "build/silicon/native-pending-unit-a1.log",
+      "sha256": "d89f4cfc0916d688fdb22c0d71f2f2da30a762fae1a0baddacfe8a82c1d90e7c",
+      "status": "FAIL missing host cc/c++/Lean outside pinned environment"
+    },
+    {
+      "path": "build/silicon/native-pending-unit-a2.log",
+      "sha256": "130384573e8f3bee6423521addd96ae771ada1d08746927e3fedb9ca5eec3273",
+      "status": "PASS 129 tests /59.004seconds pinned Nix"
+    },
+    {
+      "path": "build/silicon/native-pending-scaffold-a1.log",
+      "sha256": "e5b3e7dc6279edba72fbf5fc5495c49baa0c6618c9895334a289da9e7a3157e4",
+      "status": "PASS 18tests /6.045seconds"
+    }
+  ],
+  "bounds": {
+    "medium_payload_bytes": 268435456,
+    "accepted_sector_count_maximum": 524288,
+    "accepted_medium_overhead": "std::map nodes/allocator metadata additional to payload and guest RAM",
+    "outcome_tape_bytes": 67108864,
+    "poll_target_cycles": 1000,
+    "pending_fork_missing_tape_clock_advance": 0
+  },
+  "remaining": [
+    "Pending restoration requires actual completion tape or remains suspended; arbitrary live independent continuation absent unknown outcomes is notclaimed",
+    "Arbitrary later retry-ready/control transitions and rawpipe state are outside current LMIOLOG2 relation",
+    "Pending browser OPFS rebind/export rejected; new Wasm qualification remains separate",
+    "QEMU pending migration and cached translation/instruction visibility gap remains open",
+    "Native canonical notebook, product boot, USB/controller and radio support not qualified by these literal fixtures"
+  ]
+}

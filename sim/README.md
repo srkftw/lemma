@@ -1,3 +1,4 @@
+<!--
 # LemmaSim
 
 Permanent virtual Lemma One. Task004 implements the native reference binding,
@@ -98,3 +99,5 @@ records, EOF cancellation, literal session admission and real child-process
 SIGTERM teardown. A physical tablet was not present in the observed
 Linux input inventory, so manual tablet writing/registration is **NOT_RUN**.
 EOF fixtures are transport tests, not physical-input evidence.
+
+-->

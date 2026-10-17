@@ -1,0 +1,116 @@
+{
+  "schema": "lemma-local-registry-evidence-v1",
+  "result": "PASS_SOURCE_ACTIONS_CHECKED_LLVM_AND_RV64_OBJECT",
+  "scope": "complete maintained registry callback, independent host Action read/result/error qualification and genuine checked LLVM; runtime whole-boot performance remains unmeasured",
+  "source_context": "a137179 plus this scoped AddressSpace increment; root compiler/radio changes separately owned",
+  "contract": "004-owned-memory-v1; no functional/profile/ISA change",
+  "retained_checks": [
+    "live directory handle",
+    "fresh runtime frame configuration, owner and generation",
+    "fresh kernel-storage purpose",
+    "exact recorded physical address",
+    "resolved frame index bound",
+    "duplicate against prior four entries and current prefix",
+    "live pins zero",
+    "all first-error/status/result prefixes"
+  ],
+  "qualification": {
+    "all_admitted_frame_indices": 9728,
+    "complete_status_domain": 256,
+    "descriptor_boundaries": 23,
+    "callback_indices": [
+      0,
+      1,
+      3,
+      4,
+      7,
+      8,
+      4294967295
+    ],
+    "groups": [
+      0,
+      4,
+      8,
+      18446744073709551612,
+      18446744073709551615
+    ],
+    "compared": "exact status, packed result and ordered attempted read address/status/value prefix across metadata faults, malformed owner/generation/purpose/pin/recorded address, duplicates and modular wrap",
+    "actual_observer": "host alias refers to the imported private validateRegistryStep declaration; historical reference is independent source form",
+    "existing_directory_regression": "all28 duplicate pairs including index0, ownership/generation/purpose/physical address/alignment/bounds/pins and necessary-read-failure priority; no writes on rejection"
+  },
+  "llvm": {
+    "status": "PASS",
+    "scope": "genuine compiled object/static counts; not measured target timing",
+    "undefined_symbols": "",
+    "functions": {
+      "_private.Lemma.Kernel.Memory.AddressSpace.0.Lemma.Kernel.Memory.AddressSpace.validateRegistryStep": {
+        "llvm_symbol": "registry_local_core0_action_7",
+        "lines": 104,
+        "static_calls": 7,
+        "volatile_loads": 3
+      },
+      "RegistryLocalReference.before": {
+        "llvm_symbol": "registry_local_core0_action_10",
+        "lines": 108,
+        "static_calls": 10,
+        "volatile_loads": 1
+      }
+    }
+  },
+  "static_execution_paths": {
+    "before_successful_calls": 10,
+    "after_successful_calls": 3,
+    "after_calls": "fresh resolvePurpose plus two original packedMember predicates; four additional static calls are generic fallbacks",
+    "checked_reads": "same seven possible live reads through configuration, owner/generation/purpose and directory/pins; local callback emits3 direct volatile loads, remaining reads in unchanged fresh resolvePurpose",
+    "target_cycle_speedup": null
+  },
+  "checks": [
+    {
+      "command": "nix develop --no-write-lock-file --command lake build Lemma.Kernel.Memory.AddressSpace",
+      "log": "build/task006-registry-local-maintained-build-a1.log",
+      "result": "PASS"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command env LEMMA_REGISTRY_LOCAL_OUT=build/UNUSED lake env lean tests/kernel/RegistryLocal.lean",
+      "log": "build/task006-registry-local-maintained-a1.log",
+      "result": "PASS"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command lake env lean tests/kernel/UserCopyScans.lean",
+      "log": "build/task006-registry-local-copy-a1.log",
+      "result": "PASS"
+    }
+  ],
+  "tools": {
+    "Lean": "4.34.1",
+    "Lean_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+    "LLVM": "20.1.8"
+  },
+  "selected_sources": {
+    "Lemma/Kernel/Memory/AddressSpace.lean": "e9277975e3ac3d698af868d0ae44ebf53943d2ce20581b689b42c872f3ac1082",
+    "Lemma/Kernel/Memory/Frames.lean": "bd750645ae330e1ce3c0e7baa98478daffa34f8350dcd74ae6c83e55f0304df8",
+    "tests/kernel/RegistryLocal.lean": "26ef9f0f49958b221ccc85021116fd24de129abe923922dfb479d6a5365b5d9f",
+    "Lemma/Compiler/CFGLower.lean": "158ba5ba9ed622a32bb4d733358b9d5a4bd15737d57ef683e46cfb3ec2ff6080",
+    "Lemma/Core0/Frontend.lean": "89289353c0eca2765552db37def580c7cd824dd589fed866eb8a71291ee79d68",
+    "Lemma/Core0/IR.lean": "bdda7b7305301660e89b993786111d219c1773293d6e22874f2792b354648da6",
+    "Lemma/Core0/Memory.lean": "0a6fa6da74efb17f311310f656906281e8d46fb5660993566fccfce111029b1e",
+    "Lemma/Core0/Execution.lean": "39b6fc4f4a3e35d2d4524a8ad47bb46fa1fb9c2db9b8574b875657d65ed49f29",
+    "Lemma/Compiler/Lower.lean": "09b36615e1a391771894149bd85ddd11b1eb35c43e3eaa79dc850af27622697c",
+    "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+    "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d"
+  },
+  "artifacts": {
+    "build/task006-registry-local-maintained-a1/program.opt.ll": "1a0801e9a0c6bf969899b50bd79c9fc6642ef77df9c55cde062a3a1eae9239bc",
+    "build/task006-registry-local-maintained-a1/program.s": "619c1f4128915d700d5f9a6e8e784a92bb4648cb7ed2f9ea58634db873d37543",
+    "build/task006-registry-local-maintained-a1/symbols.txt": "fb92ea097daed2d6272c6dd1e2f07808c19b1922013693083732841f5d126007",
+    "build/task006-registry-local-maintained-a1/program.o": "4fdc759c410069d577e6dc8c848f395d8ff4fac19f995413bc91f9bec4283cac",
+    "build/task006-registry-local-maintained-a1/inventory.json": "259deea377a7b5eecde1af557f5cf35429c7b1ce888b2991184565d44a5be59d",
+    "build/task006-registry-local-maintained-a1/llvm.log": "e3af11673be4af0a5353c85f0ac25f66102048b3c188c06c7f00762da7ff954c",
+    "build/task006-registry-local-maintained-a1/program.ll": "5653a9e621512c3ed5fa5c778237d89ef1e8c31ac737ceda38f5e7d4ee755d36"
+  },
+  "retained_ignored_prototype_failures": {
+    "build/task006-registry-local-a1/faults.log": "test-only record layout parse rejection",
+    "build/task006-registry-local-a1/faults-a2.log": "test-only inferred callback index type mismatch"
+  },
+  "remaining": "Actual canonical Ready/full pixels/save/cold/failure qualification and measured cycle improvement remain separate. Older A4 failed its original7200s deadline and was reaped; optimized a3 immutable campaign continues unchanged."
+}

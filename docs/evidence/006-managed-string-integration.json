@@ -1,0 +1,355 @@
+{
+  "schema": "lemma-managed-string-connected-integration/1",
+  "status": "PASS_PARTIAL",
+  "scope": "Genuinely elaborated ordinary bounded String/UTF8 code with real generational heap/ownership in isolated RV64 Arithmetic. QEMU functional course/ink/save/independent-cold/failure observations; no general String runtime, proof kernel, exact RTL timing or browser String execution claim.",
+  "source_state": "289 exact source inputs sealed before full audits and guest startups. Report/commit separate. Later independently qualified host-only scalar Notebook dispatcher admission is explicitly separate; original audited images/archives unchanged.",
+  "source_inputs": 289,
+  "source_archive": "build/task006-string-final-consumed-sources-a1",
+  "source_archive_manifest_sha256": "7bbe7541e69ceafd55fd539b8d71f666ba4d006828bb6a0070b1567b5518208d",
+  "builds": [
+    {
+      "case": "notebook",
+      "configuration": "lemmasim-silicon-string-bulk-notebook",
+      "directory": "build/kernel/task006-string-bulk-notebook-a3",
+      "build_exit": 0,
+      "build_host_seconds": 171.96717380097834,
+      "audit_exit": 0,
+      "audit_host_seconds": 117.14340603502933,
+      "elf_sha256": "edc7c0f23739dbc1d6bbbe8415a218b79197131e3721ccc492a1fff0b2f9b615"
+    },
+    {
+      "case": "initializer",
+      "configuration": "lemmasim-silicon-string-bulk-initialize",
+      "directory": "build/kernel/task006-string-bulk-initialize-a3",
+      "build_exit": 0,
+      "build_host_seconds": 187.41299509903183,
+      "audit_exit": 0,
+      "audit_host_seconds": 103.43899912101915,
+      "elf_sha256": "85545d7b18e39cbc0c43f545f6030b83064b948a45514e418e4909bae8483212"
+    },
+    {
+      "case": "oom",
+      "configuration": "lemmasim-silicon-string-arithmetic-oom-development",
+      "directory": "build/kernel/task006-string-arithmetic-oom-a3",
+      "build_exit": 0,
+      "build_host_seconds": 143.11906050000107,
+      "audit_exit": 0,
+      "audit_host_seconds": 90.65576207998674,
+      "elf_sha256": "5ea362cceffe5fc85be7d5cc96abadebf7334a3471979e46a996e667027479f9"
+    }
+  ],
+  "component": {
+    "ordinary_functions": 21,
+    "checked_llvm_functions": 104,
+    "genuine_ir_sha256": "caf36922ba5fdbc9ba1d731c7c14b6811cb724532dbda3047035d5c3e61b8515",
+    "actual_ir_mutations_rejected": 11,
+    "historical_profiles_rejected": 22,
+    "object": {
+      "cookie_words": 15,
+      "globals": 104,
+      "text_bytes": 14704,
+      "text_sha256": "4ee0fe50fbda3dd36175a8728a0af340f2971cc24e9caf4c44bb02808c65e3bd",
+      "undefined": [
+        "lemma_exec_syscall"
+      ]
+    },
+    "actual_artifact_mutations_rejected": 13,
+    "runtime_model": {
+      "status": "PASS_HOST_ACTION_MODEL",
+      "utf8_known_answers": 30,
+      "cases": "strict UTF8, Unicode scalar/NUL counts, String/Option graph lifetime, retained aliases/append, consuming toByteArray, literal31-slot OOM and cancellation",
+      "log": "build/managed/string-runtime-a6/model.log",
+      "log_sha256": "6cbf781051d6d45571c4926054f95cb4e03e29944615c719264f15a81c3f7de1"
+    },
+    "receipt": "build/managed/string-component-a4/result-a2.json",
+    "receipt_sha256": "198672bb95016c949b2f24a50abb8fe8f07ede1caa350f3548ae756096d7a0d6"
+  },
+  "new_deployment": {
+    "name": "lemma-managed-string-bulk-deployment-v1",
+    "hardware": "lemma-silicon-dev/0.3.0",
+    "profiles": {
+      "Store": "core0-user-v0.1",
+      "Notebook": "core0-user-v0.2",
+      "Arithmetic": "core0-user-v0.6"
+    },
+    "ordinary_source": "Lemma.Mathematics.ManagedStringSubmission.compareFiveSix",
+    "operation": "Complete UInt64 values encoded as16 UTF8 hexadecimal bytes, strict validated actual String/Option, copied decoded and released; original mathematical goal/domain/resource preflight preserved",
+    "bounds": {
+      "maximum_utf8_bytes": 40,
+      "heap_slots": 31,
+      "ordinary_functions": 32,
+      "call_depth": 8,
+      "ir_nodes_per_function": 4096
+    },
+    "protocol": 6,
+    "document": 7,
+    "document_bytes": 2496
+  },
+  "actual_normal": {
+    "identity": {
+      "backend": "qemu",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+      "adapter": "lemmasim-fast-adapter/4",
+      "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+      "guest": "edc7c0f23739dbc1d6bbbe8415a218b79197131e3721ccc492a1fff0b2f9b615",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+      "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+      "icount_shift": 3
+    },
+    "boot": {
+      "virtual_seconds": 2.65000002,
+      "host_seconds": 7.811924763023853,
+      "cycle": 265000002
+    },
+    "execution_identity": {
+      "status": "PASS",
+      "format_bytes": 2496,
+      "actual_isolated_requests": 5,
+      "actual_request_revision_outcome_bound": true,
+      "known_attempts": 5,
+      "origin": "IsolatedString",
+      "protocol": 6,
+      "identity_kind": "closed implementation-version authority; not artifact hash",
+      "semantic_and_heap_resources_separate": true
+    },
+    "verified": {
+      "revision": 11,
+      "goal": 1,
+      "answer": [
+        5,
+        6,
+        0,
+        0,
+        0
+      ],
+      "outcome": 1,
+      "evidence_revision": 11,
+      "budget": 8,
+      "execution": {
+        "origin": "IsolatedString",
+        "request": 291,
+        "implementation": "lemma-isolated-arithmetic-string-v1",
+        "lowering": "core0-user-v0.6/lemma-managed-string-v1",
+        "runtime": "lemma-owned-arena-string-graph-v1",
+        "resources": "lemma-arithmetic-string-resource-v1",
+        "budget": 8,
+        "status": 0
+      }
+    },
+    "edited_execution_applicability": {
+      "status": "PASS",
+      "active_unknown": true,
+      "old_attempt_identity_preserved": true,
+      "actual_durable_guest_record": true
+    },
+    "saved_status_publication": {
+      "status": "PASS",
+      "observed_pending_after_barrier": true,
+      "before_completed": 37,
+      "after_completed": 38,
+      "virtual_ticks": 1000000,
+      "acknowledged_math_unchanged": true,
+      "original_action_seconds": 30
+    },
+    "final_record": {
+      "format": "lemma-mathematical-submission/7",
+      "namespace": 1,
+      "page": 1,
+      "revision": 20,
+      "goal": 3,
+      "answer": [
+        5,
+        7,
+        1,
+        2,
+        1
+      ],
+      "outcome": 4,
+      "evidence_revision": 20,
+      "budget": 8,
+      "attempts": 5,
+      "hints": 1,
+      "history_entries": 5,
+      "execution_known_entries": 5,
+      "learner_policy": "lemma-offline-review/1",
+      "understanding": "uncertain"
+    },
+    "cold_boot": {
+      "virtual_seconds": 3.450000008,
+      "host_seconds": 7.760411273979116,
+      "cycle": 345000001
+    },
+    "cold_recovery": {
+      "status": "PASS",
+      "actual_new_cpu": true,
+      "math_sha256": "a1d904b65a3825cb02e7b20b9a49bda4d90c00ec8d5e7800731f9c284bc7e864",
+      "complete_controller_pixels": true,
+      "raw_ink_preserved": true
+    },
+    "failed_save": {
+      "status": "PASS",
+      "no_false_saved": true,
+      "acknowledged_math_unchanged": true,
+      "actual_failed_controller_label": true,
+      "completed": 4
+    },
+    "elapsed_seconds": 214.6919510680018,
+    "full_receipt": "build/task006-string-math-a1/result.json",
+    "full_receipt_sha256": "6ba90ce320b92eed81505839bb8788b7812692fb391043c093380c63446ef827"
+  },
+  "actual_oom": {
+    "identity": {
+      "backend": "qemu",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+      "adapter": "lemmasim-fast-adapter/4",
+      "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+      "guest": "5ea362cceffe5fc85be7d5cc96abadebf7334a3471979e46a996e667027479f9",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+      "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+      "icount_shift": 3
+    },
+    "boot": {
+      "virtual_seconds": 2.650000016,
+      "host_seconds": 6.0417578350170515,
+      "cycle": 265000002
+    },
+    "string_protocol_document": {
+      "status": "PASS",
+      "protocol": 6,
+      "document": 7,
+      "format_bytes": 2496,
+      "actual_handshake": [
+        1116,
+        1688854155231233,
+        1688849860263937,
+        281492156579841,
+        1125899906842655
+      ],
+      "no_applicable_evidence_before_request": true
+    },
+    "managed_constructor_admission": {
+      "contract": "core0-user-v0.6",
+      "ordinary_source": "Lemma.Mathematics.ManagedStringSubmission.compareFiveSix",
+      "maximum_utf8_bytes": 40,
+      "logical_payload_bytes": 16,
+      "arena_slot_bytes": 64,
+      "arena_capacity": 31,
+      "actual_failure_code": 237,
+      "failure_phase": "first ByteArray allocation before String.ofByteArray; no completed String-object construction claim",
+      "artifacts": {
+        "audit.json": "abcfdcf59a4706208deac93ec21d8ea2c657410959c91c47b1f0aa94fe16c7f0",
+        "image.elf": "5ea362cceffe5fc85be7d5cc96abadebf7334a3471979e46a996e667027479f9",
+        "user-image-catalog.json": "622c382f9631145a9a4e16551157d1c28dd4a7e65560fa86481b488a508e0daf",
+        "users/arithmetic/image.elf": "721c0ed9cf53fd75a6700a7cca7968fb7785ca60e2884b73f1f42e5f3f8776ba",
+        "users/arithmetic/unit.json": "9bdff8b7ec886c77c6e036751e8750da4b6090f4c1c5ef60dc0f4dc6d3c1b05f",
+        "users/arithmetic/program.ll": "3b8200330ea2d8c47edc075659e9ac5ef2ad3c1953c57cf4c46cde86a578dd77",
+        "users/arithmetic/program.opt.ll": "b4f47f1bfea4fe29673287eb722973adc40cd13e1e060a36f041768e351bb1bb"
+      },
+      "actual_emitted_routes": 17
+    },
+    "managed_constructor_failure": {
+      "status": "PASS",
+      "actual_status": 237,
+      "goal": 1,
+      "answer": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "budget": 8,
+      "actual_server_reply": [
+        1109,
+        35,
+        1,
+        237,
+        0
+      ],
+      "live_slots": 31,
+      "no_evidence": true,
+      "record_unchanged": true
+    },
+    "failed_request": {
+      "status": "PASS",
+      "actual_error": 237,
+      "math_sha256": "cb7f957acb35a9476fc98237aeb52f72a716f1764ec6e95cde7c49ca8110fc5f",
+      "no_new_evidence": true,
+      "record_unchanged": true
+    },
+    "cold_boot": {
+      "virtual_seconds": 2.650000018,
+      "host_seconds": 5.3972493940382265,
+      "cycle": 265000002
+    },
+    "cold_recovery": {
+      "status": "PASS",
+      "new_cpu": true,
+      "complete_controller_pixels_equal": true,
+      "acknowledged_math_unchanged": true,
+      "raw_ink_preserved": true
+    },
+    "elapsed_seconds": 124.61621498997556,
+    "full_receipt": "build/task006-string-oom-a1/result.json",
+    "full_receipt_sha256": "4ad8ae80be3c3cf2ed10df075d02492048cf1851b60e0a1cd49a6ef733843c8f"
+  },
+  "actual_oom_qualification": "31 real occupied slots. The ordinary String pipeline returns237 at its first ByteArray allocation before String.ofByteArray; no completed String-object construction or false evidence claim. Mathematical bytes remain unchanged; raw pen, acknowledged Save and new-cold complete display pass.",
+  "artifact_observers": {
+    "selected_arithmetic_mutations_rejected": 31,
+    "document7_dispatch_object_mutations_rejected": 19,
+    "legacy_component_object_elf_stack": "PASS",
+    "legacy_cases": [
+      {
+        "configuration": "lemmasim-notebook",
+        "profile": "core0-user-v0.1",
+        "mutations_rejected": 5
+      },
+      {
+        "configuration": "lemmasim-silicon-array-bulk-notebook",
+        "profile": "core0-user-v0.2",
+        "mutations_rejected": 5
+      }
+    ],
+    "legacy_receipt": "build/managed/string-legacy-notebook-regression-a1/object-result-a1.json",
+    "legacy_receipt_sha256": "f405c6647d38118e7a657d425611ceecfa2d5dc50e9a86706fa0ec2ef34ed725",
+    "legacy_scope": "Actual current ordinary NotebookUser1 and ArrayNotebookUser2 compiled owner signatures/effects/full bodies are identical for seven new five-case scalar dispatchers. Exact pre-existing configuration/profile mapping and full body pins admit these switches only; no managed String/runtime/language authority is added to historical profiles."
+  },
+  "distribution": {
+    "native": "build/native/task006-string-bulk-a1",
+    "native_manifest_sha256": "e6ef92d409ac40a6eb2ba3c1f0af09e62e9cd200bcf5a073a0fe40d4add1f1cd",
+    "browser": "build/browser/task006-string-bulk-host-limit-a1",
+    "scope": "Prepared immutable bundles and dependency notices; actual browser String execution unqualified."
+  },
+  "retained_failures": [
+    {
+      "path": "build/managed/string-full-batch-a1",
+      "cause": "Real missing String canonical0.3 profile selector generated wrong platform DTB; original build/audit failure and289 consumed inputs retained."
+    },
+    {
+      "path": "build/managed/string-full-batch-a2",
+      "cause": "Original audit rejected omitted exact48-byte Document7 object pool and new bounded dispatch owners. Corrected complete retained-artifact107s diagnostic exposed/qualified all checks before fresh finala3; original provenance/failure unchanged."
+    },
+    {
+      "path": "build/managed/string-full-batch-a2/prospective-full-audit-a1.json",
+      "scope": "DIAGNOSTIC_PASS only; exactly two corrected host observer hashes reconciled, never ordinary accepted-image authority."
+    },
+    {
+      "path": "build/managed/string-full-batch-a2/document7-dispatch-mutations-a1.log",
+      "cause": "Negative test passed private source spelling instead of canonical owner; original fixture FAIL retained and correct actual owner tested."
+    },
+    {
+      "path": "build/managed/string-full-batch-a2/document7-dispatch-mutations-a2.log",
+      "cause": "Object checker passed LLVM literal rows before concrete object extent annotation; original fixture FAIL retained, complete concrete object rows now checked."
+    }
+  ],
+  "remaining": [
+    "General/static Strings, closures, recursive/general managed language and proof-kernel closure remain unsupported.",
+    "Actual service uses ASCII hex; non-ASCII/malformed UTF8 vectors are genuine-runtime host-model and compiled component qualifications, not claimed isolated RV64 malformed-text execution.",
+    "String exact RTL timing, browser cold/course execution and arbitrary-boundary fast cached-state continuation remain separately unqualified.",
+    "The partial runtime/checker extension does not close every G2/G4\u2013G7 workflow."
+  ]
+}

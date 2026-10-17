@@ -1,0 +1,158 @@
+{
+  "schema": "lemma-usercopy-kernel3-observer-evidence/1",
+  "status": "PASS_OBSERVER_ONLY",
+  "scope": "Source-bound correction for original Task004 O2 artifact audit: exactly3 complete non-inlined Kernel3 postbody alternatives, original9 prebody/remaining6 postbody and Kernel4 volatile/body checks retained. No target modification/rebuild/guest timing, rerun CI or whole Task004 acceptance claim.",
+  "original_ci": {
+    "run": 38577664110,
+    "candidate_commit": "a2a695f19c0f5976197421b0fad05a0f4cdcb492",
+    "artifact_id": 11902003996,
+    "writing_zip_sha256": "6abe33ae9d0bb66c52158f4108b537f6cdb77b6fca65e3a270ccf4e973e060af",
+    "selected_configuration": "lemmasim-notebook",
+    "profile": "core0-kernel-v0.3",
+    "function_count": 1188,
+    "status": "FAIL",
+    "error": "page-word complete checked body differs: Lemma.Kernel.Memory.UserCopy.copyWord/post",
+    "original_source_count": 370
+  },
+  "admission": {
+    "role": "kernel",
+    "schema_version": 1,
+    "configuration": "lemmasim-notebook",
+    "managed_policy": "lemma-notebook-v1",
+    "profile": "core0-kernel-v0.3",
+    "artifact_category": "development-kernel-unit",
+    "checked_inline": "ABSENT",
+    "roots": [
+      "Lemma.Platform.LemmaSim.NotebookKernel.boot",
+      "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"
+    ],
+    "three_post_alternatives": [
+      "copyWord",
+      "copyWordGenericBlockStep",
+      "copyWordBlockStep"
+    ],
+    "semantics": "Original physical read64 then checked write64, exact8 increasing addresses/original read values/status-success CFG edges, final zero orfatal255/prefix accumulator; physical wrapper contract remains separately audited by complete ordinary IR checks. No call is erased or normalized to a volatile operation.",
+    "unqualified_kernel3_configurations": "REJECT"
+  },
+  "qualification": {
+    "ordinary_original_ci_unit_pre_post_ir_seconds": 26.671775027061813,
+    "actual_mutation_rejections": 140,
+    "mutation_seconds": 7.99327534600161,
+    "independent_operations_gate_layer": true,
+    "originalCI_oldKernel4_newKernel4_pre_post_positive_seconds": 1.6902780090458691,
+    "maintained_candidate_byte_equal": true,
+    "scaffold_tests": 18,
+    "guest_execution": "NOT_RUN",
+    "new_whole_task004_ci": "NOT_RUN"
+  },
+  "current_sources": {
+    "scripts/usercopy_page_words.py": "76ea511f2914234d65e80971786b39166292d88771319fbe05e6f5f5a5d421f2",
+    "tests/kernel/usercopy_kernel3_mutations.py": "574b3dc210fbb9900b53a95a804183f11712e479a8e4116f14364101825162c0"
+  },
+  "complete_source_delta": {
+    "original_closure_pair": "build/managed/surface-bulk-closure-whole-pair-a2/result.json",
+    "original_inventory_sha256": "f0d75e55d03229cc2b8fdce350f9c2227a2e29a3907a1281ea04cedd0f8cb056",
+    "same_path_count": 371,
+    "only_changed_input": "scripts/usercopy_page_words.py",
+    "old_sha256": "3b61f9c195f78ba4150015b00ad7943ef0be6ce2b535134154cc929707cbf096",
+    "new_sha256": "76ea511f2914234d65e80971786b39166292d88771319fbe05e6f5f5a5d421f2",
+    "target_inputs_unchanged": true
+  },
+  "artifacts": [
+    {
+      "path": "build/ci/task006-a2-failures-a1/writing.zip",
+      "bytes": 5350197,
+      "sha256": "6abe33ae9d0bb66c52158f4108b537f6cdb77b6fca65e3a270ccf4e973e060af"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/kernel/unit.json",
+      "bytes": 232998,
+      "sha256": "b660ea50c29952db934d3190030775fd1fcb6ef86b42673f2d5ab77c75254cbf"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/kernel/program.ll",
+      "bytes": 4615639,
+      "sha256": "315b80717ce2fee4787b7a289559a4cd586bd2df8546a16c19d8e129cee241ae"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/kernel/program.opt.ll",
+      "bytes": 3001416,
+      "sha256": "9205cd1b664cd0c3240cb9dc29e8bf9a0f6724a02f6bfa479fc466bbe6fe63e1"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/audit-failure.json",
+      "bytes": 162,
+      "sha256": "e01fae20844ce4fedd8804d6f15c63711eced36edf99188fe245391dc639acad"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/provenance.json",
+      "bytes": 88756,
+      "sha256": "d1708a9ba8e2b15612a173ef831b52edd7220d51b59da8777007cdbc05d7c2e3"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/retained/kernel/ci-writing-lemmasim-notebook-O2/build.json",
+      "bytes": 6944,
+      "sha256": "b5487fbc509c0f61e26b92122e528e021f340d46f63d442543f34a85ec642f89"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/lemmasim-notebook-O2-audit.log",
+      "bytes": 103,
+      "sha256": "00ddc7d2d90409c76fd1fc974c8c0dcb8ae9b799e3940574b0010285b5411054"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/shapes.json",
+      "bytes": 2817,
+      "sha256": "2b58b93d31150da94794b7cb1b95b61a6725caa529120a6449c40570b3d448f3"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/copyWord.diff",
+      "bytes": 4044,
+      "sha256": "12439b97fad501fe2d9a5259fdd41c9ab6c5aa824c781b1d650ee8dac2308f47"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/copyWordGenericBlockStep.diff",
+      "bytes": 26071,
+      "sha256": "396ff51b9f5296e8d6df92c6ed2683c3f2c25f9cf04463e09cca90d5ede18a7c"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/copyWordBlockStep.diff",
+      "bytes": 14192,
+      "sha256": "e9c26776595260f713ef51b048a60043bf9d6584cd8240ddc25794757a822f56"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/candidate-result-a1.json",
+      "bytes": 31145,
+      "sha256": "a5d11a8ab7c30fe7f407b32af5401533c0567faba8716dd313d17573b654ad37"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/generic-ir-candidate-a1.json",
+      "bytes": 750,
+      "sha256": "133ccbaf45b8543692fbd6171aaa55318d4a924d918d1083e0beb535ab3befc1"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/mutations-candidate-a2.json",
+      "bytes": 27689,
+      "sha256": "b33f843d8fb3db864a1b0f8709f0f29485979a7b45ee1342723f159d14c7957c"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/maintained-result-a1.json",
+      "bytes": 1198,
+      "sha256": "a237346a0f949ff04c07d221934f4f9c3758449dda2293bced84bdd335e5ea0c"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/source-review-a1.json",
+      "bytes": 1067,
+      "sha256": "7cc46bbfcad8f0d8ac1613a9a897d33692adb3c38a030d9e4c57e2ca508c93ce"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/scaffold-a1.log",
+      "bytes": 185,
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+    },
+    {
+      "path": "build/ci/task006-a2-failures-a1/page-word-diagnosis-a1/scaffold-tests-a1.log",
+      "bytes": 1811,
+      "sha256": "c4ce256fdb598231d8745c6ce55c47ab9169142f08ca328b528c0b8802748fb7"
+    }
+  ]
+}

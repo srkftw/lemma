@@ -164,6 +164,32 @@ def router_drc(count: str) -> dict:
             "scope": "Detailed-router geometric checks; separate from process DRC"}
 
 
+def mapping_selection(effort, delay_ps=None):
+    if effort not in ("normal", "bounded"):
+        raise ValueError("Unknown mapping effort")
+    if delay_ps is not None:
+        if type(delay_ps) is not int or not 1 <= delay_ps <= 1_000_000_000:
+            raise ValueError("ABC delay target must be an integer1..1000000000 picoseconds")
+        if effort != "normal":
+            raise ValueError("ABC delay target requires normal mapping; bounded script has no delay substitution")
+        return {"mapping_profile": "sg13g2-register-cells-ties-delay/0.1.0",
+                "abc_delay_target_ps": delay_ps}
+    return {"mapping_profile": "sg13g2-register-cells-ties/0.1.0" if effort == "normal"
+            else "sg13g2-register-cells-ties-bounded/0.1.0"}
+
+
+def same_mapping_selection(previous, current):
+    return all(type(previous.get(key)) is type(current.get(key)) and
+               previous.get(key) == current.get(key)
+               for key in ("mapping_profile", "abc_delay_target_ps"))
+
+
+def normal_abc_command(lib, delay_ps=None):
+    selection = mapping_selection("normal", delay_ps)
+    delay = f" -D {selection['abc_delay_target_ps']}" if delay_ps is not None else ""
+    return f"abc -liberty {quoted(lib)}{delay}\n"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--top")
@@ -179,6 +205,8 @@ def main() -> int:
     ap.add_argument("--map", action="store_true", dest="mapping")
     ap.add_argument("--map-effort", choices=("normal", "bounded"), default="normal",
                     help="normal ABC optimization or bounded structural standard-cell mapping")
+    ap.add_argument("--abc-delay-ps", type=int,
+                    help="Explicit ABC normal-mapping delay target in picoseconds; does not change the STA clock")
     ap.add_argument("--layout", action="store_true")
     ap.add_argument("--process-checks", action="store_true", help="After layout, attempt Magic process DRC and Netgen transistor LVS")
     ap.add_argument("--clock", default="clk")
@@ -192,6 +220,12 @@ def main() -> int:
         ap.error("Deadline and clock period must be positive")
     if args.process_checks and not args.layout:
         ap.error("--process-checks requires --layout")
+    if args.abc_delay_ps is not None and not (args.mapping or args.layout):
+        ap.error("--abc-delay-ps requires --map or --layout")
+    try:
+        mapping_options = mapping_selection(args.map_effort, args.abc_delay_ps)
+    except ValueError as error:
+        ap.error(str(error))
     if any(not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*=[0-9]+", p) for p in args.parameter):
         ap.error("Top parameters must be name=unsigned_decimal_integer")
     sources = list(args.source)
@@ -228,8 +262,7 @@ def main() -> int:
               **{f"{name}_recipe_sha256": hashlib.sha256(text.encode()).hexdigest()
                  for name, text in recipes.items()},
               "physical_lock_sha256": sha(LOCK), "commands": [],
-              "mapping_profile": "sg13g2-register-cells-ties/0.1.0" if args.map_effort == "normal"
-                                 else "sg13g2-register-cells-ties-bounded/0.1.0",
+              **mapping_options,
               "scope": "RTL slice only; no external memory/media/panel model synthesized",
               "drc": "NOT_RUN", "lvs": "NOT_RUN", "foundry_signoff": "UNVERIFIED"}
     try:
@@ -285,7 +318,7 @@ def main() -> int:
             result["pdk"] = {"revision": revision, "collateral": {str(p.relative_to(pdk)): sha(p) for p in collateral},
                              "corner": "typical 1.20 V 25 C"}
             mapping = out / "mapping.ys"
-            abc = f"abc -liberty {quoted(lib)}\n"
+            abc = normal_abc_command(lib, args.abc_delay_ps)
             if args.map_effort == "bounded":
                 abc_script = out / "mapping.abc"
                 # Standard structural hashing and technology mapping, without
@@ -301,7 +334,7 @@ def main() -> int:
                                f"write_json {quoted(out / 'mapped.json')}\n" +
                                f"write_verilog -noattr -noexpr {quoted(out / 'mapped.v')}\n" +
                                f"stat -liberty {quoted(lib)}\n")
-            if previous and "mapped" in previous and previous.get("mapping_profile") == result["mapping_profile"]:
+            if previous and "mapped" in previous and same_mapping_selection(previous, result):
                 if previous["pdk"] != result["pdk"]:
                     raise RuntimeError("Mapped output collateral identity changed")
                 for name in ("mapped.json", "mapped.v", "mapping.log"):

@@ -1,0 +1,432 @@
+{
+  "schema": "lemma-task006-pen-read-capture-experiment/1",
+  "status": "UNADOPTED_RTL_PASS_PHYSICAL_FAIL",
+  "scope": "One changed-source standalone pen experiment at the full 256-entry capacity; finite literal public-interface observations and SG13G2 synthesis/global-route estimates. The default pen was restored. No new guest, full-SoC or physical-signoff claim.",
+  "source_commit": "ee6d42525fe4dc7e67b0625a01c47ac6736c78dd",
+  "source_dirty_paths": [
+    " M Lemma/Courses/PackageStore.lean",
+    " M Lemma/Services/Store/Server.lean",
+    " M sim/rtl/lemma_pen.sv",
+    "?? Lemma/Courses/PackageCommand.lean",
+    "?? Lemma/Courses/PackageInstaller.lean",
+    "?? conformance/silicon/check_pen_read_capture.py",
+    "?? scripts/check_native_evaluation.py",
+    "?? tests/lemmasim/native_disabled_eval.cpp"
+  ],
+  "decision": {
+    "adopted": false,
+    "reason": "Mapped cell and area reductions did not improve actual 100 MHz global setup timing; detailed routing again timed out. Only the experimental RTL change was restored. All artifacts remain retained, and no second route was launched.",
+    "restored_source": {
+      "path": "sim/rtl/lemma_pen.sv",
+      "bytes": 7689,
+      "sha256": "2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3"
+    },
+    "candidate_source": {
+      "path": "build/silicon/pen-task006-read-capture-owner-a1/consumed-source/lemma_pen.sv",
+      "bytes": 7799,
+      "sha256": "4a74d8da5764b1f65d3d6e368dca70bdea41001a6b1afa8f331cf34ce4c6dfc5"
+    },
+    "exact_candidate_patch": {
+      "path": "build/silicon/pen-task006-read-capture-owner-a1/candidate.patch",
+      "bytes": 670,
+      "sha256": "75fee652da8aa30acdf525be894863da482c0d54719010c76e97d9e0d86faec0"
+    },
+    "finite_test_source_archive": "build/silicon/pen-task006-read-capture-owner-a1/consumed-rtl-tests",
+    "candidate_change": "Free-running private bank_entry registers capture every positive clock edge. The two-edge head publication, bank storage, capacity, fields, acceptance, ordering, ACK, loss and reset remain unchanged.",
+    "private_activity": "Unaccepted private bank-read values can change; dynamic power is unmeasured."
+  },
+  "literal": {
+    "status": "PASS_LITERAL_INTERFACE_AND_MUTATION_SENSITIVITY",
+    "positive": {
+      "path": "build/silicon/pen-task006-read-capture-qualification-a1/result.json",
+      "sha256": "d52911fe55f1444751571d4d3acb1c1e9753fde4b7d51c9117d706e89c4e54ca",
+      "external_edges": 28457,
+      "reference_sha256": "2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3",
+      "cases": [
+        "PEN-INGRESS literal full256 fields high64 sequence/time consecutive/wrap PASS",
+        "PEN-INGRESS every-edge old/new invalid full ACK reset collision PASS edges",
+        "PEN-BANKS full-capacity all-fields two-wrap and ingress bypass PASS",
+        "PEN-BANKS refill backpressure reset cancellation and watchdog head PASS"
+      ],
+      "tool_inputs": {
+        "verilator": {
+          "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator",
+          "sha256": "f1f41487e2a6c18e55859658df8d2e3528b76fc5c7b5a95281794ded61c7b802",
+          "version": "Verilator 5.052 2026-09-05 rev v5.052"
+        },
+        "make": {
+          "path": "/nix/store/z565rgmn9vccv2h0g87z725pw610jmm8-gnumake-4.4.1/bin/make",
+          "sha256": "fee96a0fae52353d14f8d5be991366483d96f00800f8f707198af68ce47b8fea",
+          "version": "GNU Make 4.4.1"
+        },
+        "c++": {
+          "path": "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++",
+          "sha256": "c1a58806b7b7c5f038a81f94c27796764fc8cd9f8059aef62c5e83a761a56935",
+          "version": "g++ (GCC) 16.2.0"
+        },
+        "verilator_bin": {
+          "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator_bin",
+          "sha256": "7e75a7d71fec9faf87f2933b5a53040d474788ffd183f840c320a1aab228a3ae",
+          "version": "Verilator 5.052 2026-09-05 rev v5.052"
+        }
+      }
+    },
+    "sensitivity": {
+      "status": "PASS_MUTATION_REJECTED",
+      "original_negative_result": {
+        "path": "build/silicon/pen-task006-read-capture-sensitivity-a1/result.json",
+        "sha256": "564574f5e93d04f624800a97a2cb5719193d22dac6be562563cc8b8094327786"
+      },
+      "actual_exit_code": 1,
+      "fault": "Synchronous bank read uses row address XOR 1; no ordinary candidate or backend consumes this quarantined RTL.",
+      "rejected_external_edge": 1131,
+      "simulation_log": {
+        "path": "build/silicon/pen-task006-read-capture-sensitivity-a1/PenIngress-simulation.log",
+        "sha256": "9fa2f177205ec5216f68c2bab36edd41881c2eb64fc4bf4b158a73890f09d0fe"
+      },
+      "mutant_sha256": "7144c27395313e14d9445e687f20cfefc7ab907d1b227691ae90a001bd83e85c"
+    },
+    "candidate_sha256": "4a74d8da5764b1f65d3d6e368dca70bdea41001a6b1afa8f331cf34ce4c6dfc5",
+    "meaning": "Finite source-bound external-interface and independent full-depth observations; not a formal proof, guest execution or physical signoff.",
+    "scaffold_metadata": "PASS",
+    "scaffold_tests": {
+      "status": "PASS",
+      "count": 18
+    }
+  },
+  "physical": {
+    "status": "FAIL_SETUP_AND_DETAILED_ROUTE_TIMEOUT",
+    "result": {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/result.json",
+      "bytes": 8694,
+      "sha256": "cd129db8156b924a6d3e0815454203c7ecf75c1f0b7b9ecb62309d2f43404de6"
+    },
+    "plan": {
+      "path": "build/silicon/pen-task006-read-capture-owner-a1/plan.json",
+      "bytes": 2465,
+      "sha256": "d656ba6c2a0f922cd7ee4d744c202621bd937408b76da227f2a15ef08094ac9d"
+    },
+    "owner": {
+      "path": "build/silicon/pen-task006-read-capture-owner-a1/owner.json",
+      "bytes": 730,
+      "sha256": "41772c584aa4ba4736040352fb72182866e22a16a16d5d30f397e3f12c848b97"
+    },
+    "owner_reaped": true,
+    "physical_bound_seconds": 900,
+    "supervisor_bound_seconds": 1000,
+    "supervisor_elapsed_seconds": 904.3614571010112,
+    "commands": [
+      {
+        "argv": [
+          "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+          "-s",
+          "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-read-capture-a1/generic.ys"
+        ],
+        "exit_code": 0,
+        "seconds": 5.829,
+        "log": "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-read-capture-a1/generic.log",
+        "log_sha256": "4f99ba4c025f02e2dfb7bfbed32dc23523dfc121d5f4b13bc139d14ceb0074f8",
+        "timed_out": false
+      },
+      {
+        "argv": [
+          "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+          "-s",
+          "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-read-capture-a1/mapping.ys"
+        ],
+        "exit_code": 0,
+        "seconds": 31.982,
+        "log": "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-read-capture-a1/mapping.log",
+        "log_sha256": "ee3000f567cea0938177e70b469c156608df937cd4675b3b309ff464f9014576",
+        "timed_out": false
+      },
+      {
+        "argv": [
+          "/nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad",
+          "-exit",
+          "-no_init",
+          "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-read-capture-a1/layout.tcl"
+        ],
+        "exit_code": -15,
+        "seconds": 860.462,
+        "log": "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-read-capture-a1/layout.log",
+        "log_sha256": "e34f2a060f7bcbb709cc38cbb1a7aff5864c2348144e8989c4d53c7207b192eb",
+        "timed_out": true
+      }
+    ],
+    "tools": {
+      "yosys_path": "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+      "yosys_version": "Yosys 0.69+post (git sha1 v0.69, Release, GNU /nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++ 16.2.0)",
+      "openroad_path": "/nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad",
+      "openroad_version": "26Q2"
+    },
+    "tool_executable_sha256": {
+      "yosys_path": "aaa6f93f2b56b05370f008388a2a7531e74892907082aaa2bce223a37d8c782f",
+      "openroad_path": "2d49fb4cc8b03f39d089090015e24b8a783d08949491200e119048b158b6649d"
+    },
+    "pdk": {
+      "revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+      "collateral": {
+        "ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib": "7677a8918689f452e80405ad16a83e744709342574f2aedcc507c2758986b396",
+        "ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_tech.lef": "054f5b7b24d72365b4b1088be1331e04c1c2e3805de9f99c37e71938ed231efc",
+        "ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef": "c9bbc02d0c2cba3b15cd89a208750d25de882f02a2927ae78ba6422109fb01d0"
+      },
+      "corner": "typical 1.20 V 25 C"
+    },
+    "recipes": {
+      "recipe_sha256": "dcfe5afb5e702ae9db970541b145f94af7d9cc58a75a2f6e5776e1ce1d37f330",
+      "eda_recipe_sha256": "0158c908ff067cf45a90c40ce8fb6a6616b846a7a8059b4d0a6446f6afcac8ca",
+      "layout_recipe_sha256": "e703a8f8dcaa7c2ead503c5512d2b377e664034b8669e1b3e1fe0a0980b9f87b",
+      "process_recipe_sha256": "d5315c189ae13032d50cfa7f75a0ace0a4900baf3ae7eb5a32fbf9037ed66718",
+      "extract_recipe_sha256": "51b8563e25f76032a5c4f824ce43899e45e7b8ac6e0df0244fd3ce16e6567839",
+      "physical_lock_sha256": "13275a90aaf90b4d208125eb53f36be4c4a9920aaf4aa7d8893326432ff50a28"
+    },
+    "same_constraints": {
+      "clock_ns": 10,
+      "io_delay_ns": 2,
+      "output_load_pf": 0.006,
+      "uncertainty_ns": 0.25,
+      "transition_ns": 0.15,
+      "corner": "SG13G2 typical1.20V25C",
+      "repair_phase": "WNS_PATH",
+      "process_checks": true
+    },
+    "mapped_cells": 167864,
+    "flip_flops": 50102,
+    "mapped_cell_area_um2": 4273921.637998,
+    "unresolved_cells": [],
+    "latches": 0,
+    "residual_memory_bits": 0,
+    "mapped_area_change_percent": -1.8561855547918227,
+    "global_route": {
+      "cell_area_um2": 4978085.8176,
+      "core_area_um2": 17080777.9296,
+      "utilization_percent": 29.14437409184546,
+      "instances": 217626,
+      "clock_period_ns": 10.0,
+      "timing_model": "global-route RC estimate before detailed signal routing",
+      "power_grid": "NOT_IMPLEMENTED",
+      "process_drc": "NOT_RUN",
+      "lvs": "NOT_RUN",
+      "setup_worst_slack_ns": -2.021075,
+      "setup_timing": "VIOLATED",
+      "hold_worst_slack_ns": 0.030106,
+      "hold_timing": "MET"
+    },
+    "global_setup_slack_change_ns": -0.2883270000000002,
+    "setup_conclusion": "Setup slack worsened by 0.288327 ns and remains FAIL.",
+    "reported_electrical_violations": 128,
+    "electrical_kind": "128 clock-buffer fanout violations: limit 8, actual 16. None is waived.",
+    "critical_path": {
+      "start": "sample_y[21]",
+      "endpoint": "_228233_ next_sequence[59] FF",
+      "arrival_ns": 13.895729,
+      "required_ns": 11.874655,
+      "slack_ns": -2.021075,
+      "scope": "Actual final global-route RC estimate, not routed extraction.",
+      "report": {
+        "path": "build/silicon/physical/pen-task006-read-capture-a1/global-setup.rpt",
+        "bytes": 28435,
+        "sha256": "735fe413d4c56aede231458e53240e91be192729efdf3d6f243bce80bd3ee461"
+      }
+    },
+    "detailed_routing": {
+      "status": "FAIL_TIMEOUT",
+      "stage": "pin access",
+      "last_reported_completed_groups": 80000,
+      "unique_instance_patterns": 77,
+      "metal1_shape_query_size": 8639295,
+      "completed_route": false,
+      "localized_congestion_heatmap": "NOT_RETAINED",
+      "interpretation": "Group counts and source geometry differ; no normalized routing-speed claim or attribution of the timeout cause."
+    },
+    "router_drc": "NOT_RUN",
+    "process_drc": "NOT_RUN",
+    "lvs": "NOT_RUN",
+    "routed_extraction": "NOT_RUN",
+    "post_route_timing": "NOT_RUN",
+    "power_grid": "NOT_IMPLEMENTED",
+    "foundry_signoff": "UNVERIFIED"
+  },
+  "retained_originals": [
+    {
+      "path": "build/silicon/physical/pen-task006-private-ingress-a1/result.json",
+      "bytes": 9069,
+      "sha256": "b0fcbc4fdd8987582310b00736de93ed104b3afff16ec6703519629ab46d0f41"
+    },
+    {
+      "path": "docs/evidence/006-pen-private-ingress.json",
+      "bytes": 15558,
+      "sha256": "32817a7ce7f0581ec9e666f5f29201ae5ef11c6191fbb9e72ae2425599097eda"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-onehot-a1/result.json",
+      "bytes": 8742,
+      "sha256": "9882c530a7a0c377f47d9fed03a5b6946d93732602a51f04591ed19a69ee624f"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/result.json",
+      "bytes": 8694,
+      "sha256": "cd129db8156b924a6d3e0815454203c7ecf75c1f0b7b9ecb62309d2f43404de6"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/global-route.odb",
+      "bytes": 169874770,
+      "sha256": "ba127cc0632d0b937e4daaf929f431819d0b82d7d705a17ce926d7cef4324633"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/global-route.def",
+      "bytes": 33256619,
+      "sha256": "c81d74cfb293b17e035c31e033affe9ff930b233df7645e72e278452edcd7c07"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/global-route-estimated.spef",
+      "bytes": 174063826,
+      "sha256": "676a4ba1278b647025f6cedbef495bbcae6fbeb7dfb1530d5ed883abf1a621f4"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/global-route-summary.json",
+      "bytes": 304,
+      "sha256": "7f30f2ae9b00c93fcc807db58f3b3f6f5d509be53e8ec6b666cd1ea560a48f49"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/global-setup.rpt",
+      "bytes": 28435,
+      "sha256": "735fe413d4c56aede231458e53240e91be192729efdf3d6f243bce80bd3ee461"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/global-hold.rpt",
+      "bytes": 13063,
+      "sha256": "2c7a80135ff289f49efbf92d4fd15c4fa744e4ab1a2128c9dc52d135c833686f"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/global-setup-summary.rpt",
+      "bytes": 26,
+      "sha256": "2f5483933bc5bd35e70fd4acce9dc26bb506123e770f39c7de9eb688d1686f52"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/global-hold-summary.rpt",
+      "bytes": 25,
+      "sha256": "4a225c8fd58ce2deb315b554693279588ea55dec5537ceb256d5c4922b5a95e7"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/global-electrical.rpt",
+      "bytes": 8961,
+      "sha256": "cdfb92c60ad391e9aebf6264bb8f7555af1150e816004818299a0cd716c7af9e"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/global-constraints.rpt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/route.guide",
+      "bytes": 69434556,
+      "sha256": "0bbb3709a5b8da6293629599d20f8f35130d1905b2ede26a0130a644ef50819b"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/layout.log",
+      "bytes": 23258,
+      "sha256": "e34f2a060f7bcbb709cc38cbb1a7aff5864c2348144e8989c4d53c7207b192eb"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/mapping.log",
+      "bytes": 7883,
+      "sha256": "ee3000f567cea0938177e70b469c156608df937cd4675b3b309ff464f9014576"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/mapped.json",
+      "bytes": 98840726,
+      "sha256": "a163877892f278e3c095a66d3fee57a9890d3ca3cb16cca4ab01d474a7da4a66"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-read-capture-a1/mapped.v",
+      "bytes": 20923807,
+      "sha256": "70796073e00c579abcaa5c38030d7bf657f70cdb47bc24f91e4eefaf7fd8b19b"
+    }
+  ],
+  "next_physical_interface": {
+    "status": "IGNORED_SUCCESSOR_RTL_TEST_AND_MAP_ONLY_PASS",
+    "finding": "The current failed path traverses upper-coordinate bounds and acceptance logic into next_sequence[59]; the earlier retained worst path runs from refill state to next_sequence[63]. The mapped path contains substantial control/enable logic; it does not establish a 64-bit adder carry limitation.",
+    "candidate_to_inspect": "An ignored prototype separates the sequence counter into its own synchronous reset/accepted-sample block. Loss, refill, write and resynchronization priorities remain covered by the exact commit predicate. It has finite tests and a map-only observation; no adoption, placement, routing or physical speedup is claimed.",
+    "other_blockers": [
+      "Complete detailed routing and pin access",
+      "128 clock-buffer fanout violations",
+      "Complete SG13G2 enclosure/CUTCLASS rule coverage; not established as the timeout cause",
+      "Process DRC/LVS, routed extraction and post-route STA",
+      "Full-SoC, memory, pads, power and physical panel domains remain separate"
+    ],
+    "ignored_successor": {
+      "source": {
+        "path": "build/silicon/pen-sequence-enable-proposal-a1/lemma_pen.sv",
+        "bytes": 8126,
+        "sha256": "408e88ed4808185c78c3615f124d5f94dd0db102420dc43b88362b84699732fb"
+      },
+      "source_sha256": "408e88ed4808185c78c3615f124d5f94dd0db102420dc43b88362b84699732fb",
+      "predicate": "sample_valid && sample_ready && !loss && !lose && (!resync || (release_seen && sample_flags[0]))",
+      "reset_priority": "Synchronous !reset_n sets next_sequence to1; main/public acceptance and bank logic remain unchanged.",
+      "literal_result": {
+        "path": "build/silicon/pen-sequence-enable-proposal-qualification-a1/result.json",
+        "bytes": 9162,
+        "sha256": "550d0ae8ecf97f3fedc6eba5f91c841e76f6153c8680c98142a4509517719f5a"
+      },
+      "external_compared_edges": 28457,
+      "guard_enumeration": {
+        "path": "build/silicon/pen-sequence-enable-proposal-a1/guard-enumeration.json",
+        "bytes": 335,
+        "sha256": "42a6fedafd3a65dca5779eba0f876717f64bced2abcb6157bf87e2a771a30915"
+      },
+      "guard_combinations": 32768,
+      "mapping_result": {
+        "path": "build/silicon/physical/pen-sequence-enable-map-a1/result.json",
+        "bytes": 6714,
+        "sha256": "9c5f9e2da7f8369edef2adb848858e005e92ec6114c134bfb050c276ebfd9bc7"
+      },
+      "mapping_deadline_seconds": 180,
+      "mapped_cells": 184075,
+      "flip_flops": 50102,
+      "mapped_cell_area_um2": 4354297.781398,
+      "unresolved_cells": [],
+      "latches": 0,
+      "residual_memory_bits": 0,
+      "static_cones": {
+        "path": "build/silicon/pen-sequence-enable-proposal-a1/measurement.json",
+        "bytes": 4258,
+        "sha256": "e020d500a6732d0ba6de3481cfce33fc7a38b191a068802f9a48bc08ca83249b"
+      },
+      "next_sequence63_D_max_cell_stages": {
+        "baseline": 18,
+        "candidate": 17
+      },
+      "sample_y21_to_next_sequence63_D_cell_stages": {
+        "baseline": 13,
+        "candidate": 12
+      },
+      "direct_refill2_to_next_sequence63_D_cell_stages": {
+        "baseline": 7,
+        "candidate": null
+      },
+      "same_observed_refill_FSM_encoding": [
+        "00 -> --1",
+        "10 -> -1-",
+        "01 -> 1--"
+      ],
+      "meaning": "Actual mapped combinational cell stages, not RC delay, STA, physical speedup, formal equivalence or implementation adoption.",
+      "maintained_RTL_adopted": false,
+      "placement": "NOT_RUN",
+      "routing": "NOT_RUN",
+      "physical_STA": "NOT_RUN"
+    }
+  },
+  "checks": {
+    "scaffold_metadata": "PASS",
+    "scaffold_unittests": {
+      "status": "PASS",
+      "count": 18
+    },
+    "no_guest_retests": true,
+    "no_second_route_attempt": true
+  }
+}

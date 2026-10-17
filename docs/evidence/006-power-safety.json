@@ -1,0 +1,130 @@
+{
+  "schema": "lemma-power-v2-qualification/1",
+  "status": "PASS",
+  "scope": "Opt-in exact RTL digital Power-v2 and genuine checked Lean S-mode policy; development ELF-preload boot. No ordinary notebook, production boot/update, fast timing, physical power or Wasm claim.",
+  "source_commit_at_build": "bb71c853606ebb88f5c8b62c7cd4978798fdb179",
+  "exact_source_identity": {
+    "target_provenance_sha256": "c385410afb5260eb34605bf70ba2460aedc875237f6d32c45163e2a35eaf5f9e",
+    "native_manifest_sha256": "295769f53e388a78cc612af61288356366cfd3277d2e9fb455ac143be6bed29e",
+    "native_snapshot_identity": "edda68beb913247c6457bc7e4aab1a528088b2c7f9e0445e307ca672d91e8321",
+    "native_consumed_power_runtime": {
+      "sim/rtl/host/machine_runtime.cpp": "1f260c7c03f659225aafe0f66112a8d94da51644c9856650beec7470bcfce930",
+      "sim/rtl/host/machine_runtime.h": "8f031f1d1037674b88845a4ad60d4749aa712a0d006285e4b945599e44f5bf6c"
+    }
+  },
+  "execution_identity": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.4.0",
+    "runtime": "10bc343edbab2cd652ad8894a6b4e744e9b3fbc6f46931f986d1cc70b686344b",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "a3394ef410907e1827dfe9834997c612f6e8e30b0dd96f76f5bfae96e00e45da",
+    "dtb": "a40fe14fa1858a9d3e1b71c172a6202267a2d8405147840c0a67501dff2d7509",
+    "descriptor": "966e12277e1d8f0b3db109f569df4cd16a3a3aaa8099ff40b1e9f7596e324864"
+  },
+  "tools": {
+    "lean_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+    "lean": "Lean (version 4.34.1, Release)",
+    "llvm": "20.1.8",
+    "verilator": "Verilator 5.052 2026-09-05 rev v5.052"
+  },
+  "observed": {
+    "guest": {
+      "host_seconds": 191.83096363104414,
+      "owner_exit_code": 0,
+      "arm_cycle": 7302157,
+      "expiry_cycle": 7402157,
+      "watchdog_clocks": 100000,
+      "retired_at_wfi": 4095015,
+      "snapshot": {
+        "host_seconds": 0.9550853409455158,
+        "bytes": 145176550
+      },
+      "suffix_cycles": 7491165,
+      "whole_suffix_checkpoint_sha256": "10de0a1a2a0f73aeff7c7f534010cc78b9a6b64ec9f2c11f089a7aef27aa9488",
+      "cause_epoch_records": [
+        [
+          1,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          5,
+          3
+        ]
+      ],
+      "final_cycle": 29602195
+    },
+    "domain_literal": {
+      "host_seconds": 11.724907452997286,
+      "working_ram_retained_watchdog": true,
+      "actual_ram_and_overlay_lost_unsafe": true,
+      "completed_optical_retained_incomplete_aborted": true,
+      "pen_release_resync": true,
+      "whole_reset_edge_suffix_equal": true
+    },
+    "actual_os_fault_pending": {
+      "host_seconds": 13.969971542945132,
+      "actual_pwrite_prefix_bytes": 2,
+      "error": "EFBIG after RLIMIT_FSIZE=1538 at byte1536; actual fsync EBADF",
+      "pending_snapshot_observational": true,
+      "private_fork_requires_outcome_tape": true,
+      "whole_orphan_completion_suffix_equal": true,
+      "cancelled_controller_dma_absent": true
+    },
+    "sampled_native_rss_KiB": 147880,
+    "rss_scope": "Observed /proc/ps sample at approximately181s; not a peak measurement. Target RAM128MiB, host snapshot145176550bytes; no medium attached in genuine driver scenario."
+  },
+  "retained_failures": [
+    {
+      "path": "build/kernel/task006-power-safety-a1",
+      "reason": "development module quarantine missing exact selected admission"
+    },
+    {
+      "path": "build/kernel/task006-power-safety-a2",
+      "reason": "incorrect namespace for genuine wait declaration"
+    },
+    {
+      "path": "build/kernel/task006-power-safety-a3",
+      "reason": "exporter development module whitelist missing exact selected admission"
+    },
+    {
+      "path": "build/kernel/task006-power-safety-a4",
+      "reason": "strict audit expected old DTB table74; actual new literal75 independently qualified, fresh a5 rebuilt/audited"
+    },
+    {
+      "path": "build/power/task006-safety-native-fault-a1",
+      "reason": "literal host fixture exposed inconsistent combinational request after internal Verilator mutation; real ownership check rejected; independently consistent fixture now passes without changing the check"
+    }
+  ],
+  "artifacts": {
+    "build/kernel/task006-power-safety-a5/build.json": "d87b23b8ed02be6d7ffcc3e982f4a4bbd0e9f7b4feec5e62f12fa3fde3bb74ea",
+    "build/kernel/task006-power-safety-a5/provenance.json": "c385410afb5260eb34605bf70ba2460aedc875237f6d32c45163e2a35eaf5f9e",
+    "build/kernel/task006-power-safety-a5/audit.json": "e363b78ddaa80849f171871a948ef43e1322af2a3f4c4bb376b13ad1152fee11",
+    "build/silicon/task006-power-safety-runtime-a2/build.json": "295769f53e388a78cc612af61288356366cfd3277d2e9fb455ac143be6bed29e",
+    "build/silicon/task006-power-safety-runtime-a2/sources.json": "fc6b06a2a65ae619733edb5fcd0c4261aaab513548c6b49a8d87a9e8b643a19b",
+    "build/power/task006-safety-circuit-a1/result.json": "e8f744791ebe33f1c6ad513eccc04e5f6634e1468b9c7b3450b0cc2c48dcce18",
+    "build/power/task006-safety-native-a3/result.json": "97267a1f2c4c46794c56b5b00890adfb063145af6b762f516cae2ff344fe7806",
+    "build/power/task006-safety-native-fault-a3/result.json": "dace00e998e1399b796fad36a16f62e9ce6e0f2b29ca9544acf349f28ec52df0",
+    "build/power/task006-safety-guest-a1/result.json": "fe0f56a3a62dbf1042533abb866986eddfdb38b84b49076e02081849811ea4e4",
+    "build/power/task006-safety-guest-a1/session/uart.bin": "c35790c07a3ec4c48f53dbc4e73c25d2da1173067da5c848df2ac80a00b35f65",
+    "build/power/task006-safety-guest-a1/commands.jsonl": "2a10f46b80ee16cbbc69c416a1827ac94af1dcdd4834b5d08c310b8688d3d2c7"
+  },
+  "remaining": [
+    "Ordinary notebook driver/policy integration and preserved-document reset/update scenario",
+    "Real immutable production boot medium, authentication and interrupted A/B update",
+    "Fast Power-v2 timers/reset domains/RAM loss model and declared observation relation",
+    "Portable Power-v2 exact same-backend qualification",
+    "Physical power/reset-domain crossings, retention implementation and electrical qualification"
+  ]
+}

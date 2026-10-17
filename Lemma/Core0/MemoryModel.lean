@@ -278,6 +278,10 @@ def evaluate : Nat → State → Action → Except Diagnostic Evaluation
           code := .loopActionUnsupported
           message := "the finite RAM model does not execute unbounded production loops"
         }
+      | .managed2 .. | .managedSums2 .. | .managedBytes2 .. | .managedArray2 .. | .managedString2 .. | .managedClosure2 .. => .error {
+          code := .executionActionUnsupported
+          message := "the finite RAM model does not execute managed allocation/ownership IR"
+        }
       | .platform .. => .error {
           code := .executionActionUnsupported
           message := "the finite RAM model does not simulate production privilege/memory actions"

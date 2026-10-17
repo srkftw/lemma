@@ -1,3 +1,4 @@
+<!--
 # Task005 — open RV64 silicon bring-up and the shared Lean notebook
 
 Owner authorized this implementation in the task conversation, 2026-10-10.
@@ -48,3 +49,5 @@ PR, manual verification and meaningful existing CI jobs.
 Resume `docs/plan/005-session-state.md`. Deliver the strongest observed running
 slice if a genuine dependency blocks completion, with one exact next bottleneck.
 Do not claim completion from scaffolding, a UART banner or CI alone.
+
+-->

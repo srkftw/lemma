@@ -40,13 +40,19 @@ def guest_events(path: Path) -> list[tuple[int, int, int, int, int]]:
 
 def visible_pixels(path: Path) -> tuple[int, int, bytes]:
     ppm = path.read_bytes()
-    header = re.match(rb'P6\s+(\d+)\s+(\d+)\s+255\s', ppm)
+    header = re.match(rb'(P[56])\s+(\d+)\s+(\d+)\s+255\s', ppm)
     if not header:
         raise ValueError('missing real controller visible output')
-    width, height = map(int, header.groups())
+    kind, raw_width, raw_height = header.groups()
+    width, height = int(raw_width), int(raw_height)
     pixels = ppm[header.end():]
-    if not width or not height or len(pixels) != width * height * 3:
+    channels = 1 if kind == b'P5' else 3
+    if not width or not height or len(pixels) != width * height * channels:
         raise ValueError('visible geometry/byte length differs')
+    if channels == 1:
+        # Native RTL publishes actual controller-produced grayscale pixels.
+        # Normalize only the observation representation; no pixel is invented.
+        pixels = bytes(channel for gray in pixels for channel in (gray, gray, gray))
     return width, height, pixels
 
 
@@ -185,6 +191,10 @@ def check(disk: Path, input_file: Path, manifest_file: Path, device_file: Path,
         if len(data) < 64:
             raise ValueError('short document header')
         fields = struct.unpack_from('<8Q', data)
+        from math_oracle import MAGIC as MATH_MAGIC, inspect as inspect_math
+        if fields[0] == MATH_MAGIC:
+            inspect_math(data, namespace, object_id)
+            continue
         if fields[0] != MAGIC or (fields[1] != 1 and not (fields[1] == 2 and fields[2] == 2)):
             raise ValueError('unknown document format')
         if fields[2] == 1:

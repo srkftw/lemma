@@ -1,3 +1,4 @@
+<!--
 # Gate 9 compiled monitor construction contract
 
 Status: Gate 9 accepted at clean implementation
@@ -107,3 +108,5 @@ provenance checks are separate from tests and the conditional Gate 8 model lemma
 This document does not establish a general
 compiler proof, hard-real-time behavior, isolation, physical compatibility,
 managed runtime, scheduler or G1/G2 completion.
+
+-->

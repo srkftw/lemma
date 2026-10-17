@@ -1,0 +1,106 @@
+{
+  "status": "PASS",
+  "scope": "Bounded ordinary ByteArray compiler/runtime component; production deployment and isolated RV64 execution not yet selected or qualified",
+  "base_commit": "9687e02b12718e85c4cc0020798710ef8b28be63",
+  "compiler_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+  "profile": "core0-user-v0.4",
+  "contract": "lemma-managed-bytes-v1",
+  "ordinary_entry": "Lemma.Mathematics.ManagedByteSubmission.compareFiveSix",
+  "layout": {
+    "owner": "lemma-owned-arena-v1",
+    "generational_slots": 31,
+    "slot_payload_bytes": 64,
+    "logical_payload_bytes": 48,
+    "cookie": "0x3159544252414d4c",
+    "nat_domain": "0..48; checked UInt64.toNat, scalar representation; arbitrary Nat not admitted",
+    "copy_on_write": "distinct allocation; consumes one actual owned reference; aliases retain original bytes"
+  },
+  "results": {
+    "genuine_ordinary_closure_functions": 5,
+    "complete_emitted_definitions": 71,
+    "generated_payload": "16 bytes little endian UInt64 numerator/denominator reconstructed by ordinary source",
+    "component": "build/managed/bytes-component-a3/qualification-a3.json",
+    "runtime": "build/managed/bytes-runtime-draft-a1/maintained-runtime-a1.log",
+    "host_boundary_tests": "build/managed/bytes-runtime-draft-a1/component-host-a1.log",
+    "legacy_records": "build/managed/bytes-runtime-draft-a1/legacy-records-a1.log",
+    "legacy_sums": "build/managed/bytes-runtime-draft-a1/legacy-sums-a1.log",
+    "component_machine_code": "RV64IM softfloat; 7820B .text; real merged40B cookie constant pool; only undefined lemma_exec_syscall",
+    "genuine_IR_negative_mutations": 4,
+    "real_artifact_negative_mutations": 14,
+    "host_boundary_test_count": 4
+  },
+  "commands": [
+    "flock build/task006-lake.lock nix develop --no-write-lock-file --command lake build Lemma.Core0.Frontend Lemma.Compiler.CFGLower Lemma.Mathematics.ManagedByteSubmission",
+    "flock build/task006-lake.lock nix develop --no-write-lock-file --command env LEMMA_MANAGED_BYTES_OUT=UNUSED lake env lean Lemma/Compiler/Test/ManagedBytes.lean",
+    "nix develop --no-write-lock-file --command opt -S -passes=default<O2> UNUSED/program.ll -o UNUSED/program.opt.ll",
+    "nix develop --no-write-lock-file --command llc -mtriple=riscv64-unknown-elf -mattr=+m -relocation-model=static -filetype=obj UNUSED/program.opt.ll -o UNUSED/program.o",
+    "python3 scripts/check_managed_bytes_component.py --directory UNUSED --output UNUSED/qualification.json",
+    "flock build/task006-lake.lock nix develop --no-write-lock-file --command lake env lean tests/runtime/ManagedBytes.lean",
+    "python3 -m unittest discover -s tests/core0 -p test_managed_bytes_component.py -v"
+  ],
+  "sources": {
+    "Lemma/Core0/IR.lean": "991d4f7da478eaa2765a2b26a057992d6b6c91993d417b4602b47c7f5bf699c0",
+    "Lemma/Core0/Execution.lean": "237130f0b709e5feec7f43941f3c701b17346f4d830b0645b413f7ed66e9cc91",
+    "Lemma/Core0/Frontend.lean": "05b7ddbbecfc989c63f933bd03c483cc8a9883ebdbbd8a00b55ffe095aff2742",
+    "Lemma/Core0/Memory.lean": "5793bd7a46acb3e5435b8aacd27109ad4e664abc2b607150572b90f1169ec995",
+    "Lemma/Core0/MemoryModel.lean": "e320bb47eafaa25b918caed0ef0beedbecb7505fbcb6790caf71ed3cf5801dc5",
+    "Lemma/Core0/Semantics.lean": "54d57089a17d1ab87416cb836820f682f85fde8bfc19698001b031e5904e5b79",
+    "Lemma/Core0/ManagedBytesIR.lean": "afad5554ff3a7b6e4d60616966bc22e85b316c985ef0f09ce0abb18641cf5625",
+    "Lemma/Compiler/CFGLower.lean": "f258059bab566f19b5b06abc6ebcbce511e10595cd200446e87fcb619f2635b8",
+    "Lemma/Compiler/Test/ManagedBytes.lean": "61ba76240d0aba796b4dfeba6a44c387664a3acfe45c67028c6d7940116dff2a",
+    "Lemma/Mathematics/ManagedByteSubmission.lean": "718ac489b33729e8e8bdeae677269256b5b050decadebf9214c3736efed512d4",
+    "Lemma/User/Runtime/ManagedBytes.lean": "56e0545dc8f8c71df82627a3c4b2ff8115b443d6bfdc740ee2a34028dd068c6d",
+    "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+    "tests/runtime/ManagedBytes.lean": "f297cec22f47356f71497913271a749281fbc43cb08dba273a3249e9b21c6b9d",
+    "docs/contracts/MANAGED_BYTES_V1.md": "c90de12a470be6116a14d963330196ff68cf741089731e97f12e33f7eb6e1e5c",
+    "scripts/check_managed_bytes_component.py": "695ce0dd9f7d0cd4e29e0aeecdd023f8c3e878469344f6fc1e8400ca478c824c",
+    "tests/core0/test_managed_bytes_component.py": "4eb3ab1d7f3735226bb2400dad6dceb2abfcd5c87d5e41d142ca00c08e766e3d"
+  },
+  "artifacts": {
+    "build/managed/bytes-component-a3/catalog.json": "d5b657b527d7b8def444366fb993dd3d40248b9968cb754a360e2541fef22e0d",
+    "build/managed/bytes-component-a3/genuine-ir.json": "19410b7a0a298c67201cb6e679f89087a5cd33df3b67021f2072cc090ff18aba",
+    "build/managed/bytes-component-a3/program.ll": "ccd538d16dd227c2e78e6b91e3524190ab340ed12f20a50abd3cdaf73ee34765",
+    "build/managed/bytes-component-a3/program.opt.ll": "c41cd87eed0ac689734be4a6c4bf3b9b5acee058a2cb889352d62c81045be6c4",
+    "build/managed/bytes-component-a3/program.o": "7a3c06b04e62782a69ce408af25a45d90f80ad6e146086744f7c93a0a78228d3",
+    "build/managed/bytes-component-a3/symbols.txt": "ec77dcfce874d3d21cf96849c09189b174ecbde0fcbba00fcedd5105e28474a9",
+    "build/managed/bytes-component-a3/qualification-a3.json": "94724b8584b96d56994fb38369d7eed2f82e5179f06dcfc27162f8b92742dd68",
+    "build/managed/bytes-runtime-draft-a1/maintained-runtime-a1.log": "db23ed66465b617a6bae56a72a91ea2efc8a95f6f02e8041d00a1d794da8bec7",
+    "build/managed/bytes-runtime-draft-a1/legacy-records-a1.log": "46c72cdec10d4bdde75e1e01812d06c6fa2f7dca86d57da437412add7d4ce845",
+    "build/managed/bytes-runtime-draft-a1/legacy-sums-a1.log": "1dc0025b72021768864010021f7529eea361dec8e6eb465ead81c36dcb544764",
+    "build/managed/bytes-runtime-draft-a1/tool-versions.log": "d689cd5473d2449b3793e8627fbebe2a35065cd44ea8979e95e55faa18de711b"
+  },
+  "retained_failures": [
+    {
+      "path": "build/managed/bytes-runtime-draft-a1/maintained-lake-a1.log",
+      "reason": "Intermediate enum contract row accidentally duplicated User4 case; corrected source, failure retained"
+    },
+    {
+      "path": "build/managed/bytes-runtime-draft-a1/maintained-lake-a2.log",
+      "reason": "New Action was missing explicit finite-model rejection; fail-closed exhaustion found, corrected source"
+    },
+    {
+      "path": "build/managed/bytes-runtime-draft-a1/component-lower-a1.log",
+      "reason": "Host IR negative mutator lacked explicit IR.Alt type; elaboration rejected and did not run"
+    },
+    {
+      "path": "build/managed/bytes-runtime-draft-a1/component-lower-a2.log",
+      "reason": "Fixture expected unsupportedPrimitive for old scalar-only profiles whose actual valid diagnostic was invalidSuite"
+    },
+    {
+      "path": "build/managed/bytes-runtime-draft-a1/component-audit-a1.log",
+      "reason": "Observer incorrectly assumed identical pre/O2 cleanup site counts; actual CSE merges one error release. Corrected observer independently pins complete pre/post ABI/body/call closure and object code; emitted program unchanged"
+    },
+    {
+      "path": "build/managed/bytes-runtime-draft-a1/submission-fixture-a1.log",
+      "reason": "Genuine upstream static ByteArray constructor object correctly rejected; ordinary capacity parameter source repair prevents static extraction"
+    }
+  ],
+  "remaining": [
+    "No User4 production image/deployment/closed execution identity selected yet",
+    "No separately linked isolated RV64 ByteArray service acceptance yet",
+    "Full managed runtime Array/String/closures/recursion/GC remains incomplete",
+    "Ordinary comparison is UInt64 arithmetic; exact trusted caller preflight and a new execution registry/protocol/document version required",
+    "No proof-kernel or full G2 closure",
+    "Component pins grant no production mathematical authority"
+  ]
+}

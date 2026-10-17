@@ -1,0 +1,115 @@
+{
+  "component_result": {
+    "action_observation": "IPC_RPC_BORROW_ACTIONS:PASS pool512 Receive1883->1745,Reply1863->1771; ordered exact result/RAM/payload/authority/partialfault behavior after only duplicate immutable base-read projection; receiveFaults612,replyFaults608\nIPC_RPC_BORROW_ACTIONS:PASS pool8192 Receive3185->2711,Reply3347->3031; ordered exact result/RAM/payload/authority/partialfault behavior after only duplicate immutable base-read projection; receiveFaults820,replyFaults816",
+    "artifacts": {
+      "production-symbols.txt": "6a37fb0a8f214adba8bec8f3242744f6f56ac42d7af4447dcd025de478ddb6ee",
+      "production-unit.json": "f4c805a2ba4fad5f7ab808d76d74c098daa3b4fe09cab22cb4449cb5a5ac0b8d",
+      "production.ll": "2db26078b149b720c19a3e629ef8b12d0411b11a50611d5a8004174815d92e2e",
+      "production.o": "3e9ad386b2ffaedb613ac62b8a07df4e34e8af4e656b0a911f6be5fc0b8f827f",
+      "production.opt.ll": "a848e1c523fcaf5636aa29807655601796cb050dcbbd57ec1001997e7abd7b6e"
+    },
+    "bounds": {
+      "action_fixture_seconds": 240,
+      "aggregate_host_seconds": 600,
+      "other_command_seconds": 120
+    },
+    "child_peak_rss_kib": 1649100,
+    "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-ipc-rpc-qualified-a1/result.json",
+    "sha256": "dc8d21b6d4d93791e6e449847d920cb5c32add56fadbc8860cccd92961941936",
+    "sources": 86,
+    "unresolved_boundary": [
+      "lemma_exec_firmware_call"
+    ],
+    "wall_seconds": 127.33698099502362
+  },
+  "guards": {
+    "inventory_sha256": "80e38175785fced5eb19aad6ad469c75c7d55e233b398ad7e64289ab9e677dc2",
+    "negative_cases": [
+      {
+        "case": "wrong role",
+        "rejection": "IPC call borrow lacks complete closed kernel path"
+      },
+      {
+        "case": "new borrowed storage effect",
+        "rejection": "IPC Receive/Reply changed qualified body/ABI/effects: Lemma.Kernel.IPCStorage.completeAt"
+      },
+      {
+        "case": "changed descriptor ABI",
+        "rejection": "IPC Receive/Reply changed qualified body/ABI/effects: Lemma.Kernel.IPC.replyLocal"
+      },
+      {
+        "case": "wrong fresh descriptor",
+        "rejection": "IPC Receive/Reply changed qualified body/ABI/effects: Lemma.Kernel.IPC.receiveWithLimit"
+      },
+      {
+        "case": "changed checked transaction",
+        "rejection": "IPC Receive/Reply changed qualified body/ABI/effects: Lemma.Kernel.IPC.receiveHeadAt"
+      },
+      {
+        "case": "lost write preflight",
+        "rejection": "IPC Receive/Reply changed qualified body/ABI/effects: Lemma.Kernel.IPCStorage.queueCopyToUserAt"
+      },
+      {
+        "case": "incomplete borrowed closure",
+        "rejection": "IPC Receive/Reply borrow lacks complete closed kernel path"
+      },
+      {
+        "case": "unapproved additional helper caller",
+        "rejection": "IPC Receive/Reply has unapproved or absent helper caller: Lemma.Kernel.IPCStorage.completeAt"
+      }
+    ],
+    "observer_sources": {
+      "audit_kernel.py": "2ee1b6ea0a98f844b99596148f7bd88f22d30529b81a1e18b185e94cdf33a0bc",
+      "check_ipc_rpc_guards.py": "ad40e0aeb0e1de90090194392d46b79a5d1f62d658073eca32b1bea815322da4",
+      "core0_common.py": "7ac28fddd9b4f30c1de503fcc16448231fe9a55dbedc70c651c725bb2441af26",
+      "ipc_call_borrow.py": "85e8689960550aa1ff3e8fb28f43194725b58bd05d01102a2eae1e42454fdee1",
+      "ipc_rpc_borrow.py": "7248f2ccc3dda3a346fca8865453c7f632b9853e3f98659ad0195f9967d0cf4d"
+    },
+    "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-ipc-rpc-qualified-a1/guards.json",
+    "qualified_functions": 16,
+    "sha256": "d95358f63e05aaa47c49d2e55a582af7e24c7a2c83fb77fdad9039f324583e7a",
+    "source_archive": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-ipc-rpc-qualified-a1/observer-consumed-source"
+  },
+  "host_ipc_regressions": {
+    "status": "PASS",
+    "tests": 18
+  },
+  "preserved_legacy_guards": [
+    "build/kernel/task006-ipc-call-borrow-a1/component/call",
+    "build/kernel/task006-closure-notebook-a2/kernel"
+  ],
+  "preserved_original_cold_failures": [
+    "build/courses/task006-course-ipc-guest-a1/result.json",
+    "build/courses/task006-course-mount-cold-a1/result.json"
+  ],
+  "private_retained_boundary_diagnostic": {
+    "backing_write_changes": 0,
+    "barrier_changes": 0,
+    "caveat": "Frames/AddressSpace samples may be transitive copy work; direct copy counts cannot establish causal dominance",
+    "cycles": 1999997,
+    "host_seconds": 16.983049007016234,
+    "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-mount-suffix-diagnostic-a2/result.json",
+    "prelaunch_observer_failure": "build/courses/task006-course-mount-suffix-diagnostic-a1/result.json",
+    "privilege_counts": {
+      "0": 3,
+      "1": 391,
+      "3": 6
+    },
+    "processes_reaped": true,
+    "samples": 400,
+    "scope": "one privately restored original RTL failed-boundary suffix; PC distribution estimate, not causal timing proof, cold acceptance or enlarged Load budget",
+    "sha256": "826ed2710d0b66ed4fe566d8df49a4d4cf9e0aac4a4685ed6d5998c8ac88c0a2",
+    "status": "PASS_BOUNDED_PRIVATE_READ_ONLY_SUFFIX_DISTRIBUTION"
+  },
+  "remaining": {
+    "fast_timing_parity": "NOT_ESTABLISHED",
+    "installed_course_notebook_selection_and_evidence_binding": "NOT_IMPLEMENTED",
+    "new_rtl_course_cold_complete_load": "NOT_RUN",
+    "rtl_target_cycle_speedup": "NOT_MEASURED",
+    "whole_new_kernel_audit": "NOT_RUN"
+  },
+  "retained_fixture_import_failure": "build/kernel/task006-ipc-rpc-actions-a1/preflight-import-failure.json",
+  "schema": "lemma-ipc-rpc-base-reuse-evidence/1",
+  "scope": "hosted actual Lean Actions plus genuine kernel-v0.4 LLVM/RV64 component; CPU timing/full image/course installation NOT_RUN",
+  "status": "PASS_COMPONENT_AND_CLOSED_BORROW_GUARDS"
+}

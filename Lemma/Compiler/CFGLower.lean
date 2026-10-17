@@ -434,10 +434,83 @@ structure LoweredActionRoot where
   signature : Lemma.Core0.ActionSignature
   deriving Repr, BEq
 
+/-- A literal catalog describes the checked source body, not an optimizer guess. -/
+structure ClosedLiteral where
+  source : Lean.Name
+  symbol : String
+  ty : Lemma.Core0.Ty
+  value : Nat
+  deriving Repr, BEq
+
+/-- No foreign implementation is introduced: the complete existing checked
+physical-memory lowering remains in this function before selective inlining. -/
+structure CheckedPrimitiveWrapper where
+  source : Lean.Name
+  symbol : String
+  operation : Lemma.Core0.Execution.Op
+  effects : Lemma.Core0.EffectSet
+  deriving Repr, BEq
+
+private def closedLiteral? (function : Lemma.Core0.Function) :
+    Option (Lemma.Core0.Ty × Nat) :=
+  if !function.params.isEmpty || !function.signature.args.isEmpty ||
+      !function.dependencies.isEmpty then none else
+  match function.body with
+  | .lit ty value =>
+      if ty != .bool && ty == function.signature.result then some (ty, value % (2 ^ ty.width)) else none
+  | _ => none
+
+private def checkedPrimitiveWrapper? (function : Lemma.Core0.ActionFunction) :
+    Option Lemma.Core0.Execution.Op := do
+  let .platform operation arguments status value (.done returnedStatus returnedValue) := function.body
+    | none
+  unless operation.isPhysical && operation.widthBytes?.isSome && arguments.size == 6 &&
+      function.params.size == operation.argumentCount &&
+      function.signature.args == Array.replicate operation.argumentCount .u64 &&
+      function.scalarDependencies.isEmpty && function.actionDependencies.isEmpty &&
+      function.directEffects == Lemma.Core0.executionEffects operation &&
+      function.effects == Lemma.Core0.executionEffects operation &&
+      status.ty == .u8 && value.ty == .u64 && status.id != value.id &&
+      returnedStatus == .var status.id .u8 && returnedValue == .var value.id .u64 do none
+  for index in [:arguments.size] do
+    if index < operation.argumentCount then
+      let param := function.params[index]!
+      unless param.ty == .u64 && param.id != status.id && param.id != value.id &&
+          arguments[index]! == .var param.id .u64 do none
+    else
+      unless arguments[index]! == .lit .u64 0 do none
+  some operation
+
+/-- This successor admits no byte access or policy body, and is enabled only
+under User-v0.2 by the suite entry below. -/
+private def checkedUserWordWrapper? (function : Lemma.Core0.ActionFunction) :
+    Option Lemma.Core0.Execution.Op := do
+  let .platform operation arguments status value (.done returnedStatus returnedValue) := function.body
+    | none
+  unless (operation == .virtualRead64 || operation == .virtualWrite64) && arguments.size == 6 &&
+      function.params.size == operation.argumentCount &&
+      function.signature.args == Array.replicate operation.argumentCount .u64 &&
+      function.scalarDependencies.isEmpty && function.actionDependencies.isEmpty &&
+      function.directEffects == Lemma.Core0.executionEffects operation &&
+      function.effects == Lemma.Core0.executionEffects operation &&
+      status.ty == .u8 && value.ty == .u64 && status.id != value.id &&
+      returnedStatus == .var status.id .u8 && returnedValue == .var value.id .u64 do none
+  for index in [:arguments.size] do
+    if index < operation.argumentCount then
+      let param := function.params[index]!
+      unless param.ty == .u64 && param.id != status.id && param.id != value.id &&
+          arguments[index]! == .var param.id .u64 do none
+    else
+      unless arguments[index]! == .lit .u64 0 do none
+  some operation
+
 structure LoweredActionSuite where
   functions : Array LLVM.Function
   symbols : Array Symbol
   roots : Array LoweredActionRoot
+  inlineLiterals : Array ClosedLiteral := #[]
+  inlineWrappers : Array CheckedPrimitiveWrapper := #[]
+  inlineUserWrappers : Array CheckedPrimitiveWrapper := #[]
   deriving Repr
 
 def LoweredActionSuite.renderSymbolManifest (lowered : LoweredActionSuite) : String :=
@@ -1240,7 +1313,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       emit (.extractResultValue value (.local aggregate))
       pure { status := .local status, value := .local value }
   | .loop callback => do
-      unless profile.isKernel || profile == .user_v0_1 do
+      unless profile.isKernel || profile.isUser do
         throw "checked Action.loop requires a kernel/user execution profile"
       let function ← match lookupActionFunction suite.actionFunctions callback with
         | .ok function => pure function
@@ -1382,7 +1455,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
           lowerActionExpr profile suite symbols next
   | .uartReadStatus status value next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile.isKernel do
+          profile.isFirmware || profile.isKernel || profile.isBoot do
         throw s!"UART status reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART status read has an inconsistent continuation type"
@@ -1396,7 +1469,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
           lowerActionExpr profile suite symbols next
   | .uartReadByte status value next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile.isKernel do
+          profile.isFirmware || profile.isKernel || profile.isBoot do
         throw s!"UART byte reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART byte read has an inconsistent continuation type"
@@ -1410,7 +1483,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
           lowerActionExpr profile suite symbols next
   | .uartWriteByte value status next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile.isKernel do
+          profile.isFirmware || profile.isKernel || profile.isBoot do
         throw s!"UART byte writes require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless value.type == .u8 && status.ty == .u8 do
         throw "checked UART byte write has an inconsistent type"
@@ -1421,7 +1494,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         lowerActionExpr profile suite symbols next
   | .uartEnableAndResetFifo status next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile.isKernel do
+          profile.isFirmware || profile.isKernel || profile.isBoot do
         throw s!"UART FIFO control requires `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 do
         throw "checked UART FIFO control has an inconsistent continuation type"
@@ -1430,7 +1503,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         lowerActionExpr profile suite symbols next
   | .uartEnableAndResetFifo14 status next => do
-      unless profile == .kernel_v0_2 || (profile == .kernel_v0_3 || profile == .kernel_v0_4) do
+      unless profile == .kernel_v0_2 || profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 do
         throw "UART FIFO trigger14 requires core0-kernel-v0.2"
       unless status.ty == .u8 do
         throw "checked kernel FIFO control has an inconsistent continuation type"
@@ -1557,7 +1630,9 @@ private def lowerScalarActionFunction (profile : Lemma.Core0.Profile)
     parameters
     parameterExtensions
     linkage := if isPreserved then none else some "internal"
-    attributes := if isPreserved then
+    attributes := if options.inlineLiteralConstants && (closedLiteral? function).isSome then
+      #["nounwind", "alwaysinline"]
+    else if isPreserved then
       #["nounwind", "noinline", "\"disable-tail-calls\"=\"true\""]
     else #["nounwind"]
     blocks := finalState.blocks
@@ -1599,7 +1674,10 @@ private def lowerActionFunction (profile : Lemma.Core0.Profile)
     parameters
     parameterExtensions
     linkage := if isRoot || isPreserved then none else some "internal"
-    attributes := if isPreserved then
+    attributes := if (options.inlinePrimitiveWrappers && (checkedPrimitiveWrapper? function).isSome) ||
+        (options.inlineUserWordWrappers && (checkedUserWordWrapper? function).isSome) then
+      #["nounwind", "alwaysinline"]
+    else if isPreserved then
       #["nounwind", "noinline", "\"disable-tail-calls\"=\"true\""]
     else #["nounwind"]
     blocks := finalState.blocks
@@ -1611,6 +1689,8 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     (suite : Lemma.Core0.CheckedActionSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite := do
   validateSymbolPrefix options.symbolPrefix
+  if options.inlineUserWordWrappers && profile != .user_v0_2 && profile != .user_v0_3 && profile != .user_v0_4 && profile != .user_v0_5 && profile != .user_v0_6 && profile != .user_v0_7 then
+    throw "checked virtual word wrapper optimization requires core0-user-v0.2"
   unless profile == .v0_4 || profile == .v0_5 || profile == .v0_6 ||
       profile == .v0_7 || profile.isExecution do
     throw "Action lowering requires profile core0-v0.4, core0-v0.5, core0-v0.6, or core0-v0.7"
@@ -1623,7 +1703,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     actualDeviceOps := collectDeviceOps actualDeviceOps function.body
   let mut seenDeviceMetadata : Array Lemma.Core0.Device.Op := #[]
   for operation in suite.usedDeviceOps do
-    if operation == .uartEnableAndResetFifo14 && profile != .kernel_v0_2 && profile != .kernel_v0_3 && profile != .kernel_v0_4 then
+    if operation == .uartEnableAndResetFifo14 && profile != .kernel_v0_2 && profile != .kernel_v0_3 && profile != .kernel_v0_4 && profile != .kernel_v0_5 && profile != .kernel_v0_6 && profile != .kernel_v0_7 && profile != .kernel_v0_8 then
       throw s!"device operation `{operation.stableId}` is denied by `{profile.contractVersion}`"
     if seenDeviceMetadata.contains operation then
       throw s!"checked Action suite repeats device metadata `{operation.stableId}`"
@@ -1698,14 +1778,14 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
   unless actualLoops.size == suite.usedLoops.size && actualLoops.all suite.usedLoops.contains &&
       suite.usedLoops.all actualLoops.contains do
     throw "checked Action suite has stale loop metadata"
-  unless actualLoops.isEmpty || profile.isKernel || profile == .user_v0_1 do
+  unless actualLoops.isEmpty || profile.isKernel || profile.isUser do
     throw "checked Action.loop is denied outside kernel/user execution profiles"
   if profile.isExecution then
     unless Lemma.Core0.Execution.catalogValid && Lemma.Core0.Execution.memoryRegionsValid profile do
       throw "production execution catalog or authority intervals are invalid"
     unless suite.usedMemoryOps.isEmpty && suite.usedTrapOps.isEmpty && suite.usedTimerOps.isEmpty do
       throw "production profiles reject diagnostic memory/trap/timer metadata"
-  if profile == .user_v0_1 && !actualDeviceOps.isEmpty then
+  if profile.isUser && !actualDeviceOps.isEmpty then
     throw "user profile rejects direct MMIO operations"
   if profile == .v0_4 && !actualDeviceOps.isEmpty then
     throw s!"device operations require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
@@ -1714,7 +1794,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
   if profile != .v0_7 && !actualTimerOps.isEmpty then
     throw s!"timer operations require `{Lemma.Core0.Profile.v0_7.contractVersion}`"
   if profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-      profile == .firmware_v0_1 || profile.isKernel then
+      profile.isFirmware || profile.isKernel || profile.isBoot then
     unless Lemma.Core0.Device.catalogValid && deviceCatalogMatchesBackend &&
         Lemma.Core0.Device.UART.base.toNat == LLVM.UARTReadRegister.rbr.address &&
         Lemma.Core0.Device.UART.base.toNat + Lemma.Core0.Device.UART.lsrOffset.toNat ==
@@ -1726,7 +1806,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
         Lemma.Core0.Device.UART.registerWidthBytes == 1 &&
         Lemma.Core0.Device.UART.fcrEnableAndReset.toNat == 0x07 do
       throw "the compiled core0-v0.5 UART catalog disagrees with the closed LLVM lowering"
-  if profile == .kernel_v0_2 || (profile == .kernel_v0_3 || profile == .kernel_v0_4) then
+  if profile == .kernel_v0_2 || profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 then
     unless Lemma.Core0.Device.kernelCatalogValid && kernelDeviceCatalogMatchesBackend &&
         Lemma.Core0.Device.UART.fcrEnableAndReset14.toNat == 0xc7 do
       throw "the compiled kernel-v0.2 UART catalog disagrees with the closed LLVM lowering"
@@ -1840,7 +1920,27 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
       llvm := ← lookupSymbol symbols root.source
       signature := root.signature
     }
-  pure { functions, symbols, roots }
+  let mut inlineLiterals : Array ClosedLiteral := #[]
+  if options.inlineLiteralConstants then
+    for function in suite.scalarFunctions do
+      if let some (ty, value) := closedLiteral? function then
+        inlineLiterals := inlineLiterals.push {
+          source := function.name, symbol := ← lookupSymbol symbols function.name, ty, value }
+  let mut inlineWrappers : Array CheckedPrimitiveWrapper := #[]
+  if options.inlinePrimitiveWrappers then
+    for function in suite.actionFunctions do
+      if let some operation := checkedPrimitiveWrapper? function then
+        inlineWrappers := inlineWrappers.push {
+          source := function.name, symbol := ← lookupSymbol symbols function.name,
+          operation, effects := function.effects }
+  let mut inlineUserWrappers : Array CheckedPrimitiveWrapper := #[]
+  if options.inlineUserWordWrappers then
+    for function in suite.actionFunctions do
+      if let some operation := checkedUserWordWrapper? function then
+        inlineUserWrappers := inlineUserWrappers.push {
+          source := function.name, symbol := ← lookupSymbol symbols function.name,
+          operation, effects := function.effects }
+  pure { functions, symbols, roots, inlineLiterals, inlineWrappers, inlineUserWrappers }
 
 /-- Lower a complete checked `core0-v0.4` fixed-region Action suite.  Device
 constructors remain rejected by both the v0.4 checker and this backend entry. -/

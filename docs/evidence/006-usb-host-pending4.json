@@ -1,0 +1,171 @@
+{
+  "schema": "lemma-usb-host-pending4-evidence/1",
+  "status": "PASS",
+  "scope": "hosted Lean opaque receipt policy, independent durable peer and literal USB RTL WAIT; no RV64 guest claim",
+  "policy": "lemma-usb-pending-policy/4",
+  "raw_interface": "USBHOST/2 PACKET_BYTES_DEV",
+  "prepared": {
+    "path": "build/usb/host-pending-policy4-a3/prepared.json",
+    "sha256": "1c2ffc4fb0556687d2ea531f12133d14fe70320d22b7ba536265036b35526d4a"
+  },
+  "policy_sources": {
+    "sim/usb/USBPendingPolicy.lean": "c95ba5cb8b52233af06507538d8d7ecee8c43e520faff3b9d0ad8d3a96cabe05",
+    "sim/usb/pending_main.c": "8711b9357ea3cc5658d5307d5c4a1da7f9dc39114504882274dc70e0417919c9",
+    "scripts/lemmasim_usb_pending.py": "0d04a396b58678292ca8fb0f823de4154dc605ff967c334ec3ae066872e63470"
+  },
+  "policy_binary_sha256": "d5bdaa2127ff9025b95e7ec55cdf769eb71d54304bcce167d9af4aadc29be54b",
+  "host_tools": {
+    "lean": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+      "sha256": "f70d0a2a69e99b5d99c0abf4310731c512489c801099111f367981f24439a863"
+    },
+    "leanc": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/leanc",
+      "sha256": "8230f2a3fc1f8e8960066d5289168178a39850d027b46cc20affb3fbfc4c5966"
+    },
+    "cc": {
+      "path": "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/gcc",
+      "sha256": "79770329fa1c8d56f5d70222d22b04b2b74cc74254da74b16205ba8da4e7b4b5"
+    }
+  },
+  "legacy_dependency": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/usb/host-pending-policy3-a1/prepared.json",
+    "sha256": "e2c94d4a5ec6635c55d7d990f3d304fe2ebaaef89f44ad71a5a4c27e76fd5c27"
+  },
+  "target_objects_added": [],
+  "qualification": {
+    "path": "build/usb/usb-host-pending4-properties-a9/result.json",
+    "sha256": "27dd212d09e6a64c27b6d6d06077589efb9445bfcfc5a56ba5e7ccb90f4de18d"
+  },
+  "qualification_observer_sha256": "9992cc28fa531ba5a45299926d8c0bae593dcbf74f7f0fafb85ce4f715e60881",
+  "fixture_inputs": {
+    "tests/usb/PendingExchange.lean": "731b1a61c280a9c935eb806667d3c2b8609c563a8686640a054c658902648d62",
+    "tests/usb/pending_wait.cpp": "bfbf861cc4b85a4002395b1854e36d6d7828f789244cb7322dd812e742748320",
+    "sim/rtl/lemma_usb_device.sv": "33b959fe80f1b92cbb0286ec395c765602f940c9ea1c74c107de5389b0cb4fd5",
+    "scripts/check_usb_pending.py": "9992cc28fa531ba5a45299926d8c0bae593dcbf74f7f0fafb85ce4f715e60881"
+  },
+  "wait_adapter_sha256": "2544a798410b10d68259d8906b4b2eb46d09f3680903df1cfc72eb6a62b1d06f",
+  "fixture_binary_sha256": "259e3196c558243991a8e6716f4488a954a8ba22b1fc8c0014cac473772ff34f",
+  "host_seconds": 166.621327181987,
+  "bounds": {
+    "host_seconds": 180,
+    "operation_wait_clocks": 100000000,
+    "restart_delay_seconds": 0.5
+  },
+  "observed_cases": [
+    {
+      "name": "restart500",
+      "result": "RESULT ACK NEXT 2 ERROR 0 SPENT 700000",
+      "actual_wait_clocks": 700000,
+      "events": [
+        {
+          "event": "persisted_lost_reply_peer_exit",
+          "host_seconds": 27.526101668016054
+        },
+        {
+          "event": "peer_restarted",
+          "host_seconds": 28.191471611964516
+        }
+      ],
+      "peer_effects": 1,
+      "outbox_next": 2,
+      "outbox_pending_bytes": 0,
+      "outbox_sha256": "c3a8a2376370f4dc25628691601f0919775aef3fa22b503b8789ffd984172cc7"
+    },
+    {
+      "name": "retry-old",
+      "result": "RESULT ACK NEXT 2 ERROR 0 SPENT 0",
+      "actual_wait_clocks": 0,
+      "events": [],
+      "peer_effects": 1,
+      "outbox_next": 2,
+      "outbox_pending_bytes": 0,
+      "outbox_sha256": "c3a8a2376370f4dc25628691601f0919775aef3fa22b503b8789ffd984172cc7"
+    },
+    {
+      "name": "no-peer",
+      "result": "RESULT REJECT USB opaque operation Pending budget",
+      "actual_wait_clocks": 100000000,
+      "events": [],
+      "peer_effects": 0,
+      "outbox_next": 1,
+      "outbox_pending_bytes": 72,
+      "outbox_sha256": "66b5b36bb9bd907242ca39d85ff3a9bd607f2fdf5400f58193258e46901e5f42"
+    },
+    {
+      "name": "shared-budget",
+      "result": "RESULT REJECT USB opaque operation Pending budget",
+      "actual_wait_clocks": 100000,
+      "events": [],
+      "peer_effects": 0,
+      "outbox_next": 1,
+      "outbox_pending_bytes": 72,
+      "outbox_sha256": "66b5b36bb9bd907242ca39d85ff3a9bd607f2fdf5400f58193258e46901e5f42"
+    },
+    {
+      "name": "malformed",
+      "result": "RESULT REJECT USB malformed durable receipt retry bound: frame length",
+      "actual_wait_clocks": 200000,
+      "events": [],
+      "peer_effects": 0,
+      "outbox_next": 1,
+      "outbox_pending_bytes": 72,
+      "outbox_sha256": "66b5b36bb9bd907242ca39d85ff3a9bd607f2fdf5400f58193258e46901e5f42"
+    }
+  ],
+  "owned_children_reaped": true,
+  "verilator": {
+    "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator",
+    "sha256": "f1f41487e2a6c18e55859658df8d2e3528b76fc5c7b5a95281794ded61c7b802",
+    "version": "Verilator 5.052 2026-09-05 rev v5.052"
+  },
+  "complete_manifest_negatives": {
+    "path": "build/usb/usb-host-policy4-manifest-negatives-a2/result.json",
+    "sha256": "7f3a626a1e24fe5f4f53abb6e2936a777ad4accba6f1dbe8fb3c93f8776b238f"
+  },
+  "shared_response_budget_and_error_precedence": {
+    "path": "build/usb/usb-host-pending4-shared-reply-a1.log",
+    "sha256": "71afa9efafa1efa03ed08f34f199a7008228de66efadc41b8d1bcf09bc9bfb4b"
+  },
+  "session_host_regression": {
+    "log": {
+      "path": "build/usb/usb-host-policy4-session-regression-a1.log",
+      "sha256": "bf245c33471f94b3835417bbf62138bb75c0909127193f505f2cb70d216a289c"
+    },
+    "tests": 46,
+    "status": "PASS",
+    "seconds": 1.235
+  },
+  "original_policy3_restart_question": {
+    "path": "build/usb/usb-host-restart-window-a2/result.json",
+    "sha256": "b964941ecb9c6a682b25296571c61050f59d254f058e46d26049b1c08afc8eca"
+  },
+  "original_failures": [
+    {
+      "path": "build/usb/usb-host-pending4-properties-a5/run.log",
+      "reason": "malformed fixture swallowed actual backing replacement; first four per-case observations retained"
+    },
+    {
+      "path": "build/usb/usb-host-policy4-manifest-negatives-a1/result.json",
+      "reason": "wrong rejection cause due missing cloned object inventory"
+    },
+    {
+      "path": "build/usb/usb-host-pending4-properties-a7/result.json",
+      "reason": "Verilator absent; ordinary shell correctly rejected"
+    },
+    {
+      "path": "build/usb/usb-host-pending4-properties-a8/result.json",
+      "reason": "Verilator absent in default Lean shell; explicit immutable tool supplied in a9"
+    }
+  ],
+  "unqualified": [
+    "policy4 ordinary RV64 Save/lost-ACK/cold workflow",
+    "USB PHY/bit stuffing/NRZI/full USB conformance",
+    "authenticated companion and general live private-peer continuation"
+  ],
+  "commands": {
+    "build": "./scripts/lemmasim usb-pending build --legacy-prepared build/usb/host-pending-policy3-a1/prepared.json --output-dir build/usb/host-pending-policy4-NEW",
+    "qualify": "nix develop --no-write-lock-file --command python3 scripts/check_usb_pending.py --prepared build/usb/host-pending-policy4-NEW/prepared.json --verilator /nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator --work-dir build/usb/usb-host-pending4-properties-NEW",
+    "session": "Pass --usb-host-prepared build/usb/host-pending-policy4-NEW/prepared.json to the existing explicit USB6/USB8 native session; all peer/socket/private-outbox flags remain required"
+  }
+}

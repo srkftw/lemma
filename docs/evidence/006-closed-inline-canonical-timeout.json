@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "status": "FAIL",
+  "scope": "source-bound canonical0.3 actual cold Ready diagnostic; unchanged predeclared resource ceiling exceeded, no Ready/panel/Save qualification",
+  "guest": "7c30b8af07ab9a6bc937c8a7caf5891abaa1259379ad6897d51f713f48f011e4",
+  "runtime": "44442fc19ba05bc6ff315116fcad84421e1d851464cb080267da3409982c10b9",
+  "snapshot_identity": "255030a218bf67acc26a5807e1b3eb8ab97ff2d768501df0d037775e50abf90e",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "bound": {
+    "cycles": 2000000000,
+    "host_seconds": 7200,
+    "classification": "predeclared retained diagnostic resource ceilings, not independently proved whole-boot WCET; timeout remains FAIL"
+  },
+  "observed": {
+    "host_seconds": 7201.878504399036,
+    "target_cycles": 1948000000,
+    "retired": 1051214445,
+    "traps": 34779,
+    "timer_traps": 4418,
+    "guest_uploaded_pixels": 3148992,
+    "framebuffer_pixels": 3630000,
+    "upload_fraction": 0.8674909090909091,
+    "panel_sequence": 0,
+    "panel_completed": 0,
+    "flushes": 0,
+    "media_requests": 3,
+    "hwm_kib": 148252
+  },
+  "error": "TimeoutError('predeclared campaign host deadline exceeded')",
+  "checkpoint": {
+    "path": "build/silicon/task006-closed-inline-canonical-a1/failed-boundary-checkpoint/machine.chk",
+    "sha256": "e6fdca6564c63b80b4df9c7cc7671f2f0630be68054c96c38b7ae9704f028cf7",
+    "scope": "observational exact old-runtime continuation; not cold recovery"
+  },
+  "inputs": [
+    {
+      "path": "build/silicon/task006-closed-inline-canonical-a1/plan.json",
+      "sha256": "130c31b6889f2de3958797269f5da22dc02a0075ef3228619115f2823757f3d6"
+    },
+    {
+      "path": "build/silicon/task006-closed-inline-canonical-a1/cold/result.json",
+      "sha256": "240a4e0326c3b56423ac262db17b64989f94afbeb263b4d513b7ec6383766dfd"
+    },
+    {
+      "path": "build/silicon/task006-closed-inline-canonical-a1/cold/reaped.json",
+      "sha256": "14a1a271d7ac27d4b33c295c05379b2068ffd97427f17eb2feb65cff095dcf33"
+    },
+    {
+      "path": "build/silicon/task006-closed-inline-canonical-a1/cold/samples.jsonl",
+      "sha256": "e72936d1de26e92878b2e5046fa80069ee211a5074717d77286da728b480610b"
+    },
+    {
+      "path": "build/silicon/task006-closed-inline-canonical-a1/polling-phase-observation.json",
+      "sha256": "b3c8f2cf6a907b0f4244741cda8462592717f444e2e70a04cd14c562b8169378"
+    }
+  ],
+  "reaped": {
+    "157747": true,
+    "157928": true
+  },
+  "remaining": "Guest upload work unfinished; expected full pixels and scenarioA connected acceptance remain open. New IPC/User2 word changes not consumed by this preserved run."
+}

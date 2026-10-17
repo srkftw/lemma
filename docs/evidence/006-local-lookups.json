@@ -1,0 +1,118 @@
+{
+  "schema": "lemma-local-lookup-evidence-v1",
+  "result": "PASS_SOURCE_ACTIONS_CHECKED_LLVM_AND_RV64_OBJECT",
+  "scope": "maintained source-local checked frame/row lookup; independent host Action semantics and genuinely compiled RV64 object; full guest/RTL performance remains separate",
+  "source_context": "d585386 plus these scoped Kernel edits; root managed compiler fixture identity captured before next root BLE batch",
+  "contract": "004-owned-memory-v1 unchanged functional behavior",
+  "qualification": {
+    "resolve": "all9728 indices for512/1024/8192 pools; invalid configuration, owner/handle/generation edges, all256 status values and each first read failure; exact status/value/read address/prefix",
+    "row": "all256 eight-row match patterns including every duplicate; all256 read statuses; six physical regions, alignment/interval/wrap/ordinal edges; exact duplicate-versus-error priority, status/value/read address/prefix",
+    "actual_observer": "Frames.resolve imported directly; private findRowBlockStep alias resolves the actual imported declaration; independent reference definitions use the historical source forms",
+    "regressions": "allocator allocation choice/quota/generation/zero/rollback/retention; full UserCopy descriptor/registry/PTE/permissions/duplicate/preflight; Task.capture origin/trackedroot/liveowner/state/stack/pins/fault prefixes"
+  },
+  "llvm": {
+    "status": "PASS",
+    "scope": "genuine checked source lowering/O2/RV64 object; static counts are not target timing",
+    "undefined_symbols": "",
+    "functions": {
+      "Lemma.Kernel.Memory.Frames.resolve": {
+        "llvm_symbol": "local_lookup_core0_action_3",
+        "body_lines": 62,
+        "static_calls": 4,
+        "volatile_loads": 2
+      },
+      "_private.Lemma.Kernel.Memory.AddressSpace.0.Lemma.Kernel.Memory.AddressSpace.findRowBlockStep": {
+        "llvm_symbol": "local_lookup_core0_action_5",
+        "body_lines": 430,
+        "static_calls": 3,
+        "volatile_loads": 11
+      },
+      "ResolveLocalReference.before": {
+        "llvm_symbol": "local_lookup_core0_action_7",
+        "body_lines": 119,
+        "static_calls": 8,
+        "volatile_loads": 2
+      },
+      "RowLocalReference.before": {
+        "llvm_symbol": "local_lookup_core0_action_8",
+        "body_lines": 656,
+        "static_calls": 8,
+        "volatile_loads": 8
+      }
+    }
+  },
+  "performance": {
+    "whole_guest_cycle_speedup": null,
+    "static_load_alternatives": "row fast body has11 static LLVM loads from jump-threaded alternatives; every successful execution still reads exactly8 words, independently compared",
+    "frame_successful_path_calls": 3,
+    "frame_fallback_calls": 1,
+    "row_successful_path_calls": 0,
+    "row_fallback_calls": 3,
+    "checked_primitives": "unchanged checked physical read lowering; source interval facts discharge guards through LLVM"
+  },
+  "checks": [
+    {
+      "command": "nix develop --no-write-lock-file --command lake build Lemma.Kernel.Memory.AddressSpace",
+      "log": "build/task006-local-lookups-build-a1.log",
+      "result": "PASS"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command env LEMMA_LOCAL_LOOKUP_OUT=build/UNUSED lake env lean tests/kernel/LocalLookups.lean",
+      "log": "build/task006-local-lookups-maintained-a1.log",
+      "result": "PASS"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command lake env lean tests/kernel/FramesScans.lean",
+      "log": "build/task006-local-lookups-frames-a1.log",
+      "result": "PASS"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command lake env lean tests/kernel/UserCopyScans.lean",
+      "log": "build/task006-local-lookups-copy-a1.log",
+      "result": "PASS"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command lake env lean tests/kernel/TrapCaptureReuse.lean",
+      "log": "build/task006-local-lookups-capture-a1.log",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 scripts/check_scaffold.py",
+      "log": "build/task006-local-lookups-scaffold-a1.log",
+      "result": "PASS metadata only"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/scaffold -v",
+      "log": "build/task006-local-lookups-scaffold-tests-a1.log",
+      "result": "PASS18 tests, metadata only"
+    }
+  ],
+  "tools": {
+    "Lean": "4.34.1",
+    "Lean_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+    "LLVM": "20.1.8"
+  },
+  "sources": {
+    "Lemma/Kernel/Memory/Frames.lean": "bd750645ae330e1ce3c0e7baa98478daffa34f8350dcd74ae6c83e55f0304df8",
+    "Lemma/Kernel/Memory/AddressSpace.lean": "f6ab1639a006fc45e914d2bc1b3a1f3999df91aa87a14dc773ad266b172fffee",
+    "tests/kernel/LocalLookups.lean": "d0dc9b79c78a7a5869ed7def47e953492ec8b24968f744314987aebd27b8e306",
+    "Lemma/Compiler/CFGLower.lean": "16192bf33a79d784b0050b26ee0b7f1f0a6b2cce79dd24d315cf6bc4eb187b38",
+    "Lemma/Core0/Frontend.lean": "89289353c0eca2765552db37def580c7cd824dd589fed866eb8a71291ee79d68",
+    "Lemma/Core0/IR.lean": "bdda7b7305301660e89b993786111d219c1773293d6e22874f2792b354648da6",
+    "Lemma/Core0/Memory.lean": "0a6fa6da74efb17f311310f656906281e8d46fb5660993566fccfce111029b1e",
+    "Lemma/Core0/Execution.lean": "1e44899ff47dacf3e5e7b1a4055cb679c954732404abec7432a5368e2f2de284",
+    "Lemma/Compiler/Lower.lean": "09b36615e1a391771894149bd85ddd11b1eb35c43e3eaa79dc850af27622697c",
+    "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+    "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d"
+  },
+  "artifacts": {
+    "build/task006-local-lookups-maintained-a1/program.opt.ll": "b00123fae9b442778779bdecc05fd5d0d4f1d319c97ab334a6ff3a946cc27fb3",
+    "build/task006-local-lookups-maintained-a1/program.s": "cffee79a28e5f530d5870a3ab872ed267a4814c2000a3d09b28722180b762560",
+    "build/task006-local-lookups-maintained-a1/symbols.txt": "b48ca67add924e5b265f3a1b9119d4bdf14e812d2b3e025bf4384e47d0a5202b",
+    "build/task006-local-lookups-maintained-a1/program.o": "a28ba502320d69f32888fe2ff6d8309bccac47a9afe36f2c68297f65f54b132c",
+    "build/task006-local-lookups-maintained-a1/inventory.json": "494d4bae1648d71375083df4006efea3a06f513127cec8226fbd7790bc816f85",
+    "build/task006-local-lookups-maintained-a1/llvm.log": "6afa4522a3e91b5f3bf10489f18f54aaf15fe675c3854a4daa745c9a179fa124",
+    "build/task006-local-lookups-maintained-a1/program.ll": "3d31fbe2574ea86262446a6de477a52725d58289ac752a6db3afa72aeb4c66c1"
+  },
+  "remaining": "No claim of canonical Ready, independent full display or connected RTL save/cold recovery. New immutable optimized a3 campaign remains running under its original diagnostic ceilings."
+}

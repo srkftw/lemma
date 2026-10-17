@@ -1,0 +1,125 @@
+{
+  "schema": "lemma-guest-wfi-timer-execution-evidence/1",
+  "status": "PARTIAL_GUEST_AND_RESET_SCOPE",
+  "contract": "docs/contracts/006-wfi-timer-execution-v1.md",
+  "producer_origin": "d64b7ab4f96c9f84b213d929b6f0404028eef1eb plus exact six new diagnostic files recorded in121-input producer archive",
+  "guest_sha256": "7a9c5ef2d972d4f468404d2544d3748e2777264095d71e923a8e730e631560ca",
+  "source_archive": "build/silicon/task006-wfi-timer-a6/consumed-source-root",
+  "source_inputs": 121,
+  "project_Lean_inputs": 45,
+  "native_runtime_sha256": "3d265e97e1ad1d0271430d51f8a051993408327f37193f18959de05f046305e2",
+  "native_snapshot_identity": "6cab32ecdc85af48e2c074fbaf8a4e046bea8c25ed5b09a09f60308ff010df11",
+  "fast_runtime_sha256": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+  "artifacts": {
+    "producer": {
+      "path": "build/silicon/task006-wfi-timer-a6/producer-result.json",
+      "sha256": "894d815baf27859af795897fef154999c1ae89aed7c213b774ebd3f280f30c11"
+    },
+    "producer_supervision": {
+      "path": "build/managed/wfi-timer-producer-plan-a6/result.json",
+      "sha256": "23db7df6dfed371f3708a91b2b1a706b40e4abaa3bcea2207b1fe518108d9f51"
+    },
+    "audit": {
+      "path": "build/silicon/task006-wfi-timer-a6/audit.json",
+      "sha256": "2386b21cac21f7d11b2a4b88008ce6cf6782140cf87935808d3555a1070ef2a7"
+    },
+    "native_original_failure": {
+      "path": "build/silicon/task006-wfi-timer-native-a3/result.json",
+      "sha256": "7ef32c063f53a07a275e438a28276ceeb1a4d0339b3a76c09561cd34753fe7e8"
+    },
+    "native_private_suffix_and_warm1_failure": {
+      "path": "build/silicon/task006-wfi-timer-native-a4/result.json",
+      "sha256": "be64f2a8688e375b8c6ec08e3dabd425cff79bec116c6406bb32744c386eb708"
+    },
+    "native_missing_cases_original_failure": {
+      "path": "build/silicon/task006-wfi-timer-native-a5/result.json",
+      "sha256": "a83b9efa92acba7fd9953cd0768b5bdce04e6bdfb45bb22cd187c7d27fe1bfb6"
+    },
+    "native_retained_observation": {
+      "path": "build/managed/wfi-timer-native-retained-observer-a1/result.json",
+      "sha256": "a8e5591cca9725e7cc93ec2e8adab579368727657d17d19d17799bd8752bfab5"
+    },
+    "fast": {
+      "path": "build/silicon/task006-wfi-timer-fast-a3/result.json",
+      "sha256": "0d4b359d98e63afa602c0be0cf58fb95f9ab81cd96ca6ac20b624c82c7cca52d"
+    },
+    "fast_supervision": {
+      "path": "build/managed/wfi-timer-fast-plan-a3/result.json",
+      "sha256": "60e583bc513ea790c3101fcd37d9fa7330de17fc304185091bae8be37c8b225b"
+    },
+    "host_tests": {
+      "path": "build/managed/wfi-timer-host-tests-a1.log",
+      "sha256": "514d5a0afc82bc77ccc04c5de3582a19f64a16d4529932a45dac3730bdc60f9b"
+    },
+    "genuine_admission": {
+      "path": "build/managed/wfi-timer-admission-a1.log",
+      "sha256": "fc505b2552117ac5c9044c7711cdbde4c0fa47c00e7678b505f5f22529d05c43"
+    }
+  },
+  "native": {
+    "actual_waiting_cut_cycles": 462000,
+    "actual_waiting_timer_fractional_phase": 2,
+    "actual_original_final_cycles": 1062000,
+    "actual_original_retired": 451421,
+    "guest_timer_traps": 4,
+    "guest_WFI_calls": 8,
+    "spurious_returns": 0,
+    "pending_S_notification_after_WFI": true,
+    "SIE_clear": true,
+    "actual_full_record_bytes": 33024,
+    "private_fork_suffix_cycles": 600000,
+    "private_fork_exact_authoritative_bytes": 145145686,
+    "fork_original_was_not_flushed_or_drained": true,
+    "reset_requested_edges": [
+      1,
+      2,
+      8,
+      17
+    ],
+    "hold_release_retention_checks": "PASS; literal peripheral initialization is distinguished from guest execution",
+    "full_guest_reboot_completion": "FAIL at each original600k window; fourth WFI pending, actual IRQcount3, MTIME60000/compare63853 (cold63852)",
+    "all_actual_CPU_instances_cycles": 4662043,
+    "original_total_CPU_cap": 5000000,
+    "retained_outputs_bytes": 1944089151,
+    "all_owned_processes_reaped": true
+  },
+  "fast": {
+    "status": "PASS_FAST_GUEST_WFI_IMMEDIATE_RESET_SCOPE",
+    "virtual_ns_all_instances": 24000012,
+    "backend_and_observer_seconds": 0.5443800700595602,
+    "supervised_seconds": 2.6914727688999847,
+    "original_virtual_ns_cap": 50000000,
+    "original_host_cap": 120,
+    "original_warm_and_new_cold_guest_records": "PASS, same full33024-byte independent oracle; actual epochs1/2/1",
+    "immediate_paused_reset": "zero virtual-time advancement, full diagnostic RAM retention, actual MTIME0 and named M privilege",
+    "scope_excludes": [
+      "pipeline/bus timing parity",
+      "native held reset duration parity",
+      "arbitrary cached-state continuation",
+      "full ISA qualification",
+      "U-mode WFI/TW"
+    ]
+  },
+  "focused_host_tests": 4,
+  "genuine_profile_admission": "PASS existing kernel0.4/firmware0.1; other privilege profiles/unused operands/direct S comparator rejected",
+  "original_failures_retained": [
+    "producer a1 aggregate2GiB resource ceiling",
+    "producer a2 exporter syntax",
+    "producer a3 iterationStop admission",
+    "producer a4 checked firmwareCall ABI",
+    "producer a5 O2 readonly table audit",
+    "native a1 missing Verilator environment",
+    "native a2 wrong medium capacity",
+    "native a3 absent private fork directory after valid original guest",
+    "native a4 full guest reboot600k completion",
+    "native a5 missing struct import after actual cases; retained observer leaves all completion failures intact",
+    "fast a1 Path(str) failure before CPU",
+    "fast a2 numeric privilege observer; original guest records passed, full warm/newcold NOT_RUN"
+  ],
+  "open": [
+    "full processor/time/reset matrix",
+    "QEMU arbitrary cached-state continuation",
+    "native full warm/cold reboot completion under a source-justified changed workload",
+    "whole machine digital completeness"
+  ]
+}

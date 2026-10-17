@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "contract_version": "lemma-course-mounted-reply-table-v1",
+  "scope": "exact Await User1/course4 mount reply owner; retained original-image observer correction",
+  "status": "PASS_RETAINED_EXACT_AWAIT_SPLIT_TABLE_OBSERVER",
+  "original_whole": {
+    "result": "build/courses/task006-course-await-whole-a3/result.json",
+    "sha256": "dad80a6732d9ce467b7f78b3e166772cc1536ad16957bb10b4617c358d3b5afc",
+    "status": "FAIL",
+    "wall_seconds": 201.77579004107974,
+    "image_sha256": "3568e230e5e1ed2a7ee9415c59501c5a34b32a15caba5da52c08a5d1466831ae",
+    "source_commit": "859050754bcb1c3c8fa322d1fbf3b6570368765d",
+    "source_count": 372,
+    "source_inventory_sha256": "b26c0ccab6f2b15b08a4ca10a0894babd2c2c63ccd59feaa17c9b9614a5c7cff",
+    "source_root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-whole-a3/consumed-source-root"
+  },
+  "corrected_observer": {
+    "result": "build/courses/task006-course-await-jump-qualified-a1/result.json",
+    "sha256": "e2db7aebaa5928ac182a7a39c3c2bdc275c579f32ac337d988d7914d54d71820",
+    "seconds": 128.38248416699935,
+    "original_elf_unchanged": true,
+    "source_inputs": {
+      "scripts/audit_kernel.py": "ed3d9734daa4c2afd0fbcfe592e44c7b77483353d3159c5afd2f103a1969e546",
+      "scripts/course_await_deployment.py": "4e65572637b176d246ed0cf0fccaece99b2997f950e1abfbc24f87d8268348ee",
+      "tests/courses/AwaitResult.lean": "cd0e779203ac890580ecbfee0fd16fad81069c298270ca352c3eb99d5670690d"
+    },
+    "full_ordinary_audit": {
+      "audit_sha256": "9b7322f4e9312b0a4ae376afe193d714c6779ca228f8375895656c9a59fd4a49",
+      "seconds": 115.74085327796638,
+      "status": "PASS"
+    },
+    "actual_mutants_rejected": 60,
+    "predicate_cases": 39000,
+    "predicate": {
+      "log_sha256": "a631dc6bf7325a8e42bd6d8ca6fd22e256c2a597a886f5751fc4161f44179434",
+      "returncode": 0
+    },
+    "machine_relation": {
+      "all30_machine_instructions_bound": true,
+      "holes": [
+        224,
+        225,
+        226,
+        227,
+        228,
+        229,
+        230
+      ],
+      "holes_false": true,
+      "llvm_cases": [
+        0,
+        220,
+        221,
+        222,
+        223,
+        231
+      ],
+      "separate_success": {
+        "generation_max": 9223372036854775807,
+        "generation_min": 1,
+        "mode": 1,
+        "sequence_max": 9223372036854775807,
+        "status": 0
+      },
+      "separate_timeout": {
+        "mode": 0,
+        "status": 93
+      },
+      "status_interval": [
+        220,
+        231
+      ],
+      "table_case_modes": {
+        "220": 0,
+        "221": 2,
+        "222": 0,
+        "223": 3,
+        "231": 0
+      }
+    }
+  },
+  "reproduction": [
+    [
+      "nix",
+      "develop",
+      "--no-write-lock-file",
+      "--command",
+      "env",
+      "LEAN_NUM_THREADS=2",
+      "PYTHONPYCACHEPREFIX=build/courses/task006-course-await-jump-qualified-a1/python-cache",
+      "python3",
+      "build/courses/task006-course-await-jump-qualified-a1/check.py"
+    ]
+  ],
+  "limits": {
+    "whole_notebook_image": "NOT_BUILT",
+    "cold_mountedReady_Load": "NOT_RUN",
+    "installed_Notebook_course": "NOT_RUN",
+    "CPU_mount_reply_qualification": "NOT_RUN",
+    "compiler_correctness_proof": "NOT_CLAIMED"
+  },
+  "retained_private_compiler_root_preflight": {
+    "path": "build/courses/task006-course-await-missing-notebook-a1/toolchain-root-preflight-a1.json",
+    "sha256": "76d8923cdd3ee0d028172976d6462c20430bdedce9f3831d4c80ab1d8c7f4be1",
+    "status": "FAIL_ROOT_PROBES",
+    "scope": "no target build; Nix Git fetch rejected non-repository source workroot"
+  }
+}

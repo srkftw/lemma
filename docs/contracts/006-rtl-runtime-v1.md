@@ -1,3 +1,4 @@
+<!--
 # LemmaSim reusable RTL runtime and checkpoint v1
 
 The host-only `sim/rtl/host/machine_runtime.*` owns one `Vlemma_soc`, its
@@ -139,3 +140,14 @@ file is explicitly partial. Phase counts and the ordered logical-port hash
 count source-clock beats; `drive_clocks` counts every asserted drive clock.
 These synthetic logical symbols do not establish electrophoretic response,
 voltage safety, panel compatibility or physical display timing.
+
+
+The portable/native host response calculation may return the in-range framebuffer
+address directly instead of computing its identical remainder. Active out-of-range
+addresses retain the same error/zero response; inactive out-of-range addresses
+retain the original wrapped byte. The framebuffer is always nonempty at admitted
+boundaries. This changes no latency, port value, serialized state, controller or
+guest work. Complete authoritative state and distinct implementation metadata
+remain separately checked; it adds no cross-implementation restore permission.
+
+-->

@@ -1,0 +1,100 @@
+{
+  "schema": "lemma-ci-observer-repair/2",
+  "candidate": "a735d391a752c0a22b519a08d01604dd1f799a95",
+  "run": 38425035553,
+  "actual_ci_status": "FAILURE",
+  "actual_jobs": {
+    "passed": 8,
+    "failed": 2,
+    "total": 10
+  },
+  "host_failure": {
+    "job": 115392074918,
+    "step": 12,
+    "error": "ExecutionIdentity.lean missing Lemma.Services.Arithmetic.ClientV2.olean",
+    "later_host_suites": "SKIPPED; not qualified",
+    "repair": "Add exact ClientV2 target to existing bounded explicit Lake prerequisite step",
+    "observations": [
+      "Real lake build ClientV2 completed successfully,23jobs",
+      "ExecutionIdentity actual host Actions and genuine checked LLVM fixture PASS after explicit build",
+      "13 workflow host regressions PASS"
+    ],
+    "source_scope": "Shared workspace including current String-v0.6 compiler hooks; exact fixture dependencies below, not a clean candidate CI run"
+  },
+  "architecture_failure": {
+    "job": 115392074905,
+    "error": "architecture diagnostic source identities differ from the genuine kernel unit",
+    "diagnosis": "Old observer required AddressSpace.context; genuine current Task.capture carries freshly checked AddressSpace.base through private contextAt",
+    "repair": "Require exact base source/gate only with genuine normalized contextAt; otherwise retain historical context obligation",
+    "actual_ci_artifact_id": 11827979453,
+    "observations": [
+      "Original observer FAIL independently reproduced against exact CI artifact",
+      "Recomputed diagnostics from actual CI preoptimization LLVM and genuine unit equal original audit exactly",
+      "Corrected observer admits exact diagnostic; changed protected/checked/source-symbol mutants all reject",
+      "12 architecture checker host tests PASS, including rejecting old receipt with new closure"
+    ],
+    "scope": "Diagnostic source/gate qualification only; original matrix remains FAILURE until fresh candidate CI executes all cases"
+  },
+  "references": [
+    {
+      "path": "build/ci/task006-a735d39-diagnosis-a1/115392074918.log",
+      "bytes": 228820,
+      "sha256": "68aee8d925015640b339550cc2a0183a75e2813db507708cf324c98c6be102bc"
+    },
+    {
+      "path": "build/ci/task006-a735d39-diagnosis-a1/115392074905.log",
+      "bytes": 97909,
+      "sha256": "06c314ca76de6a128f2518bdff9488d47fee00d823fa4a5ab82f7b3a34abcca0"
+    },
+    {
+      "path": "build/ci/task006-a735d39-diagnosis-a1/architecture.zip",
+      "bytes": 17355401,
+      "sha256": "125b9f62091a6fcb0283d5b96b54fde89e3569f57cf49c99e4dd23dadfd9a26d"
+    },
+    {
+      "path": "build/ci/task006-a735d39-diagnosis-a1/original-check_kernel_architecture.py",
+      "bytes": 38199,
+      "sha256": "8b3ff64eb2464bd1a10cf31438421cd856f859d0c860263836ac9e4e2d853bce"
+    },
+    {
+      "path": "build/ci/task006-a735d39-diagnosis-a1/architecture/kernel/ci-architecture/service-halfword-ecall-development-O0/audit.json",
+      "bytes": 2286119,
+      "sha256": "332574846dbe7807e54797f764b9531f1d9d899d96e4d70be79b67e04ef082f6"
+    },
+    {
+      "path": "build/ci/task006-a735d39-diagnosis-a1/architecture/kernel/ci-architecture/service-halfword-ecall-development-O0/kernel/unit.json",
+      "bytes": 182267,
+      "sha256": "0d8237e83b50f9e164b15a39a82f40bfb51e58db037a707ad22c1c2df60324bb"
+    },
+    {
+      "path": "build/ci/task006-a735d39-diagnosis-a1/architecture/kernel/ci-architecture/service-halfword-ecall-development-O0/kernel/program.ll",
+      "bytes": 3739922,
+      "sha256": "85685cc0de8ad86250997547ecd1db735c9c287012ed6ca0ce842615bb69d983"
+    },
+    {
+      "path": "build/ci/task006-a735d39-diagnosis-a1/execution-identity-qualified.log",
+      "bytes": 314,
+      "sha256": "e7de528e27265ddca6da8f49966c10432ff3fc6cec5745d9c5f1aa8397f8b7bb"
+    }
+  ],
+  "changed_sources": {
+    ".github/workflows/core0.yml": "740254fa86b081783642bf05ceae2a5f59d0b65a07d8a13a6879727bf23c1719",
+    "scripts/check_kernel_architecture.py": "acff53ad67e8a9c6b14a12a7dfacd30cfcc6c6e62ade65121f48e3d2c5467e38",
+    "tests/kernel/test_architecture_checker.py": "b1fba1e72cb44be01469cbd096b16951d8c1e64bcceab45b64cc3d78b48cbd12",
+    "tests/foundation/test_ci_workflow.py": "96a610c87bf4cc2a9eb9da112d9e8cea06b04b53ceb44acc03e03cf9ee81beab"
+  },
+  "host_fixture_sources": {
+    "tests/mathematics/ExecutionIdentity.lean": "6aec133d4e4435de42be1bdde91d09ce66f8cb8486836371ba741e2d54e0a355",
+    "Lemma/Services/Arithmetic/ClientV2.lean": "ca1e1d71c62ccf817005e15bfdec7562ea25aafdb397eba0987795d6e9d469db",
+    "Lemma/Compiler/CFGLower.lean": "ae0a5f7a0e34f070720069e1401498a7edce446d7adf1d6e304cddbd325b1a71",
+    "Lemma/Core0/Memory.lean": "a1dea9dc37477d87cf504447bf6f841990cdaaa6ac0fba364840958dfdc99945",
+    "Lemma/Core0/IR.lean": "0a94bdd8675896e70f0b0b7aeae3aeca0d384fcef1693dcfc212e0223d2d7fc7",
+    "Lemma/Core0/Frontend.lean": "26afcb41ebae0a4253cad03a4802ce0a7550d41fbda2c80216e0492d1f5ddc96"
+  },
+  "reproduce": [
+    "python3 -m unittest discover -s tests/kernel -p test_architecture_checker.py -v",
+    "python3 -m unittest discover -s tests/foundation -p test_ci_workflow.py -v",
+    "flock build/task006-lake.lock nix develop --no-write-lock-file --command lake build Lemma.Services.Arithmetic.ClientV2",
+    "flock build/task006-lake.lock nix develop --no-write-lock-file --command lake env lean tests/mathematics/ExecutionIdentity.lean"
+  ]
+}

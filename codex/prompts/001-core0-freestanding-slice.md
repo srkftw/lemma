@@ -1,3 +1,4 @@
+<!--
 # Task 001 — A real Core0 -> LLVM -> bare-metal RV64 vertical slice
 
 Implement the first executable foundation of Lemma. Work in this repository on the
@@ -143,3 +144,5 @@ Report implemented files/features, the chosen compilation route and why, command
 actually run with their results, observed guest output, artifact/evidence locations,
 remaining limitations and the next smallest construction task. Explicitly state
 whether the first freestanding slice passed. Do not declare the entire OS or G1 done.
+
+-->

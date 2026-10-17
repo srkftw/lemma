@@ -33,6 +33,15 @@ structure SuiteLowerOptions where
   /-- Independent production objects may use a distinct checked symbol namespace.
   Empty preserves every historical symbol identity. -/
   symbolPrefix : String := ""
+  /-- Opt-in Action-suite optimization of checked zero-argument literal scalars.
+  Historical producers retain their original call boundaries by default. -/
+  inlineLiteralConstants : Bool := false
+  /-- Opt-in exact single physical-memory platform wrappers. No policy, device
+  operation, virtual-memory operation or multi-step Action qualifies. -/
+  inlinePrimitiveWrappers : Bool := false
+  /-- Opt-in User-v0.2 virtual word access wrappers only. Their complete
+  alignment, range, volatile and checked-result lowering is preserved. -/
+  inlineUserWordWrappers : Bool := false
   deriving Inhabited, Repr
 
 def validateSymbolPrefix (symbolPrefix : String) : Except String Unit := do

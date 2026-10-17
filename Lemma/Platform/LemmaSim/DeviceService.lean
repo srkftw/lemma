@@ -1,6 +1,7 @@
 import Lemma.Drivers.Paper
 import Lemma.Drivers.Pen
 import Lemma.Drivers.VirtIOBlock
+import Lemma.USB.Block
 import Lemma.Drivers.PLIC
 import Lemma.Kernel.Task
 import Lemma.Kernel.Memory.UserCopy
@@ -53,7 +54,7 @@ private def metadata (descriptor pointer bytes : UInt64) : Action :=
   .bind (Frames.resolvePurpose 1 handle 1) fun s base => if s = 0 then .done 0 (base + 1024) else fatal
   else .done s 0 else fatal
 
-private def upload (descriptor fieldsPointer pixels : UInt64) : Action :=
+private def uploadOrdinary (descriptor fieldsPointer pixels : UInt64) : Action :=
   .bind (metadata descriptor fieldsPointer 32) fun s fields => if s = 0 then
   .bind (Access.read64 fields) fun s x => if s = 0 then
   .bind (Access.read64 (fields + 8)) fun s y => if s = 0 then
@@ -65,6 +66,32 @@ private def upload (descriptor fieldsPointer pixels : UInt64) : Action :=
   .bind (UserCopy.copyFromUser descriptor pixels handle 0 (((w + 1) / 2) * h)) fun s _ =>
   if s = 0 then Lemma.Drivers.Paper.upload handle x y w h else .done s 0
   else fatal else fatal else fatal else fatal else fatal else .done s 0
+
+/-- Both buffers may share the single preflighted read page. The caller has
+excluded the descriptor scratch alias; every remaining call before reuse is
+read-only, and the paper driver is invoked only after the pixel copy finishes. -/
+private def uploadBorrowed (descriptor fieldsPointer pixels firstHandle : UInt64) : Action :=
+  .bind (UserCopy.copyFromUserReadPage descriptor fieldsPointer firstHandle 1024 32) fun s first => if s = 0 then
+  .bind (Frames.resolvePurpose 1 firstHandle 1) fun s base => if s = 0 then
+  let fields := base + 1024
+  .bind (Access.read64 fields) fun s x => if s = 0 then
+  .bind (Access.read64 (fields + 8)) fun s y => if s = 0 then
+  .bind (Access.read64 (fields + 16)) fun s w => if s = 0 then
+  .bind (Access.read64 (fields + 24)) fun s h => if s = 0 then
+  if w = 0 then .done 170 0 else if 32 < w then .done 170 0 else
+  if h = 0 then .done 170 0 else if 32 < h then .done 170 0 else
+  .bind (get 24) fun s handle => if s = 0 then
+  .bind (if handle = firstHandle then
+    UserCopy.copyFromUserReusingReadPage descriptor fieldsPointer first pixels handle 0 (((w + 1) / 2) * h)
+    else UserCopy.copyFromUser descriptor pixels handle 0 (((w + 1) / 2) * h)) fun s _ =>
+  if s = 0 then Lemma.Drivers.Paper.upload handle x y w h else .done s 0
+  else fatal else fatal else fatal else fatal else fatal else fatal else .done s 0
+
+private def upload (descriptor fieldsPointer pixels : UInt64) : Action :=
+  .bind (get 24) fun s handle => if s = 0 then
+  if handle = descriptor then uploadOrdinary descriptor fieldsPointer pixels else
+  uploadBorrowed descriptor fieldsPointer pixels handle
+  else fatal
 
 private def refresh (descriptor fieldsPointer : UInt64) : Action :=
   .bind (metadata descriptor fieldsPointer 48) fun s fields => if s = 0 then
@@ -128,6 +155,60 @@ def input (descriptor handle op pointer r0 r1 : UInt64) : Action :=
   else .bind enablePen fun s _ => if s = 0 then .done status seq else fatal
   else fatal else .done s 0 else .done 16 0
   else .done s 0 else .done 16 0
+
+private def copyUSBBlock (descriptor pointer direction : UInt64) : Action :=
+  .bind (Lemma.USB.Block.bounce) fun s bounce => if s = 0 then
+  .bind (Lemma.USB.Block.context) fun s handle => if s = 0 then
+  if direction = 0 then UserCopy.copyFromUser descriptor pointer handle 0x600 512
+  else UserCopy.copyToUser descriptor pointer handle 0x600 512
+  else fatal else .done s bounce
+
+private def usbBlockFinish (descriptor pointer : UInt64) : Action :=
+  .bind (get 48) fun s ready => if s = 0 then
+  if ready = 0 then .done Lemma.USB.Block.pending 0 else
+  .bind (get 56) fun s status => if s = 0 then
+  .bind (get 64) fun s kind => if s = 0 then
+  .bind (if status = 0 then if kind = 1 then copyUSBBlock descriptor pointer 1 else .done 0 0
+    else .done 0 0) fun s _ => if s = 0 then
+  .bind (put 48 0) fun s _ => if s = 0 then .done status.toUInt8 kind else fatal
+  else .done s 0 else fatal else fatal else fatal
+
+/-- syscall66: blockcap,op,sector,buffer512,reserved. Only store has this grant.
+op0 capacity;1 read;2 write;3 barrier;4 completion. Kernel owns the PIO
+frame and immutable transaction bytes. USB ACK only advances transport; the
+independent peer receipt completes a request. The store alone interprets successful flush as publication durability. -/
+def blockUSB (descriptor handle op sector pointer reserved : UInt64) : Action :=
+  if reserved = 0 then
+  .bind (authorize descriptor handle 16) fun s _ => if s = 0 then
+  if op = 0 then Lemma.USB.Block.capacity else
+  if op = 4 then usbBlockFinish descriptor pointer else
+  if (if op = 1 then true else if op = 2 then true else if op = 3 then true else false) = true then
+  .bind (get 48) fun s ready => if s = 0 then
+  if ready = 0 then
+  .bind (if op = 1 then UserCopy.validateWrite descriptor pointer 512 else
+    if op = 2 then copyUSBBlock descriptor pointer 0 else .done 0 0) fun s _ => if s = 0 then
+  .bind (Lemma.USB.Block.submit (if op = 1 then 0 else if op = 2 then 1 else 4) sector) fun status request =>
+  if status = 0 then
+    .bind (put 96 1) fun s _ => if s = 0 then .done Lemma.USB.Block.pending request else fatal
+  else .done status 0
+  else .done s 0 else .done 162 0 else fatal
+  else .done 16 0 else .done s 0 else .done 16 0
+
+/-- USB selection adds request bookkeeping without changing old bindings. -/
+def configureUSB (surface input block : UInt64) : Action :=
+  .bind (configure surface input block) fun s _ => if s = 0 then put 96 0 else .done s 0
+
+private def usbCompletion : Action :=
+  .bind (get 48) fun s ready => if s = 0 then
+  if ready = 1 then .done 0 0 else
+  .bind (get 96) fun s active => if s = 0 then
+  .bind Lemma.USB.Block.finish fun status kind =>
+  if status = Lemma.USB.Block.pending then .done 0 0 else
+  if active = 0 then .done 0 0 else
+  .bind (put 96 0) fun s _ => if s = 0 then
+  .bind (put 56 status.toUInt64) fun s _ => if s = 0 then
+  .bind (put 64 kind) fun s _ => if s = 0 then put 48 1 else fatal else fatal else fatal
+  else fatal else fatal
 
 private def copyBlock (descriptor pointer direction : UInt64) : Action :=
   .bind (Lemma.Drivers.VirtIOBlock.bounce) fun s bounce => if s = 0 then
@@ -204,5 +285,265 @@ def deferred : Action :=
     .bind Lemma.Drivers.Paper.completion fun s _ => if s = 0 then surfaceStatus 0 0 else fatal
   else .done 0 0
   else fatal else fatal else fatal
+
+/-- Level IRQ16 is masked before return to User and consumed in bounded policy.
+A pending opaque peer transaction never blocks unrelated pen/paper dispatch. -/
+def notificationUSB (source : UInt64) : Action :=
+  if source = 16 then Lemma.Drivers.PLIC.disableUSB else notification source
+
+def deferredUSB : Action :=
+  .bind deferred fun s _ => if s = 0 then
+  .bind usbCompletion fun s _ => if s = 0 then Lemma.Drivers.PLIC.enableUSB else fatal else fatal
+
+private def bulkValidateStep (i _ : UInt32) (acc base width height _ : UInt64) : Action :=
+  let fields := base + 32 + i.toUInt64 * 32
+  .bind (Access.read64 fields) fun s x => if s = 0 then
+  .bind (Access.read64 (fields + 8)) fun s y => if s = 0 then
+  .bind (Access.read64 (fields + 16)) fun s w => if s = 0 then
+  .bind (Access.read64 (fields + 24)) fun s h => if s = 0 then
+  if w = 0 then .done Lemma.Drivers.Paper.invalid 0 else if 32 < w then .done Lemma.Drivers.Paper.invalid 0 else
+  if h = 0 then .done Lemma.Drivers.Paper.invalid 0 else if 32 < h then .done Lemma.Drivers.Paper.invalid 0 else
+  if width < w then .done Lemma.Drivers.Paper.invalid 0 else if height < h then .done Lemma.Drivers.Paper.invalid 0 else
+  if width - w < x then .done Lemma.Drivers.Paper.invalid 0 else if height - h < y then .done Lemma.Drivers.Paper.invalid 0 else
+  .done 0 (acc + 1)
+  else fatal else fatal else fatal else fatal
+
+private def bulkUploadStep (i _ : UInt32) (acc handle base _ _ : UInt64) : Action :=
+  let fields := base + 32 + i.toUInt64 * 32
+  .bind (Access.read64 fields) fun s x => if s = 0 then
+  .bind (Access.read64 (fields + 8)) fun s y => if s = 0 then
+  .bind (Access.read64 (fields + 16)) fun s w => if s = 0 then
+  .bind (Access.read64 (fields + 24)) fun s h => if s = 0 then
+  .bind (Lemma.Drivers.Paper.uploadOffset handle (256 + i.toUInt64 * 512) x y w h) fun s _ =>
+  if s = 0 then .done 0 (acc + 1) else .done s acc
+  else fatal else fatal else fatal else fatal
+
+/-- Surface-v2 op5. The full immutable page prefix is preflighted/copied before
+validation or PIO. Every tile is validated before the first upload. Runtime
+controller failures may leave a prefix uploaded, reported as a tile count. -/
+private def uploadBulk (descriptor pointer count : UInt64) : Action :=
+  if count = 0 then .done Lemma.User.ABI.invalidArgument 0 else
+  if 7 < count then .done Lemma.User.ABI.invalidArgument 0 else
+  if pointer % 4096 = 0 then
+  .bind (get 24) fun s handle => if s = 0 then
+  if handle = descriptor then .done Lemma.User.ABI.invalidArgument 0 else
+  .bind (UserCopy.copyFromUser descriptor pointer handle 0 (256 + count * 512)) fun s _ => if s = 0 then
+  .bind (Frames.resolvePurpose 1 handle 1) fun s base => if s = 0 then
+  .bind (Access.read64 base) fun s version => if s = 0 then if version = 2 then
+  .bind (Access.read64 (base + 8)) fun s actual => if s = 0 then if actual = count then
+  .bind (Access.read64 (base + 16)) fun s reserved0 => if s = 0 then if reserved0 = 0 then
+  .bind (Access.read64 (base + 24)) fun s reserved1 => if s = 0 then if reserved1 = 0 then
+  .bind Lemma.Drivers.Paper.dimensions fun s geometry => if s = 0 then
+  .boundedFoldU64 7 bulkValidateStep count.toUInt32 0 base (geometry &&& 0xffffffff) (geometry >>> 32) 0 fun s _ => if s = 0 then
+  .boundedFoldU64 7 bulkUploadStep count.toUInt32 0 handle base 0 0 fun s uploaded => .done s uploaded
+  else .done s 0 else .done s 0 else .done Lemma.User.ABI.invalidArgument 0
+  else fatal else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else fatal else .done s 0 else fatal
+  else .done Lemma.User.ABI.invalidRange 0
+
+/-- Only a separately selected Surface-v2 dispatcher calls this entry. Legacy
+surface retains op5 rejection. Endpoint and reserved guards precede User spans. -/
+def surfaceV2 (descriptor handle op pointer count reserved : UInt64) : Action :=
+  if op = 5 then
+    if reserved = 0 then
+    .bind (authorize descriptor handle 0) fun s _ => if s = 0 then uploadBulk descriptor pointer count else .done s 0
+    else .done Lemma.User.ABI.invalidArgument 0
+  else surface descriptor handle op pointer count reserved
+
+private def uploadOrdinaryNext (descriptor fieldsPointer pixels : UInt64) : Action :=
+  .bind (metadata descriptor fieldsPointer 32) fun s fields => if s = 0 then
+  .bind (Access.read64 fields) fun s x => if s = 0 then
+  .bind (Access.read64 (fields + 8)) fun s y => if s = 0 then
+  .bind (Access.read64 (fields + 16)) fun s w => if s = 0 then
+  .bind (Access.read64 (fields + 24)) fun s h => if s = 0 then
+  if w = 0 then .done 170 0 else if 32 < w then .done 170 0 else
+  if h = 0 then .done 170 0 else if 32 < h then .done 170 0 else
+  .bind (get 24) fun s handle => if s = 0 then
+  .bind (UserCopy.copyFromUser descriptor pixels handle 0 (((w + 1) / 2) * h)) fun s _ =>
+  if s = 0 then Lemma.Drivers.Paper.uploadNext handle x y w h else .done s 0
+  else fatal else fatal else fatal else fatal else fatal else .done s 0
+
+
+private def bulkUploadStepNext (i _ : UInt32) (acc handle base _ _ : UInt64) : Action :=
+  let fields := base + 32 + i.toUInt64 * 32
+  .bind (Access.read64 fields) fun s x => if s = 0 then
+  .bind (Access.read64 (fields + 8)) fun s y => if s = 0 then
+  .bind (Access.read64 (fields + 16)) fun s w => if s = 0 then
+  .bind (Access.read64 (fields + 24)) fun s h => if s = 0 then
+  .bind (Lemma.Drivers.Paper.uploadOffsetNext handle (256 + i.toUInt64 * 512) x y w h) fun s _ =>
+  if s = 0 then .done 0 (acc + 1) else .done s acc
+  else fatal else fatal else fatal else fatal
+
+/-- Surface-v2 op5. The full immutable page prefix is preflighted/copied before
+validation or PIO. Every tile is validated before the first upload. Runtime
+controller failures may leave a prefix uploaded, reported as a tile count. -/
+private def uploadBulkNext (descriptor pointer count : UInt64) : Action :=
+  if count = 0 then .done Lemma.User.ABI.invalidArgument 0 else
+  if 7 < count then .done Lemma.User.ABI.invalidArgument 0 else
+  if pointer % 4096 = 0 then
+  .bind (get 24) fun s handle => if s = 0 then
+  if handle = descriptor then .done Lemma.User.ABI.invalidArgument 0 else
+  .bind (UserCopy.copyFromUser descriptor pointer handle 0 (256 + count * 512)) fun s _ => if s = 0 then
+  .bind (Frames.resolvePurpose 1 handle 1) fun s base => if s = 0 then
+  .bind (Access.read64 base) fun s version => if s = 0 then if version = 2 then
+  .bind (Access.read64 (base + 8)) fun s actual => if s = 0 then if actual = count then
+  .bind (Access.read64 (base + 16)) fun s reserved0 => if s = 0 then if reserved0 = 0 then
+  .bind (Access.read64 (base + 24)) fun s reserved1 => if s = 0 then if reserved1 = 0 then
+  .bind Lemma.Drivers.Paper.dimensions fun s geometry => if s = 0 then
+  .boundedFoldU64 7 bulkValidateStep count.toUInt32 0 base (geometry &&& 0xffffffff) (geometry >>> 32) 0 fun s _ => if s = 0 then
+  .boundedFoldU64 7 bulkUploadStepNext count.toUInt32 0 handle base 0 0 fun s uploaded => .done s uploaded
+  else .done s 0 else .done s 0 else .done Lemma.User.ABI.invalidArgument 0
+  else fatal else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else fatal else .done s 0 else fatal
+  else .done Lemma.User.ABI.invalidRange 0
+
+
+/-- Selected Paper-v2/Surface-v2 dispatcher. Existing surface and surfaceV2
+remain exact legacy entries. Every whole-page and ordinary upload keeps owned
+buffer and range checks; op1 uses the original full preflight path. -/
+def surfaceV2Next (descriptor handle op pointer count reserved : UInt64) : Action :=
+  if op = 5 then
+    if reserved = 0 then
+    .bind (authorize descriptor handle 0) fun s _ => if s = 0 then uploadBulkNext descriptor pointer count else .done s 0
+    else .done Lemma.User.ABI.invalidArgument 0
+  else if op = 1 then
+    if reserved = 0 then
+    .bind (authorize descriptor handle 0) fun s _ => if s = 0 then uploadOrdinaryNext descriptor pointer count else .done s 0
+    else .done Lemma.User.ABI.invalidArgument 0
+  else surface descriptor handle op pointer count reserved
+
+/-! Recovery-v1 adds only separately selected syscall/deferred roots. It uses
+the same Store-only block endpoint authority and retains the full task
+descriptor/ticket/guest recovery epoch while active. Historical blockUSB and
+deferredUSB never accept these control operations. -/
+
+def configureUSBRecovery (surface input block : UInt64) : Action :=
+  .bind (configureUSB surface input block) fun s _ => if s = 0 then
+  .bind (put 104 0) fun s _ => if s = 0 then
+  .bind (put 112 0) fun s _ => if s = 0 then
+  .bind (put 120 0) fun s _ => if s = 0 then put 128 0 else fatal else fatal else fatal else fatal
+
+/-- New-only operations5/6/7: begin(ticket,expected epoch), take(ticket,epoch),
+and read the logical guest recovery epoch. Only a matching independent opaque
+receipt can finish5/6. A new transport's host epoch is not a guest MMIO fact. -/
+def blockUSBRecovery (descriptor handle op sector pointer reserved : UInt64) : Action :=
+  if reserved = 0 then
+  .bind (authorize descriptor handle 16) fun s _ => if s = 0 then
+  if op = 7 then if sector ||| pointer = 0 then Lemma.USB.Block.recoveryEpoch else .done 16 0 else
+  .bind (get 128) fun s active => if s = 0 then
+  if op = 6 then
+    if active = 1 then
+    .bind (get 104) fun s owner => if s = 0 then
+    .bind (get 112) fun s ticket => if s = 0 then
+    .bind (get 120) fun s epoch => if s = 0 then
+    if owner = descriptor then if ticket = sector then if epoch = pointer then
+    .bind (Lemma.USB.Block.takeRecovery ticket epoch) fun status result =>
+    if status = Lemma.USB.Block.pending then .done status result else
+    .bind (put 128 0) fun s _ => if s = 0 then .done status result else fatal
+    else .done Lemma.USB.Block.recoveryInvalid 0 else .done Lemma.USB.Block.recoveryInvalid 0
+    else .done CapabilityABI.denied 0 else fatal else fatal else fatal
+    else .done Lemma.USB.Block.recoveryInvalid 0
+  else if op = 5 then
+    if active = 0 then
+    .bind (get 48) fun s ready => if s = 0 then
+    .bind (get 96) fun s submitted => if s = 0 then
+    if ready ||| submitted = 0 then
+    .bind (Lemma.USB.Block.beginRecovery sector pointer) fun status epoch =>
+    if status = Lemma.USB.Block.pending then
+    .bind (put 104 descriptor) fun s _ => if s = 0 then
+    .bind (put 112 sector) fun s _ => if s = 0 then
+    .bind (put 120 pointer) fun s _ => if s = 0 then
+    .bind (put 128 1) fun s _ => if s = 0 then .done status epoch else fatal
+    else fatal else fatal else fatal else .done status epoch
+    else .done Lemma.USB.Block.busy 0 else fatal else fatal
+    else .done Lemma.USB.Block.busy 0
+  else if active = 0 then
+    if op ≤ 4 then blockUSB descriptor handle op sector pointer reserved else .done 16 0
+  else .done Lemma.USB.Block.busy 0
+  else fatal else .done s 0 else .done 16 0
+
+private def usbCompletionRecovery : Action :=
+  .bind (get 128) fun s recovery => if s = 0 then
+  if recovery = 1 then
+    .bind Lemma.USB.Block.finishRecovery fun status _ =>
+    if status = 0 then .done 0 0 else if status = Lemma.USB.Block.pending then .done 0 0 else
+    .bind Lemma.USB.Block.recoveryState fun s phase => if s = 0 then
+    if phase = 7 then .done 0 0 else fatal else fatal
+  else
+  .bind (get 48) fun s ready => if s = 0 then
+  if ready = 1 then .done 0 0 else
+  .bind (get 96) fun s active => if s = 0 then
+  .bind Lemma.USB.Block.finishRecovery fun status kind =>
+  if status = Lemma.USB.Block.pending then .done 0 0 else
+  if active = 0 then .done 0 0 else
+  .bind (put 96 0) fun s _ => if s = 0 then
+  .bind (put 56 status.toUInt64) fun s _ => if s = 0 then
+  .bind (put 64 kind) fun s _ => if s = 0 then put 48 1 else fatal else fatal else fatal
+  else fatal else fatal else fatal
+
+def deferredUSBRecovery : Action :=
+  .bind deferred fun s _ => if s = 0 then
+  .bind usbCompletionRecovery fun s _ => if s = 0 then Lemma.Drivers.PLIC.enableUSB else fatal else fatal
+
+
+/-- The descriptor base comes only from the freshly captured context in the
+same nonpreemptible dispatch. Capability/object/header/rights checks remain
+fresh; only the duplicate whole AS structural scan is borrowed. -/
+private def authorizeAt (descriptor descriptorBase handle offset : UInt64) : Action :=
+  .bind (Capability.lookupAt descriptor descriptorBase handle CapabilityABI.endpointType
+    CapabilityABI.endpointCall) fun s key =>
+  if s = 0 then
+  .bind (get offset) fun s expected => if s = 0 then
+  if key = expected then .done 0 key else .done CapabilityABI.denied 0
+  else fatal else .done s 0
+
+private def bulkUploadStepAt (i _ : UInt32) (acc handle base _ _ : UInt64) : Action :=
+  let fields := base + 32 + i.toUInt64 * 32
+  .bind (Access.read64 fields) fun s x => if s = 0 then
+  .bind (Access.read64 (fields + 8)) fun s y => if s = 0 then
+  .bind (Access.read64 (fields + 16)) fun s w => if s = 0 then
+  .bind (Access.read64 (fields + 24)) fun s h => if s = 0 then
+  .bind (Lemma.Drivers.Paper.uploadOffsetAt handle (256 + i.toUInt64 * 512) x y w h) fun s _ =>
+  if s = 0 then .done 0 (acc + 1) else .done s acc
+  else fatal else fatal else fatal else fatal
+
+private def uploadBulkAt (descriptor descriptorBase pointer count : UInt64) : Action :=
+  if count = 0 then .done Lemma.User.ABI.invalidArgument 0 else
+  if 7 < count then .done Lemma.User.ABI.invalidArgument 0 else
+  if pointer % 4096 = 0 then
+  .bind (get 24) fun s handle => if s = 0 then
+  if handle = descriptor then .done Lemma.User.ABI.invalidArgument 0 else
+  .bind (UserCopy.copyFromUserAt descriptorBase pointer handle 0 (256 + count * 512)) fun s _ => if s = 0 then
+  .bind (Frames.resolvePurpose 1 handle 1) fun s base => if s = 0 then
+  .bind (Access.read64 base) fun s version => if s = 0 then if version = 2 then
+  .bind (Access.read64 (base + 8)) fun s actual => if s = 0 then if actual = count then
+  .bind (Access.read64 (base + 16)) fun s reserved0 => if s = 0 then if reserved0 = 0 then
+  .bind (Access.read64 (base + 24)) fun s reserved1 => if s = 0 then if reserved1 = 0 then
+  .bind Lemma.Drivers.Paper.dimensions fun s geometry => if s = 0 then
+  .boundedFoldU64 7 bulkValidateStep count.toUInt32 0 base (geometry &&& 0xffffffff) (geometry >>> 32) 0 fun s _ => if s = 0 then
+  .boundedFoldU64 7 bulkUploadStepAt count.toUInt32 0 base base 0 0 fun s uploaded => .done s uploaded
+  else .done s 0 else .done s 0 else .done Lemma.User.ABI.invalidArgument 0
+  else fatal else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else fatal else .done s 0 else fatal
+  else .done Lemma.User.ABI.invalidRange 0
+
+
+/-- Kernel-only borrowed Surface-v2 op5. Reserved/error order is unchanged.
+No schedule, descriptor/cap/frame mutation or overlapping DMA may intervene
+between checked capture and this private caller chain. Legacy entrypoints
+keep their complete independent admission and do not accept arbitrary bases. -/
+def surfaceV2At (descriptor descriptorBase handle op pointer count reserved : UInt64) : Action :=
+  if op = 5 then
+    if reserved = 0 then
+    .bind (authorizeAt descriptor descriptorBase handle 0) fun s _ =>
+    if s = 0 then uploadBulkAt descriptor descriptorBase pointer count else .done s 0
+    else .done Lemma.User.ABI.invalidArgument 0
+  else surface descriptor handle op pointer count reserved
 
 end Lemma.Platform.LemmaSim.DeviceService

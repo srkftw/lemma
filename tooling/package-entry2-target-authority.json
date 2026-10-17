@@ -1,0 +1,151 @@
+{
+  "schema": "lemma-package-clocked-entry2-target/1",
+  "predecessors": {
+    "package-companion-target-authority.json": "7a212c0d06254d1944dd44f000863db8f80fffff07c156e311b617f6045bee95",
+    "companion-number-pad-target-authority.json": "ba44cb4d3c1231fef40073f5a8368f82d2712fbf401ed352ae25e977f3211658"
+  },
+  "roles": {
+    "firmware": {
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": "e6ab240b3259bea6ff6058bcda161dcd2546902825edde242f51be47bafd9995"
+      },
+      "pre_function_count": 18,
+      "pre_sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4",
+      "post_function_count": 18,
+      "post_sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2",
+      "function_count": 18,
+      "artifact_contract_version": "lemma-package-clocked-entry2-target/1"
+    },
+    "kernel": {
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": "c727cb4cdd46c40580dac3e383253ff76f08ea353ec795aaddbc4547fe488cc9"
+      },
+      "pre_function_count": 1286,
+      "pre_sha256": "46026840a90bbdb5a4401331b958773707e56827f45d9dda438cd1fa10d54d62",
+      "post_function_count": 1286,
+      "post_sha256": "70fd63868a5712a970776543185d588c46cb21d50005a37de805d7e2832b35a1",
+      "function_count": 1286,
+      "artifact_contract_version": "lemma-package-clocked-entry2-target/1"
+    },
+    "store": {
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": "cddc2f7725ade9fa741838ec9f7dcedc7b35cb5eb9038a30383baee32695c1de",
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": "9587756c65d5375e97fb47b973290638910d97a60e74c3de54d55abe950271d9"
+      },
+      "pre_function_count": 298,
+      "pre_sha256": "f955119df3c12a12e962496fc2e1e99194c694ceba498bdaaf9f93bb3615929b",
+      "post_function_count": 298,
+      "post_sha256": "4067ca9e6649428e703deabaf72bba606f2c59dc32e55faac4f29b7d52b9257b",
+      "function_count": 298,
+      "artifact_contract_version": "lemma-package-clocked-entry2-target/1"
+    },
+    "notebook": {
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": "2b02fce432ce2496194c4c02d2353b31186a6b9c6c3f10a746636932ee63fcbc",
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": "3eb15dbb52d0497e0af6dcbd87e82590c703e900c4919d9238e98b597ea873fa"
+      },
+      "pre_function_count": 910,
+      "pre_sha256": "0684a344bf9867d1ebf363bc6ab8be81be1d1875f4f844c731805ede73b34ba3",
+      "post_function_count": 908,
+      "post_sha256": "a2ba235da85f2dba048879491fab20580766d5c3cc3b639bb060dcf7a4ce915e",
+      "function_count": 910,
+      "package_notebook_version": 16,
+      "artifact_contract_version": "lemma-package-clocked-entry2-target/1",
+      "character_machine_sha256": "f708bdf8245fa4b9f217d3e7c7eaf283cfa340b9789f6e09c3424eaf63b306df"
+    },
+    "arithmetic": {
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": "6ba9eba907e7f91f66ee549e4264dcbc559c463a717567aa6da860aa7796e285",
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": "4930f2906f8efffeb775a34728539389be2e01f979b8720bb97e06d1776b7f63"
+      },
+      "pre_function_count": 169,
+      "pre_sha256": "922a8ac084ee0f6623a9503e0b47b6d4ebb8ca0af840ef1b23d9223c4911c081",
+      "post_function_count": 169,
+      "post_sha256": "0a0a4408d1c114f672b8a169e3e5a5f983f0f843e115f8cf0de75dd2ba8d2517",
+      "function_count": 169,
+      "artifact_contract_version": "lemma-package-clocked-entry2-target/1"
+    },
+    "course": {
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": "530bca259ae10f21ff0a531f2f8d1a7ea62361007db73e7ce7070991c34b6853",
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": "adea38a65d5aa9e5602b6fb50ec1891745c0597b96ae048ed61690fbd7a16ca3"
+      },
+      "pre_function_count": 171,
+      "pre_sha256": "dac182aa4ad54fce985e9973f32a3727dd222602adf78d71a32e0490e9167c17",
+      "post_function_count": 171,
+      "post_sha256": "fdffc01f9c1c46cb06365e1ce8d4af7e3321bde420294004cc3aed68750998a9",
+      "function_count": 171,
+      "artifact_contract_version": "lemma-package-clocked-entry2-target/1"
+    },
+    "firmware-init": {
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": "e17c1edf5e2ef896d63dccd890a31e20efbb3aa8f381ef0770dc3c20f2195138"
+      },
+      "pre_function_count": 18,
+      "pre_sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4",
+      "post_function_count": 18,
+      "post_sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2",
+      "function_count": 18,
+      "artifact_contract_version": "lemma-package-clocked-entry2-target/1"
+    },
+    "kernel-init": {
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": "8a6fbfc82d6f262e6e030101f58474cf7dfef6c4a13fe46c75f06084259b79d3"
+      },
+      "pre_function_count": 1286,
+      "pre_sha256": "aa73f49fb515851ce2d94f6ab5f60260dd4f9e69a3a6f46bbf0b131d01bc149c",
+      "post_function_count": 1286,
+      "post_sha256": "9d731db22c06530e241a8b8d5cefd2c1f91ea448307580a0e4f60c7c169ac420",
+      "function_count": 1286,
+      "artifact_contract_version": "lemma-package-clocked-entry2-target/1"
+    }
+  },
+  "shared_kernel_predecessor_comparison": [
+    {
+      "configuration": "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook",
+      "common_unchanged_pre_functions": 1279,
+      "removed_functions": [
+        "Lemma.Kernel.Scheduler.enter",
+        "Lemma.Kernel.Scheduler.step",
+        "Lemma.Kernel.Task.context",
+        "Lemma.Platform.LemmaSim.NotebookKernel.bootPackageRecovery",
+        "Lemma.Platform.LemmaSim.NotebookKernel.recoveryStep",
+        "Lemma.Platform.LemmaSim.NotebookKernel.recoveryUSBStep",
+        "Lemma.Platform.LemmaSim.NotebookKernel.siliconUSBPackageRecoveryBoot",
+        "Lemma.Platform.LemmaSim.PowerControl.step"
+      ],
+      "added_functions": [
+        "Lemma.Kernel.Scheduler.entryV2",
+        "Lemma.Kernel.Scheduler.stepEntryV2",
+        "Lemma.Kernel.Task.entryContextV2",
+        "Lemma.Kernel.Task.entryDispatchesV2",
+        "Lemma.Platform.LemmaSim.NotebookKernel.bootPackageRecoveryEntry2",
+        "Lemma.Platform.LemmaSim.NotebookKernel.packageRecoveryEntry2Step",
+        "Lemma.Platform.LemmaSim.NotebookKernel.siliconUSBPackageRecoveryEntry2Boot"
+      ]
+    },
+    {
+      "configuration": "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize",
+      "common_unchanged_pre_functions": 1279,
+      "removed_functions": [
+        "Lemma.Kernel.Scheduler.enter",
+        "Lemma.Kernel.Scheduler.step",
+        "Lemma.Kernel.Task.context",
+        "Lemma.Platform.LemmaSim.NotebookKernel.bootPackageRecovery",
+        "Lemma.Platform.LemmaSim.NotebookKernel.recoveryStep",
+        "Lemma.Platform.LemmaSim.NotebookKernel.recoveryUSBStep",
+        "Lemma.Platform.LemmaSim.NotebookKernel.siliconUSBPackageRecoveryInitializeMedium",
+        "Lemma.Platform.LemmaSim.PowerControl.step"
+      ],
+      "added_functions": [
+        "Lemma.Kernel.Scheduler.entryV2",
+        "Lemma.Kernel.Scheduler.stepEntryV2",
+        "Lemma.Kernel.Task.entryContextV2",
+        "Lemma.Kernel.Task.entryDispatchesV2",
+        "Lemma.Platform.LemmaSim.NotebookKernel.bootPackageRecoveryEntry2",
+        "Lemma.Platform.LemmaSim.NotebookKernel.packageRecoveryEntry2Step",
+        "Lemma.Platform.LemmaSim.NotebookKernel.siliconUSBPackageRecoveryEntry2InitializeMedium"
+      ]
+    }
+  ]
+}

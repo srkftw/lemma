@@ -1,3 +1,4 @@
+<!--
 # Evidence
 
 The scaffold commit contains no target-execution evidence. Task 001's bounded scalar
@@ -29,3 +30,5 @@ remain open; implementation and report-bearing identities stay separate.
 
 Use `templates/EVIDENCE_REPORT.md` as a reporting structure. Never rename scaffold
 metadata tests to imply that the freestanding image booted.
+
+-->

@@ -1,0 +1,291 @@
+{
+  "schema": "lemma-kernel-pool-read-refinement/1",
+  "configurations": {
+    "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": {
+      "predecessor_authority": "package-entry2-target-authority.json",
+      "predecessor_authority_sha256": "ac57b94268a6e47a11f351c7421593dee21cdc570b64e5c933a5f257feea0ab2",
+      "role_key": "kernel-init",
+      "cohort": "pool-read1",
+      "previous_role_sha256": "81698b0e63a8bd7a46ee92ae55eb41c1d1d4e234c276377910c073693c07e99e",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize": "24c1c0b98db8af6cea412473f17fd4dc9d116da2dbd9f2c037269f2cb175cda4"
+        },
+        "pre_function_count": 1288,
+        "pre_sha256": "4d2b8037beb09e4c8aa5af55631bfcfac65337c53b7cf7c4d31e90d96d3e2bcb",
+        "post_function_count": 1288,
+        "post_sha256": "6ef905fa47366d736ba38a42402e18ac65fceecc4a4ef0920c6924c9f6f48adb",
+        "function_count": 1288,
+        "artifact_contract_version": "lemma-package-clocked-entry2-target/1",
+        "catalog_sha256": "24c1c0b98db8af6cea412473f17fd4dc9d116da2dbd9f2c037269f2cb175cda4"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": {
+      "predecessor_authority": "package-entry2-target-authority.json",
+      "predecessor_authority_sha256": "ac57b94268a6e47a11f351c7421593dee21cdc570b64e5c933a5f257feea0ab2",
+      "role_key": "kernel",
+      "cohort": "pool-read1",
+      "previous_role_sha256": "9f2fbccac303fb8480f738b9bb84d5e1720e4978771cc0d3313bf4305a984edf",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook": "1f03d9e1a913c0c6f822c62052bcb2be958f571a0aa3ed73cef5f58606169c74"
+        },
+        "pre_function_count": 1288,
+        "pre_sha256": "f4afdb0bfc4b2c9c34f60c12bcbe725da2455a43bc60e452f6255a0f93fb06c6",
+        "post_function_count": 1288,
+        "post_sha256": "94a99dae03e5b96bfbb483c0a939f12824e03363fdf08315ab840f1d724e45a3",
+        "function_count": 1288,
+        "artifact_contract_version": "lemma-package-clocked-entry2-target/1",
+        "catalog_sha256": "1f03d9e1a913c0c6f822c62052bcb2be958f571a0aa3ed73cef5f58606169c74"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize": {
+      "predecessor_authority": "companion-reader-target-authority.json",
+      "predecessor_authority_sha256": "82b4a6b4c052d19c646946ed4e54151b314360c60f64eb557d01189a45d8fd2a",
+      "role_key": "kernel-init",
+      "cohort": "pool-read1",
+      "previous_role_sha256": "8e2595c656b9571d0ba3e88cc73bf3412898343ba819752d35586b0d93f77cdf",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize": "94a58189fb1dd68a87a10d56a71ecce62a7d243150c9ae10fd699f9c0e5e87a6"
+        },
+        "pre_sha256": "4d2b8037beb09e4c8aa5af55631bfcfac65337c53b7cf7c4d31e90d96d3e2bcb",
+        "pre_function_count": 1288,
+        "function_count": 1288,
+        "post_sha256": "6ef905fa47366d736ba38a42402e18ac65fceecc4a4ef0920c6924c9f6f48adb",
+        "post_function_count": 1288,
+        "catalog_sha256": "94a58189fb1dd68a87a10d56a71ecce62a7d243150c9ae10fd699f9c0e5e87a6"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook": {
+      "predecessor_authority": "companion-reader-target-authority.json",
+      "predecessor_authority_sha256": "82b4a6b4c052d19c646946ed4e54151b314360c60f64eb557d01189a45d8fd2a",
+      "role_key": "kernel",
+      "cohort": "pool-read1",
+      "previous_role_sha256": "da81813410bf1af2b9fa51571bc36afe32d8a4113a516435630c67c49e281511",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook": "ecad20b0f203981985c3e063d0f64a67364f9f17b0f06d60f916994f7cc3d781"
+        },
+        "pre_sha256": "f4afdb0bfc4b2c9c34f60c12bcbe725da2455a43bc60e452f6255a0f93fb06c6",
+        "pre_function_count": 1288,
+        "function_count": 1288,
+        "post_sha256": "94a99dae03e5b96bfbb483c0a939f12824e03363fdf08315ab840f1d724e45a3",
+        "post_function_count": 1288,
+        "catalog_sha256": "ecad20b0f203981985c3e063d0f64a67364f9f17b0f06d60f916994f7cc3d781"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-retry-bulk-initialize": {
+      "predecessor_authority": "usb-recovery-target-authority.json",
+      "predecessor_authority_sha256": "5e1542db01b91cab56f4b2102c768573e435cd5093a5cb0879e54116db49f067",
+      "role_key": "kernel-init",
+      "cohort": "registry1-descriptor1-pool-read1",
+      "previous_role_sha256": "744c3f0bf9f1041c657d3641dc50ddd99f0daa4b27f9d60dff9f2042d7e18b71",
+      "role": {
+        "contract_version": "core0-kernel-v0.6",
+        "function_count": 1295,
+        "new_sources": [
+          "Lemma.Platform.LemmaSim.DeviceService.blockUSBRecovery",
+          "Lemma.Platform.LemmaSim.DeviceService.configureUSBRecovery",
+          "Lemma.Platform.LemmaSim.DeviceService.deferredUSBRecovery",
+          "Lemma.Platform.LemmaSim.DeviceService.usbCompletionRecovery",
+          "Lemma.Platform.LemmaSim.NotebookKernel.acceptPendingRecovery",
+          "Lemma.Platform.LemmaSim.NotebookKernel.bootRecovery",
+          "Lemma.Platform.LemmaSim.NotebookKernel.constructRecovery",
+          "Lemma.Platform.LemmaSim.NotebookKernel.deviceCallRecoveryBulk",
+          "Lemma.Platform.LemmaSim.NotebookKernel.dispatchRecoveryBulk",
+          "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBRecoveryBulk",
+          "Lemma.Platform.LemmaSim.NotebookKernel.recoveryStep",
+          "Lemma.Platform.LemmaSim.NotebookKernel.recoveryUSBStep",
+          "Lemma.Platform.LemmaSim.NotebookKernel.siliconUSBRecoveryInitializeMedium",
+          "Lemma.USB.Block.beginRecovery",
+          "Lemma.USB.Block.beginRecovery.beginAttempt",
+          "Lemma.USB.Block.finishRecovery",
+          "Lemma.USB.Block.initializeRecovery",
+          "Lemma.USB.Block.observeRecoveryReset",
+          "Lemma.USB.Block.prepareRecovery",
+          "Lemma.USB.Block.recoveryAwaitStep",
+          "Lemma.USB.Block.recoveryCheckBackup",
+          "Lemma.USB.Block.recoveryClearStep",
+          "Lemma.USB.Block.recoveryCopy",
+          "Lemma.USB.Block.recoveryEpoch",
+          "Lemma.USB.Block.recoveryFail",
+          "Lemma.USB.Block.recoveryHello",
+          "Lemma.USB.Block.recoveryInvalid",
+          "Lemma.USB.Block.recoveryMaximumAttempts",
+          "Lemma.USB.Block.recoveryProgress",
+          "Lemma.USB.Block.recoveryProgressRaw",
+          "Lemma.USB.Block.recoveryProgressRaw.proceed",
+          "Lemma.USB.Block.recoveryReceipt",
+          "Lemma.USB.Block.recoveryReceive",
+          "Lemma.USB.Block.recoveryRequestValid",
+          "Lemma.USB.Block.recoveryRestoreFrame",
+          "Lemma.USB.Block.recoverySaveFrame",
+          "Lemma.USB.Block.recoverySend",
+          "Lemma.USB.Block.recoveryState",
+          "Lemma.USB.Block.recoveryTicks",
+          "Lemma.USB.Block.takeRecovery"
+        ],
+        "post_sha256": "32b8e97deef543435b1f32bab8267efd1b1556e4a261caadd8867b5a139203ec",
+        "pre_sha256": "fda7c0b8acefbf684e25afbfeca2f48c03bedb69a7478626cc8389f9b56d16ed",
+        "catalog_sha256": "3ccaa37949285112618ff086147a1b7547a439e2459c9ba56b8a66eab95c1ece",
+        "pre_function_count": 1295,
+        "post_function_count": 1295
+      }
+    },
+    "lemmasim-silicon-usb-clocked-retry-bulk-notebook": {
+      "predecessor_authority": "usb-recovery-target-authority.json",
+      "predecessor_authority_sha256": "5e1542db01b91cab56f4b2102c768573e435cd5093a5cb0879e54116db49f067",
+      "role_key": "kernel",
+      "cohort": "registry1-descriptor1-pool-read1",
+      "previous_role_sha256": "3e1419632df13a420596e7314b11d81c527e284d88e30355cfba419d3d6444c3",
+      "role": {
+        "contract_version": "core0-kernel-v0.6",
+        "function_count": 1295,
+        "new_sources": [
+          "Lemma.Platform.LemmaSim.DeviceService.blockUSBRecovery",
+          "Lemma.Platform.LemmaSim.DeviceService.configureUSBRecovery",
+          "Lemma.Platform.LemmaSim.DeviceService.deferredUSBRecovery",
+          "Lemma.Platform.LemmaSim.DeviceService.usbCompletionRecovery",
+          "Lemma.Platform.LemmaSim.NotebookKernel.acceptPendingRecovery",
+          "Lemma.Platform.LemmaSim.NotebookKernel.bootRecovery",
+          "Lemma.Platform.LemmaSim.NotebookKernel.constructRecovery",
+          "Lemma.Platform.LemmaSim.NotebookKernel.deviceCallRecoveryBulk",
+          "Lemma.Platform.LemmaSim.NotebookKernel.dispatchRecoveryBulk",
+          "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBRecoveryBulk",
+          "Lemma.Platform.LemmaSim.NotebookKernel.recoveryStep",
+          "Lemma.Platform.LemmaSim.NotebookKernel.recoveryUSBStep",
+          "Lemma.Platform.LemmaSim.NotebookKernel.siliconUSBRecoveryBoot",
+          "Lemma.USB.Block.beginRecovery",
+          "Lemma.USB.Block.beginRecovery.beginAttempt",
+          "Lemma.USB.Block.finishRecovery",
+          "Lemma.USB.Block.initializeRecovery",
+          "Lemma.USB.Block.observeRecoveryReset",
+          "Lemma.USB.Block.prepareRecovery",
+          "Lemma.USB.Block.recoveryAwaitStep",
+          "Lemma.USB.Block.recoveryCheckBackup",
+          "Lemma.USB.Block.recoveryClearStep",
+          "Lemma.USB.Block.recoveryCopy",
+          "Lemma.USB.Block.recoveryEpoch",
+          "Lemma.USB.Block.recoveryFail",
+          "Lemma.USB.Block.recoveryHello",
+          "Lemma.USB.Block.recoveryInvalid",
+          "Lemma.USB.Block.recoveryMaximumAttempts",
+          "Lemma.USB.Block.recoveryProgress",
+          "Lemma.USB.Block.recoveryProgressRaw",
+          "Lemma.USB.Block.recoveryProgressRaw.proceed",
+          "Lemma.USB.Block.recoveryReceipt",
+          "Lemma.USB.Block.recoveryReceive",
+          "Lemma.USB.Block.recoveryRequestValid",
+          "Lemma.USB.Block.recoveryRestoreFrame",
+          "Lemma.USB.Block.recoverySaveFrame",
+          "Lemma.USB.Block.recoverySend",
+          "Lemma.USB.Block.recoveryState",
+          "Lemma.USB.Block.recoveryTicks",
+          "Lemma.USB.Block.takeRecovery"
+        ],
+        "post_sha256": "a8bfbe321c2a26af8759454637461a157b69466a608f63a6b0191e90a5dd26c9",
+        "pre_sha256": "8f79468951fcbd1c32bdc161f36744de6d43719a0c33e1c1a3523cf56d35f141",
+        "catalog_sha256": "a1dd6216bfde8aa4e3aee57c35c2a63449bbb9955739bb10dcbea34df3de802f",
+        "pre_function_count": 1295,
+        "post_function_count": 1295
+      }
+    },
+    "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": {
+      "predecessor_authority": "package-companion-target-authority.json",
+      "predecessor_authority_sha256": "7a212c0d06254d1944dd44f000863db8f80fffff07c156e311b617f6045bee95",
+      "role_key": "kernel-init",
+      "cohort": "pool-read1",
+      "previous_role_sha256": "a2c9051b382e010f181567dedbf3fc12b798efe523b16115a8d81d2f413a2947",
+      "role": {
+        "catalog_sha256": "c57402367b44e49ce99bec7da671a4e7c4a9d3ce60d417805e4aad78fe9bb0ae",
+        "function_count": 1289,
+        "post_function_count": 1289,
+        "post_sha256": "32c29b38e4ee14725e06353039dc8417031c119e02cd7620c98106e67aad3690",
+        "pre_function_count": 1289,
+        "pre_sha256": "7e1994081d3e37db1582aed4c830f116796629f72d78632a1abae11939cb24be"
+      }
+    },
+    "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": {
+      "predecessor_authority": "package-companion-target-authority.json",
+      "predecessor_authority_sha256": "7a212c0d06254d1944dd44f000863db8f80fffff07c156e311b617f6045bee95",
+      "role_key": "kernel",
+      "cohort": "pool-read1",
+      "previous_role_sha256": "10760e7a525234ac8bfd5d9b831373f426c054951afef907a70228e26d83fe27",
+      "role": {
+        "catalog_sha256": "21d957401d57a24f9296d1236e9354a212b4a53a1025835a9d3ca913c290aa6d",
+        "function_count": 1289,
+        "post_function_count": 1289,
+        "post_sha256": "3114c641139381a32191b0142fda4677454735801ce656747475bbdda50f4e6c",
+        "pre_function_count": 1289,
+        "pre_sha256": "6afbed8a540aa01d76689091ead26cdb4a08d666b7ff04e1c139d8aec5ff2070"
+      }
+    },
+    "lemmasim-silicon-product-course-reader-bulk-notebook": {
+      "predecessor_authority": "product-reader-target-authority.json",
+      "predecessor_authority_sha256": "c942768f0f2fb8cfccc40ec1ed9989916d8e6853b2952027b0b9b49c4f4382cb",
+      "role_key": "kernel",
+      "cohort": "pool-read1",
+      "previous_role_sha256": "5ae7d2cc5ecde6c7f8fb0078ca1cc3987716807f6bc1f4100a6675c1f6ebd014",
+      "role": {
+        "catalog_sha256": "62c9888d92c0aafe4b004e12683c3387166dd0c6bd0a93e0f601eeb455d1417a",
+        "pre_sha256": "c91d639f0e43b99a8ac96d8d3a36e8f3d33e25f081c5aa328beb7e1a67f867e3",
+        "pre_function_count": 1302,
+        "post_sha256": "30dc396c5c4216f686e2b7dacb014416e2dfe7aaa7eb8a08300267ab851ab4b0",
+        "post_function_count": 1302,
+        "physical_inline_token_post_sha256": "631654ec6b18f590141c85c6630a9c22aecf6efdd6913a745fd99ab89cf50402",
+        "physical_inline_helper_post_sha256": {
+          "Lemma.Kernel.Loader.validateExpandedStackAt": "b89a16b9dc8625024824f4e46265adb166e24ed9976651a8cdf2803e8e2c04ff",
+          "Lemma.Kernel.Memory.AddressSpace.base": "127224e9641e0ba8814407200a844fdd895bfa3f4a98b9245d48142885374517",
+          "Lemma.Kernel.Memory.AddressSpace.validateRegistry8192Step": "9a408d9c3e416ab39c5d607df8fbc78bfa298fb5577f9471069bbb9cf99e009f",
+          "Lemma.Kernel.Memory.AddressSpace.validateRegistryGenericStep": "6fa0e6dfdb16e54b24eedbecd389062d01920309165e7eff8bb060fa9ffd2af0",
+          "Lemma.Kernel.Memory.AddressSpace.validateRegistryStep": "4a527cdceabce934306d67de26a15ef91f5ff0b14b6f6f02d0b7c207c220e463",
+          "Lemma.Kernel.Memory.Frames.resolve": "dc6bad0a972cf3df0d9f6d01f6b2a5322d0593f8797ed1fd26f48acbc014b672",
+          "Lemma.Kernel.Memory.Frames.resolvePurpose": "c3800b7de56f567a13f39ee75ccfb3cb6a7726d3c5889a649aedce6239f1a453",
+          "Lemma.Kernel.Memory.Frames.resolveRegistry8192": "21b84b0fd31747b8df0cd38034991be2acbd9a43a46023c954b3f7fdd81fdb95",
+          "Lemma.Kernel.Memory.UserCopy.copyWord": "d108a80b03b927ca3063580cd0f3bafb55d0629330982454df1cafb4f370ecac",
+          "Lemma.Kernel.Memory.UserCopy.copyWordBlockStep": "1b8514b582913ab0586323b34d01e60382e38ca9d01f96ec151cb685856ac5c2",
+          "Lemma.Kernel.Memory.UserCopy.copyWordGenericBlockStep": "59382437e8af67d7b61d3d0adc8467030e5da37c0404b34f93da0cd0e0482a69",
+          "Lemma.Kernel.Process.validateStackAt": "67e389454db1b43e1be76fedfdbc806a735f9979f7b0b8ea13b24f92a61a569c",
+          "Lemma.Kernel.Scheduler.entryV2": "93caf0922728e2a47bf0ae3066837f61b3719a8c9473ac35b3ceff8ace4fca8d",
+          "Lemma.Kernel.Task.entryContextV2": "56a0637a62a832bb07404de6618de09a55a391a07415d7f26c85edacb8e00055",
+          "Lemma.Kernel.Task.entryDispatchesV2": "10f0ae9b9882da83b1fd01f0256a473f861c0c79bfe3dad4a0da4059d2ee9892",
+          "Lemma.Kernel.Task.findStep": "7f0b820e022d83f2bf1262822b32aac7ad54c6f478619ae9e350cce9b7f2c8f6",
+          "Lemma.Kernel.Task.table": "06055192affb6ec62f7d541c1e3d3615d1709e427bbee265b93568334c9ee1d9"
+        }
+      }
+    },
+    "lemmasim-silicon-usb-clocked-closure-retry-bulk-initialize": {
+      "predecessor_authority": "usb-closure-recovery-target-authority.json",
+      "predecessor_authority_sha256": "021439824bad5382476533b0448674c5708ab86dbbb10d55c36013a3358599cf",
+      "role_key": "kernel-init",
+      "cohort": "registry1-descriptor1-pool-read1",
+      "previous_role_sha256": "43b1b59c9682af1b01b52949422442e7a54f66c20f70a1be2021af59b35a1242",
+      "role": {
+        "contract_version": "core0-kernel-v0.6",
+        "function_count": 1295,
+        "post_sha256": "023f14cc6119b21d5acf8fbe40e60d10ec23146487e07b5f1ce29a05cda59eed",
+        "pre_sha256": "9f57f8bde00c51cf2f17e723d457e2e4ba5a56aac31b6afc7f3736880d7f1d7c",
+        "catalog_sha256": "dd8cea779ca76d65563a6455940c77e3655192a34a30130d1f651fb2d28d66e6",
+        "pre_function_count": 1295,
+        "post_function_count": 1295
+      }
+    },
+    "lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook": {
+      "predecessor_authority": "usb-closure-recovery-target-authority.json",
+      "predecessor_authority_sha256": "021439824bad5382476533b0448674c5708ab86dbbb10d55c36013a3358599cf",
+      "role_key": "kernel",
+      "cohort": "registry1-descriptor1-pool-read1",
+      "previous_role_sha256": "54ca1d2e3184e5d67eae7512d877739bc5a7eee78413843c10f4faea1a00ad92",
+      "role": {
+        "contract_version": "core0-kernel-v0.6",
+        "function_count": 1295,
+        "post_sha256": "1ba82101b4ad16ae4361d20cc68164e7853eb457bdb3117db5ce8fe800889c67",
+        "pre_sha256": "45752e0d4a6fe1414875b35d15c745e6178217b7afa60de6d6cde26cb9c385bc",
+        "catalog_sha256": "c2134a6cb840c1ab2cffa829e87934436b6547c13739098ba775a681bd745822",
+        "pre_function_count": 1295,
+        "post_function_count": 1295
+      }
+    }
+  }
+}

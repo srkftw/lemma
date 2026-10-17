@@ -1,3 +1,4 @@
+<!--
 # Guest record store v1
 
 Status: compiled Lean production library, separately linked service source and
@@ -308,3 +309,17 @@ memory/sector effect harness and export durable disk bytes. A separately written
 Python observer parses those bytes without calling the production recovery code.
 These checks are distinct from LLVM/RV64 object closure and actual kernel-device
 execution. Run identities and retained reports must keep that distinction.
+
+Aligned payload checksum reads may batch eight bytes in one little-endian word.
+Both address and length must be multiples of eight, with the existing32768-byte
+length and unsigned-overflow guards checked first. Each word lies entirely in
+the declared span and one Sv39 page. The guest applies the eight FNV-1a byte
+steps in their original order; no padding is hashed. Unaligned or partial-word
+spans retain byte reads. Empty spans perform no reads; a failed read retains its
+nonzero status and stops the fold. This changes neither v1 bytes nor publication,
+recovery, durability or authority. The focused genuine-source component command
+is `nix develop --no-write-lock-file --command python3 scripts/check_store_checksum.py --work-dir build/store-checksum-NEW --timeout 300`;
+its host effect results and RV64 object inspection are separate from whole-image
+guest execution and measured cold-boot performance.
+
+-->

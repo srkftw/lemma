@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/"scripts"))
-from check_kernel_ipc import IPCTrace,A_ORDER,require_death_order,require_ipc_binding
+from check_kernel_ipc import IPCTrace,A_ORDER,require_death_order,require_ipc_binding,digest
 from core0_common import Core0Error
 
 class IPCEvidenceTests(unittest.TestCase):
@@ -44,6 +44,33 @@ class IPCEvidenceTests(unittest.TestCase):
     def test_packet_cannot_authenticate_another_live_task(self):
         t=self.trace()
         with self.assertRaises(Core0Error):t.observe((0x231,512,19*256+16,1024,64))
+
+    def test_packet_and_payload_allow_preemption_between_console_syscalls(self):
+        t=self.trace()
+        t.current=1024
+        t.observe((0x231,1024,23*256+1,1536,256))
+        t.current=512
+        t.observe((0x231,512,19*256+2,1536,88))
+        t.observe((0x232,512,19*256+2,24,digest(19,24,0xa5)))
+        t.current=1024
+        t.observe((0x232,1024,23*256+1,192,digest(23,192,0xa5)))
+        self.assertEqual(len(t.payloads),2)
+
+    def test_payload_correlation_retains_exact_prior_packet_and_digest(self):
+        for fault in ('absent','other-request','wrong-length','wrong-digest','duplicate-payload'):
+            with self.subTest(fault=fault),self.assertRaises(Core0Error):
+                t=self.trace();t.current=1024
+                if fault!='absent':
+                    t.observe((0x231,1024,23*256+(2 if fault=='other-request' else 1),1536,
+                               88 if fault=='wrong-length' else 256))
+                row=(0x232,1024,23*256+1,192,digest(23,192,0xa5)^(1 if fault=='wrong-digest' else 0))
+                t.observe(row)
+                if fault=='duplicate-payload':t.observe(row)
+
+    def test_duplicate_packet_is_not_a_second_prior_witness(self):
+        t=self.trace()
+        t.observe((0x231,512,19*256+1,1536,256))
+        with self.assertRaises(Core0Error):t.observe((0x231,512,19*256+1,1536,256))
 
     def test_equal_rollback_snapshot_with_wrong_object_or_refcount_rejected(self):
         for event in ((0x233,512,1,7,410),(0x233,512,1,6,409)):

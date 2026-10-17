@@ -1,0 +1,146 @@
+{
+  "schema": "lemma-checked-inline-observation/1",
+  "status": "PASS_AUDIT_AND_FAST_GUEST_SEMANTICS",
+  "scope": "default-off checked call-boundary optimization; no boot deadline, full-machine or timing-parity closure",
+  "contracts": [
+    "lemma-closed-literals-v1",
+    "lemma-checked-primitive-wrapper-v1"
+  ],
+  "genuine_build": {
+    "path": "build/kernel/task006-closed-inline-notebook-a3",
+    "configuration": "lemmasim-silicon-power-notebook",
+    "source_commit": "bb71c853606ebb88f5c8b62c7cd4978798fdb179",
+    "source_was_dirty": true,
+    "consumed_source_files": 210,
+    "provenance_sha256": "08aa7057262dd4323c11fed726e4dc5ee9f1e91afbbd72c4b113bdc41a9673ca",
+    "image_sha256": "7c30b8af07ab9a6bc937c8a7caf5891abaa1259379ad6897d51f713f48f011e4",
+    "audit_sha256": "6cf0d7b7c761edf1c166ef64f49519b5542100ad58dfc16d4b66318494375338",
+    "lean_version": "4.34.1",
+    "lean_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+    "llvm_version": "20.1.8",
+    "undefined_helpers": "none; full strict freestanding artifact/stack/dependency auditPASS"
+  },
+  "static_inventory": {
+    "firmware/unit.json": {
+      "literals": {
+        "functions": 5,
+        "preIR_static_calls": 18,
+        "postIR_static_calls": 0
+      },
+      "wrappers": {
+        "functions": 0,
+        "preIR_static_calls": 0,
+        "postIR_static_calls": 0
+      }
+    },
+    "kernel/unit.json": {
+      "literals": {
+        "functions": 396,
+        "preIR_static_calls": 1877,
+        "postIR_static_calls": 0
+      },
+      "wrappers": {
+        "functions": 4,
+        "preIR_static_calls": 459,
+        "postIR_static_calls": 0
+      }
+    },
+    "users/arithmetic/unit.json": {
+      "literals": {
+        "functions": 60,
+        "preIR_static_calls": 224,
+        "postIR_static_calls": 0
+      },
+      "wrappers": {
+        "functions": 0,
+        "preIR_static_calls": 0,
+        "postIR_static_calls": 0
+      }
+    },
+    "users/notebook/unit.json": {
+      "literals": {
+        "functions": 105,
+        "preIR_static_calls": 572,
+        "postIR_static_calls": 0
+      },
+      "wrappers": {
+        "functions": 0,
+        "preIR_static_calls": 0,
+        "postIR_static_calls": 0
+      }
+    },
+    "users/store/unit.json": {
+      "literals": {
+        "functions": 66,
+        "preIR_static_calls": 278,
+        "postIR_static_calls": 0
+      },
+      "wrappers": {
+        "functions": 0,
+        "preIR_static_calls": 0,
+        "postIR_static_calls": 0
+      }
+    }
+  },
+  "checks": {
+    "genuine_source_eligibility_and_unchanged_body_ABI": "build/task006-closed-inline-source-a3.log",
+    "kernel_host_suite": {
+      "tests": 350,
+      "log": "build/task006-closed-inline-host-a1.log"
+    },
+    "negative_inline_catalog_and_guard_tests": {
+      "tests": 5,
+      "log": "build/task006-closed-inline-final-negatives-a1.log"
+    },
+    "complete_actual_object_inventory": "build/task006-closed-inline-a2-object-preflight-final.json",
+    "fast_connected_course_save_cold_failure": {
+      "status": "PASS",
+      "path": "build/task006-closed-inline-math-a2/result.json",
+      "result_sha256": "69267b2057a8cd43f476fc2c584119d60a2e6d6652c179c2605e94df99b8f5ae",
+      "qualification": "same genuine optimized RV64 guest; exact1856byte record/fullcontrollerpixels/cold and no falseSaved on failed barrier; instruction-counting fast time is not RTL timing"
+    }
+  },
+  "retained_failures": [
+    {
+      "path": "build/task006-closed-inline-notebook-a1.log",
+      "cause": "new observer incorrectly expected execution metadata returnkind checked instead of genuine word; strict complete checked Action guard/result preimages remain required"
+    },
+    {
+      "path": "build/kernel/task006-closed-inline-notebook-a2/audit.json",
+      "cause": "changed DTB75 observer input inventory; originalFAIL preserved, all actual LLVM/objects separately preflighted before one final fresha3"
+    },
+    {
+      "path": "build/task006-closed-inline-a2-object-preflight.json",
+      "cause": "new Power-v2 descriptor literal75 produced actual74entry backend table; exact independent literal domain/count/bound oracle successor added"
+    },
+    {
+      "path": "build/task006-closed-inline-math-a1/result.json",
+      "cause": "capture after durable ACK but before queued actualSaved footer; strengthened actualSaved/completion wait under unchanged originalbound, wholecold equality retained"
+    }
+  ],
+  "immutable_launch": {
+    "bundle": "build/native/task006-closed-inline-a1",
+    "bundle_sha256": "8356586b1b759f054b15466ab51f2368098ae395ed9ca27302810b8c890ba740",
+    "command": "python3 scripts/lemmasim session --backend rtl --native-bundle build/native/task006-closed-inline-a1 --disk <private-initialized-medium> --session-dir <unused-session> --headless --paused"
+  },
+  "canonical_rtl": {
+    "status": "RUNNING_NOT_READY",
+    "path": "build/silicon/task006-closed-inline-canonical-a1/cold/result.json",
+    "runtime_sha256": "44442fc19ba05bc6ff315116fcad84421e1d851464cb080267da3409982c10b9",
+    "state_identity": "255030a218bf67acc26a5807e1b3eb8ab97ff2d768501df0d037775e50abf90e",
+    "original_diagnostic_resource_ceilings": [
+      2000000000,
+      7200
+    ],
+    "same_resolution_pool_and_controller_work": true,
+    "whole_boot_WCET": "not established; terminal timeout remainsFAIL",
+    "full_pixel_oracle_plan": "build/silicon/task006-closed-inline-canonical-a1/full-display-plan.json",
+    "allocation_checkpoint": "build/silicon/task006-closed-inline-canonical-a1/allocation-phase-checkpoint",
+    "allocation_observation": "build/silicon/task006-closed-inline-canonical-a1/allocation-phase-counts.json"
+  },
+  "limitations": [
+    "Static callsites are not dynamic calls or a cycle-speedup measurement.",
+    "The canonical cold/ink/edit/Save/cold/failure workflow remains required.",
+    "Historical sources/default-off units and ownership/policy Action bodies retain their original semantics."
+  ]
+}

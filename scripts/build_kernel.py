@@ -15,9 +15,21 @@ from pathlib import Path
 import sys
 from typing import Sequence
 
+from course_deployment import CONFIGURATIONS as LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS
+from course_await_deployment import (CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS,
+                                     library_source_allowed as course_await_library_source_allowed)
+from package_closure_deployment import CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS
+from reader_deployment import CONFIGURATIONS as READER_NOTEBOOK_CONFIGURATIONS
+from product_reader_deployment import (ALL_CONFIGURATIONS as PRODUCT_READER_NOTEBOOK_CONFIGURATIONS,
+ BOOT_ROOT as PRODUCT_READER_BOOT_ROOT, DISPATCH_ROOT as PRODUCT_READER_DISPATCH_ROOT)
+from chooser_reader_deployment import CONFIGURATIONS as CHOOSER_NOTEBOOK_CONFIGURATIONS
+AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS+CHOOSER_NOTEBOOK_CONFIGURATIONS
+COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+AWAIT_NOTEBOOK_CONFIGURATIONS
+from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS, KERNEL_ENTRIES as CLOSURE_KERNEL_ENTRIES
 from build_core0 import (LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS,
                         capture_platform_dtb, prepare_output_directory)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
+from lean_export_host import command as export_command, for_source as export_host_policy, environment as export_host_environment
 
 ROLE_ROOTS = {
     "firmware": (("Lemma.Platform.RiscV.Firmware.dispatch", ("u64", "u64", "u64")),),
@@ -35,8 +47,28 @@ SERVICE_INSTRUCTION_CONFIGURATIONS = {
     "service-return-supervisor-development": "return-supervisor",
     "service-return-machine-development": "return-machine",
 }
-SILICON_MULTI_CONFIGURATIONS = ("lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
-SILICON_CONFIGURATIONS = (*SILICON_MULTI_CONFIGURATIONS, "lemmasim-silicon-devices", "lemmasim-silicon-power-probe")
+ARITHMETIC_DEVELOPMENT_CONFIGURATIONS = ('lemmasim-silicon-power-arithmetic-oom-development', 'lemmasim-silicon-power-arithmetic-fault-development', 'lemmasim-silicon-power-arithmetic-stall-development')
+MANAGED_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-managed-notebook", "lemmasim-silicon-managed-initialize")
+STRING_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-string-bulk-notebook", "lemmasim-silicon-string-bulk-initialize", "lemmasim-silicon-string-arithmetic-oom-development")
+ARRAY_NOTEBOOK_CONFIGURATIONS = LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS + COURSE_AWAIT_CONFIGURATIONS + ("lemmasim-silicon-array-bulk-notebook", "lemmasim-silicon-array-bulk-initialize", "lemmasim-silicon-array-arithmetic-oom-development")
+BYTES_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-bytes-bulk-notebook", "lemmasim-silicon-bytes-bulk-initialize", "lemmasim-silicon-bytes-arithmetic-oom-development")
+from package_companion_deployment import ALL_CONFIGURATIONS as USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS, ALL_BOOT_ROOTS as PACKAGE_RECOVERY_BOOT_ROOTS, DISPATCH_ROOT as PACKAGE_RECOVERY_DISPATCH_ROOT
+from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS
+USB_RECOVERY_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize')
+USB_CLOCKED_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize')
+USB_WIRE_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize')
+USB_NEXT_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize')
+PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-product-executed-bulk-notebook',)
+PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-product-next-bulk-notebook',)
+NEXT_NOTEBOOK_CONFIGURATIONS = USB_NEXT_NOTEBOOK_CONFIGURATIONS + PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS
+BULK_NOTEBOOK_CONFIGURATIONS = USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_WIRE_NOTEBOOK_CONFIGURATIONS + PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + NEXT_NOTEBOOK_CONFIGURATIONS + ('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize') + BYTES_NOTEBOOK_CONFIGURATIONS + ARRAY_NOTEBOOK_CONFIGURATIONS + STRING_NOTEBOOK_CONFIGURATIONS + CLOSURE_NOTEBOOK_CONFIGURATIONS
+SUMS_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-sums-notebook", "lemmasim-silicon-sums-initialize", "lemmasim-silicon-sums-arithmetic-oom-development") + tuple(x for x in BULK_NOTEBOOK_CONFIGURATIONS if x not in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + BYTES_NOTEBOOK_CONFIGURATIONS + ARRAY_NOTEBOOK_CONFIGURATIONS + STRING_NOTEBOOK_CONFIGURATIONS + CLOSURE_NOTEBOOK_CONFIGURATIONS)
+USB_NOTEBOOK_CONFIGURATIONS = USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_WIRE_NOTEBOOK_CONFIGURATIONS + USB_NEXT_NOTEBOOK_CONFIGURATIONS + ("lemmasim-silicon-usb-notebook", "lemmasim-silicon-usb-initialize", "lemmasim-silicon-usb-bulk-notebook", "lemmasim-silicon-usb-bulk-initialize")
+PRODUCT_NOTEBOOK_CONFIGURATIONS = PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS + ("lemmasim-silicon-product-notebook", "lemmasim-silicon-product-bulk-notebook")
+ARITHMETIC_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *BYTES_NOTEBOOK_CONFIGURATIONS, *ARRAY_NOTEBOOK_CONFIGURATIONS, *STRING_NOTEBOOK_CONFIGURATIONS, *CLOSURE_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS)
+SILICON_MULTI_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *BYTES_NOTEBOOK_CONFIGURATIONS, *ARRAY_NOTEBOOK_CONFIGURATIONS, *STRING_NOTEBOOK_CONFIGURATIONS, *CLOSURE_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS, *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
+WIFI_COMMON_CONFIGURATIONS = ("lemmasim-silicon-wifi-common-probe", "lemmasim-silicon-wifi-common-read-probe")
+SILICON_CONFIGURATIONS = (*SILICON_MULTI_CONFIGURATIONS, *WIFI_COMMON_CONFIGURATIONS, "lemmasim-silicon-devices", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe")
 CONFIGURATIONS = (*SILICON_CONFIGURATIONS, "lemmasim-isolation-development", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
                   "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
@@ -56,6 +88,8 @@ INDEPENDENT_IMAGE_KEYS = {"lemmasim-isolation-development": {"store", "notebook"
 INDEPENDENT_IMAGE_KEYS.update({"lemmasim-silicon-power-notebook": {"store", "notebook"}, "lemmasim-silicon-power-initialize": {"store", "notebook"}, "silicon-service-development": {"server", "cli", "peer", "busy", "fault"},
                                "lemmasim-silicon-full-notebook": {"store", "notebook"}, "lemmasim-silicon-notebook": {"store", "notebook"},
                                "lemmasim-silicon-full-initialize": {"store", "notebook"}, "lemmasim-silicon-initialize": {"store", "notebook"}})
+INDEPENDENT_IMAGE_KEYS.update({configuration: {"store", "notebook", "arithmetic"} for configuration in ARITHMETIC_CONFIGURATIONS})
+INDEPENDENT_IMAGE_KEYS.update({configuration: {"store", "notebook", "arithmetic", "course"} for configuration in COURSE_NOTEBOOK_CONFIGURATIONS})
 INDEPENDENT_IMAGE_KEYS.update({configuration: {"server", "cli", "peer", "busy", "fault"}
                                for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
 CONTRACTS = {role: f"core0-{role}-v0.1" for role in ROLE_ROOTS}
@@ -100,10 +134,44 @@ def validate_lean_source_realization(lean_lock: dict, output: str, info: object)
 def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
-    if configuration in {"lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize"}:
-        entry = {"lemmasim-silicon-power-notebook": "siliconPowerBoot", "lemmasim-silicon-power-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-full-notebook": "siliconFullBoot", "lemmasim-silicon-full-initialize": "siliconFullInitializeMedium", "lemmasim-silicon-notebook": "siliconBoot", "lemmasim-silicon-initialize": "siliconInitializeMedium", "lemmasim-initialize": "initializeMedium", "lemmasim-isolation-development": "isolationBoot"}.get(configuration, "boot")
+    if configuration in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
+        from product_reader_deployment import roots_for
+        boot, dispatch = roots_for(configuration)
+        return {"firmware": ROLE_ROOTS["firmware"], "kernel": (
+            (boot, ()), (dispatch, ("u64", "u64", "u64")))}
+    if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+        return {"firmware": ROLE_ROOTS["firmware"], "kernel": (
+            ("Lemma.Platform.LemmaSim.NotebookKernel."+PACKAGE_RECOVERY_BOOT_ROOTS[configuration], ()),
+            ("Lemma.Platform.LemmaSim.NotebookKernel."+PACKAGE_RECOVERY_DISPATCH_ROOT, ("u64", "u64", "u64")))}
+    if configuration in CLOSURE_NOTEBOOK_CONFIGURATIONS:
+        entry=CLOSURE_KERNEL_ENTRIES[configuration]
+        return {"firmware":ROLE_ROOTS["firmware"],"kernel":(
+          ("Lemma.Platform.LemmaSim.NotebookKernel."+entry,()),
+          ("Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk",("u64","u64","u64")))}
+    if configuration in {*ARITHMETIC_CONFIGURATIONS, "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize"}:
+        entry = {"lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook":"siliconUSBClosureRecoveryBoot", "lemmasim-silicon-usb-clocked-closure-retry-bulk-initialize":"siliconUSBClosureRecoveryInitializeMedium", "lemmasim-silicon-course-await-bulk-notebook":"siliconCourseAwaitBoot", "lemmasim-silicon-course-await-bulk-initialize":"siliconCourseAwaitInitializeMedium", "lemmasim-silicon-usb-clocked-retry-bulk-notebook":"siliconUSBRecoveryBoot", "lemmasim-silicon-usb-clocked-retry-bulk-initialize":"siliconUSBRecoveryInitializeMedium", "lemmasim-silicon-course-bulk-notebook":"siliconCourseBoot", "lemmasim-silicon-course-bulk-initialize":"siliconCourseInitializeMedium", "lemmasim-silicon-usb-clocked-bulk-notebook":"siliconUSBClockedBoot", "lemmasim-silicon-usb-clocked-bulk-initialize":"siliconUSBClockedInitializeMedium", "lemmasim-silicon-usb-wire-bulk-notebook":"siliconUSBWireBoot", "lemmasim-silicon-usb-wire-bulk-initialize":"siliconUSBWireInitializeMedium", "lemmasim-silicon-product-executed-bulk-notebook":"siliconProductExecutedBoot", "lemmasim-silicon-string-bulk-notebook":"siliconPowerBoot", "lemmasim-silicon-string-bulk-initialize":"siliconPowerInitializeMedium", "lemmasim-silicon-string-arithmetic-oom-development":"arithmeticOOMBoot", "lemmasim-silicon-usb-next-bulk-notebook":"siliconUSBNextBoot", "lemmasim-silicon-usb-next-bulk-initialize":"siliconUSBNextInitializeMedium", "lemmasim-silicon-product-next-bulk-notebook":"siliconProductNextBoot", "lemmasim-silicon-array-bulk-notebook": "siliconPowerBoot", "lemmasim-silicon-array-bulk-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-array-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-bytes-bulk-notebook": "siliconPowerBoot", "lemmasim-silicon-bytes-bulk-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-bytes-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-usb-bulk-notebook": "siliconUSBBoot", "lemmasim-silicon-usb-bulk-initialize": "siliconUSBInitializeMedium", "lemmasim-silicon-product-bulk-notebook": "siliconProductBoot", "lemmasim-silicon-bulk-notebook": "siliconPowerBoot", "lemmasim-silicon-bulk-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-product-notebook": "siliconProductBoot", "lemmasim-silicon-usb-notebook": "siliconUSBBoot", "lemmasim-silicon-usb-initialize": "siliconUSBInitializeMedium", "lemmasim-silicon-sums-notebook": "siliconPowerBoot", "lemmasim-silicon-sums-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-sums-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-managed-notebook": "siliconPowerBoot", "lemmasim-silicon-managed-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-power-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-power-arithmetic-fault-development": "arithmeticFaultBoot", "lemmasim-silicon-power-arithmetic-stall-development": "arithmeticStallBoot", "lemmasim-silicon-power-notebook": "siliconPowerBoot", "lemmasim-silicon-power-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-full-notebook": "siliconFullBoot", "lemmasim-silicon-full-initialize": "siliconFullInitializeMedium", "lemmasim-silicon-notebook": "siliconBoot", "lemmasim-silicon-initialize": "siliconInitializeMedium", "lemmasim-initialize": "initializeMedium", "lemmasim-isolation-development": "isolationBoot"}.get(configuration, "boot")
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": (("Lemma.Platform.LemmaSim.NotebookKernel." + entry, ()),
-                 ("Lemma.Platform.LemmaSim.NotebookKernel.dispatch", ("u64", "u64", "u64")))}
+                 ("Lemma.Platform.LemmaSim.NotebookKernel." + ("dispatchUSBClosureRecoveryBulk" if configuration in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS else "dispatchUSBRecoveryBulk" if configuration in USB_RECOVERY_NOTEBOOK_CONFIGURATIONS else "dispatchUSBClockedBulk" if configuration in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else "dispatchUSBWireBulk" if configuration in USB_WIRE_NOTEBOOK_CONFIGURATIONS else "dispatchProductExecutedBulk" if configuration in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else "dispatchUSBNextBulk" if configuration in USB_NEXT_NOTEBOOK_CONFIGURATIONS else "dispatchProductNextBulk" if configuration in PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS else "dispatchUSBBulk" if configuration in USB_NOTEBOOK_CONFIGURATIONS and configuration in BULK_NOTEBOOK_CONFIGURATIONS else "dispatchProductBulk" if configuration == "lemmasim-silicon-product-bulk-notebook" else "dispatchBulk" if configuration in BULK_NOTEBOOK_CONFIGURATIONS else "dispatchProduct" if configuration in PRODUCT_NOTEBOOK_CONFIGURATIONS else "dispatchUSB" if configuration in USB_NOTEBOOK_CONFIGURATIONS else "dispatch"), ("u64", "u64", "u64")))}
+    if configuration == "lemmasim-silicon-usb-link-probe":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.USBLink.boot", ()),
+                 ("Lemma.Platform.Silicon.Development.USBLink.dispatch", ("u64", "u64", "u64"))),
+                 "user": (("Lemma.User.DeviceWorker.main", ("u64",)),)}
+    if configuration == "lemmasim-silicon-wifi-common-read-probe":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.WiFiCommonReadProbe.boot", ()),
+                 ("Lemma.Platform.Silicon.Development.WiFiCommonReadProbe.dispatch", ("u64", "u64", "u64"))),
+                 "user": (("Lemma.User.DeviceWorker.main", ("u64",)),)}
+    if configuration == "lemmasim-silicon-wifi-common-probe":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.WiFiCommonProbe.boot", ()),
+                 ("Lemma.Platform.Silicon.Development.WiFiCommonProbe.dispatch", ("u64", "u64", "u64"))),
+                 "user": (("Lemma.User.DeviceWorker.main", ("u64",)),)}
+    if configuration == "lemmasim-silicon-ble-link-probe":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.BLELink.boot", ()),
+                 ("Lemma.Platform.Silicon.Development.BLELink.dispatch", ("u64", "u64", "u64"))),
+                 "user": (("Lemma.User.DeviceWorker.main", ("u64",)),)}
+    if configuration == "lemmasim-silicon-power-safety-probe":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.PowerSafety.boot", ()),
+                 ("Lemma.Platform.Silicon.Development.PowerSafety.dispatch", ("u64", "u64", "u64"))),
+                 "user": (("Lemma.User.DeviceWorker.main", ("u64",)),)}
     if configuration == "lemmasim-silicon-power-probe":
         return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe", ()),
                  ("Lemma.Platform.LemmaSim.NotebookKernel.dispatch", ("u64", "u64", "u64"))),
@@ -142,6 +210,16 @@ def configuration_modules(configuration: str) -> dict:
     configuration_roots(configuration)
     if configuration in MULTI_CONFIGURATIONS:
         return {"firmware": ROLE_MODULES["firmware"], "kernel": configuration_roots(configuration)["kernel"][0][0].rsplit(".", 1)[0]}
+    if configuration == "lemmasim-silicon-usb-link-probe":
+        return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.USBLink", "user": "Lemma.User.DeviceWorker"}
+    if configuration == "lemmasim-silicon-wifi-common-read-probe":
+        return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.WiFiCommonReadProbe", "user": "Lemma.User.DeviceWorker"}
+    if configuration == "lemmasim-silicon-wifi-common-probe":
+        return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.WiFiCommonProbe", "user": "Lemma.User.DeviceWorker"}
+    if configuration == "lemmasim-silicon-ble-link-probe":
+        return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.BLELink", "user": "Lemma.User.DeviceWorker"}
+    if configuration == "lemmasim-silicon-power-safety-probe":
+        return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.PowerSafety", "user": "Lemma.User.DeviceWorker"}
     if configuration == "lemmasim-silicon-power-probe":
         return {**ROLE_MODULES, "kernel": "Lemma.Platform.LemmaSim.NotebookKernel", "user": "Lemma.User.DeviceWorker"}
     if configuration == "lemmasim-silicon-devices":
@@ -160,7 +238,7 @@ def configuration_modules(configuration: str) -> dict:
 def development_role(configuration: str, role: str) -> bool:
     configuration_roots(configuration)
     return (configuration in MULTI_CONFIGURATIONS and configuration != "service-normal" and role == "kernel"
-            or configuration in {"frames-development", "lemmasim-silicon-devices"} and role == "kernel"
+            or configuration in {*WIFI_COMMON_CONFIGURATIONS, "frames-development", "lemmasim-silicon-devices", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe"} and role == "kernel"
             or configuration == "user-isolation-development" and role in {"kernel", "user"}
             or configuration == "user-syscall-development" and role == "user")
 
@@ -182,7 +260,9 @@ def configuration_development_modules(configuration: str, role: str) -> tuple[st
 
 def managed_policy(configuration: str) -> str | None:
     configuration_roots(configuration)
-    if configuration in {"lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize"}:
+    if configuration in ARITHMETIC_CONFIGURATIONS:
+        return "lemma-notebook-arithmetic-v1"
+    if configuration in { "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize"}:
         return "lemma-notebook-v1"
     if configuration in SERVICE_CONFIGURATIONS:
         return "lemma-buffer-service-v1"
@@ -208,7 +288,7 @@ def validate_configuration_stage(configuration: str, stage: str) -> None:
         raise Core0Error("unknown execution stage")
     if configuration == "machine-origin-development" and stage != "bootstrap-m":
         raise Core0Error("machine-origin-development requires bootstrap-m")
-    if configuration in {"lemmasim-silicon-power-probe", "user-isolation-development", "user-csr-development", "user-nx-development",
+    if configuration in {*WIFI_COMMON_CONFIGURATIONS, "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "user-isolation-development", "user-csr-development", "user-nx-development",
                          "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
                          *USER_INSTRUCTION_CONFIGURATIONS, *MULTI_CONFIGURATIONS} and stage != "supervisor":
         raise Core0Error("user isolation configurations require supervisor")
@@ -225,7 +305,8 @@ def user_artifact_category(configuration: str) -> str:
 
 
 def service_executable_module(module: str) -> bool:
-    return (module.startswith("Lemma.Applications.") or module == "Lemma.Services.Store.Server"
+    return (module == "Lemma.Courses.PackageInstaller" or module.startswith("Lemma.Courses.PackageInstaller.")
+            or module.startswith("Lemma.Applications.") or module == "Lemma.Services.Store.Server"
             or module.startswith("Lemma.Services.Store.Server.") or module == "Lemma.Services.Buffer.Server"
             or module.startswith("Lemma.Services.Buffer.Server.") or module == "Lemma.User.Development.BufferFault"
             or module.startswith("Lemma.User.Development.BufferFault.")
@@ -235,9 +316,14 @@ def service_executable_module(module: str) -> bool:
 
 def user_module_closure(root: Path, image: dict, configuration: str) -> dict[str, str]:
     """Selected target source only; exporter/compiler host imports are separate."""
+    course_await_library = (configuration in AWAIT_NOTEBOOK_CONFIGURATIONS
+                            and type(image.get("id")) is int and image["id"] == 1
+                            and image.get("boot_role") == "store-server"
+                            and course_await_library_source_allowed("user", "Lemma.Services.Store.Server", image))
     return module_closure(root, image["module"], allow_development=".Development." in image["module"],
                           forbid_user_privileged_imports=managed_policy(configuration) is not None,
-                          selected_executable_module=image["module"] if configuration in (*SERVICE_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize") else None)
+                          allow_course_await_library=course_await_library,
+                          selected_executable_module=image["module"] if configuration in (*SERVICE_CONFIGURATIONS, *ARITHMETIC_CONFIGURATIONS, "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize") else None)
 
 
 def source_inputs(root: Path) -> dict[str, str]:
@@ -247,7 +333,60 @@ def source_inputs(root: Path) -> dict[str, str]:
                                      "scripts/audit_memory.py", "scripts/audit_monitor.py", "scripts/audit_timer.py", "scripts/audit_trap.py",
                                      "scripts/build-kernel.sh", "scripts/audit-kernel.sh",
                                      "scripts/build_kernel.py", "scripts/audit_kernel.py", "scripts/lemmasim_readonly.py", "scripts/audit_lemmasim_capacity.py", "scripts/build_user.py", "scripts/build-user.sh")]
+    # Old immutable source archives predate this additive audit helper. Current
+    # selected optimization builds import it and fail if unavailable.
+    closed_inline = root / "scripts/closed_inline.py"
+    if closed_inline.is_file():inputs.append(closed_inline)
+    records = root / "scripts/managed_records.py"
+    if records.is_file():inputs.append(records)
+    for helper in ("surface_word_inline.py", "package_closure_deployment.py", "package_notebook_target.py","package_companion_deployment.py","package_entry2_deployment.py","package_entry2_target.py","package_companion_target.py","aligned_notebook_target.py", "control_notebook_target.py", "task_entry_borrow.py", "usb_closure_recovery_deployment.py", "usb_closure_recovery_target.py", "kernel_source_workspace.py","surface_bulk_borrow.py","usercopy_page_words.py","course_deployment.py","course_await_deployment.py","ipc_poll_borrow.py","ipc_call_borrow.py","ipc_rpc_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py", "managed_array.py", "arithmetic_array_identity.py", "managed_string.py", "arithmetic_string_identity.py", "closure_deployment.py", "managed_closure.py", "arithmetic_closure_identity.py", "paper_next.py", "paper_executed.py", "paper_wire.py", "paper_clocked.py", "usb_recovery_target.py", "wifi_common.py", "wifi_owned_read.py"):
+        additive = root / "scripts" / helper
+        if additive.is_file():inputs.append(additive)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
+    # Historical immutable source archives predate additive Power-v2. Their
+    # complete old inventories remain exact; selected 0.4 builds separately
+    # require/validate their profile through configuration_profile/generate.
+    safety_profile=root / "sim/profiles/lemma-silicon-dev-0.4.0.json"
+    if safety_profile.is_file():inputs.append(safety_profile)
+    ble_profile=root / "sim/profiles/lemma-silicon-dev-0.5.0.json"
+    if ble_profile.is_file():inputs.append(ble_profile)
+    usb_profile=root / "sim/profiles/lemma-silicon-dev-0.6.0.json"
+    if usb_profile.is_file():inputs.append(usb_profile)
+    product_profile=root / "sim/profiles/lemma-silicon-dev-0.7.0.json"
+    if product_profile.is_file():inputs.append(product_profile)
+    for number in (8,9,10,11,12,13):
+        next_profile=root / f"sim/profiles/lemma-silicon-dev-0.{number}.0.json"
+        if next_profile.is_file():inputs.append(next_profile)
+    recovery_authority=root / "tooling/usb-recovery-target-authority.json"
+    if recovery_authority.is_file():inputs.append(recovery_authority)
+    closure_recovery_authority=root / "tooling/usb-closure-recovery-target-authority.json"
+    if closure_recovery_authority.is_file():inputs.append(closure_recovery_authority)
+    common_authority=root / "tooling/wifi_common-authority.json"
+    if common_authority.is_file():inputs.append(common_authority)
+    read_authority=root / "tooling/wifi-owned-read-authority.json"
+    if read_authority.is_file():inputs.append(read_authority)
+    package_recovery_authority=root / "tooling/package-companion-target-authority.json"
+    if package_recovery_authority.is_file():inputs.append(package_recovery_authority)
+    aligned_authority=root / 'tooling/aligned-notebook-target-authority.json'
+    if aligned_authority.is_file():inputs.append(aligned_authority)
+    control_authority=root / 'tooling/control-notebook-target-authority.json'
+    if control_authority.is_file():inputs.append(control_authority)
+    for additive in ("scripts/trial_watchdog_target.py", "tooling/trial-watchdog-target-authority.json", "docs/contracts/006-trial-boot-watchdog-v1.md", "scripts/chooser_reader_deployment.py", "scripts/chooser_reader_target.py", "tooling/chooser-reader-target-authority.json", "scripts/companion_reader_deployment.py", "scripts/companion_reader_target.py", "tooling/companion-reader-target-authority.json", "docs/contracts/006-companion-course-reader-deployment-v1.md", "scripts/product_reader_deployment.py", "scripts/product_reader_target.py", "tooling/product-reader-target-authority.json", "docs/contracts/006-product-course-reader-deployment-v1.md", "scripts/reader_deployment.py", "scripts/reader_notebook_target.py", "tooling/reader-notebook-target-authority.json"):
+        path = root / additive
+        if path.is_file():inputs.append(path)
+    dirty_helper=root / 'scripts/dirty_batch_notebook_target.py'
+    if dirty_helper.is_file():inputs.append(dirty_helper)
+    dirty_authority=root / 'tooling/dirty-batch-notebook-target-authority.json'
+    if dirty_authority.is_file():inputs.append(dirty_authority)
+    export_host_policy(root)  # Missing current helper must not downgrade to a historical command.
+    for additive in ("scripts/companion_number_pad_target.py", "tooling/companion-number-pad-target-authority.json", "tooling/package-entry2-target-authority.json", "docs/contracts/006-package-entry2-deployment-v1.md"):
+        path = root / additive
+        if path.is_file():inputs.append(path)
+    for additive in ('scripts/notebook_control_backlog_target.py', 'tooling/notebook-control-backlog-target-authority.json', 'docs/contracts/006-notebook-control-backlog-v1.md', 'tooling/notebook-control-backlog-target-authority-v2.json', 'docs/contracts/006-notebook-control-backlog-v2.md', 'scripts/authored_hint_target.py', 'tooling/authored-hint-target-authority.json', 'docs/contracts/006-authored-hint-visibility-v1.md', 'tooling/authored-hint-publication-target-authority-v2.json', 'docs/contracts/006-authored-hint-publication-v2.md', 'scripts/kernel_pool_read_target.py', 'tooling/kernel-pool-read-target-authority.json', 'docs/contracts/006-kernel-pool-read-v1.md'):
+        path = root / additive
+        if path.is_file():inputs.append(path)
+    export_host = root / "scripts/lean_export_host.py"
+    if export_host.is_file():inputs.append(export_host)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 
@@ -256,7 +395,8 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
                    development_module: str | None = None,
                    development_modules: tuple[str, ...] | None = None,
                    forbid_user_privileged_imports: bool = False,
-                   selected_executable_module: str | None = None) -> dict[str, str]:
+                   selected_executable_module: str | None = None,
+                   allow_course_await_library: bool = False) -> dict[str, str]:
     import re
     if development_modules is None:
         development_modules = ((development_module or module,) if allow_development else ())
@@ -266,7 +406,17 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
     seen.add(module)
     if forbid_user_privileged_imports and module.startswith(("Lemma.Kernel.", "Lemma.Compiler.")):
         raise Core0Error(f"managed user dependency imports privileged/compiler code: {module}")
-    if selected_executable_module is not None and service_executable_module(module) and module != selected_executable_module:
+    recovery_library = (selected_executable_module == "Lemma.Services.Store.ServerRecovery" and module == "Lemma.Services.Store.Server") or (
+        selected_executable_module == "Lemma.Services.Store.ServerRecoveryAwait" and
+        module in {"Lemma.Services.Store.ServerRecovery", "Lemma.Services.Store.ServerAwait", "Lemma.Services.Store.Server"})
+    # The exact Await Store1 root borrows existing engine/dispatcher source.
+    # Full IR admission separately excludes the old executable entry bodies.
+    # The flag is derived only from the closed pair/role/root catalog above and
+    # does not authorize any other executable or privileged dependency.
+    course_await_library = (allow_course_await_library
+                            and selected_executable_module == "Lemma.Services.Store.ServerAwait"
+                            and module == "Lemma.Services.Store.Server")
+    if selected_executable_module is not None and service_executable_module(module) and module != selected_executable_module and not recovery_library and not course_await_library:
         raise Core0Error(f"user dependency imports another executable module: {module}")
     if ".Test." in module or module.startswith("Lemma.Compiler.Test") or "Mutation" in module:
         raise Core0Error(f"production dependency imports a test/mutation module: {module}")
@@ -286,7 +436,8 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
             result.update(module_closure(root, dependency, seen, allow_development=allow_development,
                                          development_modules=development_modules,
                                          forbid_user_privileged_imports=forbid_user_privileged_imports,
-                                         selected_executable_module=selected_executable_module))
+                                         selected_executable_module=selected_executable_module,
+                                         allow_course_await_library=allow_course_await_library))
     return result
 
 
@@ -301,16 +452,21 @@ def command_invoker(root: Path, output_dir: Path, tools: dict, timeout_seconds: 
     """Shared bounded command recording for boot and independent user builds."""
     def invoke(argv: Sequence[str], cwd: Path = output_dir, env: dict[str, str] | None = None) -> bytes:
         actual = [tools.get(argv[0], argv[0]), *argv[1:]]
+        host_environment = (export_host_environment(export_host_policy(root))
+                            if Path(actual[0]).name == "lake" else {})
+        recorded_environment = {"host_environment": host_environment} if host_environment else {}
+        if host_environment:
+            env = {**(os.environ if env is None else env), **host_environment}
         try:
             result = run_bounded(actual, cwd=cwd, timeout_seconds=timeout_seconds, env=env)
         except (Core0Error, OSError) as error:
             commands.append({"argv": list(actual), "cwd": str(cwd.relative_to(root)), "returncode": None,
-                             "error": str(error), "completed": False})
+                             "error": str(error), "completed": False, **recorded_environment})
             write_json(output_dir / "commands.json", commands)
             raise
         commands.append({"argv": list(actual), "cwd": str(cwd.relative_to(root)), "returncode": result.returncode,
                          "elapsed_seconds": result.elapsed_seconds,
-                         "stdout": result.stdout.decode(errors="replace"), "stderr": result.stderr.decode(errors="replace")})
+                         "stdout": result.stdout.decode(errors="replace"), "stderr": result.stderr.decode(errors="replace"), **recorded_environment})
         write_json(output_dir / "commands.json", commands)
         if result.returncode != 0:
             raise Core0Error(f"command failed ({result.returncode}): {' '.join(argv)}\n"
@@ -324,7 +480,7 @@ def export_user_catalog(root: Path, output_dir: Path, configuration: str, invoke
     consumer = output_dir / "CatalogExport.lean"
     consumer.write_text("import Lemma.Compiler.KernelExport\n\n#lemma_export_user_catalog\n")
     env = {**os.environ, "LEMMA_KERNEL_OUT": str(output_dir), "LEMMA_KERNEL_CONFIGURATION": configuration}
-    invoke(("lake", "env", "lean", str(consumer.relative_to(root))), root, env)
+    invoke(export_command(consumer.relative_to(root), source_root=root), root, env)
     return validate_user_image_catalog(load_json(output_dir / "user-image-catalog.json"))
 
 
@@ -338,7 +494,7 @@ def export_user_image(root: Path, output_dir: Path, configuration: str, image: d
     consumer.write_text(f'import {image["module"]}\nimport Lemma.Compiler.KernelExport\n\n'
                         f'#lemma_export_user_image "{image["key"]}" [{image["source"]}]\n')
     env = {**os.environ, "LEMMA_KERNEL_OUT": str(output_dir), "LEMMA_KERNEL_CONFIGURATION": configuration}
-    invoke(("lake", "env", "lean", str(consumer.relative_to(root))), root, env)
+    invoke(export_command(consumer.relative_to(root), source_root=root), root, env)
     _nonempty(directory, UNIT_FILES)
     unit = validate_unit(load_json(directory / "unit.json"), "user", configuration=configuration, image_key=image["key"])
     invoke(("opt", "-S", f"-passes={OPT_PASSES[opt_level]}", "program.ll", "-o", "program.opt.ll"), directory)
@@ -350,12 +506,12 @@ def export_user_files(root: Path, output_dir: Path, configuration: str, image: d
     consumer = output_dir / "UserFilesExport.lean"
     consumer.write_text(f'import Lemma.Compiler.KernelExport\n\n#lemma_export_user_files "{image["key"]}"\n')
     env = {**os.environ, "LEMMA_KERNEL_OUT": str(output_dir), "LEMMA_KERNEL_CONFIGURATION": configuration}
-    invoke(("lake", "env", "lean", str(consumer.relative_to(root))), root, env)
+    invoke(export_command(consumer.relative_to(root), source_root=root), root, env)
     _nonempty(output_dir / image["directory"], USER_IMAGE_FILES)
 
 
 def configuration_lemmasim(layout: dict) -> bool:
-    return layout.get("configuration") in {"lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-silicon-devices", "lemmasim-silicon-power-probe"}
+    return layout.get("configuration") in {*ARITHMETIC_CONFIGURATIONS, "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-silicon-devices", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe"}
 
 
 def link_user_image(output_dir: Path, image: dict, invoke) -> None:
@@ -363,8 +519,10 @@ def link_user_image(output_dir: Path, image: dict, invoke) -> None:
     relative = image["directory"]
     directory = output_dir / relative
     _nonempty(directory, USER_IMAGE_FILES)
+    from lemmasim_readonly import course_literal_link_options
+    literal_options = course_literal_link_options(directory)
     invoke(("clang", *STARTUP_ARGUMENTS, f"{relative}/startup.S", "-o", f"{relative}/startup.o"))
-    invoke(("ld.lld", "-m", "elf64lriscv", "--no-relax", "-T", f"{relative}/link.ld", f"-Map={relative}/image.map",
+    invoke(("ld.lld", "-m", "elf64lriscv", "--no-relax", *literal_options, "-T", f"{relative}/link.ld", f"-Map={relative}/image.map",
             f"{relative}/startup.o", f"{relative}/program.o", "-o", f"{relative}/image.elf"))
     for section, name in ((".text", "text.bin"), (".data", "data.bin")):
         invoke(("llvm-objcopy", "-O", "binary", f"--only-section={section}", f"{relative}/image.elf", f"{relative}/{name}"))
@@ -412,7 +570,7 @@ def validate_service_user_quota(layout: dict, image: dict, text_bytes: int) -> d
             "text_pages": pages, "reserved_arena_pages": reserve, "owner_quota": 32}
 
 
-def realize_toolchain(root: Path, tools: dict, invoke) -> tuple[dict, dict]:
+def realize_toolchain(root: Path, tools: dict, invoke, *, realization_dir: Path | None = None) -> tuple[dict, dict]:
     versions = {}
     expected_versions = {"lean": "4.34.1", "lake": "5.0.0-src", "opt": "20.1.8", "llc": "20.1.8",
                          "clang": "20.1.8", "ld.lld": "20.1.8", "qemu-system-riscv64": "11.1.1", "dtc": "1.8.1"}
@@ -424,7 +582,12 @@ def realize_toolchain(root: Path, tools: dict, invoke) -> tuple[dict, dict]:
     pin = load_json(root / "tooling/toolchain-lock.json")
     if not isinstance(pin, dict) or pin.get("status") != "pinned":
         raise Core0Error("toolchain lock is not pinned")
-    source_output = invoke(("nix", "build", "--no-link", "--print-out-paths", "--impure", "--expr", LEAN_SOURCE_EXPRESSION), root).decode(errors="strict")
+    if realization_dir is None:
+        expression, realization_cwd = LEAN_SOURCE_EXPRESSION, root
+    else:
+        from kernel_source_workspace import PATH_SOURCE_EXPRESSION
+        expression, realization_cwd = PATH_SOURCE_EXPRESSION, realization_dir
+    source_output = invoke(("nix", "build", "--no-link", "--print-out-paths", "--impure", "--expr", expression), realization_cwd).decode(errors="strict")
     lean_pin = pin["tools"]["lean"]
     source_info = json.loads(invoke(("nix", "path-info", "--json", lean_pin["source_path"]), root))
     source_realization = validate_lean_source_realization(lean_pin, source_output, source_info)
@@ -443,7 +606,7 @@ def realize_toolchain(root: Path, tools: dict, invoke) -> tuple[dict, dict]:
 
 
 def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstrap-m", configuration: str = "normal",
-          clean: bool = False, timeout_seconds: float = 300) -> dict[str, object]:
+          clean: bool = False, timeout_seconds: float = 300, archive_source_root: Path | None = None) -> dict[str, object]:
     try:
         output_relative = output_dir.resolve().relative_to((root / "build/kernel").resolve())
     except ValueError as error:
@@ -471,7 +634,13 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
                                             selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None)
                         for role, module in modules.items()}
         source_before = source_inputs(root)
-        versions, source_realization = realize_toolchain(root, tools, invoke)
+        workspace, realization_dir, orchestrator_before = None, None, None
+        if archive_source_root is not None:
+            from kernel_source_workspace import prepare, host_inputs
+            workspace, realization_dir = prepare(root, output_dir, archive_source_root, repo_root(), source_inputs)
+            orchestrator_before = host_inputs(repo_root(), source_inputs)
+        versions, source_realization = (realize_toolchain(root, tools, invoke) if workspace is None else
+                                       realize_toolchain(root, tools, invoke, realization_dir=realization_dir))
         images = []
         if configuration in MULTI_CONFIGURATIONS:
             invoke(("lake", "build", "Lemma.Compiler.KernelExport"), root)
@@ -489,7 +658,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
             consumer.write_text(f"import {module}\nimport Lemma.Compiler.KernelExport\n\n"
                                 f'#lemma_export_unit "{role}" [' + ", ".join(name for name, _ in roots[role]) + "]\n")
             env = {**os.environ, "LEMMA_KERNEL_OUT": str(directory), "LEMMA_KERNEL_CONFIGURATION": configuration}
-            invoke(("lake", "env", "lean", str(consumer.relative_to(root))), root, env)
+            invoke(export_command(consumer.relative_to(root), source_root=root), root, env)
             _nonempty(directory, UNIT_FILES)
             units[role] = validate_unit(load_json(directory / "unit.json"), role, configuration=configuration)
             invoke(("opt", "-S", f"-passes={OPT_PASSES[opt_level]}", "program.ll", "-o", "program.opt.ll"), directory)
@@ -500,7 +669,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
         consumer = output_dir / "BootExport.lean"
         consumer.write_text("import Lemma.Compiler.KernelExport\n\n#lemma_export_boot_files\n")
         env = {**os.environ, "LEMMA_KERNEL_OUT": str(output_dir), "LEMMA_KERNEL_STAGE": stage, "LEMMA_KERNEL_CONFIGURATION": configuration}
-        invoke(("lake", "env", "lean", str(consumer.relative_to(root))), root, env)
+        invoke(export_command(consumer.relative_to(root), source_root=root), root, env)
         generated_files = list(MULTI_BOOT_FILES if images else BOOT_FILES)
         _nonempty(output_dir, generated_files)
         if images:
@@ -536,6 +705,14 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
             raise Core0Error("compiler/production inputs changed during build")
         commit = invoke(("git", "rev-parse", "HEAD"), root).decode().strip()
         dirty = invoke(("git", "status", "--porcelain=v1", "--untracked-files=all"), root).decode().splitlines()
+        if workspace is not None:
+            from kernel_source_workspace import host_inputs, validate_flake_input
+            if host_inputs(repo_root(), source_inputs) != orchestrator_before:
+                raise Core0Error("archive compiler host orchestrator changed during build")
+            validate_flake_input(realization_dir, workspace['flake_input_sha256'])
+            workspace.update(parent_git_root=invoke(("git", "rev-parse", "--show-toplevel"), root).decode().strip(),
+                             parent_git_prefix=invoke(("git", "rev-parse", "--show-prefix"), root).decode().strip(),
+                             parent_git_head=commit, host_orchestrator_inputs=orchestrator_before)
         artifacts = {str(path.relative_to(output_dir)): sha256(path) for path in sorted(output_dir.rglob("*"))
                      if path.is_file() and path.name not in {"commands.json", "build.json", "provenance.json"}}
         linked_inputs = ({"boot": list(BOOT_OBJECTS), "users": {image["key"]: [f'{image["directory"]}/startup.o', f'{image["directory"]}/program.o'] for image in images}}
@@ -552,7 +729,9 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
                       **image_startup_fields, **managed_fields,
                       "lean_source_realization": source_realization,
                       "stage": stage, "optimization": opt_level, "source_commit": commit, "dirty_paths": dirty,
-                      "source_inputs": source_before, "target_module_closures": dependencies, "tools": versions,
+                      **({"compiler_source_workspace": workspace} if workspace is not None else {}),
+                      "source_inputs": source_before, "host_export_policy": export_host_policy(root),
+                      "target_module_closures": dependencies, "tools": versions,
                       "commands": commands, "generated_by_lean": generated_files,
                       "linked_inputs": linked_inputs, "artifacts": artifacts, "unit_contracts": unit_contracts}
         write_json(output_dir / "provenance.json", provenance)
@@ -576,13 +755,22 @@ def main() -> int:
     parser.add_argument("--stage", choices=("bootstrap-m", "supervisor"), default="bootstrap-m")
     parser.add_argument("--configuration", choices=CONFIGURATIONS, default="normal")
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--source-archive", type=Path, help="Complete original source-input archive; requires an unused --source-workspace")
+    parser.add_argument("--source-workspace", type=Path, help="Unused private compiler copy under build/kernel; --output-dir is relative to this copy")
     parser.add_argument("--clean", action="store_true")
     parser.add_argument("--timeout", type=float, default=300)
     ns = parser.parse_args()
     root = repo_root()
-    output = (root / ns.output_dir).resolve()
+    if (ns.source_archive is None) != (ns.source_workspace is None):
+        parser.error("--source-archive and --source-workspace must be provided together")
     try:
-        result = build(root=root, output_dir=output, opt_level=ns.opt_level, stage=ns.stage, configuration=ns.configuration, clean=ns.clean, timeout_seconds=ns.timeout)
+        source_archive = None
+        if ns.source_archive is not None:
+            from kernel_source_workspace import copy_inputs
+            source_archive = (root / ns.source_archive).resolve()
+            root = copy_inputs(source_archive, (root / ns.source_workspace).resolve(), root, source_inputs)
+        output = (root / ns.output_dir).resolve()
+        result = build(root=root, output_dir=output, opt_level=ns.opt_level, stage=ns.stage, configuration=ns.configuration, clean=ns.clean, timeout_seconds=ns.timeout, archive_source_root=source_archive)
     except (Core0Error, OSError, ValueError, KeyError, TypeError) as error:
         print(f"KERNEL BUILD FAIL: {error}", file=sys.stderr)
         return 1

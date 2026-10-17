@@ -29,7 +29,7 @@ module BusLanes;
     for(integer i=0;i<8;i++) if(mem_strb[i]) memory_word[i*8+:8]<=mem_wdata[i*8+:8];
     memory_writes<=memory_writes+1;
   end
-  lemma_soc soc(.clk,.reset,.preload_valid(1'b0),.preload_index(9'd0),.preload_data(64'd0),
+  lemma_soc soc(.clk,.reset,.usb_host_phy_clk(1'b0),.usb_chip_phy_clk(1'b0),.preload_valid(1'b0),.preload_index(9'd0),.preload_data(64'd0),
     .mem_valid,.mem_write,.mem_addr,.mem_wdata,.mem_strb,.mem_rdata,.mem_ready,.mem_error,
     .uart_rx_valid(1'b0),.uart_rx_data(8'd0),.descriptor(2048'd0),.sample_valid(1'b0),
     .sample_time(64'd0),.sample_x(64'd0),.sample_y(64'd0),.sample_pressure(64'd0),

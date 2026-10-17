@@ -325,6 +325,41 @@ while True:
                     validate_quiescence(value, self.kernel, b"")
         self.exercise(expect_failure=True, base_persistence_error=True)
 
+    def test_complete_frame_needs_real_progress_to_semantic_terminal_boundary(self):
+        with self.native_child([self.kernel, self.kernel]) as (process, capture):
+            facts = {}
+            seen = []
+            def ready(raw):
+                seen.append(raw)
+                return raw == self.kernel * 2
+            _quiesce_uart(process, capture, time.monotonic()+2, facts,
+                          budget=1, boundary_ready=ready)
+            self.assertEqual(seen, [self.kernel, self.kernel*2])
+            self.assertEqual(facts['cycles'], 2)
+            self.assertEqual(facts['resumes'], 1)
+            self.assertEqual(facts['semantic_checks'], 2)
+            self.assertIs(facts['semantic_ready'], True)
+            frozen = bytes(capture.received)
+            transport._kill_and_reap(process, capture)
+            self.assertEqual(frozen, self.kernel*2)
+            facts.update(post_kill_boundary_unchanged=True, post_kill_stderr_unchanged=True)
+            report = {'pid': process.pid, 'uart_quiescence': facts}
+            validate_quiescence(report, frozen, bytes(capture.stderr))
+            for value in (False, 1, None):
+                bad = copy.deepcopy(report);bad['uart_quiescence']['semantic_ready']=value
+                with self.subTest(value=value), self.assertRaises(Core0Error):
+                    validate_quiescence(bad, frozen, bytes(capture.stderr))
+
+    def test_semantic_terminal_errors_and_truthy_non_boolean_fail_closed(self):
+        def invalid(_raw):
+            raise Core0Error('actual semantic error')
+        for callback, message in ((invalid,'actual semantic error'),(lambda _raw:1,'actual Boolean')):
+            with self.subTest(message=message), self.native_child([self.kernel]) as (process, capture):
+                with self.assertRaisesRegex(Core0Error,message):
+                    _quiesce_uart(process,capture,time.monotonic()+2,{},budget=1,boundary_ready=callback)
+                self.assertIsNone(process.poll())
+                self.assertEqual(bytes(capture.received),self.kernel)
+
     def test_real_fragmented_kernel_and_binary_frames_need_fresh_refreeze(self):
         binary = BufferTransportTests().output(data=b"\x00\xffK1LMO1")
         chunks = [self.kernel[:2], self.kernel[2:]+binary[:1], binary[1:4], binary[4:8], binary[8:]]

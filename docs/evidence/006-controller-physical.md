@@ -1,3 +1,4 @@
+<!--
 # Task006 controller changes and physical observations
 
 The full-depth pen now uses sixteen independent synchronous 16-row banks,
@@ -81,6 +82,157 @@ closure still requires setup improvement, detailed routing, complete rule
 coverage, process DRC/LVS and actual extracted timing; power/pads, memories,
 compute/full-SoC closure and physical panel conformance remain separate.
 
+The October12 continuation replaces the second refill edge's wide binary bank
+multiplexer with a registered one-hot bank selection and parallel mask/OR.
+Its decode is latched on the existing first refill edge; no public edge,
+capacity, field width, queue order or reset behavior changes. The actual
+full-depth literal device workload passed at
+`build/silicon/devices-task006-onehot-a1/result.json` on pen source SHA256
+`f73a3c556e1444cfdcb380a902496af041f64d99d880507020b54ff0a5fbf2e4`.
+That test includes both traversals of all256 entries, high timestamp bits and
+refill/reset/watchdog cutpoints; it is separate from guest notebook acceptance.
+
+One changed-source, unchanged-constraint physical attempt mapped227520 cells,
+50038 flip-flops,4275630.953999µm² area (0.417273% below the earlier banked map),
+without unresolved cells, residual memory or latches. Actual100MHz global-route
+setup WNS improved by0.135892ns to **−3.406316ns**, still **FAIL**. Hold WNS is
+**+0.031082ns**. The currently critical reported path starts at `sample_y[43]`
+and reaches `_351090_`,15.220151ns arrival against11.813835ns required;
+the earlier binary-select-to-head path is no longer the worst reported path.
+Global geometry is286697 instances,5019481.3536µm² cells and29.379903% utilization.
+Unlike the previous run, the electrical report contains128 clock-buffer fanout
+violations; none is waived. These remain estimated global-route parasitics.
+
+The900s overall flow bound expired during detailed-routing pin access after
+30000 groups. OpenROAD was terminated/reaped and the actual result is **FAIL**
+with a timed-out command. Process checks were requested but never reached;
+DRC, LVS, routed extraction and post-route timing are **NOT_RUN**. No complete
+layout or signoff follows. The original failures remain unchanged, and the
+SG13G2 enclosure/CUTCLASS gap is still not established as the timeout's cause.
+[The compact source/tool/result receipt](006-pen-onehot.json) retains this
+attempt separately. It used `--process-checks` in addition to the command below.
+
+The October13 private-ingress continuation addresses that measured input-to-
+ingress hold path. Payload/address registers now capture every nonreset edge;
+the unchanged registered accepted-only strobe commits the preceding payload.
+Head bypass, all 256 entries, full sequence/time widths, one-hot bank selection,
+queue order, loss/ACK/reset behavior and the two refill clocks are preserved.
+Source SHA256 is `2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3`.
+Unaccepted samples can change private register bits; dynamic power is unmeasured.
+Existing immutable guest runtimes/checkpoints keep their original identities.
+
+A bounded old/new external-interface miter matched all six public output
+signals at 28,457 clock edges, including consecutive accepted samples, full
+queues, invalid inputs and ACK/write/reset collisions. Literal MMIO checks
+traverse the full depth and every field, including high timestamps and an
+explicit test-only high sequence seed crossing the 32-bit carry. The unchanged
+independent two-wrap/refill/watchdog corpus and existing Pen-v1 overflow,
+exact-ACK/resynchronization/reset corpus passed. A quarantined bank-write
+mutation that bypasses the registered payload compiled, then failed the miter
+at edge 1,131. These are finite literal RTL observations, not formal proofs or
+new guest execution.
+
+One frozen-source attempt retained the original 900-second overall bound,
+100MHz constraints, SG13G2 corner and supported `WNS_PATH` repairs. Mapping
+produced 184159 cells and 50102 flip-flops, with no unresolved cells, latches or
+residual memories. Fewer cells did not reduce mapped area: 4354753.951798 µm²
+is 1.850557% larger than the earlier one-hot map. Final global-route setup WNS
+improved by 1.673568ns to **−1.732748ns**, still **FAIL**; hold WNS is
+**+0.034803ns**. The worst reported path is now a mapped refill-state flip-flop
+to `next_sequence[63]`, arriving at 13.643834ns against 11.911086ns required.
+Global geometry is 237630 instances, 5110058.016 µm² cell area and 29.369574%
+utilization. All 128 clock-buffer fanout violations remain unwaived. These
+are global-route estimated parasitics, not routed extraction or signoff.
+
+Detailed routing again timed out in pin access, after 20000 reported completed
+groups. OpenROAD received SIGTERM and was reaped; the actual result remains
+**FAIL**. No router DRC count, process DRC/LVS, extracted parasitics or post-route
+timing was reached. Original failures and the unresolved enclosure/CUTCLASS
+coverage remain intact; that gap is not established as the timeout cause.
+The [new source/tool/result receipt](006-pen-private-ingress.json) preserves
+the exact candidate, bounded tests, failed flow and global ODB/DEF/estimated
+SPEF as a resumable checkpoint. No unchanged follow-up route was launched.
+
+The later free-running bank-read experiment is **not adopted**. Its private
+read registers captured each clock while the existing two refill edges still
+controlled public head publication. The 28,457-edge comparison against the
+retained private-ingress source and independent full-depth/two-wrap corpus
+passed; a quarantined wrong-row read failed at edge 1,131. All 256 entries,
+fields, ordering, ACK/loss/reset and refill observations were preserved in
+these finite tests. Private capture ran on more clock edges; dynamic power was
+not measured.
+
+One changed-source attempt used the same 900-second bound, 100 MHz constraints,
+corner and repair recipe. Mapping produced 167,864 cells, the same 50,102
+flip-flops and 4,273,921.637998 µm² area, with no unresolved cells, latches or
+residual memories. Area fell 1.856186%, but global-route setup WNS worsened by
+0.288327 ns to **−2.021075 ns FAIL**. Hold WNS was **+0.030106 ns**; all 128
+clock-buffer fanout violations remained unwaived. Global geometry contained
+217,626 instances and 4,978,085.8176 µm² cell area. These are estimated
+global-route parasitics, not routed extraction.
+
+Detailed routing timed out in pin access after 80,000 reported groups;
+OpenROAD was terminated and reaped. No router DRC, process DRC/LVS, routed
+extraction or post-route timing was reached. Group counts and geometry differ
+between designs, so they do not establish normalized routing speed. The
+enclosure/CUTCLASS gap remains unqualified and is not established as the
+timeout cause.
+
+The tested private-ingress pen source `2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3`
+was restored. The exact candidate, patch, focused test sources, mutation and
+failed physical outputs remain archived under
+`build/silicon/pen-task006-read-capture-owner-a1` and
+`build/silicon/physical/pen-task006-read-capture-a1`.
+[The unadopted experiment receipt](006-pen-read-capture.json) retains both the
+area improvement and timing regression, with all original failures unchanged.
+No second route was launched. The new worst path runs from `sample_y[21]`
+through validation/acceptance control to `next_sequence[59]`.
+
+A separate ignored prototype isolates the sequence counter's synchronous
+reset and exact accepted-sample enable. The same external-interface corpus
+and 32,768 finite guard combinations passed. One map-only observation retained
+50,102 flip-flops and produced 184,075 cells. The mapped `next_sequence[63]`
+data cone has 17 rather than 18 maximum cell stages; its `sample_y[21]` path
+has 12 rather than 13, and the direct `refill[2]` path is absent under the same
+observed one-hot FSM encoding. These are static graph counts, not timing or
+speed measurements. This prototype remains unadopted; placement, routing and
+physical STA are NOT_RUN. Its exact sources, tests and mapped artifacts are
+included in the same receipt for the next physical inspection.
+
+The subsequent separate-counter experiment is also **not adopted**. Its exact
+accepted-sample enable preserved the same 28,457-edge external-interface
+corpus and all 32,768 finite guard combinations. Removing `sample_ready` from
+the enable compiled, then failed at edge 24,137. These are bounded RTL tests,
+not formal proofs or new guest execution.
+
+One fresh mapping and physical attempt kept the same 900-second overall bound,
+100 MHz constraints, corner and repair recipe. Mapping produced 184,075 cells,
+50,102 flip-flops and 4,354,297.781398 µm² area, with no unresolved cells,
+latches or residual memory. The shorter static counter cone did not improve
+placed timing: global-route setup WNS was **−3.229613 ns FAIL**, 1.496865 ns
+worse than the retained private-ingress design. Hold WNS was **+0.031813 ns**,
+with all 128 clock-buffer fanout violations still unwaived. The worst path
+moved to `sample_y[35]` through validation/acceptance control to
+`head_entry[156]`, arriving at 15.056982 ns against 11.827369 ns required.
+These are global-route estimated parasitics, not routed extraction.
+
+Detailed routing timed out in pin access after 80,000 reported groups;
+OpenROAD was terminated and reaped. Router DRC, process DRC/LVS, routed
+extraction and post-route timing were NOT_RUN. Geometry and group counts do
+not establish normalized routing speed, and the unresolved enclosure/CUTCLASS
+gap is not established as the timeout cause.
+
+The tested `2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3`
+pen source was restored again. The exact counter candidate, patch, focused
+checker and test inputs remain archived under
+`build/silicon/pen-task006-sequence-enable-owner-a1`; the failed physical
+checkpoint is under `build/silicon/physical/pen-task006-sequence-enable-a1`.
+[The successor experiment receipt](006-pen-sequence-enable.json) retains the
+actual timing regression and all earlier failures. No unchanged follow-up
+route was launched. The observed validation-to-head-publication path and
+remaining pin-access demand require a separately qualified physical change
+before another attempt; no next candidate or physical closure is claimed.
+
 Reproduce with unused output paths:
 
 ```sh
@@ -88,3 +240,259 @@ python3 scripts/check_silicon.py --lane devices --work-dir build/silicon/devices
 nix-shell tooling/silicon/eda.nix --run 'python3 scripts/check_openroad_journal.py --output-dir build/silicon/journal-006-new'
 nix-shell tooling/silicon/eda.nix --run 'python3 scripts/silicon_synth.py --top lemma_pen --source sim/rtl/lemma_pen.sv --map --layout --output-dir build/silicon/physical/pen-006-new --deadline 900'
 ```
+
+
+The later first-head handoff and isolated-head-register prototypes are both
+**unadopted**. The focused corpus now checks all first-edge head fields, the
+immediate next-edge ACK, and watchdog expiry taking priority over that ACK.
+The maintained pen also passes the strengthened corpus. The stale-ACK mutant
+fails at edge10; dropping the watchdog guard fails at edge24389.
+
+The handoff prototype still has a raw sample_y41→head_entry31 critical path,
+with100MHz global setup WNS−3.519758ns. Separating retained-head updates removes
+raw sample ancestors from all181 mapped D cones (17→14 maximum cell stages),
+but its actual global WNS is still−2.896790ns, worse than the maintained
+−1.732748ns. Its critical path is first_head_pending→head_entry123.
+Neither static cone counts nor the0.622968ns prototype-to-prototype improvement
+establish timing closure. Hold WNS is+0.032611ns and+0.034214ns respectively.
+
+Both runs stop during detailed-router region-query initialization at the
+predeclared4GiB aggregate RSS ceiling (498.657s/4,329,902,080bytes and
+489.839s/4,305,465,344bytes). All owned processes are reaped. These are retained
+resource-limit **FAILs**, not900s deadline timeouts. No router/process DRC,
+LVS, routed extraction or post-route timing is reached; unsupported enclosure/
+CUTCLASS coverage remains separate and is not established as the limit cause.
+The second run reuses its exact validated mapping rather than rebuilding it.
+[The receipt](006-pen-head-register.json) preserves source, patch, tools,
+focused positive/negative results and resumable global-route artifacts. The
+maintained full256 private-ingress source2bab7e33 remains unchanged.
+
+The later per-bank refill-control experiment is also **unadopted**. Its actual
+mapped global refill state reaches none of the 2,896 bank-register D cones,
+compared with all 2,896 for the maintained implementation. Sixteen independent
+source 2-bit controllers map to 48 physical one-hot flip-flops; the generated
+serializer includes every controller. Every-edge public observations, complete
+256-entry literal cases and private-state invariants pass. A negative coverage
+gap was retained and repaired with a distinct queued-two-sample watchdog/ACK
+case; dropping loss priority, the count guard or the bank-read edge then fails.
+
+The single changed-source 100MHz/IHP-TT attempt nevertheless has global setup
+WNS **−1.828133ns FAIL**, 0.095385ns worse than maintained −1.732748ns, and hold
+WNS +0.029138ns. Its actual worst path is sample_y35→head_entry38, the packed
+x bit1; raw validation/acceptance remains dominant. The original 900s flow expires
+in pin access at 100,000 groups, before a completed route. The separately declared
+8GiB aggregate RSS limit is not reached: peak 4,615,282,688 bytes, minimum machine
+available 7,810,490,368 bytes. Supervisor 903.947s includes Nix/cleanup inside its
+original 1000s bound; owned processes are reaped and all consumed inputs remain
+unchanged. This is a deadline failure, distinct from the prior 4GiB resource
+failures. Router/full-process DRC, LVS, routed PEX, post-route timing and full-chip
+closure remain unreached. No clock/rule waiver or subsequent unchanged route
+was used. [The separate receipt](006-pen-local-refill.json) preserves all source,
+map, waveform, mutation, serializer, flow and partial-route identities. The
+maintained pen remains 2bab7e33; all older results keep their original meanings.
+
+The later empty-head capture prototype also remains **unadopted**. Capturing
+private head bytes while empty and masking public empty reads removes invalid
+high input ancestors from all181 mapped head D cones (17->8 maximum stages).
+Every-edge, independent full256 and two compiled mutant observations pass.
+Actual100MHz/IHP-TT global setup WNS is nevertheless **−2.981935ns** and hold
+WNS **−0.283493ns**, both worse than the maintained source. Detailed routing
+hits its original900s deadline in pin access. Supervisor905.847s,
+4575535104B peak RSS,3802112000B minimum available; no survivors and all
+consumed flow inputs unchanged. No completed layout export, process DRC, LVS,
+routed PEX, postroute timing or full-chip closure follows. The enclosure/
+CUTCLASS coverage gap is separate and not established as the timeout cause.
+[The receipt and patch](006-pen-empty-head.json) retain this one changed-source
+failure. Maintained full256 source2bab7e33 remains unchanged; no unchanged
+retry or constraint/rule waiver was used.
+
+The later segmented-sequence-counter experiment is also **unadopted**. Four
+16-bit lanes and three maintained carry flags preserve the full public counter.
+The strengthened every-edge/full256 corpus drains all frontier entries across
+16/32/48-bit carries and retains64-bit saturation. Missing low/high carry
+mutants fail the public comparison, with the private invariant observer omitted.
+A modular combinational SAT property proves increment/invariant preservation
+under its declared incoming invariant; this is not full-controller equivalence.
+The first formal driver failed on Yosys $check cells; supported chformal -lower
+preserves assertions and passes the unchanged property. Original failures remain.
+
+Mapping adds three FFs:184269 cells/50105FF/4355692.525798um2, with no unresolved
+cells, latches or memory macros. The actual maximum counter D-cone cell depth
+increases18->19. Original100MHz global-route setup WNS is **-4.568173ns FAIL**,
+2.835425ns worse than maintained-1.732748ns; hold is+0.037022ns. The worst path
+is sample_y53->sequence_carry1. All128 clock-buffer fanout violations remain
+unwaived. This is global-route estimated RC, not routed extraction.
+
+The original900s flow times out in detailed pin access at60000 groups;
+OpenROAD returns-15 after the runner waits for it. Outer supervision separately
+exits143 without a terminal accounting receipt. An independent exact command/
+path audit finds no scoped processes alive, but final peak RSS/resource and
+complete supervisor cleanup accounting are unavailable. The observed stdout
+prefix through817.544s has at least4203438080B RSS. No resource PASS is inferred.
+The signal's origin is not established. Source/flow hashes remain equal at the
+independent exit observation. No unchanged route is rerun. Process DRC, LVS,
+routed PEX, postroute timing and full-chip closure remain unreached; enclosure/
+CUTCLASS coverage is separate and not established as the timeout cause.
+[The retained source patch and receipt](006-pen-segment-carry.json) preserve the
+candidate, strengthened observers, proof, actual timing failure and supervision
+gap. Maintained full256 private-ingress source2bab7e33 remains unchanged.
+
+-->
+
+October16 changed-source trials preserve maintained full-depth pen2bab7e33.
+A private precomputed-prefix counter candidate passes a public protocol miter
+and independent64-bit modulo-increment SAT check, but its actual mapped worst
+cone is26 levels versus18 for maintained RTL; it is unadopted and not routed.
+The explicit ABC10000ps mapping interface produces byte-identical generic and
+mapped JSON to the maintained baseline (mappedSHA
+c36e69edcd422acfcd9960d449494d4d4ec1a57cfb686f736f70e0d4c83750ae);
+this is no timing improvement and did not justify a route by itself.
+
+A separate branch-buffer CTS trial follows actual DB evidence:128 intermediate
+clock buffers each drive16 other clock buffers, above library fanout8. Pinned
+OpenROAD26Q2 branch-end buffering is tried at the same10ns clock, with every
+constraint and existing WNS_PATH repair preserved. The completed global-route
+estimated-RC reports show setup WNS-1.540876ns (maintained-1.732748) and hold
+WNS-0.437743ns. The hold regression rejects adoption. Detailed pin access times
+out under its original900s bound, the overall actor fails, and the supervisor
+finishes904.860616s with4630405120B peak owned RSS and equal source/flow seals.
+An independent saved PID/start audit finds no owned survivors. The CTS change
+is reverted; its exact source/patch/plan/results remain under
+`build/silicon/pen-branch-clock-owner-a1`, actor
+`build/silicon/physical/pen-branch-clock-a1`, and supervision
+`build/silicon/pen-branch-clock-supervision-a1`. No timeout cause is assigned to
+rule coverage. Completed detailed routing, processDRC/LVS, routed extraction,
+postroute timing and full-chip physical closure remain open.
+
+A later isolated local counter-readiness candidate targets the actual maintained
+refill[2]→sequence[63] path. Every-edge/full256/64-bit frontier observations pass;
+a newly queued raw sample across both refill clocks exposes a previously
+surviving missing-readiness mutant. The independent maintained PenBanks case
+now also requires literal sequence3 and rejects the mutant's sequence5. A
+declared one-step readiness/acceptance invariant passes modular SAT; it is not
+full-controller equivalence. Modern $check lowering and a declaration-order
+frontend failure remain separately retained.
+
+Same-tool/library/10000ps mapping passes in51.442s supervised,1,046,249,472B
+peak. Global refill Q ancestors of the64 counter D cones fall64→0, but maximum
+cell depth remains18; mapped cells184159→184254 and FF50102→50103. These are
+netlist observations, not delay or routing improvement. RTL is **unadopted**.
+A new full route is NOT_RUN: current available memory is below the prospectively
+declared8GiB launch floor (the retained full-controller4.63GB peak plus3GiB
+available reserve). Active product machines keep their bounds. No clock/rule
+waiver, unchanged route or timeout reinterpretation is used. The source patch,
+exact observations, original failed negatives and bounded resume command are in
+[the local counter-readiness receipt](006-pen-sequence-ready.json). Detailed
+routing, complete rule coverage, processDRC/LVS, routed extraction/post-route
+timing and full-chip closure remain open.
+
+The separate pinned enclosure preflight now executes real Magic and OpenDB
+checks. Integer rectangle-union geometry finds one original fixed-via failure
+among 132 side checks: Via1_DC2L Metal1 minimum X needs -105 nm rather than
+-100 nm for the first cut's original BELOW enclosure. The explicitly requested
+copied-LEF repair clears that same isolated violation in Magic (original1,
+repaired0), with the original PDK and process deck untouched. All 132 repaired
+fixed checks, generated minimum/2-by-3 checks and the complete pinned cell cut
+corpus pass. Seven focused tests reject short edges, holes, swapped sides,
+insufficient generator minima, malformed GDS and source drift.
+
+The candidate retains all ten original clauses and adds measured square
+CUTCLASS definitions plus the same enclosure bounds. Actual native OpenDB
+import reports seven classes, ten qualified and ten retained original rules
+with exact flags/bounds. The complete source/tool-bound preflight takes
+1.832558s; this is parsing and independent geometry evidence, not TritonRoute
+enforcement or complete process rule coverage. It is not wired into the
+maintained route flow. Actual router enforcement and fixed/generated/routed-pin
+qualification remain open, as do complete controller DRC/LVS/PEX/timing and
+full-chip closure. The command, identities and limitations are in the
+[preflight receipt](006-sg13g2-enclosure-preflight.json) and
+[contract](../contracts/006-sg13g2-enclosure-preflight-v1.md). No timeout cause
+is assigned to the rule-coverage gap.
+
+An actual tiny fixed-via TritonRoute negative now demonstrates why admission
+cannot stand in for enforcement. With the qualified clauses present, both the
+known-bad original via and the repaired via yield empty DRC reports; the output
+DEF retains Via1_DC2L and adds only the Metal2 connecting wire, leaving the
+known bad lower enclosure unchanged. This is **GAP_CONFIRMED**, not routed
+process DRC. The complete two-case run takes0.689065s with one host thread and
+unchanged2GiB/90s tool bounds. Earlier OpenBLAS-initialization and deprecated
+API driver failures remain retained. The preflight receipt records the exact
+source/output hashes. The adaptation remains unadopted; no maintained rule or
+route is changed and no historical timeout cause is inferred.
+
+The first changed-source readiness-FF route subsequently met the8GiB launch
+precondition and actually ran at100MHz with the original constraints/rules. It
+failed the original900-second OpenROAD deadline during detailed pin access;
+owned supervision completed in906.223s at4,495,138,816B peak and reaped every
+owned child. Global-route estimated setup WNS is **-2.073945ns**, worse than
+the maintained-1.732748ns; hold is+0.032945ns. The candidate is rejected and
+remains unadopted. Removing the mapped refill ancestor did not establish a
+routed timing improvement. Full result and source/tool identities remain in
+`build/silicon/physical/pen-sequence-ready-route-a1/result.json`; original failed
+attempts and rule-coverage gaps retain their meanings. Detailed routing,
+complete process-rule enforcement, DRC/LVS/PEX/post-route and full-chip closure
+remain open. No unchanged route was rerun and no deadline was extended.
+
+The explicit SRAM workstream now has a maintained optional storage path inside
+the same `lemma_pen` controller. Default banked storage remains selected. Three
+actual pinned IHP256x64 macros retain all256 entries and181 bits, including full
+64-bit time/sequence, with the existing delayed write and two-edge refill.
+Published four-state functional models pass every-edge comparison against the
+historical banked controller and the independent full-field literal corpus.
+Actual upper-sequence truncation and128-row alias mutants are rejected; an
+enabled128-entry configuration rejects. Default Verilator devices also pass.
+
+Pinned technology mapping of the maintained option passes in5.150655s:
+6,820 cells,866 FF and three real SRAM macros,373,985.394600um2 typical library
+area, no unknown cells/latches/residual arrays, and checked delay/mask/BIST pins.
+These are library/netlist observations, not routed area or timing closure.
+The mapping boundary initially disappeared because read_slang flattens before
+ordinary Yosys hierarchy handling. Its documented keep-hierarchy option retains
+the pure increment through mapping, reducing timestamp-to-all64-sequence-D
+graph depth28→17; the predeclared threshold was20. No clock/state was added.
+The earlier27-cell failure and metadata-cell observer failure remain retained.
+
+Two changed-source experimental routes actually complete under the original
+900-second inner bound at100MHz, with original rules and timing constraints.
+The first takes782.287s and has2,144 router violations, estimated setup
+WNS-3.120831ns/hold+0.030859ns and three electrical slew violations. Wider
+measured bottom/intermacro channels and a LEF-permitted mirrored top macro,
+with independently checked actual ODB geometry, reduce router violations to314
+in420.827s. That route still fails: estimated setup-4.218564ns, hold-0.182969ns
+and two electrical violations. Supervision peaks at1,357,991,936B and reaps all
+owned children. Neither experiment is adopted as a timing or routing solution.
+The maintained optional path has its own protocol/mapping qualification; it
+does not inherit physical results from those separately identified prototypes.
+
+The reproducible command, exact public collateral/tool identities, actual
+negative results and both completed routing failures are in the
+[SRAM receipt](006-pen-sram.json) and
+[contract](../contracts/006-pen-sram-v1.md). This is not a physical128MiB RAM
+solution, process DRC/LVS/PEX, macro power/test/PVT, post-route timing or
+full-chip closure. No new native/Wasm SRAM state profile is admitted.
+
+A subsequent maintained range-cone change follows the actual a4 worst path
+(sample_x[30] through wide range/timestamp factoring to sequence D). It retains
+six full-width comparison outputs through mapping without clocks/state/width
+changes. The same full256/default/real four-state SRAM and actual mutation
+corpus passes7.871752s. Mapping uses6,623 rather than6,820 cells with the same
+866 flip-flops/three SRAMs; timestamp depth is18 rather than17, within the
+original20-cell limit. No delay improvement is inferred. Actual changed-netlist
+macro geometry matches a4. The new route attempt fails before OpenROAD because
+available RAM is below the unchanged8GiB launch floor;900s/1000s/100MHz/rules
+remain unchanged. Details are in the existing SRAM receipt. Original completed
+routing failures and all full-chip/process/PVT/PEX gaps remain.
+
+
+After validated task-owned worker closure and other completed jobs, actual
+8.29GiB availability satisfied the unchanged8GiB launch floor. The same changed
+maintained netlist completed detailed signal routing in504.830586s; supervisor
+505.391593s/peak1,339,625,472B, processes reaped. It **FAILS**388 router violations
+(273short/115spacing), estimated setup-3.031467ns/hold-0.184124ns and one electrical
+violation. Exact macro geometry and every source seal pass. The actual worst
+path now starts sample_time[1], traverses the wide time comparator and several
+high-fanout buffers to _09936_/D. These are global-route RC estimates retained
+after detailed routing, not routed extraction. Earlier a4 uses a different
+pre-integration source; no isolated six-comparison timing gain is claimed.
+Original8GiB prelaunchFAIL and earlier route failures remain. No process
+DRC/LVS/PEX/PVT, rule-coverage or full-chip closure follows.

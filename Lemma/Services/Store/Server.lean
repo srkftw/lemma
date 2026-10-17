@@ -2,6 +2,7 @@ import Lemma.Services.Store.Engine
 import Lemma.Services.Store.Protocol
 import Lemma.User.IPC
 import Lemma.User.Capability
+import Lemma.Courses.PackageTarget
 
 /-! Separately linked document service. All serialization, transaction ordering,
 checksums, indexing and recovery are compiled Lean User code. The kernel knows
@@ -397,5 +398,159 @@ def main (bootArgument : UInt64) : Action :=
   else failed else failed else failed else failed else failed
   else failed else failed else failed else failed
   else failed else failed else failed else failed
+
+/-! `lemma-course-store-guard/1` is opt-in. Historical main/step/application
+remain unchanged. Its reserved key prefix is4350; bits32..47 are the nonzero
+package identity and bits0..31 the nonzero edition. The existing namespace
+grant remains the authority. All policy checks precede append/delete I/O. -/
+
+def courseKey (object : UInt64) : UInt64 :=
+  if object >>> 48 = 0x4350 then 1 else 0
+
+private def courseKeyValid (object : UInt64) : UInt64 :=
+  if (object >>> 32) &&& 0xffff = 0 then 0 else
+  if object &&& 0xffffffff = 0 then 0 else 1
+
+/-- A matching latest row, including a tombstone, permanently consumes this
+edition key. Do not confuse Engine.lookup's live-only notFound with absence.
+No state publication, reply or backing operation occurs in this preflight. -/
+def courseAbsent (ns object : UInt64) : Action :=
+  if courseKey object = 1 then if courseKeyValid object = 1 then
+  .bind (Engine.field context 104) fun s index => if s = 0 then
+  .bind (Index.find index ns object) fun s slot => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (Index.row index slot)) fun s storedNs => if s = 0 then
+  if storedNs = 0 then .done 0 0 else
+  .bind (Lemma.User.Memory.read64 (Index.row index slot + 8)) fun s storedObject => if s = 0 then
+  if storedNs = ns then if storedObject = object then .done Format.readOnly 0 else .done Format.malformed 0
+  else .done Format.malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done Format.malformed 0 else .done Format.malformed 0
+
+private def courseBegin (sender reply ns object transaction count : UInt64) : Action :=
+  .bind (get 48) fun s owner => if s = 0 then
+  if owner = 0 then
+  if count < 128 then respond reply 2 ns object 0 0 Format.malformed else
+  .bind (courseAbsent ns object) fun status _ =>
+  if status = 0 then begin sender reply ns object transaction count
+  else if 220 ≤ status then if status ≤ 233 then respond reply 2 ns object 0 0 status else failed else failed
+  else respond reply 2 ns object 0 0 Protocol.busy else failed
+
+private def coursePackageStatus (status : UInt8) : UInt8 :=
+  if status = 0 then 0 else
+  if status = Lemma.Courses.PackageFormat.unsupported then Format.unsupported else
+  if status = Lemma.Courses.PackageFormat.integrityFailure then Format.checksumFailed else
+  if status = Lemma.Courses.PackageFormat.resourceLimit then Format.full else Format.malformed
+
+private def courseCommit (sender reply ns object transaction : UInt64) : Action :=
+  .bind (stageOwner sender ns object transaction) fun s matched => if s = 0 then
+  if matched = 1 then
+  .bind (get 88) fun s used => if s = 0 then
+  .bind (get 96) fun s desired => if s = 0 then
+  if used = desired then
+  .bind (courseAbsent ns object) fun status _ => if status = 0 then
+  .bind (Lemma.Courses.PackageTarget.validate payload used) fun status _ =>
+  if status = 0 then
+  .bind (Lemma.User.Memory.read64 (payload + 24)) fun s identity => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (payload + 32)) fun s edition => if s = 0 then
+  if identity = (object >>> 32) &&& 0xffff then if edition = object &&& 0xffffffff then
+    commit sender reply ns object transaction
+  else respond reply 4 ns object used 0 Format.malformed
+  else respond reply 4 ns object used 0 Format.malformed
+  else failed else failed
+  else if 240 ≤ status then if status ≤ 244 then
+    respond reply 4 ns object used 0 (coursePackageStatus status) else failed else failed
+  else if 220 ≤ status then if status ≤ 233 then respond reply 4 ns object used 0 status else failed else failed
+  else respond reply 4 ns object used 0 Protocol.incomplete
+  else failed else failed
+  else respond reply 4 ns object 0 0 Protocol.wrongOwner else failed
+
+/-- The versioned entry preserves ordinary header/shape/mode/active priority.
+Reserved begin/commit/delete are guarded. Other operations delegate unchanged
+to the legacy dispatcher; no replacement policy applies to notebook records. -/
+def courseApplication (sender reply bytes : UInt64) : Action :=
+  if 64 ≤ bytes then
+  .bind (Protocol.field (incoming + 64) 0) fun s magic => if s = 0 then
+  .bind (Protocol.field (incoming + 64) 8) fun s version => if s = 0 then
+  .bind (Protocol.field (incoming + 64) 16) fun s operation => if s = 0 then
+  .bind (Protocol.field (incoming + 64) 24) fun s ns => if s = 0 then
+  .bind (Protocol.field (incoming + 64) 32) fun s object => if s = 0 then
+  .bind (Protocol.field (incoming + 64) 40) fun s transaction => if s = 0 then
+  .bind (Protocol.field (incoming + 64) 48) fun s offset => if s = 0 then
+  .bind (Protocol.field (incoming + 64) 56) fun s count => if s = 0 then
+  .bind (get 24) fun s mode => if s = 0 then
+  .bind (Engine.field context 0) fun s active => if s = 0 then
+  if magic = Protocol.magic then if version = Protocol.requestVersion operation then
+  if Protocol.shape operation ns object transaction offset count bytes = 1 then
+    if 0 < active then application sender reply bytes else
+    if mode = 1 then if courseKey object = 1 then
+      if operation = 2 then courseBegin sender reply ns object transaction count else
+      if operation = 4 then courseCommit sender reply ns object transaction else
+      if operation = 6 then
+        .bind (get 48) fun s owner => if s = 0 then
+        if owner = 0 then respond reply operation ns object 0 0 Format.readOnly
+        else respond reply operation ns object 0 0 Protocol.busy else failed
+      else application sender reply bytes
+    else application sender reply bytes else application sender reply bytes
+  else application sender reply bytes
+  else application sender reply bytes
+  else application sender reply bytes
+  else failed else failed else failed else failed else failed else failed
+  else failed else failed else failed else failed
+  else application sender reply bytes
+
+private def courseReceive (nonblocking : UInt64) : Action :=
+  .bind (get 8) fun s endpoint => if s = 0 then
+  .bind (if nonblocking = 1 then IPC.tryReceive endpoint incoming IPCABI.maximumPacket
+    else IPC.receive endpoint incoming IPCABI.maximumPacket 1000000) fun status bytes =>
+  if status = IPCABI.wouldBlock then if bytes = 0 then .done 0 0 else failed else
+  if status = IPCABI.timeout then .done 0 0 else
+  if status = 0 then
+  .bind (IPC.validate incoming bytes) fun s kind => if s = 0 then
+  if kind = IPCABI.callKind then
+  .bind (IPC.field incoming IPCABI.senderOffset) fun s sender => if s = 0 then
+  .bind (IPC.field incoming IPCABI.replyOffset) fun s reply => if s = 0 then
+  .bind (IPC.field incoming IPCABI.lengthOffset) fun s length => if s = 0 then
+  if 0 < sender then if 16 ≤ reply then courseApplication sender reply length else failed else failed
+  else failed else failed else failed
+  else .done 0 0 else failed else failed else failed
+
+def courseStep : Action :=
+  .bind pump fun s _ => if s = 0 then
+  .bind settle fun s _ => if s = 0 then
+  .bind expireStage fun s _ => if s = 0 then
+  .bind (Engine.field context 0) fun s operation => if s = 0 then
+  if operation = 0 then courseReceive 0 else
+  .bind (get 24) fun s mode => if s = 0 then
+  .bind (get 128) fun s receipt => if s = 0 then
+  if mode = 0 then courseReceive 1 else if receipt = 1 then courseReceive 1 else .done 0 0
+  else failed else failed
+  else failed else failed else failed else failed
+
+def courseMain (bootArgument : UInt64) : Action :=
+  if bootArgument ≤ 1 then
+  .bind (Capability.bootGrant 0) fun s block => if s = 0 then
+  .bind (Capability.bootGrant 1) fun s endpoint => if s = 0 then
+  .bind Syscall.identity fun s identity => if s = 0 then
+  .boundedFoldU64 34 allocateStep 34 0 0 0 0 0 fun s pages =>
+  if s = 0 then if pages = 34 then
+  .boundedFoldU64 24 clearStep 24 0 0 0 0 0 fun s fields =>
+  if s = 0 then if fields = 24 then
+  .bind (put 0 block) fun s _ => if s = 0 then
+  .bind (put 8 endpoint) fun s _ => if s = 0 then
+  .bind (put 16 identity) fun s _ => if s = 0 then
+  .bind (put 112 bootArgument) fun s _ => if s = 0 then
+  .bind (Syscall.call 66 block 0 0 0 0) fun s capacity => if s = 0 then
+  .bind (Engine.mountStart context buffer index0 capacity) fun s _ =>
+  if s = 0 then .loop courseStep else failed
+  else failed else failed else failed else failed else failed
+  else failed else failed else failed else failed
+  else failed else failed else failed else failed
+
+/-- Opt-in recovery server composes this exact ordinary pump/settle/lease
+prefix with its separately versioned receive dispatcher. Historical step and
+courseStep retain their own complete definitions and receive paths. -/
+def courseService : Action :=
+  .bind pump fun s _ => if s = 0 then
+  .bind settle fun s _ => if s = 0 then expireStage else failed else failed
 
 end Lemma.Services.Store.Server

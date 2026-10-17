@@ -1,0 +1,32 @@
+{
+  "schema": "lemma-course-control-notebook-artifact/1",
+  "origin": {
+    "path": "build/courses/task006-control-notebook-component-a1/result.json",
+    "sha256": "dc58aa82bc76951c2ddd411e19b2abc74ff58623eacf032988723c5626b11a7b",
+    "genuine_capture_scope": "fresh source-bound ordinary declarations, no manually constructed AST"
+  },
+  "deployments": {
+    "canonical": {
+      "package_notebook_version": 8,
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-package-closure-entry2-bulk-notebook": "8d74147ea9fa9add2e4947b4fde54a41cbd79d3173b832bf66dca0a8b3f34b5b",
+        "lemmasim-silicon-package-closure-entry2-bulk-initialize": "a9c938ff2f38fa27e6a1907092e9907eb99c0eb26c740eb7048c4db7dc6cec1d"
+      },
+      "pre_function_count": 839,
+      "pre_sha256": "7dae3745e3c8d3fc9789a14079affdb7bb75a8d4791ec04ee6ecbfbfadb216b4",
+      "post_function_count": 837,
+      "post_sha256": "79006699ebbd5cecc3e16da98a46103d946c2d0a536b86acd4e722dab95ecd11"
+    },
+    "companion": {
+      "package_notebook_version": 8,
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "a8f09a124dd5fd3a7abd57530dffbfa46dcb394f9b311e25a75456a415ef1a1e",
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "4c9071ab5d518c6ad4c1619c097d1522082593c9617cf77ba05d626e7d69ebf1"
+      },
+      "pre_function_count": 877,
+      "pre_sha256": "13c7b05932ba77290720e89b1d0f9d9886ec1077994258aa32c2bb9272101375",
+      "post_function_count": 875,
+      "post_sha256": "4f75edc1588bdac9d0a3498a9758739d208113e5e4556269be89be2729797861"
+    }
+  }
+}

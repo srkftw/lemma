@@ -70,6 +70,17 @@ module PenBanks;
     // Drop valid after an acknowledged pop: refill still completes once.
     reset_machine();sample(0);sample(1);sample(2);put(88,1);wait_ready();
     expect_word(32,2);expect_head(1,2);put(88,2);wait_ready();expect_head(2,3);
+    // Queue raw input across both refill edges. Backpressure cannot consume
+    // sequence IDs: the later accepted head must still be exactly sequence3.
+    reset_machine();sample(0);sample(1);put(88,1);
+    sample_valid=1;st=64'h110000002;sx=254;sy=65473;sp=106;
+    sf=2;tool=2;buttons=2;#1;
+    if(ready||sample_ready)$fatal(1,"queued input did not start during refill");
+    wait_ready();tick();
+    if(!sample_accepted)$fatal(1,"queued valid input not accepted after refill");
+    @(negedge clk);sample_valid=0;
+    expect_word(32,2);expect_head(1,2);put(88,2);expect_head(2,3);
+    $display("PEN-BANKS queued raw across both refill edges consumes one sequence PASS");
     // Watchdog reached during refill retains the new immutable head, not the
     // already acknowledged one. It is handled at the next refill boundary.
     reset_machine();sample(0,3);sample(1,3);sample(2,3);put(88,1);

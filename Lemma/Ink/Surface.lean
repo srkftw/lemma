@@ -36,12 +36,18 @@ def letter (code : UInt64) : UInt64 :=
   if code = 68 then 0x6b6e else
   if code = 69 then 0x79a7 else if code = 70 then 0x79a4 else
   if code = 71 then 0x796f else if code = 72 then 0x5bed else
-  if code = 73 then 0x7497 else if code = 76 then 0x4927 else
+  if code = 73 then 0x7497 else if code = 75 then 0x5bad else if code = 76 then 0x4927 else
   if code = 78 then 0x5ffd else if code = 79 then 0x7b6f else
   if code = 80 then 0x7be4 else if code = 82 then 0x6bad else
   if code = 83 then 0x79cf else if code = 85 then 0x5b6f else
   if code = 86 then 0x5b6a else if code = 87 then 0x5b7f else
   if code = 89 then 0x5a92 else
+  if code = 66 then 0x6bae else if code = 77 then 0x5fed else
+  if code = 81 then 0x7b79 else if code = 84 then 0x7492 else
+  if code = 88 then 0x5aad else
+  if code = 43 then 0x05d0 else if code = 45 then 0x01c0 else
+  if code = 47 then 0x12a4 else if code = 42 then 0x55d5 else
+  if code = 61 then 0x0e38 else if code = 40 then 0x2922 else if code = 41 then 0x224a else
   if code = 48 then 0x7b6f else if code = 49 then 0x2c97 else
   if code = 50 then 0x73e7 else if code = 51 then 0x73cf else
   if code = 52 then 0x5bc9 else if code = 53 then 0x79cf else
@@ -99,6 +105,48 @@ def backgroundCanvasWord (x y width : UInt64) : UInt64 :=
     wordPixel (wordPixel initial x 24 12) x (width - 25) 12
   if width % 2 = 1 then wordPixel margins x width 15 else margins
 
+/-- Clear the intersection of one half-open black pixel span and a packed
+16-pixel word. Nibble swapping matches Gray4's high-nibble-first byte order.
+The clipped nonempty span gives shifts0..60; no shift by64 is formed. -/
+private def blackWordSpan (value x first past : UInt64) : UInt64 :=
+  if past ≤ first then value else if past ≤ x then value else
+  if x + 16 ≤ first then value else
+  let low := if first < x then 0 else first - x
+  let high := if x + 16 < past then 16 else past - x
+  let mask := ((0xffffffffffffffff : UInt64) <<< (low * 4)) &&&
+    ((0xffffffffffffffff : UInt64) >>> ((16 - high) * 4))
+  let swapped := ((mask &&& 0x0f0f0f0f0f0f0f0f) <<< 4) |||
+    ((mask &&& 0xf0f0f0f0f0f0f0f0) >>> 4)
+  value &&& ((0xffffffffffffffff : UInt64) ^^^ swapped)
+
+private def toolbarColumn (value x first past endAt : UInt64) : UInt64 :=
+  blackWordSpan value x first (if endAt < past then endAt else past)
+
+private def toolbarButtonWord (value x y buttonWidth number : UInt64) : UInt64 :=
+  let first := number * buttonWidth
+  let past := first + buttonWidth
+  let borders := blackWordSpan (blackWordSpan value x first (first + 3)) x (past - 3) past
+  if 36 ≤ y then if y < 96 then
+    let bits := (glyph number >>> ((4 - (y - 36) / 12) * 3)) &&& 7
+    let a := if bits &&& 4 = 4 then toolbarColumn borders x (first + 24) (first + 36) past else borders
+    let b := if bits &&& 2 = 2 then toolbarColumn a x (first + 36) (first + 48) past else a
+    if bits &&& 1 = 1 then toolbarColumn b x (first + 48) (first + 60) past else b
+  else borders else borders
+
+/-- Within a toolbar row, a16-pixel span intersects at most two buttons when
+buttonWidth≥16. Borders and the three authored glyph columns become bounded
+black spans rather than sixteen repeated scalar pixel/font calculations.
+Odd-width padding stays white. The caller retains the scalar path below144px
+and at row crossings; no geometry or glyph asset changes. -/
+def backgroundToolbarWord (x y width : UInt64) : UInt64 :=
+  let buttonWidth := width / 9
+  let initial := if y < 3 then 0 else if 125 ≤ y then 0 else
+    let number := x / buttonWidth
+    toolbarButtonWord
+      (toolbarButtonWord 0xffffffffffffffff x y buttonWidth number)
+      x y buttonWidth (number + 1)
+  if width % 2 = 1 then wordPixel initial x width 15 else initial
+
 private def backgroundOffsetStep (i _ : UInt32) (acc dimensions offset _ _ : UInt64) : Action :=
   backgroundStep (i + offset.toUInt32) 0 acc dimensions 0 0 0
 
@@ -108,22 +156,52 @@ private def backgroundWordStep (i _ : UInt32) (acc dimensions _ _ _ : UInt64) : 
   let offset := i.toUInt64 * 8
   let x := (offset % stride) * 2
   let y := offset / stride
-  let scalar := if y < 128 then true else if stride < offset % stride + 8 then true else false
+  let scalar := if stride < offset % stride + 8 then true else
+    if y < 128 then if width < 144 then true else false else false
   if scalar then
     .boundedFoldU64 8 backgroundOffsetStep 8 acc dimensions offset 0 0 fun s n => .done s n
   else
-    .bind (Memory.write64 (framebuffer + offset) (backgroundCanvasWord x y width)) fun s _ => .done s acc
+    let packed := if y < 128 then backgroundToolbarWord x y width else backgroundCanvasWord x y width
+    .bind (Memory.write64 (framebuffer + offset) packed) fun s _ => .done s acc
+
+/-- For admitted rows at least eight bytes wide, each word advances by eight
+bytes and crosses at most one row boundary. Carry the byte column and row in
+the fold accumulator instead of dividing the global offset for every word.
+The accumulator is local progress, not a published surface result. -/
+private def backgroundTrackedWordStep (i _ : UInt32) (position dimensions stride _ _ : UInt64) : Action :=
+  let width := dimensions &&& 0xffff
+  let column := position &&& 0xffff
+  let y := position >>> 16
+  let offset := i.toUInt64 * 8
+  let x := column * 2
+  let next : UInt64 := if stride ≤ column + 8 then
+    (column + (8 : UInt64) - stride) ||| ((y + 1) <<< 16)
+    else position + 8
+  let scalar := if stride < column + 8 then true else
+    if y < 128 then if width < 144 then true else false else false
+  if scalar then
+    .boundedFoldU64 8 backgroundOffsetStep 8 0 dimensions offset 0 0 fun s _ => .done s next
+  else
+    let packed := if y < 128 then backgroundToolbarWord x y width else backgroundCanvasWord x y width
+    .bind (Memory.write64 (framebuffer + offset) packed) fun s _ => .done s next
 
 /-- A full redraw is used for page open/edit recovery. Live ink uploads only
 intersecting tiles and coalesces their bounding refresh rectangle. Globally
-aligned words wholly within a canvas row use packed writes, including odd byte
-strides. Toolbar, row crossings and final partial words use scalar pixels. -/
+aligned words wholly within a row use packed writes, including odd byte
+strides and toolbar glyphs. Tiny toolbars, row crossings and final partial words
+use scalar pixels. Admitted rows at least eight bytes wide carry their position
+without per-word row division; the byte and checked-write order is unchanged. -/
 def background (width height : UInt64) : Action :=
-  let bytes := ((width + 1) / 2) * height
+  let stride := (width + 1) / 2
+  let bytes := stride * height
   if 2000000 < bytes then .done 16 0 else
-  .boundedFoldU64 250000 backgroundWordStep (bytes / 8).toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ =>
+  let dimensions := width ||| (height <<< 16)
+  let tracked : Bool := if width ≤ 4096 then if height ≤ 4096 then 8 ≤ stride else false else false
+  .bind (if tracked then
+    .boundedFoldU64 250000 backgroundTrackedWordStep (bytes / 8).toUInt32 0 dimensions stride 0 0 fun s n => .done s n
+    else .boundedFoldU64 250000 backgroundWordStep (bytes / 8).toUInt32 0 dimensions 0 0 0 fun s n => .done s n) fun s _ =>
   if s = 0 then
-  .boundedFoldU64 7 backgroundOffsetStep (bytes % 8).toUInt32 0 (width ||| (height <<< 16)) (bytes / 8 * 8) 0 0 fun s _ => .done s bytes
+  .boundedFoldU64 7 backgroundOffsetStep (bytes % 8).toUInt32 0 dimensions (bytes / 8 * 8) 0 0 fun s _ => .done s bytes
   else .done s 0
 
 private def tileLoadStep (i _ : UInt32) (acc dimensions origin _ _ : UInt64) : Action :=
@@ -246,5 +324,130 @@ def refresh (cap sequence x y width height mode : UInt64) : Action :=
   .bind (set 40 sequence) fun s _ => if s = 0 then
   Syscall.call 64 cap 2 metadata 0 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0
+
+/- Surface-v2 adds one owned page, not a framebuffer or host DMA shortcut. -/
+def bulkPacket : UInt64 := 0x10a000
+
+def allocateBulk : Action :=
+  .bind (Syscall.allocatePage bulkPacket) fun s address => if s = 0 then
+  if address = bulkPacket then .done 0 0 else .done 95 0 else .done s 0
+
+private def bulkCopyWord (i _ : UInt32) (acc destination _ _ _ : UInt64) : Action :=
+  .bind (Memory.read64 (tile + i.toUInt64 * 8)) fun s word => if s = 0 then
+  .bind (Memory.write64 (destination + i.toUInt64 * 8) word) fun s _ => .done s acc
+  else .done s 0
+
+private def bulkPrepareStep (i _ : UInt32) (acc dimensions first _ _ : UInt64) : Action :=
+  let width := dimensions &&& 0xffff
+  let height := dimensions >>> 16
+  let columns := (width + 31) / 32
+  let index := first + i.toUInt64
+  let x := (index % columns) * 32
+  let y := (index / columns) * 32
+  let w := if 32 < width - x then 32 else width - x
+  let h := if 32 < height - y then 32 else height - y
+  let entry := bulkPacket + 32 + i.toUInt64 * 32
+  let destination := bulkPacket + 256 + i.toUInt64 * 512
+  .bind (loadTile x y width height) fun s _ => if s = 0 then
+  .bind (if w = 32 then .done 0 0 else
+    .boundedFoldU64 512 compactStep (((w + 1) / 2) * h).toUInt32 0 ((w + 1) / 2) 0 0 0 fun s _ => .done s 0) fun s _ => if s = 0 then
+  .bind (Memory.write64 entry x) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 8) y) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 16) w) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 24) h) fun s _ => if s = 0 then
+  .boundedFoldU64 64 bulkCopyWord 64 0 destination 0 0 0 fun s _ => .done s (acc + 1)
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def bulkUploadStep (i _ : UInt32) (acc cap dimensions total _ : UInt64) : Action :=
+  let first := i.toUInt64 * 7
+  let count := if 7 < total - first then 7 else total - first
+  .boundedFoldU64 7 bulkPrepareStep count.toUInt32 0 dimensions first 0 0 fun s prepared => if s = 0 then
+  if prepared = count then
+  .bind (Memory.write64 bulkPacket 2) fun s _ => if s = 0 then
+  .bind (Memory.write64 (bulkPacket + 8) count) fun s _ => if s = 0 then
+  .bind (Memory.write64 (bulkPacket + 16) 0) fun s _ => if s = 0 then
+  .bind (Memory.write64 (bulkPacket + 24) 0) fun s _ => if s = 0 then
+  .bind (Syscall.call 64 cap 5 bulkPacket count 0) fun s completed => if s = 0 then
+  if completed = count then .done 0 (acc + count) else .done 95 0
+  else .done s completed else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done 95 0 else .done s 0
+
+/-- Identical Gray4 tile order and contents, seven separately validated rectangles
+per owned-page copy. Controller failures retain the actual completed prefix. -/
+def uploadAllBulk (cap width height : UInt64) : Action :=
+  if width = 0 then .done 16 0 else if 4096 < width then .done 16 0 else
+  if height = 0 then .done 16 0 else if 4096 < height then .done 16 0 else
+  let count := ((width + 31) / 32) * ((height + 31) / 32)
+  .boundedFoldU64 2341 bulkUploadStep ((count + 6) / 7).toUInt32 0 cap (width ||| (height <<< 16)) count 0 fun s uploaded => .done s uploaded
+
+/-- Four FIFO tile indices fit in one scalar argument. Unused slots are zero;
+duplicates and out-of-range indices reject before any controller transaction.
+The caller still owns the framebuffer and staging page throughout the call. -/
+private def indexedValidStep (i _ : UInt32) (acc packed total _ _ : UInt64) : Action :=
+  let slot := i.toUInt64
+  let index := (packed >>> (slot * 16)) &&& 65535
+  if total ≤ index then .done 234 0 else
+  let duplicate := if slot = 0 then false else
+    if index = packed &&& 65535 then true else
+    if slot = 1 then false else
+    if index = (packed >>> 16) &&& 65535 then true else
+    if slot = 2 then false else index = (packed >>> 32) &&& 65535
+  if duplicate then .done 234 0 else .done 0 (acc + 1)
+
+/-- Keep the historical bulkCopyWord callback's closed optimization ownership
+unchanged. This successor uses the existing checked word primitives normally. -/
+private def indexedCopyWord (i _ : UInt32) (acc destination _ _ _ : UInt64) : Action :=
+  .bind (Memory.read64 (tile + i.toUInt64 * 8)) fun s word => if s = 0 then
+  .bind (Memory.write64 (destination + i.toUInt64 * 8) word) fun s _ => .done s acc
+  else .done s 0
+
+private def indexedPrepareStep (i _ : UInt32) (acc dimensions packed _ _ : UInt64) : Action :=
+  let width := dimensions &&& 0xffff
+  let height := dimensions >>> 16
+  let columns := (width + 31) / 32
+  let index := (packed >>> (i.toUInt64 * 16)) &&& 65535
+  let x := (index % columns) * 32
+  let y := (index / columns) * 32
+  let w := if 32 < width - x then 32 else width - x
+  let h := if 32 < height - y then 32 else height - y
+  let entry := bulkPacket + 32 + i.toUInt64 * 32
+  let destination := bulkPacket + 256 + i.toUInt64 * 512
+  .bind (loadTile x y width height) fun s _ => if s = 0 then
+  .bind (if w = 32 then .done 0 0 else
+    .boundedFoldU64 512 compactStep (((w + 1) / 2) * h).toUInt32 0 ((w + 1) / 2) 0 0 0 fun s _ => .done s 0) fun s _ => if s = 0 then
+  .bind (Memory.write64 entry x) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 8) y) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 16) w) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 24) h) fun s _ => if s = 0 then
+  .boundedFoldU64 64 indexedCopyWord 64 0 destination 0 0 0 fun s _ => .done s (acc + 1)
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+/-- Prepare at most four arbitrary tiles, then use the existing owned-page
+Surface-v2 ABI. No syscall occurs until the complete guest packet is prepared.
+Kernel rectangle/owned-copy checks remain authoritative. A failed controller
+call returns its actual completed prefix; this is not an atomic upload. -/
+def uploadIndexedBulk (cap width height packed count : UInt64) : Action :=
+  if count = 0 then .done 0 0 else
+  if 4 < count then .done 16 0 else
+  if width = 0 then .done 16 0 else if 4096 < width then .done 16 0 else
+  if height = 0 then .done 16 0 else if 4096 < height then .done 16 0 else
+  if count < 4 then if packed >>> (count * 16) = 0 then prepare else .done 234 0
+  else prepare
+where
+  prepare : Action :=
+    let total := ((width + 31) / 32) * ((height + 31) / 32)
+    .boundedFoldU64 4 indexedValidStep count.toUInt32 0 packed total 0 0 fun s _ => if s = 0 then
+    .boundedFoldU64 4 indexedPrepareStep count.toUInt32 0 (width ||| (height <<< 16)) packed 0 0 fun s prepared => if s = 0 then
+    if prepared = count then
+    .bind (Memory.write64 bulkPacket 2) fun s _ => if s = 0 then
+    .bind (Memory.write64 (bulkPacket + 8) count) fun s _ => if s = 0 then
+    .bind (Memory.write64 (bulkPacket + 16) 0) fun s _ => if s = 0 then
+    .bind (Memory.write64 (bulkPacket + 24) 0) fun s _ => if s = 0 then
+    .bind (Syscall.call 64 cap 5 bulkPacket count 0) fun s completed =>
+    if count < completed then .done 95 0 else
+    if s = 0 then if completed = count then .done 0 completed else .done 95 0
+    else .done s completed
+    else .done s 0 else .done s 0 else .done s 0 else .done s 0
+    else .done 95 0 else .done s 0 else .done s 0
 
 end Lemma.Ink.Surface

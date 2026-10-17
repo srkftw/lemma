@@ -1,0 +1,276 @@
+{
+  "schema": "lemma-isolated-arithmetic-evidence/1",
+  "status": "SCOPED_PASS",
+  "scope": "Real scalar Lean RV64 independently linked exact arithmetic, copied async IPC, revision-bound durable course and failure isolation. Not managed source-language, proof-kernel or complete machine closure.",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "software_contract": "docs/contracts/006-arithmetic-ipc-v1.md",
+  "new_functionality": [
+    "Canonical notebook/initializer link isolated Store, Notebook and Arithmetic images; checker has only receive+console grants.",
+    "CHECK uses real one-second asynchronous IPC. Exact reply identity/revision/domain/resource validation precedes any 1856-byte record/evidence write.",
+    "Actual owned-object OOM and actual checker page-fault death preserve mathematics and leave durable ink usable.",
+    "A real stalled checker times out; starting ink cancels and consumes it before Store, freeing the historical one-outstanding-call slot.",
+    "Editing invalidates applicability; actual retired late replies cannot alter the edited record; explicit close consumes cancellation.",
+    "Legacy Objects-v1/v2 quotas remain4/5 Endpoints+8 Replies. Explicit v3 admits6+7 within the same16 rows, with malformed-header/no-write checks."
+  ],
+  "builds": {
+    "notebook-a4": {
+      "path": "build/kernel/task006-isolated-arithmetic-notebook-a4",
+      "configuration": "lemmasim-silicon-power-notebook",
+      "image_sha256": "96cd211a1808e6601cf7f35f22997484b06f2404b77e71b20936621c9c170d78",
+      "audit": "PASS",
+      "audit_sha256": "abbfadee1b9bc4eae743902e0d99520f58653e2c6c287abff5c36f1f26d40e97",
+      "source_commit": "4ff907dfb5d0fb052b9807bb0d6a44d6c257b183",
+      "source_count": 195
+    },
+    "notebook-a5": {
+      "path": "build/kernel/task006-isolated-arithmetic-notebook-a5",
+      "configuration": "lemmasim-silicon-power-notebook",
+      "image_sha256": "daa11f84b189ad79bc15293fd43a8b3f2eae83ddd3b08ee8dee1b42eef748d48",
+      "audit": "PASS",
+      "audit_sha256": "0b7349f7dd878f57769c4036c02939db2894dc3ff94622b373b38a31f59ba424",
+      "source_commit": "c1100df2f13cb558360aa25881bd7db8cc4040c1",
+      "source_count": 195
+    },
+    "initialize-a2": {
+      "path": "build/kernel/task006-isolated-arithmetic-initialize-a2",
+      "configuration": "lemmasim-silicon-power-initialize",
+      "image_sha256": "32ec25485f3ab6b80a9c05c7ea8de14c38e7f2500eb18c190fe89884ee4a7cf3",
+      "audit": "PASS",
+      "audit_sha256": "7f70cbe22430ebd7910d77ec7c2d5220f2c206630142c9993828bc8b3137c8af",
+      "source_commit": "c1100df2f13cb558360aa25881bd7db8cc4040c1",
+      "source_count": 195
+    },
+    "oom-a1": {
+      "path": "build/kernel/task006-isolated-arithmetic-oom-a1",
+      "configuration": "lemmasim-silicon-power-arithmetic-oom-development",
+      "image_sha256": "3d434e3629d10c2bfb2bb73d767fba36c33fb2379b9408c2060f1740853bd1c0",
+      "audit": "PASS",
+      "audit_sha256": "843421c837fbd87dae5e1db818b49a4be71b5d21d26852557123676c779f034f",
+      "source_commit": "4ff907dfb5d0fb052b9807bb0d6a44d6c257b183",
+      "source_count": 195
+    },
+    "fault-a1": {
+      "path": "build/kernel/task006-isolated-arithmetic-fault-a1",
+      "configuration": "lemmasim-silicon-power-arithmetic-fault-development",
+      "image_sha256": "0407f5098284b4fbb4c5d80bffe6f1d2c604611c033d71728ddb2cf9398a37c6",
+      "audit": "PASS",
+      "audit_sha256": "1a076b37e86ff074cba65f40e76e506c59f1c5dbfd4f8b0675516f39e6da031d",
+      "source_commit": "4ff907dfb5d0fb052b9807bb0d6a44d6c257b183",
+      "source_count": 195
+    },
+    "stall-a1": {
+      "path": "build/kernel/task006-isolated-arithmetic-stall-a1",
+      "configuration": "lemmasim-silicon-power-arithmetic-stall-development",
+      "image_sha256": "e05528c4338093fc9efcc2ff3cda0a5b51525d58afc08ac61e29150d23802c67",
+      "audit": "PASS",
+      "audit_sha256": "7e74430567662d5aec726aaeedb7a360ddf9b78fc1fff16628644103556e1cff",
+      "source_commit": "4ff907dfb5d0fb052b9807bb0d6a44d6c257b183",
+      "source_count": 195
+    },
+    "stall-a2": {
+      "path": "build/kernel/task006-isolated-arithmetic-stall-a2",
+      "configuration": "lemmasim-silicon-power-arithmetic-stall-development",
+      "image_sha256": "e1bde3c6890021f85b6d99bcd6a621a654675c07827cb3cb94ad226fb7ee07d4",
+      "audit": "PASS",
+      "audit_sha256": "756e51b1212a895ff7ff90f82c2240b5a113504c3e653d43828603dae586f714",
+      "source_commit": "c1100df2f13cb558360aa25881bd7db8cc4040c1",
+      "source_count": 195
+    }
+  },
+  "archive": {
+    "schema": "lemma-consumed-source-archive/1",
+    "artifact": "build/kernel/task006-isolated-arithmetic-notebook-a5",
+    "scope": "All exact consumed target/compiler/profile/auditor bytes; does not bypass public validation",
+    "source_commit": "c1100df2f13cb558360aa25881bd7db8cc4040c1",
+    "archive_sha256": "cae07fba53d89e2e85c8349dc2cad7d64a731958ff41431951f3bf4ddaa89ced",
+    "archive_bytes": 626265,
+    "image_sha256": "daa11f84b189ad79bc15293fd43a8b3f2eae83ddd3b08ee8dee1b42eef748d48",
+    "source_count": 195
+  },
+  "tools": {
+    "lean": "4.34.1",
+    "llvm": "20.1.8",
+    "qemu_runtime_sha256": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716"
+  },
+  "normal": {
+    "boot": {
+      "virtual_seconds": 10.000000024,
+      "host_seconds": 21.864119911042508,
+      "cycle": 1000000003
+    },
+    "cold_boot": {
+      "virtual_seconds": 11.150000012,
+      "host_seconds": 23.58770904201083,
+      "cycle": 1115000002
+    },
+    "cold_recovery": {
+      "status": "PASS",
+      "actual_new_cpu": true,
+      "math_sha256": "13e52b41d5cd44c33bec97c8127e0078466098c120f6a41ae1644087cfe706d5",
+      "complete_controller_pixels": true,
+      "raw_ink_preserved": true
+    },
+    "failed_save": {
+      "status": "PASS",
+      "no_false_saved": true,
+      "acknowledged_math_unchanged": true
+    },
+    "elapsed_seconds": 314.6714686729829
+  },
+  "mathematical_history_outcomes": [
+    1,
+    2,
+    5,
+    1,
+    4
+  ],
+  "maximum_ui_virtual_seconds": 9.03000001,
+  "stalled_checker": {
+    "boot": {
+      "virtual_seconds": 10.000000024,
+      "host_seconds": 19.587118261959404,
+      "cycle": 1000000003
+    },
+    "cold_boot": {
+      "virtual_seconds": 10.30000002,
+      "host_seconds": 17.672465395007748,
+      "cycle": 1030000002
+    },
+    "failed_request": {
+      "status": "PASS",
+      "actual_error": 93,
+      "math_sha256": "cbecca113dbbef658c93df4bfc62f295e74d56f5540291abb76d21418addf829",
+      "no_new_evidence": true,
+      "record_unchanged": true
+    },
+    "while_stalled": {
+      "status": "PASS",
+      "store_admission_tick": 344308005,
+      "deadline_ticks": 10000000,
+      "raw_first_sequence": 16,
+      "raw_last_sequence": 21,
+      "actual_consumed_terminal": 94,
+      "actual_guest_barrier_acknowledged": true
+    },
+    "stale_reply": {
+      "status": "PASS",
+      "actual_request": 67,
+      "original_revision": 1,
+      "edited_revision": 2,
+      "actual_retired_authority_rejection": true,
+      "edited_record_unchanged": true
+    },
+    "cancellation": {
+      "status": "PASS",
+      "actual_consumed_terminal": 94,
+      "record_unchanged": true,
+      "reply_discarded": true
+    },
+    "cold_recovery": {
+      "status": "PASS",
+      "new_cpu": true,
+      "complete_controller_pixels_equal": true,
+      "acknowledged_math_unchanged": true,
+      "raw_ink_preserved": true
+    },
+    "elapsed_seconds": 934.3465328419697
+  },
+  "store_admission_after_first_raw_virtual_seconds": 0.0578,
+  "observed_resources": {
+    "scope": "actual live stalled-case QEMU process observed peak/current RSS; not a whole-session resource guarantee",
+    "pid": 133432,
+    "status": {
+      "VmPeak": "1563720 kB",
+      "VmHWM": "98080 kB",
+      "VmRSS": "98080 kB",
+      "Threads": "4"
+    }
+  },
+  "receipts": {
+    "build/task006-isolated-arithmetic-math-a3/result.json": {
+      "status": "PASS",
+      "sha256": "d47fd4216049c34e9dd45d424476b184cfcc7dea039d8032cf0cd908f3fa75db"
+    },
+    "build/task006-isolated-arithmetic-stall-session-a2/result.json": {
+      "status": "PASS",
+      "sha256": "49be3674ce7b5b66ba78cbd07be367fb19991fc874b8eb8ac74b02ad2012b6ff"
+    },
+    "build/task006-isolated-arithmetic-oom-session-a2/result.json": {
+      "status": "PASS",
+      "sha256": "38d7da7b2ebc9cc6c72f87595c40a073595468156b3db7fbd42e441fe6b8dc98"
+    },
+    "build/task006-isolated-arithmetic-fault-session-a1/result.json": {
+      "status": "PASS",
+      "sha256": "4d6b10cc9f6976e5d143719d631e6560842ff1870dec5cff7b776441d2c2b571"
+    },
+    "build/task006-isolated-arithmetic-trace-a4.json": {
+      "status": "PASS",
+      "sha256": "72e54343c0c271ef85a96e0f614bdde1dc075e681cca9df365ddd09cdc8a6282"
+    },
+    "build/task006-isolated-arithmetic-stall-retained-a2.json": {
+      "status": "PASS",
+      "sha256": "c4166cfb79076a5a7ab297734fb8eb6aefe4ff48115c91e9bdc3324238f6b4ea"
+    },
+    "build/task006-isolated-arithmetic-oom-retained-a2.json": {
+      "status": "PASS",
+      "sha256": "23120edebea2a65d1eb7d7e5ebf775fa7956eefab2d1f9b407074a9fc3ec7588"
+    },
+    "build/task006-isolated-arithmetic-fault-retained-a2.json": {
+      "status": "PASS",
+      "sha256": "88cb582fdb452cee915779be53ec0237f4c9162007b0f7f90d198fded8372e42"
+    }
+  },
+  "tests": {
+    "kernel_host": "343 PASS: build/task006-arithmetic-kernel-host-final-a1.log; before final Notebook cancellation policy fix; final target audit/actual execution qualify that fix",
+    "objects_v3_negative": "8 PASS: build/task006-objects-v3-host-final-a1.log",
+    "catalog_negative": "3 PASS: build/task006-arithmetic-catalog-host-final-a1.log",
+    "actual_trace_negative": "4 PASS: build/task006-arithmetic-trace-host-final-a4.log, actual derived fragments reject missing/stale/duplicate/reordered tuples",
+    "actual_lean_actions": "PASS: build/task006-objects-v3-actions-final-a1.log; real bounded RAM Actions not target execution",
+    "owned_arena_actions_and_genuine_lowering": "PASS: build/task006-owned-arena-actions-final-a1.log; modeled syscalls distinguished from actual RV64",
+    "client_server_genuine_lowering_and_reply_mutations": "PASS: build/task006-arithmetic-ipc-admission-a4.log"
+  },
+  "preserved_failures": [
+    {
+      "path": "build/kernel/task006-isolated-arithmetic-notebook-a1",
+      "reason": "Genuine frontend rejected unsupported pipe form; corrected explicit Action.bind."
+    },
+    {
+      "path": "build/kernel/task006-isolated-arithmetic-notebook-a2",
+      "reason": "Whole audit rejected changed consumed auditor/source inventory. Components qualified separately; new A4 full build/audit used."
+    },
+    {
+      "path": "build/task006-isolated-arithmetic-notebook-build-a3.log",
+      "reason": "Missing required opt-level rejected before compilation."
+    },
+    {
+      "path": "build/task006-isolated-arithmetic-math-a1/result.json",
+      "reason": "Actual live/cold adapter identity5/4 differed after transient Fast adapter change. Check was retained; new normal campaigns use stable4."
+    },
+    {
+      "path": "build/task006-isolated-arithmetic-oom-session-a1/result.json",
+      "reason": "Observer confused catalog ID3 with actual image index2. Actual OOM237 occurred. Exact observer correction retained separately; new a2 passed unchanged target."
+    },
+    {
+      "path": "build/task006-isolated-arithmetic-stall-session-a1/observed-defect.json",
+      "reason": "Actual pending check consumed sole caller IPC slot; new ink Store failed99 inFlight. Stopped/reaped owned campaign; original FAIL retained. New Notebook cancels/consumes before stroke."
+    }
+  ],
+  "commands": {
+    "build_normal": "nix develop --no-write-lock-file --command ./scripts/build-kernel.sh --stage supervisor --configuration lemmasim-silicon-power-notebook --opt-level O2 --output-dir NEW_BUILD",
+    "audit": "nix develop --no-write-lock-file --command ./scripts/audit-kernel.sh NEW_BUILD",
+    "normal_actual": "python3 scripts/check_math_session.py --disk build/silicon/task006-canonical-cold-a2/medium.raw --work-dir build/task006-isolated-arithmetic-math-a3 --native-bundle build/native/task006-canonical-a1 --guest-build build/kernel/task006-isolated-arithmetic-notebook-a5 --deadline 1200",
+    "stall_actual": "python3 scripts/check_arithmetic_isolation.py --case stall --disk build/silicon/task006-canonical-cold-a2/medium.raw --work-dir build/task006-isolated-arithmetic-stall-session-a2 --native-bundle build/native/task006-canonical-a1 --guest-build build/kernel/task006-isolated-arithmetic-stall-a2",
+    "retained_readonly": "python3 scripts/check_arithmetic_trace.py --isolation-case stall --work-dir build/task006-isolated-arithmetic-stall-session-a2 --output UNUSED_JSON"
+  },
+  "timing_scope": "QEMU instruction counting/scaled wrapper counters. No canonical RTL pipeline/cache/bus timing parity. A4/A5 equal observed normal boot/cold cycle counts; different host durations are not claimed as guest algorithm speedup.",
+  "remaining": [
+    "Ordinary managed Lean constructor/array/string/closure lowering and full runtime remain unfinished. Arena is a real scalar owned-object foundation.",
+    "Lean proof kernel/pinned theorem environment, broader typed documents and G2/G5-G7 remain unfinished.",
+    "Course packages still require compiled source; hints are explicitly authored local material, not a live tutor transport.",
+    "Persistent cancellation/abandonment learner events and dedicated pending-check UI remain missing.",
+    "Object-budget v3 is explicit in table/header/deployment contract; User discovery syscall is not extended to report it.",
+    "Full redraw/navigation/error UI can take~9.03 virtual seconds on measured fast backend; no complete responsiveness claim.",
+    "OOM/death PASS artifacts have original A4 source closure, separately retained from corrected A5/stallA2 closure.",
+    "Canonical RTL Ready, exact fast timing/cached-state continuation, browser full workflow, product boot/update and physical closure are separate unfinished obligations."
+  ]
+}

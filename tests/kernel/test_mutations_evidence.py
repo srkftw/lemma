@@ -65,7 +65,7 @@ class MutationObservationBudgetTests(unittest.TestCase):
 
 class MutationEvidenceTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
+        self.temp = tempfile.TemporaryDirectory(prefix="lemma-O0-ancestor-"); self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.work = self.root / "build/kernel/mutation-fixture"
         self.work.mkdir(parents=True)
@@ -179,8 +179,12 @@ class MutationEvidenceTests(unittest.TestCase):
             def control(path, binding, root, opt, kind=kind):
                 return self.control_summaries[(kind, opt)]
             def failure(path, image, *, binding, runners, kind=kind, **kwargs):
-                opt = "O0" if "O0" in str(path) else "O2"
-                return self.failed_summaries[(kind, opt)]
+                # Nix/CI temporary ancestors may themselves contain O0.
+                # Only the exact declared case path selects an optimization.
+                matches = [opt for opt in ("O0", "O2") if Path(path) ==
+                           mutations._paths(self.work, kind, opt)["mutant_run"] / "inner-session/result.json"]
+                self.assertEqual(len(matches), 1)
+                return self.failed_summaries[(kind, matches[0])]
             stack.enter_context(patch.object(module, "positive_control", side_effect=control))
             stack.enter_context(patch.object(module, "validate_failed_session", side_effect=failure))
         return stack

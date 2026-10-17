@@ -1,3 +1,4 @@
+<!--
 # Lemma Task 002 — From the scalar compiler slice to an interrupt-capable freestanding machine foundation
 
 ## Mission
@@ -318,3 +319,4 @@ Return a compact, evidence-bearing report with:
 Do not claim G1 or G2 complete merely because this assignment's monitor works. Do not claim general Lean support, hardware memory isolation, a managed runtime, a scheduler, physical-board compatibility, or proved compiler correctness.
 
 Success means verified new compiler and machine capability, not the length of the report. Start with Gate 0 now, and keep implementing through the dependent gates while their prerequisites pass.
+-->

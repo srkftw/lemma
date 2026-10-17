@@ -1,3 +1,4 @@
+<!--
 # Core0 contract — versioned scalar profiles
 
 Status: Task 001 implements and tests the bounded `core0-v0.1` scalar membership
@@ -49,6 +50,16 @@ edge availability, returns, and direct-call signatures. The independent artifact
 audit additionally checks the source-count masks and that a divisor-zero edge
 cannot reach its dangerous operation. These checks and finite differential tests
 are not a proof of compiler correctness.
+
+The host validator indexes membership during dominance analysis. Unique labels
+and closed edges are still checked first. Cached predecessor lists, label
+positions and indexed row updates preserve the original traversal, fixed-point
+order and convergence fuel. Name-set equality retains the historical
+equal-length/mutual-membership relation even for duplicates; intersection keeps
+first occurrences in left-array order. Hash-table iteration never orders emitted
+code or diagnostics. This implementation change adds no accepted language,
+target runtime dependency or relaxed validation rule. Executable comparison
+tests and identical genuine export bytes are separate from a correctness proof.
 
 `core0-v0.3` is additive and must also be selected explicitly. It retains every
 v0.2 scalar operation and admits exactly one higher-order-looking source construct:
@@ -301,3 +312,5 @@ in accord with the pinned Lean semantics; do not assume C semantics.
 Use a Lean reference evaluator/model for the admitted operations and distinguish this
 reference from a proof that the compiler preserves semantics. That proof is not claimed
 by a passing finite differential corpus.
+
+-->

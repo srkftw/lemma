@@ -47,7 +47,9 @@ def table : Action :=
   if failed s = true then fatal else
   .bind (Frames.resolvePurpose 1 handle 1) fun s address =>
   if failed s = true then fatal else
-  .bind (Frames.mappingCount 1 handle) fun s pins =>
+  -- Owner, generation and purpose were just resolved in this same S Action.
+  -- Read pins through that exact slot, retaining the zero-pins requirement.
+  .bind (Access.read64 (Frames.record ((address - Frames.pool) / Frames.bytes) + 16)) fun s pins =>
   if failed s = true then fatal else
   if pins = 0 then .done 0 address else fatal
 
@@ -90,15 +92,20 @@ private def findStep (i _ : UInt32) (acc address descriptor _ _ : UInt64) : Acti
     if id = descriptor then .done Status.iterationStop i.toUInt64 else .done 0 acc
   else .done 0 acc
 
-def lookup (descriptor : UInt64) : Action :=
+private def lookupRecord (descriptor : UInt64) : Action :=
   if descriptor = 0 then .done 74 0 else
   .bind table fun s address =>
   if failed s = true then fatal else
   .boundedFoldU64 8 findStep 8 8 address descriptor 0 0 fun s index =>
   if s = Status.iterationStop then
-    .bind (AddressSpace.base descriptor) fun s _ =>
-    if failed s = true then fatal else .done 0 (address + index * stride)
+    .done 0 (address + index * stride)
   else if s = 0 then .done 74 0 else fatal
+
+def lookup (descriptor : UInt64) : Action :=
+  .bind (lookupRecord descriptor) fun s record =>
+  if failed s = true then .done s 0 else
+  .bind (AddressSpace.base descriptor) fun s _ =>
+  if failed s = true then fatal else .done 0 record
 
 private def freeStep (i _ : UInt32) (acc address _ _ _ : UInt64) : Action :=
   .bind (Access.read64 (address + i.toUInt64 * stride + stateOffset)) fun s state =>
@@ -370,6 +377,31 @@ def savedContext (descriptor : UInt64) : Action :=
     else fatal else fatal else fatal
   else fatal
 
+/-- Only capture borrows this fresh descriptor base and owned-stack top. The
+original hardware-frame validation and a second fresh descriptor validation run
+before copying; that copy touches only the disjoint saved-context words. Live
+task-row state and saved translation are still checked after the copy. -/
+private def contextAt (descriptor base top : UInt64) : Action :=
+  .bind (lookupRecord descriptor) fun s record =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (record + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = running then
+    let saved := base + AddressSpace.userContextOffset
+    .bind (Access.read64 (base + 72)) fun s translation =>
+    if failed s = true then fatal else
+    .bind (Access.read64 (saved + 272)) fun s actual =>
+    if failed s = true then fatal else
+    if actual = translation then
+      .bind (Access.write64 saved 0) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Access.write64 (saved + 264) 0x200000020) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Access.write64 (saved + 280) top) fun s _ =>
+      if failed s = true then fatal else .done 0 saved
+    else fatal
+  else fatal
+
 private def copyStep (i _ : UInt32) (acc source target _ _ : UInt64) : Action :=
   .bind (Access.read64 (source + i.toUInt64 * 8)) fun s value =>
   if failed s = true then fatal else
@@ -380,11 +412,12 @@ def capture (descriptor frame : UInt64) : Action :=
   .bind (Process.validateFrame frame) fun s actual =>
   if failed s = true then fatal else
   if actual = descriptor then
-    .bind (AddressSpace.context descriptor) fun s saved =>
+    .bind (AddressSpace.base descriptor) fun s base =>
     if failed s = true then fatal else
+    let saved := base + AddressSpace.userContextOffset
     .boundedFoldU64 36 copyStep 36 0 frame saved 0 0 fun s count =>
     if failed s = true then fatal else
-    if count = 36 then context descriptor else fatal
+    if count = 36 then contextAt descriptor base (frame + 288) else fatal
   else fatal
 
 def ready (descriptor reason pc : UInt64) : Action :=
@@ -538,14 +571,16 @@ private def pollIPCStep (i _ : UInt32) (acc address now _ _ : UInt64) : Action :
     if managed = 1 then
       .bind (Access.read64 record) fun s descriptor =>
       if failed s = true then fatal else
-      .bind (lookup descriptor) fun s checked =>
+      .bind (lookupRecord descriptor) fun s checked =>
+      if failed s = true then fatal else
+      .bind (AddressSpace.base descriptor) fun s base =>
       if failed s = true then fatal else
       if checked = record then
       .bind (Access.read64 (record + waitEpochOffset)) fun s epoch =>
       if failed s = true then fatal else
       .bind (Access.read64 (record + waitTransactionOffset)) fun s transaction =>
       if failed s = true then fatal else
-      .bind (IPC.poll descriptor) fun status _ =>
+      .bind (IPC.pollAt descriptor base) fun status _ =>
       if status = Lemma.User.IPCABI.wouldBlock then .done 0 acc else
       if status = 0 then
         if state = blocked then
@@ -676,5 +711,86 @@ def queryAll : Action :=
   .bind table fun s address =>
   if failed s = true then fatal else
   .boundedFoldU64 8 queryStep 8 0 address 0 0 0 fun s count => .done s count
+
+/-- Explicit Product construction keeps legacy task preparation unchanged. -/
+def prepareProduct (image argument : UInt64) : Action :=
+  .bind table fun s address =>
+  if failed s = true then fatal else
+  .boundedFoldU64 8 freeStep 8 8 address 0 0 0 fun s index =>
+  if s = Status.iterationStop then
+    let record := address + index * stride
+    .bind (Access.write64 (record + stateOffset) building) fun s _ =>
+    if failed s = true then fatal else
+    .bind Process.reserveOwner fun s owner =>
+    if failed s = true then abandon record s else
+    .bind (Loader.loadProduct image owner argument) fun s descriptor =>
+    if failed s = true then abandon record s else
+    .bind (retainPrepared record descriptor image argument) fun s id =>
+    if failed s = true then
+      .bind (Loader.teardown descriptor) fun _ _ => fatal
+    else .done 0 id
+  else if s = 0 then .done 38 0 else fatal
+
+def prepareManagedProduct (image argument : UInt64) : Action :=
+  .bind (prepareProduct image argument) fun s descriptor =>
+  if failed s = true then .done s 0 else
+  .bind (Capability.attach descriptor) fun status _ =>
+  if status = 255 then fatal else
+  if failed status = true then
+    .bind (abort descriptor) fun s _ =>
+    if failed s = true then fatal else .done status 0
+  else
+    .bind (prepared descriptor) fun s record =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + managedOffset) 1) fun s _ =>
+    if failed s = true then fatal else .done 0 descriptor
+
+
+/-- Entry-borrow v2. The original context API above remains unchanged. This
+successor performs the first complete descriptor validation before reading the
+running state, retaining its fault precedence. Only saved-context zero, status
+and scratch words are written; descriptor authority, directory/frame metadata
+and the task row are disjoint. No scheduling, mapping, release, DMA or reset may
+intervene before the sole Scheduler.entryV2 caller enters U. The borrow ends at
+that hardware boundary and is never used by the returning continuation. -/
+def entryContextV2 (descriptor : UInt64) : Action :=
+  .bind (lookupRecord descriptor) fun s record =>
+  if failed s = true then fatal else
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then fatal else
+  -- These pure bounds follow from the first complete Frames/AS validation.
+  -- They expose the fixed owned-page range to LLVM without removing an access.
+  if Frames.pool ≤ base then if base ≤ Frames.expandedPoolLimit - Frames.bytes then
+  if base % Frames.bytes = 0 then
+  .bind (Access.read64 (record + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = running then
+    let saved := base + AddressSpace.userContextOffset
+    .bind (Access.read64 (base + 72)) fun s translation =>
+    if failed s = true then fatal else
+    .bind (Access.read64 (saved + 272)) fun s actual =>
+    if failed s = true then fatal else
+    if actual = translation then
+      .bind (Process.validateStackAt base) fun s top =>
+      if failed s = true then fatal else
+      .bind (Access.write64 saved 0) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Access.write64 (saved + 264) 0x200000020) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Access.write64 (saved + 280) top) fun s _ =>
+      if failed s = true then fatal else .done 0 saved
+    else fatal
+  else fatal
+  else fatal else fatal else fatal
+
+
+/-- Only Scheduler.entryV2 may call this after entryContextV2 in the same
+nonpreemptible Action. The original row lookup and dispatch-counter read stay
+ordered; the repeated descriptor scan alone is omitted. No User profile admits
+this physical operation. A caller-chain audit must reject all other callers. -/
+def entryDispatchesV2 (descriptor : UInt64) : Action :=
+  .bind (lookupRecord descriptor) fun s record =>
+  if failed s = true then fatal else
+  Access.read64 (record + dispatchOffset)
 
 end Lemma.Kernel.Task

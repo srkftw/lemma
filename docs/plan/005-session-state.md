@@ -1,3 +1,4 @@
+<!--
 # Task 005 checkpoint
 
 Branch `task/005-open-silicon-bringup`, [PR #7](https://github.com/srkftw/lemma/pull/7) against main. Reviewed main remains `23b19296f5938821cdc5c092c3921e55e0067a28`; PR #5 merged. Exact PR #6 specification `dee6415dcb42dd242fa744b8dd271e5618873d50` was incorporated with attribution as `ef635f55916277c91ee51ab7adf10476bf444669`; PR #6 remains separate. The owner subsequently instructed “Finish and merge”; the original draft-only restriction is historical. Merge is guarded against the qualified PR head after relevant verification and applicable CI pass. Report publication retains tested implementation identities rather than relabeling compilation or execution.
@@ -230,3 +231,5 @@ Indices contain exact source/commands and subordinate bulk hashes. Old identitie
 | `build/silicon/notebook-width-09f1345-actual-cross-backend-comparison.json` | `0d46b301d361fe8e7f23d711d801ac3d05281047ebfc5400104b0a73b5288a77` |
 
 The source map and active construction plan record these implemented modules. Historical Task 001–004 evidence and OEM discussions retain their original scope.
+
+-->

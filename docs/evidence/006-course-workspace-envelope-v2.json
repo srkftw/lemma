@@ -1,0 +1,666 @@
+{
+  "schema": "lemma-workspace-envelope-component/2",
+  "status": "PASS_WHOLE_AUDITS_SAVES_AND_COLD_BYTES_PIXELS_FAIL_ACTUAL_COURSE_REOPEN",
+  "producer_parent": "470def4182f73eed523b5e4a753e91801d3a4aec",
+  "uncommitted_source_at_component_observation": true,
+  "contract": "docs/contracts/006-course-workspace-envelope-v2.md",
+  "scope": "Exact source9b18756 full fresh388-input pair and actual39-phase guest course/checker/learner/ink/Close/newCPUcold; final workspace reopen fails actual220. Source6 has a separately qualified full corrected target workflow and real partial-write/cold/retry result; this original software5 failure remains FAIL.",
+  "target_sources": {
+    "Lemma/Courses/WorkspaceCodec.lean": "f15b83a81c03d64414ecf3105089bc8847d270f9439eda2df42f6570479a84c3",
+    "Lemma/Applications/Notebook.lean": "6e3869a7d9c3f6c91477a5df47f84de3dc76a79db06ee8c11029095edd604653"
+  },
+  "complete_source_relation": {
+    "status": "PASS_GENUINE_WORKSPACE_ENVELOPE_COMPLETE_COHORT",
+    "scope": "genuine complete User2 pre/post source/body/caller software5 cohort; codec semantics and real target durability separate",
+    "old_functions": 819,
+    "new_functions": 833,
+    "added": [
+      "Lemma.Courses.WorkspaceCodec.clearStep",
+      "Lemma.Courses.WorkspaceCodec.countStep",
+      "Lemma.Courses.WorkspaceCodec.decode",
+      "Lemma.Courses.WorkspaceCodec.decodeStep",
+      "Lemma.Courses.WorkspaceCodec.encode",
+      "Lemma.Courses.WorkspaceCodec.encodeStep",
+      "Lemma.Courses.WorkspaceCodec.headerBytes",
+      "Lemma.Courses.WorkspaceCodec.magic",
+      "Lemma.Courses.WorkspaceCodec.maximumBytes",
+      "Lemma.Courses.WorkspaceCodec.read",
+      "Lemma.Courses.WorkspaceCodec.recordLength",
+      "Lemma.Courses.WorkspaceCodec.separate",
+      "Lemma.Courses.WorkspaceCodec.version",
+      "Lemma.Courses.WorkspaceCodec.write"
+    ],
+    "removed": []
+  },
+  "phases": {
+    "pre": {
+      "changed": [
+        "Lemma.Applications.Notebook.cancelPackageWork",
+        "Lemma.Applications.Notebook.openPackageCourse",
+        "Lemma.Applications.Notebook.packageBusy",
+        "Lemma.Applications.Notebook.pumpOpenPackageCourse",
+        "Lemma.Applications.Notebook.savePackageWorkspace"
+      ],
+      "unchanged_complete_bodies": 814
+    },
+    "post": {
+      "changed": [
+        "Lemma.Applications.Notebook.cancelPackageWork",
+        "Lemma.Applications.Notebook.openPackageCourse",
+        "Lemma.Applications.Notebook.packageBusy",
+        "Lemma.Applications.Notebook.packageControlCharacter",
+        "Lemma.Applications.Notebook.pumpOpenPackageCourse",
+        "Lemma.Applications.Notebook.savePackageWorkspace",
+        "Lemma.Courses.PackageBinding.captureField"
+      ],
+      "unchanged_complete_bodies": 810
+    }
+  },
+  "host_tests": {
+    "kernel": 433,
+    "foundation": 468,
+    "scaffold": 18,
+    "codec_raw_and_roundtrip_bytes": 3712,
+    "encoded_fixture_bytes": [
+      272,
+      520,
+      656,
+      792,
+      928
+    ],
+    "known_unknown_package_history": "PASS actual complete Workspace Action fixture",
+    "opener": "PASS actual raw/compact header to fullread/independentEOF phase5 and busy guard"
+  },
+  "mutations": {
+    "status": "PASS_FOUR_VALID_LLVM_CODEC_MUTANTS_AND_FOURTEEN_INCOMPLETE_COHORTS_REJECT",
+    "scope": "actual verifier-valid semantic codec LLVM mutants plus incomplete source families; no CPU claim",
+    "negative": [
+      {
+        "name": "unsafe-overlap",
+        "valid_llvm": true,
+        "sha256": "2ab29b7c439f8813b3414fc0cbaf8a55ad6fa706b1e35d08c575e66f79bb0460",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.WorkspaceCodec.separate/post"
+      },
+      {
+        "name": "wrong-maximum",
+        "valid_llvm": true,
+        "sha256": "c5b3669f34ba9b851f70a7a5c31260d521372db5b7d04f6fc593402c11f598b7",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.WorkspaceCodec.maximumBytes/post"
+      },
+      {
+        "name": "lost-value",
+        "valid_llvm": true,
+        "sha256": "82a8192e94ad5bb5a544dd639f9e4a6c4e504b3ab784791efb585160ad467350",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.WorkspaceCodec.encodeStep/post"
+      },
+      {
+        "name": "consumed-overrun",
+        "valid_llvm": true,
+        "sha256": "3637ee42352f6e51520c9d5b63bd053950549bb9903c8e609d3422cb0d095694",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.WorkspaceCodec.decodeStep/post"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.clearStep",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.countStep",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.decode",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.decodeStep",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.encode",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.encodeStep",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.headerBytes",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.magic",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.maximumBytes",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.read",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.recordLength",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.separate",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.version",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.write",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      }
+    ]
+  },
+  "all_historical_cohorts": [
+    {
+      "path": "build/kernel/task006-package-closure-notebook-a1/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/1",
+        "post": "lemma-installed-package-notebook/1"
+      }
+    },
+    {
+      "path": "build/kernel/task006-descriptor-direct-notebook-a3/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/2",
+        "post": "lemma-installed-package-notebook/2"
+      }
+    },
+    {
+      "path": "build/courses/task006-package-delta-component-a1/users/notebook/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/3",
+        "post": "lemma-installed-package-notebook/3"
+      }
+    },
+    {
+      "path": "build/courses/task006-package-sparse-component-a1/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/4",
+        "post": "lemma-installed-package-notebook/4"
+      }
+    },
+    {
+      "path": "build/courses/task006-workspace-codec-component-a2/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/5",
+        "post": "lemma-installed-package-notebook/5"
+      }
+    }
+  ],
+  "runtime_language_extension": false,
+  "extra_package_pages": 0,
+  "whole_rv64": {
+    "roles": {
+      "initializer": {
+        "audit_seconds": 225.09266039100476,
+        "audit_sha256": "7604a2b0fa40cf5bcac2ec4362615c1648d4362e868c86bb8f408b31baa03f14",
+        "audit_status": "PASS",
+        "build_seconds": 123.15053782390896,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-workspace-codec-initializer-a1",
+        "image_bytes": 694896,
+        "image_sha256": "2610a83288034f24eadcd31ca3b0adf85a4c41c1cf2ac65ca5be6cfaba46c7c1",
+        "provenance_sha256": "b0fe9a0dfe1f3803406cd0f587e84d21aeed71ef7c143cd5f018da542d4a69f3"
+      },
+      "notebook": {
+        "audit_seconds": 221.7770281630801,
+        "audit_sha256": "a81349ff433ac33464b381d9cc55fcd21cede51e829ccfd268ceaae0571ba5c7",
+        "audit_status": "PASS",
+        "build_seconds": 119.31694589101244,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-workspace-codec-notebook-a1",
+        "image_bytes": 694888,
+        "image_sha256": "ebad760cd22d6ec57c705d813ac2a726e8c694e0fd57e1cc89d8284e75a2990e",
+        "provenance_sha256": "82ed6927a2954155af781060c046386f032f702383f37b16e2569bd96b4254d1"
+      }
+    },
+    "source_commit": "9b18756dc27212263834edfc3ebbf366767254c2",
+    "source_count": 388,
+    "source_inventory_sha256": "770c828c29efe11fe10037350ec27627d3e928b886549161d6c2f92cb6e6fd9a",
+    "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+    "wall_seconds": 689.5429113600403
+  },
+  "compatibility": "Reads raw1/envelope2; writes2 on next actual ordinary save. Software1-4 cannot read2. No format/journal/rawink migration or rollback guarantee.",
+  "receipts": {
+    "build/courses/task006-workspace-codec-component-a1/export.log": "0b445282539808a638b97ba0ca28a7339af6a16bf9fb7a5dbc029ae5376d9aca",
+    "build/courses/task006-workspace-codec-component-a1/cohort-generation.json": "ad3909663ecd6ca13555bb3a1371a1fc1f342beac9ab647e7b4f2e505a57cd4d",
+    "build/courses/task006-workspace-codec-component-a1/all-cohorts-a1-failure.json": "a1785b36b3d6490cddc0150b63c5dab9ce320c8fb187c37541bf048ccf4b4ee4",
+    "build/courses/task006-workspace-codec-component-a1/all-cohorts-a2.json": "d98713d4cc43bbf7d324104c16159d956f3ab733196f6898279ce8703f0ac49d",
+    "build/courses/task006-workspace-codec-component-a1/mutations.json": "e86663624185280c5bc8dad1f6850e7271457f6c78bca41f2ee91a17596c8a49",
+    "build/courses/task006-workspace-codec-component-a1/kernel-host.log": "e45bacd480e0d90667aa065b9976bef64be36572940885596678dde18a4a08ad",
+    "build/courses/task006-workspace-codec-component-a1/foundation-host.log": "a10b06e03fb0c65faa2216cee5a9bbf0dfa51fd0c32319c6fc1c9cd9f7d0810c",
+    "build/courses/task006-workspace-codec-component-a1/scaffold.log": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c",
+    "build/courses/task006-workspace-codec-component-a1/scaffold-tests.log": "5d4abb4b52cd095d8d4e0ef3ded1aa342cda402ab453551c31b55415380150db",
+    "build/courses/task006-workspace-codec-component-a1/users/notebook/program.ll": "984520164e55a2126b713433965d0eae1289c1efee855efb15835706082e90ab",
+    "build/courses/task006-workspace-codec-component-a1/users/notebook/program.opt.ll": "06bfea2daf28c8adec528d4fb0b0d79a1b96ef7cba626dfdea1ab56ffad04a4c",
+    "build/courses/task006-workspace-codec-component-a1/users/notebook/unit.json": "2638ae53623e9228a96b8c6a8229074b134a19c2b2dca5e6b179c6bcd518b3fc",
+    "build/courses/task006-package-sparse-integration-a1/codec-test-a1.log": "f2a676d8c718a2f973cecf386345007ff9909712d009aae26c52b9ce632ca420",
+    "build/courses/task006-package-sparse-integration-a1/codec-test-a2.log": "f2a676d8c718a2f973cecf386345007ff9909712d009aae26c52b9ce632ca420",
+    "build/courses/task006-package-sparse-integration-a1/codec-test-a3.log": "0166e2e3eae0f5c541ee745c5f1e22ac47ae31ed92c4aef93cd4fb4894ede7e9",
+    "build/courses/task006-package-sparse-integration-a1/codec-notebook-actions-a1.log": "64c68f904c7ffda61d4ca57a6e1ad6f20e78982b1904d89721d8338d3080775d",
+    "build/courses/task006-package-sparse-integration-a1/codec-known-workspace-a1.log": "aa3624594e03a6dec366d82470755a7876a8c113b4781503ec8502562ed1d39f",
+    "build/courses/task006-package-sparse-integration-a1/ci-dependency-fix-a1.log": "fbaf70fdb6081e4bffd9b0c34ca9c76044763f0fa66d7104f5f4dcd79d6091e5",
+    "build/courses/task006-workspace-codec-component-a2/export.log": "0b445282539808a638b97ba0ca28a7339af6a16bf9fb7a5dbc029ae5376d9aca",
+    "build/courses/task006-workspace-codec-component-a2/cohort-generation.json": "4c0673d3c8ebd0924f59b16a53201dfa2f9ae88906e04c592b693b7ebb2f0a16",
+    "build/courses/task006-workspace-codec-component-a2/mutations.json": "72a75016472d69c10db0f113eca164c7a2fed41c6eda5083bd973c8af529ea04",
+    "build/courses/task006-workspace-codec-component-a2/all-cohorts.json": "237273778d615ecfa8aa98e8dd0d960d986876d8dcb293eab5a9236a98588bf9",
+    "build/courses/task006-workspace-codec-component-a2/users/notebook/unit.json": "2638ae53623e9228a96b8c6a8229074b134a19c2b2dca5e6b179c6bcd518b3fc",
+    "build/courses/task006-workspace-codec-component-a2/users/notebook/program.ll": "6b22173ed53e15d363028bf04355ed36e205ad20528be7dbcc0964aa2323eb18",
+    "build/courses/task006-workspace-codec-component-a2/users/notebook/program.opt.ll": "1a8f8d5b3eeaeb557563c62eaf53f7ba5a1fef939907d01e64652fc96cf3448a",
+    "build/courses/task006-package-sparse-integration-a1/codec-notebook-actions-a2.log": "951f36a1a8234b821495b3aa8014ffb65b828006a2ea350d057ba849def55c36",
+    "build/courses/task006-workspace-codec-whole-a1/result.json": "707cb4eb40e7f4ec1fa3375affa556b0c010ea35329752bb38fcc2a48c154688",
+    "build/courses/task006-workspace-codec-whole-a1/source-seal.json": "8fd1fd7eb30239c66516d3de84d42bc135839ad2c052cd404e6bf4bc8498fabc",
+    "build/courses/task006-workspace-codec-whole-supervision-a1/result.json": "8b8e895617ba847d5f43264c0c376e08fbf50bfdebec7efffdc7f8f1f3d70c6d",
+    "build/courses/task006-workspace-codec-fast-a1/result.json": "b3bed294715ce08d76fe21b03aaa460405b2dc10908c754c466b5da831d51b0b",
+    "build/courses/task006-workspace-codec-fast-supervision-a1/result.json": "900d5e0d67e3e4b8d9fd79207264974bd5419cc8ac4cdd83cbb71b74d40e65bb"
+  },
+  "opening_cancellation": "Actual phase5 pending transaction canceled/consumed exactlyonce before rawink; immutable live workspace retained. New integration hole found/fixed before fullpair.",
+  "whole_supervision": {
+    "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+    "elapsed_seconds": 691.9069694860373,
+    "peak_owned_rss_bytes": 1933017088,
+    "cleanup": {
+      "reason": "normal orphan reap",
+      "killed": [],
+      "survivors": {}
+    },
+    "source_seal": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-workspace-codec-whole-a1/source-seal.json",
+      "sha256": "8fd1fd7eb30239c66516d3de84d42bc135839ad2c052cd404e6bf4bc8498fabc",
+      "record": {
+        "archive_files_match": true,
+        "current_equal_original": true,
+        "original_inventory_sha256": "770c828c29efe11fe10037350ec27627d3e928b886549161d6c2f92cb6e6fd9a",
+        "source_count": 388,
+        "status": "PASS_SOURCE_SEAL"
+      }
+    },
+    "independent_source_seal": {
+      "current_files_equal_expected": true,
+      "archived_files_equal_expected": true,
+      "source_count": 388
+    }
+  },
+  "actual_fast": {
+    "status": "FAIL",
+    "error": "ValueError('actual guest failure in cold-reopen-installed-body:[(1116, 1970329131941889, 1970324836974593, 281496451547137, 1407374883553311), (1205, 8369, 0, 192, 209), (1200, 8369, 0, 192, 209), (1061, 1, 1, 1, 0), (1056, 9448928052850, 1, 1, 1), (1112, 0, 0, 0, 0), (1112, 0, 0, 0, 0), (1108, 220, 1, 1, 0)]')",
+    "phases": [
+      {
+        "name": "new-instruction-clock-cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 239000007,
+        "instruction_clock_cycles": 239000007,
+        "host_seconds": 23.735840943991207
+      },
+      {
+        "name": "COURSEactualpackage",
+        "initial_cycle": 239000007,
+        "final_cycle": 386000027,
+        "instruction_clock_cycles": 147000020,
+        "host_seconds": 24.636499153915793
+      },
+      {
+        "name": "actual-header-title",
+        "initial_cycle": 386000027,
+        "final_cycle": 423000031,
+        "instruction_clock_cycles": 37000004,
+        "host_seconds": 4.055324673070572
+      },
+      {
+        "name": "actual-header-source",
+        "initial_cycle": 423000031,
+        "final_cycle": 457000035,
+        "instruction_clock_cycles": 34000004,
+        "host_seconds": 3.6342706290306523
+      },
+      {
+        "name": "actual-header-edition",
+        "initial_cycle": 457000035,
+        "final_cycle": 491000039,
+        "instruction_clock_cycles": 34000004,
+        "host_seconds": 3.5461447880370542
+      },
+      {
+        "name": "actual-header-rights",
+        "initial_cycle": 491000039,
+        "final_cycle": 529000044,
+        "instruction_clock_cycles": 38000005,
+        "host_seconds": 4.092695048078895
+      },
+      {
+        "name": "actual-node-title",
+        "initial_cycle": 529000044,
+        "final_cycle": 566000048,
+        "instruction_clock_cycles": 37000004,
+        "host_seconds": 4.521772187901661
+      },
+      {
+        "name": "actual-node-body",
+        "initial_cycle": 566000048,
+        "final_cycle": 605000053,
+        "instruction_clock_cycles": 39000005,
+        "host_seconds": 4.278392240055837
+      },
+      {
+        "name": "node1",
+        "initial_cycle": 605000053,
+        "final_cycle": 643000058,
+        "instruction_clock_cycles": 38000005,
+        "host_seconds": 4.427174464915879
+      },
+      {
+        "name": "exercise2",
+        "initial_cycle": 643000058,
+        "final_cycle": 681000061,
+        "instruction_clock_cycles": 38000003,
+        "host_seconds": 4.203234091983177
+      },
+      {
+        "name": "USEactualgoal",
+        "initial_cycle": 681000061,
+        "final_cycle": 741000068,
+        "instruction_clock_cycles": 60000007,
+        "host_seconds": 5.588382306974381
+      },
+      {
+        "name": "numerator",
+        "initial_cycle": 741000068,
+        "final_cycle": 793000074,
+        "instruction_clock_cycles": 52000006,
+        "host_seconds": 5.401628824067302
+      },
+      {
+        "name": "numPLUS0",
+        "initial_cycle": 793000074,
+        "final_cycle": 845000079,
+        "instruction_clock_cycles": 52000005,
+        "host_seconds": 6.060468118987046
+      },
+      {
+        "name": "numPLUS1",
+        "initial_cycle": 845000079,
+        "final_cycle": 897000084,
+        "instruction_clock_cycles": 52000005,
+        "host_seconds": 6.758311316953041
+      },
+      {
+        "name": "numPLUS2",
+        "initial_cycle": 897000084,
+        "final_cycle": 950000089,
+        "instruction_clock_cycles": 53000005,
+        "host_seconds": 6.777136655058712
+      },
+      {
+        "name": "numPLUS3",
+        "initial_cycle": 950000089,
+        "final_cycle": 1002000092,
+        "instruction_clock_cycles": 52000003,
+        "host_seconds": 6.017498165019788
+      },
+      {
+        "name": "numPLUS4",
+        "initial_cycle": 1002000092,
+        "final_cycle": 1054000098,
+        "instruction_clock_cycles": 52000006,
+        "host_seconds": 6.449232696089894
+      },
+      {
+        "name": "denominator",
+        "initial_cycle": 1054000098,
+        "final_cycle": 1106000104,
+        "instruction_clock_cycles": 52000006,
+        "host_seconds": 5.42816017603036
+      },
+      {
+        "name": "denPLUS0",
+        "initial_cycle": 1106000104,
+        "final_cycle": 1158000108,
+        "instruction_clock_cycles": 52000004,
+        "host_seconds": 5.900729488930665
+      },
+      {
+        "name": "denPLUS1",
+        "initial_cycle": 1158000108,
+        "final_cycle": 1210000114,
+        "instruction_clock_cycles": 52000006,
+        "host_seconds": 5.728032088954933
+      },
+      {
+        "name": "denPLUS2",
+        "initial_cycle": 1210000114,
+        "final_cycle": 1262000119,
+        "instruction_clock_cycles": 52000005,
+        "host_seconds": 5.732307765050791
+      },
+      {
+        "name": "denPLUS3",
+        "initial_cycle": 1262000119,
+        "final_cycle": 1314000125,
+        "instruction_clock_cycles": 52000006,
+        "host_seconds": 5.927845906931907
+      },
+      {
+        "name": "denPLUS4",
+        "initial_cycle": 1314000125,
+        "final_cycle": 1366000129,
+        "instruction_clock_cycles": 52000004,
+        "host_seconds": 5.815677223028615
+      },
+      {
+        "name": "actual-Verified",
+        "initial_cycle": 1366000129,
+        "final_cycle": 1392000132,
+        "instruction_clock_cycles": 26000003,
+        "host_seconds": 2.802924568997696
+      },
+      {
+        "name": "edit5over7",
+        "initial_cycle": 1392000132,
+        "final_cycle": 1456000140,
+        "instruction_clock_cycles": 64000008,
+        "host_seconds": 7.330548683996312
+      },
+      {
+        "name": "actual-Invalid",
+        "initial_cycle": 1456000140,
+        "final_cycle": 1485000144,
+        "instruction_clock_cycles": 29000004,
+        "host_seconds": 3.000579940038733
+      },
+      {
+        "name": "authored-local-hint",
+        "initial_cycle": 1485000144,
+        "final_cycle": 1555000152,
+        "instruction_clock_cycles": 70000008,
+        "host_seconds": 7.306946304044686
+      },
+      {
+        "name": "review-mode0",
+        "initial_cycle": 1555000152,
+        "final_cycle": 1611000158,
+        "instruction_clock_cycles": 56000006,
+        "host_seconds": 4.974779407028109
+      },
+      {
+        "name": "review-mode1",
+        "initial_cycle": 1611000158,
+        "final_cycle": 1667000163,
+        "instruction_clock_cycles": 56000005,
+        "host_seconds": 5.134307423024438
+      },
+      {
+        "name": "review-mode2",
+        "initial_cycle": 1667000163,
+        "final_cycle": 1723000171,
+        "instruction_clock_cycles": 56000008,
+        "host_seconds": 5.450209707021713
+      },
+      {
+        "name": "review-mode3",
+        "initial_cycle": 1723000171,
+        "final_cycle": 1779000178,
+        "instruction_clock_cycles": 56000007,
+        "host_seconds": 5.773430483066477
+      },
+      {
+        "name": "review-mode4",
+        "initial_cycle": 1779000178,
+        "final_cycle": 1835000185,
+        "instruction_clock_cycles": 56000007,
+        "host_seconds": 5.543153336970136
+      },
+      {
+        "name": "NEXT-to-Unsupported0",
+        "initial_cycle": 1835000185,
+        "final_cycle": 1889000191,
+        "instruction_clock_cycles": 54000006,
+        "host_seconds": 5.13167140702717
+      },
+      {
+        "name": "NEXT-to-Unsupported1",
+        "initial_cycle": 1889000191,
+        "final_cycle": 1943000198,
+        "instruction_clock_cycles": 54000007,
+        "host_seconds": 5.016493116971105
+      },
+      {
+        "name": "actual-Unsupported",
+        "initial_cycle": 1943000198,
+        "final_cycle": 1973000202,
+        "instruction_clock_cycles": 30000004,
+        "host_seconds": 3.1519156619906425
+      },
+      {
+        "name": "NEXT-back-to-rational",
+        "initial_cycle": 1973000202,
+        "final_cycle": 2042000210,
+        "instruction_clock_cycles": 69000008,
+        "host_seconds": 7.141095380997285
+      },
+      {
+        "name": "resource-limit-zero",
+        "initial_cycle": 2042000210,
+        "final_cycle": 2097000216,
+        "instruction_clock_cycles": 55000006,
+        "host_seconds": 5.723509520990774
+      },
+      {
+        "name": "actual-Indeterminate",
+        "initial_cycle": 2097000216,
+        "final_cycle": 2129000220,
+        "instruction_clock_cycles": 32000004,
+        "host_seconds": 3.015634775045328
+      },
+      {
+        "name": "actual-raw-ink-Saved",
+        "initial_cycle": 2129000220,
+        "final_cycle": 2171000226,
+        "instruction_clock_cycles": 42000006,
+        "host_seconds": 4.3522525689331815
+      },
+      {
+        "name": "close-course-controller-work",
+        "initial_cycle": 2171000226,
+        "final_cycle": 2423000234,
+        "instruction_clock_cycles": 252000008,
+        "host_seconds": 25.69967064599041
+      },
+      {
+        "name": "independent-new-CPU-cold-all-pixels",
+        "initial_cycle": 0,
+        "final_cycle": 274000007,
+        "instruction_clock_cycles": 274000007,
+        "host_seconds": 19.844857823918574
+      }
+    ],
+    "base_functional_complete": {
+      "cycles": 2697000241,
+      "all_cold_pixels": true,
+      "all_acknowledged_objects": true
+    },
+    "independent_cold": {
+      "new_cpu": true,
+      "all_controller_pixels_exact": true,
+      "all_acknowledged_objects_exact": true
+    },
+    "elapsed_seconds": 312.9071871918859,
+    "consumed_host_current_equal": true,
+    "original_fast100M_view": {
+      "status": "FAIL_ORIGINAL100M",
+      "cycle": 339000019,
+      "scope": "separate original diagnostic; functional continuation prospectively bounded before launch"
+    },
+    "supervision": {
+      "status": "FAIL",
+      "seconds": 314.4997465920169,
+      "owned_peak_rss_bytes": 495648768
+    },
+    "diagnosis": "Cold course reopen reports220 because Notebook called Store.Format.copy for3712 bytes; that valid sector helper has a512-byte maximum. Neither the helper nor its check is weakened. Source6 replaces the call with a dedicated464-word private restore and tests the actual opener through adoption."
+  },
+  "actual_encoded_records": {
+    "opened": {
+      "stored_bytes": 272,
+      "decoded_bytes": 3712,
+      "revision": 1,
+      "decoded_sha256": "9bf02bdae3fe160ff799b4f941c0ca579e8ab4b4c2ac7c1c26f19c24ff98c10e"
+    },
+    "before-check": {
+      "stored_bytes": 440,
+      "decoded_bytes": 3712,
+      "revision": 12,
+      "decoded_sha256": "3dba7253b20e79f828e672f8dfd7718c21a8ed60e3c40d6f984ceea58b79248b"
+    },
+    "actual-Verified": {
+      "stored_bytes": 768,
+      "decoded_bytes": 3712,
+      "revision": 12,
+      "decoded_sha256": "c3cb8d6a20c309ab7e4203f12e21d635a5246789af2a35cbc4c53ad899dc339c"
+    },
+    "edited": {
+      "stored_bytes": 696,
+      "decoded_bytes": 3712,
+      "revision": 13,
+      "decoded_sha256": "1ee9168b22605ea41024dbb43420320879e3349ac2c41ab647bd314f13931055"
+    },
+    "actual-Invalid": {
+      "stored_bytes": 1008,
+      "decoded_bytes": 3712,
+      "revision": 13,
+      "decoded_sha256": "254bb8d8c85044eb2e2f23fe848074ac381345269bbae15b6010da2db0062425"
+    },
+    "learner": {
+      "stored_bytes": 1120,
+      "decoded_bytes": 3712,
+      "revision": 13,
+      "decoded_sha256": "3dcdefd5672b20e275e3b483136b8707f26689c90944964e06df3dfb2e5a5cc6"
+    },
+    "actual-Unsupported": {
+      "stored_bytes": 1152,
+      "decoded_bytes": 3712,
+      "revision": 15,
+      "decoded_sha256": "8c3bf69445f32e0f1bff6bfb8a245d8f8db20db550f39ba4350f0c68b80f722e"
+    },
+    "actual-Indeterminate": {
+      "stored_bytes": 1256,
+      "decoded_bytes": 3712,
+      "revision": 17,
+      "decoded_sha256": "94579d81561af5be0d554223fabb8fc421c0d0afda6b33d269f718d92c18d49d"
+    }
+  },
+  "prepared_bundles": {
+    "native": "build/native/task006-workspace-codec-a1",
+    "browser": "build/browser/task006-workspace-codec-a1",
+    "limitation": "Full ordinary artifact audit is valid; actual software5 mathematical-course reopen is broken. Do not present as a complete user workflow."
+  },
+  "next": "Full corrected software6 target build/audits, same original3B/900s case and real partial-pwrite failed workspace Save/retry/cold",
+  "corrected_successor": "docs/evidence/006-course-packed-row-restore.json"
+}

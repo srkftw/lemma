@@ -9,6 +9,12 @@ namespace Lemma.Compiler.DeploymentCatalog
 open Lean
 open Lemma.Platform.RiscV.ExecutionPrimitives (UserStartupCase)
 
+/-- Two exact privileged Common12 workloads share only their hardware/startup
+authority. Each has its own complete artifact body corpus. -/
+def isWiFiCommonConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-wifi-common-probe" ||
+    configuration == "lemmasim-silicon-wifi-common-read-probe"
+
 /-- These exact deployment names select diagnostic startup authority. They
 are never an independent case, module, or instruction-list input. -/
 def singletonInstructionCase? (configuration : String) : Option UserStartupCase :=
@@ -33,7 +39,7 @@ inductive ManagedBootRole where
   | capabilities | peer | busy | tamper
   | ipcServer | ipcClientA | ipcClientB | backgroundNoGrants | ipcFaultClient
   | bufferServer | bufferCLI | bufferPeer | bufferFaultClient
-  | storeServer | notebook | notebookIsolation
+  | storeServer | notebook | notebookIsolation | arithmeticServer | courseInstaller
   deriving BEq, Repr
 
 def ManagedBootRole.stableId : ManagedBootRole → String
@@ -53,13 +59,299 @@ def ManagedBootRole.stableId : ManagedBootRole → String
   | .storeServer => "store-server"
   | .notebook => "notebook"
   | .notebookIsolation => "notebook-isolation-client"
+  | .arithmeticServer => "arithmetic-server"
+  | .courseInstaller => "course-installer"
+
+def arithmeticDevelopmentMode? (configuration : String) : Option UInt64 :=
+  if configuration == "lemmasim-silicon-power-arithmetic-oom-development" || configuration == "lemmasim-silicon-sums-arithmetic-oom-development" || configuration == "lemmasim-silicon-bytes-arithmetic-oom-development" || configuration == "lemmasim-silicon-array-arithmetic-oom-development" || configuration == "lemmasim-silicon-string-arithmetic-oom-development" || configuration == "lemmasim-silicon-closure-arithmetic-oom-development" then some 1 else
+  if configuration == "lemmasim-silicon-power-arithmetic-fault-development" || configuration == "lemmasim-silicon-closure-arithmetic-fault-development" then some 2 else
+  if configuration == "lemmasim-silicon-power-arithmetic-stall-development" then some 3 else none
+
+def isArithmeticDevelopmentConfiguration (configuration : String) : Bool :=
+  (arithmeticDevelopmentMode? configuration).isSome
+
+/-- Software deployment successor on the unchanged canonical silicon binding. -/
+def isManagedNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-managed-notebook" ||
+    configuration == "lemmasim-silicon-managed-initialize"
+
+/-- Additive Paper-v2 successors; existing USB6/Product7 mappings remain exact. -/
+def isUSBNextNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-next-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-next-bulk-initialize"
+
+/-- Exact four-role Clocked13 software selection using the checked EntryV2 path. -/
+def isUSBPackageReaderNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize"
+
+def isPackageChooserNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-package-chooser-bulk-notebook" ||
+    configuration == "lemmasim-silicon-package-chooser-bulk-initialize"
+
+def isUSBPackageRecoveryEntry2NotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-clocked-package-entry2-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-clocked-package-entry2-bulk-initialize"
+
+/-- Explicit four-role installed-package/recovery4 composition on Clocked13. -/
+def isUSBPackageRecoveryNotebookConfiguration (configuration : String) : Bool :=
+  isUSBPackageReaderNotebookConfiguration configuration || isUSBPackageRecoveryEntry2NotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize"
+
+/-- Exact software successor joins Closure7/Doc8 to existing Clocked13 recovery. -/
+def isUSBClosureRecoveryNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-clocked-closure-retry-bulk-initialize"
+
+/-- Recovery-v2 selects new device/Store/Notebook policy on Clocked13 only. -/
+def isUSBRecoveryNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-clocked-retry-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-clocked-retry-bulk-initialize"
+
+/-- Clocked13 uses distinct PHY2/CDC1 identity with K6 and Paper3. -/
+def isUSBClockedNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-clocked-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-clocked-bulk-initialize"
+
+/-- USBWire11 binds the digital full-speed PHY and Paper3 without boot NV. -/
+def isUSBWireNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-wire-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-wire-bulk-initialize"
+
+/-- Four-role installed-course software on Product10; ordinary ROM boot only.
+There is deliberately no initializer variant that could format user media. -/
+def isTrialWatchdogNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-product-course-watchdog-bulk-notebook"
+
+def isProductCourseReaderNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-product-course-reader-bulk-notebook" ||
+    isTrialWatchdogNotebookConfiguration configuration
+
+/-- Product10/Paper3 executed-refresh authority has a distinct deployment. -/
+def isProductExecutedNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-product-executed-bulk-notebook"
+
+def isProductNextNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-product-next-bulk-notebook"
+
+/-- USB6 transport with the original isolated arithmetic User-v0.2 image. -/
+def isUSBNotebookConfiguration (configuration : String) : Bool :=
+  isUSBPackageRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration || isUSBRecoveryNotebookConfiguration configuration || isUSBClockedNotebookConfiguration configuration || isUSBWireNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-notebook" ||
+    configuration == "lemmasim-silicon-usb-initialize" ||
+    configuration == "lemmasim-silicon-usb-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-bulk-initialize"
+
+/-- Product7 uses immutable ROM/NV boot; this does not format user media. -/
+def isProductNotebookConfiguration (configuration : String) : Bool :=
+  isProductCourseReaderNotebookConfiguration configuration ||
+  isProductExecutedNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-product-notebook" ||
+    configuration == "lemmasim-silicon-product-bulk-notebook"
+
+/-- Installed immutable packages and the Closure7 checker use four guest roles. -/
+def isPackageReaderNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-package-reader-bulk-notebook" ||
+    configuration == "lemmasim-silicon-package-reader-bulk-initialize"
+
+def isPackageClosureNotebookConfiguration (configuration : String) : Bool :=
+  isPackageChooserNotebookConfiguration configuration || isProductCourseReaderNotebookConfiguration configuration || isPackageReaderNotebookConfiguration configuration ||
+    configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" ||
+    configuration == "lemmasim-silicon-package-closure-entry2-bulk-initialize"
+
+/-- One fresh validated task-entry borrow; historical Closure roots remain unchanged. -/
+def isClosureEntry2NotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-closure-entry2-bulk-notebook" ||
+    configuration == "lemmasim-silicon-closure-entry2-bulk-initialize"
+
+/-- Ordinary captured closures have a distinct isolated User7 authority.
+Closed software selectors admit Protocol7/document8 on their declared hardware;
+historical canonical0.3 and Clocked13 selections remain unchanged. -/
+def isClosureNotebookConfiguration (configuration : String) : Bool :=
+  isUSBPackageRecoveryNotebookConfiguration configuration || isPackageClosureNotebookConfiguration configuration || isClosureEntry2NotebookConfiguration configuration || #["lemmasim-silicon-closure-bulk-notebook", "lemmasim-silicon-closure-bulk-initialize",
+    "lemmasim-silicon-closure-arithmetic-oom-development",
+    "lemmasim-silicon-closure-arithmetic-fault-development"].contains configuration
+
+/-- Bounded String/UTF8 source has a distinct isolated User6 authority. -/
+def isStringNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-string-bulk-notebook" ||
+    configuration == "lemmasim-silicon-string-bulk-initialize" ||
+    configuration == "lemmasim-silicon-string-arithmetic-oom-development"
+
+/-- Course package installation is an additive software deployment; hardware
+and existing notebook/checker bodies remain the canonical silicon0.3 binding. -/
+def isCourseNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-course-bulk-notebook" ||
+    configuration == "lemmasim-silicon-course-bulk-initialize"
+
+/-- Completion-driven mount publication is a distinct four-image deployment. -/
+def isCourseAwaitNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-course-await-bulk-notebook" ||
+    configuration == "lemmasim-silicon-course-await-bulk-initialize"
+
+/-- Bounded full-width arrays have their own isolated User5 software authority. -/
+def isArrayNotebookConfiguration (configuration : String) : Bool :=
+  isCourseAwaitNotebookConfiguration configuration || isCourseNotebookConfiguration configuration || configuration == "lemmasim-silicon-array-bulk-notebook" ||
+    configuration == "lemmasim-silicon-array-bulk-initialize" ||
+    configuration == "lemmasim-silicon-array-arithmetic-oom-development"
+
+/-- Bounded ordinary ByteArray source execution is admitted only in its isolated User4 image. -/
+def isBytesNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-bytes-bulk-notebook" ||
+    configuration == "lemmasim-silicon-bytes-bulk-initialize" ||
+    configuration == "lemmasim-silicon-bytes-arithmetic-oom-development"
+
+/-- The bounded owned-page Surface ABI is a separate software selection. -/
+def isBulkNotebookConfiguration (configuration : String) : Bool :=
+  isUSBClosureRecoveryNotebookConfiguration configuration || isUSBRecoveryNotebookConfiguration configuration || isUSBClockedNotebookConfiguration configuration || isUSBWireNotebookConfiguration configuration || isProductExecutedNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isBytesNotebookConfiguration configuration ||
+  configuration == "lemmasim-silicon-bulk-notebook" ||
+    configuration == "lemmasim-silicon-bulk-initialize" ||
+    configuration == "lemmasim-silicon-usb-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-bulk-initialize" ||
+    configuration == "lemmasim-silicon-product-bulk-notebook"
+
+/-- Additive managed sums software; hardware remains silicon0.3. -/
+def isSumsNotebookConfiguration (configuration : String) : Bool :=
+  (isBulkNotebookConfiguration configuration && !isBytesNotebookConfiguration configuration && !isArrayNotebookConfiguration configuration && !isStringNotebookConfiguration configuration && !isClosureNotebookConfiguration configuration && !isUSBClosureRecoveryNotebookConfiguration configuration) ||
+  configuration == "lemmasim-silicon-sums-notebook" ||
+    configuration == "lemmasim-silicon-sums-initialize" ||
+    configuration == "lemmasim-silicon-sums-arithmetic-oom-development"
+
+def softwareDeploymentFields (configuration : String) : List (String × Json) :=
+  if isPackageChooserNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-reader-chooser-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("reader_contract", .str "lemma-course-reader-location/1"),
+    ("chooser_contract", .str "lemma-course-empty-selection-chooser/1"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isUSBPackageReaderNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-reader-clocked-recovery5-entry2-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.13.0"),
+    ("entry_contract", .str "lemma-scheduler-entry-borrow-v2"),
+    ("reader_contract", .str "lemma-course-reader-location/1"),
+    ("recovery_contract", .str "lemma-notebook-reader-recovery/5"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.2"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isUSBPackageRecoveryEntry2NotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-clocked-recovery4-entry2-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.13.0"),
+    ("entry_contract", .str "lemma-scheduler-entry-borrow-v2"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.2"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isProductCourseReaderNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str (if isTrialWatchdogNotebookConfiguration configuration then
+      "lemma-package-reader-product10-watchdog-deployment-v1" else "lemma-package-reader-product10-deployment-v1")),
+    ("kernel_lowering", .str "lemma-product-course-checked-physical-inline/1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.10.0"),
+    ("reader_contract", .str "lemma-course-reader-location/1"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isPackageReaderNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-reader-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("reader_contract", .str "lemma-course-reader-location/1"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isUSBPackageRecoveryNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-clocked-recovery4-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.13.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.2"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isPackageClosureNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-closure-entry2-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isUSBClosureRecoveryNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-usb-clocked-closure-recovery-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.13.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.2"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7")])])]
+  else if isUSBRecoveryNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-usb-clocked-recovery-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.13.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.2"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.3")])])]
+  else if isClosureEntry2NotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-managed-closure-entry2-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7")])])]
+  else if isClosureNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-managed-closure-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7")])])]
+  else if isCourseAwaitNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-course-mounted-await-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.5"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isCourseNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-course-array-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.5"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isStringNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-managed-string-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.6")])])]
+  else if isArrayNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-managed-array-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.5")])])]
+  else if isBytesNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-managed-bytes-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.4")])])]
+  else   if isSumsNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str (if isUSBClockedNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-clocked-deployment-v1" else if isUSBWireNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-wire-deployment-v1" else if isProductExecutedNotebookConfiguration configuration then "lemma-managed-sums-bulk-product-executed-deployment-v1" else if isProductNextNotebookConfiguration configuration then "lemma-managed-sums-bulk-product-next-deployment-v1" else if isUSBNextNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-next-deployment-v1" else if configuration == "lemmasim-silicon-product-bulk-notebook" then "lemma-managed-sums-bulk-product-deployment-v1" else if isUSBNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-deployment-v1" else if isBulkNotebookConfiguration configuration then "lemma-managed-sums-bulk-deployment-v1" else "lemma-managed-sums-deployment-v1")),
+    ("silicon_profile", .str (if isUSBClockedNotebookConfiguration configuration then "lemma-silicon-dev/0.13.0" else if isUSBWireNotebookConfiguration configuration then "lemma-silicon-dev/0.11.0" else if isProductExecutedNotebookConfiguration configuration then "lemma-silicon-dev/0.10.0" else if isProductNextNotebookConfiguration configuration then "lemma-silicon-dev/0.9.0" else if isUSBNextNotebookConfiguration configuration then "lemma-silicon-dev/0.8.0" else if isProductNotebookConfiguration configuration then "lemma-silicon-dev/0.7.0" else if isUSBNotebookConfiguration configuration then "lemma-silicon-dev/0.6.0" else "lemma-silicon-dev/0.3.0")),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.3")])])]
+  else if !isManagedNotebookConfiguration configuration then [] else
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-managed-notebook-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.2")])])]
 
 def capabilityManagedPolicy : String := "lemma-capabilities-v1"
 def ipcManagedPolicy : String := "lemma-ipc-v1"
 def bufferManagedPolicy : String := "lemma-buffer-service-v1"
 
 def managedPolicyFor (configuration : String) : Option String :=
-  if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" || configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
+  if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then some "lemma-notebook-arithmetic-v1" else
+  if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" ||
       configuration == "lemmasim-isolation-development" then some "lemma-notebook-v1"
   else if configuration == "capabilities-development" then some capabilityManagedPolicy
@@ -148,6 +440,141 @@ def notebookImages : Array UserImageSpec := #[
   { key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
     root := `Lemma.Applications.Notebook.main, bootRole? := some .notebook }]
 
+def arithmeticNotebookImages : Array UserImageSpec := notebookImages.push {
+  key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.Server,
+  root := `Lemma.Services.Arithmetic.Server.main, bootRole? := some .arithmeticServer }
+
+def sumsNotebookImages : Array UserImageSpec := #[
+  notebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainSums, bootRole? := some .notebook},
+  {key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.ServerV3,
+    root := `Lemma.Services.Arithmetic.ServerV3.main, bootRole? := some .arithmeticServer}]
+
+def bulkNotebookImages : Array UserImageSpec := #[
+  notebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainSumsBulk, bootRole? := some .notebook},
+  sumsNotebookImages[2]!]
+
+/-- A distinct service root retains old durable bytes and course guards. -/
+def recoveryNotebookImages : Array UserImageSpec := #[
+  {key := "store", id := 1, moduleName := `Lemma.Services.Store.ServerRecovery,
+    root := `Lemma.Services.Store.ServerRecovery.mainRecoveryCourse, bootRole? := some .storeServer},
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainRecoverableSumsBulk, bootRole? := some .notebook},
+  sumsNotebookImages[2]!]
+
+def bytesNotebookImages : Array UserImageSpec := #[
+  notebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainBytesBulk, bootRole? := some .notebook},
+  {key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.ServerV4,
+    root := `Lemma.Services.Arithmetic.ServerV4.main, bootRole? := some .arithmeticServer}]
+
+def arrayNotebookImages : Array UserImageSpec := #[
+  notebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainArrayBulk, bootRole? := some .notebook},
+  {key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.ServerV5,
+    root := `Lemma.Services.Arithmetic.ServerV5.main, bootRole? := some .arithmeticServer}]
+
+/-- No host package preinstallation: the separately linked course process
+receives raw bytes through owned Console and publishes through Store calls. -/
+def courseNotebookImages : Array UserImageSpec := #[
+  {key := "store", id := 1, moduleName := `Lemma.Services.Store.Server,
+    root := `Lemma.Services.Store.Server.courseMain, bootRole? := some .storeServer},
+  arrayNotebookImages[1]!, arrayNotebookImages[2]!,
+  {key := "course", id := 4, moduleName := `Lemma.Courses.PackageInstaller,
+    root := `Lemma.Courses.PackageInstaller.main, bootRole? := some .courseInstaller}]
+
+def courseAwaitNotebookImages : Array UserImageSpec := #[
+  {key := "store", id := 1, moduleName := `Lemma.Services.Store.ServerAwait,
+    root := `Lemma.Services.Store.ServerAwait.main, bootRole? := some .storeServer},
+  arrayNotebookImages[1]!, arrayNotebookImages[2]!,
+  {key := "course", id := 4, moduleName := `Lemma.Courses.PackageInstaller,
+    root := `Lemma.Courses.PackageInstaller.mainAwait, bootRole? := some .courseInstaller}]
+
+def stringNotebookImages : Array UserImageSpec := #[
+  notebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainStringBulk, bootRole? := some .notebook},
+  {key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.ServerV6,
+    root := `Lemma.Services.Arithmetic.ServerV6.main, bootRole? := some .arithmeticServer}]
+
+def closureNotebookImages : Array UserImageSpec := #[
+  notebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainClosureBulk, bootRole? := some .notebook},
+  {key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.ServerV7,
+    root := `Lemma.Services.Arithmetic.ServerV7.main, bootRole? := some .arithmeticServer}]
+
+/-- Reuse the actual scalar recovery Store and isolated Closure7 checker. -/
+def closureRecoveryNotebookImages : Array UserImageSpec := #[
+  recoveryNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainRecoverableClosureBulk, bootRole? := some .notebook},
+  closureNotebookImages[2]!]
+
+def packageClosureNotebookImages : Array UserImageSpec := #[
+  courseAwaitNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainPackageClosureBulk, bootRole? := some .notebook},
+  closureNotebookImages[2]!, courseAwaitNotebookImages[3]!]
+
+/-- Additive number-entry deployment12. The historical image specification
+above remains available for its source-bound profiles and artifact authority. -/
+def packageNumberPadNotebookImages : Array UserImageSpec := #[
+  packageClosureNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainPackageNumberPad, bootRole? := some .notebook},
+  packageClosureNotebookImages[2]!, packageClosureNotebookImages[3]!]
+
+/-- History-browse17 changes only the reader's initial location policy. -/
+def packageNumberPadBrowseNotebookImages : Array UserImageSpec := #[
+  packageNumberPadNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainPackageNumberPadBrowse, bootRole? := some .notebook},
+  packageNumberPadNotebookImages[2]!, packageNumberPadNotebookImages[3]!]
+
+/-- Reader18 adds an explicit node bookmark without changing the history17 roots. -/
+def packageReaderNotebookImages : Array UserImageSpec := #[
+  packageNumberPadBrowseNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainPackageNumberPadBookmark, bootRole? := some .notebook},
+  packageNumberPadBrowseNotebookImages[2]!, packageNumberPadBrowseNotebookImages[3]!]
+
+def packageChooserNotebookImages : Array UserImageSpec := #[
+  packageReaderNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainPackageReaderChooser, bootRole? := some .notebook},
+  packageReaderNotebookImages[2]!, packageReaderNotebookImages[3]!]
+
+/-- Composes the genuine mounted/recovery Store, package UI, isolated checker
+and installer. No host role parses or recovers documents. -/
+def packageRecoveryNotebookImages : Array UserImageSpec := #[
+  {key := "store", id := 1, moduleName := `Lemma.Services.Store.ServerRecoveryAwait,
+    root := `Lemma.Services.Store.ServerRecoveryAwait.mainRecoveryAwait, bootRole? := some .storeServer},
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainRecoverablePackageClosureBulk, bootRole? := some .notebook},
+  closureNotebookImages[2]!, courseAwaitNotebookImages[3]!]
+
+/-- Recovery successor16 joins the existing recoverable Store policy with
+ordinary bounded number entry. Historical recovery image specs remain above. -/
+def packageRecoveryNumberPadNotebookImages : Array UserImageSpec := #[
+  packageRecoveryNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainRecoverablePackageNumberPad, bootRole? := some .notebook},
+  packageRecoveryNotebookImages[2]!, packageRecoveryNotebookImages[3]!]
+
+/-- Reader/recovery19 preserves the real four services and adds only the
+joined ordinary Notebook root; it does not select a new hardware profile. -/
+def packageRecoveryReaderNotebookImages : Array UserImageSpec := #[
+  packageRecoveryNumberPadNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainRecoverablePackageReader, bootRole? := some .notebook},
+  packageRecoveryNumberPadNotebookImages[2]!, packageRecoveryNumberPadNotebookImages[3]!]
+
 /-- Ordinary store/notebook specifications are byte-for-byte the selected
 production peers; only this closed deployment admits the third User fixture. -/
 def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
@@ -155,6 +582,7 @@ def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
   root := `Lemma.User.Development.NotebookIsolation.main, bootRole? := some .notebookIsolation }
 
 def isMultiImageConfiguration (configuration : String) : Bool :=
+  isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration ||
   configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" || configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" ||
   configuration == "lemmasim-isolation-development" || configuration == "tasks-development" || configuration == "tasks-fault-development" ||
@@ -163,7 +591,25 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" || configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
+  if isPackageChooserNotebookConfiguration configuration then .ok packageChooserNotebookImages
+  else if isUSBPackageReaderNotebookConfiguration configuration then .ok packageRecoveryReaderNotebookImages
+  else if isProductCourseReaderNotebookConfiguration configuration then .ok packageReaderNotebookImages
+  else if isPackageReaderNotebookConfiguration configuration then .ok packageReaderNotebookImages
+  else if isUSBPackageRecoveryNotebookConfiguration configuration then .ok packageRecoveryNumberPadNotebookImages
+  else if isPackageClosureNotebookConfiguration configuration then .ok packageNumberPadBrowseNotebookImages
+  else if isUSBClosureRecoveryNotebookConfiguration configuration then .ok closureRecoveryNotebookImages
+  else if isUSBRecoveryNotebookConfiguration configuration then .ok recoveryNotebookImages
+  else if isClosureNotebookConfiguration configuration then .ok closureNotebookImages
+  else if isCourseAwaitNotebookConfiguration configuration then .ok courseAwaitNotebookImages
+  else if isCourseNotebookConfiguration configuration then .ok courseNotebookImages
+  else if isStringNotebookConfiguration configuration then .ok stringNotebookImages
+  else if isArrayNotebookConfiguration configuration then .ok arrayNotebookImages
+  else if isBytesNotebookConfiguration configuration then .ok bytesNotebookImages
+  else if isBulkNotebookConfiguration configuration then .ok bulkNotebookImages else
+  if isSumsNotebookConfiguration configuration then .ok sumsNotebookImages else
+  if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then .ok arithmeticNotebookImages else
+  if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" then .ok notebookImages
   else if configuration == "lemmasim-isolation-development" then .ok notebookIsolationImages
   else if configuration == "tasks-development" then .ok taskImages
@@ -207,6 +653,7 @@ def catalogJson (configuration : String) : Except String Json := do
     ("schema_version", 1), ("contract_version", .str "lemma-user-image-catalog-v1"),
     ("configuration", .str configuration), ("stage", .str "supervisor"),
     ("image_count", toJson images.size), ("images", .arr (images.map imageJson))] ++
-    ((managedPolicyFor configuration).map (fun policy => [("managed_policy", Json.str policy)]) |>.getD []))
+    ((managedPolicyFor configuration).map (fun policy => [("managed_policy", Json.str policy)]) |>.getD []) ++
+    softwareDeploymentFields configuration)
 
 end Lemma.Compiler.DeploymentCatalog

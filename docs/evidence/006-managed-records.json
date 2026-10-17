@@ -1,0 +1,94 @@
+{
+  "schema": "lemma-managed-records-evidence/1",
+  "scope": "Genuine ordinary Lean compiler IR, checked managed-record lowering, isolated RV64 build/audit. Not a compiler proof, full G2 runtime, proof kernel or target execution receipt.",
+  "compiler_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+  "profiles": [
+    "core0-user-v0.2",
+    "lemma-managed-records-v1"
+  ],
+  "builds": {
+    "arithmetic": {
+      "status": "PASS",
+      "audit": {
+        "path": "build/user/task006-managed-arithmetic-a1/audit.json",
+        "sha256": "8774a5e66dc8aa839f6adc68c45f82287c3dc2509f84be04c5897af07ff6c419"
+      },
+      "image_sha256": "e48add1fee9759f8baa276b9a85d1ac097e289b1553aa38ff22f17440a01a774",
+      "source_commit": "15758e9a172116127a5488f489da7665e2514fc1",
+      "scope": "Actual build and full artifact audit; guest execution separately required",
+      "provenance": {
+        "path": "build/user/task006-managed-arithmetic-a1/user-provenance.json",
+        "sha256": "e9a8b526618ce35bb348b982e28584fdc2ea6c90f47f2b3b057a9aa7e4bfe822"
+      },
+      "maximum_compiled_frame_chain_bytes": 576
+    },
+    "notebook": {
+      "status": "PASS",
+      "audit": {
+        "path": "build/kernel/task006-managed-notebook-a1/audit.json",
+        "sha256": "ad9b2d7b36fc423922b8bdd8b950f1d3e27c5f0401bd06f135c9cf1bbd520544"
+      },
+      "image_sha256": "c7933624ceb0d05fdb5d56669d268b68b2d7176a46e12fab138f0809ba649fac",
+      "source_commit": "d5853860ad6e007e160dd9d5acad7033775879ab",
+      "scope": "Actual build and full artifact audit; guest execution separately required",
+      "provenance": {
+        "path": "build/kernel/task006-managed-notebook-a1/provenance.json",
+        "sha256": "4f005f0b23db88445c686f82a5d8ad0a36e38553f74d21837fdf1ceb75a65784"
+      }
+    },
+    "initializer": {
+      "status": "PASS",
+      "audit": {
+        "path": "build/kernel/task006-managed-initialize-a1/audit.json",
+        "sha256": "2f91593395a3d0950d842b6cb85c8e4ad76755447fa53c43c80649d31863ca0a"
+      },
+      "image_sha256": "5bf5e97620e37c0729a0f1d50d5241db22b13eb0064cb177be085aedf43c4af3",
+      "source_commit": "d5853860ad6e007e160dd9d5acad7033775879ab",
+      "scope": "Actual build and full artifact audit; guest execution separately required",
+      "provenance": {
+        "path": "build/kernel/task006-managed-initialize-a1/provenance.json",
+        "sha256": "b956d9b3213bb232a67091bd1f636292e7488055ab2916dbd8511dac42ec7b1f"
+      }
+    }
+  },
+  "genuine_fixture": {
+    "path": "build/managed/user-v02-source-a3/genuine-ir.json",
+    "sha256": "e9867fc54a65d431de5764de95665ab38a13b9cab79f9331a80c9d27cd04fe20",
+    "status": "PASS",
+    "scope": "Actual genuine source/lowering; fifteen legacy-profile denials, dynamic-entry and non-scalar layout rejection"
+  },
+  "host_artifact_mutations": {
+    "path": "build/task006-managed-records-host-a2.log",
+    "sha256": "9095ec5f7e63ff65c44d180983a7dc1c0c7981e1b76c191cb286d22aec8d424b",
+    "tests": 8,
+    "scope": "Independent actual extracted LLVM/catalog admission mutations; no guest semantic oracle"
+  },
+  "native_bundle": {
+    "path": "build/native/task006-managed-a1/bundle.json",
+    "sha256": "91216b9efa5814ccd3304c2db30723d18e80f34f9bd423a175d2594a5435a439"
+  },
+  "browser_bundle": {
+    "path": "build/browser/task006-managed-a1/bundle.json",
+    "sha256": "8cf2789b301f2de7c8af9830d089388fbae3752248413df963ca8af9f2969a52",
+    "scope": "Validated packaging of current portable runtime and audited genuine managed guest; no browser Ready qualification"
+  },
+  "guest_execution": {
+    "status": "PASS",
+    "path": "build/task006-managed-math-a1/result.json",
+    "sha256": "dcc3330243d72a4905777867949868c5b8d4395cc0ac4f9d7fa5036147d77e1d",
+    "receipt": "docs/evidence/006-managed-guest-course.json",
+    "scope": "Actual isolated ordinary managed-record arithmetic in course/check/edit/hint/ink/Save/cold/full-controller/failure workflow; budget0 is not heap OOM"
+  },
+  "commands": [
+    "nix develop --no-write-lock-file --command env LEMMA_MANAGED_OUT=build/managed/UNUSED lake env lean Lemma/Compiler/Test/ManagedRecords.lean",
+    "nix develop --no-write-lock-file --command python3 scripts/build_user.py --configuration lemmasim-silicon-power-notebook --image-key arithmetic --opt-level O2 --output-dir build/user/UNUSED --timeout 600",
+    "nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py build/user/UNUSED --timeout 600",
+    "python3 scripts/check_math_session.py --native-bundle build/native/task006-managed-a1 --disk USER_INITIALIZED_MEDIUM --work-dir build/UNUSED --boot-seconds 60 --action-seconds 30"
+  ],
+  "limitations": [
+    "Only closed ordinary scalar-field structures, borrowed direct calls and real decrement/release are admitted. Recursion, arrays, strings, closures, general inductives and static lifted objects reject.",
+    "Durable exact/1 identity binds the mathematical semantic checker/environment, original goal and revision. It does not store the compiled arithmetic ELF or runtime digest per attempt. Execution artifacts are independently source-bound here.",
+    "All boot paths in these bundles remain ELF-preload development boot.",
+    "Earlier source/elaboration/object failures remain retained under ignored build paths; their results are not replaced."
+  ]
+}

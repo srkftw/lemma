@@ -1,0 +1,147 @@
+{
+  "optimized_ir": "define { i64, i64 } @lemma_kernel_core0_action_71(i64 %arg0) local_unnamed_addr #3 {\nentry:\n  %action.call.result0 = call { i64, i64 } @lemma_kernel_core0_action_35(i64 18)\n  %action.call.status-word1 = extractvalue { i64, i64 } %action.call.result0, 0\n  %action.call.status2 = trunc nuw nsw i64 %action.call.status-word1 to i8\n  %action.call.value3 = extractvalue { i64, i64 } %action.call.result0, 1\n  %call4 = call zeroext i1 @lemma_kernel_core0_scalar_24(i8 zeroext %action.call.status2)\n  br i1 %call4, label %action.if.merge.2, label %action.if.else.1\n\naction.if.else.1:                                 ; preds = %entry\n  %action.call.result6 = call { i64, i64 } @lemma_kernel_core0_action_35(i64 19)\n  %action.call.status-word7 = extractvalue { i64, i64 } %action.call.result6, 0\n  %action.call.status8 = trunc nuw nsw i64 %action.call.status-word7 to i8\n  %action.call.value9 = extractvalue { i64, i64 } %action.call.result6, 1\n  %call10 = call zeroext i1 @lemma_kernel_core0_scalar_24(i8 zeroext %action.call.status8)\n  br i1 %call10, label %action.if.merge.2, label %action.if.else.4\n\naction.if.else.4:                                 ; preds = %action.if.else.1\n  %cmp12 = icmp eq i64 %arg0, 1\n  br i1 %cmp12, label %if.then.6, label %if.else.7\n\nif.then.6:                                        ; preds = %action.if.else.4\n  %cmp14 = icmp eq i64 %action.call.value3, 512\n  %cmp16 = icmp eq i64 %action.call.value9, 640\n  %or.cond = select i1 %cmp14, i1 %cmp16, i1 false\n  br i1 %or.cond, label %action.if.else.46, label %action.if.merge.2\n\nif.else.7:                                        ; preds = %action.if.else.4\n  %cmp19 = icmp ugt i64 %arg0, 2\n  br i1 %cmp19, label %if.then.15, label %if.else.16\n\nif.then.15:                                       ; preds = %if.else.7\n  %cmp21 = icmp eq i64 %action.call.value3, 1650\n  %cmp23 = icmp eq i64 %action.call.value9, 2200\n  %or.cond6 = select i1 %cmp21, i1 %cmp23, i1 false\n  br i1 %or.cond6, label %action.if.else.46, label %action.if.merge.2\n\nif.else.16:                                       ; preds = %if.else.7\n  %cmp26 = icmp eq i64 %arg0, 2\n  br i1 %cmp26, label %if.then.24, label %if.else.25\n\nif.then.24:                                       ; preds = %if.else.16\n  %cmp28 = icmp eq i64 %action.call.value3, 1650\n  %cmp30 = icmp eq i64 %action.call.value9, 2200\n  %or.cond7 = select i1 %cmp28, i1 %cmp30, i1 false\n  br i1 %or.cond7, label %action.if.else.46, label %action.if.merge.2\n\nif.else.25:                                       ; preds = %if.else.16\n  switch i64 %action.call.value3, label %action.if.merge.2 [\n    i64 1650, label %if.then.33\n    i64 1404, label %if.merge.8\n  ]\n\nif.then.33:                                       ; preds = %if.else.25\n  %cmp34 = icmp eq i64 %action.call.value9, 2200\n  br i1 %cmp34, label %action.if.else.46, label %action.if.merge.2\n\nif.merge.8:                                       ; preds = %if.else.25\n  %cmp37 = icmp eq i64 %action.call.value9, 1872\n  br i1 %cmp37, label %action.if.else.46, label %action.if.merge.2\n\naction.if.else.46:                                ; preds = %if.then.24, %if.then.15, %if.then.6, %if.then.33, %if.merge.8\n  %action.call.result46 = call { i64, i64 } @lemma_kernel_core0_action_34(i64 268501024)\n  %action.call.status-word47 = extractvalue { i64, i64 } %action.call.result46, 0\n  %action.call.status48 = trunc nuw nsw i64 %action.call.status-word47 to i8\n  %action.call.value49 = extractvalue { i64, i64 } %action.call.result46, 1\n  %call50 = call zeroext i1 @lemma_kernel_core0_scalar_24(i8 zeroext %action.call.status48)\n  br i1 %call50, label %action.if.merge.2, label %action.if.else.49\n\naction.if.else.49:                                ; preds = %action.if.else.46\n  %action.call.result52 = call { i64, i64 } @lemma_kernel_core0_action_34(i64 268501032)\n  %action.call.status-word53 = extractvalue { i64, i64 } %action.call.result52, 0\n  %action.call.status54 = trunc nuw nsw i64 %action.call.status-word53 to i8\n  %action.call.value55 = extractvalue { i64, i64 } %action.call.result52, 1\n  %call56 = call zeroext i1 @lemma_kernel_core0_scalar_24(i8 zeroext %action.call.status54)\n  br i1 %call56, label %action.if.merge.2, label %action.if.else.52\n\naction.if.else.52:                                ; preds = %action.if.else.49\n  %action.call.result58 = call { i64, i64 } @lemma_kernel_core0_action_35(i64 20)\n  %action.call.status-word59 = extractvalue { i64, i64 } %action.call.result58, 0\n  %action.call.status60 = trunc nuw nsw i64 %action.call.status-word59 to i8\n  %action.call.value61 = extractvalue { i64, i64 } %action.call.result58, 1\n  %call62 = call zeroext i1 @lemma_kernel_core0_scalar_24(i8 zeroext %action.call.status60)\n  br i1 %call62, label %action.if.merge.2, label %action.if.else.55\n\naction.if.else.55:                                ; preds = %action.if.else.52\n  %action.call.result64 = call { i64, i64 } @lemma_kernel_core0_action_35(i64 21)\n  %action.call.status-word65 = extractvalue { i64, i64 } %action.call.result64, 0\n  %action.call.status66 = trunc nuw nsw i64 %action.call.status-word65 to i8\n  %call68 = call zeroext i1 @lemma_kernel_core0_scalar_24(i8 zeroext %action.call.status66)\n  br i1 %call68, label %action.if.merge.2, label %action.if.else.58\n\naction.if.else.58:                                ; preds = %action.if.else.55\n  %action.call.value67 = extractvalue { i64, i64 } %action.call.result64, 1\n  %cmp70 = icmp eq i64 %arg0, 5\n  %.5 = select i1 %cmp70, i64 7, i64 3\n  %cmp72 = icmp eq i64 %action.call.value67, %.5\n  br i1 %cmp72, label %action.if.then.63, label %action.if.merge.2\n\naction.if.then.63:                                ; preds = %action.if.else.58\n  %action.call.result73 = call { i64, i64 } @lemma_kernel_core0_action_34(i64 268505160)\n  %action.call.status-word74 = extractvalue { i64, i64 } %action.call.result73, 0\n  %action.call.status75 = trunc nuw nsw i64 %action.call.status-word74 to i8\n  %call77 = call zeroext i1 @lemma_kernel_core0_scalar_24(i8 zeroext %action.call.status75)\n  br i1 %call77, label %action.if.merge.2, label %action.if.else.67\n\naction.if.else.67:                                ; preds = %action.if.then.63\n  %action.call.value76 = extractvalue { i64, i64 } %action.call.result73, 1\n  %cmp79 = icmp eq i64 %action.call.value3, %action.call.value49\n  %cmp80 = icmp eq i64 %action.call.value9, %action.call.value55\n  %or.cond8 = select i1 %cmp79, i1 %cmp80, i1 false\n  %cmp81 = icmp eq i64 %action.call.value61, %action.call.value76\n  %or.cond9 = select i1 %or.cond8, i1 %cmp81, i1 false\n  br i1 %or.cond9, label %action.if.then.75, label %action.if.merge.2\n\naction.if.then.75:                                ; preds = %action.if.else.67\n  %action.call.result82 = call { i64, i64 } @lemma_kernel_core0_action_35(i64 26)\n  %action.call.status-word83 = extractvalue { i64, i64 } %action.call.result82, 0\n  %action.call.value85 = extractvalue { i64, i64 } %action.call.result82, 1\n  %cmp86 = icmp eq i64 %action.call.status-word83, 0\n  br i1 %cmp86, label %action.if.then.78, label %action.if.merge.2\n\naction.if.then.78:                                ; preds = %action.if.then.75\n  %action.call.result87 = call { i64, i64 } @lemma_kernel_core0_action_35(i64 27)\n  %action.call.status-word88 = extractvalue { i64, i64 } %action.call.result87, 0\n  %action.call.value90 = extractvalue { i64, i64 } %action.call.result87, 1\n  %cmp91 = icmp eq i64 %action.call.status-word88, 0\n  br i1 %cmp91, label %action.if.then.81, label %action.if.merge.2\n\naction.if.then.81:                                ; preds = %action.if.then.78\n  switch i64 %arg0, label %action.if.else.97 [\n    i64 5, label %action.if.then.84\n    i64 4, label %action.if.then.87\n    i64 3, label %action.if.then.90\n    i64 1, label %action.if.then.93\n    i64 2, label %action.if.then.96\n  ]\n\naction.if.then.84:                                ; preds = %action.if.then.81\n  %action.call.result93 = call { i64, i64 } @lemma_kernel_core0_action_66(i64 %action.call.value85, i64 %action.call.value90, i64 %action.call.value3, i64 %action.call.value9, i64 %action.call.value61)\n  %action.call.status-word94 = extractvalue { i64, i64 } %action.call.result93, 0\n  %action.call.value96 = extractvalue { i64, i64 } %action.call.result93, 1\n  br label %action.if.merge.2\n\naction.if.then.87:                                ; preds = %action.if.then.81\n  %action.call.result98 = call { i64, i64 } @lemma_kernel_core0_action_67(i64 %action.call.value85, i64 %action.call.value90, i64 %action.call.value3, i64 %action.call.value9, i64 %action.call.value61)\n  %action.call.status-word99 = extractvalue { i64, i64 } %action.call.result98, 0\n  %action.call.value101 = extractvalue { i64, i64 } %action.call.result98, 1\n  br label %action.if.merge.2\n\naction.if.then.90:                                ; preds = %action.if.then.81\n  %action.call.result103 = call { i64, i64 } @lemma_kernel_core0_action_68(i64 %action.call.value85, i64 %action.call.value90, i64 %action.call.value3, i64 %action.call.value9, i64 %action.call.value61)\n  %action.call.status-word104 = extractvalue { i64, i64 } %action.call.result103, 0\n  %action.call.value106 = extractvalue { i64, i64 } %action.call.result103, 1\n  br label %action.if.merge.2\n\naction.if.then.93:                                ; preds = %action.if.then.81\n  %action.call.result108 = call { i64, i64 } @lemma_kernel_core0_action_69(i64 %action.call.value85, i64 %action.call.value90, i64 %action.call.value3, i64 %action.call.value9, i64 %action.call.value61)\n  %action.call.status-word109 = extractvalue { i64, i64 } %action.call.result108, 0\n  %action.call.value111 = extractvalue { i64, i64 } %action.call.result108, 1\n  br label %action.if.merge.2\n\naction.if.then.96:                                ; preds = %action.if.then.81\n  %action.call.result113 = call { i64, i64 } @lemma_kernel_core0_action_69(i64 %action.call.value85, i64 %action.call.value90, i64 %action.call.value3, i64 %action.call.value9, i64 %action.call.value61)\n  %action.call.status-word114 = extractvalue { i64, i64 } %action.call.result113, 0\n  %action.call.value116 = extractvalue { i64, i64 } %action.call.result113, 1\n  br label %action.if.merge.2\n\naction.if.else.97:                                ; preds = %action.if.then.81\n  %action.call.result117 = call { i64, i64 } @lemma_kernel_core0_action_70(i64 %action.call.value85, i64 %action.call.value90, i64 %action.call.value3, i64 %action.call.value9, i64 %action.call.value61)\n  %action.call.status-word118 = extractvalue { i64, i64 } %action.call.result117, 0\n  %action.call.value120 = extractvalue { i64, i64 } %action.call.result117, 1\n  br label %action.if.merge.2\n\naction.if.merge.2:                                ; preds = %action.if.else.58, %action.if.else.67, %if.merge.8, %if.else.25, %if.then.24, %if.then.15, %if.then.6, %if.then.33, %action.if.else.1, %action.if.else.46, %action.if.else.52, %action.if.then.75, %action.if.then.87, %action.if.then.93, %action.if.else.97, %action.if.then.96, %action.if.then.90, %action.if.then.84, %action.if.then.78, %action.if.then.63, %action.if.else.55, %action.if.else.49, %entry\n  %action.if.status161 = phi i64 [ %action.call.status-word1, %entry ], [ %action.call.status-word7, %action.if.else.1 ], [ %action.call.status-word47, %action.if.else.46 ], [ %action.call.status-word53, %action.if.else.49 ], [ %action.call.status-word59, %action.if.else.52 ], [ %action.call.status-word65, %action.if.else.55 ], [ %action.call.status-word74, %action.if.then.63 ], [ %action.call.status-word94, %action.if.then.84 ], [ %action.call.status-word99, %action.if.then.87 ], [ %action.call.status-word104, %action.if.then.90 ], [ %action.call.status-word109, %action.if.then.93 ], [ %action.call.status-word114, %action.if.then.96 ], [ %action.call.status-word118, %action.if.else.97 ], [ %action.call.status-word88, %action.if.then.78 ], [ %action.call.status-word83, %action.if.then.75 ], [ 169, %if.then.33 ], [ 169, %if.then.6 ], [ 169, %if.then.15 ], [ 169, %if.then.24 ], [ 169, %if.else.25 ], [ 169, %if.merge.8 ], [ 169, %action.if.else.67 ], [ 169, %action.if.else.58 ]\n  %action.if.value162 = phi i64 [ 0, %entry ], [ 0, %action.if.else.1 ], [ 0, %action.if.else.46 ], [ 0, %action.if.else.49 ], [ 0, %action.if.else.52 ], [ 0, %action.if.else.55 ], [ 0, %action.if.then.63 ], [ %action.call.value96, %action.if.then.84 ], [ %action.call.value101, %action.if.then.87 ], [ %action.call.value106, %action.if.then.90 ], [ %action.call.value111, %action.if.then.93 ], [ %action.call.value116, %action.if.then.96 ], [ %action.call.value120, %action.if.else.97 ], [ 0, %action.if.then.78 ], [ 0, %action.if.then.75 ], [ 0, %if.then.33 ], [ 0, %if.then.6 ], [ 0, %if.then.15 ], [ 0, %if.then.24 ], [ 0, %if.else.25 ], [ 0, %if.merge.8 ], [ 0, %action.if.else.67 ], [ 0, %action.if.else.58 ]\n  %action.result.status-word163 = and i64 %action.if.status161, 255\n  %action.result.partial164 = insertvalue { i64, i64 } poison, i64 %action.result.status-word163, 0\n  %action.result.complete165 = insertvalue { i64, i64 } %action.result.partial164, i64 %action.if.value162, 1\n  ret { i64, i64 } %action.result.complete165\n\n}\n",
+  "unit": {
+    "role": "kernel",
+    "configuration": "lemmasim-silicon-power-arithmetic-oom-development",
+    "functions": [
+      {
+        "symbol": "lemma_kernel_core0_scalar_24",
+        "source": "Lemma.Platform.LemmaSim.Descriptor.failed",
+        "effects": [],
+        "args": [
+          "u8"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_action_34",
+        "source": "Lemma.Platform.LemmaSim.IO.read64",
+        "effects": [
+          "checked-access",
+          "mmio-read",
+          "io-order"
+        ],
+        "args": [
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_action_35",
+        "source": "Lemma.Platform.LemmaSim.Descriptor.word",
+        "effects": [
+          "checked-access",
+          "mmio-read",
+          "io-order"
+        ],
+        "args": [
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_action_66",
+        "source": "Lemma.Platform.LemmaSim.DescriptorDTB.validateSiliconBLE",
+        "effects": [
+          "checked-access",
+          "mmio-read",
+          "io-order",
+          "physical-read",
+          "physical-write"
+        ],
+        "args": [
+          "u64",
+          "u64",
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_action_67",
+        "source": "Lemma.Platform.LemmaSim.DescriptorDTB.validateSiliconSafety",
+        "effects": [
+          "checked-access",
+          "mmio-read",
+          "io-order",
+          "physical-read",
+          "physical-write"
+        ],
+        "args": [
+          "u64",
+          "u64",
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_action_68",
+        "source": "Lemma.Platform.LemmaSim.DescriptorDTB.validateSiliconPower",
+        "effects": [
+          "checked-access",
+          "mmio-read",
+          "io-order",
+          "physical-read",
+          "physical-write"
+        ],
+        "args": [
+          "u64",
+          "u64",
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_action_69",
+        "source": "Lemma.Platform.LemmaSim.DescriptorDTB.validateSilicon",
+        "effects": [
+          "checked-access",
+          "mmio-read",
+          "io-order",
+          "physical-read",
+          "physical-write"
+        ],
+        "args": [
+          "u64",
+          "u64",
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_action_70",
+        "source": "Lemma.Platform.LemmaSim.DescriptorDTB.validate",
+        "effects": [
+          "checked-access",
+          "mmio-read",
+          "io-order",
+          "physical-read",
+          "physical-write"
+        ],
+        "args": [
+          "u64",
+          "u64",
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_action_71",
+        "source": "_private.Lemma.Platform.LemmaSim.Descriptor.0.Lemma.Platform.LemmaSim.Descriptor.geometry",
+        "effects": [
+          "checked-access",
+          "mmio-read",
+          "io-order",
+          "physical-read",
+          "physical-write"
+        ],
+        "args": [
+          "u64"
+        ]
+      }
+    ]
+  },
+  "symbol": "lemma_kernel_core0_action_71",
+  "source_artifact": "build/kernel/task006-managed-oom-a3/kernel"
+}

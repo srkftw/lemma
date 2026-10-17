@@ -1,0 +1,65 @@
+{
+  "schema": "lemma-legacy-shared-course-reader/1",
+  "status": "PASS",
+  "source_commit": "080db960f545a3f86c4ae6776790160e5f170883",
+  "scope": "Small genuine Notebook user export and corrected reader/route observer; not full-image audit, RV64 execution or new durable-format authority",
+  "source": [
+    {
+      "path": "Lemma/Applications/Notebook.lean",
+      "sha256": "545925daad079153bc3e6a7195ca38b0506bb6e7449992175fda90d45038a76a"
+    },
+    {
+      "path": "Lemma/Documents/Mathematics.lean",
+      "sha256": "8be15ca52d8f269dcd8bc2aa5d3221c269a2b254959319c7265c921478cab1dc"
+    }
+  ],
+  "compiler_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+  "genuine_export_command": "flock build/task006-lake.lock nix develop --no-write-lock-file --command python3 build/managed/legacy-course-reader-a1/run.py",
+  "qualification_command": "python3 scripts/check_legacy_record_reader.py build/managed/legacy-course-reader-a1/power/users/notebook build/managed/legacy-course-reader-a1/managed/users/notebook --output build/managed/legacy-course-reader-a1/qualification-a2.json",
+  "receipt": {
+    "path": "build/managed/legacy-course-reader-a1/qualification-a2.json",
+    "sha256": "67b4c741d1d8adedb52bc8e39fcefa7877d104838f92b30732ef00b129d39b6b"
+  },
+  "variants": [
+    {
+      "configuration": "lemmasim-silicon-power-notebook",
+      "profile": "core0-user-v0.1",
+      "owner_body_sha256": "8cba4770e09dbb24ae2819a55d646e2f69029fe725bcb1aaebd27e6dfb2e8503"
+    },
+    {
+      "configuration": "lemmasim-silicon-managed-notebook",
+      "profile": "core0-user-v0.2",
+      "owner_body_sha256": "8cba4770e09dbb24ae2819a55d646e2f69029fe725bcb1aaebd27e6dfb2e8503"
+    }
+  ],
+  "checks": {
+    "per_variant_actual_length_mutations": 12,
+    "per_variant_actual_route_mutations": 6,
+    "host_boundary_tests": 3,
+    "codec_semantic_rejection": "tests/mathematics/ExecutionIdentitySums.lean original Mathematics.validate rejects migrated4 with234; same format1..3 parser",
+    "codec_log": {
+      "path": "build/managed/legacy-course-reader-a1/legacy-authority-regression.log",
+      "sha256": "7d2ed91743d2d29c184b146e0116ab6abca3f4aa594033cae8190329f93d150f"
+    }
+  },
+  "retained_failures": [
+    {
+      "path": "build/managed/legacy-course-reader-a1/power/observer-result.json",
+      "sha256": "6ec6c2199f847cbc1c585097c87c8c743b2b4674e632419ba3f858ab00bfb88d"
+    },
+    {
+      "path": "build/managed/legacy-course-reader-a1/managed/observer-result.json",
+      "sha256": "bd78fe49cc216f969bd5a89f6fc7dc88cfde3e0c1c99eefe176a34d08f762313"
+    },
+    {
+      "path": "build/managed/legacy-course-reader-a1/qualification-a1.json",
+      "sha256": "a59032e5cbb107a0b29e297d3f601a46ff5b24b59aaead4337b47488059008ac"
+    }
+  ],
+  "repair": "Exact selected Notebook configuration/profile map admits the already pinned scalar [1856,2496,2496] fetch. Legacy main literal2 and original codec validation/upgrade remain unchanged.",
+  "limitations": [
+    "No managed-sums language or implementation registry authority granted to legacy Notebook",
+    "No source/model changes or guest behavior claims from this corrected observer",
+    "Initial route-observer FAIL retained: LLVM label comments were not stripped before existing CFG parser; fixed independently and corruption tests pass"
+  ]
+}

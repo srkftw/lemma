@@ -1,0 +1,135 @@
+{
+  "schema": "lemma-browser-array-mathematics-cold-result/1",
+  "status": "FAIL_ORIGINAL_HOST_DEADLINE_NO_READY",
+  "cycle": 843850000,
+  "ready_observed": false,
+  "panel_completed": 0,
+  "flushes": 0,
+  "input_and_observed_medium_equal": true,
+  "heap_bytes": 201326592,
+  "declared_host_limit_seconds": 7200,
+  "actual_pause_worker_elapsed_seconds": 7822.1215,
+  "actual_pause_simulation_call_seconds": 7515.217269999462,
+  "observed_backing_completed": 250,
+  "scope": "Actual cold from opaque acknowledgedDoc6medium; original deadline failed. Oldbundle lacked automaticwallguard; observation/pause late by622.1215seconds, alllatework retained as failure. No furthercoldbudget granted and no checkpoint restore used in coldrun. No completedbrowsermathematics/course claim.",
+  "retained_pc": 2149580800,
+  "authoritative_runtime_sha256": "0b4ef229144915f65994bed3b1f008f733da8403c4160c9abdde3b4de5df2711",
+  "artifacts": {
+    "plan.json": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/plan.json",
+      "bytes": 1454,
+      "sha256": "bea506e9654c05753854e3f9c204b9a96b1cdcf0adfc180cfa024d218f44a915"
+    },
+    "deadline-failed.chk": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/deadline-failed.chk",
+      "bytes": 145638015,
+      "sha256": "d59861e80ee0dcf16583f3785399fcf0263be473e7a82331f907814a27d8e1e3"
+    },
+    "deadline-failed.raw": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/deadline-failed.raw",
+      "bytes": 268435456,
+      "sha256": "027b26c9e6af04a6d03a97a051a52d1eed32f87c92f99663a94f2d0459f0e2db"
+    },
+    "deadline-failed.io": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/deadline-failed.io",
+      "bytes": 168072,
+      "sha256": "5b0aba8cbbdf74a4bd6f81fbdb493835255ce07ef3537f40722991456c10f0bd"
+    },
+    "deadline-failed-uart.bin": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/deadline-failed-uart.bin",
+      "bytes": 1056,
+      "sha256": "11a194c03f3125d88c8427a85837474c774fa9201e9c69c74c2f15a3e73477d8"
+    },
+    "deadline-failed.ppm": {
+      "path": "build/browser/task006-array-browser-mixed-cold-a1/deadline-failed.ppm",
+      "bytes": 10890017,
+      "sha256": "1a94da0351676f340ca0dafe03d9473ec3cc51016cd41593657ba267e88b7987"
+    }
+  },
+  "uart_rows": [
+    [
+      1031,
+      1,
+      0,
+      2279604224,
+      0
+    ],
+    [
+      1031,
+      2,
+      0,
+      0,
+      0
+    ],
+    [
+      1031,
+      3,
+      0,
+      0,
+      0
+    ],
+    [
+      1029,
+      524288,
+      9448928052850,
+      1,
+      0
+    ],
+    [
+      211,
+      2181046272,
+      9223372036855308290,
+      8169,
+      0
+    ],
+    [
+      1090,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      241,
+      8217,
+      0,
+      0,
+      2181144576
+    ],
+    [
+      241,
+      8316,
+      2,
+      0,
+      2181550080
+    ],
+    [
+      241,
+      8258,
+      1,
+      2,
+      2181312512
+    ],
+    [
+      1040,
+      8217,
+      8258,
+      22,
+      8192
+    ],
+    [
+      1110,
+      0,
+      0,
+      5,
+      10000000
+    ],
+    [
+      1116,
+      1407379178520577,
+      1407374883553281,
+      281487861612545,
+      844424930131999
+    ]
+  ]
+}

@@ -1,3 +1,4 @@
+<!--
 # Notebook and ink records: envelope v1, page v2
 
 This is the bounded document consumer implemented by
@@ -59,6 +60,15 @@ Completed or in-flight controller pixels remain governed by the unchanged
 latched paper ABI; target uploads never substitute for refresh completion.
 Page reload and edit redraw clear the dirty queue and upload the whole newly
 guest-produced surface before its full refresh.
+
+Background generation packs sixteen toolbar pixels into each checked 64-bit
+store when the word lies within one row and button width is at least sixteen
+pixels. The packed constructor preserves each literal glyph, three-pixel
+button border, clipping and Gray4 nibble order. Row crossings, smaller button
+widths and incomplete tails retain the scalar construction. Below the toolbar,
+the existing packed canvas constructor remains in use. Odd-width unused low
+nibbles stay white. This changes guest work, without changing resolution,
+framebuffer capacity, upload coverage or controller refresh requirements.
 
 Each service turn advances one bounded save operation, then display work, then
 drains at most eight queued pen records through nonblocking input operation1.
@@ -255,3 +265,5 @@ accepted refresh sequence; the marker alone is not evidence that the panel has
 completed that refresh. Initializer argument 1 alone requests explicit service
 formatting and emits `0x41f` after its durable acknowledgement. Normal argument 0
 never formats an unknown or unformatted image.
+
+-->

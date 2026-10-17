@@ -1,0 +1,79 @@
+{
+  "schema": "lemma-native-bundle-v2-qualification/1",
+  "status": "PASS_SCOPED",
+  "scope": "exact immutable new genuine guest/initializer on validated archived backends; public paused admission and static browser packaging, execution separate",
+  "native_bundle": {
+    "manifest": "build/native/task006-arithmetic-a2/bundle.json",
+    "sha256": "6045bb29faf9aba915d40cbc7fec58d93c5fc478cf554a6c53501070e7f7985a",
+    "files": 629,
+    "bytes": 50349609,
+    "guest_source_count": 195,
+    "base": {
+      "sha256": "e4e93d83c7d29d5b02cb1d9d22dfc9d627b58df2ac7aaf836386f88feccac21f",
+      "scope": "validated unchanged archived backends; new genuine current-source guest compilation"
+    },
+    "source_commit_at_pack": "b8223637c47df6d1f1c3c9b82544299326791f63",
+    "notebook": {
+      "path": "workloads/notebook/image.elf",
+      "sha256": "96cd211a1808e6601cf7f35f22997484b06f2404b77e71b20936621c9c170d78"
+    },
+    "initializer": {
+      "path": "workloads/initializer/image.elf",
+      "sha256": "6567f01e4153af87b9013f09311d2559bbd5fc228261e6bd6c5bf1406590515e"
+    }
+  },
+  "browser_bundle": {
+    "manifest": "build/browser/task006-arithmetic-a1/bundle.json",
+    "sha256": "e17b252a5b53bf0e58e088749202f5cf7788582a5a40058e87022f5e28618e4f",
+    "wasm_build_sha256": "d218308b483a41da6ca881bc307c127eb05058a6dd4255743d8119ad12ab83a0",
+    "files": 21,
+    "guest_archive": {
+      "manifest_sha256": "6045bb29faf9aba915d40cbc7fec58d93c5fc478cf554a6c53501070e7f7985a",
+      "source_commit": "b8223637c47df6d1f1c3c9b82544299326791f63",
+      "scope": "unchanged validated archived genuine guest on current source-bound RTL/Wasm; not fresh target compilation"
+    }
+  },
+  "public_launch": {
+    "inspection": "build/native/task006-arithmetic-bundle-launch-a1/inspection.json",
+    "inspection_sha256": "95ea7b0d714a83ab6f25de828591282f4796bf93676fbdc3f0c67113be7774e9",
+    "identity": {
+      "backend": "rtl",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "44442fc19ba05bc6ff315116fcad84421e1d851464cb080267da3409982c10b9",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "guest": "96cd211a1808e6601cf7f35f22997484b06f2404b77e71b20936621c9c170d78",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a"
+    },
+    "cycle": 0,
+    "destroyed": true,
+    "owner_exit_code": 0
+  },
+  "commands": [
+    "./scripts/lemmasim native-bundle-build --profile lemma-silicon-dev/0.3.0 --base-bundle build/native/task006-canonical-a1 --notebook-build build/kernel/task006-isolated-arithmetic-notebook-a4 --initializer-build build/kernel/task006-isolated-arithmetic-initialize-a1 --output-dir build/native/task006-arithmetic-a2",
+    "./scripts/lemmasim browser-build --reuse-wasm --wasm-build build/wasm/task006-port-pending-a10 --guest-bundle build/native/task006-arithmetic-a2 --output-dir build/browser/task006-arithmetic-a1 --profile lemma-silicon-dev/0.3.0",
+    "./scripts/lemmasim session --backend rtl --profile lemma-silicon-dev/0.3.0 --native-bundle build/native/task006-arithmetic-a2 --workload notebook --mode developer --session-dir build/native/task006-arithmetic-bundle-launch-a1/session --disk build/native/task006-bundle-medium-a2.raw --paused --headless",
+    "python3 -m unittest discover -s tests/lemmasim -p test_native_bundle.py -v"
+  ],
+  "boundary_tests": {
+    "status": "PASS",
+    "tests": 4,
+    "log": "build/task006-native-bundle-v2-boundary-a2.log",
+    "sha256": "b101b628763e58cfa7141461a9023248b61a2bfc5f0068297897f44cc049bc0b"
+  },
+  "retained_failures": [
+    {
+      "path": "build/native/task006-arithmetic-a1",
+      "log": "build/task006-native-arithmetic-a1-pack.log",
+      "reason": "archive-root local variable shadowing exposed missing bundle metadata; fixed with immutable archive_base, new unused output required"
+    }
+  ],
+  "limitations": [
+    "A4 pending-checker/ink Store inFlight integration defect is an observed failure, corrected successor still being qualified",
+    "paused cycle0 launch is not Ready or workflow acceptance",
+    "browser static packaging is not cold Ready, durable Save or native/Wasm execution equivalence",
+    "new guest compilation and archived backend execution retain their separate source identities",
+    "ELF preload development boot; no production update/boot recovery",
+    "external pinned Linux/Nix host dependencies; no portable installer or redistribution license"
+  ]
+}

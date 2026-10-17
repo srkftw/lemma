@@ -1,8 +1,28 @@
 // SPDX-License-Identifier: Apache-2.0
 // Circuit implementation of Lemma pen v1. Host input is raw sample transport.
+// Keep arithmetic separate through physical technology mapping. The final
+// netlist is flattened after mapping; this adds no clock or architectural state.
+module lemma_pen_sequence_increment(input wire [63:0] value,
+  output wire [63:0] incremented);
+  assign incremented = value + 64'd1;
+endmodule
+
+// Keep independent input-validation cones apart during physical mapping.
+// The routed sample_x -> sequence-D path previously crossed a single wide
+// factored range/timestamp cone. These outputs retain the original full-width
+// comparisons, including parameter promotion and four-state semantics.
+module lemma_pen_sample_ranges #(parameter int PRESSURE_MAX = 4095) (
+  input wire [63:0] x, y, pressure, flags, tool, buttons,
+  output wire [5:0] invalid
+);
+  assign invalid = {x > 65535, y > 65535, pressure > PRESSURE_MAX,
+                    flags > 15, tool > 2, buttons > 7};
+endmodule
+
 module lemma_pen #(
   parameter int FIFO_DEPTH = 256,
-  parameter int PRESSURE_MAX = 4095
+  parameter int PRESSURE_MAX = 4095,
+  parameter bit IHP_SRAM = 0
 ) (
   input logic clk, reset_n,
   input logic valid, write,
@@ -35,6 +55,11 @@ module lemma_pen #(
   } entry_t;
   entry_t bank_entry [BANKS];
   entry_t head_entry, ingress_entry;
+  // Decode the bank before the existing second refill edge. A registered
+  // one-hot choice drives a parallel mask/OR rather than broadcasting four
+  // binary select bits across every bit of the181-bit sixteen-bank mux.
+  logic [BANKS-1:0] refill_select;
+  entry_t selected_head;
   logic [PTR-1:0] ingress_index;
   logic ingress_pending;
   // A completed pop advances the public FIFO once.  The next head is fetched
@@ -43,10 +68,54 @@ module lemma_pen #(
   logic [PTR-1:0] head, tail;
   logic [PTR:0] count;
   logic [63:0] epoch, head_epoch, next_sequence, losses, fault;
+  wire [63:0] sequence_incremented;
+  if (IHP_SRAM) begin : physical_increment
+    (* keep_hierarchy = 1 *) lemma_pen_sequence_increment incrementer(
+      .value(next_sequence), .incremented(sequence_incremented));
+  end else begin : register_increment
+    assign sequence_incremented = next_sequence + 64'd1;
+  end
   logic [63:0] last_time, contact_deadline;
   logic loss, resync, release_seen, bad_sample;
   logic access_ok, lose;
+  wire [5:0] range_errors;
+  if (IHP_SRAM) begin : physical_validation
+    (* keep_hierarchy = 1 *) lemma_pen_sample_ranges #(.PRESSURE_MAX(PRESSURE_MAX)) ranges(
+      .x(sample_x), .y(sample_y), .pressure(sample_pressure), .flags(sample_flags),
+      .tool(sample_tool), .buttons(sample_buttons), .invalid(range_errors));
+  end else begin : register_validation
+    assign range_errors = {sample_x > 65535, sample_y > 65535,
+      sample_pressure > PRESSURE_MAX, sample_flags > 15, sample_tool > 2, sample_buttons > 7};
+  end
 
+  if (IHP_SRAM) begin : physical_storage
+    // Actual pinned SG13G2 one-port macros, not synthesis blackbox substitutes.
+    // Existing refill edges serialize reads against delayed ingress writes.
+    // All181 entry bits occupy three64-bit field banks; upper11 bits are zero.
+    if (FIFO_DEPTH != 256) initial $fatal(1, "IHP SRAM requires full256 FIFO");
+    wire [191:0] input_words = {{(192-$bits(ingress_entry)){1'b0}},ingress_entry};
+    wire [191:0] output_words;
+    wire read_rows = reset_n && refill == 2;
+    wire write_rows = reset_n && ingress_pending;
+    wire [7:0] row_address = write_rows ? ingress_index : head;
+    for (genvar lane = 0; lane < 3; lane++) begin : field_bank
+      RM_IHPSG13_1P_256x64_c2_bm_bist memory (
+        .A_CLK(clk), .A_MEN(read_rows || write_rows),
+        .A_WEN(write_rows), .A_REN(read_rows), .A_ADDR(row_address),
+        .A_DIN(input_words[lane*64 +: 64]), .A_BM(64'hffffffffffffffff),
+        .A_DLY(1'b1), .A_DOUT(output_words[lane*64 +: 64]),
+        .A_BIST_CLK(1'b0), .A_BIST_EN(1'b0), .A_BIST_MEN(1'b0),
+        .A_BIST_WEN(1'b0), .A_BIST_REN(1'b0), .A_BIST_ADDR(8'b0),
+        .A_BIST_DIN(64'b0), .A_BIST_BM(64'b0));
+    end
+    for (genvar bank = 0; bank < BANKS; bank++) begin : head_alias
+      assign bank_entry[bank] = output_words[$bits(ingress_entry)-1:0];
+    end
+`ifndef SYNTHESIS
+    always @(posedge clk) if (read_rows && write_rows)
+      $fatal(1, "pen SRAM single-port collision");
+`endif
+  end else begin : register_storage
   // Separate bank memories give synthesis one local write and one local read
   // port per bank instead of a flattened array with BANKS competing writers.
   for (genvar bank = 0; bank < BANKS; bank++) begin : storage
@@ -58,6 +127,13 @@ module lemma_pen #(
         bank_entry[bank] <= rows[head >> BANK_BITS];
     end
   end
+  end
+
+  always_comb begin
+    selected_head = '0;
+    for (int bank = 0; bank < BANKS; bank++)
+      selected_head |= bank_entry[bank] & {$bits(entry_t){refill_select[bank]}};
+  end
 
   assign ready = refill == 0;
   assign access_ok = size == 3 && addr[2:0] == 0;
@@ -67,8 +143,7 @@ module lemma_pen #(
   assign sample_ready = ready && !(valid && write) &&
                         !(contact_deadline != 0 && now_ticks >= contact_deadline);
   assign bad_sample = sample_time < last_time || sample_time > 64'hffffffff_ff67697f ||
-    sample_x > 65535 || sample_y > 65535 || sample_pressure > PRESSURE_MAX ||
-    sample_flags > 15 || sample_tool > 2 || sample_buttons > 7;
+    (|range_errors);
   assign lose = (contact_deadline != 0 && now_ticks >= contact_deadline) ||
     (sample_valid && sample_ready && !loss &&
       (bad_sample || sample_flags[3] || next_sequence == 64'hffffffffffffffff ||
@@ -119,18 +194,26 @@ module lemma_pen #(
     // The large storage array sees only registered data/address/enable.  Raw
     // sample bounds, loss decisions and 64-bit ACK comparisons do not drive
     // every storage flip-flop's enable in the same cycle.
+    // Capture the private payload every clock. Only ingress_pending can commit
+    // it to storage, so unaccepted samples remain unobservable. This keeps the
+    // bounds/loss/ACK network out of the wide ingress register's hold mux; a
+    // bank commit still reads the preceding accepted payload/address.
+    ingress_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
+      sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
+    ingress_index <= tail;
     ingress_pending <= 0;
     if (!reset_n) begin
       head <= 0; tail <= 0; count <= 0;
       head_entry <= '0; ingress_entry <= '0; ingress_index <= 0;
-      refill <= 0;
+      refill <= 0; refill_select <= '0;
       epoch <= 1; head_epoch <= 1; next_sequence <= 1;
       losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0;
       loss <= 0; resync <= 0; release_seen <= 0;
     end else if (refill == 2) begin
+      refill_select <= {{(BANKS-1){1'b0}},1'b1} << head[BANK_BITS-1:0];
       refill <= 1;
     end else if (refill == 1) begin
-      head_entry <= bank_entry[head[BANK_BITS-1:0]];
+      head_entry <= selected_head;
       refill <= 0;
     end else if (lose) begin
       mark_loss();
@@ -154,14 +237,12 @@ module lemma_pen #(
     end else if (sample_valid && sample_ready && !loss) begin
       if (resync && !sample_flags[0]) release_seen <= 1;
       if (!resync || (release_seen && sample_flags[0])) begin
-        ingress_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
-          sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
-        ingress_index <= tail; ingress_pending <= 1;
+        ingress_pending <= 1;
         if (count == 0)
           head_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
             sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
         tail <= tail + 1'b1; count <= count + 1'b1;
-        next_sequence <= next_sequence + 1;
+        next_sequence <= sequence_incremented;
         head_epoch <= epoch; last_time <= sample_time;
         contact_deadline <= sample_flags[0] ? sample_time + 10000000 : 0;
         resync <= 0; sample_accepted <= 1;

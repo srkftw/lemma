@@ -1,0 +1,537 @@
+{
+  "status": "PASS",
+  "scope": "Literal RTL/runtime pending I/O qualification; no guest-driver claim.",
+  "build": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5",
+  "snapshot_identity": "80eebe480afc2a7d96c2f05fbcd8cd2689166881a679a2d5aa96158a558925a9",
+  "native_sha256": "ac95c4abcf0a474e0e4ab545ce2b6b01d16d98b7a42719ca1c11b8304a60b4c2",
+  "fixture_sha256": "770618b77e98897aa9548effe3b693e0592b23cae4f34c005f473f70b8ffb93a",
+  "test_binary_sha256": "9eed4b0dc21b32ccbc71f3787054cc4b2284c4a4b59937191013a096d33b3e50",
+  "compiled_inputs": {
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/machine_runtime.o": "e92c79c6924731d4e677c4dc2ca3ac28606fe618ae34a7a13d64053cbafa529b",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/backing_io.o": "84c4d7250b1753f5b47af10ee4a110be20f05443d84542080f3d19a0c28e47f2",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/backing_io_posix.o": "a5ea2984ea90d21a9bebf55c6e83a3c0819dfd24c5d0af329e642edf2a4ea124",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/verilated.o": "41399ce551f78a9039bcc2d634932d36925429d12c93220f938c892b992d626a",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/verilated_save.o": "4dc50375aa217ccdd10b2331e2d45f6729f32e9717a38fd909303023c2b16c37",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/verilated_threads.o": "03f96c455b334c77e3b36feb428fe000312ace385e8789b63ab1a84f8c49f5fb",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/verilated_dpi.o": "891361ebc9fd85978fdf7984294e4206dd35ae5935bdae6f794327e80ccdd016",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/Vlemma_soc__ALL.a": "5e7f9db5b768dc73ccbfe8402105623a6b2a8671d0835a62ec78ad2d98ff7f25"
+  },
+  "authoritative_suffix_bytes_equal": true,
+  "pending_external_snapshot_admitted": false,
+  "files": {
+    "start.snap": "64f0e94321f9483f4f9b79e1c1abdbc8fe8cf3900453cd5a00ff4f4252cd1e7b",
+    "complete.snap": "31428dfec2db3498db8b226e517b06f5e12b5cfe57e8a0644ab201d8f412348d",
+    "replay.snap": "31428dfec2db3498db8b226e517b06f5e12b5cfe57e8a0644ab201d8f412348d",
+    "actual.io": "ae3eb0c85a7be5b706b7c582dd2fe10ba7f2f04ba8db0a5150e7167082776bcf",
+    "reset.io": "dfe366b4e3918cd799cf85336b8b2aa2662e545f8602a5bcdac0b2894c0dbe08",
+    "run.log": "96919853d5113786f0f1cc352d2aca8199860598ab4051d6b8abf2f860b9b892"
+  },
+  "archived_genuine_guest": {
+    "image": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/image.elf",
+      "sha256": "b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7"
+    },
+    "rom": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/runtime/rtl/boot.bin",
+      "sha256": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2"
+    },
+    "archive": {
+      "schema": "lemmasim-native-bundle/1",
+      "manifest_sha256": "e4e93d83c7d29d5b02cb1d9d22dfc9d627b58df2ac7aaf836386f88feccac21f",
+      "source_commit": "8137ee78e82dcb467889f31195571d5bb72cdcc9",
+      "scope": "validated archived inputs; not current compilation"
+    },
+    "scope": "Real guest instructions run while literal initialized controller request is held; no guest-driver or Ready claim"
+  },
+  "host_seconds": 8.0823836849886,
+  "retained_report": {
+    "path": "build/companion/native-pending-a5/result.json",
+    "sha256": "e8e52801965f596e227df541e74e72e859be2dbbf25e72e604f9dc686cea3b1f"
+  },
+  "build_report": {
+    "path": "build/silicon/task006-backing-runtime-a5/build.json",
+    "sha256": "a301fd67304e10d53a5e955d0753ede5d40e3451f29d6697b4cc41c02ed75230"
+  },
+  "consumed_host_sources": {
+    "sim/companion/backing_peer.cpp": "d5b9a796f9b4c07d03164648d50b4bb5ef1d52bf4ef589fe93c003f256849dac",
+    "sim/companion/backing_peer.h": "028e7131de53d3d1857d3480c532265acbc1b477782bf8b3cda46cdcccd6b8cb",
+    "sim/host/backing_io.cpp": "64a3f19c829adf568a41d3c3422d1a3fbab52dac185e80e4670cfb355b1afdf7",
+    "sim/host/backing_io.h": "25c1695d3c813bfbe5769a6acc27e0a3168cfa11a868739efbb1d1aa27ef560e",
+    "sim/host/backing_io_posix.cpp": "0689696842477eab598258c921b0d3c047e60152bf6cdd74768781fbf364f482",
+    "sim/host/backing_io_posix.h": "d4742c21a9b5054bbf4a67a4c4ef5718e5602e5275a168139f9846a7c98b0cb3",
+    "sim/rtl/host/machine_runtime.cpp": "adf5c4fd87f7a767af1be8948f271f6cafc9701e741eac2d3f8a4512ed6fa8bd",
+    "sim/rtl/host/machine_runtime.h": "c47c5c61a18d4b20fad8ad2d6c6e8804c753ff0a309bc47ee108e2bad8d51ea0"
+  },
+  "profile": "lemma-silicon-dev/0.3.0",
+  "profile_sha256": "ff2d02c122f0a0974d4591fc648b27ad1e3c0837be2d64d9ecaa0cd922f9e688",
+  "build_seconds": 54.184,
+  "host_checks": {
+    "silicon_host_tests": 168,
+    "scaffold_tests": 18,
+    "metadata": "PASS"
+  },
+  "bounds": {
+    "fixture_compile_seconds": 60,
+    "fixture_execution_seconds": 60,
+    "snapshot_container_bytes_max": 805306368,
+    "backing_capture_bytes_max": 67108864
+  },
+  "allocated_fixture_bytes": 437518336,
+  "original_failures": {
+    "native-pending-a1": "Missing Verilator include path; no fixture execution",
+    "native-pending-a2": "Missing svdpi include path; retained FAIL before execution",
+    "native-pending-a4": "Added retirement assertion exposed missing reset ROM/guest preload in literal fixture; retained FAIL, assertion kept; a5 initializes full validated immutable guest artifacts"
+  },
+  "historical_basic_fixture": {
+    "path": "build/companion/native-pending-a3/result.json",
+    "status": "PASS",
+    "scope": "Literal state/runtime test without a retirement assertion or boot artifacts; no genuine guest execution claim"
+  },
+  "limits": [
+    "Literal initialized controller-state transaction, not guest-driver execution",
+    "No native notebook Ready or native peer cold recovery claim",
+    "Pending external snapshots/forks remain rejected",
+    "QEMU cached-state continuation and fast timed-I/O replay remain open",
+    "Power-v1 busy input wired; no full watchdog/brownout/reset-domain acceptance"
+  ],
+  "native_linux_file_limit_signal_capture": {
+    "status": "PASS_QUALIFIED_SCOPES",
+    "cause": "Default SIGXFSZ killed the process on actual file-limit EFBIG; older fixtures ignored this signal.",
+    "original_actual_failure": {
+      "signal": 25,
+      "wait_status": 153,
+      "log": {
+        "path": "build/lemmasim/task006-fsize-signal-a1/default-signal-original.log",
+        "sha256": "f06a213cb78615e68d95420b8d8429c5f782e643ab043131f407dfe7366e4629"
+      }
+    },
+    "implementation": "Thread-local bounded signal guard around actual pwrite; no global disposition change; prior mask/pending signal retained. I/O EINTR is still captured. Unknown signal-management failure poisons the owner.",
+    "host_tests": {
+      "status": "PASS",
+      "focused": 4,
+      "seconds": 13.876,
+      "full_simulator_suite": 294,
+      "full_seconds": 64.583,
+      "logs": [
+        {
+          "path": "build/lemmasim/task006-fsize-signal-a1/repaired.log",
+          "sha256": "bb3b64f87b7e4155ca24f04d2823e34e61381a470e6a8dce25a18b260ccda804"
+        },
+        {
+          "path": "build/lemmasim/task006-fsize-signal-a1/full-host-regression.log",
+          "sha256": "8a94ff46217c69dad6c18e6870bb53c8d686af9477a6c6ce58a56d646d5760ee"
+        }
+      ]
+    },
+    "new_native": {
+      "binary_sha256": "8e5ce4ee293f0c7fb6c17f4bb905d14e2ef80de6db1c7110e5b3fb56ef389488",
+      "snapshot_identity": "7a59b9e6067ac1fd2990aa31f311c157586d8b5fc83cce5416af10790e3ecc9c",
+      "build": {
+        "path": "build/silicon/task006-fsize-signal-native-a1/build.json",
+        "sha256": "1e952bc199d9066cde13f30a71715445da34d5d643ba6a067e2ba8d05ef87249"
+      },
+      "verilator": "5.052",
+      "verilator_reported_seconds": 50.532,
+      "configuration": "external128MiB RAM/canonical0.3; no hardware or guest change"
+    },
+    "literal_native_boundary": {
+      "status": "PASS",
+      "scope": "Literal RTL/runtime pending I/O qualification; no guest-driver claim.",
+      "host_seconds": 12.026832576026209,
+      "actual_partial_pwrite_bytes": 2,
+      "actual_fsync_error": "EBADF",
+      "controller_status_dma": 1,
+      "exact_private_suffixes": true,
+      "pending_snapshot_observational": true,
+      "result": {
+        "path": "build/lemmasim/task006-fsize-signal-native-boundary-a8/result.json",
+        "sha256": "ec9a09c0ab6ad36095d73b0d626b6e31225fa9e250485df68596ac5efd007060"
+      }
+    },
+    "literal_fixture_repairs": "Account for all actual transport link objects, and seed coherent logical, generated pending-NBA and cached output values. Original link/incoherent-seed failures remain. No runtime backpressure check weakened.",
+    "native_bundle": {
+      "path": "build/native/task006-package-layout2-fsize-a4/bundle.json",
+      "sha256": "8ee36995e3313b124d221631fc4a5b6cfe4c424d5a31fc0c1fbb14f9867dbf9c"
+    },
+    "bundle_fast_scope": "Historical fsize-a4 still archives2874932d. New matched-fsize-a5 cc85a026 archives repaired188e5447 with the same audited guest pair and repaired RTL8e5ce4ee. Real public paused startup and independent wrong-binary/different-guest rejection pass; the already observed guest scenario remains separately source-bound.",
+    "new_fast_binary": "188e544730915c0c781f22a1937c0b758fd5931a65e995c8eb69df3fad0fd674",
+    "actual_guest_scenario": {
+      "status": "PASS_RETAINED_SCENARIO_WITH_CORRECT_TYPED_OBSERVER",
+      "original_full_command_status": "FAIL",
+      "original_full_command_error": "ValueError('cold resumed write did not acknowledge exact actual raw samples')",
+      "qualification": {
+        "path": "build/lemmasim/task006-guest-fsize-retained-a3/result.json",
+        "sha256": "cdbd7d55b83dd3b77fbf0f25b4d3afd49d3a32153ef1fdd1e2ee59a0012abe9e"
+      },
+      "original_result": {
+        "path": "build/lemmasim/task006-guest-fsize-failure-a2/result.json",
+        "sha256": "f2f050e813305f3c9d61ab5e068aa52a97a20458ce67dee5bd592e7e0801c37d"
+      },
+      "actual_preloaded_guest": "a20c6530c845a69a6b9d521c491ab0abdee1b406210b763762d0b92d3313f370",
+      "phases": [
+        {
+          "name": "actual-newCPU-cold-Ready",
+          "start": 0,
+          "end": 275000006,
+          "cycles": 275000006,
+          "host_seconds": 26.984346676967107
+        },
+        {
+          "name": "raw-Compact-and-presented-guest-Saved",
+          "start": 275000006,
+          "end": 341000006,
+          "cycles": 66000000,
+          "host_seconds": 7.197652152040973
+        },
+        {
+          "name": "actual-raw-ink-and-unsuccessful-Save",
+          "start": 341000006,
+          "end": 377000008,
+          "cycles": 36000002,
+          "host_seconds": 3.654163106926717
+        },
+        {
+          "name": "independent-cold-after-real-partial-failure",
+          "start": 0,
+          "end": 275000004,
+          "cycles": 275000004,
+          "host_seconds": 26.837089580949396
+        },
+        {
+          "name": "raw-writing-and-Saved-after-cold-recovery",
+          "start": 275000004,
+          "end": 310000004,
+          "cycles": 35000000,
+          "host_seconds": 3.6410824089543894
+        }
+      ],
+      "real_os_limit": {
+        "qemu_pid": 1526960,
+        "signals": {
+          "SigBlk": "0000000010002240",
+          "SigIgn": "0000000000001000",
+          "SigCgt": "0000000100004043"
+        },
+        "soft_file_bytes": 134238210,
+        "append_offset": 134238208,
+        "prior_limit": [
+          1073741824,
+          1073741824
+        ],
+        "source": "real Linux prlimit, not controller failure injection"
+      },
+      "captured_failure": [
+        115,
+        3527691204,
+        1,
+        134238208,
+        512,
+        2,
+        27
+      ],
+      "partial_effect": {
+        "bytes": 2,
+        "offset": 134238208,
+        "prior_sequence": 5,
+        "guest_failed": true,
+        "no_new_saved": true
+      },
+      "cold_recovery": {
+        "new_cpu": true,
+        "no_snapshot_restore": true,
+        "full_medium_exact": true,
+        "all_controller_pixels_exact": true,
+        "acknowledged_objects_exact": true
+      },
+      "post_cold_writing": {
+        "saved_sequence": 8,
+        "actual_raw_samples": 3,
+        "raw_object": [
+          1,
+          65542
+        ],
+        "sample_bytes": 216,
+        "previous_immutable_objects_exact": true
+      },
+      "observer_negatives": [
+        "changed actual raw sample",
+        "duplicate extra raw effect",
+        "changed mathematical workspace"
+      ],
+      "scope": "Actual instruction-clock RV64 Compact/barrier/raw failure/newCPU cold/resumed raw Saved8. No checkpoint restore, host journal policy, exact QEMU cached-state or RTL timing claim.",
+      "original_failures": [
+        "a1 compared cold Saved against an incompletely presented Pending baseline;522 differing pixels all lie in that label. Initial full Saved plane equals actual cold in every pixel.",
+        "a2 complete execution reachedSaved8, then raw-byte observer incorrectly selected common Ink root/page magic as well as chunk3. OriginalFAIL preserved; corrected typed observer checks retained exact raw bytes and all immutable objects with3 negatives."
+      ],
+      "corrected_checker": {
+        "path": "scripts/check_guest_posix_save_failure.py",
+        "sha256": "0effde2be510373f9e9085e73920cfbc6b838470160d50f81cd2f095a8cfcd3e"
+      },
+      "latest_maintained_command": {
+        "status": "PASS",
+        "result": {
+          "path": "build/lemmasim/task006-guest-fsize-failure-a4/result.json",
+          "sha256": "0ee7c141e1b31efc02184b3e6c172f3ab9db6842fe43c22c199816a89f4cad96"
+        },
+        "checker": {
+          "path": "scripts/check_guest_posix_save_failure.py",
+          "sha256": "ed97b07acb8d761fab4f90b4cf9141b97aecc02d77b6c1b0d16f5f4494634c1c"
+        },
+        "host_seconds": 86.53526217804756,
+        "phases": [
+          {
+            "name": "actual-newCPU-cold-Ready",
+            "start": 0,
+            "end": 275000006,
+            "cycles": 275000006,
+            "host_seconds": 24.265120738069527
+          },
+          {
+            "name": "raw-Compact-and-presented-guest-Saved",
+            "start": 275000006,
+            "end": 341000006,
+            "cycles": 66000000,
+            "host_seconds": 7.754622702952474
+          },
+          {
+            "name": "actual-raw-ink-and-unsuccessful-Save",
+            "start": 341000006,
+            "end": 377000008,
+            "cycles": 36000002,
+            "host_seconds": 4.093720576027408
+          },
+          {
+            "name": "independent-cold-after-real-partial-failure",
+            "start": 0,
+            "end": 275000004,
+            "cycles": 275000004,
+            "host_seconds": 27.453906331094913
+          },
+          {
+            "name": "raw-writing-and-Saved-after-cold-recovery",
+            "start": 275000004,
+            "end": 310000004,
+            "cycles": 35000000,
+            "host_seconds": 3.12645169289317
+          }
+        ],
+        "exact_runtime_pin": "188e544730915c0c781f22a1937c0b758fd5931a65e995c8eb69df3fad0fd674",
+        "captured_failure": [
+          115,
+          3527691204,
+          1,
+          134238208,
+          512,
+          2,
+          27
+        ],
+        "partial_effect": {
+          "bytes": 2,
+          "offset": 134238208,
+          "prior_sequence": 5,
+          "guest_failed": true,
+          "no_new_saved": true
+        },
+        "cold_recovery": {
+          "new_cpu": true,
+          "no_snapshot_restore": true,
+          "full_medium_exact": true,
+          "all_controller_pixels_exact": true,
+          "acknowledged_objects_exact": true
+        },
+        "post_cold_writing": {
+          "actual_raw_samples": 3,
+          "saved_sequence": 8,
+          "raw_bytes_exact": true,
+          "raw_object": [
+            1,
+            65542
+          ],
+          "sample_bytes": 216,
+          "previous_immutable_objects_exact": true
+        },
+        "scope": "Fresh complete maintained command with exact runtime equality and typed kind3 raw-sample observer. Earlier failed commands remain FAIL."
+      }
+    },
+    "wasm_branch": {
+      "status": "PASS_COMPILER_SELECTED_WASM_HELPER_AND_OBJECT",
+      "scope": "Actual em++ object and compiler-selected preprocessed body; no complete browser/runtime or undefined-symbol audit claim",
+      "selected_body": "return pwrite(fd,bytes,count,offset);",
+      "compiler": "Emscripten6.0.9-git/clang22.1.8",
+      "object_sha256": "39ce64f7441719a3a89f5c84f4145b0ee940ad80664ee853e3fe1177b862ed60",
+      "original_failures": [
+        "emnm unavailable; original command failure retained",
+        "first preprocessed-body observer did not account for compiler line markers; no target execution"
+      ]
+    },
+    "gaps": [
+      "New RTL guest-issued real POSIX failure/cold case not run",
+      "New repaired browser bundle cold package/course workflow not run; original Layout2 cold remains separately active",
+      "General fast timing/cached-state, complete USB/radio, production trust, proof-kernel and physical storage qualification remain open"
+    ],
+    "portable_failed_io_relation": {
+      "status": "PASS",
+      "qualification": {
+        "path": "build/lemmasim/task006-fsize-native-wasm-a5/result.json",
+        "sha256": "085027ee4ac1dd89e2e66fc0d3e94b4cf72890bb48e0581a77c2f9062293de33"
+      },
+      "actual": {
+        "path": "build/lemmasim/task006-fsize-native-wasm-a5/actual/result.json",
+        "sha256": "3a20173148a53d129fbd907eb8cf38fbbefb5903653428c953069eb5fce7effa"
+      },
+      "build": {
+        "path": "build/browser/task006-fsize-native-port-a2/build.json",
+        "sha256": "91b77536fabdddaa588446d7ddfe57e940b62fb557da99ee3fb951f287a5b420"
+      },
+      "build_seconds": 76.58495728392154,
+      "wasm_sha256": "bd17589f2c3d06fdeea25aa945888eb2f6aff9207280dae6b15bcb2fb37ce656",
+      "implementation": "fb15aade4646d035457f5b5e07663ce8235c72bcb4dff3823f2d10c3c165a1c3",
+      "native_inputs": 254,
+      "native_archive": {
+        "path": "build/silicon/task006-fsize-signal-native-a1/consumed-source-archive.json",
+        "sha256": "47b543333ebceff3d96223f36846b10b1907264339f4b6b56cc68dfb6f8eaf73"
+      },
+      "host_seconds": 14.859275108,
+      "peak_rss_kib": 1371992,
+      "cases": [
+        {
+          "name": "partial",
+          "checkpoint_bytes": 145639254,
+          "suffix_cycles": 2000,
+          "complete_authoritative_prefix_and_suffix_equal": true,
+          "foreign_identity_corruption_and_no_tape_rejected": true,
+          "private_calls": {
+            "read": 256,
+            "write": 1,
+            "barrier": 0
+          },
+          "blank_creation_reads": 256,
+          "wasm_heap_bytes": 345964544,
+          "no_original_contact": true
+        },
+        {
+          "name": "barrier",
+          "checkpoint_bytes": 145638222,
+          "suffix_cycles": 2000,
+          "complete_authoritative_prefix_and_suffix_equal": true,
+          "foreign_identity_corruption_and_no_tape_rejected": true,
+          "private_calls": {
+            "read": 512,
+            "write": 0,
+            "barrier": 1
+          },
+          "blank_creation_reads": 256,
+          "wasm_heap_bytes": 345964544,
+          "no_original_contact": true,
+          "private_barrier_failure_stops_without_completion": true
+        }
+      ],
+      "relation": "Only independently admitted header implementation identities are rebound. Every other checkpoint byte, complete component CRC and recorded outcome byte remains exact. Production restore must reject native identity.",
+      "native_prefix_clock_work": 0,
+      "no_original_medium_or_peer": true,
+      "original_real_defect": {
+        "result": {
+          "path": "build/lemmasim/task006-fsize-native-wasm-a3/actual/result.json",
+          "sha256": "665aa2697504d580f7c0fc4196c164c19c8d17129a8c677d364ce5c95facf76c"
+        },
+        "scope": "Full exact partial suffix passed; failed-barrier suffix state matched but private flush count0 violated existing replay contract.",
+        "repair": "BrowserBacking.apply_recorded now requires a real successful private barrier even when the recorded original result is an error. Local barrier failure poisons the owner; no completion, later clock or checkpoint is admitted."
+      },
+      "other_retained_failures": [
+        "a1 Python observer used the stripped portable manifest rather than original producer evidence for native identity; no CPU executed.",
+        "a2 fresh creation needed explicitly supplied blank disposable backing bytes before restore; no original medium consulted.",
+        "a4 both exact suffixes passed, then the extra negative reused a replay owner retaining its tape. Fresh isolated instance in a5 tests explicit binding and local failure."
+      ],
+      "portable_scope": "Finite original-circuit canonical serialization/recorded failed-I/O relation with explicit identity admission; not arbitrary cross-backend migration, cold notebook or browser OPFS failure acceptance."
+    },
+    "current_browser_bundle": {
+      "path": "build/browser/task006-package-layout2-fsize-a6/bundle.json",
+      "sha256": "02f4381ee60b2c7e38d999e1113bcd95bc748455b3d405747b0733ac6a877c35"
+    },
+    "final_host_regression": {
+      "status": "PASS",
+      "tests": 294,
+      "host_seconds": 62.861,
+      "log": {
+        "path": "build/lemmasim/task006-fsize-signal-a1/final-full-host.log",
+        "sha256": "f04977e44fb984f3f47e6d52ee3d9809a9750df53221a913169b21e79af27e26"
+      },
+      "scaffold": "checkerPASS and18 testsPASS7.268s",
+      "scope": "Host regressions; no additional target, timing, cold or physical claim."
+    },
+    "matched_native_runtime_refresh": {
+      "status": "PASS",
+      "scope": "actual unchanged-guest runtime packaging, independent invalid-input rejection and public paused startup; no target cycles or cold/workflow claim",
+      "rejections": [
+        {
+          "case": "wrong-binary",
+          "error": "unexpected prepared fast binary",
+          "no_output": true
+        },
+        {
+          "case": "different-audited-guest",
+          "error": "fast preparation changes the audited notebook guest closure",
+          "no_output": true
+        }
+      ],
+      "launches": [
+        {
+          "backend": "rtl",
+          "identity": {
+            "backend": "rtl",
+            "profile": "lemma-silicon-dev/0.3.0",
+            "runtime": "8e5ce4ee293f0c7fb6c17f4bb905d14e2ef80de6db1c7110e5b3fb56ef389488",
+            "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+            "guest": "a20c6530c845a69a6b9d521c491ab0abdee1b406210b763762d0b92d3313f370",
+            "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+            "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a"
+          },
+          "cycle": 0,
+          "scope": "actual public paused startup only"
+        },
+        {
+          "backend": "qemu",
+          "identity": {
+            "backend": "qemu",
+            "profile": "lemma-silicon-dev/0.3.0",
+            "runtime": "188e544730915c0c781f22a1937c0b758fd5931a65e995c8eb69df3fad0fd674",
+            "adapter": "lemmasim-fast-adapter/4",
+            "derivation": "7639fa5fe6162f6060d820e5a0fae28406edd63be8503253428722ab3fa85ecc",
+            "guest": "a20c6530c845a69a6b9d521c491ab0abdee1b406210b763762d0b92d3313f370",
+            "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+            "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+            "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+            "icount_shift": 3
+          },
+          "cycle": 0,
+          "scope": "actual public paused startup only"
+        }
+      ],
+      "bundle": {
+        "path": "build/native/task006-package-layout2-matched-fsize-a5/bundle.json",
+        "sha256": "cc85a0265a05bc241e399879576ebfe00b0a9f0465330474376a428ea09030e2"
+      },
+      "builder_sha256": "7589fdba3b0c109ff304e78b18c8c025eb58cf0e5d78c7aafd16bf22b7718adb",
+      "host_seconds": 4.339876850950532,
+      "result": {
+        "path": "build/lemmasim/task006-native-fast-refresh-a1/result.json",
+        "sha256": "afd56ca24a941dee3ebe507eda4562c7b8efc50c9238acedcfb8d39514a54962"
+      },
+      "preserves": "every existing guest/RTL file, consumed source version, original dependency notice and base artifact; new fast input versions have separate archive entries",
+      "format": "existing canonical native bundle schema3; public launch validator checks all four backend/role pairs",
+      "public_command": "./scripts/lemmasim native-bundle-build --refresh-fast --base-bundle build/native/task006-package-layout2-fsize-a4 --expected-fast-sha256 188e544730915c0c781f22a1937c0b758fd5931a65e995c8eb69df3fad0fd674 --output-dir build/AN_UNUSED_MATCHED_NATIVE_BUNDLE",
+      "public_cli_bundle": {
+        "path": "build/native/task006-package-layout2-matched-fsize-a6/bundle.json",
+        "sha256": "cc85a0265a05bc241e399879576ebfe00b0a9f0465330474376a428ea09030e2",
+        "same_manifest_as_direct_helper": true
+      },
+      "public_cli_guard_tests": {
+        "status": "PASS",
+        "tests": 14,
+        "seconds": 0.335,
+        "log_sha256": "0b260367715f51e8ad1a3c6b42e5da6e0b2ce202415096ef620f00069b70d4a9",
+        "scope": "real CLI missing/mixed selection rejects before output; existing package boundaries retained"
+      }
+    }
+  }
+}

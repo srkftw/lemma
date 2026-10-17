@@ -1,0 +1,106 @@
+{
+  "schema": "lemma-paper-staging-v2-increment/1",
+  "status": "PASS_LITERAL_CIRCUIT_AND_GENUINE_GUEST_BUILD_AUDIT",
+  "scope": "Disjoint Paper2 staging in hardware successors8/9, complete checked lowering and RV64 image audits; connected USB/product cold Ready remains in progress",
+  "baseline_commit": "229ab6c16ea15916932fa2dc5ca6cd87ff9b6018",
+  "source_inventory": {
+    "count": 277,
+    "path": "build/task006-paper-next-consumed-sources-a4/source-inputs.json",
+    "sha256": "4ed3bd832f0abbefc421a46d834e8cf47cabaeee0e270a236efabc08a985ed96"
+  },
+  "literal_receipts": [
+    {
+      "path": "build/usb/paper-staging-legacy-a1/result.json",
+      "sha256": "baf979a31e6dd8d262782ee0ca681a33a9a029f593577f2857087be9cf79aab0",
+      "profile": "lemma-silicon-dev/0.6.0",
+      "status": "PASS",
+      "host_seconds": 27.8946757579688,
+      "tool": "Verilator 5.052 2026-09-05 rev v5.052",
+      "behavior": "retained collision reproduction",
+      "binary_sha256": "d4a1f3d845e70f585d3a7a3bc356391379890ea6ec325fcecb53e704f544235a"
+    },
+    {
+      "path": "build/usb/paper-staging-v2-a3/result.json",
+      "sha256": "f8b1fef5eea15b01c54b020157fb2b2728340c3cdf5ed10ad6ef22b11b4ef84b",
+      "profile": "lemma-silicon-dev/0.8.0",
+      "status": "PASS",
+      "host_seconds": 28.548801087017637,
+      "tool": "Verilator 5.052 2026-09-05 rev v5.052",
+      "behavior": "modern staging and1024 exact pixels",
+      "binary_sha256": "02f4cf2acb838bf88faf3dd401aebb663039a6fac68f6ee2acd563f5c81ed1b2"
+    },
+    {
+      "path": "build/usb/paper-staging-product-v2-a1/result.json",
+      "sha256": "02a88f5e4acf0eb564da0141cae921cc1a54e112e2eae593483f77efc3c30eb8",
+      "profile": "lemma-silicon-dev/0.9.0",
+      "status": "PASS",
+      "host_seconds": 30.366212592984084,
+      "tool": "Verilator 5.052 2026-09-05 rev v5.052",
+      "behavior": "modern staging and1024 exact pixels",
+      "binary_sha256": "2e4d5951985fe2fdc470d1c25cd6eb80590cd2691d4a55fe096ba5bd4b95e6fe"
+    }
+  ],
+  "guest_cases": [
+    {
+      "configuration": "lemmasim-silicon-usb-next-bulk-notebook",
+      "build_seconds": 100.1473954130197,
+      "audit_seconds": 73.3867104780511,
+      "directory": "build/kernel/task006-usb-next-bulk-notebook-a4",
+      "artifacts": {
+        "image.elf": "6ed17b0d4cca94c77ae4376de5c3d78c6ff0a78f64934eea3e851da33d796532",
+        "build.json": "f6835cd2c19c1ab8f57caac2889d1ec88e18e9f627fe7e22b6ec5b6d806d115c",
+        "audit.json": "123103d4e2c11e745395d0a851102958de7db3b4696dfa411866fa58e12151ca",
+        "provenance.json": "27dbf95373f7af424176effa59222742447777e9847a87478f235a190c74ec5d",
+        "kernel/unit.json": "a6e7b3cddd25366570748501e044113f08692aa6054a537db5c6926446bb8b4d",
+        "kernel/program.ll": "6bc25694eaba0f8194bcda53e581d8ab655772f7cd85de535a97b38f5f68d681",
+        "kernel/program.opt.ll": "886a17028edd3365173abb01eda5887c09dfebf4a01ca61ade0124e323830d9c"
+      }
+    },
+    {
+      "configuration": "lemmasim-silicon-usb-next-bulk-initialize",
+      "build_seconds": 106.57400955900084,
+      "audit_seconds": 87.17588692199206,
+      "directory": "build/kernel/task006-usb-next-bulk-initialize-a4",
+      "artifacts": {
+        "image.elf": "01e55e3e5d51c18f3ee42f9f9d50a11d905263ad7436a957da8680d9eb76f066",
+        "build.json": "25a7167fd9ed0521aee2b02ca3a96d2cd2d57ff91df8404d7e7a8c37477d8bc7",
+        "audit.json": "d890cfc4bc903a06cd5ee317f8b438b91f9b1f7f117e92f159df528577fd7ff5",
+        "provenance.json": "b3a1a16f83c567d3ea33a399b0574a4db2c20f857d867903d5604be7a8340a4f",
+        "kernel/unit.json": "e6f6b24094c1ebe7d14498503c7b62dba6ae57895f06d43b37f0be979bae5aa8",
+        "kernel/program.ll": "a5a446a6148d171eaf50c87f5e00d1db5bba5e8bfd508525c750d2457d0fc031",
+        "kernel/program.opt.ll": "8584c38bb2b6b2aa56be910ee5721ca4e736ae4ebbfb540cc7a0d398f6678383"
+      }
+    },
+    {
+      "configuration": "lemmasim-silicon-product-next-bulk-notebook",
+      "build_seconds": 136.39613993599778,
+      "audit_seconds": 80.30399378802394,
+      "directory": "build/kernel/task006-product-next-bulk-notebook-a4",
+      "artifacts": {
+        "image.elf": "d84446d27c72447a6600c5b103e5ae572e1b98dd7f0d1979956e22e7ac74e99c",
+        "build.json": "c864ea99d0d9b5fa031ecc06562e7904a3fc74328814996aed1f6d837d3ab357",
+        "audit.json": "e9718ddb91921cc58232eede87f564e3a5f427589928e175c3af5c612b5518da",
+        "provenance.json": "b8f8d5f2565c00b06a5b0aebe88656ec7e21e655d22b6e310f2a57f5cbb6e0a9",
+        "kernel/unit.json": "3a01800930685f3fcd6e9f564bfa38daf7e1bed3002ca7f0ca475f9dd97cd4fb",
+        "kernel/program.ll": "f7a6aa41c5227a5d956cbfb3b7571f6d9cf9e33a1ce9d14cc8eb8df5f08790fa",
+        "kernel/program.opt.ll": "b93bfd628aa5ea81befb00bfafed8e22579c30bf42da62f0ec9fe5ac9ea7cb93"
+      }
+    }
+  ],
+  "complete_ir_receipt": "build/managed/paper-next-probe-a2/independent-audit-a1.json",
+  "negative_receipt": "build/managed/paper-next-probe-a2/negative-a2.json",
+  "retained_failures": [
+    "Product7 cold: actual SCAUSE7/STVAL0x10010800 at cycle652620351, no completed panel",
+    "USB6 actual cold doublefault/noReady",
+    "build/usb/paper-staging-v2-a1: tool enum failure",
+    "build/usb/paper-staging-v2-a2: wrong nibble observer",
+    "new guest a1: missed deployment registry; a2: exact literal pool audit; a3: exact FDT token jump owner audit"
+  ],
+  "remaining": [
+    "USB8 notebook/peer lostACK/restart/cold acceptance",
+    "Product9 actual known-good boot, interrupted update and recovery",
+    "Product owner authentication and durable antirollback trust",
+    "New-profile exact native/Wasm continuation",
+    "Full radio features, browser integrated mathematics, managed proof kernel and physical closure"
+  ]
+}

@@ -1,0 +1,377 @@
+{
+  "schema": "lemma-managed-sums/1",
+  "status": "CONNECTED_GUEST_PASS",
+  "scope": "Genuine bounded ordinary Lean payload sums and actual isolated RV64 arithmetic, Protocol3/Document4 history and migration; not general managed language, proof kernel, processor timing or browser interaction qualification",
+  "registry": {
+    "implementation": "lemma-isolated-arithmetic-sums-v1",
+    "lowering": "core0-user-v0.3/lemma-managed-sums-v1",
+    "runtime": "lemma-owned-arena-sum-cookie-v1",
+    "resources": "lemma-arithmetic-resource-v1",
+    "kind": "closed implementation/contract version authority; not an artifact digest"
+  },
+  "language": {
+    "profile": "core0-user-v0.3",
+    "deployment": "lemma-managed-sums-deployment-v1",
+    "constructors": [
+      2,
+      8
+    ],
+    "u64_fields_per_constructor": [
+      1,
+      7
+    ],
+    "payload_bytes": [
+      16,
+      64
+    ],
+    "real_owned_arena_slots": 31,
+    "ordinary_source": "Lemma.Mathematics.ManagedResult.compareFiveSix",
+    "actual_layouts": {
+      "Comparison.equal": {
+        "tag": 0,
+        "bytes": 24
+      },
+      "Comparison.unequal": {
+        "tag": 1,
+        "bytes": 16
+      }
+    },
+    "real_final_release": true,
+    "unsupported_forms_fail_closed": true
+  },
+  "genuine_emitted_identity": {
+    "path": "build/kernel/task006-sums-identity-probe-a3/identity-preimages.json",
+    "sha256": "2abb43651c2b0bfc4a289a4e3f3e284da89922e6aad5e87e8ca11b60fcd940df",
+    "catalog": "92745df37120a4c86e7aa36b82c9142c87cf4dde7cabc644a548e2dc021c3f93",
+    "pre": "e2b8f1b5cf001590e5b8fa6a2b2bd26a49d46747fab02b2457d51d73c3c4ef90",
+    "post": "e30b37feea8568e3bc7cbb9d704380cbc9d8c0531b6c40688bc0d611eec2a68d",
+    "mutations": {
+      "path": "build/kernel/task006-sums-identity-probe-a3/audit-mutations-a2.json",
+      "sha256": "44058f98ef01c475d91b7e154e96652df52a55953be1dc825aa4a366915bf167",
+      "negative_count": 19
+    }
+  },
+  "record_length_observer": {
+    "path": "build/task006-sums-record-length-object-observer-a1.json",
+    "sha256": "98017ccd17ca500d31e33aaaf410df5435e2baba81773b0bc0b21f99ae159e03",
+    "actual_ir_negatives": 11,
+    "actual_object_negatives": 7,
+    "values": [
+      1856,
+      2496,
+      2496
+    ],
+    "guard": "exact checked version field, unsigned version-2<3, single load into checked readObject; complete owner body pinned"
+  },
+  "component_qualification": [
+    {
+      "path": "build/managed/sums-integration-draft-a1/component-qualification-a5.log",
+      "sha256": "59b023b614845ba372faa0ab9a8f4e35cbb2df07a69c7b25a38f8fcb83bc5313"
+    },
+    {
+      "path": "build/managed/sums-integration-draft-a1/codec-fixture-a2.log",
+      "sha256": "7d2ed91743d2d29c184b146e0116ab6abca3f4aa594033cae8190329f93d150f"
+    }
+  ],
+  "builds": {
+    "notebook": {
+      "directory": "build/kernel/task006-sums-notebook-a4",
+      "configuration": "lemmasim-silicon-sums-notebook",
+      "source_commit": "06e7486ef56c33dd3f0506e050aea26fa37f95a5",
+      "source_inputs": 244,
+      "image.elf": "ad13d2321e6a0f69aea3a7ea0ebcda3729aaef82437ca0882cf18412878c7631",
+      "audit.json": "60a700be7f2619ced0881c868f431bc60567e8bb7f234bf3ebcc2dd733afc61a",
+      "provenance.json": "a3830daeb23900c6bd3f653515d5cbd78ace8b62a26fedbdc5a74f02245025cb",
+      "arithmetic_elf": "e52ad6755b140f1eb59c9d5153da3a703ccd6ca4fd99dbf07087d70c3f06ff49"
+    },
+    "initializer": {
+      "directory": "build/kernel/task006-sums-initialize-a5",
+      "configuration": "lemmasim-silicon-sums-initialize",
+      "source_commit": "06e7486ef56c33dd3f0506e050aea26fa37f95a5",
+      "source_inputs": 244,
+      "image.elf": "72566da70407d3bf8dc2e035f7995eec6104e449e658f64fc86d42c082adb8bf",
+      "audit.json": "eb613a8843a3274bf8d6ae8bf0cc35984900c3f4e4ba075fd2fa1300bcdd1fac",
+      "provenance.json": "0fc7a52855f0e84e570d00772cf98e8c59c8a7967e90aae6c90d7648a2985c8f"
+    },
+    "laboratory_oom": {
+      "directory": "build/kernel/task006-sums-oom-a1",
+      "configuration": "lemmasim-silicon-sums-arithmetic-oom-development",
+      "source_commit": "06e7486ef56c33dd3f0506e050aea26fa37f95a5",
+      "source_inputs": 244,
+      "image.elf": "ea4a3e117d5fd30b93111564a8a3f2c7b16b91582a4151d5a87241317611483a",
+      "audit.json": "d1fce0a9e388e2d81c2f822c4a508f8edb3614d44a60824f90c4699d2643dca0",
+      "provenance.json": "e869a12cd7ca2d6c2d7c01290fa4872da4529d807abf682768b134575401c911",
+      "arithmetic_elf": "e52ad6755b140f1eb59c9d5153da3a703ccd6ca4fd99dbf07087d70c3f06ff49"
+    }
+  },
+  "consumed_source_archives": [
+    {
+      "path": "build/task006-sums-final-consumed-sources-a1/source-inputs.json",
+      "sha256": "cddc5f7cdd5b06b8f6eb21deaae07aa54fe005caa7cc8d0e9a55f4e5166713a3"
+    },
+    {
+      "path": "build/task006-sums-oom-consumed-sources-a1/source-inputs.json",
+      "sha256": "51bda72aff8a7d3fc7e47bc9714c1e3c759e3c10152a9817d1a8e66638696c9c"
+    }
+  ],
+  "tools": {
+    "Lean": "4.34.1",
+    "LLVM": "20.1.8",
+    "pinned_realizations": "Full paths and version output recorded in each provenance.json"
+  },
+  "native_bundle": {
+    "path": "build/native/task006-sums-a1/bundle.json",
+    "sha256": "8fc2b2603fd11fb0c001d190592ae82c38422a578a5fb7a1dc9f15c231545715",
+    "schema": "lemmasim-native-bundle/3",
+    "software_deployment": {
+      "contract_version": "lemma-managed-sums-deployment-v1",
+      "configurations": {
+        "notebook": "lemmasim-silicon-sums-notebook",
+        "initializer": "lemmasim-silicon-sums-initialize"
+      }
+    },
+    "source_commit": "06e7486ef56c33dd3f0506e050aea26fa37f95a5"
+  },
+  "identity": {
+    "backend": "qemu",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+    "adapter": "lemmasim-fast-adapter/4",
+    "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+    "guest": "ad13d2321e6a0f69aea3a7ea0ebcda3729aaef82437ca0882cf18412878c7631",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3
+  },
+  "normal": {
+    "path": "build/task006-sums-math-a1/result.json",
+    "sha256": "602023f80fdbd655baa60ba2be87e16250894cd75bb20d5ec18488e81d1abcac",
+    "elapsed_seconds": 195.901722487004,
+    "boot": {
+      "virtual_seconds": 4.700000012,
+      "host_seconds": 11.224071173986886,
+      "cycle": 470000002
+    },
+    "cold_boot": {
+      "virtual_seconds": 5.500000008,
+      "host_seconds": 12.17252677603392,
+      "cycle": 550000001
+    },
+    "execution_identity": {
+      "status": "PASS",
+      "format_bytes": 2496,
+      "actual_isolated_requests": 5,
+      "actual_request_revision_outcome_bound": true,
+      "known_attempts": 5,
+      "origin": "IsolatedSums",
+      "protocol": 3,
+      "identity_kind": "closed implementation-version authority; not artifact hash",
+      "semantic_and_heap_resources_separate": true
+    },
+    "edited_execution_applicability": {
+      "status": "PASS",
+      "active_unknown": true,
+      "old_attempt_identity_preserved": true,
+      "actual_durable_guest_record": true
+    },
+    "cold_recovery": {
+      "status": "PASS",
+      "actual_new_cpu": true,
+      "math_sha256": "3efdaaa429326f3ae8cacda0e34d25a12a3fe3b0e874cc4bb55c1ba6fdf95a6f",
+      "complete_controller_pixels": true,
+      "raw_ink_preserved": true
+    },
+    "failed_save": {
+      "status": "PASS",
+      "no_false_saved": true,
+      "acknowledged_math_unchanged": true,
+      "actual_failed_controller_label": true,
+      "completed": 4
+    },
+    "observer_sources": {
+      "scripts/check_live_notebook.py": "566e68fed80217d55fd08de93b6db372923d97689ab4ddd93a94dc89d2351e60",
+      "conformance/lemmasim/check_notebook_workflow.py": "f1e6807034291f24ff482d569fc292e062a9e3046a2e542c5924a9a6d986fa96",
+      "conformance/lemmasim/inspect_notebook.py": "08d6eb39127d0c12d0a170afdbd0678b74704aa9e4d66918b92cb8606b9d60f7",
+      "conformance/lemmasim/notebook_input.py": "177621eb64769660cc6dbc08d625292455942dbdabc52ca64656ef8096652252",
+      "conformance/lemmasim/store_oracle.py": "d03b54bec2f8e2c1883f6b27a25ab3ebaa59062d6299aec1a81ce42835b5324c",
+      "scripts/check_math_session.py": "4ae3e8ca9bee3245cac539fc1961c43ccae63865867ba845c150094bafaa920c",
+      "conformance/lemmasim/math_oracle.py": "33ce46f428125d30df5a3a7471bc4d9305332e07d4d5a82f8511b6458badcab5"
+    }
+  },
+  "migration": {
+    "path": "build/task006-sums-v3-migration-a1/result.json",
+    "sha256": "7bf6ce2a2065d9abceb60477d634c78992ccee7da5e9772f7aaed1cf8fc8a165",
+    "elapsed_seconds": 122.6226920770132,
+    "boot": {
+      "virtual_seconds": 5.500000008,
+      "host_seconds": 12.575328311009798,
+      "cycle": 550000001
+    },
+    "cold_boot": {
+      "virtual_seconds": 5.700000016,
+      "host_seconds": 13.215890780033078,
+      "cycle": 570000002
+    },
+    "execution_migration": {
+      "status": "PASS",
+      "old_attempts_preserved": 5,
+      "old_origin": "IsolatedManaged",
+      "new_attempt_known": true,
+      "actual_request_revision_outcome_bound": true
+    },
+    "cold_recovery": {
+      "status": "PASS",
+      "complete_controller_pixels": true,
+      "math_sha256": "710fe1100a857e1d642231b085163174d52765d95d6695080bb8f48eed515eb3",
+      "actual_new_cpu": true
+    },
+    "failed_save": {
+      "status": "PASS",
+      "no_false_saved": true,
+      "acknowledged_record_unchanged": true,
+      "actual_failed_controller_label": true,
+      "completed": 4
+    }
+  },
+  "constructor_oom": {
+    "path": "build/task006-sums-oom-a1/result.json",
+    "sha256": "74876e681495eb2705aacb675278f7362373a74f44f03641bc5bde679dcec049",
+    "elapsed_seconds": 161.54429099499248,
+    "boot": {
+      "virtual_seconds": 4.700000016,
+      "host_seconds": 9.164240545011126,
+      "cycle": 470000002
+    },
+    "cold_boot": {
+      "virtual_seconds": 4.700000006,
+      "host_seconds": 8.503026098012924,
+      "cycle": 470000001
+    },
+    "managed_constructor_admission": {
+      "contract": "core0-user-v0.3",
+      "constructor": "Lemma.Mathematics.ManagedResult.Comparison.unequal",
+      "shape": 1,
+      "tag": 1,
+      "bytes": 16,
+      "arena_capacity": 31,
+      "actual_failure_code": 237,
+      "artifacts": {
+        "audit.json": "d1fce0a9e388e2d81c2f822c4a508f8edb3614d44a60824f90c4699d2643dca0",
+        "image.elf": "ea4a3e117d5fd30b93111564a8a3f2c7b16b91582a4151d5a87241317611483a",
+        "user-image-catalog.json": "feb1ff3ed3db4fe0b8566c1fe19b9faf0d4e93d184e901bdd46f04613ed0d298",
+        "users/arithmetic/image.elf": "e52ad6755b140f1eb59c9d5153da3a703ccd6ca4fd99dbf07087d70c3f06ff49",
+        "users/arithmetic/unit.json": "33295a1737ed7cd0da5b01ae9c99a36a21f8e86c9173e4ea5041bd6d79ca0ebf",
+        "users/arithmetic/program.ll": "9eb211af339db92e50b2da47c0e80facdef20682f93115f572b5a586607ce658",
+        "users/arithmetic/program.opt.ll": "40e07e3adcdfb84b665e6896468a6c0efd93b8b95743d3ed90a44effa44fecb7"
+      }
+    },
+    "managed_constructor_failure": {
+      "status": "PASS",
+      "actual_status": 237,
+      "goal": 1,
+      "answer": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "budget": 8,
+      "actual_server_reply": [
+        1109,
+        35,
+        1,
+        237,
+        0
+      ],
+      "live_slots": 31,
+      "no_evidence": true,
+      "record_unchanged": true
+    },
+    "failed_request": {
+      "status": "PASS",
+      "actual_error": 237,
+      "math_sha256": "0caf45b2ad68bd0c3ccc72dcb733bbcafaccc9bee523900127b30948642c25b0",
+      "no_new_evidence": true,
+      "record_unchanged": true
+    },
+    "cold_recovery": {
+      "status": "PASS",
+      "new_cpu": true,
+      "complete_controller_pixels_equal": true,
+      "acknowledged_math_unchanged": true,
+      "raw_ink_preserved": true
+    }
+  },
+  "commands": [
+    "flock build/task006-lake.lock nix develop --no-write-lock-file --command python3 scripts/build_kernel.py --opt-level O2 --stage supervisor --configuration lemmasim-silicon-sums-notebook --output-dir build/kernel/task006-sums-notebook-a4 --timeout 300",
+    "nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py build/kernel/task006-sums-notebook-a4 --timeout 300",
+    "flock build/task006-lake.lock nix develop --no-write-lock-file --command python3 scripts/build_kernel.py --opt-level O2 --stage supervisor --configuration lemmasim-silicon-sums-initialize --output-dir build/kernel/task006-sums-initialize-a5 --timeout 300",
+    "nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py build/kernel/task006-sums-initialize-a5 --timeout 300",
+    "python3 scripts/check_math_session.py --require-sums-identity --disk build/silicon/task006-canonical-cold-a2/medium.raw --work-dir build/task006-sums-math-a1 --native-bundle build/native/task006-sums-a1 --boot-seconds 60 --action-seconds 30 --deadline 1200",
+    "python3 scripts/check_review_session.py --record-version 4 --source-record-version 3 --disk build/task006-execution-identity-math-a1/closed-course.raw --work-dir build/task006-sums-v3-migration-a1 --native-bundle build/native/task006-sums-a1 --boot-seconds 60 --action-seconds 30 --deadline 1200",
+    "flock build/task006-lake.lock nix develop --no-write-lock-file --command python3 scripts/build_kernel.py --opt-level O2 --stage supervisor --configuration lemmasim-silicon-sums-arithmetic-oom-development --output-dir build/kernel/task006-sums-oom-a1 --timeout 300",
+    "nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py build/kernel/task006-sums-oom-a1 --timeout 300",
+    "python3 scripts/check_arithmetic_isolation.py --case oom --require-sums-constructor --native-bundle build/native/task006-sums-a1 --guest-build build/kernel/task006-sums-oom-a1 --disk build/silicon/task006-canonical-cold-a2/medium.raw --work-dir build/task006-sums-oom-a1 --boot-seconds 60 --action-seconds 30 --deadline 1200"
+  ],
+  "comparability": {
+    "old_normal_result": "build/task006-execution-identity-math-a1/result.json",
+    "same_normal_boot_cycle": 470000002,
+    "same_normal_cold_cycle": 550000001,
+    "host_time_note": "Concurrent native Product/USB target work affected wall time; no host acceleration or exact RTL timing improvement claimed",
+    "QEMU_counters": "Instruction-count execution, not canonical pipeline/bus timing"
+  },
+  "resource_observation": {
+    "machine_ram_bytes": 134217728,
+    "owned_frame_pool_bytes": 33554432,
+    "source_media_bytes": 268435456,
+    "boot_seconds_bound": 60,
+    "action_seconds_bound": 30,
+    "campaign_seconds_bound": 1200,
+    "retained_normal_output_bytes": 3353362760,
+    "retained_migration_output_bytes": 4191040274,
+    "retained_oom_output_bytes": 1681783884,
+    "peak_host_memory": "Not measured"
+  },
+  "retained_failures": [
+    {
+      "path": "build/task006-sums-notebook-a2-original-audit/retained.json",
+      "sha256": "acba77adae6fe6e5d6db457f992d5cc6731791501333dbd08ca17b01c40b91e6",
+      "reason": "New exact3-entry record-length table missing from observer admission"
+    },
+    {
+      "path": "build/task006-sums-initialize-a2-original-audit/retained.json",
+      "sha256": "343e814a3fddcabfbeaecded173d40bb7b0789e37b60b7490e51758b2add5749",
+      "reason": "Same valid new length-table rejection in initializer"
+    },
+    {
+      "path": "build/task006-sums-a3-consumed-sources/initialize-audit-failure.json",
+      "sha256": "5a497eadc33b46a969cfddcbe7a43f32f713e83cbb38d91a2cda9c4ad3e47ce9",
+      "reason": "Later object provenance gate omitted the independently guarded length table"
+    },
+    {
+      "path": "build/task006-sums-initialize-build-a4.log",
+      "sha256": "2bee91990314e58b988880d6275d846831d66cffd45894c1c1b0af1f58402ee4",
+      "reason": "NotebookKernel monomorphic USB callback save crossed source capture; build failed closed on changed inputs"
+    },
+    {
+      "path": "build/managed/sums-integration-draft-a1/codec-fixture-a1.log",
+      "sha256": "428e598882236a34161096671b6c7044335353ed419762026a41b4927d33d096",
+      "reason": "Initial codec test stimulus assigned unchanged page value; corrected changed-byte stimulus separately qualified"
+    },
+    {
+      "path": "build/kernel/task006-sums-identity-probe-a3/audit-mutations-a1.json",
+      "sha256": "bfc740b65595ef49c04dddff18f6f710be5ee3a8546f7ee40e8107d758db52eb",
+      "reason": "Initial effects mutation was a no-op; corrected actual nonempty effects mutation qualified"
+    }
+  ],
+  "limitations": [
+    "Development ELF-preload path; product ROM/update qualification is a separate lane",
+    "New exact-domain semantic budget0 result is distinct from real heap237; failed/cancelled allocations create no mathematical evidence",
+    "General heap, ByteArray, strings, recursive inductives, closures, shared RC, general calling convention and proof-kernel/environment remain unfinished",
+    "No new exact snapshot or fast/RTL processor timing parity claim",
+    "Static Sums browser bundle is prepared separately; no actual browser Ready/course acceptance established by these QEMU runs",
+    "Course package authoring/tutor transport/assessment and demonstrated learning gains remain separate unfinished obligations"
+  ]
+}

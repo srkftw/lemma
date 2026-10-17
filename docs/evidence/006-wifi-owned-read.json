@@ -1,0 +1,364 @@
+{
+  "additional_tail": {
+    "actual_wall_seconds": 13.215055887005292,
+    "complete_checkpoint_bytes": 145223982,
+    "complete_checkpoint_sha256": "9e38f83a644949205ba476c4a20cd5aaf6e673c368cd4d7f89962192ed96af6c",
+    "delta_clocks": 1000000,
+    "end": 15282160,
+    "explicit_final_owner_pin_cells": "all8192zero",
+    "guest_rx_plic_receipts": 37,
+    "host_bound_seconds": 120,
+    "native_phase_seconds": 12.545083049975801,
+    "no_broad_3M_timing_pass": true,
+    "original2M_still_FAIL": true,
+    "owned512_sha256": "bb7716e01fcab7234aaf2cd80c31d71a42069579f7284254ad20d548a9044ef7",
+    "remaining_bytes": 56,
+    "remaining_fragments": [
+      16,
+      16,
+      16,
+      8
+    ],
+    "result": {
+      "path": "build/silicon/task006-wifi-owned-read-a4-tail/result.json",
+      "sha256": "2b66b979e0856f3991f310d960dba396564d25f588a42c09caef8294038e1dd3"
+    },
+    "source_work_counts": {
+      "CRC_bit_steps": 4608,
+      "CRC_bytes": 576,
+      "CRC_words": 72,
+      "receive_folds_max16_bytes": 4,
+      "result_copy_words": 64
+    },
+    "start": 14282160,
+    "status": "PASS_GENUINE_OWNED_READ_TAIL"
+  },
+  "bindings": {
+    "boot_nv": false,
+    "canonical_display": "1650x2200Gray4",
+    "clock_hz": 100000000,
+    "descriptor_abi": 13,
+    "features": 47,
+    "frame_count": 8192,
+    "frame_pool_bytes": 33554432,
+    "hardware": "lemma-silicon-dev/0.12.0",
+    "kernel": "core0-kernel-v0.8",
+    "plic": 18,
+    "ram_bytes": 134217728,
+    "wifi_aperture": "0x10013000/1024"
+  },
+  "evidence_discipline": "original2M and observerFAILs remainFAIL; additionaltailpositivefunctionalresult scopedseparately; no syntheticReady/hostchipMMIO/hostunpin/durableACK or fullWiFi6claim",
+  "execution": {
+    "binary": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-wifi-native12-a3/obj/lemma-rtl",
+      "sha256": "a8403e785b509b64eca6e3c0084169bad873b8b922e41691b4ad03ebd81ce21d"
+    },
+    "complete_functions": 327,
+    "complete_source_count": 317,
+    "elf_sha256": "a9381cee7f9b51baa16652bd0ab66739cfaaefc2e6ead534746402863630b208",
+    "genuine_component_observation": {
+      "path": "build/kernel/task006-wifi-read-component-a2-observation/result.json",
+      "sha256": "1c43a4906d4cb9e602851e7ed802d2f9563b588d3bbcdfb0b4996bf105580c13"
+    },
+    "guest_archive": "build/kernel/task006-wifi-read-whole-a2/consumed-source-root",
+    "native": {
+      "path": "build/silicon/task006-wifi-native12-a3/result.json",
+      "sha256": "675f30e44895157f014fdd29e132ec2d165077c474814f0b44cb005d58cd14d0"
+    },
+    "native_archive": "build/silicon/task006-wifi-native12-a3/consumed-source-root",
+    "native_complete_source_count": 251,
+    "old_common_authority": {
+      "path": "tooling/wifi_common-authority.json",
+      "sha256": "3ccc29b6fbd46dae14b1f2eb0e8566b09a237aae3c9392355e0a7317f2fea721"
+    },
+    "ordinary_audit": {
+      "path": "build/kernel/task006-wifi-read-whole-a2/target/audit.json",
+      "sha256": "c1909c42a1080c3eca2748ffc8690fd51fa80adab9fbd46b46701aad2d55c01b"
+    },
+    "publication_scope": {
+      "base_commit": "d182313bf3dfeb4abbc293d36c849409d6909459",
+      "execution_identity": "complete retained 317-input archive remains authoritative; publication does not rewrite execution inputs",
+      "owned_paths": 17,
+      "shared_read_selection_blobs": "READa2 archive bytes for DeploymentCatalog/KernelExport/build_kernel/audit_kernel/lemmasim_readonly",
+      "silicon_profile_selector": "HEAD plus only READ configuration -> existing lemma-silicon-dev/0.12.0 clause",
+      "unselected_clocked13_metadata": "present in actual complete READa2 archive; not included in this READ publication slice"
+    },
+    "rom": {
+      "path": "build/native/task006-arithmetic-a3/runtime/rtl/boot.bin",
+      "sha256": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2"
+    },
+    "runtime_identity": "bd6c0efb1f3cfd56aeec96255d8c55e684f227d5276e54b13b672dcd9405b87c",
+    "separate_read_authority": {
+      "path": "tooling/wifi-owned-read-authority.json",
+      "sha256": "e49221cb0bf46b205275f27bc42150143d5307fb9f41df8088169fd6a12049cc"
+    },
+    "sources_at_publication": {
+      "Lemma/Platform/Silicon/Development/WiFiCommonReadProbe.lean": "6e67cb5d28a4a94032a57a56b6ecbe8f9759ce4e78bfee1c4a59f6f290b18c7c",
+      "Lemma/Radio/WiFi/Block.lean": "1e1b9efd85219e2055e3b7128afa68ad5e27b4641c906f142634a8878d842028",
+      "scripts/check_wifi_owned_read.py": "9782b9706b39a60ff15799942c9b8609851240f9492b9397148f721b51d5253a",
+      "scripts/check_wifi_owned_read_tail.py": "5aa84a9b96796d1d91d3fee5d1975090576170e78e9c2e6b68aecd225e3a67b3",
+      "scripts/wifi_owned_read.py": "85c8770e19568d7e6b6d667b85773dcd8c8670c948be7debaa94611bfb80ad36",
+      "tests/radio/WiFiBlock.lean": "6df32a09c74ba20577395dfeccc5e2b223fc4da17f8b2da61e9d5edbbec66fae",
+      "tooling/wifi-owned-read-authority.json": "e49221cb0bf46b205275f27bc42150143d5307fb9f41df8088169fd6a12049cc"
+    },
+    "unchanged_old_common_shared_functions": 267,
+    "whole_build_and_full_audit": {
+      "path": "build/kernel/task006-wifi-read-whole-a2/result.json",
+      "sha256": "1158af4ddbf1a2597e61fe5c4ba7ea494b362464a26b838bfb4c9cffc028b1c7"
+    },
+    "whole_seconds": 56.75028503400972
+  },
+  "host_fixture": {
+    "cases": [
+      "full512bytes/literal72request/CRCknownanswer",
+      "5TX/37RXboundaries",
+      "missingcompletion/backpressure",
+      "11replycorruptions",
+      "peererror/shorthead/hardwarefault",
+      "latecopy/metadata/W1C/readfailure",
+      "allocationexhaustion",
+      "earlypacketpublicationfailure+callerreclaimsreturnedpacketandoriginalcontext"
+    ],
+    "genuine_lowering_functions": 143,
+    "result_log": {
+      "path": "build/radio/task006-wifi-block-host-a5/lean.log",
+      "sha256": "26aac9b1bb4f180f15bf82bfebe19c94fa826a338290e1836f535a5f2a8b92d3"
+    },
+    "scope": "finitehostboundaryfixturesandgenuineLLVMlowering; notCPU/RTLproof"
+  },
+  "initial": {
+    "actual_pc": "0x80208e34",
+    "actual_pc_owner": "Lemma.Platform.LemmaSim.IO.write64",
+    "actual_request_packets": 5,
+    "bound_clocks": 30000000,
+    "bound_host_seconds": 600,
+    "hardware_rx_active": 1,
+    "immutable_M_S_executable_and_ROM_bytes": "exactreadonlycomparison",
+    "independent_peer_reply_ready": true,
+    "no_cpu_or_request_prefix_repetition": true,
+    "observed_functional_prefix_clock": 12282160,
+    "original_observer_status": "FAIL",
+    "original_wall_seconds": 122.20027750101872,
+    "pending_checkpoint": {
+      "path": "build/silicon/task006-wifi-owned-read-a2/initial/pending-owned-read.chk",
+      "sha256": "4457eb4bb6fe3f5873a2210ddb296c654d2c39e56f7967f74b9d3e43f9f220a5"
+    },
+    "read_only_reobserver": {
+      "path": "build/silicon/task006-wifi-owned-read-a2-observation/result.json",
+      "sha256": "e298b134a9d817b34ba6c662ea2fc7b718630e8d614b40926d565a8d19e9e466"
+    },
+    "software_armed": 0
+  },
+  "original_failures": [
+    {
+      "path": "build/radio/task006-wifi-block-host-a1/lean.log",
+      "sha256": "7c80b1f4c1dfce7c26ffff1b682a17fcf6830bf6711bbe2b7ddbe9c1dfbd8096"
+    },
+    {
+      "path": "build/radio/task006-wifi-block-host-a2/lean.log",
+      "sha256": "85cb3a7fa04804bfc9948fcecb0da52deb6551a564223dbc3c32ae0f90b1a4ef"
+    },
+    {
+      "path": "build/kernel/task006-wifi-read-component-a1/result.json",
+      "sha256": "7af142cb6bb1d6f95b00c402896cc2339df85a79329585d5095e1360a665810a"
+    },
+    {
+      "path": "build/kernel/task006-wifi-read-component-a2/result.json",
+      "sha256": "4dc612a6f32558eaa6228f88a6a8b8a4a741da9ff9667584d91903cf9c8cc42b"
+    },
+    {
+      "path": "build/kernel/task006-wifi-read-whole-a1/result.json",
+      "sha256": "2efe9e7f4c3cd2751a20c2a0091757c312a6de3592f0a78c543590f54d03ee16"
+    },
+    {
+      "path": "build/kernel/task006-wifi-read-whole-a1-observation/actual-missing-tools-failure.json",
+      "sha256": "27ef02d861d19433a8fbf8947b8678322b1c2a0d820383808979a3b078f19b1e"
+    },
+    {
+      "path": "build/kernel/task006-wifi-read-whole-a1-observation/preservation.json",
+      "sha256": "ea7b67c2888e2cd1f1cae3cd05959abb689916b5c08a38bafb1c1cd092c3c9ea"
+    },
+    {
+      "path": "build/kernel/task006-wifi-read-whole-a1-observation/result.json",
+      "sha256": "4fc5c87774308087cd845e7c34a5d98b3554063ed574fea2fd39d67f8d3a2f34"
+    },
+    {
+      "path": "build/silicon/task006-wifi-owned-read-a1/result.json",
+      "sha256": "ed00e6045da44cbc6022d1bedafcecae4ddd0eb50107a4bce8b1e73815601b9d"
+    },
+    {
+      "path": "build/silicon/task006-wifi-owned-read-a2/result.json",
+      "sha256": "a082782d0abfff56d8735966d651194df7967a3b82e92000280a425608e563d4"
+    },
+    {
+      "path": "build/silicon/task006-wifi-owned-read-a3/result.json",
+      "sha256": "360275ea1e79a0a83bdf6511cf20d9a3e7d9d8de86bb2757465a8a9e4f69cdee"
+    }
+  ],
+  "original_reply_bound": {
+    "actual_wall_seconds": 32.651249134971295,
+    "context_pin": 1,
+    "delta_clocks": 2000000,
+    "end": 14282160,
+    "host_bound_seconds": 120,
+    "owned_frames": 2,
+    "received_bytes": 528,
+    "received_packets": 33,
+    "result": {
+      "path": "build/silicon/task006-wifi-owned-read-a3/result.json",
+      "sha256": "360275ea1e79a0a83bdf6511cf20d9a3e7d9d8de86bb2757465a8a9e4f69cdee"
+    },
+    "result_published": false,
+    "retained_checkpoint": {
+      "path": "build/silicon/task006-wifi-owned-read-a3/valid/complete-final.chk",
+      "sha256": "c60eb3fd3a165e52ff3e00f34cb43de313882526b31ec988b0ed5b49a5fe4b9b"
+    },
+    "start": 12282160,
+    "status": "FAIL"
+  },
+  "private_variants": {
+    "combined_host_seconds": 60.84910493699135,
+    "crc_case": "37validPHYpackets/fault0, guestpoison217/publish0/owned2/contextpin1",
+    "each_delta_clocks": 1000000,
+    "each_host_bound_seconds": 120,
+    "exact_complete_checkpoint_and_UART": true,
+    "field_masks_or_tolerances": [],
+    "loss_case": "no newrawtraffic, actualRXwatchdogfault4, guestpoison4/rx528/publish0/owned2/contextpin1",
+    "parent_full_checkpoint_unchanged": true,
+    "result": {
+      "path": "build/silicon/task006-wifi-owned-read-a5-tail-variants/result.json",
+      "sha256": "0227724f1d85bd0b3bdaf73efa7dd433f773ca73f949f15d5f25ff81aeacc2f5"
+    }
+  },
+  "processes": "all observedownednative/peer/observer/supervisorPIDsreaped beforepublication; parentactors untouched",
+  "protocol": {
+    "durable_request_records_appended": 0,
+    "offset": 4096,
+    "peer": {
+      "path": "build/silicon/task006-wifi-owned-read-a2/opaque-peer/result.json",
+      "sha256": "aa190d3caa218bd69cdad96052c0eb76da8ac9b9788c3ad945f7112ced40877c"
+    },
+    "peer_journal_bytes": 8,
+    "peer_reply": {
+      "path": "build/silicon/task006-wifi-owned-read-a2/opaque-peer/observed-reply.bin",
+      "sha256": "96f380ee894cd113179b535c613c223240af35be292046dd045d98c60e91c67a"
+    },
+    "peer_request": {
+      "path": "build/silicon/task006-wifi-owned-read-a2/opaque-peer/observed-request.bin",
+      "sha256": "dab7b1a59e9ba2d97ed67c6d769cdb3e9636a79fd0a080fd54f9775c76d57812"
+    },
+    "peer_source_closure": "Protocol.lean/HostIO.lean/Peer.lean/os_io.py +pinnedflake.lock; existing selected hostedbinary exact, unrelated changed Client/launcher wholepreparedmanifest not requalified",
+    "reply_bytes": 584,
+    "reply_fragment_lengths": [
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      8
+    ],
+    "request_bytes": 72,
+    "request_fragment_lengths": [
+      16,
+      16,
+      16,
+      16,
+      8
+    ],
+    "result_bytes": 512,
+    "sequence": 0,
+    "target_checks": [
+      "magic/version/kind",
+      "exactwriter/sequence/offset",
+      "successlength512/error0 or errorlength0/error1..4095",
+      "completeCRC64",
+      "liveowner/purpose/generation/pins",
+      "copybeforeheadrelease",
+      "TXcompletionbeforecursoradvance",
+      "verifiedresultbeforepublication"
+    ],
+    "writer": "0x445566778899aabb"
+  },
+  "public_tail": {
+    "actual_host_seconds": 41.337791354977526,
+    "command": [
+      "python3",
+      "scripts/check_wifi_owned_read_tail.py",
+      "--native-build",
+      "build/silicon/task006-wifi-native12-a3",
+      "--target-capture",
+      "build/kernel/task006-wifi-read-whole-a2",
+      "--rom-bundle",
+      "build/native/task006-arithmetic-a3",
+      "--peer-prepared",
+      "build/companion/task006-peer-a7/prepared.json",
+      "--pending-observation",
+      "build/silicon/task006-wifi-owned-read-a2-observation/pending-observation.json",
+      "--tail-checkpoint",
+      "build/silicon/task006-wifi-owned-read-a3/valid/complete-final.chk",
+      "--tail-inspect",
+      "build/silicon/task006-wifi-owned-read-a3/valid/final-inspect.json",
+      "--original-prefix-result",
+      "build/silicon/task006-wifi-owned-read-a3/result.json",
+      "--reference-success",
+      "build/silicon/task006-wifi-owned-read-a4-tail/result.json",
+      "--work-dir",
+      "build/silicon/task006-wifi-owned-read-public-tail-a1"
+    ],
+    "no_prefix_repetition": true,
+    "observer_sha256": "5aa84a9b96796d1d91d3fee5d1975090576170e78e9c2e6b68aecd225e3a67b3",
+    "result": {
+      "path": "build/silicon/task006-wifi-owned-read-public-tail-a1/result.json",
+      "sha256": "a158692f9a66d054e54e6f5e1d0734e3af1c9f9cd536a090445a00a1138a08ed"
+    },
+    "same_complete_checkpoint_sha256": "9e38f83a644949205ba476c4a20cd5aaf6e673c368cd4d7f89962192ed96af6c",
+    "status": "PASS_GENUINE_READ_TAIL_EXACT_CRC_LOSS"
+  },
+  "remaining_gaps": [
+    "no qualified cancellation/reclamation of pinned poisoned contexts/packetframes",
+    "no User capability/IPC or Notebook integration",
+    "no durable write/receipt/outbox transaction",
+    "no acquisition/PLCP/MAC/HE/RF/standard timing",
+    "inherited USB11 source-sample timing gap and coexistence/power/reset behavior not newly qualified"
+  ],
+  "schema": "lemma-common-owned-read-receipt/1",
+  "scope": "privileged compiled Lean READ512 through Common12 actual generated/decoded ideal DATA samples and independently hosted Lean opaque peer; no HE/acquisition/MAC/RF/standardtiming/durablewrite/Notebook/Usercapability claim",
+  "status": "PASS_SCOPED_FUNCTIONAL_READ_AND_PRIVATE_TAILS",
+  "stopped_follow_up": {
+    "action": "genuine cancellation/reclamation continuation",
+    "no_cancel_source_file_or_new_executable_run": true,
+    "reason": "automatic review rejection reported by parent; specific reason unavailable in this lane",
+    "status": "NOT_IMPLEMENTED_NOT_RUN"
+  }
+}

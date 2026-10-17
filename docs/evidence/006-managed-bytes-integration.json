@@ -1,0 +1,196 @@
+{
+  "schema": "lemma-managed-bytes-connected-integration/1",
+  "status": "PASS_PARTIAL",
+  "scope": "fresh source-bound connected software builds and real QEMU instruction-clock user workflows; not full digital completion, RTL timing, general managed runtime, proof kernel or browser Ready",
+  "compiled_source_commit": "1ea7768c44c67a05e17df5a9f5bc3b7232d4464c",
+  "compiled_source_state": "dirty implementation snapshot identified by complete257 consumed inputs; report-bearing commit separate",
+  "source_inputs": 257,
+  "source_inventory_sha256": "2fa22f1a97e20072eb8585a0e75cba7ef543c1bc74ba11285252ea3a55cb1e86",
+  "consumed_source_archive": {
+    "path": "build/task006-connected-consumed-sources-a3/source-inputs.json",
+    "sha256": "f0302c2f7841912b711d5269bf9ea11ae8798e548051de13c20aa34b5018b68b"
+  },
+  "builds": [
+    {
+      "configuration": "lemmasim-silicon-bytes-bulk-notebook",
+      "output": "build/kernel/task006-bytes-bulk-notebook-a3",
+      "build_exit": 0,
+      "build_seconds": 87.7559433610295,
+      "audit_exit": 0,
+      "audit_seconds": 58.200593942950945,
+      "image_sha256": "062a97b03f0cee5fd2beaa28add668b9306e9879d4d76bdf962d57ee3e177e28",
+      "build_manifest_sha256": "5c9468f01a73039f50a7438bee8ff077a0e24cfafc3649590e4b575fde17a2da",
+      "provenance_sha256": "8768493bcb8bb810767531cd14c7a2de8fc4a676a48d69808de48f3e434fbcf2",
+      "strict_audit_sha256": "6eb2e52a7bcb08b0d908bb3e57642458229deabf8fc382769b0c3525f1a64fae"
+    },
+    {
+      "configuration": "lemmasim-silicon-bytes-bulk-initialize",
+      "output": "build/kernel/task006-bytes-bulk-initialize-a3",
+      "build_exit": 0,
+      "build_seconds": 91.77119177096756,
+      "audit_exit": 0,
+      "audit_seconds": 56.67653633101145,
+      "image_sha256": "06a81e4e82d9f104416e11a39804f669ceebec1ef32ccb5a2617914553951c48",
+      "build_manifest_sha256": "1a2fd67afa5a681947ff2488d6082e868ca03db0fec7f4878da684f419820cc8",
+      "provenance_sha256": "cdf92f4f538c37be273eca134d8464a8d39682eb37ea21cdd8e4b7aecb148e9e",
+      "strict_audit_sha256": "f7e14ed9e1f6f03cdb3c5666435a1cdc0b1d8d3c19a21662584a818dfc1cc6f1"
+    },
+    {
+      "configuration": "lemmasim-silicon-product-bulk-notebook",
+      "output": "build/kernel/task006-product-bulk-notebook-a4",
+      "build_exit": 0,
+      "build_seconds": 93.75247043801937,
+      "audit_exit": 0,
+      "audit_seconds": 63.60155337303877,
+      "image_sha256": "5cb8846c152f408839d65c2b866dba0b8e349d8c3bda94e0d21036e4ae6726e0",
+      "build_manifest_sha256": "29c6d962a742c8582b719862a10651b7255901a224e8632aab22dff13137e343",
+      "provenance_sha256": "5977583765f3a1b517d723c4eb270a6548350d18c6dcdd29dddbf72880e2d889",
+      "strict_audit_sha256": "2244fef6abd436d89362cffb867fc5d1dd0aeb48cf654f15debd0886330e5564"
+    },
+    {
+      "configuration": "lemmasim-silicon-usb-bulk-notebook",
+      "output": "build/kernel/task006-usb-bulk-notebook-a3",
+      "build_exit": 0,
+      "build_seconds": 132.14412977400934,
+      "audit_exit": 0,
+      "audit_seconds": 90.1764768930152,
+      "image_sha256": "63213e63be98ee158734aeb45db0db51bda1e78c4f13b1989e7c41621ed7ed74",
+      "build_manifest_sha256": "8ec6fb6a7ecc213f4388d2b5a8f7b93bd5df72fadcb084fd7aaf9ed7d2c82e77",
+      "provenance_sha256": "005e8bb048d43ebd77d78beaa95803e2cf741d01310eb51d2a76c69abe36f024",
+      "strict_audit_sha256": "a9e418961b3c5dbd406bc29689c3c900e0555de81d3ff476cbcf679997958785"
+    },
+    {
+      "configuration": "lemmasim-silicon-usb-bulk-initialize",
+      "output": "build/kernel/task006-usb-bulk-initialize-a3",
+      "build_exit": 0,
+      "build_seconds": 121.73816564597655,
+      "audit_exit": 0,
+      "audit_seconds": 91.17681539803743,
+      "image_sha256": "67fa07f8b88775ce47432864849b8892cd1035d2f0a14ad85ff6cbf1b78697c8",
+      "build_manifest_sha256": "a9addf10a8c06916ab27f320506b98bc870afab449ad2006df4977eb43232678",
+      "provenance_sha256": "c8f14f9241409f9898058e88a30c1d51a8a04661d1f0cf31811778c306d43c87",
+      "strict_audit_sha256": "d4a8b39aed545ef52a38ea2850c20c9b70d4e93edf7f7e74abb835ac23684c34"
+    },
+    {
+      "configuration": "lemmasim-silicon-bytes-arithmetic-oom-development",
+      "output": "build/kernel/task006-bytes-arithmetic-oom-a1",
+      "build_exit": 0,
+      "build_seconds": 127.14839347597444,
+      "audit_exit": 0,
+      "audit_seconds": 82.22677299304632,
+      "image_sha256": "fd40d929689d96264fa01ab306e01d0552cc84703cb5c4231d9cbcfe3239fc35",
+      "build_manifest_sha256": "b5f6a45c51e012d8124df56bea73fada1ef7efa6dde61872984b025112b69872",
+      "provenance_sha256": "b8f060a04cdf750c8f9ed2884c38af3b09c541e76e1b143ae829db031107f85a",
+      "strict_audit_sha256": "bb0b0163390577abe2d465612549763ff3b5ea90d36eb999d8ac5a303be5be07"
+    }
+  ],
+  "observations": [
+    {
+      "path": "build/task006-bytes-math-a1/result.json",
+      "sha256": "56a33271fee46db7360199ca62442b24a31bdf8276fdbd3c9c56194c63378ce1",
+      "bytes": 27235,
+      "status": "PASS",
+      "scope": "genuine isolated ordinary ByteArray course/check/edited history/assistance/review/Save/newcold/fullpixels/failedSave",
+      "elapsed_seconds": 155.79954775399528
+    },
+    {
+      "path": "build/task006-bytes-v4-migration-a1/result.json",
+      "sha256": "e080e634bd9d4f6a9943f2f11bff0a9e4035d72a024e68998dab3d3d56937f58",
+      "bytes": 20592,
+      "status": "PASS",
+      "scope": "actual guest Document4 to5 migration preserving five IsolatedSums histories, new IsolatedBytes attempt, policy override, coldpixels and failedSave",
+      "elapsed_seconds": 90.09502949600574
+    },
+    {
+      "path": "build/task006-bytes-oom-a2/result.json",
+      "sha256": "34f0bb9ecf95257a2c9395b37bfc38ab62bba896f383aca1ca1fb9de7ae0929c",
+      "bytes": 11990,
+      "status": "PASS",
+      "scope": "actual31live-object OOM in User4 arithmetic; no result, responsive ink/Save/newcold/fullpixels",
+      "elapsed_seconds": 115.73769983404782
+    },
+    {
+      "path": "build/task006-document5-link-qualification-a3/result.json",
+      "sha256": "f3e27b88482ac7fd835c22304a9da4e6bafee516252ca2a3beb36f7accb084e6",
+      "bytes": 637920,
+      "status": "PASS",
+      "scope": "actual retained a2 per-image artifact final literal-byte audit under scoped symbol preservation; loadablebytes unchanged; distinct from fresh builds"
+    }
+  ],
+  "retained_failures": [
+    {
+      "path": "build/kernel/task006-bytes-bulk-notebook-a1/audit-failure.json",
+      "meaning": "unaccounted actual cst32 literal section; narrow fullowner/bytes/flags/symbol admission subsequently qualified",
+      "sha256": "7f5e28f306f9687d5f71c71be2ebfe72eacddb7766808abf9c9561000469d795"
+    },
+    {
+      "path": "build/kernel/task006-bytes-bulk-notebook-a2/audit-failure.json",
+      "meaning": "lld discarded local cst32 symbol; scoped --discard-none preserves byte-identical executable/data and complete final provenance",
+      "sha256": "717cf2180d73ad34f1228d5d05f5e26ba419204460f389d32675e4ff206b9457"
+    },
+    {
+      "path": "build/task006-bytes-oom-a1/result.json",
+      "meaning": "valid initial-evidence precondition rejected wrong selected input medium; corrected campaign uses original guest-produced factory medium without weakening check",
+      "sha256": "6d136f95accb18961fec7240eb9d47d5b886bef80f6f4dbdaf90ff26bbbe526a"
+    }
+  ],
+  "bounds": {
+    "boot_seconds": 60,
+    "action_seconds": 30,
+    "campaign_seconds": 1200,
+    "unchanged_original_bounds": true
+  },
+  "open_obligations": [
+    "changed Surface2 canonical RTL Ready/ink/edit/navigation/Save/cold/failure campaign currently running",
+    "changed actual browser Ready/course/Save/durable reload/exact applicable suffix",
+    "real ProductBulk/PMP healthy confirmation and update/power recovery",
+    "real USBbulk notebook lost-ACK/restart reconciliation/cold currently running",
+    "QEMU unrepresented cached translation/instruction state at arbitrary boundaries",
+    "general arrays/strings/closures/recursion and proof-kernel environment closure",
+    "immutable course packages, permissioned tutor and learning-policy evaluation",
+    "full USB and Bluetooth5.4/Wi-Fi6 digital coverage",
+    "physical routing/rules/DRC/LVS/extraction/timing/full-chip memory/pads/power/RF"
+  ],
+  "observed_tools": {
+    "clang": {
+      "path": "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang-20",
+      "version": "clang version 20.1.8\nTarget: x86_64-unknown-linux-gnu\nThread model: posix\nInstalledDir: /nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin"
+    },
+    "dtc": {
+      "path": "/nix/store/7v9p68ylbqfcj7mapysfhff2vzwl75aw-dtc-1.8.1/bin/dtc",
+      "version": "Version: DTC 1.8.1"
+    },
+    "lake": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+      "version": "Lake version 5.0.0-src (Lean version 4.34.1)"
+    },
+    "ld.lld": {
+      "path": "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld",
+      "version": "LLD 20.1.8 (compatible with GNU linkers)"
+    },
+    "lean": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+      "version": "Lean (version 4.34.1, Release)"
+    },
+    "llc": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+      "version": "LLVM (http://llvm.org/):\n  LLVM version 20.1.8\n  Optimized build.\n  Default target: x86_64-unknown-linux-gnu\n  Host CPU: meteorlake\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore"
+    },
+    "opt": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt",
+      "version": "LLVM (http://llvm.org/):\n  LLVM version 20.1.8\n  Optimized build.\n  Default target: x86_64-unknown-linux-gnu\n  Host CPU: meteorlake"
+    },
+    "qemu-system-riscv64": {
+      "path": "/nix/store/9ihv5zpj6l7fl12mdcxrbmiih3wgrmhw-qemu-11.1.1/bin/qemu-system-riscv64",
+      "version": "QEMU emulator version 11.1.1\nCopyright (c) 2003-2026 Fabrice Bellard and the QEMU Project developers"
+    }
+  },
+  "lean_source_realization": {
+    "narHash": "sha256-JO1pCqWeotC4zjiIQZccEPXfVHnuDQC0DugyuJvIMRs=",
+    "narSize": 674782584,
+    "revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+    "source_path": "/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source",
+    "uint_source": "/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source/src/Init/Data/UInt/Basic.lean",
+    "uint_source_sha256": "d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94"
+  }
+}

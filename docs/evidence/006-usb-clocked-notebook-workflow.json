@@ -1,0 +1,123 @@
+{
+  "schema": "lemma-usb-clocked-notebook-connected/1",
+  "status": "PASS_OBSERVED",
+  "scope": "actual Clocked13 guest Ready/raw ink/Undo/Redo/navigation/explicit Saved11 and independently backed new-CPU cold; original terminal observer FAIL retained",
+  "profile": "lemma-silicon-dev/0.13.0",
+  "identity": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.13.0",
+    "runtime": "90638d9213a153daaed48b343f0be7880143a286bc40f753b002d0f3836ac401",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "c5bf79c3981a5cff321205d6d4ec2f6854508c65bf779a6295ca73c3eaf93473",
+    "dtb": "eb244f1009f709c86af9880871c55e34ebceb509be9085e61cfcddc04709a6b6",
+    "descriptor": "5bfc34263f44cd265e5b0e9960b372aafd066b6b9bb5323d8f4601309f574e12"
+  },
+  "original_workflow_failure": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-notebook-workflow-a1/result.json",
+    "sha256": "524a90880153fb1e81ee36e30a3856b830e36cd30da518d6df67742547c7b9eb",
+    "error": "ValueError('actual hello identity')",
+    "host_seconds": 14103.486665909062,
+    "owned_children_reaped": true
+  },
+  "live_reobservation": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-notebook-retained-observation-a1/result.json",
+    "sha256": "4dc3cac6f4ba45dd62f16a3c360b7481d65ef9e1b87335fe8074a8452852bcb4",
+    "scope": "no CPU/peer rerun; actual initial six receipt prefix independently establishes HELLO7; all75 transactions/durable72 effects decoded; sequence1/writer84 negative guards retained",
+    "saved_sequence": 11,
+    "wire_transactions": 75,
+    "durable_effects": 72,
+    "lost_publication_barrier_effect_count": 1,
+    "workflow": {
+      "status": "PASS",
+      "sequence": 11,
+      "generation": 1,
+      "raw_samples": 3,
+      "strokes": 1,
+      "pages": 2,
+      "documents": [
+        1
+      ],
+      "contact_points": [
+        [
+          "usb annotation",
+          330,
+          1200,
+          true
+        ]
+      ],
+      "explicit_save": [
+        1057,
+        11,
+        1,
+        1,
+        0
+      ],
+      "committed_objects": 4
+    }
+  },
+  "current_acknowledged_boundary": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-final-saved11-boundary-a1/boundary.json",
+    "sha256": "c7890a34d05dd7882aba57ceb23e01c01b83b9ee1f59dde61f2a11a6849b6a1a",
+    "scope": "current acknowledged opaque boundary; no machine snapshot, drain, pause or peer request",
+    "saved_sequence": 11,
+    "high_water": 72,
+    "outbox_next": 73,
+    "pending": 0,
+    "acknowledged_sha256": "868f341aee58d4d4652b45cd384c0c67adc3f19507bc7a56d37eb8f816144208"
+  },
+  "new_cpu_cold": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-final-saved11-cold-a1/result.json",
+    "sha256": "037c6883c2305ae3691d3929a82d8a20b1e720c2bad2bd56d7bb66258308f983",
+    "ready_cycles": 725000000,
+    "ready_host_seconds": 3390.5795388959814,
+    "whole_host_seconds": 3396.8172981069656,
+    "bounds": {
+      "cold_cycles": 1600000000,
+      "cold_host_seconds": 7200,
+      "ink_cycles": 200000000,
+      "redraw_save_cycles": 1600000000,
+      "action_host_seconds": 7200
+    },
+    "whole_deadline_seconds": 7400,
+    "writes": 0,
+    "barriers": 0,
+    "opaque_reads": 42,
+    "full_pixel_count": 3630000,
+    "complete_acknowledged_bytes": 268435456,
+    "owned_children_reaped": true,
+    "supervision": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-final-saved11-cold-a1.supervision/supervision.json",
+      "sha256": "4f37fc434754492cb39a406d6cb7d87ef4f300887f10e3e0a7c534f8b2166bcf"
+    }
+  },
+  "independent_cold_observation": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-final-saved11-cold-observation-a2/result.json",
+    "sha256": "c4dd6e4676bc6f7ecf9e24c25f6cc77034aff9d9d6fd86b40b0ca0b3c6dac9c8",
+    "observer_sha256": "c7ff64dd9c191a22aad79f156bb9fe16220f80d63de1b8cd2104be0fe273b7cf",
+    "scope": "retained artifact check; no CPU, peer, restore or cold rerun",
+    "negative_cases": 5,
+    "original_observer_failure": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-final-saved11-cold-observation-a1/result.json",
+      "sha256": "a28078011e7c9e159d34e10e6676e2a3b3a056d7806bbdfcd59b9a457462f70f",
+      "error": "Integer pending request ID versus JSON string key; independent decoding showed every other field and runtime identity equal; only JSON roundtrip comparison corrected"
+    }
+  },
+  "launch_authority": {
+    "native_package": "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4",
+    "bundle_sha256": "29f9f2db667eb0d4297f762b3058b93d15cae31f752d6af9e7603aef91bff7e1",
+    "host_policy": "lemma-usb-pending-policy/4",
+    "host_prepared": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/usb/host-pending-policy4-a3/prepared.json",
+      "sha256": "1c2ffc4fb0556687d2ea531f12133d14fe70320d22b7ba536265036b35526d4a"
+    },
+    "native_input_count": 255,
+    "guest_input_count": 326
+  },
+  "not_qualified": [
+    "full USB MAC timing/standards or physical USB conformance",
+    "architectural or QEMU microstate migration",
+    "live restored original peer continuation",
+    "guest reconnect/failed-save recovery successor",
+    "full Clocked browser notebook workflow"
+  ]
+}

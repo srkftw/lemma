@@ -12,19 +12,20 @@ from core0_common import Core0Error
 
 def fixture():
     # Fixed literal expected font table, independently written as artifact bytes.
-    values=[31599,11415,29671,29647,23497,31183,31215,29330,31727,31695,
-            0,0,0,0,0,0,0,11245,0,31015,27502,31143,31140,31087,23533,29847,
-            0,0,18727,0,24573,31599,31716,0,27565,31183,0,23407,23402,23423,0,23186]
+    values=[10530,8778,21973,1488,0,448,0,4772,
+            31599,11415,29671,29647,23497,31183,31215,29330,31727,31695,
+            0,0,0,3640,0,0,0,11245,27566,31015,27502,31143,31140,31087,23533,29847,
+            0,23469,18727,24557,24573,31599,31716,31609,27565,31183,29842,23407,23402,23423,23213,23186]
     unit={'configuration':'lemmasim-notebook','role':'user','functions':[{
         'source':'Lemma.Ink.Surface.letter','symbol':'letter','args':['u64'],'effects':[]}]}
-    ir='@switch.table.letter = private unnamed_addr constant [42 x i64] ['+', '.join('i64 '+str(v) for v in values)+'''], align 8
+    ir='@switch.table.letter = private unnamed_addr constant [50 x i64] ['+', '.join('i64 '+str(v) for v in values)+'''], align 8
 define i64 @letter(i64 %arg0) {
 entry:
- %index = add i64 %arg0, -48
- %bound = icmp ult i64 %index, 42
+ %index = add i64 %arg0, -40
+ %bound = icmp ult i64 %index, 50
  br i1 %bound, label %lookup, label %done
 lookup:
- %pointer = getelementptr inbounds nuw [42 x i64], ptr @switch.table.letter, i64 0, i64 %index
+ %pointer = getelementptr inbounds nuw [50 x i64], ptr @switch.table.letter, i64 0, i64 %index
  %loaded = load i64, ptr %pointer, align 8
  br label %done
 done:
@@ -38,14 +39,16 @@ done:
 class LemmaSimArtifactBoundaries(unittest.TestCase):
     def test_literal_is_bounded_readonly_and_keeps_historical_scope(self):
         ir,unit=fixture();sites,tables=validate_readonly_pmp_lookup(ir,unit,optimized=True)
-        self.assertEqual(len(sites),1);self.assertEqual(tables[0]['index_bound'],42)
+        self.assertEqual(len(sites),1);self.assertEqual(tables[0]['index_bound'],50)
         bad=copy.deepcopy(unit);bad['configuration']='normal'
         with self.assertRaises(Core0Error): validate_readonly_pmp_lookup(ir,bad,optimized=True)
-        for changed in [ir.replace('constant [42','global [42'),ir.replace('i64 31599','i64 31600'),
+        for changed in [ir.replace('constant [50','global [50'),ir.replace('i64 31599','i64 31600'),
                         ir.replace('i64 31015','i64 0'),ir.replace('i64 31015','i64 31014'),
-                        ir.replace('icmp ult i64 %index, 42','icmp ult i64 %index, 43'),
+                        ir.replace('i64 21973','i64 21974'),ir.replace('i64 23469','i64 0'),ir.replace('i64 31609','i64 31608'),
+                        ir.replace('add i64 %arg0, -40','add i64 %arg0, -41'),
+                        ir.replace('icmp ult i64 %index, 50','icmp ult i64 %index, 51'),
                         ir.replace('br i1 %bound, label %lookup, label %done','br i1 %bound, label %done, label %lookup'),
-                        ir.replace('i64 0, i64 %index','i64 0, i64 42'),
+                        ir.replace('i64 0, i64 %index','i64 0, i64 50'),
                         ir.replace('ret i64 %result','store i64 0, ptr %pointer\n ret i64 %result')]:
             with self.assertRaises(Core0Error): validate_readonly_pmp_lookup(changed,unit,optimized=True)
 

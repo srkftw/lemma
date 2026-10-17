@@ -119,9 +119,11 @@ def failure : IO Unit := do
       if read after address ≠ read before address then
         throw <| IO.userError "capacity failure mutated a page/root/raw record"
   let expected := "K1 0000000000000424 00000000000000eb 0000000000000001 0000000000000001 0000000000010001\n"
-  if after.console ≠ #[expected] || after.uploads ≠ 0 || read after (0x20800 + 456) ≠ 9 || read after (0x20800 + 448) ≠ 128 then
+  if after.console ≠ #[expected] || after.uploads ≠ 0 || read after (0x20800 + 456) ≠ 12 || read after (0x20800 + 448) ≠ 128 then
     throw <| IO.userError "missing actual guest Failed diagnostic or bounded deferred status tile queue"
-  for i in [:9] do
+  -- The336-pixel status at x24 covers columns0..11 in the32-pixel tile grid.
+  -- The appended COURSE label needs the complete original Failed footer too.
+  for i in [:12] do
     if (read after (0x321000 + i.toUInt64 / 4 * 8) >>> (i.toUInt64 % 4 * 16)) &&& 0xffff ≠ 4 * 52 + i.toUInt64 then
       throw <| IO.userError "Failed status queued an incorrect dirty tile"
 

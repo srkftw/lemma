@@ -1,0 +1,470 @@
+{
+  "configurations": {
+    "lemmasim-silicon-package-chooser-bulk-initialize": {
+      "added_functions": [
+        "Lemma.Applications.Notebook.applyBookTap",
+        "Lemma.Applications.Notebook.bookInkTap",
+        "Lemma.Applications.Notebook.bookMathTap",
+        "Lemma.Applications.Notebook.bufferedBookInk",
+        "Lemma.Applications.Notebook.pumpBookControlBacklog",
+        "Lemma.Applications.Notebook.pumpBookTap",
+        "Lemma.Applications.Notebook.pumpBookTap.changed",
+        "Lemma.Applications.Notebook.queueBookTap",
+        "Lemma.Notebook.ControlBacklog.base",
+        "Lemma.Notebook.ControlBacklog.capacity",
+        "Lemma.Notebook.ControlBacklog.clear",
+        "Lemma.Notebook.ControlBacklog.count",
+        "Lemma.Notebook.ControlBacklog.deferFailure",
+        "Lemma.Notebook.ControlBacklog.front",
+        "Lemma.Notebook.ControlBacklog.full",
+        "Lemma.Notebook.ControlBacklog.get",
+        "Lemma.Notebook.ControlBacklog.malformed",
+        "Lemma.Notebook.ControlBacklog.pop",
+        "Lemma.Notebook.ControlBacklog.push",
+        "Lemma.Notebook.ControlBacklog.put",
+        "Lemma.Notebook.ControlBacklog.reset",
+        "Lemma.Notebook.ControlBacklog.takeFailure"
+      ],
+      "changed_functions": [
+        "Lemma.Applications.Notebook.bookmarkInputSample.acceptSample",
+        "Lemma.Applications.Notebook.cancelBookmarkInput",
+        "Lemma.Applications.Notebook.chooserReaderStep"
+      ],
+      "number_pad_pool_alpha": {
+        "new_symbol": "lemma_user_notebook_core0_scalar_299",
+        "old_symbol": "lemma_user_notebook_core0_scalar_298"
+      },
+      "predecessor_authority": "authored-hint-publication-target-authority-v2.json",
+      "predecessor_authority_sha256": "34043ccdacd626a01f4cce47a3daeadfbef1c02406cbebaa879bfb90752e7789",
+      "previous_role_sha256": "6e4c18d032d809a39ecb657b064f94f1205b4b3007aa573353262e1b59369e75",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-chooser-bulk-initialize": "09285bca56f31b9fdf25413ddafb363cc6725595f6fcca47fd3f50228396bbe5",
+          "lemmasim-silicon-package-chooser-bulk-notebook": "91e3cb21f96f85eae2d589dacb3b89a0577328a5230ec3160ef875b42e02c418"
+        },
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa",
+        "package_notebook_version": 20,
+        "post_function_count": 925,
+        "post_sha256": "431cbab4ac7b1ebde2745df1b04744991f8743d1846d9019acff85781790f517",
+        "pre_function_count": 927,
+        "pre_sha256": "408226fefddaf4f3040eefd9202a504c2e646c252d23254867e12e46ac629d45",
+        "predecessor_sha256": "37454b80a0a95ab4a03a6b3f8870eeaae6efa5f767dfc99db226851155c18a9e",
+        "schema": "lemma-course-chooser-notebook-artifact/1",
+        "surface_root_sha256_by_phase": {
+          "post": "55ccef7d73862222aa0b65ef38fe409bb47f80bdba34c448f130bb5aa29dfd51",
+          "pre": "9e1204c0afa6f544372172556e0f4979f24a7aeb47227b70df1872d83b876c85"
+        }
+      },
+      "shared_pre_function_count": 902,
+      "shared_pre_functions_sha256": "0757d1c0432a63ad5823088eada1d66d79a63dbc4da2dda61881269224b18824"
+    },
+    "lemmasim-silicon-package-chooser-bulk-notebook": {
+      "added_functions": [
+        "Lemma.Applications.Notebook.applyBookTap",
+        "Lemma.Applications.Notebook.bookInkTap",
+        "Lemma.Applications.Notebook.bookMathTap",
+        "Lemma.Applications.Notebook.bufferedBookInk",
+        "Lemma.Applications.Notebook.pumpBookControlBacklog",
+        "Lemma.Applications.Notebook.pumpBookTap",
+        "Lemma.Applications.Notebook.pumpBookTap.changed",
+        "Lemma.Applications.Notebook.queueBookTap",
+        "Lemma.Notebook.ControlBacklog.base",
+        "Lemma.Notebook.ControlBacklog.capacity",
+        "Lemma.Notebook.ControlBacklog.clear",
+        "Lemma.Notebook.ControlBacklog.count",
+        "Lemma.Notebook.ControlBacklog.deferFailure",
+        "Lemma.Notebook.ControlBacklog.front",
+        "Lemma.Notebook.ControlBacklog.full",
+        "Lemma.Notebook.ControlBacklog.get",
+        "Lemma.Notebook.ControlBacklog.malformed",
+        "Lemma.Notebook.ControlBacklog.pop",
+        "Lemma.Notebook.ControlBacklog.push",
+        "Lemma.Notebook.ControlBacklog.put",
+        "Lemma.Notebook.ControlBacklog.reset",
+        "Lemma.Notebook.ControlBacklog.takeFailure"
+      ],
+      "changed_functions": [
+        "Lemma.Applications.Notebook.bookmarkInputSample.acceptSample",
+        "Lemma.Applications.Notebook.cancelBookmarkInput",
+        "Lemma.Applications.Notebook.chooserReaderStep"
+      ],
+      "number_pad_pool_alpha": {
+        "new_symbol": "lemma_user_notebook_core0_scalar_299",
+        "old_symbol": "lemma_user_notebook_core0_scalar_298"
+      },
+      "predecessor_authority": "authored-hint-publication-target-authority-v2.json",
+      "predecessor_authority_sha256": "34043ccdacd626a01f4cce47a3daeadfbef1c02406cbebaa879bfb90752e7789",
+      "previous_role_sha256": "6e4c18d032d809a39ecb657b064f94f1205b4b3007aa573353262e1b59369e75",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-chooser-bulk-initialize": "09285bca56f31b9fdf25413ddafb363cc6725595f6fcca47fd3f50228396bbe5",
+          "lemmasim-silicon-package-chooser-bulk-notebook": "91e3cb21f96f85eae2d589dacb3b89a0577328a5230ec3160ef875b42e02c418"
+        },
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa",
+        "package_notebook_version": 20,
+        "post_function_count": 925,
+        "post_sha256": "431cbab4ac7b1ebde2745df1b04744991f8743d1846d9019acff85781790f517",
+        "pre_function_count": 927,
+        "pre_sha256": "408226fefddaf4f3040eefd9202a504c2e646c252d23254867e12e46ac629d45",
+        "predecessor_sha256": "37454b80a0a95ab4a03a6b3f8870eeaae6efa5f767dfc99db226851155c18a9e",
+        "schema": "lemma-course-chooser-notebook-artifact/1",
+        "surface_root_sha256_by_phase": {
+          "post": "55ccef7d73862222aa0b65ef38fe409bb47f80bdba34c448f130bb5aa29dfd51",
+          "pre": "9e1204c0afa6f544372172556e0f4979f24a7aeb47227b70df1872d83b876c85"
+        }
+      },
+      "shared_pre_function_count": 902,
+      "shared_pre_functions_sha256": "0757d1c0432a63ad5823088eada1d66d79a63dbc4da2dda61881269224b18824"
+    },
+    "lemmasim-silicon-package-reader-bulk-initialize": {
+      "added_functions": [
+        "Lemma.Applications.Notebook.applyBookTap",
+        "Lemma.Applications.Notebook.bookInkTap",
+        "Lemma.Applications.Notebook.bookMathTap",
+        "Lemma.Applications.Notebook.bufferedBookInk",
+        "Lemma.Applications.Notebook.pumpBookControlBacklog",
+        "Lemma.Applications.Notebook.pumpBookTap",
+        "Lemma.Applications.Notebook.pumpBookTap.changed",
+        "Lemma.Applications.Notebook.queueBookTap",
+        "Lemma.Notebook.ControlBacklog.base",
+        "Lemma.Notebook.ControlBacklog.capacity",
+        "Lemma.Notebook.ControlBacklog.clear",
+        "Lemma.Notebook.ControlBacklog.count",
+        "Lemma.Notebook.ControlBacklog.deferFailure",
+        "Lemma.Notebook.ControlBacklog.front",
+        "Lemma.Notebook.ControlBacklog.full",
+        "Lemma.Notebook.ControlBacklog.get",
+        "Lemma.Notebook.ControlBacklog.malformed",
+        "Lemma.Notebook.ControlBacklog.pop",
+        "Lemma.Notebook.ControlBacklog.push",
+        "Lemma.Notebook.ControlBacklog.put",
+        "Lemma.Notebook.ControlBacklog.reset",
+        "Lemma.Notebook.ControlBacklog.takeFailure"
+      ],
+      "changed_functions": [
+        "Lemma.Applications.Notebook.bookmarkInputSample.acceptSample",
+        "Lemma.Applications.Notebook.bookmarkStep",
+        "Lemma.Applications.Notebook.cancelBookmarkInput"
+      ],
+      "number_pad_pool_alpha": {
+        "new_symbol": "lemma_user_notebook_core0_scalar_299",
+        "old_symbol": "lemma_user_notebook_core0_scalar_298"
+      },
+      "predecessor_authority": "authored-hint-publication-target-authority-v2.json",
+      "predecessor_authority_sha256": "34043ccdacd626a01f4cce47a3daeadfbef1c02406cbebaa879bfb90752e7789",
+      "previous_role_sha256": "ec3d5e615a845eb0fc6ff0872f6353201f132cda7b91b79df8e3e780637cbd8c",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-reader-bulk-initialize": "86a4f3d38a043b2036a664dbb24e315d00d78ff46cda25411591a80b9542ba70",
+          "lemmasim-silicon-package-reader-bulk-notebook": "e696dcb4d884b59bd5a3e898680a03a94fe5ab4cd9066823d441e24e738b5f5c"
+        },
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa",
+        "package_notebook_version": 18,
+        "post_function_count": 924,
+        "post_sha256": "5ed983c40af40584366c28bf027011a67a9f326011bac6465da3844d1be90119",
+        "pre_function_count": 926,
+        "pre_sha256": "94c8f5a18612284276aebb39f53fae72e6f2df9a00738cdbb4601f07b14bd2a8",
+        "previous_artifact_sha256": "699393cffd19db94f1d98160848de5ce515b34aff865c366bff5c6a6d49eb599",
+        "reader_contract": "lemma-course-reader-location/1",
+        "schema": "lemma-course-reader-notebook-artifact/1",
+        "surface_root_sha256_by_phase": {
+          "post": "775ba1e0c77d8fbf66589f945b18daf9caae997ff6651562503597dce65a85bf",
+          "pre": "080581b7582c74029a7c2371e709f6277684b4351f9f67d759f9341a9b029681"
+        }
+      },
+      "shared_pre_function_count": 901,
+      "shared_pre_functions_sha256": "cd45803de788579b449ce58fd2315bb93cc31f263da43c7c8b67b708144325ff"
+    },
+    "lemmasim-silicon-package-reader-bulk-notebook": {
+      "added_functions": [
+        "Lemma.Applications.Notebook.applyBookTap",
+        "Lemma.Applications.Notebook.bookInkTap",
+        "Lemma.Applications.Notebook.bookMathTap",
+        "Lemma.Applications.Notebook.bufferedBookInk",
+        "Lemma.Applications.Notebook.pumpBookControlBacklog",
+        "Lemma.Applications.Notebook.pumpBookTap",
+        "Lemma.Applications.Notebook.pumpBookTap.changed",
+        "Lemma.Applications.Notebook.queueBookTap",
+        "Lemma.Notebook.ControlBacklog.base",
+        "Lemma.Notebook.ControlBacklog.capacity",
+        "Lemma.Notebook.ControlBacklog.clear",
+        "Lemma.Notebook.ControlBacklog.count",
+        "Lemma.Notebook.ControlBacklog.deferFailure",
+        "Lemma.Notebook.ControlBacklog.front",
+        "Lemma.Notebook.ControlBacklog.full",
+        "Lemma.Notebook.ControlBacklog.get",
+        "Lemma.Notebook.ControlBacklog.malformed",
+        "Lemma.Notebook.ControlBacklog.pop",
+        "Lemma.Notebook.ControlBacklog.push",
+        "Lemma.Notebook.ControlBacklog.put",
+        "Lemma.Notebook.ControlBacklog.reset",
+        "Lemma.Notebook.ControlBacklog.takeFailure"
+      ],
+      "changed_functions": [
+        "Lemma.Applications.Notebook.bookmarkInputSample.acceptSample",
+        "Lemma.Applications.Notebook.bookmarkStep",
+        "Lemma.Applications.Notebook.cancelBookmarkInput"
+      ],
+      "number_pad_pool_alpha": {
+        "new_symbol": "lemma_user_notebook_core0_scalar_299",
+        "old_symbol": "lemma_user_notebook_core0_scalar_298"
+      },
+      "predecessor_authority": "authored-hint-publication-target-authority-v2.json",
+      "predecessor_authority_sha256": "34043ccdacd626a01f4cce47a3daeadfbef1c02406cbebaa879bfb90752e7789",
+      "previous_role_sha256": "ec3d5e615a845eb0fc6ff0872f6353201f132cda7b91b79df8e3e780637cbd8c",
+      "role": {
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-reader-bulk-initialize": "86a4f3d38a043b2036a664dbb24e315d00d78ff46cda25411591a80b9542ba70",
+          "lemmasim-silicon-package-reader-bulk-notebook": "e696dcb4d884b59bd5a3e898680a03a94fe5ab4cd9066823d441e24e738b5f5c"
+        },
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa",
+        "package_notebook_version": 18,
+        "post_function_count": 924,
+        "post_sha256": "5ed983c40af40584366c28bf027011a67a9f326011bac6465da3844d1be90119",
+        "pre_function_count": 926,
+        "pre_sha256": "94c8f5a18612284276aebb39f53fae72e6f2df9a00738cdbb4601f07b14bd2a8",
+        "previous_artifact_sha256": "699393cffd19db94f1d98160848de5ce515b34aff865c366bff5c6a6d49eb599",
+        "reader_contract": "lemma-course-reader-location/1",
+        "schema": "lemma-course-reader-notebook-artifact/1",
+        "surface_root_sha256_by_phase": {
+          "post": "775ba1e0c77d8fbf66589f945b18daf9caae997ff6651562503597dce65a85bf",
+          "pre": "080581b7582c74029a7c2371e709f6277684b4351f9f67d759f9341a9b029681"
+        }
+      },
+      "shared_pre_function_count": 901,
+      "shared_pre_functions_sha256": "cd45803de788579b449ce58fd2315bb93cc31f263da43c7c8b67b708144325ff"
+    },
+    "lemmasim-silicon-product-course-reader-bulk-notebook": {
+      "added_functions": [
+        "Lemma.Applications.Notebook.applyBookTap",
+        "Lemma.Applications.Notebook.bookInkTap",
+        "Lemma.Applications.Notebook.bookMathTap",
+        "Lemma.Applications.Notebook.bufferedBookInk",
+        "Lemma.Applications.Notebook.pumpBookControlBacklog",
+        "Lemma.Applications.Notebook.pumpBookTap",
+        "Lemma.Applications.Notebook.pumpBookTap.changed",
+        "Lemma.Applications.Notebook.queueBookTap",
+        "Lemma.Notebook.ControlBacklog.base",
+        "Lemma.Notebook.ControlBacklog.capacity",
+        "Lemma.Notebook.ControlBacklog.clear",
+        "Lemma.Notebook.ControlBacklog.count",
+        "Lemma.Notebook.ControlBacklog.deferFailure",
+        "Lemma.Notebook.ControlBacklog.front",
+        "Lemma.Notebook.ControlBacklog.full",
+        "Lemma.Notebook.ControlBacklog.get",
+        "Lemma.Notebook.ControlBacklog.malformed",
+        "Lemma.Notebook.ControlBacklog.pop",
+        "Lemma.Notebook.ControlBacklog.push",
+        "Lemma.Notebook.ControlBacklog.put",
+        "Lemma.Notebook.ControlBacklog.reset",
+        "Lemma.Notebook.ControlBacklog.takeFailure"
+      ],
+      "changed_functions": [
+        "Lemma.Applications.Notebook.bookmarkInputSample.acceptSample",
+        "Lemma.Applications.Notebook.bookmarkStep",
+        "Lemma.Applications.Notebook.cancelBookmarkInput"
+      ],
+      "number_pad_pool_alpha": {
+        "new_symbol": "lemma_user_notebook_core0_scalar_299",
+        "old_symbol": "lemma_user_notebook_core0_scalar_298"
+      },
+      "predecessor_authority": "authored-hint-publication-target-authority-v2.json",
+      "predecessor_authority_sha256": "34043ccdacd626a01f4cce47a3daeadfbef1c02406cbebaa879bfb90752e7789",
+      "previous_role_sha256": "cec7b906f2d3b7f3b91e96fce215aa96b8f81258e31a339f29c595807b6966cc",
+      "role": {
+        "catalog_sha256": "5f9110c8f8b1c19ef45e8a71e0d4a5861136440f9d56de7cbbb5e0ef3b1db135",
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa",
+        "package_notebook_version": 18,
+        "post_function_count": 924,
+        "post_sha256": "5ed983c40af40584366c28bf027011a67a9f326011bac6465da3844d1be90119",
+        "pre_function_count": 926,
+        "pre_sha256": "94c8f5a18612284276aebb39f53fae72e6f2df9a00738cdbb4601f07b14bd2a8",
+        "reader_contract": "lemma-course-reader-location/1",
+        "surface_root_sha256_by_phase": {
+          "post": "775ba1e0c77d8fbf66589f945b18daf9caae997ff6651562503597dce65a85bf",
+          "pre": "080581b7582c74029a7c2371e709f6277684b4351f9f67d759f9341a9b029681"
+        }
+      },
+      "shared_pre_function_count": 901,
+      "shared_pre_functions_sha256": "cd45803de788579b449ce58fd2315bb93cc31f263da43c7c8b67b708144325ff"
+    },
+    "lemmasim-silicon-product-course-watchdog-bulk-notebook": {
+      "added_functions": [
+        "Lemma.Applications.Notebook.applyBookTap",
+        "Lemma.Applications.Notebook.bookInkTap",
+        "Lemma.Applications.Notebook.bookMathTap",
+        "Lemma.Applications.Notebook.bufferedBookInk",
+        "Lemma.Applications.Notebook.pumpBookControlBacklog",
+        "Lemma.Applications.Notebook.pumpBookTap",
+        "Lemma.Applications.Notebook.pumpBookTap.changed",
+        "Lemma.Applications.Notebook.queueBookTap",
+        "Lemma.Notebook.ControlBacklog.base",
+        "Lemma.Notebook.ControlBacklog.capacity",
+        "Lemma.Notebook.ControlBacklog.clear",
+        "Lemma.Notebook.ControlBacklog.count",
+        "Lemma.Notebook.ControlBacklog.deferFailure",
+        "Lemma.Notebook.ControlBacklog.front",
+        "Lemma.Notebook.ControlBacklog.full",
+        "Lemma.Notebook.ControlBacklog.get",
+        "Lemma.Notebook.ControlBacklog.malformed",
+        "Lemma.Notebook.ControlBacklog.pop",
+        "Lemma.Notebook.ControlBacklog.push",
+        "Lemma.Notebook.ControlBacklog.put",
+        "Lemma.Notebook.ControlBacklog.reset",
+        "Lemma.Notebook.ControlBacklog.takeFailure"
+      ],
+      "changed_functions": [
+        "Lemma.Applications.Notebook.bookmarkInputSample.acceptSample",
+        "Lemma.Applications.Notebook.bookmarkStep",
+        "Lemma.Applications.Notebook.cancelBookmarkInput"
+      ],
+      "number_pad_pool_alpha": {
+        "new_symbol": "lemma_user_notebook_core0_scalar_299",
+        "old_symbol": "lemma_user_notebook_core0_scalar_298"
+      },
+      "predecessor_authority": "trial-watchdog-target-authority.json",
+      "predecessor_authority_sha256": "1136a8d43f3de98ca2908e8cec8f961ffd1ee2297d4ad3c388d614ed147c64d2",
+      "previous_role_sha256": "02879e0e75ecd0a7372b4610d296ab1728009e8c7909c75647eac41f6a31aa50",
+      "role": {
+        "added_functions": [],
+        "catalog_sha256": "4f688808bc128940dc36f61ee2330707e279ca0f13645192d93d6cad4d732331",
+        "character_machine_sha256": "282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa",
+        "number_pad_pool_alpha": {
+          "new_symbol": "lemma_user_notebook_core0_scalar_299",
+          "old_symbol": "lemma_user_notebook_core0_scalar_298"
+        },
+        "package_notebook_version": 18,
+        "post_function_count": 924,
+        "post_sha256": "5ed983c40af40584366c28bf027011a67a9f326011bac6465da3844d1be90119",
+        "pre_function_count": 926,
+        "pre_sha256": "94c8f5a18612284276aebb39f53fae72e6f2df9a00738cdbb4601f07b14bd2a8",
+        "reader_contract": "lemma-course-reader-location/1",
+        "shared_pre_function_count": 904,
+        "shared_pre_functions_sha256": "0e17fc7990c583e6956ff2fc1732c294a1f35389f95f3cb60cfdea4d1aa2f20d",
+        "surface_root_sha256_by_phase": {
+          "post": "775ba1e0c77d8fbf66589f945b18daf9caae997ff6651562503597dce65a85bf",
+          "pre": "080581b7582c74029a7c2371e709f6277684b4351f9f67d759f9341a9b029681"
+        }
+      },
+      "shared_pre_function_count": 901,
+      "shared_pre_functions_sha256": "cd45803de788579b449ce58fd2315bb93cc31f263da43c7c8b67b708144325ff"
+    },
+    "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize": {
+      "added_functions": [
+        "Lemma.Applications.Notebook.applyBookTap",
+        "Lemma.Applications.Notebook.bookInkTap",
+        "Lemma.Applications.Notebook.bookMathTap",
+        "Lemma.Applications.Notebook.bufferedBookInk",
+        "Lemma.Applications.Notebook.pumpBookControlBacklog",
+        "Lemma.Applications.Notebook.pumpBookTap",
+        "Lemma.Applications.Notebook.pumpBookTap.changed",
+        "Lemma.Applications.Notebook.queueBookTap",
+        "Lemma.Notebook.ControlBacklog.base",
+        "Lemma.Notebook.ControlBacklog.capacity",
+        "Lemma.Notebook.ControlBacklog.clear",
+        "Lemma.Notebook.ControlBacklog.count",
+        "Lemma.Notebook.ControlBacklog.deferFailure",
+        "Lemma.Notebook.ControlBacklog.front",
+        "Lemma.Notebook.ControlBacklog.full",
+        "Lemma.Notebook.ControlBacklog.get",
+        "Lemma.Notebook.ControlBacklog.malformed",
+        "Lemma.Notebook.ControlBacklog.pop",
+        "Lemma.Notebook.ControlBacklog.push",
+        "Lemma.Notebook.ControlBacklog.put",
+        "Lemma.Notebook.ControlBacklog.reset",
+        "Lemma.Notebook.ControlBacklog.takeFailure"
+      ],
+      "changed_functions": [
+        "Lemma.Applications.Notebook.bookmarkInputSample.acceptSample",
+        "Lemma.Applications.Notebook.cancelBookmarkInput",
+        "Lemma.Applications.Notebook.readerRecoverableStep"
+      ],
+      "number_pad_pool_alpha": {
+        "new_symbol": "lemma_user_notebook_core0_scalar_311",
+        "old_symbol": "lemma_user_notebook_core0_scalar_310"
+      },
+      "predecessor_authority": "authored-hint-publication-target-authority-v2.json",
+      "predecessor_authority_sha256": "34043ccdacd626a01f4cce47a3daeadfbef1c02406cbebaa879bfb90752e7789",
+      "previous_role_sha256": "b80438fc469ca535f47dc25ba3056f3e34822c9da4699f212eef71ad99affe33",
+      "role": {
+        "artifact_contract_version": "lemma-companion-reader-target/1",
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize": "ce4ac93e953cc4cb6018d1b91cd3bdc779e935a1b5e2db82e84ab3e9bf4500bf",
+          "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook": "d2ed40966db327b02df29f61e6feec9dfdc75fc163d897b08279ce4add24bd06"
+        },
+        "character_machine_sha256": "046cc1e5b2b53a56ed4765d0e49fefa38fa7b179211a2f848735e9f151602866",
+        "function_count": 979,
+        "package_notebook_version": 19,
+        "post_function_count": 977,
+        "post_sha256": "a6d300543cf852565ab6d99116b9e371f69683ad75a3c09b134e3c2a43f94ceb",
+        "pre_function_count": 979,
+        "pre_sha256": "e159df853a70ccf68a1f428fa0c2a09cee0601a40388f5f20cbbc8796c037eb1",
+        "surface_root_sha256_by_phase": {
+          "post": "c1681913c5b264c5d6e4b052dbd31ea68224c53f0534a5b651b2e38893a552cf",
+          "pre": "01e621102cc4b491fec2a618a3c90e7a6d23dfbe59a0ee5152ab18b8f7f26d95"
+        }
+      },
+      "shared_pre_function_count": 954,
+      "shared_pre_functions_sha256": "3a3540e6d5bd5812960aabdfb7ccbe207c95406caaf3b87a68a0cf6a97aee54c"
+    },
+    "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook": {
+      "added_functions": [
+        "Lemma.Applications.Notebook.applyBookTap",
+        "Lemma.Applications.Notebook.bookInkTap",
+        "Lemma.Applications.Notebook.bookMathTap",
+        "Lemma.Applications.Notebook.bufferedBookInk",
+        "Lemma.Applications.Notebook.pumpBookControlBacklog",
+        "Lemma.Applications.Notebook.pumpBookTap",
+        "Lemma.Applications.Notebook.pumpBookTap.changed",
+        "Lemma.Applications.Notebook.queueBookTap",
+        "Lemma.Notebook.ControlBacklog.base",
+        "Lemma.Notebook.ControlBacklog.capacity",
+        "Lemma.Notebook.ControlBacklog.clear",
+        "Lemma.Notebook.ControlBacklog.count",
+        "Lemma.Notebook.ControlBacklog.deferFailure",
+        "Lemma.Notebook.ControlBacklog.front",
+        "Lemma.Notebook.ControlBacklog.full",
+        "Lemma.Notebook.ControlBacklog.get",
+        "Lemma.Notebook.ControlBacklog.malformed",
+        "Lemma.Notebook.ControlBacklog.pop",
+        "Lemma.Notebook.ControlBacklog.push",
+        "Lemma.Notebook.ControlBacklog.put",
+        "Lemma.Notebook.ControlBacklog.reset",
+        "Lemma.Notebook.ControlBacklog.takeFailure"
+      ],
+      "changed_functions": [
+        "Lemma.Applications.Notebook.bookmarkInputSample.acceptSample",
+        "Lemma.Applications.Notebook.cancelBookmarkInput",
+        "Lemma.Applications.Notebook.readerRecoverableStep"
+      ],
+      "number_pad_pool_alpha": {
+        "new_symbol": "lemma_user_notebook_core0_scalar_311",
+        "old_symbol": "lemma_user_notebook_core0_scalar_310"
+      },
+      "predecessor_authority": "authored-hint-publication-target-authority-v2.json",
+      "predecessor_authority_sha256": "34043ccdacd626a01f4cce47a3daeadfbef1c02406cbebaa879bfb90752e7789",
+      "previous_role_sha256": "b80438fc469ca535f47dc25ba3056f3e34822c9da4699f212eef71ad99affe33",
+      "role": {
+        "artifact_contract_version": "lemma-companion-reader-target/1",
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize": "ce4ac93e953cc4cb6018d1b91cd3bdc779e935a1b5e2db82e84ab3e9bf4500bf",
+          "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook": "d2ed40966db327b02df29f61e6feec9dfdc75fc163d897b08279ce4add24bd06"
+        },
+        "character_machine_sha256": "046cc1e5b2b53a56ed4765d0e49fefa38fa7b179211a2f848735e9f151602866",
+        "function_count": 979,
+        "package_notebook_version": 19,
+        "post_function_count": 977,
+        "post_sha256": "a6d300543cf852565ab6d99116b9e371f69683ad75a3c09b134e3c2a43f94ceb",
+        "pre_function_count": 979,
+        "pre_sha256": "e159df853a70ccf68a1f428fa0c2a09cee0601a40388f5f20cbbc8796c037eb1",
+        "surface_root_sha256_by_phase": {
+          "post": "c1681913c5b264c5d6e4b052dbd31ea68224c53f0534a5b651b2e38893a552cf",
+          "pre": "01e621102cc4b491fec2a618a3c90e7a6d23dfbe59a0ee5152ab18b8f7f26d95"
+        }
+      },
+      "shared_pre_function_count": 954,
+      "shared_pre_functions_sha256": "3a3540e6d5bd5812960aabdfb7ccbe207c95406caaf3b87a68a0cf6a97aee54c"
+    }
+  },
+  "schema": "lemma-notebook-control-backlog-artifact/1"
+}

@@ -21,6 +21,7 @@ stream.write(b'{"QMP":{"scope":"independent lifecycle transport fixture"}}\\n')
 for line in stream:
     request=json.loads(line);command=request['execute'];reply={'id':request['id'],'return':{}}
     if command=='query-status':reply['return']={'status':'paused','running':False}
+    if command=='qom-list':reply['return']=[]
     if command=='qom-get':
         reply['return']='0' if request['arguments']['property']=='virtual-time' else '{}'
     if command=='human-monitor-command':
@@ -108,6 +109,36 @@ class FastTransport(unittest.TestCase):
         self.assertIsNotNone(self.children[0].poll())
         self.assertFalse(self.sockets[0].parent.exists())
 
+    def test_malformed_feature_inventory_fails_closed_and_reaps_child(self):
+        execute = fast.QMP.execute
+        for inventory in ({}, [None], [{'name':'raw-uart-version'}],
+                          [{'name':7,'type':'str'}]):
+            with self.subTest(inventory=inventory):
+                def reply(peer, command, arguments=None):
+                    if command == 'qom-list':
+                        return inventory
+                    return execute(peer, command, arguments)
+                with mock.patch.object(fast.QMP, 'execute', reply):
+                    with self.assertRaisesRegex(ValueError, 'Malformed backend property'):
+                        fast.Fast(self.args, self.directory)
+                self.assertIsNotNone(self.children[-1].poll())
+                self.assertFalse(self.sockets[-1].parent.exists())
+
+    def test_unknown_advertised_uart_version_fails_closed(self):
+        execute = fast.QMP.execute
+        self.args.profile = self.data['profile'] = 'lemma-silicon-dev/0.3.0'
+        def reply(peer, command, arguments=None):
+            if command == 'qom-list':
+                return [{'name':'raw-uart-version','type':'str'}]
+            if command == 'qom-get' and arguments['property']=='raw-uart-version':
+                return 'lemma-raw-uart/unknown'
+            return execute(peer, command, arguments)
+        with mock.patch.object(fast.QMP, 'execute', reply):
+            with self.assertRaisesRegex(ValueError, 'Unsupported raw UART'):
+                fast.Fast(self.args, self.directory)
+        self.assertIsNotNone(self.children[-1].poll())
+        self.assertFalse(self.sockets[-1].parent.exists())
+
     def test_preflight_failure_allocates_no_socket_directory_or_child(self):
         self.args.memory_latency = 1
         with mock.patch.object(fast.tempfile, 'TemporaryDirectory') as allocation:
@@ -147,17 +178,21 @@ class FastTransport(unittest.TestCase):
         calls=[]
         class QMP:
             def execute(self,command,arguments=None):
-                calls.append((command,arguments));return {'running':False}
+                calls.append((command,arguments))
+                return '{}' if command=='qom-get' else {'status':'paused','running':False}
         machine.qmp=QMP()
         machine.run_until_ns(1120)
         machine.call('inject 115 pen 999 1 2 127 3 1 0')
-        self.assertEqual(calls[0],('qom-set',{'path':'/machine/lemma-hardware','property':'run-until','value':'120'}))
+        mutations=[row for row in calls if row[0] in ('qom-set','cont','stop')]
+        self.assertEqual(mutations[0],('qom-set',{'path':'/machine/lemma-hardware','property':'run-until','value':'120'}))
         self.assertEqual(calls[-1],('qom-set',{'path':'/machine/lemma-hardware','property':'external-event',
                          'value':'150 999 1 2 127 3 1 0'}))
-        count=len(calls)
+        count=len(mutations)
         for target in (1000,fast.MAX_NS,fast.MAX_NS+1,True):
             with self.subTest(target=target),self.assertRaises(ValueError):machine.run_until_ns(target)
-        self.assertEqual(len(calls),count)
+        # Reading the actual runstate is valid before admission; malformed
+        # deadlines still must never change a property or resume execution.
+        self.assertEqual(len([row for row in calls if row[0] in ('qom-set','cont','stop')]),count)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,801 @@
+{
+  "schema": "lemma-browser-closure-connected-workflow/1",
+  "status": "PASS_COLD_RAW_SAVE_COURSE_EDIT_CHECK_HINT_REVIEW_AND_EXACT_SUFFIXES",
+  "scope": "Actual canonical local RTL/Wasm guest cold/raw ink/Save/course/edit/fresh Invalid12/hint/manual review, complete Doc8/controller pixels and distinct exact authoritative/suffix checks. The newly compiled bulk guest additionally passes same-origin durable-only cold Ready and complete reopened Doc8/course pixels; the changed medium contains Saved26, so older cold timings are separate workloads. Finished G2/G4\u2013G7, proof kernel, runtime, distribution and physical gates remain incomplete.",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "bundle": {
+    "path": "build/browser/task006-usercopy-closure-a1",
+    "manifest_sha256": "b17dd9a2c400fdcecdf04b9318a6e3b8cd98588457dbd2b8e891c112970bb165",
+    "native_bundle": "build/native/task006-usercopy-closure-a1",
+    "guest_source_inventory_sha256": "f4fe85ff703dc26656ac29cdc24b475195e0c8657c1745faeefd0a0282a7b9f8",
+    "source_files": 362,
+    "guest": "cf5250af2c7a6d1a721fa8cc01c3fa944ccbb66383d335a207876c96a478038e",
+    "initializer": "f664bbe34818f35ed7ed71035530dbe738935bf948cf567a874ee2c9fc169b58",
+    "native_implementation": "6cab32ecdc85af48e2c074fbaf8a4e046bea8c25ed5b09a09f60308ff010df11",
+    "wasm_implementation": "fe167c21fe704436650efabf550fcb0767c666c8cae99b379f85dead20ca1895",
+    "wasm_sha256": "94bf974a05d3841a2ca30c09f2cdf1337750a5126d6ed92c141a4d26b8ba1d53",
+    "development_elf_preload": true,
+    "production_boot": false,
+    "pointer_lost_capture_fix_in_this_pack": false
+  },
+  "cold": {
+    "cycle": 713850000,
+    "host_elapsed_seconds": 3901.040350000024,
+    "simulation_call_seconds": 3777.270834994664,
+    "wasm_heap_bytes": 201326592,
+    "medium_sha256": "85c962ed51d5c376c1dd47d3f15b709ba76f8693c6b86e70ef32625612a0e151",
+    "sequence": 19,
+    "complete_pixels": 3630000,
+    "complete_read_count": 124,
+    "writes": 0,
+    "barriers": 0,
+    "source": "imported opaque previously guest-written verified.raw into a new private origin/name; no CPU state import/restore/replay/initialization; original medium untouched",
+    "max_cycles": 2000000000,
+    "max_host_seconds": 7200,
+    "max_heap_bytes": 2147483648
+  },
+  "resources": {
+    "allocated_frames": 696,
+    "owner_counts": {
+      "1": 36,
+      "2": 74,
+      "3": 548,
+      "4": 38
+    },
+    "purpose_counts": {
+      "1": 59,
+      "2": 57,
+      "3": 44,
+      "4": 524,
+      "5": 12
+    },
+    "pinned_frames": 637,
+    "actual_frame_capacity": 8192,
+    "actual_pool_bytes": 33554432,
+    "owner_index_matches_all_records": true,
+    "privilege_cycles": [
+      97568590,
+      604030706,
+      0,
+      12250696
+    ]
+  },
+  "cold_target_counters": {
+    "cycle": 713850000,
+    "retired": 354663166,
+    "traps": 14834,
+    "timer_traps": 1916,
+    "fb_reads": 18150000,
+    "fb_writes": 10890000,
+    "panel_pixels": 3630000,
+    "drive_clocks": 21780000,
+    "drive_pixels": 10890000
+  },
+  "new_raw_ink_save": {
+    "cycles": 60400000,
+    "phase_host_seconds": 724.7022799999713,
+    "simulation_seconds": 321.7244150005595,
+    "heap_bytes": 201326592,
+    "sequence": 22,
+    "new_key": [
+      1,
+      65556
+    ],
+    "new_raw_samples": 3,
+    "all_new_raw_bytes_exact": true,
+    "unchanged_original_ink_and_math": true,
+    "complete_controller_pixels": 3630000,
+    "barriers": 6,
+    "writes": 12,
+    "all_actual_backing_changes_reproduce_export": true,
+    "saved_row": [
+      1057,
+      22,
+      1,
+      1,
+      20
+    ],
+    "snapshot_sha256": "0a17162d8c43282974e2d7a3c1afee2296fea0ec76297c7eee8795ac6ff4c38d",
+    "medium_sha256": "617b9cdb169c20fa4de99e8413c2a2ec25bfcf40218653c93ebe106679cf41ab",
+    "pixels_sha256": "8008b98849a8fd67bde4414c5ed8556a07d57807c5c5b91d6331cd1dada9b3fd"
+  },
+  "course_open": {
+    "cycles": 104650000,
+    "conservative_phase_host_seconds": 1010.8931649999622,
+    "simulation_call_seconds": 621.3313850018935,
+    "loaded_bytes": 2496,
+    "all_loaded_bytes_equal_acknowledged_document": true,
+    "complete_controller_pixels": 3630000,
+    "full_course_expected_pixels_qualified": true,
+    "all_durable_bytes_unchanged": true,
+    "new_math_check_not_yet_claimed": true,
+    "checkpoint_sha256": "ed3b299ac7bee26bb73db58c9668bc4fc0d2378fad2a27c7ce1f84b2de06ca10",
+    "medium_sha256": "617b9cdb169c20fa4de99e8413c2a2ec25bfcf40218653c93ebe106679cf41ab"
+  },
+  "same_wasm_continuation": {
+    "status": "PASS",
+    "first_cycle": "774250000",
+    "last_cycle": "803250000",
+    "cycles": "29000000",
+    "exact_archive_sha256": "35e33d0f6aca482423b682a513db93df488ad50602afc565b9527a10bf33115a",
+    "actual_outcomes_sha256": "f38cb8dbf0a80cfd39397e6c363d1f939444b5ed08b04a723e8a219b001ffaa4",
+    "host_seconds": 190.543560507,
+    "host_peak_rss_bytes": 1705992192,
+    "wasm_heap_bytes": 345964544,
+    "private_backing": true,
+    "whole_archive_exact": true,
+    "masks_or_tolerance": false,
+    "external_actions_rerun_against_original": false,
+    "owner_reaped": true,
+    "native_cpp_wasm_migration": false
+  },
+  "retained_failures": {
+    "resource_observer": "Wrong frame-field order in a1/a2. Original allocator writes establish owner,purpose,pins,generation; distinguishing fixture and a3 independently qualify all8192 records/64 owner counts. No guest clocks changed.",
+    "ink_plan": "a1 expected adjacentrawkey65540. Existing source uses0x10001+acknowledged19, establishing65556; original plan and correction retained, no rerun.",
+    "early_display": "Real firstSaved22 snapshot771.5M has1566 RGB-byte differences/522 stale pixels, retained FAIL. Real nextscan774.25M passes all pixels, no mask/drain/synthetic completion.",
+    "suffix_observer": "a1 rejected atzero restored clocks: completedphase2 was routed through Pending-only latebinder. Existing replay constructor-before-restore selects savednextID; unchanged actual capsules/tape a2 pass exactwholearchive, no deadline widening.",
+    "edit_plan": "Original edit-plan-a1 expected6/6 but original selected denominator64 yields5/7; edit-plan-correction-a1 preserves the failure, source-derived a2 observer qualifies unchanged execution."
+  },
+  "native_500M_failure": "Original usercopy-native-connected-a3 remains FAIL; separately observed private452.5M\u2192713.85M native continuation matches independent browser authoritative Ready, not a new native cold pass. New a520 bulk native a4 also retained FAIL at500M/1746.450s; its480M cut is diagnostic, not Ready.",
+  "commands": {
+    "browser_pack": "./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 --wasm-build build/wasm/task006-canonical-native-port-a1 --reuse-wasm --wasm-input-bundle build/native/task006-usercopy-closure-a1 --guest-bundle build/native/task006-usercopy-closure-a1 --output-dir NEW_OUTPUT",
+    "launch": "./scripts/lemmasim browser-serve --bundle build/browser/task006-usercopy-closure-a1 --port 8786",
+    "cold_export_check": "python3 scripts/check_browser_cold_export.py --directory build/browser/usercopy-closure-owner-a1 --bundle build/browser/task006-usercopy-closure-a1 --reference-medium build/managed/closure-mathematics-guest-a1/workflow/verified.raw --reference-pixels build/managed/closure-mathematics-guest-a1/workflow/closed-course.ppm --derive-single-page-reads --result-name NEW_RESULT.json",
+    "same_wasm_suffix": "nix develop --no-write-lock-file --command node conformance/lemmasim/check_wasm_browser_suffix.mjs build/browser/task006-usercopy-closure-a1 build/browser/usercopy-closure-owner-a1/status-panel4.chk build/browser/usercopy-closure-owner-a1/course-suffix.chk NEW_OUTPUT build/browser/usercopy-closure-owner-a1/course-suffix.io"
+  },
+  "qualified_host_checks": {
+    "indexed_page_read_observer": "3 tests PASS0.054s, checksum-correct duplicate/missing/wrongstroke/page/calibration/version/provenance and wrongtape bytes/ID/offset/time/identity negatives",
+    "metadata": "PASS7gates/56software/6physical;18 scaffold tests PASS6.852s",
+    "candidate_ci": "Actual published7cec38598060895 terminalFAILURE,9/10jobs. NotebookO2/initializerO2 auditPASS; nextNotebookO0 UserCopy.copyWord/post rejects. Followingexactcandidate stepSKIPPED. Originalf832 ZIP/log/IR retained; independently bounded observerdiagnosis in progress, no newCI pass."
+  },
+  "retained_artifacts": {
+    "plan.json": {
+      "bytes": 4124,
+      "sha256": "330525c2e061f73ef4ed69c1e1e1d83765ceecaa43a4bf9eb700eb70d086045d"
+    },
+    "pack-plan.json": {
+      "bytes": 516,
+      "sha256": "f34b650e238f55f02e140bc9bd307ac3144b1f8f53f52e0edbc5abed45571cda"
+    },
+    "pack-result.json": {
+      "bytes": 3279,
+      "sha256": "2b1c8d5192503db0a78dd4ef1670749bbed1ba8d37b44394e5d38d254ee56fdd"
+    },
+    "cold-result-a1.json": {
+      "bytes": 4717,
+      "sha256": "7fd139bbae7a99333da3398d5c129c77e7319c832c03c4eec1362c254fb44496"
+    },
+    "reference-read-plan-a1.json": {
+      "bytes": 1775,
+      "sha256": "a2b460a8c8610073551fc5bf3ed2dc4122eda0a4be16402e04c63abf9553c436"
+    },
+    "ready-resources-a1.json": {
+      "bytes": 328,
+      "sha256": "60bcf79a14cebc71e9899751337c2afd7693671130574c5d514f4da8430bb2c0"
+    },
+    "ready-resources-a2.json": {
+      "bytes": 611,
+      "sha256": "03f42938e692066785762d3ac95d4880837ca01cd804bf4deddefdcaa37e41c0"
+    },
+    "ready-resources-a3.json": {
+      "bytes": 2158,
+      "sha256": "6d57d86741a970e12197b6889d0dce77e27b97a62327a34334b862e5e7706de4"
+    },
+    "resource-record-order-a3.json": {
+      "bytes": 391,
+      "sha256": "919d1212b8b7dce3ac04c58c7d00089bf1b49db4524ef50942fe6c3bc633b123"
+    },
+    "ink-plan-a1.json": {
+      "bytes": 1151,
+      "sha256": "dc315f5b6166beae2fa125b4bbb1e83f30003f2555a4126d22434f649b425a61"
+    },
+    "ink-plan-correction-a1.json": {
+      "bytes": 587,
+      "sha256": "66d314e23a70050dd3201c819117ab70731474553e720fd3efe7267a2027aca5"
+    },
+    "ink-plan-a2.json": {
+      "bytes": 1198,
+      "sha256": "c6b325b7ce6cccb83f18381ae5f2e0a083db4df01832980a6b30643259879188"
+    },
+    "ink-result-a1.json": {
+      "bytes": 798,
+      "sha256": "7d2152fbeaf250e8e7dce3d50006afaee2175a7abc53f57971351633b043ed0e"
+    },
+    "ink-result-a2.json": {
+      "bytes": 3425,
+      "sha256": "5004696314dbb530b0ace258d0f141278b783d6903d6d7dde3fe42cc7f21a07a"
+    },
+    "course-open-plan-a1.json": {
+      "bytes": 740,
+      "sha256": "3b0a0f176540fad39798a1ae1a147d467f3e5729d3a1c65d6cdf84776ea58dfa"
+    },
+    "course-open-result-a1.json": {
+      "bytes": 3930,
+      "sha256": "df2202653209a02a70a3be28f0b30e27c1c3a215c1c01ca77b0b6845d9fba39f"
+    },
+    "suffix-plan-a1.json": {
+      "bytes": 710,
+      "sha256": "17d26ec3a25e5d5a83bffea093a01caea65841a028be58d794c78d5545c0bfd6"
+    },
+    "suffix-host-a1/result.json": {
+      "bytes": 782,
+      "sha256": "93f081cc20ccb1b61f927e1059575d8fbc72042bda2e55ecafb52adf1dd0483f"
+    },
+    "suffix-host-a2/result.json": {
+      "bytes": 7452,
+      "sha256": "402224753c14ed298a5a17ad54e213acddb5ce52216a23d8523a81dbda07dd26"
+    },
+    "suffix-host-a2.supervision.json": {
+      "bytes": 228,
+      "sha256": "1faff507f8613ffd913ed3ba2b8548decd0e31841602e38e55ee77df9d62c8ab"
+    },
+    "qualify-ink-a1.py": {
+      "bytes": 5192,
+      "sha256": "6c7fd9ab5643a698d893fe3259fdb1f5f836be1efa9823469a3203f5d5c04958"
+    },
+    "qualify-ink-a2.py": {
+      "bytes": 5364,
+      "sha256": "ad3865f2d7775d9efbbb005a358db503f1a253a53ee1582f84a798e2609c7e7f"
+    },
+    "observe-course-open-a1.py": {
+      "bytes": 6312,
+      "sha256": "96a1d09545f992fe9a6bb27eca7bb34da1d0726033317925a9eb3abf1f5c5f11"
+    },
+    "edit-plan-a1.json": {
+      "bytes": 714,
+      "sha256": "a955ad9dc2ba7bfda0eaf01d498666832f5207f67adc3f703e977de4edcc615e"
+    },
+    "edit-plan-correction-a1.json": {
+      "bytes": 581,
+      "sha256": "4f1b8ec559102906e48f175cf12c30699f9ca1386a5d34a5672460824730326c"
+    },
+    "edit-plan-a2.json": {
+      "bytes": 832,
+      "sha256": "c6bb3e70df28b6697478c27680c57a645b8750113e73c90ac619db472bb79ea1"
+    },
+    "edit-saved23-result.json": {
+      "bytes": 4028,
+      "sha256": "c5bb35a9e6b27c61bf7de1ce7861eaede31f878448b0247bac743e8026c4cc4e"
+    },
+    "fresh-check-plan-a1.json": {
+      "bytes": 594,
+      "sha256": "59e1f643530b7edcb7790359ec40a4d03ea780f4a8631f5a4942cd8d2781e089"
+    },
+    "fresh-check-saved24-result.json": {
+      "bytes": 5038,
+      "sha256": "4925541e6cb7c85f1e9c426c737ff1507128c99c69e14818c70ff20ba92b7959"
+    },
+    "storage-suffix-plan-a1.json": {
+      "bytes": 662,
+      "sha256": "c897130a387a585155aefeb4b45d4180f9f6930a517235439e08e43744d4d04a"
+    },
+    "storage-suffix-host-a1/result.json": {
+      "bytes": 7459,
+      "sha256": "e94897dd83a590995cd2ce60f3038199a27f5fc11b06c71e13882acdc2629b7a"
+    },
+    "storage-suffix-host-a1.supervision.json": {
+      "bytes": 228,
+      "sha256": "413002dd5cca2584d35ba1a11bb098c6de230646b51b3c028fec1aed09a949f7"
+    },
+    "observe-course-transition-a1.py": {
+      "bytes": 8296,
+      "sha256": "7f9a0c32175da802d6b87d0da63a28940778e221650e61d0895aa7a01d8c485c"
+    },
+    "hint-plan-a1.json": {
+      "bytes": 841,
+      "sha256": "7dd7f817aeb3affb349ae613a702d122685bb996467afc7bb4c26de70eb12094"
+    },
+    "hint-saved25-result.json": {
+      "bytes": 5177,
+      "sha256": "5abfdb2085b6cdf31d2571fa7452285fc38358df1f1705ffb08d3dcfb81fe173"
+    },
+    "hint-saved25-observation.json": {
+      "bytes": 666,
+      "sha256": "1d27d07f99532bd4fb17af152c53a97b65d074fe1b2e2ab7154ecf6b21a6c33a"
+    },
+    "review-plan-a1.json": {
+      "bytes": 893,
+      "sha256": "94ef905ac441942d9d3c6b33d8a449cdd7ed3241b45a884c882b2db43df280ca"
+    },
+    "review-saved26-result.json": {
+      "bytes": 5309,
+      "sha256": "5a30aa274842b80413bc8a6891d786d7f77a58f8ca990f7f2e284e3605369afb"
+    },
+    "review-saved26-observation.json": {
+      "bytes": 652,
+      "sha256": "abafc9d4c6cb8d9a8f172c74b3f38b68c75d13d5d35dad40c927e6da02cd2680"
+    }
+  },
+  "remaining": "Fresh bounded course hint/review and actual durable-only reopen running; current pointer-fix pack, installed-course UI, full managed runtime/proof kernel, exact fast cached state/timing, full device/radio/distribution/physical closure.",
+  "edited_submission": {
+    "status": "PASS",
+    "cycles": 117000000,
+    "phase_host_seconds": 1355.0081749999526,
+    "simulation_call_seconds": 734.6864950020235,
+    "heap_bytes": 201326592,
+    "old_evidence_history_preserved": true,
+    "complete_controller_pixels": 3630000,
+    "all_prior_ink_unchanged": true,
+    "checkpoint_sha256": "145c6b7fe15d1605432259dda336f11363a041fbd636ec2d5944127c2dd0a430",
+    "medium_sha256": "2b58f68229fa66d60d869fdab17ffbc2cc2b98f365f1d8b8b68a2c7c1d8ee032",
+    "observer_sha256": "7f9a0c32175da802d6b87d0da63a28940778e221650e61d0895aa7a01d8c485c",
+    "saved_sequence": 23,
+    "revision": 12,
+    "answer": [
+      5,
+      7,
+      0,
+      0,
+      0
+    ],
+    "outcome": "Unchecked",
+    "current_evidence_revision": 0,
+    "retained_old_attempt_revision": 11,
+    "retained_old_attempt_outcome": "Verified",
+    "original_plan_failure": "Expected6/6; original acknowledged selected-field64 chooses denominator. Exact actual5/7 is explained by original guest source/bytes; original plan failure retained, no rerun or bound change."
+  },
+  "fresh_guest_check": {
+    "status": "PASS",
+    "cycles": 120800000,
+    "phase_host_seconds": 838.8839500000486,
+    "simulation_call_seconds": 736.0972949961388,
+    "heap_bytes": 201326592,
+    "old_evidence_history_preserved": true,
+    "complete_controller_pixels": 3630000,
+    "all_prior_ink_unchanged": true,
+    "checkpoint_sha256": "8cc7f6c1f35c18196f0c93c6b1d240e4e5d5270a6acc082da8530fdd4258699c",
+    "medium_sha256": "71d69e5e80e19a7d2e01324acca6c2228aa19857ff8b8c886388da05a1b098d2",
+    "observer_sha256": "7f9a0c32175da802d6b87d0da63a28940778e221650e61d0895aa7a01d8c485c",
+    "saved_sequence": 24,
+    "revision": 12,
+    "goal": 1,
+    "answer": [
+      5,
+      7,
+      0,
+      0,
+      0
+    ],
+    "domain": "Q",
+    "assumptions": 0,
+    "outcome": "Invalid",
+    "evidence_revision": 12,
+    "attempts": 2,
+    "hints": 1,
+    "execution": {
+      "origin": "IsolatedClosure",
+      "request": 84,
+      "implementation": "lemma-isolated-arithmetic-closure-v1",
+      "lowering": "core0-user-v0.7/lemma-managed-closure-v1",
+      "runtime": "lemma-owned-arena-closure-graph-v1",
+      "resources": "lemma-arithmetic-closure-resource-v1",
+      "budget": 8,
+      "status": 0
+    },
+    "actual_request_row": [
+      1113,
+      84,
+      12,
+      1,
+      84
+    ],
+    "actual_reply_row": [
+      1109,
+      84,
+      12,
+      0,
+      2
+    ],
+    "actual_saved_row": [
+      1057,
+      24,
+      1,
+      1,
+      32769
+    ],
+    "actual_final_cycle": 1113950000,
+    "actual_barrier": 170,
+    "no_host_authority": true,
+    "full_loaded_bytes": 2496
+  },
+  "same_wasm_storage_continuation": {
+    "status": "PASS",
+    "scope": "same Wasm implementation: real browser arbitrary-boundary archive and exact applicable suffix; not cold recovery or C++/Wasm microstate migration",
+    "input": {
+      "bundleSha256": "b17dd9a2c400fdcecdf04b9318a6e3b8cd98588457dbd2b8e891c112970bb165",
+      "prefixSha256": "bc289bf62a206c18096948daa2bc1b251e62901dcbba5b502212182b836f6dc3",
+      "suffixSha256": "145c6b7fe15d1605432259dda336f11363a041fbd636ec2d5944127c2dd0a430",
+      "firstCycle": "977350000",
+      "lastCycle": "993150000",
+      "cycles": "15800000",
+      "outcomesSha256": "bae835aa7d47106f1fed0e434976ac0332921ccdeac4cea6ed4727ebd0a27694"
+    },
+    "exactArchiveSha256": "145c6b7fe15d1605432259dda336f11363a041fbd636ec2d5944127c2dd0a430",
+    "wasmHeapBytes": 345964544,
+    "hostPeakRssBytes": 1857617920,
+    "hostSeconds": 107.360309006,
+    "prefix_volatile_sectors": 3,
+    "prefix_guest_save": "Pending23",
+    "suffix_guest_save": "Saved23",
+    "real_writes": 8,
+    "real_durable_barriers": 2,
+    "observational_no_flush_drain_completion": true,
+    "private_recorded_backing": true
+  },
+  "native_wasm_ready_relation": {
+    "schema": "lemma-canonical-native-wasm-ready-relation/1",
+    "status": "PASS_EXACT_AUTHORITATIVE_READY_STATE",
+    "scope": "Source-bound native452.5M retained cold-origin prefix continued to713.85M in a private same-backend fork, compared against independently cold Wasm at713.85M. Original500M native deadlineFAIL retained. Entire authoritative wrapper/generated logical state, no events/masks/tolerance. Not new nativecoldPASS, cross-identity restore or full parity.",
+    "cycle": 713850000,
+    "retired": 354663166,
+    "wrapper_bytes": 145579992,
+    "model_bytes": 24942,
+    "wrapper_sha256": "c7a20ebd3884b0f3ae1a85be4f696f3294442a00f04457433f9533db5cfdffc9",
+    "model_sha256": "6594d3695b2026d4ee5f29eb68f5c60530b73334776ab5a8549a2990dc937858",
+    "native_snapshot_sha256": "d3246c08829f8b3d85bad27cd0f6041a4c4a23e6a9ef0859ac551c6608304cea",
+    "wasm_snapshot_sha256": "68991da310dcf488457825f557948305c19a331374f1a80800d57a4f2908f046",
+    "native_implementation": "6cab32ecdc85af48e2c074fbaf8a4e046bea8c25ed5b09a09f60308ff010df11",
+    "wasm_implementation": "fe167c21fe704436650efabf550fcb0767c666c8cae99b379f85dead20ca1895",
+    "complete_pixels": 3630000,
+    "raw_events": 0,
+    "host_seconds": 45.169771731016226,
+    "continuation_host_seconds": 993.3191172000952
+  },
+  "durable_hint_and_review": {
+    "hint": {
+      "cycles": 116800000,
+      "phase_host_seconds": 1777.7429900000097,
+      "simulation_call_seconds": 608.911499994505,
+      "heap_bytes": 201326592,
+      "saved_row": [
+        1057,
+        25,
+        1,
+        1,
+        32769
+      ],
+      "checkpoint_sha256": "1b500b72706511d22ccf08708eef86e08fb70ce8fc02023d9c24e957622f9877",
+      "medium_sha256": "af7b605e8793601ad8f4641fd2eb0805b5880f684b9472dc9beef4427fe0f2a6",
+      "gray_sha256": "e7332e597aaa743bea3ed5eb6a28ed9bd67cf9480ed1b0a0d24c2271f2c160ac",
+      "observer_sha256": "0cf23add32027a2264491342c2f0e79aa7abebad15cfa1fc64813162133b1797",
+      "observer_seconds": 23.66742365702521,
+      "all_loaded_bytes": 2496,
+      "complete_controller_pixels": 3630000,
+      "old_evidence_history_preserved": true,
+      "all_prior_ink_unchanged": true
+    },
+    "manual_review": {
+      "cycles": 116850000,
+      "phase_host_seconds": 1054.8483299999243,
+      "simulation_call_seconds": 646.3349499999222,
+      "heap_bytes": 201326592,
+      "saved_row": [
+        1057,
+        26,
+        1,
+        1,
+        32769
+      ],
+      "checkpoint_sha256": "17775572bba9911c205a0cc86baa38c88fce8c3ec134f6bb33eadcea1281a48b",
+      "medium_sha256": "14df41bcb9caa8b897cdd46e0a6473ade5e2a6f2d0f78471379a3d7847c04a44",
+      "gray_sha256": "e3a42ad2db53faba048ffaa1912375e80f3c5d7b20ef64090d4d962f0a0c641c",
+      "observer_sha256": "e8889eae25dd6e82f3b57bd0aa8214c99fd516026a81e060d3bbdc5ace1cc9f9",
+      "observer_seconds": 16.594765675021335,
+      "all_loaded_bytes": 2496,
+      "complete_controller_pixels": 3630000,
+      "old_evidence_history_preserved": true,
+      "all_prior_ink_unchanged": true
+    },
+    "revision": 12,
+    "answer": [
+      5,
+      7
+    ],
+    "outcome": "Invalid",
+    "evidence_revision": 12,
+    "attempts": 2,
+    "hints": 2,
+    "history_revisions": [
+      11,
+      12
+    ],
+    "execution_origin": "IsolatedClosure",
+    "execution_request": 84,
+    "review_policy": "lemma-offline-review/1",
+    "review_mode": "manual-practice",
+    "understanding": "uncertain",
+    "reason_visible": true,
+    "local_hint_provider": "authored offline reference material; not a live model or transport qualification",
+    "prior_ink_preserved": true,
+    "original_each_phase_limits": {
+      "cycles": 200000000,
+      "host_seconds": 1800,
+      "heap_bytes": 2147483648
+    },
+    "independent_durable_reopen": "RUNNING; new audited a520 guest, same originalOPFS medium/origin, noinitializer/import/restore, max2B/7200s/2GiB"
+  },
+  "ordinary_guest_publication_display": {
+    "scope": "Complete newly emitted guest UART421/423/424 presentation only; no journal, recovery, mathematical authority or backing barrier in host UI. Null after reset/restore/newlaunch; literal64bit strings; Close clears label.",
+    "host_protocol_tests": "PASS4 tests in0.982s systemNode; complete/partial/order/reset/restore/Student/largeUInt64 and GPU/startup/pointer regressions",
+    "actual_guest_rows": "Read-only actual oldSaved23/24/25/26 UART captures yield exact recordkind,value,page,namespace,detail; source and existing execution receipts remain separate",
+    "new_browser_pack_execution": "NOT_RUN; ongoing cold pack07a predates this display observer, current machine untouched",
+    "independent_read_review": "Array found no falseSaved or hostauthority defect",
+    "original_fixture_failure": "Ignored a1 host fixture erased retained initializer UART during its next run; corrected fake cold constructor matches actual Machine constructor ofstream truncation. Observer still rejects truncated history."
+  },
+  "open_medium_failure_cleanup": {
+    "scope": "Host OPFS ownership before machine construction; not guest durability/real browser fault capture qualification",
+    "original_defect": "Acquired exclusive handle leaked when initialization truncate/flush/getSize threw before load adopted it. Original worker fails independently added truncate\u2192close expectation.",
+    "correction": "Wrap acquired-handle validation in try/catch; attempt close and rethrow original error; no rollback or fabricated success. Wrong-size still fails without format.",
+    "qualified_host_cases": [
+      "truncate throw",
+      "flush throw",
+      "getSize throw",
+      "wrong size",
+      "primary flush throw plus secondary close throw"
+    ],
+    "host_worker_and_app_tests": "PASS2 tests1.089s; noCPU/timer/export/result on failed opens; previous scheduling/publication/restore/pointer checks retain meaning",
+    "old_worker_sha256": "fc4494c32f069cc715c89635e19c33d9c0d21cfb0ffb7cccc8c4c82093728699",
+    "new_worker_sha256": "782c8f6274fd93ff52374586307aed7ce0704d207e8f309d3557208a2abb7e93",
+    "independent_read_review": "Array found no primary-error masking or successful-handle premature close",
+    "new_packed_browser_fault_execution": "NOT_RUN; prepared publication pack1154 predates cleanup, actual cold07a unchanged"
+  },
+  "bulk_guest_durable_only_reopen": {
+    "status": "PASS_COLD_READY_AND_COMPLETE_REOPENED_DOC8_PIXELS",
+    "guest": "a520fdbdb1a8cd3ba3fbd9903a773f6c32818ccf5b5b742400811295cc0db820",
+    "initializer": "9187603ba2e12c38fd2daac30b3ec636596053036fb9b0c225e3f6d3139575b5",
+    "native_bundle": "build/native/task006-surface-bulk-closure-a2",
+    "native_bundle_sha256": "ec008cd9e814c1a86d6b3629106fce94ae981ecc448f5434954ba24b948de5d1",
+    "executed_browser_bundle": "build/browser/task006-surface-bulk-closure-a1",
+    "executed_browser_bundle_sha256": "07a6a0bace2e704ba9a1b53ace798997e7b7911f083f2cb032ac19951abd0fae",
+    "prepared_frontend_bundle": "build/browser/task006-surface-bulk-closure-a3",
+    "prepared_frontend_bundle_sha256": "018bda02d8b7e0a959492e9303bb5fcc3526d05f6f105ae46b68a7893a72709e",
+    "origin": "http://127.0.0.1:8786",
+    "medium_name": "usercopy-closure-cold-a1",
+    "cold": {
+      "cycle": 712450000,
+      "guest_launch_elapsed_seconds": 3146.483629999995,
+      "simulation_call_seconds": 3012.981019995687,
+      "heap_bytes": 201326592,
+      "reads": 163,
+      "writes": 0,
+      "barriers": 0,
+      "complete_pixels": 3630000,
+      "medium_sha256": "14df41bcb9caa8b897cdd46e0a6473ade5e2a6f2d0f78471379a3d7847c04a44",
+      "restored": false,
+      "imported": false,
+      "initialized": false,
+      "original_bounds": {
+        "cycles": 2000000000,
+        "host_seconds": 7200,
+        "heap_bytes": 2147483648
+      },
+      "result": "build/browser/bulk-durable-reopen-owner-a1/cold-result-a1.json",
+      "result_sha256": "6c4a0348e6708984e8217dc382d5dacae3a63c888ed731dcfb88fbae5da531e0"
+    },
+    "reopened_course": {
+      "cycle": 814450000,
+      "added_cycles": 102000000,
+      "conservative_phase_elapsed_seconds": 696.9185299999708,
+      "elapsed_scope": "Includes time already paused while exporting; not a simulation-call duration.",
+      "simulation_call_seconds": 508.5111049960874,
+      "heap_bytes": 201326592,
+      "total_reads": 171,
+      "writes": 0,
+      "barriers": 0,
+      "owned_document_bytes": 2496,
+      "all_document_bytes_equal_saved26": true,
+      "all_controller_pixels": 3630000,
+      "revision": 12,
+      "answer": [
+        5,
+        7,
+        0,
+        0,
+        0
+      ],
+      "outcome": "Invalid",
+      "evidence_revision": 12,
+      "history_outcomes": [
+        "Verified11",
+        "Invalid12"
+      ],
+      "attempts": 2,
+      "hints": 2,
+      "review": "Explicit manual practice, reason visible, understanding uncertain",
+      "fresh_check_claimed": false,
+      "original_bounds": {
+        "cycles": 200000000,
+        "host_seconds": 1800,
+        "heap_bytes": 2147483648
+      },
+      "result": "build/browser/bulk-durable-reopen-owner-a1/course-open-result-a1.json",
+      "result_sha256": "453539c65327be24ffa063175407b236f5d063ad40960519157a9b03241aa81c",
+      "checkpoint_sha256": "78c6780f7c955aba9db89765a066e773fb3226b9f7d922af8932ce7ca3343350"
+    },
+    "performance_comparison": "Originalcf525 cold uses different Saved19 medium/124reads; newa520 uses Saved26/163reads. Report both identities and timings; no speedup attributed from unlike workloads.",
+    "scope": "Same-origin actualnewCPU cold, no host document input, initializer, import or restore; subsequentcourse on sameCPU. Originalb17 cold/pending-suffix/native relation remain separately qualified, not inherited.",
+    "canvas_pointer_and_publication": {
+      "status": "PASS_ACTUAL_POINTER_GUEST_INK_DURABLE_SAVE_AND_ALL_PIXELS",
+      "executed_browser_bundle": "build/browser/task006-surface-bulk-closure-a3",
+      "bundle_sha256": "018bda02d8b7e0a959492e9303bb5fcc3526d05f6f105ae46b68a7893a72709e",
+      "browser_control_contract": "lemma-browser-session-modes/1",
+      "mode": "developer",
+      "origin": "Public import/restore UI into private backing from actuala520Ready; no newcold claim.",
+      "actual_events": [
+        "712450000 pen 71244999 32815 32792 2048 3 0 0",
+        "712450000 pen 71244999 32815 32792 0 2 0 0"
+      ],
+      "raw_row_injection": false,
+      "events_sha256": "d4b00a008ddfaa2d1712e51dfa615a492df326a9d51c8b4a39ffd43dd1bcd17c",
+      "cycle": 770050000,
+      "added_cycles": 57600000,
+      "conservative_phase_elapsed_seconds": 951.783664999962,
+      "simulation_call_seconds": 247.21152999818338,
+      "heap_bytes": 345899008,
+      "first_new_ink_scan": {
+        "cycle": 716500000,
+        "added_cycles": 4050000,
+        "cumulative_simulation_seconds": 20.1,
+        "scope": "Inspection rounded simulationcounter; first completed panel boundary, not end-to-end wall response."
+      },
+      "pre_barrier_publication": "ActualPending27 at panels2/3, completedIO163/durable_barrier0, visibleGuest save pending27.",
+      "saved_publication": "Guest reports Saved 29 \u00b7 page 1 \u00b7 namespace 1",
+      "durable_barrier": 181,
+      "sequence": 29,
+      "new_key": [
+        1,
+        65563
+      ],
+      "new_raw_bytes": 272,
+      "all_two_sample_bytes_exact": true,
+      "all_immutable_prior_ink_math_unchanged": true,
+      "complete_controller_pixels": 3630000,
+      "new_independent_black_points": [
+        [
+          825,
+          1099
+        ]
+      ],
+      "writes": 12,
+      "barriers": 6,
+      "all_actual_backing_changes_reproduce_export": true,
+      "original_bounds": {
+        "cycles": 200000000,
+        "host_seconds": 1800,
+        "heap_bytes": 2147483648
+      },
+      "result": "build/browser/publication-pointer-owner-a1/result-a2.json",
+      "result_sha256": "1c5ad61bf189a0dd93f202d5e1d1846bac5ee8d3e2bf3b0f37e262d6cec5b8f0",
+      "snapshot_sha256": "32b1d7916accbab18c325cfe7aced73dd6856c4535a90378f77c4f7d9485a6b7",
+      "medium_sha256": "97547b5176d9cc807fc387f74db51ecb7409cf6729fdd4131a6153616fe10421",
+      "pixel_sha256": "894a717212bcf022ff98e52023f5a1ac8f83e353abb0b1b13497cf73b753ae93",
+      "retained_observer_failure": "Originalresult-a1 expected10rowtokens; actualnative pen row has9. Correcteda2 admits exactly9/rejects20missing/extra-field vectors; no machine/input/CPU rerun.",
+      "independent_cold_of_saved29": {
+        "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+        "reference": "active_browser_medium_name.durable_only_reopen",
+        "scope": "Student publicrestore/privatecopy/name phase followedbyClose/newCPUcycle0 Open sameexistingOPFSfork. PriorStudentrestoreexplicitlyseparate; no restore/import/initializer enters thisnewCPU."
+      }
+    }
+  },
+  "active_browser_medium_name": {
+    "status": "PASS_ACTUAL_STUDENT_PRIVATE_COPY_NAME_AND_NEW_CPU_COLD",
+    "control_contract": "lemma-browser-session-modes/2",
+    "behavior": "Publish actualprivate OPFSname only after fullopaque copy/flush/rebind; preserve nameafterClose forfreshCPUOpen, keepusernext-name edits; Student canretryincompleteopaqueprivatecopy, capturedoutcomebinding staysprivileged.",
+    "host_checks": "5browser distribution +2 actualapp/worker protocol fixtures PASS, scaffold metadata/18tests PASS. Existing control1 bundles preserved.",
+    "browser_execution": "Actualcontrol2 Student copy/name/Close thenindependentnewCPUcycle0 Open samepersistentname: coldReady/all256MiB/all3.63Mpixels/exact174preplannedreads PASS. Priorrestorephase retainedexplicitly.",
+    "guest_or_machine_core_changes": false,
+    "source_input_boundary": "BrowserJS/builder/contract notconsumed by377targetcompiler sourceinputs.",
+    "actual_student": {
+      "bundle": "build/browser/task006-surface-bulk-closure-a4",
+      "bundle_sha256": "396665e2e0832cc5dcf38f06fad6bd6b54048ee5436514d83340e4e84809f8c9",
+      "name": "fork_cefe735fda6f48899d9031cb5df9ca29",
+      "all256MiB_bytes_equal_saved29": true,
+      "medium_sha256": "97547b5176d9cc807fc387f74db51ecb7409cf6729fdd4131a6153616fe10421",
+      "guest_clock_on_student_restore": "770050000",
+      "additional_guest_cycles": 0,
+      "new_open_cycle": "0",
+      "result": "build/browser/control2-private-reopen-owner-a1/student-restore-result-a1.json",
+      "cold_plan": "build/browser/control2-private-reopen-owner-a1/plan.json",
+      "cold_status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS"
+    },
+    "durable_only_reopen": {
+      "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+      "scope": "Student publicrestore/privatecopy/name phase followedbyClose/newCPUcycle0 Open sameexistingOPFSfork. PriorStudentrestoreexplicitlyseparate; no restore/import/initializer enters thisnewCPU.",
+      "bundle": "build/browser/task006-surface-bulk-closure-a4",
+      "bundle_sha256": "396665e2e0832cc5dcf38f06fad6bd6b54048ee5436514d83340e4e84809f8c9",
+      "origin": "http://127.0.0.1:8788",
+      "medium_name": "fork_cefe735fda6f48899d9031cb5df9ca29",
+      "ready_cycle": 732000000,
+      "ready_launch_elapsed_seconds": 4135.303924999952,
+      "simulation_call_seconds": 3682.3008150002966,
+      "heap_bytes": 201326592,
+      "reads": 174,
+      "writes": 0,
+      "barriers": 0,
+      "all_durable_bytes": 268435456,
+      "complete_pixels": 3630000,
+      "journal_sequence": 29,
+      "doc8_revision": 12,
+      "outcome": "Invalid",
+      "history": [
+        "Verified11",
+        "Invalid12"
+      ],
+      "attempts": 2,
+      "hints": 2,
+      "review": "manualPractice/reason/uncertain preserved",
+      "medium_sha256": "97547b5176d9cc807fc387f74db51ecb7409cf6729fdd4131a6153616fe10421",
+      "snapshot_sha256": "874b70ef88f8eef5200b99083d1f7651d6a56b4a7172efaa5b21f55e5a734c9d",
+      "reference_normalized_pixels_sha256": "f0a07581acda1411a03ea48fd076888ec4c48702709857c9d57a0d7352cd2db9",
+      "result": "build/browser/control2-private-reopen-owner-a1/cold-result-a1.json",
+      "result_sha256": "89d46e273c1463c1a6bf26ece2077fbcfbd97eea187e564b6a38c740f1d9b745",
+      "observer_seconds": 23.251642777002417,
+      "pre_run_read_plan_exact": true,
+      "pre_run_plan_result": "build/browser/control2-private-reopen-owner-a1/pre-run-plan-result-a1.json",
+      "pre_run_json_offsets_sha256": "c92ae04bcbc75d9ee76e16aaabc05d40d725dadcb9c584ec0a151f23e5d29167",
+      "little_endian_u64_offsets_sha256": "01f19d819df853195f5f4902949ba684313bca2266df253144cd3a2be303825e",
+      "offset_digest_scope": "Same174 literaloffsets under two explicit encodings; originalpre-runplan unchanged.",
+      "original_bounds": {
+        "cycles": 2000000000,
+        "host_seconds": 7200,
+        "heap_bytes": 2147483648
+      },
+      "remaining": "No newcourse-open or mathematicalcheck claimed on thiscoldCPU; journalDoc8 validated passively, controllerink/toolbar pixels complete."
+    }
+  },
+  "restore_validation_control_repair": {
+    "status": "PASS_ACTUAL_MACHINE_REJECTION_AND_IDENTICAL_AUTHORITATIVE_CHECKPOINTS",
+    "behavior": "Rejected corrupt/incompatible archives retain live scheduling/budget/rawcapture/labels; acceptedrestore clearsoldReady/save beforeprivatebindingcanfail. No core/target change.",
+    "executed_bundle": "build/browser/task006-surface-bulk-closure-a5",
+    "bundle_sha256": "74b4de36b195674c0fa58f73a102cded1418084ea14eeefda28ddbd4dba6fe58",
+    "actual_error": "Error: invalid checkpoint container length",
+    "cycle": "770050001",
+    "heap_bytes": 345964544,
+    "before_after_checkpoint_sha256": "c67303c6bddef13941589c8a8261bd4128495154df9ee5cfd4c32190c8ce72e4",
+    "checkpoint_bytes": 145626900,
+    "complete_inspection_equal": true,
+    "actual_run_cycles": "1",
+    "host_seconds_bound": 900,
+    "heap_bytes_bound": 2147483648,
+    "result": "build/browser/restore-rejection-owner-a1/result-a1.json",
+    "result_sha256": "fbf0e9e3ff79a2b201200576432c2c64f6c21e3f69cc3b76aec40306b11b1a3b",
+    "host_checks": "tests/lemmasim/browser_worker_protocol.mjs: corrupt/type/range rejection while actively scheduled preserves timer keys, rawcursor and exact budget; validrestore/privateflushfailure clears old Ready/Saved beforeretry",
+    "scope": "PublicUI valid Saved29 private restore,1 realcycle, observational snapshot, corrupt32byte archive rejection; no newcold/Ready claim",
+    "remaining": "Live active-run corruption rejected by real publicmachine not separately exercised; active scheduling exactness qualified by worker boundary fixture. Validrestore actual OPFS quota/failure NOT_RUN in browser."
+  },
+  "reader20_fresh_course_durable_cold": {
+    "status": "COLD_RECOVERY_PASS_REOPEN_FIRST_PANEL_INCOMPLETE_WHOLE_DEADLINE_FAIL",
+    "scope": "Original browser Reader20 guest and OPFS origin8810; known cross-goal hint defect remains. No full D acceptance.",
+    "cold": {
+      "path": "build/browser/task006-reader20-fresh-course-plan-a1/cold2-result-a1.json",
+      "sha256": "4b1bf496fdfb0a9b21d619233d3afcecfdd2ae238e7a3343d321935cdbd29d5e",
+      "bytes": 681
+    },
+    "reopen_observer": {
+      "path": "build/browser/task006-reader20-fresh-course-plan-a1/cold2-reopen-result-a1.json",
+      "sha256": "395a837b57c4f533a5ef14b95f1b64b7e5ccb1d2e9e1290587e621688df4a0a4",
+      "bytes": 145
+    },
+    "prospective_reopen": {
+      "path": "build/browser/task006-reader20-fresh-course-plan-a1/cold2-reopen-pre-run-a1.json",
+      "sha256": "32de499cddeb5556d61412bba32eb099ec01021821c8ff3c9f05ec56bbf3e937",
+      "bytes": 249
+    },
+    "visible_paused_state": {
+      "path": "build/browser/task006-reader20-fresh-course-plan-a1/browser/cold2-paused-deadline-dom.txt",
+      "sha256": "8786cebae57a25324d4d239835d8c9f2dd02c2982a109a914a63f88dda113371",
+      "bytes": 4637
+    },
+    "cold_clocks": 534300000,
+    "simulation_call_seconds": 3518.735099993368,
+    "conservative_host_upper_seconds": 3608.987,
+    "all_home_pixels": 3630000,
+    "all_backing_bytes": 268435456,
+    "sequence": 25,
+    "reopen_clock": 680050000,
+    "reopen_executed_clocks": 145750000,
+    "whole_deadline_utc": "2026-10-17T12:18:08.271910Z",
+    "whole_failure": "First completed reopened panel lacked complete edition3/node3 body. No completed reopen within original whole deadline. Paused machine retained; no deadline extension or cold-Ready-as-whole-PASS.",
+    "screenshot_limitation": "Both supported screenshot APIs returned zero viewport width; visible DOM and actual controller exports retained."
+  }
+}

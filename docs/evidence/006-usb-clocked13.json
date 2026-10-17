@@ -1,0 +1,524 @@
+{
+  "schema": "lemma-usb-clocked13-milestone/1",
+  "status": "PASS_DIGITAL_PHY_CDC_GUEST_PENDING",
+  "profile": "lemma-silicon-dev/0.13.0",
+  "scope": "Maintained independent digital48MHz PHY/100MHz controller CDC, fractional edge scheduler, genuine whole audited RV64 guest discovery and owned USB transactions, observational nine-cut native checkpoints with exact historical-outcome-only private suffixes. No Clocked notebook Ready/Save, full MAC/conformance, electrical or privately live peer claim.",
+  "native_build": {
+    "manifest": "build/silicon/task006-usb-clocked-runtime-a1/build.json",
+    "manifest_sha256": "fc3fd8d0e8e3e33ca96777bea48c636e9d4c2b55ca8f095f3fb4154d3505aec3",
+    "binary_sha256": "b5d22c44da8bdb0316421e62e4f0b2207691a4c4da39b7f9f456eb7185cb7b7c",
+    "snapshot_identity": "1d445bdbec2ddb25b9395b83ef3134b3cee89dd2075b396fbaf375f9da8eceb1",
+    "original_source_inputs": 254,
+    "source_archive": "build/usb/native13-consumed-source-archive-a1/source",
+    "archive_sha256": "edbd566be2596de76df8172356ea9ff4dd9aaa5d30a16f35df3808b847bd6acd"
+  },
+  "leaf": {
+    "result": "build/usb/clocked-component-a3/result.json",
+    "sha256": "6791043bb9f4a4ff5e4200a96996964e87356d43210011993c08519a5f2fb70a",
+    "host_seconds": 57.88595135998912,
+    "clock_model": {
+      "quantum_hz": 2400000000,
+      "controller_hz": 100000000,
+      "host_nominal_hz": 48000000,
+      "chip_nominal_hz": 48000000,
+      "ppm_vectors": [
+        -2500,
+        0,
+        2500
+      ],
+      "receiver_phase_quanta": 50,
+      "generated_source_receiver_cases": 450,
+      "source_edge_error_quanta_bound": 1,
+      "fifo_bytes": 128,
+      "maximum_packet_bytes": 67,
+      "retained_completed_packets": 1
+    },
+    "source_inputs": {
+      "sim/rtl/lemma_usb_fs_phy_clocked.sv": "26d5d6b41f576f32e1920586bb1363c0e68eb09a31ccffe2205a551bf93fac2c",
+      "sim/rtl/lemma_usb_device.sv": "596d62442f1bbba8c6adc892a85b081aea648819c098da43458dce7903ca17b7",
+      "sim/rtl/lemma_usb_cdc_fifo.sv": "a457b87bbd5a411f0bb07cc53973ddc4ab27964d8a9bed704bccbee27d5f0b36",
+      "sim/rtl/lemma_usb_fs_bridge.sv": "3ae6421874b80833b387a3f0e10e57dd38591c29812689ac6aafb9d7a094f2e1",
+      "conformance/silicon/USBFullSpeedClocked.sv": "182275f334e3303677a54ca4efde38cedd9240af5d9369e00e218e484a91d7a4",
+      "tests/usb/fs_phy_clocked.cpp": "d9ae4961866c96e9dffb55d55d1d51ed3cd7224c235e2a75dbd95df65d8ae9d0",
+      "scripts/check_usb_clocked.py": "1ba00338e36cb88ca83e43b72b9ff145259772861c936762a3f25b39971f3ade",
+      "scripts/check_silicon.py": "c9cdbbdc8314db379581a0263795b40227fcc9a3d7661e4fb693daa25228459a",
+      "tooling/silicon/sim.nix": "81cb84fdab6c36979c9b40d492840ba53e0076d3bbe5a93ecb7247cba0cd271c",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+      "sim/host/usb_clock.h": "bd9b2964faef89d3f1d5b3fbf3c871d4f8dd81bb7797ef5dcf1a7e2a0338f138",
+      "tests/usb/clock_schedule.cpp": "cde00144200eb68af3a4ab3eaa3769b8def4fd440fea4e66da1dc5e35245b8e7"
+    },
+    "tool_inputs": {
+      "verilator": {
+        "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator",
+        "sha256": "f1f41487e2a6c18e55859658df8d2e3528b76fc5c7b5a95281794ded61c7b802",
+        "version": "Verilator 5.052 2026-09-05 rev v5.052"
+      },
+      "make": {
+        "path": "/nix/store/z565rgmn9vccv2h0g87z725pw610jmm8-gnumake-4.4.1/bin/make",
+        "sha256": "fee96a0fae52353d14f8d5be991366483d96f00800f8f707198af68ce47b8fea",
+        "version": "GNU Make 4.4.1"
+      },
+      "c++": {
+        "path": "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++",
+        "sha256": "c1a58806b7b7c5f038a81f94c27796764fc8cd9f8059aef62c5e83a761a56935",
+        "version": "g++ (GCC) 16.2.0"
+      },
+      "verilator_bin": {
+        "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator_bin",
+        "sha256": "7e75a7d71fec9faf87f2933b5a53040d474788ffd183f840c320a1aab228a3ae",
+        "version": "Verilator 5.052 2026-09-05 rev v5.052"
+      }
+    }
+  },
+  "native_phase": {
+    "result": "build/usb/clocked-native-phase-a2/result.json",
+    "sha256": "c739d69ee5280510e83fdce4d79a70636822c8cea606e7de34b1594788e631aa",
+    "host_seconds": 34.39372327300953,
+    "cases": [
+      {
+        "case": "clock-0",
+        "host_ppm": 0,
+        "chip_ppm": 0,
+        "host_phase": 0,
+        "chip_phase": 0,
+        "start_cycle": 173,
+        "suffix_cycles": 10003,
+        "snapshot_bytes": 145141488
+      },
+      {
+        "case": "clock-1",
+        "host_ppm": 2500,
+        "chip_ppm": -2500,
+        "host_phase": 7,
+        "chip_phase": 38,
+        "start_cycle": 173,
+        "suffix_cycles": 10003,
+        "snapshot_bytes": 145141488
+      },
+      {
+        "case": "clock-2",
+        "host_ppm": -2500,
+        "chip_ppm": 2500,
+        "host_phase": 41,
+        "chip_phase": 3,
+        "start_cycle": 173,
+        "suffix_cycles": 10003,
+        "snapshot_bytes": 145141488
+      }
+    ],
+    "apparent_bytes": 3049632525,
+    "supervision": {
+      "status": "PASS",
+      "host_seconds_bound": 120,
+      "maximum_tree_rss_kib": 4194304,
+      "peak_tree_rss_kib": 877264,
+      "automatic_restart": false,
+      "pid": 990940,
+      "absolute_monotonic_deadline": 507226.337236197,
+      "returncode": 0,
+      "host_seconds": 28.050890993967187,
+      "owned_children": [
+        {
+          "pid": 990940,
+          "start_ticks": 50710633
+        }
+      ],
+      "owned_survivors": []
+    }
+  },
+  "focused_host_checks": {
+    "profile_and_schema": "build/usb/clocked-existing-profiles-host-a1.log",
+    "sha256": "a9d1003a6dd4c751b3b81d6756776ba6a65711a3b4ca38858d03f2b846a3d8da",
+    "tests": 8,
+    "archive_and_historical": [
+      {
+        "log": "build/usb/clocked-legacy-native-archive-host-a1.log",
+        "sha256": "4b1753329159441a1902efcfa65a38d64bf3113dd2668ccb35d297fb1b06edf6",
+        "tests": 3
+      },
+      {
+        "log": "build/usb/clocked-legacy-package-host-a1.log",
+        "sha256": "e204d0cd812ce9e0a14caa3830ac5a8c4cd89b8d393cf9d2f13c1fda38bb0a5a",
+        "tests": 3
+      },
+      {
+        "log": "build/usb/clocked-profile-archive-host-a2.log",
+        "sha256": "7d061f7062f2b85388bbc938930ee17841c65c81b7ef2556c95dc30f06f5a51b",
+        "tests": 7
+      }
+    ]
+  },
+  "commands": [
+    "python3 scripts/silicon_compute.py build --profile lemma-silicon-dev/0.13.0 --output-dir build/silicon/task006-usb-clocked-runtime-a1 --jobs 2",
+    "python3 scripts/check_usb_clocked.py --work-dir build/usb/clocked-component-a3 --timeout 180 --jobs 2",
+    "nix-shell tooling/silicon/sim.nix --run 'python3 scripts/check_native_usb_clock.py --rtl-build build/silicon/task006-usb-clocked-runtime-a1 --rtl-source-root build/usb/native13-consumed-source-archive-a1/source --work-dir build/usb/clocked-native-phase-a2'",
+    "python3 scripts/lemmasim build --backend rtl --profile lemma-silicon-dev/0.13.0 --workload usb-clocked-bulk-initializer --rtl-build build/silicon/task006-usb-clocked-runtime-a2 --rtl-source-root build/usb/native13-consumed-source-archive-a2/source --guest-build build/kernel/task006-usb-clocked-bulk-initialize-a1 --guest-source-root build/kernel/task006-usb-clocked-bulk-initialize-a1/consumed-source-root",
+    "python3 scripts/lemmasim build --backend rtl --profile lemma-silicon-dev/0.13.0 --workload usb-clocked-bulk-notebook --rtl-build build/silicon/task006-usb-clocked-runtime-a2 --rtl-source-root build/usb/native13-consumed-source-archive-a2/source --guest-build build/kernel/task006-usb-clocked-bulk-notebook-a1 --guest-source-root build/kernel/task006-usb-clocked-bulk-notebook-a1/consumed-source-root",
+    "python3 scripts/lemmasim native-bundle-build --profile lemma-silicon-dev/0.13.0 --rtl-build build/silicon/task006-usb-clocked-runtime-a2 --rtl-source-root build/usb/native13-consumed-source-archive-a2/source --guest-source-root build/kernel/task006-usb-clocked-bulk-notebook-a1/consumed-source-root --initializer-guest-source-root build/kernel/task006-usb-clocked-bulk-initialize-a1/consumed-source-root --output-dir build/native/task006-usb-clocked-a2",
+    "nix-shell tooling/silicon/sim.nix --run 'python3 scripts/check_native_usb_wire_pending.py --profile lemma-silicon-dev/0.13.0 --rtl-build build/silicon/task006-usb-clocked-runtime-a2 --rtl-source-root build/usb/native13-consumed-source-archive-a2/source --native-bundle build/native/task006-usb-clocked-a2 --host-prepared build/usb/host-pending-policy4-a3/prepared.json --formatted-peer build/usb/store-initialize-a3/peer --formatted-outbox build/usb/store-initialize-a3/outbox --work-dir build/usb/clocked-pending-a1'",
+    "python3 scripts/check_clocked_archive.py --rtl-build build/silicon/task006-usb-clocked-runtime-a2 --rtl-source-root build/usb/native13-consumed-source-archive-a3/source --original-native-source-root build/usb/native13-consumed-source-archive-a2/source --native-bundle build/native/task006-usb-clocked-a4 --execution-result build/usb/clocked-pending-a1/result.json --work-dir build/usb/clocked-archive-boundary-a3"
+  ],
+  "retained_failures": [
+    "ignored draft lint-a1 reset-style/empty-output warnings; corrected domain isolation and bounded guards independently passed",
+    "ignored simulation-a1 exposed completed RX head replacement; packet admission lock corrected and full67-byte retained buffer qualified",
+    "first profile host fixture expected DTB names in MMIO register-map keys; corrected fixture independently passed, no production behavior change",
+    "build/usb/clocked-package-preflight-a1/result.json: wrong canonical replacement flags rejected before output or CPU; corrected prepared-pair package used unusedoutputa2.",
+    "Original254-input native capture omitted selected13 JSON already bound by manifest profile_sha256; retained original actual119s Pending identity/results, separately completed255-input schema2 archive and unchanged-identity package.",
+    "build/usb/clocked-prepare-a2/pack.log and build/usb/clocked-archive-boundary-a1/result.json: missing local import in new Clocked package closure check raised NameError before CPU; narrow import corrected, unused packagea4 and observera3 qualified."
+  ],
+  "remaining": [
+    "ordinary Clocked13 notebook/independent peer durability",
+    "full USB MAC timing/token/topology/error closure",
+    "physical USB oscillator/electrical and analog CDC qualification",
+    "privately live external-peer continuation",
+    "QEMU cached-state continuation"
+  ],
+  "qualified_backend": {
+    "manifest": "build/silicon/task006-usb-clocked-runtime-a2/build.json",
+    "manifest_sha256": "29067696a956b0b09b19b7aba6bbba19520585cbc6670d72eab42741b159b2cc",
+    "binary_sha256": "90638d9213a153daaed48b343f0be7880143a286bc40f753b002d0f3836ac401",
+    "snapshot_identity": "1613b2347fad50b7874a8791e7088b48913284db9a839c3506941060daaaa3cb",
+    "source_archive": "build/usb/native13-consumed-source-archive-a3/source",
+    "original_source_inputs": 255,
+    "archive_sha256": "ff3a65bf4b3aa02206314c1eded7b9cb376a19eeba3bba26917c4b39295fa274",
+    "inherited_reference_eval": "Root host-conformance reference selector, defaulttrue preserves ordinary disabled schedule; all enabledUSB paths retain evaluation.",
+    "archive_schema": "lemma-usb-native-source-archive/2",
+    "selected_profile": {
+      "path": "sim/profiles/lemma-silicon-dev-0.13.0.json",
+      "sha256": "431b5eeec21994c7be38ff1d00af8c9f409d645f4d11f425053c2760561a672f"
+    },
+    "capture_scope": "Original native manifest maps254 inputs and separately binds selected13 JSON by profile_sha256; schema2 successor retains all255 bound inputs without altering the original manifest, binary or actual execution."
+  },
+  "matched_package": {
+    "path": "build/native/task006-usb-clocked-a4",
+    "manifest_sha256": "29f9f2db667eb0d4297f762b3058b93d15cae31f752d6af9e7603aef91bff7e1",
+    "schema": "lemmasim-native-bundle/6",
+    "complete_guest_source_inputs": 326,
+    "files": 756,
+    "notebook_elf_sha256": "c5bf79c3981a5cff321205d6d4ec2f6854508c65bf779a6295ca73c3eaf93473",
+    "initializer_elf_sha256": "ff750d21f03d152f2584008dca1180174c969b185585584cb6d295b00ccfd213",
+    "genuine_guest_cohort": "build/managed/usb-clocked-whole-pair-a2/result.json"
+  },
+  "guest_pending": {
+    "result": "build/usb/clocked-pending-a1/result.json",
+    "sha256": "580a6e9c4989e33bc81fa5bef3ec58ba87ec7265616715cc0d58d421eecd9e68",
+    "status": "PASS",
+    "host_seconds": 119.17810277099488,
+    "bounds": {
+      "target_cycles": 70000000,
+      "fixture_host_seconds": 1800,
+      "external_host_response_timeout_ms": 60000,
+      "maximum_fixture_tree_rss_kib": 4194304,
+      "maximum_owned_apparent_bytes": 12000000000
+    },
+    "identity": {
+      "native": "90638d9213a153daaed48b343f0be7880143a286bc40f753b002d0f3836ac401",
+      "implementation": "1613b2347fad50b7874a8791e7088b48913284db9a839c3506941060daaaa3cb",
+      "guest": "ff750d21f03d152f2584008dca1180174c969b185585584cb6d295b00ccfd213",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "dtb": "eb244f1009f709c86af9880871c55e34ebceb509be9085e61cfcddc04709a6b6",
+      "descriptor": "5bfc34263f44cd265e5b0e9960b372aafd066b6b9bb5323d8f4601309f574e12"
+    },
+    "fixed_phy_clocks": {
+      "host_ppm": 2500,
+      "chip_ppm": -2500,
+      "host_phase": 7,
+      "chip_phase": 38
+    },
+    "fixture_sha256": "83a2a14a1b03b4810135bfd614409b83fff918cfc0a3992e800e21f098c5ee65",
+    "observer_sha256": "860d3648fba9218963bf0befaac0e4715faf6c92f073f5c32efdd49bea558c99",
+    "cases": [
+      {
+        "case": "startup",
+        "snapshot_cycle": 0,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.40443,
+        "peak_rss_kib": 1023452,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 0,
+        "captured_incoming_bytes": 0,
+        "pending_command": 2
+      },
+      {
+        "case": "reset",
+        "snapshot_cycle": 5000,
+        "suffix_cycles": 3000,
+        "host_seconds": 4.88249,
+        "peak_rss_kib": 1023452,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 0,
+        "captured_incoming_bytes": 0,
+        "pending_command": 2
+      },
+      {
+        "case": "physical-send",
+        "snapshot_cycle": 5002017,
+        "suffix_cycles": 5000,
+        "host_seconds": 6.29203,
+        "peak_rss_kib": 1023452,
+        "captured_host_tx_state": 1,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 3,
+        "captured_incoming_bytes": 3,
+        "pending_command": 8
+      },
+      {
+        "case": "physical-receive",
+        "snapshot_cycle": 5009079,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.13471,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 2,
+        "captured_chip_rx_state": 2,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 3,
+        "captured_incoming_bytes": 3,
+        "pending_command": 0
+      },
+      {
+        "case": "physical-guard",
+        "snapshot_cycle": 5017304,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.59237,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 8,
+        "captured_cursor": 3,
+        "captured_incoming_bytes": 3,
+        "pending_command": 0
+      },
+      {
+        "case": "physical-chip-send",
+        "snapshot_cycle": 5025315,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.74413,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 1,
+        "captured_guard_samples": 1,
+        "captured_cursor": 3,
+        "captured_incoming_bytes": 3,
+        "pending_command": 0
+      },
+      {
+        "case": "owned-submit",
+        "snapshot_cycle": 9604000,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.1874,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 0,
+        "captured_incoming_bytes": 0,
+        "pending_command": 0
+      },
+      {
+        "case": "owned-receive",
+        "snapshot_cycle": 9616434,
+        "suffix_cycles": 5000,
+        "host_seconds": 5.54945,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 0,
+        "captured_chip_rx_state": 0,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 7,
+        "captured_cursor": 35,
+        "captured_incoming_bytes": 35,
+        "pending_command": 3476
+      },
+      {
+        "case": "domain-reset",
+        "snapshot_cycle": 9721069,
+        "suffix_cycles": 3000,
+        "host_seconds": 7.83752,
+        "peak_rss_kib": 1036380,
+        "captured_host_tx_state": 2,
+        "captured_chip_rx_state": 1,
+        "captured_chip_tx_state": 0,
+        "captured_guard_samples": 0,
+        "captured_cursor": 3,
+        "captured_incoming_bytes": 3,
+        "pending_command": 0
+      }
+    ],
+    "checkpoint_bytes": 145568304,
+    "owned_disk": {
+      "apparent_bytes": 6822775177,
+      "allocated_bytes": 6554664960
+    },
+    "supervision": {
+      "status": "PASS",
+      "host_seconds_bound": 1800,
+      "maximum_tree_rss_kib": 4194304,
+      "peak_tree_rss_kib": 1046476,
+      "automatic_restart": false,
+      "pid": 1013139,
+      "absolute_monotonic_deadline": 512677.01214462,
+      "returncode": 0,
+      "host_seconds": 100.89458152401494,
+      "owned_children": [
+        {
+          "pid": 1013139,
+          "start_ticks": 51087701
+        },
+        {
+          "pid": 1013140,
+          "start_ticks": 51087708
+        }
+      ],
+      "owned_survivors": []
+    },
+    "semantic_future_reply_negative": {
+      "path": "build/usb/clocked-pending-a1/physical-send-semantic-error.tape",
+      "bytes": 456,
+      "sha256": "cbda8b4194c5df5084af534550f611893a3f6eff6048c78e23d52afaba2f5f56",
+      "property": "Actual generated SENT mismatches a checksum-valid future reply; partial cycle blocks all further run/poll/checkpoint calls without mutation."
+    },
+    "scope": "Every restored branch is suspended until exact implementation/prefix/horizon capture; no original peer contact, resubmission, snapshot drain or manufactured completion."
+  },
+  "archive_boundary": {
+    "result": "build/usb/clocked-archive-boundary-a3/result.json",
+    "sha256": "5a6c8b84164fa1eb3e4c33f8cec03e812756838d68a6e0f8b85c0618f086ece0",
+    "status": "PASS",
+    "host_seconds": 2.6873337969882414,
+    "observer_sha256": "b6e65e2a30725c4b9f178df8f2acf48d6c48d4ba7b9f9b1dbb557f4d9d94a01d",
+    "mutants": [
+      {
+        "case": "direct-captured-profile-differs-from-native-authority",
+        "status": "REJECT",
+        "reason": "Clocked captured selected profile differs from native authority"
+      },
+      {
+        "case": "native-missing-selected-profile",
+        "status": "REJECT",
+        "reason": "Native source archive has missing or unlisted files"
+      },
+      {
+        "case": "native-corrupt-selected-profile",
+        "status": "REJECT",
+        "reason": "Changed archived native input: sim/profiles/lemma-silicon-dev-0.13.0.json"
+      },
+      {
+        "case": "native-mismatched-selected-manifest-profile",
+        "status": "REJECT",
+        "reason": "Clocked selected profile differs from its original native manifest"
+      },
+      {
+        "case": "native-symlink-selected-profile",
+        "status": "REJECT",
+        "reason": "Symlink in native source archive"
+      },
+      {
+        "case": "package-missing-selected-profile",
+        "status": "REJECT",
+        "reason": "Bundle artifact missing, symlinked or changed: backend-sources/431b5eeec21994c7be38ff1d00af8c9f409d645f4d11f425053c2760561a672f"
+      },
+      {
+        "case": "package-corrupt-selected-profile",
+        "status": "REJECT",
+        "reason": "Bundle artifact missing, symlinked or changed: backend-sources/431b5eeec21994c7be38ff1d00af8c9f409d645f4d11f425053c2760561a672f"
+      },
+      {
+        "case": "package-mismatched-selected-profile",
+        "status": "REJECT",
+        "reason": "Archived consumed input differs: /home/sreekumaar/Downloads/lemma/sim/profiles/lemma-silicon-dev-0.13.0.json"
+      },
+      {
+        "case": "package-selected-profile-omitted-from-native-closure",
+        "status": "REJECT",
+        "reason": "USB8 consumed native closure differs from its original manifest"
+      }
+    ],
+    "unchanged_execution": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-pending-a1/result.json",
+      "sha256": "580a6e9c4989e33bc81fa5bef3ec58ba87ec7265616715cc0d58d421eecd9e68",
+      "identity": {
+        "native": "90638d9213a153daaed48b343f0be7880143a286bc40f753b002d0f3836ac401",
+        "implementation": "1613b2347fad50b7874a8791e7088b48913284db9a839c3506941060daaaa3cb",
+        "guest": "ff750d21f03d152f2584008dca1180174c969b185585584cb6d295b00ccfd213",
+        "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+        "dtb": "eb244f1009f709c86af9880871c55e34ebceb509be9085e61cfcddc04709a6b6",
+        "descriptor": "5bfc34263f44cd265e5b0e9960b372aafd066b6b9bb5323d8f4601309f574e12"
+      },
+      "cases": 9
+    },
+    "host_only_vectors": {
+      "execute_argv": [
+        "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4/runtime/rtl/lemma-rtl",
+        "--image",
+        "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4/workloads/usb-clocked-bulk-initializer/image.elf",
+        "--rom",
+        "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4/runtime/rtl/boot.bin",
+        "--load",
+        "0x87e00000:/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4/workloads/usb-clocked-bulk-initializer/platform.dtb",
+        "--uart-output",
+        "/home/sreekumaar/Downloads/lemma/build/usb/clocked-archive-boundary-a3/host-launch/uart.bin",
+        "--trace",
+        "/home/sreekumaar/Downloads/lemma/build/usb/clocked-archive-boundary-a3/host-launch/trace.csv",
+        "--trace-limit",
+        "0",
+        "--cycles",
+        "1",
+        "--deadline",
+        "1",
+        "--panel-output",
+        "/home/sreekumaar/Downloads/lemma/build/usb/clocked-archive-boundary-a3/host-launch/panel",
+        "--report",
+        "/home/sreekumaar/Downloads/lemma/build/usb/clocked-archive-boundary-a3/host-launch/host-report.json",
+        "--quiet-uart",
+        "--descriptor",
+        "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4/workloads/usb-clocked-bulk-initializer/descriptor.bin",
+        "--medium",
+        "/not-opened-host-vector-medium"
+      ],
+      "replay": "package and explicit native+guest archives each fully revalidated then stopped before capture; no CPU/medium/replay result claimed"
+    },
+    "scope": "Separate selected-profile archive correction; patched unavailable ROOT, complete native/package/guest authority, no new CPU or replay result."
+  },
+  "entry2_guest_pending": {
+    "result": "build/usb/task006-current13-entry2-pending-a2/result.json",
+    "sha256": "948dad6d0edd05dc554312cb2870194cccec717ebd6e69d4dd438b9ef0110f41",
+    "status": "PASS",
+    "workload": "usb-clocked-package-entry2-bulk-initializer",
+    "identity": {
+      "native": "60bd2f275f72386ce952f1d5572aee041217918d64cbf45a7fb33aad101732da",
+      "implementation": "5381d37a7abd0ac8c7e448d85df2278b5ad8f1ae16c798772bc2a2a04e596135",
+      "guest": "5f98614da1b1324f5c813441c5d426392109a2d35e5a30f55de118f74e4ad69f",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "dtb": "eb244f1009f709c86af9880871c55e34ebceb509be9085e61cfcddc04709a6b6",
+      "descriptor": "5bfc34263f44cd265e5b0e9960b372aafd066b6b9bb5323d8f4601309f574e12"
+    },
+    "host_seconds": 161.40669505205005,
+    "bounds": {
+      "target_cycles": 70000000,
+      "fixture_host_seconds": 1800,
+      "external_host_response_timeout_ms": 60000,
+      "maximum_fixture_tree_rss_kib": 4194304,
+      "maximum_owned_apparent_bytes": 12000000000
+    },
+    "scope": "Fresh actual current5381 and genuine EntryV2 initializer nine Pending cuts. Original older guest_pending corpus remains unchanged. No full Ready, notebook or browser peer claim.",
+    "supervision": {
+      "path": "build/browser/task006-clocked-entry2-pending-supervision-a2/result.json",
+      "sha256": "21ca69473b230ba122b0b86e8851ef7eb8d6ed7f6ecb3b992fb6f46a72d0158d"
+    },
+    "original_environment_failure": {
+      "path": "build/usb/task006-current13-entry2-pending-a1/result.json",
+      "sha256": "9f8191096020aa5d1361a10fca6250106ebc0503232e99a77a49030060cef9c1",
+      "cause": "Default Lean shell lacked Verilator. Actual peer was ready and was reaped; no CPU or expectation changed."
+    }
+  }
+}

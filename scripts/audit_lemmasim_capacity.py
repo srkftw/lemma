@@ -15,11 +15,51 @@ from audit_kernel import (machine_frame, parse_stack_sizes, weighted_stack_graph
                           optimizer_intrinsics, validate_layout,
                           validate_fresh_descriptor_helpers)
 from core0_common import Core0Error, load_json, require_tools, run_bounded, sha256, write_json
+from course_deployment import CONFIGURATIONS as LEGACY_COURSE_CONFIGURATIONS
+from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS
+COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
+from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
+
+from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_CONFIGURATIONS
+from package_companion_deployment import ALL_CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
 
 CAPACITY = 16352
+ARITHMETIC_DEVELOPMENT_CONFIGURATIONS=frozenset({
+    'lemmasim-silicon-power-arithmetic-oom-development',
+    'lemmasim-silicon-power-arithmetic-fault-development',
+    'lemmasim-silicon-power-arithmetic-stall-development',
+})
+POWER_CONFIGURATIONS=frozenset(CLOSURE_CONFIGURATIONS) | frozenset(COURSE_CONFIGURATIONS) | frozenset({'lemmasim-silicon-string-bulk-notebook',
+                              'lemmasim-silicon-string-bulk-initialize',
+                              'lemmasim-silicon-string-arithmetic-oom-development',
+                              'lemmasim-silicon-array-bulk-notebook',
+                              'lemmasim-silicon-array-bulk-initialize',
+                              'lemmasim-silicon-array-arithmetic-oom-development',
+                              'lemmasim-silicon-power-notebook',
+                              'lemmasim-silicon-power-initialize',
+                              'lemmasim-silicon-managed-notebook',
+                              'lemmasim-silicon-managed-initialize',
+                              'lemmasim-silicon-sums-notebook',
+                              'lemmasim-silicon-sums-initialize',
+                              'lemmasim-silicon-bytes-bulk-notebook',
+                              'lemmasim-silicon-bytes-bulk-initialize',
+                              'lemmasim-silicon-bytes-arithmetic-oom-development',
+                              'lemmasim-silicon-bulk-notebook',
+                              'lemmasim-silicon-bulk-initialize',
+                              'lemmasim-silicon-sums-arithmetic-oom-development'})|ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
+USB_CONFIGURATIONS=frozenset({'lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize','lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize','lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'})
+USB_CONFIGURATIONS |= frozenset(USB_CLOSURE_RECOVERY_CONFIGURATIONS) | frozenset(USB_PACKAGE_RECOVERY_CONFIGURATIONS)
+PRODUCT_CONFIGURATIONS=frozenset({'lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'})
+ADMITTED_CONFIGURATIONS=frozenset({'lemmasim-bringup','lemmasim-notebook',
+    'lemmasim-initialize','lemmasim-isolation-development','lemmasim-silicon-devices',
+    'lemmasim-silicon-full-notebook','lemmasim-silicon-notebook',
+    'lemmasim-silicon-full-initialize','lemmasim-silicon-initialize'})|POWER_CONFIGURATIONS|USB_CONFIGURATIONS|PRODUCT_CONFIGURATIONS
 
 
 def construction(unit: dict, pre_ir: str, *, expanded: bool = True) -> dict:
+    product=unit.get('configuration') in PRODUCT_CONFIGURATIONS
+    if product and not expanded:
+        raise Core0Error('Product address spaces require the genuine expanded pool')
     names = {re.sub(r'^_private\..*?\.[0-9]+\.', '', row['source']): row['symbol']
              for row in unit['functions']}
     edges = {
@@ -42,6 +82,17 @@ def construction(unit: dict, pre_ir: str, *, expanded: bool = True) -> dict:
         'Lemma.Kernel.Memory.AddressSpace.base': ['Lemma.Kernel.Memory.AddressSpace.validateRegistry'],
         'Lemma.Kernel.Memory.AddressSpace.destroy': ['Lemma.Kernel.Memory.AddressSpace.rollbackRegistry'],
     }
+    if product:
+        edges.update({
+            'Lemma.Kernel.Process.initProduct':['Lemma.Kernel.Memory.AddressSpace.createProduct'],
+            'Lemma.Kernel.Task.prepareManagedProduct':['Lemma.Kernel.Task.prepareProduct'],
+            'Lemma.Kernel.Task.prepareProduct':['Lemma.Kernel.Loader.loadProduct'],
+            'Lemma.Kernel.Loader.loadProduct':['Lemma.Kernel.Memory.AddressSpace.createProduct'],
+            'Lemma.Kernel.Memory.AddressSpace.createProduct':['Lemma.Kernel.Memory.AddressSpace.buildRegistry',
+                'Lemma.Kernel.Memory.AddressSpace.buildProductKernel','Lemma.Kernel.Memory.Batch.allocate'],
+            'Lemma.Kernel.Memory.AddressSpace.buildProductKernel':['Lemma.Kernel.Memory.AddressSpace.buildKernel',
+                'Lemma.Kernel.Memory.AddressSpace.link','Lemma.Kernel.Memory.AddressSpace.fillRange'],
+        })
     required = set(edges) | {name for callees in edges.values() for name in callees}
     required |= {'Lemma.Kernel.Memory.Frames.runtimeCount', 'Lemma.Kernel.Memory.Frames.runtimeQuota',
                  'Lemma.Kernel.Memory.Frames.configure', 'Lemma.Kernel.Loader.stackCanary',
@@ -81,20 +132,21 @@ def construction(unit: dict, pre_ir: str, *, expanded: bool = True) -> dict:
             'construction':'owned-physically-contiguous-four',
             'source_symbols':{name:names[name] for name in sorted(required)},
             'fresh_descriptor_helpers':fresh,
-            'initial_page_table_frames':13 if expanded else 11, 'leaf_registry_frames':8 if expanded else 0,
-            'user_leaf_capacity':1024 if expanded else 32, 'owned_task_base_frames':30 if expanded else 18,
-            'global_task_base_frames':31 if expanded else 19, 'user_stack_pages':4 if expanded else 2,
+            'initial_page_table_frames':14 if product else 13 if expanded else 11, 'leaf_registry_frames':8 if expanded else 0,
+            'address_space_layout':3 if product else 2 if expanded else 1,
+            'user_leaf_capacity':1024 if expanded else 32, 'owned_task_base_frames':31 if product else 30 if expanded else 18,
+            'global_task_base_frames':32 if product else 31 if expanded else 19, 'user_stack_pages':4 if expanded else 2,
             'user_stack_bytes':16384 if expanded else 8192,
             'user_stack_base':0x3fffa000 if expanded else 0x3fffc000,
             'user_stack_guards':[0x3fff9000,0x3fffe000] if expanded else [0x3fffb000,0x3fffe000],
-            'accounting_formula': ('13 initial tables + 8 leaf registry + 1 data + 4 user stack + 4 kernel stack; text/lazy tables additional; descriptor charged separately to owner1' if expanded else
+            'accounting_formula': ('14 initial tables + 8 leaf registry + 1 data + 4 user stack + 4 kernel stack; text/lazy tables additional; descriptor charged separately to owner1' if product else '13 initial tables + 8 leaf registry + 1 data + 4 user stack + 4 kernel stack; text/lazy tables additional; descriptor charged separately to owner1' if expanded else
                 '11 initial tables + 1 data + 2 user stack + 4 kernel stack =18 privately owned; descriptor separately charged toowner1 makes19 global; text additional')}
 
 
 def audit(build: Path, output: Path, timeout: float) -> dict:
     require_tools(['llvm-readelf', 'llvm-objdump'])
     unit = load_json(build / 'kernel/unit.json')
-    if unit.get('configuration') not in {'lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-devices', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize'} or unit.get('role') != 'kernel' or unit.get('contract_version') != ('core0-kernel-v0.4' if unit.get('configuration') in {'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize'} else 'core0-kernel-v0.3'):
+    if unit.get('configuration') not in ADMITTED_CONFIGURATIONS or unit.get('role') != 'kernel' or unit.get('contract_version') != ('core0-kernel-v0.7' if unit.get('configuration') in PRODUCT_CONFIGURATIONS else 'core0-kernel-v0.6' if unit.get('configuration') in USB_CONFIGURATIONS else 'core0-kernel-v0.4' if unit.get('configuration') in POWER_CONFIGURATIONS else 'core0-kernel-v0.3'):
         raise Core0Error('selected capacity audit requires exact LemmaSim kernel configuration/profile')
     commands=[]
     def invoke(argv):

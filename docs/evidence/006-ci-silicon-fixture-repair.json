@@ -1,0 +1,93 @@
+{
+  "schema": "lemma-ci-observer-repair/3",
+  "prior_candidate": {
+    "commit": "c7f9fcfc46ff48d18b1c329a0dd8933d1ddda7d3",
+    "run": 38435618357,
+    "actual_status": "CANCELLED",
+    "jobs": {
+      "passed": 8,
+      "failed": 1,
+      "cancelled": 1,
+      "total": 10
+    },
+    "notebook": "Cancelled in actual execution; requirement step skipped, not qualified"
+  },
+  "latest_observed_candidate": {
+    "commit": "e710dd4f932fd0fd4fef716a1913ce0328534b07",
+    "run": 38438783290,
+    "actual_status": "FAILURE",
+    "jobs": {
+      "passed": 9,
+      "failed": 1,
+      "total": 10
+    },
+    "passed_scope": "Legacy, foundation, Task003 A-E/F-I/J/architecture/source negatives, Task004 real O0/O2 notebook, RTL device/power"
+  },
+  "actual_host_failure": {
+    "job": 115440109343,
+    "step": 14,
+    "earlier_foundation_and_kernel_host_steps": "PASS",
+    "errors": [
+      "QMP fixture omitted actual required status key",
+      "Unsupported-format fixture used admitted canonical container version2"
+    ],
+    "production_checks": "Unchanged by this repair; actual runstate, exact local deadlines, malformed inputs, identities, lengths and pre-adoption rejection remain load-bearing"
+  },
+  "repair": {
+    "transport": "Provide proper paused QMP runstate; assert exact property/resume mutations independently of readonly status queries",
+    "container": "Identify canonical0.3 fixture explicitly and use genuinely unsupported version99; retain identity/cycle/length rejection checks"
+  },
+  "qualification": {
+    "retained_original": "Both exact CI errors independently reproduced against retained original fixture bytes with actual production imports",
+    "corrected": "179 Silicon host tests PASS in pinned nix develop; exit0",
+    "scope": "Host orchestration/observation, including live subprocess transport; not a clean candidate CI run or new target execution"
+  },
+  "references": [
+    {
+      "path": "build/ci/task006-c7f9fcf-diagnosis-a1/115428679940.log",
+      "bytes": 351597,
+      "sha256": "0a4840f12e553fa127bc931fedd58b1bbd966cedca5afaf4e6683899b14d9af0"
+    },
+    {
+      "path": "build/ci/task006-c7f9fcf-diagnosis-a1/original-test_fast_transport.py",
+      "bytes": 8824,
+      "sha256": "35fde5b5c46e38a358c9d6550dbb2bf95b42d2971236814ae66859b80e8cd035"
+    },
+    {
+      "path": "build/ci/task006-c7f9fcf-diagnosis-a1/original-test_rtl_snapshot_boundary.py",
+      "bytes": 3840,
+      "sha256": "b41c618e96c243bf2dd9681fcb96d66eceac8d9106a087189fdbaf23f15460bb"
+    },
+    {
+      "path": "build/ci/task006-c7f9fcf-diagnosis-a1/original-fixtures-reproduced.log",
+      "bytes": 2423,
+      "sha256": "3bbefd1283b1391d8702b665eef6b02da05847fc7f181abb0ac2daaab2b0224c"
+    },
+    {
+      "path": "build/ci/task006-c7f9fcf-diagnosis-a1/silicon-host-qualified.log",
+      "bytes": 30028,
+      "sha256": "390b7cd83bb6227978c82feb66f2c6ed6e0345d5770ba1b42d9b82d1d52781d3"
+    },
+    {
+      "path": "build/ci/task006-e710dd4-diagnosis-a1/115440109343.log",
+      "bytes": 351507,
+      "sha256": "d9a644f56f21d4a47b48b90d2767d215a9a78a07f79b15cd537c16b1c0b7379b"
+    },
+    {
+      "path": "build/ci/task006-e710dd4-diagnosis-a1/jobs.json",
+      "bytes": 18773,
+      "sha256": "fe320d9a74b651e620775732e65b86b03a4f634334574b6c069960cd5a1b0ed8"
+    }
+  ],
+  "changed_fixture_sources": {
+    "tests/silicon/test_fast_transport.py": "72a42cc4b0b4db29780982e21a07367007ce13a075678d2e20f1c72052711680",
+    "tests/silicon/test_rtl_snapshot_boundary.py": "3d1fdf75a2c1ad18797abb3fb23a5466856b8b77ea8331dd9c9cbcfcddd688dc"
+  },
+  "reviewed_production_sources": {
+    "scripts/lemmasim_fast.py": "aaf200598f0df93c303bcb56045ec0280a307e70f49cf437839dc417dced21c6",
+    "scripts/lemmasim_session.py": "c11d88ea10d5839f21ac7118d607ba7d97e0d7bd43c7b06f83205b702354a721"
+  },
+  "reproduce": [
+    "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/silicon -v"
+  ]
+}

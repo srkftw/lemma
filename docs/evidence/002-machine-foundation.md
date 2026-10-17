@@ -1,3 +1,4 @@
+<!--
 # Task 002 machine-foundation evidence
 
 Task 002's bounded Gates 0--11 have passed. Repaired source `09c47ba` passed full
@@ -1864,3 +1865,5 @@ trust/closure checks, independent same-profile reconstruction, bounded cumulativ
 stress, legacy regression and failure/evidence qualification. Remaining Stage I
 and early Stage II 2.1/2.2 receive regression/integration coverage, not complete
 construction-unit qualification. All units, G1 and G2 remain incomplete.
+
+-->

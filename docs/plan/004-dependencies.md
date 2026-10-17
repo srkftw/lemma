@@ -1,3 +1,4 @@
+<!--
 # Task004 dependency checks
 
 Changes to the Core0 accepted language or lowering require the legacy Core0
@@ -49,3 +50,5 @@ commit's pass, and neither lane reports Task004 complete. Required inherited
 CI/regressions, new client isolation, publication negatives and review handoff
 remain separate acceptance obligations until their real results are recorded.
 All generated evidence uses unused ignored output paths; failures are retained.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # LemmaSim stable/volatile block medium v1
 
 Backend identity is `lemma-durable/1`. It is host-only hardware code in
@@ -89,3 +90,5 @@ stable bytes, volatile readback, flush, failed flush, before/after cuts, torn
 sectors and exhaustion. It shares no production transition or journal oracle.
 These hardware observations are distinct from the compiled guest notebook's
 cold-recovery and acknowledgement acceptance.
+
+-->

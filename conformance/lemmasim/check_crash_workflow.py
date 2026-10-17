@@ -85,6 +85,10 @@ def notebook(payloads: dict[tuple[int, int], bytes]) -> Notebook:
         if not ns or not obj or len(data) < 64:
             raise ValueError('short or unnamed notebook object')
         h = struct.unpack_from('<8Q', data)
+        from math_oracle import MAGIC as MATH_MAGIC, inspect as inspect_math
+        if h[0] == MATH_MAGIC:
+            inspect_math(data, ns, obj)
+            continue
         if h[0] != MAGIC:
             raise ValueError('unknown notebook magic')
         if h[2] == 1:

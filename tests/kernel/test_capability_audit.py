@@ -7,7 +7,7 @@ import tempfile
 from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
-from audit_kernel import audit, validate_call_precedes, validate_checked_call_gate, validate_boolean_gate, validate_h_legacy_console_denial, validate_h_endpoint_budget
+from audit_kernel import audit, validate_call_precedes, validate_checked_call_gate, validate_boolean_gate, validate_h_legacy_console_denial, validate_h_endpoint_budget, validate_capability_base_borrow
 from core0_common import Core0Error
 
 GATE='''entry:
@@ -24,7 +24,41 @@ failure:
   ret { i64, i64 } %r
 '''
 
+BORROW=GATE.replace('  %ok = icmp eq i8 %s, 0',
+    '  %bad = call zeroext i1 @failed(i8 zeroext %s)\n  %ok = icmp eq i1 %bad, 1').replace(
+    'label %success, label %failure','label %failure, label %success').replace(
+    '@protected(i64 %arg0)','@protected(i64 %arg0, i64 %v)')
+FAILED='''entry:
+  %cmp0 = icmp eq i8 %arg0, 0
+  br i1 %cmp0, label %if.then.0, label %if.else.1
+if.then.0:
+  br label %if.merge.2
+if.else.1:
+  br label %if.merge.2
+if.merge.2:
+  %if.result1 = phi i1 [ 0, %if.then.0 ], [ 1, %if.else.1 ]
+  ret i1 %if.result1
+'''
+
 class CapabilityCompiledGateFailures(unittest.TestCase):
+    def test_header_borrow_requires_exact_fresh_pair_and_readonly_path(self):
+        report=validate_capability_base_borrow(BORROW,'checked','protected','failed',FAILED,{'failed'})
+        self.assertEqual(report['validated_base'],'%v')
+        self.assertEqual(report['gate']['success'],'success')
+        for bad in [BORROW.replace('@checked(i64 %arg0)','@checked(i64 %arg1)'),
+                    BORROW.replace('@protected(i64 %arg0, i64 %v)','@protected(i64 %arg1, i64 %v)'),
+                    BORROW.replace('@protected(i64 %arg0, i64 %v)','@protected(i64 %arg0, i64 %sw)'),
+                    BORROW.replace('@protected(i64 %arg0, i64 %v)','@protected(i64 %arg0, i64 0)'),
+                    BORROW.replace('%bad, 1','%bad, 0'),
+                    BORROW.replace('label %failure, label %success','label %success, label %failure'),
+                    BORROW.replace('success:\n','success:\n  %write = call { i64, i64 } @mutate(i64 %v)\n'),
+                    BORROW.replace('success:\n','success:\n  store i64 0, ptr %v\n'),
+                    BORROW.replace('success:\n','success:\n  %schedule = call { i64, i64 } @yield()\n'),
+                    BORROW.replace('failure:\n','failure:\n  %bypass = call { i64, i64 } @protected(i64 %arg0, i64 %v)\n')]:
+            with self.subTest(body=bad):
+                with self.assertRaises(Core0Error):
+                    validate_capability_base_borrow(bad,'checked','protected','failed',FAILED,{'failed'})
+
     def test_missing_inspection_tool_removes_stale_pass_and_retains_failure(self):
         root=Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory(dir=root/'build/kernel') as directory:

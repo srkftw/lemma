@@ -1,3 +1,4 @@
+<!--
 # LemmaSim subordinate device/descriptor ABIs v1
 
 Frozen with the first actual consumers. Authoritative numeric layout is
@@ -118,3 +119,5 @@ before normal operation. Low reservation is`0x80000000..0x82000000`, pool32MiB
 `0x82000000..0x84000000`; exact guest image/package/metadata/stack reservations
 must lie inside the low envelope. DTB has an independent reservation at actual
 computed address. A declared pool is usable only after guest metadata/range support.
+
+-->

@@ -1,0 +1,61 @@
+{
+  "functions": [
+    {
+      "symbol": "user_wrapper_core0_action_0",
+      "source": "Lemma.User.Memory.read64",
+      "effects": [
+        "checked-access",
+        "virtual-read"
+      ],
+      "args": [
+        "u64"
+      ]
+    },
+    {
+      "symbol": "user_wrapper_core0_action_2",
+      "source": "Lemma.User.Memory.write64",
+      "effects": [
+        "checked-access",
+        "virtual-write"
+      ],
+      "args": [
+        "u64",
+        "u64"
+      ]
+    }
+  ],
+  "used_execution_ops": [
+    {
+      "stable_id": "execution.virtual-read64",
+      "returnkind": "word",
+      "primitive_symbol": null
+    },
+    {
+      "stable_id": "execution.virtual-write64",
+      "returnkind": "word",
+      "primitive_symbol": null
+    },
+    {
+      "stable_id": "execution.virtual-write8",
+      "returnkind": "word",
+      "primitive_symbol": null
+    },
+    {
+      "stable_id": "execution.virtual-read8",
+      "returnkind": "word",
+      "primitive_symbol": null
+    }
+  ],
+  "wrappers": [
+    {
+      "symbol": "user_wrapper_core0_action_0",
+      "source": "Lemma.User.Memory.read64",
+      "operation": "execution.virtual-read64"
+    },
+    {
+      "symbol": "user_wrapper_core0_action_2",
+      "source": "Lemma.User.Memory.write64",
+      "operation": "execution.virtual-write64"
+    }
+  ]
+}

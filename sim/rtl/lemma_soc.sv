@@ -3,11 +3,77 @@
 // external working-memory port, external framebuffer SRAM, raw medium and panel ports.
 module lemma_soc #(parameter bit REGISTER_RAM=0) (
  input logic clk, reset,
- input logic [1:0] power_reset_cause,
+ input logic [2:0] power_reset_cause,
+ input logic raw_power_good,raw_brownout,
  input logic raw_button_level,
  output logic power_suspended,power_cancel_pen,
  output logic [63:0] power_error,power_epoch,power_events,power_wake_cause,
- output logic [1:0] power_cause,
+ output logic [2:0] power_cause,
+ output logic power_domain_reset,power_loss,power_watchdog_armed,
+ output logic [63:0] power_watchdog_timeout,power_watchdog_remaining,power_reset_remaining,power_reset_epoch,
+ // Explicit recovered-bit boundary. The peer is a separate circuit with its
+ // own reset/PIO and is outside the device's power domain.
+ input logic ble_rx_sample_valid,ble_rx_sample_bit,ble_coex_allow,
+ output logic ble_tx_sample_valid,ble_tx_sample_bit,ble_busy,
+ output logic [63:0] ble_ticks,ble_tx_packets,ble_rx_packets,ble_crc_errors,ble_rx_errors,
+ output logic ble_tx_active,ble_rx_active,
+ input logic ble_peer_enabled,ble_peer_reset,ble_peer_coex_allow,
+ input logic ble_peer_valid,ble_peer_write,
+ input logic [9:0] ble_peer_addr,input logic [2:0] ble_peer_size,
+ input logic [63:0] ble_peer_wdata,
+ output logic [63:0] ble_peer_rdata,
+ output logic ble_peer_ready,ble_peer_error,ble_peer_irq,
+ input logic ble_peer_rx_sample_valid,ble_peer_rx_sample_bit,
+ output logic ble_peer_tx_sample_valid,ble_peer_tx_sample_bit,ble_peer_busy,
+ output logic [63:0] ble_peer_ticks,ble_peer_tx_packets,ble_peer_rx_packets,ble_peer_crc_errors,ble_peer_rx_errors,
+ output logic ble_peer_tx_active,ble_peer_rx_active,
+ // Decoded USB packet-byte boundary; all control policy remains guest/host Lean.
+ input logic usb_connected,usb_bus_reset,usb_rx_valid,usb_rx_last,usb_tx_ready,
+ input logic usb_host_phy_clk,usb_chip_phy_clk,
+ input logic [7:0] usb_rx_byte,
+ output logic usb_rx_ready,usb_tx_valid,usb_tx_last,usb_irq_out,usb_busy,
+ output logic [7:0] usb_tx_byte,
+ output logic [63:0] usb_ticks,usb_rx_packets,usb_tx_packets,usb_packet_errors,
+ output logic [6:0] usb_address,output logic usb_configured,
+ // Optional profile11: both endpoints are real registered FS codecs. The raw
+ // process transports packet bytes into the host codec, never a success flag.
+ output logic usb_wire_host_busy,usb_wire_chip_busy,usb_wire_host_abort,usb_wire_reset,usb_wire_host_oe,usb_wire_chip_oe,
+ output logic [1:0] usb_wire_line,
+ output logic [63:0] usb_phy_host_samples,usb_phy_chip_samples,
+ output logic [63:0] usb_phy_host_tx_packets,usb_phy_host_rx_packets,usb_phy_chip_tx_packets,usb_phy_chip_rx_packets,
+ output logic [63:0] usb_phy_host_stuff_errors,usb_phy_chip_stuff_errors,
+ output logic [63:0] usb_phy_host_line_errors,usb_phy_chip_line_errors,
+ output logic [63:0] usb_phy_host_underflows,usb_phy_chip_underflows,
+ // Optional profile12 CommonOFDM aligned DATA boundary. Independent peer
+ // circuitry is part of digital environmental state; host moves raw PIO/IQ only.
+ input logic wifi_rx_sample_valid,wifi_coex_allow,
+ input logic signed [15:0] wifi_rx_i,wifi_rx_q,
+ output logic wifi_tx_sample_valid,wifi_busy,
+ output logic signed [15:0] wifi_tx_i,wifi_tx_q,
+ output logic [63:0] wifi_ticks,wifi_tx_packets,wifi_rx_packets,wifi_tx_wire_samples,wifi_rx_wire_samples,
+ output logic wifi_tx_active,wifi_rx_active,output logic [7:0] wifi_last_fault,output logic [9:0] wifi_last_metric,
+ input logic wifi_peer_reset,wifi_peer_enabled,wifi_peer_coex_allow,wifi_peer_valid,wifi_peer_write,
+ input logic [9:0] wifi_peer_addr,input logic [2:0] wifi_peer_size,input logic [63:0] wifi_peer_wdata,
+ output logic [63:0] wifi_peer_rdata,output logic wifi_peer_ready,wifi_peer_error,wifi_peer_irq,wifi_peer_busy,
+ input logic wifi_peer_rx_sample_valid,input logic signed [15:0] wifi_peer_rx_i,wifi_peer_rx_q,
+ output logic wifi_peer_tx_sample_valid,output logic signed [15:0] wifi_peer_tx_i,wifi_peer_tx_q,
+ output logic [63:0] wifi_peer_ticks,wifi_peer_tx_packets,wifi_peer_rx_packets,wifi_peer_tx_wire_samples,wifi_peer_rx_wire_samples,
+ output logic wifi_peer_tx_active,wifi_peer_rx_active,output logic [7:0] wifi_peer_last_fault,output logic [9:0] wifi_peer_last_metric,
+ // Paused observation taps, wired directly to retained controller registers.
+ // They do not read PIO, acknowledge a head, or publish a peer result.
+ output logic wifi_head_valid,wifi_peer_head_valid,
+ output logic [4:0] wifi_head_length,wifi_peer_head_length,
+ output logic [2:0] wifi_events,wifi_peer_events,
+ output logic [127:0] wifi_head_bytes,wifi_peer_head_bytes,
+ // Product boot medium has its own captured external-operation namespace.
+ input logic boot_media_ready,external_boot_media_busy,
+ input logic [63:0] boot_media_result,boot_reset_origin,
+ input logic [9:0] boot_media_bytes,
+ input logic [4095:0] boot_media_rdata,
+ output logic boot_media_valid,boot_media_cancel,
+ output logic [1:0] boot_media_kind,
+ output logic [63:0] boot_media_id,boot_media_sector,boot_media_origin,
+ output logic [4095:0] boot_media_wdata,
  input logic preload_valid,
  input logic [8:0] preload_index,
  input logic [63:0] preload_data,
@@ -50,11 +116,31 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  output logic [2:0] media_kind,
  output logic [63:0] media_sector,
  output logic [4095:0] media_wdata,
- input logic media_ready,media_error,
+ input logic media_ready,media_error,external_media_busy,
  input logic [4095:0] media_rdata
 );
  import lemma_silicon_binding::*;
  logic dev_valid,dev_write,dev_ready,dev_error;
+ logic domain_reset,controller_fb_valid,controller_panel_valid,controller_media_valid;
+ logic power_cancel_device,safety_pen_resync;
+ // A safety-domain reset discards queued/contact state. On release force the
+ // existing loss/resynchronization handshake before admitting held contact.
+ // The legacy branch retains its exact cooperative cancellation behavior.
+ generate if(POWER_SAFETY!=0) begin: safety_pen_boundary
+   always @(posedge clk) begin
+     if(reset) safety_pen_resync<=0;
+     else if(domain_reset) safety_pen_resync<=1;
+     else safety_pen_resync<=0;
+   end
+   assign power_cancel_pen=power_cancel_device||(safety_pen_resync&&!domain_reset);
+ end else begin: legacy_pen_boundary
+   assign safety_pen_resync=0;
+   assign power_cancel_pen=power_cancel_device;
+ end endgenerate
+ assign fb_valid=controller_fb_valid&&!domain_reset;
+ assign panel_valid=controller_panel_valid&&!domain_reset;
+ assign media_valid=controller_media_valid&&!domain_reset;
+ assign domain_reset=reset||power_domain_reset;
  logic [31:0] dev_addr;
  logic [2:0] dev_size;
  logic [63:0] dev_wdata,dev_rdata;
@@ -65,13 +151,14 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  logic dma_valid,dma_write,dma_ready,dma_error;
  logic [63:0] dma_addr,dma_wdata,dma_rdata;
  logic [2:0] dma_size;
- logic [63:0] pen_rdata,paper_rdata,block_rdata,power_rdata;
+ logic [63:0] pen_rdata,paper_rdata,block_rdata,power_rdata,ble_rdata,usb_rdata,boot_nv_rdata,wifi_rdata;
  logic pen_ready,paper_ready,block_ready,pen_error,paper_error,block_error;
  logic pen_irq,paper_irq,block_irq,power_irq,power_ready,power_bus_error,paper_busy,block_busy,pen_sample_ready;
+ logic ble_ready,ble_error,ble_irq,usb_ready,usb_error,usb_irq,boot_nv_ready,boot_nv_error,boot_nv_irq,wifi_ready,wifi_error,wifi_irq;
  logic [5:0] power_busy_sources;
  logic [1:0] power_event_flags;
  logic [31:0] irqs;
- logic pen_sel,paper_sel,block_sel,power_sel,dma_grant,dma_alignment,dma_span;
+ logic pen_sel,paper_sel,block_sel,power_sel,ble_sel,usb_sel,boot_nv_sel,wifi_sel,dma_grant,dma_alignment,dma_span;
  logic external_ready,external_error;
  logic [63:0] external_rdata;
  logic port_held,held_dma,held_write;
@@ -96,14 +183,18 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  end endgenerate
  assign pen_sel=dev_addr>=PEN_BASE&&dev_addr<PEN_BASE+PEN_SPAN;
  assign power_sel=POWER_ENABLED!=0&&dev_addr>=POWER_BASE&&dev_addr<POWER_BASE+POWER_SPAN;
- assign paper_sel=dev_addr>=PAPER_BASE&&dev_addr<PAPER_BASE+PAPER_SPAN&&!power_sel;
+ assign ble_sel=BLE_ENABLED!=0&&dev_addr>=BLE_BASE&&dev_addr<BLE_BASE+BLE_SPAN;
+ assign usb_sel=USB_ENABLED!=0&&dev_addr>=USB_BASE&&dev_addr<USB_BASE+USB_SPAN;
+ assign wifi_sel=WIFI_ENABLED!=0&&dev_addr>=WIFI_BASE&&dev_addr<WIFI_BASE+WIFI_SPAN;
+ assign boot_nv_sel=BOOT_NV_ENABLED!=0&&dev_addr>=BOOT_NV_BASE&&dev_addr<BOOT_NV_BASE+BOOT_NV_SPAN;
+ assign paper_sel=dev_addr>=PAPER_BASE&&dev_addr<PAPER_BASE+PAPER_SPAN&&!power_sel&&!ble_sel&&!usb_sel;
  assign block_sel=dev_addr>=BLOCK_BASE&&dev_addr<BLOCK_BASE+BLOCK_SPAN;
- assign dev_rdata=power_sel?power_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
- assign dev_ready=power_sel?power_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
- assign dev_error=power_sel?power_bus_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
- assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ);
+ assign dev_rdata=wifi_sel?wifi_rdata:boot_nv_sel?boot_nv_rdata:power_sel?power_rdata:usb_sel?usb_rdata:ble_sel?ble_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
+ assign dev_ready=wifi_sel?wifi_ready:boot_nv_sel?boot_nv_ready:power_sel?power_ready:usb_sel?usb_ready:ble_sel?ble_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
+ assign dev_error=wifi_sel?wifi_error:boot_nv_sel?boot_nv_error:power_sel?power_bus_error:usb_sel?usb_error:ble_sel?ble_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
+ assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ)|(32'(ble_irq)<<BLE_IRQ)|(32'(usb_irq)<<USB_IRQ)|(32'(boot_nv_irq)<<BOOT_NV_IRQ)|(32'(wifi_irq)<<WIFI_IRQ);
  lemma_compute compute(
-   .clk,.reset,.mem_valid(cpu_mem_valid),.mem_write(cpu_mem_write),.mem_addr(cpu_mem_addr),
+   .clk,.reset(domain_reset),.mem_valid(cpu_mem_valid),.mem_write(cpu_mem_write),.mem_addr(cpu_mem_addr),
    .mem_wdata(cpu_mem_wdata),.mem_strb(cpu_mem_strb),.mem_rdata(cpu_mem_rdata),
    .mem_ready(cpu_mem_ready),.mem_error(cpu_mem_error),.dev_valid,.dev_write,.dev_addr,.dev_size,
    .dev_wdata,.dev_rdata,.dev_ready,.dev_error,.external_irqs(irqs),.uart_rx_valid,.uart_rx_data,
@@ -111,44 +202,198 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .debug_pc,.debug_privilege,.debug_retire,.debug_trap,.debug_cause
  );
  lemma_pen #(.FIFO_DEPTH(int'(PEN_FIFO)),.PRESSURE_MAX(int'(PRESSURE_MAX))) pen(
-   .clk,.reset_n(!reset),.valid((dev_valid&&pen_sel)||power_cancel_pen),.write((dev_valid&&pen_sel&&dev_write)||power_cancel_pen),
+   .clk,.reset_n(!domain_reset),.valid((dev_valid&&pen_sel)||power_cancel_pen),.write((dev_valid&&pen_sel&&dev_write)||power_cancel_pen),
    .addr(power_cancel_pen?12'd104:(dev_valid&&pen_sel)?dev_addr[11:0]:12'd0),
    .size(power_cancel_pen?3'd3:(dev_valid&&pen_sel)?dev_size:3'd0),.wdata(power_cancel_pen?64'd1:(dev_valid&&pen_sel)?dev_wdata:64'd0),
    .rdata(pen_rdata),.ready(pen_ready),.error(pen_error),.irq(pen_irq),
-   .now_ticks(timer_ticks),.sample_valid(sample_valid&&!power_suspended&&!power_cancel_pen),.sample_ready(pen_sample_ready),.sample_time,.sample_x,.sample_y,
+   .now_ticks(timer_ticks),.sample_valid(sample_valid&&!power_suspended&&!power_cancel_pen&&!domain_reset),.sample_ready(pen_sample_ready),.sample_time,.sample_x,.sample_y,
    .sample_pressure,.sample_flags,.sample_tool,.sample_buttons,.sample_accepted
  );
- lemma_paper #(.WIDTH(int'(WIDTH)),.HEIGHT(int'(HEIGHT)),.ENABLE_SEQUENCER(PAPER_SEQUENCER!=0)) paper(
-   .clk,.reset_n(!reset),.valid(dev_valid&&paper_sel),.write(dev_valid&&paper_sel&&dev_write),
+ lemma_paper #(.WIDTH(int'(WIDTH)),.HEIGHT(int'(HEIGHT)),.ENABLE_SEQUENCER(PAPER_SEQUENCER!=0),.VERSION(int'(PAPER_VERSION)),.STAGING_OFFSET(int'(PAPER_STAGE_OFFSET))) paper(
+   .clk,.reset_n(!domain_reset),.valid(dev_valid&&paper_sel),.write(dev_valid&&paper_sel&&dev_write),
    .addr((dev_valid&&paper_sel)?dev_addr[11:0]:12'd0),
    .size((dev_valid&&paper_sel)?dev_size:3'd0),.wdata((dev_valid&&paper_sel)?dev_wdata:64'd0),
    .rdata(paper_rdata),.ready(paper_ready),.error(paper_error),.irq(paper_irq),.controller_busy(paper_busy),
-   .now_ticks(timer_ticks),.descriptor,.fb_valid,.fb_write,.fb_addr,.fb_wdata,.fb_ready,.fb_error,.fb_rdata,
-   .panel_valid,.panel_ready,.panel_x,.panel_y,.panel_gray,.panel_complete,.panel_abort,.panel_sequence,
+   .now_ticks(timer_ticks),.descriptor,.fb_valid(controller_fb_valid),.fb_write,.fb_addr,.fb_wdata,.fb_ready,.fb_error,.fb_rdata,
+   .panel_valid(controller_panel_valid),.panel_ready,.panel_x,.panel_y,.panel_gray,.panel_complete,.panel_abort,.panel_sequence,
    .panel_drive_valid,.panel_power_enable,.panel_gate_clock,.panel_source_clock,
    .panel_drive_phase,.panel_drive_code,.panel_drive_x,.panel_drive_y
  );
  lemma_block #(.DMA_BASE(FRAME_POOL_BASE),.DMA_BYTES(FRAME_POOL_BYTES)) blockdev(
-   .clk,.reset_n(!reset),.valid(dev_valid&&block_sel),.write(dev_valid&&block_sel&&dev_write),
+   .clk,.reset_n(!domain_reset),.valid(dev_valid&&block_sel),.write(dev_valid&&block_sel&&dev_write),
    .addr((dev_valid&&block_sel)?dev_addr[11:0]:12'd0),
    .size((dev_valid&&block_sel)?dev_size:3'd0),.wdata((dev_valid&&block_sel)?dev_wdata:64'd0),
    .rdata(block_rdata),.ready(block_ready),.error(block_error),.irq(block_irq),.busy(block_busy),
    .dma_valid,.dma_write,.dma_addr,.dma_wdata,.dma_size,.dma_ready,.dma_error,.dma_rdata,
-   .media_valid,.media_kind,.media_sector,.media_wdata,.media_ready,.media_error,.media_rdata
+   .media_valid(controller_media_valid),.media_kind,.media_sector,.media_wdata,.media_ready,.media_error,.media_rdata
  );
- assign sample_ready=pen_sample_ready&&!power_suspended&&!power_cancel_pen;
- assign power_busy_sources={media_valid,(dma_valid||!pen_ready),port_held,block_irq,block_busy,paper_busy};
+ generate if(BLE_ENABLED!=0) begin: sampled_ble
+   lemma_ble_packet endpoint(.clk,.reset(domain_reset),.enabled(!power_suspended),.coex_allow(ble_coex_allow),
+     .valid(dev_valid&&ble_sel),.write(dev_write),.addr(10'(dev_addr-BLE_BASE)),.size(dev_size),.wdata(dev_wdata),
+     .rdata(ble_rdata),.ready(ble_ready),.error(ble_error),.irq(ble_irq),
+     .rx_sample_valid(ble_rx_sample_valid),.rx_sample_bit(ble_rx_sample_bit),
+     .tx_sample_valid(ble_tx_sample_valid),.tx_sample_bit(ble_tx_sample_bit),
+     .ticks(ble_ticks),.tx_packets(ble_tx_packets),.rx_packets(ble_rx_packets),
+     .crc_errors(ble_crc_errors),.rx_errors(ble_rx_errors),.tx_active(ble_tx_active),.rx_active(ble_rx_active),.controller_busy(ble_busy));
+   lemma_ble_packet peer(.clk,.reset(ble_peer_reset),.enabled(ble_peer_enabled),.coex_allow(ble_peer_coex_allow),
+     .valid(ble_peer_valid),.write(ble_peer_write),.addr(ble_peer_addr),.size(ble_peer_size),.wdata(ble_peer_wdata),
+     .rdata(ble_peer_rdata),.ready(ble_peer_ready),.error(ble_peer_error),.irq(ble_peer_irq),
+     .rx_sample_valid(ble_peer_rx_sample_valid),.rx_sample_bit(ble_peer_rx_sample_bit),
+     .tx_sample_valid(ble_peer_tx_sample_valid),.tx_sample_bit(ble_peer_tx_sample_bit),
+     .ticks(ble_peer_ticks),.tx_packets(ble_peer_tx_packets),.rx_packets(ble_peer_rx_packets),
+     .crc_errors(ble_peer_crc_errors),.rx_errors(ble_peer_rx_errors),.tx_active(ble_peer_tx_active),.rx_active(ble_peer_rx_active),.controller_busy(ble_peer_busy));
+ end else begin: no_sampled_ble
+   assign ble_rdata=0;assign ble_ready=1;assign ble_error=0;assign ble_irq=0;assign ble_busy=0;
+   assign ble_tx_sample_valid=0;assign ble_tx_sample_bit=0;assign ble_ticks=0;assign ble_tx_packets=0;
+   assign ble_rx_packets=0;assign ble_crc_errors=0;assign ble_rx_errors=0;assign ble_tx_active=0;assign ble_rx_active=0;
+   assign ble_peer_rdata=0;assign ble_peer_ready=1;assign ble_peer_error=0;assign ble_peer_irq=0;assign ble_peer_busy=0;
+   assign ble_peer_tx_sample_valid=0;assign ble_peer_tx_sample_bit=0;assign ble_peer_ticks=0;assign ble_peer_tx_packets=0;
+   assign ble_peer_rx_packets=0;assign ble_peer_crc_errors=0;assign ble_peer_rx_errors=0;assign ble_peer_tx_active=0;assign ble_peer_rx_active=0;
+ end endgenerate
+ generate if(USB_ENABLED!=0) begin: packet_usb
+   logic chip_rx_valid,chip_rx_last,chip_rx_ready,chip_rx_abort,chip_bus_reset;
+   logic chip_tx_valid,chip_tx_last,chip_tx_ready,endpoint_busy,host_phy_busy,chip_phy_busy;
+   logic [7:0] chip_rx_byte,chip_tx_byte;
+   if(USB_PHY_ENABLED!=0)begin: full_speed_wire
+     logic [1:0] host_line,chip_line;
+     assign usb_wire_line=usb_bus_reset?2'b00:
+       usb_wire_host_oe&&usb_wire_chip_oe&&host_line!=chip_line?2'b11:
+       usb_wire_host_oe?host_line:usb_wire_chip_oe?chip_line:2'b01;
+     if(USB_CLOCKED_ENABLED!=0)begin: independent_clocks
+     lemma_usb_fs_bridge host_phy(.clk,.phy_clk(usb_host_phy_clk),.reset,.enabled(1'b1),.connected(usb_connected),.line_in(usb_wire_line),
+       .tx_valid(usb_rx_valid),.tx_last(usb_rx_last),.tx_byte(usb_rx_byte),.tx_ready(usb_rx_ready),
+       .tx_oe(usb_wire_host_oe),.tx_busy(usb_wire_host_busy),.line_out(host_line),
+       .rx_valid(usb_tx_valid),.rx_last(usb_tx_last),.rx_byte(usb_tx_byte),.rx_ready(usb_tx_ready),
+       .rx_abort(usb_wire_host_abort),.bus_reset(usb_wire_reset),.controller_busy(host_phy_busy),
+       .sample_ticks(usb_phy_host_samples),.tx_packets(usb_phy_host_tx_packets),.rx_packets(usb_phy_host_rx_packets),
+       .stuff_errors(usb_phy_host_stuff_errors),.line_errors(usb_phy_host_line_errors),.underflows(usb_phy_host_underflows));
+     lemma_usb_fs_bridge chip_phy(.clk,.phy_clk(usb_chip_phy_clk),.reset(domain_reset),.enabled(!power_suspended),.connected(usb_connected),.line_in(usb_wire_line),
+       .tx_valid(chip_tx_valid),.tx_last(chip_tx_last),.tx_byte(chip_tx_byte),.tx_ready(chip_tx_ready),
+       .tx_oe(usb_wire_chip_oe),.tx_busy(usb_wire_chip_busy),.line_out(chip_line),
+       .rx_valid(chip_rx_valid),.rx_last(chip_rx_last),.rx_byte(chip_rx_byte),.rx_ready(chip_rx_ready),
+       .rx_abort(chip_rx_abort),.bus_reset(chip_bus_reset),.controller_busy(chip_phy_busy),
+       .sample_ticks(usb_phy_chip_samples),.tx_packets(usb_phy_chip_tx_packets),.rx_packets(usb_phy_chip_rx_packets),
+       .stuff_errors(usb_phy_chip_stuff_errors),.line_errors(usb_phy_chip_line_errors),.underflows(usb_phy_chip_underflows));
+     end else begin: rational_enable
+     lemma_usb_fs_phy host_phy(.clk,.reset,.enabled(1'b1),.connected(usb_connected),.line_in(usb_wire_line),
+       .tx_valid(usb_rx_valid),.tx_last(usb_rx_last),.tx_byte(usb_rx_byte),.tx_ready(usb_rx_ready),
+       .tx_oe(usb_wire_host_oe),.tx_busy(usb_wire_host_busy),.line_out(host_line),
+       .rx_valid(usb_tx_valid),.rx_last(usb_tx_last),.rx_byte(usb_tx_byte),.rx_ready(usb_tx_ready),
+       .rx_abort(usb_wire_host_abort),.bus_reset(usb_wire_reset),.controller_busy(host_phy_busy),
+       .sample_ticks(usb_phy_host_samples),.tx_packets(usb_phy_host_tx_packets),.rx_packets(usb_phy_host_rx_packets),
+       .stuff_errors(usb_phy_host_stuff_errors),.line_errors(usb_phy_host_line_errors),.underflows(usb_phy_host_underflows));
+     lemma_usb_fs_phy chip_phy(.clk,.reset(domain_reset),.enabled(!power_suspended),.connected(usb_connected),.line_in(usb_wire_line),
+       .tx_valid(chip_tx_valid),.tx_last(chip_tx_last),.tx_byte(chip_tx_byte),.tx_ready(chip_tx_ready),
+       .tx_oe(usb_wire_chip_oe),.tx_busy(usb_wire_chip_busy),.line_out(chip_line),
+       .rx_valid(chip_rx_valid),.rx_last(chip_rx_last),.rx_byte(chip_rx_byte),.rx_ready(chip_rx_ready),
+       .rx_abort(chip_rx_abort),.bus_reset(chip_bus_reset),.controller_busy(chip_phy_busy),
+       .sample_ticks(usb_phy_chip_samples),.tx_packets(usb_phy_chip_tx_packets),.rx_packets(usb_phy_chip_rx_packets),
+       .stuff_errors(usb_phy_chip_stuff_errors),.line_errors(usb_phy_chip_line_errors),.underflows(usb_phy_chip_underflows));
+     end
+     // Both real codec phases count as pending digital work for Power-v2.
+     assign usb_busy=endpoint_busy||host_phy_busy||chip_phy_busy;
+   end else begin: decoded_packet_boundary
+     assign chip_rx_valid=usb_rx_valid;assign chip_rx_last=usb_rx_last;assign chip_rx_byte=usb_rx_byte;
+     assign usb_rx_ready=chip_rx_ready;assign usb_tx_valid=chip_tx_valid;assign usb_tx_last=chip_tx_last;assign usb_tx_byte=chip_tx_byte;
+     assign chip_tx_ready=usb_tx_ready;assign chip_rx_abort=0;assign chip_bus_reset=usb_bus_reset;
+     assign usb_busy=endpoint_busy;
+     assign usb_wire_host_busy=0;assign usb_wire_chip_busy=0;assign usb_wire_host_abort=0;assign usb_wire_reset=0;assign usb_wire_host_oe=0;assign usb_wire_chip_oe=0;assign usb_wire_line=2'b01;
+     assign usb_phy_host_samples=0;assign usb_phy_chip_samples=0;
+     assign usb_phy_host_tx_packets=0;assign usb_phy_host_rx_packets=0;assign usb_phy_chip_tx_packets=0;assign usb_phy_chip_rx_packets=0;
+     assign usb_phy_host_stuff_errors=0;assign usb_phy_chip_stuff_errors=0;
+     assign usb_phy_host_line_errors=0;assign usb_phy_chip_line_errors=0;
+     assign usb_phy_host_underflows=0;assign usb_phy_chip_underflows=0;
+     assign host_phy_busy=0;assign chip_phy_busy=0;
+   end
+   lemma_usb_device #(.PHY_ABORT(USB_PHY_ENABLED!=0),.CLOCKED_PHY(USB_CLOCKED_ENABLED!=0)) endpoint(.clk,.reset(domain_reset),.enabled(!power_suspended),.connected(usb_connected),.bus_reset(chip_bus_reset),
+     .valid(dev_valid&&usb_sel),.write(dev_write),.addr(10'(dev_addr-USB_BASE)),.size(dev_size),.wdata(dev_wdata),
+     .rdata(usb_rdata),.ready(usb_ready),.error(usb_error),.irq(usb_irq),.controller_busy(endpoint_busy),
+     .rx_valid(chip_rx_valid),.rx_last(chip_rx_last),.rx_byte(chip_rx_byte),.rx_ready(chip_rx_ready),.rx_abort(chip_rx_abort),
+     .tx_valid(chip_tx_valid),.tx_last(chip_tx_last),.tx_byte(chip_tx_byte),.tx_ready(chip_tx_ready),
+     .ticks(usb_ticks),.rx_packets(usb_rx_packets),.tx_packets(usb_tx_packets),.packet_errors(usb_packet_errors),
+     .device_address(usb_address),.configured(usb_configured));
+ end else begin: no_packet_usb
+   assign usb_rdata=0;assign usb_ready=1;assign usb_error=0;assign usb_irq=0;assign usb_busy=0;
+   assign usb_rx_ready=0;assign usb_tx_valid=0;assign usb_tx_last=0;assign usb_tx_byte=0;
+   assign usb_ticks=0;assign usb_rx_packets=0;assign usb_tx_packets=0;assign usb_packet_errors=0;
+   assign usb_address=0;assign usb_configured=0;
+   assign usb_wire_host_busy=0;assign usb_wire_chip_busy=0;assign usb_wire_host_abort=0;assign usb_wire_reset=0;assign usb_wire_host_oe=0;assign usb_wire_chip_oe=0;assign usb_wire_line=2'b01;
+   assign usb_phy_host_samples=0;assign usb_phy_chip_samples=0;
+   assign usb_phy_host_tx_packets=0;assign usb_phy_host_rx_packets=0;assign usb_phy_chip_tx_packets=0;assign usb_phy_chip_rx_packets=0;
+   assign usb_phy_host_stuff_errors=0;assign usb_phy_chip_stuff_errors=0;
+   assign usb_phy_host_line_errors=0;assign usb_phy_chip_line_errors=0;
+   assign usb_phy_host_underflows=0;assign usb_phy_chip_underflows=0;
+ end endgenerate
+ assign usb_irq_out=usb_irq;
+
+ generate if(WIFI_ENABLED!=0)begin: sampled_wifi
+   lemma_wifi_ofdm_data endpoint(.clk,.reset(domain_reset),.enabled(!power_suspended),.coex_allow(wifi_coex_allow),
+     .valid(dev_valid&&wifi_sel),.write(dev_write),.addr(10'(dev_addr-WIFI_BASE)),.size(dev_size),.wdata(dev_wdata),
+     .rdata(wifi_rdata),.ready(wifi_ready),.error(wifi_error),.irq(wifi_irq),.controller_busy(wifi_busy),
+     .rx_sample_valid(wifi_rx_sample_valid),.rx_i(wifi_rx_i),.rx_q(wifi_rx_q),
+     .tx_sample_valid(wifi_tx_sample_valid),.tx_i(wifi_tx_i),.tx_q(wifi_tx_q),
+     .ticks(wifi_ticks),.tx_packets(wifi_tx_packets),.rx_packets(wifi_rx_packets),
+     .tx_wire_samples(wifi_tx_wire_samples),.rx_wire_samples(wifi_rx_wire_samples),
+     .tx_active(wifi_tx_active),.rx_active(wifi_rx_active),.last_fault(wifi_last_fault),.last_metric(wifi_last_metric));
+   lemma_wifi_ofdm_data peer(.clk,.reset(wifi_peer_reset),.enabled(wifi_peer_enabled),.coex_allow(wifi_peer_coex_allow),
+     .valid(wifi_peer_valid),.write(wifi_peer_write),.addr(wifi_peer_addr),.size(wifi_peer_size),.wdata(wifi_peer_wdata),
+     .rdata(wifi_peer_rdata),.ready(wifi_peer_ready),.error(wifi_peer_error),.irq(wifi_peer_irq),.controller_busy(wifi_peer_busy),
+     .rx_sample_valid(wifi_peer_rx_sample_valid),.rx_i(wifi_peer_rx_i),.rx_q(wifi_peer_rx_q),
+     .tx_sample_valid(wifi_peer_tx_sample_valid),.tx_i(wifi_peer_tx_i),.tx_q(wifi_peer_tx_q),
+     .ticks(wifi_peer_ticks),.tx_packets(wifi_peer_tx_packets),.rx_packets(wifi_peer_rx_packets),
+     .tx_wire_samples(wifi_peer_tx_wire_samples),.rx_wire_samples(wifi_peer_rx_wire_samples),
+     .tx_active(wifi_peer_tx_active),.rx_active(wifi_peer_rx_active),.last_fault(wifi_peer_last_fault),.last_metric(wifi_peer_last_metric));
+   assign wifi_head_valid=endpoint.rx_pending;assign wifi_peer_head_valid=peer.rx_pending;
+   assign wifi_head_length=endpoint.head_length;assign wifi_peer_head_length=peer.head_length;
+   assign wifi_events=endpoint.events;assign wifi_peer_events=peer.events;
+   for(genvar octet=0;octet<16;octet++)begin: retained_observation
+     assign wifi_head_bytes[octet*8+:8]=endpoint.rx_head[octet];
+     assign wifi_peer_head_bytes[octet*8+:8]=peer.rx_head[octet];
+   end
+ end else begin: no_sampled_wifi
+   assign wifi_rdata=0;assign wifi_ready=1;assign wifi_error=0;assign wifi_irq=0;assign wifi_busy=0;
+   assign wifi_tx_sample_valid=0;assign wifi_tx_i=0;assign wifi_tx_q=0;assign wifi_ticks=0;
+   assign wifi_tx_packets=0;assign wifi_rx_packets=0;assign wifi_tx_wire_samples=0;assign wifi_rx_wire_samples=0;
+   assign wifi_tx_active=0;assign wifi_rx_active=0;assign wifi_last_fault=0;assign wifi_last_metric=0;
+   assign wifi_peer_rdata=0;assign wifi_peer_ready=1;assign wifi_peer_error=0;assign wifi_peer_irq=0;assign wifi_peer_busy=0;
+   assign wifi_peer_tx_sample_valid=0;assign wifi_peer_tx_i=0;assign wifi_peer_tx_q=0;assign wifi_peer_ticks=0;
+   assign wifi_peer_tx_packets=0;assign wifi_peer_rx_packets=0;assign wifi_peer_tx_wire_samples=0;assign wifi_peer_rx_wire_samples=0;
+   assign wifi_peer_tx_active=0;assign wifi_peer_rx_active=0;assign wifi_peer_last_fault=0;assign wifi_peer_last_metric=0;
+   assign wifi_head_valid=0;assign wifi_peer_head_valid=0;assign wifi_head_length=0;assign wifi_peer_head_length=0;
+   assign wifi_events=0;assign wifi_peer_events=0;assign wifi_head_bytes=0;assign wifi_peer_head_bytes=0;
+ end endgenerate
+ generate if(BOOT_NV_ENABLED!=0) begin: product_boot_medium
+   lemma_boot_nv #(.CAPACITY_SECTORS(BOOT_NV_CAPACITY_SECTORS)) boot_store(
+     .clk,.reset_n(!domain_reset),.valid(dev_valid&&boot_nv_sel&&!power_suspended),.write(dev_write),
+     .addr(10'(dev_addr-BOOT_NV_BASE)),.size(dev_size),.wdata(dev_wdata),
+     .rdata(boot_nv_rdata),.ready(boot_nv_ready),.error(boot_nv_error),.irq(boot_nv_irq),
+     .media_valid(boot_media_valid),.media_kind(boot_media_kind),.media_id(boot_media_id),
+     .media_sector(boot_media_sector),.media_wdata(boot_media_wdata),.media_cancel(boot_media_cancel),
+     .media_ready(boot_media_ready),.media_result(boot_media_result),.media_bytes(boot_media_bytes),
+     .media_rdata(boot_media_rdata),.reset_origin(boot_reset_origin),.media_origin(boot_media_origin));
+ end else begin: no_product_boot_medium
+   assign boot_nv_rdata=0;assign boot_nv_ready=1;assign boot_nv_error=0;assign boot_nv_irq=0;
+   assign boot_media_valid=0;assign boot_media_kind=0;assign boot_media_id=0;assign boot_media_sector=0;
+   assign boot_media_wdata=0;assign boot_media_cancel=0;assign boot_media_origin=0;
+ end endgenerate
+ assign sample_ready=pen_sample_ready&&!power_suspended&&!power_cancel_pen&&!domain_reset;
+ assign power_busy_sources={(media_valid||external_media_busy||boot_media_valid||external_boot_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,(paper_busy||ble_busy||usb_busy||wifi_busy)};
  generate if(POWER_ENABLED!=0) begin: control_domain
-   lemma_power power(.clk,.reset,.reset_cause(power_reset_cause),.raw_button_level,
+   lemma_power #(.SAFETY(POWER_SAFETY!=0)) power(.clk,.reset,.reset_cause(power_reset_cause),.raw_button_level,.raw_power_good,.raw_brownout,
      .busy_sources(power_busy_sources),.valid(dev_valid&&power_sel),.write(dev_write),
      .addr(dev_addr[7:0]),.size(dev_size),.wdata(dev_wdata),.rdata(power_rdata),
      .ready(power_ready),.error(power_bus_error),.irq(power_irq),
-     .suspended(power_suspended),.cancel_pen(power_cancel_pen),.fault(power_error),
-     .epoch(power_epoch),.wake_cause(power_wake_cause),.cause(power_cause),.events(power_event_flags));
+     .suspended(power_suspended),.cancel_pen(power_cancel_device),.fault(power_error),
+     .epoch(power_epoch),.wake_cause(power_wake_cause),.cause(power_cause),.events(power_event_flags),
+     .domain_reset(power_domain_reset),.power_loss,.watchdog_armed(power_watchdog_armed),
+     .watchdog_timeout(power_watchdog_timeout),.watchdog_remaining(power_watchdog_remaining),
+     .reset_remaining(power_reset_remaining),.reset_epoch(power_reset_epoch));
    assign power_events={62'b0,power_event_flags};
  end else begin: no_control_domain
    assign power_rdata=0;assign power_ready=1;assign power_bus_error=0;assign power_irq=0;
-   assign power_suspended=0;assign power_cancel_pen=0;assign power_error=0;assign power_epoch=0;
+   assign power_suspended=0;assign power_cancel_device=0;assign power_error=0;assign power_epoch=0;
+   assign power_domain_reset=0;assign power_loss=0;assign power_watchdog_armed=0;
+   assign power_watchdog_timeout=0;assign power_watchdog_remaining=0;assign power_reset_remaining=0;assign power_reset_epoch=0;
    assign power_event_flags=0;assign power_events=0;assign power_wake_cause=0;assign power_cause=0;
  end endgenerate
  // DMA has priority only at an idle external port. A request which sees
@@ -161,16 +406,16 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  assign dma_span=dma_addr>=FRAME_POOL_BASE && dma_addr<=FRAME_POOL_BASE+FRAME_POOL_BYTES-(64'd1<<dma_size);
  assign selected_valid=port_held?1'b1:dma_grant?dma_valid:(cpu_mem_valid&&!cpu_error_pending);
  assign selected_fault=!port_held&&dma_grant&&(!dma_alignment||!dma_span);
- assign mem_valid=!reset&&selected_valid&&!selected_fault;
+ assign mem_valid=!domain_reset&&selected_valid&&!selected_fault;
  assign mem_write=port_held?held_write:dma_grant?dma_write:cpu_mem_write;
  assign mem_addr=port_held?held_addr:dma_grant?{dma_addr[55:3],3'b000}:cpu_mem_addr;
  assign mem_wdata=port_held?held_wdata:dma_grant?(dma_wdata<<(8*dma_addr[2:0])):cpu_mem_wdata;
  assign mem_strb=port_held?held_strb:dma_grant?(8'((9'd1<<(1<<dma_size))-1)<<dma_addr[2:0]):cpu_mem_strb;
- assign cpu_mem_ready=!reset&&(cpu_error_pending||(!dma_grant&&external_ready));
- assign cpu_mem_error=!reset&&(cpu_error_pending||(!dma_grant&&mem_valid&&external_ready&&external_error));
+ assign cpu_mem_ready=!domain_reset&&(cpu_error_pending||(!dma_grant&&external_ready));
+ assign cpu_mem_error=!domain_reset&&(cpu_error_pending||(!dma_grant&&mem_valid&&external_ready&&external_error));
  assign cpu_mem_rdata=cpu_error_pending?cpu_error_rdata:external_rdata;
- assign dma_ready=!reset&&dma_grant&&(selected_fault||external_ready);
- assign dma_error=!reset&&dma_grant&&(selected_fault||(external_ready&&external_error));
+ assign dma_ready=!domain_reset&&dma_grant&&(selected_fault||external_ready);
+ assign dma_error=!domain_reset&&dma_grant&&(selected_fault||(external_ready&&external_error));
  assign active_dma_lane=port_held?held_lane:dma_addr[2:0];
  assign active_dma_size=port_held?held_size:dma_size;
  // Return a right-justified transfer, rather than unrelated bytes from the
@@ -178,7 +423,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  assign dma_rdata=(external_rdata>>(8*active_dma_lane)) &
    (active_dma_size==0?64'hff:active_dma_size==1?64'hffff:active_dma_size==2?64'hffffffff:64'hffffffffffffffff);
  always_ff @(posedge clk) begin
-   if(reset) begin
+   if(domain_reset) begin
      port_held<=0;held_dma<=0;held_write<=0;held_addr<=0;held_wdata<=0;held_strb<=0;
      held_lane<=0;held_size<=0;cpu_error_pending<=0;cpu_error_rdata<=0;
    end else begin
