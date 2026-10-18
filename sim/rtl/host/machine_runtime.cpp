@@ -548,7 +548,31 @@ void Machine::report(const std::string&path)const{std::ofstream r(path);r<<"{\n\
 // authentication). Every byte is verified before allocating decoded machine
 // state or applying the implementation-specific Verilator serialization.
 namespace {
-struct Writer { std::ostream&f;void raw(const void*p,size_t n){if(!f.write(static_cast<const char*>(p),n))throw std::runtime_error("checkpoint write failed");}void u64(uint64_t n){uint8_t b[8];for(int i=0;i<8;i++)b[i]=n>>(8*i);raw(b,8);}void str(const std::string&v){u64(v.size());raw(v.data(),v.size());}void vec(const std::vector<uint8_t>&v){u64(v.size());raw(v.data(),v.size());} };
+// These helpers write only new/truncated host files, never a live backing file.
+// Holes encode the same zero bytes without allocating every unused RAM page.
+// A seek alone does not extend EOF: materialize the last byte of a trailing hole.
+bool sparse_bytes(std::ostream&out,const void*data,size_t size){
+ const char*p=static_cast<const char*>(data);bool trailing_hole=false;
+ while(size){size_t n=std::min<size_t>(65536,size);
+  if(n>=4096&&std::all_of(p,p+n,[](char b){return b==0;})){out.seekp(n,std::ios::cur);trailing_hole=true;}
+  else{out.write(p,n);trailing_hole=false;}
+  if(!out)throw std::runtime_error("checkpoint write failed");
+  p+=n;size-=n;
+ }return trailing_hole;
+}
+void sparse_tail(std::ostream&out){out.seekp(-1,std::ios::cur);out.put('\0');if(!out)throw std::runtime_error("checkpoint zero tail failed");}
+void sparse_extent(int fd,const uint8_t*data,size_t size,uint64_t offset){
+ // The destination has already been exclusively created and sized with zeros.
+ // Coalesce adjacent populated pages so dense exports keep bounded syscall cost.
+ for(size_t first=0;first<size;){size_t end=first;
+  while(end<size){size_t n=std::min<size_t>(4096,size-end);if(std::any_of(data+end,data+end+n,[](uint8_t b){return b!=0;}))break;end+=n;}
+  first=end;
+  while(end<size){size_t n=std::min<size_t>(4096,size-end);if(std::all_of(data+end,data+end+n,[](uint8_t b){return b==0;}))break;end+=n;}
+  if(end>first&&pwrite(fd,data+first,end-first,offset+first)!=ssize_t(end-first))throw std::runtime_error("export copy failed");
+  first=end;
+ }
+}
+struct Writer { std::ostream&f;void raw(const void*p,size_t n){if(sparse_bytes(f,p,n))sparse_tail(f);}void u64(uint64_t n){uint8_t b[8];for(int i=0;i<8;i++)b[i]=n>>(8*i);raw(b,8);}void str(const std::string&v){u64(v.size());raw(v.data(),v.size());}void vec(const std::vector<uint8_t>&v){u64(v.size());raw(v.data(),v.size());} };
 struct Reader { std::istream&f;uint64_t remaining;bool validate;void raw(void*p,size_t n){if(n>remaining)throw std::runtime_error("truncated checkpoint state");if(p){if(!f.read(static_cast<char*>(p),n))throw std::runtime_error("checkpoint read failed");}else{f.seekg(n,std::ios::cur);if(!f)throw std::runtime_error("checkpoint skip failed");}remaining-=n;}uint64_t u64(){uint8_t b[8];raw(b,8);uint64_t n=0;for(int i=0;i<8;i++)n|=uint64_t(b[i])<<(8*i);return n;}uint64_t count(uint64_t maximum){auto n=u64();if(n>maximum)throw std::runtime_error("checkpoint length exceeds state bound");return n;}std::string str(uint64_t maximum){auto n=count(maximum);std::string v;if(!validate)v.resize(n);raw(validate?nullptr:v.data(),n);return v;}void vec(std::vector<uint8_t>&v,uint64_t expected){if(u64()!=expected)throw std::runtime_error("checkpoint memory geometry mismatch");if(!validate)v.resize(expected);raw(validate?nullptr:v.data(),expected);} };
 uint64_t crc(std::istream&f,uint64_t n){static std::array<uint64_t,256>table=[](){std::array<uint64_t,256>t{};for(unsigned i=0;i<256;i++){uint64_t x=uint64_t(i)<<56;for(int k=0;k<8;k++)x=(x<<1)^((x>>63)?0x42f0e1eba9ea3693ULL:0);t[i]=x;}return t;}();uint64_t c=0;std::array<char,65536>b;while(n){size_t q=std::min<uint64_t>(n,b.size());if(!f.read(b.data(),q))throw std::runtime_error("checkpoint checksum read failed");for(size_t i=0;i<q;i++)c=(c<<8)^table[((c>>56)^uint8_t(b[i]))&255];n-=q;}return c;}
 uint64_t length(const std::string&p){struct stat st{};if(stat(p.c_str(),&st)||st.st_size<0)throw std::runtime_error("cannot stat checkpoint component");return st.st_size;}
@@ -573,7 +597,7 @@ struct PrivateMedium {
   int dirfd=open(root.c_str(),O_RDONLY|O_DIRECTORY);if(dirfd<0)throw std::runtime_error("cannot open private medium directory");int failed=fsync(dirfd);close(dirfd);if(failed)throw std::runtime_error("private medium directory barrier failed");
  }
 };
-void copy_bytes(std::istream&in,std::ostream&out,uint64_t n){std::array<char,65536>b;while(n){size_t q=std::min<uint64_t>(n,b.size());if(!in.read(b.data(),q)||!out.write(b.data(),q))throw std::runtime_error("checkpoint copy failed");n-=q;}}
+void copy_bytes(std::istream&in,std::ostream&out,uint64_t n){std::array<char,65536>b;bool trailing_hole=false;while(n){size_t q=std::min<uint64_t>(n,b.size());if(!in.read(b.data(),q))throw std::runtime_error("checkpoint copy failed");trailing_hole=sparse_bytes(out,b.data(),q);n-=q;}if(trailing_hole)sparse_tail(out);}
 #define BLE_SCALARS(X) X(ble_attached) X(ble_ready) X(ble_coex) X(ble_next_id) X(ble_poll_cycle) X(ble_pending) X(ble_request_cycle) X(ble_request_header) X(ble_peer_reset_until) X(ble_drop_remaining) X(ble_dropped_packets) X(ble_peer_sending) X(ble_peer_dropping) X(ble_to_chip_valid) X(ble_to_chip_bit) X(ble_to_peer_valid) X(ble_to_peer_bit) X(ble_raw_valid) X(ble_raw_bit) X(ble_ack_pending) X(ble_ack_header) X(ble_chip_samples) X(ble_peer_samples) X(ble_rx_heads) X(ble_accepted_replies)
 #define STATE_SCALARS(X) X(event_index) X(cycle) X(reset_until) X(boot_cycle) X(drive_clocks) X(drive_pixels) X(drive_hash) X(retired) X(traps) X(timer_traps) X(flushes) X(media_requests) X(pen_ingress) X(pen_accepted) X(panel_completed) X(panel_aborted) X(fb_reads) X(fb_writes) X(panel_pixels) X(transitions) X(block_rows) X(block_omitted) X(previous_block_state) X(fail_flush) X(stop_panels) X(observer_cycle) X(memory_latency) X(memory_pending) X(memory_wait) X(memory_addr) X(memory_write) X(memory_wdata) X(memory_strb) X(button_level) X(power_reset_cause) X(media_active) X(media_kind) X(media_sector) X(flush_active) X(flush_cursor) X(backing_poll_cycle) X(backing_orphan) X(backing_retry_ready)
 void write_event(Writer&w,const Event&e){w.u64(e.cycle);w.str(e.kind);w.u64(e.words.size());for(auto v:e.words)w.u64(v);w.str(e.payload);}
@@ -770,5 +794,5 @@ void Machine::export_private_medium(const std::string&path)const{
  if(!s.isolated||!s.medium_present||s.backing.poisoned||(s.backing_pending&&!backing_fork_suspended&&options.backing_replay_path.empty()))throw std::runtime_error("private export requires an isolated backing without owned live external work");
  export_backing(path);
 }
-void Machine::export_backing(const std::string&path)const{if(!s.medium_present)throw std::runtime_error("no medium");int fd=open(path.c_str(),O_WRONLY|O_CREAT|O_EXCL,0600);if(fd<0)throw std::runtime_error("export destination exists or cannot be created");try{if(ftruncate(fd,MEDIUM_SECTORS*512))throw std::runtime_error("export capacity failed");std::array<uint8_t,1048576>b{};for(uint64_t offset=0;offset<MEDIUM_SECTORS*512;offset+=b.size()){backing->passive_read(offset,b.data(),b.size());if(pwrite(fd,b.data(),b.size(),offset)!=ssize_t(b.size()))throw std::runtime_error("export copy failed");}if(fsync(fd))throw std::runtime_error("export barrier failed");close(fd);}catch(...){close(fd);unlink(path.c_str());throw;}}
+void Machine::export_backing(const std::string&path)const{if(!s.medium_present)throw std::runtime_error("no medium");int fd=open(path.c_str(),O_WRONLY|O_CREAT|O_EXCL,0600);if(fd<0)throw std::runtime_error("export destination exists or cannot be created");try{if(ftruncate(fd,MEDIUM_SECTORS*512))throw std::runtime_error("export capacity failed");std::array<uint8_t,1048576>b{};for(uint64_t offset=0;offset<MEDIUM_SECTORS*512;offset+=b.size()){backing->passive_read(offset,b.data(),b.size());sparse_extent(fd,b.data(),b.size(),offset);}if(fsync(fd))throw std::runtime_error("export barrier failed");close(fd);}catch(...){close(fd);unlink(path.c_str());throw;}}
 }
