@@ -6445,3 +6445,100 @@ also passes2.530436s from /tmp with PATH=/usr/bin:/bin, outside nix develop,
 2809archive members; this does NOT remove external exactNix-store/Python need.
 Receipt build/distribution/task006-scoped-rom-extract-a1/result.json. No new
 user media or target clocks. Both original bundle observerFAILs retained.
+
+
+LIVE HANDOFF AFTER PUBLISHED8e75bc6541131189d7a2efe02e9ff77bde61194f:
+All implementation commits350debc/15fe349/1d530a9 and report8e75bc6 pushed to
+same Task006 branch. PR9actual OPEN/DRAFT/unmerged, head8e75bc6. ActualCIrun170
+39067515439 IN_PROGRESS (not PASS); prior350run169 SUCCESS11jobs/117steps0skip.
+These newest live observation notes stay uncommitted to batch with the full
+connected result; no new code/target inputs changed. Preserve them.
+
+Browser22 now PASSES actual Saved48 durable-only cold:611350000RTLclocks,
+5352.631945 simulation-call seconds/5421.096290 Ready/opened seconds/192MiB
+heap; every3.63Mhome pixel and256MiB matches actual acknowledged closed-home.
+No snapshot/import/initializer cold input or writes/barriers in cold launch.
+Receipt ...hint-publication-save32-plan-a1/saved48-cold-result-a1.json.
+Actual subsequent rawCOURSE two events admitted at611350000 with0clock advance;
+400M/3600s phase is RUNNING. Absolute original phase deadline1792273291499ms
+(21:41:31.499Z), endcycle1011350000. ActualUI3553seconds includes30s setupmargin;
+whole00:26:11.452097Z/6B unchanged, priorclosedmachine2207300000cycles counted.
+Use admission/budgetJSONs under its browser/ dir, never restart limits. On first
+panel pause compare full course to prior actual explicit-save.pgm with contract
+SAVEDfooter (prior cut was PENDING), independent labels/body and allsaved48
+workspace/history/media. If a partial frame, retain it and use ONLY residual
+clock/time to the same deadline. Full D and unsupported/resource extensions
+remain unqualified until observed. New exportSaved48Cut(roleName,name) performs
+real button/download into workflowRoot. Existing numeric exportWorkflowCut
+still available but semantic helper avoids stale AXindices.
+
+Browser23 current-v2 cold PASS remains459550000/all3.63Mliteralhome/all256MiB
+installed3/4063.996385simsec/192MiB; immutable cold files retained. Actualraw
+COURSE chooser running, Saved4 observed; firstcontrollercomplete still required.
+Originalendcycle609550000/absolute21:33:02.364Z; finalclamp-a2 from476450000
+remaining133100000/3314UIsec with120s margin. Whole07:22Z/6B unchanged. Don't
+recompare currentmutated backing to initial3 as though still cold. Continue
+chooser -> edition2 -> edition3 -> OPEN -> node2 -> node3 -> USE -> selectN ->5
+then four-tap+rawink burst, controlled242overflow, ordinaryink/Save/cold under
+its already declared phase limits. Currenthelper exportBacklogCut boundto23.
+
+Frozen live native cases remain tools40721(v2fullRTL),71627(image16fullupdate)
+and25097(realmetadata256/EFBIG/brownout/cold); inspect own terminal/progress
+before acting. No restart/extension. All completed physical/bundle/checker
+owners reaped; physicalnewrange route remainsFAIL388/setup-3.031467/hold-.184124/
+oneelectrical, no retry scheduled. Disk~12GiB available, RAM~8.5GiB available;
+preserve user media/all failures. CUA tabs20(closedexpired),22and23 marked for
+handoff. Re-read browser documentation on next compacted computer-use turn.
+
+Latest live browser23 advancement (after above notes, no code changes):
+Chooser actually completed548950000cycles/phase89400000; independent EDIT+/LOAD
+pixel checks and actual durable Saved4/newworkspace/all3original package
+payloads pass. Receipt ...control-backlog-home-browser-plan-a1/chooser-result-a1.json.
+Real raw NEXTedition2 x168y670 twoevents admitted at548950000, no clock advance;
+phase is RUNNING with150Mclock ceiling/end698950000 and original3600s wall
+ceiling, conservative residualUI budget in browser/choose-edition2-budget-a1.json.
+Absolute deadline is in its choose-edition2-admission-a1.json; do not reset it.
+stopPanel remains true/stopReady false. Next onpanel: verify the actual edition2
+selection then admit NEXTedition3 under a fresh separately declared phase;
+OPEN264,670 -> node2/node3 -> USE etc under originalwholeplan. Never skip
+existing selector/controller work or claim full workflow from these phases.
+Browser22 atlast652M is running realcoldCOURSE reopen, not yet wholeD PASS.
+
+
+New load-bearing metadata-fault observation: actual1059sector guest transfers,
+tagreceipt tx1159/status0/barrier3181, complete validation barrier4244, then
+actualNVIO5304 atcycle366436203 WRITE(offset0,len512) transferred256/EFBIG27.
+Guest tx1160 returnsstatus212/value0, no publication receipt or laterbarrier.
+All expected changed BootNV bytes/header/oldmetadata peer and user media checks
+pass, actualbrownoutcause5/200cycles ends366500200. Partial owner closedcleanly;
+new independent normalROM/confirmed13 CPU0 launched and cold running. Original
+2.4B/21600s whole/900M7200transfer/1.5B11200cold unchanged. This is an observed
+required failure boundary, NOT terminalwholePASS. Frozen progress.json contains
+it; do not rerun installation. Completion requires actualcoldReady/fullhome/
+all256MiB. New cold1M progress begun after2526s total. Result still pending.
+
+Final publication/CI observation for this increment: actual8e75bc6 run170/
+39067515439 COMPLETE SUCCESS, all11jobs/117steps/zero failed or skipped.
+Full actual tool outputs at build/ci/task006-8e75-complete.json. PR9bodyupdated,
+remainsDRAFT/OPEN/unmerged. Do not restart CI for these live evidence notes.
+Implementation code is committed/pushed; latest live receipts/notes remain
+uncommitted for the next full connected milestone.
+
+Current browser23 E2/E3 selection labels both independently PASS:
+567750000/E00000002 and586100000/E00000003, exactfull REQrow atx24y700.
+Actual LOADedition3 x264y670 admitted at586100000, phase RUNNING400M/3600s,
+end986100000; original phase deadline1792274672138ms. Use load-edition3
+admission/budgetJSON; no reset/extension. CUA admitBacklogTap(name,x,y,cap,
+hostSeconds) now safely waits actualtwo-event no-clock admission then runs a
+conservative residual budget; body retained as browser/raw-tap-helper.js.
+Use only prospective original-plan phase limits. Original whole07:22Z/6B.
+
+Browser22 firstcoldCOURSE completedpanel2 at761250000 (149900000 phaseclocks).
+All256MiB media remains exact; independent5/7Unchecked labels match. Fullplane
+stilldiffers30957bytes startingbodyy320: bodyhasn't appeared. This is retained
+PREFIX_OBSERVATION at saved48-reopen-observation-a1.json, not wholePASS.
+Actual resume uses remaining250100000/end1011350000 and the SAME absolute
+phase1792273291499ms; residual-a1.json includes conservativeUIhostlimit.
+Nextpanel needs fullcoursecomparison, fixedSAVEDfooter versus prior explicit
+Save48PENDINGcut. No new rawinput was admitted on residualresume. Inspectactual
+later outputs; if originalbound expires, retainFAIL rather than extending.
