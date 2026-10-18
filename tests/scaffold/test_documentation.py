@@ -25,7 +25,7 @@ class DocumentationPolicyTests(unittest.TestCase):
             'schema': 'lemma-document-map/v1',
             'exceptions': {**{name: 'functional entry' for name in policy.HOOKS},
                            'docs/evidence/history/frozen.md': 'immutable'},
-            'documents': [{'original': 'guide.md', 'current': 'docs/contributing.html'},
+            'documents': [{'original': 'guide.md', 'current': 'docs/contributor-guide.html'},
                           {'original': 'docs/evidence/history/frozen.md', 'exception': 'immutable',
                            'original_sha256': hashlib.sha256(b'immutable original source\n').hexdigest()}]}))
     def tearDown(self): self.temporary.cleanup()
@@ -38,25 +38,28 @@ class DocumentationPolicyTests(unittest.TestCase):
     def test_readme_html_cannot_regress_landing_selection(self):
         self.write('.github/README.html', HTML.format('project prose'))
         self.assertTrue(any('Automatically selected README' in e for e in policy.validate(self.root)))
+    def test_contributing_html_cannot_regress_observed_landing_selection(self):
+        self.write('docs/CONTRIBUTING.html', HTML.format('raw guide prose'))
+        self.assertTrue(any('Automatically selected CONTRIBUTING' in e for e in policy.validate(self.root)))
     def test_missing_agent_hook_or_rendered_hook_prose_reject(self):
         (self.root / 'AGENTS.md').unlink()
         self.assertTrue(any('Missing agent/template' in e for e in policy.validate(self.root)))
-        self.write('AGENTS.md', 'Read docs/contributing.html')
+        self.write('AGENTS.md', 'Read docs/contributor-guide.html')
         self.assertTrue(any('minimal raw-readable comment' in e for e in policy.validate(self.root)))
     def test_current_link_and_anchor_are_checked(self):
         for link in ('missing.html', '#absent'):
             with self.subTest(link=link):
-                self.write('docs/contributing.html', HTML.format('<a href="' + link + '">link</a>'))
+                self.write('docs/contributor-guide.html', HTML.format('<a href="' + link + '">link</a>'))
                 self.assertTrue(any('broken current link' in e or 'missing current anchor' in e
                                     for e in policy.validate(self.root)))
     def test_pinned_remote_url_is_preserved_without_network(self):
-        self.write('docs/contributing.html', HTML.format('<a href="https://example.invalid/old.md#original">history</a>'))
+        self.write('docs/contributor-guide.html', HTML.format('<a href="https://example.invalid/old.md#original">history</a>'))
         self.assertEqual(policy.validate(self.root), [])
     def test_historical_evidence_bytes_are_not_relabelled(self):
         self.write('docs/evidence/history/frozen.md', 'changed')
         self.assertTrue(any('Changed immutable historical' in e for e in policy.validate(self.root)))
     def test_duplicate_anchors_and_missing_utf8_reject(self):
-        self.write('docs/contributing.html', HTML.format('<p id="stable">duplicate</p>').replace('<meta charset="utf-8">', ''))
+        self.write('docs/contributor-guide.html', HTML.format('<p id="stable">duplicate</p>').replace('<meta charset="utf-8">', ''))
         errors = policy.validate(self.root)
         self.assertTrue(any('duplicate anchor' in e for e in errors))
         self.assertTrue(any('UTF-8' in e for e in errors))
@@ -78,7 +81,7 @@ class ConsumedContractTests(unittest.TestCase):
         import build_kernel
         original = Path.is_file
         def archived(path):
-            if path == ROOT / 'docs/document-map.json' or path == ROOT / 'docs/contributing.html': return False
+            if path == ROOT / 'docs/document-map.json' or path == ROOT / 'docs/contributor-guide.html': return False
             # The preserved historical layout also predates the new deployment
             # and its mandatory current HTML/specification dependency closure.
             if path == ROOT / 'scripts/multimodal_deployment.py': return False

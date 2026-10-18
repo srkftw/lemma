@@ -1312,7 +1312,9 @@ def validate_capability_header_helpers(unit: dict, pre_ir: str) -> dict:
     a='Lemma.Kernel.Memory.AddressSpace.base';v='Lemma.User.CapabilityABI.invalidHandle'
     helper=c+'headerAt';callers={c+'header',c+'managed'}
     from surface_bulk_borrow import validate_if_present
-    surface_borrow=validate_if_present(pre_ir,unit,optimized=False)
+    from multimodal_target import selected as multimodal_selected, capability_header_borrow
+    surface_borrow=(capability_header_borrow(pre_ir,unit) if multimodal_selected(unit)
+                    else validate_if_present(pre_ir,unit,optimized=False))
     borrowed_caller=c+'requireActiveAt'
     if surface_borrow is not None: callers.add(borrowed_caller)
     required={helper,*callers,a,v,c+'failed',o+'get',o+'registryDescriptor',c+'headerOffset',
@@ -1370,6 +1372,8 @@ def validate_fresh_descriptor_helpers(unit: dict, pre_ir: str) -> dict:
     allowed={process:{p+'Process.validateStack',p+'Process.validateFrame',p+'Task.context',p+'Task.savedContext'},
              loader:{p+'Loader.validateExpandedStack',process}}
     from task_entry_borrow import validate_if_present as validate_entry2
+    # The selector also identifies the separately pinned exact Kernel9 roots.
+    # Every fresh-base/caller/CFG check below remains required.
     entry2=validate_entry2(pre_ir,unit,optimized=False)
     if entry2 is not None: allowed[process].add(p+'Task.entryContextV2')
     required={base,process,loader,p+'Process.failed'}

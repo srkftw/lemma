@@ -219,6 +219,16 @@
       "receipt": "build/multimodal/probe-production-a1/result.json",
       "sha256": "e1546144a15f931cd4b0dcaa10a2189b2705dd88a8a3954869014aea6427d848",
       "error": "unknown controller component authority"
+    },
+    {
+      "receipt": "build/multimodal/published-landing-a1/report.json",
+      "sha256": "cad7b038f97ef7a0004c3a51b8f17a8b93b6ef88cea799b56a3a69c8986e9b64",
+      "error": "Actual branch landing auto-selects full contributor HTML"
+    },
+    {
+      "receipt": "build/multimodal/final-base-notebook-audit-original-fail-a1.json",
+      "sha256": "92f1fe2adfacd6b539412345c303e55a2aba4f38bc52dd0e90caf694c15dc9da",
+      "error": "Nested legacy Entry2 selector rejects current Kernel9 full candidate"
     }
   ],
   "pending": [
@@ -275,5 +285,24 @@
     "sha256": "31ad9afda33942b62b352480296d7d05776042f02c2b05f89452f83ff1fbb292",
     "authority_sha256": "90845a237ad9f13e8be96995016428a95e198f41019780d2f327bafd2f59933d",
     "scope": "genuine producer identity, full IR corpus and mutation review; collection-only; complete normal linked audit/execution still pending"
+  },
+  "publication": {
+    "url": "https://github.com/srkftw/lemma/pull/11",
+    "draft": true,
+    "initial_head": "e7046b4261888dd1c0f1708cfaf0ffb0023e46df",
+    "base": "main",
+    "default_branch_changed": false
+  },
+  "first_ci": {
+    "run_id": 39117512834,
+    "merge_sha": "c0996efdfa59463644343fe88e21683decdd58ed",
+    "head_sha": "e7046b4261888dd1c0f1708cfaf0ffb0023e46df",
+    "job_id": 117646207266,
+    "result": "FAIL",
+    "decoded_log": "build/multimodal/ci-pr11-first/rtl-job-decoded.log",
+    "decoded_log_sha256": "f672d6deb76b9e502bb9dd1133bfb21d872b2f7250b64ece5f2314767e88a604",
+    "original_artifact": 12133285527,
+    "original_artifact_zip_sha256": "b2e5680f8d549a32bddafb2c11a1f54d6403434f85bf6852ba598ff29a0d2030",
+    "other_jobs": "running/not aggregate PASS"
   }
 }

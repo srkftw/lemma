@@ -444,7 +444,9 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  // arrivals from the other master cannot replace an outstanding request.
  // D-cache is disabled; CPU data and DMA touch this one byte-coherent interface.
  // The 4KiB instruction cache remains subject to the guest's actual fence.i.
- assign dma_grant=port_held?held_dma:(selected_owner!=0);
+ // Preserve the historical single-DMA boundary on profiles without the extension.
+ // The versioned three-master arbiter owns selection only when it is present.
+ assign dma_grant=port_held?held_dma:(MULTIMODAL_ENABLED!=0?(selected_owner!=0):dma_valid);
  assign dma_alignment=dma_size<=3&&(dma_addr&((64'd1<<dma_size)-1))==0;
  assign dma_span=dma_addr>=FRAME_POOL_BASE && dma_addr<=FRAME_POOL_BASE+FRAME_POOL_BYTES-(64'd1<<dma_size);
  assign selected_valid=port_held?1'b1:dma_grant?dma_valid:(cpu_mem_valid&&!cpu_error_pending);

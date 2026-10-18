@@ -12,7 +12,7 @@
     "docs/plan/006-session-state.md includes preserved original-checkout append-only updates supplied at assignment start"
   ],
   "exceptions": {
-    "AGENTS.md": "Filename-sensitive agent discovery hook; narrative moves to docs/contributing.html.",
+    "AGENTS.md": "Filename-sensitive agent discovery hook; narrative moves to docs/contributor-guide.html.",
     ".github/pull_request_template.md": "Filename-sensitive GitHub template hook; guidance moves to docs/pull-request-guidance.html.",
     "docs/evidence/history/003-kernel-isolated-services-pre-final.md": "Immutable historical evidence: retain exact original bytes and path."
   },
@@ -26,10 +26,11 @@
     },
     {
       "original": "AGENTS.md",
-      "current": "docs/contributing.html",
+      "current": "docs/contributor-guide.html",
       "original_sha256": "eea3e7d702bdf4a718cfc235694c737a537a1f0fe383da79bbe92688f42717a2",
       "original_bytes": 17767,
-      "converted_sha256": "3e56ec2947946ff635906d3509ead602933e689b539592aa1dfb84bdc3d0bd52"
+      "converted_sha256": "3e56ec2947946ff635906d3509ead602933e689b539592aa1dfb84bdc3d0bd52",
+      "initial_converted_path": "docs/contributing.html"
     },
     {
       "original": "LEMMA_MACHINE_CONTRACT.md",
@@ -1333,5 +1334,15 @@
       "converted_sha256": "fdcf96428fadc9c987058af8bdd8110dc3060537d4265af4b9ae03be0554e6d9"
     }
   ],
-  "converted_sha256_scope": "Initial mechanical renderer output before subsequent maintained edits; current files use their actual Git/consumed-input identities. This field is not a current-file validation receipt."
+  "converted_sha256_scope": "Initial mechanical renderer output before subsequent maintained edits; current files use their actual Git/consumed-input identities. This field is not a current-file validation receipt.",
+  "current_html_successors": {
+    "docs/contributing.html": "docs/contributor-guide.html"
+  },
+  "initial_converter_source": {
+    "path": "docs/source-artifacts/migrate-html-initial-e7046b4.mjs",
+    "sha256": "f3af203313eeca20b5469412f3567af51ef2db9b3d80629d9910ee677d48a3a2",
+    "original_path": "scripts/docs/migrate_html.mjs",
+    "retained_at_commit": "e7046b4261888dd1c0f1708cfaf0ffb0023e46df",
+    "scope": "Exact initial renderer bytes underlying original conversion/reproduction identities; later maintained producer avoids GitHub automatic CONTRIBUTING selection."
+  }
 }

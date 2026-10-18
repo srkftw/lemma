@@ -12,7 +12,7 @@ import sys
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-HOOKS = {'AGENTS.md': 'docs/contributing.html',
+HOOKS = {'AGENTS.md': 'docs/contributor-guide.html',
          '.github/pull_request_template.md': 'docs/pull-request-guidance.html'}
 
 class Document(HTMLParser):
@@ -52,11 +52,21 @@ def validate(root):
         if not isinstance(rows, list) or not rows or not isinstance(exceptions, dict): raise ValueError('empty or malformed map')
     except (OSError, ValueError, KeyError) as exc: return ['Unreadable documentation inventory: ' + str(exc)]
     paths = source_paths(root)
+    initial = inventory.get('initial_converter_source')
+    if initial is not None:
+        try:
+            original = root / initial['path']
+            if hashlib.sha256(original.read_bytes()).hexdigest() != initial['sha256']:
+                errors.append('Changed original converter source artifact: ' + initial['path'])
+        except (OSError, KeyError, TypeError):
+            errors.append('Missing or malformed original converter source artifact')
     for name in paths:
         if Path(name).suffix.lower() == '.md' and name not in exceptions:
             errors.append('Unapproved narrative Markdown: ' + name)
         if re.fullmatch(r'readme(?:\..*)?', Path(name).name, re.I):
             errors.append('Automatically selected README must not be generated or maintained: ' + name)
+        if re.fullmatch(r'contributing(?:\..*)?', Path(name).name, re.I):
+            errors.append('Automatically selected CONTRIBUTING must use a descriptive guide filename: ' + name)
     for name, target in HOOKS.items():
         try: text = (root / name).read_text(encoding='utf-8')
         except OSError: errors.append('Missing agent/template entry point: ' + name); continue

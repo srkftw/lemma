@@ -18,12 +18,12 @@ const {marked} = await import(pathToFileURL(markedPath));
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const files = execFileSync('git', ['ls-files', '-z', '*.md', '*.MD'], {encoding:'utf8'}).split('\0').filter(Boolean);
 const exceptions = {
-  'AGENTS.md': 'Filename-sensitive agent discovery hook; narrative moves to docs/contributing.html.',
+  'AGENTS.md': 'Filename-sensitive agent discovery hook; narrative moves to docs/contributor-guide.html.',
   '.github/pull_request_template.md': 'Filename-sensitive GitHub template hook; guidance moves to docs/pull-request-guidance.html.',
   'docs/evidence/history/003-kernel-isolated-services-pre-final.md': 'Immutable historical evidence: retain exact original bytes and path.'
 };
 const special = {
-  'AGENTS.md': 'docs/contributing.html',
+  'AGENTS.md': 'docs/contributor-guide.html',
   '.github/pull_request_template.md': 'docs/pull-request-guidance.html',
   'README.md': 'docs/overview.html',
   'conformance/README.md': 'conformance/conformance-overview.html',
@@ -75,7 +75,7 @@ for (const original of files) {
   inventory.push({original,current:target,original_sha256:sha(bytes),original_bytes:bytes.length,converted_sha256:sha(html)});
   if (!exceptions[original])fs.unlinkSync(original);
 }
-fs.writeFileSync('AGENTS.md','<!-- Read docs/contributing.html in full before changing this repository. It is the canonical contributor and agent instruction source, including historical boundaries and current task precedence. Read docs/plan/CURRENT.html and the assigned task checkpoint as well. -->\n');
+fs.writeFileSync('AGENTS.md','<!-- Read docs/contributor-guide.html in full before changing this repository. It is the canonical contributor and agent instruction source, including historical boundaries and current task precedence. Read docs/plan/CURRENT.html and the assigned task checkpoint as well. -->\n');
 fs.writeFileSync('.github/pull_request_template.md','<!-- Follow docs/pull-request-guidance.html. Report the implemented scope, trust boundaries, actual evidence and remaining limits. -->\n');
 const moduleBytes=fs.readFileSync(markedPath);
 fs.writeFileSync('docs/document-map.json',JSON.stringify({schema:'lemma-document-map/v1',scope:'Current navigation map; original source hashes are conversion provenance, never reused evidence receipts.',converted_sha256_scope:'Initial mechanical renderer output before subsequent maintained edits; current files use their actual Git/consumed-input identities. This field is not a current-file validation receipt.',converter:'scripts/docs/migrate_html.mjs',parser:{name:'marked',version:'17.0.5',module_sha256:sha(moduleBytes)},source_base:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),source_override:['docs/plan/006-session-state.md includes preserved original-checkout append-only updates supplied at assignment start'],exceptions,documents:inventory},null,2)+'\n');

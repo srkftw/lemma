@@ -1,1 +1,1 @@
-<!-- Read docs/contributing.html in full before changing this repository. It is the canonical contributor and agent instruction source, including historical boundaries and current task precedence. Read docs/plan/CURRENT.html and the assigned task checkpoint as well. -->
+<!-- Read docs/contributor-guide.html in full before changing this repository. It is the canonical contributor and agent instruction source, including historical boundaries and current task precedence. Read docs/plan/CURRENT.html and the assigned task checkpoint as well. -->

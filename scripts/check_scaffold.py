@@ -8,7 +8,7 @@ import sys
 
 STATUSES = {'planned', 'in_progress', 'partial', 'blocked', 'failed', 'passed'}
 REQUIRED = (
-    'docs/overview.html', 'docs/contributing.html', 'docs/ARCHITECTURE.html', 'docs/SOURCES.html',
+    'docs/overview.html', 'docs/contributor-guide.html', 'docs/ARCHITECTURE.html', 'docs/SOURCES.html',
     'docs/contracts/CORE0.html', 'docs/contracts/TARGET_ABI.html',
     'docs/contracts/LEMMA_VM.html', 'docs/contracts/TRUST_MANIFEST.html',
     'docs/plan/BUILD_ORDER.html', 'docs/plan/construction-units.json',

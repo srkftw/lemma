@@ -338,7 +338,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     # Current HTML contracts are required consumed inputs. Old immutable source
     # archives retain their original Markdown layout and hashes.
     documentation_map = root / "docs/document-map.json"
-    if (root / "docs/contributing.html").is_file() and not documentation_map.is_file():
+    if any((root / guide).is_file() for guide in ("docs/contributor-guide.html", "docs/contributing.html")) and not documentation_map.is_file():
         raise Core0Error("Current source is missing its documentation identity map")
     def documented_input(relative: str) -> Path:
         selected = root / relative

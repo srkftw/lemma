@@ -410,6 +410,39 @@ def validate(ir, unit, *, optimized):
             'semantics': semantics(ir, unit) if not optimized else None}
 
 
+def capability_header_borrow(ir, unit):
+    """Retain unchanged Capability borrow bodies beneath the new dispatcher.
+
+    Source9 changes Paper MMIO lowering and Kernel9 replaces the two outer
+    dispatcher bodies. Their complete current corpus is independently pinned;
+    the four actual Capability bodies and their private incoming edges must
+    still match the original lower-level borrow contract exactly.
+    """
+    report = validate(ir, unit, optimized=False)
+    require(report is not None and role_key(unit) == 'kernel', 'header borrow escaped exact Kernel9 authority')
+    from audit_kernel import _ir_definition_body, _local_call_arguments
+    from surface_bulk_borrow import CAP, CALLERS, SIGNATURES, PINS, normalized_body
+    rows = {canonical(row['source']):row for row in unit['functions']}
+    names = {row['symbol']:source for source,row in rows.items()}
+    observed = {}
+    for suffix in ('headerAt','requireActiveAt','lookupEntryAt','lookupAt'):
+        source = CAP+suffix
+        require(source in rows, 'header borrow missing unchanged authority source: '+source)
+        row = rows[source]
+        arguments,effects = SIGNATURES[source]
+        require(row['args'] == arguments and row['effects'] == effects, 'header borrow signature/effects differ: '+source)
+        body = _ir_definition_body(ir,row['symbol'])
+        identity = hashlib.sha256(normalized_body(body,names).encode()).hexdigest()
+        require(identity == PINS['pre'][source], 'header borrow unchanged complete body differs: '+source)
+        observed[source] = identity
+        if source in CALLERS:
+            incoming = {owner for owner,entry in rows.items() if
+                _local_call_arguments(_ir_definition_body(ir,entry['symbol']),row['symbol'])}
+            require(incoming == CALLERS[source], 'header borrow private caller inventory differs: '+source)
+    return {'contract_version':'lemma-multimodal-capability-header-borrow/v1','body_identities':observed,
+            'scope':'four unchanged Capability bodies/private callers plus complete current Kernel9 corpus; generic header/base/CFG checks remain required'}
+
+
 def collect(directories):
     """Collect real producer outputs; never install pins or claim acceptance."""
     result = {'schema': VERSION, 'configurations': {}}

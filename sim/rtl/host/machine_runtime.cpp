@@ -495,11 +495,11 @@ void Machine::tick(){auto&soc=*model;uint64_t c=s.cycle;
     if(state!=s.previous_block_state){block_row(c,"state",0,0,0,0,0,0,0);s.previous_block_state=state;}
     if(r->lemma_soc__DOT____Vcellinp__blockdev__valid&&r->lemma_soc__DOT__compute__DOT__hready)
      block_row(c,"mmio",r->lemma_soc__DOT__compute__DOT__write_d,r->lemma_soc__DOT__compute__DOT__size_d,r->lemma_soc__DOT__compute__DOT__addr_d,r->lemma_soc__DOT__compute__DOT__core__DOT__LSUHWDATA,r->lemma_soc__DOT____Vcellinp__blockdev__wdata,r->lemma_soc__DOT__compute__DOT__hrdata,r->lemma_soc__DOT__compute__DOT__hresp);
-    if(r->lemma_soc__DOT__dma_valid&&r->lemma_soc__DOT__dma_ready)
+    if(r->lemma_soc__DOT__block_dma_valid&&r->lemma_soc__DOT__block_dma_ready)
      // This observer is limited to the external-memory configuration: its
      // response error is the actual host s.input. selected_fault is the retained
      // RTL rejection for the active beat, including held-owner semantics.
-     block_row(c,"dma",soc.mem_write,r->lemma_soc__DOT__dma_size,r->lemma_soc__DOT__dma_addr,soc.mem_wdata,soc.mem_wdata>>(8*(r->lemma_soc__DOT__dma_addr&7)),r->lemma_soc__DOT__dma_rdata,r->lemma_soc__DOT__selected_fault||soc.mem_error);
+     block_row(c,"dma",soc.mem_write,r->lemma_soc__DOT__block_dma_size,r->lemma_soc__DOT__block_dma_addr,soc.mem_wdata,soc.mem_wdata>>(8*(r->lemma_soc__DOT__block_dma_addr&7)),r->lemma_soc__DOT__dma_rdata,r->lemma_soc__DOT__selected_fault||soc.mem_error);
    }
    if(!soc.register_memory_enabled&&soc.mem_valid&&soc.mem_ready&&soc.mem_write&&!soc.mem_error&&ram_pointer)for(int j=0;j<8;j++)if(soc.mem_strb&(1<<j))ram_pointer[j]=soc.mem_wdata>>(j*8);
    if(soc.fb_valid&&soc.fb_ready&&!soc.fb_error){

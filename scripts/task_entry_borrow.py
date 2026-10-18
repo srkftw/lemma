@@ -192,6 +192,12 @@ def validate_component(ir,unit,*,optimized):
          'scope':'Component only; actual production boot/cfg admission separately required'}
 
 def validate_if_present(ir,unit,*,optimized):
+ from multimodal_target import selected as multimodal_selected, validate as validate_multimodal
+ if multimodal_selected(unit) and unit.get('role')=='kernel':
+  # Kernel9 replaces the two outer Entry2 roots. Its independently collected
+  # complete catalog/bodies and boot/grant edges identify this exact successor;
+  # never describe it using the older Kernel4 root/body identity.
+  return validate_multimodal(ir,unit,optimized=optimized)
  from companion_reader_target import selected as reader_selected, validate_entry as reader_entry
  if reader_selected(unit) and unit.get("role")=="kernel":return reader_entry(ir,unit,optimized=optimized)
  from package_entry2_target import selected as companion_selected, validate_entry as companion_entry
