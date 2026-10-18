@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import shutil
 import sys
@@ -428,20 +429,103 @@ def _normal_audit(record: dict[str, object]) -> dict[str, object]:
     return value
 
 
-def _normal_command(command: object, output: Path, root: Path) -> dict[str, object]:
+def _normal_environment(environment: object, output: Path) -> dict[str, str]:
+    """Compare controlled construction settings, rebinding only the output."""
+    from build_actions import controlled_environment
+
+    value = _object(environment, "provenance command environment")
+    fixed = controlled_environment({})
+    if (set(value) - {"LEMMA_CORE0_OUT"} != set(fixed)
+            or any(not isinstance(v, str) for v in value.values())
+            or any(value.get(k) != v for k, v in fixed.items() if k != "PATH")):
+        raise Core0Error("provenance command environment is not controlled")
+    paths = value["PATH"].split(os.pathsep)
+    if (not paths or paths != sorted(set(paths))
+            or any(not p or not Path(p).is_absolute() for p in paths)):
+        raise Core0Error("provenance command environment PATH is not controlled")
+    normalized = dict(value)
+    if "LEMMA_CORE0_OUT" in value:
+        if value["LEMMA_CORE0_OUT"] != str(output.resolve()):
+            raise Core0Error("provenance command environment output differs")
+        normalized["LEMMA_CORE0_OUT"] = "$OUTPUT"
+    return normalized
+
+
+def _command_evidence(command: object, output: Path, root: Path) -> tuple[dict, dict]:
     value = _object(command, "provenance command")
-    if set(value) != {"argv", "cwd", "returncode", "elapsed_seconds", "stdout", "stderr"}:
+    output_display = _relative(output, root)
+    if "route" in value:
+        from build_actions import SCHEMA, admitted_commands
+
+        if (value.get("route") != SCHEMA or set(value) != {
+                "route", "requested_argv", "requested_cwd", "admission", "admission_sha256"}):
+            raise Core0Error("qualification provenance action route differs")
+        # Admission validates original executable/options/environment, consumed
+        # inputs, producer identities and all currently materialized outputs.
+        admitted = admitted_commands([value], root=root, output_dir=output)
+        receipt = _object(load_json(output / value["admission"]), "qualification action receipt")
+        if receipt.get("status") != "fresh" or admitted[0].get("admitted_route") != "fresh":
+            raise Core0Error("independent fresh qualification rejects reused production")
+        producer = _object(receipt.get("producer"), "qualification action producer")
+        original_request = _object(producer.get("provenance"), "qualification original producer provenance")
+        if (original_request.get("checkout") != str(root.resolve())
+                or original_request.get("requested_argv") != value["requested_argv"]
+                or original_request.get("requested_cwd") != value["requested_cwd"]):
+            raise Core0Error("independent fresh qualification producer request differs")
+        action = producer["request"]["action"]
+        if action.get("kind") not in {"opt", "llc", "clang", "ld.lld"}:
+            raise Core0Error("qualification action is not Core0 LLVM production")
+        original = _array(producer.get("executed", {}).get("commands"), "original producer commands")
+        if (len(original) != 1 or type(original[0].get("returncode")) is not int
+                or original[0]["returncode"] != 0):
+            raise Core0Error("qualification original producer command return code differs")
+        structure = {
+            "route": SCHEMA,
+            "admission_status": "fresh",
+            "action_key": receipt["action_key"],
+            "kind": action["kind"],
+            "argv": admitted[0]["argv"],
+            "cwd": "$OUTPUT" if admitted[0]["cwd"] == output_display else admitted[0]["cwd"],
+            "environment": _normal_environment(action["environment"], output),
+        }
+        observation = {
+            "route": SCHEMA,
+            "scope": "original producer observations; fresh admission independently validated",
+            "admission": {"path": _relative(output / value["admission"], root),
+                          "sha256": value["admission_sha256"]},
+            "producer_receipt_id": receipt["producer_receipt_id"],
+            "original_producer_commands": original,
+        }
+        return structure, observation
+    fields = {"argv", "cwd", "returncode", "elapsed_seconds", "stdout", "stderr"}
+    if set(value) not in (fields, fields | {"environment"}):
         raise Core0Error("provenance command fields differ")
     if type(value.get("returncode")) is not int or value["returncode"] != 0:
         raise Core0Error("provenance command return code differs")
+    if (not isinstance(value["argv"], list) or not value["argv"]
+            or any(not isinstance(arg, str) or not arg for arg in value["argv"])
+            or not isinstance(value["cwd"], str)
+            or not isinstance(value["stdout"], str) or not isinstance(value["stderr"], str)
+            or type(value["elapsed_seconds"]) not in (int, float)
+            or not math.isfinite(value["elapsed_seconds"]) or value["elapsed_seconds"] < 0):
+        raise Core0Error("provenance command execution observation differs")
     cwd = value.get("cwd")
-    output_display = _relative(output, root)
     normalized_cwd = "$OUTPUT" if cwd == output_display else cwd
-    return {
+    structure = {
+        "route": "executed-subprocess",
         "argv": value.get("argv"),
         "cwd": normalized_cwd,
         "returncode": value.get("returncode"),
     }
+    if "environment" in value:
+        if Path(value["argv"][0]).name != "lake":
+            raise Core0Error("qualification raw environment is only defined for Lake")
+        structure["environment"] = _normal_environment(value["environment"], output)
+    return structure, {"route": "executed-subprocess", **value}
+
+
+def _normal_command(command: object, output: Path, root: Path) -> dict[str, object]:
+    return _command_evidence(command, output, root)[0]
 
 
 def _compare_provenance(
@@ -455,19 +539,20 @@ def _compare_provenance(
         _same(rebuilt.get(field), baseline.get(field), f"rebuild provenance {field}")
     baseline_commands = _array(baseline.get("commands"), "baseline provenance commands")
     rebuilt_commands = _array(rebuilt.get("commands"), "rebuilt provenance commands")
-    baseline_structure = [
-        _normal_command(command, baseline_output, root) for command in baseline_commands
-    ]
-    rebuilt_structure = [
-        _normal_command(command, rebuilt_output, root) for command in rebuilt_commands
-    ]
+    baseline_evidence = [_command_evidence(command, baseline_output, root) for command in baseline_commands]
+    rebuilt_evidence = [_command_evidence(command, rebuilt_output, root) for command in rebuilt_commands]
+    baseline_structure = [structure for structure, _ in baseline_evidence]
+    rebuilt_structure = [structure for structure, _ in rebuilt_evidence]
     _same(rebuilt_structure, baseline_structure, "rebuild command structure")
     observations = []
-    for index, (first, second) in enumerate(zip(baseline_commands, rebuilt_commands, strict=True)):
-        first = _object(first, "baseline command")
-        second = _object(second, "rebuilt command")
+    for index, ((_, first), (_, second)) in enumerate(zip(baseline_evidence, rebuilt_evidence, strict=True)):
+        if first["route"] != "executed-subprocess":
+            observations.append({"index": index, "route": first["route"],
+                                 "baseline": first, "rebuilt": second})
+            continue
         observations.append({
             "index": index,
+            "route": "executed-subprocess",
             "stdout_sha256": {
                 "baseline": _bytes_sha256(str(first["stdout"]).encode()),
                 "rebuilt": _bytes_sha256(str(second["stdout"]).encode()),
@@ -543,6 +628,8 @@ def _reproducibility_metadata(
             "intentional_differences": [
                 "commands[*].cwd", "commands[*].elapsed_seconds",
                 "commands[*].stdout", "commands[*].stderr",
+                "commands[*].environment.LEMMA_CORE0_OUT",
+                "fresh action receipt identities and original producer observations",
             ],
         },
     }
@@ -741,6 +828,16 @@ def stale_pass_experiments(
     return experiments, evidence
 
 
+def _copy_qualification_audit_fixture(source: Path, destination: Path, root: Path) -> bool:
+    """Rebind a copied test placement, preserving its original construction."""
+    from build_actions import SCHEMA
+    from check_foundation import _copy_audit_regression
+
+    _copy_audit_regression(source, destination, root)
+    provenance = _object(load_json(destination / "provenance.json"), "copied qualification provenance")
+    return any(row.get("route") == SCHEMA for row in provenance["commands"])
+
+
 def artifact_failure_experiments(
     *, root: Path, gate9_directory: Path, work: Path, timeout_seconds: float,
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
@@ -755,7 +852,7 @@ def artifact_failure_experiments(
     )
     for identifier, target, mode in cases:
         directory = work / "failure-experiments" / identifier / "artifact"
-        shutil.copytree(original_output, directory)
+        action_fixture = _copy_qualification_audit_fixture(original_output, directory, root)
         for stale in (directory / "audit.json", directory / "sha256sums.txt"):
             if stale.exists():
                 stale.unlink()
@@ -780,15 +877,16 @@ def artifact_failure_experiments(
         )
         stderr_path = Path(command["stderr"]["path"])
         stderr = (root / stderr_path).read_text(encoding="utf-8", errors="replace")
-        expected = (
-            "missing audit artifacts: program.o"
-            if mode == "missing"
-            else "monitor pre-optimization LLVM closure differs"
-        )
+        if mode == "missing":
+            expected = ("missing audit artifacts: program.o",)
+        elif action_fixture:
+            expected = ("action consumed/admitted file differs: " + str(directory / "program.ll"),)
+        else:
+            expected = ("monitor pre-optimization LLVM closure differs",)
         if (
             result.returncode == 0
             or (directory / "audit.json").exists()
-            or expected not in stderr
+            or any(fragment not in stderr for fragment in expected)
             or sha256(original_output / "image.elf") != original_image_hash
         ):
             raise Core0Error(f"isolated audit experiment did not fail closed: {identifier}")

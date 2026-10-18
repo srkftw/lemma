@@ -100,6 +100,29 @@ class BuildAdmissionTests(unittest.TestCase):
         shutil.rmtree(self.actions.cache.directory)
         self.assertEqual(len(self.admit()), 2)
 
+    def test_foundation_negative_copy_rebinds_placement_and_keeps_producer_integrity(self):
+        from check_foundation import _copy_audit_regression
+
+        self.llvm()
+        write_json(self.output/"provenance.json", {"commands": self.rows})
+        original = {p.relative_to(self.output): p.read_bytes()
+                    for p in self.output.rglob("*") if p.is_file()}
+        copied = self.root/"build/foundation/negative-copy"
+        _copy_audit_regression(self.output, copied, self.root)
+        rows = json.loads((copied/"provenance.json").read_text())["commands"]
+        source_receipt = json.loads((self.output/self.rows[0]["admission"]).read_text())
+        copied_receipt = json.loads((copied/rows[0]["admission"]).read_text())
+        self.assertEqual(copied_receipt["producer"], source_receipt["producer"])
+        self.assertEqual(copied_receipt["producer_receipt_id"], source_receipt["producer_receipt_id"])
+        self.assertEqual(copied_receipt["outputs"], source_receipt["outputs"])
+        admitted = admitted_commands(rows, root=self.root, output_dir=copied)
+        self.assertEqual([row["admitted_route"] for row in admitted], ["fresh"])
+        self.assertEqual(original, {p.relative_to(self.output): p.read_bytes()
+                                  for p in self.output.rglob("*") if p.is_file()})
+        (copied/"program.opt.ll").write_text("corrupt copied payload")
+        with self.assertRaisesRegex(Core0Error, "consumed/admitted file differs"):
+            admitted_commands(rows, root=self.root, output_dir=copied)
+
     def test_llvm_rejects_different_actual_program_options_environment_and_cwd(self):
         for field in ("program", "option", "environment", "cwd", "failure", "extra-command"):
             with self.subTest(field=field):
@@ -126,6 +149,12 @@ class BuildAdmissionTests(unittest.TestCase):
             producer["input_archive_sha256"] = _digest(_json({}))
         self.mutate(remove_input)
         with self.assertRaisesRegex(Core0Error, "dependency closure"):self.admit()
+
+    def test_saved_boolean_returncode_cannot_be_normalized_as_executed_success(self):
+        self.llvm()
+        self.mutate(lambda receipt: receipt["producer"]["executed"]["commands"][0].update(returncode=False))
+        with self.assertRaisesRegex(Core0Error, "original executed command"):
+            self.admit()
 
     def test_wrong_tool_alias_and_archive_identity_rejected(self):
         self.llvm()

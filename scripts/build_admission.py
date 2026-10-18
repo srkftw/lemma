@@ -80,7 +80,8 @@ def admitted_commands(rows, *, root, output_dir, source_root=None):
 
     def execution(row, expected_argv, expected_cwd, expected_environment):
         if (not isinstance(row, dict) or row.get("argv") != expected_argv
-                or row.get("returncode") != 0 or row.get("cwd") != str(expected_cwd)
+                or type(row.get("returncode")) is not int or row["returncode"] != 0
+                or row.get("cwd") != str(expected_cwd)
                 or row.get("environment") != expected_environment):
             raise Core0Error("action original executed command, environment or working directory differs")
 
