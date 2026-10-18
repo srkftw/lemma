@@ -1332,6 +1332,15 @@
       "original_sha256": "8c41a45a2d736962d254cd94f2c34d505ce69b901c8f148bfe1c751d61c6bbe1",
       "original_bytes": 6175,
       "converted_sha256": "fdcf96428fadc9c987058af8bdd8110dc3060537d4265af4b9ae03be0554e6d9"
+    },
+    {
+      "original": "docs/CI.md",
+      "current": "docs/CI.html",
+      "original_sha256": "c3ad8e2714e8d137c8ae68a19a0c0aaaf92e6155ea3e8835da61b00dc2f88d1d",
+      "original_bytes": 14167,
+      "converted_sha256": "97f090cd395e54407627de80dddcf3fc9c373ee5c4d345f4bc7ddfa5af658b64",
+      "source_commit": "dc58edb385c4eec4192a0f36e9b568d6adf4ec87",
+      "conversion_note": "October 18 integration: converted_sha256 binds the initial mechanical HTML before current-policy additions; original evidence JSON remains unchanged."
     }
   ],
   "converted_sha256_scope": "Initial mechanical renderer output before subsequent maintained edits; current files use their actual Git/consumed-input identities. This field is not a current-file validation receipt.",

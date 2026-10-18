@@ -1,0 +1,50 @@
+name: Lemma task preflight
+
+on:
+  push:
+    branches:
+      - "task/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preflight-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  preflight:
+    name: Task branch preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Record the exact CI source and event
+        run: python3 scripts/ci_source.py --output build/ci/source.json
+
+      - name: Check metadata, harness failures and workflow policy
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 3m \
+            python3 scripts/ci_preflight.py --output-dir build/ci/preflight
+
+      - name: Retain scoped preflight logs even on failure
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/ci/source.json
+            build/ci/preflight/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
