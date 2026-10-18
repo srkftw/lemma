@@ -456,6 +456,7 @@ jobs:
           set -euo pipefail
           timeout --foreground --signal=TERM --kill-after=10s 5m \
             nix develop --no-write-lock-file --command \
+              nix shell --no-write-lock-file --inputs-from . nixpkgs#git --command \
               python3 -m unittest discover -s tests/cache -v \
             2>&1 | tee build/ci/metadata/cache-host-unittest.log
           python3 - <<'PY'
