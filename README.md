@@ -1,6 +1,10 @@
 <!--
 # Lemma
 
+For current development, start with the [incremental workflow](docs/plan/CURRENT.md)
+and `python3 scripts/dev_status.py`. The status command reports explicit retained
+evidence and pending work without compiling or replaying historical campaigns.
+
 ## LemmaSim: permanent virtual Lemma One
 
 **LemmaSim is a first-class, distributable embodiment of Lemma One**, not a temporary emulator. Both virtual and physical embodiments target one versioned [canonical machine contract](LEMMA_MACHINE_CONTRACT.md), sharing the freestanding Lean-authored RV64 operating system, mathematical capabilities, and user-visible device semantics. The ambition is complete functional equivalence, **not an already established physical-hardware result**. Physical properties such as thermals and writing-surface feel remain separate. Student, Developer, and Laboratory are modes of one LemmaSim.

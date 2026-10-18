@@ -7,7 +7,10 @@ modified copies live under ignored build/, and exact replacements fail closed.
 No instruction semantics, MMU identity mappings, or software policy substitutes.
 """
 from pathlib import Path
-import argparse
+import argparse, sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
+from action_cache import write_if_changed
 
 def replace(text, old, new):
     if text.count(old)!=1: raise RuntimeError('pinned CVW patch anchor differs: '+old[:100])
@@ -59,7 +62,7 @@ def apply(dep, out):
     t=replace(t,'    assign {DTLBMissM, LSULoadAccessFaultM, LSUStoreAmoAccessFaultM, LoadMisalignedFaultM, StoreAmoMisalignedFaultM}', '    assign {DTLBMissM, MMULoadAccessFaultM, MMUStoreAccessFaultM, LoadMisalignedFaultM, StoreAmoMisalignedFaultM}')
     modifications[p]=t
     for p,t in modifications.items():
-        dst=out/p;dst.parent.mkdir(parents=True,exist_ok=True);dst.write_text(t)
+        write_if_changed(out/p,t.encode())
     return modifications.keys()
 if __name__=='__main__':
     ap=argparse.ArgumentParser();ap.add_argument('dependency',type=Path);ap.add_argument('output',type=Path);a=ap.parse_args();apply(a.dependency,a.output)

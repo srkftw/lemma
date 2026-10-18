@@ -531,6 +531,76 @@ def _expect_audit_failure(
     return {"name": name, "status": "pass", "expected_failure": diagnostic}
 
 
+def _copy_audit_regression(source: Path, destination: Path, root: Path) -> Path:
+    """Copy adversarial evidence and rebind only its requested placement.
+
+    The embedded producer, action key, actual commands and payload inventories
+    still describe the original construction.  A copied fixture has a new
+    materialization directory; leaving the original requested directory in its
+    outer admissions would test relocation rejection before its intended fault.
+    """
+    from build_actions import SCHEMA
+
+    source_cwd = str(source.relative_to(root))
+    destination_cwd = str(destination.relative_to(root))
+    shutil.copytree(source, destination)
+    provenance = load_json(destination / "provenance.json")
+    if not isinstance(provenance, dict) or not isinstance(provenance.get("commands"), list):
+        raise Core0Error("audit regression source lacks its ordered command inventory")
+    replacements: dict[str, tuple[str, str]] = {}
+
+    def rebind(row: dict[str, object]) -> None:
+        if not isinstance(row, dict):
+            raise Core0Error("audit regression ordered command is malformed")
+        if row.get("route") != SCHEMA:
+            return
+        name = row.get("admission")
+        if (not isinstance(name, str) or Path(name).is_absolute()
+                or ".." in Path(name).parts):
+            raise Core0Error("audit regression admission path escapes its fixture")
+        path = destination / name
+        if row.get("requested_cwd") != source_cwd:
+            raise Core0Error("audit regression request differs from its source placement")
+        original_hash = row.get("admission_sha256")
+        if name in replacements:
+            old_hash, new_hash = replacements[name]
+            if original_hash != old_hash:
+                raise Core0Error("audit regression ordered admissions disagree")
+        else:
+            if (path.is_symlink() or not path.resolve().is_relative_to(destination.resolve())
+                    or sha256(path) != original_hash):
+                raise Core0Error("audit regression source admission is corrupt")
+            receipt = load_json(path)
+            if (not isinstance(receipt, dict)
+                    or receipt.get("requested_cwd") != source_cwd
+                    or receipt.get("requested_argv") != row.get("requested_argv")):
+                raise Core0Error("audit regression source admission request differs")
+            receipt["requested_cwd"] = destination_cwd
+            write_json(path, receipt)
+            new_hash = sha256(path)
+            replacements[name] = (original_hash, new_hash)
+        row["requested_cwd"] = destination_cwd
+        row["admission_sha256"] = new_hash
+
+    for row in provenance["commands"]:
+        rebind(row)
+    provenance["audit_regression_fixture"] = {
+        "copied_from": source_cwd,
+        "materialized_at": destination_cwd,
+        "construction": "copied payloads; original producers retained; no new tool execution",
+    }
+    write_json(destination / "provenance.json", provenance)
+    commands_path = destination / "commands.json"
+    if commands_path.is_file():
+        commands = load_json(commands_path)
+        if not isinstance(commands, list):
+            raise Core0Error("audit regression source command log is malformed")
+        for row in commands:
+            rebind(row)
+        write_json(commands_path, commands)
+    return destination
+
+
 def _run_audit_regressions(
     *,
     root: Path,
@@ -570,8 +640,7 @@ def _run_audit_regressions(
 
     def copied(name: str) -> Path:
         destination = regression_root / name
-        shutil.copytree(baseline_mutant, destination)
-        return destination
+        return _copy_audit_regression(baseline_mutant, destination, root)
 
     def mutant_audit(directory: Path) -> dict[str, object]:
         return audit_core0.audit(

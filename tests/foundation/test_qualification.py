@@ -2,6 +2,7 @@
 """Gate 10 qualification orchestration and fail-closed evidence tests."""
 
 import ast
+import copy
 import json
 import sys
 import tempfile
@@ -271,6 +272,179 @@ class FoundationQualificationTests(unittest.TestCase):
             second["commands"][0]["returncode"] = False
             with self.assertRaisesRegex(Core0Error, "return code"):
                 qualifier._compare_provenance(first, second, baseline, rebuilt, root)
+
+    def test_controlled_lake_environment_only_normalizes_the_bound_output(self):
+        from build_actions import controlled_environment
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            baseline, rebuilt = root / "build/first", root / "build/second"
+            first, second = [], []
+            for output, rows in ((baseline, first), (rebuilt, second)):
+                row = self._command(".")
+                row["argv"] = ["lake", "env", "lean", "Export.lean"]
+                row["environment"] = controlled_environment(
+                    {"lake": "/pin/bin/lake"}, {"LEMMA_CORE0_OUT": str(output)})
+                rows.append(row)
+            original = copy.deepcopy((first, second))
+            result = qualifier._compare_provenance(
+                {"commands": first}, {"commands": second}, baseline, rebuilt, root)
+            self.assertTrue(result["command_structure_equal"])
+            self.assertEqual((first, second), original)
+            self.assertEqual(qualifier._normal_command(first[0], baseline, root)["environment"]["LEMMA_CORE0_OUT"], "$OUTPUT")
+            for key, value, diagnostic in (
+                ("PATH", "/other/bin", "command structure"),
+                ("TZ", "local", "not controlled"),
+                ("LEAN_PATH", "/foreign", "not controlled"),
+                ("LEMMA_CORE0_OUT", str(root / "wrong"), "output differs"),
+            ):
+                with self.subTest(environment=key):
+                    changed = copy.deepcopy(second)
+                    changed[0]["environment"][key] = value
+                    with self.assertRaisesRegex(Core0Error, diagnostic):
+                        qualifier._compare_provenance(
+                            {"commands": first}, {"commands": changed}, baseline, rebuilt, root)
+
+    def action_fixture(self, root, *, reused=False):
+        """Actual host subprocesses and admissions; no Lean/LLVM/target claim."""
+        from build_actions import BuildActions
+
+        for name in ("build_actions.py", "build_admission.py", "core0_common.py", "action_worker.py", "build_dependencies.py"):
+            path = root / "scripts" / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes((ROOT / "scripts" / name).read_bytes())
+        (root / "scripts/audit_kernel.py").write_text("host fixture observer\n")
+        tools = {}
+        for name in ("lean", "lake", "opt", "llc", "clang", "ld.lld", "llvm-objcopy"):
+            path = root / "tools" / name
+            path.parent.mkdir(exist_ok=True)
+            path.write_text(
+                f"#!{sys.executable}\n"
+                "import pathlib,sys\n"
+                "if '--version' in sys.argv:\n print('host fixture 1');sys.exit(0)\n"
+                "args=sys.argv[1:]\n"
+                "pathlib.Path(args[-1]).write_bytes(pathlib.Path(args[-3]).read_bytes()+b'fixture output')\n"
+                "print('HOST_FIXTURE_ONLY: no target compilation')\n")
+            path.chmod(0o755)
+            tools[name] = str(path)
+        records = []
+        for index in range(2):
+            output = root / "build" / ("first" if index == 0 else "second")
+            output.mkdir(parents=True)
+            (output / "program.ll").write_bytes(b"host input fixture\n")
+            rows = []
+            actions = BuildActions(root, output, tools, 10, rows, fresh=not (reused and index))
+            actions.invoke(["opt", "-S", "-passes=verify", "program.ll", "-o", "program.opt.ll"], output)
+            records.append((output, {"schema_version": 2, "commands": rows}))
+        return records
+
+    def test_fresh_actions_compare_validated_requests_and_retain_actual_producer_observations(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (baseline, first), (rebuilt, second) = self.action_fixture(root)
+            original = copy.deepcopy((first, second))
+            compared = qualifier._compare_provenance(first, second, baseline, rebuilt, root)
+            self.assertTrue(compared["command_structure_equal"])
+            observation = compared["intentional_command_observation_differences"][0]
+            self.assertEqual(observation["route"], "lemma-build-actions/1")
+            for label, directory, record in (("baseline", baseline, first), ("rebuilt", rebuilt, second)):
+                receipt = json.loads((directory / record["commands"][0]["admission"]).read_text())
+                saved = observation[label]
+                self.assertEqual(receipt["status"], "fresh")
+                self.assertEqual(saved["producer_receipt_id"], receipt["producer_receipt_id"])
+                self.assertEqual(saved["original_producer_commands"], receipt["producer"]["executed"]["commands"])
+                self.assertIn("HOST_FIXTURE_ONLY", saved["original_producer_commands"][0]["stdout"])
+                self.assertNotIn("stdout", saved)
+                self.assertNotIn("returncode", saved)
+                self.assertNotIn("elapsed_seconds", saved)
+            self.assertEqual((first, second), original)
+
+    def test_independent_fresh_qualification_rejects_an_actual_warm_admission(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (baseline, first), (rebuilt, second) = self.action_fixture(root, reused=True)
+            receipt = json.loads((rebuilt / second["commands"][0]["admission"]).read_text())
+            self.assertEqual(receipt["status"], "reused")
+            with self.assertRaisesRegex(Core0Error, "fresh qualification rejects reused"):
+                qualifier._compare_provenance(first, second, baseline, rebuilt, root)
+
+    def test_warm_producer_cannot_be_relabelled_as_fresh_independent_production(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (baseline, first), (rebuilt, second) = self.action_fixture(root, reused=True)
+            row = second["commands"][0]
+            path = rebuilt / row["admission"]
+            receipt = json.loads(path.read_text())
+            self.assertEqual(receipt["status"], "reused")
+            producer = copy.deepcopy(receipt["producer"])
+            receipt["status"] = "fresh"
+            write_json(path, receipt)
+            row["admission_sha256"] = sha256(path)
+            self.assertEqual(json.loads(path.read_text())["producer"], producer)
+            with self.assertRaisesRegex(Core0Error, "fresh qualification producer request differs"):
+                qualifier._compare_provenance(first, second, baseline, rebuilt, root)
+
+    def test_action_comparison_cannot_bypass_real_admission_or_accept_unknown_routes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (baseline, first), (rebuilt, second) = self.action_fixture(root)
+            changed = copy.deepcopy(second)
+            changed["commands"][0]["route"] = "unrecognized-action/1"
+            with self.assertRaisesRegex(Core0Error, "action route differs"):
+                qualifier._compare_provenance(first, changed, baseline, rebuilt, root)
+            receipt = rebuilt / second["commands"][0]["admission"]
+            original = receipt.read_bytes()
+            receipt.write_bytes(b"corrupt receipt")
+            with self.assertRaisesRegex(Core0Error, "receipt missing, corrupt"):
+                qualifier._compare_provenance(first, second, baseline, rebuilt, root)
+            receipt.write_bytes(original)
+            (rebuilt / "program.opt.ll").write_bytes(b"changed output")
+            with self.assertRaisesRegex(Core0Error, "consumed/admitted file differs"):
+                qualifier._compare_provenance(first, second, baseline, rebuilt, root)
+
+    def test_fresh_comparison_binds_the_complete_validated_action_request(self):
+        from action_cache import _digest, _json
+        from build_actions import admitted_commands
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (baseline, first), (rebuilt, second) = self.action_fixture(root)
+            row = second["commands"][0]
+            path = rebuilt / row["admission"]
+            receipt = json.loads(path.read_text())
+            producer = receipt["producer"]
+            producer["request"]["action"]["tools"]["opt"]["sha256"] = "a" * 64
+            producer["action_key"] = _digest(_json(producer["request"]))
+            receipt["action_key"] = producer["action_key"]
+            receipt["producer_receipt_id"] = _digest(_json(producer))
+            write_json(path, receipt)
+            row["admission_sha256"] = sha256(path)
+            self.assertEqual(admitted_commands([row], root=root, output_dir=rebuilt)[0]["admitted_route"], "fresh")
+            with self.assertRaisesRegex(Core0Error, "command structure"):
+                qualifier._compare_provenance(first, second, baseline, rebuilt, root)
+
+    def test_copied_qualification_fixture_preserves_producers_and_rejects_the_consumed_ir(self):
+        from build_actions import admitted_commands
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (source, record), _ = self.action_fixture(root)
+            write_json(source / "provenance.json", record)
+            original = {p.relative_to(source): p.read_bytes() for p in source.rglob("*") if p.is_file()}
+            destination = root / "build/qualification/failure-experiments/tampered-program-ir/artifact"
+            self.assertTrue(qualifier._copy_qualification_audit_fixture(source, destination, root))
+            copied = json.loads((destination / "provenance.json").read_text())
+            row = copied["commands"][0]
+            first = json.loads((source / record["commands"][0]["admission"]).read_text())
+            second = json.loads((destination / row["admission"]).read_text())
+            for field in ("producer", "producer_receipt_id", "action_key", "outputs", "materialized"):
+                self.assertEqual(first[field], second[field])
+            self.assertEqual(admitted_commands(copied["commands"], root=root, output_dir=destination)[0]["admitted_route"], "fresh")
+            (destination / "program.ll").write_bytes(b"tampered consumed IR fixture")
+            with self.assertRaises(Core0Error) as rejected:
+                admitted_commands(copied["commands"], root=root, output_dir=destination)
+            self.assertEqual(str(rejected.exception), "action consumed/admitted file differs: " + str(destination / "program.ll"))
+            self.assertEqual(original, {p.relative_to(source): p.read_bytes() for p in source.rglob("*") if p.is_file()})
 
     def test_gate9_stress_mode_must_be_exact_and_boolean(self):
         with tempfile.TemporaryDirectory() as temporary:

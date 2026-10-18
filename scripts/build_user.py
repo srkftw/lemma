@@ -17,7 +17,7 @@ from lean_export_host import for_source as export_host_policy
 
 def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
           configuration: str = "tasks-development", clean: bool = False,
-          timeout_seconds: float = 300) -> dict:
+          timeout_seconds: float = 300, fresh: bool = True, cache_dir: Path | None = None) -> dict:
     try:
         relative = output_dir.resolve().relative_to((root / "build/user").resolve())
     except ValueError as error:
@@ -32,9 +32,11 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
                            "llvm-readelf", "llvm-nm", "llvm-objdump", "qemu-system-riscv64", "dtc"))
     prepare_output_directory(output_dir, root, clean=clean)
     commands: list[dict] = []
-    invoke = command_invoker(root, output_dir, tools, timeout_seconds, commands)
+    invoke = command_invoker(root, output_dir, tools, timeout_seconds, commands, fresh=fresh, cache_dir=cache_dir)
     try:
         before = source_inputs(root)
+        from build_actions import retain_source
+        retain_source(root, output_dir, before)
         versions, realization = realize_toolchain(root, tools, invoke)
         invoke(("lake", "build", "Lemma.Compiler.KernelExport"), root)
         catalog = export_user_catalog(root, output_dir, configuration, invoke)
@@ -82,13 +84,15 @@ def main() -> int:
     parser.add_argument("--opt-level", choices=("O0", "O2"), required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--clean", action="store_true")
+    parser.add_argument("--fresh", action="store_true", help="Execute actions without cache reads")
+    parser.add_argument("--cache-dir", type=Path)
     parser.add_argument("--timeout", type=float, default=300)
     args = parser.parse_args()
     root = repo_root()
     try:
         result = build(root=root, output_dir=(root / args.output_dir).resolve(), image_key=args.image_key,
                        configuration=args.configuration, opt_level=args.opt_level,
-                       clean=args.clean, timeout_seconds=args.timeout)
+                       clean=args.clean, timeout_seconds=args.timeout, fresh=args.fresh, cache_dir=args.cache_dir)
     except (Core0Error, OSError, ValueError, KeyError, TypeError) as error:
         print(f"USER BUILD FAIL: {error}", file=sys.stderr)
         return 1

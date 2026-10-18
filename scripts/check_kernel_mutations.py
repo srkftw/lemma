@@ -274,7 +274,7 @@ def _file(path: Path, expected=NO_HASH) -> str:
     return value
 
 
-def _artifact(image: Path, *, identity: dict, sources: dict, dirty: list[str], config: str, opt: str) -> dict:
+def _artifact(image: Path, *, root: Path, identity: dict, sources: dict, dirty: list[str], config: str, opt: str) -> dict:
     build, provenance, audit = (load_json(image.parent / name) for name in ("build.json", "provenance.json", "audit.json"))
     for value in (build, provenance, audit):
         if (not isinstance(value, dict) or value.get("configuration") != config
@@ -298,6 +298,26 @@ def _artifact(image: Path, *, identity: dict, sources: dict, dirty: list[str], c
         _file(image.parent / name, digest)
     for label, value in (("build", provenance), ("audit", audit)):
         commands = value.get("commands")
+        if label == "build" and isinstance(commands, list):
+            from action_cache import ADMISSION_SCHEMA
+            from build_actions import SCHEMA as ACTION_SCHEMA
+            from build_admission import admitted_commands
+            commands = admitted_commands(commands, root=root, output_dir=image.parent, source_root=root)
+            if any("route" in row for row in commands):
+                raise Core0Error("mutation build command has an unknown admission route")
+            if any(row.get("admitted_route") == "reused" for row in commands):
+                raise Core0Error("independent fresh mutation qualification rejects reused production")
+            for original in value["commands"]:
+                if original.get("route") != ACTION_SCHEMA:
+                    continue
+                receipt = load_json(image.parent / original["admission"])
+                if receipt.get("schema") != ADMISSION_SCHEMA:
+                    continue  # Strictly admitted incremental host Lake preparation.
+                producer = receipt["producer"].get("provenance", {})
+                if (producer.get("checkout") != str(root.resolve())
+                        or producer.get("requested_argv") != original.get("requested_argv")
+                        or producer.get("requested_cwd") != original.get("requested_cwd")):
+                    raise Core0Error("fresh mutation production original producer request differs from this checkout/output")
         if not isinstance(commands, list) or not commands or any(type(row.get("returncode")) is not int or row["returncode"] for row in commands):
             raise Core0Error("mutation " + label + " command inventory is missing or failed")
     return {"image_sha256": _file(image), "build_sha256": _file(image.parent / "build.json"),
@@ -320,8 +340,8 @@ def validate_case(row: dict, work: Path, identity: dict, sources: dict) -> dict:
     control_report = load_json(control_path)
     if control_report.get("image") != str(control_image):
         raise Core0Error("mutation control refers to a reused or different image")
-    artifacts = {"control": _artifact(control_image, identity=identity, sources=sources, dirty=[], config=config, opt=opt),
-                 "mutant": _artifact(image, identity=identity, sources=binding["source_inputs"],
+    artifacts = {"control": _artifact(control_image, root=paths["control_root"], identity=identity, sources=sources, dirty=[], config=config, opt=opt),
+                 "mutant": _artifact(image, root=paths["mutant_root"], identity=identity, sources=binding["source_inputs"],
                                       dirty=[" M " + binding["mutation"]["path"]], config=config, opt=opt)}
     runners = module.runner_inputs(paths["mutant_root"])
     outer_path = paths["mutant_run"] / "result.json"
@@ -370,7 +390,7 @@ def _case_commands(paths: dict, kind: str, opt: str) -> list[tuple[str, list[str
         root, artifact = paths[role + "_root"], paths[role + "_artifact"]
         image, output = artifact / "image.elf", paths[role + "_run"]
         commands.append((label + "-" + role + "-build",
-                         [sys.executable, "scripts/build_kernel.py", "--opt-level", opt, "--stage", "supervisor",
+                         [sys.executable, "scripts/build_kernel.py", "--fresh", "--opt-level", opt, "--stage", "supervisor",
                           "--configuration", config, "--output-dir", str(artifact), "--timeout", "300"], root, 300))
         commands.append((label + "-" + role + "-audit",
                          [sys.executable, "scripts/audit_kernel.py", str(artifact), "--timeout", "60"], root, 120))

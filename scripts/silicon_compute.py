@@ -3,6 +3,7 @@
 """Pinned open CVW source closure and Verilator build; no guest execution helpers."""
 from pathlib import Path
 import argparse, hashlib, json, os, shlex, signal, subprocess, sys
+from action_cache import write_if_changed
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tooling/silicon'))
 from apply_cvw import apply
@@ -51,9 +52,9 @@ def source_manifest(dep, profile_name=None):
     binding=generated/'lemma_silicon_binding.sv'
     fields=constants(selected)
     binding.parent.mkdir(parents=True,exist_ok=True)
-    binding.write_text('// Generated from '+str(profile_path(profile_name).relative_to(ROOT))+'\npackage lemma_silicon_binding;\n'+''.join(f"  localparam logic [63:0] {k.upper()} = 64'h{v:016x};\n" for k,v in fields.items())+'endpackage\n')
+    write_if_changed(binding,('// Generated from '+str(profile_path(profile_name).relative_to(ROOT))+'\npackage lemma_silicon_binding;\n'+''.join(f"  localparam logic [63:0] {k.upper()} = 64'h{v:016x};\n" for k,v in fields.items())+'endpackage\n').encode())
     header=generated/'lemma_silicon_binding.h'
-    header.write_text('// Generated from the same authoritative binding as RTL and Lean.\n#pragma once\n'+f'#define LEMMA_USB_CLOCKED_ENABLED {fields.get("usb_clocked_enabled",0)}\n'+''.join(f'constexpr uint64_t BINDING_{k.upper()} = {v}ULL;\n' for k,v in fields.items()))
+    write_if_changed(header,('// Generated from the same authoritative binding as RTL and Lean.\n#pragma once\n'+f'#define LEMMA_USB_CLOCKED_ENABLED {fields.get("usb_clocked_enabled",0)}\n'+''.join(f'constexpr uint64_t BINDING_{k.upper()} = {v}ULL;\n' for k,v in fields.items())).encode())
     paths=[binding]+sources(dep,patched=True)+[ROOT/'tooling/silicon/config.vh',ROOT/'sim/rtl/lemma_compute.sv',ROOT/'sim/rtl/lemma_soc.sv',ROOT/'sim/rtl/lemma_pen.sv',ROOT/'sim/rtl/lemma_paper.sv',ROOT/'sim/rtl/lemma_block.sv',ROOT/'sim/rtl/lemma_power.sv',ROOT/'sim/rtl/lemma_ble_packet.sv',ROOT/'sim/rtl/lemma_usb_device.sv',ROOT/'sim/rtl/lemma_usb_fs_phy.sv',ROOT/'sim/rtl/lemma_usb_fs_phy_clocked.sv',ROOT/'sim/rtl/lemma_usb_cdc_fifo.sv',ROOT/'sim/rtl/lemma_usb_fs_bridge.sv',ROOT/'sim/rtl/lemma_wifi_math.sv',ROOT/'sim/rtl/lemma_wifi_bcc_symbol.sv',ROOT/'sim/rtl/lemma_wifi_ofdm_data.sv',ROOT/'sim/rtl/lemma_boot_nv.sv',ROOT/'sim/rtl/lemma_register_ram.sv']
     return {'core_repository':'https://github.com/openhwfoundation/cvw','core_revision':REV,
             **({'runtime_control_contracts':{'usb_recovery':'lemma-usb-live-recovery/1'}} if fields.get('usb_clocked_enabled') else {}),
@@ -114,9 +115,9 @@ def main():
     out.mkdir(parents=True,exist_ok=True)
     identity_dir=out/'generated';identity_dir.mkdir(exist_ok=True)
     identity_header=identity_dir/'lemma_runtime_identity.h'
-    identity_header.write_text('#pragma once\n#define LEMMA_RUNTIME_IDENTITY "'+manifest['snapshot_identity']+'"\n')
+    write_if_changed(identity_header,('#pragma once\n#define LEMMA_RUNTIME_IDENTITY "'+manifest['snapshot_identity']+'"\n').encode())
     manifest['runtime_identity_header']={'path':str(identity_header),'sha256':hashlib.sha256(identity_header.read_bytes()).hexdigest()}
-    (out/'sources.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    write_if_changed(out/'sources.json',(json.dumps(manifest,indent=2)+'\n').encode())
     args=['verilator',*manifest['build_options']['verilator'],
           '-j',str(a.jobs),'--Mdir',str(out/'obj'),'-o','lemma-rtl',
           '-MAKEFLAGS',manifest['build_options']['make_flags'],

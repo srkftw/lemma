@@ -8,6 +8,7 @@ not allocate target frames, create mappings, schedule tasks, or handle guest IPC
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import math
 import os
@@ -28,7 +29,7 @@ COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+AWAIT_NOTEB
 from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS, KERNEL_ENTRIES as CLOSURE_KERNEL_ENTRIES
 from build_core0 import (LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS,
                         capture_platform_dtb, prepare_output_directory)
-from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
+from core0_common import Core0Error, action_lease, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from lean_export_host import command as export_command, for_source as export_host_policy, environment as export_host_environment
 
 ROLE_ROOTS = {
@@ -387,6 +388,8 @@ def source_inputs(root: Path) -> dict[str, str]:
         if path.is_file():inputs.append(path)
     export_host = root / "scripts/lean_export_host.py"
     if export_host.is_file():inputs.append(export_host)
+    for helper in ("scripts/action_cache.py", "scripts/action_worker.py", "scripts/build_actions.py", "scripts/build_dependencies.py", "scripts/build_admission.py", "scripts/toolchain_preparation.py", "lake-manifest.json", "scripts/silicon_reset_rom.py"):
+        if (root / helper).is_file(): inputs.append(root / helper)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 
@@ -448,9 +451,20 @@ def _nonempty(directory: Path, names: Sequence[str]) -> None:
             raise Core0Error(f"missing/empty mandatory generated artifact: {path}")
 
 
-def command_invoker(root: Path, output_dir: Path, tools: dict, timeout_seconds: float, commands: list):
+def command_invoker(root: Path, output_dir: Path, tools: dict, timeout_seconds: float, commands: list,
+                    *, fresh: bool = False, cache_dir: Path | None = None, action_reuse: bool = True):
     """Shared bounded command recording for boot and independent user builds."""
+    actions = None
     def invoke(argv: Sequence[str], cwd: Path = output_dir, env: dict[str, str] | None = None) -> bytes:
+        nonlocal actions
+        candidate = (Path(argv[0]).name in {"lake", "opt", "llc", "clang", "ld.lld", "llvm-objcopy"}
+                     and list(argv[1:]) != ["--version"])
+        if action_reuse and candidate and (output_dir / "action-source").is_dir():
+            from build_actions import BuildActions
+            if actions is None:
+                actions = BuildActions(root, output_dir, tools, timeout_seconds, commands, fresh=fresh, cache_dir=cache_dir)
+            result = actions.invoke(argv, cwd, env)
+            if result is not None: return result
         actual = [tools.get(argv[0], argv[0]), *argv[1:]]
         host_environment = (export_host_environment(export_host_policy(root))
                             if Path(actual[0]).name == "lake" else {})
@@ -458,7 +472,15 @@ def command_invoker(root: Path, output_dir: Path, tools: dict, timeout_seconds: 
         if host_environment:
             env = {**(os.environ if env is None else env), **host_environment}
         try:
-            result = run_bounded(actual, cwd=cwd, timeout_seconds=timeout_seconds, env=env)
+            if Path(actual[0]).name == "lake":
+                lock_path = root / "build/lake.lock"
+                lock_path.parent.mkdir(parents=True, exist_ok=True)
+                with lock_path.open("a+b") as lock:
+                    fcntl.flock(lock, fcntl.LOCK_EX)
+                    with action_lease(lock.fileno()):
+                        result = run_bounded(actual, cwd=cwd, timeout_seconds=timeout_seconds, env=env)
+            else:
+                result = run_bounded(actual, cwd=cwd, timeout_seconds=timeout_seconds, env=env)
         except (Core0Error, OSError) as error:
             commands.append({"argv": list(actual), "cwd": str(cwd.relative_to(root)), "returncode": None,
                              "error": str(error), "completed": False, **recorded_environment})
@@ -472,6 +494,11 @@ def command_invoker(root: Path, output_dir: Path, tools: dict, timeout_seconds: 
             raise Core0Error(f"command failed ({result.returncode}): {' '.join(argv)}\n"
                              + (result.stdout + result.stderr).decode(errors='replace'))
         return result.stdout
+    invoke.command_rows = commands
+    invoke.output_dir = output_dir
+    invoke.action_reuse = action_reuse
+    invoke.cache_dir = cache_dir
+    invoke.fresh = fresh
     return invoke
 
 
@@ -486,7 +513,7 @@ def export_user_catalog(root: Path, output_dir: Path, configuration: str, invoke
 
 def export_user_image(root: Path, output_dir: Path, configuration: str, image: dict,
                       opt_level: str, invoke) -> dict:
-    """Always elaborate fresh. No prebuilt-object or cached-image input exists."""
+    """Elaborate selected declarations or admit their exact prior action result."""
     from audit_kernel import validate_unit
     directory = output_dir / image["directory"]
     directory.mkdir(parents=True)
@@ -570,7 +597,7 @@ def validate_service_user_quota(layout: dict, image: dict, text_bytes: int) -> d
             "text_pages": pages, "reserved_arena_pages": reserve, "owner_quota": 32}
 
 
-def realize_toolchain(root: Path, tools: dict, invoke, *, realization_dir: Path | None = None) -> tuple[dict, dict]:
+def _realize_toolchain_fresh(root: Path, tools: dict, invoke, *, realization_dir: Path | None = None) -> tuple[dict, dict]:
     versions = {}
     expected_versions = {"lean": "4.34.1", "lake": "5.0.0-src", "opt": "20.1.8", "llc": "20.1.8",
                          "clang": "20.1.8", "ld.lld": "20.1.8", "qemu-system-riscv64": "11.1.1", "dtc": "1.8.1"}
@@ -605,8 +632,23 @@ def realize_toolchain(root: Path, tools: dict, invoke, *, realization_dir: Path 
     return versions, source_realization
 
 
+def realize_toolchain(root: Path, tools: dict, invoke, *, realization_dir: Path | None = None) -> tuple[dict, dict]:
+    from build_actions import fresh_requested
+    if (getattr(invoke, "action_reuse", False) and realization_dir is None
+            and not fresh_requested(getattr(invoke, "fresh", True))):
+        from toolchain_preparation import prepare
+        from action_cache import CacheError
+        try:
+            return prepare(root, tools, invoke, output_dir=invoke.output_dir,
+                           cache_dir=invoke.cache_dir, fresh=False, produce=lambda: _realize_toolchain_fresh(root, tools, invoke))
+        except CacheError as error:
+            raise Core0Error("toolchain cache rejected preparation: " + str(error)) from error
+    return _realize_toolchain_fresh(root, tools, invoke, realization_dir=realization_dir)
+
+
 def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstrap-m", configuration: str = "normal",
-          clean: bool = False, timeout_seconds: float = 300, archive_source_root: Path | None = None) -> dict[str, object]:
+          clean: bool = False, timeout_seconds: float = 300, archive_source_root: Path | None = None,
+          fresh: bool = True, cache_dir: Path | None = None) -> dict[str, object]:
     try:
         output_relative = output_dir.resolve().relative_to((root / "build/kernel").resolve())
     except ValueError as error:
@@ -626,7 +668,8 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
     prepare_output_directory(output_dir, root, clean=clean)
     commands: list[dict[str, object]] = []
 
-    invoke = command_invoker(root, output_dir, tools, timeout_seconds, commands)
+    invoke = command_invoker(root, output_dir, tools, timeout_seconds, commands, fresh=fresh, cache_dir=cache_dir,
+                             action_reuse=archive_source_root is None)
 
     try:
         dependencies = {role: module_closure(root, module, allow_development=development_role(configuration, role),
@@ -634,6 +677,9 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
                                             selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None)
                         for role, module in modules.items()}
         source_before = source_inputs(root)
+        if archive_source_root is None:
+            from build_actions import retain_source
+            retain_source(root, output_dir, source_before)
         workspace, realization_dir, orchestrator_before = None, None, None
         if archive_source_root is not None:
             from kernel_source_workspace import prepare, host_inputs
@@ -758,6 +804,8 @@ def main() -> int:
     parser.add_argument("--source-archive", type=Path, help="Complete original source-input archive; requires an unused --source-workspace")
     parser.add_argument("--source-workspace", type=Path, help="Unused private compiler copy under build/kernel; --output-dir is relative to this copy")
     parser.add_argument("--clean", action="store_true")
+    parser.add_argument("--fresh", action="store_true", help="Execute production actions, bypassing cache reads; qualification uses LEMMA_BUILD_FRESH=1")
+    parser.add_argument("--cache-dir", type=Path, help="Shared local validated action cache (default build/action-cache)")
     parser.add_argument("--timeout", type=float, default=300)
     ns = parser.parse_args()
     root = repo_root()
@@ -770,7 +818,7 @@ def main() -> int:
             source_archive = (root / ns.source_archive).resolve()
             root = copy_inputs(source_archive, (root / ns.source_workspace).resolve(), root, source_inputs)
         output = (root / ns.output_dir).resolve()
-        result = build(root=root, output_dir=output, opt_level=ns.opt_level, stage=ns.stage, configuration=ns.configuration, clean=ns.clean, timeout_seconds=ns.timeout, archive_source_root=source_archive)
+        result = build(root=root, output_dir=output, opt_level=ns.opt_level, stage=ns.stage, configuration=ns.configuration, clean=ns.clean, timeout_seconds=ns.timeout, archive_source_root=source_archive, fresh=ns.fresh, cache_dir=ns.cache_dir)
     except (Core0Error, OSError, ValueError, KeyError, TypeError) as error:
         print(f"KERNEL BUILD FAIL: {error}", file=sys.stderr)
         return 1

@@ -430,20 +430,42 @@ jobs:
               lake env lean -j2 --run tests/core0/LLVMNameSets.lean \
             2>&1 | tee build/ci/metadata/llvm-name-sets.log
 
-      - name: Run kernel host-harness suite
+      - name: Produce the ordinary kernel host prerequisite once
         run: |
           set -euo pipefail
           timeout --foreground --signal=TERM --kill-after=30s 15m \
             nix develop --no-write-lock-file --command \
-              python3 -m unittest discover -s tests/kernel -v \
+              nix shell --no-write-lock-file --inputs-from . nixpkgs#git --command \
+              python3 scripts/host_prerequisites.py produce \
+                --output-dir build/ci/metadata/kernel-host-prerequisite --timeout 850 \
             2>&1 | tee build/ci/metadata/kernel-host-unittest.log
+
+      - name: Share the exact successful kernel host receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kernel-host-prerequisite-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/ci/metadata/kernel-host-prerequisite/receipt.json
+            build/ci/metadata/kernel-host-prerequisite/kernel-host.log
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+      - name: Run action-cache and resume-status failure tests
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              nix shell --no-write-lock-file --inputs-from . nixpkgs#git --command \
+              python3 -m unittest discover -s tests/cache -v \
+            2>&1 | tee build/ci/metadata/cache-host-unittest.log
           python3 - <<'PY'
           import re
           from pathlib import Path
-          value = Path("build/ci/metadata/kernel-host-unittest.log").read_text()
+          value = Path("build/ci/metadata/cache-host-unittest.log").read_text()
           count = re.search(r"Ran ([0-9]+) tests?", value)
           if not count or int(count[1]) <= 0 or not re.search(r"^OK$", value, re.M):
-              raise RuntimeError("Kernel host suite is missing, empty or failing")
+              raise RuntimeError("Cache/status host suite is missing, empty or failing")
           PY
 
       - name: Run silicon host orchestration and observation suite
@@ -691,6 +713,7 @@ jobs:
 
   kernel-rv64:
     name: Task 003 implemented Gates A-E RV64 acceptance
+    needs: metadata
     runs-on: ubuntu-24.04
     timeout-minutes: 45
 
@@ -706,6 +729,12 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
 
+      - name: Download this run's exact ordinary host prerequisite
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: kernel-host-prerequisite-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/ci/metadata/kernel-host-prerequisite
+
       - name: Prepare Task 003 log directory
         run: mkdir -p build/ci
 
@@ -714,8 +743,10 @@ jobs:
           set -euo pipefail
           timeout --foreground --signal=TERM --kill-after=30s 40m \
             nix develop --no-write-lock-file --command \
+              nix shell --no-write-lock-file --inputs-from . nixpkgs#git --command \
               python3 scripts/check_kernel.py \
                 --work-dir build/kernel/ci-prefix \
+                --host-prerequisite build/ci/metadata/kernel-host-prerequisite/receipt.json \
                 --clean \
                 --timeout 300 \
                 --qemu-timeout 90 \
@@ -725,7 +756,8 @@ jobs:
       - name: Require complete Task 003 acceptance evidence
         run: |
           set -euo pipefail
-          nix develop --no-write-lock-file --command python3 - <<'PY'
+          nix develop --no-write-lock-file --command \
+            nix shell --no-write-lock-file --inputs-from . nixpkgs#git --command python3 - <<'PY'
           import hashlib
           import json
           import sys
@@ -749,6 +781,11 @@ jobs:
           require(value["source"] == source_identity(Path.cwd()))
           require(value["source_inputs"] == source_inputs(Path.cwd()))
           require(value["acceptance_inputs"] == acceptance_inputs(Path.cwd()))
+          from host_prerequisites import validate as validate_host_prerequisite
+          admission = validate_host_prerequisite(Path.cwd(), Path("build/kernel/ci-prefix/host-prerequisite/receipt.json"))
+          shared = [row for row in value["invocations"] if row.get("route") == "lemma-kernel-host-prerequisite/1"]
+          require(len(shared) == 1 and shared[0] == {"label": "kernel-host", **admission})
+          require(value["host_tests"] == admission["test_count"] and admission["test_count"] > 0)
           require([(row["configuration"], row["stage"], row["optimization"]) for row in value["images"]] == list(matrix()))
           expected_observations = []
           for cfg, stage, opt in matrix():
@@ -1165,3 +1202,40 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           compression-level: 6
+
+
+  acceptance-summary:
+    name: Aggregate required acceptance dispositions
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    needs:
+      - lemmasim-writing-rv64
+      - metadata
+      - kernel-managed-rv64
+      - kernel-services-rv64
+      - legacy-rv64
+      - foundation-rv64
+      - kernel-rv64
+      - kernel-source-negatives-rv64
+      - kernel-architecture-rv64
+      - silicon-devices-rtl
+      - crypto-rv64
+    steps:
+      - name: Require every designated claim, including jobs that were skipped
+        env:
+          REQUIRED_DISPOSITIONS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          results = json.loads(os.environ["REQUIRED_DISPOSITIONS"])
+          expected = {"lemmasim-writing-rv64", "metadata", "kernel-managed-rv64",
+                      "kernel-services-rv64", "legacy-rv64", "foundation-rv64", "kernel-rv64",
+                      "kernel-source-negatives-rv64", "kernel-architecture-rv64",
+                      "silicon-devices-rtl", "crypto-rv64"}
+          if set(results) != expected:
+              raise RuntimeError("Required acceptance job inventory is incomplete")
+          dispositions = {name: value["result"] for name, value in sorted(results.items())}
+          print(json.dumps(dispositions, indent=2))
+          if any(value != "success" for value in dispositions.values()):
+              raise RuntimeError("Required claim failed, was cancelled, unavailable or skipped")
+          PY

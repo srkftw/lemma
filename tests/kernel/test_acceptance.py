@@ -13,7 +13,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from check_kernel import matrix, validate_session, stop_controller_children
 from core0_common import Core0Error, sha256
-from run_kernel import Session
+from run_kernel import Session, validate_reaped_process
+from action_cache import process_identity
 
 
 class AcceptanceFailures(unittest.TestCase):
@@ -51,6 +52,30 @@ class AcceptanceFailures(unittest.TestCase):
             self.assertEqual(value['cleanup'],{'explicit_host_stop':True,'process_group_killed':True,
                                                'target_exited_before_cleanup':False,'process_reaped':True})
             self.assertFalse(Path('/proc',str(value['pid'])).exists())
+            self.assertEqual(value['process_identity']['pid'], value['pid'])
+            self.assertTrue(value['process_identity']['boot_id'])
+            self.assertTrue(value['process_identity']['start_ticks'].isdigit())
+
+    def test_historical_reap_survives_recycled_pid_but_same_live_owner_rejects(self):
+        # This real host process is unrelated to any historical guest receipt.
+        # Its PID existence alone cannot undo an observed historical wait().
+        owner = process_identity()
+        historical = {"pid": os.getpid(), "cleanup": {"process_reaped": True}}
+        validate_reaped_process(historical)
+        previous = {**owner, "start_ticks": str(int(owner["start_ticks"]) - 1)}
+        validate_reaped_process({**historical, "process_identity": previous})
+        validate_reaped_process({**historical, "process_identity": {**owner, "boot_id": "another-boot"}})
+        for identity in (owner, {**owner, "start_ticks": int(owner["start_ticks"])}):
+            with self.assertRaisesRegex(Core0Error, "still present"):
+                validate_reaped_process({**historical, "process_identity": identity})
+        for identity in (None, {"pid": os.getpid()}, {**owner, "pid": os.getpid() + 1},
+                         {**owner, "start_ticks": None}, {**owner, "extra": "unexpected"}):
+            with self.assertRaisesRegex(Core0Error, "malformed"):
+                validate_reaped_process({**historical, "process_identity": identity})
+        for invalid in ({**historical, "cleanup": {"process_reaped": False}},
+                        {**historical, "cleanup": {"process_reaped": 1}}, {**historical, "pid": -1}):
+            with self.assertRaises(Core0Error):
+                validate_reaped_process(invalid)
 
     def test_interruption_kills_and_reaps_independent_tool_child(self):
         # A real host-only child proves that interruption does not leak the
@@ -90,6 +115,11 @@ class AcceptanceFailures(unittest.TestCase):
                       'cleanup':{'explicit_host_stop':True,'process_group_killed':True,'target_exited_before_cleanup':False,'process_reaped':True},
                       'raw_artifacts':{name:sha256(p/name) for name in ('received.bin','sent.bin','stderr.bin')}}
             result = p/'result.json'; result.write_text(json.dumps(report)); validate_session(result,image)
+            recycled = {**report, 'pid': os.getpid()}
+            result.write_text(json.dumps(recycled)); validate_session(result,image)
+            result.write_text(json.dumps({**recycled, 'process_identity': process_identity()}))
+            with self.assertRaisesRegex(Core0Error, 'still present'):
+                validate_session(result,image)
             for key, value in [('raw_artifacts', {}), ('source_inputs', {}), ('records', [[1]*5]),
                                ('cleanup',{'explicit_host_stop':True,'process_group_killed':True,'process_reaped':True})]:
                 bad = {**report, key:value}; result.write_text(json.dumps(bad))

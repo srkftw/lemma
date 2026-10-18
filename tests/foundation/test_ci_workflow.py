@@ -2,17 +2,24 @@
 """Static regressions for the bounded, pinned foundation and kernel CI lanes."""
 
 from pathlib import Path
+from contextlib import redirect_stdout
+import io
+import json
+import os
 import re
+import textwrap
 import unittest
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github/workflows/core0.yml"
 
 
-JOBS = ("lemmasim-writing-rv64", "metadata", "kernel-managed-rv64", "kernel-services-rv64", "legacy-rv64",
+REQUIRED_JOBS = ("lemmasim-writing-rv64", "metadata", "kernel-managed-rv64", "kernel-services-rv64", "legacy-rv64",
         "foundation-rv64", "kernel-rv64", "kernel-source-negatives-rv64",
         "kernel-architecture-rv64", "silicon-devices-rtl", "crypto-rv64")
+JOBS = (*REQUIRED_JOBS, "acceptance-summary")
 
 
 def job_block(source: str, job: str) -> str:
@@ -68,7 +75,7 @@ class CiWorkflowTests(unittest.TestCase):
             r"^  ([a-z0-9-]+):$", self.source.split("jobs:\n", 1)[1], re.MULTILINE
         )
         self.assertEqual(jobs, list(JOBS))
-        for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/boot", "tests/kernel", "tests/silicon"):
+        for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/boot", "tests/kernel", "tests/cache", "tests/silicon"):
             self.assertIn(suite, self.metadata)
         self.assertIn("scripts/check_scaffold.py", self.metadata)
         self.assertIn("lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel", self.metadata)
@@ -174,7 +181,9 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/arithmetic-aligned-actions.log",
                          "metadata/llvm-name-sets.log",
                          "metadata/kernel-host-unittest.log",
+                         "metadata/cache-host-unittest.log",
                          "metadata/silicon-host-unittest.log"),
+            "acceptance-summary": (),
             "crypto-rv64": ("crypto-rv64.log", "development-auth-rom.log", "development-auth-layout.log"),
             "legacy-rv64": ("legacy-rv64.log",),
             "foundation-rv64": ("foundation-gates1-9.log", "foundation-qualification.log"),
@@ -205,6 +214,67 @@ class CiWorkflowTests(unittest.TestCase):
             logged_pipeline_names(source.replace("set -euo pipefail", "set -eu", 1))
         with self.assertRaises(ValueError):
             logged_pipeline_names(source.replace("build/ci/second.log", "unretained.log"))
+
+    def test_kernel_host_prerequisite_is_produced_shared_and_revalidated(self):
+        receipt = "build/ci/metadata/kernel-host-prerequisite"
+        artifact = "kernel-host-prerequisite-${{ github.run_id }}-${{ github.run_attempt }}"
+        for required in ("python3 scripts/host_prerequisites.py produce",
+                         "--output-dir " + receipt + " --timeout 850",
+                         "timeout --foreground --signal=TERM --kill-after=30s 15m",
+                         "name: " + artifact, receipt + "/receipt.json",
+                         receipt + "/kernel-host.log"):
+            self.assertIn(required, self.metadata)
+        share = self.metadata.split("      - name: Share the exact successful kernel host receipt\n", 1)[1].split("      - name:", 1)[0]
+        self.assertIn("uses: actions/upload-artifact@", share)
+        self.assertIn("if-no-files-found: error", share)
+        self.assertNotIn("if:", share)
+        self.assertEqual(self.metadata.count("scripts/host_prerequisites.py produce"), 1)
+        self.assertRegex(self.kernel, r"(?m)^    needs: metadata$")
+        for required in ("uses: actions/download-artifact@", "name: " + artifact,
+                         "path: " + receipt, "--host-prerequisite " + receipt + "/receipt.json",
+                         "from host_prerequisites import validate as validate_host_prerequisite",
+                         'validate_host_prerequisite(Path.cwd(), Path("build/kernel/ci-prefix/host-prerequisite/receipt.json"))',
+                         'row.get("route") == "lemma-kernel-host-prerequisite/1"',
+                         'require(len(shared) == 1 and shared[0] == {"label": "kernel-host", **admission})',
+                         'require(value["host_tests"] == admission["test_count"] and admission["test_count"] > 0)'):
+            self.assertIn(required, self.kernel)
+        self.assertLess(self.kernel.index("uses: actions/download-artifact@"), self.kernel.index("python3 scripts/check_kernel.py"))
+        self.assertNotIn("continue-on-error", self.kernel)
+
+    def test_aggregate_requires_exact_original_jobs_and_rejects_every_non_success(self):
+        summary = self.blocks["acceptance-summary"]
+        self.assertIn("    if: ${{ always() }}\n", summary)
+        self.assertIn("REQUIRED_DISPOSITIONS: ${{ toJSON(needs) }}", summary)
+        needs = summary.split("    needs:\n", 1)[1].split("    steps:\n", 1)[0]
+        self.assertEqual(re.findall(r"^      - ([a-z0-9-]+)$", needs, re.M), list(REQUIRED_JOBS))
+        self.assertNotIn("continue-on-error", summary)
+        script = textwrap.dedent(summary.split("          python3 - <<'PY'\n", 1)[1].split("          PY", 1)[0])
+        code = compile(script, str(WORKFLOW) + ":acceptance-summary", "exec")
+
+        def require_dispositions(values):
+            with mock.patch.dict(os.environ, {"REQUIRED_DISPOSITIONS": json.dumps(values)}), redirect_stdout(io.StringIO()):
+                exec(code, {})
+
+        successful = {job: {"result": "success"} for job in REQUIRED_JOBS}
+        require_dispositions(successful)
+        for job in REQUIRED_JOBS:
+            missing = dict(successful)
+            del missing[job]
+            with self.subTest(job=job, result="missing"), self.assertRaisesRegex(RuntimeError, "inventory is incomplete"):
+                require_dispositions(missing)
+            for result in ("failure", "cancelled", "skipped", "unavailable", "", None):
+                with self.subTest(job=job, result=result), self.assertRaisesRegex(RuntimeError, "Required claim failed"):
+                    require_dispositions({**successful, job: {"result": result}})
+        with self.assertRaisesRegex(RuntimeError, "inventory is incomplete"):
+            require_dispositions({**successful, "unexpected": {"result": "success"}})
+
+    def test_cache_host_suite_retains_a_nonempty_success_requirement(self):
+        for required in ("python3 -m unittest discover -s tests/cache -v",
+                         'Path("build/ci/metadata/cache-host-unittest.log").read_text()',
+                         'count = re.search(r"Ran ([0-9]+) tests?", value)',
+                         'if not count or int(count[1]) <= 0 or not re.search(r"^OK$", value, re.M):',
+                         'raise RuntimeError("Cache/status host suite is missing, empty or failing")'):
+            self.assertIn(required, self.metadata)
 
     def test_lemmasim_lane_builds_pinned_host_and_checks_real_cold_guest_ink(self):
         lane = self.blocks['lemmasim-writing-rv64']

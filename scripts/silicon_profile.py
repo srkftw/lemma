@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """Deterministic silicon binding generation; no guest policy lives here."""
 from __future__ import annotations
-import argparse, hashlib, json, struct, subprocess
+import argparse, hashlib, json, struct, subprocess, tempfile
 from pathlib import Path
+from action_cache import write_if_changed
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.1.0.json'
 FULL_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.2.0.json'
@@ -226,14 +227,17 @@ def dts(p, devices=True):
 
 def generate(out, *, devices=True, name=None):
     p=profile(name);out.mkdir(parents=True,exist_ok=True)
-    (out/'platform.dts').write_text(dts(p,devices))
-    subprocess.run(['dtc','-I','dts','-O','dtb','-o',str(out/'platform.dtb'),str(out/'platform.dts')],check=True,timeout=30)
-    (out/'descriptor.bin').write_bytes(descriptor(p,(out/'platform.dtb').stat().st_size))
+    write_if_changed(out/'platform.dts',dts(p,devices))
+    with tempfile.TemporaryDirectory(prefix='.binding-',dir=out) as temporary:
+        dtb=Path(temporary)/'platform.dtb'
+        subprocess.run(['dtc','-I','dts','-O','dtb','-o',str(dtb),str(out/'platform.dts')],check=True,timeout=30)
+        write_if_changed(out/'platform.dtb',dtb.read_bytes())
+    write_if_changed(out/'descriptor.bin',descriptor(p,(out/'platform.dtb').stat().st_size))
     fields=constants(p)
     package=f'// Generated from {profile_path(name).relative_to(ROOT)}\npackage lemma_silicon_binding;\n'
     package+=''.join(f'  localparam logic [63:0] {k.upper()} = 64\'h{v:016x};\n' for k,v in fields.items())
-    package+='endpackage\n';(out/'lemma_silicon_binding.sv').write_text(package)
-    (out/'binding.json').write_text(json.dumps({'profile':p['profile'],'profile_sha256':hashlib.sha256(profile_path(name).read_bytes()).hexdigest(),
+    package+='endpackage\n';write_if_changed(out/'lemma_silicon_binding.sv',package)
+    write_if_changed(out/'binding.json',json.dumps({'profile':p['profile'],'profile_sha256':hashlib.sha256(profile_path(name).read_bytes()).hexdigest(),
         'devices_enabled':devices,'constants':fields},indent=2)+'\n')
     return p
 
@@ -255,6 +259,6 @@ if __name__=='__main__':
         if not power_abi.exists() or power_abi.read_text()!=power_header():raise SystemExit('FAIL: generated power ABI is stale')
         if generated.read_text()!=lean_text(p):raise SystemExit('FAIL: generated Lean silicon binding is stale')
     else:
-        power_abi.write_text(power_header())
-        generated.parent.mkdir(parents=True,exist_ok=True);generated.write_text(lean_text(p))
+        write_if_changed(power_abi,power_header())
+        write_if_changed(generated,lean_text(p))
     if args.output_dir:generate(args.output_dir,devices=not args.compute_only,name=args.profile)

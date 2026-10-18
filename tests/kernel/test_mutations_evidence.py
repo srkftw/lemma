@@ -63,6 +63,143 @@ class MutationObservationBudgetTests(unittest.TestCase):
             self.assertEqual(row["returncode"], 0)
 
 
+class MutationArtifactAdmissionTests(unittest.TestCase):
+    """Real host fixture subprocess receipts, without target compilation or QEMU."""
+    def setUp(self):
+        from build_actions import BuildActions
+        self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.output = self.root / "build/kernel/host-artifact"
+        self.output.mkdir(parents=True)
+        helper_names = ("build_actions.py", "build_admission.py", "audit_kernel.py", "core0_common.py", "action_worker.py", "build_dependencies.py")
+        for name in helper_names:
+            path = self.root / "scripts" / name
+            path.parent.mkdir(exist_ok=True)
+            path.write_bytes((ROOT / "scripts" / name).read_bytes())
+        executable = (f"#!{sys.executable}\nimport pathlib,sys\n"
+                      "if '--version' in sys.argv: print('host receipt fixture 1');sys.exit(0)\n"
+                      "args=sys.argv[1:];source=pathlib.Path(args[-3]);destination=pathlib.Path(args[-1])\n"
+                      "destination.write_bytes(source.read_bytes()+b' observed host subprocess')\n")
+        tools = {}
+        for name in ("lean", "lake", "opt", "llc", "clang", "ld.lld", "llvm-objcopy"):
+            path = self.root / "tools" / name
+            path.parent.mkdir(exist_ok=True)
+            path.write_text(executable); path.chmod(0o755)
+            tools[name] = str(path)
+        (self.output / "program.ll").write_bytes(b"host fixture input, not LLVM or a target image")
+        self.commands = []
+        self.tools = tools
+        self.actions = BuildActions(self.root, self.output, tools, 10, self.commands, fresh=True)
+        self.actions.invoke(["opt", "-S", "-passes=default<O2>", "program.ll", "-o", "program.opt.ll"], self.output)
+        self.image = self.output / "image.elf"
+        self.image.write_bytes(b"host fixture, not an ELF")
+        self.identity = {"commit": "a" * 40}
+        self.sources = {"scripts/" + name: sha256(self.root / "scripts" / name)
+                        for name in helper_names}
+        self.artifacts = {name: sha256(self.output / name) for name in ("image.elf", "program.ll", "program.opt.ll")}
+        self.publish()
+
+    def publish(self):
+        common = {"configuration": "host-fixture", "optimization": "O2", "stage": "supervisor"}
+        write_json(self.output / "provenance.json", {**common, "source_commit": self.identity["commit"],
+                   "dirty_paths": [], "source_inputs": self.sources, "artifacts": self.artifacts, "commands": self.commands})
+        write_json(self.output / "build.json", {**common, "status": "BUILT", "artifacts": self.artifacts,
+                   "provenance_sha256": sha256(self.output / "provenance.json")})
+        write_json(self.output / "audit.json", {**common, "status": "PASS", "source_commit": self.identity["commit"],
+                   "dirty_paths": [], "image_sha256": sha256(self.image),
+                   "commands": [{"argv": ["host-only-observer-fixture"], "returncode": 0}]})
+
+    def validate(self):
+        return mutations._artifact(self.image, root=self.root, identity=self.identity, sources=self.sources,
+                                   dirty=[], config="host-fixture", opt="O2")
+
+    def test_actual_saved_execution_admits_without_fabricated_executed_row(self):
+        receipt_path = self.output / self.commands[0]["admission"]
+        original = receipt_path.read_bytes()
+        original_rows = copy.deepcopy(self.commands)
+        self.assertNotIn("returncode", self.commands[0])
+        self.assertEqual(self.validate()["image_sha256"], sha256(self.image))
+        self.assertEqual(receipt_path.read_bytes(), original)
+        self.assertEqual(self.commands, original_rows)
+        self.assertEqual(load_json(receipt_path)["producer"]["executed"]["commands"][0]["returncode"], 0)
+
+    def test_corrupt_and_unknown_saved_admissions_reject_with_outer_hashes_rebound(self):
+        from action_cache import _digest, _json
+        path = self.output / self.commands[0]["admission"]
+        original = load_json(path)
+        for defect in ("unknown-schema", "failed-command"):
+            with self.subTest(defect=defect):
+                receipt = copy.deepcopy(original)
+                if defect == "unknown-schema":
+                    receipt["schema"] = "unknown-admission/1"
+                else:
+                    receipt["producer"]["executed"]["commands"][0]["returncode"] = 1
+                    receipt["producer_receipt_id"] = _digest(_json(receipt["producer"]))
+                write_json(path, receipt)
+                self.commands[0]["admission_sha256"] = sha256(path)
+                self.publish()
+                with self.assertRaises(Core0Error): self.validate()
+
+    def test_unknown_route_cannot_pose_as_an_executed_success(self):
+        self.commands[0].update(route="unknown-admission/1", returncode=0)
+        self.publish()
+        with self.assertRaisesRegex(Core0Error, "unknown admission route"):
+            self.validate()
+
+    def warm_artifact(self):
+        from build_actions import BuildActions
+        original_path = self.output / self.commands[0]["admission"]
+        original = original_path.read_bytes()
+        producer_id = load_json(original_path)["producer_receipt_id"]
+        source = (self.output / "program.ll").read_bytes()
+        image = self.image.read_bytes()
+        self.output = self.root / "build/kernel/warm-host-artifact"
+        self.output.mkdir()
+        (self.output / "program.ll").write_bytes(source)
+        self.commands = []
+        warm = BuildActions(self.root, self.output, self.tools, 10, self.commands, fresh=False)
+        warm.invoke(["opt", "-S", "-passes=default<O2>", "program.ll", "-o", "program.opt.ll"], self.output)
+        receipt = load_json(self.output / self.commands[0]["admission"])
+        self.assertEqual(receipt["status"], "reused")
+        self.assertEqual(receipt["producer_receipt_id"], producer_id)
+        self.image = self.output / "image.elf"
+        self.image.write_bytes(image)
+        self.artifacts = {name: sha256(self.output / name) for name in ("image.elf", "program.ll", "program.opt.ll")}
+        self.publish()
+        return original_path, original, receipt
+
+    def test_actual_warm_receipt_cannot_pass_independent_fresh_qualification(self):
+        original_path, original, _ = self.warm_artifact()
+        with self.assertRaisesRegex(Core0Error, "fresh mutation qualification rejects reused"):
+            self.validate()
+        self.assertEqual(original_path.read_bytes(), original)
+
+    def test_actual_warm_outer_label_cannot_relabel_original_production_as_fresh(self):
+        original_path, original, receipt = self.warm_artifact()
+        producer = copy.deepcopy(receipt["producer"])
+        receipt["status"] = "fresh"
+        path = self.output / self.commands[0]["admission"]
+        write_json(path, receipt)
+        self.commands[0]["admission_sha256"] = sha256(path)
+        self.publish()
+        self.assertEqual(load_json(path)["producer"], producer)
+        with self.assertRaisesRegex(Core0Error, "original producer request differs"):
+            self.validate()
+        self.assertEqual(original_path.read_bytes(), original)
+
+    def test_boolean_original_execution_cannot_be_normalized_into_success(self):
+        from action_cache import _digest, _json
+        path = self.output / self.commands[0]["admission"]
+        receipt = load_json(path)
+        receipt["producer"]["executed"]["commands"][0]["returncode"] = False
+        receipt["producer_receipt_id"] = _digest(_json(receipt["producer"]))
+        write_json(path, receipt)
+        self.commands[0]["admission_sha256"] = sha256(path)
+        self.publish()
+        with self.assertRaises(Core0Error):
+            self.validate()
+
+
 class MutationEvidenceTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="lemma-O0-ancestor-"); self.addCleanup(self.temp.cleanup)

@@ -1,6 +1,7 @@
 """Host-only cold dependency ordering guards; no Lean/LLVM/QEMU run is mocked as a target pass."""
 from __future__ import annotations
 import sys,tempfile,unittest
+from contextlib import contextmanager
 from pathlib import Path
 from unittest import mock
 ROOT=Path(__file__).resolve().parents[2]
@@ -27,6 +28,7 @@ class ConsoleDependencyTests(unittest.TestCase):
         return temporary,root
     def precompile(self,root,commands,mode):
         def invoke(_rows,argv,**_):
+            if not argv or argv[0]!='lake':raise AssertionError('host ordering fixture reached a non-Lean command')
             commands.append(tuple(argv))
             if tuple(argv)==('lake','build'):return None  # Library default deliberately does not realize this new module.
             if '-o' not in argv:raise ExportBoundary()
@@ -37,6 +39,18 @@ class ConsoleDependencyTests(unittest.TestCase):
             if source==DEPENDENCY and mode=='missing':return None
             output.write_bytes(b'' if source==DEPENDENCY and mode=='empty' else b'host-olean-fixture:'+str(source).encode())
         return invoke
+    @contextmanager
+    def host_elaboration(self,root,commands,mode):
+        # These fixtures stop at export, before any generated LLVM input exists.
+        # Keep the real driver ordering while rejecting the separate LLVM seam.
+        with mock.patch.object(build_core0,'require_tools',return_value={}),mock.patch('build_actions.BuildActions') as actions,mock.patch.object(build_core0,'_invoke',side_effect=self.precompile(root,commands,mode)):
+            actions.return_value.provenance={}
+            actions.return_value.invoke.side_effect=AssertionError('host ordering fixture reached an LLVM action')
+            try:
+                yield
+            finally:
+                actions.assert_called_once()
+                actions.return_value.invoke.assert_not_called()
     def test_cold_dependency_precedes_every_client_and_is_hashed_before_export(self):
         for driver in DRIVERS:
             for build_lean in (False,True):
@@ -44,7 +58,7 @@ class ConsoleDependencyTests(unittest.TestCase):
                     temporary,root=self.fixture(driver)
                     with temporary:
                         calls=[]
-                        with mock.patch.object(build_core0,'require_tools',return_value={}),mock.patch.object(build_core0,'_invoke',side_effect=self.precompile(root,calls,'ok')),mock.patch.object(build_core0,'sha256',wraps=build_core0.sha256) as hashed:
+                        with self.host_elaboration(root,calls,'ok'),mock.patch.object(build_core0,'sha256',wraps=build_core0.sha256) as hashed:
                             with self.assertRaises(ExportBoundary):self.invoke_driver(driver,root,build_lean)
                         sources=[Path(c[-1]) for c in calls if '-o' in c]
                         self.assertEqual(sources.count(DEPENDENCY),1)
@@ -63,7 +77,7 @@ class ConsoleDependencyTests(unittest.TestCase):
                     temporary,root=self.fixture(driver)
                     with temporary:
                         calls=[]
-                        with mock.patch.object(build_core0,'require_tools',return_value={}),mock.patch.object(build_core0,'_invoke',side_effect=self.precompile(root,calls,mode)):
+                        with self.host_elaboration(root,calls,mode):
                             with self.assertRaisesRegex(Core0Error,'nonempty olean'):self.invoke_driver(driver,root,False)
                         self.assertFalse(any('-o' in c and Path(c[-1])==CLIENT for c in calls))
                         self.assertFalse(any('-o' not in c and c[:3]==('lake','env','lean') for c in calls))

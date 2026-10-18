@@ -111,9 +111,12 @@ def build(args):
     elif args.guest_build:
         directory = args.guest_build.resolve()
     else:
-        guest.run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/build_kernel.py',
+        guest_command=['nix','develop','--no-write-lock-file','--command','python3','scripts/build_kernel.py',
                            '--configuration',selected[workload],'--stage','supervisor','--opt-level',args.opt_level,
-                           '--output-dir',directory,'--timeout','300'], timeout=1500)
+                           '--output-dir',directory,'--timeout','300']
+        if getattr(args,'fresh',False):guest_command+=['--fresh']
+        if getattr(args,'cache_dir',None) is not None:guest_command+=['--cache-dir',args.cache_dir]
+        guest.run_command(guest_command, timeout=1500)
         guest.run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_kernel.py',directory],timeout=600)
     if archived is None:
         guest.verify_guest_build(directory, selected[workload], args.opt_level)

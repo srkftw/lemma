@@ -16,13 +16,14 @@ import os
 from pathlib import Path
 import re
 import signal
+import shutil
 import sys
 import time
 
 from build_core0 import prepare_output_directory
 from build_kernel import build, source_inputs
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
-from run_kernel import RECORD_BYTES, parse_record
+from run_kernel import RECORD_BYTES, parse_record, validate_reaped_process
 
 QUARANTINE = ("user-isolation-development", "user-csr-development", "user-nx-development",
               "user-kernel-fetch-development", "user-misaligned-development")
@@ -94,7 +95,7 @@ def source_identity(root: Path) -> dict:
 
 def acceptance_inputs(root: Path) -> dict:
     paths = {root / ".github/workflows/core0.yml", root / "scripts/check_kernel.py", root / "scripts/run_kernel.py",
-             root / "scripts/run_device_session.py", root / "scripts/run_monitor_session.py",
+             root / "scripts/run_device_session.py", root / "scripts/run_monitor_session.py", root / "scripts/host_prerequisites.py",
              *(root / "scripts" / name for name in ("buffer_transport.py", "run_buffer_session.py", "buffer-cli.py", "buffer_reference.py"))}
     paths.update((root / "scripts").glob("check_kernel_*.py"))
     paths.update((root / "tests/kernel").rglob("*.py"))
@@ -112,8 +113,7 @@ def validate_session(path: Path, image: Path, *, machine_origin: bool = False) -
     if not isinstance(value.get("source_inputs"), dict) or not value["source_inputs"] or value["source_inputs"] != provenance.get("source_inputs"):
         raise Core0Error("guest source hash inventory is missing or differs")
     cleanup = value.get("cleanup", {})
-    if not isinstance(cleanup, dict) or cleanup.get("process_reaped") is not True or type(value.get("pid")) is not int or Path("/proc", str(value["pid"])).exists():
-        raise Core0Error("guest process lacks observed cleanup/reaping")
+    validate_reaped_process(value)
     if machine_origin:
         if (value.get("returncode") != 48 or value.get("trace_observed") is not True or value.get("actual_trap", {}).get("cause") != 11
                 or cleanup.get("explicit_host_stop") is not False or value.get("target_exited_before_cleanup") is not True):
@@ -180,7 +180,8 @@ def validate_session(path: Path, image: Path, *, machine_origin: bool = False) -
     return value
 
 
-def check(*, root: Path, work_dir: Path, clean: bool, timeout: float, qemu_timeout: float, deadline: float) -> dict:
+def check(*, root: Path, work_dir: Path, clean: bool, timeout: float, qemu_timeout: float, deadline: float,
+          host_prerequisite: Path | None = None) -> dict:
     try:
         relative = work_dir.resolve().relative_to((root / "build/kernel").resolve())
     except ValueError as error:
@@ -229,6 +230,17 @@ def check(*, root: Path, work_dir: Path, clean: bool, timeout: float, qemu_timeo
         report.update(source=identity, source_inputs=sources, acceptance_inputs=consumers)
         for label, argv in (("lake-build", ("lake", "build")),
                             ("kernel-host", (sys.executable, "-m", "unittest", "discover", "-s", "tests/kernel", "-v"))):
+            if label == "kernel-host" and host_prerequisite is not None:
+                from host_prerequisites import validate as validate_host_prerequisite
+                validate_host_prerequisite(root, host_prerequisite)
+                retained = work_dir / "host-prerequisite"
+                retained.mkdir()
+                shutil.copyfile(host_prerequisite, retained / "receipt.json")
+                shutil.copyfile(host_prerequisite.parent / "kernel-host.log", retained / "kernel-host.log")
+                admission = validate_host_prerequisite(root, retained / "receipt.json")
+                report["invocations"].append({"label": label, **admission})
+                report["host_tests"] = admission["test_count"]
+                continue
             result = run_bounded(argv, cwd=root, timeout_seconds=min(timeout, remaining()))
             log = logs / (label + ".log"); log.write_bytes(result.stdout + result.stderr)
             report["invocations"].append({"execution": "subprocess", "argv": list(result.argv), "returncode": result.returncode,
@@ -327,6 +339,8 @@ def main() -> int:
     parser.add_argument("--timeout", type=float, default=300)
     parser.add_argument("--qemu-timeout", type=float, default=90)
     parser.add_argument("--deadline", type=float, default=2400)
+    parser.add_argument("--host-prerequisite", type=Path,
+                        help="Validate an exact ordinary kernel-host receipt; Lake and all target qualification remain fresh")
     args = parser.parse_args()
     interruption = None
     def terminate(_signum, _frame):
@@ -347,7 +361,8 @@ def main() -> int:
             signal.setitimer(signal.ITIMER_REAL, args.deadline)
         root = repo_root()
         value = check(root=root, work_dir=(root / args.work_dir).resolve(), clean=args.clean,
-                      timeout=args.timeout, qemu_timeout=args.qemu_timeout, deadline=args.deadline)
+                      timeout=args.timeout, qemu_timeout=args.qemu_timeout, deadline=args.deadline,
+                      host_prerequisite=(root / args.host_prerequisite).resolve() if args.host_prerequisite else None)
         print(f"PASS: clean Task003 A-E prefix, {len(value['images'])} images, {len(value['observations'])} checker reports")
         return 0
     except (Core0Error, OSError, ValueError, TypeError, KeyError) as error:
