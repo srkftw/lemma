@@ -30,6 +30,38 @@ private def decodeStep (i _ : UInt32) (acc source output _ _ : UInt64) : Action 
 private def separate (address bytes output : UInt64) : Bool :=
   if address ≤ output then bytes ≤ output-address else output+192 ≤ address
 
+/-- Only the guest's dedicated LOAD intent requires a marked response. An
+ordinary historical chooser load retains its original package semantics. -/
+def requiredMarkerReason (requested selected marked : UInt64) : UInt64 :=
+  if requested = 1 then if selected = 60001 then if marked = 0 then 18 else 0 else 0 else 0
+
+private def annotationByte (claim index : UInt64) : UInt64 :=
+  let word := if index/8 = 0 then 0x4946495245564e55 else
+    if index/8 = 1 then 0x5349535341204445 else
+    if claim = 0 then 0x203a45434e4154 else
+    if index/8 = 2 then 0x202d2045434e4154 else
+    if index/8 = 3 then 0x474e494b43454843 else
+    if index/8 = 4 then 0x474e49444e455020 else 0x203a
+  (word >>> (index%8*8)) &&& 255
+private def annotationStep (i _ : UInt32) (acc address claim _ _ : UInt64) : Action :=
+  .bind (Memory.read8 (address+i.toUInt64)) fun s byte => if s = 0 then
+  .done 0 (acc ||| (byte ^^^ annotationByte claim i.toUInt64)) else .done s 0
+
+/-- Requires successful decode of this immutable package into output. Claim0
+must begin with exactly `UNVERIFIED ASSISTANCE: `; claim1 with exactly
+`UNVERIFIED ASSISTANCE - CHECKING PENDING: `. The guest enforces these23/42
+visible ASCII bytes independently of the companion/publisher. Unknown claim
+classes remain the action validator's reason14, never checked authority. -/
+def annotationReason (address output : UInt64) : Action :=
+  .bind (Memory.read64 (output+96)) fun s claim => if s = 0 then
+  if 1 < claim then .done 0 0 else
+  .bind (Memory.read64 (address+248)) fun s body => if s = 0 then
+  let count : UInt64 := if claim = 0 then 23 else 42
+  if spanLength body < count then .done 0 19 else
+  .boundedFoldU64 42 annotationStep count.toUInt32 0 (address+spanOffset body) claim 0 0 fun s delta =>
+  if s = 0 then .done 0 (if delta = 0 then 0 else 19) else .done s 0
+  else .done s 0 else .done s 0
+
 /--0 means an ordinary package;1means a decoded marked assistance package.
 Output is192 caller-owned bytes disjoint from the full immutable package. -/
 def decode (address bytes output : UInt64) : Action :=
@@ -67,6 +99,9 @@ def validate (address bytes output context now : UInt64) : Action :=
   .bind (decode address bytes output) fun s marked => if s = 0 then
   if marked = 0 then .done 0 0 else
   .bind (TutorAction.validate output context now) fun s reason => if s = 0 then
-  if reason = 0 then .done 0 1 else .done 0 (32+reason)
+  if reason = 0 then
+  .bind (annotationReason address output) fun s annotation => if s = 0 then
+  if annotation = 0 then .done 0 1 else .done 0 (32+annotation) else .done s 0
+  else .done 0 (32+reason)
   else .done s 0 else .done s 0
 end Lemma.Multimodal.TutorPackage

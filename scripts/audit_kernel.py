@@ -4883,7 +4883,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
                 hoisted={'instruction':'li a5,8','definition_instruction':0,
                          'preserved_register':'a5','normalized_index_register':'a1'}
         elif (source=='Lemma.Courses.PackageReader.step'
-              and configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + CHOOSER_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
+              and configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + CHOOSER_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + MULTIMODAL_CONFIGURATIONS and image_key=='notebook'
               and count==6 and minimum==0 and len(code)==48 and use==21 and i==17
               and index==scaled==address=='a0' and base==target=='a2'
               and code[:4]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)']),

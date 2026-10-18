@@ -21,7 +21,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--work-dir',type=Path,required=True);p.add_argument('--inference',action='store_true');p.add_argument('--model',default='qwen2.5:7b');p.add_argument('--espeak',type=Path);a=p.parse_args();out=a.work_dir.resolve()
     if out.exists() or not out.is_relative_to(ROOT/'build'):p.error('unused ignored output required')
     out.mkdir(parents=True);started=time.monotonic()
-    sources=[*sorted((ROOT/'sim/companion/multimodal').glob('*.py')),*sorted((ROOT/'Lemma/Multimodal').glob('*.lean')),ROOT/'tests/multimodal/Policies.lean',ROOT/'tests/multimodal/TutorClaims.lean',Path(__file__)]
+    sources=[*sorted((ROOT/'sim/companion/multimodal').glob('*.py')),*sorted((ROOT/'Lemma/Multimodal').glob('*.lean')),ROOT/'tests/multimodal/Policies.lean',ROOT/'tests/multimodal/TutorClaims.lean',ROOT/'tests/multimodal/TutorAnnotations.lean',Path(__file__)]
     report={'status':'FAIL','scope':__doc__,'commands':[],'sources':{str(p.relative_to(ROOT)):sha(p) for p in sources}}
     try:
         rng=random.Random(72820);vectors=[]
@@ -41,9 +41,10 @@ def main():
             (out/(label+'.log')).write_bytes(result.stdout+result.stderr);report['commands'].append({'argv':argv,'returncode':result.returncode})
             if result.returncode:raise ValueError('actual command failed '+label)
             return result.stdout.decode()
-        command('elaborate',['lake','build','Lemma.Multimodal.Parameterized','Lemma.Multimodal.TutorAction','Lemma.Multimodal.ProtectedSession'])
+        command('elaborate',['lake','build','Lemma.Multimodal.Parameterized','Lemma.Multimodal.TutorAction','Lemma.Multimodal.ProtectedSession','Lemma.Multimodal.TutorPackage'])
         expect('MULTIMODAL_POLICIES:PASS' in command('lean-policies',['lake','env','lean',str(ROOT/'tests/multimodal/Policies.lean')]),'missing actual Lean policy outcomes')
         expect('TUTOR_CLAIM_KINDS:PASS' in command('lean-tutor-claims',['lake','env','lean',str(ROOT/'tests/multimodal/TutorClaims.lean')]),'unknown mathematical claim class admitted')
+        expect('TUTOR_ANNOTATIONS:PASS' in command('lean-tutor-annotations',['lake','env','lean',str(ROOT/'tests/multimodal/TutorAnnotations.lean')]),'guest-visible annotation or dedicated marker policy failed')
         #Official independent published vectors, not this producer's tags.
         key=bytes.fromhex('85d6be7857556d337f4452fe42d506a80103808afb0db2fd4abff6af4149f51b')
         expect(protected.poly1305(key,b'Cryptographic Forum Research Group').hex()=='a8061dc1305136c6c22b8baf0c0127a9','host RFC8439 Poly1305')

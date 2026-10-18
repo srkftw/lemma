@@ -5810,13 +5810,26 @@ private def multimodalLoadTutor : Action :=
   .bind (put 512 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (beginPackageRead 60001 sequence) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 128 60001) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (tutorState + 8) 1) fun s _ => if statusFailed s = true then .done s 0 else
   packagePut 136 sequence
+
+private def multimodalTutorDecision (reason : UInt64) : Action :=
+  .bind (tutorGet 16) fun s revision => if statusFailed s = true then .done s 0 else
+  .bind (tutorGet 24) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x724 reason revision object 0) fun s _ => if statusFailed s = true then .done s 0 else
+  if reason = 0 then .done 0 1 else .done 244 reason
 
 private def multimodalAdmitTutor : Action :=
   .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
   if phase = 2 then
+  .bind (Memory.read64 (tutorState + 8)) fun s requested => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 128) fun s selected => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (tutorState + 8) 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Multimodal.TutorPackage.decode packageBytes length tutorPacket) fun s marked => if statusFailed s = true then .done s 0 else
+  let markerReason := Lemma.Multimodal.TutorPackage.requiredMarkerReason requested selected marked
+  if 0 < markerReason then multimodalTutorDecision markerReason else
   if marked = 0 then .done 0 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision => if statusFailed s = true then .done s 0 else
@@ -5826,9 +5839,8 @@ private def multimodalAdmitTutor : Action :=
   if different object (Lemma.Courses.PackageWorkspace.object page) = true then .done 244 0 else
   .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Multimodal.TutorAction.validate tutorPacket tutorContext now) fun s reason => if statusFailed s = true then .done s 0 else
-  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
-  .bind (CapabilityConsole.record console 0x724 reason expectedRevision object 0) fun s _ => if statusFailed s = true then .done s 0 else
-  if reason = 0 then .done 0 1 else .done 244 reason
+  .bind (if reason = 0 then Lemma.Multimodal.TutorPackage.annotationReason packageBytes tutorPacket else .done 0 reason)
+    fun s decision => if statusFailed s = true then .done s 0 else multimodalTutorDecision decision
   else .done 0 0
 
 /-- Consume the proposal sequence after guest rasterization succeeds. This is
