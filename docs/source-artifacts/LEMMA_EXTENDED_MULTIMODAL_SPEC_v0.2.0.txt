@@ -1,0 +1,702 @@
+# Lemma Extended Multimodal Client Specification v0.2.0
+
+## Tablet optical sensing and physiological/audio headband
+
+**Status:** Proposed normative revision; not an implementation report, frozen numeric hardware ABI, patent-clearance opinion, tapeout approval, or consumer-safety certification.  
+**Date:** 2026-10-13.  
+**Proposed profile:** `lemma-one-multimodal/0.2.0`.  
+**Supersedes:** The proposed multimodal architecture in the supplied v0.1.0 document; historical deployed interfaces and evidence retain their original scope.  
+**Purpose:** Define one fully simulatable open client with tablet-mounted eye/face acquisition and a detachable headband for EEG, contact PPG, fNIRS, microphone capture, and custom bone-conduction output. A separately identified flow-sensitive capability supports the blood-flow target; conventional fNIRS alone MUST NOT satisfy that claim.
+
+**Source and review boundary:** This revision is based on the supplied `LEMMA_EXTENDED_MULTIMODAL_SPEC_v0.1.0.txt`, SHA-256 `d0cfb7900e7246a8cf78f30cb595006696f50577c1ca93bad537c6cae2d358ff`. Its reported repository baseline was `srkftw/lemma`, `main` at `b2fe214258345f9e48ae1f836fd80b0773d933a6`, with task head `d219650b1cef7f3c3eff080f2ab78c2bcf21c504` and tree `b6871119603f32ff01107424e4f2f2f2a99d03ba`. Those identifiers are inherited context, NOT a fresh review of current main, an active branch, or a PR. No repository changes, simulator execution, hardware qualification, or patent clearance were performed for this revision. The companion testing plan is a proposal, not a claim that the bridges already exist.
+
+“MUST” states an acceptance requirement of this proposed specification. “SHOULD” states a preferred design whose replacement requires a recorded rationale. “MAY” identifies an optional capability. None of these words claims present implementation. Numeric workloads marked **SYNTHETIC REFERENCE** are simulator design points, not measured sensor specifications.
+
+**Revision decisions:** Remove mandatory head-mounted eye/scene cameras. Admit a camera without requiring RGB collection. Prefer the smallest justified eye/face sensing arrangement rather than a compulsory camera-plus-LiDAR collection stack. Add physiological optical acquisition, explicit manufacturing/rights evidence, and a strict distinction between canonical devices and optional commercial development adapters. Preserve the one-machine, Lean-target, full-digital-simulation, mathematical-evidence, and independent-learning-outcome requirements.
+
+## 1. Product definition
+
+Lemma is an open, pen-first mathematical textbook/workbook system with two permanent client embodiments: physical Lemma One and virtual LemmaSim. This extension makes the complete multimodal accessory part of the machine being simulated, rather than attaching sensor summaries to a separate browser application.
+
+The completed system MUST support a student who writes mathematics, speaks questions, receives written and spoken explanations, and selectively authorizes physiological and gaze observations. The tutor MAY learn how to change explanations, exercises, pacing, presentation, and intervention timing from those observations. It MUST be evaluated primarily by later independent mathematical capability, not by a predefined interpretation of EEG or gaze.
+
+The central invariant is:
+
+> One versioned machine contract, one maintained Lean-authored client stack, one mathematical document/evidence system, and equivalent admitted digital behavior across physical and virtual embodiments.
+
+This preserves the repository’s canonical machine contract and the distinction between raw ink, interpreted mathematics, checking evidence, and learner estimates. [R1, R4]
+
+### 1.1 Required end-state capabilities
+
+The full multimodal profile MUST include pen acquisition and local ink feedback; electrophoretic display control; raw multichannel EEG; contact PPG waveforms; wavelength-resolved fNIRS optical acquisition; tablet-mounted eye/face acquisition; tablet/document-relative gaze estimation with uncertainty; independently qualified facial-movement observations; microphone capture; programmable bone-conduction audio playback; clocks, DMA, interrupts, reset and power control for every device; permissioned companion communication; recoverable mathematical documents; and replayable observations, interventions, and assessments.
+
+The full profile MUST implement EEG, PPG, fNIRS, eye/face acquisition and audio interfaces. Depth/ToF and flow-sensitive optical sensing are separately advertised extensions. A configuration claiming the complete blood-flow-plus-oxygenation capability MUST include the flow-sensitive extension as well as fNIRS; a configuration without it MUST state blood flow unavailable. The simulator MUST admit a fully synthetic configuration exercising both extensions without physical consumer equipment.
+
+Full-profile support does not mean every stream is always active. Pen-only and silent operation MUST remain useful, supported configurations. Removing a headband, losing a sensor, or declining physiological collection MUST NOT disable the notebook or mathematical verification.
+
+### 1.2 Explicit non-goals
+
+This specification does not claim to simulate a human brain, predict a particular student’s future physiological response, reproduce electrophoresis or bone mechanics exactly, infer a person’s true emotion directly from facial movement, provide clinical cerebral oxygenation or blood-flow measurements without separate qualification, diagnose attention disorders, or provide electrical brain stimulation. EEG electrodes are acquisition interfaces, not a general stimulation interface. Ordinary speech and audio cues are in scope; neural-phase-targeted stimulation requires a separately specified and reviewed capability.
+
+The simulator’s exclusion of physical processes MUST NOT be used to exclude their digital controllers, deadlines, status signals, fault consequences, power sequencing, or safety interlocks.
+
+### 1.3 Signal economy: useful information without compulsory collection
+
+The design objective is the smallest justified sensing and representation burden that preserves useful instructional information, uncertainty, and inspectable evidence. “Pure signal” means a declared physical observable with known transformations, not an unsupported claim of a noise-free measurement or direct access to understanding.
+
+A modality or extra camera MUST have a named purpose, a measurement requirement, and an evaluation plan. Routine capture SHOULD prefer justified regions of interest, rates, spectral bands, and bounded processing windows. RGB, room video, identity recognition, extra microphones, LiDAR, and redundant physiological estimates MUST NOT be enabled merely because hardware makes them available. Reference observations that identify motion, optical cross-talk, contact loss, or playback interference MAY be useful even when they are not tutor inputs themselves.
+
+Raw acquisition, local processing, transmission, retention, and training are independent choices. The architecture MUST expose the real acquisition representation in explicitly authorized diagnostic/research modes. This does not require continuously archiving full-face imagery or physiological data. Cropping, compression, normalization, filtering, and learned encoders MUST be identified; a cropped stream MUST NOT be advertised as a retained complete sensor frame.
+
+The open tutor MAY learn directly from authorized raw windows or learned representations. No mandatory “attention,” “confusion,” “emotion,” or engagement-score bottleneck is imposed. Simpler representations SHOULD be compared with richer ones using measurement validity and later independent learning. The system MUST be able to ignore or disable a modality that adds no demonstrated value. Unknown utility is a research question, not permission for permanent default collection.
+
+## 2. Compatibility, precedence, and scope of change
+
+The canonical machine contract remains authoritative for observable behavior. `LEMMA_SILICON_v0.1.0.md` continues to govern the primary tablet silicon and openness policy. Historical QEMU/LemmaVM profiles and their acceptance evidence retain their original meanings. [R1–R3]
+
+This extension MUST NOT silently change the existing pen/paper register layouts, fixed v1 descriptor, interrupt assignments, sequence semantics, owned-memory rules, durable acknowledgements, or document formats. New devices MUST be discoverable in a new, versioned board binding. The existing profile/constants generation mechanism MUST remain the single source of numeric definitions; do not add a competing general interface-description language.
+
+Student, Developer, and Laboratory remain modes of the same machine, with different capabilities rather than incompatible application forks.
+
+The proposed full profile is a capability superset, not a retroactive claim that `lemma-one-core/0.1.0` already implements multimodal hardware. A legacy guest must either continue its supported pen/notebook workflow or explicitly reject an unsupported profile. Unsupported capabilities MUST NOT be fabricated.
+
+**Fixed by this proposal:** tablet versus headband responsibilities; signal-economy and openness requirements; required digital behavior; raw/derived/provenance boundaries; learning objective; permissions; simulation obligations; and evidence gates. A new profile MUST NOT reuse old three-camera identifiers while silently changing their geometry or meaning.
+
+**Not frozen:** final addresses and interrupt numbers; exact core ISA extensions beyond the applicable base profile; die partition and process for the accessory; package and pinout; electrode montage; actual ADC noise and effective resolution; camera/photodetector/emitter process; optical geometry and working volume; PPG/fNIRS optode layout, wavelengths and pathlength models; flow-sensing method; acoustic output limits; battery capacity and life; final sample rates; memory size; radio throughput; manufacturing cost and dates.
+
+These values MUST be bound before claiming the corresponding concrete profile or hardware implementation complete. An explicit synthetic workload can be executable while physical parameters remain unverified.
+
+## 3. System architecture
+
+```text
+Authorized environment / synthetic scenarios / consented replay
+                         |
+        +----------------+---------------------+
+        |                                      |
+TABLET: open acquisition               HEADBAND: open acquisition
+pen + paper controller                  EEG electrodes -> quiet AFE/ADC
+NIR eye/face optics                      contact PPG emitters/detectors
+optional qualified ToF/depth             fNIRS optodes + reference channels
+camera/illumination controllers          flow extension where installed
+independent privacy controls             microphones / bone-audio output
+        |                               local clocks, interlocks, queues
+        |                                      |
+        +---- published headband digital link--+
+                         |
+Complete Lemma client: open control / clocks / DMA / IRQ / reset / power
+                         |
+Freestanding Lean drivers and services; permissions; local ink and audio
+                         |
+             Versioned authenticated companion link
+                         |
+Replaceable companion: authorized encoders, speech, tutor, storage
+                         |
+Independent mathematical checking and assessment authority
+```
+
+Sensor placement does not decide inference placement. The headband MUST own acquisition timing, local protection, safe output inhibition, and bounded buffering even when disconnected. The tablet MUST expose the headband through specified digital controllers and guest services, not a host-only biosignal dashboard. Both ends of the headband link, their clocks, reset states, queues, and errors are part of the simulated client. A removable accessory does not create a second authoritative notebook.
+
+The companion MAY run on an owner-controlled computer or server. It MUST be replaceable through the published protocol. A proprietary API MUST NOT be required for the open reference system to function.
+
+### 3.1 Thin-client responsibilities
+
+The client MUST own time-sensitive pen capture, immediate ink feedback, display updates, sensor acquisition, timestamping, bounded buffering, permission enforcement, audio scheduling, interruption, and hardware safety. It MUST maintain the local document view and the existing truthful distinction between provisional and durably acknowledged writing.
+
+The companion SHOULD perform expensive model inference, long-history processing, speech recognition/synthesis, policy optimization, and bulk archival work. A companion response MUST return through the same versioned link and guest services used by physical Lemma One. It MUST NOT mutate the simulator’s guest memory, application state, or screen through a host shortcut.
+
+Thin client does not mean stateless remote screen. Network loss MUST NOT prevent local pen operation, local mute, sensor revocation, or reading already available content. Durable offline recovery is promised only for data actually covered by the selected storage binding; RAM alone is not persistent storage. [R2]
+
+### 3.2 Software constraints
+
+Maintained target-side firmware, drivers, services, and applications remain Lean 4. No target-side C/C++/Rust/Zig, hidden upstream target runtime, or handwritten assembly is introduced by this extension. Host EDA, simulator, compiler, and build dependencies retain their existing role; they do not become an alternative application implementation. [R4]
+
+The open reference tutor MUST publish its orchestration and inference implementation, model/configuration identities, preprocessing, permitted model artifacts, and training/evaluation procedures. Private student recordings MUST NOT be published merely to support an openness claim. Reproducibility that depends on unavailable private training data MUST be described accurately; public evaluation fixtures and released checkpoints are separate deliverables.
+
+## 4. Custom hardware and enclosure architecture
+
+### 4.1 Tablet and accessory partition
+
+The primary tablet retains the existing target of a custom monolithic RV64 mixed-signal SoC. Separate sensor dies and a wearable do not silently replace this with a chiplet architecture. Physical partition choices MUST be recorded without changing the guest-visible contract. [R2]
+
+The tablet owns eye/face optical acquisition, illumination, optical calibration relative to its display, and optional qualified depth sensing. A camera is permitted. The reference optical candidate is a narrow-band monochrome NIR imager arrangement capable of both eyes and the required facial regions; the number of cameras and lenses MUST be selected from verified field of view, resolution, occlusion, and timing requirements. A single shared imager is preferred when it meets them; multiple views remain allowed when justified. Neither “one camera is enough” nor “two eye cameras plus a face camera are required” is frozen here.
+
+Depth/ToF is a serious candidate for facial geometry and movement, not a mandatory companion to every camera. A binding MUST establish what incremental measurement or robustness it supplies. Perovskite detectors, SPAD arrays, scanning mirrors, event sensors, and other technologies are not selected by name alone. Every chosen device needs an open implementation, an actual measurement model, and a manufacturable process route.
+
+The headband owns EEG, contact PPG, fNIRS, the optional flow-sensitive extension, two reference microphone channels, programmable bone-conduction audio, and justified contact/motion references. It MUST NOT require eye-facing supports or a scene camera. A tablet microphone fallback MAY have its own identity; it MUST NOT masquerade as a headband channel.
+
+EEG, optical emitters/detectors, audio drivers, and communication logic MUST have explicit analog/noise and power-domain boundaries. Headband transport MUST preserve original acquisition clocks and channel timing. Any programmable controller executing maintained target software remains subject to the Lean-only target policy.
+
+### 4.2 Reference mechanical and optical geometry
+
+The reference wearable is an adjustable physiological/audio band with independently replaceable electrode contacts, optodes, acoustic pads, and cables. Acoustic preload, electrode force, and optode contact force MUST NOT be mechanically inseparable. The release MUST include strain relief, cleaning procedures, inspection access, serviceable fasteners, optode light shielding, and fit tests across declared head geometries, hair/contact conditions, and eyewear.
+
+The headband need not cover the whole scalp. Its supported measurement sites, limitations, and expected sensitivity MUST be declared rather than inferred from the word “brain.” A forehead-limited design MUST NOT claim whole-brain coverage.
+
+Tablet optics MUST have a verified sightline to the required eye/face regions during the supported reading and writing postures. Validation MUST include downward gaze, flat and tilted tablet use, handheld motion where supported, hand/pen occlusion, eyewear, ambient illumination, and relevant variation in user geometry and optical reflectance. A raised or adjustable optical bar MAY be necessary; it must be included in the actual enclosure and calibration, not hidden in a laboratory demonstration.
+
+The fixed camera-to-display relationship replaces the old head-mounted scene-camera localization requirement for the tablet’s own display. Adjustable parts MUST report or recalibrate their changed geometry. Tracking arbitrary external paper or room objects is a separate capability, not an automatic consequence of screen gaze.
+
+### 4.3 Required open design artifacts
+
+The canonical release MUST include synthesizable RTL; analog schematics and simulation benches; inspectable amplifiers, converters, sensor pixels/readout and illumination drivers; standard-cell/memory provenance; PCB source, stackup and assembly data; package/interconnect drawings; electrode and optode materials/geometry; transducer electromagnetic/mechanical drawings; lens/filter specifications; parametric enclosure CAD; fixture designs; calibration procedures and datasets where shareable; and reproducible tool/configuration inputs.
+
+An open driver for an opaque EEG, camera, ToF, PPG, fNIRS, microphone, radio, or audio chip does not satisfy this requirement. No Muse, Shokz/AfterShokz, Apple, or other proprietary acquisition/actuation subsystem is the canonical implementation. A bought headset or open PCB wrapped around an undisclosed active chip does not close the open-hardware gate.
+
+The sole existing product exception remains electrophoretic panel/medium manufacture. It does not exempt display control or necessary waveform rights, sensor/emitter silicon, converters, safety electronics, microphones, radio/baseband logic, or bone-audio transducers. No private-documentation outreach, NDA, purchase, or fabrication submission is authorized here. [R2]
+
+### 4.4 Manufacturing openness and reproducibility
+
+Three claims MUST be tracked separately:
+
+1. **Open design:** complete editable sources, dependency provenance, and rights to study, modify, redistribute, build, and have the product built.
+2. **Reproducible manufacture from open inputs:** a demonstrated source-to-layout/PCB/mechanical build, public usable process interfaces and models, identified assembly/test procedures, and a qualified fabrication route that does not require hidden design IP.
+3. **Open manufacturing process:** public process recipes, specialized tooling/fixtures, calibration methods, materials requirements, and process knowledge sufficient for an appropriately equipped party to reproduce the relevant manufacturing steps.
+
+The first two are required goals for canonical physical qualification. The third is a preferred additional goal and MUST be reported honestly, not inferred from an open PDK or a GDS file. Industrial fabrication services are allowed; their availability does not establish openly reproducible foundry operations. No factory construction or fabrication access is presumed.
+
+A per-block ledger MUST state source/license identities, public design/model interfaces, process compatibility, tool support, required manufacturing operations, actual supplier/route evidence, unresolved restrictions, and measured qualification. Special processes for imaging pixels, LEDs/lasers, photodetectors, MEMS microphones, optical filters, and mechanical transducers MUST be evaluated independently. A logic/RF PDK does not automatically supply them. A missing open active block remains a blocker, not a newly invented exception.
+
+### 4.5 Rights, patents, and independent implementation
+
+The canonical system MUST NOT require Shokz/AfterShokz transducer designs, branded processing technology, Muse/other proprietary EEG firmware, restricted SDKs, closed signal encoders, or undisclosed vendor calibration services. Implementations MUST be independently designed or reused under rights consistent with complete open manufacture and redistribution.
+
+New hardware sources SHOULD use a recognized hardware-native license with explicit patent provisions, such as CERN-OHL-S-2.0 where appropriate. Existing sources keep their applicable licenses; this proposal does not relicense third-party work. Firmware, host tools, models, datasets, and mechanical assets need their own compatible licenses. A hardware license’s allowance for available components MUST NOT weaken Lemma’s stricter active-block policy. [N1]
+
+“Open source,” “independently designed,” and “patent-free” are not equivalent claims. Before manufacturing/distribution claims, the project MUST retain a jurisdiction/date-specific freedom-to-operate assessment of the actual design, including transducers, headband mechanics, electrode/front-end methods, optical ranging, and communications. Relevant rights must permit the intended open manufacture/use or the design must change. No blanket absence-of-patents claim is made here. Patent rights are territorial; license text also does not warrant absence of third-party infringement. [N1, N2]
+
+Consumer hardware MAY be used as optional, lawfully operated external test equipment under Section 10.8. That permission is not a license to copy it, redistribute its firmware, or admit it into the canonical open bill of materials.
+
+## 5. Device requirements
+
+### 5.1 Pen and paper
+
+Existing pen and paper behavior MUST remain authoritative. Pen ingress MUST enter the digitizer model and guest driver rather than writing strokes directly. Coordinates, pressure where supported, contact/proximity, tool identity, acquisition time, loss boundaries, and provenance MUST remain available.
+
+New multimodal envelopes MAY reference the existing pen records without changing them. A mouse-derived pressure value MUST remain synthetic; unsupported tilt or contact measurements MUST remain unsupported. The pen’s established lost-contact and resynchronization rules MUST NOT be replaced by generic continuous-stream handling. [R3]
+
+Display updates MUST retain submission, acceptance, busy, completion, interruption, reset, and power-sequence events. The tutor MUST know which document version was requested and which regions the controller reports updated. Controller completion is not automatically a measurement of optical stimulus onset.
+
+### 5.2 EEG acquisition
+
+The EEG endpoint MUST expose raw converter codes, not only filtered band powers or an attention score. Its capabilities MUST describe channel identities, electrode/reference topology, gain/range, converter format, supported rates, filters, converter delay, calibration, and channel-validity semantics.
+
+Frames MUST carry sample counters, source-clock timestamps, saturation/overrange, lead/contact information where implemented, dropped-sample intervals, reset/stream epochs, and configuration identity. Calibration and contact-testing operations MUST be distinguishable from ordinary measurements.
+
+The simulated path MUST include front-end configuration, converter/control latency, digital filtering/decimation state where present, sample latching, readout serialization, bounded queues, DMA/interrupt behavior, and recovery. Stimulus injection MUST occur at a declared analog-origin boundary or converter-input boundary. Inserting a precomputed “attention level” is not EEG hardware simulation. A measured external EEG waveform may drive an explicitly declared electrode/converter model, but that does not validate the canonical analog front end.
+
+The physical design MUST specify and measure input-referred noise in a stated bandwidth, offset tolerance, input impedance, common-mode behavior, simultaneous-sampling or interchannel skew, alias protection, overload recovery, protection, and coupling from other modules. Nominal word width MUST NOT be presented as effective resolution or signal quality. TI’s published EEG converter documentation is a performance reference, not an open implementation selected for Lemma. [R10]
+
+### 5.3 Tablet optical acquisition, gaze, and face observations
+
+#### 5.3.1 Raw optical endpoints
+
+Each actual image endpoint MUST specify spectrum/filter response, pixel format, dimensions/stride, optical geometry, region of interest, exposure interval, gain, readout mode, row timing where applicable, frame counter, source clock, overflow, calibration, and image-quality metadata. The old requirement for exactly two eye-camera streams plus one scene stream is removed.
+
+One physical imager MAY expose eye crops and lower-rate face frames, but only when its real readout and buffering support that combination. Software crops are derived from their source frames; they are not extra cameras or independent simultaneous exposures. Shared readout contention, skipped regions, and ROI changes MUST be modeled. Sensor-side cropping and host-side cropping MUST remain distinguishable for privacy and bandwidth accounting.
+
+NIR monochrome is a preferred starting candidate, not a proved minimum. An RGB implementation MAY be admitted when its benefit is documented, but routine collection of color, background scenery, or unrelated people MUST NOT be required for mathematical tutoring. Ambient-light reference values MAY support exposure/quality; a single broad-field photosensor MUST NOT be declared a gaze tracker without a qualified measurement method.
+
+Illumination command state, actual digital enable, qualified limit configuration, current-monitor/fault information where implemented, watchdog timeout, and inhibition MUST be observable. Reset, disconnect, expired output lease, and loss of control MUST default active illumination off. Other independent hardware safety limits MUST apply even if software or a monitor fails.
+
+#### 5.3.2 Depth and ToF extension
+
+A depth binding MUST identify its measurement method: direct ToF, indirect ToF, structured light, stereo, or another declared method. These are not identical raw devices. It MUST expose the implemented acquisition primitives and their calibration, such as photon-arrival histograms, phase/amplitude samples, or source images. Derived depth, intensity, confidence, validity, and any spatial/temporal filtering MUST have separate identities.
+
+For each depth output, specify coordinate frame, spatial sampling and field of view, units, invalid returns, range/ambiguity limits, integration/gating or modulation timing, saturation, calibration, and the observed or modeled error envelope. Precise distance does not imply fine lateral feature resolution. A coarse expression classifier does not qualify detailed facial reconstruction, eyelid tracking, pupil measurement, or gaze.
+
+Raw primitives MUST be available in authorized bounded diagnostic modes when implemented; an API that supplies only a vendor-processed depth map cannot be called a raw canonical sensor implementation. A sensor that acquires depth/spatial intensity remains an imaging system for permission and retention purposes even without RGB.
+
+#### 5.3.3 Derived gaze and document mapping
+
+Gaze is a derived stream, not the raw image/depth device. It MUST include per-eye capability where available, coordinate frame, estimated ray or point, uncertainty/error model, validity, calibration identity, and references to the source observations. Unsupported binocular, pupil-size, or vergence measurements MUST remain unsupported.
+
+Off-screen, occluded, uncalibrated, head-out-of-volume, dropped, and unavailable states MUST be distinct. They MUST NOT become zero coordinates or hidden inattention labels. Low-confidence region-level gaze MUST NOT become a precise symbol selection.
+
+The document path is:
+
+`optical observations -> eye/head geometry -> calibrated tablet/display frame -> displayed viewport revision -> document region`.
+
+Every concrete binding MUST publish a held-out gaze-validation procedure, accuracy/precision/availability and latency results, usable head-motion volume, and recalibration policy. Region-, line-, word-, and symbol-level capability are separate claims. Camera placement alone does not establish any of them. Existing camera-based tracking documentation is methodological background, not evidence that the custom Lemma optics work. [R6]
+
+#### 5.3.4 Facial observations
+
+Head pose, geometric landmarks, eyelid openness, blinks, mouth/eyebrow/cheek movement, or learned face representations MAY be exposed with per-output measurement definitions, calibration, source references, confidence and failure states. Required outputs for a binding MUST be individually tested. Identity recognition is not a required tutor feature.
+
+Facial motion, an expression category, a latent representation, an affect hypothesis, and mathematical understanding MUST remain distinct. No fixed expression taxonomy is compulsory. The tutor MAY use the authorized observations without first translating them into an emotion or attention score. Raw availability for an authorized research session does not require raw retention in routine use.
+
+### 5.3A Headband contact PPG
+
+The PPG endpoint MUST expose the measured optical waveform or converter counts with source/detector identity, wavelength or spectrum, contact site, gain/range, emitter command/actual enable state, integration interval, sample counter, source clock, dark/ambient reference handling, saturation, quality and gaps.
+
+Derived pulse rate, heart-rate estimates, pulse timing and related variability measures MUST identify their algorithm, input windows, validity and limitations. A pulse-derived estimate MUST NOT be represented as an ECG measurement. Oxygen saturation, blood pressure, and cerebral flow are not automatically supplied by a PPG channel.
+
+The physical binding MUST qualify contact, ambient rejection, usable optical range, motion sensitivity, heating/illumination safety, and coupling to audio and other optical channels. Sharing components with fNIRS is allowed only where both measurement requirements, independent permissions and channel timing are preserved; sharing a photodiode does not make two physiological estimands identical.
+
+### 5.3B Headband fNIRS
+
+The fNIRS endpoint MUST expose wavelength-resolved source/detector optical measurements before any mandatory hemoglobin or cognitive-state classifier. Its configuration MUST identify source/detector locations, source-detector separations, wavelengths/spectral bandwidths, emitter levels, gain, integration and multiplex timing, source-on and source-off/dark references, effective rate per channel, and calibration/quality.
+
+The reference layout MUST include short-separation or comparably justified superficial-reference acquisition in addition to the intended longer-separation channels. Exact distances, site coverage, and sensitivity are not frozen here. A claim of cerebral sensitivity MUST be supported by the chosen geometry and analysis, with superficial/systemic contamination and contact failure explicitly considered.
+
+For an ordinary continuous-wave binding, derived outputs are changes in oxygenated and deoxygenated hemoglobin under an identified model. Optical density, pathlength/extinction assumptions, preprocessing, and uncertainty MUST be retained. Absolute tissue saturation or oxygen consumption requires a separately qualified method. Ordinary fNIRS does NOT directly satisfy the blood-flow requirement. These distinctions are reflected in optical-imaging research and optical-density/hemoglobin processing documentation. [N3, N4]
+
+The simulated path MUST include emitter scheduling, integration, analog/converter response to configuration, dark-reference slots, multiplex state, sample latching, queues, controller/readout timing, and all common lifecycle/error semantics. Injecting HbO/HbR values into the tutor bypasses fNIRS acquisition and cannot qualify the full device.
+
+### 5.3C Flow-sensitive optical extension
+
+The blood-flow target requires a separately specified flow-sensitive observable. Diffuse correlation spectroscopy (DCS) is one candidate, not a frozen component selection or a claim of a build-ready open module. Combined NIRS/DCS instruments distinguish hemoglobin-related and flow-sensitive measurements. [N3]
+
+A DCS-like binding MUST specify source coherence/wavelength and qualified output envelope, collection geometry, detector/event representation, timestamp resolution, dead time and count limits, correlator lags/windows, overflow, calibration, and estimation model. It MUST distinguish photon/event observations, autocorrelations, a fitted blood-flow index, relative flow change, and an absolute perfusion claim. “Blood-flow index” MUST NOT silently become absolute cerebral perfusion.
+
+The simulator MUST include the chosen digital acquisition/counting/correlation, control and safety state. Photon transport and tissue dynamics may be external versioned models. No consumer EEG/PPG adapter supplies flow by implication. If open process access, patent rights, optical safety, or measurement qualification is unresolved, this extension remains explicitly unqualified for physical use while its digital simulation can be exercised.
+
+### 5.4 Microphone input
+
+The headband reference profile MUST provide two independently identifiable microphone channels, with source sample counters, acquisition timestamps, gain state, clipping, mute state, and loss markers. Processed speech audio MAY be additional output, but automatic gain, noise reduction, resampling, and echo-cancellation operations MUST be declared transformations.
+
+Raw microphone data, recognized words, corrected transcripts, and speaker/turn hypotheses MUST remain separate records. The student MUST be able to use speech without EEG or gaze and to disable the microphone without disabling playback.
+
+### 5.5 Bone-conduction audio output
+
+The physical transducers, drive circuit, equalization, limiter, contact mechanics, calibration and manufacturing drawings MUST be independently reproducible open designs. Neither Shokz/AfterShokz hardware nor its firmware, branded processing, mechanical design, or restricted IP is selected. The rights gate in Section 4.5 applies to the actual implementation, not just its marketing name.
+
+The endpoint MUST support arbitrary authorized PCM content within the qualified output envelope, including speech and ordinary instructional cues. It MUST expose sample rate/format, channel routing, gain, queue capacity, submitted/consumed sample positions, underrun, scheduled start, cancellation, flush, mute, reset, and fault state.
+
+The path MUST be:
+
+`authorized tutor audio → companion link → guest audio service → playback queue → digital output/DAC control → driver → transducer`.
+
+No consumer simulator path may speak through host text-to-speech while bypassing the modeled device. Host speakers/headphones are an external output transport for the modeled waveform. They do not establish actual bone-conduction exposure or onset timing.
+
+An output receipt MUST distinguish accepted, queued, digitally started, partially played, completed, cancelled, and physically measured onset where instrumentation exists. A command timestamp MUST NOT masquerade as delivery. Already emitted sound cannot be undone; interruption bounds MUST include the entire declared output buffer path.
+
+### 5.6 Reference and quality observations
+
+The full architecture SHOULD admit independently qualified motion/vibration references, contact quality, power state, and synchronization diagnostics when they help characterize the main measurements. Their own sensors/readout silicon fall under the same openness rule.
+
+Outgoing audio samples, optical emitter schedules across both tablet and headband, display refreshes, and student speech activity MUST be available as context for authorized analyses. Filtering MUST NOT silently delete raw data in a mode that promises raw capture. A model’s confidence MUST NOT turn saturated, missing, or uncalibrated samples into valid measurements.
+
+### 5.7 Cross-modality interference and quiet acquisition
+
+The binding MUST analyze and characterize electrical, optical, mechanical, and timing interference among EEG, PPG, fNIRS/flow, NIR/ToF, radios, display updates, microphones, and bone playback. Shared spectrum and independent clock drift MUST be considered rather than assuming different named modalities cannot interfere.
+
+Where source coding, time multiplexing, blanking, shielding, or quiet windows are used, their schedules and consequences MUST be explicit. Scheduled blanking is not uninterrupted measurement. EEG during jaw movement or bone playback MUST retain applicable quality flags and interference context, not become a guaranteed neural-only stream. The simulator MUST exercise arbitration, deliberately conflicting schedules, clock drift, watchdog timeouts, output inhibition and marked acquisition gaps.
+
+## 6. Common stream and device-control contract
+
+This section specifies behavior; the concrete byte offsets and numeric identifiers MUST be generated from the existing profile authority when the first working binding and guest consumers are implemented.
+
+### 6.1 Device discovery
+
+Each endpoint MUST expose identity, interface version, instance identifier, supported operations, numeric format and units, available rates, clock identifiers, maximum payload, queue capacities, reset domains, power domains, DMA constraints, and required firmware/calibration versions.
+
+The new profile MUST supply a versioned extension-discovery structure without reinterpreting the fixed historical descriptor. Unknown required versions fail explicitly. Unknown optional endpoints may be ignored. A checksum is not authentication.
+
+### 6.2 Stream envelope
+
+A logical observation block MUST identify:
+
+```text
+schema_version
+machine_profile / device_model_version
+source_device / stream_id / payload_format
+boot_epoch / stream_epoch / first_sequence / item_count
+source_clock / capture_start / capture_end
+regular_sample_period_numerator / denominator, when applicable
+configuration_id / calibration_id
+quality_flags / explicit_gap_description
+origin: MEASURED or SYNTHETIC
+execution: LIVE, RECORDED_REPLAY, or SCENARIO
+transformation_chain, if derived
+physical_location / measurement_role / ingestion_boundary
+source_representation / source_units / external_adapter_id, when applicable
+upstream_origin_refs / model_id / claimed_conformance_scope
+consent_epoch / authorized_session
+payload_length / integrity information
+```
+
+Time-critical counters and acquisition times MUST originate at the acquisition boundary. The guest MAY assemble descriptive metadata and transport integrity fields afterward, but MUST NOT replace acquisition timestamps with receive times.
+
+Transport and derived records MUST preserve the original source fields. A replay of measured data remains measured-origin replay; a synthetic stream never becomes measured by passing through real drivers. Provenance MUST include collection-device configuration and quality limits where known. Mixed-source sessions MUST label each stream/record, not apply one “real data” flag to the whole session. External measurements converted into modeled canonical ADC codes retain their measured-source ancestry AND the synthetic/model-derived transformation; those codes are not measured from canonical silicon. Never relabel processed RGB as raw NIR, ARKit coefficients as measured depth, or resampled Muse data as newly measured channels.
+
+### 6.3 Lifecycle and atomic configuration
+
+Devices MUST implement documented transitions among `OFF`, `RESET`, `IDLE`, `CONFIGURED`, `ARMED`, `RUNNING`, `DRAINING`, `FAULT`, and `DISCONNECTED`, as applicable. The exact legal transition table MUST be part of the concrete device ABI.
+
+Capabilities may be queried without acquisition permission. Starting collection requires a live authorization. Configuration changes apply atomically at a specified block/frame boundary, or require stopping first. No buffer may mix undocumented gains, sample periods, pixel geometry, or reference configurations.
+
+Start, stop, drain, cancel, clear-fault, warm reset, cold reset, and disconnect MUST have distinct observable consequences. Sequence and epoch counters MUST NOT wrap silently. Error acknowledgement MUST refer to the actual reported event or epoch.
+
+### 6.4 DMA, ownership, and interrupts
+
+Buffer ownership MUST follow the existing capability/owned-memory architecture. A concrete implementation MUST enforce a lifecycle equivalent to:
+
+`free → guest-prepared → device-owned → completed → guest-owned`.
+
+A device MUST validate descriptor ranges, alignment, lengths, formats, and permissions before writing. It MUST NOT write outside the granted extent or continue DMA after ownership is returned. Required barriers and cache maintenance MUST be specified for each board binding.
+
+Completion records MUST be stable until acknowledged. Interrupt assertion, masking, coalescing, acknowledgement, reassertion, and simultaneous error/completion ordering MUST be specified. An MMIO read MUST NOT have an undocumented acknowledgement side effect.
+
+### 6.5 Backpressure and gaps
+
+All queues are bounded. The binding MUST declare capacities and its admission policy. The system MUST reject an unsustainable requested stream set rather than silently promise lossless operation.
+
+Continuous acquisition streams may drop complete blocks/frames according to the declared policy. They MUST report exact known gaps or explicitly unknown missing extents; they MUST NOT invent zero samples, repeat stale frames as fresh data, or hide a restart. Pen contact loss retains the stricter existing semantics.
+
+Audio underrun MUST produce the specified safe output and an underrun record. Policy-selected silence and an underrun MUST be distinguishable. On resource contention, mute/revocation and pen responsiveness take priority over optional telemetry. Durable document publication MUST not be starved by camera archival traffic.
+
+### 6.6 Required errors
+
+Each endpoint MUST represent unsupported operation/version; bad format/length/range; stale epoch/sequence; invalid state; busy; permission denied/revoked; timeout; overflow/underrun; transport loss; calibration invalid; synchronization uncertainty; counter exhaustion; and hardware safety inhibition where applicable.
+
+No success result may mean “the host silently substituted something else.”
+
+## 7. Time, synchronization, and delivery evidence
+
+Each clock domain MUST have an explicit frequency or calibration model, epoch, drift description, uncertainty, and reset behavior. Domain mappings MUST preserve the original source ticks and record the mapping used. Wall-clock timestamps MAY be attached for user records but MUST NOT drive deterministic machine scheduling.
+
+For asynchronous clocks, a piecewise mapping such as `t_common = a * t_device + b` MAY be used with a validity interval and uncertainty. The system MUST NOT imply that a fine timestamp representation guarantees equally fine synchronization.
+
+The reference simulator MUST impose a deterministic total ordering on otherwise simultaneous admitted events. The ordering rule MUST be versioned and included in checkpoint/replay compatibility.
+
+The following times MUST be distinguishable: EEG sample aperture and converter availability; PPG/fNIRS source-on intervals, detector integration and readout; flow event/correlation windows; camera exposure and frame delivery; ToF acquisition and processed-depth delivery; microphone capture; audio command acceptance and digital playback; display command acceptance and controller completion; companion arrival and policy decision.
+
+The binding MUST publish a timing budget and verification method for every claimed bound. Source sample counters, loopback/trigger fixtures, measured transducer onset where applicable, and exposure measurements MUST be used where software observations are insufficient. A sensor colocated with another sensor does not automatically share its clock. PPG/fNIRS multiplex phases, phone camera timestamps, BLE arrival times, headband ticks and browser performance clocks MUST remain separately mapped. LSL documentation distinguishes clock mapping from acquisition timestamp jitter; it is an interoperability reference, not a substitute for this hardware contract. [R5]
+
+## 8. Synthetic reference workload and resource budgeting
+
+These are **SYNTHETIC REFERENCE** transport/acquisition workloads, not physical specifications, recommended perpetual collection, or measured browser performance. The two optical presets exercise the same interfaces at different loads. Logical image streams do not fix the number of physical cameras; source readout must actually support an admitted combination.
+
+| Stream | Economy fixture | Stress fixture | Economy bytes/s | Stress bytes/s |
+|---|---|---|---:|---:|
+| EEG | 8 channels × 500/s × 4-byte slots | Same | 16,000 | 16,000 |
+| PPG | 2 wavelength/path values × 200/s × 4 bytes | Same | 1,600 | 1,600 |
+| fNIRS | 16 source-detector pairs × 2 wavelengths × 20/s × 4 bytes | Same | 2,560 | 2,560 |
+| Optical dark/reference values | 16 values × 20/s × 4 bytes | Same | 1,280 | 1,280 |
+| Microphone input | 2 × 48,000/s × 4-byte PCM slots | Same | 384,000 | 384,000 |
+| Eye regions | 2 × 160 × 120 × 60/s × 1 byte | 2 × 320 × 240 × 120/s × 1 byte | 2,304,000 | 18,432,000 |
+| Face region | 320 × 240 × 15/s × 1 byte | 640 × 480 × 30/s × 1 byte | 1,152,000 | 9,216,000 |
+| Reference motion | 6 axes × 1,000/s × 4 bytes | Same | 24,000 | 24,000 |
+| Pen | 240/s × historical 72-byte record | Same | 17,280 | 17,280 |
+| **Acquisition total without extensions** | | | **3,902,720** | **28,094,720** |
+| Optional derived depth/intensity/validity | 160 × 120 × 30/s × (2+2+1) bytes | Same | 2,880,000 | 2,880,000 |
+| Optional synthetic flow event ingress | 4 detectors × 250,000 events/s × 8-byte event | Same | 8,000,000 | 8,000,000 |
+| Optional flow correlation output | 4 detectors × 64 lag values × 20/s × 8 bytes | Same | 40,960 | 40,960 |
+| Audio playback, separate downstream direction | 2 × 48,000/s × 4 bytes | Same | 384,000 | 384,000 |
+
+The base acquisition totals are approximately **31.22 Mbit/s** and **224.76 Mbit/s**. Two seconds of base payload is **7,805,440 bytes** or **56,189,440 bytes**. The stress fixture plus derived depth is **30,974,720 bytes/s**; adding the example flow events and correlations makes **39,015,680 bytes/s**. Framing, quality/events, encryption, retransmission, copies, inference tensors and archival indexes are additional costs.
+
+The fNIRS fixture’s 16 pairs include 4 superficial-reference pairs and 12 longer-separation pairs in its abstract topology; their physical spacing is not specified. Wavelength multiplexing must achieve the stated effective rate and preserve individual sample times. The depth row is a processed-output workload, not raw ToF photon/phase bandwidth. Every concrete ToF binding MUST separately budget its raw primitives and intermediate state. Flow photon-event traffic can dominate low-rate physiology; it MUST NOT be budgeted as just a single flow score.
+
+The new profile MUST NOT silently consume historical guest reservations or enlarge its fixed descriptor. Budget guest memory, device rings, source frames, software crops, duplicate views, image/flow processing, network buffers and replay state explicitly. Resource admission MUST consider controller/CPU/bus work, not only link bytes.
+
+The client MUST support negotiated raw and derived modes. Authorized bounded full-raw modes are required for development and appropriate research; routine delivery SHOULD use justified rates, ROIs, selected raw windows or declared representations. Lossy compression is not raw/lossless. Discarded data cannot later be advertised as replayable. Sensor reduction remains subject to user grants and declared measurement limits.
+
+The initial headband link and high-volume companion link SHOULD be specified open wired paths with qualified body-connected protection. Their control/data framing, clocks, flow control, cancellation and recovery MUST be modeled. Wireless remains in the existing digital target but its capacity is not presumed sufficient from a version label. The lower-rate headband does not need to carry tablet image traffic. A link that cannot sustain an admitted workload must negotiate a lower mode or report explicit loss.
+
+## 9. Companion transport and durability
+
+The protocol MUST provide version/capability negotiation, authenticated endpoints, integrity and confidentiality, per-stream sequencing, bounded flow control, clock metadata, reconnect epochs, cancellation, and explicit acknowledgement meanings.
+
+Channels MUST separate safety/control, pen/document publication, interactive audio, and optional bulk recordings. Camera backlogs MUST NOT delay local mute or silently postpone a pen-save acknowledgement.
+
+A reconnect MUST identify the machine boot epoch, capture-session epoch, document state, and durable commit frontier. Duplicate messages MUST be detected. Stale tutor actions MUST NOT replay onto a different document revision. Network retries MUST NOT repeat already performed speech without a new explicit action.
+
+The existing storage contract governs saved mathematics. Sensor buffers are transient unless an authorized archival operation and durable receipt exist. Loss of uncommitted physiological data MUST NOT imply loss of a committed notebook, and notebook durability MUST NOT imply that all sensors were recorded.
+
+Raw archives MUST be encrypted and bound to retention permissions. A content hash or event receipt alone is not enough to reproduce a session when the source payload has been deleted; the replay tool MUST report that limitation rather than synthesize replacement data.
+
+## 10. Full hardware-level simulation
+
+### 10.1 What must be modeled
+
+The full client simulation MUST include the actual digital processor and peripheral designs or validated behaviorally equivalent implementations: instruction/privilege behavior; memory ordering and protection; cache/TLB effects where relevant to the selected profile; interconnect arbitration; DMA; interrupts; timers; clock/reset domains; boot and update recovery; persistent-media ordering; companion/USB and radio digital paths; power/watchdog/brownout responses; and every new acquisition/playback controller.
+
+This extension MUST NOT erase outstanding base-machine work by calling the multimodal subsystem “complete.” Both the inherited base profile and the extension require their own evidence. Digital radio coding, packet scheduling, baseband arithmetic, sample interfaces, coexistence, and reset/power logic remain in scope; excluding propagation and RF material physics does not exclude those functions.
+
+### 10.2 Three engineering representations
+
+**Authoritative digital implementation.** Synthesizable RTL and its executable simulation MUST define the implemented digital design, including sequential state and cycle behavior. A fast CPU plus convenient MMIO handlers is not, by itself, proof of processor/timing/reset parity.
+
+**Fast consumer LemmaSim.** A native/browser accelerated backend MAY execute a validated abstraction for usable speed. Every claimed equivalence class and timing tolerance MUST be declared. It MUST NOT claim cycle accuracy or canonical RTL parity beyond the measured comparison coverage. Where required state is not modeled, the corresponding readiness gate remains open.
+
+**Mixed-signal/physical-design models.** Analog circuits, optical conversion, transducer models, and enclosure analysis MUST have separately versioned engineering models and test fixtures. Simplified or measured-input models may support digital simulation; they do not certify physical fidelity or safety.
+
+These representations share interface definitions and conformance observations. They are not independent application implementations.
+
+### 10.3 Sensor stimulus boundaries
+
+EEG fixtures enter as declared electrode-voltage/converter stimuli; PPG/fNIRS fixtures enter as declared optical-flux/photocurrent or converter stimuli with emitter schedules; flow fixtures enter as declared detector/photon events or a separately identified downstream correlator boundary; image fixtures enter as declared irradiance/pixel samples at the sensor boundary; ToF fixtures enter as the selected histogram/phase/optical primitive boundary; microphone fixtures enter at the specified acoustic/electrical/converter boundary; pen fixtures enter at the digitizer boundary.
+
+The downstream controller, FIFO, DMA, interrupts, driver, capture service, permission checks, and companion path MUST still run. High-level gaze, face coefficients, heart-rate, HbO/HbR, depth maps above a raw ToF boundary, flow-index, or EEG-feature injection MAY support scoped service experiments but MUST NOT count as full-device acquisition acceptance. The manifest MUST name the bypassed stages.
+
+The behavioral front-end MUST respond to gain, range, exposure, timing, reset, saturation, and loss conditions according to its declared model. Feeding fixed frames regardless of device configuration is not a conformant sensor model.
+
+### 10.4 External physics and honest claims
+
+Thermals, physical light propagation, skin/electrode chemistry, actual neuronal dynamics, hearing, acoustic coupling, and electrophoretic material dynamics are outside exact digital equivalence. They MAY be modeled approximately with identified assumptions.
+
+Digital control of those processes remains in scope. Thus illumination limits, audio enable, converter timing, power-state decisions, panel waveform sequencing, and fault consequences MUST be modeled even when the associated physics is not.
+
+A browser without an EEG, PPG, fNIRS or flow device MUST report that modality absent, or explicitly use a synthetic/replay source. It MUST NOT derive “EEG” from ordinary pointer activity or a webcam and label it measured brain activity.
+
+### 10.5 Native and browser execution
+
+Both distributions MUST run the maintained RV64 guest through the same versioned device interfaces. Browser LemmaSim is a shipped first-class target, not a separate textbook implementation. Host code MAY supply emulation, presentation, external-device adapters and storage transport; guest-authoritative ink, documents, checking, permissions and device control stay in the shared target stack.
+
+A browser fast backend MAY use WebAssembly in a worker and WebGPU for presentation or validated compute. These are implementation candidates, not a claim that the current repository already compiles for the browser or meets real-time requirements. WebGPU availability does not establish that a serial processor model or detailed RTL will execute at native-device speed.
+
+Browser microphone/camera/pen access is external ingress, subject to both host permission and guest authorization. Browser audio is egress from the modeled playback waveform, not host text-to-speech bypassing the guest. Host permission withdrawal, audio suspension, background throttling, device disappearance, GPU loss and rendering delay MUST produce bridge observations.
+
+Direct Web Bluetooth/USB/HID access MAY be offered after runtime capability checks. It MUST NOT be required for universal basic participation. A small open native sensor bridge MAY provide missing OS device access while the actual client remains browser-based. Platform-specific adapters can use host languages/APIs; this is not permission to replace target Lean services with a native application. Optional adapters depending on closed consumer hardware or platform frameworks remain noncanonical test equipment. [N7, N8]
+
+The basic browser workflow MUST run entirely from redistributable synthetic/replay fixtures with no headset, phone, or drawing tablet. Optional peripherals replace individual inputs, not the architecture. A native distribution SHOULD reuse the same machine/runtime, formats and conformance suite for high-load collection and engineering. Native execution is not automatically cycle-exact or physically faithful.
+
+Live sessions MUST be paced to the external environment. Replay MAY run faster or slower while retaining virtual event times. A missed deadline MUST NOT silently rewrite timestamps. Exact replay must use retained admitted inputs and the documented deterministic scheduling relation, not host wall-clock delivery.
+
+Before a performance claim, retain measurements of host/browser/build identity, admitted stream configuration, memory, CPU/GPU use, real-time factor, dropped blocks, pen latency, audio underruns and durable-save progress. Define numerical gates with the actual binding; do not advertise universal browser support from a single successful desktop demonstration.
+
+### 10.6 Snapshots and exact continuation
+
+A checkpoint advertised as exact MUST preserve all state that can affect future claimed observations: CPU architectural and required microarchitectural state; caches/TLBs where claimed; memory; bus transactions; clock phase/deadlines; IRQ state; device configuration; sample/filter history; FIFOs; DMA ownership; partially completed optical exposures/readout, source multiplex schedules, ToF histograms/phase accumulators, flow event windows/correlators, and audio operations; transport queues; random generators; external-input cursor; and guest service state.
+
+Flushing or reconstructing caches on restore is acceptable only under an explicitly narrower contract that proves the relevant observations unchanged. It does not establish arbitrary cached-state or cycle-exact continuation.
+
+For a sealed replay, capture the nondeterministic companion responses and admitted external inputs. A model hash and random seed alone MUST NOT be assumed sufficient to reproduce remote or accelerator execution.
+
+Restoring a live session cannot rewind a person or remote server. Live restore MUST create a new external-interaction epoch, invalidate stale permissions and output leases, suppress previously completed side effects, and re-establish the connection. A sealed replay MUST be isolated from live actuator/network effects.
+
+### 10.7 Equivalence boundary
+
+For a versioned profile `v`, a declared digital input trace `I`, and corresponding admitted initial states `S`, the target is:
+
+`Obs_v(LemmaSim, I, S) ≈_v Obs_v(physical digital implementation, I, S)`.
+
+The observation relation MUST state which bytes, interrupt ordering, digital output samples, durable records, and application results match exactly, and which timing quantities admit specified envelopes. Comparisons driven by analog-origin physical stimuli MUST additionally identify converter/calibration/noise tolerances; the same spoken sentence or electrode placement is not assumed to produce bit-identical samples on two occasions.
+
+One valid method is to capture a measured digital boundary trace and replay it through the corresponding simulated controller, while separately characterizing the analog front end. That establishes only the stated downstream equivalence, not an untested upstream sensor property. Universal coverage remains a target unless established by applicable proofs; a finite passing corpus MUST retain its scope.
+
+Current authorization is required to access replay payloads. Snapshot-era grants cannot authorize new live collection, transmission, or physical output.
+
+### 10.8 External consumer adapters and mixed-source testing
+
+Adapters MUST declare hardware/firmware identity where available, host/library version, raw-versus-processed representation, original units and clock, capability limits, transformations, ingestion boundary, and conformance scope. Pairing MUST NOT grant collection automatically. Each source can be replaced with synthetic or replay input without changing the guest application.
+
+Supported test categories MUST be visibly distinct:
+
+- **Canonical digital conformance:** known boundary stimuli exercise the actual modeled controller, guest driver and downstream services; fast/RTL observations are compared within a declared relation.
+- **External-source interoperability:** a commercial sensor’s actual stream is admitted through its declared adapter path; this validates only that path and exercised downstream behavior.
+- **Derived-service experiments:** externally generated gaze, face coefficients or physiological estimates enter a separately permissioned derived service; acquisition stages are explicitly untested.
+- **Mixed live/synthetic sessions:** real and synthetic channels coexist with per-record ancestry and quality; no unified measured-physiology claim is allowed.
+
+For example, Muse 2 EEG/PPG may support an external-source test; phone face estimates may support a derived-service test; a drawing tablet may supply host pen events; commercial headphones may render the modeled output waveform. None supplies canonical component RTL, analog behavior, safety qualification or manufacturing rights. Muse 2 does not complete the fNIRS/flow channels. The basic conformance corpus MUST NOT depend on acquiring these products or redistributing their firmware. [N5, N6]
+
+External data converted into another representation MUST preserve the source record and transformation identity within the granted retention scope. Upsampling four measured EEG channels does not produce eight measured electrodes. A grayscale conversion does not turn RGB into measured NIR. A phone face mesh must not be expanded into supposedly measured raw frames. Synthetic reconstruction may test a model only with explicit synthetic/model-derived provenance.
+
+Phone-to-monitor extrinsics, monitor/display geometry, OS scaling and guest viewport transforms MUST be calibrated before claiming monitor-relative gaze. These are independent of pen coordinates from a non-display drawing tablet. A propped phone can be moved; the adapter must invalidate or re-establish calibration. Estimated face/gaze output from a consumer framework is not ground truth.
+
+No adapter may silently modify a guest register, document, framebuffer, verifier result, grant or tutor reward. A scoped derived ingress must itself be a versioned guest-visible service/transport, not privileged host state mutation.
+
+## 11. Learned tutor and instructional control
+
+### 11.1 Observation architecture
+
+The tutor MAY learn modality encoders and a temporal state representation from the authorized history of raw/derived observations, task context, prior actions, actual delivery receipts, and assistance records:
+
+`h_t = f_theta(authorized history through t)`  
+`action_t ~ pi_theta(action | h_t)`.
+
+No mandatory intermediate “attention,” “confusion,” or brainwave-category classifier is imposed. A transformer or another architecture MAY be used; its internal attention weights are not, by definition, measurements of the student’s psychological attention.
+
+The policy MUST receive missingness, calibration uncertainty, and source provenance. It MUST NOT access future observations, hidden scenario labels, held-out solutions, or assessment-authority internals. The model MAY ignore a modality when it provides no useful information.
+
+### 11.2 Action space
+
+An instructional action MAY change explanation content; worked examples; counterexamples; exercise selection; hints; reading order within declared curricular goals; spoken versus written delivery; pacing; visual emphasis; review scheduling; clarification questions; and silence.
+
+Changing the presentation is permitted. Changing mathematical truth, the student’s original work, a checker verdict, the assessment definition, a permission grant, or a hardware safety envelope is not.
+
+The primary behavioral objective is improvement in later independent mathematical capability under a declared study budget. The action policy MUST remain interruptible and support stable, nonadaptive textbook operation.
+
+### 11.3 Action proposal and execution receipt
+
+Each action proposal MUST identify the policy/model version, observation cutoff, document revision and object anchors, requested modality, content and provenance, requested start/deadline, interruption policy, required permissions, and any mathematical claims requiring checking.
+
+The client MUST validate the proposal before execution. It may reject stale references, unavailable modalities, unsafe output, expired permissions, or insufficient resources. It MUST log the actual executed action and the reason for any rejection or modification.
+
+Presentation receipts MUST distinguish generated content from content actually displayed or played. For an interrupted spoken hint, the record MUST identify the consumed portion, not credit delivery of the entire explanation. Where exact audibility is unmeasured, report digital playback—not what the student necessarily heard.
+
+## 12. Textbook/workbook and mathematical evidence
+
+The existing semantic textbook direction MUST remain one shared Lean-authored content/runtime system, not a separate web course player.
+
+A course package MUST contain versioned definitions, propositions, examples, exercises, prerequisites, references, and checking requirements. Adaptive presentation MUST attach to stable semantic object identities. Student ink remains immutable source material; recognitions, edits, formalizations, explanations, and assessment results are distinct linked records.
+
+A gaze point MUST be resolved against the relevant displayed document version. A delayed sensor block MUST NOT be mapped onto the newest page merely because that page is currently open. During partial refresh, the system MUST represent which displayed state is known and which is uncertain.
+
+AI-generated formalization MUST NOT be silently substituted for the student’s intended statement. A kernel proof establishes the submitted formal proposition under its stated assumptions; the provenance chain MUST preserve how that proposition relates to the task and the student’s work.
+
+A tutor-suggested proof MUST NOT be counted as an independent student solution. Unsupported mathematics remains explicitly unchecked. The tutor never receives the verifier’s authority.
+
+## 13. Reward and evaluation specification
+
+For a policy `pi` and an agreed study budget `B`, define the target schematically as:
+
+`J_B(pi) = E_{learner i, challenge q, delay tau}[V_q(Y_{i,q,tau}^{pi,B})]`.
+
+`Y` is the student’s later submission. `V_q` is an independently specified evaluation procedure. The assessment authority controls the challenge distribution, permitted resources, delays, and scoring rules; the presentation policy does not.
+
+The challenge distribution MUST cover delayed retention, fresh applications/transfer, control of assumptions and counterexamples, and learning from a standardized unfamiliar mathematical resource. It SHOULD include tasks in which a useful definition or classification enables later independently checked work. Task weighting and budget conventions MUST be published before policy comparisons.
+
+Scoring SHOULD use exact or kernel-checked evidence when appropriate, together with correct task formalization and assistance provenance. Where evaluation is interpretive, its rubric and uncertainty MUST remain visible. The policy MUST NOT be the sole unreviewed judge of its own educational success.
+
+EEG patterns, PPG pulse estimates, fNIRS/flow changes, facial expressions, gaze duration, physiological calm, compliance, time-on-platform, and immediate assisted correctness MUST NOT substitute for the primary outcome. No blanket penalty is assigned to asking for help; later independent capability determines whether the assistance was useful.
+
+Pretraining, self-supervised signal representations, and outcome predictors are compatible with this objective. Intermediate shaping MUST be documented and tested for alignment with the protected outcome; a predicted score MUST NOT silently become the final reward.
+
+Policy evaluation MUST separate train/development/held-out sessions and learners as appropriate, record actual intervention exposure, account for study opportunities and starting performance, and compare against a credible reference policy. Randomization among acceptable interventions SHOULD be used where needed for causal attribution. Retrospective prediction alone is not evidence that an intervention helps.
+
+Sensor-value comparisons MUST test whether access to a modality improves learning under comparable resources, not merely whether it predicts learner identity or final scores. Recorded human trajectories cannot establish how the same human would have reacted to a different action. Simulated learners and synthetic physiology/face/gaze support development, not an educational-effectiveness claim. Synthetic cross-modality correlations MUST be labeled modeling assumptions. Neither a convincing rendered face nor a correlated synthetic HbO/EEG pattern establishes that a real person is understanding mathematics.
+
+## 14. Privacy, ownership, safety, and security
+
+### 14.1 Independent permissions
+
+Separate grants MUST govern acquisition, local processing, companion transmission, archival retention, research reuse, and policy training. A grant to hear tutor speech does not authorize microphone recording. A grant to process eye frames locally does not authorize uploading them.
+
+The ordinary default MUST NOT be permanent raw physiological, face, eye, depth, or room-video storage. Buffer duration, ROI, permitted transformations, upload and retention MUST be visible. Depth and embeddings must be treated as potentially sensitive, not automatically anonymous because color images were omitted. Rich collection is supported through explicit, bounded, visible sessions. Refusal or revocation MUST not remove the basic notebook or disadvantage access to instructional content.
+
+The user MUST have visible recording indicators, independent hardware-accessible mute/privacy controls, session export, retention controls, and deletion procedures. Deletion must describe backup expiry and downstream-copy limits; it MUST NOT promise automatic removal of all influence from an already trained model.
+
+### 14.2 Local safety authority
+
+The tutor MUST NOT control its own safety limits. Independent local mechanisms MUST enforce qualified audio output, tablet and headband illumination limits, optode/contact heating constraints, electrode protection, watchdog behavior, charging/interconnect interlocks, and safe reset/disconnect states. A wireless command, host bridge or tutor must not override them.
+
+Unqualified calibration MUST inhibit the corresponding physical output; it MUST NOT imply unrestricted operation. Prototype body-connected operation requires a reviewed isolation/protection arrangement and a separate safety gate. A battery is not, by itself, a complete isolation argument.
+
+Near-eye and skin-contact illumination require assessment of actual sources, spectra, geometry, exposure, cumulative multi-emitter operation and fault conditions. Laser-based ToF/flow options require the applicable laser-safety assessment in addition to considering the system’s other optical hazards; an LED framework is not a blanket laser qualification. IEC 62471 provides a relevant photobiological-safety framework, but this document does not reproduce the standard, select a complete jurisdiction-specific compliance regime, or certify a design. [R9]
+
+Audio-output limits MUST be based on the qualified transducer/contact implementation, not copied from an unrelated speaker or stated only as a digital volume percentage. Biological comfort, electrical safety, and mechanical fit require physical tests independent of simulator conformance.
+
+### 14.3 Security and updates
+
+The threat model MUST cover an untrusted tutor response, malformed sensor payloads, hostile companion peers, stale commands, unauthorized DMA, replayed grants, compromised course packages, and unsafe update interruptions.
+
+The system MUST support owner-controlled trust, verifiable boot/update identities, recovery, and replaceable open software without covert vendor lock-in. Changing a safety-critical implementation invalidates its previous qualification unless requalified; software openness is not a claim that every modification remains safe.
+
+Updates and resets MUST clear pending output authorization as specified, preserve truthful durable document state, and never reactivate a disabled stream solely because it was active in a snapshot.
+
+## 15. Physical design lifecycle
+
+The lifecycle is a parallel program with integrated deliverables, not a sequence of documentation-only gates.
+
+**P0 — Contract and runnable binding.** Extend the existing profile source and produce discoverable devices with real Lean drivers. Preserve old profile behavior. Establish an executable synthetic full-session workload and resource budget.
+
+**P1 — End-to-end multimodal notebook.** Capture pen, EEG, PPG, fNIRS, tablet optical and microphone stimuli through modeled hardware; exercise depth/flow extensions when selected; transmit authorized observations; return real tutor content; render through the guest and play through modeled audio; record actual delivery and preserve saved ink across restart. A fixed fixture tutor may test transport, but a fixture response alone does not complete adaptive tutoring.
+
+**P2 — Authoritative RTL integration.** Implement acquisition/control/audio logic in synthesizable RTL, integrate clocks/interrupts/DMA/transport, and compare against fast models using the same guest workloads. Track inherited processor, timing, reset, radio, and checkpoint gaps separately.
+
+**P3 — Analog, optical, and mechanical engineering.** Develop EEG circuits, PPG/fNIRS optics and readout, the selected flow-sensitive design, tablet camera/ToF pixels/readout and fixtures, custom transducers, microphones, and enclosure assemblies. Use publicly licensed process models and independently reproducible designs. Characterize critical circuits with bench fixtures and, when justified, small reusable test chips.
+
+**P4 — Physical closure.** Complete source-to-layout reproduction, design-rule and layout-versus-schematic checks, extracted parasitics, timing, clock/reset analysis, mixed-signal noise/coupling analysis, power/ground/package integrity, test access, and documented rule/model coverage. OpenROAD’s flow separates placement, routing, extraction, and final verification; a generated layout file is not closure. [R8]
+
+**P5 — Fabrication and physical qualification.** Only after separately authorized fabrication/assembly and resolution of required rights/manufacturing gates, measure actual silicon, interfaces, tablet optics, optode/contact physiology performance, electrodes, acoustic output, safety, ergonomics, and failure behavior. Compare measured device traces against the declared simulation relations.
+
+**P6 — Educational qualification.** Evaluate the adaptive tutor with real learning outcomes, initially without making physiological interpretation a product claim. Demonstrate whether each extra modality improves learning relative to its costs, burden, and privacy impact.
+
+IHP SG13G2 remains provisional. Its public documentation, checked for this revision on 2026-10-13, describes the open PDK as an experimental preview and not intended for production use. No camera/emitter/photodetector/MEMS process compatibility, qualified EEG/PPG/fNIRS performance, open foundry recipes, complete rule coverage, or tapeout acceptance follows from its availability. [R7]
+
+## 16. Acceptance: one useful integrated workflow
+
+The first full integration milestone MUST demonstrate the following continuous workflow using actual guest software and modeled devices:
+
+1. Boot the extended profile; discover and authorize the chosen devices; load a real workbook.
+2. Receive pen data through the digitizer and preserve local ink responsiveness while other streams run.
+3. Configure tablet optics and headband EEG/PPG/fNIRS; receive raw observations with correct capture times, optical schedules, calibration, provenance and quality. Exercise depth/flow acquisition in the extension scenario.
+4. Let the student ask a spoken or written question tied to a document region; send only permitted observations to the companion.
+5. Receive a tutor action whose document references and mathematical claims are handled by the guest’s normal services.
+6. Present written content through the paper controller and spoken content through the audio controller; retain accurate partial-delivery receipts.
+7. Interrupt speech locally; revoke one sensor without terminating the notebook or the other permitted streams.
+8. Exercise an optical gap, EEG saturation, PPG contact loss, fNIRS dark/reference failure, interfering emitter schedules, headband/link interruption, and a stale tutor response without fabricating data or corrupting saved mathematics.
+9. Resume after a supported checkpoint or restart with correct epoch, authorization, queue, and durability behavior.
+10. Record a later independent challenge and a correctly scoped evaluation result under the separate assessment authority.
+
+The conformance corpus MUST also include reset during conversion/exposure/optode multiplexing/ToF or flow accumulation/playback, concurrent DMA and display activity, full queues, counter/epoch boundaries, malformed descriptors, cold recovery after a save barrier, blocked illumination/audio when safety state is invalid, and deterministic sealed replay.
+
+Repeat the same useful workflow in browser and native distributions using the shared guest. Demonstrate a wholly synthetic session first, then an optional mixed external-source session with per-channel provenance and explicitly scoped acceptance. Show that physiological refusal leaves a working pen/notebook/tutor path.
+
+Tests must exercise functionality that ships. Metadata checks, screenshots, repeated polling, empty models, and assertions of readiness are not substitutes for these observations.
+
+## 17. Readiness and evidence accounting
+
+The project MUST maintain independent readiness dimensions:
+
+| Dimension | Evidence required |
+|---|---|
+| Consumer simulation readiness | Real guest workflows, all profile interfaces, supported faults, permissions, installation and replay work in the distributed simulator. |
+| Canonical digital/RTL parity | Declared processor, peripheral, timing/reset, and state-continuation equivalence supported by reproducible comparisons; no hidden unmodeled digital functions. |
+| Open design completeness | Required sources, models, rights, build inputs, and dependency provenance are available; opaque active blocks remain blockers. |
+| Manufacturing reproducibility/openness | Each block has a demonstrated public-input build, process compatibility, assembly/test route and recorded process-recipe/tooling openness; an open PDK alone is insufficient. |
+| Design-specific rights clearance | License compatibility and dated, jurisdiction-scoped manufacturing/use rights assessment; no unsupported patent-free claim. |
+| Physical implementation closure | Actual process-specific layout, timing, extraction, rule coverage, mixed-signal, package and manufacturing gates close. |
+| Physical functional/safety qualification | Measured hardware meets declared contracts and safety/consumer-use requirements. |
+| Educational benefit | Real comparisons demonstrate improved delayed independent capability for the stated population and conditions. |
+
+Use the existing evidence vocabulary—`UNKNOWN`, `BLOCKED`, `UNVERIFIED`, `SIMULATED_ONLY`, `MEASURED`, and `QUALIFIED`—with an identified claim and scope. Passing one dimension MUST NOT upgrade another.
+
+Each result MUST record source/profile/RTL/firmware/tool/model identities, input and initial-state identities, commands and raw outputs, environmental assumptions, applicable equivalence relation, and exclusions. No universal equivalence claim follows from a finite test corpus without further proof.
+
+## 18. Intended repository integration
+
+This document is delivered as a specification, not a repository change. A subsequent implementation should place it under an appropriate `docs/contracts/` path, amend the canonical contract through its normal versioning process, extend the existing profile generator, and add module-specific ABIs beside their first real consumers.
+
+Required implementation artifacts are the extended profile; raw-stream and companion protocol definitions; Lean drivers/services; canonical RTL; fast device models; analog/optical/acoustic models and fixtures, including headband source schedules and cross-talk scenarios; safety/permission state machines; semantic action/receipt records; independent assessment configuration; conformance fixtures; open-hardware source, manufacturing and rights ledger; optional external-device adapters with scoped provenance; and retained evidence reports.
+
+Do not create a second standalone simulated textbook, a sensor-only dashboard, a host-owned notebook, or a separate authoritative document database to avoid integrating the existing system.
+
+## 19. Definition of success
+
+> A student uses the same open Lemma workbook environment on a physical device or in LemmaSim; every enabled digital input/output follows the same versioned machine contract; the student controls access to each stream; the tutor learns how to present mathematics from permitted observations; and the value of that adaptation is tested by what the student can later establish, apply, and learn without the tutor supplying the reasoning.
+
+The target is the complete system. Incremental implementation and separate evidence gates exist to make that target buildable and its status truthful, not to redefine partial device support as completion.
+
+## Appendix A. v0.1.0 migration checklist
+
+- Replace the mandatory head-mounted two-eye-plus-scene geometry with a declared tablet optical binding; do not reuse raw camera identities without versioning.
+- Add headband PPG/fNIRS device ABIs, optical schedules, references, permissions and source clocks; implement the flow extension where a flow claim is made.
+- Preserve EEG codes, pen/paper semantics, microphone separation, arbitrary PCM playback, output receipts, bounded queues, timing, DMA ownership and safe reset.
+- Add open camera/ToF/optode/transducer manufacturing and rights evidence; commercial adapters remain external-only.
+- Update discovery and the existing generator rather than creating a new independent ABI language.
+- Replace the fixed three-camera budget with negotiated image/physiology/depth/flow workloads and real admission checks.
+- Extend checkpoint state and deterministic fixtures to source multiplexing, optical accumulators, correlators, headband transport and cross-talk controls.
+- Keep the same Lean guest and workbook in browser/native/physical embodiments; preserve existing processor/RTL/physical-closure gaps.
+- Retain an explicitly authorized raw path without making perpetual rich recording the default; evaluate marginal sensor value against independent learning.
+- Do not claim an implementation exists merely because this migration list is complete.
+
+## References and reviewed foundations
+
+Repository references are pinned to the reviewed commit. External references support the identified engineering rationale; they do not certify this proposed design or establish that physiological tutoring improves learning.
+
+- **R1. Canonical machine contract:** `https://github.com/srkftw/lemma/blob/b2fe214258345f9e48ae1f836fd80b0773d933a6/LEMMA_MACHINE_CONTRACT.md`
+- **R2. Existing silicon specification:** `https://github.com/srkftw/lemma/blob/b2fe214258345f9e48ae1f836fd80b0773d933a6/docs/contracts/LEMMA_SILICON_v0.1.0.md`
+- **R3. Existing device/descriptor ABI:** `https://github.com/srkftw/lemma/blob/b2fe214258345f9e48ae1f836fd80b0773d933a6/docs/contracts/004-devices-v1.md`
+- **R4. Repository invariants:** `https://github.com/srkftw/lemma/blob/b2fe214258345f9e48ae1f836fd80b0773d933a6/README.md`
+- **R5. Lab Streaming Layer, Time Synchronization:** `https://labstreaminglayer.readthedocs.io/info/time_synchronization.html`
+- **R6. Pupil Labs, Pupil Capture: raw acquisition, calibration, and surface tracking:** `https://docs.pupil-labs.com/core/software/pupil-capture/`
+- **R7. IHP Open PDK documentation, current experimental status:** `https://ihp-open-pdk-docs.readthedocs.io/en/latest/`
+- **R8. OpenROAD implementation flow:** `https://openroad.readthedocs.io/en/latest/main/README.html`
+- **R9. IEC 62471:2006, official scope and publication record:** `https://webstore.iec.ch/en/publication/7076`
+- **R10. Texas Instruments ADS1299 published converter specifications, reference only:** `https://www.ti.com/product/ADS1299`
+
+R1–R10 above are the foundations inherited from the supplied v0.1.0; their original review date was 2026-10-12. R7 was rechecked for this revision. Repository links remain pinned historical context, not a fresh current-branch audit. New references below were consulted on 2026-10-13.
+
+- **N1. CERN Open Hardware Licence and published strong-reciprocal license text:** `https://cern-ohl.web.cern.ch/`; `https://spdx.org/licenses/CERN-OHL-S-2.0.html`. Licensing framework, patent provisions and warranty limitations; not design clearance.
+- **N2. WIPO patent FAQ:** `https://www.wipo.int/en/web/patents/faq_patents`. Territorial rights and patent fundamentals; not a patent search or legal opinion on Lemma.
+- **N3. Martinos Center, optical imaging and combined NIRS/DCS research:** `https://optics.martinos.org/research/imaging-modalities/`; `https://optics.martinos.org/faculty/maria-angela-franceschini/franceschini-lab-research/combined-nirs-dcs/`. Distinct hemoglobin and flow-sensitive modalities.
+- **N4. MNE/MNE-NIRS measurement processing:** `https://mne.tools/stable/generated/mne.preprocessing.nirs.optical_density.html`; `https://mne.tools/mne-nirs/stable/api.html`. Optical-density, hemoglobin and short-channel processing; not proof of a physical headband’s cerebral sensitivity.
+- **N5. BrainFlow supported boards, Muse 2 section:** `https://brainflow.readthedocs.io/en/stable/SupportedBoards.html#muse-2`. External EEG/PPG adapter capabilities and platform/configuration requirements.
+- **N6. Muse SDK licensing and signal access:** `https://choosemuse.com/pages/developers`; `https://choosemuse.my.site.com/s/article/About-EEG-Data-and-Muse-Biofeedback`. Consumer access is not an open canonical design or unrestricted SDK grant.
+- **N7. Browser device access:** `https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API`; `https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent/pressure`. Capability-dependent host ingress; no universal peripheral-support promise.
+- **N8. Browser runtime facilities:** `https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API`; `https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet`; `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer`. Candidate presentation/compute/audio/shared-memory facilities; not a Lemma benchmark.
+
+No measured Lemma sensor performance, implemented browser bridge, completed manufacturing/rights qualification, consumer certification, or educational-effectiveness result is asserted by this document.

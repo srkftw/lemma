@@ -5089,8 +5089,13 @@ def audit(
             "scripts/run_timer_case.py",
             "scripts/run_trap_case.py",
             "scripts/check_foundation_gate8.py",
-            "docs/audits/timers-core0-v07.md",
+            "docs/audits/timers-core0-v07.html",
         }
+        # Historical consumed-source archives keep their original document
+        # paths and bytes; current builds consume the mapped HTML edition.
+        if not (root / "docs/document-map.json").is_file():
+            required_timer_sources = {name[:-5] + ".md" if name.startswith("docs/") and name.endswith(".html") else name
+                                        for name in required_timer_sources}
         missing_timer_sources = required_timer_sources - observed_sources
         if missing_timer_sources:
             raise Core0Error(
@@ -5140,9 +5145,14 @@ def audit(
             "scripts/run_monitor_session.py",
             "scripts/check_foundation_gate9.py",
             "scripts/qualify_foundation.py",
-            "docs/audits/timers-core0-v07.md",
-            "docs/audits/monitor-core0-v07.md",
+            "docs/audits/timers-core0-v07.html",
+            "docs/audits/monitor-core0-v07.html",
         }
+        # Historical consumed-source archives keep their original document
+        # paths and bytes; current builds consume the mapped HTML edition.
+        if not (root / "docs/document-map.json").is_file():
+            required_monitor_sources = {name[:-5] + ".md" if name.startswith("docs/") and name.endswith(".html") else name
+                                        for name in required_monitor_sources}
         missing_monitor_sources = required_monitor_sources - observed_sources
         if missing_monitor_sources:
             raise Core0Error(

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trust and dependency manifest</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="trust-and-dependency-manifest">Trust and dependency manifest</h1>
+<p>Status: required audit structure. Task 001 implements executable scalar-image audit
+and provenance; Task 002 Gates 1--8 extend it with fault manifests, versioned suites,
+control-flow/loop checks, checked-memory effects, a closed compiled-device path,
+and synchronous-trap audits. Timer/runtime categories remain open.</p>
+<h2 id="categories">Categories</h2>
+<ol>
+<li><strong>Host execution:</strong> Lean compiler/elaborator/runtime, LLVM, LLD, QEMU, build tools,
+OS, scripts, Nix and test tools. These may be non-Lean upstream dependencies.</li>
+<li><strong>Guest code:</strong> compiled Core0 functions, explicitly generated startup and primitive
+lowerings, and later Lean-authored runtime/kernel/services. Every executable byte needs provenance.</li>
+<li><strong>Emulator artifacts:</strong> reset trampoline/ROM, device tree and test fixtures. These
+are declared platform assumptions, not hidden dependencies of a purported native runtime.</li>
+<li><strong>Physical firmware/peripherals:</strong> audited separately when hardware is introduced.
+RISC-V application code does not establish every controller&#39;s internal ISA.</li>
+<li><strong>Mathematical trust:</strong> reference semantics/proofs with recorded assumptions. Later
+proof-kernel and exercise environments have their own transitive axiom manifests.</li>
+</ol>
+<h2 id="minimum-generated-evidence-fields">Minimum generated evidence fields</h2>
+<ul>
+<li>Source commit, dirty-tree status and hashes for relevant source/configuration inputs.</li>
+<li>Immutable tool revisions, package identities, flags, host/target architecture and ABI.</li>
+<li>Source declaration -&gt; normalized representation -&gt; lowered IR -&gt; object -&gt; image mapping.</li>
+<li>Allowed primitives and each primitive&#39;s type, effect contract, implementation and reason.</li>
+<li>All object/archive paths, section/symbol inventory, linker map, ELF attributes and relocations.</li>
+<li>Every external call before and after optimization, with resolution and provenance.</li>
+<li>QEMU invocation, declared platform artifacts, runtime input, UART output and termination status.</li>
+<li>Test names, seeds, run counts, results, rejected fixtures and exact diagnostic reasons.</li>
+<li>Claims established, claims not established and remaining blocked work.</li>
+</ul>
+<p>An empty test corpus, missing manifest, missing dependency, unknown linked object,
+skipped QEMU run or unrecognized runtime call is not success. Exit nonzero on acceptance failure.</p>
+<h2 id="gate-6-device-trust-boundary">Gate 6 device trust boundary</h2>
+<p>The trusted guest machine primitives remain the structured startup, the IO-fence
+primitive, and the status-coded SiFive-test operation in the minimal device harness.
+UART policy and algorithms are compiled from elaborated Lean source. The device catalog
+admits only four exact source identities and records their fixed address, direction,
+byte width, volatility, alignment, ordering, and modeled register side effect.</p>
+<p>The audit must bind the manifest to normalized source and symbols, reject stale or
+duplicated operation/effect metadata, and inspect both O0/O2 IR and machine code. It
+checks wrong addresses, widths, volatility, alignment, missing/reordered fences,
+duplicate physical operations, forbidden generic MMIO, hosted dependencies, and UART
+logic appearing in the harness. QEMU and its emulated UART remain host/emulator trust,
+not guest code and not a physical-device result. The finite model and four local
+theorems are mathematical evidence with narrower claims than the target executions.</p>
+<h2 id="gate-7-trap-trust-boundary">Gate 7 trap trust boundary</h2>
+<p><code>core0-v0.6</code> adds only four exact synchronous-trap source identities and a
+closed typed Lean machine sequence for masking, vector entry, complete integer
+context preservation, CSR snapshots, explicit return, and bounded finishers.
+Compiled Lean owns dispatch policy, observations, diagnostics, arithmetic, and
+software-denial checks. Private frame/probe storage is not ordinary RAM authority.
+The audit must name every symbol, CSR operation, object and generated instruction
+role, check the nine-argument call and complete save/restore sequence, and bind
+source/effect metadata to LLVM and machine code. Test-only wrong-slot restore
+must be a declared valid-image mutation, not an unexplained audit bypass.</p>
+<p>Local policy lemmas, source probes, resource/disassembly audits, and actual trap
+executions are distinct evidence. The fixed-RAM/no-NMI entry-tail premises and
+single-hart non-nesting limitations remain explicit; see
+<a href="../audits/traps-core0-v06.html"><code>traps-core0-v06.md</code></a>. Gate 7 clean target acceptance
+has passed; timer/concurrency/runtime categories are not thereby qualified.</p>
+<h2 id="gate-8-timer-trust-boundary">Gate 8 timer trust boundary</h2>
+<p>The additive timer primitives have exact source identities, signatures, effect
+catalogs, typed instruction implementations, fixed aligned 64-bit MMIO addresses,
+and finite CSR operations. Compiled Lean owns ISR policy, ring/overflow/skipped
+accounting, foreground computation, validation, and deferred UART encoding.
+Single-hart masking, volatile shared RAM, and ordered primitive boundaries are
+explicit premises; no atomics extension or threading runtime is added.</p>
+<p>Audits must bind actual MTIMER accesses/fences, CSR masking, complete integer
+preservation, executable PCs, object closure, and both declared sole-instruction
+mutations. A missing-event test must observe its guest diagnostic, not credit a
+timeout or compilation/audit failure. Finite deadline/ring lemmas do not model
+hardware delivery or prove compiled correctness. See
+<a href="../audits/timers-core0-v07.html"><code>timers-core0-v07.md</code></a>. Gate 8 target acceptance
+passed at clean <code>42674c1</code>; the monitor, detached qualification and actual CI are
+separate obligations. This is not a proof of frontend/backend correctness:
+backend direct effects are independently recomputed, while dependency metadata
+still originates in the trusted frontend; the closed artifact audit additionally
+checks actual call/role closure.</p>
+<h2 id="gate-9-monitor-category">Gate 9 monitor category</h2>
+<p><code>test-monitor-image</code>/<code>lemma-monitor-v1</code> is a separate closed category, not an
+arbitrary-root relaxation of the accepted timer suite. Its own source-function,
+operation, optimized-IR, UART and final-machine inventories must be checked.
+The existing sixteen startup functions and exactly <code>program.o</code> plus <code>startup.o</code>
+remain named inputs. Full-register/CSR/CLINT closure, forbidden runtime and ISA
+checks, stack bounds, source provenance, and actual ISR call-role separation
+remain mandatory. Fresh post-boot request streams and raw frames are additional
+evidence obligations. Clean <code>8fd45d8</code> acceptance passed all 18 sessions, with
+independent raw replay and complete 101-source bindings. Final cumulative,
+stress, detached-worktree and CI qualification remain distinct.</p>
+<h2 id="prohibited-shortcuts">Prohibited shortcuts</h2>
+<p>Do not hide an upstream runtime by static linkage, rename banned symbols, copy object
+files without source provenance, add no-op reference counting, substitute C-generated
+application code, or emit hardcoded expected answers. LLVM intrinsics also require audit
+because optimization/code generation can lower them into external helper calls.</p>
+<h2 id="reproducibility-claim">Reproducibility claim</h2>
+<p>Separate repeatable behavior from byte-identical output. Rebuild twice from clean
+outputs with pinned dependencies; compare artifact hashes where determinism is expected.
+Explain metadata differences rather than discarding them silently. Keep credentials,
+supplier NDA files and personal data out of evidence bundles.</p>
+<p><code>tooling/toolchain-lock.json</code> starts unresolved. It is not a reproducible-build lock until
+task 001 replaces each required entry with a verified immutable identity and commands.</p>
+</main>
+</body>
+</html>

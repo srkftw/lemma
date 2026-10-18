@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lemma Silicon Specification v0.1.0</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lemma-silicon-specification-v010">Lemma Silicon Specification v0.1.0</h1>
+<p><strong>Status:</strong> normative architectural direction; <strong>not</strong> a verified physical design, approved MPW submission, or demonstration of device parity.<br><strong>Date:</strong> 2026-10-10<br><strong>Precedence:</strong> <a href="../../LEMMA_MACHINE_CONTRACT.html">Canonical machine contract</a> defines observable behavior; this document constrains its silicon realization. Historical <a href="LEMMA_VM.html">LemmaVM</a> QEMU <code>virt</code> addresses and tests <strong>do not</strong> become Lemma silicon addresses by implication.</p>
+<h2 id="1-decisions-and-non-negotiable-constraints">1. Decisions and non-negotiable constraints</h2>
+<ol>
+<li>Lemma One targets one custom, <strong>monolithic RV64 mixed-signal SoC</strong>, developed for multi-project-wafer (MPW) fabrication. Internal blocks remain independently specified, reusable, and physically partitionable for an eventual chiplet design. Chiplets are <strong>not</strong> required for the first tapeout.</li>
+<li>Hardware source (RTL, schematics, layouts, memories/macros, RF and analog blocks), firmware, and necessary design-flow inputs must be publicly inspectable and redistributable under compatible licenses. An openly described API for an opaque implementation does <strong>not</strong> satisfy this requirement. Every third-party dependency gets provenance, exact revision, license, and an independently rebuildable or explicitly <strong>BLOCKED</strong> status.</li>
+<li>The <strong>sole exception</strong> is manufacture of the electrophoretic display panel/medium. The controller, host software, power-sequence logic, and redistribution rights for essential waveform data must remain open. Proprietary panel waveforms are not implicitly exempt. Physical passive devices and fabrication services do not become licensed design IP merely through purchase; where process/manufacturing details remain closed, disclose that distinction rather than claim an entirely open fabrication process.</li>
+<li>Do not seek private documentation, vendor contacts, NDAs or proprietary IP to close specification gaps. Work from public materials and original design. Fabrication submission will eventually require a foundry transaction, separately authorized.</li>
+<li><strong>IHP SG13G2 is a provisional process candidate only.</strong> No statement of RF performance, PDK closure, MPW eligibility, die fit, procurement, or open-source signoff is asserted until independently evidenced.</li>
+<li>LemmaSim remains a <strong>permanent first-class Lemma One embodiment</strong>. Both run one maintained freestanding Lean-authored software stack against the same versioned observable machine. Functional equivalence requires interface-specific traces and measured physical conformance; browser convenience paths must not bypass guest devices.</li>
+<li>Maintain the existing <code>docs/contracts/LEMMA_VM.md</code> historical QEMU profiles unmodified. This specification does not retroactively qualify hardware, RF or a panel.</li>
+</ol>
+<h2 id="2-scope-and-version-semantics">2. Scope and version semantics</h2>
+<p><strong>Frozen at v0.1.0:</strong> architectural commitments, module boundaries, ownership, openness policy, methods for change, required contracts, and evidence gates.<br><strong>Not frozen:</strong> exact RV64 extension set, ISA privilege version, cache geometry, SoC addresses, SRAM and external RAM sizes, clock rates, bus protocols, package/pinout, voltages, panel geometry and waveforms, RF band/channel configuration, target frequencies, area, power, analog performance or MPW date. They are <strong>UNKNOWN</strong>, never inferred from QEMU <code>virt</code> or proposed components.</p>
+<p>A change to guest-visible behavior requires a versioned amendment to the canonical machine contract, migration rules for durable formats, compatible simulator/device models and conformance vectors. Silicon-only changes require a new implementation revision; breaking module interfaces require a new module-interface version. Candidate process substitutions are allowed without guest ABI changes.</p>
+<h2 id="3-logical-soc-partition-and-required-interfaces">3. Logical SoC partition and required interfaces</h2>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Ownership and first meaningful construction</th>
+<th>Stable boundary to define</th>
+<th>Physical concerns</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RV64 compute</td>
+<td>Open core/RTL; boot a genuine Lean-produced freestanding image</td>
+<td>ISA/CSR/traps, instruction memory, MMU/PMP, interrupt and debug contracts</td>
+<td>clocks, reset, timing, core-area</td>
+</tr>
+<tr>
+<td>Interconnect/security</td>
+<td>Open address decoder, bus fabric, DMA and access controls</td>
+<td>bus ordering, transaction IDs, faults, endianness, barriers, capability-to-DMA authorization</td>
+<td>arbitration, crossings, isolation</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>Open ROM image, SRAM implementation and external RAM controller if needed</td>
+<td>memory map, cache/DMA coherence, reset retention, ECC/errors, write ordering</td>
+<td>open macro availability, pads, timing</td>
+</tr>
+<tr>
+<td>Boot/recovery</td>
+<td>Immutable/open boot source and recovery mechanism</td>
+<td>reset vector, image identity, fault/retry/rollback, boot-device transport</td>
+<td>nonvolatile bootstrap, ROM masks</td>
+</tr>
+<tr>
+<td>Pen</td>
+<td>Open electrode/readout design and digitizer controller</td>
+<td>sample frames, timestamp, coordinate calibration, pressure/hover capabilities, overflow/error</td>
+<td>sensing SNR, ADC, shielding, display stack</td>
+</tr>
+<tr>
+<td>Electrophoretic display</td>
+<td>Custom open pixel/update/waveform engine</td>
+<td>framebuffer ownership, update queues, refresh/busy/completion/errors and reset</td>
+<td>panel power, VCOM, waveforms, external panel pins</td>
+</tr>
+<tr>
+<td>Wi-Fi 6</td>
+<td>Open 802.11ax MAC/baseband and original RF where necessary</td>
+<td>host queues, authentication boundaries, DMA, status, link and faults</td>
+<td>bands, synthesizers, PA/LNA, ADC/DAC, certification</td>
+</tr>
+<tr>
+<td>Bluetooth 5.4</td>
+<td>Open Bluetooth LE host/controller/PHY</td>
+<td>HCI or versioned equivalent; supported roles/features, timing, pairing and faults</td>
+<td>RF/coexistence, interop, qualification</td>
+</tr>
+<tr>
+<td>Companion link</td>
+<td>Open transport and protocol</td>
+<td>discovery, reconnection, acknowledgements, save/flush ordering</td>
+<td>physical interface and pin budget</td>
+</tr>
+<tr>
+<td>Debug/measurement</td>
+<td>Open trace, counters, fault injection and test access</td>
+<td>privilege limits, event schema, capture/replay</td>
+<td>DFT access, test fixtures</td>
+</tr>
+</tbody></table>
+<p>Module contracts MUST enumerate register layout, field semantics, endian/width/alignment, state transitions, accepted/rejected commands, ordering, interrupts, timing bounds, reset/power behavior, errors, DMA permissions and conformance observations before those values are declared frozen. An unassigned register or address remains <strong>TBD</strong>, not implicitly zero.</p>
+<h2 id="4-monolithic-now-chiplet-compatible-later">4. Monolithic now, chiplet-compatible later</h2>
+<p>All blocks use explicit versioned logical interfaces, transaction ordering, reset handshakes, independent clock-domain descriptions, explicit backpressure and bounded queues. No guest software may depend on a module being on the same die. A future die-to-die bridge must preserve software-visible semantics; any additional permitted latency, loss, or reset behavior is a <strong>declared contract revision</strong>. Do <strong>not</strong> prematurely promise pin-compatible UCIe, an open physical PHY, chiplet packaging availability, or zero additional latency.</p>
+<p>The present intended floorplan is <strong>one</strong> digital/analog mixed-signal die, not an already-qualified radio/process solution. External display panel, antenna/matching, power components, and working memory may still be physically necessary; “one chip” means one custom logic/RF SoC die, not an entire tablet made of one part.</p>
+<h2 id="5-diskless-machine-and-durable-state">5. Diskless machine and durable state</h2>
+<p>No HDD/SSD is required. This does <strong>not</strong> imply zero ROM, zero boot configuration storage, or durability without a backing store. Boot must be possible without a cyclic dependency on an unconfigured interface. Pen capture and immediate ink feedback operate locally when possible. Record durability is acknowledged <strong>only</strong> after a specified flush barrier reaches persistent media (local open journal or companion-backed service); disconnection, timeout, brownout and cold-restart behavior remain observable. Mark strokes as provisional until acknowledged. No unsupported promise of offline persistence. Existing Task 004 storage semantics are preserved unless explicitly versioned.</p>
+<h2 id="6-display-and-pen-boundaries">6. Display and pen boundaries</h2>
+<p>The <strong>manufacturing-only</strong> panel exception does not extend to closed controller firmware. Do not freeze display resolution, pixel format, voltage, waveform tables or pen stack from an unqualified listing. Define a panel-independent guest device first and a versioned open panel adapter second. Panel acceptance requires publicly releasable electrical/interface and waveform inputs or an independently developed driving model qualified against the selected material; unknown manufacturer-specific behavior remains UNKNOWN.</p>
+<p>The pen sensing arrangement must demonstrate digitizer/dielectric stack compatibility before physical signoff. For LemmaSim, digitizer sample records and controller state transitions are canonicalized independently of host pointer-rendering shortcuts. Analog origin is modeled with stated error envelopes rather than false bit-exact physical equivalence.</p>
+<h2 id="7-dual-radio-open-silicon-targets-not-demonstrated">7. Dual-radio open-silicon targets (NOT demonstrated)</h2>
+<p>Wi-Fi 6 / IEEE 802.11ax and Bluetooth 5.4 are end-state targets; no assumption that openwifi already implements complete 802.11ax, nor that an open BLE host establishes a full 5.4 controller or radio. Identify required 2.4/5 GHz modes, channel widths, security, BLE roles/features, coexistence and mandatory/optional compliance before implementation.</p>
+<p>All PLL, clocking, data-converter, mixers, receive/transmit path, calibration and digital MAC/PHY dependencies must pass the open design/IP audit. Run RF circuit simulations and a measured silicon characterization campaign before claiming protocol compliance. The provisional SG13G2 PDK has <strong>not</strong> been demonstrated to meet integrated Wi-Fi 6 requirements or to provide full open RF signoff. Radio work must <strong>not</strong> block the compute/display/pen simulator.</p>
+<h2 id="8-mpw-process-and-eda-qualification-ledger">8. MPW process and EDA qualification ledger</h2>
+<p>The process choice is a <strong>hypothesis</strong> until objective evidence closes each item below. Every item is initially <code>UNVERIFIED</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Required public, reproducible evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PDK</td>
+<td>Exact commit, redistribution/license audit, complete design-rule and device/corner coverage; document missing proprietary-only signoff steps</td>
+</tr>
+<tr>
+<td>Cells/memories</td>
+<td>Inspectable standard-cell and SRAM collateral, legal integration, synthesis/P&amp;R timing and macro layout; avoid undocumented memory black boxes</td>
+</tr>
+<tr>
+<td>Digital</td>
+<td>Reproducible source → netlist → layout, DRC/LVS, parasitic extraction, static timing, clock/reset analysis, power estimate</td>
+</tr>
+<tr>
+<td>Analog/RF</td>
+<td>Public models, reproducible RF schematic/layout/parasitic simulation and calibrated target requirements</td>
+</tr>
+<tr>
+<td>Integration</td>
+<td>Area and pad-ring budgets, power domains, clock crossings, mixed-signal isolation, DFT and package feasibility</td>
+</tr>
+<tr>
+<td>Foundry</td>
+<td>Public shuttle parameters and submission constraints; <strong>no claimed submission acceptance</strong> without a real acceptance record</td>
+</tr>
+<tr>
+<td>Packaging</td>
+<td>Pinout, RF escape/antenna interface, external RAM, display and pen hookups and test access documented and checked</td>
+</tr>
+<tr>
+<td>Post-silicon</td>
+<td>Actual measurements of boot, pen, display, memory, RF and failure cases cross-referenced to LemmaSim trace corpus</td>
+</tr>
+</tbody></table>
+<p>Statuses are <code>UNKNOWN</code>, <code>BLOCKED</code>, <code>UNVERIFIED</code>, <code>SIMULATED_ONLY</code>, <code>MEASURED</code>, and <code>QUALIFIED</code>; none upgrades by writing prose or creating an empty test. A complete SoC tapeout is prohibited until the required process-specific checks pass.</p>
+<h2 id="9-equivalence-and-provenance">9. Equivalence and provenance</h2>
+<p>For a declared version <code>v</code>, inputs <code>i</code> and initial states <code>s</code>, the goal is <code>Obs_v(LemmaSim,i,s) ≈_v Obs_v(Silicon,i,s)</code>, using the per-device relation in <a href="../../LEMMA_MACHINE_CONTRACT.html">the canonical contract</a>. Exact guest bytes and persistent records where specified; bounded time, asynchronous events, and analog-origin observations only within explicitly defined relations. Browser simulation includes the virtual SoC&#39;s guest-visible controller operations, not unmodeled host helpers. Analog channel simulation is not a claim of electromagnetic equivalence.</p>
+<p>Every artifact should record: source commit, dependency and PDK/toolchain hashes, versioned machine profile, RTL/firmware hashes, model version, simulator/target backend, input and initial-state hashes, actual commands, raw outputs, outcome and failure evidence. Model tests, Lean proofs, DRC reports, emulator boots, physical measurements and certification are <strong>distinct</strong>.</p>
+<h2 id="10-construction-order-useful-vertical-slices">10. Construction order: useful vertical slices</h2>
+<ol>
+<li><strong>S0: enforceable contracts.</strong> Create versioned machine/module schemas, open-IP inventory, process qualification records; keep UNKNOWN explicit.</li>
+<li><strong>S1: bootable silicon SoC.</strong> Synthesize a real RV64 core + boot ROM + RAM + timer/interrupt + debug transport; execute a freestanding Lean image on RTL simulation and retain hashes/traces. Then run open-layout feasibility.</li>
+<li><strong>S2: ink end-to-end.</strong> Connect actual guest pen driver, controller event FIFO, pixel/update queue, open panel adapter and durable write/reopen; compare controller traces in LemmaSim. Do not fake pen or screen success through host UI.</li>
+<li><strong>S3: diskless companion.</strong> Real versioned link, bounded retransmission, disconnected edits and acknowledged persistence; prove restart behaviors through targeted cutpoint experiments.</li>
+<li><strong>S4: open wireless digital.</strong> Deliver a concrete interoperable BLE feature slice, then measured 802.11ax MAC/PHY slices; maintain mandatory feature matrix, not version-name claims.</li>
+<li><strong>S5: RF test silicon.</strong> Fabricate RF/analog test structures only after publicly reproducible design/layout validation; measure against predicted parameters.</li>
+<li><strong>S6: SoC tapeout.</strong> Integrate and close actual layout and signoff; package, bring up, measure, and run the canonical conformance suite. No inferred success.</li>
+</ol>
+<p>Implementation effort is measured by running guest functionality and physical design milestones, not numbers of scaffold tests. Retain historical Task 001–004 evidence and failures intact.</p>
+<h2 id="11-open-decisions-requiring-evidence-before-v020">11. Open decisions requiring evidence before v0.2.0</h2>
+<ul>
+<li>Exact RV64 ISA extensions, privilege and MMU specification; module-specific clocks and reset.</li>
+<li>Concrete bus and chiplet-portable link protocol; interrupt and DMA maps.</li>
+<li>Boot configuration storage, memory size/technology, pad/power budget.</li>
+<li>Releasable panel waveforms, pen stack, display geometry, actual controller electrical front end.</li>
+<li>Bluetooth 5.4 feature subset, 802.11ax bands/channel widths, RF sensitivity/linearity, regulatory scope.</li>
+<li>SG13G2 digital timing and RF viability, open SRAM, full licensing/signoff, shuttle/package eligibility and die area.</li>
+</ul>
+<p><strong>Do not silently answer an open item with an invented number.</strong> Prefer a demonstrable, versioned minimal machine whose functionality can grow without contradicting the canonical contract.</p>
+</main>
+</body>
+</html>

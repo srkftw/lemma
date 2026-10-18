@@ -54,13 +54,14 @@ def source_manifest(dep, profile_name=None):
     binding.parent.mkdir(parents=True,exist_ok=True)
     write_if_changed(binding,('// Generated from '+str(profile_path(profile_name).relative_to(ROOT))+'\npackage lemma_silicon_binding;\n'+''.join(f"  localparam logic [63:0] {k.upper()} = 64'h{v:016x};\n" for k,v in fields.items())+'endpackage\n').encode())
     header=generated/'lemma_silicon_binding.h'
-    write_if_changed(header,('// Generated from the same authoritative binding as RTL and Lean.\n#pragma once\n'+f'#define LEMMA_USB_CLOCKED_ENABLED {fields.get("usb_clocked_enabled",0)}\n'+''.join(f'constexpr uint64_t BINDING_{k.upper()} = {v}ULL;\n' for k,v in fields.items())).encode())
-    paths=[binding]+sources(dep,patched=True)+[ROOT/'tooling/silicon/config.vh',ROOT/'sim/rtl/lemma_compute.sv',ROOT/'sim/rtl/lemma_soc.sv',ROOT/'sim/rtl/lemma_pen.sv',ROOT/'sim/rtl/lemma_paper.sv',ROOT/'sim/rtl/lemma_block.sv',ROOT/'sim/rtl/lemma_power.sv',ROOT/'sim/rtl/lemma_ble_packet.sv',ROOT/'sim/rtl/lemma_usb_device.sv',ROOT/'sim/rtl/lemma_usb_fs_phy.sv',ROOT/'sim/rtl/lemma_usb_fs_phy_clocked.sv',ROOT/'sim/rtl/lemma_usb_cdc_fifo.sv',ROOT/'sim/rtl/lemma_usb_fs_bridge.sv',ROOT/'sim/rtl/lemma_wifi_math.sv',ROOT/'sim/rtl/lemma_wifi_bcc_symbol.sv',ROOT/'sim/rtl/lemma_wifi_ofdm_data.sv',ROOT/'sim/rtl/lemma_boot_nv.sv',ROOT/'sim/rtl/lemma_register_ram.sv']
+    write_if_changed(header,('// Generated from the same authoritative binding as RTL and Lean.\n#pragma once\n'+f'#define LEMMA_USB_CLOCKED_ENABLED {fields.get("usb_clocked_enabled",0)}\n#define LEMMA_MULTIMODAL_ENABLED {fields.get("multimodal_enabled",0)}\n'+''.join(f'constexpr uint64_t BINDING_{k.upper()} = {v}ULL;\n' for k,v in fields.items())).encode())
+    paths=[binding]+sources(dep,patched=True)+[ROOT/'tooling/silicon/config.vh',ROOT/'sim/rtl/lemma_compute.sv',ROOT/'sim/rtl/lemma_soc.sv',ROOT/'sim/rtl/lemma_pen.sv',ROOT/'sim/rtl/lemma_paper.sv',ROOT/'sim/rtl/lemma_block.sv',ROOT/'sim/rtl/lemma_multimodal.sv',ROOT/'sim/rtl/lemma_power.sv',ROOT/'sim/rtl/lemma_ble_packet.sv',ROOT/'sim/rtl/lemma_usb_device.sv',ROOT/'sim/rtl/lemma_usb_fs_phy.sv',ROOT/'sim/rtl/lemma_usb_fs_phy_clocked.sv',ROOT/'sim/rtl/lemma_usb_cdc_fifo.sv',ROOT/'sim/rtl/lemma_usb_fs_bridge.sv',ROOT/'sim/rtl/lemma_wifi_math.sv',ROOT/'sim/rtl/lemma_wifi_bcc_symbol.sv',ROOT/'sim/rtl/lemma_wifi_ofdm_data.sv',ROOT/'sim/rtl/lemma_boot_nv.sv',ROOT/'sim/rtl/lemma_register_ram.sv']
+    selected_build_options={**BUILD_OPTIONS,'verilator':[*BUILD_OPTIONS['verilator'],*(['-fno-dfg'] if fields.get('multimodal_enabled') else [])]}
     return {'core_repository':'https://github.com/openhwfoundation/cvw','core_revision':REV,
             **({'runtime_control_contracts':{'usb_recovery':'lemma-usb-live-recovery/1'}} if fields.get('usb_clocked_enabled') else {}),
             'core_license':'Apache-2.0 WITH SHL-2.1 and six preserved MIT-notice files','top':'lemma_soc',
             'host_toolchain_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'tooling/silicon/sim.nix',ROOT/'flake.lock')},
-            'build_options':BUILD_OPTIONS,
+            'build_options':selected_build_options,
             'build_driver':{'path':'scripts/silicon_compute.py','sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()},
             'upstream_patch':{'path':'tooling/silicon/apply_cvw.py','sha256':hashlib.sha256((ROOT/'tooling/silicon/apply_cvw.py').read_bytes()).hexdigest(),'purpose':'architectural AHB HRESP access-fault delivery'},
             'sources':[str(p) for p in paths],
@@ -69,7 +70,7 @@ def source_manifest(dep, profile_name=None):
             'host_binding_sha256':hashlib.sha256(header.read_bytes()).hexdigest(),
             'profile':selected['profile'],
             'profile_sha256':hashlib.sha256(profile_path(profile_name).read_bytes()).hexdigest(),
-            'binding_generator_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'scripts/silicon_profile.py',POWER_PROFILE)},
+            'binding_generator_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in dict.fromkeys((ROOT/'scripts/silicon_profile.py',POWER_PROFILE,profile_path(profile_name)))},
             'sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
             'host_adapter':{'path':'sim/rtl/host/main.cpp','sha256':hashlib.sha256((ROOT/'sim/rtl/host/main.cpp').read_bytes()).hexdigest()},
             'host_runtime':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted([ROOT/'sim/host/panel_pending.h',ROOT/'sim/host/usb_clock.h',*(ROOT/'sim/rtl/host').glob('machine_runtime.*'),*(ROOT/'sim/host').glob('backing_io*'),*(ROOT/'sim/companion').glob('backing_peer.*'),*(ROOT/'sim/radio').glob('ble_peer_transport.*'),*(ROOT/'sim/usb').glob('usb_transport.*')])},

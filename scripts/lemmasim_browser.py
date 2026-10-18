@@ -106,19 +106,22 @@ def validate_wasm_inputs(source,m,input_bundle=None):
 
 def bundle(args):
     import silicon_guest
-    if args.profile!='lemma-silicon-dev/0.3.0':raise ValueError('The local browser bundle currently admits profile0.3 only')
+    if args.profile not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0'):raise ValueError('The local browser bundle admits canonical0.3 or multimodal0.14')
     from silicon_guest_bundle import read_json
     source=args.wasm_build.resolve();m=read_json(source/'build.json')
     if m.get('status')!='BUILT' or m.get('profile')!=args.profile:raise ValueError('Missing compatible Wasm build')
     input_bundle=getattr(args,'wasm_input_bundle',None)
     consumed=validate_wasm_inputs(source,m,input_bundle)
+    workbook=getattr(args,'workbook','ordinary')
+    if workbook not in ('ordinary','parameterized') or (workbook=='parameterized' and args.profile!='lemma-silicon-dev/0.14.0'):raise ValueError('Parameterized browser workbook requires exact0.14')
+    roles={w:('parameterized-'+w if workbook=='parameterized' else w) for w in ('notebook','initializer')}
     guest_archive=getattr(args,'guest_bundle',None)
     if guest_archive is None:
-        prepared={w:silicon_guest.prepared(w,args.profile) for w in ('notebook','initializer')}
+        prepared={w:silicon_guest.prepared(role,args.profile) for w,role in roles.items()}
     else:
         import silicon_guest_bundle
-        prepared={w:silicon_guest_bundle.prepared(guest_archive,'rtl',w,args.profile)
-                  for w in ('notebook','initializer')}
+        prepared={w:silicon_guest_bundle.prepared(guest_archive,'rtl',role,args.profile)
+                  for w,role in roles.items()}
     out=args.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
     def artifact(item,name):
         path=Path(item['path'])
@@ -131,6 +134,8 @@ def bundle(args):
             'session_control_contract':'lemma-browser-session-modes/2',
             'controller_image_contract':'lemma-controller-gray4-image/1',
             'wasm_build_sha256':sha(source/'build.json'),'wasm_project_root':str(ROOT),'workloads':{}}
+    if args.profile=='lemma-silicon-dev/0.14.0':
+        result.update(multimodal_contract='synthetic-aperture/1',checkpoint_contract='UNSUPPORTED: new acquisition and live-output state relation is not admitted')
     if guest_archive is not None:
         result['guest_archive']={'manifest_sha256':sha(guest_archive/'bundle.json'),
             'source_commit':prepared['notebook']['native_bundle']['source_commit'],
@@ -156,9 +161,12 @@ def bundle(args):
         selected=deployment['contract_version']
         if deployment.get('configurations')!=SOFTWARE_DEPLOYMENTS[selected]:raise ValueError('Course bundle deployment differs')
         result['course_install_contract']='lemma-course-console-command/1'
+    if args.profile=='lemma-silicon-dev/0.14.0':
+        result['course_install_contract']='lemma-course-console-command/1'
+        result['multimodal_workbook']=workbook
     result['rom']=artifact(prepared['notebook']['rom'],'boot.bin')
     for w,data in prepared.items():
-        entry=data['workloads'][w]
+        entry=data['workloads'][roles[w]]
         result['workloads'][w]={k:artifact(entry[k],w+'/'+k+('.elf' if k=='image' else '.bin')) for k in ('image','dtb','descriptor')}
         result['workloads'][w]['qualification']={k:artifact(entry[k],w+'/'+k+'.json')
             for k in ('build','provenance','audit','capacity') if k in entry}
@@ -194,7 +202,7 @@ def validated_bundle(directory):
     manifest_path=directory/'bundle.json'
     if manifest_path.is_symlink():raise ValueError('Symlinked browser manifest')
     m=read_json(manifest_path)
-    if m.get('schema')!='lemmasim-browser-bundle/1' or m.get('profile')!='lemma-silicon-dev/0.3.0' or (m.get('width'),m.get('height'))!=(1650,2200):
+    if m.get('schema')!='lemmasim-browser-bundle/1' or m.get('profile') not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0') or (m.get('width'),m.get('height'))!=(1650,2200):
         raise ValueError('Unsupported browser machine bundle')
     if m.get('session_control_contract') not in (None, 'lemma-browser-session-modes/1', 'lemma-browser-session-modes/2'):
         raise ValueError('Unsupported browser control contract')
@@ -230,7 +238,13 @@ def validated_bundle(directory):
             if item.get('path') not in files or files[item['path']]!=item.get('sha256'):
                 raise ValueError('Unbound course installer deployment')
             configurations[workload]=read_json(directory/item['path']).get('configuration')
-        if configurations not in [SOFTWARE_DEPLOYMENTS[name] for name in (COURSE_DEPLOYMENT,COURSE_AWAIT_DEPLOYMENT,PACKAGE_CLOSURE_DEPLOYMENT,READER_DEPLOYMENT,CHOOSER_READER_DEPLOYMENT)]:
+        admitted=[SOFTWARE_DEPLOYMENTS[name] for name in (COURSE_DEPLOYMENT,COURSE_AWAIT_DEPLOYMENT,PACKAGE_CLOSURE_DEPLOYMENT,READER_DEPLOYMENT,CHOOSER_READER_DEPLOYMENT)]
+        if m['profile']=='lemma-silicon-dev/0.14.0':
+            workbook=m.get('multimodal_workbook')
+            if workbook not in ('ordinary','parameterized'):raise ValueError('Multimodal workbook identity missing')
+            prefix='lemmasim-silicon-multimodal-'+('parameterized-' if workbook=='parameterized' else '')
+            admitted=[{'notebook':prefix+'notebook','initializer':prefix+'initialize'}]
+        if configurations not in admitted:
             raise ValueError('Browser course transport requires the complete exact guest deployment')
     if m.get('rom',{}).get('path')!='boot.bin' or m['rom'].get('sha256')!=files['boot.bin']:raise ValueError('Unbound browser boot artifact')
     wasm=directory/'wasm-build.json'

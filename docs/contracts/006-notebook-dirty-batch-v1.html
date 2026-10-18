@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notebook dirty-tile batch1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="notebook-dirty-tile-batch1">Notebook dirty-tile batch1</h1>
+<p><code>lemma-notebook-dirty-batch/1</code> is a Package notebook successor on the existing
+canonical0.3 and Clocked13 deployments. Artifact cohort9 keeps the current
+four-tile refresh-work budget and input-drain cadence. It submits the selected
+FIFO tiles through the already versioned Surface-v2 owned-page operation5.
+There is no new instruction, hardware ABI, heap, page, persistent record or
+mathematical authority. The historical <code>pumpRefresh</code> and Surface definitions
+remain unchanged; only the two Package loops select <code>pumpRefreshBatched</code>.</p>
+<p><code>Surface.uploadIndexedBulk(cap,width,height,packed,count)</code> admits zero to four
+16-bit tile indices in FIFO order. Zero count touches no owned data or device.
+Nonzero count first rejects count&gt;4 and dimensions outside1..4096 with16, then
+rejects nonzero unused slots, duplicate or out-of-range indices with234 before
+owned data access. The final used slot is at shift48; no shift by64 is formed.
+The helper prepares every rectangle and payload before submitting one packet.
+Ordinary checked word operations retain the historical word-copy optimization&#39;s
+closed caller ownership; the new callback is not added to that old exception.</p>
+<p>The existing private staging page holds the normal version2 header, reserved
+zeros, up to four32-byte descriptors and512-byte payload slots. Existing tile
+gather/edge compaction supplies Gray4 bytes. The kernel still copies owned data,
+validates every rectangle and checks the current capability, frame generation,
+owner and purpose before controller work. A staging fault may change private
+packet bytes but sends no controller transaction and consumes no queue entry.</p>
+<p>The kernel returns the actual successfully uploaded prefix. A failed batch can
+already have changed those controller staging pixels. The guest consumes only
+that ordered prefix, clearing its bitmap bits and advancing the16384-entry
+queue modulo capacity. Every uncompleted tile remains queued. A later caller
+retry starts at the remaining prefix; this helper does not add automatic
+application recovery. A malformed completion count rejects with95. Controller
+and private-memory errors remain failures, with no atomic-upload promise.</p>
+<p>Refresh publication, accepted sequence checks, busy waits, reset restoration
+and controller-produced visible pixels retain their existing path. No refresh
+is requested after a failed batch or while queued tiles remain. This work does
+not synthesize Ready, Saved or panel completion. Store acknowledgments still
+depend on their own real barriers.</p>
+<p>The component fixtures cover a wrapped/noncontiguous queue, four-tile and tail
+budgets, partial controller completion/retry, late packet-preparation failure,
+malformed indices and odd/canonical clipped geometry. These are literal Action
+observations and genuine checked lowering; whole linked artifact audits and
+actual guest execution remain separate requirements. Timing, complete browser
+workflows, fast cached-state continuation and physical closure do not follow
+from this component contract.</p>
+</main>
+</body>
+</html>

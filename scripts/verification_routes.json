@@ -1,8 +1,8 @@
 {
   "schema": "lemma-verification-routes/v1",
   "comparison_base": "8e75bc6541131189d7a2efe02e9ff77bde61194f",
-  "objective": "Reliable incremental Lemma builds with validated artifact reuse and fresh affected behavior checks",
-  "historical_checkpoint": "docs/plan/006-session-state.md",
+  "objective": "Implement the extended multimodal machine and workbook; preserve inherited pending verification",
+  "historical_checkpoint": "docs/plan/007-session-state.html",
   "resource_budgets": {
     "status": "Read-only Git/receipt inspection; each Git command at most 15 seconds; no build or execution",
     "host_export": "scripts/lean_export_host.py: two host Lean workers; 65536 KiB worker stack reservation",
@@ -10,7 +10,8 @@
     "kernel_fresh_qualification": "scripts/check_kernel.py: deadline at most 2400 seconds, QEMU timeout default 90 seconds",
     "notebook_writing": "CI writing lane: 3500-second whole deadline; separate pinned QEMU build",
     "live_sessions": "Retain each session's original admission/budget receipt; do not restart or extend it from status",
-    "incremental_notebook": "scripts/check_incremental_notebook.py: timeout300s per operation, boot30/action30 virtual seconds, whole deadline1200s; fresh instances and private media"
+    "incremental_notebook": "scripts/check_incremental_notebook.py: timeout300s per operation, boot30/action30 virtual seconds, whole deadline1200s; fresh instances and private media",
+    "multimodal": "New converter guest component <=5M RTL cycles/120 host seconds per backend; controller corpus bounded separately; original inherited campaign limits retained"
   },
   "claims": {
     "cache-host": {
@@ -39,7 +40,7 @@
     },
     "rtl-notebook": {
       "kind": "execution",
-      "command": "Select an unused output and run the source-bound canonical RTL notebook launcher/checker named in docs/plan/006-session-state.md; preserve original phase budgets"
+      "command": "Select an unused output and run the source-bound canonical RTL notebook launcher/checker named in docs/plan/006-session-state.html; preserve original phase budgets"
     },
     "browser": {
       "kind": "execution",
@@ -64,6 +65,46 @@
     "incremental-canonical-qemu": {
       "kind": "execution",
       "command": "nix develop --no-write-lock-file --command python3 scripts/check_incremental_notebook.py --work-dir build/incremental/notebook-UNUSED --native-bundle NATIVE_BUNDLE --guest-build GUEST_BUILD --guest-source-root EXACT_SOURCE_ROOT --initial-medium ACKNOWLEDGED_EMPTY_MEDIUM"
+    },
+    "multimodal-host": {
+      "kind": "validation",
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/multimodal -v"
+    },
+    "multimodal-controller": {
+      "kind": "execution",
+      "command": "Run source-bound C-model/RTL controller corpus with unused output via scripts/check_multimodal_controller.py"
+    },
+    "multimodal-guest": {
+      "kind": "execution",
+      "command": "Run the exact compiled Multimodal14 guest on matched fast and RTL; independently compare captured records, digital output and application results"
+    },
+    "multimodal-workbook-native": {
+      "kind": "execution",
+      "command": "Run actual Notebook21 native workflow including opt-in capture, permitted tutor, guest paper/PCM, mute/revoke, Save and independent cold recovery"
+    },
+    "multimodal-workbook-browser": {
+      "kind": "execution",
+      "command": "Repeat actual shared-guest workflow in supported browser with declared bridge events, identities and performance gates"
+    },
+    "multimodal-protected-session": {
+      "kind": "execution",
+      "command": "Execute target RFC-vector crypto and protected session malformed/replay/rollback/epoch corpus; no live security fallback"
+    },
+    "multimodal-independent-assessment": {
+      "kind": "execution",
+      "command": "Run fresh runtime questions, independent later assessment and frozen learned policy comparison with separate authority receipts"
+    },
+    "multimodal-resource-performance": {
+      "kind": "execution",
+      "command": "Independently check section8 arithmetic, actual transport/memory/mapping/bus admission, then measure >=1 virtual second/wall second economy with pen/mute/Save bounds"
+    },
+    "multimodal-engineering": {
+      "kind": "execution",
+      "command": "python3 scripts/check_multimodal_engineering.py --pdk VALIDATED_IHP_GIT --ngspice PINNED_NGSPICE --work-dir build/multimodal/engineering-UNUSED; inspect exact nominal circuit boundaries, raw transients and independent negative control; no physical qualification"
+    },
+    "multimodal-browser-component": {
+      "kind": "execution",
+      "command": "python3 scripts/serve_multimodal_probe.py --wasm-build ACTUAL_WASM_BUILD --guest AUDITED_PROBE_ELF --rom GENERATED_ROM --binding GENERATED_BINDING --work-dir build/multimodal/browser-UNUSED; run actual browser component and retain UA, records, PCM and original wall limit; not full workbook"
     }
   },
   "boundaries": [
@@ -72,9 +113,9 @@
       "inputs": [
         "scripts/dev_status.py",
         "scripts/verification_routes.json",
-        "docs/plan/CURRENT.md",
+        "docs/plan/CURRENT.html",
         "tests/cache/*",
-        "README.md"
+        "docs/overview.html"
       ],
       "claims": [
         "cache-host",
@@ -264,7 +305,7 @@
     {
       "id": "machine-and-language-contracts",
       "inputs": [
-        "LEMMA_MACHINE_CONTRACT.md",
+        "LEMMA_MACHINE_CONTRACT.html",
         "docs/contracts/*",
         "sim/profiles/*"
       ],
@@ -310,9 +351,9 @@
       "id": "historical-evidence-and-resume-notes",
       "inputs": [
         "docs/evidence/*",
-        "docs/plan/006-session-state.md",
+        "docs/plan/006-session-state.html",
         "docs/plan/006-gates.json",
-        "docs/plan/005-session-state.md",
+        "docs/plan/005-session-state.html",
         "docs/plan/005-gates.json"
       ],
       "claims": [
@@ -327,6 +368,154 @@
       ],
       "claims": [
         "incremental-canonical-qemu"
+      ],
+      "affects": []
+    },
+    {
+      "id": "current-html-documentation",
+      "inputs": [
+        "docs/**/*.html",
+        "docs/*.html",
+        "docs/document-map.json",
+        "docs/documentation.css",
+        "LEMMA_MACHINE_CONTRACT.html",
+        "AGENTS.md",
+        ".github/pull_request_template.md",
+        "codex/prompts/*.html",
+        "conformance/**/*.html",
+        "conformance/*.html",
+        "templates/*.html",
+        "scripts/docs/*",
+        "scripts/check_documentation.py",
+        "scripts/check_scaffold.py",
+        "tests/scaffold/*",
+        "README.md",
+        "LEMMA_MACHINE_CONTRACT.md",
+        "**/*.md",
+        ".gitattributes",
+        "repository.json",
+        "docs/plan/construction-units.json",
+        "docs/source-artifacts/*",
+        "sim/simulator-overview.html",
+        "sim/host/host-model-overview.html",
+        "tooling/silicon/silicon-tooling-overview.html",
+        "scripts/build_monitor.py",
+        "scripts/build_timer_suite.py",
+        "scripts/run_timer_case.py",
+        "scripts/publish-github.sh",
+        "conformance/lemmasim/check_fast_state_equivalence.py",
+        "tests/foundation/test_gate8_build.py",
+        "tests/foundation/test_gate9_build.py"
+      ],
+      "claims": [
+        "metadata"
+      ],
+      "affects": []
+    },
+    {
+      "id": "multimodal-profile-and-controller",
+      "inputs": [
+        "sim/profiles/lemma-silicon-dev-0.14.0.json",
+        "Lemma/Platform/Silicon/BindingMultimodal.lean",
+        "Lemma/Drivers/Multimodal.lean",
+        "Lemma/Platform/LemmaSim/MultimodalService.lean",
+        "sim/rtl/lemma_multimodal.sv",
+        "sim/host/lemma_multimodal*",
+        "scripts/multimodal*",
+        "Lemma/Multimodal/ControllerProbe.lean",
+        "Lemma/Compiler/MultimodalProbeExport.lean",
+        "scripts/build_multimodal_probe.py",
+        "docs/contracts/007-*.html",
+        "tests/multimodal/*",
+        "scripts/check_multimodal_controller.py",
+        "scripts/check_multimodal_guest.py",
+        "scripts/check_multimodal_rtl_guest.py"
+      ],
+      "claims": [
+        "multimodal-host",
+        "multimodal-controller",
+        "multimodal-guest",
+        "multimodal-resource-performance"
+      ],
+      "affects": [
+        "rtl-backend-or-observer",
+        "qemu-backend-or-observer"
+      ]
+    },
+    {
+      "id": "multimodal-notebook",
+      "inputs": [
+        "Lemma/User/Multimodal.lean",
+        "scripts/multimodal_deployment.py",
+        "scripts/multimodal_target.py",
+        "scripts/lemmasim_tutor.py",
+        "scripts/lemmasim_parameterized.py",
+        "sim/companion/PackageProposal.lean",
+        "Lemma/Services/Arithmetic/ClientV8.lean",
+        "Lemma/Services/Arithmetic/ProtocolV8.lean",
+        "Lemma/Services/Arithmetic/ServerV8.lean",
+        "scripts/check_multimodal_workbook.py"
+      ],
+      "claims": [
+        "multimodal-workbook-native",
+        "multimodal-workbook-browser",
+        "multimodal-guest"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation"
+      ]
+    },
+    {
+      "id": "multimodal-protected-companion",
+      "inputs": [
+        "Lemma/Multimodal/ProtectedSession.lean",
+        "Lemma/Multimodal/TutorAction.lean",
+        "Lemma/Multimodal/TutorPackage.lean",
+        "Lemma/Multimodal/Parameterized.lean",
+        "sim/companion/multimodal/*",
+        "Lemma/Crypto/ChaCha20.lean",
+        "Lemma/Crypto/Poly1305.lean",
+        "Lemma/Crypto/AEAD.lean",
+        "Lemma/Crypto/HKDF.lean"
+      ],
+      "claims": [
+        "multimodal-protected-session",
+        "multimodal-independent-assessment",
+        "multimodal-workbook-native",
+        "multimodal-workbook-browser"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation"
+      ]
+    },
+    {
+      "id": "multimodal-open-engineering",
+      "inputs": [
+        "engineering/multimodal/**",
+        "scripts/check_multimodal_engineering.py",
+        "docs/multimodal-engineering.html",
+        "docs/evidence/007-multimodal-engineering.json"
+      ],
+      "claims": [
+        "multimodal-engineering",
+        "contract-review"
+      ],
+      "affects": []
+    },
+    {
+      "id": "multimodal-portable-component",
+      "inputs": [
+        "scripts/serve_multimodal_probe.py",
+        "scripts/check_multimodal_wasm.mjs",
+        "sim/browser/multimodal_probe.mjs",
+        "scripts/benchmark_multimodal_wasm.mjs"
+      ],
+      "claims": [
+        "multimodal-browser-component",
+        "multimodal-guest",
+        "multimodal-resource-performance"
       ],
       "affects": []
     }

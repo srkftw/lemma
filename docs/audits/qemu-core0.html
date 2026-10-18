@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LemmaVM QEMU `virt` audit for Task 001</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lemmavm-qemu-virt-audit-for-task-001">LemmaVM QEMU <code>virt</code> audit for Task 001</h1>
+<p>The tested emulator is QEMU 11.1.1, upstream commit
+<code>c3d48b7d1e89604920e5b81b91140c2ad39a1943</code>, from the pinned Nix output recorded
+in <code>tooling/toolchain-lock.json</code>.  The executable is
+<code>/nix/store/9ihv5zpj6l7fl12mdcxrbmiih3wgrmhw-qemu-11.1.1/bin/qemu-system-riscv64</code>.</p>
+<h2 id="frozen-launch-profile">Frozen launch profile</h2>
+<p>Each differential case starts a fresh emulator with:</p>
+<pre><code class="language-text">qemu-system-riscv64
+  -machine virt,acpi=off
+  -accel tcg -cpu rv64 -smp 1 -m 128M
+  -bios none -kernel &lt;image.elf&gt;
+  -device loader,file=&lt;input.bin&gt;,addr=0x81000000,force-raw=on
+  -nodefaults -nic none
+  -display none -serial stdio -monitor none
+  -no-reboot -seed 1
+</code></pre>
+<p>No block device or network backend is attached.  The generic-loader fixture has no
+<code>cpu-num</code> property, because setting it would also change the CPU program counter.
+The host runner enforces a per-run timeout, kills the process group on expiration,
+reaps it, requires exit status zero and empty stderr, and accepts only one complete
+versioned UART frame.</p>
+<p><code>-nodefaults</code> does not remove the <code>virt</code> board&#39;s buses or MMIO transport windows; it
+prevents default guest devices from being attached.  These unused platform nodes are
+visible in the captured DTB and are not guest code dependencies.</p>
+<h2 id="reset-and-handoff">Reset and handoff</h2>
+<p><code>-bios none</code> means no OpenSBI or other external firmware image is loaded.  It does not
+mean that execution starts directly in the project ELF.  QEMU synthesizes the machine
+ROM at <code>0x1000</code> (<code>VIRT_MROM</code>, size <code>0xf000</code>) in <code>hw/riscv/virt.c</code> and
+<code>hw/riscv/boot.c:riscv_setup_rom_reset_vec</code>.</p>
+<p>The six-instruction RV64 reset vector obtains <code>mhartid</code>, loads the generated DTB
+address and next address from its data words, and jumps there in M mode.  Under this
+profile the observed handoff is:</p>
+<ul>
+<li>PC/reset ROM: <code>0x00001000</code>;</li>
+<li><code>a0</code>: hart ID <code>0</code>;</li>
+<li><code>a1</code>: runtime DTB at <code>0x87e00000</code>;</li>
+<li><code>a2</code>: firmware-dynamic information at <code>0x1028</code>; and</li>
+<li>next address: <code>0x80000000</code>.</li>
+</ul>
+<p>The Task 001 startup contract consumes and preserves only <code>a0</code> (hart ID) and <code>a1</code>
+(DTB pointer), storing them in the two declared BSS boot slots.  The observed <code>a2</code>
+firmware-dynamic pointer is intentionally ignored by this no-firmware scalar slice;
+supporting an SBI-style firmware handoff would require a new versioned contract.</p>
+<p>For <code>-kernel</code>, QEMU 11.1.1 assigns the reset next address from
+<code>boot_info.image_low_addr</code> in <code>hw/riscv/virt.c</code>, not from ELF <code>e_entry</code>.  A probe whose
+entry field differed from its lowest load segment confirmed the latter was reached.
+Therefore the closure audit requires all three facts: ELF <code>e_entry == 0x80000000</code>,
+<code>_start == 0x80000000</code>, and the lowest executable <code>PT_LOAD</code> begins at <code>0x80000000</code>.</p>
+<p>An actual post-reset monitor capture produced these emulator-artifact hashes:</p>
+<table>
+<thead>
+<tr>
+<th>Region/artifact</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>full MROM, <code>0x1000..0x10000</code></td>
+<td><code>d0fd275d8b65aecfaeeabbfdca02152793356dfc852fa1304fc790c33a1fd75b</code></td>
+</tr>
+<tr>
+<td>pre-reset <code>dumpdtb</code></td>
+<td><code>c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f</code></td>
+</tr>
+<tr>
+<td>runtime DTB at <code>a1</code></td>
+<td><code>6190e60bba396a340b526ac10219a43184e3927fa76c8a096bc5700ade41c5df</code></td>
+</tr>
+</tbody></table>
+<p>The two DTBs differ only in <code>/chosen/rng-seed</code>: QEMU randomizes that 32-byte property
+during reset.  Both captures are deterministic with <code>-seed 1</code>.  Each real build also
+regenerates <code>platform.dtb</code> and its DTS, validates the declared nodes, and records the
+artifact hash; it does not claim the pre-reset blob is byte-identical to the handoff
+blob.</p>
+<h2 id="validated-layout-and-devices">Validated layout and devices</h2>
+<p>The captured device tree establishes:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>DTB value</th>
+<th>Project use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DRAM</td>
+<td><code>reg = &lt;0 0x80000000 0 0x08000000&gt;</code></td>
+<td>128 MiB RAM</td>
+</tr>
+<tr>
+<td>CPU</td>
+<td>one <code>cpu@0</code>, <code>rv64i</code> base and at least <code>m</code>, <code>zicsr</code>, <code>zifencei</code></td>
+<td>generated integer code</td>
+</tr>
+<tr>
+<td>UART</td>
+<td><code>ns16550a</code>, <code>reg = &lt;0 0x10000000 0 0x100&gt;</code></td>
+<td>bounded framed output</td>
+</tr>
+<tr>
+<td>finisher</td>
+<td><code>sifive,test0/test1</code>, <code>reg = &lt;0 0x00100000 0 0x1000&gt;</code></td>
+<td>VM termination</td>
+</tr>
+</tbody></table>
+<p>The project image envelope is <code>[0x80000000,0x807f0000)</code>, the fixed stack is
+<code>[0x807f0000,0x80800000)</code>, and runtime input is
+<code>[0x81000000,0x81001000)</code>.  The Lean layout validator enforces containment, alignment,
+and non-overlap.  The runtime DTB at <code>0x87e00000</code> is outside those regions.</p>
+<p>The SiFive finisher encodes host status in the upper 16 bits.  Probes established that
+<code>0x5555</code> exits successfully, while a failure write must use <code>0x00013333</code> (not merely
+<code>0x3333</code>) to make QEMU return nonzero.  Both writes are 32-bit volatile MMIO surrounded
+by the generated I/O fence primitive.</p>
+</main>
+</body>
+</html>

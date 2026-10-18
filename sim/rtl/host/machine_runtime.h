@@ -52,6 +52,7 @@ struct Options {
  // Keep the maintained/default schedule until representative measurements
  // warrant enabling the alternative; the paired host fixture selects both.
  bool reference_disabled_usb_eval=true;
+ std::string multimodal_pcm_path;
  std::string uart_path,trace_path,panel_path,block_trace_path,input_capture_path,stop_marker,drive_trace_path,fork_directory,backing_capture_path,backing_replay_path;
 };
 struct BleOutcome {
@@ -82,6 +83,10 @@ struct State {
  uint64_t event_payload_bytes=0;
  std::deque<Event> samples;
  std::deque<uint8_t> rx;
+ std::deque<std::array<uint64_t,3>> multimodal_egress;
+ uint64_t multimodal_sink_dropped=0;
+ std::array<uint32_t,8> multimodal_input{},multimodal_reference{};
+ std::array<uint16_t,8> multimodal_quality{};
  uint64_t event_index=0,cycle=0,reset_until=8,boot_cycle=0;
  uint64_t button_level=0,power_reset_cause=1;
  uint64_t power_good=1,brownout=0,power_domain_seen=0;
@@ -165,6 +170,7 @@ class Machine {
  void ble_accept(const BleOutcome&);
  void ble_reply_action(const std::string&);
 
+ std::ofstream multimodal_pcm;
  Options options;
  int boot_medium=-1,boot_capture=-1;
  std::shared_ptr<BackingPlatform> boot_platform;
@@ -244,6 +250,7 @@ public:
  // the original Pending adapter or manufactures guest durability.
  void export_private_medium(const std::string&) const;
  void ram_dump(uint64_t,uint64_t,const std::string&) const;
+ std::string take_multimodal_pcm();
  std::string inspect() const;
  void report(const std::string&) const;
  const State& state() const { return s; }

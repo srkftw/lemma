@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source map</title>
+<link rel="stylesheet" href="documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="source-map">Source map</h1>
+<p>Tasks001/002 implement the bounded Core0/compiler/machine foundation. Task003
+adds the tested owned-page supervisor/User kernel and volatile service. Task004
+adds the explicit LemmaSim hardware binding and durable notebook, with source-
+specific results in <a href="evidence/004-lemmasim-durable-ink.html">its evidence report</a>. Runtime,
+mathematics and tutor rows remain naming guidance, not implemented subsystems.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Intended responsibility</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Lemma/Core0/</code></td>
+<td>Accepted language, declaration checks, reference semantics</td>
+</tr>
+<tr>
+<td><code>Lemma/Compiler/</code></td>
+<td>Structured LLVM emission and checked Core0 lowering</td>
+</tr>
+<tr>
+<td><code>Lemma/Machine/</code></td>
+<td>Machine primitives, target layout, startup generation</td>
+</tr>
+<tr>
+<td><code>Lemma/Runtime/</code></td>
+<td>Stage II runtime; do not stub it in task 001</td>
+</tr>
+<tr>
+<td><code>Lemma/Kernel/</code></td>
+<td>Tasks, memory, capabilities, scheduling</td>
+</tr>
+<tr>
+<td><code>Lemma/Services/Store/</code></td>
+<td>Guest block-backed record engine/codecs, isolated service, short durable Inspect and owner-bound asynchronous Compact receipts</td>
+</tr>
+<tr>
+<td><code>Lemma/Drivers/</code></td>
+<td>Lean VirtIO block, PLIC, paper and pen hardware drivers</td>
+</tr>
+<tr>
+<td><code>Lemma/Platform/LemmaSim/</code></td>
+<td>Descriptor/DTB validation, bounded device mediation and isolated deployments</td>
+</tr>
+<tr>
+<td><code>Lemma/Ink/</code></td>
+<td>Integer geometry, pressure-aware tile rasterization and owned Gray4 surface</td>
+</tr>
+<tr>
+<td><code>Lemma/Documents/Ink.lean</code></td>
+<td>Versioned raw provenance, page indices and stable-ID edits</td>
+</tr>
+<tr>
+<td><code>Lemma/Applications/Notebook.lean</code></td>
+<td>Guest toolbar, streamed pages, live ink and asynchronous commit state</td>
+</tr>
+<tr>
+<td><code>sim/host/</code></td>
+<td>Host-only QEMU hardware models/adapters; no guest notebook or recovery algorithms</td>
+</tr>
+<tr>
+<td><code>sim/rtl/</code></td>
+<td>Synthesizable CVW compute, held-request AHB/DMA fabric, bounded register RAM and pen/paper/block controllers; <code>host/</code> supplies clocks and external bytes only</td>
+</tr>
+<tr>
+<td><code>Lemma/Platform/Silicon/</code></td>
+<td>Lean-authored reset ROM and narrow silicon binding validation; shared kernel/service/application policy</td>
+</tr>
+<tr>
+<td><code>tooling/silicon/</code></td>
+<td>Exact open core/EDA/PDK inputs, limited hardware notices, synthesis and physical-flow recipes</td>
+</tr>
+<tr>
+<td><code>conformance/silicon/</code></td>
+<td>Literal RTL device/bus, banked paper and block-quiescence stimuli; independent guest/notebook observations with optical-contact negative sensitivity</td>
+</tr>
+<tr>
+<td><code>scripts/silicon_compute.py</code>, <code>scripts/silicon_guest.py</code>, <code>scripts/check_silicon.py</code></td>
+<td>Pinned RTL build, existing LemmaSim preparation/capture/replay and short independent acceptance; no guest execution or document/recovery policy in host adapters</td>
+</tr>
+<tr>
+<td><code>scripts/silicon_synth.py</code></td>
+<td>Actual bounded synthesis and separately scoped open physical-flow recipes/results</td>
+</tr>
+<tr>
+<td><code>docs/plan/005-session-state.html</code></td>
+<td>Current registered-controller A/B/C, durable write/edit/Save/cold, exact RTL replay and failed-FLUSH/cold receipts; separate historical failures, synthesis/global-route results and rule-coverage assessment</td>
+</tr>
+<tr>
+<td><code>sim/profiles/</code></td>
+<td>Versioned machine-readable reference binding</td>
+</tr>
+<tr>
+<td><code>conformance/lemmasim/</code></td>
+<td>Independent offline observations/oracles and raw input fixtures</td>
+</tr>
+<tr>
+<td><code>Lemma/Verify/</code></td>
+<td>Exact checkers, proof checking and evidence</td>
+</tr>
+<tr>
+<td><code>Lemma/Learn/</code></td>
+<td>Content, prerequisites, learner observations/policy</td>
+</tr>
+<tr>
+<td><code>Lemma/Tutor/</code></td>
+<td>Permissioned remote assistance</td>
+</tr>
+<tr>
+<td><code>examples/core0/</code></td>
+<td>Real Lean source fixtures admitted/rejected by the compiler</td>
+</tr>
+<tr>
+<td><code>tests/core0/</code></td>
+<td>Scalar inputs, rejection expectations and fail-closed host tests</td>
+</tr>
+<tr>
+<td><code>examples/foundation/</code></td>
+<td>Elaborated scalar/loop/Action programs, compiled UART/trap/timer routines and the interactive monitor; quarantined profile rejections</td>
+</tr>
+<tr>
+<td><code>tests/foundation/</code></td>
+<td>Deterministic corpora, reference comparisons, audit mutations and fail-closed host tests</td>
+</tr>
+<tr>
+<td><code>scripts/</code></td>
+<td>Host build/run/audit orchestration only, not target compiler/runtime logic</td>
+</tr>
+<tr>
+<td><code>docs/evidence/</code></td>
+<td>Small checked-in evidence reports; generated bulk artifacts in <code>build/</code></td>
+</tr>
+</tbody></table>
+<p>No target C/assembly scaffolding is needed to reserve directories. No empty fake kernel
+modules, <code>sorry</code> stubs or target build scripts claiming success should be added.</p>
+<p>Task 002&#39;s source interfaces are <code>Lemma/Core0/Bounded.lean</code> and the checked <code>Action</code>
+syntax in <code>Lemma/Core0/Memory.lean</code>, with declared device, trap and timer semantics
+in the adjacent modules. <code>examples/foundation/Monitor.lean</code> and <code>MonitorProtocol.lean</code>
+contain compiled command handling and framing; Python only drives and checks it.
+<code>Lemma/Machine/TrapPrimitives.lean</code> and <code>TimerPrimitives.lean</code> generate narrowly
+scoped structured machine glue. <code>scripts/check_foundation.py</code> runs the gate suite;
+<code>scripts/qualify_foundation.py</code> revalidates retained evidence and repeat builds.
+These are bounded M-mode capabilities, not a managed runtime, scheduler or isolation.</p>
+</main>
+</body>
+</html>

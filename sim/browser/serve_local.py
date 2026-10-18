@@ -16,7 +16,7 @@ def verify_package(root):
     if manifest.is_symlink():
         raise ValueError('Symlinked distribution manifest')
     data = json.loads(manifest.read_text())
-    if data.get('schema') != 'lemma-local-browser-distribution/1':
+    if data.get('schema') not in ('lemma-local-browser-distribution/1', 'lemma-local-browser-distribution/2'):
         raise ValueError('Unsupported local browser distribution')
     files = data.get('files')
     if not isinstance(files, dict) or not 6 <= len(files) <= 4096:
@@ -41,7 +41,7 @@ def verify_package(root):
         if hashlib.sha256(path.read_bytes()).hexdigest() != item['sha256']:
             raise ValueError('Changed distribution bytes: ' + name)
     required = {'serve.py', 'tools/lemmasim_browser.py', 'tools/silicon_guest_bundle.py',
-                'bundle/bundle.json', 'README.md', 'NOTICE.txt'}
+                'bundle/bundle.json', ('usage.html' if data['schema'] == 'lemma-local-browser-distribution/2' else 'README.md'), 'NOTICE.txt'}
     actual = {p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
     if (not required <= files.keys() or actual != files.keys() | {'package.json'}
             or any(p.is_symlink() for p in root.rglob('*'))):

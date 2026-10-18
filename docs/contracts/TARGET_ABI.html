@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Target ABI — G1 proposal</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="target-abi--g1-proposal">Target ABI — G1 proposal</h1>
+<p>Status: Task 001 validates the scalar RV64/LP64 bootstrap profile against the pinned
+compiler and emitted ELF. Task 002 Gates 2--6 preserve that profile, exercise wider
+integer call shapes, add the explicit checked-result ABI, and use it for a compiled
+polling UART session. The managed Lean ABI remains future work.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Proposal</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Triple</td>
+<td><code>riscv64-unknown-elf</code>, subject to exact LLVM target spelling</td>
+</tr>
+<tr>
+<td>Application machine</td>
+<td>RV64GC-capable, little endian</td>
+</tr>
+<tr>
+<td>G1 generated code</td>
+<td>Integer-only RV64 subset, no F/D/vector operations</td>
+</tr>
+<tr>
+<td>G1 calling convention</td>
+<td>Standard integer LP64; do not silently mix with LP64D objects</td>
+</tr>
+<tr>
+<td>Pointer and word width</td>
+<td>64 bits</td>
+</tr>
+<tr>
+<td>Stack</td>
+<td>16-byte alignment at call boundaries; fixed reserved area initially</td>
+</tr>
+<tr>
+<td>ELF</td>
+<td>Static RV64 ELF, explicit entry, no interpreter/dynamic dependencies</td>
+</tr>
+<tr>
+<td>Initial privilege</td>
+<td>M-mode for the first slice</td>
+</tr>
+<tr>
+<td>Later privilege</td>
+<td>M-mode platform services, S-mode OS, U-mode isolated processes</td>
+</tr>
+</tbody></table>
+<p>Choosing the integer ABI for G1 is a scoped bootstrap choice, not a claim that the
+managed Lean ABI has been ported. Record all changes before linking objects from another profile.</p>
+<h2 id="core0-scalar-and-checked-result-conventions">Core0 scalar and checked-result conventions</h2>
+<p>The v0.1--v0.3 scalar profiles use the standard integer LP64 convention for admitted
+<code>Bool</code>, <code>UInt8</code>, <code>UInt32</code>, and <code>UInt64</code> arguments/results. Narrow arguments and results
+are zero-extended at the explicit project ABI boundary. Calls with more than eight
+integer arguments use the psABI stack slots and retain 16-byte call-boundary stack
+alignment; the conformance suites keep dedicated non-inlined calls to exercise this.</p>
+<p><code>core0-v0.4</code> Actions have the logical result
+<code>{ status : UInt8, value : UInt64 }</code>. The project LLVM ABI is exactly
+<code>{ i64, i64 }</code>, returned directly rather than through <code>sret</code>; RV64 returns status in
+<code>a0</code> and value in <code>a1</code>. The status word must have bits 63 through 8 clear. Action
+callers and the test harness reject a noncanonical status or a mismatched aggregate
+shape. This two-word convention is a versioned Core0 ABI only; it is not a general
+managed-Lean object layout.</p>
+<p><code>core0-v0.5</code> preserves this exact two-register checked-result convention. Its sole
+device-session root has no scalar arguments. <code>core0_main</code> calls that root, treats
+status zero as success, and writes <code>0x5555</code> to the fixed SiFive test finisher. A
+nonzero status writes <code>(status &lt;&lt; 16) | 0x3333</code>, allowing the host to distinguish
+the bounded terminal cause. The root performs its own compiled UART initialization,
+framing, parsing, polling, responses, and final drain; none of those operations are
+part of the harness ABI.</p>
+<p>The device wire protocol is independent of the Action calling convention. Its request
+header is <code>LMQ6</code>, version, command, payload length, zero flags, and a little-endian
+64-bit request ID. Its response is exactly 24 bytes: <code>LMS6</code>, version, status, length
+8, zero flags, the echoed request ID, and a little-endian 64-bit value. Protocol bytes
+arrive after boot and are never linker or loader inputs.
+For the branch command, the result word contains the checked RAM-marker readback in
+bits 15..8 and the selector in bit zero: <code>0x5a00</code> for false and <code>0x3c01</code> for true.</p>
+<p>The Gate 5 test image reserves four fixed 4 KiB ordinary regions plus separate image,
+stack, UART, and SiFive-test entries as recorded in <code>CORE0.md</code>. Those addresses are a
+pinned LemmaVM/test-image contract, not arbitrary pointers supplied through the ABI.
+Runtime request metadata is loaded from the declared input fixture at <code>0x81000000</code>;
+it is data, not executable code or a second boot image.</p>
+<h2 id="gate-7-synchronous-trap-abi">Gate 7 synchronous-trap ABI</h2>
+<p><code>core0-v0.6</code> retains the Action <code>{i64,i64}</code> return and integer LP64 convention.
+Its dispatcher has nine <code>UInt64</code> arguments; the machine caller places the ninth
+at zero of a 16-byte outgoing frame. The returned a0 is status and a1 is the
+explicit authorized resume PC. Four closed no-argument machine primitives
+return a 64-bit context-check mask to the checked Action continuation.</p>
+<p>The trap frame saves x1–x31, including interrupted SP, and five critical CSR
+snapshots before dispatch. Its aligned size is 288 bytes. Dedicated private
+storage and exact offsets are specified in
+<a href="../audits/traps-core0-v06.html"><code>traps-core0-v06.md</code></a>. Saved GP/TP are temporarily
+zeroed for compiled dispatch, whose object code must use neither register;
+no relaxation is permitted. MRET architectural changes to mstatus are not
+mistaken for arbitrary context corruption. Clean O0/O2 target acceptance is
+recorded in Task 002 evidence; asynchronous timer handling is not implied.</p>
+<h2 id="gate-8-timer-abi">Gate 8 timer ABI</h2>
+<p><code>core0-v0.7</code> preserves the two-word Action result, full integer trap frame, and
+nine-word dispatcher convention. Its seven closed <code>core0_timer_*</code>/<code>core0_irq_*</code>
+machine functions each return one i64. Compare receives one i64 deadline;
+restore and interrupt-enable receive canonical i64 0/1 converted from source
+Bool. Asynchronous dispatch returns the captured interrupted PC unchanged,
+not PC+4. Source timer/critical-section policy remains compiled Lean, not an ABI
+stub. See <a href="../audits/timers-core0-v07.html"><code>timers-core0-v07.md</code></a>; its finite
+O0/O2 target matrix passed at clean <code>42674c1</code>. This does not qualify arbitrary
+interrupt handlers, nested execution, or a scheduler.</p>
+<h2 id="gate-9-monitor-wire-abi">Gate 9 monitor wire ABI</h2>
+<p><code>lemma-monitor-v1</code> preserves the v0.7 machine calling convention. Its versioned
+UART requests have a 16-byte header and at most 32 payload bytes; responses have
+a 16-byte header and four UInt64 words (48 bytes total), all little-endian.
+These are compiled encodings in fixed RAM, not heap-backed target objects.
+Only the monitor foreground and existing nine-word timer dispatcher are roots.
+The exact framing and failure rules are in
+<a href="../audits/monitor-core0-v07.html"><code>monitor-core0-v07.md</code></a>. The clean finite O0/O2
+matrix passed at <code>8fd45d8</code>; this does not prove the compiler or qualify a board.</p>
+<h2 id="entry-and-layout">Entry and layout</h2>
+<p>Generate the minimal entry sequence from reviewed Lean-authored primitive definitions.
+It must establish a valid stack before any code with a compiler-generated prologue executes,
+preserve/document boot inputs, clear required zero-initialized storage, and handle <code>gp</code> /
+relaxation deliberately. No assumptions about a C runtime having prepared the environment.</p>
+<p>Reserve text, readonly data, writable data, zero-initialized storage, stack and any runtime
+test-input region in one machine-readable layout. Verify alignment, bounds and non-overlap.
+Record ELF entry, load segments, target features, relocations and a linker map. No implied
+heap or process environment. Any required compiler helper must be Lean-authored and audited
+or the operation must be rejected. Prefer explicit LLVM/LLD tools over a driver that links
+hosted startup/default libraries implicitly.</p>
+<h2 id="provenance">Provenance</h2>
+<p>Every linked input has a path, source identity, SHA-256, generation command and purpose.
+Track symbols/sections back to Lean source or an explicitly declared generated primitive.
+Inspect pre-optimization and optimized IR, as well as object and final image closure.
+No unresolved symbols is not enough: known, statically linked unwanted libraries also fail.</p>
+<p>Consult the RISC-V psABI and LLVM manuals listed in <code>docs/SOURCES.md</code>; freeze the exact
+versions and relevant rules in task 001&#39;s audit report.</p>
+</main>
+</body>
+</html>

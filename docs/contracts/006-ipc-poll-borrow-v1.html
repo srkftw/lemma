@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Same-Action IPC polling base, version1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="same-action-ipc-polling-base-version1">Same-Action IPC polling base, version1</h1>
+<p><code>lemma-ipc-poll-borrow-v1</code> preserves the IPC-v1 ABI, metadata, completion,
+transaction ordering and error precedence. It removes only a second complete
+address-space descriptor validation during a single nonpreemptible Supervisor
+poll. It adds no persistent cached authority or borrowed User pointer.</p>
+<p>The public <code>IPCStorage.pending</code> establishes a fresh <code>AddressSpace.base</code>, preserves
+error80, and invokes <code>pendingAt</code>. The public <code>IPC.poll</code> establishes a fresh base,
+preserves its fatal255 result, and invokes <code>pollAt</code>. A pending-only or public-poll
+reachable closure is valid independently of Task polling.</p>
+<p><code>Task.pollIPCStep</code> freshly reads state, managed flag and descriptor. It performs
+<code>lookupRecord</code>, then a complete fresh <code>AddressSpace.base</code> of that same descriptor,
+checks the returned row against the current row, and reads the wait epoch and
+transaction. Only those two checked readonly reads may occur before <code>pollAt</code>.
+No mutation, schedule or suspension occurs between validation and the helper.
+<code>pollAt</code> calls <code>pendingAt</code>; every IPC magic/version/self/state/next/transaction/
+operation/endpoint field remains a fresh checked read. Hardware time, readiness,
+completion precedence and the complete blocked-task completion tail are unchanged.</p>
+<p>The strict preIR auditor independently checks exact role, signatures, effects,
+fresh descriptor/base arguments, row equality, error gates, readonly prefix and
+all helper callers. Five complete bodies are pinned after rebinding emitted
+callees to genuine source identities. The Task caller authority is added only
+when that complete borrowed path is actually reachable and qualified. The
+public wrappers alone grant no Task lookup or scheduling authority. Helpers
+cannot be called from User or arbitrary Kernel source.</p>
+<p>The independent finite-RAM fixture captures the prior ordinary Task source and
+calls the actual maintained private callback. It checks exact status/value,
+whole memory and the ordered request trace, with only the redundant complete
+base-validation trace removed. Read/write/time failures, malformed directories,
+bank duplicates, metadata and task mutations are covered. These component
+checks establish neither RTL timing nor complete cold boot acceptance.</p>
+</main>
+</body>
+</html>

@@ -22,26 +22,24 @@ import time
 from silicon_guest_bundle import prepared
 
 ROOT = Path(__file__).resolve().parents[1]
-README = '''# Local native LemmaSim development machine
-
-Requires Linux x86-64, Python3.10+ and the exact external Nix loader/library
+USAGE_HTML = '''<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Native LemmaSim usage</title></head>
+<body><main>
+<h1>Local native LemmaSim development machine</h1>
+<p>Requires Linux x86-64, Python3.10+ and the exact external Nix loader/library
 files inventoried in bundle/bundle.json. They are not included or downloaded.
 Tk is optional for native presentation; use --headless otherwise. Original
-dependency notices and unresolved redistribution licensing remain in NOTICE.txt.
-
-No checkout or build tool is needed to execute these prepared artifacts:
-
-```sh
-python3 -I /path/to/extracted/run.py --help
+dependency notices and unresolved redistribution licensing remain in NOTICE.txt.</p>
+<p>No checkout or build tool is needed to execute these prepared artifacts:</p>
+<pre><code class="language-sh">python3 -I /path/to/extracted/run.py --help
 python3 -I /path/to/extracted/run.py init --backend qemu --profile lemma-silicon-dev/0.3.0 --disk /outside/package/new.raw
 python3 -I /path/to/extracted/run.py session --backend rtl --profile lemma-silicon-dev/0.3.0 --disk /outside/package/new.raw --session-dir /outside/package/live --mode developer --paused --headless
-python3 -I /path/to/extracted/run.py session-control --session-dir /outside/package/live --request '{"action":"run","cycles":1000000}'
+python3 -I /path/to/extracted/run.py session-control --session-dir /outside/package/live --request &#39;{&quot;action&quot;:&quot;run&quot;,&quot;cycles&quot;:1000000}&#39;
 python3 -I /path/to/extracted/run.py snapshot --session-dir /outside/package/live --to /outside/package/cut
 python3 -I /path/to/extracted/run.py course-install --session-dir /outside/package/live --package /outside/package/course.lcp --transaction 1
 python3 -I /path/to/extracted/run.py file-limit --help
-```
-
-Session/init creates a persistent sibling .bundle directory and .relocation.json
+</code></pre>
+<p>Session/init creates a persistent sibling .bundle directory and .relocation.json
 receipt. Keep them with the session. Only source lookup locations are aliased;
 original consumed versions, image/runtime bytes, profiles and admission checks
 are preserved. The original prepared bundle remains immutable. Session-control,
@@ -50,9 +48,8 @@ host front end and guest permissions. Supported commands forward ordinary CLI
 arguments; run COMMAND --help for details. No compile/build command is provided.
 Course commands select the exact RTL guest path or a negotiated canonical fast
 raw UART1 bundle. Pause a Developer/Laboratory session first. Admission is not
-Installed/Saved; only the actual guest receipt after its backing barrier counts.
-
-file-limit applies an actual Linux process file-size limit to a verified paused
+Installed/Saved; only the actual guest receipt after its backing barrier counts.</p>
+<p>file-limit applies an actual Linux process file-size limit to a verified paused
 private Laboratory fork: RTL implementation600e93eb, or canonical fast launcher
 97ab475e with executor298840d9 and its actual private migration medium/FD. Keep
 its cleanup token outside this package, retain exclusive paused control and
@@ -60,15 +57,15 @@ restore the previous limit before large exports. The limit covers every regular
 output file in the VM process. Actual partial backing writes/errors are captured;
 the OS condition itself is not portable checkpoint state. Outcome replay rejects
 live fault admission. Fast migration retains its documented cached-state gap.
-Run file-limit apply/restore --help.
-
-Restoring a checkpoint creates a private continuation, not cold recovery. For a
+Run file-limit apply/restore --help.</p>
+<p>Restoring a checkpoint creates a private continuation, not cold recovery. For a
 new restored session omit --disk and supply --restore /path/to/cut. Guest Saved
 still requires its real backing barrier. Keep user media and sessions outside
 the immutable package, back up raw media, and close owners before copying them.
 ELF preload is development boot. Product ROM/update/authentication, complete
 digital support, fast timing/cached-state parity, universal native installation
-and physical qualification remain separate obligations.
+and physical qualification remain separate obligations.</p>
+</main></body></html>
 '''
 
 
@@ -226,20 +223,20 @@ def package(bundle, output, archive=None, include_nix_runtime=False, current_hos
     shutil.copyfile(launcher, output / 'run.py')
     inputs['sim/native/run_local.py'] = sha(launcher)
     runtime = runtime_export(bundle, output) if include_nix_runtime else None
-    readme = README
+    readme = USAGE_HTML
     if runtime is not None:
         readme = readme.replace('They are not included or downloaded.',
             'The complete existing runtime closure is included in runtime-closure.nar.\n'
             'On a compatible Nix host, import it explicitly if needed:\n'
-            '`nix-store --import < /path/to/extracted/runtime-closure.nar`.\n'
+            '<code>nix-store --import &lt; /path/to/extracted/runtime-closure.nar</code>.\n'
             'The launcher never imports or downloads automatically. Normal Nix import\n'
             'permissions are required; no trust settings or signatures are added.')
     if host_differences:
-        readme += ('\nThis package explicitly selects current host launch tools. package.json\n'
+        readme = readme.replace('</main>', '<p>This package explicitly selects current host launch tools. package.json\n'
                    'records every difference from the original compiled source closure.\n'
                    'The exact compiled versions remain in bundle/source; host/ is a\n'
-                   'separate launch environment. No target compilation or runtime changes.\n')
-    (output / 'README.md').write_text(readme)
+                   'separate launch environment. No target compilation or runtime changes.</p></main>')
+    (output / 'usage.html').write_text(readme)
     (output / 'NOTICE.txt').write_text((bundle / 'DEPENDENCIES.txt').read_text() +
         ('\nThe included Nix export preserves the original host runtime closure and notices.' if runtime else
          '\nExact host Nix libraries remain external.') +
@@ -248,7 +245,7 @@ def package(bundle, output, archive=None, include_nix_runtime=False, current_hos
              for p in sorted(output.rglob('*')) if p.is_file()}
     if len(files) > 8192 or sum(row['bytes'] for row in files.values()) > 2 << 30:
         raise ValueError('Native package exceeds declared file/byte bound')
-    manifest = {'schema': 'lemma-local-native-distribution/3' if host_differences else 'lemma-local-native-distribution/2',
+    manifest = {'schema': 'lemma-local-native-distribution/4',
                 'scope': 'Prepared canonical machine, extracted host front end and exact source-location aliases; external Nix libraries required',
                 'source_bundle_sha256': sha(bundle / 'bundle.json'),
                 'producer_sha256': sha(Path(__file__)), 'host_inputs': inputs, 'files': files}

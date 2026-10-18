@@ -433,5 +433,42 @@
     "controller_screenshot": "build/browser/task006-control-backlog-home-browser-plan-a1/browser/cold-ready-controller-view.png",
     "next_phase": "Two actual raw COURSE events admitted at459550000 with zero clock advancement; chooser150M/3600s running. Conservative residual budgets include UI pauses and retain original absolute phase deadline1792272782364ms and whole07:22Z deadline.",
     "native_comparison": "Same installed3/current-v2 guest native RTL Ready observation460M with1M quantum; browser459.55M uses50k quantum. Different host load/timing scopes; no algorithm speedup or full new-guest crossbackend state claim."
+  },
+  "saved48_actual_durable_only_cold": {
+    "status": "PASS_BROWSER_SAVED48_DURABLE_ONLY_COLD_ALL_HOME_PIXELS_AND_MEDIA",
+    "scope": "Actual UI Close/Open same OPFS durable-only CPU0 cold. No snapshot/import/initializer input; compare allactual611.35M controller pixels/all256MiB with prior actual acknowledgedSaved48 full closed home. Originalwhole6B/00:26:11Z and1B/7200s cold limits retained.",
+    "RTL_clocks": 611350000,
+    "all_pixels": 3630000,
+    "all_backing_bytes": 268435456,
+    "simulation_call_seconds": 5352.6319449960265,
+    "opened_session_seconds": 5421.096290000081,
+    "heap_bytes": 201326592,
+    "pixel_sha256": "d84c7fc5fa7729f4f9f0d4fc9457d94b5a2ed2aed66f8d28d4a3945e3b4ea798",
+    "backing_sha256": "e8f0b164f3a2c1aabf12fd6522db56d2b43917a20a0e30c8aa8449b8cf83547f",
+    "snapshot_cold_input": false,
+    "full_math_course_reopen": "NEXT_ACTUAL_RAW_PHASE_REQUIRED",
+    "observer_seconds": 2.832703900989145,
+    "result": "build/browser/task006-hint-publication-save32-plan-a1/saved48-cold-result-a1.json",
+    "result_sha256": "f116c186656ac7f9c54c41addca828a4ca48af9361a46c153478b5d7fee04b12",
+    "actual_following_phase": "RUNNING_REAL_RAW_COURSE_REOPEN_400M_ORIGINAL_3600S",
+    "following_admission": "build/browser/task006-hint-publication-save32-plan-a1/browser/saved48-cold-course-reopen-admission-a1.json",
+    "following_budget": "build/browser/task006-hint-publication-save32-plan-a1/browser/saved48-cold-course-reopen-budget-a1.json"
+  },
+  "current_v2_actual_browser_chooser": {
+    "status": "PASS_CURRENT_V2_BROWSER_REAL_CHOOSER_SAVED4_ORIGINAL_PACKAGES_EXACT",
+    "scope": "Current v2 guest actual rawCOURSE open; independent full EDIT+/LOAD labels and durable newworkspace with alloriginal3 objects byte-exact. Full following course/math workflow remains pending.",
+    "initial_cycle": 459550000,
+    "final_cycle": 548950000,
+    "phase_RTL_clocks": 89400000,
+    "sequence": 4,
+    "original_objects_unchanged": 3,
+    "completed_panel": "2",
+    "heap_bytes": 201326592,
+    "observer_seconds": 1.9629062989261001,
+    "result": "build/browser/task006-control-backlog-home-browser-plan-a1/chooser-result-a1.json",
+    "sha256": "f7d75be5cbc5589f8d561d96e7d30e5df401f952e16255aea51791ad1a429c3a",
+    "following_phase": "RUNNING_REAL_RAW_EDITION2_SELECTION",
+    "following_admission": "build/browser/task006-control-backlog-home-browser-plan-a1/browser/choose-edition2-admission-a1.json",
+    "following_budget": "build/browser/task006-control-backlog-home-browser-plan-a1/browser/choose-edition2-budget-a1.json"
   }
 }

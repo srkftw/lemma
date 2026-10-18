@@ -119,8 +119,8 @@ function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.te
  }catch(e){fallback();}
  else if(context){const image=context.createImageData(m.width,m.height);for(let i=0;i<m.pixels.length;i++){const gray=m.pixels[i]*17;image.data[4*i]=image.data[4*i+1]=image.data[4*i+2]=gray;image.data[4*i+3]=255;}context.putImageData(image,0,0);}}
 worker.onmessage=({data:m})=>{
- if(m.type==='error')status.textContent=m.error;
- if(m.type==='closed'){beginSelection();selectionMachineName=null;displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
+ if(m.type==='error'){stopPcm('Machine bridge error.');status.textContent=m.error;}
+ if(m.type==='closed'){stopPcm('Machine closed.');beginSelection();selectionMachineName=null;displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
  if(m.type==='course-admission')document.querySelector('#course-admission').textContent=m.error?`Admitted ${m.accepted} of ${m.total} raw events; rejected remainder: ${m.error}. The accepted prefix remains queued. Close and cold-open backing before retrying.`:`Admitted ${m.bytes} package bytes to the guest. See the guest installation result below.`;
  if(m.type==='raw-admission')document.querySelector('#raw-result').textContent=m.error?`Accepted ${m.accepted} of ${m.total} events; rejected remainder: ${m.error}`:`Admitted ${m.accepted} raw events.`;
@@ -139,6 +139,7 @@ worker.onmessage=({data:m})=>{
   commitStatus.textContent=reported===null?'No save result observed in this guest launch.':reported.state==='saved'?`Guest reports Saved ${reported.value} · page ${reported.page} · namespace ${reported.namespace}`:reported.state==='pending'?`Guest save pending ${reported.value} · page ${reported.page} · namespace ${reported.namespace}`:`Guest save failed (${reported.value}) · page ${reported.page} · namespace ${reported.namespace}`;
   if(m.mode){sessionMode.value=m.mode;sessionMode.disabled=true;modeControls();}status.textContent=`Cycle ${m.state.cycle} · ${m.readyAt?'Guest Ready observed at '+m.readyAt.cycle:m.guestObservation==='continuation'?'Restored continuation; Ready not observed':'Booting'} · ${m.running?'running':'paused'+(m.pauseReason?' ('+m.pauseReason+')':'')} · ${Math.round(m.heapBytes/1048576)} MiB Wasm heap · ${m.timing.elapsedSeconds.toFixed(1)} s elapsed · ${m.timing.simulationCallSeconds.toFixed(1)} s simulation calls (${m.timing.backingCallSecondsDuringRun.toFixed(1)} s backing)`;
   document.querySelector('#inspection').textContent=JSON.stringify(m,null,2);}
+ if(m.type==='pcm')presentPcm(m.pcm);
  if(m.type==='panel')present(m);
  if(m.type==='uart')document.querySelector('#uart').textContent=m.text;
  if(m.type==='export')download(m.name,m.bytes);
@@ -146,3 +147,30 @@ worker.onmessage=({data:m})=>{
 // Presentation availability never gates raw input, storage controls or CPU
 // scheduling. Rejected or indefinitely pending GPU setup leaves 2D active.
 initializeGPU().catch(()=>{if(gpu)fallback();});
+
+// Speaker embodiment consumes controller-produced PCM only. No text-to-speech.
+// Sink queue is bounded to20ms. UI mute stops every queued source immediately;
+// this is a host sink receipt, independent of guest cancellation and audibility.
+let pcmContext=null,pcmAllowed=false,pcmNext=0,pcmLastTick=null,pcmLastPosition=null,pcmSources=new Set(),pcmDrops=0;
+const pcmStatus=document.querySelector('#pcm-status');
+document.querySelector('#pcm-enable').onclick=async()=>{try{pcmContext??=new AudioContext();await pcmContext.resume();pcmAllowed=pcmContext.state==='running';pcmStatus.textContent=pcmAllowed?'Guest PCM speaker presentation enabled. Physical audibility and bone transducer onset remain unmeasured.':'Audio context unavailable.';}catch(e){pcmAllowed=false;pcmStatus.textContent=String(e);}};
+function stopPcm(reason){pcmAllowed=false;for(const source of pcmSources)try{source.stop();}catch{}pcmSources.clear();pcmNext=0;pcmLastTick=null;pcmLastPosition=null;pcmStatus.textContent=reason+' Queued sink samples cancelled; emitted samples cannot be undone. Guest action cancellation is a separate receipt.';}
+document.querySelector('#pcm-mute').onclick=()=>stopPcm('Speaker presentation muted.');
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPcm('Page hidden.');});
+function presentPcm(pcm){if(pcm.format!=='mono-s16le-low16/1'||pcm.clock_hz!==100000000||!Array.isArray(pcm.samples)||pcm.samples.length>256){stopPcm('Unsupported PCM egress.');return;}
+ if(!pcmAllowed||!pcmContext||pcmContext.state!=='running'){pcmDrops+=pcm.samples.length;return;}
+ const groups=[];let group=null;
+ for(const row of pcm.samples){const tick=BigInt(row[0]),position=BigInt(row[1]);if(!Number.isInteger(row[2])||row[2]<-32768||row[2]>32767){stopPcm('Malformed PCM waveform.');return;}
+  const period=pcmLastTick===null?null:tick-pcmLastTick;
+  if(period===null||period<=0n||pcmLastPosition+1n!==position){pcmLastTick=tick;pcmLastPosition=position;pcmDrops++;continue;}
+  const rate=100000000/Number(period);if(rate<3000||rate>384000){pcmDrops++;pcmLastTick=tick;pcmLastPosition=position;continue;}
+  if(!group||group.period!==period){group={period,rate,samples:[]};groups.push(group);}group.samples.push(row[2]);pcmLastTick=tick;pcmLastPosition=position;
+ }
+ for(const group of groups){const now=pcmContext.currentTime;pcmNext=Math.max(pcmNext,now);const seconds=group.samples.length/group.rate;if(pcmNext-now+seconds>0.020){pcmDrops+=group.samples.length;continue;}
+  const buffer=pcmContext.createBuffer(1,group.samples.length,group.rate),samples=buffer.getChannelData(0);for(let i=0;i<samples.length;i++)samples[i]=group.samples[i]/32768;
+  const source=pcmContext.createBufferSource();source.buffer=buffer;source.connect(pcmContext.destination);pcmSources.add(source);source.onended=()=>pcmSources.delete(source);source.start(pcmNext);pcmNext+=seconds;
+ }
+ pcmStatus.textContent=`Modeled PCM speaker sink; digital egress dropped ${pcm.dropped}, presentation dropped ${pcmDrops}; at most20ms queued. Physical onset unmeasured.`;
+}
+
+for(const id of ['warm','cold','power'])document.querySelector('#'+id).addEventListener('click',()=>stopPcm('Machine output epoch changed.'));

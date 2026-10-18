@@ -49,8 +49,8 @@ def raw_uart_selected(name):
     value = os.environ.get('LEMMA_FAST_RAW_UART', '')
     if value not in ('', '1'):
         raise ValueError('LEMMA_FAST_RAW_UART admits only the explicit value1')
-    if value and profile(name)['profile'] != 'lemma-silicon-dev/0.3.0':
-        raise ValueError('Raw UART backend1 admits only canonical0.3')
+    if value and profile(name)['profile'] not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0'):
+        raise ValueError('Raw UART backend1 requires canonical0.3 or multimodal0.14')
     return value == '1'
 
 
@@ -71,7 +71,7 @@ def sources(name):
     if raw_uart_selected(name):
         paths += [qemu_recipe(name), ROOT/'tooling/lemmasim/patch_uart_ingress.py',
                   ROOT/'tooling/lemmasim/uart_build_budget.py']
-    if profile(name)['profile'] in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0'):
+    if profile(name)['profile'] in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0','lemma-silicon-dev/0.14.0'):
         paths.append(ROOT/'tooling/lemmasim/patch_counter_clock.py')
     if profile(name)['profile']=='lemma-silicon-dev/0.4.0':paths += [ROOT/'tooling/lemmasim/patch_power_safety.py',ROOT/'scripts/silicon_power_guest_archive.py']
     paths += sorted(p for p in (ROOT/'sim/host').glob('*') if p.is_file())
@@ -265,6 +265,9 @@ class Fast:
                        'dtb':self.data['workloads'][args.workload]['dtb']['sha256'],
                        'descriptor':self.data['workloads'][args.workload]['descriptor']['sha256'],
                        'cpu':CPU,'icount_shift':3}
+        if self.data['profile']=='lemma-silicon-dev/0.14.0':
+            self.identity['host_controls']={name:digest(ROOT/name) for name in ('scripts/lemmasim','scripts/lemmasim_fast.py','scripts/lemmasim_session.py','scripts/silicon_guest_bundle.py','scripts/multimodal_native_bundle.py')}
+            if isinstance(self.data.get('native_bundle'),dict):self.identity['native_bundle']=dict(self.data['native_bundle'])
         override_archive=self.data.get('guest_override',{}).get('source_archive')
         if override_archive is not None:
             self.identity['development_guest_source_archive']={key:override_archive[key] for key in ('inventory','build','provenance','audit','image','configuration','source_commit','dirty_paths','inputs','scope')}
@@ -273,6 +276,7 @@ class Fast:
         self.power_enabled=bool(profile(self.data['profile']).get('power_enabled',0))
         self.input_kinds={'pen','button'} if self.power_enabled else {'pen'}
         if self.data['profile']=='lemma-silicon-dev/0.4.0':self.input_kinds.update(('pgood','brownout'))
+        if self.data['profile']=='lemma-silicon-dev/0.14.0':self.input_kinds.add('multimodal')
         self.medium=args.disk.resolve() if args.disk else None
         self.companion=None
         if getattr(args,'companion',None) is not None:
@@ -345,7 +349,7 @@ class Fast:
             self.input_kinds = self.input_kinds - {'uart'}
             self.identity = {**self.identity, 'adapter':ADAPTER}
             if any(row.get('name') == 'raw-uart-version' for row in properties):
-                if self.data['profile'] != 'lemma-silicon-dev/0.3.0' or self.get('raw-uart-version') != 'lemma-raw-uart/1':
+                if self.data['profile'] not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0') or self.get('raw-uart-version') != 'lemma-raw-uart/1':
                     raise ValueError('Unsupported raw UART backend/profile')
                 self.qmp.execute('qom-set', {'path':'/machine/lemma-hardware',
                                            'property':'enable-raw-uart','value':'lemma-raw-uart/1'})
@@ -383,6 +387,7 @@ class Fast:
 
     def inspect(self):
         devices=json.loads(self.get('device-state'))
+        if self.data['profile']=='lemma-silicon-dev/0.14.0':devices['multimodal']=json.loads(self.get('multimodal-state'))
         if getattr(self,'power_enabled',False):devices['power']=json.loads(self.get('power-state'))
         if getattr(self,'raw_uart',False):devices['uart_ingress']=json.loads(self.get('raw-uart-state'))
         return {**self.clock(),'devices':devices,
@@ -484,6 +489,10 @@ class Fast:
             ns=cycle*1000000000//self.clock_hz
             now=self.time_origin_ns+int(self.get('virtual-time'))
             if not now<=ns<=MAX_NS-7:raise ValueError('Fast event delivery exceeds its virtual time bound')
+            if kind == 'multimodal':
+                if len(fields)!=6 or cycle!=self.clock()['cycle']:raise ValueError('Fast multimodal stimulus requires current cycle; future scheduled stimuli are not admitted')
+                self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'multimodal-stimulus','value':' '.join(fields[2:])})
+                return self.inspect()
             if kind == 'uart':
                 if len(fields) != 3 or not re.fullmatch(r'(?:[0-9a-fA-F]{2}){1,65536}', fields[2]) or ns > MAX_NS-10:
                     raise ValueError('Fast UART requires bounded raw hexadecimal bytes and time')

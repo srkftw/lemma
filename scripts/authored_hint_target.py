@@ -152,7 +152,14 @@ def number_pad_machine(normalized, unit, assembly, symbol):
         return normalized
     from product_reader_deployment import WATCHDOG_CONFIGURATION
     from notebook_control_backlog_target import present as backlog_present, entry as backlog_entry
-    if backlog_present(unit):
+    from multimodal_target import selected as multimodal_selected, authority as multimodal_authority
+    if multimodal_selected(unit):
+        key, _ = multimodal_authority(unit)
+        if key != 'notebook': raise Core0Error('Multimodal NumberPad pool escaped Notebook User2')
+        # Exact new catalog binds the declaration ordinal; complete machine
+        # bytes and the two independently checked literal values remain pinned.
+        entry = {'old_symbol':'lemma_user_notebook_core0_scalar_298','new_symbol':symbol}
+    elif backlog_present(unit):
         entry = backlog_entry(unit)['number_pad_pool_alpha']
     elif unit.get('configuration') == WATCHDOG_CONFIGURATION:
         from trial_watchdog_target import authority as watchdog_authority

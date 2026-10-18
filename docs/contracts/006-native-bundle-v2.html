@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Native development bundle v2</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="native-development-bundle-v2">Native development bundle v2</h1>
+<p><code>lemmasim-native-bundle/2</code> preserves the v1 file/byte bounds, strict inventory,
+source/tool/profile checks, guest audits and external host dependency rules.
+The launcher continues to admit immutable v1 packages under their original
+format. This remains ELF-preload development boot and a local package, with
+physical conformance UNVERIFIED and unresolved project-wide redistribution
+rights. It is neither product update recovery nor a portable installer.</p>
+<p>V2 identifies every consumed origin by <strong>absolute origin path and SHA-256</strong>.
+Its <code>origins</code> entries map each digest to one inventoried artifact. This permits
+a genuinely compiled new guest to retain a validated older backend when the
+same build-script path has changed. The guest compiler source tree remains a
+single exact closure under <code>source/</code>; historical backend inputs are archived
+separately. The validator selects only the requested digest and rejects absent,
+malformed or contradictory entries. It never substitutes the newest source
+for an older consumed revision.</p>
+<p>Ordinary packing uses current prepared backends and audited guests. Explicit
+replacement requires all three arguments below. Both backends, both historical
+guest workloads and their consumed inputs are validated before replacement;
+replacement guests then undergo strict <strong>current-source</strong> provenance and
+capacity validation. A replacement does not recompile or relabel its backend.
+The resulting package can launch and perform independent cold recovery after
+later compiler edits without a current-tree override.</p>
+<pre><code class="language-sh">./scripts/lemmasim native-bundle-build \
+  --profile lemma-silicon-dev/0.3.0 \
+  --base-bundle build/native/task006-canonical-a1 \
+  --notebook-build build/kernel/task006-isolated-arithmetic-notebook-a4 \
+  --initializer-build build/kernel/task006-isolated-arithmetic-initialize-a1 \
+  --output-dir build/native/task006-arithmetic-a2
+./scripts/lemmasim session --backend rtl \
+  --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/task006-arithmetic-a2 \
+  --disk build/native/task006-bundle-medium-a2.raw \
+  --session-dir build/native/new-arithmetic-session
+</code></pre>
+<p>Those paths are actual locally prepared artifacts, not instructions to recreate
+an accepted boot result. The A4 image still has the observed pending-checker /
+ink-commit integration defect; its archive preserves that implementation.
+A corrected successor needs its own image, source archive and observations.
+The package qualification establishes exact artifact admission, not Ready,
+mathematical correctness, timing parity or complete checkpoint semantics.</p>
+</main>
+</body>
+</html>

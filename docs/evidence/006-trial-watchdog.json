@@ -615,7 +615,7 @@
     "scope": "Separate normal-ROM CPU0 cold/reader from the retained actual confirmed image15. Original full healthy campaign remains FAIL."
   },
   "scoped_metadata_fault": {
-    "status": "RUNNING_FROZEN_FULL_GUEST_METADATA_CASE_ORIGINAL_BOUNDS",
+    "status": "ACTUAL_GUEST_TORN_METADATA_ERROR_AND_BROWNOUT_OBSERVED_INDEPENDENT_COLD_RUNNING",
     "runtime_identity": "677aacbc0c1dc2cea5658357e7ad992b0d91ca63a4504c69a43e42ead097bd4d",
     "binary_sha256": "0606235b79b603c43a35f59274c3d625ed227e5fb3f0289f5511d3d8e78fde68",
     "prepared": "build/boot/task006-scoped-boot-write-prepared-a3",
@@ -625,7 +625,7 @@
       "boot": 39,
       "scaffold": 18
     },
-    "scope": "Real Linux scoped write limit and independently observed returned byte prefix. Full1059-sector guest metadata case remains a separate required execution.",
+    "scope": "Actual full guest payload/tag/authentication, real256/EFBIG metadata failure/no publication receipt and brownout assertions complete; independent normal-ROM confirmed13 cold/home/allmedia result still required. Not whole-case PASS or full failure-matrix closure.",
     "plan": "build/boot/task006-torn-metadata-update-plan-a1/plan.json",
     "source_commit": "350debcc497856b9eb4aa6a768c0c7dc50d40c0e",
     "host_source_count": 1881,
@@ -637,6 +637,25 @@
       "transfer_seconds": 7200,
       "cold_clocks": 1500000000,
       "cold_seconds": 11200
-    }
+    },
+    "observed_progress": "build/boot/task006-torn-metadata-update-plan-a1/consumed-host-source-root/build/connected/progress.json",
+    "completed_payload_sectors": 1059,
+    "actual_failed_IO": [
+      5304,
+      366436203,
+      1,
+      0,
+      512,
+      256,
+      27
+    ],
+    "actual_guest_publish_reply": {
+      "transaction": 1160,
+      "status": 212,
+      "value": 0
+    },
+    "payload_tag_barrier": 4244,
+    "brownout_reset_cause": 5,
+    "transfer_and_brownout_RTL_clocks": 366500200
   }
 }

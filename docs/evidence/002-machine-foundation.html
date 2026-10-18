@@ -1,0 +1,2349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task 002 machine-foundation evidence</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="task-002-machine-foundation-evidence">Task 002 machine-foundation evidence</h1>
+<p>Task 002&#39;s bounded Gates 0--11 have passed. Repaired source <code>09c47ba</code> passed full
+cold clean detached local qualification and both actual GitHub push/PR CI runs.
+The branch is pushed with an upstream; draft stacked PR #2 remains open and
+unmerged. Initial CI failures and earlier local results remain historical evidence.
+This does not complete G1, G2, the broader compiler-conformance construction unit,
+any Stage II unit, or a general-purpose OS/runtime.</p>
+<h2 id="gate-status-and-rv64-capability-delta">Gate status and RV64 capability delta</h2>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Result</th>
+<th>Demonstrated scope / remaining work</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>Passed</td>
+<td>Reproduced Task 001 baseline.</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Passed</td>
+<td>Deliberately defective lowerings detected.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Passed</td>
+<td>Multi-root scalar/typed-ABI conformance.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Passed</td>
+<td>Validated CFG and total fixed-width operations.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Passed</td>
+<td>Checked bounded iteration and resource evidence.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Passed</td>
+<td>Fixed-region RAM, Actions and transitive effects.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Passed</td>
+<td>Compiled bounded UART interaction.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Passed</td>
+<td>Real authorized M-mode synchronous traps and context tests.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Passed</td>
+<td>Hardware timer IRQs, bounded ring and useful foreground work.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Passed</td>
+<td>One coherent post-boot interactive monitor ELF/profile.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Passed locally</td>
+<td>Fresh clean detached hosts, cumulative stress, legacy, rebuilds and failure-path qualification.</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Passed</td>
+<td>Branch/upstream/draft stacked PR published; actual repair push/PR CI, retained artifacts and bounded evidence handoff checked.</td>
+</tr>
+</tbody></table>
+<p>Task 001 executed a bounded scalar program from post-build fixture input.
+Task 002 now executes multiple typed scalar roots/ABI shapes, validated CFG with
+total fixed-width operations and bounded loops, checked fixed RAM through Action
+effects, compiled UART exchange, real M-mode synchronous traps, hardware timer
+interrupts with a bounded event ring alongside useful foreground computation,
+and one monitor ELF per profile receiving fresh commands after boot. Its parsing,
+calculations, buffer algorithms and responses execute on RV64, not in a hosted
+guest or host-precomputed image. All claims are profile-bound finite tests/audits;
+this is not general Lean support, compiler correctness, isolation, managed runtime,
+scheduling, physical hardware, or G1/G2 completion.</p>
+<h2 id="source-identity-and-checkpoint-lineage">Source identity and checkpoint lineage</h2>
+<ul>
+<li>Task 001 base: <code>b8e9c59365ae8e9925e0bf6fbca6a963d990ec85</code>, tree
+<code>88d2c23aafbd2b3a40a195755c01494de9ffad75</code> (unmerged PR #1).</li>
+<li>Gate 0 checkpoint: <code>27033e434337e7b0af9ae428688fee242b499005</code>.</li>
+<li>Gate 1 implementation checkpoint: <code>8878d2c65a6d76bc94ef0e8a9e036404bc76582c</code>,
+tree <code>a110453f7d92b342f193cd36e889db9a370d3232</code>; its evidence checkpoint is
+<code>4258375</code>.</li>
+<li>Gate 2 implementation and cumulative clean verification source:
+<code>687ee7e292b7a049f8fd35fcf17097c80c3d5665</code>, tree
+<code>9b3a8e06a0ce683b887a75ee9c615eb856965a1c</code>.</li>
+<li>Gate 3 implementation checkpoint:
+<code>9519adcc1f72fbf06a5f888e387e561df9f1604a</code>, tree
+<code>ef80a9cdf95e150606344ee84551128231092937</code>.</li>
+<li>Gate 4 implementation checkpoint:
+<code>16e7461e009e09390c0e9682d5800cae9fdd90d3</code>, tree
+<code>ee8840a642aa3acc03a8759242cc477a7b8c2eb2</code>.</li>
+<li>Gate 5 implementation checkpoint:
+<code>ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98</code>, tree
+<code>c1172034c1dedc0a91375b2eb21dd6fe5fd9b187</code>.</li>
+<li>Gate 6 implementation and historical cumulative clean verification source:
+<code>179ef541e7cfa53235322610222a01ccdf9364cd</code>, tree
+<code>9ff742607b5b1d73924928bf147dabada037f406</code>.</li>
+<li>Gate 7 implementation and historical cumulative clean verification source:
+<code>6c1b6a8ded1e94a822cff9977578b7c292075f75</code>, tree
+<code>5c53acabde200edd2ef7061ba65830c7c00b5b5b</code>.</li>
+<li>Gate 7 report-bearing revision: <code>530fb1ec80687569e5f5def5ac870153b3256227</code>.</li>
+<li>Historical accepted cumulative Gates 1--8 implementation checkpoint:
+<code>42674c1ba773454c36c277620e2acd289539e5a2</code>, tree
+<code>f7bea0b4f126275773bbc84e8fb534849ac6bb35</code>.</li>
+<li>Historical Gate 9 clean focused monitor implementation: <code>8fd45d8458f4901c7a2d4debcb60ebd71f18a39c</code>,
+tree <code>965b550c576f80284a1a24c427d9704b517d160d</code>.</li>
+<li>Historical successful clean detached/local qualification implementation:
+<code>e0e1f2188fba1d26fbdd8723f37091001802064d</code>, tree
+<code>9660ade13a0b202bb0a76325eb36cf0c2b75a7d4</code>.</li>
+<li>Current repaired clean detached/local qualification implementation:
+<code>09c47ba24577da87390f4c693237fe71ab67c965</code>, tree
+<code>7051d19087e09a6eede78210fdbe7652105e355d</code>.</li>
+<li>Branch: <code>task/002-machine-foundation</code>, stacked on Task 001.</li>
+<li>Initial post-test report-bearing/published revision:
+<code>ac2a95ec460d271ef00f92335ae3ea821d1b329d</code>, tree
+<code>6e129a2ed43608d2bd728df26d09037d93e72fb9</code>. This later publication-status edit
+is not self-referenced or claimed to be in that revision. At that initial
+publication tested source was <code>e0e1f2</code>; current tested source is the separately
+identified <code>09c47ba</code> implementation above.</li>
+</ul>
+<p>The historical Gate 0 clean aggregate was <code>build/core0/check/check-results.json</code>,
+SHA-256 <code>3a3cb9244b4a84b1a93ff869843aa3619622719ef6f431067e5502cbefc58a7c</code>.
+Gate 1 first passed at <code>8878d2c...</code>; it was then rerun as part of the cumulative clean
+Gates 1-2 command at <code>687ee7e...</code>. All 14 Gate 1 control/mutant provenance records,
+both Gate 2 profiles, and the Task 001 O0/O2 release records in that historical
+checkpoint name the full <code>687ee7e...</code> commit and record <code>dirty_tree: false</code>.</p>
+<p>The previous cumulative clean run repeated Gates 1--6 at <code>179ef54...</code>. All 29
+retained cumulative provenance records (24 actual builds and five copied Gate 1
+negative-audit records) name that full commit and record
+<code>dirty_tree: false</code>; the focused Gate 6 and legacy O0/O2 audits do likewise. The
+earlier per-gate identities remain historical checkpoints rather than being
+overwritten. These are clean committed-source runs in the existing checkout, not
+the separate detached-worktree qualification then still required by Gate 10
+(and subsequently passed at the later checkpoints below).</p>
+<p>The previous cumulative clean run repeated Gates 1--7 at <code>6c1b6a8...</code>, with all
+33 retained provenance records (28 actual builds and five copied Gate 1
+negative-audit records) naming that exact commit and <code>dirty_tree: false</code>.
+The focused Gate 7 run&#39;s four build records and the legacy regression&#39;s eight retained
+records (seven actual builds and one copied audit) likewise name clean <code>6c1b6a8...</code>. Later report/guidance updates and
+Gate 8 work are not retroactively covered by those source identities. The source
+snapshot in that historical hash inventory uses <code>git show 6c1b6a8...:&lt;path&gt;</code>, not the later
+worktree; its report-bearing files are explicitly hashed separately.</p>
+<p>The historical accepted cumulative Gates 1--8 run names exact <code>42674c1...</code> source in
+all 39 retained provenance records (34 actual builds and five copied Gate 1
+negative-audit records), each with <code>dirty_tree: false</code>; all eight legacy
+regression provenance records do likewise. Gate 8 acceptance is the complete
+checker executed as the cumulative child, not a separate clean focused run.
+The historical focused Gate 9 run binds both profiles to exact <code>8fd45d8...</code>
+with <code>dirty_tree: false</code> and 101 source inputs/profile. Current local Gate 10
+acceptance is a full clean detached run at <code>09c47ba...</code> (successful <code>e0e1f2</code> remains historical): 41 retained cumulative
+provenance records (36 actual builds plus five copied Gate 1 negative-audit records),
+eight retained legacy records (seven actual builds plus one copied negative-audit
+record) and two qualifier rebuild records all bind that
+exact clean source. Monitor source inputs now number 102/profile. The current
+inventory hashes source with <code>git show 09c47ba...:&lt;path&gt;</code>, including guidance bytes
+as they existed then; later report/root-guidance updates are explicitly separate.</p>
+<p>Generated build output remains ignored. The durable identities of the cumulative
+clean records are:</p>
+<table>
+<thead>
+<tr>
+<th>Record</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>build/foundation/gates1-2-clean/all-results.json</code></td>
+<td><code>45ba122a148518e76062512f7358d536c16924f1bd881380d69c4819da02a158</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-2-clean/gate1/gate1-results.json</code></td>
+<td><code>b09cfaa81a8e1d567f3afe492570bd04112c86cec9378cb9cfab987e64a9bffe</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-2-clean/gate2/gate2-results.json</code></td>
+<td><code>6b3e775f3f7ffeb17ed5b9d781d8ae38815afea07944d3e7fc45de21beb3b5cc</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gate3-clean-9519adc/gate3-results.json</code> (authoritative focused Gate 3 report)</td>
+<td><code>82bc01be3efd4f4da1f88eb20e61f36035c4499a2c100ec08bfbed2d7ae2fb6c</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-3-clean-9519adc/all-results.json</code></td>
+<td><code>023ed2f602194dbf376de335fc8a507a0b496727b85498dde2ce0049915dea34</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-3-clean-9519adc/gate1/gate1-results.json</code></td>
+<td><code>d9535b416a3a7889fd3bb3262d0e4d3b1c3d1170ffcddd0b9a473d4982777b46</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-3-clean-9519adc/gate2/gate2-results.json</code></td>
+<td><code>b8ee9c7f1e6f1bfe69481885e0adc31000acb388a51c76d3e6192a3f145b91bf</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-3-clean-9519adc/gate3/gate3-results.json</code></td>
+<td><code>707315b5875d12f2a0c1dd33276ff35f143d0aafae0ad20ce44b8a8e315df4a6</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gate4-clean-16e7461/gate4-results.json</code> (authoritative focused Gate 4 report)</td>
+<td><code>a88ad21498f64b3bc69305ca70603c2c14057c36d48ba812e3a772cc284f611a</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-4-clean-16e7461/all-results.json</code></td>
+<td><code>19f507b7317afcf318a4e4c1c3297f5dec421fc92c2aa2062ce61108bad1055e</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-4-clean-16e7461/gate1/gate1-results.json</code></td>
+<td><code>455c3604a118d7498a94fce557dfd9cef831eb688dddd20059cf4fd3ff72d52e</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-4-clean-16e7461/gate2/gate2-results.json</code></td>
+<td><code>13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-4-clean-16e7461/gate3/gate3-results.json</code></td>
+<td><code>ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-4-clean-16e7461/gate4/gate4-results.json</code></td>
+<td><code>6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gate5-clean-ff8ef0f/gate5-results.json</code> (authoritative focused Gate 5 report)</td>
+<td><code>fa670e195ce2b4f8988850f8b1e2f10c3dc9eda7cb993b5f0dcf09f20cbe25d7</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-5-clean-ff8ef0f/all-results.json</code></td>
+<td><code>635c1ca0c7d3a4647297a978b109ce5b42d015a6ab46de676d8791b66261b863</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-5-clean-ff8ef0f/gate1/gate1-results.json</code></td>
+<td><code>d2d8abeeb5bb709863074941e13580c5edcd30b76de6d9bb985de1050de8be04</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-5-clean-ff8ef0f/gate2/gate2-results.json</code></td>
+<td><code>24d07cda88c3e318547b0af3fa116d56f30b854cb9ab099a28658c7d53811045</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-5-clean-ff8ef0f/gate3/gate3-results.json</code></td>
+<td><code>dd742d894dabd5714dad387212421fc12e376e23e86acb763d4cfd2a5eb1dbcf</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-5-clean-ff8ef0f/gate4/gate4-results.json</code></td>
+<td><code>60e29f2c73934c0dc2ad761c6df3ab0ab0a10310295b63901bbb9948efde1a4a</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-5-clean-ff8ef0f/gate5/gate5-results.json</code></td>
+<td><code>c331d3f4210d3bdaef88def71c892606d0dc4caa85cee8e07f092092b55de8f6</code></td>
+</tr>
+<tr>
+<td><code>build/core0/check/check-results.json</code> (historical Gate 5 legacy regression; path subsequently reused)</td>
+<td><code>ab160eebccc519922a537c181c83900c2838f690bd15c7ca49ba8906283b1c8f</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gate6-clean-readback/gate6-results.json</code> (authoritative focused Gate 6 report)</td>
+<td><code>da4726d0c7f312c72295b70651a94cd4eeb69f5e99072dd6ba3f07676acd73a1</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-6-clean-readback/all-results.json</code></td>
+<td><code>b82597eced2cd1e23bc9c589142c353e36d6f3414746194cdbb47be00ce3c2de</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-6-clean-readback/gate1/gate1-results.json</code></td>
+<td><code>f5d58aff59e38c7a8f29b86bc87742164c9f5531080d064e17dcd51140c08706</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-6-clean-readback/gate2/gate2-results.json</code></td>
+<td><code>d757326af681a420137f14157fb9609aa1972b9852bb232eee55f874c6528eb0</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-6-clean-readback/gate3/gate3-results.json</code></td>
+<td><code>fedd4428a9831744f51bede8d1ef44ce18c228859ccbd2e5e64a4d463cee3c71</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-6-clean-readback/gate4/gate4-results.json</code></td>
+<td><code>b91564ae709820dbe58e1c58ca8a76bbec90a72c16ecec081c8d28d838cf898a</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-6-clean-readback/gate5/gate5-results.json</code></td>
+<td><code>dcd9e7b34efee45570860f33e9b04e0a7654ed7e14daca8c7641447dbe1ff3e1</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-6-clean-readback/gate6/gate6-results.json</code></td>
+<td><code>bb61dc1c32a2d00440ff71a78ffc040f8efd8a2ec10b0441d529ba820c38e9f2</code></td>
+</tr>
+<tr>
+<td><code>build/core0/check/check-results.json</code> (historical same-source Gate 6 legacy regression)</td>
+<td><code>1a0e514c0ff086f6ca25679882c97e992c02f9e9eb6cbfe049e3552c5eaa0e09</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gate7-clean-6c1b6a8/gate7-results.json</code> (authoritative focused Gate 7 report)</td>
+<td><code>34e27a775b18d06195133e8c05e3d048e78dc849b06188447d2d849638aad7c5</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-7-clean-6c1b6a8/all-results.json</code></td>
+<td><code>12837b1bf0d38df75ad9744a120da5702c3651b1bfff22234092721e3d182339</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-7-clean-6c1b6a8/gate1/gate1-results.json</code></td>
+<td><code>59c9bc9230f7408a1f0d46cd965f9bb3c292c0014f847e1511d7cec5fe074a66</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-7-clean-6c1b6a8/gate2/gate2-results.json</code></td>
+<td><code>d909000e9b529a7b3e6afa035aaf86ccde3040dd009b778690fd72c01e0aed1f</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-7-clean-6c1b6a8/gate3/gate3-results.json</code></td>
+<td><code>2352a9daae79853ca4105d186cddaf717fd56bf00c19120777c5a24de2435ea2</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-7-clean-6c1b6a8/gate4/gate4-results.json</code></td>
+<td><code>a79d624c2259df47681f296ed38990ceb93c795431298ca49ea35df64dec6c27</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-7-clean-6c1b6a8/gate5/gate5-results.json</code></td>
+<td><code>4ba92dc8eb13ec3a12edd8357b2e11ec9b583e336e6f7864f301debd9521e0f1</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-7-clean-6c1b6a8/gate6/gate6-results.json</code></td>
+<td><code>c239b3f9343bf2e34f0efd3c2386c3deedf5b5a00f2abf63ec4d732f5e0468e0</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-7-clean-6c1b6a8/gate7/gate7-results.json</code></td>
+<td><code>0f2ab68547526cd8c2d370d98d58495b0388b8b75c55f91f895622b26500667b</code></td>
+</tr>
+<tr>
+<td><code>build/core0/task002-gate7-clean/check-results.json</code> (historical same-source regression)</td>
+<td><code>f118ffe7ed2646657bf614dcf1081b7e156d6b602e99f5427ecd472637e78bf2</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-8-clean-42674c1/all-results.json</code> (historical accepted Gates 1--8 baseline)</td>
+<td><code>393a2a649e3f804ea7fc332b53d9c88cdd2d789dc34c7ac7357fbdb1d4aca8de</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gates1-8-clean-42674c1/gate8/gate8-results.json</code> (authoritative clean Gate 8 child)</td>
+<td><code>09190b5a7ad03d5b3a208aa9514c6aa48dfd64bd2a95890dc7a755c2866bb8e9</code></td>
+</tr>
+<tr>
+<td><code>build/core0/task002-gate8-clean/check-results.json</code> (historical accepted legacy baseline)</td>
+<td><code>7ba1294f53702fb4b86ef3a8ad65173b4100a9efc0256e11b90a4a72dda89f82</code></td>
+</tr>
+<tr>
+<td><code>build/foundation/gate9-clean-8fd45d8/gate9-results.json</code> (clean focused Gate 9)</td>
+<td><code>69e37da2266a4c89ddd18243600da1da52300c7edbebe264eae9033bf3841ca6</code></td>
+</tr>
+<tr>
+<td><code>build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/all-results.json</code> (historical successful e0e1f2 cumulative stress)</td>
+<td><code>8d8189b489e07643dcacf5f03bf4c5317fab191a5a69584f57c2c51d1c575f5f</code></td>
+</tr>
+<tr>
+<td><code>build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/gate9-results.json</code> (historical successful e0e1f2 monitor normal/stress)</td>
+<td><code>cce7d93e6c830015c4952110c6d05d89abe16dd04127d4c019701e46a9b988be</code></td>
+</tr>
+<tr>
+<td><code>build/qualification-worktree.hJDCyB/build/core0/qualification-legacy/check-results.json</code> (historical successful e0e1f2 legacy)</td>
+<td><code>1878d6d734d118836ddc4840f686098029339f29a164d11d185c34db3a42cafd</code></td>
+</tr>
+<tr>
+<td><code>build/qualification-worktree.hJDCyB/build/foundation/qualification/qualification-results.json</code> (historical successful e0e1f2 qualifier)</td>
+<td><code>3b7923e051835c2bd2de87b69ac365ced24b95f73d364fcf488fd5373c7284d9</code></td>
+</tr>
+</tbody></table>
+<h2 id="commands-executed-for-the-historical-gate-6-implementation-checkpoint">Commands executed for the historical Gate 6 implementation checkpoint</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="right">Exit</th>
+<th>Actual result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>nix develop --no-write-lock-file --command lake build</code></td>
+<td align="right">0</td>
+<td>44 jobs; complete Lean library build; 52 compile-time CFG validator checks</td>
+</tr>
+<tr>
+<td><code>python3 scripts/check_scaffold.py</code></td>
+<td align="right">0</td>
+<td>metadata valid: 7 gates, 56 software units, 6 physical units</td>
+</tr>
+<tr>
+<td><code>python3 -m unittest discover -s tests/scaffold -v</code></td>
+<td align="right">0</td>
+<td>18/18 passed</td>
+</tr>
+<tr>
+<td><code>nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v</code></td>
+<td align="right">0</td>
+<td>32/32 passed</td>
+</tr>
+<tr>
+<td><code>nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v</code></td>
+<td align="right">0</td>
+<td>239/239 passed</td>
+</tr>
+<tr>
+<td><code>nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean</code></td>
+<td align="right">0</td>
+<td>10 cases/profile, 13 intended rejections, 23 fresh QEMU boots</td>
+</tr>
+<tr>
+<td><code>git status --short --branch</code></td>
+<td align="right">0</td>
+<td>Before authoritative runs: clean status <code>## task/002-machine-foundation</code></td>
+</tr>
+<tr>
+<td><code>nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 6 --work-dir build/foundation/gate6-clean-readback --clean --timeout 300 --qemu-timeout 20</code></td>
+<td align="right">0</td>
+<td>Gate 6 passed: 14 scenarios/profile, 28 fresh QEMU boots, 16 runtime requests</td>
+</tr>
+<tr>
+<td><code>nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-6-clean-readback --clean --timeout 300 --qemu-timeout 20</code></td>
+<td align="right">0</td>
+<td>Gates 1--6 passed: boot counts 24, 136, 88, 14, 104, 28 respectively; 394 total</td>
+</tr>
+</tbody></table>
+<p>The build and unit suites ran against the final implementation tree immediately
+before its checkpoint commit. The focused Gate 6, cumulative Gates 1--6, and legacy
+Core0 commands then ran after the implementation was committed, from clean source
+<code>179ef54...</code>. Those reports are the source-attributable authorities: the focused
+report details Gate 6, the cumulative report proves Gates 1--6 still pass together,
+and the legacy Core0 report binds both O0/O2 audits to <code>179ef54...</code> with
+<code>dirty_tree: false</code>.</p>
+<h2 id="gate-1-incorrect-compiler-detection">Gate 1: incorrect-compiler detection</h2>
+<p>The immutable source declarations live in <code>examples/foundation/CompilerFaults.lean</code>.
+Lean elaborates them to a recorded <code>.olean</code>; the genuine Core0 frontend checks the
+transitive closure; the ordinary structured lowering runs; and only then may the
+test-only exporter apply one closed transform. The production exporter imports no
+mutation module and the production build CLI exposes no mutation/category selector.</p>
+<p>The test categories are explicit:</p>
+<ul>
+<li><code>test-compiler-control</code> uses the unmodified lowering;</li>
+<li><code>test-compiler-mutant</code> requires <code>compiler-mutation.json</code> and its hash bindings;</li>
+<li><code>release</code> rejects either test category and all mutation metadata.</li>
+</ul>
+<p>Every mutant audit repeats the normal IR, object, relocation, dependency, ELF, ISA,
+layout, startup, and final-closure checks. It also audits its clean control, requires
+the source manifest/normalized form/symbol map/startup/layout/linker script to be
+byte-identical, reverses the reported instruction replacement, and requires the
+resulting pre-optimization IR to be byte-identical to the control. Thus the reported
+replacement is the sole pre-optimization IR delta.</p>
+<p>The imported source was elaborated with:</p>
+<pre><code class="language-text">lake env lean -o .lake/build/lib/lean/examples/foundation/CompilerFaults.olean \
+  examples/foundation/CompilerFaults.lean
+</code></pre>
+<p>Source SHA-256 is
+<code>e757146e213b9e265dc1b074abbb113efed38ca49554fe2845fb8082504d8274</code>;
+the clean <code>.olean</code> SHA-256 is
+<code>b299c8b87db79d4665959632c4b1a5c2e377ca1f674f6c23dec0a5c7b3c65a1e</code>.
+Each schema-2 provenance record hashes both and retains the exact elaboration command.</p>
+<p>The checked-Core0 executable semantics supplied the unchanged oracle. Each clean
+control ran all six inputs under O0 and O2 (12 boots). Each fault then produced a
+separate valid O0 and O2 image, passed its audit, booted, emitted exactly one valid
+UART frame, and returned the specific wrong result below (12 more boots).</p>
+<table>
+<thead>
+<tr>
+<th>Closed fault</th>
+<th>Distinguishing input <code>(selector, x, y)</code></th>
+<th align="right">Oracle/control</th>
+<th align="right">O0 mutant</th>
+<th align="right">O2 mutant</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ult-as-ule</code></td>
+<td><code>(0, 7, 7)</code></td>
+<td align="right"><code>0x22</code></td>
+<td align="right"><code>0x11</code></td>
+<td align="right"><code>0x11</code></td>
+</tr>
+<tr>
+<td><code>ult-as-slt</code></td>
+<td><code>(1, 0x8000000000000000, 0)</code></td>
+<td align="right"><code>0x44</code></td>
+<td align="right"><code>0x33</code></td>
+<td align="right"><code>0x33</code></td>
+</tr>
+<tr>
+<td><code>add-as-sub</code></td>
+<td><code>(2, 9, 4)</code></td>
+<td align="right"><code>0x0d</code></td>
+<td align="right"><code>0x05</code></td>
+<td align="right"><code>0x05</code></td>
+</tr>
+<tr>
+<td><code>zext-as-sext</code></td>
+<td><code>(3, 0x0000000080000001, 0)</code></td>
+<td align="right"><code>0x0000000080000001</code></td>
+<td align="right"><code>0xffffffff80000001</code></td>
+<td align="right"><code>0xffffffff80000001</code></td>
+</tr>
+<tr>
+<td><code>trunc-high-half</code></td>
+<td><code>(4, 0x1122334455667788, 0)</code></td>
+<td align="right"><code>0x0000000055667788</code></td>
+<td align="right"><code>0x0000000011223344</code></td>
+<td align="right"><code>0x0000000011223344</code></td>
+</tr>
+<tr>
+<td><code>swap-call-args</code></td>
+<td><code>(5, 9, 4)</code></td>
+<td align="right"><code>0x05</code></td>
+<td align="right"><code>0xfffffffffffffffb</code></td>
+<td align="right"><code>0xfffffffffffffffb</code></td>
+</tr>
+</tbody></table>
+<p>Only <code>verified-behavioral-mismatch</code> counts. Compile/link failures, missing artifacts,
+audit/provenance rejection, timeout, process failure, malformed protocol, a result
+equal to the oracle, and an unexpected wrong value have separate fail-closed
+categories. The cumulative run retained 2 controls, 12 mutants, 12/12 verified
+behavioral mismatches, 3 intended source rejections, and 7 artifact-level audit
+regressions.</p>
+<h2 id="gate-2-genuine-multi-root-frontend-conformance">Gate 2: genuine multi-root frontend conformance</h2>
+<p>Gate 2 preserves the Task 001 fixed-entry runner and adds the test-only
+<code>test-frontend-suite</code> category. The new route starts from 37 genuine elaborated Lean
+roots. <code>checkAndLowerSuite</code> checks every root and its dependency closure before the
+structured LLVM exporter emits one O0 or O2 image containing the complete suite.</p>
+<p>The roots span <code>Bool</code>, <code>UInt8</code>, <code>UInt32</code>, and <code>UInt64</code>; a zero-argument constant;
+nested lets and conditionals; direct, cross-module, and shared-diamond calls;
+mixed-width signatures; all six admitted casts; and every admitted arithmetic,
+bitwise, equality, and unsigned-comparison primitive. The manifest records 34 used
+primitive identities. Five paired roots test alpha-renaming, helper extraction,
+equivalent let nesting, module reorganization, and an unreachable host-only import.
+Each pair used the same four inputs and produced equal results.</p>
+<h3 id="three-comparison-routes-and-deterministic-corpus">Three comparison routes and deterministic corpus</h3>
+<p>The corpus uses suite ID <code>0x7812482420151ea4</code>, source seed
+<code>0x4c454d4d41323032</code>, runtime seed <code>0x52554e54494d4532</code>, and
+<code>SplitMix64-v1</code> with fixed typed boundary pools. Its file is
+<code>build/foundation/gates1-2-clean/gate2/corpus/gate2-cases.json</code>, SHA-256
+<code>b035b7aec0218e3132e93c8ec34a2b45e46e992880f4894b28c0f7d311804d1d</code>.
+It contains exactly 1,024 distinct <code>(root, arguments)</code> cases per profile, distributed
+over all 37 roots and packed into 61 valid batches per profile.</p>
+<p>The three routes were:</p>
+<ol>
+<li>direct evaluation of the original elaborated declarations, from a driver that
+imports the conformance declarations but neither the Core0 checker nor evaluator;</li>
+<li>one genuine <code>checkAndLower</code> per root followed by the checked-Core0 evaluator;</li>
+<li>compiled freestanding RV64 execution in the audited O0 and O2 images under QEMU.</li>
+</ol>
+<p>Direct source and model matched all 1,024 cases and produced the same canonical result
+digest, <code>54aca4404cf28f441ae6d83ba3b4fad0dfc3618ff89fd2414bcae8bfba531933</code>.
+Each target profile independently matched that same digest for all 1,024 cases, for
+2,048 source/model/target profile comparisons. No target case was replaced by a host
+simulation.</p>
+<p>The target matrix used 61 valid boots plus 7 negative typed-input boots in each
+profile: 68/profile and 136 total. The negative matrix required exact guest failure
+for inconsistent suite identity, excess argument count, a tag mismatch, invalid Bool
+encoding, pre-truncation UInt8 and UInt32 overflow, and a nonzero unused slot. A
+separate elaborated fixture rejected a 17-argument suite root with the required
+<code>lemma-scalar-test-v1 maximum is 16</code> diagnostic.</p>
+<h3 id="versioned-typed-abi-and-real-call-boundary">Versioned typed ABI and real call boundary</h3>
+<p><code>lemma-scalar-test-v1</code> uses a 128-byte little-endian header and 136-byte records
+containing a case ID plus sixteen UInt64 transport slots. Type tags are Bool=1,
+UInt8=2, UInt32=3, UInt64=4; Bool must be 0/1, narrow arguments are range-checked
+before truncation, unused slots must be zero, and narrow results are explicitly
+extended to the transport word. The guest emits the versioned <code>LEMMA_SCALAR/1</code>
+batch/result/end grammar. Both host descriptors and the image-bound manifest identify
+the exact root and signature.</p>
+<p>The dedicated ten-argument caller and callee use the signature
+<code>(u64,u8,u32,bool,u64,u8,u32,bool,u8,u32) -&gt; u64</code>. Pre-optimization LLVM contains a
+non-tail real call and exact LP64 attributes at both definitions and the call site:
+UInt8/Bool use <code>zeroext</code>, UInt32 uses <code>signext</code>, and UInt64 has no extension attribute.
+Both O0 and O2 audits identify caller <code>core0_user_31</code>, callee <code>core0_user_30</code>, a
+32-byte caller frame aligned to 16 bytes, outgoing stack argument offsets 0 and 8,
+and a retained real call. The callee&#39;s audited stack-load offsets are 64/72 at O0 and
+0/8 at O2. Thus the ninth and tenth, deliberately narrow, arguments cross the actual
+RV64 stack boundary rather than an inlined or silently widened surrogate.</p>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Audit SHA-256</th>
+<th>Image SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>O0</td>
+<td><code>26fccf1bafee4b03e24a95ba7b32df3765dd985bc09fa370f4df8c73f32de2c0</code></td>
+<td><code>84ad3a6e5c0397d460bb272ebbfe64c1e3d94e5c0d8fe06907e254ba96b35d48</code></td>
+</tr>
+<tr>
+<td>O2</td>
+<td><code>c29900d25bffdf71e0543cd58fd93dc3a6a3a5eb246c5d45657c6f667d000efc</code></td>
+<td><code>6ea70385af020d53edf40e19bb7b0f74a9eca4cb2890b7e0b8bfed5d6c7c0cb9</code></td>
+</tr>
+</tbody></table>
+<p>The two profiles have byte-identical checked suite manifest
+(<code>ec99b7c526af8bce080a0bdeac8a12c7b136d226012add83af3859dd1b8951cd</code>),
+normalized suite
+(<code>a3ebd6ecbc3e2ebaab387e5b8d499cb5954f1bfaff801b4e84f6c6b0c13ea5b4</code>),
+typed ABI
+(<code>ad68695a7820051d319e8ac914018e89272837ca77756be4b4e88a6d099148aa</code>),
+symbol map
+(<code>ced6e5edd52d6d1126234a0a68b8225e1f678cbf737e504a8e168e618362763c</code>),
+and pre-optimization <code>program.ll</code>
+(<code>07b37f40e8dccfbeb93be2412b2160252fe2932fb22db2a57c57f6ca8887f658</code>).
+Their schema-2 provenance agrees on artifact category, source commit, clean-tree state,
+compiler route, target, source and elaborated inputs, and export configuration. This
+binds both optimized profiles to the same checked source while retaining their
+distinct optimized IR, object, image, and audit identities.</p>
+<h3 id="exhaustive-uint8-anchor">Exhaustive UInt8 anchor</h3>
+<p>The direct-source and checked-model routes exhaustively enumerated all 65,536 ordered
+<code>(x,y)</code> pairs, in x-major order, for five named roots: UInt8 add, subtract, less-than,
+less-or-equal, and equality. That is 327,680 exact comparisons. Each route emitted a
+327,680-byte result artifact; both have SHA-256
+<code>fd1b65ef4cff910a3e0179670516b2a9d176d7fefb931027b47cff76ab8b25dd</code>.
+The recorded exhaustive phase completed in 5.888941 seconds and records per-root
+offsets, pair counts, and hashes rather than only an aggregate claim.</p>
+<h2 id="gate-3-structured-control-flow-and-total-scalar-operations">Gate 3: structured control flow and total scalar operations</h2>
+<p>Gate 3 introduces the explicit <code>core0-v0.2</code> profile without changing
+<code>core0-v0.1</code>. The new checked IR and lowering support structured basic blocks,
+conditional branches, merge values, fixed-width complement, left and logical-right
+shifts, and unsigned division/remainder for UInt8, UInt32, and UInt64. Signed
+arithmetic was not added. The 44 roots lower to 47 checked functions and retain 49
+used primitive identities; source conditionals lower through branches and phi nodes,
+not eager evaluation through <code>select</code>.</p>
+<p>The deterministic corpus uses suite ID <code>0xb15c8d071a8dc520</code>, source seed
+<code>0x4c454d4d41333033</code>, runtime seed <code>0x52554e54494d4533</code>, and <code>SplitMix64-v1</code>
+with fixed scalar/CFG boundary pools. Its 708 distinct cases/profile cover all 44
+roots in 44 batches/profile. Direct source and checked model agreed on all 708 cases;
+both have result SHA-256
+<code>eabc0c7033b47f1d96c2df0164195e10221886447989b4152287fa65f858b4a9</code>.
+O0 and O2 each ran all 708 cases in 44 QEMU boots and matched the same result digest,
+for 1,416 source/model/target profile matches and 88 target boots total. Fifteen
+notation/direct metamorphic pairs cover complement, shift, division, and remainder
+at all three widths.</p>
+<h3 id="pinned-source-semantics-and-profile-compatibility">Pinned source semantics and profile compatibility</h3>
+<p>The run executed
+<code>lake env lean examples/foundation/ScalarV2PinnedSemantics.lean</code> and retained 18
+direct-source probes: complement, divide-by-zero, remainder-by-zero, shift-by-width,
+shift-by-width-plus-one, and right-shift-by-maximum-count at each of UInt8, UInt32,
+and UInt64. The observed contract is:</p>
+<ul>
+<li>complement is fixed-width;</li>
+<li>shift counts reduce modulo the operand width;</li>
+<li>unsigned division by zero returns zero; and</li>
+<li>unsigned remainder by zero returns the dividend.</li>
+</ul>
+<p>The probe source SHA-256 is
+<code>2d45bfa0bd410c3bbfb0f4694c50191e06e4a7f60060851ae4fb34d13a710e82</code>;
+its stdout SHA-256 is
+<code>f6f6edc79d777fef3d6df66d721df9f91876d41e78877366a2118fae308a067e</code>.
+The inspected pinned Lean UInt source has SHA-256
+<code>d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94</code>.</p>
+<p>Compatibility was tested rather than inferred: all 13 legacy rejection fixtures
+still rejected under <code>core0-v0.1</code>; eight new <code>core0-v0.2</code> fixtures rejected custom
+division, remainder, left-shift, right-shift, and complement instances, signed
+division, UInt16, and a branch-hidden arbitrary extern; and a separate probe rejected
+unsupported <code>core0-v0.3</code> in the parser and reference model. Every suite/ABI manifest
+records its exact profile.</p>
+<h3 id="cfg-and-dangerous-operation-audit">CFG and dangerous-operation audit</h3>
+<p>The validated pre-optimization module has 47 checked functions, 44 roots, and 51
+audited call sites. Its structured audit records 18 guarded division/remainder sites,
+18 exact same-block shift-mask sites, eight source functions containing branches,
+and zero source <code>select</code>s. The divisor nonzero block must be the unique false
+successor of an exact zero guard, must not be reachable from the zero successor, and
+must have no alternate predecessor. Shift counts must come from the exact source
+count masked by 7, 31, or 63 in the same block. O0 and O2 machine code contains
+native unsigned divide/remainder and shift instructions; post-optimization flags are
+audited separately so optimizer-inferred O2 flags are not attributed to the emitter.</p>
+<p>All seven fail-closed audit mutations were detected:</p>
+<table>
+<thead>
+<tr>
+<th>Mutation</th>
+<th>Kind</th>
+<th>Mutant IR SHA-256</th>
+<th>Required diagnostic</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>wrong-divisor-guard-operand</code></td>
+<td>wrong guard</td>
+<td><code>f842cdeec0f3d67bd9dda9781717372e03e6d71b967c14cdf4d6eed7313c9058</code></td>
+<td><code>not the unique false successor</code></td>
+</tr>
+<tr>
+<td><code>inverted-divisor-guard-edges</code></td>
+<td>wrong guard</td>
+<td><code>7cfa67adca6f0072bee9e6efa7cc809e7eb3c9a40e608b91f50390c5ecd4dfa9</code></td>
+<td><code>not the unique false successor</code></td>
+</tr>
+<tr>
+<td><code>zero-edge-reaches-dangerous-block</code></td>
+<td>wrong guard</td>
+<td><code>f7d14d3032903698fba215517c458b7dfbbc1c61a7c6fd3f66f83b66c6895773</code></td>
+<td><code>reachable from the divisor-zero successor</code></td>
+</tr>
+<tr>
+<td><code>unguarded-dangerous-block-predecessor</code></td>
+<td>wrong guard</td>
+<td><code>86b81cb40b018fcca5e58df810ea0385b2d06b153b3970a3f5e0659a28b6039b</code></td>
+<td><code>unguarded predecessor set</code></td>
+</tr>
+<tr>
+<td><code>wrong-shift-count-mask</code></td>
+<td>wrong count handling</td>
+<td><code>839e6f54ba4b23aaeeacf48a08d615e1dacc933ee5fee632e478745e427e6daf</code></td>
+<td><code>same-block source-count</code></td>
+</tr>
+<tr>
+<td><code>wrong-shift-count-source</code></td>
+<td>wrong count handling</td>
+<td><code>e5f182911f2c9764b74d393c0da96d25a2a845fb3f321c7b4cc842616d8dd71c</code></td>
+<td><code>same-block source-count</code></td>
+</tr>
+<tr>
+<td><code>unsupported-contract-version</code></td>
+<td>profile version</td>
+<td>manifest mutation, no IR artifact</td>
+<td><code>unsupported Core0 contract</code></td>
+</tr>
+</tbody></table>
+<p>The two profiles use byte-identical checked source artifacts and the same
+pre-optimization IR:</p>
+<table>
+<thead>
+<tr>
+<th>Shared checked artifact</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>scalar-suite-manifest.json</code></td>
+<td><code>0b6ab4f9051c9f688236e771a8d5b3dc24baf09500b3807f804f50eefb068b62</code></td>
+</tr>
+<tr>
+<td><code>scalar-suite-normalized.txt</code></td>
+<td><code>804b3bc0cd5e7608e0f613d2736c9dc36e6ed54c2cd533cabc62b831fc530836</code></td>
+</tr>
+<tr>
+<td><code>scalar-test-abi.json</code></td>
+<td><code>b1beaa206470404f55c6a1b1fec8efb1fd26d7967495671034a113eed06fa515</code></td>
+</tr>
+<tr>
+<td><code>symbols.txt</code></td>
+<td><code>ac4ab5a6da285c70ba30617c2a57114674336bdf780dddd27e6aa0b17cff6cc4</code></td>
+</tr>
+<tr>
+<td><code>program.ll</code></td>
+<td><code>9e3053f7dbceb2c4cd423e3e29056afaf0710431ca848f8aab43aa9fed18cf2b</code></td>
+</tr>
+</tbody></table>
+<p>Their profile-specific retained artifacts are:</p>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Audit SHA-256</th>
+<th>Optimized IR SHA-256</th>
+<th>Image SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>O0</td>
+<td><code>9d41571fe1667da1e05f5f05af556bde3408495d100c896829256d96e621761a</code></td>
+<td><code>0414c988cd850b7a9e4bd892767562797be9b0719de1744c52800073024311c7</code></td>
+<td><code>48c3c1b04a5532d8cb441a824b8aa68532598c6eeea8c234cdccf07a34ebb2c0</code></td>
+</tr>
+<tr>
+<td>O2</td>
+<td><code>03fa90658dc63a483007860a424f4af20c6b980ca071a5c541f13e4686d030f5</code></td>
+<td><code>06f09dcca3ce1df8afc4e2fc56e13e8231a59d45e482c4cc3980b419afa59e85</code></td>
+<td><code>4e14cae828732613cbaa427905bdffc508a5060a78b7118d3e439472de8ab7f1</code></td>
+</tr>
+</tbody></table>
+<h3 id="local-mathematical-lemmas-and-their-limits">Local mathematical lemmas and their limits</h3>
+<p>The run checked eight named scalar lemmas and recorded their exact axiom
+dependencies:</p>
+<table>
+<thead>
+<tr>
+<th>Theorem</th>
+<th>Recorded axioms</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>fixedWidthNormalize_lt</code></td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>fixedWidthNormalize_idempotent</code></td>
+<td><code>propext</code></td>
+</tr>
+<tr>
+<td><code>maskedShiftCount_lt</code></td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>shiftCountMask_eq_mod</code></td>
+<td><code>propext</code>, <code>Classical.choice</code>, <code>Quot.sound</code></td>
+</tr>
+<tr>
+<td><code>shiftCountMask_lt</code></td>
+<td><code>propext</code>, <code>Classical.choice</code>, <code>Quot.sound</code></td>
+</tr>
+<tr>
+<td><code>u8ToU32ToU8</code></td>
+<td><code>propext</code></td>
+</tr>
+<tr>
+<td><code>u8ToU64ToU8</code></td>
+<td><code>propext</code></td>
+</tr>
+<tr>
+<td><code>u32ToU64ToU32</code></td>
+<td><code>propext</code></td>
+</tr>
+</tbody></table>
+<p><code>Lemma/Core0/ScalarLemmas.lean</code> has SHA-256
+<code>6fa63d2d99f94092eb96942c294deaef7b5f0d17e2e0c5ce5989a3847a459497</code>.
+The dependency-probe source and stdout SHA-256 values are respectively
+<code>c0978395ea7deb6aa254e705cec63c9096f2c0c82a273e71e031db869ea0562d</code> and
+<code>f7b2ebfe4a7eeafdb60b823a29fffc05da67b9f3b2780932b9107e37e10adfd8</code>.
+These are local normalization, shift-mask, and conversion-round-trip invariants.
+They do not prove the frontend, CFG lowering, LLVM optimizer, code generator, audit,
+or whole compiler correct.</p>
+<h3 id="pinned-tools-and-machine-contract">Pinned tools and machine contract</h3>
+<p>The Gate 3 report binds <code>tooling/toolchain-lock.json</code>, SHA-256
+<code>314fa2842766f300308c8a703581a1f07f12eb2332f9e63bb2e96e7c58230872</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Exact pin</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>nixpkgs</td>
+<td>revision <code>7dd199b0e2993e37b4775ed66b1c291699608c9f</code></td>
+</tr>
+<tr>
+<td>Lean / Lake</td>
+<td>Lean 4.34.1, Lake 5.0.0-src; ref <code>v4.34.1</code>; revision <code>5045d0056413266e57c625dcd7c365b10e377c52</code>; binary <code>--githash</code> unavailable, so the Nix source identity is authoritative</td>
+</tr>
+<tr>
+<td>LLVM <code>opt</code>/<code>llc</code>, Clang, LLD</td>
+<td>20.1.8; ref <code>llvmorg-20.1.8</code>; revision <code>87f0227cb60147a26a1eeb4fb06e3b505e9c7261</code>; tag object <code>023ec9011c9a92cfa8922030eb266d66a10f78f8</code></td>
+</tr>
+<tr>
+<td>QEMU</td>
+<td>11.1.1; ref <code>v11.1.1</code>; revision <code>c3d48b7d1e89604920e5b81b91140c2ad39a1943</code>; tag object <code>5e35f26695645b20931e10d8567c7e0169e62c07</code></td>
+</tr>
+<tr>
+<td>DTC / Python / jq / Nix</td>
+<td>1.8.1 / 3.14.7 / 1.8.2 / 2.31.2</td>
+</tr>
+</tbody></table>
+<p>The target remains <code>riscv64-unknown-elf</code>, integer/soft-float LP64,
+<code>rv64im_zicsr_zifencei</code>, QEMU <code>virt</code>, one hart, 128 MiB RAM, no firmware, and no
+compressed instructions. Gate 3 did not add a managed Lean runtime.</p>
+<h2 id="gate-4-bounded-iteration">Gate 4: bounded iteration</h2>
+<p>Gate 4 introduces the explicitly selected, additive <code>core0-v0.3</code> profile while
+preserving the <code>core0-v0.1</code> and <code>core0-v0.2</code> contracts and rejection behavior. It
+admits exactly one higher-order-looking compiler-recognized source identity:</p>
+<pre><code class="language-lean">Lemma.Core0.Bounded.boundedFoldU32
+  (budget : Nat)
+  (step : UInt32 -&gt; UInt32 -&gt; UInt32)
+  (count initial : UInt32) : UInt64
+</code></pre>
+<p>The budget must be a canonical standard <code>Nat</code> literal in <code>0..256</code>. The callback must
+be a direct safe, total, monomorphic top-level declaration with exactly the displayed
+type; its ordinary helpers are checked as transitive Core0 dependencies. The budget
+and callback identity are compile-time data. They do not become a guest <code>Nat</code>,
+closure, environment, function pointer, or higher-order dispatch mechanism.</p>
+<p><code>count</code> and <code>initial</code> are runtime <code>UInt32</code> values. If <code>count.toNat &lt;= budget</code>, the
+callback receives <code>(index, accumulator)</code> for ascending zero-based indices through
+<code>count - 1</code>, and the final accumulator is zero-extended to <code>UInt64</code>. If
+<code>count.toNat &gt; budget</code>, no callback executes and the result is
+<code>0x8000000000000000 ||| initial.toUInt64</code>. Bit 63 identifies exhaustion, bits 62
+through 32 are zero, and the low 32 bits retain the unchanged initial value. This
+semantic budget exhaustion is distinct from a checked-model expression/call
+traversal-fuel diagnostic and from host or QEMU timeout enforcement.</p>
+<h3 id="genuine-checked-loop-lowering-and-target-execution">Genuine checked loop lowering and target execution</h3>
+<p>The seven genuine elaborated roots are <code>sumFold</code>, <code>sumFoldChanged</code>, <code>bitMixFold</code>,
+<code>nestedFold</code>, <code>helperFold</code>, <code>zeroBudgetFold</code>, and <code>maxBudgetFold</code>. Their transitive
+closure contains 14 checked functions and eight bounded-fold sites; the nested root
+accounts for two sites. Checked structured lowering emits an unsigned runtime budget
+guard, scalar <code>i32</code> index and accumulator phi nodes, one direct callback call on the
+body edge, a plain wrapping index increment, an actual backedge, a zero-extension on
+success, and a tagged <code>i64</code> exhaustion edge. Iteration uses fixed call frames rather
+than recursive calls, and the exhaustion path cannot reach the callback.</p>
+<p>The retained pre-optimization audit binds all eight sites to the exact source budget
+and callback catalog and checks their guard, preheader/header/body/latch/exit shape,
+phi inputs, callback argument order, increment, success value, and exhaustion edge.
+It also preserves the v0.2 audit premises for scalar operations. The machine audit
+finds exactly one direct callback call and a backward branch for each of the seven
+positive-budget loop functions under both O0 and O2. The zero-budget site remains in
+the checked IR catalog but does not require a runtime backedge; O2 removes its dead
+callback and loop. Thus the QEMU results come from runtime-counted RV64 loops, not
+compiler-side unrolling or a host simulation.</p>
+<p>No audited loop function uses a dynamic stack adjustment. The stack report combines
+the optimized LLVM direct-call graph with the object&#39;s <code>.stack_sizes</code> metadata,
+requires that graph to be acyclic, and sums the maximum frame chain against the
+64 KiB stack limit. The observed maximum is 1,856 bytes at O0 and 176 bytes at O2.
+This bound is specifically an optimized-LLVM direct-call graph weighted by object
+metadata, not a claim that every possible machine call edge was reconstructed.
+Machine disassembly separately establishes the retained direct callback calls and
+backedges.</p>
+<p>The source emitter asserted no <code>disjoint</code>, <code>nuw</code>, <code>nsw</code>, or <code>inbounds</code> premise. O2
+inferred 23 <code>or disjoint</code> instructions. The fail-closed post-optimization inventory
+accepted exactly seven exhaustion-tag ORs whose payloads are zero-extended <code>UInt32</code>
+values and 16 hexadecimal-formatting ORs combining low nibbles with ASCII <code>0x30</code>.
+All 23 operands were locally proven disjoint; no other inferred form was accepted.
+O0 retained zero <code>disjoint</code> instructions.</p>
+<h3 id="four-comparison-routes-and-adversarial-evidence">Four comparison routes and adversarial evidence</h3>
+<p>The deterministic corpus uses suite ID <code>0xb1e51d2902bca153</code>, source seed
+<code>0x4c454d4d41343034</code>, runtime seed <code>0x52554e54494d4534</code>, and <code>SplitMix64-v1</code> with an
+exact bounded-count boundary pool. It contains 112 distinct cases over all seven
+roots and is split into seven batches/profile. Direct evaluation of the original
+Lean declarations, the checked Core0 model, and an independent Python model agreed
+on all 112 results, with result SHA-256
+<code>38ad1a02fc9dd60f482b533ea5492b465643cda5231a0ad26883d4026d392f62</code>.
+The Python model shares the documented arithmetic contract, but not the Lean
+evaluator implementation. O0 and O2 each executed all 112 cases in seven fresh QEMU
+boots and matched the same digest, giving 224 source/model/target profile matches and
+14 boots total.</p>
+<p>The <code>sumFold</code> and <code>sumFoldChanged</code> roots use identical inputs but distinct source
+callback bodies. Six of the 16 successful comparison inputs produced distinct
+results. The first recorded witness has count 1 and initial <code>0xffffffff</code>: the
+unchanged callback body returns <code>0x00000000ffffffff</code>, while the changed body returns
+<code>0x0000000000000000</code>. This binds target behavior to the source callback body rather
+than only to its declaration name.</p>
+<p>The audit detected nine structured-LLVM loop mutations: wrong static budget, wrong
+budget predicate, index starting at one, stale accumulator phi, swapped callback
+arguments, wrong index increment, missing backedge, missing exhaustion tag, and an
+exhaustion path reaching the callback. It also detected four manifest mutations for
+tampered budget/callback and incomplete site/function closure, plus one unsupported
+profile-version mutation. These are audit fixtures, never production compiler inputs.</p>
+<p>All 11 exact frontend fixtures rejected: capturing, dynamic, and polymorphic
+callbacks; a direct arbitrary extern callback; a forbidden extern hidden behind a
+callback helper; a lookalike combinator; a nonliteral budget; budget 257; a recursive
+callback; and attempts to use the bounded construct under <code>core0-v0.1</code> or
+<code>core0-v0.2</code>. The last two preserve the older profiles rather than silently widening
+them.</p>
+<p>Three local source-semantics lemmas were checked with their exact dependency output:</p>
+<table>
+<thead>
+<tr>
+<th>Theorem</th>
+<th>Recorded axioms</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>executedIterations_le_budget</code></td>
+<td><code>propext</code></td>
+</tr>
+<tr>
+<td><code>boundedFoldU32_exhausted</code></td>
+<td><code>propext</code>, <code>Quot.sound</code></td>
+</tr>
+<tr>
+<td><code>boundedFoldU32_zero</code></td>
+<td><code>propext</code>, <code>Quot.sound</code></td>
+</tr>
+</tbody></table>
+<p><code>Lemma/Core0/Bounded.lean</code> has SHA-256
+<code>19600082ec9b26ee297e001deca524cebe896e96b03c29f607df5f693b344305</code>.
+The dependency-probe source and stdout SHA-256 values are respectively
+<code>eb2ab935ac6d37273a5741261224c8648e635d1f55fed9725656a84c44935197</code>
+and <code>4065ac14230bcb6912555b00483ed23fd8cf39055fc0d9fa4239de213339961f</code>.
+These facts constrain the source combinator; they do not prove frontend, lowering,
+LLVM, machine-code, or whole-compiler correctness.</p>
+<h3 id="retained-gate-4-artifacts">Retained Gate 4 artifacts</h3>
+<p>The O0 and O2 builds carry the same clean source commit and byte-identical checked
+manifest, normalized suite, typed ABI, symbol map, and pre-optimization LLVM:</p>
+<table>
+<thead>
+<tr>
+<th>Shared checked artifact</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>bounded-suite-manifest.json</code></td>
+<td><code>7ce0f74cde332acdb60e14de8edf96fe4ab292654bd3cb3fc61866653c728300</code></td>
+</tr>
+<tr>
+<td><code>bounded-suite-normalized.txt</code></td>
+<td><code>7b7a2601b3256df1e976e7702cb7680e93d23cd90ecc205751c30885181b3e10</code></td>
+</tr>
+<tr>
+<td><code>scalar-test-abi.json</code></td>
+<td><code>1ef34a43553748f75c897c669d19c0dc7235d28af502a4201df39e96037cd5d7</code></td>
+</tr>
+<tr>
+<td><code>symbols.txt</code></td>
+<td><code>fbdf607644c1f0da61e032f70d07724406da0cbfde35f9d1d28117084ca86bea</code></td>
+</tr>
+<tr>
+<td><code>program.ll</code></td>
+<td><code>88c9da324e8dcf1629416690a7309173c417c8c2675a6b0488f61ef64a9891fe</code></td>
+</tr>
+</tbody></table>
+<p>Their profile-specific retained artifacts are:</p>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Audit SHA-256</th>
+<th>Optimized IR SHA-256</th>
+<th>Stack-size report SHA-256</th>
+<th>Image SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>O0</td>
+<td><code>74d5fcbe006afde2badeb0e3468cdea511e3384e934ef985ff50db164c9fb259</code></td>
+<td><code>cf400e19dbf948f411186d9a1380e550b8524b5d73421ccf9d4eacbc1f048d06</code></td>
+<td><code>a5930212727612e1edeaf14cc980e33168f988dba0944e82484eb71337a4b90f</code></td>
+<td><code>68a2624214b03d5b05d170fd08e6537cc2284bd2fe1114225e3d9f74b8e42464</code></td>
+</tr>
+<tr>
+<td>O2</td>
+<td><code>461492bb14cb911a764ccc8e4e6837ca86e68ffc26c4498cfbe0865b0c35be5f</code></td>
+<td><code>e7840296cdb0a92d3c923b4eb2983ffc90e5033524fab9cf104c454cad0a34a9</code></td>
+<td><code>99ea1b90d7118ac624d57e052fa03de3aa1e30342d4e2f6dd34892210c5d41b1</code></td>
+<td><code>1bb445b821725b8cccf4d5c58d984cceaf7c9f6f8303c7a6209707b80f0d7b6d</code></td>
+</tr>
+</tbody></table>
+<p>The focused report records seven pinned source probes, three lemmas, 11 frontend
+rejections, nine IR mutants, four manifest mutants, and one profile mutant in
+addition to the full comparison matrix. Its SHA-256 is
+<code>a88ad21498f64b3bc69305ca70603c2c14057c36d48ba812e3a772cc284f611a</code>.
+The separate cumulative Gates 1-4 report and all four child identities are listed in
+the source-identity table above.</p>
+<h2 id="gate-5-checked-fixed-region-memory-and-explicit-effects">Gate 5: checked fixed-region memory and explicit effects</h2>
+<p>Gate 5 adds the explicitly selected, additive <code>core0-v0.4</code> profile. It preserves
+v0.1--v0.3 and introduces closed <code>Action</code> syntax rather than hiding effects behind a
+scalar function. The checker resolves continuations, direct Action calls, and
+bounded-fold callbacks statically; computes <code>checkedAccess</code>, <code>ramRead</code>, and
+<code>ramWrite</code> transitively; and rejects runtime Action values, captures, recursion,
+arbitrary externs, lookalikes, unsafe definitions, and Action use under older
+profiles. No Action, closure, allocator, exception object, or managed state monad is
+present in the target image.</p>
+<p>The fixed table contains four 4 KiB ordinary regions: read/write scratch at
+<code>0x80801000</code>, read-only input at <code>0x81000000</code>, read/write output at <code>0x80803000</code>,
+and width-4/8 event storage at <code>0x80805000</code>. Image and stack regions are reserved;
+UART and SiFive-test are classified as devices and cannot reach the ordinary-RAM
+pointer path. Loads/stores admit 8, 32, and 64 bits as allowed by each table entry.
+The exact failure order is lookup, class, permission, width, bounds, alignment.
+Bounds are subtraction-first (<code>offset &lt;= length - width</code>) after width/interval
+validation, so <code>offset + width</code> cannot wrap into acceptance. Range checks are pure
+preflights. A pointer and one volatile physical access are emitted only on success.</p>
+<p>The result is logically <code>(status : UInt8, value : UInt64)</code>, physically LLVM
+<code>{ i64, i64 }</code>, and directly returned in RV64 <code>a0/a1</code> with the status zero-extended.
+Status codes 0--9 cover success, unknown/reserved/device region, read/write/width
+denial, out-of-bounds, misalignment, and iteration-budget exhaustion. Status 4 is
+defined but unreachable under this exact table because every ordinary region is
+readable and class checks precede permission checks.</p>
+<h3 id="sourcemodeltarget-state-agreement">Source/model/target state agreement</h3>
+<p>The closed suite uses ID <code>0xa20c6fd4108dbf27</code>, source seed
+<code>0x4c454d4d41353035</code>, and runtime seed <code>0x52554e54494d4535</code>. It contains 26 genuine
+elaborated roots and 52 deterministic cases/profile. The roots exercise each width,
+endianness and overlapping loads, last-valid and one-past accesses, misalignment,
+maximum offsets, read-only writes, forged IDs, reserved/device denial, range
+preflight, selected-branch writes, runtime-counted stores, bounded fill, byte
+checksum, non-overlap helper copy, and overlap-aware copy. The source algorithms are
+ordinary declarations in <code>examples/foundation/MemoryConformance.lean</code>; the host does
+not substitute their target implementation.</p>
+<p>The independent Python finite-memory transition model records every successful
+read/write event and the complete final contents of all four ordinary regions. The
+pinned Lean model separately evaluates the original elaborated Action declarations;
+18 probes cover outcome/event behavior. Their shared fixture/layout assumptions are
+explicit: the Python model imports the runner&#39;s frozen catalog and deterministic
+initial-region generator, while implementing transitions separately.</p>
+<p>Each O0/O2 case used a fresh QEMU boot. After the checked root returned, test glue
+emitted the exact 16,384-byte ordinary-region post-state as reversible aligned-word
+frames, followed by all ten 16-byte boundary canaries. The runner enforces exact
+frame order, IDs, lengths, payload sizes, case/image binding, and terminal framing;
+it decodes every word to little-endian bytes. Acceptance reparses the retained raw
+UART rather than trusting summary metadata and compares SHA-256 over
+<code>region-id || complete-region-bytes</code> with the independently recomputed model state.</p>
+<p>Both profiles matched all 52 scalar outcomes and all 52 complete post-states. Across
+104 boots this is 104 outcome matches, 104 post-state matches, 1,703,936 observed
+ordinary-region bytes, and 1,040 exact canary observations. O0, O2, and the model
+share scalar-result digest
+<code>66aef0a96804cba0e71f1c17d5e2cab272a3cc448b7abdf7a5caa752d2c71d19</code>
+and post-state aggregate digest
+<code>4b508bee3b64f17c8548a7db1dc6cbb11b6afc1514e440a8ce214db8eb06d544</code>.
+The corpus SHA-256 is
+<code>6051b6f7e38eecb7b95501bbd36296699a3840c8e74c3b6e768051c69b30a6a4</code>.</p>
+<h3 id="lowering-mutation-proof-and-closure-evidence">Lowering, mutation, proof, and closure evidence</h3>
+<p>The pre-optimization audit finds 31 Action functions, 37 successful physical access
+sites (18 loads and 19 stores), eight range sites, and five Action-fold sites. It
+checks region dispatch; exact class/permission/width metadata; guard order and CFG
+dominance; subtraction-first bounds; alignment; pointer construction; volatility;
+the direct aggregate ABI; Action-call closure; and source/effect manifests. Its
+focused source-binding layer connects stable sites to directly auditable normalized
+region, offset, store-value, and range-length operands. Computed expressions and
+Action-bound variables remain outside that narrow binding claim; they retain the
+generic guard/CFG checks and finite target comparisons.</p>
+<p>All 51 audit mutations were rejected: 19 manifest/effect/closure mutations and 32
+pre-optimization IR mutations. The latter include nonvolatile/wrong-width/wrong-
+alignment/extra accesses; changed source store value, checked offset, region
+selection, and branch route; reserved/device inversion; bounds, permission, width,
+alignment, range, and address-construction defects; poison-sensitive flags; checked
+result corruption; indirect calls; and wrong direct callees. Focused target-state
+tests separately show that a wrong stored byte, wrong checked offset, or wrong branch
+destination changes the complete-state observation and fails comparison.</p>
+<p>All 14 exact frontend fixtures rejected, including three older-profile Action uses.
+Five local Lean theorems were checked: fixed-table validity, interval containment,
+physical interval containment, and rejected-store preservation of memory and model
+events. Their dependency reports contain no <code>sorryAx</code>; the allowed dependencies are
+only standard <code>propext</code>, <code>Classical.choice</code>, and <code>Quot.sound</code> where present. These are
+facts about the finite model, not a compiler-correctness proof or refinement proof
+for emitted RV64.</p>
+<p>O0 and O2 have byte-identical checked source artifacts and clean provenance at
+<code>ff8ef0f...</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Shared checked artifact</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>memory-suite-manifest.json</code></td>
+<td><code>3e88850ba609f598d1e8ae52668880bb99e06367bf6dde4b0810e5558400292d</code></td>
+</tr>
+<tr>
+<td><code>memory-suite-normalized.txt</code></td>
+<td><code>d254f79b53d115488f5536dc7840072f1e28282edc35f5791307b7242028d7d2</code></td>
+</tr>
+<tr>
+<td><code>memory-test-abi.json</code></td>
+<td><code>cb261785b0bf5de2e51c41eb78ad4a511ae9d407cc3b518697230a1516d19ab2</code></td>
+</tr>
+<tr>
+<td><code>symbols.txt</code></td>
+<td><code>d630fd5c2a9f86650218cdc1e80a88c25a72fa8755d0f1f1c86c98eed25081d0</code></td>
+</tr>
+<tr>
+<td><code>program.ll</code></td>
+<td><code>58cf81fd9781be78de568fbb8a20488dda7d7e39bb4bfd1f6241131fa77ed8e3</code></td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Audit SHA-256</th>
+<th>Optimized IR SHA-256</th>
+<th>Stack-size report SHA-256</th>
+<th>Image SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>O0</td>
+<td><code>dc5552bf57556d512aca363c58eafdbada6836d2690e22d9ba6771cc42ceafda</code></td>
+<td><code>6d4b9a7b684f8e47633c15b62e679ef2292eb756ed96d6c2707043842ea0a100</code></td>
+<td><code>98fd3b38a21d3acd3a9757aee979478422b42c5d5b0d93c6974f9b5d19c90494</code></td>
+<td><code>976cceb9dd09346b518067b56a73f98ec93b54dfe597ada7cf5fe1df10e7bfce</code></td>
+</tr>
+<tr>
+<td>O2</td>
+<td><code>b3f4a02ff6df0ac0c9973dfe1775d47d332a6687b25cc431b3b62610c10bfd90</code></td>
+<td><code>fea3cb038478e58c16983a421634fac7c8e6b8a0257698f17d8ec746b06caa7f</code></td>
+<td><code>dd0e9652e263356c9fdf7d5fd0dd72f8827cd74622cf749d300ede780941d5bf</code></td>
+<td><code>400e909ae118746a361053e59aad102779a11397907cbfbb061e8ffb56bb4018</code></td>
+</tr>
+</tbody></table>
+<p>The optimized direct-call graph is acyclic and has no dynamic allocation. Its
+maximum frame chain is 1,568 bytes at O0 and 240 bytes at O2, below the fixed 64 KiB
+stack. Pre-optimization IR contains no <code>disjoint</code>, <code>inbounds</code>, <code>nsw</code>, or <code>nuw</code>.
+O2&#39;s closed inventory contains 54 <code>or disjoint</code>, five <code>inbounds</code>, 85 <code>nsw</code>, and 84
+<code>nuw</code> inferences, each classified by the audit; no such premise is attributed to the
+source emitter.</p>
+<p>Gate 5 establishes checked ordinary-RAM access inside one trusted M-mode image. It
+does not establish protection against arbitrary privileged machine code, MMIO
+ordering, a device driver, traps, interrupts, address-space isolation, allocation,
+or a managed runtime.</p>
+<h2 id="gate-6-compiled-lean-polling-uart-and-runtime-sessions">Gate 6: compiled Lean polling UART and runtime sessions</h2>
+<p>Gate 6 adds explicitly selected <code>core0-v0.5</code>, test ABI
+<code>lemma-device-session-v1</code>, and artifact category <code>test-device-suite</code>. The genuine
+elaborated root <code>Lemma.Examples.Foundation.Device.deviceSession</code> has a checked
+closure of 22 Action and 19 scalar functions. Its four closed device operations are
+<code>uartReadStatus</code>, <code>uartReadByte</code>, <code>uartWriteByte</code>, and <code>uartEnableAndResetFifo</code>.
+Their <code>mmioRead</code>, <code>mmioWrite</code>, and <code>ioOrder</code> effects remain separate from ordinary
+RAM effects and propagate through helper calls, selected branches, and bounded
+Action folds. Generic RAM access to device regions remains denied. The older
+<code>core0-v0.4</code> budget stays 256; the new profile permits a literal Action-fold budget
+up to 1,000,000 for bounded polling, without adding dynamic closures or recursion.</p>
+<p>The compiled source performs UART FIFO initialization, transmit/status/receive
+polling, bounded timeouts, packet validation, dispatch, arithmetic, encoding, and
+final drain. <code>DeviceHarness.lean</code> only invokes the no-argument Action root and
+writes the status-coded SiFive-test finisher; its audit finds zero UART accesses.
+The legacy Task 001 harness remains separately tested.</p>
+<h3 id="pinned-machine-ordering-and-audit-scope">Pinned machine, ordering, and audit scope</h3>
+<p>The one-hart integer-only machine remains QEMU <code>virt</code>, <code>-bios none</code>, 128 MiB RAM,
+RV64IM with Zicsr/Zifencei, and LP64. QEMU 11.1.1 revision
+<code>c3d48b7d1e89604920e5b81b91140c2ad39a1943</code> has source archive SHA-256
+<code>079ffbff8a7111bbc89022107cbabf3bbfd614d5fc9d7cc675991196aca12482</code>.
+The captured DTB SHA-256 is
+<code>c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f</code>.
+Its <code>/soc/serial@10000000</code> node identifies ns16550a, span <code>0x100</code>, clock
+3,686,400 Hz, and IRQ 10; this polling gate does not enable that IRQ or use the
+clock as a timing oracle. The exact source inspection and model limits are in
+<a href="../audits/uart-core0-v05.html">the UART audit</a>.</p>
+<p>The selected register-shift-zero interface uses bytes only: RBR/THR at
+<code>0x10000000</code>, fixed FCR <code>0x07</code> at <code>0x10000002</code>, and LSR at <code>0x10000005</code>.
+RBR reads consume receive data; LSR reads clear BI/OE, not every error bit; THR/FCR
+writes have the documented transmitter/FIFO side effects. Every source device
+operation emits a volatile <code>i8</code> access, alignment one, immediately bracketed by
+calls to the structured <code>fence iorw,iorw</code> primitive. Six physical source sites and
+twelve fence calls survive both profiles. The optimized alignment audit admits
+only alignment one or the exact constant address&#39;s justified low-bit alignment.
+It does not attribute LLVM-inferred alignment to the source emitter.</p>
+<p>The central audit checks the named two-object closure, ELF/ISA/layout, direct-call
+closure, stack metadata, fences, and all inferred UART memory uses. Its register
+constant/alias tracking is bounded per-function straight-line inference, not a
+general machine CFG proof. O0 has 18 explicitly classified UART-base constants
+used only in denied-region metadata; O2 has none. The acyclic optimized-LLVM call
+graph weighted by object <code>.stack_sizes</code> has maximum chains of 2,736 bytes at O0
+and 288 at O2, below the fixed 65,536-byte stack; this is not a complete machine
+call-graph proof.</p>
+<h3 id="actual-runtime-and-failure-matrix">Actual runtime and failure matrix</h3>
+<p>Suite ID is <code>0x4c454d4d41363036</code>, source seed <code>0x534f555243453036</code>, and runtime
+seed <code>0x52554e54494d4536</code>. The closed corpus SHA-256 is
+<code>dab17f6d43e29ca55787ccbe63862a3d1af35a9bd62126d09f089c200de844df</code>.
+The compiled READY bytes are <code>LEMMA_DEVICE/1\nREADY\n</code>. A request has a 16-byte
+<code>LMQ6</code> header, version 1, command, payload length at most 16, zero flags, and a
+little-endian UInt64 ID. A response is exactly 24 bytes: <code>LMS6</code>, version, status,
+payload length 8, zero flags, echoed ID, and little-endian UInt64 result.</p>
+<p>Each profile ran four interactive and ten terminal scenarios: 14 fresh boots,
+eight runtime requests, and four single-PID/two-request sessions. Across O0/O2 that
+is 28 boots, 16 runtime requests, and eight two-request sessions. ADD64/XOR64
+answers, selected branch effects, unsupported-command recovery, and bounded TX
+stress all matched the independent host oracle using inputs sent after READY.
+An unsupported command returned status 17 and the next valid request succeeded
+without restarting or rebuilding the image.</p>
+<p>Malformed magic/version/flags and noncanonical branch input terminated with status
+14; partial header/payload with 15; invalid lengths with 16; no receive input with
+12; and actual serial-backend backpressure with bounded transmit status 11. Each
+profile&#39;s exit-status histogram is <code>{0:4, 11:1, 12:1, 14:4, 15:2, 16:2}</code>. A line-error
+outcome is covered by the finite UART probes, not a claimed injected target line
+error. Backpressure evidence is specific to QEMU&#39;s stdio backend, not a UART latency
+measurement. Retained raw bytes, PID/ELF binding, argv, timestamps, status, and
+cleanup are checked rather than accepting a banner alone.</p>
+<p>The branch command first initializes scratch+64 to <code>0x3c</code>. False alone writes
+<code>0x5a</code>; true alone emits raw UART <code>0xa5</code>. Both paths read the byte through checked
+RAM and encode <code>(readback &lt;&lt; 8) | selector</code>. Both profiles returned exactly
+<code>0x5a00</code> and <code>0x3c01</code>, respectively, giving four actual target marker readbacks.
+Source bindings and exclusive pre/post-LLVM CFG placement additionally check the
+sentinel, selected effect, branch-local load, and encoded result. The earlier
+development-only observation gap is closed in this clean checkpoint.</p>
+<p>All 18 manifest/effect/branch/pre-IR/post-IR audit mutants per profile rejected
+(36 total). They exercise stale/duplicate catalogs, wrong address/width/volatility,
+missing/reordered fences, duplicated physical operations, invalid optimized
+alignment, and misplaced branch effects. These are audit mutations, not six new
+behavioral compiler faults; the Gate 1 behavioral fault matrix remains separate.
+All five exact frontend fixtures rejected, including one older-profile rejection
+(the latter is a subset, not a sixth fixture). They also cover excessive budget,
+stored continuation, hidden arbitrary extern, and a pure result concealing effects.</p>
+<h3 id="retained-transcript-models-and-proofs">Retained transcript, models, and proofs</h3>
+<p>The focused acceptance command in the command table produced this actual O2
+<code>branch-effects</code> session, PID 226639, image SHA-256
+<code>34195270cb43289f64754b10b63508ae08fff07974c6c60875c06710c6cd6910</code>.
+The run record and binary streams are under
+<code>build/foundation/gate6-clean-readback/O2/runs/branch-effects/</code>.</p>
+<pre><code class="language-text">guest READY: LEMMA_DEVICE/1\nREADY\n
+host request 0x2001: 4c4d513601030100012000000000000000
+guest frame:        4c4d5336010008000120000000000000005a000000000000
+decoded: id=0x2001 status=0 marker=0x5a selector=0 value=0x5a00
+host request 0x2002: 4c4d513601030100022000000000000001
+guest prefix:       a5
+guest frame:        4c4d5336010008000220000000000000013c000000000000
+decoded: id=0x2002 status=0 marker=0x3c selector=1 value=0x3c01
+QEMU exit: 0; both requests used the same PID and ELF
+</code></pre>
+<p>Twelve pinned-UART semantics probes and thirteen packet/source-model probes passed.
+The finite model scripts receive/transmit availability; it is not a timing-accurate
+model of the asynchronous FIFO. Packet probes separately compare original
+elaborated source encoders. Four local lemmas were checked:
+<code>empty_write_has_ordered_events</code>, <code>fifo_reset_discards_pending_rx</code>, and
+<code>fifo_reset_is_ordered</code> have no axiom dependencies; <code>response_size</code> depends only on
+<code>propext</code> and <code>Quot.sound</code>. Their exact statements and dependency output are retained
+in the focused JSON and <code>proofs/device-lemmas-axioms.stdout</code>. They establish model
+ordering/reset/frame-size facts, not frontend/lowering refinement, compiler
+correctness, or physical UART correctness.</p>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Audit SHA-256</th>
+<th>Optimized IR SHA-256</th>
+<th>Image SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>O0</td>
+<td><code>cf5735bd8e7b58de2c9b504430a017a1eb9f1a55cc9c09aef345bb2da5252b4a</code></td>
+<td><code>4bb9b7476f25f15d1e0657bf46e801ddfd3be88f6e4767ca7358d78bbf374259</code></td>
+<td><code>5feef4cb1b5989d5421f07db8df703f5a34352c8ea824b2c2f2e8d53dc40ec80</code></td>
+</tr>
+<tr>
+<td>O2</td>
+<td><code>71cf14a9ea62080c9f9fb46ec51b6e96fb827b2313fdb5ae0d94c8784412b565</code></td>
+<td><code>76f76f44ed39897a923c1db0ec6b0d10b68bf55be08acc8f534d4c6966e57ab0</code></td>
+<td><code>34195270cb43289f64754b10b63508ae08fff07974c6c60875c06710c6cd6910</code></td>
+</tr>
+</tbody></table>
+<p>O0/O2 have byte-identical checked manifest, normalized source, wire ABI, symbol
+map, layout, startup, and pre-optimization IR. The pre-IR SHA-256 is
+<code>06993acef2e38439afc6e49ce682f4f32d2e3d4785a2eaca7a6e7a1057d4504c</code>.
+The full identities are in the machine-readable summary and SHA-256 inventory.
+Gate 6 itself adds no traps, interrupts, scheduler, managed runtime, or physical-board
+claim. Later Gate 7 synchronous traps and Gate 8 timer acceptance are recorded
+below, followed by local Gate 10 detached qualification and Gate 11 publication;
+actual CI subsequently failed as recorded under Gate 11.</p>
+<h2 id="gate-7-synchronous-m-mode-traps-dispatch-and-return">Gate 7: synchronous M-mode traps, dispatch, and return</h2>
+<p>The explicitly selected additive profile is <code>core0-v0.6</code>, ABI
+<code>lemma-sync-trap-test-v1</code>, artifact category <code>test-trap-suite</code>. Genuine elaboration
+checks two roots, <code>Lemma.Examples.Foundation.Trap.foreground</code> and <code>dispatch</code>, with
+21 Action and 26 scalar functions. Four exact no-address source operations admit
+ECALL, EBREAK, an unauthorized ECALL fixture, and an illegal-instruction fixture;
+their <code>sync-trap</code> and <code>machine-state</code> effects propagate through calls, branches,
+and bounded folds. Scalar wrappers and older profiles cannot hide these effects.
+The finite RAM/UART models explicitly reject trap execution rather than simulating
+hardware success.</p>
+<p>The machine contract remains one-hart QEMU <code>virt</code>, <code>-bios none</code>, integer-only
+RV64IM/Zicsr/Zifencei, LP64, no compressed/FP/vector/atomic instructions or target
+runtime libraries. The privileged reference is the official RISC-V 20240411
+Machine ISA 1.13 PDF, SHA-256
+<code>538f3b17e1990ffabde30a6b96aaa2a0111afb63c174a6ef02b55a7aeb0e701d</code>.
+Exact ISA sections and inspected pinned QEMU 11.1.1 source hashes are in the
+<a href="../audits/traps-core0-v06.html">trap construction audit</a>; the earlier toolchain pins
+above are unchanged. Pinned TCG disables Smrnmi/Smdbltrp, a relevant premise of the
+tested software double-fault latch, not a general hardware double-trap claim.</p>
+<h3 id="clean-source-commands-and-actual-results">Clean-source commands and actual results</h3>
+<p>The final build and unit suites ran on the implementation tree immediately before
+commit: Lean build 48 jobs/52 compile-time CFG checks, scaffold metadata valid,
+18/18 scaffold, 32/32 Core0 host, and 281/281 foundation host tests passed. The
+following commands then ran from exact clean <code>6c1b6a8...</code> source; all exited zero:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 \
+  --work-dir build/foundation/gate7-clean-6c1b6a8 --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh \
+  --work-dir build/core0/task002-gate7-clean --clean
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
+  --work-dir build/foundation/gates1-7-clean-6c1b6a8 --clean --timeout 300 --qemu-timeout 20
+</code></pre>
+<p>Focused Gate 7 passed 32 fresh boots: eight positive, six negative, one extra
+clean-control, and one behavioral restore-mutant boot per O0/O2 profile. The eight
+positive cases use counts 0, 1, 7, and 64 with two distinguishing seeds each. They
+observed 288 actual ECALL/EBREAK resumptions per profile, 576 total, separately
+from the extra clean-control/mutant completions and fatal/nested entries. Both
+profiles&#39; foreground checksums matched the unchanged independent arithmetic oracle
+and an interrupt-disabled, trap-free control fold. Every positive case also passed
+14 software-denial checks with the vector active: exact error/value, unchanged
+trap count, and unchanged scratch guard. Full register/canary masks were zero in
+the returning probes. Zero-count cases execute no returning trap.</p>
+<p>Unauthorized ECALL and actual illegal instruction each produced five correctly
+framed source-encoded diagnostic values and exit 18, with causes 11 and 2,
+exact ELF-bound faulting PCs, relevant status/mie checks, and permitted trap values
+(observed illegal mtval <code>0x0b</code>). An actual ECALL from compiled dispatch hit the
+zero-latch stackless nested-fault path and exited 19. Semantic count 65, non-UInt32
+count, and invalid scenario terminated with 9, 16, and 14 respectively, without
+fabricated normal frames. Protocol errors, timeout, process failure, and malformed
+artifact/provenance are distinct failures, not accepted trap outcomes.</p>
+<p>The quarantined Lean structured mutation changes exactly
+<code>ld s3,144(sp)</code> to <code>ld s3,152(sp)</code> on restore. In both profiles it compiled, passed
+its declared test-only audit, booted, entered compiled dispatch, returned from the
+real ECALL, and emitted frame ID <code>0x71ff</code>, status 20, mask <code>0x40000</code>, before exit 20.
+Both outcomes were <code>verified-behavioral-context-mismatch</code>; a compilation, audit,
+timeout, or protocol failure would not count as detection. The source and compiled
+program remain identical to the clean control; production inputs cannot select
+the mutation.</p>
+<p>All four exact frontend fixtures rejected with their intended reasons. Twenty
+direct-source policy probes and the actual transitive frontend/lowering/model-refusal
+probe passed. Two conditional local lemmas, <code>approvedEcallResume</code> and
+<code>approvedBreakpointResume</code>, were checked with only <code>propext</code> and <code>Quot.sound</code>.
+They establish the source return-policy facts under the stated status premise, not
+entry/return correctness, compiler refinement, or hardware correctness.</p>
+<p>The cumulative Gates 1--7 command passed 426 boots
+(<code>24+136+88+14+104+28+32</code>); all seven fresh child reports passed and all 33 build
+provenance records identify clean <code>6c1b6a8...</code>. The separate legacy command passed
+10 cases/profile, all 13 intended rejections, and 23 fresh boots, with repeat-build,
+source mutation, and foreign-object audit checks preserved. These are clean runs
+in the existing checkout, not Gate 10&#39;s detached-worktree qualification.</p>
+<h3 id="contextresource-and-artifact-audits">Context/resource and artifact audits</h3>
+<p>Lean-authored typed machine instructions mask interrupts, initialize the direct
+vector and dedicated private stack, save x1--x31 including interrupted SP, capture
+five CSRs in an aligned 288-byte frame, and call the nine-word compiled dispatcher
+with its ninth argument in a separate 16-byte outgoing frame. Only the exact
+four-byte authorized ECALL/EBREAK site/continuation pairs may resume; dispatch
+does not blindly increment an arbitrary PC. GP/TP are saved then zeroed for compiled
+dispatch, whose emitted code must use neither. MRET&#39;s architectural status changes
+are accounted for rather than requiring invalid raw pre/post mstatus equality.</p>
+<p>Each returning probe initializes all 31 integer sentinels and a valid private SP,
+snapshots them before comparison clobbers any register, and checks six canary pairs
+covering foreground/trap/probe stacks. The private trap/probe storage grants no
+ordinary RAM-region authority. Non-nesting is explicit: dispatch faults are caught
+by the zero <code>mscratch</code> latch, while fixed aligned RAM/CSR accesses in the entry and
+final return tail, MPRV clear, an approved M-mode continuation, and no NMI remain
+premises. Interrupt masking alone is not claimed to suppress synchronous faults.</p>
+<p>The central audit retains exactly two named linked objects and the closed 17-file
+build bundle. It binds exact signatures, effects, normalized source, ABI, platform,
+provenance, hashes, LLVM call closure, ELF attributes/layout/sections/relocations,
+full vector/probe register-slot sequences, stack adjustments, direct vector/latch
+targets, ordered CSR operations, and stackless terminal fatal loops. It finds 48
+compiled functions using zero privileged instructions, eleven vector CSR operations,
+two approved resume pairs, and the two bounded fatal loops. Checked pre-IR has 24
+physical ordinary-RAM sites (16 loads/eight stores) and one range preflight. UART
+machine audit finds four exact byte accesses with eight fence calls; denied UART
+metadata constants are 24 at O0 and zero at O2. Its alias inference is bounded
+straight-line analysis, not a general machine CFG proof.</p>
+<p>The optimized LLVM acyclic direct-call graph weighted by object <code>.stack_sizes</code>
+measures foreground chains O0 3,536 and O2 288 bytes against 65,520 usable bytes;
+compiled dispatcher chains are 1,312 and 272 against 16,048 bytes. The separate
+288-byte frame plus 16-byte outgoing slot fit the 16,352-byte usable trap stack.
+These bounds and observed canaries are complementary evidence, not exhaustive
+machine call-graph reconstruction or a compiler proof.</p>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Audit SHA-256</th>
+<th>Optimized IR SHA-256</th>
+<th>Image SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>O0</td>
+<td><code>177e94b0080f4f5debd9fe9b7e8e704c18c3f13a8951240d4c37d8f31d5887ab</code></td>
+<td><code>f8b5c6fef9a9cf6585ad6a353c0d4a421abbd1123c54aed547adeaeda5e1df8b</code></td>
+<td><code>3652a3ac62db05112ade80e318c5131ff8ca97371d39e920643ad540a10e626d</code></td>
+</tr>
+<tr>
+<td>O2</td>
+<td><code>0abc7f10fe76b9a1900b35b0f1e6f5333fb4b08a6bf3363a7f108846991dbff5</code></td>
+<td><code>3a92c31e0fa8560c4671852fc2a1fee87b2ebd91c8907e60770db4a3a5a712ab</code></td>
+<td><code>6e8d8f630657ff5a61659490eef1317c27d34bdac201ce53a1addd1563e39928</code></td>
+</tr>
+</tbody></table>
+<p>The shared pre-optimization IR SHA-256 is
+<code>85a460be25445ef2330d5cb0e144bd62a0126af98683a8cfa4c74386a7ad0ac9</code>.
+O0/O2 checked source artifacts are byte-identical; the summary and full hash
+inventory retain their identities and every fresh artifact under the focused,
+cumulative, and legacy output directories.</p>
+<h3 id="retained-synchronous-trap-transcript-and-limits">Retained synchronous-trap transcript and limits</h3>
+<p>The focused O2 <code>several-pattern-a</code> run used PID 246658 and the O2 ELF above. Its
+24-byte loader fixture was generated after image binding, with seed
+<code>0x0123456789abcdef</code>, count 7, and scenario 0. These are runtime loader data, not
+interactive UART requests or precomputed target answers. Raw bytes and <code>run.json</code>
+are under <code>build/foundation/gate7-clean-6c1b6a8/runs/O2/several-pattern-a/</code>.</p>
+<pre><code class="language-text">guest READY: LEMMA_DEVICE/1\nREADY\n
+guest frame: 4c4d533601000800017100000000000082204bc33116f6d4
+decoded: id=0x7101 status=0 checksum=0xd4f61631c34b2082
+guest frame: 4c4d53360100080002710000000000000e00000000000000
+decoded: id=0x7102 status=0 actual returning trap count=14
+guest frame: 4c4d53360100080003710000000000000e00000000000000
+decoded: id=0x7103 status=0 software denials=14
+guest frame: 4c4d53360100080004710000000000000000000000000000
+decoded: id=0x7104 status=0 register/canary mismatch mask=0
+QEMU exit: 0; raw UART SHA-256 b4a634d16835a3e42ad7f615962f858020383f66906bedeb9e57e56c991c5c19
+</code></pre>
+<p>Gate 7 itself establishes only synchronous, non-nested M-mode trap behavior under
+the declared pinned-machine premises. Gate 8&#39;s later actual timer acceptance is
+recorded below, followed by integrated monitor/local detached qualification and
+Gate 11 publication. At the historical Gate 7 checkpoint those later checks and
+publication had not yet run; no later success is attributed to Gate 7 source. No scheduler, managed runtime,
+privilege transition, hardware isolation, physical-board result, or G1/G2 completion
+is claimed.</p>
+<h2 id="gate-8-actual-machine-timer-interrupts-and-useful-foreground-work">Gate 8: actual machine-timer interrupts and useful foreground work</h2>
+<p>The additive <code>core0-v0.7</code> profile, <code>lemma-timer-test-v1</code> ABI, and
+<code>test-timer-suite</code> category compile two elaborated roots with 40 Action and 40
+scalar functions. Seven exact Actions admit time/compare/pending observation,
+global-MIE save/disable/restore, MTIE control, and an asynchronous full-register
+probe. Bool arguments are canonically widened at the closed machine boundary;
+no source-selected MMIO address, CSR, handler, arbitrary extern, allocation,
+threading runtime, atomics extension, or SBI call is introduced. Transitive
+timer/interrupt/machine-state and ordered-IO effects are checked explicitly.</p>
+<p>The pinned QEMU source and DTB establish hart-0 MTIMECMP <code>0x02004000</code>, MTIME
+<code>0x0200bff8</code>, 10,000,000-Hz timebase, and cause <code>0x8000000000000007</code>.
+The <a href="../audits/timers-core0-v07.html">timer audit</a> records immutable source hashes,
+ISA sections, naturally aligned RV64 64-bit access, eventual MTIP update,
+possible delayed/spurious observations, and the unchanged no-NMI/non-nesting
+entry-tail premises. This is the QEMU CLINT compatibility node backed by ACLINT
+MTIMER, not another board&#39;s timer or a PLIC/SBI path.</p>
+<h3 id="executed-clean-qualification">Executed clean qualification</h3>
+<p>Final precommit host suites passed: scaffold 18/18, Core0 32/32, foundation
+339/339, and scaffold metadata valid. The actual Gate 8 Lean build passed 52 jobs
+and 52 CFG checks. After committing <code>42674c1...</code>, these commands exited zero:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
+  --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh \
+  --work-dir build/core0/task002-gate8-clean --clean
+</code></pre>
+<p>All eight cumulative children passed: <code>24+136+88+14+104+28+32+30 = 456</code> fresh
+boots. Gate 8 itself ran 30 boots: six positives, five input rejections, and
+two extra clean controls plus two mutants per optimization profile. Its positive
+corpus observed 737 real timer entries/profile, 1,474 total; extra control/mutant
+entries are not folded into that count. Legacy acceptance passed 10 cases/profile,
+13 intended rejections, and 23 boots with its reproducibility/source-mutation/
+foreign-object checks. The 39 cumulative and eight legacy provenance records all
+identify exact clean <code>42674c1...</code>.</p>
+<p>There was no separate clean focused Gate 8 run. The earlier dirty development
+focused report at <code>build/foundation/gate8-integration-final/gate8-results.json</code>
+passed 30 boots/1,474 entries, SHA-256
+<code>715fd9346126151aa81f700dc3b0a645edfe84d8e5bc649ab9418e2156852e53</code>;
+it is historical development evidence, not clean acceptance. The first strict
+attempt at <code>build/foundation/gate8-integration/</code> failed closed when
+<code>audit_core0.py</code> changed midrun and O0 mutation2 source binding rejected. Its
+partial artifacts/check-failure record remain retained; that failure received
+no behavioral-mutant detection credit.</p>
+<h3 id="actual-delivery-accounting-and-distinguishing-failures">Actual delivery, accounting, and distinguishing failures</h3>
+<table>
+<thead>
+<tr>
+<th>Positive case</th>
+<th align="right">O0/O2 real entries</th>
+<th align="right">O0/O2 work quanta</th>
+<th align="right">O0/O2 overflow</th>
+<th align="right">O0/O2 skipped periods</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>overflow-zero</td>
+<td align="right">256 / 256</td>
+<td align="right">9,992 / 14,844</td>
+<td align="right">240 / 240</td>
+<td align="right">1 / 1</td>
+</tr>
+<tr>
+<td>overflow-wrap-seed</td>
+<td align="right">256 / 256</td>
+<td align="right">10,323 / 16,414</td>
+<td align="right">240 / 240</td>
+<td align="right">2 / 0</td>
+</tr>
+<tr>
+<td>masked-pending</td>
+<td align="right">1 / 1</td>
+<td align="right">0 / 0</td>
+<td align="right">0 / 0</td>
+<td align="right">0 / 0</td>
+</tr>
+<tr>
+<td>forced-catch-up</td>
+<td align="right">32 / 32</td>
+<td align="right">862 / 1,117</td>
+<td align="right">16 / 16</td>
+<td align="right">8 / 5</td>
+</tr>
+<tr>
+<td>shutdown</td>
+<td align="right">64 / 64</td>
+<td align="right">4,639 / 6,831</td>
+<td align="right">48 / 48</td>
+<td align="right">0 / 0</td>
+</tr>
+<tr>
+<td>interleaved-wrap</td>
+<td align="right">128 / 128</td>
+<td align="right">4,778 / 4,921</td>
+<td align="right">0 / 0</td>
+<td align="right">1 / 1</td>
+</tr>
+</tbody></table>
+<p>Each work quantum executes 128 wrapping mix steps. The guest recomputes the
+foreground result with interrupts disabled, and the independent host oracle
+checks it using the observed quantum count. O0/O2 work counts and checksums need
+not be identical: QEMU virtual-time delivery is not an instruction-count or
+wall-clock oracle. Every stress case performed useful foreground computation;
+the one-event masked/pending fixture deliberately needs none. All context/guard
+masks were zero. The asynchronous sentinel probe checks all 31 integer registers
+within its bounded enable window; checksum/ring checks cover the wider event
+stream, not a claim of complete sentinel instrumentation on every entry.</p>
+<p>Compiled Lean owns the non-allocating ISR, phase-reset rearming, sixteen-record
+ring, drop-on-full accounting, critical sections, validation, and deferred UART
+encoding. Masked delivery first observed real MTIP while the entry count stayed
+zero, then unmasked inside the sentinel probe. Catch-up performs constant work:
+<code>next = now + period</code>, recording <code>(now - oldDeadline) / period</code> separately from
+hardware entries. Periods are 1..1,000,000 and <code>now &lt;= 0x7fffffffffffffff-period</code>;
+wrap is not silently admitted. Interleaved consumption advanced head/tail to
+128 with zero overflow, exercising physical ring wrap. Full-buffer cases visibly
+dropped events; final accounting requires <code>hardware = head + overflow</code> and a
+drained ring. The host checks every retained physical record&#39;s sequence/time,
+cause, and actual ELF executable PC; the guest validates every consumed record.
+The last sixteen records are not a complete interrupt trace.</p>
+<p>Shutdown masks global MIE, clears MTIE, parks compare at all ones, marks the
+source state inactive, and re-enables global MIE during bounded foreground work.
+Before/after hardware counts remained equal, including 512 shutdown quanta in
+the dedicated scenario. All ones is far future only within the stated domain,
+not a timeless disable mechanism across wrap. Pending state is observed without
+assuming immediate architectural deassertion. No host sleep, injected software
+tick, or manual ISR call counted as hardware delivery.</p>
+<p>Both wrong-S3-slot mutants built, audited, booted, and emitted ID <code>0x81ff</code>,
+status/exit 20, value <code>0x40000</code>. Both disabled-arming mutants changed only the
+compare store from <code>sd a0,0(t0)</code> to <code>sd t1,0(t0)</code>, parking the far-future value;
+they emitted the same ID with status/exit 21, value zero. Each had an unchanged
+successful clean control. All four were exact behavioral detections, not timeout,
+compile/audit rejection, malformed output, or missing-file outcomes. Invalid
+zero/excess goal, zero/excess period, and malformed scenario terminated with
+16, 16, 22, 22, and 14 respectively in both profiles. Four exact frontend
+fixtures rejected; 26 policy predicates, six finite-model examples, and the
+actual frontend/effect/lowering probe passed.</p>
+<p>Six local Nat-model lemmas establish future/nonwrapping deadlines, one hardware
+count per modeled enqueue, separate skipped accounting, capacity preservation,
+and exact drop overflow. <code>valid_nextDeadline_greater</code> has no axioms; the other
+five depend only on <code>propext</code>. They do not model hardware delivery, prove the
+UInt64 source-to-model correspondence, or prove compiler/hardware correctness.</p>
+<h3 id="artifactresource-audit-and-retained-transcript">Artifact/resource audit and retained transcript</h3>
+<p>The two-object image closure remains exact. The audit checks seven timer machine
+bodies, exact CSR roles and register slots, 64-bit MTIMER/fence sequences, complete
+integer preservation, executable PCs, final body hashes, unknown/system instruction
+rejection, manifests/effects/provenance, and ordered shared-memory calls. It finds
+three fixed MTIMER accesses (startup park, clock load, compare store), no compiled
+program MMIO escape, fourteen timer fences, and zero privileged instructions in
+80 compiled functions. Named CSR roles include twelve vector operations and sum
+to 28 over the complete startup/primitive map. The historical raw report retains
+an inherited <code>machine_csr_operations=11</code> aggregate; it is stale trap-only metadata,
+not the total or an omitted-instruction allowance. The exact named map and all
+per-function sequences were checked. Gate 9 development corrects that aggregate
+to 28; it does not rewrite the retained clean Gate 8 report. O2&#39;s
+single <code>llvm.umin.i64</code> is restricted to the exact retained-record bound of sixteen;
+its sole merged compare call is bound to the mutually exclusive deadline branches.
+These optimizer accommodations are explicit checks, not arbitrary intrinsic or
+call allowances. The byte/alias inference remains bounded, not a full machine CFG
+proof. Foreground stack chains are O0 3,088/O2 512 bytes against 65,520 usable;
+dispatcher chains 976/272 against 16,048, separately accounting for the 288-byte
+frame and 16-byte outgoing slot.</p>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Audit SHA-256</th>
+<th>Image SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>O0</td>
+<td><code>4b541f578e0ea596683acc4a1dcacfe80b38b9bdfe2a1551f20c3302b8ac95fa</code></td>
+<td><code>86b3df55da352176d9246bc70b8956e3e029b8feed58243084c1140c8804b7f8</code></td>
+</tr>
+<tr>
+<td>O2</td>
+<td><code>f67687f2742c23f67c13ab63c2d97f0fa56dbda014f649d72df793868585166e</code></td>
+<td><code>e7a4700e2bee1ef5ba1b5857642aad68b170ddca8f5a91400267640edaa7ea33</code></td>
+</tr>
+</tbody></table>
+<p>The actual clean O2 interleaved-wrap transcript (PID 280439) decodes in part as:</p>
+<pre><code class="language-text">runtime fixture: seed=0xa55aa55a5aa55aa5 goal=128 period=10000 scenario=4
+guest READY: LEMMA_DEVICE/1\nREADY\n
+id=0x8101 status=0 checksum=0xa5727edaab989825
+id=0x8102 status=0 foreground quanta=4921
+id=0x8103 status=0 hardware IRQs=128
+head=tail=128 overflow=0 skipped=1 context_mask=guard_mask=0
+shutdown count before=after=128; last record sequence=128 cause=0x8000000000000007
+QEMU exit=0
+</code></pre>
+<p>Raw frames/fixture/run record are at
+<code>build/foundation/gates1-8-clean-42674c1/gate8/runs/O2/interleaved-wrap/</code>;
+UART SHA-256 is
+<code>31487da4d1f8bf8bedc0fced343ec92ba36d4b8aab3670cc55138fe91612e6cb</code>.
+This uses post-build loader data, not the integrated interactive monitor.
+Later Gate 9 monitor and local Gate 10 detached qualification are recorded below;
+publication and the later actual CI failure are recorded under Gate 11. No Stage II
+unit, G1, G2, scheduler,
+managed runtime, isolation, physical board, or hard-real-time claim is completed.</p>
+<h2 id="gate-9-integrated-freestanding-diagnostic-monitor">Gate 9: integrated freestanding diagnostic monitor</h2>
+<p>The coherent <code>test-monitor-image</code>, ABI <code>lemma-monitor-v1</code>, reuses <code>core0-v0.7</code>
+without adding a source-language primitive or machine glue. Genuine elaboration
+checks <code>Lemma.Examples.Foundation.Monitor.foreground</code> and the nine-word
+<code>Timer.dispatch</code>, with 85 Action and 54 scalar functions. The exact two linked
+objects remain <code>program.o</code> and <code>startup.o</code>; there is no hosted IO, loader fixture,
+managed runtime or host-precomputed guest answer. Parsing, validation, command
+dispatch, byte fill/sum, scalar selection, trap/timer lifecycle and formatting are
+compiled Lean. <a href="../audits/monitor-core0-v07.html">The monitor contract</a> records the
+wire format and bounded policy in detail.</p>
+<p>Clean focused acceptance used implementation <code>8fd45d8458f4901c7a2d4debcb60ebd71f18a39c</code>,
+tree <code>965b550c576f80284a1a24c427d9704b517d160d</code>:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 \
+  --work-dir build/foundation/gate9-clean-8fd45d8 --clean --timeout 300 --qemu-timeout 20
+</code></pre>
+<p>Exit 0: 18 fresh boots, 1,598 handled requests, 1,461 actual hardware IRQs,
+20 synchronous recoveries and 192 retained records checked. Fifty source policy
+probes, the real frontend/lowering probe and four intended source rejections
+passed. Both build provenance records name exact clean <code>8fd45d8...</code>, each with
+101 source inputs. An independent review replayed all 18 retained raw sessions,
+hashes, bindings and provenance. Actual Lean build passed 53 jobs with 52 CFG
+checks; precommit host suites passed foundation 398, Core0 32 and scaffold 18,
+with metadata valid. Earlier dirty <code>gate9-integration-01</code> observed 1,465 IRQs;
+that is development evidence, not the 1,461-IRQ clean acceptance.</p>
+<p>One unchanged ELF per optimization profile serves two differing mixed sessions,
+five terminal sessions and two request-budget cases. Inputs are sent only after
+compiled <code>LEMMA_MONITOR/1\nREADY\n</code>; no rebuilding occurs between streams.
+Each mixed session handles 143 requests, including 25 recoverable errors,
+five actual synchronous recoveries and 48 checked records. Observed hardware
+IRQs were O0 376/356 and O2 373/354 for mixed-zero/mixed-wrap; the active truncated
+prefix adds one per profile. Counts may vary with execution, so elapsed time and
+an exact inter-IRQ spacing are not correctness oracles.</p>
+<p>Requests use a 16-byte <code>LMQ9</code> v1 header with command, length, zero flags and
+UInt64 ID, followed by at most 32 payload bytes. Responses are fixed 48-byte
+<code>LMS9</code> frames with echoed ID, status and four UInt64 values. The ten commands are
+HELLO, STATUS, EVAL, FILL, CHECKSUM, TRAP_TEST, TIMER_START, TIMER_STOP, TICKS and EXIT.
+The 256-request limit allows EXIT as request 256; exhausting it without EXIT
+terminates status 9. Bounded malformed headers recover with 14, wrong lengths
+with 16, unknown commands with 17, denied intervals with 7. Oversize input
+terminates 16, truncated header/payload 15, and missing input 12. Active truncated
+input tests cleanup. These expected terminal rejections remain distinct from a
+successful EXIT, a process failure or a host timeout.</p>
+<p>The logical user buffer is <code>[0,3840)</code> at scratch offsets 256--4095, disjoint from
+parser bytes 0--47. Preflight uses <code>offset &lt;= 3840</code> then
+<code>length &lt;= 3840-offset</code>; zero length at the end is valid, wrapping/out-of-range
+intervals and values above 255 are rejected before writing. The mixed sessions
+check full-buffer fill/checksum, both endpoints and denied writes, then reuse the
+same image for fresh arithmetic, authorized ECALL/EBREAK, real IRQ-dependent
+mixing, visible overflow, record peek/pop and ring wrap, timer restart/stop and
+orderly EXIT. Host checksum/mixing validation uses actual response data and
+reported useful quanta, not a constant baked into the image.</p>
+<p>Monitor TIMER_START deliberately narrows the lower-level deadline domain to
+10,000--1,000,000 ticks. A retained development period-one request timed out after
+three seconds and QEMU was killed/reaped; sustained pending delivery can starve
+foreground progress. Requests below 10,000 now return status 22 without arming.
+This is an empirically qualified bounded monitor policy, not worst-case latency
+or a real-time guarantee. STOP retains eight useful 128-step quanta through a
+volatile private checksum witness; the O2 audit checks its eight ordered unrolled
+calls rather than silently accepting optimized-away work. TICKS snapshots/ring
+access occur with saved/masked MIE, and UART formatting occurs after restore.</p>
+<p>The expanded audit retains exact source/effect/IR closure, volatile memory guards,
+UART/fence sequences, fixed machine calls, final ELF/disassembly/relocation checks
+and the two-object provenance rule. It records 139 compiled functions with zero
+privileged instructions and no GP/TP use, 16 structured startup functions,
+28 named CSR operations, three 64-bit timer MMIO sites and six byte-wide UART
+sites. Gate 9 correctly reports the total 28; the stale inherited aggregate 11
+in the immutable Gate 8 raw report remains a disclosed historical metadata issue.
+No optimizer intrinsic appears in either monitor profile. Foreground stack chains
+are O0 3,776/O2 720 bytes against 65,520 usable; dispatcher chains 976/272 against
+16,048. These are optimized LLVM direct-call graphs weighted by object stack
+metadata, not a reconstructed whole-machine CFG or compiler proof.</p>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>ELF SHA-256</th>
+<th>Audit SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>O0</td>
+<td><code>b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68</code></td>
+<td><code>32fdeafd007ac98675eb55a4e9d9e5a6596edb4f7bba213fd3f74fdf4ac94a73</code></td>
+</tr>
+<tr>
+<td>O2</td>
+<td><code>8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382</code></td>
+<td><code>bd4ade2153cc67a434f374d708af26a87d3383fd38141ac64417916f91a65145</code></td>
+</tr>
+</tbody></table>
+<p>Actual O2 mixed-zero frames (PID 291257), decoded compactly:</p>
+<pre><code class="language-text">id=9000 HELLO -&gt; status=0 [31304e4f4d4d454c,7,1,3ff]
+id=9014 FILL(0,3840,90) -&gt; status=0 [3840,345600,0,0]
+id=9015 CHECKSUM(0,3840) -&gt; status=0 [345600,3840,0,0]
+id=901b FILL(3840,1,0) -&gt; status=7 [0,0,0,0]
+id=9021 TRAP_TEST(ECALL) -&gt; status=0 [0,1,0,0]
+id=902e TIMER_START(10000) -&gt; status=0 [1,10000,1555875,0]
+id=9031 TRAP_TEST(ECALL, timer active) -&gt; status=0 [0,1,5,5]
+id=9033 EVAL(IRQ-progress,seed=0,delta=64) -&gt; status=0 [d38c22f10ed34d00,2705,9,73]
+id=9036 TICKS(peek,0) -&gt; status=0 [1,1545875,80001afc,8000000000000007]
+id=908d STATUS -&gt; status=0 [142,25,5,4d641b9d2b5cdd5a]
+id=908e EXIT -&gt; status=0 [143,5,17,0]; QEMU exit=0
+</code></pre>
+<p>IDs, checksums, PCs and HELLO tag above are hexadecimal; other numbers are decimal.
+Raw sent/received frames, stderr and <code>run.json</code> are at
+<code>build/foundation/gate9-clean-8fd45d8/runs/O2/mixed-zero/</code>; received SHA-256 is
+<code>5aaec282cebb41eeab5c3ddd5dc02b7f17ed9b668323b7037d62f2069295abdc</code>.
+The session driver used by acceptance is <code>python3 scripts/run_monitor_session.py --image build/foundation/gate9-clean-8fd45d8/O2/image.elf --output-dir &lt;fresh-dir&gt; --scenario mixed-zero --timeout 20 --clean</code>, inside the pinned environment.
+Its exact QEMU argv is retained in each run record. This example is decoded guest
+output, not a host-emitted success banner.</p>
+<p>Gate 9 was the highest passing gate at this focused checkpoint. The historical
+accepted cumulative Gates 1--8
+and legacy baseline is <code>42674c1</code>; neither is silently attributed to <code>8fd45d8</code>.
+Later clean cumulative/legacy checks at <code>8fe29c4</code> passed, but its qualifier failed
+as recorded below. Fixed-candidate local Gate 10 acceptance is recorded later;
+actual CI remains separate.
+Publication had not been attempted at the focused Gate 9 checkpoint; current
+publication/CI state is under Gate 11 below. The monitor adds finite integration
+tests and audits, not new proof lemmas or any Stage II/G1/G2 completion.</p>
+<h2 id="gate-10-development-and-failed-first-qualification-historical">Gate 10 development and failed first qualification (historical)</h2>
+<p>At this historical preparation point, Gate 10 was in progress and Gate 9 was the
+highest accepted gate. The successful fixed-candidate qualification follows below.
+The first qualification candidate <code>8fe29c4d435ab12841dbc80f09580f580b0e3fc0</code>, tree
+<code>8bdaf06023726917b25f209613b9ab6d17cd5ad5</code>, ran in a separate clean detached
+worktree at <code>/home/sreekumaar/Downloads/lemma/build/qualification-worktree.BeCycl</code>.
+It initially had neither <code>.lake</code> nor build output; no previous outputs were copied.
+Its cold Lean build passed 53 jobs. Fresh hosts passed foundation 433 in 32.102
+seconds, Core0 32, scaffold 18 and metadata. Cumulative <code>--all --stress</code> passed
+482 boots; its monitor child ran 26 boots, handled 2,742 requests and observed
+4,374 hardware IRQs, 60 synchronous recoveries and 576 retained records.
+The default/stress split is 18/8 boots, 1,598/1,144 requests, 1,466/2,908 IRQs,
+20/40 recoveries and 192/384 records. Fresh legacy acceptance passed 23 boots,
+ten cases/profile and 13 expected rejections. These clean results remain valid
+at <code>8fe29c4</code>; the qualifier failure below prevents Gate 10 acceptance.</p>
+<p>Root-relative retained report identities (prefix
+<code>build/qualification-worktree.BeCycl/</code>):</p>
+<ul>
+<li><code>build/foundation/gates1-9-clean/all-results.json</code>:
+<code>84510c8134fe8dcf9bfc77cc0ef0eff41c1fa44b53c601d061c7b29abfbcb1d5</code>.</li>
+<li><code>build/foundation/gates1-9-clean/gate9/gate9-results.json</code>:
+<code>5b3944da77baf639798ed9254dcb8ba8d060f89855935c2e011025a0af4b9a5b</code>.</li>
+<li><code>build/core0/qualification-legacy/check-results.json</code>:
+<code>03a7b5bbe7fbc1c7b27659a1a94ddc4c45e658e413968ae5b22045487dc2e1ab</code>.</li>
+</ul>
+<p>The actual qualifier exited 1 during final report validation with
+<code>qualification artifact roles are duplicate</code>. Canonical PASS is absent;
+149 intermediate files, including rebuilds and five failure experiments, remain
+retained. Failure report <code>build/foundation/qualification/qualification-failure.json</code>
+under that prefix hashes to
+<code>50f784c97c1fd53c47763f951c4d7a3d7b2b85ba234446b36df84dcec16c21fd</code>.
+All eight detached host/check logs are retained at <code>build/qualification-host/</code>.
+A failed final report is not credited as successful qualification even when its
+intermediate checks produced useful evidence.</p>
+<p>The minimal fix assigns distinct semantic roles to four colliding command-stream
+artifacts without changing target semantics or weakening strict 66-artifact and
+eight-mandatory-role validation. Actual-callsite/full-catalog regressions passed
+15 focused tests; fresh precommit foundation passed 435 in 35.318 seconds,
+Core0 32, scaffold 18 and metadata. Logs are at
+<code>build/foundation/gate10-role-fix-host/</code>. The new committed candidate is
+<code>e0e1f2188fba1d26fbdd8723f37091001802064d</code>, tree
+<code>9660ade13a0b202bb0a76325eb36cf0c2b75a7d4</code>, in new detached worktree
+<code>/home/sreekumaar/Downloads/lemma/build/qualification-worktree.hJDCyB</code>.
+That worktree also began without <code>.lake</code> or build outputs and copied no prior
+outputs. Its fresh cold Lean build passed 53 jobs; metadata and scaffold 18,
+Core0 32 and foundation 435 tests (35.382 seconds) passed. These were the completed
+checks at the preparatory checkpoint. The later cumulative, legacy and qualifier
+all actually passed as recorded below. That successful <code>e0e1f2</code> checkpoint and
+the failed earlier attempt remain historical; the current inventory now binds
+the later fully qualified repair source <code>09c47ba</code>.</p>
+<p>The earlier development <code>--all --stress</code> command at dirty <code>8fd45d8</code> passed
+482 boots in <code>build/foundation/gates1-9-stress-dev-01</code>. The monitor child ran the
+18 default plus eight additional deterministic stress sessions (26 boots total),
+handling 2,742 requests with 4,389 observed hardware IRQs, 60 synchronous
+recoveries and 576 retained records. This run predates review fixes and is
+historical development evidence, not clean acceptance. Its aggregate SHA-256 is
+<code>a81a1ece8363d50c8a2eea047d156014c6e7acec99fa03d75d9d0169739c92fc</code>;
+the Gate 9 child is
+<code>57c2cfa6832d207c3a3aa038699d87bca450c6ec51dcb275843ee565b12a77df</code>.</p>
+<p>Independent review closed five host-harness/qualification issues: strict JSON
+integers, exact retained schema/QEMU argv/full binding, ELF-derived machine
+witnesses, malformed-CLI stale-PASS cleanup, and cold CI host-test build ordering.
+Post-fix precommit suites actually passed foundation 433/433 in 32.250 seconds,
+Core0 32/32, scaffold 18/18 and metadata; logs remain under
+<code>build/foundation/gate10-host-dev-postfix/</code>. These host checks do not substitute
+for the subsequent clean target qualification or an actual GitHub CI run.</p>
+<p>A real malformed CLI probe copied the prior successful aggregate, then supplied
+<code>--timeout not-a-number</code>. It returned 2, removed the copied <code>all-results.json</code>
+PASS and wrote <code>harness-input-failure</code> / <code>CLI</code>; the retained old report hashes to
+the development aggregate above. The failure report at
+<code>build/foundation/gate10-malformed-cli-dev.mBxPSQ/check-failure.json</code> hashes to
+<code>04d6682e4fba6c729bc3f2d7b332837dc43b56f3ade27e1502942e532bdc4d0a</code>.
+This is an observed harness-failure test, not successful guest execution or a
+behavioral compiler/timer mutant. The later clean cumulative/legacy passes above
+remain distinct from the failed qualifier. No actual CI result or Gate 11 publication is inferred from these development
+checks; successful local Gate 10 qualification is recorded separately below.</p>
+<h2 id="gate-10-historical-successful-clean-detached-qualification-at-e0e1f2">Gate 10: historical successful clean detached qualification at e0e1f2</h2>
+<p>The entire fresh sequential pipeline passed at exact clean implementation
+<code>e0e1f2188fba1d26fbdd8723f37091001802064d</code>, tree
+<code>9660ade13a0b202bb0a76325eb36cf0c2b75a7d4</code>, in
+<code>/home/sreekumaar/Downloads/lemma/build/qualification-worktree.hJDCyB</code>.
+It began with no <code>.lake</code> or build output, copied no earlier outputs, and remained
+clean throughout. Tested implementation and later report-bearing revisions are
+separate; this report does not hash or claim its own future commit.</p>
+<p>The commands below were actually run inside that detached repository. Relative
+paths in commands are relative to it; root-relative retained artifact paths need
+the prefix <code>build/qualification-worktree.hJDCyB/</code>.</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command python3 scripts/check_scaffold.py
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/scaffold -v
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v
+nix develop --no-write-lock-file --command lake build
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress \
+  --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh \
+  --work-dir build/core0/qualification-legacy --clean
+nix develop --no-write-lock-file --command python3 scripts/qualify_foundation.py \
+  --gate9-dir build/foundation/gates1-9-clean/gate9 \
+  --work-dir build/foundation/qualification --clean --timeout 300 --qemu-timeout 20
+</code></pre>
+<p>All exited 0. Metadata and scaffold 18, cold Lean build 53 jobs (52 CFG checks),
+Core0 host 32 and foundation host 435 tests (35.382 seconds) passed. Eight closed
+logs are retained at child <code>build/qualification-host/</code>. Full cumulative stress
+passed 24+136+88+14+104+28+32+30+26 = <strong>482 fresh target boots</strong>. Same-source legacy
+separately passed 23 boots, ten cases/profile and 13 expected source rejections,
+with reproducibility, changed-source behavior and foreign-object rejection.
+The total is 505 target boots; the qualifier replays retained monitor sessions
+and is not credited with 26 additional boots.</p>
+<p>The monitor normal/stress matrix passed:</p>
+<table>
+<thead>
+<tr>
+<th>Corpus</th>
+<th align="right">Boots</th>
+<th align="right">Requests</th>
+<th align="right">Actual hardware IRQs</th>
+<th align="right">Sync recoveries</th>
+<th align="right">Retained records</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Default O0/O2</td>
+<td align="right">18</td>
+<td align="right">1,598</td>
+<td align="right">1,417</td>
+<td align="right">20</td>
+<td align="right">192</td>
+</tr>
+<tr>
+<td>Additional bounded stress</td>
+<td align="right">8</td>
+<td align="right">1,144</td>
+<td align="right">2,826</td>
+<td align="right">40</td>
+<td align="right">384</td>
+</tr>
+<tr>
+<td>Total</td>
+<td align="right">26</td>
+<td align="right">2,742</td>
+<td align="right">4,243</td>
+<td align="right">60</td>
+<td align="right">576</td>
+</tr>
+</tbody></table>
+<p>Stress adds four deterministic mixed streams per profile, preserving one ELF per
+profile, fresh runtime UART input, bounded useful checksum/mixing work, checked
+buffer denial/recovery, actual traps, overflow/wrap and shutdown. IRQ counts differ
+from historical runs without implying a failure: useful completed work and actual
+observations drive the host oracle; exact elapsed timing is not asserted. Fifty
+source policy probes, the genuine frontend/lowering probe and four source rejection
+fixtures passed. The strengthened source/binding closure records 102 inputs/profile.
+The audit preserves the same two-object runtime closure, full integer state,
+fixed timer/UART accesses and 28 named CSR operations; no accepted language or
+target primitive was broadened by the qualification-role fix.</p>
+<p>The successful qualifier independently revalidated all 26 retained sessions,
+including raw-frame hashes, exact QEMU argv, schema/types, source/ELF/ABI binding,
+machine-derived executable witnesses, distinct PIDs, protocol replies, useful
+computation and terminal outcomes. It rebuilt O0 and O2 independently and compared
+16 intended deterministic artifacts/profile byte-for-byte: checked manifests,
+normalized source, ABI/symbol/layout/device/startup/linker artifacts, pre/post LLVM,
+both objects, ELF/map and DTB/DTS. Reproducibility is within each profile; O0 and O2
+are not required to match one another.</p>
+<p>Build/audit report directory fields and their referenced provenance digest differ
+intentionally. Provenance keeps identical stable source/toolchain/link/target fields
+and command structure, while output directories, command elapsed times and observed
+stdout/stderr differ. Those differences are retained and enumerated, not deleted
+to manufacture matching hashes. The final qualifier validates all 66 artifact paths
+and 66 semantic roles as unique, including its eight mandatory-role closure.</p>
+<p>Five actual failure-path experiments passed their intended checks:</p>
+<table>
+<thead>
+<tr>
+<th>Experiment</th>
+<th>Observed distinction</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Seeded stale Gate 9 PASS + invalid finite timeout</td>
+<td>Exit 1, <code>harness-input-failure</code>; canonical PASS removed.</td>
+</tr>
+<tr>
+<td>Seeded stale runner PASS + invalid timeout</td>
+<td>Exit 1, <code>image-or-harness-rejection</code>; failure replaces PASS and retains raw files.</td>
+</tr>
+<tr>
+<td>Missing <code>program.o</code> in isolated artifact copy</td>
+<td>Audit exit 1 with missing-artifact diagnostic; no new audit PASS.</td>
+</tr>
+<tr>
+<td>Tampered pre-optimization LLVM in isolated copy</td>
+<td>Audit exit 1 with exact source/LLVM closure rejection.</td>
+</tr>
+<tr>
+<td>Missing retained <code>received.bin</code></td>
+<td>Retained-session validation rejects missing evidence; old PASS quarantined.</td>
+</tr>
+</tbody></table>
+<p>The isolated stale-runner negative <code>run.json</code> deliberately retains a bare <code>NaN</code>
+timeout from the invalid input; that negative child record is not RFC-strict JSON.
+The canonical successful qualification report is strict JSON. Consumers must not
+assume every negative raw child artifact uses the successful report schema.</p>
+<p>Accepted images were not modified. These are harness/audit/evidence failure tests,
+not new behavioral compiler-mutant detections or guest successes. Earlier cumulative
+gates separately retain their actual distinguishing compiler/context/missing-IRQ
+mutants. The previous 8fe29 qualifier failure remains preserved and receives no
+successful-qualification credit.</p>
+<p>Current O0/O2 ELF hashes remain respectively
+<code>b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68</code> and
+<code>8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382</code>;
+source/provenance-bound audit hashes are now
+<code>b87d3fe456de85ea817098921b1dadc30f5260c6f0631a324e53944b5eb37cb8</code> and
+<code>b4c3425874cbe7d735927f89a3ccd1e022dc5fbdc5ed0d7abbe34544f995b7ea</code>.</p>
+<p>Actual final O2 mixed-zero sample, PID 332603 (IDs/checksums/PCs/tag/capability bitmap hexadecimal;
+other numbers decimal):</p>
+<pre><code class="language-text">READY: LEMMA_MONITOR/1\nREADY\n
+id=9000 HELLO -&gt; status=0 [31304e4f4d4d454c,7,1,3ff]
+id=9014 FILL(0,3840,90) -&gt; status=0 [3840,345600,0,0]
+id=9015 CHECKSUM(0,3840) -&gt; status=0 [345600,3840,0,0]
+id=901b FILL(3840,1,0) -&gt; status=7 [0,0,0,0]
+id=9021 TRAP_TEST(ECALL) -&gt; status=0 [0,1,0,0]
+id=902e TIMER_START(10000) -&gt; status=0 [1,10000,885109,0]
+id=9031 TRAP_TEST(ECALL, timer active) -&gt; status=0 [0,1,3,3]
+id=9033 EVAL(IRQ-progress,seed=0,delta=64) -&gt; status=0 [aae526ec967c9c00,6110,5,69]
+id=9036 TICKS(peek,0) -&gt; status=0 [1,875109,80001afc,8000000000000007]
+id=908d STATUS -&gt; status=0 [142,25,5,d60eeaddd4ca455a]
+id=908e EXIT -&gt; status=0 [143,5,17,0]; QEMU exit=0
+</code></pre>
+<p>This session observed 358 hardware IRQs across its timer lifetimes, five synchronous
+recoveries, 48 checked records, overflow/wrap and independently validated checksum
+work. The final lifetime counter 17 is not confused with the aggregate 358.
+Raw files are at child <code>build/foundation/gates1-9-clean/gate9/runs/O2/mixed-zero/</code>;
+received SHA-256 is
+<code>1a30ecdac0aca89c10a71ba77b999e876846a8e2504cf2349eb41eba1751593d</code>.
+Acceptance used the actual session interface (with a fresh output directory):</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command python3 scripts/run_monitor_session.py \
+  --image build/foundation/gates1-9-clean/gate9/O2/image.elf \
+  --output-dir &lt;fresh-build-directory&gt; --scenario mixed-zero --timeout 20 --clean
+</code></pre>
+<p>The cumulative checker invoked that interface; the example does not claim an extra
+manual boot. At this historical e0e1f2 checkpoint, local Gate 10 was the highest
+passing gate. Gate 11
+publication now exists as recorded below. Initial CI later exposed the Gate 3
+pinned-source prerequisite; subsequent repaired-source local qualification is
+recorded next. The pinned CI workflow and local checks are not themselves
+remote CI success evidence. All construction units remain partial; conditional
+models/lemmas, artifact audits, finite target tests and physical measurements remain
+distinct. No compiler proof, WCET, supervisor/user isolation, managed runtime,
+scheduler, physical-board compatibility, G1/G2 or full Task 002 completion is claimed.</p>
+<h2 id="gate-10-current-repaired-source-clean-qualification-at-09c47ba">Gate 10: current repaired-source clean qualification at 09c47ba</h2>
+<p>The minimal host-only repair realizes immutable <code>pkgs.lean4.src</code> with
+<code>nix build --no-link --print-out-paths</code> before checking the pinned UInt source and
+hash. It changes no target semantics, accepted language or toolchain pins. Three
+focused host regressions and an actual realization probe passed; their development
+logs remain separate from the following complete clean run.</p>
+<p>All eight commands listed in the historical Gate 10 command block above ran again,
+in exactly that order and each via <code>nix develop --no-write-lock-file --command</code>,
+in a new cold detached worktree:
+<code>/home/sreekumaar/Downloads/lemma/build/qualification-worktree.exc0kN</code>.
+Exact source is <code>09c47ba24577da87390f4c693237fe71ab67c965</code>, tree
+<code>7051d19087e09a6eede78210fdbe7652105e355d</code>. It initially contained no <code>.lake</code>/build
+outputs, copied no prior outputs and stayed clean throughout. Every command exited 0:
+metadata, scaffold 18 (2.696 s), Core0 32 (1.156 s), cold Lean 53 jobs/52 CFG checks,
+foundation 438 (24.635 s), cumulative stress, legacy and qualifier. All eight
+closed command logs are at child <code>build/qualification-host/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Fresh local scope</th>
+<th align="right">Boots / replays</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cumulative Gates 1--9 with stress</td>
+<td align="right">482 boots</td>
+<td>24+136+88+14+104+28+32+30+26; all passed.</td>
+</tr>
+<tr>
+<td>Same-source legacy Core0</td>
+<td align="right">23 boots</td>
+<td>10 cases/profile, 13 rejections, mutation/audit/reproducibility passed.</td>
+</tr>
+<tr>
+<td>Independent qualifier</td>
+<td align="right">26 retained-session replays</td>
+<td>Two profiles, 16 byte-identical artifacts/profile, five actual failure experiments, 66 unique paths/roles.</td>
+</tr>
+</tbody></table>
+<p>There are <strong>505 actual target boots</strong>, not 531; qualification adds no target boots.
+The complete monitor sessions handled 2,742 requests with <strong>4,229 actual hardware
+IRQs</strong>, 60 synchronous recoveries and 576 checked retained records. Default
+18 sessions accounted for 1,598 requests/1,414 IRQs/20 recoveries/192 records;
+additional eight stress sessions accounted for 1,144/2,815/40/384. These are fresh
+observations, not the earlier <code>e0e1f2</code> counters. The same-profile reproducibility,
+intentional provenance/time/path differences, negative-child <code>NaN</code> caveat and
+proof/audit/testing limits in the preceding qualification section still apply.</p>
+<p>Current report identities (prefix <code>build/qualification-worktree.exc0kN/</code>):</p>
+<ul>
+<li><code>build/foundation/gates1-9-clean/all-results.json</code>:
+<code>205719680253a4287b226f4481e21540014ce71ff6265f218a280ab1f31cdcc0</code>.</li>
+<li><code>build/foundation/gates1-9-clean/gate9/gate9-results.json</code>:
+<code>712e4e24a3a7c46893c26b85ff9861f0c8d75bedbdd9a17d09a81476f0a1bc9e</code>.</li>
+<li><code>build/core0/qualification-legacy/check-results.json</code>:
+<code>822c33466924cb5b4ff785d64791ded017800eb233c498804f9a7974e7a7b7b9</code>.</li>
+<li><code>build/foundation/qualification/qualification-results.json</code>:
+<code>9f8aacd874d9f7c317c9f8573a92ba7b1dfd55892312055066f406ea033e78c1</code>.</li>
+</ul>
+<p>The cumulative 41 retained provenance records are 36 actual builds plus five copied
+negative-audit records; legacy eight are seven actual builds plus one copied
+negative-audit record. Two qualifier rebuilds are actual builds, not copied records.
+The O0/O2 monitor images retain the ELF hashes shown in the earlier qualification;
+current source-bound audit hashes are
+<code>60ac99783e9804b6ab0a8539f0bc58c4b07ea4c31a28b38b8e60e28ec7593f31</code> and
+<code>5ccf622b52e811455f67419d3adf619b449eecdaaf1401794c813ee077db2dca</code>.
+Independent artifact review verified the complete reports, source/ELF/audit bindings,
+all 26 raw sessions and their 78 raw streams, exact request/frame counts, actual
+machine witnesses and qualifier closure. This is an evidence review, not an extra
+QEMU run, additional replay credit or a compiler proof.</p>
+<p>Actual latest O2 mixed-zero sample, PID 357202 (IDs/checksums/PCs/tag hexadecimal;
+capability bitmap and other counts decimal):</p>
+<pre><code class="language-text">id=9000 HELLO -&gt; status=0 [31304e4f4d4d454c,7,1,1023]
+id=9014 FILL(0,3840,90) -&gt; status=0 [3840,345600,0,0]
+id=9015 CHECKSUM(0,3840) -&gt; status=0 [345600,3840,0,0]
+id=901b FILL(3840,1,0) -&gt; status=7 [0,0,0,0]
+id=9021 TRAP_TEST(ECALL) -&gt; status=0 [0,1,0,0]
+id=902e TIMER_START(10000) -&gt; status=0 [1,10000,914475,0]
+id=9031 TRAP_TEST(ECALL, timer active) -&gt; status=0 [0,1,3,3]
+id=9033 EVAL(IRQ-progress,seed=0,delta=64) -&gt; status=0 [3e882f3e44836000,5768,5,69]
+id=9036 TICKS(peek,0) -&gt; status=0 [1,904475,80001afc,8000000000000007]
+id=908d STATUS -&gt; status=0 [142,25,5,bce3223f72cdbf5a]
+id=908e EXIT -&gt; status=0 [143,5,17,0]; QEMU exit=0
+</code></pre>
+<p>This one session observed 360 hardware IRQs across timer lifetimes,
+five synchronous recoveries, 48 checked records and overflow/wrap, with useful
+validated computation. Its final lifetime counter is 17, not the aggregate
+IRQ count. Raw run directory is child
+<code>build/foundation/gates1-9-clean/gate9/runs/O2/mixed-zero/</code>;
+received SHA-256 is <code>fcdfa16d5305fab2fefb025ef48c3350193dca7bbd88d947b3eaef1d22dd1916</code>.
+The cumulative checker used the same actual <code>run_monitor_session.py</code> interaction
+command shown above, against this child&#39;s O2 image, with fresh post-READY UART input.
+No extra manual boot is claimed. Detailed latest counts/source/command/report
+references are compactly recorded in the summary; the full inventory includes every
+retained current artifact and hashes 305 tracked source files from exact
+<code>git show 09c47ba:&lt;path&gt;</code> bytes. Historical artifacts are not relabeled or removed.
+Gate 11 actual repair CI and final bounded evidence closure passed as recorded below.</p>
+<h2 id="gate-11-publication-retained-initial-ci-failure-and-repair-reverification">Gate 11: publication, retained initial CI failure and repair reverification</h2>
+<p>Normal publication succeeded after local qualification. Initial report-bearing
+commit <code>ac2a95ec460d271ef00f92335ae3ea821d1b329d</code> (tree
+<code>6e129a2ed43608d2bd728df26d09037d93e72fb9</code>) was committed after the tests, then:</p>
+<pre><code class="language-sh">env GIT_TERMINAL_PROMPT=0 git push --set-upstream origin task/002-machine-foundation
+</code></pre>
+<p>Exit 0; upstream is <code>origin/task/002-machine-foundation</code>. At publication the root
+worktree was clean and had no ahead/behind difference. Later evidence/ledger edits
+are separate reporting changes, not a claim that the current worktree is unchanged.
+No force push or automatic merge was performed.</p>
+<p><a href="https://github.com/srkftw/lemma/pull/2">Draft PR #2</a> was created at
+2026-10-08 18:19:37 UTC and is open, draft and unmerged. It is stacked against
+<code>task/001-core0-freestanding-slice</code> at
+<code>b8e9c59365ae8e9925e0bf6fbca6a963d990ec85</code>, because fresh read-only inspection
+still found PR #1 open/draft/unmerged. PR #1 was not modified. PR #2&#39;s initial published
+head was <code>ac2a95ec460d271ef00f92335ae3ea821d1b329d</code>; its body was inspected and the
+435-test host count corrected. At that initial publication, tested target source
+was <code>e0e1f2</code>, not this
+later report commit or a synthetic PR merge. The later repaired implementation
+<code>09c47ba</code> is now the latest locally qualified source, as recorded above.</p>
+<p>Actual <a href="https://github.com/srkftw/lemma/actions/runs/37823411915">Lemma pinned acceptance run #4</a>
+completed with conclusion <strong>failure</strong>: run ID <code>37823411915</code>, attempt 1, event
+<code>pull_request</code>, head <code>ac2a95ec...</code>, updated 2026-10-08 18:25:15 UTC. Full logs
+confirm the actual checkout, not merely a candidate: synthetic PR merge
+<code>0755c817d35c5d466875a2df0e7339a681d3cda4</code>, ref <code>refs/remotes/pull/2/merge</code>,
+tree <code>6e129a2ed43608d2bd728df26d09037d93e72fb9</code>, parents Task 001 base <code>b8e9c593...</code>
+and published report-bearing head <code>ac2a95ec...</code>. This is distinct from the locally
+then-locally tested implementation <code>e0e1f2</code>.</p>
+<p>Metadata job <code>113469966392</code> passed: metadata, 18 scaffold, 32 Core0, 53 Lean build
+jobs/52 CFG checks and 435 foundation host tests (28.076 seconds). Legacy job
+<code>113469965796</code> passed: 23 fresh boots, 10 differential cases/profile, 13 expected
+source rejections, source-mutation boots and audit/reproducibility checks.
+Foundation job <code>113469965539</code> passed Gates 1/2 (24/136 fresh boots) before its Gate 3
+prerequisite failed. The recorded Gate 1/2 report hashes are respectively
+<code>191b43ad556804f5b1837c5cc4ded627c7658534d18a46c6bc9102e35340e73e</code> and
+<code>fe21cbda02c10384311926992f56f998d167a4b188cfd0b035a135665ea64733</code>.
+Gate 3 did not reach target acceptance; Gates 4--9 did not run and qualification
+was skipped. Evidence upload succeeded.</p>
+<p>The actual failure was <code>pinned-source-semantics-failure[UInt8/UInt32/UInt64]</code>:</p>
+<pre><code class="language-text">pinned UInt source is missing:
+/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source/src/Init/Data/UInt/Basic.lean
+</code></pre>
+<p>The assignment-owned Gate 3 driver evaluated <code>pkgs.lean4.src</code> but did not realize
+its source derivation in the fresh Nix store. The warm local store masked that
+prerequisite. This is not external CI unavailability or evidence of a failed RV64
+operation. The later code-only repair passed full clean local qualification at <code>09c47ba</code>.
+Actual repair CI terminal successes are separately recorded below; this failed run
+is never relabeled as green.</p>
+<p>Full logs for all three jobs, terminal observation, extracted failure record and
+earlier partial observations are retained under <code>build/foundation/gate11-ci/</code>.
+The finalized terminal observation SHA-256 is
+<code>b6fa35b57a1314563c6361b795e8bd2dbc7f8894abe0a71057df82cb6f066e7a</code>;
+<code>foundation-check-failure.json</code> is
+<code>1600f4afb91a9a89722d8045d8c9a8674212700cc8618fa17d055495c8a0087e</code>.
+All retained local files and full job-log hashes are in the inventory/summary.
+Earlier partial observations remain historical, not the terminal run status.</p>
+<p>GitHub retained these artifact archives (reported metadata, not locally downloaded
+archive bytes):</p>
+<ul>
+<li>Foundation <code>11569704127</code>, <code>foundation-rv64-37823411915-1</code>: 3,200,685 bytes,
+1,898 members, digest <code>sha256:91d590ab60ecf3c5b0e8013c69903e3ebd06adcef00f4daaa83a05ec905a9119</code>.</li>
+<li>Legacy <code>11570427723</code>, <code>legacy-rv64-37823411915-1</code>: 391,130 bytes, 341 members,
+digest <code>sha256:ddb8c446df9dc74dc9d91c8950ff5048c4a2f3d83e9b2e6f991f2de6586fbc7e</code>.</li>
+<li>Metadata <code>11570936129</code>, <code>metadata-host-suites-37823411915-1</code>: 25,972 bytes,
+five members, reported digest <code>sha256:21abd67ba63557783e2e341f188f94a777bed22adaad354cf89718ae22af6083</code>.</li>
+</ul>
+<p>Artifact URLs, creation/expiry times and retained observation hashes are in the
+machine-readable summary. No nonexistent local archive/member bytes are inventoried.
+Existing local clean artifacts remain intact and independently inventoried.</p>
+<p>At the initial failure checkpoint Gate 11 remained unaccepted. Historical local Gate 10 at exact
+<code>e0e1f2</code> remains valid; latest repaired-source local Gate 10 passed at <code>09c47ba</code>.
+The remote failure above remains scoped to its confirmed synthetic merge checkout.
+Code-only repair candidate
+<code>09c47ba24577da87390f4c693237fe71ab67c965</code> (tree
+<code>7051d19087e09a6eede78210fdbe7652105e355d</code>) was normally pushed after the failure.
+Three focused host tests and an actual source-realization probe passed in the
+root development checkout; their closed logs are retained. Its new cold detached
+full rerun at <code>build/qualification-worktree.exc0kN</code> passed, as recorded above.
+That full run, not the narrow development checks, binds the current tested source.
+Both later repair CI runs and final bounded evidence closure passed as recorded below.</p>
+<h3 id="gate-11-final-actual-repair-ci-and-evidence-closure">Gate 11 final actual repair CI and evidence closure</h3>
+<p>Both repair runs finished <strong>success</strong>, all six jobs:
+<a href="https://github.com/srkftw/lemma/actions/runs/37825241614">push run #5, 37825241614</a>
+and <a href="https://github.com/srkftw/lemma/actions/runs/37825247231">PR run #6, 37825247231</a>.
+Push checkout was exact <code>09c47ba24577da87390f4c693237fe71ab67c965</code>; actual PR
+checkout was synthetic merge <code>e292d4359fabbf46d2c18423103333217a58c062</code>, parents
+Task 001 base <code>b8e9c593...</code> and repair <code>09c47ba...</code>. Logs and the GitHub commit
+record confirm both share tree <code>7051d19087e09a6eede78210fdbe7652105e355d</code>.
+These checkout identities are distinct from the initial report-bearing <code>ac2a95</code>
+and failed initial synthetic merge <code>0755c817</code>; no CI is inferred from a candidate.</p>
+<p>Each actual run passed metadata/scaffold 18/Core0 32/cold Lean 53 jobs/52 CFG
+checks/foundation 438 hosts; cumulative Gates 1--9 with stress (482 target boots);
+legacy Core0 (23 target boots); and qualification (26 retained-session replays,
+two profiles/16 byte-identical artifacts each/66 unique paths and roles/five
+failure experiments). Push monitor observed 4,348 hardware IRQs, PR monitor 4,445;
+local observed 4,229. These separate time-dependent observations are not substituted
+for one another. All retain 26 monitor boots/60 synchronous recoveries; request
+and record counts remain the same bounded corpus. Gate 3&#39;s report records actual
+source realization and pinned UInt SHA-256
+<code>d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94</code>.
+The checked subprocess captures realization output; no direct source-cache-copy
+line is claimed in the wrapper log.</p>
+<p>Six uploaded archives were downloaded and stream-inspected; their zip SHA-256
+matched GitHub API digests. Archive bytes were <strong>not retained locally</strong>. IDs/digests,
+all six job IDs, actual source/report hashes and detailed inspected member counts
+are recorded in the summary and retained terminal observation. Foundation artifacts
+are push <code>11571767094</code> (29,934,938 bytes) and PR <code>11572411330</code> (29,933,650 bytes),
+3,819 members each. The full seven closed job logs (six successful plus historical
+failed push foundation) and terminal metadata are retained under
+<code>build/foundation/gate11-ci-repair/</code>; terminal SHA-256 is
+<code>af6af5e23c1d4ad4613d72ff37868961fb00b35e72ebc3313aae829e5f1783f2</code>.
+Initial failed push run #3 (<code>37823368652</code>) and PR run #4 remain failures in that
+metadata, with their missing-source record and logs retained. No failed run is
+rewritten as a pass, and no nonexistent local archive/member bytes are inventoried.</p>
+<p>Supplemental final report metadata and scaffold checks passed (18 tests, 1.939 s);
+closed logs are in <code>build/foundation/gate11-final-report-checks/</code>. These check
+later documentation consistency, not new target acceptance. Gate 11 is accepted
+for bounded Task 002 publication/CI/evidence handoff. PR #2 stays draft/unmerged;
+no force push or automatic merge occurred. G1/G2 and all broader construction
+units remain partial/incomplete. Future report-only commit/push identities are
+external Git metadata, not invented self-referential hashes; tests remain bound
+to the explicit implementation/CI revisions above.</p>
+<p>The initial report-bearing commit is identified externally rather than embedded
+as its own future hash. The current source inventory still hashes exact tested
+<code>git show 09c47ba:&lt;path&gt;</code> bytes; later reporting/remote metadata updates do not
+silently requalify source or change the historical artifact identities.</p>
+<h2 id="shared-assumptions-stage-mapping-and-limits">Shared assumptions, stage mapping, and limits</h2>
+<p>The direct and checked-model routes are deliberately separate computations, but both
+share the pinned Lean 4 host elaborator and type checker. They are not absolutely
+independent proof systems; the target route also consumes the same checked source
+before LLVM lowering. Gates 4 and 5 add independent Python computations that share
+their documented contracts and selected fixed fixture/layout definitions, but these
+routes are still finite testing rather than proofs. The exhaustive UInt8 comparison, 1,024-case wider-type
+matrix, Gate 3&#39;s 708-case matrix, Gate 4&#39;s 112-case matrix, and metamorphic/body-change
+checks are strong finite evidence, not a compiler-correctness or semantic-preservation
+proof. Gates 3--5 add local mathematical lemmas with recorded axiom dependencies,
+but no whole-compiler proof or separate kernel-reduction comparison. The exact ABI
+audit covers one deliberate ten-argument shape, not every possible RISC-V ABI
+signature.</p>
+<p>Gates 1 and 2 directly advance Unit 1.8. Gate 2 also adds evidence for Units 1.1,
+1.3, 1.4, 1.5, and 1.7 through its versioned ABI, multi-root membership checks,
+executable model comparison, exact lowering/ABI audit, and source-bound freestanding
+images. Gate 3 directly advances Units 1.1, 1.3, 1.4, 1.5, 1.7, and 1.8 through
+versioned membership rejection, executable scalar semantics, validated structured
+lowering, dangerous-operation audit mutations, and differential target execution.
+Gate 4 advances the same partial Stage I units with a versioned bounded construct,
+transitive callback checks, validated loop lowering, machine backedge/callback
+evidence, stack bounds, mutations, and source/model/Python/target comparison. The
+Gate 5 Action profile advances Units 1.1, 1.3, 1.4, 1.5, 1.7, and 1.8 with an
+explicit RAM/effect contract, finite executable semantics and local proofs, audited
+checked-memory lowering, source/manifest/IR mutations, and complete target post-state
+comparison. It gives Unit 1.6 only regression coverage because its physical memory
+observer and existing UART/finisher remain test glue rather than a new compiled
+device primitive. The explicit profiles and trust manifests plus source-bound images account for the added
+1.1 and 1.7 evidence. Unit 1.2 receives regression coverage only. Every listed
+construction unit remains <code>partial</code>; broader G1/G2 obligations
+remain open; bounded Task 002 remote CI/evidence handoff now passed.</p>
+<p>No Stage II unit is marked passed. In particular, later Task 002 M-mode work will not
+by itself satisfy Unit 2.1&#39;s supervisor-entry requirement. G1 and G2 remain
+incomplete. Bounded Task 002 gates are complete; Gate 7 synchronous traps remain a historical passing checkpoint;
+Local Gate 10 clean detached qualification passed; highest passing gate is now 11;
+Gate 11 has published the branch/draft PR. Its initial CI failure is preserved;
+the later repair passed full local qualification and both actual CI runs.
+Gate 11 bounded acceptance passed without broadening any construction-unit claim.
+Gate 6 directly advances partial Units 1.1,
+1.3, 1.4, 1.5, 1.6, 1.7, and 1.8 through its versioned effectful device interface,
+finite semantics, ordered lowering, machine audit, source-bound image, branch RAM
+readbacks, and real runtime UART exchanges. Unit 1.2 retains regression coverage
+only; all Stage I statuses remain partial and no Stage II unit is marked passed.</p>
+<p>Gate 7 directly adds evidence for partial Units 1.1, 1.3, 1.4, 1.5, 1.6, 1.7,
+and 1.8 through its versioned trap effects, exact membership checks, source policy
+probes/local lemmas, structured entry/return lowering, machine audit, full-context
+target observations, and distinguishing restore mutant. Unit 1.2 retains regression
+coverage only. It also contributes narrowly scoped early Stage II evidence to
+Unit 2.1 (M-mode entry and bounded stacks, not supervisor entry) and Unit 2.2
+(synchronous cause/PC identification, diagnostics, saved integer state, and approved
+return, not timer interrupts). Those two units are now <code>partial</code> in the
+construction backlog; this evidence does not mark them or any Stage II unit passed.
+Supervisor entry and the broader construction obligations remain open.</p>
+<p>Gate 8 directly advances the same partial Stage I units as Gate 7 and adds
+narrow early Stage II Unit 2.2 evidence for actual timer delivery, pending/masking,
+context, bounded overflow/catch-up and shutdown. Unit 2.1 still lacks supervisor
+entry; both Stage II backlog entries are partial and no Stage II unit passes.</p>
+<p>Gate 9 directly advances partial Units 1.1, 1.3, 1.5, 1.6, 1.7 and 1.8 through
+the integrated protocol/trust contract, genuine checked source, expanded artifact
+audit and mixed target execution. Units 1.2 and 1.4 receive regression/integration
+coverage, not a newly complete VM contract or semantics proof. It contributes
+partial early Stage II 2.1/2.2 integration evidence only; supervisor entry and the
+broader construction-unit obligations remain unmet. The backlog records only
+partial progress for G2 and Units 2.1/2.2; no Stage II unit, G1 or G2 is passed.</p>
+<p>Gate 10 directly advances partial Units 1.1, 1.5, 1.7 and 1.8 through retained
+trust/closure checks, independent same-profile reconstruction, bounded cumulative
+stress, legacy regression and failure/evidence qualification. Remaining Stage I
+and early Stage II 2.1/2.2 receive regression/integration coverage, not complete
+construction-unit qualification. All units, G1 and G2 remain incomplete.</p>
+</main>
+</body>
+</html>

@@ -273,6 +273,9 @@ def bundle(args):
     import lemmasim_fast as fast
     from build_kernel import source_inputs
     name=args.profile
+    if name=='lemma-silicon-dev/0.14.0':
+        from multimodal_native_bundle import pack
+        return pack(args)
     if getattr(args,'refresh_fast',False):
         conflicts=('notebook_build','initializer_build','rtl_build','rtl_source_root',
                    'guest_source_root','initializer_guest_source_root',
@@ -766,6 +769,9 @@ def prepared(directory,backend,workload,name=None):
     from build_kernel import source_inputs
     from silicon_profile import profile_path
     directory=Path(directory).resolve();m=read_json(directory/'bundle.json')
+    if m.get('schema')=='lemmasim-native-multimodal-fast/1':
+        from multimodal_native_bundle import prepared_archive
+        return prepared_archive(directory,backend,workload,name)
     if m.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE,SCHEMA_USB_CLOCKED,SCHEMA_USB_RECOVERY,SCHEMA_USB_CLOSURE_RECOVERY,SCHEMA_USB_PACKAGE_RECOVERY,SCHEMA_USB_PACKAGE_ENTRY2,SCHEMA_USB_COMPANION_READER):
         return prepared_usb_next(directory, m, backend, workload, name)
     if m.get('schema') not in (SCHEMA,SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT) or m.get('profile')!='lemma-silicon-dev/0.3.0' or name not in (None,m['profile']):

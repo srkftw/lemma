@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lemma One canonical machine contract</title>
+<link rel="stylesheet" href="docs/documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="docs/overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lemma-one-canonical-machine-contract">Lemma One canonical machine contract</h1>
+<p>Status: <strong>normative architecture target, not hardware-conformance evidence</strong>. Version: <strong>draft 0.1</strong> (2026-10-09).</p>
+<h2 id="one-machine-two-embodiments">One machine, two embodiments</h2>
+<p><strong>LemmaSim</strong> is a permanent, distributable, first-class implementation of Lemma One. The physical Lemma One and LemmaSim implement the <em>same versioned observable machine contract</em>, with the same maintained freestanding Lean-authored RV64 operating system, services, checkers and applications. Student, Developer and Laboratory are modes of the same LemmaSim, not incompatible product forks.</p>
+<p>The target is total <strong>functional</strong> equivalence: for every admitted guest-observable input, device operation and documented failure, the two embodiments produce equivalent traces under a declared observation abstraction. This is a testable goal, <strong>not</strong> a presently demonstrated fact. Thermal, tactile, optical-material and other intrinsically physical equivalence are excluded. Functional timing, deadlines, busy/completion events and error reporting remain included wherever exposed in the contract.</p>
+<h2 id="compatibility-and-precedence">Compatibility and precedence</h2>
+<ol>
+<li>The canonical contract defines the intended finished machine. A released version cannot silently change guest-visible ABI or peripheral semantics.</li>
+<li><code>docs/contracts/LEMMA_VM.md</code> documents <em>tested historical boot profiles</em> (including QEMU virt, Core0 and Task 002) and remains authoritative for those profiles. The finished canonical machine is <strong>not</strong> falsely claimed to be implemented by those tests.</li>
+<li>Machine-contract changes require versioning, reference models, positive/negative conformance fixtures and a migration statement for storage/document formats.</li>
+<li>When OEM hardware differs, implement a conformance-preserving physical adapter, change hardware, or explicitly revise the versioned contract for <em>both</em> embodiments. Never silently introduce divergent guest software behavior.</li>
+<li>The guest must not use host-only shortcut services for ink, checking, storage or scheduling. Host drawing tablet, graphics and filesystem are strictly external I/O transports backing modeled devices.</li>
+</ol>
+<h2 id="task-004-reference-subset">Task 004 reference subset</h2>
+<p><a href="docs/contracts/004-machine-profile-0.1.0.html">Machine Profile 0.1.0</a> freezes
+<code>lemma-one-core/0.1.0</code> and its first binding <code>lemmasim-virt/0.1.0</code>.
+<a href="sim/profiles/lemmasim-virt-0.1.0.json">The declarative instance</a>,
+<a href="docs/contracts/004-devices-v1.html">descriptor and device v1 ABIs</a>,
+<a href="docs/contracts/004-owned-memory-v1.html">owned-memory extension</a>, and
+<a href="docs/contracts/004-store-v1.html">guest record-store format</a> are subordinate
+contracts. <a href="docs/evidence/004-lemmasim-durable-ink.html">Task004 evidence</a> records
+the implemented bounded native notebook, exact virtual replay and admitted
+crash model. These observations do not certify the finished canonical machine
+or physical equivalence. Physical conformance remains UNVERIFIED. Historical
+profiles retain their meanings.</p>
+<h2 id="required-contract-sections-unfrozen-values-must-remain-unknown">Required contract sections (unfrozen values must remain UNKNOWN)</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Guest-visible specification to freeze</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Processor</td>
+<td>RV64 ISA/extensions, privilege levels, memory ordering, trap/CSR semantics, hart count</td>
+<td>differential ISA and privilege tests</td>
+</tr>
+<tr>
+<td>Board</td>
+<td>memory map, bus widths, address alignment, discovery, firmware/reset handoff</td>
+<td>boot trace and map consistency</td>
+</tr>
+<tr>
+<td>Interrupts and clocks</td>
+<td>sources, priority, masking, timers, virtual-time ordering, reset rules</td>
+<td>boundary and race tests</td>
+</tr>
+<tr>
+<td>RAM and DMA</td>
+<td>size, regions, coherency, ownership, protection, faults</td>
+<td>invalid access and isolation tests</td>
+</tr>
+<tr>
+<td>Persistent media</td>
+<td>block/erase/flush barriers, acknowledgements, write atomicity and crash model</td>
+<td>power-loss cutpoint replay</td>
+</tr>
+<tr>
+<td>Pen digitizer</td>
+<td>coordinates, sampling, hover, pressure, tilt/buttons if supported, event framing, ordering, calibration</td>
+<td>host-injected and recorded device-level traces</td>
+</tr>
+<tr>
+<td>E-paper controller</td>
+<td>display dimensions, pixel formats, command/register protocol, queue limits, refresh modes, completion/busy, error model</td>
+<td>guest-driven pixel/transition traces</td>
+</tr>
+<tr>
+<td>USB, buttons, network</td>
+<td>enumeration/protocol, input state, cancellation, disconnect/error semantics</td>
+<td>disconnect and malformed-packet tests</td>
+</tr>
+<tr>
+<td>Power/reset</td>
+<td>observable power states, reset causes, sequencing and brownout consequences</td>
+<td>deterministic state-machine and fault campaigns</td>
+</tr>
+<tr>
+<td>Updates and identity</td>
+<td>firmware image identity, version negotiation, trust and recovery boundaries</td>
+<td>rollback/failed-update tests</td>
+</tr>
+</tbody></table>
+<p>Exact OEM panel waveforms, connector pinouts, measured electrical parameters and timing distributions are <strong>unknown until sourced or measured</strong>. Do not invent them. Host models may use explicitly named assumed parameter ranges; such models do not certify a future panel.</p>
+<h2 id="trace-level-equivalence">Trace-level equivalence</h2>
+<p>Define <code>Obs_v(E,input,initial_state)</code> as the version-<code>v</code> canonicalized observable trace from embodiment <code>E</code>: software-visible MMIO/interrupt/clock/error events, device input/output, persisted records and application results. The goal is:</p>
+<p><code>Obs_v(Sim, i, s) ≈_v Obs_v(Physical, i, s)</code></p>
+<p>for all <strong>admitted</strong> inputs/states, where <code>≈_v</code> is specified <em>per interface</em> (exact bytes and semantic results where required; tolerance envelopes for analog-origin samples and declared timing bounds). A deterministic virtual clock and captured external-service responses are prerequisites for exact replay. Snapshot reproducibility does not imply arbitrary physical nondeterminism is reproducible.</p>
+<p>For each test: record machine version, firmware/OS hash, simulator build, device-model version, assumptions, input trace, initial storage image hash, result, applicable equivalence relation and evidence provenance. Missing coverage is <strong>unverified</strong>, never pass.</p>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li><strong>LemmaSim functional completion:</strong> all canonical interfaces implemented; all supported student workflows, pen/document persistence, mathematics checking, offline textbooks and network-assisted tutoring function through real guest drivers; mandatory conformance suites pass; user-installable distributions and developer diagnostics exist.</li>
+<li><strong>Physical functional equivalence:</strong> run the same applicable conformance corpus on measured physical hardware and resolve every discrepancy. Until then label results <code>SIMULATED_ONLY</code>.</li>
+<li><strong>Explicit exclusion:</strong> claims of thermals, battery life, electromagnetic compatibility, panel feel, mechanical fit and material behavior require separate physical validation.</li>
+</ul>
+<p>See <a href="docs/plan/LEMMASIM.html">the simulator plan</a>, <a href="sim/simulator-overview.html">sim/</a> and <a href="conformance/conformance-overview.html">conformance/</a>.</p>
+<h2 id="extended-multimodal-revision-020">Extended multimodal revision 0.2.0</h2>
+<p>The <a href="docs/contracts/007-extended-multimodal-v0.2.0.html">Extended Multimodal Client Specification v0.2.0</a> defines the normative destination for <code>lemma-one-multimodal/0.2.0</code>. Its <a href="docs/source-artifacts/LEMMA_EXTENDED_MULTIMODAL_SPEC_v0.2.0.txt">unchanged supplied source</a> has SHA-256 <code>f7eac3fd8e46b84edd7ec43a96cc9e61fa1795a722a536c71147cad902ace721</code>; <a href="docs/source-artifacts/extended-multimodal-html-conversion.json">conversion provenance</a> identifies the HTML edition. This adoption does not assert implementation or qualification. Historical profiles, documents and evidence retain their meanings.</p>
+</main>
+</body>
+</html>

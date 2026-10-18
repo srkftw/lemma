@@ -1,3 +1,6 @@
+import Lemma.Multimodal.TutorPackage
+import Lemma.Services.Arithmetic.ClientV8
+import Lemma.User.Multimodal
 import Lemma.Documents.MathematicsEntry
 import Lemma.Courses.NumberPad
 import Lemma.Courses.PackageReader
@@ -38,6 +41,9 @@ bounded ink buffers let input continue while the store flushes another chunk.
 The framebuffer and current page index are owned virtual memory; previous page
 history is streamed from the document service when that page is reopened. -/
 namespace Lemma.Applications.Notebook
+
+private def mmDifferent (a b : UInt64) : Bool := if a = b then false else true
+private def mmFailed (s : UInt8) : Bool := if s = 0 then false else true
 open Lemma.Core0.Memory
 open Lemma.User
 open Lemma.Ink
@@ -5751,6 +5757,375 @@ def mainPackageReaderChooser (bootArgument : UInt64) : Action :=
   .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
   if statusFailed s = true then .done s 0 else .loop chooserReaderStep
+
+
+
+private def tutorContext : UInt64 := Lemma.User.Multimodal.records + 1024
+private def tutorPacket : UInt64 := Lemma.User.Multimodal.records + 1536
+private def tutorState : UInt64 := Lemma.User.Multimodal.state + 144
+private def tutorPut (offset value : UInt64) : Action := Memory.write64 (tutorContext + offset) value
+private def tutorGet (offset : UInt64) : Action := Memory.read64 (tutorContext + offset)
+
+/-- The local HELP request snapshots current, already validated mathematical
+source anchors. A model cannot select these values through its package bytes.
+The action/publication sequence exceeds the guest-observed durable frontier,
+so cold boot cannot reuse a prior immutable assistance edition. -/
+private def multimodalAsk : Action :=
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.BrowseHistory.location packageWorkspace ns page) fun s binding => if statusFailed s = true then .done s 0 else
+  if binding = 0 then .done 244 0 else
+  .bind (Memory.read64 (binding + 16)) fun s source => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (binding + 24)) fun s edition => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (binding + 40)) fun s task => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 tutorState) fun s previous => if statusFailed s = true then .done s 0 else
+  .bind (get 128) fun s durableFrontier => if statusFailed s = true then .done s 0 else
+  let sequence := maximum previous durableFrontier
+  if 0xffffffff ≤ sequence then .done 235 0 else
+  .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
+  if 0x7ffffffffffffffe - 3000000000 < now then .done 235 0 else
+  .bind (tutorPut 0 (now + 1)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 8 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 16 revision) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 24 (Lemma.Courses.PackageWorkspace.object page)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 32 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 40 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 48 source) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 56 edition) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 64 task) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 72 512) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 80 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 tutorState (sequence + 1)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x721 (now + 1) revision (Lemma.Courses.PackageWorkspace.object page) (sequence + 1)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x722 source edition task now) fun s _ => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x723 1 (now + 3000000000) 1 0
+
+private def multimodalLoadTutor : Action :=
+  .bind (Memory.read64 tutorState) fun s sequence => if statusFailed s = true then .done s 0 else
+  if sequence = 0 then .done 244 0 else
+  .bind cancelBookmarkWork fun s _ => if statusFailed s = true then .done s 0 else
+  .bind cancelArithmetic fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 512 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (beginPackageRead 60001 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 128 60001) fun s _ => if statusFailed s = true then .done s 0 else
+  packagePut 136 sequence
+
+private def multimodalAdmitTutor : Action :=
+  .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 2 then
+  .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Multimodal.TutorPackage.decode packageBytes length tutorPacket) fun s marked => if statusFailed s = true then .done s 0 else
+  if marked = 0 then .done 0 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision => if statusFailed s = true then .done s 0 else
+  .bind (tutorGet 16) fun s expectedRevision => if statusFailed s = true then .done s 0 else
+  .bind (tutorGet 24) fun s object => if statusFailed s = true then .done s 0 else
+  if different expectedRevision revision = true then .done 244 0 else
+  if different object (Lemma.Courses.PackageWorkspace.object page) = true then .done 244 0 else
+  .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Multimodal.TutorAction.validate tutorPacket tutorContext now) fun s reason => if statusFailed s = true then .done s 0 else
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x724 reason expectedRevision object 0) fun s _ => if statusFailed s = true then .done s 0 else
+  if reason = 0 then .done 0 1 else .done 244 reason
+  else .done 0 0
+
+/-- Consume the proposal sequence after guest rasterization succeeds. This is
+an acceptance/raster receipt only; panel completion remains separately observed.
+The high water prevents LOAD from repeating an accepted live action. -/
+private def multimodalTutorAccepted : Action :=
+  .bind (Memory.read64 (tutorPacket + 40)) fun s sequence => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 32 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x725 sequence 1 0 0
+
+/-- Local diagnostic controls, guest-rasterized and submitted through paper.
+CAPTURE is synthetic, five seconds, no transmission/retention. MUTE is local. -/
+private def multimodalCharacter (index enabled : UInt64) : UInt64 :=
+  if index < 12 then
+    if enabled = 1 then
+      if index < 8 then (0x4556495443414e53 >>> (index * 8)) &&& 255 else 32
+    else if index < 8 then (0x45525554504143 >>> (index * 8)) &&& 255 else 32
+  else if index < 20 then
+    if index < 16 then (0x4554554d >>> ((index - 12) * 8)) &&& 255 else 32
+  else if index < 30 then
+    if index < 27 then (0x46464f20474545 >>> ((index - 20) * 8)) &&& 255 else 32
+  else if index < 44 then
+    if 36 ≤ index then if index < 39 then (0x4b5341 >>> ((index - 36) * 8)) &&& 255 else 32 else 32
+  else if index < 48 then (0x44414f4c >>> ((index - 44) * 8)) &&& 255 else 32
+
+private def multimodalBarStep (i _ : UInt32) (acc enabled width _ _ : UInt64) : Action :=
+  let x := i.toUInt64 % 312 * 2
+  let y := i.toUInt64 / 312
+  let a := pixel x y enabled
+  let b := pixel (x + 1) y enabled
+  .bind (Memory.write8 (Surface.framebuffer + (132 + y) * ((width + 1) / 2) + 200 + x / 2) ((a <<< 4) ||| b)) fun s _ => .done s acc
+where
+  pixel (x y enabled : UInt64) : UInt64 :=
+    if x % 12 < 9 then
+      if (Surface.letter (multimodalCharacter (x / 12) enabled) >>> (14 - (y / 3 * 3 + x % 12 / 3))) &&& 1 = 1 then 0 else 15
+    else 15
+
+private def multimodalBar : Action :=
+  .bind Lemma.User.Multimodal.active fun s enabled => if mmFailed s = true then .done s 0 else
+  .bind (get 32) fun s width => if mmFailed s = true then .done s 0 else
+  .boundedFoldU64 4680 multimodalBarStep 4680 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+  dirty 400 132 1024 147
+
+private def multimodalControl (operation : UInt64) : Action :=
+  .bind (if operation = 3 then multimodalAsk else if operation = 4 then multimodalLoadTutor else Lemma.User.Multimodal.control operation) fun status result =>
+  .bind (get 24) fun s console => if mmFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x712 operation status.toUInt64 result 0) fun s _ => if mmFailed s = true then .done s 0 else
+  Memory.write64 (Lemma.User.Multimodal.state + 32) 1
+
+/-- Local inhibition never waits behind mathematical/Store/paper work. Only
+the named controller operation and an explicit receipt execute here. Rendering
+waits for a free framebuffer and cannot mutate an owned display submission. -/
+private def multimodalSafety (operation : UInt64) : Action :=
+  .bind (Lemma.User.Multimodal.control operation) fun status result =>
+  .bind (get 24) fun s console => if mmFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x712 operation status.toUInt64 result 0) fun s _ => if mmFailed s = true then .done s 0 else
+  Memory.write64 (Lemma.User.Multimodal.state + 32) 1
+
+private def multimodalPumpBar : Action :=
+  .bind (Memory.read64 (Lemma.User.Multimodal.state + 32)) fun s pending => if mmFailed s = true then .done s 0 else
+  if pending = 0 then .done 0 0 else
+  .bind (get 104) fun s stroke => if mmFailed s = true then .done s 0 else
+  .bind (get 160) fun s store => if mmFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if mmFailed s = true then .done s 0 else
+  .bind (get 336) fun s dirtyX => if mmFailed s = true then .done s 0 else
+  if stroke ||| store ||| checking = 0 then if dirtyX = 0xffff then
+  .bind (get 0) fun s surface => if mmFailed s = true then .done s 0 else
+  .bind (Surface.status surface) fun s status => if mmFailed s = true then .done s 0 else
+  if status &&& 1 = 0 then
+    .bind multimodalBar fun s _ => if mmFailed s = true then .done s 0 else
+    Memory.write64 (Lemma.User.Multimodal.state + 32) 0
+  else .done 0 0 else .done 0 0 else .done 0 0
+
+
+private def multimodalInputSample : Action :=
+  .bind (Memory.read64 raw) fun s sequence => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 8)) fun s time => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 16)) fun s x => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 24)) fun s y => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 40)) fun s flags => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 64)) fun s epoch => if statusFailed s = true then .done s 0 else
+  .bind (get 288) fun s previousEpoch => if statusFailed s = true then .done s 0 else
+  .bind (get 296) fun s previousSequence => if statusFailed s = true then .done s 0 else
+  .bind (get 304) fun s previousTime => if statusFailed s = true then .done s 0 else
+  if different previousSequence 0 = true then
+    if (if different epoch previousEpoch = true then true else if different sequence (previousSequence + 1) = true then true else if time < previousTime then true else false) = true then
+      cancelBookmarkInput
+    else acceptSample sequence time x y flags epoch
+  else acceptSample sequence time x y flags epoch
+where
+  acceptSample (sequence time x y flags epoch : UInt64) : Action :=
+    .bind (put 288 epoch) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 296 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 304 time) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (get 408) fun s previousContact => if statusFailed s = true then .done s 0 else
+    .bind (put 408 (flags &&& 1)) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+    if different active 0 = true then appendRaw else
+    if flags &&& 1 = 0 then .done 0 0 else if previousContact = 1 then .done 0 0 else
+    .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+    .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
+    .bind (get 48) fun s maxX => if statusFailed s = true then .done s 0 else
+    .bind (get 56) fun s maxY => if statusFailed s = true then .done s 0 else
+    let safetyX := Geometry.pixel (Geometry.normalized x maxX) width
+    let safetyY := Geometry.pixel (Geometry.normalized y maxY) height
+    if (if 132 ≤ safetyY then if safetyY < 160 then if 544 ≤ safetyX then if safetyX < 832 then true else false else false else false else false) = true then
+      multimodalSafety (if safetyX < 640 then 1 else 2)
+    else
+    .bind (get 432) fun s cancelled => if statusFailed s = true then .done s 0 else
+    if cancelled = 1 then .done 0 0 else
+    .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+    .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+    .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+    .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
+    .bind Lemma.Notebook.ControlBacklog.count fun queueStatus waiting =>
+    if queueStatus = 0 then
+    if different (pending ||| checking ||| waiting) 0 = true then queueBookTap x y else
+    if 2 ≤ status then queueBookTap x y else
+    if different dirtyX 0xffff = true then queueBookTap x y else
+    .bind (get 112) fun s queued => if statusFailed s = true then .done s 0 else
+    if different queued 0 = true then queueBookTap x y else
+    .bind cancelBookmarkWork fun s _ => if statusFailed s = true then courseError s else
+    .bind cancelArithmetic fun s _ => if statusFailed s = true then courseError s else
+    .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+    .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
+    .bind (get 48) fun s maxX => if statusFailed s = true then .done s 0 else
+    .bind (get 56) fun s maxY => if statusFailed s = true then .done s 0 else
+    let px := Geometry.pixel (Geometry.normalized x maxX) width
+    let py := Geometry.pixel (Geometry.normalized y maxY) height
+    if py < 128 then bookmarkToolbar (minimum 8 (px / (width / 9))) else
+    if py < 160 then if 132 ≤ py then
+      if 400 ≤ px then if px < 544 then multimodalControl 0 else
+        if px < 640 then multimodalControl 1 else if px < 832 then multimodalControl 2 else
+        if px < 928 then multimodalControl 3 else if px < 1024 then multimodalControl 4 else .done 0 0
+      else if 288 ≤ px then if px < 360 then numericToggleCourse else .done 0 0 else .done 0 0
+      else .done 0 0 else
+    .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+    if course = 1 then
+      if 448 ≤ px then if px < 832 then if 160 ≤ py then if py < 360 then
+        numericPadPress (Lemma.Courses.NumberPad.key (px - 448) (py - 160)) else write else write else write else
+      if py < 320 then if 24 ≤ px then if px < 408 then packageCoursePress px py else write else write else
+      if 640 ≤ py then if py < 700 then if 24 ≤ px then if px < 408 then packageControlPress px py else write else write else write else write
+    else write
+    else Lemma.Notebook.ControlBacklog.deferFailure queueStatus
+  write : Action :=
+    .bind numericMarkPadOverdraw fun s _ => if statusFailed s = true then failWriting s else
+    .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
+
+private def drainMultimodalInput (input : UInt64) : Action :=
+  .boundedFoldU64 8 drainStep 8 0 input 0 0 0 fun s consumed =>
+    if s = Status.iterationStop then .done 0 consumed else .done s consumed
+where
+  drainStep (_ _ : UInt32) (consumed input _ _ _ : UInt64) : Action :=
+    .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
+    if count = 384 then .done Status.iterationStop consumed else
+    .bind (Syscall.call 65 input 1 raw 0 0) fun s _ =>
+    if s = 174 then .done Status.iterationStop consumed else
+    if s = 175 then
+      .bind cancelBookmarkInput fun s _ => if statusFailed s = true then .done s consumed else .done Status.iterationStop consumed
+    else if statusFailed s = true then .done s consumed else
+    .bind multimodalInputSample fun s _ => if statusFailed s = true then .done s consumed else
+    if count = 383 then .done Status.iterationStop (consumed + 1) else
+    .bind (get 104) fun s active => if statusFailed s = true then .done s consumed else
+    if active = 0 then .done Status.iterationStop (consumed + 1) else
+    .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
+    if count = 384 then .done Status.iterationStop (consumed + 1) else .done 0 (consumed + 1)
+
+private def multimodalPackageWork : Action :=
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
+  if allocated = 12 then
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  if pending ||| rawCount ||| rawPending ||| stroke ||| checking = 0 then
+  .bind pumpBookmarkOpen fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 208) fun s lookup => if statusFailed s = true then .done s 0 else
+  if lookup = 1 then .done 0 0 else if lookup = 2 then .done 0 0 else
+  .bind (get 160) fun s openedSave => if statusFailed s = true then .done s 0 else
+  if openedSave = 0 then
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  if course = 1 then
+  .bind readerPrepareSelection fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 152) fun s automatic => if statusFailed s = true then .done s 0 else
+  .bind (if automatic = 1 then
+    .bind (packagePut 152 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 128) fun s identity => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 136) fun s edition => if statusFailed s = true then .done s 0 else
+    beginPackageRead identity edition else .done 0 0) fun s _ => if statusFailed s = true then bookmarkCourseError s else
+  .bind pumpPackageRead fun result _ =>
+  if statusFailed result = true then
+    .bind cancelPackageRead fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packagePut 32 4) fun s _ => if statusFailed s = true then .done s 0 else courseError result
+  else
+  .bind validateBookmarkPackage fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 72) fun s text => if statusFailed s = true then .done s 0 else
+  .bind (if text = 1 then
+    .bind multimodalAdmitTutor fun s marked => if statusFailed s = true then courseError s else
+    .bind renderPackageText fun s _ => if statusFailed s = true then courseError s else
+    .bind (if marked = 1 then multimodalTutorAccepted else .done 0 0) fun s _ => if statusFailed s = true then courseError s else packagePut 72 0
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 144) fun s controls => if statusFailed s = true then .done s 0 else
+  if controls = 1 then
+    .bind renderPackageControls fun s _ => if statusFailed s = true then courseError s else packagePut 144 0
+  else .done 0 0
+  else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0
+
+private def multimodalStep : Action :=
+  .bind Lemma.User.Multimodal.pump fun _ _ =>
+  .bind pumpBookmarkSave fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpPackageArithmetic fun s _ => if statusFailed s = true then .done s 0 else
+  .bind numericPumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
+  .bind multimodalPackageWork fun s _ => if statusFailed s = true then .done s 0 else
+  .bind numericPumpPad fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else
+  .bind multimodalPumpBar fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpBookControlBacklog fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+  .bind (if count = 384 then enqueue else if active = 0 then enqueue else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  if count = 384 then Syscall.sleep 10000 else
+  .bind (get 8) fun s input => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  .bind bookmarkBusy fun s work => if statusFailed s = true then .done s 0 else
+  if work = 0 then
+    if (if checking = 0 then if pending = 0 then if recovery = 0 then if dirtyX = 0xffff then true else false else false else false else false) = true then
+      .bind (Syscall.call 65 input 1 raw 0 0) fun s _ =>
+      if s = 175 then cancelBookmarkInput else if s = 174 then Syscall.sleep 10000 else
+      if statusFailed s = true then .done s 0 else multimodalInputSample
+    else drain input
+  else drain input
+where
+  drain (input : UInt64) : Action :=
+    .bind (drainMultimodalInput input) fun s consumed =>
+    if statusFailed s = true then .done s 0 else if consumed = 0 then Syscall.sleep 10000 else .done 0 consumed
+
+def mainMultimodal (bootArgument : UInt64) : Action :=
+  if (if bootArgument = 2 then (1 : UInt64) else if bootArgument = 3 then 1 else 0) = 0 then failed else
+  .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 packageAllocationAddress 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 576 7) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 584 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 0) fun s surface => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 1) fun s input => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 2) fun s documents => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 3) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (put 0 surface) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 8 input) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 16 documents) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 24 console) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if 2 ≤ bootArgument then Capability.bootGrant 5 else .done 0 0) fun s arithmetic => if statusFailed s = true then .done s 0 else
+  .bind (put 528 arithmetic) fun s _ => if statusFailed s = true then .done s 0 else
+  if bootArgument = 3 then
+    .bind waitForMount fun s _ => if statusFailed s = true then .done s 0 else initializeMedium
+  else
+  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.PackageAwaitClient.call documents outgoing incoming 1 0 request) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Services.Store.Client.responseField incoming 40) fun s floor => if statusFailed s = true then .done s 0 else
+  .bind (put 128 floor) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.geometry surface) fun s geometry => if statusFailed s = true then .done s 0 else
+  let width := geometry &&& 0xffffffff
+  let height := geometry >>> 32
+  if width < 832 then failed else if 4096 < width then failed else
+  if height < 760 then failed else if 4096 < height then failed else
+  .bind (put 32 width) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 40 height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 3 0 0 0) fun s maxX => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 4 0 0 0) fun s maxY => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 0 0 0 0) fun s pressure => if statusFailed s = true then .done s 0 else
+  .bind (put 48 maxX) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 56 maxY) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 64 pressure) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 80 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 120 ink0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 272 512) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 336 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 344 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 41 allocateStep 41 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind Surface.allocateBulk fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.allocate width height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (loadNotebook 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 416) fun s create => if statusFailed s = true then .done s 0 else
+  .bind (if create = 1 then savePage 1 else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.User.Multimodal.initialize console) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind multimodalBar fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
+  if statusFailed s = true then .done s 0 else .loop multimodalStep
 
 
 

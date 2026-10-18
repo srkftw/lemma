@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evidence report: Task 001 Core0 freestanding scalar slice</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="evidence-report-task-001-core0-freestanding-scalar-slice">Evidence report: Task 001 Core0 freestanding scalar slice</h1>
+<p>Status: <strong>passed for the stated Task 001 scalar slice</strong> on 2026-10-07. This is
+bounded evidence for parts of Stage I. It is not completion of G1, arbitrary
+freestanding Lean, the managed Lean runtime, or an operating system.</p>
+<p>The compact machine record is
+<a href="001-core0-summary.json"><code>001-core0-summary.json</code></a>, and full checked-in source and
+primary-artifact digests are in
+<a href="001-core0-sha256s.txt"><code>001-core0-sha256s.txt</code></a>. Generated evidence remains under
+ignored <code>build/core0/</code>; the CI workflow retains that directory when CI runs.</p>
+<h2 id="exact-claim-and-tested-source">Exact claim and tested source</h2>
+<p>The clean acceptance run established this route for one declared program and a
+finite test corpus:</p>
+<pre><code class="language-text">ordinary Lean source
+  -&gt; Lean elaboration and Environment declaration bodies
+  -&gt; fail-closed checked Core0 v0.1
+  -&gt; Lean-authored structured LLVM
+  -&gt; LLVM 20.1.8 RV64 objects
+  -&gt; direct LLD static link with generated startup
+  -&gt; QEMU 11.1.1 virt, -bios none
+  -&gt; framed UART result from post-code-generation input
+</code></pre>
+<p>The source state that produced the recorded target artifacts was a separate clean
+worktree at:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Identity</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Repository</td>
+<td><code>srkftw/lemma</code></td>
+</tr>
+<tr>
+<td>Branch</td>
+<td><code>task/001-core0-freestanding-slice</code></td>
+</tr>
+<tr>
+<td>Starting <code>main</code> commit</td>
+<td><code>f384f13d9f4981023b88008f87f1aa7685372d5a</code></td>
+</tr>
+<tr>
+<td>Tested implementation commit</td>
+<td><code>800d35963cb63c754584f5b8b0d53244c29c7018</code></td>
+</tr>
+<tr>
+<td>Tested implementation tree</td>
+<td><code>17f6fbdc8e1d81d4e0f4d91620bf6da5b6e59b9e</code></td>
+</tr>
+<tr>
+<td>Worktree status during build</td>
+<td>clean; <code>dirty_tree: false</code>, <code>dirty_paths: []</code></td>
+</tr>
+<tr>
+<td>Task files relative to the starting commit</td>
+<td>58; every full SHA-256 is in the inventory</td>
+</tr>
+<tr>
+<td>Direct image-generation source inputs</td>
+<td>23</td>
+</tr>
+<tr>
+<td>Canonical compact JSON digest of those 23 records</td>
+<td><code>98d663d6e1688a0af284ff7071265687b69b7ad2acd8768083922a6a0a8bfe9e</code></td>
+</tr>
+</tbody></table>
+<p>The evidence report and machine summary are documentation added after that clean
+implementation run. The publication handoff identifies the final report-bearing
+commit separately; it does not relabel the starter commit as the tested source.</p>
+<h3 id="post-report-verification-identities">Post-report verification identities</h3>
+<p>The historical hashes throughout this report remain bound to implementation commit
+<code>800d35963cb63c754584f5b8b0d53244c29c7018</code> and tree
+<code>17f6fbdc8e1d81d4e0f4d91620bf6da5b6e59b9e</code>. The later report-bearing commit is
+<code>b8e9c59365ae8e9925e0bf6fbca6a963d990ec85</code>, tree
+<code>88d2c23aafbd2b3a40a195755c01494de9ffad75</code>. That commit was also verified in a
+separate clean local worktree: its 23-input canonical digest was
+<code>ff8bad8c2b2b11e782bcdc16877f82f877476f21abea28811edc36816e741834</code>, and its
+run-specific <code>check-results.json</code> hash was
+<code>a9a43ece72b9c48987a5d22720bfe3b15e97f7add69f83aeaa07dd04c865319b</code>.
+Only <code>tooling/toolchain-lock.json</code> changed among the 23 direct image-generation
+inputs from the historical implementation commit; all 14 declared reproducibility
+artifacts in each optimization profile remained byte-identical.</p>
+<p>GitHub Actions subsequently passed twice. Push run <code>37738473183</code> tested the branch
+head <code>b8e9c593...</code> and retained artifact <code>11532842069</code>, digest
+<code>sha256:1dc8dedd414822ad645030864242482dd769b55056f833810fcaf87718c9087c</code>.
+Pull-request run <code>37738500851</code> used GitHub&#39;s synthetic merge commit
+<code>7e56613a23d86cad6e21a98546da6983660d9806</code> (parents <code>f384f13...</code> and
+<code>b8e9c593...</code>), whose tree matched the report-bearing tree, and retained artifact
+<code>11532718091</code>, digest
+<code>sha256:f37a3097c9c18d1f3311f5f0b118cafc638a14ed161e870cef08743104660be1</code>.
+These are later reruns, not relabelings of the historical <code>800d359...</code> evidence.</p>
+<h2 id="implemented-source-profile">Implemented source profile</h2>
+<p><code>Lemma.Core0.checkAndLower</code> reads kernel-checked <code>ConstantInfo</code> bodies already
+installed in <code>Lean.Environment</code>, follows reachable direct declarations, validates
+exact primitive identities, complete scalar signatures and expected standard
+instances, and produces a dependency-first typed Core0 tree. The compiler does not
+replace elaboration with a caller-built sample AST.</p>
+<p>The admitted profile is deliberately narrow:</p>
+<ul>
+<li>runtime values and results: <code>Bool</code>, <code>UInt8</code>, <code>UInt32</code>, and <code>UInt64</code>;</li>
+<li>first-order monomorphic definitions, explicit scalar parameters, literals, <code>let</code>,
+pure conditionals and direct calls;</li>
+<li>wrapping fixed-width addition, subtraction and multiplication;</li>
+<li>fixed-width <code>and</code>, <code>or</code>, and <code>xor</code>;</li>
+<li>equality and unsigned <code>&lt;</code>/<code>≤</code> comparisons;</li>
+<li>unsigned zero extension and low-bit truncation between the admitted widths; and</li>
+<li>a separately declared machine boundary for startup, aligned fixed input reads,
+bounded ordered 16550 UART output, an I/O fence and SiFive-test termination.</li>
+</ul>
+<p>The guest root is
+<code>Lemma.Examples.Core0.Positive.entry : UInt64 -&gt; UInt64 -&gt; UInt64 -&gt; UInt64</code>.
+It directly calls <code>mix64</code>, uses both branches, performs wrapping arithmetic and bit
+operations, and truncates to <code>UInt32</code> before zero extending. Additional elaborated
+positive checks exercise <code>UInt8</code>, <code>UInt32</code>, <code>Bool</code>, conversions and 11 reference
+evaluator cases. The actual differential guest corpus exercises the <code>entry</code> root;
+it does not claim that every positive helper is separately booted.</p>
+<p>The checker rejects reachable boxed or heap-backed data, allocation, capturing
+closures, hosted <code>IO</code>, arbitrary <code>extern</code>, unchecked compiler replacements, custom
+primitive instances, runtime initialization, partial/general recursion, division,
+remainder, shifts, complement, exceptions, loops, floating point, vectors, atomics,
+generic memory operations, unknown expressions and unresolved calls. Unreachable
+host imports are not rejected merely for existing.</p>
+<p>The independent model in <code>Lemma/Core0/Semantics.lean</code> interprets checked Core0. It
+does not call the LLVM lowering. Its shared boundary is the checked Core0 program,
+so differential execution checks lowering/code generation without pretending to be
+a compiler-correctness proof.</p>
+<h2 id="why-this-compilation-route-was-chosen">Why this compilation route was chosen</h2>
+<p>The pinned Lean binary reports no LLVM feature, and an actual <code>lean -b</code> probe failed
+at the disabled LLVM-backend assertion. The audited Lean source defaults that backend
+off, restricts it to LLVM 19 while this repository pins LLVM 20.1.8, lacks the needed
+RV64 triple/data-layout contract, admits general C externs, and links managed Lean
+runtime bitcode with boxing, reference-counting, initialization and hosted helpers.</p>
+<p>Task 001 therefore uses the genuine elaborated declaration body as its frontend
+boundary, then a project-owned Lean checker and narrow Lean LLVM lowering. It does
+not use Lean-to-C-to-LLVM. Details and immutable upstream source paths are in
+<code>docs/audits/llvm-core0.md</code>; semantics are frozen in
+<code>docs/audits/core0-lowering.md</code>.</p>
+<p>The generated manifest stores the checked function order, source and LLVM identities,
+signatures, direct dependencies, deterministic normalized typed bodies, and exact
+primitive contracts. The closure audit cross-checks it with the normalized companion,
+pre/post-optimization IR, object symbols and final ELF. Low-level assembly is generated
+from the small structured instruction ADT in <code>Lemma/Machine/Primitives.lean</code>; there is
+no maintained target C/C++/Rust/Zig/assembly source and no complete target program
+hidden in a Lean string.</p>
+<h2 id="pinned-inputs-and-observed-tools">Pinned inputs and observed tools</h2>
+<p><code>flake.lock</code>, <code>lean-toolchain</code>, and <code>tooling/toolchain-lock.json</code> are the authoritative
+locks. The latter records immutable flake/store/NAR identities for all used tools, plus
+upstream source revisions/hashes, derivations and replay commands for the principal
+Lean/LLVM/LLD/QEMU inputs. Principal identities used by this run were:</p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Version / immutable revision</th>
+<th>Realized output identity</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>nixpkgs</td>
+<td><code>7dd199b0e2993e37b4775ed66b1c291699608c9f</code></td>
+<td>source NAR <code>sha256-o9ZUW4SlEAvFPIyJWnqChhOT/VHpHg8TAvEgmqK1fSI=</code></td>
+</tr>
+<tr>
+<td>Lean / Lake</td>
+<td>Lean 4.34.1, Lake 5.0.0-src; <code>5045d0056413266e57c625dcd7c365b10e377c52</code></td>
+<td><code>/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1</code>; NAR <code>sha256-CPrzJ6Fq5wxwravpLoJQIkp9WGW+3Lv8GjJG9nefwqo=</code></td>
+</tr>
+<tr>
+<td>LLVM <code>opt</code>/<code>llc</code></td>
+<td>20.1.8; <code>87f0227cb60147a26a1eeb4fb06e3b505e9c7261</code></td>
+<td><code>/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8</code>; NAR <code>sha256-N/rgDsq17lRAEQm9vf6YruWnIHN/DZhWM5Et1YCulJk=</code></td>
+</tr>
+<tr>
+<td>Clang, unwrapped</td>
+<td>20.1.8; same LLVM revision</td>
+<td><code>/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8</code>; NAR <code>sha256-zy5fyFT/JnjPfCFKtAFKIMyFwqshmBorDoxRt7zyIVo=</code></td>
+</tr>
+<tr>
+<td>LLD</td>
+<td>20.1.8; same LLVM revision</td>
+<td><code>/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8</code>; NAR <code>sha256-VfnUCqZmurMkXKzYy4hchZKNu6bVMKByWoNTCe0geZE=</code></td>
+</tr>
+<tr>
+<td>QEMU</td>
+<td>11.1.1; <code>c3d48b7d1e89604920e5b81b91140c2ad39a1943</code></td>
+<td><code>/nix/store/9ihv5zpj6l7fl12mdcxrbmiih3wgrmhw-qemu-11.1.1</code>; NAR <code>sha256-ZgXwd0SM3CJt8UkZ38IfhH2LMY7QaC99MQJLbLypRVQ=</code></td>
+</tr>
+<tr>
+<td>DTC</td>
+<td>1.8.1</td>
+<td><code>/nix/store/7v9p68ylbqfcj7mapysfhff2vzwl75aw-dtc-1.8.1</code>; NAR <code>sha256-xfFb10AV/TTaSUKchw2eN2tgFGfstpKvg0QL34+HQ1s=</code></td>
+</tr>
+<tr>
+<td>Python</td>
+<td>3.14.7 in the Nix shell; system Python 3.13.9 for the two outside-Nix scaffold commands</td>
+<td><code>/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7</code>; NAR <code>sha256-G7+E0T4FPbBU3fDd7ypzt5uDoKXRz+80fsI+WBUMsB0=</code></td>
+</tr>
+</tbody></table>
+<p>The observed host was x86_64 NixOS 25.11 build
+<code>25.11.3064.64049ca74d63</code>, kernel 6.12.63, with Nix 2.31.2. This host generation is
+forensic context, not a flake input.</p>
+<h2 id="commands-actually-executed">Commands actually executed</h2>
+<p>These public interfaces were run successfully against the clean tested commit:</p>
+<pre><code class="language-sh">python3 scripts/check_scaffold.py
+python3 -m unittest discover -s tests/scaffold -v
+nix develop --no-write-lock-file --command \
+  python3 -m unittest discover -s tests/core0 -v
+nix develop --no-write-lock-file --command \
+  ./scripts/check-core0.sh --clean
+</code></pre>
+<p>Observed results were metadata validation PASS; 18/18 scaffold tests PASS; 21/21
+Core0 host-harness tests PASS; and <code>CORE0 CHECK PASS: 10 cases at O0/O2; 13 expected rejections</code>. No check used a skip-to-success path. The acceptance command created 23
+fresh QEMU boots and returned zero. The same commands, without generated artifacts
+copied into the checkout, were run in the separate clean worktree; <code>git status --porcelain</code> and <code>git diff --check</code> were empty afterward.</p>
+<p>The relevant target commands retained in provenance include:</p>
+<pre><code class="language-sh">lake build
+lake env lean examples/core0/Build.lean
+
+opt -S -passes=verify program.ll -o program.opt.ll
+llc -mtriple=riscv64-unknown-elf \
+  -mattr=+m,+zicsr,+zifencei,-a,-f,-d,-c,-v,-relax \
+  -target-abi=lp64 -relocation-model=static -code-model=medium \
+  -filetype=obj -O0 program.opt.ll -o program.o
+
+opt -S &#39;-passes=default&lt;O2&gt;&#39; program.ll -o program.opt.ll
+llc -mtriple=riscv64-unknown-elf \
+  -mattr=+m,+zicsr,+zifencei,-a,-f,-d,-c,-v,-relax \
+  -target-abi=lp64 -relocation-model=static -code-model=medium \
+  -filetype=obj -O2 program.opt.ll -o program.o
+
+clang --target=riscv64-unknown-elf -march=rv64im_zicsr_zifencei \
+  -mabi=lp64 -mno-relax -c startup.S -o startup.o
+ld.lld -m elf64lriscv --no-relax -T link.ld -Map=image.map \
+  -o image.elf startup.o program.o
+</code></pre>
+<p>Each runtime case then used the recorded form:</p>
+<pre><code class="language-sh">qemu-system-riscv64 -machine virt,acpi=off -accel tcg -cpu rv64 \
+  -smp 1 -m 128M -bios none -kernel build/core0/check/O0/image.elf \
+  -device loader,file=build/core0/check/O0/runs/input-CASE.bin,addr=0x81000000,force-raw=on \
+  -nodefaults -nic none -display none -serial stdio -monitor none \
+  -no-reboot -seed 1
+</code></pre>
+<p><code>scripts/run_core0.py</code> supplies absolute paths in the actual argv, enforces a five-second
+default timeout, kills the QEMU process group on timeout, reaps it, and requires zero
+exit status, empty stderr and one exact complete frame.</p>
+<h2 id="runtime-input-and-observed-uart-output">Runtime input and observed UART output</h2>
+<p>The image is built before a case fixture is created. Each 40-byte fixture contains five
+little-endian 64-bit words. Its first eight bytes are ASCII <code>LEMMA001</code>
+(<code>4c 45 4d 4d 41 30 30 31</code>), whose little-endian integer value is
+<code>0x313030414d4d454c</code>; the remaining words are the case ID and three arguments. QEMU&#39;s
+generic loader places the fixture in the reserved, non-overlapping input region at
+<code>0x81000000</code>. The image, stack and fixture regions are separately validated.</p>
+<p>The distinct value <code>0x4c454d4d41303031</code> is retained as the corpus tag in <code>cases.json</code>;
+it is neither the wire magic nor a random seed and does not generate the cases. QEMU&#39;s
+actual deterministic seed is <code>1</code>.</p>
+<p>Representative case <code>ordinary-then-branch</code> used case ID <code>2</code> and arguments <code>2</code>, <code>3</code>,
+<code>0x13</code>. The actual UART bytes were:</p>
+<pre><code class="language-text">LEMMA_CORE0/1
+RESULT:0000000000000002:000000000000009d
+</code></pre>
+<p>The fixture SHA-256 was
+<code>b5de1f08a0af7b3c9041bc06045db8bd4592188efc7171a22e9b024b843fc354</code>,
+the UART SHA-256 was
+<code>5629e055e1a6e70b1a0fffba0464d34bec88a628be05f91ce960ef6f8d46f701</code>,
+and QEMU returned zero with empty stderr. The O0/O2 run-record hashes were respectively
+<code>ff44c71016db83bd6987c4f3111021f69151bb6ba7202b52f3f06a074b562fa8</code>
+and <code>c99e14a6841fa24b4e31ae295b687478821b12887dee2027e3185275318a248a</code>.</p>
+<h2 id="acceptance-results">Acceptance results</h2>
+<h3 id="positive-and-differential-execution">Positive and differential execution</h3>
+<p>Ten fixed runtime cases were evaluated by the independent Lean model, then booted once
+each at genuine O0 and O2 for 20 differential boots. They covered all-zero input, both
+entry branches, direct calls, unsigned comparisons, <code>UInt64</code> maximum values, addition
+and multiplication wraparound, <code>UInt32</code> truncation/zero extension, discarded high bits,
+subtraction and alternating-bit patterns. All 20 target results exactly matched the
+reference. <code>Reference.lean</code> and its stdout hash to
+<code>d5d858e5c554edda811b1108c5b0ea7ac6c1fe464e7029ae7b41ab4d7737a3e8</code>
+and <code>c37ad643448736e294786eb37fbfe444bac2033b57824e09c7ea6c816530020d</code>;
+reference stderr was empty.</p>
+<p>The O0 pipeline uses <code>opt -passes=verify</code> and <code>llc -O0</code>; O2 uses
+<code>opt -passes=default&lt;O2&gt;</code> and <code>llc -O2</code>. Generated pre-optimization IR contains zero
+<code>nsw</code>, <code>nuw</code>, or <code>inbounds</code> flags. O0 post-optimization remains zero for all three.
+O2 post-optimization contains 50 optimizer-inferred <code>nsw</code> and 50 <code>nuw</code> occurrences,
+inventoried by the audit, and zero <code>inbounds</code>; the project emitter did not assert them.</p>
+<h3 id="expected-source-rejection">Expected source rejection</h3>
+<p>All 13 isolated fixtures failed with return code 1 and the required Core0 diagnostic,
+source location where available, and dependency path:</p>
+<table>
+<thead>
+<tr>
+<th>Fixture</th>
+<th>Intended checked failure</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>reachable-allocation</code></td>
+<td>non-scalar/boxed let-bound value</td>
+</tr>
+<tr>
+<td><code>arbitrary-extern</code></td>
+<td>arbitrary <code>@[extern]</code> dependency</td>
+</tr>
+<tr>
+<td><code>capturing-closure</code></td>
+<td>nested/capturing closure</td>
+</tr>
+<tr>
+<td><code>unchecked-compiler-replacement</code></td>
+<td>unchecked <code>implemented_by</code> replacement</td>
+</tr>
+<tr>
+<td><code>non-allowlisted-typeclass-instance</code></td>
+<td>non-allowlisted primitive instance</td>
+</tr>
+<tr>
+<td><code>unsupported-division</code></td>
+<td>unsupported division primitive</td>
+</tr>
+<tr>
+<td><code>extern-on-definition-with-body</code></td>
+<td><code>@[extern]</code> even though a body exists</td>
+</tr>
+<tr>
+<td><code>hidden-forbidden-helper</code></td>
+<td>transitive helper reaches division</td>
+</tr>
+<tr>
+<td><code>hosted-io-result</code></td>
+<td>hosted/non-scalar <code>IO</code> result</td>
+</tr>
+<tr>
+<td><code>initialization-effect</code></td>
+<td>reachable runtime initializer</td>
+</tr>
+<tr>
+<td><code>partial-recursion</code></td>
+<td>partial/recursive declaration</td>
+</tr>
+<tr>
+<td><code>unsupported-shift</code></td>
+<td>unsupported shift primitive</td>
+</tr>
+<tr>
+<td><code>unsupported-complement</code></td>
+<td>unsupported complement primitive</td>
+</tr>
+</tbody></table>
+<p>The rejection manifest hash is
+<code>a8054ddd4384eb2c0d23988633265fc7f7c330618c7a0217fc1071bafe8f8ca0</code>.
+Per-fixture diagnostic hashes are preserved in <code>check-results.json</code>.</p>
+<h3 id="source-sensitivity-and-name-independence">Source sensitivity and name independence</h3>
+<p>Three additional fresh O2 boots exercised the source-mutation check:</p>
+<ul>
+<li>baseline multiplier 3: source
+<code>389ecaa09620cfd0e28c3f86b0dbbe4387136c9a05faae335dffeb587f051f87</code>,
+LLVM <code>720dc5f2d0c9f7527458c067008a7376396a0089acf925e16b38826ef2221d47</code>,
+ELF <code>a7a151d46a8a70bbf255f1a90d1921ef54e45a8e357a8a67bddb434bb82ac290</code>,
+result <code>0x0000000000000006</code>;</li>
+<li>changed multiplier 5: source
+<code>bc87d5e5d0184e62d684085939efe97e203ad2c16b2e391956f8f5420a241eed</code>,
+LLVM <code>114fd3604967b032e1f47b0f0034ca3e3f6cee2df138b12c9c37ba0f83c14dc3</code>,
+ELF <code>f4484c54f0abd1c9a3fdd764c2b537ef58b591063f9c67387a9bf6c6a7ab391e</code>,
+result <code>0x000000000000000a</code>; and</li>
+<li>semantically identical renamed helper/root: source
+<code>17ef3dbdb0b8d0d2fd8b4bbb440b04fa2a4534ebbe87ca6af5d2318fbc90f81c</code>,
+LLVM <code>e5453303e8b0cb232937e8ba796a6993366f0ae1b282fc7af3a1a96aa8de006f</code>,
+ELF <code>a6c8885dab278b355cb205275945558e483bb043a602572787b1f7a248ca9255</code>,
+result matching the baseline.</li>
+</ul>
+<p>This demonstrates that the compiled bodies affect guest behavior and that source names
+are not a semantic allowlist. It is not the still-open Stage I test that deliberately
+injects an incorrect lowering and proves the oracle detects it.</p>
+<h3 id="repeat-builds">Repeat builds</h3>
+<p>O0 and O2 were rebuilt into fresh output directories. For each profile, all 14 declared
+reproducibility artifacts (<code>program.ll</code>, optimized IR, both objects/generators,
+linker/layout/manifest data, image/map/symbol data and platform DTB/DTS) were
+byte-identical. Invocation records were deliberately excluded from that byte-identity
+set: <code>provenance.json</code> retains elapsed durations and command/output paths, <code>build.json</code>
+and <code>audit.json</code> retain output-directory metadata, and their derived wrapper hashes can
+therefore differ. Per-case run records and the aggregate <code>check-results.json</code> are also
+observations of a particular run, not claimed byte-identical build products. The target
+output directories were clean, but the pinned Lake dependency cache was deliberately
+reused; the claim is fresh target artifacts, not a from-zero rebuild of the Lean
+toolchain.</p>
+<h3 id="linked-code-closure">Linked-code closure</h3>
+<p>Both profiles passed the fail-closed audit. The direct link contains exactly two inputs:
+<code>startup.o</code>, generated from the structured Lean primitive definition, and <code>program.o</code>,
+generated from checked Core0 plus the fixed Lean-authored harness. The audit validates
+their exact generation and link commands, source hashes and object hashes.</p>
+<p>The final files are little-endian ELF64 RISC-V, entry <code>_start</code> at <code>0x80000000</code>, integer
+LP64 with exact ELF flags <code>0x0</code> (soft-float and no RVC), and architecture
+<code>rv64i2p1_m2p0_zicsr2p0_zifencei2p0_zmmul1p0</code>. Allocated sections are exactly
+<code>.text</code>, <code>.rodata</code>, and <code>.bss</code>; the GNU stack is non-executable. The final ELF has no
+undefined symbols, dynamic dependencies, interpreter or relocations. The audit checks
+the exact pre/post-optimization function closure, direct calls only, no inline assembly,
+object/final <code>FUNC</code> symbols, object relocations, segments/layout, startup disassembly,
+stack alignment, BSS clearing, <code>a0</code>/<code>a1</code> preservation, absence of <code>gp</code> use/relaxation and
+absence of floating-point/vector instructions.</p>
+<p>At O0 the final function symbols are <code>_start</code>, <code>core0_io_fence</code>, both checked user
+functions and the fixed six-function harness. O2 legitimately inlines the helper and
+UART-drain functions; the post-optimization manifest/symbol closure accounts for the
+remaining functions.</p>
+<p>The deliberate foreign-runtime regression linked a third object while resolving every
+symbol and retaining <code>lean_alloc_object</code> plus <code>lemma_forbidden_foreign_runtime</code>. Its
+fixture and object hashes are
+<code>499e190134343c1da7402267df0f3869f3c13c9c9b50791c2f82f7357f34e264</code>
+and <code>6770c4c5ba6821a623f9f7747c99375335840a565ea5a69105c36c885a5b7a31</code>.
+The audit rejected it for violating the exact two-object provenance contract. A clean
+undefined-symbol table therefore could not produce PASS by itself.</p>
+<h3 id="harness-failure-behavior">Harness failure behavior</h3>
+<p>The 21 tests in <code>tests/core0/test_harness.py</code> cover these named paths:</p>
+<ul>
+<li>framing: <code>test_complete_exact_frame_is_accepted</code>,
+<code>test_truncated_frames_are_rejected</code>,
+<code>test_noisy_or_duplicate_output_is_rejected</code>, and
+<code>test_wrong_case_identifier_is_rejected</code>;</li>
+<li>process handling: <code>test_timeout_kills_and_reaps_direct_process</code>,
+<code>test_nonzero_exit_is_not_checked_success</code>,
+<code>test_nonzero_qemu_exit_is_rejected</code>, and
+<code>test_qemu_timeout_is_rejected_without_a_run_record</code>;</li>
+<li>inputs/tools: <code>test_missing_layout_manifest_is_rejected</code>,
+<code>test_missing_tool_is_an_error</code>,
+<code>test_missing_and_malformed_json_are_errors</code>,
+<code>test_empty_case_corpus_cannot_report_pass</code>,
+<code>test_positive_corpus_is_nonempty_well_formed_and_covers_boundaries</code>, and
+<code>test_rejection_manifest_is_nonempty_and_points_to_real_fixtures</code>; and</li>
+<li>closure/provenance: <code>test_missing_target_manifest_fails_before_tool_inspection</code>,
+<code>test_malformed_target_manifest_fails_before_tool_inspection</code>,
+<code>test_target_manifest_without_checked_body_is_rejected</code>,
+<code>test_untracked_linked_object_is_rejected</code>,
+<code>test_tampered_source_provenance_is_rejected</code>,
+<code>test_incomplete_object_provenance_is_rejected</code>, and
+<code>test_fully_defined_forbidden_runtime_is_rejected</code>.</li>
+</ul>
+<p>The full acceptance driver independently requires a nonempty well-formed positive and
+rejection corpus before tool inspection or build-output creation. Expected negative
+fixtures must contain their intended diagnostic fragments, so an unrelated compiler
+failure is not counted as a successful rejection.</p>
+<h2 id="qemu-platform-and-reset-boundary">QEMU platform and reset boundary</h2>
+<p>The automated acceptance run used one RV64 hart, 128 MiB RAM, TCG, no disk or network,
+<code>-nodefaults</code>, <code>-bios none</code>, UART at <code>0x10000000</code>, SiFive test finisher at <code>0x00100000</code>,
+RAM at <code>0x80000000</code>, and seed 1. The pinned QEMU <code>virt</code> pre-reset <code>dumpdtb</code> was generated
+and decompiled on each build, then checked against those nodes. Its DTB/DTS hashes are
+<code>c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f</code>
+and <code>dbc65ed2346dd8aa6ab8f3218639cbe39636f2649201d88f516a7343396b3ec8</code>.</p>
+<p><code>-bios none</code> excludes OpenSBI or another firmware image; it does not remove QEMU&#39;s reset
+ROM. A separate post-reset monitor probe, not counted as one of the 23 acceptance boots,
+single-stepped the synthesized vector and observed M-mode PC <code>0x1010</code>, <code>a0 = 0</code>,
+<code>a1 = 0x87e00000</code> and <code>a2 = 0x1028</code>. The Task 001 startup preserves/uses only <code>a0</code> and
+<code>a1</code>; the firmware-dynamic value in <code>a2</code> is intentionally ignored by this no-firmware
+slice. Quoted HMP captures used:</p>
+<pre><code class="language-text">pmemsave 0x1000 0xf000 &quot;&lt;tmp&gt;/full-mrom.bin&quot;
+pmemsave 0x87e00000 0x13b4 &quot;&lt;tmp&gt;/runtime-a1.dtb&quot;
+</code></pre>
+<p>The 61,440-byte full MROM hash was
+<code>d0fd275d8b65aecfaeeabbfdca02152793356dfc852fa1304fc790c33a1fd75b</code>;
+the 5,044-byte runtime DTB hash was
+<code>6190e60bba396a340b526ac10219a43184e3927fa76c8a096bc5700ade41c5df</code>.
+The runtime blob&#39;s header gave total size <code>0x13b4</code>. The runtime and pre-reset DTBs differ
+in QEMU&#39;s reset-time <code>/chosen/rng-seed</code>; both were captured with <code>-seed 1</code>. This manual
+probe corroborates the documented reset contract but is distinct from automated
+acceptance. Its temporary probe script, console output, raw HMP transcript and captured
+bytes were copied into the ignored local bundle at
+<code>build/core0/evidence-800d359/reset-probe/</code>; their hashes are in the inventory.</p>
+<h2 id="primary-artifact-hashes">Primary artifact hashes</h2>
+<p><code>check-results.json</code> hashes to
+<code>9c57398a77d240f3217a0e64f15d8f8c8d60b46b819754ce3837fe762f80d34b</code>.
+The case manifest hashes to
+<code>2b2236b35d76fb3edc3e02724b24c34223519398a6ffd87d67b7796e02789cc4</code>.
+Primary profile artifacts are:</p>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>O0 SHA-256</th>
+<th>O2 SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>audit.json</code></td>
+<td><code>7fce28f12270e87004322d74bc2d745553e976292b4e4d61aef2032a6904d1f0</code></td>
+<td><code>2417a9d58fd601a912b604d10a1f93a1e33712f2dea25f116ff4db40ce1abeec</code></td>
+</tr>
+<tr>
+<td><code>build.json</code></td>
+<td><code>55c8768d3320e2848b1a31a72fa1b9f7f64df1fecdcb08e90ea6423de5ae72a2</code></td>
+<td><code>1ce0afdec19a199b76692c578d3dd33cf1f236b7e62ac23b2e54940eff93eb0c</code></td>
+</tr>
+<tr>
+<td><code>sha256sums.txt</code></td>
+<td><code>8fa08ccecffef0292783a17f7efdd8c8a33f2e154e875b832a2d22a2869c6b54</code></td>
+<td><code>dd3d1cd07e47acd846d354457ecf2019c4ca3d60c9f6a89f8b7abefd67df91b0</code></td>
+</tr>
+<tr>
+<td><code>core0-manifest.json</code></td>
+<td><code>50985254ac530d9c021748fef8d0680064dbf8dc1de9ee2f19c77a40968c2c0d</code></td>
+<td><code>50985254ac530d9c021748fef8d0680064dbf8dc1de9ee2f19c77a40968c2c0d</code></td>
+</tr>
+<tr>
+<td><code>core0-normalized.txt</code></td>
+<td><code>9d9c7b4875dccf619967f2d45caedaafb3c44a08396016bab4925883e0ee2d74</code></td>
+<td><code>9d9c7b4875dccf619967f2d45caedaafb3c44a08396016bab4925883e0ee2d74</code></td>
+</tr>
+<tr>
+<td><code>image.elf</code></td>
+<td><code>26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b</code></td>
+<td><code>a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b</code></td>
+</tr>
+<tr>
+<td><code>image.map</code></td>
+<td><code>08f9111350bd0ddf4f0d0add2e18e80876b9edb5dc3bd0759e6ecde6c19b65c4</code></td>
+<td><code>993e7c6f110d95996b4bf3b7b3caedc11a8e63d45ff4338892eef5a7b9337ce9</code></td>
+</tr>
+<tr>
+<td><code>layout.json</code></td>
+<td><code>81f5ab1ff4f765b928656d7f572c7c8afd2dca1409600b9d4544597d039f95ff</code></td>
+<td><code>81f5ab1ff4f765b928656d7f572c7c8afd2dca1409600b9d4544597d039f95ff</code></td>
+</tr>
+<tr>
+<td><code>link.ld</code></td>
+<td><code>ecc3802ff26174e8939c11637da8d098f61b9aefa84f3107a9e2c41aa7bafe68</code></td>
+<td><code>ecc3802ff26174e8939c11637da8d098f61b9aefa84f3107a9e2c41aa7bafe68</code></td>
+</tr>
+<tr>
+<td><code>platform.dtb</code></td>
+<td><code>c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f</code></td>
+<td><code>c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f</code></td>
+</tr>
+<tr>
+<td><code>platform.dts</code></td>
+<td><code>dbc65ed2346dd8aa6ab8f3218639cbe39636f2649201d88f516a7343396b3ec8</code></td>
+<td><code>dbc65ed2346dd8aa6ab8f3218639cbe39636f2649201d88f516a7343396b3ec8</code></td>
+</tr>
+<tr>
+<td><code>program.ll</code></td>
+<td><code>879bb50473d1e49072554638b0230ba29fc42e089f30d0fc361c6339f44705f8</code></td>
+<td><code>879bb50473d1e49072554638b0230ba29fc42e089f30d0fc361c6339f44705f8</code></td>
+</tr>
+<tr>
+<td><code>program.opt.ll</code></td>
+<td><code>62b55da43074df9c03a43980f0d9d0cd3bcf49ed86c0f09dc8c234828b792c3c</code></td>
+<td><code>9160b7b0fae0346a0ba1978d04d8ca25e2761cf4975c69513ee1ec404c2714b2</code></td>
+</tr>
+<tr>
+<td><code>program.o</code></td>
+<td><code>44b226c562663aaef00de00c9196d8b25a3d9c26564e1429ff5ba8f9b959f3b1</code></td>
+<td><code>31e3e6fd1b78e3380ffd2367cda0b3d5906549a3f21deff9ed9413258a220607</code></td>
+</tr>
+<tr>
+<td><code>provenance.json</code></td>
+<td><code>7f543ed911eb4f8b0409c5bd96cfc7249615d93ede1b5e36655d5f877333f12b</code></td>
+<td><code>235e7bae5ba0f3ee24896dc31638ff6e59a55dad7c77a7daaf7243023341f66e</code></td>
+</tr>
+<tr>
+<td><code>startup.S</code></td>
+<td><code>1cd535e3f5dad9cc910316d26960942b06668fa4769eb7acf721b56a67a4b36c</code></td>
+<td><code>1cd535e3f5dad9cc910316d26960942b06668fa4769eb7acf721b56a67a4b36c</code></td>
+</tr>
+<tr>
+<td><code>startup.o</code></td>
+<td><code>83e13345e1a9e89cf8baaa167f9a7611d5858b9f3ba39372be924d79cefcdc0c</code></td>
+<td><code>83e13345e1a9e89cf8baaa167f9a7611d5858b9f3ba39372be924d79cefcdc0c</code></td>
+</tr>
+<tr>
+<td><code>symbols.txt</code></td>
+<td><code>16185fd2a3b658cbad41d9af6c085581ebbee92d9998558b36417412cbcb0bdb</code></td>
+<td><code>16185fd2a3b658cbad41d9af6c085581ebbee92d9998558b36417412cbcb0bdb</code></td>
+</tr>
+</tbody></table>
+<p>These are full hexadecimal SHA-256 values. The companion inventory includes every
+Task 001 implementation/configuration/test file at the tested commit and the mutation,
+reference, representative-run, reset-probe and audit-regression artifacts. Bulky binaries,
+logs and toolchains are intentionally not checked in.</p>
+<h2 id="stage-i-mapping-and-remaining-uncertainty">Stage I mapping and remaining uncertainty</h2>
+<table>
+<thead>
+<tr>
+<th>Unit</th>
+<th>What this slice demonstrates</th>
+<th>Why status remains <code>partial</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.1 architecture/trust</td>
+<td>pinned host/guest/emulator categories, exact primitive and source manifests</td>
+<td>broader architecture and future runtime/physical trust remain open</td>
+</tr>
+<tr>
+<td>1.2 LemmaVM</td>
+<td>versioned QEMU launch, validated DTB nodes, reset handoff and incompatible closure checks</td>
+<td>only this QEMU scalar machine profile is qualified</td>
+</tr>
+<tr>
+<td>1.3 membership</td>
+<td>genuine elaborated declarations, transitive checking and 13 intended rejections</td>
+<td>the profile is intentionally narrow, not a final Core0 language</td>
+</tr>
+<tr>
+<td>1.4 semantics</td>
+<td>independent Lean interpreter, fixed-width semantics and 10 guest differential cases</td>
+<td>finite examples are not a preservation proof or full primitive model</td>
+</tr>
+<tr>
+<td>1.5 LLVM lowering</td>
+<td>inspectable lowering plus exact pre/post-optimization dependency accounting</td>
+<td>only the admitted scalar operations are implemented</td>
+</tr>
+<tr>
+<td>1.6 machine primitives</td>
+<td>generated startup/fence, bounded UART/input/finisher and disassembly invariants</td>
+<td>no traps, privilege transition or general device layer</td>
+</tr>
+<tr>
+<td>1.7 image</td>
+<td>actual static two-object RV64 ELF and 23 successful bare-metal boots</td>
+<td>no managed runtime, hardware port or broader initialization model</td>
+</tr>
+<tr>
+<td>1.8 conformance</td>
+<td>O0/O2 differential runs, negative/harness/audit/mutation/repeat tests</td>
+<td>no deliberately defective-lowering injection test and no exhaustive proof</td>
+</tr>
+</tbody></table>
+<p>CI had <strong>not run at the time this local evidence record was written</strong>. Local success is
+not relabelled as CI success; the publication handoff reports the later observed CI state.</p>
+<p>The next smallest construction task is a Unit 1.8 fault-injection test that deliberately
+corrupts one otherwise-supported lowering and demonstrates that the independent oracle
+detects it. It should not broaden Core0 or start the managed runtime. All G1 units and G1
+itself remain <code>partial</code>.</p>
+</main>
+</body>
+</html>

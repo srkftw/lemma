@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Core0 kernel v0.4: Power-v1 PLIC priority</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="core0-kernel-v04-power-v1-plic-priority">Core0 kernel v0.4: Power-v1 PLIC priority</h1>
+<p>This successor preserves the language, primitive operations, ABI, alignment,
+whole-access bounds, volatile accesses and fences of
+<a href="004-core0-kernel-v0.3.html">kernel v0.3</a>. Its only device-range change extends
+the exclusive end of the 32-bit PLIC priority interval from <code>0x0c000038</code> to
+<code>0x0c00003c</code>. Source14&#39;s four-byte priority register at <code>0x0c000038</code> is thereby
+admitted. Source15, unaligned accesses and accesses crossing the interval remain
+rejected. All other memory and device ranges are identical.</p>
+<p>Only <code>lemmasim-silicon-power-initialize</code>, <code>lemmasim-silicon-power-notebook</code> and
+<code>lemmasim-silicon-power-probe</code>, selected by machine profile
+<code>lemma-silicon-dev/0.3.0</code>, use this compiler contract. Historical configurations
+continue to use their previous contract and priority bound. User software gains
+no raw MMIO operation or new compiler operation.</p>
+<p><code>tests/lemmasim/CompilerPowerBoundary.lean</code> genuinely elaborates the relevant
+declarations through checked lowering. <code>scripts/check_power_compiler.py</code> executes
+their emitted O0/O2 guards against an independently mapped host-only register
+page, checking both contracts, alignment, widths, boundary addresses and rejected
+values. This focused guard evidence is separate from RV64 guest execution,
+compiler correctness, whole-machine equivalence and physical qualification.</p>
+</main>
+</body>
+</html>

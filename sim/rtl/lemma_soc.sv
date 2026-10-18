@@ -3,6 +3,10 @@
 // external working-memory port, external framebuffer SRAM, raw medium and panel ports.
 module lemma_soc #(parameter bit REGISTER_RAM=0) (
  input logic clk, reset,
+ input logic [255:0] multimodal_stimulus,multimodal_reference,
+ input logic [127:0] multimodal_quality,
+ output logic multimodal_pcm_valid,
+ output logic [63:0] multimodal_pcm_data,multimodal_pcm_position,multimodal_pcm_tick,
  input logic [2:0] power_reset_cause,
  input logic raw_power_good,raw_brownout,
  input logic raw_button_level,
@@ -149,6 +153,32 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  logic [63:0] cpu_mem_wdata,cpu_mem_rdata;
  logic [7:0] cpu_mem_strb;
  logic dma_valid,dma_write,dma_ready,dma_error;
+ logic block_dma_valid,block_dma_write,block_dma_ready,block_dma_error;
+ logic [63:0] block_dma_addr,block_dma_wdata;logic [2:0] block_dma_size;
+ logic mm_dma_valid,mm_dma_write,mm_dma_ready,mm_dma_error,mm_busy;
+ logic [63:0] mm_dma_addr,mm_dma_wdata,mm_tick;logic [2:0] mm_dma_size;
+ logic mm_sel,mm_ready,mm_error,mm_irq;logic [63:0] mm_rdata;
+ logic [1:0] selected_owner,held_owner,round_robin;
+ logic choose_mm;
+ always_comb begin
+   selected_owner=0;
+   if(MULTIMODAL_ENABLED!=0)begin
+     case(round_robin)
+       0:if(cpu_mem_valid&&!cpu_error_pending)selected_owner=0;else if(block_dma_valid)selected_owner=1;else if(mm_dma_valid)selected_owner=2;
+       1:if(block_dma_valid)selected_owner=1;else if(mm_dma_valid)selected_owner=2;else selected_owner=0;
+       2:if(mm_dma_valid)selected_owner=2;else if(cpu_mem_valid&&!cpu_error_pending)selected_owner=0;else if(block_dma_valid)selected_owner=1;
+       default:selected_owner=0;
+     endcase
+   end else if(block_dma_valid)selected_owner=1;
+ end
+ assign choose_mm=(port_held?held_owner:selected_owner)==2;
+ assign dma_valid=choose_mm?mm_dma_valid:block_dma_valid;
+ assign dma_write=choose_mm?mm_dma_write:block_dma_write;
+ assign dma_addr=choose_mm?mm_dma_addr:block_dma_addr;
+ assign dma_wdata=choose_mm?mm_dma_wdata:block_dma_wdata;
+ assign dma_size=choose_mm?mm_dma_size:block_dma_size;
+ assign mm_dma_ready=choose_mm&&dma_ready;assign mm_dma_error=choose_mm&&dma_error;
+ assign block_dma_ready=!choose_mm&&dma_ready;assign block_dma_error=!choose_mm&&dma_error;
  logic [63:0] dma_addr,dma_wdata,dma_rdata;
  logic [2:0] dma_size;
  logic [63:0] pen_rdata,paper_rdata,block_rdata,power_rdata,ble_rdata,usb_rdata,boot_nv_rdata,wifi_rdata;
@@ -181,6 +211,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  end else begin: large_external
    assign external_ready=mem_ready;assign external_error=mem_error;assign external_rdata=mem_rdata;
  end endgenerate
+ assign mm_sel=MULTIMODAL_ENABLED!=0&&dev_addr>=MULTIMODAL_BASE&&dev_addr<MULTIMODAL_BASE+MULTIMODAL_SPAN;
  assign pen_sel=dev_addr>=PEN_BASE&&dev_addr<PEN_BASE+PEN_SPAN;
  assign power_sel=POWER_ENABLED!=0&&dev_addr>=POWER_BASE&&dev_addr<POWER_BASE+POWER_SPAN;
  assign ble_sel=BLE_ENABLED!=0&&dev_addr>=BLE_BASE&&dev_addr<BLE_BASE+BLE_SPAN;
@@ -189,10 +220,10 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  assign boot_nv_sel=BOOT_NV_ENABLED!=0&&dev_addr>=BOOT_NV_BASE&&dev_addr<BOOT_NV_BASE+BOOT_NV_SPAN;
  assign paper_sel=dev_addr>=PAPER_BASE&&dev_addr<PAPER_BASE+PAPER_SPAN&&!power_sel&&!ble_sel&&!usb_sel;
  assign block_sel=dev_addr>=BLOCK_BASE&&dev_addr<BLOCK_BASE+BLOCK_SPAN;
- assign dev_rdata=wifi_sel?wifi_rdata:boot_nv_sel?boot_nv_rdata:power_sel?power_rdata:usb_sel?usb_rdata:ble_sel?ble_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
- assign dev_ready=wifi_sel?wifi_ready:boot_nv_sel?boot_nv_ready:power_sel?power_ready:usb_sel?usb_ready:ble_sel?ble_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
- assign dev_error=wifi_sel?wifi_error:boot_nv_sel?boot_nv_error:power_sel?power_bus_error:usb_sel?usb_error:ble_sel?ble_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
- assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ)|(32'(ble_irq)<<BLE_IRQ)|(32'(usb_irq)<<USB_IRQ)|(32'(boot_nv_irq)<<BOOT_NV_IRQ)|(32'(wifi_irq)<<WIFI_IRQ);
+ assign dev_rdata=mm_sel?mm_rdata:wifi_sel?wifi_rdata:boot_nv_sel?boot_nv_rdata:power_sel?power_rdata:usb_sel?usb_rdata:ble_sel?ble_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
+ assign dev_ready=mm_sel?mm_ready:wifi_sel?wifi_ready:boot_nv_sel?boot_nv_ready:power_sel?power_ready:usb_sel?usb_ready:ble_sel?ble_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
+ assign dev_error=mm_sel?mm_error:wifi_sel?wifi_error:boot_nv_sel?boot_nv_error:power_sel?power_bus_error:usb_sel?usb_error:ble_sel?ble_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
+ assign irqs=(32'(mm_irq)<<MULTIMODAL_IRQ)|(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ)|(32'(ble_irq)<<BLE_IRQ)|(32'(usb_irq)<<USB_IRQ)|(32'(boot_nv_irq)<<BOOT_NV_IRQ)|(32'(wifi_irq)<<WIFI_IRQ);
  lemma_compute compute(
    .clk,.reset(domain_reset),.mem_valid(cpu_mem_valid),.mem_write(cpu_mem_write),.mem_addr(cpu_mem_addr),
    .mem_wdata(cpu_mem_wdata),.mem_strb(cpu_mem_strb),.mem_rdata(cpu_mem_rdata),
@@ -224,9 +255,21 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .addr((dev_valid&&block_sel)?dev_addr[11:0]:12'd0),
    .size((dev_valid&&block_sel)?dev_size:3'd0),.wdata((dev_valid&&block_sel)?dev_wdata:64'd0),
    .rdata(block_rdata),.ready(block_ready),.error(block_error),.irq(block_irq),.busy(block_busy),
-   .dma_valid,.dma_write,.dma_addr,.dma_wdata,.dma_size,.dma_ready,.dma_error,.dma_rdata,
+   .dma_valid(block_dma_valid),.dma_write(block_dma_write),.dma_addr(block_dma_addr),.dma_wdata(block_dma_wdata),.dma_size(block_dma_size),.dma_ready(block_dma_ready),.dma_error(block_dma_error),.dma_rdata,
    .media_valid(controller_media_valid),.media_kind,.media_sector,.media_wdata,.media_ready,.media_error,.media_rdata
  );
+ generate if(MULTIMODAL_ENABLED!=0)begin: multimodal_devices
+   lemma_multimodal #(.DMA_BASE(FRAME_POOL_BASE),.DMA_BYTES(FRAME_POOL_BYTES)) endpoint(
+    .clk,.reset(domain_reset),.valid(dev_valid&&mm_sel),.write(dev_write),.addr(13'(dev_addr-MULTIMODAL_BASE)),.size(dev_size),.wdata(dev_wdata),
+    .rdata(mm_rdata),.ready(mm_ready),.error(mm_error),.irq(mm_irq),.busy(mm_busy),
+    .stimulus(multimodal_stimulus),.reference_input(multimodal_reference),.source_quality(multimodal_quality),
+    .pcm_valid(multimodal_pcm_valid),.pcm_data(multimodal_pcm_data),.pcm_position(multimodal_pcm_position),.pcm_tick(multimodal_pcm_tick),
+    .dma_valid(mm_dma_valid),.dma_write(mm_dma_write),.dma_addr(mm_dma_addr),.dma_wdata(mm_dma_wdata),.dma_size(mm_dma_size),.dma_ready(mm_dma_ready),.dma_error(mm_dma_error),.acquisition_tick(mm_tick));
+ end else begin:no_multimodal_devices
+   assign mm_rdata=0;assign mm_ready=1;assign mm_error=0;assign mm_irq=0;assign mm_busy=0;
+   assign mm_dma_valid=0;assign mm_dma_write=0;assign mm_dma_addr=0;assign mm_dma_wdata=0;assign mm_dma_size=0;assign mm_tick=0;
+   assign multimodal_pcm_valid=0;assign multimodal_pcm_data=0;assign multimodal_pcm_position=0;assign multimodal_pcm_tick=0;
+ end endgenerate
  generate if(BLE_ENABLED!=0) begin: sampled_ble
    lemma_ble_packet endpoint(.clk,.reset(domain_reset),.enabled(!power_suspended),.coex_allow(ble_coex_allow),
      .valid(dev_valid&&ble_sel),.write(dev_write),.addr(10'(dev_addr-BLE_BASE)),.size(dev_size),.wdata(dev_wdata),
@@ -377,7 +420,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    assign boot_media_wdata=0;assign boot_media_cancel=0;assign boot_media_origin=0;
  end endgenerate
  assign sample_ready=pen_sample_ready&&!power_suspended&&!power_cancel_pen&&!domain_reset;
- assign power_busy_sources={(media_valid||external_media_busy||boot_media_valid||external_boot_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,(paper_busy||ble_busy||usb_busy||wifi_busy)};
+ assign power_busy_sources={(media_valid||external_media_busy||boot_media_valid||external_boot_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,(paper_busy||ble_busy||usb_busy||wifi_busy||mm_busy)};
  generate if(POWER_ENABLED!=0) begin: control_domain
    lemma_power #(.SAFETY(POWER_SAFETY!=0)) power(.clk,.reset,.reset_cause(power_reset_cause),.raw_button_level,.raw_power_good,.raw_brownout,
      .busy_sources(power_busy_sources),.valid(dev_valid&&power_sel),.write(dev_write),
@@ -401,7 +444,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  // arrivals from the other master cannot replace an outstanding request.
  // D-cache is disabled; CPU data and DMA touch this one byte-coherent interface.
  // The 4KiB instruction cache remains subject to the guest's actual fence.i.
- assign dma_grant=port_held?held_dma:dma_valid;
+ assign dma_grant=port_held?held_dma:(selected_owner!=0);
  assign dma_alignment=dma_size<=3&&(dma_addr&((64'd1<<dma_size)-1))==0;
  assign dma_span=dma_addr>=FRAME_POOL_BASE && dma_addr<=FRAME_POOL_BASE+FRAME_POOL_BYTES-(64'd1<<dma_size);
  assign selected_valid=port_held?1'b1:dma_grant?dma_valid:(cpu_mem_valid&&!cpu_error_pending);
@@ -424,15 +467,17 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    (active_dma_size==0?64'hff:active_dma_size==1?64'hffff:active_dma_size==2?64'hffffffff:64'hffffffffffffffff);
  always_ff @(posedge clk) begin
    if(domain_reset) begin
-     port_held<=0;held_dma<=0;held_write<=0;held_addr<=0;held_wdata<=0;held_strb<=0;
+     port_held<=0;held_dma<=0;held_owner<=0;round_robin<=0;held_write<=0;held_addr<=0;held_wdata<=0;held_strb<=0;
      held_lane<=0;held_size<=0;cpu_error_pending<=0;cpu_error_rdata<=0;
    end else begin
      if(port_held) begin
        if(external_ready) port_held<=0;
      end else if(mem_valid&&!external_ready) begin
-       port_held<=1;held_dma<=dma_grant;held_write<=mem_write;held_addr<=mem_addr;
+       port_held<=1;held_dma<=dma_grant;held_owner<=selected_owner;held_write<=mem_write;held_addr<=mem_addr;
        held_wdata<=mem_wdata;held_strb<=mem_strb;held_lane<=dma_addr[2:0];held_size<=dma_size;
      end
+     if(MULTIMODAL_ENABLED!=0&&selected_valid&&(selected_fault||external_ready))
+       round_robin<=(port_held?held_owner:selected_owner)==2?0:(port_held?held_owner:selected_owner)+1;
      // The AHB adapter needs two cycles for ERROR. Retain its terminal
      // response without issuing the failed external beat a second time.
      cpu_error_pending<=mem_valid&&!dma_grant&&external_ready&&external_error;

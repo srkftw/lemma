@@ -70,7 +70,7 @@ function admit(e){if(replayUntil!==null)throw Error('Offline replay accepts its 
 function admitRaw(text,observe=true){if(replayUntil!==null)throw Error('Offline replay accepts its recorded events only');
  if(typeof text!=='string'||text.length>256||capture.length>=1000000)throw Error('Raw event exceeds its bound');
  const fields=text.trim().split(/\s+/),s=state();
- if(!['pen','button','uart'].includes(fields[1]))throw Error('Raw input admits pen, button or uart only');
+ if(!['pen','button','uart'].includes(fields[1])&&!(manifest.multimodal_contract==='synthetic-aperture/1'&&fields[1]==='multimodal'))throw Error('Raw input endpoint is absent from this bundle');
  if(fields[0]==='now')fields[0]=s.cycle;if(fields[1]==='pen'&&fields[2]==='now')fields[2]=s.ticks;
  const row=fields.join(' ');check('lemma_event',['string'],[row]);capture.push(row);if(observe)sendState();}
 function admitBatch(text){
@@ -111,6 +111,7 @@ function step(){if(!running)return;try{
   pause('initializer-complete');initializing=false;launchNotebook().catch(e=>{pause('error');postMessage({type:'error',error:String(e)});});return;}
  const start=performance.now();inRun=true;
  try{check('lemma_run',['number'],[Number(quantum)]);}finally{inRun=false;timing.runSeconds+=(performance.now()-start)/1000;if(budget)budget.observe(state().cycle,quantum);}
+ if(manifest.multimodal_contract==='synthetic-aperture/1'){const pcm=JSON.parse(core.ccall('lemma_pcm','string',[],[]));if(pcm.samples?.length)postMessage({type:'pcm',pcm});}
  loops++;
  const after=state(),periodic=loops%10===0;
  if(budget?.hostExpired(performance.now())){pause('host-limit');panel(true);sendState();return;}

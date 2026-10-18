@@ -24,7 +24,7 @@ int main(int argc,char**argv)try{
  for(int i=1;i<argc;i++){std::string a=argv[i];auto val=[&](){if(++i>=argc)throw std::runtime_error("missing value "+a);return std::string(argv[i]);};
   if(a=="--image"){loads.push_back({a,val()});have_elf=true;}else if(a=="--rom"){loads.push_back({a,val()});have_rom=true;}else if(a=="--load")loads.push_back({a,val()});
   else if(a=="--uart-input"){auto b=bytes(val());initial.insert(initial.end(),b.begin(),b.end());}
-  else if(a=="--uart-output")o.uart_path=val();else if(a=="--trace")o.trace_path=val();else if(a=="--cycles")cycles=number(val());
+  else if(a=="--multimodal-pcm-output")o.multimodal_pcm_path=val();else if(a=="--uart-output")o.uart_path=val();else if(a=="--trace")o.trace_path=val();else if(a=="--cycles")cycles=number(val());
   else if(a=="--host-threads"){auto n=number(val());if(n>64)throw std::runtime_error("host thread pool must be0..64");o.host_threads=n;}else if(a=="--trace-limit")o.trace_limit=number(val());else if(a=="--deadline"){auto d=number(val());if(!d||d>7200)throw std::runtime_error("deadline must be1..7200seconds");o.deadline=d;}
   else if(a=="--quiet-uart")o.quiet_uart=true;else if(a=="--uart-stdin")uart_stdin=true;
   else if(a=="--panel-drive-trace")o.drive_trace_path=val();

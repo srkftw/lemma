@@ -126,6 +126,11 @@ def external_command(value, current):
         for word,(low,high) in zip(words,((0,(1<<64)-1),(0,65535),(0,65535),(0,4095),(0,15),(0,2),(0,7))):
             bounded(word,low,high,'Pen field')
         command=f'inject {cycle} pen '+' '.join(map(str,words))
+    elif kind=='multimodal':
+        words=value.get('words')
+        if not isinstance(words,list) or len(words)!=4:raise ValueError('Multimodal stimulus needs id,u32-code,u32-reference,quality')
+        for word,(low,high) in zip(words,((0,7),(0,(1<<32)-1),(0,(1<<32)-1),(0,65535))):bounded(word,low,high,'Multimodal stimulus')
+        command=f'inject {cycle} multimodal '+' '.join(map(str,words))
     elif kind=='uart':
         payload=value.get('hex','')
         if not isinstance(payload,str) or not 2<=len(payload)<=8192 or len(payload)%2 or any(c not in '0123456789abcdefABCDEF' for c in payload):
@@ -415,6 +420,7 @@ class RTL:
         self.timeout = args.timeout
         self.argv = command
         self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'} if self.data['profile'] in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') else {'pen','uart','button','pgood','brownout'} if self.data['profile']=='lemma-silicon-dev/0.4.0' else {'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
+        if self.data['profile']=='lemma-silicon-dev/0.14.0':self.input_kinds={'pen','uart','button','multimodal'}
         # The first operation validates that the actual executable supports the
         # runtime interface; an old prepared harness cannot become a session.
         try:self.checkpoint_identity=self.call('inspect')['snapshot_identity']
@@ -1024,18 +1030,20 @@ def initialize(args):
     if args.backend=='qemu':import lemmasim_fast
     if args.force:raise ValueError('Matched initialization exclusively creates a new medium; --force is unsupported')
     if args.size_mib!=256:raise ValueError('The admitted development medium is exactly256MiB')
+    initializer=getattr(args,'workload','initializer')
+    if initializer not in ('initializer','parameterized-initializer') or (initializer=='parameterized-initializer' and args.profile!='lemma-silicon-dev/0.14.0'):raise ValueError('Initializer workload requires its exact admitted binding')
     # Fail before creating user data when preparation is stale or missing.
     if getattr(args,'native_bundle',None):
         import silicon_guest_bundle
-        silicon_guest_bundle.prepared(args.native_bundle,args.backend,'initializer',args.profile)
-    elif args.backend=='rtl':silicon_guest.prepared('initializer',args.profile)
+        silicon_guest_bundle.prepared(args.native_bundle,args.backend,initializer,args.profile)
+    elif args.backend=='rtl':silicon_guest.prepared(initializer,args.profile)
     else:
         import lemmasim_fast
-        lemmasim_fast.prepared('initializer',args.profile)
+        lemmasim_fast.prepared(initializer,args.profile)
     directory=(args.session_dir or ROOT/f'build/lemmasim/init-machine-{time.time_ns()}').resolve()
     directory.mkdir(parents=True,exist_ok=False)
     disk=args.disk.resolve();disk.parent.mkdir(parents=True,exist_ok=True)
-    options=argparse.Namespace(backend=args.backend,profile=args.profile,workload='initializer',
+    options=argparse.Namespace(backend=args.backend,profile=args.profile,workload=initializer,
         mode='developer',paused=True,quantum=1000000,timeout=min(args.timeout,120),
         disk=disk,memory_latency=0,fail_flush=None,events=None,trace_limit=0,
         native_bundle=getattr(args,'native_bundle',None))

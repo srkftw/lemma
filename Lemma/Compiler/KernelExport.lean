@@ -30,7 +30,7 @@ private def roleProfile (role : String) (configuration : String)
     (image? : Option UserImageSpec := none) : Except String Profile :=
   match role with
   | "firmware" => .ok .firmware_v0_1
-  | "kernel" => .ok (if isWiFiCommonConfiguration configuration then .kernel_v0_8 else if isProductNotebookConfiguration configuration then .kernel_v0_7 else if configuration == "lemmasim-silicon-usb-link-probe" || isUSBNotebookConfiguration configuration then .kernel_v0_6 else
+  | "kernel" => .ok (if isMultimodalNotebookConfiguration configuration then .kernel_v0_9 else if isWiFiCommonConfiguration configuration then .kernel_v0_8 else if isProductNotebookConfiguration configuration then .kernel_v0_7 else if configuration == "lemmasim-silicon-usb-link-probe" || isUSBNotebookConfiguration configuration then .kernel_v0_6 else
       if configuration == "lemmasim-silicon-ble-link-probe" then .kernel_v0_5 else
       if configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" ||
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
@@ -83,7 +83,13 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if isUSBPackageRecoveryEntry2NotebookConfiguration configuration || isUSBPackageReaderNotebookConfiguration configuration then
+  | "kernel" => if isMultimodalNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if isMultimodalParameterizedConfiguration configuration then
+          (if configuration.endsWith "-notebook" then "siliconMultimodalParameterizedBoot" else "siliconMultimodalParameterizedInitializeMedium")
+         else if configuration.endsWith "-notebook" then "siliconMultimodalBoot" else "siliconMultimodalInitializeMedium"),
+        "Lemma.Platform.LemmaSim.NotebookKernel.dispatchMultimodalBulk"]
+    else if isUSBPackageRecoveryEntry2NotebookConfiguration configuration || isUSBPackageReaderNotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
         (if configuration.endsWith "-notebook" then
           "siliconUSBPackageRecoveryEntry2Boot" else "siliconUSBPackageRecoveryEntry2InitializeMedium"),
@@ -868,7 +874,7 @@ private def unitManifest (env : Environment) (configuration role : String) (suit
       (← managedStringFields env configuration image? suite lowered) ++
       (← ManagedClosureMetadata.managedClosureFields env (image?.any (·.key == "arithmetic")) suite lowered) ++
       (← ManagedClosureMetadata.executionFields (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration)
-        (image?.any (·.key == "arithmetic")) role suite) ++
+        (image?.any (·.key == "arithmetic")) role suite (isMultimodalNotebookConfiguration configuration)) ++
       (← arithmeticArrayExecutionFields configuration role image? suite) ++
       (← arithmeticStringExecutionFields configuration role image? suite) ++
       (← arithmeticBytesExecutionFields configuration role image? suite) ++
@@ -1257,7 +1263,7 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
   let kernel ← readRootSymbol directory configuration "kernel" 0
   let dispatcher ← readRootSymbol directory configuration "kernel" 1
   let config : Lemma.Platform.RiscV.ExecutionPrimitives.Configuration := {
-    stage, lemmasim := configuration.startsWith "lemmasim-", productBoot := isProductNotebookConfiguration configuration, commonOFDM := isWiFiCommonConfiguration configuration, startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
+    stage, lemmasim := configuration.startsWith "lemmasim-", productBoot := isProductNotebookConfiguration configuration, commonOFDM := isWiFiCommonConfiguration configuration, multimodal := isMultimodalNotebookConfiguration configuration, startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
     kernelMain := kernel, firmwareDispatcher := firmware, supervisorDispatcher := dispatcher }
   let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderStartup config
   if isMultiImageConfiguration configuration then

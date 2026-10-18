@@ -1,0 +1,279 @@
+{
+  "schema": "lemma-extended-multimodal-development-index/1",
+  "result": "IN_PROGRESS_NOT_P0_P1_P2",
+  "branch": "task/007-extended-multimodal",
+  "baseline": "b4b5c239728d2fd56fa5b749a7a9b81ffff6e9f5",
+  "attachment_sha256": "f7eac3fd8e46b84edd7ec43a96cc9e61fa1795a722a536c71147cad902ace721",
+  "component_receipts": [
+    {
+      "receipt": "build/multimodal/controller-qualified/report.json",
+      "sha256": "11340e8516d2eb12dbc50a56a1d7da2770ed32c38a4e6d2030fd64c937259c91",
+      "result": "PASS",
+      "scope": "standalone synthetic converter/control/PCM RTL versus functional circuit model and separately written arithmetic assertions; no guest/SoC/physical/full sensor claim",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/controller-fault-corpus/report.json",
+      "sha256": "cbfcc7a17777f17a770c45776906b4123bea4a6af4418c324de9db8eb79d5b5c",
+      "result": "PASS",
+      "scope": "standalone synthetic converter/control/PCM RTL versus functional circuit model and separately written arithmetic assertions; no guest/SoC/physical/full sensor claim",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/crypto-rv64-a5/result.json",
+      "sha256": "c9fcb54ba1457f438e69153821bb88a74dd4b25fa181450c471a15f6c31af86d",
+      "result": "PASS_GENUINE_RV64_RFC8439_COMPONENT",
+      "scope": "Build genuine Lean RFC8439 workload, audit closure and execute RV64 QEMU.\nFinite component evidence only: not production identity, privacy or P1/P2.\n",
+      "limits": {
+        "aggregate_seconds": 600,
+        "qemu_seconds": 60
+      }
+    },
+    {
+      "receipt": "build/multimodal/companion-inference-a3/result.json",
+      "sha256": "ca080542561e3cbbb7768738672fc3d46cfc908263632e458b6e91407a8317b7",
+      "result": "PASS_COMPANION_COMPONENTS",
+      "scope": "Source-bound host/Lean companion policies, independent assessment and real\noptional owner-local inference. This is component evidence, not a guest workflow.\n",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/learned-inference-a1/result.json",
+      "sha256": "563d82db30a2383fee6d6542a4d6db4ae27514837417802a29abe18d38d05a93",
+      "result": "PASS_LOCAL_LEARNED_SELECTOR_AND_MODEL",
+      "scope": "actual model with frozen synthetic-trained presentation selector; generated only",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/companion-components-assessment-v2-a4/result.json",
+      "sha256": "b72b5ad9bd8924983becfedab016a0d22809b4c7e02f6975640204169a2071b9",
+      "result": "PASS_COMPANION_COMPONENTS",
+      "scope": "Source-bound host/Lean companion policies, independent assessment and real\noptional owner-local inference. This is component evidence, not a guest workflow.\n",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/guest-fast-probe-a4/report.json",
+      "sha256": "9c41c8480a3dc455dbeb385643940089e9b9af35db4cff82054036a52e4c7fb5",
+      "result": "PASS",
+      "scope": "actual Lean M-mode converter+PCM component; no workbook,headband-link,full image/raw sensor,consumer realtime,checkpoint or physical claim",
+      "limits": {
+        "wall_seconds": 120,
+        "virtual_cycles_100MHz": 5000000
+      }
+    },
+    {
+      "receipt": "build/multimodal/guest-rtl-probe-a4/report.json",
+      "sha256": "09e54edf8e18d2012d056e6eadcdc573c5e954915b2a94a7945694a75da82098",
+      "result": "PASS",
+      "scope": "actual genuinely elaborated Lean M-mode component on integrated CVW CPU+controllers; scalar apertures/DMA-independent probe, not full notebook/P2/physical or consumer claim",
+      "limits": {
+        "wall_seconds": 120,
+        "rtl_cycles": 5000000
+      }
+    },
+    {
+      "receipt": "build/multimodal/guest-wasm-probe-a4-node-a3/report.json",
+      "sha256": "8c22b8e4c7ead62b3239df2ef9a669f81ba7509319874990a6740d3fca1f77ea",
+      "result": "PASS",
+      "scope": "actual shared Lean M-mode component in portable RTL/Wasm; no whole notebook,consumer realtime,headband/full sensor,physical or educational qualification",
+      "limits": {
+        "wall_seconds": 120,
+        "rtl_cycles": 5000000
+      }
+    },
+    {
+      "receipt": "build/multimodal/guest-browser-probe-a1/assessment.json",
+      "sha256": "c4cfe861386e33b2d7f412933bbc2e38c2a85e6ba885d440cda2f32c6deb0fdb",
+      "result": "PASS",
+      "scope": "actual shared Lean M-mode component in portable RTL/Wasm; no whole notebook,consumer realtime,headband/full sensor,physical or educational qualification",
+      "limits": {
+        "wall_seconds": 180
+      }
+    },
+    {
+      "receipt": "build/multimodal/qemu-uart-production/report.json",
+      "sha256": "822f1b9b3f17ed27d0b9d49be2b1d601c16d92ebbfac4105c6484d4258933c6c",
+      "result": "PASS_HOST_BUILD_ONLY",
+      "scope": null,
+      "limits": {
+        "wall_seconds": 1200,
+        "cores": 2,
+        "jobs": 1
+      }
+    },
+    {
+      "receipt": "build/multimodal/engineering-a1/report.json",
+      "sha256": "b6e29538ca05bdc833036acd1e28dd5edc7bbad105d7733bfe59c3744680cc82",
+      "result": "PASS",
+      "scope": "synthetic nominal circuit transient; separate from machine/RTL, physical safety and human learning",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/guest-rtl-probe-a4-current-a3/report.json",
+      "sha256": "4135dfbe2e44387fc7cfc9b181fd2db19df62ba9de2a2e48d901fad654601a1b",
+      "result": "PASS",
+      "scope": "actual genuinely elaborated Lean M-mode component on integrated CVW CPU+controllers; scalar apertures/DMA-independent probe, not full notebook/P2/physical or consumer claim",
+      "limits": {
+        "wall_seconds": 120,
+        "rtl_cycles": 5000000
+      }
+    },
+    {
+      "receipt": "build/multimodal/guest-wasm-probe-a4-current-a3/report.json",
+      "sha256": "2739f8ffd8bfd7e65737899c54e247b8245f1dd5368a2a0e6704ddd190519545",
+      "result": "PASS",
+      "scope": "actual shared Lean M-mode component in portable RTL/Wasm; no whole notebook,consumer realtime,headband/full sensor,physical or educational qualification",
+      "limits": {
+        "wall_seconds": 120,
+        "rtl_cycles": 5000000
+      }
+    },
+    {
+      "receipt": "build/multimodal/guest-browser-probe-current-a3/report.json",
+      "sha256": "58fd6ab5b3b59ddb7dc96c7d7a4076c96d1f7ffb388d180db93b54fab0e070c0",
+      "result": "PASS",
+      "scope": "actual shared Lean M-mode component in portable RTL/Wasm; no whole notebook,consumer realtime,headband/full sensor,physical or educational qualification",
+      "limits": {
+        "wall_seconds": 180
+      }
+    },
+    {
+      "receipt": "build/multimodal/companion-annotated-inference-a9/result.json",
+      "sha256": "071179aa55f3cb61b76d2256ad71e98043b64519f3e8cb94dc78f58f4b9a71de",
+      "result": "PASS_COMPANION_COMPONENTS",
+      "scope": "Source-bound host/Lean companion policies, independent assessment and real\noptional owner-local inference. This is component evidence, not a guest workflow.\n",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/engineering-a2/report.json",
+      "sha256": "a580eb6eb54049aa28ed4b585e2e8ef491870993420879ebf6bdf5145355b195",
+      "result": "PASS",
+      "scope": "synthetic nominal circuit transient; separate from machine/RTL, physical safety and human learning",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/wasm-steady-a2/report.json",
+      "sha256": "3fc175472e3daa07f11df8244da1cf9f6a3ef714f9fe29a155a85463b376a998",
+      "result": "MEASURED_IDLE_COMPONENT_ONLY",
+      "scope": "Real shared Lean M-mode probe followed by idle CPU loop. No notebook, sustained acquisition, economy, inference or browser performance qualification.",
+      "limits": {
+        "steadyCycles": 3000000,
+        "perBatchCycles": 100000,
+        "wallSeconds": 90
+      }
+    },
+    {
+      "receipt": "build/multimodal/notebook-layout-safety-source-a1.json",
+      "sha256": "6ecb92a2bebb77fb7a3263732729e2fe2061884ced1a135ea043a8bc0b14b8eb",
+      "result": "PASS",
+      "scope": "independent narrow raw-source predicates and source-negative observer tests; no compiler, guest timing or output-consumption claim",
+      "limits": null
+    }
+  ],
+  "retained_failures": [
+    {
+      "receipt": "build/multimodal/companion-inference-a2/result.json",
+      "sha256": "d0a745b3ad32750be4cb05e641d5cb08676a820b898809bc5166078a289816cf",
+      "error": "ValueError('consumed source changed')"
+    },
+    {
+      "receipt": "build/multimodal/controller-first/report.json",
+      "sha256": "b179ee34c667bdb4cfc8c6f19ea263bb2f8a315d57857359fc1d634fa5b492d9",
+      "error": "Command '['/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/controller-first/obj/Vlemma_multimodal']' returned non-zero exit status 1."
+    },
+    {
+      "receipt": "build/multimodal/crypto-rv64-a1/result.json",
+      "sha256": "fba61102ff24d49b7ac62c6d8a5a33f8012b05cd34473284c9c83818055f1ddc",
+      "error": "Core0Error('actual command failed: export')"
+    },
+    {
+      "receipt": "build/multimodal/crypto-rv64-a2/result.json",
+      "sha256": "faaa25b8de16f163e717f7b6938b6077f8660fb1d00491283d623f6f7c9b6942",
+      "error": "Core0Error('actual command failed: export')"
+    },
+    {
+      "receipt": "build/multimodal/crypto-rv64-a3/result.json",
+      "sha256": "f913cc0ea1690299889abdc8c4fe8b0b6a5a7e0656f495a82c2e089f2753c889",
+      "error": "Core0Error('unaccounted crypto readonly bytes')"
+    },
+    {
+      "receipt": "build/multimodal/guest-older-model-probe-a2/report.json",
+      "sha256": "e3e91f7c5d44551abe8de3ecf8fc1c72bee72c7314a26cd725def898d3c37246",
+      "error": "guest marker/status 4c4d4d50/10; retained actual prefix"
+    },
+    {
+      "receipt": "build/multimodal/guest-older-model-probe-a3/report.json",
+      "sha256": "4029f85aa71de58de8b267f8d130d40695a85d36c72bfed0da1f6afbb4b43422",
+      "error": "guest marker/status 4c4d4d50/10; retained actual prefix"
+    },
+    {
+      "receipt": "build/multimodal/guest-rtl-probe-a3/report.json",
+      "sha256": "c469b3a1a78fb2fcd65332b1a73540ea1f9c063efef54b3266b789cc4b2e378e",
+      "error": "guest marker/status 4c4d4d50/10"
+    },
+    {
+      "receipt": "build/multimodal/guest-wasm-probe-a4-node-a2/report.json",
+      "sha256": "8c7bbbf330a32f4fed5ebf1722cd106b31117ef57a1c28ed8c0d785dd86d1616",
+      "error": "Error: PCM waveform publication failed"
+    },
+    {
+      "receipt": "build/multimodal/probe-production-a1/result.json",
+      "sha256": "e1546144a15f931cd4b0dcaa10a2189b2705dd88a8a3954869014aea6427d848",
+      "error": "unknown controller component authority"
+    }
+  ],
+  "pending": [
+    "audited full workbook native execution and tutor/Store/paper action path",
+    "actual independent192-byte isolated IPC",
+    "complete browser workbook and economy real-time performance",
+    "full raw acquisition endpoints, headband link and admitted high-volume transports",
+    "target-side protected companion transport/live trust/entropy",
+    "raw image/ToF/flow/gaze/full optical scheduling",
+    "bulk PCM tutor delivery/cancellation through host sink",
+    "new-device exact checkpoints/sealed replay",
+    "whole-workbook fast/RTL admitted comparison and inherited digital gaps",
+    "physical/manufacturing/rights/safety/educational qualification"
+  ],
+  "legacy_regression": {
+    "receipt": "build/core0/qualification-multimodal-a1/check-results.json",
+    "sha256": "6db537fa2de33bdaf94ccf20f63c7d2f466a8f6b0aea28556f661dd1f0e489ce",
+    "result": "PASS",
+    "scope": "actual O0/O2 Task001 regression; exact pre-final-workbook-fix source, not current workbook acceptance",
+    "exact_consumed_source": "build/multimodal/core0-qualified-source-a1/retained-source.json"
+  },
+  "host_checks": [
+    {
+      "log": "build/multimodal/kernel-host-audit-integration-a6.log",
+      "sha256": "d24eb06b9e96184927b2f8a1444a7bb6422f87604163860b59f5ad927bf8086a",
+      "tests": 474,
+      "result": "PASS",
+      "scope": "host tests only"
+    },
+    {
+      "log": "build/multimodal/foundation-host-html-fixture-a2.log",
+      "sha256": "99735c5109eb7dfbf9d147c573eb6eff3e78ab6c65950e89226fde5b448ef7d2",
+      "tests": 483,
+      "result": "PASS",
+      "scope": "host tests only"
+    },
+    {
+      "log": "build/multimodal/cache-host-a1.log",
+      "sha256": "5c5209b2b2136920e2f65d5e27cecdcf94332114ee7d93479a105ba9c84e9b27",
+      "tests": 87,
+      "result": "PASS",
+      "scope": "host tests only"
+    },
+    {
+      "log": "build/multimodal/core0-host-a1.log",
+      "sha256": "66345f14f1d2e2445405082fbf3513d5bab4cb200377c40fd6668f449cd3511b",
+      "tests": 40,
+      "result": "PASS",
+      "scope": "host tests only"
+    }
+  ],
+  "authority_collection": {
+    "receipt": "build/multimodal/authority-review-a3.json",
+    "sha256": "31ad9afda33942b62b352480296d7d05776042f02c2b05f89452f83ff1fbb292",
+    "authority_sha256": "90845a237ad9f13e8be96995016428a95e198f41019780d2f327bafd2f59933d",
+    "scope": "genuine producer identity, full IR corpus and mutation review; collection-only; complete normal linked audit/execution still pending"
+  }
+}

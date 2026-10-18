@@ -44,6 +44,16 @@ class NativeHostVersions(unittest.TestCase):
             self.assertEqual(self.verify(root, data), data)
             self.assertEqual((root / 'bundle/source/scripts/audit_kernel.py').read_bytes(), b'compiled original')
 
+    def test_html_distribution_successor_preserves_original_source_versions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); data = self.fixture(root)
+            (root / 'README.md').rename(root / 'usage.html')
+            data['files']['usage.html'] = data['files'].pop('README.md')
+            data['schema'] = 'lemma-local-native-distribution/4'
+            self.assertEqual(self.verify(root, data), data)
+            data['schema'] = 'lemma-local-native-distribution/3'
+            with self.assertRaises(ValueError): self.verify(root, data)
+
     def test_wrong_original_replacement_or_unversioned_mode_reject(self):
         for change in ('compiled', 'host', 'missing', 'old-schema'):
             with self.subTest(change=change), tempfile.TemporaryDirectory() as directory:

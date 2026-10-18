@@ -3,7 +3,7 @@
 """Exact checkpoint byte observer with two explicitly pinned host statistics.
 
 This never rewrites snapshots or removes guest counters/timer state. See
-QEMU_STATE_EQUIVALENCE.md for the source-bound observation relation.
+QEMU_STATE_EQUIVALENCE.html for the source-bound observation relation.
 """
 import argparse
 import hashlib

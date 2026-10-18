@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lemma contributor and agent instructions</title>
+<link rel="stylesheet" href="documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="documentation-and-historical-identities">Documentation and historical identities</h1>
+<p>Maintained first-party narrative documentation is UTF-8 HTML. Read the complete HTML contributor guide and current task checkpoint. <code>docs/contributing.html</code> remains the minimal discovery hook. Do not restore the old Markdown comment-wrapper presentation.</p>
+<p><a href="document-map.json">The document map</a> records original paths and hashes and the current navigation destinations. Historical consumed-source receipts, pinned URLs, source archives and immutable evidence keep their original bytes and identities; converted HTML is never relabeled as original evidence. Preserve substantive text that appeared inside or after an old presentation wrapper.</p>
+<h1 id="lemma-contributor-and-agent-instructions">Lemma contributor and agent instructions</h1>
+<h2 id="read-before-changing-code">Read before changing code</h2>
+<p>Read <code>docs/overview.html</code>, <code>docs/ARCHITECTURE.html</code>, the files in <code>docs/contracts/</code>,
+<code>docs/plan/BUILD_ORDER.html</code>, and the assigned task under <code>codex/prompts/</code>.
+This is a tested, bounded freestanding foundation, not a complete OS. Do not invent successful builds.</p>
+<h2 id="non-negotiable-boundaries">Non-negotiable boundaries</h2>
+<ol>
+<li>Physical/reference application ISA: RISC-V. No ARM substitute, Linux guest,
+hosted userspace executable, or dependency on default OpenSBI in the G1 boot path.</li>
+<li>Maintained target software and project compiler/runtime logic: Lean 4.
+Host-only shell/Python/Nix/YAML may orchestrate builds, run tests and inspect artifacts.
+Host tools may use their normal runtimes; those runtimes must not enter the target image.</li>
+<li>No maintained target <code>.c</code>, <code>.cc</code>, <code>.cpp</code>, <code>.rs</code>, <code>.zig</code>, <code>.s</code>, or <code>.S</code> files.
+Lean-authored structured primitive lowering may generate narrowly scoped startup,
+CSR and MMIO code. A C/assembly program hidden in a Lean string is not compliance.</li>
+<li>Use a genuine Lean elaboration path for source declarations and inspect reachable
+runtime dependencies. A manually constructed demonstration AST or LLVM text printer
+is not a compiler for Lean-authored programs.</li>
+<li>Audit upstream compiler behavior at an immutable revision before assuming it works.
+A small Lean-authored Core0 backend is allowed when the upstream route is unsuitable;
+record why. Do not replace LLVM with a different backend to simplify the task.</li>
+<li>No target libc, libm, libgcc, compiler-rt, libuv, pthreads, C++ runtime, upstream
+Lean runtime, arbitrary foreign code, or undocumented stubs. Every intrinsic/helper
+must be supported, documented and accounted for. Unknown means reject, not pass.</li>
+<li>No <code>sorry</code>, <code>admit</code>, <code>sorryAx</code>, extra axioms, or <code>native_decide</code> used to certify a
+trusted property. Negative fixtures may mention forbidden constructs. Such fixtures
+must be quarantined and expected to fail, not imported into the trusted implementation.</li>
+<li>Preserve the difference between tests, proofs, audits, and physical measurements.
+Green scaffolding tests do not establish freestanding execution or compiler correctness.</li>
+<li>Do not silently broaden Core0&#39;s accepted language. Version contracts, add tests,
+and record any accepted feature with its semantics and lowering.</li>
+<li>Keep vendor hardware documents and firmware/ISA unknowns explicit. Supplier selection
+is not supply confirmation. Do not use guessed panel or controller specifications.</li>
+</ol>
+<h2 id="first-tasks-scope">First task&#39;s scope</h2>
+<p>Task 001 builds a small scalar Core0 vertical slice through LLVM to QEMU. It is not
+permission to implement the scheduler, allocator, managed runtime, UI, verifier,
+recognizer, network stack, or tutor. Stay on the task&#39;s provided branch; do not
+change repository visibility, licensing, branch protection, or credentials.</p>
+<h2 id="second-tasks-scope">Second task&#39;s scope</h2>
+<p>Task 002 is defined by <code>codex/prompts/002-machine-foundation.html</code>. It deliberately
+extends the Task 001-only boundary with versioned scalar profiles, bounded loops,
+checked fixed-region memory and effects, compiled device routines, M-mode traps,
+timer interrupts, and a bounded diagnostic monitor. Preserve <code>core0-v0.1</code> as a
+regression profile and advance through the recorded gates in dependency order.
+Task 002 still excludes a managed heap/runtime, scheduler, page-table isolation,
+filesystem, proof checker, notebook, networking, tutor, and physical-board claims.
+Resume from <code>docs/plan/002-session-state.html</code> and <code>docs/plan/002-gates.json</code>; do not
+infer that a later gate passed from the existence of code or a cached earlier run.</p>
+<h2 id="third-tasks-scope">Third task&#39;s scope</h2>
+<p>Task 003 is authorized by <code>codex/prompts/003-kernel-isolated-services.html</code>.
+It extends the earlier task boundaries with a real supervisor kernel, owned
+physical pages, Sv39 user address spaces, syscalls, preemptive tasks, capabilities,
+blocking IPC and a separately linked volatile buffer service. Preserve every
+legacy Core0 profile and check. Keep target policy and algorithms in compiled
+Lean; structured machine primitives implement only the declared hardware boundary.
+Resume from <code>docs/plan/003-session-state.html</code> and <code>docs/plan/003-gates.json</code>.
+Gates A–K require their own observed results; code existence does not pass a gate.
+The managed Lean heap/runtime, filesystem/persistence, networking, graphical
+notebook, tutor and physical-board claims remain out of scope. Publish a draft PR
+against main. The owner explicitly authorized completion and then a guarded
+merge commit for this session; that authorization overrides the original
+draft-only instruction after full verification and applicable CI pass. Do not
+change repository settings or delete task branches. Leave USGCE untouched.</p>
+<h2 id="fourth-tasks-scope">Fourth task&#39;s scope</h2>
+<p>Task 004 is authorized by <code>codex/prompts/004-lemmasim-durable-ink.html</code>.
+It extends the historical restrictions with the <code>lemma-one-core/0.1.0</code> and
+<code>lemmasim-virt/0.1.0</code> profiles, host-only QEMU device implementation, compiled
+Lean block/pen/paper drivers, durable records, rasterized ink, isolated notebook
+applications and capture/replay. Historical profiles and evidence retain their
+original meanings. Target policy, codecs, recovery, ink and notebook remain Lean.
+Host C is confined to <code>sim/host/</code> and the separately identified QEMU patch; it
+must never enter the RV64 link. Resume the current Task 004 checkpoint. Completion
+requires a usable persistent notebook, not devices or a bring-up demonstration.
+Publish a draft PR against current main; do not merge or inherit Task 003 merge
+authorization. Keep physical conformance UNVERIFIED and USGCE untouched.</p>
+<h2 id="fifth-tasks-scope">Fifth task&#39;s scope</h2>
+<p>Task005 is authorized by <code>codex/prompts/005-open-silicon-bringup.html</code>.
+Use <code>task/005-open-silicon-bringup</code>; preserve the exact PR#6 specification
+dependency and its attribution. Implement <code>lemma-silicon-dev/0.1.0</code> as a
+development backend of first-class LemmaSim. Synthesizable RTL is circuitry;
+all target software and compiler policy remain genuinely elaborated Lean.
+Host adapters and generated Verilator C++ supply clocks, reset, external memory,
+raw input, medium bytes and panel effects only. They never execute instructions,
+construct documents or recover journals. QEMU remains the default native
+notebook backend. Read <code>docs/plan/005-session-state.html</code> before resuming.</p>
+<p>The sequence is RTL compute/reset -&gt; existing isolated services -&gt; actual
+pen/paper/block controllers -&gt; short durable notebook -&gt; scoped open-flow
+feasibility. External simulation RAM is not on-chip SRAM. Track exact core,
+tool, library and source identities, unresolved cells and failed observations.
+Synthesis, routed-controller feasibility, DRC/LVS and physical conformance
+have separate results. Reuse artifacts only after validating their exact consumed
+source/tool identities; distinguish literal RTL tests, real guest execution and
+physical-flow results. No managed-runtime rewrite, radio, browser rewrite,
+fabrication submission, paid infrastructure, supplier outreach or proprietary
+closure. The original assignment required a draft PR. The owner subsequently
+authorized finishing and a guarded Task 005 merge in this session after relevant
+verification and applicable CI pass. Preserve task branches and repository
+settings. This does not authorize future merges. USGCE is untouched.</p>
+<p>Task 005 acceptance uses short source-bound RTL workloads and independent
+observations. The registered controller at a760e5f/2b6ede4 has closed A/B/C,
+literal protocols, durable write/edit/Save/cold and failed-FLUSH/cold evidence.
+Exact current-controller RTL replay has its own closed PASS receipt. Historical
+runs retain their original identities.
+Fresh hardware execution using validated unchanged guest ELF sources is not
+fresh target compilation. Preserve original FAIL reports when an independently
+tested host oracle correction produces a new observation. The checkpoint keeps
+synthesis, live global-route timing, incomplete detailed routing, rule-coverage
+assessment and cell-only process checks separate. A slower hypothetical STA
+clock does not change the development binding or establish physical signoff.</p>
+<p>Use unused outputs for the short literal RTL protocol check:</p>
+<pre><code class="language-sh">python3 scripts/check_silicon.py --lane devices \
+  --work-dir build/silicon/devices-agent-new --timeout 600 --jobs 2
+</code></pre>
+<p>Real isolated-service and notebook acceptance use the existing launcher/checkers
+listed in the checkpoint. Literal device tests, host tests and CI passes are
+separate from those guest claims. Reuse unchanged artifacts only after exact
+consumed-input validation; do not rerun every historical lane for a report edit.</p>
+<h2 id="sixth-tasks-scope">Sixth task&#39;s scope</h2>
+<p>Task 006 is authorized by <code>codex/prompts/006-whole-machine-lemmasim.html</code> and the
+owner&#39;s whole-machine assignment. Use <code>task/006-whole-machine-lemmasim</code>; resume
+<code>docs/plan/006-session-state.html</code>. It extends earlier task-local exclusions with
+state-complete machine sessions, matched fast/RTL bindings, digital devices,
+boot/power/recovery, companion/radio, native/browser embodiments and eventual
+G2/G5–G7 product work. Keep target policy and algorithms genuinely elaborated
+Lean. Host transport/presentation must not implement guest ink, journals,
+recovery or mathematical authority. Synthetic panel sequencing is digital
+evidence, not physical panel conformance. Report each unfinished subsystem.</p>
+<p>The original assignment required a draft PR. The owner subsequently authorized
+merging Task006 PR8 in this session after the applicable checks pass. This is
+Task006 authorization only; preserve the task branch and repository settings.
+Preserve historical profiles/results, durable formats, USGCE,
+repository settings and unrelated branches. Same-backend exact checkpoints
+must retain in-flight work and restore into isolated durable forks. They are
+not cold recovery or QEMU/RTL microstate migration. The canonical-resolution
+RTL boot timeout and physical routing failures are retained failures, not
+implicit passes. Use the checkpoint for the exact final execution identities
+and remaining blockers; do not rerun historical workloads for report changes.</p>
+<h2 id="extended-multimodal-assignment">Extended multimodal assignment</h2>
+<p>The owner authorizes the connected implementation of the <a href="contracts/007-extended-multimodal-v0.2.0.html">Extended Multimodal Client Specification v0.2.0</a>, including the same maintained Lean guest, native/browser LemmaSim, connected digital controllers, companion and workbook. This task extends earlier task-local exclusions where required; all technical, provenance and evidence invariants remain in force.</p>
+<p>Resume <a href="plan/007-session-state.html">the current multimodal checkpoint</a> and <a href="plan/CURRENT.html">current development guide</a>. Preserve old profiles, fixed descriptors, pen/paper and durable semantics, task branches, failures, user changes, USGCE and repository settings. Use validated build-action admission and source-bound verification. Publish a coherent draft PR against current main; this assignment authorizes neither merge nor deployment.</p>
+<p>No outreach, NDA, purchase, paid infrastructure, fabrication submission, human-data collection or physical body-connected activation is authorized. Synthetic software and digital engineering proceed independently of unresolved physical, manufacturing, rights, safety and educational qualification. Keep the eight readiness dimensions separate.</p>
+<h2 id="evidence-discipline-all-tasks">Evidence discipline (all tasks)</h2>
+<ul>
+<li>Generate evidence from real commands, record versions and source revisions, and
+mark blocked/not-run work accurately. Never print fabricated expected logs as results.</li>
+<li>Use fail-closed checks: missing tools, skipped runs, an empty test corpus, malformed
+manifests or unexpected linked objects must not yield an ordinary success.</li>
+<li>A clean undefined-symbol table is necessary, not sufficient. Inspect linked-code
+provenance, code generation before/after optimization, ELF attributes and relocations.</li>
+<li>Do not implement no-op allocation/reference-counting helpers to make the image link.</li>
+<li>Keep bounded CI runs. Kill/reap QEMU on timeout. A timeout is a failure unless a
+narrowly documented target test protocol defines an independently observed success.</li>
+<li>Put large generated outputs under ignored <code>build/</code>; retain a small checked-in report
+and a hash inventory, or upload CI artifacts with traceable identifiers.</li>
+<li>Update the construction backlog only to reflect demonstrated work. Task 001 does not
+automatically complete G1 or all eight Stage I units.</li>
+</ul>
+<h2 id="available-checks">Available checks</h2>
+<p>Metadata-only checks:</p>
+<pre><code class="language-sh">python3 scripts/check_scaffold.py
+python3 -m unittest discover -s tests/scaffold -v
+</code></pre>
+<p>Host-harness failure tests and the complete pinned target acceptance run:</p>
+<pre><code class="language-sh">nix develop --command python3 -m unittest discover -s tests/core0 -v
+nix develop --command ./scripts/check-core0.sh --clean
+</code></pre>
+<p>Focused interfaces, run inside <code>nix develop</code>, are:</p>
+<pre><code class="language-sh">./scripts/build-core0.sh --opt-level O2 --output-dir build/core0/O2 --clean
+./scripts/audit-core0.sh build/core0/O2
+./scripts/run-core0.sh --image build/core0/O2/image.elf \
+  --output-dir build/core0/O2/manual-run --case-id 1 --arg 0 --arg 0 --arg 0
+</code></pre>
+<p>The full check performs real O0/O2 RV64 QEMU boots, negative-source checks,
+independent-reference comparisons, clean-directory reproducibility builds, a source
+mutation, and an audit-regression link.  Missing tools or evidence fail; there is no
+skip-to-success mode.  Run both scaffold checks after changes as well.  The Python
+programs are host-only orchestration; compiler and target logic remain Lean.</p>
+<p>Task 002 has a separate host suite and incremental target checker. Gates 0–10
+have recorded clean-source acceptance at <code>09c47ba</code> (full identity in the ledger):</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command lake build
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh \
+  --work-dir build/core0/qualification-legacy --clean
+</code></pre>
+<p>The focused monitor interface passed historically at clean <code>8fd45d8</code>. The current
+<code>--all --stress</code>, legacy and qualifier passed separately in a cold detached
+worktree at <code>09c47ba</code>: 482 cumulative/23 legacy boots and 26 raw-session replays.
+These do not inherit earlier passes. Follow the task ledger/checkpoint when
+resuming. The branch is pushed with an upstream and published as draft stacked
+PR #2 against Task 001. Its first actual CI run failed at Gate 3 because the pinned
+Lean source was evaluated but not realized in the fresh Nix store. The explicit
+realization repair passed all fresh detached acceptance at <code>09c47ba</code> and all
+three jobs in actual push/PR runs <code>37825241614</code>/<code>37825247231</code>. Push checks exact
+<code>09c47ba</code>; PR checks synthetic merge <code>e292d435...</code> with the same tree. Later
+report-only commits are separate. Preserve historical failure evidence.</p>
+<p>The cumulative/stress and qualification commands (the latter requires committed,
+clean source) are:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress \
+  --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command python3 scripts/qualify_foundation.py \
+  --gate9-dir build/foundation/gates1-9-clean/gate9 \
+  --work-dir build/foundation/qualification --clean --timeout 300 --qemu-timeout 20
+</code></pre>
+<p>The first detached qualification failed closed on duplicate evidence-role labels;
+its valid cumulative/legacy results and failed report remain retained. The fixed
+candidate&#39;s complete detached rerun passed. Do not relabel earlier artifacts as
+outputs of the fix, or infer CI success from the workflow file.</p>
+<h2 id="task-003-verification-and-recovery">Task 003 verification and recovery</h2>
+<p>The A–K milestone is recorded at implementation
+<code>14cc79be8914a349b729347cc05091aba6ac7ca7</code>, separately from the report-bearing
+head and subsequent merge. Read the Task 003 report, ledger and checkpoint
+before resuming; historical failures retain their original results. The full
+acceptance interfaces use the pinned environment and require clean committed
+source and unused output paths:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command python3 scripts/check_kernel.py \
+  --work-dir build/kernel/verify-A-E --clean --timeout 300 --qemu-timeout 90 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
+  --lane F-I --work-dir build/kernel/verify-F-I --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
+  --lane J --work-dir build/kernel/verify-J --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_architecture.py \
+  --work-dir build/kernel/verify-architecture --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_mutations.py \
+  --expected-commit &quot;$(git rev-parse HEAD)&quot; \
+  --work-dir build/kernel/verify-source-negatives --deadline 2400
+</code></pre>
+<p>Keep the separate legacy Core0 and cumulative/stress foundation qualification
+above. README contains actual build, boot and ordinary terminal commands;
+<code>docs/evidence/003-kernel-isolated-services-commands.json</code> lists all acceptance
+interfaces. Recover an interrupted campaign using a new output path; never
+overwrite or turn a retained FAIL into PASS. A report-only commit may reference
+its tested implementation as permitted by the assignment. Do not start the
+managed runtime or another implementation task as part of this publication.</p>
+<h2 id="lemmasim-first-class-architecture">LemmaSim first-class architecture</h2>
+<p>Read <code>LEMMA_MACHINE_CONTRACT.html</code> and <code>docs/plan/LEMMASIM.html</code> before any change to the machine, peripheral, pen, display, storage or simulator. LemmaSim is a permanent user-facing virtual Lemma One with Student, Developer and Laboratory modes, all using one canonical versioned machine contract alongside the physical embodiment. Preserve the historical pinned <code>docs/contracts/LEMMA_VM.html</code> boot profiles and G1-G7 evidence. No host-side bypass of guest drivers or mathematical authorities; no unfounded claims of physical equivalence, controller compatibility or completed conformance.</p>
+</main>
+</body>
+</html>

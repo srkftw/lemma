@@ -1,0 +1,23 @@
+Two independent microphone voltage boundaries RC and declared gain mute bench
+* SPDX-License-Identifier: Apache-2.0
+* B sources represent microphone voltages and ideal gain stages, not a MEMS
+* microphone or a transistor amplifier. Raw channel identities stay distinct.
+Bmic1 raw1 0 V=0.01*sin(1884.955592153876*time)
+Bmic2 raw2 0 V=0.02*sin(1884.955592153876*time+0.7)*(time<0.08)
+R1 raw1 filtered1 1k
+R2 raw2 filtered2 1k
+C1 filtered1 0 100n
+C2 filtered2 0 100n
+Vgain gain 0 PWL(0 10 39.999m 10 40m 20 100m 20)
+Venable enabled 0 PWL(0 1 60m 1 60.001m 0 100m 0)
+Bamp1 out1 0 V=V(filtered1)*V(gain)*V(enabled)
+Bamp2 out2 0 V=V(filtered2)*10*V(enabled)
+.tran 10u 100m 0 10u
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata microphone.dat v(raw1) v(raw2) v(filtered1) v(filtered2) v(out1) v(out2) v(gain) v(enabled)
+quit
+.endc
+.end

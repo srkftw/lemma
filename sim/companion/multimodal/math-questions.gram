@@ -1,0 +1,4 @@
+#JSGF V1.0;
+grammar lemma_questions;
+public <question> = [please] (explain how to add [two] fractions | give [me] a hint | show [me] a worked example | give [me] a counter example | what is <number> (plus | times | over) <number> | remain silent);
+<number> = zero | one | two | three | four | five | six | seven | eight | nine | ten | eleven | twelve | thirteen | fourteen | fifteen | sixteen | seventeen | eighteen | nineteen | twenty;

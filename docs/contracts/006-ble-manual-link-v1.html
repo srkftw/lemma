@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLE manual-context sequence policy v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="ble-manual-context-sequence-policy-v1">BLE manual-context sequence policy v1</h1>
+<p><code>lemma-ble-manual-link/1</code> supplies bounded, Lean-authored ACL SN/NESN policy
+above the actual <code>lemma-ble-packet/1</code> CRC-valid immutable receive head. It
+implements the sequence rules in pinned Bluetooth Core 5.4
+<a href="https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/low-energy-controller/link-layer-specification.html">Vol 6B §4.5.9</a>.
+The context is supplied explicitly for development. Connection establishment,
+channel hopping/event scheduling, L2CAP, encryption/authentication and complete
+Bluetooth support remain missing. An access address and CRC do not authenticate
+a peer.</p>
+<p>State bits 0/1 contain transmit SN and expected receive SN. Bit 2 is one
+outstanding immutable payload; bit 3 is an uncertain frozen context. Bits 8–9
+count its transmissions, from one through three. Idle or frozen contexts have
+zero attempts. Malformed combinations or high bits fail before changing state.
+Only length 0–27, LLID 1/2 and the packet component&#39;s unencrypted/no-CTE header
+are accepted. Zero length requires LLID 1. Receive space is exactly zero or one.</p>
+<p>A valid packet whose NESN differs from the local outstanding SN acknowledges
+that payload and advances local TX SN. A received SN matching the expected SN
+admits its payload and advances expected RX SN only when receive space exists.
+A duplicate never delivers its bytes again. Full space leaves expected RX SN
+unchanged; the resulting NESN withholds receipt and permits the same retry.
+CRC failure must never call the policy at all. This policy accepts the actual
+hardware head rather than a host-created success indication.</p>
+<p>Retries retain the payload and SN; the next NESN may describe new receive
+progress. Three transmissions is the resource ceiling. Exhaustion (status 198)
+or cancellation (200) freezes the context because an unacknowledged payload
+may already have reached the peer. Frozen work cannot be replaced by another
+transaction. Restart/rebind requires explicit external reconciliation; no
+exactly-once packet delivery or durable receipt is claimed. Busy, malformed and
+frozen inputs return distinct statuses 196, 197 and 199.</p>
+<p>The pure transition result contains status in its upper 32 bits and bounded
+state/observation flags in its lower 24 bits. Observation flags 16–19 mean
+outstanding payload acknowledged, new receive, duplicate and receive shortage.
+Callers retain only the defined state mask. Ordinary Action wrappers expose
+these same scalar functions through checked lowering; the hosted development
+peer reuses the functions directly. No second target interpreter is involved.</p>
+<p><code>sim/radio/ble_peer.lean</code> is a separately hosted, volatile development peer.
+Its normal Lean runtime never enters the RV64 image. It retains one opaque
+27-byte application head, exposes explicit credit, and emits empty LLID 1 ACK
+requests. It does not inspect notebook records or implement a journal. Its
+adapter must encode each <code>TX</code> request through a distinct real packet controller
+and supply <code>RX</code> only after that controller&#39;s CRC-valid publication. The command
+capture is bounded to 256 bytes; malformed frames do not change sequence state.
+<code>CANCEL</code> freezes state. <code>STATUS</code> is observational. A peer restart discards this
+volatile context; it is not companion storage or cold durable recovery.</p>
+<p>The versioned hosted text boundary begins with
+<code>BLEPEER/2 OPEN_MANUAL_UNAUTHENTICATED_CONTEXT</code>. Commands are <code>RX &lt;decimal header&gt; &lt;decimal length&gt; &lt;lowercase opaque hex or -&gt;</code>, <code>CREDIT</code>, <code>STATUS</code>, <code>CANCEL</code> and
+<code>QUIT</code>. ACK requests are <code>TX &lt;decimal header&gt; 0 -</code>. The native adapter supplies
+raw timing and packet-controller transport only; it must not set configured or
+authenticated state on either endpoint. Snapshot integration must preserve the
+packet models, pending sample decisions and queued raw frames, and must isolate
+or replay the external peer rather than reissue irreversible actions to it.</p>
+<p>Every response, including handshake and errors, ends in a complete accepted
+logical-state trailer:</p>
+<pre><code class="language-text">&lt;action&gt; | STATE &lt;state&gt; ACCEPTED &lt;count&gt; DUPLICATES &lt;count&gt; PENDING &lt;length&gt; &lt;opaque lowercase hex or -&gt;
+</code></pre>
+<p>Both counters are bounded to <code>2^63-1</code>. Overflow is status201 before mutation.
+The opaque head is at most27 bytes. A host adapter caches this actual accepted
+response before scheduling any peer controller transaction. Taking a snapshot
+does not request <code>STATUS</code>, flush the peer, advance a clock or drain a response.</p>
+<p>A newly created, privately bound process may receive <code>--private-restore</code>; its
+first command must be <code>RESTORE &lt;state&gt; &lt;accepted&gt; &lt;duplicates&gt; &lt;opaque hex or -&gt;</code>.
+The Lean peer validates all fields before adopting them. Unknown state bits,
+inconsistent outstanding/frozen/attempt fields, oversized heads, out-of-range
+counters and a nonempty head with zero accepted count reject with status197
+and exit2. A normal live process never accepts <code>RESTORE</code>. After restore,
+replay/fork inputs must go to that private peer and packet endpoint. This is
+complete logical policy continuation at an accepted-response boundary, not an
+arbitrary-boundary whole-machine checkpoint. Pending host operations require
+recorded outcomes or explicit snapshot rejection; they cannot be rerun against
+the original peer.</p>
+<p><code>sim/radio/ble_peer_transport.{h,cpp}</code> is a host-only, nonblocking raw process
+adapter. It retains stable request IDs, one outstanding operation,256-byte
+response framing and an actual deadline. It returns the real complete response
+before controller PIO, and tears down/reaps only its owned process group.
+Readiness means the host process completed its handshake/private restore. It
+does not establish/configure/authenticate a Bluetooth connection or report
+companion durability. An EOF, timeout or malformed reply is an error; no ACK is
+fabricated. Snapshot callers must reject <code>is_pending()</code> and retain controller,
+wire and cached policy state separately.</p>
+<p><code>parse_recorded_reply(frame)</code> admits an already captured complete response with
+the same canonical framing checks, without creating a process or changing peer
+state. It preserves the raw action/trailer and returns request ID zero for the
+runtime to bind to its recorded request. It rejects newlines, extra responses,
+inconsistent heads and frames over256 bytes. This parser grants no authority to
+an unbound frame: the runtime must check request identity, event cursor and the
+applicable captured outcome boundary before scheduling device effects.</p>
+<p>Run the hosted peer with:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command lake env lean --run sim/radio/ble_peer.lean
+</code></pre>
+<p>Run ordinary lowering, real RV64 object generation and the hosted lost-ACK
+state/credit/cancellation check with an unused output directory:</p>
+<pre><code class="language-sh">python3 scripts/check_ble_link.py --work-dir build/radio/manual-link-new
+</code></pre>
+<p>Exercise the actual hosted Lean peer through two distinct sampled-bit packet
+circuits, including lost ACK, duplicate rejection, CRC corruption and credit:</p>
+<pre><code class="language-sh">python3 scripts/check_ble_wire_peer.py --work-dir build/radio/wire-peer-new
+</code></pre>
+<p>These checks are software/component qualifications. The additive future
+<code>lemmasim-silicon-ble-link-probe</code> will use base <code>0x10010600</code>, span <code>0x400</code>, PLIC
+source 15 and explicit <code>core0-kernel-v0.5</code>; old 0.3/0.4 apertures stay unchanged.
+Versioned0.5 descriptor/SoC integration is a separate workstream; this component
+receipt does not qualify its registration. Actual guest/controller/IRQ execution,
+bounded live native retries, whole-machine replay and companion durability
+remain separate unfinished qualifications.</p>
+</main>
+</body>
+</html>

@@ -90,7 +90,8 @@ module lemma_compute import cvw::*; #(
                    (addr_d >= PAPER_BASE && addr_d < PAPER_BASE+PAPER_SPAN) ||
                    (addr_d >= PEN_BASE && addr_d < PEN_BASE+PEN_SPAN) ||
                    (BOOT_NV_ENABLED!=0 && addr_d >= BOOT_NV_BASE && addr_d < BOOT_NV_BASE+BOOT_NV_SPAN) ||
-                   (WIFI_ENABLED!=0 && addr_d >= WIFI_BASE && addr_d < WIFI_BASE+WIFI_SPAN));
+                   (WIFI_ENABLED!=0 && addr_d >= WIFI_BASE && addr_d < WIFI_BASE+WIFI_SPAN) ||
+                   (MULTIMODAL_ENABLED!=0 && addr_d >= MULTIMODAL_BASE && addr_d < MULTIMODAL_BASE+MULTIMODAL_SPAN));
   assign mem_valid = valid_d && sel_mem && !bad_alignment;
   assign mem_write = write_d;
   assign mem_addr = {addr_d[55:3],3'b000};

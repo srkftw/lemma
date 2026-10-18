@@ -21,6 +21,13 @@ REGISTRY = {
  'resources': {'name':'lemma-arithmetic-closure-resource-v1','id':0x000500000000001f,
                'heap_objects':31,'maximum_captures':4,'maximum_targets':8,'ordinary_peak_objects':9,'semantic_budgets':[0,8],'deadline_ticks':10000000},
 }
+# Whole ServerV8 is a new implementation identity. Its inherited closure
+# lowering/runtime/resource identities and the historical V7 registry stay exact.
+PARAMETERIZED_REGISTRY = {**REGISTRY,
+ 'contract_version':'lemma-arithmetic-execution-identity-v7',
+ 'implementation':{'name':'lemma-isolated-arithmetic-parameterized-closure-v1','id':0x0008000100000001},
+ 'parameterized':{'version':2,'request_bytes':192,'reply_bytes':192,'checker_id':0x0002000000000001}}
+from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS
 from closure_deployment import ALL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 CONFIGURATIONS = frozenset(CLOSURE_CONFIGURATIONS)
 ROOT = 'Lemma.Services.Arithmetic.ServerV7.main'
@@ -56,8 +63,12 @@ def contract(unit):
   return None
  require(selected(unit) and unit.get('contract_version')=='core0-user-v0.7',
          'Arithmetic execution identity escaped the exact managed isolated deployment')
- require(unit.get(FIELD)==REGISTRY, 'Arithmetic implementation/lowering/runtime/resource registry differs')
- return REGISTRY
+ registry = PARAMETERIZED_REGISTRY if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS else REGISTRY
+ require(unit.get(FIELD)==registry, 'Arithmetic implementation/lowering/runtime/resource registry differs')
+ if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS:
+  require(any(canonical(row.get('source',''))=='Lemma.Services.Arithmetic.ServerV8.main' for row in rows),
+          'Parameterized implementation lacks its genuine ServerV8 root')
+ return registry
 
 
 def catalog_inventory(unit):
@@ -120,6 +131,9 @@ def llvm_inventory(ir, unit):
 
 def validate(ir, unit, *, optimized):
  if contract(unit) is None:return None
+ if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS:
+  from multimodal_target import validate as validate_multimodal
+  return validate_multimodal(ir,unit,optimized=optimized)
  catalog=catalog_inventory(unit)
  require(EXPECTED['catalog'] is not None and catalog==EXPECTED['catalog'],
          'Arithmetic complete genuine source/contract inventory differs from implementation version')

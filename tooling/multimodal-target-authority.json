@@ -1,0 +1,277 @@
+{
+  "schema": "lemma-multimodal-target-authority/1",
+  "configurations": {
+    "lemmasim-silicon-multimodal-notebook": {
+      "firmware": {
+        "catalog_sha256": "7b07e4dd34a035a66e24829a76bff77bf7351a17bdc47de8157c39791fdfc149",
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        },
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "8b982b16b077c73bbdcb1a37e45ef1290c536ddd8677b8f88abf3835831940a8",
+        "pre": {
+          "function_count": 1253,
+          "sha256": "37d2b3d6c825c0d7aa4827ba6aacd0d99516a5c458049babae37df6150f7d815"
+        },
+        "post": {
+          "function_count": 1253,
+          "sha256": "16fb6296c231d356a50ce09acb17c523581f4b9750f50cb3400c833754cd603f"
+        }
+      },
+      "store": {
+        "catalog_sha256": "509bbeb964945f914afb189229e76c06bd85b2cef68d94b60f2a0acd14658775",
+        "pre": {
+          "function_count": 259,
+          "sha256": "58b233792a1411b9c8e3a23efea75340df981ff2a3c5d44c0b29cf2f1dc77541"
+        },
+        "post": {
+          "function_count": 259,
+          "sha256": "e255a79981abaa4448e321b59b37b3700d4ad2eb739829c273e0ead5a40e5cfe"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "705a86de8bf7964ceb1dfb6ffbed425a318860797a386ce192392fd87a6ca244",
+        "pre": {
+          "function_count": 977,
+          "sha256": "0ebc5142f432516ea8a1ab2b80c16f66f9c170ac4836f305e0c85025e2d5ec07"
+        },
+        "post": {
+          "function_count": 975,
+          "sha256": "2fd52925c7e8c517aa0bf1a266f44645727545ffc066590593281fd8c1ee3697"
+        }
+      },
+      "arithmetic": {
+        "catalog_sha256": "41549326682740cb5c1c796e41eefca95ddd20c0368b61b8661a1ef648503161",
+        "pre": {
+          "function_count": 184,
+          "sha256": "5c07cb5b00ba86b594da935659dd328ba7e1d3b3103aa9ef43fd507eb1579a98"
+        },
+        "post": {
+          "function_count": 184,
+          "sha256": "3c1ef8a2ef50860220d28250320743450bf9ff8eea63751e6d2898c8a83fb3f4"
+        }
+      },
+      "course": {
+        "catalog_sha256": "10cddf0bc05da8aaae67ebbc56f82c61f2d300de96e2d8e67f3b7b24fba7ba51",
+        "pre": {
+          "function_count": 171,
+          "sha256": "dac182aa4ad54fce985e9973f32a3727dd222602adf78d71a32e0490e9167c17"
+        },
+        "post": {
+          "function_count": 171,
+          "sha256": "fdffc01f9c1c46cb06365e1ce8d4af7e3321bde420294004cc3aed68750998a9"
+        }
+      }
+    },
+    "lemmasim-silicon-multimodal-initialize": {
+      "firmware": {
+        "catalog_sha256": "b944daef94539154636ddc8b8051fd5a4f126d5572c517f87b5ad4d239836179",
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        },
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "6e3e8e5298477462f115ac0c16445aa5571db9095e169570ec33f57968624436",
+        "pre": {
+          "function_count": 1253,
+          "sha256": "f6fbbcbd1900356d7f36338f7d1a54c6859ef8203e90f4aa8f241d02a8b10466"
+        },
+        "post": {
+          "function_count": 1253,
+          "sha256": "88ca09f6c333d758a904189db67c0b43de08a638b12ecc8992c8fe37367f36b2"
+        }
+      },
+      "store": {
+        "catalog_sha256": "da18971c325a00c8f86afe3e5da6b43f72e40699a6fc3dc393c0b6b4689c2175",
+        "pre": {
+          "function_count": 259,
+          "sha256": "58b233792a1411b9c8e3a23efea75340df981ff2a3c5d44c0b29cf2f1dc77541"
+        },
+        "post": {
+          "function_count": 259,
+          "sha256": "e255a79981abaa4448e321b59b37b3700d4ad2eb739829c273e0ead5a40e5cfe"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "1ab01e9b03d1a7d66c45af585b6f3d555569487766838739b8186514f1959033",
+        "pre": {
+          "function_count": 977,
+          "sha256": "0ebc5142f432516ea8a1ab2b80c16f66f9c170ac4836f305e0c85025e2d5ec07"
+        },
+        "post": {
+          "function_count": 975,
+          "sha256": "2fd52925c7e8c517aa0bf1a266f44645727545ffc066590593281fd8c1ee3697"
+        }
+      },
+      "arithmetic": {
+        "catalog_sha256": "4307a219aa00b249b774c3236cf7c0378e338423d69d5323565401bf1aea99a0",
+        "pre": {
+          "function_count": 184,
+          "sha256": "5c07cb5b00ba86b594da935659dd328ba7e1d3b3103aa9ef43fd507eb1579a98"
+        },
+        "post": {
+          "function_count": 184,
+          "sha256": "3c1ef8a2ef50860220d28250320743450bf9ff8eea63751e6d2898c8a83fb3f4"
+        }
+      },
+      "course": {
+        "catalog_sha256": "f0183d70aa3498a58039f232d13370b15f9116304b82ce908484772eeed2ada1",
+        "pre": {
+          "function_count": 171,
+          "sha256": "dac182aa4ad54fce985e9973f32a3727dd222602adf78d71a32e0490e9167c17"
+        },
+        "post": {
+          "function_count": 171,
+          "sha256": "fdffc01f9c1c46cb06365e1ce8d4af7e3321bde420294004cc3aed68750998a9"
+        }
+      }
+    },
+    "lemmasim-silicon-multimodal-parameterized-notebook": {
+      "firmware": {
+        "catalog_sha256": "e7765a71f8183d671ea5bd1d6b94a8533c1aab16db79cf32654daf47664ac211",
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        },
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "9acacc032c493c6e93c1437124fa07f25e2f779fe4a1e781a8e39b40c8243c1a",
+        "pre": {
+          "function_count": 1254,
+          "sha256": "452bd9a7f5c603e58a9b795221aed43dab8ba693858a1025258c84f29f772f55"
+        },
+        "post": {
+          "function_count": 1254,
+          "sha256": "8e6d5eb42c668fed1c7c2d9030228b73bde4839c37de4938abce40c8c0c40616"
+        }
+      },
+      "store": {
+        "catalog_sha256": "4944ddcfc996a13e001657910a541ebf13bffa5d49dd2c26edda6602aeb1ce79",
+        "pre": {
+          "function_count": 259,
+          "sha256": "58b233792a1411b9c8e3a23efea75340df981ff2a3c5d44c0b29cf2f1dc77541"
+        },
+        "post": {
+          "function_count": 259,
+          "sha256": "e255a79981abaa4448e321b59b37b3700d4ad2eb739829c273e0ead5a40e5cfe"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "fa479c0fe37c29a1d93beb47cd7f3cc0949b16e522b37595ada43e458ee80564",
+        "pre": {
+          "function_count": 977,
+          "sha256": "0ebc5142f432516ea8a1ab2b80c16f66f9c170ac4836f305e0c85025e2d5ec07"
+        },
+        "post": {
+          "function_count": 975,
+          "sha256": "2fd52925c7e8c517aa0bf1a266f44645727545ffc066590593281fd8c1ee3697"
+        }
+      },
+      "arithmetic": {
+        "catalog_sha256": "01e9304fa69db8acb47763d574e665ed4cc7b04deaf9d4df744d7d5ce83d3ded",
+        "pre": {
+          "function_count": 184,
+          "sha256": "5c07cb5b00ba86b594da935659dd328ba7e1d3b3103aa9ef43fd507eb1579a98"
+        },
+        "post": {
+          "function_count": 184,
+          "sha256": "3c1ef8a2ef50860220d28250320743450bf9ff8eea63751e6d2898c8a83fb3f4"
+        }
+      },
+      "course": {
+        "catalog_sha256": "12f18dc987daa26025d24772b78b5752fa0f0aae13034fc1da30fd58e188c61f",
+        "pre": {
+          "function_count": 183,
+          "sha256": "3b979e9e41d214397842f243c6a0073ec31973eda745c5691adf3b3b277977fb"
+        },
+        "post": {
+          "function_count": 183,
+          "sha256": "c0af5d54e7ddc6462476af37713a7b8444c8201fba82c8ce6dd74e0e587ac3da"
+        }
+      }
+    },
+    "lemmasim-silicon-multimodal-parameterized-initialize": {
+      "firmware": {
+        "catalog_sha256": "b0d8cfc0d10ca76e4d94980f7c6b4c0f38fdd3999f851570e1fbc84cbbcd759c",
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        },
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "b323c673b21d11163972430170b2b5672fdbcc0cfdf157226e67e3d009b8b93f",
+        "pre": {
+          "function_count": 1254,
+          "sha256": "31e2284a6af537775077ad3bb033f65e03e89a0827416cc07faf5ac01b1049fc"
+        },
+        "post": {
+          "function_count": 1254,
+          "sha256": "765a6e1ff03fef24c4795a5786de90de053a34084319294bfe245d10853958ee"
+        }
+      },
+      "store": {
+        "catalog_sha256": "173d48fb0512ffb8648b3065439feebf078227ea251dbd8fcfea7c8356d0538b",
+        "pre": {
+          "function_count": 259,
+          "sha256": "58b233792a1411b9c8e3a23efea75340df981ff2a3c5d44c0b29cf2f1dc77541"
+        },
+        "post": {
+          "function_count": 259,
+          "sha256": "e255a79981abaa4448e321b59b37b3700d4ad2eb739829c273e0ead5a40e5cfe"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "133b56466f4a90cc861313887f418fa6f65920c104d69098e4c7501cba5f16e4",
+        "pre": {
+          "function_count": 977,
+          "sha256": "0ebc5142f432516ea8a1ab2b80c16f66f9c170ac4836f305e0c85025e2d5ec07"
+        },
+        "post": {
+          "function_count": 975,
+          "sha256": "2fd52925c7e8c517aa0bf1a266f44645727545ffc066590593281fd8c1ee3697"
+        }
+      },
+      "arithmetic": {
+        "catalog_sha256": "183e005ce7ae6261a3118b2c1f33b02393376c76d9fe1fd1d0f8a066f3bfdbf6",
+        "pre": {
+          "function_count": 184,
+          "sha256": "5c07cb5b00ba86b594da935659dd328ba7e1d3b3103aa9ef43fd507eb1579a98"
+        },
+        "post": {
+          "function_count": 184,
+          "sha256": "3c1ef8a2ef50860220d28250320743450bf9ff8eea63751e6d2898c8a83fb3f4"
+        }
+      },
+      "course": {
+        "catalog_sha256": "9d292aee9f259edd65830365acf399f80e786f971db921d3e023f3dc81529a86",
+        "pre": {
+          "function_count": 183,
+          "sha256": "3b979e9e41d214397842f243c6a0073ec31973eda745c5691adf3b3b277977fb"
+        },
+        "post": {
+          "function_count": 183,
+          "sha256": "c0af5d54e7ddc6462476af37713a7b8444c8201fba82c8ce6dd74e0e587ac3da"
+        }
+      }
+    }
+  }
+}

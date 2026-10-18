@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surface word callback inlining v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="surface-word-callback-inlining-v1">Surface word callback inlining v1</h1>
+<p><code>lemma-surface-word-inline-v1</code> is a closed compiler-policy selection for the
+Package Notebook User2 root <code>Lemma.Applications.Notebook.mainPackageClosureBulk</code>
+under exactly <code>lemmasim-silicon-package-closure-entry2-bulk-notebook</code> and
+<code>lemmasim-silicon-package-closure-entry2-bulk-initialize</code>. It changes no Surface,
+Notebook, memory, device, mathematical, or durable-document source semantics.
+Historical configurations and callback lowering remain unchanged.</p>
+<p>The genuine Lean exporter first checks the full source-derived checked Action
+bodies of <code>tileLoadWordStep</code>, <code>bulkCopyWord</code>, their two callers, and <code>gatherWord</code>.
+It also checks the three scalar layout declarations, both complete callback
+signatures/effects and exhaustive incoming caller sets. Only those two callback
+names are excluded from <code>preserveCalls</code>. Their LLVM definitions are internal
+<code>nounwind</code>; no new <code>alwaysinline</code> or general eligibility rule is added. The
+existing pinned LLVM O2 pipeline must remove both definitions and inline their
+original bodies inside the original64-iteration loops. No grouped Surface
+implementation or broader accepted Lean language is introduced.</p>
+<p>The generated unit carries the closed <code>surface_word_inline</code> record with contract,
+policy, two ordered source/symbol/signature/effect/caller rows, and exact integer
+budget/count64. <code>scripts/surface_word_inline.py</code> rejects malformed metadata,
+wrong roles/versions/roots/software tuples, partial catalogues, and other symbols.
+Its <code>catalog(unit)</code>, <code>validate(ir,unit,optimized=...)</code>, and
+<code>removed_symbols(unit)</code> APIs compose with ordinary unit/IR/object audits.
+<code>removed_symbols</code> alone is never permission to omit a definition: its caller
+must first successfully validate the actual optimized IR. Package Notebook
+inventory admission subtracts exactly those two unowned library callbacks only
+after that validation. All189 owned Package body/caller checks remain required.</p>
+<p>The observer pins five complete preIR bodies and three complete postIR bodies.
+Its finite normalization rebinds exact one-to-one generated symbol names to their
+source owners and expands module-local attribute-group numbers to their complete
+attribute tokens; it discards no instruction, operand, edge or attribute.
+Independent CFG/dataflow gates require all64 iterations, full64-bit values,
+original framebuffer/tile/packet address calculations, gather-status checks,
+ordered volatile loads/stores, original first-error results, and bounds before
+subsequent reads/writes. The unaligned gather reads its first word before the
+second-word range check and only reads the second word after that check succeeds.
+The packet-copy loop reads its tile word before checking the packet destination,
+and writes that same full word only on the successful path. Partial writes and
+hardware-fault prefixes therefore retain their source order.</p>
+<p>LLVM may prove the fixed aligned tile span <code>[0x20500,0x20700)</code> valid and remove
+redundant pure address checks. It may not replace a volatile memory operation,
+assume cross-trap address-space validity, omit a hardware permission check,
+recover from a hardware fault in host code, or reorder the admitted accesses.
+Synthetic Action failure injection checks the abstract Action prefix; it is not
+a temporal RAM-fault model or a physical measurement. Canonical target execution
+and performance remain separate from source, Action, LLVM, object and host tests.
+The original925M Undo/200M-bound failure remains a failure.</p>
+<p>Generated outputs and exact producer/observer source inventories live under
+ignored <code>build/</code>. The evidence record identifies the actual selected producer,
+all retained failed observations, unchanged historical sources, and the separate
+qualification results. There is no inherited target CPU or speedup claim.</p>
+</main>
+</body>
+</html>

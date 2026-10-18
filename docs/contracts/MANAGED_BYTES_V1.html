@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ordinary managed bytes v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="ordinary-managed-bytes-v1">Ordinary managed bytes v1</h1>
+<p>The additive successor <code>core0-user-v0.4</code> inherits User virtual memory/syscalls,
+scalar Actions and the separately versioned records/sums bridges. Its new
+<code>Action.managedBytes2</code> bridge accepts an exact source constant with two UInt64
+parameters and a UInt64 result. Genuine pinned upstream Lean IR, rather than a
+supplied IR/AST or foreign runtime, determines the complete ordinary call and
+ownership closure. The closure has at most 32 definitions, depth 8 and 4096 nodes
+per function; source IDs below 10000 and generated SSA IDs below 65536 remain
+separate. Only safe monomorphic nonrecursive definitions are admitted.</p>
+<p>The initial bytes subset supports source UInt64, UInt8 and ByteArray values;
+<code>ByteArray.emptyWithCapacity</code>, <code>push</code>, <code>set!</code>, <code>size</code>, and <code>get!</code>; exact byte
+conversions; selected UInt64 scalar operations; borrowed observations, consuming
+calls/updates, owned returns, exhaustive internal Bool cases, and exact single
+reference increment/decrement operations. Static objects, generic Array,
+closures, joins, arbitrary loops/recursion, constructors, reference payloads and
+unsupported ownership forms fail closed. Arithmetic shifts retain Lean&#39;s
+modulo64 shift count. No pointer or runtime object address crosses a source
+entry or is fabricated from a scalar.</p>
+<p>The only Nat values admitted in bytes IR are literals 0..48, size results 0..48,
+and UInt64.toNat values dynamically checked to 0..48. Their representation is an
+unboxed logical UInt64 value; genuine IR&#39;s decrement of such a known scalar
+needs no allocated Nat object. Arbitrary Nat operations, bignums, persistent
+Nat objects and runtime replacements are denied. This is an explicit bounded
+contract extension, not a discarded or no-op reference-counting helper.</p>
+<p>Each ByteArray has a real process-owned Arena generational 64B slot: its payload
+word0 is a distinct cookie, word1 is logical length, and bytes16..63 hold up to 48
+bytes. Full tag/generation/size/cookie/length checks precede observations. The
+existing 31-slot owned page and real reference count remain authoritative; old
+record/sum cookies cannot be read as ByteArray. New arrays begin zeroed.
+Capacity is not observable in ordinary Lean; requested capacity 0..48 is accepted
+and this backend reserves 48 bytes. Larger capacities/Nat conversions return 236.</p>
+<p>The first implementation always allocates a distinct output on a valid
+push/set, copies at most 48 bytes, and consumes exactly one input reference.
+Actual <code>inc</code> uses Arena.retain. Actual final <code>dec</code> uses Arena.release, clearing
+payload/metadata and advancing generation. Source aliases retain their bytes.
+Successful unchanged out-of-bounds set! returns the same owned reference;
+get! out-of-bounds returns controlled 236 instead of a foreign panic runtime.
+Length 48 push or real exhausted 31-slot allocation returns 237; cancellation 238
+and invalid lifetime 239 remain distinct. Unpublished outputs and owned inputs
+are cleaned up on normal resource/cancellation failure. An underlying mapped
+memory fault propagates its real status; corrupted allocator state is never
+repaired into trusted mathematical evidence. Process isolation and death
+cleanup remain kernel obligations.</p>
+<p>Component fixture, emitted LLVM/object audit and isolated RV64 service execution
+must be reported separately. This subset does not close general managed Lean,
+arrays/strings/closures, a proof kernel, course packages, mathematical precision,
+or complete G2. Changing the checker implementation requires a separate new
+execution registry/protocol/document version; existing Sums/Document4 identities
+and receipts remain unchanged.</p>
+</main>
+</body>
+</html>

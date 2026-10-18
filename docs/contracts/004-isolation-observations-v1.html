@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LemmaSim ordinary-client isolation observations v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lemmasim-ordinary-client-isolation-observations-v1">LemmaSim ordinary-client isolation observations v1</h1>
+<p>The closed <code>lemmasim-isolation-development</code> deployment adds one separately
+linked <code>Lemma.User.Development.NotebookIsolation.main</code> to the same store and
+notebook specifications as <code>lemmasim-notebook</code>. It selects the existing
+<code>NotebookKernel.isolationBoot</code> path, scheduler, Sv39 loader, capability tables,
+IPC and device syscall handler. It introduces no second kernel or privileged
+User instruction startup. The ordinary production deployment admits no fixture
+image. The initializer remains separate and this deployment cannot format.</p>
+<p>The third client receives document Call and console Write grants only. It
+serializes the actual replies below through its console capability. Any reply
+that differs aborts the fixture; the independent observer also rejects the
+retained behavioral result. A successful source export is not execution proof.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Actual operation</th>
+<th>Required reply</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Raw block capacity, using the document endpoint</td>
+<td>72, wrong device endpoint authority</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Raw block write, missing capability</td>
+<td>80, invalid handle</td>
+</tr>
+<tr>
+<td>3/4</td>
+<td>Paper geometry / pen sample, using document endpoint</td>
+<td>72, wrong device endpoint authority</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Endpoint creation using document authority</td>
+<td>81, wrong capability type</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Real namespace1 IPC request with missing capability</td>
+<td>80, invalid handle before service delivery</td>
+</tr>
+<tr>
+<td>101/102/106</td>
+<td>Real IPC delivery of open/begin/delete requests for namespace3</td>
+<td>transport0 and128 reply bytes</td>
+</tr>
+<tr>
+<td>201/202/206</td>
+<td>Service application replies to those namespace3 requests</td>
+<td>220, unsupported namespace framing</td>
+</tr>
+<tr>
+<td>298/299</td>
+<td>Queued IPC transaction / guest20.27second attempted request</td>
+<td>transport0, nonzero transaction / actual monotonic time</td>
+</tr>
+<tr>
+<td>300</td>
+<td>Real namespace1 eight-byte chunk from a foreign full sender/transaction</td>
+<td>232, staging owner mismatch</td>
+</tr>
+</tbody></table>
+<p>The document grant deliberately authorizes namespaces1/2 as one notebook
+family. Namespace3 rejection is format admission, not a claim of finer-grained
+namespace1/2 capabilities. The original eight-byte payload is
+<code>0xd15ca11ed15ca11e</code>; it must never become a document transaction. The foreign chunk is attempted at guest20.27seconds, after the ordinary first
+stroke pen-up at20.25seconds. Actual IPC acceptance is observed separately.
+The independent checker requires Notebook Pending before the attempt and actual
+queued IPC before the first stroke Saved ACK. Test300 proves the actual
+sender-owner check rejects this client during that notebook commit interval.
+Pending UI state does not alone establish that the store staging buffer was
+populated at the exact instant of that request.</p>
+<p>After guest monotonic time reaches42seconds, the client reports its planned
+load then executes <code>User.Memory.read64 0x400000</code>. This page is not allocated in
+its address space. The required observation is real User load page fault13,
+original trap SPP clear, normal task termination44, and ordinary frame reaping.
+A returned load, a source failure, a privileged startup exception, or a host
+memory edit cannot satisfy this boundary.</p>
+<p>Kernel-only cells <code>[0x80400f00,0x80400f20)</code> hold this deployment&#39;s selection and
+initial queue identity. They follow the DTB scratch reservation ending at
+<code>0x80400f00</code>. No User mapping or grant exposes them. Normal boot explicitly
+clears selection. At boot, immediately before this client&#39;s actual fault, and
+after its task lookup confirms reaping, compiled kernel observations revalidate
+the VirtIO queue frame as owner1/purpose1, and record its actual handle, physical
+base, outstanding kind, purpose, mapping count, remaining frame count and actual
+guest monotonic time. The
+handle/base must remain identical and post-reap free frames must increase. These
+are observations of a retained live kernel DMA allocation. Driver outstanding
+state alone does not prove an in-flight DMA death experiment.</p>
+<p>This experiment additionally selects a named, finite Laboratory medium policy:
+the first actual write at/after virtual40seconds waits3virtualseconds before the
+device consumes its DMA iovec. Normal media disable this optional delay. Actual
+<code>write-delay-begin</code>/<code>write-delay-end</code> observations identify the same sector offset
+and byte length. The independent observer requires both compiled kernel fault
+and completed-reap times strictly inside that device interval, with actual write
+kind2 and the same kernel-owned queue frame. The actual delayed write must then
+consume its retained DMA bytes, followed by normal guest durable publication.
+No host sleep, QMP stop/drain, driver counter alone, or post-hoc disk rewrite can
+satisfy these checks. The declared delay policy belongs in the run identity.</p>
+<p><code>conformance/lemmasim/check_notebook_isolation.py</code> requires an existing second
+notebook with acknowledged raw writing in the input image. It independently
+recovers the before/after committed records, preserves every namespace2
+object/transaction/sequence/kind/payload, rejects namespace3 publications,
+checks every actual rejection/trap/reap/queue observation, and requires normal
+notebook stroke acknowledgements before and after client reaping. The ordinary
+raw two-stroke fixture must enter the real pen FIFO, become exactly50 fresh
+indexed raw samples, and produce completed controller-visible black writing.
+Physical sector addresses may move under legitimate checkpointing; document
+bytes and object identity may not change. The checker never supplies recovery
+results to the guest. Literal observer unit tests exercise failure decisions and
+are not target execution evidence. A fresh linked QEMU run is required.</p>
+<p>Observation tags: <code>42f</code> client grants/identity; <code>430</code> actual reply cases; <code>432</code>
+planned load/address/time; <code>433</code> queue phase/handle/base/outstanding; <code>434</code>
+phase/purpose/mappings/free frames; <code>435</code> erroneous returned load; <code>436</code>
+phase/actual guest ticks/outstanding kind/reserved0. Existing
+<code>d4</code>, <code>f4</code>, <code>f6</code>, <code>421</code> retain their real trap/reaping/document ACK meanings.</p>
+</main>
+</body>
+</html>

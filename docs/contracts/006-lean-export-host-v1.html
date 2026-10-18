@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lean export host resources, version 1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lean-export-host-resources-version-1">Lean export host resources, version 1</h1>
+<p><code>lemma-lean-export-host/1</code> records an explicit <code>-j2</code> worker-pool argument on
+kernel and independent-user export commands. The public build interfaces are
+unchanged. Actual command evidence contains <code>lake env lean -j2 SOURCE.lean</code>;
+the launcher does not rewrite an already recorded command. Genuine elaboration,
+checked lowering, LLVM arguments, target helpers and link provenance retain
+their existing contracts. This policy adds no target language feature or runtime.</p>
+<p>The complete consumed-source inventory includes <code>scripts/lean_export_host.py</code>.
+Its presence requires the exact versioned policy object in provenance. Missing,
+unknown, malformed or inconsistent policy/argv evidence rejects. A current
+builder missing its required helper rejects instead of silently selecting old
+arguments. All selected export roots, ordering, pinned executables and working
+directories remain checked independently.</p>
+<p>Historical source archives without this helper retain their original commands
+and absent/null host policy, including construction through the explicit
+archived-source workspace. Supplying a new policy to that old inventory rejects.
+The original Core0 build driver is unchanged. Earlier artifact identities and
+failure reports retain their meanings.</p>
+<p>Two Lean workers are not a two-thread process limit: the runtime can also use
+GC and other host threads. Command deadlines, address-space limits, aggregate
+RSS limits and cleanup supervision remain separate. <code>LEAN_NUM_THREADS=2</code> and
+Lake&#39;s build arguments alone did not cap a separately launched <code>lake env lean</code>
+process in the retained Linux diagnostic; explicit <code>-j2</code> is load-bearing here.
+This is a host build policy, not a guest cycle, processor timing or execution
+memory guarantee.</p>
+<p>Focused checks:</p>
+<pre><code class="language-sh">python3 -m unittest discover -s tests/kernel -p test_lean_export_host.py -v
+python3 -m unittest discover -s tests/kernel -p test_multi_image_audit.py -v
+</code></pre>
+<p>The actual preceding normal/initializer command corpora pass the new validator
+with their original arguments. New-policy whole-image compilation/audits and
+resource measurements require their own results; these tests alone do not
+establish those outcomes.</p>
+</main>
+</body>
+</html>

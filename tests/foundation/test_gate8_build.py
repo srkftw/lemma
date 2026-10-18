@@ -64,7 +64,7 @@ class TimerBuildDriverTests(unittest.TestCase):
             Path("scripts/check_foundation_gate8.py"),
             Path("examples/foundation/TimerFrontendProbes.lean"),
             Path("examples/foundation/TimerPolicyProbes.lean"),
-            Path("docs/audits/timers-core0-v07.md"),
+            Path("docs/audits/timers-core0-v07.html"),
         }
         self.assertTrue(required <= set(build_timer_suite.HOST_INPUTS))
 

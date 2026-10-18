@@ -76,8 +76,8 @@ class MonitorBuildDriverTests(unittest.TestCase):
             Path("examples/foundation/TimerFrontendProbes.lean"),
             Path("examples/foundation/TimerPolicyProbes.lean"),
             Path("examples/foundation/MonitorPolicyProbes.lean"),
-            Path("docs/audits/timers-core0-v07.md"),
-            Path("docs/audits/monitor-core0-v07.md"),
+            Path("docs/audits/timers-core0-v07.html"),
+            Path("docs/audits/monitor-core0-v07.html"),
         }
         self.assertTrue(required <= available)
         self.assertTrue(all((ROOT / path).is_file() for path in available))

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Owner-local companion, checking and assessment</title>
+<style>body{max-width:75rem;margin:auto;padding:2rem;font:1rem/1.6 system-ui}code,pre{font-family:ui-monospace,monospace}pre{padding:1rem;background:#f2f2f2;overflow:auto}table{border-collapse:collapse}th,td{padding:.5rem;border:1px solid #bbb;vertical-align:top}</style>
+<h1>Owner-local companion, checking and assessment</h1>
+<p>This implementation extends the maintained Lean workbook. The companion proposes assistance; the existing guest installer, Store, copied-action gate and paper controller decide what is installed and presented. A model response, an installed package, a successful rasterization and a completed panel update are separate observations. The companion never grants mathematical verification.</p>
+<h2 id="paths">Executable paths</h2>
+<table><tr><th>Path</th><th>Authority and scope</th></tr>
+<tr><td><code>sim/companion/multimodal/tutor.py</code></td><td>Replaceable local Ollama inference, fresh stdin questions after startup, scoped history and observation cutoff, exact model/template/license identities, raw responses and rejected-proposal receipts. The default is the locally installed Apache-2.0 Qwen2.5 7B model; no proprietary account is required. A missing model fails without downloading a substitute.</td></tr>
+<tr><td><code>scripts/lemmasim_tutor.py</code></td><td>Reads actual guest ASK records. Calls inference, invokes the hosted Lean package publisher and sends ordinary bounded UART command bytes. Original source/edition/object/revision anchors come from the guest, never the model. This development transport is integrity-only and unsuitable for real private collection.</td></tr>
+<tr><td><code>Lemma.Multimodal.TutorAction</code>, <code>TutorPackage</code></td><td>Guest permission, current session/consent, source, revision, resource, timing and completion-sequence admission. Assistance remains unverified. Formal claim checking is an explicit pending obligation until semantic claims are linked to admitted exact requests.</td></tr>
+<tr><td><code>Lemma.Services.Arithmetic.ServerV8</code></td><td>Separately linked exact rational/polynomial authority, accepting the historical V7 request and a new 192-byte immutable runtime task envelope. It echoes all task, submission, assistance and session fields. New operands do not require a guest rebuild. These bounded domains do not establish a general Lean proof kernel.</td></tr>
+<tr><td><code>scripts/lemmasim_parameterized.py</code></td><td>Owner-local runtime task framing and actual guest reply observation. The sole PackageInstaller UART consumer calls the real isolated checker; the adapter does not mutate workbooks or create Verified evidence.</td></tr>
+<tr><td><code>sim/companion/multimodal/speech.py</code></td><td>Real local eSpeak NG PCM generation and PocketSphinx file recognition with executable/model/grammar identities. Raw audio, recognized words and corrections remain distinct. Generated PCM is never played directly by this adapter; guest controller delivery must be observed independently. Recognition accuracy remains unqualified.</td></tr>
+<tr><td><code>sim/companion/multimodal/policy.py</code></td><td>Executable gradient-trained linear presentation selector, immutable model identities and owner-controlled rollback. Synthetic learner assumptions generate later submissions, and the separate assessment authority scores those submissions. The reward is never physiology or immediate assisted correctness.</td></tr>
+<tr><td><code>sim/companion/multimodal/assessment.py</code></td><td>Independent challenge generation and exact/rubric scoring for delayed retention, transfer, counterexamples/assumptions, definitions/classification and learning from an unfamiliar standardized resource. This module is absent from runtime tutoring imports. Synthetic tests establish software operation, not human learning benefit.</td></tr></table>
+<h2 id="commands">Commands</h2>
+<p>Run commands from the repository root in the pinned environment. Output paths must be unused. The current deployment checkpoint supplies the exact admitted native bundle, initialized disk and final guest identities.</p>
+<pre>nix develop --no-write-lock-file --command python3 scripts/check_multimodal_companion.py \
+  --work-dir build/multimodal/companion-UNUSED
+
+nix develop --no-write-lock-file --command python3 scripts/check_multimodal_companion.py \
+  --inference --model qwen2.5:7b --work-dir build/multimodal/inference-UNUSED
+
+nix develop --no-write-lock-file --command python3 scripts/check_multimodal_crypto.py \
+  --work-dir build/multimodal/crypto-UNUSED
+
+python3 sim/companion/multimodal/policy.py fixture --output build/multimodal/rows-UNUSED.json
+python3 sim/companion/multimodal/policy.py train --input build/multimodal/rows-UNUSED.json \
+  --output build/multimodal/policy-UNUSED.json
+python3 sim/companion/multimodal/policy.py rollback --input build/multimodal/policy-UNUSED.json \
+  --registry build/multimodal/current-policy-UNUSED.json
+
+nix develop --no-write-lock-file --command python3 scripts/check_multimodal_workbook.py \
+  --native-bundle ADMITTED_BUNDLE --disk ACKNOWLEDGED_INITIALIZED_DISK \
+  --package ORIGINAL_EDITION3_PACKAGE --work-dir build/multimodal/workbook-UNUSED</pre>
+<p>The native scenario declares its virtual and wall limits before launch, uses private disk copies and public device/session controls, and retains its original failures. Its intended observations include original-course installation, actual model inference, guest paper pixels, seven fresh isolated checking requests, local capture/revocation/mute, pen input and Save, and independent cold recovery. A command or harness alone is not an execution receipt.</p>
+<h2 id="security">Cryptographic components and live-session boundary</h2>
+<p>The target Lean implementations cover ChaCha20, Poly1305, IETF ChaCha20-Poly1305 and a bounded 32-byte SHA-256 HKDF expansion. Independent published vectors come from <a href="https://www.rfc-editor.org/rfc/rfc8439">RFC 8439</a> and <a href="https://www.rfc-editor.org/rfc/rfc5869">RFC 5869</a>. The RV64 component checker genuinely elaborates, lowers through LLVM, audits and executes the target vector workload. Known-answer and tamper tests do not establish side-channel resistance or production qualification.</p>
+<p>The host protected-session reference implements transcript-bound directional keys, authenticated framing, packet and stream sequences, bounded priorities, consent-aware queued cancellation, reconnect and nonce exhaustion. The scalar target session policy and target cryptography are not yet integrated into a protected live companion channel. Owner provisioning, live entropy, physical entropy hardware, snapshot-safe key management and production identity remain separately unqualified. Simulator entropy and deterministic development keys cannot authorize physical private-data collection. The older CRC64 opaque storage protocol keeps its independent durability meaning.</p>
+<h2 id="limits">Remaining boundaries</h2>
+<p>The default guest flow is text-only, with visible unverified assistance. It does not claim guest PCM tutor playback, measured audibility, general speech accuracy, physiological interpretation, raw camera/ToF/photon-flow acquisition qualification, real-time consumer performance, arbitrary checkpoint exactness or educational benefit. The assessment pipeline requires actual independent learner submissions and controlled comparisons before any human benefit claim. No human recordings or body-connected activation are authorized by this software work.</p>
+</html>

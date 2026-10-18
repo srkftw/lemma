@@ -356,6 +356,9 @@ class MonitorBindingTests(unittest.TestCase):
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("source:" + name)
+        # Identify the current HTML fixture; do not weaken the runner's
+        # original-path handling for immutable historical source archives.
+        write_json(self.root / "docs/document-map.json", {"schema": "lemma-document-map/v1"})
         self.bind()
 
     def tearDown(self):

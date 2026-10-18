@@ -1,0 +1,30 @@
+{
+  "schema": "lemma-html-render-reproduction/1",
+  "status": "PASS_MECHANICAL_RENDER_REPRODUCTION",
+  "source_base": "b4b5c239728d2fd56fa5b749a7a9b81ffff6e9f5",
+  "source_documents": 188,
+  "rendered_documents": 187,
+  "scope": "Reconstruct exact original Markdown bytes from source_base plus hash-checked preserved original-checkout Task006 updates; run the current converter in an isolated temporary source tree and compare all initial mechanical HTML hashes. Current maintained edits remain separately versioned.",
+  "converter": {
+    "path": "scripts/docs/migrate_html.mjs",
+    "sha256": "f3af203313eeca20b5469412f3567af51ef2db9b3d80629d9910ee677d48a3a2"
+  },
+  "parser": {
+    "name": "marked",
+    "version": "17.0.5",
+    "module_sha256": "0b4487359ce6b85108708e7a532e1242a27f4718241e7b2de109ac6cd307d2dc"
+  },
+  "source_identity_map": "docs/document-map.json",
+  "renderer_stdout": {
+    "tracked_markdown": 188,
+    "converted": 187,
+    "exceptions": [
+      "AGENTS.md",
+      ".github/pull_request_template.md",
+      "docs/evidence/history/003-kernel-isolated-services-pre-final.md"
+    ]
+  },
+  "seconds": 1.321277,
+  "original_receipts_rewritten": false,
+  "target_execution": "NOT_RUN_NOT_CLAIMED"
+}

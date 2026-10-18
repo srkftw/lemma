@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Managed sums v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="managed-sums-v1">Managed sums v1</h1>
+<p><code>core0-user-v0.3</code> adds <code>lemma-managed-sums-v1</code> on the existing isolated User
+memory/syscall boundary. User1/User2, firmware, Boot and Kernel profiles reject
+its <code>Action.managedSums2</code> bridge. Existing managed-records-v1 remains a separate
+bridge, source grammar, cookie and artifact catalog; no historical result is
+assigned this implementation identity.</p>
+<p>The entry is an ordinary safe Lean definition <code>UInt64 → UInt64 → UInt64</code> at an
+exact direct source constant. Elaboration and the pinned upstream Lean compiler
+produce the real IR; the checked bridge discovers its complete nonrecursive
+call closure. No supplied IR or handwritten mathematical interpreter grants
+admission. Closed calls have depth at most8, at most32 source definitions,
+4096 IR nodes per definition and disjoint source/SSA variable ranges bounded
+by10000/65536. Unknown forms reject before LLVM emission.</p>
+<p>Admitted payload sums have2..8 nonrecursive, nonindexed constructors, each
+with1..7 explicit UInt64 fields. Parameters, dependencies, nested or reference
+fields, nullary/tagged forms, closures and unsafe/foreign/replaced definitions
+reject. Actual compiler constructor/tag/payload metadata must equal genuine
+elaborated source metadata. UInt64 add/sub/mul retain modulo2^64 semantics;
+UInt64 equality and Bool false/true tag cases have exact0/1 representation.
+Admitted cases explicitly cover every source constructor once; defaults,
+joins/jumps, RC increment/reuse and absent IR forms remain unsupported.</p>
+<p>Every constructor obtains a real generational reference from the owned31-slot
+Arena-v1 page. Its checked payload layout is8+8n bytes (16..64); the first word
+is <code>(closed_type_id &lt;&lt;8)|constructor_tag</code>. Record cookies remain separate.
+Initialization has a compile-time field mask; every field is written once
+before publication. Cases validate the actual type, tag, arena handle,
+constructor count and packed length catalog before choosing a branch.
+Projections require a specific checked constructor and validate the complete
+cookie, payload length, index and generation. Borrowed objects cannot be
+released or returned; an owned return transfers its reference. A genuine
+<code>dec1</code> calls real final release. Every failed helper attempts remaining owned
+cleanup while preserving the first failure. Cookie publication failure
+attempts release; errors/OOM/cancellation create no mathematical evidence.
+Arbitrary repeated memory faults can prevent cleanup and remain real faults;
+no rollback or successful reclamation is invented.</p>
+<p>The first production algorithm is bounded exact/1 rational comparison to5/6,
+returning an ordinary <code>Comparison.equal numerator denominator</code> or
+<code>Comparison.unequal difference</code>. Its existing caller checks denominator,
+encoding, integer bounds, sign and semantic budget before the ordinary entry.
+Distinct24/16-byte payloads, generated source tag cases, borrowed projections
+and final release are present in actual IR and emitted LLVM. Polynomial and
+other outcomes keep their declared exact/1 algorithms. This is a managed sum
+slice, not a general Lean runtime, proof kernel or bytearray/closure port.</p>
+<p><code>lemma-managed-sums-deployment-v1</code> uses the unchanged silicon0.3 hardware,
+Kernel4, Store/User1, Notebook/User2 and Arithmetic/User3, selected by exact
+<code>sums-notebook</code>/<code>sums-initialize</code> configurations. Protocol3 requires a distinct
+implementation/lowering/runtime tuple. Document4 retains2496 bytes and extends
+the versioned execution registry: legacy origin2 must match its original tuple;
+new origin3 must match the exact sums tuple. v3 migration preserves all existing
+Known/Unknown attempts; v1/v2 migration stays Unknown. Edits clear active
+applicability only. No integer identity is described as an ELF or source hash;
+complete genuine source/call/LLVM preimages and final artifacts independently
+bind the named implementation authority.</p>
+<p>General variable-sized heap, ByteArray, strings, recursive sums, closures,
+shared references and general calling conventions remain open. A compiler
+fixture or host runtime fixture does not establish isolated RV64 execution,
+exact simulator timing parity, mathematical understanding or a proof-kernel
+check. Those obligations require their own real guest observations.</p>
+<p>The prepared native bundle <code>build/native/task006-sums-a1</code> contains the complete
+audited notebook and initializer artifacts with archived consumed sources.
+Use a private, guest-initialized medium for the normal notebook:</p>
+<pre><code class="language-sh">./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/task006-sums-a1 --disk PRIVATE_MEDIUM \
+  --session-dir NEW_SESSION
+</code></pre>
+<p>COURSE opens the existing offline arithmetic sequence. Raw pen taps edit the
+submitted rational/coefficient values, CHECK invokes the separately linked
+Arithmetic process, HINT records authored local assistance, and REVIEW exposes
+the uncertain offline policy with user override/disable. Save remains the
+ordinary Store journal/barrier path. The native implementation versions are
+not proof-kernel or exact RTL timing claims.</p>
+<p>The connected normal and historical-record checks use independent cold machines,
+private backing copies, complete controller pixels and the unchanged 60-second
+boot/30-second action bounds:</p>
+<pre><code class="language-sh">python3 scripts/check_math_session.py --require-sums-identity \
+  --disk build/silicon/task006-canonical-cold-a2/medium.raw \
+  --work-dir NEW_MATH_OUTPUT --native-bundle build/native/task006-sums-a1 \
+  --boot-seconds 60 --action-seconds 30 --deadline 1200
+python3 scripts/check_review_session.py --record-version 4 --source-record-version 3 \
+  --disk build/task006-execution-identity-math-a1/closed-course.raw \
+  --work-dir NEW_MIGRATION_OUTPUT --native-bundle build/native/task006-sums-a1 \
+  --boot-seconds 60 --action-seconds 30 --deadline 1200
+</code></pre>
+<p>The source media above are retained development artifacts created by real guest
+formatting/Saves. The observers never format or modify those originals. Product
+boot, browser interaction, snapshots, radio, teacher package authoring and tutor
+transport remain separately qualified paths.</p>
+</main>
+</body>
+</html>

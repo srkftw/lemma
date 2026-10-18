@@ -1,0 +1,39 @@
+{
+  "schema": "lemma-multimodal-engineering/1",
+  "units": {"circuit": "SI with SPICE suffixes", "geometry": "mm"},
+  "first_party_sources_license": "Apache-2.0",
+  "public_model": {
+    "repository": "https://github.com/IHP-GmbH/IHP-Open-PDK",
+    "commit": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "path": "ihp-sg13g2/libs.tech/ngspice/models/diodes.lib",
+    "sha256": "66fa37819fa8a5c8af4dbb85f11208c3e38faa49c117de55c35a1538786715e8",
+    "license": "Apache-2.0; original complete model and copyright retained without edits in every run",
+    "device": "dantenna reverse-bias model; original model describes SG13S technology test structures",
+    "scope": "nominal27C diode/passive transient fixture; no statistical/process-corner coverage or proof that this PDK provides all requested sensors"
+  },
+  "functional_boundaries": {
+    "electrode": "Ideal source and rail-limited B amplifier; public diode plus real R/C topology; no fabricated ADC/effective-bit claim",
+    "optical": "Declared photocurrent B sources and ideal reset/inhibition switches; public reverse diode capacitance/leakage; no emitter/pixel fabrication or tissue model",
+    "microphone": "Independent synthetic voltage inputs, passive RC, ideal gain/mute; no MEMS capsule or transistor preamplifier",
+    "bone_driver": "Authorized-PCM voltage input, ideal gain/mute, explicit passive RLC equivalent; no measured transducer or acoustic/body-transfer claim",
+    "geometry": "Editable independent carrier travel, replaceable pads/cables, shields, inspection slots and tablet bracket; no fit/contact-force/eyewear/occlusion certification"
+  },
+  "remaining_public_inputs": [
+    "Qualified electrode/contact/protection and interconnect/charging design with actual component limits",
+    "Complete converter and low-noise amplifier transistor/circuit/layout implementation and qualified public models",
+    "Imaging-pixel, photodetector, emitter and microphone-MEMS process/design/assembly inputs",
+    "Custom bone-transducer material/magnetic/mechanical process and measured electrical/acoustic model",
+    "Qualified package/pad/ESD, power, extraction, DRC/LVS/routing and mixed-signal closure",
+    "Optical/acoustic/electrical/thermal and mechanical safety and human fit qualification"
+  ],
+  "readiness": {
+    "consumer_simulation": "UNVERIFIED by these fixtures; separate machine evidence required",
+    "canonical_digital_rtl_parity": "UNVERIFIED by these analog/CAD fixtures",
+    "open_design": "SIMULATED_ONLY for declared circuit boundary; CAD source UNVERIFIED",
+    "manufacturing_reproducibility_openness": "BLOCKED: listed process/design/assembly inputs absent",
+    "design_specific_rights": "UNVERIFIED beyond identified source licenses; no patent-free claim",
+    "physical_closure": "UNVERIFIED",
+    "physical_functional_safety_qualification": "UNVERIFIED; no body-connected activation",
+    "educational_benefit": "UNVERIFIED by these fixtures"
+  }
+}

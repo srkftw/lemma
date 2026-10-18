@@ -23,30 +23,27 @@ not a browser-local compiler or a production authenticated boot distribution.
 Physical conformance, complete digital device support and full course/browser
 acceptance are separate obligations. Packaging bytes establishes none of them.
 '''
-README = '''# Local LemmaSim browser machine
-
-Python3.10 or later and a browser with WebAssembly and OPFS synchronous worker
-access are required. Launch after extraction, from any working directory:
-
-```sh
-python3 /path/to/extracted/serve.py --verify-only
+USAGE_HTML = '''<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Browser LemmaSim usage</title></head>
+<body><main>
+<h1>Local LemmaSim browser machine</h1>
+<p>Python3.10 or later and a browser with WebAssembly and OPFS synchronous worker
+access are required. Launch after extraction, from any working directory:</p>
+<pre><code class="language-sh">python3 /path/to/extracted/serve.py --verify-only
 python3 /path/to/extracted/serve.py --port 8787
-```
-
-Open http://127.0.0.1:8787/ in your browser. The launcher binds loopback only,
+</code></pre>
+<p>Open <a href="http://127.0.0.1:8787/">http://127.0.0.1:8787/</a> in your browser. The launcher binds loopback only,
 serves the original inventoried machine files and needs no repository, Nix,
 Lean, LLVM, network download or Python package installation. Verify-only checks
 the distribution and the original complete browser bundle. Checksums detect
-changed bytes; they do not authenticate a sender.
-
-Create a new named medium through the real Lean guest initializer, or import
+changed bytes; they do not authenticate a sender.</p>
+<p>Create a new named medium through the real Lean guest initializer, or import
 an exported raw medium under a new name and Open it for guest cold recovery.
 Keep the same port: browser storage belongs to its origin. Save succeeds only
 after the actual guest/backing barrier. OPFS flush does not guarantee physical
 power-loss durability, retention against eviction or persistence in private
-browsing. Export backing bytes regularly; beforeunload is not a save mechanism.
-
-Student, Developer and Laboratory run the same RV64 guest and permissions.
+browsing. Export backing bytes regularly; beforeunload is not a save mechanism.</p>
+<p>Student, Developer and Laboratory run the same RV64 guest and permissions.
 Developer/Laboratory expose raw input, inspection, bounded runs, checkpoint
 export/restore into private forks and offline outcome replay. Restoring a
 checkpoint is continuation; Open from raw backing is cold recovery. A bounded
@@ -55,7 +52,8 @@ Changing machines while a selected file loads cancels that selection; choose it
 again in the new machine. Import destinations and installation transactions
 belong to the original selection, even if their fields are edited during loading.
 Stop the server with Ctrl-C. The server does not send documents or other data
-to a remote service. See NOTICE.txt and bundle/DEPENDENCIES.txt for limitations.
+to a remote service. See NOTICE.txt and bundle/DEPENDENCIES.txt for limitations.</p>
+</main></body></html>
 '''
 
 
@@ -93,7 +91,7 @@ def package(source, destination, archive=None):
         if digest(destination / installed) != inputs[original]:
             raise ValueError('Launcher source changed during packaging')
     (destination / 'NOTICE.txt').write_text(NOTICE)
-    (destination / 'README.md').write_text(README)
+    (destination / 'usage.html').write_text(USAGE_HTML)
     validated_bundle(destination / 'bundle')
     if digest(destination / 'bundle/bundle.json') != source_manifest:
         raise ValueError('Original machine manifest changed')
@@ -101,7 +99,7 @@ def package(source, destination, archive=None):
              for p in sorted(destination.rglob('*')) if p.is_file()}
     if sum(row['bytes'] for row in files.values()) > 1 << 30:
         raise ValueError('Distribution exceeds one GiB')
-    manifest = {'schema': 'lemma-local-browser-distribution/1',
+    manifest = {'schema': 'lemma-local-browser-distribution/2',
                 'scope': 'Prepared exact machine and standalone local launch; no new guest acceptance claim',
                 'source_bundle_sha256': source_manifest,
                 'producer': {'path': 'scripts/package_browser.py', 'sha256': digest(Path(__file__))},

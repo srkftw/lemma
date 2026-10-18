@@ -47,13 +47,13 @@ HOST_INPUTS = (
     Path("examples/foundation/gate8-reject/StoredTimerContinuation.lean"),
     Path("examples/foundation/gate8-reject/V06Timer.lean"),
     Path("examples/foundation/gate8-reject/rejections.json"),
-    Path("docs/audits/timers-core0-v07.md"),
+    Path("docs/audits/timers-core0-v07.html"),
     Path("scripts/gate9_corpus.py"),
     Path("scripts/run_monitor_session.py"),
     Path("scripts/check_foundation_gate9.py"),
     Path("scripts/qualify_foundation.py"),
     Path("examples/foundation/MonitorPolicyProbes.lean"),
-    Path("docs/audits/monitor-core0-v07.md"),
+    Path("docs/audits/monitor-core0-v07.html"),
 )
 
 

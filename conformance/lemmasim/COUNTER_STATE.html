@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selected 0.3 counter clock and exact state checks</title>
+<link rel="stylesheet" href="../../docs/documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../../docs/overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="selected-03-counter-clock-and-exact-state-checks">Selected 0.3 counter clock and exact state checks</h1>
+<p>The <code>lemma-silicon-dev/0.3.0</code> fast binding consumes the declared 100 MHz
+clock. Its <code>mcycle</code> source is <code>floor(local_virtual_ns / 10)</code>, with the
+existing writable and inhibited counter baseline applied. Scaling the
+absolute clock before subtracting baselines preserves fractional phase.
+<code>minstret</code> continues to use actual QEMU instruction accounting and its
+existing exception adjustment. It is not equated with RTL retirement.
+Historical 0.1/0.2 QEMU derivations remain unchanged.</p>
+<p>The selected CPU requires precise icount and rejects filtered or
+programmable PMU configurations. Completed paused QMP reset zeros fixed
+counters and inhibit state. The new <code>cpu/lemma-counter-clock/v1</code> subsection
+retains the frequency marker, counter configuration and all fixed-counter
+privilege snapshots, alongside existing counter baselines and icount state.
+Missing or incompatible counter state rejects. This is same-backend state;
+it does not permit RTL/QEMU microstate migration.</p>
+<p>The selected 16550 reset also clears FIFO control and sets its threshold to
+one. The pinned upstream reset cleared IIR while retaining FCR, so restore
+changed a guest-visible register. The original failing observation is retained
+under <code>build/task006-counter-plan/actual-a1</code>; the fix does not add an allowed
+checkpoint difference.</p>
+<p>Prepare the genuine Lean power probe through the ordinary launcher, then run
+the bounded checker with an unused output directory:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command ./scripts/lemmasim build \
+  --backend qemu --profile lemma-silicon-dev/0.3.0 --workload power
+nix develop --no-write-lock-file --command python3 \
+  conformance/lemmasim/check_counter_state.py \
+  --output-dir build/lemmasim/counter-state-new
+</code></pre>
+<p>The checker validates the current prepared source and reviewed binary identity.
+It requires cold clock, warm reset, UART reset registers, repeated passive
+inspection, fractional-phase continuation, writable/inhibited counters, wrap,
+unsupported configuration and missing/mismatched state checks. Every serialized
+CPU, RAM and device byte must agree under the existing
+<a href="QEMU_STATE_EQUIVALENCE.html">two named host elapsed-time fields</a>. It never filters
+guest counters or UART registers. Processes and host deadlines are bounded;
+each restore runs in an isolated disposable machine.</p>
+<p>An optional historical comparison requires the explicitly reviewed A5 binary:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command python3 \
+  conformance/lemmasim/check_counter_state.py \
+  --historical-reference /path/to/reviewed-A5/qemu-system-riscv64 \
+  --output-dir build/lemmasim/counter-reference-new
+</code></pre>
+<p>Without that binary, only the historical comparison is <code>NOT_RUN</code>; current
+clock and state checks remain mandatory. The reference SHA is
+<code>80e54f2095774ecdbfe3bcd36e52e7c55b1c5e566ecf869b4c6ed3f8c857b43a</code>.
+The reviewed current SHA is
+<code>927bef771d31134b73b76a2c219d1717144feec6986b07df5c58ef85d08ad6e5</code>.
+This successor also carries the separately checked <a href="WARM_PEN_STATE.html">pen reset clock state</a>.</p>
+<p>Actual maintained runs of the preceding <code>6dc0c7f…</code> binary passed at
+<code>build/lemmasim/task006-counter-current-a1/result.json</code> and
+<code>build/lemmasim/task006-counter-reference-a1/result.json</code>. At 100,000,000 ns,
+its cycle counter was 10,000,000, while the historical reference was
+100,000,000; both retained 12,499,999 instructions and MTIME 1,000,000 for the
+identical probe. Warm restored UART FCR/IIR were 0/1. That run also
+rejected a removed counter subsection. The successor reran the same counter/UART
+checks under <code>build/task006-warm-pen-plan/counter-a1</code>; all processes were reaped.
+Current prepared execution passed separately at
+<code>build/lemmasim/task006-counter-pen-a1/result.json</code>, using the fresh audited
+Loader probe and explicit historical reference. It does not inherit the earlier run.
+The documented current-only command passed independently at
+<code>build/lemmasim/counter-pen-current-only-a1/result.json</code> (SHA256
+<code>c9320ccb8005d8f3add12baa533fa219e14e83086d665fb8afd259006c3b90e6</code>).
+All mandatory checks passed and processes were reaped; only the optional historical
+comparison was <code>NOT_RUN</code>.</p>
+<p>Counter writes use the pinned debugger&#39;s real CSR handlers. The current Lean
+primitive catalog does not admit guest-issued <code>mcycle</code>, <code>minstret</code> or
+<code>mcountinhibit</code> operations, so instruction/privilege qualification for those
+operations remains unexecuted. RTL holds reset for eight actual clock edges;
+QEMU completes its paused reset immediately. Reset-duration parity and full
+architectural equivalence remain unqualified.</p>
+</main>
+</body>
+</html>

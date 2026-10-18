@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pinned QEMU checkpoint observation</title>
+<link rel="stylesheet" href="../../docs/documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../../docs/overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="pinned-qemu-checkpoint-observation">Pinned QEMU checkpoint observation</h1>
+<p><code>check_fast_state_equivalence.py</code> compares complete saved machine files. The
+relation admits unequal values in exactly two eight-byte fields:
+<code>timer.cpu_ticks_offset</code> and <code>timer.cpu_clock_offset</code>. It reports their original
+values, offsets, raw file hashes and every differing byte. All other bytes must
+agree, including CPU registers/private state, RAM/ROM, device state, controller
+timers, <code>timer/icount.qemu_icount_bias</code> and <code>timer/icount.qemu_icount</code>. It does
+not modify serialization or snapshots. Unequal containers remain unequal.</p>
+<p>The observer is deliberately limited to QEMU 11.1.1 machine
+<code>lemma-silicon-fast</code>, the exact fixed <code>shift=3,align=off,sleep=off</code> configuration
+in <code>scripts/lemmasim_fast.py</code>, the admitted RV64IM/MSU/Sv39/PMP CPU string, and
+binary SHA256
+<code>87d7282df1de259a3560fee369ef1f303a644654793726fc9da12009d639d467</code>.
+The session manifest binds the implementation, guest, DTB and descriptor; both
+checkpoints must have equal identities, exact virtual nanosecond phase and
+external-event cursor, with individually validated lengths/checksums. A future
+QEMU binary, adaptive instruction clock, realtime device or different schema
+requires new review; this observation relation cannot be assumed for it.</p>
+<p>The reviewed Power-v1 successor uses profile <code>lemma-silicon-dev/0.3.0</code> and
+binary SHA256
+<code>80e54f2095774ecdbfe3bcd36e52e7c55b1c5e566ecf869b4c6ed3f8c857b43a</code>,
+from <code>/nix/store/pgmq625gkqpsav85l32jkjdfp3z4z7lq-lemmasim-qemu-11.1.1</code>.
+It uses the same pinned upstream source, scalar CPU string and fixed instruction
+clock. The reviewed repository changes add Power-v1 to device VMState version2,
+raw button queue kinds, stable bounded future-event insertion, its level IRQ
+and passive panel inspection/saving.
+Controller and input timers continue to use <code>QEMU_CLOCK_VIRTUAL</code>; none of those
+changes consumes the two host clock statistics. The older binary/profile
+admissions retain their original meanings. The selected executable must match
+the checkpoint&#39;s exact runtime hash. The counter-clock successor below is also
+reviewed; no arbitrary binary is admitted.</p>
+<p>The profile0.3 counter-clock successor has SHA256
+<code>6dc0c7f66bbf3c118da5486c6b000772f1854cda0e235dca57941b4d48b3f6a8</code>.
+The immutable-source-guarded host patch
+<code>tooling/lemmasim/patch_counter_clock.py</code> consumes the declared100MHz clock.
+It scales absolute precise instruction-clock nanoseconds before subtracting
+counter baselines, preserving fractional phase, writes and inhibit behavior.
+Selected warm reset zeros fixed counters and their baselines at the current
+clock. Existing PMU counter state and the added version1
+<code>cpu/lemma-counter-clock</code> subsection retain the frequency marker, configuration
+words and all fixed-counter private arrays. Missing/wrong-frequency state rejects;
+the public session separately rejects a different implementation identity.
+Every added byte participates in exact comparison. No counter exemption exists.</p>
+<p>The same narrowly selected patch resets the UART FIFO control to zero. The
+upstream reset cleared IIR but left the previous FCR; restore then derived a
+different IIR from that stale FCR. Actual warm-reset/restore caught that mismatch;
+the corrected machine preserves both actual UART state and its complete suffix.
+Historical profile0.1/0.2 derivations and executables are unchanged.</p>
+<p><code>check_counter_state.py</code> executes actual cold/warm, fractional-phase,
+write/inhibit/wrap and private-state continuation checks with a genuine audited
+Lean probe. Its writes invoke QEMU&#39;s real debugger CSR handlers. Guest-issued
+counter CSR instruction/privilege qualification is absent. QEMU&#39;s completed
+paused RESET and RTL&#39;s eight reset edges have explicitly different boundaries;
+these checks do not establish whole-machine architectural equivalence.</p>
+<p>The selected pen/reset successor has SHA256
+<code>927bef771d31134b73b76a2c219d1717144feec6986b07df5c58ef85d08ad6e5</code>.
+It retains the counter/UART repairs and resets the complete pen controller on
+hardware reset. Software RESET1 still enters loss/resynchronization. Device
+VMState version3 adds a mandatory aligned <code>pen_clock_origin_ns</code>, mapping the
+watchdog and mouse timestamps onto actual reset-local MTIME without changing
+the fractional instruction-clock phase. Missing, stale version2, misaligned,
+future and inconsistent deadline state reject. The independent wire decoder
+and mutation check include the origin; no new field exemptions exist. Ordinary
+warm notebook writing/Save/new cold recovery passed using identical old/new
+raw stimulus. See <a href="WARM_PEN_STATE.html">the focused boundary</a>. Paper warm reset
+state parity and full processor/reset-duration equivalence remain unqualified.</p>
+<p>All seven power words, enable flag and queued button state are exact comparison
+bytes. The additional independent mutation checks change each power word and
+require failure. The wire decoder requires the fixed device prefix and the
+complete seven-word Power-v1 schema; it never calls the controller&#39;s state
+transition code. Save and inspection do not advance the new panel controller.
+The authoritative virtual timer performs its completion, including after restore.</p>
+<p>The historical absent-version wrapper is recognized explicitly with origin
+zero for retained observations. <code>lemmasim-fast-adapter/2</code> additionally requires
+<code>clock.json</code>, schema <code>lemmasim-fast-clock/1</code>, a bounded integer
+<code>time_origin_ns</code>, its manifest length/SHA256 and exact left/right file bytes.
+Missing, unknown-version or altered wrapper state rejects the comparison.
+Both selected durable bases are independently hashed and must also agree.
+There is no exemption for wrapper clock state.</p>
+<p>Adapter2 keeps session time monotone through cold cycles using
+<code>virtual_ns = time_origin_ns + local_virtual_ns</code>. Controller/event deadlines
+are translated to the fresh QEMU process clock; all admitted sample fields
+remain unchanged. Actual CLINT MTIME supplies <code>ticks</code>/<code>local_ticks</code>: warm reset
+zeroes it while QEMU&#39;s instruction-clock phase remains. Warm reset waits for
+the real RESET event. The old <code>-no-reboot</code> option previously converted even
+QMP reset requests to shutdown; the retained warm probe records that defect.
+The final seven nanoseconds of the signed clock range are reserved before
+run/event admission so the next instruction boundary cannot overflow it.
+The historical executions do not qualify cycle/instret reset semantics. The
+reviewed counter successor qualifies the narrower selected behavior above.</p>
+<h2 id="unserialized-cached-state">Unserialized cached state</h2>
+<p>QEMU11.1.1 <code>hw/core/cpu-system.c:cpu_common_post_load</code> calls <code>tlb_flush(cpu)</code>.
+Cached Sv39 software translations and TCG translation blocks are not in the
+CPU migration stream. This observer compares every serialized guest byte,
+but cannot detect an omitted cache entry. Actual supported guest suffixes
+passed; arbitrary cached-translation continuation remains unfinished.
+<code>target/riscv/machine.c</code> explicitly serializes <code>env.load_res</code>/<code>env.load_val</code>;
+selected RV64IM excludes A and does not exercise LR/SC. The Lean address-space
+operations issue declared SFence primitives, but that source observation is
+not a proof covering every possible processor/memory state. RTL&#39;s savable
+model captures its cache/TLB circuits. Cross-backend microstate migration and
+a portable architectural checkpoint boundary remain absent.</p>
+<h2 id="source-reason-for-the-two-fields">Source reason for the two fields</h2>
+<p>The pinned source archive is QEMU 11.1.1, SHA256
+<code>079ffbff8a7111bbc89022107cbabf3bbfd614d5fc9d7cc675991196aca12482</code>,
+realized as
+<code>/nix/store/5fncyn7ha91mjhrxsl6id2wdi6zlgbnb-qemu-11.1.1.tar.xz</code>
+by the repository Nixpkgs pin <code>7dd199b0e2993e37b4775ed66b1c291699608c9f</code>.
+The following are direct inspections of that source, rather than deductions
+from the differing values:</p>
+<ul>
+<li><code>system/cpu-timers.c:43–135</code> defines <code>cpu_ticks_offset</code> in host CPU-cycle
+units and <code>cpu_clock_offset</code> in host monotonic nanoseconds. Start/stop adds
+<code>cpu_get_host_ticks()</code> / <code>get_clock()</code> so they measure elapsed host running
+time. Different host execution durations necessarily produce different
+values. Lines 202–234 serialize them in timer version 2, around an unused
+eight-byte field, and separately serialize the two instruction-clock fields
+in timer/icount version 1.</li>
+<li><code>accel/tcg/tcg-accel-ops.c:211–214</code> selects <code>icount_get</code> for both virtual
+clock and elapsed guest ticks when instruction counting is enabled.
+<code>system/cpus.c:225–256</code> dispatches those selected operations.
+<code>util/qemu-timer.c:650–662</code> sends <code>QEMU_CLOCK_VIRTUAL</code> through that virtual
+clock; the host-offset clock belongs to <code>QEMU_CLOCK_VIRTUAL_RT</code>.</li>
+<li><code>accel/tcg/icount-common.c:448–468</code> creates the realtime warp timer only
+with sleep enabled. A numeric shift enables precise counting and returns
+before creating the adaptive realtime adjustment timers. With sleep and
+alignment disabled here, idle advancement follows virtual deadlines;
+elapsed host offsets do not drive it. The fast stop-boundary guard in
+<code>tooling/lemmasim/apply_qemu.py</code> prevents further idle advancement after a
+bounded run has requested its stop.</li>
+<li><code>target/riscv/tcg/csr.c:1298–1303</code> reads the admitted cycle/instret counters
+from <code>icount_get</code> / <code>icount_get_raw</code>. Time reads use the CLINT callback;
+<code>hw/intc/riscv_aclint.c:53</code> derives that from <code>QEMU_CLOCK_VIRTUAL</code>.
+The selected scalar CPU has no admitted filtered-PMU extension.</li>
+<li>All custom pen/paper/block timers and timestamps in <code>sim/host/lemma_qemu.c</code>
+and <code>lemma_fast_block.c</code>, plus the selected UART timers in
+<code>hw/char/serial.c</code>, use <code>QEMU_CLOCK_VIRTUAL</code>. The fast machine excludes the
+unused RTC/PCI/other virt devices. Host clock statistics may be printed by
+a host observer such as <code>info jit</code>; such output is distinct from guest time.</li>
+</ul>
+<p>Relevant unpatched source SHA256 values:</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>SHA256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>system/cpu-timers.c</td>
+<td>dc7d022db8e17a6323285e78897f9f8f15c537931f7bcd46094373f494758671</td>
+</tr>
+<tr>
+<td>accel/tcg/tcg-accel-ops.c</td>
+<td>79a918acaf0e6c770b2095036c06c513a567beb478a3aed113edb738d00151a2</td>
+</tr>
+<tr>
+<td>accel/tcg/icount-common.c</td>
+<td>1e75ed69fa6cf45701e631db75b71d859af865ea78b06a3f7358f496b225bc7d</td>
+</tr>
+<tr>
+<td>target/riscv/tcg/csr.c</td>
+<td>631294ef82387021c1a40d2125b636b4097a9350a2bc50d299ff38d5aa856360</td>
+</tr>
+<tr>
+<td>scripts/analyze-migration.py</td>
+<td>30cc780aecc662d695bdb32d20715c854bead5172fc2bc45a54456cbe4669d35</td>
+</tr>
+</tbody></table>
+<h2 id="independent-decoding-and-negative-checks">Independent decoding and negative checks</h2>
+<p>The observer requires the exact embedded timer descriptor, unique full-section
+header, versioned icount subsection, unused bytes and matching footer. An
+ambiguous section-looking string in RAM causes rejection. No entire timer,
+CPU, counter or metadata section is omitted.</p>
+<p>The retained public workflow&#39;s raw-container comparison remains FAIL in
+<code>build/l6-native1/result.json</code>. A separately recorded observation is PASS in
+<code>build/l6-native1-state-equivalence-a1/result.json</code>: exactly nine bytes differ
+inside the two named host fields; all other 25,696,738 bytes match at virtual
+time 106368000276 ns. The official decoder from the immutable source archive
+independently reads both timer sections in
+<code>build/l6-native1-state-equivalence-a1/archive-timer-decoder.json</code>.
+Its source is executed only as a host observer; it never enters the target.
+The original raw files and failed result remain unchanged.</p>
+<p><code>--mutation-checks</code> changes one byte in each named host field and verifies that
+the difference is retained/named. Independent one-byte changes in either
+private instruction-clock field, CPU x1 and an actual RAM-page payload must
+FAIL. The focused unittest fixtures also reject unknown/missing subsections,
+schema changes, ambiguous headers, truncated/trailing data and resource bounds.
+These serializer tests establish observer behavior, not guest execution.
+The additional actual lifecycle checker executes a genuine Lean notebook boot
+prefix, snapshots computation in progress, captures warm/cold/input operations,
+and replays through isolated restored processes. Its result
+<code>build/lemmasim/fast-lifecycle-clock-a2/result.json</code> is PASS with exact wrapper,
+CPU/RAM/controller and durable state under the declared relation. It is not a
+notebook-ready or cold-journal-recovery claim. The first attempt&#39;s retained
+FAIL was an observer expecting fixed HMP spacing; the corrected parser checks
+the independently reported numeric PC0x1000. No machine change hid that result.</p>
+<pre><code class="language-sh">python3 conformance/lemmasim/check_fast_state_equivalence.py \
+  --left build/l6-native1/final-original/machine.chk \
+  --right build/l6-native1/final-replayed/machine.chk \
+  --qemu build/lemmasim/qemu-task006-fast-full-a6/bin/qemu-system-riscv64 \
+  --output build/l6-native1-state-equivalence-new/result.json --mutation-checks
+python3 -m unittest discover -s tests/lemmasim -p test_checkpoint_observer.py -v
+python3 conformance/lemmasim/check_fast_lifecycle.py \
+  --work-dir build/lemmasim/fast-lifecycle-new --timeout 30
+</code></pre>
+<p>This compares same-backend authoritative checkpoint state. It neither defines
+cross-backend microstate migration nor closes the unmatched timing/ISA or
+unfinished whole-machine capabilities.</p>
+<h2 id="opt-in-logical-softtlb-data-increment">Opt-in logical SoftTLB data increment</h2>
+<p>The separately named experimental <code>lemma-silicon-fast-softtlb/0.1.0</code> binding
+retains the original full-continuation <code>GAP_CONFIRMED</code>. Its current narrow
+qualification is recorded in
+<a href="../../docs/evidence/006-qemu-logical-softtlb.json"><code>006-qemu-logical-softtlb.json</code></a>
+and the <a href="../../docs/contracts/006-qemu-logical-softtlb-v1.html">versioned contract</a>.
+Historical binaries, public Fast/Session adapters, profile 0.3 hardware and
+VMState 3 remain unchanged; actual default derivation equality passed.</p>
+<p>A genuinely elaborated Lean RV64IM guest warmed a data translation, changed its
+PTE without SFENCE and stopped at a predeclared 1,000,000 ns boundary. The saved
+logical cache actually retained old physical page A. Both the original and its
+fresh private restored fork subsequently read 111 without SFENCE and 222 after
+an actual guest SFENCE, reaching 300,000,000 ns within the 120 s bound. Every final
+logical cache slot, comparator/flag, mapping, capacity/eviction/resize field,
+flush/dirty counter and admitted pending CPU witness agreed exactly. Raw files
+retain their separate ordinary-file hashes and checksums. No whole-state
+byte-mask extension or new binary admission to this document&#39;s historical
+observer is made.</p>
+<p>This work also found that ordinary migration dirty-log setup commits the memory
+listener and flushes the <strong>original</strong> through <code>tcg_commit_cpu</code>. That actual
+failed observation remains retained. Only the new paired paused operation
+copies every initially-dirty RAM page without starting/stopping that logging
+transaction; it does not flush or restore the original cache to force a match.
+The selected derivative uses a side-effect-free precise icount resize clock,
+explicit nullable region identities and complete physical-page segment/hole
+hashes, with fresh host-reference rebinding. These are explicit experimental
+backend semantics. The first full host completion took 563.135 s within 1,200 s;
+guarded source preparation reproduces its tested latest source exactly.</p>
+<p>TB/jump-cache bypass, executable translation, self-modifying instruction
+visibility/code dirty tracking/FENCE.I, actual interrupt-handler suffixes and
+remaining acceleration pending state are still unqualified. A failed ordinary
+VMState load is not transactional and its private fork must be discarded.
+Unrepresented queued CPU work rejects rather than being drained. The actual
+data suffix establishes only its stated property; total QEMU continuation,
+public adapter adoption and cross-backend microstate migration remain absent.</p>
+<p>The separate executable successor <code>ceabdf19b191de8bca717cf089e8dee8310ea7faf68b91b205fcaa958165db40</code>
+now qualifies two finite genuine Lean instruction-stream states: warmed stale
+executable translation before SFENCE and actual compiled-code modification
+before/after FENCE.I. Original and both own private restored forks match actual
+111/222/111/111 results, complete observed architectural/device state and every
+declared logical SoftTLB field at1Bns. Captures change no observed cache flush/
+invalidation counters. The private destination additionally uses the legal
+PRELAUNCH-&gt;INMIGRATE-&gt;PAUSED host lifecycle, with no CPU or device notification.
+The original host-status mismatch and failed direct transition remain failures.</p>
+<p>These finite observations do not serialize TB/jump caches or establish their
+semantic irrelevance for all admitted states. Broader instruction visibility,
+actual interrupt delivery/pending work and public session integration remain
+GAP_CONFIRMED. See the exact new source/build/result identities and executable
+commands in <a href="../../docs/contracts/006-qemu-logical-softtlb-v1.html">the logical-cache contract</a>
+and <a href="../../docs/evidence/006-qemu-logical-softtlb.json">its retained receipt</a>.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selected 0.3 pen hardware reset and watchdog state</title>
+<link rel="stylesheet" href="../../docs/documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../../docs/overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="selected-03-pen-hardware-reset-and-watchdog-state">Selected 0.3 pen hardware reset and watchdog state</h1>
+<p>The selected fast successor resets the entire pen controller on completed
+hardware reset: FIFO and immutable head, epoch/sequence, loss/error/resync,
+last timestamp and contact deadline. Its declared sample maxima remain the
+same. Software <code>RESET1</code>, including cooperative suspend, still preserves the
+old head and enters loss/resynchronization. Those are distinct operations.</p>
+<p>The pinned ACLINT resets MTIME to zero without resetting QEMU&#39;s local virtual
+clock. At 10 MHz its timer is <code>floor(local_ns/100)-floor(reset_ns/100)</code>.
+The pen therefore retains a private 100 ns aligned reset origin, rather than
+subtracting the exact reset nanosecond. Mouse timestamps and watchdog deadlines
+use that origin. A large admitted u64 sample timestamp saturates the host timer
+at the signed virtual-clock limit; it cannot wrap into an immediate loss.</p>
+<p><code>lemma-paper-pen/1</code> private VMState version 3 serializes this origin. Restore
+rejects version 2, misaligned/future/wrapped origins and inconsistent deadlines.
+The ordinary snapshot wrapper also binds the exact implementation and checks
+file bounds/checksums before applying a candidate. Every origin byte remains
+exact continuation state; no new checkpoint differences are permitted.
+Historical 0.1/0.2 derivations and binaries do not consume this extension.</p>
+<p>Prepare the current genuine Lean probe with the ordinary launcher, then use an
+unused result directory:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command ./scripts/lemmasim build \
+  --backend qemu --profile lemma-silicon-dev/0.3.0 --workload power
+nix develop --no-write-lock-file --command python3 \
+  conformance/lemmasim/check_warm_pen_state.py \
+  --output-dir build/lemmasim/warm-pen-state-new
+</code></pre>
+<p>The bounded checker boots the genuine probe. It observes hardware reset with
+a pending contact, software loss/resynchronization, and a fractional reset
+followed by the watchdog boundary. Exact forks compare all serialized CPU,
+RAM, devices and private state under the existing two named host elapsed-time
+fields. Malformed origins, missing state and unsupported device versions reject.
+A separate Laboratory clock mutation checks deadline saturation near the signed
+clock limit. The checker uses debugger MMIO to isolate controller behavior;
+it does not qualify guest-issued clock writes or ordinary notebook warm recovery.
+The guest notebook&#39;s own warm workflow has separate evidence.</p>
+<p>The original <code>6dc0c7f…</code> mismatches remain under
+<code>build/task006-warm-pen-a1</code>: hardware reset retained timestamp 12,000,000 and
+rejected post-reset TIME 0, while the absolute-clock watchdog expired a newly
+accepted TIME 0 contact immediately. The isolated successor <code>927bef77…</code>
+passed the focused checks in <code>build/task006-warm-pen-plan/actual-a1</code>, including
+exact watchdog loss at 2,300,000,000 ns after a fractional reset at
+1,200,000,040 ns. Counter/UART state checks also passed separately. The maintained checker then
+passed in 7.429 seconds at <code>build/lemmasim/task006-warm-pen-current-a1</code>, using
+the current prepared machine and fresh audited Loader probe. All processes
+were reaped.</p>
+<p>This closes the observed fast pen reset/watchdog bugs. Paper reset parity,
+RTL/QEMU reset-duration parity and full architectural equivalence remain
+unqualified; same-backend snapshots do not permit microstate migration.</p>
+</main>
+</body>
+</html>

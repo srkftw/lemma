@@ -39,10 +39,12 @@ def catalog(unit):
     from reader_deployment import CONFIGURATIONS as READER, SOFTWARE_DEPLOYMENT as READER_SOFTWARE
     from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER, software_deployment_for as product_reader_software
     from chooser_reader_deployment import CONFIGURATIONS as CHOOSER, SOFTWARE_DEPLOYMENT as CHOOSER_SOFTWARE
+    from multimodal_deployment import CONFIGURATIONS as MULTIMODAL, SOFTWARE_DEPLOYMENT as MULTIMODAL_SOFTWARE, NOTEBOOK_ROOT as MULTIMODAL_ROOT
+    if unit.get('configuration') in MULTIMODAL: selected_root = MULTIMODAL_ROOT
     from package_companion_deployment import software_deployment_for as package_software
     if joined: JOINED_SOFTWARE=package_software(unit['configuration'])
-    selected_software=CHOOSER_SOFTWARE if unit.get('configuration') in CHOOSER else product_reader_software(unit['configuration']) if unit.get('configuration') in PRODUCT_READER else READER_SOFTWARE if unit.get('configuration') in READER else JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
-    require(unit.get('configuration') in CONFIGURATIONS + JOINED + READER + PRODUCT_READER + CHOOSER and
+    selected_software=MULTIMODAL_SOFTWARE if unit.get('configuration') in MULTIMODAL else CHOOSER_SOFTWARE if unit.get('configuration') in CHOOSER else product_reader_software(unit['configuration']) if unit.get('configuration') in PRODUCT_READER else READER_SOFTWARE if unit.get('configuration') in READER else JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
+    require(unit.get('configuration') in CONFIGURATIONS + JOINED + READER + PRODUCT_READER + CHOOSER + MULTIMODAL and
             unit.get('role') == 'user' and unit.get('contract_version') == 'core0-user-v0.2' and
             type(unit.get('schema_version')) is int and unit.get('schema_version') == 2 and unit.get('artifact_category') == 'development-user-unit' and
             unit.get('managed_policy') == 'lemma-notebook-arithmetic-v1' and

@@ -85,6 +85,15 @@ def isUSBPackageReaderNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize"
 
+def isMultimodalParameterizedConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-multimodal-parameterized-notebook" ||
+    configuration == "lemmasim-silicon-multimodal-parameterized-initialize"
+
+def isMultimodalNotebookConfiguration (configuration : String) : Bool :=
+  isMultimodalParameterizedConfiguration configuration ||
+  configuration == "lemmasim-silicon-multimodal-notebook" ||
+    configuration == "lemmasim-silicon-multimodal-initialize"
+
 def isPackageChooserNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-package-chooser-bulk-notebook" ||
     configuration == "lemmasim-silicon-package-chooser-bulk-initialize"
@@ -153,7 +162,7 @@ def isPackageReaderNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-package-reader-bulk-initialize"
 
 def isPackageClosureNotebookConfiguration (configuration : String) : Bool :=
-  isPackageChooserNotebookConfiguration configuration || isProductCourseReaderNotebookConfiguration configuration || isPackageReaderNotebookConfiguration configuration ||
+  isMultimodalNotebookConfiguration configuration || isPackageChooserNotebookConfiguration configuration || isProductCourseReaderNotebookConfiguration configuration || isPackageReaderNotebookConfiguration configuration ||
     configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" ||
     configuration == "lemmasim-silicon-package-closure-entry2-bulk-initialize"
 
@@ -216,7 +225,18 @@ def isSumsNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-sums-arithmetic-oom-development"
 
 def softwareDeploymentFields (configuration : String) : List (String × Json) :=
-  if isPackageChooserNotebookConfiguration configuration then
+  if isMultimodalNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-multimodal-notebook-deployment/1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.14.0"),
+    ("machine_profile", .str "lemma-one-multimodal/0.2.0"),
+    ("stream_contract", .str "lemma-multimodal-converter/1"),
+    ("reader_contract", .str "lemma-course-reader-location/1"),
+    ("chooser_contract", .str "lemma-course-empty-selection-chooser/1"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isPackageChooserNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
     ("contract_version", .str "lemma-package-reader-chooser-bulk-deployment-v1"),
     ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
@@ -550,6 +570,20 @@ def packageChooserNotebookImages : Array UserImageSpec := #[
     root := `Lemma.Applications.Notebook.mainPackageReaderChooser, bootRole? := some .notebook},
   packageReaderNotebookImages[2]!, packageReaderNotebookImages[3]!]
 
+def multimodalNotebookImages : Array UserImageSpec := #[
+  packageChooserNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainMultimodal, bootRole? := some .notebook},
+  {key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.ServerV8,
+    root := `Lemma.Services.Arithmetic.ServerV8.main, bootRole? := some .arithmeticServer},
+  packageChooserNotebookImages[3]!]
+
+/-- Additive owner-local runtime operand ingress uses the existing four roles. -/
+def multimodalParameterizedImages : Array UserImageSpec := #[
+  multimodalNotebookImages[0]!, multimodalNotebookImages[1]!, multimodalNotebookImages[2]!,
+  {key := "course", id := 4, moduleName := `Lemma.Courses.PackageInstaller,
+    root := `Lemma.Courses.PackageInstaller.mainParameterized, bootRole? := some .courseInstaller}]
+
 /-- Composes the genuine mounted/recovery Store, package UI, isolated checker
 and installer. No host role parses or recovers documents. -/
 def packageRecoveryNotebookImages : Array UserImageSpec := #[
@@ -591,7 +625,9 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if isPackageChooserNotebookConfiguration configuration then .ok packageChooserNotebookImages
+  if isMultimodalParameterizedConfiguration configuration then .ok multimodalParameterizedImages
+  else if isMultimodalNotebookConfiguration configuration then .ok multimodalNotebookImages
+  else if isPackageChooserNotebookConfiguration configuration then .ok packageChooserNotebookImages
   else if isUSBPackageReaderNotebookConfiguration configuration then .ok packageRecoveryReaderNotebookImages
   else if isProductCourseReaderNotebookConfiguration configuration then .ok packageReaderNotebookImages
   else if isPackageReaderNotebookConfiguration configuration then .ok packageReaderNotebookImages

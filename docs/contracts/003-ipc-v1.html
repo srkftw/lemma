@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bounded capability IPC v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="bounded-capability-ipc-v1">Bounded capability IPC v1</h1>
+<p>This is the Gate I lower-layer construction contract. It defines the interfaces
+to implement after the Gate H checkpoint; it asserts no compilation, audit or
+runtime pass. Shared <code>Lemma.User.IPCABI</code> defines calls20 Send,21 Receive,
+22 asynchronous CallBegin,23 CallWait,24 Reply and25 Cancel. Public errors are
+wouldBlock12, queueFull92, timeout93, canceled94, peerDied96,
+invalidTransaction97, bufferTooSmall98, inFlight99, alreadyCompleted100 and
+invalidPacket101. Capability errors remain unchanged. Internal blocking254
+never reaches User;255 denotes a kernel invariant failure.</p>
+<h2 id="ownership-and-dependency-order">Ownership and dependency order</h2>
+<p><code>IPCStorage</code> imports <code>Memory.AddressSpace</code>, <code>Memory.UserCopy</code> and pure numeric
+<code>User.IPCABI</code> declarations. It stores
+checked transactions and copied packets, but neither grants capabilities nor
+selects or resumes tasks. <code>Objects</code> may import <code>IPCStorage</code>; <code>Capability</code> imports
+<code>Objects</code> and uses storage cancellation before retiring object authority.
+<code>Kernel.IPC</code> imports Capability, Objects and IPCStorage, with no Task or Process
+import. Task and Scheduler integrate blocking and checked saved-context
+completion above Process. There is no lower-layer callback into the scheduler.</p>
+<p>Descriptor frames are allocated and resolved as owner1/purpose1. They already
+meet UserCopy&#39;s kernel-scratch requirement, so IPC allocates no global packet
+frame or per-call scratch frame. The empty managed baseline remains498 frames:
+one task-table frame and one global object-table frame in addition to the stable
+kernel address space. Each Endpoint retains its real one-frame queue.</p>
+<h2 id="descriptor-transaction-storage">Descriptor transaction storage</h2>
+<p>Every checked descriptor reserves128 bytes at offsets3648..3775 for16 little
+endian UInt64 words and256 copied packet bytes at3776..4031. The final64 bytes
+remain reserved. Capability entries end at3648 and do not overlap these fields.
+The metadata layout is:</p>
+<table>
+<thead>
+<tr>
+<th>Offset from3648</th>
+<th>Field</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>Magic <code>0x31435049414d454c</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Version1</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Full self descriptor handle, including allocator generation</td>
+</tr>
+<tr>
+<td>24</td>
+<td>State: idle0, reserved1, waiting2, ready3</td>
+</tr>
+<tr>
+<td>32</td>
+<td>Operation: Send1, Receive2, Call3</td>
+</tr>
+<tr>
+<td>40</td>
+<td>Active transaction serial, or0 when idle</td>
+</tr>
+<tr>
+<td>48</td>
+<td>Next transaction serial</td>
+</tr>
+<tr>
+<td>56</td>
+<td>Full Endpoint object key</td>
+</tr>
+<tr>
+<td>64</td>
+<td>Full Reply object key, or0</td>
+</tr>
+<tr>
+<td>72</td>
+<td>Original User virtual destination address</td>
+</tr>
+<tr>
+<td>80</td>
+<td>User destination capacity</td>
+</tr>
+<tr>
+<td>88</td>
+<td>Absolute hardware deadline, or0 for nonblocking</td>
+</tr>
+<tr>
+<td>96</td>
+<td>Committed result status</td>
+</tr>
+<tr>
+<td>104</td>
+<td>Committed actual byte count</td>
+</tr>
+<tr>
+<td>112</td>
+<td>Committed full sender descriptor identity</td>
+</tr>
+<tr>
+<td>120</td>
+<td>Committed receiver-local Reply handle, or0</td>
+</tr>
+</tbody></table>
+<p>There is at most one transaction per descriptor. The transaction serial is
+monotonic1..<code>2^60-1</code>; its next value can become <code>2^60</code> to represent exhaustion,
+and never wraps. A recoverable rejected preparation or publication does not
+consume a serial. Descriptor generation, transaction serial and full object key
+must all agree before changing a transaction. Reusing a registry slot is not
+sufficient identity.</p>
+<p>The reserved state belongs to one bounded nonpreemptible transition. Preparation
+validates authority in Kernel.IPC and the complete required User range before
+copy or externally visible publication. Staged request bytes are kernel-owned.
+No borrowed physical User address persists. A stored User virtual address
+remains untrusted: completion validates the live descriptor and current complete
+mapping/permissions again. Empty payloads still require descriptor, object and
+transaction checks because UserCopy intentionally skips range/scratch checks
+for zero length.</p>
+<p>A ready result is already committed. Cancellation, timeout, endpoint destruction
+or Reply destruction cannot overwrite it. The scheduler consumes it once through
+the exact transaction, updates a checked saved User context and resets storage
+to idle. Reset preserves the next transaction serial and withdraws bindings
+before clearing bytes. Descriptor detach clears pending authority before
+Capability.unregister and Loader teardown.</p>
+<p>All parameters below are UInt64, and all functions return Core0 <code>Action</code>.
+Internal addresses returned by inspection functions are never User syscall
+results.</p>
+<table>
+<thead>
+<tr>
+<th>IPCStorage API</th>
+<th>Result and purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>initialize(descriptor)</code></td>
+<td>Initialize a genuinely zero tail; bind full checked self identity</td>
+</tr>
+<tr>
+<td><code>prepare(descriptor, operation, endpointKey, userVA, capacity, deadline)</code></td>
+<td>Reserve the idle row and return its unconsumed transaction serial</td>
+</tr>
+<tr>
+<td><code>pending(descriptor)</code></td>
+<td>Return the checked metadata address</td>
+</tr>
+<tr>
+<td><code>packet(descriptor, transaction)</code></td>
+<td>Return the checked256-byte packet address</td>
+</tr>
+<tr>
+<td><code>stagePayload(descriptor, transaction, sourceVA, length)</code></td>
+<td>Copy at most192 checked User bytes at descriptor offset3840</td>
+</tr>
+<tr>
+<td><code>setReply(descriptor, transaction, replyKey)</code></td>
+<td>Bind one exact Call Reply key before publication</td>
+</tr>
+<tr>
+<td><code>setWaitBuffer(descriptor, transaction, userVA, capacity)</code></td>
+<td>Bind a checked64..256-byte CallWait destination</td>
+</tr>
+<tr>
+<td><code>commitWait(descriptor, transaction)</code></td>
+<td>Publish waiting state and consume its serial after all publication preflights</td>
+</tr>
+<tr>
+<td><code>abort(descriptor, transaction)</code></td>
+<td>Withdraw an unpublished reservation without consuming a serial</td>
+</tr>
+<tr>
+<td><code>complete(descriptor, transaction, status, bytes, sender, replyHandle)</code></td>
+<td>Commit one exact waiting result; retain an existing ready result</td>
+</tr>
+<tr>
+<td><code>take(descriptor, transaction)</code></td>
+<td>Inspect the exact ready result for checked context completion</td>
+</tr>
+<tr>
+<td><code>finish(descriptor, transaction)</code></td>
+<td>Reset an observed ready row to idle after completion</td>
+</tr>
+<tr>
+<td><code>invalidateEndpoint(descriptor, endpointKey, status)</code></td>
+<td>Complete only matching outstanding waits, preserving committed ready results</td>
+</tr>
+<tr>
+<td><code>invalidateReply(descriptor, replyKey, status)</code></td>
+<td>Cancel the exact outstanding Call/Reply binding</td>
+</tr>
+<tr>
+<td><code>waitsOnReceive(descriptor, endpointKey)</code></td>
+<td>Return1 only for a checked waiting Receive on that exact key</td>
+</tr>
+<tr>
+<td><code>detach(descriptor)</code></td>
+<td>Withdraw transaction bindings and clear the tail before frame release</td>
+</tr>
+</tbody></table>
+<p>CallBegin immediately enqueues and returns its transaction, or returns
+queueFull92 before preparing storage, creating a Reply, changing references or
+consuming any serial. Phase0 is a provisional Reply inside one bounded
+nonpreemptible transition only; it is never retained for polling. An unexpected
+full queue after checked preflight is an invariant failure. CallWait binds the
+output buffer to the already queued transaction and may block awaiting its
+Reply. Blocking Receive mode1 owns a deadline; the initial ABI has no blocking
+Send or hidden CallBegin retry. Reply phases distinguish provisional0, queued1
+and delivered2. No second Call can replace an outstanding transaction.</p>
+<p><code>Kernel.IPC</code> owns the ordering of preparation, copied-byte staging, object/cap
+preflight, queue publication and immediate-result reset. A committed queued
+nonblocking Send can reset its caller row; the copied queue record independently
+retains full sender and transaction identity. No unbounded Action recursion or
+dynamic callback is introduced.</p>
+<p>Capability inspection call19 field5 requires the calling task&#39;s scoped
+Management/Inspect authority, a valid local Endpoint subject and the active
+boot-selected peer. It returns only whether that peer&#39;s checked storage row is
+waiting on Receive for the exact Endpoint. It returns no pointer, object key or
+authority. Existing fields0..3 retain their meanings; field4 and unknown fields
+are invalid arguments.</p>
+<h2 id="four-copied-queue-packets">Four copied queue packets</h2>
+<p>An Endpoint queue resolves from its live object as an owner1/purpose1 frame. Its
+128-byte header contains magic <code>0x31455551414d454c</code>, version1, full Endpoint key,
+live count0..4, next FIFO serial, then zero reserved words. Four slots begin at
+offset128, have stride320 and end at1408. Each slot has64 internal metadata bytes
+followed by a maximum256-byte wire packet. The wire packet reserves64 bytes for
+its User ABI header and192 for application payload; Kernel.IPC validates and
+stamps that header. Its eight words are magic <code>0x31504349414d454c</code>, kind
+Send1/Call2/Reply3, full authenticated sender descriptor, User request identifier,
+receiver-local Reply handle or0, payload length, application status (0 on
+requests; at most255 on Replies), and reserved0. Storage never obtains authority
+from header integers. User requests supply only payload bytes; kernel stamping
+cannot be replaced by a User-authored header.</p>
+<p>The eight internal words are state0/free or1/live or2/reserved, FIFO serial,
+full sender descriptor, sender transaction, full Reply key or0, actual copied
+packet length, reserved0, reserved0. FIFO serials do not wrap; a new queue can
+start at1 only with a new full object generation. Selection scans four slots
+and chooses the least live FIFO serial. Queue validation checks actual count,
+slot states and bounded lengths rather than trusting only the header.</p>
+<table>
+<thead>
+<tr>
+<th>IPCStorage queue API</th>
+<th>Result and purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>queueInitialize(queueHandle, endpointKey)</code></td>
+<td>Initialize a genuinely zero owned frame and bind its full key</td>
+</tr>
+<tr>
+<td><code>queueAvailable(queueHandle, endpointKey)</code></td>
+<td>Return checked free-slot count without publication</td>
+</tr>
+<tr>
+<td><code>queuePeek(queueHandle, endpointKey)</code></td>
+<td>Return checked oldest live internal slot address, or the defined empty result</td>
+</tr>
+<tr>
+<td><code>queueEnqueue(queueHandle, endpointKey, senderDescriptor, replyKey)</code></td>
+<td>Copy the exact staged packet into a reserved slot, publish last</td>
+</tr>
+<tr>
+<td><code>queueCopyToUser(queueHandle, endpointKey, receiverDescriptor, userVA, capacity, localReplyHandle)</code></td>
+<td>Revalidate the complete offered output range; stamp only the copied receiver-local Reply handle</td>
+</tr>
+<tr>
+<td><code>queuePop(queueHandle, endpointKey, fifoSerial)</code></td>
+<td>Withdraw only the exact inspected slot after receive/cap publication succeeds</td>
+</tr>
+<tr>
+<td><code>queueCancelSender(queueHandle, endpointKey, descriptor)</code></td>
+<td>Withdraw that full sender&#39;s copied messages during detach</td>
+</tr>
+<tr>
+<td><code>queueCancelReply(queueHandle, endpointKey, replyKey, transaction)</code></td>
+<td>Withdraw the exact queued Call when its Reply is cancelled</td>
+</tr>
+</tbody></table>
+<p>Unknown handles, malformed metadata, oversize packets and unexpected states fail
+closed. Queue-full and output-range/cap-table failures leave the queue, source
+authority, references and serials unchanged. Capacity and serial preflight
+precede frame/object/cap effects. After checked preflight, impossible metadata
+write failures are kernel invariants, not ordinary rollback claims.</p>
+<h2 id="reply-objects-and-authority-withdrawal">Reply objects and authority withdrawal</h2>
+<p>The closed object set gains Reply type5. Its type-specific right/mask is1; this
+reuses an existing known rights bit and does not change <code>knownRights=2047</code>.
+Reply has neither Duplicate nor Transfer authority. Console&#39;s bit1 remains Read
+and cannot authorize a Reply operation because object typing is checked first.
+The accepted rights-mask table becomes <code>[35,124,928,1056,1]</code>; the compiler artifact
+audit must account for the actual new immutable table at the selected I roots.
+This is an additive shared capability/IPC ABI extension, not a new Core0 feature.
+Current H and I builds use the five-value mask; retained historical H builds
+with the four-value mask are not relabeled as outputs of this change.</p>
+<p>There are at most four live/revoking Endpoints, eight live/revoking Replies and16
+global objects. These are independent bounds. A Reply occupies one existing
+128-byte object row and owns no frame. It binds full caller descriptor,
+transaction, Endpoint generation, deadline and, after delivery, full server
+descriptor. It has one explicit kernel pending reference and at most one server
+capability reference, so its reference count is at most2. It is not a pinned boot
+object. Endpoint waits add no hidden Endpoint references.</p>
+<p>Objects supplies capacity preflight <code>replyAvailable()</code>,
+<code>endpointQueue(endpointKey)</code>, <code>createReply(callerDescriptor, endpointKey, transaction, deadline)</code>, <code>replyFields(replyKey)</code>,
+<code>markReplyQueued(replyKey)</code>, <code>deliverReply(replyKey, serverDescriptor)</code>,
+<code>beginReplyRevoke(replyKey)</code> and <code>destroyReply(replyKey)</code>. Existing
+<code>registryDescriptor(index)</code> and <code>registrySlot(descriptor)</code> bound enrollment.
+The Reply row&#39;s common owner word40 is the caller, word56 the Endpoint key,
+word64 the transaction, word72 the server (0 before delivery), word80 the phase
+0/1/2, and word88 the deadline. Payload32 and pin48 remain0.
+Capability supplies <code>grantReply(serverDescriptor, replyKey)</code>,
+<code>retireReply(replyKey, status)</code>, <code>cancelEndpointReplies(endpointKey,status)</code> and
+<code>cancelDescriptorReplies(descriptor,status)</code>.
+Destination entry and serial availability are checked before delivery
+publication. A reply attempt validates local type/right, object generation,
+server identity, live caller transaction, deadline and both current User ranges
+before consuming authority. A valid reply commits copied bytes once; a malformed
+range leaves live reply authority available for a defined retry. A stale,
+already used or cancelled Reply grants no authority.</p>
+<p><code>retireReply</code> first withdraws Reply authority, cancels its exact queued Call and
+completes its matching caller row unless already ready. It sweeps at most8 tables
+of16 entries to remove the server capability, drops the one pending kernel
+reference and destroys only at refs0. Generation advancement/retirement follows
+withdrawal. Leaving a dead object behind a live uncloseable capability entry is
+not acceptable cleanup. Closing a server Reply handle invokes this cancellation
+path rather than merely decrementing a reference.</p>
+<p>Endpoint revoke, owner detach and last-alias Endpoint close retire matching
+Replies before dropping the final Endpoint reference or releasing its queue.
+User revoke remains Endpoint/Revoke only. Objects&#39; queue destruction checks that
+no matching live Replies remain, invalidates matching descriptor waits across
+the checked8-entry registry, then releases the queue once. Objects cannot call
+Capability: the bounded Reply capability sweep is performed by the higher
+Capability layer before Objects destruction.</p>
+<p>Timeout, caller/server death and endpoint revocation have defined public results
+and exactly one completion. Detach removes all messages of the dead full sender,
+including ordinary Sends, and all of its call/reply bindings. No ready result is
+overwritten, no registered dead descriptor can survive frame reuse, and no reply
+generation or FIFO/transaction counter wraps. Task/Scheduler wakes blocked
+contexts only after these lower transitions produce a checked ready result.</p>
+<p>Enqueue linearizes when its copied slot becomes live; its fields, actual count
+and next FIFO serial are initialized first. Dequeue linearizes at withdrawal of
+the exact inspected FIFO slot, after checked copying and Reply-cap publication.
+Reply linearizes when the caller metadata becomes ready, after copying into
+kernel-owned scratch and a fresh hardware time sample immediately before
+commit. A deadline reached at that sample yields timeout, not reply success.
+Cancellation and timeout linearize at that same ready-state publication with
+their error. Later events cannot overwrite ready state or its packet. Capability
+withdrawal and bounded cleanup follow the commit before returning from the
+nonpreemptible transition. A timeout may follow server acceptance of a request;
+at-most-once completion does not assert exactly-once application execution.</p>
+<h2 id="required-evidence">Required evidence</h2>
+<p>The <code>ipc-development</code> boot policy links Server, ClientA, ClientB, Busy and one
+later-created Fault image separately. It prepares the first four before creating
+three Endpoint queues: primary owned by Server, private probe owned by ClientA,
+and inbox owned by ClientB. Grant order is Server Console34/primary8;
+ClientA Console34/primary20/probe124/Management928/inbox4;
+ClientB Console34/primary20/inbox8; Busy none. Management is scoped to ClientB.
+Each creation records actual owner/key/remaining frames before grants, and each
+grant records its actual local handle. Activation follows all grants. Ordinary
+construction failure aborts provisional tasks and their owned queues.</p>
+<p>Checked Objects table word160 retains only the full primary generation key.
+Late Fault creation revalidates its type and live active owner task before any
+allocation, then grants Console34 and primary20 to the constructing instance.
+No raw physical pointer, arbitrary object authority, descriptor alias or
+generation mutation is exposed by this policy. The historical launch transport
+still requires its fourth payload word0; the IPC entry&#39;s explicit wrapper accepts
+four independently supplied launch nonces in the same forty-byte packet.</p>
+<p>CapabilityModel proves that Reply&#39;s mask uses a known bit, excludes Duplicate,
+and leaves bit2048 unknown. These numeric facts do not establish storage
+integrity, at-most-once completion or linked-code correctness.</p>
+<p>Genuine Lean compilation, immutable compiler/source realization, exact closed
+module/LLVM/object provenance, stack limits and bounded copies precede guests.
+Fresh O0/O2 sessions must separately observe two clients and a server exchanging
+independently chosen payloads, copied-packet sender binding, queue-full/empty
+behavior, timeouts, invalid-memory no-publication, denied Send/Receive, caller
+and server death, revoke while blocked, cancellation, duplicate Replies, complete
+local/object/frame cleanup and sustained unrelated-task progress. Host models
+and malformed-evidence tests do not substitute for those observations. No Gate I
+pass follows from this contract or the existence of source files.</p>
+</main>
+</body>
+</html>

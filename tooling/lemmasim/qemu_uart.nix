@@ -3,7 +3,7 @@
 let
   selected = builtins.fromJSON (builtins.readFile siliconProfile);
   base = import ./qemu.nix { inherit siliconProfile; };
-in assert selected.profile == "lemma-silicon-dev/0.3.0";
+in assert builtins.elem selected.profile [ "lemma-silicon-dev/0.3.0" "lemma-silicon-dev/0.14.0" ];
 base.overrideAttrs (old: {
   pname = "lemmasim-qemu-raw-uart-v1";
   buildPhase = ''

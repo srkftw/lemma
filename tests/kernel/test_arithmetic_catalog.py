@@ -65,7 +65,11 @@ class ArithmeticCatalog(unittest.TestCase):
         'lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook',
         'lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize',
         'lemmasim-silicon-package-chooser-bulk-notebook',
-        'lemmasim-silicon-package-chooser-bulk-initialize'})
+        'lemmasim-silicon-package-chooser-bulk-initialize',
+        'lemmasim-silicon-multimodal-notebook',
+        'lemmasim-silicon-multimodal-initialize',
+        'lemmasim-silicon-multimodal-parameterized-notebook',
+        'lemmasim-silicon-multimodal-parameterized-initialize'})
         for config,(server,profile,kernel) in expected.items():
             with self.subTest(configuration=config):
                 rows=image_specs(config)
@@ -76,6 +80,26 @@ class ArithmeticCatalog(unittest.TestCase):
                 self.assertEqual(managed_fields(config)['managed_policy'],'lemma-notebook-arithmetic-v1')
                 self.assertEqual(configuration_profile(config),f'lemma-silicon-dev/0.{profile}.0')
                 self.assertEqual(kernel_contract(config),f'core0-kernel-v0.{kernel}')
+    def test_exact_multimodal_successor_preserves_four_isolated_roles(self):
+        from multimodal_deployment import CONFIGURATIONS, PARAMETERIZED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT, BOOT_ROOTS
+        for configuration in CONFIGURATIONS:
+            with self.subTest(configuration=configuration):
+                rows=image_specs(configuration)
+                self.assertEqual([(row['key'],row['id']) for row in rows],
+                                 [('store',1),('notebook',2),('arithmetic',3),('course',4)])
+                self.assertEqual(rows[1]['source'],'Lemma.Applications.Notebook.mainMultimodal')
+                self.assertEqual(rows[2]['source'],'Lemma.Services.Arithmetic.ServerV8.main')
+                self.assertEqual(rows[3]['source'],'Lemma.Courses.PackageInstaller.'+
+                                 ('mainParameterized' if configuration in PARAMETERIZED_CONFIGURATIONS else 'mainAwait'))
+                self.assertEqual(kernel_contract(configuration),'core0-kernel-v0.9')
+                self.assertEqual(configuration_profile(configuration),'lemma-silicon-dev/0.14.0')
+                self.assertEqual(software_deployment_fields(configuration),{'software_deployment':SOFTWARE_DEPLOYMENT})
+                self.assertEqual(configuration_roots(configuration)['kernel'],(
+                    ('Lemma.Platform.LemmaSim.NotebookKernel.'+BOOT_ROOTS[configuration],()),
+                    ('Lemma.Platform.LemmaSim.NotebookKernel.dispatchMultimodalBulk',('u64','u64','u64'))))
+        for name in ('lemmasim-silicon-multimodal-any','lemmasim-silicon-multimodal-privileged'):
+            with self.assertRaises(Core0Error):configuration_roots(name)
+
     def test_trial_watchdog_keeps_four_roles_and_separate_privileged_roots(self):
         config = 'lemmasim-silicon-product-course-watchdog-bulk-notebook'
         legacy = 'lemmasim-silicon-product-course-reader-bulk-notebook'

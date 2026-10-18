@@ -36,6 +36,16 @@ class SurfaceWordInlineCatalog(unittest.TestCase):
             self.assertEqual(removed_symbols(u),{'word0','word1'})
         u=fixture();u.pop(FIELD)
         self.assertIsNone(catalog(u));self.assertEqual(removed_symbols(u),set())
+    def test_exact_multimodal_pair_keeps_original_callback_catalog(self):
+        from multimodal_deployment import CONFIGURATIONS as names,SOFTWARE_DEPLOYMENT as software,NOTEBOOK_ROOT as root
+        for cfg in names:
+            u=fixture();u.update(configuration=cfg,software_deployment=deepcopy(software))
+            u['roots'][0]['source']=root;u['functions'][0]['source']=root
+            self.assertEqual(removed_symbols(u),{'word0','word1'})
+            for key,value in [('configuration',cfg+'-unknown'),('software_deployment',SOFTWARE_DEPLOYMENT),
+                              ('image_key','arithmetic'),('image_id',3)]:
+                changed=deepcopy(u);changed[key]=value
+                with self.subTest(cfg=cfg,key=key),self.assertRaises(Core0Error):catalog(changed)
     def test_wrong_identity(self):
         for key,value in [('configuration','lemmasim-silicon-array-bulk-notebook'),('role','kernel'),
                           ('contract_version','core0-user-v0.7'),('schema_version',2.0),('schema_version',True),

@@ -2,3 +2,16 @@
 *.png binary
 *.pdf binary
 *.zip binary
+
+# Maintained narrative HTML; browser application HTML remains implementation code.
+/docs/*.html linguist-documentation=true
+/docs/**/*.html linguist-documentation=true
+/LEMMA_MACHINE_CONTRACT.html linguist-documentation=true
+/codex/prompts/*.html linguist-documentation=true
+/conformance/*.html linguist-documentation=true
+/conformance/lemmasim/*.html linguist-documentation=true
+/templates/*.html linguist-documentation=true
+/sim/simulator-overview.html linguist-documentation=true
+/sim/host/host-model-overview.html linguist-documentation=true
+/sim/rtl/NOTICE.html linguist-documentation=true
+/tooling/silicon/silicon-tooling-overview.html linguist-documentation=true

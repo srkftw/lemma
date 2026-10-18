@@ -43,7 +43,7 @@ REQUIRED_SOURCE_INPUTS = frozenset({
     "scripts/check_foundation_gate9.py", "scripts/run_device_session.py", "scripts/gate6_corpus.py",
     "scripts/qualify_foundation.py",
     "scripts/run_timer_case.py", "scripts/gate8_corpus.py", "scripts/run_trap_case.py",
-    "docs/audits/monitor-core0-v07.md", "docs/audits/timers-core0-v07.md",
+    "docs/audits/monitor-core0-v07.html", "docs/audits/timers-core0-v07.html",
 })
 
 
@@ -81,7 +81,11 @@ def source_inputs(directory: Path, root: Path) -> dict[str, str]:
         if not path.is_relative_to(root.resolve()) or not path.is_file() or sha256(path) != digest:
             raise Core0Error(f"monitor source input is stale or escaped: {name}")
         result[name] = digest
-    if not REQUIRED_SOURCE_INPUTS <= result.keys():
+    required = REQUIRED_SOURCE_INPUTS
+    if not (root / "docs/document-map.json").is_file():
+        required = frozenset(name[:-5] + ".md" if name.startswith("docs/") and name.endswith(".html") else name
+                             for name in required)
+    if not required <= result.keys():
         raise Core0Error("monitor provenance omits required source/machine/compiler/host inputs")
     return result
 

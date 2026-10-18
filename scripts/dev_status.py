@@ -493,7 +493,7 @@ def collect(root: Path, *, config_path: Path | None = None, evidence_paths=(), c
     jobs["external_truncated"] = len(job_receipts) > limit
     summary = aggregate(plan["required_claims"], evidence)
     blockers = [f'{row["claim"]}: {row["disposition"]}' for row in summary["required_claims"] if row["disposition"] not in ("fresh-pass", "reused")]
-    next_action = next((row["command"] for row in summary["required_claims"] if row["disposition"] not in ("fresh-pass", "reused")), "No changed-boundary verification pending; choose the next objective from CURRENT.md.")
+    next_action = next((row["command"] for row in summary["required_claims"] if row["disposition"] not in ("fresh-pass", "reused")), "No changed-boundary verification pending; choose the next objective from CURRENT.html.")
     return {"schema": SCHEMA, "objective": config["objective"], "source": source, "routing": plan,
             "evidence": evidence, "builds": builds, "aggregate": summary, "active_jobs": jobs,
             "blockers": blockers, "next_action": next_action, "resource_budgets": config["resource_budgets"],

@@ -1,0 +1,1337 @@
+{
+  "schema": "lemma-document-map/v1",
+  "scope": "Current navigation map; original source hashes are conversion provenance, never reused evidence receipts.",
+  "converter": "scripts/docs/migrate_html.mjs",
+  "parser": {
+    "name": "marked",
+    "version": "17.0.5",
+    "module_sha256": "0b4487359ce6b85108708e7a532e1242a27f4718241e7b2de109ac6cd307d2dc"
+  },
+  "source_base": "b4b5c239728d2fd56fa5b749a7a9b81ffff6e9f5",
+  "source_override": [
+    "docs/plan/006-session-state.md includes preserved original-checkout append-only updates supplied at assignment start"
+  ],
+  "exceptions": {
+    "AGENTS.md": "Filename-sensitive agent discovery hook; narrative moves to docs/contributing.html.",
+    ".github/pull_request_template.md": "Filename-sensitive GitHub template hook; guidance moves to docs/pull-request-guidance.html.",
+    "docs/evidence/history/003-kernel-isolated-services-pre-final.md": "Immutable historical evidence: retain exact original bytes and path."
+  },
+  "documents": [
+    {
+      "original": ".github/pull_request_template.md",
+      "current": "docs/pull-request-guidance.html",
+      "original_sha256": "a09d18b66377ab2803752a85bc539c6e82d38283a94d4e90eba58d1c3cc1ca69",
+      "original_bytes": 476,
+      "converted_sha256": "ea51c584466a916897bed3be08f67b0e9c52d4e498dde06b3e4699164f779f44"
+    },
+    {
+      "original": "AGENTS.md",
+      "current": "docs/contributing.html",
+      "original_sha256": "eea3e7d702bdf4a718cfc235694c737a537a1f0fe383da79bbe92688f42717a2",
+      "original_bytes": 17767,
+      "converted_sha256": "3e56ec2947946ff635906d3509ead602933e689b539592aa1dfb84bdc3d0bd52"
+    },
+    {
+      "original": "LEMMA_MACHINE_CONTRACT.md",
+      "current": "LEMMA_MACHINE_CONTRACT.html",
+      "original_sha256": "193106afdb89458ee600d24a0eabe4e03d89a4cf21b22e6eb45537ced501b7ca",
+      "original_bytes": 6570,
+      "converted_sha256": "febef35a875a0a81cf66759fb9e005d7249c29828585bcbb212f114224dc28af"
+    },
+    {
+      "original": "README.md",
+      "current": "docs/overview.html",
+      "original_sha256": "e17f2061ea96ad2cd7b70c0cfa14f6f579e34484f1fe7eb175b4fe8cfb3fddac",
+      "original_bytes": 168935,
+      "converted_sha256": "23e795c3985599018f29f0ff0a1beefd00574a191f260b8acc87fd199ed4dddd"
+    },
+    {
+      "original": "codex/prompts/001-core0-freestanding-slice.md",
+      "current": "codex/prompts/001-core0-freestanding-slice.html",
+      "original_sha256": "d2d03c4228db6bd7054c7bc5e6d5e1fd01deba18f749f41fe9de2a010df0197a",
+      "original_bytes": 8901,
+      "converted_sha256": "2ae2756d8301715948669862aab1efbad02639c18c6f35a14bf50b395a3ce0b5"
+    },
+    {
+      "original": "codex/prompts/002-machine-foundation.md",
+      "current": "codex/prompts/002-machine-foundation.html",
+      "original_sha256": "4f19264e56460131edfa1697c2bf9ce8e4da25b0b6e412c50c2600274857bb3f",
+      "original_bytes": 37203,
+      "converted_sha256": "e7543d3d0a088fc2591e0ce976cc076721053a5fdece35e93f5b4a4684961941"
+    },
+    {
+      "original": "codex/prompts/003-kernel-isolated-services.md",
+      "current": "codex/prompts/003-kernel-isolated-services.html",
+      "original_sha256": "519f88da577a840a37a0009a0821c3b97256272fef6d654fb403454a90c5f716",
+      "original_bytes": 40602,
+      "converted_sha256": "aaa490989a968578ec88dba294a63759408db034a1103c273837395dd06075f3"
+    },
+    {
+      "original": "codex/prompts/004-lemmasim-durable-ink.md",
+      "current": "codex/prompts/004-lemmasim-durable-ink.html",
+      "original_sha256": "c0cb93136b622b149845073635dc904c6c583b0392c94f42893769e6b8f4043a",
+      "original_bytes": 4474,
+      "converted_sha256": "ddf365e190b467155af0ece1bbe0fb6a3aa78a5ca6e4ab0b661f6f77f7717c17"
+    },
+    {
+      "original": "codex/prompts/005-open-silicon-bringup.md",
+      "current": "codex/prompts/005-open-silicon-bringup.html",
+      "original_sha256": "22a1a4f69254075cb7666e59d78173191716c15e778f347428a83a4f96cc9b03",
+      "original_bytes": 3286,
+      "converted_sha256": "ac73b9273e22cc1b62ddd2034f57a5fd304c2e975fbce8e8f2bee3c68e0e2d3f"
+    },
+    {
+      "original": "codex/prompts/006-whole-machine-lemmasim.md",
+      "current": "codex/prompts/006-whole-machine-lemmasim.html",
+      "original_sha256": "3c42165365a2c3129d7d87ee99b3884e16ee225cf2f8dded82082549290a59bf",
+      "original_bytes": 4864,
+      "converted_sha256": "c980e8261ab54f3a94529afc2e971623252981a637ce00df2fd646ffd5854448"
+    },
+    {
+      "original": "conformance/README.md",
+      "current": "conformance/conformance-overview.html",
+      "original_sha256": "0205f3866eb3d758a5bd8f9c54dd27ac09387ec83b17cd546c13a61263f5385a",
+      "original_bytes": 1067,
+      "converted_sha256": "4353bebc46dbb1c4505d2aea56c1b9ee152791a729f4d4da8fe35641c206b93b"
+    },
+    {
+      "original": "conformance/lemmasim/COUNTER_STATE.md",
+      "current": "conformance/lemmasim/COUNTER_STATE.html",
+      "original_sha256": "4d4055092a1cdb574157d1e996d0a1918f4b8af062384c1b0db52815e37a1867",
+      "original_bytes": 4607,
+      "converted_sha256": "0c84508360a2e62ba86ed617d3a8ecd8d96299410049c974fea13c731d01ef3b"
+    },
+    {
+      "original": "conformance/lemmasim/CRASH_OBSERVATIONS.md",
+      "current": "conformance/lemmasim/CRASH_OBSERVATIONS.html",
+      "original_sha256": "c500b3ebd0cac007e3ac400bf9c29248319c855227d096a04fb68b57ad099cf7",
+      "original_bytes": 9285,
+      "converted_sha256": "a08aeee40b263b902e6728f9cabf8bab76485c3e2968febb1d7f0e1c2c1787c6"
+    },
+    {
+      "original": "conformance/lemmasim/POWER_V2_RELATION.md",
+      "current": "conformance/lemmasim/POWER_V2_RELATION.html",
+      "original_sha256": "a0f87e96600ffbd4cbb03cba9b291ff22ff839c430adb579225d03f28bc9ee53",
+      "original_bytes": 3888,
+      "converted_sha256": "56561a994039ae8602d662e486487b3646dce55ae6491789f3afc4f7cf221643"
+    },
+    {
+      "original": "conformance/lemmasim/QEMU_STATE_EQUIVALENCE.md",
+      "current": "conformance/lemmasim/QEMU_STATE_EQUIVALENCE.html",
+      "original_sha256": "0174e47465341d37c49564d9bb379ad37a4362cba443deb8699fd56452031a1c",
+      "original_bytes": 16830,
+      "converted_sha256": "818463a609d7e490ef62ec0e66b02a402866f4c31f753a2b64bc20f7d3f7c1b7"
+    },
+    {
+      "original": "conformance/lemmasim/WARM_PEN_STATE.md",
+      "current": "conformance/lemmasim/WARM_PEN_STATE.html",
+      "original_sha256": "adfcc78eb6588b1d2f1bdd892673d900c91f3799d0efb01a59b4dbce24f47bca",
+      "original_bytes": 3368,
+      "converted_sha256": "b69ce42940cd4a5bcd115f4dfd98c1fe372050f7fdd59a90fa582f783b9878c2"
+    },
+    {
+      "original": "docs/ARCHITECTURE.md",
+      "current": "docs/ARCHITECTURE.html",
+      "original_sha256": "88b519028ea983f804d91b8d0a3372dc062aee540c6390fab87fabac38f5fd82",
+      "original_bytes": 4279,
+      "converted_sha256": "2ac2eb5af0feddfe5bf00b76de88f3f94a0b35a82e1fb165b0e7fbd17c43aa75"
+    },
+    {
+      "original": "docs/PUBLISHING.md",
+      "current": "docs/PUBLISHING.html",
+      "original_sha256": "87c910468bc226f3443925fe95466d02d8479f5fd01227da634c4962fd604856",
+      "original_bytes": 2081,
+      "converted_sha256": "2f57444cc570d46b995a218bde11ef158343d0f548f179833462807181025cdf"
+    },
+    {
+      "original": "docs/SOURCES.md",
+      "current": "docs/SOURCES.html",
+      "original_sha256": "be65f3f6684267e93221ebf17ef7754b01e0c5566d8ec45799f6dbc3497a27fe",
+      "original_bytes": 1472,
+      "converted_sha256": "f9714aa3196deeb125ad97102b8b0ae4641550d15293c72944383900754d7298"
+    },
+    {
+      "original": "docs/SOURCE_MAP.md",
+      "current": "docs/SOURCE_MAP.html",
+      "original_sha256": "e6e3b6299516500d9b8280ce7d12e20dae7f3509c4801520cad580e0a5e3a4af",
+      "original_bytes": 4633,
+      "converted_sha256": "a1cbdc8996a3d08f66f01fdfad69be9755d85b798dd9b4f806a28533ab8003d2"
+    },
+    {
+      "original": "docs/audits/core0-lowering.md",
+      "current": "docs/audits/core0-lowering.html",
+      "original_sha256": "c072237c3ef3ef6b3b471b17d644b3cd398cc1293b7e2529feace5ac9ad11b13",
+      "original_bytes": 12178,
+      "converted_sha256": "140f6365e7887fa5bc9e8cb05d977e19223456ffb82d303544a2f83436ed789f"
+    },
+    {
+      "original": "docs/audits/llvm-core0.md",
+      "current": "docs/audits/llvm-core0.html",
+      "original_sha256": "455130c65d25f4dfa14c1727553d316537339d3e091d6121ac6f991a871c25a9",
+      "original_bytes": 21921,
+      "converted_sha256": "aef027903a61602d3d59c0d70bb00cea51c028f5052f8ca307b68a23c47ae33e"
+    },
+    {
+      "original": "docs/audits/monitor-core0-v07.md",
+      "current": "docs/audits/monitor-core0-v07.html",
+      "original_sha256": "073ca1ba3b8e549ee98ac16fe2d8fe2ee5015555bbbade473614d836b90c7ce6",
+      "original_bytes": 6287,
+      "converted_sha256": "ec226737fd1b278fcc4822f87cf81c7bca4c012aa25318d3b4bd73e70d8a2d7c"
+    },
+    {
+      "original": "docs/audits/qemu-core0.md",
+      "current": "docs/audits/qemu-core0.html",
+      "original_sha256": "0472d6d772f40e86f8a410cdcb7457eabc2ca08e0f5fb3aa84c1bd0d57ddf22e",
+      "original_bytes": 4490,
+      "converted_sha256": "d7e1108313090395e4ea925ad8db86c89312a5d2915cf6a8220ae33dbcecfea3"
+    },
+    {
+      "original": "docs/audits/timers-core0-v07.md",
+      "current": "docs/audits/timers-core0-v07.html",
+      "original_sha256": "c53090c5a8c5f939e6958304b20f6ded3a24b46bdd7af1a68f079e469170f466",
+      "original_bytes": 10562,
+      "converted_sha256": "51f3798df7b2263066412ac9e6cd7ac9eae7236d7e1c75ac88283e662e530fd3"
+    },
+    {
+      "original": "docs/audits/traps-core0-v06.md",
+      "current": "docs/audits/traps-core0-v06.html",
+      "original_sha256": "c6609aa300c4880ca6c7863b7b4304323d3704513c5ee2d5ee5cdf005b586a64",
+      "original_bytes": 9206,
+      "converted_sha256": "628174b1e93a11dde989c5858d50001859fdef1e94a01b8410b37aeff22b3f0c"
+    },
+    {
+      "original": "docs/audits/uart-core0-v05.md",
+      "current": "docs/audits/uart-core0-v05.html",
+      "original_sha256": "4d02383fb836ef5bd0a33836bf242184d8e26d9bf2dba9b743a38c1e038ffd40",
+      "original_bytes": 3465,
+      "converted_sha256": "7bdd29d0b9b286f4bff94f9afae79847037bc7a6343f9e000bb36e411128d3cc"
+    },
+    {
+      "original": "docs/contracts/003-buffer-service-v1.md",
+      "current": "docs/contracts/003-buffer-service-v1.html",
+      "original_sha256": "37d3532f7d5c2fec025a08c957dd0ad998a89714b60ef89c8af953f75ace8438",
+      "original_bytes": 17343,
+      "converted_sha256": "94673e5152b7abf7d800ca2ebd9d706fd9426cb101d3dac92f7fa52ab8313721"
+    },
+    {
+      "original": "docs/contracts/003-capabilities-v1.md",
+      "current": "docs/contracts/003-capabilities-v1.html",
+      "original_sha256": "c284c62cce8b6872fb2b2a9026c066ac316192b31ab234164c4e7be430f6eddf",
+      "original_bytes": 7873,
+      "converted_sha256": "69ac76fcc5dfcd9da4010d48240b6f156295d3031633d2911400a403662a968e"
+    },
+    {
+      "original": "docs/contracts/003-ipc-v1.md",
+      "current": "docs/contracts/003-ipc-v1.html",
+      "original_sha256": "81ec490d431a5d535d1bfea778f2f4cd7a5cc15104e9569ec45141c8dcc7f63e",
+      "original_bytes": 17418,
+      "converted_sha256": "f0ce2af740da006e3fe5d84764e21d15fe9f5bef0b9bf848735b271fd01cc971"
+    },
+    {
+      "original": "docs/contracts/003-lifecycle-v1.md",
+      "current": "docs/contracts/003-lifecycle-v1.html",
+      "original_sha256": "6d605f8bccb104e102a4f80d5a5ba276c798bc2aa186f328d8342008d4af461a",
+      "original_bytes": 3428,
+      "converted_sha256": "998162d3cd37a64584916a4af6630dbc590dbf6a66feb123b9e6966ebb47c422"
+    },
+    {
+      "original": "docs/contracts/003-tasks-v1.md",
+      "current": "docs/contracts/003-tasks-v1.html",
+      "original_sha256": "b037b53567ae04327836d5a8335514a35425e0258b8e04dd9a77cdda43eb6753",
+      "original_bytes": 5574,
+      "converted_sha256": "0cc84fb6045497e511a7681de85375107cd98692c77ac1c5fa9f34572cb5f21b"
+    },
+    {
+      "original": "docs/contracts/004-block-medium-v1.md",
+      "current": "docs/contracts/004-block-medium-v1.html",
+      "original_sha256": "0ee36392671ec338b94a3c05de9c5915c943372059ba2d79ede0ce6211feaafd",
+      "original_bytes": 6225,
+      "converted_sha256": "0c3d988aa655279b46634a116e5ff47496f327fa5c5d4b2a634bd2240c56db7a"
+    },
+    {
+      "original": "docs/contracts/004-core0-kernel-v0.3.md",
+      "current": "docs/contracts/004-core0-kernel-v0.3.html",
+      "original_sha256": "e9711854c1b5a35cd5267ae8f37675a744873efb894af885e429d343de062e8a",
+      "original_bytes": 2315,
+      "converted_sha256": "460809161ea83e593a1413ca3d3aabe846e06b71d5305a0097477bbe5c13c4b8"
+    },
+    {
+      "original": "docs/contracts/004-devices-v1.md",
+      "current": "docs/contracts/004-devices-v1.html",
+      "original_sha256": "57c50d0830d81d89abc20a303d08cc679073faa1eedad9dd0c3d232887e67fab",
+      "original_bytes": 7847,
+      "converted_sha256": "c37336590ebc172d9d2e180471154a25126f76044c12034f5d934f4288badf2a"
+    },
+    {
+      "original": "docs/contracts/004-isolation-observations-v1.md",
+      "current": "docs/contracts/004-isolation-observations-v1.html",
+      "original_sha256": "1fb6f11e8a024e53a539dde750222fd72677195354b94a2c28a3359bd1d58a9b",
+      "original_bytes": 5997,
+      "converted_sha256": "4199710e45ae539ae9570523a2068bd78edf7166edabdedb8f5ac5f720cf6fb2"
+    },
+    {
+      "original": "docs/contracts/004-machine-profile-0.1.0.md",
+      "current": "docs/contracts/004-machine-profile-0.1.0.html",
+      "original_sha256": "f895916f725c65ffa70a37b6d7665d67e200a0abca952ec03aab056e1ca0c9a7",
+      "original_bytes": 6850,
+      "converted_sha256": "2f3f7fe7bbf96d7472c90ff0feaa8c839b40a6a42018944ae48e1cc82c5bb49e"
+    },
+    {
+      "original": "docs/contracts/004-notebook-ink-v1.md",
+      "current": "docs/contracts/004-notebook-ink-v1.html",
+      "original_sha256": "e2f3fd974dda4a623a20097f14a698919bb1ae119e24f963672153c3e0fb876b",
+      "original_bytes": 17427,
+      "converted_sha256": "1e8ec45a574687ed204693cdca275bef6dc8a0aba853ed4505c7dd774b3dc598"
+    },
+    {
+      "original": "docs/contracts/004-owned-memory-v1.md",
+      "current": "docs/contracts/004-owned-memory-v1.html",
+      "original_sha256": "7120fcbc6733d824e7de769d83baa79123b4e610417067e9f6bf88ca90b28b0c",
+      "original_bytes": 23845,
+      "converted_sha256": "3b00b1d75e08dc96f52f7007b2da3abe80b773ba32c086818d11cf1dd925974a"
+    },
+    {
+      "original": "docs/contracts/004-store-v1.md",
+      "current": "docs/contracts/004-store-v1.html",
+      "original_sha256": "9e18e44db970bdc4bc63f21c4b869e1cb69d5dfa4a8e9f7efbc275bc9f06fcbf",
+      "original_bytes": 21579,
+      "converted_sha256": "0c937050728810fb22c826ffe471e5ee71dfcd77c17e19275c2437ce0cf79c9a"
+    },
+    {
+      "original": "docs/contracts/005-silicon-dev-0.1.0.md",
+      "current": "docs/contracts/005-silicon-dev-0.1.0.html",
+      "original_sha256": "b7b50001ecbe003f02647999750499226aa3c111ae42a348bd5502361ebd533f",
+      "original_bytes": 10957,
+      "converted_sha256": "78b5941cdc85ec9d39894a07c8a31044ecb22881005512d285094c5836f17d02"
+    },
+    {
+      "original": "docs/contracts/006-archived-compiler-workspace-v1.md",
+      "current": "docs/contracts/006-archived-compiler-workspace-v1.html",
+      "original_sha256": "0cc0d954acfe4a20aea1891cfb6254fd719964a658a9ef01a333a08e3e863426",
+      "original_bytes": 3896,
+      "converted_sha256": "1967690a30c6544953a1968bd958104ae04176c5f9e6e0ec7dc9e6cc1557d0e8"
+    },
+    {
+      "original": "docs/contracts/006-arithmetic-ipc-v1.md",
+      "current": "docs/contracts/006-arithmetic-ipc-v1.html",
+      "original_sha256": "3463d316329dceb7f67ed32efb5a8c8f6040d61c66454529c692c37663d93aaa",
+      "original_bytes": 5124,
+      "converted_sha256": "88325f263e9958f8189c63c401eed13319637d992f604222a7f7311e8fb13053"
+    },
+    {
+      "original": "docs/contracts/006-authored-hint-publication-v2.md",
+      "current": "docs/contracts/006-authored-hint-publication-v2.html",
+      "original_sha256": "88df41e979b0a400e23f47a52b85c97c897d2504dea8af69d52156ca939281f0",
+      "original_bytes": 3648,
+      "converted_sha256": "30dea8fe8114c3a05d1715d0ee5a631dad932dbef84964620cbabd4f9c6949f7"
+    },
+    {
+      "original": "docs/contracts/006-authored-hint-visibility-v1.md",
+      "current": "docs/contracts/006-authored-hint-visibility-v1.html",
+      "original_sha256": "8bd3ac7647986edb4d94c1736be1d580e033e8d467a425230542235a30e7e369",
+      "original_bytes": 2649,
+      "converted_sha256": "e0481695ce28f636d18f6f9a38a7a0ae8ecb8fa11e8adba27733cb12524c5bdb"
+    },
+    {
+      "original": "docs/contracts/006-backing-io-v1.md",
+      "current": "docs/contracts/006-backing-io-v1.html",
+      "original_sha256": "a62f4a47f758e805151d81d14a96786c8bf37dc10041a8f970a6d63dd0b878e6",
+      "original_bytes": 15703,
+      "converted_sha256": "120695bd13d9d8e941f93c70c7fc3cb02c7a6c4fc64e812720fe21238d98f8bf"
+    },
+    {
+      "original": "docs/contracts/006-ble-machine-v0.1.md",
+      "current": "docs/contracts/006-ble-machine-v0.1.html",
+      "original_sha256": "fe6e89b6380580a35420e69090f1eaefc0c5ac789348eb23301503cb6b7df5cc",
+      "original_bytes": 6446,
+      "converted_sha256": "b7aa7d6ded99457ee60a26118032158f0824fce0758e10b1a8c4d88242961bd6"
+    },
+    {
+      "original": "docs/contracts/006-ble-machine-v0.2.md",
+      "current": "docs/contracts/006-ble-machine-v0.2.html",
+      "original_sha256": "c5edf98ec40cdb605bd2b9798afb3cb242c78be0e42b85ad26c26b995fd929d1",
+      "original_bytes": 3933,
+      "converted_sha256": "e711ccaabdcce40ee1ab0b263220578ba2f7adf757851dde41cb465d608879fb"
+    },
+    {
+      "original": "docs/contracts/006-ble-manual-link-v1.md",
+      "current": "docs/contracts/006-ble-manual-link-v1.html",
+      "original_sha256": "8e37bdfad664cc48d2417e6bc963b6998187fa1ec0f2d38e9f578adcee1f4931",
+      "original_bytes": 7600,
+      "converted_sha256": "16601a7ad17c44d534a953bd8cfc68990cac5820c601d03312929685f9274d1b"
+    },
+    {
+      "original": "docs/contracts/006-ble-packet-v1.md",
+      "current": "docs/contracts/006-ble-packet-v1.html",
+      "original_sha256": "dba30aaf113d3ddefa82b4775e80dfc752e9e710e00a4d72b4db46ec761dd73b",
+      "original_bytes": 8983,
+      "converted_sha256": "a683d2559021a5721c75ad8bc2131f7979b276d59bd4bd8dc6bc83d2148e8833"
+    },
+    {
+      "original": "docs/contracts/006-boot-backing-v1.md",
+      "current": "docs/contracts/006-boot-backing-v1.html",
+      "original_sha256": "c47dd667a7c84aa5db86871ef0a587397fc32aed152d416146cd46b526bda605",
+      "original_bytes": 4310,
+      "converted_sha256": "0edd07ef96cf9b3d5db38c347680a89d7783d4f88d3738276996feb8eacc2f02"
+    },
+    {
+      "original": "docs/contracts/006-browser-machine-v1.md",
+      "current": "docs/contracts/006-browser-machine-v1.html",
+      "original_sha256": "e2161148e464f4d8f650dad5488a3fded6dc4308a9ebd5ad3bede5dbf43782e4",
+      "original_bytes": 22853,
+      "converted_sha256": "bfaf66c24d7d3a36438f9cf121a4513e18c617bff72e17185245ddb345184d30"
+    },
+    {
+      "original": "docs/contracts/006-closed-inline-v1.md",
+      "current": "docs/contracts/006-closed-inline-v1.html",
+      "original_sha256": "1f6af89a72894b80e5e9e631c86aaaf7dbfb2cdc956af6ba3b05e50f0cdfa97c",
+      "original_bytes": 3075,
+      "converted_sha256": "3871283483ebe943ab24f3d07abb1edf184207a022c00cf50ca4009e0b8d30d8"
+    },
+    {
+      "original": "docs/contracts/006-companion-backing-dev-v1.md",
+      "current": "docs/contracts/006-companion-backing-dev-v1.html",
+      "original_sha256": "5c03a5da49126b89ad37e150e611ec62da3478e5728026d55de8538c78b18bc8",
+      "original_bytes": 9834,
+      "converted_sha256": "a37837742ca082d4b9d8b20676d6b983a41b33cdd00eb67ef6f897b5aa52cbf6"
+    },
+    {
+      "original": "docs/contracts/006-companion-backing-dev-v2.md",
+      "current": "docs/contracts/006-companion-backing-dev-v2.html",
+      "original_sha256": "e8546e95aca6fdc118a4e88cdcf2c866750b15d523e92ffa0222b1d576b1c219",
+      "original_bytes": 5918,
+      "converted_sha256": "9a0b3cc1737c8a52831c6a3d4f90657187d4d957bdb17ae1c4b82b58460a29f3"
+    },
+    {
+      "original": "docs/contracts/006-companion-backing-dev-v3.md",
+      "current": "docs/contracts/006-companion-backing-dev-v3.html",
+      "original_sha256": "e0a754102d470845e71df9adf9378314c917f098ebd93b3aea9e25157f00eaba",
+      "original_bytes": 4198,
+      "converted_sha256": "8100cf2d69236d5ebf62364ed037954f786997fad63f87b129401afb1c21a56a"
+    },
+    {
+      "original": "docs/contracts/006-companion-backing-dev-v4.md",
+      "current": "docs/contracts/006-companion-backing-dev-v4.html",
+      "original_sha256": "4336d761cbe292fb5a4d0ccb52fe6f3c3a5da926f6eccd784cfa45dafa5b373d",
+      "original_bytes": 5219,
+      "converted_sha256": "87df1961e5c8c1759ea79b30ac027675c88b8dbd4f931dc6a787a0130607c63b"
+    },
+    {
+      "original": "docs/contracts/006-companion-backing-dev-v5.md",
+      "current": "docs/contracts/006-companion-backing-dev-v5.html",
+      "original_sha256": "974e24103a9fb5aea75809036cd04aab95b5f80c053b7c785d0c89f84f10c948",
+      "original_bytes": 8537,
+      "converted_sha256": "10776ae002bf326c2f04ac9ae7e8885960c19d8b432ab16a8cf15127b11a5623"
+    },
+    {
+      "original": "docs/contracts/006-companion-course-reader-deployment-v1.md",
+      "current": "docs/contracts/006-companion-course-reader-deployment-v1.html",
+      "original_sha256": "bfaf5597932154dde49990ab4c4bbf213293851b5a45f4388e0b6b9f3c9b2296",
+      "original_bytes": 4311,
+      "converted_sha256": "d7938b33de7197cbb2f54a3b3841b1550c4b07c8cdf018dafc273e3cbca856bf"
+    },
+    {
+      "original": "docs/contracts/006-companion-observational-boundary.md",
+      "current": "docs/contracts/006-companion-observational-boundary.html",
+      "original_sha256": "55ad881e922fab985078fdd92f1d553cc20fa27cf69c33cba95819359f983b70",
+      "original_bytes": 6547,
+      "converted_sha256": "eabe6feee1952170ce1247a971b5c0b455b6424fe92c243e4e491badfd6e1902"
+    },
+    {
+      "original": "docs/contracts/006-core0-kernel-v0.4.md",
+      "current": "docs/contracts/006-core0-kernel-v0.4.html",
+      "original_sha256": "71cbb561675c420180dfec9595a8ea024ea23292e1076f7b98466ac70135e51d",
+      "original_bytes": 1383,
+      "converted_sha256": "b82556eb6aa64a42438c75ce1e6a0ff102647898950950b48581763fb8cf234e"
+    },
+    {
+      "original": "docs/contracts/006-core0-kernel-v0.6.md",
+      "current": "docs/contracts/006-core0-kernel-v0.6.html",
+      "original_sha256": "44beb375c3b354d393a1407a44797e414518f8fb7a06dc8f9c2cb7577e0620fb",
+      "original_bytes": 2410,
+      "converted_sha256": "672de2dd6fac545fe4e3ac2b09e89420d19db6bbe431f461792112c7d936ff48"
+    },
+    {
+      "original": "docs/contracts/006-core0-kernel-v0.8.md",
+      "current": "docs/contracts/006-core0-kernel-v0.8.html",
+      "original_sha256": "813932a3d8b437de283418ced112880e7fba9136ad20fc9bafc057a33553e2d3",
+      "original_bytes": 2722,
+      "converted_sha256": "dbbe652eeeb985194d8447fcdc568b6fc45ca7a59cd018c927cc23717cd16b9e"
+    },
+    {
+      "original": "docs/contracts/006-course-aligned-delta-v2.md",
+      "current": "docs/contracts/006-course-aligned-delta-v2.html",
+      "original_sha256": "af64cc499af8ba6e08cf97e3c6c917a182b98247232506991b1b6452797d5293",
+      "original_bytes": 2492,
+      "converted_sha256": "8e8fe13b4a3a898639b656939faca6cdab8d84a43ac4731b952699080567a12e"
+    },
+    {
+      "original": "docs/contracts/006-course-control-aligned-v1.md",
+      "current": "docs/contracts/006-course-control-aligned-v1.html",
+      "original_sha256": "c68b7575edbeeb9c21cbfb1f9755b75365beb13cd7c61aace48f6d08dd84251d",
+      "original_bytes": 2377,
+      "converted_sha256": "9a4db445c2ac00c88048941fe6b175b2c291742d00c9174da5b3347ca7f558f4"
+    },
+    {
+      "original": "docs/contracts/006-course-ingress-idle-v2.md",
+      "current": "docs/contracts/006-course-ingress-idle-v2.html",
+      "original_sha256": "ffdaaaabd6093cedd20f3c320849ddc9311954ccc12a73e5cb7d81db6088f1e7",
+      "original_bytes": 4204,
+      "converted_sha256": "8626ec1aaecbf6ab1f5879f1aff824eb2e7fe5a1cea93c4fab4ffd1f12e45255"
+    },
+    {
+      "original": "docs/contracts/006-course-mounted-await-v1.md",
+      "current": "docs/contracts/006-course-mounted-await-v1.html",
+      "original_sha256": "46c00c8796c6c82a84dddf54ee65ecd91f497f7a3d1ffb84cea4c651bf6af17b",
+      "original_bytes": 11220,
+      "converted_sha256": "6a24f1bfe7ffe4400c862ca16c69cdf647e1a172ba69c311d8d42aef4f1672f0"
+    },
+    {
+      "original": "docs/contracts/006-course-package-v1.md",
+      "current": "docs/contracts/006-course-package-v1.html",
+      "original_sha256": "cca7cc42798f7d6eb8bcf2f2c5d2ca58ea3867d2d4ea6808e86bdbb320ea083c",
+      "original_bytes": 24444,
+      "converted_sha256": "d48669b2d9957387ea196317bcbece0090780b2112d2852d6932b9ebf0adf51a"
+    },
+    {
+      "original": "docs/contracts/006-course-packed-row-v1.md",
+      "current": "docs/contracts/006-course-packed-row-v1.html",
+      "original_sha256": "f40c1da88378ce9ad6610179df868a9d5f64a60597c52a6f683bc7dd2282d7c1",
+      "original_bytes": 2056,
+      "converted_sha256": "9bc10554935a787cc776f2a8f5c430c67cb2644c5cc56cbac0719ffb40e0751a"
+    },
+    {
+      "original": "docs/contracts/006-course-preserving-save-v1.md",
+      "current": "docs/contracts/006-course-preserving-save-v1.html",
+      "original_sha256": "46a8c5731061690692482a544696e82ca4c869025dcfea6b94ef74707a3c98e2",
+      "original_bytes": 2960,
+      "converted_sha256": "08aae9b3252242119143395b66de095af6b0046ff7845300ba9263407a5f7e13"
+    },
+    {
+      "original": "docs/contracts/006-course-reader-binding-v1.md",
+      "current": "docs/contracts/006-course-reader-binding-v1.html",
+      "original_sha256": "3132dbdabc0a52c4ef5e07710b7f0f61654bae70131e3159fb641f5f9f4b2d52",
+      "original_bytes": 5235,
+      "converted_sha256": "ea8cd6292aaf5d9d25139f57de68c5900661fd91379cb85afa0b93ab7597bd8a"
+    },
+    {
+      "original": "docs/contracts/006-course-reader-location-v1.md",
+      "current": "docs/contracts/006-course-reader-location-v1.html",
+      "original_sha256": "072aae924d7bc261daf4f32c649f4398b3d6c4dceb643c5edbddadabc1c62c4a",
+      "original_bytes": 3777,
+      "converted_sha256": "6f24133a505a3714fc7c7acd7b1e1736b70dc78d8a4980e4baf304ba70a985e4"
+    },
+    {
+      "original": "docs/contracts/006-course-text-delta-v1.md",
+      "current": "docs/contracts/006-course-text-delta-v1.html",
+      "original_sha256": "d5d37334c48ca3ab1a93b0aa5a0e2cecb138875ed637203074434c3f1ad04195",
+      "original_bytes": 4343,
+      "converted_sha256": "1b116e9e9df8f664582fa65ab539da1666ebfd7cf816d7bc8a6d624161465933"
+    },
+    {
+      "original": "docs/contracts/006-course-white-word-v1.md",
+      "current": "docs/contracts/006-course-white-word-v1.html",
+      "original_sha256": "88363ae723a3d5f5576bc92d9b8e3c0e0d2bb56ebf2bc9e7bf11e594cd7838d8",
+      "original_bytes": 2973,
+      "converted_sha256": "4b83327af2b6dad4d01e0f91c4fadafb8bdc8d426a3e04feb24b76e7bccb4ffc"
+    },
+    {
+      "original": "docs/contracts/006-course-workspace-envelope-v2.md",
+      "current": "docs/contracts/006-course-workspace-envelope-v2.html",
+      "original_sha256": "dd39fbb6cf9c3cf52912ae88463872ef1e9a19b62f27060ae5683c3bebd984db",
+      "original_bytes": 4106,
+      "converted_sha256": "b39d7470a73a0bc108bf68f5ff4d62056717eae60934adc0c5e14979ad87ec3d"
+    },
+    {
+      "original": "docs/contracts/006-course-workspace-v1.md",
+      "current": "docs/contracts/006-course-workspace-v1.html",
+      "original_sha256": "d69075d57d32908288983c8c03f6a67d5282bc89ab922829d248a0043cbc1c87",
+      "original_bytes": 4133,
+      "converted_sha256": "c5c48b1cd8d77a1e96ec0b68a1de49dd8c8fc3981e71b2a0b67312d8caf192ed"
+    },
+    {
+      "original": "docs/contracts/006-development-boot-authentication-v1.md",
+      "current": "docs/contracts/006-development-boot-authentication-v1.html",
+      "original_sha256": "3f4b4f743a450f5826975f25dd694d4ef65d1e5f137abfa87c362d95c8046de9",
+      "original_bytes": 6864,
+      "converted_sha256": "d7743c9404e090ebec3110e1d76e30dd38f066097c8ab4197dc32683f96a0d1d"
+    },
+    {
+      "original": "docs/contracts/006-exact-mathematics-v1.md",
+      "current": "docs/contracts/006-exact-mathematics-v1.html",
+      "original_sha256": "7c6a81f1e590afe2a58d728c6016c7e9fd9716d87c0c212f0033a42a6d8ebb67",
+      "original_bytes": 8737,
+      "converted_sha256": "6a7e566ae67f7b3e878cacfe51e94c7e4828685b575507cda4dec559068af4ce"
+    },
+    {
+      "original": "docs/contracts/006-exact-mathematics-v2.md",
+      "current": "docs/contracts/006-exact-mathematics-v2.html",
+      "original_sha256": "50fbe857395e23e84d91bdba0ffbed52c63eaa0634e2be4c762060c622076653",
+      "original_bytes": 5572,
+      "converted_sha256": "4e1799689bed7c335192064b081db564e9a332bb876f79575f455fba76ff2de8"
+    },
+    {
+      "original": "docs/contracts/006-exact-mathematics-v3.md",
+      "current": "docs/contracts/006-exact-mathematics-v3.html",
+      "original_sha256": "11bee9ca89028bd9fdcbb3ac950e3801ad3e340ed425c26026b55c5d0a9eeb40",
+      "original_bytes": 4564,
+      "converted_sha256": "36199933a7677bf6f95c4fb4d5b2d686bb6e32ad4e7f95760915ad4c78d380bd"
+    },
+    {
+      "original": "docs/contracts/006-fast-uart-ingress-v1.md",
+      "current": "docs/contracts/006-fast-uart-ingress-v1.html",
+      "original_sha256": "af62eba3429c68f9765b384c386b70e8f0dff06cb9c9e8366a9c2d6f419e4eb3",
+      "original_bytes": 5213,
+      "converted_sha256": "b3f5791676ba66e4dfd5bb955eb795f65555f4257c9cf7400656e7108b7bb6b1"
+    },
+    {
+      "original": "docs/contracts/006-guest-counter-csr-v1.md",
+      "current": "docs/contracts/006-guest-counter-csr-v1.html",
+      "original_sha256": "06d420bfcdec26c651955fce492a969b26b1c905819a60156e9785f2dba601b5",
+      "original_bytes": 4536,
+      "converted_sha256": "4ad21a01a8679377d3bcb093ee7cea20b97965fe02289e00d308e5506af2f375"
+    },
+    {
+      "original": "docs/contracts/006-guest-counter-progress-v1.md",
+      "current": "docs/contracts/006-guest-counter-progress-v1.html",
+      "original_sha256": "e9b51cc645aad7d1665e0255e1d2fb7ad620ef49257e8f124b63484f33476c16",
+      "original_bytes": 5694,
+      "converted_sha256": "7b406ba5596af6bdc26df1bc86845125d1ded070c95f43033256d18ccc754772"
+    },
+    {
+      "original": "docs/contracts/006-guest-counter-su-v1.md",
+      "current": "docs/contracts/006-guest-counter-su-v1.html",
+      "original_sha256": "c159d25c04fc53a92f463740ddb60f3f784c2eaa2b7e0b923928c1a3179dc27a",
+      "original_bytes": 8214,
+      "converted_sha256": "7611dc4ffee3cf30edd711b7629e713398129414fb3a7948bcaec4e76a2db06f"
+    },
+    {
+      "original": "docs/contracts/006-installed-package-notebook-v1.md",
+      "current": "docs/contracts/006-installed-package-notebook-v1.html",
+      "original_sha256": "399d9565dec67988b9495f788b74df68f08833e6e73b0bc2d614bab3f25ad074",
+      "original_bytes": 9978,
+      "converted_sha256": "03090d7deeedfc23d057a6fc087613cb4b36650d2dccaaaf8cd5941e59a29070"
+    },
+    {
+      "original": "docs/contracts/006-installed-package-notebook-v2.md",
+      "current": "docs/contracts/006-installed-package-notebook-v2.html",
+      "original_sha256": "e62711ab2a65fb677a2a93d5ba0edaeb07b84d64ed2b2178d18cfd6753502e2a",
+      "original_bytes": 2863,
+      "converted_sha256": "426c47c627489bad803a2c0c18427bcbc1ede3818e920cd863a765e47dfe6fc6"
+    },
+    {
+      "original": "docs/contracts/006-ipc-poll-borrow-v1.md",
+      "current": "docs/contracts/006-ipc-poll-borrow-v1.html",
+      "original_sha256": "b44f1301a35572f4bcab06c738ea8597854bcd65efee71c9097be7b6720a1261",
+      "original_bytes": 2281,
+      "converted_sha256": "65422990d9d4cbf5a22a8221c2417a7348730cd6ebb0745884d1f747e51ff413"
+    },
+    {
+      "original": "docs/contracts/006-ipc-rpc-borrow-v1.md",
+      "current": "docs/contracts/006-ipc-rpc-borrow-v1.html",
+      "original_sha256": "6b457f553859043329ef5aff4f50e8ae309c25e2e088edaaa298c3e354a9c778",
+      "original_bytes": 3905,
+      "converted_sha256": "578ab2207f3c380a45c6f1d9d551ec5da3414376ab5b96077a0be3ec64f0402d"
+    },
+    {
+      "original": "docs/contracts/006-kernel-pool-read-v1.md",
+      "current": "docs/contracts/006-kernel-pool-read-v1.html",
+      "original_sha256": "da57a777e224ea0723b1abdf15a704eee113fad25786943d003ac9a5fcb79cbb",
+      "original_bytes": 3250,
+      "converted_sha256": "b140bb9066db8462407dca689388cbd3f73390a582153acc10509690689611d7"
+    },
+    {
+      "original": "docs/contracts/006-laboratory-guest-archive.md",
+      "current": "docs/contracts/006-laboratory-guest-archive.html",
+      "original_sha256": "f82684459aebf196b8487cc6de2f63778a40ec31ff8951782c9b092d74876571",
+      "original_bytes": 3403,
+      "converted_sha256": "1942ac122cf0f3fa7cd9155282c0e703c19016107d7df108c50e964db3582268"
+    },
+    {
+      "original": "docs/contracts/006-lean-export-host-v1.md",
+      "current": "docs/contracts/006-lean-export-host-v1.html",
+      "original_sha256": "d381583d348adffb058f96aadba5177dec05b99867fee4e26e83b0e648aeed49",
+      "original_bytes": 2220,
+      "converted_sha256": "98f5df20e02e61f00c5062535267ed7402599ccff4d6de131adebd3f99450052"
+    },
+    {
+      "original": "docs/contracts/006-lean-export-host-v2.md",
+      "current": "docs/contracts/006-lean-export-host-v2.html",
+      "original_sha256": "e7a1e04237922aa760d955e38c11d3d7c6c3c4a93e85e221e35f602e4fccbc96",
+      "original_bytes": 2452,
+      "converted_sha256": "a8e265daa24ab0acd63f9e3f69ebcc3e338ef709e142759221446d4d8a6f3e05"
+    },
+    {
+      "original": "docs/contracts/006-local-native-distribution-v1.md",
+      "current": "docs/contracts/006-local-native-distribution-v1.html",
+      "original_sha256": "52cd2a170b3d1d79e80d1501641f67fbec69946b2adcec979fdfc44560b14419",
+      "original_bytes": 9284,
+      "converted_sha256": "467a7bd84e3491d8edf32e0b4b2ee38fc49801c12da8391edd41c3f49229ab82"
+    },
+    {
+      "original": "docs/contracts/006-machine-session.md",
+      "current": "docs/contracts/006-machine-session.html",
+      "original_sha256": "0fdbfec45c3d051b7ebbe6f63de81d2de524139b0c3a33373164c1c545d3feea",
+      "original_bytes": 12915,
+      "converted_sha256": "5b61da172d5bd6e634d2113d2864cd8465f9ac3ff467ab741df6ed0aff9f02e5"
+    },
+    {
+      "original": "docs/contracts/006-managed-bytes-service-v1.md",
+      "current": "docs/contracts/006-managed-bytes-service-v1.html",
+      "original_sha256": "f4eb5aeb975df6e4f3bb41b9c48a4b0c84666ebbe24f12375fbce578bca43178",
+      "original_bytes": 4674,
+      "converted_sha256": "3485672643c9d7181d747021a3bbfcfd7c5b63dac6fadc437966266f65d8a1af"
+    },
+    {
+      "original": "docs/contracts/006-managed-closure-mathematics-v1.md",
+      "current": "docs/contracts/006-managed-closure-mathematics-v1.html",
+      "original_sha256": "dba240a3a039ea5180ac26be592e8a084b82b9f15d80996a5fa2b4908df6d1c1",
+      "original_bytes": 6653,
+      "converted_sha256": "7cac73e0ebf5d4bad2c2dc8f2d10deb564df555a3cf117a75a82f2b06e6a6904"
+    },
+    {
+      "original": "docs/contracts/006-managed-notebook-deployment-v1.md",
+      "current": "docs/contracts/006-managed-notebook-deployment-v1.html",
+      "original_sha256": "630781c8472f10997b7285f0db49e09191ce07f6d1dd766e105c02a427888612",
+      "original_bytes": 2748,
+      "converted_sha256": "6d27cf91f501ea23d670be538c52ef8ed5fdb853af56fcaa882edb361d2fdb1d"
+    },
+    {
+      "original": "docs/contracts/006-managed-records-v1.md",
+      "current": "docs/contracts/006-managed-records-v1.html",
+      "original_sha256": "47d4804d6bc939599ff73deb7c537dd6c4ca4b712277671fd55fc2b0bc8ab3f7",
+      "original_bytes": 4984,
+      "converted_sha256": "554707c0cf63ad57bae184bf329b110b84e486f95acccb40afc2295894ecc1f5"
+    },
+    {
+      "original": "docs/contracts/006-managed-sums-v1.md",
+      "current": "docs/contracts/006-managed-sums-v1.html",
+      "original_sha256": "1992ac73d07bf1fd33ee69ff8aa4b97f4c9fd6c0594ae97ab31696b3199720c9",
+      "original_bytes": 6133,
+      "converted_sha256": "1973ee3788000d000f243dc5590219a7db403dd0b72dbc7482847e7f989190e7"
+    },
+    {
+      "original": "docs/contracts/006-native-bundle-v1.md",
+      "current": "docs/contracts/006-native-bundle-v1.html",
+      "original_sha256": "8181503a329a66d4c67918b43c615931f1efcf15d9b9e00e69ece2436254089a",
+      "original_bytes": 2929,
+      "converted_sha256": "2a38ad432a180efd1c577df1da59086dc447c24819c406735942939d6d211a69"
+    },
+    {
+      "original": "docs/contracts/006-native-bundle-v2.md",
+      "current": "docs/contracts/006-native-bundle-v2.html",
+      "original_sha256": "a6d732f1df84d6d03bcb55a2807cf79d32665c1fd1f02eadefc2cbd1d7f3f314",
+      "original_bytes": 2632,
+      "converted_sha256": "09a3077e10e31312d4f33ebc16e2c340b05f4a6e512abe089fde4041012d23d5"
+    },
+    {
+      "original": "docs/contracts/006-notebook-closure-recovery-v3.md",
+      "current": "docs/contracts/006-notebook-closure-recovery-v3.html",
+      "original_sha256": "632b4a78257059bbe32ab2d494cc03abba339598059d72609af5cf2c0570e2be",
+      "original_bytes": 7731,
+      "converted_sha256": "ba7dd80ab059288456877f9b1b62cbfde6a5eff44f2d7e4b007af19526cc2fb2"
+    },
+    {
+      "original": "docs/contracts/006-notebook-control-backlog-v1.md",
+      "current": "docs/contracts/006-notebook-control-backlog-v1.html",
+      "original_sha256": "662f5e407507dd524ffb0d5c231f10faf0de3b90e9a7d95d0b8d1e3893aa3756",
+      "original_bytes": 3804,
+      "converted_sha256": "8f9d2229c195644166a57a60c3df3f99ea4ddf71513b801a3a4a163b24344275"
+    },
+    {
+      "original": "docs/contracts/006-notebook-control-backlog-v2.md",
+      "current": "docs/contracts/006-notebook-control-backlog-v2.html",
+      "original_sha256": "f33f591a5a0a568e67df13922d16eafcfc012ec6163dd589ee4923e40e35bd05",
+      "original_bytes": 2462,
+      "converted_sha256": "d0f2c6373f04fdf2e59f2310abea79ed7192858c67d56f14aae1cf4dae2d1450"
+    },
+    {
+      "original": "docs/contracts/006-notebook-dirty-batch-v1.md",
+      "current": "docs/contracts/006-notebook-dirty-batch-v1.html",
+      "original_sha256": "cb23b7eb15d35d7f0dfdd46295e138e51b891f48e02c0bd753ad552bb2378a48",
+      "original_bytes": 3049,
+      "converted_sha256": "6c2d5115dd42a4e79b6ca4cbfdffa75f8824e64a37e5600409f2501bd36ec100"
+    },
+    {
+      "original": "docs/contracts/006-notebook-recovery-v2.md",
+      "current": "docs/contracts/006-notebook-recovery-v2.html",
+      "original_sha256": "64d60de52d3486c503a63fc5fb965d495147ddf50f01bb38d837e601e89c1541",
+      "original_bytes": 8965,
+      "converted_sha256": "33a280eee9337a6c3d817895a99462389083977d85e2768eb16bd92cfde505fc"
+    },
+    {
+      "original": "docs/contracts/006-notebook-retry-v1.md",
+      "current": "docs/contracts/006-notebook-retry-v1.html",
+      "original_sha256": "f13e781a8f1bb1fd5e7ca20c692d2239c92dad5d3fa3a385a347c700bbf19bbd",
+      "original_bytes": 3741,
+      "converted_sha256": "a2f44b444bb65d0b0c0eb3eebc0e0f3ecc3ac3c7439bb86ca971290354548f67"
+    },
+    {
+      "original": "docs/contracts/006-number-entry-v1.md",
+      "current": "docs/contracts/006-number-entry-v1.html",
+      "original_sha256": "7882deaf3c0fad14cf05fc838bcf8172d5233a2f8c3b9f91680f58184a4bb0aa",
+      "original_bytes": 8913,
+      "converted_sha256": "0430defae5ec861557a6faa0820af933d4f7b89d79415c51dd53ea73b48289b2"
+    },
+    {
+      "original": "docs/contracts/006-owned-arena-v1.md",
+      "current": "docs/contracts/006-owned-arena-v1.html",
+      "original_sha256": "40e0e79dfaa87cb9e96ef75e87837c10f29b06d97b7fb8d76cee594ded003f15",
+      "original_bytes": 5408,
+      "converted_sha256": "06590fc134e4e4c5185c21b4e5caaa2890ca7adf8f30af683b3b763ac0e6eef4"
+    },
+    {
+      "original": "docs/contracts/006-package-companion-recovery-v1.md",
+      "current": "docs/contracts/006-package-companion-recovery-v1.html",
+      "original_sha256": "4244c6bd643f9d397946a2621540ad38490bc0d49d8c02c7f8073fac1a6ac477",
+      "original_bytes": 4903,
+      "converted_sha256": "66b8402ffabc6d22e1ee9942b3891ca0f44ab2b37eca6934472814cbb5cbba40"
+    },
+    {
+      "original": "docs/contracts/006-package-entry2-deployment-v1.md",
+      "current": "docs/contracts/006-package-entry2-deployment-v1.html",
+      "original_sha256": "baa4150ce0bd333b794c1ce3e71f89c62c70942ddc8456f3101ff891562280b4",
+      "original_bytes": 3058,
+      "converted_sha256": "1c18bbd14ecedd00d107b8e7d8090a80ff0f318cb56dbce215a085f932278a33"
+    },
+    {
+      "original": "docs/contracts/006-paper-bulk-v2.md",
+      "current": "docs/contracts/006-paper-bulk-v2.html",
+      "original_sha256": "1f1d95b91149d55017c07866563eead7b6025c35710c0422cafa3895661e2aa1",
+      "original_bytes": 4393,
+      "converted_sha256": "d02807119764c705347d4ed094279b6791b2678b96e2503d67c934a80d54132b"
+    },
+    {
+      "original": "docs/contracts/006-paper-executed-v3.md",
+      "current": "docs/contracts/006-paper-executed-v3.html",
+      "original_sha256": "5ed40ed6148241323b3b48a13cb18d9cb4c84ada8192e7fbfb5e5e6bbca75953",
+      "original_bytes": 3897,
+      "converted_sha256": "e17a4b9777d0947d1645ed94a9d93bb04d848bee58774caa508c2dda7fcd0a7e"
+    },
+    {
+      "original": "docs/contracts/006-paper-staging-v2.md",
+      "current": "docs/contracts/006-paper-staging-v2.html",
+      "original_sha256": "1c3065245474589886834dd14d371818f85a15f1f564d02f9862b13aa265119b",
+      "original_bytes": 5036,
+      "converted_sha256": "8f74047c6879d759411bdd92e1d93e121d3f67603058e7de778f917596af2fdc"
+    },
+    {
+      "original": "docs/contracts/006-pen-sram-v1.md",
+      "current": "docs/contracts/006-pen-sram-v1.html",
+      "original_sha256": "d6af13097388a7f5d5f602d0c1a8359a6ccecc5d909d2b2800a400c4cc72cb4f",
+      "original_bytes": 4763,
+      "converted_sha256": "9d641bb5e5cfe6e0e4c6e28c16a213adc6a5f667704aae05d26c256f6ea4e288"
+    },
+    {
+      "original": "docs/contracts/006-power-control-v1.md",
+      "current": "docs/contracts/006-power-control-v1.html",
+      "original_sha256": "2d4c5f7ba7c9d89a27d87d478161e74a7b25817a1b67c8772423501dbca7a8fa",
+      "original_bytes": 5919,
+      "converted_sha256": "cca738366a436fb80d9981276c7c65cb5583f3c3bfc1c3e898d10bcedd7e90c3"
+    },
+    {
+      "original": "docs/contracts/006-power-control-v2.md",
+      "current": "docs/contracts/006-power-control-v2.html",
+      "original_sha256": "ac76cb7b7a15ebc24b40b1c665c56da83f343d41d31ad9bb357cc09f201c0db8",
+      "original_bytes": 7064,
+      "converted_sha256": "37f8e5a55585450136bafecfd7422537e20437a8ea816e94321e138074dd54d0"
+    },
+    {
+      "original": "docs/contracts/006-product-boot-v1.md",
+      "current": "docs/contracts/006-product-boot-v1.html",
+      "original_sha256": "954ad6fbcbdda6b2293ffc1dcb2f855bbe63fdf33ad62aeba1b577dfdaf6c8e0",
+      "original_bytes": 24317,
+      "converted_sha256": "0d6461f86e9b58bd8c84d3f16eaa612ce406fc009b4087a81a977b0d1ef3100b"
+    },
+    {
+      "original": "docs/contracts/006-product-course-reader-deployment-v1.md",
+      "current": "docs/contracts/006-product-course-reader-deployment-v1.html",
+      "original_sha256": "fb2216a5c28a11501d71a0838ee20caeea2d88b2fe372b01d522369a764c1ba8",
+      "original_bytes": 3084,
+      "converted_sha256": "4e2032e97a64de1ff492bf7b8010ccdbec89664a092881893a69f73d8e5e4f75"
+    },
+    {
+      "original": "docs/contracts/006-qemu-logical-softtlb-v1.md",
+      "current": "docs/contracts/006-qemu-logical-softtlb-v1.html",
+      "original_sha256": "db38e0f9b1942ba407c8415260c16e9443d25c9da989b22203e50802d582b0f7",
+      "original_bytes": 8719,
+      "converted_sha256": "84efe7ba3a45b06d2af55f976834efb9b593543ea6d3fd5cdef85f04b2ef1a16"
+    },
+    {
+      "original": "docs/contracts/006-restored-surface-notebook-v1.md",
+      "current": "docs/contracts/006-restored-surface-notebook-v1.html",
+      "original_sha256": "4722b5c45c5dac9508c5c64c93c6cdb0967d13fbde2b9f16adb488103af8196c",
+      "original_bytes": 2720,
+      "converted_sha256": "350d602c9bee55711d8176ffb0643a87c841c98ce3bf6f2a1e1e938b3cbbaac2"
+    },
+    {
+      "original": "docs/contracts/006-rtl-runtime-v1.md",
+      "current": "docs/contracts/006-rtl-runtime-v1.html",
+      "original_sha256": "d2bb2cc103dfde66025cac1c7ff1b3a3628b0aa60c4945e68ec82306b06d4439",
+      "original_bytes": 10334,
+      "converted_sha256": "64d1abe463a86e3798e95e35179b0eab01d6adb6b51bddf3b6b792c8314c11de"
+    },
+    {
+      "original": "docs/contracts/006-rtl-source-archive-v1.md",
+      "current": "docs/contracts/006-rtl-source-archive-v1.html",
+      "original_sha256": "956c6735ba1329638d6a08b0232c387ccfeec9dc9dcb8e1b0381287f77083cac",
+      "original_bytes": 4947,
+      "converted_sha256": "b4bca49af465cba30d4738391fa0cb71aeb2e4f57eb66876ac933cdc7272dada"
+    },
+    {
+      "original": "docs/contracts/006-sg13g2-enclosure-preflight-v1.md",
+      "current": "docs/contracts/006-sg13g2-enclosure-preflight-v1.html",
+      "original_sha256": "90a35bb6abdf7ca828015b9fa829981685133c7f2a4a1bc85e9fc97143bdf430",
+      "original_bytes": 2840,
+      "converted_sha256": "3886309f39ea406b21f94be683d1d7388fba6b67aa0eb015cf7713abe40615f7"
+    },
+    {
+      "original": "docs/contracts/006-sha256-hmac256-v1.md",
+      "current": "docs/contracts/006-sha256-hmac256-v1.html",
+      "original_sha256": "2d2d0591041df0a75f3cf9ec97287a4f46ce0a06cfd1a578bfc5da4cf4572ba3",
+      "original_bytes": 3620,
+      "converted_sha256": "bacae29fc5583e7594ca0e6de12674a536e656a58e6e1efc823228f6bac0d08e"
+    },
+    {
+      "original": "docs/contracts/006-surface-bulk-critical-borrow-v1.md",
+      "current": "docs/contracts/006-surface-bulk-critical-borrow-v1.html",
+      "original_sha256": "597693d6ca7337e25006eae44a8d5e5dc27e36680fa3e0ac285c31cde5cc0e89",
+      "original_bytes": 6979,
+      "converted_sha256": "1a23735e641d34aeeaa0a694d6b432e4df791a0892ec1f52b60c1d65c605ce95"
+    },
+    {
+      "original": "docs/contracts/006-surface-word-inline-v1.md",
+      "current": "docs/contracts/006-surface-word-inline-v1.html",
+      "original_sha256": "8956a5179d034c65447ed5681ee7ed07dea31d42090de3dee39b6d536a29f30f",
+      "original_bytes": 3820,
+      "converted_sha256": "c1e51fd0b00c0054d31cf582366c4f001aef30c4184c07f880b4fe6d640a97b8"
+    },
+    {
+      "original": "docs/contracts/006-synthetic-panel-v1.md",
+      "current": "docs/contracts/006-synthetic-panel-v1.html",
+      "original_sha256": "010b4da5c43ace90509cc529bc9e0376d939eeb402bc1aae9c0edfe61cd98964",
+      "original_bytes": 4729,
+      "converted_sha256": "b634f25d54992365720d2d8590d5b7492d254a45b916270ec80ab6e5c15913b3"
+    },
+    {
+      "original": "docs/contracts/006-task-entry-borrow-v2.md",
+      "current": "docs/contracts/006-task-entry-borrow-v2.html",
+      "original_sha256": "122fa93abb052801fa2e4aff1caa29e20d7b41762528e9c02fdce6680cee2b94",
+      "original_bytes": 8142,
+      "converted_sha256": "5cdfda0af08fc2090d29aef6188db3931bc119874c5f131229930d6695d5c4aa"
+    },
+    {
+      "original": "docs/contracts/006-trial-boot-watchdog-v1.md",
+      "current": "docs/contracts/006-trial-boot-watchdog-v1.html",
+      "original_sha256": "72164539017d697dbbc65e6a7391135e94c99fd903113238e9f4ff6b19d694b5",
+      "original_bytes": 3796,
+      "converted_sha256": "46f8130e4abee1baa5e7f40e31f625f8a4a6d7b71ef5b286e84837892369cf8f"
+    },
+    {
+      "original": "docs/contracts/006-usb-backing-policy3.md",
+      "current": "docs/contracts/006-usb-backing-policy3.html",
+      "original_sha256": "cb08eacd89cf6011903d03b8d250a59fa8d85c02864df71047a87ab80734ae9b",
+      "original_bytes": 5969,
+      "converted_sha256": "6b798781d0a098f77ce41b5426816f3c347fdba7cdde8288dcefd509eb299687"
+    },
+    {
+      "original": "docs/contracts/006-usb-bulk-notebook-v1.md",
+      "current": "docs/contracts/006-usb-bulk-notebook-v1.html",
+      "original_sha256": "5e63f35bac70409f36b5d00567b051e50cb41ed1417a3880db2474cf2ec4ad56",
+      "original_bytes": 6607,
+      "converted_sha256": "a42c9478097ff9077f4565cd553ca800935c4c53271d898ed3e8b98d6a66300b"
+    },
+    {
+      "original": "docs/contracts/006-usb-client-peer-restart.md",
+      "current": "docs/contracts/006-usb-client-peer-restart.html",
+      "original_sha256": "2515bcdc45f8b324079199510286687f543fa58e78c9c039f322c9bbfa676f3e",
+      "original_bytes": 1569,
+      "converted_sha256": "c4ab712353b11886326f94b2b84f908634a8b5d701d756c007b148e3c334b3f7"
+    },
+    {
+      "original": "docs/contracts/006-usb-clocked13.md",
+      "current": "docs/contracts/006-usb-clocked13.html",
+      "original_sha256": "7b1cc6b18866a0dabfee8850bf991e1c10d048561a7f590490945f66e8a7d084",
+      "original_bytes": 18709,
+      "converted_sha256": "68e1c146d8573ec0145162cd2572051c183cd848b00cbefdad14afebf4404c98"
+    },
+    {
+      "original": "docs/contracts/006-usb-device-v1.md",
+      "current": "docs/contracts/006-usb-device-v1.html",
+      "original_sha256": "791a6836165f1b455c3a0d62f9be96f67d0e548f8fbea5f05ab5990e24ce52c8",
+      "original_bytes": 3719,
+      "converted_sha256": "355c0e65908ccf33c1b8b7c35aa36f6b4a6d70576da51bbff60bf20263731c18"
+    },
+    {
+      "original": "docs/contracts/006-usb-fork-disconnect-v1.md",
+      "current": "docs/contracts/006-usb-fork-disconnect-v1.html",
+      "original_sha256": "2060782b7de97df2f15738e1cd544dd41218015f8774e368e1d69b6ac6614bbf",
+      "original_bytes": 5143,
+      "converted_sha256": "16f6655bb8899cb49e62ae2c517bd87dac660adec0d2ea7135a5b040d8cd9858"
+    },
+    {
+      "original": "docs/contracts/006-usb-fullspeed-digital-v1.md",
+      "current": "docs/contracts/006-usb-fullspeed-digital-v1.html",
+      "original_sha256": "885caefc5a60c048423287fca324505296da29e5f44c4217c332be9c71f8d002",
+      "original_bytes": 14023,
+      "converted_sha256": "83a2f8113f5d238ef7bac2709637522138151177dc5b9695cf1971574b2f3535"
+    },
+    {
+      "original": "docs/contracts/006-usb-host-pending-policy-v4.md",
+      "current": "docs/contracts/006-usb-host-pending-policy-v4.html",
+      "original_sha256": "5bc73cc949f6dd128a22ff681e0b726a739a641412236b0ad5187de41ecf6480",
+      "original_bytes": 3243,
+      "converted_sha256": "b3e05984d0a98793ab103fa8789af30be2946c7e277d1caba97e80bacecd8ecb"
+    },
+    {
+      "original": "docs/contracts/006-usb-host-v2.md",
+      "current": "docs/contracts/006-usb-host-v2.html",
+      "original_sha256": "4624377585b02773fbef2e198b01f0c893f74aa4666a483eb9550d1254c8c98f",
+      "original_bytes": 4409,
+      "converted_sha256": "7f0a13b4d24de8857b6cefcd81cf8b7b271721f83405eb80dd3249a0009b457c"
+    },
+    {
+      "original": "docs/contracts/006-usb-live-recovery-v1.md",
+      "current": "docs/contracts/006-usb-live-recovery-v1.html",
+      "original_sha256": "762e95f05884b046011554448e3c0a152056a64c0da36bbd9a117e8634e8f1d3",
+      "original_bytes": 5662,
+      "converted_sha256": "d4cc638f23aeb10d4d3a205c592db6136af82b8f4c5a095c37de6af31cdd1eb5"
+    },
+    {
+      "original": "docs/contracts/006-usb-raw-continuation-v1.md",
+      "current": "docs/contracts/006-usb-raw-continuation-v1.html",
+      "original_sha256": "b955e82e1d5916f7c842ff2fd20a35f06a9f0c2130b0f69ce5967e1aeb595bcf",
+      "original_bytes": 6383,
+      "converted_sha256": "5ca9f337e0b174bc0556fc2f11ad86cd995b5449a7e78a1fe844152700e0c86d"
+    },
+    {
+      "original": "docs/contracts/006-usb6-rv64-opaque-peer.md",
+      "current": "docs/contracts/006-usb6-rv64-opaque-peer.html",
+      "original_sha256": "cd67be00d8d308cdaa7f68a4ed7eb77a9c040b85f5ad6f3d6b7ef32848d5d2bf",
+      "original_bytes": 4290,
+      "converted_sha256": "57d6fd0ce039ac11d23575f99655b67f0947a6123b94bd28537b78e249cc2182"
+    },
+    {
+      "original": "docs/contracts/006-usb8-recorded-suffix.md",
+      "current": "docs/contracts/006-usb8-recorded-suffix.html",
+      "original_sha256": "54446dbc7dfc93081cbfb605972a48b0d779c652e534916727807acffdc0dae4",
+      "original_bytes": 4538,
+      "converted_sha256": "55a9ee1d9e3081cc4a7fd5d1e76bd7e4698e402bb6faffba0f2b7ccf35d7a35a"
+    },
+    {
+      "original": "docs/contracts/006-user-copy-page-words-v1.md",
+      "current": "docs/contracts/006-user-copy-page-words-v1.html",
+      "original_sha256": "f2b77bb0e81004d8c7661d1a3c637af14ac8eb39e0bbc947c65cd8ce333662dd",
+      "original_bytes": 4493,
+      "converted_sha256": "503b7431912969f79b81c88dc07fc53a2d542f1d5570d16ed3896ad06bc0aa96"
+    },
+    {
+      "original": "docs/contracts/006-wfi-timer-execution-v1.md",
+      "current": "docs/contracts/006-wfi-timer-execution-v1.html",
+      "original_sha256": "d0d96340717340d34f8115cae868b0dc2211b3139c4aae6b904b8e75d00f3413",
+      "original_bytes": 3371,
+      "converted_sha256": "06a9690072f43eab9dcbf68f9b0fc86b998681a4b4732ed3f9144c82880dbd18"
+    },
+    {
+      "original": "docs/contracts/006-wifi-common-ofdm-data-v1.md",
+      "current": "docs/contracts/006-wifi-common-ofdm-data-v1.html",
+      "original_sha256": "cf1b6e4a84fcf99fbced60b83d0a20988e4ad22c62ade6995ebcd4934d5884dc",
+      "original_bytes": 8568,
+      "converted_sha256": "e46283c6989c8946484da897fa0821408cd8ad2c554c5cdeebb70ae3c5eb6883"
+    },
+    {
+      "original": "docs/contracts/006-wifi-owned-read.md",
+      "current": "docs/contracts/006-wifi-owned-read.html",
+      "original_sha256": "47134523829a6fc736180268593bb090e9a168bb2830718f9f9243aee46f9e1c",
+      "original_bytes": 6832,
+      "converted_sha256": "0918c980fb3d8b31cb504fe21296545abcd7344e56b192dfa6f170b53392f527"
+    },
+    {
+      "original": "docs/contracts/006-wifi-same-machine-v1.md",
+      "current": "docs/contracts/006-wifi-same-machine-v1.html",
+      "original_sha256": "60aec000ce2ff9b49cd491eb5f1b7cec68768ba0d6ec5194529954ccb40b6260",
+      "original_bytes": 5613,
+      "converted_sha256": "c7337e60870e93ce1c1c944b1a1a683e76cc1d42d3f2db7a5393ab9f329bf866"
+    },
+    {
+      "original": "docs/contracts/CORE0.md",
+      "current": "docs/contracts/CORE0.html",
+      "original_sha256": "31931053bbae6c7226e192e223c8568b3e5dfd47e25cf7a4f3ca7f21ff3c0df9",
+      "original_bytes": 18677,
+      "converted_sha256": "656e2eb9c8560c7e55eb48b3ca16a1523e19d71145c619e51f881980c97dba10"
+    },
+    {
+      "original": "docs/contracts/KERNEL_V1.md",
+      "current": "docs/contracts/KERNEL_V1.html",
+      "original_sha256": "49c498c6849f3fed7825f7c068f839a6746b0aa9b942093c0be93baeb694bb05",
+      "original_bytes": 15150,
+      "converted_sha256": "c05435cd4806d2d2eb17894a4f1b404b57323275f2ce9a47f0e31833df256823"
+    },
+    {
+      "original": "docs/contracts/LEMMA_SILICON_v0.1.0.md",
+      "current": "docs/contracts/LEMMA_SILICON_v0.1.0.html",
+      "original_sha256": "693354a64535c36006f6e9c15197faac89f6641beacbad4e6c3897127512ea9b",
+      "original_bytes": 14519,
+      "converted_sha256": "83ba4c870d8fc6c78cb935731c6b82f94ac9d4848f471c94d29c9003bcc44560"
+    },
+    {
+      "original": "docs/contracts/LEMMA_VM.md",
+      "current": "docs/contracts/LEMMA_VM.html",
+      "original_sha256": "bbbaad660ccc14f805f7fe1932b4724063991efbbee4e840afc37aa80708d8c8",
+      "original_bytes": 8353,
+      "converted_sha256": "195c80026e20c807ea8280abb51c9f1723a12ccfebf7ee6a874f97cab2975c78"
+    },
+    {
+      "original": "docs/contracts/MANAGED_ARRAY_V1.md",
+      "current": "docs/contracts/MANAGED_ARRAY_V1.html",
+      "original_sha256": "e80ad51ff2a85defecd108031cc1011af82b49df23a843a679092fde0615cd5b",
+      "original_bytes": 7907,
+      "converted_sha256": "53fcb32cf68119e9a5ec9d13f776977087b8ea0109549ba44f9cc9d8afc64451"
+    },
+    {
+      "original": "docs/contracts/MANAGED_BYTES_V1.md",
+      "current": "docs/contracts/MANAGED_BYTES_V1.html",
+      "original_sha256": "f38d74a8648fca28c5fe3d6c5288866708fca22dfef8988111de0b3098f77028",
+      "original_bytes": 3653,
+      "converted_sha256": "cbc3554bcc9771aba90cec5e9ffc12a729f56ea74098c1d79d6ed3d9d3cbd314"
+    },
+    {
+      "original": "docs/contracts/MANAGED_CLOSURE_V1.md",
+      "current": "docs/contracts/MANAGED_CLOSURE_V1.html",
+      "original_sha256": "b069a5b5a69c1804d61293149e1cbebcf249ddd3a35d5054fbfbc1b884017b42",
+      "original_bytes": 8339,
+      "converted_sha256": "76dcc0d5ece1edf66437bbdbb41746369abc793b31014fe3147ff2917d46970b"
+    },
+    {
+      "original": "docs/contracts/MANAGED_STRING_V1.md",
+      "current": "docs/contracts/MANAGED_STRING_V1.html",
+      "original_sha256": "3f98f803ccffbb8900c5d808ab6b56341c505b8501510ad4d44c5dd0fff78781",
+      "original_bytes": 6341,
+      "converted_sha256": "9905bd71050e092bad757a327cb28806dc4e525df2700835dd4e9e5320e32bf5"
+    },
+    {
+      "original": "docs/contracts/TARGET_ABI.md",
+      "current": "docs/contracts/TARGET_ABI.html",
+      "original_sha256": "4593714d105f37d1acc9ed32d5b06c36439e1bfacaa8b3b5cfcfc4833f925fb9",
+      "original_bytes": 7365,
+      "converted_sha256": "6c391794be4036507280ede9cd6b02ab051cd4320b390441b2e58d806feeb270"
+    },
+    {
+      "original": "docs/contracts/TRUST_MANIFEST.md",
+      "current": "docs/contracts/TRUST_MANIFEST.html",
+      "original_sha256": "008bd416f669675d3351e577d94e3cb4eeb3e024d06baee2d9a764fade5dfec9",
+      "original_bytes": 7427,
+      "converted_sha256": "233e1515f26fe844fda73de190cba34c0d0225f1f3d2380c90df20dce3294f31"
+    },
+    {
+      "original": "docs/decisions/0001-bootstrap-boundaries.md",
+      "current": "docs/decisions/0001-bootstrap-boundaries.html",
+      "original_sha256": "e1e1a26c925d2933e4a845f188154ff1f9ddff2f3e8578e523667cb1ff072f62",
+      "original_bytes": 1161,
+      "converted_sha256": "014bcf224d3a4e47b7bc17afa1604eb941c681c34a730b79959f3a63aabbbf95"
+    },
+    {
+      "original": "docs/evidence/000-scaffold.md",
+      "current": "docs/evidence/000-scaffold.html",
+      "original_sha256": "e1b6192d4abb25c4bcdb6efe1f274f6df20272407ac276a2d00a30fb1b481be5",
+      "original_bytes": 2655,
+      "converted_sha256": "7c71a4a51931a96ac4ef6f3e015667b60c77b734440d403b88b523ed80a3dd7a"
+    },
+    {
+      "original": "docs/evidence/001-core0.md",
+      "current": "docs/evidence/001-core0.html",
+      "original_sha256": "53eeecbf7eff66a0c1b72d576347c3e408c643d6eb3bf88c537187560aac94ba",
+      "original_bytes": 27857,
+      "converted_sha256": "e9e347b8e65dbdee49b08a7f4ab0dbc42b4007caa331b97d94321abcf64a3dc6"
+    },
+    {
+      "original": "docs/evidence/002-machine-foundation.md",
+      "current": "docs/evidence/002-machine-foundation.html",
+      "original_sha256": "b7690eb10a9adc296b74104c114dc630727de928f1093a68c234b278d23b6df1",
+      "original_bytes": 120903,
+      "converted_sha256": "a8b7e5e117a0f897120d081321954cddb5a085405c11979ec9c5b2aaed38725e"
+    },
+    {
+      "original": "docs/evidence/003-kernel-isolated-services.md",
+      "current": "docs/evidence/003-kernel-isolated-services.html",
+      "original_sha256": "2d1e5cfec99f383093069c21938846dc503c65d7c975492c54945c7c8f4ac67f",
+      "original_bytes": 14898,
+      "converted_sha256": "ab7f829735d52e7478363f489293d839280111755ba2353fb6dd6826f1b3a9e0"
+    },
+    {
+      "original": "docs/evidence/004-lemmasim-durable-ink.md",
+      "current": "docs/evidence/004-lemmasim-durable-ink.html",
+      "original_sha256": "afd431dc63c98e777370c40e3c2e63ea8c6a381f30d74247a470c6816271c4e8",
+      "original_bytes": 7586,
+      "converted_sha256": "7127c26653b6a117e0505593274b5ed8783a7c5fda41d72cb8e39a929edaf153"
+    },
+    {
+      "original": "docs/evidence/006-companion-backing.md",
+      "current": "docs/evidence/006-companion-backing.html",
+      "original_sha256": "3647b20012d25ea154726a6fc61a2598b12a65dd94f6a63d12658500e24282e5",
+      "original_bytes": 15787,
+      "converted_sha256": "4cf5dbc4b3e93de85d6e9ac4aaad75fa7b98a0962587dbfb0137e0e235c1996c"
+    },
+    {
+      "original": "docs/evidence/006-controller-physical.md",
+      "current": "docs/evidence/006-controller-physical.html",
+      "original_sha256": "99663ab24b59e85506b41ac4bbc0507e51f7ebb15a3de9acf6fcab7cc52a722c",
+      "original_bytes": 33370,
+      "converted_sha256": "e703e94854ac814dc339467da4db415ccf549663b5a6a9e6147819e491d0013f"
+    },
+    {
+      "original": "docs/evidence/006-frame-index.md",
+      "current": "docs/evidence/006-frame-index.html",
+      "original_sha256": "a6e26aa37151ea30dfd93bcffe6835a7935f75b7abcc3d8d2dfb9ad073d72bdf",
+      "original_bytes": 21176,
+      "converted_sha256": "bc501a55377cfc1743612eddeb94415efedfce7b392ef793cb0a0ce77f63766c"
+    },
+    {
+      "original": "docs/evidence/006-indexed-panel.md",
+      "current": "docs/evidence/006-indexed-panel.html",
+      "original_sha256": "c5f6dc7e9233ca485c960175b5c436e644874a39facc88bc36f8ee00bb94fafc",
+      "original_bytes": 1686,
+      "converted_sha256": "c1f7e11dbdfe871eed583f872cf8451ef8b17122ed63b8406c05ebef652a4595"
+    },
+    {
+      "original": "docs/evidence/006-native-bundle.md",
+      "current": "docs/evidence/006-native-bundle.html",
+      "original_sha256": "55dd5c715f576dabfae9dbcfc7375e8c0450640cf6846a268cfe50ad38083cd0",
+      "original_bytes": 2408,
+      "converted_sha256": "15122e30e1333c7b6506e7a67e4739a9a6fa36fa8bbc64f640f53f08e1c31ba8"
+    },
+    {
+      "original": "docs/evidence/006-power-fast.md",
+      "current": "docs/evidence/006-power-fast.html",
+      "original_sha256": "9f63c13fcd0a1d1ce7c5003ba0f53035db4d545f01ec4a5ea8441c2efb856f7c",
+      "original_bytes": 4781,
+      "converted_sha256": "9d1fe134b97eaab78aa1f9d6a0457a0a59365971fef60e6fe6ef04de858b41a8"
+    },
+    {
+      "original": "docs/evidence/006-power-safety.md",
+      "current": "docs/evidence/006-power-safety.html",
+      "original_sha256": "3c397eb50e1390e60b2cdb71e6efd01f8d3d52582c5c792758c70813f34abaf7",
+      "original_bytes": 4576,
+      "converted_sha256": "11e0f87d60501f7b5f3a8372a8651741e568340a06428cc549e6436f530b4c46"
+    },
+    {
+      "original": "docs/evidence/006-whole-machine-lemmasim.md",
+      "current": "docs/evidence/006-whole-machine-lemmasim.html",
+      "original_sha256": "d2db53da1b3d928242fc257a633fc80d31eb5d368bb91b8f62038dd3d28f23fa",
+      "original_bytes": 21021,
+      "converted_sha256": "1d460ce514f186d0f6e38c37bf6a4de2ec9b0e26e905d976117aae8c02628f3e"
+    },
+    {
+      "original": "docs/evidence/README.md",
+      "current": "docs/evidence/evidence-overview.html",
+      "original_sha256": "e91c0cc6a7e856c5f622918d1dfbc7d9edccb0dc65e09a034421f8eb68448d3d",
+      "original_bytes": 1940,
+      "converted_sha256": "552bb93b380498b185e3a2d0e199db3fc59bf339a2038ebaa97299e87fc4c251"
+    },
+    {
+      "original": "docs/evidence/history/003-kernel-isolated-services-pre-final.md",
+      "original_sha256": "b6519730571b30de1a86e6cbbc5059508ed734a5fb30f61afe1dc61b09724857",
+      "bytes": 7817,
+      "exception": "Immutable historical evidence: retain exact original bytes and path."
+    },
+    {
+      "original": "docs/plan/002-session-state.md",
+      "current": "docs/plan/002-session-state.html",
+      "original_sha256": "231c8e6e11504b8e8d71372e8b0d5514cd1756aaf2faf341472b7ec4ffd17c21",
+      "original_bytes": 6862,
+      "converted_sha256": "98727f64abacc7e65ed38385d9c056f673c9b9e35f864fbaddd5f1f2c005d6ed"
+    },
+    {
+      "original": "docs/plan/003-session-state.md",
+      "current": "docs/plan/003-session-state.html",
+      "original_sha256": "ecb1c9b0a6cc8fae11453676d093f2847c7999c8301908703abf4a951ba2e216",
+      "original_bytes": 96702,
+      "converted_sha256": "e5ac06ce6f78262cae766cc14a4b34717619e2dfa0fe547693c114ece55d9279"
+    },
+    {
+      "original": "docs/plan/004-dependencies.md",
+      "current": "docs/plan/004-dependencies.html",
+      "original_sha256": "fd2fadeb43a6efc90b54c5baa5f834c294b3897779ffe39af6612f304cb3fd86",
+      "original_bytes": 3504,
+      "converted_sha256": "b0ae2c48badc9bc7935825448ac2bf23a4d84ed5c41065b8ca5865bb155b127d"
+    },
+    {
+      "original": "docs/plan/004-session-state.md",
+      "current": "docs/plan/004-session-state.html",
+      "original_sha256": "5be5c6630705e6e208f227301a57aee320ed3ee0ba5aa5f394aa35fab9143b83",
+      "original_bytes": 2402,
+      "converted_sha256": "cd347ac0abffdb172adbdfff7403912ae05a09dc0f2940a12324acaa647a64e0"
+    },
+    {
+      "original": "docs/plan/005-session-state.md",
+      "current": "docs/plan/005-session-state.html",
+      "original_sha256": "3ca0b36b3a378c382be0858ec7a36c5b189985cfd2eb6b2b742f9a4591d15ced",
+      "original_bytes": 49914,
+      "converted_sha256": "6fc51a2ee75e771b882f8b8f1af763d136da6c570d42eb21bbbd5310a7d7dacc"
+    },
+    {
+      "original": "docs/plan/006-session-state.md",
+      "current": "docs/plan/006-session-state.html",
+      "original_sha256": "7db9ff0268f1b452bb56d0e23c561e0fd381b5004f502b6ebf54eb93d013556d",
+      "original_bytes": 447849,
+      "converted_sha256": "a02618288b3ccb4b4d865d29d5235f5cc2fa9a638459f82f705243677e7d4f0b"
+    },
+    {
+      "original": "docs/plan/BUILD_ORDER.md",
+      "current": "docs/plan/BUILD_ORDER.html",
+      "original_sha256": "0d45ef67e2da84690150cdc01c82ebce929fa1633a1d2522b80c9fb0efe64e67",
+      "original_bytes": 17237,
+      "converted_sha256": "b77c6624dcd41dcaf353815bf50617193c98b547e1a1301370bd0ce2817c6ef3"
+    },
+    {
+      "original": "docs/plan/CURRENT.md",
+      "current": "docs/plan/CURRENT.html",
+      "original_sha256": "6f49b3642a63c962b2908660a0146e838505eec40aeac6478903961752f2f387",
+      "original_bytes": 9004,
+      "converted_sha256": "31e0fa4487bf850a09713696828deab9bf84d86a63747c00eb91eba2426d2aa1"
+    },
+    {
+      "original": "docs/plan/LEMMASIM.md",
+      "current": "docs/plan/LEMMASIM.html",
+      "original_sha256": "564f37e56085ee1e5acc7583e0cb9accbd547176cf1635469c5f986b270f07d9",
+      "original_bytes": 33550,
+      "converted_sha256": "c7e9b11375d16953a61ba1a30b666c5bd14c5541d71b0205ff2f85c6bb9dd8d4"
+    },
+    {
+      "original": "sim/README.md",
+      "current": "sim/simulator-overview.html",
+      "original_sha256": "14b25542262474712ec4edd40d880f723c898477d35e19e019d37aec9c8f6ac8",
+      "original_bytes": 6226,
+      "converted_sha256": "00606d50fdc92998b3cdaa589fea6938b5b2877052459967cf330e6603654c6e"
+    },
+    {
+      "original": "sim/host/README.md",
+      "current": "sim/host/host-model-overview.html",
+      "original_sha256": "3c1185648627023383a677fbd716866c2b13ec81ca603580c72c7ba6180c4b0a",
+      "original_bytes": 11284,
+      "converted_sha256": "d1a10b488d705dd4a0e94d781432bdb9b9a31792b1bc14ce6a457e42395d8661"
+    },
+    {
+      "original": "sim/rtl/NOTICE.md",
+      "current": "sim/rtl/NOTICE.html",
+      "original_sha256": "dd234b9af54614b789f8e5f06b70ced6a3b0d6d1e379388756b24c97d53788ff",
+      "original_bytes": 795,
+      "converted_sha256": "8fd94fa2e4fae072d8412bb4256adba9f478a42ec8f969b166697e26c077dbb1"
+    },
+    {
+      "original": "templates/EVIDENCE_REPORT.md",
+      "current": "templates/EVIDENCE_REPORT.html",
+      "original_sha256": "b5236137ff77bc37ad3e3775e175fb1fd6541926dc3d17802e515c732ce7d3a4",
+      "original_bytes": 956,
+      "converted_sha256": "6a8daa8681f321f00bdfc74c5e785e546b3bcd14d93e0b8d57b80df6d8a1ae0c"
+    },
+    {
+      "original": "tooling/silicon/README.md",
+      "current": "tooling/silicon/silicon-tooling-overview.html",
+      "original_sha256": "8c41a45a2d736962d254cd94f2c34d505ce69b901c8f148bfe1c751d61c6bbe1",
+      "original_bytes": 6175,
+      "converted_sha256": "fdcf96428fadc9c987058af8bdd8110dc3060537d4265af4b9ae03be0554e6d9"
+    }
+  ],
+  "converted_sha256_scope": "Initial mechanical renderer output before subsequent maintained edits; current files use their actual Git/consumed-input identities. This field is not a current-file validation receipt."
+}

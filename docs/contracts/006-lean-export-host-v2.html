@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lean export host resources, version 2</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lean-export-host-resources-version-2">Lean export host resources, version 2</h1>
+<p><code>lemma-lean-export-host/2</code> retains the literal <code>-j2</code> argument for direct
+kernel/user exports and adds an explicit environment for every Lake build and
+export: <code>LEAN_NUM_THREADS=2</code>, <code>LEAN_STACK_SIZE_KB=65536</code>. These select the pinned
+host runtime&#39;s documented worker pool and 64 MiB thread-stack reservation.
+They do not change target stacks, Lean source semantics, checked lowering,
+LLVM arguments, device timing or the maintained RV64 runtime.</p>
+<p>The command invoker applies these exact two values after combining the caller&#39;s
+environment and records only these nonsecret values as <code>host_environment</code> on
+each actual Lake command. Successful and unsuccessful commands retain that
+record. Audit rejects a missing or changed value, including on a dependency
+build preceding the exports. Address-space, aggregate RSS, command deadlines
+and owned-process cleanup remain independent limits.</p>
+<p>The consumed helper hash selects the policy. The exact version-1 helper
+<code>52e96d6d3ec2139dd6c5a12fbc824d65b121af52a81642fa2cb966757a6433fa</code>
+retains version 1, its original arguments and absence of environment evidence.
+Pre-helper archives retain their original no-flag commands. Unknown helper
+sources, a missing current helper, or a policy inconsistent with the complete
+consumed-source inventory reject. Historical artifacts are never rewritten.</p>
+<p>The retained recovery16 component first failed during dependency compilation,
+before export, with thread creation failure under 8 GiB address space. An
+owned-process diagnostic observed the same failure with the worker variable
+present and literal child <code>-j2</code>; Lake and its child approached the address cap.
+The immutable Lean runtime reserves 1 GiB per thread by default. A second
+bounded diagnostic changed only the documented stack environment, completed the
+same dependency build, and reduced Lake&#39;s peak virtual size from 8,142,852,096
+to 3,244,695,552 bytes. The original failure remains a failure. This observation
+concerns host virtual reservations, not a claim that all 64 MiB of stack is
+required or that a worker count bounds the total OS thread count.</p>
+<p>A genuine normal/initializer recovery16 component subsequently completed under
+the same 8 GiB address and 4 GiB owned-RSS caps. Full linked-image qualification
+and connected guest/device execution have separate receipts. Version 1&#39;s
+previous complete matched15 qualification remains bound to its original source.</p>
+</main>
+</body>
+</html>

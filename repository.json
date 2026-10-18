@@ -8,7 +8,7 @@
   "license": null,
   "description": "A freestanding Lean 4 mathematics computer on RISC-V: LemmaVM, LemmaOS, ink, exact checking and permissioned learning.",
   "scaffold_date": "2026-10-07",
-  "first_task": "codex/prompts/001-core0-freestanding-slice.md",
+  "first_task": "codex/prompts/001-core0-freestanding-slice.html",
   "repository_url": "https://github.com/srkftw/lemma",
   "publication_method": "owner-created repository; connected GitHub file/tree/commit operations"
 }

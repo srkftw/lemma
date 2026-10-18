@@ -199,6 +199,6 @@
     "qemu_machine": "virt",
     "tool_support_verified": true,
     "execution_verified_here": true,
-    "execution_evidence": "docs/evidence/001-core0.md"
+    "execution_evidence": "docs/evidence/001-core0.html"
   }
 }

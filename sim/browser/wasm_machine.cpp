@@ -5,6 +5,9 @@
 #include "lemma_silicon_binding.h"
 #include "Vlemma_soc___024root.h"
 #include <emscripten.h>
+#ifndef LEMMA_MULTIMODAL_ENABLED
+#define LEMMA_MULTIMODAL_ENABLED 0
+#endif
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
@@ -139,6 +142,13 @@ EMSCRIPTEN_KEEPALIVE int lemma_usb_outcomes(const char*path){return checked([=]{
  machine->bind_usb_replay(path);
  });}
 EMSCRIPTEN_KEEPALIVE int lemma_run(unsigned cycles){return checked([=]{if(!machine||cycles>1000000)throw std::runtime_error("invalid bounded browser run");machine->run(cycles);});}
+EMSCRIPTEN_KEEPALIVE const char* lemma_pcm(){
+#if LEMMA_MULTIMODAL_ENABLED
+ if(!machine)return "{}";result=machine->take_multimodal_pcm();return result.c_str();
+#else
+ return "{}";
+#endif
+}
 EMSCRIPTEN_KEEPALIVE const char* lemma_inspect(){if(!machine)return "{}";result=machine->inspect();return result.c_str();}
 // Presentation reads the actual controller's completed sequence. An accepted
 // refresh or a boot UART prefix does not establish displayed-page readiness.
@@ -148,6 +158,13 @@ EMSCRIPTEN_KEEPALIVE const char* lemma_paper_inspect(){if(!machine)return "{}";
    "\",\"accepted\":\""+std::to_string(machine->soc().panel_sequence)+
    "\",\"busy\":"+std::to_string(r->lemma_soc__DOT__paper__DOT__busy)+"}";
  return result.c_str();}
+EMSCRIPTEN_KEEPALIVE int lemma_multimodal_diagnostic_records(){return checked([]{
+#if LEMMA_MULTIMODAL_ENABLED
+ if(!machine)throw std::runtime_error("no machine");machine->ram_dump(0x80410000,640,"/multimodal-probe.bin");
+#else
+ throw std::runtime_error("multimodal diagnostic absent");
+#endif
+});}
 EMSCRIPTEN_KEEPALIVE int lemma_event(const char*event){return checked([=]{if(!machine)throw std::runtime_error("no machine");machine->schedule(lemma::parse_event(event));});}
 EMSCRIPTEN_KEEPALIVE const uint8_t* lemma_pixels(){return machine?machine->state().visible.data():nullptr;}
 EMSCRIPTEN_KEEPALIVE unsigned lemma_pixel_count(){return machine?machine->state().visible.size():0;}

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Owned object arena v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="owned-object-arena-v1">Owned object arena v1</h1>
+<p><code>Lemma.User.Runtime.Arena</code> is a bounded runtime foundation executed by ordinary
+elaborated Lean through the existing checked <code>user-v0.1</code> scalar Action lowering.
+It allocates an actual owned User page through syscall7 and releases it through
+syscall8. It is not ordinary managed-Lean language support: the frontend still
+rejects general inductive constructors, Lean arrays/strings, closures and
+recursive managed programs. This contract does not close G2 or the proof kernel.</p>
+<p>The Loader-owned User data page reserves <code>0x20e00..0x20e17</code> for phase, cancellation
+and live-object count. This lies beyond the notebook&#39;s state and bounded IPC
+packets (<code>incoming=0x20c00</code>, maximum256 bytes). The owned heap page is <code>0x400000</code>,
+beyond the notebook&#39;s existing working pages ending at <code>0x32afff</code>. Another User
+task has a separate Sv39 mapping and no authority over this page. Handles are
+process-local values; they never enter a durable mathematical record or IPC
+authority grant. A restarted process may have new local handle values.</p>
+<p>The page&#39;s first128 bytes hold the arena identity <code>0x31414e4552414d4c</code>, version1
+and zero reserved bytes. Thirty-one128-byte slots fill the rest of the page:</p>
+<table>
+<thead>
+<tr>
+<th>Slot offset</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>free0, live1, retired2</td>
+</tr>
+<tr>
+<td>8</td>
+<td>generation1..<code>0x07ffffffffffffff</code></td>
+</tr>
+<tr>
+<td>16</td>
+<td>references1..65535 when live</td>
+</tr>
+<tr>
+<td>24</td>
+<td>boxed scalar1 or byte array2</td>
+</tr>
+<tr>
+<td>32</td>
+<td>box length8 or byte-array length0..64</td>
+</tr>
+<tr>
+<td>40..63</td>
+<td>zero reserved</td>
+</tr>
+<tr>
+<td>64..127</td>
+<td>payload</td>
+</tr>
+</tbody></table>
+<p>Handles are <code>generation &lt;&lt; 5 | slot</code>. Slot31, zero generation, stale generation,
+wrong tag, malformed length/reference count and nonlive slots reject before
+payload access. Allocation chooses the lowest free slot. The kernel zeroes a
+new owned page before mapping it; each object allocation independently zeros
+its complete64-byte payload before returning a handle. Byte and aligned-word
+access enforce the declared length without wrapping arithmetic. The object
+count counts live allocations, not references.</p>
+<p>Retain increments the real reference count. Release decrements it; final
+release clears payload and object metadata, advances the generation and makes
+the slot free. The last generation retires the slot permanently. No retain or
+release operation is a no-op. These scalar boxes contain no traced references;
+cycles and collection of object graphs are not admitted. The single-threaded
+process may be preempted, but this API supplies no simultaneous-thread atomicity.</p>
+<p>Cancellation blocks allocation and reads/writes. Release and destroy remain
+available for cleanup. Destroy requires zero live objects and releases the
+owned page. Its process control phase becomes terminal2: creating a fresh zeroed
+page cannot resurrect an old generation. Process death uses the kernel&#39;s existing
+owner cleanup. All runtime state resides in ordinary guest RAM; this does not
+establish an omitted-state-free QEMU checkpoint or cross-backend migration.</p>
+<p>Status236 rejects a handle/access shape;237 reports slot exhaustion;238 reports
+cancellation;239 reports malformed lifetime/header state or reference overflow.
+Actual allocation/quota/mapping syscall errors propagate unchanged. Entry shape checks explicitly present in the byte-array API (length, value or
+word alignment) run first. Other access checks validate live state/cancellation
+before handle/tag/generation; release omits the cancellation restriction.
+Allocation validates the live count before selecting a free slot. No successful handle exists until allocation and initialization
+have completed. Bounded folds inspect at most31 slots and clear at most14 words.
+The full target audit must independently validate the resulting stack and code.</p>
+<p><code>Lemma.Mathematics.OwnedSubmission.check</code> allocates a56-byte temporary object
+containing the original goal and six typed scalar inputs. The exact checker
+reads these actual object words and computes the same admitted rational/polynomial
+algorithm. The caller owns a real Box64 for the output; the worker retains a
+borrowed reference, writes the exact outcome, releases its reference and returns.
+The caller reads the completed box and releases both its own reference and the
+coefficient object. The borrowed reference cannot be a no-op. One owned page is
+reused; no result or coefficient object leaks after a check. The pure result
+selector remains available to cold record validation.</p>
+<p>A routine OOM/cancellation returns before the submission, immutable history or
+learner events are changed. The notebook&#39;s existing course admission error path
+reports the actual status, redraws raw ink and keeps the store and writing alive.
+It does not fabricate an unexplained Indeterminate result under a sufficient
+recorded work budget. The v2 record and journal formats remain unchanged. This
+checker still runs inside the isolated notebook process; a separately linked
+verifier and verifier-death containment remain unfinished.</p>
+<p>Focused semantic and genuine-lowering checks are:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command lake build Lemma.Applications.Notebook
+nix develop --no-write-lock-file --command lake env lean tests/runtime/OwnedArena.lean
+nix develop --no-write-lock-file --command lake env lean tests/mathematics/ExactMath.lean
+</code></pre>
+<p>The fixture&#39;s OS model is test evidence, not target execution. A strict audited
+RV64 build and actual guest course workflow require their own observed results.</p>
+</main>
+</body>
+</html>

@@ -102,8 +102,10 @@ def catalog(unit):
   require(isinstance(r,dict) and set(r)=={'source','symbol','operation'},'wrapper catalog row keys differ')
   f=by.get(r.get('symbol'));op=PHYSICAL.get(r.get('operation'))
   from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS, software_deployment_for as product_reader_software
+  from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as MULTIMODAL_SOFTWARE
+  multimodal=(unit.get('configuration') in MULTIMODAL_CONFIGURATIONS and unit.get('software_deployment')==MULTIMODAL_SOFTWARE)
   product_reader=(unit.get('configuration') in PRODUCT_READER_CONFIGURATIONS and unit.get('software_deployment')==product_reader_software(unit['configuration']))
-  require(unit['role']=='kernel' and (unit['contract_version'] in {'core0-kernel-v0.4','core0-kernel-v0.6'} or unit['contract_version']=='core0-kernel-v0.7' and product_reader) and
+  require(unit['role']=='kernel' and (unit['contract_version'] in {'core0-kernel-v0.4','core0-kernel-v0.6'} or unit['contract_version']=='core0-kernel-v0.7' and product_reader or unit['contract_version']=='core0-kernel-v0.9' and multimodal) and
    f is not None and op is not None and r['source']==f['source'] and (f['args'],f['effects'])==op[1:],
    'wrapper source/signature/effects/authority differs')
   require(any(o['stable_id']==r['operation'] and o['primitive_symbol'] is None and o['returnkind']=='word'

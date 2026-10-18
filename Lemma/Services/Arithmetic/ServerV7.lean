@@ -128,3 +128,11 @@ def main (mode : UInt64) : Action :=
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 end Lemma.Services.Arithmetic.ServerV7
+
+/-! New-deployment adapter only. The historical ServerV7 main/step bodies and
+all old configurations remain unchanged. ServerV8 may dispatch a copied160byte
+legacy request through the same checked implementation after kernel framing. -/
+namespace Lemma.Services.Arithmetic.ServerV7
+open Lemma.Core0.Memory
+def processCopied (authority request : UInt64) : Action := processV7 authority request
+end Lemma.Services.Arithmetic.ServerV7

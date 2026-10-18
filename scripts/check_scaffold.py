@@ -8,11 +8,11 @@ import sys
 
 STATUSES = {'planned', 'in_progress', 'partial', 'blocked', 'failed', 'passed'}
 REQUIRED = (
-    'README.md', 'AGENTS.md', 'docs/ARCHITECTURE.md', 'docs/SOURCES.md',
-    'docs/contracts/CORE0.md', 'docs/contracts/TARGET_ABI.md',
-    'docs/contracts/LEMMA_VM.md', 'docs/contracts/TRUST_MANIFEST.md',
-    'docs/plan/BUILD_ORDER.md', 'docs/plan/construction-units.json',
-    'codex/prompts/001-core0-freestanding-slice.md', 'tooling/toolchain-lock.json',
+    'docs/overview.html', 'docs/contributing.html', 'docs/ARCHITECTURE.html', 'docs/SOURCES.html',
+    'docs/contracts/CORE0.html', 'docs/contracts/TARGET_ABI.html',
+    'docs/contracts/LEMMA_VM.html', 'docs/contracts/TRUST_MANIFEST.html',
+    'docs/plan/BUILD_ORDER.html', 'docs/plan/construction-units.json',
+    'codex/prompts/001-core0-freestanding-slice.html', 'tooling/toolchain-lock.json',
     'repository.json', 'scripts/publish-github.sh',
 )
 
@@ -111,6 +111,8 @@ def validate(root: Path) -> list[str]:
         for p in target_root.rglob('*'):
             if p.is_file() and p.suffix in forbidden:
                 errors.append(f'Maintained non-Lean target source: {p.relative_to(root)}')
+    from check_documentation import validate as validate_documentation
+    errors.extend(validate_documentation(root))
     return errors
 
 def main() -> int:

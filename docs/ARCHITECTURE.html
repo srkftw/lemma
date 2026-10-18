@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture baseline</title>
+<link rel="stylesheet" href="documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="architecture-baseline">Architecture baseline</h1>
+<p>Status: architecture baseline; Task 001 implementation evidence is recorded separately.</p>
+<h2 id="layers">Layers</h2>
+<p><code>Lean source -&gt; checked Core0 -&gt; LLVM -&gt; RV64 ELF -&gt; LemmaVM</code> establishes the first
+execution path. A managed Lean runtime is constructed afterward. Above it sit the
+capability kernel, services, durable store, ink/document system, mathematical
+checkers, semantic textbooks, learner state and permissioned tutor.</p>
+<p><strong>Core0</strong> is an explicitly checked freestanding fragment, not all Lean programs.
+<strong>Managed Lean</strong> supplies allocation, object representations and library services
+only after those implementations exist on the device. Host Lean running the
+compiler is not the device runtime.</p>
+<p><strong>LemmaVM</strong> is a versioned machine contract, initially backed by a pinned QEMU RISC-V
+<code>virt</code> configuration. The final privilege design is M -&gt; S -&gt; U with Sv39. The first
+smoke image remains in machine mode. User isolation is a Stage II claim.</p>
+<p><strong>Lemma One</strong> targets a custom monolithic open RV64 mixed-signal SoC, with
+inspectable compute, memory, pen and paper-controller boundaries. Task005&#39;s
+<code>lemma-silicon-dev/0.1.0</code> is a digital development binding within permanent
+LemmaSim; external simulation memory, medium and panel models are explicit.
+The <a href="contracts/LEMMA_SILICON_v0.1.0.html">silicon specification</a> governs this
+direction. IHP SG13G2 is provisional. Historical board/cartridge and supplier
+discussions are history, not the active integration dependency. Physical
+memory, sensing, panel compatibility and whole-chip closure remain unverified.</p>
+<h2 id="target-language-boundary">Target-language boundary</h2>
+<p>Application, OS, runtime, project compiler and checker implementations are maintained
+in Lean. A small audited generator may emit machine primitives/startup/LLVM artifacts.
+Declarations must not merely wrap hand-authored programs in another language.
+Build tools are allowed to be implemented upstream in other languages on the host;
+all target inputs and generated code must have an explicit origin.</p>
+<h2 id="authority-and-evidence-boundaries">Authority and evidence boundaries</h2>
+<ul>
+<li>Kernel capabilities enforce access; typed handles alone are not authority.</li>
+<li>Raw ink, proposed interpretation, verification result and learner estimate are separate.</li>
+<li>The proof kernel is not the operating-system kernel.</li>
+<li>Tutor outputs and recognition results are untrusted proposals.</li>
+<li>Correctness evidence binds the exact goal, domain, assumptions, submission,
+environment, checker version and resource outcome.</li>
+<li>Storage commits have a specified failure model; saving to a software queue is not durability.</li>
+<li>Virtual display timing is a model. Pen-to-visible-ink latency needs physical measurement.</li>
+</ul>
+<h2 id="what-is-deliberately-not-frozen">What is deliberately not frozen</h2>
+<p>Task 001 freezes only the tested scalar profile and its Lean 4.34.1 / LLVM 20.1.8 /
+QEMU 11.1.1 toolchain.  A complete Core0 feature set, managed Lean ABI, physical board
+firmware closure, peripheral ISAs, screen connectors, waveforms, FPGA resources, and
+native network cryptography remain unfrozen.  See <code>docs/audits/core0-lowering.html</code> for
+the exact accepted semantics and <code>docs/audits/qemu-core0.html</code> for the machine handoff.</p>
+<h2 id="third-party-reference-points">Third-party reference points</h2>
+<p>Lean&#39;s runtime ABI and upstream LLVM emitter are inputs to the audit, not evidence
+of freestanding readiness. QEMU&#39;s firmware selection and RISC-V&#39;s psABI are inputs
+to the virtual platform contract. See <code>docs/SOURCES.html</code> for official references.</p>
+<h2 id="first-class-lemmasim-decision-2026-10-09">First-class LemmaSim decision (2026-10-09)</h2>
+<p>Lemma One is one specified machine with two embodiments: permanent user-facing <strong>LemmaSim</strong> and physical <strong>Lemma One</strong>. The canonical intended machine contract lives in <a href="../LEMMA_MACHINE_CONTRACT.html">../LEMMA_MACHINE_CONTRACT.md</a>; the existing LemmaVM document remains the tested historical boot-profile contract. The full virtual hardware, including pen and e-paper controllers, storage, reset and device error behavior, is a foundational parallel workstream. The guest executes the actual Lean-authored software through genuine device interfaces rather than host-side software substitutes. Student, Developer and Laboratory modes share those guest interfaces. Simulator completion requires conformance evidence; physical equivalence requires physical measurements and hardware testing. See <a href="plan/LEMMASIM.html">plan/LEMMASIM.md</a>.</p>
+</main>
+</body>
+</html>
