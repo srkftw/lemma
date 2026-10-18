@@ -16,7 +16,7 @@ import sys
 
 from audit_core0 import (alloc_section_names, defined_function_symbols, numeric_symbols, parse_definitions_and_calls,
                          parse_load_segments, relocation_types, parse_stack_sizes,
-                         validate_loop_stack_call_graph, _ir_definition_body, _structured_ir_blocks, _structured_successors, _structured_reachable)
+                         validate_loop_stack_call_graph, _ir_definition_body, _ir_signature_arguments, _structured_ir_blocks, _structured_successors, _structured_reachable)
 from build_core0 import LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS, invalidate_output_file
 from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROLE_ROOTS,
                           UNIT_FILES, USER_OBJECTS, artifact_category, configuration_modules,
@@ -5477,7 +5477,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     if not optimized:
         types = {"bool": "i1", "u8": "i8", "u32": "i32", "u64": "i64"}
         for row in unit["functions"]:
-            matches = re.findall(r"(?m)^define\s+[^\n]*@" + re.escape(row["symbol"]) + r"\(([^\n]*)\)", ir)
+            matches = _ir_signature_arguments(ir, row["symbol"])
             if len(matches) != 1 or re.findall(r"\b(i1|i8|i32|i64)\b", matches[0]) != [types[ty] for ty in row["args"]]:
                 raise Core0Error("source manifest/LLVM function argument signature differs")
         by_source = {row["source"]: row["symbol"] for row in unit["functions"]}

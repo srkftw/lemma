@@ -2631,6 +2631,27 @@ def _llvm_scalar_parameter(ty: str) -> str:
 
 
 @lru_cache(maxsize=2)
+def _ir_header_projection(ir: str) -> str | None:
+    """Retain exact definition lines for repeated signature regex queries.
+
+    A bare definition token permits the old whitespace operator to cross a newline, so
+    that spelling retains the full-text path. Two complete immutable IR keys
+    bound storage; neither the projection nor a cached admission is mutable.
+    """
+    if re.search(r"(?m)^define[^\S\n]*$", ir):
+        return None
+    return "\n".join(line for line in ir.split("\n") if line.startswith("define"))
+
+
+def _ir_signature_arguments(ir: str, symbol: str) -> list[str]:
+    """Apply the unchanged kernel signature regex to an exact projection."""
+    projection = (_ir_header_projection(ir)
+                  if re.fullmatch(r"[A-Za-z_.$][A-Za-z0-9_.$-]*", symbol) else None)
+    return re.findall(r"(?m)^define\s+[^\n]*@" + re.escape(symbol) + r"\(([^\n]*)\)",
+                      ir if projection is None else projection)
+
+
+@lru_cache(maxsize=2)
 def _ir_definition_index(ir: str) -> dict[str, tuple[str, ...]] | None:
     """Index the exact existing header/body boundary once per immutable IR text.
 

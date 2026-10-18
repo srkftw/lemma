@@ -1,4 +1,5 @@
 """Exact additive course mount-await deployment; no guest policy implementation."""
+from functools import lru_cache
 CONFIGURATIONS=('lemmasim-silicon-course-await-bulk-notebook',
                 'lemmasim-silicon-course-await-bulk-initialize')
 SOFTWARE_DEPLOYMENT={'contract_version':'lemma-course-mounted-await-bulk-deployment-v1',
@@ -69,9 +70,27 @@ def _canonical(source):
  import re
  return re.sub(r'^_private\..*?\.[0-9]+\.','',source)
 
+@lru_cache(maxsize=2)
+def _compatible_body_index(ir):
+ import re
+ from audit_core0 import _ir_definition_index
+ # The original expression requires one literal space after define and accepts
+ # any trailing text after the closing brace. Only equivalent boundaries use
+ # the shared lexical index; all other spellings retain that exact expression.
+ if re.search(r'(?m)^define[^\S\n]*$',ir):return None
+ if re.search(r'(?m)^define\s',ir) and any(line.startswith('define') and not line.startswith('define ') for line in ir.split('\n')):return None
+ if any(line.startswith('}') and line.strip()!='}' for line in ir.split('\n')):return None
+ return _ir_definition_index(ir)
+
 def _body(ir,symbol):
  import re
  from core0_common import Core0Error
+ if re.fullmatch(r'[A-Za-z_.$][A-Za-z0-9_.$-]*',symbol):
+  index=_compatible_body_index(ir)
+  if index is not None:
+   rows=index.get(symbol,())
+   if len(rows)!=1:raise Core0Error('mount-result LLVM owner missing/duplicated: '+symbol)
+   return rows[0]
  rows=re.findall(r'(?ms)^define [^\n]*@'+re.escape(symbol)+r'\([^\n]*\)[^\n]*\{\n(.*?)^\}',ir)
  if len(rows)!=1:raise Core0Error('mount-result LLVM owner missing/duplicated: '+symbol)
  return rows[0]

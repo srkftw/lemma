@@ -61,6 +61,18 @@ async function appFixture(gpu){
  assert.equal(f.audioSources.length,2);f.trigger('#cold','click');assert.equal(f.audioSources[1].stopped,true);
  assert.match(f.node('#pcm-status').textContent,/Machine output epoch changed/);
 }
+// Controller cancellation clears every queued source independently of the
+// browser playback permission. A later authorized controller turn can render.
+{
+ const f=await appFixture(undefined);await f.node('#pcm-enable').onclick();
+ const emit=(first,position)=>f.worker.onmessage({data:{type:'pcm',pcm:{format:'mono-s16le-low16/1',clock_hz:100000000,dropped:0,samples:[[String(first),String(position),100],[String(first+2000),String(position+1),-100]]}}});
+ emit(2000,1);assert.equal(f.audioSources.length,1);
+ f.worker.onmessage({data:{type:'pcm-stop',reason:'Controller consent epoch revoked'}});
+ assert.equal(f.audioSources[0].stopped,true);assert.match(f.node('#pcm-status').textContent,/epoch revoked/);
+ emit(6000,3);assert.equal(f.audioSources.length,2,'controller stop must preserve independent speaker permission');
+ f.node('#pcm-mute').onclick();assert.equal(f.audioSources[1].stopped,true);
+ emit(10000,5);assert.equal(f.audioSources.length,2,'local sink mute must reject subsequent samples');
+}
 // Presentation labels only newly emitted guest reports; a missing result,
 // restored continuation or Close cannot inherit an earlier Saved label.
 {

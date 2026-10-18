@@ -140,6 +140,7 @@ worker.onmessage=({data:m})=>{
   if(m.mode){sessionMode.value=m.mode;sessionMode.disabled=true;modeControls();}status.textContent=`Cycle ${m.state.cycle} · ${m.readyAt?'Guest Ready observed at '+m.readyAt.cycle:m.guestObservation==='continuation'?'Restored continuation; Ready not observed':'Booting'} · ${m.running?'running':'paused'+(m.pauseReason?' ('+m.pauseReason+')':'')} · ${Math.round(m.heapBytes/1048576)} MiB Wasm heap · ${m.timing.elapsedSeconds.toFixed(1)} s elapsed · ${m.timing.simulationCallSeconds.toFixed(1)} s simulation calls (${m.timing.backingCallSecondsDuringRun.toFixed(1)} s backing)`;
   document.querySelector('#inspection').textContent=JSON.stringify(m,null,2);}
  if(m.type==='pcm')presentPcm(m.pcm);
+ if(m.type==='pcm-stop')stopPcm(m.reason??'Controller playback stopped.',false);
  if(m.type==='panel')present(m);
  if(m.type==='uart')document.querySelector('#uart').textContent=m.text;
  if(m.type==='export')download(m.name,m.bytes);
@@ -154,7 +155,7 @@ initializeGPU().catch(()=>{if(gpu)fallback();});
 let pcmContext=null,pcmAllowed=false,pcmNext=0,pcmLastTick=null,pcmLastPosition=null,pcmSources=new Set(),pcmDrops=0;
 const pcmStatus=document.querySelector('#pcm-status');
 document.querySelector('#pcm-enable').onclick=async()=>{try{pcmContext??=new AudioContext();await pcmContext.resume();pcmAllowed=pcmContext.state==='running';pcmStatus.textContent=pcmAllowed?'Guest PCM speaker presentation enabled. Physical audibility and bone transducer onset remain unmeasured.':'Audio context unavailable.';}catch(e){pcmAllowed=false;pcmStatus.textContent=String(e);}};
-function stopPcm(reason){pcmAllowed=false;for(const source of pcmSources)try{source.stop();}catch{}pcmSources.clear();pcmNext=0;pcmLastTick=null;pcmLastPosition=null;pcmStatus.textContent=reason+' Queued sink samples cancelled; emitted samples cannot be undone. Guest action cancellation is a separate receipt.';}
+function stopPcm(reason,withdrawPermission=true){if(withdrawPermission)pcmAllowed=false;for(const source of pcmSources)try{source.stop();}catch{}pcmSources.clear();pcmNext=0;pcmLastTick=null;pcmLastPosition=null;pcmStatus.textContent=reason+' Queued sink samples cancelled; emitted samples cannot be undone. Guest action cancellation is a separate receipt.';}
 document.querySelector('#pcm-mute').onclick=()=>stopPcm('Speaker presentation muted.');
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPcm('Page hidden.');});
 function presentPcm(pcm){if(pcm.format!=='mono-s16le-low16/1'||pcm.clock_hz!==100000000||!Array.isArray(pcm.samples)||pcm.samples.length>256){stopPcm('Unsupported PCM egress.');return;}

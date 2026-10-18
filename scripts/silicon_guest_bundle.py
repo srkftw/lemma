@@ -192,8 +192,12 @@ def origin_destination(manifest,path,digest):
 
 def inventory(directory,manifest):
     from silicon_guest import sha
+    # The new four-role multimodal archive retains four actual637-artifact
+    # target closures: observed3108 files/~175MiB. Historical schemas keep
+    # their original bounds; the new schema has an explicit256MiB byte budget.
+    max_files,max_bytes=(4096,256*1024*1024) if manifest.get('schema')=='lemmasim-native-multimodal-fast/1' else (MAX_FILES,MAX_BYTES)
     files=manifest.get('files')
-    if not isinstance(files,dict) or not 1<=len(files)<=MAX_FILES:raise ValueError('Invalid bundle file inventory')
+    if not isinstance(files,dict) or not 1<=len(files)<=max_files:raise ValueError('Invalid bundle file inventory')
     total=0
     for name,item in files.items():
         if not isinstance(name,str) or not name or Path(name).is_absolute() or '..' in Path(name).parts:
@@ -204,7 +208,7 @@ def inventory(directory,manifest):
         if not isinstance(h,str) or not re.fullmatch('[a-f0-9]{64}',h) or type(size) is not int or size<1 or type(execute) is not bool:
             raise ValueError('Malformed bundle checksum/length/mode')
         total+=size
-        if total>MAX_BYTES:raise ValueError('Bundle exceeds byte bound')
+        if total>max_bytes:raise ValueError('Bundle exceeds byte bound')
         path=directory/name
         if any(p.is_symlink() for p in (path,*path.parents)) or not path.is_file() or path.stat().st_size!=size or sha(path)!=h:
             raise ValueError('Bundle artifact missing, symlinked or changed: '+name)

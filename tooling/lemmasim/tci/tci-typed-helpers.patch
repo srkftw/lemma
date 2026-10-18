@@ -1,0 +1,371 @@
+--- a/include/tcg/helper-info.h
++++ b/include/tcg/helper-info.h
+@@ -62,6 +62,9 @@
+     /* Used with g_once_init_enter. */
+ #ifdef CONFIG_TCG_INTERPRETER
+     ffi_cif *cif;
++#if defined(__EMSCRIPTEN__)
++    void (*tci_call)(void *result, void **arguments);
++#endif
+ #else
+     uintptr_t init;
+ #endif
+--- a/include/exec/helper-info.c.inc
++++ b/include/exec/helper-info.c.inc
+@@ -15,75 +15,208 @@
+  */
+ #define str(s) #s
+ 
+-#define DEF_HELPER_FLAGS_0(NAME, FLAGS, RET)                            \
+-    TCGHelperInfo glue(helper_info_, NAME) = {                          \
+-        .func = HELPER(NAME), .name = str(NAME),                        \
+-        .flags = FLAGS | dh_callflag(RET),                              \
+-        .typemask = dh_typemask(RET, 0)                                 \
+-    };
+-
+-#define DEF_HELPER_FLAGS_1(NAME, FLAGS, RET, T1)                        \
+-    TCGHelperInfo glue(helper_info_, NAME) = {                          \
+-        .func = HELPER(NAME), .name = str(NAME),                        \
+-        .flags = FLAGS | dh_callflag(RET),                              \
+-        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1)            \
+-    };
+-
+-#define DEF_HELPER_FLAGS_2(NAME, FLAGS, RET, T1, T2)                    \
+-    TCGHelperInfo glue(helper_info_, NAME) = {                          \
+-        .func = HELPER(NAME), .name = str(NAME),                        \
+-        .flags = FLAGS | dh_callflag(RET),                              \
+-        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1)            \
+-                  | dh_typemask(T2, 2)                                  \
+-    };
+-
+-#define DEF_HELPER_FLAGS_3(NAME, FLAGS, RET, T1, T2, T3)                \
+-    TCGHelperInfo glue(helper_info_, NAME) = {                          \
+-        .func = HELPER(NAME), .name = str(NAME),                        \
+-        .flags = FLAGS | dh_callflag(RET),                              \
+-        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1)            \
+-                  | dh_typemask(T2, 2) | dh_typemask(T3, 3)             \
+-    };
+-
+-#define DEF_HELPER_FLAGS_4(NAME, FLAGS, RET, T1, T2, T3, T4)            \
+-    TCGHelperInfo glue(helper_info_, NAME) = {                          \
+-        .func = HELPER(NAME), .name = str(NAME),                        \
+-        .flags = FLAGS | dh_callflag(RET),                              \
+-        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1)            \
+-                  | dh_typemask(T2, 2) | dh_typemask(T3, 3)             \
+-                  | dh_typemask(T4, 4)                                  \
+-    };
+-
+-#define DEF_HELPER_FLAGS_5(NAME, FLAGS, RET, T1, T2, T3, T4, T5)        \
+-    TCGHelperInfo glue(helper_info_, NAME) = {                          \
+-        .func = HELPER(NAME), .name = str(NAME),                        \
+-        .flags = FLAGS | dh_callflag(RET),                              \
+-        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1)            \
+-                  | dh_typemask(T2, 2) | dh_typemask(T3, 3)             \
+-                  | dh_typemask(T4, 4) | dh_typemask(T5, 5)             \
+-    };
+-
+-#define DEF_HELPER_FLAGS_6(NAME, FLAGS, RET, T1, T2, T3, T4, T5, T6)    \
+-    TCGHelperInfo glue(helper_info_, NAME) = {                          \
+-        .func = HELPER(NAME), .name = str(NAME),                        \
+-        .flags = FLAGS | dh_callflag(RET),                              \
+-        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1)            \
+-                  | dh_typemask(T2, 2) | dh_typemask(T3, 3)             \
+-                  | dh_typemask(T4, 4) | dh_typemask(T5, 5)             \
+-                  | dh_typemask(T6, 6)                                  \
++#if defined(CONFIG_TCG_INTERPRETER) && defined(__EMSCRIPTEN__)
++/* Exact declared helper prototypes; no ABI-incompatible helper casts. */
++#define lemma_tci_store_void(TYPE, CALL) do { CALL; } while (0)
++#define lemma_tci_store_noreturn(TYPE, CALL) do { CALL; } while (0)
++#define lemma_tci_store_i32(TYPE, CALL) do { dh_ctype(TYPE) value = CALL; memcpy(result, &value, sizeof(value)); } while (0)
++#define lemma_tci_store_i64(TYPE, CALL) lemma_tci_store_i32(TYPE, CALL)
++#define lemma_tci_store_i128(TYPE, CALL) lemma_tci_store_i32(TYPE, CALL)
++#define lemma_tci_store_ptr(TYPE, CALL) lemma_tci_store_i32(TYPE, CALL)
++#define lemma_tci_store(TYPE, CALL) glue(lemma_tci_store_, dh_alias(TYPE))(TYPE, CALL)
++#define lemma_tci_thunk_0(NAME, RET) \
++    static void glue(lemma_tci_call_, NAME)(void *result, void **arguments) { \
++        (void)result; (void)arguments; \
++        lemma_tci_store(RET, HELPER(NAME)()); \
++    }
++#define lemma_tci_thunk_1(NAME, RET, T1) \
++    static void glue(lemma_tci_call_, NAME)(void *result, void **arguments) { \
++        (void)result; (void)arguments; \
++        dh_ctype(T1) a1; \
++        memcpy(&a1, arguments[0], sizeof(a1)); \
++        lemma_tci_store(RET, HELPER(NAME)(a1)); \
++    }
++#define lemma_tci_thunk_2(NAME, RET, T1, T2) \
++    static void glue(lemma_tci_call_, NAME)(void *result, void **arguments) { \
++        (void)result; (void)arguments; \
++        dh_ctype(T1) a1; \
++        memcpy(&a1, arguments[0], sizeof(a1)); \
++        dh_ctype(T2) a2; \
++        memcpy(&a2, arguments[1], sizeof(a2)); \
++        lemma_tci_store(RET, HELPER(NAME)(a1, a2)); \
++    }
++#define lemma_tci_thunk_3(NAME, RET, T1, T2, T3) \
++    static void glue(lemma_tci_call_, NAME)(void *result, void **arguments) { \
++        (void)result; (void)arguments; \
++        dh_ctype(T1) a1; \
++        memcpy(&a1, arguments[0], sizeof(a1)); \
++        dh_ctype(T2) a2; \
++        memcpy(&a2, arguments[1], sizeof(a2)); \
++        dh_ctype(T3) a3; \
++        memcpy(&a3, arguments[2], sizeof(a3)); \
++        lemma_tci_store(RET, HELPER(NAME)(a1, a2, a3)); \
++    }
++#define lemma_tci_thunk_4(NAME, RET, T1, T2, T3, T4) \
++    static void glue(lemma_tci_call_, NAME)(void *result, void **arguments) { \
++        (void)result; (void)arguments; \
++        dh_ctype(T1) a1; \
++        memcpy(&a1, arguments[0], sizeof(a1)); \
++        dh_ctype(T2) a2; \
++        memcpy(&a2, arguments[1], sizeof(a2)); \
++        dh_ctype(T3) a3; \
++        memcpy(&a3, arguments[2], sizeof(a3)); \
++        dh_ctype(T4) a4; \
++        memcpy(&a4, arguments[3], sizeof(a4)); \
++        lemma_tci_store(RET, HELPER(NAME)(a1, a2, a3, a4)); \
++    }
++#define lemma_tci_thunk_5(NAME, RET, T1, T2, T3, T4, T5) \
++    static void glue(lemma_tci_call_, NAME)(void *result, void **arguments) { \
++        (void)result; (void)arguments; \
++        dh_ctype(T1) a1; \
++        memcpy(&a1, arguments[0], sizeof(a1)); \
++        dh_ctype(T2) a2; \
++        memcpy(&a2, arguments[1], sizeof(a2)); \
++        dh_ctype(T3) a3; \
++        memcpy(&a3, arguments[2], sizeof(a3)); \
++        dh_ctype(T4) a4; \
++        memcpy(&a4, arguments[3], sizeof(a4)); \
++        dh_ctype(T5) a5; \
++        memcpy(&a5, arguments[4], sizeof(a5)); \
++        lemma_tci_store(RET, HELPER(NAME)(a1, a2, a3, a4, a5)); \
++    }
++#define lemma_tci_thunk_6(NAME, RET, T1, T2, T3, T4, T5, T6) \
++    static void glue(lemma_tci_call_, NAME)(void *result, void **arguments) { \
++        (void)result; (void)arguments; \
++        dh_ctype(T1) a1; \
++        memcpy(&a1, arguments[0], sizeof(a1)); \
++        dh_ctype(T2) a2; \
++        memcpy(&a2, arguments[1], sizeof(a2)); \
++        dh_ctype(T3) a3; \
++        memcpy(&a3, arguments[2], sizeof(a3)); \
++        dh_ctype(T4) a4; \
++        memcpy(&a4, arguments[3], sizeof(a4)); \
++        dh_ctype(T5) a5; \
++        memcpy(&a5, arguments[4], sizeof(a5)); \
++        dh_ctype(T6) a6; \
++        memcpy(&a6, arguments[5], sizeof(a6)); \
++        lemma_tci_store(RET, HELPER(NAME)(a1, a2, a3, a4, a5, a6)); \
++    }
++#define lemma_tci_thunk_7(NAME, RET, T1, T2, T3, T4, T5, T6, T7) \
++    static void glue(lemma_tci_call_, NAME)(void *result, void **arguments) { \
++        (void)result; (void)arguments; \
++        dh_ctype(T1) a1; \
++        memcpy(&a1, arguments[0], sizeof(a1)); \
++        dh_ctype(T2) a2; \
++        memcpy(&a2, arguments[1], sizeof(a2)); \
++        dh_ctype(T3) a3; \
++        memcpy(&a3, arguments[2], sizeof(a3)); \
++        dh_ctype(T4) a4; \
++        memcpy(&a4, arguments[3], sizeof(a4)); \
++        dh_ctype(T5) a5; \
++        memcpy(&a5, arguments[4], sizeof(a5)); \
++        dh_ctype(T6) a6; \
++        memcpy(&a6, arguments[5], sizeof(a6)); \
++        dh_ctype(T7) a7; \
++        memcpy(&a7, arguments[6], sizeof(a7)); \
++        lemma_tci_store(RET, HELPER(NAME)(a1, a2, a3, a4, a5, a6, a7)); \
++    }
++#define lemma_tci_initializer(NAME) .tci_call = glue(lemma_tci_call_, NAME),
++#else
++#define lemma_tci_thunk_0(NAME, RET)
++#define lemma_tci_thunk_1(NAME, RET, T1)
++#define lemma_tci_thunk_2(NAME, RET, T1, T2)
++#define lemma_tci_thunk_3(NAME, RET, T1, T2, T3)
++#define lemma_tci_thunk_4(NAME, RET, T1, T2, T3, T4)
++#define lemma_tci_thunk_5(NAME, RET, T1, T2, T3, T4, T5)
++#define lemma_tci_thunk_6(NAME, RET, T1, T2, T3, T4, T5, T6)
++#define lemma_tci_thunk_7(NAME, RET, T1, T2, T3, T4, T5, T6, T7)
++#define lemma_tci_initializer(NAME)
++#endif
++
++#define DEF_HELPER_FLAGS_0(NAME, FLAGS, RET) \
++    lemma_tci_thunk_0(NAME, RET) \
++    TCGHelperInfo glue(helper_info_, NAME) = { \
++        .func = HELPER(NAME), .name = str(NAME), \
++        lemma_tci_initializer(NAME) \
++        .flags = FLAGS | dh_callflag(RET), \
++        .typemask = dh_typemask(RET, 0) \
++    };
++
++#define DEF_HELPER_FLAGS_1(NAME, FLAGS, RET, T1) \
++    lemma_tci_thunk_1(NAME, RET, T1) \
++    TCGHelperInfo glue(helper_info_, NAME) = { \
++        .func = HELPER(NAME), .name = str(NAME), \
++        lemma_tci_initializer(NAME) \
++        .flags = FLAGS | dh_callflag(RET), \
++        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1) \
++    };
++
++#define DEF_HELPER_FLAGS_2(NAME, FLAGS, RET, T1, T2) \
++    lemma_tci_thunk_2(NAME, RET, T1, T2) \
++    TCGHelperInfo glue(helper_info_, NAME) = { \
++        .func = HELPER(NAME), .name = str(NAME), \
++        lemma_tci_initializer(NAME) \
++        .flags = FLAGS | dh_callflag(RET), \
++        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1) | dh_typemask(T2, 2) \
++    };
++
++#define DEF_HELPER_FLAGS_3(NAME, FLAGS, RET, T1, T2, T3) \
++    lemma_tci_thunk_3(NAME, RET, T1, T2, T3) \
++    TCGHelperInfo glue(helper_info_, NAME) = { \
++        .func = HELPER(NAME), .name = str(NAME), \
++        lemma_tci_initializer(NAME) \
++        .flags = FLAGS | dh_callflag(RET), \
++        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1) | dh_typemask(T2, 2) | dh_typemask(T3, 3) \
++    };
++
++#define DEF_HELPER_FLAGS_4(NAME, FLAGS, RET, T1, T2, T3, T4) \
++    lemma_tci_thunk_4(NAME, RET, T1, T2, T3, T4) \
++    TCGHelperInfo glue(helper_info_, NAME) = { \
++        .func = HELPER(NAME), .name = str(NAME), \
++        lemma_tci_initializer(NAME) \
++        .flags = FLAGS | dh_callflag(RET), \
++        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1) | dh_typemask(T2, 2) | dh_typemask(T3, 3) | dh_typemask(T4, 4) \
++    };
++
++#define DEF_HELPER_FLAGS_5(NAME, FLAGS, RET, T1, T2, T3, T4, T5) \
++    lemma_tci_thunk_5(NAME, RET, T1, T2, T3, T4, T5) \
++    TCGHelperInfo glue(helper_info_, NAME) = { \
++        .func = HELPER(NAME), .name = str(NAME), \
++        lemma_tci_initializer(NAME) \
++        .flags = FLAGS | dh_callflag(RET), \
++        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1) | dh_typemask(T2, 2) | dh_typemask(T3, 3) | dh_typemask(T4, 4) | dh_typemask(T5, 5) \
++    };
++
++#define DEF_HELPER_FLAGS_6(NAME, FLAGS, RET, T1, T2, T3, T4, T5, T6) \
++    lemma_tci_thunk_6(NAME, RET, T1, T2, T3, T4, T5, T6) \
++    TCGHelperInfo glue(helper_info_, NAME) = { \
++        .func = HELPER(NAME), .name = str(NAME), \
++        lemma_tci_initializer(NAME) \
++        .flags = FLAGS | dh_callflag(RET), \
++        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1) | dh_typemask(T2, 2) | dh_typemask(T3, 3) | dh_typemask(T4, 4) | dh_typemask(T5, 5) | dh_typemask(T6, 6) \
+     };
+ 
+ #define DEF_HELPER_FLAGS_7(NAME, FLAGS, RET, T1, T2, T3, T4, T5, T6, T7) \
+-    TCGHelperInfo glue(helper_info_, NAME) = {                          \
+-        .func = HELPER(NAME), .name = str(NAME),                        \
+-        .flags = FLAGS | dh_callflag(RET),                              \
+-        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1)            \
+-                  | dh_typemask(T2, 2) | dh_typemask(T3, 3)             \
+-                  | dh_typemask(T4, 4) | dh_typemask(T5, 5)             \
+-                  | dh_typemask(T6, 6) | dh_typemask(T7, 7)             \
+-    };
+-
++    lemma_tci_thunk_7(NAME, RET, T1, T2, T3, T4, T5, T6, T7) \
++    TCGHelperInfo glue(helper_info_, NAME) = { \
++        .func = HELPER(NAME), .name = str(NAME), \
++        lemma_tci_initializer(NAME) \
++        .flags = FLAGS | dh_callflag(RET), \
++        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1) | dh_typemask(T2, 2) | dh_typemask(T3, 3) | dh_typemask(T4, 4) | dh_typemask(T5, 5) | dh_typemask(T6, 6) | dh_typemask(T7, 7) \
++    };
++
++/* Upstream tcg-runtime.h explicitly fudges memset length as ptr, while
++ * actual libc prototype takes size_t. Preserve published libffi for that
++ * identified exception; generated exact-type thunks must reject this mismatch. */
++#define LEMMA_TCI_FFI_FLAGS_3(NAME, FLAGS, RET, T1, T2, T3) \
++    TCGHelperInfo glue(helper_info_, NAME) = { \
++        .func = HELPER(NAME), .name = str(NAME), \
++        .flags = FLAGS | dh_callflag(RET), \
++        .typemask = dh_typemask(RET, 0) | dh_typemask(T1, 1) | \
++                    dh_typemask(T2, 2) | dh_typemask(T3, 3) \
++    };
+ #include HELPER_H
++#undef LEMMA_TCI_FFI_FLAGS_3
+ 
+ #undef str
+ #undef DEF_HELPER_FLAGS_0
+@@ -94,3 +227,20 @@
+ #undef DEF_HELPER_FLAGS_5
+ #undef DEF_HELPER_FLAGS_6
+ #undef DEF_HELPER_FLAGS_7
++
++#undef lemma_tci_initializer
++#undef lemma_tci_store
++#undef lemma_tci_store_void
++#undef lemma_tci_store_noreturn
++#undef lemma_tci_store_i32
++#undef lemma_tci_store_i64
++#undef lemma_tci_store_i128
++#undef lemma_tci_store_ptr
++#undef lemma_tci_thunk_0
++#undef lemma_tci_thunk_1
++#undef lemma_tci_thunk_2
++#undef lemma_tci_thunk_3
++#undef lemma_tci_thunk_4
++#undef lemma_tci_thunk_5
++#undef lemma_tci_thunk_6
++#undef lemma_tci_thunk_7
+--- a/tcg/tci.c
++++ b/tcg/tci.c
+@@ -37,6 +37,10 @@
+ #endif
+ 
+ __thread uintptr_t tci_tb_ptr;
++#if defined(__EMSCRIPTEN__)
++uint64_t lemma_tci_direct_calls;
++uint64_t lemma_tci_ffi_calls;
++#endif
+ 
+ /*
+  * Load sets of arguments all at once.  The naming convention is:
+@@ -363,7 +367,19 @@
+ 
+                 /* Helper functions may need to access the "return address" */
+                 tci_tb_ptr = (uintptr_t)tb_ptr;
++#if defined(__EMSCRIPTEN__)
++                void (*direct)(void *, void **);
++                memcpy(&direct, (uint8_t *)ptr + 2 * sizeof(uintptr_t), sizeof(direct));
++                if (direct) {
++                    qatomic_fetch_inc(&lemma_tci_direct_calls);
++                    direct(stack, call_slots);
++                } else {
++                    qatomic_fetch_inc(&lemma_tci_ffi_calls);
++                    ffi_call(cif, func, stack, call_slots);
++                }
++#else
+                 ffi_call(cif, func, stack, call_slots);
++#endif
+             }
+ 
+             switch (len) {
+--- a/tcg/tci/tcg-target.c.inc
++++ b/tcg/tci/tcg-target.c.inc
+@@ -449,7 +449,12 @@
+                          cif->rtype->size == 16);
+         which = ctz32(cif->rtype->size) - 1;
+     }
++#if defined(__EMSCRIPTEN__)
++    new_pool_l4(s, 20, s->code_ptr, 0, (uintptr_t)func, (uintptr_t)cif,
++                (uintptr_t)info->tci_call, 0);
++#else
+     new_pool_l2(s, 20, s->code_ptr, 0, (uintptr_t)func, (uintptr_t)cif);
++#endif
+     insn = deposit32(insn, 0, 8, INDEX_op_call);
+     insn = deposit32(insn, 8, 4, which);
+     tcg_out32(s, insn);
+--- a/accel/tcg/tcg-runtime.h
++++ b/accel/tcg/tcg-runtime.h
+@@ -32,7 +32,11 @@
+  * all supported hosts.
+  */
+ #define helper_memset memset
++#ifdef LEMMA_TCI_FFI_FLAGS_3
++LEMMA_TCI_FFI_FLAGS_3(memset, TCG_CALL_NO_RWG, ptr, ptr, int, ptr)
++#else
+ DEF_HELPER_FLAGS_3(memset, TCG_CALL_NO_RWG, ptr, ptr, int, ptr)
++#endif
+ #endif /* IN_HELPER_PROTO */
+ 
+ DEF_HELPER_FLAGS_3(ld_i128, TCG_CALL_NO_WG, i128, env, i64, i32)

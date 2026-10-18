@@ -63,6 +63,7 @@ def digest(path):
 
 def package(source, destination, archive=None):
     source, _ = validated_bundle(source)
+    functional = json.loads((source / 'bundle.json').read_text()).get('schema') == 'lemmasim-browser-qemu-tci/1'
     destination = Path(destination).absolute()
     if (destination.exists() or destination.is_relative_to(source)
             or any(p.is_symlink() for p in destination.parents)):
@@ -78,20 +79,38 @@ def package(source, destination, archive=None):
     shutil.copytree(source, destination / 'bundle', symlinks=False)
     (destination / 'tools').mkdir()
     inputs = {}
-    for original, installed in [('scripts/lemmasim_browser.py', 'tools/lemmasim_browser.py'),
+    launchers = [('scripts/lemmasim_browser.py', 'tools/lemmasim_browser.py'),
                                 ('scripts/silicon_guest_bundle.py', 'tools/silicon_guest_bundle.py'),
                                 ('scripts/usb_closure_recovery_deployment.py', 'tools/usb_closure_recovery_deployment.py'),
                                 ('scripts/package_companion_deployment.py', 'tools/package_companion_deployment.py'),
                                 ('scripts/package_entry2_deployment.py', 'tools/package_entry2_deployment.py'),
                                 ('scripts/companion_reader_deployment.py', 'tools/companion_reader_deployment.py'),
                                 ('scripts/chooser_reader_deployment.py', 'tools/chooser_reader_deployment.py'),
-                                ('sim/browser/serve_local.py', 'serve.py')]:
+                                ('sim/browser/serve_local.py', 'serve.py')]
+    if functional:
+        launchers.append(('scripts/lemmasim_browser_tci.py', 'tools/lemmasim_browser_tci.py'))
+    for original, installed in launchers:
         inputs[original] = digest(ROOT / original)
         shutil.copyfile(ROOT / original, destination / installed)
         if digest(destination / installed) != inputs[original]:
             raise ValueError('Launcher source changed during packaging')
     (destination / 'NOTICE.txt').write_text(NOTICE)
-    (destination / 'usage.html').write_text(USAGE_HTML)
+    usage = USAGE_HTML
+    if functional:
+        start = usage.index('<p>Student, Developer and Laboratory')
+        end = usage.index('</p>', start) + 4
+        usage = usage[:start] + '''<p>This explicit functional QEMU/TCI embodiment runs the shared Lean guest,
+requires Wasm64 and a 2 GiB host Wasm heap, and currently has an identified
+Chromium 155/Linux boot result. Exact TCI checkpoints and sealed replay are
+unsupported. Cold recovery from actual Save bytes is separate. Student,
+Developer and Laboratory preserve guest authority. The host presents controller
+pixels and DAC samples only; it owns no notebook, recovery or mathematical policy.
+Use <code>python3 -I serve.py --verify-only</code> and
+<code>python3 -I serve.py --port 8787</code>. The extracted launcher uses the
+included audited dependency policy with Python's POSIX modules; Windows launch
+is not qualified. Stop with Ctrl-C. No remote service is contacted. Packaging
+and static serving do not establish whole-workbook or real-time acceptance.</p>''' + usage[end:]
+    (destination / 'usage.html').write_text(usage)
     validated_bundle(destination / 'bundle')
     if digest(destination / 'bundle/bundle.json') != source_manifest:
         raise ValueError('Original machine manifest changed')
@@ -99,7 +118,7 @@ def package(source, destination, archive=None):
              for p in sorted(destination.rglob('*')) if p.is_file()}
     if sum(row['bytes'] for row in files.values()) > 1 << 30:
         raise ValueError('Distribution exceeds one GiB')
-    manifest = {'schema': 'lemma-local-browser-distribution/2',
+    manifest = {'schema': 'lemma-local-browser-distribution/3' if functional else 'lemma-local-browser-distribution/2',
                 'scope': 'Prepared exact machine and standalone local launch; no new guest acceptance claim',
                 'source_bundle_sha256': source_manifest,
                 'producer': {'path': 'scripts/package_browser.py', 'sha256': digest(Path(__file__))},

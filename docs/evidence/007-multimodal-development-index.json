@@ -247,6 +247,65 @@
       "result": "PASS_COMPANION_COMPONENTS",
       "scope": "Host component operation and genuine Lean fixtures; no native workbook execution",
       "limits": null
+    },
+    {
+      "receipt": "build/multimodal/final-four-target-production-a6.json",
+      "sha256": "9341817b21311d858e47fcac55acf7885ca7f4b76d0ad9a8caed82f250904e89",
+      "result": "PASS_FOUR_COMPLETE_PRODUCTIONS_AND_STRICT_AUDITS",
+      "scope": "All four ordinary/parameterized a6 complete target artifacts. Source9b106e918f4d31ad359c5c63c68a489aa03e1140;496 consumed inputs match. Provenance records changed TCI bridge outside target closure. Validated production reuse is separate from fresh compilation, strict audit and actual execution.",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/ordinary-initialization-a2/result.json",
+      "sha256": "eec4b884461222b2df35e3986bb11d8dab62ac7cab5dd177eac7ec335d62e74d",
+      "result": "ACKNOWLEDGED_GUEST_INITIALIZATION",
+      "scope": "Actual a6 ordinary initializer on QEMU0.14: guest041f at25,000,001 execution units/0.518286521s. Resulting256MiB sparse medium c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46. Not host formatting or a complete workbook workflow.",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/native-four-role-a1/bundle.json",
+      "sha256": "fb860b8a41b329fbe4ac1b8520b55e1b21beaa221402ea74376b956122e763e6",
+      "result": "PACKED_FOUR_ROLE_NATIVE_ARCHIVE",
+      "scope": "Immutable inventory of3108 files, all four audited a6 ordinary/parameterized guest roles and exact QEMU/source/runtime. Packaging is separate from corruption checks and each actual machine execution.",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/published-landing-a2/report.json",
+      "sha256": "2d016652431084e293b58dfe09cb35804be9591a908fdb3b42985d4cea2daea2",
+      "result": "PASS_BRANCH_LANDING_PROSE_REMOVAL",
+      "scope": "Actual Chromium155 published task-branch325ecb1 reload/DOM plus independent git ls-remote; no README/Contributing section or rendered project prose. Default main unchanged; original a1 FAIL retained.",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/browser-workbook-boot-a1/report.json",
+      "sha256": "9f01f3363663e366582ebb835dbc77989e1320f1c99b93eebcd0d85ff587cc84",
+      "result": "PASS_ACTUAL_BROWSER_WORKBOOK_BOOT",
+      "scope": "Actual maintained ordinary a6 RV64 notebook cold boot using an opaque byte-identical copy of the native guest-initialized medium and actual OPFS; not complete P1/P2, economy throughput, exact snapshots, measured sensor or educational qualification",
+      "limits": {
+        "server_seconds": 660,
+        "whole_browser_seconds": 600,
+        "bounded_run_host_seconds": 570,
+        "run_cycles": 400000000
+      }
+    },
+    {
+      "receipt": "build/multimodal/tci-ui-component-a2/report.json",
+      "sha256": "b4c6fb615622147aa65cebcd6ada4d513685827c4ed4c8e5c18f7f7f178cf235",
+      "result": "PASS",
+      "scope": "Actual Chromium155 browser UI/worker/OPFS component,1.9924s; finite shared controller component only, separate from actual workbook boot and complete P1.",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/native-installation-observer-assessment-a1/result.json",
+      "sha256": "85b567a2fc12d43fdd84d7d08eae35d54dc14d81c273ca9ed9931c36fedc07dc",
+      "result": "PASS_SCOPED_UNCHANGED_RAW_COURSE_COMMIT_ASSESSMENT",
+      "scope": "Only the original course publication observation is assessed. Original150M phase/4B whole execution/1800s wall limits were never extended. No later guest execution, inference, tutor presentation, audio or cold recovery is inferred.",
+      "limits": {
+        "original_phase_execution_units": 150000000,
+        "whole_execution_units": 4000000000,
+        "whole_wall_seconds": 1800
+      },
+      "original_failure": "build/multimodal/native-workbook-a1/result.json"
     }
   ],
   "retained_failures": [
@@ -309,12 +368,22 @@
       "receipt": "build/multimodal/final-base-notebook-audit-original-fail-a1.json",
       "sha256": "92f1fe2adfacd6b539412345c303e55a2aba4f38bc52dd0e90caf694c15dc9da",
       "error": "Nested legacy Entry2 selector rejects current Kernel9 full candidate"
+    },
+    {
+      "receipt": "build/multimodal/final-four-target-production-a5.json",
+      "sha256": "125922848490f519bbbff4b79e50f3a9d64bb7cb4c4b399304ab14bc116e4138",
+      "error": "Original a5 normal production passed; strict audit rejected Object power initializer constructor selector. Separate narrow observer correction precedes current a6; no raw result replaced."
+    },
+    {
+      "receipt": "build/multimodal/native-workbook-a1/result.json",
+      "sha256": "746b64ceb7ce0e27ee8a11e29ae3d3a8254c76bf68260b0946ea5dbd6363a66b",
+      "error": "Original installation observer cap failed at33.297282s. Actual4b1 Store sequence3 differs from observer-assumed input transaction1001. Separate unchanged-raw course-commit assessment passes; original FAIL and4B/1800s whole limits retained."
     }
   ],
   "pending": [
-    "audited full workbook native execution and tutor/Store/paper action path",
+    "complete native workbook workflow and tutor/Store/paper action path; ordinary initialization and browser boot have separate bounded passes",
     "actual independent192-byte isolated IPC",
-    "complete browser workbook and economy real-time performance",
+    "complete browser workbook interaction and sustained economy real-time performance; actual boot alone does not close either",
     "full raw acquisition endpoints, headband link and admitted high-volume transports",
     "target-side protected companion transport/live trust/entropy",
     "raw image/ToF/flow/gaze/full optical scheduling",
@@ -361,17 +430,19 @@
     }
   ],
   "authority_collection": {
-    "receipt": "build/multimodal/authority-review-a3.json",
-    "sha256": "31ad9afda33942b62b352480296d7d05776042f02c2b05f89452f83ff1fbb292",
-    "authority_sha256": "90845a237ad9f13e8be96995016428a95e198f41019780d2f327bafd2f59933d",
-    "scope": "genuine producer identity, full IR corpus and mutation review; collection-only; complete normal linked audit/execution still pending"
+    "receipt": "build/multimodal/authority-review-alias-a1.json",
+    "sha256": "6369c3f76dd98b015d1cd154aa4ffaa1773553a187cfbfa462f35321fe267498",
+    "authority_sha256": "acc3d6b60da83973476901e10fa9959dcead614e9ec250027e71d47ff6765c99",
+    "scope": "72 actual producer-pinned unit/pre/post files;48 role/phase checks and six actual-data negatives. Collection-only review; subsequent complete a6 linked builds/audits have separate receipts."
   },
   "publication": {
     "url": "https://github.com/srkftw/lemma/pull/11",
     "draft": true,
     "initial_head": "e7046b4261888dd1c0f1708cfaf0ffb0023e46df",
     "base": "main",
-    "default_branch_changed": false
+    "default_branch_changed": false,
+    "observed_published_head": "325ecb146b16c89598947bb7068680b0dd730b19",
+    "landing_receipt": "build/multimodal/published-landing-a2/report.json"
   },
   "first_ci": {
     "run_id": 39117512834,
@@ -383,10 +454,10 @@
     "decoded_log_sha256": "f672d6deb76b9e502bb9dd1133bfb21d872b2f7250b64ece5f2314767e88a604",
     "original_artifact": 12133285527,
     "original_artifact_zip_sha256": "b2e5680f8d549a32bddafb2c11a1f54d6403434f85bf6852ba598ff29a0d2030",
-    "other_jobs": "running/not aggregate PASS"
+    "other_jobs": "terminal: nine acceptance successes, two failures, required aggregate failure; see first_pr_ci"
   },
-  "latest_complete_artifact_head": "e76fd6cd63032affa1965828a71f0de8834c4404",
-  "connected_execution": "FAIL_OR_NOT_RUN; mapping-fixed guest not yet linked/audited/executed",
+  "latest_complete_artifact_head": "9b106e918f4d31ad359c5c63c68a489aa03e1140",
+  "connected_execution": "PARTIAL: actual ordinary a6 guest initialization and Chromium workbook boot PASS; original native workflow observer FAIL retained, separate unchanged-raw course-commit assessment PASS, corrected campaign in progress; complete P1/P2 and economy remain UNVERIFIED",
   "first_pr_ci": {
     "run": 39117512834,
     "merge": "c0996efdfa59463644343fe88e21683decdd58ed",
@@ -395,5 +466,69 @@
     "aggregate": "failure",
     "notebook_artifact": 12132609886,
     "notebook_artifact_zip_sha256": "db36ef01a68aa358a629ab726eb093d0db184a4e8e0f263fb873789794c4048a"
+  },
+  "historical_authority_collections": [
+    {
+      "receipt": "build/multimodal/authority-review-a3.json",
+      "sha256": "31ad9afda33942b62b352480296d7d05776042f02c2b05f89452f83ff1fbb292",
+      "authority_sha256": "90845a237ad9f13e8be96995016428a95e198f41019780d2f327bafd2f59933d",
+      "scope": "genuine producer identity, full IR corpus and mutation review; collection-only; complete normal linked audit/execution still pending"
+    }
+  ],
+  "current_artifacts": {
+    "receipt": "build/multimodal/final-four-target-production-a6.json",
+    "target_consumed_inputs": 496,
+    "source_commit": "9b106e918f4d31ad359c5c63c68a489aa03e1140",
+    "recorded_dirty_paths": [
+      " M tooling/lemmasim/tci/bridge.html"
+    ],
+    "dirty_path_scope": "outside496 consumed target closure; no whole-worktree clean claim",
+    "production_seconds": [
+      7.256125684012659,
+      9.074237036053091,
+      9.660879781004041,
+      8.961219080956653
+    ],
+    "separate_strict_audit_seconds": [
+      184.33694010099862,
+      205.63327110302635,
+      186.23323767795227,
+      189.03934943501372
+    ]
+  },
+  "browser_functional_distribution": {
+    "scope": "Explicit functional QEMU/TCI embodiment, same audited Lean guest; P1/P2/economy not closed",
+    "launch_guide": "docs/multimodal-browser-runtime.html",
+    "packaged_archive": {
+      "path": "build/multimodal/browser-functional-parameterized-a4/bundle.json",
+      "sha256": "5da0a4db10913bfa97817d66b27dbf299f736a3f3736e44ee538b29c2b4809b5"
+    },
+    "actual_admission_controls": {
+      "path": "build/multimodal/browser-tci-admission-negatives-a5/report.json",
+      "sha256": "c0fcde60ba5d7d97cfef7023437faf9d5c3d7a88182dd31a81ce3486a6960809"
+    },
+    "boot_execution": {
+      "path": "build/multimodal/browser-workbook-boot-a1/report.json",
+      "sha256": "9f01f3363663e366582ebb835dbc77989e1320f1c99b93eebcd0d85ff587cc84",
+      "scope": "Earlier bridge version actual boot/OPFS/panel only; final packaged worker not whole-workflow qualified"
+    },
+    "next_case": {
+      "path": "build/multimodal/browser-ink-save-cold-a1",
+      "state": "NOT_STARTED_BROWSER_CONNECTION_UNAVAILABLE",
+      "detail": "cua createBrowserTab timed out; subsequent state contained no browsers and prior browser2 was unavailable before case button activation. Server retains original1020second bound."
+    }
+  },
+  "connected_execution_native_a2": {
+    "path": "build/multimodal/native-workbook-a2/result.json",
+    "sha256": "7f5a6e4c96fee374d584594cf70f21f72ba6d03887d61081490f5d18d1a5dac6",
+    "status": "FAIL",
+    "scope": "Real same-boot seven V8 outcomes and eight converter streams plus pen/Save/mute/revoke; hint accepted but visible panel not completed within original100M view cap. OriginalFAIL preserved; no displayed hint/P1 claim."
+  },
+  "toolbar_fix_candidate": {
+    "authority_sha256": "959e0b520ea81dc52b79654e7cd0764520b9c73c9d3b02d208833cc07531a962",
+    "scope": "Only four Notebook role pins changed; genuine producers and actual IR/source negative controls pass. New complete normal production/audit and execution remain pending, separate from a6.",
+    "hosted_ui_actions": "build/multimodal/notebook-ui-actions-a2/result.json",
+    "production": "build/multimodal/notebook-toolbar-production-a1.json",
+    "full_normal_cohort": "build/multimodal/final-four-target-produce-a7.py"
   }
 }

@@ -125,11 +125,39 @@ class Workflow(CourseMathWorkflow):
         observed=s.inspect();u=observed['machine']['devices']['uart_ingress']
         require(observed['running'] is False and u['enabled'] is True and len(packet)<=65536-u['pending'],'actual paused rawUART capacity')
         for n in range(0,len(packet),4096):s.control(dict(action='inject',kind='uart',cycle=observed['machine']['cycle'],hex=packet[n:n+4096].hex()))
-    def installed(self,s,transaction,identity,edition):
-        return any(r[0]==0x4b1 and r[1]==1 and r[2]==transaction and r[3]==identity|(edition<<16) for r in self.rows(s))
+    def installed(self,s,identity,edition,crc):
+        #4b1 field2 is the Store Commit durability sequence, not the input
+        #transaction. A receipt requires status0, positive sequence and the
+        #exact source/edition/CRC; opaque durable bytes are checked separately.
+        return any(r[0]==0x4b1 and r[1]==1 and r[2]>0 and r[3]==(identity|(edition<<16)) and r[4]==crc for r in self.rows(s))
+    def capture_control(self,s,stream,name,enabled):
+        # An unrelated paper completion does not acknowledge a control tap.
+        # Require its own actual guest receipt, endpoint state and bar pixels.
+        before=sum(r[0]==0x712 and r[1]==0 for r in self.rows(s));first,_=self.raw(s,stream,450,140)
+        panel=self.directory/(name+'-visible-control.ppm')
+        def completed(st):
+            rows=[r for r in self.rows(s) if r[0]==0x712 and r[1]==0]
+            if len(rows)<=before or rows[-1][2]!=0 or not idle(st):return False
+            streams=st['devices']['multimodal']['streams']
+            if enabled and not all(row['consent']>0 for row in streams[:8]):return False
+            if not enabled and any(row['consent']>0 for row in streams):return False
+            s.control({'action':'panel','path':str(panel)})
+            return label_matches(panel,'ACTIVE' if enabled else 'CAPTURE',400,132)
+        self.phase(s,name,150_000_000,completed)
+        self.report['interactions'].append(dict(name=name,pixel=[450,140],first_raw_sequence=first+1,last_raw_sequence=len(stream.events),actual_guest_operation=0,actual_local_capture_enabled=enabled,visible_control_label='ACTIVE' if enabled else 'CAPTURE'))
+    def anchored_ask(self,s,stream,name):
+        before=sum(r[0]==0x721 for r in self.rows(s));control=sum(r[0]==0x712 and r[1]==3 for r in self.rows(s))
+        first,_=self.raw(s,stream,870,140)
+        def completed(st):
+            rows=self.rows(s);accepted=[r for r in rows if r[0]==0x712 and r[1]==3]
+            return idle(st) and sum(r[0]==0x721 for r in rows)>before and len(accepted)>control and accepted[-1][2]==0
+        self.phase(s,name,150_000_000,completed)
+        context=ask_context((s.directory/'uart-0.bin').read_bytes())
+        self.report['interactions'].append(dict(name=name,pixel=[870,140],first_raw_sequence=first+1,last_raw_sequence=len(stream.events),actual_guest_operation=3,actual_guest_context=context))
+        return context
     def diagnostic(self,s,stream):
         for i in range(8):s.control(dict(action='inject',kind='multimodal',cycle=s.inspect()['machine']['cycle'],words=[i,100+i,10,0]))
-        self.click(s,stream,'explicit-five-second-local-capture',450,140)
+        self.capture_control(s,stream,'explicit-five-second-local-capture',True)
         self.phase(s,'all-eight-converters-guest-completions',100_000_000,lambda st:all(any(r[0]==0x711 and r[1]==i for r in self.rows(s)) for i in range(8)))
         prior_saved=sum(r[0]==0x421 for r in self.rows(s));prior_pending=sum(r[0]==0x423 for r in self.rows(s));stream.tick=s.inspect()['machine']['ticks']+10000;first=len(stream.events);stream.stroke('raw-ink-during-capture',1,1,3,1800);self.diagnostic_samples=stream.events[first:];s.admit(self.diagnostic_samples)
         panel=self.directory/'during-capture-ink.ppm';points=expected_stroke(self.diagnostic_samples)[1]
@@ -153,7 +181,7 @@ class Workflow(CourseMathWorkflow):
         require(len([r for r in self.rows(s) if r[0]==0x711 and r[1]==1])>other,'revocation test did not leave another authorized stream running')
         state=s.inspect()['machine'];self.report['local_diagnostic']={'prior_state':before['devices']['multimodal'],'after_revoke_flood':state['devices']['multimodal'],'injected_revoked_stimuli':32,'payload_wipe':'source/audit invariant; no unauthorized RAM/raw snapshot exported','no_raw_upload':'guest711 carries zero value; local-only permission'}
         self.click(s,stream,'local-mute',570,140)
-        self.click(s,stream,'stop-remaining-local-capture',450,140)
+        self.capture_control(s,stream,'stop-remaining-local-capture',False)
     def tasks(self,s):
         out=self.directory/'runtime-tasks';out.mkdir();cases=[]
         fixtures=[(1,0,[2,7,3,5],None,8),(1,0,[9,11,7,13],None,8),(1,0,[2,7,3,5],(32,35),8),(2,0,[2,3,1,4],None,8),(2,0,[11,2,3,7],(14,84,33),8),(1,0,[2,7,3,5],None,0),(1,1,[2,7,3,5],None,8)]
@@ -189,14 +217,13 @@ class Workflow(CourseMathWorkflow):
             ('worked-example','Please give a complete brief worked example of adding 5/8 and 11/19.',(5,8,11,19)),
             ('counterexample','Give a counterexample using 17/23 and 13/29 to show why adding denominators is not fraction addition.',(17,23,13,29))]
         for index,(requested,question,values) in enumerate(questions,1):
-            self.click(s,stream,'student-ASK-'+str(index)+'-'+requested,870,140)
-            context=ask_context((s.directory/'uart-0.bin').read_bytes());out=self.directory/('actual-tutor-'+str(index))
+            context=self.anchored_ask(s,stream,'student-ASK-'+str(index)+'-'+requested);out=self.directory/('actual-tutor-'+str(index))
             args=[sys.executable,str(ROOT/'scripts/lemmasim_tutor.py'),'--session-dir',str(s.directory),'--work-dir',str(out),'--question',question,'--kind','rational-sum']
             for flag,value in zip(('a','b','c','d'),values):args.extend(['--'+flag,str(value)])
             args.append('--inject');self.tool('actual-inference-publication-'+str(index),args,180)
             proposal=json.loads((out/'proposal.json').read_text());raw=(out/'assistance.lcp').read_bytes();package=decode(raw);sequence=context['sequence']
             require(proposal['action']==requested,'actual inference did not supply the explicitly requested pedagogical action; retain real response')
-            self.phase(s,'guest-Store-commits-action-'+str(index),150_000_000,lambda st:idle(st) and self.installed(s,sequence,60001,sequence))
+            self.phase(s,'guest-Store-commits-action-'+str(index),150_000_000,lambda st:idle(st) and self.installed(s,60001,sequence,struct.unpack_from('<Q',raw,80)[0]))
             prior_good=sum(r[0]==0x724 and r[1]==0 for r in self.rows(s));prior_accepted=sum(r[0]==0x725 for r in self.rows(s))
             self.click(s,stream,'guest-LOAD-executes-'+str(index)+'-'+requested,970,140,text=package['nodes'][0]['body'])
             require(sum(r[0]==0x724 and r[1]==0 for r in self.rows(s))==prior_good+1 and sum(r[0]==0x725 for r in self.rows(s))==prior_accepted+1 and any(r[0]==0x725 and r[1]==sequence for r in self.rows(s)),'fresh actual guest gate/acceptance absent')
@@ -209,12 +236,11 @@ class Workflow(CourseMathWorkflow):
         require(len({r['action'] for r in deliveries})==3,'differing actual executed actions absent')
         return last_package,last_packet
     def corrupt_checked_claim(self,s,stream,published,packet_hex):
-        self.click(s,stream,'fresh-ASK-for-untrusted-claim-negative',870,140)
-        context=ask_context((s.directory/'uart-0.bin').read_bytes());out=self.directory/'negative-self-checked2';out.mkdir()
+        context=self.anchored_ask(s,stream,'fresh-ASK-for-untrusted-claim-negative');out=self.directory/'negative-self-checked2';out.mkdir()
         raw,crc=admission_fault_fixture(published,packet_hex,'self-checked2',context)
         (out/'original-model.lcp').write_bytes(published);(out/'quarantined-self-checked2.lcp').write_bytes(raw);(out/'guest-context.json').write_text(json.dumps(context,indent=2)+'\n')
         seq=context['sequence'];self.uart_bytes(s,frame(1,60001,seq,len(raw),seq,crc)+raw)
-        self.phase(s,'guest-Store-installs-adversarial-unverified-data',150_000_000,lambda st:idle(st) and self.installed(s,seq,60001,seq))
+        self.phase(s,'guest-Store-installs-adversarial-unverified-data',150_000_000,lambda st:idle(st) and self.installed(s,60001,seq,crc))
         accepted=sum(r[0]==0x725 for r in self.rows(s));old=sum(r[0]==0x724 and r[1]==14 for r in self.rows(s));self.raw(s,stream,970,140)
         self.phase(s,'guest-rejects-untrusted-checked-claim2',100_000_000,lambda st:idle(st) and sum(r[0]==0x724 and r[1]==14 for r in self.rows(s))>old)
         require(sum(r[0]==0x725 for r in self.rows(s))==accepted,'untrusted claim2 acquired acceptance')
@@ -222,11 +248,10 @@ class Workflow(CourseMathWorkflow):
     def admission_negatives(self,s,stream,published,packet_hex):
         results=[]
         for kind,reason in [('marker-omitted',18),('prefix-omitted',19)]:
-            self.click(s,stream,'fresh-ASK-for-'+kind,870,140)
-            context=ask_context((s.directory/'uart-0.bin').read_bytes());raw,crc=admission_fault_fixture(published,packet_hex,kind,context)
+            context=self.anchored_ask(s,stream,'fresh-ASK-for-'+kind);raw,crc=admission_fault_fixture(published,packet_hex,kind,context)
             out=self.directory/('negative-'+kind);out.mkdir();(out/'original-model.lcp').write_bytes(published);(out/'quarantined-frame.lcp').write_bytes(raw);(out/'guest-context.json').write_text(json.dumps(context,indent=2)+'\n')
             sequence=context['sequence'];self.uart_bytes(s,frame(1,60001,sequence,len(raw),sequence,crc)+raw)
-            self.phase(s,'guest-Store-installs-'+kind,150_000_000,lambda st:idle(st) and self.installed(s,sequence,60001,sequence))
+            self.phase(s,'guest-Store-installs-'+kind,150_000_000,lambda st:idle(st) and self.installed(s,60001,sequence,struct.unpack_from('<Q',raw,80)[0]))
             accepted=sum(r[0]==0x725 for r in self.rows(s));old=sum(r[0]==0x724 and r[1]==reason for r in self.rows(s));self.raw(s,stream,970,140)
             self.phase(s,'guest-rejects-'+kind,100_000_000,lambda st:idle(st) and sum(r[0]==0x724 and r[1]==reason for r in self.rows(s))>old)
             require(sum(r[0]==0x725 for r in self.rows(s))==accepted,'untrusted '+kind+' acquired acceptance')
@@ -238,10 +263,10 @@ class Workflow(CourseMathWorkflow):
         package=self.args.package[0].read_bytes();p=decode(package);require(p['identity']==1 and p['edition']==3,'fresh original edition3 package required')
         _,_,original=recover(self.args.disk.read_bytes());require((1,5785718146287534081) not in original,'input must not contain a staged workspace')
         disk=self.directory/'private.raw';self.sparse_copy(self.args.disk,disk);s=self.session('first',disk)
-        self.report.update(scope=__doc__,original_input_sha256=sha(self.args.disk),observer_sha256=sha(Path(__file__)),aggregate_cap=4_000_000_000)
+        self.report.update(scope=__doc__,original_input_sha256=sha(self.args.disk),observer_sha256=sha(Path(__file__)),aggregate_cap=4_000_000_000,aggregate_cycles=4_000_000_000,hint_scope='guest-gated owner-local text assistance; protected transport/audio remain unexecuted')
         self.phase(s,'cold-native-Ready-and-sole-installer',1_000_000_000,lambda st:idle(st) and st['panel_completed']>0 and any(r[0]==0x420 for r in self.rows(s)) and any(r[0]==0x72d for r in self.rows(s)))
         self.uart_bytes(s,frame(1,1,3,len(package),1001,struct.unpack_from('<Q',package,80)[0])+package)
-        self.phase(s,'guest-validates-and-durably-installs-original-course',150_000_000,lambda st:idle(st) and self.installed(s,1001,1,3))
+        self.phase(s,'guest-validates-and-durably-installs-original-course',150_000_000,lambda st:idle(st) and self.installed(s,1,3,struct.unpack_from('<Q',package,80)[0]))
         stream=Input(1650,2200,s.inspect()['machine']['ticks']+10000,100000,0)
         self.click(s,stream,'open-fresh-workbook-chooser',320,140)
         self.click(s,stream,'choose-edition2',168,670);self.click(s,stream,'choose-edition3',168,670)

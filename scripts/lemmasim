@@ -822,7 +822,8 @@ def main():
     sub.add_parser('usb-pending',help='Opt-in hosted Lean policy4 with bounded receipt Pending; use usb-pending --help')
     sub.add_parser('companion',help='Hosted Lean persistent opaque backing development transport; use companion --help')
     sub.add_parser('product',help='Immutable Lean ROM, real NV boot and owner-local recovery; use product --help')
-    p=sub.add_parser('browser-build',help='Build the same RTL Machine as a local Wasm static bundle')
+    p=sub.add_parser('browser-build',help='Prepare the shared Lean machine as a source-bound local Wasm bundle')
+    p.add_argument('--engine',choices=('rtl','qemu-tci'),default='rtl',help='Explicit functional QEMU/TCI or clocked RTL implementation; no timing-equivalence claim')
     p.add_argument('--workbook',choices=('ordinary','parameterized'),default='ordinary');p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--wasm-build',type=Path,required=True)
     p.add_argument('--output-dir',type=Path,required=True);p.add_argument('--reuse-wasm',action='store_true')
     p.add_argument('--guest-bundle',type=Path,help='Use fully validated immutable genuine guest artifacts; rebuild only the current machine')
@@ -931,6 +932,12 @@ def main():
             silicon_guest_bundle.bundle(args)
             return 0
         if args.command=='browser-build':
+            if args.engine=='qemu-tci':
+                if not args.reuse_wasm or args.guest_bundle is None or args.wasm_input_bundle is not None or args.wasm_source_bundle is not None or args.host_optimization!='scalar':
+                    raise Failure('QEMU/TCI packaging requires --reuse-wasm, --wasm-build admitted-runtime and --guest-bundle; host compilation uses tooling/lemmasim/tci/build.py')
+                import lemmasim_browser_tci
+                lemmasim_browser_tci.bundle(args)
+                return 0
             if args.wasm_input_bundle is not None and not args.reuse_wasm:
                 raise Failure('--wasm-input-bundle requires --reuse-wasm')
             if args.reuse_wasm and (args.wasm_source_bundle is not None or args.host_optimization!='scalar'):

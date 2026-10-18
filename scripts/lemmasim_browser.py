@@ -202,6 +202,9 @@ def validated_bundle(directory):
     manifest_path=directory/'bundle.json'
     if manifest_path.is_symlink():raise ValueError('Symlinked browser manifest')
     m=read_json(manifest_path)
+    if m.get('schema')=='lemmasim-browser-qemu-tci/1':
+        import lemmasim_browser_tci
+        return lemmasim_browser_tci.validated_bundle(directory)
     if m.get('schema')!='lemmasim-browser-bundle/1' or m.get('profile') not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0') or (m.get('width'),m.get('height'))!=(1650,2200):
         raise ValueError('Unsupported browser machine bundle')
     if m.get('session_control_contract') not in (None, 'lemma-browser-session-modes/1', 'lemma-browser-session-modes/2'):

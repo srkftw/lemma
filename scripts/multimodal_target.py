@@ -163,6 +163,17 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
       .bind (CapabilityConsole.record console 0x712 operation status.toUInt64 result 0) fun s _ => if mmFailed s = true then .done s 0 else
       Memory.write64 (Lemma.User.Multimodal.state + 32) 1'''),
       'source local safety may only control/receipt/defer; framebuffer work rejected')
+    require(definition(notebook,'multimodalBarTile') == compact('''private def multimodalBarTile (i _ : UInt32) (acc width _ _ _ : UInt64) : Action :=
+      .bind (markDirtyTile (4 * ((width + 31) / 32) + 12 + i.toUInt64)) fun s _ => .done s acc'''),
+      'source toolbar tile row/column/index differs')
+    require(definition(notebook,'multimodalBar') == compact('''private def multimodalBar : Action :=
+      .bind Lemma.User.Multimodal.active fun s enabled => if mmFailed s = true then .done s 0 else
+      .bind (get 32) fun s width => if mmFailed s = true then .done s 0 else
+      if width < 1024 then .done 16 0 else
+      .boundedFoldU64 4680 multimodalBarStep 4680 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+      .boundedFoldU64 20 multimodalBarTile 20 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+      dirty 400 132 1024 147'''),
+      'source toolbar must bound width and enqueue all twenty intersected tiles before dirty')
     require(definition(notebook,'multimodalPumpBar') == compact('''private def multimodalPumpBar : Action :=
       .bind (Memory.read64 (Lemma.User.Multimodal.state + 32)) fun s pending => if mmFailed s = true then .done s 0 else
       if pending = 0 then .done 0 0 else
@@ -183,8 +194,17 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
     else .bind (get 432)''')
     require(safety_branch in input_, 'source safety controls no longer precede busy/cancelled queue gate')
     prefix = input_[:input_.index(safety_branch)]
+    capture_branch = compact('''.bind (if 132 ≤ safetyY then if safetyY < 160 then
+      if 400 ≤ safetyX then if safetyX < 544 then Lemma.User.Multimodal.active
+      else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0)
+      fun s captureActive => if statusFailed s = true then .done s 0 else
+      if different captureActive 0 = true then multimodalSafety 0 else''')
+    require(capture_branch+' '+safety_branch in input_,
+            'source CAPTURE may only inhibit an active session before the busy queue')
     require(all(token not in prefix for token in ('queueBookTap','get 160','get 536','ControlBacklog.count','cancelBookmarkWork')),
             'source local safety waits behind Store/check/backlog')
+    require(all(token not in prefix for token in ('Surface.framebuffer','markDirtyTile','multimodalBar')),
+            'source local inhibition renders before idle/frame ownership')
     require('if different active 0 = true then appendRaw else if flags &&& 1 = 0 then .done 0 0 else if previousContact = 1 then .done 0 0 else' in prefix,
             'source safety bypass changed pen contact/raw-stroke handling')
     for offset in (288,296,304):
@@ -342,13 +362,22 @@ def semantics(ir, unit):
                               (prefix+'multimodalStep', prefix+'pumpBookControlBacklog'),
                               (prefix+'multimodalControl', 'Lemma.User.Multimodal.control'),
                               (prefix+'multimodalSafety', 'Lemma.User.Multimodal.control'),
+                              (prefix+'multimodalBar', prefix+'multimodalBarTile'),
+                              (prefix+'multimodalBarTile', prefix+'markDirtyTile'),
                               (prefix+'multimodalPumpBar', prefix+'multimodalBar'),
                               (prefix+'multimodalPumpBar', 'Lemma.Ink.Surface.status'),
                               (prefix+'multimodalStep', prefix+'multimodalPumpBar'),
-                              (prefix+'drainMultimodalInput.drainStep', prefix+'multimodalInputSample'),
-                              (prefix+'multimodalInputSample.acceptSample', prefix+'multimodalSafety')):
+                              (prefix+'drainMultimodalInput.drainStep', prefix+'multimodalInputSample')):
             require(len(calls(owner, target)) == 1, 'Notebook omitted or repeated ' + target)
             checked.append((owner, target))
+        owner=prefix+'multimodalInputSample.acceptSample'
+        safety_calls=calls(owner,prefix+'multimodalSafety')
+        require(len(safety_calls)==2 and safety_calls[0]=='i64 0',
+                'Notebook active-stop and mute/revoke call inventory differs')
+        variable=re.fullmatch(r'i64 (%[-A-Za-z0-9_.$]+)',safety_calls[1])
+        require(variable is not None and len(re.findall(re.escape(variable[1])+r' = phi i64 \[ 1, %[-A-Za-z0-9_.$]+ \], \[ 2, %[-A-Za-z0-9_.$]+ \]',body(owner)))==1,
+                'Notebook mute/revoke selector no longer contains exact operations1/2')
+        checked.append((owner,prefix+'multimodalSafety'))
         invoke = 'Lemma.User.Multimodal.invoke'
         actual = calls(invoke, 'Lemma.User.Syscall.call')
         require(len(actual) == 1 and actual[0].startswith('i64 69, '), 'User sensor control bypasses syscall69')

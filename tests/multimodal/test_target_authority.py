@@ -147,6 +147,31 @@ class NotebookSafetySourceTests(unittest.TestCase):
         with self.assertRaisesRegex(Core0Error,'lost-contact'):
             target.notebook_safety_sources(self.sources[0],changed,self.sources[2])
 
+    def test_toolbar_requires_every_intersected_tile_and_width_guard(self):
+        # x400..1023 and y132..146 intersect exactly row4, columns12..31.
+        columns = set(x // 32 for x in range(400,1024))
+        rows = set(y // 32 for y in range(132,147))
+        self.assertEqual((rows, columns), ({4},set(range(12,32))))
+        for before,after in (
+            ('if width < 1024 then .done 16 0 else','if width < 624 then .done 16 0 else'),
+            ('.boundedFoldU64 20 multimodalBarTile 20','.boundedFoldU64 1 multimodalBarTile 1'),
+            ('4 * ((width + 31) / 32) + 12 + i.toUInt64','3 * ((width + 31) / 32) + 12 + i.toUInt64'),
+            ('4 * ((width + 31) / 32) + 12 + i.toUInt64','4 * ((width + 31) / 32) + 13 + i.toUInt64'),
+            ('4 * ((width + 31) / 32) + 12 + i.toUInt64','4 * ((width + 31) / 32) + 12')):
+            with self.subTest(after=after):self.reject(1,before,after,'source toolbar')
+
+    def test_active_capture_inhibition_cannot_start_or_wait_for_busy_queue(self):
+        for before,after in (
+            ('if different captureActive 0 = true then multimodalSafety 0 else',
+             'if different captureActive 0 = false then multimodalSafety 0 else'),
+            ('if different captureActive 0 = true then multimodalSafety 0 else',
+             'if different captureActive 0 = true then multimodalControl 0 else'),
+            ('if 400 ≤ safetyX then if safetyX < 544 then Lemma.User.Multimodal.active',
+             'if 400 ≤ safetyX then if safetyX < 640 then Lemma.User.Multimodal.active'),
+            ('if 400 ≤ safetyX then if safetyX < 544 then Lemma.User.Multimodal.active',
+             'if 400 ≤ safetyX then if safetyX < 544 then .done 0 1')):
+            with self.subTest(after=after):self.reject(1,before,after,'source CAPTURE')
+
 class ReadonlyGuardTests(unittest.TestCase):
     def fixture(self):
         unit={'functions':[{'source':'Lemma.Fixture.lookup','symbol':'lemma_lookup','args':['u64'],'effects':[]}], 'role':'kernel'}

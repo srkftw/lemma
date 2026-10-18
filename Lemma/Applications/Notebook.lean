@@ -5857,7 +5857,7 @@ CAPTURE is synthetic, five seconds, no transmission/retention. MUTE is local. -/
 private def multimodalCharacter (index enabled : UInt64) : UInt64 :=
   if index < 12 then
     if enabled = 1 then
-      if index < 8 then (0x4556495443414e53 >>> (index * 8)) &&& 255 else 32
+      if index < 6 then (0x455649544341 >>> (index * 8)) &&& 255 else 32
     else if index < 8 then (0x45525554504143 >>> (index * 8)) &&& 255 else 32
   else if index < 20 then
     if index < 16 then (0x4554554d >>> ((index - 12) * 8)) &&& 255 else 32
@@ -5879,10 +5879,15 @@ where
       if (Surface.letter (multimodalCharacter (x / 12) enabled) >>> (14 - (y / 3 * 3 + x % 12 / 3))) &&& 1 = 1 then 0 else 15
     else 15
 
+private def multimodalBarTile (i _ : UInt32) (acc width _ _ _ : UInt64) : Action :=
+  .bind (markDirtyTile (4 * ((width + 31) / 32) + 12 + i.toUInt64)) fun s _ => .done s acc
+
 private def multimodalBar : Action :=
   .bind Lemma.User.Multimodal.active fun s enabled => if mmFailed s = true then .done s 0 else
   .bind (get 32) fun s width => if mmFailed s = true then .done s 0 else
+  if width < 1024 then .done 16 0 else
   .boundedFoldU64 4680 multimodalBarStep 4680 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+  .boundedFoldU64 20 multimodalBarTile 20 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
   dirty 400 132 1024 147
 
 private def multimodalControl (operation : UInt64) : Action :=
@@ -5947,6 +5952,13 @@ where
     .bind (get 56) fun s maxY => if statusFailed s = true then .done s 0 else
     let safetyX := Geometry.pixel (Geometry.normalized x maxX) width
     let safetyY := Geometry.pixel (Geometry.normalized y maxY) height
+    -- Stopping an already active diagnostic window is local inhibition.
+    -- Starting collection still follows the ordinary idle-only control path.
+    .bind (if 132 ≤ safetyY then if safetyY < 160 then
+      if 400 ≤ safetyX then if safetyX < 544 then Lemma.User.Multimodal.active
+      else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0)
+      fun s captureActive => if statusFailed s = true then .done s 0 else
+    if different captureActive 0 = true then multimodalSafety 0 else
     if (if 132 ≤ safetyY then if safetyY < 160 then if 544 ≤ safetyX then if safetyX < 832 then true else false else false else false else false) = true then
       multimodalSafety (if safetyX < 640 then 1 else 2)
     else

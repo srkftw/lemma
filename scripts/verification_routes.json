@@ -105,6 +105,10 @@
     "multimodal-browser-component": {
       "kind": "execution",
       "command": "python3 scripts/serve_multimodal_probe.py --wasm-build ACTUAL_WASM_BUILD --guest AUDITED_PROBE_ELF --rom GENERATED_ROM --binding GENERATED_BINDING --work-dir build/multimodal/browser-UNUSED; run actual browser component and retain UA, records, PCM and original wall limit; not full workbook"
+    },
+    "multimodal-notebook-ui": {
+      "kind": "validation",
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_notebook_ui.py --work-dir build/multimodal/UI-UNUSED; hosted real Lean Actions with source negatives, not RV64/display execution"
     }
   },
   "boundaries": [
@@ -295,10 +299,16 @@
         "tooling/silicon/wasm.nix",
         "scripts/package_browser.py",
         "scripts/silicon_wasm.py",
-        "scripts/check_browser_*.py"
+        "scripts/check_browser_*.py",
+        "scripts/lemmasim_browser_tci.py",
+        "sim/browser/tci/*",
+        "tooling/lemmasim/tci/*"
       ],
       "claims": [
-        "browser"
+        "browser",
+        "multimodal-host",
+        "multimodal-workbook-browser",
+        "multimodal-resource-performance"
       ],
       "affects": []
     },
@@ -516,6 +526,20 @@
         "multimodal-browser-component",
         "multimodal-guest",
         "multimodal-resource-performance"
+      ],
+      "affects": []
+    },
+    {
+      "id": "multimodal-notebook-ui-actions",
+      "inputs": [
+        "scripts/check_multimodal_notebook_ui.py",
+        "tests/multimodal/NotebookUIActions.lean.inc",
+        "Lemma/Applications/Notebook.lean"
+      ],
+      "claims": [
+        "multimodal-notebook-ui",
+        "multimodal-workbook-native",
+        "multimodal-workbook-browser"
       ],
       "affects": []
     }
