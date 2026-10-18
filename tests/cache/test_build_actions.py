@@ -145,6 +145,93 @@ def literal := "/- this string is not an unterminated comment"
                 self.assertFalse(valid.exists())
         self.assertFalse((self.root / ".lake").exists())
 
+    def test_compiled_root_symlink_is_unlinked_without_touching_external_bytes(self):
+        source = self.fixture()
+        inputs = lean_source_inputs(self.root, [source])
+        tools = {"lean": "fixture-lean", "lake": "fixture-lake"}
+        # Only tool identity is substituted. The actual private-tree traversal,
+        # symlink admission and ordinary/fresh reset paths execute on disk.
+        with patch("action_cache.tool_identity", side_effect=lambda name: {"path": name, "sha256": "fixture-tool"}):
+            for fresh in (False, True):
+                with self.subTest(fresh=fresh):
+                    cache = self.root / f"cache-{fresh}"
+                    with lean_workspace(self.root, cache, tools, inputs) as tree:
+                        original = tree / ".lake/build/lib/lean/App.olean"
+                        original.parent.mkdir(parents=True)
+                        original.write_bytes(b"original compiled bytes")
+                    external = self.root / f"external-lake-{fresh}"
+                    (tree / ".lake").rename(external)
+                    (tree / ".lake").symlink_to(external, target_is_directory=True)
+                    foreign = external / "build/lib/lean/App.olean"
+                    foreign.write_bytes(b"corrupt external compiled bytes")
+                    before = {p.relative_to(external): p.read_bytes()
+                              for p in external.rglob("*") if p.is_file()}
+                    with lean_workspace(self.root, cache, tools, inputs, fresh=fresh) as current:
+                        self.assertEqual(current, tree)
+                        self.assertFalse((current / ".lake").exists())
+                        self.assertFalse((current / ".lake").is_symlink())
+                        replacement = current / ".lake/build/lib/lean/App.olean"
+                        replacement.parent.mkdir(parents=True)
+                        replacement.write_bytes(b"new private compiled bytes")
+                    self.assertEqual(before, {p.relative_to(external): p.read_bytes()
+                                             for p in external.rglob("*") if p.is_file()})
+                    self.assertFalse((tree / ".lake").is_symlink())
+                    self.assertEqual(replacement.read_bytes(), b"new private compiled bytes")
+
+    def test_workspace_root_symlink_rejects_before_traversing_or_rewriting_external_tree(self):
+        source = self.fixture()
+        inputs = lean_source_inputs(self.root, [source])
+        tools = {"lean": "fixture-lean", "lake": "fixture-lake"}
+        with patch("action_cache.tool_identity", side_effect=lambda name: {"path": name, "sha256": "fixture-tool"}):
+            cache = self.root / "cache"
+            with lean_workspace(self.root, cache, tools, inputs) as tree:
+                compiled = tree / ".lake/build/lib/lean/App.olean"
+                compiled.parent.mkdir(parents=True)
+                compiled.write_bytes(b"external compiled bytes")
+            external = self.root / "external-tree"
+            tree.rename(external)
+            tree.symlink_to(external, target_is_directory=True)
+            before = {p.relative_to(external): p.read_bytes()
+                      for p in external.rglob("*") if p.is_file()}
+            source.write_text(source.read_text() + "\ndef changed : Nat := 9\n")
+            for fresh in (False, True):
+                with self.subTest(fresh=fresh):
+                    with self.assertRaisesRegex(Core0Error, "workspace root must not be a symlink"):
+                        with lean_workspace(self.root, cache, tools, inputs, fresh=fresh):
+                            self.fail("external workspace root was admitted")
+                    self.assertTrue(tree.is_symlink())
+                    self.assertEqual(before, {p.relative_to(external): p.read_bytes()
+                                             for p in external.rglob("*") if p.is_file()})
+
+    def test_compiled_metadata_symlink_rejects_before_read_and_write_without_external_changes(self):
+        source = self.fixture()
+        inputs = lean_source_inputs(self.root, [source])
+        tools = {"lean": "fixture-lean", "lake": "fixture-lake"}
+        with patch("action_cache.tool_identity", side_effect=lambda name: {"path": name, "sha256": "fixture-tool"}):
+            for fresh in (False, True):
+                with self.subTest(fresh=fresh):
+                    cache = self.root / f"metadata-cache-{fresh}"
+                    with lean_workspace(self.root, cache, tools, inputs) as tree:
+                        pass
+                    metadata = tree.parent / "compiled.json"
+                    external = self.root / f"external-metadata-{fresh}"
+                    external.write_bytes(b"external bytes must remain unchanged")
+                    metadata.unlink()
+                    metadata.symlink_to(external)
+                    with self.assertRaisesRegex(Core0Error, "compiled-state metadata must not be a symlink"):
+                        with lean_workspace(self.root, cache, tools, inputs, fresh=fresh):
+                            self.fail("symlink metadata was admitted")
+                    self.assertTrue(metadata.is_symlink())
+                    self.assertEqual(external.read_bytes(), b"external bytes must remain unchanged")
+                    metadata.unlink()
+                    # A link introduced while the caller owns the tree must
+                    # also reject before the final metadata write follows it.
+                    with self.assertRaisesRegex(Core0Error, "compiled-state metadata must not be a symlink"):
+                        with lean_workspace(self.root, cache, tools, inputs, fresh=fresh):
+                            metadata.symlink_to(external)
+                    self.assertTrue(metadata.is_symlink())
+                    self.assertEqual(external.read_bytes(), b"external bytes must remain unchanged")
+
 
 if __name__ == "__main__":
     unittest.main()

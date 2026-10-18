@@ -113,14 +113,25 @@ def lean_workspace(root, cache_directory, tools, inputs, *, fresh=False):
     with (base / "lock").open("a+b") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         tree = base / "tree"
+        if tree.is_symlink():
+            raise Core0Error("private Lean workspace root must not be a symlink")
         tree.mkdir(exist_ok=True)
+        compiled = tree / ".lake"
+        metadata = base / "compiled.json"
+        if metadata.is_symlink():
+            raise Core0Error("private Lean compiled-state metadata must not be a symlink")
         def inventory():
-            return {p.relative_to(tree).as_posix(): sha256(p) for p in sorted((tree / ".lake").rglob("*")) if p.is_file()}
+            return {p.relative_to(tree).as_posix(): sha256(p) for p in sorted(compiled.rglob("*")) if p.is_file()}
         try:
-            previous = json.loads((base / "compiled.json").read_text())
-            valid = previous == inventory() and not any(p.is_symlink() for p in (tree / ".lake").rglob("*"))
+            previous = json.loads(metadata.read_text())
+            valid = (not compiled.is_symlink() and previous == inventory()
+                     and not any(p.is_symlink() for p in compiled.rglob("*")))
         except (OSError, ValueError): valid = False
-        if fresh or not valid: shutil.rmtree(tree / ".lake", ignore_errors=True)
+        if fresh or not valid:
+            if compiled.is_symlink():
+                compiled.unlink()
+            elif compiled.exists():
+                shutil.rmtree(compiled)
         names = set(inputs)
         for name,path in inputs.items():
             if not name.endswith(".lean"): continue
@@ -138,10 +149,12 @@ def lean_workspace(root, cache_directory, tools, inputs, *, fresh=False):
             with action_lease(lock.fileno()):
                 yield tree
         except BaseException:
-            (base / "compiled.json").unlink(missing_ok=True)
+            metadata.unlink(missing_ok=True)
             raise
         else:
-            write_json(base / "compiled.json", inventory())
+            if metadata.is_symlink():
+                raise Core0Error("private Lean compiled-state metadata must not be a symlink")
+            write_json(metadata, inventory())
 
 
 def fresh_requested(fresh=False):

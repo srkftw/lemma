@@ -36,6 +36,11 @@ def embedded_inputs(path: Path) -> list[str]:
     if path.suffix not in ('.S', '.s', '.ld', '.ll'):
         return []
     text = path.read_text()
+    # Clang's assembler-with-cpp splices lines before parsing directives, even
+    # with intervening horizontal whitespace. read_text normalizes CR/CRLF.
+    # Reject this unsupported syntax before looking for file-consuming tokens.
+    if re.search(r'\\[^\S\n]*\n', text):
+        raise Core0Error('unsupported LLVM input line continuation dependency')
     # Conservative matching deliberately includes comments. An irrelevant
     # comment can be removed; an unaccounted external input cannot be admitted.
     if path.suffix == '.ll':
@@ -44,6 +49,10 @@ def embedded_inputs(path: Path) -> list[str]:
         return []
     if re.search(r'(?m)^\s*(?:#|%:|\?\?=)|(?:#|%:|\?\?=)\s*(?:include(?:_next)?|import|embed|define|undef)\b|\.\s*(?:include|macro|purgem|irp|irpc)\b|\bINCLUDE(?=\s|[\"\x27(])|\b(?:INPUT|GROUP|SEARCH_DIR|STARTUP|AS_NEEDED|OUTPUT)\s*\(', text, re.I):
         raise Core0Error('undeclared assembly/preprocessor/linker dependency')
+    # Linker comments may separate a directive from its argument list. Token
+    # rejection avoids depending on LLD's whitespace/comment normalization.
+    if path.suffix == '.ld' and re.search(r'(?<![\w./-])(?:INCLUDE|INPUT|GROUP|SEARCH_DIR|STARTUP|AS_NEEDED|OUTPUT)(?![\w.-]|/(?!\*))', text, re.I):
+        raise Core0Error('undeclared linker directive dependency')
     found = []
     for line in text.splitlines():
         if not re.search(r'\.\s*incbin\b', line, re.I):
