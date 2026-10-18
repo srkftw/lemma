@@ -2,6 +2,7 @@ import Lemma.Courses.PackageCommand
 import Lemma.Courses.PackageStore
 import Lemma.Courses.PackageAwaitClient
 import Lemma.User.CapabilityConsole
+import Lemma.Services.Arithmetic.ClientV8
 
 /-! Separately linked owner-local course installer. Raw console input is copied
 into its own pages. Guest validation, Store staging/publication, loading and
@@ -241,4 +242,118 @@ def mainAwait (initialization : UInt64) : Action :=
   else failed else failed else failed else failed else failed
   else failed else failed
 
+end Lemma.Courses.PackageInstaller
+
+/-! Additive owner-local development math frames. The sole existing installer
+continues normal course commands; a distinct magic admits192 immutable copied
+bytes after startup. No result changes notebook work or grants mathematical
+presentation authority. Runtime processing uses the separately linked checker.
+The selected development boot supplies a third Call-only arithmetic grant. -/
+namespace Lemma.Courses.PackageInstaller
+open Lemma.Core0.Memory Lemma.User Lemma.Services.Store Lemma.Courses.PackageFormat
+private def mathMagic : UInt64 := 0x324b4843414d454c
+private def mathCRCStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (Memory.read8 (package+i.toUInt64)) fun s byte => if s = 0 then
+  .done 0 (crcByte acc byte) else .done s 0
+private def mathReport (status : UInt8) (outcome : UInt64) : Action :=
+  .bind (get 0) fun s console => if s = 0 then
+  .bind (get 72) fun s request => if s = 0 then
+  .bind (CapabilityConsole.record console 0x72b request status.toUInt64 outcome 0) fun s _ => if s = 0 then
+  .bind (Memory.read64 (package+8)) fun s source => if s = 0 then
+  .bind (Memory.read64 (package+16)) fun s edition => if s = 0 then
+  .bind (Memory.read64 (package+24)) fun s object => if s = 0 then
+  .bind (Memory.read64 (package+40)) fun s revision => if s = 0 then
+  .bind (CapabilityConsole.record console 0x72c source edition object revision) fun s _ => if s = 0 then
+  .bind (put 96 request) fun s _ => if s = 0 then reset else failed
+  else failed else failed else failed else failed else failed else failed else failed else failed
+private def mathExecute : Action :=
+  .boundedFoldU64 192 mathCRCStep 192 0xffffffff 0 0 0 0 fun s crc => if s = 0 then
+  .bind (command 56) fun s expected => if s = 0 then
+  if (crc ^^^ 0xffffffff) = expected then
+  .bind (Memory.read64 (package+8)) fun s source => if s = 0 then
+  .bind (Memory.read64 (package+16)) fun s edition => if s = 0 then
+  .bind (command 24) fun s sourceExpected => if s = 0 then
+  .bind (command 32) fun s editionExpected => if s = 0 then
+  if source = sourceExpected then if edition = editionExpected then
+  .bind (get 64) fun s checking => if s = 0 then
+  .bind (get 72) fun s request => if s = 0 then
+  .bind (Lemma.Services.Arithmetic.ClientV8.beginCall checking package request) fun status transaction =>
+  if status = 0 then
+  .bind (put 80 transaction) fun s _ => if s = 0 then put 32 3 else failed
+  else mathReport status 0
+  else failed else failed else mathReport malformed 0 else mathReport malformed 0
+  else failed else failed else failed else failed
+  else mathReport integrityFailure 0 else failed else failed
+private def mathHeaderComplete : Action :=
+  .bind (command 0) fun s magic => if s = 0 then
+  if magic = mathMagic then
+  .bind (command 8) fun s version => if s = 0 then
+  .bind (command 16) fun s operation => if s = 0 then
+  .bind (command 24) fun s source => if s = 0 then
+  .bind (command 32) fun s edition => if s = 0 then
+  .bind (command 40) fun s bytes => if s = 0 then
+  .bind (command 48) fun s request => if s = 0 then
+  .bind (command 56) fun s crc => if s = 0 then
+  .bind (get 96) fun s previous => if s = 0 then
+  if version = 2 then if operation = 1 then if source = 0 then Syscall.exit 240 else
+  if edition = 0 then Syscall.exit 240 else if bytes = 192 then
+  if previous < request then if request ≤ 0x7ffffffffffffffe then if crc ≤ 0xffffffff then
+  .bind Syscall.time fun s now => if s = 0 then
+  if now ≤ 0xffffffffffffffff-100000000 then
+  .bind (put 16 0) fun s _ => if s = 0 then
+  .bind (put 24 192) fun s _ => if s = 0 then
+  .bind (put 72 request) fun s _ => if s = 0 then
+  .bind (put 48 (now+100000000)) fun s _ => if s = 0 then put 32 2 else failed
+  else failed else failed else failed else failed else failed
+  else Syscall.exit 240 else Syscall.exit 240 else Syscall.exit 240 else Syscall.exit 240 else Syscall.exit 241 else Syscall.exit 241
+  else failed else failed else failed else failed else failed else failed else failed else failed
+  else headerComplete else failed
+private def mathReceive (phase filled desired : UInt64) : Action :=
+  .bind (get 0) fun s console => if s = 0 then
+  let address := if phase = 0 then header else package
+  let count := minimum 256 (desired-filled)
+  .bind (Capability.consoleRead console (address+filled) count) fun status bytes =>
+  if status = ABI.noByte then if bytes = 0 then
+  .bind (Syscall.sleep 10000) fun s _ => if s = 0 then .done 0 0 else failed else failed else
+  if status = 0 then if 0 < bytes then if bytes ≤ count then
+  .bind (put 16 (filled+bytes)) fun s _ => if s = 0 then
+  if filled+bytes = desired then if phase = 0 then mathHeaderComplete else mathExecute else .done 0 0
+  else failed else failed else failed else failed else failed
+private def mathStep : Action :=
+  .bind (get 32) fun s phase => if s = 0 then
+  if phase = 3 then
+  .bind (get 80) fun s transaction => if s = 0 then
+  .bind (get 72) fun s request => if s = 0 then
+  .bind (Lemma.Services.Arithmetic.ClientV8.pollCall transaction incoming package request) fun status outcome =>
+  if status = IPCABI.wouldBlock then .bind (Syscall.sleep 10000) fun s _ => .done s 0 else mathReport status outcome
+  else failed else failed else
+  .bind (get 16) fun s filled => if s = 0 then
+  .bind (get 24) fun s body => if s = 0 then
+  let desired := if phase = 0 then (64 : UInt64) else body
+  if phase ≤ 2 then if filled < desired then
+  if phase = 1 then receive phase filled desired else
+  if phase = 0 then mathReceive phase filled desired else
+  .bind (get 48) fun s deadline => if s = 0 then
+  .bind Syscall.time fun s now => if s = 0 then
+  if now < deadline then mathReceive phase filled desired else Syscall.exit 93
+  else failed else failed else failed else failed else failed else failed else failed
+
+def mainParameterized (initialization : UInt64) : Action :=
+  if initialization ≤ 1 then
+  .bind (Capability.bootGrant 0) fun s console => if s = 0 then
+  .bind (Capability.bootGrant 1) fun s endpoint => if s = 0 then
+  .bind (Capability.bootGrant 2) fun s checking => if s = 0 then
+  .boundedFoldU64 16 allocateStep 16 0 0 0 0 0 fun s pages => if s = 0 then
+  if pages = 16 then
+  .bind (put 0 console) fun s _ => if s = 0 then
+  .bind (put 8 endpoint) fun s _ => if s = 0 then
+  .bind (put 40 6001) fun s _ => if s = 0 then
+  .bind (put 64 checking) fun s _ => if s = 0 then
+  .bind (put 96 0) fun s _ => if s = 0 then
+  .bind reset fun s _ => if s = 0 then
+  .bind (PackageAwaitClient.call endpoint outgoing incoming 1 initialization 1) fun s generation => if s = 0 then
+  .bind (CapabilityConsole.record console 0x72d generation checking 192 2) fun s _ =>
+  if s = 0 then .loop mathStep else failed
+  else failed else failed else failed else failed else failed else failed else failed
+  else failed else failed else failed else failed else failed else failed
 end Lemma.Courses.PackageInstaller

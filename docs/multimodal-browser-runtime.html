@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Functional browser machine</title><style>body{max-width:76ch;margin:2rem auto;padding:0 1rem;font:17px/1.55 system-ui;color:#172d2b;background:#f6f7f3}pre{overflow:auto;padding:1rem;background:#e7ece7}code{font-size:.9em}a{color:#075b56}table{border-collapse:collapse}td,th{border:1px solid #aabbb5;padding:.5rem;text-align:left}</style></head><body>
+<h1>Functional browser machine</h1>
+<p>The explicit QEMU/TCI browser embodiment executes the same audited Lean RV64 guest as the native functional machine. It uses the actual QEMU processor interpreter and maintained controllers. The separate RTL browser embodiment remains available. Their processor timing and exact continuation relations are different.</p>
+<h2 id="launch">Build and launch</h2>
+<p>Use a complete admitted <code>lemma-tci-retained-runtime/1</code> directory and a validated four-role native guest archive. These commands package unchanged audited artifacts; they do not compile a new guest or produce execution evidence. Select an unused output path.</p>
+<pre><code>./scripts/lemmasim browser-build --engine qemu-tci --reuse-wasm \
+  --profile lemma-silicon-dev/0.14.0 --workbook parameterized \
+  --wasm-build build/multimodal/tci-maintained-admission-a3 \
+  --guest-bundle build/multimodal/native-four-role-a1 \
+  --output-dir build/multimodal/browser-functional-parameterized-UNUSED
+./scripts/lemmasim browser-serve \
+  --bundle build/multimodal/browser-functional-parameterized-UNUSED --port 8767</code></pre>
+<p>Open <code>http://127.0.0.1:8767/</code>. Choose a new medium name and Create new medium to execute the Lean initializer, or import exactly 256 MiB of opaque durable bytes into a new name. Open resumes through real cold guest recovery. Student, Developer and Laboratory select bridge capabilities before opening; they do not replace guest capabilities or grant physiological collection.</p>
+<p>The server binds loopback and serves only inventoried files. It checks hashes on every response. Packaging retains the original runtime build/source inventory, public dependency identities, controller sources, upstream license, complete consumed guest source closure, guest production/audit receipts, and exact UI/bridge source derivatives. Unknown, missing, changed or coherently inconsistent inputs reject. Current contracts remain required dependencies.</p>
+<h2 id="standalone">Standalone local distribution</h2>
+<pre><code>python3 scripts/package_browser.py \
+  --bundle build/multimodal/browser-functional-parameterized-a4 \
+  --output-dir build/multimodal/browser-standalone-UNUSED
+python3 -I build/multimodal/browser-standalone-UNUSED/serve.py --verify-only
+python3 -I build/multimodal/browser-standalone-UNUSED/serve.py --port 8787</code></pre>
+<p>The extracted version-3 distribution includes its complete audited dependency policy and uses Python standard-library POSIX modules. It requires no checkout, Nix, Lean, compiler or network download at launch. Actual isolated entry-point verification passed for <code>browser-standalone-a1</code>: 570 files, 63,547,165 bytes, manifest <code>befbc74a69c392f7d1f768eaf88290545572ba09af703d138631b022c5adb765</code>. This verifies bytes and standalone launch, not a browser session. Historical version-1/2 distributions retain their own interpretation. No README is generated.</p>
+<h2 id="boundaries">Execution, persistence and presentation</h2>
+<table><thead><tr><th>Boundary</th><th>Implementation and limit</th></tr></thead><tbody>
+<tr><td>Machine</td><td>QEMU 11.1.1 Wasm64 TCI, one RV64 CPU, 128 MiB guest RAM and a 2 GiB Wasm host heap. Instruction-derived virtual time is not RTL cycle parity.</td></tr>
+<tr><td>Storage</td><td>QEMU POSIX reads, writes and fsync reach an exclusive OPFS SyncAccessHandle. A successful flush has browser-origin scope; eviction and physical power-loss durability remain unqualified.</td></tr>
+<tr><td>Display and pen</td><td>Only the modeled controller Gray4 plane is presented. Browser pointer samples enter the digitizer boundary; mouse pressure is synthetic. The host does not rasterize ink or interpret journals.</td></tr>
+<tr><td>Audio</td><td>The bridge decodes actual LMPCM001 controller output, including signed samples, ticks and consumed positions. Controller stop/grant changes clear queued sink output independently of speaker permission. The existing sink queues at most 20 ms; emitted samples and physical audibility cannot be undone or inferred. A 64 MiB digital file limit and 16,384-record observation bound pause on excess. Full guest tutor PCM delivery remains unverified.</td></tr>
+<tr><td>Continuation</td><td>Exact TCI checkpoints and sealed replay are explicitly unsupported. Cold recovery from Save bytes is a separate claim. No RTL, native or historical checkpoint result upgrades this embodiment.</td></tr>
+</tbody></table>
+<h2 id="observations">Observed scope</h2>
+<p>The retained actual Chromium 155 boot <code>build/multimodal/browser-workbook-boot-a1/report.json</code> executes the ordinary a6 guest at source <code>9b106e918f4d31ad359c5c63c68a489aa03e1140</code>. Guest Ready occurred at 180,000,000 functional cycles, 1.799999998 virtual seconds and 25.358525 wall seconds. Total import/boot observation took 28.29945 seconds. Actual OPFS observations were 19 reads/9,728 bytes, eight writes/4,096 bytes, and four successful flushes with zero errors. All 3,630,000 controller pixels and UART reports are retained. This earlier tested bridge precedes the final packaged PCM transport and strict input checks.</p>
+<p>The normal parameterized a4 package has manifest SHA-256 <code>5da0a4db10913bfa97817d66b27dbf299f736a3f3736e44ee538b29c2b4809b5</code>. Independently mutated actual-archive admission controls pass; that validates packaging, not a completed workbook session. A later pen/Save/cold case could not start because the browser-control connection became unavailable. Native, browser, real-time economy, protected tutor delivery and RTL acceptance remain independent obligations. See the <a href="plan/007-session-state.html">current checkpoint</a> and <a href="evidence/007-multimodal-development-index.json">evidence index</a>.</p>
+<p>This is a local development distribution. Upstream components retain their licenses. Project-wide redistribution rights, physical qualification and educational benefit remain unresolved; no physical sensor accuracy or human learning result is established.</p>
+</body></html>

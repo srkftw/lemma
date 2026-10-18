@@ -1867,4 +1867,230 @@ def validateSiliconUSBClocked (pointer expectedBytes width height pressure : UIn
 
 
 
+
+-- Multimodal successor: exact additional inventory, without broadening legacy parsers.
+private def literalLengthMultimodal (code : UInt64) : UInt64 :=
+  if code = 96 then 26 else
+  if code = 97 then 20 else
+  if code = 98 then 19 else
+  if code = 99 then 19 else
+  if code = 100 then 19 else
+  if code = 101 then 27 else
+  if code = 102 then 25 else
+  literalLength code
+private def literalWordMultimodal (code index : UInt64) : UInt64 :=
+  if code = 96 then
+    if index = 0 then 0x756d2d616d6d656c else
+    if index = 1 then 0x6c61646f6d69746c else
+    if index = 2 then 0x3030343130303140 else
+    if index = 3 then 0x30 else
+    0 else
+  if code = 97 then
+    if index = 0 then 0x756d2c616d6d656c else
+    if index = 1 then 0x6c61646f6d69746c else
+    if index = 2 then 0x31762d else
+    0 else
+  if code = 98 then
+    if index = 0 then 0x74732c616d6d656c else
+    if index = 1 then 0x756f632d6d616572 else
+    if index = 2 then 0x746e else
+    0 else
+  if code = 99 then
+    if index = 0 then 0x69662c616d6d656c else
+    if index = 1 then 0x726f6365722d6f66 else
+    if index = 2 then 0x7364 else
+    0 else
+  if code = 100 then
+    if index = 0 then 0x65722c616d6d656c else
+    if index = 1 then 0x7479622d64726f63 else
+    if index = 2 then 0x7365 else
+    0 else
+  if code = 101 then
+    if index = 0 then 0x78652c616d6d656c else
+    if index = 1 then 0x2d6e6f69736e6574 else
+    if index = 2 then 0x7470697263736564 else
+    if index = 3 then 0x726f else
+    0 else
+  if code = 102 then
+    if index = 0 then 0x68702c616d6d656c else
+    if index = 1 then 0x712d6c6163697379 else
+    if index = 2 then 0x64656966696c6175 else
+    if index = 3 then 0x0 else
+    0 else
+  literalWord code index
+private def matchStepMultimodal (i _ : UInt32) (acc address code _ _ : UInt64) : Action :=
+  .bind (Access.read8 (address + i.toUInt64)) fun s byte =>
+  if s = 0 then
+    let expected := (literalWordMultimodal code (i.toUInt64 / 8) >>> ((i.toUInt64 % 8) * 8)) &&& 255
+    if byte = expected then .done 0 acc else .done 10 0
+  else .done s 0
+
+private def equalLiteralMultimodal (address bytes code : UInt64) : Action :=
+  if bytes = literalLengthMultimodal code then
+    .boundedFoldU64 32 matchStepMultimodal bytes.toUInt32 1 address code 0 0 fun s same =>
+    if s = 10 then .done 0 0 else .done s same
+  else .done 0 0
+
+private def findStepMultimodal (i _ : UInt32) (acc address bytes start _ : UInt64) : Action :=
+  let code := start + i.toUInt64
+  .bind (equalLiteralMultimodal address bytes code) fun s same =>
+  if s = 0 then if same = 1 then .done 10 code else .done 0 acc else .done s 0
+
+private def findCodeMultimodal (address bytes start count : UInt64) : Action :=
+  if count ≤ 24 then
+    .boundedFoldU64 24 findStepMultimodal count.toUInt32 0 address bytes start 0 fun s code =>
+    if s = 10 then .done 0 code else if s = 0 then
+      .boundedFoldU64 7 findStepMultimodal 7 0 address bytes 96 0 fun s extra =>
+      if s = 10 then .done 0 extra else .done s extra else .done s code
+  else .done invalid 0
+
+private def leafMultimodal (role : UInt64) : UInt64 := if role = 15 then 1 else leaf role
+private def leafPropertyMultimodal (data bytes code role : UInt64) : Action :=
+  if role = 15 then
+    if code = 32 then
+      .bind (equalLiteralMultimodal data bytes 97) fun s same => if s = 0 then
+      if same = 1 then mark 2 else .done invalid 0 else .done s 0
+    else if code = 33 then
+      if bytes = 16 then
+        .bind (BootInfo.readBE64 data) fun s base => if s = 0 then
+        .bind (BootInfo.readBE64 (data + 8)) fun s span => if s = 0 then
+        if base = 0x10014000 then if span = 8192 then mark 1 else .done invalid 0 else .done invalid 0
+        else .done s 0 else .done s 0 else .done invalid 0
+    else if code = 34 then fixedCell data bytes 19 4 else
+    if code = 35 then parentCell data bytes else
+    if code = 38 then fixedCell data bytes 1 16 else
+    if code = 98 then fixedCell data bytes 9 32 else
+    if code = 99 then fixedCell data bytes 16 64 else
+    if code = 100 then fixedCell data bytes 64 128 else
+    if code = 51 then fixedCell data bytes 100000000 256 else
+    if code = 101 then
+      if bytes = 16 then
+        .bind (BootInfo.readBE64 data) fun s base => if s = 0 then
+        .bind (BootInfo.readBE64 (data + 8)) fun s span => if s = 0 then
+        if base = 0x10014000 then if span = 256 then mark 512 else .done invalid 0 else .done invalid 0
+        else .done s 0 else .done s 0 else .done invalid 0
+    else if code = 102 then fixedCell data bytes 0 1024 else .done 0 0
+  else if role = 4 then if code = 48 then fixedCell data bytes 19 32 else leafProperty data bytes code role
+  else leafProperty data bytes code role
+private def beginNodeMultimodal (cursor depth limit : UInt64) : Action :=
+  if depth < 16 then
+  .bind (BootInfo.readBoundedName (cursor + 4) limit) fun s endName => if s = 0 then
+  .bind (findCodeMultimodal (cursor + 4) (endName - cursor - 4) 1 21) fun s code => if s = 0 then
+  .bind (if depth = 0 then .done 0 0 else get (256 + (depth - 1) * 8)) fun s parent => if s = 0 then
+  if leafMultimodal parent = 0 then
+  let role := if parent = 12 then if code = 96 then 15 else nodeRole parent code else nodeRole parent code
+  .bind (get 48) fun s seen => if s = 0 then
+  if role = 0 then
+    .bind (put (256 + depth * 8) 0) fun s _ => if s = 0 then
+    .bind (put 32 (depth + 1)) fun s _ => if s = 0 then put 0 ((endName + 3) &&& 0xfffffffffffffffc) else .done s 0 else .done s 0
+  else if seen &&& ((1 : UInt64) <<< role) = 0 then
+    .bind (put 48 (seen ||| ((1 : UInt64) <<< role))) fun s _ => if s = 0 then
+    .bind (put (256 + depth * 8) role) fun s _ => if s = 0 then
+    .bind (if leafMultimodal role = 1 then put 64 0 else .done 0 0) fun s _ => if s = 0 then
+    .bind (put 32 (depth + 1)) fun s _ => if s = 0 then put 0 ((endName + 3) &&& 0xfffffffffffffffc) else .done s 0
+    else .done s 0 else .done s 0 else .done s 0
+  else .done invalid 0 else .done s 0
+  else .done invalid 0 else .done s 0 else .done s 0 else .done s 0
+  else .done invalid 0
+
+private def endNodeMultimodal (cursor depth : UInt64) : Action :=
+  if 0 < depth then
+  .bind (get (256 + (depth - 1) * 8)) fun s role => if s = 0 then
+  .bind (if leafMultimodal role = 1 then
+    .bind (get 64) fun s flags => if s = 0 then
+    if flags = (if role = 15 then 2047 else requiredFlags role) then .done 0 0 else .done invalid 0 else .done s 0
+  else .done 0 0) fun s _ => if s = 0 then
+  .bind (put 32 (depth - 1)) fun s _ => if s = 0 then put 0 (cursor + 4) else .done s 0
+  else .done s 0 else .done s 0 else .done invalid 0
+
+private def propertyMultimodal (cursor depth limit : UInt64) : Action :=
+  if depth = 0 then .done invalid 0 else if limit < cursor + 12 then .done invalid 0 else
+  .bind (BootInfo.readBE32 (cursor + 4)) fun s bytes => if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (cursor + 8)) fun s nameOffset => if failed s = true then .done s 0 else
+  .bind (get 16) fun s strings => if failed s = true then .done s 0 else
+  .bind (get 24) fun s stringsEnd => if failed s = true then .done s 0 else
+  if stringsEnd - strings ≤ nameOffset then .done invalid 0 else
+  let data := cursor + 12
+  if limit - data < bytes then .done invalid 0 else
+  .bind (BootInfo.readBoundedName (strings + nameOffset) stringsEnd) fun s nameEnd => if failed s = true then .done s 0 else
+  .bind (findCodeMultimodal (strings + nameOffset) (nameEnd - strings - nameOffset) 32 24) fun s firstCode => if failed s = true then .done s 0 else
+  .bind (if firstCode = 0 then findCodeMultimodal (strings + nameOffset) (nameEnd - strings - nameOffset) 56 7 else .done 0 firstCode) fun s code => if failed s = true then .done s 0 else
+  .bind (get (256 + (depth - 1) * 8)) fun s role => if failed s = true then .done s 0 else
+  .bind (if leafMultimodal role = 1 then leafPropertyMultimodal data bytes code role else
+    if role = 10 then containerProperty data bytes code role else
+    if role = 11 then containerProperty data bytes code role else
+    if role = 12 then containerProperty data bytes code role else
+    if code = 33 then
+      if 2 ≤ depth then if depth ≤ 3 then
+        .bind (get (256 + (depth - 2) * 8)) fun s parent => if s = 0 then
+        if parent = 12 then otherReg data bytes else
+        if parent = 10 then otherReg data bytes else .done 0 0 else .done s 0
+      else
+        .bind (get 264) fun s ancestor => if s = 0 then
+        if ancestor = 12 then .done invalid 0 else .done 0 0 else .done s 0
+      else .done 0 0
+    else if code = 32 then unknownCompatible data bytes else .done 0 0) fun s _ => if failed s = true then .done s 0 else
+  let next := (data + bytes + 3) &&& 0xfffffffffffffffc
+  if next ≤ limit then put 0 next else .done invalid 0
+
+private def tokenStepMultimodal (_ _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (get 40) fun s ended => if s = 0 then if ended = 1 then .done 0 acc else
+  .bind (get 0) fun s cursor => if s = 0 then
+  .bind (get 8) fun s limit => if s = 0 then
+  .bind (get 32) fun s depth => if s = 0 then
+  if cursor + 4 ≤ limit then
+  .bind (BootInfo.readBE32 cursor) fun s token => if s = 0 then
+  if token = 1 then beginNodeMultimodal cursor depth limit else if token = 2 then endNodeMultimodal cursor depth else
+  if token = 3 then propertyMultimodal cursor depth limit else if token = 4 then put 0 (cursor + 4) else
+  if token = 9 then if depth = 0 then if cursor + 4 = limit then put 40 1 else .done invalid 0 else .done invalid 0
+  else .done invalid 0
+  else .done s 0 else .done invalid 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0
+
+private def validateBindingMultimodal (binding pointer expectedBytes width height pressure : UInt64) : Action :=
+  .bind BootInfo.validate fun s actual =>
+  if failed s = true then .done s 0 else if actual = pointer then
+  .bind (BootInfo.readBE32 (pointer + 4)) fun s bytes =>
+  if failed s = true then .done s 0 else if bytes = expectedBytes then
+  .bind (BootInfo.readBE32 (pointer + 8)) fun s structureOffset =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 12)) fun s stringsOffset =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 32)) fun s stringsBytes =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 36)) fun s structureBytes =>
+  if failed s = true then .done s 0 else
+  .boundedFoldU64 64 clearStep 64 0 0 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (put 0 (pointer + structureOffset)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 8 (pointer + structureOffset + structureBytes)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 16 (pointer + stringsOffset)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 24 (pointer + stringsOffset + stringsBytes)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 104 width) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 112 height) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 120 pressure) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 176 binding) fun s _ => if failed s = true then .done s 0 else
+  .boundedFoldU64 4096 tokenStepMultimodal 4096 0 0 0 0 0 fun s _ => if failed s = true then .done s 0 else
+  .bind (get 40) fun s ended => if failed s = true then .done s 0 else
+  .bind (get 48) fun s seen => if failed s = true then .done s 0 else
+  .bind (get 72) fun s parent => if failed s = true then .done s 0 else
+  .bind (get 80) fun s plic => if failed s = true then .done s 0 else
+  .bind (get 184) fun s socFlags => if failed s = true then .done s 0 else
+  .bind (get 192) fun s timebase => if failed s = true then .done s 0 else
+  .bind (get 168) fun s rootIdentity => if failed s = true then .done s 0 else
+  if (if 0 < binding then if rootIdentity = 1 then true else false else true) = true then
+  if ended = 1 then if seen = 0x9d7e then
+  if parent = plic then if 0 < plic then if socFlags = 15 then if timebase = 1 then
+  .bind actualDevices fun s _ => if s = 0 then
+  .bind (if 4 ≤ binding then actualBLE else .done 0 1) fun s _ => if s = 0 then
+  .bind (if 5 ≤ binding then actualUSB else .done 0 1) fun s _ => if s = 0 then
+  .bind (if binding = 6 then actualBootNV else .done 0 1) fun s _ => .done s pointer
+  else .done s 0 else .done s 0 else .done s 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0
+
+def validateSiliconMultimodal (pointer expectedBytes width height pressure : UInt64) : Action :=
+  validateBindingMultimodal 2 pointer expectedBytes width height pressure
+
 end Lemma.Platform.LemmaSim.DescriptorDTB

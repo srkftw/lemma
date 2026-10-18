@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub publication and Codex handoff</title>
+<link rel="stylesheet" href="documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="github-publication-and-codex-handoff">GitHub publication and Codex handoff</h1>
+<h2 id="current-repository">Current repository</h2>
+<p><code>srkftw/lemma</code> is the owner&#39;s private GitHub repository. The connected repository
+read confirmed its name, private visibility, default branch <code>main</code>, and push access.
+The repository was initially empty; the starter is being committed through the
+connected GitHub file/tree/commit APIs, without force-pushing or changing visibility.</p>
+<p>This publishes source and instructions, not an implemented Core0 compiler or a
+running Codex task. Select the repository and <code>main</code> in Codex, then assign
+<code>codex/prompts/001-core0-freestanding-slice.html</code>. Codex should use a task branch and
+return a reviewable change. Its own GitHub connection must have repository access;
+publication alone does not configure a Codex environment or grant that connection access.</p>
+<h2 id="historical-preparation">Historical preparation</h2>
+<p>The starter was first prepared locally because the connection did not expose a
+repository-creation action and the runtime had no authenticated GitHub CLI. The
+owner subsequently created the repository. No credentials were requested in chat.</p>
+<p>The ZIP and Git bundle supplied earlier are preparation snapshots. GitHub <code>main</code>
+is the canonical published starter; its publication notes and metadata supersede
+the preparation snapshots&#39; statements that no remote exists.</p>
+<h2 id="retained-bootstrap-helper">Retained bootstrap helper</h2>
+<p><code>scripts/publish-github.sh</code> and its mocked tests remain as auditable host-only tooling.
+The helper was designed to create a new private <code>srkftw/lemma</code> from a clean local
+source tree using an authenticated GitHub CLI. It refuses existing repositories,
+existing origins, dirty worktrees, the wrong account, and failed visibility checks.</p>
+<p><strong>Do not run the helper for this existing repository.</strong> Use ordinary branches and
+reviewable commits instead. Do not delete the repository to make the helper run.
+Its tests create temporary mock repositories and make no live GitHub requests.</p>
+<p>No project license has been selected. Do not change visibility, add a license,
+commit secrets/NDA material, or alter GitHub access controls as part of task 001.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Same-Action Receive/Reply descriptor reuse, version 1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="same-action-receivereply-descriptor-reuse-version-1">Same-Action Receive/Reply descriptor reuse, version 1</h1>
+<p><code>lemma-ipc-rpc-base-reuse/1</code> preserves IPC-v1 packet limits, copied bytes,
+transactions, one-use reply authority and error precedence. The trusted
+<code>IPC.dispatchWithLimit</code> uses <code>receiveWithLimit</code> and the new <code>replyLocal</code> path.
+Historical public <code>receive</code>, <code>reply</code> and <code>dispatch</code> retain their original
+bodies. There is no new User pointer, cached authority, heap or syscall ABI.</p>
+<p>Each new borrowed base comes from a successful full <code>idle</code> or
+<code>checkedTransaction</code> validation in that same nonpreemptible Supervisor Action.
+The descriptor identity, root, layout, leaf registry, frame generations,
+ownership and pins read by <code>AddressSpace.base</code> remain immutable through this
+Action. No mapping, frame allocation/free, descriptor replacement, task switch
+or suspension may intervene. No alias survives the call. The single hart runs
+no other User task during the Action. Interrupt handlers do not change these
+protected fields, and admitted controller DMA buffers cannot alias them.</p>
+<p>Reply capability grants and revocation may change their own disjoint capability
+rows and object/queue state. They do not change the protected address-space
+base closure. Their original complete capability/object checks still execute;
+no grant, ownership or generation result is reused. <code>pendingAt</code> re-reads every
+live transaction field. Each UserCopy preflights the owned scratch handle and
+both user-page permissions afresh. Its existing aligned-word and byte-tail
+paths are unchanged. Zero-before-publication, pinning, quotas, expired-head
+withdrawal, namespace authority, partial-copy failures and cleanup are preserved.</p>
+<p>The closed pre-LLVM observer qualifies sixteen actual emitted function bodies,
+their signatures/effects, all helper callers, and each base&#39;s exact derivation
+from the current successful metadata result. The older CallBegin guard admits
+these additional callers only after that full guard passes. Unknown callers,
+changed effects, stale metadata, wrong descriptors and missing functions reject.</p>
+<p>The finite RAM fixture compares actual maintained old/new Actions for both
+512 and 8192 frame profiles. Whole memory, results and the ordered remaining
+request/status/byte trace must match. Only identical successful duplicate
+<code>AddressSpace.base</code> read subsequences may be projected away. Faults at every
+distinct reached address retain their first applicable failure and prior writes.
+This fixture models stable protected RAM: it does not establish equivalence for
+transient errors on a later duplicate read, asynchronous descriptor mutation or
+unimplemented ECC. Those states are not admitted by this optimization contract.</p>
+<p>In the 8192-frame fixture, a 256-byte call packet and 128-byte reply reduce
+Receive requests 3185 to 2711 and Reply requests 3347 to 3031. These are host
+observations of Lean Actions, not RTL cycles, fast-backend timing parity or a
+completed cold course load. The original 100-million-cycle cold Load failures
+remain failures. The private 2-million-cycle retained-boundary diagnostic is a
+PC sample distribution only: Frames/AddressSpace samples may also be transitive
+copy work, so direct copy-function counts do not prove causal dominance.</p>
+<p>Run the focused genuine compilation and exact emitted-corpus guards with:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command python3 scripts/check_ipc_rpc_borrow.py \
+  --output-dir build/kernel/unused-ipc-rpc
+python3 scripts/check_ipc_rpc_guards.py \
+  --component build/kernel/unused-ipc-rpc/component/rpc \
+  --output build/kernel/unused-ipc-rpc/guards.json
+</code></pre>
+<p>The first command takes <code>build/task006-lake.lock</code>, seals all original consumed
+inputs and bounds the Action fixture to 240 seconds, other commands to 120
+seconds and the complete component campaign to 600 seconds. Whole guest audits
+and actual cold-load target/host measurements remain separate requirements.</p>
+</main>
+</body>
+</html>

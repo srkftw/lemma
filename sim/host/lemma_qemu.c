@@ -16,11 +16,25 @@
 #include "system/runstate.h"
 #include "lemma_silicon_fast.h"
 #include "lemma_model.h"
+#include "lemma_multimodal.h"
+#include "system/address-spaces.h"
+#ifndef LS_MULTIMODAL_ENABLED
+#define LS_MULTIMODAL_ENABLED 0
+#define LS_MULTIMODAL_BASE 0
+#define LS_MULTIMODAL_SPAN 0
+#define LS_MULTIMODAL_IRQ 0
+#endif
 #define TYPE_LEMMA_PAPER_PEN "lemma-paper-pen"
 OBJECT_DECLARE_SIMPLE_TYPE(LemmaDevices, LEMMA_PAPER_PEN)
 struct LemmaDevices {
     SysBusDevice parent_obj;
-    MemoryRegion paper_mmio,pen_mmio;
+    MemoryRegion paper_mmio,pen_mmio,multimodal_mmio;
+    qemu_irq multimodal_irq;
+    LemmaMM multimodal;
+    bool multimodal_enabled;
+    QEMUTimer *multimodal_timer;
+    char *multimodal_audio_path;
+    FILE *multimodal_audio;
     qemu_irq paper_irq,pen_irq,power_irq;
     LemmaPaper paper; LemmaPen pen;
     LemmaPower power;
@@ -43,6 +57,7 @@ struct LemmaDevices {
     bool dirty,reset_seen,run_stopping,fast_binding;
     uint64_t trace_limit,trace_rows,trace_omitted;
 };
+#include "lemma_multimodal_qemu.inc.c"
 void lemma_binding_create(MachineState *,DeviceState *);
 void lemma_binding_add_fdt(MachineState *);
 void lemma_binding_set_dtb(uint64_t,uint64_t);
@@ -390,6 +405,7 @@ static void lemma_reset_enter(Object *obj,ResetType type)
 {
     LemmaDevices *s=LEMMA_PAPER_PEN(obj);
     timer_del(s->timer);timer_del(s->pen_timer);
+    if(s->multimodal_enabled){timer_del(s->multimodal_timer);lemma_mm_init(&s->multimodal);s->multimodal.tick=(uint64_t)qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)/10;}
     if(s->reset_seen && object_dynamic_cast(OBJECT(qdev_get_machine()),MACHINE_TYPE_NAME("lemma-silicon-fast"))) {
         timer_del(s->input_timer);s->external_head=s->external_count=0;s->recorded_next=s->recorded_count;s->input_dirty=false;
     }
@@ -418,11 +434,20 @@ static void lemma_realize(DeviceState *dev,Error **errp)
         s->power_enabled=LS_POWER_ENABLED;lemma_power_init(&s->power);
     }
     lemma_pen_init(&s->pen,65535,65535,s->pressure_max);
+    s->multimodal_enabled=s->fast_binding&&LS_MULTIMODAL_ENABLED;
+    if(s->multimodal_enabled){
+        lemma_mm_init(&s->multimodal);
+        memory_region_init_io(&s->multimodal_mmio,OBJECT(s),&multimodal_ops,s,"lemma-multimodal-v1",LS_MULTIMODAL_SPAN);
+        memory_region_add_subregion(get_system_memory(),LS_MULTIMODAL_BASE,&s->multimodal_mmio);
+        s->multimodal_timer=timer_new_ns(QEMU_CLOCK_VIRTUAL,lemma_mm_timer,s);
+        if(s->multimodal_audio_path){s->multimodal_audio=fopen(s->multimodal_audio_path,"wx");if(!s->multimodal_audio){error_setg(errp,"multimodal-audio-output requires new writable file");return;}fwrite("LMPCM001",1,8,s->multimodal_audio);}
+    }
     memory_region_init_io(&s->paper_mmio,OBJECT(s),&paper_ops,s,"lemma-paper-v1",4096);
     memory_region_init_io(&s->pen_mmio,OBJECT(s),&pen_ops,s,"lemma-pen-v1",4096);
     sysbus_init_mmio(SYS_BUS_DEVICE(s),&s->paper_mmio);sysbus_init_mmio(SYS_BUS_DEVICE(s),&s->pen_mmio);
     sysbus_init_irq(SYS_BUS_DEVICE(s),&s->paper_irq);sysbus_init_irq(SYS_BUS_DEVICE(s),&s->pen_irq);
     if(s->power_enabled)sysbus_init_irq(SYS_BUS_DEVICE(s),&s->power_irq);
+    if(s->multimodal_enabled)sysbus_init_irq(SYS_BUS_DEVICE(s),&s->multimodal_irq);
     s->timer=timer_new_ns(QEMU_CLOCK_VIRTUAL,lemma_timer,s);
     s->input_timer=timer_new_ns(QEMU_CLOCK_VIRTUAL,lemma_recorded_input,s);
     s->pen_timer=timer_new_ns(QEMU_CLOCK_VIRTUAL,lemma_watchdog,s);
@@ -446,6 +471,8 @@ static void lemma_realize(DeviceState *dev,Error **errp)
 static void lemma_finalize(Object *obj)
 {
     LemmaDevices *s=LEMMA_PAPER_PEN(obj);
+    if(s->multimodal_timer)timer_free(s->multimodal_timer);
+    if(s->multimodal_audio)fclose(s->multimodal_audio);
     if(s->input)qemu_input_handler_unregister(s->input);
     if(s->timer)timer_free(s->timer);
     if(s->input_timer)timer_free(s->input_timer);
@@ -460,6 +487,7 @@ static const Property lemma_properties[]={
     DEFINE_PROP_UINT32("width",LemmaDevices,width,1650),
     DEFINE_PROP_UINT32("height",LemmaDevices,height,2200),
     DEFINE_PROP_UINT32("pressure-max",LemmaDevices,pressure_max,4095),
+    DEFINE_PROP_STRING("multimodal-audio-output",LemmaDevices,multimodal_audio_path),
     DEFINE_PROP_STRING("raw-input",LemmaDevices,input_file),
     DEFINE_PROP_STRING("raw-output",LemmaDevices,output_file),
     DEFINE_PROP_STRING("trace-file",LemmaDevices,trace_file),
@@ -541,7 +569,8 @@ static int lemma_post_load(void *opaque,int version)
 }
 static int lemma_pre_save(void *opaque)
 {
-    LemmaDevices *s=opaque;if(!s->power_enabled)lemma_paper_advance(&s->paper,qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL));s->dirty=true;
+    LemmaDevices *s=opaque;if(s->multimodal_enabled)return -ENOTSUP;
+    if(!s->power_enabled)lemma_paper_advance(&s->paper,qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL));s->dirty=true;
     return 0;
 }
 static const VMStateDescription lemma_vmstate={.name="lemma-paper-pen/1",.version_id=2,.minimum_version_id=2,.pre_save=lemma_pre_save,.post_load=lemma_post_load,
@@ -562,6 +591,8 @@ static void lemma_class_init(ObjectClass *klass,const void *data)
     dc->realize=lemma_realize;
     rc->phases.enter=lemma_reset_enter;rc->phases.exit=lemma_reset_exit;
     device_class_set_props(dc,lemma_properties);
+    object_class_property_add_str(klass,"multimodal-state",lemma_mm_state,NULL);
+    object_class_property_add_str(klass,"multimodal-stimulus",NULL,lemma_mm_inject);
     object_class_property_add_str(klass,"device-state",lemma_get_state,NULL);
     object_class_property_add_str(klass,"trace-state",lemma_get_trace_state,NULL);
     object_class_property_add_str(klass,"storage-state",lemma_get_storage_state,NULL);
@@ -610,6 +641,7 @@ void lemma_binding_create(MachineState *machine,DeviceState *irqchip)
     sysbus_connect_irq(SYS_BUS_DEVICE(dev),0,qdev_get_gpio_in(irqchip,12));
     sysbus_connect_irq(SYS_BUS_DEVICE(dev),1,qdev_get_gpio_in(irqchip,13));
     if(s->power_enabled)sysbus_connect_irq(SYS_BUS_DEVICE(dev),2,qdev_get_gpio_in(irqchip,LS_POWER_IRQ));
+    if(s->multimodal_enabled)sysbus_connect_irq(SYS_BUS_DEVICE(dev),3,qdev_get_gpio_in(irqchip,LS_MULTIMODAL_IRQ));
     binding_devices=s;d=s->paper.descriptor;
     d[0]=LEMMA_DESCRIPTOR_MAGIC;d[1]=1;d[2]=256;d[4]=0x80000000;d[5]=128*MiB;
     d[6]=0x82000000;d[7]=32*MiB;d[8]=10000000;

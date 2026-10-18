@@ -1,4 +1,5 @@
 """Exact additive course mount-await deployment; no guest policy implementation."""
+from functools import lru_cache
 CONFIGURATIONS=('lemmasim-silicon-course-await-bulk-notebook',
                 'lemmasim-silicon-course-await-bulk-initialize')
 SOFTWARE_DEPLOYMENT={'contract_version':'lemma-course-mounted-await-bulk-deployment-v1',
@@ -14,8 +15,10 @@ from package_companion_deployment import ALL_CONFIGURATIONS as JOINED_CONFIGURAT
 from reader_deployment import CONFIGURATIONS as READER_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as READER_SOFTWARE_DEPLOYMENT
 from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as PRODUCT_READER_SOFTWARE_DEPLOYMENT
 from chooser_reader_deployment import CONFIGURATIONS as CHOOSER_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as CHOOSER_SOFTWARE_DEPLOYMENT
-ALL_CONFIGURATIONS=CONFIGURATIONS+PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS+PRODUCT_READER_CONFIGURATIONS+CHOOSER_CONFIGURATIONS
+from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS, PARAMETERIZED_CONFIGURATIONS as MULTIMODAL_PARAMETERIZED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as MULTIMODAL_SOFTWARE
+ALL_CONFIGURATIONS=CONFIGURATIONS+PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS+PRODUCT_READER_CONFIGURATIONS+CHOOSER_CONFIGURATIONS+MULTIMODAL_CONFIGURATIONS
 def software_deployment_for(configuration):
+ if configuration in MULTIMODAL_CONFIGURATIONS:return MULTIMODAL_SOFTWARE
  if configuration in CHOOSER_CONFIGURATIONS:return CHOOSER_SOFTWARE_DEPLOYMENT
  if configuration in PRODUCT_READER_CONFIGURATIONS:
   from product_reader_deployment import software_deployment_for as product_software
@@ -67,9 +70,27 @@ def _canonical(source):
  import re
  return re.sub(r'^_private\..*?\.[0-9]+\.','',source)
 
+@lru_cache(maxsize=2)
+def _compatible_body_index(ir):
+ import re
+ from audit_core0 import _ir_definition_index
+ # The original expression requires one literal space after define and accepts
+ # any trailing text after the closing brace. Only equivalent boundaries use
+ # the shared lexical index; all other spellings retain that exact expression.
+ if re.search(r'(?m)^define[^\S\n]*$',ir):return None
+ if re.search(r'(?m)^define\s',ir) and any(line.startswith('define') and not line.startswith('define ') for line in ir.split('\n')):return None
+ if any(line.startswith('}') and line.strip()!='}' for line in ir.split('\n')):return None
+ return _ir_definition_index(ir)
+
 def _body(ir,symbol):
  import re
  from core0_common import Core0Error
+ if re.fullmatch(r'[A-Za-z_.$][A-Za-z0-9_.$-]*',symbol):
+  index=_compatible_body_index(ir)
+  if index is not None:
+   rows=index.get(symbol,())
+   if len(rows)!=1:raise Core0Error('mount-result LLVM owner missing/duplicated: '+symbol)
+   return rows[0]
  rows=re.findall(r'(?ms)^define [^\n]*@'+re.escape(symbol)+r'\([^\n]*\)[^\n]*\{\n(.*?)^\}',ir)
  if len(rows)!=1:raise Core0Error('mount-result LLVM owner missing/duplicated: '+symbol)
  return rows[0]
@@ -90,13 +111,14 @@ def validate_mount_reply(ir,unit,*,optimized):
      unit['image_id']==4 and unit.get('contract_version')=='core0-user-v0.1' and
      unit.get('boot_role')=='course-installer' and
      [{k:r.get(k) for k in ('source','id','args')} for r in unit.get('roots',[])]==
-       [{'source':INSTALLER_ROOT,'id':1,'args':['u64']}])
+    [{'source':('Lemma.Courses.PackageInstaller.mainParameterized' if unit.get('configuration') in
+      MULTIMODAL_PARAMETERIZED_CONFIGURATIONS else INSTALLER_ROOT),'id':1,'args':['u64']}])
  package_root=USER_ROOTS['notebook'][1] if unit.get('configuration') in JOINED_CONFIGURATIONS else 'Lemma.Applications.Notebook.mainPackageClosureBulk'
  from dirty_batch_notebook_target import numeric_candidate,numeric_contract,numeric_root
  if numeric_candidate(unit):
   numeric_contract(unit)
   package_root=numeric_root(unit)
- package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS+PRODUCT_READER_CONFIGURATIONS+CHOOSER_CONFIGURATIONS and
+ package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS+PRODUCT_READER_CONFIGURATIONS+CHOOSER_CONFIGURATIONS+MULTIMODAL_CONFIGURATIONS and
      unit.get('image_key')=='notebook' and type(unit.get('image_id')) is int and
      unit['image_id']==2 and unit.get('contract_version')=='core0-user-v0.2' and
      unit.get('boot_role')=='notebook' and

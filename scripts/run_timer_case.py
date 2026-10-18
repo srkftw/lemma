@@ -46,7 +46,7 @@ REQUIRED_SOURCE_INPUTS = frozenset({
     "examples/foundation/gate8-reject/StoredTimerContinuation.lean",
     "examples/foundation/gate8-reject/V06Timer.lean",
     "examples/foundation/gate8-reject/rejections.json",
-    "docs/audits/timers-core0-v07.md",
+    "docs/audits/timers-core0-v07.html",
 })
 SITE_SYMBOLS = frozenset({"core0_trap_vector", "__timer_probe_loop", "__timer_probe_snapshot",
     "__trap_ecall_site", "__trap_ecall_resume", "__trap_breakpoint_site", "__trap_breakpoint_resume"})
@@ -102,7 +102,11 @@ def source_inputs(directory: Path, root: Path) -> dict[str, str]:
         if not source.is_relative_to(root.resolve()) or not source.is_file() or sha256(source) != digest:
             raise Core0Error(f"stale or escaped timer source input: {name}")
         result[name] = digest
-    if not REQUIRED_SOURCE_INPUTS <= result.keys():
+    required = REQUIRED_SOURCE_INPUTS
+    if not (root / "docs/document-map.json").is_file():
+        required = frozenset(name[:-5] + ".md" if name.startswith("docs/") and name.endswith(".html") else name
+                             for name in required)
+    if not required <= result.keys():
         raise Core0Error("timer provenance omits required source/compiler/machine/host inputs")
     return result
 

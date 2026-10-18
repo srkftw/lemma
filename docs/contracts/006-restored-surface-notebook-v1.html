@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Restored Surface notebook1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="restored-surface-notebook1">Restored Surface notebook1</h1>
+<p><code>lemma-restored-surface-notebook-artifact/1</code> identifies Package notebook cohort10
+for both the canonical and clocked-companion deployments. It extends cohort9&#39;s
+four-tile dirty FIFO batching to full framebuffer restoration after controller
+state loss. It changes no ISA, machine clock, memory capacity, device ABI,
+managed runtime, durable document format or checkpoint serialization.</p>
+<p><code>restorePaperBatch</code> reads the existing restoration cursor at state offset488.
+For the admitted Surface dimensions, it submits at most four consecutive tile
+indices in one existing owned Surface-v2 packet. The final batch has one, two
+or three tiles when appropriate. Each index occupies sixteen bits; unused
+lanes are zero. The full batch avoids a shift by64 when constructing that mask.
+The unchanged Surface implementation validates geometry and ownership, prepares
+all pixel bytes before a controller call, and checks completion counts.</p>
+<p>The cursor advances only by the returned completed prefix. A controller error
+with an accepted prefix returns that error and retains the remaining suffix
+for retry. Cursor-read or pixel-preparation faults submit no packet. Exhausted
+restoration submits no additional work. Existing generation, owned-copy,
+rectangle, zero-before-publication, pinning and controller checks stay active.</p>
+<p>Both selected Package loops call <code>pumpRefreshRestoredBatched</code>. It preserves
+the prior refresh state machine, refresh rectangle/sequence and four-tile
+per-iteration budget. Dirty work uses the remainder of that budget. A refresh
+is requested only after the complete restoration and dirty queue finish.
+The historical <code>pumpRefresh</code> and <code>pumpRefreshBatched</code> definitions remain, as
+does the initial boot call to the historical pump. Historical artifacts retain
+their own catalogs, source archives and independent validation.</p>
+<p>The existing artifact authority file retains cohort9 unchanged and carries a
+separate nested cohort10 authority. Each admitted deployment requires both
+actual ordinary notebook/initializer catalogs and complete pre/post LLVM
+body/global/caller pins from genuine elaboration and checked lowering. Mixing
+old and new selected pumps, a partial corpus, unknown catalogs or changed
+bodies rejects. No host renderer, journal recovery or mathematical authority
+is introduced.</p>
+<p>Literal Action and genuine checked LLVM component results qualify four/tail
+batches, partial completion/error/retry, cursor/preparation faults and clipped
+35x33/canonical edge tiles. Complete linked-image audits, actual guest execution
+and measured performance are separate requirements. A component or compiler
+trace is not a successful notebook boot or physical panel qualification.</p>
+</main>
+</body>
+</html>

@@ -312,7 +312,7 @@ class Checker:
         if args.checkpoint_relation == 'pinned-host-time-v1':
             observer = ROOT/'conformance/lemmasim/check_fast_state_equivalence.py'
             self.report['observer_sources'][str(observer.relative_to(ROOT))] = sha(observer)
-            proof = ROOT/'conformance/lemmasim/QEMU_STATE_EQUIVALENCE.md'
+            proof = ROOT/'conformance/lemmasim/QEMU_STATE_EQUIVALENCE.html'
             self.report['observer_sources'][str(proof.relative_to(ROOT))] = sha(proof)
             self.report['checkpoint_relation_detail'] = ('Exact every serialized byte except timer.cpu_ticks_offset '
                 'and timer.cpu_clock_offset, two pinned host elapsed-time statistics; exact virtual nanoseconds, '

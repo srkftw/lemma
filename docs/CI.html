@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CI and development feedback</title>
+<link rel="stylesheet" href="documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="ci-and-development-feedback">CI and development feedback</h1>
+<p>The integrated workflow preserves the current eleven acceptance lanes, their commands, bounds, validators and retained artifacts. Full acceptance runs for every pull request, main push and manual dispatch. Task branch pushes run a separate bounded host preflight. The main-only full-push trigger was already present before this integration.</p>
+<p>Pull request updates supersede only the preceding acceptance run for that pull request number. Main and manual runs use unique run IDs, preserving both running and pending verification for each revision. Preflight cancellation is isolated by task branch. No path filters or draft exclusions reduce acceptance.</p>
+<h2 id="current-acceptance-inventory">Current acceptance inventory</h2>
+<table><thead><tr><th>Job</th><th>Retained scope</th></tr></thead><tbody>
+<tr><td><code>metadata</code></td><td>Current scaffold, compiler and host suites, including CI policy, boot, cache and silicon checks; exact kernel host prerequisite production.</td></tr>
+<tr><td><code>lemmasim-writing-rv64</code></td><td>Separately pinned host QEMU and real O0/O2 writing and cold recovery.</td></tr>
+<tr><td><code>legacy-rv64</code></td><td>Independent Core0 references, real RV64 boots and source/link negatives.</td></tr>
+<tr><td><code>foundation-rv64</code></td><td>Gates 1–9, stress and clean qualification.</td></tr>
+<tr><td><code>kernel-rv64</code></td><td>Gates A–E; validates this run's successful host prerequisite, then freshly executes target qualification.</td></tr>
+<tr><td><code>kernel-managed-rv64</code></td><td>Gates F–I real RV64 acceptance.</td></tr>
+<tr><td><code>kernel-services-rv64</code></td><td>Separately linked buffer service RV64 acceptance.</td></tr>
+<tr><td><code>kernel-source-negatives-rv64</code></td><td>Paired control/mutant source qualification.</td></tr>
+<tr><td><code>kernel-architecture-rv64</code></td><td>Hardware fault and continuing-service containment observations.</td></tr>
+<tr><td><code>silicon-devices-rtl</code></td><td>Literal RTL device, bus-lane, power and pen/UART resynchronization checks.</td></tr>
+<tr><td><code>crypto-rv64</code></td><td>Real SHA/HMAC RV64 known answers and authenticated development ROM audits.</td></tr>
+</tbody></table>
+<p><code>acceptance-summary</code> runs even after failures and requires success from all eleven designated jobs. Failed, cancelled, unavailable or skipped jobs fail the aggregate. It combines dispositions and does not produce a target acceptance receipt.</p>
+<p>The existing dependency from <code>kernel-rv64</code> to <code>metadata</code> remains intentional. Only this run and attempt's exact <code>kernel-host-prerequisite</code> artifact is downloaded. Its admitted receipt binds nonempty, unskipped host observations and their current source/tool/environment identities; it does not replace target execution. All other acceptance lanes retain their independent job scheduling. The <a href="plan/CURRENT.html">current development guide</a> documents this narrow prerequisite and validated local action reuse.</p>
+<h2 id="exact-ci-source">Exact CI source</h2>
+<p>Each acceptance lane explicitly checks out <code>github.sha</code> and runs <code>scripts/ci_source.py</code> before its toolchain/build steps. Its always-retained <code>build/ci/source.json</code> records the actual clean commit, tree, raw parents, event/ref/run/job, pull request head and base, runner Python and toolchain-pin hashes. Pull request provenance requires the event's synthetic merge parents. The manifest supplements each lane's ordinary evidence and is never an acceptance result. The aggregate needs no separate checkout.</p>
+<h2 id="host-preflight">Host preflight</h2>
+<pre><code class="language-sh">python3 scripts/ci_preflight.py --output-dir build/ci/UNUSED_PREFLIGHT
+</code></pre>
+<p>Preflight runs the metadata checker and scaffold, Core0 host-harness and CI policy suites with host Python. Empty, failed, skipped or malformed suites fail. Its hosted command is bounded to three minutes within a five-minute job, with separate logs and result. It performs no guest compilation or boot. Full metadata repeats these checks in the pinned environment. A preflight pass cannot qualify a guest or compiler.</p>
+<h2 id="integration-and-historical-evidence">Integration and historical evidence</h2>
+<p>The October 18 integration ports the useful orchestration changes from <code>ci/verification-efficiency</code> while preserving subsequent acceptance lanes, the host prerequisite and aggregate. The original baseline and validation JSON files below remain byte-for-byte historical evidence for their original source revisions. They establish neither current target acceptance nor observed hosted scheduling for the new merge candidate. Current remote acceptance and rollout observations must be recorded for the exact published revision.</p>
+<p>The complete original October 10 narrative is retained below as historical context. Its nine-job inventory, rollout state, authorization statements, source revisions and earlier no-sharing assumptions describe that original proposal. Current behavior is defined above and in the maintained workflow; original results and failed notebook observations keep their original identities.</p>
+<section aria-label="Historical October 10 CI efficiency proposal">
+<h2 id="historical-ci-and-development-feedback">CI and development feedback</h2>
+<p>This policy removes the second full campaign on task pushes. It preserves all
+acceptance lanes, fresh project builds and observations. The cleanup is based on
+PR #5 at <code>2d8813dd94b94f16d41beabfc1360abbebcb81a7</code>, separately from Task 004&#39;s
+active working changes. Main was <code>504f6e462e502d93192ba689d16d8552ca1e68b5</code>;
+open drafts were notebook PR #5 and silicon specification PR #6. This change
+does not qualify Task 004 or repair target code.</p>
+<h3 id="historical-trigger-and-cancellation-policy">Trigger and cancellation policy</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Before</th>
+<th>After</th>
+<th>Source and cancellation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>task/**</code> push</td>
+<td>Full campaign</td>
+<td>Short host preflight</td>
+<td>Exact push SHA; newer pushes on that branch supersede preflight only</td>
+</tr>
+<tr>
+<td>PR opened, synchronized or reopened, including drafts</td>
+<td>Full campaign</td>
+<td>One full campaign</td>
+<td>Exact event synthetic merge SHA; newer updates cancel acceptance for that PR number only</td>
+</tr>
+<tr>
+<td>Main push after merge</td>
+<td>Full campaign</td>
+<td>Full campaign</td>
+<td>Exact main SHA; each run has a unique group, so every main revision keeps running and pending verification</td>
+</tr>
+<tr>
+<td>Manual <code>workflow_dispatch</code></td>
+<td>Full campaign</td>
+<td>Full campaign</td>
+<td>Selected ref&#39;s event SHA; unique run group, isolated from PR/main/preflight and other manual campaigns</td>
+</tr>
+<tr>
+<td>Other branch push</td>
+<td>No campaign</td>
+<td>No campaign</td>
+<td>Open a draft PR for full acceptance; local preflight remains available</td>
+</tr>
+</tbody></table>
+<p>There are no path filters, draft exclusions, conditional mandatory jobs, shared
+build-output downloads or aggregate acceptance checks. Contract, evidence,
+tooling and documentation changes still receive full PR acceptance. The jobs
+start independently; preflight does not gate them. No merge queue was observed:
+the public main branch endpoint reported <code>protected: false</code>, empty required
+contexts/checks, and the rulesets endpoint returned <code>[]</code> on 2026-10-10. The
+dedicated protection endpoint returned HTTP401 without credentials, so its
+configuration could not be inspected directly. No settings changed and no
+<code>merge_group</code> trigger was added. Reinspect requirements before future rollout.</p>
+<p>GitHub&#39;s <a href="https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request">PR event</a>
+uses a merge candidate. Branch HEAD is a separate target; removing its ordinary
+full campaign does not establish that HEAD and the merge are equivalent. When
+exact HEAD full qualification is needed, select that branch for a manual run or
+use the pinned local acceptance interfaces. Refresh a PR with current main and
+rerun acceptance when its merge candidate changes; a historical green head is
+not evidence for a new merge tree.
+The inherited default PR events do not run on base-retarget edits alone. After
+retargeting, update the PR branch to trigger merge-candidate acceptance; a manual
+run on the branch qualifies exact HEAD only.</p>
+<p>Groups for main and manual use the event and run ID, rather than a fixed ref
+with only <code>cancel-in-progress: false</code>: GitHub can otherwise replace an older
+pending run. See <a href="https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency">concurrency behavior</a>.
+Ordinary PR groups use PR number; preflight has its own purpose prefix. Explicit
+manual qualification cannot be canceled by an ordinary update. A user can still
+cancel a run in GitHub; a canceled mandatory job is not acceptance.</p>
+<h3 id="historical-coverage-and-job-inventory">Coverage and job inventory</h3>
+<p>Main historically has eight jobs; Task 004 adds the ninth below. Every existing
+job ID, displayed check name, runner, bound, acceptance command, validator,
+artifact path and 14-day retention remains. This inventory describes PR #5.
+All jobs use <code>ubuntu-24.04</code>, read-only contents permission, pinned actions and
+checkout with credentials removed.</p>
+<table>
+<thead>
+<tr>
+<th>Stable check name</th>
+<th>Commands/coverage retained before and after</th>
+<th>Bound</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Metadata and host-only suites</td>
+<td>Scaffold checker/suite, Core0/foundation/kernel host suites, <code>lake build</code>; adds CI orchestration regressions</td>
+<td>45 min</td>
+</tr>
+<tr>
+<td>Legacy Core0 RV64 acceptance</td>
+<td><code>check-core0.sh --clean</code>: independent Lean oracle, O0/O2 boots, source rejections, separate repeat builds, source mutation, foreign-link audit rejection</td>
+<td>45 min</td>
+</tr>
+<tr>
+<td>Foundation Gates 1-9 and clean qualification</td>
+<td><code>check-foundation.sh --all --stress --clean</code>, then <code>qualify_foundation.py</code> consuming that run&#39;s Gate 9 directory; independent replay, repeat builds and failure experiments</td>
+<td>60 min</td>
+</tr>
+<tr>
+<td>Task 003 implemented Gates A-E RV64 acceptance</td>
+<td><code>check_kernel.py --clean</code>, exact matrix/images/observations and source/tool/audit/hash revalidation</td>
+<td>45 min</td>
+</tr>
+<tr>
+<td>Task 003 Gates F-I RV64 acceptance</td>
+<td><code>check_kernel_cumulative.py --lane F-I --clean</code>, eight cases plus full lane revalidation</td>
+<td>45 min</td>
+</tr>
+<tr>
+<td>Task 003 Buffer service RV64 acceptance</td>
+<td><code>check_kernel_cumulative.py --lane J --clean</code>, four real service cases plus full lane revalidation</td>
+<td>45 min</td>
+</tr>
+<tr>
+<td>Task 003 source-negative RV64 qualification</td>
+<td><code>check_kernel_mutations.py --expected-commit HEAD</code>, four paired control/mutant cases plus campaign revalidation</td>
+<td>45 min</td>
+</tr>
+<tr>
+<td>Task 003 architectural containment RV64 acceptance</td>
+<td><code>check_kernel_architecture.py --clean</code>, twelve actual hardware fault/continuation cases plus revalidation</td>
+<td>45 min</td>
+</tr>
+<tr>
+<td>Task 004 real notebook O0/O2 writing and cold recovery</td>
+<td>Separately pinned host QEMU build; <code>check-lemmasim.sh --clean --lane writing --with-o0</code>; two actual 50-sample writing and new-process committed-byte/pixel recovery cases</td>
+<td>120 min</td>
+</tr>
+</tbody></table>
+<p>The writing lane remains scoped. Task 004&#39;s full notebook, recovery/cuts, replay,
+geometry, isolation and workload qualification still uses its maintained checker
+and checkpoint; this CI cleanup does not shrink those obligations or infer a
+pass from the writing lane. The intentionally independent references, repeated
+builds, legacy profiles, stress, mutations and architecture tests are useful
+redundancy. They are not outputs to share between jobs.</p>
+<p>Each full job now runs <code>scripts/ci_source.py</code> after explicitly checking out
+<code>github.sha</code>. The uploaded <code>build/ci/source.json</code> records the actual Git commit,
+tree, raw commit parents, event/ref/run/job, PR head/base, runner Python version
+and pin-file hashes. It rejects a dirty checkout, wrong event SHA, malformed
+identity, missing pins or PR parents inconsistent with that event. Raw commit
+parents work with checkout&#39;s shallow history. This supplements each lane&#39;s
+existing toolchain/artifact/guest provenance; it is not a PASS report.</p>
+<h3 id="historical-fast-development-loop">Fast development loop</h3>
+<p>Run from the project checkout with an unused output directory:</p>
+<pre><code class="language-sh">python3 scripts/ci_preflight.py --output-dir build/ci/local-preflight-1
+</code></pre>
+<p>Preflight runs metadata plus scaffold, Core0 harness and CI policy suites using
+the host Python standard library. It fails on empty suites, failures, import
+errors or skipped tests and retains scoped logs/results. The hosted job has a
+three-minute command limit and five-minute job limit. It does not realize Nix,
+build Lean, generate RV64 artifacts or boot QEMU. A preflight pass is host
+feedback only. Full metadata repeats the suites in the pinned environment.</p>
+<p>Open a draft PR early to receive the independent parallel acceptance jobs.
+For focused compiler/guest feedback, use the README&#39;s build/audit/run and lane
+interfaces in <code>nix develop --no-write-lock-file</code>; choose new evidence paths and
+retain failures. Final qualification requires a clean committed candidate and
+the separate inherited and Task 004 interfaces. Do not move successful reports
+across source revisions. A new project directory with a warm Nix store is a
+clean project build, not a cold toolchain observation.</p>
+<h3 id="historical-measurements-and-expected-savings">Measurements and expected savings</h3>
+<p><a href="evidence/ci-efficiency-baseline.json">The baseline JSON</a> binds real API responses,
+run IDs, outcomes, timing categories, archive sizes and an authenticated PR #5
+notebook log. Detailed raw responses remain under ignored
+<code>build/ci-efficiency/baseline/</code> with hashes. The API&#39;s PR <code>head_sha</code> is branch
+HEAD; the fetched notebook log confirms actual synthetic merge
+<code>ceeaf359052185b8774909c1cd3f43fd61d545e9</code> for that job.</p>
+<table>
+<thead>
+<tr>
+<th>Representative campaign</th>
+<th align="right">Event to final job</th>
+<th align="right">Summed runner minutes</th>
+<th align="right">Uploaded archive MiB</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://github.com/srkftw/lemma/actions/runs/38036945640">Task 003 push</a></td>
+<td align="right">29m51s</td>
+<td align="right">107.90</td>
+<td align="right">147.76</td>
+<td>Success</td>
+</tr>
+<tr>
+<td><a href="https://github.com/srkftw/lemma/actions/runs/38036948421">Task 003 PR</a></td>
+<td align="right">29m51s</td>
+<td align="right">124.60</td>
+<td align="right">147.96</td>
+<td>Success</td>
+</tr>
+<tr>
+<td><a href="https://github.com/srkftw/lemma/actions/runs/38074535663">Task 004 push</a></td>
+<td align="right">32m53s</td>
+<td align="right">138.75</td>
+<td align="right">157.47</td>
+<td>Failure</td>
+</tr>
+<tr>
+<td><a href="https://github.com/srkftw/lemma/actions/runs/38074538129">Task 004 PR</a></td>
+<td align="right">34m25s</td>
+<td align="right">141.42</td>
+<td align="right">154.46</td>
+<td>Failure</td>
+</tr>
+<tr>
+<td><a href="https://github.com/srkftw/lemma/actions/runs/38038810136">Main</a></td>
+<td align="right">22m46s</td>
+<td align="right">107.62</td>
+<td align="right">147.83</td>
+<td>Success</td>
+</tr>
+</tbody></table>
+<p>Removing the sampled push campaign would eliminate its 108–139 runner minutes
+and 148–157 MiB of future archives per update, minus the new preflight cost.
+That is about 46–50% of paired runner time. These are estimates based on measured
+old runs, not measured after-change GitHub savings or rounded billing minutes.
+PR wall time does not halve merely because the duplicate disappears; reduced
+runner contention is possible but unmeasured. Main and explicit manual work
+remain full, and main retains every run even during rapid merges.</p>
+<p>Per-job API queue time was 2–4 seconds; event to first runner was 3–32 seconds
+(including dispatch). Nix installation took 3–9 seconds per job. Metadata&#39;s
+first Nix/check step took 53–101 seconds; its Lean build step took 52–89 seconds.
+The expensive target steps combine realization, compilation, audits and guest
+tests, so their individual durations cannot be inferred from API timestamps.
+The LemmaSim host QEMU step took 468–519 seconds. Both sampled writing steps
+failed after 67–69 seconds; these do not predict a successful notebook runtime.
+Upload/compression steps totaled 37–47 seconds per campaign, at most ten
+seconds per lane. Archive metadata does not justify deleting evidence contents.</p>
+<h3 id="historical-dependencies-artifacts-and-trust">Dependencies, artifacts and trust</h3>
+<p>No project outputs, PASS reports, guest observations or qualification outputs
+are cached. Existing Nix binary substitution and source realization remain
+mandatory on cache misses. No custom Actions dependency cache was added:
+the selected existing Lean/LLVM/LLD/stock-QEMU closure alone measured
+7,204,814,352 NAR bytes (6.71 GiB), excluding the additional devshell tools,
+pinned Lean source and derived LemmaSim QEMU. Closure transfer/compression and
+hit/miss behavior require benchmarks before proposing a cache.
+The exact local LemmaSim build took 344.345 seconds with a warm shared Nix
+store and fresh project checkout. Its output measured 21,665,768 NAR bytes
+(20.7 MiB), with 116 runtime closure paths totaling 369,982,328 bytes (352.8 MiB).
+This smaller host-tool candidate merits a transfer benchmark; no Actions cache
+hit/miss measurement or trusted main cache producer exists in this cleanup.</p>
+<p>A future dependency-only cache would need exact platform/runner/Nix-action keys,
+<code>flake.nix</code>, <code>flake.lock</code>, <code>lean-toolchain</code>, <code>tooling/toolchain-lock.json</code>, the
+LemmaSim QEMU derivation, <code>apply_qemu.py</code> and all patch inputs, and all filtered
+<code>sim/host</code> C/header inputs including the durable filter. It must verify existing
+NAR/tool/source identities, realize normally on a miss, allow only a trusted
+main producer and restore-only PR consumers, and preserve required uncached
+qualification. No hit/miss benchmark or new warmed/cold claim is made here.
+See <a href="https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching">cache trust restrictions</a>.</p>
+<p>All existing artifact inclusions and always-upload steps remain, including
+failure logs, binaries, raw guest observations, audits, hashes, provenance,
+mutation evidence and replay inputs. New context is included in every lane;
+preflight adds a small scoped artifact. No historical artifacts were deleted,
+retention reduced, secrets added, token permissions widened or runner changed.
+Main-only full pushes remove future duplicate uploads without altering retained
+historical evidence.</p>
+<h3 id="historical-validation-and-rollout">Validation and rollout</h3>
+<p>Workflow validation includes pinned actionlint, Bash syntax checks for every
+inline command, Python parsing, static nine-lane contracts, evaluated concurrency
+truth tables and real temporary-Git/unittest failure cases. These checks cannot
+establish GitHub scheduling or successful remote cache/upload behavior. Actual
+new GitHub runs require publishing; this session does not authorize a push.
+Local exact-candidate commands/results and any failures are recorded separately
+in <a href="evidence/ci-efficiency-validation.json">the validation evidence</a>. The tested
+implementation is <code>c0e946874a8bb4d360d75703d924af759aa33375</code>; subsequent evidence
+updates change only this policy document and the report. Cache hit/miss tests are inapplicable
+because no cache path was introduced.</p>
+<p>Keep Task 004&#39;s work isolated when applying this cleanup. This branch&#39;s diff is
+relative to its PR head; do not replace a newer Task 004 workflow/checker with
+the older file. If landing separately on pre-Task-004 main, port the common
+trigger/provenance/preflight changes to its eight existing jobs, then retain
+the ninth job when Task 004 integrates. Do not add a writing job to a tree
+without its implementation. Resolve the workflow test inventory accordingly.</p>
+<p>After authorized publication, verify a task push starts only preflight, a draft
+PR starts all existing stable checks at its synthetic merge, a newer PR update
+cancels only its ordinary predecessor, and two manual runs plus a main push keep
+their own groups. Verify all source manifests, upload inclusions after failure,
+and complete mandatory acceptance on the reviewed merge candidate. Do not treat
+local expression tests as these GitHub observations.</p>
+<p>Rollback uses a normal revert of this cleanup commit on the integration branch.
+It restores duplicate task-push campaigns and the old cancellation policy;
+do not delete artifacts or target/task branches. If porting to main, revert the
+port commit and preserve any independently added Task 004 qualification lane.</p>
+</section>
+</main>
+</body>
+</html>

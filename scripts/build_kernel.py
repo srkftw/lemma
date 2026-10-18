@@ -24,9 +24,11 @@ from reader_deployment import CONFIGURATIONS as READER_NOTEBOOK_CONFIGURATIONS
 from product_reader_deployment import (ALL_CONFIGURATIONS as PRODUCT_READER_NOTEBOOK_CONFIGURATIONS,
  BOOT_ROOT as PRODUCT_READER_BOOT_ROOT, DISPATCH_ROOT as PRODUCT_READER_DISPATCH_ROOT)
 from chooser_reader_deployment import CONFIGURATIONS as CHOOSER_NOTEBOOK_CONFIGURATIONS
-AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS+CHOOSER_NOTEBOOK_CONFIGURATIONS
+from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS
+AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS+CHOOSER_NOTEBOOK_CONFIGURATIONS+MULTIMODAL_CONFIGURATIONS
 COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+AWAIT_NOTEBOOK_CONFIGURATIONS
 from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS, KERNEL_ENTRIES as CLOSURE_KERNEL_ENTRIES
+CLOSURE_NOTEBOOK_CONFIGURATIONS += MULTIMODAL_CONFIGURATIONS
 from build_core0 import (LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS,
                         capture_platform_dtb, prepare_output_directory)
 from core0_common import Core0Error, action_lease, load_json, repo_root, require_tools, run_bounded, sha256, write_json
@@ -135,6 +137,11 @@ def validate_lean_source_realization(lean_lock: dict, output: str, info: object)
 def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
+    if configuration in MULTIMODAL_CONFIGURATIONS:
+        from multimodal_deployment import BOOT_ROOTS
+        return {"firmware": ROLE_ROOTS["firmware"], "kernel": (
+            ("Lemma.Platform.LemmaSim.NotebookKernel." + BOOT_ROOTS[configuration], ()),
+            ("Lemma.Platform.LemmaSim.NotebookKernel.dispatchMultimodalBulk", ("u64", "u64", "u64")))}
     if configuration in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
         from product_reader_deployment import roots_for
         boot, dispatch = roots_for(configuration)
@@ -306,7 +313,7 @@ def user_artifact_category(configuration: str) -> str:
 
 
 def service_executable_module(module: str) -> bool:
-    return (module == "Lemma.Courses.PackageInstaller" or module.startswith("Lemma.Courses.PackageInstaller.")
+    return (module in {"Lemma.Services.Arithmetic.ServerV7", "Lemma.Services.Arithmetic.ServerV8"} or module == "Lemma.Courses.PackageInstaller" or module.startswith("Lemma.Courses.PackageInstaller.")
             or module.startswith("Lemma.Applications.") or module == "Lemma.Services.Store.Server"
             or module.startswith("Lemma.Services.Store.Server.") or module == "Lemma.Services.Buffer.Server"
             or module.startswith("Lemma.Services.Buffer.Server.") or module == "Lemma.User.Development.BufferFault"
@@ -328,6 +335,20 @@ def user_module_closure(root: Path, image: dict, configuration: str) -> dict[str
 
 
 def source_inputs(root: Path) -> dict[str, str]:
+    # Current HTML contracts are required consumed inputs. Old immutable source
+    # archives retain their original Markdown layout and hashes.
+    documentation_map = root / "docs/document-map.json"
+    if any((root / guide).is_file() for guide in ("docs/contributor-guide.html", "docs/contributing.html")) and not documentation_map.is_file():
+        raise Core0Error("Current source is missing its documentation identity map")
+    def documented_input(relative: str) -> Path:
+        selected = root / relative
+        if relative.startswith("docs/contracts/") and relative.endswith(".html"):
+            if documentation_map.is_file() and not selected.is_file():
+                raise Core0Error("Missing required current contract source: " + relative)
+            legacy = selected.with_suffix(".md")
+            if not documentation_map.is_file() and legacy.is_file():
+                return legacy
+        return selected
     inputs = [root / name for name in ("flake.nix", "flake.lock", "lean-toolchain", "lakefile.toml",
                                      "tooling/toolchain-lock.json", "scripts/core0_common.py", "scripts/build_core0.py",
                                      "scripts/audit_core0.py", "scripts/audit_device.py",
@@ -355,7 +376,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     if usb_profile.is_file():inputs.append(usb_profile)
     product_profile=root / "sim/profiles/lemma-silicon-dev-0.7.0.json"
     if product_profile.is_file():inputs.append(product_profile)
-    for number in (8,9,10,11,12,13):
+    for number in (8,9,10,11,12,13,14):
         next_profile=root / f"sim/profiles/lemma-silicon-dev-0.{number}.0.json"
         if next_profile.is_file():inputs.append(next_profile)
     recovery_authority=root / "tooling/usb-recovery-target-authority.json"
@@ -372,24 +393,43 @@ def source_inputs(root: Path) -> dict[str, str]:
     if aligned_authority.is_file():inputs.append(aligned_authority)
     control_authority=root / 'tooling/control-notebook-target-authority.json'
     if control_authority.is_file():inputs.append(control_authority)
-    for additive in ("scripts/trial_watchdog_target.py", "tooling/trial-watchdog-target-authority.json", "docs/contracts/006-trial-boot-watchdog-v1.md", "scripts/chooser_reader_deployment.py", "scripts/chooser_reader_target.py", "tooling/chooser-reader-target-authority.json", "scripts/companion_reader_deployment.py", "scripts/companion_reader_target.py", "tooling/companion-reader-target-authority.json", "docs/contracts/006-companion-course-reader-deployment-v1.md", "scripts/product_reader_deployment.py", "scripts/product_reader_target.py", "tooling/product-reader-target-authority.json", "docs/contracts/006-product-course-reader-deployment-v1.md", "scripts/reader_deployment.py", "scripts/reader_notebook_target.py", "tooling/reader-notebook-target-authority.json"):
-        path = root / additive
+    for additive in ("scripts/trial_watchdog_target.py", "tooling/trial-watchdog-target-authority.json", "docs/contracts/006-trial-boot-watchdog-v1.html", "scripts/chooser_reader_deployment.py", "scripts/chooser_reader_target.py", "tooling/chooser-reader-target-authority.json", "scripts/companion_reader_deployment.py", "scripts/companion_reader_target.py", "tooling/companion-reader-target-authority.json", "docs/contracts/006-companion-course-reader-deployment-v1.html", "scripts/product_reader_deployment.py", "scripts/product_reader_target.py", "tooling/product-reader-target-authority.json", "docs/contracts/006-product-course-reader-deployment-v1.html", "scripts/reader_deployment.py", "scripts/reader_notebook_target.py", "tooling/reader-notebook-target-authority.json"):
+        path = documented_input(additive)
         if path.is_file():inputs.append(path)
     dirty_helper=root / 'scripts/dirty_batch_notebook_target.py'
     if dirty_helper.is_file():inputs.append(dirty_helper)
     dirty_authority=root / 'tooling/dirty-batch-notebook-target-authority.json'
     if dirty_authority.is_file():inputs.append(dirty_authority)
     export_host_policy(root)  # Missing current helper must not downgrade to a historical command.
-    for additive in ("scripts/companion_number_pad_target.py", "tooling/companion-number-pad-target-authority.json", "tooling/package-entry2-target-authority.json", "docs/contracts/006-package-entry2-deployment-v1.md"):
-        path = root / additive
+    for additive in ("scripts/companion_number_pad_target.py", "tooling/companion-number-pad-target-authority.json", "tooling/package-entry2-target-authority.json", "docs/contracts/006-package-entry2-deployment-v1.html"):
+        path = documented_input(additive)
         if path.is_file():inputs.append(path)
-    for additive in ('scripts/notebook_control_backlog_target.py', 'tooling/notebook-control-backlog-target-authority.json', 'docs/contracts/006-notebook-control-backlog-v1.md', 'tooling/notebook-control-backlog-target-authority-v2.json', 'docs/contracts/006-notebook-control-backlog-v2.md', 'scripts/authored_hint_target.py', 'tooling/authored-hint-target-authority.json', 'docs/contracts/006-authored-hint-visibility-v1.md', 'tooling/authored-hint-publication-target-authority-v2.json', 'docs/contracts/006-authored-hint-publication-v2.md', 'scripts/kernel_pool_read_target.py', 'tooling/kernel-pool-read-target-authority.json', 'docs/contracts/006-kernel-pool-read-v1.md'):
-        path = root / additive
+    for additive in ('scripts/notebook_control_backlog_target.py', 'tooling/notebook-control-backlog-target-authority.json', 'docs/contracts/006-notebook-control-backlog-v1.html', 'tooling/notebook-control-backlog-target-authority-v2.json', 'docs/contracts/006-notebook-control-backlog-v2.html', 'scripts/authored_hint_target.py', 'tooling/authored-hint-target-authority.json', 'docs/contracts/006-authored-hint-visibility-v1.html', 'tooling/authored-hint-publication-target-authority-v2.json', 'docs/contracts/006-authored-hint-publication-v2.html', 'scripts/kernel_pool_read_target.py', 'tooling/kernel-pool-read-target-authority.json', 'docs/contracts/006-kernel-pool-read-v1.html'):
+        path = documented_input(additive)
         if path.is_file():inputs.append(path)
     export_host = root / "scripts/lean_export_host.py"
     if export_host.is_file():inputs.append(export_host)
     for helper in ("scripts/action_cache.py", "scripts/action_worker.py", "scripts/build_actions.py", "scripts/build_dependencies.py", "scripts/build_admission.py", "scripts/toolchain_preparation.py", "lake-manifest.json", "scripts/silicon_reset_rom.py"):
         if (root / helper).is_file(): inputs.append(root / helper)
+    if documentation_map.is_file(): inputs.append(documentation_map)
+    # The additive deployment is imported by this builder. Its current helpers
+    # and contracts are mandatory inputs; immutable pre-multimodal archives do
+    # not contain the deployment and retain their original closure. Authority
+    # pins are collected from genuine exports, then required by the IR auditor.
+    if (root / "scripts/multimodal_deployment.py").is_file():
+        for relative in ("scripts/multimodal_deployment.py", "scripts/multimodal_target.py",
+                         "docs/contracts/007-core0-kernel-v0.9.html",
+                         "docs/contracts/007-converter-v1.html",
+                         "docs/contracts/007-extended-multimodal-v0.2.0.html",
+                         "docs/source-artifacts/LEMMA_EXTENDED_MULTIMODAL_SPEC_v0.2.0.txt",
+                         "docs/source-artifacts/extended-multimodal-html-conversion.json",
+                         "LEMMA_MACHINE_CONTRACT.html"):
+            required = root / relative
+            if not required.is_file():
+                raise Core0Error("Missing required multimodal dependency: " + relative)
+            inputs.append(required)
+        authority = root / "tooling/multimodal-target-authority.json"
+        if authority.is_file(): inputs.append(authority)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 
@@ -419,7 +459,9 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
     course_await_library = (allow_course_await_library
                             and selected_executable_module == "Lemma.Services.Store.ServerAwait"
                             and module == "Lemma.Services.Store.Server")
-    if selected_executable_module is not None and service_executable_module(module) and module != selected_executable_module and not recovery_library and not course_await_library:
+    parameterized_library = (selected_executable_module == "Lemma.Services.Arithmetic.ServerV8"
+                             and module == "Lemma.Services.Arithmetic.ServerV7")
+    if selected_executable_module is not None and service_executable_module(module) and module != selected_executable_module and not recovery_library and not course_await_library and not parameterized_library:
         raise Core0Error(f"user dependency imports another executable module: {module}")
     if ".Test." in module or module.startswith("Lemma.Compiler.Test") or "Mutation" in module:
         raise Core0Error(f"production dependency imports a test/mutation module: {module}")

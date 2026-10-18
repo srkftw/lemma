@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Managed unary scalar closures v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="managed-unary-scalar-closures-v1">Managed unary scalar closures v1</h1>
+<p><code>lemma-managed-closure-v1</code> adds <code>core0-user-v0.7</code> and the distinct
+<code>Action.managedClosure2</code> bridge. User1–6 retain their grammars and reject this
+bridge. User7 inherits their existing bridges, execution operations, privilege
+boundary and fixed virtual address domain. No production deployment selector,
+mathematical verifier, proof kernel or persistent document format changes.</p>
+<p>A direct safe monomorphic ordinary Lean <code>UInt64 → UInt64 → UInt64</code> entry is
+elaborated by pinned Lean4.34.1 at immutable compiler revision
+<code>5045d0056413266e57c625dcd7c365b10e377c52</code>. Reachable ordinary functions accept
+only UInt64 and unary <code>UInt64 → UInt64</code> parameters and return UInt64. The actual
+compiler IR decides ownership and control. There are at most32 ordinary source
+definitions, acyclic call depth8,8 distinct PAP targets,4096 IR nodes per source
+function, and65536 generated SSA IDs. Source SSA IDs are unique and below10000.</p>
+<p>The reserved generated namespace and the dispatcher source name <code>__apply</code>
+cannot be impersonated or collide with an ordinary source declaration.</p>
+<p>The new grammar admits actual <code>box UInt64</code>, <code>unbox</code>, <code>pap</code>, unary <code>app</code>, owned
+single-reference <code>inc</code>/<code>dec</code>, exact exhaustive Bool control and closed direct
+ordinary calls. Scalar add/subtract/multiply/bitwise operations use all64 bits
+with unsigned wraparound; shifts mask the count to0–63. Source-local ownership
+is affine: an owned local has at most8 compiler-visible references, consuming
+calls decrement them, reads after consumption and leaked roots reject. Closures
+never escape this scalar entry as unchecked handle words.</p>
+<p>A PAP target must be the actual generated <code>_boxed</code> adapter of an admitted
+ordinary scalar function. It has1–5 object parameters, no borrowed parameters,
+and one object result. Its genuine body must unbox each parameter as UInt64,
+consume it once, call exactly its safe source owner with those scalar values in
+order, then box and return the full UInt64 result. The compiler checks actual
+parameter/body IDs, ownership metadata, source ownership, arity and layouts.
+The exact source type, owner identity and generated adapter IR are exported;
+there is no manufactured source declaration for the adapter. <code>pap</code> must leave
+exactly one invocation argument and consume0–4 owned scalar boxes.</p>
+<p>The maintained backend does not import the upstream runtime. The immutable
+upstream <code>IR/EmitLLVM.lean</code> lines713–750 and <code>LCNF/EmitC.lean</code> lines665–683 emit
+<code>lean_alloc_closure</code>, captured object fields and <code>lean_apply_1</code>; upstream
+<code>runtime/apply.cpp</code> lines101–157 distinguishes exclusive/shared closure roots
+and retains captures for shared application. This unsupported foreign path is
+replaced by a checked Lean-authored source-derived finite CFG dispatcher.
+Its code catalog comes only from the checked actual PAP adapters. It checks the
+code ID and capture count, reads the full scalar captures and argument, calls
+the exact checked source owner, consumes one closure/argument reference, then
+allocates a real result box. It is neither a target interpreter nor a
+<code>lean_apply</code>/allocation stub.</p>
+<p>Scalar adapters cannot observe object identity/refcounts or escape a capture.
+Therefore their temporary shared-capture retain followed immediately by unbox
+and dec is represented by a validated borrow from the live closure root.
+Shared closure application decrements only that actual parent. Final application
+releases its owned captures and parent. This specialization preserves the
+checked adapter&#39;s scalar values and ownership while using the versioned arena&#39;s
+explicit resource policy, rather than pretending its object ABI matches the
+upstream heap. Persistent/static boxed captures and initializers reject; they
+are not tokens, truncated words or no-op reference counts.</p>
+<h2 id="real-storage-and-lifetime">Real storage and lifetime</h2>
+<p>The runtime uses <code>lemma-owned-arena-v1</code>: one syscall-owned process page at
+<code>0x400000</code>, a128-byte header and31 slots of128 bytes. Each full UInt64 capture
+is a real8-byte scalar box. Each closure is a real64-byte bytes-tagged object
+whose inline owned environment has this layout:</p>
+<table>
+<thead>
+<tr>
+<th>Payload offset</th>
+<th>Field</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>Cookie <code>0x31534c4341524d4c</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Checked source catalog code ID1–8</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Capture count0–4</td>
+</tr>
+<tr>
+<td>24,32,40,48</td>
+<td>Owned scalar box handles; unused positions are zero</td>
+</tr>
+<tr>
+<td>56</td>
+<td>Reserved zero</td>
+</tr>
+</tbody></table>
+<p>Slot headers retain the existing state/generation/refcount/tag/length fields.
+Every observation validates the page header, live count1–31, slot, generation,
+refcount1–65535, bytes tag/length, cookie, code/count, used boxed children and
+zero unused/reserved fields. Retain increments the actual parent refcount.
+Shared release decrements only the parent. Final release preflights each child,
+releases every capture, clears/regenerates the parent slot and decrements the
+actual live count. Cancellation blocks observation/allocation but cannot block
+owned cleanup. Child boxes may be aliased only through real retained references.</p>
+<p>A k-capture closure owns k+1 slots. Application temporarily requires an actual
+argument box; its actual result box is allocated after consuming the argument
+and one parent reference. Multiple live closures and intermediates share the31
+slots. The source budget is not a promise that all admitted inputs fit: actual
+exhaustion returns237 and publishes no scalar result. Invalid shape/code/index
+returns236, cancellation238, and lifetime failure239; mapped-memory and syscall
+faults retain their actual status. PAP rejection/OOM consumes its captured
+roots. Failed calls clean up remaining owned locals; cleanup attempts all owned
+roots while preserving the original failure. An actual memory fault can defeat
+cleanup and is never reported as successful rollback.</p>
+<p>There are no generic closures, closure-valued captures, escaping closures,
+multi-argument/over/under application, static closures, join points, reset/reuse,
+polymorphism, recursion, arbitrary externs, dynamic source bridges or proof
+execution. Those remain separate work.</p>
+<h2 id="bounded-isolated-qualification">Bounded isolated qualification</h2>
+<p>The dedicated <code>ClosureExport</code>, <code>ClosureKernel</code> and <code>ClosureProcess</code> path is a
+quarantined development artifact. It genuinely lowers firmware, supervisor and
+User7 units independently, then uses the existing structured startup, Sv39
+loader, page syscalls, traps and teardown. It changes no production registry.
+<code>check_managed_closure.py</code> archives exact consumed source/tool identities and
+observes ten O0/O2 process outcomes against independent full64 arithmetic.
+The guest checks zero live roots, releases its arena page before exit, and the
+supervisor observes frame-baseline restoration after each process teardown.</p>
+<p>The isolated boot selects the existing1024-frame/128-frame-owner/4-page-stack
+mode before constructing any process; the historical512-frame mode rejects the
+arena VA and remains unchanged. Package-v2 text/stack layout and the existing
+full metadata clear match that selected mode. Outputs combine repeated results
+with a logical right shift so bit63 of each full64 capture remains observable.
+Two ordinary closures capture the same full64 scalar through the distinct boxes
+actually emitted by Lean; the runtime does not invent compiler CSE. The finite
+runtime fixture separately retains one real box across two parent graphs and
+checks both child-reference releases without losing the remaining alias.</p>
+<p>Pressure cases preserve29 unrelated boxes while selected source boxing reaches
+31 slots, and27 unrelated boxes while a four-capture PAP reaches31 slots.
+Actual failure must be237; consumed inputs must be reclaimed, unrelated boxes
+must remain, and all retained pressure boxes/page must then be released.
+The finite protocol requires all ten exact exit/data records and the compiled
+c7 completion record before explicit QEMU kill/reap. Timeout or missing records
+fail; this finite observation is not a natural machine shutdown.</p>
+<p>Compiler mutation fixtures change actual upstream IR and require rejection.
+Runtime finite-memory fixtures inspect actual Lean Actions; they are modeled
+runtime tests, not guest execution or correctness proofs. Concrete qualification
+receipts record observed results separately from this contract. RTL/Wasm closure
+execution, production integration, general recursion and the proof kernel remain
+unqualified by this subset.</p>
+</main>
+</body>
+</html>

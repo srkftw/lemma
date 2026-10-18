@@ -4,6 +4,9 @@ import Lemma.Kernel.MachineServices
 The legacy validator remains unchanged. S policy is non-nested with SIE clear;
 SEIP is enabled and delegated for real PLIC delivery on entry to U. -/
 namespace Lemma.Platform.LemmaSim.MachineServices
+
+private def mmDifferent (a b : UInt64) : Bool := if a = b then false else true
+private def mmFailed (s : UInt8) : Bool := if s = 0 then false else true
 open Lemma.Core0.Memory
 open Lemma.Kernel.Memory
 
@@ -37,5 +40,14 @@ def validateFor (expectedInterrupts : UInt64) : Action :=
 
 def validate : Action := validateFor 0x1646
 def validateSilicon : Action := validateFor 514
+
+/-- The ninth PMP entry is an actual readback from the structured startup.
+The old eight entries and machine-service witness retain their prior meaning. -/
+def validateMultimodal : Action :=
+  .bind validateSilicon fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (Access.read64 0x804e01f0) fun s address => if mmFailed s = true then .done s 0 else
+  .bind (Access.read64 0x804e01f8) fun s configuration => if mmFailed s = true then .done s 0 else
+  if mmDifferent address 0x040053ff = true then .done 51 0 else
+  if mmDifferent configuration 0x1b = true then .done 51 0 else .done 0 0
 
 end Lemma.Platform.LemmaSim.MachineServices

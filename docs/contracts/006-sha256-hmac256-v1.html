@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SHA-256 and HMAC-SHA-256 physical-memory substrate1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="sha-256-and-hmac-sha-256-physical-memory-substrate1">SHA-256 and HMAC-SHA-256 physical-memory substrate1</h1>
+<p><code>lemma-sha256-physical/1</code> and <code>lemma-hmac256-physical/1</code> are ordinary Lean
+algorithms using the existing checked <code>core0-boot-v0.1</code> lowering. They add no
+language feature, intrinsic, allocator or foreign target runtime. The
+freestanding component is separate from product image authentication.</p>
+<p>The algorithms follow <a href="https://csrc.nist.gov/files/pubs/fips/180-4/final/docs/fips180-4.pdf">FIPS180-4, August2015, sections4–6</a>
+and <a href="https://www.rfc-editor.org/rfc/rfc2104">RFC2104, February1997</a>.
+<a href="https://www.rfc-editor.org/rfc/rfc4231">RFC4231, December2005</a> supplies independent
+short- and long-key HMAC vectors. These are pinned publication editions; this
+does not claim FIPS cryptographic-module validation or physical side-channel
+qualification. The direct PDF byte fetch was unavailable; no reference-file
+hash or vendored specification is asserted.</p>
+<p>SHA accepts a private1024-byte, eight-byte-aligned workspace in physical RAM
+<code>[0x80000000,0x88000000)</code>. Its state layout is:</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0–63</td>
+<td>Eight hash words, each in the low32 bits of a64-bit slot</td>
+</tr>
+<tr>
+<td>64–127</td>
+<td>Eight working words</td>
+</tr>
+<tr>
+<td>128–639</td>
+<td>Sixty-four message-schedule words</td>
+</tr>
+<tr>
+<td>640</td>
+<td>Total input bytes</td>
+</tr>
+<tr>
+<td>648</td>
+<td>Pending bytes, equal to total modulo64</td>
+</tr>
+<tr>
+<td>656–719</td>
+<td>Pending block</td>
+</tr>
+<tr>
+<td>720</td>
+<td>Active-stream phase marker</td>
+</tr>
+<tr>
+<td>728–1023</td>
+<td>Reserved, never authoritative</td>
+</tr>
+</tbody></table>
+<p><code>begin</code> initializes the state. <code>update</code> accepts at most4096 bytes per call,
+including unaligned spans, and processes full blocks without retaining caller
+references. Total admitted input is at most64MiB. <code>finish</code> applies big-endian
+SHA padding and writes exactly32 digest bytes; it consumes the stream before
+padding. Repeated finalization fails. The one-shot <code>hash</code> has the same4096-byte
+bound; larger images use repeated updates.</p>
+<p>HMAC owns2048 bytes. It uses SHA&#39;s context at0, an inner digest at1024, a
+64-byte padded key at1088 and its phase marker at1200. Keys of at most4096
+bytes are supported; keys longer than64 bytes are hashed first. The inner
+prefix counts toward SHA&#39;s64MiB bound. The full32-byte tag is returned.
+Keys come from the caller. No production key, entropy, immutable trust state,
+anti-rollback rule or authentication-success constant is supplied here.</p>
+<p>Public span/alignment/alias checks precede private mutation. Source and output
+must be disjoint from the complete workspace; source/output may alias each
+other because output is written after all input is consumed. Streaming data
+must remain immutable during each call. The context is private trusted scratch,
+not a transferable validation token. Errors248/249/250 mean invalid argument,
+resource bound and invalid stream state. Existing physical-access errors
+propagate. A library span check does not enlarge the selected compiler profile&#39;s physical regions; an otherwise well-formed call outside an admitted region
+still fails through the compiled physical primitive. Faults may leave private state or output partially written; callers
+must reject the result and initialize before retry. No durable effect occurs.</p>
+<p><code>Lemma.Crypto.Probe</code> prints actual computed digests from a freestanding RV64
+workload. <code>scripts/check_crypto.py</code> independently compares UART bytes with
+host-only SHA/HMAC oracles after genuine elaboration, checked lowering, LLVM,
+direct-call/stack/runtime/ISA/ELF audits. The host oracle never supplies a digest
+to the target. Product ROM selection must still explicitly verify tags before
+handoff and preserve authenticated fallback/recovery; these component checks
+alone cannot establish that behavior.</p>
+</main>
+</body>
+</html>

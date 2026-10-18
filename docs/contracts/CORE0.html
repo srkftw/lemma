@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Core0 contract — versioned scalar profiles</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="core0-contract--versioned-scalar-profiles">Core0 contract — versioned scalar profiles</h1>
+<p>Status: Task 001 implements and tests the bounded <code>core0-v0.1</code> scalar membership
+checker. Task 002 Gate 3 adds the explicitly separate <code>core0-v0.2</code> scalar/CFG
+profile. Task 002 Gate 4 adds the narrowly bounded <code>core0-v0.3</code> iteration profile
+described below. Task 002 Gate 5 adds the separately selected <code>core0-v0.4</code>
+checked-memory/Action profile. Task 002 Gate 6 adds the separately selected
+<code>core0-v0.5</code> polling-device profile. Task 002 Gate 7 adds the separately selected
+<code>core0-v0.6</code> synchronous-trap profile below, with recorded clean target acceptance.
+Gate 8&#39;s <code>core0-v0.7</code> timer profile has clean finite target acceptance at
+<code>42674c1</code>; the broader Core0 contract remains future work.</p>
+<h2 id="purpose">Purpose</h2>
+<p>Accept a precisely bounded subset of ordinary, elaborated Lean declarations and
+compile their reachable target code without an allocator or managed runtime.
+Core0 membership is about runtime representation/effects and transitive dependencies,
+not a keyword search of surface syntax or a blanket ban on host-side Lean libraries.
+Proof terms and typeclass elaboration can occur on the host; they must be erased or
+lowered soundly so they do not introduce unmanaged runtime dependencies on the guest.</p>
+<h2 id="implemented-scalar-profiles">Implemented scalar profiles</h2>
+<p><code>core0-v0.1</code> remains the Task 001/Gate 2 profile. It admits the scalar types,
+first-order calls, lets, pure conditionals, equality and unsigned comparisons,
+wrapping addition/subtraction/multiplication, bitwise and/or/xor, and the six
+unsigned widening/truncation conversions exercised by its closed conformance
+suite. Its historical checker/exporter commands retain their original meaning;
+division, remainder, shifts, and complement remain rejection cases in v0.1.</p>
+<p><code>core0-v0.2</code> is additive and must be selected explicitly. It retains every v0.1
+primitive and adds fixed-width complement, left and logical-right shift, unsigned
+division, and unsigned remainder for <code>UInt8</code>, <code>UInt32</code>, and <code>UInt64</code>. It also
+changes conditional lowering to validated branch/phi control flow. Its checked
+programs, suite manifests, corpus, model, exporter, and audit carry
+<code>core0-v0.2</code>; an unknown or mismatched version fails closed.</p>
+<p>For v0.2, the pinned Lean semantics are:</p>
+<ul>
+<li><code>x / 0 = 0</code> and <code>x % 0 = x</code>;</li>
+<li>shift counts are reduced modulo 8, 32, or 64 as appropriate;</li>
+<li>complement flips exactly the bits of the fixed-width value.</li>
+</ul>
+<p>The lowering branches on an exact divisor-zero check and emits LLVM <code>udiv</code> or
+<code>urem</code> only in the nonzero successor. It masks a shift count by width minus one
+before LLVM <code>shl</code> or <code>lshr</code>. The structured LLVM validator checks termination,
+targets, reachability, SSA definitions/types, dominance, predecessor/phi sets,
+edge availability, returns, and direct-call signatures. The independent artifact
+audit additionally checks the source-count masks and that a divisor-zero edge
+cannot reach its dangerous operation. These checks and finite differential tests
+are not a proof of compiler correctness.</p>
+<p>The host validator indexes membership during dominance analysis. Unique labels
+and closed edges are still checked first. Cached predecessor lists, label
+positions and indexed row updates preserve the original traversal, fixed-point
+order and convergence fuel. Name-set equality retains the historical
+equal-length/mutual-membership relation even for duplicates; intersection keeps
+first occurrences in left-array order. Hash-table iteration never orders emitted
+code or diagnostics. This implementation change adds no accepted language,
+target runtime dependency or relaxed validation rule. Executable comparison
+tests and identical genuine export bytes are separate from a correctness proof.</p>
+<p><code>core0-v0.3</code> is additive and must also be selected explicitly. It retains every
+v0.2 scalar operation and admits exactly one higher-order-looking source construct:</p>
+<pre><code class="language-lean">Lemma.Core0.Bounded.boundedFoldU32
+  (budget : Nat)
+  (step : UInt32 -&gt; UInt32 -&gt; UInt32)
+  (count initial : UInt32) : UInt64
+</code></pre>
+<p>This is a compiler-recognized bounded-fold form, not general closure support. The
+budget must be a canonical standard <code>Nat</code> literal in <code>0..256</code>, and <code>step</code> must be a
+direct reference to a safe, total, monomorphic top-level declaration of exactly the
+displayed callback type. The callback and its ordinary helper dependencies pass
+through the same transitive Core0 checker. Lambdas, captured environments, runtime
+function values, arbitrary higher-order dispatch, partial definitions, and recursive
+callback/helper cycles remain rejected.</p>
+<p><code>count</code> and <code>initial</code> are runtime <code>UInt32</code> values. When <code>count.toNat &lt;= budget</code>, the
+fold invokes <code>step index accumulator</code> in ascending index order from zero through
+<code>count - 1</code>, beginning with <code>initial</code>, and returns the final accumulator zero-extended
+to <code>UInt64</code>. When <code>count.toNat &gt; budget</code>, it invokes the callback zero times and
+returns <code>0x8000000000000000 ||| initial.toUInt64</code>. Bit 63 therefore distinguishes
+semantic budget exhaustion from every successful result; bits 62 through 32 remain
+zero, and the low 32 bits preserve the unchanged initial value. This tagged outcome
+is distinct from the checked model&#39;s expression/call traversal-fuel diagnostic and
+from a host or QEMU timeout.</p>
+<p>The erased budget and callback identity never become a target <code>Nat</code>, closure, or
+function pointer. Lowering emits a runtime count guard, scalar <code>i32</code> index and
+accumulator phis, one direct callback call on the body edge, and an actual backedge.
+It uses fixed call frames rather than recursive iteration. The profile adds no heap,
+arrays, boxed tuples, allocator, exception machinery, or managed Lean runtime.</p>
+<h2 id="implemented-checked-memory-profile">Implemented checked-memory profile</h2>
+<p><code>core0-v0.4</code> is additive and must be selected explicitly with the v0.4 checker.
+It preserves v0.1--v0.3 and adds an explicit, compiler-recognized <code>Action</code> syntax.
+An Action is closed first-order syntax with statically resolved continuations and
+bounded-fold callbacks; it is not <code>IO</code>, a general state monad, a runtime closure, or
+permission to call arbitrary externs. The checker computes <code>checkedAccess</code>,
+<code>ramRead</code>, and <code>ramWrite</code> effects transitively through direct calls and loop bodies.
+Scalar profiles reject Actions, and a scalar result cannot conceal an Action effect.</p>
+<p>The source operations are <code>done</code>, <code>bind</code>, <code>load8</code>, <code>load32</code>, <code>load64</code>, <code>store8</code>,
+<code>store32</code>, <code>store64</code>, <code>checkReadRange</code>, <code>checkWriteRange</code>, and the v0.4
+<code>boundedFoldU64</code>. The fold has the same static-callback and literal-budget discipline
+as v0.3, carries fixed scalar state, has a maximum admitted budget of 256, and returns
+the checked status <code>budget-exceeded</code> without executing its callback when the runtime
+count exceeds the declared budget. The logical result is
+<code>{ status : UInt8, value : UInt64 }</code>; its physical ABI is specified in
+<code>TARGET_ABI.md</code>.</p>
+<p>The fixed region catalog is part of the profile, not caller-supplied authority:</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Base</th>
+<th>Length</th>
+<th>Class/permission</th>
+<th>Widths</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>scratch</td>
+<td><code>0x80801000</code></td>
+<td><code>0x1000</code></td>
+<td>ordinary RAM, read/write</td>
+<td>1, 4, 8</td>
+</tr>
+<tr>
+<td>2</td>
+<td>input</td>
+<td><code>0x81000000</code></td>
+<td><code>0x1000</code></td>
+<td>ordinary RAM, read-only</td>
+<td>1, 4, 8</td>
+</tr>
+<tr>
+<td>3</td>
+<td>output</td>
+<td><code>0x80803000</code></td>
+<td><code>0x1000</code></td>
+<td>ordinary RAM, read/write</td>
+<td>1, 4, 8</td>
+</tr>
+<tr>
+<td>4</td>
+<td>events</td>
+<td><code>0x80805000</code></td>
+<td><code>0x1000</code></td>
+<td>ordinary RAM, read/write</td>
+<td>4, 8</td>
+</tr>
+<tr>
+<td><code>0x70</code></td>
+<td>image</td>
+<td><code>0x80000000</code></td>
+<td><code>0x7f0000</code></td>
+<td>reserved</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>0x71</code></td>
+<td>stack</td>
+<td><code>0x807f0000</code></td>
+<td><code>0x10000</code></td>
+<td>reserved</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>0x80</code></td>
+<td>UART</td>
+<td><code>0x10000000</code></td>
+<td>device</td>
+<td>device, denied here</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>0x81</code></td>
+<td>SiFive test</td>
+<td><code>0x00100000</code></td>
+<td>device</td>
+<td>device, denied here</td>
+<td>none</td>
+</tr>
+</tbody></table>
+<p>Every access evaluates guards in this order: region lookup, class, permission,
+width, bounds, alignment. Bounds checking first establishes a valid region interval,
+then validates the width, then compares <code>offset &lt;= length - width</code>; it never relies
+on a potentially wrapping <code>offset + width</code>. A pointer and a volatile physical load or
+store are constructed only on the success edge. Range preflight performs no physical
+access. The fixed status codes are:</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>success</td>
+</tr>
+<tr>
+<td>1</td>
+<td>unknown region</td>
+</tr>
+<tr>
+<td>2</td>
+<td>reserved region</td>
+</tr>
+<tr>
+<td>3</td>
+<td>device region</td>
+</tr>
+<tr>
+<td>4</td>
+<td>read denied</td>
+</tr>
+<tr>
+<td>5</td>
+<td>write denied</td>
+</tr>
+<tr>
+<td>6</td>
+<td>width denied</td>
+</tr>
+<tr>
+<td>7</td>
+<td>out of bounds</td>
+</tr>
+<tr>
+<td>8</td>
+<td>misaligned</td>
+</tr>
+<tr>
+<td>9</td>
+<td>iteration budget exceeded</td>
+</tr>
+</tbody></table>
+<p>Status 4 is catalogued but unreachable under this exact table because every ordinary
+region is readable and class checks precede permission checks. Rejected operations
+return zero as their value, do not perform a physical access, and do not append a
+model event. Successful modeled loads/stores append one ordered event containing the
+operation, region, offset, width, and transferred value. The finite-memory model and
+its interval/rejected-write lemmas describe this contract; they are not a proof that
+the compiler preserves it.</p>
+<p>The v0.4 region API is checked access inside one trusted M-mode image. It is not a
+hardware protection boundary against arbitrary privileged code, an allocator, an
+address-space system, or a device API. MMIO remains excluded from ordinary RAM and
+requires the separately versioned effect and ordering contract below.</p>
+<h2 id="implemented-compiled-device-profile">Implemented compiled-device profile</h2>
+<p><code>core0-v0.5</code> is additive and must be selected explicitly. It retains the complete
+v0.4 scalar, Action, and checked-RAM contract and admits exactly four device Actions:
+<code>uartReadStatus</code>, <code>uartReadByte</code>, <code>uartWriteByte</code>, and
+<code>uartEnableAndResetFifo</code>. They denote the pinned ns16550a LSR read, RBR read, THR
+write, and fixed FCR <code>0x07</code> write respectively. Source code cannot supply an MMIO
+base, register offset, width, alignment, volatility flag, or fence policy.</p>
+<p>Each admitted device Action lowers to exactly one volatile <code>i8</code> access with alignment
+one at its fixed address, immediately preceded and followed by the generated
+<code>core0_io_fence</code> (<code>fence iorw, iorw</code>) primitive. Device effects are recorded separately
+as <code>mmioRead</code>, <code>mmioWrite</code>, and <code>ioOrder</code>; the checker unions them transitively through
+conditionals, direct helper calls, and bounded-fold callbacks. Ordinary RAM access to
+the UART region remains status 3 and never becomes a generic MMIO escape hatch.</p>
+<p>The v0.5 <code>boundedFoldU64</code> maximum is 1,000,000 iterations, while the v0.4 maximum
+remains 256. Status 10 is an internal early-stop result consumed by polling helpers and
+must not escape the public protocol. The added public terminal statuses are 11
+(transmit timeout), 12 (receive timeout), 13 (line error), 14 (malformed frame),
+15 (truncated frame), 16 (invalid length), and 17 (unsupported command). Unknown
+operations and stale device/effect metadata fail closed.</p>
+<p>The fixed Gate 6 root initializes the UART FIFO, transmits
+<code>LEMMA_DEVICE/1\nREADY\n</code>, and handles exactly two runtime requests received after
+boot. Requests use the 16-byte <code>LMQ6</code> little-endian header and at most 16 payload
+bytes; responses are fixed 24-byte <code>LMS6</code> frames. ADD64, XOR64, a distinguishing
+RAM-versus-UART branch, and bounded TX stress are admitted. An unsupported command
+gets status 17 and preserves framing for the next request; malformed, truncated,
+invalid-length, and bounded polling failures terminate with their declared Action
+status.</p>
+<p>The branch command initializes <code>scratch+64</code> to <code>0x3c</code>. Selector zero alone writes
+<code>0x5a</code>; selector one alone sends the raw UART byte <code>0xa5</code>. Each selected branch then
+reads the marker through checked RAM and returns <code>(observedMarker &lt;&lt; 8) | selector</code>.
+The independent target oracle therefore requires <code>0x5a00</code> and <code>0x3c01</code>, respectively,
+and can observe both the false write and the true branch&#39;s marker preservation.</p>
+<p>The finite UART and packet models describe register side effects, ordered access
+events, polling outcomes, parsing, dispatch, and encoding. Their local lemmas and
+executable comparisons do not prove that the frontend or LLVM lowering preserves
+those models. This profile is specific to the pinned QEMU machine; it is not a
+general driver framework, physical-board port, interrupt implementation, hosted IO,
+or managed runtime.</p>
+<h2 id="implemented-synchronous-trap-profile">Implemented synchronous-trap profile</h2>
+<p><code>core0-v0.6</code> must be selected explicitly. It preserves v0.5 and adds exactly
+<code>Action.trapEcall</code>, <code>trapBreakpoint</code>, <code>trapUnexpectedEcall</code>, and
+<code>trapIllegalInstruction</code>. Each takes an immediate checked <code>UInt8 -&gt; UInt64 -&gt; Action</code> continuation and no caller-selected machine address, instruction, CSR,
+cause, or frame pointer. The first two execute fixed authorized traps and return
+status zero with a target register/canary mismatch mask. The latter two are
+controlled fatal fixtures, not recoverable arbitrary-fault primitives.</p>
+<p>The new transitive effects are <code>sync-trap</code> and <code>machine-state</code>. Scalar wrappers
+cannot hide these effects; old Action profiles reject them. Source signatures,
+normalized checked nodes, operation catalogs, declared effects, and exact closed
+<code>core0_trap_*</code> machine declarations must agree. The finite ordinary-memory and
+UART models explicitly reject trap Actions rather than pretending to execute
+hardware. The v0.5 fold budget and fixed-memory/UART contracts are unchanged.</p>
+<p>Added terminal statuses are 18 (unexpected trap), 19 (double fault), and 20
+(context mismatch). Status 10 remains internal. The nine-word compiled trap
+dispatcher checks cause, exact PC, relevant mstatus bits, mie, and specification-
+permitted trap values; only explicit site/continuation pairs may resume. The
+machine entry/return and resource premises are in
+<a href="../audits/traps-core0-v06.html"><code>traps-core0-v06.md</code></a>. This contract describes the
+tested implementation, not a compiler-correctness proof. Gate 7 acceptance is
+recorded at clean <code>6c1b6a8...</code>; timer evidence belongs to the separate v0.7 profile.</p>
+<h2 id="implemented-timer-profile">Implemented timer profile</h2>
+<p><code>core0-v0.7</code> is additive and explicit. It admits exactly <code>Action.timerReadTime</code>,
+<code>timerSetCompare</code>, <code>timerReadPending</code>, <code>irqSaveDisable</code>, <code>irqRestore</code>,
+<code>timerSetInterrupt</code>, and <code>timerProbe</code>. Each has an immediate checked
+<code>UInt8 -&gt; UInt64 -&gt; Action</code> continuation. Compare takes UInt64; restore and
+interrupt-enable take Bool, widened canonically only at their closed i64 ABI
+boundaries. No raw address, CSR, handler registration, or general foreign call
+is admitted. Previous profiles reject these operations and retain their behavior.</p>
+<p>The seven closed machine calls return i64 and checked status zero, with actual
+time, pending bit, previous global enable, probe mismatch mask, or setter zero.
+Transitive <code>timer-state</code> and <code>interrupt-state</code> effects supplement ordered I/O and
+machine-state effects. Timer MMIO reads/writes retain their direction effects.
+Finite RAM/UART models reject timer Actions rather than synthesize interrupts.
+Status 21 means required hardware event missing; 22 means invalid deadline domain.</p>
+<p>The fixed-hart timer, constant-work deadline policy, bounded ring, synchronization,
+full-register probe, and two quarantined mutations are specified in
+<a href="../audits/timers-core0-v07.html"><code>timers-core0-v07.md</code></a>. Local policy/model probes
+are not target acceptance. Fresh audited O0/O2 execution and both behavioral
+failure controls passed at clean <code>42674c1</code>, with 1,474 positive-corpus hardware
+entries. The integrated monitor reuses v0.7 and passed its separate clean
+18-boot O0/O2 acceptance at <code>8fd45d8</code>.</p>
+<p>The accepted Gate 9 monitor is an ordinary v0.7 program, not a new
+language profile. Its parsing, scalar selection, checked byte fill/sum, trap
+commands, timer lifecycle and bounded request loop pass the same genuine
+elaboration/checked-IR route. See <a href="../audits/monitor-core0-v07.html">its protocol contract</a>.</p>
+<h2 id="future-profile-work">Future profile work</h2>
+<ul>
+<li><code>UInt8</code>, <code>UInt32</code>, <code>UInt64</code>, explicitly represented Boolean values, and literal data.</li>
+<li>First-order monomorphic scalar functions, direct calls, let bindings, conditionals,
+unsigned comparisons, bit operations and wrapping integer addition/subtraction/multiplication.</li>
+<li>v0.5 UART operation remains polling-only and v0.6 remains synchronous,
+non-nested M-mode trap handling only; v0.7 does not silently alter either.</li>
+<li>No floating point, vectors, atomics, dynamic allocation or concurrency in this first profile.</li>
+<li>General recursion and dynamic loops may be rejected initially. Any admitted bounded loop
+needs an explicit representation and lowering; the compiler must not ignore its body.</li>
+</ul>
+<p>The first implementation may narrow the profile when justified, but must preserve
+nontrivial scalar calls/branches and actual target computation, and document omissions.
+Changing the initial subset does not permit changing the RISC-V/Lean/LLVM constraints.</p>
+<h2 id="reject-or-require-an-explicit-intrinsic-rule">Reject or require an explicit intrinsic rule</h2>
+<p>Heap-backed data, capturing closures, boxed values requiring a runtime, reference-count
+operations, arbitrary foreign imports, implicit initialization effects, hosted <code>IO</code>,
+exceptions, unsupported memory access and unresolved calls are rejected on their
+reachable target path. The compiler may normalize static constants safely; do not
+infer that a whole import needs a runtime simply because the host uses one.</p>
+<p>Unknown operations are rejected with declaration/dependency path, unsupported feature
+and source location where available. No dummy allocator or empty initializer may make
+a rejected program appear supported.</p>
+<h2 id="source-to-target-evidence">Source-to-target evidence</h2>
+<p>Inspect elaborated terms and the actual post-lowering target dependency graph. Audit
+optimization-created helpers and residual runtime calls. Intrinsics are accepted by
+exact declaration identity, signature, effects and lowering rule; names alone are not proof.
+User-defined foreign declarations do not enter the allowlist automatically.</p>
+<p>Test dependencies hidden behind helper functions, aliases and imported modules. Renaming
+an accepted function must not break compilation; replacing its arithmetic must change its
+behavior. Whole-program strings or manually assembled example ASTs are not acceptable substitutes.</p>
+<h2 id="semantics">Semantics</h2>
+<p>State the fixed-width overflow rules, Boolean representation, conversion/truncation rules,
+comparison signedness, shift behavior and memory access preconditions. A profile that does
+not admit division or shifts must reject them rather than lower them accidentally.
+An admitting profile must establish LLVM&#39;s nonzero-divisor and in-range-count premises.
+No <code>nuw</code>, <code>nsw</code>, <code>inbounds</code>, alignment or aliasing attributes without a justified premise.
+Any admitted division must handle the full source domain, including division by zero,
+in accord with the pinned Lean semantics; do not assume C semantics.</p>
+<p>Use a Lean reference evaluator/model for the admitted operations and distinguish this
+reference from a proof that the compiler preserves semantics. That proof is not claimed
+by a passing finite differential corpus.</p>
+</main>
+</body>
+</html>

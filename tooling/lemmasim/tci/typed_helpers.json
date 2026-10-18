@@ -1,0 +1,29 @@
+{
+  "schema": "lemma-qemu-tci-typed-helper-patch/1",
+  "upstream_version": "11.1.1",
+  "license": "GPL-2.0-or-later; modifications preserve upstream source copyrights/licenses",
+  "patch_sha256": "9b7f69218696f7775a6fa76d80008d2e99987fea93ffc616e136e8924eab2da9",
+  "sources": {
+    "include/tcg/helper-info.h": {
+      "before": "7861539d916469b0f240819b25f0396946dd3bf69994d4a5c51713e7b28ed93a",
+      "after": "628645990b0e4e50f96da869480c211ff44bae17f4b279254c738462567bd4aa"
+    },
+    "include/exec/helper-info.c.inc": {
+      "before": "6eac9b5de4f4b468d123b52fe6acda46c860170488c283648cbf7cfaf9257817",
+      "after": "e91514dcf4a4700f132cf2cb46b956b88e4e924e4f457c34d4033c902c1df04b"
+    },
+    "tcg/tci.c": {
+      "before": "c5fcf4792558d93fbdee89c373cfe7671dd817010c3d826601ad9bd3eaea4f4d",
+      "after": "69c11032b131031966061f490a18e13fa7df2d6694752d9a459a18e2c8e1d422"
+    },
+    "tcg/tci/tcg-target.c.inc": {
+      "before": "00817a773a093f6efd431ce7b10bbe0710274c7607c8f6d2a6b490e13cdd828a",
+      "after": "0b513240d02c23cf3ba5228bc14a95291f7e108e9b85e699f7e89d99c8450a4e"
+    },
+    "accel/tcg/tcg-runtime.h": {
+      "before": "d9b5d26acee9f003023ec8b6cfe3347f3015bec3b0b3211448bea44f99a71e5b",
+      "after": "f7e78efd59d966103975530d403a05cdcd7a3c5e1b4fa31fbb0b90e724ad6963"
+    }
+  },
+  "scope": "Host-only exact DEF_HELPER C thunks and existinglibffi fallback for explicitlyfudgedmemset/manualinfos. No guestpolicy, targetsource or RTLtiming change. Actualsourcebytes match separately compiled/executed prototype helper sources."
+}

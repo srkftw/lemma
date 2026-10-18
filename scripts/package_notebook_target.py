@@ -63,6 +63,15 @@ def _rows(unit):
     return rows
 
 def contract(unit):
+    from multimodal_target import selected as multimodal_selected, catalog as multimodal_catalog
+    if multimodal_selected(unit) and unit.get('role')=='user' and unit.get('image_key')=='notebook':
+        # Export must be able to produce both genuine corpora before their
+        # independently reviewed IR authority can be installed. This structural
+        # check is not the validate_ir admission below, which still requires it.
+        _, rows = multimodal_catalog(unit)
+        return {'contract_version':'lemma-installed-package-notebook/21', 'root':unit['roots'][0]['source'],
+                'private_layout':{**PACKED_LAYOUT,'text_delta_contract':'lemma-course-text-aligned-delta/2'},
+                'owned_functions':len(rows)}
     from aligned_notebook_target import candidate as aligned_candidate, contract as aligned_contract
     if aligned_candidate(unit):
         scope,wanted=aligned_contract(unit)
@@ -155,6 +164,8 @@ def _validate_bodies(ir, unit, *, optimized, pins, callers, layout=None, version
             'contract_version': version if version is not None else VERSION}
 
 def validate(ir, unit, *, optimized):
+    from multimodal_target import selected as multimodal_selected, validate as validate_multimodal
+    if multimodal_selected(unit): return validate_multimodal(ir, unit, optimized=optimized)
     from aligned_notebook_target import candidate as aligned_candidate, validate as validate_aligned
     if aligned_candidate(unit):return validate_aligned(ir,unit,optimized=optimized)
     from package_companion_deployment import ALL_CONFIGURATIONS as JOINED

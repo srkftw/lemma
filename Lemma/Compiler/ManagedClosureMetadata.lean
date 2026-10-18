@@ -69,20 +69,29 @@ def managedClosureFields (env : Environment) (isArithmetic : Bool)
       ("checked_action",.str checked.body.renderNormalized)])])]
 
 def executionFields (selectedDeployment isArithmetic : Bool) (role : String)
-    (suite : CheckedActionSuite) : Except String (List (String × Json)) := do
+    (suite : CheckedActionSuite) (parameterized : Bool := false) : Except String (List (String × Json)) := do
   if !isArithmetic then return []
   let hasV7 := suite.actionFunctions.any fun function =>
     ((Lean.privateToUserName? function.name).getD function.name).toString.startsWith
       "Lemma.Services.Arithmetic.ProtocolV7."
-  if !hasV7 then return []
+  if !hasV7 then
+    if parameterized then throw "Parameterized Arithmetic omitted its preserved Protocol7 implementation" else return []
+  let hasV8 := suite.actionFunctions.any (·.name == `Lemma.Services.Arithmetic.ServerV8.main)
+  unless hasV8 == parameterized do
+    throw "Parameterized Arithmetic source escaped its exact implementation identity"
+  if parameterized then
+    unless suite.actionFunctions.any (·.name == `Lemma.Services.Arithmetic.ProtocolV8.reply) &&
+        suite.actionFunctions.any (·.name == `Lemma.Multimodal.Parameterized.evaluate) do
+      throw "Parameterized Arithmetic omitted its genuinely elaborated packet/checker path"
   unless selectedDeployment && role == "user" && suite.contractVersion == Profile.user_v0_7.contractVersion &&
       suite.actionFunctions.any (·.name == `Lemma.Services.Arithmetic.ProtocolV7.reply) &&
       suite.actionFunctions.any (·.name == `Lemma.Services.Arithmetic.ProtocolV7.validateRequest) do
     throw "Closure execution identity escaped its exact Protocol7 isolated deployment"
-  return [("arithmetic_closure_execution_identity",Json.mkObj [
-    ("contract_version",.str "lemma-arithmetic-execution-identity-v6"),
-    ("implementation",Json.mkObj [("name",.str "lemma-isolated-arithmetic-closure-v1"),
-      ("id",toJson Lemma.Mathematics.ExecutionIdentityV6.implementation.toNat)]),
+  return [("arithmetic_closure_execution_identity",Json.mkObj ([
+    ("contract_version",.str (if parameterized then "lemma-arithmetic-execution-identity-v7" else "lemma-arithmetic-execution-identity-v6")),
+    ("implementation",Json.mkObj [("name",.str (if parameterized then
+      "lemma-isolated-arithmetic-parameterized-closure-v1" else "lemma-isolated-arithmetic-closure-v1")),
+      ("id",toJson (if parameterized then (0x0008000100000001 : Nat) else Lemma.Mathematics.ExecutionIdentityV6.implementation.toNat))]),
     ("lowering",Json.mkObj [("name",.str "core0-user-v0.7/lemma-managed-closure-v1"),
       ("id",toJson Lemma.Mathematics.ExecutionIdentityV6.lowering.toNat)]),
     ("runtime",Json.mkObj [("name",.str "lemma-owned-arena-closure-graph-v1"),
@@ -92,5 +101,8 @@ def executionFields (selectedDeployment isArithmetic : Bool) (role : String)
       ("heap_objects",toJson (31 : Nat)),("maximum_captures",toJson (4 : Nat)),
       ("maximum_targets",toJson (8 : Nat)),("ordinary_peak_objects",toJson (9 : Nat)),
       ("semantic_budgets",.arr #[toJson (0 : Nat),toJson (8 : Nat)]),
-      ("deadline_ticks",toJson (10000000 : Nat))])])]
+      ("deadline_ticks",toJson (10000000 : Nat))])] ++
+    (if parameterized then [("parameterized",Json.mkObj [
+      ("version",toJson (2 : Nat)),("request_bytes",toJson (192 : Nat)),
+      ("reply_bytes",toJson (192 : Nat)),("checker_id",toJson (0x0002000000000001 : Nat))])] else [])))]
 end Lemma.Compiler.ManagedClosureMetadata

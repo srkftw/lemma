@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper-v2 staging and modern hardware successors</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="paper-v2-staging-and-modern-hardware-successors">Paper-v2 staging and modern hardware successors</h1>
+<p>The USB notebook and Product notebook exposed a real device-map collision:
+historical Paper-v1 staging is <code>0x10010800..0x100109ff</code>, inside the enabled BLE
+window <code>0x10010600..0x100109ff</code>. The motherboard gives BLE priority. A Paper
+staging store therefore reaches a read-only BLE receive register and faults.
+The retained USB cold failure and independently captured Product store-access
+fault keep their original meanings. Hardware profiles 0.1 through 0.7 retain
+their mappings and snapshot identities.</p>
+<p><code>lemma-silicon-dev/0.8.0</code> is the USB successor, descriptor ABI9/features15.
+<code>lemma-silicon-dev/0.9.0</code> is the Product successor, descriptor ABI10/features31.
+Both select Paper-v2 with the complete 512-byte staging window at
+<code>0x10010e00..0x10010fff</code>. BLE ends at<code>0x10010a00</code>; USB ends at<code>0x10010e00</code>;
+Pen begins at<code>0x10011000</code>. The controller aperture remains 4096 bytes. Display
+geometry, packed Gray4 bytes, upload dimensions, framebuffer transactions,
+panel sequence and synthetic scan timing retain their earlier semantics.</p>
+<p>Paper-v2 reports version2 at offset8 and its actual staging offset3584 at the
+new read-only offset184. The new Lean driver validates both through real MMIO
+after validating the selected descriptor/discovery. Version1 still reports1;
+its previously zero offset184 remains zero. New profiles do not alias the old
+staging addresses back to Paper. BLE and USB continue to own their full declared
+windows, including error and retained receive-head behavior.</p>
+<p>The common generated constants are <code>PAPER_VERSION</code> and <code>PAPER_STAGE_OFFSET</code>.
+Historical profiles default to1/2048. Successors require2/3584, including the
+512-byte end at4096. <code>lemma_paper</code> uses those parameters only for discovery and
+staging admission; its existing eight byte banks retain 64 rows each. The
+512-byte alignment keeps their row/lane address interpretation unchanged.
+Transfers crossing the staging end fail without changing staged bytes.</p>
+<p>The exact register region is already inside the maintained Kernel6/Kernel7
+checked MMIO, Sv39 and PMP boundaries. This is a hardware ABI successor, with
+new explicitly selected software roots; it grants no new User MMIO privilege
+or language feature. Canonical hardware 0.3 and all historical target roots
+remain separate selections.</p>
+<p>The focused check uses the actual motherboard and all real controllers,
+replacing the CPU only with explicitly declared raw MMIO stimuli:</p>
+<pre><code class="language-sh">nix-shell tooling/silicon/sim.nix --run \
+  &#39;python3 scripts/check_paper_staging_soc.py --profile lemma-silicon-dev/0.8.0 \
+    --work-dir build/usb/paper-staging-NEW --jobs 2 --timeout 180&#39;
+</code></pre>
+<p>It preserves the actual 1650×2200 framebuffer clear, checks every staged 64-bit
+word, first/last-word and end-crossing behavior, neighboring BLE/USB ownership,
+and an independently calculated 1024-pixel 32×32 upload. The same interface on
+profiles 0.6/0.7 reproduces the retained collision. This literal circuit check
+does not establish actual guest Ready, notebook durability, update recovery,
+physical panel qualification or new-profile checkpoint continuation. Those
+require their own source-bound machine and guest observations.</p>
+<p>The USB8 native package is a distinct RTL-only schema4 deployment. It validates
+both exact <code>usb-next-bulk-notebook</code> and <code>usb-next-bulk-initializer</code> guest roles,
+all original compiler/unit/object/ELF artifacts and source bytes, compiled native
+implementation identity and full native source inventory, and pinned host
+libraries. It contains the actual machine and guest artifacts, not a new host
+notebook. Canonical schema1–3 bundles and historical USB6 launches retain their
+admission rules. Product9 uses its separate immutable-ROM/boot-medium launcher.</p>
+<p>Prepared native8/guest-pair inputs can be archived with:</p>
+<pre><code class="language-sh">python3 scripts/lemmasim native-bundle-build \
+  --profile lemma-silicon-dev/0.8.0 --output-dir build/native/usb8-NEW \
+  --rtl-build build/silicon/task006-usb-next-runtime-a1 \
+  --rtl-source-root build/usb/native8-consumed-source-archive-a1/source
+</code></pre>
+<p>The current qualified package is <code>build/native/task006-usb-next-a1</code>. Guest
+execution and the durable peer are exercised by the supervised connected path:</p>
+<pre><code class="language-sh">python3 scripts/supervise_usb_notebook.py launch \
+  --profile lemma-silicon-dev/0.8.0 \
+  --native-bundle build/native/task006-usb-next-a1 \
+  --host-prepared build/usb/host-pending-policy3-a1/prepared.json \
+  --formatted-peer build/usb/store-initialize-a3/peer \
+  --formatted-outbox build/usb/store-initialize-a3/outbox \
+  --work-dir build/usb/notebook-next-NEW
+</code></pre>
+<p>The independent peer and its outbox are copied privately before launch. The
+supervisor retains the original absolute deadline, does not restart a failed
+run, and reaps only its owned process identities on cancellation or timeout.
+The launch itself does not establish Ready, Save or cold recovery. The native
+host boundary remains decoded USB packets; physical USB PHY and full USB
+conformance remain unfinished.</p>
+</main>
+</body>
+</html>

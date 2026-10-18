@@ -13,7 +13,7 @@ def verify(root):
         raise ValueError('Symlinked native package path')
     data = json.loads((root / 'package.json').read_text())
     if data.get('schema') not in ('lemma-local-native-distribution/1', 'lemma-local-native-distribution/2',
-                                'lemma-local-native-distribution/3'):
+                                'lemma-local-native-distribution/3', 'lemma-local-native-distribution/4'):
         raise ValueError('Unsupported native distribution')
     files = data.get('files')
     if not isinstance(files, dict) or not 8 <= len(files) <= 8192:
@@ -33,15 +33,15 @@ def verify(root):
         if total > 2 << 30 or hashlib.sha256(path.read_bytes()).hexdigest() != row['sha256']:
             raise ValueError('Native distribution byte bound/identity failed')
     required = {'run.py', 'bundle/bundle.json', 'host/scripts/lemmasim',
-                'host/scripts/native_bundle_relocation.py', 'NOTICE.txt', 'README.md'}
-    if data['schema'] in ('lemma-local-native-distribution/2', 'lemma-local-native-distribution/3'):
+                'host/scripts/native_bundle_relocation.py', 'NOTICE.txt', ('usage.html' if data['schema'] == 'lemma-local-native-distribution/4' else 'README.md')}
+    if data['schema'] in ('lemma-local-native-distribution/2', 'lemma-local-native-distribution/3', 'lemma-local-native-distribution/4'):
         required |= {'host/scripts/lemmasim-course', 'host/scripts/lemmasim_course_fast.py'}
     actual = {p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
     if (not required <= files.keys() or actual != files.keys() | {'package.json'}
             or any(p.is_symlink() for p in root.rglob('*'))
             or data.get('source_bundle_sha256') != files['bundle/bundle.json']['sha256']):
         raise ValueError('Incomplete or contradictory native distribution')
-    if data['schema'] == 'lemma-local-native-distribution/3':
+    if data['schema'] == 'lemma-local-native-distribution/3' or (data['schema'] == 'lemma-local-native-distribution/4' and 'host_tool_versions' in data):
         versions = data.get('host_tool_versions', {})
         differences = versions.get('differences')
         if (versions.get('schema') != 'lemma-native-host-tool-versions/1'
@@ -106,7 +106,7 @@ def main():
             args += ['--native-bundle', str(view)]
         course = {'course-install': 'install', 'course-load': 'load',
                   'course-delete-probe': 'delete-probe'}
-        if distribution['schema'] in ('lemma-local-native-distribution/2', 'lemma-local-native-distribution/3') and args[0] in course:
+        if distribution['schema'] in ('lemma-local-native-distribution/2', 'lemma-local-native-distribution/3', 'lemma-local-native-distribution/4') and args[0] in course:
             args = [course[args[0]], *args[1:]]
             script = root / 'host/scripts/lemmasim-course'
         else:

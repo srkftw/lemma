@@ -1,0 +1,42 @@
+* SPDX-License-Identifier: Apache-2.0
+* GENERIC SYNTHETIC level1 CMOS S/H + differential comparator, no process claim.
+.model NM NMOS level=1 VTO=0.45 KP=200u GAMMA=0.2 PHI=0.6 LAMBDA=0.02
+.model PM PMOS level=1 VTO=-0.45 KP=80u GAMMA=0.2 PHI=0.6 LAMBDA=0.02
+Vdd vdd 0 1.8
+Vbias bias 0 0.6
+Vin input 0 PWL(0 1.01 1.5u 1.01 1.501u 0.8 12u 0.8)
+Vclk clk 0 PULSE(1.8 0 1u 1n 1n 20u 40u)
+Vclkb clkb 0 PULSE(0 1.8 1u 1n 1n 20u 40u)
+Mns hold clk input 0 NM W=50u L=1u
+Mps hold clkb input vdd PM W=100u L=1u
+Chold hold 0 10p
+Rleak hold 0 1e12
+Vdac dac 0 1.0
+Mtail tail bias 0 0 NM W=12u L=1u
+Mnleft left hold tail 0 NM W=20u L=1u
+Mnright right dac tail 0 NM W=20u L=1u
+Mpleft left left vdd vdd PM W=40u L=1u
+Mpright right left vdd vdd PM W=40u L=1u
+Ccomp right 0 0.2p
+Mp1 inv right vdd vdd PM W=8u L=1u
+Mn1 inv right 0 0 NM W=4u L=1u
+Mp2 out inv vdd vdd PM W=8u L=1u
+Mn2 out inv 0 0 NM W=4u L=1u
+Cout out 0 0.1p
+.control
+set noaskquit
+set wr_vecnames
+set wr_singlescale
+stop when time=3u
+tran 5n 12u
+let observed = v(out)[length(v(out))-1]
+print observed
+alter Vdac 1.05
+stop when time=6u
+resume
+let observed2 = v(out)[length(v(out))-1]
+print observed2
+wrdata transient.dat v(input) v(hold) v(dac) v(out)
+quit
+.endc
+.end

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QEMU logical SoftTLB experiment, version 1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="qemu-logical-softtlb-experiment-version-1">QEMU logical SoftTLB experiment, version 1</h1>
+<p>Status: finite data and executable translation/modification/fence suffixes qualified. The original
+<code>GAP_CONFIRMED</code> observation in <code>conformance/lemmasim/QEMU_STATE_EQUIVALENCE.md</code>
+remains. This contract does not establish total exact QEMU continuation.</p>
+<p>The opt-in host binding <code>lemma-silicon-fast-softtlb/0.1.0</code> uses the pinned
+QEMU 11.1.1 source and the unchanged canonical 0.3 hardware/guest contract. It is
+a separately identified derivative, not a replacement of any historical
+profile, VMState 3 device schema, binary or tool. Its TLB resize windows use
+precise virtual instruction-clock time rather than host realtime. A seqlock
+read combines the published icount/bias with the executing CPU budget minus
+its decrement/extra counters without modifying either; SFENCE helpers cannot
+use the ordinary clock API while <code>can_do_io</code> is false. Allocation
+failure rejects instead of silently choosing another cache size. These are
+explicit new backend semantics. Ordinary default derivations remain unchanged.</p>
+<p>The experimental QMP pair <code>lemma-save-machine-softtlb</code> and
+<code>lemma-load-machine-softtlb</code> accepts <code>filename</code> for ordinary machine state and
+<code>cache-filename</code> for the logical sidecar. Both are exclusively owned files.
+The paired paused capture uses the upstream initially all-dirty RAM bitmap
+and copies every RAM page while execution stays inactive. Only this selected
+operation skips migration dirty-log start/stop: the ordinary transaction calls
+<code>tcg_commit_cpu</code> and flushes the original TLB. Ordinary legacy saves retain their
+existing behavior. The paired operation never flushes or restores the original
+cache to manufacture a matching boundary.</p>
+<p>One paused, single-CPU QMP operation captures the pair without an intervening
+guest edge or external-event admission. The sidecar binds the exact complete
+ordinary machine file SHA256 and precise virtual boundary. Restore is admitted
+only in a new private fork. Sidecar format, bounds, checksum, boundary and all
+memory-region identities must validate before any cache adoption. A failed
+machine restore remains a failed isolated fork; it must never resume.</p>
+<p><code>LMTLB01</code> sidecar schema 1 declares page size, MMU-mode count, all primary and
+victim slots and exact primary capacity, dirty-mode bits, flush counters,
+large-page range, eviction index, occupancy and resize-window metadata. Valid
+slots retain all read/write/execute comparator tags, target physical page,
+transaction attributes, page size/protection and slow flags. Empty slots have
+an explicit empty marker; their uninitialized unused full-entry storage is not
+logical state. Host pointers, addends, RAMBlock addresses and section pointers
+are never serialized. Region type/name/owner include explicit presence bits
+for unnamed mappings.
+Physical placement, region offset, size, readonly state and RAM/ROMD/MMIO kind
+identify each logical mapping. A SHA256 covers every actual mapped segment and
+every hole of its complete physical page, including leaf regions hidden by an
+unnamed subpage dispatch wrapper. Unknown/IOMMU layouts reject.
+Restoration validates that identity and rebinds host references at their actual
+new addresses while preserving saved tags and semantic flags. It does not
+reevaluate guest PTEs or call <code>tlb_set_page_full</code> to refill or evict entries.</p>
+<p>Schema 1 binds explicit stopped/running/work-queue witnesses and the migrated
+halt, interrupt-request and exception fields. These must also match the restored
+ordinary CPU stream before adopting any logical cache array.</p>
+<p>This first schema rejects unrepresented pending CPU work and live execution
+explicitly. That restriction is part of the experimental admission, not a
+hidden claim that an arbitrary cached boundary is clean. CPU interrupt and
+exception state remain in the bound ordinary migration stream. Further pending
+acceleration work must receive its own logical representation before broader
+admission. Snapshot callers must not flush the original machine to satisfy a
+boundary check. Public Fast/Session adoption is not authorized by preparation.</p>
+<p>TBs, jump-cache hits, generated instruction visibility and executable-page dirty
+tracking remain separate unresolved dependencies. Rebuilding them cannot be
+declared semantically irrelevant by inspection alone. Required real guest cases
+include warmed translation followed by PTE change without SFENCE, subsequent
+SFENCE, execution translation changes and jump-cache bypass, self-modification
+without/with FENCE.I and interrupts between those operations. Debugger CSR/PTE
+writes are insufficient substitutes for guest-issued instructions. A passing
+logical SoftTLB result must name the narrower tested property and retain every
+failed or unqualified case.</p>
+<p>The actual bounded <code>logical-guest-a5</code> result used genuinely elaborated checked
+kernel-v0.4 Actions, LLVM 20.1.8 and an audited RV64IM test ELF. At 1,000,000 ns,
+mode 1 primary slot 80 retained VA0x82050000 -&gt; PA0x82103000 despite the guest&#39;s
+unfenced leaf PTE change to page B. Original and private restored fork both
+read 111 without SFENCE and 222 after actual guest SFENCE, then reached the
+predeclared 300,000,000 ns boundary within 120 s per interval. Every final declared
+logical slot/metadata field agreed exactly. The sidecar retains the actual
+stopped/running/work witness and pending interrupt-request 2/exception-index -1.
+This does not qualify interrupt delivery or handler continuation.</p>
+<p>A subsequent executable test genuinely compiles44 project modules from source
+with the same kernel-v0.4 checker and LLVM20.1.8. Ordinary Lean valueA/valueB
+functions produce the independently audited8-byte leafs. Guest-issued calls
+warm the actual executable comparator at VA0x82050000 -&gt; PA0x82103000, then
+change its PTE without SFENCE. At the1Mns cut the original/fork still execute111;
+actual SFENCE then selects222. The guest copies the actual compiled A leaf to B,
+and the second checkpoint is the first fixed1Mns boundary after that real store
+(at129Mns, within the predeclared400Mns search limit). Original and both private
+forks reach1Bns with exact111/222/111/111 result words, applicable UART suffixes,
+all observed architectural/device state and every declared logical cache field.
+Five actual JIT flush/invalidation counters remain unchanged across each
+capture. This selected model exposes modified code immediately before FENCE.I;
+no RISC-V requirement to retain stale instructions is invented. These two
+finite states do not close arbitrary executable/TB/jump/interrupt continuation.</p>
+<p>The selected host successor has SHA256
+<code>ceabdf19b191de8bca717cf089e8dee8310ea7faf68b91b205fcaa958165db40</code>.
+It repairs the private destination&#39;s host lifecycle using the legal
+PRELAUNCH -&gt; INMIGRATE -&gt; PAUSED sequence after validation. The original binary
+left a loaded fork labeled prelaunch; an initial attempted direct transition
+was rejected by QEMU&#39;s runstate graph. Both failures remain. The corrected
+transition runs no CPU, notifies no device and enters no stop/drain/cache path;
+all original equality checks remain. Fresh guarded preparation reproduces all
+eight consumed derivative files exactly. The new result is recorded separately
+from the original data-only binary and historical failed builds.</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command python3 scripts/build_softtlb_exec_probe.py \
+  --output-dir build/lemmasim/UNUSED_EXEC_TARGET
+python3 conformance/lemmasim/run_softtlb_exec_probe.py \
+  --qemu build/task006-softtlb-a1/qualified-a12/qemu-system-riscv64 \
+  --guest-build build/lemmasim/UNUSED_EXEC_TARGET \
+  --dtb build/native/task006-bytes-bulk-a1/workloads/notebook/platform.dtb \
+  --work-dir build/lemmasim/UNUSED_EXEC_SUFFIX
+</code></pre>
+<p>These retained local inputs must exist and match their build manifests. A
+fresh host build uses the opt-in derivation in tooling/lemmasim/qemu.nix.
+The new test is not an ordinary session snapshot command or a distribution.</p>
+<p>The initial completed host build used a kept pinned Nix-configured tree and
+finished in 563.135 s within 1,200 s. Later bounded host increments preserve their own
+executable/source identities. The guarded maintained installer reproduces all
+eight tested derivative source files exactly. Default <code>logicalSoftTlb=false</code>
+actually evaluates to the identical pre-change derivation. Complete fresh Nix
+packaging was not rerun after its retained original failures. See the complete
+small receipt in <code>docs/evidence/006-qemu-logical-softtlb.json</code>.</p>
+<p>The ordinary container and sidecar remain intact. Each file hash and any
+binding/header differences are reported explicitly; no byte mask, tolerance,
+original-state flush or hidden clean-boundary retry certifies this experiment.</p>
+</main>
+</body>
+</html>

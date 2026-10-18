@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lemma digital power/control v2</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lemma-digital-powercontrol-v2">Lemma digital power/control v2</h1>
+<p>This opt-in <code>lemma-silicon-dev/0.4.0</code> successor preserves the memory, ISA,
+100 MHz machine clock, 10 MHz MTIME, 1650x2200 Gray4 geometry and actual
+8192-frame pool of 0.3.0. Historical 0.3.0 continues exposing Power-v1 only.
+The power subwindow and PLIC source14 remain unchanged. Descriptor ABI5 and
+<code>lemma,power-v2</code> distinguish the new discovery contract. This digital model
+does not qualify electrical supply ramps, battery chemistry or optical physics.</p>
+<p>All v1 registers and cooperative suspend/wake semantics remain. Version reads2.
+New registers use aligned little-endian 64-bit accesses. Invalid offsets, sizes
+and values fault with error2 and a bus error, without the requested effect.</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Read</th>
+<th>Write</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>96</td>
+<td>Watchdog timeout in machine clocks, initially0</td>
+<td>8..0xffffffff; BUSY/error1 while armed</td>
+</tr>
+<tr>
+<td>104</td>
+<td>Zero</td>
+<td>1 arm/reload,2 heartbeat,3 disarm</td>
+</tr>
+<tr>
+<td>112</td>
+<td>Remaining watchdog clocks</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>120</td>
+<td>Armed0/1</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>128</td>
+<td>Sampled inputs: bit0 power-good,bit1 brownout</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>136</td>
+<td>bit0 supervised domain held in reset; bit1 running</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>144</td>
+<td>Remaining reset qualification clocks</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>152</td>
+<td>Saturating reset-event epoch</td>
+<td>Invalid</td>
+</tr>
+</tbody></table>
+<p>Arm requires a configured timeout. Heartbeat requires armed state. Failure
+reports error2 without arming. Arm/reload and valid heartbeat set remaining to
+exactly the timeout at their admitted rising edge. Subsequent always-on rising
+edges decrement it; the terminal edge expires unless a valid reload is admitted
+on that same edge. Disarm does not override terminal expiry. Malformed input
+never counts as a heartbeat. The timeout is bounded to approximately42.95s at
+100 MHz. This counter is independent of instruction retirement, bus responses,
+WFI, supervisor/user progress and cooperative suspend. No host wall clock
+participates. It is disabled on reset and after expiry; enabling it is explicit
+Lean policy rather than an automatic claim of healthy boot progress.</p>
+<p>Watchdog expiry reports reset cause4 and resets the compute/fabric, pen, paper
+and block controller domains for exactly eight following rising edges. The
+compute architectural state, MTIME/prescaler and controller registers reset;
+absolute machine/event time and the always-on watchdog clock continue. It
+clears watchdog arming and cooperative control/event state, preserves working
+RAM and volatile storage overlay, and retains the button epoch/actual level.
+The always-on power controller and its reset-event epoch survive this reset.
+A stalled supervised guest cannot prevent this expiry.</p>
+<p>Raw <code>pgood LEVEL</code> and <code>brownout LEVEL</code> events supply digital status inputs;
+no adapter derives them from a battery model. Last admitted levels at a
+boundary are sampled once. Brownout takes priority over loss of power-good,
+which takes priority over watchdog reload/expiry. Unsafe levels gate supervised
+memory/DMA/controller traffic at that boundary and hold the domain in reset.
+They produce cause5 brownout or6 power-good loss and one RAM/overlay loss
+boundary per transition from safe to unsafe. While unsafe, qualification
+remaining stays8; eight consecutive safe rising edges are required to release
+reset. A held unsafe level cannot repeatedly generate loss events. Reset causes
+1 cold,2 warm and3 historical Laboratory reset retain their original meanings.</p>
+<p>The native adapter actually clears all working RAM on the loss boundary. Under
+this explicitly <strong>ELF-preload development boot</strong> profile it subsequently
+reinstalls only the immutable preloaded ELF/DTB boot pages, as the existing cold
+power-cycle path does. Runtime modifications to those pages are erased too.
+This is not immutable production ROM image loading or update recovery. The
+external 128 MiB RAM and host framebuffer are behavioral backing, not a
+physical memory implementation.</p>
+<p>Reset clears pending fabric ownership, volatile controller queues, task execution
+and active panel sequence; unsafe/reset domains cannot accept new work or DMA
+writes. Already completed synthetic visible pixels are retained. Incomplete
+panel output is discarded without a successful refresh acknowledgment; optical
+retention is an explicit model assumption. Controller/framebuffer reset and
+optical state are separate. Raw pen/UART input while held in reset is discarded;
+future button/supply/reset input remains scheduled so a power-good release or
+wake is reachable. A Power-v2-only release pulse invokes the existing pen
+FORCE_LOSS/resynchronization boundary before ingress resumes. Held contact
+cannot bypass the required acknowledgment, release and subsequent new contact.
+After reset qualification releases the domain, that pen-only pulse must retain
+UART bytes and future UART events admitted in the running domain. It does not
+cancel an owner recovery request. Cooperative suspend continues canceling its
+queued UART input. The old native adapter incorrectly shared the UART purge
+with pen resynchronization; implementation identities distinguish that failure
+from the corrected adapter. Historical captures/binaries remain unchanged.</p>
+<p>No reset manufactures a storage barrier. A submitted external operation cannot
+be undone by resetting a guest. It becomes orphaned: its actual returned bytes,
+partial write prefix, error and accepted completion boundary are still captured,
+and may change backing bytes, while the canceled controller cannot DMA or
+publish successful completion. New backing work remains blocked until that
+orphan&#39;s actual outcome is reconciled. Acknowledged durability remains distinct
+from observed unacknowledged persistence. Snapshots preserve power status,
+watchdog/reset counters, phase, pending raw inputs, accepted medium view and
+orphan ownership. Power-v2 native container3 is distinct from historical
+container1/2 and is bound to the exact generated model identity.</p>
+<p>The Power-v2 reference model is host-only circuitry emulation. QEMU/profile0.4
+admits only the genuine Power probe, through the partial observation relation in
+<code>conformance/lemmasim/POWER_V2_RELATION.md</code>. Its independent 10ns Power clock,
+watchdog expiry during WFI, eight-edge qualification, actual working-RAM loss,
+immutable development image reinstall and guest cause/epoch reports are
+qualified separately from full processor timing. ACLINT retains a serialized
+reset origin and fractional phase; MTIMECMP resets to all ones. A second Power
+write while one is pending halts this backend explicitly, retaining the first
+write. An unprocessed asynchronous QEMU reset request or external backing
+operation rejects snapshots. The selected warm-reset timer-phase suffix passes;
+QEMU migration still omits soft-TLB/translation-block/jump-cache contents, so
+arbitrary cached-state continuation remains open. Existing QEMU profile0.3 is
+unaffected. The ordinary 0.3 notebook remains the qualified product path;
+Power-v2 circuit/native/Lean and scoped fast qualification are separate. Watchdog support does not close product
+boot/update, physical reset-domain/CDC or electrical power qualification.</p>
+</main>
+</body>
+</html>

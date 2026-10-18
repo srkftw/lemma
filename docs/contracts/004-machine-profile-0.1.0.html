@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lemma machine profile 0.1.0</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lemma-machine-profile-010">Lemma machine profile 0.1.0</h1>
+<p>Decision date: 2026-10-10. Architecture freeze adopted by Task 004, not an
+implementation or physical-conformance certificate. <code>lemma-one-core/0.1.0</code>
+is the common software/device-service floor; <code>lemmasim-virt/0.1.0</code> is its
+precise first virtual binding. Student, Developer and Laboratory use one
+machine. Physical conformance is <strong>UNVERIFIED</strong>; motherboard/cartridge is
+<strong>NOT_FROZEN</strong>. The complete machine remains governed by
+<a href="../../LEMMA_MACHINE_CONTRACT.html">the canonical contract</a>. Historical
+<a href="LEMMA_VM.html">LemmaVM</a> profiles and their evidence are unchanged.</p>
+<p>The machine executes maintained Lean-authored freestanding RV64 kernel,
+firmware, drivers, services and applications through the existing genuine Lean
+elaboration/Core0/LLVM path. Target code is little-endian RV64IM, LP64,
+integer-only; one hart uses M/S/U and Sv39 4KiB pages. No target hosted runtime,
+Linux, C/C++/Rust/Zig/handwritten assembly, libc or managed Lean runtime is
+introduced. Host hardware models may be C, transport raw input, block bytes and
+controller-visible pixels, and use normal host runtimes. They do not implement
+notebooks, brushes, document serialization, recovery, mathematical authority or
+capability policy.</p>
+<p>The binding derives from immutable QEMU <code>c3d48b7d1e89604920e5b81b91140c2ad39a1943</code>,
+keeps the pinned Lean/LLVM/LLD/Nix environment, and is separately named
+<code>lemmasim-virt</code>. TCG, <code>rv64,smrnmi=false,smdbltrp=false</code>, one hart, 128MiB,
+<code>-bios none</code> preserve real reset ROM/DTB and Lean M-firmware → S-kernel → U-task
+handoff. Integer-only emitted code does not imply the CPU lacks inherited
+extensions. The generated DTB/CPU inventory belongs to each run identity.
+The <a href="../../sim/profiles/virt-fixed-inventory-0.1.0.json">fixed inventory</a>
+records the actual advertised ISA, Sv57 maximum, expanded CPU switches and
+pinned CSR implementation hashes. The supported guest uses Sv39 and the
+integer application ABI; inherited floating-point/H/compressed CPU behavior
+is explicitly accounted for.</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th align="right">Base</th>
+<th align="right">Span</th>
+<th align="right">IRQ</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RAM</td>
+<td align="right"><code>0x80000000</code></td>
+<td align="right"><code>0x08000000</code></td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>CLINT</td>
+<td align="right"><code>0x02000000</code></td>
+<td align="right"><code>0x10000</code></td>
+<td align="right">local timer7</td>
+</tr>
+<tr>
+<td>PLIC</td>
+<td align="right"><code>0x0c000000</code></td>
+<td align="right">pinned virt span</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td>UART</td>
+<td align="right"><code>0x10000000</code></td>
+<td align="right"><code>0x100</code></td>
+<td align="right">10</td>
+</tr>
+<tr>
+<td>Modern VirtIO block, explicit transport0</td>
+<td align="right"><code>0x10001000</code></td>
+<td align="right"><code>0x1000</code></td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td>Paper v1</td>
+<td align="right"><code>0x10010000</code></td>
+<td align="right"><code>0x1000</code></td>
+<td align="right">12</td>
+</tr>
+<tr>
+<td>Pen v1</td>
+<td align="right"><code>0x10011000</code></td>
+<td align="right"><code>0x1000</code></td>
+<td align="right">13</td>
+</tr>
+</tbody></table>
+<p>The eight inherited VirtIO transports occupy <code>0x10001000..0x10009000</code>;
+paper/pen do not overlap them. Source11 remains goldfish RTC. Fixed inherited
+mask ROM, SiFive finisher, CLINT, PLIC, UART, RTC (<code>0x00101000</code>), fw_cfg,
+platform bus, PCIe host/interrupts and two CFI flash banks remain present and
+must be accounted for in binding observations. Additional guest-visible
+peripherals and CPU features cannot be erased from identity by <code>-nodefaults</code>.
+No network/PCI endpoints, RNG device or flash image is attached by the
+Task 004 launch. Inherited <code>/chosen/rng-seed</code> remains guest-visible: construction
+and reset use QEMU guest-random, bound to <code>-seed 0x4c454d4d413031</code>; record/replay
+records its bytes. RTC origin is fixed by its launch policy. UART is diagnostic,
+not pen/disk transport.</p>
+<p>A bounded descriptor is read by the guest from the paper device; its exact
+layout and the pen/paper protocols are <a href="004-devices-v1.html">subordinate v1 ABIs</a>.
+Unknown mandatory versions or inconsistent/overlapping map/reservations fail.
+The 10MHz guest monotonic timer is separate from wall time. Geometry/capabilities
+are queried: default1650×2200 and fixture1404×1872 use the same guest binary.
+Neither is a confirmed physical purchase. Synthetic pen pressure range is
+0..4095; mouse pressure is marked synthetic. Missing tilt is absent.</p>
+<p>Pixels are packed row-major Gray4, black0/white15, even-x high nibble,
+stride<code>ceil(width/2)</code>, unused last nibble white. Only controller refresh completion
+changes visible pixels. Both native/headless frontend consume that same state.
+Fast threshold-monochrome and quality-gray refresh use named synthetic timings;
+no vendor waveform or measured latency is asserted. Document coordinates remain
+normalized integers0..2^24, mapped with wide integer
+<code>floor(q*(dimension-1)/2^24)</code>; raw input provenance is distinct.</p>
+<p>Block transport is modern OASIS VirtIO1.2 MMIO, split ring, one queue,
+512-byte sectors, VERSION_1 and FLUSH negotiation. The initial raw medium is
+256MiB/524288 sectors; clients query capacity. Owned pinned DMA/bounce pages
+retain ownership until completion/reset quiescence. Notebook receives document,
+input and surface capabilities; raw block is reserved to the store authority.
+Ordinary write completion is distinct from durable commit acknowledgement.
+Store-defined payload/commit barriers, explicit errors, power cuts and recovery
+are guest responsibilities. Host panel retention is physical display state,
+never document truth. Reset is not clean shutdown.</p>
+<p>Deterministic virtual replay identifies core/binding/device/backend versions,
+all guest hashes, geometry/capabilities, clock policy, initial media hash and
+external events/faults. Use pinned QEMU&#39;s record/replay machinery and bound
+external raw streams; instruction counting alone is insufficient. Exact replay
+is distinct from future physical tolerance. Whole-machine snapshot is optional;
+this controller adapter does not claim snapshot support.</p>
+<p>Avalue ENT-13T3 Gen3 is a supplier system lead, not an orderable/documented
+RISC-V cartridge. E Ink/Linfiny/Wacom public category information does not grant
+controller/waveform rights. JH7110/VisionFive2 remains a physical-port candidate,
+not a qualified boot/DRAM/peripheral closure. FPGA/PMIC/connector sketches,
+DDR/BootROM, cartridge SKU, physical pressure/timings, battery/network/USB,
+finished capacities, multicore, browser runtime, managed Lean ABI, textbooks
+and tutor remain deliberately unfrozen. No hardware purchase, private supplier
+material or proprietary waveform is implied or included.</p>
+<p>Incompatible semantics require a new explicit profile/ABI/format version and
+stored-data migration or refusal. Optional capabilities are negotiated without
+changing existing meanings. All new hardware observations are <strong>SIMULATED_ONLY</strong>;
+physical whole-machine equivalence requires a named actual binding and measurements.</p>
+<p>Normative machine-readable source: <a href="../../sim/profiles/lemmasim-virt-0.1.0.json">profile JSON</a>.
+Public basis: <a href="https://docs.oasis-open.org/virtio/virtio/v1.2/virtio-v1.2.html">VirtIO1.2</a>,
+<a href="https://www.qemu.org/docs/master/system/riscv/virt.html">QEMU virt</a>,
+<a href="https://www.qemu.org/docs/master/system/replay.html">QEMU replay</a>, and immutable
+<a href="https://github.com/qemu/qemu/blob/c3d48b7d1e89604920e5b81b91140c2ad39a1943/hw/riscv/virt.c">pinned map</a>.
+Frozen project allocations are decisions, not vendor-register claims.</p>
+</main>
+</body>
+</html>

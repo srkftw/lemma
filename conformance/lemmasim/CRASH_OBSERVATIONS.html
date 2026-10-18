@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notebook device-fault observations</title>
+<link rel="stylesheet" href="../../docs/documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../../docs/overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="notebook-device-fault-observations">Notebook device-fault observations</h1>
+<p><code>check_crash_workflow.py</code> is an independent offline observer. It imports the
+independent <code>store_oracle.py</code>, never the production store engine or notebook
+codec. It cannot repair media, feed recovered objects to a guest, draw pixels,
+or substitute for a new CPU/guest boot. Its result is one storage/provenance
+observation within the Task 004 acceptance matrix. A separate cold guest launch,
+page navigation through raw input, and controller-visible comparison are still
+required. Synthetic unit examples are not actual QEMU fault evidence.</p>
+<p>Before a fault family, stop a successful guest run after its final <code>0x421</code> ACK,
+copy its stable medium, and export it with <code>inspect_notebook.py</code>. Retain its
+actual serial output. The export&#39;s independently observed committed sequence
+must equal that final ACK; a Pending/Failed state or unacknowledged tail cannot
+be relabeled as an acknowledged baseline. Use fresh copies of that baseline
+for the reference and every fault case. Do not mutate the original image.</p>
+<p>Create a successful append reference and a successful Save/checkpoint reference
+through the ordinary guest workflow. Name candidate boundaries from their real
+medium writes and independently recovered record positions:</p>
+<pre><code class="language-sh">python3 conformance/lemmasim/check_crash_workflow.py --plan \
+  --baseline-export BASELINE_EXPORT \
+  --reference-disk SUCCESSFUL_COPY --reference-media SUCCESSFUL_MEDIA_TRACE \
+  --output build/lemmasim/new-fault-plan.json
+</code></pre>
+<p>The plan contains case templates, not a PASS. Only latest committed record
+positions are named; superseded mutable revisions and no-write mount/close
+flushes remain explicitly unnamed. Choose a template and add <code>fault</code> with one
+of <code>cut-before-flush</code>, <code>cut-after-flush</code>, <code>tear-flush</code>, or <code>fail-flush</code>. These are
+exact one-based filter ordinals. Run the real machine with that filter option,
+retain its actual disk, media/device traces and guest output, and then observe:</p>
+<pre><code class="language-sh">python3 conformance/lemmasim/check_crash_workflow.py \
+  --baseline-export BASELINE_EXPORT --baseline-serial BASELINE_SERIAL \
+  --disk FAULT_COPY --serial FAULT_SERIAL \
+  --input RAW_FIXTURE --input-manifest RAW_MANIFEST --devices FAULT_DEVICE_TRACE \
+  --media FAULT_MEDIA_TRACE --case SELECTED_CASE_JSON \
+  --output build/lemmasim/new-crash-observation.json
+</code></pre>
+<p>Append templates record the exact header, body-sector count and publication
+position. A payload flush must contain exactly the header/body and next-tail
+sentinel writes; a publication flush must contain exactly its publication sector.
+Checkpoint templates name the actual inactive segment and the alternating root
+slot. With the production v1 initialization (both generation-1 roots, slot zero
+selected), the next root write is byte offset <code>(oldGeneration % 2) * 512</code>.
+The old root and segment must remain available. The checker independently
+requires the actual fault event at the named ordinal. A torn case additionally
+requires the recorded first dirty sector&#39;s 256-byte new/256-byte old write.</p>
+<table>
+<thead>
+<tr>
+<th>Named phase and device cut</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Payload, cut before flush</td>
+<td>Payload remains volatile; prior ACK survives</td>
+</tr>
+<tr>
+<td>Payload, cut after flush</td>
+<td>Payload stable, publication still absent</td>
+</tr>
+<tr>
+<td>Publication, cut before flush</td>
+<td>Publication queued, final barrier absent</td>
+</tr>
+<tr>
+<td>Publication, cut after flush</td>
+<td>Final publication durable, completion/ACK not yet delivered</td>
+</tr>
+<tr>
+<td>Publication, torn flush</td>
+<td>Publication is absent or wholly valid; zero trailing fields can permit whole recovery</td>
+</tr>
+<tr>
+<td>Payload, torn flush</td>
+<td>Stable header with missing body/publication cannot expose a partial transaction</td>
+</tr>
+<tr>
+<td>Payload/publication, failed flush</td>
+<td>Real device error reaches guest <code>0x424</code></td>
+</tr>
+<tr>
+<td>Checkpoint segment, cut before/after flush</td>
+<td>Old root continues to govern until replacement root is durable</td>
+</tr>
+<tr>
+<td>Checkpoint root, cut before/after or torn flush</td>
+<td>Independently valid old/new root governs; prior ACK bytes survive</td>
+</tr>
+</tbody></table>
+<p>The observer compares baseline immutable chunks byte-for-byte, requires all old
+page entries in order and prior editing history, independently checks page flags
+against applied edits, and rejects an ACK beyond stable recovered sequence or
+before its catalog/index publication. Every new ink sample must be an exact
+member of the actual FIFO ingress mapped from the raw fixture, with one original
+stroke action and calibration/lifecycle preserved. A complete valid but
+unacknowledged record may recover. Valid orphan or unfinished chunks are allowed;
+they are reported as chunks, never invented completed strokes. A cut can end
+input before its scheduled suffix: the observed prefix and unobserved suffix
+are explicit and do not establish full-session replay.</p>
+<p>These fault cases append or checkpoint. Undo/redo/erase may legitimately change
+an applied edit cursor or discard a redo suffix, so they have their own complete
+workflow/recovery checker rather than weakening the append fault invariant.
+A checkpoint ACK with unchanged logical sequence still requires a newer durable
+root generation. Unknown/damaged nonempty media fail; no formatting fallback is
+provided. Failed checks retain a new FAIL JSON and exit nonzero.</p>
+<p>Run the compact literal checker boundaries with:</p>
+<pre><code class="language-sh">python3 -m unittest discover -s tests/lemmasim \
+  -p &#39;test_crash_workflow_observer.py&#39; -v
+</code></pre>
+<p>The maintained campaign drives both references, then nine append barriers/error
+cases and six checkpoint barriers/error cases, with a fresh disk copy and a real
+cold guest process for every case. It takes build metadata and the executable
+identity explicitly; it does not build dependencies during a launch. The caller
+must identify whether those inputs are development or the final committed
+candidate. Its Python entry point is
+<code>campaign(metadata, qemu, baseline_disk, baseline_export, baseline_serial, out)</code>
+in <code>scripts/check_lemmasim_faults.py</code>; the same file exposes a CLI:</p>
+<pre><code class="language-sh">python3 scripts/check_lemmasim_faults.py --metadata PREPARED_BUILD_JSON \
+  --qemu PINNED_LEMMASIM_QEMU --baseline-disk ACKNOWLEDGED_DISK_COPY \
+  --baseline-export BASELINE_EXPORT --baseline-serial BASELINE_SERIAL \
+  --output build/lemmasim/new-device-fault-campaign
+</code></pre>
+<p>The baseline serial directory must also contain its actual <code>visible.ppm</code>. All
+references and fault runs have bounded waits and are reaped through the native
+launch helper. The original baseline hash is checked again after completion.
+The campaign records explicit FAIL on the first failed observation; remaining
+cases cannot yield an ordinary PASS. Cold comparison uses stable committed bytes
+and either the baseline or successful appended page&#39;s real controller pixels,
+according to the independently observed whole page publication. An orphan
+unpublished chunk never changes that expected page. No host pixel production or
+live recovery is involved.</p>
+<p>A v1 root/publication has all nonzero fields and checksums in its first 104 bytes.
+A cut after the model writes the first 256 bytes may therefore leave a wholly
+valid publication when the old trailing bytes were also zero. That admitted
+outcome is reported honestly. The separate torn-payload case writes a new
+header while leaving its body/publication incomplete; the store observer must
+retain the acknowledged baseline and refuse the incomplete append suffix.</p>
+<p>The maintained publication-barrier regression is
+<code>scripts/check_lemmasim_publication_negative.py</code>. It requires a positive image
+whose actual clean build provenance matches the supplied committed candidate.
+It creates a fresh detached experimental checkout and changes exactly one Lean
+branch: completion of publication write (phase 20) calls <code>acknowledged</code> instead
+of requesting the real final flush (phase 21). The genuine pinned Lean/LLVM/RV64
+pipeline builds that quarantined image. Its source patch, original build
+provenance, and separate <code>UNQUALIFIED_NEGATIVE_ONLY</code> label are retained; the
+altered implementation is never imported into the trusted checkout.</p>
+<pre><code class="language-sh">python3 scripts/check_lemmasim_publication_negative.py \
+  --metadata PREPARED_BUILD_JSON --qemu PINNED_LEMMASIM_QEMU \
+  --candidate-commit EXACT_CLEAN_BUILD_COMMIT \
+  --baseline-disk ACKNOWLEDGED_DISK_COPY --baseline-export BASELINE_EXPORT \
+  --baseline-serial BASELINE_SERIAL --output build/lemmasim/new-barrier-regression
+</code></pre>
+<p>Both positive and negative consume the same ordinary one-stroke raw device
+input on fresh copies. After the actual guest <code>0x421</code> record, maintained
+read-only inspection captures pending medium state, then Laboratory controls
+cut the running whole process with SIGKILL. The owner launch thread reaps the process. There is no normal
+QMP stop, quit, reset or cleanup flush before that cut. QEMU stop can
+flush block nodes and would mask this particular ordering error. The independent store oracle must
+retain the positive ACK and reject the negative&#39;s ACK beyond stable recovery.
+The negative observer&#39;s result remains <strong>FAIL</strong>; the enclosing regression may
+report PASS only when that real behavioral failure was observed and rejected,
+with previously acknowledged ink preserved in both cases. This tests a storage
+ordering bug, not a changed-source hash. Final candidate execution is separate
+from development experiments using earlier explicitly identified images.</p>
+</main>
+</body>
+</html>

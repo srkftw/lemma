@@ -91,6 +91,8 @@ NUMERIC_BROWSE_ROOT='Lemma.Applications.Notebook.mainPackageNumberPadBrowse'
 NUMERIC_BROWSE_POLICY='Lemma.Courses.BrowseHistory.location'
 
 def numeric_root(unit):
+ from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS, NOTEBOOK_ROOT as MULTIMODAL_ROOT
+ if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS:return MULTIMODAL_ROOT
  from chooser_reader_target import candidate as chooser_candidate
  from chooser_reader_deployment import NOTEBOOK_ROOT as CHOOSER_ROOT
  if chooser_candidate(unit):return CHOOSER_ROOT
@@ -111,6 +113,13 @@ def numeric_candidate(unit):
  if not isinstance(rows,list)or any(not isinstance(r,dict)or not isinstance(r.get('source'),str)for r in rows):raise Core0Error('Number entry candidate function map malformed')
  return any(canonical(r['source']) in (NUMERIC_ROOT,NUMERIC_BROWSE_ROOT,NUMERIC_BROWSE_POLICY) or canonical(r['source']).startswith(('Lemma.Courses.NumberPad.','Lemma.Documents.MathematicsEntry.'))for r in rows)
 def numeric_contract(unit):
+ from multimodal_target import selected as multimodal_selected, catalog as multimodal_catalog, VERSION as MULTIMODAL_VERSION
+ if multimodal_selected(unit):
+  key,rows=multimodal_catalog(unit)
+  if key!='notebook':raise Core0Error('Multimodal NumberPad authority escaped Notebook User2')
+  return 'canonical',{'schema':MULTIMODAL_VERSION,'package_notebook_version':21,
+    'pre_function_count':len(rows),'post_function_count':len(rows),
+    'character_machine_sha256':'282404da5329dd00a33e6cf3c980e772af3e3eab1e76b8ddda412e7ce4f828fa'}
  from chooser_reader_target import candidate as chooser_candidate, contract as chooser_contract
  if chooser_candidate(unit):return chooser_contract(unit)
  from companion_reader_target import candidate as companion_reader_candidate, notebook_contract
@@ -196,6 +205,8 @@ def numeric_semantics(ir,unit):
  return {'ordinary_guest_entry_and_storage_connected':True,'numeric_bounds':'0..99; overflow is unchanged bytes, explicit limit message','scope':'Complete source/IR authority; CPU/Store/controller qualification separate'}
 
 def numeric_validate(ir,unit,*,optimized):
+ from multimodal_target import selected as multimodal_selected, validate as validate_multimodal
+ if multimodal_selected(unit):return validate_multimodal(ir,unit,optimized=optimized)
  from chooser_reader_target import candidate as chooser_candidate, validate as chooser_validate
  if chooser_candidate(unit):return chooser_validate(ir,unit,optimized=optimized)
  from companion_reader_target import candidate as companion_reader_candidate, validate_notebook

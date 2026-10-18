@@ -1,0 +1,10 @@
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; line-height: 1.6; }
+body { max-width: 78rem; margin: 2rem auto; padding: 0 1.2rem; }
+nav { border-bottom: 1px solid #8885; padding-bottom: .7rem; }
+h1, h2, h3, h4 { line-height: 1.25; scroll-margin-top: 1rem; }
+a { overflow-wrap: anywhere; }
+pre { overflow-x: auto; padding: 1rem; background: #8881; border: 1px solid #8884; }
+code { font-size: .92em; }
+table { display: block; overflow-x: auto; border-collapse: collapse; }
+th, td { border: 1px solid #8886; padding: .4rem .7rem; text-align: left; vertical-align: top; }
+blockquote { margin-left: 0; padding-left: 1rem; border-left: 3px solid #8886; }

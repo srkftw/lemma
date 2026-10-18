@@ -275,6 +275,7 @@ def _source_hashes(
     additional_source_inputs: Sequence[Path] = (),
 ) -> list[dict[str, str]]:
     paths: list[Path] = []
+    if (root / "docs/document-map.json").is_file(): paths.append(root / "docs/document-map.json")
     paths.extend(root / value for value in SOURCE_INPUTS)
     paths.extend(root / value for value in ("scripts/action_cache.py", "scripts/action_worker.py", "scripts/build_actions.py", "scripts/build_dependencies.py", "scripts/build_admission.py") if (root/value).is_file())
     paths.extend(sorted((root / "Lemma").rglob("*.lean")))

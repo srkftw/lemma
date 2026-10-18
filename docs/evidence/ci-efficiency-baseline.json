@@ -1,0 +1,495 @@
+{
+  "schema_version": 1,
+  "category": "read-only-ci-efficiency-baseline",
+  "repository": "srkftw/lemma",
+  "inspected_worktree_commit": "2d8813dd94b94f16d41beabfc1360abbebcb81a7",
+  "observed_at_utc": "2026-10-10T19:20:04.007649+00:00",
+  "methods": [
+    "Unauthenticated GitHub REST run, jobs and artifacts responses retained under ignored build/ci-efficiency/baseline.",
+    "Requested per_page=100; each jobs/artifacts total_count matches returned length and there is no next Link page. No endpoint exceeds a single page in this sample.",
+    "Durations are timestamp differences at API second resolution. Runner seconds exclude queue time and are not GitHub rounded billable minutes.",
+    "Step durations include process setup and all work within the step. Target acceptance steps combine dependency realization, Lean compilation, LLVM codegen, audit and guest tests; these components cannot be separated with the available API data.",
+    "Artifact size is the compressed GitHub archive size. Upload step duration includes archive compression and transfer; separate network upload duration and uncompressed content inventory are unavailable.",
+    "Unauthenticated notebook job log download returned HTTP403 and artifact archive download returned HTTP401. No log content, current PASS output, failure diagnosis or synthetic merge SHA is invented."
+  ],
+  "runs": [
+    {
+      "run_id": 38074535663,
+      "url": "https://github.com/srkftw/lemma/actions/runs/38074535663",
+      "event": "push",
+      "branch": "task/004-lemmasim-durable-ink",
+      "api_head_sha": "2d8813dd94b94f16d41beabfc1360abbebcb81a7",
+      "api_head_sha_meaning": "push commit",
+      "checkout_policy": "default actions/checkout push commit",
+      "actual_checkout_from_logs": "API_PUSH_HEAD",
+      "conclusion": "failure",
+      "attempt": 1,
+      "created_at": "2026-10-10T18:07:50Z",
+      "event_to_first_runner_seconds": 29,
+      "event_to_first_completed_job_seconds": 221,
+      "event_to_final_job_seconds": 1973,
+      "summed_runner_seconds": 8325,
+      "summed_phase_seconds": {
+        "runner_checkout_nix_setup": 72,
+        "first_devshell_realization_and_metadata_check": 53,
+        "host_tests_and_nix_invocation": 44,
+        "lean_host_compilation_and_nix_invocation": 89,
+        "artifact_upload": 47,
+        "cleanup": 2,
+        "realization_compilation_audit_guest_tests_combined": 7501,
+        "evidence_validation": 26,
+        "lemmasim_qemu_realization_and_compilation": 468
+      },
+      "artifact_archive_bytes": 165118109,
+      "job_count": 9,
+      "artifact_count": 9,
+      "job_queue_seconds_range": [
+        3,
+        3
+      ],
+      "failures": [
+        {
+          "job": "Metadata and host-only suites",
+          "failed_steps": [
+            "Run foundation host-harness suite"
+          ],
+          "skipped_steps": [
+            "Run kernel host-harness suite"
+          ]
+        },
+        {
+          "job": "Task 004 real notebook O0/O2 writing and cold recovery",
+          "failed_steps": [
+            "Compile, audit and observe real O0/O2 guest ink and cold recovery"
+          ],
+          "skipped_steps": [
+            "Require exact-candidate observations rather than a scoped empty pass"
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": 38074538129,
+      "url": "https://github.com/srkftw/lemma/actions/runs/38074538129",
+      "event": "pull_request",
+      "branch": "task/004-lemmasim-durable-ink",
+      "api_head_sha": "2d8813dd94b94f16d41beabfc1360abbebcb81a7",
+      "api_head_sha_meaning": "PR branch HEAD; not confirmation of the checked-out synthetic merge",
+      "checkout_policy": "default actions/checkout PR synthetic merge",
+      "actual_checkout_from_logs": "ceeaf359052185b8774909c1cd3f43fd61d545e9",
+      "conclusion": "failure",
+      "attempt": 1,
+      "created_at": "2026-10-10T18:07:52Z",
+      "event_to_first_runner_seconds": 32,
+      "event_to_first_completed_job_seconds": 228,
+      "event_to_final_job_seconds": 2065,
+      "summed_runner_seconds": 8485,
+      "summed_phase_seconds": {
+        "runner_checkout_nix_setup": 60,
+        "realization_compilation_audit_guest_tests_combined": 7620,
+        "evidence_validation": 22,
+        "artifact_upload": 47,
+        "cleanup": 3,
+        "lemmasim_qemu_realization_and_compilation": 519,
+        "first_devshell_realization_and_metadata_check": 93,
+        "host_tests_and_nix_invocation": 32,
+        "lean_host_compilation_and_nix_invocation": 65
+      },
+      "artifact_archive_bytes": 161961768,
+      "job_count": 9,
+      "artifact_count": 9,
+      "job_queue_seconds_range": [
+        2,
+        3
+      ],
+      "failures": [
+        {
+          "job": "Task 004 real notebook O0/O2 writing and cold recovery",
+          "failed_steps": [
+            "Compile, audit and observe real O0/O2 guest ink and cold recovery"
+          ],
+          "skipped_steps": [
+            "Require exact-candidate observations rather than a scoped empty pass"
+          ]
+        },
+        {
+          "job": "Metadata and host-only suites",
+          "failed_steps": [
+            "Run foundation host-harness suite"
+          ],
+          "skipped_steps": [
+            "Run kernel host-harness suite"
+          ]
+        },
+        {
+          "job": "Task 003 Buffer service RV64 acceptance",
+          "failed_steps": [
+            "Build, audit and observe fresh ordinary and development services"
+          ],
+          "skipped_steps": [
+            "Require all service artifacts and actual sessions"
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": 38036945640,
+      "url": "https://github.com/srkftw/lemma/actions/runs/38036945640",
+      "event": "push",
+      "branch": "task/003-kernel-isolated-services",
+      "api_head_sha": "994ea942aaf1e8d2a5aeb58593d9adae05f73eec",
+      "api_head_sha_meaning": "push commit",
+      "checkout_policy": "default actions/checkout push commit",
+      "actual_checkout_from_logs": "API_PUSH_HEAD",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-10T08:10:10Z",
+      "event_to_first_runner_seconds": 3,
+      "event_to_first_completed_job_seconds": 188,
+      "event_to_final_job_seconds": 1791,
+      "summed_runner_seconds": 6474,
+      "summed_phase_seconds": {
+        "runner_checkout_nix_setup": 62,
+        "realization_compilation_audit_guest_tests_combined": 6113,
+        "evidence_validation": 24,
+        "artifact_upload": 37,
+        "cleanup": 3,
+        "first_devshell_realization_and_metadata_check": 101,
+        "host_tests_and_nix_invocation": 45,
+        "lean_host_compilation_and_nix_invocation": 69
+      },
+      "artifact_archive_bytes": 154938975,
+      "job_count": 8,
+      "artifact_count": 8,
+      "job_queue_seconds_range": [
+        2,
+        3
+      ],
+      "failures": []
+    },
+    {
+      "run_id": 38036948421,
+      "url": "https://github.com/srkftw/lemma/actions/runs/38036948421",
+      "event": "pull_request",
+      "branch": "task/003-kernel-isolated-services",
+      "api_head_sha": "994ea942aaf1e8d2a5aeb58593d9adae05f73eec",
+      "api_head_sha_meaning": "PR branch HEAD; not confirmation of the checked-out synthetic merge",
+      "checkout_policy": "default actions/checkout PR synthetic merge",
+      "actual_checkout_from_logs": "UNAVAILABLE_WITHOUT_AUTHENTICATED_LOG_ACCESS",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-10T08:10:13Z",
+      "event_to_first_runner_seconds": 3,
+      "event_to_first_completed_job_seconds": 186,
+      "event_to_final_job_seconds": 1791,
+      "summed_runner_seconds": 7476,
+      "summed_phase_seconds": {
+        "runner_checkout_nix_setup": 57,
+        "first_devshell_realization_and_metadata_check": 53,
+        "host_tests_and_nix_invocation": 48,
+        "lean_host_compilation_and_nix_invocation": 88,
+        "artifact_upload": 43,
+        "cleanup": 1,
+        "realization_compilation_audit_guest_tests_combined": 7130,
+        "evidence_validation": 28
+      },
+      "artifact_archive_bytes": 155148826,
+      "job_count": 8,
+      "artifact_count": 8,
+      "job_queue_seconds_range": [
+        3,
+        4
+      ],
+      "failures": []
+    },
+    {
+      "run_id": 38038810136,
+      "url": "https://github.com/srkftw/lemma/actions/runs/38038810136",
+      "event": "push",
+      "branch": "main",
+      "api_head_sha": "504f6e462e502d93192ba689d16d8552ca1e68b5",
+      "api_head_sha_meaning": "push commit",
+      "checkout_policy": "default actions/checkout push commit",
+      "actual_checkout_from_logs": "API_PUSH_HEAD",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-10T08:42:25Z",
+      "event_to_first_runner_seconds": 3,
+      "event_to_first_completed_job_seconds": 190,
+      "event_to_final_job_seconds": 1366,
+      "summed_runner_seconds": 6457,
+      "summed_phase_seconds": {
+        "runner_checkout_nix_setup": 62,
+        "realization_compilation_audit_guest_tests_combined": 6133,
+        "artifact_upload": 38,
+        "cleanup": 2,
+        "evidence_validation": 27,
+        "first_devshell_realization_and_metadata_check": 90,
+        "host_tests_and_nix_invocation": 35,
+        "lean_host_compilation_and_nix_invocation": 52
+      },
+      "artifact_archive_bytes": 155010090,
+      "job_count": 8,
+      "artifact_count": 8,
+      "job_queue_seconds_range": [
+        3,
+        3
+      ],
+      "failures": []
+    }
+  ],
+  "observed_redundancy": [
+    "Both PR updates produced full task-branch push and full pull_request campaigns with all lanes started independently. Task003 has 8 lanes/campaign; Task004 adds and retains the real writing/cold recovery lane for 9.",
+    "The pairs have the same API branch-head SHA but distinct checkout targets under the unchanged workflow: push HEAD versus PR synthetic merge. Removing branch full acceptance retains merge-candidate acceptance rather than claiming the two source targets are identical.",
+    "Jobs are already parallel. Install Nix takes 3-9 seconds per job; the largest cost is combined build/audit/test work. The sample provides no reason to serialize expensive lanes behind metadata.",
+    "Foundation qualification sequentially consumes Gate9 evidence from its own cumulative/stress step; this is a real evidence dependency.",
+    "All sampled runs retain every lane artifact, including failures; Task004 failures do not imply successful notebook acceptance."
+  ],
+  "measured_removed_campaign_upper_bounds": [
+    {
+      "pair": "Task003 successful push+PR update",
+      "removed_push_run": 38036945640,
+      "removed_runner_seconds": 6474,
+      "removed_artifact_archive_bytes": 154938975,
+      "meaning": "Measured old push cost; estimated future net savings subtract unmeasured branch preflight. PR completion wall time is not predicted to halve."
+    },
+    {
+      "pair": "Task004 failing push+PR update",
+      "removed_push_run": 38074535663,
+      "removed_runner_seconds": 8325,
+      "removed_artifact_archive_bytes": 165118109,
+      "meaning": "Measured old failing push cost; not a successful Task004 acceptance runtime. Estimated future net savings subtract unmeasured branch preflight."
+    }
+  ],
+  "cache_evaluation": {
+    "existing_dependency_source": "Pinned Nix binary substitution plus fixed-output sources; workflow has no bespoke GitHub dependency cache.",
+    "local_existing_closure_measurement": {
+      "selection": [
+        "pinned Lean",
+        "LLVM",
+        "clang-unwrapped",
+        "LLD",
+        "stock QEMU"
+      ],
+      "store_paths": 353,
+      "nar_bytes": 7204814352,
+      "scope": "Existing local x86_64-linux closure, not a GitHub transfer/cache-hit benchmark. Additional devshell tools, pinned Lean source and derived LemmaSim QEMU are outside this selected bound."
+    },
+    "lemmasim_qemu_step_seconds": {
+      "push_38074535663": 468,
+      "pr_38074538129": 519
+    },
+    "candidate_input_keys": [
+      "runner OS/image and x86_64-linux platform",
+      "Nix version/action revision",
+      "flake.nix",
+      "flake.lock",
+      "lean-toolchain",
+      "tooling/toolchain-lock.json",
+      "tooling/lemmasim/qemu.nix",
+      "tooling/lemmasim/apply_qemu.py",
+      "all tracked tooling/lemmasim patch inputs",
+      "all sim/host derivation-filter inputs including headers and durable block filter"
+    ],
+    "safe_design_conditions": [
+      "Cache only pinned dependency closures, not .lake/build/qualification/result/guest observations.",
+      "Exact platform/input key with no broad fallback key that masks changed hardware inputs.",
+      "Trusted main cache producer; untrusted PR code must not write a cache later restored by trusted main/qualification.",
+      "Verify realized store/executable/source hashes using existing provenance; cache miss follows normal pinned realization and fails closed on missing tools.",
+      "Keep uncached qualification, independently rebuilt project outputs and fresh guest boots. A dependency-cache hit is not a cold toolchain observation."
+    ],
+    "decision": "Do not enable a bespoke cache without cache-hit/miss, serialized closure size, transfer-time and uncached qualification measurements. Dependency realization is inseparable in API steps and 6.71GiB selected local closure makes benefit uncertain."
+  },
+  "artifact_evaluation": {
+    "retention_policy": "Existing 14 days; unchanged.",
+    "decision": "No content deletions justified by archive metadata alone. Preserve binaries, raw observations, failure logs, hashes, audit/provenance and replay inputs. Removing the duplicate future branch campaign removes its separate uploads without editing retained historical evidence.",
+    "demonstrated_small_duplicate_inputs": [
+      "Checked-in docs/evidence/001-core0* included in every legacy upload.",
+      "Checked-in docs/evidence/002-machine-foundation* included in every foundation upload."
+    ],
+    "duplicate_input_removal_decision": "Leave these historical reports in place for this cleanup unless archive completeness is inspected and quantified; they are small versus generated acceptance artifacts."
+  },
+  "raw_response_inventory": [
+    {
+      "path": "build/ci-efficiency/baseline/38036945640-artifacts-response.json",
+      "bytes": 360,
+      "sha256": "e8eb06661a22d9880ab6927957b156e1cb11860a40d4ab9b6041eb7f357d7611"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036945640-artifacts.json",
+      "bytes": 7074,
+      "sha256": "e57275e9f58c35df542243108158995f04361bf03a0864e5855550dec8228e92"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036945640-jobs-response.json",
+      "bytes": 355,
+      "sha256": "db4072c4b27f9924d14d4a95b4272b581a0e69760959187173324611dea51876"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036945640-jobs.json",
+      "bytes": 28667,
+      "sha256": "8953e110c8de070637b73498329718f93dad59de146c39010f3c09337ee20564"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036945640-run-response.json",
+      "bytes": 337,
+      "sha256": "efcf95222a8a7eb4f8c47a5d987cdfc96d5087e587a5e46baf1ebc67ba4d485e"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036945640-run.json",
+      "bytes": 13148,
+      "sha256": "d91227d93c6dfa99a64fff949314b843ffb3208f3079ebb8c8d9dda7c136519d"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036948421-artifacts-response.json",
+      "bytes": 360,
+      "sha256": "8aa15993845407235ac0178b4e03881622c6048de286fe95d28069ea2d14df4d"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036948421-artifacts.json",
+      "bytes": 7074,
+      "sha256": "5773a6050855ef1c232b69c0ef0e2517e57e6ca7943c43c746701829416871f1"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036948421-jobs-response.json",
+      "bytes": 355,
+      "sha256": "d8b97ddec868aaeaf95b0d0034bcebe64f051e191bfb6d6b782980b2b83fd340"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036948421-jobs.json",
+      "bytes": 28667,
+      "sha256": "1b93ac769683430e05642ac1cdcf867928aca768d89e60043f25b32ca9e1083b"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036948421-run-response.json",
+      "bytes": 337,
+      "sha256": "740901f9b06bdfa650c34abe01eb09afa53354ccdcb13e8835f4749e0a3156aa"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38036948421-run.json",
+      "bytes": 13177,
+      "sha256": "b59edef19c7e836ae19fcfbbbdbfcd11660a1831c9d234366f20a0e9a23d3bf6"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38038810136-artifacts-response.json",
+      "bytes": 360,
+      "sha256": "d086e8f89bdcc035c93f74984d2e29e0e25b9bec4b46b13b16f7eb9430d88ed8"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38038810136-artifacts.json",
+      "bytes": 6842,
+      "sha256": "5d7d9aec17dc49203411583dba000c129931bce354e12631839e73a1683efc4e"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38038810136-jobs-response.json",
+      "bytes": 355,
+      "sha256": "caea5310067e10e39a0d91f93f330e9a9e7f282408f92f46f27bd4a9222b5ede"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38038810136-jobs.json",
+      "bytes": 28435,
+      "sha256": "dcbf85edec803fb3266c59ffc67a85f8b4b9b5e0c3cafc14583e4cf227335014"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38038810136-run-response.json",
+      "bytes": 337,
+      "sha256": "efc039d9556a80f9455d9930d0034dbb132d3147c39200be4661d09a3349633d"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38038810136-run.json",
+      "bytes": 13226,
+      "sha256": "8860971852de2821e7c1bf2890096904bd856a4f515e15c40130e66dae417956"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074535663-artifacts-response.json",
+      "bytes": 360,
+      "sha256": "439b70301aa9df3130011173b59033d12a890e1662a46fbb0fe6acc83f1b892f"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074535663-artifacts.json",
+      "bytes": 7912,
+      "sha256": "cf47ae09b7d09cd8b1b48894b924f342db6d18fadf292a72c5841a55ad611c9c"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074535663-jobs-response.json",
+      "bytes": 355,
+      "sha256": "361b3ee7ffa31b339fb587370caf6e64b751d3358244c0543010abdbb92e2b44"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074535663-jobs.json",
+      "bytes": 32432,
+      "sha256": "2b3e02c2dde5b2928a21cb5787d898331e7998e47ae49ec637bdc07a449b1f0b"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074535663-run-response.json",
+      "bytes": 337,
+      "sha256": "14024c7fd36f8cd374c612729a47f97bff908e19ec4eef70913a741d50bbc6bd"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074535663-run.json",
+      "bytes": 13826,
+      "sha256": "12cf3fe1fd48d66fd09727c1687ec0515630a1554b0ce3505225f40692b7e8b3"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074538129-artifacts-response.json",
+      "bytes": 360,
+      "sha256": "b6dc2404684742aef28bb81c558dd315debef3ba7fb606f2b20935ce4b04bbfe"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074538129-artifacts.json",
+      "bytes": 7912,
+      "sha256": "01ee8a01541652d3eeb92db1c3b20200174633cddf24f82eeef54dfca711c2f1"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074538129-jobs-response.json",
+      "bytes": 355,
+      "sha256": "865733e516b9930995dcdc73b57c45a4f0631f755ab753bb20e48762aeefbfc0"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074538129-jobs.json",
+      "bytes": 32432,
+      "sha256": "44164b225e3ba78596f4a9bde4d0fee221462ded474fc9a57aacfc0717880190"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074538129-run-response.json",
+      "bytes": 337,
+      "sha256": "fc99ea40de77b3caf84749af74081930067507a9d7b09fdc0de6503cb11c1787"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/38074538129-run.json",
+      "bytes": 13823,
+      "sha256": "b21b55f57675fcfc72591f40f947db6ba0baafb774bc8c1354088104e59fa1ef"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/local-pinned-dependency-closure.json",
+      "bytes": 247520,
+      "sha256": "0eb3d3d22160074cf37d43199800653f471e37707fa24a07e3cb72a198e95d53"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/pr-notebook-artifact-error.json",
+      "bytes": 262,
+      "sha256": "453666b973cc64776b27e2fd57f1c272e03b939d94af8e2bbcfee58892fb69e9"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/pr-notebook-logs-error.json",
+      "bytes": 307,
+      "sha256": "f19268c3d6327d1a9618dbcb58f0e18b1f761012c52740e92029de300bbe1394"
+    },
+    {
+      "path": "build/ci-efficiency/baseline/phase-breakdown.json",
+      "bytes": 40372,
+      "sha256": "f2d77084148b0a17b05b18582a09de9dee5da4437461fe47e5d427db5c08bc67"
+    }
+  ],
+  "authenticated_log_followup": {
+    "run_id": 38074538129,
+    "job_id": 114278730906,
+    "path": "build/ci-efficiency/baseline/38074538129-114278730906.log",
+    "sha256": "5a51d4da725fc6fa7c2d2b5e0075dc5a276018abba28471ee197b2d96b589d26",
+    "bytes": 136083,
+    "checkout_commit": "ceeaf359052185b8774909c1cd3f43fd61d545e9",
+    "base": "504f6e462e502d93192ba689d16d8552ca1e68b5",
+    "head": "2d8813dd94b94f16d41beabfc1360abbebcb81a7",
+    "scope": "Connector subsequently returned this one full notebook job log; original unauthenticated access failures remain recorded. Other sampled checkout logs/artifact contents were not fetched."
+  }
+}

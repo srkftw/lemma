@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLE manual-link machine development binding 0.5</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="ble-manual-link-machine-development-binding-05">BLE manual-link machine development binding 0.5</h1>
+<p><code>lemma-silicon-dev/0.5.0</code> is an opt-in development machine. It retains the canonical 1650×2200 Gray4 display, 128 MiB external simulation RAM, 8192-frame guest pool, 100 MHz machine clock and 10 MHz MTIME, and inherits Power-v2. Historical bindings retain their byte meanings.</p>
+<p>Binding5 uses descriptor ABI6, feature word 7, a copied-PIO packet controller at <code>0x10010600</code> with a <code>0x400</code> aperture, PLIC source 15, and at most 27 opaque payload bytes. Each LE1M sampled bit spans 100 machine clocks. The declared context is manual, unauthenticated, preconfigured AA <code>aa08192b</code>, CRC initialization <code>c4c181</code>, channel 16. Connection establishment, encryption, GFSK sampling, analog RF, full Bluetooth 5.4 and durable companion receipts remain separate requirements.</p>
+<p>The machine contains two independently clocked instances of the maintained packet RTL. Host code routes only generated one-bit sample strobes, copies a CRC-validated immutable RX head to the genuine hosted Lean policy, and schedules actual accepted peer replies through the second controller&#39;s PIO. The host does not encode packets, compute CRC/whitening or decide SN/NESN. A lost packet control discards a complete generated peer wire packet, rather than changing a shared success flag.</p>
+<p>The live hosted interface has nonblocking bounded request/response framing. Complete actual responses are recorded before their effects enter the machine, with stable request IDs, issued/accepted cycles, exact header and opaque bytes, and complete logical-state trailers. The state carries both RTL instances, clock/sample phases, pending wires, coex grant, queued PIO beats and the previous accepted outcome. No host pointers enter checkpoints.</p>
+<p>Current checkpoint container4 admits resolved hosted-policy boundaries, including an in-flight generated packet. Unresolved startup/data responses reject observationally. Restored resolved branches remain suspended until a tape proves the exact prior accepted context and applicable future requests; continuation consumes captured responses without contacting or restarting the original peer. No tape means no clock advancement. Wrong context, request, boundary, implementation or corrupt state rejects before adoption.</p>
+<p>A future separately qualified container successor may retain an unresolved data request. It must retain the actual original issued request and next poll phase; a private branch must not resubmit it. This paragraph is an outstanding implementation obligation, not a current checkpoint claim.</p>
+<p>The privileged guest probe configures the actual controller and PLIC15, sends the opaque LMCMP001 prefix, consumes a decoded empty ACK, and performs bounded retry. A link ACK is not a storage durability receipt. This does not provide a guest notebook companion driver, USB, radio-backed Save or a production boot path.</p>
+<h2 id="qualified-native-path">Qualified native path</h2>
+<p><code>docs/evidence/006-ble-machine.json</code> records actual checked RV64 execution. The changed SoC relative-offset decoder is exercised by the guest&#39;s identity/version reads at base/+8, configuration writes at +24/+32/+40, copied payload and command registers, and source15 claim/completion. The two generated packet streams are compared to an independent CRC/whitening reference. One complete peer ACK is dropped, causing one retry; the genuine hosted Lean peer accepts the opaque payload once and records one duplicate. A checkpoint during that first ACK retains the complete generated endpoints and pending sampled wire, with a byte-exact applicable suffix from recorded external responses.</p>
+<p>These source-bound commands were executed; use unused output/session paths for a new run:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command python3 scripts/silicon_compute.py build \
+  --profile lemma-silicon-dev/0.5.0 \
+  --output-dir build/silicon/task006-ble-wire-runtime-a4 --jobs 2
+python3 scripts/lemmasim build --backend rtl \
+  --profile lemma-silicon-dev/0.5.0 --workload ble \
+  --guest-build build/kernel/task006-ble-guest-a4 \
+  --rtl-build build/silicon/task006-ble-wire-runtime-a4 --opt-level O2
+python3 scripts/check_guest_ble_link.py \
+  --work-dir build/radio/task006-ble-machine-a2 --boot-cycles 20000000 --deadline 360
+</code></pre>
+<p>Ordinary launch of the prepared probe and the independent hosted Lean peer:</p>
+<pre><code class="language-sh">python3 scripts/lemmasim session --backend rtl \
+  --profile lemma-silicon-dev/0.5.0 --workload ble \
+  --mode developer --session-dir build/radio/manual-ble --headless --paused \
+  --ble-peer &quot;$(command -v nix)&quot; \
+  --ble-peer-arg=develop --ble-peer-arg=--no-write-lock-file \
+  --ble-peer-arg=--command --ble-peer-arg=lake --ble-peer-arg=env \
+  --ble-peer-arg=lean --ble-peer-arg=--run --ble-peer-arg=sim/radio/ble_peer.lean
+python3 scripts/lemmasim session-control --session-dir build/radio/manual-ble \
+  --request &#39;{&quot;action&quot;:&quot;run&quot;,&quot;cycles&quot;:10000000}&#39;
+</code></pre>
+<p>Add <code>--ble-drop-packets 1</code> in Laboratory mode to select the demonstrated lost-ACK wire case. Raw <code>ble-rx</code> and <code>ble-coex</code> inputs are Laboratory/Developer device inputs; the machine owns their cycle ordering. An ordinary Developer resolved snapshot/restore uses the shared <code>snapshot --to</code> and <code>restore --from</code> commands. After restoring an attached-peer checkpoint, bind the original complete captured suffix with <code>session-control --request &#39;{&quot;action&quot;:&quot;ble-outcomes&quot;,&quot;path&quot;:&quot;ABSOLUTE_OUTCOME_PATH&quot;}&#39;</code> before <code>run</code>. The restored owner never resumes the original process. A complete capture is needed; a log ending in a pending request fails closed.</p>
+<p>The same-binary fixed-prefix host-pool comparison uses <code>python3 scripts/check_native_host_threads.py --work-dir UNUSED_OUTPUT --cycles 2000000</code>. It proved byte equality for default14 versus one host thread, including a100000-cycle restore suffix. Its single short sample did not show a speedup; the default was about7% faster, with a340KiB larger peak RSS. Host thread counts do not alter virtual clock frequency.</p>
+<p>Original failures are preserved. The first integrated guest stopped with fatal50 at7,870,065cycles after successful FDT parsing: the SoC had passed low address bits for an unaligned1KiB aperture. The subsequent changed-source build subtracts BLE_BASE. The old observer&#39;s generic first-packet bound error is not reclassified as a timeout or harmless failure. The first host-suite invocation outside Nix failed because tools were unavailable; the pinned host suite separately passed146tests.</p>
+</main>
+</body>
+</html>

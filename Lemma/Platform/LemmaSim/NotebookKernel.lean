@@ -1,3 +1,4 @@
+import Lemma.Platform.LemmaSim.MultimodalService
 import Lemma.Platform.LemmaSim.Descriptor
 import Lemma.Platform.LemmaSim.MachineServices
 import Lemma.Platform.LemmaSim.DeviceService
@@ -13,6 +14,9 @@ an isolated checker; historical deployments retain their two-image contract.
 Only the store receives the raw-block endpoint. The kernel does not interpret
 record headers, notebook actions, strokes or display pixels. -/
 namespace Lemma.Platform.LemmaSim.NotebookKernel
+
+private def mmDifferent (a b : UInt64) : Bool := if a = b then false else true
+private def mmFailed (s : UInt8) : Bool := if s = 0 then false else true
 open Lemma.Core0.Memory
 open Lemma.Kernel
 open Lemma.Kernel.Memory
@@ -1571,5 +1575,186 @@ private def bootPackageRecoveryEntry2 (initialization : UInt64) : Action :=
 
 def siliconUSBPackageRecoveryEntry2Boot : Action := bootPackageRecoveryEntry2 0
 def siliconUSBPackageRecoveryEntry2InitializeMedium : Action := bootPackageRecoveryEntry2 1
+
+
+private def deviceCallMultimodalAt (descriptor context pc number : UInt64) : Action :=
+  .bind (Access.read64 (context + 80)) fun s a => if s = 0 then
+  .bind (Access.read64 (context + 88)) fun s b => if s = 0 then
+  .bind (Access.read64 (context + 96)) fun s c => if s = 0 then
+  .bind (Access.read64 (context + 104)) fun s d => if s = 0 then
+  .bind (Access.read64 (context + 112)) fun s e => if s = 0 then
+  .bind (if number = 64 then DeviceService.surfaceV2At descriptor (context - AddressSpace.userContextOffset) a b c d e else
+    if number = 65 then DeviceService.input descriptor a b c d e else
+    if number = 66 then DeviceService.block descriptor a b c d e else
+    if number = 69 then MultimodalService.call descriptor a b c d e else
+    if number = 68 then PowerControl.call descriptor a b c d e else
+    if d ||| e = 0 then IPC.tryCallWait descriptor a b c else .done 16 0) fun status result =>
+  if status = DeviceService.waitStatus then
+    .bind MachineServices.time fun s now => if s = 0 then
+    if 0xffffffffffffffff - 10000000 < now then fatal else
+    .bind (Process.syscallReply context pc 174 0) fun s _ => if s = 0 then
+    .bind (Task.sleep descriptor (now + 10000000) pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 3 pc else fatal else fatal else fatal
+  else if status = 255 then fatal else
+  if number = 68 then if b = 1 then if status = 0 then
+    .bind (Process.syscallReply context pc status result) fun s _ => if s = 0 then
+    .bind (Task.ready descriptor 2 pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 2 pc else fatal else fatal
+  else Process.syscallReply context pc status result
+  else Process.syscallReply context pc status result
+  else Process.syscallReply context pc status result
+  else fatal else fatal else fatal else fatal else fatal
+
+def dispatchMultimodalBulk (frame cause value : UInt64) : Action :=
+  if cause = 0x8000000000000009 then
+    .bind (Access.read64 Process.control) fun s descriptor => if s = 0 then
+    .bind (Task.capture descriptor frame) fun s context => if s = 0 then
+    .bind (Access.read64 (context + 256)) fun s pc => if s = 0 then
+    .bind Lemma.Drivers.PLIC.claim fun s source => if s = 0 then
+    .bind (if source = 14 then PowerControl.notification else DeviceService.notification source) fun s _ => if s = 0 then
+    .bind (Lemma.Drivers.PLIC.completePower source) fun s _ => if s = 0 then
+    .bind (Task.ready descriptor 1 pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 1 pc else fatal else fatal else fatal else fatal
+    else fatal else fatal else fatal
+  else if cause = 8 then
+    .bind (Access.read64 Process.control) fun s descriptor => if s = 0 then
+    .bind (Task.capture descriptor frame) fun s context => if s = 0 then
+    .bind (Access.read64 (context + 256)) fun s pc => if s = 0 then
+    if pc % 4 = 0 then
+    .bind (AddressSpace.lookupAt (context - AddressSpace.userContextOffset) pc 4) fun s _ => if s = 0 then
+    .bind (Access.read64 (context + 136)) fun s number => if s = 0 then
+    if (if number = 64 then true else if number = 65 then true else if number = 66 then true else if number = 67 then true else if number = 68 then true else if number = 69 then true else false) = true then
+      deviceCallMultimodalAt descriptor context pc number
+    else Scheduler.callWithIPCLimit IPCABI.lemmaSimMaximumTicks descriptor context pc
+    else fatal else fatal else fatal else fatal else fatal else fatal
+  else
+    .bind (observeFault cause) fun s _ => if s = 0 then
+    Scheduler.dispatch frame cause value else fatal
+
+/-- Converter14 construction: the same four original authorities, with
+explicit supervisor-only aliases in each fixed task root before activation. -/
+private def constructCourseMultimodal (initialization : UInt64) : Action :=
+  let binding : UInt64 := 3
+  let arithmeticMode : UInt64 := 0
+  let isolation : UInt64 := 0
+  .bind Process.initMultimodal fun s _ => if s = 0 then
+  .bind Task.init fun s _ => if s = 0 then
+  .bind (if binding = 3 then Objects.initArithmetic else Objects.init) fun s _ => if s = 0 then
+  .bind (Task.prepareManaged 0 initialization) fun s store => if s = 0 then
+  .bind (Task.prepareManaged 1 (if binding = 3 then initialization + 2 else initialization)) fun s notebook => if s = 0 then
+  .bind (if binding = 3 then Task.prepareManaged 2 arithmeticMode else .done 0 0) fun s arithmetic => if s = 0 then
+  .bind (Task.prepareManaged 3 initialization) fun s installer => if s = 0 then
+  .bind (AddressSpace.addMultimodalAliases store) fun s _ => if s = 0 then
+  .bind (AddressSpace.addMultimodalAliases notebook) fun s _ => if s = 0 then
+  .bind (AddressSpace.addMultimodalAliases arithmetic) fun s _ => if s = 0 then
+  .bind (AddressSpace.addMultimodalAliases installer) fun s _ => if s = 0 then
+  .bind (Objects.createEndpoint notebook) fun s surface => if s = 0 then
+  .bind (Objects.createEndpoint notebook) fun s input => if s = 0 then
+  .bind (Objects.createEndpoint store) fun s block => if s = 0 then
+  .bind (Objects.createEndpoint store) fun s documents => if s = 0 then
+  .bind (if binding = 3 then Objects.createEndpoint notebook else .done 0 0) fun s power => if s = 0 then
+  .bind (if binding = 3 then Objects.createEndpoint arithmetic else .done 0 0) fun s checking => if s = 0 then
+  .bind (DeviceService.configure surface input block) fun s _ => if s = 0 then
+  .bind (grant store block CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant store documents CapabilityABI.endpointReceive) fun s _ => if s = 0 then
+  .bind (grant store Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
+  .bind (grant notebook surface CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant notebook input CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant notebook documents CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant notebook Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
+  .bind (if binding = 3 then grant notebook power CapabilityABI.endpointCall else .done 0 0) fun s _ => if s = 0 then
+  .bind (if binding = 3 then
+    .bind (grant notebook checking CapabilityABI.endpointCall) fun s _ => if s = 0 then
+    .bind (grant arithmetic checking CapabilityABI.endpointReceive) fun s _ => if s = 0 then
+    grant arithmetic Objects.consoleKey CapabilityABI.consoleWrite else fatal else fatal
+    else .done 0 0) fun s _ => if s = 0 then
+  .bind (grant installer Objects.consoleKey (CapabilityABI.consoleRead ||| CapabilityABI.consoleWrite)) fun s _ => if s = 0 then
+  .bind (grant installer documents CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (PowerControl.configure (if binding = 3 then 1 else 0) power) fun s _ => if s = 0 then
+  .bind (Task.activateManaged store) fun s _ => if s = 0 then
+  .bind (if binding = 3 then Task.activateManaged arithmetic else .done 0 0) fun s _ => if s = 0 then
+  .bind (Task.activateManaged installer) fun s _ => if s = 0 then
+  .bind (Task.activateManaged notebook) fun s _ => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x410 store notebook documents (if binding = 1 then Lemma.Platform.Silicon.Binding.frame_count else 8192)) fun s _ => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x4b4 installer documents 0 0) fun s _ => if s = 0 then
+  configureIsolation isolation documents
+  else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal
+
+private def bootMultimodal (initialization : UInt64) : Action :=
+  .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
+  .bind BootInfo.validate fun status value =>
+  .bind (observedStage 1 status value) fun s _ => if s = 0 then
+  .bind Descriptor.validateSiliconMultimodal fun status value =>
+  .bind (observedStage 2 status value) fun s _ => if s = 0 then
+  .bind Lemma.Platform.LemmaSim.MachineServices.validateMultimodal fun status value =>
+  .bind (observedStage 3 status value) fun s _ => if s = 0 then
+  .bind Frames.init fun s _ => if s = 0 then
+  .bind Lemma.Drivers.VirtIOBlock.initialize fun s capacity => if s = 0 then
+  .bind Lemma.Drivers.Paper.initialize fun s geometry => if s = 0 then
+  .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
+  .bind Lemma.Drivers.PLIC.initializePower fun s _ => if s = 0 then
+  .bind (constructCourseMultimodal initialization) fun s _ => if s = 0 then
+    .bind (Access.read64 (PowerControl.stateBase + 8)) fun s key => if mmFailed s = true then .done s 0 else
+    .bind (MultimodalService.configure key) fun s _ => if mmFailed s = true then .done s 0 else
+    .loop powerStepEntryV2 else .done s 0
+  else .done s 0 else fatal else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+def siliconMultimodalBoot : Action := bootMultimodal 0
+def siliconMultimodalInitializeMedium : Action := bootMultimodal 1
+
+/-- Exact owner-local parameterized development boot: grant the existing
+isolated checker Call endpoint to the sole course UART consumer before the
+first User instruction. Registry role and initial capability counts are checked;
+no Store, display, sensor or checking-result authority is added. -/
+private def grantParameterizedInstaller : Action :=
+  .bind (Objects.registryDescriptor 1) fun s notebook => if s = 0 then
+  .bind (Task.lookup notebook) fun s notebookRow => if s = 0 then
+  .bind (Access.read64 (notebookRow + Task.imageOffset)) fun s notebookImage => if s = 0 then
+  if notebookImage = 1 then
+  .bind (Capability.bootGrant notebook 5) fun s checkingHandle => if s = 0 then
+  .bind (Capability.lookup notebook checkingHandle CapabilityABI.endpointType CapabilityABI.endpointCall) fun s checking => if s = 0 then
+  .bind (Objects.registryDescriptor 3) fun s installer => if s = 0 then
+  .bind (Task.lookup installer) fun s installerRow => if s = 0 then
+  .bind (Access.read64 (installerRow + Task.imageOffset)) fun s installerImage => if s = 0 then
+  if installerImage = 3 then
+  .bind (Capability.entryCount installer) fun s before => if s = 0 then
+  if before = 2 then
+  .bind (Capability.grantDiscovered installer checking) fun s handle => if s = 0 then
+  .bind (Capability.entryCount installer) fun s after => if s = 0 then
+  if after = 3 then Lemma.Kernel.Console.record 0x72e installer checking handle after else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal
+
+private def bootMultimodalParameterized (initialization : UInt64) : Action :=
+  .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
+  .bind BootInfo.validate fun status value =>
+  .bind (observedStage 1 status value) fun s _ => if s = 0 then
+  .bind Descriptor.validateSiliconMultimodal fun status value =>
+  .bind (observedStage 2 status value) fun s _ => if s = 0 then
+  .bind Lemma.Platform.LemmaSim.MachineServices.validateMultimodal fun status value =>
+  .bind (observedStage 3 status value) fun s _ => if s = 0 then
+  .bind Frames.init fun s _ => if s = 0 then
+  .bind Lemma.Drivers.VirtIOBlock.initialize fun s capacity => if s = 0 then
+  .bind Lemma.Drivers.Paper.initialize fun s geometry => if s = 0 then
+  .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
+  .bind Lemma.Drivers.PLIC.initializePower fun s _ => if s = 0 then
+  .bind (constructCourseMultimodal initialization) fun s _ => if s = 0 then
+    .bind grantParameterizedInstaller fun s _ => if mmFailed s = true then .done s 0 else
+    .bind (Access.read64 (PowerControl.stateBase + 8)) fun s key => if mmFailed s = true then .done s 0 else
+    .bind (MultimodalService.configure key) fun s _ => if mmFailed s = true then .done s 0 else
+    .loop powerStepEntryV2 else .done s 0
+  else .done s 0 else fatal else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+def siliconMultimodalParameterizedBoot : Action := bootMultimodalParameterized 0
+def siliconMultimodalParameterizedInitializeMedium : Action := bootMultimodalParameterized 1
 
 end Lemma.Platform.LemmaSim.NotebookKernel

@@ -23,30 +23,27 @@ not a browser-local compiler or a production authenticated boot distribution.
 Physical conformance, complete digital device support and full course/browser
 acceptance are separate obligations. Packaging bytes establishes none of them.
 '''
-README = '''# Local LemmaSim browser machine
-
-Python3.10 or later and a browser with WebAssembly and OPFS synchronous worker
-access are required. Launch after extraction, from any working directory:
-
-```sh
-python3 /path/to/extracted/serve.py --verify-only
+USAGE_HTML = '''<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Browser LemmaSim usage</title></head>
+<body><main>
+<h1>Local LemmaSim browser machine</h1>
+<p>Python3.10 or later and a browser with WebAssembly and OPFS synchronous worker
+access are required. Launch after extraction, from any working directory:</p>
+<pre><code class="language-sh">python3 /path/to/extracted/serve.py --verify-only
 python3 /path/to/extracted/serve.py --port 8787
-```
-
-Open http://127.0.0.1:8787/ in your browser. The launcher binds loopback only,
+</code></pre>
+<p>Open <a href="http://127.0.0.1:8787/">http://127.0.0.1:8787/</a> in your browser. The launcher binds loopback only,
 serves the original inventoried machine files and needs no repository, Nix,
 Lean, LLVM, network download or Python package installation. Verify-only checks
 the distribution and the original complete browser bundle. Checksums detect
-changed bytes; they do not authenticate a sender.
-
-Create a new named medium through the real Lean guest initializer, or import
+changed bytes; they do not authenticate a sender.</p>
+<p>Create a new named medium through the real Lean guest initializer, or import
 an exported raw medium under a new name and Open it for guest cold recovery.
 Keep the same port: browser storage belongs to its origin. Save succeeds only
 after the actual guest/backing barrier. OPFS flush does not guarantee physical
 power-loss durability, retention against eviction or persistence in private
-browsing. Export backing bytes regularly; beforeunload is not a save mechanism.
-
-Student, Developer and Laboratory run the same RV64 guest and permissions.
+browsing. Export backing bytes regularly; beforeunload is not a save mechanism.</p>
+<p>Student, Developer and Laboratory run the same RV64 guest and permissions.
 Developer/Laboratory expose raw input, inspection, bounded runs, checkpoint
 export/restore into private forks and offline outcome replay. Restoring a
 checkpoint is continuation; Open from raw backing is cold recovery. A bounded
@@ -55,7 +52,8 @@ Changing machines while a selected file loads cancels that selection; choose it
 again in the new machine. Import destinations and installation transactions
 belong to the original selection, even if their fields are edited during loading.
 Stop the server with Ctrl-C. The server does not send documents or other data
-to a remote service. See NOTICE.txt and bundle/DEPENDENCIES.txt for limitations.
+to a remote service. See NOTICE.txt and bundle/DEPENDENCIES.txt for limitations.</p>
+</main></body></html>
 '''
 
 
@@ -65,6 +63,7 @@ def digest(path):
 
 def package(source, destination, archive=None):
     source, _ = validated_bundle(source)
+    functional = json.loads((source / 'bundle.json').read_text()).get('schema') == 'lemmasim-browser-qemu-tci/1'
     destination = Path(destination).absolute()
     if (destination.exists() or destination.is_relative_to(source)
             or any(p.is_symlink() for p in destination.parents)):
@@ -80,20 +79,38 @@ def package(source, destination, archive=None):
     shutil.copytree(source, destination / 'bundle', symlinks=False)
     (destination / 'tools').mkdir()
     inputs = {}
-    for original, installed in [('scripts/lemmasim_browser.py', 'tools/lemmasim_browser.py'),
+    launchers = [('scripts/lemmasim_browser.py', 'tools/lemmasim_browser.py'),
                                 ('scripts/silicon_guest_bundle.py', 'tools/silicon_guest_bundle.py'),
                                 ('scripts/usb_closure_recovery_deployment.py', 'tools/usb_closure_recovery_deployment.py'),
                                 ('scripts/package_companion_deployment.py', 'tools/package_companion_deployment.py'),
                                 ('scripts/package_entry2_deployment.py', 'tools/package_entry2_deployment.py'),
                                 ('scripts/companion_reader_deployment.py', 'tools/companion_reader_deployment.py'),
                                 ('scripts/chooser_reader_deployment.py', 'tools/chooser_reader_deployment.py'),
-                                ('sim/browser/serve_local.py', 'serve.py')]:
+                                ('sim/browser/serve_local.py', 'serve.py')]
+    if functional:
+        launchers.append(('scripts/lemmasim_browser_tci.py', 'tools/lemmasim_browser_tci.py'))
+    for original, installed in launchers:
         inputs[original] = digest(ROOT / original)
         shutil.copyfile(ROOT / original, destination / installed)
         if digest(destination / installed) != inputs[original]:
             raise ValueError('Launcher source changed during packaging')
     (destination / 'NOTICE.txt').write_text(NOTICE)
-    (destination / 'README.md').write_text(README)
+    usage = USAGE_HTML
+    if functional:
+        start = usage.index('<p>Student, Developer and Laboratory')
+        end = usage.index('</p>', start) + 4
+        usage = usage[:start] + '''<p>This explicit functional QEMU/TCI embodiment runs the shared Lean guest,
+requires Wasm64 and a 2 GiB host Wasm heap, and currently has an identified
+Chromium 155/Linux boot result. Exact TCI checkpoints and sealed replay are
+unsupported. Cold recovery from actual Save bytes is separate. Student,
+Developer and Laboratory preserve guest authority. The host presents controller
+pixels and DAC samples only; it owns no notebook, recovery or mathematical policy.
+Use <code>python3 -I serve.py --verify-only</code> and
+<code>python3 -I serve.py --port 8787</code>. The extracted launcher uses the
+included audited dependency policy with Python's POSIX modules; Windows launch
+is not qualified. Stop with Ctrl-C. No remote service is contacted. Packaging
+and static serving do not establish whole-workbook or real-time acceptance.</p>''' + usage[end:]
+    (destination / 'usage.html').write_text(usage)
     validated_bundle(destination / 'bundle')
     if digest(destination / 'bundle/bundle.json') != source_manifest:
         raise ValueError('Original machine manifest changed')
@@ -101,7 +118,7 @@ def package(source, destination, archive=None):
              for p in sorted(destination.rglob('*')) if p.is_file()}
     if sum(row['bytes'] for row in files.values()) > 1 << 30:
         raise ValueError('Distribution exceeds one GiB')
-    manifest = {'schema': 'lemma-local-browser-distribution/1',
+    manifest = {'schema': 'lemma-local-browser-distribution/3' if functional else 'lemma-local-browser-distribution/2',
                 'scope': 'Prepared exact machine and standalone local launch; no new guest acceptance claim',
                 'source_bundle_sha256': source_manifest,
                 'producer': {'path': 'scripts/package_browser.py', 'sha256': digest(Path(__file__))},

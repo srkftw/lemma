@@ -220,6 +220,9 @@ class TimerBindingTests(unittest.TestCase):
             source = self.root / name
             source.parent.mkdir(parents=True, exist_ok=True)
             source.write_text("source:" + name)
+        # This fixture supplies the current HTML layout. Historical archive
+        # tests retain their original Markdown paths without this marker.
+        write_json(self.root / "docs/document-map.json", {"schema": "lemma-document-map/v1"})
         self.bind()
 
     def tearDown(self):

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lemma digital power/control v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lemma-digital-powercontrol-v1">Lemma digital power/control v1</h1>
+<p><code>lemma-silicon-dev/0.3.0</code> extends the preserved 0.2 binding with a digital
+power/control subwindow at <code>0x10010500</code>, 256 bytes, and PLIC source14. It uses
+descriptor ABI4; word25 is the power base. The existing descriptor, paper
+aperture, memory, geometry, durable records and device ABIs remain unchanged.
+The DTB declares <code>lemma,power-v1</code>. Historical profiles do not expose this device.</p>
+<p>All registers use aligned little-endian 64-bit accesses. Unsupported offsets,
+sizes and writes produce a bus error and error2; malformed writes have no
+requested power effect. Magic is <code>0x4c505752</code>; version is1.</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Read</th>
+<th>Write</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>Magic</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Version</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>16</td>
+<td>State:0 RUN,1 SUSPENDED</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>24</td>
+<td>Error:0 none,1 BUSY,2 invalid</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>32</td>
+<td>Reset cause:1 cold,2 warm,3 legacy Laboratory cut</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>40</td>
+<td>Raw button level0/1</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>48</td>
+<td>Events:bit0 suspend request,bit1 wake</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>56</td>
+<td>Button rising-edge epoch, saturating u64</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>64</td>
+<td>Wake cause:0 none,1 button,2 authorized resume</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>72</td>
+<td>Zero</td>
+<td>Command1 suspend,2 resume</td>
+</tr>
+<tr>
+<td>80</td>
+<td>Zero</td>
+<td>W1C event mask0..3</td>
+</tr>
+<tr>
+<td>88</td>
+<td>Zero</td>
+<td>Clear error, value1 only</td>
+</tr>
+</tbody></table>
+<p>An admitted timestamped raw <code>button LEVEL</code> event changes only an external
+digital level. A rising edge increments the epoch, sets the request event in
+RUN, or changes SUSPENDED to RUN and sets wake event/cause1. A new rising event
+wins simultaneous acknowledgement. No host gesture or command requests guest
+suspend. PLIC14 is level asserted while events are pending.</p>
+<p>At one delivery cycle, the last admitted button level is sampled once. All raw
+rows remain captured in admission order. A paused press and release assigned
+the same delivery cycle therefore produce no rising edge. Pen ingress at that
+boundary uses the state before the button sample, including on wake.
+The successor admits any delivery cycle at or after virtual now and inserts it
+into the bounded device queue in timestamp order. Equal-time admission order
+is stable, so an earlier future button can be admitted while later pen samples
+are queued. Historical fast profiles retain their original monotone admission
+restriction. The wrapper records admission time separately from delivery time.</p>
+<p>Command1 rejects with BUSY if already suspended, a block queue/transfer,
+unconsumed block completion, paper update or fabric transaction is pending.
+The Lean driver additionally checks its pending request/completion state before
+issuing this command. Rejection neither drains nor cancels that operation.
+Successful suspend retains RAM, CPU and task contexts, timer/time phase,
+target/latch/visible panel state, durable base and volatile medium overlay.
+It does not save, flush, acknowledge storage or complete a refresh. The pen gets
+an explicit loss/resynchronization boundary through its existing RESET1
+semantics; its old head cannot become a new stroke without loss acknowledgement
+and a fresh release/contact boundary. Unadmitted pen/UART queues and future
+scheduled pen/UART events are canceled; scheduled raw button events remain.
+New pen/UART input arriving while suspended is captured but discarded at its
+device boundary. Other device registers are not reset.</p>
+<p>The kernel consumes power-button requests, reports acceptance/BUSY, and enters
+cooperative suspend by withholding User dispatch and executing the existing
+S-mode WFI path until a wake is admitted. Timers and controller clocks continue.
+Spurious WFI/timer returns do not resume User tasks. This is a functional
+cooperative suspend policy, not CPU clock gating, electrical sequencing,
+battery-life measurement or watchdog implementation. The separately named
+power endpoint and syscall68 authorize notebook control; arbitrary endpoints
+and the store&#39;s block grant confer no power authority.
+The power-enabled boot selects volatile object-table version2, with word24
+equal to5 and a five-endpoint limit. Historical version1 requires word24 zero
+and retains its four-endpoint limit. Other versions/limits fail validation.
+The global sixteen-object budget, eight-Reply budget, key generations, row
+layout and capability rights are unchanged. The fifth object is the separately
+granted power authority; it does not alias surface, input, block or document
+authority. This volatile successor changes no durable notebook format.
+An accepted syscall68 suspend stores the advanced User PC and reply, marks the
+task ready, and returns the actual supervisor continuation before any User
+instruction can execute. Command2 in RUN is a harmless no-op clearing error.
+An observed wake takes priority over an older simultaneously observed request.
+The kernel acknowledges those observed bits and does not reissue suspend from
+that old request; a new edge at the acknowledgement boundary remains pending.</p>
+<p>Warm reset clears RUN/error/events/wake state and reports cause2, retaining the
+button epoch/physical level. Cold reset reports cause1, epoch0 and level0.
+Existing machine reset retention/cancellation rules still apply. Snapshot state
+includes every controller field, physical button level, scheduled button event,
+event cursor and execution/time phase; live host handles remain external.</p>
+<p>The preserved RTL-only raw Laboratory <code>reset</code> event reports cause3: it performs the
+historical processor/controller reset, clears the volatile medium overlay,
+and retains wrapper RAM. It is distinct from the lifecycle cold power cycle,
+which creates cold device state from permitted durable backing.</p>
+<p>Actual Lean observation records are <code>0x440 SOURCE STATUS STATE EPOCH</code> for
+request decisions (source1 raw button,2 authorized syscall; status0 accepted,
+196 BUSY,197 invalid), <code>0x441 WAKE_CAUSE EPOCH TIME 0</code> for wake, and
+<code>0x442 RESET_CAUSE EPOCH BUTTON_LEVEL 0</code> after validated boot initialization.
+They are guest UART output, not fabricated host completion records.</p>
+</main>
+</body>
+</html>

@@ -100,7 +100,7 @@ class PublishTests(unittest.TestCase):
         self.assertFalse(self.did_create())
     def test_dirty_worktree_refused(self):
         self.prepare_git()
-        (self.root/'README.md').write_text('Unreviewed change\n')
+        (self.root/'docs/overview.html').write_text('Unreviewed change\n')
         p = self.run_publish()
         self.assertNotEqual(p.returncode,0)
         self.assertFalse(self.did_create())

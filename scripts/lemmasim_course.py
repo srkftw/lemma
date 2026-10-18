@@ -15,7 +15,8 @@ from course_await_deployment import CONFIGURATIONS as AWAIT_CONFIGURATIONS
 from package_closure_deployment import CONFIGURATIONS as PACKAGE_CONFIGURATIONS
 from package_companion_deployment import ALL_CONFIGURATIONS as USB_PACKAGE_CONFIGURATIONS
 CANONICAL_CONFIGURATIONS=LEGACY_CONFIGURATIONS+AWAIT_CONFIGURATIONS+PACKAGE_CONFIGURATIONS
-CONFIGURATIONS=CANONICAL_CONFIGURATIONS+USB_PACKAGE_CONFIGURATIONS
+MULTIMODAL_CONFIGURATIONS=('lemmasim-silicon-multimodal-notebook','lemmasim-silicon-multimodal-parameterized-notebook')
+CONFIGURATIONS=CANONICAL_CONFIGURATIONS+USB_PACKAGE_CONFIGURATIONS+MULTIMODAL_CONFIGURATIONS
 MAGIC=0x31504b43414d454c
 
 def frame(operation,identity,edition,count,transaction,crc):
@@ -36,13 +37,14 @@ def send(args):
     if metadata.get('schema')!='lemmasim-live/1' or metadata.get('mode') not in ('developer','laboratory') or metadata.get('backend')!='rtl':
         raise ValueError('Course command requires a canonical RTL Developer/Laboratory session')
     identity=metadata.get('identity',{})
-    if identity.get('profile') not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.13.0'):
+    if identity.get('profile') not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.13.0','lemma-silicon-dev/0.14.0'):
         raise ValueError('Course command requires an exact admitted course hardware profile')
     argv=metadata.get('argv',[])
     if argv.count('--image')!=1:raise ValueError('Course session lacks an exact guest image')
     image=Path(argv[argv.index('--image')+1]); build=json.loads((image.parent/'build.json').read_text())
     configuration=build.get('configuration')
-    expected_profile=('lemma-silicon-dev/0.13.0' if configuration in USB_PACKAGE_CONFIGURATIONS else
+    expected_profile=('lemma-silicon-dev/0.14.0' if configuration in MULTIMODAL_CONFIGURATIONS else
+                      'lemma-silicon-dev/0.13.0' if configuration in USB_PACKAGE_CONFIGURATIONS else
                       'lemma-silicon-dev/0.3.0' if configuration in CANONICAL_CONFIGURATIONS else None)
     if expected_profile is None or identity.get('profile')!=expected_profile or hashlib.sha256(image.read_bytes()).hexdigest()!=identity.get('guest'):
         raise ValueError('Course command requires the exact audited course guest deployment')

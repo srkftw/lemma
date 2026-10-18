@@ -1,0 +1,55 @@
+{
+  "schema": "lemma-tci-public-sources/1",
+  "qemu": "11.1.1",
+  "host_sdk": "Emscripten6.0.9 pinned by repository flake.lock Nixpkgs",
+  "sources": [
+    {
+      "url": "https://download.qemu.org/qemu-11.1.1.tar.xz",
+      "filename": "qemu-11.1.1.tar.xz",
+      "sha256": "079ffbff8a7111bbc89022107cbabf3bbfd614d5fc9d7cc675991196aca12482",
+      "bytes": 141888716
+    },
+    {
+      "url": "https://zlib.net/zlib-1.3.2.tar.xz",
+      "sha256": "d7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3",
+      "bytes": 1320064,
+      "filename": "zlib-1.3.2.tar.xz"
+    },
+    {
+      "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+      "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc",
+      "bytes": 1423124,
+      "filename": "libffi-3.5.2.tar.gz"
+    },
+    {
+      "url": "https://cairographics.org/releases/pixman-0.44.2.tar.gz",
+      "sha256": "6349061ce1a338ab6952b92194d1b0377472244208d47ff25bef86fc71973466",
+      "bytes": 813915,
+      "filename": "pixman-0.44.2.tar.gz"
+    },
+    {
+      "url": "https://download.gnome.org/sources/glib/2.84/glib-2.84.0.tar.xz",
+      "sha256": "f8823600cb85425e2815cfad82ea20fdaa538482ab74e7293d58b3f64a5aff6a",
+      "bytes": 5613328,
+      "filename": "glib-2.84.0.tar.xz"
+    },
+    {
+      "url": "https://gitlab.com/qemu-project/dtc/-/archive/b6910bec11614980a21e46fbccc35934b671bd81/dtc-b6910bec11614980a21e46fbccc35934b671bd81.tar.gz",
+      "filename": "dtc-b6910bec11614980a21e46fbccc35934b671bd81.tar.gz",
+      "sha256": "e115f987eec23a1ba25150a46ced1675de3716072d3b4905afb3a9cda0f007c7",
+      "bytes": 205556
+    },
+    {
+      "url": "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.44/pcre2-10.44.tar.bz2",
+      "filename": "pcre2-10.44.tar.bz2",
+      "sha256": "d34f02e113cf7193a1ebf2770d3ac527088d485d4e047ed10e5d217c6ef5de96"
+    },
+    {
+      "url": "https://wrapdb.mesonbuild.com/v2/pcre2_10.44-2/get_patch",
+      "filename": "pcre2_10.44-2_patch.zip",
+      "sha256": "4336d422ee9043847e5e10dbbbd01940d4c9e5027f31ccdc33a7898a1ca94009"
+    }
+  ],
+  "firmware": "QEMU roms subtree excluded; no firmware blobs built/used, RV64 -bios none only",
+  "rights": "QEMU GPL-2.0-or-later; GLib LGPL-2.1-or-later; libffi MIT; pixman MIT; zlib Zlib; PCRE2 BSD-3-Clause; DTC GPL-2.0-or-later. Preserve upstream LICENSE/COPYING per actual block; no project-wide redistribution qualification."
+}

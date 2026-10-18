@@ -11,7 +11,7 @@ PREPARED=ROOT/'build/lemmasim/rtl-prepared.json'
 MAX_RUN_SECONDS=7200
 CONFIGURATIONS={'service':'silicon-service-development', 'notebook':'lemmasim-silicon-notebook',
                 'initializer':'lemmasim-silicon-initialize','devices':'lemmasim-silicon-devices'}
-NOTEBOOK_WORKLOADS=frozenset({'notebook','managed-notebook','usb-bulk-notebook','usb-next-bulk-notebook','usb-wire-bulk-notebook','usb-clocked-bulk-notebook','usb-clocked-retry-bulk-notebook','usb-clocked-closure-retry-bulk-notebook','usb-clocked-package-retry-bulk-notebook','usb-clocked-package-entry2-bulk-notebook','usb-clocked-reader-entry2-bulk-notebook'})
+NOTEBOOK_WORKLOADS=frozenset({'parameterized-notebook','notebook','managed-notebook','usb-bulk-notebook','usb-next-bulk-notebook','usb-wire-bulk-notebook','usb-clocked-bulk-notebook','usb-clocked-retry-bulk-notebook','usb-clocked-closure-retry-bulk-notebook','usb-clocked-package-retry-bulk-notebook','usb-clocked-package-entry2-bulk-notebook','usb-clocked-reader-entry2-bulk-notebook'})
 POWER_CONFIGURATIONS={'managed-notebook':'lemmasim-silicon-managed-notebook','managed-initializer':'lemmasim-silicon-managed-initialize','notebook':'lemmasim-silicon-power-notebook','initializer':'lemmasim-silicon-power-initialize','power':'lemmasim-silicon-power-probe'}
 FULL_CONFIGURATIONS={'notebook':'lemmasim-silicon-full-notebook', 'initializer':'lemmasim-silicon-full-initialize'}
 BLE_CONFIGURATIONS={'ble':'lemmasim-silicon-ble-link-probe'}
@@ -40,10 +40,16 @@ USB_PACKAGE_ENTRY2_CONFIGURATIONS={'usb-clocked-package-entry2-bulk-notebook':'l
 
 from silicon_guest_bundle import USB_COMPANION_READER_CONFIGURATIONS
 def configurations(name=None):
+    if name=="lemma-silicon-dev/0.14.0":
+        profile(name)
+        return {"notebook":"lemmasim-silicon-multimodal-notebook","initializer":"lemmasim-silicon-multimodal-initialize","parameterized-notebook":"lemmasim-silicon-multimodal-parameterized-notebook","parameterized-initializer":"lemmasim-silicon-multimodal-parameterized-initialize"}
     if name!=USB_CLOCKED_PROFILE_NAME:profile(name)
     if name==USB_CLOCKED_PROFILE_NAME:return {**USB_CLOCKED_CONFIGURATIONS,**USB_RECOVERY_CONFIGURATIONS,**USB_CLOSURE_RECOVERY_CONFIGURATIONS,**USB_PACKAGE_RECOVERY_CONFIGURATIONS,**USB_PACKAGE_ENTRY2_CONFIGURATIONS,**USB_COMPANION_READER_CONFIGURATIONS}
     return USB_CLOCKED_CONFIGURATIONS if name=='lemma-silicon-dev/0.13.0' else USB_WIRE_CONFIGURATIONS if name=='lemma-silicon-dev/0.11.0' else PRODUCT_EXECUTED_CONFIGURATIONS if name=='lemma-silicon-dev/0.10.0' else PRODUCT_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.9.0' else USB_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.8.0' else USB_CONFIGURATIONS if name=='lemma-silicon-dev/0.6.0' else BLE_CONFIGURATIONS if name=='lemma-silicon-dev/0.5.0' else SAFETY_CONFIGURATIONS if name=='lemma-silicon-dev/0.4.0' else POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
 def prepared_path(name=None):
+    if name=="lemma-silicon-dev/0.14.0":
+        profile(name)
+        return ROOT/"build/lemmasim/rtl-prepared-0.14.0.json"
     if name!=USB_CLOCKED_PROFILE_NAME:profile(name)
     return ROOT/'build/lemmasim/rtl-prepared-0.13.0.json' if name=='lemma-silicon-dev/0.13.0' else ROOT/'build/lemmasim/rtl-prepared-0.11.0.json' if name=='lemma-silicon-dev/0.11.0' else ROOT/'build/lemmasim/rtl-prepared-0.10.0.json' if name=='lemma-silicon-dev/0.10.0' else ROOT/'build/lemmasim/rtl-prepared-0.9.0.json' if name=='lemma-silicon-dev/0.9.0' else ROOT/'build/lemmasim/rtl-prepared-0.8.0.json' if name=='lemma-silicon-dev/0.8.0' else ROOT/'build/lemmasim/rtl-prepared-0.6.0.json' if name=='lemma-silicon-dev/0.6.0' else ROOT/'build/lemmasim/rtl-prepared-0.5.0.json' if name=='lemma-silicon-dev/0.5.0' else ROOT/'build/lemmasim/rtl-prepared-0.4.0.json' if name=='lemma-silicon-dev/0.4.0' else ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
 
@@ -455,7 +461,7 @@ def build(args):
         raise ValueError('Product hardware requires immutable ROM boot and its separate boot-medium launcher')
     workload=getattr(args,'workload',None) or 'service'
     if workload not in selected:raise ValueError('Workload is not admitted by the selected binding')
-    out=(getattr(args,'rtl_build',None) or ROOT/('build/silicon/compute-'+name.split('/')[1] if name!='lemma-silicon-dev/0.1.0' else 'build/silicon/compute')).resolve();dep=ROOT/'build/silicon/deps/cvw'
+    out=(getattr(args,'rtl_build',None) or ROOT/('build/silicon/compute-'+name.split('/')[1] if name!='lemma-silicon-dev/0.1.0' else 'build/silicon/compute')).resolve();dep=(getattr(args,'deps',None) or ROOT/'build/silicon/deps/cvw').resolve()
     archive_sources=archive_evidence=None
     if archive_root is not None:
         if getattr(args,'rtl_build',None) is None:raise ValueError('--rtl-source-root requires an explicit --rtl-build')
@@ -467,7 +473,7 @@ def build(args):
         except (OSError,ValueError):pass
         if cached is None or cached.get('configuration')!='external-ram-128MiB' or any(cached.get(k)!=v for k,v in current.items()) or not (out/'obj/lemma-rtl').is_file() or cached.get('binary_sha256')!=sha(out/'obj/lemma-rtl'):
             if getattr(args,'rtl_build',None):raise ValueError('Supplied RTL build differs from current exact source closure')
-            run_command(['python3','scripts/silicon_compute.py','build','--profile',name,'--output-dir',out],timeout=1200)
+            run_command(['python3','scripts/silicon_compute.py','build','--profile',name,'--output-dir',out,'--deps',dep],timeout=1200)
             cached=json.loads((out/'build.json').read_text())
     stamp=str(time.time_ns());directory=ROOT/f'build/silicon/prepared-{stamp}'
     directory.mkdir(parents=True)

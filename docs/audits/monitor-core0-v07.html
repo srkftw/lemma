@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gate 9 compiled monitor construction contract</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="gate-9-compiled-monitor-construction-contract">Gate 9 compiled monitor construction contract</h1>
+<p>Status: Gate 9 accepted at clean implementation
+<code>8fd45d8458f4901c7a2d4debcb60ebd71f18a39c</code>
+(tree <code>965b550c576f80284a1a24c427d9704b517d160d</code>). Gate 10 integrated
+qualification remains separate; this is not G1/G2 or OS completion.
+The monitor reuses <code>core0-v0.7</code>; it adds neither a source-language primitive nor
+machine glue. Its closed category is <code>test-monitor-image</code>, ABI <code>lemma-monitor-v1</code>.
+The elaborated roots are <code>Monitor.foreground</code> and the existing nine-word
+<code>Timer.dispatch</code>. All parsing, dispatch, buffer algorithms and encoding remain
+compiled Lean. The only linked objects remain <code>program.o</code> and <code>startup.o</code>.</p>
+<h2 id="wire-and-bounds">Wire and bounds</h2>
+<p>Requests are <code>LMQ9</code>, version 1, command byte, payload length byte, zero flags,
+little-endian UInt64 request ID, then at most 32 payload bytes. The header is
+16 bytes. Responses are exactly 48 bytes: <code>LMS9</code>, version 1, status byte,
+length 32, zero flags, the same ID and four little-endian UInt64 values.
+The compiled READY banner is <code>LEMMA_MONITOR/1\nREADY\n</code>.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Command</th>
+<th>Payload bytes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>HELLO</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>STATUS</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3</td>
+<td>EVAL</td>
+<td>32</td>
+</tr>
+<tr>
+<td>4</td>
+<td>FILL</td>
+<td>24</td>
+</tr>
+<tr>
+<td>5</td>
+<td>CHECKSUM</td>
+<td>16</td>
+</tr>
+<tr>
+<td>6</td>
+<td>TRAP_TEST</td>
+<td>8</td>
+</tr>
+<tr>
+<td>7</td>
+<td>TIMER_START</td>
+<td>8</td>
+</tr>
+<tr>
+<td>8</td>
+<td>TIMER_STOP</td>
+<td>0</td>
+</tr>
+<tr>
+<td>9</td>
+<td>TICKS</td>
+<td>16</td>
+</tr>
+<tr>
+<td>10</td>
+<td>EXIT</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p>HELLO&#39;s tag is ASCII <code>LEMMON01</code>, bytes <code>4c454d4d4f4e3031</code>, loaded little-endian
+as <code>0x31304e4f4d4d454c</code>. Its other words identify v0.7, machine profile 1 and
+the ten-command capability mask <code>0x3ff</code>. STATUS reports complete bounded
+requests handled (including malformed ones), recoverable errors, synchronous
+recoveries and the last work checksum. The current request increments the
+handled count before validation/dispatch. Session capacity is 256 requests;
+only a successfully checked EXIT returns ordinary status zero to the finisher.</p>
+<p>Known bounded headers with wrong magic/version/flags consume their declared
+payload, reply 14 and recover. Wrong command length replies 16, unknown commands
+17. Oversize payload lengths terminate 16 without a reply; missing input is 12,
+partial header/payload is 15. UART statuses 11/13 remain terminal. Internal fold
+stop status 10 is consumed, never sent as a public response. Error responses
+normally contain four zero words; context/missing-event errors may carry the
+observed mismatch/count. Transport/protocol/process/timeout failures are not
+credited as successful behavioral feature tests.</p>
+<p>Parser scratch offsets are 0--47. The user buffer is disjoint, logical
+<code>[0,3840)</code> mapped to scratch offsets 256--4095 and initialized to zero. Bounds
+establish <code>offset &lt;= 3840</code> and <code>length &lt;= 3840-offset</code> before addition/narrowing.
+A zero-length interval at offset 3840 is valid. FILL rejects values above 255
+before truncation and writes only after complete preflight. CHECKSUM is wrapping
+UInt64 byte sum. Lifetime counters occupy events offsets 128--152, outside
+timer initialization 0--127 and below the low ring guard at 240.
+Private events word 160 retains the shutdown-work checksum, seeded from runtime
+count, so optimization cannot erase the STOP stability-test work.</p>
+<h2 id="integration-and-evidence-premises">Integration and evidence premises</h2>
+<p>EVAL selectors add/xor fresh arguments or execute bounded 128-step mixing quanta.
+The IRQ-progress selector observes actual hardware count advancement while
+running useful work, with a finite one-million-quanta ceiling. Host reference
+mixing is independent and based on the reported completed quanta, not elapsed
+time. TRAP_TEST invokes only the fixed authorized ECALL/EBREAK primitives and
+checks context and the compiled dispatch&#39;s actual recovery-count increment.</p>
+<p>TIMER_START admits 10,000--1,000,000 ticks (1--100 ms at the pinned timebase),
+validates the deadline domain, arms with interrupts masked, witnesses
+pending with zero entries, then runs the full asynchronous register probe and
+requires a real entry before returning. TIMER_STOP masks, clears MTIE, parks
+compare at MAX, marks inactive, and checks stable count during bounded work.
+It does not require instantaneous MTIP deassertion. TICKS atomically snapshots
+counters/timing/state or peeks/pops a checked ring record under saved/masked MIE,
+restoring it before UART formatting. EXIT stops, checks guards, replies and drains.
+The immutable hardware references and no-NMI/full-frame/non-nesting premises
+remain those of <a href="timers-core0-v07.html">Gate 8</a>.</p>
+<p>The monitor&#39;s minimum period is deliberately narrower than the lower-level
+Core0/Gate 8 deadline policy. An actual development period-one request failed
+to return within three seconds (retained at
+<code>build/foundation/gate9-period1-diagnostic-eoo8qb_n</code>); QEMU was killed/reaped.
+Continuous pending delivery can starve foreground progress when ISR work exceeds
+the requested period. Requests below 10,000 now receive bounded status 22 rather
+than arming. This is an empirically qualified diagnostic policy, not a proof of
+worst-case service time or a hard-real-time guarantee.</p>
+<p>Clean acceptance used differing post-boot request streams against one ELF per
+profile, including malformed frames, denied intervals, real trap recovery,
+hardware progression/overflow/wrap, checked records, restart and shutdown.
+The 18 boots handled 1,598 requests, observed 1,461 hardware IRQs and 20
+synchronous recoveries, and checked 192 retained ring records. The shared source
+also passed 50 source probes and four rejection fixtures. Reports and raw
+frames are under <code>build/foundation/gate9-clean-8fd45d8</code>; aggregate SHA-256 is
+<code>69e37da2266a4c89ddd18243600da1da52300c7edbebe264eae9033bf3841ca6</code>.</p>
+<p>The exact final closure is 139 compiled functions and 16 structured startup
+functions, 28 named CSR operations, three timer MMIO sites and six UART sites.
+O0 foreground/dispatcher stack chains are 3,776/976 bytes, below their checked
+65,520/16,048-byte capacities. The pre/post LLVM audit independently checks
+volatile memory guards, machine primitive calls, UART/fence sequence, source
+effects and STOP work retention. Final disassembly, ELF, relocation and two-object
+provenance checks are separate from tests and the conditional Gate 8 model lemmas.</p>
+<p>This document does not establish a general
+compiler proof, hard-real-time behavior, isolation, physical compatibility,
+managed runtime, scheduler or G1/G2 completion.</p>
+</main>
+</body>
+</html>

@@ -10,7 +10,7 @@ companion=a.companion_source or r/'sim/companion'
 # Keep this host presentation correction confined to the derived binary.
 f=s/'ui/ui-qmp-cmds.c';text=f.read_text();needle='                                  pixman_image_get_stride(linebuf), errp) < 0) {';assert text.count(needle)==1
 f.write_text(text.replace(needle,'                                  width * 3, errp) < 0) {'))
-for name in ['lemma_qemu.c','lemma_model.c','lemma_model.h','lemma_device_abi.h','lemma_power_abi.h','lemma_fast_block.c']:
+for name in ['lemma_qemu.c','lemma_model.c','lemma_model.h','lemma_device_abi.h','lemma_power_abi.h','lemma_fast_block.c','lemma_multimodal.c','lemma_multimodal.h','lemma_multimodal_qemu.inc.c']:
     shutil.copyfile(host/name,s/'hw/riscv'/name)
 shutil.copyfile(host/'lemma_durable.c',s/'block/lemma-durable.c')
 for directory,origin,names in [('host',host,['backing_io.h','backing_io.cpp','backing_io_posix.h','backing_io_posix.cpp']),
@@ -66,10 +66,10 @@ definition='''# @BlockdevOptionsLemmaDurable:
 '''
 text=text.replace(needle,definition+needle);f.write_text(text)
 f=s/'hw/riscv/meson.build';text=f.read_text();old="riscv_ss.add(when: 'CONFIG_RISCV_VIRT', if_true: files('virt.c'))";assert text.count(old)==1
-f.write_text(text.replace(old,"riscv_ss.add(when: 'CONFIG_RISCV_VIRT', if_true: files('virt.c', 'lemma_qemu.c', 'lemma_model.c', 'lemma_fast_block.c', 'host/backing_io.cpp', 'host/backing_io_posix.cpp', 'companion/backing_peer.cpp', 'companion/backing_c.cpp'))"))
+f.write_text(text.replace(old,"riscv_ss.add(when: 'CONFIG_RISCV_VIRT', if_true: files('virt.c', 'lemma_qemu.c', 'lemma_model.c', 'lemma_multimodal.c', 'lemma_fast_block.c', 'host/backing_io.cpp', 'host/backing_io_posix.cpp', 'companion/backing_peer.cpp', 'companion/backing_c.cpp'))"))
 if profile['profile']=='lemma-silicon-dev/0.4.0':
-    f=s/'hw/riscv/meson.build';text=f.read_text();needle="'lemma_model.c', 'lemma_fast_block.c'";assert text.count(needle)==1
-    f.write_text(text.replace(needle,"'lemma_model.c', 'lemma_power_safety.c', 'lemma_power_clock.c', 'lemma_fast_block.c'"))
+    f=s/'hw/riscv/meson.build';text=f.read_text();needle="'lemma_model.c', 'lemma_multimodal.c', 'lemma_fast_block.c'";assert text.count(needle)==1
+    f.write_text(text.replace(needle,"'lemma_model.c', 'lemma_multimodal.c', 'lemma_power_safety.c', 'lemma_power_clock.c', 'lemma_fast_block.c'"))
 f=s/'hw/riscv/virt.c';text=f.read_text();text=text.replace('#include \"qemu/osdep.h\"','#include \"qemu/osdep.h\"\n#include <libfdt.h>\n#include \"lemma_silicon_fast.h\"')
 anchor='static void virt_machine_done(Notifier *notifier, void *data)';assert text.count(anchor)==1
 text=text.replace(anchor,'void lemma_binding_create(MachineState *, DeviceState *);\nvoid lemma_binding_add_fdt(MachineState *);\nvoid lemma_binding_set_dtb(uint64_t, uint64_t);\nvoid lemma_fast_block_create(MachineState *, DeviceState *);\n\n'+anchor)

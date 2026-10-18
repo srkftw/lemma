@@ -1,0 +1,33 @@
+Passive electrode interface and converter-input functional bench
+* SPDX-License-Identifier: Apache-2.0
+* No body connection. Voltages are simulator stimuli; not qualified protection.
+* Public dantenna model is used in its declared reverse-bias direction.
+* B amplifier is an explicitly ideal, rail-limited functional placeholder.
+.include ihp-diodes.lib
+.options reltol=1e-5 abstol=1e-12
+Vbias bias 0 1.65
+Vsignal signal 0 SIN(0 100u 10)
+Vfault fault 0 PWL(0 0 350m 0 350.001m 13 360m 13 360.001m 0 500m 0)
+Binput raw 0 V=1.65+V(signal)+V(fault)
+Vconnected connected 0 PWL(0 1 420m 1 420.001m 0 500m 0)
+Scontact raw contact connected 0 CONTACT
+.model CONTACT SW(Ron=1 Roff=1e12 Vt=0.5 Vh=0.05)
+Rprotect contact normal 110k
+Rweak contact weak 1.1meg
+Cnormal normal bias 10n
+Cweak weak bias 10n
+Rreturn normal bias 1g
+Rweakreturn weak bias 1g
+Xnormal 0 normal dantenna l=10u w=10u
+Xweak 0 weak dantenna l=10u w=10u
+Bamp out 0 V=min(max(1.65+1000*(V(normal)-1.65),0.2),3.1)
+Bweak outweak 0 V=min(max(1.65+1000*(V(weak)-1.65),0.2),3.1)
+.tran 20u 500m 0 20u
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata electrode.dat v(signal) v(raw) v(contact) v(normal) v(weak) v(out) v(outweak) v(connected)
+quit
+.endc
+.end

@@ -1,0 +1,191 @@
+{
+  "schema": "lemma-multimodal-engineering-observation/1",
+  "status": "PASS",
+  "sources": {
+    "engineering/multimodal/bone-driver.cir": "b38bb7cc05b51cabc8d12a42246998975353444463eeab15ba7cf54feb56b21b",
+    "engineering/multimodal/contact-optics.scad": "e99d27f89e1b83f791c783270421eecc5ae723335aceb414c93ba3257a1d2f68",
+    "engineering/multimodal/electrode.cir": "0a0dfe6c5b34938af282de639c9350b966377609a73b07847a2402ba80185dc0",
+    "engineering/multimodal/microphone.cir": "c80e7c787180263cde76bf4088cb739ec13f036a48e2bf59b3b2221820ce7772",
+    "engineering/multimodal/optical.cir": "52f3d9d6db1b4b3e0271a0a3623b8eb4fd3d8521060d0925ad9369f3ad598430",
+    "engineering/multimodal/provenance.json": "7f5b09eb8616768bb89c10827de3c062f0e6e75c31c531a79da16bf938ed6c37",
+    "scripts/check_multimodal_engineering.py": "f06470b5ea6e477411d926ae742210290bb45d74fc3f69c1b686232b579af6b7"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+        "-b",
+        "-o",
+        "electrode.log",
+        "electrode.cir"
+      ],
+      "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/engineering-a2"
+    },
+    {
+      "argv": [
+        "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+        "-b",
+        "-o",
+        "optical.log",
+        "optical.cir"
+      ],
+      "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/engineering-a2"
+    },
+    {
+      "argv": [
+        "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+        "-b",
+        "-o",
+        "microphone.log",
+        "microphone.cir"
+      ],
+      "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/engineering-a2"
+    },
+    {
+      "argv": [
+        "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+        "-b",
+        "-o",
+        "bone-driver.log",
+        "bone-driver.cir"
+      ],
+      "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/engineering-a2"
+    },
+    {
+      "argv": [
+        "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+        "-b",
+        "-o",
+        "electrode-no-diode-control.log",
+        "electrode-no-diode-control.cir"
+      ],
+      "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/engineering-a2"
+    }
+  ],
+  "scope": "synthetic nominal circuit transient; separate from machine/RTL, physical safety and human learning",
+  "cad": "SOURCE_ONLY; OpenSCAD was not executed",
+  "timeout_seconds_per_command": 30,
+  "model": {
+    "commit": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "path": "ihp-sg13g2/libs.tech/ngspice/models/diodes.lib",
+    "sha256": "66fa37819fa8a5c8af4dbb85f11208c3e38faa49c117de55c35a1538786715e8",
+    "retained_original": "ihp-diodes.lib"
+  },
+  "tool": {
+    "path": "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+    "sha256": "689be776737abed4fc759d872c594ad935e2e9ba38487c8c0b95f0d84fdc53a8",
+    "version": "******\n** ngspice-45 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Sun Aug 31 14:24:01 UTC 2025\n******\n"
+  },
+  "consumed_input_copies": {
+    "ihp-diodes.lib": "66fa37819fa8a5c8af4dbb85f11208c3e38faa49c117de55c35a1538786715e8",
+    "microphone.cir": "c80e7c787180263cde76bf4088cb739ec13f036a48e2bf59b3b2221820ce7772",
+    "bone-driver.cir": "b38bb7cc05b51cabc8d12a42246998975353444463eeab15ba7cf54feb56b21b",
+    "optical.cir": "52f3d9d6db1b4b3e0271a0a3623b8eb4fd3d8521060d0925ad9369f3ad598430",
+    "electrode.cir": "0a0dfe6c5b34938af282de639c9350b966377609a73b07847a2402ba80185dc0",
+    "IHP-LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "electrode-no-diode-control.cir": "31f81b83ffc54dfee214d40373501c4c4d63dd63800b9f7c9f1df8bc0d0a33e4"
+  },
+  "observations": {
+    "electrode": {
+      "rc_fit": [
+        {
+          "channel": "v(out)",
+          "volts_peak": 0.09974990921040591,
+          "independent_rc_expected": 0.09975108301500712
+        },
+        {
+          "channel": "v(outweak)",
+          "volts_peak": 0.08219594951819711,
+          "independent_rc_expected": 0.08220252260649075
+        }
+      ],
+      "peak_series_current_A": 0.0001181270059090909,
+      "model_protected_peak_V": 13.1941815,
+      "no_diode_control_peak_V": 14.6470482,
+      "functional_output_range_V": [
+        1.53558384,
+        3.1
+      ]
+    },
+    "optical": {
+      "integrations": [
+        {
+          "cycle": 0,
+          "source": "v(sense1)",
+          "volts_integrated_minus_dark": 0.0007999762328001481,
+          "independent_charge_over_capacitance": 0.0007999999999999999
+        },
+        {
+          "cycle": 0,
+          "source": "v(sense2)",
+          "volts_integrated_minus_dark": 0.0015999399999999664,
+          "independent_charge_over_capacitance": 0.0015999999999999996
+        },
+        {
+          "cycle": 4,
+          "source": "v(sense1)",
+          "volts_integrated_minus_dark": 0.0015999500000001277,
+          "independent_charge_over_capacitance": 0.0015999999999999999
+        },
+        {
+          "cycle": 4,
+          "source": "v(sense2)",
+          "volts_integrated_minus_dark": 0.0031998799999999328,
+          "independent_charge_over_capacitance": 0.0031999999999999993
+        }
+      ],
+      "inhibited_conflict_samples": 64,
+      "corrupted_dark_delta_V": 0.000719329999999907,
+      "mid_exposure_reset_V": 1.0000011
+    },
+    "microphone": {
+      "channel1_peak_V": 0.09826935270824119,
+      "channel2_peak_V": 0.196538705396865,
+      "changed_gain_peak_V": 0.19653870544222576,
+      "muted_peak_V": 0.0
+    },
+    "bone_driver": {
+      "actual_pcm_peak_V": 0.3,
+      "post_mute_coil_current_A": 0.02413207470777585,
+      "post_mute_initial_energy_J": 2.969642794381633e-07,
+      "final_energy_J": 5.602951638842663e-28
+    },
+    "sample_rows": {
+      "electrode": 25061,
+      "optical": 7158,
+      "microphone": 10028,
+      "bone-driver": 8074
+    },
+    "tolerance": {
+      "relative_analog_nominal": 0.03,
+      "absolute_volts": 1e-08,
+      "scope": "analytical nominal R/C/charge/energy checks; no measured biological/acoustic/physical accuracy"
+    }
+  },
+  "elapsed_seconds": 0.8147936509922147,
+  "retained": {
+    "IHP-LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "bone-driver-invocation.log": "775f37d34c4ec2d733429a9ddfc102474e609b4d2d1a1f469c98492544e19735",
+    "bone-driver.cir": "b38bb7cc05b51cabc8d12a42246998975353444463eeab15ba7cf54feb56b21b",
+    "bone-driver.dat": "dbdc8b1b685ab0dfc2b0d0b964cd8cb8087b71bcdc83d8fc8e83087650cda8b1",
+    "bone-driver.log": "660bce05f1ea6821ab464c1e937de821f7715b68481a1c9387254b714cfbaf84",
+    "electrode-invocation.log": "0dd161baf3b907550c85b8b6f0b163e73f82b5ec7ab7727d6cd304c7c7c4a13e",
+    "electrode-no-diode-control-invocation.log": "8b25a43663a54ec103917bf27457e7a0199d8580f2676454fc33f56cafbc4613",
+    "electrode-no-diode-control.cir": "31f81b83ffc54dfee214d40373501c4c4d63dd63800b9f7c9f1df8bc0d0a33e4",
+    "electrode-no-diode-control.dat": "2516799c0ec49b58ca259fbffe63034f91b0bbe7f7a77c19b278f38f2c69acb4",
+    "electrode-no-diode-control.log": "90bbf17cc68efb26aa104703b4b02776cfaf139355e7d2067e47b387417e5a57",
+    "electrode.cir": "0a0dfe6c5b34938af282de639c9350b966377609a73b07847a2402ba80185dc0",
+    "electrode.dat": "d6f3be7ade4e161e6a0a74dbb89a4e29dcacb5da3f363481d07741ba8b429507",
+    "electrode.log": "ba8fe8b5c8dc1da9b5301c309314cd0449ffce8a6c1558426b71056830e407a2",
+    "ihp-diodes.lib": "66fa37819fa8a5c8af4dbb85f11208c3e38faa49c117de55c35a1538786715e8",
+    "microphone-invocation.log": "0eefb4951c88610066bd2c7b6474866cbb5a12c307fdc1d6e8510528709df400",
+    "microphone.cir": "c80e7c787180263cde76bf4088cb739ec13f036a48e2bf59b3b2221820ce7772",
+    "microphone.dat": "9fc9679f0ed0fb7a8e5490f724ac14f9cfe04eb1f6e6de8341c9fa4bff31dade",
+    "microphone.log": "2065b3d1c5465c80c510d2fe46f6a9cff13c2a4337fe90f23c22cc0cf0425280",
+    "ngspice-version.log": "e092e7a12f337df8306f197634896ea428adbd3de9f8211bb114840783a74625",
+    "optical-invocation.log": "a885299c54e70363629e9bb0a6815981a4cfb366005837571edd5a77974a9332",
+    "optical.cir": "52f3d9d6db1b4b3e0271a0a3623b8eb4fd3d8521060d0925ad9369f3ad598430",
+    "optical.dat": "32f8becaa7d03138dbe720d5cef20071f40b88455bde432efc66edbb73dd359b",
+    "optical.log": "bc65b2072690985c3ade1230d0e0e916773d37a6eaa7bcd5eeeca5bc2099b68f"
+  }
+}

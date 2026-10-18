@@ -1095,11 +1095,32 @@ def tool_text(name: str, args: list[str], root: Path) -> str:
     return result.stdout.decode("utf-8", errors="strict")
 
 
-def parse_definitions_and_calls(ir: str) -> tuple[set[str], set[str], set[str]]:
-    definitions = set(re.findall(r"^define\s+.*?@([A-Za-z0-9_.$-]+)\(", ir, re.MULTILINE))
-    declarations = set(re.findall(r"^declare\s+.*?@([A-Za-z0-9_.$-]+)\(", ir, re.MULTILINE))
-    calls = set(re.findall(r"\bcall\s+[^@\n]*@([A-Za-z0-9_.$-]+)\(", ir))
+_LEXICAL_PARSE_MAX_CHARS = 131072
+
+
+def _definition_call_sets(ir: str) -> tuple[frozenset[str], frozenset[str], frozenset[str]]:
+    definitions = frozenset(re.findall(r"^define\s+.*?@([A-Za-z0-9_.$-]+)\(", ir, re.MULTILINE))
+    declarations = frozenset(re.findall(r"^declare\s+.*?@([A-Za-z0-9_.$-]+)\(", ir, re.MULTILINE))
+    calls = frozenset(re.findall(r"\bcall\s+[^@\n]*@([A-Za-z0-9_.$-]+)\(", ir))
     return definitions, declarations, calls
+
+
+@lru_cache(maxsize=2048)
+def _definition_call_sets_cached(ir: str) -> tuple[frozenset[str], frozenset[str], frozenset[str]]:
+    # The complete immutable text is the key, including comments and literals.
+    # This caches only the original three lexical regex results, never source
+    # admission, a validator decision, machine state or execution evidence.
+    return _definition_call_sets(ir)
+
+
+def parse_definitions_and_calls(ir: str) -> tuple[set[str], set[str], set[str]]:
+    # Large modules bypass retained storage. Ordinary repeated function bodies
+    # fit the bounded cache; fresh sets preserve the original mutable API and
+    # prevent one observer from changing another observer's lexical results.
+    parsed = (_definition_call_sets_cached(ir) if len(ir) <= _LEXICAL_PARSE_MAX_CHARS
+              else _definition_call_sets(ir))
+    definitions, declarations, calls = parsed
+    return set(definitions), set(declarations), set(calls)
 
 
 def _exact_keys(value: dict[str, object], expected: set[str], context: str) -> None:
@@ -2607,6 +2628,27 @@ def _llvm_scalar_parameter(ty: str) -> str:
     extension = _scalar_abi_extension(ty)
     suffix = "" if extension == "none" else " " + extension
     return _llvm_scalar_type(ty) + suffix
+
+
+@lru_cache(maxsize=2)
+def _ir_header_projection(ir: str) -> str | None:
+    """Retain exact definition lines for repeated signature regex queries.
+
+    A bare definition token permits the old whitespace operator to cross a newline, so
+    that spelling retains the full-text path. Two complete immutable IR keys
+    bound storage; neither the projection nor a cached admission is mutable.
+    """
+    if re.search(r"(?m)^define[^\S\n]*$", ir):
+        return None
+    return "\n".join(line for line in ir.split("\n") if line.startswith("define"))
+
+
+def _ir_signature_arguments(ir: str, symbol: str) -> list[str]:
+    """Apply the unchanged kernel signature regex to an exact projection."""
+    projection = (_ir_header_projection(ir)
+                  if re.fullmatch(r"[A-Za-z_.$][A-Za-z0-9_.$-]*", symbol) else None)
+    return re.findall(r"(?m)^define\s+[^\n]*@" + re.escape(symbol) + r"\(([^\n]*)\)",
+                      ir if projection is None else projection)
 
 
 @lru_cache(maxsize=2)
@@ -5089,8 +5131,13 @@ def audit(
             "scripts/run_timer_case.py",
             "scripts/run_trap_case.py",
             "scripts/check_foundation_gate8.py",
-            "docs/audits/timers-core0-v07.md",
+            "docs/audits/timers-core0-v07.html",
         }
+        # Historical consumed-source archives keep their original document
+        # paths and bytes; current builds consume the mapped HTML edition.
+        if not (root / "docs/document-map.json").is_file():
+            required_timer_sources = {name[:-5] + ".md" if name.startswith("docs/") and name.endswith(".html") else name
+                                        for name in required_timer_sources}
         missing_timer_sources = required_timer_sources - observed_sources
         if missing_timer_sources:
             raise Core0Error(
@@ -5140,9 +5187,14 @@ def audit(
             "scripts/run_monitor_session.py",
             "scripts/check_foundation_gate9.py",
             "scripts/qualify_foundation.py",
-            "docs/audits/timers-core0-v07.md",
-            "docs/audits/monitor-core0-v07.md",
+            "docs/audits/timers-core0-v07.html",
+            "docs/audits/monitor-core0-v07.html",
         }
+        # Historical consumed-source archives keep their original document
+        # paths and bytes; current builds consume the mapped HTML edition.
+        if not (root / "docs/document-map.json").is_file():
+            required_monitor_sources = {name[:-5] + ".md" if name.startswith("docs/") and name.endswith(".html") else name
+                                        for name in required_monitor_sources}
         missing_monitor_sources = required_monitor_sources - observed_sources
         if missing_monitor_sources:
             raise Core0Error(

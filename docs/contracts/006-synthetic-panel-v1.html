@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Synthetic digital panel sequencer v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="synthetic-digital-panel-sequencer-v1">Synthetic digital panel sequencer v1</h1>
+<p>This compatible extension is enabled only by <code>PAPER_SEQUENCER=1</code> in the
+<code>lemma-silicon-dev/0.2.0</code> binding and its matching fast binding. Historical
+<code>lemma-silicon-dev/0.1.0</code> selects zero and retains its v1 timing/state machine.
+The controller register version remains v1; offsets 384–448 are a read-only
+extension. The persistent notebook format is unchanged.</p>
+<p><code>virtual-panel-synthetic/1</code> is a fixed, redistributable digital program. Its
+codes are logical symbols, <strong>not voltage values</strong>, manufacturer waveforms,
+electrophoretic predictions or physically safe driving instructions. Physical
+panel qualification and configurable qualified waveform programs remain open.
+The program intentionally does not depend on old pixels. Target pixels, the
+immutable accepted plane and the external retained visible panel are distinct.</p>
+<p>The ordinary Lean driver still uploads tiles and accepts mode1 (thresholded
+fast) or mode2 (exact-gray quality) rectangle refreshes. Accepted data is copied
+into the isolated latch before sequencing. Later uploads cannot change that
+latch. Once the existing synthetic deadline has arrived and copying has
+completed, the digital controller performs:</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Digital behavior</th>
+<th>Controller clocks with ready external ports</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Power up</td>
+<td>Power-enable asserted; neutral code</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Condition scan, phase0</td>
+<td>Row-major accepted rectangle, code3</td>
+<td>1 read + 2 drive per pixel</td>
+</tr>
+<tr>
+<td>Gap</td>
+<td>Neutral code, no source/gate clocks</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Target scan, phase1</td>
+<td>Accepted gray below8: code1; otherwise code2</td>
+<td>1 read + 2 drive per pixel</td>
+</tr>
+<tr>
+<td>Gap</td>
+<td>Neutral code, no source/gate clocks</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Neutral scan, phase2</td>
+<td>Row-major accepted rectangle, code0</td>
+<td>1 read + 2 drive per pixel</td>
+</tr>
+<tr>
+<td>Gap</td>
+<td>Neutral code, no source/gate clocks</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Visible commit</td>
+<td>Exact accepted gray through existing panel output</td>
+<td>1 read + 1 acknowledged output per pixel</td>
+</tr>
+<tr>
+<td>Power down</td>
+<td>Neutral code; power-enable remains asserted until end</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>Thus an N-pixel rectangle takes <code>11*N+7</code> controller clocks after the sequence
+start boundary when both ports are ready. Snapshot-copy clocks precede this
+boundary. Frame-memory and final-panel backpressure extend this duration;
+there is no cycle skipping. Busy remains asserted through power down. Only
+then does the controller publish completion, advance the completed sequence and
+raise the existing completion interrupt. The visible abstraction accepts only
+controller-produced pixels and commits them on that completion.</p>
+<p><code>panel_drive_valid</code> denotes each of the two held drive clocks. <code>panel_source_clock</code>
+pulses on the first clock for each pixel. <code>panel_gate_clock</code> pulses on that first
+clock at each rectangle row start. The accompanying phase, absolute x/y and
+2-bit code are controller outputs. No host gesture or rendering algorithm
+supplies these values. Outside drive clocks the code is zero; power and drive
+are immediately inactive under asserted reset or an admitted reset command.</p>
+<p>The added aligned 64-bit reads are:</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>384</td>
+<td>Extension version1 when enabled, otherwise0</td>
+</tr>
+<tr>
+<td>392</td>
+<td>Fixed program identity <code>0x31504d53</code>, otherwise0</td>
+</tr>
+<tr>
+<td>400</td>
+<td>Bit0 power-stage active; bits8–9 phase0–2; bits16–17 remaining drive clocks0–2</td>
+</tr>
+<tr>
+<td>408 /416</td>
+<td>Current absolute scan/commit x / y</td>
+</tr>
+<tr>
+<td>424</td>
+<td>Current logical drive code0–3</td>
+</tr>
+<tr>
+<td>432</td>
+<td>Held drive clocks in this accepted update</td>
+</tr>
+<tr>
+<td>440</td>
+<td>Power-enable0/1</td>
+</tr>
+<tr>
+<td>448</td>
+<td>Completed digital pixel drives in this accepted update</td>
+</tr>
+</tbody></table>
+<p>Phase and counters remain inspectable after completion. Counters restart at
+refresh acceptance. Disabled bindings return zero at every extension offset.
+Writes to these offsets fail with the existing malformed-command error.
+Reads retain the controller&#39;s registered sampling/response behavior.</p>
+<p>Reset/cancel wins over simultaneous drive or final-output progress. It aborts
+an active update, clears private sequencing progress, and retains the previous
+completed sequence and visible panel. It clears the target plane using the
+existing reset protocol; that is not a white-panel completion. A frame-memory
+error aborts with error1, disables digital drive/power, and publishes no
+completion. Invalid mode/rectangle acceptance produces error3 before any scan;
+a busy second refresh produces error4 without replacing accepted data.</p>
+<p>The bounded <code>PaperSequencer.sv</code> corpus observes raw pins, memory and completion
+independently: every phase/row/source clock, immutable accepted data despite
+later uploads, stalled reads, power-down ordering, invalid modes, reset during
+drive, retained visible state and memory-error cancellation. It is literal
+circuit simulation, separate from guest integration and physical closure.</p>
+</main>
+</body>
+</html>

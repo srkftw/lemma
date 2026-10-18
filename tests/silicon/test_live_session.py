@@ -307,6 +307,7 @@ class LifecycleFailures(unittest.TestCase):
                 # adapter's internal-error guard while modeling stop/cont.
                 if command=='query-status':return {'running':self.running,'status':'running' if self.running else 'paused'}
         machine=object.__new__(fast.Fast);machine.qmp=QMP();machine.args=SimpleNamespace(timeout=0)
+        machine.data={'profile':'lemma-silicon-dev/0.1.0'}
         machine.clock_hz=100000000;machine.time_origin_ns=0;machine.get=lambda name:'0'
         machine.inspect=lambda:{'running':machine.qmp.running}
         with self.assertRaises(TimeoutError):machine.call('run 1000')

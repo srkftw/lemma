@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course packed glyph rows 1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="course-packed-glyph-rows-1">Course packed glyph rows 1</h1>
+<p><code>lemma-installed-package-notebook/6</code> combines the full workspace restore repair
+with a pure font operation. Canonical geometry, raw text, all framebuffer
+reads/writes and fault order, dirty-tile policy, controller work, Doc8/checker
+authority and journal/barrier semantics remain those of the existing paths.</p>
+<p>A3×5 glyph row has three bits. Each bit produces three black or white pixels,
+followed by three white spacing pixels. <code>packedCellRow</code> expands that selected
+row into six little-endian Gray4 bytes, retaining high-nibble-first pixel order.
+The black masks for the three columns are <code>0xf0ff</code>, <code>0xff0f00</code> and
+<code>0xf0ff000000</code>; all other bits of the48-bit cell remain white. Only the three
+selected glyph bits contribute. The caller guards the five spacing rows before
+computing the selected row shift.</p>
+<p>Every ordinary16-pixel word starts at cell offset0,4 or8. Two48-bit cell rows
+are stitched with respectively <code>(a | b&lt;&lt;48)</code>, <code>(a&gt;&gt;16 | b&lt;&lt;32)</code> and
+<code>(a&gt;&gt;32 | b&lt;&lt;16)</code>, with ordinary UInt64 truncation. Other starts use the original
+per-pixel operation, preserving arbitrary public UInt64 inputs. The existing
+white-word guard remains. No persistent cache, memory effect, display authority,
+new runtime helper or language feature is introduced.</p>
+<p>The codec repair copies exactly464 validated words into private staging. Its
+bytes remain frozen through the actual save transaction; restore is not a Saved
+receipt. The complete software6 source cohort requires both packed-row helpers
+and both restore helpers. Partial/mixed cohorts reject; software1–5 retain
+separate exact historical admissions and their original observed limitations.</p>
+<p>Independent finite row/start/high-bit cases, the original per-pixel renderer,
+full canonical/odd-stride/fault framebuffer Actions and scalar mathematics
+pixels qualify components. Complete fresh ELF audits and actual guest/controller
+workflows remain separate acceptance requirements. Static instruction counts
+and host comparisons alone do not establish target speed or timing parity.</p>
+</main>
+</body>
+</html>

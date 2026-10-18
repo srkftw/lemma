@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task006 observed implementation increment</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="task006-observed-implementation-increment">Task006 observed implementation increment</h1>
+<p>Branch <code>task/006-whole-machine-lemmasim</code>, <a href="https://github.com/srkftw/lemma/pull/8">PR8</a>,
+based on main <code>abd9920d54df04ce52da9386170e99012c39bdfb</code>.
+<strong>The whole-machine destination remains unfinished.</strong> The
+<a href="../plan/006-session-state.html">checkpoint</a>, <a href="../plan/LEMMASIM.html#task006-capability-inventory">capability inventory</a>
+and <a href="006-whole-machine-inventory.json">source-bound artifact inventory</a> retain
+completed functionality, actual failures and exact remaining scope. Generated
+outputs stay under ignored <code>build/</code>; historical artifacts keep their execution identities.</p>
+<h2 id="implemented-product">Implemented product</h2>
+<p>The persistent <code>scripts/lemmasim</code> command surface owns QEMU or RTL execution,
+bounded virtual intervals, pause/inspect/raw input, exact checkpoints, isolated
+durable forks, recorded suffix replay, warm/cold reset and teardown. Native Tk
+presents controller pixels. Evdev transports actual reported capabilities;
+physical tablet/manual acceptance is NOT_RUN. Linux native pins/prepared images
+are usable; portable installation and same-core browser/Wasm are unfinished.</p>
+<p><code>lemma-silicon-dev/0.3.0</code> supplies both bindings with canonical1650×2200 Gray4,
+128MiB external RAM, an actual Lean32MiB/8192-frame pool, consumed discovery,
+IRQs,100MHz clock and10MHz MTIME. Historical0.1/0.2 remain supported.
+Scalar RV64IM/MSU/Sv39/PMP is the declared CPU subset, not RV64GC. QEMU&#39;s
+handoff and the Lean-authored RTL ROM remain different explicit ELF-preload
+mechanisms, consuming identical compatible guest ELF/DTB/descriptor. Production
+nonvolatile boot/update/recovery and secure boot are absent. Synthesized4KiB
+register RAM is a separate configuration and cannot run this notebook.</p>
+<p>The full256-entry pen uses synchronous banks/cached head without truncating
+samples. Paper circuitry scans immutable accepted updates through three synthetic
+phases, row/control clocks, digital timing and reset/error behavior; QEMU projects
+the selected program. Target/latched/visible states remain distinct. These are
+digital sequencing results, not qualified physical waveforms or panel response.
+Block DMA/queues/volatile overlays and actual host <code>fdatasync</code> precede durable
+acknowledgement; real Lean drivers, store/recovery, ink and notebook remain authoritative.</p>
+<p>New Power-v1/IRQ14 and separately authorized syscall68 implement actual Lean
+cooperative suspend/wake and reset causes. Busy paper/block work rejects suspend.
+Accepted suspend retains RAM/tasks/time/panel/media, enters pen loss/resync and
+masks input until wake. Raw button levels reach the controller; host presentation
+does not decide the guest policy. The object-table v2 explicitly grants the fifth
+power endpoint; historical v1 keeps four. OOM, stale capabilities and preallocation
+rejections remain checked. Clocks continue; electrical domains/watchdog/brownout
+remain required. <a href="../contracts/006-power-control-v1.html">The contract</a> defines the scope.</p>
+<p>Checkpoint state combines actual Verilator <code>--savable</code> processor/private circuitry
+with explicit RAM/ROM/fabric ownership, media/overlays, input/adapter queues,
+controller staging/progress/visible outputs, interrupts/timers and reset/clock phase.
+Fast migration retains CPU/RAM/private clock and controller state. Wrapper
+adapter2 binds the monotone origin separately. Snapshot never drains or flushes;
+restore validates bounded lengths/checksums/identities and owns a private medium.
+Live handles disconnect. No QEMU/RTL microstate migration or portable architectural
+checkpoint is implemented.
+QEMU&#39;s common CPU post-load explicitly flushes the software TLB; cached Sv39
+translations and TCG blocks are not in the stream. Listed actual fast suffixes
+are equal, but arbitrary cache-state continuation remains unfinished. RTL&#39;s
+complete savable model includes its caches/TLBs. Reservations are explicitly
+serialized by QEMU RISC-V VMState; the selected RV64IM binding excludes A.</p>
+<p>The final QEMU11.1.1 successor is SHA256
+<code>927bef771d31134b73b76a2c219d1717144feec6986b07df5c58ef85d08ad6e5</code>;
+current RTL runtime is <code>c36d0628df1fff3b538257a72f41c30559e8dad60348e48923cb3fddbd03c6bb</code>.
+Fast counters use the declared clock and serialize all private phase/write/inhibit
+arrays. UART reset preserves exact restored state. Hardware pen reset clears
+FIFO/time state; software RESET1 remains loss/resync. VMState3 retains the aligned
+pen reset origin, mapping watchdog/sample time to reset-local MTIME. Unsupported
+old-version/missing/misaligned/future state rejects. The independent observer
+compares all CPU/RAM/private-counter/pen-origin/Power/wrapper bytes, except two
+source-proven host elapsed-time statistics; complete raw differences remain retained.
+<a href="../../conformance/lemmasim/QEMU_STATE_EQUIVALENCE.html">Observer relation</a>.</p>
+<p>Target/controller commits are <code>91911c5</code>, <code>4d18b93</code>, <code>3101cc6</code>, <code>9366387</code>;
+persistent runtime <code>9946e7ef</code>; checked-memory work <code>536fea2</code>/<code>97e4dcb</code>;
+power/authority <code>0626acc</code>; fixed counters <code>b01d336</code>; genuine Lean Loader <code>2bf6658</code>;
+bounded profiling/warm workflow <code>fff15dc</code>; warm pen state <code>de21f0c5</code>;
+lightweight live input <code>d8d7b0cc306a91a113b5a95e964a2a19313f457d</code>.
+All target/compiler policy remains genuinely elaborated Lean → checked Core0 → LLVM
+→ freestanding RV64. No new accepted Core0 language or foreign target helper.</p>
+<h2 id="actual-acceptance-and-retained-limits">Actual acceptance and retained limits</h2>
+<table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Result and exact scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Final canonical power</td>
+<td><strong>PASS</strong>, <code>build/l6-power-final-a1/result.json</code>,133.37s: busy rejection, held contact/suspend retention, malformed Power rejection with unchanged live checkpoint, queued wake exact fork, real post-wake ink/Save, new cold every-pixel/durable recovery; failed FLUSH227/no Saved and another new cold recovery</td>
+</tr>
+<tr>
+<td>Final warm notebook</td>
+<td><strong>PASS</strong>, <code>build/l6-warm-final-a1/result.json</code>,27.24s: pending contact, new cause2/Ready/redraw, actual-MTIME pressure ink, Save31, new cold identical pixels/durable bytes; acknowledged source unchanged</td>
+</tr>
+<tr>
+<td>Original warm failure</td>
+<td><strong>FAIL</strong>, <code>build/l6-warm-prepatch-a3/result.json</code>,198.61s: same frozen checker/guest/medium/first nine raw events; old6dc reached warm Ready but new ink timed out with loss8/resync. Final927 changes no timestamps or observer predicates</td>
+</tr>
+<tr>
+<td>Fixed counters and pen boundary</td>
+<td><strong>PASS</strong>, current-only <code>build/lemmasim/counter-pen-current-only-a1/result.json</code> and <code>task006-warm-pen-current-a1/result.json</code>: cold/warm, fractional phase, writes/inhibit/wrap, watchdog and full private forks, missing/malformed/stale state negatives. Debugger CSR/MMIO qualification; guest-issued CSR instructions not qualified</td>
+</tr>
+<tr>
+<td>Paired Power probe</td>
+<td><strong>PASS</strong>, <code>build/lemmasim/task006-power-final-pair-a2/result.json</code>: final927/current genuine c49a5 probe against retained actual RTLc36; exact admitted fields/results except predeclared100000-tick wake-time bound. Full states retained; partial relation only</td>
+</tr>
+<tr>
+<td>Real RTL power</td>
+<td><strong>PASS</strong>, <code>build/lemmasim/task006-power-final-rtl-a1/rtl/result.json</code>,249.76s: actual Lean cold/wake/queued exact suffix; no canonical notebook or Save claim. Literal Power checks separately pass six busy sources/malformed/W1C/reset</td>
+</tr>
+<tr>
+<td>Genuine Loader deployment</td>
+<td><strong>PASS</strong>, <code>build/task006-loader-plan/maintained-result.json</code>: full initializer/notebook/probe builds and strict audits, notebook8192-frame capacity checks. Finite-RAM alignment/error/RX/BSS/abort cleanup tests pass; no runtime stub</td>
+</tr>
+<tr>
+<td>Canonical RTL cold prefix</td>
+<td><strong>OBSERVED_PREFIX_NOT_READY</strong>, <code>build/silicon/task006-loader-cold-a1/result.json</code>,100Mcycles354.74s; first sampled user mode38M, no Ready/paper/Save. Retained pre-Loader242M and earlier504M deadline FAILs remain unchanged</td>
+</tr>
+<tr>
+<td>Bounded profiling checkpoint</td>
+<td><strong>PASS</strong>, <code>build/silicon/task006-boot-checkpoint-a2/result.json</code>: real1M probe prefix snapshot, unchanged boundary, existing-destination rejection, exact145270622-byte continuation containers and isolated fork inspect, teardown. No notebook readiness claim</td>
+</tr>
+<tr>
+<td>Historical public notebook</td>
+<td><strong>PASS</strong>, <code>build/l6-native3/result.json</code>,534.21s on source9946/older87d:117 raw events,100 samples/four strokes, undo/redo/erase, three pages/two documents, Save25, pending-paper exact fork, new cold and failed-FLUSH recovery. Not relabeled as current927 execution</td>
+</tr>
+<tr>
+<td>Durable format compatibility</td>
+<td><strong>PASS</strong>, <code>build/l6-upgrade1/result.json</code>: actual new936 guest cold-opens earlier3101 medium without formatting or republishing, identical old bytes/pixels</td>
+</tr>
+<tr>
+<td>Historical exact runtime/native</td>
+<td><strong>PASS</strong> on original identities: v4e RTL profiles0.1/0.2 monitor,0.1 pending paper/block DMA; stale-sidecar live-state rejection; pinned Tk/Xvfb widgets/raw input. Profile0.2 active sequencer guest continuation/manual tablet remain unqualified</td>
+</tr>
+<tr>
+<td>Final relevant host set</td>
+<td><strong>PASS</strong>, <code>build/task006-current-host-a1/result.json</code>:616 tests (103 LemmaSim,327 kernel,168 silicon,18 scaffold), metadata check;613 frozen code inputs unchanged. Separate pinned Lake build completed55 jobs. Host checks are not target/physical acceptance</td>
+</tr>
+<tr>
+<td>Live input clock</td>
+<td><strong>PASS</strong>, <code>build/lemmasim/task006-input-clock-a3/result.json</code>: exact three raw admissions/cursors/phases, full post-inject responses, queued/cold-readonly/fractional-warm-readonly states; each23298752-byte container pair is literally equal. Earlier CLI-path and literal-coordinate oracle FAILs remain unchanged</td>
+</tr>
+</tbody></table>
+<p>Final current927 workflows consume genuine new Loader notebook ELF
+<code>9b7972a35f189c929bf7b16dd37dbcfc0a9ba5a710729eb91a06fdd277a1553b</code>,
+initializer <code>722923948db13663aa0ea78b827c99db68d046d3ab620b29a940a5298a060fed</code>,
+and probe <code>c49a5b83eef94fa9848e90883d5c85a79fc3d2e3387fb96664551a8507738b7e</code>.
+Actual compilation and audits consume the exact2bf Loader sources; an initializer
+command began at0626 with those dirty inputs, not clean-at-start2bf. Probe bytes
+match earlier power probe but its new compilation/audit identity is preserved.
+Lean4.34.1/source5045d005…,LLVM20.1.8,CVW20f2af74… and all RTL build flags/tools
+are pinned in source-bound inventories. Historical failures and source reuse are
+validated without claiming recompilation.</p>
+<h2 id="measured-performance">Measured performance</h2>
+<table>
+<thead>
+<tr>
+<th>Workload</th>
+<th align="right">Before</th>
+<th align="right">After</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Checked4096-byte user copy</td>
+<td align="right">2674 callbacks/2918 reads/512 writes</td>
+<td align="right">818/2777/512</td>
+<td>Real finite-RAM Lean Action counts; per-action authorization preserved, not CPU throughput</td>
+</tr>
+<tr>
+<td>Aligned4096-byte Loader copy</td>
+<td align="right">8192 physical accesses/4096 callbacks</td>
+<td align="right">1024/512</td>
+<td>8× fewer accesses, bounds/RX/BSS/abort checks unchanged; not machine speed</td>
+</tr>
+<tr>
+<td>Public paused session control</td>
+<td align="right">143.28ms median via two CLI processes</td>
+<td align="right">60.42ms direct existing Unix RPC</td>
+<td>10 requests,2.37×, shared host; same owner/API/virtual cycles</td>
+</tr>
+<tr>
+<td>Live input timestamp query</td>
+<td align="right">19.25ms median full inspect,8670B</td>
+<td align="right">1.45ms clock,207B</td>
+<td>20 paused RPCs each,13.29×; actual current927 probe. Full post-inject inspect remains; not total stroke latency</td>
+</tr>
+<tr>
+<td>Canonical RTL100M cold prefix</td>
+<td align="right">195809cycles/s,510.70s</td>
+<td align="right">281900cycles/s,354.74s</td>
+<td>Shared host, same medium/runtime/UserELFs, new Loader kernel; no sole-change attribution or Ready claim;147732KiB HWM</td>
+</tr>
+<tr>
+<td>Canonical RTL user-mode observation</td>
+<td align="right">No U sample through100M</td>
+<td align="right">U sampled at38M</td>
+<td>Fixed1M sampling; overlapping task-symbol candidates retained, no guessed task identity</td>
+</tr>
+<tr>
+<td>Current canonical QEMU Ready</td>
+<td align="right">—</td>
+<td align="right">12.20s virtual/12.17s host</td>
+<td>Final927/Loader power workflow, shared host; historical editing measurements below remain separate</td>
+</tr>
+<tr>
+<td>Historical canonical native Ready</td>
+<td align="right">59.22s host/15.75s virtual</td>
+<td align="right">44.73s/14.85s</td>
+<td>Same old binding/actions, adaptive input timestamps/shared host</td>
+</tr>
+<tr>
+<td>Historical six-action mean navigation</td>
+<td align="right">54.57s host/14.31s virtual</td>
+<td align="right">42.20s/13.41s</td>
+<td>No sole-change attribution</td>
+</tr>
+<tr>
+<td>Historical guest initializer median3</td>
+<td align="right">0.902s</td>
+<td align="right">0.312s</td>
+<td>Real barriers,~68MiB RSS; not UI frame rate</td>
+</tr>
+<tr>
+<td>Historical RTL scalar throughput</td>
+<td align="right">391694cycles/s</td>
+<td align="right">382713cycles/s</td>
+<td>2.29% slower,~134MiB RSS; host-paced, no real-time claim</td>
+</tr>
+</tbody></table>
+<p>Snapshot-final preserves expensive observed RTL prefixes for bounded later
+continuation. Ordinary presentation avoids detailed trace flushing; no optimization
+skips hardware cycles, guest operations or device deadlines. Full canonical native
+campaign peak RSS was not measured. Before/after measurements retain their actual
+workload/source identities and do not erase failed cold paths.</p>
+<h2 id="separate-physical-lane-and-unfinished-destination">Separate physical lane and unfinished destination</h2>
+<p><a href="006-controller-physical.html">Controller evidence</a>: full256-entry banked pen
+mapping PASS; minimal OpenROAD ECO assertion reproduced; justified WNS_PATH
+repair used.100MHz TT global setup WNS−3.542208ns remains <strong>FAIL</strong>, hold+0.034896ns;
+detailed routing times out. Global-route estimates are not routed extraction.
+Paper timeout and SG13G2 LEF58 enclosure/CUTCLASS associations remain unresolved;
+no rule omission/waiver is hidden and no timeout cause is invented. Process
+DRC/LVS, routed parasitics and post-route timing are NOT_RUN. Power physical flow,
+large memories, compute/full SoC, pads/analog/RF and panel qualification are open.</p>
+<p>Digital/software obstacles remain canonical RTL Ready and full matched timing,
+ISA/CSR/paper warm-state mapping; fast cached-translation checkpoint coverage;
+production Lean boot/update/recovery;
+electrical power/watchdog/brownout; real companion/USB controller, Lean bounded
+framing/retry and independently durable peer/lost-ACK recovery; Wi-Fi6/BT5.4
+digital MAC/baseband/PHY; unexpected live backing-I/O fault recording/replay;
+same-core local browser/Wasm/durable quota/barriers; G2 managed runtime and G5–G7
+mathematics/verifier/courses/learner/tutor. No companion launch command exists.</p>
+<p>Use <a href="../overview.html#task006-persistent-machine-sessions">README launch, interaction, snapshot, restore and replay</a>.
+Focused current power/warm acceptance requires an actual acknowledged medium:</p>
+<pre><code class="language-sh">python3 scripts/check_power_session.py --work-dir build/power-new --disk PATH_TO_ACKNOWLEDGED_RAW
+python3 scripts/check_warm_notebook.py --work-dir build/warm-new --disk PATH_TO_ACKNOWLEDGED_RAW
+python3 conformance/lemmasim/check_counter_state.py --output-dir build/counters-new
+python3 conformance/lemmasim/check_warm_pen_state.py --output-dir build/warm-pen-new
+</code></pre>
+<p>The owner subsequently authorized merging PR8 after applicable checks pass.
+Candidate9812a22 <a href="https://github.com/srkftw/lemma/actions/runs/38245370738">CI38245370738</a>
+passed nine target/RTL jobs and failed the metadata job&#39;s three stale foundation
+workflow assertions. The repair accounts for every logged pipeline in the new
+multi-command Lean block and preserves explicit pipefail/timeout requirements;
+the exact literal-device expectation becomes eight commands/four binaries and
+includes the new power lane. The actual workflow, guest/RTL implementation and
+historical observations are unchanged. Repaired-candidate CI is separate from
+historical/main passes; a timeout, absent result or unfinished physical step
+remains exactly that.
+Final local repair checks passed 13 focused and 456 foundation host tests,
+21.323s for the latter, on test source SHA256
+<code>0950dff309a3f26190c4177eb1cb65a3896c019aa59fc882479e6ff19dd67b24</code>;
+the command/log/result record is <code>build/task006-merge-ci-repair-a2/</code>.
+Metadata and18 scaffold tests also passed. No additional local historical guest/physical rerun
+was needed for this host-test/documentation repair.
+The subsequent <a href="https://github.com/srkftw/lemma/actions/runs/38287697012">CI38287697012</a>
+at703ddc9 passed the repaired foundation suite and exposed the first Lean
+fixture&#39;s missing <code>Lemma.Kernel.Memory.UserCopy.olean</code> in a fresh checkout.
+Default <code>lake build</code> does not build all fixture imports; CI must explicitly
+build those modules before the five Lean/compiler fixture commands. This
+retained dependency failure is separate from the earlier stale assertions.
+The explicit build <code>lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel</code>
+passed94 jobs in51.936s in a clean detached703ddc9 checkout with an initially
+absent <code>.lake</code> cache. All five exact bounded CI fixture commands then passed:
+checked copy6.428s, Loader25.516s, power authority131.483s, object budget5.877s,
+and24 O0/O2 compiler guard cases1.718s. The checkout stayed clean and all
+processes were reaped. Actual result/log/input hashes are retained in
+<code>build/task006-metadata-clean-a1/result.json</code>, SHA256
+<code>8e612cf0df5bc601cb059b4be8b99466331f7787b963365c15b8277f78438ce4</code>.
+The focused workflow regression passed13 tests; target/controller inputs were
+unchanged. The repaired candidate still requires its own successful CI.</p>
+<h2 id="october12-implementation-continuation">October12 implementation continuation</h2>
+<p>The subsequent actual candidate CI38288756841 at <code>d219650</code> passed all10 jobs.
+PR8 was already merged when this continuation inspected it. The current owner
+instruction forbids another merge; new work stays on the preserved Task006
+branch for draft publication. The original failed CI and canonical/physical
+observations above retain their identities and meanings.</p>
+<p><code>aa49491</code> adds shared backing read/write/barrier outcomes and isolated replay,
+including real partial-write and sync/read errors. <code>e0e325c</code> adds a deterministic
+free-frame cursor and maintained owner accounting without changing allocation
+choice, quota priority, generations, zeroing, pinning or cleanup. See the
+<a href="006-frame-index.html">frame evidence</a>. <code>3704441</code> adds an independently persistent
+hosted-Lean opaque peer and normal companion launch command; actual lost-ACK
+and both-restart receipt reconciliation passed, while USB and an asynchronous
+guest companion service remain unfinished. See <a href="006-companion-backing.html">peer evidence</a>.</p>
+<p><code>84c5dcd</code> connects actual rational/polynomial checks, revision-bound evidence,
+an authored course and hints to the guest notebook and store. Real raw input,
+edited/unsupported/resource cases, acknowledged Save, independent cold complete
+pixels/record recovery and failed barrier passed. Three earlier source/observer
+failures are retained separately. See <a href="006-exact-course.json">the exact-course receipt</a>.
+This bounded arithmetic checker does not close the managed-runtime or Lean
+proof-kernel gate.</p>
+<p>The local RTL/Wasm port builds the existing generated circuitry and reusable
+Machine. Actual browser-worker OPFS initialization/cold-prefix execution,
+corrupt rejection without any archive change, private origin restore and an
+8.15M-cycle queued-input suffix passed. The browser/native-host Wasm suffix
+archive is exact, with68.316s host time,325MiB Wasm heap and1.683GiB peak host
+RSS. Browser Ready, writing, acknowledged Save and full cold recovery remain
+unqualified. The canonical RTL campaign and changed-source hot-path work are
+still active. See <a href="006-browser-machine.json">browser source/tool/observation identities</a>.
+These results do not fix the QEMU cached-state hole, complete digital radios,
+establish production boot/update or close physical implementation.</p>
+<p><code>8137ee7</code> adds durable ordered learner events, explicit uncertain estimates and
+an overridable/disableable review baseline. Actual v1 record migration,
+assisted mathematics, policy changes, independent cold full record/pixels and
+unsuccessful Save passed in <code>build/task006-review-course-a3/result.json</code>.
+<code>cb10b29</code> connects the same backing interface to QEMU and the actual guest
+Store/notebook. The independent peer persisted barrier transaction78 but lost
+its ACK; no guest Saved acknowledgment followed. Both restarts reconciled that
+same transaction without another peer append, then a new cold CPU recovered
+all objects and complete display. See <a href="006-companion-guest.json">the guest receipt</a>.
+These are separately observed connected guest workflows; they do not implement
+USB or transfer guest document recovery into the peer.</p>
+<p><code>e312758</code> adds an immutable native development bundle containing audited
+genuine guest artifacts, complete consumed source closure and identified native/
+QEMU implementations. Actual guest initialization and archived RTL clock0 launch
+passed after newer target edits invalidated ordinary current-source preparation.
+Reusing that guest is explicit archived-source execution, not fresh compilation.
+Pinned external Linux dependencies and unresolved project redistribution terms
+remain visible. See <a href="006-native-bundle.html">the package evidence</a>.</p>
+<p><code>54763c8</code> adds the separately linked Arithmetic service and async notebook client.
+Normal A5 checks, edited and unsupported cases, actual OOM/fault isolation, and
+finite-stall cancellation have independent receipts; the original stalled Save
+failure remains retained. This is connected guest mathematics, not proof-kernel
+completion. See <a href="006-isolated-arithmetic.json">isolated arithmetic</a>.</p>
+<p>Portable a11 builds the shared private-Pending boundary and an explicit outcome
+tape control. Actual guest qualification failed at its30M-cycle bound before
+first WRITE. The loopback browser launch now validates immutable bundle/guest/
+Wasm identities; six real HTTP responses and four focused host tests passed.
+The retained older browser canonical boundary remains not Ready. See
+<a href="006-browser-private-pending.json">portable backing and local launch</a>.</p>
+</main>
+</body>
+</html>

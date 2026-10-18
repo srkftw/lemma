@@ -21,6 +21,20 @@ REQUIRED_JOBS = ("lemmasim-writing-rv64", "metadata", "kernel-managed-rv64", "ke
         "kernel-architecture-rv64", "silicon-devices-rtl", "crypto-rv64")
 JOBS = (*REQUIRED_JOBS, "acceptance-summary")
 
+CHECK_NAMES = {
+    "lemmasim-writing-rv64": "Task 004 real notebook O0/O2 writing and cold recovery",
+    "metadata": "Metadata and host-only suites",
+    "kernel-managed-rv64": "Task 003 Gates F-I RV64 acceptance",
+    "kernel-services-rv64": "Task 003 Buffer service RV64 acceptance",
+    "legacy-rv64": "Legacy Core0 RV64 acceptance",
+    "foundation-rv64": "Foundation Gates 1-9 and clean qualification",
+    "kernel-rv64": "Task 003 implemented Gates A-E RV64 acceptance",
+    "kernel-source-negatives-rv64": "Task 003 source-negative RV64 qualification",
+    "kernel-architecture-rv64": "Task 003 architectural containment RV64 acceptance",
+    "silicon-devices-rtl": "RTL device and digital power conformance with literal host stimuli",
+    "crypto-rv64": "Public-development SHA/HMAC RV64 and authenticated ROM audit",
+}
+
 
 def job_block(source: str, job: str) -> str:
     """Slice one actual job, independent of its following sibling's name."""
@@ -61,6 +75,7 @@ class CiWorkflowTests(unittest.TestCase):
         cls.legacy = cls.blocks["legacy-rv64"]
         cls.foundation = cls.blocks["foundation-rv64"]
         cls.kernel = cls.blocks["kernel-rv64"]
+        cls.writing = cls.blocks["lemmasim-writing-rv64"]
         cls.task002 = cls.metadata + cls.legacy + cls.foundation
 
     def test_pr_campaign_does_not_duplicate_task_branch_push(self):
@@ -75,7 +90,7 @@ class CiWorkflowTests(unittest.TestCase):
             r"^  ([a-z0-9-]+):$", self.source.split("jobs:\n", 1)[1], re.MULTILINE
         )
         self.assertEqual(jobs, list(JOBS))
-        for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/boot", "tests/kernel", "tests/cache", "tests/silicon"):
+        for suite in ("tests/ci", "tests/scaffold", "tests/core0", "tests/foundation", "tests/boot", "tests/kernel", "tests/cache", "tests/silicon"):
             self.assertIn(suite, self.metadata)
         self.assertIn("scripts/check_scaffold.py", self.metadata)
         self.assertIn("lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel", self.metadata)
@@ -137,10 +152,30 @@ class CiWorkflowTests(unittest.TestCase):
         # Three original job ceilings plus the narrower Reader19 Action step.
         self.assertEqual(timeouts, [45, 12, 45, 60])
 
+    def test_required_names_dependencies_and_exact_checkout_are_preserved(self):
+        self.assertEqual(set(CHECK_NAMES), set(REQUIRED_JOBS))
+        for job in REQUIRED_JOBS:
+            block = self.blocks[job]
+            with self.subTest(job=job):
+                self.assertEqual(re.findall(r"^    name: (.+)$", block, re.M), [CHECK_NAMES[job]])
+                self.assertEqual(re.findall(r"^    runs-on: (.+)$", block, re.M), ["ubuntu-24.04"])
+                self.assertNotRegex(block, re.compile(r"^    if:", re.M))
+                self.assertEqual(re.findall(r"^    needs: (.+)$", block, re.M),
+                                 ["metadata"] if job == "kernel-rv64" else [])
+                self.assertIn("persist-credentials: false", block)
+                self.assertIn("ref: ${{ github.sha }}", block)
+                self.assertIn("scripts/ci_source.py", block)
+                self.assertIn("build/ci/source.json", block)
+                self.assertEqual(re.findall(r"retention-days: (\d+)", block),
+                                 ["14", "14"] if job == "metadata" else ["14"])
+        self.assertNotIn("continue-on-error", self.source)
+        self.assertNotIn("actions/cache@", self.source)
+        self.assertNotIn("magic-nix-cache", self.source)
+
     def test_every_logged_pipeline_fails_closed_with_explicit_pipefail(self):
         expected = {
             "lemmasim-writing-rv64": ("lemmasim-host-build.log", "lemmasim-writing.log"),
-            "metadata": ("metadata/check-scaffold.log", "metadata/scaffold-unittest.log",
+            "metadata": ("metadata/ci-unittest.log", "metadata/check-scaffold.log", "metadata/scaffold-unittest.log",
                          "metadata/core0-host-unittest.log", "metadata/lake-build.log",
                          "metadata/foundation-host-unittest.log", "metadata/boot-host-unittest.log", "metadata/user-copy-scans.log",
                          "metadata/loader-copy.log", "metadata/course-save.log", "metadata/course-ingress-idle.log", "metadata/power-authority.log",
@@ -396,6 +431,31 @@ class CiWorkflowTests(unittest.TestCase):
                 self.assertNotRegex(block, r"\bassert\s")
                 self.assertNotIn("continue-on-error", block)
 
+    def test_task004_keeps_independent_host_binding_and_real_writing_recovery(self):
+        for required in (
+            "timeout-minutes: 120",
+            "timeout --foreground --signal=TERM --kill-after=30s 50m",
+            "nix build --no-write-lock-file --file tooling/lemmasim/qemu.nix",
+            "--out-link build/lemmasim/ci-qemu",
+            "timeout --foreground --signal=TERM --kill-after=30s 60m",
+            "./scripts/check-lemmasim.sh --clean --lane writing --with-o0",
+            "--qemu build/lemmasim/ci-qemu/bin/qemu-system-riscv64",
+            "--work-dir build/lemmasim/ci-writing --deadline 3500",
+            "value['source']['commit'] != head",
+            "not value['source']['clean']",
+            "value['lane'] != 'writing' or not value['with_o0'] or len(value['cases']) != 2",
+            "observed['retained_unique_raw_samples'] != 50",
+            "cold['status'] != 'PASS'",
+            "build/lemmasim/ci-writing/",
+            "build/kernel/ci-writing-*/",
+            "build/ci/lemmasim-*.log",
+            "if: ${{ always() }}",
+            "if-no-files-found: error",
+        ):
+            self.assertIn(required, self.writing)
+        self.assertLess(self.writing.index("nix build"), self.writing.index("./scripts/check-lemmasim.sh"))
+        self.assertNotRegex(self.writing, r"\bassert\s")
+
     def test_prefix_revalidator_binds_current_source_exact_roles_and_real_sessions(self):
         for required in ('value["source"] == source_identity(Path.cwd())',
                          'value["source_inputs"] == source_inputs(Path.cwd())',
@@ -422,8 +482,7 @@ class CiWorkflowTests(unittest.TestCase):
             self.assertIn("if-no-files-found: warn", block)
             match = re.search(r"retention-days:\s+(\d+)", block)
             self.assertIsNotNone(match)
-            self.assertGreaterEqual(int(match.group(1)), 1)
-            self.assertLessEqual(int(match.group(1)), 14)
+            self.assertEqual(int(match.group(1)), 14)
         self.assertIn("build/core0/ci-legacy/", self.legacy)
         self.assertIn("build/foundation/ci-gates1-9/", self.foundation)
         self.assertIn("build/foundation/ci-qualification/", self.foundation)

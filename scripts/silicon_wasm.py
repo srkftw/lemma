@@ -248,7 +248,7 @@ def main():
         with (out/log).open('w') as f:
             command(['nix-shell',shell,'--run',shlex.join(map(str,argv))],timeout=timeout,log=f)
     start=time.monotonic()
-    run(['verilator','--cc','--savable','-Wno-fatal','--top-module','lemma_soc','--Mdir',out/'obj',
+    run(['verilator','--cc','--savable','-Wno-fatal',*(['-fno-dfg'] if a.profile=='lemma-silicon-dev/0.14.0' else []),'--top-module','lemma_soc','--Mdir',out/'obj',
          *['-I'+str(x) for x in include_paths],*source_paths], 'generate.log',900)
     includes=subprocess.check_output(['nix-shell',shell,'--run','printf %s "$VERILATOR_ROOT"'],text=True)
     if not includes.startswith('/nix/store/'):

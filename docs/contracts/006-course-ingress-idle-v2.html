@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Empty course-ingress polling policy2</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="empty-course-ingress-polling-policy2">Empty course-ingress polling policy2</h1>
+<p><code>lemma-course-ingress-idle/2</code> is a guest service policy in the maintained
+<code>PackageInstaller.mainAwait</code> path. Hardware profiles, clocks, scheduler quantum,
+capability grants, course-command1 frames and durable formats are unchanged.
+Historical <code>main</code>, <code>step</code> and <code>receive</code> retain their source/behavior. This is
+neither a UART implementation nor an additional storage acknowledgment.</p>
+<p>Before the first byte of a command header, an actual console read returning
+<code>noByte</code>/zero sleeps for1,2,4,8,16,32,64, then100ms, saturating at100ms. These are
+10MHz MTIME requested delays; ordinary kernel timer/scheduling latency still
+applies. This is not a100ms worst-case service or responsiveness guarantee.
+A successful nonempty read resets the exponent immediately and advances only
+by the actual returned count. Counts outside the requested64-byte header and
+inconsistent status/count pairs fail; no header or package is inferred.</p>
+<p>Any partial header or body uses the historical receiver, its1ms empty-read
+sleep,256-byte maximum read and unchanged body deadline. No backoff extends an
+in-progress command. The existing transport has no partial-header expiry; this
+policy does not claim to add one. A complete header still undergoes the same
+shape checks and real Store transactions. Input admission never implies an
+installed package or a durable receipt.</p>
+<p>The owned state word at<code>PackageInstaller.state+56</code> stores exponent0..7. Startup
+sets it to0 before entering the loop; the cap is7. An out-of-range exponent at
+an empty read fails rather than applying a masked shift. Failed sleeps retain
+the already written exponent prefix; no rollback is promised. Snapshots retain
+this ordinary RAM, user PC and the existing kernel sleep deadline. There is no
+new checkpoint field, clean-boundary condition, flush or drain.</p>
+<p>The motivation is passive sampling of the already running canonical11 cold
+case:25 of32 boundary samples were in S mode, including repeated address-space
+registry, object and IPC validation. The installer source independently shows
+two frequent syscalls at the1ms empty-input cadence. The samples are not a
+cycle-exact profile or proof of its contribution. A new guest must demonstrate
+any Ready improvement on comparable inputs; no speedup is inferred here and
+no ownership or registry validation is removed.</p>
+<p>Literal Action checks cover every backoff step/cap, first-byte reset, partial
+header/body waits, original body timeout, invalid read counts/statuses, corrupt
+exponents and failed read/sleep prefixes. Genuine existing User1 elaboration,
+checked lowering and LLVM produce171 functions, with169 common functions and
+only <code>mainAwait</code> changed from the previous installer. The two new functions are
+<code>receiveIdleHeader</code> and<code>stepIdle</code>. The verified RV64 object has only the declared
+<code>lemma_exec_syscall</code> external. These are component results; full linked audits,
+actual UART installation/backpressure, notebook Ready/Save/cold and comparative
+performance remain separate acceptance work.</p>
+<p>The Clocked13 companion artifact audit retains its historical169-function
+course authority. <code>lemma-package-clocked-recovery4-course-ingress/2</code> adds a
+separate exact171-function authority for policy2, with both genuinely emitted
+normal/initializer catalogs, complete pre/post bodies, globals and callers.
+The predecessor role digest, exact function counts and selected <code>stepIdle</code>
+loop are checked. Unknown versions, missing configuration pins and changed
+catalogs reject. Historical catalogs still select the original authority.</p>
+<p>The first new companion whole build succeeded in compilation and then failed
+its full audit against the historical catalog. That failure is retained.
+Independent comparison establishes that only <code>mainAwait</code> changes among169
+common unoptimized functions and exactly the two declared helpers are added.
+Separately elaborated normal/initializer components have byte-identical LLVM
+and RV64 objects; their catalogs differ only by configuration. A valid LLVM
+mutation of the requested sleep cap is rejected by the complete-body check.
+These component results do not replace a corrected whole linked audit or
+actual companion cold recovery.</p>
+</main>
+</body>
+</html>

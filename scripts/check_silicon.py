@@ -178,10 +178,17 @@ def power_control(out, timeout, jobs):
             'generated_binding_sha256': sha(binding), 'observations': expected,
             'scope': 'literal power circuitry; guest cooperative suspend, session checkpoints and physical power remain separate'}
 
-def bus_lanes(out, timeout, jobs):
-    from silicon_compute import source_manifest, prepare
-    dep=ROOT/'build/silicon/deps/cvw'
-    prepare(dep);manifest=source_manifest(dep)
+def bus_dependency(deps=None):
+    from silicon_compute import prepare
+    dep=Path(deps).resolve() if deps is not None else ROOT/'build/silicon/deps/cvw'
+    if deps is not None and (not dep.is_dir() or not (dep/'.git').exists()):
+        raise ValueError('Explicit --deps requires an existing CVW Git checkout')
+    prepare(dep)
+    return dep
+
+def bus_lanes(out, timeout, jobs, deps=None):
+    from silicon_compute import source_manifest
+    dep=bus_dependency(deps);manifest=source_manifest(dep)
     bench=ROOT/'conformance/silicon/BusLanes.sv'
     before={**manifest['sha256'],**manifest['configuration_includes'],
             str(bench):sha(bench),str(Path(__file__)):sha(__file__),
@@ -204,7 +211,7 @@ def bus_lanes(out, timeout, jobs):
         raise RuntimeError('Missing or duplicate actual bus-lane observations')
     host=out/'host'
     records.append(command(['python3','scripts/silicon_compute.py','build','--output-dir',str(host),
-                            '--jobs',str(jobs)],out/'host-build.log',timeout))
+                            '--jobs',str(jobs),'--deps',str(dep)],out/'host-build.log',timeout))
     host_options=host_deadline_options(host/'obj/lemma-rtl')
     if before!={p:sha(p) for p in before}:raise RuntimeError('Bus-lane inputs changed during observation')
     return {'status':'PASS','source_inputs':before,'commands':records,'observations':expected,
@@ -214,6 +221,7 @@ def bus_lanes(out, timeout, jobs):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--deps',type=Path,help='Existing immutable CVW dependency checkout for bus-lanes; validated by normal source admission')
     parser.add_argument('--lane',choices=['devices','power','bus-lanes','guest-devices','device-input','monitor','monitor-input','initializer','notebook','cold','failed-flush','input'],required=True)
     parser.add_argument('--work-dir',type=Path,required=True)
     parser.add_argument('--timeout',type=float,default=300)
@@ -227,6 +235,7 @@ def main():
     parser.add_argument('--gap-cycles',type=int,default=50000000)
     parser.add_argument('--session',choices=['undo-redo','brush-width'],default='undo-redo')
     args=parser.parse_args();out=args.work_dir.resolve()
+    if args.deps is not None and args.lane!='bus-lanes':parser.error('--deps is admitted only for bus-lanes')
     if out.exists():parser.error('Use a new output path; retained failures cannot be overwritten')
     if not 1<=args.timeout<=1800:parser.error('timeout must be bounded1..1800 seconds')
     if not 1<=args.jobs<=8:parser.error('jobs must be bounded1..8')
@@ -236,7 +245,7 @@ def main():
     try:
         if args.lane=='devices':report.update(devices(out,args.timeout,args.jobs))
         elif args.lane=='power':report.update(power_control(out,args.timeout,args.jobs))
-        elif args.lane=='bus-lanes':report.update(bus_lanes(out,args.timeout,args.jobs))
+        elif args.lane=='bus-lanes':report.update(bus_lanes(out,args.timeout,args.jobs,args.deps))
         elif args.lane in ('guest-devices','device-input'):
             sys.path.insert(0,str(ROOT/'conformance/silicon'))
             from device_observations import fixture,observe

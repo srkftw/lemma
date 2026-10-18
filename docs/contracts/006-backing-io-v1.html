@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LemmaSim external backing-I/O v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lemmasim-external-backing-io-v1">LemmaSim external backing-I/O v1</h1>
+<p>The host-only <a href="../../sim/host/backing_io.h">shared boundary</a> carries opaque bytes;
+it does not parse records, run recovery or decide document acknowledgements.
+The RTL Machine runtime consumes it for medium reads, ascending-sector FLUSH
+writes and the final barrier. Its POSIX implementation uses actual buffered
+<code>pread</code>, <code>pwrite</code> and <code>fsync</code> on the regular medium exclusively owned by the native session. The QEMU
+adapter has not yet adopted this boundary. A browser adapter can provide the
+same narrow callbacks; this contract alone does not establish browser durability.</p>
+<p>Each external operation has a monotone u64 identity, the exact virtual cycle,
+kind, byte offset, bounded length and immutable write bytes. A single owner
+advances <code>Idle/Completed/Cancelled -&gt; Pending -&gt; Completed</code>. Cancellation is
+legal only before external execution. An exception after execution may have
+changed external bytes; the owner is poisoned and cannot retry, advance or
+checkpoint that ambiguous operation. Current native calls are synchronous and
+do not yield: an external callback completes before the next RTL rising edge.
+There is consequently no external syscall in flight at the supported completed
+rising-edge snapshot boundary. The RTL queue/DMA/controller can still be in
+flight and remains captured. An asynchronous adapter must implement and version
+its additional pending state and fork/cancellation rule before advertising it.</p>
+<p>Reads and writes return the exact transferred prefix and terminal errno. A
+zero-byte transfer before the requested length is a short transfer/EIO; EINTR
+is captured rather than retried indefinitely. Ordinary failures reach the real
+controller&#39;s IOERR completion. Successful buffered writes may precede a failed
+later write or fsync. They remain changed in the backing file; failure neither
+rolls them back nor clears the volatile overlay. The POSIX profile excludes
+direct I/O and models changed buffered bytes as the positively returned write
+prefix. It makes no guarantee about their survival across physical host failure.
+<code>observed_write</code> and <code>durable_barrier</code> are separate operation identities. Only
+a successful barrier moves the latter; guest store publication and Saved remain
+separate, Lean-authoritative decisions.</p>
+<p>Snapshots and exports read the actual backing bytes through <code>passive_read</code>.
+They issue no guest operation, barrier, drain or completion. The historical
+wrapper field named <code>durable</code> stores these observed backing bytes, including
+unacknowledged bytes left by a failed publication. The volatile overlay is
+captured separately. Restoring retains operation identities and materializes
+the saved backing into an exclusive private fork. Thus a cold reopen may see
+unacknowledged persistence and the guest journal must decide applicability.
+A restore is not cold recovery.</p>
+<p><code>BackingPlatform</code> supplies capacity, observational reads, execution and isolated
+record application. <code>Machine.attach_backing</code> validates canonical medium capacity.
+<code>rebind_private_backing</code> is permitted only after restore, compares every observed
+backing byte before replacing ownership, and preserves all serialized operation
+state. It supports moving a restored private fork to another platform without
+turning MEMFS or an in-memory buffer into a claimed persistence barrier. No raw
+descriptor, host pointer or original backing path enters a checkpoint.</p>
+<h2 id="capture-and-isolated-replay">Capture and isolated replay</h2>
+<p>Native RTL sessions automatically create <code>backing.io</code>. A successful restore starts
+a new exclusive <code>backing.io.fork-N-XXXXXX</code> stream and retains the original log.
+Operation identities can rewind with restored machine state without creating
+duplicate identities in an external stream. The public
+<code>Machine.backing_capture_path()</code> getter names the current stream; this path and
+its branch ordinal are host ownership fields excluded from authoritative state. Low-level <code>lemma-rtl</code>
+also exposes <code>--backing-capture NEW_FILE</code> and <code>--backing-replay LOG_FILE</code>.
+Replay requires a restored private fork. The ordinary session command accepts
+<code>--backing-replay LOG_FILE --restore SNAPSHOT_DIRECTORY</code>. The existing raw-input
+suffix replay remains necessary for admitted pen/button/UART events.</p>
+<p><code>LMIOLOG1</code> is followed by the 64-byte implementation identity, then length-prefixed
+records. Each contains seven little-endian u64 fields: identity, virtual boundary,
+kind, offset, requested length, transferred length and errno; immutable requested
+write bytes; exact returned/changed prefix bytes; and CRC64-ECMA. CRC and source
+identity provide integrity and compatibility, not authentication. A zero-length
+placeholder is written before external execution, and completed outcome bytes
+are recorded before the device can receive the result. Interrupted placeholders,
+truncation, corrupt records, malformed fields and inconsistent ordering reject.
+The entire regular log is preflighted before replay. A capture write failure
+poisons the owner instead of permitting an unrecorded success.</p>
+<p>Logs are bounded at 64 MiB and 1,000,000 records; transfers at 1 MiB. Capacity is
+reserved before external execution. Exhaustion pauses with an explicit error.
+The capture file receives its own fsync at snapshot; that observational-log
+barrier never flushes the guest medium. The log is external replay input rather
+than part of exact machine state. Saved machine state includes the next operation
+identity, last accepted completion, last successful barrier, observed write and
+phase. The implementation closure includes every shared boundary source.</p>
+<p>Replay checks the complete request, including cycle and immutable write bytes,
+before consuming an outcome. Reads use recorded returned bytes; they never
+consult the original medium. Writes apply only their recorded changed prefix to
+the private backing. A local fork barrier must succeed to retain replay effects,
+while the original captured success/error remains the guest-visible result.
+An error in materializing the fork is a replay failure, not a replacement guest
+outcome. Original files, networks and peers are never recontacted. Missing or
+divergent requests fail closed. Replaying a failed barrier preserves its changed
+bytes without inventing a Saved acknowledgement.</p>
+<p>The focused host check runs real RLIMIT_FSIZE partial pwrite/EFBIG and real
+pread/fsync EBADF failures, independently inspects resulting bytes, closes the
+original descriptor, and reproduces the recorded prefix into a new file. It also
+checks separate acknowledgement, cancellation/poison and CRC/truncation behavior:</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command python3 -m unittest discover \
+  -s tests/lemmasim -p test_backing_io.py -v
+</code></pre>
+<p>This is host-boundary evidence; it does not establish guest cold recovery,
+QEMU parity, USB/companion completion, browser distribution or physical storage.</p>
+<p>The native Pending checkpoint successor is specified in <a href="006-companion-backing-dev-v5.html">v5</a>; the synchronous v1 observations above retain their original scope.</p>
+<p>The native Linux POSIX adapter now captures file-size-limit failures with the
+default <code>SIGXFSZ</code> disposition. Each <code>pwrite</code> temporarily blocks that signal on
+its calling thread, consumes only a newly generated file-limit signal after
+<code>EFBIG</code>, and restores the original mask. A previously pending signal is retained;
+no process-wide handler is installed. The actual partial prefix and errno still
+enter the ordinary backing record before controller completion. Signal-drain
+interference is bounded to16 interruptions; an unknown host failure poisons the
+operation through the existing exception path. I/O <code>EINTR</code> is still captured.
+Emscripten uses its existing virtual-file path without these Unix signal calls.</p>
+<p><code>scripts/lemmasim_file_limit.py</code> supplies a Linux Laboratory environment control
+for the qualified canonical native implementation600e93eb. It requires a paused
+private fork and verifies the actual executable, process start time and medium
+ownership. Before changing the soft <code>RLIMIT_FSIZE</code>, it fsyncs a new pending token
+and its parent directory. The token records the previous limits and exact
+process; cleanup accepts either the pending or applied form, rejects a replaced
+process or superseding limits, and remains available after capture uncertainty.
+Neither admission nor cleanup advances machine clocks. Clients must exclusively
+control the paused session while changing the host policy. New faults are
+rejected for uncertain capture, external adapters and recorded-outcome replay.
+The OS limit is external environment, not serialized machine state. Restored
+live branches must explicitly select their own environment; recorded replay
+applies the captured prefixes/errors to private bytes without recreating the
+original POSIX fault. <code>lemmasim file-limit</code> and the standalone native <code>run.py file-limit</code> forward the same bounded arguments to this helper; neither adds a
+machine or changes its fault semantics. See README for actual arguments.</p>
+<p>The original default-disposition child terminated with signal25. The repaired
+real-syscall regression preserves a128-byte prefix, <code>EFBIG</code>, default disposition,
+original mask and an independently preexisting pending signal. The rebuilt
+canonical native runtime additionally qualifies actual two-byte partial write
+and <code>fsync/EBADF</code> Pending snapshots, IOERR status DMA, retained unacknowledged
+effects and exact private recorded suffixes. This latter fixture explicitly
+seeds coherent logical/cached controller state; it is literal runtime evidence,
+not a guest-issued Save or cold-recovery result. Original failed fixtures remain.</p>
+<p>Native binary8e5ce4ee and snapshot identity7a59b9e6 have their own source binding;
+older runtime/checkpoint identities retain their historical scope. The new
+prepared native bundle is <code>build/native/task006-package-layout2-fsize-a4</code>, with
+the unchanged fully audited Layout2 RV64 pair. Active earlier cold machines
+continue on their original runtime. The exact qualification command is:</p>
+<pre><code class="language-sh">nix-shell tooling/silicon/sim.nix --run &#39;python3 scripts/check_native_backing.py --fixture fault-pending --rtl-build build/silicon/task006-fsize-signal-native-a1 --guest-bundle build/native/task006-package-layout2-a3 --work-dir build/AN_UNUSED_NATIVE_FAULT_CHECK&#39;
+</code></pre>
+<p>The complete maintained guest scenario additionally passes with exact QEMU
+binary188e5447 and audited guest a20c6530. The guest performs Compact, raw ink,
+unsuccessful Save after a real two-byte partial <code>pwrite/EFBIG</code>, independent cold
+recovery and new raw writing through Saved8. It checks every observed medium
+byte, acknowledged object and controller pixel at the cold boundary. The OS
+file limit applies only to its owned child and is restored before teardown.
+The original observer failures remain retained; the final complete command has
+its own PASS receipt. This is functional instruction-clock evidence.</p>
+<pre><code class="language-sh">nix develop --no-write-lock-file --command python3 scripts/check_guest_posix_save_failure.py \
+  --disk build/courses/task006-package-fast-layout2-a2/final-observed.raw \
+  --work-dir build/AN_UNUSED_GUEST_POSIX_CASE \
+  --expected-guest-sha256 a20c6530c845a69a6b9d521c491ab0abdee1b406210b763762d0b92d3313f370 \
+  --expected-runtime-sha256 188e544730915c0c781f22a1937c0b758fd5931a65e995c8eb69df3fad0fd674
+</code></pre>
+<p>Portable private replay now requires a successful local barrier even when the
+recorded original barrier failed. The recorded error remains the guest outcome;
+a failure applying the private barrier instead poisons and stops that fork.
+The repaired canonical port qualifies both actual native failure cuts with
+complete authoritative prefix/suffix equality under explicitly admitted
+implementation identities, plus foreign identity, corrupt state/tape, missing
+tape and private-barrier-failure rejection. It never consults the original file
+or peer. Its two literal2000-clock suffixes do not establish guest Save,
+arbitrary microstate migration, browser OPFS failure handling or cold recovery.</p>
+<pre><code class="language-sh">python3 scripts/check_wasm_backing_pending.py \
+  --wasm-build build/browser/task006-fsize-native-port-a2 \
+  --rtl-build build/silicon/task006-fsize-signal-native-a1 \
+  --rtl-source-root build/silicon/task006-fsize-signal-native-a1/consumed-source-root \
+  --native-bundle build/native/task006-package-layout2-fsize-a4 \
+  --native-result build/lemmasim/task006-fsize-signal-native-boundary-a8/result.json \
+  --work-dir build/AN_UNUSED_PORTABLE_FAULT_CHECK
+</code></pre>
+<p>The additive fast Laboratory control admits only launcher97ab475e and actual
+executor298840d9 from the pinned raw-UART QEMU derivation. It checks both hashes,
+the current owned process/start time, actual command-line local medium and its
+open writable FD inode. The medium must be a single-link private migration copy
+under that session. It rejects peer adapters, recorded replay, capture poison,
+noncanonical profiles and running sessions. Initial owner argv may precede a
+QEMU restore; it never substitutes that stale medium path for the actual VM FD.
+This is a functional migration branch. The cached-state limitation in
+QEMU_STATE_EQUIVALENCE remains open, and no RTL timing parity is inferred.</p>
+<p>The real OS limit covers every regular file written by that process. Clear it
+after observing the desired backing failure and before large display, medium
+or checkpoint exports. The backing adapter&#39;s per-thread signal guard does not
+change the default disposition for other output operations. The retained first
+fast observer attempted a large screendump under the limit and terminated its
+private VM; the corrected workflow clears the limit with zero guest clocks,
+then requires the complete Failed display and absence of Saved. Actual partial
+bytes/errors are replayed without recreating the OS fault. A new CPU then cold
+recovers the acknowledged bytes from the observed partial medium.</p>
+<p>The native Linux POSIX implementation independently reads the selected extent
+before and after each buffered write. It verifies the returned prefix against
+actual bytes, without issuing a barrier. A failed preflight precedes any write;
+a failed post-observation or bytes outside the reported prefix poison the owner
+before completion. This does not assume an error rolled back the medium, and
+does not claim persistence across physical host failure.</p>
+<p>The public-development-auth launcher adds Laboratory-only
+<code>--boot-write-limit FIRST:PAST:CEILING</code> for a cold, single-thread native session.
+For actual BootNV writes overlapping the half-open byte range, the POSIX adapter
+scopes the real soft <code>RLIMIT_FSIZE</code> to CEILING; the hard limit is unchanged. It
+restores the prior policy before returning the outcome or writing capture/UART
+logs. Reads, barriers and unrelated writes retain their ordinary behavior. The
+adapter checks that exactly one host thread exists at each selected operation;
+restoration failure terminates instead of leaking policy into the logger.
+Student/Developer, multithreaded, restore and live replay admissions reject.
+This is an explicit external Linux environment, not portable snapshot state.
+The same owner&#39;s private fork retains its configured condition; a new owner
+requires explicit configuration or recorded outcomes. Recorded replay applies
+only captured byte effects to private backing, without applying the live limit.</p>
+<p>Focused tests exercise real partial256/EFBIG, unchanged signal/process policy,
+unaffected unrelated writes/logging, recorded private replay and concurrent
+thread rejection. These component results do not establish guest boot recovery;
+<code>check_interrupted_notebook_update.py --cut metadata</code> performs that separate
+fixed1059-sector image15 workload under its prospectively declared bounds.</p>
+</main>
+</body>
+</html>

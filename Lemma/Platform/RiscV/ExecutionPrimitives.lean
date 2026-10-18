@@ -72,6 +72,8 @@ structure Configuration where
   productBoot : Bool := false
   /-- Opt-in CommonOFDM12 grants only its separate1KiB S aperture. -/
   commonOFDM : Bool := false
+  /-- Exclusive Multimodal14 controller aperture; no boot NV or radio. -/
+  multimodal : Bool := false
   deriving Repr, BEq
 
 def contextBytes : Nat := Layout.contextBytes
@@ -112,8 +114,8 @@ def commonPmpAddress : Nat := napot 0x10013000 0x400
 def commonPmpConfiguration : Nat := 0x1b
 def commonPmpReadbacks : Nat := 0x804e01f0
 
-private def initializePmp (lemmasim product common : Bool) : Array Line := #[ins (.csrWrite .pmpcfg0 .zero)] ++
-  (if product || common then #[ins (.csrWrite .pmpcfg2 .zero)] else #[]) ++
+private def initializePmp (lemmasim product common multimodal : Bool) : Array Line := #[ins (.csrWrite .pmpcfg0 .zero)] ++
+  (if product || common || multimodal then #[ins (.csrWrite .pmpcfg2 .zero)] else #[]) ++
   (pmpAddresses ++ (if lemmasim then #[
     (.pmpaddr5, napot 0x0c000000 0x800000),
     (.pmpaddr6, napot 0x10001000 0x1000),
@@ -132,6 +134,11 @@ private def initializePmp (lemmasim product common : Bool) : Array Line := #[ins
     ins (.loadImmediate .t0 commonPmpAddress), ins (.csrWrite .pmpaddr8 .t0),
     ins (.csrRead .t1 .pmpaddr8), ins (.branchNe .t0 .t1 "lemma_machine_fatal"),
     ins (.loadImmediate .t0 commonPmpConfiguration), ins (.csrWrite .pmpcfg2 .t0),
+    ins (.csrRead .t1 .pmpcfg2), ins (.branchNe .t0 .t1 "lemma_machine_fatal")
+  ] else if multimodal then #[
+    ins (.loadImmediate .t0 (napot 0x10014000 0x2000)), ins (.csrWrite .pmpaddr8 .t0),
+    ins (.csrRead .t1 .pmpaddr8), ins (.branchNe .t0 .t1 "lemma_machine_fatal"),
+    ins (.loadImmediate .t0 0x1b), ins (.csrWrite .pmpcfg2 .t0),
     ins (.csrRead .t1 .pmpcfg2), ins (.branchNe .t0 .t1 "lemma_machine_fatal")
   ] else #[]) ++ #[
     ins .translationFenceAll
@@ -153,7 +160,7 @@ private def recordBootState (config : Configuration) : Array Line := #[
 ]) ++ (if config.lemmasim then
   (#[ (.pmpaddr5, 104), (.pmpaddr6, 112), (.pmpaddr7, 120) ] : Array (CSR × Nat)).flatMap
     (fun (csr, slot) => #[ins (.csrRead .t1 csr), ins (.storeDouble .t1 .t0 (offset slot))])
-  else #[]) ++ (if config.commonOFDM then #[
+  else #[]) ++ (if config.commonOFDM || config.multimodal then #[
     ins (.loadImmediate .t0 commonPmpReadbacks),
     ins (.csrRead .t1 .pmpaddr8), ins (.storeDouble .t1 .t0 0),
     ins (.csrRead .t1 .pmpcfg2), ins (.storeDouble .t1 .t0 8)
@@ -182,7 +189,7 @@ def startup (config : Configuration) : Array Line := #[
   ins (.loadImmediate .t0 (UInt64.toNat Lemma.Core0.Timer.MachineTimer.compareAddress)),
   ins (.loadImmediate .t1 0xffffffffffffffff),
   ins .fenceIO, ins (.storeDouble .t1 .t0 0), ins .fenceIO
-] ++ initializePmp config.lemmasim config.productBoot config.commonOFDM ++ #[
+] ++ initializePmp config.lemmasim config.productBoot config.commonOFDM config.multimodal ++ #[
   ins (.loadImmediate .t0 exceptionDelegation), ins (.csrWrite .medeleg .t0),
   ins (.loadImmediate .t0 (if config.lemmasim then 514 else interruptDelegation)), ins (.csrWrite .mideleg .t0)
 ] ++ (if config.startupCase == .machineOriginProbe then #[
@@ -394,6 +401,9 @@ private def validSymbol (symbol : String) : Bool :=
 def Configuration.validate (config : Configuration) : Except String Unit := do
   unless Layout.valid do throw "authoritative machine layout is invalid"
   unless validSymbol config.kernelMain do throw "invalid compiled kernel entry symbol"
+  if config.multimodal then
+    unless config.lemmasim && !config.productBoot && !config.commonOFDM && config.stage == .supervisor && config.startupCase == .normal do
+      throw "Multimodal PMP requires exclusive normal LemmaSim supervisor startup"
   if config.productBoot then
     unless config.lemmasim && config.stage == .supervisor && config.startupCase == .normal do
       throw "Product PMP authority requires normal LemmaSim supervisor startup"

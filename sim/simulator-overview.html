@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LemmaSim</title>
+<link rel="stylesheet" href="../docs/documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../docs/overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="lemmasim">LemmaSim</h1>
+<p>Permanent virtual Lemma One. Task004 implements the native reference binding,
+project-owned pen/paper devices and volatile/durable block transport, with a
+compiled Lean notebook and isolated record service. Its bounded qualification
+is recorded in the <a href="../docs/evidence/004-lemmasim-durable-ink.html">evidence report</a>
+and <a href="../docs/plan/004-session-state.html">checkpoint</a>; this does not finish the
+canonical machine.</p>
+<p>The canonical machine contract is <a href="../LEMMA_MACHINE_CONTRACT.html">../LEMMA_MACHINE_CONTRACT.md</a>. Historic tested QEMU <code>virt</code> boot profiles remain in <a href="../docs/contracts/LEMMA_VM.html">../docs/contracts/LEMMA_VM.md</a>.</p>
+<p>The separately pinned QEMU <code>lemmasim-virt</code> runs the real M/S/U RV64 path.
+Host pointer or recorded samples enter the pen FIFO and PLIC; guest drivers,
+ink, rasterization and toolbar produce controller pixels. The record service
+uses guest VirtIO writes and flush publication. The host never draws strokes,
+parses live documents or reconstructs a notebook for recovery. Student,
+Developer and Laboratory modes share that machine. Developer controls and
+Laboratory faults operate outside guest authority.</p>
+<p>The <a href="profiles/lemmasim-virt-0.1.0.json">profile</a>,
+<a href="../docs/contracts/004-devices-v1.html">descriptor/register ABI</a>,
+<a href="../docs/contracts/004-block-medium-v1.html">block medium</a> and
+<a href="host/host-model-overview.html">host boundary</a> bind discovery, state transitions, virtual
+timing, failure and capture. The maintained command is <code>scripts/lemmasim</code>;
+ordinary launch uses prepared tools/images and an existing persistent disk.
+See the <a href="../docs/overview.html#task004-native-durable-notebook">runnable workflow</a>.</p>
+<p>Headless and native display consume the same controller state. Mouse pressure
+and refresh timing are synthetic. Automated GTK mouse capture, exact replay,
+cold recovery and Busy reset were exercised with dedicated Xvfb 21.1.24 from
+the pinned Nix input. Its optional recipe and executable SHA are retained in
+the evidence archive; it is a test environment, not a runtime installer.
+Manual visible interaction and physical tablet input are NOT_RUN. Physical conformance remains unverified;
+networking, managed Lean runtime and mathematics/tutor remain unfinished.
+Task006 adds the same-backend machine sessions below; these do not qualify
+the complete machine. The future machine is governed by
+<a href="../docs/plan/LEMMASIM.html">LEMMASIM.md</a>, not completed by this bounded notebook.</p>
+<h2 id="persistent-machine-sessions">Persistent machine sessions</h2>
+<p><code>scripts/lemmasim session</code> uses the reusable RTL runtime or the matched QEMU
+<code>lemma-silicon-fast</code> binding. The new <code>lemma-silicon-dev/0.2.0</code> profile uses
+1650×2200 pixels and a checked 32MiB allocator pool within external simulation
+RAM. It includes an explicitly synthetic digital panel sequencer. Historical
+profiles retain their original geometry, quotas and meaning.</p>
+<p>The command owns a long-lived machine with pause, bounded run, inspection,
+raw input, snapshot, restore, recorded-suffix replay, warm reset and cold cycle.
+The native window presents controller-produced pixels; toolbar operations,
+ink, editing, page/document changes and Save still execute in the Lean guest.
+Tk is available in the pinned host-only <code>tooling/lemmasim/session.nix</code> shell.
+See <a href="../docs/overview.html#task006-persistent-machine-sessions">launch and lifecycle commands</a>,
+the <a href="../docs/contracts/006-machine-session.html">state boundary</a>, and the
+<a href="../docs/contracts/006-rtl-runtime-v1.html">RTL serialization inventory</a>.</p>
+<p>Exact checkpoints are bound to their backend, implementation, guest and
+discovery bytes. Restore uses an isolated medium and never overwrites the
+source notebook. Live adapter handles disconnect on restore. Simulator
+pause/resume are distinct from the still-unimplemented guest suspend service.
+Nonvolatile recovery boot, companion transport, digital radio, browser/Wasm
+and finished mathematics applications remain part of the destination.</p>
+<h2 id="native-raw-tablet-transport">Native raw tablet transport</h2>
+<p><code>python3 scripts/lemmasim_tablet.py --list</code> reads Linux input-device names without
+reading their event streams. A selected real digitizer can feed an existing
+persistent session:</p>
+<pre><code class="language-sh">python3 scripts/lemmasim_tablet.py --device /dev/input/eventN --session-dir build/lemmasim/my-session --record build/lemmasim/my-session/tablet-raw.jsonl
+</code></pre>
+<p>The current adapter supports Linux x86_64 evdev. It requires reported absolute
+X/Y, contact and a pen/eraser tool; touchpads and ordinary mice are rejected.
+The capability report includes actual ranges, pressure support, tool/buttons,
+reported but untransported axes, and an explicit integer coordinate/pressure
+normalization. Absent pressure is reported <code>UNAVAILABLE</code> and transports zero;
+no contact pressure or tilt is invented. Pen-v1 cannot carry tilt. Full physical
+registration/calibration and physical digitizer compatibility remain unverified.</p>
+<p>Each <code>SYN_REPORT</code> transports one raw sample at the session&#39;s authoritative
+virtual time. Kernel timestamps and complete raw frame events are preserved
+separately; host wall time does not become guest time. <code>SYN_DROPPED</code> produces
+an explicit guest stream-loss boundary, discards incomplete events, and queries
+actual kernel state after the next synchronization. Disconnect/cancel also
+produces stream loss, allowing the real guest to cancel/resynchronize a stroke.
+Frames, capture size and lifetime are bounded, and capture paths are exclusive.
+The adapter performs no gesture, notebook, ink, journal or mathematical work.
+SIGTERM/SIGINT stop the input thread and attempt an explicit loss event before
+closing; bounded RPCs and teardown expose a blocked or failed sink. An operating
+system device handle is an external connection, not snapshot state. Snapshot
+creation does not drain input or inject a cancellation. Restore/replay must
+disconnect the live adapter before applying machine state; reconnection and
+loss are separately recorded external decisions.</p>
+<p>Eight independent host fixtures include a real byte-pipe with fragmented event
+records, EOF cancellation, literal session admission and real child-process
+SIGTERM teardown. A physical tablet was not present in the observed
+Linux input inventory, so manual tablet writing/registration is <strong>NOT_RUN</strong>.
+EOF fixtures are transport tests, not physical-input evidence.</p>
+</main>
+</body>
+</html>

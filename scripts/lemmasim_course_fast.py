@@ -20,9 +20,9 @@ def send(args):
             metadata.get('backend') != 'qemu'):
         raise ValueError('Fast course command requires a Developer/Laboratory fast session')
     identity = metadata.get('identity', {})
-    if (identity.get('profile') != 'lemma-silicon-dev/0.3.0' or
+    if (identity.get('profile') not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0') or
             identity.get('adapter') != 'lemmasim-fast-adapter/5'):
-        raise ValueError('Fast course command requires negotiated canonical raw UART1')
+        raise ValueError('Fast course command requires negotiated canonical/multimodal raw UART1')
     argv = metadata.get('argv', [])
     if not isinstance(argv, list) or argv.count('-kernel') != 1:
         raise ValueError('Fast course session lacks an exact development guest image')
@@ -31,7 +31,10 @@ def send(args):
         raise ValueError('Malformed fast guest image argument')
     image = Path(argv[index])
     build = json.loads((image.parent/'build.json').read_text())
-    if (build.get('configuration') not in CANONICAL_CONFIGURATIONS or
+    configuration=build.get('configuration')
+    expected_profile=('lemma-silicon-dev/0.14.0' if configuration in ('lemmasim-silicon-multimodal-notebook','lemmasim-silicon-multimodal-parameterized-notebook') else
+                      'lemma-silicon-dev/0.3.0' if configuration in CANONICAL_CONFIGURATIONS else None)
+    if (expected_profile is None or identity.get('profile')!=expected_profile or
             hashlib.sha256(image.read_bytes()).hexdigest() != identity.get('guest')):
         raise ValueError('Fast course command requires the exact admitted course guest')
     # Observe the actual private control owner as well as its launch metadata.

@@ -127,13 +127,13 @@ class StatusTests(unittest.TestCase):
 
     def test_routes_keep_contract_validation_and_history_separate(self):
         config = status.load(Path(__file__).resolve().parents[2] / "scripts/verification_routes.json")
-        cases = (("docs/contracts/006-trial-boot-watchdog-v1.md", "contract-review"),
+        cases = (("docs/contracts/006-trial-boot-watchdog-v1.html", "contract-review"),
                  ("scripts/build_actions.py", "notebook-qemu"),
                  ("scripts/action_cache.py", "cache-host"),
                  ("scripts/core0_common.py", "kernel-host"))
         for path, claim in cases:
             self.assertIn(claim, status.verification_plan(config, [path])["required_claims"])
-        history = status.verification_plan(config, ["docs/plan/006-session-state.md"])
+        history = status.verification_plan(config, ["docs/plan/006-session-state.html"])
         self.assertNotIn("artifact-production", [row["boundary"] for row in history["affected"]])
         self.assertEqual(set(history["required_claims"]), {"metadata", *config["baseline_claims"]})
         self.assertIn("dependency-review", status.verification_plan(config, ["unknown-helper.py"])["required_claims"])

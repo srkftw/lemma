@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kernel foundation contracts v1</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="kernel-foundation-contracts-v1">Kernel foundation contracts v1</h1>
+<p>This additive contract preserves all historical Core0 profiles. New checked
+profiles are <code>core0-firmware-v0.1</code>, <code>core0-kernel-v0.1</code> and <code>core0-user-v0.1</code>.
+Gate E adds <code>core0-kernel-v0.2</code> for one closed UART FIFO operation; v0.1 remains
+a regression profile. The new operation enables/resets the pinned 16550 FIFO
+with fixedFCR0xc7 (receive trigger14), with no user-supplied register or value.
+Legacy FIFO initialization remains fixed0x07 and unchanged. Earlier profiles
+reject the new operation. The kernel initializes the UART once before exposing
+its input protocol; reset is not repeated during a live session.
+Legacy host device/memory models reject this new hardware operation explicitly;
+their older properties do not certify its trigger behavior. The pinned source,
+exact generated MMIO store and real VM observations supply distinct evidence.
+Their exact scalar/effect/operation catalogs are maintained in Core0.Execution
+and the production unit manifests. Genuine elaborated declarations remain the
+source; arbitrary externs, indirect callbacks and unknown helpers are rejected.</p>
+<p>Kernel/firmware physical accesses use width1/8, subtraction-safe bounds and
+alignment checks before a volatile load/store. Firmware may access its private
+storage; kernel policy may access metadata, boot stack and the frame pool, and
+read the declared image/package/DTB intervals. User units receive virtual
+accesses only. Compiler bounds are an authority boundary, not a proof of
+architectural user isolation. Firmware/syscall transport returns actual ABI
+status/value in a0/a1. It does not manufacture success for a failed ECALL.</p>
+<p><code>Action.loop</code> is restricted to kernel/user profiles and a statically resolved,
+monomorphic zero-argument Action step. It repeats while step status=0, retaining
+no recursive target stack growth. A nonzero status returns the original failure
+and value. The loop may diverge; emitted functions promise neither <code>willreturn</code>
+nor <code>mustprogress</code>. Each bounded operation retains its own fail-closed budget.</p>
+<p>The authoritative LemmaVM Layout reserves firmware, M storage, S image,
+metadata, stack, package, pool and DTB separately. The available pool is512
+4KiB frames at0x82000000..0x82200000. The guest DTB parser validates the exact
+advertised128MiB RAM and rejects reserved-memory nodes before allocation.
+Pinned QEMU/libfdt property padding is not necessarily zero; at most3 property
+alignment bytes are bounded/skipped. Node-name padding remains canonical zero.</p>
+<p>Frames.allocate(owner,purpose) zeroes the complete page before publishing a
+generation-tagged handle <code>generation*512+index</code>. Owner1 is kernel; other valid
+owners are quota-limited to32 pages. Owner0/MAX and purposes outside1..5 reject.
+Resolve checks live owner and generation. Release requires that exact identity
+and map count0. Callers must invalidate translations before dropping the last
+mapping pin. Reuse increments a55-bit generation; final-generation release
+permanently retires the slot and does not restore available capacity.</p>
+<p>Batch.allocate builds1..32 frames in bounded kernel scratch storage, rolls back
+every partial grant on failure, and publishes the count only on complete success.
+Its returned handle array is ephemeral until the next batch; trusted callers
+copy it before another transaction. No user pointer controls that storage.</p>
+<p>Frames.allocateContiguous2 acquires exactly two adjacent pages with independently
+checked generations. It requires two free slots and quota/global room for both,
+zeros both before publishing either grant, and returns two handles in fixed
+kernel scratch storage80400580/+8. Ordinary rejection acquires no frames. The
+loader copies both handles into its descriptor at2400/2480 before another pair
+transaction, with top at2408. Task003 evidence used two pages and8192 bytes for
+the owned kernel trap stack. Both purpose1 handles, owner, zero mapping pins and
+physical contiguity are revalidated before reading an incoming trap frame.
+Inactive teardown clears each handle immediately after its release; a suspended
+or active task stack cannot be reclaimed from that stack.</p>
+<p>Task004 current launches use the checked four-page constructor and
+<code>lemma-kernel-layout-v2</code>, with16KiB allocation and16352 usable bytes after
+sentinel reservations. The pair operation and explicit512/32/2 fixture
+configuration keep their prior meaning. Current allocation/accounting,
+canaries and interrupt-nesting assumptions are specified in
+<a href="004-owned-memory-v1.html"><code>004-owned-memory-v1.md</code></a>; earlier evidence is unchanged.</p>
+<p>Normal roots exclude development imports. The separate frames-development
+configuration exposes raw privileged probes and metadata fixtures for acceptance.
+Its mapping-count fixture tests bookkeeping only; actual installed mapping,
+invalidation and U-mode containment require Gate D evidence.</p>
+<p>The ownership model&#39;s non-overlap, free-not-live and pool-envelope lemmas are
+separate mathematical properties, not compiler or emitted allocator proofs.</p>
+<p>The private firmware ABI accepts S-origin ECALLs from the supervisor envelope:
+1 acknowledges SSIP and arms a future deadline1000..10000000 ticks away;
+2 reads machine time;3 returns a saved-privilege origin witness;4 returns actual
+M timer IRQ count. Unknown calls return17, invalid deadlines22. M handlers use
+only their fixed private stack/frame, park the timer and latch SSIP. S execution
+is initially nonpreemptible; pending notification is distinct from delivered
+S interrupts and scheduler decisions. No SBI compatibility is claimed.
+Call5 accepts a relative1000..10000000-tick interval, computes and overflow-checks
+its deadline in M, acknowledges SSIP and arms that hardware deadline. It returns
+the actual deadline; call1 retains the existing absolute-deadline contract.</p>
+<p>Startup reads back five PMP NAPOT intervals, exception delegation0xb1ff,
+interrupt delegation0x1446 (desiredSSIP2 plus pinned QEMU H read-only0x1444),
+status and SATP. Machine-origin-development is bootstrap-only and adds exactly
+one typed M ECALL rejection boundary; normal roots cannot select it implicitly.
+LLVM&#39;s immutable PMP comparison table is audited by exact source, contents,
+guarded load and32-byte readonly object-section provenance.</p>
+<p>AddressSpace creates an independent owned 4KiB Sv39 tree with ASID zero. Its
+descriptor is a generation-tagged owner1 frame; tables belong to the instance&#39;s
+owner. User leaves carry exact live handles and logical R1/RW3/RX5 permissions.
+Text-purpose frames admit RX, data R/RW and stacks RW. Intermediate leaves,
+reserved PTE bits, unknown frames, stale handles and unsupported permissions
+reject. Lookup checks the actual three-level walk against tracked ownership and
+the exact PTE. Removal clears the PTE, flushes translations, then drops its pin.
+Destroy requires an inactive root and releases leaves, tables and descriptor.</p>
+<p>Stable supervisor mappings cover the image, metadata/boot stack, immutable
+package/DTB, pool management alias, UART and finisher, with U clear. VA30000 is
+an additional S-only RW/NX alias of the metadata page. User addresses are in
+10000..40000000, excluding device holes. The loader reserves its text/data/stack
+layout and leaves surrounding user stack guards unmapped. The S management
+alias remains RW/NX even for executable user frames: the claim is user-PTE W^X,
+not strict global W^X. No user mapping grants physical or device authority.</p>
+<p>The guest loader validates every descriptor in a package of1..8 images before
+allocation, including selection, unique IDs, payload bounds/overlap, entry
+alignment/containment, fixed virtual layout and flags. It copies bytes into real
+owned frames, obtains zeroed BSS/stacks from Frames, fences instruction fetch,
+and publishes a sanitized U context only on success. A partial construction
+unwinds on the stable S root. The separately compiled user root takes one u64
+argument and returns the two-word Action result through the ordinary LP64 ABI.</p>
+<p>The first process boundary suspends one S caller in reserved context80500000,
+below the live boot stack floor80501000. Its owned U trap stack and frame are
+validated before dereference. Hardware-saved SPP, SATP and PC establish origin;
+unknown ECALLs return17 and advance only a validated ordinary ECALL site.
+The dispatcher chooses the exact fixed S context for exit/fault return; typed
+restoration installs/flushed its SATP before the caller reclaims user storage.
+This single-process boundary is not yet a scheduler or capability system.</p>
+<p>A verified U trap&#39;s saved PC is diagnostic data for architectural faults,
+including forbidden kernel fetches and illegal halfword targets. Origin comes
+from owned trap storage, saved privilege and the task&#39;s exact translation.
+Only ordinary ECALL continuation requires aligned mapped executable code.
+The independently linked image contains a declared16-byte initial data header
+[0,ABI.version]; actual U code checks the copied version and separately zeroed
+BSS before computing its result. Both object and packaged bytes are audited.</p>
+<h2 id="user-syscall-abi-v1-under-gate-e-construction">User syscall ABI v1 under Gate E construction</h2>
+<p>An ordinary U ECALL supplies number in a7 and five payload words in a0..a4;
+the two-word result is UInt8 status in a0 and UInt64 value in a1. a5/a6 do not
+convey ABI arguments. Unused payload words must be zero and otherwise return16.
+The trap preserves the interrupted integer register set except those two result
+registers and the advanced PC. The library transport is an ordinary LP64 function
+call: its argument shuffling modifies caller-saved registers, while callee-saved
+registers and stack are preserved. No floating-point/vector state is admitted.
+The dispatcher advances only a validated four-byte executable ECALL site and
+sanitizes restored status. Internal integrity status255 terminates the kernel;
+it is never exposed as a normal user result.
+An ECALL from a verified U context at a halfword site lies outside this generated
+ABI and terminates only that instance with code44; it cannot confer kernel
+authority. The closed architectural corpus below requires its direct hardware
+witness, separately from source rejection or an alignment model.</p>
+<p>Numbers are1 identity,2 console,3 yield,4 sleep,5 time,6 exit,7 allocate page,
+8 release page. Unknown numbers return17. Identity is the current validated
+address-space generation handle. Exit consumes one code and selects trusted
+teardown; yield currently returns0/0. Gate E yield and hardware sleep are not
+task scheduling or blocking-task evidence; those transitions require Gate F.
+Sleep accepts one relative interval and returns the armed absolute deadline
+only after an actual pending timer notification, then rearms the quantum.</p>
+<p>Console payload is(operation,pointer,length), where0 writes and1 reads. Length
+is at most256. Nonempty complete ranges are checked before device effects,
+including both pages of a boundary crossing and write permission for a read
+destination. Zero length touches neither pointer, scratch storage nor UART.
+Reads poll without blocking: empty returns12/0; available input returns a short
+actual count. A device error after progress reports the actual prefix count;
+the console cannot roll back transmitted or consumed bytes.
+The pinned QEMU backend&#39;s receive advertisement depends on FIFO trigger level;
+even with a larger FIFO, a nonblocking call may return fewer bytes than requested.
+Clients must account for actual counts. An accumulated client payload is distinct
+from one successful syscall; a crossing-copy witness requires that actual call
+to deliver bytes on both pages.</p>
+<p>Page operations accept(alignedVA,count=1) within40000..100000, leaving loader
+code/data/stacks and devices outside this arena. Ownership derives from the
+validated caller descriptor. Mapping failure releases the provisional grant;
+release invalidates the mapping before dropping its pin and releasing the exact
+generation. Results expose virtual addresses, never physical handles. Range71,
+permission72, duplicate73, missing/stale mapping74 and quota38 are ordinary
+errors. The synchronous single-hart copy routines retain no borrowed user
+pointer or physical alias beyond the bounded syscall critical section.</p>
+<p>This describes the current construction interface. Gate E remains incomplete
+until its complete O0/O2 artifact audits and actual guest corpus pass. Historical
+Gate D evidence binds its earlier one-page-stack implementation separately.</p>
+<h2 id="closed-gate-k-architectural-instruction-cases">Closed Gate K architectural instruction cases</h2>
+<p>Three selected development startup cases run only after the genuine separately
+compiled <code>Lemma.User.Entry.main(UInt64)</code> returns status zero. That root checks
+the copied ABI word and zero BSS, writes <code>mix(argument)</code> to private user data
+and reads it back. A failed precondition exits normally and cannot qualify an
+attack. The ordinary four service images and all production startup paths use
+case <code>none</code>; these cases add no accepted Core0 source feature or user authority.</p>
+<p>The exact configurations are <code>user-halfword-ecall-development</code>,
+<code>user-return-supervisor-development</code>, <code>user-return-machine-development</code> and
+the corresponding <code>service-</code> configurations. All are supervisor-stage development
+packages. The singleton selects the ordinary user root; a managed package
+replaces only fault image ID5 with that root and its selected startup case.</p>
+<p>The halfword body is24 bytes: a structured local-address load, add2, indirect
+jump, ADDI zero,t1,7 (word00730013), and one fixed zero word. The instruction
+bytes at the pair&#39;s +2 site form ECALL00000073. The pinned CPU supports IALIGN16;
+this is a hardware U ECALL at a site denied by the four-byte generated ABI,
+not an IALIGN32 hardware misalignment claim. Expected cause is8 and stval0.
+The SRET and MRET bodies contain exactly one4-byte instruction10200073 or
+30200073. In U they must produce illegal-instruction cause2; the pinned QEMU
+source predicts the respective opcode in stval, which actual tests must confirm.
+No arbitrary instruction-word operand is admitted by the fixed zero primitive.</p>
+<p>Both startup.o and linked User code require the exact selected source/case,
+symbol, executable section, entire bytes, local relocation targets and genuine
+main/status-zero gate. Audit <code>instruction_site</code> contains actual PC, symbol-relative
+offset, instruction_bits32 and opcode; the halfword pair-relative offset2 is
+not the symbol-relative offset. User SRET/MRET exceptions apply only to that
+proven selected site. Ordinary User instructions retain their privilege audit.</p>
+<p>A rejected halfword ABI call and an architectural user fault emit D4 with cause,
+PC, stval and raw hardware-saved sstatus before code44 termination. Managed
+policy reads the original owned frame only after Task.capture validates its
+address, stack pair, origin and translation. The separate saved context status
+is sanitized for restoration and is not raw trap evidence. Actual tests require
+three fresh generations, private mix results, complete reclamation, and ordinary
+CLI/Peer progress plus CPU arithmetic preemption between managed faults.
+These tests and byte/stack audits do not establish a whole-kernel proof or
+physical-board measurement.</p>
+</main>
+</body>
+</html>

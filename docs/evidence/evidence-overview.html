@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evidence</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="evidence">Evidence</h1>
+<p>The scaffold commit contains no target-execution evidence. Task 001&#39;s bounded scalar
+execution evidence is now recorded in <a href="001-core0.html">001-core0.md</a>, with a compact
+<a href="001-core0-summary.json">machine-readable summary</a> and <a href="001-core0-sha256s.txt">SHA-256
+inventory</a>. The report identifies the clean source commit that
+produced the results and keeps the remaining G1 work explicit.</p>
+<p>Large generated outputs remain under ignored <code>build/</code>; CI uploads the corresponding
+Core0 build directory as a retrievable artifact. Checked-in evidence contains hashes,
+not toolchains or target binaries.</p>
+<p>Task 002&#39;s bounded passing Gates 0--11 are recorded in
+<a href="002-machine-foundation.html">002-machine-foundation.md</a>, with a
+<a href="002-machine-foundation-summary.json">machine-readable summary</a> and
+<a href="002-machine-foundation-sha256s.txt">hash inventory</a>. Repaired source <code>09c47ba</code>
+passed cold clean detached qualification: 438 foundation hosts, 482 cumulative
+plus 23 legacy boots, and 26 retained-session replays. Both actual
+<a href="https://github.com/srkftw/lemma/actions/runs/37825241614">push CI</a> and
+<a href="https://github.com/srkftw/lemma/actions/runs/37825247231">PR CI</a> passed with
+verified source/checkout/artifact identities. The branch has an upstream and
+<a href="https://github.com/srkftw/lemma/pull/2">draft stacked PR #2</a>, still unmerged.
+Earlier <code>e0e1f2</code> local success and initial fresh-store Gate 3 CI failures are
+retained separately, not relabeled. Full local artifacts/logs are inventoried;
+remote archives were stream-inspected/hash-verified but not retained locally.
+The report contains the Task 001→002 RV64 capability delta, remaining risks and
+partial-only unit mapping. G1/G2 and complete construction-unit qualification
+remain open; implementation and report-bearing identities stay separate.</p>
+<p>Use <code>templates/EVIDENCE_REPORT.md</code> as a reporting structure. Never rename scaffold
+metadata tests to imply that the freestanding image booted.</p>
+</main>
+</body>
+</html>

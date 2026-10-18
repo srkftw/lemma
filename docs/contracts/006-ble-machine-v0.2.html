@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLE machine checkpoint extension v0.2</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="ble-machine-checkpoint-extension-v02">BLE machine checkpoint extension v0.2</h1>
+<p>This extends the opt-in0.5 hardware binding in <code>006-ble-machine-v0.1.md</code> with native checkpoint container5. The hardware, genuine RV64 guest and manual unauthenticated radio profile are unchanged. Container4 and its qualified outcomes remain historical results tied to their exact implementation; the new runtime rejects them rather than guessing missing state. Historical bindings retain their own container authority.</p>
+<p>A checkpoint is observational at its current completed-clock boundary, including before the first clock. It neither polls a hosted process nor forwards, completes, cancels or retries an external request. It retains the original stable request identity, issued cycle, header and opaque bytes, next polling cycle, pending flag, prior accepted logical trailer and complete actual response. Both packet RTL instances, generated clocks/coding/controller state, queued PIO beats and pending wire samples remain in the authoritative state. No host process, descriptor or pointer is serialized.</p>
+<p>The initial handshake is request0 with an empty payload and no prior accepted state. A data request retains its actual CRC-validated immutable receive head and previous accepted context. Pending completion has a declared1000-machine-cycle polling cadence; the original live process continues after snapshot without any intervention. The capture records complete actual replies before admission or copied PIO effects.</p>
+<p>Restore validates the complete candidate before replacing the live machine. It cannot discard unresolved live external work. A restored attached-peer branch is privately captured and suspended; <code>run</code> rejects before clock advancement until a complete outcome tape proves the inherited request, exact previous accepted outcome where one exists, and a future congruent polling boundary. The initial handshake requires exact request0 and its actual recorded response. Data Pending requires exact opaque request bytes, not merely an operation number. The branch consumes that completion from the tape without resubmitting a request, contacting the original peer, querying STATUS or reconstructing a fabricated reply.</p>
+<p>An absent, incomplete, incompatible, corrupt or nonmatching tape does not resume the branch. A known complete tape is an explicit external continuation input; this is not an unconditional promise that a peer operation lost during a host crash can be recovered without its outcome. Timeout/disconnect without an accepted complete frame poisons the live owner and rejects ambiguous-error snapshots. Neither a link ACK nor captured external completion is a durable companion receipt.</p>
+<p>The actual result in <code>docs/evidence/006-ble-pending.json</code> snapshots startup Pending atcycle0 and data Pending atcycle7,897,000, lets the original continue3000cycles while stillPending, releases an actual hosted Lean frame, exercises lost-ACK retry, then destroys the original peer. Two private forks consume a privately copied tape and reproduce byte-exact authoritative suffixes of8,990,000 and1,093,000cycles. Changed opaque bytes and accepted phases reject before any clock/capture change. The whole-machine generated bitstreams are independently checked. Snapshot times were0.715/0.898s and the data checkpoint was145,181,993bytes.</p>
+<p>Build/preparation follows the native commands in v0.1 with unused outputs and the current genuine audited BLE guest. <code>python3 scripts/check_guest_ble_pending.py --work-dir UNUSED_OUTPUT --deadline 360</code> creates an owned raw frame-delay fixture and performs the complete qualification. The retained a1 execution used <code>--attach</code> to consume its already source-validated owner and startup snapshot, as listed in the receipt. Developer restore then uses the ordinary <code>restore --from</code> and <code>session-control --request &#39;{&quot;action&quot;:&quot;ble-outcomes&quot;,&quot;path&quot;:&quot;ABSOLUTE_TAPE_PATH&quot;}&#39;</code> before <code>run</code>. The fork requires no live peer executable.</p>
+</main>
+</body>
+</html>

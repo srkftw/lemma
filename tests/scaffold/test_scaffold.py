@@ -25,7 +25,7 @@ class ScaffoldTests(unittest.TestCase):
     def test_baseline(self):
         self.assertEqual(validate(self.root), [])
     def test_missing_contract_fails(self):
-        (self.root/'docs/contracts/CORE0.md').unlink()
+        (self.root/'docs/contracts/CORE0.html').unlink()
         self.assertTrue(any('Missing required' in e for e in validate(self.root)))
     def test_unknown_dependency_fails(self):
         self.change('docs/plan/construction-units.json', lambda p: p['units'][0].update(depends_on=['not-real']))

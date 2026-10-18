@@ -1,0 +1,41 @@
+Two wavelength integration dark reference multiplex and reset functional bench
+* SPDX-License-Identifier: Apache-2.0
+* Currents are declared synthetic photodetector-response inputs, not emitter or
+* imaging-pixel device models. No physical optical exposure is authorized.
+.include ihp-diodes.lib
+.options reltol=1e-5 abstol=1e-13
+Vbias bias 0 1
+Ven1 requested1 0 PULSE(0 1 100u 1n 1n 100u 1m)
+Ven2 requested2 0 PWL(0 0 300u 0 300.001u 1 400u 1 400.001u 0 1.15m 0 1.150001m 1 1.25m 1 1.250001m 0 2.3m 0 2.300001m 1 2.4m 1 2.400001m 0 3.3m 0 3.300001m 1 3.4m 1 3.400001m 0 4.3m 0 4.300001m 1 4.4m 1 4.400001m 0 5.3m 0 5.300001m 1 5.4m 1 5.400001m 0 6m 0)
+* Functional local inhibit makes actual source2 off during a conflicting slot.
+Bactual actual2 0 V=V(requested2)*(V(requested1)<0.5)
+Vgain gain 0 PWL(0 1 3.999m 1 4m 2 6m 2)
+Vbadref badref 0 PWL(0 0 2.05m 0 2.050001m 1 2.85m 1 2.850001m 0 6m 0)
+Vreset resetcycle 0 PULSE(1 0 50u 1n 1n 850u 1m)
+Vpartial resetpartial 0 PWL(0 0 3.15m 0 3.150001m 1 3.16m 1 3.160001m 0 6m 0)
+Breset reset 0 V=max(V(resetcycle),V(resetpartial))
+.model RESET SW(Ron=10 Roff=1e12 Vt=0.5 Vh=0.05)
+Sreset1 sense1 bias reset 0 RESET
+Sreset2 sense2 bias reset 0 RESET
+Sresetdark dark bias reset 0 RESET
+C1 sense1 bias 10n
+C2 sense2 bias 10n
+Cd dark bias 10n
+Rleak1 sense1 bias 1g
+Rleak2 sense2 bias 1g
+Rleakd dark bias 1g
+Xdet1 0 sense1 dantenna l=20u w=20u
+Xdet2 0 sense2 dantenna l=20u w=20u
+Xdetdark 0 dark dantenna l=20u w=20u
+Bphoto1 0 sense1 I=10n+100n*V(requested1)*V(gain)
+Bphoto2 0 sense2 I=10n+200n*V(actual2)*V(gain)
+Bdark 0 dark I=10n+80n*V(badref)
+.tran 1u 6m 0 1u
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata optical.dat v(sense1) v(sense2) v(dark) v(requested1) v(requested2) v(actual2) v(gain) v(reset)
+quit
+.endc
+.end

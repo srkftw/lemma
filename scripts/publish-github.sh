@@ -44,4 +44,4 @@ GH_HOST=github.com gh repo create "$FULL" --private --source="$ROOT" --remote=or
 CHECK="$(gh repo view "github.com/$FULL" --json nameWithOwner,isPrivate --jq '[.nameWithOwner, (.isPrivate | tostring)] | @tsv')"
 [[ "$CHECK" == "$FULL"$'\ttrue' ]] || fail "Publication returned, but expected private visibility was not verified. Inspect the GitHub repository before any further action."
 printf '\nPublished private repository: https://github.com/%s\n' "$FULL"
-printf 'Next assignment: codex/prompts/001-core0-freestanding-slice.md\n'
+printf 'Next assignment: codex/prompts/001-core0-freestanding-slice.html\n'

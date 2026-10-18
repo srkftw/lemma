@@ -148,9 +148,9 @@ def admits (profile : Profile) (operation : Op) : Bool :=
       .readSupervisorPending =>
       profile.isKernel
   | .deviceRead32 | .deviceWrite32 =>
-      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8
+      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_9
   | .deviceRead64 | .deviceWrite64 =>
-      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_5 || profile.isBoot
+      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_9 || profile == .kernel_v0_5 || profile.isBoot
 
   | .readMisa | .readMachineCycle | .writeMachineCycle | .readMachineRetired | .writeMachineRetired | .readMachineInhibit | .writeMachineInhibit | .readMachineCounterEnable | .writeMachineCounterEnable => profile == .firmware_v0_2 || profile == .counter_su_v0_1
 
@@ -287,6 +287,14 @@ def deviceRegionsFor (profile : Profile) (operation : Op) : Array MemoryRegion :
         nv.push ⟨"boot-trial-power-controller", 0x10010500, 0x100105a0, true⟩
       else nv
     else #[]
+  else if profile == .kernel_v0_9 then
+    let inherited := (deviceRegions operation).map fun region =>
+      if region.name == "plic-priority" then { region with stop := 0x0c00003c } else region
+    if operation == .deviceRead32 || operation == .deviceWrite32 then
+      inherited.push ⟨"multimodal-priority19", 0x0c00004c, 0x0c000050, true⟩
+    else if operation == .deviceRead64 || operation == .deviceWrite64 then
+      inherited.push ⟨"multimodal-controller-v1", 0x10014000, 0x10016000, true⟩
+    else inherited
   else if profile == .kernel_v0_8 then
     let inherited := (deviceRegions operation).map fun region =>
       if region.name == "plic-priority" then { region with stop := 0x0c000044 } else region
@@ -338,7 +346,7 @@ def memoryRegions : Profile → Array MemoryRegion
       (kernelMemoryRegions.map fun region =>
         if region.name == "owned-frame-pool" then { region with stop := 0x84000000 } else region).push
         ⟨"boot-private-scratch", 0x81fc0000, 0x81fc4000, true⟩
-  | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_8 => kernelMemoryRegions.map fun region =>
+  | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_8 | .kernel_v0_9 => kernelMemoryRegions.map fun region =>
       if region.name == "owned-frame-pool" then { region with stop := 0x84000000 } else region
   | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 => #[⟨"user-virtual-domain", 0x10000, 0x40000000, true⟩]
   | _ => #[]

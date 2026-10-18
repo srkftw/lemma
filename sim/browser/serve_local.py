@@ -16,7 +16,7 @@ def verify_package(root):
     if manifest.is_symlink():
         raise ValueError('Symlinked distribution manifest')
     data = json.loads(manifest.read_text())
-    if data.get('schema') != 'lemma-local-browser-distribution/1':
+    if data.get('schema') not in ('lemma-local-browser-distribution/1', 'lemma-local-browser-distribution/2', 'lemma-local-browser-distribution/3'):
         raise ValueError('Unsupported local browser distribution')
     files = data.get('files')
     if not isinstance(files, dict) or not 6 <= len(files) <= 4096:
@@ -41,7 +41,9 @@ def verify_package(root):
         if hashlib.sha256(path.read_bytes()).hexdigest() != item['sha256']:
             raise ValueError('Changed distribution bytes: ' + name)
     required = {'serve.py', 'tools/lemmasim_browser.py', 'tools/silicon_guest_bundle.py',
-                'bundle/bundle.json', 'README.md', 'NOTICE.txt'}
+                'bundle/bundle.json', ('README.md' if data['schema'] == 'lemma-local-browser-distribution/1' else 'usage.html'), 'NOTICE.txt'}
+    if data['schema'] == 'lemma-local-browser-distribution/3':
+        required |= {'tools/lemmasim_browser_tci.py', 'bundle/guest-source/scripts/build_kernel.py'}
     actual = {p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
     if (not required <= files.keys() or actual != files.keys() | {'package.json'}
             or any(p.is_symlink() for p in root.rglob('*'))):
@@ -60,11 +62,18 @@ def main():
     try:
         if not 1024 <= args.port <= 65535:
             raise ValueError('Port must be1024..65535')
-        verify_package(root)
+        package = verify_package(root)
         # Validation precedes importing packaged Python. No checkout, Lean,
         # LLVM, Nix or downloaded module is used at launch.
         sys.dont_write_bytecode = True
         sys.path.insert(0, str(root / 'tools'))
+        if package['schema'] == 'lemma-local-browser-distribution/3':
+            machine = json.loads((root / 'bundle/bundle.json').read_text())
+            if machine.get('schema') != 'lemmasim-browser-qemu-tci/1':
+                raise ValueError('Functional distribution requires its exact machine schema')
+            # Every archived dependency-policy module was verified above. Import
+            # the admitted original source closure; do not require a checkout.
+            sys.path.append(str(root / 'bundle/guest-source/scripts'))
         from lemmasim_browser import local_server, validated_bundle
         validated_bundle(root / 'bundle')
         if args.verify_only:

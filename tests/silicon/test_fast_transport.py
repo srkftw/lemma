@@ -170,6 +170,7 @@ class FastTransport(unittest.TestCase):
 
     def test_global_deadline_and_raw_delivery_map_to_local_clock(self):
         machine=object.__new__(fast.Fast)
+        machine.data={'profile':'lemma-silicon-dev/0.2.0'}
         machine.time_origin_ns=1000;machine.clock_hz=100000000
         machine.get=lambda name:'40'
         machine.inspect=lambda:{'literal':'observer fixture'}

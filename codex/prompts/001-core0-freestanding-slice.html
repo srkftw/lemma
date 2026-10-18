@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task 001 — A real Core0 -&gt; LLVM -&gt; bare-metal RV64 vertical slice</title>
+<link rel="stylesheet" href="../../docs/documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../../docs/overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="task-001--a-real-core0---llvm---bare-metal-rv64-vertical-slice">Task 001 — A real Core0 -&gt; LLVM -&gt; bare-metal RV64 vertical slice</h1>
+<p>Implement the first executable foundation of Lemma. Work in this repository on the
+provided task branch. Read <code>docs/contributor-guide.html</code>, <code>docs/ARCHITECTURE.html</code>, all four contracts in
+<code>docs/contracts/</code>, <code>docs/decisions/0001-bootstrap-boundaries.html</code>, and the Stage I
+construction units before editing.</p>
+<h2 id="objective">Objective</h2>
+<p>Compile a small, precisely declared subset of ordinary Lean 4 source through LLVM
+into a freestanding RV64 ELF, boot it on a pinned QEMU RISC-V <code>virt</code> machine with
+<code>-bios none</code>, and produce actual UART results from runtime-dependent computation.
+Audit the complete target code/dependency closure. Do not stop at a plan, a documentation
+patch, a manually authored LLVM example, or a banner that proves only generated startup.</p>
+<p>This is the first scalar slice of G1, not the entire G1 gate, managed Lean, or an OS.</p>
+<h2 id="non-negotiable-constraints">Non-negotiable constraints</h2>
+<ul>
+<li>RISC-V target, LLVM backend, maintained project compiler/target code in Lean 4.</li>
+<li>No target C/C++/Rust/Zig/handwritten assembly, Linux guest, hosted Lean executable,
+OpenSBI default, upstream Lean target runtime, libc/libm/libgcc/compiler-rt/libuv,
+foreign allocator, or undeclared binary. Host dependencies are separate and recorded.</li>
+<li>A small Lean-authored structured primitive generator for startup/CSR/MMIO is allowed.
+Do not hide a complete assembly/C program in a Lean string or bypass source compilation.</li>
+<li>Core0 source must pass through Lean elaboration. Inspect reachable declarations and
+lowered runtime operations. A hand-built toy AST is not the required source pipeline.</li>
+<li>No fabricated execution logs, constant-answer generator, dummy runtime helpers,
+<code>sorry</code>/axiom shortcuts, skipped tests reported as passes, or architecture substitutions.</li>
+</ul>
+<h2 id="1-audit-and-pin-the-actual-toolchain">1. Audit and pin the actual toolchain</h2>
+<p>Inspect the chosen immutable Lean source revision and its actual compiler pipeline.
+Evaluate the upstream LLVM emitter&#39;s availability/build requirements, target layout,
+scalar representations, boxing, reference counting, initialization and emitted helpers.
+Record concrete file paths, revisions and probe results in <code>docs/audits/llvm-core0.html</code>.
+Do not assume a command-line option or backend works because documentation names it.</p>
+<p>Use the upstream route when it can honestly satisfy this slice. Otherwise implement
+a narrow Lean-authored lowering from elaborated declarations or a documented Lean IR
+boundary to LLVM, explaining the choice. Do not quietly use Lean -&gt; C -&gt; LLVM.</p>
+<p>Replace the unresolved <code>tooling/toolchain-lock.json</code> entries with tested immutable
+identities and hashes, create <code>lean-toolchain</code>/Lake configuration, and provide a
+reproducible host environment. Prefer a pinned Nix flake/lock for this user&#39;s NixOS
+workflow; document the actual Codex-host setup too. Do not use an unpinned <code>latest</code>.
+Use caches or binary distributions only with recorded identities; do not commit
+large upstream checkouts or binaries.</p>
+<h2 id="2-implement-a-small-real-compiler-profile">2. Implement a small real compiler profile</h2>
+<p>At minimum support nontrivial <code>UInt64</code> functions with parameters, constants, wrapping
+arithmetic, unsigned comparisons, let bindings, conditionals and direct scalar calls.
+Add <code>UInt8</code>/<code>UInt32</code> and bit operations as needed for a minimal documented machine boundary.
+Reject features not implemented; do not implement a broad managed runtime to avoid rejection.</p>
+<p>Create accepted source fixtures under <code>examples/core0/</code> and isolated rejection fixtures.
+Trace forbidden dependencies through helpers/imports. Account for proof erasure and
+static normalization without mistaking host metaprogramming for target allocation.
+Use an exact primitive identity/type/effects allowlist, not just symbol-name filtering.</p>
+<p>Document semantics and lowering of every accepted operation. Do not attach LLVM
+<code>nsw</code>/<code>nuw</code>/<code>inbounds</code>/aliasing/alignment promises without proving or enforcing their
+premises. Reject division and shifts outside the supported domain until their full
+Lean semantics are deliberately handled. Include a Lean reference evaluator/model.</p>
+<h2 id="3-generate-and-run-the-first-freestanding-image">3. Generate and run the first freestanding image</h2>
+<p>Create the minimal Lean-authored startup/primitive layer, linker layout and static
+image. Set a valid aligned stack before calling compiled functions, initialize any
+required static storage, handle <code>gp</code>/relaxation deliberately, and record boot inputs.
+No implicit runtime initializers or memory managers are allowed.</p>
+<p>Pin and validate the VM configuration: one RV64 hart, M-mode entry, declared RAM,
+UART and loading path, no disk/network, and <code>-bios none</code>. Derive/confirm addresses
+against the pinned machine/DTB. Declare QEMU&#39;s reset trampoline and DTB rather than
+claiming that no emulator-provided code exists.</p>
+<p>The guest must emit a versioned banner plus a framed computed result. Supply test
+inputs after code generation via UART or a reserved, documented test-memory fixture.
+Confirm results depend on those inputs and on the actual compiled function bodies.
+Keep any input-memory region separate from image/stack. Use bounded polling and
+bounded host timeouts; always terminate/reap QEMU.</p>
+<h2 id="4-build-acceptance-tests-that-detect-false-success">4. Build acceptance tests that detect false success</h2>
+<p>Provide at least:</p>
+<ul>
+<li>Positive source tests: scalar calls, both branches, zero, maximum-width values,
+overflow wraparound, conversions and the admitted memory/MMIO boundary.</li>
+<li>Negative tests: reachable allocation/boxed data, capturing closures, hosted IO,
+arbitrary extern, unknown operations, hidden helper dependency, initialization
+effects, and unsupported arithmetic. Unused unreachable host imports alone are
+not grounds for rejection. Require useful declaration/dependency diagnostics.</li>
+<li>Actual RV64 differential execution at unoptimized and optimized settings against
+the independent Lean reference, using recorded seeds and runtime-provided inputs.</li>
+<li>Clean-build repetition and artifact hashes. Distinguish byte identity from merely
+repeated behavior; explain nondeterministic metadata rather than suppressing it.</li>
+<li>ELF/code-closure audit: architecture/ABI, entry, segments, relocations, dynamic
+dependencies, undefined symbols, all linked objects/archives, symbols, intrinsics
+and helpers before/after optimization, and their source provenance.</li>
+<li>At least one audit-regression fixture with an unexpected foreign/runtime dependency
+that fails even when statically resolved. Audit itself must fail closed.</li>
+<li>Harness failure tests: missing tools, missing manifest, empty corpus, malformed or
+truncated target output, target timeout and nonzero exits cannot report PASS.</li>
+<li>A source-mutation test showing that changing an accepted function changes guest
+behavior, rather than compiling a canned target program or printing fixed answers.</li>
+</ul>
+<p>A zero unresolved-symbol count and a UART banner alone do not satisfy this task.
+A finite passing corpus does not prove compiler correctness.</p>
+<h2 id="5-deliver-a-reproducible-implementation-and-bounded-evidence">5. Deliver a reproducible implementation and bounded evidence</h2>
+<p>Add actual commands (for example <code>scripts/check-core0.sh</code>, <code>scripts/build-core0.sh</code>,
+<code>scripts/run-core0.sh</code>, <code>scripts/audit-core0.sh</code>) or a similarly coherent interface,
+then document only commands that exist. Run existing scaffold tests as well.
+Add CI for the real checks with pinned dependencies/actions, bounded execution and
+retained artifact evidence. Green metadata checks must be labelled separately.</p>
+<p>Write <code>docs/evidence/001-core0.html</code> containing the exact implemented subset, commands
+actually executed, toolchain identities, target transcripts, input seeds, artifact
+inventory/hashes, dependency findings and limitations. Store bulky artifacts under
+<code>build/</code> or a retrievable CI artifact. Do not commit secrets, NDA documents or binaries.
+Update <code>docs/contributor-guide.html</code> with runnable checks and adjust the backlog only for demonstrated
+work; leave remaining G1 obligations open.</p>
+<h2 id="scope-and-stop-conditions">Scope and stop conditions</h2>
+<p>Do not build an allocator, scheduler, capabilities, filesystem, pen UI, proof kernel,
+recognizer, network stack or tutor in this task. Do not modify GitHub visibility,
+licensing, access controls or credentials. Keep the change focused on the scalar slice.</p>
+<p>Complete the vertical slice when technically possible. A real external blocker
+(e.g. unavailable pinned dependency or denied network access) is not a reason to
+fake a pass or substitute forbidden technology: preserve useful implementation,
+run all reachable checks, include a minimal reproducer and exact unblock/resume
+commands, and mark the result partial/blocked. Do not treat upstream inconvenience
+as proof the freestanding goal is impossible.</p>
+<h2 id="final-response">Final response</h2>
+<p>Report implemented files/features, the chosen compilation route and why, commands
+actually run with their results, observed guest output, artifact/evidence locations,
+remaining limitations and the next smallest construction task. Explicitly state
+whether the first freestanding slice passed. Do not declare the entire OS or G1 done.</p>
+</main>
+</body>
+</html>

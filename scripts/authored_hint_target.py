@@ -141,18 +141,27 @@ def semantics(ir, unit, *, optimized):
 
 
 def number_pad_machine(normalized, unit, assembly, symbol):
-    """Rebind only two source-bound local constant names to the old machine pin.
+    """Rebind declared local names while retaining the original machine pin.
 
     LLVM numbers these private labels by the declaration's ordinal. The v2
     complete catalog fixes the new owner; the authority fixes both old/new
     names. Literal data, every instruction and the old complete owner pin are
-    still checked. Historical machine normalization is unchanged.
+    still checked. The exact Multimodal tuple additionally verifies two paired
+    local AUIPC/load labels before renaming them. Historical normalization is
+    unchanged.
     """
     if not scoped_publication(unit):
         return normalized
     from product_reader_deployment import WATCHDOG_CONFIGURATION
     from notebook_control_backlog_target import present as backlog_present, entry as backlog_entry
-    if backlog_present(unit):
+    from multimodal_target import selected as multimodal_selected, authority as multimodal_authority
+    if multimodal_selected(unit):
+        key, _ = multimodal_authority(unit)
+        if key != 'notebook': raise Core0Error('Multimodal NumberPad pool escaped Notebook User2')
+        # Exact new catalog binds the declaration ordinal; complete machine
+        # bytes and the two independently checked literal values remain pinned.
+        entry = {'old_symbol':'lemma_user_notebook_core0_scalar_298','new_symbol':symbol}
+    elif backlog_present(unit):
         entry = backlog_entry(unit)['number_pad_pool_alpha']
     elif unit.get('configuration') == WATCHDOG_CONFIGURATION:
         from trial_watchdog_target import authority as watchdog_authority
@@ -180,4 +189,24 @@ def number_pad_machine(normalized, unit, assembly, symbol):
             raise Core0Error('Number pad local constant reference differs')
         at, arg = sites[0]
         result[at][1][arg] = '%pcrel_hi(.LCPI' + old + '_' + str(i) + ')'
+    if multimodal_selected(unit):
+        # The same two loads also reference module-global temporary PC-relative
+        # labels. Prove each label is the actual immediately preceding AUIPC,
+        # with exactly one use, before rebinding only its name to the original
+        # chooser companion. The complete original machine hash remains the
+        # authority for every instruction, register, guard, call and suffix.
+        from audit_kernel import _jump_assembly_function
+        code, labels = _jump_assembly_function(assembly, symbol)
+        for high, load, original in ((20,21,160),(25,26,159)):
+            if (len(result) <= load or result[load][0] != 'ld' or
+                    len(result[load][1]) != 2 or result[load][1][0] != 'a0'):
+                raise Core0Error('Number pad local low relocation load differs')
+            match = re.fullmatch(r'%pcrel_lo\((\.Lpcrel_hi\d+)\)\(a0\)',result[load][1][1])
+            if match is None or labels.get(match[1]) != high or code[high][0] != 'auipc':
+                raise Core0Error('Number pad local low relocation pair differs')
+            uses = [(at,arg) for at,(_,arguments) in enumerate(code)
+                    for arg,text in enumerate(arguments) if match[1] in text]
+            if uses != [(load,1)]:
+                raise Core0Error('Number pad local low relocation escaped its sole paired load')
+            result[load][1][1] = '%pcrel_lo(.Lpcrel_hi'+str(original)+')(a0)'
     return result

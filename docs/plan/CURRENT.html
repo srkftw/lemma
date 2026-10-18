@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Current development entry point</title>
+<link rel="stylesheet" href="../documentation.css">
+</head>
+<body>
+<nav aria-label="Documentation"><a href="../overview.html">Lemma documentation</a></nav>
+<main>
+<h1 id="current-development-entry-point">Current development entry point</h1>
+<p>The current assignment is the <a href="../contracts/007-extended-multimodal-v0.2.0.html">extended multimodal machine and workbook</a>.
+Resume the <a href="007-session-state.html">current implementation checkpoint</a>;
+the complete specification remains the destination and component results do not close P0/P1/P2.
+Preserve the merged incremental build and verification workflow below.
+Start with <code>python3 scripts/dev_status.py</code>; use <code>--json</code> for the
+complete source/worktree identity, reviewed verification boundaries, evidence,
+invalidation reasons, job ownership, budgets and next action. Status writes
+nothing and executes no build or test.</p>
+<p>Normal kernel and independent user CLI builds reuse validated action results.
+Enter the pinned environment with <code>nix develop --no-write-lock-file</code>, then use an
+unused development output directory:</p>
+<pre><code class="language-sh">./scripts/build-kernel.sh --configuration lemmasim-silicon-bytes-bulk-notebook \
+  --stage supervisor --opt-level O2 --output-dir build/kernel/dev-notebook-NEW
+./scripts/build-user.sh --configuration lemmasim-silicon-bytes-bulk-notebook \
+  --image-key notebook --opt-level O2 --output-dir build/user/dev-notebook-NEW
+python3 scripts/dev_status.py --build build/kernel/dev-notebook-NEW
+</code></pre>
+<p>The incremental production campaign (<code>scripts/check_incremental_builds.py</code>)
+defaults to <code>lemmasim-silicon-bytes-bulk-notebook</code>; the focused execution checker
+uses canonical geometry and <code>lemma-silicon-dev/0.3.0</code>. This is a bounded notebook integration, not a claim that
+all later Task006 deployments or backends are qualified. <code>--cache-dir &lt;path&gt;</code>
+selects another shared local cache; the default is <code>build/action-cache</code>.
+<code>--fresh</code> bypasses action reads and resets the protected private Lake compiled
+state for that build. <code>--clean</code> resets only the selected output directory; it
+does not request fresh compilation. Preserve retained evidence directories.
+A new output directory may contain copied cached payloads; their producer and
+commands remain original and their compilation remains reused.</p>
+<p>Programmatic <code>build()</code> APIs default conservatively to fresh production, preserving
+existing qualification callers. Normal CLIs opt into validated reuse. Existing
+fresh checkers keep their fresh defaults; the explicit campaign override is:</p>
+<pre><code class="language-sh">LEMMA_BUILD_FRESH=1 ./scripts/check-core0.sh --clean \
+  --work-dir build/core0/qualification-NEW
+</code></pre>
+<p>For a fresh notebook build, add <code>--fresh</code> to the kernel command above; run its
+ordinary audit separately. A cold host compiler and a new cold guest are separate
+observations. The measured integration reused validated host Lake imports while
+executing every target action in the fresh phase:</p>
+<table>
+<thead>
+<tr>
+<th>Canonical O2 production</th>
+<th align="right">Seconds</th>
+<th align="right">Fresh target actions</th>
+<th align="right">Reused target actions</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Fresh target production</td>
+<td align="right">121.192</td>
+<td align="right">32</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>Warm production</td>
+<td align="right">11.701</td>
+<td align="right">0</td>
+<td align="right">32</td>
+</tr>
+<tr>
+<td>Selected Save response mutation</td>
+<td align="right">49.544</td>
+<td align="right">8</td>
+<td align="right">24</td>
+</tr>
+</tbody></table>
+<p>Each phase also ran two protected incremental Lake preparations. Actual warm
+process tracing found no Lean elaboration, LLVM compilation or linking. Audits
+executed separately (172.061 / 134.388 / 108.231 seconds respectively). Both
+positive images passed new canonical QEMU writing, Save, independent cold
+recovery and failed-FLUSH/cold scenarios. The mutation produced guest error234
+and no later Saved acknowledgement. See the <a href="../evidence/incremental-builds-v1.json">scoped report</a>
+for exact original producer identities, command traces, retained failures,
+other measurements and the final source-bound host-check receipt location.</p>
+<p>Actual notebook behavior is separate from compilation. The focused public-session
+checker consumes an explicitly supplied built guest, validated native QEMU bundle
+and an actual guest-initialized empty medium. It copies private medium bytes, admits
+real raw pen events, Saves, starts new cold guests and tests failed first FLUSH:</p>
+<pre><code class="language-sh">python3 scripts/check_incremental_notebook.py --work-dir build/incremental/notebook-NEW \
+  --native-bundle NATIVE_BUNDLE --guest-build GUEST_BUILD \
+  --guest-source-root EXACT_SOURCE_ROOT --initial-medium ACKNOWLEDGED_EMPTY_MEDIUM
+</code></pre>
+<p>Those uppercase arguments identify actual admitted inputs; select them from the
+retained campaign report. The checker performs no compilation or machine-state
+restore. Its whole deadline is 1200 host seconds, each public operation at most
+300 host seconds, and boot/action bounds are 30 virtual seconds each. Earlier
+budgets and failures retain their original meanings.</p>
+<p>Inspect or clean ephemeral storage with bounded commands:</p>
+<pre><code class="language-sh">python3 scripts/action_cache.py --cache-dir build/action-cache --limit 12
+python3 scripts/action_cache.py --cache-dir build/action-cache --cleanup \
+  --limit 100 --older-than-seconds 86400 --pin-action RETAINED_ACTION_KEY
+</code></pre>
+<p>Ordinary CI shares only a successful <code>tests/kernel</code> host receipt from metadata
+with A–E. <code>scripts/host_prerequisites.py</code> binds the actual nonempty, unskipped
+corpus, log, complete nonignored source inventory, Python pin, controlled
+environment and checkout path. Original commit/tree remain producer provenance;
+byte-identical publication commits do not invalidate it. Changed source or policy
+still invalidates the receipt. Its child tool PATH is closed to immutable Nix
+Python and Git; CI obtains Git through the locked <code>nix shell --inputs-from . nixpkgs#git</code> route without changing the target toolchain. A–E executes Lake and every target qualification
+action freshly. The aggregate workflow rejects skipped required jobs.</p>
+<p>Cleanup respects active actions and explicit pins. Published claims must own their
+producer receipts, output copies and source archives outside the ephemeral cache.
+Do not edit cached objects. Materialized outputs are private copies.</p>
+<p><code>scripts/verification_routes.json</code> declares baseline claims, changed-input
+boundaries, consumer edges and an optional explicit <code>evidence_paths</code> registry.
+The baseline&#39;s <code>incremental-canonical-qemu</code> claim is the focused O2 canonical
+scenario. The distinct <code>notebook-qemu</code> claim still requires the broader historical
+writing/O0/O2 checker where a changed shared boundary requires it; a focused PASS
+cannot satisfy that broader claim. The registry contains exact paths or
+<code>{path, claim, kind}</code> entries; it performs no wildcard PASS search. A missing registered assessment is unavailable. An omitted
+required claim is pending. Hash-validated receipts distinguish fresh-pass,
+reused, pending, failed and unavailable. <code>--campaign &lt;id&gt;</code> labels only matching
+explicit fresh campaign receipts fresh-pass; otherwise retained PASS is reused.
+Use <code>--evidence &lt;path&gt;</code> for another explicit assessment, <code>--changed &lt;path&gt;</code>
+repeatedly for scoped changes, or <code>--since &lt;revision&gt;</code> to override the objective&#39;s
+configured <code>comparison_base</code>. Default routing includes committed changes from that
+baseline plus dirty paths; committing identical file bytes cannot erase required checks.</p>
+<p><code>--build &lt;directory&gt;</code> validates the real action journal, original producer
+identities, materialized outputs, current input/tool/recipe identities, host
+Python, execution/dependency helpers and both current audit/admission validators. It reports original fresh/reused action counts
+as production only. A cached artifact never satisfies an execution claim. The
+routing model selects verification; exact consumed-input closures select action
+keys. Unknown changed paths need review. Contracts and generated authorities are
+inputs where declared. Backend, browser, source-negative, optimization and physical
+requirements retain their separate scopes. A pure observer can revalidate retained
+raw observations only by actually running and writing a new bound assessment.</p>
+<p>An optional <code>--job-receipt &lt;path&gt;</code> explicitly adds an external active-job receipt.
+Its <code>owner</code> requires boot ID, PID and kernel start ticks. Cache registrations use
+the same ownership checks. Terminal receipts remain historical; a recycled PID
+cannot invalidate observed cleanup. Unknown simulator/browser owners remain
+unverified and are never inferred from a PID alone. Status never stops processes.
+Human output is bounded by <code>--max-items 12</code>; JSON retains the complete assessment.</p>
+<p>Assessment schema <code>lemma-dev-evidence/v1</code> contains <code>claim</code>, <code>kind</code> (production,
+execution or validation), <code>route</code> (fresh, reused or revalidated), <code>result</code>, optional
+<code>campaign</code>, and original <code>producer</code> (<code>source_commit</code>, <code>executed_at</code>, actual
+<code>command</code>). <code>receipt</code> binds its original path/SHA256. Nonempty <code>inputs</code>, <code>outputs</code>
+and current <code>validator</code> inventories map repository-relative paths to SHA256s.
+Execution <code>context</code> declares backend, profile, scenario, driver, fixtures,
+initial_state, input_events, seeds, fault_schedule and limits_environment. Retained
+FAILs remain failed; missing or malformed evidence cannot pass. These assessments
+supplement ordered-command and archived-source audits.</p>
+<p>The historical <a href="006-session-state.html">Task006 checkpoint</a> retains its exact source
+identities, unfinished subsystems, live session phase budgets and original
+failures. Read the relevant section when its dependency is needed. Do not restart
+historical workloads to edit a report or extend a live admission deadline.
+Physical conformance remains UNVERIFIED.</p>
+</main>
+</body>
+</html>

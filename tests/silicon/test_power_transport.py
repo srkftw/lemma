@@ -56,6 +56,7 @@ class PowerTransport(unittest.TestCase):
             def __init__(self):self.commands=[]
             def execute(self,*arguments):self.commands.append(arguments)
         machine=object.__new__(fast.Fast);machine.qmp=QMP()
+        machine.data={'profile':'lemma-silicon-dev/0.3.0'}
         machine.input_kinds={'pen','button'};machine.time_origin_ns=1000;machine.clock_hz=100000000
         machine.get=lambda name:'200';machine.inspect=lambda:{'cycle':130}
         machine.call('inject 130 button 1')

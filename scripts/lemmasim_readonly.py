@@ -769,3 +769,9 @@ def validate_linked_literals(section_text: str, symbol_text: str, text: bytes,
         extents.append((offset,offset+size));observed.append(dict(symbol=row[-1],address=address,bytes=size,
             source=table['source'],sha256=hashlib.sha256(expected).hexdigest(),writable=False))
     return observed
+
+# Exact Multimodal14 inherits the unchanged Doc8/User2 format; its complete
+# target, MMIO and table authority lives in multimodal_target, never a radio union.
+from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS
+DOCUMENT4_NOTEBOOK_CONFIGURATIONS |= set(MULTIMODAL_CONFIGURATIONS)
+DOCUMENT4_NOTEBOOK_PROFILES.update({configuration:'core0-user-v0.2' for configuration in MULTIMODAL_CONFIGURATIONS})
