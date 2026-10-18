@@ -14,14 +14,14 @@
         }
       },
       "kernel": {
-        "catalog_sha256": "8b982b16b077c73bbdcb1a37e45ef1290c536ddd8677b8f88abf3835831940a8",
+        "catalog_sha256": "670fc899230ea38ed6a278530149bd61fdec166894b626493de37e21145d3ce2",
         "pre": {
-          "function_count": 1253,
-          "sha256": "37d2b3d6c825c0d7aa4827ba6aacd0d99516a5c458049babae37df6150f7d815"
+          "function_count": 1255,
+          "sha256": "620da1da3faecd2d6f799a70627ba178ff440d69439b02c33c3a2190fc2de100"
         },
         "post": {
-          "function_count": 1253,
-          "sha256": "16fb6296c231d356a50ce09acb17c523581f4b9750f50cb3400c833754cd603f"
+          "function_count": 1255,
+          "sha256": "1c20e0b97f0d6a71c860dcec010ee744fb04226c483dcdeb8bbb3ab5af43441e"
         }
       },
       "store": {
@@ -82,14 +82,14 @@
         }
       },
       "kernel": {
-        "catalog_sha256": "6e3e8e5298477462f115ac0c16445aa5571db9095e169570ec33f57968624436",
+        "catalog_sha256": "4f739afd17ae58d880be256bd2a9958811dcbfed6b313b19e752c1074bc4c5b5",
         "pre": {
-          "function_count": 1253,
-          "sha256": "f6fbbcbd1900356d7f36338f7d1a54c6859ef8203e90f4aa8f241d02a8b10466"
+          "function_count": 1255,
+          "sha256": "22f94f872a84cd044e70d9781603bf78ead67625fb9c2d4bf67e8acfdaf26fde"
         },
         "post": {
-          "function_count": 1253,
-          "sha256": "88ca09f6c333d758a904189db67c0b43de08a638b12ecc8992c8fe37367f36b2"
+          "function_count": 1255,
+          "sha256": "d045b0bbeea581765b54a141dd8a1756593c233137695141259a4e0874ff2e02"
         }
       },
       "store": {
@@ -150,14 +150,14 @@
         }
       },
       "kernel": {
-        "catalog_sha256": "9acacc032c493c6e93c1437124fa07f25e2f779fe4a1e781a8e39b40c8243c1a",
+        "catalog_sha256": "967a0bfc3a1a7185003dcc9d179d0f3219bda3a4b17350239fa1a8f2e64bec78",
         "pre": {
-          "function_count": 1254,
-          "sha256": "452bd9a7f5c603e58a9b795221aed43dab8ba693858a1025258c84f29f772f55"
+          "function_count": 1256,
+          "sha256": "7ccff2d48e41590087938a35dc7a32fddad25a29b3eb3be0f2397558535bcbd4"
         },
         "post": {
-          "function_count": 1254,
-          "sha256": "8e6d5eb42c668fed1c7c2d9030228b73bde4839c37de4938abce40c8c0c40616"
+          "function_count": 1256,
+          "sha256": "a2481a0a4cbaa91fe79acf3cda92b3847288eee453b5fd68263c2440702f8671"
         }
       },
       "store": {
@@ -218,14 +218,14 @@
         }
       },
       "kernel": {
-        "catalog_sha256": "b323c673b21d11163972430170b2b5672fdbcc0cfdf157226e67e3d009b8b93f",
+        "catalog_sha256": "2df2b48d35c1396f255ff8a9bfdf995a7aaebcdae4cde7fb29dd4fd4a96e8a72",
         "pre": {
-          "function_count": 1254,
-          "sha256": "31e2284a6af537775077ad3bb033f65e03e89a0827416cc07faf5ac01b1049fc"
+          "function_count": 1256,
+          "sha256": "a307a87a0f5536ba7c37e5d2cfce0b20e21cc28dba28844fae8a74a9f0cc0644"
         },
         "post": {
-          "function_count": 1254,
-          "sha256": "765a6e1ff03fef24c4795a5786de90de053a34084319294bfe245d10853958ee"
+          "function_count": 1256,
+          "sha256": "c21e75be6e36a12508b65d2481fcf2673ef41be80dd78243327a7c34ba9c25f0"
         }
       },
       "store": {

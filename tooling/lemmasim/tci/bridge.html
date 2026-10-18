@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Wasm64 QEMU TCI host bridge</title><style>body{max-width:76ch;margin:3em auto;padding:0 1em;line-height:1.5;font-family:system-ui}pre{overflow:auto;background:#eee;padding:1em}table{border-collapse:collapse}td,th{border:1px solid #aaa;padding:.4em;text-align:left}</style></head><body>
+<h1 id="scope">Wasm64 QEMU TCI host bridge</h1>
+<p>This host implementation runs the published QEMU 11.1.1 RV64 CPU through its upstream Wasm64 TCG interpreter and the maintained Lemma controller models. The same audited Lean ELF runs inside the machine. JavaScript transports external inputs, reads actual controller outputs and supplies opaque storage; it does not implement documents, mathematical checking, recovery, grants or rewards.</p>
+<p>The binding is a fast functional model. QEMU instruction-clock ordering is not processor RTL cycle equivalence. The retained RTL/Wasm implementation remains independently identified. Component demonstrations do not establish the complete workbook, consumer real-time performance, physical sensor accuracy, safety or educational benefit.</p>
+<h2 id="build">Public-source production</h2>
+<pre>python3 tooling/lemmasim/tci/build.py build \
+  --work-dir build/multimodal/tci-public-UNUSED --timeout 900</pre>
+<p>The producer validates archive checksums, preserves upstream license files, applies the existing exact QEMU counter/UART/device patches and the separate Wasm bridge patch, builds real zlib/libffi/pixman/GLib/PCRE2/DTC dependencies, and compiles upstream QEMU. Its Nix toolchain reads the repository's pinned flake.lock. Native QEMU and RV64 target sources are not mutated. Two jobs, an explicit per-phase deadline, a two GiB free-space floor and four GiB fresh staging admission apply. Failures remain in their output directory; an unavailable public source or compiler is not success. Fresh execution of this consolidated producer is a distinct claim from the retained exploratory build receipts and validated retained-build admission.</p>
+<p>The headless configuration uses <code>-bios none</code> and excludes the unused QEMU roms subtree. An explicit unsupported DNS boundary returns HOST_NOT_FOUND; no network stack or live DNS capability is claimed. Third-party license and source provenance remain per block; this is not a blanket project redistribution or patent-rights qualification.</p>
+<h2 id="abi">Control ABI: lemma-qemu-wasm-control/1</h2>
+<table><thead><tr><th>Export</th><th>Contract</th></tr></thead><tbody>
+<tr><td>lemma_browser_abi()</td><td>Returns the exact ABI string.</td></tr>
+<tr><td>lemma_browser_ready()</td><td>True only after actual machine initialization completes.</td></tr>
+<tr><td>lemma_browser_submit(JSON)</td><td>Queues one request: 0 accepted; 1 busy or stable reply unacknowledged; 2 empty or over4096 UTF-8 bytes; 3 not ready.</td></tr>
+<tr><td>lemma_browser_poll()</td><td>Null until ready, then the identical stable JSON reply until ACK, at most one MiB.</td></tr>
+<tr><td>lemma_browser_ack()</td><td>0 releases a ready reply; 1 no ready reply; 3 not initialized. Reads never implicitly ACK.</td></tr>
+</tbody></table>
+<p>Requests contain exactly execute, id and optional object arguments. IDs are monotonic uint32 values1 through4294967295; stale or repeated IDs reject without another action. Exhaustion requires a new machine and interaction epoch. Submission never takes the Big QEMU Lock on the JavaScript thread. A real I/O bottom half dispatches each bounded noncoroutine QMP request under that lock, avoiding filesystem proxy deadlock. No arbitrary guest memory writes or host evaluation command exists.</p>
+<p>The allowlist is stop, cont, query-status, system_reset; qom-get/set/list for /machine/lemma-hardware; block storage/trace status and retry-backing; and read-only pmemsave of at most one MiB within the declared128 MiB RAM into a flat /lab-* file. The outer user-facing adapter must additionally enforce capability mode, including Laboratory-only RAM inspection. Unknown, other-path and coroutine commands fail explicitly. Transport receipt and successful QMP dispatch are not notebook durability or actual output delivery.</p>
+<h2 id="presentation">Typed pure observations</h2>
+<ul>
+<li><code>lemma-clock</code> takes no arguments and returns actual pure ACLINT MTIME ticks,10 MHz MTIME frequency,100 MHz controller frequency, virtual_ns, capture interval and clock model identity. Warm reset's MTIME offset is preserved. wasm_heap_bytes comes from emscripten_get_heap_size(), not an inferred guest RAM size.</li>
+<li><code>lemma-panel</code> copies actual completed Gray4 panel-controller bytes into /panel.gray4 and returns dimensions, stride, completed sequence and capture time. It cannot draw text or ink. Completion is not measured optical onset.</li>
+<li><code>lemma-waveform</code> flushes only the actual modeled PCM waveform file /audio.bin and returns its LMPCM001 format, source clock, submitted/consumed positions and stream epoch. Its rows are tick, position and signed16 low-word sample. It does not synthesize speech or establish physical audibility.</li>
+</ul>
+<p>MEMFS alone is volatile. A browser embodiment must supply and independently test a real durable filesystem boundary, propagate short writes/flush errors, and obtain the actual guest Save receipt before claiming recovery. The control bridge itself does not supply OPFS durability. Live restore and exact snapshots for profile0.14 remain unsupported. Browser permission withdrawal, background suspension, sink cancellation and actual queued/emitted output need separate embodiment receipts.</p>
+<h2 id="evidence">Retained-build admission</h2>
+<p>The admit action validates a previously recorded complete source inventory, direct maintained controller/control identities and the exact JS/Wasm bytes before copying an immutable runtime. Its receipt explicitly says retained compilation; it never fabricates fresh target compilation, execution, or browser evidence. Every new component/workbook execution retains its own observer, inputs, limits and outputs.</p>
+</body></html>

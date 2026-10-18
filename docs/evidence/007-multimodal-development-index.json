@@ -167,6 +167,86 @@
       "result": "PASS",
       "scope": "independent narrow raw-source predicates and source-negative observer tests; no compiler, guest timing or output-consumption claim",
       "limits": null
+    },
+    {
+      "receipt": "build/multimodal/final-four-target-production-a4.json",
+      "sha256": "ec37681acc28243dafd22d2b64f36d871647354849dd246c9a7c0977f335f23b",
+      "result": "PASS_FOUR_COMPLETE_ARTIFACT_AUDITS_ONLY",
+      "scope": "All four clean e76fd6c normal whole productions and separate full audits; no successful guest execution",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/ordinary-initialization-a1/result.json",
+      "sha256": "820987796cbb36635eb6fe34fd2a6d48dd7ad2515ac77f370888ec4819eb1aaa",
+      "result": "FAIL",
+      "scope": "Actual fully audited initializer execution FAIL before acknowledgement; medium not admitted",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/ordinary-initialization-diagnostic-a3/report.json",
+      "sha256": "8d4063d01ebac5ab62e3c8abbf3b0ba17500e3650574b80b3e1bfad0f97acaa7",
+      "result": "OBSERVED_FAILURE",
+      "scope": "Actual read-only bounded diagnostic: S-mode load page fault10014000; PMP correct",
+      "limits": {
+        "virtual_ns": 1000000000,
+        "wall_seconds_per_interval": 15,
+        "ram_bytes": 3145728
+      }
+    },
+    {
+      "receipt": "build/multimodal/mm-sv39-reviewed-a2/result.json",
+      "sha256": "a1e34c807d01bd76261637e83e6709cb820770c99cc0296a0a6a6c956a717912",
+      "result": "PASS",
+      "scope": "Actual genuine Lean alias Actions/independent Sv39 RAM walker; new fixed linked boot still pending",
+      "limits": null
+    },
+    {
+      "receipt": "build/multimodal/tci-browser-component-a1/report.json",
+      "sha256": "80ec7699f29ef62d1fbf06d95de34c36b201a7d4c0717f3df4e26009aae996b0",
+      "result": "PASS",
+      "scope": "Actual Chromium shared Lean component, independently checked raw values/PCM; no workbook or steadyRTF",
+      "limits": {
+        "wall_seconds": 180,
+        "worker_seconds": 60,
+        "virtual_fixture_nanoseconds": 50000000
+      }
+    },
+    {
+      "receipt": "build/multimodal/tci-control-probe-a4/report.json",
+      "sha256": "4bc4b4b3b46c744213d70891281b3adeaaf5460d4fb7afb8dab60f4562791398",
+      "result": "PASS",
+      "scope": "Actual Node QEMU TCI control/clock/2GiB heap/panel/waveform; not full workbook",
+      "limits": {
+        "wall_seconds": 60,
+        "virtual_ns": 50000000
+      }
+    },
+    {
+      "receipt": "build/multimodal/tci-opfs-posix-a1/report.json",
+      "sha256": "251fd61a2a8d48aead135feb4b3e8859b4f7427d3ee411ab878c6cef48d0a09b",
+      "result": "FAIL",
+      "scope": "Original actual host C signed HEAP8 adapter FAIL",
+      "limits": {
+        "server_seconds": 180,
+        "worker_seconds": 60
+      }
+    },
+    {
+      "receipt": "build/multimodal/tci-opfs-posix-a2/report.json",
+      "sha256": "1317b2af1e9d01b832bbedd6568b730ad02bacc4abf6a37246af5220822a1481",
+      "result": "PASS",
+      "scope": "Actual Chromium host C POSIX/OPFS including failed flush/partial write/independent worker reopen; not guest durability",
+      "limits": {
+        "server_seconds": 180,
+        "worker_seconds": 60
+      }
+    },
+    {
+      "receipt": "build/multimodal/companion-retention-components-a1/result.json",
+      "sha256": "22b53cd95564db98a33ec104b6324d01695ebf01333af137db6a57490ed5d484",
+      "result": "PASS_COMPANION_COMPONENTS",
+      "scope": "Host component operation and genuine Lean fixtures; no native workbook execution",
+      "limits": null
     }
   ],
   "retained_failures": [
@@ -304,5 +384,16 @@
     "original_artifact": 12133285527,
     "original_artifact_zip_sha256": "b2e5680f8d549a32bddafb2c11a1f54d6403434f85bf6852ba598ff29a0d2030",
     "other_jobs": "running/not aggregate PASS"
+  },
+  "latest_complete_artifact_head": "e76fd6cd63032affa1965828a71f0de8834c4404",
+  "connected_execution": "FAIL_OR_NOT_RUN; mapping-fixed guest not yet linked/audited/executed",
+  "first_pr_ci": {
+    "run": 39117512834,
+    "merge": "c0996efdfa59463644343fe88e21683decdd58ed",
+    "acceptance_success": 9,
+    "acceptance_failure": 2,
+    "aggregate": "failure",
+    "notebook_artifact": 12132609886,
+    "notebook_artifact_zip_sha256": "db36ef01a68aa358a629ab726eb093d0db184a4e8e0f263fb873789794c4048a"
   }
 }

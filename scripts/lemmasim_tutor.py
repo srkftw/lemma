@@ -129,8 +129,9 @@ def main():
         query={**context,'task':{'kind':a.kind,'a':a.a,'b':a.b,'c':a.c,'d':a.d},'question':a.question}
         #These public operands/questions are untrusted educational context;
         #they cannot change the guest's independently captured task authority.
+        (out/'request.json').write_text(json.dumps(query,indent=2)+'\n')
         tutor=Tutor('http://127.0.0.1:11434',a.model);proposal=tutor.propose(query)
-        (out/'request.json').write_text(json.dumps(query,indent=2)+'\n');(out/'proposal.json').write_text(json.dumps(proposal,indent=2)+'\n')
+        (out/'proposal.json').write_text(json.dumps(proposal,indent=2)+'\n')
         package=out/'assistance.lcp'
         command=['lake','env','lean','--run','sim/companion/PackageProposal.lean','--proposal',str(out/'proposal.json'),'--output',str(package)]
         published=subprocess.run(command,cwd=ROOT,capture_output=True,timeout=120);(out/'publisher.log').write_bytes(published.stdout+published.stderr)
@@ -151,7 +152,12 @@ def main():
         (out/'course-command.bin').write_bytes(command_bytes)
         report.update(status='RAW_TUTOR_COMMAND_ADMITTED' if a.inject else 'GENERATED_TUTOR_PACKAGE',guest_identity=identity,ask=context,uart_sha256=hashlib.sha256(captured).hexdigest(),inference=proposal['inference'],package_sha256=sha(package),command=command,admission=boundaries,
             transport='OWNER_LOCAL_INTEGRITY_ONLY',receipt='No Installed, displayed, audible or mathematical receipt; observe actual4b1/724/paper completion',next_step='Run guest until actual install commit, then use guest LOAD control')
-    except BaseException as error:report['error']=repr(error)
+    except BaseException as error:
+        report['error']=repr(error)
+        receipt=getattr(error,'receipt',None)
+        if receipt is not None:
+            report['rejected_inference']=receipt
+            (out/'rejected-inference.json').write_text(json.dumps(receipt,indent=2)+'\n')
     try:
         if report.get('source_inputs')!=source_inventory():raise ValueError('complete consumed source changed')
         for name,record in report.get('tools',{}).items():

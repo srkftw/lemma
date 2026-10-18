@@ -1,0 +1,32 @@
+{
+  "schema": "lemma-generic-cmos-sar4-design/1",
+  "first_party_sources_license": "Apache-2.0",
+  "model_identity": "lemma-generic-level1-sar4/0.1.0",
+  "origin": "SYNTHETIC",
+  "process_binding": "NONE; explicit Level1 NMOS/PMOS parameters, not IHP devices or a manufactured process",
+  "external_analog_boundaries": [
+    "input voltage",
+    "1.8V supply",
+    "0.6V ideal bias",
+    "declared lower/upper reference voltages"
+  ],
+  "digital_capacity": "one in-flight four-bit conversion; default one acquisition and two settling clocks, no queue",
+  "comparison_scope": "actual continuous analog decision traces replayed offline through synthesizable SAR control; generic synthesis only, no whole-machine RTL/guest claim",
+  "missing": [
+    "process-qualified MOS models/corners/mismatch/noise and comparator offset/metastability qualification",
+    "actual reference/bias/low-noise front end and calibration circuit",
+    "transistor layout/extraction/mixed-signal verification/pad/package/ESD/power isolation",
+    "canonical SoC/controller integration and same-guest raw conversion workload",
+    "manufacturing recipe/assembly/rights/physical/safety qualification"
+  ],
+  "readiness": {
+    "consumer_simulation": "UNVERIFIED by this bench",
+    "canonical_digital_rtl_parity": "SIMULATED_ONLY standalone component; whole-machine relation UNVERIFIED",
+    "open_design": "SIMULATED_ONLY declared generic circuit/control sources",
+    "manufacturing_reproducibility_openness": "BLOCKED: no process-bound layout/public production inputs",
+    "design_specific_rights": "UNVERIFIED beyond source license; no patent-free claim",
+    "physical_closure": "UNVERIFIED",
+    "physical_functional_safety_qualification": "UNVERIFIED",
+    "educational_benefit": "UNVERIFIED"
+  }
+}

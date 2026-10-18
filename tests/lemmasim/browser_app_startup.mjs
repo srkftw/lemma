@@ -8,15 +8,15 @@ const source=await fs.readFile('sim/browser/app.js','utf8');
 const deferred=()=>{let resolve,reject;const promise=new Promise((r,e)=>{resolve=r;reject=e;});return {promise,resolve,reject};};
 const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 async function appFixture(gpu){
- const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[],viewportListeners=new Map();let worker,current,rect={left:0,top:0,width:100,height:100};
- const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},setPointerCapture(){},releasePointerCapture(){}});return nodes.get(id);};
+ const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[],viewportListeners=new Map(),documentListeners=new Map(),audioSources=[];let worker,current,rect={left:0,top:0,width:100,height:100};
+ const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},addEventListener(name,callback){(this.listeners??=new Map()).set(name,callback);},setPointerCapture(){},releasePointerCapture(){}});return nodes.get(id);};
  function canvas(){const c={width:3,height:1,style:{},setPointerCapture(){},releasePointerCapture(){},getBoundingClientRect:()=>rect,
   cloneNode:()=>canvas(),replaceWith(next){assert.equal(current,this);current=next;},getContext(kind){if(kind==='2d')return {createImageData:(w,h)=>({data:new Uint8Array(w*h*4)}),putImageData:image=>images.push(Array.from(image.data))};
    if(kind==='webgpu')return {configure(){},getCurrentTexture:()=>({createView:()=>({})})};throw Error('unexpected context');}};canvases.push(c);return c;}
  current=canvas();const actions=['pause','resume','snapshot','export','capture-outcomes','events','bind','inspect','close'].map(action=>({dataset:{action}}));
  node('#session-mode').value='student';
- const document={querySelector:id=>id==='canvas'?current:node(id),querySelectorAll:()=>actions,createElement:()=>({click(){}})};
- const context=vm.createContext({document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
+ const document={hidden:false,addEventListener:(name,callback)=>documentListeners.set(name,callback),querySelector:id=>id==='canvas'?current:node(id),querySelectorAll:()=>actions,createElement:()=>({click(){}})};
+ const context=vm.createContext({document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,AudioContext:class{constructor(){this.state='running';this.currentTime=0;this.destination={};}async resume(){}createBuffer(_channels,length,rate){return {duration:length/rate,getChannelData:()=>new Float32Array(length)};}createBufferSource(){const source={connect(){},start(){this.started=true;},stop(){this.stopped=true;}};audioSources.push(source);return source;}},GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
  const module=new vm.SourceTextModule(source,{context});await module.link(()=>{throw Error('unexpected app import');});
  let watchdog;try{await Promise.race([module.evaluate(),new Promise((_resolve,reject)=>{watchdog=setTimeout(()=>reject(Error('renderer initialization blocked actual app registration')),250);})]);}finally{clearTimeout(watchdog);}
  function exercise(){node('#medium').value='owned';node('#open').onclick();assert.equal(sent.at(-1).action,'open');assert.equal(sent.at(-1).name,'owned');assert.equal(sent.at(-1).mode,'student');
@@ -28,7 +28,7 @@ async function appFixture(gpu){
   worker.onmessage({data:{type:'panel',pixels:new Uint8Array([0,8,15]),width:3,height:1}});
   assert.deepEqual(images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
  }
- exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,actions,setRect:r=>rect=r,resize:()=>viewportListeners.get('resize')?.()};
+ exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,actions,setRect:r=>rect=r,resize:()=>viewportListeners.get('resize')?.(),visibility:hidden=>{document.hidden=hidden;documentListeners.get('visibilitychange')?.();},audioSources,trigger:(id,name)=>node(id).listeners?.get(name)?.()};
 }
 {
  const f=await appFixture(undefined);
@@ -45,6 +45,21 @@ async function appFixture(gpu){
   timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
  assert.equal(f.node('#session-mode').disabled,true);
  f.worker.onmessage({data:{type:'closed'}});assert.equal(f.node('#session-mode').disabled,false);
+}
+// Hidden-page notification cancels real queued sink sources in the actual app.
+// Browser DOM/AudioContext fixtures verify host behavior only, not audibility.
+{
+ const f=await appFixture(undefined);await f.node('#pcm-enable').onclick();
+ const pcm={format:'mono-s16le-low16/1',clock_hz:100000000,dropped:0,samples:[['2000','1',100],['4000','2',-200]]};
+ f.worker.onmessage({data:{type:'pcm',pcm}});
+ assert.equal(f.audioSources.length,1);assert.equal(f.audioSources[0].started,true);
+ f.visibility(true);assert.equal(f.audioSources[0].stopped,true);
+ assert.match(f.node('#pcm-status').textContent,/Page hidden/);
+ f.worker.onmessage({data:{type:'pcm',pcm}});assert.equal(f.audioSources.length,1,'hidden page must not schedule new sink samples');
+ f.visibility(false);await f.node('#pcm-enable').onclick();
+ f.worker.onmessage({data:{type:'pcm',pcm:{...pcm,samples:[['6000','3',100],['8000','4',-200]]}}});
+ assert.equal(f.audioSources.length,2);f.trigger('#cold','click');assert.equal(f.audioSources[1].stopped,true);
+ assert.match(f.node('#pcm-status').textContent,/Machine output epoch changed/);
 }
 // Presentation labels only newly emitted guest reports; a missing result,
 // restored continuation or Close cannot inherit an earlier Saved label.

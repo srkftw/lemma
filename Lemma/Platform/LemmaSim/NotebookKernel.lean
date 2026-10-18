@@ -1631,6 +1631,60 @@ def dispatchMultimodalBulk (frame cause value : UInt64) : Action :=
     .bind (observeFault cause) fun s _ => if s = 0 then
     Scheduler.dispatch frame cause value else fatal
 
+/-- Converter14 construction: the same four original authorities, with
+explicit supervisor-only aliases in each fixed task root before activation. -/
+private def constructCourseMultimodal (initialization : UInt64) : Action :=
+  let binding : UInt64 := 3
+  let arithmeticMode : UInt64 := 0
+  let isolation : UInt64 := 0
+  .bind Process.initMultimodal fun s _ => if s = 0 then
+  .bind Task.init fun s _ => if s = 0 then
+  .bind (if binding = 3 then Objects.initArithmetic else Objects.init) fun s _ => if s = 0 then
+  .bind (Task.prepareManaged 0 initialization) fun s store => if s = 0 then
+  .bind (Task.prepareManaged 1 (if binding = 3 then initialization + 2 else initialization)) fun s notebook => if s = 0 then
+  .bind (if binding = 3 then Task.prepareManaged 2 arithmeticMode else .done 0 0) fun s arithmetic => if s = 0 then
+  .bind (Task.prepareManaged 3 initialization) fun s installer => if s = 0 then
+  .bind (AddressSpace.addMultimodalAliases store) fun s _ => if s = 0 then
+  .bind (AddressSpace.addMultimodalAliases notebook) fun s _ => if s = 0 then
+  .bind (AddressSpace.addMultimodalAliases arithmetic) fun s _ => if s = 0 then
+  .bind (AddressSpace.addMultimodalAliases installer) fun s _ => if s = 0 then
+  .bind (Objects.createEndpoint notebook) fun s surface => if s = 0 then
+  .bind (Objects.createEndpoint notebook) fun s input => if s = 0 then
+  .bind (Objects.createEndpoint store) fun s block => if s = 0 then
+  .bind (Objects.createEndpoint store) fun s documents => if s = 0 then
+  .bind (if binding = 3 then Objects.createEndpoint notebook else .done 0 0) fun s power => if s = 0 then
+  .bind (if binding = 3 then Objects.createEndpoint arithmetic else .done 0 0) fun s checking => if s = 0 then
+  .bind (DeviceService.configure surface input block) fun s _ => if s = 0 then
+  .bind (grant store block CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant store documents CapabilityABI.endpointReceive) fun s _ => if s = 0 then
+  .bind (grant store Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
+  .bind (grant notebook surface CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant notebook input CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant notebook documents CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant notebook Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
+  .bind (if binding = 3 then grant notebook power CapabilityABI.endpointCall else .done 0 0) fun s _ => if s = 0 then
+  .bind (if binding = 3 then
+    .bind (grant notebook checking CapabilityABI.endpointCall) fun s _ => if s = 0 then
+    .bind (grant arithmetic checking CapabilityABI.endpointReceive) fun s _ => if s = 0 then
+    grant arithmetic Objects.consoleKey CapabilityABI.consoleWrite else fatal else fatal
+    else .done 0 0) fun s _ => if s = 0 then
+  .bind (grant installer Objects.consoleKey (CapabilityABI.consoleRead ||| CapabilityABI.consoleWrite)) fun s _ => if s = 0 then
+  .bind (grant installer documents CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (PowerControl.configure (if binding = 3 then 1 else 0) power) fun s _ => if s = 0 then
+  .bind (Task.activateManaged store) fun s _ => if s = 0 then
+  .bind (if binding = 3 then Task.activateManaged arithmetic else .done 0 0) fun s _ => if s = 0 then
+  .bind (Task.activateManaged installer) fun s _ => if s = 0 then
+  .bind (Task.activateManaged notebook) fun s _ => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x410 store notebook documents (if binding = 1 then Lemma.Platform.Silicon.Binding.frame_count else 8192)) fun s _ => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x4b4 installer documents 0 0) fun s _ => if s = 0 then
+  configureIsolation isolation documents
+  else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal
+
 private def bootMultimodal (initialization : UInt64) : Action :=
   .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
   .bind BootInfo.validate fun status value =>
@@ -1645,7 +1699,7 @@ private def bootMultimodal (initialization : UInt64) : Action :=
   .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
   .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
   .bind Lemma.Drivers.PLIC.initializePower fun s _ => if s = 0 then
-  .bind (constructCourse initialization 0 3 0) fun s _ => if s = 0 then
+  .bind (constructCourseMultimodal initialization) fun s _ => if s = 0 then
     .bind (Access.read64 (PowerControl.stateBase + 8)) fun s key => if mmFailed s = true then .done s 0 else
     .bind (MultimodalService.configure key) fun s _ => if mmFailed s = true then .done s 0 else
     .loop powerStepEntryV2 else .done s 0
@@ -1692,7 +1746,7 @@ private def bootMultimodalParameterized (initialization : UInt64) : Action :=
   .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
   .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
   .bind Lemma.Drivers.PLIC.initializePower fun s _ => if s = 0 then
-  .bind (constructCourse initialization 0 3 0) fun s _ => if s = 0 then
+  .bind (constructCourseMultimodal initialization) fun s _ => if s = 0 then
     .bind grantParameterizedInstaller fun s _ => if mmFailed s = true then .done s 0 else
     .bind (Access.read64 (PowerControl.stateBase + 8)) fun s key => if mmFailed s = true then .done s 0 else
     .bind (MultimodalService.configure key) fun s _ => if mmFailed s = true then .done s 0 else

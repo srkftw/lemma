@@ -227,7 +227,24 @@ def semantics(ir, unit):
         wrapper = PREFIX + BOOT_ROOTS[unit['configuration']]
         mode = int(unit['configuration'].endswith('-initialize'))
         require(calls(wrapper, boot) == ['i64 ' + str(mode)], 'boot wrapper changed initialization operand')
-        require(calls(boot, PREFIX + 'constructCourse') == ['i64 %arg0, i64 0, i64 3, i64 0'], 'real four-role constructor operands differ')
+        constructor = PREFIX + 'constructCourseMultimodal'
+        process = 'Lemma.Kernel.Process.initMultimodal'
+        aliases = 'Lemma.Kernel.Memory.AddressSpace.addMultimodalAliases'
+        require(calls(boot, constructor) == ['i64 %arg0'],
+                'exact multimodal four-role constructor operand differs')
+        require(calls(constructor, process) == [''],
+                'multimodal constructor bypassed its initial supervisor mapping')
+        require(calls(process, 'Lemma.Kernel.Memory.AddressSpace.create') == ['i64 1'] and
+                len(calls(process, aliases)) == 1,
+                'initial supervisor root omitted exact extension aliases')
+        alias_arguments = calls(constructor, aliases)
+        require(len(alias_arguments) == len(set(alias_arguments)) == 4 and
+                len(calls(constructor, 'Lemma.Kernel.Task.prepareManaged')) == 4 and
+                len(calls(constructor, 'Lemma.Kernel.Task.activateManaged')) == 4,
+                'four distinct prepared task roots lack multimodal supervisor aliases')
+        for owner, target in ((boot, constructor), (constructor, process),
+                              (process, aliases), (constructor, aliases)):
+            checked.append((owner, target))
         for target in ('Lemma.Platform.LemmaSim.Descriptor.validateSiliconMultimodal',
                        'Lemma.Platform.LemmaSim.MachineServices.validateMultimodal',
                        'Lemma.Platform.LemmaSim.MultimodalService.configure', PREFIX + 'powerStepEntryV2'):
@@ -395,6 +412,8 @@ def validate(ir, unit, *, optimized):
             'Lemma.Platform.LemmaSim.MultimodalService.', 'Lemma.Platform.Silicon.BindingMultimodal.')
         hardware_roots={NOTEBOOK_ROOT, PREFIX+'dispatchMultimodalBulk', PREFIX+'bootMultimodal',
                         PREFIX+'bootMultimodalParameterized',PREFIX+'grantParameterizedInstaller',
+                        PREFIX+'constructCourseMultimodal','Lemma.Kernel.Process.initMultimodal',
+                        'Lemma.Kernel.Memory.AddressSpace.addMultimodalAliases',
                         *(PREFIX+name for name in BOOT_ROOTS.values())}
         require(not any(canonical(r.get('source','')).startswith(hardware_prefixes) or
                         canonical(r.get('source','')) in hardware_roots for r in unit.get('functions', [])),

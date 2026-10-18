@@ -82,6 +82,12 @@ def main():
             result=assessment.score(c,submission,c['unlock_tick'],{'tutor_during_challenge':False,'prior_delivered_assistance':'recorded-separately'})
             expect(result['score']==1,'independent assessment positive control')
             expect(assessment.score(c,submission,c['unlock_tick'],{'tutor_during_challenge':True})['outcome']=='CONTAMINATED','assisted answer scored independent')
+            expect(assessment.score(c,submission,c['unlock_tick'],{})['outcome']=='INDEPENDENCE_UNVERIFIED','missing assistance evidence became an independent score')
+            if c['kind']=='polynomial':
+                rejects(lambda:assessment.score(c,{'coefficients':[float(x) for x in submission['coefficients']]},c['unlock_tick'],{'tutor_during_challenge':False}),'float coefficients admitted as exact integers')
+                rejects(lambda:assessment.score(c,{'coefficients':[True,1,1]},c['unlock_tick'],{'tutor_during_challenge':False}),'Boolean coefficients admitted as exact integers')
+            elif c['kind']=='definition':
+                rejects(lambda:assessment.score(c,{**submission,'classification':int(submission['classification'])},c['unlock_tick'],{'tutor_during_challenge':False}),'integer classification silently substituted for Boolean')
             results.append({'challenge':c,'result':result})
         (out/'assessment.json').write_text(json.dumps(results,indent=2)+'\n');report['assessment']={'status':'PASS_SYNTHETIC_SOFTWARE','families':list(assessment.FAMILIES),'educational_benefit':'UNVERIFIED','policy_receipt':receipt}
         for claims in ([],[{'domain':'Q','statement':'pending exact checking'}]):

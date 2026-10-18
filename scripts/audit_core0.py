@@ -1095,11 +1095,32 @@ def tool_text(name: str, args: list[str], root: Path) -> str:
     return result.stdout.decode("utf-8", errors="strict")
 
 
-def parse_definitions_and_calls(ir: str) -> tuple[set[str], set[str], set[str]]:
-    definitions = set(re.findall(r"^define\s+.*?@([A-Za-z0-9_.$-]+)\(", ir, re.MULTILINE))
-    declarations = set(re.findall(r"^declare\s+.*?@([A-Za-z0-9_.$-]+)\(", ir, re.MULTILINE))
-    calls = set(re.findall(r"\bcall\s+[^@\n]*@([A-Za-z0-9_.$-]+)\(", ir))
+_LEXICAL_PARSE_MAX_CHARS = 131072
+
+
+def _definition_call_sets(ir: str) -> tuple[frozenset[str], frozenset[str], frozenset[str]]:
+    definitions = frozenset(re.findall(r"^define\s+.*?@([A-Za-z0-9_.$-]+)\(", ir, re.MULTILINE))
+    declarations = frozenset(re.findall(r"^declare\s+.*?@([A-Za-z0-9_.$-]+)\(", ir, re.MULTILINE))
+    calls = frozenset(re.findall(r"\bcall\s+[^@\n]*@([A-Za-z0-9_.$-]+)\(", ir))
     return definitions, declarations, calls
+
+
+@lru_cache(maxsize=2048)
+def _definition_call_sets_cached(ir: str) -> tuple[frozenset[str], frozenset[str], frozenset[str]]:
+    # The complete immutable text is the key, including comments and literals.
+    # This caches only the original three lexical regex results, never source
+    # admission, a validator decision, machine state or execution evidence.
+    return _definition_call_sets(ir)
+
+
+def parse_definitions_and_calls(ir: str) -> tuple[set[str], set[str], set[str]]:
+    # Large modules bypass retained storage. Ordinary repeated function bodies
+    # fit the bounded cache; fresh sets preserve the original mutable API and
+    # prevent one observer from changing another observer's lexical results.
+    parsed = (_definition_call_sets_cached(ir) if len(ir) <= _LEXICAL_PARSE_MAX_CHARS
+              else _definition_call_sets(ir))
+    definitions, declarations, calls = parsed
+    return set(definitions), set(declarations), set(calls)
 
 
 def _exact_keys(value: dict[str, object], expected: set[str], context: str) -> None:

@@ -30,16 +30,21 @@ def challenge(seed,learner,session,family,start=0):
 def score(challenge,submission,now,assistance):
     if challenge.get('schema')!=VERSION or now<challenge['unlock_tick']:raise ValueError('assessment locked or unknown')
     if assistance.get('tutor_during_challenge') or assistance.get('solution_exposure'):return {'score':None,'outcome':'CONTAMINATED','reason':'challenge independence violated'}
+    if assistance.get('tutor_during_challenge') is not False:return {'score':None,'outcome':'INDEPENDENCE_UNVERIFIED','reason':'challenge-time assistance observation is missing'}
     kind=challenge['kind'];v=challenge['operands'];correct=False
     def q(value):
         if not isinstance(value,list) or len(value)!=2 or any(type(x) is not int or abs(x)>1000000 for x in value) or value[1]==0:raise ValueError('bounded rational format')
         return Fraction(*value)
     if kind=='rational':correct=q(submission['answer'])==Fraction(v[0],v[1])+Fraction(v[2],v[3])
-    elif kind=='polynomial':correct=submission['coefficients']==[v[1]*v[3],v[0]*v[3]+v[1]*v[2],v[0]*v[2]]
+    elif kind=='polynomial':
+        coefficients=submission['coefficients']
+        if not isinstance(coefficients,list) or len(coefficients)!=3 or any(type(x) is not int or abs(x)>1000000 for x in coefficients):raise ValueError('bounded integer polynomial format')
+        correct=coefficients==[v[1]*v[3],v[0]*v[3]+v[1]*v[2],v[0]*v[2]]
     elif kind=='counterexample':
         x,y=q(submission['x']),q(submission['y'])
         correct=(x+y)**2!=x*x+y*y and q(submission['lhs'])==(x+y)**2 and q(submission['rhs'])==x*x+y*y and submission['y_zero_valid'] is True
     elif kind=='definition':
+        if type(submission['classification']) is not bool:raise ValueError('explicit Boolean classification required')
         example=q(submission['proper_example'])
         correct=submission['classification']==(v[0]<v[1]) and 0<example<1
     elif kind=='unfamiliar':correct=q(submission['answer'])==v[0]+2*v[1]+2*(v[2]+2*v[3])

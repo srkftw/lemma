@@ -1053,4 +1053,43 @@ def createProduct (owner : UInt64) : Action :=
   if failed s = true then abortCreate descriptor address s else .done 0 descriptor
   else .done invalidDescriptor 0 else .done invalidDescriptor 0
 
+private def multimodalPinnedTable (address index : UInt64) : Action :=
+  .bind (get address 24) fun s owner => if failed s = true then .done s 0 else
+  .bind (get address (tableList + index * 8)) fun s handle => if failed s = true then .done s 0 else
+  .bind (Frames.mappingCount owner handle) fun s pins => if failed s = true then .done s 0 else
+  if pins = 1 then tableAt address index else .done invalidDescriptor 0
+
+/-- Boot-only successor for the exact converter14 aperture. The caller has
+freshly validated that board and retains this descriptor. All owned/pinned
+tables, parent links and both destination leaves are checked before either
+write. No U or X permission is installed; adjacent pages remain untouched.
+Legacy create/createProduct and their consumers do not call this operation.
+The four fixed task roots and initial kernel root are its complete scope. -/
+def addMultimodalAliases (descriptor : UInt64) : Action :=
+  .bind Frames.runtimeCount fun s amount => if failed s = true then .done s 0 else
+  if amount = 8192 then
+  .bind (base descriptor) fun s address => if failed s = true then .done s 0 else
+  .bind (get address 8) fun s version => if failed s = true then .done s 0 else
+  if version = 2 then
+  .bind (multimodalPinnedTable address 0) fun s root => if failed s = true then .done s 0 else
+  .bind (multimodalPinnedTable address 7) fun s middle => if failed s = true then .done s 0 else
+  .bind (multimodalPinnedTable address 9) fun s low => if failed s = true then .done s 0 else
+  if root = middle then .done invalidDescriptor 0 else
+  if root = low then .done invalidDescriptor 0 else
+  if middle = low then .done invalidDescriptor 0 else
+  .bind (Access.read64 root) fun s first => if failed s = true then .done s 0 else
+  if (if first = (middle >>> 12 <<< 10 ||| 1) then false else true) = true then .done invalidDescriptor 0 else
+  .bind (Access.read64 (middle + 128 * 8)) fun s second => if failed s = true then .done s 0 else
+  if (if second = (low >>> 12 <<< 10 ||| 1) then false else true) = true then .done invalidDescriptor 0 else
+  .bind (Access.read64 (low + 20 * 8)) fun s old0 => if failed s = true then .done s 0 else
+  .bind (Access.read64 (low + 21 * 8)) fun s old1 => if failed s = true then .done s 0 else
+  let leaf0 : UInt64 := (0x10014000 : UInt64) >>> 12 <<< 10 ||| 0xc7
+  let leaf1 : UInt64 := (0x10015000 : UInt64) >>> 12 <<< 10 ||| 0xc7
+  if (if old0 = 0 then false else if old0 = leaf0 then false else true) = true then .done invalidDescriptor 0 else
+  if (if old1 = 0 then false else if old1 = leaf1 then false else true) = true then .done invalidDescriptor 0 else
+  .bind (Access.write64 (low + 20 * 8) leaf0) fun s _ => if failed s = true then .done s 0 else
+  .bind (Access.write64 (low + 21 * 8) leaf1) fun s _ => if failed s = true then .done s 0 else
+  flushCurrent
+  else .done invalidDescriptor 0 else .done invalidDescriptor 0
+
 end Lemma.Kernel.Memory.AddressSpace

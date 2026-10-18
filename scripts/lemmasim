@@ -1019,7 +1019,7 @@ def main():
         else:
             if any(getattr(args,key,None) is not None for key in ('guest_build','rtl_build')):raise Failure('RTL prepared artifact options require --backend rtl')
             if getattr(args,'profile',None) not in (None,'lemmasim-virt/0.1.0'):raise Failure('QEMU backend requires profile lemmasim-virt/0.1.0')
-            if getattr(args,'workload',None) not in (None,'notebook'):raise Failure('QEMU native launcher supports notebook workload')
+            if args.command!='init' and getattr(args,'workload',None) not in (None,'notebook'):raise Failure('QEMU native launcher supports notebook workload')
             if args.command=='run':
                 if any(getattr(args,key,None) is not None for key in ('uart_input','events','uart_stop','uart_stop_hex','stop_after_panel','fail_flush','observer_cycle','ram_dump','block_trace')):raise Failure('RTL transport options require --backend rtl')
                 args.geometry=args.geometry or '1650x2200'

@@ -54,8 +54,13 @@ class TargetAuthorityTests(unittest.TestCase):
     def test_unknown_profile_or_source_cannot_acquire_multimodal_authority(self):
         unit, ir=self.fixture()
         unit['configuration']='historical-profile'
-        unit['functions'][0]['source']='Lemma.User.Multimodal.inject'
-        with self.assertRaisesRegex(Core0Error,'escaped its exact deployment'):target.validate(ir,unit,optimized=False)
+        for source in ('Lemma.User.Multimodal.inject',
+                       'Lemma.Kernel.Memory.AddressSpace.addMultimodalAliases',
+                       'Lemma.Kernel.Process.initMultimodal',
+                       target.PREFIX+'constructCourseMultimodal'):
+            unit['functions'][0]['source']=source
+            with self.subTest(source=source),self.assertRaisesRegex(Core0Error,'escaped its exact deployment'):
+                target.validate(ir,unit,optimized=False)
     def test_wrong_user_identifier_root_or_device_privilege_rejects(self):
         unit,_=self.fixture()
         for key,value in (('image_id',2),('contract_version','core0-user-v0.2'),('used_device_ops',[{'pretend':'mmio'}])):

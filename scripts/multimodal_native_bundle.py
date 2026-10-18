@@ -20,6 +20,19 @@ def _modules():
     import lemmasim_fast as fast
     return guest,bundle,fast
 
+def _origin_destination(manifest,path,digest):
+    """Resolve exact origins within this successor schema only."""
+    if manifest.get('schema')!=SCHEMA:raise ValueError('Unsupported multimodal origin schema')
+    origins=manifest.get('origins')
+    entry=origins.get(str(Path(path).resolve())) if isinstance(origins,dict) else None
+    destination=entry.get(digest) if isinstance(entry,dict) else None
+    files=manifest.get('files')
+    if (not isinstance(files,dict) or not isinstance(destination,str) or
+            destination not in files or files[destination].get('sha256')!=digest):
+        raise ValueError('Archived consumed multimodal input differs: '+str(path))
+    return destination
+
+
 def pack(args):
     guest,bundle,fast=_modules()
     from build_kernel import source_inputs
@@ -95,7 +108,7 @@ def prepared_archive(directory,backend,workload,name=None):
     controls=m.get('host_controls')
     required=('scripts/lemmasim','scripts/lemmasim_fast.py','scripts/lemmasim_session.py','scripts/silicon_guest_bundle.py','scripts/multimodal_native_bundle.py')
     if not isinstance(controls,dict) or set(controls)!=set(required):raise ValueError('Archived host control inventory differs')
-    for path,h in controls.items():bundle.origin_destination(m,guest.ROOT/path,h)
+    for path,h in controls.items():_origin_destination(m,guest.ROOT/path,h)
     root=directory/'source'
     if source_inputs(root)!=m.get('sources') or bundle.read_json(root/'source-inputs.json')!=m['sources']:
         raise ValueError('Multimodal archive complete target source closure differs')
@@ -105,8 +118,8 @@ def prepared_archive(directory,backend,workload,name=None):
         raise ValueError('Multimodal fast execution contract differs')
     if data.get('profile_sha256')!=guest.sha(profile_path(PROFILE)):
         raise ValueError('Archived0.14 binding differs from its retained version')
-    bundle.origin_destination(m,profile_path(PROFILE),data['profile_sha256'])
-    for path,h in data.get('sources',{}).items():bundle.origin_destination(m,guest.ROOT/path,h)
+    _origin_destination(m,profile_path(PROFILE),data['profile_sha256'])
+    for path,h in data.get('sources',{}).items():_origin_destination(m,guest.ROOT/path,h)
     if not data.get('sources'):raise ValueError('Missing archived fast source closure')
     def absolute(item):
         if not isinstance(item,dict) or set(item)!={'path','sha256'} or item['path'] not in m['files'] or m['files'][item['path']]['sha256']!=item['sha256']:

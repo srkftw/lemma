@@ -1,0 +1,1046 @@
+{
+  "schema": "lemma-generic-cmos-sar4-engineering/1",
+  "status": "PASS",
+  "scope": "SIMULATED_ONLY generic synthetic Level1 MOS S/H/comparator/switched DAC and offline paired SAR control; no PDK, layout, ADC accuracy, physical, manufacturing, or integrated Lemma machine claim",
+  "time_relation": "analog sample aperture1us, comparator decisions3/5/7/9us; RTL one acquisition and two settling clocks per decision,1us testbench clocks; actual analog comparator decisions replayed offline, not continuous mixed-signal cosimulation",
+  "source_sha256": {
+    "sample-hold-comparator.cir": "6eec8a91859aa2e82153b3c511dd5d593f83716312a9a068f63164e505af3ebd",
+    "sar4_control.sv": "62ce469f2ab5832dc159edb143b745a361e33cf635a1bd2c07838a770ca2afc5",
+    "Sar4Bench.sv": "c1599e1fac195db0e51d9b133627391567488ed3b812b3821e8c2bd3b831a528",
+    "provenance.json": "1d04770f8099e5f1866148bc395fa46a9ecf1858629e97024972abff7ffe71fb",
+    "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/scripts/check_multimodal_converter.py": "54ab82b65ee0450c0a18d01fa71325badf02f49c5a0f19ed7d9936572cb20a7c"
+  },
+  "tools": {
+    "ngspice": {
+      "path": "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+      "sha256": "689be776737abed4fc759d872c594ad935e2e9ba38487c8c0b95f0d84fdc53a8",
+      "version": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "--version"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.003938785055652261,
+        "log_sha256": "e092e7a12f337df8306f197634896ea428adbd3de9f8211bb114840783a74625"
+      }
+    },
+    "verilator": {
+      "path": "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator",
+      "sha256": "f1f41487e2a6c18e55859658df8d2e3528b76fc5c7b5a95281794ded61c7b802",
+      "version": {
+        "argv": [
+          "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator",
+          "--version"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.04894096392672509,
+        "log_sha256": "110d748d8e6eca23b22ad7bf766d1d1fcf69c45731c3260fc80857cdd2d62576"
+      }
+    },
+    "make": {
+      "path": "/nix/store/z565rgmn9vccv2h0g87z725pw610jmm8-gnumake-4.4.1/bin/make",
+      "sha256": "fee96a0fae52353d14f8d5be991366483d96f00800f8f707198af68ce47b8fea",
+      "version": {
+        "argv": [
+          "/nix/store/z565rgmn9vccv2h0g87z725pw610jmm8-gnumake-4.4.1/bin/make",
+          "--version"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.0015969689702615142,
+        "log_sha256": "cb84250d994234272d0a465014ce2931be76e9e0cb114b9bffa078c3c211e8eb"
+      }
+    },
+    "cxx": {
+      "path": "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++",
+      "sha256": "c1a58806b7b7c5f038a81f94c27796764fc8cd9f8059aef62c5e83a761a56935",
+      "version": {
+        "argv": [
+          "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++",
+          "--version"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.007602444966323674,
+        "log_sha256": "18506106dcb7aa3f2ccfdcaf961b91543b28f772644bf4f143ab234beb024990"
+      }
+    },
+    "yosys": {
+      "path": "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+      "sha256": "aaa6f93f2b56b05370f008388a2a7531e74892907082aaa2bce223a37d8c782f",
+      "version": {
+        "argv": [
+          "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+          "--version"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.007510914001613855,
+        "log_sha256": "8d4d2a3404eb057d1633cfd7c8f4dd1a3f12e5ccd7e506d229fb238bb52555ae"
+      }
+    },
+    "yosys_abc": {
+      "path": "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys-abc",
+      "sha256": "d0c8bc6c2822f258e6d83868ef83159b945aa1ec1f8a625e3c3a608f4783dc0a"
+    }
+  },
+  "analog_cases": [
+    {
+      "name": "center-0",
+      "input_volts": 0.7625,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 0,
+      "actual_code": 0,
+      "decisions_msb_first": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measurements": {
+        "decision3": 1.675926e-09,
+        "measured_dac3": 0.9498804,
+        "held3": 0.7624999,
+        "decision2": 1.675926e-09,
+        "measured_dac2": 0.8500161,
+        "held2": 0.7624998,
+        "decision1": 1.675926e-09,
+        "measured_dac1": 0.8000281,
+        "held1": 0.7624997,
+        "decision0": 1.675926e-09,
+        "measured_dac0": 0.7750192,
+        "held0": 0.7624996,
+        "resultcode": 0.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-0",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.033657146035693586,
+        "log_sha256": "25afb2251e706888287142e38fea91228837ead4e7577d48325cec8f30cc1c04"
+      },
+      "netlist_sha256": "b3661fceb7f7bb7aff4fad151f7319562be37427900d966042eb96b2bcef781d",
+      "transient_sha256": "f98fe1af1ba2eff4ae91cb2e50afc31bf3613198c297b08376d08e91061f0519"
+    },
+    {
+      "name": "center-1",
+      "input_volts": 0.7875,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 1,
+      "actual_code": 1,
+      "decisions_msb_first": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "measurements": {
+        "decision3": 1.675926e-09,
+        "measured_dac3": 0.9498804,
+        "held3": 0.7874999,
+        "decision2": 1.675926e-09,
+        "measured_dac2": 0.8500161,
+        "held2": 0.7874998,
+        "decision1": 1.675926e-09,
+        "measured_dac1": 0.8000281,
+        "held1": 0.7874997,
+        "decision0": 1.8,
+        "measured_dac0": 0.7750192,
+        "held0": 0.7874995,
+        "resultcode": 1.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-1",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03455445298459381,
+        "log_sha256": "1fa49be15795e71bbb751847eed76092f03caf58c076abda29b94d9f8ba02af9"
+      },
+      "netlist_sha256": "a5c5a86214ce2a564389e46b89267a922f11ef22b6d8675737ecf39ad386095e",
+      "transient_sha256": "fe4992b56b8284c8855a96e29d9d7fb60458e94e44ef060a1470c170ccba6853"
+    },
+    {
+      "name": "center-2",
+      "input_volts": 0.8125,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 2,
+      "actual_code": 2,
+      "decisions_msb_first": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "measurements": {
+        "decision3": 1.675926e-09,
+        "measured_dac3": 0.9498804,
+        "held3": 0.8124999,
+        "decision2": 1.675926e-09,
+        "measured_dac2": 0.8500161,
+        "held2": 0.8124997,
+        "decision1": 1.8,
+        "measured_dac1": 0.8000281,
+        "held1": 0.8124996,
+        "decision0": 1.675919e-09,
+        "measured_dac0": 0.8250475,
+        "held0": 0.8124995,
+        "resultcode": 2.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-2",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.035600821021944284,
+        "log_sha256": "ecd2177d0f182fdf3b8a8a4d40b0d54ffc267e428713a18ff80400c1872b71dd"
+      },
+      "netlist_sha256": "d0d16db9a5653579d887ee9d987c28a35dff3df4f7c1bea041e8b425a640c471",
+      "transient_sha256": "2fcbf565110332d74d64af12974cb74e8f3cf39865f95d7478eb2706ba818dbb"
+    },
+    {
+      "name": "center-3",
+      "input_volts": 0.8375,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 3,
+      "actual_code": 3,
+      "decisions_msb_first": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "measurements": {
+        "decision3": 1.675926e-09,
+        "measured_dac3": 0.9498804,
+        "held3": 0.8374999,
+        "decision2": 1.675926e-09,
+        "measured_dac2": 0.8500161,
+        "held2": 0.8374997,
+        "decision1": 1.8,
+        "measured_dac1": 0.8000281,
+        "held1": 0.8374996,
+        "decision0": 1.8,
+        "measured_dac0": 0.8250475,
+        "held0": 0.8374994,
+        "resultcode": 3.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-3",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03428196208551526,
+        "log_sha256": "1a7426b12b94be87ed263e684eef58261b18d8fa7642992223febb2573988aa6"
+      },
+      "netlist_sha256": "f3f7bd4b8ba08c437002650a710595a7d792777f0f0bcc65aabf180001e69735",
+      "transient_sha256": "9220e40449efb1d6e0cc512b02d590340333389bc28c7c02b983807d74837bf6"
+    },
+    {
+      "name": "center-4",
+      "input_volts": 0.8625,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 4,
+      "actual_code": 4,
+      "decisions_msb_first": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "measurements": {
+        "decision3": 1.675926e-09,
+        "measured_dac3": 0.9498804,
+        "held3": 0.8624998,
+        "decision2": 1.8,
+        "measured_dac2": 0.8500161,
+        "held2": 0.8624997,
+        "decision1": 1.675933e-09,
+        "measured_dac1": 0.9000462,
+        "held1": 0.8624995,
+        "decision0": 1.675926e-09,
+        "measured_dac0": 0.8750361,
+        "held0": 0.8624994,
+        "resultcode": 4.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-4",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03461432398762554,
+        "log_sha256": "9cf38b618d1f48c80b6df460065b5a47cddc60c3a22bdda5ac2a60b78916d52f"
+      },
+      "netlist_sha256": "17c4244f1215cb45ffd85ce3aa4948b8504db270e9df67cb35a12f5b065dd372",
+      "transient_sha256": "c3b408731fea2a2850589707963e364c38afdc82bee3438d851cb1d81dc09a54"
+    },
+    {
+      "name": "center-5",
+      "input_volts": 0.8875,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 5,
+      "actual_code": 5,
+      "decisions_msb_first": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "measurements": {
+        "decision3": 1.675926e-09,
+        "measured_dac3": 0.9498804,
+        "held3": 0.8874998,
+        "decision2": 1.8,
+        "measured_dac2": 0.8500161,
+        "held2": 0.8874997,
+        "decision1": 1.67592e-09,
+        "measured_dac1": 0.9000462,
+        "held1": 0.8874995,
+        "decision0": 1.8,
+        "measured_dac0": 0.8750361,
+        "held0": 0.8874993,
+        "resultcode": 5.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-5",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03571870399173349,
+        "log_sha256": "4b4c178eacc820aba03d5954e60c7b2a4de0fa1ce46ff482e637f9aa2fc90236"
+      },
+      "netlist_sha256": "891e89a12e62ffbdd6be2c89ea7230e89ee1e7c3113f968b3a38b32e4ef19a08",
+      "transient_sha256": "25254518da5d1b390a8cfea3259e75042df5555e9e367a326b72f50df7bcb837"
+    },
+    {
+      "name": "center-6",
+      "input_volts": 0.9125,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 6,
+      "actual_code": 6,
+      "decisions_msb_first": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "measurements": {
+        "decision3": 1.675926e-09,
+        "measured_dac3": 0.9498804,
+        "held3": 0.9124998,
+        "decision2": 1.8,
+        "measured_dac2": 0.8500161,
+        "held2": 0.9124996,
+        "decision1": 1.8,
+        "measured_dac1": 0.9000462,
+        "held1": 0.9124994,
+        "decision0": 1.675919e-09,
+        "measured_dac0": 0.9250664,
+        "held0": 0.9124992,
+        "resultcode": 6.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-6",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03601350600365549,
+        "log_sha256": "6e3a3d22439c964536f842da5e1ce6161e77f11dca6df2cb524a2929bbf2f636"
+      },
+      "netlist_sha256": "bb09561c89ade817bec491bf1b1ac539478e806aa161153042a4cb0e0093e368",
+      "transient_sha256": "55690de7e8d9e328e9d05ba6193e537846826205d16550fea11437eff25768ae"
+    },
+    {
+      "name": "center-7",
+      "input_volts": 0.9375,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 7,
+      "actual_code": 7,
+      "decisions_msb_first": [
+        0,
+        1,
+        1,
+        1
+      ],
+      "measurements": {
+        "decision3": 1.675926e-09,
+        "measured_dac3": 0.9498804,
+        "held3": 0.9374998,
+        "decision2": 1.8,
+        "measured_dac2": 0.8500161,
+        "held2": 0.9374996,
+        "decision1": 1.8,
+        "measured_dac1": 0.9000462,
+        "held1": 0.9374994,
+        "decision0": 1.8,
+        "measured_dac0": 0.9250664,
+        "held0": 0.9374992,
+        "resultcode": 7.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-7",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03549214906524867,
+        "log_sha256": "a64cfc837a37d99dff145ed48f5f9d30c6132d2df20a171eefce266464bd4c4f"
+      },
+      "netlist_sha256": "b00a83be698ce7bec48f62e477c5372aad0a73c6cae768fd7b9211244c4e59a1",
+      "transient_sha256": "247b873362d7ec2ba8b813f49f6599a5d1e50140fbd394f31b0944feab189de9"
+    },
+    {
+      "name": "center-8",
+      "input_volts": 0.9625,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 8,
+      "actual_code": 8,
+      "decisions_msb_first": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "measurements": {
+        "decision3": 1.8,
+        "measured_dac3": 0.9498804,
+        "held3": 0.9624998,
+        "decision2": 1.675933e-09,
+        "measured_dac2": 1.049912,
+        "held2": 0.9624996,
+        "decision1": 1.675926e-09,
+        "measured_dac1": 0.999915,
+        "held1": 0.9624993,
+        "decision0": 1.675926e-09,
+        "measured_dac0": 0.9749025,
+        "held0": 0.9624991,
+        "resultcode": 8.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-8",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03638415702152997,
+        "log_sha256": "885277ea1b8102f2ff05323db1b55519a12028ca7fbe547d656ea2a0f487cc9d"
+      },
+      "netlist_sha256": "73e5f2048528f7faeba073e41a48534279890208e5a30530093583fbf934e47d",
+      "transient_sha256": "35083230043341fd59cc3a86a0aefe49f5bb946dd4edb168d612595901d54df2"
+    },
+    {
+      "name": "center-9",
+      "input_volts": 0.9875,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 9,
+      "actual_code": 9,
+      "decisions_msb_first": [
+        1,
+        0,
+        0,
+        1
+      ],
+      "measurements": {
+        "decision3": 1.8,
+        "measured_dac3": 0.9498804,
+        "held3": 0.9874998,
+        "decision2": 1.675932e-09,
+        "measured_dac2": 1.049912,
+        "held2": 0.9874995,
+        "decision1": 1.676008e-09,
+        "measured_dac1": 0.999915,
+        "held1": 0.9874993,
+        "decision0": 1.8,
+        "measured_dac0": 0.9749025,
+        "held0": 0.9874991,
+        "resultcode": 9.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-9",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03659959801007062,
+        "log_sha256": "cda1efd694d68d9f7615f5c54d2825b456fc45c4de5d379cb40df755d61d41d2"
+      },
+      "netlist_sha256": "0263fe5c622986bf66474b60aff3c6d9870adcce11e83d19ac2f7175e542f8c3",
+      "transient_sha256": "f712d5d4d847ba2f3dd2d519cbcc6085f3f659fee5d59d24dd196d1bea424731"
+    },
+    {
+      "name": "center-10",
+      "input_volts": 1.0125,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 10,
+      "actual_code": 10,
+      "decisions_msb_first": [
+        1,
+        0,
+        1,
+        0
+      ],
+      "measurements": {
+        "decision3": 1.8,
+        "measured_dac3": 0.9498804,
+        "held3": 1.0125,
+        "decision2": 1.676171e-09,
+        "measured_dac2": 1.049912,
+        "held2": 1.0125,
+        "decision1": 1.8,
+        "measured_dac1": 0.999915,
+        "held1": 1.012499,
+        "decision0": 1.676879e-09,
+        "measured_dac0": 1.024937,
+        "held0": 1.012499,
+        "resultcode": 10.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-10",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03554436599370092,
+        "log_sha256": "0e17d0bfc6fc27a0d9c0f4827c158fb166ce00d28dc98551704a906de0ae4994"
+      },
+      "netlist_sha256": "af0bfeea349f2aa09d82334adb121719e035dedf28f9a949f09e37ce46b6ee04",
+      "transient_sha256": "d88d4e6dd89c428e914c23633b792d2ce5f9f506ee29fd13adef2e55cd77379c"
+    },
+    {
+      "name": "center-11",
+      "input_volts": 1.0375,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 11,
+      "actual_code": 11,
+      "decisions_msb_first": [
+        1,
+        0,
+        1,
+        1
+      ],
+      "measurements": {
+        "decision3": 1.8,
+        "measured_dac3": 0.9498804,
+        "held3": 1.0375,
+        "decision2": 1.678808e-09,
+        "measured_dac2": 1.049912,
+        "held2": 1.037499,
+        "decision1": 1.8,
+        "measured_dac1": 0.999915,
+        "held1": 1.037499,
+        "decision0": 1.8,
+        "measured_dac0": 1.024937,
+        "held0": 1.037499,
+        "resultcode": 11.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-11",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03782039403449744,
+        "log_sha256": "9349c2ad8f457ce5858c2fad4f462704673751d54cdeea9645b85817118d26ca"
+      },
+      "netlist_sha256": "dc56aa272210da7fc9e40a1dac859057c0b81dd32301a10c0a917cc122c005bf",
+      "transient_sha256": "6aad4b10ce254f2c324e07489e6124755f1220e4fa5c651b8ad58ba6c6fdb1de"
+    },
+    {
+      "name": "center-12",
+      "input_volts": 1.0625,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 12,
+      "actual_code": 12,
+      "decisions_msb_first": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "measurements": {
+        "decision3": 1.8,
+        "measured_dac3": 0.9498804,
+        "held3": 1.0625,
+        "decision2": 1.8,
+        "measured_dac2": 1.049912,
+        "held2": 1.062499,
+        "decision1": 1.679592e-09,
+        "measured_dac1": 1.099949,
+        "held1": 1.062499,
+        "decision0": 1.681846e-09,
+        "measured_dac0": 1.074935,
+        "held0": 1.062499,
+        "resultcode": 12.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-12",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03541525697801262,
+        "log_sha256": "e1fcd4fedaf794a9b70fbc795ea0349cffeb490950640f7d66dd27b1f1d33a8e"
+      },
+      "netlist_sha256": "97b1c15d0ca12d56bc1987bce8c8e50bf9ad709f6eff449bc0f2ff631368e8d8",
+      "transient_sha256": "1ee2b8aace9911f50e25f939db14f6490b991655e99e5bd02f8eecd2a71c3e7c"
+    },
+    {
+      "name": "center-13",
+      "input_volts": 1.0875,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 13,
+      "actual_code": 13,
+      "decisions_msb_first": [
+        1,
+        1,
+        0,
+        1
+      ],
+      "measurements": {
+        "decision3": 1.8,
+        "measured_dac3": 0.9498804,
+        "held3": 1.0875,
+        "decision2": 1.8,
+        "measured_dac2": 1.049912,
+        "held2": 1.087499,
+        "decision1": 1.686157e-09,
+        "measured_dac1": 1.099949,
+        "held1": 1.087499,
+        "decision0": 1.8,
+        "measured_dac0": 1.074935,
+        "held0": 1.087499,
+        "resultcode": 13.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-13",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03606523701455444,
+        "log_sha256": "9d2ef52c24feeee9ade05380c2bc88454c90df8fc1c5208e1d1603de0c9d71a3"
+      },
+      "netlist_sha256": "44f4febe1ae98d45ec6b89b38f8750240af63a46dbd006883b5c8e78ec62ac00",
+      "transient_sha256": "7ea17d2327ce903cf0844890d5ac1231a7b464f21f0537ea6e30d19742f0a25f"
+    },
+    {
+      "name": "center-14",
+      "input_volts": 1.1125,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 14,
+      "actual_code": 14,
+      "decisions_msb_first": [
+        1,
+        1,
+        1,
+        0
+      ],
+      "measurements": {
+        "decision3": 1.8,
+        "measured_dac3": 0.9498804,
+        "held3": 1.1125,
+        "decision2": 1.8,
+        "measured_dac2": 1.049912,
+        "held2": 1.112499,
+        "decision1": 1.8,
+        "measured_dac1": 1.099949,
+        "held1": 1.112499,
+        "decision0": 1.691855e-09,
+        "measured_dac0": 1.124972,
+        "held0": 1.112499,
+        "resultcode": 14.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-14",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.035075735999271274,
+        "log_sha256": "9696e244a9b05e3da48610c7e6c986a8563146f7cb0bb9af616c875dd401a9d9"
+      },
+      "netlist_sha256": "6a4c01cdc6a538426e490d401848b5ebb42b32d3b13ed158e29af38003efe16e",
+      "transient_sha256": "73e416b6fcd523d8b195729646047eb3542acebdb819ac27d617193cd7400c82"
+    },
+    {
+      "name": "center-15",
+      "input_volts": 1.1375,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 15,
+      "actual_code": 15,
+      "decisions_msb_first": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "measurements": {
+        "decision3": 1.8,
+        "measured_dac3": 0.9498804,
+        "held3": 1.1375,
+        "decision2": 1.8,
+        "measured_dac2": 1.049912,
+        "held2": 1.137499,
+        "decision1": 1.8,
+        "measured_dac1": 1.099949,
+        "held1": 1.137499,
+        "decision0": 1.8,
+        "measured_dac0": 1.124972,
+        "held0": 1.137499,
+        "resultcode": 15.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/center-15",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.03459258296061307,
+        "log_sha256": "e9ce0c39f56a2651488e590b48c4258ea99ef3f645160ada0e2f0259bdb3e95d"
+      },
+      "netlist_sha256": "3c1790ad7079113f070688d4c807960e782bc8a27d8ccc6eddf370c8fef7285f",
+      "transient_sha256": "6c9f77630699ce2068a0f548e2a4d6988b05cf51792f93efa746607c0d075ec3"
+    },
+    {
+      "name": "low-clip",
+      "input_volts": 0.7,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 0,
+      "actual_code": 0,
+      "decisions_msb_first": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measurements": {
+        "decision3": 1.675926e-09,
+        "measured_dac3": 0.9498804,
+        "held3": 0.6999999,
+        "decision2": 1.675926e-09,
+        "measured_dac2": 0.8500161,
+        "held2": 0.6999999,
+        "decision1": 1.675926e-09,
+        "measured_dac1": 0.8000281,
+        "held1": 0.6999998,
+        "decision0": 1.675926e-09,
+        "measured_dac0": 0.7750192,
+        "held0": 0.6999998,
+        "resultcode": 0.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/low-clip",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.033851910033263266,
+        "log_sha256": "cdc5300df535d5db67cf42d9ff1b2fd3d42c3c80b3592c9344f9aeb6298e042f"
+      },
+      "netlist_sha256": "10f44d5d4303528a6b9f7a269a3f6f58ea28588a67ba611465855784260a7e70",
+      "transient_sha256": "297fb9b0386acfd78f7e1d22ca72c638717fe902cc4660e6dcfa65c50dc31462"
+    },
+    {
+      "name": "high-clip",
+      "input_volts": 1.2,
+      "reference_volts": [
+        0.75,
+        1.15
+      ],
+      "expected_code": 15,
+      "actual_code": 15,
+      "decisions_msb_first": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "measurements": {
+        "decision3": 1.8,
+        "measured_dac3": 0.9498804,
+        "held3": 1.2,
+        "decision2": 1.8,
+        "measured_dac2": 1.049912,
+        "held2": 1.199999,
+        "decision1": 1.8,
+        "measured_dac1": 1.099949,
+        "held1": 1.199999,
+        "decision0": 1.8,
+        "measured_dac0": 1.124972,
+        "held0": 1.199999,
+        "resultcode": 15.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/high-clip",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.034634158946573734,
+        "log_sha256": "f2aa7752adb8ddfcd555304142c5c1d1a88476ab438b8c9b5eebbe8d78ad103e"
+      },
+      "netlist_sha256": "7401fbc8576c71ea958a3c29e68841ffe7c97d7dab1e5276991be8583af0f815",
+      "transient_sha256": "4c792f186ff6c454ad5d2241ae166ebe21f9b71c0c2b8308fdda61f638074f07"
+    },
+    {
+      "name": "range-change",
+      "input_volts": 0.94375,
+      "reference_volts": [
+        0.85,
+        1.05
+      ],
+      "expected_code": 7,
+      "actual_code": 7,
+      "decisions_msb_first": [
+        0,
+        1,
+        1,
+        1
+      ],
+      "measurements": {
+        "decision3": 1.675926e-09,
+        "measured_dac3": 0.9499438,
+        "held3": 0.9437498,
+        "decision2": 1.8,
+        "measured_dac2": 0.9000105,
+        "held2": 0.9437496,
+        "decision1": 1.8,
+        "measured_dac1": 0.9250261,
+        "held1": 0.9437494,
+        "decision0": 1.8,
+        "measured_dac0": 0.9375364,
+        "held0": 0.9437492,
+        "resultcode": 7.0
+      },
+      "invocation": {
+        "argv": [
+          "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+          "-b",
+          "sar.cir"
+        ],
+        "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/range-change",
+        "returncode": 0,
+        "timeout_seconds": 60,
+        "elapsed_seconds": 0.034397362964227796,
+        "log_sha256": "53ff865d80aee4dfbec287da0864a05792bad240b2294d7821e2b52b48a318f6"
+      },
+      "netlist_sha256": "c9f63f8170c675facd1f08718a8695fac2d456cc3309af094ac192ed93d368bf",
+      "transient_sha256": "ed045b8c38082115d7293fb3ae7d9b2e302d71e852163fb2f343935625a4ac22"
+    }
+  ],
+  "reset": {
+    "measurements": {
+      "before_reset": 1.009999,
+      "after_reset": 1.340741e-10
+    },
+    "invocation": {
+      "argv": [
+        "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+        "-b",
+        "reset.cir"
+      ],
+      "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/analog-reset",
+      "returncode": 0,
+      "timeout_seconds": 60,
+      "elapsed_seconds": 0.028674331959336996,
+      "log_sha256": "86ad8496214dcc80814e9f650e1c4e5452e99da41666aecb2742a5d42c243493"
+    },
+    "transient_sha256": "6fd920b242fe99db7e92a72192dba990ce9430f1de9b40afecebc3bd76bb72b1"
+  },
+  "digital_build": {
+    "argv": [
+      "/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/bin/verilator",
+      "--binary",
+      "--timing",
+      "--top-module",
+      "Sar4Bench",
+      "--Mdir",
+      "obj_sar",
+      "sar4_control.sv",
+      "Sar4Bench.sv"
+    ],
+    "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2",
+    "returncode": 0,
+    "timeout_seconds": 120,
+    "elapsed_seconds": 8.79859109397512,
+    "log_sha256": "e68e288570f616ee71cbe25eaf95f3354a9ff1edad77033cb1e5879b2f67da48"
+  },
+  "digital_run": {
+    "argv": [
+      "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/obj_sar/VSar4Bench"
+    ],
+    "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2",
+    "returncode": 0,
+    "timeout_seconds": 60,
+    "elapsed_seconds": 0.003249529981985688,
+    "log_sha256": "287c55cbb0bd2cf43aa63a926a2d8ff48f951729c408061e6297e85b0e98eeea"
+  },
+  "synthesis": {
+    "invocation": {
+      "argv": [
+        "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+        "-Q",
+        "-p",
+        "read_verilog -sv sar4_control.sv; hierarchy -check -top sar4_control; proc; opt; check -assert; synth -top sar4_control; check -assert; stat; write_json sar4-synth.json"
+      ],
+      "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2",
+      "returncode": 0,
+      "timeout_seconds": 60,
+      "elapsed_seconds": 0.15795925806742162,
+      "log_sha256": "5055390c7cc3dc13dc9eec538bc9262934f2eca6fc6a54c5709a840ab49dd38d"
+    },
+    "cell_count": 236,
+    "json_sha256": "73e7d7b299f2a92b93a94bdf9d02127d0ad3d29eed260e217c48042f3387a8fc",
+    "scope": "generic digital gates only; no process mapping, timing, layout or mixed-signal closure"
+  },
+  "swapped_comparator_negative": {
+    "invocation": {
+      "argv": [
+        "/nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice",
+        "-b",
+        "sar.cir"
+      ],
+      "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/negative-comparator",
+      "returncode": 0,
+      "timeout_seconds": 60,
+      "elapsed_seconds": 0.034294426906853914,
+      "log_sha256": "c78d87c3900ebf86459fd3bf66c98d7dafb867fc84696635dea43724fc6a0384"
+    },
+    "actual_wrong_code": 15,
+    "expected_code": 0,
+    "transient_sha256": "20fb39f0581f6de9e60e9ad64105a7bbed90f92a4f9490154a16657ac7646286"
+  },
+  "digital_executable_sha256": "089d6495d0f4a175bfca6e3a86ad95ceff730c34a72ab4bfc67db1e19b96706e",
+  "corrupted_comparator_trace": {
+    "argv": [
+      "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/obj_sar/VSar4Bench"
+    ],
+    "cwd": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/converter-maintained-a2/negative-trace",
+    "returncode": 1,
+    "timeout_seconds": 60,
+    "elapsed_seconds": 0.0030768340220674872,
+    "log_sha256": "d33f245f47751610fff4a80d06b655bb3b31442ab0884939cc62b48222ad5a58"
+  },
+  "limits": "four-bit nominal codes, center/range/rail/reset fixtures only; no ENOB, noise/mismatch/temperature/metastability/comparator-offset or manufacturability qualification; ideal bias/reference supplies remain explicit boundaries"
+}
