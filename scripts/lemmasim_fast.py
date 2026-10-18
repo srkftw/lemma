@@ -471,6 +471,8 @@ class Fast:
 
     def call(self,command):
         action,_,text=command.partition(' ')
+        if self.data.get('profile')=='lemma-silicon-dev/0.14.0' and action in ('snapshot','restore'):
+            raise ValueError('Profile0.14 exact checkpoint and live restore are explicitly unsupported; no snapshot file or candidate was created')
         if action=='inspect':return self.inspect()
         if action=='pause':
             if self.qmp.execute('query-status')['running']:self.qmp.execute('stop')

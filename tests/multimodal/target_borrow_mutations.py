@@ -1,7 +1,7 @@
 """Negative observer checks over actual produced Kernel9 LLVM, never fabricated positives.
 
 Call with a genuine complete boot output. No target compilation/execution claim.
-Patching the outer pin validator in two negative-only cases isolates the unchanged
+Patching the outer pin validator in negative-only cases isolates the unchanged
 independent lower-body/private-caller checks; production never bypasses pins.
 """
 from pathlib import Path
@@ -15,7 +15,7 @@ sys.path.insert(0,str(ROOT/'scripts'))
 from core0_common import Core0Error
 from audit_kernel import (_ir_definition_body,validate_fresh_descriptor_helpers,
                           validate_capability_header_helpers,validate_task_capture_borrow,
-                          validate_surface_read_page_borrow)
+                          validate_surface_read_page_borrow,validate_object_budget)
 from ipc_poll_borrow import validate_reachable_helpers
 import multimodal_target as target
 from paper_next import canonical
@@ -86,7 +86,8 @@ def exercise(directory):
     pre=(directory/'kernel/program.ll').read_text();rows={canonical(r['source']):r for r in unit['functions']}
     positive={}
     for function in (validate_fresh_descriptor_helpers,validate_capability_header_helpers,
-                     validate_reachable_helpers,validate_task_capture_borrow,validate_surface_read_page_borrow):
+                     validate_reachable_helpers,validate_task_capture_borrow,validate_surface_read_page_borrow,
+                     validate_object_budget):
         positive[function.__name__]=function(unit,pre)
     cases=[]
     def reject(label,operation):
@@ -106,6 +107,23 @@ def exercise(directory):
         changed=re.sub(r'(?m)^(  ret [^\n]+)$',lambda m:extra+m[1],body,count=1);assert changed!=body
         mutated=pre.replace(body,changed,1)
         reject('actual-foreign-private-caller-independent',lambda:target.capability_header_borrow(mutated,unit))
+        # The full corpus is checked in ordinary operation. These two negatives
+        # additionally isolate the original Objects initializer's explicit
+        # constant binding and exhaustive constructor-ownership witnesses.
+        constructor=target.PREFIX+'constructCourseMultimodal'
+        body=_ir_definition_body(pre,rows[constructor]['symbol'])
+        comparison=positive['validate_object_budget']['initialization']['binding3_gates'][0]['comparison']
+        before=comparison+' = icmp eq i64 3, 3'
+        changed=body.replace(before,comparison+' = icmp eq i64 2, 3',1)
+        assert changed!=body
+        reject('actual-objects-wrong-constant-binding-independent',
+               lambda:validate_object_budget(unit,pre.replace(body,changed,1)))
+        changed_unit=json.loads(json.dumps(unit))
+        for row in changed_unit['functions']:
+            if canonical(row['source'])==constructor:
+                row['source']=row['source'].replace('constructCourseMultimodal','untrustedConstructor')
+        reject('actual-objects-foreign-constructor-independent',
+               lambda:validate_object_budget(changed_unit,pre))
     return {'schema':'lemma-multimodal-shared-borrow-observation/1','status':'PASS',
             'scope':'actual produced-LLVM source/CFG observer positives and negatives only; no guest execution or full artifact audit',
             'input':str(directory),'unit_sha256':hashlib.sha256((directory/'kernel/unit.json').read_bytes()).hexdigest(),

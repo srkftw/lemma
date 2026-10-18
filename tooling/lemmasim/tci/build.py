@@ -104,7 +104,7 @@ def build(a):
         for script in ('apply_qemu.py','patch_counter_clock.py','patch_uart_ingress.py'):
             argv=['python3',str(ROOT/'tooling/lemmasim'/script),str(q)]
             if script=='apply_qemu.py':argv+=['--repository',str(ROOT),'--silicon-profile',str(ROOT/'sim/profiles/lemma-silicon-dev-0.14.0.json')]
-            if script=='patch_uart_ingress.py':argv+=['--header',str(ROOT/'sim/host/lemma_uart_ingress.h'),'--implementation',str(ROOT/'sim/host/lemma_uart_ingress.inc.c')]
+            if script=='patch_uart_ingress.py':argv+=['--header',str(ROOT/'sim/host/lemma_uart_ingress.h'),'--implementation',str(ROOT/'sim/host/lemma_uart_qemu.inc.c')]
             command(argv,out,a.timeout)
         command(['python3',str(HERE/'patch_wasm.py'),str(q),'--report',str(out/'wasm-patch.json')],out,a.timeout)
         prefix=out/'prefix';prefix.mkdir();(prefix/'lib').mkdir();crossfile=out/'cross.meson';crossfile.write_text(cross(prefix))
@@ -164,7 +164,7 @@ def admit(a):
     for name in ('dependencies.json','lemma_browser_control.inc.c','patch_wasm.py','shell.nix','build.py','res_query_unavailable.c'):shutil.copyfile(HERE/name,out/name)
     shutil.copyfile(inventory,out/'source-inputs.json');shutil.copyfile(a.receipt,out/'original-build.json')
     shutil.copyfile(a.source_root/'COPYING',out/'COPYING.QEMU')
-    for name in ('lemma_qemu.c','lemma_silicon_fast.h','lemma_model.c','lemma_model.h','lemma_multimodal.c','lemma_multimodal.h','lemma_multimodal_qemu.inc.c','lemma_fast_block.c','lemma_uart_ingress.h','lemma_uart_ingress.inc.c'):
+    for name in ('lemma_qemu.c','lemma_silicon_fast.h','lemma_model.c','lemma_model.h','lemma_multimodal.c','lemma_multimodal.h','lemma_multimodal_qemu.inc.c','lemma_fast_block.c','lemma_uart_ingress.h','lemma_uart_qemu.inc.c'):
         destination=out/'controller-source'/name;destination.parent.mkdir(exist_ok=True);shutil.copyfile(a.source_root/'hw/riscv'/name,destination)
     (out/'package.json').write_text('{"type":"module"}\n')
     if initial!=sources() or read(inventory)!=identity(a.source_root):raise ValueError('Retained source changed during admission')

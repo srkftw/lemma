@@ -1758,7 +1758,11 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     wire_binding=unit.get('configuration') in USB_WIRE_NOTEBOOK_CONFIGURATIONS
     executed_binding=unit.get('configuration') in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS
     next_binding=unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
-    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructProductCourseReader' if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS else 'constructPackageRecovery' if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructCourse' if unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if recovery_binding else 'constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
+    multimodal_binding=unit.get('configuration') in MULTIMODAL_CONFIGURATIONS
+    if multimodal_binding:
+        from multimodal_target import validate as validate_multimodal
+        validate_multimodal(pre_ir,unit,optimized=False)
+    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructCourseMultimodal' if multimodal_binding else 'constructProductCourseReader' if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS else 'constructPackageRecovery' if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructCourse' if unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if recovery_binding else 'constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
     selected=o+('initArithmetic' if arithmetic else 'initPower')
     for source,symbol in names.items():
         other=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(other)[2]
@@ -1766,6 +1770,8 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
             raise Core0Error('Objects versioned initializer has a non-wrapper caller')
         if selected not in names or names[selected] not in calls:continue
         if source!=construct:raise Core0Error('Objects power initializer escapes the selected machine constructor')
+        if multimodal_binding and not arithmetic:
+            raise Core0Error('multimodal notebook requires its exact Objects-v3 wrapper')
         if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
             if not arithmetic:
                 raise Core0Error('modern notebook requires the exact Objects-v3 wrapper')
@@ -1778,7 +1784,8 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
             callers.append(source)
             continue
         admitted=[]
-        for cmp in re.findall('('+var+r') = icmp eq i64 %arg2, 3$',other,re.M):
+        binding_operand='3' if multimodal_binding else '%arg2'
+        for cmp in re.findall('('+var+r') = icmp eq i64 '+re.escape(binding_operand)+r', 3$',other,re.M):
             try:admitted.append((validate_boolean_gate(other,cmp,names[selected]),validate_boolean_gate(other,cmp,names[o+'init'],success_when_true=False)))
             except Core0Error:pass
         if len(admitted)!=1:raise Core0Error('Objects power initializer lacks the exact binding3 selection')

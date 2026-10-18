@@ -40,6 +40,12 @@ static bool lemma_browser_allowed(QDict *request)
  }
  return false;
 }
+static bool lemma_browser_write_panel(const uint8_t *pixels,size_t bytes)
+{
+ FILE *f=fopen("/panel.gray4","wb");bool failed=!f;
+ if(f){if(fwrite(pixels,1,bytes,f)!=bytes)failed=true;if(fclose(f))failed=true;}
+ return !failed;
+}
 static QDict *lemma_browser_presentation(QDict *request)
 {
  const char *name=qdict_get_try_str(request,"execute");
@@ -55,11 +61,12 @@ static QDict *lemma_browser_presentation(QDict *request)
   for(unsigned i=0;i<8;i++)ticks|=(uint64_t)bytes[i]<<(i*8);
   g_autofree char *count=g_strdup_printf("%"PRIu64,ticks),*begin=g_strdup_printf("%"PRIu64,capture_begin);
   qdict_put_str(value,"mtime_ticks",count);qdict_put_str(value,"capture_begin_ns",begin);qdict_put_int(value,"mtime_hz",LS_TIMEBASE_HZ);qdict_put_int(value,"controller_clock_hz",LS_CLOCK_HZ);qdict_put_str(value,"clock_model","qemu-icount8ns/ACLINT-reset-offset/1");qdict_put_int(value,"wasm_heap_bytes",emscripten_get_heap_size());
+  g_autofree char *paper_completed=g_strdup_printf("%"PRIu64,s->paper.completed),*paper_accepted=g_strdup_printf("%"PRIu64,s->paper.last_sequence),*paper_status=g_strdup_printf("%"PRIu64,s->paper.status);
+  qdict_put_str(value,"paper_completed",paper_completed);qdict_put_str(value,"paper_accepted",paper_accepted);qdict_put_str(value,"paper_status",paper_status);qdict_put_bool(value,"paper_power",s->paper.panel_power);
  }else if(!strcmp(name,"lemma-panel")){
   uint64_t bytes=s->paper.stride*s->paper.height;
   if(!bytes||bytes>8388608){qobject_unref(value);return lemma_browser_error("panel extent outside declared8MiB bound");}
-  FILE *f=fopen("/panel.gray4","wb");
-  if(!f||fwrite(s->paper.visible,1,bytes,f)!=bytes||fclose(f)){qobject_unref(value);return lemma_browser_error("actual panel byte publication failed");}
+  if(!lemma_browser_write_panel(s->paper.visible,bytes)){qobject_unref(value);return lemma_browser_error("actual panel byte publication failed");}
   qdict_put_str(value,"format","gray4-high-nibble-first/1");qdict_put_str(value,"path","/panel.gray4");qdict_put_int(value,"width",s->paper.width);qdict_put_int(value,"height",s->paper.height);qdict_put_int(value,"stride",s->paper.stride);qdict_put_int(value,"bytes",bytes);
   g_autofree char *sequence=g_strdup_printf("%"PRIu64,s->paper.completed);qdict_put_str(value,"completed",sequence);
  }else{
