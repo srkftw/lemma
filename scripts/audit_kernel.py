@@ -5922,6 +5922,8 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
                             compiler_source_workspace: dict | None = None, source_root: Path | None = None,
                             host_export_policy: dict | None = None) -> None:
     rows = _array(rows, "multi-image construction commands")
+    from build_actions import admitted_commands
+    rows = admitted_commands(rows, root=root, output_dir=output_dir, source_root=source_root)
     if not rows or any(not isinstance(row, dict) or type(row.get("returncode")) is not int or row["returncode"] != 0
                        or not isinstance(row.get("argv"), list) or not row["argv"]
                        or any(not isinstance(arg, str) for arg in row["argv"]) or not isinstance(row.get("cwd"), str)
@@ -6233,6 +6235,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60, source_r
             if provenance.get("target_module_closures") != {**{role: module_closure(source_origin, module, allow_development=development_role(configuration, role), development_modules=development_modules(configuration, role), selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None) for role, module in configuration_modules(configuration).items()}, "users": expected_users}:
                 raise Core0Error("exact full per-image source dependency inventory differs")
         command_rows = _array(provenance.get("commands"), "build commands")
+        from build_actions import admitted_commands
+        command_rows = admitted_commands(command_rows, root=root, output_dir=output_dir, source_root=source_origin)
         if not command_rows or any(not isinstance(row, dict) or row.get("returncode") != 0 for row in command_rows):
             raise Core0Error("build command corpus empty, malformed or failed")
         validate_export_commands(command_rows, export_policy)

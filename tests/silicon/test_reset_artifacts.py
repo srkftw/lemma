@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-import copy, json, struct, sys, tempfile, unittest
+import copy, json, shutil, struct, sys, tempfile, unittest
 from pathlib import Path
 from unittest import mock
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
 import silicon_guest as module
+from action_cache import ActionCache
 
 class ResetArtifactReuse(unittest.TestCase):
     def setUp(self):
@@ -38,6 +39,19 @@ class ResetArtifactReuse(unittest.TestCase):
     def alter_audit(self,data,mutate):
         path=Path(data['rom_audit']['path']);audit=json.loads(path.read_text());mutate(audit);path.write_text(json.dumps(audit));data['rom_audit']=module.identified(path)
     def reuse(self):return module.reusable_reset_rom(self.old,self.new,self.new_guest)
+    def current_admission(self):
+        audit=json.loads(Path(self.old['rom_audit']['path']).read_text())
+        names={'assembly':'boot.S','object':'boot.o','elf':'boot.elf','binary':'boot.bin'}
+        inputs={'Lemma/Platform/Silicon/BootROM.lean':self.source,
+                **{'fixtures/'+name:Path(audit[key]['path']) for key,name in names.items()}}
+        outputs={name:Path(audit[key]['path']) for key,name in names.items()}
+        def produce(workspace):
+            for name in names.values():shutil.copyfile(workspace.inputs['fixtures/'+name],workspace.outputs[name])
+            return {'scope':'literal artifact-admission fixture, no compilation claim'}
+        admission=ActionCache(self.root).run({'recipe':'literal-reset-admission-fixture/1'},inputs,outputs,produce)
+        path=self.root/'current-admission.json';path.write_text(json.dumps(admission))
+        self.alter_audit(self.old,lambda a:a.update(production_admission=admission))
+        return path,admission
     def test_unchanged_verified_artifacts_keep_original_ids(self):
         self.assertEqual(self.reuse(),{'rom':self.old['rom'],'rom_audit':self.old['rom_audit']})
     def test_source_snapshot_change_regenerates_instead_of_reusing(self):
@@ -61,6 +75,20 @@ class ResetArtifactReuse(unittest.TestCase):
     def test_changed_binary_with_claimed_good_inventory_rejects(self):
         path=Path(self.old['rom']['path']);path.write_bytes(bytes(24));self.old['rom']=module.identified(path)
         self.alter_audit(self.old,lambda a:a.update(binary=self.old['rom']));self.assertRaises(ValueError,self.reuse)
+    def test_current_action_admission_is_bound_to_audited_payload(self):
+        self.current_admission()
+        self.assertEqual(module.reset_rom_audit(self.old)['status'],'PASS')
+    def test_current_action_receipt_corruption_rejects(self):
+        path,admission=self.current_admission()
+        admission['producer']['executed']['scope']='changed metadata';path.write_text(json.dumps(admission))
+        self.alter_audit(self.old,lambda a:a.update(production_admission=admission))
+        with self.assertRaisesRegex(ValueError,'production admission'):module.reset_rom_audit(self.old)
+    def test_current_action_output_inventory_mismatch_rejects(self):
+        path,admission=self.current_admission()
+        admission['outputs']=copy.deepcopy(admission['outputs'])
+        admission['outputs']['boot.o']['sha256']='0'*64;path.write_text(json.dumps(admission))
+        self.alter_audit(self.old,lambda a:a.update(production_admission=admission))
+        with self.assertRaisesRegex(ValueError,'production admission'):module.reset_rom_audit(self.old)
     def test_atomic_publication_keeps_old_on_failure(self):
         publication=self.root/'prepared.json';publication.write_text('{"old":true}')
         with mock.patch.object(module,'PREPARED',publication),mock.patch.object(module.os,'replace',side_effect=OSError('interrupted')):

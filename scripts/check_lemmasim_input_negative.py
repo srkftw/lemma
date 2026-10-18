@@ -195,7 +195,7 @@ def campaign(metadata: dict, qemu: Path | str, initial_disk: Path | str,
         if git(checkout, 'diff', '--name-only') != NOTEBOOK:
             raise ValueError('negative changed more than its one quarantined Lean boundary')
         build = checkout / 'build/kernel/input-negative-O2'
-        bounded(['nix', 'develop', '--no-write-lock-file', '--command', 'python3', 'scripts/build_kernel.py',
+        bounded(['nix', 'develop', '--no-write-lock-file', '--command', 'python3', 'scripts/build_kernel.py', '--fresh',
                  '--configuration', 'lemmasim-notebook', '--stage', 'supervisor', '--opt-level', 'O2',
                  '--output-dir', str(build), '--timeout', '300'], checkout,
                 output / 'negative-build.log', timeout(1200))

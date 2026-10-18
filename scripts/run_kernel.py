@@ -18,6 +18,7 @@ import subprocess
 import time
 
 from audit_kernel import audit
+from action_cache import is_process_alive, process_identity
 from build_kernel import source_inputs
 from core0_common import Core0Error, repo_root, require_tools, sha256, write_json
 from build_core0 import prepare_output_directory
@@ -32,6 +33,29 @@ def parse_record(raw: bytes) -> tuple[int, ...]:
     if len(raw) != RECORD_BYTES or not RECORD.fullmatch(raw):
         raise Core0Error(f"malformed kernel record: {raw!r}")
     return tuple(int(word, 16) for word in raw.split()[1:])
+
+
+def validate_reaped_process(value: dict) -> None:
+    """Retain observed wait status; reject only the same live process identity.
+
+    Historical receipts contain PID + observed reap, without boot/start identity.
+    A later unrelated process using that PID does not invalidate their history.
+    New receipts additionally bind Linux boot ID and kernel process start ticks.
+    """
+    cleanup = value.get("cleanup")
+    pid = value.get("pid")
+    if not isinstance(cleanup, dict) or cleanup.get("process_reaped") is not True or type(pid) is not int or pid <= 0:
+        raise Core0Error("guest process lacks observed cleanup/reaping")
+    if "process_identity" not in value:
+        return
+    owner = value["process_identity"]
+    if (not isinstance(owner, dict) or set(owner) != {"pid", "boot_id", "start_ticks"}
+            or type(owner.get("pid")) is not int or owner["pid"] != pid
+            or not isinstance(owner.get("boot_id"), str) or not owner["boot_id"]
+            or isinstance(owner.get("start_ticks"), bool) or not str(owner.get("start_ticks", "")).isdigit()):
+        raise Core0Error("guest process has malformed boot/start ownership")
+    if is_process_alive({**owner, "start_ticks": str(owner["start_ticks"])}):
+        raise Core0Error("guest process with the recorded boot/start identity is still present")
 
 
 class Session:
@@ -73,6 +97,10 @@ class Session:
             self.process = subprocess.Popen(argv, cwd=self.root, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE, start_new_session=True, bufsize=0)
             self.capture.pid, self.capture.argv = self.process.pid, argv
+            owner = process_identity(self.process.pid)
+            if owner["start_ticks"] is None or owner["boot_id"] is None:
+                raise Core0Error("kernel guest process ownership unavailable")
+            self.report["process_identity"] = owner
             for stream in (self.process.stdin, self.process.stdout, self.process.stderr):
                 os.set_blocking(stream.fileno(), False)
             self.deadline = time.monotonic() + self.timeout

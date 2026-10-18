@@ -372,9 +372,37 @@ def reset_rom_audit(data):
         raise ValueError('Reset ROM audited source/binary differs')
     if validate(data['rom']).read_bytes()!=struct.pack('<6I',*words):
         raise ValueError('Reset ROM actual instruction words differ')
+    if 'production_admission' in audit:
+        admission=audit['production_admission']
+        if not isinstance(admission,dict):raise ValueError('Reset ROM production admission is malformed')
+        producer=admission.get('producer',{})
+        if not isinstance(producer,dict):raise ValueError('Reset ROM producer receipt is malformed')
+        encoded=(json.dumps(producer,sort_keys=True,separators=(',',':'),allow_nan=False)+'\n').encode()
+        request=(json.dumps(producer.get('request'),sort_keys=True,separators=(',',':'),allow_nan=False)+'\n').encode()
+        if (admission.get('schema')!='lemma-action-admission/1' or
+                admission.get('status') not in ('fresh','reused') or
+                hashlib.sha256(encoded).hexdigest()!=admission.get('producer_receipt_id') or
+                producer.get('schema')!='lemma-action-producer/1' or
+                producer.get('result')!='success' or
+                producer.get('action_key')!=admission.get('action_key') or
+                hashlib.sha256(request).hexdigest()!=admission.get('action_key') or
+                not isinstance(admission.get('outputs'),dict) or
+                producer.get('outputs')!=admission.get('outputs') or
+                set(admission.get('outputs',{}))!={'boot.S','boot.o','boot.elf','boot.bin'}):
+            raise ValueError('Reset ROM production admission differs')
+        for field,name in (('assembly','boot.S'),('object','boot.o'),('elf','boot.elf'),('binary','boot.bin')):
+            if admission['outputs'].get(name,{}).get('sha256')!=audit[field]['sha256']:
+                raise ValueError('Reset ROM admitted output differs: '+name)
+        if producer.get('request',{}).get('inputs',{}).get('Lemma/Platform/Silicon/BootROM.lean',{}).get('sha256')!=audit['source']['sha256']:
+            raise ValueError('Reset ROM admitted source differs')
     return audit
 
 def reusable_reset_rom(previous,data,guest):
+    """Historical prepared-receipt comparison; new builds use ActionCache early.
+
+    Kept for callers inspecting original receipts. It is intentionally absent
+    from the ordinary production path, where running the tools first is wasteful.
+    """
     if previous is None:return None
     for key in ('schema_version','profile','profile_sha256','binary','rtl_build','rtl_sources','rtl_source_archive','memory','physical_conformance'):
         if previous.get(key)!=data.get(key):return None
@@ -444,14 +472,20 @@ def build(args):
     stamp=str(time.time_ns());directory=ROOT/f'build/silicon/prepared-{stamp}'
     directory.mkdir(parents=True)
     rom=directory/'rom';rom.mkdir()
-    run_command(['nix','develop','--no-write-lock-file','--command','lake','build','Lemma.Platform.Silicon.Binding'],timeout=300,log=directory/'rom-elaboration.log')
-    run_command(['nix','develop','--no-write-lock-file','--command','lake','env','lean','--run',
-                 'Lemma/Platform/Silicon/BootROM.lean',rom/'boot.S'],timeout=300,log=directory/'rom-export.log')
-    # One immutable Lean/LLVM closure; no maintained assembly source.
-    for argv in ([ 'clang','--target=riscv64-unknown-elf','-march=rv64im_zicsr_zifencei','-mabi=lp64','-mcmodel=medany','-mno-relax','-c',rom/'boot.S','-o',rom/'boot.o'],
-                 ['ld.lld','-m','elf64lriscv','--no-relax','-Ttext=0x1000','-e','_reset',rom/'boot.o','-o',rom/'boot.elf'],
-                 ['llvm-objcopy','-O','binary','--only-section=.text',rom/'boot.elf',rom/'boot.bin']):
-        run_command(['nix','develop','--no-write-lock-file','--command',*argv],timeout=300)
+    # Eligibility is decided inside the pinned environment before Lake, Lean,
+    # assembly, linking or extraction. Current audits remain fresh even on a hit.
+    rom_command=['nix','develop','--no-write-lock-file','--command','python3',
+                 'scripts/silicon_reset_rom.py','--output-dir',rom,
+                 '--profile-file',selected_profile_path]
+    if getattr(args,'fresh',False):rom_command+=['--fresh']
+    if getattr(args,'cache_dir',None) is not None:rom_command+=['--cache-dir',args.cache_dir]
+    run_command(rom_command,timeout=1200,log=directory/'rom-production.log')
+    admission=json.loads((rom/'action-admission.json').read_text())
+    consumed=admission['producer']['request']['inputs']
+    for logical,item in consumed.items():
+        source=selected_profile_path if logical=='selected-profile.json' else ROOT/logical
+        if item['sha256']!=sha(source):
+            raise ValueError('Reset ROM consumed input changed during preparation: '+logical)
     # Independent instruction-word inventory for this fixed versioned binding:
     # a0=0; a1=0x43f<<21; t0=1<<31; jalr x0,t0,0. Unknown words fail closed.
     if (p['dtb_base'],p['entry'])!=(0x87e00000,0x80000000):raise ValueError('Reset handoff audit requires a new binding inventory')
@@ -460,7 +494,8 @@ def build(args):
     (rom/'audit.json').write_text(json.dumps({'status':'PASS','scope':'exact structured reset handoff words; no guest privilege initialization',
         'source':identified(ROOT/'Lemma/Platform/Silicon/BootROM.lean'),
         'assembly':identified(rom/'boot.S'),'object':identified(rom/'boot.o'),'elf':identified(rom/'boot.elf'),
-        'binary':identified(rom/'boot.bin'),'instruction_words':words},indent=2)+'\n')
+        'binary':identified(rom/'boot.bin'),'instruction_words':words,
+        'production_admission':admission},indent=2)+'\n')
     data={'schema_version':1,'profile':p['profile'],'profile_sha256':sha(selected_profile_path),
           'binary':identified(out/'obj/lemma-rtl'),'rom':identified(rom/'boot.bin'),'rom_audit':identified(rom/'audit.json'),
           'rtl_build':identified(out/'build.json'),'rtl_sources':{**cached['sha256'],**cached['configuration_includes'],
@@ -482,9 +517,12 @@ def build(args):
     guest=getattr(args,'guest_build',None)
     if guest is None:
         guest=ROOT/f'build/kernel/silicon-{workload}-{stamp}-{args.opt_level}'
-        run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/build_kernel.py',
+        guest_command=['nix','develop','--no-write-lock-file','--command','python3','scripts/build_kernel.py',
             '--configuration',selected[workload],'--stage','supervisor','--opt-level',args.opt_level,
-            '--output-dir',guest,'--timeout','300'],timeout=1500,log=directory/'guest-build.log')
+            '--output-dir',guest,'--timeout','300']
+        if getattr(args,'fresh',False):guest_command+=['--fresh']
+        if getattr(args,'cache_dir',None) is not None:guest_command+=['--cache-dir',args.cache_dir]
+        run_command(guest_command,timeout=1500,log=directory/'guest-build.log')
         run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_kernel.py',guest],timeout=600,log=directory/'guest-audit.log')
     guest=Path(guest).resolve()
     guest_root=getattr(args,'guest_source_root',None);guest_evidence=None
@@ -522,12 +560,6 @@ def build(args):
                     data['workloads'][key]=old_entry
     except FileNotFoundError:pass
     data['workloads'][workload]=entry
-    reused=reusable_reset_rom(previous,data,guest)
-    if reused:
-        write={'status':'PASS','scope':'Verified immutable reset-ROM reuse; not functional acceptance',
-               'generated_rom':data['rom'],'generated_rom_audit':data['rom_audit'],'reused':reused}
-        (directory/'rom-reuse.json').write_text(json.dumps(write,indent=2)+'\n')
-        data.update(reused)
     publish_prepared(data)
     print(f'Prepared RTL {workload}; {prepared_path(name)}. Ordinary launch validates identities without rebuilding.')
 

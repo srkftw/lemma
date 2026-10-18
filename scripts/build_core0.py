@@ -9,6 +9,8 @@ provenance.
 from __future__ import annotations
 
 import argparse
+import fcntl
+from functools import wraps
 import json
 import os
 import shutil
@@ -16,7 +18,7 @@ import sys
 from pathlib import Path
 from typing import Mapping, Sequence
 
-from core0_common import Core0Error, checked, repo_root, require_tools, sha256, write_json
+from core0_common import Core0Error, action_lease, checked, repo_root, require_tools, sha256, write_json
 
 
 OPT_PASSES = {
@@ -228,6 +230,13 @@ def _invoke(
     timeout_seconds: float,
     env: Mapping[str, str] | None = None,
 ) -> None:
+    if Path(argv[0]).name == "lake":
+        from build_actions import controlled_environment
+        allowed = {"LEMMA_CORE0_OUT", "LEMMA_TRAP_RESTORE_MUTATION", "LEMMA_TIMER_MUTATION"}
+        allowed.update("LEMMA_" + family + "_" + field for family in ("SCALAR", "MEMORY", "DEVICE")
+                       for field in ("SUITE_ID", "SOURCE_SEED", "RUNTIME_SEED"))
+        supplied = {} if env is None else {k:v for k,v in env.items() if k in allowed}
+        env = controlled_environment(require_tools(("lean", "lake", "clang", "ld.lld")), supplied)
     result = checked(argv, cwd=cwd, timeout_seconds=timeout_seconds, env=env)
     command_log.append(
         {
@@ -237,6 +246,7 @@ def _invoke(
             "elapsed_seconds": round(result.elapsed_seconds, 6),
             "stdout": result.stdout.decode("utf-8", errors="replace"),
             "stderr": result.stderr.decode("utf-8", errors="replace"),
+            **({"environment": dict(env)} if env is not None else {}),
         }
     )
 
@@ -266,6 +276,7 @@ def _source_hashes(
 ) -> list[dict[str, str]]:
     paths: list[Path] = []
     paths.extend(root / value for value in SOURCE_INPUTS)
+    paths.extend(root / value for value in ("scripts/action_cache.py", "scripts/action_worker.py", "scripts/build_actions.py", "scripts/build_dependencies.py", "scripts/build_admission.py") if (root/value).is_file())
     paths.extend(sorted((root / "Lemma").rglob("*.lean")))
     paths.append(root / "Lemma.lean")
     paths.append(root / "examples/core0/Positive.lean")
@@ -549,6 +560,20 @@ def capture_platform_dtb(
     return dtb, dts, qemu_argv
 
 
+def _serialized_lean(function):
+    @wraps(function)
+    def serialized(*args, **kwargs):
+        root = Path(kwargs["root"])
+        lock_path = root / "build/lake.lock"
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        with lock_path.open("a+b") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            with action_lease(lock.fileno()):
+                return function(*args, **kwargs)
+    return serialized
+
+
+@_serialized_lean
 def build(
     *,
     root: Path,
@@ -563,6 +588,8 @@ def build(
     additional_source_inputs: Sequence[Path] = (),
     elaboration_sources: Sequence[Path] = (),
     export_environment: Mapping[str, str] | None = None,
+    fresh: bool = True,
+    cache_dir: Path | None = None,
 ) -> dict[str, object]:
     _validate_artifact_request(artifact_category, compiler_fault_manifest)
     if opt_level not in OPT_PASSES:
@@ -586,8 +613,24 @@ def build(
     prepare_output_directory(output_dir, root, clean=clean)
     commands: list[dict[str, object]] = []
 
+    # Core0 shares the LLVM boundaries; its source-negative Lean elaborations
+    # deliberately remain fresh under the existing qualification contract.
+    from build_actions import BuildActions
+    action_tools = {**tools, **require_tools(("llvm-objcopy",))}
+    actions = BuildActions(root, output_dir, action_tools, timeout_seconds, commands,
+                           fresh=fresh, cache_dir=cache_dir)
+    actions.provenance.pop("source_archive", None)
+    actions.provenance["archive_scope"] = (
+        "LLVM immutable action inputs retained by producer.input_archive_sha256; "
+        "broader Core0 Lean/source provenance is recorded as hashes in provenance.json")
+    def invoke(log, argv, **options):
+        if Path(argv[0]).name in {"opt", "llc", "clang", "ld.lld"}:
+            if actions.invoke(argv, options["cwd"], options.get("env")) is not None:
+                return
+        _invoke(log, argv, **options)
+
     if build_lean:
-        _invoke(
+        invoke(
             commands,
             ("lake", "build"),
             cwd=root,
@@ -607,7 +650,7 @@ def build(
         str(positive_olean.relative_to(root)),
         "examples/core0/Positive.lean",
     )
-    _invoke(
+    invoke(
         commands,
         positive_command,
         cwd=root,
@@ -637,7 +680,7 @@ def build(
             str(olean_relative),
             str(source_relative),
         )
-        _invoke(
+        invoke(
             commands,
             command,
             cwd=root,
@@ -722,7 +765,7 @@ def build(
                 )
             export_env[key] = value
     export_argv = ("lake", "env", "lean", str(export_source))
-    _invoke(
+    invoke(
         commands,
         export_argv,
         cwd=root,
@@ -770,7 +813,7 @@ def build(
         "-o",
         "program.opt.ll",
     ]
-    _invoke(
+    invoke(
         commands,
         opt_argv,
         cwd=output_dir,
@@ -798,7 +841,7 @@ def build(
         "-o",
         "program.o",
     ]
-    _invoke(
+    invoke(
         commands,
         llc_argv,
         cwd=output_dir,
@@ -807,7 +850,7 @@ def build(
     )
 
     startup_argv = ["clang", *STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"]
-    _invoke(
+    invoke(
         commands,
         startup_argv,
         cwd=output_dir,
@@ -823,7 +866,7 @@ def build(
         "startup.o",
         "program.o",
     ]
-    _invoke(
+    invoke(
         commands,
         link_argv,
         cwd=output_dir,
@@ -999,6 +1042,8 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--export-source", type=Path, default=Path("examples/core0/Build.lean"))
     parser.add_argument("--clean", action="store_true")
+    parser.add_argument("--fresh", action="store_true", help="Bypass LLVM cache reads")
+    parser.add_argument("--cache-dir", type=Path)
     parser.add_argument("--timeout", type=float, default=180.0)
     ns = parser.parse_args()
     root = repo_root()
@@ -1017,6 +1062,8 @@ def main() -> int:
             export_source=source,
             clean=ns.clean,
             timeout_seconds=ns.timeout,
+            fresh=ns.fresh,
+            cache_dir=ns.cache_dir,
         )
     except (Core0Error, OSError, ValueError, json.JSONDecodeError) as error:
         print(f"CORE0 BUILD FAIL: {error}", file=sys.stderr)

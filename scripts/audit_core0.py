@@ -5436,6 +5436,12 @@ def audit(
     commands = provenance_obj.get("commands")
     if not isinstance(commands, list) or any(not isinstance(command, dict) for command in commands):
         raise Core0Error("provenance command log is missing or malformed")
+    from build_actions import admitted_commands
+    commands = admitted_commands(commands, root=root, output_dir=directory)
+    # Historical Core0 command relations use executable names; producer
+    # receipts retain the actual pinned absolute executable paths.
+    commands = [{**row, "argv": [Path(row["argv"][0]).name.replace("clang-20", "clang"), *row["argv"][1:]]}
+                if row.get("admitted_route") else row for row in commands]
     command_argv = [command.get("argv") for command in commands]
     if scalar_export_configuration is not None:
         validate_scalar_export_command_log(

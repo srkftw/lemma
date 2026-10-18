@@ -207,7 +207,7 @@ def campaign(metadata: dict, qemu: Path | str, baseline_disk: Path | str,
         if git(checkout, 'diff', '--name-only') != ENGINE:
             raise ValueError('negative changed more than its single quarantined source boundary')
         build = checkout / 'build/kernel/publication-negative-O2'
-        bounded(['nix', 'develop', '--no-write-lock-file', '--command', 'python3', 'scripts/build_kernel.py',
+        bounded(['nix', 'develop', '--no-write-lock-file', '--command', 'python3', 'scripts/build_kernel.py', '--fresh',
                  '--configuration', 'lemmasim-notebook', '--stage', 'supervisor', '--opt-level', 'O2',
                  '--output-dir', str(build), '--timeout', '300'], checkout, output / 'negative-build.log', bounded_timeout(1200))
         built = json.loads((build / 'build.json').read_text())

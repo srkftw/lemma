@@ -75,7 +75,7 @@ def require_pass(path):
 
 def image(configuration, optimization, out):
     destination = ROOT / 'build/kernel' / f'{out.name}-{configuration}-{optimization}'
-    command(['python3', 'scripts/build_kernel.py', '--configuration', configuration,
+    command(['python3', 'scripts/build_kernel.py', '--fresh', '--configuration', configuration,
              '--stage', 'supervisor', '--opt-level', optimization, '--output-dir', str(destination),
              '--timeout', '300'], out / f'{configuration}-{optimization}-build.log', 1200)
     command(['python3', 'scripts/audit_kernel.py', str(destination)],

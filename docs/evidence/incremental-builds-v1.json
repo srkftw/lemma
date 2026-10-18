@@ -1,0 +1,973 @@
+{
+  "schema": "lemma-incremental-implementation/1",
+  "status": "PASS_SCOPED",
+  "recorded_at": "2026-10-18T03:03:06.039952+00:00",
+  "scope": "Shared local action caching and explicit production admission; canonical O2 QEMU notebook writing/Save/cold recovery/failed-FLUSH integration. Broader historical and physical qualifications remain separate.",
+  "source": {
+    "branch": "task/006-whole-machine-lemmasim",
+    "base_commit": "8e75bc6541131189d7a2efe02e9ff77bde61194f",
+    "upstream_main_observed": "a6f768d9d0ed2e7ec1a5e35f252474150e7f6c80",
+    "implementation_files": {
+      ".github/workflows/core0.yml": "17b3b32c8fcc3d9e15ab5ba2c34391efb2fd4fb01fe20fb1ffdd0586db7cb897",
+      "scripts/audit_core0.py": "342d8e52ea1dfe2c2f0a5ea861b6092735b672a97957af6fa16487f15f241aee",
+      "scripts/audit_kernel.py": "1a614939904445ab33b6e206e238aa7c44f650e57ac20a52d60d7c5979aafa44",
+      "scripts/build_core0.py": "9ab5f4f35f1a691a0414aa5bb5963b1af4b0ae8f03bf0635d5c8fb9a98faf67a",
+      "scripts/build_kernel.py": "7c9873aa59af321eb04ff8660b3088d22c44c9a631c9423a1688def0d5872a7b",
+      "scripts/build_user.py": "4e8683726db2ad71092059bddf7a0b2565050171efd5d6906bd06619ed15ee3a",
+      "scripts/check_kernel.py": "74b9fdfea59aac5adee30cb8e65bfbdbf80331c3683a70481912f643b00de985",
+      "scripts/check_kernel_mutations.py": "6f4daf56bf6c134bdb22fb575c843cc8d0fb1150c42de311f5a6aba3d154c395",
+      "scripts/check_lemmasim.py": "3ba79b33bd85c6fe221d9489b0d8edb3aaf168a9dfb30e26f4c2b8a2a59c1414",
+      "scripts/check_lemmasim_input_negative.py": "6a090d64945a796a8fcf90fc66fd9f64ea8acdc7058eb0434a7c13a040b92c6d",
+      "scripts/check_lemmasim_publication_negative.py": "04b9cd667aabc9830c7c2ee34fd5892d0aca7e17d6d5d5db45a59a4fb1c03ad7",
+      "scripts/core0_common.py": "3811a7436914b85663bcb05aec0c5ccb2dcd642bd44f3344e179d619d1f55336",
+      "scripts/lemmasim": "bb27059814fae07145bcd35c9ae590b6c0fb0d92104c8c0b6dc4d3c7e80f8f52",
+      "scripts/lemmasim_fast.py": "8b1a4ab208a488c9a249a8af928a5da6cd3f62ce05db043ca4b1496f0e885f1f",
+      "scripts/run_kernel.py": "4c7afcb9945b9e578f301a31f2b4fd909aa5b95acb3914ba2cbdc1629278ec18",
+      "scripts/silicon_compute.py": "079bf7a480dacb8bb0929e0f49075b873533dc02cdf1b460ad6939ca019130e6",
+      "scripts/silicon_guest.py": "8737342628528046b9d65fa6e4482386a94083dd4204ad6ff9fb32ec8c29f4b3",
+      "scripts/silicon_profile.py": "1061846a893a593fc3d7266d09c1133a5ae92ffcda5b32f8eecc1813638528d7",
+      "tests/kernel/test_acceptance.py": "ca06d5d06fabbd031ff8c2ec6507298ff6b5f850d41b5f108a559fb50ab47c7e",
+      "tests/silicon/test_reset_artifacts.py": "7d9d26dd6081fe3ad35e7c79cff21a836b73e7a1dd6fec642ca4f8070f422a12",
+      "tooling/silicon/apply_cvw.py": "71371b0638d6cda7618de6810ab3e7e0957e9554ab3792a4e9b6134183664305",
+      "scripts/action_cache.py": "1aa9df74f5cca717da97ca95b98d383c3467f51ea118b0bcd436246b707ecf35",
+      "scripts/action_worker.py": "1c0d56186c1eb70d256d8f3a8cec59052084b4bfead40aaf54e32a765538279c",
+      "scripts/build_actions.py": "f98a1024da8c958cde9c6b75e739deb71384218a885c72ead1cc8fe0fe325e84",
+      "scripts/build_admission.py": "f6019a717bd29fbec02cdee02b7cba8506af821b833eabcff3033f645a1dba3f",
+      "scripts/build_dependencies.py": "851378c3572d6908d240d7a9498c0e5b226fe0848969a5feb79281bb61de0c70",
+      "scripts/check_incremental_builds.py": "a3e4db68c43459358bd29a3da998d07541255ac69dc72f526ccd1389efe80ec2",
+      "scripts/check_incremental_notebook.py": "5415c9327a5e496130fda2d34e8172c803421096412d3b69916d74d7ac932227",
+      "scripts/dev_status.py": "f6173469ef506743ffe0a5096b3ecbbcb9b1059375dbc8515c904f9c4ad09e7d",
+      "scripts/host_prerequisites.py": "e4bdc272de2ae0a41e14a55908de07ba12d755234b750d515e8161803ccb34dd",
+      "scripts/silicon_reset_rom.py": "cb7062da8508315f196d164eeecf696e4ac4ce6791569301d1918e44da7ee1a6",
+      "scripts/toolchain_preparation.py": "d6b84257fc0cddd92c60e262840c3fe71f78a75d583de7c6f351e01025e25aa1",
+      "scripts/verification_routes.json": "b38e7fee52dc8f1684e7e3ce2a40e92fff7140c7d4a86e4f0d0d6605e6215410",
+      "tests/cache/test_action_cache.py": "6f3cb3766f231d2a55d794e986a06f70ddd4d9f48d44d0b911f8edd9ec73994c",
+      "tests/cache/test_action_worker.py": "11f63281f0a6fabef3669207d31b4c07cfb822e0eea65cdf797c8c184c4b5afe",
+      "tests/cache/test_build_actions.py": "f1f432eceaa0e411ec8441c35602da38705044e93adfd1799b9937ceda77778f",
+      "tests/cache/test_build_admission.py": "641efe050c229569632dbf6f9cd97437c5b05c97068e4d1eeb14944adef32e3b",
+      "tests/cache/test_build_dependencies.py": "37c193f32beb7d75b67dad936ecd32db1eab8a842d9fcaeec8e37875a1a518b3",
+      "tests/cache/test_build_option_forwarding.py": "a79bf087bba1d710cfbeadbe33932cfb193abdd4679b8e1163bd309bdcb49d7b",
+      "tests/cache/test_dev_status.py": "73818e85d63e27e406900bfdde2bacd0bcfe8f61d1d5ca35fcb3ac8ee3f56af9",
+      "tests/cache/test_host_prerequisites.py": "8460d88c963e4a69ef765276128dd4fa45c7beabcebde0b702a4c42619a1a58a",
+      "tests/cache/test_incremental_driver.py": "bcff89900c9b24d208f9ac10ae9b7dba614f69c2acae18d4ce177c326233f36f",
+      "tests/cache/test_toolchain_preparation.py": "caaa85c6ed3dbb24aa45adf51690086df8c6901350d82749984e6447f7e4859a",
+      "tests/silicon/test_generated_inputs.py": "33c6606cd18239c5d885d4ed9fe4469adccbfe237030a4b0715c2a98c19c1890",
+      "tests/silicon/test_reset_dependencies.py": "4aafafd167033674d5d994b033b6cd5520174debad4b9142bf554a542cad772c"
+    },
+    "identity_rule": "Original producer source manifests and command receipts are authoritative. Publication commit is not a compilation key. No maintained target Lean source was changed; controlled mutation is private.",
+    "preserved_preexisting_dirty_files": {
+      "docs/evidence/006-browser-controller-image.json": "7910f0d0aa18c6ad587d133ab5d87053a075379bd219c4da534088b82bbc4278",
+      "docs/evidence/006-trial-watchdog.json": "22c121b47a1cb63e50f197ce2d12c71ec5ea9a39f91212af2f32bec7af091031",
+      "docs/plan/006-session-state.md": "7db9ff0268f1b452bb56d0e23c561e0fd381b5004f502b6ebf54eb93d013556d"
+    }
+  },
+  "implementation": {
+    "normal_entry_points": [
+      "scripts/build_kernel.py",
+      "scripts/build_user.py",
+      "scripts/build_core0.py",
+      "scripts/lemmasim build",
+      "scripts/silicon_guest.py"
+    ],
+    "cache": "One versioned content-addressed ActionCache; immutable copied inputs and outputs, original command/input archives, same-action flock, atomic publication, quarantine, conflict poison, bounded ownership-aware cleanup and explicit pins.",
+    "lean": "Transitive selected source and exporter/compiler-host closure; unknown package imports fail; controlled search path; private protected Lake tree with complete validated compiled inventory. Foreign compiled files reject or clear; Lake incremental preparation remains explicit.",
+    "fresh": "--fresh bypasses action reads; public Python build APIs retain fresh defaults; qualification subprocess builders explicitly request fresh. Core0 source-negative elaborations remain fresh.",
+    "validation": "Separate current policy hashes and strict ordered command/dependency admission; pure observer revisions can reuse bytes but must execute required validation.",
+    "processes": "Linux boot-ID/PID/start-ticks ownership, immutable supervisor, parent-death/timeout cleanup and lease retention until writers are reaped. Historical recycled PID does not erase cleanup.",
+    "ci": "Only ordinary kernel host unittest execution shared metadata -> A-E, via a complete source/log/pinned Python and closed immutable Nix Git receipt. Fresh target/optimization/negative/backend jobs retained; aggregate rejects skipped required jobs.",
+    "status": "Read-only explicit receipt registry and reviewed dependency/consumer routing; omitted required claims are pending and missing artifacts unavailable. No historical PASS search or automatic execution."
+  },
+  "canonical_production": {
+    "configuration": "lemmasim-silicon-bytes-bulk-notebook",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "optimization": "O2",
+    "report": {
+      "path": "build/incremental/current-final/report.json",
+      "sha256": "6d80dd465486119b748d7a4a5b5cc752eadc4c5585c03e0cda5752c20c1613c8",
+      "bytes": 472161
+    },
+    "source_snapshot": {
+      "path": "build/incremental/current-final/source.json",
+      "sha256": "93b9f4288d9c543b915fff3b3e56c1288ad6fc71a68fdedabc7ae0f4f88478b9",
+      "bytes": 216115
+    },
+    "cold_host_compiler": false,
+    "host_import_relation": "Validated unchanged private Lake imports reused. All 32 target actions in current-fresh actually executed under the final build_actions/common/worker helpers.",
+    "phases": [
+      {
+        "name": "current-fresh",
+        "output": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/kernel/current-fresh",
+        "status": "PASS",
+        "target_actions": {
+          "fresh": 32,
+          "incremental": 2,
+          "reused": 0
+        },
+        "action_journal": {
+          "path": "build/incremental/canonical-a1/checkout/build/kernel/current-fresh/actions.json",
+          "sha256": "1936dbb77b810632b93e98cf2f946a82ac7abaf83145596eeb8a88575e45a55c",
+          "bytes": 7270
+        },
+        "production": {
+          "argv": [
+            "/run/current-system/sw/bin/strace",
+            "-f",
+            "-qq",
+            "-s",
+            "65535",
+            "-e",
+            "trace=execve",
+            "-o",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-fresh.execve.log",
+            "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+            "scripts/build_kernel.py",
+            "--configuration",
+            "lemmasim-silicon-bytes-bulk-notebook",
+            "--opt-level",
+            "O2",
+            "--output-dir",
+            "build/kernel/current-fresh",
+            "--cache-dir",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/cache",
+            "--timeout",
+            "300",
+            "--stage",
+            "supervisor"
+          ],
+          "child_system_cpu_seconds": 18.426446,
+          "child_user_cpu_seconds": 102.74980000000001,
+          "children_peak_rss_kib_cumulative": 1919416,
+          "cwd": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout",
+          "elapsed_seconds": 121.1916019419441,
+          "log": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-fresh.build.log",
+          "log_sha256": "51a4befe78a259d19b3aecc3b47991b693b97255b0e4aefec4de3d5f749618bd",
+          "owner": {
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d",
+            "pid": 2840933,
+            "start_ticks": "85797974"
+          },
+          "returncode": 0
+        },
+        "actual_invocations": {
+          "lake_preparations_are_separate": true,
+          "metadata_by_tool": {
+            "clang": 1,
+            "lake": 10,
+            "ld.lld": 1,
+            "lean": 10,
+            "llc": 1,
+            "llvm-objcopy": 1,
+            "opt": 1
+          },
+          "production_by_tool": {
+            "clang": 15,
+            "lake": 16,
+            "ld.lld": 4,
+            "lean": 8,
+            "llc": 5,
+            "llvm-objcopy": 6,
+            "opt": 5
+          },
+          "schema": "lemma-execve-counts/1",
+          "successful_execve_by_path": {
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc": 6,
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objcopy": 7,
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt": 6,
+            "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang-20": 16,
+            "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld": 5,
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake": 26,
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean": 18
+          },
+          "successful_execve_by_tool": {
+            "clang": 16,
+            "lake": 26,
+            "ld.lld": 5,
+            "lean": 18,
+            "llc": 6,
+            "llvm-objcopy": 7,
+            "opt": 6
+          },
+          "trace": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-fresh.execve.log",
+          "trace_sha256": "06ce752c32cf4519e168977507c00cdf6521abb02a68de1bed6b8cd26bf67d80"
+        },
+        "audit": {
+          "argv": [
+            "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+            "scripts/audit_kernel.py",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/kernel/current-fresh",
+            "--timeout",
+            "300",
+            "--source-root",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/kernel/current-fresh/action-source"
+          ],
+          "child_system_cpu_seconds": 2.0067970000000024,
+          "child_user_cpu_seconds": 168.95409199999997,
+          "children_peak_rss_kib_cumulative": 1919416,
+          "cwd": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout",
+          "elapsed_seconds": 172.06148617400322,
+          "log": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-fresh.audit.log",
+          "log_sha256": "39ae1ba0b54b63bf13b39e74a946804646c6b968189a503ee5e43de815b7e3d2",
+          "owner": {
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d",
+            "pid": 2841959,
+            "start_ticks": "85810100"
+          },
+          "returncode": 0
+        }
+      },
+      {
+        "name": "current-warm",
+        "output": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/kernel/current-warm",
+        "status": "PASS",
+        "target_actions": {
+          "fresh": 0,
+          "incremental": 2,
+          "reused": 32
+        },
+        "action_journal": {
+          "path": "build/incremental/canonical-a1/checkout/build/kernel/current-warm/actions.json",
+          "sha256": "1fa94eae8acd2a04b186a9e48d69dba739798a8258f808a6db9178c9ac0c662e",
+          "bytes": 7062
+        },
+        "production": {
+          "argv": [
+            "/run/current-system/sw/bin/strace",
+            "-f",
+            "-qq",
+            "-s",
+            "65535",
+            "-e",
+            "trace=execve",
+            "-o",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-warm.execve.log",
+            "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+            "scripts/build_kernel.py",
+            "--configuration",
+            "lemmasim-silicon-bytes-bulk-notebook",
+            "--opt-level",
+            "O2",
+            "--output-dir",
+            "build/kernel/current-warm",
+            "--cache-dir",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/cache",
+            "--timeout",
+            "300",
+            "--stage",
+            "supervisor"
+          ],
+          "child_system_cpu_seconds": 2.615880999999998,
+          "child_user_cpu_seconds": 6.594655000000046,
+          "children_peak_rss_kib_cumulative": 1919416,
+          "cwd": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout",
+          "elapsed_seconds": 11.700812997063622,
+          "log": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-warm.build.log",
+          "log_sha256": "9798a71c2a3092aa3780452e33656165de36de7b7bb520dcaa2d272c98c07281",
+          "owner": {
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d",
+            "pid": 2844191,
+            "start_ticks": "85827307"
+          },
+          "returncode": 0
+        },
+        "actual_invocations": {
+          "lake_preparations_are_separate": true,
+          "metadata_by_tool": {
+            "clang": 1,
+            "lake": 3,
+            "ld.lld": 1,
+            "lean": 3,
+            "llc": 1,
+            "llvm-objcopy": 1,
+            "opt": 1
+          },
+          "production_by_tool": {
+            "lake": 2
+          },
+          "schema": "lemma-execve-counts/1",
+          "successful_execve_by_path": {
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc": 1,
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objcopy": 1,
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt": 1,
+            "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang-20": 1,
+            "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld": 1,
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake": 5,
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean": 3
+          },
+          "successful_execve_by_tool": {
+            "clang": 1,
+            "lake": 5,
+            "ld.lld": 1,
+            "lean": 3,
+            "llc": 1,
+            "llvm-objcopy": 1,
+            "opt": 1
+          },
+          "trace": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-warm.execve.log",
+          "trace_sha256": "3d24e44faa03499d472856a797453cbe98e849dfb670e6bd10741aa6dc8840b6"
+        },
+        "audit": {
+          "argv": [
+            "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+            "scripts/audit_kernel.py",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/kernel/current-warm",
+            "--timeout",
+            "300",
+            "--source-root",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/kernel/current-warm/action-source"
+          ],
+          "child_system_cpu_seconds": 1.6959870000000024,
+          "child_user_cpu_seconds": 132.193021,
+          "children_peak_rss_kib_cumulative": 1919416,
+          "cwd": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout",
+          "elapsed_seconds": 134.38786913605873,
+          "log": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-warm.audit.log",
+          "log_sha256": "39ae1ba0b54b63bf13b39e74a946804646c6b968189a503ee5e43de815b7e3d2",
+          "owner": {
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d",
+            "pid": 2844313,
+            "start_ticks": "85828480"
+          },
+          "returncode": 0
+        }
+      },
+      {
+        "name": "current-standalone",
+        "output": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/user/current-standalone",
+        "status": "PASS",
+        "target_actions": {
+          "fresh": 1,
+          "incremental": 2,
+          "reused": 8
+        },
+        "action_journal": {
+          "path": "build/incremental/canonical-a1/checkout/build/user/current-standalone/actions.json",
+          "sha256": "cdb1133e4805e92b667eb9505379209ed26a7a538a4408251a20d064071d8d22",
+          "bytes": 2397
+        },
+        "production": {
+          "argv": [
+            "/run/current-system/sw/bin/strace",
+            "-f",
+            "-qq",
+            "-s",
+            "65535",
+            "-e",
+            "trace=execve",
+            "-o",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-standalone.execve.log",
+            "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+            "scripts/build_user.py",
+            "--configuration",
+            "lemmasim-silicon-bytes-bulk-notebook",
+            "--opt-level",
+            "O2",
+            "--output-dir",
+            "build/user/current-standalone",
+            "--cache-dir",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/cache",
+            "--timeout",
+            "300",
+            "--image-key",
+            "notebook"
+          ],
+          "child_system_cpu_seconds": 3.329269,
+          "child_user_cpu_seconds": 5.464027999999985,
+          "children_peak_rss_kib_cumulative": 1919416,
+          "cwd": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout",
+          "elapsed_seconds": 10.699724775040522,
+          "log": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-standalone.build.log",
+          "log_sha256": "f71da5da8df012e46bf6918c179ba9ce5a662c8607715979570cb88a5c85c1ea",
+          "owner": {
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d",
+            "pid": 2845803,
+            "start_ticks": "85841919"
+          },
+          "returncode": 0
+        },
+        "actual_invocations": {
+          "lake_preparations_are_separate": true,
+          "metadata_by_tool": {
+            "clang": 1,
+            "lake": 4,
+            "ld.lld": 1,
+            "lean": 4,
+            "llc": 1,
+            "llvm-objcopy": 1,
+            "opt": 1
+          },
+          "production_by_tool": {
+            "lake": 4,
+            "lean": 1
+          },
+          "schema": "lemma-execve-counts/1",
+          "successful_execve_by_path": {
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc": 1,
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objcopy": 1,
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt": 1,
+            "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang-20": 1,
+            "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld": 1,
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake": 8,
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean": 5
+          },
+          "successful_execve_by_tool": {
+            "clang": 1,
+            "lake": 8,
+            "ld.lld": 1,
+            "lean": 5,
+            "llc": 1,
+            "llvm-objcopy": 1,
+            "opt": 1
+          },
+          "trace": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-standalone.execve.log",
+          "trace_sha256": "f2c51e26a29a44145fbc33df3922842b9c1e06e8c66a678ac2e9b15805b8aa2f"
+        },
+        "audit": {
+          "argv": [
+            "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+            "scripts/audit_kernel.py",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/user/current-standalone",
+            "--timeout",
+            "300"
+          ],
+          "child_system_cpu_seconds": 0.5581839999999971,
+          "child_user_cpu_seconds": 15.091949,
+          "children_peak_rss_kib_cumulative": 1919416,
+          "cwd": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout",
+          "elapsed_seconds": 15.610264286980964,
+          "log": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-standalone.audit.log",
+          "log_sha256": "39ae1ba0b54b63bf13b39e74a946804646c6b968189a503ee5e43de815b7e3d2",
+          "owner": {
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d",
+            "pid": 2845976,
+            "start_ticks": "85842992"
+          },
+          "returncode": 0
+        }
+      },
+      {
+        "name": "current-changed",
+        "output": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/kernel/current-changed",
+        "status": "PASS",
+        "target_actions": {
+          "fresh": 8,
+          "incremental": 2,
+          "reused": 24
+        },
+        "action_journal": {
+          "path": "build/incremental/canonical-a1/checkout/build/kernel/current-changed/actions.json",
+          "sha256": "aeafe7840d6fa5cecf6c721e0d56fad7f08c7e5040a2964fb695f1e961a0b521",
+          "bytes": 7117
+        },
+        "production": {
+          "argv": [
+            "/run/current-system/sw/bin/strace",
+            "-f",
+            "-qq",
+            "-s",
+            "65535",
+            "-e",
+            "trace=execve",
+            "-o",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-changed.execve.log",
+            "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+            "scripts/build_kernel.py",
+            "--configuration",
+            "lemmasim-silicon-bytes-bulk-notebook",
+            "--opt-level",
+            "O2",
+            "--output-dir",
+            "build/kernel/current-changed",
+            "--cache-dir",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/cache",
+            "--timeout",
+            "300",
+            "--stage",
+            "supervisor"
+          ],
+          "child_system_cpu_seconds": 7.808568000000005,
+          "child_user_cpu_seconds": 45.374378999999976,
+          "children_peak_rss_kib_cumulative": 1919416,
+          "cwd": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout",
+          "elapsed_seconds": 49.5439380609896,
+          "log": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-changed.build.log",
+          "log_sha256": "6ca11f7d5915885cd9789b25644c109c8410216a9a8029dd8803b42222d8e4df",
+          "owner": {
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d",
+            "pid": 2846255,
+            "start_ticks": "85844554"
+          },
+          "returncode": 0
+        },
+        "actual_invocations": {
+          "lake_preparations_are_separate": true,
+          "metadata_by_tool": {
+            "clang": 1,
+            "lake": 4,
+            "ld.lld": 1,
+            "lean": 4,
+            "llc": 1,
+            "llvm-objcopy": 1,
+            "opt": 1
+          },
+          "production_by_tool": {
+            "clang": 3,
+            "lake": 4,
+            "ld.lld": 2,
+            "lean": 2,
+            "llc": 1,
+            "llvm-objcopy": 2,
+            "opt": 1
+          },
+          "schema": "lemma-execve-counts/1",
+          "successful_execve_by_path": {
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc": 2,
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objcopy": 3,
+            "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt": 2,
+            "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang-20": 4,
+            "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld": 3,
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake": 8,
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean": 6
+          },
+          "successful_execve_by_tool": {
+            "clang": 4,
+            "lake": 8,
+            "ld.lld": 3,
+            "lean": 6,
+            "llc": 2,
+            "llvm-objcopy": 3,
+            "opt": 2
+          },
+          "trace": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-changed.execve.log",
+          "trace_sha256": "e52410979fea8c214430d28fd7c71a4e276798cc4811f4cc05293a326ce777da"
+        },
+        "audit": {
+          "argv": [
+            "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+            "scripts/audit_kernel.py",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/kernel/current-changed",
+            "--timeout",
+            "300",
+            "--source-root",
+            "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/build/kernel/current-changed/action-source"
+          ],
+          "child_system_cpu_seconds": 1.522552999999995,
+          "child_user_cpu_seconds": 106.44885899999997,
+          "children_peak_rss_kib_cumulative": 1919416,
+          "cwd": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout",
+          "elapsed_seconds": 108.23087692202535,
+          "log": "/home/sreekumaar/Downloads/lemma/build/incremental/current-final/current-changed.audit.log",
+          "log_sha256": "39ae1ba0b54b63bf13b39e74a946804646c6b968189a503ee5e43de815b7e3d2",
+          "owner": {
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d",
+            "pid": 2847477,
+            "start_ticks": "85849512"
+          },
+          "returncode": 0
+        }
+      }
+    ],
+    "payloads": "All 44 pre-audit deterministic payload files, including ELF, object, IR, generated assembly/linker inputs, extracted bytes and linker maps, match exactly between fresh and warm. No normalization.",
+    "mutation": {
+      "after_sha256": "7d08861022265c1ef16b16205d42fa5a9465d891ecca064b5db4cd637480e2bd",
+      "before_sha256": "fec5e5e96dd8368c8633d81bbc140efd11c9f31b996a797cfdc078df4a57b325",
+      "new": "if operation = 8 then if mode = 1 then if prior \u2264 observed then 234 else 234",
+      "old": "if operation = 8 then if mode = 1 then if prior \u2264 observed then 0 else 234",
+      "source": "/home/sreekumaar/Downloads/lemma/build/incremental/canonical-a1/checkout/Lemma/Applications/Notebook.lean"
+    },
+    "earlier_cold_campaign": {
+      "receipt": {
+        "path": "build/incremental/canonical-a2/report.json",
+        "sha256": "1c8ff0aaaa3028a5389891c137982b96613887851391450a7ac754083dc1610e",
+        "bytes": 472272
+      },
+      "source": {
+        "path": "build/incremental/canonical-a2/source-snapshot.json",
+        "sha256": "15a05dc2be96a69feb53b66eedc7b3f8f04fce0d6df2c54187f90da8b33bd1b4",
+        "bytes": 217742
+      },
+      "relation": "Original earlier helper identities; cold protected host compiler with 182 actual Lean executions. Preserved as its own observation, not relabelled current compilation.",
+      "fresh_seconds": 355.72915962000843,
+      "warm_seconds": 12.943092004046775,
+      "fresh_target_actions": 32,
+      "warm_reused_target_actions": 32
+    }
+  },
+  "functional_execution": {
+    "backend": "actual QEMU through maintained public persistent machine sessions",
+    "geometry": [
+      1650,
+      2200
+    ],
+    "initial_medium_bytes": 268435456,
+    "unchanged_runtime": {
+      "path": "build/native/task006-bytes-bulk-a1/bundle.json",
+      "sha256": "5d4545dd361681401021472c94870af12b86343dd4872ab8e38b6763b6c7443b",
+      "bytes": 464166
+    },
+    "initialization": {
+      "log": {
+        "path": "build/incremental-initializer-a1.log",
+        "sha256": "a23740decbd28b1967e1b2cda7420baaf5a7443eebd8434bb396efc22e8b1667",
+        "bytes": 251
+      },
+      "medium": {
+        "path": "build/incremental-empty-a1.raw",
+        "sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46",
+        "bytes": 268435456
+      },
+      "scope": "Real guest acknowledged empty durable roots; medium copied privately for every scenario."
+    },
+    "fresh": {
+      "receipt": {
+        "path": "build/incremental/notebook-current-fresh-a2/result.json",
+        "sha256": "38c06c8bf90be42bcbb9708314c92497c7057f421380b8feddf1c4e527e05051",
+        "bytes": 107133
+      },
+      "elapsed_seconds": 50.57208889897447,
+      "workflow": {
+        "status": "PASS",
+        "sequence": 8,
+        "generation": 1,
+        "raw_samples": 50,
+        "strokes": 2,
+        "pages": 1,
+        "documents": [
+          1
+        ],
+        "contact_points": [
+          [
+            "a",
+            330,
+            733,
+            true
+          ],
+          [
+            "b",
+            330,
+            1100,
+            true
+          ]
+        ],
+        "explicit_save": [
+          1057,
+          8,
+          1,
+          1,
+          0
+        ],
+        "committed_objects": 4,
+        "durable_sha256": "0a11f4365af6ecdd44f37532e3a8ecc2a2eb744e94e226d8adb401a6f0083445",
+        "controller_pixels_sha256": "e07e1d922b6023bb06d8d999aaddf2f71b54e35b0c21d4bba657278f23fcf7fd"
+      },
+      "cold_recovery": {
+        "status": "PASS",
+        "exact_acknowledged_medium_and_pixels": true,
+        "durable_sha256": "0a11f4365af6ecdd44f37532e3a8ecc2a2eb744e94e226d8adb401a6f0083445",
+        "controller_pixels_sha256": "e07e1d922b6023bb06d8d999aaddf2f71b54e35b0c21d4bba657278f23fcf7fd",
+        "boot_state": "new process, original guest ELF and copied durable bytes only"
+      },
+      "instances": 4,
+      "cleanup": [
+        {
+          "session": "/home/sreekumaar/Downloads/lemma/build/incremental/notebook-current-fresh-a2/live",
+          "owner": {
+            "pid": 2844505,
+            "start_ticks": "85828898",
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d"
+          },
+          "process_reaped": true,
+          "returncode": 0
+        },
+        {
+          "session": "/home/sreekumaar/Downloads/lemma/build/incremental/notebook-current-fresh-a2/cold",
+          "owner": {
+            "pid": 2844723,
+            "start_ticks": "85830563",
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d"
+          },
+          "process_reaped": true,
+          "returncode": 0
+        },
+        {
+          "session": "/home/sreekumaar/Downloads/lemma/build/incremental/notebook-current-fresh-a2/failed",
+          "owner": {
+            "pid": 2844817,
+            "start_ticks": "85831646",
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d"
+          },
+          "process_reaped": true,
+          "returncode": 0
+        },
+        {
+          "session": "/home/sreekumaar/Downloads/lemma/build/incremental/notebook-current-fresh-a2/failed-cold",
+          "owner": {
+            "pid": 2844896,
+            "start_ticks": "85832717",
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d"
+          },
+          "process_reaped": true,
+          "returncode": 0
+        }
+      ],
+      "max_rss_kib": 290876,
+      "children_max_rss_kib": 403448
+    },
+    "warm": {
+      "receipt": {
+        "path": "build/incremental/notebook-current-warm-a1/result.json",
+        "sha256": "ab2073dbd009818947e00f18a11b8b001d4bd9fc281f1c9e0eb90a2999943421",
+        "bytes": 107089
+      },
+      "elapsed_seconds": 51.41548794298433,
+      "workflow": {
+        "status": "PASS",
+        "sequence": 8,
+        "generation": 1,
+        "raw_samples": 50,
+        "strokes": 2,
+        "pages": 1,
+        "documents": [
+          1
+        ],
+        "contact_points": [
+          [
+            "a",
+            330,
+            733,
+            true
+          ],
+          [
+            "b",
+            330,
+            1100,
+            true
+          ]
+        ],
+        "explicit_save": [
+          1057,
+          8,
+          1,
+          1,
+          0
+        ],
+        "committed_objects": 4,
+        "durable_sha256": "0a11f4365af6ecdd44f37532e3a8ecc2a2eb744e94e226d8adb401a6f0083445",
+        "controller_pixels_sha256": "e07e1d922b6023bb06d8d999aaddf2f71b54e35b0c21d4bba657278f23fcf7fd"
+      },
+      "cold_recovery": {
+        "status": "PASS",
+        "exact_acknowledged_medium_and_pixels": true,
+        "durable_sha256": "0a11f4365af6ecdd44f37532e3a8ecc2a2eb744e94e226d8adb401a6f0083445",
+        "controller_pixels_sha256": "e07e1d922b6023bb06d8d999aaddf2f71b54e35b0c21d4bba657278f23fcf7fd",
+        "boot_state": "new process, original guest ELF and copied durable bytes only"
+      },
+      "instances": 4,
+      "cleanup": [
+        {
+          "session": "/home/sreekumaar/Downloads/lemma/build/incremental/notebook-current-warm-a1/live",
+          "owner": {
+            "pid": 2845977,
+            "start_ticks": "85843078",
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d"
+          },
+          "process_reaped": true,
+          "returncode": 0
+        },
+        {
+          "session": "/home/sreekumaar/Downloads/lemma/build/incremental/notebook-current-warm-a1/cold",
+          "owner": {
+            "pid": 2846337,
+            "start_ticks": "85844700",
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d"
+          },
+          "process_reaped": true,
+          "returncode": 0
+        },
+        {
+          "session": "/home/sreekumaar/Downloads/lemma/build/incremental/notebook-current-warm-a1/failed",
+          "owner": {
+            "pid": 2846990,
+            "start_ticks": "85845860",
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d"
+          },
+          "process_reaped": true,
+          "returncode": 0
+        },
+        {
+          "session": "/home/sreekumaar/Downloads/lemma/build/incremental/notebook-current-warm-a1/failed-cold",
+          "owner": {
+            "pid": 2847110,
+            "start_ticks": "85847077",
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d"
+          },
+          "process_reaped": true,
+          "returncode": 0
+        }
+      ]
+    },
+    "failed_flush": "Both positive scenarios independently inject failed first FLUSH, observe guest failure state and visible FAILED pixels, retain acknowledged medium bytes, then start another cold guest and compare full recovered pixels/medium. No replay or snapshot substitute.",
+    "controlled_defect": {
+      "receipt": {
+        "path": "build/incremental/notebook-current-changed-a1/result.json",
+        "sha256": "2bc88362fd440b9d54d3edf60670fea3ff43b12e744fa2ecbdeb4d3e418a61d7",
+        "bytes": 69080
+      },
+      "observed_status": "FAIL",
+      "observed_error": "ValueError: declared virtual milestone bound exceeded",
+      "elapsed_seconds": 35.84036539506633,
+      "scope": "Expected failure after selected Save response success0 ->234 mutation with cache warm. Original FAIL is retained; the behavior was not declared passing.",
+      "independent_negative_assessment": {
+        "path": "build/incremental/notebook-current-changed-a1/expected-negative-assessment.json",
+        "sha256": "09422d5331633be781b44da33422250949c9a01b6b9121e572c2989ef42679f0",
+        "bytes": 3429
+      },
+      "actual_final_guest_state": [
+        1060,
+        234,
+        1,
+        1,
+        0
+      ],
+      "cold_and_fault_suffix": "NOT_RUN after controlled Save failure",
+      "cleanup": [
+        {
+          "session": "/home/sreekumaar/Downloads/lemma/build/incremental/notebook-current-changed-a1/live",
+          "owner": {
+            "pid": 2848218,
+            "start_ticks": "85865144",
+            "boot_id": "ad0735bf-02c8-48c0-b401-86b512285c2d"
+          },
+          "process_reaped": true,
+          "returncode": 0
+        }
+      ]
+    }
+  },
+  "other_actual_observations": {
+    "pure_validator": {
+      "receipt": {
+        "path": "build/incremental/validation-only-b1/report.json",
+        "sha256": "353366ce5ae044c302fd599c1440e0b17ebdf5ab6788a6c3b646637c044d66c3",
+        "bytes": 68424
+      },
+      "production_seconds": 10.093937181052752,
+      "actions": {
+        "fresh": 0,
+        "incremental": 2,
+        "reused": 32
+      },
+      "actual_production_invocations": {
+        "lake": 2
+      },
+      "audit_seconds": 105.41668658994604,
+      "old_validator": "1a614939904445ab33b6e206e238aa7c44f650e57ac20a52d60d7c5979aafa44",
+      "new_validator": "0b94e8e15725f066b276e9d60da22999240a90e946b088b001ae5c8b409800d6",
+      "result": "44 production payloads identical; all32 reused; changed pure observer actually executed and passed."
+    },
+    "reset_rom": {
+      "path": "build/silicon/reset-host-closure-final-a1/measurement.json",
+      "sha256": "5d4a9862d52778fcc56eb21a738ac9043ccb1e6406e3067cb0917d057068a758",
+      "bytes": 5834
+    },
+    "independent_rom_words": {
+      "path": "build/silicon/reset-host-closure-final-a1/word-audit.json",
+      "sha256": "155436d22518ec7c5e354e4d161343707fdccaee98e4ff049c8623220be93d54",
+      "bytes": 495
+    },
+    "irrelevant_docs_and_structured_primitive_mutation": {
+      "path": "build/silicon/incremental-rom-agent-probe/measurement.json",
+      "sha256": "c7bd3ec4e6f748dc1d00b90395d4950715d9157ad11e9ea883dbbbc7c374d0dc",
+      "bytes": 12350
+    },
+    "write_if_changed_10_generated_files": {
+      "path": "build/silicon/incremental-generated-agent/measurement.json",
+      "sha256": "6f38821b17a3c4fcd3ab42f40dc324da4b3780216e106f723ee49bb438337530",
+      "bytes": 2380
+    },
+    "shared_toolchain_preparation": {
+      "path": "build/kernel/toolchain-preparation-agent-a2/measurement.json",
+      "sha256": "0d9dd00ce485a831306c6968d85427a79438e0e190cfe5f9a4a3d0d94fd2ed28",
+      "bytes": 16712
+    },
+    "core0_fresh_qualification": {
+      "receipt": {
+        "path": "build/core0/incremental-qualification-final/check-results.json",
+        "sha256": "e638b519452e7fb0a32b916e059545b0d863c8c2ecb1d9f25c8fbd091280d261",
+        "bytes": 59249
+      },
+      "observed_status": "pass",
+      "fresh_qemu_boots": 23,
+      "scope": "Actual 10-case O0/O2,13 source rejections,reproducibility,mutation and audit regression. Original source hashes retained; later Core0 caller metadata correction separately verified below."
+    },
+    "core0_corrected_metadata_fresh_warm_audits_and_qemu": {
+      "path": "build/core0/incremental-provenance-agent-b2-observation.json",
+      "sha256": "768dcb3f569088648242a55787ca607e27927abe570163113dde399a5889a331",
+      "bytes": 4249
+    },
+    "workflow_syntax": {
+      "command": [
+        "nix",
+        "shell",
+        "--no-write-lock-file",
+        "--inputs-from",
+        ".",
+        "nixpkgs#actionlint",
+        "--command",
+        "actionlint",
+        "-shellcheck=",
+        "-pyflakes=",
+        ".github/workflows/core0.yml"
+      ],
+      "log": {
+        "path": "build/incremental-ci-actionlint-final.log",
+        "sha256": "a2988d3a72ff552f5cacf3d9c8b39daa6cf825a668da3796b591801cdbe60cee",
+        "bytes": 682
+      },
+      "exit_code": 0,
+      "scope": "actionlint1.7.12 schema/expression validation; remote GitHub Actions not executed."
+    }
+  },
+  "final_source_bound_checks": {
+    "receipt": "build/incremental/final-verification.json",
+    "host_prerequisite": "build/incremental/host-prerequisite-final-a4/receipt.json",
+    "rule": "Generated after this report and tracked source freeze. Read the actual retained receipt for final results, exact command/tool/source identities and nonempty counts; missing does not imply PASS."
+  },
+  "required_negative_coverage": {
+    "invalidation": "Actual selected Notebook Save mutation8miss/24reuse; compiler-host/config/generated registries/tool hash/options/dependency closure tested in tests/cache; independent actual ROM structured primitive mutation rejected by instruction-word observer.",
+    "corruption": "Wrong/missing blobs, missing outputs, incompatible manifests, interrupted publication, recomputed outer-hash semantic command tampering and conflicting fresh outputs reject in isolated real subprocess fixtures.",
+    "concurrency": "Same-key multiprocessing invocation executes once; caller SIGKILL, detached writer/timeout cleanup and lock retention checked. Tests are host evidence, not target execution.",
+    "isolation": "Private snapshot survives live source edits; modified snapshot rejects; foreign oleans and shadowed upstream Lean namespaces reject. Checkout/cache paths remain conservative identity inputs.",
+    "validation_only": "Actual observer-only canonical run all32reuse+new audit, separate from target behavior."
+  },
+  "retained_failures": [
+    {
+      "path": "build/kernel/incremental-canonical-probe-a1",
+      "reason": "Live compiler/production source changed during initial probe; failed closed."
+    },
+    {
+      "path": "build/incremental/notebook-current-fresh-a1/result.json",
+      "reason": "Launched before audit.json was written; admission failed before guest readiness. Successful corrected launch uses new a2 output."
+    },
+    {
+      "path": "build/incremental/host-prerequisite-final-a1/receipt.json",
+      "reason": "466 tests passed but original parser rejected buffered expected-negative fixture stdout after runner OK. Log/parser correction separately tested."
+    },
+    {
+      "path": "build/incremental/validation-only-a1/report.json",
+      "reason": "Observer compared post-audit artifacts against pre-audit production stage; shared production bytes did not differ."
+    },
+    {
+      "path": "build/incremental/validation-only-a2/report.json",
+      "reason": "Observer exposed one actual Lake recompilation after restoring prior private Notebook mutation. Final b1 experiment starts from warmed original imports and preserves both failures."
+    }
+  ],
+  "limitations": [
+    "Local Linux filesystem/process ownership implementation. Checkout/cache relocation conservatively misses; no cross-worktree output-path normalization claim.",
+    "Closed supported Lean imports and LLVM option/file grammar; unknown dependencies/options reject instead of risking a false hit.",
+    "Complete historical source archives remain broad; compilation keys use consumed closures. Some broad compiler-host imports are real coupling and intentionally retained.",
+    "Warm builds still validate tool/output/source inventories and run protected Lake preparation. Policy audits run anew and take substantial time; the measured table separates build and audit durations.",
+    "Current focused canonical integration is O2 QEMU. Broader writing/O0/O2, full kernel/foundation historical campaigns, RTL guest acceptance, browser interaction/persistence and physical-flow signoff were not rerun or inferred.",
+    "No native/Wasm model compilation or controller behavior was changed. Existing runtime reused with admission; generated RTL/header bytes checked unchanged, and focused native/browser archive compatibility tests remain host-only.",
+    "Remote CI, publication and merge are not performed. Existing unrelated jobs, USGCE, user dirty evidence, task branches and repository settings are preserved."
+  ]
+}

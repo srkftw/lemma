@@ -1,0 +1,372 @@
+{
+  "schema": "lemma-verification-routes/v1",
+  "comparison_base": "8e75bc6541131189d7a2efe02e9ff77bde61194f",
+  "objective": "Reliable incremental Lemma builds with validated artifact reuse and fresh affected behavior checks",
+  "historical_checkpoint": "docs/plan/006-session-state.md",
+  "resource_budgets": {
+    "status": "Read-only Git/receipt inspection; each Git command at most 15 seconds; no build or execution",
+    "host_export": "scripts/lean_export_host.py: two host Lean workers; 65536 KiB worker stack reservation",
+    "ordinary_build": "Existing build entry points default to 300 seconds per bounded tool command",
+    "kernel_fresh_qualification": "scripts/check_kernel.py: deadline at most 2400 seconds, QEMU timeout default 90 seconds",
+    "notebook_writing": "CI writing lane: 3500-second whole deadline; separate pinned QEMU build",
+    "live_sessions": "Retain each session's original admission/budget receipt; do not restart or extend it from status",
+    "incremental_notebook": "scripts/check_incremental_notebook.py: timeout300s per operation, boot30/action30 virtual seconds, whole deadline1200s; fresh instances and private media"
+  },
+  "claims": {
+    "cache-host": {
+      "kind": "validation",
+      "command": "python3 -m unittest discover -s tests/cache -v"
+    },
+    "metadata": {
+      "kind": "validation",
+      "command": "python3 scripts/check_scaffold.py && python3 -m unittest discover -s tests/scaffold -v"
+    },
+    "kernel-host": {
+      "kind": "validation",
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/kernel -v"
+    },
+    "core0-fresh": {
+      "kind": "execution",
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean --work-dir build/core0/qualification-UNUSED"
+    },
+    "notebook-qemu": {
+      "kind": "execution",
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-lemmasim.sh --clean --lane writing --with-o0 --work-dir build/lemmasim/writing-UNUSED --deadline 3500"
+    },
+    "rtl-devices": {
+      "kind": "execution",
+      "command": "python3 scripts/check_silicon.py --lane devices --work-dir build/silicon/devices-UNUSED --timeout 600 --jobs 2"
+    },
+    "rtl-notebook": {
+      "kind": "execution",
+      "command": "Select an unused output and run the source-bound canonical RTL notebook launcher/checker named in docs/plan/006-session-state.md; preserve original phase budgets"
+    },
+    "browser": {
+      "kind": "execution",
+      "command": "Run the affected actual browser input/packaging/persistence workflow from its retained admission plan; native results do not substitute"
+    },
+    "physical-flow": {
+      "kind": "execution",
+      "command": "Run the affected pinned physical-flow gate with exact source/tool identities; synthesis, routing, DRC/LVS and physical conformance stay separate"
+    },
+    "contract-review": {
+      "kind": "validation",
+      "command": "Inspect the changed contract and actual consumers; version semantics before selecting backend qualification"
+    },
+    "fresh-qualification-review": {
+      "kind": "validation",
+      "command": "Review required fresh, source-negative, optimization and backend coverage; keep independent compilation jobs fresh"
+    },
+    "dependency-review": {
+      "kind": "validation",
+      "command": "Classify unmatched changed paths and imported/generated dependencies in scripts/verification_routes.json before claiming coverage"
+    },
+    "incremental-canonical-qemu": {
+      "kind": "execution",
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_incremental_notebook.py --work-dir build/incremental/notebook-UNUSED --native-bundle NATIVE_BUNDLE --guest-build GUEST_BUILD --guest-source-root EXACT_SOURCE_ROOT --initial-medium ACKNOWLEDGED_EMPTY_MEDIUM"
+    }
+  },
+  "boundaries": [
+    {
+      "id": "agent-workflow",
+      "inputs": [
+        "scripts/dev_status.py",
+        "scripts/verification_routes.json",
+        "docs/plan/CURRENT.md",
+        "tests/cache/*",
+        "README.md"
+      ],
+      "claims": [
+        "cache-host",
+        "metadata"
+      ],
+      "affects": []
+    },
+    {
+      "id": "artifact-production",
+      "inputs": [
+        "scripts/action_cache.py",
+        "scripts/build_actions.py",
+        "scripts/build_core0.py",
+        "scripts/build_kernel.py",
+        "scripts/build_user.py",
+        "scripts/build-core0.sh",
+        "scripts/build-kernel.sh",
+        "scripts/build-user.sh",
+        "scripts/core0_common.py",
+        "scripts/lean_export_host.py",
+        "scripts/kernel_source_workspace.py",
+        "scripts/closed_inline.py",
+        "scripts/managed_records.py",
+        "scripts/*_target.py",
+        "scripts/*_deployment.py",
+        "scripts/toolchain_preparation.py",
+        "scripts/build_dependencies.py",
+        "scripts/action_worker.py"
+      ],
+      "claims": [
+        "cache-host",
+        "kernel-host",
+        "notebook-qemu"
+      ],
+      "affects": []
+    },
+    {
+      "id": "compiler-and-toolchain",
+      "inputs": [
+        "Lemma/Compiler/*",
+        "Lemma/Core0/*",
+        "Lemma/LLVM/*",
+        "flake.nix",
+        "flake.lock",
+        "lakefile.toml",
+        "lean-toolchain",
+        "tooling/toolchain-lock.json",
+        "lake-manifest.json",
+        "Lemma/Machine/*"
+      ],
+      "claims": [
+        "core0-fresh"
+      ],
+      "affects": [
+        "artifact-production"
+      ]
+    },
+    {
+      "id": "guest-software",
+      "inputs": [
+        "Lemma/Applications/*",
+        "Lemma/Notebook/*",
+        "Lemma/Services/*",
+        "Lemma/Kernel/*",
+        "Lemma/User/*",
+        "Lemma/Platform/*",
+        "Lemma/Runtime/*",
+        "Lemma/Ink/*",
+        "Lemma/Store/*",
+        "Lemma/Courses/*",
+        "Lemma/Mathematics/*",
+        "Lemma/Boot/*",
+        "Lemma/Crypto/*",
+        "Lemma/Documents/*",
+        "Lemma/Drivers/*",
+        "Lemma/Radio/*",
+        "Lemma/USB/*"
+      ],
+      "claims": [
+        "kernel-host",
+        "notebook-qemu"
+      ],
+      "affects": []
+    },
+    {
+      "id": "artifact-validation",
+      "inputs": [
+        "scripts/audit*.py",
+        "scripts/audit*.sh",
+        "scripts/lemmasim_readonly.py",
+        "tests/kernel/*",
+        "tests/core0/*",
+        "scripts/build_admission.py"
+      ],
+      "claims": [
+        "kernel-host",
+        "notebook-qemu"
+      ],
+      "affects": []
+    },
+    {
+      "id": "qemu-backend-or-observer",
+      "inputs": [
+        "sim/host/*",
+        "tooling/lemmasim/*",
+        "scripts/check_lemmasim.py",
+        "scripts/check_lemmasim_faults.py",
+        "scripts/check_lemmasim_input_negative.py",
+        "scripts/check_lemmasim_publication_negative.py",
+        "scripts/run_device_session.py",
+        "scripts/run_notebook_session.py",
+        "scripts/notebook_reference.py",
+        "tests/lemmasim/*",
+        "tests/qemu/*",
+        "scripts/lemmasim",
+        "scripts/run_kernel.py",
+        "scripts/run_buffer_session.py",
+        "scripts/run_monitor_session.py",
+        "scripts/lemmasim_session.py",
+        "conformance/lemmasim/check_notebook_workflow.py",
+        "conformance/lemmasim/notebook_input.py",
+        "conformance/lemmasim/store_oracle.py",
+        "conformance/lemmasim/inspect_notebook.py",
+        "conformance/lemmasim/math_oracle.py",
+        "scripts/lemmasim_fast.py",
+        "scripts/check_live_notebook.py"
+      ],
+      "claims": [
+        "notebook-qemu"
+      ],
+      "affects": []
+    },
+    {
+      "id": "rtl-backend-or-observer",
+      "inputs": [
+        "sim/rtl/*",
+        "sim/silicon/*",
+        "scripts/silicon_guest.py",
+        "scripts/silicon_compute.py",
+        "scripts/check_silicon.py",
+        "tooling/silicon/apply_cvw.py",
+        "tooling/silicon/config.vh",
+        "tooling/silicon/dependencies.json",
+        "tooling/silicon/sim.nix",
+        "tests/silicon/*",
+        "scripts/silicon_reset_rom.py",
+        "scripts/silicon_profile.py"
+      ],
+      "claims": [
+        "cache-host",
+        "rtl-devices",
+        "rtl-notebook"
+      ],
+      "affects": []
+    },
+    {
+      "id": "native-runtime",
+      "inputs": [
+        "scripts/lemmasim_native.py",
+        "scripts/check_lemmasim_native.py",
+        "sim/native/*",
+        "scripts/package_native.py",
+        "scripts/product_native.py",
+        "scripts/native_bundle_relocation.py",
+        "scripts/check_native_*.py"
+      ],
+      "claims": [
+        "rtl-notebook"
+      ],
+      "affects": []
+    },
+    {
+      "id": "browser-runtime-or-presentation",
+      "inputs": [
+        "scripts/lemmasim_browser.py",
+        "sim/browser/*",
+        "tooling/silicon/wasm.nix",
+        "scripts/package_browser.py",
+        "scripts/silicon_wasm.py",
+        "scripts/check_browser_*.py"
+      ],
+      "claims": [
+        "browser"
+      ],
+      "affects": []
+    },
+    {
+      "id": "machine-and-language-contracts",
+      "inputs": [
+        "LEMMA_MACHINE_CONTRACT.md",
+        "docs/contracts/*",
+        "sim/profiles/*"
+      ],
+      "claims": [
+        "contract-review"
+      ],
+      "affects": []
+    },
+    {
+      "id": "physical-flow",
+      "inputs": [
+        "tooling/silicon/physical-lock.json",
+        "tooling/silicon/eda.nix",
+        "tooling/silicon/layout.tcl",
+        "tooling/silicon/extract.tcl",
+        "tooling/silicon/process.tcl",
+        "tooling/silicon/enclosure-inputs-v1.json"
+      ],
+      "claims": [
+        "physical-flow"
+      ],
+      "affects": []
+    },
+    {
+      "id": "qualification-orchestration",
+      "inputs": [
+        ".github/workflows/*",
+        "scripts/check_kernel.py",
+        "scripts/check_kernel_*.py",
+        "scripts/check-core0.sh",
+        "scripts/check_core0.py",
+        "scripts/check-foundation.sh",
+        "scripts/check_foundation.py",
+        "scripts/check_incremental_builds.py",
+        "scripts/host_prerequisites.py"
+      ],
+      "claims": [
+        "fresh-qualification-review"
+      ],
+      "affects": []
+    },
+    {
+      "id": "historical-evidence-and-resume-notes",
+      "inputs": [
+        "docs/evidence/*",
+        "docs/plan/006-session-state.md",
+        "docs/plan/006-gates.json",
+        "docs/plan/005-session-state.md",
+        "docs/plan/005-gates.json"
+      ],
+      "claims": [
+        "metadata"
+      ],
+      "affects": []
+    },
+    {
+      "id": "incremental-notebook-observer",
+      "inputs": [
+        "scripts/check_incremental_notebook.py"
+      ],
+      "claims": [
+        "incremental-canonical-qemu"
+      ],
+      "affects": []
+    }
+  ],
+  "evidence_paths": [
+    {
+      "path": "build/incremental/assessments/cache-host.json",
+      "claim": "cache-host",
+      "kind": "validation"
+    },
+    {
+      "path": "build/incremental/assessments/metadata.json",
+      "claim": "metadata",
+      "kind": "validation"
+    },
+    {
+      "path": "build/incremental/assessments/kernel-host.json",
+      "claim": "kernel-host",
+      "kind": "validation"
+    },
+    {
+      "path": "build/incremental/assessments/core0-fresh.json",
+      "claim": "core0-fresh",
+      "kind": "execution"
+    },
+    {
+      "path": "build/incremental/assessments/canonical-fresh.json",
+      "claim": "incremental-canonical-qemu",
+      "kind": "execution"
+    },
+    {
+      "path": "build/incremental/assessments/canonical-warm.json",
+      "claim": "incremental-canonical-qemu",
+      "kind": "execution"
+    }
+  ],
+  "baseline_claims": [
+    "cache-host",
+    "metadata",
+    "kernel-host",
+    "incremental-canonical-qemu"
+  ]
+}

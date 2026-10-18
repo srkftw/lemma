@@ -370,7 +370,7 @@ def _case_commands(paths: dict, kind: str, opt: str) -> list[tuple[str, list[str
         root, artifact = paths[role + "_root"], paths[role + "_artifact"]
         image, output = artifact / "image.elf", paths[role + "_run"]
         commands.append((label + "-" + role + "-build",
-                         [sys.executable, "scripts/build_kernel.py", "--opt-level", opt, "--stage", "supervisor",
+                         [sys.executable, "scripts/build_kernel.py", "--fresh", "--opt-level", opt, "--stage", "supervisor",
                           "--configuration", config, "--output-dir", str(artifact), "--timeout", "300"], root, 300))
         commands.append((label + "-" + role + "-audit",
                          [sys.executable, "scripts/audit_kernel.py", str(artifact), "--timeout", "60"], root, 120))
