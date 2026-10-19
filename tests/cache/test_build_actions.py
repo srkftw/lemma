@@ -145,6 +145,52 @@ def literal := "/- this string is not an unterminated comment"
                 self.assertFalse(valid.exists())
         self.assertFalse((self.root / ".lake").exists())
 
+    def test_rejected_export_retains_only_unchanged_previously_validated_compiled_bytes(self):
+        source = self.fixture()
+        inputs = lean_source_inputs(self.root, [source])
+        tools = {"lean": "fixture-lean", "lake": "fixture-lake"}
+        with patch("action_cache.tool_identity", side_effect=lambda name: {"path": name, "sha256": "fixture-tool"}):
+            cache = self.root / "retained-cache"
+            with lean_workspace(self.root, cache, tools, inputs) as tree:
+                compiled = tree / ".lake/build/lib/lean/App.olean"
+                compiled.parent.mkdir(parents=True)
+                compiled.write_bytes(b"previous successful compiler output")
+            with self.assertRaisesRegex(Core0Error, "rejected export"):
+                with lean_workspace(self.root, cache, tools, inputs):
+                    raise Core0Error("rejected export")
+            with lean_workspace(self.root, cache, tools, inputs):
+                self.assertEqual(compiled.read_bytes(), b"previous successful compiler output")
+
+            for mutation in ("changed", "new", "fresh"):
+                with self.subTest(mutation=mutation):
+                    with self.assertRaisesRegex(Core0Error, "rejected export"):
+                        with lean_workspace(self.root, cache, tools, inputs, fresh=mutation == "fresh"):
+                            if mutation == "changed":
+                                compiled.write_bytes(b"failed action changed compiled output")
+                            elif mutation == "new":
+                                (compiled.parent / "Foreign.olean").write_bytes(b"unadmitted compiled output")
+                            raise Core0Error("rejected export")
+                    with lean_workspace(self.root, cache, tools, inputs):
+                        self.assertFalse(compiled.exists())
+                        self.assertFalse((compiled.parent / "Foreign.olean").exists())
+                        compiled.parent.mkdir(parents=True)
+                        compiled.write_bytes(b"previous successful compiler output")
+
+    def test_initial_failed_compilation_never_admits_new_compiled_bytes(self):
+        source = self.fixture()
+        inputs = lean_source_inputs(self.root, [source])
+        tools = {"lean": "fixture-lean", "lake": "fixture-lake"}
+        with patch("action_cache.tool_identity", side_effect=lambda name: {"path": name, "sha256": "fixture-tool"}):
+            cache = self.root / "failed-initial-cache"
+            with self.assertRaisesRegex(Core0Error, "failed preparation"):
+                with lean_workspace(self.root, cache, tools, inputs) as tree:
+                    compiled = tree / ".lake/build/lib/lean/App.olean"
+                    compiled.parent.mkdir(parents=True)
+                    compiled.write_bytes(b"incomplete compiler output")
+                    raise Core0Error("failed preparation")
+            with lean_workspace(self.root, cache, tools, inputs):
+                self.assertFalse(compiled.exists())
+
     def test_compiled_root_symlink_is_unlinked_without_touching_external_bytes(self):
         source = self.fixture()
         inputs = lean_source_inputs(self.root, [source])

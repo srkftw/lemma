@@ -145,11 +145,25 @@ def lean_workspace(root, cache_directory, tools, inputs, *, fresh=False):
             if p.is_file() and relative.as_posix() not in names: p.unlink()
         for name, path in inputs.items():
             write_if_changed(tree / name, Path(path).read_bytes())
+        # A rejected export need not discard its unchanged, previously admitted
+        # compiler dependencies. Never admit new/changed compiled bytes on a
+        # failed action: only the exact inventory validated on entry survives.
+        baseline = inventory() if valid and not fresh else None
         try:
             with action_lease(lock.fileno()):
                 yield tree
         except BaseException:
-            metadata.unlink(missing_ok=True)
+            unchanged = False
+            if baseline is not None and not metadata.is_symlink() and not compiled.is_symlink():
+                try:
+                    unchanged = (not any(p.is_symlink() for p in compiled.rglob("*"))
+                                 and inventory() == baseline)
+                except OSError:
+                    pass
+            if not unchanged:
+                # Unlinking a metadata symlink does not follow it or alter its
+                # external target. The next action must rebuild dependencies.
+                metadata.unlink(missing_ok=True)
             raise
         else:
             if metadata.is_symlink():
