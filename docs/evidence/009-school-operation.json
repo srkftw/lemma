@@ -931,5 +931,50 @@
       "scope": "Actual041f acknowledged guest initialization, immutable copy verified before Notebook writes. This remains valid independently of subsequent Notebook boot failure."
     },
     "nextChangedInput": "Minimal target initialization ordering correction required before a new finite native workflow; do not rerun unchanged failing image."
+  },
+  "secondOrdinaryNativeCampaign": {
+    "result": "FAIL",
+    "receipt": {
+      "path": "build/school/task009-student-native-a3/terminal-inflight.json",
+      "sha256": "4750a8162e4eda3c016c4172345b0a131be912ac4306de89c21c9c210de6df0b"
+    },
+    "bundle": {
+      "path": "build/task009/school23-native-a2/bundle.json",
+      "sha256": "66230830c1ff1b6ccc49f825999919717027729d6e0cd21c73c4beeb8d67fd9a"
+    },
+    "functionalUnits": 400000001,
+    "hostRunSeconds": 3.8046381040476263,
+    "scope": "Fresh changed-input native Student execution. Mapped boot queue-gate fault is removed and actualReady/capability observed, but first Save and queue restore fail; no JOIN or submitted attempt. Fast functional observation does not qualify canonical timing.",
+    "ready": [
+      1056,
+      9448928052850,
+      1,
+      1,
+      0
+    ],
+    "capability": [
+      1841,
+      2,
+      512,
+      262144,
+      2
+    ],
+    "queueFailure": [
+      1842,
+      99,
+      0,
+      0,
+      0
+    ],
+    "saveFailure": [
+      1060,
+      101,
+      1,
+      1,
+      257
+    ],
+    "cause": "Initial asynchronous Save remains in-flight when schoolQueueInitialize advances shared request176 and starts restore on same endpoint. inFlight99 and invalidPacket101 are actual statuses, not simulated timeout. Source inspection confirms pumpSave validates against live176.",
+    "nextChangedInput": "Sequence queue initialization after initial Save actual terminal without invalidating live request ownership. Preserve previous page-fault and current IPC failure receipts.",
+    "cleanup": "Ordinary Student destroy returned success and owned session process exited0."
   }
 }
