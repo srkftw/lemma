@@ -866,5 +866,23 @@
       "sha256": "5c18eadf748210a8e5244839a686e7959da7dbd76c3724838fe5f920cff25c21"
     },
     "campaignScope": "Original deadline reached with actual timeout124 terminal; a new independently budgeted3600s ordinary-client campaign starts generation8/epoch3 on the same29 acknowledged records, with separate source producer and deadline22:58:35UTC. No original deadline extension."
+  },
+  "currentFinalHostedValidation": {
+    "result": "PASS",
+    "receipt": {
+      "path": "build/school/task009-host-validation-final-a2/validation.json",
+      "sha256": "e7e27ba72572fb29b5eea03278958e931c7e67715c9ae222e8e366f71f281531"
+    },
+    "production": "/home/sreekumaar/Downloads/lemma/build/school/host-task009-delivery-a2/production.json",
+    "hostTests": 63,
+    "hostSeconds": 225.565,
+    "wholeSeconds": 227.7709057989996,
+    "commandSeconds": {
+      "host.log": 225.7755848740926,
+      "client-validation.log": 1.8012605289695784
+    },
+    "command": "nix develop --no-write-lock-file --command env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 python3 scripts/check_school.py --production build/school/host-task009-delivery-a2/production.json --host-timeout600 --work-dir build/school/task009-host-validation-final-a2",
+    "prospectiveBudget": "600seconds hosted corpus,120seconds separate Client Action; every command completed through existing owned action_worker and descendant reaping",
+    "scope": "Fresh current63-test hosted semantics/authority/protectedHTTP/source ingestion/preview/operator/typed delivery/complete v2 submission suite and separate Client Action validation; reused exact binary/compiled imports, no fresh native/browser/RTL or physical execution implied. Earlier61-test v1 suite and obsolete source-gate cancellation retain their own identities."
   }
 }
