@@ -576,7 +576,7 @@ private def schoolBegin (sender reply ns object transaction count : UInt64) : Ac
   .bind (get 48) fun s owner => if s = 0 then
   if owner = 0 then
   if count < 4096 then respond reply 2 ns object 0 0 Format.malformed else
-  if 16384 < count then respond reply 2 ns object 0 0 Format.full else
+  if 24576 < count then respond reply 2 ns object 0 0 Format.full else
   .bind (schoolAbsent ns object) fun status _ =>
   if status = 0 then begin sender reply ns object transaction count
   else if 220 ≤ status then if status ≤ 233 then respond reply 2 ns object 0 0 status else failed else failed
@@ -592,10 +592,10 @@ private def schoolMetadataShape (ns object bytes : UInt64) : Action :=
   .bind (Memory.read64 (payload+232)) fun s header => if s = 0 then
   .bind (Memory.read64 (payload+240)) fun s workspace => if s = 0 then
   .bind (Memory.read64 (payload+248)) fun s index => if s = 0 then
-  if tag = 0x31425553534d454c then if version = 1 then
+  if tag = 0x31425553534d454c then if (if version = 1 then (1 : UInt64) else if version = 2 then 1 else 0) = 1 then
   if frontier < 0x0000fffffffffffe then if queue = (0x5351000000000000 ||| (frontier+1)) then
   if queue = object then if ns = 2 then if Protocol.namespaceValid actualNs = 1 then if header = 256 then if workspace = 3712 then
-  if 128 ≤ index then if index%8 = 0 then if index ≤ 8512 then
+  if 128 ≤ index then if index%8 = 0 then if index ≤ (if version = 1 then (8512 : UInt64) else 20608) then
   if bytes = header+workspace+index then if bytes ≤ total then if total ≤ 262144 then .done 0 0
   else .done Format.full 0 else .done Format.malformed 0 else .done Format.malformed 0
   else .done Format.malformed 0 else .done Format.malformed 0 else .done Format.malformed 0

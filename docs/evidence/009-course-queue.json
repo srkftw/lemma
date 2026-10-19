@@ -305,5 +305,17 @@
     },
     "notebook_sha256": "cd816150014c8d2ea656997c4b7f41909a0212faf125d7b7f8e33669e8c97445",
     "fixture_sha256": "01f828c5f8320886095b901556b34299ef5c3165f51b4ff90f8818bf2d806757"
+  },
+  "submission_v2": {
+    "result": {
+      "path": "build/courses/task009-submission-v2-source-a2/v2-component-result.json",
+      "sha256": "dd2613bdb3a9e9a1fe73c0e6c243d68696f326d25719c493600564b8cf3c40dc"
+    },
+    "archive": {
+      "path": "build/courses/task009-submission-v2-source-a2/v2-component-source.tar.gz",
+      "sha256": "e27d6fe5e50c1b1da2c8d1d9acc6b0247d3fa06def32db5a5f4884fba3af5717"
+    },
+    "scope": "Actual candidate target Actions in finite RAM/IPC fixture with admitted compiled Lean imports; no CPU, disk, browser or new LLVM/RV64-object claim",
+    "status": "PASS_SUBMISSION_V2_ACTION_COMPONENTS"
   }
 }

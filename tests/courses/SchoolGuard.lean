@@ -1,9 +1,7 @@
 import Lemma.Services.Store.ServerSchool
 import Lemma.Courses.PackageReference
 
-/-! Independent finite RAM executes the actual opt-in Store Actions. It permits
-only RAM, a fixed time sample and opaque IPC replies; any backing syscall fails.
-This is a component fixture, not RV64 execution or a durable-media qualification. -/
+/-! Actual target Action component fixtures; no CPU or durable-media claim. -/
 namespace SchoolGuardTests
 open Lemma.Core0.Memory
 open Lemma.User
@@ -131,13 +129,25 @@ def check : IO Unit := do
   let (queued,accepted) ← observed staged (Server.schoolApplication 11 16 64)
   if queued != (0,0) || !accepted.replies.isEmpty || (← IO.ofExcept <| read accepted Server.context 8) != 2 then
     throw <| IO.userError "exact queue Commit did not enter original append engine"
-  for (offset,value,status) in #[(0,0,220),(8,2,220),(16,262145,224),(24,key+1,220),(32,101,220),
+  for (offset,value,status) in #[(0,0,220),(8,3,220),(16,262145,224),(24,key+1,220),(32,101,220),
       (40,0,220),(232,128,220),(240,3713,220),(248,129,220)] do
     let corrupt ← set staged (Server.payload+offset) value
     let (_,rejected) ← observed corrupt (Server.schoolApplication 11 16 64)
     if rejected.replies.size != 1 || rejected.replies[0]!.1 != status ||
         (← IO.ofExcept <| read rejected Server.context 8) != 0 then
       throw <| IO.userError "malformed queue header entered append engine"
+  let mut maximumV2 := staged
+  for (offset,value) in #[(88,24576),(96,24576)] do maximumV2 ← set maximumV2 (Server.state+offset) value
+  for (offset,value) in #[(8,2),(16,24576),(248,20608)] do maximumV2 ← set maximumV2 (Server.payload+offset) value
+  let (v2Status,v2Accepted) ← observed maximumV2 (Server.schoolApplication 11 16 64)
+  if v2Status != (0,0) || !v2Accepted.replies.isEmpty || (← IO.ofExcept <| read v2Accepted Server.context 8) != 2 then
+    throw <| IO.userError "maximum v2 metadata did not enter original append engine"
+  for (offset,value) in #[(8,1),(248,20616)] do
+    let badV2 ← set maximumV2 (Server.payload+offset) value
+    let (_,rejected) ← observed badV2 (Server.schoolApplication 11 16 64)
+    if rejected.replies.size != 1 || rejected.replies[0]!.1 != 220 ||
+        (← IO.ofExcept <| read rejected Server.context 8) != 0 then
+      throw <| IO.userError "v2 enlargement weakened legacy/per-record metadata bounds"
   IO.println "SCHOOL_STORE_GUARD:PASS append-only live/tombstone,delete rejection,empty key,two legacy namespaces,actual append engine admission,9 independent header negatives; component only"
 end SchoolGuardTests
 

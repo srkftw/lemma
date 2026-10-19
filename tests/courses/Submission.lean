@@ -1,9 +1,7 @@
 import Lemma.Courses.SchoolSubmission
 import Lemma.User.Capability
 
-/-! Transport/RAM fixture for the actual asynchronous guest queue. Opaque Store
-objects and Commit replies do not model a disk barrier; durable media remains
-an independent native/browser scenario. Captured bytes are observed separately. -/
+/-! Actual target Action component fixtures; no CPU or durable-media claim. -/
 namespace SubmissionTests
 open Lemma.Core0.Memory Lemma.User Lemma.Services.Store Lemma.Courses Lemma.Documents
 
@@ -100,6 +98,10 @@ private def syscall (state : IO.Ref Model) (number a b c d e : UInt64) : IO (UIn
     else if tag == 0x730 then
       if values[3]! != m.stream.size.toUInt64 || values[4]! != 0 then throw <| IO.userError "guest stream invented completion"
       next := {next with streamEnds := next.streamEnds+1}
+    else if tag == 0x733 then
+      if values[3]! != m.sequence || (values[4]! != 2 && values[4]! != 3) then throw <| IO.userError "terminal receipt is not the actual pointer Commit"
+    else if tag == 0x734 then
+      if values[3]! != m.sequence || (values[4]! != 2 && values[4]! != 3) then throw <| IO.userError "restored receipt is not the observed READ frontier"
     else throw <| IO.userError "queue emitted another Console protocol"
     state.set {next with records := next.records.push values}
     return (0,88)
@@ -113,7 +115,7 @@ private def syscall (state : IO.Ref Model) (number a b c d e : UInt64) : IO (UIn
     let object ← get 32
     let offset ← get 48
     let count ← get 56
-    if magic != Protocol.magic || version != 1 || c != (if operation == 3 then 64+count else 64) || count > 16384 then
+    if magic != Protocol.magic || version != 1 || c != (if operation == 3 then 64+count else 64) || count > 24576 then
       throw <| IO.userError "queue changed actual packet framing"
     state.set {m with pending := true, request := d, operation, ns, object, offset, count, calls := m.calls+1}
     if operation == 3 then
@@ -301,7 +303,53 @@ def check : IO Unit := do
     if (← word lost Lemma.Courses.SchoolSubmission.arena) != 30 then let _ ← run lost Lemma.Courses.SchoolSubmission.pump; pure ()
   if (← word lost Lemma.Courses.SchoolSubmission.arena) != 30 || !(← lost.get).records.isEmpty || (← lost.get).commits != 1 then
     throw <| IO.userError "uncertain queue Commit retried or emitted an acknowledgement"
-  IO.println s!"SCHOOL_SUBMISSION_ACTIONS:PASS exact{expected.size}-byte frozen/rawstream,16-byte boundaries,Busy/wouldBlock,retry,coldpendingrestore,boundACKdurablepointer,suspend/Abort/resume,partialstreamcancel,ninthchunkreject,allocationrollback,lostCommitnooutput; component only"
+  -- A normal 32-stroke written response exceeds v1's deliberate eight-chunk cap.
+  let large ← IO.mkRef prepared
+  set large (header+8) 2
+  let _ ← ok large (Ink.emptyPage ink 1)
+  let mut rawObjects := #[]
+  for i in [:32] do
+    let stroke := 1+i.toUInt64
+    let object := 65537+i.toUInt64
+    let _ ← ok large (Ink.addEntry ink object stroke)
+    let _ ← ok large (Ink.addEdit ink 1 stroke)
+    let _ ← ok large (Ink.chunk raw 1 stroke 512 4095)
+    for (offset,value) in #[(72,1000),(80,1000),(96,1024),(104,768)] do set large (raw+offset) value
+    let count ← ok large (Ink.finishChunk raw 1 3)
+    rawObjects := rawObjects.push (1,object,extract (← large.get) raw count)
+  large.modify fun m => {m with objects := rawObjects}
+  let largeQueue ← ok large (Lemma.Courses.SchoolSubmission.start header workspace ink)
+  advanceTo large 26
+  let largeComplete ← large.get
+  let largeFrozen := (objectBytes largeComplete 2 largeQueue).get!
+  let expectedLarge := rawObjects.foldl (fun acc row => acc ++ row.2.2) largeFrozen
+  if largeComplete.stream != expectedLarge || largeFrozen[8]! != 2 ||
+      (← word large (Lemma.Courses.SchoolSubmission.arena+120)) != 32 || largeComplete.commits != 2 then
+    throw <| IO.userError "v2 truncated a 32-stroke response"
+  -- Cold v2 replay is exact, and legacy v1 replay above retained its original bytes.
+  let largeRestored ← IO.mkRef {objects := largeComplete.objects, sequence := largeComplete.sequence, commits := largeComplete.commits, busyBegin := false : Model}
+  let _ ← ok largeRestored (Lemma.Courses.SchoolSubmission.initializeQueue 16 17 20000)
+  let _ ← ok largeRestored (Lemma.Courses.SchoolSubmission.restore 1)
+  advanceTo largeRestored 26
+  if (← largeRestored.get).stream != expectedLarge || (← largeRestored.get).commits != 2 then
+    throw <| IO.userError "v2 cold restore changed identity, bytes, or writes"
+  let largeCRC := (expectedLarge.data.foldl (fun crc byte => PackageFormat.crcByte crc byte.toUInt64) 0xffffffff) ^^^ 0xffffffff
+  let largeAck := (#[Lemma.Courses.SchoolSubmission.ackMagic,1,largeQueue,888,
+    (← word largeRestored (Lemma.Courses.SchoolSubmission.arena+152)),largeCRC,0,0]).foldl (fun bytes value =>
+    (List.range 8).foldl (fun out i => out.push ((value >>> (i.toUInt64*8)).toUInt8)) bytes) ByteArray.empty
+  largeRestored.modify fun m => {m with objects := m.objects.push (2,Lemma.Courses.SchoolSubmission.ackObject,largeAck)}
+  advanceTo largeRestored 29
+  let terminal ← largeRestored.get
+  let expectedReceipt := #[0x733,largeQueue,888,terminal.sequence,3]
+  if !(terminal.records.contains expectedReceipt) then throw <| IO.userError "ACK lacked exact new pointer-Commit receipt"
+  let terminalRestored ← IO.mkRef {objects := terminal.objects, sequence := terminal.sequence+17, commits := terminal.commits, busyBegin := false : Model}
+  let _ ← ok terminalRestored (Lemma.Courses.SchoolSubmission.initializeQueue 16 17 30000)
+  let _ ← ok terminalRestored (Lemma.Courses.SchoolSubmission.restore 1)
+  advanceTo terminalRestored 29
+  let observed := (← terminalRestored.get).records
+  if observed != #[#[0x734,largeQueue,888,terminal.sequence+17,3]] then
+    throw <| IO.userError "cold terminal restore manufactured an original Commit instead of READ frontier"
+  IO.println s!"SCHOOL_SUBMISSION_ACTIONS:PASS exact{expected.size}-byte frozen/rawstream,16-byte boundaries,Busy/wouldBlock,retry,coldpendingrestore,boundACKdurablepointer,suspend/Abort/resume,partialstreamcancel,ninthchunkreject,allocationrollback,lostCommitnooutput; v2-32-stroke-exact-stream/coldrestore/ACK;733actualCommit;734READfrontier; component only"
 end SubmissionTests
 
 def main : IO Unit := SubmissionTests.check

@@ -4,7 +4,7 @@ import Lemma.Multimodal.SchoolPacket
 import Lemma.Services.Store.Client
 import Lemma.User.CapabilityConsole
 
-/-! Guest-origin school submission/1. Eight private pages freeze metadata and
+/-! Guest-origin school submission/2. Eight private pages freeze metadata and
 stream original immutable Store chunks. Every pump admits at most one IPC
 transition or one16-byte Console record. Stream completion is transport output,
 never school admission or proof. Phase1..4 preflights raw headers/EOF;
@@ -18,11 +18,11 @@ namespace Lemma.Courses.SchoolSubmission
 open Lemma.Core0.Memory Lemma.User Lemma.Services.Store
 
 def magic : UInt64 := 0x31425553534d454c
-def version : UInt64 := 1
+def version : UInt64 := 2
 def headerBytes : UInt64 := 256
 def maximumBytes : UInt64 := 262144
-def maximumChunks : UInt64 := 8
-def metadataCapacity : UInt64 := 16384
+def maximumChunks : UInt64 := 512
+def metadataCapacity : UInt64 := 24576
 def queuePrefix : UInt64 := 0x5351000000000000
 def pointerObject : UInt64 := 0x5350000000000001
 def pointerMagic : UInt64 := 0x3151544f534d454c
@@ -32,7 +32,7 @@ def arena : UInt64 := 0x380000
 def outgoing : UInt64 := arena+0x400
 def incoming : UInt64 := arena+0x500
 def chunkHeader : UInt64 := arena+0x600
-def lengths : UInt64 := arena+0x680
+def lengths : UInt64 := arena+0x7000
 def pointer : UInt64 := arena+0x700
 def metadata : UInt64 := arena+0x1000
 private def malformed : UInt8 := 240
@@ -51,7 +51,7 @@ private def copyStep (i _ : UInt32) (acc source target _ _ : UInt64) : Action :=
   .bind (write target (i.toUInt64*8) value) fun s _ => .done s acc else .done s 0
 private def copy (source target bytes : UInt64) : Action :=
   if bytes%8 = 0 then if bytes ≤ metadataCapacity then
-  .boundedFoldU64 2048 copyStep (bytes/8).toUInt32 0 source target 0 0 fun s _ => .done s bytes
+  .boundedFoldU64 3072 copyStep (bytes/8).toUInt32 0 source target 0 0 fun s _ => .done s bytes
   else bad else bad
 private def zeroStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   .bind (put (i.toUInt64*8) 0) fun s _ => .done s acc
@@ -124,6 +124,15 @@ private def record (tag a b c d : UInt64) : Action :=
   .bind (get 16) fun s console => if s = 0 then CapabilityConsole.record console tag a b c d else .done s 0
 
 
+/-- A queued edition is immutable: restore accepts its own original contract.
+The successor increases capacity without rewriting a pending v1 envelope. -/
+private def envelopeChunks (v : UInt64) : UInt64 := if v = 1 then 8 else if v = version then maximumChunks else 0
+private def envelopeMetadata (v : UInt64) : UInt64 := if v = 1 then 16384 else if v = version then metadataCapacity else 0
+private def envelopeBounds (chunks bytes : UInt64) : Action :=
+  .bind (field metadata 8) fun s v => if s = 0 then
+  if chunks ≤ envelopeChunks v then if bytes ≤ envelopeMetadata v then .done 0 0
+  else .done resourceLimit 0 else .done resourceLimit 0 else .done s 0
+
 private def validateHeader : Action :=
   .bind (field metadata 0) fun s tag => if s = 0 then
   .bind (field metadata 8) fun s v => if s = 0 then
@@ -139,7 +148,7 @@ private def validateHeader : Action :=
   .bind (field metadata 104) fun s kind => if s = 0 then
   .bind (field metadata 112) fun s now => if s = 0 then
   if tag = magic then
-  if v = version then
+  if (if v = 1 then (1 : UInt64) else if v = version then 1 else 0) = 1 then
   if frontier < 0x0000fffffffffffe then
   if Protocol.namespaceValid ns = 1 then
   if 0 < page then
@@ -223,7 +232,7 @@ def start (header workspace inkPage : UInt64) : Action :=
   .bind (Lemma.Documents.Ink.encodePage inkPage (metadata+3968)) fun s indexBytes => if s = 0 then
   .bind (equal (metadata+3968) 24 page) fun s _ => if s = 0 then
   .bind (field (metadata+3968) 32) fun s chunks => if s = 0 then
-  if chunks ≤ maximumChunks then
+  .bind (envelopeBounds chunks (3968+indexBytes)) fun checked _ => if checked = 0 then
   .bind (put 120 chunks) fun s _ => if s = 0 then
   .bind (put 104 (3968+indexBytes)) fun s _ => if s = 0 then
   .bind (put 112 (3968+indexBytes)) fun s _ => if s = 0 then
@@ -241,7 +250,7 @@ def start (header workspace inkPage : UInt64) : Action :=
   .bind (put 0 1) fun s _ => if s = 0 then
   .done 0 queue
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done resourceLimit 0
+  else .done checked 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done Protocol.busy 0
   else .done s 0
@@ -381,6 +390,20 @@ private def commit (isPointer next : UInt64) : Action :=
   else .done s 0
 
 
+/-- New terminal receipt: the exact pointer Commit just acknowledged by Store.
+A restored terminal record has a separate tag because READ observes a frontier. -/
+private def terminalCommit (sequence desired : UInt64) : Action :=
+  .bind (put 0 29) fun s _ => if s = 0 then
+  .bind (get 96) fun s queue => if s = 0 then
+  .bind (get 312) fun s schoolCommit => if s = 0 then
+  record 0x733 queue schoolCommit sequence desired
+  else .done s 0 else .done s 0 else .done s 0
+private def terminalRestore (queue schoolCommit state : UInt64) : Action :=
+  .bind (put 0 29) fun s _ => if s = 0 then
+  .bind (get 200) fun s observedFrontier => if s = 0 then
+  record 0x734 queue schoolCommit observedFrontier state
+  else .done s 0 else .done s 0
+
 private def pollCommit (isPointer : UInt64) : Action :=
   .bind pollOp fun status sequence =>
     if status = IPCABI.wouldBlock then .done 0 0 else if status = 0 then
@@ -393,7 +416,7 @@ private def pollCommit (isPointer : UInt64) : Action :=
   else
   .bind (put 200 sequence) fun s _ => if s = 0 then
   .bind (get 184) fun s desired => if s = 0 then
-  if desired = 1 then put 0 20 else put 0 29
+  if desired = 1 then put 0 20 else terminalCommit sequence desired
   else .done s 0 else .done s 0 else .done s 0
   else halt status
 
@@ -543,7 +566,7 @@ private def restorePointer : Action :=
   .bind (put 104 bytes) fun s _ => if s = 0 then
   .bind (put 184 status) fun s _ => if s = 0 then
   .bind (put 144 0) fun s _ => if s = 0 then
-  if status = 1 then put 0 42 else put 0 29
+  if status = 1 then put 0 42 else terminalRestore queue reserved status
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else halt malformed
   else halt malformed
@@ -604,14 +627,14 @@ private def restoreMetadata : Action :=
   .bind (field (metadata+3968) 32) fun s chunks => if s = 0 then
   if indexBytes = actualIndexBytes then
   if bytes = 3968+indexBytes then
-  if chunks ≤ maximumChunks then
+  .bind (envelopeBounds chunks bytes) fun checked _ => if checked = 0 then
   .bind (put 120 chunks) fun s _ => if s = 0 then
   .bind (put 264 0) fun s _ => if s = 0 then
   .bind (put 112 bytes) fun s _ => if s = 0 then
   .bind (put 128 0) fun s _ => if s = 0 then
   put 0 1
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else halt malformed
+  else halt checked
   else halt malformed
   else halt malformed
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
