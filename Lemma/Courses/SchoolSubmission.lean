@@ -795,7 +795,13 @@ write. A positive value means it must keep deferring that Begin while pumping
 this helper. Immutable metadata and raw references survive suspension. -/
 def writerActive : Action :=
   .bind (get 0) fun s phase => if s = 0 then
-  .done 0 (if 6 ≤ phase then if phase ≤ 10 then 1 else if 12 ≤ phase then if phase ≤ 16 then 1 else if phase = 47 then 1 else 0 else 0 else 0)
+  .done 0 (if phase = 2 then 1 else if phase = 4 then 1 else
+    if 6 ≤ phase then if phase ≤ 10 then 1 else
+      if 12 ≤ phase then if phase ≤ 16 then 1 else
+        if phase = 23 then 1 else if phase = 41 then 1 else if phase = 43 then 1 else
+        if phase = 45 then 1 else if phase = 47 then 1 else 0
+      else 0
+    else 0)
   else .done s 0
 
 def suspend : Action :=
@@ -830,6 +836,8 @@ def pump : Action :=
   if requested = 1 then
     if phase = 1 then pauseAt 1 else if phase = 3 then pauseAt 3 else
     if phase = 5 then pauseAt 5 else if phase = 11 then pauseAt 11 else
+    if phase = 22 then pauseAt 22 else if phase = 26 then pauseAt 26 else
+    if phase = 40 then pauseAt 40 else if phase = 42 then pauseAt 42 else
     if phase = 7 then suspendStage 5 0 else if phase = 9 then suspendStage 5 0 else
     if phase = 13 then suspendStage 11 1 else if phase = 15 then suspendStage 11 1 else normalPump
   else normalPump else .done s 0 else .done s 0

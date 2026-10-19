@@ -248,6 +248,39 @@ def check : IO Unit := do
   let _ ← ok restored (Lemma.Courses.SchoolSubmission.restore 1)
   advanceTo restored 26
   if (← restored.get).stream != expected || (← restored.get).commits != 2 then throw <| IO.userError "restart retargeted or recommitted pending attempt"
+  -- One Notebook task owns one kernel IPC row. Suspension must drain reads,
+  -- not only writes, and must not begin another ACK/restore read behind Save.
+  for phase in #[2,4,23] do
+    let reader ← IO.mkRef prepared
+    let _ ← ok reader (Lemma.Courses.SchoolSubmission.start header workspace ink)
+    advanceTo reader phase
+    if (← ok reader Lemma.Courses.SchoolSubmission.suspend) != 1 then
+      throw <| IO.userError s!"in-flight read phase{phase} lost IPC ownership"
+    let calls := (← reader.get).calls
+    advanceTo reader 46
+    if (← reader.get).pending || (← reader.get).calls != calls ||
+        (← ok reader Lemma.Courses.SchoolSubmission.writerActive) != 0 then
+      throw <| IO.userError "suspension began another read or exposed live IPC"
+    let _ ← ok reader Lemma.Courses.SchoolSubmission.resume
+    advanceTo reader 26
+    if (← reader.get).stream != expected then throw <| IO.userError "read suspension changed immutable bytes"
+  for phase in #[40,41,43,26,45] do
+    let reader ← IO.mkRef {objects := completed.objects, sequence := completed.sequence, commits := completed.commits, busyBegin := false : Model}
+    let _ ← ok reader (Lemma.Courses.SchoolSubmission.initializeQueue 16 17 6000)
+    let _ ← ok reader (Lemma.Courses.SchoolSubmission.restore 1)
+    advanceTo reader phase
+    let pending := (← reader.get).pending
+    if (← ok reader Lemma.Courses.SchoolSubmission.suspend) != (if pending then 1 else 0) then
+      throw <| IO.userError s!"restore/ACK phase{phase} misreported actual IPC ownership"
+    let calls := (← reader.get).calls
+    advanceTo reader 46
+    if (← reader.get).pending || (← reader.get).calls != calls then
+      throw <| IO.userError "suspended restore/ACK retained or began IPC"
+    for _ in [:8] do let _ ← ok reader Lemma.Courses.SchoolSubmission.pump; pure ()
+    if (← reader.get).calls != calls then throw <| IO.userError "suspended ACK polled behind another client"
+    let _ ← ok reader Lemma.Courses.SchoolSubmission.resume
+    advanceTo reader 26
+    if (← reader.get).stream != expected then throw <| IO.userError "restore/ACK suspension retargeted work"
   let paused ← IO.mkRef prepared
   let _ ← ok paused (Lemma.Courses.SchoolSubmission.start header workspace ink)
   advanceTo paused 7
@@ -372,7 +405,7 @@ def check : IO Unit := do
   let observed := (← terminalRestored.get).records
   if observed != #[#[0x734,largeQueue,888,terminal.sequence+17,3]] then
     throw <| IO.userError "cold terminal restore manufactured an original Commit instead of READ frontier"
-  IO.println s!"SCHOOL_SUBMISSION_ACTIONS:PASS exact{expected.size}-byte frozen/rawstream,16-byte boundaries,Busy/wouldBlock,retry,coldpendingrestore,boundACKdurablepointer,suspend/Abort/resume,partialstreamcancel,ninthchunkreject,allocationrollback,lostCommitnooutput; v2-32-stroke-exact-stream/coldrestore/ACK;733actualCommit;734READfrontier; one-combined-IPC-poll/Console-per-pump;pendingCommit-cancel-order;ACK-cancel-rejection; component only"
+  IO.println s!"SCHOOL_SUBMISSION_ACTIONS:PASS exact{expected.size}-byte frozen/rawstream,16-byte boundaries,Busy/wouldBlock,retry,coldpendingrestore,boundACKdurablepointer,suspend/Abort/resume,partialstreamcancel,ninthchunkreject,allocationrollback,lostCommitnooutput; v2-32-stroke-exact-stream/coldrestore/ACK;733actualCommit;734READfrontier; one-combined-IPC-poll/Console-per-pump;pendingCommit-cancel-order;ACK-cancel-rejection; single-task-IPC-read-suspend-drain; component only"
 end SubmissionTests
 
 def main : IO Unit := SubmissionTests.check

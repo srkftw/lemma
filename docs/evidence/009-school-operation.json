@@ -976,5 +976,20 @@
     "cause": "Initial asynchronous Save remains in-flight when schoolQueueInitialize advances shared request176 and starts restore on same endpoint. inFlight99 and invalidPacket101 are actual statuses, not simulated timeout. Source inspection confirms pumpSave validates against live176.",
     "nextChangedInput": "Sequence queue initialization after initial Save actual terminal without invalidating live request ownership. Preserve previous page-fault and current IPC failure receipts.",
     "cleanup": "Ordinary Student destroy returned success and owned session process exited0."
+  },
+  "queueIPCReadOwnership": {
+    "result": "PASS_ACTION_COMPONENT",
+    "receipt": {
+      "path": "build/school/task009-queue-owner-source-a1/result.json",
+      "sha256": "eb7e071d222031e8f5859211da37ee62ec0fbf121178aaadfac05ee0705b82d5"
+    },
+    "sourceSHA256": {
+      "Lemma/Courses/SchoolSubmission.lean": "b562820c9c4d59a2fe362ae0c3e288ddc7e33627116f751c18d72a5ab5f8625c",
+      "tests/courses/Submission.lean": "e41df3506a2f6374cba13298d2cca2d6eec760730d07ce58208d061d4aed85e4"
+    },
+    "scope": "Fresh actual target Actions in RAM/IPC fixture, original300s bound and exit0. Compiled imports reused; no fresh CPU, durable disk, browser or physical claim. Exact wall time not captured.",
+    "change": "writerActive now includes all in-flight read IPC and confirmed Store stage ownership. Suspend drains old read polls2/4/23/41/43/45; new raw/restore/ACK reads pause, with no hidden repeated polling while another Notebook client owns IPC. Resume preserves original bytes/identity.",
+    "coverage": "Original v1 exact replay and v2 32-stroke/ACK/733/734 fixtures retained; new cases cover suspended live reads and quiescent starts, no new Call while paused, and exact replay after resume.",
+    "consumerQualification": "Notebook caller sequencing and gates are a separately coordinated change; next real native/browser producer must execute them. Current failed native receipts remain unchanged."
   }
 }
