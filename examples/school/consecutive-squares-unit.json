@@ -1,0 +1,600 @@
+{
+  "format": "lemma-school-unit/1",
+  "course": {
+    "identity": "803",
+    "edition": "1",
+    "title": "From expansions to square differences and odd gaps",
+    "sourceAnchor": "AoPS Introduction to Algebra2007 section11.2, printed313-314; catalogue row681; follows publication802/1",
+    "editionAnchor": "AoPS First Printing2007; original authored unit803/1",
+    "rightsAnchor": "Original paraphrased instructional activities with source/page metadata. Textbook bytes are excluded; third-party rights and repository license remain separate and unresolved.",
+    "nodes": [
+      {
+        "kind": "explanation",
+        "title": "Recall every product",
+        "body": "Reconstruct a product table for (x+1)*(x+1). Identify which products contribute to each degree. This recalls publication802/1 before using expansion to explain a new pattern.",
+        "exampleText": "",
+        "hint": "List the four products before collecting powers.",
+        "sourceAnchor": "aops07:identity-p307",
+        "logicalPrerequisites": [],
+        "worked": "",
+        "exercise": "Explain the role of each cross product.",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": "worked",
+        "title": "Worked bridge to a difference",
+        "body": "Expand (n+1)*(n+1), then subtract n*n. Equal-term subtraction leaves2*n+1, an odd number. This argument never divides by a term that might be zero.",
+        "worked": "For n=6, the two squares49 and36 differ by13=2*6+1. This example illustrates the identity; expansion justifies arbitrary natural n.",
+        "hint": "Separate the common square from its remainder.",
+        "sourceAnchor": "aops07:square-gap-p314",
+        "logicalPrerequisites": [
+          0
+        ],
+        "exampleText": "",
+        "exercise": "Explain why the common square disappears.",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "State the domain and claim",
+        "body": "State the universal consecutive-square gap claim for n in Nat. Explain why matching the pattern at n=2,3,4 supports a conjecture but does not prove it for every n.",
+        "exercise": "State the quantifier and what must be justified.",
+        "hint": "Compare a finite list with an arbitrary natural input.",
+        "sourceAnchor": "aops07:square-gap-p314",
+        "logicalPrerequisites": [
+          0
+        ],
+        "exampleText": "",
+        "worked": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "binomialSquare"
+          }
+        },
+        "title": "Check the exact precursor",
+        "body": "Use the fixed exact goal (x+1)*(x+1) over Q[x]. Enter constant, linear and quadratic coefficients. This checks the precursor expansion; it does not check the later written proof or a conjugate factorization.",
+        "exercise": "Submit C0+C1*x+C2*x*x equal to (x+1)*(x+1).",
+        "hint": "Compare each coefficient with your product table.",
+        "sourceAnchor": "aops07:identity-p307",
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "exampleText": "",
+        "worked": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "Find the invalid cancellation",
+        "body": "A proposed proof assumes equal positive integers a=b, factors a difference, then divides by a-b to claim a contradiction. Identify the first illegal operation. Explain why positivity of a cannot justify that division.",
+        "exercise": "Give the missing nonzero assumption and an equal-input example.",
+        "hint": "Evaluate the divisor using the stated equality before cancelling.",
+        "sourceAnchor": "aops07:zero-division-p313",
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "exampleText": "",
+        "worked": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "Independent proof of every odd gap",
+        "body": "Without hints, prove that the gap between consecutive squares is2*n+1 for every n in Nat. Justify expansion and subtraction. A Lean reference checks the algebraic equality; your written argument still needs human review.",
+        "exercise": "Prove (n+1)*(n+1)-n*n=2*n+1 for every natural n.",
+        "sourceAnchor": "aops07:square-gap-p314",
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "exampleText": "",
+        "worked": "",
+        "hint": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "Transfer to integer-pair classification",
+        "body": "Find all positive integer pairs u>v whose square difference is45. Use (u-v)*(u+v), explain its parity constraint and show your list is exhaustive. This new problem is human-reviewed.",
+        "exercise": "Classify all positive u>v with u*u-v*v=45 and justify completeness.",
+        "hint": "Write the factor pairs of45 and recover u and v from each sum and difference.",
+        "sourceAnchor": "aops07:pair-classification-p314",
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "exampleText": "",
+        "worked": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": "review",
+        "title": "Later independent reconstruction",
+        "body": "After the scheduled delay, reconstruct the consecutive-square proof without hints. Explain when a difference factors into conjugates and why dividing by a zero difference invalidates an argument.",
+        "review": "Seven-day authored review; completion requires a linked response and exact or versioned human assessment. The schedule alone is not evidence of retention.",
+        "sourceAnchor": "aops07:square-gap-p314",
+        "logicalPrerequisites": [
+          2
+        ],
+        "exampleText": "",
+        "worked": "",
+        "exercise": "Reconstruct a universal proof and diagnose a fresh invalid cancellation.",
+        "hint": "",
+        "pedagogicalPrerequisites": []
+      }
+    ]
+  },
+  "learningGoals": [
+    "Use the expansion in802/1 to justify every consecutive-square gap",
+    "Account for cancelling cross terms in conjugate products",
+    "Distinguish identities from division by a possibly zero term",
+    "Classify possible integer pairs by parity of conjugate factors"
+  ],
+  "notationGuide": [
+    "Prerequisite publication802/1: all four products and both cross terms",
+    "The informal conjugate identity is over Z; the reference successor theorem is over Nat",
+    "The exact checker supports only the marked fixed polynomial precursor; other work requires human review",
+    "A pattern at finitely many inputs does not prove a universal identity"
+  ],
+  "sources": {
+    "format": "lemma-source-registry/1",
+    "sources": [
+      {
+        "id": "aops-intro-algebra-2007",
+        "title": "Introduction to Algebra",
+        "authors": [
+          "Richard Rusczyk"
+        ],
+        "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+        "publication": "AoPS Incorporated; copyright2007; ISBN9781934124017",
+        "bibliographicStatus": "verified",
+        "bibliographicEvidence": "Title PDFpage1 and copyright PDFpage2 visually inspected; First Printing2007. File metadata alone did not establish edition.",
+        "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "mediaType": "application/pdf",
+        "ownerLocation": "build/school/corpus-a1/MyMathTextbooks/Introduction to algebra (the art of problem solving) -- Richard Rusczyk -- 1st edition, March 30, 20.pdf",
+        "rights": "Copyright2007 AoPS Incorporated, All Rights Reserved. Owner-supplied PDF remains external/private; redistribution permission is not inferred."
+      },
+      {
+        "id": "owner-topic-catalogue",
+        "title": "Owner mathematics topic catalogue",
+        "authors": [],
+        "edition": "sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+        "publication": "Owner-supplied archive member Curriculum.json; no external bibliographic authorship asserted",
+        "bibliographicStatus": "ambiguous",
+        "bibliographicEvidence": "Exact source bytes verified; authorship/publication information is unavailable",
+        "fileDigest": "095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+        "mediaType": "application/json",
+        "ownerLocation": "build/school/corpus-a1/MyMathTextbooks/Curriculum.json",
+        "rights": "Owner-supplied catalogue metadata; no blanket third-party textbook or repository redistribution grant inferred."
+      },
+      {
+        "id": "owner-course-outline",
+        "title": "Lower and Upper School Mathematics Sequence",
+        "authors": [],
+        "edition": "sha256:92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+        "publication": "Owner-supplied six-page outline; no author/year metadata asserted",
+        "bibliographicStatus": "ambiguous",
+        "bibliographicEvidence": "Exact bytes and LS2 text placement inspected; publication identity unavailable",
+        "fileDigest": "92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+        "mediaType": "application/pdf",
+        "ownerLocation": "build/school/corpus-a1/MyMathTextbooks/mathCurriculum.pdf",
+        "rights": "Owner-supplied course outline; no blanket redistribution grant inferred."
+      }
+    ]
+  },
+  "anchors": [
+    {
+      "id": "aops07:identity-p307",
+      "sourceId": "aops-intro-algebra-2007",
+      "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+      "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+      "pdfPageIndex": 323,
+      "printedPageLabel": "307",
+      "sectionLabel": "11.1 Squares of Binomials",
+      "exercise": "General identity and cross-term argument",
+      "verification": "verified",
+      "evidence": "Complete PDF page index323 rendered with Poppler26.05.0 at120dpi and visually inspected; printed label307 confirmed. OCR text is not sole authority.",
+      "extraction": {
+        "method": "pypdf extraction of existing OCR text layer plus independent Poppler page-image inspection",
+        "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+        "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "outputDigest": "060dcf01e25fd301218a0dfa4a24ca77586c0ef6029cb9d5690e0e0eaccba129",
+        "parentOutputDigest": null
+      }
+    },
+    {
+      "id": "outline:lower-school-2",
+      "sourceId": "owner-course-outline",
+      "edition": "sha256:92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+      "fileDigest": "92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+      "pdfPageIndex": 0,
+      "printedPageLabel": null,
+      "sectionLabel": "Lower School course LS2; Algebra I with Introductory Counting",
+      "exercise": null,
+      "verification": "verified",
+      "evidence": "Outline PDF page0 rendered and visually inspected: LS2 lists AoPS Introduction to Algebra. Course placement is a reviewed author choice.",
+      "extraction": {
+        "method": "pypdf page text extraction and Poppler page-image inspection",
+        "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+        "inputDigest": "92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+        "outputDigest": "381640f4bce440aecf0b214cd2807c78a6198999fd8b0dd25a23938a0a966b72",
+        "parentOutputDigest": null
+      }
+    },
+    {
+      "id": "aops07:zero-division-p313",
+      "sourceId": "aops-intro-algebra-2007",
+      "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+      "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+      "pdfPageIndex": 329,
+      "printedPageLabel": "313",
+      "sectionLabel": "11.2 Difference of Squares",
+      "exercise": "Section11.2 opening and invalid zero-division argument",
+      "verification": "verified",
+      "evidence": "Complete page index329 rendered and visually inspected in Task009; printed313 and context confirmed. OCR is not sole authority.",
+      "extraction": {
+        "method": "pypdf text layer plus independent complete Poppler image inspection",
+        "toolVersion": "pypdf 6.10.0",
+        "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "outputDigest": "49acc656a343cbb4a3aef9a149e2248f1503ab2f6ac4857b091bdc42011b0434",
+        "parentOutputDigest": null
+      }
+    },
+    {
+      "id": "aops07:square-gap-p314",
+      "sourceId": "aops-intro-algebra-2007",
+      "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+      "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+      "pdfPageIndex": 330,
+      "printedPageLabel": "314",
+      "sectionLabel": "11.2 Difference of Squares",
+      "exercise": "Problem11.10; independently authored successor-square explanation and proof",
+      "verification": "verified",
+      "evidence": "Complete page index330 rendered and visually inspected in Task009; printed314 and context confirmed. OCR is not sole authority.",
+      "extraction": {
+        "method": "pypdf text layer plus independent complete Poppler image inspection",
+        "toolVersion": "pypdf 6.10.0",
+        "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "outputDigest": "15393561c8d4513540b572b3a77c0b80f019854f5b87d7c37eebd89259c991cd",
+        "parentOutputDigest": null
+      }
+    },
+    {
+      "id": "aops07:pair-classification-p314",
+      "sourceId": "aops-intro-algebra-2007",
+      "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+      "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+      "pdfPageIndex": 330,
+      "printedPageLabel": "314",
+      "sectionLabel": "11.2 Difference of Squares",
+      "exercise": "Problem11.11 structural method; independently authored45 classification",
+      "verification": "verified",
+      "evidence": "Complete page index330 rendered and visually inspected in Task009; printed314 and context confirmed. OCR is not sole authority.",
+      "extraction": {
+        "method": "pypdf text layer plus independent complete Poppler image inspection",
+        "toolVersion": "pypdf 6.10.0",
+        "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "outputDigest": "15393561c8d4513540b572b3a77c0b80f019854f5b87d7c37eebd89259c991cd",
+        "parentOutputDigest": null
+      }
+    },
+    {
+      "id": "catalogue:row-681",
+      "sourceId": "owner-topic-catalogue",
+      "edition": "sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+      "fileDigest": "095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+      "pdfPageIndex": null,
+      "printedPageLabel": null,
+      "sectionLabel": "zero-based source record681",
+      "exercise": null,
+      "verification": "verified",
+      "evidence": "Exact preserved original: 2.18.3 difference of squares. Unit mapping is an author-reviewed choice.",
+      "extraction": null
+    }
+  ],
+  "activities": [
+    {
+      "id": "prepare",
+      "node": 0,
+      "kind": "preparation",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "Account for every product",
+          "Explain its connection to publication802/1"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "worked",
+      "node": 1,
+      "kind": "preparation",
+      "goal": "unsupported",
+      "assistance": "worked",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "Justify equal-term subtraction without division",
+          "Explain why the example illustrates a universal argument"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "define",
+      "node": 2,
+      "kind": "definition",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "State the Nat domain and universal quantifier",
+          "Distinguish conjecture from proof"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "coefficients",
+      "node": 3,
+      "kind": "routine",
+      "goal": "binomialSquare",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "lemma-exact/1:binomialSquare",
+        "criteria": [
+          "Use constant, linear, quadratic order",
+          "Match only the fixed exact polynomial goal"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "invalid",
+      "node": 4,
+      "kind": "invalidArgument",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "Locate the first division by zero",
+          "Explain the missing nonzero assumption"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "reason",
+      "node": 5,
+      "kind": "independentReasoning",
+      "goal": "unsupported",
+      "assistance": "none",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "State the domain and justify expansion",
+          "Justify subtraction and the odd-gap conclusion"
+        ],
+        "independent": true,
+        "referenceTheorem": "Lemma.School.ConsecutiveSquares.square_gap"
+      }
+    },
+    {
+      "id": "transfer",
+      "node": 6,
+      "kind": "transfer",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "Use both conjugate factors and parity",
+          "List every positive solution and justify completeness"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "later-review",
+      "node": 7,
+      "kind": "review",
+      "goal": "unsupported",
+      "assistance": "none",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "Reconstruct independently after the delay",
+          "Explain factorization and invalid division conditions"
+        ],
+        "independent": true,
+        "referenceTheorem": null
+      }
+    }
+  ],
+  "relations": [
+    {
+      "fromActivity": "prepare",
+      "toActivity": "worked",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "prepare",
+      "toActivity": "define",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "worked",
+      "toActivity": "coefficients",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "define",
+      "toActivity": "coefficients",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "worked",
+      "toActivity": "invalid",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "define",
+      "toActivity": "invalid",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "worked",
+      "toActivity": "reason",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "define",
+      "toActivity": "reason",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "worked",
+      "toActivity": "transfer",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "define",
+      "toActivity": "transfer",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "define",
+      "toActivity": "later-review",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "invalid",
+      "toActivity": "reason",
+      "kind": "related",
+      "origin": "Author-curated conceptual connection; no hard progression edge",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": []
+    },
+    {
+      "fromActivity": "reason",
+      "toActivity": "invalid",
+      "kind": "related",
+      "origin": "Author-curated conceptual connection; no hard progression edge",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": []
+    }
+  ],
+  "review": {
+    "version": "lemma-review-schedule/1",
+    "delaySeconds": 604800,
+    "activityId": "later-review",
+    "uncertainty": "Author-selected seven-day review; scheduling alone does not establish retention."
+  }
+}
