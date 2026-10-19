@@ -1,0 +1,137 @@
+"""Protected actual HTTP observations, distinct from trusted presentation evidence."""
+import copy
+import hashlib
+import json
+import os
+from pathlib import Path
+import signal
+import socket
+import subprocess
+import sys
+import time
+import unittest
+import urllib.request
+
+import test_authority as harness
+import test_admission as admission
+
+
+class Delivery(unittest.TestCase):
+    setUpClass=classmethod(harness.Authority.setUpClass.__func__)
+    setUp=harness.Authority.setUp
+    command=harness.Authority.command
+    call=harness.Authority.call
+    publish=harness.Authority.publish
+    enroll=harness.Authority.enroll
+    issue=admission.Admission.issue
+
+    def start(self):
+        sockets=[]
+        for _ in range(2):
+            item=socket.socket();item.bind(('127.0.0.1',0));sockets.append(item)
+        ports=[item.getsockname()[1] for item in sockets]
+        for item in sockets:item.close()
+        log=(self.base/f'service-{time.monotonic_ns()}.log').open('wb')
+        self.addCleanup(log.close)
+        self.server=subprocess.Popen([sys.executable,str(harness.REPO/'scripts/school_transport.py'),
+            '--binary',str(harness.BINARY),str(self.root),'run','--port',str(ports[0]),
+            '--client-port',str(ports[1])],cwd=harness.REPO,stdout=log,stderr=log,start_new_session=True)
+        self.endpoint=f'http://127.0.0.1:{ports[1]}/v1/client'
+        deadline=time.monotonic()+8
+        while time.monotonic()<deadline:
+            if self.server.poll() is not None:raise RuntimeError('owned actual school transport exited; inspect service log')
+            try:
+                ready=json.loads((self.root/'transport.json').read_text())
+                if ready['pid']==self.server.pid and ready['clientPort']==ports[1]:return
+            except (OSError,ValueError,KeyError):pass
+            time.sleep(0.02)
+        raise RuntimeError('owned actual school transport startup8s deadline')
+
+    def stop(self):
+        server=getattr(self,'server',None)
+        if server is None:return
+        if server.poll() is None:
+            os.killpg(server.pid,signal.SIGTERM)
+            try:server.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                os.killpg(server.pid,signal.SIGKILL);server.wait(timeout=3)
+        self.server=None
+
+    def client(self,token,op,error=None,**fields):
+        request=urllib.request.Request(self.endpoint,data=json.dumps(dict(op=op,**fields)).encode(),
+            headers={'Content-Type':'application/json','Authorization':'Bearer '+token})
+        with urllib.request.urlopen(request,timeout=12) as reply:response=json.load(reply)
+        if error:
+            self.assertFalse(response['ok'],response);self.assertIn(error,response['error']);return response
+        self.assertTrue(response['ok'],response);return response['result']
+
+    def test_original_context_partial_cancel_raw_records_and_lost_ack_restart(self):
+        self.enroll('alice');self.enroll('bob')
+        alice=self.issue('alice');bob=self.issue('bob');teacher=self.issue('teacher')
+        self.call('grant',subject='teacher',action='admin',resource='school')
+        self.addCleanup(self.stop);self.start()
+        ask=harness.Authority.ask(self)
+        joined=self.client(alice,'join',course=1,revision=1,session='delivery-live',guestSession=41,
+                           lifetimeMs=10000,ask=ask)
+        authored=self.client(alice,'assist',session='delivery-live',ask=ask)
+        decision=authored['decision']
+        digest=hashlib.sha256(b'exact retained opaque packet').hexdigest()
+        uart=hashlib.sha256(b'exact complete console observation').hexdigest()
+        def observation(kind,payload,token=alice,**changes):
+            request=dict(decision=decision,sequence=1,observer='native-owned-execution-a',kind=kind,observation=payload)
+            request.update(changes)
+            return self.client(token,'delivery-observe',**request)
+        state=lambda:json.loads((self.root/'state.json').read_text())['payload']
+        original=copy.deepcopy(next(r for r in state()['records'] if r['kind']=='decision'))
+        partial=dict(admittedBytes=64,wireBytes=200,packetSHA256=digest)
+        first=observation('transport',partial)
+        self.assertFalse(first['reused']);self.assertIn('not guest acceptance',first['scope'])
+        repeat=observation('transport',dict(reversed(list(partial.items()))))
+        self.assertTrue(repeat['reused']);self.assertEqual(first['commitSequence'],repeat['commitSequence'])
+        snapshot=state()['records'][:]
+        observation('transport',partial,token=bob,error='principal differs')
+        observation('transport',partial,sequence=2,error='sequence differs')
+        observation('transport',dict(partial,admittedBytes=201),error='outside declared')
+        observation('transport',dict(partial,visible=True),error='unknown delivery')
+        observation('guest-raster',dict(record=[0x725,2,1,0,0],uartSHA256=uart),error='original ASK sequence')
+        observation('guest-rejected',dict(record=[0x724,0,3,99,0],uartSHA256=uart),error='rejection record')
+        observation('guest-rejected',dict(record=[0x724,4,3,100,0],uartSHA256=uart),error='original ASK context')
+        self.assertEqual(state()['records'],snapshot)
+        accepted=observation('guest-raster',dict(record=[0x725,1,1,0,0],uartSHA256=uart))
+        self.assertIn('panel completion',accepted['scope'])
+        rejection=observation('guest-rejected',dict(record=[0x724,4,3,99,0],uartSHA256=uart))
+        self.assertIn('no presentation',rejection['scope'])
+        panel=dict(cycle=500,completed=7,accepted=8,busy=1,targetSHA256='a'*64,visibleSHA256='b'*64,hashEncoding='gray4')
+        controller=observation('controller-snapshot',panel)
+        self.assertIn('do not establish',controller['scope'])
+        observation('controller-snapshot',dict(panel,busy=2),error='not a bit')
+        observation('controller-snapshot',dict(panel,completed=9),error='exceeds accepted')
+        observation('controller-snapshot',dict(panel,visibleSHA256='bad'),error='SHA256')
+        observation('controller-snapshot',dict(panel,bodyVisible=True),error='unknown delivery')
+        cancelled=observation('cancelled',dict(reason='user-cancel'))
+        self.assertEqual(cancelled['commitSequence'],observation('cancelled',dict(reason='user-cancel'))['commitSequence'])
+        self.client(alice,'cancel-session',session='delivery-live')
+        self.client(alice,'assist',session='delivery-live',ask=ask,error='cancelled')
+        self.assertEqual(observation('transport',partial)['commitSequence'],first['commitSequence'])
+        before=state();self.stop();self.start()
+        self.assertEqual(observation('transport',partial)['commitSequence'],first['commitSequence'])
+        after=state()
+        self.assertEqual(after['generation'],before['generation']+1)
+        self.assertEqual(after['records'],before['records'])
+        self.assertEqual(observation('transport',partial)['commitSequence'],first['commitSequence'])
+        other=observation('controller-snapshot',panel,observer='native-owned-execution-b')
+        self.assertNotEqual(other['observation'],controller['observation'])
+        self.client(teacher,'admission-revoke',tokenHash=hashlib.sha256(alice.encode()).hexdigest())
+        observation('transport',partial,error='revoked')
+        final=state();self.assertEqual(next(r for r in final['records'] if r['kind']=='decision'),original)
+        rows=[r for r in final['records'] if r['kind']=='delivery-observation']
+        self.assertEqual(len(rows),6)
+        self.assertTrue(all(r['data']['decision']==decision and r['data']['ask']==ask and r['data']['edition']==1 and
+                            r['data']['artifact']==authored['artifact'] for r in rows))
+        self.assertFalse(any(r['kind']=='attempt' for r in final['records']))
+        print(json.dumps(dict(deliveryObservations=len(rows),transportPartial=True,originalDecisionUnchanged=True,
+                              exactRetryCommit=first['commitSequence'],restartGeneration=final['generation'],
+                              rawRasterIsNotVisible=True,changedObserverDistinct=True,revocationEnforced=True)))
+
+
+if __name__=='__main__':unittest.main()

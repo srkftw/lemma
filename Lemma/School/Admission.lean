@@ -44,7 +44,7 @@ def resolve (state : State) (request : Json) (now : Nat) : Except String Json :=
   let command ← field request "command"
   let op ← str command "op"
   require (#["course-catalogue","client-course","join","assist","cancel-session","delivery","attempt",
-    "guest-submit","progress","reviews","review-open","review-state","feedback","feedback-read","learner-choices",
+    "guest-submit","delivery-observe","progress","reviews","review-open","review-state","feedback","feedback-read","learner-choices",
     "goal-set","interpretation-challenge","suggestion-override","work-upload",
     "publish","enroll","enrollment-revoke","review-queue","review-work","review-artifact","review-render","human-assess",
     "recommendation-input","models","model-select","model-rollback","admission-issue","admission-revoke"].contains op)

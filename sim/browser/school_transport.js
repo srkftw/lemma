@@ -80,8 +80,108 @@ function encoded(value){
  return JSON.stringify(value);
 }
 export class SchoolTransport {
- constructor(){this.pending=new Set();this.connection=null;this.session=null;this.review=null;this.generation=0;}
- disconnect(){this.generation++;this.intent=(this.intent??0)+1;this.busy=false;for(const c of this.pending)c.abort();this.pending.clear();this.connection=null;this.session=null;this.review=null;}
+ constructor(){this.pending=new Set();this.connection=null;this.session=null;this.review=null;this.generation=0;this.deliveryQueue=[];this.deliveryFailed=[];this.deliveryDropped=0;this.deliveryLastError=null;this.deliveryActive=null;this.deliveryObserver=null;this.deliveryRunning=false;}
+ disconnect(){this.cancelDelivery('disconnect');this.generation++;this.intent=(this.intent??0)+1;this.busy=false;for(const c of this.pending)c.abort();this.pending.clear();this.connection=null;this.session=null;this.review=null;}
+ // These bounded live observations are outside guest/checkpoint state. Every
+ // queued receipt owns its original peer; reconnect can never retarget it.
+ beginDelivery(result,context,uartByteStart=0){
+  if(!result||typeof result.decision!=='string'||!result.decision.length||result.decision.length>256||!this.connection)throw Error('No authored school decision to observe');
+  if(!Number.isSafeInteger(uartByteStart)||uartByteStart<0)throw Error('Invalid delivery console boundary');
+  if(this.deliveryActive?.decision===result.decision&&!this.deliveryActive.cancelled)return this.deliveryStatus();
+  this.cancelDelivery('navigation');
+  this.deliveryObserver??='browser-'+crypto.randomUUID();
+  this.deliveryActive={decision:result.decision,ask:{...context},connection:{...this.connection},observer:this.deliveryObserver,
+   uartStart:uartByteStart,uartCursor:uartByteStart,notes:new Set(),records:new Set(),controller:null,controllerCount:0,rasterAccepted:false,controllerDone:false,cancelled:false,observing:false};
+  return this.deliveryStatus();
+ }
+ deliveryStatus(){return {pending:this.deliveryQueue.length+(this.deliveryRunning?1:0),failed:this.deliveryFailed.length,dropped:this.deliveryDropped,lastError:this.deliveryLastError,
+  scope:'Bounded live reported observations; no guest checkpoint persistence or all-body visibility claim'};}
+ _deliveryNote(delivery,kind,observation){
+  if(!delivery)return;
+  const command={op:'delivery-observe',decision:delivery.decision,sequence:delivery.ask.sequence,observer:delivery.observer,kind,observation};
+  const identity=encoded(command);if(delivery.notes.has(identity))return;
+  if(this.deliveryQueue.length+(this.deliveryRunning?1:0)>=64||delivery.notes.size>=64){this.deliveryDropped++;this.deliveryLastError='Delivery observation queue full; original guest work is unchanged';return;}
+  delivery.notes.add(identity);this.deliveryQueue.push({command,connection:delivery.connection});void this._pumpDelivery();
+ }
+ async _deliveryExchange(entry){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
+  try{
+   const response=await fetch(entry.connection.endpoint,{method:'POST',mode:'cors',credentials:'omit',cache:'no-store',redirect:'error',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+entry.connection.token},body:encoded(entry.command),signal:controller.signal});
+   if(!response.ok)throw Error('Delivery observation HTTP '+response.status);
+   const reader=response.body.getReader();let count=0,parts=[];
+   for(;;){const {done,value}=await reader.read();if(done)break;count+=value.length;if(count>65536){await reader.cancel();throw Error('Delivery receipt exceeds64KiB');}parts.push(value);}
+   const bytes=new Uint8Array(count);let offset=0;for(const part of parts){bytes.set(part,offset);offset+=part.length;}
+   const reply=parseSchoolJson(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+   if(reply.ok!==true)throw Error('Lean school rejected delivery observation: '+String(reply.error));
+   if(!reply.result||typeof reply.result.observation!=='string'||!/^[a-f0-9]{64}$/.test(reply.result.observation)||BigInt(reply.result.commitSequence??0)<1n)throw Error('School returned no committed delivery receipt');
+   return reply.result;
+  }finally{clearTimeout(timer);}
+ }
+ async _pumpDelivery(){
+  if(this.deliveryRunning)return;this.deliveryRunning=true;
+  try{while(this.deliveryQueue.length){
+   const entry=this.deliveryQueue.shift();let completed=false;
+   for(let attempt=0;attempt<3&&!completed;attempt++){
+    try{entry.receipt=await this._deliveryExchange(entry);this.deliveryLastReceipt=entry.receipt;completed=true;}
+    catch(error){this.deliveryLastError=String(error);if(String(error).includes('Lean school rejected'))break;if(attempt<2)await new Promise(resolve=>setTimeout(resolve,200*(attempt+1)));}
+   }
+   if(!completed){if(this.deliveryFailed.length>=64){this.deliveryFailed.shift();this.deliveryDropped++;}this.deliveryFailed.push(entry);}
+  }}finally{this.deliveryRunning=false;}
+ }
+ retryDelivery(){
+  while(this.deliveryFailed.length&&this.deliveryQueue.length+(this.deliveryRunning?1:0)<64)this.deliveryQueue.push(this.deliveryFailed.shift());
+  void this._pumpDelivery();return this.deliveryStatus();
+ }
+ async transportDelivery(packetBytes,admittedBytes){
+  const delivery=this.deliveryActive;if(!delivery)return this.deliveryStatus();
+  const packet=packetBytes instanceof Uint8Array?packetBytes:new Uint8Array(packetBytes);
+  if(packet.length<1||packet.length>65536||!Number.isSafeInteger(admittedBytes)||admittedBytes<0||admittedBytes>packet.length)throw Error('Invalid bounded delivery byte admission');
+  const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',packet));
+  this._deliveryNote(delivery,'transport',{admittedBytes,wireBytes:packet.length,packetSHA256:Array.from(digest,b=>b.toString(16).padStart(2,'0')).join('')});
+  return this.deliveryStatus();
+ }
+ cancelDelivery(reason='user-cancel'){
+  const delivery=this.deliveryActive;if(delivery&&!delivery.cancelled){delivery.cancelled=true;this._deliveryNote(delivery,'cancelled',{reason});}
+  return this.deliveryStatus();
+ }
+ async observeDelivery(uartBytes,start=0,controller=null){
+  const delivery=this.deliveryActive;if(!delivery||delivery.cancelled||delivery.observing)return this.deliveryStatus();
+  if(!(uartBytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>uartBytes.length||uartBytes.length>16*1048576)throw Error('Invalid bounded delivery console observation');
+  if(uartBytes.length<delivery.uartCursor){this.cancelDelivery('machine-restart');return this.deliveryStatus();}
+  delivery.observing=true;
+  try{
+   let end=uartBytes.length;while(end>delivery.uartCursor&&uartBytes[end-1]!==10)end--;
+   let from=Math.max(start,delivery.uartStart,delivery.uartCursor>delivery.uartStart?delivery.uartCursor-1:delivery.uartStart);
+   if(end-from>1048576){from=end-1048576;this.deliveryDropped++;this.deliveryLastError='Delivery console observation gap exceeds1MiB';}
+   if(end>from){
+    const text=new TextDecoder().decode(uartBytes.subarray(from,end));delivery.uartCursor=end;
+    for(const row of text.matchAll(/(?:^|\n)K1 (0000000000000724|0000000000000725) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)/g)){
+     const [tag,a,b,c,d]=row.slice(1).map(x=>BigInt('0x'+x));let kind=null;
+     if(tag===0x725n&&a===BigInt(delivery.ask.sequence)&&b===1n&&c===0n&&d===0n)kind='guest-raster';
+     if(tag===0x724n&&a>0n&&b===BigInt(delivery.ask.revision)&&c===BigInt(delivery.ask.object)&&d===0n)kind='guest-rejected';
+     if(!kind||delivery.records.has(row[0]))continue;delivery.records.add(row[0]);if(kind==='guest-raster')delivery.rasterAccepted=true;
+     const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(row[0].replace(/^\n/,'')+'\n')));
+     this._deliveryNote(delivery,kind,{record:[tag,a,b,c,d],uartSHA256:Array.from(digest,b=>b.toString(16).padStart(2,'0')).join('')});
+    }
+   }
+   if(controller&&delivery.rasterAccepted&&!delivery.controllerDone){
+    const allowed=['cycle','completed','accepted','busy','targetSHA256','visibleSHA256','hashEncoding'];
+    if(Object.keys(controller).some(key=>!allowed.includes(key)))throw Error('Unknown raw delivery controller field');
+    const observation={};for(const key of ['cycle','completed','busy','accepted'])if(key in controller){
+     const value=controller[key];if(typeof value==='number'&&!Number.isSafeInteger(value))throw Error('Unsafe controller integer');
+     const raw=BigInt(value);if(raw<0n||raw>0xffffffffffffffffn)throw Error('Controller integer exceeds64bits');observation[key]=raw;
+    }
+    for(const key of ['targetSHA256','visibleSHA256','hashEncoding'])if(key in controller)observation[key]=controller[key];
+    const projection={...observation};delete projection.cycle;const identity=encoded(projection);
+    if(identity!==delivery.controller&&(delivery.controllerCount===0||observation.busy===0n)){delivery.controller=identity;
+     if(delivery.controllerCount<2){delivery.controllerCount++;this._deliveryNote(delivery,'controller-snapshot',observation);}
+     if(observation.busy===0n||delivery.controllerCount===2)delivery.controllerDone=true;
+    }
+   }
+  }finally{delivery.observing=false;}
+  return this.deliveryStatus();
+ }
  connect(credential){
   this.disconnect();
   if(!credential||credential.schema!=='lemma-school-credential/1'||!/[a-f0-9]{64}/.test(credential.token)||credential.token.length!==64)throw Error('Choose an admitted local school credential');
@@ -118,6 +218,7 @@ export class SchoolTransport {
   finally{if(mutation&&this.intent===intent)this.busy=false;}
  }
  async perform(message,ask,submission){
+  if(message.operation==='receipts')return this.retryDelivery();
   if(message.operation==='disconnect'){this.disconnect();return {state:'disconnected'};}
   if(message.operation==='connect'){this.connect(message.credential);return this.command({op:'course-catalogue',limit:20,after:0});}
   if(message.operation==='catalogue')return this.command({op:'course-catalogue',limit:20,after:message.after??0});
@@ -140,7 +241,7 @@ export class SchoolTransport {
   }
   if(message.operation==='cancel'){
    if(!this.session)throw Error('No school session is bound');
-   const result=await this.command({op:'cancel-session',session:this.session});this.session=null;return result;
+   this.cancelDelivery('user-cancel');const result=await this.command({op:'cancel-session',session:this.session});this.session=null;return result;
   }
   throw Error('Unsupported school activity');
  }

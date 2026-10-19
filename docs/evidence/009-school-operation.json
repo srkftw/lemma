@@ -696,5 +696,122 @@
       "index": "docs/evidence/009-course-queue.json",
       "boundary": "Separate source-bound target Action+Store guard component result; actual native/browser machine execution is not implied. Exact wall elapsed not captured and not claimed."
     }
+  },
+  "connectedTeacherRevision3": {
+    "result": "PASS",
+    "build": {
+      "path": "build/school/task009-teacher-author-build-a3/build.json",
+      "sha256": "fed314ca4ca207d7d5e582f0e13dd6a7b5e72dcc11502d8ee19dac68fdacdad6"
+    },
+    "publication": {
+      "path": "build/school/task009-teacher-author-a1/protected-publication.json",
+      "sha256": "be52575b1b9a4b06882139c10df89c7347acc001b6d95dccf8ec1adee0a808b6"
+    },
+    "invitationRevocation": {
+      "path": "build/school/task009-teacher-author-a1/live-invite-enroll-revoke.json",
+      "sha256": "3690bf24b3de65b2149ee8471ad2d307ef6dcef2830ce27bcdef4a4e25cf3619"
+    },
+    "source": "Retained verified source registry/anchors and independently authored content; no corpus reimport",
+    "edition": 3,
+    "policy": 3,
+    "reviewDelaySeconds": 604800,
+    "prior803_2Unchanged": true,
+    "genuineLeanElaborationSeconds": 2.121390129090287,
+    "sharedPackageCompileSeconds": 0.07049635401926935,
+    "hostedGuestPreview": {
+      "path": "build/school/task009-teacher-author-a1/shared-preview.json",
+      "sha256": "997643a5455dda4ee2ecfa03f8f20327efab574b0d0b67f26f2b1ccfb056098d"
+    },
+    "previewSource": {
+      "path": "build/school/task009-teacher-author-a1/SharedGuestPreview.lean",
+      "sha256": "e1580d2b9caa24cb531ac62fe9d840ccf1ef7f1cc4811937fbef025fbf6923fd"
+    },
+    "previewScope": "Hosted execution of exact maintained guest PackageRender.renderAlignedSelectedDelta Actions into owned private framebuffer; no controller publication, target/native/browser execution or educational qualification",
+    "previewPresentation": {
+      "path": "build/school/task009-teacher-author-a1/shared-guest-preview/reason-body.png",
+      "sha256": "baa33b2c68231b9c2adcae2958ce30bc63254c1dec9af373dade9bac20ee0ae2"
+    },
+    "boundary": "Actual maintained author CLI and protected teacher publication/enrollment/invitation/revocation; four exact shared renderer Action pages in hosted RAM. Guest controller/Student execution remains separate.",
+    "retainedFailures": [
+      {
+        "path": "build/school/task009-teacher-author-build-a1/build.json",
+        "sha256": "32da4601bfb689c21fc7c991881f6551505a1e8e059d6c2c8c430881e6fc951c"
+      },
+      {
+        "path": "build/school/task009-teacher-author-build-a2/build.json",
+        "sha256": "e02ba7fa2886c30d3c930590d7c2b16ae4f55b2229f27c20f88edb45ec63830d"
+      }
+    ],
+    "failureScope": "A4GiB virtual address cap prevented genuine Lean thread/import mappings; bounded2threads with no inappropriate virtual mapping cap passed. Read-only catalogue observer first used unsupported op/field names after mutations already succeeded; corrected observer reread actual unchanged history without repeating publication/enrollment."
+  },
+  "deliveryObservations": {
+    "result": "PASS",
+    "contract": "docs/contracts/009-school-delivery-observations-v1.html",
+    "production": {
+      "path": "build/school/host-task009-delivery-a1/production.json",
+      "sha256": "f247b73ae17f79707a725b511bc908d435436ae1ac532bcb0d402daedb3e1d74"
+    },
+    "productionSeconds": 44.11213842802681,
+    "sourceInputsMatch": 61,
+    "scope": "Actual protected HTTP Lean admission and browser byte-transport/fault behavior. Actual native/browser guest/controller workflow is separately observed; no all-body visibility claim.",
+    "protectedTests": {
+      "result": "PASS",
+      "count": 1,
+      "elapsedSeconds": 6.273,
+      "log": {
+        "path": "build/school/task009-delivery-prep/protected-tests-a3.log",
+        "sha256": "24358de33163054c21e72218977460b48852ee98b4d6fe514a081994d20844f8"
+      },
+      "test": {
+        "path": "tests/school/test_delivery.py",
+        "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
+      },
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
+    },
+    "browserTests": {
+      "result": "PASS",
+      "count": 1,
+      "elapsedSeconds": 0.31,
+      "log": {
+        "path": "build/school/task009-delivery-prep/browser-tests-a1.log",
+        "sha256": "631c251c56c5c1cda1905a43b50d67e702ec37fba9868d5db2360a5a9bdab52a"
+      },
+      "test": {
+        "path": "tests/lemmasim/test_school_delivery.py",
+        "sha256": "56724b44518375415e442dfea54a2774c5a512a99f311e71808a5a3441cf8f1e"
+      },
+      "observations": "Exact byte retry after lost ACK, original peer retained after reconnect, exact CRLF raster record hash, at most busy/idle pair after matching725, cancellation, original-peer manual retry, UART rollback cancellation; synthetic transport boundary fixture, not browser guest execution."
+    },
+    "connectedRestart": {
+      "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
+      "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
+    },
+    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "retainedObserverFailures": [
+      {
+        "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
+        "sha256": "a44c9d2a88c7597a0c408dc5399632585801fb8bcfff36277324c77c657378a4"
+      },
+      {
+        "path": "build/school/task009-delivery-prep/protected-tests-a2.log",
+        "sha256": "309803c6bc29b662d828e53ba24cfcef0d3588d099520c6cde272dbb0b22bfee"
+      }
+    ],
+    "failureScope": "Observers read persisted generation before the first command caused actual serve initialization; corrected startup ownership/read synchronization observes the real generation and reuses the exact same implementation.",
+    "inputs": {
+      "Lemma/School/Delivery.lean": "49e310bc2f1fe16ae269f7fccca37cc5d2c901382c5560c0b7e6dc6e43703ebf",
+      "Lemma/School/Authority.lean": "a9e7046f58316d052bfaa607fad8656d50d3d839c7a1f58e81904f50bf54e8dc",
+      "Lemma/School/Admission.lean": "2b58a71d1b1713c944d566b23421fe78fd59ac3f900baebd6c5d03cb56ff41e5",
+      "sim/browser/school_transport.js": "ca222bf0af3e65afa0f295d0b9561f763212d3a87bd766627b79666b20c9fb1b"
+    },
+    "legacyAdmissionRegressions": {
+      "result": "PASS",
+      "count": 4,
+      "elapsedSeconds": 9.565,
+      "log": {
+        "path": "build/school/task009-delivery-prep/admission-regressions.log",
+        "sha256": "af3e2b11b89879024763e8c65919c7fba6f0e625e8196fa821de5aa6c9c02f21"
+      }
+    }
   }
 }

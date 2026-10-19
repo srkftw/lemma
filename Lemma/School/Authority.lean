@@ -10,6 +10,7 @@ import Lemma.School.Admission
 import Lemma.School.Submission
 import Lemma.School.Recommendation
 import Lemma.School.ReviewRender
+import Lemma.School.Delivery
 import Lemma.Documents.Mathematics
 
 /-! One local database-oriented authority. Every decision below is maintained
@@ -472,6 +473,8 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let binding : Client.SessionBinding ← lift (fromJson? row.data)
     need (binding.actor == actor || actor == state.operator) "session cancellation denied"
     append state "session" id actor now (toJson {binding with cancelled:=true})
+  | "delivery-observe" =>
+    lift (Delivery.execute state actor request now)
   | "delivery" =>
     let id ← lift (str request "decision")
     let row ← lift <| (state.latest "decision" id).toExcept "decision absent"
