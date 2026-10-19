@@ -22,6 +22,7 @@ def incoming : UInt64 := 0x20c00
 def context : UInt64 := 0x20e00
 def package : UInt64 := 0x40000
 def loaded : UInt64 := 0x48000
+def selectedRecord : UInt64 := 0x20d00
 
 private def get (offset : UInt64) : Action := Memory.read64 (state + offset)
 private def put (offset value : UInt64) : Action := Memory.write64 (state + offset) value
@@ -71,6 +72,103 @@ private def loadPackage (identity edition ordinal expected : UInt64) : Action :=
   else failed else failed
   else report 2 identity edition crc 0 integrityFailure
   else failed else report 2 identity edition expected 0 s
+
+private def selectedCall (operation transaction requestOffset : UInt64) : Action :=
+  .bind (get 8) fun s endpoint => if s = 0 then
+  .bind (Memory.read64 (context + 64)) fun s request => if s = 0 then
+  Client.call endpoint outgoing incoming operation PackageCommand.selectedNamespace
+    PackageCommand.selectedObject transaction 0
+    (if operation = 2 then PackageCommand.selectedBytes else
+     if operation = 3 then PackageCommand.selectedBytes else 0)
+    (if operation = 3 then selectedRecord else 0) (request + requestOffset)
+  else failed else failed
+
+private def selectedAbort (transaction : UInt64) (status : UInt8) : Action :=
+  .bind (selectedCall 9 transaction 259) fun _ _ => .done status 0
+
+private def selectedCommit (transaction : UInt64) : Action :=
+  .bind (selectedCall 2 transaction 256) fun s _ => if s = 0 then
+  .bind (Client.responseField incoming 48) fun s detail => if s = 0 then
+  if detail = 0 then
+  .bind (selectedCall 3 transaction 257) fun s _ => if s = 0 then
+  .bind (Client.responseField incoming 48) fun s copied => if s = 0 then
+  if copied = PackageCommand.selectedBytes then
+    -- An uncertain Commit never causes an automatic abort or retry.
+    .bind (selectedCall 4 transaction 258) fun s sequence => if s = 0 then
+    .bind (Client.responseField incoming 48) fun s mode => if s = 0 then
+    if mode = 1 then if 0 < sequence then .done 0 sequence else .done malformed 0
+    else .done malformed 0 else .done s 0 else .done s 0
+  else selectedAbort transaction malformed
+  else selectedAbort transaction s
+  else selectedAbort transaction s
+  else selectedAbort transaction malformed
+  else selectedAbort transaction s
+  else .done s 0
+
+/-- Select only a complete installed package read through the real Store.
+This Action owns the installer buffers; expected identity/edition/CRC are
+independently checked before any selection write. Its positive sequence comes
+only from the ordinary Store Commit reply. No document or package is rewritten. -/
+private def selectValidated (identity edition transaction expected : UInt64) : Action :=
+  .bind (PackageStore.load context) fun s _ => if s = 0 then
+  .bind (Memory.read64 (loaded + 24)) fun s actualIdentity => if s = 0 then
+  .bind (Memory.read64 (loaded + 32)) fun s actualEdition => if s = 0 then
+  .bind (Memory.read64 (loaded + 80)) fun s crc => if s = 0 then
+  if actualIdentity = identity then if actualEdition = edition then if crc = expected then
+  .bind (Memory.write64 selectedRecord PackageCommand.selectedMagic) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord + 8) PackageCommand.selectedVersion) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord + 16) PackageCommand.selectedPackageNamespace) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord + 24) identity) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord + 32) edition) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord + 40) crc) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord + 48) 0) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord + 56) 0) fun s _ => if s = 0 then
+  selectedCommit transaction
+  else failed else failed else failed else failed else failed else failed else failed else failed
+  else .done integrityFailure 0 else .done malformed 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+/-- Validate the fixed owned context before loading. The public component does
+not treat a package from another namespace or buffer as the selected object. -/
+def selectInstalled (identity edition transaction expected : UInt64) : Action :=
+  let shape := PackageCommand.selectionCommandShape PackageCommand.magic
+    PackageCommand.selectedCommandVersion 9 identity edition 0 transaction expected
+  if shape = 0 then
+  .bind (Memory.read64 (context + 24)) fun s ns => if s = 0 then
+  .bind (Memory.read64 (context + 48)) fun s target => if s = 0 then
+  .bind (Memory.read64 (context + 64)) fun s request => if s = 0 then
+  if ns = PackageCommand.selectedPackageNamespace then if target = loaded then
+  if request ≤ Format.maximumSequence - 259 then selectValidated identity edition transaction expected
+  else .done resourceLimit 0 else .done malformed 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0
+  else .done shape 0
+
+private def finishSelection (identity edition expected : UInt64) (status : UInt8) (sequence : UInt64) : Action :=
+  .bind (get 0) fun s console => if s = 0 then
+  .bind (CapabilityConsole.record console 0x4b9 status.toUInt64 sequence
+    (identity ||| (edition <<< 16)) expected) fun s _ => if s = 0 then
+  .bind (report 9 identity edition expected sequence status) fun s _ => if s = 0 then reset else failed
+  else failed else failed
+
+private def executeSelection : Action :=
+  .bind (command 24) fun s identity => if s = 0 then
+  .bind (command 32) fun s edition => if s = 0 then
+  .bind (command 48) fun s transaction => if s = 0 then
+  .bind (command 56) fun s expected => if s = 0 then
+  .bind (get 40) fun s request => if s = 0 then
+  if request ≤ Format.maximumSequence - 6288 then
+  .bind (put 40 (request + 6288)) fun s _ => if s = 0 then
+  .bind (prepare identity edition loaded request) fun s _ => if s = 0 then
+  .bind (PackageStore.awaitReady context) fun ready _ => if ready = 0 then
+  .bind (Memory.write64 (context + 64) (request + 6000)) fun s _ => if s = 0 then
+  .bind (selectInstalled identity edition transaction expected) fun status sequence =>
+  finishSelection identity edition expected status sequence
+  else failed
+  else finishSelection identity edition expected ready 0
+  else failed else failed
+  else finishSelection identity edition expected resourceLimit 0
+  else failed else failed else failed else failed else failed
+
 
 private def execute : Action :=
   .bind (command 16) fun s operation => if s = 0 then
@@ -129,6 +227,23 @@ private def headerComplete : Action :=
     .bind (report operation identity edition crc 0 status) fun s _ =>
     if s = 0 then Syscall.exit status.toUInt64 else failed
   else failed else failed else failed else failed else failed else failed else failed else failed
+
+private def selectedHeaderComplete : Action :=
+  .bind (command 16) fun s operation => if s = 0 then
+  if operation = 9 then
+  .bind (command 0) fun s magic => if s = 0 then
+  .bind (command 8) fun s version => if s = 0 then
+  .bind (command 24) fun s identity => if s = 0 then
+  .bind (command 32) fun s edition => if s = 0 then
+  .bind (command 40) fun s bytes => if s = 0 then
+  .bind (command 48) fun s transaction => if s = 0 then
+  .bind (command 56) fun s crc => if s = 0 then
+  let status := PackageCommand.selectionCommandShape magic version operation identity edition bytes transaction crc
+  if status = 0 then executeSelection else
+    .bind (report operation identity edition crc 0 status) fun s _ =>
+    if s = 0 then Syscall.exit status.toUInt64 else failed
+  else failed else failed else failed else failed else failed else failed else failed
+  else headerComplete else failed
 
 private def receive (phase filled desired : UInt64) : Action :=
   .bind (get 0) fun s console => if s = 0 then
@@ -193,6 +308,39 @@ def stepIdle : Action :=
   else step
   else failed else failed
 
+/-- The additive v2 ingress dispatches selection only after all64 owned header
+bytes arrive. Partial headers keep1ms polling; the empty boundary shares the
+bounded backoff of idle policy2. Package bodies reuse the original receiver. -/
+def receiveSelectedHeader (filled : UInt64) : Action :=
+  .bind (get 0) fun s console => if s = 0 then
+  let count := 64 - filled
+  .bind (Capability.consoleRead console (header + filled) count) fun status bytes =>
+  if status = ABI.noByte then if bytes = 0 then
+    if filled = 0 then
+      .bind (get 56) fun s exponent => if s = 0 then
+      if exponent < 8 then
+        let delay := if exponent < 7 then (10000 : UInt64) <<< exponent else 1000000
+        .bind (put 56 (if exponent < 7 then exponent + 1 else exponent)) fun s _ => if s = 0 then
+        .bind (Syscall.sleep delay) fun s _ => if s = 0 then .done 0 0 else failed
+        else failed
+      else failed else failed
+    else .bind (Syscall.sleep 10000) fun s _ => if s = 0 then .done 0 0 else failed
+  else failed else
+  if status = 0 then if 0 < bytes then if bytes ≤ count then
+    .bind (put 56 0) fun s _ => if s = 0 then
+    .bind (put 16 (filled + bytes)) fun s _ => if s = 0 then
+    if filled + bytes = 64 then selectedHeaderComplete else .done 0 0
+    else failed else failed
+  else failed else failed else failed
+  else failed
+
+def stepSelected : Action :=
+  .bind (get 32) fun s phase => if s = 0 then
+  .bind (get 16) fun s filled => if s = 0 then
+  if phase = 0 then if filled < 64 then receiveSelectedHeader filled else failed
+  else step
+  else failed else failed
+
 def main (initialization : UInt64) : Action :=
   if initialization ≤ 1 then
   .bind (Capability.bootGrant 0) fun s console => if s = 0 then
@@ -237,6 +385,31 @@ def mainAwait (initialization : UInt64) : Action :=
   if 0 < generation then
   .bind (CapabilityConsole.record console 0x4b0 identity initialization console endpoint) fun s _ =>
   if s = 0 then .loop stepIdle else failed else failed
+  else failed else failed else failed
+  else failed else failed else failed else failed
+  else failed else failed else failed else failed else failed
+  else failed else failed
+
+/-- Selected-publication v2 keeps the completion-driven mount and v1 Install,
+Load and DeleteProbe operations, and admits the separately versioned op9. -/
+def mainAwaitSelected (initialization : UInt64) : Action :=
+  if initialization ≤ 1 then
+  .bind (Capability.bootGrant 0) fun s console => if s = 0 then
+  .bind (Capability.bootGrant 1) fun s endpoint => if s = 0 then
+  .bind Syscall.identity fun s identity => if s = 0 then
+  .boundedFoldU64 16 allocateStep 16 0 0 0 0 0 fun s pages => if s = 0 then
+  if pages = 16 then
+  .bind (put 0 console) fun s _ => if s = 0 then
+  .bind (put 8 endpoint) fun s _ => if s = 0 then
+  .bind (put 40 6001) fun s _ => if s = 0 then
+  .bind reset fun s _ => if s = 0 then
+  .bind (put 56 0) fun s _ => if s = 0 then
+  .bind (CapabilityConsole.record console 0x4b5 identity initialization console endpoint) fun s _ => if s = 0 then
+  .bind (prepare 1 1 loaded 1) fun s _ => if s = 0 then
+  .bind (PackageAwaitClient.call endpoint outgoing incoming 1 initialization 1) fun s generation => if s = 0 then
+  if 0 < generation then
+  .bind (CapabilityConsole.record console 0x4b0 identity initialization console endpoint) fun s _ =>
+  if s = 0 then .loop stepSelected else failed else failed
   else failed else failed else failed
   else failed else failed else failed else failed
   else failed else failed else failed else failed else failed

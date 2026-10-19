@@ -1,0 +1,2 @@
+import Lemma.Compiler.CourseInstallExport
+#lemma_export_course_selection

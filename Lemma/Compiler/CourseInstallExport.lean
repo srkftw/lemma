@@ -18,9 +18,10 @@ private def effects (value : EffectSet) : Json :=
     let interior := String.ofList (value.render.toList.drop 1 |>.reverse |>.drop 1 |>.reverse)
     .arr ((interior.splitOn ",").toArray.map Json.str)
 
-def exportFiles (env : Environment) (directory : System.FilePath) (guard : Bool := false) : IO Unit := do
+def exportFiles (env : Environment) (directory : System.FilePath) (guard : Bool := false) (selection : Bool := false) : IO Unit := do
   if ← directory.pathExists then throw <| IO.userError "course decoder exporter refuses retained output"
   let roots := if guard then #[``Lemma.Services.Store.Server.courseMain] else
+    if selection then #[``Lemma.Courses.PackageInstaller.mainAwaitSelected] else
     #[``Lemma.Courses.PackageStore.install, ``Lemma.Courses.PackageInstaller.main]
   let suite ← match checkAndLowerActionSuiteForProfile env .user_v0_2 roots with
     | .ok value => pure value | .error error => throw <| IO.userError error.render
@@ -34,7 +35,8 @@ def exportFiles (env : Environment) (directory : System.FilePath) (guard : Bool 
     let source := ((Lean.privateToUserName? name).getD name).toString
     unless #["Lemma.Courses.PackageTarget.","Lemma.Courses.PackageFormat.",
       "Lemma.Courses.PackageStore.","Lemma.Courses.PackageCommand.",
-      "Lemma.Courses.PackageInstaller.","Lemma.Services.Store.","Lemma.User."].any
+      "Lemma.Courses.PackageInstaller.","Lemma.Courses.PackageAwaitClient.",
+      "Lemma.Courses.PackageAwaitProtocol.","Lemma.Services.Store.","Lemma.User."].any
         (fun stem => source.startsWith stem) || source == "Lemma.Core0.Memory.Status.iterationStop" do
       throw <| IO.userError s!"unaccounted course-install dependency {name}"
   let preserved := suite.scalarFunctions.map (·.name) ++ suite.actionFunctions.map (·.name)
@@ -47,7 +49,9 @@ def exportFiles (env : Environment) (directory : System.FilePath) (guard : Bool 
         name, returnType := if spec.resultKind == .checked then .checkedResult else .i64,
         parameters := spec.machineArguments.map llvmTy }
   let module : LLVM.Module := {
-    sourceName := if guard then "genuine Lean course-store-guard-v1 service" else "genuine Lean course-command-v1 installer", declarations,
+    sourceName := if guard then "genuine Lean course-store-guard-v1 service" else
+      if selection then "genuine Lean course-command-v2 selected-publication installer" else
+      "genuine Lean course-command-v1 installer", declarations,
     functions := lowered.functions }
   IO.ofExcept <| LLVM.validateModule module
   let symbolFor (name : Name) : Except String String := do
@@ -71,7 +75,8 @@ def exportFiles (env : Environment) (directory : System.FilePath) (guard : Bool 
       ("symbol", .str (← IO.ofExcept <| symbolFor root))]
   let manifest := Json.mkObj [
     ("schema_version", toJson (1 : Nat)),
-    ("artifact_category", .str (if guard then "course-store-guard-component" else "course-install-component")),
+    ("artifact_category", .str (if guard then "course-store-guard-component" else
+      if selection then "course-selection-component" else "course-install-component")),
     ("contract_version", .str suite.contractVersion), ("package_format", .str "lemma-course-package/1"),
     ("roots", .arr selected), ("functions", .arr functions),
     ("used_execution_ops", .arr <| suite.usedExecutionOps.map fun spec => Json.mkObj [
@@ -89,6 +94,7 @@ def exportFiles (env : Environment) (directory : System.FilePath) (guard : Bool 
     IO.FS.writeFile (directory / name) contents
 
 syntax (name := lemmaExportCourseInstall) "#lemma_export_course_install" : command
+syntax (name := lemmaExportCourseSelection) "#lemma_export_course_selection" : command
 syntax (name := lemmaExportCourseGuard) "#lemma_export_course_guard" : command
 elab_rules : command
   | `(#lemma_export_course_install) => do
@@ -96,6 +102,11 @@ elab_rules : command
       | throwError "LEMMA_COURSE_INSTALL_OUT must name an unused output directory"
     liftIO <| exportFiles (← getEnv) (System.FilePath.mk output)
     logInfo "COURSE_INSTALL_EXPORT:PASS genuine User2 copied-IPC/console/source/LLVM closure"
+  | `(#lemma_export_course_selection) => do
+    let some output ← liftIO <| IO.getEnv "LEMMA_COURSE_SELECTION_OUT"
+      | throwError "LEMMA_COURSE_SELECTION_OUT must name an unused output directory"
+    liftIO <| exportFiles (← getEnv) (System.FilePath.mk output) false true
+    logInfo "COURSE_SELECTION_EXPORT:PASS genuine User2 copied-IPC/selection/console/source/LLVM closure"
   | `(#lemma_export_course_guard) => do
     let some output ← liftIO <| IO.getEnv "LEMMA_COURSE_GUARD_OUT"
       | throwError "LEMMA_COURSE_GUARD_OUT must name an unused output directory"
