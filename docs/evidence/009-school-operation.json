@@ -424,5 +424,120 @@
       "tests/school/test_review_render.py": "8cc45ff549499594c135c42355f879b9b0f0154a9dd8251c417763d277d851d0",
       "tests/school/test_teacher_pairing.py": "377961fcb01eae9d515023716d90d8b7901e32ff8a4e57d3ef8218d1238edd4d"
     }
+  },
+  "connectedTeacherPublication": {
+    "result": "PASS",
+    "receipt": {
+      "path": "build/school/task009-connected-a2/teacher-publish803-2.json",
+      "sha256": "68f28cc5afbc2a17a90b38621e980f16cd56346a4ed7965c3daf4bac083a7848"
+    },
+    "activitySummary": {
+      "path": "build/school/task009-connected-a2/course803-2-activities.json",
+      "sha256": "3a695fbd1e38c1ca4ac4e243db3c7b8399cb945fdb291071ba4527bab33530f9"
+    },
+    "principal": "teacher derived from protected local admission",
+    "course": 803,
+    "edition": 2,
+    "policy": 2,
+    "packageSHA256": "0fc39afd5d4b0351fc2a59272673d800ad8e7ffe4dd31014380ff484720eb42f",
+    "enrolled": [
+      "alice",
+      "bob"
+    ],
+    "priorPublicationPreserved": [
+      803,
+      1,
+      1
+    ],
+    "reviewDelaySeconds": 60,
+    "scheduleScope": "Developer integration revision with explicit60-second delay; original803/1 delay604800s remains unchanged. Some inherited review prose still says seven-day; this short cycle is an integration timing scenario, not a retention or educational experiment.",
+    "boundary": "Actual protected teacher publication/enrollment; ordinary guest installation, writing, submission and review execution have separate receipts."
+  },
+  "connectedDefinitionFork": {
+    "result": "PASS",
+    "command": "python3 scripts/school_transport.py --binary build/school/host-task009-review-render-a2/school build/school/task009-connected-a2/school fork --school task009-school --actor owner --to build/school/task009-connected-a2/independent-school --new-school task009-independent --new-deployment task009-independent-local",
+    "receipt": {
+      "path": "build/school/task009-connected-a2/independent-fork.json",
+      "sha256": "868f596911a1c9708c320fa0aad63f2fb6a2392a0bf8d6cb3b25c8a898f17d81"
+    },
+    "assessment": {
+      "path": "build/school/task009-connected-a2/independent-fork-assessment.json",
+      "sha256": "3f60fc652d71e9c7bf51d0a3cf75b95a33ff48a124c41d178c3b81554eab2386"
+    },
+    "originalRecords": 23,
+    "forkRecords": 4,
+    "publications": [
+      [
+        1,
+        1
+      ],
+      [
+        802,
+        1
+      ],
+      [
+        803,
+        1
+      ],
+      [
+        803,
+        2
+      ]
+    ],
+    "privateHistoryExcluded": true,
+    "independentArtifactInodes": true,
+    "boundary": "Operator-local maintained filesystem operation, not a learner privilege or simultaneous replicated authority."
+  },
+  "finalHostedValidation": {
+    "result": "PASS",
+    "receipt": {
+      "path": "build/school/task009-host-validation-a6/validation.json",
+      "sha256": "3727e5aa9ba98b7e0a5f8c53243b7278b2af476e4c2c8cf07cbbd32123275f89"
+    },
+    "hostTests": 61,
+    "hostSeconds": 244.863,
+    "clientActionSeconds": 2.6038247529650107,
+    "wholeSeconds": 248.55401870701462,
+    "command": "nix develop --no-write-lock-file --command python3 scripts/check_school.py --production build/school/host-task009-review-render-a2/production.json --host-timeout600 --work-dir build/school/task009-host-validation-a6",
+    "limits": {
+      "hostSeconds": 600,
+      "clientSeconds": 120
+    },
+    "scope": "Fresh actual hosted semantics/admission/importer/review/preview/operator/teacher checks against exact retained genuineLeanproducer; reused native compilation is not target execution. Separate Client.lean Actionvalidation is hosted, not native/browserguest.",
+    "supervision": "Existing action_worker subreaper owns each fresh command and emits completed only after owned descendants stopped/reaped; no cache-production/reuse claim.",
+    "ownershipFault": {
+      "path": "build/school/task009-connected-a2/validation-owner-timeout.json",
+      "sha256": "5ebe01480e9dd9d148a187baed6c4d5c074a8d99d4b6ff40260efcc06ec03875"
+    },
+    "retainedTimeout": {
+      "path": "build/school/task009-host-validation-a5/validation.json",
+      "sha256": "07b7ad56fc57a9546fec9865bdd37caf8f228a24d404a016e5393f31b8996705"
+    },
+    "retainedOriginalObserverFailure": {
+      "path": "build/school/task009-connected-a2/legacy-mutex-diagnostic-a1.log",
+      "sha256": "c9964c9d2677a9a7db7ee1545a1b8e6bdb55b3efcfe4a60a3fd50b5ee35e37d4"
+    },
+    "correctedObserver": {
+      "path": "build/school/task009-connected-a2/legacy-mutex-corrected-a1.log",
+      "sha256": "4036c5a1af8eaa354b4446072cc1a44366f0eb5b97b1d22695a51ff280e03874"
+    },
+    "correction": "Task009 routes ordinary local queries through the running singleton. Corrected observers verify identicalPID/generation and reject a secondactual run. Original300s campaign also reached its unchanged terminal deadline; new prospectively600s campaign completed within245shosttime. No failed report overwritten."
+  },
+  "currentPanelValidation": {
+    "result": "PASS",
+    "receipt": {
+      "path": "build/school/task009-panel-a3/panel-evidence.json",
+      "sha256": "b5c903f834ba65f1e8d9d97929e60ec41b41f3136272fc2cf00da47341f70e27"
+    },
+    "sourceSeal": {
+      "path": "build/school/task009-panel-a3/source-observation.json",
+      "sha256": "075cd5a13b248aa7fc6a56603bd3a8ed202f94d2f6770d21e31f46fe3bec5ea2"
+    },
+    "command": "nix develop --no-write-lock-file --command nix-shell tooling/lemmasim/session.nix --run \"python3 scripts/check_school_panel.py --work-dir build/school/task009-panel-a3 --binary build/school/host-task009-review-render-a2/school --curriculum build/school/host-task009-review-render-a2/school-curriculum --school-production build/school/host-task009-review-render-a2/production.json --session-dir build/school/task009-native-a1/session --gui\"",
+    "retainedFailure": {
+      "path": "build/school/task009-panel-a2/terminal-failure.json",
+      "sha256": "573142dfbbdf8e36b1a78e1bba39c64cbd435ab089e81fbecb63e6d5c22d8417"
+    },
+    "scope": "Actual Tk/Xvfb fouractivity layout, native/HTTPLeanstatus and scopedlearnerchoicehistory; localqueryroutes to same authority and secondactualrun rejects. Guest writing/Schoolsubmission and new invitation/review-renderdialog interaction are separate actualproduct scenarios."
   }
 }

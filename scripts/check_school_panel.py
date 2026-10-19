@@ -114,10 +114,15 @@ def check(args):
             except Exception:
                 if time.monotonic()>deadline:raise
                 time.sleep(.05)
-        try:connection.command("status")
-        except RuntimeError as error:
-            if "already owned" not in str(error):raise
-        else:raise Core0Error("direct panel transport bypassed active authority mutex")
+        before_runtime=json.loads((connection.school_root/"transport.json").read_text())
+        local_status=connection.command("status")
+        after_runtime=json.loads((connection.school_root/"transport.json").read_text())
+        if local_status["generation"]!=status["generation"] or before_runtime!=after_runtime:
+            raise Core0Error("ordinary local query did not use the existing authority generation")
+        competing=subprocess.run([sys.executable,str(root/"scripts/school_transport.py"),"--binary",str(args.binary.resolve()),
+            str(connection.school_root),"run","--port",str(port)],cwd=root,capture_output=True,timeout=10)
+        if competing.returncode==0 or b"already owned" not in competing.stderr:
+            raise Core0Error("second actual authority bypassed the singleton mutex")
         http_challenge=http.command("interpretation-challenge",id="panel-http-challenge",**choice_fields)["record"]
         choices=http.command("learner-choices")["choices"]
         if choices!=[local_goal,http_challenge] or any(row["data"]["original"]["sequence"]!=attempt["sequence"] for row in choices):
@@ -209,6 +214,7 @@ def check(args):
     report={"schema":"lemma-school-native-panel-evidence/v1","result":"pass","schoolProductionSha256":sha256(args.school_production),
             "schoolBinarySha256":sha256(args.binary),"curriculumBinarySha256":sha256(args.curriculum),
             "actualNativeAndHttpTransport":True,"scopedEvidenceDenied":True,"activeAuthorityMutexEnforced":True,
+            "ordinaryLocalQueryUsesRunningAuthority":True,"secondActualAuthorityRejected":True,
             "authoringPreview":preview,"publication":published,"gui":gui,"sampleCompilation":compilation,
             "sampleAuthoringSha256":sha256(SAMPLE),"sampleIdentity":[course,1],
             "learnerChoices":{"originalAttempt":attempt,"records":final_choices,
