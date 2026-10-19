@@ -72,7 +72,7 @@ class Delivery(unittest.TestCase):
         self.call('grant',subject='teacher',action='admin',resource='school')
         self.call('grant',subject='teacher',action='review',resource='alice')
         self.addCleanup(self.stop);self.start()
-        ask=harness.Authority.ask(self);ask['revision']=1
+        ask=harness.Authority.ask(self);ask.update(revision=1,object=0x504b000000000001)
         joined=self.client(alice,'join',course=1,revision=1,session='delivery-live',guestSession=41,
                            lifetimeMs=10000,ask=ask)
         invitation=bytes.fromhex(joined['package_hex']);span=submission.word(invitation,112)
@@ -112,7 +112,7 @@ class Delivery(unittest.TestCase):
         self.assertEqual(state()['records'],snapshot)
         accepted=observation('guest-raster',dict(record=[0x725,1,1,0,0],uartSHA256=uart))
         self.assertIn('panel completion',accepted['scope'])
-        rejection=observation('guest-rejected',dict(record=[0x724,4,1,99,0],uartSHA256=uart))
+        rejection=observation('guest-rejected',dict(record=[0x724,4,1,ask['object'],0],uartSHA256=uart))
         self.assertIn('no presentation',rejection['scope'])
         panel=dict(cycle=500,completed=7,accepted=8,busy=1,targetSHA256='a'*64,visibleSHA256='b'*64,hashEncoding='gray4')
         controller=observation('controller-snapshot',panel)
@@ -151,6 +151,51 @@ class Delivery(unittest.TestCase):
         print(json.dumps(dict(deliveryObservations=len(rows),transportPartial=True,originalDecisionUnchanged=True,
                               exactRetryCommit=first['commitSequence'],restartGeneration=final['generation'],
                               rawRasterIsNotVisible=True,changedObserverDistinct=True,revocationEnforced=True,guestAttemptRetainsTypedObservations=len(exposure),teacherOriginalArtifactContext=True)))
+
+
+    def test_replaced_join_and_unrelated_page_publication_generation_do_not_taint_work(self):
+        self.enroll('alice');alice=self.issue('alice');teacher=self.issue('teacher')
+        self.call('grant',subject='teacher',action='review',resource='alice')
+        edition=copy.deepcopy(self.unit);edition['course']['edition']='2'
+        self.call('publish',definition=edition,policy=2);self.call('enroll',learner='alice',course=1,revision=2)
+        other=copy.deepcopy(self.unit);other['course']['identity']='2'
+        self.call('publish',definition=other,policy=3);self.call('enroll',learner='alice',course=2,revision=1)
+        self.addCleanup(self.stop);self.start()
+        original=harness.Authority.ask(self);original.update(revision=1,object=0x504b000000000001)
+        variants=[dict(object=0x504b000000000002),dict(session=42),dict(consent=8),dict(edition=2),dict(source=2)]
+        def join(ask):
+            return self.client(alice,'join',course=ask['source'],revision=ask['edition'],
+                session='reused-live-context',guestSession=ask['session'],lifetimeMs=10000,ask=ask)
+        for sequence,changes in enumerate(variants,1):
+            ask=dict(original,sequence=sequence,**changes);join(ask)
+            authored=self.client(alice,'assist',session='reused-live-context',ask=ask)
+            self.client(alice,'delivery-observe',decision=authored['decision'],sequence=sequence,
+                observer='unrelated-context-'+str(sequence),kind='transport',observation=dict(
+                    admittedBytes=1,wireBytes=1,packetSHA256=hashlib.sha256(str(sequence).encode()).hexdigest()))
+        old=json.loads((self.root/'state.json').read_text())['payload']
+        self.stop();self.start()
+        ask=dict(original,sequence=6);joined=join(ask)
+        # No current assistance was requested. Historical authored/transport
+        # reports retain their own contexts and cannot mark this artifact assisted.
+        invitation=bytes.fromhex(joined['package_hex']);span=submission.word(invitation,112)
+        context=bytes.fromhex(invitation[span&0xffffffff:(span&0xffffffff)+(span>>32)].decode())
+        package=bytes.fromhex(self.client(alice,'client-course',course=1,revision=1)['package_hex'])
+        packagePath=self.base/'current-package.bin';contextPath=self.base/'current-context.bin';artifactPath=self.base/'current-work.bin'
+        packagePath.write_bytes(package);contextPath.write_bytes(context)
+        fixture=subprocess.run(['lake','env','lean','--run','tests/school/SubmissionFixture.lean',
+            str(packagePath),str(contextPath),str(artifactPath),'2','4'],cwd=harness.REPO,capture_output=True,timeout=40)
+        self.assertEqual(fixture.returncode,0,(fixture.stdout+fixture.stderr).decode())
+        captured=self.client(alice,'guest-submit',hex=artifactPath.read_bytes().hex())
+        reviewed=self.client(teacher,'review-work',attempt=captured['attempt'])
+        data=reviewed['attempt']['data']
+        self.assertEqual(data['deliveryObservations'],[])
+        self.assertFalse(data['assisted'])
+        self.assertEqual(data['outcome'],4)
+        after=json.loads((self.root/'state.json').read_text())['payload']
+        self.assertEqual(after['records'][:len(old['records'])],old['records'])
+        self.assertEqual(len([r for r in after['records'] if r['kind']=='delivery']),5)
+        print(json.dumps(dict(unrelatedContexts=5,immutableHistoricalReports=True,
+            currentAssistance=False,guestArtifactOutcome=4,fullOriginalJoinContext=True)))
 
 
 if __name__=='__main__':unittest.main()

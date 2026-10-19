@@ -324,12 +324,17 @@ def admit (state : Lemma.School.State) (actor : String) (envelope : Envelope)
     envelope.values[0]!.toUInt64 envelope.values[1]!.toUInt64 envelope.values[2]!.toUInt64
     envelope.values[3]!.toUInt64 envelope.values[4]!.toUInt64 envelope.budget.toUInt64
   let outcome := if envelope.workKind == 2 then 4 else outcomes.toNat
-  let decisions := state.records.filter (fun row => row.kind == "decision" && row.actor == actor &&
-    match Lemma.School.field row.data "input" with
-    | .ok input => Lemma.School.optionalStr input "session" == binding.session &&
-        (Lemma.School.field input "ask" |>.toOption).any (fun ask =>
-          Lemma.School.optionalNat ask "task_id" == envelope.node &&
-          Lemma.School.optionalNat ask "revision" == envelope.documentRevision)
+  let currentWork := ask.session == envelope.guestSession && ask.source == envelope.course &&
+    ask.edition == envelope.edition && ask.task_id == envelope.node &&
+    ask.revision == envelope.documentRevision &&
+    ask.object == (PackageWorkspace.object envelope.page.toUInt64).toNat
+  let decisions := state.records.filter (fun row => currentWork && row.kind == "decision" &&
+    row.actor == actor && binding.bindingRecord < row.sequence &&
+    match Lemma.School.field row.data "input" >>= fromJson? (α := Lemma.School.Client.AssistInput) with
+    | .ok input => input.school == binding.school && input.actor == binding.actor &&
+        input.session == binding.session && input.course == binding.course &&
+        input.revision == binding.revision && input.policy == binding.policy &&
+        input.generation == binding.generation && input.ask == ask
     | .error _ => false)
   let delivery := state.records.filter (fun row => row.kind == "delivery" &&
     decisions.any (fun decision => Lemma.School.optionalStr row.data "decision" == decision.key))

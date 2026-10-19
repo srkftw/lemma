@@ -991,5 +991,41 @@
     "change": "writerActive now includes all in-flight read IPC and confirmed Store stage ownership. Suspend drains old read polls2/4/23/41/43/45; new raw/restore/ACK reads pause, with no hidden repeated polling while another Notebook client owns IPC. Resume preserves original bytes/identity.",
     "coverage": "Original v1 exact replay and v2 32-stroke/ACK/733/734 fixtures retained; new cases cover suspended live reads and quiescent starts, no new Call while paused, and exact replay after resume.",
     "consumerQualification": "Notebook caller sequencing and gates are a separately coordinated change; next real native/browser producer must execute them. Current failed native receipts remain unchanged."
+  },
+  "ordinaryClientAuthorityCampaign": {
+    "result": "READY_FOR_CONSUMER_EXECUTION",
+    "generation": 10,
+    "clockEpochSequence": 3,
+    "acknowledgedRows": 29,
+    "historyUnchanged": true,
+    "deadlineUTC": "2026-10-20T00:29:39.749518+00:00",
+    "producer": "build/school/host-task009-context-a1/production.json",
+    "matchedConsumedSourceInputs": 61,
+    "receipts": {
+      "generation9-ordinary-terminal.json": {
+        "path": "build/school/task009-connected-a2/generation9-ordinary-terminal.json",
+        "sha256": "af88e6c7e5e97bb2db40048af14822aedaeeaaa68a9bd1d4d6dd566916b30d22"
+      },
+      "generation10-context-ready.json": {
+        "path": "build/school/task009-connected-a2/generation10-context-ready.json",
+        "sha256": "8703417727357656ce0e87ff2bbfe506b2cfe54ccce93480e4f4c84cfcce6af9"
+      },
+      "ordinary-campaign-budget-a3.json": {
+        "path": "build/school/task009-connected-a2/ordinary-campaign-budget-a3.json",
+        "sha256": "9a6e61d6273583baf4341de71983a8104219bc743e8d30e6486eefc476e70900"
+      }
+    },
+    "scope": "Gen9 ended normalstop0 for a concrete qualified source correction, with its original deadline preserved. A separate3600s gen10 campaign uses fresh changed hosted source, same private admissions and29unchanged rows. Target Notebook/Queue source is unchanged by this hosted fix; real native/browser work remains separately pending."
+  },
+  "deliveryDeclaredContextConsumer": {
+    "result": "PASS_PROTECTED_COMPONENT",
+    "receipt": {
+      "path": "build/school/task009-delivery-object-context-a1/qualification.json",
+      "sha256": "6fefb0c8e210ab80dffe469aa73ce0e5ef235a3c3c84c4c9378e21d76c40e65e"
+    },
+    "producer": "build/school/host-task009-context-a1/production.json",
+    "binarySHA256": "736daea17ec93f34a15b9b0fe6b7d7471bc1d617d0f5e777c5c66ed355ef70cb",
+    "sourceSHA256": "d56f35d596dc02156d4c407f5e0603192472b95f1e8c15694ad76841c3fd7752",
+    "scope": "Fresh hosted source51.264s,2protected consumer cases40.932s. Matching actual workspace Action artifact retains5typedreports; five unrelated or replaced contexts across restart contribute0falseexposure. CPU/native/browser guest execution is separate. Original unrelated-object failed observation and earlier63-test producer gate remain retained; new64-test full gate is independent."
   }
 }
