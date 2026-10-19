@@ -1,8 +1,8 @@
 {
   "schema": "lemma-verification-routes/v1",
-  "comparison_base": "8e75bc6541131189d7a2efe02e9ff77bde61194f",
-  "objective": "Implement school/cloud foundation 0.1.0; preserve inherited Task 007 and machine verification obligations",
-  "historical_checkpoint": "docs/plan/008-session-state.html",
+  "comparison_base": "c6a785478e8212ae476058224d4c9c7e546fb81c",
+  "objective": "Task009: physical implementation corrections and connected machine, school, operator and developer workflows; preserve inherited qualification obligations",
+  "historical_checkpoint": "docs/plan/009-session-state.html",
   "resource_budgets": {
     "status": "Read-only Git/receipt inspection; each Git command at most 15 seconds; no build or execution",
     "host_export": "scripts/lean_export_host.py: two host Lean workers; 65536 KiB worker stack reservation",
@@ -686,6 +686,69 @@
         "school-client"
       ],
       "affects": []
+    },
+    {
+      "id": "school-student-service",
+      "inputs": [
+        "scripts/lemmasim_school_service.py",
+        "sim/browser/school_transport.js",
+        "tests/lemmasim/test_school_service.py",
+        "Lemma/Courses/SchoolSubmission.lean",
+        "Lemma/Services/Store/ServerSchool.lean",
+        "scripts/school_deployment.py",
+        "scripts/school_target.py",
+        "tests/courses/Submission*.lean",
+        "tests/courses/NotebookSchool.lean",
+        "tests/courses/SchoolGuard*.lean",
+        "tests/courses/Selection.lean",
+        "examples/school/ConsecutiveSquares.lean"
+      ],
+      "claims": [
+        "school-host",
+        "school-client",
+        "school-panel",
+        "browser",
+        "kernel-host",
+        "multimodal-workbook-native",
+        "multimodal-workbook-browser"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation"
+      ]
+    },
+    {
+      "id": "integrated15-product",
+      "inputs": [
+        "Lemma/Platform/LemmaSim/IntegratedKernel.lean",
+        "Lemma/Platform/Silicon/BindingIntegrated.lean",
+        "scripts/integrated_*.py",
+        "scripts/check_integrated_*",
+        "scripts/check_uart_paced.py",
+        "scripts/silicon_sram.py",
+        "sim/profiles/lemma-silicon-dev-0.15.0.json",
+        "tests/silicon/IntegratedAliases.lean",
+        "tests/silicon/test_integrated_profile.py",
+        "tooling/integrated-target-authority.json",
+        "tooling/lemmasim/tci/incremental_uart.py",
+        "sim/browser/tci/uart_arrivals.mjs"
+      ],
+      "claims": [
+        "rtl-devices",
+        "rtl-notebook",
+        "physical-flow",
+        "browser",
+        "kernel-host",
+        "multimodal-host",
+        "multimodal-controller",
+        "multimodal-guest"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation",
+        "rtl-backend-or-observer",
+        "qemu-backend-or-observer"
+      ]
     }
   ],
   "evidence_paths": [
