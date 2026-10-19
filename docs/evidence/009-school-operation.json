@@ -1,0 +1,221 @@
+{
+  "schema": "lemma-task009-school-operation-evidence/1",
+  "scope": "Hosted local Lean school authority. Each original producer/source identity is retained; no fabricated current-head execution, physical power-loss, production internet security or educational qualification claim.",
+  "implementationCommit": "7bcac24de9d3ffe228bb613d4ba74e739448b848",
+  "operatorCapabilities": [
+    "start/status/stop with actual process ownership diagnostics",
+    "private OS-random pairing and bounded protected loopback transport",
+    "artifact-before-reference file/directory barriers with commit failure stop",
+    "immutable schema/1 history migration across an explicit lower-uptime clock domain",
+    "backup/restore/new execution generation and independent definition fork",
+    "read-only cached queries while the OS mutex is held",
+    "configured training/evaluate/publish/select/rollback through maintained Lean interfaces"
+  ],
+  "production": {
+    "a3": {
+      "path": "build/school/host-task009-operator-a3/production.json",
+      "sha256": "68159f7971370e150328dccfc42f40b80eb47d0209d631c8e5b38c5208c6eab9"
+    },
+    "a4": {
+      "path": "build/school/host-task009-operator-a4/production.json",
+      "sha256": "a1ddd552ead6627d3fc4685aaab306f00fc7aa219b7c0c3354401fe9efe14592"
+    },
+    "route": "Hosted incremental Lake production; reused imports are not fresh compilation. a4 adds only explicit missing-legacy-field decoding over a3."
+  },
+  "legacyMigration": {
+    "result": "PASS",
+    "receipt": {
+      "path": "build/school/migration-task009-a2/report.json",
+      "sha256": "b3ce043be1656822fc45113b5a883e8c7f2c11b30705812bb3e225e2185f46ea"
+    },
+    "commands": {
+      "path": "build/school/migration-task009-a2/commands.json",
+      "sha256": "2d25b513880b391907c605340d6863b9e33c2b69c4dffa9ded3193f0f26e77f5"
+    },
+    "reproductionScript": {
+      "path": "build/school/migration-task009-a2/run.py",
+      "sha256": "3245fa09b7c024ee4bcac0727e2a0d6e641a4719531a7766d94e4dd8550e34df"
+    },
+    "actualLegacyBinarySha256": "d88c2311c0a0fe1112133c32f1e2aac569eb1064d6f33101ccac1823b04ed7d1",
+    "historicalRowsPreserved": 2,
+    "clockBeforeAndAfter": 1003993598,
+    "newGeneration": 2,
+    "oldBinaryRejectsState2": true,
+    "newWorkAcknowledged": true,
+    "clockStimulus": "explicit synthetic boot identity and uptime1; actual old-producer snapshots; no real reboot or power loss"
+  },
+  "training": {
+    "result": "PASS",
+    "receipt": {
+      "path": "build/school/training-task009-a1/training-evidence.json",
+      "sha256": "a087c11a3b52c954eaab01c05da067a10998671e6d7ebaf237fe63999e7df913"
+    },
+    "actualSIGKILLResume": {
+      "bitwiseCheckpointEqual": true,
+      "epoch": 1,
+      "nextRecord": 12,
+      "observedStep": 7,
+      "resumedTotalSteps": 160,
+      "scope": "atomic replacement/process interruption, not host-power-loss durability",
+      "signal": "SIGKILL"
+    },
+    "configured": {
+      "checkpoint": "/home/sreekumaar/Downloads/lemma/build/school/training-task009-a1/configured-checkpoint.json",
+      "configurationSha256": "57094ab3c4afc9e72957155a150995b62f630ba6e96762994e12bf41344d5681",
+      "dataset": "/home/sreekumaar/Downloads/lemma/build/school/training-task009-a1/permitted-dataset",
+      "evaluation": {
+        "baseline": "fixed 0.5 risk; explainable due/error review remains operational fallback",
+        "baselineMse": 0.017031,
+        "maximumQuantizationDeviation": 0.000474,
+        "modelMse": 0.006447,
+        "quantizedMse": 0.006471,
+        "samples": 8,
+        "scope": "synthetic held-out session groups; no educational improvement claim"
+      },
+      "manifestSha256": "2733b199007a3acee6318b03572899efb13b637e3cdcc67b8b1174da2dc6b793",
+      "modelVersion": 9001,
+      "parameters": "/home/sreekumaar/Downloads/lemma/build/school/training-task009-a1/configured/parameters.json",
+      "resumeBitwiseEqual": true,
+      "scope": "independently supplied permitted synthetic data/configuration; no measured learning benefit",
+      "secondCheckpoint": "/home/sreekumaar/Downloads/lemma/build/school/training-task009-a1/configured-v2-checkpoint.json",
+      "secondConfiguration": "/home/sreekumaar/Downloads/lemma/build/school/training-task009-a1/school-configuration-v2.json",
+      "secondModelVersion": 9002,
+      "secondParameters": "/home/sreekumaar/Downloads/lemma/build/school/training-task009-a1/configured-v2/parameters.json",
+      "standaloneEvaluationPreservesCheckpoint": true
+    },
+    "sumRecordedCommandSeconds": 150.1460853946628,
+    "bounds": "Existing180s whole run; each subprocess120s; not extended during execution",
+    "scope": "Permitted synthetic independent groups and two fixed optimizer configurations. No measured learning benefit; repeated fixed-split comparison is software pipeline evidence."
+  },
+  "configuredConsumer": {
+    "result": "PASS",
+    "source": "a3 original producer; a4 only adds legacy schema/1 decoder",
+    "receipt": {
+      "path": "build/school/training-workflow-task009-a2/workflow.json",
+      "sha256": "c4e3892ba03d1c8499a6a410ff871beb0b24bd6f774a2759eca7025740e68192"
+    },
+    "commands": {
+      "path": "build/school/training-workflow-task009-a2/commands.json",
+      "sha256": "10bbc41cf2711837ee5cf40b5b38892e5ecea68ad776164d25d8e1e397a8da22"
+    },
+    "scoresQ20": [
+      673792,
+      770048
+    ],
+    "models": [
+      9001,
+      9002
+    ],
+    "selectedAfterRollback": 9001,
+    "preparedFeatures": [
+      1024,
+      1024
+    ],
+    "inputScope": "actual independent written fixture and versioned human needs-revision judgment; full assessment sequence remains distinct from exact checker outcome",
+    "missingness": "No independent assessment yields presenceMask0 and authored baseline; numerical job admission rejects missing inputs",
+    "execution": "Two fresh actual RV64 QEMU processes; current source-audited byte-identical worker image; no host inference substitution"
+  },
+  "workerProduction": {
+    "build": {
+      "path": "build/school/worker-task009-O2-a1/build.json",
+      "sha256": "3e2f0a976fcd612f5d6b3d35bbb88d236b94352094545f3defb0e60454400e2f"
+    },
+    "actions": {
+      "path": "build/school/worker-task009-O2-a1/actions.json",
+      "sha256": "a6e20e0e8ecb04c5a1c385fdde873a837b74825ef6b56de11535cd54ced38886"
+    },
+    "commands": {
+      "path": "build/school/worker-task009-O2-a1/commands.json",
+      "sha256": "ca87c86d46f94541bdcef88a523cc60218b7796876affc3b0d9141ecc0385e4b"
+    },
+    "imageSha256": "875377980f76559ce8338c506adae1c45f0c5f94519a66400034d284b23c8e52",
+    "targetActions": {
+      "fresh": 0,
+      "reused": 4
+    },
+    "boundary": "Genuine current Lean worker elaboration; validated matching opt/llc/startup/link action results reused. Original producer receipts remain original; execution above is fresh."
+  },
+  "actualWorkerLossAndRecovery": {
+    "result": "PASS",
+    "source": "a2 original source scope before later CSR-source addition",
+    "receipt": {
+      "path": "build/school/job-worker-task009-a1/job-worker-evidence.json",
+      "sha256": "6cda82475089e617a7bc4819bdc23ca5f1d28c575401b86d19b244c2bbee1e9e"
+    },
+    "scoreQ20": 711424,
+    "claims": "actual killed/reassigned QEMU worker, stale result rejection, committed inference, retained history/required artifacts, restored generation and definition-only fork"
+  },
+  "actualFourWorkerLoad": {
+    "result": "PASS",
+    "source": "a2 original source scope before later CSR-source addition",
+    "receipt": {
+      "path": "build/school/load-worker-task009-a1/load-evidence.json",
+      "sha256": "38ec8dc0aa1ccb7054dcc86b203a068a29fe2b872a676c1838c4f795a19226ff"
+    },
+    "workers": 4,
+    "statusLatencySeconds": {
+      "afterCompletions": 0.08324617298785597,
+      "afterConcurrentRelease": 0.11769292200915515,
+      "fourProcessesPausedAtExplicitBarrier": 0.09908037993591279
+    },
+    "learnerRequests": {
+      "afterConcurrentRelease": {
+        "courseResponseSha256": "1e2baf32831224ffc651f238d714cfe7b20e10b3b926096f379e0ba6a5bb1f8e",
+        "courseSeconds": 0.07885002298280597,
+        "observedTypedAttempts": 1,
+        "packageBytes": 4199,
+        "packageSha256": "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e",
+        "progressResponseSha256": "566af63c49dc74240c6b905955d17fe12f5418827623b98f0cce71d92855b869",
+        "progressSeconds": 0.07253034505993128
+      },
+      "fourProcessesPausedAtExplicitBarrier": {
+        "courseResponseSha256": "1e2baf32831224ffc651f238d714cfe7b20e10b3b926096f379e0ba6a5bb1f8e",
+        "courseSeconds": 0.08533662802074105,
+        "observedTypedAttempts": 1,
+        "packageBytes": 4199,
+        "packageSha256": "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e",
+        "progressResponseSha256": "566af63c49dc74240c6b905955d17fe12f5418827623b98f0cce71d92855b869",
+        "progressSeconds": 0.07895642297808081
+      },
+      "progressScope": "one deliberately supplied hosted typed attempt; no guest observation invented"
+    },
+    "targetRoundTripSeconds": {
+      "maximum": 0.022549351095221937,
+      "median": 0.020690120989456773,
+      "minimum": 0.0036655899602919817
+    },
+    "emulatorPeakRssKiBObserved": [
+      59228,
+      58288,
+      59636,
+      60972
+    ],
+    "scope": "tiny four-job synthetic fixture on one host; actual enrolled course/progress requests at an explicit paused barrier and after concurrent release; no sustained load, drawing/browser responsiveness, native-RISC-V or hyperscale claim"
+  },
+  "retainedFailures": [
+    {
+      "path": "build/school/training-workflow-task009-a1",
+      "observation": "Fail-closed audit: old worker consumed-source identity differed at Lemma/Machine/Primitives.lean; no execution result promoted. Corrected by current source-bound worker production, preserving identical image bytes."
+    },
+    {
+      "path": "build/school/migration-task009-a1",
+      "observation": "Actual legacy producer snapshot failed with clockEpoch String expected; fixed by explicit schema/1 field normalization in a4."
+    },
+    {
+      "path": "build/school/task009-host-validation-a1",
+      "observation": "53tests282.231s one actor-error wording failure; actor check moved before enrollment."
+    },
+    {
+      "path": "build/school/task009-host-validation-a2",
+      "observation": "45tests89.832s eight missing-lake errors from noncanonical host PATH. These are not successful checks; final pinned suite owned by root."
+    }
+  ],
+  "remainingDependencies": [
+    "long-lived mutations still publish bounded full snapshots; no general indexed/journal database engine",
+    "local admission is loopback bearer identity with OS-protected storage, not internet TLS or production device key protection",
+    "unknown cross-boot offline scheduling elapsed time is frozen; credentials invalidate and workers fence",
+    "filesystem/device barrier guarantees are declared assumptions; no measured host-crash or physical power-loss qualification",
+    "full native/browser Student guest submission and delivery are separate root integration work",
+    "single-host availability, resident language-model inference and educational benefit remain unqualified"
+  ]
+}
