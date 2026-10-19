@@ -36,7 +36,7 @@ const hash=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-25
 // bounded geometry, byte lengths and run quanta, never clocks or addresses.
 function state(){return JSON.parse(core.ccall('lemma_inspect','string',[],[]).replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));}
 function check(name,types=[],args=[]){if(core.ccall(name,'number',types,args))throw Error(core.ccall('lemma_error','string',[],[]));}
-function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourse:guestCourseInstallState(core.FS.readFile('/uart.bin'),guestOutputStart),guestQueue:guestSchoolQueueState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
+function sendState(){const s=state();void school.observeDelivery(core.FS.readFile('/uart.bin'),guestOutputStart,{cycle:s.cycle,completed:s.panel_completed,accepted:s.panel_sequence,busy:s.paper_busy}).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));postMessage({type:'state',state:s,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourse:guestCourseInstallState(core.FS.readFile('/uart.bin'),guestOutputStart),guestQueue:guestSchoolQueueState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
  pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-timing.started)/1000,
  simulationCallSeconds:timing.runSeconds,backingCallSeconds:timing.backingSeconds,backingCallSecondsDuringRun:timing.backingRunSeconds,
  simulationOutsideBackingSeconds:Math.max(0,timing.runSeconds-timing.backingRunSeconds)}});return s;}
@@ -99,6 +99,7 @@ function admitCourseInstall(message){
  let accepted=0;
  try{for(const row of rows){admitRaw(row,false);accepted++;}}
  catch(e){courseInputPartial=accepted>0;postMessage({type:'course-admission',accepted,total:rows.length,bytes:packet.length-64,error:String(e)});throw e;}
+ finally{if(message.delivery)void school.transportDelivery(packet,accepted).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));}
  sendState();postMessage({type:'course-admission',accepted,total:rows.length,bytes:packet.length-64,error:null});
 }
 function step(){if(!running)return;try{
@@ -235,15 +236,15 @@ async function schoolActivity(message){
   if(!manifest.sample_course)throw Error('This bundle has no compiled sample');
   const bytes=new Uint8Array(await getBytes(manifest.sample_course));
   result={package_hex:Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join(''),sample:true};
- }else result=await school.operation(message,()=>guestSchoolAsk(core.FS.readFile('/uart.bin'),guestOutputStart),()=>guestSchoolSubmission(core.FS.readFile('/uart.bin'),guestOutputStart));
+ }else {let helpAsk=null;result=await school.operation(message,()=>{const ask=guestSchoolAsk(core.FS.readFile('/uart.bin'),guestOutputStart);if(message.operation==='help')helpAsk=ask;return ask;},()=>guestSchoolSubmission(core.FS.readFile('/uart.bin'),guestOutputStart));
+  if(result.decision)school.beginDelivery(result,helpAsk,core.FS.readFile('/uart.bin').length);}
  if(epoch!==schoolMachineEpoch)throw Error('Machine changed while school request was pending');
  if(result.package_hex!==undefined||result.ack_bytes!==undefined){
   if(busy)throw Error('Machine storage is busy; retry this school activity');
   const wasRunning=running,transaction=(BigInt(crypto.getRandomValues(new Uint32Array(1))[0])+1n).toString();
   if(result.ack_bytes){pause('school-ack');for(const row of courseInstallRows(result.ack_bytes,state().cycle))admitRaw(row,false);sendState();}
-  else admitCourseInstall({bytes:schoolPackage(result),transaction,schoolSelect:guestSchoolCapability(core.FS.readFile('/uart.bin'),guestOutputStart)!==null,node:result.node??0});
+  else admitCourseInstall({bytes:schoolPackage(result),transaction,schoolSelect:guestSchoolCapability(core.FS.readFile('/uart.bin'),guestOutputStart)!==null,node:result.node??0,delivery:!!result.decision});
   if(wasRunning){running=true;pauseReason=null;scheduleStep();}
-  if(result.decision)await school.command({op:'delivery',decision:result.decision,stage:'transport-admitted',receipt:{transport:'lemma-school-browser-service/1',transaction}});
  }
  const {package_hex,ack_bytes,...view}=result;postMessage({type:'school',operation:message.operation,result:view});
 }

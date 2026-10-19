@@ -6,9 +6,12 @@ import struct
 import subprocess
 import sys
 import unittest
+import tempfile
+from types import SimpleNamespace
+from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
-from lemmasim_school_service import submission_stream,school_capability
+from lemmasim_school_service import submission_stream,school_capability,SchoolService
 
 QUEUE=0x5351000000000011
 
@@ -23,6 +26,33 @@ def fixture():
     return payload,records
 
 class SchoolByteTransport(unittest.TestCase):
+    def test_delivery_keeps_original_peer_and_does_not_infer_visibility(self):
+        with tempfile.TemporaryDirectory() as name:
+            directory=Path(name);uart=directory/'uart.bin';uart.write_bytes(b'')
+            (directory/'session.json').write_text('{}')
+            paper={'status':1,'completed':4,'pending_sequence':5,'target_sha256':'a'*64,'visible_sha256':'b'*64}
+            session=SimpleNamespace(directory=directory,machine=SimpleNamespace(call=lambda _:{'cycle':100,'devices':{'paper':paper}}))
+            service=SchoolService(session);original=('http://127.0.0.1:1/v1/client','a'*64)
+            service.connection=original
+            service.delivery={'decision':'work.7','sequence':7,'revision':9,'object':13,'cursor':0,'partial':b'',
+                              'accepted':False,'snapshots':0,'lastBusy':None}
+            try:
+                with patch('lemmasim_school_service.uart_path',return_value=uart):
+                    uart.write_bytes(row(0x725,6,1,0,0)+row(0x724,0,9,13,0))
+                    service.observe_delivery();self.assertEqual(service.receipts,{})
+                    with uart.open('ab') as stream:stream.write(row(0x725,7,1,0,0)[:-1])
+                    service.observe_delivery();self.assertEqual(service.receipts,{})
+                    with uart.open('ab') as stream:stream.write(b'\n')
+                    service.observe_delivery();paper['status']=0;paper['completed']=5;service.observe_delivery()
+                    before=len(service.receipts);service.observe_delivery();self.assertEqual(len(service.receipts),before)
+                    service.invalidate('disconnect');service.connection=('http://127.0.0.1:2/v1/client','b'*64)
+                commands=[receipt['command'] for receipt in service.receipts.values()]
+                self.assertEqual([c['kind'] for c in commands],['guest-raster','controller-snapshot','controller-snapshot','cancelled'])
+                self.assertTrue(all(r['connection']==original for r in service.receipts.values()))
+                self.assertTrue(all('visible' not in c['observation'] for c in commands))
+                self.assertEqual(commands[-1]['observation'],{'reason':'disconnect'})
+            finally:service.close()
+
     def test_versioned_capability_and_actual_receipt_scope(self):
         for version,chunks in ((1,8),(2,512)):
             self.assertEqual(school_capability(row(0x731,version,chunks,262144,2))['maximumChunks'],chunks)

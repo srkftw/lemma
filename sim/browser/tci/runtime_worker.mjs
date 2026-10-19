@@ -37,13 +37,14 @@ async function inspect(full=false){
  if(typeof clock.paper_power!=='boolean')throw Error('Missing actual panel power observation');
  if(!Number.isSafeInteger(clock.wasm_heap_bytes)||clock.wasm_heap_bytes<2147483648)throw Error('Missing actual Wasm heap measurement');heapBytes=clock.wasm_heap_bytes;
  const cycle=(BigInt(clock.virtual_ns)+9n)/10n;
- const state={cycle:String(cycle),ticks:clock.mtime_ticks,virtual_ns:clock.virtual_ns,panel_completed:clock.paper_completed,paper_busy:String(BigInt(clock.paper_status)&1n),panel_power:clock.paper_power?'1':'0',isolated_medium:false,backend:'qemu-tci-wasm64/1',timingScope:'instruction/virtual-timer boundary; not RTL processor-cycle parity'};
+ const state={cycle:String(cycle),ticks:clock.mtime_ticks,virtual_ns:clock.virtual_ns,panel_completed:clock.paper_completed,panel_sequence:clock.paper_accepted,paper_busy:String(BigInt(clock.paper_status)&1n),panel_power:clock.paper_power?'1':'0',isolated_medium:false,backend:'qemu-tci-wasm64/1',timingScope:'instruction/virtual-timer boundary; not RTL processor-cycle parity'};
  if(full){state.paper=exactJson(await control.get('device-state'));state.storage=exactJson(await control.get('storage-state','/machine/lemma-block'));state.power=exactJson(await control.get('power-state'));state.uart_ingress=exactJson(await control.get('raw-uart-state'));state.fullInspectionVirtualNs=clock.virtual_ns;}
  if(readyAt===null&&guestPageReady(uart(),guestStart,{accepted:clock.paper_accepted,completed:clock.paper_completed}))readyAt={cycle:state.cycle,hostSeconds:(performance.now()-started)/1000};
  return state;
 }
 async function sendState(state){
  if(state===undefined)state=await inspect();
+ void school.observeDelivery(uart(),guestStart,{cycle:state.cycle,completed:state.panel_completed,accepted:state.panel_sequence,busy:state.paper_busy}).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));
  postMessage({type:'state',state,mode,modeContract:contract,running,guestObservation:'boot',guestCommit:guestCommitState(uart(),guestStart),guestCourse:guestCourseInstallState(uart(),guestStart),guestQueue:guestSchoolQueueState(uart(),guestStart),backingMedium:{name:mediumName,private:false,ready:true},backingMetrics:backing.metrics,controlMetrics:control.metrics,pcmEgress:egress.inspect(),heapBytes,readyAt,hostSeconds:(performance.now()-started)/1000,pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-started)/1000,simulationCallSeconds:timing.runSeconds,backingCallSeconds:0,backingCallSecondsDuringRun:0,backingTimingAvailable:false}});
 }
 async function panel(force=false,observation=null){
@@ -122,7 +123,8 @@ async function schoolActivity(message){
   if(!manifest.sample_course)throw Error('This bundle has no compiled sample');
   const bytes=await artifact(manifest.sample_course);
   result={package_hex:Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join(''),sample:true};
- }else result=await school.operation(message,()=>guestSchoolAsk(uart(),guestStart),()=>guestSchoolSubmission(uart(),guestStart));
+ }else {let helpAsk=null;result=await school.operation(message,()=>{const ask=guestSchoolAsk(uart(),guestStart);if(message.operation==='help')helpAsk=ask;return ask;},()=>guestSchoolSubmission(uart(),guestStart));
+  if(result.decision)school.beginDelivery(result,helpAsk,uart().length);}
  if(epoch!==schoolMachineEpoch)throw Error('Machine changed while school request was pending');
  await enqueue(async()=>{
   if(epoch!==schoolMachineEpoch)throw Error('Machine changed before school response admission');
@@ -135,8 +137,8 @@ async function schoolActivity(message){
    // The additive queue API batches admission without making FIFO bursts.
    let arrival;try{arrival=await admitUart(control,frame,base,uartPaced,n=>{accepted=n;});postMessage({type:'uart-arrival-admission',arrival});}
    catch(e){coursePartial=accepted>0;throw Error('School transfer admitted '+accepted+' of '+frame.length+' bytes; cold-open before retry: '+e);}
+   finally{if(result.decision)void school.transportDelivery(frame,accepted).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));}
    if(wasRunning){running=true;pauseReason=null;schedule();}await sendState();
-   if(result.decision)school.command({op:'delivery',decision:result.decision,stage:'transport-admitted',receipt:{transport:'lemma-school-browser-service/1',transaction}}).catch(e=>postMessage({type:'school',operation:'delivery',error:String(e)}));
   }
   const {package_hex,ack_bytes,...view}=result;postMessage({type:'school',operation:message.operation,result:view});
  });

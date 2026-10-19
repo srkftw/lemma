@@ -67,16 +67,82 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 class SchoolService:
     def __init__(self, session):
         self.session=session; self.pool=ThreadPoolExecutor(max_workers=2,thread_name_prefix='lemma-school-io')
+        self.receipt_pool=ThreadPoolExecutor(max_workers=1,thread_name_prefix='lemma-school-receipts')
         self.connection=None; self.binding=None; self.epoch=0; self.jobs={}; self.partial=False
         self.review=None
+        self.delivery=None;self.observer='native-'+uuid.uuid4().hex
+        self.receipts={};self.delivery_next=0
 
-    def invalidate(self):
+    def invalidate(self,reason='machine-restart'):
+        self.delivery_report('cancelled',{'reason':reason})
         self.epoch+=1; self.connection=None; self.binding=None;self.review=None
+        self.delivery=None;self.observer='native-'+uuid.uuid4().hex
         for job in self.jobs.values():
             if job.get('future') is not None: job['future'].cancel()
 
     def close(self):
-        self.invalidate(); self.pool.shutdown(wait=False,cancel_futures=True)
+        self.invalidate(); self.pool.shutdown(wait=False,cancel_futures=True);self.receipt_pool.shutdown(wait=False,cancel_futures=True)
+
+    def delivery_report(self,kind,observation):
+        if self.delivery is None or self.connection is None:return
+        command={'op':'delivery-observe','decision':self.delivery['decision'],'sequence':self.delivery['sequence'],
+                 'observer':self.observer,'kind':kind,'observation':observation}
+        key=hashlib.sha256(json.dumps(command,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        if key not in self.receipts:
+            # A live, bounded transport outbox. Its connection is immutable:
+            # switching schools cannot retarget an old observation.
+            if len(self.receipts)>=64:
+                for old in list(self.receipts):
+                    if self.receipts[old]['status'] in ('completed','failed'):
+                        del self.receipts[old];break
+            if len(self.receipts)<64:self.receipts[key]={'status':'queued','command':command,'connection':self.connection}
+
+    def observe_delivery(self):
+        delivery=self.delivery
+        if delivery is None or self.connection is None:return
+        path=uart_path(self.session.directory,json.loads((self.session.directory/'session.json').read_text()))
+        with path.open('rb') as stream:
+            stream.seek(delivery['cursor']);data=stream.read(65536)
+        delivery['cursor']+=len(data)
+        lines=(delivery['partial']+data).split(b'\n');delivery['partial']=lines.pop()
+        if len(delivery['partial'])>4096:raise ValueError('oversized partial guest delivery record')
+        for line in lines:
+            row=re.fullmatch(rb'K1 ([0-9a-f]{16}) ((?:[0-9a-f]{16} ){3}[0-9a-f]{16})\r?',line)
+            if row is None:continue
+            tag=int(row[1],16);words=[int(x,16) for x in row[2].split()]
+            kind=None
+            if tag==0x725 and words==[delivery['sequence'],1,0,0]:kind='guest-raster';delivery['accepted']=True
+            elif tag==0x724 and words[0]>0 and words[1:]==[delivery['revision'],delivery['object'],0]:kind='guest-rejected'
+            if kind:self.delivery_report(kind,{'record':[tag,*words],'uartSHA256':hashlib.sha256(line+b'\n').hexdigest()})
+        if delivery['accepted'] and delivery['snapshots']<2:
+            state=self.session.machine.call('inspect');paper=state.get('devices',{}).get('paper')
+            if paper is not None:
+                busy=int(bool(paper['status']&1));observation={'cycle':state['cycle'],'completed':paper['completed'],'busy':busy}
+                if 'pending_sequence' in paper:observation['accepted']=paper['pending_sequence']
+                for source,target in (('target_sha256','targetSHA256'),('visible_sha256','visibleSHA256')):
+                    if source in paper:observation[target]=paper[source];observation['hashEncoding']='gray4'
+            elif 'panel_completed' in state:
+                busy=int(bool(state['paper_busy']));observation={'cycle':state['cycle'],'completed':state['panel_completed'],'busy':busy,'accepted':state['panel_sequence']}
+            else:return
+            # At most an in-flight and an idle controller observation per
+            # decision. These counters/hashes never assert text visibility.
+            if delivery['lastBusy'] is None or (delivery['lastBusy']==1 and busy==0):
+                self.delivery_report('controller-snapshot',observation);delivery['lastBusy']=busy
+                delivery['snapshots']=2 if busy==0 else 1
+
+    def pump_receipts(self):
+        for receipt in self.receipts.values():
+            future=receipt.get('future')
+            if future is not None and future.done():
+                try:receipt.update(status='completed',result=future.result())
+                except Exception as error:receipt.update(status='failed',error=str(error))
+                receipt.pop('future',None)
+                if receipt['status']=='completed':receipt.pop('connection',None)
+        active=sum(r['status']=='pending' for r in self.receipts.values())
+        for receipt in self.receipts.values():
+            if active>=1:break
+            if receipt['status']=='queued':
+                receipt.update(status='pending',future=self.receipt_pool.submit(self.exchange,receipt['connection'],receipt['command']));active+=1
 
     def context(self):
         metadata=json.loads((self.session.directory/'session.json').read_text())
@@ -94,7 +160,7 @@ class SchoolService:
         url=urllib.parse.urlsplit(credential.get('endpoint',''))
         if url.scheme!='http' or url.hostname not in ('127.0.0.1','localhost','::1') or url.path!='/v1/client' or url.username or url.password or url.query or url.fragment:
             raise ValueError('school service requires an explicit loopback /v1/client endpoint')
-        self.invalidate(); self.connection=(url.geturl(),credential['token'])
+        self.invalidate('disconnect'); self.connection=(url.geturl(),credential['token'])
 
     @staticmethod
     def exchange(connection, command):
@@ -120,6 +186,9 @@ class SchoolService:
     def dispatch(self, value):
         operation=value.get('operation')
         if operation=='observation':
+            for receipt in self.receipts.values():
+                if receipt['status']=='failed':receipt['status']='queued'
+            self.observe_delivery();self.pump_receipts()
             metadata=json.loads((self.session.directory/'session.json').read_text())
             data=uart_path(self.session.directory,metadata).read_bytes()
             records={};queue=None
@@ -132,13 +201,15 @@ class SchoolService:
                     if not ((d==2 and b==0) or (d==3 and b>0)):raise ValueError('malformed terminal guest queue report')
                     queue={'state':'cancelled' if d==2 else 'acknowledged','queue':str(a),'schoolCommit':str(b),'observedFrontier':str(c),
                            'observation':'new-pointer-commit' if key==0x733 else 'restored-pointer-read'}
-            return {'authority':'complete compiled-guest console records','records':records,'outgoingQueue':queue,'capability':school_capability(data)}
+            return {'authority':'complete compiled-guest console records','records':records,'outgoingQueue':queue,'capability':school_capability(data),
+                    'deliveryReports':[{k:v for k,v in r.items() if k in ('status','result','error')} for r in self.receipts.values()],
+                    'deliveryObserverError':getattr(self,'delivery_error',None)}
         if operation=='poll':
             self.pump();job=self.jobs.get(value.get('id'))
             if job is None:raise ValueError('school request absent')
             return {k:v for k,v in job.items() if k not in ('future','epoch','stream')}
         if operation=='disconnect':
-            self.invalidate();return {'status':'disconnected','scope':'live external admission cleared; saved guest work retained'}
+            self.invalidate('disconnect');self.pump_receipts();return {'status':'disconnected','scope':'live external admission cleared; saved guest work retained'}
         if operation=='sample':
             encoded=value.get('hex','')
             if not isinstance(encoded,str) or len(encoded)!=8398 or not re.fullmatch('[a-f0-9]+',encoded):
@@ -152,6 +223,7 @@ class SchoolService:
         if self.connection is None:raise ValueError('connect using a private school pairing file first')
         mutations=('install','review','join','help','submit','cancel')
         if operation=='cancel':
+            self.delivery_report('cancelled',{'reason':'user-cancel'})
             self.epoch+=1
             for pending in self.jobs.values():
                 if pending.get('future') is not None:pending['future'].cancel()
@@ -194,6 +266,7 @@ class SchoolService:
         self.jobs[id]={'id':id,'status':'pending','operation':operation,'epoch':self.epoch,
                       **({'binding':binding} if operation=='join' else {}),
                       **({'review':value['id']} if operation=='review' else {}),
+                      **({'ask':ask} if operation=='help' else {}),
                       **({'stream':stream} if operation=='submit' else {}),
                       'future':self.pool.submit(self.exchange,self.connection,command)}
         return {'id':id,'status':'pending','operation':operation}
@@ -227,9 +300,14 @@ class SchoolService:
         session=self.session;session.ensure_capture_certain()
         state=session.machine.call('inspect');cycle=state['cycle']
         ingress=state.get('devices',{}).get('uart_ingress',{})
-        if not ingress.get('enabled') or len(packet)>65536-ingress.get('pending',65536):
-            raise ValueError('guest UART backpressure; retry after guest drains input')
-        self.admit_packet(packet,state)
+        self.admitted_bytes=0
+        try:
+            if not ingress.get('enabled') or len(packet)>65536-ingress.get('pending',65536):
+                raise ValueError('guest UART backpressure; retry after guest drains input')
+            self.admit_packet(packet,state)
+        finally:
+            if result.get('decision') is not None:
+                self.delivery_report('transport',{'admittedBytes':self.admitted_bytes,'wireBytes':len(packet),'packetSHA256':hashlib.sha256(packet).hexdigest()})
         result['transport']={'contract':'lemma-school-native-service/1','bytes':len(payload),'transaction':transaction,'byte_interval_ns':100000,
                              'receipt':'UART input admitted; guest install, JOIN and visible delivery remain separate'}
 
@@ -240,6 +318,7 @@ class SchoolService:
         paced=state.get('devices',{}).get('uart_ingress',{}).get('paced') is True
         width=1024 if paced else 1
         admitted=0
+        self.admitted_bytes=0
         try:
             for offset in range(0,len(packet),width):
                 chunk=packet[offset:offset+width].hex()
@@ -249,6 +328,7 @@ class SchoolService:
                 command=f'inject {when} uart-paced 100000 {chunk}' if paced else f'inject {when} uart {chunk}'
                 session.external(value,state,command)
                 admitted+=len(chunk)//2
+                self.admitted_bytes=admitted
         except BaseException:
             self.partial=admitted>0;raise
 
@@ -259,6 +339,14 @@ class SchoolService:
             try:
                 if job['epoch']!=self.epoch:raise ValueError('external school epoch changed; reconnect explicitly')
                 result=future.result()
+                if job['operation']=='help':
+                    ask=job['ask']
+                    if self.delivery is None or self.delivery['decision']!=result['decision']:
+                        self.delivery_report('cancelled',{'reason':'navigation'})
+                        path=uart_path(self.session.directory,json.loads((self.session.directory/'session.json').read_text()))
+                        self.delivery={'decision':result['decision'],'sequence':ask['sequence'],'revision':ask['revision'],'object':ask['object'],
+                                       'cursor':path.stat().st_size,'partial':b'','accepted':False,'snapshots':0,'lastBusy':None}
+                        self.delivery_next=0;self.delivery_error=None
                 if job['operation']=='submit':self.admit_acknowledgement(result,job['stream'])
                 else:self.admit(result)
                 if job['operation']=='join':self.binding=job['binding']
@@ -266,3 +354,11 @@ class SchoolService:
                 job.update(status='completed',result={k:v for k,v in result.items() if k!='package_hex'})
             except Exception as error:job.update(status='failed',error=str(error))
             job.pop('future',None);job.pop('stream',None)
+        now=time.monotonic()
+        if now>=self.delivery_next:
+            self.delivery_next=now+.25
+            try:self.observe_delivery()
+            except Exception as error:
+                # An observer failure cannot stop guest ink, Save or recovery.
+                self.delivery_error=str(error);self.delivery_next=float('inf')
+        self.pump_receipts()

@@ -315,4 +315,16 @@ for(const phase of ['adapter','device']){
   await f.node('#install-course').onclick();assert.equal(f.sent.length,count);
  }
 }
+// Keyboard pen uses the same raw input boundary, including contact cancellation.
+{
+ const f=await appFixture(undefined),paper=f.canvas();paper.width=1650;paper.height=2200;
+ const images=f.images.length,key=(key,fields={})=>paper.onkeydown({key,repeat:false,preventDefault(){},...fields});
+ key('Home');for(let i=0;i<3;i++)key('ArrowRight',{ctrlKey:true});key('ArrowRight');
+ key('ArrowDown',{ctrlKey:true});key('ArrowDown');key('ArrowDown');for(let i=0;i<5;i++)key('ArrowDown',{shiftKey:true});
+ assert.match(f.node('#keyboard-pen-status').textContent,/320, 145/);key('Enter');
+ const down=f.sent.at(-2),up=f.sent.at(-1);assert.equal(down.action,'pen');assert.equal(down.flags,3);assert.equal(up.flags,2);
+ assert.equal(down.x,Math.round(320*65535/1649));assert.equal(up.y,Math.round(145*65535/2199));
+ key(' ');key('ArrowRight');assert.equal(f.sent.at(-1).flags,3);paper.onblur();assert.equal(f.sent.at(-1).flags,10);
+ assert.equal(f.images.length,images,'keyboard input must not manufacture controller pixels');
+}
 console.log('PASS actual app host fixture: unresolved GPU leaves controls, worker observation and exact Gray4 fallback functional; qualified switch/loss safely cancel contact');

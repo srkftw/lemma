@@ -27,7 +27,7 @@ function modeControls(){document.querySelectorAll('[data-developer]').forEach(co
 sessionMode.onchange=()=>{beginSelection();modeControls();};modeControls();
 function scaleDisplay(){const factor=({'1':1,'1.5':1.5,'2':2})[displayScale.value]||0;
  canvas.style.width=factor?`${canvas.width*factor}px`:'';}
-function cancelContact(){if(active===null)return;const pointer=active;active=null;activeTransform=null;
+function cancelContact(){cancelKeyboardPen();if(active===null)return;const pointer=active;active=null;activeTransform=null;
  send('pen',{...last,pressure:0,flags:10,tool:activeTool});
  try{canvas.releasePointerCapture(pointer);}catch(e){} }
 // Zoom presents the existing controller plane. Cancel an active contact before
@@ -110,7 +110,26 @@ function point(e,contact,cancel=false){const r=pointerTransform();
  // Pressure is a raw browser device capability. A mouse is explicitly a
  // synthetic-pressure source; cancellation supplies a loss/resync flag.
  send('pen',{...last,pressure:contact?Math.round((e.pointerType==='pen'?e.pressure:0.5)*4095):0,flags:cancel?10:contact?3:2,tool:e.pointerType==='pen'?1:0});}
-function bindPointer(){canvas.onpointerdown=e=>{if(active!==null)return;const transform=pointerTransform();
+// Keyboard input is an ordinary synthetic pen source. It sends the same raw
+// samples as a mouse and never draws a host cursor into controller pixels.
+let keyboardX=0,keyboardY=0,keyboardDown=false;
+function keyboardPoint(contact,cancel=false){send('pen',{x:Math.round(keyboardX*65535/Math.max(1,canvas.width-1)),y:Math.round(keyboardY*65535/Math.max(1,canvas.height-1)),pressure:contact?2047:0,flags:cancel?10:contact?3:2,tool:0});}
+function cancelKeyboardPen(){if(keyboardDown){keyboardDown=false;keyboardPoint(false,true);}}
+function keyboardPosition(){document.querySelector('#keyboard-pen-status').textContent=`Keyboard pen at ${keyboardX}, ${keyboardY}${keyboardDown?' · contact':''}`;}
+function keyboardKey(e){
+ const movement={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
+ if(movement){e.preventDefault();const step=e.shiftKey?1:e.ctrlKey?100:20;
+  keyboardX=Math.max(0,Math.min(canvas.width-1,keyboardX+movement[0]*step));keyboardY=Math.max(0,Math.min(canvas.height-1,keyboardY+movement[1]*step));
+  if(keyboardDown)keyboardPoint(true);keyboardPosition();
+ }else if(e.key==='Home'){e.preventDefault();cancelKeyboardPen();keyboardX=keyboardY=0;keyboardPosition();
+ }else if(e.key===' '){e.preventDefault();if(!e.repeat&&!keyboardDown&&active===null){keyboardDown=true;keyboardPoint(true);keyboardPosition();}
+ }else if(e.key==='Enter'){e.preventDefault();if(!e.repeat&&!keyboardDown&&active===null){keyboardPoint(true);keyboardPoint(false);}
+ }else if(e.key==='Escape'){e.preventDefault();cancelKeyboardPen();keyboardPosition();}
+}
+function bindPointer(){canvas.tabIndex=0;canvas.onkeydown=keyboardKey;
+ canvas.onkeyup=e=>{if(e.key===' '){e.preventDefault();if(keyboardDown){keyboardDown=false;keyboardPoint(false);keyboardPosition();}}};
+ canvas.onblur=()=>{cancelKeyboardPen();keyboardPosition();};
+ canvas.onpointerdown=e=>{cancelKeyboardPen();if(active!==null)return;const transform=pointerTransform();
  if(transform===null||!Number.isFinite(e.clientX)||!Number.isFinite(e.clientY))return;
  active=e.pointerId;activeTool=e.pointerType==='pen'?1:0;activeTransform=transform;canvas.setPointerCapture(active);point(e,true);};
 canvas.onpointermove=e=>{if(e.pointerId===active)point(e,true);};
@@ -141,7 +160,7 @@ document.querySelector('#school-install').onclick=()=>{
  if(!selected){schoolStatus.textContent='Connect and select an enrolled publication first.';return;}
  schoolAction('install',{course:Number(selected.dataset.course),revision:Number(selected.dataset.revision)});
 };
-for(const operation of ['join','help','feedback','submit','cancel','disconnect'])document.querySelector('#school-'+operation).onclick=()=>schoolAction(operation);
+for(const operation of ['join','help','feedback','receipts','submit','cancel','disconnect'])document.querySelector('#school-'+operation).onclick=()=>schoolAction(operation);
 document.querySelector('#school-reviews').onclick=()=>schoolAction('reviews',{after:0});
 document.querySelector('#school-reviews-next').onclick=()=>schoolAction('reviews',{after:reviewCursor});
 document.querySelector('#school-review-open').onclick=()=>{
