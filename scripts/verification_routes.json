@@ -176,7 +176,10 @@
         "scripts/*_deployment.py",
         "scripts/toolchain_preparation.py",
         "scripts/build_dependencies.py",
-        "scripts/action_worker.py"
+        "scripts/action_worker.py",
+        "scripts/arithmetic_closure_identity.py",
+        "scripts/surface_word_inline.py",
+        "tooling/FactoryBootMain.lean"
       ],
       "claims": [
         "cache-host",
@@ -241,7 +244,10 @@
         "scripts/lemmasim_readonly.py",
         "tests/kernel/*",
         "tests/core0/*",
-        "scripts/build_admission.py"
+        "scripts/build_admission.py",
+        "scripts/arithmetic_closure_identity.py",
+        "scripts/surface_word_inline.py",
+        "scripts/check_course_install.py"
       ],
       "claims": [
         "kernel-host",
@@ -295,7 +301,9 @@
         "tooling/silicon/sim.nix",
         "tests/silicon/*",
         "scripts/silicon_reset_rom.py",
-        "scripts/silicon_profile.py"
+        "scripts/silicon_profile.py",
+        "conformance/silicon/Pen*.sv",
+        "scripts/check_pen_sram.py"
       ],
       "claims": [
         "cache-host",
@@ -331,7 +339,8 @@
         "scripts/check_browser_*.py",
         "scripts/lemmasim_browser_tci.py",
         "sim/browser/tci/*",
-        "tooling/lemmasim/tci/*"
+        "tooling/lemmasim/tci/*",
+        "scripts/check_tci_uart.mjs"
       ],
       "claims": [
         "browser",
@@ -361,7 +370,13 @@
         "tooling/silicon/layout.tcl",
         "tooling/silicon/extract.tcl",
         "tooling/silicon/process.tcl",
-        "tooling/silicon/enclosure-inputs-v1.json"
+        "tooling/silicon/enclosure-inputs-v1.json",
+        "conformance/silicon/Pen*.sv",
+        "scripts/check_pen_sram.py",
+        "scripts/silicon_enclosure.py",
+        "scripts/silicon_pen_*.py",
+        "scripts/silicon_route_enclosure.py",
+        "tooling/silicon/pen-*.tcl"
       ],
       "claims": [
         "physical-flow"
@@ -551,7 +566,8 @@
         "engineering/multimodal/**",
         "scripts/check_multimodal_engineering.py",
         "docs/multimodal-engineering.html",
-        "docs/evidence/007-multimodal-engineering.json"
+        "docs/evidence/007-multimodal-engineering.json",
+        "scripts/check_sg13g2_microphone.py"
       ],
       "claims": [
         "multimodal-engineering",
@@ -599,7 +615,9 @@
         "scripts/school_transport.py",
         "examples/school/QuickReview.lean",
         "examples/school/*unit.json",
-        "examples/school/*mappings.json"
+        "examples/school/*mappings.json",
+        "scripts/school_develop.py",
+        "scripts/school_fs_barrier.py"
       ],
       "claims": [
         "school-host",
@@ -638,7 +656,9 @@
         "scripts/check_school_job_worker.py",
         "scripts/check_school_load_worker.py",
         "scripts/school_provider_runner.py",
-        "scripts/check_school_worker_lifecycle.py"
+        "scripts/check_school_worker_lifecycle.py",
+        "examples/school/training-config.json",
+        "scripts/check_school_training_workflow.py"
       ],
       "claims": [
         "school-numerics",
@@ -701,7 +721,11 @@
         "tests/courses/NotebookSchool.lean",
         "tests/courses/SchoolGuard*.lean",
         "tests/courses/Selection.lean",
-        "examples/school/ConsecutiveSquares.lean"
+        "examples/school/ConsecutiveSquares.lean",
+        "scripts/check_course_install.py",
+        "scripts/lemmasim_course.py",
+        "tests/courses/SelectionExport.lean",
+        "tooling/school-target-authority.json"
       ],
       "claims": [
         "school-host",
@@ -731,7 +755,11 @@
         "tests/silicon/test_integrated_profile.py",
         "tooling/integrated-target-authority.json",
         "tooling/lemmasim/tci/incremental_uart.py",
-        "sim/browser/tci/uart_arrivals.mjs"
+        "sim/browser/tci/uart_arrivals.mjs",
+        "scripts/lemmasim_auth.py",
+        "scripts/lemmasim_product.py",
+        "scripts/package_product_image.py",
+        "tooling/FactoryBootMain.lean"
       ],
       "claims": [
         "rtl-devices",
