@@ -69,7 +69,11 @@ class ArithmeticCatalog(unittest.TestCase):
         'lemmasim-silicon-multimodal-notebook',
         'lemmasim-silicon-multimodal-initialize',
         'lemmasim-silicon-multimodal-parameterized-notebook',
-        'lemmasim-silicon-multimodal-parameterized-initialize'})
+        'lemmasim-silicon-multimodal-parameterized-initialize',
+        'lemmasim-silicon-school-notebook',
+        'lemmasim-silicon-school-initialize',
+        'lemmasim-silicon-integrated-notebook',
+        'lemmasim-silicon-integrated-school-notebook'})
         for config,(server,profile,kernel) in expected.items():
             with self.subTest(configuration=config):
                 rows=image_specs(config)
@@ -81,7 +85,7 @@ class ArithmeticCatalog(unittest.TestCase):
                 self.assertEqual(configuration_profile(config),f'lemma-silicon-dev/0.{profile}.0')
                 self.assertEqual(kernel_contract(config),f'core0-kernel-v0.{kernel}')
     def test_exact_multimodal_successor_preserves_four_isolated_roles(self):
-        from multimodal_deployment import CONFIGURATIONS, PARAMETERIZED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT, BOOT_ROOTS
+        from multimodal_deployment import LEGACY_CONFIGURATIONS as CONFIGURATIONS, PARAMETERIZED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT, BOOT_ROOTS
         for configuration in CONFIGURATIONS:
             with self.subTest(configuration=configuration):
                 rows=image_specs(configuration)
@@ -99,6 +103,40 @@ class ArithmeticCatalog(unittest.TestCase):
                     ('Lemma.Platform.LemmaSim.NotebookKernel.dispatchMultimodalBulk',('u64','u64','u64'))))
         for name in ('lemmasim-silicon-multimodal-any','lemmasim-silicon-multimodal-privileged'):
             with self.assertRaises(Core0Error):configuration_roots(name)
+
+    def test_school_and_integrated_successors_keep_exact_roles_and_legacy_distinct(self):
+        for configuration, integrated in (
+                ('lemmasim-silicon-school-notebook', False),
+                ('lemmasim-silicon-school-initialize', False),
+                ('lemmasim-silicon-integrated-school-notebook', True)):
+            with self.subTest(configuration=configuration):
+                rows=list(image_specs(configuration))
+                self.assertEqual([(r['key'],r['id'],r['source'],r['boot_role']) for r in rows], [
+                    ('store',1,'Lemma.Services.Store.ServerSchool.main','store-server'),
+                    ('notebook',2,'Lemma.Applications.Notebook.mainMultimodalSchool','notebook'),
+                    ('arithmetic',3,'Lemma.Services.Arithmetic.ServerV8.main','arithmetic-server'),
+                    ('course',4,'Lemma.Courses.PackageInstaller.mainAwaitSelected','course-installer')])
+                software=software_deployment_fields(configuration)['software_deployment']
+                self.assertEqual(software['contract_version'],'lemma-school-notebook-deployment/2')
+                self.assertEqual(software['notebook_version'],23)
+                self.assertEqual(software['submission_contract'],'lemma-school-guest-submission/2')
+                self.assertEqual(software['user_profiles']['store'],'core0-user-v0.2')
+                self.assertEqual(kernel_contract(configuration),'core0-kernel-v0.10' if integrated else 'core0-kernel-v0.9')
+                self.assertEqual(configuration_profile(configuration),'lemma-silicon-dev/0.15.0' if integrated else 'lemma-silicon-dev/0.14.0')
+                value={'schema_version':1,'contract_version':'lemma-user-image-catalog-v1',
+                    'configuration':configuration,'stage':'supervisor','image_count':4,'images':rows,
+                    **managed_fields(configuration),**software_deployment_fields(configuration)}
+                validate_user_image_catalog(value)
+                for index,source in ((0,'Lemma.Services.Store.Server.courseMain'),
+                                     (1,'Lemma.Applications.Notebook.mainMultimodal'),
+                                     (3,'Lemma.Courses.PackageInstaller.mainAwait')):
+                    changed=[dict(row) for row in rows];changed[index]['source']=source
+                    with self.assertRaises(Core0Error):validate_user_image_catalog({**value,'images':changed})
+        rows=image_specs('lemmasim-silicon-integrated-notebook')
+        self.assertEqual(rows[0]['source'],'Lemma.Services.Store.ServerAwait.main')
+        self.assertEqual(rows[1]['source'],'Lemma.Applications.Notebook.mainMultimodal')
+        self.assertEqual(software_deployment_fields('lemmasim-silicon-integrated-notebook')['software_deployment']['contract_version'],
+                         'lemma-integrated-notebook-deployment/1')
 
     def test_trial_watchdog_keeps_four_roles_and_separate_privileged_roots(self):
         config = 'lemmasim-silicon-product-course-watchdog-bulk-notebook'
