@@ -383,7 +383,7 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("timeout-minutes: 45", self.kernel)
         self.assertIn("timeout --foreground --signal=TERM --kill-after=30s 40m", self.kernel)
         for required in ("nix develop --no-write-lock-file --command", "python3 scripts/check_kernel.py",
-                         "--work-dir build/kernel/ci-prefix", "--clean", "--timeout 300", "--qemu-timeout 90", "--deadline 2400"):
+                         "--work-dir build/kernel/ci-prefix", "--clean", "--jobs 2", "--timeout 300", "--qemu-timeout 90", "--deadline 2400"):
             self.assertIn(required, self.kernel)
         pipeline_blocks = re.findall(r"run: \|\n((?: {10}.*(?:\n|$))+)", self.kernel)
         logged = [block for block in pipeline_blocks if "| tee " in block]
@@ -393,6 +393,9 @@ class CiWorkflowTests(unittest.TestCase):
                          'value["required_gate_prefix"] == "A-E" and value["highest_exercised_gate"] == "E"',
                          'len(value["images"]) == 20 and len(value["observations"]) == 24',
                          'value["qemu_sessions"] == 28 and value["syscall_user_instances"] == 6',
+                         'value["jobs"] == 2 and len(value["matrix_rows"]) == 20',
+                         '[row["index"] for row in value["matrix_rows"]] == list(range(20))',
+                         'require(admitted["supervision"] == row)',
                          'recorded["source_commit"] == value["source"]["commit"]',
                          'recorded["lean_source_realization"]',
                          'realized["source_path"] == lean["source_path"] and realized["revision"] == lean["revision"]',

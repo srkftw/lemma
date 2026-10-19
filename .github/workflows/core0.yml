@@ -874,6 +874,7 @@ jobs:
                 --work-dir build/kernel/ci-prefix \
                 --host-prerequisite build/ci/metadata/kernel-host-prerequisite/receipt.json \
                 --clean \
+                --jobs 2 \
                 --timeout 300 \
                 --qemu-timeout 90 \
                 --deadline 2400 \
@@ -890,7 +891,7 @@ jobs:
           from pathlib import Path
           sys.path.insert(0, "scripts")
           from build_kernel import source_inputs
-          from check_kernel import acceptance_inputs, matrix, source_identity, validate_session
+          from check_kernel import acceptance_inputs, matrix, source_identity, validate_row_result, validate_session
           from check_kernel_syscall import DEFAULT_SEEDS
           def require(condition):
               if not condition:
@@ -904,9 +905,22 @@ jobs:
           require(value["required_gate_prefix"] == "A-E" and value["highest_exercised_gate"] == "E")
           require(len(value["images"]) == 20 and len(value["observations"]) == 24)
           require(value["qemu_sessions"] == 28 and value["syscall_user_instances"] == 6)
+          require(value["jobs"] == 2 and len(value["matrix_rows"]) == 20)
+          require([row["index"] for row in value["matrix_rows"]] == list(range(20)))
           require(value["source"] == source_identity(Path.cwd()))
           require(value["source_inputs"] == source_inputs(Path.cwd()))
           require(value["acceptance_inputs"] == acceptance_inputs(Path.cwd()))
+          for row in value["matrix_rows"]:
+              request_path = Path(row["request"])
+              supervisor_path = Path(row["supervisor"])
+              require(digest(request_path) == row["request_sha256"] and digest(supervisor_path) == row["supervisor_sha256"])
+              require(digest(Path(row["result"])) == row["result_sha256"] and row["cleanup_complete"] is True)
+              request = json.loads(request_path.read_text())
+              require(request["source"] == value["source"] and request["source_inputs"] == value["source_inputs"])
+              require(request["acceptance_inputs"] == value["acceptance_inputs"] and request["slot"] in (0, 1))
+              admitted = validate_row_result(Path.cwd(), Path("build/kernel/ci-prefix").resolve(), request,
+                                            request_path.resolve(), row["request_sha256"], supervisor_path.resolve())
+              require(admitted["supervision"] == row)
           from host_prerequisites import validate as validate_host_prerequisite
           admission = validate_host_prerequisite(Path.cwd(), Path("build/kernel/ci-prefix/host-prerequisite/receipt.json"))
           shared = [row for row in value["invocations"] if row.get("route") == "lemma-kernel-host-prerequisite/1"]
