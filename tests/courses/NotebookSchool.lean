@@ -25,6 +25,7 @@ structure Model where
   words : Std.HashMap UInt64 UInt64 := {}
   syscalls : Array (UInt8 × UInt64) := #[]
   writes : Array UInt64 := #[]
+  forbiddenPage : Option UInt64 := none
 private def word (m : Model) (a : UInt64) : UInt64 := m.words.getD a 0
 private def write (m : Model) (a v : UInt64) : Model :=
   {m with words := m.words.insert a v, writes := m.writes.push a}
@@ -44,6 +45,9 @@ partial def run (r : IO.Ref Model) : Action → IO (UInt8 × UInt64)
     run r (next s v)
   | .platform op a b _ _ _ _ next => do
     let m ← r.get
+    if op == .virtualRead64 || op == .virtualWrite64 || op == .virtualRead8 || op == .virtualWrite8 then
+      if m.forbiddenPage == some (a-a%4096) then
+        throw <| IO.userError s!"access to unallocated private page {a-a%4096} at {a}"
     if op == .virtualRead64 then
       if a%8 != 0 then throw <| IO.userError "unaligned read"
       run r (next 0 (word m a))
@@ -135,8 +139,22 @@ private def saveChecks : IO Unit := do
       (← get r (base+232)) == 4 && (← get r (base+168)) == 43)
     "older foreground Begin lowered concurrent commit frontier or failed real next Commit"
 
+private def bootGateCheck : IO Unit := do
+  let r ← IO.mkRef ({forbiddenPage:=some Lemma.User.Multimodal.records} : Model)
+  put r (base+712) 99; put r (base+720) 99; put r (base+760) 99
+  let cleared ← run r ((schoolNotebook% "clearStep") 0 80 0 0 0 0 0)
+  expect (cleared.1 == 0 && (← get r (base+712)) == 0 && (← get r (base+720)) == 0 && (← get r (base+760)) == 0)
+    "boot did not clear always-mapped queue lifecycle gates before fresh Save"
+  for school in #[0,1] do
+    put r (base+760) school;put r (base+16) 7;put r (base+72) 1
+    put r (base+224) 1;put r (base+384) 16;put r (base+176) 9
+    r.modify fun m => {m with syscalls:=#[(0,42)]}
+    let issued ← run r ((schoolNotebook% "issue") 2 0 0 0)
+    expect (issued.1 == 0 && (← get r (base+168)) == 42 && (← get r (base+232)) == 2)
+      "first Save failed before multimodal/queue allocation in ordinary or school root"
+
 def main : IO Unit := do
-  floorChecks; recordChecks; selectedNodeCheck; saveChecks
+  floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck
   IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply; component only"
 end NotebookSchoolTests
 

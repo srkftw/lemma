@@ -58,8 +58,11 @@ def state : UInt64 := 0x20800
 def raw : UInt64 := 0x20300
 def context : UInt64 := 0x20400
 private def schoolActivityFlag : UInt64 := state + 760
-private def schoolQueueReadyFlag : UInt64 := Lemma.User.Multimodal.records + 2864
-private def schoolQueueError : UInt64 := Lemma.User.Multimodal.records + 2872
+-- These lifecycle gates are used by the first ordinary Save, before the
+-- optional multimodal/queue arenas exist. Keep them in the owned boot BSS,
+-- below packageAllocationAddress and the outgoing Store packet at0x20b00.
+private def schoolQueueReadyFlag : UInt64 := state + 712
+private def schoolQueueError : UInt64 := state + 720
 private def schoolSubmissionHeader : UInt64 := Lemma.User.Multimodal.records + 2560
 def outgoing : UInt64 := 0x20b00
 def incoming : UInt64 := 0x20c00
@@ -109,7 +112,11 @@ private def allocateStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   if actual = address then .done 0 (acc + 1) else failed
 
 private def clearStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
-  .bind (if i = 0 then Memory.write64 schoolActivityFlag 0 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if i = 0 then
+    .bind (Memory.write64 schoolActivityFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 schoolQueueReadyFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
+    Memory.write64 schoolQueueError 0
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put (i.toUInt64 * 8) 0) fun s _ => .done s acc
 
 private def nextRequest : Action :=
