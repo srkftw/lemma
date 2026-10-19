@@ -19,8 +19,9 @@ let serial=Promise.resolve(),timer=null,budget=null,pauseReason=null,started=0,r
 const timing={runSeconds:0},sleep=ms=>new Promise(r=>setTimeout(r,ms));
 // Paced package parsing is substantially more expensive than idle boot in
 // the TCI interpreter. Keep the original60s deadline, but yield after at most
-// one million functional units so ordinary input gets an observation boundary.
-const quantumUnits=1000000n;
+// 100,000 functional units so ordinary input gets an observation boundary.
+// The retained package run advanced896,748units before its60s deadline.
+const quantumUnits=100000n;
 const exactJson=text=>JSON.parse(text.replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));
 let heapBytes=null,uartPaced=false;
 const egress=new PcmEgress();
