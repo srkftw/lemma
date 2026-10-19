@@ -17,6 +17,10 @@ const developer=new Set(['run','raw','raw-batch','course-install','inspect','eve
 let core,control,handle,manifest,backing,loaded=false,running=false,mode='student',mediumName=null,initializing=false;
 let serial=Promise.resolve(),timer=null,budget=null,pauseReason=null,started=0,readyAt=null,loops=0,panelSequence=null,guestStart=0,capture=[],coursePartial=false,interruptEpoch=0;
 const timing={runSeconds:0},sleep=ms=>new Promise(r=>setTimeout(r,ms));
+// Paced package parsing is substantially more expensive than idle boot in
+// the TCI interpreter. Keep the original60s deadline, but yield after at most
+// one million functional units so ordinary input gets an observation boundary.
+const quantumUnits=1000000n;
 const exactJson=text=>JSON.parse(text.replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));
 let heapBytes=null,uartPaced=false;
 const egress=new PcmEgress();
@@ -106,11 +110,11 @@ async function step(){
  if(budget?.hostExpired(performance.now())){pause('host-limit');await stopped();await panel(true);await sendState();return;}
  const entryEpoch=interruptEpoch,before=await inspect();if(entryEpoch!==interruptEpoch)return;if(notebookFault.fault){await sendState(before);return;}if(budget?.stopOnReady&&readyAt!==null){pause('guest-ready');await sendState(before);return;}
  if(budget?.panelCompleted(before)){pause('panel-complete');await sendState(before);return;}
- const quantum=budget?(budget.remaining<10000000n?budget.remaining:10000000n):10000000n;
+ const quantum=budget?(budget.remaining<quantumUnits?budget.remaining:quantumUnits):quantumUnits;
  if(quantum===0n){pause('cycle-limit');await sendState(before);return;}
  const target=(BigInt(before.cycle)+quantum)*10n-7n,start=performance.now();
  await control.set('run-until',String(target));if(entryEpoch!==interruptEpoch)return;await control.request('cont');
- while((await control.request('query-status')).running){if(budget?.hostExpired(performance.now())){pause('host-limit');await stopped();break;}if(performance.now()-start>60000){await stopped();const observed=await inspect(true);postMessage({type:'execution-boundary',contract:'lemma-tci-quantum-observation/1',result:'Original60s execution quantum deadline',before,targetVirtualNs:String(target),observed,elapsedSeconds:(performance.now()-start)/1000});throw Error('Original60s execution quantum deadline');}await sleep(5);}
+ while((await control.request('query-status')).running){if(budget?.hostExpired(performance.now())){pause('host-limit');await stopped();break;}if(performance.now()-start>60000){pause('execution-quantum');await stopped();const observed=await inspect(true),elapsedSeconds=(performance.now()-start)/1000;timing.runSeconds+=elapsedSeconds;postMessage({type:'execution-boundary',contract:'lemma-tci-quantum-observation/1',result:'Original60s execution quantum deadline',before,targetVirtualNs:String(target),observed,elapsedSeconds});await sendState(observed);throw Error('Original60s execution quantum deadline');}await sleep(5);}
  timing.runSeconds+=(performance.now()-start)/1000;loops++;
  const after=await inspect();if(notebookFault.fault){await panel(true);await sendState(after);return;}if(BigInt(after.cycle)<BigInt(before.cycle)||(after.cycle===before.cycle&&entryEpoch===interruptEpoch))throw Error('Actual guest made no virtual-clock progress');
  if(budget)budget.observe(after.cycle,quantum);

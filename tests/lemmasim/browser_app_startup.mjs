@@ -46,6 +46,18 @@ async function appFixture(gpu){
  assert.equal(f.node('#session-mode').disabled,true);
  f.worker.onmessage({data:{type:'closed'}});assert.equal(f.node('#session-mode').disabled,false);
 }
+// A real interpreter deadline must retain its measured progress in the error
+// shown to a Student. A new machine launch cannot inherit that failed interval.
+{
+ const f=await appFixture(undefined);
+ f.worker.onmessage({data:{type:'execution-boundary',before:{cycle:'332823721'},observed:{cycle:'333000123'},targetVirtualNs:'3428237203',elapsedSeconds:60.125,result:'Original60s execution quantum deadline'}});
+ f.worker.onmessage({data:{type:'error',error:'Original60s execution quantum deadline'}});
+ assert.match(f.node('#status').textContent,/332823721 to 333000123/);
+ assert.match(f.node('#status').textContent,/60\.1 s/);
+ f.node('#open').onclick();
+ f.worker.onmessage({data:{type:'error',error:'Different launch failure'}});
+ assert.equal(f.node('#status').textContent,'Different launch failure');
+}
 // Hidden-page notification cancels real queued sink sources in the actual app.
 // Browser DOM/AudioContext fixtures verify host behavior only, not audibility.
 {
