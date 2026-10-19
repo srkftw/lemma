@@ -7,6 +7,7 @@ import Lemma.School.LearnerChoice
 import Lemma.School.LocalProvider
 import Lemma.School.Review
 import Lemma.School.Admission
+import Lemma.School.Submission
 import Lemma.School.Recommendation
 import Lemma.Documents.Mathematics
 
@@ -241,6 +242,21 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let resource ← lift (str request "resource")
     need (validId subject && validId action && !resource.isEmpty && resource.utf8ByteSize <= 128) "invalid grant scope"
     append state "grant" (Digest.sha256String (toJson #[subject,action,resource]).compress) actor now request
+  | "guest-submit" =>
+    let bytes ← lift (Admission.uploadBytes request)
+    let envelope ← lift (Submission.decode bytes)
+    let pub ← publication state envelope.course envelope.edition
+    let package ← readBounded (artifactPath root (optionalStr pub.data "artifact")) 32768
+    need ((← lift (Submission.word package 80)).toNat == envelope.packageCRC)
+      "guest submitted package CRC differs from original immutable publication"
+    let digest := Digest.sha256Bytes bytes
+    let (next,receipt) ← lift (Submission.admit state actor envelope digest (Submission.crc32 bytes) now)
+    if next.records.size != state.records.size then
+      let stored ← putBytes root bytes (min 262144 state.budgets.maxArtifactBytes)
+      need (stored == digest) "guest artifact identity changed while staging"
+      faultBoundary "after-artifact"
+    else requireArtifact root digest
+    return (next,receipt)
   | "work-upload" =>
     let bytes ← lift (Admission.uploadBytes request)
     let digest ← putBytes root bytes (min 262144 state.budgets.maxArtifactBytes)
@@ -362,13 +378,20 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
       need (optionalStr old.data "actor" == actor) "session belongs to another learner"
     let ask : Client.GuestAsk ← lift (field request "ask" >>= fromJson?)
     need (ask.session == guestSession) "joined guest session differs from supplied ASK"
+    let reviewId := optionalStr request "reviewId"
+    if !reviewId.isEmpty then
+      let unit ← definition pub
+      let activity ← lift <| (unit.activities.find? (fun activity => activity.node+1 == ask.task_id)).toExcept "joined review activity absent"
+      lift (Review.admitResponse state actor (object [("reviewId",toJson reviewId),
+        ("course",toJson course),("revision",toJson revision),("activity",toJson activity.id),
+        ("id",toJson s!"pending-join-{state.records.size+1}")]) now)
     let authority := Digest.sha256String (toJson #[state.school,state.deployment]).compress
     if let some old := state.latest "session" session then
       let prior : Client.SessionBinding ← lift (fromJson? old.data)
       if prior.authority == authority && prior.generation == state.generation && prior.course == course &&
           prior.revision == revision && prior.guestSession == guestSession && !prior.cancelled && prior.expires > now then
         if let some invitation := state.latest "invitation" (toString prior.bindingRecord) then
-          if (← lift (field invitation.data "ask")) == toJson ask then
+          if (← lift (field invitation.data "ask")) == toJson ask && optionalStr invitation.data "reviewId" == reviewId then
             let digest ← lift (str invitation.data "artifact")
             let bytes ← readBounded (artifactPath root digest) 32768
             return (state,object [("binding",toJson prior),("package_hex",toJson (hex bytes)),
@@ -390,7 +413,7 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let digest ← putBytes root bytes 32768
     let next ← lift (state.add "session" session actor now (toJson binding) #[digest])
     let next ← lift (next.add "invitation" (toString binding.bindingRecord) actor now
-      (object [("ask",toJson ask),("artifact",toJson digest),("bindingRecord",toJson binding.bindingRecord)]) #[digest])
+      (object [("ask",toJson ask),("artifact",toJson digest),("bindingRecord",toJson binding.bindingRecord),("reviewId",toJson reviewId)]) #[digest])
     return (next,object [("binding",toJson binding),("package_hex",toJson (hex bytes)),
       ("identity",toJson (60000:Nat)),("edition",toJson ask.sequence)])
   | "assist" =>
