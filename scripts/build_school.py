@@ -19,7 +19,7 @@ def inputs(root):
     paths = lean_source_inputs(root, [root / "Lemma/School/Main.lean", root / "Lemma/School/CurriculumMain.lean"])
     for name in ("fixtures/school/Distributivity.txt", "lakefile.toml", "lake-manifest.json",
                  "lean-toolchain", "flake.nix", "flake.lock", "tooling/toolchain-lock.json",
-                 "scripts/build_school.py"):
+                 "scripts/build_school.py", "scripts/school_fs_barrier.py"):
         paths[name] = root / name
     return {name: sha256(path) for name, path in sorted(paths.items())}
 
@@ -49,6 +49,11 @@ def main():
             destination = output / name
             shutil.copy2(source, destination)
             binaries[name] = {"path": str(destination), "sha256": sha256(destination)}
+        shutil.copy2(root / "scripts/school_fs_barrier.py", output / "school_fs_barrier.py")
+        result["hostPrimitives"] = {"school_fs_barrier.py": {
+            "path": str(output / "school_fs_barrier.py"),
+            "sha256": sha256(output / "school_fs_barrier.py"),
+            "scope": "fsync one Lean-selected file/directory; no domain policy"}}
         result.update(result="PASS", binaries=binaries,
                       leanVersion=subprocess.check_output(["lean", "--version"], cwd=root, text=True).strip(),
                       sourceCommit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),

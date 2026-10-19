@@ -49,6 +49,11 @@ def main():
             if sha256(Path(record["path"])) != record["sha256"]:
                 raise RuntimeError("pinned hosted executable changed")
             environment["LEMMA_SCHOOL_TEST_BINARY" if name == "school" else "LEMMA_SCHOOL_TEST_CURRICULUM"] = record["path"]
+        primitive = producer.get("hostPrimitives", {}).get("school_fs_barrier.py")
+        if not primitive or sha256(Path(primitive["path"])) != primitive["sha256"]:
+            raise RuntimeError("pinned storage barrier primitive missing or changed")
+        environment["LEMMA_SCHOOL_FS_BARRIER"] = primitive["path"]
+        environment["LEMMA_SCHOOL_FS_PYTHON"] = sys.executable
         commands = [
             ([sys.executable, "-m", "unittest", "discover", "-s", "tests/school", "-v"], "host.log", 300),
             (["lake", "env", "lean", "--run", "tests/school/Client.lean"], "client-validation.log", 120),

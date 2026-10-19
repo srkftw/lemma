@@ -127,12 +127,18 @@ instance : FromJson Checkpoint where
 
 def validateCheckpoint (state : Checkpoint) (dataset : String) : Except String Unit := do
   unless state.schema == "lemma-linear-checkpoint/v1" && state.numericProfile == profile &&
-      state.codeVersion == "school-linear-training/0.1.0" do throw "checkpoint version is incompatible"
+      #["school-linear-training/0.1.0","school-linear-training/0.2.0"].contains state.codeVersion do
+    throw "checkpoint version is incompatible"
   unless state.dataset == dataset do throw "checkpoint dataset digest mismatch"
   validateParameters state.parameters
   unless state.velocity.size == 3 && state.velocity.all Float.isFinite do throw "invalid optimizer state"
-  unless state.learningRate == 0.1 && state.momentum == 0.5 && state.batchSize == 4 do
-    throw "checkpoint optimizer configuration differs from pinned training semantics"
+  if state.codeVersion == "school-linear-training/0.1.0" then
+    unless state.learningRate == 0.1 && state.momentum == 0.5 && state.batchSize == 4 do
+      throw "checkpoint optimizer configuration differs from pinned training semantics"
+  else
+    unless state.learningRate.isFinite && 0.0 < state.learningRate && state.learningRate <= 0.25 &&
+        state.momentum.isFinite && 0.0 <= state.momentum && state.momentum <= 0.95 && state.batchSize == 4 do
+      throw "configured optimizer requires learningRate (0,0.25], momentum [0,0.95], batchSize 4"
 
 def update (state : Checkpoint) (batch : Array Sample) : Except String Checkpoint := do
   validateCheckpoint state state.dataset

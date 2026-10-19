@@ -9,8 +9,12 @@ fi
 if [[ ${1:-} == catalogue ]]; then
   exec nix develop --no-write-lock-file --command lake exe school "$@"
 fi
+if [[ ${1:-} == training ]]; then
+  shift
+  exec nix develop --no-write-lock-file --command lake env lean --run examples/school/Train.lean "$@"
+fi
 if [[ $# -lt 2 ]]; then
-  echo 'usage: lemma-school ROOT REQUEST_JSON | lemma-school ROOT serve | lemma-school ROOT run [--port PORT]' >&2
+  echo 'usage: lemma-school ROOT REQUEST_JSON | ROOT run | ROOT start/status/stop/backup/restore/fork --school ID --actor ID [options]' >&2
   exit 2
 fi
 nix develop --no-write-lock-file --command lake build school >&2

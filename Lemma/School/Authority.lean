@@ -5,6 +5,9 @@ import Lemma.School.Authoring
 import Lemma.School.Definition
 import Lemma.School.LearnerChoice
 import Lemma.School.LocalProvider
+import Lemma.School.Review
+import Lemma.School.Admission
+import Lemma.School.Recommendation
 import Lemma.Documents.Mathematics
 
 /-! One local database-oriented authority. Every decision below is maintained
@@ -37,7 +40,7 @@ private def enrollmentKey (learner : String) (course revision : Nat) : String :=
 private def publication (state : State) (course revision : Nat) : IO Record :=
   lift <| (state.latest "publication" (key course revision)).toExcept "course publication absent"
 private def enrolled (state : State) (actor : String) (course revision : Nat) : IO Unit :=
-  need ((state.latest "enrollment" (enrollmentKey actor course revision)).isSome) "learner is not enrolled in this publication"
+  need ((state.latest "enrollment" (enrollmentKey actor course revision)).any (fun row => !flag row.data "revoked")) "learner is not enrolled in this publication or enrollment revoked"
 private def definition (row : Record) : IO Authoring.Unit :=
   lift <| (field row.data "definition" >>= Authoring.decode)
 private def recordResult (row : Record) : Json :=
@@ -50,7 +53,7 @@ private def checkTime (state : State) (request : Json) : IO Nat := do
   let now ← if state.clockModel == "controlled-ms" then pure (optionalNat request "now" state.clock)
     else do
       need (!(field request "now").isOk) "explicit now requires controlled-ms school clock"
-      pure (← IO.monoMsNow)
+      schedulingNow state
   need (now >= state.clock && now <= 0x7ffffffffffffffe) "authority clock rollback/range rejected"
   return now
 private def permitted (state : State) (actor action resource : String) : IO Unit :=
@@ -66,7 +69,7 @@ private def consentFor (state : State) (observation : Observation.Observation) :
 
 private def due (state : State) (actor : String) (now : Nat) : Json :=
   toJson <| (state.allLatest "review").filter (fun r => optionalStr r.data "learner" == actor &&
-    optionalNat r.data "due" > 0 && optionalNat r.data "due" <= now && !flag r.data "disabled")
+    optionalNat r.data "due" > 0 && optionalNat r.data "due" <= now && Review.active r)
 
 private def copyExport (root destination : FilePath) (state : State) (sourceRecords : Nat) : IO Unit := do
   need (!(← destination.pathExists)) "export destination already exists"
@@ -85,6 +88,8 @@ private def copyExport (root destination : FilePath) (state : State) (sourceReco
     ("artifacts",toJson state.references),
     ("externalSources",toJson "Source registries retain owner locations and digests; textbook/source bytes are not automatically bundled. Resolve explicitly after restore."),
     ("mode",toJson "offline-authority; stop the original before restoring")]).compress ++ "\n")
+  barrier "file" (destination / "export.json")
+  syncDirectoryAndParent destination
 
 private def writeDefinition (root destination : FilePath) (package : Definition.Package) : IO Unit := do
   lift (Definition.validate package)
@@ -95,7 +100,9 @@ private def writeDefinition (root destination : FilePath) (package : Definition.
     let copied ← putBytes destination (← readBounded (artifactPath root digest) package.budgets.maxArtifactBytes) package.budgets.maxArtifactBytes
     need (copied == digest) "definition artifact differs during copy"
   IO.FS.writeFile (destination / "school-package.part") ((toJson package).compress ++ "\n")
+  barrier "file" (destination / "school-package.part")
   IO.FS.rename (destination / "school-package.part") (destination / "school-package.json")
+  syncDirectoryAndParent destination
 
 /-- Restore copies bytes into a new directory. The caller must explicitly name
 offline authority recovery; this is not independent replication. -/
@@ -112,21 +119,63 @@ def restore (destination : FilePath) (request : Json) : IO Json := do
   for digest in state.references do
     let copied ← putBytes destination (← readBounded (artifactPath source digest) state.budgets.maxArtifactBytes) state.budgets.maxArtifactBytes
     need (copied == digest) "restore artifact differs"
-  let next := {state with generation := state.generation+1}
+  let next ← bindClock state true
   commit destination next
-  return object [("school",toJson next.school),("generation",toJson next.generation),("mode",toJson "offline-restored-authority")]
+  return object [("school",toJson next.school),("generation",toJson next.generation),
+    ("clockEpoch",toJson next.clockEpoch),("clockEpochSequence",toJson next.clockEpochSequence),
+    ("offlineElapsed",toJson "same boot measured; unknown cross-boot time frozen"),
+    ("mode",toJson "offline-restored-authority")]
+
+private def registerModel (root : FilePath) (state : State) (actor : String) (now : Nat)
+    (request : Json) : IO (State × Json) := do
+  permitted state actor "publish" "school"
+  let digest ← lift (str request "artifact")
+  requireArtifact root digest
+  let parameters ← readJson (artifactPath root digest) 16384
+  need (optionalStr parameters "schema" == "lemma-linear-parameters/v1" &&
+    optionalStr parameters "profile" == "school-linear-q10-v1" &&
+    optionalNat parameters "dimensions" == 2 && optionalNat parameters "scale" == 1024)
+    "unsupported model artifact shape or numerical profile"
+  let version ← lift (nat parameters "version")
+  let weights : Array Int ← lift (field parameters "quantized" >>= fromJson?)
+  need (version > 0 && version <= 0x7ffffffffffffffe && weights.size == 3 && weights.all (fun w => w.natAbs <= 8192)) "model parameter range rejected"
+  let id := toString version
+  if let some old := state.latest "model" id then
+    need (optionalStr old.data "artifact" == digest) "immutable model version conflict"
+    return (state,recordResult old)
+  let closure : Array String ← lift (field request "artifacts" >>= fromJson?)
+  need (closure.size > 0 && closure.size <= 32 && closure.contains (optionalStr parameters "dataset"))
+    "model release requires its dataset manifest in the declared artifact closure"
+  for artifact in closure do requireArtifact root artifact
+  let dataset ← readJson (artifactPath root (optionalStr parameters "dataset")) 65536
+  need (#["lemma-synthetic-risk-dataset/v1","lemma-permitted-risk-dataset/v1"].contains (optionalStr dataset "schema"))
+    "private or unknown dataset training profile unsupported"
+  need (!(optionalStr dataset "source").isEmpty && !(optionalStr dataset "grant").isEmpty &&
+    !(optionalStr dataset "labelOrigin").isEmpty && Digest.valid (optionalStr dataset "transformationDigest"))
+    "model release requires explicit source/grant/independent-label/transformation provenance"
+  for name in #["trainDigest","evaluationDigest"] do
+    need (closure.contains (optionalStr dataset name)) s!"model release closure lacks {name}"
+  append state "model" id actor now (object [("artifact",toJson digest),("version",toJson version),
+    ("profile",toJson "school-linear-q10-v1"),("dataset",toJson (optionalStr parameters "dataset")),
+    ("reusable",toJson (flag request "reusable")),("rights",toJson (optionalStr request "rights" "unresolved; owner controlled")),
+    ("scope",toJson "bounded declared-data scorer; no measured educational effect")]) (#[digest] ++ closure)
 
 def execute (root : FilePath) (state : State) (request : Json) : IO (State × Json) := do
+  let now ← checkTime state request
+  let request ← if optionalStr request "op" == "client" then lift (Admission.resolve state request now) else pure request
   let actor ← lift (state.checkSchool request)
   let op ← lift (str request "op")
-  let now ← checkTime state request
   let state := {state with clock := now}
+  if Review.handles op then return ← lift (Review.execute state actor request now)
+  if Admission.handles op then return ← lift (Admission.execute state actor request now)
   match op with
   | "status" =>
     permitted state actor "read" "school"
     return (state,object [("school",toJson state.school),("deployment",toJson state.deployment),
       ("generation",toJson state.generation),("clock",toJson now),("clockModel",toJson state.clockModel),("records",toJson state.records.size),
-      ("provider",toJson "local"),("storage",toJson "close+atomic-rename; process termination only"),
+      ("clockEpoch",toJson state.clockEpoch),("clockEpochSequence",toJson state.clockEpochSequence),
+      ("offlineElapsed",toJson "same boot measured; unknown cross-boot time frozen"),
+      ("provider",toJson "local"),("storage",toJson "fsync-file+rename+fsync-parent/1; requires filesystem/device barrier guarantees"),
       ("budgets",toJson state.budgets),("jobs",toJson (state.allLatest "job")),
       ("artifacts",toJson state.references),("capabilities",toJson #["local-school","course-package/1","stdio/1","rv64-linear-worker/1"] ),
       ("localProvider",LocalProvider.describe state)])
@@ -192,6 +241,14 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let resource ← lift (str request "resource")
     need (validId subject && validId action && !resource.isEmpty && resource.utf8ByteSize <= 128) "invalid grant scope"
     append state "grant" (Digest.sha256String (toJson #[subject,action,resource]).compress) actor now request
+  | "work-upload" =>
+    let bytes ← lift (Admission.uploadBytes request)
+    let digest ← putBytes root bytes (min 262144 state.budgets.maxArtifactBytes)
+    let id := s!"{actor}.{digest}"
+    if (state.latest "work-upload" id).isSome then
+      return (state,object [("digest",toJson digest),("bytes",toJson bytes.size),("state",toJson "retained-upload")])
+    let next ← lift (state.add "work-upload" id actor now (object [("digest",toJson digest)]) #[digest])
+    return (next,object [("digest",toJson digest),("bytes",toJson bytes.size),("state",toJson "retained-upload")])
   | "artifact-put" | "work-put" =>
     if op == "artifact-put" then permitted state actor "publish" "school"
     let path := FilePath.mk (← lift (str request "path"))
@@ -256,6 +313,7 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
       ("edition",toJson source.edition),("digest",toJson source.fileDigest),
       ("rights",toJson source.rights),("scope",toJson "explicit owner-local source resolution; source bytes not redistributed")])
   | "enroll" =>
+    if flag request "admittedLearner" then permitted state actor "enroll" "school"
     let learner ← lift (str request "learner")
     need (validId learner) "invalid learner"
     if learner != actor then permitted state actor "enroll" "school"
@@ -265,6 +323,22 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let id := enrollmentKey learner course revision
     if let some old := state.latest "enrollment" id then return (state,recordResult old)
     append state "enrollment" id actor now request
+  | "review-artifact" =>
+    let fields ← lift request.getObj?
+    let (_,work) ← lift (Review.execute state actor (Json.obj (fields.insert "op" (toJson "review-work"))) now)
+    let digest ← lift (str work "workArtifact")
+    requireArtifact root digest state.budgets.maxArtifactBytes
+    let bytes ← readBounded (artifactPath root digest) state.budgets.maxArtifactBytes
+    return (state,object [("digest",toJson digest),("bytes",toJson bytes.size),("hex",toJson (hex bytes))])
+  | "enrollment-revoke" =>
+    permitted state actor "enroll" "school"
+    let learner ← lift (str request "learner")
+    let course ← lift (nat request "course")
+    let revision ← lift (nat request "revision")
+    let id := enrollmentKey learner course revision
+    let prior ← lift <| (state.latest "enrollment" id).toExcept "enrollment absent"
+    let fields ← lift prior.data.getObj?
+    append state "enrollment" id actor now (Json.obj (fields.insert "revoked" (toJson true)))
   | "client-course" =>
     let course ← lift (nat request "course")
     let revision ← lift (nat request "revision")
@@ -323,6 +397,8 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let session ← lift (str request "session")
     let row ← lift <| (state.latest "session" session).toExcept "school session absent"
     let binding : Client.SessionBinding ← lift (fromJson? row.data)
+    need (binding.actor == actor) "school session actor differs"
+    enrolled state actor binding.course binding.revision
     let pub ← publication state binding.course binding.revision
     let unit ← definition pub
     let ask : Client.GuestAsk ← lift (field request "ask" >>= fromJson?)
@@ -345,7 +421,15 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let text := unit.course.nodes[activity.node]?.map (·.hint) |>.getD ""
     let bytes ← lift (Client.handleAssist binding input text)
     let id := s!"{session}.{ask.sequence}"
-    need ((state.latest "decision" id).isNone) "replayed assistance sequence"
+    if let some prior := state.latest "decision" id then
+      need (flag request "admittedLearner") "replayed assistance sequence"
+      let original : Client.AssistInput ← lift (field prior.data "input" >>= fromJson?)
+      need (prior.actor == actor && toJson {original with now := now} == toJson input &&
+        optionalStr prior.data "artifact" == Digest.sha256Bytes bytes) "assistance retry differs from immutable original context"
+      let digest := optionalStr prior.data "artifact"
+      requireArtifact root digest 32768
+      return (state,object [("decision",toJson id),("package_hex",toJson (hex bytes)),
+        ("identity",toJson (60001:Nat)),("edition",toJson ask.sequence),("artifact",toJson digest),("reused",toJson true)])
     let prior := (state.allLatest "decision").filter (fun r => optionalStr r.data "session" == session)
     need (prior.all (fun r => optionalNat r.data "sequence" < ask.sequence)) "out-of-order assistance sequence"
     let digest ← putBytes root bytes 32768
@@ -380,6 +464,7 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     if let some old := state.latest "attempt" id then
       need (old.actor == actor && stableRequest (← lift (field old.data "request")) == stableRequest request) "attempt idempotency conflict"
       return (state,recordResult old)
+    lift (Review.admitResponse state actor request now)
     let values : Array Nat ← lift (field request "values" >>= fromJson?)
     need (values.size == 5 && values.all (· <= 99)) "typed-answer profile requires five integers in 0..99; ink remains a separate observation"
     let goal := match activity.goal with | .fractionAddition => 1 | .binomialSquare => 2 | .unsupported => 3
@@ -397,6 +482,8 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
         optionalNat receipt "task_id" == activity.node+1 && optionalNat receipt "outcome" == outcome.toNat)
         "guest receipt differs from explicit typed submission/publication/checker comparison"
     if let .ok artifact := str request "observationArtifact" then
+      if flag request "admittedLearner" then
+        need ((state.latest "work-upload" s!"{actor}.{artifact}").isSome) "work artifact is not owned by admitted learner"
       requireArtifact root artifact
       refs := refs.push artifact
     let data := object [("request",request),("course",toJson course),("revision",toJson revision),
@@ -408,12 +495,13 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
       ("estimate",toJson "uncertain; no educational-effect claim"),
       ("origin",toJson (if (field request "guestReceipt").isOk then "owner-local guest observation; hosted comparison separate" else "deliberately supplied local work"))]
     let next ← lift (state.add "attempt" id actor now data refs)
+    let next ← lift (Review.linkResponse next actor request now outcome.toNat)
     append next "review" id actor now (object [("learner",toJson actor),("course",toJson course),
       ("revision",toJson revision),("activity",toJson unit.review.activityId),("sourceAttempt",toJson id),
       ("reviewPolicy",toJson unit.review.version),("policy",toJson (optionalNat pub.data "policy")),
       ("due",toJson (now+unit.review.delaySeconds*1000)),("assisted",toJson assisted),
       ("recommendation",toJson (if assisted || outcome != 1 then "practice" else "later independent review")),
-      ("disabled",toJson false)]) refs
+      ("status",toJson "due"),("disabled",toJson false)]) refs
   | "progress" =>
     let learner := optionalStr request "learner" actor
     if learner != actor then permitted state actor "read" learner
@@ -430,7 +518,7 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let id ← lift (str request "id")
     let row ← lift <| (state.latest "review" id).toExcept "scheduled review absent"
     need (optionalStr row.data "learner" == actor) "review belongs to another learner"
-    need (!flag row.data "disabled" && optionalNat row.data "due" <= now) "review is not due or is disabled"
+    need (Review.active row && optionalNat row.data "due" <= now) "review is not due or is disabled"
     let course := optionalNat row.data "course"
     let revision := optionalNat row.data "revision"
     let pub ← publication state course revision
@@ -451,6 +539,26 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let fields ← lift row.data.getObj?
     let data := Json.obj (fields.insert "due" (toJson dueAt) |>.insert "disabled" (toJson (flag request "disabled")))
     append state "review" id actor now data row.artifacts
+  | "recommendation-input" =>
+    let learner := optionalStr request "learner" actor
+    if learner != actor then permitted state actor "read" learner
+    let course ← lift (nat request "course")
+    let revision ← lift (nat request "revision")
+    enrolled state learner course revision
+    let pub ← publication state course revision
+    let unit ← definition pub
+    let activityId ← lift (str request "activity")
+    let activity ← lift <| (unit.activities.find? (fun a => a.id == activityId)).toExcept "recommendation activity absent"
+    need (!activity.assessment.independent && activity.assistance != .none) "recommendation prohibited during independent assessment"
+    let id ← lift (str request "id")
+    need (validId id) "invalid recommendation input identity"
+    if let some prior := state.latest "recommendation-input" id then
+      need ((← lift (field prior.data "request")) == stableRequest request) "recommendation input idempotency conflict"
+      return (state,recordResult prior)
+    let fields ← lift (Recommendation.prepare state learner course revision now).getObj?
+    append state "recommendation-input" id actor now (Json.obj (fields.insert "request" (stableRequest request)
+      |>.insert "learner" (toJson learner) |>.insert "course" (toJson course) |>.insert "revision" (toJson revision)
+      |>.insert "activity" (toJson activityId) |>.insert "policy" (toJson (optionalNat pub.data "policy")))) pub.artifacts
   | "job-submit" =>
     permitted state actor "execute" "school"
     let id ← lift (str request "job")
@@ -467,6 +575,11 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     for digest in refs do requireArtifact root digest
     let input ← lift (field request "input")
     need (input.compress.utf8ByteSize <= 4096) "job input too large; stage a bounded artifact"
+    if !(optionalStr input "preparation").isEmpty then
+      let prepared ← lift <| (state.latest "recommendation-input" (optionalStr input "preparation")).toExcept "recommendation input absent"
+      for name in #["learner","course","revision","activity","features","presenceMask"] do
+        need ((← lift (field input name)) == (← lift (field prepared.data name))) "job differs from immutable recommendation input"
+      need (optionalNat input "presenceMask" == 3) "missing independent evidence: retain authored baseline"
     append state "job" id actor now (object [("status",toJson "queued"),("class",toJson className),
       ("input",input),("generation",toJson state.generation),("fence",toJson (0:Nat)),
       ("retries",toJson (0:Nat)),("request",request)]) refs
@@ -475,16 +588,16 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let id ← lift (str request "job")
     let row ← lift <| (state.latest "job" id).toExcept "job absent"
     let status := optionalStr row.data "status"
-    let generation := optionalNat row.data "generation"
-    need (status == "queued" || (status == "leased" &&
-      (generation != state.generation || optionalNat row.data "expires" <= now))) "job is neither queued nor expired"
+    need (status == "queued" || (status == "leased" && !state.liveLease row.data now)) "job is neither queued nor expired"
     let retries := optionalNat row.data "retries" + (if status == "leased" then 1 else 0)
     need (retries <= state.budgets.maxRetries) "job retry budget exhausted"
     let leased := (state.allLatest "job").filter (fun r => optionalStr r.data "status" == "leased" &&
-      optionalNat r.data "generation" == state.generation && optionalNat r.data "expires" > now)
+      state.liveLease r.data now)
     need (leased.size < state.budgets.maxLeased) "worker capacity exhausted"
     let duration ← lift (nat request "duration")
-    need (duration > 0 && duration <= state.budgets.maxLeaseMs) "lease duration exceeds resource profile"
+    need (duration > 0 && duration <= state.budgets.maxLeaseMs &&
+      now+duration <= 0x7ffffffffffffffe && state.bootTime now+duration <= 0x7ffffffffffffffe)
+      "lease duration exceeds resource profile"
     let worker ← lift (str request "worker")
     need (validId worker) "invalid worker identity"
     let mut artifactBytes := 0
@@ -500,7 +613,9 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     append state "job" id actor now (object [("status",toJson "leased"),("class",toJson (optionalStr row.data "class")),
       ("input",← lift (field row.data "input")),("request",← lift (field row.data "request")),
       ("generation",toJson state.generation),("fence",toJson (optionalNat row.data "fence"+1)),
-      ("expires",toJson (now+duration)),("worker",toJson worker),("ownerActor",toJson actor),
+      ("expires",toJson (now+duration)),("leaseClockEpoch",toJson state.clockEpoch),
+      ("leaseBootExpires",toJson (state.bootTime now+duration)),
+      ("worker",toJson worker),("ownerActor",toJson actor),
       ("provider",provider),("retries",toJson retries)]) row.artifacts
   | "job-complete" =>
     permitted state actor "execute" "school"
@@ -515,7 +630,7 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     if optionalStr row.data "status" == "completed" then
       need (optionalStr row.data "result" == digest) "committed result differs"
       return (state,recordResult row)
-    need (optionalStr row.data "status" == "leased" && now < optionalNat row.data "expires") "job ownership cancelled or expired"
+    need (optionalStr row.data "status" == "leased" && state.liveLease row.data now) "job ownership cancelled or expired"
     lift (LocalProvider.completionAllowed state row)
     requireArtifact root digest
     let declared ← lift (field row.data "input")
@@ -565,35 +680,40 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
       ("provider",(field row.data "provider").toOption.getD Json.null),
       ("origin",toJson (optionalStr request "origin" "unverified-worker-response"))]
     append state "job" id actor now data (row.artifacts.push digest ++ evidence)
-  | "model-register" =>
+  | "model-register" => registerModel root state actor now request
+  | "training-publish" =>
     permitted state actor "publish" "school"
-    let digest ← lift (str request "artifact")
-    requireArtifact root digest
-    let parameters ← readJson (artifactPath root digest) 16384
-    need (optionalStr parameters "schema" == "lemma-linear-parameters/v1" &&
-      optionalStr parameters "profile" == "school-linear-q10-v1" &&
-      optionalNat parameters "dimensions" == 2 && optionalNat parameters "scale" == 1024)
-      "unsupported model artifact shape or numerical profile"
-    let version ← lift (nat parameters "version")
-    let weights : Array Int ← lift (field parameters "quantized" >>= fromJson?)
-    need (version > 0 && version <= 0x7ffffffffffffffe && weights.size == 3 && weights.all (fun w => w.natAbs <= 8192)) "model parameter range rejected"
-    let id := toString version
-    if let some old := state.latest "model" id then
-      need (optionalStr old.data "artifact" == digest) "immutable model version conflict"
-      return (state,recordResult old)
-    let closure : Array String ← lift (field request "artifacts" >>= fromJson?)
-    need (closure.size > 0 && closure.size <= 32 && closure.contains (optionalStr parameters "dataset"))
-      "model release requires its dataset manifest in the declared artifact closure"
-    for artifact in closure do requireArtifact root artifact
-    let dataset ← readJson (artifactPath root (optionalStr parameters "dataset")) 65536
-    need (optionalStr dataset "schema" == "lemma-synthetic-risk-dataset/v1") "private or unknown dataset training profile unsupported"
-    for name in #["trainDigest","evaluationDigest"] do
-      need (closure.contains (optionalStr dataset name)) s!"model release closure lacks {name}"
-    append state "model" id actor now (object [("artifact",toJson digest),("version",toJson version),
-      ("profile",toJson "school-linear-q10-v1"),("dataset",toJson (optionalStr parameters "dataset")),
-      ("reusable",toJson (flag request "reusable")),("rights",toJson (optionalStr request "rights" "unresolved; owner controlled")),
-      ("scope",toJson "synthetic trained scorer; no measured educational effect")]) (#[digest] ++ closure)
-  | "model-select" =>
+    let output := FilePath.mk (← lift (str request "directory"))
+    let dataset := FilePath.mk (← lift (str request "dataset"))
+    let checkpoint := FilePath.mk (← lift (str request "checkpoint"))
+    let rights ← lift (str request "rights")
+    need (!rights.isEmpty && rights.utf8ByteSize <= 2048) "training publication requires explicit bounded rights/provenance"
+    let parameters ← readJson (output / "parameters.json") 16384
+    let manifest ← readJson (dataset / "manifest.json") 65536
+    let datasetDigest ← Digest.sha256File (dataset / "manifest.json")
+    let saved ← readJson checkpoint 65536
+    need (optionalStr parameters "dataset" == datasetDigest && optionalStr saved "dataset" == datasetDigest &&
+      (← lift (field parameters "parameterBits")) == (← lift (field saved "parameterBits")))
+      "training checkpoint/parameter/dataset identity differs"
+    for (name,digestName) in #[("train.jsonl","trainDigest"),("evaluation.jsonl","evaluationDigest")] do
+      need ((← Digest.sha256File (dataset / name)) == optionalStr manifest digestName) "training split bytes differ from manifest"
+    let mut paths := #[dataset / "manifest.json",dataset / "train.jsonl",dataset / "evaluation.jsonl",
+      checkpoint,output / "evaluation.json"]
+    let configuration := optionalStr parameters "trainingConfiguration" "default/0.1.0"
+    if configuration != "default/0.1.0" then
+      let path := FilePath.mk (← lift (str request "configuration"))
+      need ((← Digest.sha256File path) == configuration) "training configuration identity differs"
+      paths := paths.push path
+    let mut closure := #[]
+    for path in paths do closure := closure.push (← putFile root path state.budgets.maxArtifactBytes)
+    let digest ← putFile root (output / "parameters.json") state.budgets.maxArtifactBytes
+    registerModel root state actor now (object [("artifact",toJson digest),("artifacts",toJson closure),
+      ("rights",toJson rights),("reusable",toJson (flag request "reusable"))])
+  | "models" =>
+    permitted state actor "read" "school"
+    return (state,object [("models",toJson (state.allLatest "model")),
+      ("selection",toJson (state.latest "model-selection" "active"))])
+  | "model-select" | "model-rollback" =>
     permitted state actor "publish" "school"
     let version ← lift (nat request "version")
     let model ← lift <| (state.latest "model" (toString version)).toExcept "model release absent"
@@ -628,6 +748,7 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     append state "suggestion" s!"{learner}.{job}" actor now (object [("learner",toJson learner),
       ("course",toJson course),("revision",toJson revision),("policy",toJson (optionalNat pub.data "policy")),
       ("activity",toJson activityId),("job",toJson job),("model",toJson modelVersion),
+      ("preparation",toJson (optionalStr input "preparation")),
       ("scoreQ20",toJson score),("suggestion",toJson choice),("overrideAllowed",toJson true),
       ("uncertainty",toJson "synthetic estimate; baseline review remains available; not mastery or educational efficacy")])
       (#[digest] ++ model.artifacts ++ pub.artifacts)
@@ -643,7 +764,7 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let id ← lift (str request "job")
     let row ← lift <| (state.latest "job" id).toExcept "job absent"
     need (optionalStr row.data "status" == "leased" &&
-      (optionalNat row.data "generation" != state.generation || optionalNat row.data "expires" <= now || LocalProvider.unavailable state row))
+      (!state.liveLease row.data now || LocalProvider.unavailable state row))
       "retry requires expired or superseded leased ownership"
     let retries := optionalNat row.data "retries"+1
     need (retries <= state.budgets.maxRetries) "retry budget exhausted"
@@ -656,7 +777,7 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     permitted state actor "execute" "school"
     let mut next := state
     for row in state.allLatest "job" do
-      if optionalStr row.data "status" == "leased" && (optionalNat row.data "generation" != state.generation || optionalNat row.data "expires" <= now || LocalProvider.unavailable state row) then
+      if optionalStr row.data "status" == "leased" && (!state.liveLease row.data now || LocalProvider.unavailable state row) then
         let fields ← lift row.data.getObj?
         let retries := optionalNat row.data "retries"+1
         let data := Json.obj (fields.insert "status" (toJson (if retries > state.budgets.maxRetries then "cancelled" else "queued")) |>.insert "retries" (toJson retries))
@@ -702,7 +823,7 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let package ← lift (Definition.fromState state)
     writeDefinition root (path / "definition") package
     let rows := state.records.filter (fun r => r.kind == "publication" || (r.kind == "model" && flag r.data "reusable"))
-    let mut next : State := {school,deployment,operator:=actor,budgets:=state.budgets,clockModel:=state.clockModel}
+    let mut next ← bindClock {school,deployment,operator:=actor,budgets:=state.budgets,clockModel:=state.clockModel}
     for row in rows do
       for digest in row.artifacts do
         let copied ← putBytes path (← readBounded (artifactPath root digest) state.budgets.maxArtifactBytes) state.budgets.maxArtifactBytes
@@ -735,7 +856,7 @@ def installDefinition (destination : FilePath) (request : Json) : IO Json := do
   let deployment ← lift (str request "deployment")
   need (validId school && validId actor && validId deployment) "definition installation needs fresh school/actor/deployment identities"
   let clockModel := optionalStr request "clockModel" "monotonic-ms"
-  let initial : State := {school,operator:=actor,deployment,budgets:=package.budgets,clockModel}
+  let initial ← bindClock {school,operator:=actor,deployment,budgets:=package.budgets,clockModel}
   lift (Store.validateState initial)
   for digest in Definition.references package do
     requireArtifact source digest package.budgets.maxArtifactBytes
