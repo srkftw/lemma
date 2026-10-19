@@ -111,12 +111,15 @@ environment and checkout path. Original commit/tree remain producer provenance;
 byte-identical publication commits do not invalidate it. Changed source or policy
 still invalidates the receipt. Its child tool PATH is closed to immutable Nix
 Python and Git; CI obtains Git through the locked <code>nix shell --inputs-from . nixpkgs#git</code> route without changing the target toolchain. A–E executes Lake and every target qualification
-action freshly. CI uses two isolated row processes with distinct slot cache roots;
-the ordinary checker defaults to one. Each image retains cold private Lake preparation,
-fresh exports and target actions, serial checker roles, the original absolute deadline
-and complete-protocol admission guard. Dedicated row subreapers cancel and reap owned
-separate-session descendants before results can pass. Reports retain the original
-matrix order and exact coverage. The aggregate workflow rejects skipped required jobs.</p>
+action freshly. CI now prepares fixed O0/O2 halves on two independent runners,
+with one row process per producer and the original per-producer bounds and complete-protocol
+guards. Every image retains cold private Lake preparation, fresh exports/target actions
+and serial checker roles. Dedicated subreapers cancel and reap owned descendants.
+The original named A–E acceptance job collects the exact current-run/attempt pair,
+revalidates source/tool/artifact/raw/cleanup identities, and requires the complete ordered
+20-image/24-report/28-session/six-instance matrix. Producer execution and their separate
+host clocks remain distinct from collector validation. A skipped or failed producer prevents
+the required acceptance job from passing; the aggregate rejects every non-success disposition.</p>
 <p>Cleanup respects active actions and explicit pins. Published claims must own their
 producer receipts, output copies and source archives outside the ephemeral cache.
 Do not edit cached objects. Materialized outputs are private copies.</p>

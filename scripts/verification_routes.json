@@ -7,7 +7,7 @@
     "status": "Read-only Git/receipt inspection; each Git command at most 15 seconds; no build or execution",
     "host_export": "scripts/lean_export_host.py: two host Lean workers; 65536 KiB worker stack reservation",
     "ordinary_build": "Existing build entry points default to 300 seconds per bounded tool command",
-    "kernel_fresh_qualification": "scripts/check_kernel.py: deadline at most 2400 seconds, QEMU timeout default 90 seconds; default one isolated row process, CI two; each image retains cold private Lake preparation and fresh target actions",
+    "kernel_fresh_qualification": "scripts/check_kernel.py: default full matrix has 2400-second whole deadline, QEMU default 90 seconds, one/two local row processes. CI uses two independent fixed O0/O2 producers, each one row process, deadline 2400s, tool 300s, QEMU 90s and cold private Lake per image; separate full collector revalidates exact 20/24/28/6. Do not combine host monotonic times into one elapsed claim.",
     "notebook_writing": "CI writing lane: 3500-second whole deadline; separate pinned QEMU build",
     "live_sessions": "Retain each session's original admission/budget receipt; do not restart or extend it from status",
     "incremental_notebook": "scripts/check_incremental_notebook.py: timeout300s per operation, boot30/action30 virtual seconds, whole deadline1200s; fresh instances and private media",
@@ -375,15 +375,29 @@
         "scripts/check_kernel.py",
         "scripts/check_kernel_*.py",
         "scripts/kernel_row_supervisor.py",
+        "scripts/kernel_shard_artifact.py",
         "scripts/check-core0.sh",
         "scripts/check_core0.py",
         "scripts/check-foundation.sh",
         "scripts/check_foundation.py",
         "scripts/check_incremental_builds.py",
         "scripts/host_prerequisites.py",
-        "tests/foundation/test_ci_workflow.py"
+        "tests/foundation/test_ci_workflow.py",
+        "tests/ci/test_workflow_policy.py"
       ],
       "claims": [
+        "fresh-qualification-review"
+      ],
+      "affects": []
+    },
+    {
+      "id": "kernel-shard-transport",
+      "inputs": [
+        "scripts/kernel_shard_artifact.py",
+        "tests/kernel/test_shard_artifact.py"
+      ],
+      "claims": [
+        "kernel-host",
         "fresh-qualification-review"
       ],
       "affects": []

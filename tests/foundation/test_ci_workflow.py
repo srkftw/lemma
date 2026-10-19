@@ -19,7 +19,7 @@ WORKFLOW = ROOT / ".github/workflows/core0.yml"
 REQUIRED_JOBS = ("lemmasim-writing-rv64", "metadata", "kernel-managed-rv64", "kernel-services-rv64", "legacy-rv64",
         "foundation-rv64", "kernel-rv64", "kernel-source-negatives-rv64",
         "kernel-architecture-rv64", "silicon-devices-rtl", "crypto-rv64")
-JOBS = (*REQUIRED_JOBS, "acceptance-summary")
+JOBS = (*REQUIRED_JOBS[:6], "kernel-rv64-shard", *REQUIRED_JOBS[6:], "acceptance-summary")
 
 CHECK_NAMES = {
     "lemmasim-writing-rv64": "Task 004 real notebook O0/O2 writing and cold recovery",
@@ -75,6 +75,7 @@ class CiWorkflowTests(unittest.TestCase):
         cls.legacy = cls.blocks["legacy-rv64"]
         cls.foundation = cls.blocks["foundation-rv64"]
         cls.kernel = cls.blocks["kernel-rv64"]
+        cls.kernel_shard = cls.blocks["kernel-rv64-shard"]
         cls.writing = cls.blocks["lemmasim-writing-rv64"]
         cls.task002 = cls.metadata + cls.legacy + cls.foundation
 
@@ -164,7 +165,7 @@ class CiWorkflowTests(unittest.TestCase):
                 self.assertEqual(re.findall(r"^    runs-on: (.+)$", block, re.M), ["ubuntu-24.04"])
                 self.assertNotRegex(block, re.compile(r"^    if:", re.M))
                 self.assertEqual(re.findall(r"^    needs: (.+)$", block, re.M),
-                                 ["metadata"] if job == "kernel-rv64" else [])
+                                 ["[metadata, kernel-rv64-shard]"] if job == "kernel-rv64" else [])
                 self.assertIn("persist-credentials: false", block)
                 self.assertIn("ref: ${{ github.sha }}", block)
                 self.assertIn("scripts/ci_source.py", block)
@@ -234,7 +235,8 @@ class CiWorkflowTests(unittest.TestCase):
             "foundation-rv64": ("foundation-gates1-9.log", "foundation-qualification.log"),
             "kernel-managed-rv64": ("kernel-managed-rv64.log",),
             "kernel-services-rv64": ("kernel-services-rv64.log",),
-            "kernel-rv64": ("kernel-rv64.log",),
+            "kernel-rv64-shard": ("kernel-rv64-shard.log", "kernel-rv64-shard-pack.log"),
+            "kernel-rv64": ("kernel-rv64-shard-O0-unpack.log", "kernel-rv64-shard-O2-unpack.log", "kernel-rv64.log"),
             "kernel-source-negatives-rv64": ("kernel-source-negatives-rv64.log",),
             "kernel-architecture-rv64": ("kernel-architecture-rv64.log",),
             "silicon-devices-rtl": ("silicon-devices-rtl.log", "silicon-bus-lanes-rtl.log",
@@ -274,7 +276,11 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("if-no-files-found: error", share)
         self.assertNotIn("if:", share)
         self.assertEqual(self.metadata.count("scripts/host_prerequisites.py produce"), 1)
-        self.assertRegex(self.kernel, r"(?m)^    needs: metadata$")
+        self.assertRegex(self.kernel, r"(?m)^    needs: \[metadata, kernel-rv64-shard\]$")
+        self.assertRegex(self.kernel_shard, r"(?m)^    needs: metadata$")
+        for required in ("uses: actions/download-artifact@", "name: " + artifact,
+                         "path: " + receipt, "--host-prerequisite " + receipt + "/receipt.json"):
+            self.assertIn(required, self.kernel_shard)
         for required in ("uses: actions/download-artifact@", "name: " + artifact,
                          "path: " + receipt, "--host-prerequisite " + receipt + "/receipt.json",
                          "from host_prerequisites import validate as validate_host_prerequisite",
@@ -383,18 +389,27 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("timeout-minutes: 45", self.kernel)
         self.assertIn("timeout --foreground --signal=TERM --kill-after=30s 40m", self.kernel)
         for required in ("nix develop --no-write-lock-file --command", "python3 scripts/check_kernel.py",
-                         "--work-dir build/kernel/ci-prefix", "--clean", "--jobs 2", "--timeout 300", "--qemu-timeout 90", "--deadline 2400"):
+                         "--work-dir build/kernel/ci-prefix", "--source-event build/ci/source.json", "--deadline 2400",
+                         "--collect-shard build/kernel/ci-prefix/shards/O0/result.json",
+                         "--collect-shard build/kernel/ci-prefix/shards/O2/result.json"):
             self.assertIn(required, self.kernel)
+        self.assertNotIn("--clean", self.kernel)
         pipeline_blocks = re.findall(r"run: \|\n((?: {10}.*(?:\n|$))+)", self.kernel)
         logged = [block for block in pipeline_blocks if "| tee " in block]
-        self.assertEqual(len(logged), 1)
-        self.assertEqual(next(line.strip() for line in logged[0].splitlines() if line.strip()), "set -euo pipefail")
+        self.assertEqual(len(logged), 2)
+        for block in logged:
+            self.assertEqual(next(line.strip() for line in block.splitlines() if line.strip()), "set -euo pipefail")
         for required in ('value["status"] == "PASS" and value["source"]["clean"] is True',
                          'value["required_gate_prefix"] == "A-E" and value["highest_exercised_gate"] == "E"',
                          'len(value["images"]) == 20 and len(value["observations"]) == 24',
                          'value["qemu_sessions"] == 28 and value["syscall_user_instances"] == 6',
-                         'value["jobs"] == 2 and len(value["matrix_rows"]) == 20',
+                         'value["production_route"] == "same-run-shards" and len(value["shard_producers"]) == 2',
+                         '[producer["optimization"] for producer in value["shard_producers"]] == ["O0", "O2"]',
+                         'len(value["matrix_rows"]) == 20',
                          '[row["index"] for row in value["matrix_rows"]] == list(range(20))',
+                         'revalidate_collected(Path.cwd(), Path("build/kernel/ci-prefix").resolve(), result.resolve(), Path("build/ci/source.json"))',
+                         'validate_retained_row_result(Path.cwd(), Path(request["work_dir"]).resolve(), request,',
+                         'request_path.resolve(), row["request_sha256"], supervisor_path.resolve(), row)',
                          'require(admitted["supervision"] == row)',
                          'recorded["source_commit"] == value["source"]["commit"]',
                          'recorded["lean_source_realization"]',
@@ -409,6 +424,96 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("build/kernel/ci-prefix/", self.kernel)
         self.assertIn("build/ci/kernel-rv64.log", self.kernel)
         self.assertIn("retention-days: 14", self.kernel)
+
+    def test_kernel_cold_shards_keep_both_optimizations_and_original_execution_bounds(self):
+        shard = self.kernel_shard
+        self.assertEqual(re.findall(r"^    name: (.+)$", shard, re.M),
+                         ["Task 003 cold A-E shard (${{ matrix.optimization }})"])
+        self.assertIn("    strategy:\n      fail-fast: false\n      matrix:\n        optimization: [O0, O2]\n", shard)
+        self.assertEqual(re.findall(r"^    timeout-minutes: (\d+)$", shard, re.M), ["45"])
+        self.assertNotRegex(shard, re.compile(r"^    if:", re.M))
+        for required in ("persist-credentials: false", "ref: ${{ github.sha }}",
+                         "python3 scripts/ci_source.py --output build/ci/source.json",
+                         "timeout --foreground --signal=TERM --kill-after=30s 40m",
+                         "nix develop --no-write-lock-file --command",
+                         "nix shell --no-write-lock-file --inputs-from . nixpkgs#git --command",
+                         "--work-dir build/kernel/ci-prefix/shards/${{ matrix.optimization }}",
+                         "--shard ${{ matrix.optimization }}", "--source-event build/ci/source.json",
+                         "--clean", "--jobs 1", "--timeout 300", "--qemu-timeout 90", "--deadline 2400",
+                         "name: kernel-A-E-shard-${{ matrix.optimization }}-${{ github.run_id }}-${{ github.run_attempt }}",
+                         "python3 scripts/kernel_shard_artifact.py pack",
+                         "--archive build/ci/kernel-AE-shard-${{ matrix.optimization }}.tar",
+                         "--receipt build/ci/kernel-AE-shard-${{ matrix.optimization }}.pack.json",
+                         "cp build/ci/kernel-rv64-shard.log build/kernel/ci-prefix/shards/${{ matrix.optimization }}/ci.log",
+                         "if-no-files-found: error", "retention-days: 14"):
+            self.assertIn(required, shard)
+        self.assertLess(shard.index("scripts/ci_source.py"), shard.index("python3 scripts/check_kernel.py"))
+        self.assertEqual(shard.count("--shard ${{ matrix.optimization }}"), 1)
+        self.assertNotIn("--collect-shard", shard)
+        self.assertNotIn("--jobs 2", shard)
+        self.assertNotIn("continue-on-error", shard)
+        for step in ("Stage shard failure log and original source event", "Package the shard with its exact file modes",
+                     "Retain the exact cold optimization shard", "Retain shard source and transport failure logs"):
+            block = shard.split("      - name: " + step + "\n", 1)[1].split("      - name:", 1)[0]
+            self.assertIn("if: ${{ always() }}", block)
+        pack = shard.split("      - name: Package the shard with its exact file modes\n", 1)[1].split("      - name:", 1)[0]
+        self.assertIn("timeout --foreground --signal=TERM --kill-after=30s 2m", pack)
+        self.assertIn("nix develop --no-write-lock-file --command", pack)
+        self.assertLess(shard.index("Stage shard failure log and original source event"),
+                        shard.index("Package the shard with its exact file modes"))
+        upload = shard.split("      - name: Retain the exact cold optimization shard\n", 1)[1].split("      - name:", 1)[0]
+        paths = upload.split("          path: |\n", 1)[1].split("          if-no-files-found:", 1)[0]
+        self.assertEqual([line.strip() for line in paths.splitlines() if line.strip()],
+                         ["build/ci/kernel-AE-shard-${{ matrix.optimization }}.tar",
+                          "build/ci/kernel-AE-shard-${{ matrix.optimization }}.pack.json"])
+        failure_logs = shard.split("      - name: Retain shard source and transport failure logs\n", 1)[1]
+        for required in ("build/ci/source.json", "build/ci/kernel-rv64-shard.log", "build/ci/kernel-rv64-shard-pack.log"):
+            self.assertIn(required, failure_logs)
+        self.assertEqual(re.findall(r"retention-days: (\d+)", shard), ["14", "14"])
+
+    def test_kernel_collector_downloads_only_exact_same_run_pair_without_cleaning_imports(self):
+        for optimization in ("O0", "O2"):
+            marker = "      - name: Download this run's exact " + optimization + " producer\n"
+            block = self.kernel.split(marker, 1)[1].split("      - name:", 1)[0]
+            self.assertIn("uses: actions/download-artifact@", block)
+            self.assertIn("name: kernel-A-E-shard-" + optimization + "-${{ github.run_id }}-${{ github.run_attempt }}", block)
+            self.assertIn("path: build/ci/kernel-shard-artifacts/" + optimization, block)
+            self.assertNotIn("pattern:", block)
+            self.assertNotIn("if:", block)
+        self.assertEqual(self.kernel.count("uses: actions/download-artifact@"), 3)
+        self.assertEqual(self.kernel.count("--collect-shard "), 2)
+        self.assertNotIn("--shard ", self.kernel)
+        self.assertNotIn("--clean", self.kernel)
+        self.assertNotIn("rm -", self.kernel)
+        self.assertNotIn("continue-on-error", self.kernel)
+        self.assertLess(self.kernel.index("Download this run's exact O2 producer"),
+                        self.kernel.index("python3 scripts/check_kernel.py"))
+        restore = self.kernel.split("      - name: Restore both exact mode-preserving shard archives\n", 1)[1].split("      - name:", 1)[0]
+        self.assertEqual(restore.count("timeout --foreground --signal=TERM --kill-after=30s 2m"), 2)
+        self.assertEqual(restore.count("nix develop --no-write-lock-file --command"), 2)
+        self.assertEqual(restore.count("python3 scripts/kernel_shard_artifact.py unpack"), 2)
+        for optimization in ("O0", "O2"):
+            for required in ("--optimization " + optimization,
+                             "--archive build/ci/kernel-shard-artifacts/" + optimization + "/kernel-AE-shard-" + optimization + ".tar",
+                             "--manifest build/ci/kernel-shard-artifacts/" + optimization + "/kernel-AE-shard-" + optimization + ".pack.json",
+                             "--destination build/kernel/ci-prefix/shards/" + optimization,
+                             "--receipt build/ci/kernel-AE-shard-" + optimization + ".extract.json"):
+                self.assertIn(required, restore)
+        self.assertLess(self.kernel.index("Restore both exact mode-preserving shard archives"),
+                        self.kernel.index("Collect and revalidate both exact cold producers"))
+        retain = self.kernel.split("      - name: Retain Task 003 prefix evidence\n", 1)[1]
+        for required in ("build/ci/kernel-shard-artifacts/", "build/ci/kernel-AE-shard-O0.extract.json",
+                         "build/ci/kernel-AE-shard-O2.extract.json", "build/ci/kernel-rv64-shard-O0-unpack.log",
+                         "build/ci/kernel-rv64-shard-O2-unpack.log"):
+            self.assertIn(required, retain)
+        self.assertNotIn("chmod", self.kernel)
+        self.assertNotIn("tar -", self.kernel)
+        for required in ('request["source"] == value["source"] and request["source_inputs"] == value["source_inputs"]',
+                         'request["acceptance_inputs"] == value["acceptance_inputs"]',
+                         'digest(request_path) == row["request_sha256"] and digest(supervisor_path) == row["supervisor_sha256"]',
+                         'digest(Path(row["result"])) == row["result_sha256"] and row["cleanup_complete"] is True',
+                         'require(admitted["supervision"] == row)'):
+            self.assertIn(required, self.kernel)
 
     def test_new_kernel_lanes_require_exact_bounded_commands_and_revalidators(self):
         cases = (
