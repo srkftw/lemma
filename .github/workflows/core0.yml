@@ -524,6 +524,10 @@ jobs:
       - name: Observe hosted synthetic training and exact checkpoint resume
         run: |
           set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              lake build Lemma.Numerics.Linear \
+            2>&1 | tee build/ci/metadata/school-training-preparation.log
           timeout --foreground --signal=TERM --kill-after=10s 3m \
             nix develop --no-write-lock-file --command \
               python3 scripts/check_school_training.py --work-dir build/school/ci-training \
@@ -720,21 +724,32 @@ jobs:
                 build/school/ci-worker-parameters/checkpoint.json \
                 build/school/ci-worker-parameters/early 1 0 \
             2>&1 | tee build/ci/school-worker-parameters.log
-          for optimization in O0 O2; do
-            timeout --foreground --signal=TERM --kill-after=10s 2m \
-              nix develop --no-write-lock-file --command \
-                python3 scripts/build_school_worker.py --fresh \
-                  --opt-level "$optimization" --output-dir "build/school/ci-worker-$optimization" \
-              2>&1 | tee "build/ci/school-worker-$optimization-build.log"
-            timeout --foreground --signal=TERM --kill-after=10s 1m \
-              nix develop --no-write-lock-file --command \
-                python3 scripts/check_school_worker.py \
-                  --image "build/school/ci-worker-$optimization/image.elf" \
-                  --parameters fixtures/school/numerics/parameters-step160.json \
-                  --alternate-parameters build/school/ci-worker-parameters/early/parameters.json \
-                  --work-dir "build/school/ci-worker-execution-$optimization" \
-              2>&1 | tee "build/ci/school-worker-$optimization-execution.log"
-          done
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/build_school_worker.py --fresh \
+                --opt-level O0 --output-dir build/school/ci-worker-O0 \
+            2>&1 | tee build/ci/school-worker-O0-build.log
+          timeout --foreground --signal=TERM --kill-after=10s 1m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_school_worker.py \
+                --image build/school/ci-worker-O0/image.elf \
+                --parameters fixtures/school/numerics/parameters-step160.json \
+                --alternate-parameters build/school/ci-worker-parameters/early/parameters.json \
+                --work-dir build/school/ci-worker-execution-O0 \
+            2>&1 | tee build/ci/school-worker-O0-execution.log
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/build_school_worker.py --fresh \
+                --opt-level O2 --output-dir build/school/ci-worker-O2 \
+            2>&1 | tee build/ci/school-worker-O2-build.log
+          timeout --foreground --signal=TERM --kill-after=10s 1m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_school_worker.py \
+                --image build/school/ci-worker-O2/image.elf \
+                --parameters fixtures/school/numerics/parameters-step160.json \
+                --alternate-parameters build/school/ci-worker-parameters/early/parameters.json \
+                --work-dir build/school/ci-worker-execution-O2 \
+            2>&1 | tee build/ci/school-worker-O2-execution.log
 
       - name: Retain legacy RV64 evidence
         if: ${{ always() }}

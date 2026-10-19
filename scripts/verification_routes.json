@@ -379,7 +379,8 @@
         "scripts/check-foundation.sh",
         "scripts/check_foundation.py",
         "scripts/check_incremental_builds.py",
-        "scripts/host_prerequisites.py"
+        "scripts/host_prerequisites.py",
+        "tests/foundation/test_ci_workflow.py"
       ],
       "claims": [
         "fresh-qualification-review"

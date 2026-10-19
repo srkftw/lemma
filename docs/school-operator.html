@@ -57,6 +57,7 @@ scripts/lemma-school curriculum compile build/school/my-quick-review.json build/
 <p>See <a href="contracts/008-school-worker-numerics-v1.html">the exact numerical/worker contract</a>. A hosted Lean Float64 trainer fits a two-feature linear synthetic review-risk scorer, saves complete resumable state and quantizes parameters to signed Q10. The actual unchanged RV64 image reads parameters and features at runtime, returns a Q20 score, and its raw response plus source/audit/execution artifacts are committed through fenced school jobs. Only a selected published release can inform an allowed suggestion; the explainable review policy remains visible fallback. Synthetic performance is pipeline evidence, not learning efficacy.</p>
 <pre><code class="language-sh">nix develop --no-write-lock-file --command python3 scripts/build_school.py --output-dir build/school/host-UNUSED
 nix develop --no-write-lock-file --command python3 scripts/check_school.py --production build/school/host-UNUSED/production.json --work-dir build/school/host-check-UNUSED
+nix develop --no-write-lock-file --command lake build Lemma.Numerics.Linear Lemma.Compiler.SchoolWorkerExport
 nix develop --no-write-lock-file --command python3 scripts/check_school_training.py --work-dir build/school/training-UNUSED
 nix develop --no-write-lock-file --command python3 scripts/build_school_worker.py --output-dir build/school/worker-UNUSED --opt-level O2
 </code></pre>

@@ -100,6 +100,9 @@ class CiWorkflowTests(unittest.TestCase):
                         self.metadata.index("tests/courses/IngressIdle.lean"))
         self.assertLess(self.metadata.index("lake build"), self.metadata.index("tests/foundation"))
         self.assertIn("Lemma.Applications.Notebook", self.metadata)
+        self.assertIn("lake build Lemma.Numerics.Linear", self.metadata)
+        self.assertLess(self.metadata.index("lake build Lemma.Numerics.Linear"),
+                        self.metadata.index("python3 scripts/check_school_training.py"))
         self.assertLess(self.metadata.index("Lemma.Applications.Notebook"),
                         self.metadata.index("tests/courses/NotebookPackage.lean"))
         for source in ("tests/courses/NumberEntry.lean", "tests/courses/NumberPad.lean"):
@@ -149,8 +152,8 @@ class CiWorkflowTests(unittest.TestCase):
                 r"^\s+timeout-minutes:\s+(\d+)$", self.task002, re.MULTILINE
             )
         ]
-        # Three original job ceilings plus the narrower Reader19 Action step.
-        self.assertEqual(timeouts, [45, 12, 45, 60])
+        # Three original job ceilings plus narrower Reader19 and school-worker steps.
+        self.assertEqual(timeouts, [45, 12, 45, 8, 60])
 
     def test_required_names_dependencies_and_exact_checkout_are_preserved(self):
         self.assertEqual(set(CHECK_NAMES), set(REQUIRED_JOBS))
@@ -217,10 +220,17 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/llvm-name-sets.log",
                          "metadata/kernel-host-unittest.log",
                          "metadata/cache-host-unittest.log",
-                         "metadata/silicon-host-unittest.log"),
+                         "metadata/silicon-host-unittest.log",
+                         "metadata/school-host-production.log",
+                         "metadata/school-host-validation.log",
+                         "metadata/school-training-preparation.log",
+                         "metadata/school-host-training.log"),
             "acceptance-summary": (),
             "crypto-rv64": ("crypto-rv64.log", "development-auth-rom.log", "development-auth-layout.log"),
-            "legacy-rv64": ("legacy-rv64.log",),
+            "legacy-rv64": ("legacy-rv64.log", "school-worker-preparation.log",
+                            "school-worker-fixture.log", "school-worker-parameters.log",
+                            "school-worker-O0-build.log", "school-worker-O0-execution.log",
+                            "school-worker-O2-build.log", "school-worker-O2-execution.log"),
             "foundation-rv64": ("foundation-gates1-9.log", "foundation-qualification.log"),
             "kernel-managed-rv64": ("kernel-managed-rv64.log",),
             "kernel-services-rv64": ("kernel-services-rv64.log",),

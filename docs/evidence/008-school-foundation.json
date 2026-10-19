@@ -146,8 +146,8 @@
       "sha256": "da93492c54966187d78637bd6b7927fd92321981897afa4d17425f353acb25a8"
     },
     "ci": {
-      "path": "docs/evidence/008-school-ci.json",
-      "sha256": "1ed13cbfb8533eff2dd9634d3a9e4949c721638925ca237a9726935b7cde1efd"
+      "path": "docs/evidence/008-school-ci-merge-readiness.json",
+      "sha256": "0da85b5846968c2a91f177d43996d00d22aef5eab9c407193ca7d66abf301cde"
     },
     "sample": {
       "path": "docs/evidence/008-school-sample.json",
@@ -168,6 +168,10 @@
     "client": {
       "path": "docs/evidence/008-school-client.json",
       "sha256": "98192742531570cde91657c8934502d87060bc11f4b3671ff0fa1fe9ba2dd007"
+    },
+    "ciBeforeMergeRepair": {
+      "path": "docs/evidence/008-school-ci.json",
+      "sha256": "1ed13cbfb8533eff2dd9634d3a9e4949c721638925ca237a9726935b7cde1efd"
     }
   },
   "gates": {
@@ -306,10 +310,20 @@
     "cacheHost": {
       "result": "PASS",
       "tests": 87,
-      "path": "build/school/cache-host-008-final.log",
-      "sha256": "2fe22186ff3d77f44e8d1237c2c3a9b6c86045100c8a5280e31eb45a4010ba63"
+      "path": "build/school/merge-cache-host-a1.log",
+      "sha256": "290407578ea3a180a20d1ae3aaf0a0772722bf6f2a74a8ce8f1bfa437e185d36"
     },
     "ciPolicy": {
+      "result": "PASS_LOCAL_POLICY_CHECKS",
+      "foundationTests": 485,
+      "focusedWorkflowTests": 19,
+      "ciPolicyTests": 20,
+      "bashBlocks": 49,
+      "scope": "local policy, complete foundation host suite and syntax; corrected published candidate still requires remote CI",
+      "path": "docs/evidence/008-school-ci-merge-readiness.json",
+      "sha256": "0da85b5846968c2a91f177d43996d00d22aef5eab9c407193ca7d66abf301cde"
+    },
+    "ciPolicyBeforeMergeRepair": {
       "result": "PASS",
       "tests": 20,
       "scope": "policy/actionlint/Bashsyntax only; not remote CI acceptance",
@@ -877,8 +891,8 @@
     }
   },
   "routingReview": {
-    "path": "build/school/dev-status-final-a5.json",
-    "sha256": "1614655564a96633ce25ee39ce7fc81d02588d15b544680efa298e309b639f1b",
+    "path": "build/school/merge-dev-status-a1.json",
+    "sha256": "8c26fcdadd84e97d9118bde1ce781d4687cdb47cbd4912f4b2fc3d9106b3a739",
     "scope": "read-only prepublication observation; not a qualification receipt",
     "currentTaskUnmatchedPaths": [],
     "aggregate": {
@@ -1048,5 +1062,14 @@
     "consumedHostCurrentEqual": true,
     "observerSha256": "02485e7596b3a5e90b4d1f1646fb7eaedf7eb0957e7f1b329ae1c5fe0baaf6f1"
   },
-  "failureResolution": "All original FAIL receipts and diagnostic-only continuations remain unchanged. The fresh complete native-a12 execution passes C/J; diagnostic suffixes are not used as full acceptance. The client index binds original failures, exact observer corrections, final source census and current guest/audit provenance."
+  "failureResolution": "All original FAIL receipts and diagnostic-only continuations remain unchanged. The fresh complete native-a12 execution passes C/J; diagnostic suffixes are not used as full acceptance. The client index binds original failures, exact observer corrections, final source census and current guest/audit provenance.",
+  "mergeFollowUp": {
+    "userAuthorization": "Owner explicitly requested merge of PR12; applicable CI must pass, task branch/settings preserved.",
+    "publicationHeadBeforeRepair": "5f058cf941d604f9d9494581fbb04715122e9cca",
+    "ci": {
+      "path": "docs/evidence/008-school-ci-merge-readiness.json",
+      "sha256": "0da85b5846968c2a91f177d43996d00d22aef5eab9c407193ca7d66abf301cde"
+    },
+    "applicationTargetChange": "None; only workflow policy, exact routing and documentation changed. Existing source-bound host/native/worker/corpus observations remain separately scoped."
+  }
 }
