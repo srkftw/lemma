@@ -73,44 +73,45 @@ private def loadPackage (identity edition ordinal expected : UInt64) : Action :=
   else report 2 identity edition crc 0 integrityFailure
   else failed else report 2 identity edition expected 0 s
 
-private def selectedCall (operation transaction requestOffset : UInt64) : Action :=
+private def recordCall (object operation transaction requestOffset : UInt64) : Action :=
   .bind (get 8) fun s endpoint => if s = 0 then
   .bind (Memory.read64 (context + 64)) fun s request => if s = 0 then
   Client.call endpoint outgoing incoming operation PackageCommand.selectedNamespace
-    PackageCommand.selectedObject transaction 0
+    object transaction 0
     (if operation = 2 then PackageCommand.selectedBytes else
      if operation = 3 then PackageCommand.selectedBytes else 0)
     (if operation = 3 then selectedRecord else 0) (request + requestOffset)
   else failed else failed
 
-private def selectedAbort (transaction : UInt64) (status : UInt8) : Action :=
-  .bind (selectedCall 9 transaction 259) fun _ _ => .done status 0
+private def selectedAbort (object transaction : UInt64) (status : UInt8) : Action :=
+  .bind (recordCall object 9 transaction 259) fun _ _ => .done status 0
 
-private def selectedCommit (transaction : UInt64) : Action :=
-  .bind (selectedCall 2 transaction 256) fun s _ => if s = 0 then
+private def selectedCommit (object transaction : UInt64) : Action :=
+  .bind (recordCall object 2 transaction 256) fun s _ => if s = 0 then
   .bind (Client.responseField incoming 48) fun s detail => if s = 0 then
   if detail = 0 then
-  .bind (selectedCall 3 transaction 257) fun s _ => if s = 0 then
+  .bind (recordCall object 3 transaction 257) fun s _ => if s = 0 then
   .bind (Client.responseField incoming 48) fun s copied => if s = 0 then
   if copied = PackageCommand.selectedBytes then
     -- An uncertain Commit never causes an automatic abort or retry.
-    .bind (selectedCall 4 transaction 258) fun s sequence => if s = 0 then
+    .bind (recordCall object 4 transaction 258) fun s sequence => if s = 0 then
     .bind (Client.responseField incoming 48) fun s mode => if s = 0 then
     if mode = 1 then if 0 < sequence then .done 0 sequence else .done malformed 0
     else .done malformed 0 else .done s 0 else .done s 0
-  else selectedAbort transaction malformed
-  else selectedAbort transaction s
-  else selectedAbort transaction s
-  else selectedAbort transaction malformed
-  else selectedAbort transaction s
+  else selectedAbort object transaction malformed
+  else selectedAbort object transaction s
+  else selectedAbort object transaction s
+  else selectedAbort object transaction malformed
+  else selectedAbort object transaction s
   else .done s 0
 
 /-- Select only a complete installed package read through the real Store.
 This Action owns the installer buffers; expected identity/edition/CRC are
 independently checked before any selection write. Its positive sequence comes
 only from the ordinary Store Commit reply. No document or package is rewritten. -/
-private def selectValidated (identity edition transaction expected : UInt64) : Action :=
-  .bind (PackageStore.load context) fun s _ => if s = 0 then
+private def selectValidated (identity edition transaction expected ordinal : UInt64) : Action :=
+  .bind (PackageStore.load context) fun s bytes => if s = 0 then
+  .bind (PackageTarget.select loaded bytes ordinal) fun s _ => if s = 0 then
   .bind (Memory.read64 (loaded + 24)) fun s actualIdentity => if s = 0 then
   .bind (Memory.read64 (loaded + 32)) fun s actualEdition => if s = 0 then
   .bind (Memory.read64 (loaded + 80)) fun s crc => if s = 0 then
@@ -121,27 +122,31 @@ private def selectValidated (identity edition transaction expected : UInt64) : A
   .bind (Memory.write64 (selectedRecord + 24) identity) fun s _ => if s = 0 then
   .bind (Memory.write64 (selectedRecord + 32) edition) fun s _ => if s = 0 then
   .bind (Memory.write64 (selectedRecord + 40) crc) fun s _ => if s = 0 then
-  .bind (Memory.write64 (selectedRecord + 48) 0) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord + 48) ordinal) fun s _ => if s = 0 then
   .bind (Memory.write64 (selectedRecord + 56) 0) fun s _ => if s = 0 then
-  selectedCommit transaction
+  selectedCommit PackageCommand.selectedObject transaction
   else failed else failed else failed else failed else failed else failed else failed else failed
   else .done integrityFailure 0 else .done malformed 0 else .done malformed 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 /-- Validate the fixed owned context before loading. The public component does
 not treat a package from another namespace or buffer as the selected object. -/
-def selectInstalled (identity edition transaction expected : UInt64) : Action :=
+def selectInstalledAt (identity edition transaction expected ordinal : UInt64) : Action :=
   let shape := PackageCommand.selectionCommandShape PackageCommand.magic
-    PackageCommand.selectedCommandVersion 9 identity edition 0 transaction expected
+    PackageCommand.selectedNodeCommandVersion 9 identity edition ordinal transaction expected
   if shape = 0 then
   .bind (Memory.read64 (context + 24)) fun s ns => if s = 0 then
   .bind (Memory.read64 (context + 48)) fun s target => if s = 0 then
   .bind (Memory.read64 (context + 64)) fun s request => if s = 0 then
   if ns = PackageCommand.selectedPackageNamespace then if target = loaded then
-  if request ≤ Format.maximumSequence - 259 then selectValidated identity edition transaction expected
+  if request ≤ Format.maximumSequence - 259 then selectValidated identity edition transaction expected ordinal
   else .done resourceLimit 0 else .done malformed 0 else .done malformed 0
   else .done s 0 else .done s 0 else .done s 0
   else .done shape 0
+
+/-- Historical selection component selects the first node explicitly. -/
+def selectInstalled (identity edition transaction expected : UInt64) : Action :=
+  selectInstalledAt identity edition transaction expected 0
 
 private def finishSelection (identity edition expected : UInt64) (status : UInt8) (sequence : UInt64) : Action :=
   .bind (get 0) fun s console => if s = 0 then
@@ -155,19 +160,20 @@ private def executeSelection : Action :=
   .bind (command 32) fun s edition => if s = 0 then
   .bind (command 48) fun s transaction => if s = 0 then
   .bind (command 56) fun s expected => if s = 0 then
+  .bind (command 40) fun s ordinal => if s = 0 then
   .bind (get 40) fun s request => if s = 0 then
   if request ≤ Format.maximumSequence - 6288 then
   .bind (put 40 (request + 6288)) fun s _ => if s = 0 then
   .bind (prepare identity edition loaded request) fun s _ => if s = 0 then
   .bind (PackageStore.awaitReady context) fun ready _ => if ready = 0 then
   .bind (Memory.write64 (context + 64) (request + 6000)) fun s _ => if s = 0 then
-  .bind (selectInstalled identity edition transaction expected) fun status sequence =>
+  .bind (selectInstalledAt identity edition transaction expected ordinal) fun status sequence =>
   finishSelection identity edition expected status sequence
   else failed
   else finishSelection identity edition expected ready 0
   else failed else failed
   else finishSelection identity edition expected resourceLimit 0
-  else failed else failed else failed else failed else failed
+  else failed else failed else failed else failed else failed else failed
 
 
 private def execute : Action :=
@@ -228,6 +234,45 @@ private def headerComplete : Action :=
     if s = 0 then Syscall.exit status.toUInt64 else failed
   else failed else failed else failed else failed else failed else failed else failed else failed
 
+
+private def executeAck : Action :=
+  .bind (command 24) fun s queue => if s = 0 then
+  .bind (command 32) fun s schoolCommit => if s = 0 then
+  .bind (command 48) fun s localCommit => if s = 0 then
+  .bind (command 56) fun s crc => if s = 0 then
+  .bind (get 40) fun s request => if s = 0 then
+  if request ≤ Format.maximumSequence-260 then
+  .bind (put 40 (request+260)) fun s _ => if s = 0 then
+  .bind (prepare 1 1 loaded request) fun s _ => if s = 0 then
+  .bind (Memory.write64 selectedRecord PackageCommand.ackMagic) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord+8) 1) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord+16) queue) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord+24) schoolCommit) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord+32) localCommit) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord+40) crc) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord+48) 0) fun s _ => if s = 0 then
+  .bind (Memory.write64 (selectedRecord+56) 0) fun s _ => if s = 0 then
+  .bind (selectedCommit PackageCommand.ackObject localCommit) fun status sequence =>
+  .bind (report 10 0 0 crc sequence status) fun s _ => if s = 0 then reset else failed
+  else failed else failed else failed else failed else failed else failed else failed else failed
+  else failed else failed
+  else .bind (report 10 0 0 crc 0 resourceLimit) fun s _ => if s = 0 then reset else failed
+  else failed else failed else failed else failed else failed
+
+private def ackHeaderComplete : Action :=
+  .bind (command 0) fun s magic => if s = 0 then
+  .bind (command 8) fun s version => if s = 0 then
+  .bind (command 16) fun s operation => if s = 0 then
+  .bind (command 24) fun s queue => if s = 0 then
+  .bind (command 32) fun s schoolCommit => if s = 0 then
+  .bind (command 40) fun s bytes => if s = 0 then
+  .bind (command 48) fun s localCommit => if s = 0 then
+  .bind (command 56) fun s crc => if s = 0 then
+  let status := PackageCommand.ackCommandShape magic version operation queue schoolCommit bytes localCommit crc
+  if status = 0 then executeAck else
+    .bind (report 10 0 0 crc 0 status) fun s _ => if s = 0 then Syscall.exit status.toUInt64 else failed
+  else failed else failed else failed else failed else failed else failed else failed else failed
+
 private def selectedHeaderComplete : Action :=
   .bind (command 16) fun s operation => if s = 0 then
   if operation = 9 then
@@ -243,7 +288,7 @@ private def selectedHeaderComplete : Action :=
     .bind (report operation identity edition crc 0 status) fun s _ =>
     if s = 0 then Syscall.exit status.toUInt64 else failed
   else failed else failed else failed else failed else failed else failed else failed
-  else headerComplete else failed
+  else if operation = 10 then ackHeaderComplete else headerComplete else failed
 
 private def receive (phase filled desired : UInt64) : Action :=
   .bind (get 0) fun s console => if s = 0 then

@@ -20,6 +20,7 @@ structure Model where
   count : UInt64 := 0
   faultOperation : UInt64 := 0
   fault : UInt64 := 0
+  ordinal : UInt64 := 0
 
 private def read (model : Model) (address width : UInt64) : Except String UInt64 := do
   if address < base || model.memory.size.toUInt64 < width || model.memory.size.toUInt64-width < address-base then
@@ -64,7 +65,7 @@ private def syscall (state : IO.Ref Model) (number a b c d e : UInt64) : IO (UIn
         if writes.map (·.2) != #[2] then throw <| IO.userError "selection Chunk out of order"
         let crc := (List.range 8).foldl (fun x i => x |||
           (model.image[80+i]!.toUInt64 <<< (i.toUInt64*8))) (0 : UInt64)
-        for (i,value) in (#[PackageCommand.selectedMagic,1,1,802,1,crc,0,0]).zipIdx do
+        for (i,value) in (#[PackageCommand.selectedMagic,1,1,802,1,crc,model.ordinal,0]).zipIdx do
           if (← IO.ofExcept <| read model (b+64+value.toUInt64*8) 8) != i then
             throw <| IO.userError "selection copied the wrong immutable package binding"
       else if operation == 4 then
@@ -144,6 +145,12 @@ def check : IO Unit := do
   let after ← actual.get
   if after.requests.map (·.2) != (Array.replicate ((image.size+127)/128) 5) ++ #[2,3,4] then
     throw <| IO.userError "selection did not read complete installed package before writing"
+  let node ← IO.mkRef {before with ordinal := 2}
+  if (← run node (selectInstalledAt 802 1 7 crc 2)) != (0,37) then
+    throw <| IO.userError "ordinary review node was not selected through actual installed bytes"
+  let absent ← IO.mkRef before
+  if (← run absent (selectInstalledAt 802 1 7 crc 8)) != (244,0) || (← absent.get).requests.any (fun row => row.2 != 5) then
+    throw <| IO.userError "absent selected node wrote durable selection"
   for (op,fault,status,last) in #[(5,1,93,5),(5,2,230,5),(2,1,93,2),(2,2,230,2),
       (3,1,93,9),(3,2,230,9),(3,3,240,9),(4,1,93,4),(4,2,230,4),(4,4,240,4),(4,5,240,4)] do
     let failure ← IO.mkRef {before with faultOperation := op, fault}
@@ -162,7 +169,12 @@ def check : IO Unit := do
       PackageCommand.selectionShape PackageCommand.selectedMagic 1 1 802 1 crc 0 0 != 1 ||
       PackageCommand.selectionShape PackageCommand.selectedMagic 1 1 802 1 crc 0 1 != 0 then
     throw <| IO.userError "version/record authority boundary changed"
-  IO.println s!"COURSE_SELECTION_ACTIONS:PASS exact installed802/1,{image.size} bytes,ordered64-byte record/Commit,11 transport/application/ack failures,stale CRC,3 context guards; component only"
+  if PackageCommand.selectionCommandShape PackageCommand.magic 4 9 802 1 2 7 crc != 0 ||
+      PackageCommand.selectionCommandShape PackageCommand.magic 2 9 802 1 2 7 crc != 240 ||
+      PackageCommand.ackCommandShape PackageCommand.magic 3 10 0x5351000000000065 777 0 101 crc != 0 ||
+      PackageCommand.ackCommandShape PackageCommand.magic 3 10 0x5351000000000065 777 0 0 crc != 240 then
+    throw <| IO.userError "review/ack additive wire versions lost their guards"
+  IO.println s!"COURSE_SELECTION_ACTIONS:PASS exact installed802/1,{image.size} bytes,ordered64-byte record/Commit,reviewnode/absentnode,v3ACKguards,11 transport/application/ack failures,stale CRC,3 context guards; component only"
 end CourseSelectionTests
 
 def main : IO Unit := CourseSelectionTests.check

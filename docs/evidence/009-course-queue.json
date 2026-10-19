@@ -1,0 +1,296 @@
+{
+  "schema_version": 1,
+  "task": "009",
+  "status": "PASS_SCHOOL_SUBMISSION_STORE_COMPONENTS",
+  "scope": "actual Lean Actions and genuinely elaborated LLVM/RV64 objects; CPU/durable medium NOT_RUN",
+  "command": "nix develop --no-write-lock-file --command python3 scripts/check_course_install.py --school-submission --output-dir build/courses/task009-school-submission-a1",
+  "result": {
+    "path": "build/courses/task009-school-submission-a1/result.json",
+    "sha256": "f7b5e3cdca50be05f20590392c8d3f36c3d014d7d0743515fd70df18e7179232"
+  },
+  "source_archive": {
+    "path": "build/courses/task009-school-submission-a1/consumed-source.tar.gz",
+    "sha256": "a18533f648bdcdc94c4fee0fc9089833e057fd147e3868308a69de055f4501a0",
+    "bytes": 215733,
+    "input_count": 114
+  },
+  "bounds": {
+    "address_space_bytes": 17179869184,
+    "command_seconds": 300,
+    "file_bytes": 1073741824,
+    "whole_seconds": 900
+  },
+  "wall_seconds": 146.5358863150468,
+  "child_peak_rss_kib": 1584736,
+  "fresh_reused": {
+    "fresh": [
+      "Lean Action executions",
+      "genuine elaboration/export",
+      "LLVM O2 validation",
+      "RV64IM object generation and boundary inspection"
+    ],
+    "reused": [
+      "pinned Lean 4.34.1 and LLVM 20.1.8 tool binaries",
+      "admitted lake module cache; producer build took 0.1833074149908498 seconds"
+    ],
+    "not_run": [
+      "CPU execution",
+      "integrated native/browser school session",
+      "real durable-medium interruption",
+      "physical power loss"
+    ]
+  },
+  "components": {
+    "guard": {
+      "artifacts": {
+        "normalized.txt": "a59dd2724fe28734bf246fb584130ae0fb3ecad63bf4faca22c20961e3912d68",
+        "program.ll": "283a0513a0ef65f0869f2d33df5b8e270b92b95084bb7de52423bbfe6797195c",
+        "program.o": "45dc4ce03dd5a17f974ebad15500828d3959603b0b792b906673beca46de1c3f",
+        "program.opt.ll": "0aa325c1036ea26bc2ab9b9b382dfacd9e0d485bd1465992189bc2ef12e57087",
+        "unit.json": "a33739109fd3d7f8777017a3c0ef74e03ffd0f2c6da3b511a0fd59ca147669f1"
+      },
+      "function_count": 239,
+      "roots": [
+        "Lemma.Services.Store.Server.courseMain"
+      ],
+      "unresolved_boundary": [
+        "lemma_exec_syscall"
+      ]
+    },
+    "install": {
+      "artifacts": {
+        "normalized.txt": "313cf193eed47cd64d44ba53c638d45ca3fb44beecb5babc468e69d84ea97783",
+        "program.ll": "9da9f29961ee384f411d2f78bd60a60baf3ba6084ad2f1087bbc2d4321d26485",
+        "program.o": "669b76fa88d0576289664179cf28e2b2df57a704008028f9ca4fb2cb1859fe3f",
+        "program.opt.ll": "09007576bc681283bcc2930794f8858ac1a88612821d12704bd8bdde74b8a9c0",
+        "unit.json": "73856343a8623deb8ee26d34663b608b99ef4e82d05cf935723438212023e45d"
+      },
+      "function_count": 158,
+      "roots": [
+        "Lemma.Courses.PackageStore.install",
+        "Lemma.Courses.PackageInstaller.main"
+      ],
+      "unresolved_boundary": [
+        "lemma_exec_syscall"
+      ]
+    },
+    "school-guard": {
+      "artifacts": {
+        "normalized.txt": "8377817af97644388de90a2867552900813da42593464dd4a4f6390830eee374",
+        "program.ll": "e93f868f5263c26128604073ca1bfab6b7d4bc394ce8160805a8ba5e7c501bc1",
+        "program.o": "e0c8b37fe352a25bde1cfe34e7bd59d7e34accaf87ec879b8347973adb919c16",
+        "program.opt.ll": "f65ae728dbe174d6992acc269761c500d63907d131599ec507ff3f16dc576019",
+        "unit.json": "df2c2dfd3555d7019640ac887707c01b4e6dcfe8d73bdb776cda6ffb53baea40"
+      },
+      "function_count": 305,
+      "roots": [
+        "Lemma.Services.Store.ServerSchool.main"
+      ],
+      "unresolved_boundary": [
+        "lemma_exec_syscall"
+      ]
+    },
+    "selection": {
+      "artifacts": {
+        "normalized.txt": "4a688cf97faeba61f777e6540e2d8e5b47c8d88d7de4c9ba52c379b626564262",
+        "program.ll": "0233c1b0f868cda3acd58b25501daa93323457279cd21aa97bc01866c65593aa",
+        "program.o": "9a0d09f23a9242a0bbf9860e5949ee105fd0eb14e3b9fcd1baa2b4c8a9889788",
+        "program.opt.ll": "9bc6bcaa4a6c191f6858a81431d7993fcca77de4c1c4f9619ccabf01146435fe",
+        "unit.json": "2742dbaf57f729535b1aacb6d83492bc794f264d110489d0f25eb2c01f454430"
+      },
+      "function_count": 196,
+      "roots": [
+        "Lemma.Courses.PackageInstaller.mainAwaitSelected"
+      ],
+      "unresolved_boundary": [
+        "lemma_exec_syscall"
+      ]
+    },
+    "submission": {
+      "artifacts": {
+        "normalized.txt": "b3c876d334963d97ecc7577be4639861a1b88f501f6f6c657cb64449699c4bf5",
+        "program.ll": "44fb92102c4d85012e11ccc9afa843def56c3853157fa2e5e2bcc66ff3304d64",
+        "program.o": "a953d06d96c00ca3e58ab5d3a7a3ddde3e6e618417ce8737da1d62afa3d5d512",
+        "program.opt.ll": "fcce13159e2b04ff8c30e5bea5416a48495da7a69c3a1b6bd61675f612017154",
+        "unit.json": "49459799875c08173a2fcb24193e3249931a926f600fe52b702f95330a336062"
+      },
+      "function_count": 365,
+      "roots": [
+        "Lemma.Courses.SchoolSubmission.initializeQueue",
+        "Lemma.Courses.SchoolSubmission.start",
+        "Lemma.Courses.SchoolSubmission.pump",
+        "Lemma.Courses.SchoolSubmission.restore",
+        "Lemma.Courses.SchoolSubmission.retry",
+        "Lemma.Courses.SchoolSubmission.cancel",
+        "Lemma.Courses.SchoolSubmission.frontier",
+        "Lemma.Courses.SchoolSubmission.writerActive",
+        "Lemma.Courses.SchoolSubmission.suspend",
+        "Lemma.Courses.SchoolSubmission.resume"
+      ],
+      "unresolved_boundary": [
+        "lemma_exec_syscall"
+      ]
+    }
+  },
+  "source_inputs": {
+    "Lemma/Compiler/CFGLower.lean": "7b8a129149a09616bf8bf15e66822dc78ed9911139373667c3aabfe1a7a9051d",
+    "Lemma/Compiler/CourseInstallExport.lean": "0d1bfe124ad4fb4c45bc19471ae9a3925292e9a440a22145bbc4c93579039ca3",
+    "Lemma/Compiler/LLVMIR.lean": "7983e138d5b52d3581ec0425612d6978e9beb2be22971ebe12fbb2896166db65",
+    "Lemma/Compiler/LLVMNameSets.lean": "4f07465a35a35d88d1168e965f71c828134ab5a14cb2b06a9be9e46f873ae728",
+    "Lemma/Compiler/LLVMValidate.lean": "b9495ab1a4e931ecf0bd6e78f3afc89718806a3e3456d254dd0e06c665aa9cc2",
+    "Lemma/Compiler/Lower.lean": "f27b07c3a4972d1807990f5c4d232a27952a5a94ea17a80459462542b3b1cff5",
+    "Lemma/Core0.lean": "938faee4a200708e2e061c571b703d2d4b3ac8ef4147d651a1274134991b24c9",
+    "Lemma/Core0/ActionIR.lean": "e49183735572a2fdc93b872d4ce6f68482d82e464b1c426942b9af4fa2b2f244",
+    "Lemma/Core0/Bounded.lean": "19600082ec9b26ee297e001deca524cebe896e96b03c29f607df5f693b344305",
+    "Lemma/Core0/Command.lean": "7f1f24dbb817952c758463b02ea37b5c221f8b88ed8892f954d41f41ded59e3b",
+    "Lemma/Core0/Device.lean": "587d8f753372622e9bcc8c7a2bb1a41146b8d8cfc18cc91506ebff18dc958cc8",
+    "Lemma/Core0/DeviceLemmas.lean": "b45d31627ffa0f1f4de2380790512543e7a5f6ff78cfdbed87911458485ecf41",
+    "Lemma/Core0/DeviceModel.lean": "f4b98b8c3ebd19bbfbb9283aea2d79b2d290ecb1330cdc687ecde172ed52898e",
+    "Lemma/Core0/Execution.lean": "d1e511aefb8281ee1638dea0c1a2442ca85d0396d4c6d2f3eecdd77b4bbd9041",
+    "Lemma/Core0/Frontend.lean": "a9aa9a392a9e5780b49e67b9a1705d00f057e62fc0d66aa7b7bd55a6a4055cdb",
+    "Lemma/Core0/IR.lean": "030f9543d49f8bf80f3a940e5477f4bc75ffc125e6826b081172ac97bde2409b",
+    "Lemma/Core0/ManagedArrayIR.lean": "f203cda5c3e12a0e87142fc5695093e36bddbe1a09b8a812e572a1ca48bbc934",
+    "Lemma/Core0/ManagedBytesIR.lean": "afad5554ff3a7b6e4d60616966bc22e85b316c985ef0f09ce0abb18641cf5625",
+    "Lemma/Core0/ManagedClosureIR.lean": "c8f1a0e16f3e9bbcd80560d0c64b717ef845736f2975cb2c03cad2a0994d809c",
+    "Lemma/Core0/ManagedIR.lean": "8667413a5b6ff1ede752a28f1e29182eeda91b8329c33532272d8aa1fcf3c34a",
+    "Lemma/Core0/ManagedStringIR.lean": "5f728dcb92d33b526da4d1f43a3c420237152a1e2b4be5f61b5221bbc10cc841",
+    "Lemma/Core0/ManagedSumsIR.lean": "7861321500c03edd068e6408639070c686a22aa991a7841281d6ec128f55e048",
+    "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+    "Lemma/Core0/MemoryLemmas.lean": "5973966eb7c6d00f233a981c5bb6d0d6e532898b5f8e86773ffcdb7f7340cc27",
+    "Lemma/Core0/MemoryModel.lean": "aee209c3bc2c6cab2ea6bfa6326ecd7177d186e83b2d0438a65098e18d56e563",
+    "Lemma/Core0/ScalarLemmas.lean": "6fa63d2d99f94092eb96942c294deaef7b5f0d17e2e0c5ce5989a3847a459497",
+    "Lemma/Core0/Semantics.lean": "adc3d7c4616cdcefbc0063f9cafd5fd2ec097142a87ec747cf14f641b531ace3",
+    "Lemma/Core0/Timer.lean": "d6a0d0dbc7ed2939a5825683abc21374ee4bcfd60bc010ee5575ed0296bd68f2",
+    "Lemma/Core0/TimerModel.lean": "3c0866f0b3c12da2aed2d1b3ccef93b5da89212db2f2e15e989e263d04ba58fa",
+    "Lemma/Core0/Trap.lean": "bc40c4ac403d995bf026737af7b8b2ca25390399473cfe1389a0bd700fe078af",
+    "Lemma/Courses/Package.lean": "d2fa235ddebbe0a50160290b9b3e6d8b0f110269fac623a79674bdd2b8253e21",
+    "Lemma/Courses/PackageAwaitClient.lean": "2cc6c957a04dd81ff5e03e0858c9555b996f8d5d28350b6fa65024844a426cf3",
+    "Lemma/Courses/PackageAwaitProtocol.lean": "bc2803ab1cee43514b0c4567f298fb2c84f320c328a0acd39e7c1697c3d32883",
+    "Lemma/Courses/PackageBinding.lean": "b1f9cc9ea6a4f137f0555065e0c91fc4eb10126a2f77e8fa1f2628700b7801d5",
+    "Lemma/Courses/PackageCommand.lean": "8048af9e5ed16fa9ae54aa8f30e83ccd7f5ab7946981f0a0db4d4469ff769a4e",
+    "Lemma/Courses/PackageFormat.lean": "ee2e3a88c9016e8817d87c08559babedf99d3707ef7f1c928dbf04e7ac500e88",
+    "Lemma/Courses/PackageInstaller.lean": "cf9c11d203b2da0ae39fae5cf13f47ed33c8a7b6843795a6c4719822f06e0763",
+    "Lemma/Courses/PackageReference.lean": "6e33a2a02731a7a61eab5cd3547e1169595c47591493c2953493d7cc3e9d63ea",
+    "Lemma/Courses/PackageStore.lean": "9487ac1e291dc6ce99abd680a83b73ed312ee64c3bd6352ad7e1f44f54675841",
+    "Lemma/Courses/PackageTarget.lean": "b2f17c554e9c8379d656bde733d6c767a6b2d506f192a9cbd49c71d81846689b",
+    "Lemma/Courses/PackageWorkspace.lean": "00ddcbc93e6c6bb1e405a6e3e53dbdb6172bdebce30fef932055273f28419666",
+    "Lemma/Courses/SchoolSubmission.lean": "dc96e90dfdf888839f7f6ea86e862dd257947bd8749b9a7feb0816c2abfc644c",
+    "Lemma/Documents/Ink.lean": "45ce9640230d5da1aecb4e342ce1ffd6e75edd262ad5c43b0e2406611862e7e1",
+    "Lemma/Documents/Mathematics.lean": "cdc7a38753985251e526b3813df719a2b27b1783350ece5a49800d4d6cbbf4fa",
+    "Lemma/Documents/MathematicsArray.lean": "3c68f91e16a535c6b49fdaf4d4134f5649c1d2d71f22acbc889c16eb62a73d6a",
+    "Lemma/Documents/MathematicsBytes.lean": "a659807e3a4b959ed2deefe237b0fa219ee3a85ca168256eba625d88e61dabfc",
+    "Lemma/Documents/MathematicsClosure.lean": "73a1f34a7ff44f5d415c5b8b284bafc8fab82168e524868c35c60ce8ae0d0d7a",
+    "Lemma/Documents/MathematicsString.lean": "65ff495de8af16cec5aef45fc07351793d5ddb5f96dce8b55a9de474540d32ee",
+    "Lemma/Ink/Geometry.lean": "cbf8618582284d364131d3e1b2a6ce1cdec50a99ad6589e440f3e24ed5185063",
+    "Lemma/Mathematics/Exact.lean": "3cbeefed82f41a2b6692f96ecfd06a793d272fd8480bfb6ae662e08a0211c828",
+    "Lemma/Mathematics/ExecutionIdentity.lean": "611495044f1f620d23b8439c7147683b16654aa8a06c922636dabb111cd0a7b7",
+    "Lemma/Mathematics/ExecutionIdentityV2.lean": "bd19191c002bfcb1fd2d0e7bc14d6b9cf28fd16938000dcc0e036f3c716b683a",
+    "Lemma/Mathematics/ExecutionIdentityV3.lean": "ee7b35cc6829727bc016662fb7cec208d5a8dfdf65a77433db615246f78a97f1",
+    "Lemma/Mathematics/ExecutionIdentityV4.lean": "34126784408980975caf49097dc0ffdcdf6e76929b272377616e046879c34389",
+    "Lemma/Mathematics/ExecutionIdentityV5.lean": "ed70850888a5419158fb6f2c8ba4695bf157613a900813345e2d7f72b5d14095",
+    "Lemma/Mathematics/ExecutionIdentityV6.lean": "ca67c5bea47e4485e3901ab078e398c4edb0278979a30e24ba1382d97d9202e4",
+    "Lemma/Mathematics/OwnedSubmission.lean": "a6f76a484d21834365244c6c775fa288073b5e4a345329f205c18d2b046fd6eb",
+    "Lemma/Multimodal/Parameterized.lean": "b79f3e7fbb9ec0a1377d8a7525d0b12e9341af99e03afc117b2829575ece31e0",
+    "Lemma/Multimodal/SchoolPacket.lean": "1c996d0eb4980cd3648a36fc7db72759d7e47129f124d2762e7c8a3eac7e3790",
+    "Lemma/Multimodal/TutorAction.lean": "ed6e180bfaecdd0ca94dbacb3625bc7461e6a3240e8b677789cc88291d5655c9",
+    "Lemma/Multimodal/TutorPackage.lean": "2c8f192041668432e8aac9612ab0369d71385bc6e837ec3197807ac03dfaf590",
+    "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903",
+    "Lemma/Services/Arithmetic/ClientV8.lean": "d56226348d2715f22770bebf88429df5c0fb896855040a918da823b4b39f77f0",
+    "Lemma/Services/Arithmetic/Protocol.lean": "f5c3a714e21722603cd77616f1f58eb5cf91e6ace66272e65eccfaf66cd6dbc0",
+    "Lemma/Services/Arithmetic/ProtocolV8.lean": "42129fc05c0c24b185197bd2ccdf0b14ba1e4dfa0fb6aef8c0ffe9c8e6b09491",
+    "Lemma/Services/Store/Client.lean": "0019d67b5e26555419c21fd7d088c095cf63504087151b20132a02b14b094d0b",
+    "Lemma/Services/Store/Codec.lean": "d8359a56d46d0506a1ed634eb341bd3bcc0ef0a74ed965ccaf131df222f5ce93",
+    "Lemma/Services/Store/Engine.lean": "0c81b53548c20f51f2a23ecc3db85bffb8d8d6db8d3e434f9bf6207cad9aca86",
+    "Lemma/Services/Store/Format.lean": "034dd9a3e104105a311194e2719fd7117d08f8b46400b9dd1ca1bb8caf6efad4",
+    "Lemma/Services/Store/Index.lean": "7883aefaa73f8dfe38ea148c69d8fc7b012a92d43acdb87639e70db65c82f22d",
+    "Lemma/Services/Store/Protocol.lean": "4525967f4de52723bcbddeff0e53b01b11fdb653642c8f8ba3085b0a55cc456a",
+    "Lemma/Services/Store/RecoveryProtocol.lean": "b73d2db14fc12f7f3506d3c5bc33a3816be9f6a213556553dfd5a49dd8cc794a",
+    "Lemma/Services/Store/Remount.lean": "0aa2f6b2ccc882e150fd03d8482bd8fca87d948f96b9544fa54b23807c372d6e",
+    "Lemma/Services/Store/Server.lean": "bd6b4f3534cb760c1d6a0b8eb6a7d444a003d7d1e5de531790d55db0abc413e1",
+    "Lemma/Services/Store/ServerAwait.lean": "55c5f5f49a24131db3547dda06047cba5472190051c08244c66c00170540aa3b",
+    "Lemma/Services/Store/ServerRecovery.lean": "ad9a5a6dfc33beb3684b467dc0381e228d600a5a1a2f164f89312588f672a31d",
+    "Lemma/Services/Store/ServerSchool.lean": "df0af256cf30eb58f82ad50efab95813963ecce134d34431b7f27e4da98dbd7c",
+    "Lemma/User/ABI.lean": "43f315ac5caf22ac47f0e6fb7f9dda5a1899a1e3436de695cee0f41653ed9259",
+    "Lemma/User/Capability.lean": "7422d98252a0be3cfe7c245bd803b0cad4199b69565354024ed84e57e8a187df",
+    "Lemma/User/CapabilityABI.lean": "9b026d357f644d68224dbcc94c37e334338e0d12a051bd21a718f3d12ca94739",
+    "Lemma/User/CapabilityConsole.lean": "b18af9e0ffdaddd4f39627179717b7dee70641a6509a6e8763f030d09b81f818",
+    "Lemma/User/Console.lean": "aebcbb5d40d5cb5cab5385fa2fefe6fc9cfd35d4024b12946c1b898421d22b26",
+    "Lemma/User/IPC.lean": "56fa2c194cffee66cff1286bc61a69a0e663c3af84796796755e0e062fc3e4be",
+    "Lemma/User/IPCABI.lean": "8d9a995abd3d71c1ff2671e909698b611115ac245a1e2a9d20f07b6f8cbaf32d",
+    "Lemma/User/Memory.lean": "c04236eb3b42ff74a30a12dd04d18fb6dcbeb2bc74aaf000ad58fe4958265024",
+    "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+    "Lemma/User/Runtime/ManagedArray.lean": "90d1dacccba2fd82a41290e33eadb3f99aec24adc36900eaf13229e08b6a59a8",
+    "Lemma/User/Runtime/ManagedBytes.lean": "56e0545dc8f8c71df82627a3c4b2ff8115b443d6bfdc740ee2a34028dd068c6d",
+    "Lemma/User/Runtime/ManagedClosure.lean": "e28443f299971fea7b7eabb4c2e196ade4b8fad67529dc92fd389c7cab6adaff",
+    "Lemma/User/Runtime/ManagedRecords.lean": "2a8401a15077057d4bc0499d31ec303f1a3b11bac5bcf706e4d9c8736908680b",
+    "Lemma/User/Runtime/ManagedString.lean": "e3891328f38a0509c5e3115e9d02d1f74e72a2cbd9e2ef49f7463ef7ca47b1d4",
+    "Lemma/User/Runtime/ManagedSums.lean": "a7a36ec54e2a3845dc89a6fe3786dd43463b070f29a80e010a0a31999bc04d46",
+    "Lemma/User/Syscall.lean": "d405577a4fd2cf4a67bfa67a71ae26ade5be16ba377c7884a8f578589899ea66",
+    "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+    "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+    "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+    "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+    "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+    "scripts/build_course_package.py": "26fc481ac93faa3c96bcd082e86bc79001f5f17c8137840ccb0ae4e98c2cfae4",
+    "scripts/check_course_install.py": "00665c856c90413e3f60f3ff147679895647a40d420336f7a9c03f7ca7af62ae",
+    "scripts/core0_common.py": "3811a7436914b85663bcb05aec0c5ccb2dcd642bd44f3344e179d619d1f55336",
+    "scripts/course_package.py": "56230cd83e8852031a0f7c2d94eda1fe0a3541597a414ffef2faa86efb8bf1e0",
+    "tests/courses/Guard.lean": "f5ccaa7e9913c41dee09cd0ccf0270bddc47ac29f14bf4b557931cb4c9fd4655",
+    "tests/courses/GuardExport.lean": "c3e112721465db9c30bb809ad41258ea6164080dadb67303f6a2a069e5a945b6",
+    "tests/courses/Install.lean": "a534eca29afc285661a2af24a2c91fc86cb9c78930d9feb83cf45cf4bdf9387a",
+    "tests/courses/InstallExport.lean": "9a491d18694c3abd6b48fa3848190d6a13066b50cd77ba4263077dcaf03e6022",
+    "tests/courses/Mount.lean": "aaa82ae337715e1d3f88cb94dbedda3bc2d3321539c66c59e7d5f8b47c5e793d",
+    "tests/courses/SchoolGuard.lean": "5d64eda41334d613d380d42bbbc3d62be5bdf044d89ae093dff4895fe0098fd6",
+    "tests/courses/SchoolGuardExport.lean": "fff58c78cd0453d840ddd9c63909d188ab290c9df8293b38ded777c4daeb647a",
+    "tests/courses/Selection.lean": "0b5a1692982b13e5f945a8a0433ce81ca9f03d417db038534beb5fd0ef92950f",
+    "tests/courses/SelectionExport.lean": "b7ba4e5b4e88e3e108bcffe0565d8cb8ec8c7cd33c855894dd51ee1c266a4b35",
+    "tests/courses/Submission.lean": "827aadd940794bbf9a27aede55c9d7bbf3d85798c942e7637735d22294ee8240",
+    "tests/courses/SubmissionExport.lean": "dcda0ef4b08f33341c4816cdf50d2b95b6776f67eee55ccf3278521964407b4e",
+    "tests/courses/test_package.py": "bf79b47a7c01b7bbe861b3036f45cd40ae522d0106310b24664fbeaf471b1494"
+  },
+  "actions": {
+    "submission-actions": {
+      "path": "build/courses/task009-school-submission-a1/submission-actions.stdout.log",
+      "sha256": "b5ee75f21dea8e0953645f7d2c9f4685da265bdcfdece50def013b8ac2933265",
+      "observation": "SCHOOL_SUBMISSION_ACTIONS:PASS exact4320-byte frozen/rawstream,16-byte boundaries,Busy/wouldBlock,retry,coldpendingrestore,boundACKdurablepointer,suspend/Abort/resume,partialstreamcancel,ninthchunkreject,allocationrollback,lostCommitnooutput; component only"
+    },
+    "school-guard-actions": {
+      "path": "build/courses/task009-school-submission-a1/school-guard-actions.stdout.log",
+      "sha256": "e3fb119d5db461d756decaf1ece008f2aae9857ebe291791826d8867ee57e629",
+      "observation": "SCHOOL_STORE_GUARD:PASS append-only live/tombstone,delete rejection,empty key,two legacy namespaces,actual append engine admission,9 independent header negatives; component only"
+    },
+    "selection-actions": {
+      "path": "build/courses/task009-school-submission-a1/selection-actions.stdout.log",
+      "sha256": "19b054af10e7db51870030d65ff044e8047598f73993cbc70e9c9f7ae8035dda",
+      "observation": "COURSE_SELECTION_ACTIONS:PASS exact installed802/1,4040 bytes,ordered64-byte record/Commit,reviewnode/absentnode,v3ACKguards,11 transport/application/ack failures,stale CRC,3 context guards; component only"
+    },
+    "guard-actions": {
+      "path": "build/courses/task009-school-submission-a1/guard-actions.stdout.log",
+      "sha256": "864b58dbfe72b44b6727b6e456a97e45078e1c3c7ac2f7723acc0ddb2d143477",
+      "observation": "COURSE_STORE_GUARD:PASS absent/present/tombstone keys,begin/delete no-I/O rejection,invalid keys,exact read faults,two ordinary namespaces,full package commit deferred and corrupt package rejected"
+    },
+    "install-actions": {
+      "path": "build/courses/task009-school-submission-a1/install-actions.stdout.log",
+      "sha256": "152ae2df79a7ec15b22339d5070ae9b96752d07184650b5fe40ffc0fa11db473",
+      "observation": "COURSE_INSTALL_ACTIONS:PASS 34 genuine ordered Begin/chunks/Commit calls,4040 exact copied bytes,9 independent failed outcomes,7 admission guards,CRC rejection; component only"
+    },
+    "mount-actions": {
+      "path": "build/courses/task009-school-submission-a1/mount-actions.stdout.log",
+      "sha256": "641a7f2f79b53ed735f1db2bbcc7251bc1df58e07a9493455eca2b98202cadb2",
+      "observation": "COURSE_MOUNT_ACTIONS:PASS ordered object0/status8, pending yields, ready/failed modes, real errors/deadline/overflow, context guards; no format/write/Commit"
+    }
+  },
+  "limits": {
+    "maximum_chunks": 8,
+    "maximum_stream_bytes": 262144,
+    "private_pages": 8,
+    "metadata_bytes": 16384,
+    "console_fragment_bytes": 16
+  },
+  "remaining": [
+    "Connect the admitted school notebook root and run ordinary native/browser workflows",
+    "General arbitrary-length durable outbox is not provided by this bounded single-pending queue",
+    "ACK CRC32 detects corruption and does not authenticate a remote principal",
+    "Exact machine checkpoints and cold Store recovery retain separate qualification scopes"
+  ]
+}
