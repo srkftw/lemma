@@ -1,0 +1,16 @@
+{"group":"synthetic-train-session-0","id":"train-0","independent":true,"present":[true,true],"split":"train","target":0.1,"time":0,"x":[0,0]}
+{"group":"synthetic-train-session-1","id":"train-1","independent":true,"present":[true,true],"split":"train","target":0.25,"time":1,"x":[0.25,0]}
+{"group":"synthetic-train-session-2","id":"train-2","independent":true,"present":[true,true],"split":"train","target":0.4,"time":2,"x":[0.5,0]}
+{"group":"synthetic-train-session-3","id":"train-3","independent":true,"present":[true,true],"split":"train","target":0.55,"time":3,"x":[0.75,0]}
+{"group":"synthetic-train-session-4","id":"train-4","independent":true,"present":[true,true],"split":"train","target":0.175,"time":4,"x":[0,0.25]}
+{"group":"synthetic-train-session-5","id":"train-5","independent":true,"present":[true,true],"split":"train","target":0.325,"time":5,"x":[0.25,0.25]}
+{"group":"synthetic-train-session-6","id":"train-6","independent":true,"present":[true,true],"split":"train","target":0.475,"time":6,"x":[0.5,0.25]}
+{"group":"synthetic-train-session-7","id":"train-7","independent":true,"present":[true,true],"split":"train","target":0.625,"time":7,"x":[0.75,0.25]}
+{"group":"synthetic-train-session-8","id":"train-8","independent":true,"present":[true,true],"split":"train","target":0.25,"time":8,"x":[0,0.5]}
+{"group":"synthetic-train-session-9","id":"train-9","independent":true,"present":[true,true],"split":"train","target":0.4,"time":9,"x":[0.25,0.5]}
+{"group":"synthetic-train-session-10","id":"train-10","independent":true,"present":[true,true],"split":"train","target":0.55,"time":10,"x":[0.5,0.5]}
+{"group":"synthetic-train-session-11","id":"train-11","independent":true,"present":[true,true],"split":"train","target":0.7,"time":11,"x":[0.75,0.5]}
+{"group":"synthetic-train-session-12","id":"train-12","independent":true,"present":[true,true],"split":"train","target":0.325,"time":12,"x":[0,0.75]}
+{"group":"synthetic-train-session-13","id":"train-13","independent":true,"present":[true,true],"split":"train","target":0.475,"time":13,"x":[0.25,0.75]}
+{"group":"synthetic-train-session-14","id":"train-14","independent":true,"present":[true,true],"split":"train","target":0.625,"time":14,"x":[0.5,0.75]}
+{"group":"synthetic-train-session-15","id":"train-15","independent":true,"present":[true,true],"split":"train","target":0.775,"time":15,"x":[0.75,0.75]}

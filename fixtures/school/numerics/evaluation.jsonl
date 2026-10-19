@@ -1,0 +1,8 @@
+{"group":"synthetic-heldout-session-0","id":"heldout-0","independent":true,"present":[true,true],"split":"evaluation","target":0.2125,"time":100,"x":[0.125,0.125]}
+{"group":"synthetic-heldout-session-1","id":"heldout-1","independent":true,"present":[true,true],"split":"evaluation","target":0.3625,"time":101,"x":[0.375,0.125]}
+{"group":"synthetic-heldout-session-2","id":"heldout-2","independent":true,"present":[true,true],"split":"evaluation","target":0.5125,"time":102,"x":[0.625,0.125]}
+{"group":"synthetic-heldout-session-3","id":"heldout-3","independent":true,"present":[true,true],"split":"evaluation","target":0.6625,"time":103,"x":[0.875,0.125]}
+{"group":"synthetic-heldout-session-4","id":"heldout-4","independent":true,"present":[true,true],"split":"evaluation","target":0.3625,"time":104,"x":[0.125,0.625]}
+{"group":"synthetic-heldout-session-5","id":"heldout-5","independent":true,"present":[true,true],"split":"evaluation","target":0.5125,"time":105,"x":[0.375,0.625]}
+{"group":"synthetic-heldout-session-6","id":"heldout-6","independent":true,"present":[true,true],"split":"evaluation","target":0.6625,"time":106,"x":[0.625,0.625]}
+{"group":"synthetic-heldout-session-7","id":"heldout-7","independent":true,"present":[true,true],"split":"evaluation","target":0.8125,"time":107,"x":[0.875,0.625]}

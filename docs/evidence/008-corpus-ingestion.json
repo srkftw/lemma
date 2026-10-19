@@ -1,0 +1,297 @@
+{
+  "schema": "lemma-school-corpus-ingestion/1",
+  "result": "PASS",
+  "sourceCommit": "3102aa4357dbe7d66032c8d6f905431289685906",
+  "sourceStatus": "Task008 dirty working tree; native producer and input SHA256s identify actual implementation, not HEAD alone",
+  "host": {
+    "platform": "Linux-6.12.63-x86_64-with-glibc2.40",
+    "python": "3.13.9 (main, Oct 14 2025, 13:52:31) [GCC 14.3.0]",
+    "tools": {
+      "tar": "tar (GNU tar) 1.35",
+      "zstd": "*** Zstandard CLI (64-bit) v1.5.7, by Yann Collet ***",
+      "poppler": "pdftoppm version 26.05.0"
+    }
+  },
+  "nativeObservation": {
+    "path": "build/school/corpus-native-a2/report.json",
+    "sha256": "4ae92be25163be727fc7664588e618aaecef22e05dd5072d4ef4b6ead2bd8557",
+    "result": "PASS",
+    "producer": "build/school/host-native-v3-a1/production.json",
+    "producerSha256": "a6575dd9b373baad64bac759753d1fb16e43beecb609c0814281774decd61f11",
+    "binarySha256": "1c6d5820b86fa5f393c7526dec02d84298012a7984f06d5612372ef8ec0b3b05",
+    "producerBinaryMatches": true,
+    "sourceInputsMatchProducer": true
+  },
+  "archive": {
+    "ownerPath": "/home/sreekumaar/Documents/Codex/2026-10-18/go/outputs/MyMathTextbooks-compressed.tar.zst",
+    "bytes": 511754217,
+    "sha256": "03c28f0b2108bc1603a34df14b34ff0620149f3a9426cabbe2b17da7f8de864e",
+    "memberCount": 62,
+    "originalArchiveUnchanged": true,
+    "selectedInitialMembers": [
+      "MyMathTextbooks/Curriculum.json",
+      "MyMathTextbooks/mathCurriculum.pdf"
+    ],
+    "selectedAdditionalTextbook": "MyMathTextbooks/Introduction to algebra (the art of problem solving) -- Richard Rusczyk -- 1st edition, March 30, 20.pdf",
+    "inventory": "build/school/corpus-a1/archive-members.txt",
+    "inventorySha256": "87befe1faf4205ed1b9a30f73d0b008b24b94223970f26d78545a4ae13c87d13",
+    "bulkBoundary": "Only catalogue, outline and one relevant textbook extracted; source PDFs/private text/page images remain ignored, with source archive untouched"
+  },
+  "catalogue": {
+    "sha256": "095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+    "bytes": 1320542,
+    "records": 27912,
+    "distinctStrings": 27912,
+    "everyOriginalAndPositionCompared": true,
+    "everyOriginalDigestCompared": true,
+    "idempotentReimport": true,
+    "changedFixtureRevision": "e6c69aef4fd709873898f52ffd49fd3e4c2605eb0043ca1b726d682eb4153fe4",
+    "priorRevisionRetained": true,
+    "searchQuery": "binomial",
+    "searchMatches": 61,
+    "stableSourceRecordExample": "sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5#679"
+  },
+  "outline": {
+    "sha256": "92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+    "bytes": 76481,
+    "pages": 6,
+    "courses": 32,
+    "selectedPlacement": "Lower School LS2; AoPS Introduction to Algebra; PDF index0 inspected"
+  },
+  "textbook": {
+    "ownerExtractedPath": "build/school/corpus-a1/MyMathTextbooks/Introduction to algebra (the art of problem solving) -- Richard Rusczyk -- 1st edition, March 30, 20.pdf",
+    "sha256": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+    "title": "Introduction to Algebra",
+    "author": "Richard Rusczyk",
+    "publication": "AoPS Incorporated; copyright2007",
+    "edition": "First Printing2007, visually verified",
+    "isbn": "978-1-934124-01-7",
+    "pageCount": 658,
+    "bibliographyEvidence": "Title PDF index1 and copyright PDF index2 rendered and visually inspected",
+    "rights": "All Rights Reserved in inspected copyright page; no redistribution permission inferred",
+    "selectedSourceAnchors": [
+      {
+        "id": "aops07:distribution-p13",
+        "sourceId": "aops-intro-algebra-2007",
+        "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+        "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "pdfPageIndex": 29,
+        "printedPageLabel": "13",
+        "sectionLabel": "1.4 Distribution and Factoring",
+        "exercise": "Problem1.8; independently authored rectangle example",
+        "verification": "verified",
+        "evidence": "Complete PDF page index29 rendered with Poppler26.05.0 at120dpi and visually inspected; printed label13 confirmed. OCR text is not sole authority.",
+        "extraction": {
+          "method": "pypdf extraction of existing OCR text layer plus independent Poppler page-image inspection",
+          "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+          "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+          "outputDigest": "cedeef6bbf1e04f90f4e7a0c6af92b55a8e1378237538c194ea2005998199414",
+          "parentOutputDigest": null
+        }
+      },
+      {
+        "id": "aops07:worked-p306",
+        "sourceId": "aops-intro-algebra-2007",
+        "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+        "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "pdfPageIndex": 322,
+        "printedPageLabel": "306",
+        "sectionLabel": "11.1 Squares of Binomials",
+        "exercise": "Worked solution11.1; independently authored t+3 example",
+        "verification": "verified",
+        "evidence": "Complete PDF page index322 rendered with Poppler26.05.0 at120dpi and visually inspected; printed label306 confirmed. OCR text is not sole authority.",
+        "extraction": {
+          "method": "pypdf extraction of existing OCR text layer plus independent Poppler page-image inspection",
+          "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+          "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+          "outputDigest": "21b1f1fb09f3aa55b93a868bc0c9e5cbad28915b2b8e57d406ff44c882f5f6f3",
+          "parentOutputDigest": null
+        }
+      },
+      {
+        "id": "aops07:identity-p307",
+        "sourceId": "aops-intro-algebra-2007",
+        "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+        "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "pdfPageIndex": 323,
+        "printedPageLabel": "307",
+        "sectionLabel": "11.1 Squares of Binomials",
+        "exercise": "General identity and cross-term argument",
+        "verification": "verified",
+        "evidence": "Complete PDF page index323 rendered with Poppler26.05.0 at120dpi and visually inspected; printed label307 confirmed. OCR text is not sole authority.",
+        "extraction": {
+          "method": "pypdf extraction of existing OCR text layer plus independent Poppler page-image inspection",
+          "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+          "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+          "outputDigest": "060dcf01e25fd301218a0dfa4a24ca77586c0ef6029cb9d5690e0e0eaccba129",
+          "parentOutputDigest": null
+        }
+      },
+      {
+        "id": "aops07:recognition-p308",
+        "sourceId": "aops-intro-algebra-2007",
+        "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+        "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "pdfPageIndex": 324,
+        "printedPageLabel": "308",
+        "sectionLabel": "11.1 Squares of Binomials",
+        "exercise": "Recognition discussion around Problem11.3; independently authored coefficients",
+        "verification": "verified",
+        "evidence": "Complete PDF page index324 rendered with Poppler26.05.0 at120dpi and visually inspected; printed label308 confirmed. OCR text is not sole authority.",
+        "extraction": {
+          "method": "pypdf extraction of existing OCR text layer plus independent Poppler page-image inspection",
+          "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+          "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+          "outputDigest": "038235e295b71b0bee9b6e045b829518d2862b7603a30c1c5e026cac4e0ad814",
+          "parentOutputDigest": null
+        }
+      }
+    ]
+  },
+  "sourceDerivedUnits": [
+    {
+      "definition": "examples/school/source-derived-unit.json",
+      "definitionSha256": "7620270a98a13e594658a7375851ec9970b5ea2855266df7d50f22bd6a58e7f2",
+      "course": 802,
+      "revision": 1,
+      "artifact": "build/school/corpus-a1/units/802-1.lcp",
+      "artifactSha256": "ed029d68ea14f0dd86deb9931d451bf0b1dd653b87ea311387eb0a555b3793cb",
+      "bytes": 5229,
+      "compilationReceipt": "build/school/corpus-a1/units/802-1-compile.json",
+      "compilationReceiptSha256": "ee834f3bca75c9483677931e9a4bc0f18b42f629788d758fa1ee2ebeaffa36ac"
+    },
+    {
+      "definition": "examples/school/source-derived-client-unit.json",
+      "definitionSha256": "1c9ee1a5ed481c9070ee68b11093ab86fedd2f14192fa6ab1f61f7e7f2e1270e",
+      "course": 1,
+      "revision": 2,
+      "artifact": "build/school/corpus-a1/units/1-2.lcp",
+      "artifactSha256": "61a66c07afe8ddd7b0271e549dff1be04f6ca1957bff24e8a97ba20a5c038529",
+      "bytes": 5263,
+      "compilationReceipt": "build/school/corpus-a1/units/1-2-compile.json",
+      "compilationReceiptSha256": "1f7fd099efeb3620d787d3d279b570977fd85bba43e06d1df517bb9c0b864373"
+    }
+  ],
+  "sourceResolution": {
+    "command": [
+      ".lake/build/bin/school-curriculum",
+      "resolve-sources",
+      "examples/school/source-derived-unit.json"
+    ],
+    "result": "PASS",
+    "receipt": "build/school/corpus-a1/units/802-1-resolved.json",
+    "receiptSha256": "a0c7893bb5ca4eb09c6167898563cdc99e30cad24a07fcd861a99f0134d22f73",
+    "sourcesResolved": 3,
+    "portableOverride": "Use source-config under publish/school grant for digest/path, then enrolled source-resolve for course/revision/source; immutable unit definition unchanged"
+  },
+  "mathematicalEvidence": {
+    "referenceTheorem": "Lemma.School.FixtureUnit.square_successor",
+    "statement": "forall x : Nat, (x+1)*(x+1)=x*x+2*x+1",
+    "role": "Reuse the checked mathematical specialization a=x,b=1 of inspected binomial identity; original fixture unit remains distinct",
+    "axioms": [
+      "propext"
+    ],
+    "theoremSourceSha256": "d6f916fdfb74ff5dde941c99c4d35487d1a93e440b5295fbca893e56780ecc56",
+    "existingExactChecker": "lemma-exact/1:binomialSquare over Q[x]",
+    "actualVaryingResponses": [
+      1,
+      2,
+      2
+    ],
+    "responseReceipt": "build/school/corpus-a1/units/exact-checker-examples.json",
+    "remainingActivities": "informal definitions, argument analysis, independent proof, transfer and review need teacher review; reference theorem is not a handwritten submission checker"
+  },
+  "performance": {
+    "nativeSeconds": {
+      "import": 0.5579875640105456,
+      "reimport": 0.622556910966523,
+      "search": 0.5812474660342559,
+      "lookup": 0.5603421899722889
+    },
+    "nativeMaximumChildRssKiB": 136144,
+    "nativeMemoryScope": "maximum RSS across tar and native hosted Lean children; independent Python oracle memory excluded",
+    "retainedInterpreterReceipt": "build/school/corpus-a1/import-evidence/report.json",
+    "retainedInterpreterReceiptSha256": "46584ca6382703e26c6de1ba5cc62586d42c839c151d6c1906c626e5c2783c2f",
+    "interpreterSeconds": {
+      "import": 62.47223950503394,
+      "reimport": 69.36300396802835,
+      "search": 65.89560310903471,
+      "lookup": 67.74545734003186,
+      "changed-fixture": 1.4342137860367075
+    },
+    "interpreterMaximumChildRssKiB": 1575328,
+    "scope": "finite local hosted workload on actual catalogue; neither target nor distributed performance"
+  },
+  "commands": [
+    [
+      "tar",
+      "--zstd",
+      "-tf",
+      "/home/sreekumaar/Documents/Codex/2026-10-18/go/outputs/MyMathTextbooks-compressed.tar.zst"
+    ],
+    [
+      "tar",
+      "--zstd",
+      "-tvf",
+      "/home/sreekumaar/Documents/Codex/2026-10-18/go/outputs/MyMathTextbooks-compressed.tar.zst"
+    ],
+    [
+      "tar",
+      "--zstd",
+      "-xf",
+      "/home/sreekumaar/Documents/Codex/2026-10-18/go/outputs/MyMathTextbooks-compressed.tar.zst",
+      "-C",
+      "/home/sreekumaar/Downloads/lemma/build/school/corpus-native-a2",
+      "--",
+      "MyMathTextbooks/Curriculum.json",
+      "MyMathTextbooks/mathCurriculum.pdf"
+    ],
+    [
+      "/home/sreekumaar/Downloads/lemma/.lake/build/bin/school-curriculum",
+      "catalogue",
+      "import",
+      "/home/sreekumaar/Downloads/lemma/build/school/corpus-native-a2/school",
+      "owner-math",
+      "/home/sreekumaar/Downloads/lemma/build/school/corpus-native-a2/MyMathTextbooks/Curriculum.json"
+    ],
+    [
+      "/home/sreekumaar/Downloads/lemma/.lake/build/bin/school-curriculum",
+      "catalogue",
+      "import",
+      "/home/sreekumaar/Downloads/lemma/build/school/corpus-native-a2/school",
+      "owner-math",
+      "/home/sreekumaar/Downloads/lemma/build/school/corpus-native-a2/MyMathTextbooks/Curriculum.json"
+    ],
+    [
+      "/home/sreekumaar/Downloads/lemma/.lake/build/bin/school-curriculum",
+      "catalogue",
+      "search",
+      "/home/sreekumaar/Downloads/lemma/build/school/corpus-native-a2/school",
+      "owner-math",
+      "095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+      "binomial",
+      "0",
+      "5"
+    ],
+    [
+      "/home/sreekumaar/Downloads/lemma/.lake/build/bin/school-curriculum",
+      "catalogue",
+      "lookup",
+      "/home/sreekumaar/Downloads/lemma/build/school/corpus-native-a2/school",
+      "owner-math",
+      "095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+      "437"
+    ],
+    [
+      "/home/sreekumaar/Downloads/lemma/.lake/build/bin/school-curriculum",
+      "catalogue",
+      "import",
+      "/home/sreekumaar/Downloads/lemma/build/school/corpus-native-a2/school",
+      "owner-math",
+      "/home/sreekumaar/Downloads/lemma/fixtures/school/catalogue.json"
+    ]
+  ],
+  "independentChecks": "Host observer conveys archive bytes and checks identities/order; maintained parsing, search, validation, source registry, authoring and package encoding are Lean",
+  "clientAndPublicationScope": "Actual school authority publication and LemmaSim installation/presentation have separate root/client receipts; not asserted by this ingestion receipt",
+  "releaseBoundary": "Authored paraphrases and provenance metadata only are tracked. Textbooks, private extracts and image renders excluded. Repository license and third-party rights remain separate."
+}

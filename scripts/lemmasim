@@ -815,12 +815,21 @@ def main():
         import lemmasim_companion
         result = lemmasim_companion.main(sys.argv[2:])
         return result if isinstance(result,int) else 0
+    if len(sys.argv)>1 and sys.argv[1]=='school-open':
+        import lemmasim_school_panel
+        return lemmasim_school_panel.main(sys.argv[2:])
+    if len(sys.argv)>1 and sys.argv[1]=='school':
+        import lemmasim_school
+        sys.argv = [sys.argv[0], *sys.argv[2:]]
+        return lemmasim_school.main()
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='command',required=True)
     sub.add_parser('product-bundle',help='Relocatable local immutable-ROM machine with exact host sources; use product-bundle --help')
     sub.add_parser('product-auth',help='Public-development-key ROM boot/update and fault controls; use product-auth --help')
     sub.add_parser('file-limit',help='Actual Linux backing fault on a paused private Laboratory fork; use file-limit --help')
     sub.add_parser('usb-pending',help='Opt-in hosted Lean policy4 with bounded receipt Pending; use usb-pending --help')
     sub.add_parser('companion',help='Hosted Lean persistent opaque backing development transport; use companion --help')
+    sub.add_parser('school',help='Study/join/help/submit/review through the local Lean school and real workbook; use school --help')
+    sub.add_parser('school-open',help='Native study/teach/operate/develop panel coupled to an actual session and Lean school; use school-open --help')
     sub.add_parser('product',help='Immutable Lean ROM, real NV boot and owner-local recovery; use product --help')
     p=sub.add_parser('browser-build',help='Prepare the shared Lean machine as a source-bound local Wasm bundle')
     p.add_argument('--engine',choices=('rtl','qemu-tci'),default='rtl',help='Explicit functional QEMU/TCI or clocked RTL implementation; no timing-equivalence claim')

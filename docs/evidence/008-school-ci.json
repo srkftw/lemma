@@ -1,0 +1,63 @@
+{
+  "addedScopes": {
+    "legacy-rv64": "independent early Lean training plus fresh standalone school worker O0/O2 build/audit/nine UART cases within 8 min; actual retained step160 parameter fixture",
+    "metadata": "source-bound hosted school producer: 5 min; authority/client validation: 8 min; hosted synthetic training: 3 min"
+  },
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/ci",
+        "-v"
+      ],
+      "result": "pass",
+      "seconds": 0.848,
+      "tests": 20
+    },
+    {
+      "command": [
+        "/nix/store/bwxcfsghzk4hyynxgl3lvjgmcnkc7qhf-actionlint-1.7.12/bin/actionlint",
+        ".github/workflows/core0.yml",
+        ".github/workflows/preflight.yml"
+      ],
+      "result": "pass",
+      "version": "1.7.12"
+    },
+    {
+      "blocks": 49,
+      "description": "bash -n of extracted run blocks across both maintained workflows",
+      "result": "pass"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        ".github/workflows/core0.yml",
+        "docs/CI.html",
+        "scripts/check_school_load_worker.py"
+      ],
+      "result": "pass"
+    }
+  ],
+  "preserved": [
+    "eleven acceptance-job topology plus aggregate",
+    "old commands and job timeouts",
+    "events and concurrency",
+    "action and toolchain pins",
+    "old upload inclusions and retention"
+  ],
+  "result": "pass",
+  "schema": "lemma-school-ci-change-validation/v1",
+  "sourceInputs": {
+    ".github/workflows/core0.yml": "f6d2d34c8cd407c6626796ae9171c4f4c568a1f5eede89901e97789d2ed0c373",
+    ".github/workflows/preflight.yml": "54db10d0217ff098010f3e2b30d28489b305d8f5cf170fe261243a87e61a1890",
+    "docs/CI.html": "52c64afa4a0427e833ddc02db0e5d6ddeb8f8c47234e2ef166461740f9241b32"
+  },
+  "sourceScope": "current dirty task008 worktree; local workflow validation only, no hosted scheduling or remote acceptance claim"
+}

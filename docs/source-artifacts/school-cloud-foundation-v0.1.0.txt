@@ -1,0 +1,278 @@
+LEMMA SCHOOL / CLOUD FOUNDATIONS
+Codex implementation prompt, version 0.1.0
+
+1. ASSIGNMENT AND PRODUCT DIRECTION
+
+Work in the existing srkftw/lemma repository. Establish the architecture and implement the first working foundation of Lemma School and Lemma Cloud. Continue through implementation, integration, meaningful verification, and a reviewable handoff. A proposal, directory scaffold, collection of interfaces, attractive disconnected dashboard, or roadmap alone does not complete this assignment.
+
+Lemma is an open educational and research system for learning, teaching, operating schools, and developing the Lemma hardware/software suite. Its maintained application and system logic is written in Lean. LemmaSim and the eventual Lemma One are clients of the same school and device contracts. A school can run on its owner's machines, use its own curriculum and tutor configuration, export its work, and operate without a mandatory Lemma-hosted account, proprietary model API, or hyperscaler service.
+
+The central distributable object is a versioned school package. It composes source references, curriculum definitions, tutor policy, learner-model configuration, model artifacts, independent assessments, permissions, and deployment requirements. Learner records, private recordings, credentials, and a running deployment's identity are separate from that reusable package.
+
+The same person may study, teach, administer a school, or develop Lemma. These are activities and scoped capabilities, not permanent account castes. Everyone can create their own workspace, inspect the system, author material, experiment, and fork permitted packages. Authority over another person's records or a shared school's operation remains explicitly scoped.
+
+USGCE is the first reference school using these public interfaces. Its only inherited curriculum authority is the owner's attached textbook collection and topic catalogue/course outline. Do not make USGCE a special privileged tenant or bake its content, naming, educational assumptions, or model choices into the platform.
+
+2. INSPECT THE ACTUAL CHECKOUT AND PRESERVE EXISTING WORK
+
+Before editing, inspect the current checkout, branch, worktrees, git status, current task checkpoint, available tools, disk budget, and active build ownership. Read AGENTS.md, docs/contributor-guide.html in full, docs/overview.html, docs/ARCHITECTURE.html, relevant docs/contracts/, docs/plan/BUILD_ORDER.html, docs/plan/CURRENT.html, and the assigned task documents. Run the documented read-only developer status command, including its structured output when useful.
+
+The preparation snapshot inspected main at 3102aa4357dbe7d66032c8d6f905431289685906. Task 007 was already an ancestor of that main. These are historical orientation facts, not instructions to reset to that commit. The actual checkout may contain newer or unpublished work. Preserve it, understand its ownership, and extend the current interfaces. Do not discard, overwrite, clean away, or silently replace unrelated changes.
+
+Primary repository references:
+https://github.com/srkftw/lemma
+https://github.com/srkftw/lemma/blob/3102aa4357dbe7d66032c8d6f905431289685906/docs/contributor-guide.html
+https://github.com/srkftw/lemma/blob/3102aa4357dbe7d66032c8d6f905431289685906/docs/plan/CURRENT.html
+
+This assignment authorizes adding the school/cloud foundation beyond historical task exclusions. It does not erase hardware contracts, compiler constraints, evidence standards, existing failures, or user changes. Record the new task's precedence explicitly while retaining historical documents as history. Use the next available task number; 008-school-cloud-foundation is the expected successor if still unused.
+
+Inspect and reuse the existing course package, reader, workspace, persistence, mathematics, multimodal, tutor-action, transport, compiler, deployment, and build-cache layers. Useful starting points include Lemma/Courses/, Lemma/Documents/, Lemma/Multimodal/TutorAction.lean, Lemma/Multimodal/TutorPackage.lean, Lemma/Core0/IR.lean, Lemma/Compiler/, and scripts/verification_routes.json. Verify paths and current behavior before relying on them.
+
+3. WHAT USGCE MEANS, AND WHAT IT DOES NOT SUPPLY
+
+The owner explicitly rejected the old USGCE application's authority. Do not port its Haskell application, generated task bank, database schema, import machinery, or levels-to-topics-to-tasks hierarchy merely because they exist. Do not modify srkftw/USGCE as part of this assignment. An individually useful inspected artifact may inform a decision, but it must not become an inherited architectural requirement.
+
+The source archive supplied during planning was MyMathTextbooks-compressed.tar.zst, 511754217 bytes. Its planning-session locator was:
+/workspace/scratch/6e1b7837391c/upload/MyMathTextbooks-compressed.tar.zst
+
+Two members were inspected:
+- MyMathTextbooks/Curriculum.json: a JSON list of 27912 distinct strings, retaining numbered labels with prefixes 1 through 32. SHA-256: 095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5.
+- MyMathTextbooks/mathCurriculum.pdf: a six-page outline containing 16 Lower School and 16 Upper School courses. SHA-256: 92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c.
+
+These paths describe the preparation environment. They are not guaranteed to exist in your Codex environment. Locate the supplied archive or an explicitly configured corpus directory in the checkout's documented attachment locations. Do not scan the entire filesystem. Accept a user-provided corpus path as an input; do not hardcode the planning scratch directory into source.
+
+When the corpus is available, verify its actual bytes and report identity differences. Keep the original archive read-only. Inventory it and extract only necessary members, preserving names and provenance without repeatedly unpacking hundreds of megabytes. Keep textbook binaries, private extracted text, embeddings, and other derived bulk content outside tracked source. Do not infer redistribution permission from possession of a textbook.
+
+If the corpus is unavailable, implement and test the genuine importer with a small explicitly redistributable fixture, complete all independent work, and report real-corpus ingestion and the corpus-derived unit as blocked. Do not manufacture source inspection, hardcode the expected count as a successful import, or call the missing real-corpus acceptance gate complete.
+
+4. REQUIRED RELEASE AND LONG-TERM ARCHITECTURE
+
+The destination is an all-Lean school and research system: a database-oriented school/fleet control service, replaceable freestanding RISC-V workers, resident inference services, recoverable training jobs, useful numerical and scientific DSLs, and provider-independent deployment. Establish that direction concretely in contracts and dependency order.
+
+For foundation version 0.1, deliver a functioning one-machine school and a substantive integrated path through the actual client. It must include source ingestion, course authoring and publication, enrollment, tablet-minimum learning, a grounded tutoring/assessment loop, durable recovery, package cloning/export, a real trainable Lean component, and a freestanding worker executing inference from its learned parameters through school jobs. The acceptance gates below define completion.
+
+A hosted Lean reference implementation may support development where the target binding is not yet complete. Label its execution environment, runtime dependencies, and assurance boundary accurately. It does not count as a freestanding server or satisfy a missing target worker gate. Share Lean semantics and test vectors across bindings; do not create an unrelated demonstration product.
+
+Full distributed consensus, production multicloud operations, a complete database engine, frontier-model pretraining, broad accelerator coverage, and feature/performance parity with JAX are subsequent engineering milestones. Give each a concrete interface, dependency, and validation obligation. Do not claim those properties from the foundation, but do not replace the all-Lean destination with permanent foreign services either.
+
+Sequence work so usable school behavior is not held hostage to completing every future operating-system component. Conversely, do not terminate after documenting future work while a feasible required local workflow remains unimplemented.
+
+5. LEAN, RISC-V, COMPILATION, AND TRUST BOUNDARIES
+
+Preserve the repository's genuine Lean elaboration and existing LLVM-based lowering. The requirement is efficient compiled target code, not the absence of compiler intermediate representations. Do not delete LLVM, substitute an interpreter, or claim that direct RISC-V output alone establishes performance parity with JAX.
+
+All new maintained curriculum semantics, tutoring policy, learner-model logic, numerical operations, enrollment and authorization decisions, protocol validation, durable state transitions, job reconciliation, dataset construction, and target services belong in Lean. Host shell, Python, Nix, or YAML may orchestrate builds/tests, extract archives, convey bytes, invoke existing tools, or expose explicitly documented development host operations. They must not implement the school, tutor, optimizer, scheduler, or target-runtime semantics under the name of an adapter.
+
+An existing foreign-model companion may remain an optional explicitly identified development/reference provider. It does not qualify all-Lean inference, and the required school baseline and trained-component target path must work without it. Preserve useful legacy tooling with an accurate boundary instead of deleting it to improve a language-purity claim.
+
+Preserve the repository's restrictions on target C/C++/Rust/Zig/assembly, libc, libm, compiler-rt, libgcc, libuv, pthreads, the upstream Lean runtime, and unaccounted foreign symbols. Machine primitives must follow the existing structured Lean lowering rules. Do not embed target-language strings, introduce no-op foreign stubs, or fabricate compiler inputs instead of elaborating real Lean source.
+
+Keep closed Core0 profiles versioned. Existing scalar types and tiny managed arrays do not constitute a tensor runtime. Add an explicit compatible profile or new numerical boundary where required, with exact representation, effects, allocation limits, and supported operations. Do not silently change legacy profile meaning or increase a small boxed-array limit and call it numerical infrastructure.
+
+RISC-V remains the reference target. Do not silently add Linux guests, ARM targets, default OpenSBI, or another native ISA as an architectural prerequisite. Emulation on another host is useful execution evidence with its limitations stated; it is not native RISC-V performance evidence.
+
+Formal claims require the claimed theorem, assumptions, checked artifact, and versioned trusted boundary. Preserve the prohibition on sorry, admit, sorryAx, unjustified axioms, or native_decide as a substitute for the required trusted proof. Ordinary successfully compiled Lean programs are not automatically verified operating systems or verified pedagogical policies.
+
+6. SHARED SCHOOL MODEL AND DOMAIN LANGUAGES
+
+Implement a coherent versioned Lean model for school definitions, published course versions, source references, units, activities, assessment specifications, enrollment, learner work, observations, interpretations, checked evidence, tutor decisions, jobs, artifacts, and model releases. Reuse existing domain objects where appropriate instead of duplicating course/package/document state.
+
+Separate four kinds of information: immutable published definitions; durable private operational records; immutable large artifacts; and rebuildable indexes/projections. A course edit creates a new version. An attempt remains tied to the exact content, rubric, checker, model, and policy versions used when it occurred. Migration must preserve that historical interpretation.
+
+Implement a usable Lean authoring DSL for a complete unit: learning goals, prerequisites, source anchors, notation, worked examples, activities, permitted assistance, assessment criteria, supported checking methods, and review policy. Provide preview and validation from the same definition used by the learner runtime. Invalid references, incompatible versions, unsupported requirements, and cycles in prerequisite relations explicitly declared acyclic must produce actionable diagnostics. Related-topic, review, and other curricular relations may contain cycles; distinguish their semantics from hard progression requirements.
+
+Use a family of focused DSLs over shared types rather than one giant syntax: curriculum and assessment; tutor and learner-model policy; datasets and numerical computation; deployment and resources; experiments and measurement. Implement the pieces required by this release and expose honest capability/version information for the rest. Do not present proposed syntax as a working compiler feature.
+
+Teacher-facing editing and developer-facing Lean definitions must round-trip through the same semantic representation for supported constructs. Preserve or explicitly diagnose constructs a visual editor cannot represent. Do not maintain a separate, less expressive hidden curriculum format behind the UI.
+
+Treat imported school definitions, learner submissions, and contributed extensions as untrusted inputs. Declarative authoring must not implicitly grant filesystem, network, deployment, or administrative effects. Validate packages and execute effectful compilation/checking extensions within existing isolation and resource boundaries. Reuse the canonical device binding authority for hardware DSLs instead of inventing conflicting device contracts.
+
+7. TURN THE TEXTS AND CATALOGUE INTO A REAL SCHOOL
+
+Implement the actual topic importer in Lean. Preserve every original string, numbering, order, source digest, record position, import version, and validation result. Define stable source-record identity and a separate way to relate records across catalogue revisions. Preserve exact originals even if search uses normalized fields. Re-importing the same source must be idempotent; different source content must not overwrite history.
+
+The 27912 catalogue entries are source material, not 27912 automatic lessons, mastery flags, embedding jobs, or model calls. Import and browse the full catalogue with bounded memory and useful search/pagination. No compulsory model invocation per entry or full-corpus preprocessing should block first use.
+
+Represent proposed prerequisite relations, equivalences, grouping, course placement, and textbook mappings separately from the raw catalogue. Mark their origin, confidence or unresolved status, and review history. Numeric order and similar names do not prove educational dependency or mathematical equivalence.
+
+Build a source registry with verified bibliographic identity where available, edition, file digest, PDF page index, printed page label when known, section/exercise anchors, extraction method, and extraction lineage. Preserve notation and edition differences. Distinguish verified anchors from ambiguous/OCR-derived matches. A reader must be able to recover the actual source context of a cited claim.
+
+Implement meaningful source-to-unit authoring: select topics and text passages, define goals and prerequisites, write or curate explanations and activities, specify assistance and assessments, validate, preview, and publish. Bulk source bytes may remain in owner-controlled storage while packages contain resolvable manifests and permitted metadata. Missing sources should produce clear, recoverable errors.
+
+Build at least one substantive coherent unit from the actual available collection. Choose it after inspecting the relevant text and current checker capabilities. Include prerequisite preparation, a worked example, definition reconstruction, routine application, analysis of an invalid argument, an independent reasoning/proof task, a transfer task, and a scheduled later review. These can share a mathematical theme; they must not be cosmetic variations of one scalar calculation.
+
+Use the existing exact checker where its domain applies. For mathematical work outside its capability, retain the attempt and give accurately labeled feedback or teacher review. A source-grounded reference proof checked in Lean does not establish that an arbitrary handwritten student proof was checked. Keep independent assessment material and outcome labels out of the tutor's answer-generation inputs when the assessment protocol requires withholding them.
+
+For the selected unit, actually check at least one substantive reference theorem or solution and evaluate varying learner responses within a supported checker domain. Identify the remaining informal or unsupported activities. Unsupported-proof feedback alone cannot satisfy the mathematical checking requirement.
+
+8. STUDENT, TEACHER, OPERATOR, AND DEVELOPER WORKFLOWS
+
+Expose clear entry actions through the actual LemmaSim experience: study or join a school; create or teach a course; run or customize a school; develop for Lemma. Allow switching activities within one identity. Do not force users to choose a permanent persona before trying the system.
+
+Student: open LemmaSim, discover or enter a configured school endpoint, join through the supported enrollment mechanism, select a course, install/open the relevant package, work with the drawing surface, obtain permitted help, submit an attempt, inspect progress and uncertainty, disconnect, and resume. Support an immediate sample experience without requiring every sensor or account-infrastructure dependency before first interaction.
+
+Teacher: import or reference source material, find catalogue topics, construct a unit, preview the exact student experience, configure assistance and assessment, publish an immutable course version, invite/enroll learners, and inspect authorized evidence and course-level problems. The teacher can revise a course while previous attempts retain their original version.
+
+Operator: initialize a school, choose data/artifact locations and budgets, select available execution/model providers, run it locally, inspect health and storage, manage jobs, create a consistent export, restore into a fresh location, and clone a reusable school definition. Make routine actions available without editing opaque internals while keeping readable Lean configuration accessible.
+
+Developer: find the authoritative contract, open a minimal runnable extension, change a real activity/checker/tutor component or device binding, validate it, test it in LemmaSim, and see useful diagnostics. Examples must execute through maintained interfaces. Include a path from browser experimentation to the corresponding physical-device contract, clearly marking unqualified hardware behavior.
+
+Scope authorization to school/workspace/resource/action. A learner may administer their own school without being able to read other learners' private records. A teacher sees only evidence their role and the data grants permit. Package forks do not carry production credentials or live learner data by default.
+
+Build on the existing course reader, document/workbook, interaction settings, and companion transport. Do not create a disconnected website that bypasses the actual guest. Resolve load-bearing Task 007 display, cancellation, or transport defects encountered by the chosen workflow, retaining evidence of remaining unrelated gaps.
+
+9. TUTOR STRUCTURE, EVIDENCE, AND LEARNING OBJECTIVE
+
+Make the tutoring loop explicit: obtain authorized observations; attach source/time/missingness; interpret with uncertainty; retrieve permitted curriculum context; invoke available checks; update a provisional learner estimate; select a permitted intervention; deliver through the client contract; record receipt and subsequent evidence. Each stage must be inspectable without requiring a teacher to reverse-engineer a monolithic prompt.
+
+Separate the pedagogical policy, learner model, language/multimodal model, retrieval, mathematical tools, activity definition, and assessment protocol. A school must be able to customize curriculum and teaching behavior without retraining a frontier language model. Support configuration, replacement of a model bundle, and training a small school-owned component as distinct operations. The baseline must remain usable without a language-model download, using authored source-grounded feedback, supported exact checks, and the visible pedagogical policy. Identify the active backend; do not describe this fallback as language-model generation.
+
+Distinguish observed work, inferred intent, mathematical validity within a checker's scope, estimated learning state, and measured educational effect. Record assistance already given. Correctness after a revealed answer is assisted performance, not independent mastery. Estimates must expose uncertainty, insufficient evidence, and policy version. Learners can change goals, challenge interpretations, and override recommendations where course rules permit; authorized corrections append provenance-bearing records. These actions must not overwrite original observations or falsely relabel checker evidence.
+
+For the reference school's default policy, the intended learning objective is later independent mathematical ability: retention, transfer, use of assumptions and counterexamples, construction of useful definitions/classifications, and learning from unfamiliar resources. Implement assessment records and evaluation hooks for these outcomes. Schools may version and replace outcome protocols, including protocols for explicitly tool-supported work, while retaining assistance provenance. Do not treat engagement, session duration, physiological signals, immediate assisted correctness, or an arbitrary scalar attention score as proof of learning. Distinguish chosen metrics from established educational outcomes.
+
+Learned representations may consume permitted raw observations without a compulsory attention/emotion classifier bottleneck. Do not invent psychological diagnoses or treat simulated sensor data as measured learner state. Synthetic data can validate mechanics and robustness, but cannot establish educational efficacy or causal benefit.
+
+Preserve existing tutor-action validation and installed-package admission. Define the school/learner-to-session binding and validate it at the authority admitting each action, together with course/activity revision, grant, sequence, and validity window. Do not assume the current packet already contains every required identity. If new wire fields are needed, add a versioned envelope and validator without silently repurposing existing fields. Retain explicit rejection reasons. Record decision, delivery attempt, guest acceptance/rejection, cancellation/expiry, and visible presentation where the client can attest it; do not collapse them into one success flag.
+
+10. MINIMUM CLIENT AND OPTIONAL MODALITIES
+
+Drawing input is the baseline. A functioning learning session must not require voice, camera, gaze, EEG, physiology, a complete synthetic dataset, or physical Lemma One hardware. Discover capabilities, ask only for the inputs a chosen activity truly needs, and offer an appropriate supported alternative when an optional input is missing.
+
+Model each observation with modality/schema version, source class, timestamp/clock context, calibration or quality metadata when relevant, and explicit missingness. Record measured, derived, or synthetic origin separately from live/replay execution. Replay preserves original provenance, observation identity, and acquisition timestamps while recording replay timing separately; it must not silently create new evidence of learner performance. Missing data must not become zero-valued measurements or simulated readings.
+
+Keep collection, local processing, upload, retention, and training permissions separate and scoped. Enforce grants in data ingestion, retrieval, task scheduling, model datasets, exports, and deletion/retention behavior. A training-consent change must affect subsequent dataset eligibility; document what can and cannot be removed from previously trained model artifacts rather than promising automatic unlearning.
+
+The client retains immediate pen/display feedback, input timing, mute and permission controls, and local document interaction. School outages or overloaded training jobs must not freeze drawing. Describe local persistence only to the level supported by the actual storage binding; a buffered write is not automatically durable across power loss.
+
+Use the published companion/device transport for cloud interactions. No host framebuffer mutation, hidden guest-memory writes, permissive test-only grants in normal operation, or direct state injection may substitute for the real route. Fault and replay tests must exercise the same admission path. This repository task does not launch a research study, recruit third-party participants, acquire unrequested sensor recordings, or operate body-connected hardware. Use supplied assets, synthetic/replayed fixtures, and deliberately provided local test interactions for implementation evidence; these execution limits are not restrictions on correctly authorized future platform capabilities.
+
+11. DURABLE SCHOOL STATE AND JOB EXECUTION
+
+Implement a database-oriented school control core with a small transactional state boundary for identities/references, enrollment, revisions, attempts, grants, job ownership, and committed results. Store large source files, recordings, datasets, and checkpoints as immutable content-addressed artifacts with explicit lifecycle management. Treat retrieval/analytics indexes as rebuildable projections, not the only copy of learner work.
+
+Specify consistency and acknowledgement semantics. Define when an attempt, job completion, course publication, and checkpoint is committed and when a client may be told it is durable. State the actual failure model supported by the storage binding. Process restart, host crash, filesystem durability, network partition, and machine snapshot rollback are different claims.
+
+At minimum, acknowledged attempts, publications, and committed results must survive abrupt termination and restart of the school process under declared local storage assumptions. Recover incomplete trailing records or interrupted transactions without accepting partial state. Validate forced termination, not only graceful shutdown; stronger power-loss guarantees need separate evidence.
+
+Stage, verify, and durably publish required artifact bytes before committing authoritative references to them. Publish records and their dependency references atomically within the supported transaction boundary. Recovery may leave unreferenced staging artifacts, but no acknowledged publication may reference missing or incomplete bytes. Garbage collection must respect active exports, checkpoints, retained versions, and publication ownership.
+
+Implement durable job identity, declared inputs/code/configuration, resource bounds, status transitions, cancellation, bounded retries, and result references. Use idempotency keys and transactional result admission so a lost acknowledgement does not duplicate an assessment result or model promotion. Avoid universal exactly-once execution claims; side effects need explicit commit semantics.
+
+For replaceable workers, implement leased ownership with monotonic fencing or an equivalent checked authority mechanism. A restarted or delayed worker cannot commit after its ownership is superseded. Bound lease behavior using the supported clock model. Persist the state needed to decide recovery; do not assume a dead process will clean up its own work.
+
+Separate interactive tutoring/checking, bulk indexing, and training resource classes. Implement backpressure, quotas, bounded queues, and cancellation so bulk jobs cannot consume all memory or destroy interaction responsiveness. Job inputs and artifact sizes must be admitted before allocation. Garbage collection must respect live references, retained versions, and in-progress ownership.
+
+Provide real operational commands or equivalent maintained interfaces for init, run, status, stop, course import/validate/publish, enrollment, job inspection/retry/cancel, export, restore, and configuration cloning. These names describe capabilities to implement, not commands assumed to exist. A shutdown-only state dump is not a durable operational store.
+
+12. FREESTANDING WORKERS AND RESIDENT MODEL SERVICES: Unikernel Swarm Database Operating System
+
+Implement a real versioned school-worker contract: declared capability/profile, job/input identity, bounded buffers and resources, cancellation/deadline behavior, result/evidence format, ownership/fencing, and restart semantics. Run inference from the trained component described below through genuine Lean elaboration, the existing lowering pipeline, and the freestanding RV64 image path. Useful checking or feature-processing jobs may share this worker contract.
+
+Integrate that worker into real school jobs using the same built image for distinct runtime inputs. Receive job identity, bounded data, and ownership information through supported transport; return results through it. Do not rebuild the image to embed each fixture. The committed result must derive from the actual target response; the Lean reference supplies comparison evidence, not a hidden substitute operational result. Retain source-bound build/execution evidence, the unchanged binary digest across jobs, unresolved-symbol audit, and the exact target profile. A hosted process with a worker-shaped API is not a unikernel.
+
+Measure worker lifecycle stages separately: build/package preparation, process or VM creation, boot/readiness, state/artifact attachment, and first useful result. Specify the cold state and cache conditions. Do not equate a tiny image's boot time with loading a large model and serving its first token.
+
+Keep large inference weights resident in separately budgeted services where supported. Session workers hold limited recoverable context and reference durable state; they do not load a private frontier model per learner. Define model-service compatibility, identity, capacity, cancellation, and admission independently from the worker that chooses a pedagogical action.
+
+Training is a durable checkpointed workload, not a background side effect of opening a lesson. Model replacement requires explicit version selection or a recorded promotion decision with rollback. A worker failure must not erase the learner record, whole school definition, or only surviving model checkpoint.
+
+13. LEAN NUMERICS AND A GENUINELY TRAINABLE COMPONENT
+
+Implement the smallest useful numerical foundation that supports a real trainable school component. It must expose shape/dtype/layout and bounded allocation semantics, owned contiguous numerical storage where required, a reference evaluator, useful operators, and explicit unsupported-operation diagnostics. Do not claim a general tensor compiler from scalar wrappers or a renamed tiny managed array.
+
+Deliver a meaningful differentiable operator subset, actual gradient computation and parameter updates, batching where the chosen model needs it, and a reproducible small learner/policy model. Document the model's target, features, missingness handling, loss, optimizer, numeric representation, and how predictions influence permitted suggestions. Keep the existing explainable review policy as a visible baseline and fallback.
+
+Choose an honest numerical implementation compatible with the compiler. If a new floating-point profile is required, implement its representation/lowering and conformance tests. If fixed-point or another bounded representation is chosen for the initial target, specify rounding, overflow, range, and error behavior. Do not claim exact derivatives of discrete rounding operations or hide a floating-point implementation in a foreign dependency.
+
+Training, gradients, and optimization may execute in the hosted Lean reference binding for this release. Inference from the resulting trained parameters must execute in the freestanding worker. Publish a versioned parameter artifact from an actual run; load it and varying feature vectors as runtime data through checked buffers; return target inference through a school job; and use that result in a permitted suggestion. A small bounded linear scorer is acceptable if it performs this full function.
+
+If the target uses quantized parameters, specify dimensions, signed representation, scales, rounding, accumulation bounds, overflow behavior, and admitted sizes. Compare target execution with independently checked reference results for the same quantized semantics, bit-exact where appropriate. Separately measure quantization deviation and evaluate the quantized model against the original model. Show that loading changed trained parameters changes an appropriate prediction. Hosted training does not qualify freestanding training.
+
+Train on an explicitly identified permitted fixture or dataset, evaluate on a separate split, save the model, reload it, and demonstrate input-dependent inference through maintained school interfaces. Include a nontrivial reference/gradient check appropriate to the numeric semantics. Record failures and baseline comparisons; training must not automatically be presented as improvement.
+
+Validate at least one independently derived small example covering forward evaluation, a gradient, and an optimizer update; both sides must not call the same implementation under test. Check invalid shapes/bounds and representation edge cases. Declare floating-point dtype, finite/nonfinite behavior and tolerances, or fixed-point rounding, overflow and range rejection. Finite differences supplement independent expected results and must respect nondifferentiable or quantized boundaries.
+
+Dataset manifests must identify source versions, transformation code, grants, synthetic/replay status, label origin, and learner/session/time grouping. Fix split identities before fitting; fit preprocessing statistics only on training data. Prevent group/time leakage and disclose repeated tuning on an evaluation set or reserve a separate final test set. Separate assisted practice from independent outcome labels. Synthetic training and evaluation establish pipeline behavior only.
+
+Implement bounded streaming/chunked access for the chosen artifact and training-data path. Define ordering, batch size, decoding limits, and resume position from the manifest. A dataset larger than the worker's admitted memory must not require loading the whole dataset before useful work begins.
+
+Checkpoint parameters, optimizer state, training step, RNG state, dataset identity/cursor, code/profile versions, and numerical semantics. Interrupt and resume an actual run. Demonstrate that the chosen resumption contract does not silently skip or duplicate samples/updates; document any nondeterminism instead of asserting bitwise identity without evidence.
+
+Connect this implementation to the broader JAX-inspired roadmap: automatic differentiation coverage, vectorized batching, compilation/specialization, distributed arrays and sharding, communication collectives, sparse operators, random-number semantics, checkpointing, datasets, and accelerator kernels. Distinguish implemented operations from designed and unsupported ones. Performance claims require comparable workloads, hardware, dtype, precision, memory use, compilation cost, warm state, and measured results. The goal is feature parity with JAX/Pytorch/Sci-kit but this research DSL is far more elegant/research friendly. A mathematician should appreciate the elegance of formulating machine learning, cognitive science, and engineering research in beautiful, well abstracted, DSL where problems/solutions can be expressed in a highly pure, information theoretic/learning theory/high-dimensional probability theory standpoint.
+
+14. PROVIDER-INDEPENDENT INFRASTRUCTURE AND MULTICLOUD DIRECTION
+
+[For some (for example teacher only/minimal sysadmins) this could mean a clean, automatic, and highly agnostic integration in to hyperscalers like aws/google/azure for lemmaCloud whereas some teachers would want on prem to integrate easily with their oxide, lamabdalabs, and greenlake setups or even home servers] Implement a usable local provider and desired-state reconciliation for the resources this release actually controls. Represent node/worker capabilities, target profile, compute/memory/storage budgets, artifact availability, health, assignment, and drain/restart behavior. Repeated reconciliation must converge without duplicating resources or losing ownership.
+
+School semantics and durable formats must not depend on one vendor's identity, queue, object storage, deployment, or model API. Provider adapters declare capabilities and failure modes. An unsupported remote provider must fail clearly; a configuration file or printed provisioning plan is not a working cloud adapter.
+
+Define the path from one machine to several nodes and independent providers: per-school isolation, placement, failure domains, model/data locality, connection/authentication, membership, replication/consensus, backup, rolling compatibility, and bounded recovery. Preserve school-local authority and allow independent schools to remain independent. Optional federation must not require central ownership of their private data.
+
+The first implementation may have one local durable authority. State this limitation and avoid a misleading singleton-master design claim of fault tolerance. Worker restart recovery is not replicated control-plane availability. Replication and remote provisioning need separate implementation and partition/failover gates before they are advertised as supported.
+
+Prefer portable package/configuration export and local execution over a mandatory managed platform. Keep external adapters replaceable. Do not add paid infrastructure, publish an internet-facing service, or assume secrets. Where the complete protected session or identity path is not qualified, enforce the actual development boundary and report it; do not market that boundary as production security.
+
+15. REPOSITORY ORGANIZATION, DOCUMENTATION, AND OPEN RELEASE
+
+Place code according to the repository's current architecture. Introduce focused school, tutor, numerical, and cloud modules only when their ownership is clear; avoid a parallel application tree with duplicate identity, course, device, or storage models. Integrate the new task with the current build and deployment catalogues.
+
+Maintain first-party narrative documentation in UTF-8 HTML as required by the contributor guide. Keep AGENTS.md as the existing minimal hook. Do not recreate README/frontpage prose, Markdown documentation mirrors, or HTML files containing Markdown comment wrappers. Preserve original historical evidence bytes and their hashes.
+
+Create or update the new task's contract, implementation checkpoint, authoring/operator/developer guides, and canonical navigation links. Expected new names may include docs/contracts/008-school-cloud-v0.1.0.html, docs/plan/008-session-state.html, and codex/prompts/008-school-cloud-foundation.html if that task number remains correct. Update CURRENT, BUILD_ORDER, architecture and relevant contracts to describe actual precedence and implementation.
+
+Document the shared model, authority boundaries, serialization/version rules, DSL examples, source-import workflow, local setup, school cloning, restore, training/evaluation, target worker, and recovery behavior. Examples must match executable commands and compile against maintained APIs. Include an operator path that a teacher can follow without understanding every compiler subsystem.
+
+The reusable distribution must distinguish code, curriculum metadata, source texts, datasets, model weights, generated material, and learner records. Record provenance and existing license information per artifact; do not infer that one license covers everything. Inspect the actual repository license state. Do not change repository visibility, invent an open-source license, or claim that unlicensed/private content has been cleared for public release. Record unresolved release decisions without blocking independent engineering work.
+
+16. IMPLEMENTATION ORDER AND WORKING DISCIPLINE
+
+First establish the new contract and a short live dependency plan after inspecting the repository. Then implement in integrated increments: shared records and persistence; real corpus import and unit publication; student/teacher/operator flows; tutor evidence and admission; durable jobs and the freestanding worker; train/evaluate/checkpoint integration; export/restore and failure recovery. Adjust the sequence when actual dependencies justify it, documenting why.
+
+Use parallel work only for separable ownership. Shared protocol/schema changes need one agreed version and integration owner. Preserve active job and output-directory ownership. Keep user-visible progress focused on findings, working behavior, and concrete blockers rather than long tool transcripts.
+
+Follow the repository's pinned environment and cache workflow, including nix develop --no-write-lock-file where specified. Inspect python3 scripts/dev_status.py and its JSON output before expensive builds. Reuse validated action-cache entries and existing build commands. Use unused output directories for independent builds. Extend reviewed source-input closures and verification routes for new modules; unknown paths must not receive an invented blanket cache exemption.
+
+Preserve the distinction between fresh, reused, and revalidated evidence. Use --fresh only when a concrete correctness risk or gate requires it; --clean is not equivalent to a fresh build. Do not repeatedly rebuild unchanged LLVM/toolchain/dependencies or rerun historical campaigns to manufacture confidence for a narrow edit.
+
+Keep large generated binaries, extracted source content, recordings, and checkpoints in designated ignored/output/artifact locations. Plan around the available disk budget, avoid repeated full archive extraction, and retain small reproducible records and digests. Never delete original source archives, active outputs, retained failure evidence, or unrelated work to make a build fit.
+
+If a requirement is blocked by missing corpus, credentials, tools, target capability, or a genuine prerequisite, implement all independent work and identify the exact failed or unavailable gate. Do not create a fake provider, canned model result, in-memory durability substitute, or permissive checker to make the completion table green. Never silently redefine a required gate as optional.
+
+17. MANDATORY END-TO-END ACCEPTANCE
+
+Create a maintained integration scenario that exercises the actual system with declared input, source identity, commands, and outputs. Use tests where they resolve real correctness and recovery risks; avoid tests that only assert the implementation's own constants or snapshot a mock success response.
+
+A. Independent school setup: initialize a school in a fresh location, configure budgets and available providers, start it locally, obtain useful status, and stop/restart it. The process must not require a proprietary account or remote managed service for the baseline scenario.
+
+B. Source and curriculum: import the actual catalogue when available, verify its source digest, preserve all 27912 records for this exact source, and demonstrate idempotent re-import, search, and source lookup. Import a changed fixture as a distinct revision. Publish the substantive source-derived unit through the same authoring/package route available to teachers. Keep unavailable-corpus gates visibly blocked.
+
+C. Real client use: open the installed unit in LemmaSim through supported transport, join as a learner, use drawing input with all optional modalities absent, submit varying work, obtain bounded assistance, and complete an independent assessment item with its assistance conditions recorded. Schedule a later review, restart, and demonstrate that it becomes due and opens through the normal learner path with its original course/policy references. A controlled clock may accelerate production scheduling code; this does not establish retention. Verify actual hint/feedback presentation and cancellation/expiry/revision rules. An API response alone does not demonstrate client delivery.
+
+D. Evidence and versions: distinguish assisted and independent attempts, checker results and unverified feedback, model estimates and observations. Publish a course revision and show that earlier attempts retain their original definition. Exercise an out-of-scope role or grant and a cross-school misrouted action; verify rejection at the proper admission boundary without hiding the authorized user's normal workflow.
+
+E. Durability: force termination of the actual school process and verify recovery of acknowledged work and committed results. Interrupt between artifact staging and record publication, and between commit and acknowledgement. Verify resolvable committed references, correct retry without duplicate results, and eventual reclamation of abandoned staging data. Do not infer host-crash or power-loss durability from process-restart evidence.
+
+F. Worker recovery: kill or disconnect a worker during a real job, reassign/retry within policy, and demonstrate rejection of a late result from stale ownership. Verify cancellation and resource admission. If timing uses a simulated clock, identify that scope and also exercise the real supported runtime path.
+
+G. Freestanding execution: build and run the actual RV64 school worker from elaborated Lean, send trained parameters and multiple feature vectors as runtime inputs to the unchanged image, compare results with the declared reference semantics, and commit the actual inference response into the school's durable record. Demonstrate input-dependent and parameter-dependent behavior. Record target/runtime boundaries and artifact identity. No hosted substitute may satisfy this gate.
+
+H. Learning component: train the Lean model with actual parameter updates, report held-out results beside the declared baseline, checkpoint, interrupt, resume, reload, publish its parameter artifact, and use its actual freestanding inference in a permitted school suggestion. Verify forward/gradient/update behavior and missing-feature handling, with quantization results if applicable. Label synthetic-only evidence and do not claim improved learning from a software test.
+
+I. Portability and ownership: export selected authorized operational records and their required artifact closure, restore into a fresh directory/instance, and recover exported learner progress and committed results. Separately clone the reusable school definition with a new identity and distinct storage; configuration cloning excludes learner records and live credentials by default. Neither operation may alias mutable storage in the original. Handle credentials through explicit separate configuration. A restored deployment starts a new execution generation and rejects pre-export leases. Distinguish offline-authority restoration from an independent copy; do not run two authorities with the same live deployment identity without implemented coordination.
+
+J. Developer path: modify one documented activity/checker/policy extension using maintained Lean APIs, validate it, and exercise it through LemmaSim. The example must remain executable and source-bound after the changes. Where a hardware profile is involved, identify the precise supported simulator and physical qualification boundary.
+
+K. Bounded load and failure: exercise declared representative concurrent jobs and an oversized/bulk request. Show backpressure, cancellation, and preservation of interactive client responsiveness within the stated test environment. Report measured latency, memory, workload size, and limitations; do not turn one local test into a hyperscale claim.
+
+18. EVIDENCE, HANDOFF, AND DEFINITION OF DONE
+
+Record a source-bound result for each required gate: implemented and exercised; implemented but not exercised with a stated reason; designed but unimplemented; blocked; or unsupported. Include commands, input/configuration identity, relevant output/artifact digests, environment/profile, and whether evidence is fresh or validly reused. Preserve failed results and explain what later change, if any, resolves them.
+
+Maintain inherited Task 007 and machine-readiness distinctions. School application functionality, compiler/worker conformance, storage recovery, protected communication, browser performance, physical-device qualification, distributed availability, and educational efficacy are independent claims. This task must not automatically promote any unrelated readiness status.
+
+Deliver the actual code, integrated UI/CLI behavior, versioned school/course interfaces, corpus importer and manifests, substantive reference unit when the corpus is available, numerical/trainable component, freestanding worker, local operator workflow, recovery/export capability, focused tests, HTML documentation, and a precise remaining-work checkpoint. The final report must explain what changed, why, how to run it, what was verified, and what remains blocked or unimplemented.
+
+Prepare a coherent reviewable change set. If the configured repository workflow permits it, commit the scoped work and create or update a draft PR with problem, changes, resulting behavior, validation, and limitations. Preserve unrelated changes and existing branch ownership. Do not merge, change visibility/licensing, perform a paid deployment, or send outreach messages under this assignment.
+
+Do not stop at a plan or a statement of capability. Carry the authorized engineering work through the required local implementation and evidence, and leave the repository with a usable school foundation whose real behavior and remaining research obligations are both clear.

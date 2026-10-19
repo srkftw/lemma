@@ -1,0 +1,545 @@
+{
+  "sources": {
+    "sources": [
+      {
+        "title": "Distributivity and the square of a sum",
+        "rights": "Explicit permission in fixture: copy, modify, redistribute for any purpose; fixture only",
+        "publication": "Original task fixture, 2026",
+        "ownerLocation": "fixtures/school/Distributivity.txt",
+        "mediaType": "text/plain",
+        "id": "lemma-distributivity-fixture",
+        "fileDigest": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+        "edition": "1",
+        "bibliographicStatus": "verified",
+        "bibliographicEvidence": "Maintained source fixture header and eight numbered sections inspected",
+        "authors": [
+          "Lemma task 008 fixture authorship"
+        ]
+      }
+    ],
+    "format": "lemma-source-registry/1"
+  },
+  "review": {
+    "version": "lemma-review-schedule/1",
+    "uncertainty": "Uncertain provisional estimate; synthetic schedule establishes software operation only",
+    "delaySeconds": 86400,
+    "activityId": "later-review"
+  },
+  "relations": [
+    {
+      "toActivity": "worked",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "prepare",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "define",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "prepare",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "coefficients",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "worked",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "coefficients",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "define",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "invalid",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "worked",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "invalid",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "define",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "reason",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "worked",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "reason",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "define",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "transfer",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "worked",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "transfer",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "define",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "later-review",
+      "reviewed": true,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "prerequisite",
+      "fromActivity": "define",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "reason",
+      "reviewed": false,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "related",
+      "fromActivity": "invalid",
+      "confidencePermille": null
+    },
+    {
+      "toActivity": "invalid",
+      "reviewed": false,
+      "reviewHistory": [],
+      "origin": "Author-curated fixture",
+      "kind": "related",
+      "fromActivity": "reason",
+      "confidencePermille": null
+    }
+  ],
+  "notationGuide": [
+    "x denotes a natural number in the reference theorem",
+    "Q[x] is the installed exact coefficient checker domain"
+  ],
+  "learningGoals": [
+    "Use distributivity with explicit domains",
+    "Distinguish symbolic identity from sampled equality",
+    "Justify cross terms and refute dropped-term arguments"
+  ],
+  "format": "lemma-school-unit/1",
+  "course": {
+    "title": "Why the cross terms matter",
+    "sourceAnchor": "lemma-distributivity-fixture; exact source digest in unit registry",
+    "rightsAnchor": "Fixture permits copying/modification/redistribution; no claim for missing textbooks or repository license",
+    "nodes": [
+      {
+        "worked": "",
+        "title": "Prepare: equality and distribution",
+        "sourceAnchor": "fixture:section-1",
+        "review": "",
+        "pedagogicalPrerequisites": [],
+        "logicalPrerequisites": [],
+        "kind": "explanation",
+        "hint": "List which term multiplies each summand.",
+        "exercise": "",
+        "exampleText": "3*(4+1)=3*4+3*1=15.",
+        "body": "For natural numbers, multiplication distributes over addition. Replacing equal expressions preserves equality. Name the domain before manipulating an expression."
+      },
+      {
+        "worked": "(3+1)*(3+1)=3*3+3*1+1*3+1*1=9+3+3+1=16.",
+        "title": "A worked square with four products",
+        "sourceAnchor": "fixture:section-2",
+        "review": "",
+        "pedagogicalPrerequisites": [],
+        "logicalPrerequisites": [
+          0
+        ],
+        "kind": "worked",
+        "hint": "Draw a two by two product table.",
+        "exercise": "",
+        "exampleText": "",
+        "body": "Every term in the left sum multiplies every term in the right sum. The two middle products are different contributions, even though they have equal values."
+      },
+      {
+        "worked": "",
+        "title": "Reconstruct the definition",
+        "sourceAnchor": "fixture:section-3",
+        "review": "",
+        "pedagogicalPrerequisites": [],
+        "logicalPrerequisites": [
+          0
+        ],
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "hint": "Specify the quantifier and the domain.",
+        "exercise": "Write a definition using the phrase for every value in a declared domain.",
+        "exampleText": "",
+        "body": "Explain what a polynomial identity claims. Contrast that claim with an equality checked at one chosen value."
+      },
+      {
+        "worked": "",
+        "title": "Collect exact coefficients",
+        "sourceAnchor": "fixture:section-4",
+        "review": "",
+        "pedagogicalPrerequisites": [],
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "kind": {
+          "exercise": {
+            "goal": "binomialSquare"
+          }
+        },
+        "hint": "List four products before combining equal powers.",
+        "exercise": "Submit C0+C1*x+C2*x*x equal to (x+1)*(x+1).",
+        "exampleText": "",
+        "body": "Write the coefficients in constant, linear, quadratic order. This installed exact checker supports the fixed goal (x+1)*(x+1) in Q[x]."
+      },
+      {
+        "worked": "",
+        "title": "Analyse the dropped-term argument",
+        "sourceAnchor": "fixture:section-5",
+        "review": "",
+        "pedagogicalPrerequisites": [],
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "hint": "Compare the four-product table with the proposed right side.",
+        "exercise": "Explain the missing products and compare both sides at x=1.",
+        "exampleText": "",
+        "body": "A learner claims (x+1)*(x+1)=x*x+1 by squaring each term separately. Locate the invalid step and supply a counterexample."
+      },
+      {
+        "worked": "",
+        "title": "Independent reasoning",
+        "sourceAnchor": "fixture:section-6",
+        "review": "",
+        "pedagogicalPrerequisites": [],
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "hint": "",
+        "exercise": "Prove for every natural x: (x+1)*(x+1)=x*x+2*x+1. State the domain and justify each equality.",
+        "exampleText": "",
+        "body": "Give a symbolic proof over natural numbers. Your writing is retained for teacher review. The checked reference theorem does not verify your submission."
+      },
+      {
+        "worked": "",
+        "title": "Transfer to unequal constants",
+        "sourceAnchor": "fixture:section-7",
+        "review": "",
+        "pedagogicalPrerequisites": [],
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "hint": "Make a fresh two by two product table.",
+        "exercise": "Expand (x+2)*(x+3), collect coefficients, and justify the identity symbolically.",
+        "exampleText": "",
+        "body": "Use the same product accounting for two different constants. This transfer task requires teacher review because its goal differs from the installed exact checker."
+      },
+      {
+        "worked": "",
+        "title": "Later reconstruction",
+        "sourceAnchor": "fixture:section-8",
+        "review": "The review remains tied to this unit edition and review-policy version. A due software event is not evidence of retention.",
+        "pedagogicalPrerequisites": [],
+        "logicalPrerequisites": [
+          2
+        ],
+        "kind": "review",
+        "hint": "",
+        "exercise": "",
+        "exampleText": "",
+        "body": "After the scheduled delay, reconstruct the four-product argument without assistance. Explain why two cross terms appear and diagnose the dropped-term argument."
+      }
+    ],
+    "identity": "1",
+    "editionAnchor": "Original redistributable fixture, edition 1",
+    "edition": "1"
+  },
+  "anchors": [
+    {
+      "verification": "verified",
+      "sourceId": "lemma-distributivity-fixture",
+      "sectionLabel": "1",
+      "printedPageLabel": null,
+      "pdfPageIndex": null,
+      "id": "fixture:section-1",
+      "fileDigest": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "extraction": null,
+      "exercise": null,
+      "evidence": "Exact maintained fixture paragraph; no OCR or inferred textbook correspondence",
+      "edition": "1"
+    },
+    {
+      "verification": "verified",
+      "sourceId": "lemma-distributivity-fixture",
+      "sectionLabel": "2",
+      "printedPageLabel": null,
+      "pdfPageIndex": null,
+      "id": "fixture:section-2",
+      "fileDigest": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "extraction": null,
+      "exercise": null,
+      "evidence": "Exact maintained fixture paragraph; no OCR or inferred textbook correspondence",
+      "edition": "1"
+    },
+    {
+      "verification": "verified",
+      "sourceId": "lemma-distributivity-fixture",
+      "sectionLabel": "3",
+      "printedPageLabel": null,
+      "pdfPageIndex": null,
+      "id": "fixture:section-3",
+      "fileDigest": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "extraction": null,
+      "exercise": null,
+      "evidence": "Exact maintained fixture paragraph; no OCR or inferred textbook correspondence",
+      "edition": "1"
+    },
+    {
+      "verification": "verified",
+      "sourceId": "lemma-distributivity-fixture",
+      "sectionLabel": "4",
+      "printedPageLabel": null,
+      "pdfPageIndex": null,
+      "id": "fixture:section-4",
+      "fileDigest": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "extraction": null,
+      "exercise": null,
+      "evidence": "Exact maintained fixture paragraph; no OCR or inferred textbook correspondence",
+      "edition": "1"
+    },
+    {
+      "verification": "verified",
+      "sourceId": "lemma-distributivity-fixture",
+      "sectionLabel": "5",
+      "printedPageLabel": null,
+      "pdfPageIndex": null,
+      "id": "fixture:section-5",
+      "fileDigest": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "extraction": null,
+      "exercise": null,
+      "evidence": "Exact maintained fixture paragraph; no OCR or inferred textbook correspondence",
+      "edition": "1"
+    },
+    {
+      "verification": "verified",
+      "sourceId": "lemma-distributivity-fixture",
+      "sectionLabel": "6",
+      "printedPageLabel": null,
+      "pdfPageIndex": null,
+      "id": "fixture:section-6",
+      "fileDigest": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "extraction": null,
+      "exercise": null,
+      "evidence": "Exact maintained fixture paragraph; no OCR or inferred textbook correspondence",
+      "edition": "1"
+    },
+    {
+      "verification": "verified",
+      "sourceId": "lemma-distributivity-fixture",
+      "sectionLabel": "7",
+      "printedPageLabel": null,
+      "pdfPageIndex": null,
+      "id": "fixture:section-7",
+      "fileDigest": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "extraction": null,
+      "exercise": null,
+      "evidence": "Exact maintained fixture paragraph; no OCR or inferred textbook correspondence",
+      "edition": "1"
+    },
+    {
+      "verification": "verified",
+      "sourceId": "lemma-distributivity-fixture",
+      "sectionLabel": "8",
+      "printedPageLabel": null,
+      "pdfPageIndex": null,
+      "id": "fixture:section-8",
+      "fileDigest": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "extraction": null,
+      "exercise": null,
+      "evidence": "Exact maintained fixture paragraph; no OCR or inferred textbook correspondence",
+      "edition": "1"
+    }
+  ],
+  "activities": [
+    {
+      "node": 0,
+      "kind": "preparation",
+      "id": "prepare",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "referenceTheorem": null,
+        "independent": false,
+        "criteria": [
+          "State the domain and justify each equality",
+          "Account for every product term"
+        ],
+        "checker": "teacher-review/1"
+      }
+    },
+    {
+      "node": 1,
+      "kind": "preparation",
+      "id": "worked",
+      "goal": "unsupported",
+      "assistance": "worked",
+      "assessment": {
+        "referenceTheorem": null,
+        "independent": false,
+        "criteria": [
+          "State the domain and justify each equality",
+          "Account for every product term"
+        ],
+        "checker": "teacher-review/1"
+      }
+    },
+    {
+      "node": 2,
+      "kind": "definition",
+      "id": "define",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "referenceTheorem": null,
+        "independent": false,
+        "criteria": [
+          "State the domain and justify each equality",
+          "Account for every product term"
+        ],
+        "checker": "teacher-review/1"
+      }
+    },
+    {
+      "node": 3,
+      "kind": "routine",
+      "id": "coefficients",
+      "goal": "binomialSquare",
+      "assistance": "hint",
+      "assessment": {
+        "referenceTheorem": null,
+        "independent": false,
+        "criteria": [
+          "State the domain and justify each equality",
+          "Account for every product term"
+        ],
+        "checker": "lemma-exact/1:binomialSquare"
+      }
+    },
+    {
+      "node": 4,
+      "kind": "invalidArgument",
+      "id": "invalid",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "referenceTheorem": null,
+        "independent": false,
+        "criteria": [
+          "State the domain and justify each equality",
+          "Account for every product term"
+        ],
+        "checker": "teacher-review/1"
+      }
+    },
+    {
+      "node": 5,
+      "kind": "independentReasoning",
+      "id": "reason",
+      "goal": "unsupported",
+      "assistance": "none",
+      "assessment": {
+        "referenceTheorem": "Lemma.School.FixtureUnit.square_successor",
+        "independent": true,
+        "criteria": [
+          "State the domain and justify each equality",
+          "Account for every product term"
+        ],
+        "checker": "teacher-review/1"
+      }
+    },
+    {
+      "node": 6,
+      "kind": "transfer",
+      "id": "transfer",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "referenceTheorem": null,
+        "independent": false,
+        "criteria": [
+          "State the domain and justify each equality",
+          "Account for every product term"
+        ],
+        "checker": "teacher-review/1"
+      }
+    },
+    {
+      "node": 7,
+      "kind": "review",
+      "id": "later-review",
+      "goal": "unsupported",
+      "assistance": "none",
+      "assessment": {
+        "referenceTheorem": null,
+        "independent": true,
+        "criteria": [
+          "State the domain and justify each equality",
+          "Account for every product term"
+        ],
+        "checker": "teacher-review/1"
+      }
+    }
+  ]
+}

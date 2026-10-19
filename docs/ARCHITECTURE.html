@@ -11,6 +11,26 @@
 <main>
 <h1 id="architecture-baseline">Architecture baseline</h1>
 <p>Status: architecture baseline; Task 001 implementation evidence is recorded separately.</p>
+<h2 id="school-foundation">School foundation 0.1.0</h2>
+<p><a href="contracts/008-school-cloud-v0.1.0.html">Task 008</a> adds a versioned reusable
+<code>lemma-school-package/1</code>, distinct from private operational state, large immutable artifacts
+and rebuildable projections. <code>Lemma/School</code> owns source identity, authoring, scoped grants,
+consent, enrollment, tutor admission, attempts, reviews, local commits and fenced jobs in Lean.
+Its local provider registry admits numerical workers by profile, image/artifact availability,
+declared resources, controller-reported readiness epochs and drain state; actual VM readiness remains separate evidence.
+The reference authority is a hosted native Lean executable under an OS process mutex, using
+close and atomic rename for process-restart recovery. It is neither a freestanding server nor replicated storage.</p>
+<p><code>Lemma/Numerics</code> supplies bounded hosted Float64 training and explicit quantization;
+<code>Lemma/School/Worker.lean</code> and <code>SchoolWorkerExport</code> use the unchanged
+<code>core0-v0.5</code> elaboration/LLVM/RV64 path for runtime inference. Trained parameters, input vectors,
+raw request, actual response, ELF audit and execution receipt are content-bound to durable jobs.
+The native school panel and byte bridge delegate policy to Lean and drawing/presentation to the actual
+notebook guest. School-bound tutor packet version 3 adds authority/publication/session/generation fencing;
+legacy packet version 2 retains its historical contract outside a joined school session.</p>
+<p>Single-host local execution is implemented. Replicated availability, remote provisioning, a general tensor compiler,
+freestanding training, production internet authentication, and physical or educational qualification remain separate gates.
+See the <a href="school-operator.html">operator/developer guide</a>, <a href="school-curriculum.html">curriculum guide</a>
+and <a href="contracts/008-school-worker-numerics-v1.html">numerical worker boundary</a>.</p>
 <h2 id="layers">Layers</h2>
 <p><code>Lean source -&gt; checked Core0 -&gt; LLVM -&gt; RV64 ELF -&gt; LemmaVM</code> establishes the first
 execution path. A managed Lean runtime is constructed afterward. Above it sit the

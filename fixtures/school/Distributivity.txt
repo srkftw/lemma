@@ -1,0 +1,13 @@
+Distributivity and the square of a sum
+Original redistributable instructional fixture, edition 1.
+Permission: copy, modify, and redistribute this fixture for any purpose.
+This permission applies only to this fixture, not to the repository or third-party texts.
+
+1. Preparation: multiplication distributes over addition. For natural numbers a, b, and c, a*(b+c)=a*b+a*c. Equality permits replacing equals inside a larger expression.
+2. Worked example: (3+1)*(3+1)=3*3+3*1+1*3+1*1=9+3+3+1=16. Each term of the first sum multiplies each term of the second sum.
+3. Definition: a polynomial identity states equality for every value in its declared domain. Agreement at one value alone does not establish an identity.
+4. Routine application: collecting powers gives (x+1)*(x+1)=1+2*x+x*x. Coefficients are listed in constant, linear, quadratic order.
+5. Invalid argument: the claim (x+1)*(x+1)=x*x+1 drops two cross terms. At x=1 its two sides are 4 and 2. The counterexample refutes the proposed identity.
+6. Independent reasoning: prove (x+1)*(x+1)=x*x+2*x+1 for every natural number x using distributivity. State the domain and account for every term. Handwritten reasoning requires teacher review; a checked reference theorem does not check a learner's proof.
+7. Transfer: expand (x+2)*(x+3), collect coefficients, and explain why testing three arbitrary values is not by itself the stated symbolic proof. This transfer item is outside the installed fixed-goal checker and requires teacher review.
+8. Later review: after a delay, reconstruct the four-product argument without a hint. State why two cross terms appear and diagnose the dropped-term argument. A software schedule does not establish retention.

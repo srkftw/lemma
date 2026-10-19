@@ -1,0 +1,65 @@
+{
+  "schema": "lemma-school-definition-validation/1",
+  "result": "PASS",
+  "environment": "Pinned hosted upstream Lean; pure definition tests, no guest or effectful installation claim",
+  "receipt": "build/school/definition-a3/run.json",
+  "receiptSha256": "292abdc6d047fae93dcc482dace5cc70de9fe7de1ab305b2c959853efb18e738",
+  "command": [
+    "nix",
+    "develop",
+    "--no-write-lock-file",
+    "--command",
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/school",
+    "-p",
+    "test_definition.py",
+    "-v"
+  ],
+  "exitCode": 0,
+  "elapsedSeconds": 4.225450902944431,
+  "unchangedDuringExecution": true,
+  "recordedInputsStillMatch": true,
+  "inputs": {
+    "Lemma/School/Definition.lean": "566329be192ebb8439e274f6b266ced369f2ebf5faaf104c4a3f3ccd2972c434",
+    "Lemma/School/Authoring.lean": "abfc31f812c5a48c3443cad6b9c78469324cf6dbc990012774e511e02c0de30a",
+    "Lemma/School/SourceRegistry.lean": "420cacb5257c771a88f44b7bee4751b875023819e43ad4dc4d066a082ce45292",
+    "Lemma/School/Store.lean": "d8434717861dd318199faed508c10cd333092e2f9420efe14bc7bc974f832856",
+    "Lemma/School/Model.lean": "32deff8d404d0a0f0340e0aa875c8c36492ce80551c948e4419f9ca89525e962",
+    "Lemma/School/Digest.lean": "e776deed7d2437dc6b27648d6bfc662c56d48e11e92b35384bc1fc1439aabaa2",
+    "Lemma/School/FixtureUnit.lean": "d6f916fdfb74ff5dde941c99c4d35487d1a93e440b5295fbca893e56780ecc56",
+    "tests/school/DefinitionMain.lean": "131bf79afb642a4748ada8726cee4d26295943d8887e78c205ab671a9e3f7a17",
+    "tests/school/test_definition.py": "0505a678fabbd73b2908724951488d4558bf19379e859b3a9a25493d7c55a54b",
+    "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+    "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d"
+  },
+  "checks": {
+    "pythonTests": 2,
+    "pureLeanChecks": 24,
+    "extraction": "Reusable publications/models only; live identities, learner records, grants, credentials and deployment source overrides excluded",
+    "publicationBinding": "Actual Authoring.compile bytes must match publication artifact digest",
+    "modelClosure": "Parameter reference separate from 1..32 dependency references; maximum admitted 32-dependency state round-trips without loss",
+    "selection": "Included reusable selection preserved; excluded private selection omitted",
+    "strictAdmission": "Unknown nested fields, unsupported schema/policy/provider/profile/permissions/budgets, duplicate identities, artifact mismatch and missing reuse/rights rejected"
+  },
+  "retainedFailures": [
+    {
+      "path": "build/school/definition-a1-failure/report.json",
+      "sha256": "43bbb7d6973819cdfdd1c4648c8425b6a773f7b86b4ea2685cfa1c33c94deebe",
+      "reason": "Initial observer harness did not compile: unsafe array indexing needed an unavailable Inhabited instance and Except Json lacked BEq. Harness corrected with optional indexing and explicit roundtrip matching; library implementation was not the failing observer."
+    }
+  ],
+  "effectfulValidation": "Maintained tests/school/test_authority.py exercises exporter, fresh init-package consumer and independent artifacts; its execution receipt is owned by the authority gate, not this pure-test receipt.",
+  "claimsExcluded": [
+    "effectful export/installation PASS",
+    "guest execution",
+    "production authentication",
+    "source licensing",
+    "private-data training",
+    "deletion or unlearning",
+    "educational effectiveness"
+  ]
+}

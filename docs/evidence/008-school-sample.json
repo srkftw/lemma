@@ -1,0 +1,187 @@
+{
+  "accountFreePath": "panel compiles exact shared authoring JSON in Lean then reuses actual_session and send_package mode/image/UART admission; no school enrollment, authority initialization or remote account requested",
+  "bytes": 4199,
+  "compiledSample": {
+    "path": "build/school/panel-008-sample-a7/sample.lcp",
+    "sha256": "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e"
+  },
+  "definition": {
+    "path": "examples/school/sample-unit.json",
+    "sha256": "f14a9a328839f5146d3b9819867ea43db9eca18e209751d8992310f5e9ea1f81"
+  },
+  "historicalComponents": {
+    "actualCheckerRequestsAndReplies": [
+      {
+        "reply": [
+          1109,
+          282,
+          2,
+          0,
+          2
+        ],
+        "request": [
+          1113,
+          282,
+          2,
+          2,
+          59
+        ]
+      },
+      {
+        "reply": [
+          1109,
+          347,
+          6,
+          0,
+          1
+        ],
+        "request": [
+          1113,
+          347,
+          6,
+          2,
+          124
+        ]
+      }
+    ],
+    "compiledBytesEqualOriginalInstalledPackage": true,
+    "guestIdentity": {
+      "adapter": "lemmasim-fast-adapter/5",
+      "backend": "qemu",
+      "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+      "derivation": "468e058ac29ad2c9af582f77f320fb6374b23c517033253097d6dc68c59f6aa6",
+      "descriptor": "1cddbad5d7fd0520eff481b4c304944da8839734e17903048b699e425b9c9915",
+      "dtb": "12ae8f1a83fc7cc979e2ca7bd4af1e19f6c4bafa05c39f42b59f975b4f62df9f",
+      "guest": "b251a878b3d02603e5925eccfc56a6acc124b763034435ba3042c5b024a3ae4d",
+      "host_controls": {
+        "scripts/lemmasim": "1f9917e5d13a287a75a670332a6b28ac61ec90db8976265c884dcec58fa40d92",
+        "scripts/lemmasim_fast.py": "4af8e7c138829052bb0a8f981bc3c1b1e4babadc9f32eae41092de3968ccc46c",
+        "scripts/lemmasim_session.py": "09ede8e10952c1fb911b035e4df4a675319ca31b869cb7088b8673ae68a0378c",
+        "scripts/multimodal_native_bundle.py": "f927bf4ad0aa9188a8f4a723062cb37cd7297d2b37069b2de11f0d216843aec6",
+        "scripts/silicon_guest_bundle.py": "0fa92036ed1f8e8385c4eea75aed28330ecc78898469c9abc5b39f732ca6114d"
+      },
+      "icount_shift": 3,
+      "native_bundle": {
+        "manifest_sha256": "fb860b8a41b329fbe4ac1b8520b55e1b21beaa221402ea74376b956122e763e6",
+        "path": "/home/sreekumaar/.codex/worktrees/multimodal-workbook/lemma/build/multimodal/native-four-role-a1",
+        "schema": "lemmasim-native-multimodal-fast/1",
+        "scope": "unchanged fully audited ordinary0.14 guest pair and exact QEMU source/runtime archive; no RTL,checkpoint,realtime,physical or educational qualification",
+        "source_commit": "9b106e918f4d31ad359c5c63c68a489aa03e1140"
+      },
+      "profile": "lemma-silicon-dev/0.14.0",
+      "runtime": "d131ae7811ffbca4e4b7321e717ae534912ec1fcf1dfbee2523ae95402c624d5"
+    },
+    "originalFailure": "ValueError('original phase/whole limit learner-ASK-for-published-hint')",
+    "originalOverallStatus": "FAIL",
+    "originalPackage": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/school/client-fixture-a1/unit.lcp",
+      "sha256": "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e"
+    },
+    "originalReport": {
+      "path": "build/school/client-native-a1/result.json",
+      "sha256": "0d208891557926cb8ae11fdddf4a8a90145073269eed6be45af32b5fb7bc7247"
+    },
+    "reusedSuccessfulPhases": [
+      {
+        "cycle_limit": 150000000,
+        "execution_units": 36000001,
+        "final_cycle": 267000013,
+        "host_limit": 600,
+        "host_seconds": 8.840866393991746,
+        "initial_cycle": 231000012,
+        "name": "guest-durable-installs-school-publication"
+      },
+      {
+        "cycle_limit": 150000000,
+        "execution_units": 52000005,
+        "final_cycle": 319000018,
+        "host_limit": 600,
+        "host_seconds": 4.606106391991489,
+        "initial_cycle": 267000013,
+        "name": "study-open-actual-course-chooser"
+      },
+      {
+        "cycle_limit": 100000000,
+        "execution_units": 93000010,
+        "final_cycle": 412000028,
+        "host_limit": 600,
+        "host_seconds": 12.610513108898886,
+        "initial_cycle": 319000018,
+        "name": "study-open-published-unit"
+      },
+      {
+        "cycle_limit": 100000000,
+        "execution_units": 27000004,
+        "final_cycle": 439000032,
+        "host_limit": 600,
+        "host_seconds": 2.099788176943548,
+        "initial_cycle": 412000028,
+        "name": "study-node-2"
+      },
+      {
+        "cycle_limit": 100000000,
+        "execution_units": 25000002,
+        "final_cycle": 464000034,
+        "host_limit": 600,
+        "host_seconds": 1.8112507869955152,
+        "initial_cycle": 439000032,
+        "name": "study-node-3"
+      },
+      {
+        "cycle_limit": 100000000,
+        "execution_units": 25000002,
+        "final_cycle": 489000036,
+        "host_limit": 600,
+        "host_seconds": 2.1123708540108055,
+        "initial_cycle": 464000034,
+        "name": "study-node-4"
+      },
+      {
+        "cycle_limit": 150000000,
+        "execution_units": 39000003,
+        "final_cycle": 528000039,
+        "host_limit": 600,
+        "host_seconds": 2.699120958102867,
+        "initial_cycle": 489000036,
+        "name": "use-exact-school-exercise"
+      },
+      {
+        "cycle_limit": 200000000,
+        "execution_units": 18000002,
+        "final_cycle": 546000041,
+        "host_limit": 600,
+        "host_seconds": 1.3981501159723848,
+        "initial_cycle": 528000039,
+        "name": "actual-school-coefficients-Invalid"
+      },
+      {
+        "cycle_limit": 200000000,
+        "execution_units": 33000002,
+        "final_cycle": 788000061,
+        "host_limit": 600,
+        "host_seconds": 3.0252094169845805,
+        "initial_cycle": 755000059,
+        "name": "actual-school-coefficients-Verified"
+      }
+    ],
+    "scope": "successful original installer/reader/varying-checker observations only; historical source and overall FAIL retained; not a new current guest execution or joined-help acceptance"
+  },
+  "hostedPanelValidation": {
+    "path": "build/school/panel-008-sample-a7/panel-evidence.json",
+    "sha256": "2d98a8ac2aa587d4c1d2c81c23527cad4c1b4d66fbd32a578f7d3140f82ed3c7"
+  },
+  "limits": "final panel GUI uses closed historical session metadata only; its account-free raw transport button has no new live delivery claim",
+  "nativeProduction": {
+    "path": "build/school/host-native-v3-a8/production.json",
+    "sha256": "36a8d5d255fc396a0afc9070bc59211f8f0e0eeb2a5751f934c6533d2f11edbc"
+  },
+  "normalPublicationBytesEqualDirectCompilation": true,
+  "result": "current hosted preview/compile/package equality pass; explicit historical successful component reuse only",
+  "schema": "lemma-school-sample-evidence/v1",
+  "teacherEdit": {
+    "allOtherDecodedFieldsEqual": true,
+    "field": "course.identity",
+    "original": "801",
+    "sample": "1"
+  }
+}

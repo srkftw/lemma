@@ -1,0 +1,577 @@
+{
+  "schema": "lemma-school-reader-diagnosis/1",
+  "status": "BOUNDED DIAGNOSIS COMPLETE; FULL CLIENT ACCEPTANCE PENDING",
+  "scope": "Read-only interpretation of retained actual native guest a2/a3 failures. No source, medium, execution cap or failure receipt was changed by this diagnosis.",
+  "sourceBoundRuns": {
+    "a2": {
+      "status": "FAIL",
+      "error": "ValueError('original phase/whole limit study-open-published-unit')",
+      "elapsedSeconds": 57.48926515004132,
+      "receipt": {
+        "path": "build/school/client-native-a2/result.json",
+        "sha256": "5f70aa22e8b9b8be5bd3407910e9a7e8ba230d180bee10e9a46ba5567b01a332"
+      },
+      "uart": {
+        "path": "build/school/client-native-a2/first/uart-0.bin",
+        "sha256": "dde4274c45a2943d950800444f717f9767c5b487e7421f58729fee89d6c1f8ef"
+      },
+      "backingLog": {
+        "path": "build/school/client-native-a2/first/backing-0.io",
+        "sha256": "9ec49a51d6688bb18770405dc6fa62b882f6715610f86b3061c03f0afcf65cae"
+      },
+      "panel": {
+        "path": "build/school/client-native-a2/observed-panel.png",
+        "sha256": "8d2f98090303cca5eefc875172e1be987374dc649fbc68826e991dc4e73c0fa9"
+      },
+      "commands": {
+        "path": "build/school/client-native-a2/commands.jsonl",
+        "sha256": "06802800a57d5f04e4cb4e8624d897cc2b4efc2076d3c3299a541db91909d5f8"
+      },
+      "nativeBundleManifest": {
+        "path": "build/school/client-native-bundle-a1/bundle.json",
+        "sha256": "f9995d8e60c6183e96fd15df1f170d0a7872bf226274335a351a3e158ab4fb7f"
+      },
+      "archivedNotebook": {
+        "path": "build/school/client-native-bundle-a1/source/Lemma/Applications/Notebook.lean",
+        "sha256": "c058532d613b3fa836e077b63d5905fc3a38efaa76bd7fd2c4e02b9d00d32184"
+      },
+      "notebookMatchesNativeManifest": true,
+      "schoolExecutableSha256": "619e609ac2f3d8cb1bd7e6f36d72aaf4ec99af3c6199250d8c75488e0c06257f",
+      "originalMediumSha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46",
+      "package": {
+        "path": "build/school/client-native-a2/school-course-install/package.lcp",
+        "sha256": "61a66c07afe8ddd7b0271e549dff1be04f6ca1957bff24e8a97ba20a5c038529",
+        "bytes": 5263,
+        "identity": 1,
+        "edition": 2
+      },
+      "installer4b1": [
+        [
+          1201,
+          1,
+          3,
+          131073,
+          1462836285
+        ]
+      ],
+      "intent726": [],
+      "dispatch712": [],
+      "courseError454": [],
+      "loadGestureRawWords": [
+        [
+          34410001,
+          10492,
+          19968,
+          2048,
+          3,
+          1,
+          0
+        ],
+        [
+          34510001,
+          10492,
+          19968,
+          0,
+          2,
+          1,
+          0
+        ]
+      ],
+      "lastCompletedPhase": {
+        "name": "choose-published-edition-2",
+        "initial_cycle": 332000017,
+        "final_cycle": 344000019,
+        "execution_units": 12000002,
+        "host_seconds": 1.3102843910455704,
+        "cycle_limit": 150000000,
+        "host_limit": 600
+      },
+      "firstViewAssignedLimit": 100000000,
+      "reportedCourseLimit": 400000000,
+      "sumRequestedRunUnits": 443999982,
+      "actualCourseSectorReads": [
+        [
+          38,
+          3473990468,
+          7168,
+          512,
+          512,
+          0,
+          3473990468
+        ],
+        [
+          39,
+          3478611764,
+          7680,
+          512,
+          512,
+          0,
+          3478611764
+        ],
+        [
+          40,
+          3545810320,
+          8192,
+          512,
+          512,
+          0,
+          3545810320
+        ],
+        [
+          41,
+          3608640172,
+          8704,
+          512,
+          512,
+          0,
+          3608640172
+        ],
+        [
+          42,
+          3668315852,
+          9216,
+          512,
+          512,
+          0,
+          3668315852
+        ],
+        [
+          43,
+          3727991432,
+          9728,
+          512,
+          512,
+          0,
+          3727991432
+        ],
+        [
+          44,
+          3787667012,
+          10240,
+          512,
+          512,
+          0,
+          3787667012
+        ],
+        [
+          45,
+          3847342592,
+          10752,
+          512,
+          512,
+          0,
+          3847342592
+        ],
+        [
+          46,
+          3907018272,
+          11264,
+          512,
+          512,
+          0,
+          3907018272
+        ],
+        [
+          47,
+          3966693952,
+          11776,
+          512,
+          512,
+          0,
+          3966693952
+        ],
+        [
+          48,
+          4026369532,
+          12288,
+          512,
+          512,
+          0,
+          4026369532
+        ],
+        [
+          49,
+          4086045112,
+          12800,
+          512,
+          512,
+          0,
+          4086045112
+        ]
+      ],
+      "consumedObserverSources": {
+        "check_school_client.py": {
+          "path": "build/school/client-native-a2/consumed-host-source-root/observer/scripts/check_school_client.py",
+          "sha256": "97a280e22f4c6a0dfa4c927aa31f9af29557a2463c554d915eb98f12ff48d0f8"
+        },
+        "check_multimodal_workbook.py": {
+          "path": "build/school/client-native-a2/consumed-host-source-root/observer/scripts/check_multimodal_workbook.py",
+          "sha256": "2767ff5f27128ea0847f077ec5768857e2092e2ef6a4f7aa132fa68cb539fe98"
+        },
+        "check_course_math_workflow.py": {
+          "path": "build/school/client-native-a2/consumed-host-source-root/observer/scripts/check_course_math_workflow.py",
+          "sha256": "16f39e4fba84e1b9f6b7a1bcd8879b4b45b63618eb720cc20d21d19f7beadc02"
+        }
+      },
+      "actualCourseSectorReadColumns": [
+        "id",
+        "submittedBoundaryNs",
+        "offset",
+        "bytes",
+        "transferred",
+        "error",
+        "acceptedBoundaryNs"
+      ]
+    },
+    "a3": {
+      "status": "FAIL",
+      "error": "ValueError('original phase/whole limit study-open-published-unit')",
+      "elapsedSeconds": 42.57922556903213,
+      "receipt": {
+        "path": "build/school/client-native-a3/result.json",
+        "sha256": "41a1d19558c9527bb603dc122cb56fb5ebe1992b1a681ebda6aa23cead013dec"
+      },
+      "uart": {
+        "path": "build/school/client-native-a3/first/uart-0.bin",
+        "sha256": "d5badc57199daf40e202d3eaa91ca7a9a852693495615b546d3cc283885fc84e"
+      },
+      "backingLog": {
+        "path": "build/school/client-native-a3/first/backing-0.io",
+        "sha256": "80a1120ea04eebf05a627beb3d9f5caa77e758495bc5e1f071a2aed9f6092b8e"
+      },
+      "panel": {
+        "path": "build/school/client-native-a3/observed-panel.png",
+        "sha256": "8d2f98090303cca5eefc875172e1be987374dc649fbc68826e991dc4e73c0fa9"
+      },
+      "commands": {
+        "path": "build/school/client-native-a3/commands.jsonl",
+        "sha256": "db72c2ec953d68da5a41446ef9b7b99f733ffe52dd737b6bab3407a29fffd17a"
+      },
+      "nativeBundleManifest": {
+        "path": "build/school/client-native-bundle-a2/bundle.json",
+        "sha256": "a868001ab7a83d4c164519fab2b1d6590043ee3bd76aa3fde53e2fddc98fddd0"
+      },
+      "archivedNotebook": {
+        "path": "build/school/client-native-bundle-a2/source/Lemma/Applications/Notebook.lean",
+        "sha256": "b4faec2b29880cec1b907d4526e309ceda4f5ccbc7082d7f0be74bd53d949cae"
+      },
+      "notebookMatchesNativeManifest": true,
+      "schoolExecutableSha256": "619e609ac2f3d8cb1bd7e6f36d72aaf4ec99af3c6199250d8c75488e0c06257f",
+      "originalMediumSha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46",
+      "package": {
+        "path": "build/school/client-native-a3/school-course-install/package.lcp",
+        "sha256": "61a66c07afe8ddd7b0271e549dff1be04f6ca1957bff24e8a97ba20a5c038529",
+        "bytes": 5263,
+        "identity": 1,
+        "edition": 2
+      },
+      "installer4b1": [
+        [
+          1201,
+          1,
+          3,
+          131073,
+          1462836285
+        ]
+      ],
+      "intent726": [
+        [
+          1830,
+          6,
+          1,
+          0,
+          0
+        ]
+      ],
+      "dispatch712": [
+        [
+          1810,
+          6,
+          0,
+          0,
+          0
+        ]
+      ],
+      "courseError454": [],
+      "loadGestureRawWords": [
+        [
+          34410001,
+          10492,
+          19968,
+          2048,
+          3,
+          1,
+          0
+        ],
+        [
+          34510001,
+          10492,
+          19968,
+          0,
+          2,
+          1,
+          0
+        ]
+      ],
+      "lastCompletedPhase": {
+        "name": "choose-published-edition-2",
+        "initial_cycle": 332000018,
+        "final_cycle": 344000020,
+        "execution_units": 12000002,
+        "host_seconds": 0.7884770670207217,
+        "cycle_limit": 150000000,
+        "host_limit": 600
+      },
+      "firstViewAssignedLimit": 100000000,
+      "reportedCourseLimit": 400000000,
+      "sumRequestedRunUnits": 443999982,
+      "actualCourseSectorReads": [
+        [
+          38,
+          3476883560,
+          7168,
+          512,
+          512,
+          0,
+          3476883560
+        ],
+        [
+          39,
+          3481504856,
+          7680,
+          512,
+          512,
+          0,
+          3481504856
+        ],
+        [
+          40,
+          3546249336,
+          8192,
+          512,
+          512,
+          0,
+          3546249336
+        ],
+        [
+          41,
+          3610879600,
+          8704,
+          512,
+          512,
+          0,
+          3610879600
+        ],
+        [
+          42,
+          3700694300,
+          9216,
+          512,
+          512,
+          0,
+          3700694300
+        ],
+        [
+          43,
+          3761986400,
+          9728,
+          512,
+          512,
+          0,
+          3761986400
+        ],
+        [
+          44,
+          3821662080,
+          10240,
+          512,
+          512,
+          0,
+          3821662080
+        ],
+        [
+          45,
+          3881337560,
+          10752,
+          512,
+          512,
+          0,
+          3881337560
+        ],
+        [
+          46,
+          3941013140,
+          11264,
+          512,
+          512,
+          0,
+          3941013140
+        ],
+        [
+          47,
+          4000688820,
+          11776,
+          512,
+          512,
+          0,
+          4000688820
+        ],
+        [
+          48,
+          4060364500,
+          12288,
+          512,
+          512,
+          0,
+          4060364500
+        ],
+        [
+          49,
+          4119127492,
+          12800,
+          512,
+          512,
+          0,
+          4119127492
+        ]
+      ],
+      "consumedObserverSources": {
+        "check_school_client.py": {
+          "path": "build/school/client-native-a3/consumed-host-source-root/observer/scripts/check_school_client.py",
+          "sha256": "3b2758e3a8ab3d9baa39cee7ad162a451df20452ef91204909c8465c27e905be"
+        },
+        "check_multimodal_workbook.py": {
+          "path": "build/school/client-native-a3/consumed-host-source-root/observer/scripts/check_multimodal_workbook.py",
+          "sha256": "2767ff5f27128ea0847f077ec5768857e2092e2ef6a4f7aa132fa68cb539fe98"
+        },
+        "check_course_math_workflow.py": {
+          "path": "build/school/client-native-a3/consumed-host-source-root/observer/scripts/check_course_math_workflow.py",
+          "sha256": "16f39e4fba84e1b9f6b7a1bcd8879b4b45b63618eb720cc20d21d19f7beadc02"
+        }
+      },
+      "actualCourseSectorReadColumns": [
+        "id",
+        "submittedBoundaryNs",
+        "offset",
+        "bytes",
+        "transferred",
+        "error",
+        "acceptedBoundaryNs"
+      ]
+    }
+  },
+  "traceDecoding": {
+    "uartWords": "Each preserved K1 row is [record,word1,word2,word3,word4], converted from hexadecimal integers.726 op6/status1 means queued;712 op6/status0 means successful dispatch.",
+    "backingFormat": "LMIOLOG2:72-byte identity header, then tag/length plus wire records. Tag0 requests expose id,boundaryNs,kind,offset,length; tag1 exposes actual transferred/error and accepted boundary. Kind0 is Read.",
+    "parserSources": [
+      {
+        "path": "sim/host/backing_io.cpp",
+        "sha256": "64a3f19c829adf568a41d3c3422d1a3fbab52dac185e80e4670cfb355b1afdf7"
+      },
+      {
+        "path": "sim/host/backing_io.h",
+        "sha256": "25c1695d3c813bfbe5769a6acc27e0a3168cfa11a868739efbb1d1aa27ef560e"
+      },
+      {
+        "path": "sim/companion/backing_c.cpp",
+        "sha256": "f18e6a5fafa09f9bd4d0d3bbffe3a14657363c0b2a786c0210c0ce42250f8aea"
+      }
+    ],
+    "integrityScope": "The retained complete logs are SHA-256 bound here; selected fields were decoded independently. This observer does not claim a new authenticated trace or a separate full CRC64 replay validation."
+  },
+  "provedObservations": [
+    "Both runs installed the same5263-byte course1/edition2 package, SHA25661a66c07afe8ddd7b0271e549dff1be04f6ca1957bff24e8a97ba20a5c038529.",
+    "Both runs issued and completed successful512-byte media reads of the course journal header at7168 and payload sectors7680..12800 after LOAD. Both therefore reached actual course reading; unchanged READ0/0 is not evidence of zero read attempts.",
+    "a3 queued op6 and emitted successful op6 dispatch. There is no observed175 stale-context receipt or454 course-error receipt in that UART trace.",
+    "The bottom display field is normal Doc8 budget B08 beside D1/A0, not package error11.",
+    "The current first-view call uses a nonempty text expectation and is therefore assigned the inherited100000000 view limit. Its phase name is study-open-published-unit.",
+    "The historical CourseMathWorkflow.phase implementation special-cases COURSEactualpackage and cold-reopen-installed-body to400000000. The Multimodal Workflow.phase override used here does not retain that specialization; the reported course400000000 field does not control this call."
+  ],
+  "latentBusyQueueDefect": {
+    "status": "PROVED SOURCE PATH; ACTUAL a2 FAILURE CAUSE NOT ESTABLISHED",
+    "source": {
+      "path": "build/school/client-native-bundle-a1/source/Lemma/Applications/Notebook.lean",
+      "sha256": "c058532d613b3fa836e077b63d5905fc3a38efaa76bd7fd2c4e02b9d00d32184"
+    },
+    "path": "multimodalInputSample routes busy/dirty ordinary taps into queueBookTap; bookMathTap excludes chooser y670 and bookInkTap excludes chooser x24..407/y640..699; that branch returns done0 without retaining LOAD.",
+    "repairObservation": "a3 contains the separately implemented bounded chooser intent and actual726/712 op6 receipts. That real latent defect does not establish that a2 took the dropping branch."
+  },
+  "correctedInference": {
+    "earlierInference": "READ0/0 plus absent course-error receipt was interpreted as evidence that a2 LOAD never started a read and was dropped by the busy queue.",
+    "correction": "Retracted as a causal diagnosis: the backing log proves that a2 read the course record. READ is published only after the full reader/EOF workflow, so this display does not reveal intermediate read progress.",
+    "remainingUncertainty": "a2/a3 alone did not identify the exact incomplete RPC/copy/validation/EOF/render/controller stage at100M. The fresh separate diagnostic now demonstrates finite complete first-view pixels at111000021. It does not establish the exact stage active at100M in the original runs."
+  },
+  "originalBoundaries": {
+    "view": 100000000,
+    "control": 150000000,
+    "reportedHistoricalCourse": 400000000,
+    "wholeScenario": 4000000000,
+    "retainedOriginalFailures": "a2 and a3 remain FAIL and are not relabelled by a later diagnostic or observer correction."
+  },
+  "separateDiagnostic": {
+    "status": "FAIL",
+    "error": "DiagnosticComplete('intentional stop after bounded firstview measurement; no fullworkflow success claim')",
+    "receipt": {
+      "path": "build/school/client-view-diagnostic-a1/result.json",
+      "sha256": "423c88831dea0bc4ce7774026a3ef5b530745667ebec532c5211a35da4735a05"
+    },
+    "prospectiveFirstViewLimit": 200000000,
+    "originalFirstViewLimit": 100000000,
+    "functionalExecutionUnits": 111000021,
+    "originalBoundSatisfied": false,
+    "completeActualBodyPixels": true,
+    "panel": {
+      "path": "build/school/client-view-diagnostic-a1/diagnostic-finite-course-body.ppm",
+      "sha256": "914236c959080c30524d83c2a88683aa51c271ecb220b5a078b3bb18bc4f1b1c"
+    },
+    "medium": {
+      "path": "build/school/client-view-diagnostic-a1/diagnostic-finite-course-body.raw",
+      "sha256": "8918c55aa2e58dc23870cc200165d9a9348f841a7af48d5925943644ad299ef1"
+    },
+    "phase": {
+      "name": "study-open-published-unit",
+      "initial_cycle": 344000020,
+      "final_cycle": 455000041,
+      "execution_units": 111000021,
+      "host_seconds": 12.577319136005826,
+      "cycle_limit": 200000000,
+      "host_limit": 600
+    },
+    "nativeBundleManifest": {
+      "path": "build/school/client-native-bundle-a2/bundle.json",
+      "sha256": "a868001ab7a83d4c164519fab2b1d6590043ee3bd76aa3fde53e2fddc98fddd0"
+    },
+    "observerSourceCensus": {
+      "path": "build/school/client-view-diagnostic-a1/consumed-host-inputs.json",
+      "sha256": "a846b88793d3353c23328fc60c57bd14047a09d774d0fb50a6f453900896fc8a"
+    },
+    "schoolExecutableSha256": "619e609ac2f3d8cb1bd7e6f36d72aaf4ec99af3c6199250d8c75488e0c06257f",
+    "fullWorkflowAcceptance": false,
+    "interpretation": "Fresh first-view-only diagnostic intentionally stopped after independent complete-body pixel comparison and export.111000021 exceeds100M; original a2/a3 failures remain failures. Finite completion is observed, not a deadlock and not a full client gate PASS.",
+    "diagnosticDriver": {
+      "path": "build/school/client-view-diagnostic-a1/consumed-host-source-root/observer/build/school/client-view-diagnostic-a1.py",
+      "sha256": "4b28ef80e214649f3f5baa0719eeb173a6972cad2bf03f262a0279766877129f",
+      "matchesObservedSourceCensus": true
+    }
+  },
+  "claimsExcluded": [
+    "passed School client acceptance C",
+    "passed full connected workflow",
+    "exact stage or measured deadlock",
+    "a2 failure caused by latent queue drop",
+    "production authentication",
+    "physical or educational qualification"
+  ],
+  "observerCorrectionPlan": {
+    "status": "PLANNED; FRESH FULL SCENARIO NOT CLAIMED BY THIS RECEIPT",
+    "change": "Restore the pre-existing400M historical course-load specialization for explicitly named initial LOAD and cold course reopen in the school scenario; do not use it for ordinary view operations.",
+    "retainedLimits": {
+      "ordinaryViews": 100000000,
+      "controls": 150000000,
+      "wholeScenarioExecutionUnits": 4000000000,
+      "wholeScenarioSeconds": 1800
+    },
+    "evidencePolicy": "Keep the original100M failures and independent111M diagnostic visible. A new400M course-load scenario must produce its own full acceptance evidence; it cannot relabel the previous failures.",
+    "guestSourceChangesForThisObserverCorrection": false
+  }
+}

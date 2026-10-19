@@ -503,6 +503,32 @@ jobs:
               raise RuntimeError("Silicon host suite is missing, empty or failing")
           PY
 
+      - name: Produce the source-bound hosted school executables
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/build_school.py --output-dir build/school/ci-host-native \
+            2>&1 | tee build/ci/metadata/school-host-production.log
+
+      - name: Check hosted school authority, authoring and client admission
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 8m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_school.py \
+                --production build/school/ci-host-native/production.json \
+                --work-dir build/school/ci-host-validation \
+            2>&1 | tee build/ci/metadata/school-host-validation.log
+
+      - name: Observe hosted synthetic training and exact checkpoint resume
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 3m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_school_training.py --work-dir build/school/ci-training \
+            2>&1 | tee build/ci/metadata/school-host-training.log
+
       - name: Retain host-suite logs
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -511,6 +537,9 @@ jobs:
           path: |
             build/ci/source.json
             build/ci/metadata/
+            build/school/ci-host-native/
+            build/school/ci-host-validation/
+            build/school/ci-training/
             build/lemmasim/compiler-power-ci/
             build/kernel/ci-user-word-inline/
           if-no-files-found: warn
@@ -671,6 +700,42 @@ jobs:
                 --clean \
             2>&1 | tee build/ci/legacy-rv64.log
 
+      - name: Build, audit and execute the separate school worker at O0 and O2
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              lake build Lemma.Numerics.Linear Lemma.Compiler.SchoolWorkerExport \
+            2>&1 | tee build/ci/school-worker-preparation.log
+          timeout --foreground --signal=TERM --kill-after=10s 1m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run examples/school/Train.lean fixture \
+                build/school/ci-worker-parameters/dataset \
+            2>&1 | tee build/ci/school-worker-fixture.log
+          timeout --foreground --signal=TERM --kill-after=10s 1m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run examples/school/Train.lean train \
+                build/school/ci-worker-parameters/dataset \
+                build/school/ci-worker-parameters/checkpoint.json \
+                build/school/ci-worker-parameters/early 1 0 \
+            2>&1 | tee build/ci/school-worker-parameters.log
+          for optimization in O0 O2; do
+            timeout --foreground --signal=TERM --kill-after=10s 2m \
+              nix develop --no-write-lock-file --command \
+                python3 scripts/build_school_worker.py --fresh \
+                  --opt-level "$optimization" --output-dir "build/school/ci-worker-$optimization" \
+              2>&1 | tee "build/ci/school-worker-$optimization-build.log"
+            timeout --foreground --signal=TERM --kill-after=10s 1m \
+              nix develop --no-write-lock-file --command \
+                python3 scripts/check_school_worker.py \
+                  --image "build/school/ci-worker-$optimization/image.elf" \
+                  --parameters fixtures/school/numerics/parameters-step160.json \
+                  --alternate-parameters build/school/ci-worker-parameters/early/parameters.json \
+                  --work-dir "build/school/ci-worker-execution-$optimization" \
+              2>&1 | tee "build/ci/school-worker-$optimization-execution.log"
+          done
+
       - name: Retain legacy RV64 evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -680,6 +745,8 @@ jobs:
             build/ci/source.json
             build/core0/ci-legacy/
             build/ci/legacy-rv64.log
+            build/ci/school-worker-*.log
+            build/school/ci-worker-*/
             docs/evidence/001-core0*
           if-no-files-found: warn
           retention-days: 14

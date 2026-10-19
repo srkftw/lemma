@@ -1,0 +1,1052 @@
+{
+  "schema": "lemma-school-foundation-acceptance/1",
+  "release": "0.1.0",
+  "result": "PASS_SCOPED_SCHOOL_CLOUD_FOUNDATION_0_1_0",
+  "sourceCommit": "3102aa4357dbe7d66032c8d6f905431289685906",
+  "sourceIdentity": "Dirty Task008 implementation; exact per-producer sourceInputs and binary digests identify executed bytes. Publication commit is separate.",
+  "host": {
+    "platform": "Linux-6.12.63-x86_64-with-glibc2.40",
+    "python": "3.13.9",
+    "execution": "hosted native Lean4.34.1 reference authority; freestanding RV64 inference separately audited"
+  },
+  "production": {
+    "path": "build/school/host-native-v3-a8/production.json",
+    "sha256": "36a8d5d255fc396a0afc9070bc59211f8f0e0eeb2a5751f934c6533d2f11edbc"
+  },
+  "hostValidation": {
+    "path": "build/school/host-validation-v3-a6/validation.json",
+    "sha256": "fc7b38df6f6e0f7468b349d1ba43030a25bec2de4766e027a09b6c1ca906efbb",
+    "result": "PASS",
+    "hostTests": 40,
+    "elapsedSeconds": 118.4848305840278,
+    "commands": [
+      {
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests/school",
+          "-v"
+        ],
+        "exitCode": 0,
+        "log": "host.log",
+        "logSha256": "b5816098b6382974348fc5e7a3402888fd282e9d021021c554a01502caf7d022",
+        "elapsedSeconds": 116.58673977991566
+      },
+      {
+        "command": [
+          "lake",
+          "env",
+          "lean",
+          "--run",
+          "tests/school/Client.lean"
+        ],
+        "exitCode": 0,
+        "log": "client-validation.log",
+        "logSha256": "62ddc92096dca4993eebe1841545aaed421398510a40c84e331f237613123c48",
+        "elapsedSeconds": 1.7179660249967128
+      }
+    ],
+    "sourceInputs": {
+      "Lemma/Core0/Execution.lean": "1eb46d0bba6ad1c13e9a2285a9cca70aef322c42a3ea35fbb53c30caa14642ae",
+      "Lemma/Core0/IR.lean": "125fca545e8107939ac9a9c08ec674ab7287d20a2cb00fa99d86a9f7e670c441",
+      "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+      "Lemma/Core0/Timer.lean": "d6a0d0dbc7ed2939a5825683abc21374ee4bcfd60bc010ee5575ed0296bd68f2",
+      "Lemma/Core0/Trap.lean": "bc40c4ac403d995bf026737af7b8b2ca25390399473cfe1389a0bd700fe078af",
+      "Lemma/Courses/Package.lean": "d2fa235ddebbe0a50160290b9b3e6d8b0f110269fac623a79674bdd2b8253e21",
+      "Lemma/Courses/PackageFormat.lean": "ee2e3a88c9016e8817d87c08559babedf99d3707ef7f1c928dbf04e7ac500e88",
+      "Lemma/Documents/Mathematics.lean": "cdc7a38753985251e526b3813df719a2b27b1783350ece5a49800d4d6cbbf4fa",
+      "Lemma/Mathematics/Exact.lean": "3cbeefed82f41a2b6692f96ecfd06a793d272fd8480bfb6ae662e08a0211c828",
+      "Lemma/Mathematics/ExecutionIdentity.lean": "611495044f1f620d23b8439c7147683b16654aa8a06c922636dabb111cd0a7b7",
+      "Lemma/Mathematics/ExecutionIdentityV2.lean": "bd19191c002bfcb1fd2d0e7bc14d6b9cf28fd16938000dcc0e036f3c716b683a",
+      "Lemma/Mathematics/ExecutionIdentityV3.lean": "ee7b35cc6829727bc016662fb7cec208d5a8dfdf65a77433db615246f78a97f1",
+      "Lemma/Mathematics/ExecutionIdentityV4.lean": "34126784408980975caf49097dc0ffdcdf6e76929b272377616e046879c34389",
+      "Lemma/Mathematics/OwnedSubmission.lean": "a6f76a484d21834365244c6c775fa288073b5e4a345329f205c18d2b046fd6eb",
+      "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903",
+      "Lemma/School/Authoring.lean": "abfc31f812c5a48c3443cad6b9c78469324cf6dbc990012774e511e02c0de30a",
+      "Lemma/School/Authority.lean": "d3f37abbe235134e5ab1a0f9c1cbe42d7f1da53ee8359c90d795113847dcc908",
+      "Lemma/School/Catalogue.lean": "ca2a22cb389d0713e24eb1202b356e6f6ce85182f7d224b5c4573c84b6dbd38b",
+      "Lemma/School/Client.lean": "eaf88fe83df1c0e58af4ed0385e23a860e28d2ce476d78867fad909795d0e303",
+      "Lemma/School/CurriculumMain.lean": "e74fea97a5f4994240aab47ba85b7583f87d4bd77040749f6afb81939fd76ee0",
+      "Lemma/School/Definition.lean": "566329be192ebb8439e274f6b266ced369f2ebf5faaf104c4a3f3ccd2972c434",
+      "Lemma/School/Digest.lean": "e776deed7d2437dc6b27648d6bfc662c56d48e11e92b35384bc1fc1439aabaa2",
+      "Lemma/School/FixtureUnit.lean": "d6f916fdfb74ff5dde941c99c4d35487d1a93e440b5295fbca893e56780ecc56",
+      "Lemma/School/LearnerChoice.lean": "882bada0b07ba0d8430513cb221fa8f82cfae91f240cc96f4e6dcef49d4f60b1",
+      "Lemma/School/LocalProvider.lean": "7ebf8cd92610661afb6916b855e744d86d0c0492b86f513b11649768cc767da5",
+      "Lemma/School/Main.lean": "d4af4a2d0772fcb7202d3afa122b8ec70e1f143790bbd8c86a70eb9c894bfcb9",
+      "Lemma/School/Model.lean": "32deff8d404d0a0f0340e0aa875c8c36492ce80551c948e4419f9ca89525e962",
+      "Lemma/School/Observation.lean": "43c74dbbe4035d0c4af401160c2ff5fd731057022f9b8a295b6cb088e5d8919f",
+      "Lemma/School/SourceRegistry.lean": "420cacb5257c771a88f44b7bee4751b875023819e43ad4dc4d066a082ce45292",
+      "Lemma/School/Store.lean": "d8434717861dd318199faed508c10cd333092e2f9420efe14bc7bc974f832856",
+      "Lemma/User/ABI.lean": "43f315ac5caf22ac47f0e6fb7f9dda5a1899a1e3436de695cee0f41653ed9259",
+      "Lemma/User/Memory.lean": "c04236eb3b42ff74a30a12dd04d18fb6dcbeb2bc74aaf000ad58fe4958265024",
+      "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+      "Lemma/User/Syscall.lean": "d405577a4fd2cf4a67bfa67a71ae26ade5be16ba377c7884a8f578589899ea66",
+      "fixtures/school/Distributivity.txt": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+      "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+      "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+      "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+      "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+      "scripts/build_school.py": "5967730a148e25a37af712e13f0d692889ac512d9afb2633aef650793346664c",
+      "tooling/toolchain-lock.json": "9615c3d43319431b04bce1807f711ddb0e822294904e3e21287863be6c4cd08a",
+      "tests/school/StoreValidationMain.lean": "fa57a9577514e6ac00351898e78cd0f2f238246cf5eaa2ea4197f5b257cf73e2",
+      "tests/school/ObservationMain.lean": "f841938ea9c67876ebb3d80980bd2be2d850f001bcd72eb4d763a1a9c75a8c3c",
+      "tests/school/LocalProviderMain.lean": "6744240873a9d4564e3ddd87bc499811083e3cdd9bc0d94355776a8172f817da",
+      "tests/school/LearnerChoiceMain.lean": "635c7a57123c438431efb5792be7ba4ed14e356eb451c490f45817c850af73b7",
+      "tests/school/DefinitionMain.lean": "131bf79afb642a4748ada8726cee4d26295943d8887e78c205ab671a9e3f7a17",
+      "tests/school/Client.lean": "f714613bea66486d43005d934557aac8b3166bb2998d98768e49cd332b9ac9fd",
+      "Lemma/Multimodal/SchoolPacket.lean": "1c996d0eb4980cd3648a36fc7db72759d7e47129f124d2762e7c8a3eac7e3790",
+      "Lemma/Multimodal/TutorPackage.lean": "2c8f192041668432e8aac9612ab0369d71385bc6e837ec3197807ac03dfaf590",
+      "Lemma/Courses/PackageTarget.lean": "b2f17c554e9c8379d656bde733d6c767a6b2d506f192a9cbd49c71d81846689b",
+      "Lemma/Multimodal/TutorAction.lean": "ed6e180bfaecdd0ca94dbacb3625bc7461e6a3240e8b677789cc88291d5655c9",
+      "tests/school/test_authority.py": "24cb38fae1b19c44179b5b24c527b5af77c11026bfabb2005c08ef516516c833",
+      "tests/school/test_curriculum.py": "9c73ad18def27cbb7973d17f82542d6715dc197c71bdc6971735ea66f520c02b",
+      "tests/school/test_definition.py": "0505a678fabbd73b2908724951488d4558bf19379e859b3a9a25493d7c55a54b",
+      "tests/school/test_learner_choice.py": "95f6f25a1ae97f3756c614a3b369a337250b1ad88c2e992d53eb848a6bf298c4",
+      "tests/school/test_local_provider.py": "cb5daa8db1836b30b6f065df639d7744d8781b401fc134666bb050bbcad50297",
+      "tests/school/test_observation.py": "8911cd69672c7ec08edd92c6d079acd75e230b2cc676d85bc5f8e256c11db30c",
+      "tests/school/test_privacy_scopes.py": "cb5c308ee728aca30e80a952763098a73c01f71f0fec416fc2e2551ffad7af6f",
+      "tests/school/test_source_unit.py": "aabb9cbded4842f0e1af2ccc4901639dde1219ca7ca181e56b755bf68cf09729",
+      "tests/school/test_store_validation.py": "3f04ff2211e47d61078a039f93096aa7e93a92ec256d1480c80bb86922092949",
+      "fixtures/school/catalogue.json": "e6c69aef4fd709873898f52ffd49fd3e4c2605eb0043ca1b726d682eb4153fe4",
+      "fixtures/school/numerics/evaluation.jsonl": "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+      "fixtures/school/numerics/manifest.json": "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+      "fixtures/school/numerics/parameters-step160.json": "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+      "fixtures/school/numerics/train.jsonl": "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+      "examples/school/QuickReview.lean": "8292b137359f14b473edc67da9d48d79355fbadda5a8d61ce5496b1fa365eb0b",
+      "examples/school/Train.lean": "d74f443d8243b43f91ac5818b7b1728b8edf076ee2e2e00ee2bb8d8fc431a3c8",
+      "examples/school/WorkerBuild.lean": "83fe3a6534348513e5f0b0b8d44f918646a04894aa0658c725ca0c4e727f70be",
+      "examples/school/sample-unit.json": "f14a9a328839f5146d3b9819867ea43db9eca18e209751d8992310f5e9ea1f81",
+      "examples/school/source-derived-client-unit.json": "1c9ee1a5ed481c9070ee68b11093ab86fedd2f14192fa6ab1f61f7e7f2e1270e",
+      "examples/school/source-derived-mappings.json": "3119d8544ce801e40920a872701b69a265c6a24cf2f1778c4cbe8ff6787b11fe",
+      "examples/school/source-derived-unit.json": "7620270a98a13e594658a7375851ec9970b5ea2855266df7d50f22bd6a58e7f2",
+      "scripts/check_school.py": "2f0691c374e30cdcb333468c2ae59d0ea626617124db95ae7497a4fd35b3b4c4",
+      "scripts/school_transport.py": "9082e0ae5df08d21844ede3f540b70574fbc0ceaf3aff19a3abfc0a63a38364f",
+      "scripts/lemmasim_school.py": "7c18022594ecd717c3a10d2ee72c2e432bee386b91cd8dc22e24a80761dc53ea"
+    }
+  },
+  "separateEvidence": {
+    "corpus": {
+      "path": "docs/evidence/008-corpus-ingestion.json",
+      "sha256": "6507fb96ddc9bf4f039598d47b8a60dd6ae2b34311fd747c07205932314d7864"
+    },
+    "numericsWorker": {
+      "path": "docs/evidence/008-school-numerics-worker.json",
+      "sha256": "e56d641ecba992dc754d1db62d091d4de63fa914da6c58fa6f6cad72c5bd2590"
+    },
+    "package": {
+      "path": "docs/evidence/008-school-definition-validation.json",
+      "sha256": "f495c1cbd9d282f8d0b702b59f62506089c72dc59691f2738c3f6d0d8443129c"
+    },
+    "panel": {
+      "path": "docs/evidence/008-school-native-panel.json",
+      "sha256": "da93492c54966187d78637bd6b7927fd92321981897afa4d17425f353acb25a8"
+    },
+    "ci": {
+      "path": "docs/evidence/008-school-ci.json",
+      "sha256": "1ed13cbfb8533eff2dd9634d3a9e4949c721638925ca237a9726935b7cde1efd"
+    },
+    "sample": {
+      "path": "docs/evidence/008-school-sample.json",
+      "sha256": "ea7ad3cf55854216e641652f0f7b02a181e7304b0b41d5c419b76e7c24c48af7"
+    },
+    "readerDiagnosis": {
+      "path": "docs/evidence/008-school-reader-diagnosis.json",
+      "sha256": "fe88b582b3ab8d010800897f60adaaef52b51f41572dd8e55de84ddcc845639a"
+    },
+    "workerLifecycle": {
+      "path": "docs/evidence/008-school-worker-lifecycle.json",
+      "sha256": "ac3571b6b3591582b568bae43e5bf6a7bfaa6b26e14807cd72c3d10ecedcb284"
+    },
+    "localProvider": {
+      "path": "docs/evidence/008-school-local-provider.json",
+      "sha256": "83adc7cc3a7e4035afd193fcb3a0bcc1bc253b2fb0e28fa729c6a18fb97ebd50"
+    },
+    "client": {
+      "path": "docs/evidence/008-school-client.json",
+      "sha256": "98192742531570cde91657c8934502d87060bc11f4b3671ff0fa1fe9ba2dd007"
+    }
+  },
+  "gates": {
+    "A": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "hostValidation: actual monotonic HTTP start/status/stop/restart and exclusive mutex",
+        "panel: four native activities with actual Lean status",
+        "native no-account sample path; exact compiled package equals prior actual successful1/1 install/reader/checker phases, whose laterASKFAIL is retained",
+        "localProvider: explicit local node/worker capability, verified image/artifact availability, declared slot/memory/storage reservations and controller readiness; actual registered jobs/drain/health/reconcile exercised"
+      ],
+      "scope": "one local OS authority; no remote credentials"
+    },
+    "B": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "corpus: all27912 exact originals/order/digests + reimport/search/lookup + changed revision",
+        "source-derived canonical802/1 and teacher variant1/2 compiled; actual authority publication in client-source-setup-a1"
+      ],
+      "scope": "actual supplied archive; metadata and original paraphrases tracked, private PDF bytes excluded"
+    },
+    "C": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "client: fresh full native-a12 PASS; current A8 authority and A15 audited guest, actual1/2 source unit and all eight activity bodies",
+        "actual Invalid\u2192Verified typed coefficients; explicit school JOIN727 and assistance-v3 hint725 with every body pixel and exact durable package bytes; assisted resubmission",
+        "actual guest replay reason5 and changed-document reason3 reject without new725; actual authority cross-school/changed-ASK/expiry/cancel negatives plus separate guest packet Action negatives",
+        "all nine optional modality consent bits off, actual raw drawing/newSaved/explicitSave, independent newCPU equality of268435456 medium bytes and3630000 pixels; no live assistance replay",
+        "actual school SIGKILL/restart; production604800-second review under controlled school clock opens originalcourse1/edition2/policy1 through normal reader",
+        "actual unsupported independent USE241, three raw work samples and Saved pixels; real school teacher-review outcome4, independent=true/assisted=false; synthetic task-field mutation for assistance refusal is separately labelled"
+      ],
+      "scope": "owner-local actual native guest; typed exact checker and opaque teacher-review work are distinct; no arbitrary handwritten-proof checking or retention claim"
+    },
+    "D": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "hostValidation: immutable edition/assisted vs independent/exact vs teacher-review/grant/crossschool",
+        "client actual authority admission negatives remain separate from target packet validation",
+        "LearnerChoice: bounded goal changes, interpretation challenges and policy-permitted suggestion overrides append exact original evidence/policy/artifact provenance; owner or distinctcorrect grant; peerreads useexistingread grant; stable retry keys preserve originals",
+        "current A8 job-worker-008-a9: actual711424 RV64 suggestion accepted goal/challenge/override declarations and idempotent retries; unchanged original suggestion and exact history verified through offline restore"
+      ]
+    },
+    "E": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "hostValidation: SIGKILL after artifact/before commit/after commit before ack; replay without duplicate; abrupt daemon restart; orphan GC; missing committed reference fails",
+        "actual SIGKILL transport parent during child beforecommit: inheritedOSmutex rejects competingwriter until actualchild exits; bothoneshot/serve tested"
+      ],
+      "scope": "process termination with functioning local FS; no power-loss/host-crash claim"
+    },
+    "F": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "actual worker SIGKILL midframe, expired lease fence1to2, genuine late response rejected",
+        "hostValidation real monotonic20ms lease expiry and cancellation/restart generation",
+        "current A8 job-worker-008-a9: actual SIGKILL followed by controller offline report before expiry, two convergent reconciliations, new ownership and real target completion; changed health epoch cannot revive old lease; drain preserves current completion"
+      ]
+    },
+    "G": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "numericsWorker: actual elaborated core0-v0.5 O0/O2 images, nine runtime cases, same image varied parameters and features, independent integer oracle, full linked/runtime audit",
+        "actual response committed with ELF/parameters/request/audit/execution byte closure"
+      ]
+    },
+    "H": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "numericsWorker:160 actual SGDupdates; separate synthetic heldout baseline/float/quantizedMSE",
+        "actual SIGKILLstep7 and complete bit-identical resume; checkpoint/load/publish; actual RV64 score711424 used in permitted suggestion"
+      ],
+      "scope": "two-feature synthetic scorer; no private trainer, freestanding training or educational-effect claim"
+    },
+    "I": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "hostValidation: current-consent selected history export and same-clock offline restore, independent reusable definition import/clone, no mutable inode aliases",
+        "current A8 job-worker-008-a9: full49-row/18-artifact backup preserves progress, actual committed result, three learner choices and17 provider runtime rows; exact29-row/17-artifact committed-result prefix excludes later private learner work/choices",
+        "restoration increments generation, rejects old lease and requires a fresh readiness report before numeric work; original and restored authorities run serially",
+        "reusable selected model160 definition-export/init-package and ordinary clone preserve seven required public artifacts; all five provider record kinds and learner/grant/job/result/choice histories excluded"
+      ],
+      "scope": "operational recovery within same host-boot monotonic clock domain. Cross-boot/cross-host historical restore unsupported; reusable import/clone starts new clock; temporal prefix selection, not per-learner filtering; historical restore rolls back grants/consents at the selected point",
+      "historicalStageEvidence": [
+        "hostValidation: export/offline restore/definition clone, no mutable inode aliases, original learner progress retained",
+        "numericsWorker:13 required artifacts copied/verified; newgeneration rejects exported lease",
+        "actual mutex init-package fresh authority excludes learner history/grants",
+        "job-worker-008-a6: real selected reusable model160 definition-export/init-package and normal clone preserve seven required public artifacts; all copied stores separate inodes; only publication/model/model-selection, old grants/enrollment/private results excluded",
+        "selected history export: optional throughSequence preserves exact rows and artifact closure, excludes later learner work, restores original progress/result with new generation; current consent revocation blocks historical disclosure; focused actual tests PASS",
+        "job-worker-008-a7 current A6 authority: actual RV64 result restored in exact14-record/14-artifact prefix, later private learner attempt/grant/suggestion/unique artifact excluded; full27-row/15-artifact backup retained progress and result; original copies independent",
+        "final A7 job-worker-008-a8: thirty-row full backup with fifteen artifacts preserves three learner choices and original progress/result; fourteen-row selection excludes later private choices; reusable definitions exclude all choice history"
+      ]
+    },
+    "J": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "client: same fresh full native-a12 executes maintained QuickReview Lean Authoring.Unit extension, publishes/enrolls/installs next edition1/3, ordinary chooser/LOAD/USE and actual guest Verified",
+        "production review delay changes604800\u219260seconds; actual due review opens through normal NEXT controls with complete body pixels; original acknowledged edition2 attempt retained"
+      ],
+      "scope": "source-bound software scheduling demonstration; controlled school clock, no measured retention or physical qualification"
+    },
+    "K": {
+      "status": "implemented-and-exercised",
+      "evidence": [
+        "current A8 load-worker-008-a9: four actual registered QEMU workers, capacity4/fifth lease rejection, queue8/reserve2/bulk/ninth/oversize admission negatives; all four actual scores recovered after fresh process restart",
+        "enrolled learner course4199 exact package bytes and progress preserved: course/progress81.4\u2013117.8ms around paused/released four-worker burst; status61.2\u2013105.5ms; target round trip4.74\u201312.26ms; observed QEMU RSS60416\u201360660KiB",
+        "actual cancellation and global queue admission remain covered by current full40-test host validation; scope is a finite local learner-service workload, no overlapping tablet drawing/browser throughput claim"
+      ],
+      "scope": "tiny four-worker local learner-service workload. Sustained load, concurrent tablet drawing/browser and native-RV64 performance not asserted.",
+      "historicalStageEvidence": [
+        "numericsWorker: four real concurrent QEMU jobs, capacity4/fifthlease reject, queue8/reserve2/bulk/oversize backpressure, freshprocess recovers allfourresults",
+        "hostValidation cancellation; declared local API latency and QEMU RSS retained",
+        "actual enrolled learner client-course preserved4199 exactbytes/digest and progress around four-worker burst; latencies paused54/54ms and release143/55ms; load-worker-008-a6",
+        "load-worker-008-a7 current A6 authority: enrolled learner course/progress87\u201394ms; actual QEMU requests11\u201318ms; QEMU RSS62800\u201368904KiB; finite local fixture, no sustained or drawing overlap claim"
+      ]
+    }
+  },
+  "regressions": {
+    "legacyCore0": {
+      "path": "build/school/legacy-core0-008/check-results.json",
+      "sha256": "d41bbc8ccb5c0737e22a5f9c9c989d1b09bfd2bf671e289b2acf5a5b4d9cd0fb",
+      "result": "PASS",
+      "scope": "fresh O0/O2,10cases,13 expected rejections, clean-repeat/source-mutation/audit-regression"
+    },
+    "scaffold": {
+      "result": "PASS",
+      "tests": 31,
+      "path": "build/school/scaffold-008-final-a5.log",
+      "sha256": "91fe1874ab256c8ade65b7fedc06a7f0528a4a76931622d7f04e473549279660"
+    },
+    "multimodalHost": {
+      "result": "PASS",
+      "tests": 66,
+      "path": "build/school/multimodal-host-final-a6.log",
+      "sha256": "9aa598b7855bd3a90c4a1745a10b28156aed6664c88f40abb5ca7d10a97e76b8"
+    },
+    "cacheHost": {
+      "result": "PASS",
+      "tests": 87,
+      "path": "build/school/cache-host-008-final.log",
+      "sha256": "2fe22186ff3d77f44e8d1237c2c3a9b6c86045100c8a5280e31eb45a4010ba63"
+    },
+    "ciPolicy": {
+      "result": "PASS",
+      "tests": 20,
+      "scope": "policy/actionlint/Bashsyntax only; not remote CI acceptance",
+      "path": "docs/evidence/008-school-ci.json",
+      "sha256": "1ed13cbfb8533eff2dd9634d3a9e4949c721638925ca237a9726935b7cde1efd"
+    }
+  },
+  "retainedFailures": [
+    {
+      "path": "build/school/client-native-a1",
+      "reason": "ASK phase failed during pending Save/display; bounded retained ASK/LOAD/JOIN queue separately tested, final integrated native result pending"
+    },
+    {
+      "path": "build/school/client-produce-a5",
+      "reason": "concurrent school Lean source changed conservative complete input seal; genuine prior actions retained and validated reuse for a6"
+    },
+    {
+      "path": "build/school/host-native-v3-a4/production.json",
+      "reason": "PASS original source; final Definition dependency closure changed afterward. a5 reran actual producer against final source; a4 not relabeled current"
+    },
+    {
+      "scope": "initial scaffold run during live documentation edits",
+      "reason": "missing package guide/evidence link caused real FAIL; all31 tests and scaffold metadata then passed after guide/evidence existed"
+    },
+    {
+      "path": "build/school/panel-008-a5/panel-evidence.json",
+      "reason": "mechanical smoke passed but visual review found results clipped; final visible-panel receipt reran and passed"
+    },
+    {
+      "path": "build/school/client-native-a2/result.json",
+      "reason": "Original100M initial published-unit view timeout retained. Backing logs confirm actual package sector reads; independent complete-lesson diagnostic took111,000,021 units under the inherited400M initial-course load exception. No droppedLOAD inferred."
+    },
+    {
+      "path": "build/school/notebook-chooser-ui-a1/result.json",
+      "reason": "initial new Action observer decoded console packet words incorrectly; corrected serializer observer; actual maintained/consequential-mutant Action tests passed a2"
+    },
+    {
+      "path": "build/school/client-native-a3/result.json",
+      "sha256": "41a1d19558c9527bb603dc122cb56fb5ebe1992b1a681ebda6aa23cead013dec",
+      "reason": "retained LOAD queued and dispatched successfully; backing trace confirms course sectors read, but initial text-bearing view exceeded generic100M budget; independent diagnosis found school observer omitted inherited400M initial-course exception; no deadlock or droppedLOAD inferred"
+    },
+    {
+      "path": "build/school/client-native-a4/result.json",
+      "sha256": "54a4284c19c56b4630fa530931ee07c96971ecaad227f7eb5f83c89dba3e610a",
+      "reason": "Actual third activity displayed but independent pixel oracle had J0x126e while unchanged historical guest font is0x124e; nine mismatching pixels localized to J in JUSTIFICATION; original failure retained, literal observer corrected and positive/flipped-pixel tests passed."
+    },
+    {
+      "path": "build/school/client-native-a5/result.json",
+      "reason": "Actual source answers/JOIN727/help725/assisted classification/replay rejection passed; subsequent ASK was retained but blocked because rejected package left pending presentation flags. Minimal guest cleanup passed eight actual Action cases, a consequential missing-cleanup mutation, four full genuine productions and audits."
+    },
+    {
+      "path": "build/school/client-native-a6/result.json",
+      "sha256": "1bbf840c586ca46b5d841985dd43876de92e457f4a17f5dae365c4039c3df3d6",
+      "reason": "With actual rejection cleanup, freshASK still exceeded150M because its observation window included the preceding full-page rejection redraw. Separate diagnostic observed actual successfulASK at183M. Maintained observer now checks complete home presentation under the existing500M close bound before starting the unchanged150M ASK window; whole-run limit unchanged."
+    },
+    {
+      "path": "build/school/client-native-a7/result.json",
+      "sha256": "d6a5fca151aa2b739e562d6af403e35afe2150db063d68c2d1c6403f0e56c24a",
+      "reason": "Complete replay-close then freshASK/JOIN/reopen succeeded; stale-proposal LOAD failed integrity243 before expected revision rejection. Ordinary reader reopen had left expected package CRC/node guards active for a different assistance envelope. Guest LOAD/JOIN now explicitly clear old reader CRC/node context; actual Action and target requalification pending."
+    },
+    {
+      "path": "build/school/client-native-a8/result.json",
+      "sha256": "d261c9eb3959e6d7a29ffc86e350b61a09b7f0dd47ec62acb4d7fc71b57d9f34",
+      "reason": "Actual source/JOIN/hint/assisted/replay/doc-revision rejection, rawdrawing andMUTE712 consent0 passed; explicitSave150M timed out with no explicitSave423(object0)/new421. Initial inkpending-only causal inference is withdrawn after a9; drawing acknowledgement alone did not resolve it. The MUTE observer had accepted an unrelated paper completion without checking its queued bar. Original failure retained."
+    },
+    {
+      "path": "build/school/client-native-a9/result.json",
+      "sha256": "35b9610fd8790103a7bc404344a958c840edc678d13048ea81c464c69b875eef",
+      "reason": "ExplicitSave150M again failed despite actual drawing421+Savedlabel precondition. Offline captured panel lacked all six multimodal bar labels at that precondition. MUTE genericclick accepted another paper completion, not observed own bar; new observer now requires MUTE712/status0, all nine consent bits0 and full literal bar labels within unchanged150M before firstSave. No target change, cap increase or hidden Save retry; fresh full scenario pending."
+    },
+    {
+      "path": "build/school/client-native-a10/result.json",
+      "sha256": "c241263f48ea4ec2e0876c67fe5826177f630e2a9539bdd9be91f31aa8295346",
+      "reason": "Strict actualMUTEbar16M, firstSave newack8M, newCPU257M/full256MiB+3630000pixel equality, schoolSIGKILL/restart/due/originalreader reopening all passed. IndependentUSE emitted expected454/241 but admission-stage predicate also waited hardwareidle, counting subsequent full rejection redraw against100M. Observer separates direct admission receipt100M from alreadydeclared complete-home500M; no target/cap/whole-run change. Diagnostic suffix is separate; final fresh full acceptance pending."
+    },
+    {
+      "path": "build/school/client-native-a11/result.json",
+      "sha256": "b660018ffab74c8c0026dc71fc788d38eea2957e34c2bcd47de797652ca686ca",
+      "reason": "Explicitly interrupted after the parallel developer-only diagnostic found a predecessor-presentation observer omission; source census closed current-equal at interruption. This is a retained FAIL/KeyboardInterrupt, not native acceptance. Prior source/JOIN/hint/revision rejection phases completed; a new observer and fresh full run are required."
+    },
+    {
+      "path": "build/school/client-developer-diagnostic-a1/result.json",
+      "sha256": "02cb0a8217baf0d0fd7e267a2fe60330bd59e79b883551053ed0a88a4098af10",
+      "reason": "Diagnostic-only offline continuation: actual edition3 publish/enroll/install, complete reader navigation, USE, guest Verified, durable attempt and changed60-second due schedule succeeded. First later-review NEXT exceeded its original100M limit because the check observer had accepted checker+Saved before the queued control presentation. The panel remained the correct routine body; the earlier tentative home-view inference was withdrawn. Same200M check now additionally requires own post-Saved controller completion, exact source/footer/body pixels and hardwareidle; no extra COURSE action or timeout increase."
+    }
+  ],
+  "unsupported": [
+    "replicated control plane/consensus/failover",
+    "remote provisioning and protected public service",
+    "resident large-model inference",
+    "general numerical compiler/automatic differentiation/accelerators",
+    "cross-boot/cross-host historical snapshot clock rebasing",
+    "host-crash/power-loss durability",
+    "private-data training/deletion/unlearning",
+    "physical machine qualification",
+    "educational efficacy"
+  ],
+  "inheritedReadiness": "Task007 and machine claims retain all historical failures/pending dimensions. scripts/verification_routes.json comparison_base8e75... retained; no blanket exemption or implicit overall dev_status PASS.",
+  "targetProductionReview": {
+    "path": "build/school/client-production-a14/authority-review.json",
+    "sha256": "48891b6c5d48a0de48629e921916baa3f14e6369bcd8e4cea3d17c03514d272e",
+    "result": "REVIEWED_EXACT_EXPLICIT_ENVELOPE_READER_GUARD_NOTEBOOK_DELTA",
+    "scope": "All four genuine producer exports; twenty non-Notebook full catalogs/pre/post corpora unchanged; four Notebook corpora clear original reader CRC/node before explicit school-envelope selection; full coverage and directed edges retained; actual retained-readerCRC LLVM mutant rejected; all four a15 full audits PASS with current combined source"
+  },
+  "retainedHostValidation": {
+    "path": "build/school/host-validation-v3-a1/validation.json",
+    "sha256": "576f6218aec174191b03f58ca7a395475dbc31b1b8c7d97ab744f5268744e834",
+    "result": "PASS",
+    "hostTests": 29,
+    "elapsedSeconds": 129.22002651297953,
+    "commands": [
+      {
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests/school",
+          "-v"
+        ],
+        "exitCode": 0,
+        "log": "host.log",
+        "logSha256": "45f627bcf3efb3b5238376a0b104312207c177f7cb275d7cbafcff0dfad67148",
+        "elapsedSeconds": 125.96339611301664
+      },
+      {
+        "command": [
+          "lake",
+          "env",
+          "lean",
+          "--run",
+          "tests/school/Client.lean"
+        ],
+        "exitCode": 0,
+        "log": "client-validation.log",
+        "logSha256": "62ddc92096dca4993eebe1841545aaed421398510a40c84e331f237613123c48",
+        "elapsedSeconds": 3.021932760020718
+      }
+    ],
+    "sourceInputs": {
+      "Lemma/Core0/Execution.lean": "1eb46d0bba6ad1c13e9a2285a9cca70aef322c42a3ea35fbb53c30caa14642ae",
+      "Lemma/Core0/IR.lean": "125fca545e8107939ac9a9c08ec674ab7287d20a2cb00fa99d86a9f7e670c441",
+      "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+      "Lemma/Core0/Timer.lean": "d6a0d0dbc7ed2939a5825683abc21374ee4bcfd60bc010ee5575ed0296bd68f2",
+      "Lemma/Core0/Trap.lean": "bc40c4ac403d995bf026737af7b8b2ca25390399473cfe1389a0bd700fe078af",
+      "Lemma/Courses/Package.lean": "d2fa235ddebbe0a50160290b9b3e6d8b0f110269fac623a79674bdd2b8253e21",
+      "Lemma/Courses/PackageFormat.lean": "ee2e3a88c9016e8817d87c08559babedf99d3707ef7f1c928dbf04e7ac500e88",
+      "Lemma/Documents/Mathematics.lean": "cdc7a38753985251e526b3813df719a2b27b1783350ece5a49800d4d6cbbf4fa",
+      "Lemma/Mathematics/Exact.lean": "3cbeefed82f41a2b6692f96ecfd06a793d272fd8480bfb6ae662e08a0211c828",
+      "Lemma/Mathematics/ExecutionIdentity.lean": "611495044f1f620d23b8439c7147683b16654aa8a06c922636dabb111cd0a7b7",
+      "Lemma/Mathematics/ExecutionIdentityV2.lean": "bd19191c002bfcb1fd2d0e7bc14d6b9cf28fd16938000dcc0e036f3c716b683a",
+      "Lemma/Mathematics/ExecutionIdentityV3.lean": "ee7b35cc6829727bc016662fb7cec208d5a8dfdf65a77433db615246f78a97f1",
+      "Lemma/Mathematics/ExecutionIdentityV4.lean": "34126784408980975caf49097dc0ffdcdf6e76929b272377616e046879c34389",
+      "Lemma/Mathematics/OwnedSubmission.lean": "a6f76a484d21834365244c6c775fa288073b5e4a345329f205c18d2b046fd6eb",
+      "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903",
+      "Lemma/School/Authoring.lean": "abfc31f812c5a48c3443cad6b9c78469324cf6dbc990012774e511e02c0de30a",
+      "Lemma/School/Authority.lean": "ee98de62e1bb422772aebb2cd88e11d4e67e5b1594e26ee0a15a4756c199456b",
+      "Lemma/School/Catalogue.lean": "ca2a22cb389d0713e24eb1202b356e6f6ce85182f7d224b5c4573c84b6dbd38b",
+      "Lemma/School/Client.lean": "eaf88fe83df1c0e58af4ed0385e23a860e28d2ce476d78867fad909795d0e303",
+      "Lemma/School/CurriculumMain.lean": "e74fea97a5f4994240aab47ba85b7583f87d4bd77040749f6afb81939fd76ee0",
+      "Lemma/School/Definition.lean": "566329be192ebb8439e274f6b266ced369f2ebf5faaf104c4a3f3ccd2972c434",
+      "Lemma/School/Digest.lean": "e776deed7d2437dc6b27648d6bfc662c56d48e11e92b35384bc1fc1439aabaa2",
+      "Lemma/School/FixtureUnit.lean": "d6f916fdfb74ff5dde941c99c4d35487d1a93e440b5295fbca893e56780ecc56",
+      "Lemma/School/Main.lean": "d4af4a2d0772fcb7202d3afa122b8ec70e1f143790bbd8c86a70eb9c894bfcb9",
+      "Lemma/School/Model.lean": "32deff8d404d0a0f0340e0aa875c8c36492ce80551c948e4419f9ca89525e962",
+      "Lemma/School/Observation.lean": "43c74dbbe4035d0c4af401160c2ff5fd731057022f9b8a295b6cb088e5d8919f",
+      "Lemma/School/SourceRegistry.lean": "420cacb5257c771a88f44b7bee4751b875023819e43ad4dc4d066a082ce45292",
+      "Lemma/School/Store.lean": "d8434717861dd318199faed508c10cd333092e2f9420efe14bc7bc974f832856",
+      "Lemma/User/ABI.lean": "43f315ac5caf22ac47f0e6fb7f9dda5a1899a1e3436de695cee0f41653ed9259",
+      "Lemma/User/Memory.lean": "c04236eb3b42ff74a30a12dd04d18fb6dcbeb2bc74aaf000ad58fe4958265024",
+      "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+      "Lemma/User/Syscall.lean": "d405577a4fd2cf4a67bfa67a71ae26ade5be16ba377c7884a8f578589899ea66",
+      "fixtures/school/Distributivity.txt": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+      "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+      "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+      "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+      "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+      "scripts/build_school.py": "5967730a148e25a37af712e13f0d692889ac512d9afb2633aef650793346664c",
+      "tooling/toolchain-lock.json": "9615c3d43319431b04bce1807f711ddb0e822294904e3e21287863be6c4cd08a",
+      "tests/school/Client.lean": "f714613bea66486d43005d934557aac8b3166bb2998d98768e49cd332b9ac9fd",
+      "tests/school/DefinitionMain.lean": "131bf79afb642a4748ada8726cee4d26295943d8887e78c205ab671a9e3f7a17",
+      "tests/school/ObservationMain.lean": "f841938ea9c67876ebb3d80980bd2be2d850f001bcd72eb4d763a1a9c75a8c3c",
+      "tests/school/StoreValidationMain.lean": "fa57a9577514e6ac00351898e78cd0f2f238246cf5eaa2ea4197f5b257cf73e2",
+      "tests/school/test_authority.py": "60ff5ccbc27f0d65639a8d017dce2b1105daa547366570042bd87a73d6f22328",
+      "tests/school/test_curriculum.py": "9c73ad18def27cbb7973d17f82542d6715dc197c71bdc6971735ea66f520c02b",
+      "tests/school/test_definition.py": "0505a678fabbd73b2908724951488d4558bf19379e859b3a9a25493d7c55a54b",
+      "tests/school/test_observation.py": "8911cd69672c7ec08edd92c6d079acd75e230b2cc676d85bc5f8e256c11db30c",
+      "tests/school/test_privacy_scopes.py": "cb5c308ee728aca30e80a952763098a73c01f71f0fec416fc2e2551ffad7af6f",
+      "tests/school/test_source_unit.py": "aabb9cbded4842f0e1af2ccc4901639dde1219ca7ca181e56b755bf68cf09729",
+      "tests/school/test_store_validation.py": "3f04ff2211e47d61078a039f93096aa7e93a92ec256d1480c80bb86922092949",
+      "fixtures/school/catalogue.json": "e6c69aef4fd709873898f52ffd49fd3e4c2605eb0043ca1b726d682eb4153fe4",
+      "fixtures/school/numerics/evaluation.jsonl": "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+      "fixtures/school/numerics/manifest.json": "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+      "fixtures/school/numerics/parameters-step160.json": "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+      "fixtures/school/numerics/train.jsonl": "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+      "examples/school/QuickReview.lean": "8292b137359f14b473edc67da9d48d79355fbadda5a8d61ce5496b1fa365eb0b",
+      "examples/school/Train.lean": "d74f443d8243b43f91ac5818b7b1728b8edf076ee2e2e00ee2bb8d8fc431a3c8",
+      "examples/school/WorkerBuild.lean": "83fe3a6534348513e5f0b0b8d44f918646a04894aa0658c725ca0c4e727f70be",
+      "examples/school/source-derived-client-unit.json": "1c9ee1a5ed481c9070ee68b11093ab86fedd2f14192fa6ab1f61f7e7f2e1270e",
+      "examples/school/source-derived-mappings.json": "3119d8544ce801e40920a872701b69a265c6a24cf2f1778c4cbe8ff6787b11fe",
+      "examples/school/source-derived-unit.json": "7620270a98a13e594658a7375851ec9970b5ea2855266df7d50f22bd6a58e7f2",
+      "scripts/check_school.py": "15072811805babb6a2154d070a31a38c23588aef2bc166d773360aa498aad562",
+      "scripts/school_transport.py": "64f6fae53d05915463bc08fa8a9115be195fc10e209885d7f4731c937c5681cd",
+      "scripts/lemmasim_school.py": "140ee9aa9bc10f1a62f425b09ecd08297cc8112b66dab0740c8fd57acdb3e096"
+    }
+  },
+  "retainedHostValidationBeforeTransitiveActionClosure": {
+    "path": "build/school/host-validation-v3-a2/validation.json",
+    "sha256": "499f35c0e724d1a00a9ba05972f9c9d027986263c28804ef385ef2436497470d",
+    "result": "PASS",
+    "hostTests": 30,
+    "elapsedSeconds": 101.482913705986,
+    "commands": [
+      {
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests/school",
+          "-v"
+        ],
+        "exitCode": 0,
+        "log": "host.log",
+        "logSha256": "122336f7baf640ac62011e42c09757749276101c72636af380df088e5afbbf2b",
+        "elapsedSeconds": 99.73366873303894
+      },
+      {
+        "command": [
+          "lake",
+          "env",
+          "lean",
+          "--run",
+          "tests/school/Client.lean"
+        ],
+        "exitCode": 0,
+        "log": "client-validation.log",
+        "logSha256": "62ddc92096dca4993eebe1841545aaed421398510a40c84e331f237613123c48",
+        "elapsedSeconds": 1.5680839649867266
+      }
+    ],
+    "sourceInputs": {
+      "Lemma/Core0/Execution.lean": "1eb46d0bba6ad1c13e9a2285a9cca70aef322c42a3ea35fbb53c30caa14642ae",
+      "Lemma/Core0/IR.lean": "125fca545e8107939ac9a9c08ec674ab7287d20a2cb00fa99d86a9f7e670c441",
+      "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+      "Lemma/Core0/Timer.lean": "d6a0d0dbc7ed2939a5825683abc21374ee4bcfd60bc010ee5575ed0296bd68f2",
+      "Lemma/Core0/Trap.lean": "bc40c4ac403d995bf026737af7b8b2ca25390399473cfe1389a0bd700fe078af",
+      "Lemma/Courses/Package.lean": "d2fa235ddebbe0a50160290b9b3e6d8b0f110269fac623a79674bdd2b8253e21",
+      "Lemma/Courses/PackageFormat.lean": "ee2e3a88c9016e8817d87c08559babedf99d3707ef7f1c928dbf04e7ac500e88",
+      "Lemma/Documents/Mathematics.lean": "cdc7a38753985251e526b3813df719a2b27b1783350ece5a49800d4d6cbbf4fa",
+      "Lemma/Mathematics/Exact.lean": "3cbeefed82f41a2b6692f96ecfd06a793d272fd8480bfb6ae662e08a0211c828",
+      "Lemma/Mathematics/ExecutionIdentity.lean": "611495044f1f620d23b8439c7147683b16654aa8a06c922636dabb111cd0a7b7",
+      "Lemma/Mathematics/ExecutionIdentityV2.lean": "bd19191c002bfcb1fd2d0e7bc14d6b9cf28fd16938000dcc0e036f3c716b683a",
+      "Lemma/Mathematics/ExecutionIdentityV3.lean": "ee7b35cc6829727bc016662fb7cec208d5a8dfdf65a77433db615246f78a97f1",
+      "Lemma/Mathematics/ExecutionIdentityV4.lean": "34126784408980975caf49097dc0ffdcdf6e76929b272377616e046879c34389",
+      "Lemma/Mathematics/OwnedSubmission.lean": "a6f76a484d21834365244c6c775fa288073b5e4a345329f205c18d2b046fd6eb",
+      "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903",
+      "Lemma/School/Authoring.lean": "abfc31f812c5a48c3443cad6b9c78469324cf6dbc990012774e511e02c0de30a",
+      "Lemma/School/Authority.lean": "ee98de62e1bb422772aebb2cd88e11d4e67e5b1594e26ee0a15a4756c199456b",
+      "Lemma/School/Catalogue.lean": "ca2a22cb389d0713e24eb1202b356e6f6ce85182f7d224b5c4573c84b6dbd38b",
+      "Lemma/School/Client.lean": "eaf88fe83df1c0e58af4ed0385e23a860e28d2ce476d78867fad909795d0e303",
+      "Lemma/School/CurriculumMain.lean": "e74fea97a5f4994240aab47ba85b7583f87d4bd77040749f6afb81939fd76ee0",
+      "Lemma/School/Definition.lean": "566329be192ebb8439e274f6b266ced369f2ebf5faaf104c4a3f3ccd2972c434",
+      "Lemma/School/Digest.lean": "e776deed7d2437dc6b27648d6bfc662c56d48e11e92b35384bc1fc1439aabaa2",
+      "Lemma/School/FixtureUnit.lean": "d6f916fdfb74ff5dde941c99c4d35487d1a93e440b5295fbca893e56780ecc56",
+      "Lemma/School/Main.lean": "d4af4a2d0772fcb7202d3afa122b8ec70e1f143790bbd8c86a70eb9c894bfcb9",
+      "Lemma/School/Model.lean": "32deff8d404d0a0f0340e0aa875c8c36492ce80551c948e4419f9ca89525e962",
+      "Lemma/School/Observation.lean": "43c74dbbe4035d0c4af401160c2ff5fd731057022f9b8a295b6cb088e5d8919f",
+      "Lemma/School/SourceRegistry.lean": "420cacb5257c771a88f44b7bee4751b875023819e43ad4dc4d066a082ce45292",
+      "Lemma/School/Store.lean": "d8434717861dd318199faed508c10cd333092e2f9420efe14bc7bc974f832856",
+      "Lemma/User/ABI.lean": "43f315ac5caf22ac47f0e6fb7f9dda5a1899a1e3436de695cee0f41653ed9259",
+      "Lemma/User/Memory.lean": "c04236eb3b42ff74a30a12dd04d18fb6dcbeb2bc74aaf000ad58fe4958265024",
+      "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+      "Lemma/User/Syscall.lean": "d405577a4fd2cf4a67bfa67a71ae26ade5be16ba377c7884a8f578589899ea66",
+      "fixtures/school/Distributivity.txt": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+      "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+      "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+      "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+      "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+      "scripts/build_school.py": "5967730a148e25a37af712e13f0d692889ac512d9afb2633aef650793346664c",
+      "tooling/toolchain-lock.json": "9615c3d43319431b04bce1807f711ddb0e822294904e3e21287863be6c4cd08a",
+      "tests/school/Client.lean": "f714613bea66486d43005d934557aac8b3166bb2998d98768e49cd332b9ac9fd",
+      "tests/school/DefinitionMain.lean": "131bf79afb642a4748ada8726cee4d26295943d8887e78c205ab671a9e3f7a17",
+      "tests/school/ObservationMain.lean": "f841938ea9c67876ebb3d80980bd2be2d850f001bcd72eb4d763a1a9c75a8c3c",
+      "tests/school/StoreValidationMain.lean": "fa57a9577514e6ac00351898e78cd0f2f238246cf5eaa2ea4197f5b257cf73e2",
+      "tests/school/test_authority.py": "dc52024656a30d6e35e719a6276c4f524770553b5992106664a7150f3e694ba1",
+      "tests/school/test_curriculum.py": "9c73ad18def27cbb7973d17f82542d6715dc197c71bdc6971735ea66f520c02b",
+      "tests/school/test_definition.py": "0505a678fabbd73b2908724951488d4558bf19379e859b3a9a25493d7c55a54b",
+      "tests/school/test_observation.py": "8911cd69672c7ec08edd92c6d079acd75e230b2cc676d85bc5f8e256c11db30c",
+      "tests/school/test_privacy_scopes.py": "cb5c308ee728aca30e80a952763098a73c01f71f0fec416fc2e2551ffad7af6f",
+      "tests/school/test_source_unit.py": "aabb9cbded4842f0e1af2ccc4901639dde1219ca7ca181e56b755bf68cf09729",
+      "tests/school/test_store_validation.py": "3f04ff2211e47d61078a039f93096aa7e93a92ec256d1480c80bb86922092949",
+      "fixtures/school/catalogue.json": "e6c69aef4fd709873898f52ffd49fd3e4c2605eb0043ca1b726d682eb4153fe4",
+      "fixtures/school/numerics/evaluation.jsonl": "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+      "fixtures/school/numerics/manifest.json": "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+      "fixtures/school/numerics/parameters-step160.json": "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+      "fixtures/school/numerics/train.jsonl": "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+      "examples/school/QuickReview.lean": "8292b137359f14b473edc67da9d48d79355fbadda5a8d61ce5496b1fa365eb0b",
+      "examples/school/Train.lean": "d74f443d8243b43f91ac5818b7b1728b8edf076ee2e2e00ee2bb8d8fc431a3c8",
+      "examples/school/WorkerBuild.lean": "83fe3a6534348513e5f0b0b8d44f918646a04894aa0658c725ca0c4e727f70be",
+      "examples/school/sample-unit.json": "f14a9a328839f5146d3b9819867ea43db9eca18e209751d8992310f5e9ea1f81",
+      "examples/school/source-derived-client-unit.json": "1c9ee1a5ed481c9070ee68b11093ab86fedd2f14192fa6ab1f61f7e7f2e1270e",
+      "examples/school/source-derived-mappings.json": "3119d8544ce801e40920a872701b69a265c6a24cf2f1778c4cbe8ff6787b11fe",
+      "examples/school/source-derived-unit.json": "7620270a98a13e594658a7375851ec9970b5ea2855266df7d50f22bd6a58e7f2",
+      "scripts/check_school.py": "15072811805babb6a2154d070a31a38c23588aef2bc166d773360aa498aad562",
+      "scripts/school_transport.py": "9082e0ae5df08d21844ede3f540b70574fbc0ceaf3aff19a3abfc0a63a38364f",
+      "scripts/lemmasim_school.py": "7c18022594ecd717c3a10d2ee72c2e432bee386b91cd8dc22e24a80761dc53ea"
+    }
+  },
+  "chooserLoadRepair": {
+    "path": "build/school/notebook-chooser-ui-a2/result.json",
+    "sha256": "0a349f1158818f296d033a80e1248b4b15c7e6e17bf28d117bfc34b4f90ba5e4",
+    "scope": "seven actual Action cases including busy request snapshot, held Store and stale edition cancellation; repairs a proven possible busy-drop path but a2/a3 disk reads do not establish that path caused their reader-view failure"
+  },
+  "targetProductionReviewHistoricalFirstDelta": {
+    "path": "build/school/client-production-a6/authority-review.json",
+    "sha256": "ceb685d7666049884684e5380acecc282e1cc0cc3c4b61b098cc7106a75a9abc",
+    "result": "REVIEWED_EXACT_NOTEBOOK_ONLY_DELTA",
+    "scope": "all four genuine first-delta role producers, twenty unchanged non-Notebook role corpora; exact historical Notebook delta and its then-current pins; all four a7 full audits PASS, retained separately from final envelope-reset production"
+  },
+  "retainedProductionBeforeSelectedExport": {
+    "path": "build/school/host-native-v3-a5/production.json",
+    "sha256": "134ac403bf8d3343a2640e737222fbda083bf8ea5cfecea27f40eeef34688401"
+  },
+  "retainedHostValidationBeforeSelectedExport": {
+    "path": "build/school/host-validation-v3-a3/validation.json",
+    "sha256": "3d5bc582a30451d096efd4f7d052b855c7104f62d6aae5b0f889f80b9cffa5b2",
+    "result": "PASS",
+    "hostTests": 30,
+    "elapsedSeconds": 119.7727239279775,
+    "commands": [
+      {
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests/school",
+          "-v"
+        ],
+        "exitCode": 0,
+        "log": "host.log",
+        "logSha256": "331cfa6b4cb1fd43ba82310cfba0b74b75d51586d083af38b47ea688cd32673f",
+        "elapsedSeconds": 116.86548025300726
+      },
+      {
+        "command": [
+          "lake",
+          "env",
+          "lean",
+          "--run",
+          "tests/school/Client.lean"
+        ],
+        "exitCode": 0,
+        "log": "client-validation.log",
+        "logSha256": "62ddc92096dca4993eebe1841545aaed421398510a40c84e331f237613123c48",
+        "elapsedSeconds": 2.6712736090412363
+      }
+    ],
+    "sourceInputs": {
+      "Lemma/Core0/Execution.lean": "1eb46d0bba6ad1c13e9a2285a9cca70aef322c42a3ea35fbb53c30caa14642ae",
+      "Lemma/Core0/IR.lean": "125fca545e8107939ac9a9c08ec674ab7287d20a2cb00fa99d86a9f7e670c441",
+      "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+      "Lemma/Core0/Timer.lean": "d6a0d0dbc7ed2939a5825683abc21374ee4bcfd60bc010ee5575ed0296bd68f2",
+      "Lemma/Core0/Trap.lean": "bc40c4ac403d995bf026737af7b8b2ca25390399473cfe1389a0bd700fe078af",
+      "Lemma/Courses/Package.lean": "d2fa235ddebbe0a50160290b9b3e6d8b0f110269fac623a79674bdd2b8253e21",
+      "Lemma/Courses/PackageFormat.lean": "ee2e3a88c9016e8817d87c08559babedf99d3707ef7f1c928dbf04e7ac500e88",
+      "Lemma/Documents/Mathematics.lean": "cdc7a38753985251e526b3813df719a2b27b1783350ece5a49800d4d6cbbf4fa",
+      "Lemma/Mathematics/Exact.lean": "3cbeefed82f41a2b6692f96ecfd06a793d272fd8480bfb6ae662e08a0211c828",
+      "Lemma/Mathematics/ExecutionIdentity.lean": "611495044f1f620d23b8439c7147683b16654aa8a06c922636dabb111cd0a7b7",
+      "Lemma/Mathematics/ExecutionIdentityV2.lean": "bd19191c002bfcb1fd2d0e7bc14d6b9cf28fd16938000dcc0e036f3c716b683a",
+      "Lemma/Mathematics/ExecutionIdentityV3.lean": "ee7b35cc6829727bc016662fb7cec208d5a8dfdf65a77433db615246f78a97f1",
+      "Lemma/Mathematics/ExecutionIdentityV4.lean": "34126784408980975caf49097dc0ffdcdf6e76929b272377616e046879c34389",
+      "Lemma/Mathematics/OwnedSubmission.lean": "a6f76a484d21834365244c6c775fa288073b5e4a345329f205c18d2b046fd6eb",
+      "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903",
+      "Lemma/School/Authoring.lean": "abfc31f812c5a48c3443cad6b9c78469324cf6dbc990012774e511e02c0de30a",
+      "Lemma/School/Authority.lean": "ee98de62e1bb422772aebb2cd88e11d4e67e5b1594e26ee0a15a4756c199456b",
+      "Lemma/School/Catalogue.lean": "ca2a22cb389d0713e24eb1202b356e6f6ce85182f7d224b5c4573c84b6dbd38b",
+      "Lemma/School/Client.lean": "eaf88fe83df1c0e58af4ed0385e23a860e28d2ce476d78867fad909795d0e303",
+      "Lemma/School/CurriculumMain.lean": "e74fea97a5f4994240aab47ba85b7583f87d4bd77040749f6afb81939fd76ee0",
+      "Lemma/School/Definition.lean": "566329be192ebb8439e274f6b266ced369f2ebf5faaf104c4a3f3ccd2972c434",
+      "Lemma/School/Digest.lean": "e776deed7d2437dc6b27648d6bfc662c56d48e11e92b35384bc1fc1439aabaa2",
+      "Lemma/School/FixtureUnit.lean": "d6f916fdfb74ff5dde941c99c4d35487d1a93e440b5295fbca893e56780ecc56",
+      "Lemma/School/Main.lean": "d4af4a2d0772fcb7202d3afa122b8ec70e1f143790bbd8c86a70eb9c894bfcb9",
+      "Lemma/School/Model.lean": "32deff8d404d0a0f0340e0aa875c8c36492ce80551c948e4419f9ca89525e962",
+      "Lemma/School/Observation.lean": "43c74dbbe4035d0c4af401160c2ff5fd731057022f9b8a295b6cb088e5d8919f",
+      "Lemma/School/SourceRegistry.lean": "420cacb5257c771a88f44b7bee4751b875023819e43ad4dc4d066a082ce45292",
+      "Lemma/School/Store.lean": "d8434717861dd318199faed508c10cd333092e2f9420efe14bc7bc974f832856",
+      "Lemma/User/ABI.lean": "43f315ac5caf22ac47f0e6fb7f9dda5a1899a1e3436de695cee0f41653ed9259",
+      "Lemma/User/Memory.lean": "c04236eb3b42ff74a30a12dd04d18fb6dcbeb2bc74aaf000ad58fe4958265024",
+      "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+      "Lemma/User/Syscall.lean": "d405577a4fd2cf4a67bfa67a71ae26ade5be16ba377c7884a8f578589899ea66",
+      "fixtures/school/Distributivity.txt": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+      "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+      "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+      "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+      "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+      "scripts/build_school.py": "5967730a148e25a37af712e13f0d692889ac512d9afb2633aef650793346664c",
+      "tooling/toolchain-lock.json": "9615c3d43319431b04bce1807f711ddb0e822294904e3e21287863be6c4cd08a",
+      "tests/school/StoreValidationMain.lean": "fa57a9577514e6ac00351898e78cd0f2f238246cf5eaa2ea4197f5b257cf73e2",
+      "tests/school/ObservationMain.lean": "f841938ea9c67876ebb3d80980bd2be2d850f001bcd72eb4d763a1a9c75a8c3c",
+      "tests/school/DefinitionMain.lean": "131bf79afb642a4748ada8726cee4d26295943d8887e78c205ab671a9e3f7a17",
+      "tests/school/Client.lean": "f714613bea66486d43005d934557aac8b3166bb2998d98768e49cd332b9ac9fd",
+      "Lemma/Multimodal/SchoolPacket.lean": "1c996d0eb4980cd3648a36fc7db72759d7e47129f124d2762e7c8a3eac7e3790",
+      "Lemma/Multimodal/TutorPackage.lean": "2c8f192041668432e8aac9612ab0369d71385bc6e837ec3197807ac03dfaf590",
+      "Lemma/Courses/PackageTarget.lean": "b2f17c554e9c8379d656bde733d6c767a6b2d506f192a9cbd49c71d81846689b",
+      "Lemma/Multimodal/TutorAction.lean": "ed6e180bfaecdd0ca94dbacb3625bc7461e6a3240e8b677789cc88291d5655c9",
+      "tests/school/test_authority.py": "dc52024656a30d6e35e719a6276c4f524770553b5992106664a7150f3e694ba1",
+      "tests/school/test_curriculum.py": "9c73ad18def27cbb7973d17f82542d6715dc197c71bdc6971735ea66f520c02b",
+      "tests/school/test_definition.py": "0505a678fabbd73b2908724951488d4558bf19379e859b3a9a25493d7c55a54b",
+      "tests/school/test_observation.py": "8911cd69672c7ec08edd92c6d079acd75e230b2cc676d85bc5f8e256c11db30c",
+      "tests/school/test_privacy_scopes.py": "cb5c308ee728aca30e80a952763098a73c01f71f0fec416fc2e2551ffad7af6f",
+      "tests/school/test_source_unit.py": "aabb9cbded4842f0e1af2ccc4901639dde1219ca7ca181e56b755bf68cf09729",
+      "tests/school/test_store_validation.py": "3f04ff2211e47d61078a039f93096aa7e93a92ec256d1480c80bb86922092949",
+      "fixtures/school/catalogue.json": "e6c69aef4fd709873898f52ffd49fd3e4c2605eb0043ca1b726d682eb4153fe4",
+      "fixtures/school/numerics/evaluation.jsonl": "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+      "fixtures/school/numerics/manifest.json": "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+      "fixtures/school/numerics/parameters-step160.json": "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+      "fixtures/school/numerics/train.jsonl": "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+      "examples/school/QuickReview.lean": "8292b137359f14b473edc67da9d48d79355fbadda5a8d61ce5496b1fa365eb0b",
+      "examples/school/Train.lean": "d74f443d8243b43f91ac5818b7b1728b8edf076ee2e2e00ee2bb8d8fc431a3c8",
+      "examples/school/WorkerBuild.lean": "83fe3a6534348513e5f0b0b8d44f918646a04894aa0658c725ca0c4e727f70be",
+      "examples/school/sample-unit.json": "f14a9a328839f5146d3b9819867ea43db9eca18e209751d8992310f5e9ea1f81",
+      "examples/school/source-derived-client-unit.json": "1c9ee1a5ed481c9070ee68b11093ab86fedd2f14192fa6ab1f61f7e7f2e1270e",
+      "examples/school/source-derived-mappings.json": "3119d8544ce801e40920a872701b69a265c6a24cf2f1778c4cbe8ff6787b11fe",
+      "examples/school/source-derived-unit.json": "7620270a98a13e594658a7375851ec9970b5ea2855266df7d50f22bd6a58e7f2",
+      "scripts/check_school.py": "2f0691c374e30cdcb333468c2ae59d0ea626617124db95ae7497a4fd35b3b4c4",
+      "scripts/school_transport.py": "9082e0ae5df08d21844ede3f540b70574fbc0ceaf3aff19a3abfc0a63a38364f",
+      "scripts/lemmasim_school.py": "7c18022594ecd717c3a10d2ee72c2e432bee386b91cd8dc22e24a80761dc53ea"
+    }
+  },
+  "workerLifecycle": {
+    "path": "build/school/lifecycle-008-a1/lifecycle-evidence.json",
+    "sha256": "d137f9dbec40e3146892091cea4c2223a3ebf57bf88eb56ec704d9c1d7cc5382",
+    "result": "PASS",
+    "scope": "five new QEMU/RAM processes; host files/toolchain/page cache warm; Popen/READY/write-flush/reply stage boundaries; build timing retained with original producer/reuse identity, no large-model or physical-RV64 timing claim"
+  },
+  "rejectionCleanup": {
+    "path": "build/school/notebook-rejection-ui-a1/result.json",
+    "sha256": "a5a5b5c010b1aea598fce31f22f184d00978bfdda20427e8c06cc303ba70ec29",
+    "scope": "eight actual source Action cases including cleanup, subsequent queued ASK and consequential missing-cleanup mutation; final native-a12 demonstrates fresh ASK/JOIN after actual replay rejection and full redraw"
+  },
+  "retainedProductionBeforeLearnerChoices": {
+    "path": "build/school/host-native-v3-a6/production.json",
+    "sha256": "b73d7e6b801702fbc2ff9cf72fad51c181bd76b7404faa584857b61fa0e0761b"
+  },
+  "learnerChoices": {
+    "path": "build/school/learner-choice-a1/validation.json",
+    "sha256": "58e9db1d7bd53cb67b1123700764d5bf5836945ec3e15dad55e0a95ba35e2ccd",
+    "scope": "four focused native API tests including17 explicitly synthetic component checks; independent current real-worker suggestion choice path in job-worker-008-a8"
+  },
+  "retainedHostValidationBeforeLearnerChoices": {
+    "path": "build/school/host-validation-v3-a4/validation.json",
+    "sha256": "cab3de3e790b766729688e51e25c470577aaad18868f271b529b27303771c2f8",
+    "result": "PASS",
+    "hostTests": 31,
+    "elapsedSeconds": 125.4328584560426,
+    "commands": [
+      {
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests/school",
+          "-v"
+        ],
+        "exitCode": 0,
+        "log": "host.log",
+        "logSha256": "0bc1db1f051ddd9903aec9208513a8a30a4b79b24b1abb9f37eeea31d06eef15",
+        "elapsedSeconds": 121.92723063193262
+      },
+      {
+        "command": [
+          "lake",
+          "env",
+          "lean",
+          "--run",
+          "tests/school/Client.lean"
+        ],
+        "exitCode": 0,
+        "log": "client-validation.log",
+        "logSha256": "62ddc92096dca4993eebe1841545aaed421398510a40c84e331f237613123c48",
+        "elapsedSeconds": 3.3237992939539254
+      }
+    ],
+    "sourceInputs": {
+      "Lemma/Core0/Execution.lean": "1eb46d0bba6ad1c13e9a2285a9cca70aef322c42a3ea35fbb53c30caa14642ae",
+      "Lemma/Core0/IR.lean": "125fca545e8107939ac9a9c08ec674ab7287d20a2cb00fa99d86a9f7e670c441",
+      "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+      "Lemma/Core0/Timer.lean": "d6a0d0dbc7ed2939a5825683abc21374ee4bcfd60bc010ee5575ed0296bd68f2",
+      "Lemma/Core0/Trap.lean": "bc40c4ac403d995bf026737af7b8b2ca25390399473cfe1389a0bd700fe078af",
+      "Lemma/Courses/Package.lean": "d2fa235ddebbe0a50160290b9b3e6d8b0f110269fac623a79674bdd2b8253e21",
+      "Lemma/Courses/PackageFormat.lean": "ee2e3a88c9016e8817d87c08559babedf99d3707ef7f1c928dbf04e7ac500e88",
+      "Lemma/Documents/Mathematics.lean": "cdc7a38753985251e526b3813df719a2b27b1783350ece5a49800d4d6cbbf4fa",
+      "Lemma/Mathematics/Exact.lean": "3cbeefed82f41a2b6692f96ecfd06a793d272fd8480bfb6ae662e08a0211c828",
+      "Lemma/Mathematics/ExecutionIdentity.lean": "611495044f1f620d23b8439c7147683b16654aa8a06c922636dabb111cd0a7b7",
+      "Lemma/Mathematics/ExecutionIdentityV2.lean": "bd19191c002bfcb1fd2d0e7bc14d6b9cf28fd16938000dcc0e036f3c716b683a",
+      "Lemma/Mathematics/ExecutionIdentityV3.lean": "ee7b35cc6829727bc016662fb7cec208d5a8dfdf65a77433db615246f78a97f1",
+      "Lemma/Mathematics/ExecutionIdentityV4.lean": "34126784408980975caf49097dc0ffdcdf6e76929b272377616e046879c34389",
+      "Lemma/Mathematics/OwnedSubmission.lean": "a6f76a484d21834365244c6c775fa288073b5e4a345329f205c18d2b046fd6eb",
+      "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903",
+      "Lemma/School/Authoring.lean": "abfc31f812c5a48c3443cad6b9c78469324cf6dbc990012774e511e02c0de30a",
+      "Lemma/School/Authority.lean": "94106a48ce988eb62fa71d11fccb27ef3b4411380313ae7aaf9160237a313a38",
+      "Lemma/School/Catalogue.lean": "ca2a22cb389d0713e24eb1202b356e6f6ce85182f7d224b5c4573c84b6dbd38b",
+      "Lemma/School/Client.lean": "eaf88fe83df1c0e58af4ed0385e23a860e28d2ce476d78867fad909795d0e303",
+      "Lemma/School/CurriculumMain.lean": "e74fea97a5f4994240aab47ba85b7583f87d4bd77040749f6afb81939fd76ee0",
+      "Lemma/School/Definition.lean": "566329be192ebb8439e274f6b266ced369f2ebf5faaf104c4a3f3ccd2972c434",
+      "Lemma/School/Digest.lean": "e776deed7d2437dc6b27648d6bfc662c56d48e11e92b35384bc1fc1439aabaa2",
+      "Lemma/School/FixtureUnit.lean": "d6f916fdfb74ff5dde941c99c4d35487d1a93e440b5295fbca893e56780ecc56",
+      "Lemma/School/Main.lean": "d4af4a2d0772fcb7202d3afa122b8ec70e1f143790bbd8c86a70eb9c894bfcb9",
+      "Lemma/School/Model.lean": "32deff8d404d0a0f0340e0aa875c8c36492ce80551c948e4419f9ca89525e962",
+      "Lemma/School/Observation.lean": "43c74dbbe4035d0c4af401160c2ff5fd731057022f9b8a295b6cb088e5d8919f",
+      "Lemma/School/SourceRegistry.lean": "420cacb5257c771a88f44b7bee4751b875023819e43ad4dc4d066a082ce45292",
+      "Lemma/School/Store.lean": "d8434717861dd318199faed508c10cd333092e2f9420efe14bc7bc974f832856",
+      "Lemma/User/ABI.lean": "43f315ac5caf22ac47f0e6fb7f9dda5a1899a1e3436de695cee0f41653ed9259",
+      "Lemma/User/Memory.lean": "c04236eb3b42ff74a30a12dd04d18fb6dcbeb2bc74aaf000ad58fe4958265024",
+      "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+      "Lemma/User/Syscall.lean": "d405577a4fd2cf4a67bfa67a71ae26ade5be16ba377c7884a8f578589899ea66",
+      "fixtures/school/Distributivity.txt": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+      "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+      "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+      "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+      "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+      "scripts/build_school.py": "5967730a148e25a37af712e13f0d692889ac512d9afb2633aef650793346664c",
+      "tooling/toolchain-lock.json": "9615c3d43319431b04bce1807f711ddb0e822294904e3e21287863be6c4cd08a",
+      "tests/school/StoreValidationMain.lean": "fa57a9577514e6ac00351898e78cd0f2f238246cf5eaa2ea4197f5b257cf73e2",
+      "tests/school/ObservationMain.lean": "f841938ea9c67876ebb3d80980bd2be2d850f001bcd72eb4d763a1a9c75a8c3c",
+      "tests/school/DefinitionMain.lean": "131bf79afb642a4748ada8726cee4d26295943d8887e78c205ab671a9e3f7a17",
+      "tests/school/Client.lean": "f714613bea66486d43005d934557aac8b3166bb2998d98768e49cd332b9ac9fd",
+      "Lemma/Multimodal/SchoolPacket.lean": "1c996d0eb4980cd3648a36fc7db72759d7e47129f124d2762e7c8a3eac7e3790",
+      "Lemma/Multimodal/TutorPackage.lean": "2c8f192041668432e8aac9612ab0369d71385bc6e837ec3197807ac03dfaf590",
+      "Lemma/Courses/PackageTarget.lean": "b2f17c554e9c8379d656bde733d6c767a6b2d506f192a9cbd49c71d81846689b",
+      "Lemma/Multimodal/TutorAction.lean": "ed6e180bfaecdd0ca94dbacb3625bc7461e6a3240e8b677789cc88291d5655c9",
+      "tests/school/test_authority.py": "24cb38fae1b19c44179b5b24c527b5af77c11026bfabb2005c08ef516516c833",
+      "tests/school/test_curriculum.py": "9c73ad18def27cbb7973d17f82542d6715dc197c71bdc6971735ea66f520c02b",
+      "tests/school/test_definition.py": "0505a678fabbd73b2908724951488d4558bf19379e859b3a9a25493d7c55a54b",
+      "tests/school/test_observation.py": "8911cd69672c7ec08edd92c6d079acd75e230b2cc676d85bc5f8e256c11db30c",
+      "tests/school/test_privacy_scopes.py": "cb5c308ee728aca30e80a952763098a73c01f71f0fec416fc2e2551ffad7af6f",
+      "tests/school/test_source_unit.py": "aabb9cbded4842f0e1af2ccc4901639dde1219ca7ca181e56b755bf68cf09729",
+      "tests/school/test_store_validation.py": "3f04ff2211e47d61078a039f93096aa7e93a92ec256d1480c80bb86922092949",
+      "fixtures/school/catalogue.json": "e6c69aef4fd709873898f52ffd49fd3e4c2605eb0043ca1b726d682eb4153fe4",
+      "fixtures/school/numerics/evaluation.jsonl": "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+      "fixtures/school/numerics/manifest.json": "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+      "fixtures/school/numerics/parameters-step160.json": "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+      "fixtures/school/numerics/train.jsonl": "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+      "examples/school/QuickReview.lean": "8292b137359f14b473edc67da9d48d79355fbadda5a8d61ce5496b1fa365eb0b",
+      "examples/school/Train.lean": "d74f443d8243b43f91ac5818b7b1728b8edf076ee2e2e00ee2bb8d8fc431a3c8",
+      "examples/school/WorkerBuild.lean": "83fe3a6534348513e5f0b0b8d44f918646a04894aa0658c725ca0c4e727f70be",
+      "examples/school/sample-unit.json": "f14a9a328839f5146d3b9819867ea43db9eca18e209751d8992310f5e9ea1f81",
+      "examples/school/source-derived-client-unit.json": "1c9ee1a5ed481c9070ee68b11093ab86fedd2f14192fa6ab1f61f7e7f2e1270e",
+      "examples/school/source-derived-mappings.json": "3119d8544ce801e40920a872701b69a265c6a24cf2f1778c4cbe8ff6787b11fe",
+      "examples/school/source-derived-unit.json": "7620270a98a13e594658a7375851ec9970b5ea2855266df7d50f22bd6a58e7f2",
+      "scripts/check_school.py": "2f0691c374e30cdcb333468c2ae59d0ea626617124db95ae7497a4fd35b3b4c4",
+      "scripts/school_transport.py": "9082e0ae5df08d21844ede3f540b70574fbc0ceaf3aff19a3abfc0a63a38364f",
+      "scripts/lemmasim_school.py": "7c18022594ecd717c3a10d2ee72c2e432bee386b91cd8dc22e24a80761dc53ea"
+    }
+  },
+  "routingReview": {
+    "path": "build/school/dev-status-final-a5.json",
+    "sha256": "1614655564a96633ce25ee39ce7fc81d02588d15b544680efa298e309b639f1b",
+    "scope": "read-only prepublication observation; not a qualification receipt",
+    "currentTaskUnmatchedPaths": [],
+    "aggregate": {
+      "failed": 0,
+      "fresh-pass": 0,
+      "pending": 30,
+      "reused": 0,
+      "unavailable": 0
+    },
+    "explanation": "Thirty inherited/scoped claims remain pending in the generic dev-evidence registry; Task008 custom producer/execution receipts are assessed separately here. All current Task008 changed code paths have explicit routing; unmatched paths belong to inherited changes since preserved comparison base."
+  },
+  "targetProductionReviewHistoricalChooserDelta": {
+    "path": "build/school/client-production-a8/authority-review.json",
+    "sha256": "2d3750dc233c4358014c027b8beae2d4fa43cad330aae03ef587b0d5091bc90d",
+    "result": "REVIEWED_EXACT_CHOOSER_LOAD_NOTEBOOK_DELTA",
+    "scope": "all four genuine chooser-repaired role producers; twenty non-Notebook role corpora unchanged; exact two-function Notebook delta reviewed and consequential LLVM mutation rejected; all four final a10 full audits PASS"
+  },
+  "localProvider": {
+    "status": "implemented-and-exercised",
+    "path": "docs/evidence/008-school-local-provider.json",
+    "sha256": "83adc7cc3a7e4035afd193fcb3a0bcc1bc253b2fb0e28fa729c6a18fb97ebd50",
+    "scope": "five focused native tests, ten pure synthetic component checks and actual current A8 RV64 job/load registry+drain/offline/reconcile/restore admission; declared resources/controller reports, actual READY independently observed"
+  },
+  "envelopeReaderReset": {
+    "path": "build/school/notebook-envelope-ui-a3/result.json",
+    "sha256": "f535534348728e029d39607e50b4cae56df8f1ad7ec14a43947452e08d94eb85",
+    "scope": "nine actual Lean Action cases including both LOAD/JOIN seeded stale readerCRC/node and consequential retainedCRC mutant; final A14 genuine exports/A15 full audits and native-a12 actual valid help plus changed-document reason3 retain integrity and school/action admission"
+  },
+  "retainedProductionBeforeLocalProvider": {
+    "path": "build/school/host-native-v3-a7/production.json",
+    "sha256": "2db8f2d312883dab85eff0b53bd12b93d195dbef74a9173b87aece5558da4dcd"
+  },
+  "retainedHostValidationBeforeLocalProvider": {
+    "path": "build/school/host-validation-v3-a5/validation.json",
+    "sha256": "810ca22dc12b8bffa24d5c71a0aa83edaeaa1b52263773c3ea28099bc087eecc",
+    "result": "PASS",
+    "hostTests": 35,
+    "elapsedSeconds": 122.26232168194838,
+    "commands": [
+      {
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests/school",
+          "-v"
+        ],
+        "exitCode": 0,
+        "log": "host.log",
+        "logSha256": "c1251f1c41fc1d409c07101da1399c9b0913049fdaf67b8eaed5048306101a5f",
+        "elapsedSeconds": 120.09725523099769
+      },
+      {
+        "command": [
+          "lake",
+          "env",
+          "lean",
+          "--run",
+          "tests/school/Client.lean"
+        ],
+        "exitCode": 0,
+        "log": "client-validation.log",
+        "logSha256": "62ddc92096dca4993eebe1841545aaed421398510a40c84e331f237613123c48",
+        "elapsedSeconds": 1.9196684850612655
+      }
+    ],
+    "sourceInputs": {
+      "Lemma/Core0/Execution.lean": "1eb46d0bba6ad1c13e9a2285a9cca70aef322c42a3ea35fbb53c30caa14642ae",
+      "Lemma/Core0/IR.lean": "125fca545e8107939ac9a9c08ec674ab7287d20a2cb00fa99d86a9f7e670c441",
+      "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+      "Lemma/Core0/Timer.lean": "d6a0d0dbc7ed2939a5825683abc21374ee4bcfd60bc010ee5575ed0296bd68f2",
+      "Lemma/Core0/Trap.lean": "bc40c4ac403d995bf026737af7b8b2ca25390399473cfe1389a0bd700fe078af",
+      "Lemma/Courses/Package.lean": "d2fa235ddebbe0a50160290b9b3e6d8b0f110269fac623a79674bdd2b8253e21",
+      "Lemma/Courses/PackageFormat.lean": "ee2e3a88c9016e8817d87c08559babedf99d3707ef7f1c928dbf04e7ac500e88",
+      "Lemma/Documents/Mathematics.lean": "cdc7a38753985251e526b3813df719a2b27b1783350ece5a49800d4d6cbbf4fa",
+      "Lemma/Mathematics/Exact.lean": "3cbeefed82f41a2b6692f96ecfd06a793d272fd8480bfb6ae662e08a0211c828",
+      "Lemma/Mathematics/ExecutionIdentity.lean": "611495044f1f620d23b8439c7147683b16654aa8a06c922636dabb111cd0a7b7",
+      "Lemma/Mathematics/ExecutionIdentityV2.lean": "bd19191c002bfcb1fd2d0e7bc14d6b9cf28fd16938000dcc0e036f3c716b683a",
+      "Lemma/Mathematics/ExecutionIdentityV3.lean": "ee7b35cc6829727bc016662fb7cec208d5a8dfdf65a77433db615246f78a97f1",
+      "Lemma/Mathematics/ExecutionIdentityV4.lean": "34126784408980975caf49097dc0ffdcdf6e76929b272377616e046879c34389",
+      "Lemma/Mathematics/OwnedSubmission.lean": "a6f76a484d21834365244c6c775fa288073b5e4a345329f205c18d2b046fd6eb",
+      "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903",
+      "Lemma/School/Authoring.lean": "abfc31f812c5a48c3443cad6b9c78469324cf6dbc990012774e511e02c0de30a",
+      "Lemma/School/Authority.lean": "61deb42c4e080e7b1af5b711d756adfc1d302c9f24b6f9a5df0cfea743b95022",
+      "Lemma/School/Catalogue.lean": "ca2a22cb389d0713e24eb1202b356e6f6ce85182f7d224b5c4573c84b6dbd38b",
+      "Lemma/School/Client.lean": "eaf88fe83df1c0e58af4ed0385e23a860e28d2ce476d78867fad909795d0e303",
+      "Lemma/School/CurriculumMain.lean": "e74fea97a5f4994240aab47ba85b7583f87d4bd77040749f6afb81939fd76ee0",
+      "Lemma/School/Definition.lean": "566329be192ebb8439e274f6b266ced369f2ebf5faaf104c4a3f3ccd2972c434",
+      "Lemma/School/Digest.lean": "e776deed7d2437dc6b27648d6bfc662c56d48e11e92b35384bc1fc1439aabaa2",
+      "Lemma/School/FixtureUnit.lean": "d6f916fdfb74ff5dde941c99c4d35487d1a93e440b5295fbca893e56780ecc56",
+      "Lemma/School/LearnerChoice.lean": "882bada0b07ba0d8430513cb221fa8f82cfae91f240cc96f4e6dcef49d4f60b1",
+      "Lemma/School/Main.lean": "d4af4a2d0772fcb7202d3afa122b8ec70e1f143790bbd8c86a70eb9c894bfcb9",
+      "Lemma/School/Model.lean": "32deff8d404d0a0f0340e0aa875c8c36492ce80551c948e4419f9ca89525e962",
+      "Lemma/School/Observation.lean": "43c74dbbe4035d0c4af401160c2ff5fd731057022f9b8a295b6cb088e5d8919f",
+      "Lemma/School/SourceRegistry.lean": "420cacb5257c771a88f44b7bee4751b875023819e43ad4dc4d066a082ce45292",
+      "Lemma/School/Store.lean": "d8434717861dd318199faed508c10cd333092e2f9420efe14bc7bc974f832856",
+      "Lemma/User/ABI.lean": "43f315ac5caf22ac47f0e6fb7f9dda5a1899a1e3436de695cee0f41653ed9259",
+      "Lemma/User/Memory.lean": "c04236eb3b42ff74a30a12dd04d18fb6dcbeb2bc74aaf000ad58fe4958265024",
+      "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+      "Lemma/User/Syscall.lean": "d405577a4fd2cf4a67bfa67a71ae26ade5be16ba377c7884a8f578589899ea66",
+      "fixtures/school/Distributivity.txt": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+      "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+      "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+      "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+      "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+      "scripts/build_school.py": "5967730a148e25a37af712e13f0d692889ac512d9afb2633aef650793346664c",
+      "tooling/toolchain-lock.json": "9615c3d43319431b04bce1807f711ddb0e822294904e3e21287863be6c4cd08a",
+      "tests/school/StoreValidationMain.lean": "fa57a9577514e6ac00351898e78cd0f2f238246cf5eaa2ea4197f5b257cf73e2",
+      "tests/school/ObservationMain.lean": "f841938ea9c67876ebb3d80980bd2be2d850f001bcd72eb4d763a1a9c75a8c3c",
+      "tests/school/LearnerChoiceMain.lean": "635c7a57123c438431efb5792be7ba4ed14e356eb451c490f45817c850af73b7",
+      "tests/school/DefinitionMain.lean": "131bf79afb642a4748ada8726cee4d26295943d8887e78c205ab671a9e3f7a17",
+      "tests/school/Client.lean": "f714613bea66486d43005d934557aac8b3166bb2998d98768e49cd332b9ac9fd",
+      "Lemma/Multimodal/SchoolPacket.lean": "1c996d0eb4980cd3648a36fc7db72759d7e47129f124d2762e7c8a3eac7e3790",
+      "Lemma/Multimodal/TutorPackage.lean": "2c8f192041668432e8aac9612ab0369d71385bc6e837ec3197807ac03dfaf590",
+      "Lemma/Courses/PackageTarget.lean": "b2f17c554e9c8379d656bde733d6c767a6b2d506f192a9cbd49c71d81846689b",
+      "Lemma/Multimodal/TutorAction.lean": "ed6e180bfaecdd0ca94dbacb3625bc7461e6a3240e8b677789cc88291d5655c9",
+      "tests/school/test_authority.py": "24cb38fae1b19c44179b5b24c527b5af77c11026bfabb2005c08ef516516c833",
+      "tests/school/test_curriculum.py": "9c73ad18def27cbb7973d17f82542d6715dc197c71bdc6971735ea66f520c02b",
+      "tests/school/test_definition.py": "0505a678fabbd73b2908724951488d4558bf19379e859b3a9a25493d7c55a54b",
+      "tests/school/test_learner_choice.py": "95f6f25a1ae97f3756c614a3b369a337250b1ad88c2e992d53eb848a6bf298c4",
+      "tests/school/test_observation.py": "8911cd69672c7ec08edd92c6d079acd75e230b2cc676d85bc5f8e256c11db30c",
+      "tests/school/test_privacy_scopes.py": "cb5c308ee728aca30e80a952763098a73c01f71f0fec416fc2e2551ffad7af6f",
+      "tests/school/test_source_unit.py": "aabb9cbded4842f0e1af2ccc4901639dde1219ca7ca181e56b755bf68cf09729",
+      "tests/school/test_store_validation.py": "3f04ff2211e47d61078a039f93096aa7e93a92ec256d1480c80bb86922092949",
+      "fixtures/school/catalogue.json": "e6c69aef4fd709873898f52ffd49fd3e4c2605eb0043ca1b726d682eb4153fe4",
+      "fixtures/school/numerics/evaluation.jsonl": "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+      "fixtures/school/numerics/manifest.json": "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+      "fixtures/school/numerics/parameters-step160.json": "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+      "fixtures/school/numerics/train.jsonl": "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+      "examples/school/QuickReview.lean": "8292b137359f14b473edc67da9d48d79355fbadda5a8d61ce5496b1fa365eb0b",
+      "examples/school/Train.lean": "d74f443d8243b43f91ac5818b7b1728b8edf076ee2e2e00ee2bb8d8fc431a3c8",
+      "examples/school/WorkerBuild.lean": "83fe3a6534348513e5f0b0b8d44f918646a04894aa0658c725ca0c4e727f70be",
+      "examples/school/sample-unit.json": "f14a9a328839f5146d3b9819867ea43db9eca18e209751d8992310f5e9ea1f81",
+      "examples/school/source-derived-client-unit.json": "1c9ee1a5ed481c9070ee68b11093ab86fedd2f14192fa6ab1f61f7e7f2e1270e",
+      "examples/school/source-derived-mappings.json": "3119d8544ce801e40920a872701b69a265c6a24cf2f1778c4cbe8ff6787b11fe",
+      "examples/school/source-derived-unit.json": "7620270a98a13e594658a7375851ec9970b5ea2855266df7d50f22bd6a58e7f2",
+      "scripts/check_school.py": "2f0691c374e30cdcb333468c2ae59d0ea626617124db95ae7497a4fd35b3b4c4",
+      "scripts/school_transport.py": "9082e0ae5df08d21844ede3f540b70574fbc0ceaf3aff19a3abfc0a63a38364f",
+      "scripts/lemmasim_school.py": "7c18022594ecd717c3a10d2ee72c2e432bee386b91cd8dc22e24a80761dc53ea"
+    }
+  },
+  "currentWorkerJob": {
+    "path": "build/school/job-worker-008-a9/job-worker-evidence.json",
+    "sha256": "6e424653ab2b4e0862b5d0c0d207225ecff1efef91cdd41de6a1362922bb75a3"
+  },
+  "currentWorkerLoad": {
+    "path": "build/school/load-worker-008-a9/load-evidence.json",
+    "sha256": "91b8f55f6cf1f3d5aa797e09da941991c15828793e7fd4b0c4192747232108fd"
+  },
+  "targetProductionReviewHistoricalRejectionDelta": {
+    "path": "build/school/client-production-a12/authority-review.json",
+    "sha256": "e00fb0e213a249b486745d9eeb2d6e052d6ae7f8a92fa8e1753267676399fbc0",
+    "result": "REVIEWED_EXACT_REJECTION_CLEANUP_NOTEBOOK_DELTA",
+    "scope": "All four genuine producer exports; twenty non-Notebook full catalogs/pre/post corpora unchanged; four Notebook corpora add terminal rejected-view cleanup; full coverage and directed edges retained; all four current a13 full audits PASS; pins preserve exact complete coverage"
+  },
+  "currentClientExecution": {
+    "path": "build/school/client-native-a12/result.json",
+    "sha256": "d15e86903e2cabf04c4d7418b16ef94f79fad601216ede2ede2e9f228ae2b6c5",
+    "result": "PASS_SCOPED_SCHOOL_REAL_CLIENT",
+    "elapsedSeconds": 371.8307338820305,
+    "executionUnits": 3305100388,
+    "aggregateExecutionCap": 4000000000,
+    "aggregateHostSeconds": 1800,
+    "consumedHostCurrentEqual": true,
+    "observerSha256": "02485e7596b3a5e90b4d1f1646fb7eaedf7eb0957e7f1b329ae1c5fe0baaf6f1"
+  },
+  "failureResolution": "All original FAIL receipts and diagnostic-only continuations remain unchanged. The fresh complete native-a12 execution passes C/J; diagnostic suffixes are not used as full acceptance. The client index binds original failures, exact observer corrections, final source census and current guest/audit provenance."
+}

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+if [[ ${1:-} == curriculum ]]; then
+  shift
+  exec nix develop --no-write-lock-file --command lake exe school-curriculum "$@"
+fi
+if [[ ${1:-} == catalogue ]]; then
+  exec nix develop --no-write-lock-file --command lake exe school "$@"
+fi
+if [[ $# -lt 2 ]]; then
+  echo 'usage: lemma-school ROOT REQUEST_JSON | lemma-school ROOT serve | lemma-school ROOT run [--port PORT]' >&2
+  exit 2
+fi
+nix develop --no-write-lock-file --command lake build school >&2
+exec python3 "$repo_root/scripts/school_transport.py" --binary "$repo_root/.lake/build/bin/school" "$@"

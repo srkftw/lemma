@@ -144,6 +144,11 @@ MONITOR_IMAGE_GENERATED_BY_LEAN = (
     "symbols.txt",
 )
 
+SCHOOL_WORKER_GENERATED_BY_LEAN = (
+    "program.ll", "startup.S", "link.ld", "layout.json", "device-contract.json",
+    "worker-manifest.json", "worker-normalized.txt", "worker-abi.json", "symbols.txt",
+)
+
 ARTIFACT_CATEGORIES = (
     "release",
     "test-compiler-control",
@@ -156,6 +161,7 @@ ARTIFACT_CATEGORIES = (
     "test-trap-suite",
     "test-timer-suite",
     "test-monitor-image",
+    "school-worker",
 )
 
 COMPILER_FAULT_MANIFEST = "compiler-mutation.json"
@@ -465,6 +471,10 @@ def _program_object_provenance(
             "test-only machine-timer policy, asynchronous M-mode interrupt dispatch, "
             "bounded event-ring behavior, and freestanding QEMU interaction"
         )
+    elif artifact_category == "school-worker":
+        kind = "school-worker-llvm"
+        source = "program.ll generated from the genuinely elaborated school worker through preserved Core0 v0.5"
+        purpose = "bounded runtime parameter/feature admission, fixed-point inference and UART school-job responses"
     else:
         assert artifact_category == "test-monitor-image"
         kind = "test-monitor-image-llvm"
@@ -774,7 +784,9 @@ def build(
         timeout_seconds=timeout_seconds,
         env=export_env,
     )
-    if artifact_category == "test-monitor-image":
+    if artifact_category == "school-worker":
+        generated_by_lean = list(SCHOOL_WORKER_GENERATED_BY_LEAN)
+    elif artifact_category == "test-monitor-image":
         generated_by_lean = list(MONITOR_IMAGE_GENERATED_BY_LEAN)
     elif artifact_category == "test-timer-suite":
         generated_by_lean = list(TIMER_SUITE_GENERATED_BY_LEAN)
@@ -834,6 +846,7 @@ def build(
                 "test-trap-suite",
                 "test-timer-suite",
                 "test-monitor-image",
+                "school-worker",
             }
             else []
         ),

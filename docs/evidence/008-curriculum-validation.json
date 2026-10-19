@@ -1,0 +1,208 @@
+{
+  "schema": "lemma-school-curriculum-validation/1",
+  "executionEnvironment": "pinned hosted Lean 4.34.1; upstream host runtime; no target claims",
+  "corpus": {
+    "status": "blocked",
+    "reason": "No MyMathTextbooks-compressed.tar.zst or Curriculum.json found in documented attachments or explicit matching Downloads locations",
+    "realSourceVerified": false,
+    "realCatalogueCountVerified": false,
+    "realCollectionUnitAuthored": false
+  },
+  "fixtures": {
+    "source": "fixtures/school/Distributivity.txt",
+    "sourceSha256": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+    "rights": "Explicit copy/modify/redistribute permission is limited to this fixture",
+    "catalogue": "fixtures/school/catalogue.json",
+    "catalogueSha256": "e6c69aef4fd709873898f52ffd49fd3e4c2605eb0043ca1b726d682eb4153fe4"
+  },
+  "results": {
+    "curriculum_a4": {
+      "receipt": "build/school/curriculum-a4/run.json",
+      "sha256": "a045c22f444eab1c9c7f31e84c7370bea491ff0908ebd9bb302dcb96e8d50009",
+      "exitCode": 0,
+      "elapsedSeconds": 78.7920088430401,
+      "unchangedDuringExecution": true,
+      "currentInputsMatch": false,
+      "scope": "hosted Lean curriculum importer, authoring, SHA256 and checker tests; no real corpus or guest execution",
+      "command": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/school",
+        "-p",
+        "test_curriculum.py",
+        "-v"
+      ]
+    },
+    "curriculum_a5": {
+      "receipt": "build/school/curriculum-authoring-a5/run.json",
+      "sha256": "433b23bf6a64eddbd145776faef1c32b8abe004c79a17705e36d833e256fa6b0",
+      "exitCode": 1,
+      "elapsedSeconds": 71.13280043494888,
+      "unchangedDuringExecution": true,
+      "currentInputsMatch": false,
+      "scope": "hosted Lean curriculum importer, authoring with guest prerequisite consistency, SHA256 and checker tests; no real corpus or guest execution",
+      "command": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/school",
+        "-p",
+        "test_curriculum.py",
+        "-v"
+      ]
+    },
+    "authoring_a6": {
+      "receipt": "build/school/curriculum-authoring-a6/run.json",
+      "sha256": "8920d10776bf4f9879a7f7b0fd55cd780255365f19ff126b79ae0426c30111f5",
+      "exitCode": 0,
+      "elapsedSeconds": 19.29459040297661,
+      "unchangedDuringExecution": true,
+      "currentInputsMatch": true,
+      "scope": "focused re-execution of authoring negatives after correcting missing-policy fixture isolation; six independent a5 tests passed unchanged implementation",
+      "command": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/school",
+        "-p",
+        "test_curriculum.py",
+        "-k",
+        "authoring",
+        "-v"
+      ]
+    },
+    "observation_a2": {
+      "receipt": "build/school/observation-a2/run.json",
+      "sha256": "e03391d3c4ce99c049b50601d004c88e02a6a155cc056db629b3a43f0c45c4f1",
+      "exitCode": 0,
+      "elapsedSeconds": 17.372573422966525,
+      "unchangedDuringExecution": true,
+      "currentInputsMatch": true,
+      "scope": "hosted Lean observation acquisition/replay metadata, missingness and current granular consent admission; no sensor, upload, deletion or private training execution",
+      "command": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/school",
+        "-p",
+        "test_observation.py",
+        "-v"
+      ]
+    },
+    "store_validation_a1": {
+      "receipt": "build/school/store-validation-a1/run.json",
+      "sha256": "3b15f9d445ad86e7952d859e263f3333122a80b8fd84d212776dea16eef349c8",
+      "exitCode": 0,
+      "elapsedSeconds": 10.081268875976093,
+      "unchangedDuringExecution": true,
+      "currentInputsMatch": false,
+      "scope": "hosted Lean semantic commit/load validator and artifact pre-hash admission; no process-kill durability claim",
+      "command": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/school",
+        "-p",
+        "test_store_validation.py",
+        "-v"
+      ]
+    }
+  },
+  "assessment": {
+    "curriculum_a5": "FAIL overall retained: six independent tests PASS, authoring missing-policy fixture expected later diagnostic but retained dangling relation was rejected first",
+    "authoring_a6": "PASS focused correction of missing-policy negative fixture; implementation unchanged from a5",
+    "observation_a2": "PASS one test with22 live/replay/missingness/lineage/granular-consent cases",
+    "store_validation_a1": "PASS historical focused tests; root subsequently extended clock-model semantics, requiring its current-source suite"
+  },
+  "referenceTheorem": {
+    "declaration": "Lemma.School.FixtureUnit.square_successor",
+    "statement": "forall x : Nat, (x+1)*(x+1)=x*x+2*x+1",
+    "checked": true,
+    "axioms": [
+      "propext"
+    ],
+    "command": [
+      "nix",
+      "develop",
+      "--no-write-lock-file",
+      "--command",
+      "lake",
+      "env",
+      "lean",
+      "build/school/curriculum-a3/reference-theorem.lean"
+    ],
+    "scope": "reference theorem only; arbitrary learner proof is unsupported and needs teacher review"
+  },
+  "package": {
+    "definition": "build/school/curriculum-package-a7/fixture-unit.json",
+    "definitionSha256": "2811066fca2c9de1968f51a7f1e3475ddb72622f993d6464237106a99eaae563",
+    "path": "build/school/curriculum-package-a7/unit.lcp",
+    "sha256": "a5437fb580e53ad9aae2da153f4eb15bfc7be56aaf3704fbb33f52c50adc4581",
+    "bytes": 4199,
+    "identity": 801,
+    "edition": 1,
+    "format": "lemma-course-package/1",
+    "guestInstallation": "not asserted by this receipt"
+  },
+  "retainedFailures": [
+    {
+      "path": "build/school/curriculum-a2/host-tests.log",
+      "reason": "observer expected JSON numeric UInt64 results but maintained Lean emits decimal strings; observer now parses numeric strings"
+    },
+    {
+      "path": "build/school/curriculum-authoring-a5/host-tests.log",
+      "reason": "dangling relation in missing-policy negative fixture triggered earlier correct diagnostic; fixture isolated before a6 PASS"
+    },
+    {
+      "path": "build/school/curriculum-authoring-a6/fixture-unit.json",
+      "reason": "nix environment admission log was redirected into artifact before JSON; clean child process generation and compilation succeeded in curriculum-package-a7"
+    }
+  ],
+  "claimsExcluded": [
+    "real-corpus ingestion",
+    "real-corpus-derived unit",
+    "actual guest installation/presentation",
+    "physical conformance",
+    "educational effectiveness",
+    "authenticated metadata",
+    "power-loss durability",
+    "private-data training",
+    "deletion or unlearning"
+  ],
+  "corpusObservationStage": "Historical initial stage before owner supplied explicit archive path",
+  "latestCorpusEvidence": {
+    "path": "docs/evidence/008-corpus-ingestion.json",
+    "result": "PASS; real import/source-derived authoring now exercised"
+  }
+}

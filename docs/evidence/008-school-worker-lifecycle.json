@@ -1,0 +1,192 @@
+{
+  "boundaryDefinitions": {
+    "firstReplyRead": "Host read start through all 48 actual response bytes. Guest inference can overlap the write/flush interval and response bytes may already be buffered.",
+    "firstResult": "First successful exact integer inference response, not first generated token; oracle validation occurs after this clock endpoint.",
+    "packagePreparation": "Read/hash existing image and parameter bytes, validate parameter schema, prepare exact runtime request; no compile or school-network download.",
+    "processCreationPopen": "Host monotonic_ns immediately before subprocess.Popen and immediately after it returns; includes Python/OS child creation, not exec-to-main CPU cycles.",
+    "readinessObservedAfterPopen": "Host read start after Popen return through receiving the exact real UART READY bytes; child execution can already overlap Popen.",
+    "requestAttachmentWriteFlush": "Host write of actual 88-byte frame and pipe flush return. Parameters are in this runtime frame; flush is not a guest attachment acknowledgement."
+  },
+  "cacheScope": "5 sequential fresh QEMU processes and fresh 128MiB guest RAM allocations; image/parameter bytes pre-read and audit completed before trials. Host filesystem/page caches and QEMU executable cache are warm or uncontrolled; no cache drop or physical cold boot.",
+  "freshProcesses": 5,
+  "guide": {
+    "path": "docs/contracts/008-school-worker-numerics-v1.html",
+    "sha256": "d8b1285ca1769b0594a74c34ed4232d0cb6ec0c0125e8dbcd165fa2e2c858a02"
+  },
+  "image": {
+    "bytes": 13880,
+    "path": "/home/sreekumaar/Downloads/lemma/build/school/worker-008-O2-release/image.elf",
+    "sha256": "875377980f76559ce8338c506adae1c45f0c5f94519a66400034d284b23c8e52"
+  },
+  "originalProduction": {
+    "actions": {
+      "bytes": 1029,
+      "path": "/home/sreekumaar/Downloads/lemma/build/school/worker-008-O2-release/actions.json",
+      "sha256": "a6e20e0e8ecb04c5a1c385fdde873a837b74825ef6b56de11535cd54ced38886"
+    },
+    "admissionStatuses": [
+      "reused",
+      "reused",
+      "reused",
+      "reused"
+    ],
+    "build": {
+      "bytes": 3155,
+      "path": "/home/sreekumaar/Downloads/lemma/build/school/worker-008-O2-release/build.json",
+      "sha256": "26a8cb0ce9c4c585e6d572ee6447ca10e7672e64a76754145e13263a01628eab"
+    },
+    "commands": {
+      "bytes": 9372,
+      "path": "/home/sreekumaar/Downloads/lemma/build/school/worker-008-O2-release/commands.json",
+      "sha256": "ce51629ae5c8029d0f670700b13217e6d5598b20ee7d7b38837c5df3c362eb24"
+    },
+    "originalActionCommandSecondsSum": 0.8678066319553182,
+    "recordedInvocationCommandSecondsSum": 9.478946,
+    "scope": "Valid reused production: original command intervals and original action-producer clocks; not a fresh build, cold-cache compile measurement, or an end-to-end build wall duration."
+  },
+  "parameters": {
+    "bytes": 447,
+    "path": "/home/sreekumaar/Downloads/lemma/fixtures/school/numerics/parameters-step160.json",
+    "sha256": "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d"
+  },
+  "receipt": {
+    "path": "build/school/lifecycle-008-a1/lifecycle-evidence.json",
+    "sha256": "d137f9dbec40e3146892091cea4c2223a3ebf57bf88eb56ec704d9c1d7cc5382"
+  },
+  "result": "PASS",
+  "schema": "lemma-school-worker-lifecycle-summary/v1",
+  "scope": "Finite two-feature synthetic worker on shared host TCG. Host observation boundaries are not exclusive guest stages, CPU-cycle measurements, native RV64 performance, large-model loading or a first-token benchmark.",
+  "sourceInputs": {
+    "scripts/audit_core0.py": "fee1efdf9a91d9f1a9ed752223548db9d449f9369844a9ebe27c500a75d88a9f",
+    "scripts/audit_device.py": "31a654e8fae54c4bf9f267d28dec53ef9507360f4416a4a101c4ed9704893e1c",
+    "scripts/build_actions.py": "cd45c4d176d6ab76595d9464a94fb053cb9f9ebed308b46140cf9d5251b16b8e",
+    "scripts/check_school_worker.py": "73384628c3012ffc90132dc3d159bc970b584cc2820d9745bcb5d140dfcba2f4",
+    "scripts/check_school_worker_lifecycle.py": "44769f88f8d4de8f7ca9212962ab3184d5eaa7c6688c35e6027aa0722229bffc",
+    "scripts/core0_common.py": "3811a7436914b85663bcb05aec0c5ccb2dcd642bd44f3344e179d619d1f55336"
+  },
+  "summarySeconds": {
+    "creationToFirstResult": {
+      "maximum": 0.087145141,
+      "median": 0.07174888,
+      "minimum": 0.05949462
+    },
+    "creationToReady": {
+      "maximum": 0.084290059,
+      "median": 0.066935477,
+      "minimum": 0.055936334
+    },
+    "firstReplyRead": {
+      "maximum": 0.004772489,
+      "median": 0.003400139,
+      "minimum": 0.002574522
+    },
+    "packagePreparation": {
+      "maximum": 0.000205444,
+      "median": 0.000138197,
+      "minimum": 0.0001294
+    },
+    "preparationToFirstResult": {
+      "maximum": 0.087343345,
+      "median": 0.072070903,
+      "minimum": 0.059705556
+    },
+    "processCreationPopen": {
+      "maximum": 0.000544185,
+      "median": 0.000524537,
+      "minimum": 0.000489426
+    },
+    "readinessObservedAfterPopen": {
+      "maximum": 0.083797974,
+      "median": 0.066386832,
+      "minimum": 0.055410314
+    },
+    "requestAttachmentWriteFlush": {
+      "maximum": 0.000151089,
+      "median": 2.3518e-05,
+      "minimum": 1.5767e-05
+    },
+    "requestStartToFirstResult": {
+      "maximum": 0.00480534,
+      "median": 0.003551466,
+      "minimum": 0.002590645
+    }
+  },
+  "validation": {
+    "actualRawFramedRequestsResponsesAndStreamHashesChecked": true,
+    "allFiveActualFirstScoresQ20": [
+      711424,
+      711424,
+      711424,
+      711424,
+      711424
+    ],
+    "independentIntegerOracleExact": true,
+    "namedClockEndpointsMonotonic": true
+  },
+  "workerAudit": {
+    "bytes": 9222,
+    "path": "/home/sreekumaar/Downloads/lemma/build/school/worker-008-O2-release/worker-audit.json",
+    "sha256": "bc2f22df02c2c79dcfd9c322788654dae14ebdb541600bf2071d45dfae333e82"
+  },
+  "workerSourceInputs": {
+    "Lemma/Compiler/CFGLower.lean": "b8aad344c107c1a881f9acba200a199f124a1d6e20fcc82954e9388ec9d2fcae",
+    "Lemma/Compiler/Format.lean": "056ef322f301f63713b1f2ec02cd9cf91832d78fbc98e7019cf45060d3c90a2c",
+    "Lemma/Compiler/LLVMIR.lean": "7983e138d5b52d3581ec0425612d6978e9beb2be22971ebe12fbb2896166db65",
+    "Lemma/Compiler/LLVMNameSets.lean": "4f07465a35a35d88d1168e965f71c828134ab5a14cb2b06a9be9e46f873ae728",
+    "Lemma/Compiler/LLVMValidate.lean": "b9495ab1a4e931ecf0bd6e78f3afc89718806a3e3456d254dd0e06c665aa9cc2",
+    "Lemma/Compiler/Lower.lean": "f27b07c3a4972d1807990f5c4d232a27952a5a94ea17a80459462542b3b1cff5",
+    "Lemma/Compiler/SchoolWorkerExport.lean": "9e54ab425d8774903844d701656782baaf3eaee54496e7837e90ad2ffaeb4dab",
+    "Lemma/Compiler/Test/DeviceABI.lean": "6da376fb2b0ef3aee08a1fe6a764abcb17d656236d53ccc64e7ad0f121a77ab4",
+    "Lemma/Compiler/Test/DeviceExport.lean": "69c0d42a4af310662a6b1506928db7275287b71cefec49417005313f517aa8d2",
+    "Lemma/Core0.lean": "938faee4a200708e2e061c571b703d2d4b3ac8ef4147d651a1274134991b24c9",
+    "Lemma/Core0/ActionIR.lean": "e49183735572a2fdc93b872d4ce6f68482d82e464b1c426942b9af4fa2b2f244",
+    "Lemma/Core0/Bounded.lean": "19600082ec9b26ee297e001deca524cebe896e96b03c29f607df5f693b344305",
+    "Lemma/Core0/Command.lean": "7f1f24dbb817952c758463b02ea37b5c221f8b88ed8892f954d41f41ded59e3b",
+    "Lemma/Core0/Device.lean": "be5bb9acae2c95bb5f9882de0d86483fbee6b58d4144c13e8ad3204d89834c8f",
+    "Lemma/Core0/DeviceLemmas.lean": "b45d31627ffa0f1f4de2380790512543e7a5f6ff78cfdbed87911458485ecf41",
+    "Lemma/Core0/DeviceModel.lean": "f4b98b8c3ebd19bbfbb9283aea2d79b2d290ecb1330cdc687ecde172ed52898e",
+    "Lemma/Core0/Execution.lean": "1eb46d0bba6ad1c13e9a2285a9cca70aef322c42a3ea35fbb53c30caa14642ae",
+    "Lemma/Core0/Frontend.lean": "e5c78d29903735ac669b93ac16337c1480a6956ac243612a7f95499613416e46",
+    "Lemma/Core0/IR.lean": "125fca545e8107939ac9a9c08ec674ab7287d20a2cb00fa99d86a9f7e670c441",
+    "Lemma/Core0/ManagedArrayIR.lean": "f203cda5c3e12a0e87142fc5695093e36bddbe1a09b8a812e572a1ca48bbc934",
+    "Lemma/Core0/ManagedBytesIR.lean": "afad5554ff3a7b6e4d60616966bc22e85b316c985ef0f09ce0abb18641cf5625",
+    "Lemma/Core0/ManagedClosureIR.lean": "c8f1a0e16f3e9bbcd80560d0c64b717ef845736f2975cb2c03cad2a0994d809c",
+    "Lemma/Core0/ManagedIR.lean": "8667413a5b6ff1ede752a28f1e29182eeda91b8329c33532272d8aa1fcf3c34a",
+    "Lemma/Core0/ManagedStringIR.lean": "5f728dcb92d33b526da4d1f43a3c420237152a1e2b4be5f61b5221bbc10cc841",
+    "Lemma/Core0/ManagedSumsIR.lean": "7861321500c03edd068e6408639070c686a22aa991a7841281d6ec128f55e048",
+    "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+    "Lemma/Core0/MemoryLemmas.lean": "5973966eb7c6d00f233a981c5bb6d0d6e532898b5f8e86773ffcdb7f7340cc27",
+    "Lemma/Core0/MemoryModel.lean": "aee209c3bc2c6cab2ea6bfa6326ecd7177d186e83b2d0438a65098e18d56e563",
+    "Lemma/Core0/ScalarLemmas.lean": "6fa63d2d99f94092eb96942c294deaef7b5f0d17e2e0c5ce5989a3847a459497",
+    "Lemma/Core0/Semantics.lean": "953696056efa6dfcab85d14022faac103aaa5df362c77c6fec9ba48cdff89b0d",
+    "Lemma/Core0/Timer.lean": "d6a0d0dbc7ed2939a5825683abc21374ee4bcfd60bc010ee5575ed0296bd68f2",
+    "Lemma/Core0/TimerModel.lean": "3c0866f0b3c12da2aed2d1b3ccef93b5da89212db2f2e15e989e263d04ba58fa",
+    "Lemma/Core0/Trap.lean": "bc40c4ac403d995bf026737af7b8b2ca25390399473cfe1389a0bd700fe078af",
+    "Lemma/Machine/DeviceHarness.lean": "0a947c3b4fff520d809061169350e5bc66edff6ce14bbbc26fb793fccda69d02",
+    "Lemma/Machine/DeviceLayout.lean": "5482053f84d0b4e0f5c2fd6703c4416bf2a6d8c8cd13db27d543aa76f80407e9",
+    "Lemma/Machine/Layout.lean": "b0fe978a2eeb408e683ed71f2b766b5d36fa66a0e3fcf0f0f08815f5f0866165",
+    "Lemma/Machine/MemoryLayout.lean": "9f5d6b1e16a5035b4063208de9e4e880502c25a678ddf4b4d44a3abb363af619",
+    "Lemma/Machine/Primitives.lean": "830f34ad80ce03167d4aa444c6796f619e73bbf6690d8c74a064205b957701f7",
+    "Lemma/Numerics/Quantized.lean": "43f628abd7e1dbeacebea6245895241c9941c8405acae3bce556e8ddd447297b",
+    "Lemma/Platform/LemmaVM/ConsoleDevice.lean": "aa6177af67c075cba333e80fd71b3656047b3544c2174d264e5ccca50f0778a2",
+    "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903",
+    "Lemma/School/Worker.lean": "f60647e22ae99d5109b22b6d770405f830273f71357add8ecd5a171fc2b2f07e",
+    "Lemma/User/ABI.lean": "43f315ac5caf22ac47f0e6fb7f9dda5a1899a1e3436de695cee0f41653ed9259",
+    "Lemma/User/Memory.lean": "c04236eb3b42ff74a30a12dd04d18fb6dcbeb2bc74aaf000ad58fe4958265024",
+    "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+    "Lemma/User/Runtime/ManagedArray.lean": "90d1dacccba2fd82a41290e33eadb3f99aec24adc36900eaf13229e08b6a59a8",
+    "Lemma/User/Runtime/ManagedBytes.lean": "56e0545dc8f8c71df82627a3c4b2ff8115b443d6bfdc740ee2a34028dd068c6d",
+    "Lemma/User/Runtime/ManagedClosure.lean": "e28443f299971fea7b7eabb4c2e196ade4b8fad67529dc92fd389c7cab6adaff",
+    "Lemma/User/Runtime/ManagedRecords.lean": "2a8401a15077057d4bc0499d31ec303f1a3b11bac5bcf706e4d9c8736908680b",
+    "Lemma/User/Runtime/ManagedString.lean": "e3891328f38a0509c5e3115e9d02d1f74e72a2cbd9e2ef49f7463ef7ca47b1d4",
+    "Lemma/User/Runtime/ManagedSums.lean": "a7a36ec54e2a3845dc89a6fe3786dd43463b070f29a80e010a0a31999bc04d46",
+    "Lemma/User/Syscall.lean": "d405577a4fd2cf4a67bfa67a71ae26ade5be16ba377c7884a8f578589899ea66",
+    "examples/school/WorkerBuild.lean": "83fe3a6534348513e5f0b0b8d44f918646a04894aa0658c725ca0c4e727f70be",
+    "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+    "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+    "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+    "scripts/build_core0.py": "095511b2854f4259867a63da48e7ee7d4750ce9a6db5718b0e0b8f5d335a2230",
+    "scripts/build_school_worker.py": "9228bad70d24159f47d1a2950f8f1dcf33aa7faee24052db4f99f05cbcb67550",
+    "scripts/check_school_worker.py": "73384628c3012ffc90132dc3d159bc970b584cc2820d9745bcb5d140dfcba2f4"
+  }
+}
