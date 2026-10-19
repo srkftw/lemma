@@ -46,8 +46,8 @@ def resolve (state : State) (request : Json) (now : Nat) : Except String Json :=
   require (#["course-catalogue","client-course","join","assist","cancel-session","delivery","attempt",
     "guest-submit","progress","reviews","review-open","review-state","feedback","feedback-read","learner-choices",
     "goal-set","interpretation-challenge","suggestion-override","work-upload",
-    "publish","enroll","enrollment-revoke","review-queue","review-work","review-artifact","human-assess",
-    "recommendation-input","models","model-select","model-rollback"].contains op)
+    "publish","enroll","enrollment-revoke","review-queue","review-work","review-artifact","review-render","human-assess",
+    "recommendation-input","models","model-select","model-rollback","admission-issue","admission-revoke"].contains op)
     "operation is outside bounded learner admission"
   require (!(field command "path").isOk) "host paths are outside admitted transport; use inline definitions or bounded uploads"
   if op == "publish" then require ((field command "definition").isOk) "admitted publication requires an inline definition"

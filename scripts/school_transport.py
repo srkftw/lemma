@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import signal
 import secrets
+import stat
 import select
 import subprocess
 import sys
@@ -25,6 +26,7 @@ import urllib.parse
 LIMIT = 1048576
 SHORTCUTS = {"status": "status", "stop": "stop", "backup": "export", "restore": "restore", "fork": "clone", "pair": "admission-issue"}
 SHORTCUTS.update({"publish-training": "training-publish", "models": "models", "select-model": "model-select", "rollback-model": "model-rollback"})
+SHORTCUTS["revoke-pair"] = "admission-revoke"
 
 
 def boot_id():
@@ -57,6 +59,43 @@ def post(port, data, timeout=10):
         return result
 
 
+def credential_binding(path):
+    """Read only a private handoff; no secret appears in child args or logs."""
+    descriptor = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+    with os.fdopen(descriptor, "rb") as handle:
+        metadata = os.fstat(handle.fileno())
+        if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != os.getuid() or stat.S_IMODE(metadata.st_mode) != 0o600:
+            raise ValueError("credential must be an owned private mode0600 regular file")
+        raw = handle.read(4097)
+    if len(raw) > 4096:
+        raise ValueError("credential exceeds4096-byte bound")
+    value = json.loads(raw)
+    if not isinstance(value, dict):
+        raise ValueError("credential must be a handoff object")
+    endpoint = urllib.parse.urlsplit(value.get("endpoint", ""))
+    if (value.get("schema") != "lemma-school-credential/1" or endpoint.scheme != "http" or
+            endpoint.hostname not in {"127.0.0.1", "localhost", "::1"} or endpoint.path != "/v1/client" or
+            endpoint.username or endpoint.password or endpoint.query or endpoint.fragment or not endpoint.port):
+        raise ValueError("credential requires a supported loopback /v1/client endpoint")
+    secret = value.get("token", "")
+    if not isinstance(secret, str) or len(secret) != 64 or any(char not in "0123456789abcdef" for char in secret):
+        raise ValueError("credential has an invalid private admission secret")
+    return value, endpoint
+
+
+def credential_post(credential, data, timeout=30):
+    if len(data) > LIMIT:
+        raise ValueError("protected request byte limit exceeded")
+    request = urllib.request.Request(credential["endpoint"], data=data, headers={
+        "Content-Type": "application/json", "Authorization": "Bearer " + credential["token"]})
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+    with opener.open(request, timeout=timeout) as reply:
+        result = reply.read(LIMIT*32+1)
+    if len(result) > LIMIT*32:
+        raise ValueError("protected response byte limit exceeded")
+    return result
+
+
 def emit_reply(reply):
     sys.stdout.buffer.write(reply)
     return 0 if json.loads(reply).get("ok") else 1
@@ -87,6 +126,10 @@ def shortcut(args, parser):
         if args.version is None:
             parser.error(f"{args.request} requires --version NUMBER")
         value.update(version=args.version, reason=args.reason)
+    if args.request == "revoke-pair":
+        if not args.token_hash:
+            parser.error("revoke-pair requires --token-hash SHA256")
+        value["tokenHash"] = args.token_hash
     if args.request == "publish-training":
         if not args.directory or not args.dataset or not args.checkpoint or not args.rights:
             parser.error("publish-training requires --directory OUTPUT --dataset DATASET --checkpoint FILE --rights PROVENANCE")
@@ -192,7 +235,28 @@ def main():
     parser.add_argument("--reusable", action="store_true")
     parser.add_argument("--version", type=int)
     parser.add_argument("--reason", default="operator selected an immutable model release")
+    parser.add_argument("--credential", type=Path, help="private admitted teacher/operator pairing; never grants filesystem operations")
+    parser.add_argument("--token-hash", help="public SHA256 admission identity for revoke-pair")
     args = parser.parse_args()
+    if args.credential:
+        if args.request in {"serve", "run", "client-run", "start", "restore", "backup", "fork", "publish-training"}:
+            parser.error("this operation requires the operator-local filesystem/lifecycle path")
+        try:
+            credential, endpoint = credential_binding(args.credential)
+            args.school, args.actor = credential["school"], credential["learner"]
+            if args.client_port is None:
+                args.client_port = endpoint.port
+            if args.request == "pair":
+                data, _ = pair(args, parser)
+            elif args.request in SHORTCUTS:
+                data = shortcut(args, parser)
+            else:
+                data = args.request.encode()
+                json.loads(data)
+            return emit_reply(credential_post(credential, data))
+        except (ValueError, KeyError, OSError, urllib.error.URLError):
+            # No exception detail can accidentally print the private handoff.
+            parser.exit(1, "protected school request failed; check private file, endpoint and admitted scope\n")
     for origin in args.browser_origin:
         parsed = urllib.parse.urlsplit(origin)
         if (parsed.scheme != "http" or parsed.hostname not in {"localhost", "127.0.0.1", "::1"}

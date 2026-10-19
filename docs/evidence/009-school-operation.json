@@ -314,5 +314,115 @@
     "elapsedSeconds": 6.243,
     "command": "nix develop --no-write-lock-file --command env LEMMA_SCHOOL_TEST_BINARY=build/school/host-task009-submission-a3/school LEMMA_SCHOOL_TEST_CURRICULUM=build/school/host-task009-submission-a3/school-curriculum python3 -m unittest discover -s tests/school -p test_learner_reviews.py -v",
     "scope": "Actual hosted Lean/protected own-principal pagination, original title/edition/activity, two learners isolated, teacher scope unchanged, opening not completion, latest withdrawal/defer/completed-human-response states. Actual guest navigation remains separate product evidence."
+  },
+  "teacherPairingAndReviewPreview": {
+    "scope": "Hosted Lean protected admission and immutable ink preview; no target/browser guest execution or handwriting interpretation is claimed by these host fixtures.",
+    "production": {
+      "path": "build/school/host-task009-review-render-a2/production.json",
+      "sha256": "70df4df4407924a7b90bae814d88ce7cf43bde530258c647f31d5091c65dd627"
+    },
+    "productionSeconds": 19.314274168922566,
+    "productionRoute": "Genuine incremental hosted Lake; fresh changed Lean sources/native linking and reused unchanged imports. Source/binary identities are the original producer receipt.",
+    "renderer": {
+      "tests": {
+        "path": "build/school/task009-connected-a2/review-render-tests-a2.log",
+        "sha256": "9fa960bf5c9e6054830f870c5a64f4040a4d63fba889328fbf947e815a47886c"
+      },
+      "command": "nix develop --no-write-lock-file --command env LEMMA_SCHOOL_TEST_BINARY=$PWD/build/school/host-task009-review-render-a2/school LEMMA_SCHOOL_TEST_CURRICULUM=$PWD/build/school/host-task009-review-render-a2/school-curriculum LEMMA_SCHOOL_RENDER_EVIDENCE_DIR=$PWD/build/school/task009-connected-a2/renderer-fixture-a2 python3 -m unittest discover -s tests/school -p test_review_render.py -v",
+      "testSeconds": 11.787,
+      "renderSeconds": 0.6064386940561235,
+      "width": 1650,
+      "height": 2200,
+      "gray4Bytes": 1815000,
+      "segments": 1,
+      "tiles": 1,
+      "changedPixels": 13,
+      "fixture": {
+        "path": "build/school/task009-connected-a2/renderer-fixture-a2/visible-submission.bin",
+        "sha256": "4ebd3a2c39167123cbfc7701a99319ba8b1bc44fa8dbb42556f905eaf6925166"
+      },
+      "pixels": {
+        "path": "build/school/task009-connected-a2/renderer-fixture-a2/ink.gray4",
+        "sha256": "584f079053aae8726bdec137aae9715ac5e47ffedf1c57e26a7ca6819cbaae7b"
+      },
+      "presentation": {
+        "path": "build/school/task009-connected-a2/renderer-fixture-a2/ink.png",
+        "sha256": "021e3e733fb54c6c5036107d88fa4b218641f35b9b99bf816dcb0ec1b11bc224"
+      },
+      "checks": [
+        "whole-envelope validation",
+        "wrong learner denied",
+        "teacher without review grant denied",
+        "invisible chunk retained but not drawn",
+        "actual Rasterizer.segmentSurface Action produces13pixels",
+        "no state mutation while rendering",
+        "invalid pressure rejects in the actual rasterizer while immutable artifact stays retrievable",
+        "revocation takes effect"
+      ],
+      "limits": "8192tile invocations; hosted preview of canonical ink layer, original prompt and typed metadata remain separate. Full ordinary submitted writing has separate guest execution evidence.",
+      "receipt": {
+        "path": "build/school/task009-connected-a2/renderer-fixture-a2/render.json",
+        "sha256": "8c640c461e84ff4ffa3fc9dffb1d7777f93e3eae8a1d8fc2a0090684bb7bb359"
+      },
+      "result": "PASS"
+    },
+    "pairing": {
+      "result": "PASS",
+      "tests": {
+        "path": "build/school/task009-connected-a2/teacher-pairing-tests-a3.log",
+        "sha256": "9b8d5765762fbc2507a18316755a5ee8b1dc50bfe24caab95fc0cc11fb11c929"
+      },
+      "command": "nix develop --no-write-lock-file --command env LEMMA_SCHOOL_TEST_BINARY=$PWD/build/school/host-task009-review-render-a2/school LEMMA_SCHOOL_TEST_CURRICULUM=$PWD/build/school/host-task009-review-render-a2/school-curriculum python3 -m unittest discover -s tests/school -p test_teacher_pairing.py -v",
+      "checks": [
+        "actual running protected endpoint",
+        "teacher explicit admin/school and enroll/school grants",
+        "private random new credential0600 plus fsync",
+        "principal resolved from teacher credential despite owner actor field",
+        "distinct new learner enrolled and catalogue visible",
+        "admission revoked through protected teacher",
+        "revoked administrator cannot pair",
+        "no secret in args/output/state",
+        "weak file mode and malformed private handoffs rejected"
+      ],
+      "retainedFailure": {
+        "path": "build/school/task009-connected-a2/teacher-pairing-tests-a1.log",
+        "sha256": "515f93eb4bbe10caefaa26553905b81c0ab3464adec1727d03c86a7c43277d3a"
+      },
+      "failureScope": "First observer omitted school/actor from an owner raw JSON revocation request and was correctly rejected. Corrected observer and added malformed-handoff cases are separate runs; no failed report overwritten.",
+      "testSeconds": 6.916
+    },
+    "connectedRestart": {
+      "result": "PASS",
+      "recovery": {
+        "path": "build/school/task009-connected-a2/recovery.json",
+        "sha256": "eb7a51073bff3e0c0815834ee7ab7ca463ce94092b06078689d50fa60fe539ea"
+      },
+      "admission": {
+        "path": "build/school/task009-connected-a2/generation5-admission.json",
+        "sha256": "32403af0fd6d27448a651cbd28c500e2788a45c4d500b72c85c42a710236d127"
+      },
+      "originalRows": 15,
+      "originalRetainedRoot": "build/school/task009-connected-a1/school",
+      "checks": [
+        "stopped original copied without mutation",
+        "maintained export and restore",
+        "explicit synthetic different boot epoch with uptime7",
+        "all original immutable rows equal",
+        "historical scheduling time preserved",
+        "actual live host rebase",
+        "fresh distinct Alice/Bob/teacher protected catalogues",
+        "normal actual stop/restart to final reviewed producer",
+        "same-epoch admissions retained, generation5, clockEpochSequence3"
+      ],
+      "liveRun": "Original3600s bound and owned timeout process, retained run budget; live transport receipt is diagnostic only and is not a terminal full guest workflow result."
+    },
+    "inputs": {
+      "Lemma/School/ReviewRender.lean": "76ab6109dad59e705c93689e9083ed10d64323ab888bd1262500592207b69314",
+      "Lemma/School/Admission.lean": "521677d15c01b08cbc35fc24296da8630f30fbfd530c52e33d051fdda03c86e1",
+      "Lemma/School/Authority.lean": "7cb11f47307271fda3c8efaee9eb1efdb2cfa9a01421b605d83cad720e83757c",
+      "scripts/school_transport.py": "a1bf32b153ba5e45ae724c81e97cb1aab5923c589a98e27d5c6959a2107a83d1",
+      "tests/school/test_review_render.py": "8cc45ff549499594c135c42355f879b9b0f0154a9dd8251c417763d277d851d0",
+      "tests/school/test_teacher_pairing.py": "377961fcb01eae9d515023716d90d8b7901e32ff8a4e57d3ef8218d1238edd4d"
+    }
   }
 }

@@ -9,6 +9,7 @@ import Lemma.School.Review
 import Lemma.School.Admission
 import Lemma.School.Submission
 import Lemma.School.Recommendation
+import Lemma.School.ReviewRender
 import Lemma.Documents.Mathematics
 
 /-! One local database-oriented authority. Every decision below is maintained
@@ -339,12 +340,16 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let id := enrollmentKey learner course revision
     if let some old := state.latest "enrollment" id then return (state,recordResult old)
     append state "enrollment" id actor now request
-  | "review-artifact" =>
+  | "review-artifact" | "review-render" =>
     let fields ← lift request.getObj?
     let (_,work) ← lift (Review.execute state actor (Json.obj (fields.insert "op" (toJson "review-work"))) now)
     let digest ← lift (str work "workArtifact")
     requireArtifact root digest state.budgets.maxArtifactBytes
     let bytes ← readBounded (artifactPath root digest) state.budgets.maxArtifactBytes
+    if op == "review-render" then
+      let rendered ← ReviewRender.render bytes
+      let fields ← lift rendered.getObj?
+      return (state,Json.obj (fields.insert "digest" (toJson digest)))
     return (state,object [("digest",toJson digest),("bytes",toJson bytes.size),("hex",toJson (hex bytes))])
   | "enrollment-revoke" =>
     permitted state actor "enroll" "school"
