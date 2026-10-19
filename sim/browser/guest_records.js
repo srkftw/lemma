@@ -82,7 +82,10 @@ export class NotebookFaultObserver {
      const match=/^K1 (00000000000000f[14]) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?$/.exec(this.tail);
      if(match){
       if(match[1].endsWith('1')&&match[3]==='0000000000000001'&&this.descriptor===null)this.descriptor=match[2];
-      if(match[1].endsWith('4')&&match[2]===this.descriptor&&match[5]!=='0000000000000000')
+      // Successful User exit is a handled U-mode ecall (cause8/code0),
+      // including the ordinary initializer's acknowledged completion.
+      if(match[1].endsWith('4')&&match[2]===this.descriptor&&match[5]!=='0000000000000000'&&
+         !(match[5]==='0000000000000008'&&match[3]==='0000000000000000'))
        this.fault={authority:'compiled-kernel-report',descriptor:match[2],exitCode:match[3],data:match[4],cause:match[5],record:this.tail};
      }
     }

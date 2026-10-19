@@ -25,6 +25,7 @@ class NotebookFault(unittest.TestCase):
             self.assertIsNone(observer.feed(trap))
             self.assertIsNone(observer.feed(primary + helper))
             self.assertIsNone(observer.feed(row(0xf4, 0x2047, 1, 0, 0)))
+            self.assertIsNone(observer.feed(row(0xf4, 0x2047, 0, 0, 8)))
             self.assertIsNone(observer.feed(trap[:-1]))
             found = observer.feed(b'\n')
             self.assertEqual(found['cause'], '000000000000000d')
@@ -39,7 +40,7 @@ import assert from 'node:assert/strict';
 const rows=JSON.parse(process.argv[1]), enc=x=>new TextEncoder().encode(x);
 const o=new NotebookFaultObserver();
 let text=rows.trap;assert.equal(o.observe(enc(text),0),null);
-text+=rows.primary+rows.helper+rows.normal+rows.trap.slice(0,-1);
+text+=rows.primary+rows.helper+rows.normal+rows.initializerExit+rows.trap.slice(0,-1);
 assert.equal(o.observe(enc(text),0),null);text+='\\n';
 assert.equal(o.observe(enc(text),0).cause,'000000000000000d');
 assert.equal(o.observe(enc(text),0).descriptor,'0000000000002047');
@@ -52,7 +53,8 @@ assert.equal(o.observe(enc(text),0).cause,'000000000000000d');
 '''
         run = subprocess.run(['node', '--input-type=module', '-e', script, json.dumps(dict(
             primary=primary.decode(), trap=trap.decode(), helper=helper.decode(),
-            normal=row(0xf4, 0x2047, 1, 0, 0).decode()))], cwd=ROOT, capture_output=True, text=True, timeout=15)
+            normal=row(0xf4, 0x2047, 1, 0, 0).decode(),
+            initializerExit=row(0xf4, 0x2047, 0, 0, 8).decode()))], cwd=ROOT, capture_output=True, text=True, timeout=15)
         self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
 
     def test_real_session_observation_keeps_backing_and_pauses_only_primary(self):

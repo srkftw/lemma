@@ -51,7 +51,8 @@ class NotebookFaultObserver:
                     kind, descriptor, code, value, cause = match.groups()
                     if kind.endswith(b'1') and code == b'0000000000000001' and self.descriptor is None:
                         self.descriptor = descriptor
-                    if kind.endswith(b'4') and descriptor == self.descriptor and cause != b'0000000000000000':
+                    if (kind.endswith(b'4') and descriptor == self.descriptor and cause != b'0000000000000000'
+                            and not (cause == b'0000000000000008' and code == b'0000000000000000')):
                         self.fault = dict(authority='compiled-kernel-report', descriptor=descriptor.decode(),
                             exitCode=code.decode(), data=value.decode(), cause=cause.decode(), record=self.tail.decode())
                 self.tail = b''
