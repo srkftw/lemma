@@ -326,6 +326,11 @@ for(const phase of ['adapter','device']){
  assert.equal(down.x,Math.round(320*65535/1649));assert.equal(up.y,Math.round(145*65535/2199));
  key(' ');key('ArrowRight');assert.equal(f.sent.at(-1).flags,3);f.visibility(true);assert.equal(f.sent.at(-1).flags,10);
  const cancelled=f.sent.length;paper.onblur();assert.equal(f.sent.length,cancelled);
+ key('Insert');assert.equal(f.sent.at(-1).flags,3);
+ paper.onkeyup({key:'Insert'});key('ArrowRight');assert.equal(f.sent.at(-1).flags,3);
+ key('Insert');assert.equal(f.sent.at(-1).flags,2);
+ key('Insert');paper.onblur();assert.equal(f.sent.at(-1).flags,10);
+ key('Insert');key('Escape');assert.equal(f.sent.at(-1).flags,10);
  assert.equal(f.images.length,images,'keyboard input must not manufacture controller pixels');
 }
 console.log('PASS actual app host fixture: unresolved GPU leaves controls, worker observation and exact Gray4 fallback functional; qualified switch/loss safely cancel contact');

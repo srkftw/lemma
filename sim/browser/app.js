@@ -123,6 +123,7 @@ function keyboardKey(e){
   if(keyboardDown)keyboardPoint(true);keyboardPosition();
  }else if(e.key==='Home'){e.preventDefault();cancelKeyboardPen();keyboardX=keyboardY=0;keyboardPosition();
  }else if(e.key===' '){e.preventDefault();if(!e.repeat&&!keyboardDown&&active===null){keyboardDown=true;keyboardPoint(true);keyboardPosition();}
+ }else if(e.key==='Insert'){e.preventDefault();if(!e.repeat&&active===null){keyboardDown=!keyboardDown;keyboardPoint(keyboardDown);keyboardPosition();}
  }else if(e.key==='Enter'){e.preventDefault();if(!e.repeat&&!keyboardDown&&active===null){keyboardPoint(true);keyboardPoint(false);}
  }else if(e.key==='Escape'){e.preventDefault();cancelKeyboardPen();keyboardPosition();}
 }
