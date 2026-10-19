@@ -217,7 +217,7 @@ const pcmStatus=document.querySelector('#pcm-status');
 document.querySelector('#pcm-enable').onclick=async()=>{try{pcmContext??=new AudioContext();await pcmContext.resume();pcmAllowed=pcmContext.state==='running';pcmStatus.textContent=pcmAllowed?'Guest PCM speaker presentation enabled. Physical audibility and bone transducer onset remain unmeasured.':'Audio context unavailable.';}catch(e){pcmAllowed=false;pcmStatus.textContent=String(e);}};
 function stopPcm(reason,withdrawPermission=true){if(withdrawPermission)pcmAllowed=false;for(const source of pcmSources)try{source.stop();}catch{}pcmSources.clear();pcmNext=0;pcmLastTick=null;pcmLastPosition=null;pcmStatus.textContent=reason+' Queued sink samples cancelled; emitted samples cannot be undone. Guest action cancellation is a separate receipt.';}
 document.querySelector('#pcm-mute').onclick=()=>stopPcm('Speaker presentation muted.');
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPcm('Page hidden.');});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelContact();stopPcm('Page hidden.');}});
 function presentPcm(pcm){if(pcm.format!=='mono-s16le-low16/1'||pcm.clock_hz!==100000000||!Array.isArray(pcm.samples)||pcm.samples.length>256){stopPcm('Unsupported PCM egress.');return;}
  if(!pcmAllowed||!pcmContext||pcmContext.state!=='running'){pcmDrops+=pcm.samples.length;return;}
  const groups=[];let group=null;
