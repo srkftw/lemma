@@ -53,7 +53,7 @@ def linkResponse (state : State) (actor : String) (request : Json) (now outcome 
     |>.insert "assessmentScope" (toJson (if outcome == 1 then "supported exact checker" else "no completed assessment")))) row.artifacts
 
 def handles (op : String) : Bool :=
-  #["course-catalogue","review-queue","review-work","human-assess","feedback","feedback-read","review-state"].contains op
+  #["course-catalogue","reviews","review-queue","review-work","human-assess","feedback","feedback-read","review-state"].contains op
 
 def execute (state : State) (actor : String) (request : Json) (now : Nat) : Except String (State × Json) := do
   let op ← str request "op"
@@ -78,6 +78,30 @@ def execute (state : State) (actor : String) (request : Json) (now : Nat) : Exce
           cursor := row.sequence
         else more := true
     return (state,object [("courses",toJson rows),("next",toJson cursor),("more",toJson more)])
+  | "reviews" =>
+    require (optionalStr request "learner" actor == actor) "due reviews belong to the admitted learner"
+    let mut items : Array Json := #[]
+    let mut cursor := after
+    let mut more := false
+    for row in state.allLatest "review" do
+      if row.sequence > after && optionalStr row.data "learner" == actor && active row &&
+          optionalNat row.data "due" > 0 && optionalNat row.data "due" <= now then
+        if items.size < limit then
+          let course ← nat row.data "course"
+          let revision ← nat row.data "revision"
+          let publication ← (state.latest "publication" s!"{course}.{revision}").toExcept "original due publication absent"
+          let unit ← field publication.data "definition" >>= Authoring.decode
+          let activity ← (unit.activities.find? (fun activity => activity.id == optionalStr row.data "activity")).toExcept "original due activity absent"
+          items := items.push (object [("id",toJson row.key),("sourceAttempt",toJson (optionalStr row.data "sourceAttempt")),
+            ("course",toJson course),("revision",toJson revision),("edition",toJson revision),
+            ("courseTitle",toJson unit.course.title),("title",toJson unit.course.nodes[activity.node]!.title),
+            ("activity",toJson activity.id),("node",toJson activity.node),("ordinal",toJson (activity.node+1)),
+            ("policy",toJson (optionalNat row.data "policy")),("reviewPolicy",toJson (optionalStr row.data "reviewPolicy")),
+            ("due",toJson (optionalNat row.data "due")),("status",toJson (optionalStr row.data "status" "due")),
+            ("sequence",toJson row.sequence)])
+          cursor := row.sequence
+        else more := true
+    return (state,object [("reviews",toJson items),("next",toJson cursor),("more",toJson more)])
   | "review-queue" =>
     let learner ← str request "learner"
     if actor != state.operator then state.authorize actor "review" learner

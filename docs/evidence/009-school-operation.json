@@ -302,5 +302,17 @@
       "path": "build/school/developer-task009-schema-rejection-a1/build.json",
       "observation": "Actual shared Lean decoder rejected unit.unknownEditorConstruct rather than dropping unrepresented content."
     }
+  },
+  "learnerDueReviews": {
+    "result": "PASS",
+    "production": {
+      "path": "build/school/host-task009-submission-a3/production.json",
+      "sha256": "59eef4f21a8389ffe69dfc7df2e2de5f7204cd4c6f1aa79c349d5d672bd8ed3a"
+    },
+    "test": "tests/school/test_learner_reviews.py",
+    "count": 1,
+    "elapsedSeconds": 6.243,
+    "command": "nix develop --no-write-lock-file --command env LEMMA_SCHOOL_TEST_BINARY=build/school/host-task009-submission-a3/school LEMMA_SCHOOL_TEST_CURRICULUM=build/school/host-task009-submission-a3/school-curriculum python3 -m unittest discover -s tests/school -p test_learner_reviews.py -v",
+    "scope": "Actual hosted Lean/protected own-principal pagination, original title/edition/activity, two learners isolated, teacher scope unchanged, opening not completion, latest withdrawal/defer/completed-human-response states. Actual guest navigation remains separate product evidence."
   }
 }
