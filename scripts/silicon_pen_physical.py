@@ -54,6 +54,7 @@ def main():
     clock.add_argument('--automatic-clock-wire-length', dest='automatic_clock_wire_length', action='store_true', default=True, help='Use actual pinned RC/driver wire optimum (default); all timing/electrical constraints remain')
     clock.add_argument('--historical-clock-wire-length', dest='automatic_clock_wire_length', action='store_false', help='Reproduce the historical100um clock-repair optimization bound')
     p.add_argument('--center-validation-cones', action='store_true', help='Fence real range-validation cones/collectors in the open middle macro channel; preserve all timing and macro OBS')
+    p.add_argument('--group-button-bus', action='store_true', help='Place all64 raw button inputs contiguously on the original top-edge Metal2 tracks; preserve every input delay/bit and verify actual geometry')
     p.add_argument('--defer-global-eco', action='store_true', help='Keep placement/clock repairs and every constraint, but defer the failing global-RC ECO optimization until actual routed extraction; fresh timing failures remain failures')
     p.add_argument('--question',default='Do independent timestamp/counter arithmetic and bounded clock clusters remove observed defects at unchanged100MHz/full256 FIFO?',help='Prospective engineering question for this changed-input run')
     p.add_argument('--completed-eco-route-from', type=Path, help='Independently assess a source-sealed completed ECO route rejected only by the timestamp-sensitive SDC observer; never reroutes it')
@@ -72,6 +73,7 @@ def main():
               'physical_closure': 'UNVERIFIED',
               'derived_routing_capacity': 'NOT_ADMITTED: future adaptations require actual non-increase and blocked-zero/edge/interior plus underflow/increase negative controls',
               'validation_cone_placement': 'open-middle-channel' if args.center_validation_cones else 'unconstrained',
+              'button_bus_pin_placement': 'FULL64_ORDERED_TOP_EDGE' if args.group_button_bus else 'UNCONSTRAINED',
               'global_rc_optimization': 'DEFERRED_UNTIL_ACTUAL_EXTRACTION' if args.defer_global_eco else 'ENABLED',
               'clock_wire_repair': 'pinned-driver-RC-optimum' if args.automatic_clock_wire_length else 'historical100um', 'power_grid': 'NOT_IMPLEMENTED',
               'process_drc': 'NOT_RUN', 'lvs': 'NOT_RUN',
@@ -94,6 +96,7 @@ def main():
     try:
         require(not (args.center_validation_cones and args.routed_eco_from), 'initial cone placement and retained-route ECO are separate questions')
         require(not args.defer_global_eco or (args.center_validation_cones and not args.routed_eco_from), 'deferred optimization is scoped to the aligned validation-placement question')
+        require(not args.group_button_bus or not args.routed_eco_from, 'a new input-pin placement requires a fresh initial physical implementation')
         available = next(int(x.split()[1]) * 1024 for x in Path('/proc/meminfo').read_text().splitlines()
                          if x.startswith('MemAvailable:'))
         require(available >= 8 << 30, 'launch memory floor')
@@ -127,7 +130,7 @@ def main():
         inputs = [Path(__file__).resolve(), ROOT / 'scripts/silicon_enclosure.py',
                   ROOT / 'scripts/silicon_route_enclosure.py', ROOT / 'tooling/silicon/layout.tcl',
                   ROOT / 'scripts/silicon_synth.py', ROOT / 'tooling/silicon/eda.nix',
-                  ROOT / 'tooling/silicon/pen-floorplan.tcl', ROOT / 'tooling/silicon/pen-validation-region.tcl', ROOT / 'tooling/silicon/pen-validation-check.tcl', mapping / 'candidate.sv',
+                  ROOT / 'tooling/silicon/pen-floorplan.tcl', ROOT / 'tooling/silicon/pen-validation-region.tcl', ROOT / 'tooling/silicon/pen-validation-check.tcl', ROOT / 'tooling/silicon/pen-button-pins.tcl', mapping / 'candidate.sv',
                   mapping / 'mapped.v', mapping / 'result.json', openroad]
         if args.routed_eco_from:
             prior = args.routed_eco_from.resolve()
@@ -136,8 +139,9 @@ def main():
             require(previous['mapping_receipt']['sha256'] == sha(mapping / 'result.json'), 'ECO mapping producer differs')
             require(sha(prior / 'routed.def') == previous['route_enclosure']['routed_def_sha256'], 'original route DEF differs')
             require(sha(prior / 'nom.spef') == previous['extracted_rc']['nom']['spef_sha256'], 'original nominal SPEF differs')
-            report['routed_eco_from'] = {'path': str(prior), 'receipt_sha256': sha(prior / 'result.json')}
-            inputs += [ROOT / 'tooling/silicon/pen-extracted-eco.tcl'] + [prior / name for name in ('result.json', 'routed.odb', 'routed.def', 'routed.v', 'routed.sdc', 'nom.spef')]
+            require((prior / 'route.guide').is_file() and (prior / 'route.guide').stat().st_size > 1000, 'real prior routing guides required to initialize GRT net/grid context')
+            report['routed_eco_from'] = {'path': str(prior), 'receipt_sha256': sha(prior / 'result.json'), 'guides_sha256': sha(prior / 'route.guide'), 'guide_scope': 'Newly source-bound real prior guide input initializes net/grid context; timing remains original actual SPEF, not guide estimates'}
+            inputs += [ROOT / 'tooling/silicon/pen-extracted-eco.tcl'] + [prior / name for name in ('result.json', 'routed.odb', 'routed.def', 'routed.v', 'routed.sdc', 'nom.spef', 'route.guide')]
         if args.completed_eco_route_from:
             require(args.routed_eco_from is not None, 'completed ECO requires its original source route')
             completed = args.completed_eco_route_from.resolve()
@@ -181,6 +185,8 @@ set clock_ns 10
 set clock_port clk
 set automatic_clock_wire_length {1 if args.automatic_clock_wire_length else 0}
 set center_validation_cones {1 if args.center_validation_cones else 0}
+set group_button_bus {1 if args.group_button_bus else 0}
+set button_pin_script {{{ROOT/"tooling/silicon/pen-button-pins.tcl"}}}
 set defer_global_eco {1 if args.defer_global_eco else 0}
 set validation_region_script {{{ROOT/"tooling/silicon/pen-validation-region.tcl"}}}
 set validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check.tcl"}}}

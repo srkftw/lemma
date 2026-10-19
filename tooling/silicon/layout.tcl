@@ -51,7 +51,9 @@ set_layer_rc -layer Metal4 -resistance 6.31424e-04 -capacitance 1.66454e-04
 set_layer_rc -layer Metal5 -resistance 6.84051e-04 -capacitance 8.57431e-05
 set_wire_rc -signal -layer Metal2
 set_wire_rc -clock -layer Metal5
+if {[info exists group_button_bus] && $group_button_bus == 1} {source $button_pin_script}
 place_pins -hor_layers Metal3 -ver_layers Metal2
+if {[info exists group_button_bus] && $group_button_bus == 1} {lemma_check_button_pins}
 global_placement -density 0.35
 estimate_parasitics -placement
 repair_design

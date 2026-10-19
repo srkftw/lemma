@@ -136,6 +136,7 @@ def main():
             require(expected_failure is None, 'actual mutant survived public observation')
             markers = (['PEN-INGRESS literal full256 fields high64 sequence/time consecutive/wrap PASS',
                         'PEN-INGRESS first-edge all-fields immediate-next-edge ACK PASS',
+                        'PEN-INGRESS cached full64 predicate carry/equality/exhaustion boundary PASS',
                         'PEN-INGRESS every-edge old/new invalid full ACK reset collision PASS edges']
                        if top == 'PenIngress' else
                        ['PEN-BANKS full-capacity all-fields two-wrap and ingress bypass PASS',
@@ -155,11 +156,13 @@ def main():
         for name, before, after in (
                 ('upper-sequence-zeroed', "wire [191:0] input_words = {{(192-$bits(ingress_entry)){1'b0}},ingress_entry};",
                  "wire [191:0] input_words = {{(192-$bits(ingress_entry)){1'b0}},ingress_entry} & {64'b0,128'hffffffffffffffffffffffffffffffff};"),
+                ('stale-sequence-cache', 'sequence_all_ones[part] <= &sequence_incremented[part*16 +:16];', "sequence_all_ones[part] <= 1'b0;"),
+                ('ignored-sequence-saturation', 'IHP_SRAM ? (&sequence_all_ones)', "IHP_SRAM ? 1'b0"),
                 ('address-alias128', '.A_ADDR(row_address)', ".A_ADDR({1'b0,row_address[6:0]})")):
             require(source.count(before) == 1, 'mutation no longer targets actual storage')
             mutant = out / (name + '.sv')
             mutant.write_text(source.replace(before, after))
-            simulate(name, 'PenIngress', mutant, out / 'PenIngress.sv', 'external-interface difference at edge')
+            simulate(name, 'PenIngress', mutant, out / 'PenIngress.sv', 'cached full64 sequence predicate invariant failed' if name == 'stale-sequence-cache' else 'external-interface difference at edge')
         bad_depth = out / 'bad-depth.sv'
         bad_depth.write_text((out / 'PenIngress.sv').read_text().replace('.IHP_SRAM(1)', '.IHP_SRAM(1),.FIFO_DEPTH(128)'))
         simulate('reject-depth128', 'PenIngress', out / 'candidate.sv', bad_depth, 'IHP SRAM requires full256 FIFO')

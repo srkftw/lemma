@@ -110,6 +110,13 @@ module lemma_pen #(
   logic [PTR-1:0] head, tail;
   logic [PTR:0] count;
   logic [63:0] epoch, head_epoch, next_sequence, losses;
+  // Invariant after reset and every accepted counter update:
+  // sequence_all_ones[p] == &next_sequence[p*16 +:16].  Four registered
+  // predicates remove a full64 reduction from the high-fanout acceptance
+  // control path. Counter storage, public sequence width and edge remain.
+  logic [3:0] sequence_all_ones;
+  wire sequence_exhausted = IHP_SRAM ? (&sequence_all_ones) :
+    (next_sequence == 64'hffffffffffffffff);
   // Post-reset fault codes are exactly0,1,2,3,5. Compact internal storage
   // removes unreachable upper feedback bits; public MMIO remains full64.
   logic [2:0] fault;
@@ -208,7 +215,7 @@ module lemma_pen #(
     (|range_errors);
   assign lose = (contact_deadline != 0 && now_ticks >= contact_deadline) ||
     (sample_valid && sample_ready && !loss &&
-      (bad_sample || sample_flags[3] || next_sequence == 64'hffffffffffffffff ||
+      (bad_sample || sample_flags[3] || sequence_exhausted ||
        (!resync && count == FIFO_DEPTH)));
 
   always_comb begin
@@ -269,6 +276,7 @@ module lemma_pen #(
       head_entry <= '0; ingress_entry <= '0; ingress_index <= 0;
       refill <= 0; refill_select <= '0;
       epoch <= 1; head_epoch <= 1; next_sequence <= 1;
+      sequence_all_ones <= 4'b0000;
       losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0;
       loss <= 0; resync <= 0; release_seen <= 0;
     end else if (refill == 2) begin
@@ -305,6 +313,8 @@ module lemma_pen #(
             sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
         tail <= tail + 1'b1; count <= count + 1'b1;
         next_sequence <= sequence_incremented;
+        for (int part = 0; part < 4; part++)
+          sequence_all_ones[part] <= &sequence_incremented[part*16 +:16];
         head_epoch <= epoch; last_time <= sample_time;
         contact_deadline <= sample_flags[0] ? sample_time + 10000000 : 0;
         resync <= 0; sample_accepted <= 1;

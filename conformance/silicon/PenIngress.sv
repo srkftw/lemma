@@ -29,6 +29,18 @@ module PenIngress;
       $fatal(1,"external-interface difference at edge%0d",compared_edges);
     compared_edges++;
   end
+  task automatic seed_sequence(input logic [63:0] value);
+    pen.next_sequence=value; prior.next_sequence=value;
+    for (int part=0;part<4;part++)
+      pen.sequence_all_ones[part]=&value[part*16 +:16];
+  endtask
+  always @(posedge clk or negedge clk) begin
+    #2;
+    if(reset_n && pen.IHP_SRAM &&
+       pen.sequence_all_ones !== {(&pen.next_sequence[63:48]),(&pen.next_sequence[47:32]),
+                                 (&pen.next_sequence[31:16]),(&pen.next_sequence[15:0])})
+      $fatal(1,"cached full64 sequence predicate invariant failed");
+  end
   task automatic tick(input int n=1);repeat(n)begin @(posedge clk);#3;end endtask
   task automatic clear_bus;
     @(negedge clk); valid=0;write=0;sample_valid=0;size=3;now_ticks=0;
@@ -84,7 +96,7 @@ module PenIngress;
     reset_machine();
     // An explicit white-box seed exercises upper sequence bits and the 32-bit
     // carry. All observations afterward use external MMIO and literal values.
-    @(negedge clk);pen.next_sequence=seed;prior.next_sequence=seed;
+    @(negedge clk);seed_sequence(seed);
     for(int lap=0;lap<2;lap++)begin
       // Keep valid asserted: every following edge admits the next payload.
       for(int i=lap*256;i<(lap+1)*256;i++)begin
@@ -98,7 +110,7 @@ module PenIngress;
       expect_word(32,1);expect_head(lap*256,seed+64'(lap*256));
       // Loss intentionally retains only its immutable head. Reset and repeat
       // the full corpus below before performing the complete wrap traversal.
-      reset_machine();@(negedge clk);pen.next_sequence=seed+64'(lap*256);prior.next_sequence=seed+64'(lap*256);
+      reset_machine();@(negedge clk);seed_sequence(seed+64'(lap*256));
       for(int i=lap*256;i<(lap+1)*256;i++)begin
         @(negedge clk);sample_valid=1;fields(i);tick();
       end
@@ -109,6 +121,34 @@ module PenIngress;
       expect_word(256,0);expect_word(264,0);
     end
     $display("PEN-INGRESS literal full256 fields high64 sequence/time consecutive/wrap PASS");
+    // Exact16/32/48/64-bit carry boundaries, full64 equality and saturation.
+    // White-box initial state includes the redundant-cache invariant; all
+    // acceptance, ACK, loss and data observations use the public interface.
+    for(int boundary=0;boundary<9;boundary++)begin
+      reset_machine();
+      case(boundary)
+        0:seed=64'h000000000000fffe;
+        1:seed=64'h00000000fffffffe;
+        2:seed=64'h0000fffffffffffe;
+        3:seed=64'h7ffffffffffffffe;
+        4:seed=64'hffff0000fffffffe;
+        5:seed=64'hffffffff0000fffe;
+        6:seed=64'hfffffffffffffffd;
+        7:seed=64'hfffffffffffffffe;
+        8:seed=64'hffffffffffffffff;
+      endcase
+      @(negedge clk);seed_sequence(seed);
+      for(int step=0;step<3;step++)begin
+        @(negedge clk);sample_valid=1;fields(step);tick();
+        if(seed>=64'hfffffffffffffffd && 64'(step)>=64'hffffffffffffffff-seed)begin
+          if(sample_accepted)$fatal(1,"full64 saturated sequence admitted");
+        end else if(!sample_accepted)$fatal(1,"full64 carry boundary rejected early");
+        clear_bus();
+      end
+      if(seed!=64'hffffffffffffffff)expect_head(0,seed);
+      else expect_word(256,0);
+    end
+    $display("PEN-INGRESS cached full64 predicate carry/equality/exhaustion boundary PASS");
     // Malformed bounds, valid/write collision, malformed MMIO and exact ACK.
     for(int bad=0;bad<8;bad++)begin
       reset_machine();@(negedge clk);sample_valid=1;fields(0);tick();clear_bus();

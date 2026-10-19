@@ -15,6 +15,12 @@ set_layer_rc -layer Metal5 -resistance 6.84051e-04 -capacitance 8.57431e-05
 set_wire_rc -signal -layer Metal2
 set_wire_rc -clock -layer Metal5
 set_propagated_clock [get_clocks core]
+# read_db/read_spef do not initialize GRT's net/pin grid objects. Both
+# SwapPinsMove and BufferMove dereferenced that absent context in retained
+# negative runs. Restore real routing guides through the supported API first;
+# the following read_spef still supplies actual loads, not guide estimates.
+set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
+read_guides $prior/route.guide
 write_verilog $out/pre-eco.v
 write_sdc $out/pre-eco.sdc
 read_spef $prior/nom.spef

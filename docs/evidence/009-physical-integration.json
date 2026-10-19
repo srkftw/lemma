@@ -610,6 +610,156 @@
         "path": "build/silicon/task009-fault3-centered-actual-eco-a1/source-archive/manifest.json",
         "sha256": "a4594c36b52dbd17d054c78f440905d14597bb8cd6294ac0e976ff5bfcb5b90e"
       }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-sequence-prefix-route-a1/result.json",
+        "sha256": "b38c0a4e304b27dd8fcb94425f51dd7a0016f81f1d8f9c4149690439ddc0a753"
+      },
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 393.2801963429665,
+      "source_seal_equal": true,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 540,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 396069.6288,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 45.60240824159134,
+        "instances": 8671,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -2.144189,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": -0.177272,
+        "hold_timing": "VIOLATED"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "814d47ad7fa145f8094d65cc59c0d7e4addcdeb38caa12204c0fe69d7dfac137",
+          "setup": "worst slack max -14.565382",
+          "hold": "worst slack min -0.090177",
+          "electrical_violations": 1022
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "bdd389e39484af815510b58ec4efa23300179a2905ef91d69a2529490c63ca90",
+          "setup": "worst slack max -17.091133",
+          "hold": "worst slack min -0.038760",
+          "electrical_violations": 1237
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "a77d822edfe53218fd4a0ac6940dd83306a05c09d30274bd4f58f810f76ee999",
+          "setup": "worst slack max -19.570375",
+          "hold": "worst slack min 0.013024",
+          "electrical_violations": 1413
+        }
+      },
+      "candidate_only": true,
+      "scope": "Source-bound physical producer; full process/closure still unverified. Guide-context SIG11 attempts and selection-boundary cancellation remain failures, not successful routes."
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-sequence-prefix-actual-eco-a1/result.json",
+        "sha256": "619d19c56de589b41b9b704cd97a3cb0f7c943421afae8fe0d3bfeced3c2ccd2"
+      },
+      "status": "FAIL",
+      "seconds": 3.3963314100401476,
+      "source_seal_equal": true,
+      "candidate_only": true,
+      "error": "CommandFailure('Command exited -11: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-sequence-prefix-actual-eco-a1/layout.log')",
+      "scope": "Source-bound physical producer; full process/closure still unverified. Guide-context SIG11 attempts and selection-boundary cancellation remain failures, not successful routes."
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-sequence-prefix-actual-eco-a2/result.json",
+        "sha256": "4cb610a6b9074129f98e0147be30e0bd6def03558975e582f05b5506c13f592e"
+      },
+      "status": "FAIL",
+      "seconds": 3.7892113140551373,
+      "source_seal_equal": true,
+      "candidate_only": true,
+      "error": "CommandFailure('Command exited -11: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-sequence-prefix-actual-eco-a2/layout.log')",
+      "scope": "Source-bound physical producer; full process/closure still unverified. Guide-context SIG11 attempts and selection-boundary cancellation remain failures, not successful routes."
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-sequence-prefix-actual-eco-a3/result.json",
+        "sha256": "642599b694102ef3cbc32ca4c9decc2139841a0e1b64b4350252abbe5c517ea5"
+      },
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 369.8101295370143,
+      "source_seal_equal": true,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 170,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 396759.1008,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 45.681792221904104,
+        "instances": 8678,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after fresh ECO detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -0.858953,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": -0.145087,
+        "hold_timing": "VIOLATED"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "a7fd64de6dd5f65cf8b22fbdd3a2e5e6cd1123ac3a3e9cb2643b4c1f186c2ce4",
+          "setup": "worst slack max -13.108043",
+          "hold": "worst slack min -0.099249",
+          "electrical_violations": 615
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "ea714e2cdefd77a5ebbde710bb491c7965555e90073531c1d94793a10d412328",
+          "setup": "worst slack max -15.433440",
+          "hold": "worst slack min -0.038567",
+          "electrical_violations": 763
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "33419426e4f2c906504b11d22caefe9afc67b349fabd33932d0657e004817a6e",
+          "setup": "worst slack max -17.734999",
+          "hold": "worst slack min -0.040655",
+          "electrical_violations": 929
+        }
+      },
+      "candidate_only": true,
+      "scope": "Source-bound physical producer; full process/closure still unverified. Guide-context SIG11 attempts and selection-boundary cancellation remain failures, not successful routes."
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-sequence-button-edge-route-a1/result.json",
+        "sha256": "2300a33b2ea31c18a0e05caba8faef441a6da9c06004c90f341eb40ac42e8f95"
+      },
+      "status": "FAIL",
+      "seconds": 67.74305389693473,
+      "source_seal_equal": true,
+      "candidate_only": true,
+      "error": "CommandFailure('Canceled: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-sequence-button-edge-route-a1/layout.log')",
+      "scope": "Source-bound physical producer; full process/closure still unverified. Guide-context SIG11 attempts and selection-boundary cancellation remain failures, not successful routes."
     }
   ],
   "extracted_available_corners": [
@@ -624,6 +774,14 @@
     {
       "path": "build/silicon/task009-fault3-eco-corners-a1/result.json",
       "sha256": "ac05ddfee28c12fe542b59f35ef8bf811893280d13da4bbb390e8e3aeae95ded"
+    },
+    {
+      "path": "build/silicon/task009-sequence-prefix-corners-a1/result.json",
+      "sha256": "bc60efda77cbe606ebb3dd405b7865ab4db5506c3505973068d193aabc4074e4"
+    },
+    {
+      "path": "build/silicon/task009-sequence-prefix-eco-corners-a1/result.json",
+      "sha256": "420969c31d69a2a50b0b24c1d3e42c28a97b284c611cf77f5f53c96c1ef15fe6"
     }
   ],
   "process_attempts": [
@@ -790,18 +948,18 @@
     "important_correction": "Public typical and slow SRAM timing libraries exist and are assessed; they are not missing-input blockers."
   },
   "source_boundaries": {
-    "physical_execution": "Historical a3, isolated fault3, clock-auto and real extracted-load ECO each retain their own source-bound producers. Fault3 is now selected in canonical RTL and freshly mapped through the normal maintained path. Actual native/Wasm guest behavior is separate machine evidence. The latest completed physical ECO still fails all closure categories.",
+    "physical_execution": "Historical a3, fault3, centered and cached-saturation sources retain distinct producers and failures. Cache now selected in canonical RTL and freshly mapped through normal maintained path; actual native/Wasm require separate fresh runtime producers. Selected physical ECO still fails routing/setup/hold/electrical; no process/fabrication qualification follows.",
     "process": "Original process/GDS/LEF/deck bytes stay immutable. Removing display expansion exposed full DRC; separate300s export and180s direct extraction attempts remain failed. Direct extraction reached real top-cell geometry. Complete process DRC and connected transistor LVS have not completed; no missing nominal process collateral is invented to excuse these tool/engineering failures.",
     "logic_comparison": "Private Yosys zero-delay correspondence trials retain async-FF/commutative-cutpoint/timeout failures; they do not establish connected layout-vs-netlist equivalence.",
     "failure_snapshot_retention": "A corrected Tcl observer retains failed OpenDB/DEF and primary error. The retained grid is a source-bound congestion heatmap, not an isolated physical-track overflow: pinned usage includes blockage and both directions. The original stronger interpretation is corrected separately without rewriting producer receipts."
   },
   "final_rtl": {
     "path": "sim/rtl/lemma_pen.sv",
-    "sha256": "c886dda855e2b913115b5af3f3ff3bb93c66d86396bb62c02ead369908b5cada"
+    "sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b"
   },
   "final_protocol": {
-    "path": "build/silicon/task009-fault3-maintained-map-a1/result.json",
-    "sha256": "9b437ff0d1260bae965a5c62eadd52686f7b0271164f6684df65f86c44868bc9"
+    "path": "build/silicon/task009-sequence-prefix-maintained-map-a1/result.json",
+    "sha256": "917e76493b934a299015b144390a3ae2040ee0a9ed40660c664047b36bcf5f6b"
   },
   "retained_outputs_are_not_ephemeral_action_cache": "build/silicon/task009-* and build/multimodal/task009-*; receipt/archive identities above pin needed source and raw observations.",
   "fault_storage_advance": {
@@ -948,7 +1106,7 @@
     }
   },
   "sequence_saturation_candidate": {
-    "status": "QUALIFIED_COMPONENT_AND_MAPPING_UNSELECTED",
+    "status": "SELECTED_CANONICAL_RTL_PROTOCOL_AND_MAPPING_QUALIFIED_PHYSICAL_CLOSURE_FAIL",
     "source": {
       "path": "build/silicon/task009-sequence-prefix-prep-a1/candidate.sv",
       "sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b"
@@ -965,7 +1123,7 @@
       "path": "build/silicon/task009-sequence-prefix-consumer-negative-a1/result.json",
       "sha256": "1a3809c45b57c33a5996407934eae9c4acc84d3315fc36ae4338417b81712a09"
     },
-    "scope": "Private next RTL input after measured next_sequence[11] full64 saturation reduction. Canonical product RTL remains unchanged; no route/timing/guest/physical continuation qualification follows.",
+    "scope": "Selected byte-identical qualified source into maintained pen controller after actual route/ECO and available-corner results. Native/Wasm consume only their separately regenerated source-bound runtimes. No physical closure or arbitrary old-microstate migration claim.",
     "invariant": "After reset and every accepted counter update, cache[p] equals reduction-AND of next_sequence[p*16+:16]. Both counter and cache update on the same existing accepted branch; all other transitions preserve both. Reset counter1 implies four zero predicates.",
     "capacity": 256,
     "entry_bits": 181,
@@ -974,6 +1132,75 @@
     "mapped_flip_flops": 809,
     "mapped_cells": 7066,
     "cases": "Real IHP models, every-edge reference miter and cache invariant, full256 two-wrap fields/high64 sequence/time, nine16/32/48/64 carry/equality/exhaustion seeds, stale-cache negative and independent public-consumer bypass negative. Seeded hidden state explicitly includes consistent redundant cache; not arbitrary old-state migration.",
-    "seconds": 11.891290999017656
+    "seconds": 11.891290999017656,
+    "maintained_qualification": {
+      "path": "build/silicon/task009-sequence-prefix-maintained-map-a1/result.json",
+      "sha256": "917e76493b934a299015b144390a3ae2040ee0a9ed40660c664047b36bcf5f6b"
+    },
+    "maintained_qualification_seconds": 4.822080328012817,
+    "pre_ECO": {
+      "path": "build/silicon/task009-sequence-prefix-route-a1/result.json",
+      "sha256": "b38c0a4e304b27dd8fcb94425f51dd7a0016f81f1d8f9c4149690439ddc0a753"
+    },
+    "actual_SPEF_ECO": {
+      "path": "build/silicon/task009-sequence-prefix-actual-eco-a3/result.json",
+      "sha256": "642599b694102ef3cbc32ca4c9decc2139841a0e1b64b4350252abbe5c517ea5"
+    },
+    "available_corners": {
+      "path": "build/silicon/task009-sequence-prefix-eco-corners-a1/result.json",
+      "sha256": "420969c31d69a2a50b0b24c1d3e42c28a97b284c611cf77f5f53c96c1ef15fe6"
+    },
+    "actual_SPEF_ECO_result": {
+      "router_violations": 170,
+      "nominal_setup_ns": -15.43344,
+      "nominal_hold_ns": -0.038567,
+      "electrical_violations": 763,
+      "seconds": 369.8101295370143,
+      "resized_cells": 139,
+      "pin_swaps": 2,
+      "hold_buffers": 7,
+      "all_nine_corner_status": "FAIL",
+      "slow125C_nominal": {
+        "setup_ns": -30.076056,
+        "hold_ns": -0.082713,
+        "electrical_violations": 1563
+      }
+    },
+    "selection_tradeoff": "Against prior unconstrained fault3 ECO: route340→170, nominal hold−0.108067→−0.038567ns, electrical818→763; setup regresses−15.191022→−15.433440ns (0.242418ns). Every closure category still FAIL. Center117 strategy remains unselected.",
+    "guide_context_correction": {
+      "failed_attempts": [
+        {
+          "path": "build/silicon/task009-sequence-prefix-actual-eco-a1/result.json",
+          "sha256": "619d19c56de589b41b9b704cd97a3cb0f7c943421afae8fe0d3bfeced3c2ccd2"
+        },
+        {
+          "path": "build/silicon/task009-sequence-prefix-actual-eco-a2/result.json",
+          "sha256": "4cb610a6b9074129f98e0147be30e0bd6def03558975e582f05b5506c13f592e"
+        }
+      ],
+      "cause": "Actual routed ODB plus SPEF did not initialize GRT net/grid context: both pin-swap and buffer moves crashed. Supported read_guides initializes actual net/grid objects; original real guide file newly SHA-bound as input. All repair moves remain enabled, every signal rerouted and fresh min/nom/max extracted. Prior guide was not included in old producer receipt; its new binding does not retroactively qualify old provenance.",
+      "guides_sha256": "bed05cb2d082deb35993c11812fe56966f481a2b5b0c4f839c5d83ea8abbcc6f"
+    }
+  },
+  "prior_fault3_rtl": {
+    "path": "sim/rtl/lemma_pen.sv",
+    "sha256": "c886dda855e2b913115b5af3f3ff3bb93c66d86396bb62c02ead369908b5cada"
+  },
+  "prior_fault3_protocol": {
+    "path": "build/silicon/task009-fault3-maintained-map-a1/result.json",
+    "sha256": "9b437ff0d1260bae965a5c62eadd52686f7b0271164f6684df65f86c44868bc9"
+  },
+  "button_bus_pin_question": {
+    "status": "NEXT_PHYSICAL_ONLY_CHANGED_INPUT",
+    "cause": "Actual cached pre-ECO sample_buttons[38] two-net path detours bottom→top→bottom:1448.38um/0.942812pF wire and1404.2um/0.975988pF wire, source/deck units unchanged.",
+    "placement": "All64 real input BTerms ordered/grouped top-edge on original Metal2 tracks; every bit and original2ns delay/10ns clock retained. Strict actual pin geometry checks require in-die top boundary, ascending x and ≤128um span. No capacity adaptation.",
+    "probe": {
+      "path": "build/silicon/task009-button-edge-probe-a1"
+    },
+    "first_route": {
+      "path": "build/silicon/task009-sequence-button-edge-route-a1/result.json",
+      "sha256": "2300a33b2ea31c18a0e05caba8faef441a6da9c06004c90f341eb40ac42e8f95"
+    },
+    "first_route_scope": "Explicitly cancelled67.743s at canonical source activation boundary; not a terminal successful routing result. Replacement consumes fresh normal maintained map."
   }
 }
