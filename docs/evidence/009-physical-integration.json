@@ -760,6 +760,63 @@
       "candidate_only": true,
       "error": "CommandFailure('Canceled: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-sequence-button-edge-route-a1/layout.log')",
       "scope": "Source-bound physical producer; full process/closure still unverified. Guide-context SIG11 attempts and selection-boundary cancellation remain failures, not successful routes."
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-sequence-button-edge-route-a2/result.json",
+        "sha256": "7ffdf6bf7ab97bac05c4ee899cbb5f83e197d1a6596ee76c83ab3e36012db083"
+      },
+      "scope": "Full64 top-edge pin placement. Actual button detour removed; whole-design setup/hold regress before actual-SPEF ECO. Unselected physical-only configuration; every endpoint/delay/clock preserved.",
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 558.3570532370359,
+      "source_seal_equal": true,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 313,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 395369.2704,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 45.52177083001047,
+        "instances": 8636,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -2.197009,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": -0.056907,
+        "hold_timing": "VIOLATED"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "33ada42b248539df4fb2d5434c69df92d804bc6360e35fbb3328c6fa35babc39",
+          "setup": "worst slack max -15.467343",
+          "hold": "worst slack min -0.160479",
+          "electrical_violations": 1032
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "0095a626d01fc3361109d16339b2d5444270ec599ab0f7ab0376fa8767bd7e1e",
+          "setup": "worst slack max -18.219656",
+          "hold": "worst slack min -0.116174",
+          "electrical_violations": 1224
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "d47d4bb1601c80ff40d9673110ad90a748f9e7807b46851b5d951c4585a037d5",
+          "setup": "worst slack max -20.670471",
+          "hold": "worst slack min -0.090391",
+          "electrical_violations": 1396
+        }
+      },
+      "candidate_only": false
     }
   ],
   "extracted_available_corners": [
@@ -782,6 +839,10 @@
     {
       "path": "build/silicon/task009-sequence-prefix-eco-corners-a1/result.json",
       "sha256": "420969c31d69a2a50b0b24c1d3e42c28a97b284c611cf77f5f53c96c1ef15fe6"
+    },
+    {
+      "path": "build/silicon/task009-sequence-button-edge-corners-a1/result.json",
+      "sha256": "4bc1efbdb1e919e407bbefc87aedb2c1a2be645742076361e17c9ebdce42ea9e"
     }
   ],
   "process_attempts": [
@@ -872,6 +933,45 @@
       "seconds": 180.10544921492692,
       "source_seal_equal": true,
       "scope": "Actual failed command retained; historical NOT_RUN phase fields do not erase logged extraction/import attempts"
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-sequence-connectivity-extract-a1/result.json",
+        "sha256": "bd77342b66def365bf92237fe468c0746f3ba0e3ddaef97d565466a7b334e54d"
+      },
+      "status": "FAIL",
+      "seconds": 191.46676528896205,
+      "source_seal_equal": true,
+      "process_drc": {
+        "status": "NOT_RUN",
+        "scope": "Independent transistor connectivity extraction; no process DRC result inferred for this geometry"
+      },
+      "transistor_extraction": {
+        "status": "EXTRACTED",
+        "sha256": "83ca087fd738af8f1de356901090a501f06744e2624a1fafcd3d0bea6b4dbf5b"
+      },
+      "lvs": {
+        "status": "FAIL",
+        "error": "CommandFailure('Deadline exceeded: /nix/store/h4p1nm8mz8yynv667kc5avnwwbh1r7dc-netgen-1.5.323/bin/netgen; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-sequence-connectivity-extract-a1/lvs.log')"
+      },
+      "error": "CommandFailure('Deadline exceeded: /nix/store/h4p1nm8mz8yynv667kc5avnwwbh1r7dc-netgen-1.5.323/bin/netgen; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-sequence-connectivity-extract-a1/lvs.log')",
+      "scope": "First complete real transistor extraction,146.133s. LVS actual comparison times out45.215s with macro array-label/resistor/device/net mismatches retained. Independent processDRC not run by this source-bound producer; no RC timing claim from connectivity-only mode."
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-sequence-direct-process-drc-a1/result.json",
+        "sha256": "3aca89f5e1a6131885df7d4bfa26ff6305c0fa80981b41fe1e40ae5963d0f68e"
+      },
+      "status": "FAIL",
+      "seconds": 300.1123482119292,
+      "source_seal_equal": true,
+      "process_drc": {
+        "status": "FAIL",
+        "error": "CommandFailure('Deadline exceeded: /nix/store/g0n7zlrbf02035zi8fg120zzh8c4w1rh-magic-vlsi-8.3.681/bin/magic; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-sequence-direct-process-drc-a1/process.log')",
+        "deck": "original public beta SG13G2 drc(full)"
+      },
+      "error": "GeometryError('actual original-deck full process DRC failed')",
+      "scope": "Direct originalGDS+actualDEF reaches original drc(full), avoiding redundant stream. Fixed300s timeout while loading/checking CIF style; no completed process count or closure claim."
     }
   ],
   "active_microphone_first_stage": {
@@ -927,6 +1027,14 @@
       "status": "PASS",
       "seconds": 15.757,
       "scope": "Currentv2 consumed-contract negative and separate retainedv1 registry negative; source/host only. Original failing fixture/run preserved."
+    },
+    "process_mapping_negative": {
+      "receipt": {
+        "path": "build/silicon/task009-process-mapping-negative-a1/result.json",
+        "sha256": "d0f8b01d0dc32fb181c221adc50ee9e07e6b81c60d5ff4042c448767bf3c0aa8"
+      },
+      "status": "PASS_REJECTED_UNRELATED_MAPPING_BEFORE_EXTERNAL_TOOL",
+      "scope": "Real retained route and separate mapping receipt; admission-only negative, not process or guest execution."
     }
   },
   "remaining": {
@@ -1191,7 +1299,7 @@
     "sha256": "9b437ff0d1260bae965a5c62eadd52686f7b0271164f6684df65f86c44868bc9"
   },
   "button_bus_pin_question": {
-    "status": "NEXT_PHYSICAL_ONLY_CHANGED_INPUT",
+    "status": "ACTUAL_DETOUR_REMOVED_GLOBAL_TIMING_REGRESSION_UNSELECTED",
     "cause": "Actual cached pre-ECO sample_buttons[38] two-net path detours bottom→top→bottom:1448.38um/0.942812pF wire and1404.2um/0.975988pF wire, source/deck units unchanged.",
     "placement": "All64 real input BTerms ordered/grouped top-edge on original Metal2 tracks; every bit and original2ns delay/10ns clock retained. Strict actual pin geometry checks require in-die top boundary, ascending x and ≤128um span. No capacity adaptation.",
     "probe": {
@@ -1201,6 +1309,80 @@
       "path": "build/silicon/task009-sequence-button-edge-route-a1/result.json",
       "sha256": "2300a33b2ea31c18a0e05caba8faef441a6da9c06004c90f341eb40ac42e8f95"
     },
-    "first_route_scope": "Explicitly cancelled67.743s at canonical source activation boundary; not a terminal successful routing result. Replacement consumes fresh normal maintained map."
+    "first_route_scope": "Explicitly cancelled67.743s at canonical source activation boundary; not a terminal successful routing result. Replacement consumes fresh normal maintained map.",
+    "completed_route": {
+      "path": "build/silicon/task009-sequence-button-edge-route-a2/result.json",
+      "sha256": "7ffdf6bf7ab97bac05c4ee899cbb5f83e197d1a6596ee76c83ab3e36012db083"
+    },
+    "actual_wire_comparison": {
+      "path": "build/silicon/task009-button-edge-comparison-a1/result.json",
+      "sha256": "171c6f7e6d0f1879a98874c2b01ab19db4789c01167de587338d9afd0fd6505e"
+    },
+    "corners": {
+      "path": "build/silicon/task009-sequence-button-edge-corners-a1/result.json",
+      "sha256": "4bc1efbdb1e919e407bbefc87aedb2c1a2be645742076361e17c9ebdce42ea9e"
+    },
+    "detour_result": {
+      "input_length_um": [
+        1448.38,
+        45.81
+      ],
+      "input_wire_pF": [
+        0.942812,
+        0.026779093
+      ],
+      "NOR_output_length_um": [
+        1404.2,
+        35.71
+      ],
+      "NOR_output_wire_pF": [
+        0.975988,
+        0.022589212
+      ]
+    },
+    "global_result": {
+      "router_violations": 313,
+      "nominal_setup_ns": -18.219656,
+      "nominal_hold_ns": -0.116174,
+      "electrical_violations": 1224,
+      "seconds": 558.3570532370359,
+      "scope": "Against same cached pre-ECO540/−17.091133/−.038760/1237: routing improves, setup/hold regress. All closureFAIL; new worst sample_time[14]."
+    }
+  },
+  "connectivity_only_adapter": {
+    "status": "REAL_EXTRACTION_COMPLETED_CONNECTED_LVS_UNQUALIFIED",
+    "mode": "Explicit opt-in extract no capacitance/no coupling only; resistance/default transistor W/L/diffusion area/bulk/net treatment retained; actual routed RC timing separately OpenRCX",
+    "documentation": "https://www.opencircuitdesign.com/magic/howto.html",
+    "maintained_preflight": {
+      "path": "build/silicon/task009-lvs-connectivity-preflight-a2/result.json",
+      "sha256": "137a7a0ce98e007d3016ced2b71183324b05225cdb1d45957c3e684c2f3b5274"
+    },
+    "historical_preflight": {
+      "path": "build/silicon/task009-lvs-connectivity-preflight-a1/result.json",
+      "sha256": "632b67ee7a67633e98a9822a4fd7902101b5e1c55b8bfd294bb8d27a7d48e242"
+    },
+    "actual_source_bound_producer": {
+      "path": "build/silicon/task009-sequence-connectivity-extract-a1/result.json",
+      "sha256": "bd77342b66def365bf92237fe468c0746f3ba0e3ddaef97d565466a7b334e54d"
+    },
+    "actual_transistor_netlist": {
+      "path": "build/silicon/task009-sequence-connectivity-extract-a1/extracted.spice",
+      "sha256": "83ca087fd738af8f1de356901090a501f06744e2624a1fafcd3d0bea6b4dbf5b"
+    },
+    "actual_Magic_seconds": 146.133,
+    "limitations": "Original full process GDS re-stream/extraction timeouts retained. No missing nominal PDK input invented. Actual SRAM subscript-count/shorted-port warnings, r vs lvsres classes, unequal device/net counts and45s Netgen timeout block connected LVS. PDN/power/test connectivity still unfinished.",
+    "direct_full_DRC": {
+      "path": "build/silicon/task009-sequence-direct-process-drc-a1/result.json",
+      "sha256": "3aca89f5e1a6131885df7d4bfa26ff6305c0fa80981b41fe1e40ae5963d0f68e"
+    },
+    "source_retention_assessment": {
+      "path": "build/silicon/task009-process-source-retention-a1/result.json",
+      "sha256": "48021044f5b4556f53adf506c5b8551ad7c73774ead6d716e3efbfd129484ea5"
+    },
+    "producer_source_archive": {
+      "path": "build/silicon/task009-process-source-retention-a1/producer-sources.tar.gz",
+      "sha256": "f7b0c78ce6eb16406ce2b9d95ea7a251ae61c08b48a1f4872413d8b29c94e02e"
+    },
+    "retention_fix": "Future process launches archive exact caller/recipe/tool/process input bytes before expensive work. Failed owned Magic recovery databases are copied before automatic Nix-shell temporary cleanup. Original failed temporary database was already cleaned; sourceGDS/DEF/logs retained. Neither prior producer is rewritten."
   }
 }

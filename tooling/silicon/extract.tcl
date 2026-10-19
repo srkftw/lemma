@@ -15,6 +15,13 @@ if {[catch {
     # The supplied primitive style passes width/bulk negative preflights;
     # it differs from the PDK README's ordinary Magic/Netgen recommendation.
     extract style ngspice(lvs)
+    if {[info exists connectivity_only_extraction] && $connectivity_only_extraction == 1} {
+        # Supported LVS acceleration: preserve all transistor geometry and
+        # terminal/net/bulk connectivity. Actual RC timing is separately
+        # extracted by OpenRCX, never this connectivity-only comparison.
+        extract no capacitance
+        extract no coupling
+    }
     extract all
     ext2spice lvs
     ext2spice -o $out/extracted.spice $top
