@@ -44,7 +44,10 @@
       "independent_drc_types": {},
       "global_rc_after_route": null,
       "extracted_rc": null,
-      "source_archive": null
+      "source_archive": {
+        "path": "build/silicon/task009-pen-physical-a1/source-archive/manifest.json",
+        "sha256": "26409b2a4d12dffbb5ed3902c8bf01f1578cd8007fa156e021e740647603d8a1"
+      }
     },
     {
       "receipt": {
