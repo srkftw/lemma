@@ -30,6 +30,41 @@ MAX_REQUEST = 65536
 MAX_EVENTS = 1000000
 
 
+class NotebookFaultObserver:
+    """Bounded kernel lifecycle presentation, never notebook/domain policy."""
+    record = re.compile(rb'K1 (00000000000000f[14]) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?')
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.tail = b''
+        self.boundary = True
+        self.descriptor = None
+        self.fault = None
+
+    def feed(self, data):
+        for byte in data:
+            if byte == 10:
+                match = self.record.fullmatch(self.tail) if self.boundary else None
+                if match:
+                    kind, descriptor, code, value, cause = match.groups()
+                    if kind.endswith(b'1') and code == b'0000000000000001' and self.descriptor is None:
+                        self.descriptor = descriptor
+                    if kind.endswith(b'4') and descriptor == self.descriptor and cause != b'0000000000000000':
+                        self.fault = dict(authority='compiled-kernel-report', descriptor=descriptor.decode(),
+                            exitCode=code.decode(), data=value.decode(), cause=cause.decode(), record=self.tail.decode())
+                self.tail = b''
+                self.boundary = True
+            elif self.boundary:
+                if len(self.tail) < 89:
+                    self.tail += bytes((byte,))
+                else:
+                    self.tail = b''
+                    self.boundary = False
+        return self.fault
+
+
 def digest(path):
     h = hashlib.sha256()
     with Path(path).open('rb') as stream:
@@ -518,6 +553,47 @@ class Session:
         self.presentation_generation = 0
         self.restored_parent = None
         self.school_service = None
+        self.notebook_lifecycle = NotebookFaultObserver()
+        self.notebook_observation_path = None
+        self.notebook_observation_offset = 0
+        self.observe_notebook_fault = 'notebook' in getattr(args, 'workload', '')
+
+    def notebook_epoch(self):
+        self.notebook_lifecycle.reset()
+        self.notebook_observation_path = None
+        self.notebook_observation_offset = 0
+        path = self.directory / (f'uart-{getattr(self.machine,"generation",0)}.bin'
+            if self.machine.identity.get('backend') == 'qemu' else 'uart.bin')
+        if path.is_file():
+            self.notebook_observation_path = path
+            self.notebook_observation_offset = path.stat().st_size
+            if self.notebook_observation_offset:
+                with path.open('rb') as stream:
+                    stream.seek(self.notebook_observation_offset - 1)
+                    self.notebook_lifecycle.boundary = stream.read(1) == b'\n'
+
+    def observe_notebook(self):
+        if not self.observe_notebook_fault:
+            return
+        path = self.directory / (f'uart-{getattr(self.machine,"generation",0)}.bin'
+            if self.machine.identity.get('backend') == 'qemu' else 'uart.bin')
+        if not path.is_file():
+            return
+        if self.notebook_observation_path != path:
+            self.notebook_observation_path = path
+            self.notebook_observation_offset = 0
+            self.notebook_lifecycle.reset()
+        size = path.stat().st_size
+        if size < self.notebook_observation_offset:
+            raise RuntimeError('Notebook lifecycle UART history was truncated')
+        # At most64KiB per owner interval; retain the offset rather than
+        # repeatedly reading or verifying the full submission/boot history.
+        with path.open('rb') as stream:
+            stream.seek(self.notebook_observation_offset)
+            data = stream.read(65536)
+        self.notebook_observation_offset += len(data)
+        if self.notebook_lifecycle.feed(data) is not None:
+            self.automatic = False
 
     def ensure_capture_certain(self):
         if self.capture_uncertain:
@@ -578,6 +654,7 @@ class Session:
             raise
         self.run_seconds += time.monotonic() - started
         self.run_cycles += result['cycle'] - before
+        self.observe_notebook()
         if result.get('finished'):
             self.automatic = False
         return result
@@ -639,6 +716,7 @@ class Session:
         self.event_cursor = cursor
         self.presentation_generation += 1
         self.restored_parent = source
+        self.notebook_epoch()
         return {'restored': str(source), 'machine': result,
                 'medium': 'isolated snapshot fork', 'external_event_cursor': manifest['external_event_cursor']}
 
@@ -780,6 +858,7 @@ class Session:
                     'presentation_generation':self.presentation_generation,
                     'capture_uncertain':self.capture_uncertain,
                     'last_failed_operation':self.last_error,
+                    'guest_fault':self.notebook_lifecycle.fault,
                     'performance': {'run_seconds': self.run_seconds, 'requested_cycles': self.run_cycles,
                                     'cycles_per_second': self.run_cycles / self.run_seconds if self.run_seconds else None}}
         if action == 'pause':
@@ -811,6 +890,7 @@ class Session:
             result = self.external(value, state, action)
             if action=='cold-cycle' and getattr(self,'school_service',None) is not None:self.school_service.partial=False
             self.presentation_generation += 1
+            self.notebook_epoch()
             return result
         if action == 'usb-reconnect':
             if (self.mode not in ('developer', 'laboratory') or self.automatic or
@@ -1198,7 +1278,9 @@ def view(directory):
             power_text=(' · power SUSPENDED' if power['state']==1 else ' · power RUN') if power else ''
             if power and power.get('error'):
                 power_text+=' · '+{1:'suspend Busy',2:'invalid power access'}.get(power['error'],'power error '+str(power['error']))
-            status.set(f"cycle {produced['cycle']} · ticks {produced['ticks']} · " + ('running' if state['running'] else 'paused')+power_text)
+            fault=state.get('guest_fault')
+            fault_text=(f" · Notebook fault (kernel cause0x{fault['cause']}, exit0x{fault['exitCode']}). Export the medium before recovery." if fault else '')
+            status.set(f"cycle {produced['cycle']} · ticks {produced['ticks']} · " + ('running' if state['running'] else 'paused')+power_text+fault_text)
             paper=produced.get('devices',{}).get('paper',{})
             panel=(state.get('presentation_generation',0),paper.get('visible_sha256',produced.get('panel_completed')))
             if panel != last_panel:

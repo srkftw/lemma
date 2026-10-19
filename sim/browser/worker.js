@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 import createMachine from './machine.mjs';
-import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState} from './guest_records.js';
+import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,NotebookFaultObserver} from './guest_records.js';
 import {courseInstallFrame,courseInstallRows,courseSchoolFrames} from './course_transport.js';
 import {RunBudget,uint64} from './run_budget.js';
 import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission,guestSchoolCapability,guestSchoolQueueState} from './school_transport.js';
+const notebookFault=new NotebookFaultObserver();
 const school=new SchoolTransport();let schoolMachineEpoch=0;
 let core, handle, bootHandle, running=false, loaded=false, manifest, panelSequence='-1';
 let activeMediumName=null;
@@ -36,7 +37,8 @@ const hash=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-25
 // bounded geometry, byte lengths and run quanta, never clocks or addresses.
 function state(){return JSON.parse(core.ccall('lemma_inspect','string',[],[]).replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));}
 function check(name,types=[],args=[]){if(core.ccall(name,'number',types,args))throw Error(core.ccall('lemma_error','string',[],[]));}
-function sendState(){const s=state();void school.observeDelivery(core.FS.readFile('/uart.bin'),guestOutputStart,{cycle:s.cycle,completed:s.panel_completed,accepted:s.panel_sequence,busy:s.paper_busy}).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));postMessage({type:'state',state:s,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourse:guestCourseInstallState(core.FS.readFile('/uart.bin'),guestOutputStart),guestQueue:guestSchoolQueueState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
+function observeFault(data=core.FS.readFile('/uart.bin')){const fault=notebookFault.observe(data,guestOutputStart);if(fault)pause('notebook-fault');return fault;}
+function sendState(){const s=state();const fault=observeFault();void school.observeDelivery(core.FS.readFile('/uart.bin'),guestOutputStart,{cycle:s.cycle,completed:s.panel_completed,accepted:s.panel_sequence,busy:s.paper_busy}).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));postMessage({type:'state',state:s,guestFault:fault,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourse:guestCourseInstallState(core.FS.readFile('/uart.bin'),guestOutputStart),guestQueue:guestSchoolQueueState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
  pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-timing.started)/1000,
  simulationCallSeconds:timing.runSeconds,backingCallSeconds:timing.backingSeconds,backingCallSecondsDuringRun:timing.backingRunSeconds,
  simulationOutsideBackingSeconds:Math.max(0,timing.runSeconds-timing.backingRunSeconds)}});return s;}
@@ -119,7 +121,7 @@ function step(){if(!running)return;try{
  const after=state(),periodic=loops%10===0;
  if(budget?.hostExpired(performance.now())){pause('host-limit');panel(true);sendState();return;}
  const data=(periodic||initializing||budget?.stopOnReady)?core.FS.readFile('/uart.bin'):null;
- if(data)observeReady(data);
+ if(data){observeReady(data);if(observeFault(data)){panel(true);sendState();return;}}
  if(budget?.remaining===0n){pause('cycle-limit');panel(true);sendState();return;}
  if(budget?.panelCompleted(after)){pause('panel-complete');panel(true);sendState();return;}
  if(budget?.stopOnReady&&readyAt!==null){pause('guest-ready');panel(true);sendState();return;}
@@ -196,12 +198,12 @@ async function load(message){if(loaded)throw Error('Close this machine before op
    const until=BigInt(log.until);if(until<BigInt(state().cycle)||until>18446744073709551615n)throw Error('Invalid replay end');
    for(const row of log.events.slice(boundary.eventCount)){if(typeof row!=='string'||row.length>256)throw Error('Invalid bounded raw event');const cycle=BigInt(row.split(' ')[0]);if(cycle<BigInt(state().cycle)||cycle>until)throw Error('Replay event outside suffix');check('lemma_event',['string'],[row]);}
    replayUntil=String(until);
-  }else check('lemma_create');courseInputPartial=false;loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay&&!product;started=performance.now();running=!message.paused;pauseReason=message.paused?'opened-paused':null;sendState();panel(true);if(running)scheduleStep();
+  }else check('lemma_create');courseInputPartial=false;loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;notebookFault.reset(guestOutputStart);guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay&&!product;started=performance.now();running=!message.paused;pauseReason=message.paused?'opened-paused':null;sendState();panel(true);if(running)scheduleStep();
  }catch(e){pause('error');core?.ccall('lemma_destroy',null,[],[]);handle?.close();bootHandle?.close();handle=null;bootHandle=null;activeMediumName=null;loaded=false;throw e;}}
 async function launchNotebook(){busy=true;try{core.ccall('lemma_destroy',null,[],[]);
  const w=manifest.workloads.notebook;
  for(const [path,item]of [['/image.elf',w.image],['/machine.dtb',w.dtb],['/descriptor.bin',w.descriptor]])core.FS.writeFile(path,await getBytes(item));
- check('lemma_create');if(budget)budget.rebase(state().cycle);guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='boot';loops=0;capture=[];checkpoints={};readyAt=null;started=performance.now();sendState();panel(true);running=true;pauseReason=null;scheduleStep();
+ check('lemma_create');if(budget)budget.rebase(state().cycle);guestOutputStart=core.FS.readFile('/uart.bin').length;notebookFault.reset(guestOutputStart);guestObservation='boot';loops=0;capture=[];checkpoints={};readyAt=null;started=performance.now();sendState();panel(true);running=true;pauseReason=null;scheduleStep();
  }finally{busy=false;}}
 async function bindPrivate(){
  // Copy opaque backing bytes, including observed unacknowledged changes.
@@ -275,7 +277,7 @@ onmessage=async({data:m})=>{
  else if(m.action==='raw-batch'){admitBatch(m.rows);}
  else if(m.action==='course-install')admitCourseInstall(m);
  else if(m.action==='inspect'){sendState();postMessage({type:'uart',text:new TextDecoder().decode(core.FS.readFile('/uart.bin'))});}
- else if(m.action==='reset'){school.disconnect();schoolMachineEpoch++;if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');pause('reset');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='boot';check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}
+ else if(m.action==='reset'){school.disconnect();schoolMachineEpoch++;if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');pause('reset');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;notebookFault.reset(guestOutputStart);guestObservation='boot';check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}
  else if(m.action==='snapshot'){pause('snapshot');const path='/snapshot-'+loops+'.bin';check('lemma_snapshot',['string'],[path]);
   const b=core.FS.readFile(path);core.FS.unlink(path);checkpoints[await hash(b)]={eventCount:capture.length,cycle:state().cycle};
   postMessage({type:'export',name:'lemma-checkpoint.bin',bytes:b},[b.buffer]);sendState();}
@@ -291,7 +293,7 @@ onmessage=async({data:m})=>{
   // incompatible/corrupt archive without cancelling the live run or budget.
   // No asynchronous copy starts until this synchronous acceptance succeeds.
   try{restoreCheckpoint(m.bytes);}catch(error){postMessage({type:'error',error:String(error)});return;}
-  pause('restore');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='continuation';capture=[];checkpoints={};replayUntil=null;readyAt=null;
+  pause('restore');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;notebookFault.reset(guestOutputStart);guestObservation='continuation';capture=[];checkpoints={};replayUntil=null;readyAt=null;
   // Clear launch observations before private backing can fail. The accepted
   // continuation remains paused and retryable, with no prior Ready/save label.
   backingReady=false;await bindPrivate();sendState();panel(true);

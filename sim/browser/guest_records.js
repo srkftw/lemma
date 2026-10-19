@@ -60,3 +60,38 @@ export function guestCourseInstallState(bytes,start){
   status:status.toString(),identity:identity.toString(),edition:edition.toString(),
   sequence:sequence.toString(),crc32:crc.toString()};
 }
+
+// Incremental presentation of the admitted notebook's kernel lifecycle. Image
+// index1 is the primary notebook in the maintained notebook deployments. A
+// helper exit (including an arithmetic failure) must not stop usable paper.
+// This observes the kernel's own F1/F4 reports; it never diagnoses document
+// contents or infers a fault from a timeout, a partial line, or an old boot.
+export class NotebookFaultObserver {
+ constructor(){this.reset(0);}
+ reset(start){this.start=start;this.cursor=start;this.tail='';this.descriptor=null;this.fault=null;this.boundary=null;}
+ observe(bytes,start){
+  if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length)
+   throw Error('Invalid notebook lifecycle observation boundary');
+  if(this.start!==start)this.reset(start);
+  if(this.cursor>bytes.length)throw Error('Notebook lifecycle UART history was truncated');
+  if(this.boundary===null)this.boundary=start===0||bytes[start-1]===10;
+  for(let i=this.cursor;i<bytes.length;i++){
+   const byte=bytes[i];
+   if(byte===10){
+    if(this.boundary){
+     const match=/^K1 (00000000000000f[14]) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?$/.exec(this.tail);
+     if(match){
+      if(match[1].endsWith('1')&&match[3]==='0000000000000001'&&this.descriptor===null)this.descriptor=match[2];
+      if(match[1].endsWith('4')&&match[2]===this.descriptor&&match[5]!=='0000000000000000')
+       this.fault={authority:'compiled-kernel-report',descriptor:match[2],exitCode:match[3],data:match[4],cause:match[5],record:this.tail};
+     }
+    }
+    this.tail='';this.boundary=true;
+   }else if(this.boundary){
+    if(this.tail.length<89)this.tail+=String.fromCharCode(byte);
+    else {this.tail='';this.boundary=false;}
+   }
+  }
+  this.cursor=bytes.length;return this.fault;
+ }
+}
