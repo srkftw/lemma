@@ -292,5 +292,18 @@
     "General arbitrary-length durable outbox is not provided by this bounded single-pending queue",
     "ACK CRC32 detects corruption and does not authenticate a remote principal",
     "Exact machine checkpoints and cold Store recovery retain separate qualification scopes"
-  ]
+  ],
+  "notebook_integration_actions": {
+    "path": "build/courses/task009-notebook-school-actions-a1/result.json",
+    "sha256": "d1ff65b5d86f47d0aa5d73e8d1932bffe2ac0def9b618eef99bcf201c0ecfc30",
+    "status": "PASS_NOTEBOOK_SCHOOL_ACTIONS",
+    "scope": "Actual private Notebook Actions over independently framed finite RAM/IPC; not CPU or durable medium execution",
+    "source_archive": {
+      "path": "build/courses/task009-notebook-school-actions-a1/consumed-source.tar.gz",
+      "sha256": "92f06574bfbb75c1ef07bf700424cdf463260dc829b1e2ac2bacf07b0955e74e",
+      "bytes": 153285
+    },
+    "notebook_sha256": "cd816150014c8d2ea656997c4b7f41909a0212faf125d7b7f8e33669e8c97445",
+    "fixture_sha256": "01f828c5f8320886095b901556b34299ef5c3165f51b4ff90f8818bf2d806757"
+  }
 }
