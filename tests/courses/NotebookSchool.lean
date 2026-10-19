@@ -153,9 +153,52 @@ private def bootGateCheck : IO Unit := do
     expect (issued.1 == 0 && (← get r (base+168)) == 42 && (← get r (base+232)) == 2)
       "first Save failed before multimodal/queue allocation in ordinary or school root"
 
+private def queueHandoffCheck : IO Unit := do
+  let tutor := Lemma.User.Multimodal.state+144
+  -- The actual queue pump cannot reserve request IDs or allocate its arena
+  -- while any foreground owner/intent still exists. No syscall is available.
+  for owner in #[base+160,base+112,base+144,base+104,base+536,tutor+16] do
+    let r ← IO.mkRef ({} : Model)
+    put r (base+760) 1;put r (base+176) 7;put r owner 1
+    let held ← run r (schoolNotebook% "schoolQueuePump")
+    expect (held.1 == 0 && (← get r (base+712)) == 0 && (← get r (base+176)) == 7)
+      "queue initialization borrowed a live foreground request/call"
+  let r ← IO.mkRef ({} : Model)
+  put r (base+760) 1;put r (base+176) 7
+  r.modify fun m => {m with syscalls := (Array.range 8).map fun i => (0,SchoolSubmission.arena+i.toUInt64*4096)}
+  let initialized ← run r (schoolNotebook% "schoolQueuePump")
+  expect (initialized.1 == 0 && (← get r (base+712)) == 1 && (← get r (base+176)) == 1000007 &&
+    (← get r SchoolSubmission.arena) == 40 && (← r.get).syscalls.isEmpty)
+    "idle queue did not reserve once and prepare its actual recovery"
+  -- A real queue read now owns the one task IPC slot. Save must retain its
+  -- buffers in deferred phase8; it must not issue a competing Store Begin.
+  put r SchoolSubmission.arena 41
+  put r (base+160) 1
+  let owns ← run r (schoolNotebook% "schoolQueueOwnsIPC")
+  let deferred ← run r ((schoolNotebook% "issue") 2 0 64 0)
+  expect (owns == (0,1) && deferred.1 == 0 && (← get r (base+160)) == 8 &&
+    (← get r (base+176)) == 1000007 && (← r.get).syscalls.isEmpty)
+    "foreground Save started before actual queue read completion"
+  -- Transient controls preserve exact context and coalesce without borrowing
+  -- document/IPC state. A changed view rejects replay before any Store call.
+  put r (base+72) 1;put r (base+80) 1;put r (base+512) 0
+  r.modify fun m => {m with syscalls := #[(0,88)]}
+  let queued ← run r ((schoolNotebook% "schoolQueueControl") 1400 64)
+  let operation ← get r (tutor+16)
+  expect (queued.1 == 0 && operation == ((0x100000000 : UInt64) ||| (1400 : UInt64) ||| ((64 : UInt64) <<< 16)) &&
+    (← get r (tutor+32)) == 1 && (← get r (tutor+56)) == 1)
+    "queued navigation/Save control lost its original page binding"
+  put r (base+80) 2
+  let changed ← run r (schoolNotebook% "schoolControlContext")
+  expect (changed.1 == 175 && (← get r (base+176)) == 1000007)
+    "deferred control was silently retargeted to a changed page"
+  put r (base+80) 1
+  let original ← run r (schoolNotebook% "schoolControlContext")
+  expect (original.1 == 0) "unchanged original home control was rejected"
+
 def main : IO Unit := do
-  floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck
-  IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply; component only"
+  floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck
+  IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control; component only"
 end NotebookSchoolTests
 
 def main : IO Unit := NotebookSchoolTests.main
