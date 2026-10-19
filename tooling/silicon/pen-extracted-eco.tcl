@@ -5,6 +5,10 @@ set_thread_count 4
 read_liberty $pdk/lib/sg13g2_stdcell_typ_1p20V_25C.lib
 read_liberty $macro_lib
 read_db $prior/routed.odb
+if {[info exists group_button_bus] && $group_button_bus == 1} {
+    source $button_pin_script
+    lemma_check_button_pins
+}
 read_sdc $prior/routed.sdc
 set validation_group [[ord::get_db_block] findGroup pen_validation_middle]
 if {$validation_group != "NULL"} {source $validation_region_check_script}
@@ -33,6 +37,7 @@ repair_timing -setup -phases WNS_PATH -setup_margin 0.25 -max_passes 2 -max_iter
 repair_timing -hold -hold_margin 0.03 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose
+if {[info exists group_button_bus] && $group_button_bus == 1} {lemma_check_button_pins}
 if {$validation_group != "NULL"} {source $validation_region_check_script}
 write_verilog $out/post-eco-unrouted.v
 # Every signal is freshly routed and then independently re-extracted. An old

@@ -140,6 +140,7 @@ def main():
             require(sha(prior / 'routed.def') == previous['route_enclosure']['routed_def_sha256'], 'original route DEF differs')
             require(sha(prior / 'nom.spef') == previous['extracted_rc']['nom']['spef_sha256'], 'original nominal SPEF differs')
             require((prior / 'route.guide').is_file() and (prior / 'route.guide').stat().st_size > 1000, 'real prior routing guides required to initialize GRT net/grid context')
+            report['button_bus_pin_placement'] = previous.get('button_bus_pin_placement', 'UNCONSTRAINED')
             report['routed_eco_from'] = {'path': str(prior), 'receipt_sha256': sha(prior / 'result.json'), 'guides_sha256': sha(prior / 'route.guide'), 'guide_scope': 'Newly source-bound real prior guide input initializes net/grid context; timing remains original actual SPEF, not guide estimates'}
             inputs += [ROOT / 'tooling/silicon/pen-extracted-eco.tcl'] + [prior / name for name in ('result.json', 'routed.odb', 'routed.def', 'routed.v', 'routed.sdc', 'nom.spef', 'route.guide')]
         if args.completed_eco_route_from:
@@ -185,7 +186,7 @@ set clock_ns 10
 set clock_port clk
 set automatic_clock_wire_length {1 if args.automatic_clock_wire_length else 0}
 set center_validation_cones {1 if args.center_validation_cones else 0}
-set group_button_bus {1 if args.group_button_bus else 0}
+set group_button_bus {1 if report['button_bus_pin_placement'] == 'FULL64_ORDERED_TOP_EDGE' else 0}
 set button_pin_script {{{ROOT/"tooling/silicon/pen-button-pins.tcl"}}}
 set defer_global_eco {1 if args.defer_global_eco else 0}
 set validation_region_script {{{ROOT/"tooling/silicon/pen-validation-region.tcl"}}}
@@ -193,7 +194,7 @@ set validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check
 source {{{ROOT/'tooling/silicon/layout.tcl'}}}
 ''')
         if args.routed_eco_from:
-            script.write_text(f'set prior {{{prior}}}\nset out {{{out}}}\nset pdk {{{std}}}\nset macro_lib {{{macro/"lib"/(MACRO+"_typ_1p20V_25C.lib")}}}\nset validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check.tcl"}}}\nsource {{{ROOT/"tooling/silicon/pen-extracted-eco.tcl"}}}\n')
+            script.write_text(f'set prior {{{prior}}}\nset out {{{out}}}\nset pdk {{{std}}}\nset macro_lib {{{macro/"lib"/(MACRO+"_typ_1p20V_25C.lib")}}}\nset validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check.tcl"}}}\nset group_button_bus {1 if report['button_bus_pin_placement'] == 'FULL64_ORDERED_TOP_EDGE' else 0}\nset button_pin_script {{{ROOT/"tooling/silicon/pen-button-pins.tcl"}}}\nsource {{{ROOT/"tooling/silicon/pen-extracted-eco.tcl"}}}\n')
         # Preserve the real failed database, including GRT's stored overflow
         # grid, before Tcl propagates an implementation error. A snapshot is
         # diagnostic state only and never a completed routed layout.

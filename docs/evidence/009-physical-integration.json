@@ -817,6 +817,63 @@
         }
       },
       "candidate_only": false
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-sequence-button-edge-actual-eco-a1/result.json",
+        "sha256": "e06921c8982875a7c86eefd9456654028635aef05839c8ae3815a809e4f75e24"
+      },
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 417.49443000298925,
+      "source_seal_equal": true,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 129,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 396510.528,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 45.65317220794924,
+        "instances": 8670,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after fresh ECO detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -0.953732,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": 0.02965,
+        "hold_timing": "MET"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "cbed038d1b960921b3dab4a413f6b47ac14c8e99a829dd9fe6ef6386c849e2ea",
+          "setup": "worst slack max -11.917049",
+          "hold": "worst slack min 0.018250",
+          "electrical_violations": 609
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "be24736654666fb6bcda4453574168f739a11a2191bf6037fa90539365373a23",
+          "setup": "worst slack max -14.263388",
+          "hold": "worst slack min 0.052187",
+          "electrical_violations": 753
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "613b3a32961845271a5b44f6716a3e378ce48a95c84859258f4bbefb64d482ba",
+          "setup": "worst slack max -16.511238",
+          "hold": "worst slack min -0.012314",
+          "electrical_violations": 936
+        }
+      },
+      "candidate_only": false,
+      "scope": "Selected full64 top-edge physical variant after actual-SPEF repair. Canonical504fRTL unchanged. Initial inline pin assertions omitted due to generated-header error; independent actual ODB assessment verifies all64 shapes exactly. All setup/electrical and RCmaxhold stillfail; no process qualification for this new geometry."
     }
   ],
   "extracted_available_corners": [
@@ -843,6 +900,10 @@
     {
       "path": "build/silicon/task009-sequence-button-edge-corners-a1/result.json",
       "sha256": "4bc1efbdb1e919e407bbefc87aedb2c1a2be645742076361e17c9ebdce42ea9e"
+    },
+    {
+      "path": "build/silicon/task009-sequence-button-edge-eco-corners-a1/result.json",
+      "sha256": "da60ecbabe2fd863b5b710e40c85f2837067e568206298f128031401d532e098"
     }
   ],
   "process_attempts": [
@@ -1056,8 +1117,8 @@
     "important_correction": "Public typical and slow SRAM timing libraries exist and are assessed; they are not missing-input blockers."
   },
   "source_boundaries": {
-    "physical_execution": "Historical a3, fault3, centered and cached-saturation sources retain distinct producers and failures. Cache now selected in canonical RTL and freshly mapped through normal maintained path; actual native/Wasm require separate fresh runtime producers. Selected physical ECO still fails routing/setup/hold/electrical; no process/fabrication qualification follows.",
-    "process": "Original process/GDS/LEF/deck bytes stay immutable. Removing display expansion exposed full DRC; separate300s export and180s direct extraction attempts remain failed. Direct extraction reached real top-cell geometry. Complete process DRC and connected transistor LVS have not completed; no missing nominal process collateral is invented to excuse these tool/engineering failures.",
+    "physical_execution": "Historical a3, fault3, centered and cached-saturation sources retain distinct producers and failures. Cache now selected in canonical RTL and freshly mapped through normal maintained path; actual native/Wasm require separate fresh runtime producers. Selected physical ECO still fails routing/setup/hold/electrical; no process/fabrication qualification follows. The current selected physical variant is full64 top-edge actual-SPEF ECO129markers/−14.263388ns setup/+.052187ns nominal hold/753electrical; RCmaxhold−.012314ns stillfails. CanonicalRTL504f unchanged; every runtime keeps its own source identity.",
+    "process": "Original process/GDS/LEF/deck bytes stay immutable. Removing display expansion exposed full DRC; separate300s export and180s direct extraction attempts remain failed. Direct extraction reached real top-cell geometry. Complete process DRC and connected transistor LVS have not completed; no missing nominal process collateral is invented to excuse these tool/engineering failures. Completed146s transistor extraction and300s directDRC/45s Netgen failures bind the preceding170marker geometry; they are not process qualification for the later129marker variant.",
     "logic_comparison": "Private Yosys zero-delay correspondence trials retain async-FF/commutative-cutpoint/timeout failures; they do not establish connected layout-vs-netlist equivalence.",
     "failure_snapshot_retention": "A corrected Tcl observer retains failed OpenDB/DEF and primary error. The retained grid is a source-bound congestion heatmap, not an isolated physical-track overflow: pinned usage includes blockage and both directions. The original stronger interpretation is corrected separately without rewriting producer receipts."
   },
@@ -1288,6 +1349,10 @@
       ],
       "cause": "Actual routed ODB plus SPEF did not initialize GRT net/grid context: both pin-swap and buffer moves crashed. Supported read_guides initializes actual net/grid objects; original real guide file newly SHA-bound as input. All repair moves remain enabled, every signal rerouted and fresh min/nom/max extracted. Prior guide was not included in old producer receipt; its new binding does not retroactively qualify old provenance.",
       "guides_sha256": "bed05cb2d082deb35993c11812fe56966f481a2b5b0c4f839c5d83ea8abbcc6f"
+    },
+    "selected_physical_variant": {
+      "path": "build/silicon/task009-sequence-button-edge-actual-eco-a1/result.json",
+      "sha256": "e06921c8982875a7c86eefd9456654028635aef05839c8ae3815a809e4f75e24"
     }
   },
   "prior_fault3_rtl": {
@@ -1299,7 +1364,7 @@
     "sha256": "9b437ff0d1260bae965a5c62eadd52686f7b0271164f6684df65f86c44868bc9"
   },
   "button_bus_pin_question": {
-    "status": "ACTUAL_DETOUR_REMOVED_GLOBAL_TIMING_REGRESSION_UNSELECTED",
+    "status": "SELECTED_PHYSICAL_VARIANT_PHYSICAL_CLOSURE_FAIL",
     "cause": "Actual cached pre-ECO sample_buttons[38] two-net path detours bottom→top→bottom:1448.38um/0.942812pF wire and1404.2um/0.975988pF wire, source/deck units unchanged.",
     "placement": "All64 real input BTerms ordered/grouped top-edge on original Metal2 tracks; every bit and original2ns delay/10ns clock retained. Strict actual pin geometry checks require in-die top boundary, ascending x and ≤128um span. No capacity adaptation.",
     "probe": {
@@ -1347,7 +1412,46 @@
       "electrical_violations": 1224,
       "seconds": 558.3570532370359,
       "scope": "Against same cached pre-ECO540/−17.091133/−.038760/1237: routing improves, setup/hold regress. All closureFAIL; new worst sample_time[14]."
-    }
+    },
+    "actual_SPEF_ECO": {
+      "path": "build/silicon/task009-sequence-button-edge-actual-eco-a1/result.json",
+      "sha256": "e06921c8982875a7c86eefd9456654028635aef05839c8ae3815a809e4f75e24"
+    },
+    "ECO_corners": {
+      "path": "build/silicon/task009-sequence-button-edge-eco-corners-a1/result.json",
+      "sha256": "da60ecbabe2fd863b5b710e40c85f2837067e568206298f128031401d532e098"
+    },
+    "pin_assessment": {
+      "path": "build/silicon/task009-button-eco-pin-assessment-a2/result.json",
+      "sha256": "65667850aaea9185951dba528769ec7312f0c03cf407eda40a83788f76fb5a04"
+    },
+    "pin_observer_initial_failure": {
+      "path": "build/silicon/task009-button-eco-pin-assessment-a1/result.json",
+      "sha256": "e4f0159fff306e754c58721f2d606fdf246ace00d1ecf9b08377b8255887ab42"
+    },
+    "ECO_result": {
+      "router_violations": 129,
+      "shorts": 112,
+      "spacing": 17,
+      "nominal_setup_ns": -14.263388,
+      "nominal_hold_ns": 0.052187,
+      "electrical_violations": 753,
+      "RC_min_hold_ns": 0.01825,
+      "RC_max_hold_ns": -0.012314,
+      "seconds": 417.49443000298925,
+      "resized_cells": 141,
+      "electrical_buffers": 1,
+      "hold_buffers": 33,
+      "pin_swaps": 2,
+      "all_nine_corners": "FAIL",
+      "slow125C_nominal": {
+        "setup_ns": -30.01766,
+        "hold_ns": 0.110635,
+        "electrical_violations": 1564
+      },
+      "next_critical": "contact_deadline[2]→contact_deadline[36] through scalar full64 watchdog/control"
+    },
+    "pin_observer_scope": "Original ECO header omitted group enable/script variables; inline checks did not run. A separate read-only source-bound ODB assessment checks both actual prior/final64 BPin shapes and their exact identity, full top/Metal2/order/span rules. First2GiB observer failed OpenBLAS allocation; corrected threadenvironment1 retains samebudget and succeeds0.604s. Future ECO header now supplies variables; no old producer rewritten or rerouted merely to fix observer."
   },
   "connectivity_only_adapter": {
     "status": "REAL_EXTRACTION_COMPLETED_CONNECTED_LVS_UNQUALIFIED",
