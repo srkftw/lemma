@@ -76,7 +76,7 @@ def host_flags(preset):
     raise ValueError('Unknown portable host optimization')
 
 def archived_native_build(build, source_root, selected_profile):
-    """Port a complete original canonical or Clocked13 producer.
+    """Port a complete original canonical, Clocked13 or Integrated15 producer.
 
     The native archive closes all original inputs and its separately bound
     selected JSON. The portable C ABI and build recipe are new host inputs;
@@ -84,8 +84,9 @@ def archived_native_build(build, source_root, selected_profile):
     """
     from silicon_guest import native_source_archive, USB_CLOCKED_PROFILE_NAME
     canonical = selected_profile == 'lemma-silicon-dev/0.3.0'
-    if not canonical and selected_profile != USB_CLOCKED_PROFILE_NAME:
-        raise ValueError('Native-to-portable source admission is canonical0.3 or Clocked13 only')
+    integrated = selected_profile == 'lemma-silicon-dev/0.15.0'
+    if not canonical and not integrated and selected_profile != USB_CLOCKED_PROFILE_NAME:
+        raise ValueError('Native-to-portable source admission is canonical0.3, Clocked13 or Integrated15 only')
     source_root = Path(source_root).resolve()
     original_prefix = ROOT
     if canonical:
@@ -109,6 +110,17 @@ def archived_native_build(build, source_root, selected_profile):
             'runtime_identity':manifest['snapshot_identity'],
             'source_count':len(relative_inputs),
             'scope':'unchanged complete canonical native producer; selected JSON archived; execution separate'}
+    elif integrated:
+        from product_native import native, archived_original_root
+        checked=native(build,source_root,selected_profile)
+        manifest=checked['manifest'];original_prefix=archived_original_root(manifest)
+        archive=json.loads((source_root.parent/'consumed-source-archive.json').read_text())
+        inputs={str(original_prefix/name):want for name,want in archive['inputs'].items()}
+        evidence={'schema':'lemma-wasm-integrated-native-producer/1',
+            'build_manifest_sha256':digest(Path(build)/'build.json'),
+            'archive_sha256':digest(source_root.parent/'consumed-source-archive.json'),
+            'binary_sha256':manifest['binary_sha256'],'runtime_identity':manifest['snapshot_identity'],
+            'source_count':len(inputs),'scope':'complete source-bound Integrated15 native producer; real portable compilation and execution remain separate'}
     else:
         manifest, inputs, evidence = native_source_archive(build, source_root, selected_profile)
         from product_native import archived_original_root
@@ -161,7 +173,7 @@ def archived_native_build(build, source_root, selected_profile):
         **({'original_repository_root':str(original_prefix),
             'logical_build_root':str(ROOT)} if original_prefix != ROOT else {}),
         'scope':'fresh portable host compilation of the complete original '+
-            ('canonical0.3' if canonical else 'Clocked13')+' circuit and Machine; no fresh guest compilation'}
+            ('canonical0.3' if canonical else 'Integrated15' if integrated else 'Clocked13')+' circuit and Machine; no fresh guest compilation'}
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
@@ -171,7 +183,7 @@ def main():
     p.add_argument('--source-bundle',type=Path,
                    help='complete original static browser source bundle; never mix with current RTL')
     p.add_argument('--native-build',type=Path,
-                   help='original canonical0.3 or Clocked13 native build; requires its complete source archive')
+                   help='original canonical0.3, Clocked13 or Integrated15 native build; requires its complete source archive')
     p.add_argument('--native-source-root',type=Path,
                    help='complete selected-profile native source archive; no checkout fallback')
     p.add_argument('--host-optimization',choices=('scalar','simd-lto'),default='scalar',
@@ -238,9 +250,13 @@ def main():
             'scope':'integer SIMD and LLVM LTO; no fast-math, circuit or virtual-time changes'}
     identity=hashlib.sha256(json.dumps(snapshot_inputs(m,dep),sort_keys=True,separators=(',',':')).encode()).hexdigest()
     gen=out/'generated';gen.mkdir();(gen/'lemma_runtime_identity.h').write_text('#pragma once\n#define LEMMA_RUNTIME_IDENTITY "'+identity+'"\n')
-    version_script="import json, subprocess; print(json.dumps({tool:subprocess.check_output([tool,'--version'],text=True) for tool in ['verilator','em++','node']}))"
-    versions=json.loads(subprocess.check_output(
-        ['nix-shell',str(shell),'--run',shlex.join(['python3','-c',version_script])],text=True))
+    # Machine-readable output has its own file; admission/budget wrappers may
+    # legitimately log to stdout before the tool runs. Preserve that log too.
+    version_output=out/'tool-versions.json'
+    version_script="import json, pathlib, subprocess; pathlib.Path("+repr(str(version_output))+").write_text(json.dumps({tool:subprocess.check_output([tool,'--version'],text=True) for tool in ['verilator','em++','node']}))"
+    with (out/'tool-versions.log').open('w') as version_log:
+        command(['nix-shell',str(shell),'--run',shlex.join(['python3','-c',version_script])],timeout=120,log=version_log)
+    versions=json.loads(version_output.read_text())
     if a.source_bundle and versions != m['portable_tool_versions']:
         raise ValueError('Original portable tool versions differ')
     m['portable_tool_versions']=versions
@@ -248,7 +264,7 @@ def main():
         with (out/log).open('w') as f:
             command(['nix-shell',shell,'--run',shlex.join(map(str,argv))],timeout=timeout,log=f)
     start=time.monotonic()
-    run(['verilator','--cc','--savable','-Wno-fatal',*(['-fno-dfg'] if a.profile=='lemma-silicon-dev/0.14.0' else []),'--top-module','lemma_soc','--Mdir',out/'obj',
+    run(['verilator','--cc','--savable','-Wno-fatal',*(['-fno-dfg'] if a.profile in ('lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.15.0') else []),*(['-DFUNCTIONAL','--no-timing'] if m.get('sram_model') else []),'--top-module','lemma_soc','--Mdir',out/'obj',
          *['-I'+str(x) for x in include_paths],*source_paths], 'generate.log',900)
     includes=subprocess.check_output(['nix-shell',shell,'--run','printf %s "$VERILATOR_ROOT"'],text=True)
     if not includes.startswith('/nix/store/'):

@@ -775,3 +775,8 @@ def validate_linked_literals(section_text: str, symbol_text: str, text: bytes,
 from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS
 DOCUMENT4_NOTEBOOK_CONFIGURATIONS |= set(MULTIMODAL_CONFIGURATIONS)
 DOCUMENT4_NOTEBOOK_PROFILES.update({configuration:'core0-user-v0.2' for configuration in MULTIMODAL_CONFIGURATIONS})
+
+# Integrated15 retains the exact maintained Doc8/User2 format.
+from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS
+DOCUMENT4_NOTEBOOK_CONFIGURATIONS |= set(INTEGRATED_CONFIGURATIONS)
+DOCUMENT4_NOTEBOOK_PROFILES.update({configuration:'core0-user-v0.2' for configuration in INTEGRATED_CONFIGURATIONS})

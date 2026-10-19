@@ -74,6 +74,9 @@ structure Configuration where
   commonOFDM : Bool := false
   /-- Exclusive Multimodal14 controller aperture; no boot NV or radio. -/
   multimodal : Bool := false
+  /-- Integrated15 composes the unchanged Product10 NV/image interface and
+  Multimodal14 converter aperture using distinct PMP8/PMP9. -/
+  integrated : Bool := false
   deriving Repr, BEq
 
 def contextBytes : Nat := Layout.contextBytes
@@ -114,7 +117,7 @@ def commonPmpAddress : Nat := napot 0x10013000 0x400
 def commonPmpConfiguration : Nat := 0x1b
 def commonPmpReadbacks : Nat := 0x804e01f0
 
-private def initializePmp (lemmasim product common multimodal : Bool) : Array Line := #[ins (.csrWrite .pmpcfg0 .zero)] ++
+private def initializePmp (lemmasim product common multimodal integrated : Bool) : Array Line := #[ins (.csrWrite .pmpcfg0 .zero)] ++
   (if product || common || multimodal then #[ins (.csrWrite .pmpcfg2 .zero)] else #[]) ++
   (pmpAddresses ++ (if lemmasim then #[
     (.pmpaddr5, napot 0x0c000000 0x800000),
@@ -123,7 +126,14 @@ private def initializePmp (lemmasim product common multimodal : Bool) : Array Li
     ins (.loadImmediate .t0 value), ins (.csrWrite csr .t0)
   ]) ++ #[
     ins (.loadImmediate .t0 (if lemmasim then 0x1b1b1b1b1b1f1818 else pmpConfiguration)), ins (.csrWrite .pmpcfg0 .t0)
-  ] ++ (if product then #[
+  ] ++ (if integrated then #[
+    ins (.loadImmediate .t0 productPmpAddress), ins (.csrWrite .pmpaddr8 .t0),
+    ins (.csrRead .t1 .pmpaddr8), ins (.branchNe .t0 .t1 "lemma_machine_fatal"),
+    ins (.loadImmediate .t0 (napot 0x10014000 0x2000)), ins (.csrWrite .pmpaddr9 .t0),
+    ins (.csrRead .t1 .pmpaddr9), ins (.branchNe .t0 .t1 "lemma_machine_fatal"),
+    ins (.loadImmediate .t0 0x1b1b), ins (.csrWrite .pmpcfg2 .t0),
+    ins (.csrRead .t1 .pmpcfg2), ins (.branchNe .t0 .t1 "lemma_machine_fatal")
+  ] else if product then #[
     -- The original entry7 ends at10012000. A separate ninth entry preserves
     -- its exclusive boundary and grants only the actual 1 KiB BootNV port.
     ins (.loadImmediate .t0 productPmpAddress), ins (.csrWrite .pmpaddr8 .t0),
@@ -160,7 +170,13 @@ private def recordBootState (config : Configuration) : Array Line := #[
 ]) ++ (if config.lemmasim then
   (#[ (.pmpaddr5, 104), (.pmpaddr6, 112), (.pmpaddr7, 120) ] : Array (CSR × Nat)).flatMap
     (fun (csr, slot) => #[ins (.csrRead .t1 csr), ins (.storeDouble .t1 .t0 (offset slot))])
-  else #[]) ++ (if config.commonOFDM || config.multimodal then #[
+  else #[]) ++ (if config.integrated then #[
+    ins (.loadImmediate .t0 (commonPmpReadbacks - 16)),
+    ins (.csrRead .t1 .pmpaddr8), ins (.storeDouble .t1 .t0 0),
+    ins (.csrRead .t1 .pmpcfg2), ins (.storeDouble .t1 .t0 8),
+    ins (.csrRead .t1 .pmpaddr9), ins (.storeDouble .t1 .t0 16),
+    ins (.csrRead .t1 .pmpcfg2), ins (.storeDouble .t1 .t0 24)
+  ] else if config.commonOFDM || config.multimodal then #[
     ins (.loadImmediate .t0 commonPmpReadbacks),
     ins (.csrRead .t1 .pmpaddr8), ins (.storeDouble .t1 .t0 0),
     ins (.csrRead .t1 .pmpcfg2), ins (.storeDouble .t1 .t0 8)
@@ -189,7 +205,7 @@ def startup (config : Configuration) : Array Line := #[
   ins (.loadImmediate .t0 (UInt64.toNat Lemma.Core0.Timer.MachineTimer.compareAddress)),
   ins (.loadImmediate .t1 0xffffffffffffffff),
   ins .fenceIO, ins (.storeDouble .t1 .t0 0), ins .fenceIO
-] ++ initializePmp config.lemmasim config.productBoot config.commonOFDM config.multimodal ++ #[
+] ++ initializePmp config.lemmasim config.productBoot config.commonOFDM config.multimodal config.integrated ++ #[
   ins (.loadImmediate .t0 exceptionDelegation), ins (.csrWrite .medeleg .t0),
   ins (.loadImmediate .t0 (if config.lemmasim then 514 else interruptDelegation)), ins (.csrWrite .mideleg .t0)
 ] ++ (if config.startupCase == .machineOriginProbe then #[
@@ -401,7 +417,10 @@ private def validSymbol (symbol : String) : Bool :=
 def Configuration.validate (config : Configuration) : Except String Unit := do
   unless Layout.valid do throw "authoritative machine layout is invalid"
   unless validSymbol config.kernelMain do throw "invalid compiled kernel entry symbol"
-  if config.multimodal then
+  if config.integrated then
+    unless config.lemmasim && config.productBoot && config.multimodal && !config.commonOFDM && config.stage == .supervisor && config.startupCase == .normal do
+      throw "Integrated15 requires its exact Product+Multimodal supervisor startup"
+  if config.multimodal && !config.integrated then
     unless config.lemmasim && !config.productBoot && !config.commonOFDM && config.stage == .supervisor && config.startupCase == .normal do
       throw "Multimodal PMP requires exclusive normal LemmaSim supervisor startup"
   if config.productBoot then

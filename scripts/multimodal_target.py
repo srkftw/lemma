@@ -15,6 +15,7 @@ import re
 from core0_common import Core0Error
 from multimodal_deployment import CONFIGURATIONS, PARAMETERIZED_CONFIGURATIONS, BOOT_ROOTS, NOTEBOOK_ROOT, SOFTWARE_DEPLOYMENT
 from paper_next import canonical
+from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS
 
 ROOT = Path(__file__).resolve().parents[1]
 AUTHORITY = ROOT / 'tooling/multimodal-target-authority.json'
@@ -40,7 +41,8 @@ def digest(value):
 
 
 def selected(unit):
-    return unit.get('configuration') in CONFIGURATIONS
+    from integrated_deployment import CONFIGURATIONS as integrated
+    return unit.get('configuration') in CONFIGURATIONS + integrated
 
 
 def role_key(unit):
@@ -51,6 +53,10 @@ def role_key(unit):
 
 
 def catalog(unit):
+    from school_target import selected as school_selected, catalog as school_catalog
+    if school_selected(unit):return school_catalog(unit)
+    from integrated_target import selected as integrated, catalog as integrated_catalog
+    if integrated(unit):return integrated_catalog(unit)
     require(selected(unit), 'unknown exact configuration')
     key = role_key(unit)
     rows = unit.get('functions')
@@ -283,6 +289,8 @@ def notebook_safety_source(root=ROOT):
 
 
 def semantics(ir, unit):
+    from school_target import selected as school_selected, semantics as school_semantics
+    if school_selected(unit):return school_semantics(ir,unit)
     """Connect the complete pinned bodies to actual boot, grants and UI paths."""
     from audit_kernel import _ir_definition_body, _local_call_arguments
     key, rows = catalog(unit)
@@ -484,11 +492,15 @@ def complete(ir, unit, *, optimized=False):
 
 
 def authority(unit):
+    from school_target import selected as school_selected, authority as school_authority
+    if school_selected(unit):return school_authority(unit)
+    from integrated_target import selected as integrated, authority as integrated_authority
+    if integrated(unit):return integrated_authority(unit)
     key, _ = catalog(unit)
     try: data = json.loads(AUTHORITY.read_text())
     except (OSError, ValueError) as exc: raise Core0Error('Multimodal14 genuine artifact authority unavailable: ' + str(exc)) from exc
     require(set(data) == {'schema', 'configurations'} and data['schema'] == VERSION and
-            set(data['configurations']) == set(CONFIGURATIONS), 'authority configuration inventory differs')
+            set(data['configurations']) == set(__import__('multimodal_deployment').LEGACY_CONFIGURATIONS), 'authority configuration inventory differs')
     item = data['configurations'][unit['configuration']]
     require(set(item) == set(ROLES), 'authority role inventory differs')
     pin = item[key]
@@ -502,6 +514,10 @@ def authority(unit):
 
 
 def validate(ir, unit, *, optimized):
+    from school_target import selected as school_selected, validate as school_validate
+    if school_selected(unit):return school_validate(ir,unit,optimized=optimized)
+    from integrated_target import selected as integrated, validate as integrated_validate
+    if integrated(unit):return integrated_validate(ir,unit,optimized=optimized)
     if not selected(unit):
         hardware_prefixes=('Lemma.User.Multimodal.', 'Lemma.Drivers.Multimodal.',
             'Lemma.Platform.LemmaSim.MultimodalService.', 'Lemma.Platform.Silicon.BindingMultimodal.')
@@ -605,10 +621,10 @@ def validate_devices(ir, unit, optimized):
                 row['effects'] == ['checked-access', 'mmio-write' if write else 'mmio-read', 'io-order'],
                 'controller primitive signature/effects differ')
         body = _ir_definition_body(ir, row['symbol'])
-        regions = [(0x10001000, 0x10001200), (0xc000004, 0xc00003c),
+        regions = [(0x10001000, 0x10001200), (0xc000004, 0xc000048 if unit.get("configuration") in INTEGRATED_CONFIGURATIONS else 0xc00003c),
                    (0xc002080, 0xc002084), (0xc201000, 0xc201008),
                    (0xc00004c, 0xc000050)] if width == 4 else [
-                   (0x10010000, 0x10011000), (0x10011000, 0x10012000), (0x10014000, 0x10016000)]
+                   (0x10010000, 0x10011000), (0x10011000, 0x10012000), *([(0x10012000,0x10012400)] if unit.get('configuration') in INTEGRATED_CONFIGURATIONS else []), (0x10014000, 0x10016000)]
         if not optimized:
             require([int(v) for v in re.findall(r'icmp uge i64 %arg0, (\d+)', body)] == [a for a, _ in regions] and
                     [int(v) for v in re.findall(r'icmp ule i64 %arg0, (\d+)', body)] == [b-width for _, b in regions] and
@@ -627,6 +643,11 @@ def validate_devices(ir, unit, optimized):
 
 
 def readonly_lookup(ir, unit, *, optimized):
+    from school_target import selected as school_selected, readonly_lookup as school_readonly_lookup
+    if school_selected(unit):return school_readonly_lookup(ir,unit,optimized=optimized)
+    return _readonly_lookup(ir,unit,optimized=optimized)
+
+def _readonly_lookup(ir, unit, *, optimized):
     """Pin every table and independently require a dominating unsigned index bound.
 
     This is a new exact-corpus authority, not permission for arbitrary readonly
@@ -750,12 +771,15 @@ JUMP_SPECS = {
 
 
 def jump_spec(ir, unit, source, symbol):
-    if not selected(unit) or source not in JUMP_SPECS: return None
+    spec=JUMP_SPECS.get(source)
+    if unit.get('configuration') in INTEGRATED_CONFIGURATIONS and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepExecuted':
+        spec=('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9])
+    if not selected(unit) or spec is None: return None
     validate(ir, unit, optimized=True)
     rows = [row for row in unit['functions'] if canonical(row['source']) == source]
     require(len(rows) == 1 and rows[0]['symbol'] == symbol and unit['role'] == 'kernel',
             'backend table escaped its actual Kernel9 owner')
-    return JUMP_SPECS[source]
+    return spec
 
 
 if __name__ == '__main__':

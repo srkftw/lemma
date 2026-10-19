@@ -20,6 +20,7 @@ USB_WIRE_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.11.0.json'
 WIFI_COMMON_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.12.0.json'
 USB_CLOCKED_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.13.0.json'
 MULTIMODAL_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.14.0.json'
+INTEGRATED_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.15.0.json'
 
 def profile(name=None):
     path = profile_path(name)
@@ -28,7 +29,7 @@ def profile(name=None):
         raise ValueError('unsupported silicon binding')
     if p['ram_base'] + p['ram_bytes'] != p['dtb_base'] + p['dtb_reserve_bytes']:
         raise ValueError('silicon RAM/DTB bounds contradict')
-    expected = (0x82000000,0x2000000,8192,8192) if path in (FULL_PROFILE,POWER_PROFILE,SAFETY_PROFILE,BLE_PROFILE,USB_PROFILE,PRODUCT_PROFILE,USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE,USB_WIRE_PROFILE,WIFI_COMMON_PROFILE,USB_CLOCKED_PROFILE,MULTIMODAL_PROFILE) else (0x82000000,0x400000,1024,128)
+    expected = (0x82000000,0x2000000,8192,8192) if path in (FULL_PROFILE,POWER_PROFILE,SAFETY_PROFILE,BLE_PROFILE,USB_PROFILE,PRODUCT_PROFILE,USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE,USB_WIRE_PROFILE,WIFI_COMMON_PROFILE,USB_CLOCKED_PROFILE,MULTIMODAL_PROFILE,INTEGRATED_PROFILE) else (0x82000000,0x400000,1024,128)
     if (p['frame_pool_base'],p['frame_pool_bytes'],p['frame_count'],p['frame_quota']) != expected:
         raise ValueError('silicon development allocator binding differs')
     if p['frame_count']*4096 != p['frame_pool_bytes']:
@@ -38,28 +39,28 @@ def profile(name=None):
             raise ValueError('BLE binding feature/authority fields differ')
         if p['devices'].get('ble') != dict(base=0x10010600,span=0x400,irq=15,payload_max=27,clocks_per_bit=100):
             raise ValueError('BLE fixed packet aperture differs')
-    if path in (USB_PROFILE,PRODUCT_PROFILE,USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE,USB_WIRE_PROFILE,WIFI_COMMON_PROFILE,USB_CLOCKED_PROFILE):
-        features,abi,irqs=(15,14,16) if path==USB_CLOCKED_PROFILE else (15,12,16) if path==USB_WIRE_PROFILE else (47,13,18) if path==WIFI_COMMON_PROFILE else (31,11,17) if path==PRODUCT_EXECUTED_PROFILE else (31,10,17) if path==PRODUCT_NEXT_PROFILE else (15,9,16) if path==USB_NEXT_PROFILE else (31,8,17) if path==PRODUCT_PROFILE else (15,7,16)
+    if path in (USB_PROFILE,PRODUCT_PROFILE,USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE,USB_WIRE_PROFILE,WIFI_COMMON_PROFILE,USB_CLOCKED_PROFILE,INTEGRATED_PROFILE):
+        features,abi,irqs=(31,11,19) if path==INTEGRATED_PROFILE else (15,14,16) if path==USB_CLOCKED_PROFILE else (15,12,16) if path==USB_WIRE_PROFILE else (47,13,18) if path==WIFI_COMMON_PROFILE else (31,11,17) if path==PRODUCT_EXECUTED_PROFILE else (31,10,17) if path==PRODUCT_NEXT_PROFILE else (15,9,16) if path==USB_NEXT_PROFILE else (31,8,17) if path==PRODUCT_PROFILE else (15,7,16)
         if p.get('usb_enabled') != 1 or p.get('ble_enabled') != 1 or p.get('descriptor_features') != features or p['descriptor']['abi'] != abi or p['plic_sources'] != irqs or p.get('power_safety') != 1:
             raise ValueError('USB binding feature/authority fields differ')
         if p['devices'].get('usb') != dict(base=0x10010a00,span=0x400,irq=16,payload_max=64,endpoints=3,reset_clocks=1000000):
             raise ValueError('USB fixed packet aperture differs')
-    if path in (PRODUCT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE):
+    if path in (PRODUCT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE,INTEGRATED_PROFILE):
         if p.get('boot_nv_enabled') != 1 or p['rom_bytes'] != 65536 or p['reset_vector'] != 0x1000:
             raise ValueError('product immutable-ROM binding differs')
         if p['devices'].get('boot_nv') != dict(base=0x10012000,span=0x400,irq=17,capacity_sectors=65544,sector_bytes=512):
             raise ValueError('product boot medium aperture differs')
-    if path in (USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE,USB_WIRE_PROFILE,WIFI_COMMON_PROFILE,USB_CLOCKED_PROFILE):
-        if p.get('paper_version')!=(3 if path in (PRODUCT_EXECUTED_PROFILE,USB_WIRE_PROFILE,WIFI_COMMON_PROFILE,USB_CLOCKED_PROFILE) else 2) or p.get('paper_stage_offset')!=3584:
+    if path in (USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE,USB_WIRE_PROFILE,WIFI_COMMON_PROFILE,USB_CLOCKED_PROFILE,INTEGRATED_PROFILE):
+        if p.get('paper_version')!=(3 if path in (PRODUCT_EXECUTED_PROFILE,USB_WIRE_PROFILE,WIFI_COMMON_PROFILE,USB_CLOCKED_PROFILE,INTEGRATED_PROFILE) else 2) or p.get('paper_stage_offset')!=3584:
             raise ValueError('Paper2 successor requires its disjoint512-byte staging alias')
         if not (p['devices']['paper']['base']+3584+512 == p['devices']['pen']['base']):
             raise ValueError('Paper2 stage must end exactly before the separate pen aperture')
     elif p.get('paper_version',1)!=1 or p.get('paper_stage_offset',2048)!=2048:
         raise ValueError('Historical paper staging binding may not acquire successor semantics')
-    if path in (PRODUCT_EXECUTED_PROFILE,USB_WIRE_PROFILE,WIFI_COMMON_PROFILE,USB_CLOCKED_PROFILE) and p.get('paper_executed_registers') != dict(sequence=192,x=200,y=208,width=216,height=224,mode=232):
+    if path in (PRODUCT_EXECUTED_PROFILE,USB_WIRE_PROFILE,WIFI_COMMON_PROFILE,USB_CLOCKED_PROFILE,INTEGRATED_PROFILE) and p.get('paper_executed_registers') != dict(sequence=192,x=200,y=208,width=216,height=224,mode=232):
         raise ValueError('Paper3 executed refresh witness registers differ')
-    if path==USB_CLOCKED_PROFILE:
-        if (p.get('usb_phy_enabled'),p.get('usb_phy_version'),p.get('usb_phy_sample_hz'),p.get('usb_phy_bit_hz'),p.get('boot_nv_enabled',0),p['clock_hz'])!=(1,2,48000000,12000000,0,100000000):
+    if path in (USB_CLOCKED_PROFILE,INTEGRATED_PROFILE):
+        if (p.get('usb_phy_enabled'),p.get('usb_phy_version'),p.get('usb_phy_sample_hz'),p.get('usb_phy_bit_hz'),p.get('boot_nv_enabled',0),p['clock_hz'])!=(1,2,48000000,12000000,int(path==INTEGRATED_PROFILE),100000000):
             raise ValueError('Clocked USB PHY/controller namespace differs')
         if tuple(p.get(k) for k in ('usb_clocked_enabled','usb_clocked_quantum_hz','usb_clocked_ppm_bound','usb_clocked_cdc_version','usb_clocked_fifo_bytes','usb_clocked_packet_bytes'))!=(1,2400000000,2500,1,128,67) or p.get('usb_clocked_registers')!=dict(phy_version=176,phy_nominal_hz=184,controller_nominal_hz=192,cdc_version=200,fifo_bytes=208,packet_bytes=216):
             raise ValueError('Clocked USB timing/CDC/readonly contract differs')
@@ -68,7 +69,7 @@ def profile(name=None):
             raise ValueError('USB wire binding clock/PHY/boot namespace differs')
     elif any(p.get(k,0) for k in ('usb_phy_enabled','usb_phy_version','usb_phy_sample_hz','usb_phy_bit_hz')):
         raise ValueError('historical USB profile may not acquire PHY semantics')
-    if path!=USB_CLOCKED_PROFILE and any(k.startswith('usb_clocked_') for k in p):
+    if path not in (USB_CLOCKED_PROFILE,INTEGRATED_PROFILE) and any(k.startswith('usb_clocked_') for k in p):
         raise ValueError('historical binding may not acquire clocked USB semantics')
     if path==WIFI_COMMON_PROFILE:
         if (p.get('wifi_enabled'),p.get('wifi_version'),p.get('boot_nv_enabled',0),p['clock_hz'])!=(1,1,0,100000000):
@@ -77,15 +78,20 @@ def profile(name=None):
             raise ValueError('CommonOFDM fixed aperture/IRQ/sample policy differs')
     elif p.get('wifi_enabled',0) or p.get('wifi_version',0) or 'wifi' in p['devices']:
         raise ValueError('historical binding may not acquire CommonOFDM semantics')
-    if path==MULTIMODAL_PROFILE:
-        if (p.get('multimodal_enabled'),p['canonical'],p['plic_sources'],p['descriptor']['abi'])!=(1,'lemma-one-multimodal/0.2.0',19,4):
+    if path in (MULTIMODAL_PROFILE,INTEGRATED_PROFILE):
+        if (p.get('multimodal_enabled'),p['canonical'],p['plic_sources'],p['descriptor']['abi'])!=(1,'lemma-one-multimodal/0.2.0',19,11 if path==INTEGRATED_PROFILE else 4):
             raise ValueError('multimodal binding authority differs')
         if p['devices'].get('multimodal')!=dict(base=0x10014000,span=0x2000,irq=19,streams=9,fifo_records=16,record_bytes=64,clock_hz=100000000):
             raise ValueError('multimodal fixed extension aperture differs')
-        if any(p.get(k,0) for k in ('usb_enabled','ble_enabled','wifi_enabled','boot_nv_enabled')):
+        if path==MULTIMODAL_PROFILE and any(p.get(k,0) for k in ('usb_enabled','ble_enabled','wifi_enabled','boot_nv_enabled')):
             raise ValueError('multimodal v1 has no untested transport/boot union')
     elif p.get('multimodal_enabled',0) or 'multimodal' in p['devices']:
         raise ValueError('historical binding may not acquire multimodal semantics')
+    if path==INTEGRATED_PROFILE:
+        if p.get('pen_ihp_sram')!=1 or p['devices']['pen']['fifo']!=256:
+            raise ValueError('Integrated physical pen requires full256 pinned SRAM storage')
+    elif p.get('pen_ihp_sram',0):
+        raise ValueError('historical binding may not silently select physical pen SRAM')
     return p
 
 def profile_path(name=None):
@@ -103,9 +109,13 @@ def profile_path(name=None):
     if name == 'lemma-silicon-dev/0.12.0': return WIFI_COMMON_PROFILE
     if name == 'lemma-silicon-dev/0.13.0': return USB_CLOCKED_PROFILE
     if name == 'lemma-silicon-dev/0.14.0': return MULTIMODAL_PROFILE
+    if name == 'lemma-silicon-dev/0.15.0': return INTEGRATED_PROFILE
     raise ValueError('unsupported silicon binding')
 
 def configuration_profile(configuration):
+    from school_deployment import CONFIGURATIONS as SCHOOL, INTEGRATED as SCHOOL_INTEGRATED
+    if configuration in SCHOOL:return 'lemma-silicon-dev/0.15.0' if configuration==SCHOOL_INTEGRATED else 'lemma-silicon-dev/0.14.0'
+    if configuration=="lemmasim-silicon-integrated-notebook":return "lemma-silicon-dev/0.15.0"
     if configuration.startswith("lemmasim-silicon-multimodal-"):return "lemma-silicon-dev/0.14.0"
     from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
     if configuration in PRODUCT_READER_CONFIGURATIONS:return "lemma-silicon-dev/0.10.0"
@@ -140,6 +150,7 @@ def constants(p):
                            'dtb_reserve_bytes','timebase_hz','clock_hz','boot_timer_probe_ticks','pressure_max','frame_pool_base','frame_pool_bytes','frame_count','frame_quota','plic_sources')}
     c.update(width=p['geometry'][0], height=p['geometry'][1])
     c.update(multimodal_enabled=p.get('multimodal_enabled',0),multimodal_base=0,multimodal_span=0,multimodal_irq=0,multimodal_streams=0,multimodal_fifo_records=0,multimodal_record_bytes=0,multimodal_clock_hz=0)
+    c['pen_ihp_sram'] = p.get('pen_ihp_sram',0)
     c['paper_sequencer'] = p.get('paper_sequencer', 0)
     c['paper_version'] = p.get('paper_version', 1)
     c['paper_stage_offset'] = p.get('paper_stage_offset', 2048)
@@ -174,14 +185,14 @@ def binding_namespace(p):
     names = {1:'Binding',2:'BindingFull',3:'BindingPower',4:'BindingSafety',
              5:'BindingBLE',6:'BindingUSB',7:'BindingProduct',8:'BindingUSBNext',
              9:'BindingProductNext',10:'BindingProductExecuted',11:'BindingUSBWire',
-             12:'BindingWiFiCommon',13:'BindingUSBClocked',14:'BindingMultimodal'}
+             12:'BindingWiFiCommon',13:'BindingUSBClocked',14:'BindingMultimodal',15:'BindingIntegrated'}
     return names[int(p['profile'].split('/')[1].split('.')[1])]
 
 
 def lean_text(p):
     namespace = binding_namespace(p)
     return f'-- Generated by scripts/silicon_profile.py from the versioned binding.\nnamespace Lemma.Platform.Silicon.{namespace}\n' + ''.join(
-        f'def {k} : UInt64 := {v}\n' for k,v in constants(p).items() if (p.get('multimodal_enabled',0) or not k.startswith('multimodal_')) and (k not in ('paper_version','paper_stage_offset') or p['profile'] in ('lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0','lemma-silicon-dev/0.10.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.12.0','lemma-silicon-dev/0.13.0')) and (not k.startswith('usb_phy_') or p['profile'] in ('lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.12.0','lemma-silicon-dev/0.13.0')) and (not k.startswith('usb_clocked_') or p['profile']=='lemma-silicon-dev/0.13.0') and (not k.startswith('wifi_') or p['profile']=='lemma-silicon-dev/0.12.0') and (p.get('ble_enabled',0) or not k.startswith('ble_')) and (p.get('usb_enabled',0) or not k.startswith('usb_')) and (p.get('boot_nv_enabled',0) or not k.startswith('boot_nv_'))) + f'end Lemma.Platform.Silicon.{namespace}\n'
+        f'def {k} : UInt64 := {v}\n' for k,v in constants(p).items() if (k!='pen_ihp_sram' or p['profile']=='lemma-silicon-dev/0.15.0') and (p.get('multimodal_enabled',0) or not k.startswith('multimodal_')) and (k not in ('paper_version','paper_stage_offset') or p['profile'] in ('lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0','lemma-silicon-dev/0.10.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.12.0','lemma-silicon-dev/0.13.0','lemma-silicon-dev/0.15.0')) and (not k.startswith('usb_phy_') or p['profile'] in ('lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.12.0','lemma-silicon-dev/0.13.0','lemma-silicon-dev/0.15.0')) and (not k.startswith('usb_clocked_') or p['profile'] in ('lemma-silicon-dev/0.13.0','lemma-silicon-dev/0.15.0')) and (not k.startswith('wifi_') or p['profile']=='lemma-silicon-dev/0.12.0') and (p.get('ble_enabled',0) or not k.startswith('ble_')) and (p.get('usb_enabled',0) or not k.startswith('usb_')) and (p.get('boot_nv_enabled',0) or not k.startswith('boot_nv_'))) + f'end Lemma.Platform.Silicon.{namespace}\n'
 
 def descriptor(p, dtb_bytes):
     d=p['devices']; words=[p['descriptor']['magic'],p['descriptor']['abi'],256,0,p['ram_base'],p['ram_bytes'],

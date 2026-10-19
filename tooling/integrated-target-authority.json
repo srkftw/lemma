@@ -1,0 +1,73 @@
+{
+  "schema": "lemma-integrated-target-authority/1",
+  "configurations": {
+    "lemmasim-silicon-integrated-notebook": {
+      "firmware": {
+        "catalog_sha256": "ae510677df403abba3fca693d12e4fc2b4209786382e6ebe9e9a6893b26a1d7d",
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        },
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "3e291f17820119227ec18a6e92661987385b08adddc4686a9b381da2b490d96e",
+        "pre": {
+          "function_count": 1381,
+          "sha256": "df3a8fc2077de6c85eeef23aefd37f2c31b2264628e95cd04a82506d6abeba2f"
+        },
+        "post": {
+          "function_count": 1381,
+          "sha256": "20ebb7bbffb50a62fe08342fb895713af41c9f0acbe257dcdc601e7394fa4971"
+        }
+      },
+      "store": {
+        "catalog_sha256": "11ba8b02a6a8912fb1f15c450258b92f1ed79974093228d55026921154b23fb0",
+        "pre": {
+          "function_count": 259,
+          "sha256": "58b233792a1411b9c8e3a23efea75340df981ff2a3c5d44c0b29cf2f1dc77541"
+        },
+        "post": {
+          "function_count": 259,
+          "sha256": "e255a79981abaa4448e321b59b37b3700d4ad2eb739829c273e0ead5a40e5cfe"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "8d9048b78cc1480180ef345df6380bff316baa53d4d977fadf9db78fdf0a3d29",
+        "pre": {
+          "function_count": 1012,
+          "sha256": "343d203c556ee5fb0ac11a0a5d7953534e13043d930f06f712dc18dc5c62b78d"
+        },
+        "post": {
+          "function_count": 1010,
+          "sha256": "6becc515f5c1f2f72fa88e6eaf490f4c471e578f8641e3510d11eed949af4f09"
+        }
+      },
+      "arithmetic": {
+        "catalog_sha256": "e13d7512f3fd57dad84bad5f6da930bfb9c540dfcf409e83c527a2a1d9ad2d4e",
+        "pre": {
+          "function_count": 184,
+          "sha256": "5c07cb5b00ba86b594da935659dd328ba7e1d3b3103aa9ef43fd507eb1579a98"
+        },
+        "post": {
+          "function_count": 184,
+          "sha256": "3c1ef8a2ef50860220d28250320743450bf9ff8eea63751e6d2898c8a83fb3f4"
+        }
+      },
+      "course": {
+        "catalog_sha256": "d286fa96bc1d0eb715d4ff1710ce519056e3c37bffc0bfa848b6b21a0f1fb5f7",
+        "pre": {
+          "function_count": 183,
+          "sha256": "3b979e9e41d214397842f243c6a0073ec31973eda745c5691adf3b3b277977fb"
+        },
+        "post": {
+          "function_count": 183,
+          "sha256": "c0af5d54e7ddc6462476af37713a7b8444c8201fba82c8ce6dd74e0e587ac3da"
+        }
+      }
+    }
+  }
+}

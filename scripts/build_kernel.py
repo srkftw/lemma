@@ -25,10 +25,11 @@ from product_reader_deployment import (ALL_CONFIGURATIONS as PRODUCT_READER_NOTE
  BOOT_ROOT as PRODUCT_READER_BOOT_ROOT, DISPATCH_ROOT as PRODUCT_READER_DISPATCH_ROOT)
 from chooser_reader_deployment import CONFIGURATIONS as CHOOSER_NOTEBOOK_CONFIGURATIONS
 from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS
-AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS+CHOOSER_NOTEBOOK_CONFIGURATIONS+MULTIMODAL_CONFIGURATIONS
+from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS
+AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS+READER_NOTEBOOK_CONFIGURATIONS+PRODUCT_READER_NOTEBOOK_CONFIGURATIONS+CHOOSER_NOTEBOOK_CONFIGURATIONS+MULTIMODAL_CONFIGURATIONS+INTEGRATED_CONFIGURATIONS
 COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+AWAIT_NOTEBOOK_CONFIGURATIONS
 from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS, KERNEL_ENTRIES as CLOSURE_KERNEL_ENTRIES
-CLOSURE_NOTEBOOK_CONFIGURATIONS += MULTIMODAL_CONFIGURATIONS
+CLOSURE_NOTEBOOK_CONFIGURATIONS += MULTIMODAL_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS
 from build_core0 import (LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS,
                         capture_platform_dtb, prepare_output_directory)
 from core0_common import Core0Error, action_lease, load_json, repo_root, require_tools, run_bounded, sha256, write_json
@@ -67,7 +68,7 @@ NEXT_NOTEBOOK_CONFIGURATIONS = USB_NEXT_NOTEBOOK_CONFIGURATIONS + PRODUCT_NEXT_N
 BULK_NOTEBOOK_CONFIGURATIONS = USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_WIRE_NOTEBOOK_CONFIGURATIONS + PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + NEXT_NOTEBOOK_CONFIGURATIONS + ('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize') + BYTES_NOTEBOOK_CONFIGURATIONS + ARRAY_NOTEBOOK_CONFIGURATIONS + STRING_NOTEBOOK_CONFIGURATIONS + CLOSURE_NOTEBOOK_CONFIGURATIONS
 SUMS_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-sums-notebook", "lemmasim-silicon-sums-initialize", "lemmasim-silicon-sums-arithmetic-oom-development") + tuple(x for x in BULK_NOTEBOOK_CONFIGURATIONS if x not in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + BYTES_NOTEBOOK_CONFIGURATIONS + ARRAY_NOTEBOOK_CONFIGURATIONS + STRING_NOTEBOOK_CONFIGURATIONS + CLOSURE_NOTEBOOK_CONFIGURATIONS)
 USB_NOTEBOOK_CONFIGURATIONS = USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_WIRE_NOTEBOOK_CONFIGURATIONS + USB_NEXT_NOTEBOOK_CONFIGURATIONS + ("lemmasim-silicon-usb-notebook", "lemmasim-silicon-usb-initialize", "lemmasim-silicon-usb-bulk-notebook", "lemmasim-silicon-usb-bulk-initialize")
-PRODUCT_NOTEBOOK_CONFIGURATIONS = PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS + ("lemmasim-silicon-product-notebook", "lemmasim-silicon-product-bulk-notebook")
+PRODUCT_NOTEBOOK_CONFIGURATIONS = INTEGRATED_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS + ("lemmasim-silicon-product-notebook", "lemmasim-silicon-product-bulk-notebook")
 ARITHMETIC_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *BYTES_NOTEBOOK_CONFIGURATIONS, *ARRAY_NOTEBOOK_CONFIGURATIONS, *STRING_NOTEBOOK_CONFIGURATIONS, *CLOSURE_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS)
 SILICON_MULTI_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *BYTES_NOTEBOOK_CONFIGURATIONS, *ARRAY_NOTEBOOK_CONFIGURATIONS, *STRING_NOTEBOOK_CONFIGURATIONS, *CLOSURE_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS, *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
 WIFI_COMMON_CONFIGURATIONS = ("lemmasim-silicon-wifi-common-probe", "lemmasim-silicon-wifi-common-read-probe")
@@ -137,6 +138,9 @@ def validate_lean_source_realization(lean_lock: dict, output: str, info: object)
 def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
+    if configuration in INTEGRATED_CONFIGURATIONS:
+        from integrated_deployment import BOOT_ROOT, DISPATCH_ROOT
+        return {"firmware":ROLE_ROOTS["firmware"], "kernel":((BOOT_ROOT,()),(DISPATCH_ROOT,("u64","u64","u64")))}
     if configuration in MULTIMODAL_CONFIGURATIONS:
         from multimodal_deployment import BOOT_ROOTS
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": (
@@ -315,7 +319,7 @@ def user_artifact_category(configuration: str) -> str:
 def service_executable_module(module: str) -> bool:
     return (module in {"Lemma.Services.Arithmetic.ServerV7", "Lemma.Services.Arithmetic.ServerV8"} or module == "Lemma.Courses.PackageInstaller" or module.startswith("Lemma.Courses.PackageInstaller.")
             or module.startswith("Lemma.Applications.") or module == "Lemma.Services.Store.Server"
-            or module.startswith("Lemma.Services.Store.Server.") or module == "Lemma.Services.Buffer.Server"
+            or module.startswith("Lemma.Services.Store.Server.") or module == "Lemma.Services.Store.ServerSchool" or module.startswith("Lemma.Services.Store.ServerSchool.") or module == "Lemma.Services.Buffer.Server"
             or module.startswith("Lemma.Services.Buffer.Server.") or module == "Lemma.User.Development.BufferFault"
             or module.startswith("Lemma.User.Development.BufferFault.")
             or module == "Lemma.User.Development.NotebookIsolation"
@@ -376,7 +380,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     if usb_profile.is_file():inputs.append(usb_profile)
     product_profile=root / "sim/profiles/lemma-silicon-dev-0.7.0.json"
     if product_profile.is_file():inputs.append(product_profile)
-    for number in (8,9,10,11,12,13,14):
+    for number in (8,9,10,11,12,13,14,15):
         next_profile=root / f"sim/profiles/lemma-silicon-dev-0.{number}.0.json"
         if next_profile.is_file():inputs.append(next_profile)
     recovery_authority=root / "tooling/usb-recovery-target-authority.json"
@@ -412,6 +416,18 @@ def source_inputs(root: Path) -> dict[str, str]:
     for helper in ("scripts/action_cache.py", "scripts/action_worker.py", "scripts/build_actions.py", "scripts/build_dependencies.py", "scripts/build_admission.py", "scripts/toolchain_preparation.py", "lake-manifest.json", "scripts/silicon_reset_rom.py"):
         if (root / helper).is_file(): inputs.append(root / helper)
     if documentation_map.is_file(): inputs.append(documentation_map)
+    # An archive predating Integrated15 has no dependency on its new contract.
+    # A source tree that installs the registry must retain its actual helpers
+    # and contract; a missing current file never downgrades to an old authority.
+    if (root / "scripts/integrated_deployment.py").is_file():
+        for relative in ("scripts/integrated_deployment.py", "scripts/integrated_target.py",
+                         "docs/contracts/009-core0-kernel-v0.10.html"):
+            required = root / relative
+            if not required.is_file():
+                raise Core0Error("Missing required Integrated15 dependency: " + relative)
+            inputs.append(required)
+        authority = root / "tooling/integrated-target-authority.json"
+        if authority.is_file(): inputs.append(authority)
     # The additive deployment is imported by this builder. Its current helpers
     # and contracts are mandatory inputs; immutable pre-multimodal archives do
     # not contain the deployment and retain their original closure. Authority
@@ -430,6 +446,15 @@ def source_inputs(root: Path) -> dict[str, str]:
             inputs.append(required)
         authority = root / "tooling/multimodal-target-authority.json"
         if authority.is_file(): inputs.append(authority)
+    if (root / "scripts/school_deployment.py").is_file():
+        school_registry=(root / "scripts/school_deployment.py").read_text()
+        school_contract="docs/contracts/009-school-submission-v2.html" if "lemma-school-notebook-deployment/2" in school_registry else "docs/contracts/009-school-submission-v1.html"
+        for relative in ("scripts/school_deployment.py", "scripts/school_target.py", school_contract):
+            required=root/relative
+            if not required.is_file():raise Core0Error("Missing School dependency: "+relative)
+            inputs.append(required)
+        authority=root/"tooling/school-target-authority.json"
+        if authority.is_file():inputs.append(authority)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 
@@ -451,6 +476,8 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
         raise Core0Error(f"managed user dependency imports privileged/compiler code: {module}")
     recovery_library = (selected_executable_module == "Lemma.Services.Store.ServerRecovery" and module == "Lemma.Services.Store.Server") or (
         selected_executable_module == "Lemma.Services.Store.ServerRecoveryAwait" and
+        module in {"Lemma.Services.Store.ServerRecovery", "Lemma.Services.Store.ServerAwait", "Lemma.Services.Store.Server"}) or (
+        selected_executable_module == "Lemma.Services.Store.ServerSchool" and
         module in {"Lemma.Services.Store.ServerRecovery", "Lemma.Services.Store.ServerAwait", "Lemma.Services.Store.Server"})
     # The exact Await Store1 root borrows existing engine/dispatcher source.
     # Full IR admission separately excludes the old executable entry bodies.

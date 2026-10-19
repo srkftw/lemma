@@ -148,9 +148,9 @@ def admits (profile : Profile) (operation : Op) : Bool :=
       .readSupervisorPending =>
       profile.isKernel
   | .deviceRead32 | .deviceWrite32 =>
-      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_9
+      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_9 || profile == .kernel_v0_10
   | .deviceRead64 | .deviceWrite64 =>
-      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_9 || profile == .kernel_v0_5 || profile.isBoot
+      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_9 || profile == .kernel_v0_10 || profile == .kernel_v0_5 || profile.isBoot
 
   | .readMisa | .readMachineCycle | .writeMachineCycle | .readMachineRetired | .writeMachineRetired | .readMachineInhibit | .writeMachineInhibit | .readMachineCounterEnable | .writeMachineCounterEnable => profile == .firmware_v0_2 || profile == .counter_su_v0_1
 
@@ -287,6 +287,15 @@ def deviceRegionsFor (profile : Profile) (operation : Op) : Array MemoryRegion :
         nv.push ⟨"boot-trial-power-controller", 0x10010500, 0x100105a0, true⟩
       else nv
     else #[]
+  else if profile == .kernel_v0_10 then
+    let inherited := (deviceRegions operation).map fun region =>
+      if region.name == "plic-priority" then { region with stop := 0x0c000048 } else region
+    if operation == .deviceRead32 || operation == .deviceWrite32 then
+      inherited.push ⟨"multimodal-priority19", 0x0c00004c, 0x0c000050, true⟩
+    else if operation == .deviceRead64 || operation == .deviceWrite64 then
+      (inherited.push ⟨"boot-nv-controller", 0x10012000, 0x10012400, true⟩).push
+        ⟨"multimodal-controller-v1", 0x10014000, 0x10016000, true⟩
+    else inherited
   else if profile == .kernel_v0_9 then
     let inherited := (deviceRegions operation).map fun region =>
       if region.name == "plic-priority" then { region with stop := 0x0c00003c } else region
@@ -342,7 +351,7 @@ def memoryRegions : Profile → Array MemoryRegion
   | .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
       Lemma.Platform.LemmaVM.Layout.privateLimit, true⟩]
   | .kernel_v0_1 | .kernel_v0_2 => kernelMemoryRegions
-  | .kernel_v0_7 =>
+  | .kernel_v0_7 | .kernel_v0_10 =>
       (kernelMemoryRegions.map fun region =>
         if region.name == "owned-frame-pool" then { region with stop := 0x84000000 } else region).push
         ⟨"boot-private-scratch", 0x81fc0000, 0x81fc4000, true⟩

@@ -24,6 +24,7 @@ from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVE
 from package_companion_deployment import ALL_CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
 
 from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS
+from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS
 
 CAPACITY = 16352
 ARITHMETIC_DEVELOPMENT_CONFIGURATIONS=frozenset({
@@ -51,7 +52,7 @@ POWER_CONFIGURATIONS=frozenset(CLOSURE_CONFIGURATIONS) | frozenset(COURSE_CONFIG
                               'lemmasim-silicon-sums-arithmetic-oom-development'})|ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
 USB_CONFIGURATIONS=frozenset({'lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize','lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize','lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'})
 USB_CONFIGURATIONS |= frozenset(USB_CLOSURE_RECOVERY_CONFIGURATIONS) | frozenset(USB_PACKAGE_RECOVERY_CONFIGURATIONS)
-PRODUCT_CONFIGURATIONS=frozenset({'lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'})
+PRODUCT_CONFIGURATIONS=frozenset(INTEGRATED_CONFIGURATIONS)|frozenset({'lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'})
 ADMITTED_CONFIGURATIONS=frozenset({'lemmasim-bringup','lemmasim-notebook',
     'lemmasim-initialize','lemmasim-isolation-development','lemmasim-silicon-devices',
     'lemmasim-silicon-full-notebook','lemmasim-silicon-notebook',
@@ -148,7 +149,7 @@ def construction(unit: dict, pre_ir: str, *, expanded: bool = True) -> dict:
 def audit(build: Path, output: Path, timeout: float) -> dict:
     require_tools(['llvm-readelf', 'llvm-objdump'])
     unit = load_json(build / 'kernel/unit.json')
-    if unit.get('configuration') not in ADMITTED_CONFIGURATIONS or unit.get('role') != 'kernel' or unit.get('contract_version') != ('core0-kernel-v0.9' if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS else 'core0-kernel-v0.7' if unit.get('configuration') in PRODUCT_CONFIGURATIONS else 'core0-kernel-v0.6' if unit.get('configuration') in USB_CONFIGURATIONS else 'core0-kernel-v0.4' if unit.get('configuration') in POWER_CONFIGURATIONS else 'core0-kernel-v0.3'):
+    if unit.get('configuration') not in ADMITTED_CONFIGURATIONS or unit.get('role') != 'kernel' or unit.get('contract_version') != ('core0-kernel-v0.10' if unit.get('configuration') in INTEGRATED_CONFIGURATIONS else 'core0-kernel-v0.9' if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS else 'core0-kernel-v0.7' if unit.get('configuration') in PRODUCT_CONFIGURATIONS else 'core0-kernel-v0.6' if unit.get('configuration') in USB_CONFIGURATIONS else 'core0-kernel-v0.4' if unit.get('configuration') in POWER_CONFIGURATIONS else 'core0-kernel-v0.3'):
         raise Core0Error('selected capacity audit requires exact LemmaSim kernel configuration/profile')
     commands=[]
     def invoke(argv):

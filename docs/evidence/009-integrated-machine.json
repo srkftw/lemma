@@ -1,0 +1,422 @@
+{
+  "schema": "lemma-task009-integrated-machine/1",
+  "profile": "lemma-silicon-dev/0.15.0",
+  "status": "PARTIAL_INTEGRATION",
+  "scope": "selected full256 IHP SRAM SoC, controller union, actual development ROM/NV finite execution and sealed synthetic continuation",
+  "native": {
+    "producer": "build/silicon/task009-integrated15-native-a3/build.json",
+    "binary_sha256": "273ab5c928d49a1b4846898f42536127cf6d7666bb92d1d4140d540ea1f522ad",
+    "runtime_identity": "8314bc308247de0e156b3b06002875ca830056360dfc66cdd6957a86a2a02d63",
+    "source_archive": "build/task009/integrated15-native-source-a3/consumed-source-root",
+    "physical_pen": "timestamp + sequence/epoch/loss parallel combinational implementation; full256/181bit protocol unchanged"
+  },
+  "wasm": {
+    "producer": "build/silicon/task009-integrated15-wasm-a2/build.json",
+    "outputs": {
+      "machine.mjs": "53481fbbb43ac1c563171e1dcd6a6a1e880b84931d98bf292f20f741190fc680",
+      "machine.wasm": "738262f187c7a645813a356f6e09ae576b206e22dcff216f6bb09b4228d383aa"
+    },
+    "runtime_identity": "954505e1a3f58ce50e306c85a6869edf7d92bd5cfa530e123424cc15ed0e2f33",
+    "source_archive": "build/task009/integrated15-wasm-source-a2/consumed-source-root",
+    "wall_seconds": 195.56683697807603
+  },
+  "finite_cases": [
+    {
+      "receipt": "build/task009/integrated15-checkpoint-a4/result.json",
+      "scope": "native-a2 timestamp-only candidate; actual initial ROM/NV +2queued synthetic inputs",
+      "result": "PASS_INTEGRATED15_SEALED_SYNTHETIC_CHECKPOINT",
+      "wall_seconds": 8.204024296021089,
+      "checkpoint": {
+        "cut_sha256": "993369ea13efaabfe102dee162dd4c27beb1a6c8b4a3fedfed4beb26dd719170",
+        "suffix_sha256": "1260d99e22eecd51c78880abb7bede6e849dfb1546f1c9c8995f974eac5e193a",
+        "all_serialized_bytes": 145617933,
+        "suffix_cycles": 200000,
+        "pending_synthetic_stimuli": 2,
+        "corrupt_restore_transactional": true,
+        "scope": "initial actual ROM/NV with two changed external converter inputs; not active multimodal-controller qualification"
+      }
+    },
+    {
+      "receipt": "build/task009/integrated15-wasm-rom-a1/result.json",
+      "scope": "real Wasm RTL, actual Lean ROM and separate boot/user byte stores; initial finite synthetic-stimulus checkpoint case",
+      "result": "PASS_FINITE_ROM_CASE",
+      "cycles": 200000,
+      "wall_seconds": 13.130325562,
+      "checkpoint_bytes": 145617973,
+      "suffix_sha256": "441803c686b0372d19e914e4efc3071c1e134d52ecb8c38bad8d6f3303e3af13",
+      "boot_backing_completions": 9,
+      "wasm_heap_bytes": 345964544,
+      "peak_rss_bytes": 1924644864
+    },
+    {
+      "receipt": "build/task009/integrated15-checkpoint-a5/result.json",
+      "scope": "final counter-corrected native-a3; same finite ROM case and transactional corrupt restore",
+      "result": "PASS_INTEGRATED15_SEALED_SYNTHETIC_CHECKPOINT",
+      "wall_seconds": 15.96006704994943,
+      "checkpoint": {
+        "cut_sha256": "a0ee20dda49eb5254099f26b04dac52fa15648aaff34e511e5ccb32c1209606a",
+        "suffix_sha256": "a1db62164ae7cf110ce4eda6520c33fd12294bcdee5a2047c0179e2135aafe54",
+        "all_serialized_bytes": 145617973,
+        "suffix_cycles": 200000,
+        "pending_synthetic_stimuli": 2,
+        "corrupt_restore_transactional": true,
+        "scope": "initial actual ROM/NV with two changed external converter inputs; not active multimodal-controller qualification"
+      }
+    }
+  ],
+  "verification": {
+    "profile_tests": "12PASS; original14 generated Lean bindings byte-identical; invalid capacity/address/IRQ/clock combinations rejected",
+    "alias_action": "separate Kernel0.10 development; exact2 S-onlyRW/NX mappings, ProductNV preserved,12 malformed/5read/2write fault cases PASS"
+  },
+  "compatibility": {
+    "boot_image": "unchanged Product10 image ABI with explicit MAC-bound Product10 base discovery view; converter requires separate endpoint discovery",
+    "fast_backend": "0.15 rejected because required controller models absent",
+    "isa": "RV64IM Zicsr/Zifencei; A/F/D/C disabled"
+  },
+  "remaining": [
+    "corrected School23 ordinary native/browser startup and connected workflows, then actual Integrated15 ROM/NV Ready/pen/Save/reset",
+    "initial finite cases do not qualify active acquisition, arbitrary exact continuation or cross-backend migration",
+    "higher-capacity full raw wired path",
+    "complete BLE/Wi-Fi standard behavior",
+    "physical memory/package/pad/board and routed/PVT closure",
+    "fabrication/physical qualification",
+    "educational qualification"
+  ],
+  "observation_relation": {
+    "version": "lemma-integrated15-initial-rom-observation/1",
+    "same_maintained_rom_sha256": "8a853ef5ef9fa3414c1db85afb22f10835b054e02fd912b1f3262d56280aa5a4",
+    "boundary_cycles": 200000,
+    "match": true,
+    "fields": [
+      "cycle",
+      "ticks",
+      "pc",
+      "privilege",
+      "retired",
+      "finished",
+      "boot_backing",
+      "power",
+      "usb_clocks"
+    ],
+    "scope": "native-a3/RTL-Wasm-a2 architectural and controller observations after same2synthetic inputs; microstate migration and ordinary notebook not claimed"
+  },
+  "browser_bundle": {
+    "path": "build/task009/integrated15-browser-a2",
+    "profile": "lemma-silicon-dev/0.15.0",
+    "inventory_files": 277,
+    "source_archive": "build/task009/integrated15-wasm-source-a3/consumed-source-root",
+    "source_files": 325,
+    "boot": "actual ROM/NV, separate OPFS user/boot backings, no ELF/DTB preload",
+    "result": "PASS_SOURCE_VALIDATED_PACKAGE",
+    "ui_execution": "BLOCKED: computer interface reports no enabled browser; Node/Wasm case is separate",
+    "fresh_user_initialization": "only optional declared guest-produced seed; fresh guest initializer configuration absent",
+    "checkpoint_import": "explicitly unavailable until independent persistent boot-fork rebinding is implemented"
+  },
+  "combined_guest": {
+    "configuration": "lemmasim-silicon-integrated-notebook",
+    "profile": "core0-kernel-v0.10",
+    "source_commit": "c6a785478e8212ae476058224d4c9c7e546fb81c",
+    "source_archive": "build/task009/integrated15-guest-source-a7/consumed-source-root",
+    "source_inputs": 531,
+    "build": "/home/sreekumaar/.codex/worktrees/task009-integrated-target/lemma/build/kernel/task009-integrated15-a7/build.json",
+    "build_sha256": "674b8a708536e7ea75dce30918b0e4e354b9f95abca682ab5abacdf93f25ad30",
+    "audit": "/home/sreekumaar/.codex/worktrees/task009-integrated-target/lemma/build/kernel/task009-integrated15-a7/audit.json",
+    "audit_sha256": "ac6f01cd69e535b896f4195fdf044648737204530518f78905875afb87b3feec",
+    "image_sha256": "384dda8b87ae96fc7cb1ad8f62e6273103afb991951deef4941dfadc88438ebe",
+    "result": "PASS_SOURCE_LLVM_LINKED_OBJECT_MACHINE_STACK_PMP_AUDIT",
+    "roles": {
+      "kernel": 1381,
+      "firmware": 18,
+      "store": 259,
+      "notebook_pre": 1012,
+      "notebook_post": 1010,
+      "arithmetic": 184,
+      "course": 183
+    },
+    "kernel_stack": [
+      {
+        "source": "Lemma.Platform.LemmaSim.IntegratedKernel.boot",
+        "domain": "boot",
+        "bytes": 1792,
+        "capacity": 61440
+      },
+      {
+        "source": "Lemma.Platform.LemmaSim.IntegratedKernel.dispatch",
+        "domain": "kernel-trap",
+        "bytes": 2224,
+        "capacity": 16352
+      }
+    ],
+    "production_actions": {
+      "fresh": 0,
+      "incremental": 2,
+      "reused": 39
+    },
+    "scope": "exact genuine new kernel plus unchanged maintained MM14 parameterized user bodies; current source receipt refresh admits original producer actions, not fresh execution",
+    "package": "build/boot/task009-integrated15-image-a1/package.json",
+    "package_sha256": "9ba9d87badad1e0effb9e6e8fcc121f121e28cf9ac53af373996039fd04e60c7",
+    "package_sectors": 1157,
+    "compatibility_dtb_bytes": 2973,
+    "execution": {
+      "receipt": "build/task009/integrated15-combined-boot-a1/result.json",
+      "result": "FAIL",
+      "seconds": 663.9580665440299,
+      "receipts": 379,
+      "last_cycle": 75900000,
+      "reason": "runtime process disappeared during app/user interruption; no assertion or guest failure observed; no install/Ready success admitted",
+      "owned_processes_reaped": true
+    }
+  },
+  "retained_failures": [
+    {
+      "path": "build/task009/uart-paced-native-a1/build.log",
+      "result": "INTERRUPTED",
+      "scope": "local Nix producer interrupted at1236/1798 actual objects; no final output"
+    },
+    {
+      "path": "build/task009/uart-paced-tci-a1-launch.log",
+      "result": "FAIL",
+      "scope": "retained source mismatch rejected before compilation"
+    },
+    {
+      "path": "build/task009/uart-paced-tci-a2-launch.log",
+      "result": "FAIL",
+      "scope": "retained output mismatch rejected before compilation"
+    },
+    {
+      "path": "build/task009/uart-paced-tci-a4/build.json",
+      "result": "FAIL",
+      "scope": "real link invalidated-object closure rejected before compilation"
+    },
+    {
+      "path": "build/task009/uart-paced-tci-a5/build.json",
+      "result": "FAIL",
+      "scope": "stale retained-input observer bound rejected before compilation"
+    },
+    {
+      "path": "build/kernel/task009-school22-workspace-a1/build/kernel/school22-notebook-a1/build-failure.json",
+      "result": "FAIL",
+      "scope": "local Nix ADMIT diagnostic contaminated stdout; strict tool realization rejected before target compilation"
+    },
+    {
+      "path": "build/task009/uart-paced-tci-execution-a1/result.json",
+      "result": "FAIL",
+      "scope": "actual controller cases completed, then original observer accessed an unexported heap field; separate corrected observer a2 passes"
+    },
+    {
+      "path": "build/kernel/task009-school22-workspace-a2/build/kernel/school22-notebook-a2/build-failure.json",
+      "result": "FAIL",
+      "scope": "genuine Store export rejected missing sibling-library registry gate; no linked guest admitted"
+    },
+    {
+      "path": "build/kernel/task009-school22-notebook-a4/build-failure.json",
+      "result": "FAIL",
+      "scope": "genuine Store export rejected missing empty User-v0.2 record registry gate; original stdout retained in action-failure.json"
+    },
+    {
+      "path": "build/task009/school23-producer-a3/audit.log",
+      "result": "FAIL",
+      "scope": "strict actual object audit rejected previously unregistered queue switch owners; separate focused whole-object observer plus later full audits pass"
+    },
+    {
+      "path": "build/task009/school23-startup-diagnosis-a1/result.json",
+      "result": "FAIL_ACTUAL_STARTUP",
+      "scope": "native and browser shared guest startup fault; prior linked image audits remain audits, no Ready claim"
+    }
+  ],
+  "school22": {
+    "status": "SUPERSEDED_BEFORE_CONNECTED_EXECUTION",
+    "configuration": "lemmasim-silicon-school-notebook",
+    "source_archive": "build/task009/school22-source-a1",
+    "source_inputs": 538,
+    "source_inventory_sha256": "b940ec27f461de6600dea408248d849344bad9f7340a824d9fedb5bba298685c",
+    "scope": "new roots select immutable queue, selected publication, mounted recovery Store and existing checker; connected guest execution is not yet admitted",
+    "store_gate_check": {
+      "receipt": "build/task009/school-store-export-gates-a1/result.json",
+      "result": "PASS_GENUINE_STORE_EXPORT_AND_CATALOG",
+      "genuine_functions": 305,
+      "profile": "core0-user-v0.2",
+      "managed_record_authority": false,
+      "scope": "80 retained exporter/import inputs, genuine source/LLVM and exact six dispatch/recovery edges; no linked object or notebook execution claim"
+    },
+    "next_source": "School23 explicit version2 written-page envelope"
+  },
+  "paced_uart": {
+    "contract": "lemma-raw-uart-paced/1",
+    "rate": {
+      "byte_interval_ns": 100000,
+      "bytes_per_second": 10000,
+      "scope": "explicit reduced serial companion stream; raw economy acquisition is 3902720 bytes/s"
+    },
+    "native": {
+      "producer_log": "build/task009/uart-paced-native-a2/build.log",
+      "derivation": "/nix/store/37jxnfdsngni5dg4m0ba6lngrwh7pc2z-lemmasim-qemu-raw-uart-v1-11.1.1.drv",
+      "execution": "build/task009/uart-paced-native-execution-a2/result.json",
+      "result": "PASS",
+      "cases": 14,
+      "elapsed_seconds": 0.38450544991064817
+    },
+    "wasm": {
+      "producer": "build/task009/uart-paced-tci-a6/build.json",
+      "producer_sha256": "50724186a8a2dc5986ee5e80338ef173073c4ea20b74bf1203595635f762e430",
+      "result": "BUILT_WASM64_QEMU_TCI",
+      "elapsed_seconds": 675.3702587729786,
+      "fresh_objects": 1047,
+      "reused_link_inputs": 5,
+      "retained_runtime": "build/task009/uart-paced-tci-runtime-a1/runtime.json",
+      "runtime_sha256": "9d980360b4f8014be342026f1a4251a4ec26539c9b46d3e8a85f9cdbf20ff59d",
+      "admission_correction": "build/task009/uart-paced-tci-runtime-a1-observer.json",
+      "outputs": {
+        "qemu-system-riscv64.js": {
+          "sha256": "59d0ebfbbcd61d935157bd928e0f196ad313b5be001d124bd5ff24d3b550cb76",
+          "bytes": 404838
+        },
+        "qemu-system-riscv64.wasm": {
+          "sha256": "8d08cbf19e8c611d17aeea5d539861a7e94576bd5c8b836da2c42ee656d20f6e",
+          "bytes": 18494355
+        }
+      },
+      "execution": "build/task009/uart-paced-tci-execution-a2/result.json",
+      "execution_result": "PASS",
+      "cases": 11,
+      "execution_seconds": 2.564009609,
+      "wasm_heap_bytes": 2147483648,
+      "peak_rss_bytes": 2489409536
+    },
+    "scope": "actual QEMU16550, timer admission, stable ordering, capacity/invalid-input transactionality and pending reset cancellation; guest install, ordinary UI, native/RTL timing parity and physical serial rate are separate"
+  },
+  "school23": {
+    "status": "FAIL_ACTUAL_STARTUP_BEFORE_READY",
+    "configuration": "lemmasim-silicon-school-notebook",
+    "contract": "lemma-school-notebook-deployment/2",
+    "submission": "lemma-school-guest-submission/2",
+    "source_archive": "build/task009/school23-source-a5",
+    "source_inputs": 540,
+    "source_inventory_sha256": "39ea330d8a4ca093d82ef9731df4f612f0998ff342d4396a202578a4e149d27e",
+    "current_producer": "build/kernel/task009-school23-notebook-a5",
+    "pre_correction_producer": {
+      "path": "build/kernel/task009-school23-notebook-a1",
+      "status": "BUILT",
+      "source_archive": "build/task009/school23-source-a1",
+      "source_inventory_sha256": "a0804a2f18f3092fda80407f7572b91887713160b7ae547e00b433ca502a520f",
+      "authority_candidate": "build/task009/school23-producer-a1/authority-candidate.json",
+      "actual_actions": {
+        "fresh": 39,
+        "incremental": 2,
+        "reused": 0
+      },
+      "functions": {
+        "firmware": 18,
+        "kernel": 1255,
+        "store": 305,
+        "notebook": 1131,
+        "arithmetic": 184,
+        "course": 196
+      },
+      "scope": "genuine complete Lean/LLVM/O2/RV64 object/link producer; superseded before ordinary execution after separate receipt-phase defect found"
+    },
+    "store_catalog": "build/task009/school23-store-admission-a1/result.json",
+    "scope": "genuine source/LLVM/object/stack/PMP audits PASS, native/browser actual startup FAIL before Ready; no ordinary workflow completion",
+    "initializer": "build/kernel/task009-school23-initialize-a4",
+    "full_audits": {
+      "notebook": {
+        "path": "build/kernel/task009-school23-notebook-a5/audit.json",
+        "sha256": "bb498da57627216db6b7458755c37f6fb31d264e8173b0828460a4dc596a43d0",
+        "status": "PASS"
+      },
+      "initializer": {
+        "path": "build/kernel/task009-school23-initialize-a4/audit.json",
+        "sha256": "dc14de8cc947190ead2208085580a1c8c3bd7fa475d48175d4da8842fdf85732",
+        "status": "PASS"
+      },
+      "integrated": {
+        "path": "build/kernel/task009-school23-integrated-a2/audit.json",
+        "sha256": "cba53ef0eeb0ceeb4223002fd6e5e991594af5e3e57cf3023eaae8c97a2f2da8",
+        "status": "PASS"
+      }
+    },
+    "integrated": {
+      "configuration": "lemmasim-silicon-integrated-school-notebook",
+      "producer": "build/kernel/task009-school23-integrated-a2",
+      "source_archive": "build/task009/school23-integrated-source-a2",
+      "source_inventory_sha256": "e4a292699ab0ff673353cb743e2398a3c233aa1e1b205bdae2308aac668fab95",
+      "complete_guest_archive": "build/task009/school23-integrated-guest-source-a2/consumed-source-root",
+      "function_counts": {
+        "firmware": 18,
+        "kernel": 1381,
+        "store": 305,
+        "notebook": 1128,
+        "arithmetic": 184,
+        "course": 196
+      },
+      "package": "build/boot/task009-integrated15-school23-image-a1",
+      "scope": "audited/packaged; expensive canonical positive intentionally not launched after actual shared guest startup fault"
+    },
+    "bundles": {
+      "native": {
+        "path": "build/task009/school23-native-a1",
+        "manifest_sha256": "639e46ff5c14715348237179f56d74e2eca362bbe51e2fe39772f1378c3f2b01",
+        "scope": "source-bound actual package; ordinary execution failed startup"
+      },
+      "browser": {
+        "path": "build/task009/school23-browser-a1",
+        "manifest_sha256": "13f58346a33a8d65bc5b534a9e98482b8f2f236ee9ae3816331e79edefe8756e",
+        "scope": "source-bound actual package; ordinary execution failed startup"
+      }
+    },
+    "actual_object_tables": {
+      "path": "build/task009/school23-jump-admission-a6/result.json",
+      "tables": 22,
+      "seconds": 18.967765368055552,
+      "scope": "actual complete notebook object, companion bytes/relocations, source-pinned switch domains and defaults;20 legacy jump admission tests separately PASS"
+    },
+    "startup_fault": {
+      "diagnosis": "build/task009/school23-startup-diagnosis-a1/result.json",
+      "descriptor": 8263,
+      "image_id": 2,
+      "role": "notebook",
+      "cause": 13,
+      "sepc": "0x100b97c",
+      "stval": "0x340b30",
+      "actual_source": "Lemma.Applications.Notebook.issue",
+      "cause_detail": "fresh-notebook savePage reaches issue before Multimodal.initialize allocates flag page; narrow Lean lifecycle correction pending"
+    }
+  },
+  "factory_artifact": {
+    "author": "tooling/FactoryBootMain.lean",
+    "hosted_authoring": "build/task009/factory-author-a1/result.json",
+    "source_archive": "build/task009/factory-author-a1/source",
+    "scope": "offline new slot0 backing only; maintained Lean Product10 constants/CRC/metadata validation, exact image/tag bytes; no running RAM preload or update/install claim",
+    "metadata_negative": {
+      "receipt": "build/task009/factory-rom-metadata-negative-a1/result.json",
+      "result": "PASS_ACTUAL_ROM_REJECTED_FACTORY_METADATA",
+      "cycles": 100000,
+      "seconds": 1.5929552318993956,
+      "scope": "actual ROM invalid structural metadata rejection/recovery beacon; no arbitrary MAC-negative claim"
+    },
+    "tag_negative": {
+      "receipt": "build/task009/factory-rom-tag-negative-a1/result.json",
+      "result": "PASS_ACTUAL_ROM_REJECTED_FACTORY_TAG",
+      "cycles": 103700000,
+      "seconds": 944.715140337008,
+      "scope": "actual ROM structural tag rejection/fallback/recovery beacon; arbitrary wrong MAC remains separate"
+    },
+    "positive_notebook_cold_execution": "held before launch after actual shared guest23 startup fault; source-corrected successor required"
+  },
+  "native_fault3": {
+    "producer": "build/silicon/task009-integrated15-native-a4/build.json",
+    "source_archive": "build/task009/integrated15-native-source-a4/consumed-source-root",
+    "binary_sha256": "e0ff7a8007b2ffd037bdea0cf9a05c8825a11203460cb63576f2e987d7b3bf0a",
+    "runtime_identity": "78131b740e45fe6aa219ef135dd5d5dbcefbfce862912776265d5a13f87df30b",
+    "physical_pen": "61 impossible high fault flops removed; 3-bit internal code zero-extended to unchanged64-bit MMIO; full256x181 capacity preserved",
+    "scope": "actual new native RTL producer; earlier finite cases retain preceding native-a3 identity"
+  },
+  "wasm_fault3": {
+    "producer": "build/silicon/task009-integrated15-wasm-a3/build.json",
+    "native_archive": "build/task009/integrated15-native-source-a4/consumed-source-root",
+    "seconds": 123.107884,
+    "machine_wasm_sha256": "beb9cc622a45b2bea1e4ca3c0fd691829629d00585ea8a2357be224da862d660",
+    "runtime_identity": "5248bfb3528d2237c97467461e61c43985607b0de2a4e392b96315d50efd5f45",
+    "scope": "fresh portable actual compilation from complete258-input exact native source archive; not browser ordinary workflow"
+  }
+}

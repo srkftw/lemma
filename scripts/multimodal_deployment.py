@@ -14,3 +14,8 @@ SOFTWARE_DEPLOYMENT = {
 }
 BOOT_ROOTS = dict(zip(CONFIGURATIONS, ('siliconMultimodalBoot', 'siliconMultimodalInitializeMedium', 'siliconMultimodalParameterizedBoot', 'siliconMultimodalParameterizedInitializeMedium')))
 NOTEBOOK_ROOT = 'Lemma.Applications.Notebook.mainMultimodal'
+
+LEGACY_CONFIGURATIONS=CONFIGURATIONS
+from school_deployment import FAST_CONFIGURATIONS, BOOT_ROOTS as SCHOOL_BOOT_ROOTS
+CONFIGURATIONS += FAST_CONFIGURATIONS
+BOOT_ROOTS.update(SCHOOL_BOOT_ROOTS)

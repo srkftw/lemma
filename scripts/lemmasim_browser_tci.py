@@ -28,8 +28,8 @@ CONTROLLERS={'lemma_fast_block.c','lemma_model.c','lemma_model.h',
              'lemma_multimodal.c','lemma_multimodal.h','lemma_multimodal_qemu.inc.c',
              'lemma_qemu.c','lemma_silicon_fast.h','lemma_uart_ingress.h','lemma_uart_qemu.inc.c'}
 UI_EXPORT='\n// Host execution observer uses the same UI transport.\nexport {worker,send};\n'
-UI_FILES=('app.js','style.css','guest_records.js','course_transport.js','run_budget.js')
-BRIDGE_FILES=('worker.mjs','runtime_worker.mjs','control.mjs','opfs_backing.mjs','pcm_egress.mjs')
+UI_FILES=('app.js','style.css','guest_records.js','course_transport.js','run_budget.js','school_transport.js')
+BRIDGE_FILES=('worker.mjs','runtime_worker.mjs','control.mjs','opfs_backing.mjs','pcm_egress.mjs','uart_arrivals.mjs')
 PACKAGING_INPUTS={'scripts/lemmasim_browser_tci.py','sim/browser/index.html'}|{'sim/browser/'+name for name in UI_FILES}|{'sim/browser/tci/'+name for name in BRIDGE_FILES}
 
 def sha(path):
@@ -80,8 +80,12 @@ def retained_runtime(directory):
     files=inventory(directory,m.get('files'),{'runtime.json'})
     required=RUNTIME_OUTPUTS|{'original-build.json','source-inputs.json','COPYING.QEMU','lemma_browser_control.inc.c','dependencies.json','patch_wasm.py','build.py','shell.nix','package.json','res_query_unavailable.c'}|{'controller-source/'+name for name in CONTROLLERS}
     if m['schema']==RUNTIME_SCHEMA_WITH_HELPERS:required|=HELPER_FILES
+    build=read(directory/'original-build.json')
+    if build.get('production_mode') in ('incremental-controller-object-and-real-link/1','fresh-upstream-objects-and-real-link/1'):
+        required.add('incremental_uart.py')
+        if build.get('inputs',{}).get('tooling/lemmasim/tci/incremental_uart.py')!=files.get('incremental_uart.py'):raise ValueError('Unbound incremental controller producer')
     if set(files)!=required:raise ValueError('Unknown or incomplete admitted runtime closure')
-    build=read(directory/'original-build.json');source=read(directory/'source-inputs.json')
+    source=read(directory/'source-inputs.json')
     if type(build.get('exit_code')) is not int or type(build.get('source_file_count')) is not int:raise ValueError('Runtime production counters must be exact integers')
     if build.get('schema')=='lemma-tci-public-build/1':
         origin=build.get('producer_input_root')
@@ -110,12 +114,16 @@ def retained_runtime(directory):
 def bundle(args):
     import silicon_guest_bundle
     from multimodal_native_bundle import SCHEMA as NATIVE_SCHEMA
-    if args.profile!=PROFILE or args.workbook not in ('ordinary','parameterized'):raise ValueError('TCI requires exact multimodal profile/workbook')
+    if args.profile!=PROFILE or args.workbook not in ('ordinary','parameterized','school'):raise ValueError('TCI requires exact multimodal profile/workbook')
     packaging_inputs={name:sha(ROOT/name) for name in sorted(PACKAGING_INPUTS)}
     runtime,admission=retained_runtime(args.wasm_build)
     archive=Path(args.guest_bundle).absolute();native=read(archive/'bundle.json')
     if native.get('schema')!=NATIVE_SCHEMA:raise ValueError('TCI requires the complete audited multimodal guest archive')
     roles={w:('parameterized-'+w if args.workbook=='parameterized' else w) for w in ('notebook','initializer')}
+    if args.workbook=='school':
+        from multimodal_native_bundle import SCHOOL
+        if native.get('configurations')!=SCHOOL:raise ValueError('School browser requires the exact School22 native pair')
+    elif native.get('configurations')==__import__('multimodal_native_bundle').SCHOOL:raise ValueError('School roots require explicit school workbook identity')
     prepared={w:silicon_guest_bundle.prepared(archive,'qemu',role,PROFILE) for w,role in roles.items()}
     out=Path(args.output_dir).absolute();out.mkdir(parents=True,exist_ok=False)
     def add(path,name,expected=None):
@@ -127,6 +135,7 @@ def bundle(args):
     m={'schema':SCHEMA,'profile':PROFILE,'execution_backend':BACKEND,
        'session_control_contract':'lemma-browser-session-modes/2','width':1650,'height':2200,
        'multimodal_workbook':args.workbook,'course_install_contract':'lemma-course-console-command/1',
+       'school_service_contract':'lemma-school-browser-service/1',
        'checkpoint_contract':'UNSUPPORTED: no exact TCI continuation relation is admitted',
        'timing_scope':'instruction/virtual-timer boundary; not RTL processor-cycle parity',
        'boot':'ELF-preload development boot; no production identity or physical entropy claim',
@@ -147,6 +156,9 @@ def bundle(args):
         for key in ('image','dtb','descriptor','build','provenance','audit'):
             if key not in entry:raise ValueError('Incomplete guest qualification')
             item=entry[key];m['workloads'][w][key]=add(item['path'],w+'/'+Path(item['path']).name,item['sha256'])
+    if getattr(args,'sample_course',None):
+        if not 128<=Path(args.sample_course).stat().st_size<=32768:raise ValueError('Sample package bound rejected')
+        m['sample_course']=add(args.sample_course,'sample.lcp')
     for name in UI_FILES:add(ROOT/'sim/browser'/name,name,packaging_inputs['sim/browser/'+name])
     # Export existing UI transport for an external observer, retaining both exact
     # source and the declared suffix. This adds no ink, journal or checking path.
@@ -168,16 +180,19 @@ def bundle(args):
 def validated_bundle(directory):
     directory=Path(directory).absolute();m=read(directory/'bundle.json')
     if m.get('schema')!=SCHEMA or m.get('profile')!=PROFILE or m.get('execution_backend')!=BACKEND or m.get('session_control_contract')!='lemma-browser-session-modes/2' or (m.get('width'),m.get('height'))!=(1650,2200):raise ValueError('Unsupported TCI bundle')
-    if m.get('multimodal_workbook') not in ('ordinary','parameterized') or m.get('course_install_contract')!='lemma-course-console-command/1':raise ValueError('Unsupported workbook')
+    if m.get('multimodal_workbook') not in ('ordinary','parameterized','school') or m.get('course_install_contract')!='lemma-course-console-command/1':raise ValueError('Unsupported workbook')
     if m.get('memory')!={'guest_bytes':134217728,'host_wasm_heap_bytes':2147483648} or set(m.get('workloads',{}))!={'notebook','initializer'} or set(m.get('runtime',{}))!={'factory','wasm'}:raise ValueError('Unsupported TCI machine resources')
     files=inventory(directory,m.get('files'),{'bundle.json'})
     required={'index.html','worker.js','runtime_worker.mjs','control.mjs','opfs_backing.mjs','pcm_egress.mjs','app.js','style.css','guest_records.js','course_transport.js','run_budget.js','qemu-system-riscv64.js','qemu-system-riscv64.wasm','runtime-source/runtime.json'}
+    if m.get('school_service_contract') is not None and (m['school_service_contract']!='lemma-school-browser-service/1' or 'school_transport.js' not in files):raise ValueError('Unsupported school service closure')
+    if m.get('sample_course') is not None and (m['sample_course']!={'path':'sample.lcp','sha256':files.get('sample.lcp')} or not 128<=(directory/'sample.lcp').stat().st_size<=32768):raise ValueError('Unbound sample package')
     if not required<=files.keys():raise ValueError('Incomplete TCI launch bundle')
     if 'packaging_inputs' not in m:raise ValueError('Missing packaging source closure')
     if 'packaging_inputs' in m:
         inputs=m['packaging_inputs']
-        if not isinstance(inputs,dict) or set(inputs)!=PACKAGING_INPUTS or any(files.get('packaging-source/'+name)!=digest for name,digest in inputs.items()):raise ValueError('Incomplete packaging source closure')
+        if not isinstance(inputs,dict) or set(inputs)!=(PACKAGING_INPUTS if m.get('school_service_contract') else PACKAGING_INPUTS-{'sim/browser/school_transport.js'}) or any(files.get('packaging-source/'+name)!=digest for name,digest in inputs.items()):raise ValueError('Incomplete packaging source closure')
         for name in UI_FILES:
+            if name=='school_transport.js' and not m.get('school_service_contract'):continue
             target='ui-source/app.js' if name=='app.js' else name
             if files.get(target)!=inputs['sim/browser/'+name]:raise ValueError('Changed packaged UI input')
         for name in BRIDGE_FILES:
@@ -216,6 +231,9 @@ def validated_bundle(directory):
         build=read(directory/entry['build']['path']);audit=read(directory/entry['audit']['path']);provenance=read(directory/entry['provenance']['path'])
         prefix='lemmasim-silicon-multimodal-'+('parameterized-' if m['multimodal_workbook']=='parameterized' else '')
         configuration=prefix+('initialize' if w=='initializer' else 'notebook')
+        if m['multimodal_workbook']=='school':
+            from school_deployment import FAST,INITIALIZE
+            configuration=INITIALIZE if w=='initializer' else FAST
         for report in (build,audit,provenance):
             if report.get('schema_version')!=2 or report.get('artifact_category')!='development-kernel-boot-package' or report.get('configuration')!=configuration or report.get('stage')!='supervisor' or report.get('optimization') not in ('O0','O2'):raise ValueError('Incompatible actual guest qualification')
         if len({report['optimization'] for report in (build,audit,provenance)})!=1:raise ValueError('Inconsistent guest optimization')

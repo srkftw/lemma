@@ -45,4 +45,7 @@ def dispatch (frame cause value : UInt64) : Action :=
   .bind disarmIfHealthy fun status _ => .done status result
   else .done s result
 
+/-- Shared local boot-health supervision for the Integrated15 composition. -/
+def confirmHealthy : Action := disarmIfHealthy
+
 end Lemma.Platform.LemmaSim.TrialWatchdogKernel

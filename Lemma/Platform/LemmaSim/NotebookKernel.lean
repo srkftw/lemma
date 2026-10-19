@@ -1757,4 +1757,11 @@ private def bootMultimodalParameterized (initialization : UInt64) : Action :=
 def siliconMultimodalParameterizedBoot : Action := bootMultimodalParameterized 0
 def siliconMultimodalParameterizedInitializeMedium : Action := bootMultimodalParameterized 1
 
+/-- Integrated15 composes the maintained Product10 four-role authorities and
+scheduler step; their original constructors and legacy roots remain unchanged. -/
+def prepareIntegratedAuthorities : Action :=
+  .bind constructProductCourseReader fun s _ => if mmFailed s = true then .done s 0 else
+  grantParameterizedInstaller
+def stepIntegratedAuthorities : Action := productCourseReaderStep
+
 end Lemma.Platform.LemmaSim.NotebookKernel

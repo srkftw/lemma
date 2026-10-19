@@ -40,11 +40,15 @@ def catalog(unit):
     from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER, software_deployment_for as product_reader_software
     from chooser_reader_deployment import CONFIGURATIONS as CHOOSER, SOFTWARE_DEPLOYMENT as CHOOSER_SOFTWARE
     from multimodal_deployment import CONFIGURATIONS as MULTIMODAL, SOFTWARE_DEPLOYMENT as MULTIMODAL_SOFTWARE, NOTEBOOK_ROOT as MULTIMODAL_ROOT
-    if unit.get('configuration') in MULTIMODAL: selected_root = MULTIMODAL_ROOT
+    from integrated_deployment import CONFIGURATIONS as INTEGRATED, SOFTWARE_DEPLOYMENT as INTEGRATED_SOFTWARE
+    if unit.get('configuration') in MULTIMODAL + INTEGRATED: selected_root = MULTIMODAL_ROOT
+    from school_deployment import CONFIGURATIONS as SCHOOL, NOTEBOOK_ROOT as SCHOOL_ROOT, software_deployment_for as school_software
+    if unit.get('configuration') in SCHOOL:selected_root=SCHOOL_ROOT
     from package_companion_deployment import software_deployment_for as package_software
     if joined: JOINED_SOFTWARE=package_software(unit['configuration'])
-    selected_software=MULTIMODAL_SOFTWARE if unit.get('configuration') in MULTIMODAL else CHOOSER_SOFTWARE if unit.get('configuration') in CHOOSER else product_reader_software(unit['configuration']) if unit.get('configuration') in PRODUCT_READER else READER_SOFTWARE if unit.get('configuration') in READER else JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
-    require(unit.get('configuration') in CONFIGURATIONS + JOINED + READER + PRODUCT_READER + CHOOSER + MULTIMODAL and
+    selected_software=INTEGRATED_SOFTWARE if unit.get('configuration') in INTEGRATED else MULTIMODAL_SOFTWARE if unit.get('configuration') in MULTIMODAL else CHOOSER_SOFTWARE if unit.get('configuration') in CHOOSER else product_reader_software(unit['configuration']) if unit.get('configuration') in PRODUCT_READER else READER_SOFTWARE if unit.get('configuration') in READER else JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
+    if unit.get('configuration') in SCHOOL:selected_software=school_software(unit['configuration'])
+    require(unit.get('configuration') in CONFIGURATIONS + JOINED + READER + PRODUCT_READER + CHOOSER + MULTIMODAL + INTEGRATED and
             unit.get('role') == 'user' and unit.get('contract_version') == 'core0-user-v0.2' and
             type(unit.get('schema_version')) is int and unit.get('schema_version') == 2 and unit.get('artifact_category') == 'development-user-unit' and
             unit.get('managed_policy') == 'lemma-notebook-arithmetic-v1' and

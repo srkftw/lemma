@@ -232,7 +232,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .uart_rx_ready,.uart_tx_valid,.uart_tx_data,.finish_valid,.finish_code,.timer_ticks,
    .debug_pc,.debug_privilege,.debug_retire,.debug_trap,.debug_cause
  );
- lemma_pen #(.FIFO_DEPTH(int'(PEN_FIFO)),.PRESSURE_MAX(int'(PRESSURE_MAX))) pen(
+ lemma_pen #(.FIFO_DEPTH(int'(PEN_FIFO)),.PRESSURE_MAX(int'(PRESSURE_MAX)),.IHP_SRAM(PEN_IHP_SRAM!=0)) pen(
    .clk,.reset_n(!domain_reset),.valid((dev_valid&&pen_sel)||power_cancel_pen),.write((dev_valid&&pen_sel&&dev_write)||power_cancel_pen),
    .addr(power_cancel_pen?12'd104:(dev_valid&&pen_sel)?dev_addr[11:0]:12'd0),
    .size(power_cancel_pen?3'd3:(dev_valid&&pen_sel)?dev_size:3'd0),.wdata(power_cancel_pen?64'd1:(dev_valid&&pen_sel)?dev_wdata:64'd0),

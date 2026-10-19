@@ -15,14 +15,33 @@ sys.path.insert(0,str(ROOT/'scripts'))
 
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 
-def validate_wasm_inputs(source,m,input_bundle=None):
+def validate_wasm_inputs(source,m,input_bundle=None,source_archive=None):
     """Check the complete recorded portable build/generation closure on reuse.
 
     Generated binding bytes alone cannot certify unchanged generator policy.
     This checks actual files before packaging, without rebuilding the machine.
     The immutable packaged launch validator remains independent of checkout.
     """
-    archive=None;consumed={};browser_archive=False
+    archive=None;consumed={};browser_archive=False;original_sources=None
+    if source_archive is not None:
+        if input_bundle is not None:raise ValueError('Choose one exact Wasm source provider')
+        source_archive=Path(source_archive).resolve()
+        original_sources=json.loads((source_archive/'consumed-source-archive.json').read_text())
+        if (original_sources.get('schema')!='lemma-original-portable-consumed-source-archive/1' or
+            original_sources.get('original_manifest_sha256')!=sha(source/'build.json') or
+            original_sources.get('implementation')!=m.get('snapshot_identity') or
+            original_sources.get('outputs')!=m.get('outputs') or not isinstance(original_sources.get('inputs'),dict)):
+            raise ValueError('Portable source archive does not bind original producer')
+        expected={}
+        for group in ('sha256','configuration_includes','binding_generator_inputs','portable_inputs','verilator_runtime_inputs','host_toolchain_inputs','host_runtime'):
+            for name,want in m.get(group,{}).items():
+                path=Path(name);path=path if path.is_absolute() else ROOT/path
+                expected[str(path)]=want
+        for group in ('build_driver','upstream_patch'):
+            item=m[group];expected[str(ROOT/item['path'])]=item['sha256']
+        expected[str(Path(m['host_include_dir'])/'lemma_silicon_binding.h')]=m['host_binding_sha256']
+        actual={item.get('original_path'):item.get('sha256') for item in original_sources['inputs'].values()}
+        if actual!=expected:raise ValueError('Portable archive input inventory differs from complete original producer')
     if input_bundle is not None:
         from silicon_guest_bundle import read_json,inventory
         input_bundle=Path(input_bundle).resolve()
@@ -34,6 +53,11 @@ def validate_wasm_inputs(source,m,input_bundle=None):
         resolved=path
         try:relative=path.relative_to(ROOT)
         except ValueError:relative=None
+        if original_sources is not None:
+            alias=relative.as_posix() if relative is not None else 'immutable-external/'+path.as_posix().lstrip('/')
+            item=original_sources['inputs'].get(alias,{})
+            if item.get('original_path')!=str(path) or item.get('sha256')!=want:raise ValueError('Missing original portable archive input: '+label)
+            resolved=source_archive/'consumed-source-root'/alias
         if archive is not None and relative is not None:
             if browser_archive:
                 item=archive.get('wasm_project_inputs',{}).get(relative.as_posix())
@@ -90,7 +114,10 @@ def validate_wasm_inputs(source,m,input_bundle=None):
     profile='sim/profiles/'+m['profile'].replace('/','-')+'.json'
     if m['binding_generator_inputs'].get(profile)!=m.get('profile_sha256'):
         raise ValueError('Wasm binding profile is not source bound')
-    if sha(Path(m['host_include_dir'])/'lemma_silicon_binding.h')!=m['host_binding_sha256']:
+    binding_header=Path(m['host_include_dir'])/'lemma_silicon_binding.h'
+    if original_sources is not None:
+        check(binding_header,m['host_binding_sha256'],'host binding')
+    if original_sources is None and sha(binding_header)!=m['host_binding_sha256']:
         raise ValueError('Portable host binding changed')
     patched=m.get('portable_verilator_patch')
     if not isinstance(patched,dict) or set(patched)!={'verilatedos_c.h','verilated_threads.cpp'}:
@@ -105,6 +132,7 @@ def validate_wasm_inputs(source,m,input_bundle=None):
     return consumed
 
 def bundle(args):
+    if args.profile=='lemma-silicon-dev/0.15.0':return product_bundle(args)
     import silicon_guest
     if args.profile not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0'):raise ValueError('The local browser bundle admits canonical0.3 or multimodal0.14')
     from silicon_guest_bundle import read_json
@@ -205,7 +233,7 @@ def validated_bundle(directory):
     if m.get('schema')=='lemmasim-browser-qemu-tci/1':
         import lemmasim_browser_tci
         return lemmasim_browser_tci.validated_bundle(directory)
-    if m.get('schema')!='lemmasim-browser-bundle/1' or m.get('profile') not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0') or (m.get('width'),m.get('height'))!=(1650,2200):
+    if m.get('schema')!='lemmasim-browser-bundle/1' or m.get('profile') not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.15.0') or (m.get('width'),m.get('height'))!=(1650,2200):
         raise ValueError('Unsupported browser machine bundle')
     if m.get('session_control_contract') not in (None, 'lemma-browser-session-modes/1', 'lemma-browser-session-modes/2'):
         raise ValueError('Unsupported browser control contract')
@@ -224,9 +252,20 @@ def validated_bundle(directory):
         if total>1024*1024*1024:raise ValueError('Browser bundle exceeds byte bound')
         if sha(path)!=digest:raise ValueError('Changed browser artifact: '+name)
     if not {'index.html','worker.js','app.js','machine.mjs','machine.wasm','boot.bin'}<=files.keys():raise ValueError('Incomplete browser launch bundle')
-    for workload in ('notebook','initializer'):
+    product=m['profile']=='lemma-silicon-dev/0.15.0'
+    if product:
+        if m.get('product_boot_contract')!='lemma-browser-product-nv/1' or m.get('boot')!='immutable Lean ROM/NV' or set(m.get('workloads',{}))!={'notebook'}:raise ValueError('Unsupported Product15 boot contract')
+        for kind,size in (('boot_medium',33558528),('user_seed',268435456)):
+            item=m.get(kind)
+            if kind=='user_seed' and item is None:continue
+            if not isinstance(item,dict) or item.get('path') not in files or files[item['path']]!=item.get('sha256') or item.get('bytes')!=size or (directory/item['path']).stat().st_size!=size:raise ValueError('Unbound Product15 '+kind)
+        item=m.get('product_prepared',{})
+        if item.get('path') not in files or files[item['path']]!=item.get('sha256'):raise ValueError('Unbound Product15 component admission')
+        admitted=read_json(directory/item['path'])
+        if admitted.get('profile')!=m['profile'] or admitted.get('rom_sha256')!=files['boot.bin'] or admitted.get('digital_discovery',{}).get('descriptor_sha256')!=m['workloads']['notebook'].get('descriptor',{}).get('sha256'):raise ValueError('Product15 component identities differ')
+    for workload in (('notebook',) if product else ('notebook','initializer')):
         entry=m.get('workloads',{}).get(workload,{})
-        for kind in ('image','dtb','descriptor'):
+        for kind in (('descriptor',) if product else ('image','dtb','descriptor')):
             item=entry.get(kind,{})
             if not isinstance(item,dict) or item.get('path') not in files or files[item['path']]!=item.get('sha256'):
                 raise ValueError('Unbound browser guest '+workload+'/'+kind)
@@ -280,6 +319,9 @@ def validated_bundle(directory):
                 try:relative=Path(path).relative_to(project_root).as_posix()
                 except ValueError:continue
                 expected[relative]=digest
+        if product:
+            header=(Path(build['host_include_dir'])/'lemma_silicon_binding.h').relative_to(project_root).as_posix()
+            expected[header]=build['host_binding_sha256']
         if set(consumed)!=set(expected):raise ValueError('Incomplete archived Wasm consumed source closure')
         for name,digest in expected.items():
             item=consumed[name]
@@ -330,3 +372,54 @@ def serve(args):
     try:server.serve_forever(poll_interval=.25)
     except KeyboardInterrupt:pass
     finally:server.server_close()
+
+
+def product_bundle(args):
+    """Package real Product15 ROM/NV creation; never preload target image state."""
+    import lemmasim_auth
+    from silicon_guest_bundle import read_json
+    prepared_path=getattr(args,'product_prepared',None);boot_path=getattr(args,'boot_medium',None)
+    if prepared_path is None or boot_path is None:raise ValueError('Product15 browser requires --product-prepared and explicit opaque --boot-medium')
+    prepared_path=Path(prepared_path).resolve();admission,_,rom=lemmasim_auth.prepared(prepared_path)
+    if admission['profile']!='lemma-silicon-dev/0.15.0':raise ValueError('Exact Product15 prepared components required')
+    source=args.wasm_build.resolve();m=read_json(source/'build.json')
+    if m.get('status')!='BUILT' or m.get('profile')!=admission['profile']:raise ValueError('Exact Product15 Wasm producer required')
+    consumed=validate_wasm_inputs(source,m,getattr(args,'wasm_input_bundle',None),getattr(args,'wasm_source_archive',None))
+    boot_path=Path(boot_path).resolve();user_path=getattr(args,'user_seed',None)
+    if boot_path.stat().st_size!=33558528:raise ValueError('Exact bounded Product boot medium required')
+    if user_path is not None:
+        user_path=Path(user_path).resolve()
+        if user_path.stat().st_size!=268435456:raise ValueError('Exact256MiB guest-produced user seed required')
+    out=args.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
+    def artifact(path,name):
+        path=Path(path);want=sha(path);target=out/name;target.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(path,target)
+        if sha(target)!=want:raise ValueError('Product browser input changed while copying: '+name)
+        return {'path':name,'sha256':want}
+    result={'schema':'lemmasim-browser-bundle/1','profile':admission['profile'],'width':1650,'height':2200,
+      'boot':'immutable Lean ROM/NV','product_boot_contract':'lemma-browser-product-nv/1',
+      'compiler':'native pinned Lean/LLVM helper; no browser compiler',
+      'persistence':'separate OPFS boot/user SyncAccessHandles; flush primitives, origin eviction and physical power loss unqualified',
+      'session_control_contract':'lemma-browser-session-modes/2','controller_image_contract':'lemma-controller-gray4-image/1',
+      'multimodal_contract':'synthetic-aperture/1',
+      'checkpoint_contract':'initial sealed synthetic case only; ordinary Product checkpoint import/private boot persistence not admitted',
+      'wasm_build_sha256':sha(source/'build.json'),'wasm_project_root':str(ROOT),
+      'rom':artifact(rom['binary'],'boot.bin'),
+      'product_prepared':artifact(prepared_path/'prepared.json','product/prepared.json'),
+      'boot_medium':{**artifact(boot_path,'product/boot.raw'),'bytes':33558528},
+      'workloads':{'notebook':{'descriptor':artifact(prepared_path/'descriptor.bin','notebook/descriptor.bin')}},
+      'initialization':'copy exact guest-produced user seed' if user_path else 'requires imported guest-produced user medium; fresh initializer not present',
+      'authentication':admission['authentication'],'production_identity':'OPEN','anti_rollback':'OPEN',
+      'qualification':'packaged actual ROM/NV machine; no image preload, notebook Ready or ordinary browser workflow inferred'}
+    if user_path:result['user_seed']={**artifact(user_path,'product/user.raw'),'bytes':268435456}
+    result['wasm_project_inputs']={name:{'path':'wasm-sources/'+name,'sha256':item['sha256']} for name,item in consumed.items()}
+    for name,item in consumed.items():
+        archived=artifact(item['path'],'wasm-sources/'+name)
+        if archived['sha256']!=item['sha256']:raise ValueError('Changed original portable source')
+    for name in ('machine.mjs','machine.wasm'):artifact(source/name,name)
+    for path in (ROOT/'sim/browser').glob('*'):
+        if path.suffix in ('.js','.html','.css'):artifact(path,path.name)
+    result['files']={path.relative_to(out).as_posix():sha(path) for path in sorted(out.rglob('*')) if path.is_file()}
+    (out/'bundle.json').write_text(json.dumps(result,indent=2)+'\n');shutil.copyfile(source/'build.json',out/'wasm-build.json')
+    (out/'DEPENDENCIES.txt').write_text('Local Product15 development bundle. Public development authentication key; production identity and anti-rollback OPEN. Existing project, CVW, IHP functional SRAM, Verilator and Emscripten rights/notices remain. Raw media are opaque supplied guest-produced seeds; no permission to redistribute private work or supplied source corpus is inferred.\n')
+    validated_bundle(out);print(out/'index.html')

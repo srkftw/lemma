@@ -28,6 +28,8 @@ BYTES_CONFIGURATIONS={"lemmasim-silicon-bytes-bulk-notebook","lemmasim-silicon-b
 ARRAY_CONFIGURATIONS=set(COURSE_CONFIGURATIONS) | {"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"}
 STRING_CONFIGURATIONS={"lemmasim-silicon-string-bulk-notebook","lemmasim-silicon-string-bulk-initialize","lemmasim-silicon-string-arithmetic-oom-development"}
 USER_CONFIGURATIONS |= BYTES_CONFIGURATIONS | ARRAY_CONFIGURATIONS | STRING_CONFIGURATIONS | set(CLOSURE_CONFIGURATIONS)
+from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as INTEGRATED_SOFTWARE
+USER_CONFIGURATIONS |= set(INTEGRATED_CONFIGURATIONS)
 CONFIGURATIONS |= USER_CONFIGURATIONS
 USER_WRAPPER='lemma-checked-user-word-wrapper-v1'
 USER_WORD={
@@ -49,6 +51,8 @@ PRODUCT_PHYSICAL_PREIMAGE={
  'write8':'2a776ffdb37ebed3fc9caf313d15dc293647ef456a9ec035d481e111575a7002'}
 def product_physical(unit):
  from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER, software_deployment_for as product_software
+ if unit.get('configuration') in INTEGRATED_CONFIGURATIONS:
+  return unit.get('role')=='kernel' and unit.get('contract_version')=='core0-kernel-v0.10' and unit.get('software_deployment')==(__import__('school_deployment').software_deployment_for(unit['configuration']) if unit['configuration'] in __import__('school_deployment').CONFIGURATIONS else INTEGRATED_SOFTWARE)
  return unit.get('configuration') in PRODUCT_READER and unit.get('role')=='kernel' and unit.get('contract_version')=='core0-kernel-v0.7' and unit.get('software_deployment')==product_software(unit['configuration'])
 def physical_preimages(unit):return PRODUCT_PHYSICAL_PREIMAGE if product_physical(unit) else PHYSICAL_PREIMAGE
 TYPES={'u8':('i8','zeroext ',8),'u32':('i32','signext ',32),'u64':('i64','',64)}
@@ -103,9 +107,10 @@ def catalog(unit):
   f=by.get(r.get('symbol'));op=PHYSICAL.get(r.get('operation'))
   from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS, software_deployment_for as product_reader_software
   from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as MULTIMODAL_SOFTWARE
-  multimodal=(unit.get('configuration') in MULTIMODAL_CONFIGURATIONS and unit.get('software_deployment')==MULTIMODAL_SOFTWARE)
+  integrated=(unit.get('configuration') in INTEGRATED_CONFIGURATIONS and unit.get('software_deployment')==(__import__('school_deployment').software_deployment_for(unit['configuration']) if unit['configuration'] in __import__('school_deployment').CONFIGURATIONS else INTEGRATED_SOFTWARE))
+  multimodal=(unit.get('configuration') in MULTIMODAL_CONFIGURATIONS and unit.get('software_deployment')==(__import__('school_deployment').software_deployment_for(unit['configuration']) if unit['configuration'] in __import__('school_deployment').CONFIGURATIONS else MULTIMODAL_SOFTWARE))
   product_reader=(unit.get('configuration') in PRODUCT_READER_CONFIGURATIONS and unit.get('software_deployment')==product_reader_software(unit['configuration']))
-  require(unit['role']=='kernel' and (unit['contract_version'] in {'core0-kernel-v0.4','core0-kernel-v0.6'} or unit['contract_version']=='core0-kernel-v0.7' and product_reader or unit['contract_version']=='core0-kernel-v0.9' and multimodal) and
+  require(unit['role']=='kernel' and (unit['contract_version'] in {'core0-kernel-v0.4','core0-kernel-v0.6'} or unit['contract_version']=='core0-kernel-v0.7' and product_reader or unit['contract_version']=='core0-kernel-v0.9' and multimodal or unit['contract_version']=='core0-kernel-v0.10' and integrated) and
    f is not None and op is not None and r['source']==f['source'] and (f['args'],f['effects'])==op[1:],
    'wrapper source/signature/effects/authority differs')
   require(any(o['stable_id']==r['operation'] and o['primitive_symbol'] is None and o['returnkind']=='word'
@@ -115,7 +120,7 @@ def catalog(unit):
   require(isinstance(r,dict) and set(r)=={'source','symbol','operation'},'user-word catalog row keys differ')
   f=by.get(r.get('symbol'));op=USER_WORD.get(r.get('operation'))
   require(unit['role']=='user' and (unit['contract_version'] in {'core0-user-v0.2','core0-user-v0.3'} or unit['contract_version']=='core0-user-v0.4' and unit.get('configuration') in BYTES_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.5' and unit.get('configuration') in ARRAY_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.6' and unit.get('configuration') in STRING_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.7' and unit.get('configuration') in CLOSURE_CONFIGURATIONS + USB_CLOSURE_RECOVERY_CONFIGURATIONS) and
-   (unit.get('image_key') in {'notebook','arithmetic'} or unit.get('image_key')=='store' and unit.get('configuration') in {'lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize'} | set(USB_CLOSURE_RECOVERY_CONFIGURATIONS) | set(USB_PACKAGE_RECOVERY_CONFIGURATIONS)) and f is not None and op is not None and
+   (unit.get('image_key') in {'notebook','arithmetic'} or unit.get('image_key')=='store' and unit.get('configuration') in {'lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize'} | set(USB_CLOSURE_RECOVERY_CONFIGURATIONS) | set(USB_PACKAGE_RECOVERY_CONFIGURATIONS) | set(__import__('school_deployment').CONFIGURATIONS)) and f is not None and op is not None and
    r['source']==f['source'] and (f['args'],f['effects'])==op[:2],
    'user-word source/signature/effects/authority differs')
   require(any(o['stable_id']==r['operation'] and o['primitive_symbol'] is None and o['returnkind']=='word'

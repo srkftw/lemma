@@ -85,12 +85,22 @@ def isUSBPackageReaderNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize"
 
+def isSchoolNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-school-notebook" ||
+    configuration == "lemmasim-silicon-school-initialize" ||
+    configuration == "lemmasim-silicon-integrated-school-notebook"
+
+def isIntegratedNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-integrated-notebook" ||
+    configuration == "lemmasim-silicon-integrated-school-notebook"
+
 def isMultimodalParameterizedConfiguration (configuration : String) : Bool :=
+  isIntegratedNotebookConfiguration configuration ||
   configuration == "lemmasim-silicon-multimodal-parameterized-notebook" ||
     configuration == "lemmasim-silicon-multimodal-parameterized-initialize"
 
 def isMultimodalNotebookConfiguration (configuration : String) : Bool :=
-  isMultimodalParameterizedConfiguration configuration ||
+  isSchoolNotebookConfiguration configuration || isMultimodalParameterizedConfiguration configuration ||
   configuration == "lemmasim-silicon-multimodal-notebook" ||
     configuration == "lemmasim-silicon-multimodal-initialize"
 
@@ -133,6 +143,7 @@ def isTrialWatchdogNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-product-course-watchdog-bulk-notebook"
 
 def isProductCourseReaderNotebookConfiguration (configuration : String) : Bool :=
+  isIntegratedNotebookConfiguration configuration ||
   configuration == "lemmasim-silicon-product-course-reader-bulk-notebook" ||
     isTrialWatchdogNotebookConfiguration configuration
 
@@ -225,7 +236,36 @@ def isSumsNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-sums-arithmetic-oom-development"
 
 def softwareDeploymentFields (configuration : String) : List (String × Json) :=
-  if isMultimodalNotebookConfiguration configuration then
+  if isSchoolNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj ([
+    ("contract_version", .str "lemma-school-notebook-deployment/2"),
+    ("notebook_version", toJson (23 : Nat)),
+    ("silicon_profile", .str (if isIntegratedNotebookConfiguration configuration then
+      "lemma-silicon-dev/0.15.0" else "lemma-silicon-dev/0.14.0")),
+    ("machine_profile", .str "lemma-one-multimodal/0.2.0"),
+    ("stream_contract", .str "lemma-multimodal-converter/1"),
+    ("reader_contract", .str "lemma-course-reader-location/1"),
+    ("chooser_contract", .str "lemma-course-empty-selection-chooser/1"),
+    ("selection_contract", .str "lemma-school-course-selection/1"),
+    ("submission_contract", .str "lemma-school-guest-submission/2"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.2"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])] ++
+    (if isIntegratedNotebookConfiguration configuration then
+      [("boot_image_contract", .str "lemma-product10-image-compatibility/1")] else [])))]
+  else if isIntegratedNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-integrated-notebook-deployment/1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.15.0"),
+    ("machine_profile", .str "lemma-one-multimodal/0.2.0"),
+    ("stream_contract", .str "lemma-multimodal-converter/1"),
+    ("reader_contract", .str "lemma-course-reader-location/1"),
+    ("chooser_contract", .str "lemma-course-empty-selection-chooser/1"),
+    ("boot_image_contract", .str "lemma-product10-image-compatibility/1"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else  if isMultimodalNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
     ("contract_version", .str "lemma-multimodal-notebook-deployment/1"),
     ("silicon_profile", .str "lemma-silicon-dev/0.14.0"),
@@ -584,6 +624,17 @@ def multimodalParameterizedImages : Array UserImageSpec := #[
   {key := "course", id := 4, moduleName := `Lemma.Courses.PackageInstaller,
     root := `Lemma.Courses.PackageInstaller.mainParameterized, bootRole? := some .courseInstaller}]
 
+/-- School22 uses the same notebook and services with durable publication
+selection and the append-only guest submission queue admitted explicitly. -/
+def schoolNotebookImages : Array UserImageSpec := #[
+  {key := "store", id := 1, moduleName := `Lemma.Services.Store.ServerSchool,
+    root := `Lemma.Services.Store.ServerSchool.main, bootRole? := some .storeServer},
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainMultimodalSchool, bootRole? := some .notebook},
+  multimodalNotebookImages[2]!,
+  {key := "course", id := 4, moduleName := `Lemma.Courses.PackageInstaller,
+    root := `Lemma.Courses.PackageInstaller.mainAwaitSelected, bootRole? := some .courseInstaller}]
+
 /-- Composes the genuine mounted/recovery Store, package UI, isolated checker
 and installer. No host role parses or recovers documents. -/
 def packageRecoveryNotebookImages : Array UserImageSpec := #[
@@ -625,7 +676,8 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if isMultimodalParameterizedConfiguration configuration then .ok multimodalParameterizedImages
+  if isSchoolNotebookConfiguration configuration then .ok schoolNotebookImages
+  else if isMultimodalParameterizedConfiguration configuration then .ok multimodalParameterizedImages
   else if isMultimodalNotebookConfiguration configuration then .ok multimodalNotebookImages
   else if isPackageChooserNotebookConfiguration configuration then .ok packageChooserNotebookImages
   else if isUSBPackageReaderNotebookConfiguration configuration then .ok packageRecoveryReaderNotebookImages

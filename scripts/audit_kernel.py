@@ -334,7 +334,33 @@ COURSE_NOTEBOOK_CONFIGURATIONS += MULTIMODAL_CONFIGURATIONS
 AWAIT_NOTEBOOK_CONFIGURATIONS += MULTIMODAL_CONFIGURATIONS
 MANAGED_POLICIES.update({configuration:'lemma-notebook-arithmetic-v1' for configuration in MULTIMODAL_CONFIGURATIONS})
 
+from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as INTEGRATED_SOFTWARE_DEPLOYMENT
+MULTI_USER_CONFIGURATIONS.update({configuration:tuple(
+    {**row, "source":MULTIMODAL_NOTEBOOK_ROOT} if row["key"] == "notebook" else
+    {**row, "module":"Lemma.Services.Arithmetic.ServerV8", "source":"Lemma.Services.Arithmetic.ServerV8.main"} if row["key"] == "arithmetic" else
+    {**row, "source":"Lemma.Courses.PackageInstaller.mainParameterized"} if row["key"] == "course" else row
+    for row in READER_NOTEBOOK_IMAGES) for configuration in INTEGRATED_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS |= frozenset(INTEGRATED_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(INTEGRATED_CONFIGURATIONS)
+POWER_CONFIGURATIONS |= frozenset(INTEGRATED_CONFIGURATIONS)
+PRODUCT_CONFIGURATIONS |= frozenset(INTEGRATED_CONFIGURATIONS)
+PRODUCT_NOTEBOOK_CONFIGURATIONS |= frozenset(INTEGRATED_CONFIGURATIONS)
+MODERN_NOTEBOOK_CONFIGURATIONS |= frozenset(INTEGRATED_CONFIGURATIONS)
+COURSE_NOTEBOOK_CONFIGURATIONS += INTEGRATED_CONFIGURATIONS
+AWAIT_NOTEBOOK_CONFIGURATIONS += INTEGRATED_CONFIGURATIONS
+MANAGED_POLICIES.update({configuration:'lemma-notebook-arithmetic-v1' for configuration in INTEGRATED_CONFIGURATIONS})
+
+
+from school_deployment import CONFIGURATIONS as SCHOOL_CONFIGURATIONS, USER_ROOTS as SCHOOL_ROOTS
+MULTI_USER_CONFIGURATIONS.update({configuration:tuple(
+    {**row,"module":SCHOOL_ROOTS[row["key"]][0].rsplit(".",1)[0],"source":SCHOOL_ROOTS[row["key"]][0]}
+    for row in READER_NOTEBOOK_IMAGES) for configuration in SCHOOL_CONFIGURATIONS})
+
 def software_deployment_fields(configuration):
+    from school_deployment import CONFIGURATIONS as school, software_deployment_for as school_software
+    if configuration in school:return {"software_deployment":school_software(configuration)}
+    if configuration in INTEGRATED_CONFIGURATIONS:
+        return {"software_deployment":INTEGRATED_SOFTWARE_DEPLOYMENT}
     if configuration in MULTIMODAL_CONFIGURATIONS:
         from multimodal_deployment import SOFTWARE_DEPLOYMENT as multimodal_software
         return {"software_deployment":multimodal_software}
@@ -368,7 +394,7 @@ def software_deployment_fields(configuration):
 
 
 def kernel_contract(configuration: str) -> str:
-    return "core0-kernel-v0.9" if configuration in MULTIMODAL_CONFIGURATIONS else "core0-kernel-v0.8" if configuration in COMMON_CONFIGURATIONS else "core0-kernel-v0.7" if configuration in PRODUCT_CONFIGURATIONS else "core0-kernel-v0.6" if configuration in USB_CONFIGURATIONS else "core0-kernel-v0.5" if configuration in BLE_CONFIGURATIONS else "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
+    return "core0-kernel-v0.10" if configuration in INTEGRATED_CONFIGURATIONS else "core0-kernel-v0.9" if configuration in MULTIMODAL_CONFIGURATIONS else "core0-kernel-v0.8" if configuration in COMMON_CONFIGURATIONS else "core0-kernel-v0.7" if configuration in PRODUCT_CONFIGURATIONS else "core0-kernel-v0.6" if configuration in USB_CONFIGURATIONS else "core0-kernel-v0.5" if configuration in BLE_CONFIGURATIONS else "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
 
 
 def optimizer_intrinsics(unit: dict) -> set[str]:
@@ -1762,7 +1788,7 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     if multimodal_binding:
         from multimodal_target import validate as validate_multimodal
         validate_multimodal(pre_ir,unit,optimized=False)
-    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructCourseMultimodal' if multimodal_binding else 'constructProductCourseReader' if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS else 'constructPackageRecovery' if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructCourse' if unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if recovery_binding else 'constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
+    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructCourseMultimodal' if multimodal_binding else 'constructProductCourseReader' if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS else 'constructPackageRecovery' if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructCourse' if unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if recovery_binding else 'constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
     selected=o+('initArithmetic' if arithmetic else 'initPower')
     for source,symbol in names.items():
         other=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(other)[2]
@@ -1791,7 +1817,11 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         if len(admitted)!=1:raise Core0Error('Objects power initializer lacks the exact binding3 selection')
         binding_gates.extend(admitted[0]);callers.append(source)
     if selected in names and callers!=[construct]:raise Core0Error('Objects power initializer has no exact constructor')
-    if unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
+    if unit.get('configuration') in INTEGRATED_CONFIGURATIONS:
+        from integrated_target import validate as validate_integrated, semantics as integrated_semantics
+        validate_integrated(pre_ir,unit,optimized=False)
+        binding_gates.append(integrated_semantics(pre_ir,unit))
+    elif unit.get('configuration') in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS:
         from product_reader_deployment import BOOT_ROOT
         from product_reader_target import kernel_semantics
         kernel_semantics(pre_ir,unit)
@@ -3367,7 +3397,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     if (image_key is not None) != multi_user:
         raise Core0Error("per-image unit selection differs from its configuration/role")
     image = image_spec(configuration, image_key) if multi_user else None
-    if multi_user and configuration not in MULTIMODAL_CONFIGURATIONS:
+    if multi_user and configuration not in MULTIMODAL_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS:
         from dirty_batch_notebook_target import numeric_candidate, numeric_contract, numeric_root
         if numeric_candidate(unit):
             numeric_contract(unit)
@@ -3379,7 +3409,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     case_field = {"startup_case"} if multi_user and configuration in {"tasks-fault-development", *MANAGED_POLICIES} else set()
     expected_managed = managed_fields(configuration, image)
     from closed_inline import selected as inline_selected, FIELD as inline_field, catalog as inline_catalog
-    from managed_records import FIELD as records_field, allowed as records_allowed, profile_allowed as user_v2_allowed, contract as records_contract
+    from managed_records import FIELD as records_field, allowed as records_allowed, profile_allowed as user_v2_allowed, recovery_store_profile_allowed, contract as records_contract
     from arithmetic_execution_identity import FIELD as execution_field, selected as execution_selected, contract as execution_contract
     from managed_sums import FIELD as sums_field, allowed as sums_allowed, contract as sums_contract
     from arithmetic_sums_identity import FIELD as sums_execution_field, selected as sums_execution_selected, contract as sums_execution_contract
@@ -3407,7 +3437,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
                  'core0-user-v0.5' if array_allowed(unit) else
                  'core0-user-v0.4' if bytes_allowed(unit) else
                  'core0-user-v0.3' if sums_allowed(unit) else
-                 'core0-user-v0.2' if role == 'user' and (user_v2_allowed(unit) and (records_field in unit or image_key=='notebook' or configuration in USB_RECOVERY_FAMILIES and image_key=='store')) else CONTRACTS[role])):
+                 'core0-user-v0.2' if role == 'user' and (user_v2_allowed(unit) and (records_field in unit or image_key=='notebook' or recovery_store_profile_allowed(unit))) else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
         raise Core0Error("per-image user unit key/ID differs")
@@ -3438,7 +3468,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             raise Core0Error("managed user source reaches privileged/compiler code")
         normalized_source = re.sub(r"^_private\..*?\.[0-9]+\.", "", source)
         course_await_executable=(configuration in AWAIT_NOTEBOOK_CONFIGURATIONS and normalized_source.startswith("Lemma.Services.Store.ServerAwait."))
-        if configuration in (*SERVICE_CONFIGURATIONS, *COURSE_NOTEBOOK_CONFIGURATIONS) and (service_executable_module(normalized_source) or course_await_executable):
+        school_recovery_executable=(configuration in SCHOOL_CONFIGURATIONS and normalized_source.startswith("Lemma.Services.Store.ServerRecovery."))
+        if configuration in (*SERVICE_CONFIGURATIONS, *COURSE_NOTEBOOK_CONFIGURATIONS) and (service_executable_module(normalized_source) or course_await_executable or school_recovery_executable):
             borrowed=(configuration in AWAIT_NOTEBOOK_CONFIGURATIONS and course_await_library_source_allowed(role,normalized_source,image))
             if not borrowed and (role != "user" or not normalized_source.startswith(image["module"] + ".")):
                 raise Core0Error("service unit reaches another executable namespace")
@@ -3516,7 +3547,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         "uart.write-byte": ("uartWriteByte", "uart.thr.write8", 0, "write", None),
         "uart.enable-reset-fifo": ("uartEnableAndResetFifo", "uart.fcr.enable-reset", 2, "write", 7),
     }
-    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4", "core0-kernel-v0.5", "core0-kernel-v0.6", "core0-kernel-v0.7", "core0-kernel-v0.8", "core0-kernel-v0.9"}:
+    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4", "core0-kernel-v0.5", "core0-kernel-v0.6", "core0-kernel-v0.7", "core0-kernel-v0.8", "core0-kernel-v0.9", "core0-kernel-v0.10"}:
         expected_devices["uart.enable-reset-fifo-trigger14"] = (
             "uartEnableAndResetFifo14", "uart.fcr.enable-reset-trigger14", 2, "write", 199)
     for raw in device:
@@ -3803,6 +3834,9 @@ def validate_product_pmp(assembly: str, raw_machine: str, ranges: dict, configur
     Product retains its1 KiB aperture. Multimodal14 separately grants8 KiB
     RW/NX for its two generated apertures; legacy startup stays unchanged.
     """
+    if configuration in INTEGRATED_CONFIGURATIONS:
+        from integrated_target import validate_pmp
+        return validate_pmp(assembly,raw_machine,ranges)
     multimodal=configuration in MULTIMODAL_CONFIGURATIONS
     selected=configuration in PRODUCT_NOTEBOOK_CONFIGURATIONS or multimodal
     body=_assembly_function(assembly,"_start")
@@ -4242,7 +4276,7 @@ def validate_usb_descriptor_lookup(ir: str, unit: dict) -> tuple[set[int], list[
 
 def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
     """Preserve PMP admission; add only the two observed managed-policy lookups."""
-    if unit.get("configuration") in MULTIMODAL_CONFIGURATIONS:
+    if unit.get("configuration") in MULTIMODAL_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS:
         from multimodal_target import readonly_lookup
         sites, tables, _ = readonly_lookup(ir, unit, optimized=optimized)
         return sites, tables
@@ -4631,7 +4665,8 @@ def _jump_status_default(optimized_body: str, assembly: str, symbol: str,
 
 
 def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
-                       targets: list[str], cases: list[int]) -> dict:
+                       targets: list[str], cases: list[int], *, unit: dict | None = None,
+                       optimized_ir: str | None = None) -> dict:
     """Bind the notebook phase5 hole to its checked error234 return, not a phase."""
     switches=re.findall(r'switch i64 (%[A-Za-z0-9_.$-]+), label %([A-Za-z0-9_.$-]+) \[([^]]+)\]',optimized_body,re.S)
     selected=[(value,default,block) for value,default,block in switches
@@ -4639,8 +4674,17 @@ def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
     if cases!=[1,2,3,4,6] or len(targets)!=6 or len(selected)!=1:
         raise Core0Error('notebook Save lacks its exact phase/default switch')
     value,default,_=selected[0]
+    wait_phases=[0,5]
+    if unit is not None and unit.get('configuration') in SCHOOL_CONFIGURATIONS:
+        from school_target import validate as validate_school
+        if optimized_ir is None:raise Core0Error('School Save resume requires its complete genuine source corpus')
+        validate_school(optimized_ir,unit,optimized=True)
+        # Explicit School23 phase8 resumes the original Save after the durable
+        # queue releases its Store writer. Its complete actual body is pinned;
+        # the old phase5 rejecting hole/return/frame checks remain identical.
+        wait_phases=[0,5,8]
     waits=[block for operand,_default,block in switches if operand==value
-           and sorted(int(case) for case in re.findall(r'i64 (-?\d+), label',block))==[0,5]]
+           and sorted(int(case) for case in re.findall(r'i64 (-?\d+), label',block))==wait_phases]
     if len(waits)!=1:
         raise Core0Error('notebook Save phase0/5 wait split differs')
     from audit_memory import _parse_blocks
@@ -4673,7 +4717,7 @@ def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
           ('li',['s0','234']),('bltu',['a0','s3',hole]),('slli',['s3','s3','3'])]):
         raise Core0Error('notebook Save default error/frame or phase guard differs')
     return {'holes':[5],'llvm_default':default,'machine_default':hole,
-            'default_status':234,'default_value':0,'wait_split_phases':[0,5]}
+            'default_status':234,'default_value':0,'wait_split_phases':wait_phases}
 
 
 def validate_dtb_pair_body(ir: str, unit: dict, symbol: str) -> str:
@@ -4890,7 +4934,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
                 hoisted={'instruction':'li a5,8','definition_instruction':0,
                          'preserved_register':'a5','normalized_index_register':'a1'}
         elif (source=='Lemma.Courses.PackageReader.step'
-              and configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + CHOOSER_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + MULTIMODAL_CONFIGURATIONS and image_key=='notebook'
+              and configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS + READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + CHOOSER_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + MULTIMODAL_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS and image_key=='notebook'
               and count==6 and minimum==0 and len(code)==48 and use==21 and i==17
               and index==scaled==address=='a0' and base==target=='a2'
               and code[:4]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)']),
@@ -4981,7 +5025,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
         package_literals=[]
         if unit.get('configuration') in set(PACKAGE_NOTEBOOK_CONFIGURATIONS) | set(READER_NOTEBOOK_CONFIGURATIONS + PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + CHOOSER_NOTEBOOK_CONFIGURATIONS) | set(USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS):
             _, package_literals, _ = package_readonly_lookup(optimized_ir,unit)
-        if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS:
+        if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS:
             from multimodal_target import readonly_lookup
             _, package_literals, _ = readonly_lookup(optimized_ir, unit, optimized=True)
         package_literal_keys={
@@ -5129,11 +5173,15 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             from multimodal_target import jump_spec as multimodal_jump_spec
             multimodal_spec=multimodal_jump_spec(optimized_ir,unit,source,owner['name'])
             multimodal_owner=multimodal_spec is not None
-            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and (source in LEMMASIM_BACKEND_JUMP_TABLES or next_token or executed_token or wire_token or wire_owner or common_owner or clocked_owner or course_result_owner or package_owner or multimodal_owner)
+            from school_target import jump_spec as school_jump_spec, jump_default as school_jump_default
+            school_spec=school_jump_spec(optimized_ir,unit,source,owner['name'])
+            school_owner=school_spec is not None
+            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and (source in LEMMASIM_BACKEND_JUMP_TABLES or next_token or executed_token or wire_token or wire_owner or common_owner or clocked_owner or course_result_owner or package_owner or multimodal_owner or school_owner)
             spec=(LEMMASIM_BACKEND_JUMP_TABLES if sim_source else BACKEND_JUMP_TABLES).get(source)
             if course_result_owner:spec=course_result_spec
             if package_owner:spec=package_spec
             if multimodal_owner:spec=multimodal_spec
+            if school_owner:spec=school_spec
             if clocked_owner:
                 # Complete actual pre/post owner/caller authority was checked
                 # before literal provenance above. These four measured domains
@@ -5221,6 +5269,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 # Installer User1 root or selected Package Notebook User2 root.
                 image_authority={**image_authority,RESULT_SOURCE:{unit['image_key']}}
             if package_owner:image_authority={**image_authority,source:{'notebook'}}
+            if school_owner:image_authority={**image_authority,source:{'notebook'}}
             if (unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and
                     source == 'Lemma.Services.Store.Protocol.shape'):
                 image_authority={**image_authority,source:image_authority[source] | {'course'}}
@@ -5243,7 +5292,8 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             elif split_common:
                 if switch_sets!=[[4,15],spec[4]] or len(targets)!=spec[1]:raise Core0Error('Scoped split switch escaped exact full domain/table extent')
             elif switch_sets.count(spec[4])!=1 or max(spec[4])-min(spec[4])+1!=len(targets):raise Core0Error('backend table lacks its exact genuine LLVM switch domain')
-            default = (_jump_switch_default(_ir_definition_body(optimized_ir,owner['name']), assembly,
+            default = (school_jump_default(optimized_ir,unit,assembly,owner['name'],targets)
+                       if school_owner else _jump_switch_default(_ir_definition_body(optimized_ir,owner['name']), assembly,
                                            owner['name'], targets, spec[4])
                        if source == 'Lemma.Kernel.Development.FramesEntry.operation' else
                        _jump_service_default(optimized_ir,assembly,owner['name'],targets,spec[4],unit)
@@ -5252,7 +5302,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                                             owner['name'],targets,spec[4])
                        if source == 'Lemma.Applications.Notebook.statusCharacter' else
                        _jump_save_default(_ir_definition_body(optimized_ir,owner['name']),assembly,
-                                          owner['name'],targets,spec[4])
+                                          owner['name'],targets,spec[4],unit=unit,optimized_ir=optimized_ir)
                        if source == 'Lemma.Applications.Notebook.pumpSave' else None)
             if named.get(name,{}).get('value')!=start or named.get(owner['name'],{}).get('value')!=owner['value'] or named[owner['name']]['size']!=owner['size']:
                 raise Core0Error('companion table/function extents differ from actual object')
@@ -5362,7 +5412,9 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
         if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
             from package_companion_deployment import boot_source_for
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.'+boot_source_for(unit['configuration']))
-        if unit['configuration'] in MULTIMODAL_CONFIGURATIONS:
+        if unit['configuration'] in INTEGRATED_CONFIGURATIONS:
+            boot = normalized.get('Lemma.Platform.LemmaSim.IntegratedKernel.boot')
+        elif unit['configuration'] in MULTIMODAL_CONFIGURATIONS:
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.'+('bootMultimodalParameterized' if unit['configuration'] in MULTIMODAL_PARAMETERIZED_CONFIGURATIONS else 'bootMultimodal'))
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
@@ -5400,7 +5452,7 @@ def validate_modern_power_selection(ir: str, unit: dict, *, optimized: bool) -> 
         return
     names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
     by={source:symbol for symbol,source in names.items()}
-    required=['Lemma.Platform.LemmaSim.NotebookKernel.'+('constructProductCourseReader' if unit['configuration'] in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS else 'constructPackageRecovery' if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if unit['configuration'] in USB_RECOVERY_FAMILIES else 'constructClocked' if unit['configuration'] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else 'constructWire' if unit['configuration'] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else 'constructModernExecuted' if unit['configuration'] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else 'constructModernNext' if unit['configuration'] in NEXT_NOTEBOOK_CONFIGURATIONS else 'constructModern'),
+    required=['Lemma.Platform.LemmaSim.NotebookKernel.'+('constructProductCourseReader' if unit['configuration'] in PRODUCT_READER_NOTEBOOK_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS else 'constructPackageRecovery' if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if unit['configuration'] in USB_RECOVERY_FAMILIES else 'constructClocked' if unit['configuration'] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else 'constructWire' if unit['configuration'] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else 'constructModernExecuted' if unit['configuration'] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else 'constructModernNext' if unit['configuration'] in NEXT_NOTEBOOK_CONFIGURATIONS else 'constructModern'),
         'Lemma.Platform.LemmaSim.PowerControl.configureSafety','Lemma.Drivers.PowerSafety.initialize',
         'Lemma.Kernel.Task.activateManaged','Lemma.Kernel.Objects.createEndpoint']
     if not all(source in by for source in required):raise Core0Error('Modern Power-v2 constructor source closure missing')
@@ -5533,7 +5585,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     readonly_load_sites, readonly_tables = validate_readonly_pmp_lookup(ir, unit,
         optimized=sim_transformed if unit.get('configuration') in LEMMASIM_CONFIGURATIONS else optimized)
     from lemmasim_readonly import validate_devices
-    if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS:
+    if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS:
         from multimodal_target import validate_devices as validate_multimodal_devices
         sim_device_sites, sim_devices = validate_multimodal_devices(ir, unit, sim_transformed)
     else:
@@ -5697,7 +5749,7 @@ def validate_machine(text: str, *, user: bool = False,
         if instruction.startswith("csr"):
             names = re.findall(r"\b(?:[ms][a-z][a-z0-9]+|satp|pmp[a-z0-9]+)\b", operands)
             allowed = KNOWN_CSRS | ({"pmpaddr5", "pmpaddr6", "pmpaddr7"} if configuration in LEMMASIM_CONFIGURATIONS else set())
-            product_csrs={"pmpaddr8","pmpcfg2"}
+            product_csrs={"pmpaddr8","pmpcfg2"} | ({"pmpaddr9"} if configuration in INTEGRATED_CONFIGURATIONS else set())
             product_start=configuration in PRODUCT_NOTEBOOK_CONFIGURATIONS | set(COMMON_CONFIGURATIONS) | set(MULTIMODAL_CONFIGURATIONS) and ranges is not None and "_start" in ranges and ranges["_start"][0] <= address < sum(ranges["_start"])
             if product_start:allowed |= product_csrs
             if not names or not set(names) <= allowed:

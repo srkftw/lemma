@@ -52,9 +52,10 @@ def prepare(args):
  out=args.output_dir.resolve()
  if out.exists():raise ValueError('unused prepared output required')
  trial_watchdog=getattr(args,'trial_watchdog',False)
- n=inputs.native(args.native_build,args.native_source_archive,inputs.EXECUTED_PROFILE);r=rom(args.rom_build,args.rom_source_archive,trial_watchdog=trial_watchdog)
+ selected=getattr(args,'profile',inputs.EXECUTED_PROFILE)
+ n=inputs.native(args.native_build,args.native_source_archive,selected);r=rom(args.rom_build,args.rom_source_archive,trial_watchdog=trial_watchdog)
  from silicon_guest_bundle import host_dependencies
- data={'schema':WATCHDOG_SCHEMA if trial_watchdog else SCHEMA,'profile':inputs.EXECUTED_PROFILE,'boot':'immutable Lean ROM/NV; no running image preload',
+ data={'schema':WATCHDOG_SCHEMA if trial_watchdog else SCHEMA,'profile':selected,'boot':'immutable Lean ROM/NV; no running image preload',
   'authentication':'HMAC-SHA-256/PUBLIC DEVELOPMENT KEY ONLY','key_id':KEY_ID,'production_identity':'OPEN','anti_rollback':'OPEN',
   'native_build':str(args.native_build.resolve()),'native_source_archive':str(args.native_source_archive.resolve()) if args.native_source_archive else None,
   'rom_build':str(args.rom_build.resolve()),'rom_source_archive':str(args.rom_source_archive.resolve()) if args.rom_source_archive else None,
@@ -72,7 +73,7 @@ def prepare(args):
 def prepared(path):
  path=Path(path);data=json.loads((path/'prepared.json').read_text())
  trial_watchdog=watchdog_policy(data)
- if data.get('profile')!=inputs.EXECUTED_PROFILE or data.get('key_id')!=KEY_ID or data.get('recovery_version')!=2:raise ValueError('unknown exact development authentication tuple')
+ if data.get('profile') not in inputs.EXECUTED_PROFILES or data.get('key_id')!=KEY_ID or data.get('recovery_version')!=2:raise ValueError('unknown exact development authentication tuple')
  n=inputs.native(data['native_build'],data['native_source_archive'],data['profile']);r=rom(data['rom_build'],data['rom_source_archive'],trial_watchdog=trial_watchdog)
  for name,expected in [('native_manifest_sha256',inputs.sha(Path(data['native_build'])/'build.json')),('rom_manifest_sha256',inputs.sha(Path(data['rom_build'])/'build.json')),('binary_sha256',n['manifest']['binary_sha256']),('runtime_identity',n['manifest']['snapshot_identity']),('rom_sha256',inputs.sha(r['binary']))]:
   if data[name]!=expected:raise ValueError('changed prepared identity '+name)
@@ -100,6 +101,7 @@ class AuthRTL(product.ProductRTL):
   if args.recovery:
    (directory/'initial-uart').write_bytes(b'R');command+=['--uart-input',str(directory/'initial-uart')]
   self.argv=command;self.timeout=args.timeout;self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'}
+  if data['profile']==inputs.INTEGRATED_PROFILE:self.input_kinds.add('multimodal')
   self.process=subprocess.Popen(command,cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=self.log,start_new_session=True,bufsize=0)
   self.reader=selectors.DefaultSelector();self.reader.register(self.process.stdout,selectors.EVENT_READ);self.pending=bytearray()
   try:
@@ -123,7 +125,7 @@ class RecoveryClient(product.RecoveryClient):
   self.cursor=len(past);self.call({'action':'inject','kind':'uart','hex':wire.hex()});return self.wait(tx)
 def main(argv=None):
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--public-development-key',action='store_true',required=True);sub=p.add_subparsers(dest='command',required=True)
- a=sub.add_parser('prepare');a.add_argument('--native-build',type=Path,required=True);a.add_argument('--native-source-archive',type=Path);a.add_argument('--rom-build',type=Path,required=True);a.add_argument('--rom-source-archive',type=Path);a.add_argument('--output-dir',type=Path,required=True);a.add_argument('--dtc')
+ a=sub.add_parser('prepare');a.add_argument('--profile',choices=inputs.EXECUTED_PROFILES,default=inputs.EXECUTED_PROFILE);a.add_argument('--native-build',type=Path,required=True);a.add_argument('--native-source-archive',type=Path);a.add_argument('--rom-build',type=Path,required=True);a.add_argument('--rom-source-archive',type=Path);a.add_argument('--output-dir',type=Path,required=True);a.add_argument('--dtc')
  a.add_argument('--trial-watchdog',action='store_true',help='Require the separately audited core0-boot-v0.2 trial-watchdog ROM; actual execution qualification separate')
  a=sub.add_parser('archive');a.add_argument('--prepared',type=Path,required=True);a.add_argument('--output-dir',type=Path,required=True)
  a=sub.add_parser('create-medium');a.add_argument('--boot-medium',type=Path,required=True)
@@ -144,7 +146,7 @@ def main(argv=None):
   elif args.command=='launch':
    if not 1<=args.quantum<=1000000 or not 1<=args.timeout<=7200 or not 1<=args.host_threads<=64:raise ValueError('bounded launch required')
    args.boot_write_limit=boot_write_limit(args.boot_write_limit,args.mode,args.host_threads,bool(args.restore))
-   args.backend='rtl';args.workload='product';args.profile=inputs.EXECUTED_PROFILE;sessions.serve(args,AuthRTL,product.ProductSession);return 0
+   args.backend='rtl';args.workload='product';args.profile=prepared(args.prepared)[0]['profile'];sessions.serve(args,AuthRTL,product.ProductSession);return 0
   else:
    if not 1<=args.quantum<=1000000 or not 1<=args.cycles<=2000000000 or not 1<=args.timeout<=7200:raise ValueError('bounded recovery required')
    resume_inputs=None
