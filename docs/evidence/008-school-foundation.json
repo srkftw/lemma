@@ -172,6 +172,10 @@
     "ciBeforeMergeRepair": {
       "path": "docs/evidence/008-school-ci.json",
       "sha256": "1ed13cbfb8533eff2dd9634d3a9e4949c721638925ca237a9726935b7cde1efd"
+    },
+    "ciParallelQualification": {
+      "path": "docs/evidence/008-school-ci-parallel-qualification.json",
+      "sha256": "f0095ecb10addc945acd376a970ebb897097450b779a6bb9191263d35c44098a"
     }
   },
   "gates": {
@@ -1070,6 +1074,10 @@
       "path": "docs/evidence/008-school-ci-merge-readiness.json",
       "sha256": "0da85b5846968c2a91f177d43996d00d22aef5eab9c407193ca7d66abf301cde"
     },
-    "applicationTargetChange": "None; only workflow policy, exact routing and documentation changed. Existing source-bound host/native/worker/corpus observations remain separately scoped."
+    "applicationTargetChange": "Lean application, numerical and target sources and client observer unchanged. A-E host orchestration now uses bounded isolated row processes; current seven-file source closure, full host tests and genuine two-row diagnostic are separate from final remote acceptance.",
+    "ciParallelQualification": {
+      "path": "docs/evidence/008-school-ci-parallel-qualification.json",
+      "sha256": "f0095ecb10addc945acd376a970ebb897097450b779a6bb9191263d35c44098a"
+    }
   }
 }

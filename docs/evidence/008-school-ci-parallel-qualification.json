@@ -1,0 +1,262 @@
+{
+  "schema": "lemma-school-ci-parallel-qualification/v1",
+  "result": "PASS_LOCAL_HOST_AND_TWO_ROW_DIAGNOSTIC",
+  "originalRemoteFailure": {
+    "pullRequestHead": "79b72e1ba035c54e5ee93a032bf113b2514f49ca",
+    "runId": 39232733297,
+    "jobId": 118002419691,
+    "url": "https://github.com/srkftw/lemma/actions/runs/39232733297/job/118002419691",
+    "source": {
+      "clean": true,
+      "commit": "d9ff278e716a29fd0f6c34a1ea6ee240b05163a1",
+      "tree": "9220cbfd9dd8d610d95e578f720b7cc71bd2a21e"
+    },
+    "conclusion": "FAIL",
+    "error": "insufficient remaining deadline for a complete bounded guest protocol",
+    "elapsedSeconds": 2269.4880654619997,
+    "deadlineSeconds": 2400.0,
+    "completedImages": 16,
+    "completedCheckerReports": 20,
+    "completedQemuSessions": 24,
+    "completedSyscallUserInstances": 3,
+    "freshlyBuiltButUncheckedImage": "user-nx-development-supervisor-O2",
+    "coldPreparations": {
+      "count": 17,
+      "sumSeconds": 1434.568545363,
+      "minSeconds": 82.66589025299999,
+      "maxSeconds": 87.7803006050001
+    },
+    "retainedArtifact": {
+      "id": 12181075793,
+      "url": "https://github.com/srkftw/lemma/actions/runs/39232733297/artifacts/12181075793",
+      "path": "build/school/merge-AE-failure-a1.zip",
+      "sha256": "ea38f743767a2800d274bf9da9e30486edc20c1ec348acf494cae45ab98393b7"
+    },
+    "result": {
+      "path": "build/school/merge-AE-failure-a1/build/kernel/ci-prefix/result.json",
+      "sha256": "b627470a74a1db87aeb6c62d0f8157654787a65e94eb298bb13ada432ed42e4f"
+    }
+  },
+  "checks": [
+    {
+      "name": "cache",
+      "command": "python3 -m unittest discover -s tests/cache -v",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-parallel-cache-a1.log",
+        "sha256": "1990949e82b8e91a4e555c0d3665a8e88c291bf032be8b9879d6d5b8500ae468"
+      },
+      "tests": 87,
+      "seconds": 13.023,
+      "skipped": 0
+    },
+    {
+      "name": "kernel-host",
+      "command": "nix develop --no-write-lock-file --command env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/kernel -v",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-parallel-kernel-host-a1.log",
+        "sha256": "6352d9031355f2e7fedbda7ac846d4cb825d3fdc5f4cd9e2073846217422fce9"
+      },
+      "tests": 497,
+      "seconds": 27.103,
+      "skipped": 0
+    },
+    {
+      "name": "foundation-host",
+      "command": "nix develop --no-write-lock-file --command env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/foundation -v",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-parallel-foundation-host-a1.log",
+        "sha256": "2854c638ded49ce93aa530eefcd78ac1d1fc18393289cc262fe4f7c4af143539"
+      },
+      "tests": 485,
+      "seconds": 38.419,
+      "skipped": 0
+    },
+    {
+      "name": "workflow",
+      "command": "nix develop --no-write-lock-file --command env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/foundation -p test_ci_workflow.py -v",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-parallel-workflow-a2.log",
+        "sha256": "49597289ee6749d4e695ff1ab72b0d5c74332acb6a4601410c07df9540cb25d1"
+      },
+      "tests": 19,
+      "seconds": 0.058,
+      "skipped": 0
+    },
+    {
+      "name": "actionlint",
+      "command": "/nix/store/bwxcfsghzk4hyynxgl3lvjgmcnkc7qhf-actionlint-1.7.12/bin/actionlint .github/workflows/core0.yml .github/workflows/preflight.yml",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-parallel-actionlint-a2.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "workflow-syntax",
+      "command": "Python driver syntax-checks all49 bash run blocks and compiles all10 Python heredocs from both workflows",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-parallel-syntax-a2.log",
+        "sha256": "41182da029a7bcda241ee16e073fe59318f87ba36b83050248f0eb9bda88ec49"
+      }
+    },
+    {
+      "name": "coordinator-focused",
+      "command": "PYTHONDONTWRITEBYTECODE=1 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/kernel -p test_matrix_pool.py -v",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-AE-matrix-host-a3.log",
+        "sha256": "19620e7d380f0c79363c2e46007e00eb5b7001adf94a275bb6c9f94aadd73c85"
+      },
+      "tests": 12,
+      "seconds": 11.929,
+      "skipped": 0
+    },
+    {
+      "name": "supervisor-focused",
+      "command": "PYTHONDONTWRITEBYTECODE=1 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/kernel -p test_row_supervisor.py -v",
+      "result": "PASS",
+      "log": {
+        "path": "build/kernel/row-supervisor-host-a2/tests.log",
+        "sha256": "29b1c6c0155cf1859c1ef52ce6548f1515e956fc3e133ee2f9e49a0e24c7805d"
+      },
+      "tests": 11,
+      "seconds": 4.665,
+      "skipped": 0
+    },
+    {
+      "name": "scaffold",
+      "command": "python3 scripts/check_scaffold.py",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-parallel-scaffold-a2.log",
+        "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+      }
+    },
+    {
+      "name": "scaffold-tests",
+      "command": "python3 -m unittest discover -s tests/scaffold -v",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-parallel-scaffold-tests-a2.log",
+        "sha256": "5e4d11ef6817210d176a2c6d8a7da9a66427fbd766e64a5a3712b1572cfe85f3"
+      },
+      "tests": 31,
+      "seconds": 9.463,
+      "skipped": 0
+    }
+  ],
+  "implementationCommit": "cd6d5e332d16387e8a13ad0daf38bd2e649caf86",
+  "sourceInputs": {
+    ".github/workflows/core0.yml": "9c141cc3f8a9136bbe6a5be1624d41d267fcbcb3c736f10ada16a4b57b579680",
+    "scripts/check_kernel.py": "77234f605deba7ca8f0a905f5e963f923dac9007a051503c2f8b961e9d52bf66",
+    "scripts/kernel_row_supervisor.py": "9452420319bdd2bc87225b86d44fccb01e5e7c279c5a49113bc2c1bd5eb88ac2",
+    "scripts/verification_routes.json": "9580d20d4c186e538977e2f32f32459f3c8a529493135965df67f1cce4595576",
+    "tests/foundation/test_ci_workflow.py": "5192d51c8c817569ad4f971a97ae2b71394da7e8ff7625dafccbfc045a18c975",
+    "tests/kernel/test_matrix_pool.py": "0315847c56acafa84ed2cf6e97ef49d48b667ca13a8e64134c7048fafab5e579",
+    "tests/kernel/test_row_supervisor.py": "5dc7fcb0da7756f244148228b74900c355dfcf9587cc3b09fa1c94609b1a836a"
+  },
+  "preserved": [
+    "20 fresh images,24 checker reports,28 QEMU sessions,6 syscall user instances and original matrix ordering",
+    "default one process; CI selects two independent fixed slots; each image cold-prepares private Lake state and executes every target action freshly",
+    "45-minute job,40-minute command,2400-second controller,300-second tool,90-second QEMU bounds and unchanged210/390-second complete-protocol guards",
+    "existing eleven required jobs, exact host prerequisite, always-upload artifacts and aggregate rejects skipped/non-success dispositions",
+    "all prior application,numerics,worker,client,corpus and historical CI receipts retain original bytes and separate source identities"
+  ],
+  "repair": [
+    "factor unchanged real per-image build/check/audit sequence into row processes; no concurrent in-process guest CLI globals",
+    "dedicated Linux subreapers own separately sessioned descendants and cancel on deadline,parent death,control EOF or signal",
+    "registration masks signals until ownership is recorded; helper releases inherited masks before launching row",
+    "parent admits exact helper,argv,deadline,request/source hashes and actual reaped process identities; workflow independently re-admits every row",
+    "ordered complete matrix closure rejects missing,duplicate,cross-row and changed artifact/raw evidence"
+  ],
+  "remoteAcceptance": "Not claimed by local host tests or the two-row diagnostic; all applicable exact-final-head GitHub jobs and aggregate must pass before merge.",
+  "scope": "Host orchestration qualification plus actual two-row diagnostic only; full20-row remote A-E acceptance is separate and required before merge.",
+  "concurrentDiagnostic": {
+    "path": "build/kernel/merge-AE-two-row-a2/diagnostic.json",
+    "sha256": "f142096f42d58a7fde6c2964dcb2726a6db41ec4c3515fa4d7d3290a5295ba05",
+    "status": "DIAGNOSTIC_PASS",
+    "diagnosticOnly": true,
+    "source": {
+      "clean": true,
+      "commit": "cd6d5e332d16387e8a13ad0daf38bd2e649caf86",
+      "tree": "aeeaa10570f5a8ac79d5732be956c38eda16d2fe"
+    },
+    "rows": [
+      [
+        "normal",
+        "bootstrap-m",
+        "O0"
+      ],
+      [
+        "user-syscall-development",
+        "supervisor",
+        "O2"
+      ]
+    ],
+    "images": 2,
+    "checkerReports": 2,
+    "qemuSessions": 4,
+    "syscallUserInstances": 3,
+    "freshTargetActions": 34,
+    "reusedTargetActions": 0,
+    "elapsedSeconds": 183.88505703408737,
+    "supervisorOverlapSeconds": 166.49779224395752,
+    "coldPreparationSeconds": [
+      120.99533249193337,
+      119.49379483191296
+    ],
+    "limits": {
+      "diagnosticDeadlineSeconds": 900,
+      "commandSeconds": 300,
+      "guestSeconds": 90,
+      "ordinaryProtocolGuardSeconds": 210,
+      "bootinfoProtocolGuardSeconds": 390
+    },
+    "execution": {
+      "path": "build/kernel/merge-AE-two-row-a2/rows/execution.json",
+      "sha256": "64dab8f0ebb03e3b6e68437da198165fe10e61a2862850fabf30ba7dcd26ea3f"
+    },
+    "driver": {
+      "path": "build/school/merge-AE-two-row-driver-a2.py",
+      "sha256": "0628c8e41d09f142c2e2ffecba799438d7a89b0edba6c14e881d110828aca590"
+    },
+    "log": {
+      "path": "build/school/merge-AE-two-row-host-a2.log",
+      "sha256": "ac7acd6a998388d50bdedd3b9de37c0fe82ad0d5a5bd4513ecfd2e6798b75af1"
+    },
+    "outerCommand": {
+      "path": "build/school/merge-AE-two-row-host-a2-command.json",
+      "sha256": "fe67ce65359dce218d73166d5305d4c66ebd6832e69639f397e38ff516881292"
+    },
+    "environmentScope": "Outer Nix develop/shell admitted through existing dev-budget; immutable nested Nix PATH avoids wrapper stdout in machine-readable JSON. Budget cgroup/file cap remain active; exact environment and tool/wrapper/guard hashes are in diagnostic receipt.",
+    "sourceCensusClosed": true
+  },
+  "retainedLocalFailure": {
+    "path": "build/kernel/merge-AE-two-row-a1/diagnostic.json",
+    "sha256": "69ec534d8ccb017670daeb79e614a2b94be13e84e0b3d5ee7961160b07418c9d",
+    "status": "DIAGNOSTIC_FAIL",
+    "error": "Core0Error: matrix row0 supervisor failed; see /home/sreekumaar/Downloads/lemma/build/kernel/merge-AE-two-row-a1/rows/00/supervisor.json",
+    "elapsedSeconds": 1.5578648169757798,
+    "execution": {
+      "path": "build/kernel/merge-AE-two-row-a1/rows/execution.json",
+      "sha256": "23a39579a40651e7785c5ddd913b536a9963007b3237cfab1e1a6252d73b082d"
+    },
+    "scope": "Stopped before target compilation: local Nix wrapper ADMIT stdout contaminated nested nix path-info JSON. Both owned process trees cleaned up. Subsequent invocation used established immutable nested Nix route within admitted scope; no source/parser/budget changes."
+  },
+  "applicationConsumedInputs": {
+    "path": "build/school/merge-parallel-application-inputs-a1.json",
+    "sha256": "4f939fcfb58bb084fd5984459ecdffa435f582a1f50c6f7c9bc6538b23c5e8e5",
+    "status": "PASS",
+    "entries": 122,
+    "scope": "Current byte comparison, not a new production/execution or relabeling of historical receipts."
+  },
+  "retainedPreviousCiRepair": {
+    "path": "docs/evidence/008-school-ci-merge-readiness.json",
+    "sha256": "0da85b5846968c2a91f177d43996d00d22aef5eab9c407193ca7d66abf301cde"
+  }
+}
