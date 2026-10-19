@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-19T19:14:26.517788+00:00",
+  "written_at": "2026-10-19T21:55:45.855991+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -178,6 +178,260 @@
         "path": "build/silicon/task009-pen-physical-a3/source-archive/manifest.json",
         "sha256": "7502884c39a478889903ef9c51e9d0850ba12168e39e78daad539456c252b2f8"
       }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-physical-a1/result.json",
+        "sha256": "208487e90d1895397f0e776d0cb77b2531114078ea0447e227ccaf24ab4c36ad"
+      },
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 657.3239790769294,
+      "source_seal_equal": true,
+      "candidate_only": true,
+      "error": null,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 379,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 398413.8336,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 45.872313774654764,
+        "instances": 8768,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -1.221032,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": -0.512839,
+        "hold_timing": "VIOLATED"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "2cc9168410d7772ab646b52518e59c93987dd912b038efaedc3fdb4cfc5af72b",
+          "setup": "worst slack max -18.687590",
+          "hold": "worst slack min -1.573341",
+          "electrical_violations": 1282
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "554690ca3a534ee2efa1614998b3562de07c0c5aa8959dc63694118aaf7a04e1",
+          "setup": "worst slack max -21.538258",
+          "hold": "worst slack min -1.924977",
+          "electrical_violations": 1550
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "41329f1306b45c9145ac2a0648caa008dc95c2f33a02d5da244b64f76836dd02",
+          "setup": "worst slack max -24.624510",
+          "hold": "worst slack min -2.230359",
+          "electrical_violations": 1817
+        }
+      },
+      "source_archive": {
+        "path": "build/silicon/task009-fault3-physical-a1/source-archive/manifest.json",
+        "sha256": "08da460e350afaf680870a1b75561d555582fd1e4e4df914de9f15f3767dc6b6"
+      },
+      "independent_drc_types": {
+        "Metal Spacing": 95,
+        "Short": 284
+      }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-clock-auto-a1/result.json",
+        "sha256": "200f02d6af694d2c8f4ccdee3b7825767184f594e83b1d4eeb1e44d2da50a1dc"
+      },
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 344.8565489479806,
+      "source_seal_equal": true,
+      "candidate_only": true,
+      "error": null,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 354,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 394298.7744,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 45.39851675531432,
+        "instances": 8458,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -2.29825,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": -0.038889,
+        "hold_timing": "VIOLATED"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "ec345e89bfe55f85e25a389e622e82920031a4d64a6da330834e60387aaba276",
+          "setup": "worst slack max -18.943733",
+          "hold": "worst slack min -0.198528",
+          "electrical_violations": 1084
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "a2f8d1eadd5395007f30967919bdf960fc91171fe33b277cd1b34a8ad801298b",
+          "setup": "worst slack max -22.866478",
+          "hold": "worst slack min -0.146561",
+          "electrical_violations": 1390
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "f27cb568102bbaaf2e6b12f9af640d49d3f45741746a3d02ec41b0e7c23003c3",
+          "setup": "worst slack max -26.324398",
+          "hold": "worst slack min -0.143137",
+          "electrical_violations": 1576
+        }
+      },
+      "source_archive": {
+        "path": "build/silicon/task009-fault3-clock-auto-a1/source-archive/manifest.json",
+        "sha256": "934720b6e183c01695b43d0a8b2dd99672f752b07a41bc396b440258f1aeb7d8"
+      },
+      "independent_drc_types": {
+        "Short": 283,
+        "Metal Spacing": 71
+      }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-extracted-eco-a1/result.json",
+        "sha256": "823e20883de7f762a6119c1001cad148d14427032dd1cc5f915c43e843a8d16e"
+      },
+      "status": "FAIL",
+      "seconds": 383.424278654973,
+      "source_seal_equal": true,
+      "candidate_only": true,
+      "error": "GeometryError('ECO changed admitted timing constraints')",
+      "router_drc": null,
+      "global_rc_after_route": null,
+      "extracted_rc": null,
+      "source_archive": {
+        "path": "build/silicon/task009-fault3-extracted-eco-a1/source-archive/manifest.json",
+        "sha256": "9f90f0ed3e0129791de6ab0cb7e4b74eb76b59d62d7ace2fca413505c7d087de"
+      },
+      "independent_drc_types": {
+        "Short": 288,
+        "Metal Spacing": 52
+      }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-extracted-assessment-a1/result.json",
+        "sha256": "f1c2515e19e0623480bbd730c72a7392f10bed421bce5359aaa7460b6d5f3083"
+      },
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 16.233350356924348,
+      "source_seal_equal": true,
+      "candidate_only": true,
+      "error": null,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 340,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 395802.912,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 45.57169917552298,
+        "instances": 8512,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after fresh ECO detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -1.423132,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": -0.350326,
+        "hold_timing": "VIOLATED"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "c0e4d5ff82ac8d62634a8216f52f8b5d2e3089ac5ed2e6d1e73e22568b26fe07",
+          "setup": "worst slack max -12.749745",
+          "hold": "worst slack min -0.147595",
+          "electrical_violations": 625
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "59c39a12c4fa50e2f3e7512674875fbdef60f9f05913378c91a06a798487103f",
+          "setup": "worst slack max -15.191022",
+          "hold": "worst slack min -0.108067",
+          "electrical_violations": 818
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "379717ab468b996feaee1a786c92c1703e4df3970e673c80ff90f9f36bd04edf",
+          "setup": "worst slack max -17.447002",
+          "hold": "worst slack min -0.062654",
+          "electrical_violations": 995
+        }
+      },
+      "source_archive": {
+        "path": "build/silicon/task009-fault3-extracted-assessment-a1/source-archive/manifest.json",
+        "sha256": "8f03e7781425a88613d38184cca21183cf65b2c682e02bfa21b42259e51aeb6b"
+      },
+      "reused_completed_route": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task009-fault3-extracted-eco-a1",
+        "receipt_sha256": "823e20883de7f762a6119c1001cad148d14427032dd1cc5f915c43e843a8d16e",
+        "scope": "actual completed routing reused; this observer performs new extraction only"
+      }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-centered-validation-a1/result.json",
+        "sha256": "04aa19eee0de6bf9d0fd6d5fdad3488664bd49381d8fab1d0d0c6496326d29e2"
+      },
+      "status": "FAIL",
+      "seconds": 214.55565398198087,
+      "source_seal_equal": true,
+      "candidate_only": false,
+      "error": "CommandFailure('Canceled: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-fault3-centered-validation-a1/layout.log')",
+      "router_drc": null,
+      "global_rc_after_route": null,
+      "extracted_rc": null,
+      "source_archive": {
+        "path": "build/silicon/task009-fault3-centered-validation-a1/source-archive/manifest.json",
+        "sha256": "99d7a2817366cfdf2596382f6823664b9f157682a5bf8a5624af3691c951a621"
+      }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-validation-group-a2/result.json",
+        "sha256": "628928e84179b19296ddfa68b68ada2fc948edcd82034a3cf9bfc76dd988456d"
+      },
+      "status": "FAIL",
+      "seconds": 4.038780898088589,
+      "source_seal_equal": true,
+      "candidate_only": false,
+      "error": "CommandFailure('Command exited -11: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-fault3-validation-group-a2/layout.log')",
+      "router_drc": null,
+      "global_rc_after_route": null,
+      "extracted_rc": null,
+      "source_archive": {
+        "path": "build/silicon/task009-fault3-validation-group-a2/source-archive/manifest.json",
+        "sha256": "710badd03ffd477cfcddd14963497ea89151a9d8edd5a37a80f19e76943c9eb5"
+      }
     }
   ],
   "extracted_available_corners": [
@@ -188,6 +442,10 @@
     {
       "path": "build/silicon/task009-pen-corners-a2/result.json",
       "sha256": "a3ba127f2caf801152dcf2f5293d2e0be078b456e2b866420e9586d7d1dac604"
+    },
+    {
+      "path": "build/silicon/task009-fault3-eco-corners-a1/result.json",
+      "sha256": "ac05ddfee28c12fe542b59f35ef8bf811893280d13da4bbb390e8e3aeae95ded"
     }
   ],
   "process_attempts": [
@@ -234,6 +492,50 @@
       "seconds": 30.081229121075012,
       "source_seal_equal": true,
       "scope": "No DRC/LVS success. a1 observer retained RUNNING after real timed-out command/exit1; later observer fixes terminal failure accounting."
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-process-noexpand-a1/result.json",
+        "sha256": "eb48af41f7a9e57e3038de6ff95772cd22190f39d3104a1b4d8930252db3d1cd"
+      },
+      "status": "FAIL",
+      "error": "CommandFailure('Deadline exceeded: /nix/store/g0n7zlrbf02035zi8fg120zzh8c4w1rh-magic-vlsi-8.3.681/bin/magic; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-fault3-process-noexpand-a1/process.log')",
+      "seconds": 90.06902156607248,
+      "source_seal_equal": true,
+      "scope": "Actual failed command retained; historical NOT_RUN phase fields do not erase logged extraction/import attempts"
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-extract-noexpand-a1/result.json",
+        "sha256": "9a7a154b622d4d7eb39de4dbda973952b4d1ab55799caf6445d13258c71b6e88"
+      },
+      "status": "FAIL",
+      "error": "CommandFailure('Deadline exceeded: /nix/store/g0n7zlrbf02035zi8fg120zzh8c4w1rh-magic-vlsi-8.3.681/bin/magic; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-fault3-extract-noexpand-a1/import.log')",
+      "seconds": 30.110075098928064,
+      "source_seal_equal": true,
+      "scope": "Actual failed command retained; historical NOT_RUN phase fields do not erase logged extraction/import attempts"
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-eco-process-a1/result.json",
+        "sha256": "2135a5dffda448308e68ca9a77876e15cd7455a1826ec5cc9637a5ca01a87892"
+      },
+      "status": "FAIL",
+      "error": "GeometryError('no complete source GDS for independent extraction')",
+      "seconds": 300.32205117098056,
+      "source_seal_equal": true,
+      "scope": "Actual failed command retained; historical NOT_RUN phase fields do not erase logged extraction/import attempts"
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-eco-direct-extract-a1/result.json",
+        "sha256": "a1479edcf521579e44e7c6256ac5d3255777f540da9b48bfb9df0cbce2babbc8"
+      },
+      "status": "FAIL",
+      "error": "CommandFailure('Deadline exceeded: /nix/store/g0n7zlrbf02035zi8fg120zzh8c4w1rh-magic-vlsi-8.3.681/bin/magic; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-fault3-eco-direct-extract-a1/extract.log')",
+      "seconds": 180.10544921492692,
+      "source_seal_equal": true,
+      "scope": "Actual failed command retained; historical NOT_RUN phase fields do not erase logged extraction/import attempts"
     }
   ],
   "active_microphone_first_stage": {
@@ -296,17 +598,87 @@
     "important_correction": "Public typical and slow SRAM timing libraries exist and are assessed; they are not missing-input blockers."
   },
   "source_boundaries": {
-    "physical_execution": "a3 executed its archived source/tool recipe and current RTL. Later source-archive retention, unsupported-DEF indentation rejection and reporting/input-closure fixes are separate observer/tooling changes, not a new route. Fresh independent geometry validation consumes actual unchanged a3 DEF.",
-    "process": "Timed-out full process and import receipts are retained; a1 observer terminal RUNNING bug is corrected in current tool without editing that historical receipt. No transistor LVS/extracted-GDS result exists.",
+    "physical_execution": "Historical a3, isolated fault3, clock-auto and real extracted-load ECO each retain their own source-bound producers. Fault3 is now selected in canonical RTL and freshly mapped through the normal maintained path. Actual native/Wasm guest behavior is separate machine evidence. The latest completed physical ECO still fails all closure categories.",
+    "process": "Original process/GDS/LEF/deck bytes stay immutable. Removing display expansion exposed full DRC; separate300s export and180s direct extraction attempts remain failed. Direct extraction reached real top-cell geometry. Complete process DRC and connected transistor LVS have not completed; no missing nominal process collateral is invented to excuse these tool/engineering failures.",
     "logic_comparison": "Private Yosys zero-delay correspondence trials retain async-FF/commutative-cutpoint/timeout failures; they do not establish connected layout-vs-netlist equivalence."
   },
   "final_rtl": {
     "path": "sim/rtl/lemma_pen.sv",
-    "sha256": "e6310eb2f0f1e559ce9bb7d30082ec2f4efd99917069bd1ab7400fd9d4282550"
+    "sha256": "c886dda855e2b913115b5af3f3ff3bb93c66d86396bb62c02ead369908b5cada"
   },
   "final_protocol": {
-    "path": "build/silicon/task009-pen-counter-a2/result.json",
-    "sha256": "5566e16df8d1a234aaa90bd51ed652718189abcffa353b9690c45dde1c2c0eb8"
+    "path": "build/silicon/task009-fault3-maintained-map-a1/result.json",
+    "sha256": "9b437ff0d1260bae965a5c62eadd52686f7b0271164f6684df65f86c44868bc9"
   },
-  "retained_outputs_are_not_ephemeral_action_cache": "build/silicon/task009-* and build/multimodal/task009-*; receipt/archive identities above pin needed source and raw observations."
+  "retained_outputs_are_not_ephemeral_action_cache": "build/silicon/task009-* and build/multimodal/task009-*; receipt/archive identities above pin needed source and raw observations.",
+  "fault_storage_advance": {
+    "scope": "Selected width-only canonical RTL correction; no physical closure claim",
+    "legal_fault_codes": [
+      0,
+      1,
+      2,
+      3,
+      5
+    ],
+    "MMIO_bits": 64,
+    "internal_fault_bits": 3,
+    "removed_unreachable_feedback_registers": 61,
+    "FIFO_entries": 256,
+    "entry_bits": 181,
+    "timestamps_and_sequences_bits": 64,
+    "fresh_maintained_protocol_mapping": {
+      "path": "build/silicon/task009-fault3-maintained-map-a1/result.json",
+      "sha256": "9b437ff0d1260bae965a5c62eadd52686f7b0271164f6684df65f86c44868bc9"
+    },
+    "fault_codes": {
+      "path": "build/silicon/task009-fault3-codes-a1/result.json",
+      "sha256": "ddbf22481670b74f0543a6b400783e30b797958201ffaafaac172c153cf24145"
+    },
+    "mapping_seconds": 7.437016753014177,
+    "consequence": "Eliminates observed fault[48] high-fanout reduction cone; native/Wasm consumers require their own source-bound rebuild and guest execution.",
+    "mapped_cells": 6941,
+    "mapped_flip_flops": 805,
+    "mapped_verilog_sha256": "8b02677096bd3a2cc411d9499aa36ee39c98b8da39276ee267a2a28c8784df26"
+  },
+  "extracted_ECO": {
+    "producer": {
+      "path": "build/silicon/task009-fault3-extracted-eco-a1/result.json",
+      "sha256": "823e20883de7f762a6119c1001cad148d14427032dd1cc5f915c43e843a8d16e"
+    },
+    "corrected_assessment": {
+      "path": "build/silicon/task009-fault3-extracted-assessment-a1/result.json",
+      "sha256": "f1c2515e19e0623480bbd730c72a7392f10bed421bce5359aaa7460b6d5f3083"
+    },
+    "fresh_route_seconds": 383.424278654973,
+    "fresh_assessment_seconds": 16.233350356924348,
+    "resized_cells": 165,
+    "electrical_buffers": 3,
+    "hold_buffers": 51,
+    "pin_swaps": 2,
+    "nominal_actual": {
+      "setup_ns": -15.191022,
+      "hold_ns": -0.108067,
+      "electrical_violations": 818,
+      "router_violations": 340
+    },
+    "constraints": "Every actual SDC command byte-identical; only whole comments/blank lines ignored. Positive timestamp and negative changed-clock checks passed. Original timestamp-sensitive observer failure retained.",
+    "limitations": [
+      "All route/setup/hold/electrical results still FAIL",
+      "Pinned resizer warns new/changed nets use wire-load models when its estimated cache is absent; actual imported original SPEF and all fresh post-ECO extraction results retained",
+      "RC min/nom/max use same typical transistor libraries; not new PVT corners",
+      "Connected transistor LVS and full process DRC unfinished"
+    ]
+  },
+  "RC_geometry_sanity": {
+    "path": "build/silicon/task009-rc-sanity-a1/result.json",
+    "sha256": "88ce81ee35a6af8057f23560590e970726f1d2baebcc49a344db777a3b4325c7"
+  },
+  "placement_constraint_trials": {
+    "bare_region_cancelled": "build/silicon/task009-fault3-centered-validation-a1/result.json",
+    "group_padding_crash": "build/silicon/task009-fault3-validation-group-a2/result.json",
+    "aligned_small_probe": "build/silicon/task009-validation-group-aligned-a1/query.tcl",
+    "alignment": "physical0.48um sites/3.78um rows: bbox500.16,476.28,700.80,589.68um; padding retained",
+    "active_bounded_full_run": "build/silicon/task009-fault3-validation-aligned-a3/plan.json",
+    "scope": "Two actual containment phases passed; no route/timing outcome yet. This optional candidate is not a closure claim."
+  }
 }

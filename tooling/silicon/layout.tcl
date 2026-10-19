@@ -57,11 +57,19 @@ estimate_parasitics -placement
 repair_design
 detailed_placement
 check_placement -verbose
+if {[info exists center_validation_cones] && $center_validation_cones == 1} {source $validation_region_check_script}
 if {[info exists pen_sram]} {
     # The SRAM input clock has a stricter slew limit than stdcell clocks.
     # Cluster each hard macro independently and bound the register clusters.
     clock_tree_synthesis -root_buf sg13g2_buf_16 -buf_list {sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4} -sink_clustering_enable -sink_clustering_size 4 -macro_clustering_size 1 -macro_clustering_max_diameter 100 -sink_buffer_max_cap_derate 0.5 -repair_clock_nets
-    repair_clock_nets -max_wire_length 100
+    if {[info exists automatic_clock_wire_length] && $automatic_clock_wire_length == 1} {
+        # Let the pinned resizer choose its actual RC/driver optimum. The
+        # previous100um bound emitted RSZ-0065 and inserted146 extra buffers.
+        # Library slew/cap,10ns clock and all I/O constraints remain active.
+        repair_clock_nets
+    } else {
+        repair_clock_nets -max_wire_length 100
+    }
 } else {
     clock_tree_synthesis -root_buf sg13g2_buf_16 -buf_list {sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2} -sink_clustering_enable -sink_clustering_size 8 -repair_clock_nets
 }
@@ -77,6 +85,7 @@ repair_timing -setup -phases WNS_PATH -max_passes 2 -max_iterations 20 -max_buff
 repair_timing -hold -max_passes 2 -max_iterations 20 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose
+if {[info exists center_validation_cones] && $center_validation_cones == 1} {source $validation_region_check_script}
 set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
 global_route -guide_file $out/route.guide -congestion_iterations 50
 # Placement estimates differ from actual global RC. Repair once against live
@@ -91,6 +100,7 @@ repair_timing -setup -phases WNS_PATH -setup_margin 0.25 -max_passes 2 -max_iter
 repair_timing -hold -hold_margin 0.03 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose
+if {[info exists center_validation_cones] && $center_validation_cones == 1} {source $validation_region_check_script}
 global_route -end_incremental -guide_file $out/route.guide -congestion_iterations 50
 # Persist completed global routing before bounded detailed-route refinement.
 write_db $out/global-route.odb

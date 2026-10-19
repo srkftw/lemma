@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 # Extract actual streamed geometry in a fresh Magic process. Selecting
 # drc(full) and subsequently extracting crashes the pinned tool on the
-# original public inverter; full-rule DRC ran separately in process.tcl.
+# original public inverter; full-rule DRC is attempted separately in process.tcl.
 cd $out
 if {[catch {
     gds readonly true
     gds read $out/layout.gds
     load $top
     select top cell
-    expand
+    # expand changes only the UI view; hierarchical DRC/extract all owns geometry.
     extract path $out
     # Original public CDL uses primitive M devices, while ngspice() emits
     # undefined subcircuit placeholders in this explicit CDL comparison.

@@ -21,12 +21,21 @@ def main():
     p.add_argument('--mapping', type=Path, required=True)
     p.add_argument('--pdk', type=Path, required=True)
     p.add_argument('--work-dir', type=Path, required=True)
+    p.add_argument('--process-seconds', type=int, default=90)
+    p.add_argument('--import-seconds', type=int, default=30)
+    p.add_argument('--extraction-seconds', type=int, default=90)
+    p.add_argument('--whole-seconds', type=int, default=240)
+    p.add_argument('--question', default='Can the bounded original process deck complete on the declared real three-SRAM routed geometry?')
+    p.add_argument('--direct-import-extraction', action='store_true', help='After a retained failed process attempt, extract original GDS+actual DEF directly without repeating the failed GDS re-stream')
     p.add_argument('--continue-from-drc-attempt', type=Path,
                    help='Retain a source-matched failed DRC attempt and independently continue GDS extraction/LVS')
     args = p.parse_args()
     out, route, mapping, pdk = (v.resolve() for v in (args.work_dir, args.route, args.mapping, args.pdk))
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
     out.mkdir(parents=True)
+    require(1 <= args.process_seconds <= 600 and 1 <= args.import_seconds <= 120 and
+            1 <= args.extraction_seconds <= 600 and 1 <= args.whole_seconds <= 1500 and
+            1 <= len(args.question) <= 1024, 'invalid prospective process budget/question')
     resource.setrlimit(resource.RLIMIT_AS, (4 << 30, 4 << 30))
     resource.setrlimit(resource.RLIMIT_FSIZE, (512 << 20, 512 << 20))
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
@@ -34,13 +43,19 @@ def main():
     report = {'schema': 'lemma-pen-process/1', 'status': 'FAIL', 'scope': __doc__,
               'commands': [], 'process_drc': 'NOT_RUN', 'transistor_extraction': 'NOT_RUN',
               'lvs': 'NOT_RUN', 'power_grid': 'NOT_IMPLEMENTED',
-              'bounds': {'whole_seconds': 240, 'process_seconds': 90, 'extraction_seconds': 90,
+              'question': args.question,
+              'bounds': {'whole_seconds': args.whole_seconds, 'process_seconds': args.process_seconds, 'import_seconds': args.import_seconds, 'extraction_seconds': args.extraction_seconds,
                          'lvs_seconds': 45, 'AS_bytes': 4 << 30, 'file_bytes': 512 << 20}}
 
     def invoke(argv, name, seconds, stdin=None):
+        phase = {'process': 'process_drc', 'extract': 'transistor_extraction', 'lvs': 'lvs'}.get(name)
+        if phase:
+            report[phase] = {'status': 'RUNNING'}
         try:
-            record = run(argv, out / (name + '.log'), min(started + 240, time.monotonic() + seconds), stdin)
+            record = run(argv, out / (name + '.log'), min(started + args.whole_seconds, time.monotonic() + seconds), stdin)
         except CommandFailure as error:
+            if phase:
+                report[phase] = {'status': 'FAIL', 'error': repr(error)}
             report['commands'].append(error.record)
             raise
         report['commands'].append(record)
@@ -51,7 +66,10 @@ def main():
         sram = mapping / 'pdk/ihp-sg13g2/libs.ref/sg13g2_sram'
         macro_gds, macro_cdl = sram / 'gds' / (macro + '.gds'), sram / 'cdl' / (macro + '.cdl')
         admitted = json.loads((mapping / 'result.json').read_text())
-        require(admitted['status'].startswith('PASS_MAINTAINED_'), 'real SRAM mapping required')
+        require(admitted['status'].startswith(('PASS_MAINTAINED_', 'PASS_ISOLATED_CANDIDATE_')), 'real SRAM mapping required')
+        report['candidate_only'] = admitted.get('candidate_only', False)
+        report['mapping_receipt'] = {'path': str(mapping / 'result.json'), 'sha256': sha(mapping / 'result.json')}
+        require(report['candidate_only'] == admitted['status'].startswith('PASS_ISOLATED_CANDIDATE_'), 'mapping candidate scope differs')
         for path in (macro_gds, macro_cdl):
             name = str(path.relative_to(mapping / 'pdk'))
             require(sha(path) == admitted['collateral'][name]['sha256'], 'SRAM process input differs')
@@ -62,6 +80,10 @@ def main():
                   ROOT / 'tooling/silicon/process.tcl', ROOT / 'tooling/silicon/extract.tcl',
                   route / 'routed.def', route / 'routed.v', macro_gds, macro_cdl,
                   std / 'gds/sg13g2_stdcell.gds', std / 'cdl/sg13g2_stdcell.cdl', rc, magic, netgen]
+        inputs += [std / 'lef/sg13g2_tech.lef', std / 'lef/sg13g2_stdcell.lef',
+                   route / 'enclosure/repaired-original.lef', sram / 'lef' / (macro+'.lef'),
+                   pdk / 'ihp-sg13g2/libs.tech/netgen/ihp-sg13g2_setup.tcl']
+        inputs += sorted(path for path in rc.parent.rglob('*') if path.is_file())
         report['source_inputs'] = {str(path): sha(path) for path in inputs}
         shutil.copyfile(route / 'routed.def', out / 'routed.def')
         # Use the actual derived via geometry too. Standard LEF is otherwise
@@ -101,24 +123,45 @@ def main():
             # The old flow wrote GDS only after finishing DRC, preventing an
             # independent extraction when DRC exceeded its own bound. Import
             # the same original geometry and stream it without repeating DRC.
-            import_only = process[:process.index('    drc style drc(full)')] + '''    gds write $out/layout.gds
-} failure]} {
+            import_only = process[:process.index('    drc style drc(full)')] + '''} failure]} {
     puts stderr "Geometry import failed: $failure"
     exit 1
 }
 quit -noprompt
 '''
             (out / 'import-only.tcl').write_text(header + import_only)
-            invoke([str(magic), '-dnull', '-noconsole', '-rcfile', str(rc)], 'import', 30, out / 'import-only.tcl')
+            if not args.direct_import_extraction:
+                invoke([str(magic), '-dnull', '-noconsole', '-rcfile', str(rc)], 'import', args.import_seconds, out / 'import-only.tcl')
             count = None
         else:
-            invoke([str(magic), '-dnull', '-noconsole', '-rcfile', str(rc)], 'process', 90, out / 'process.tcl')
-            count = int((out / 'process-drc-count.txt').read_text().strip())
-            report['process_drc'] = {'status': 'PASS' if count == 0 else 'FAIL', 'violations': count,
-                'report_sha256': sha(out / 'process-drc.rpt'), 'deck': 'original public beta SG13G2 drc(full)'}
+            try:
+                invoke([str(magic), '-dnull', '-noconsole', '-rcfile', str(rc)], 'process', args.process_seconds, out / 'process.tcl')
+                count = int((out / 'process-drc-count.txt').read_text().strip())
+                report['process_drc'] = {'status': 'PASS' if count == 0 else 'FAIL', 'violations': count,
+                    'report_sha256': sha(out / 'process-drc.rpt'), 'deck': 'original public beta SG13G2 drc(full)'}
+            except CommandFailure as error:
+                # Geometry is written and closed before starting DRC. Retain
+                # this failed command and continue only the independent check.
+                count = None
+                report['process_drc'] = {'status': 'FAIL', 'error': repr(error),
+                                        'deck': 'original public beta SG13G2 drc(full)'}
+        geometry = out / 'layout.gds'
+        if not args.direct_import_extraction:
+            require(geometry.is_file() and geometry.stat().st_size > 1000 and
+                geometry.read_bytes()[-4:] == bytes((0, 4, 4, 0)), 'no complete source GDS for independent extraction')
+            report['imported_geometry'] = {'sha256': sha(geometry), 'bytes': geometry.stat().st_size, 'complete_ENDLIB': True}
+        else:
+            require(args.continue_from_drc_attempt is not None, 'direct extraction requires retained failed process observation')
+            report['imported_geometry'] = {'mode': 'direct original transistor GDS plus actual routed DEF', 'source_DEF_sha256': sha(route / 'routed.def'), 're_streamed_GDS': False}
         extract = out / 'extract.tcl'
-        extract.write_text(header + (ROOT / 'tooling/silicon/extract.tcl').read_text())
-        invoke([str(magic), '-dnull', '-noconsole', '-rcfile', str(rc)], 'extract', 90, extract)
+        extraction = (ROOT / 'tooling/silicon/extract.tcl').read_text()
+        if args.direct_import_extraction:
+            # Retain the exact original transistor layouts, LEFs and DEF import.
+            # No drc(full) selection precedes extraction in this fresh process.
+            body = process[:process.index('    gds write $out/layout.gds')]
+            extraction = body + extraction[extraction.index('    extract path $out'):]
+        extract.write_text(header + extraction)
+        invoke([str(magic), '-dnull', '-noconsole', '-rcfile', str(rc)], 'extract', args.extraction_seconds, extract)
         require((out / 'extracted.spice').stat().st_size > 1000, 'empty transistor extraction')
         report['transistor_extraction'] = {'status': 'EXTRACTED', 'sha256': sha(out / 'extracted.spice')}
         compare = out / 'lvs.tcl'

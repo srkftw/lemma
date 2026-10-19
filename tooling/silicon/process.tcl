@@ -10,7 +10,10 @@ if {[catch {
     def read $out/routed.def
     load $top
     select top cell
-    expand
+    # expand changes only the UI view; hierarchical DRC/extract all owns geometry.
+    # Publish complete imported geometry before independent DRC. A DRC timeout
+    # must not discard a finished input for separately bounded extraction.
+    gds write $out/layout.gds
     drc style drc(full)
     drc on
     drc check
@@ -22,7 +25,6 @@ if {[catch {
     set file [open $out/process-drc.rpt w]
     puts $file [drc listall why]
     close $file
-    gds write $out/layout.gds
 } failure]} {
     puts stderr "Process check Tcl failure: $failure"
     exit 1

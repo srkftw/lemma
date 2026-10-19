@@ -109,7 +109,10 @@ module lemma_pen #(
   logic [1:0] refill;
   logic [PTR-1:0] head, tail;
   logic [PTR:0] count;
-  logic [63:0] epoch, head_epoch, next_sequence, losses, fault;
+  logic [63:0] epoch, head_epoch, next_sequence, losses;
+  // Post-reset fault codes are exactly0,1,2,3,5. Compact internal storage
+  // removes unreachable upper feedback bits; public MMIO remains full64.
+  logic [2:0] fault;
   wire [63:0] sequence_incremented, epoch_incremented, losses_incremented;
   if (IHP_SRAM) begin : physical_increment
     (* keep_hierarchy = 1 *) lemma_pen_sequence_increment incrementer(
@@ -214,7 +217,7 @@ module lemma_pen #(
       0: rdata = 1280331854;
       8: rdata = 1;
       16: rdata = {60'b0, fault != 0, resync, loss, count != 0};
-      24: rdata = fault;
+      24: rdata = {61'b0, fault};
       32: rdata = {{(63-PTR){1'b0}},count};
       40: rdata = epoch;
       48: rdata = losses;

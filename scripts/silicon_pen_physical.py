@@ -19,22 +19,39 @@ from silicon_synth import ROOT, CommandFailure, layout_reports, router_drc, run,
 MACRO = 'RM_IHPSG13_1P_256x64_c2_bm_bist'
 
 
+def sdc_commands(path):
+    # write_sdc adds a timestamp comment. Ignore only whole comment/blank lines;
+    # every command, endpoint, value and exception must remain byte-identical.
+    return '\n'.join(line for line in path.read_text().splitlines()
+                     if line.strip() and not line.lstrip().startswith('#'))
+
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--mapping', type=Path, required=True)
     p.add_argument('--pdk', type=Path, required=True)
+    clock = p.add_mutually_exclusive_group()
+    clock.add_argument('--automatic-clock-wire-length', dest='automatic_clock_wire_length', action='store_true', default=True, help='Use actual pinned RC/driver wire optimum (default); all timing/electrical constraints remain')
+    clock.add_argument('--historical-clock-wire-length', dest='automatic_clock_wire_length', action='store_false', help='Reproduce the historical100um clock-repair optimization bound')
+    p.add_argument('--center-validation-cones', action='store_true', help='Fence real range-validation cones/collectors in the open middle macro channel; preserve all timing and macro OBS')
+    p.add_argument('--question',default='Do independent timestamp/counter arithmetic and bounded clock clusters remove observed defects at unchanged100MHz/full256 FIFO?',help='Prospective engineering question for this changed-input run')
+    p.add_argument('--completed-eco-route-from', type=Path, help='Independently assess a source-sealed completed ECO route rejected only by the timestamp-sensitive SDC observer; never reroutes it')
+    p.add_argument('--routed-eco-from', type=Path, help='Repair the exact sealed routed nominal-SPEF producer, then route and extract the changed physical netlist afresh')
     p.add_argument('--work-dir', type=Path, required=True)
     args = p.parse_args()
     out, mapping, pdk = (v.resolve() for v in (args.work_dir, args.mapping, args.pdk))
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
     out.mkdir(parents=True)
     start = time.monotonic()
-    report = {'schema': 'lemma-pen-physical/2', 'status': 'FAIL', 'scope': __doc__,
+    report = {'schema': 'lemma-pen-physical/3', 'status': 'FAIL', 'scope': __doc__,
               'commands': [], 'bounds': {'whole_seconds': 1200, 'route_seconds': 900,
               'extraction_each_seconds': 60, 'AS_bytes': 6 << 30,
               'launch_available_bytes': 8 << 30, 'file_bytes': 1 << 30,
               'output_budget_bytes': 12 << 30},
-              'physical_closure': 'UNVERIFIED', 'power_grid': 'NOT_IMPLEMENTED',
+              'physical_closure': 'UNVERIFIED',
+              'validation_cone_placement': 'open-middle-channel' if args.center_validation_cones else 'unconstrained',
+              'clock_wire_repair': 'pinned-driver-RC-optimum' if args.automatic_clock_wire_length else 'historical100um', 'power_grid': 'NOT_IMPLEMENTED',
               'process_drc': 'NOT_RUN', 'lvs': 'NOT_RUN',
               'remaining': ['power grid and power/test-pin connectivity',
                  'process DRC and transistor LVS', 'matched-temperature fast stdcell/SRAM timing pair',
@@ -53,14 +70,18 @@ def main():
         report['commands'].append(record)
 
     try:
+        require(not (args.center_validation_cones and args.routed_eco_from), 'initial cone placement and retained-route ECO are separate questions')
         available = next(int(x.split()[1]) * 1024 for x in Path('/proc/meminfo').read_text().splitlines()
                          if x.startswith('MemAvailable:'))
         require(available >= 8 << 30, 'launch memory floor')
         require(shutil.disk_usage(out).free >= 12 << 30, 'output disk floor')
         report['available_bytes_at_launch'] = available
         admitted = json.loads((mapping / 'result.json').read_text())
-        require(admitted['status'] == 'PASS_MAINTAINED_PEN_PROTOCOL_AND_THREE_REAL_SRAM_MAPPING',
+        require(admitted['status'] in ('PASS_MAINTAINED_PEN_PROTOCOL_AND_THREE_REAL_SRAM_MAPPING',
+                'PASS_ISOLATED_CANDIDATE_PEN_PROTOCOL_AND_THREE_REAL_SRAM_MAPPING'),
                 'actual full256 protocol/mapping admission required')
+        report['candidate_only']=admitted.get('candidate_only',False)
+        require(isinstance(args.question,str) and 1<=len(args.question)<=1024,'bounded engineering question required')
         require(all(sha(ROOT / name) == digest for name, digest in admitted['source_inputs'].items()),
                 'mapped producer source differs from current implementation')
         require(sha(mapping / 'mapped.v') == admitted['mapping']['mapped_verilog_sha256'], 'mapped bytes differ')
@@ -83,8 +104,35 @@ def main():
         inputs = [Path(__file__).resolve(), ROOT / 'scripts/silicon_enclosure.py',
                   ROOT / 'scripts/silicon_route_enclosure.py', ROOT / 'tooling/silicon/layout.tcl',
                   ROOT / 'scripts/silicon_synth.py', ROOT / 'tooling/silicon/eda.nix',
-                  ROOT / 'tooling/silicon/pen-floorplan.tcl', mapping / 'candidate.sv',
+                  ROOT / 'tooling/silicon/pen-floorplan.tcl', ROOT / 'tooling/silicon/pen-validation-region.tcl', ROOT / 'tooling/silicon/pen-validation-check.tcl', mapping / 'candidate.sv',
                   mapping / 'mapped.v', mapping / 'result.json', openroad]
+        if args.routed_eco_from:
+            prior = args.routed_eco_from.resolve()
+            previous = json.loads((prior / 'result.json').read_text())
+            require(previous['status'] == 'ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED' and previous['source_seal_equal'], 'sealed actual route producer required')
+            require(previous['mapping_receipt']['sha256'] == sha(mapping / 'result.json'), 'ECO mapping producer differs')
+            require(sha(prior / 'routed.def') == previous['route_enclosure']['routed_def_sha256'], 'original route DEF differs')
+            require(sha(prior / 'nom.spef') == previous['extracted_rc']['nom']['spef_sha256'], 'original nominal SPEF differs')
+            report['routed_eco_from'] = {'path': str(prior), 'receipt_sha256': sha(prior / 'result.json')}
+            inputs += [ROOT / 'tooling/silicon/pen-extracted-eco.tcl'] + [prior / name for name in ('result.json', 'routed.odb', 'routed.def', 'routed.v', 'routed.sdc', 'nom.spef')]
+        if args.completed_eco_route_from:
+            require(args.routed_eco_from is not None, 'completed ECO requires its original source route')
+            completed = args.completed_eco_route_from.resolve()
+            producer = json.loads((completed / 'result.json').read_text())
+            require(producer['status'] == 'FAIL' and producer['source_seal_equal'] and
+                    producer.get('error') == "GeometryError('ECO changed admitted timing constraints')", 'only the retained timestamp observer failure may continue')
+            require(producer['mapping_receipt']['sha256'] == sha(mapping / 'result.json') and
+                    producer['routed_eco_from']['receipt_sha256'] == sha(prior / 'result.json'), 'completed ECO producer differs')
+            require(sdc_commands(completed / 'pre-eco.sdc') == sdc_commands(completed / 'routed.sdc') == sdc_commands(prior / 'routed.sdc'), 'actual ECO timing commands differ')
+            retained = ('routed.odb', 'routed.def', 'routed.v', 'routed.sdc', 'pre-eco.v', 'pre-eco.sdc',
+                        'post-eco-unrouted.v', 'layout-summary.json', 'router-drc-count.txt', 'setup-summary.rpt',
+                        'hold-summary.rpt', 'actual-pre-eco-setup.rpt', 'actual-pre-eco-hold.rpt')
+            inputs += [completed / 'result.json'] + [completed / name for name in retained]
+            for name in retained:
+                shutil.copyfile(completed / name, out / name)
+            report['reused_completed_route'] = {'path': str(completed), 'receipt_sha256': sha(completed / 'result.json'),
+                                              'scope': 'actual completed routing reused; this observer performs new extraction only'}
+        inputs += [std / 'lib/sg13g2_stdcell_typ_1p20V_25C.lib', macro / 'lib' / (MACRO+'_typ_1p20V_25C.lib')]
         report['source_inputs'] = {str(v): sha(v) for v in inputs}
         archive = out / 'source-archive'
         archive.mkdir()
@@ -107,13 +155,27 @@ set out {{{out}}}
 set top lemma_pen
 set clock_ns 10
 set clock_port clk
+set automatic_clock_wire_length {1 if args.automatic_clock_wire_length else 0}
+set center_validation_cones {1 if args.center_validation_cones else 0}
+set validation_region_script {{{ROOT/"tooling/silicon/pen-validation-region.tcl"}}}
+set validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check.tcl"}}}
 source {{{ROOT/'tooling/silicon/layout.tcl'}}}
 ''')
-        report['question'] = 'Do independent timestamp/counter arithmetic and bounded clock clusters remove observed defects at unchanged100MHz/full256 FIFO?'
+        if args.routed_eco_from:
+            script.write_text(f'set prior {{{prior}}}\nset out {{{out}}}\nset pdk {{{std}}}\nset macro_lib {{{macro/"lib"/(MACRO+"_typ_1p20V_25C.lib")}}}\nsource {{{ROOT/"tooling/silicon/pen-extracted-eco.tcl"}}}\n')
+        report['question'] = args.question
         report['status'] = 'RUNNING'
         (out / 'plan.json').write_text(json.dumps(report, indent=2) + '\n')
-        invoke([str(openroad), '-no_init', '-exit', str(script)], 'layout', 900)
+        if not args.completed_eco_route_from:
+            invoke([str(openroad), '-no_init', '-exit', str(script)], 'layout', 900)
         require((out / 'routed.def').is_file(), 'no completed route')
+        if args.routed_eco_from:
+            require(sha(out / 'pre-eco.v') == sha(prior / 'routed.v'), 'ECO database logical netlist differs from declared source route')
+            require(sha(out / 'pre-eco.v') != sha(out / 'post-eco-unrouted.v'), 'ECO made no physical netlist change')
+            require(sdc_commands(out / 'pre-eco.sdc') == sdc_commands(out / 'routed.sdc') == sdc_commands(prior / 'routed.sdc'), 'ECO changed admitted timing commands')
+            report['eco_netlist'] = {name: sha(out / name) for name in ('pre-eco.v', 'post-eco-unrouted.v', 'routed.v', 'pre-eco.sdc', 'routed.sdc')}
+            report['eco_netlist']['pre_setup'] = (out / 'actual-pre-eco-setup.rpt').read_text().strip()
+            report['eco_netlist']['pre_hold'] = (out / 'actual-pre-eco-hold.rpt').read_text().strip()
         report['router_drc'] = router_drc((out / 'router-drc-count.txt').read_text())
         report['global_rc_after_route'] = layout_reports(out)
         report['route_enclosure'] = audit(out / 'enclosure/repaired-original.lef', out / 'routed.def')

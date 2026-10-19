@@ -16,3 +16,7 @@ foreach {name x y orient} {
 # failed actual GRT-0116: that coarse reservation also blocks required pin
 # escape resources. Preserve that failed run; do not waive original LEF OBS.
 set_placement_padding -global -left 1 -right 1
+
+if {[info exists center_validation_cones] && $center_validation_cones == 1} {
+    source $validation_region_script
+}
