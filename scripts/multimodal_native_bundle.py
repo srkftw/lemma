@@ -51,16 +51,16 @@ def pack(args):
     source_root=guest.ROOT
     if school:
         if any(getattr(args,key,None) is None for key in ('notebook_build','initializer_build','guest_source_root')):
-            raise ValueError('School22 archive requires explicit audited notebook/initializer builds and complete original guest source root')
+            raise ValueError('School23/v2 archive requires explicit audited notebook/initializer builds and complete original guest source root')
         source_root=Path(args.guest_source_root).resolve()
         other=Path(getattr(args,'initializer_guest_source_root',None) or source_root).resolve()
         sources=source_inputs(source_root)
-        if source_inputs(other)!=sources:raise ValueError('School22 initializer source inventory differs')
+        if source_inputs(other)!=sources:raise ValueError('School23/v2 initializer source inventory differs')
         data=copy.deepcopy(bundle.read_json(fast.prepared_path(PROFILE)))
         if (data.get('schema')!='lemmasim-fast-prepared/1' or data.get('profile')!=PROFILE or
             data.get('profile_sha256')!=guest.sha(profile_path(PROFILE)) or data.get('sources')!=fast.sources(PROFILE) or
             data.get('cpu')!=fast.CPU or data.get('icount_shift')!=3):
-            raise ValueError('School22 archive requires current prepared QEMU runtime sources')
+            raise ValueError('School23/v2 archive requires current prepared QEMU runtime sources')
         for key in ('qemu','derivation'):guest.validate(data[key])
         selected=dict(SCHOOL);data['workloads']={};data.pop('guest_archive',None)
         for role in selected:
@@ -69,7 +69,7 @@ def pack(args):
             # The complete original archive validator also rejects extra, missing,
             # symlinked or tool-mismatched inputs before copying anything.
             bundle._audited_guest_archive(base,source_root,selected[role],'lemma-school-guest-source-archive/1',
-                'actual School22 audited source/tool/object closure; packaging is not execution')
+                'actual School23/v2 audited source/tool/object closure; packaging is not execution')
             data['workloads'][role]={k:guest.identified(base/name) for k,name in
                 [('image','image.elf'),('build','build.json'),('provenance','provenance.json'),
                  ('audit','audit.json'),('dtb','platform.dtb'),('descriptor','descriptor.bin')]}
@@ -92,7 +92,7 @@ def pack(args):
             guest.verify_guest_build(base,selected[role],bundle.read_json(base/'build.json')['optimization'])
     out=args.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
     manifest={'schema':SCHEMA,'profile':PROFILE,'boot':'ELF-preload development',
-              'scope':('audited School22 guest pair and exact QEMU source/runtime archive; packaging is not execution or physical qualification' if school else 'unchanged fully audited ordinary0.14 guest pair and exact QEMU source/runtime archive; no RTL,checkpoint,realtime,physical or educational qualification'),
+              'scope':('audited School23/v2 guest pair and exact QEMU source/runtime archive; packaging is not execution or physical qualification' if school else 'unchanged fully audited ordinary0.14 guest pair and exact QEMU source/runtime archive; no RTL,checkpoint,realtime,physical or educational qualification'),
               'configurations':selected,'sources':sources,'source_commit':bundle.read_json(Path(data['workloads']['notebook']['provenance']['path']))['source_commit'],
               'host_controls':{name:guest.sha(guest.ROOT/name) for name in (SCHOOL_CONTROLS if school else LEGACY_CONTROLS)},
               'origins':{},'host_dependencies':{'qemu':bundle.host_dependencies(data['qemu']['path'])},'backends':{}}
@@ -152,7 +152,7 @@ def prepared_archive(directory,backend,workload,name=None):
         from school_deployment import software_deployment_for
         if (m.get('software_deployment')!=software_deployment_for(SCHOOL['notebook']) or
             m.get('school_service_contract')!='lemma-school-native-service/1'):
-            raise ValueError('School22 software/service contract differs')
+            raise ValueError('School23/v2 software/service contract differs')
     elif 'software_deployment' in m or 'school_service_contract' in m:
         raise ValueError('Legacy multimodal archive acquired school deployment authority')
     sample=m.get('sample_course')
@@ -192,7 +192,7 @@ def prepared_archive(directory,backend,workload,name=None):
         base=Path(data['workloads'][role]['build']['path']).parent
         bundle._audited_guest_archive(base,root,selected[role],
             'lemma-school-guest-source-archive/1' if school else 'lemma-multimodal-guest-source-archive/1',
-            'audited School22 '+role+' complete source/tool/object closure' if school else
+            'audited School23/v2 '+role+' complete source/tool/object closure' if school else
             'unchanged fully audited ordinary0.14 '+role+' complete source/tool/object closure')
     data['native_bundle']={'schema':SCHEMA,'path':str(directory),'manifest_sha256':guest.sha(directory/'bundle.json'),
                            'source_commit':m['source_commit'],'scope':m['scope']}

@@ -89,7 +89,7 @@ def readonly_lookup(ir,unit,*,optimized):
 QUEUE_DISPATCH='Lemma.Courses.SchoolSubmission.activePump'
 QUEUE_PHASES=[*range(17),*range(20,31),40,41,42,43,45]
 QUEUE_JUMPS={QUEUE_DISPATCH:(46,QUEUE_PHASES,[]),
-    'Lemma.Courses.SchoolSubmission.pump':(15,[1,3,5,7,9,11,13,15],[[46,47]]),
+    'Lemma.Courses.SchoolSubmission.pump':(42,[1,3,5,7,9,11,13,15,22,26,40,42],[[46,47]]),
     'Lemma.Applications.Notebook.multimodalControl':(6,[3,4,5,6,7,8],[])}
 def jump_spec(ir,unit,source,symbol):
     if not selected(unit) or source not in QUEUE_JUMPS:return None

@@ -418,5 +418,62 @@
     "machine_wasm_sha256": "beb9cc622a45b2bea1e4ca3c0fd691829629d00585ea8a2357be224da862d660",
     "runtime_identity": "5248bfb3528d2237c97467461e61c43985607b0de2a4e392b96315d50efd5f45",
     "scope": "fresh portable actual compilation from complete258-input exact native source archive; not browser ordinary workflow"
+  },
+  "school23_serialized": {
+    "status": "AUDIT_AND_EXECUTION_PENDING",
+    "qualified_source_commit": "a688c79",
+    "notebook_sha256": "bf6f4c920be1a6ea3a6282aabbdd4e1682885ddbbe0bb74ebfd855209168a7a7",
+    "queue_sha256": "b562820c9c4d59a2fe362ae0c3e288ddc7e33627116f751c18d72a5ab5f8625c",
+    "producer_archive": "build/task009/school23-serialized-source-a1",
+    "producer_receipts": [
+      "build/kernel/task009-school23-notebook-a8/build.json",
+      "build/kernel/task009-school23-initialize-a7/build.json",
+      "build/kernel/task009-school23-integrated-a5/build.json"
+    ],
+    "object_admission": {
+      "receipt": "build/task009/school23-serialized-jump-a2/result.json",
+      "result": "PASS",
+      "table_count": 22,
+      "seconds": 20.189465068047866,
+      "changed_dispatch": "42 entries, exact12case domain, checked source-pinned coalesced default",
+      "negative_receipt": "build/task009/school23-serialized-jump-a2/mutations/result.json",
+      "negative_cases": 5
+    },
+    "retained_bootfix_execution": {
+      "native_bundle": "build/task009/school23-native-a2",
+      "browser_bundle": "build/task009/school23-browser-a2",
+      "source_archive": "build/task009/school23-bootfix-source-a2",
+      "native_ready": "build/school/task009-student-native-a3/boot-400M.json",
+      "seconds_to_observe_ready": 3.8046,
+      "failure": "73299 IPCABI.inFlight and424101 invalidPacket: fresh asyncSave collided with queue restore and shared request ID",
+      "terminal": "build/school/task009-student-native-a3/terminal-inflight.json",
+      "browser_successor_execution": "withheld after native proved same guest fault"
+    },
+    "correction": "Defer queue init and new IO until all foreground endpoint owners idle; drain accepted queue read replies before handing endpoint back; preserve safety/raw ink and context-bound queued controls",
+    "scope": "Actual builds and focused object admission; complete audits, corrected native/browser ordinary workflow and canonical positive remain pending",
+    "final_archive": "build/task009/school23-serialized-source-a3",
+    "final_inventory_sha256": "3ac35e189f6590f342ca54556657904a3d6008f0eb0803ab73c94afcdea5f2bd",
+    "final_producer_receipts": [
+      "build/kernel/task009-school23-notebook-a10/build.json",
+      "build/kernel/task009-school23-initialize-a9/build.json",
+      "build/kernel/task009-school23-integrated-a7/build.json"
+    ]
+  },
+  "selected_cache_runtime": {
+    "native": "build/silicon/task009-integrated15-native-a5/build.json",
+    "binary_sha256": "992cfc3c1c0c82cea1f57c9b5c1a6b0dc2c1d863ce447714b7c4a1e1a92ff04f",
+    "runtime_identity": "3aa4e65994d57b064e04723ef09cbc36f7c2a20bb834a0f8d031d38b44087636",
+    "source_archive": "build/task009/integrated15-native-source-a5/consumed-source-root",
+    "pen_sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b",
+    "physical_commit": "f66ea99",
+    "wasm": "build/silicon/task009-integrated15-wasm-a4/build.json",
+    "scope": "Fresh native compilation of selected exact four-predicate cache; earlier finite executions retain earlier runtime identities; routing and all extracted corner failures remain separate",
+    "wasm_outputs": {
+      "machine.mjs": "53481fbbb43ac1c563171e1dcd6a6a1e880b84931d98bf292f20f741190fc680",
+      "machine.wasm": "ac07b4589e1cad7b6040e7cb899e39884d0fb4cc0f379fe9977aad0bf1ee6f3a"
+    },
+    "wasm_runtime_identity": "38382f26146fc97225d07ff5fd8d78fa3bdd401fa1c28e9279daa7f827b91810",
+    "wasm_seconds": 225.74096904299222,
+    "wasm_source_archive": "build/task009/integrated15-wasm-source-a4/consumed-source-root"
   }
 }
