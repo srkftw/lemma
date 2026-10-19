@@ -27,6 +27,7 @@ structure Model where
   sequence : UInt64 := 100
   commits : UInt64 := 0
   calls : UInt64 := 0
+  transitions : UInt64 := 0
   records : Array (Array UInt64) := #[]
   stream : ByteArray := ByteArray.empty
   streamEnds : UInt64 := 0
@@ -64,6 +65,8 @@ private def parseHex (m : Model) (address : UInt64) : IO UInt64 := do
     value := value*16+digit
   return value
 private def syscall (state : IO.Ref Model) (number a b c d e : UInt64) : IO (UInt8 × UInt64) := do
+  if number == CapabilityABI.console || number == IPCABI.callBegin || number == 67 then
+    state.modify fun m => {m with transitions := m.transitions+1}
   let m ← state.get
   if number == ABI.allocatePages then
     if a < Lemma.Courses.SchoolSubmission.arena || Lemma.Courses.SchoolSubmission.arena+32768 ≤ a || a%4096 != 0 then throw <| IO.userError "queue allocation escaped eight pages"
@@ -202,7 +205,7 @@ private def advanceTo (state : IO.Ref Model) (phase : UInt64) : IO Unit := do
     let before ← state.get
     let _ ← ok state Lemma.Courses.SchoolSubmission.pump
     let after ← state.get
-    if before.calls+1 < after.calls || before.records.size+1 < after.records.size then throw <| IO.userError "one pump exceeded IPC/Console budget"
+    if before.transitions+1 < after.transitions || before.calls+1 < after.calls || before.records.size+1 < after.records.size then throw <| IO.userError "one pump exceeded IPC/Console budget"
   throw <| IO.userError s!"queue did not reach bounded phase{phase}, actual{← word state Lemma.Courses.SchoolSubmission.arena}"
 
 def check : IO Unit := do
@@ -264,6 +267,16 @@ def check : IO Unit := do
   advanceTo cancelled 29
   let withdrawn := (objectBytes (← cancelled.get) 2 Lemma.Courses.SchoolSubmission.pointerObject).get!
   if withdrawn[16]! != 2 || (← cancelled.get).streamEnds != 0 then throw <| IO.userError "cancel did not stop partial presentation and persist withdrawal"
+  -- Cancellation while the pending-state pointer Commit is in flight must
+  -- complete that original receipt, then persist a distinct withdrawn pointer.
+  let pendingCancel ← IO.mkRef prepared
+  let _ ← ok pendingCancel (Lemma.Courses.SchoolSubmission.start header workspace ink)
+  advanceTo pendingCancel 16
+  let _ ← ok pendingCancel (Lemma.Courses.SchoolSubmission.cancel queue)
+  advanceTo pendingCancel 29
+  let pendingWithdrawn := (objectBytes (← pendingCancel.get) 2 Lemma.Courses.SchoolSubmission.pointerObject).get!
+  if pendingWithdrawn[16]! != 2 || (← pendingCancel.get).commits != 3 then
+    throw <| IO.userError "cancel retagged an already in-flight pending pointer Commit"
   let invalid ← IO.mkRef prepared
   for i in [:8] do let _ ← ok invalid (Ink.addEntry ink (65538+i.toUInt64) (2+i.toUInt64)); pure ()
   let invalidResult ← run invalid (Lemma.Courses.SchoolSubmission.start header workspace ink)
@@ -338,6 +351,14 @@ def check : IO Unit := do
     (← word largeRestored (Lemma.Courses.SchoolSubmission.arena+152)),largeCRC,0,0]).foldl (fun bytes value =>
     (List.range 8).foldl (fun out i => out.push ((value >>> (i.toUInt64*8)).toUInt8)) bytes) ByteArray.empty
   largeRestored.modify fun m => {m with objects := m.objects.push (2,Lemma.Courses.SchoolSubmission.ackObject,largeAck)}
+  advanceTo largeRestored 16
+  if (← run largeRestored (Lemma.Courses.SchoolSubmission.cancel largeQueue)).1 != 240 then
+    throw <| IO.userError "cancellation retracted accepted school ACK during pointer Commit"
+  advanceTo largeRestored 28
+  if (← largeRestored.get).records.any (fun row => row[0]! == 0x733) then
+    throw <| IO.userError "terminal receipt did not yield after the actual Commit poll"
+  if (← run largeRestored (Lemma.Courses.SchoolSubmission.cancel largeQueue)).1 != 240 then
+    throw <| IO.userError "terminal receipt phase remained cancellable"
   advanceTo largeRestored 29
   let terminal ← largeRestored.get
   let expectedReceipt := #[0x733,largeQueue,888,terminal.sequence,3]
@@ -345,11 +366,13 @@ def check : IO Unit := do
   let terminalRestored ← IO.mkRef {objects := terminal.objects, sequence := terminal.sequence+17, commits := terminal.commits, busyBegin := false : Model}
   let _ ← ok terminalRestored (Lemma.Courses.SchoolSubmission.initializeQueue 16 17 30000)
   let _ ← ok terminalRestored (Lemma.Courses.SchoolSubmission.restore 1)
+  advanceTo terminalRestored 27
+  if !(← terminalRestored.get).records.isEmpty then throw <| IO.userError "restore receipt did not yield after READ poll"
   advanceTo terminalRestored 29
   let observed := (← terminalRestored.get).records
   if observed != #[#[0x734,largeQueue,888,terminal.sequence+17,3]] then
     throw <| IO.userError "cold terminal restore manufactured an original Commit instead of READ frontier"
-  IO.println s!"SCHOOL_SUBMISSION_ACTIONS:PASS exact{expected.size}-byte frozen/rawstream,16-byte boundaries,Busy/wouldBlock,retry,coldpendingrestore,boundACKdurablepointer,suspend/Abort/resume,partialstreamcancel,ninthchunkreject,allocationrollback,lostCommitnooutput; v2-32-stroke-exact-stream/coldrestore/ACK;733actualCommit;734READfrontier; component only"
+  IO.println s!"SCHOOL_SUBMISSION_ACTIONS:PASS exact{expected.size}-byte frozen/rawstream,16-byte boundaries,Busy/wouldBlock,retry,coldpendingrestore,boundACKdurablepointer,suspend/Abort/resume,partialstreamcancel,ninthchunkreject,allocationrollback,lostCommitnooutput; v2-32-stroke-exact-stream/coldrestore/ACK;733actualCommit;734READfrontier; one-combined-IPC-poll/Console-per-pump;pendingCommit-cancel-order;ACK-cancel-rejection; component only"
 end SubmissionTests
 
 def main : IO Unit := SubmissionTests.check

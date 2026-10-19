@@ -317,5 +317,17 @@
     },
     "scope": "Actual candidate target Actions in finite RAM/IPC fixture with admitted compiled Lean imports; no CPU, disk, browser or new LLVM/RV64-object claim",
     "status": "PASS_SUBMISSION_V2_ACTION_COMPONENTS"
+  },
+  "bounded_terminal_receipts": {
+    "result": {
+      "path": "build/courses/task009-submission-receipt-source-a1/result.json",
+      "sha256": "625deb5b76fff63095d06cf7ed7258f9600b6d451ba1f19ce429f93e697b5a39"
+    },
+    "source_archive": {
+      "path": "build/courses/task009-submission-receipt-source-a1/source.tar.gz",
+      "sha256": "d2bb7fb37b811bee8ed115f72e0824a5275d413189fd73bcb8e852f257092b1a"
+    },
+    "status": "PASS_BOUNDED_TERMINAL_RECEIPTS_AND_CANCEL_ORDER",
+    "scope": "actual private candidate target Actions in finite RAM/IPC; no CPU/durable-medium claim"
   }
 }

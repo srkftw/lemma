@@ -9,7 +9,8 @@ stream original immutable Store chunks. Every pump admits at most one IPC
 transition or one16-byte Console record. Stream completion is transport output,
 never school admission or proof. Phase1..4 preflights raw headers/EOF;
 5..10 writes frozen metadata;11..16 publishes the pending pointer;
-20..25 streams bytes;26 awaits a school ACK;29 is terminal;30 retains failure;
+20..25 streams bytes;26 awaits a school ACK;27..28 emit terminal receipts;
+29 is terminal;30 retains failure;
 40..43 restores pointer/metadata;45 polls ACK;46..47 pauses/aborts staging.
 The queue pointer follows the metadata Commit;
 no bytes leave before both actual Store receipts. A lost Commit is never retried.
@@ -390,19 +391,16 @@ private def commit (isPointer next : UInt64) : Action :=
   else .done s 0
 
 
-/-- New terminal receipt: the exact pointer Commit just acknowledged by Store.
-A restored terminal record has a separate tag because READ observes a frontier. -/
-private def terminalCommit (sequence desired : UInt64) : Action :=
-  .bind (put 0 29) fun s _ => if s = 0 then
-  .bind (get 96) fun s queue => if s = 0 then
-  .bind (get 312) fun s schoolCommit => if s = 0 then
-  record 0x733 queue schoolCommit sequence desired
-  else .done s 0 else .done s 0 else .done s 0
-private def terminalRestore (queue schoolCommit state : UInt64) : Action :=
-  .bind (put 0 29) fun s _ => if s = 0 then
-  .bind (get 200) fun s observedFrontier => if s = 0 then
-  record 0x734 queue schoolCommit observedFrontier state
-  else .done s 0 else .done s 0
+/-- A separate one-Console phase reports immutable acknowledged pointer bytes.
+The new Commit and restored READ frontier retain distinct record tags. -/
+private def terminalReceipt (tag : UInt64) : Action :=
+  .bind (field pointer 24) fun s queue => if s = 0 then
+  .bind (field pointer 56) fun s schoolCommit => if s = 0 then
+  .bind (get 200) fun s observed => if s = 0 then
+  .bind (field pointer 16) fun s state => if s = 0 then
+  .bind (record tag queue schoolCommit observed state) fun s _ => if s = 0 then
+  put 0 29
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 private def pollCommit (isPointer : UInt64) : Action :=
   .bind pollOp fun status sequence =>
@@ -415,8 +413,8 @@ private def pollCommit (isPointer : UInt64) : Action :=
   else .done s 0
   else
   .bind (put 200 sequence) fun s _ => if s = 0 then
-  .bind (get 184) fun s desired => if s = 0 then
-  if desired = 1 then put 0 20 else terminalCommit sequence desired
+  .bind (field pointer 16) fun s committedState => if s = 0 then
+  if committedState = 1 then put 0 20 else put 0 28
   else .done s 0 else .done s 0 else .done s 0
   else halt status
 
@@ -566,7 +564,7 @@ private def restorePointer : Action :=
   .bind (put 104 bytes) fun s _ => if s = 0 then
   .bind (put 184 status) fun s _ => if s = 0 then
   .bind (put 144 0) fun s _ => if s = 0 then
-  if status = 1 then put 0 42 else terminalRestore queue reserved status
+  if status = 1 then put 0 42 else put 0 27
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else halt malformed
   else halt malformed
@@ -702,8 +700,10 @@ It cannot retract previously admitted school work; that is a separate request. -
 def cancel (queue : UInt64) : Action :=
   .bind (get 0) fun s phase => if s = 0 then
   .bind (get 96) fun s actual => if s = 0 then
-  if queue = actual then if phase = 0 then bad else if phase = 29 then bad else if phase = 30 then bad else
-  put 184 2 else bad else .done s 0 else .done s 0
+  .bind (get 184) fun s desired => if s = 0 then
+  if queue = actual then if phase = 0 then bad else if phase = 27 then bad else if phase = 28 then bad else
+  if phase = 29 then bad else if phase = 30 then bad else if desired = 3 then bad else
+  put 184 2 else bad else .done s 0 else .done s 0 else .done s 0
 
 /-- Called only after the integrating service admits a bound school commit ACK.
 The value is not a transport receipt, checker result, or assessment. -/
@@ -765,6 +765,7 @@ private def activePump : Action :=
   if phase = 20 then streamStart else if phase = 21 then streamMetadata else
   if phase = 22 then streamRaw else if phase = 23 then streamRawPoll else
   if phase = 24 then streamRawEmit else if phase = 25 then streamEnd else
+  if phase = 27 then terminalReceipt 0x734 else if phase = 28 then terminalReceipt 0x733 else
   if phase = 40 then beginOp 5 pointerObject 0 64 0 41 else if phase = 41 then restorePointerPoll else
   if phase = 42 then restoreMetadata else if phase = 43 then restoreMetadataPoll else
   if phase = 45 then ackPoll else
