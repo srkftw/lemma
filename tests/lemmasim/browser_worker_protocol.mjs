@@ -345,7 +345,7 @@ for(const [storageFault,expected] of [['truncate',['truncate','close']],['flush'
  const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},addEventListener(name,callback){(this.listeners??=new Map()).set(name,callback);},getContext:()=>({}),setPointerCapture(){}});return nodes.get(id);};
  const actions=['pause','resume','snapshot','export','capture-outcomes','events','bind','inspect','close'].map(action=>({...node('action-'+action),dataset:{action}}));
  const document={hidden:false,addEventListener:(name,callback)=>documentListeners.set(name,callback),querySelector:node,querySelectorAll:()=>actions,createElement:()=>({click(){downloads.push(this.download);}})};
- const context=vm.createContext({document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{},Worker:class{constructor(){appWorker=this;}postMessage(m){sent.push(m);}},URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console});
+ const context=vm.createContext({fetch:async url=>{assert.equal(url,'./bundle.json');return {ok:true,json:async()=>({backend:'fixture-machine'})};},document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{},Worker:class{constructor(){appWorker=this;}postMessage(m){sent.push(m);}},URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console});
  const app=new vm.SourceTextModule(await fs.readFile('sim/browser/app.js','utf8'),{context});await app.link(()=>{throw Error('unexpected app import');});await app.evaluate();
  assert.equal(typeof viewportListeners.get('resize'),'function');
  assert.equal(typeof documentListeners.get('visibilitychange'),'function');

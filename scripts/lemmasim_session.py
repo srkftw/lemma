@@ -135,7 +135,10 @@ def external_command(value, current):
         payload=value.get('hex','')
         if not isinstance(payload,str) or not 2<=len(payload)<=8192 or len(payload)%2 or any(c not in '0123456789abcdefABCDEF' for c in payload):
             raise ValueError('UART requires1..4096 literal hex bytes')
-        command=f'inject {cycle} uart {payload}'
+        if 'byte_interval_ns' in value:
+            interval=bounded(value['byte_interval_ns'],1,1000000000,'UART byte interval')
+            command=f'inject {cycle} uart-paced {interval} {payload}'
+        else:command=f'inject {cycle} uart {payload}'
     elif kind in ('pgood','brownout','ble-rx','ble-coex'):
         level=bounded(value.get('level'),0,1,'Supply digital level')
         command=f'inject {cycle} {kind} {level}'
@@ -514,6 +517,7 @@ class Session:
         self.capture_uncertain = False
         self.presentation_generation = 0
         self.restored_parent = None
+        self.school_service = None
 
     def ensure_capture_certain(self):
         if self.capture_uncertain:
@@ -600,6 +604,7 @@ class Session:
         return {'snapshot': str(destination), 'machine': result}
 
     def restore(self, source):
+        if getattr(self,'school_service',None) is not None:self.school_service.invalidate()
         self.ensure_capture_certain()
         source = Path(source).resolve()
         if (source / 'snapshot.json').stat().st_size > MAX_REQUEST:
@@ -746,6 +751,13 @@ class Session:
         if not isinstance(value, dict):
             raise ValueError('Session request must be an object')
         action = value.get('action')
+        if action == 'school-service':
+            if self.machine.identity.get('profile') not in ('lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.15.0'):
+                raise ValueError('ordinary school transport requires the admitted notebook device profile')
+            if getattr(self,'school_service',None) is None:
+                from lemmasim_school_service import SchoolService
+                self.school_service=SchoolService(self)
+            return self.school_service.dispatch(value)
         if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes','usb-outcomes','export-usb-replay','usb-fault','usb-reconnect'):
             self.ensure_capture_certain()
         if value.get('source')=='tablet' and (not self.adapter or not self.adapter().get('tablet',{}).get('connected')):
@@ -794,8 +806,10 @@ class Session:
                 raise ValueError('Input is unsupported by this backend/profile')
             return self.external(actual, state, command)
         if action in ('warm-reset', 'cold-cycle'):
+            if getattr(self,'school_service',None) is not None:self.school_service.invalidate()
             state = self.machine.call('inspect')
             result = self.external(value, state, action)
+            if action=='cold-cycle' and getattr(self,'school_service',None) is not None:self.school_service.partial=False
             self.presentation_generation += 1
             return result
         if action == 'usb-reconnect':
@@ -871,6 +885,7 @@ class Session:
         raise ValueError('Unsupported lifecycle action')
 
     def close(self):
+        if getattr(self,'school_service',None) is not None:self.school_service.close()
         self.capture.close()
         self.machine.close()
 
@@ -945,6 +960,7 @@ def serve(args, machine_type=None, session_type=None):
                 viewer = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), 'view', str(directory)])
             clients = {}
             while not session.closed:
+                if getattr(session,'school_service',None) is not None:session.school_service.pump()
                 for key, _ in ready.select(0 if session.automatic else 0.25):
                     if key.fileobj is listener:
                         client, _ = listener.accept()
@@ -1138,6 +1154,11 @@ def view(directory):
         tk.Button(controls, text=label, command=lambda a=action: operation({'action': a})).pack(side='left')
     tk.Button(controls, text='Snapshot', command=save).pack(side='left')
     tk.Button(controls, text='Restore', command=restore).pack(side='left')
+    if metadata['identity']['profile'] in ('lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.15.0'):
+        def study():
+            from lemmasim_school_panel import open_study
+            open_study(window,directory)
+        tk.Button(controls,text='Study',command=study).pack(side='left')
     if metadata['identity']['profile']=='lemma-silicon-dev/0.3.0':
         # A physical-style level bridge. Guest policy decides whether an edge
         # requests suspend, fails Busy, or wakes the retained machine.

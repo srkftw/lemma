@@ -81,6 +81,8 @@ def sources(name):
 
 def build(args):
     name = profile(args.profile)['profile']
+    if name == 'lemma-silicon-dev/0.15.0':
+        raise ValueError('Integrated0.15 requires canonical RTL/native or RTL/Wasm; fast BootNV/clockedUSB/power-v2 models are not implemented')
     selected = guest.configurations(name)
     workload = args.workload or 'notebook'
     if workload not in selected:
@@ -266,7 +268,7 @@ class Fast:
                        'descriptor':self.data['workloads'][args.workload]['descriptor']['sha256'],
                        'cpu':CPU,'icount_shift':3}
         if self.data['profile']=='lemma-silicon-dev/0.14.0':
-            self.identity['host_controls']={name:digest(ROOT/name) for name in ('scripts/lemmasim','scripts/lemmasim_fast.py','scripts/lemmasim_session.py','scripts/silicon_guest_bundle.py','scripts/multimodal_native_bundle.py')}
+            self.identity['host_controls']={name:digest(ROOT/name) for name in ('scripts/lemmasim','scripts/lemmasim_fast.py','scripts/lemmasim_session.py','scripts/silicon_guest_bundle.py','scripts/multimodal_native_bundle.py','scripts/lemmasim_school_service.py','scripts/lemmasim_school_panel.py','scripts/lemmasim_course.py','scripts/lemmasim_tutor.py')}
             if isinstance(self.data.get('native_bundle'),dict):self.identity['native_bundle']=dict(self.data['native_bundle'])
         override_archive=self.data.get('guest_override',{}).get('source_archive')
         if override_archive is not None:
@@ -346,6 +348,7 @@ class Fast:
                         not isinstance(row.get('type'), str) for row in properties)):
                 raise ValueError('Malformed backend property inventory')
             self.raw_uart = False
+            self.raw_uart_paced = False
             self.input_kinds = self.input_kinds - {'uart'}
             self.identity = {**self.identity, 'adapter':ADAPTER}
             if any(row.get('name') == 'raw-uart-version' for row in properties):
@@ -356,6 +359,10 @@ class Fast:
                 self.raw_uart = True
                 self.input_kinds = self.input_kinds | {'uart'}
                 self.identity = {**self.identity, 'adapter':RAW_UART_ADAPTER}
+                if any(row.get('name') == 'raw-uart-paced-version' for row in properties):
+                    if self.get('raw-uart-paced-version') != 'lemma-raw-uart-paced/1':
+                        raise ValueError('Unsupported paced UART backend contract')
+                    self.raw_uart_paced = True
         except BaseException:
             if self.process is not None:
                 if self.process.poll() is None:os.killpg(self.process.pid,signal.SIGKILL)
@@ -389,7 +396,8 @@ class Fast:
         devices=json.loads(self.get('device-state'))
         if self.data['profile']=='lemma-silicon-dev/0.14.0':devices['multimodal']=json.loads(self.get('multimodal-state'))
         if getattr(self,'power_enabled',False):devices['power']=json.loads(self.get('power-state'))
-        if getattr(self,'raw_uart',False):devices['uart_ingress']=json.loads(self.get('raw-uart-state'))
+        if getattr(self,'raw_uart',False):
+            devices['uart_ingress']={**json.loads(self.get('raw-uart-state')), 'paced':getattr(self,'raw_uart_paced',False)}
         return {**self.clock(),'devices':devices,
                 'storage':json.loads(self.qmp.execute('qom-get',{'path':'/machine/lemma-block','property':'storage-state'})),
                 'cpu_registers':self.qmp.execute('human-monitor-command',{'command-line':'info registers'})}
@@ -487,13 +495,21 @@ class Fast:
         if action=='run-until-ns':return self.run_until_ns(int(text))
         if action=='inject':
             fields=text.split();cycle=int(fields[0]);kind=fields[1]
-            if kind not in self.input_kinds: raise ValueError('Fast input is unsupported by this profile')
+            if ('uart' if kind=='uart-paced' else kind) not in self.input_kinds: raise ValueError('Fast input is unsupported by this profile')
             ns=cycle*1000000000//self.clock_hz
             now=self.time_origin_ns+int(self.get('virtual-time'))
             if not now<=ns<=MAX_NS-7:raise ValueError('Fast event delivery exceeds its virtual time bound')
             if kind == 'multimodal':
                 if len(fields)!=6 or cycle!=self.clock()['cycle']:raise ValueError('Fast multimodal stimulus requires current cycle; future scheduled stimuli are not admitted')
                 self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'multimodal-stimulus','value':' '.join(fields[2:])})
+                return self.inspect()
+            if kind == 'uart-paced':
+                if not getattr(self,'raw_uart_paced',False):raise ValueError('Backend lacks paced UART admission')
+                if len(fields)!=4 or not re.fullmatch(r'[1-9][0-9]{0,18}',fields[2]) or not re.fullmatch(r'(?:[0-9a-fA-F]{2}){1,65536}',fields[3]):
+                    raise ValueError('Fast paced UART requires bounded interval and hexadecimal bytes')
+                interval=int(fields[2]);count=len(fields[3])//2
+                if ns+(count-1)*interval>MAX_NS-10:raise ValueError('Fast paced UART final arrival overflows virtual time')
+                self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'external-uart-paced','value':str(ns-self.time_origin_ns)+' '+str(interval)+' '+fields[3]})
                 return self.inspect()
             if kind == 'uart':
                 if len(fields) != 3 or not re.fullmatch(r'(?:[0-9a-fA-F]{2}){1,65536}', fields[2]) or ns > MAX_NS-10:

@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 import createMachine from './machine.mjs';
 import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState} from './guest_records.js';
-import {courseInstallFrame,courseInstallRows} from './course_transport.js';
+import {courseInstallFrame,courseInstallRows,courseSchoolFrames} from './course_transport.js';
 import {RunBudget,uint64} from './run_budget.js';
-let core, handle, running=false, loaded=false, manifest, panelSequence='-1';
+import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission} from './school_transport.js';
+const school=new SchoolTransport();let schoolMachineEpoch=0;
+let core, handle, bootHandle, running=false, loaded=false, manifest, panelSequence='-1';
 let activeMediumName=null;
 let loops=0, capture=[], checkpoints={}, readyAt=null, started=0,initializing=false;
 let busy=false,backingReady=true,replayUntil=null;
@@ -11,7 +13,7 @@ let guestOutputStart=0;
 let guestObservation='boot';
 let sessionMode='student';
 const SESSION_CONTROL_CONTRACT='lemma-browser-session-modes/2';
-const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','export-panel','restore','bind','close']);
+const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','export-panel','restore','bind','close','school']);
 const developerActions=new Set(['replay','run','raw','raw-batch','course-install','inspect','outcomes','events','capture','capture-outcomes']);
 function admission(message){
  if(!message||typeof message!=='object'||typeof message.action!=='string')throw Error('Invalid browser request');
@@ -90,7 +92,7 @@ function admitCourseInstall(message){
  if(manifest.course_install_contract!=='lemma-course-console-command/1')throw Error('This bundle does not expose the guest package installer');
  if(courseInputPartial||guestObservation==='continuation')throw Error('Close and cold-open backing before sending another package after a partial admission or restored continuation');
  if(replayUntil!==null)throw Error('Offline replay accepts its recorded events only');
- const packet=courseInstallFrame(message.bytes,message.transaction);
+ const packet=message.schoolSelect?courseSchoolFrames(message.bytes,message.transaction,true,message.node??0):courseInstallFrame(message.bytes,message.transaction);
  const rows=courseInstallRows(packet,state().cycle);
  if(capture.length+rows.length>1000000)throw Error('Course input exceeds the raw capture limit');
  pause('course-input');
@@ -150,16 +152,40 @@ async function openMedium(name,initialize){
   throw error;
  }
 }
+async function openProductBoot(name){
+ const root=await navigator.storage.getDirectory();let file,fresh=false;
+ try{file=await root.getFileHandle(name+'.boot.raw');}
+ catch(error){if(error.name!=='NotFoundError')throw error;file=await root.getFileHandle(name+'.boot.raw',{create:true});fresh=true;}
+ const next=await file.createSyncAccessHandle();
+ try{
+  if(fresh){const bytes=await getBytes(manifest.boot_medium);if(bytes.length!==33558528)throw Error('Product boot seed extent differs');
+   next.truncate(bytes.length);for(let i=0;i<bytes.length;i+=1048576){const part=bytes.subarray(i,i+1048576);
+    if(next.write(part,{at:i})!==part.length)throw Error('Product boot seed partial transfer');}next.flush();}
+  if(next.getSize()!==33558528)throw Error('Product boot medium extent differs');return next;
+ }catch(error){try{next.close();}catch{}if(fresh)try{await root.removeEntry(name+'.boot.raw');}catch{}throw error;}
+}
+async function seedProductUser(next){
+ const bytes=await getBytes(manifest.user_seed);if(bytes.length!==268435456)throw Error('Product user seed extent differs');
+ for(let i=0;i<bytes.length;i+=1048576){const part=bytes.subarray(i,i+1048576);
+  if(next.write(part,{at:i})!==part.length)throw Error('Product user seed partial transfer');}next.flush();
+}
 async function load(message){if(loaded)throw Error('Close this machine before opening another');
  if(message.paused!==undefined&&typeof message.paused!=='boolean')throw Error('Open paused must be a Boolean');
  manifest=await(await fetch('./bundle.json')).json();if(manifest.schema!=='lemmasim-browser-bundle/1')throw Error('Unsupported bundle');
  if(manifest.session_control_contract!==SESSION_CONTROL_CONTRACT)throw Error('Browser control contract differs from this worker');
  if(!navigator.storage?.getDirectory)throw Error('Browser OPFS persistence is required');
+ const product=manifest.product_boot_contract==='lemma-browser-product-nv/1';
+ if(product&&message.replay)throw Error('Product replay requires separate boot/user outcome tapes');
+ if(product&&message.initialize&&!manifest.user_seed)throw Error('Import a guest-produced user medium first; this Product bundle has no initializer image');
  handle=await openMedium(message.name,!!message.initialize);
  activeMediumName=message.name;
- try{timing={started:performance.now(),runSeconds:0,backingSeconds:0,backingRunSeconds:0};core=await createMachine();core.backing=timedBacking(handle);core.FS.mkdir('/forks');
-  const workload=manifest.workloads[message.initialize&&!message.replay?'initializer':'notebook'];
-  for(const [path,item]of [['/image.elf',workload.image],['/machine.dtb',workload.dtb],['/descriptor.bin',workload.descriptor],['/boot.bin',manifest.rom]])core.FS.writeFile(path,await getBytes(item));
+ try{timing={started:performance.now(),runSeconds:0,backingSeconds:0,backingRunSeconds:0};
+  if(product&&message.initialize)await seedProductUser(handle);
+  if(product)bootHandle=await openProductBoot(message.name);
+  core=await createMachine();core.backing=timedBacking(handle);if(product)core.bootBacking=timedBacking(bootHandle);core.FS.mkdir('/forks');
+  const workload=manifest.workloads[product?'notebook':message.initialize&&!message.replay?'initializer':'notebook'];
+  const assets=product?[['/descriptor.bin',workload.descriptor],['/boot.bin',manifest.rom]]:[['/image.elf',workload.image],['/machine.dtb',workload.dtb],['/descriptor.bin',workload.descriptor],['/boot.bin',manifest.rom]];
+  for(const [path,item]of assets)core.FS.writeFile(path,await getBytes(item));
   if(message.replay){
    core.FS.writeFile('/replay.io',new Uint8Array(message.replayLog));check('lemma_create_mode',['number'],[1]);
    await restore(message.checkpoint);
@@ -169,8 +195,8 @@ async function load(message){if(loaded)throw Error('Close this machine before op
    const until=BigInt(log.until);if(until<BigInt(state().cycle)||until>18446744073709551615n)throw Error('Invalid replay end');
    for(const row of log.events.slice(boundary.eventCount)){if(typeof row!=='string'||row.length>256)throw Error('Invalid bounded raw event');const cycle=BigInt(row.split(' ')[0]);if(cycle<BigInt(state().cycle)||cycle>until)throw Error('Replay event outside suffix');check('lemma_event',['string'],[row]);}
    replayUntil=String(until);
-  }else check('lemma_create');courseInputPartial=false;loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay;started=performance.now();running=!message.paused;pauseReason=message.paused?'opened-paused':null;sendState();panel(true);if(running)scheduleStep();
- }catch(e){pause('error');core?.ccall('lemma_destroy',null,[],[]);handle?.close();handle=null;activeMediumName=null;loaded=false;throw e;}}
+  }else check('lemma_create');courseInputPartial=false;loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay&&!product;started=performance.now();running=!message.paused;pauseReason=message.paused?'opened-paused':null;sendState();panel(true);if(running)scheduleStep();
+ }catch(e){pause('error');core?.ccall('lemma_destroy',null,[],[]);handle?.close();bootHandle?.close();handle=null;bootHandle=null;activeMediumName=null;loaded=false;throw e;}}
 async function launchNotebook(){busy=true;try{core.ccall('lemma_destroy',null,[],[]);
  const w=manifest.workloads.notebook;
  for(const [path,item]of [['/image.elf',w.image],['/machine.dtb',w.dtb],['/descriptor.bin',w.descriptor]])core.FS.writeFile(path,await getBytes(item));
@@ -201,13 +227,34 @@ async function restore(bytes){
  // is complete. On storage failure, retry binding or export its actual bytes.
  backingReady=false;await bindPrivate();
 }
+async function schoolActivity(message){
+ if(!loaded||manifest.school_service_contract!=='lemma-school-browser-service/1')throw Error('Open a school-capable machine first');
+ const epoch=schoolMachineEpoch;
+ let result;
+ if(message.operation==='sample'){
+  if(!manifest.sample_course)throw Error('This bundle has no compiled sample');
+  const bytes=new Uint8Array(await getBytes(manifest.sample_course));
+  result={package_hex:Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join(''),sample:true};
+ }else result=await school.operation(message,()=>guestSchoolAsk(core.FS.readFile('/uart.bin'),guestOutputStart),()=>guestSchoolSubmission(core.FS.readFile('/uart.bin'),guestOutputStart));
+ if(epoch!==schoolMachineEpoch)throw Error('Machine changed while school request was pending');
+ if(result.package_hex!==undefined||result.ack_bytes!==undefined){
+  if(busy)throw Error('Machine storage is busy; retry this school activity');
+  const wasRunning=running,transaction=(BigInt(crypto.getRandomValues(new Uint32Array(1))[0])+1n).toString();
+  if(result.ack_bytes){pause('school-ack');for(const row of courseInstallRows(result.ack_bytes,state().cycle))admitRaw(row,false);sendState();}
+  else admitCourseInstall({bytes:schoolPackage(result),transaction,schoolSelect:guestRecord(core.FS.readFile('/uart.bin'),guestOutputStart,'0000000000000731'),node:result.node??0});
+  if(wasRunning){running=true;pauseReason=null;scheduleStep();}
+  if(result.decision)await school.command({op:'delivery',decision:result.decision,stage:'transport-admitted',receipt:{transport:'lemma-school-browser-service/1',transaction}});
+ }
+ const {package_hex,ack_bytes,...view}=result;postMessage({type:'school',operation:message.operation,result:view});
+}
 onmessage=async({data:m})=>{
  // Admission is outside the mutation/error-pause path. A denied control must
  // not cancel scheduled clocks, touch backing storage or alter live state.
  let nextMode;try{nextMode=admission(m);}catch(e){postMessage({type:'error',error:String(e)});return;}
+ if(m.action==='school'){schoolActivity(m).catch(e=>postMessage({type:'school',operation:m.operation,error:String(e)}));return;}
  if(busy){postMessage({type:'error',error:'A storage or restore operation is pending'});return;}
  busy=true;try{
- if(m.action==='open'||m.action==='replay'){if(loaded)throw Error('Close this machine before opening another');capture=[];checkpoints={};replayUntil=null;backingReady=true;budget=null;readyAt=null;loops=0;panelSequence='-1';
+ if(m.action==='open'||m.action==='replay'){school.disconnect();schoolMachineEpoch++;if(loaded)throw Error('Close this machine before opening another');capture=[];checkpoints={};replayUntil=null;backingReady=true;budget=null;readyAt=null;loops=0;panelSequence='-1';
   sessionMode=nextMode;await load({...m,replay:m.action==='replay',initialize:m.action==='replay'||m.initialize});return;}
  if(m.action==='import'){
   if(loaded)throw Error('Close this machine before importing another medium');
@@ -227,7 +274,7 @@ onmessage=async({data:m})=>{
  else if(m.action==='raw-batch'){admitBatch(m.rows);}
  else if(m.action==='course-install')admitCourseInstall(m);
  else if(m.action==='inspect'){sendState();postMessage({type:'uart',text:new TextDecoder().decode(core.FS.readFile('/uart.bin'))});}
- else if(m.action==='reset'){if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');pause('reset');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='boot';check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}
+ else if(m.action==='reset'){school.disconnect();schoolMachineEpoch++;if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');pause('reset');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='boot';check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}
  else if(m.action==='snapshot'){pause('snapshot');const path='/snapshot-'+loops+'.bin';check('lemma_snapshot',['string'],[path]);
   const b=core.FS.readFile(path);core.FS.unlink(path);checkpoints[await hash(b)]={eventCount:capture.length,cycle:state().cycle};
   postMessage({type:'export',name:'lemma-checkpoint.bin',bytes:b},[b.buffer]);sendState();}
@@ -237,6 +284,8 @@ onmessage=async({data:m})=>{
   try{exportPanel();}catch(error){postMessage({type:'error',error:String(error)});return;}
  }
  else if(m.action==='restore'){
+  if(manifest.product_boot_contract==='lemma-browser-product-nv/1')throw Error('Product checkpoint import needs an independent persistent boot backing; finite same-Wasm diagnostic restore is separate');
+  school.disconnect();schoolMachineEpoch++;
   // The machine validates before replacing authoritative state. Reject an
   // incompatible/corrupt archive without cancelling the live run or budget.
   // No asynchronous copy starts until this synchronous acceptance succeeds.
@@ -255,6 +304,6 @@ onmessage=async({data:m})=>{
  else if(m.action==='capture'||m.action==='capture-outcomes'){pause('capture');const path=core.ccall('lemma_capture_path','string',[],[]);if(!path)throw Error('This replay instance does not capture live outcomes');
   const b=core.FS.readFile(path);postMessage({type:'export',name:'lemma-backing.io',bytes:b},[b.buffer]);
   if(m.action==='capture')exportEvents();sendState();}
- else if(m.action==='close'){pause('close');core.ccall('lemma_destroy',null,[],[]);handle.close();loaded=false;handle=null;activeMediumName=null;postMessage({type:'closed'});}
+ else if(m.action==='close'){school.disconnect();schoolMachineEpoch++;pause('close');core.ccall('lemma_destroy',null,[],[]);handle.close();bootHandle?.close();loaded=false;handle=null;bootHandle=null;activeMediumName=null;postMessage({type:'closed'});}
  else throw Error('Unsupported browser action');
  }catch(e){pause('error');if(loaded)sendState();postMessage({type:'error',error:String(e)});}finally{busy=false;}};

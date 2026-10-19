@@ -18,6 +18,11 @@ let active=null,activeTool=0,activeTransform=null,last={x:0,y:0};
 let context=canvas.getContext('2d'),gpu=null,pipeline=null,device=null;
 const displayScale=document.querySelector('#display-scale');
 const sessionMode=document.querySelector('#session-mode');
+fetch('./bundle.json').then(response=>{if(!response.ok)throw Error('Bundle unavailable');return response.json();}).then(bundle=>{
+ document.querySelector('#machine-build').textContent=(bundle.backend??bundle.profile??'Local machine')+(bundle.initialization?' · '+bundle.initialization:'');
+ if(bundle.initialization?.startsWith('copy exact guest-produced'))document.querySelector('#initialize').textContent='Create from guest-produced seed';
+ else if(bundle.initialization?.startsWith('requires imported')){document.querySelector('#initialize').disabled=true;document.querySelector('#initialize').title=bundle.initialization;}
+}).catch(error=>{document.querySelector('#machine-build').textContent=String(error);});
 function modeControls(){document.querySelectorAll('[data-developer]').forEach(control=>{control.hidden=sessionMode.value==='student';});}
 sessionMode.onchange=()=>{beginSelection();modeControls();};modeControls();
 function scaleDisplay(){const factor=({'1':1,'1.5':1.5,'2':2})[displayScale.value]||0;
@@ -118,7 +123,37 @@ function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.te
   pass.setBindGroup(0,device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[{binding:0,resource:texture.createView()}]}));pass.draw(3);pass.end();device.queue.submit([encoder.finish()]);device.queue.onSubmittedWorkDone().then(()=>texture.destroy()).catch(()=>{if(device===renderer)fallback();});
  }catch(e){fallback();}
  else if(context){const image=context.createImageData(m.width,m.height);for(let i=0;i<m.pixels.length;i++){const gray=m.pixels[i]*17;image.data[4*i]=image.data[4*i+1]=image.data[4*i+2]=gray;image.data[4*i+3]=255;}context.putImageData(image,0,0);}}
+let schoolCursor=0,reviewCursor=0;
+const schoolStatus=document.querySelector('#school-status');
+function schoolAction(operation,fields={}){send('school',{operation,...fields});schoolStatus.textContent='School '+operation+' pending · local pen and Save remain available';}
+document.querySelector('#school-connect').onclick=async()=>{
+ const file=document.querySelector('#school-credential').files[0];
+ if(!file||file.size>4096){schoolStatus.textContent='Choose the bounded private school pairing file.';return;}
+ try{const credential=JSON.parse(await file.text());schoolAction('connect',{credential});}catch(e){schoolStatus.textContent=String(e);}
+};
+document.querySelector('#school-sample').onclick=()=>schoolAction('sample');
+document.querySelector('#school-next').onclick=()=>schoolAction('catalogue',{after:schoolCursor});
+document.querySelector('#school-install').onclick=()=>{
+ const selected=document.querySelector('#school-course').selectedOptions[0];
+ if(!selected){schoolStatus.textContent='Connect and select an enrolled publication first.';return;}
+ schoolAction('install',{course:Number(selected.dataset.course),revision:Number(selected.dataset.revision)});
+};
+for(const operation of ['join','help','feedback','submit','cancel','disconnect'])document.querySelector('#school-'+operation).onclick=()=>schoolAction(operation);
+document.querySelector('#school-reviews').onclick=()=>schoolAction('reviews',{after:0});
+document.querySelector('#school-reviews-next').onclick=()=>schoolAction('reviews',{after:reviewCursor});
+document.querySelector('#school-review-open').onclick=()=>{
+ const id=document.querySelector('#school-review').value;
+ if(!id){schoolStatus.textContent='Choose a due review first.';return;}
+ schoolAction('review',{id});
+};
 worker.onmessage=({data:m})=>{
+ if(m.type==='school'){
+  schoolStatus.textContent=m.error?m.error:JSON.stringify(m.result,null,2);
+  if(m.result?.courses){schoolCursor=m.result.next;const list=document.querySelector('#school-course');list.replaceChildren();
+   for(const course of m.result.courses){const option=document.createElement('option');option.textContent=course.title+' · '+course.course+'/'+course.revision;option.dataset.course=course.course;option.dataset.revision=course.revision;list.append(option);}}
+  if(m.result?.reviews){reviewCursor=m.result.next;const list=document.querySelector('#school-review');list.replaceChildren();
+   for(const review of m.result.reviews){const option=document.createElement('option');option.value=review.id;option.textContent=review.courseTitle+' · '+review.title+' · '+review.course+'/'+review.edition;list.append(option);}}
+ }
  if(m.type==='error'){stopPcm('Machine bridge error.');status.textContent=m.error;}
  if(m.type==='closed'){stopPcm('Machine closed.');beginSelection();selectionMachineName=null;displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
@@ -127,6 +162,7 @@ worker.onmessage=({data:m})=>{
  if(m.type==='state'){const reported=m.guestCommit??null;
   const course=m.guestCourse??null;
   document.querySelector('#course-result').textContent=course===null?'No installation result observed in this guest launch.':course.state==='installed'?`Guest reports installed package ${course.identity}, edition ${course.edition}, durable sequence ${course.sequence}.`:`Guest reports installation failure (${course.status}) for package ${course.identity}, edition ${course.edition}.`;
+  document.querySelector('#school-installation').textContent=document.querySelector('#course-result').textContent;
   const backing=m.backingMedium;
   if(backing&&typeof backing.name==='string'){
    if(backing.name!==selectionMachineName){beginSelection();selectionMachineName=backing.name;}
