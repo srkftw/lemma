@@ -1,0 +1,309 @@
+{
+  "schema": "lemma-task009-physical-evidence/1",
+  "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
+  "written_at": "2026-10-19T19:14:26.517788+00:00",
+  "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
+  "protocol_and_mapping": {
+    "path": "build/silicon/task009-pen-counter-a2/result.json",
+    "sha256": "5566e16df8d1a234aaa90bd51ed652718189abcffa353b9690c45dde1c2c0eb8"
+  },
+  "known_via_gap": {
+    "negative": {
+      "path": "build/silicon/task009-enclosure-original-b1.json",
+      "sha256": "06e41dec9722554eea9d0e3dabde460cc4a53671033a34a7a97e5f116b87fb5c"
+    },
+    "positive": {
+      "path": "build/silicon/task009-enclosure-repaired-b1.json",
+      "sha256": "a5c52195cba226008c1e7a5577d39dd3ee20d67b3e2454b905690c7ce3287ddf"
+    },
+    "routed_a2": {
+      "path": "build/silicon/task009-enclosure-routed-a2-b1.json",
+      "sha256": "6d7f65e54c89506ca5b01c0d52cd705987123ab6dd4e60dcede188188d03d3a2"
+    },
+    "original_router_reports_both_empty": true,
+    "source": {
+      "path": "scripts/silicon_route_enclosure.py",
+      "sha256": "91ffb4dddbb870cc473f6afc33d6cc4648c1d1abd6d08fbf79bccfcbb8ef14ee"
+    },
+    "scope": "Fresh independent geometry validation of retained real router output; no new router/Magic simulation implied. Original bad geometry rejected despite zero router report.",
+    "routed_a3": {
+      "path": "build/silicon/task009-enclosure-routed-a3.json",
+      "sha256": "ead779d96b30e66d01ea7ee4784b414908752a424757700f7d264264ea9a7e19"
+    }
+  },
+  "routes": [
+    {
+      "receipt": {
+        "path": "build/silicon/task009-pen-physical-a1/result.json",
+        "sha256": "c504af95829ee6c1dc5d57aae5a7dfd4ccf24f33943bbadfe16d7e070f2ae13e"
+      },
+      "status": "FAIL",
+      "seconds": 35.464048954076134,
+      "source_seal_equal": true,
+      "router_drc": null,
+      "independent_drc_types": {},
+      "global_rc_after_route": null,
+      "extracted_rc": null,
+      "source_archive": null
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-pen-physical-a2/result.json",
+        "sha256": "d02fe74e07208977092fe7550f921b86ae4b1cbe97d36dadaa1785a570e16499"
+      },
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 318.55222121591214,
+      "source_seal_equal": true,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 1479,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "independent_drc_types": {
+        "Short": 87,
+        "Metal Spacing": 92,
+        "Cut Short": 0,
+        "Lef58Enclosure": 1300
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 397952.976,
+        "core_area_um2": 1507521.456,
+        "utilization_percent": 26.39783164718022,
+        "instances": 8561,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -4.090446,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": 0.038437,
+        "hold_timing": "MET"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "6a7dfa939fcb28e15aaa2642513f7bb207e0181e808383836695b799bd8cd69e",
+          "setup": "worst slack max -17.479677",
+          "hold": "worst slack min -0.144792",
+          "electrical_violations": 1099
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "7076ee93df82c808d60a63075f900b0d1596f5bed490104225872ed2e5393933",
+          "setup": "worst slack max -20.730324",
+          "hold": "worst slack min -0.172956",
+          "electrical_violations": 1452
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "2279d4f950cadd1dac30c5537bddf9b6af83fc1533920d80e7b7ec9426868811",
+          "setup": "worst slack max -23.679361",
+          "hold": "worst slack min -0.193626",
+          "electrical_violations": 1761
+        }
+      },
+      "source_archive": {
+        "path": "build/silicon/task009-pen-physical-a2/source-archive/manifest.json",
+        "sha256": "b1558d0f788392b297cc80705c979dad5223ad03f186127c1b53a0eb6f4ec131"
+      }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-pen-physical-a3/result.json",
+        "sha256": "5f2c547e46dd963a9e84151e88b11e09c89d14ec8e4661b3575c45d83439d0ef"
+      },
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 768.6791252150433,
+      "source_seal_equal": true,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 790,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "independent_drc_types": {
+        "Short": 659,
+        "Metal Spacing": 130,
+        "Cut Short": 1,
+        "Lef58Enclosure": 0
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 404762.4192,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 46.603273109166324,
+        "instances": 9229,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -1.403807,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": -0.810572,
+        "hold_timing": "VIOLATED"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "e0d22ea4bda27249b56d753b944d818c6b85563521ce9170cef28ee8dd710cbb",
+          "setup": "worst slack max -19.889240",
+          "hold": "worst slack min -1.459193",
+          "electrical_violations": 1225
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "4e6a1c6c7e09c30eae4be0396bbde560f8450f06deed60b2e80897dfe67fb2ab",
+          "setup": "worst slack max -22.962557",
+          "hold": "worst slack min -1.758517",
+          "electrical_violations": 1521
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "1403aa1c58f95ce970d22a69b0df3b6456f50ecf81ed5efe13d901d20c501fd8",
+          "setup": "worst slack max -26.248957",
+          "hold": "worst slack min -2.012906",
+          "electrical_violations": 1760
+        }
+      },
+      "source_archive": {
+        "path": "build/silicon/task009-pen-physical-a3/source-archive/manifest.json",
+        "sha256": "7502884c39a478889903ef9c51e9d0850ba12168e39e78daad539456c252b2f8"
+      }
+    }
+  ],
+  "extracted_available_corners": [
+    {
+      "path": "build/silicon/task009-pen-corners-a1/result.json",
+      "sha256": "3e342d12e0fb723f45019d87c6e54a41cd4a5435cda534ec5b81028abcc1358d"
+    },
+    {
+      "path": "build/silicon/task009-pen-corners-a2/result.json",
+      "sha256": "a3ba127f2caf801152dcf2f5293d2e0be078b456e2b866420e9586d7d1dac604"
+    }
+  ],
+  "process_attempts": [
+    {
+      "receipt": {
+        "path": "build/silicon/task009-pen-process-a1/result.json",
+        "sha256": "c36885c13dad19167f5f80ec2890e96df212e48354de778b2212d3ca56cca1bb"
+      },
+      "observed_status": "RUNNING",
+      "error": "CommandFailure('Deadline exceeded: /nix/store/g0n7zlrbf02035zi8fg120zzh8c4w1rh-magic-vlsi-8.3.681/bin/magic; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-pen-process-a1/process.log')",
+      "seconds": 90.1011795210652,
+      "source_seal_equal": true,
+      "scope": "No DRC/LVS success. a1 observer retained RUNNING after real timed-out command/exit1; later observer fixes terminal failure accounting."
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-pen-process-a2/result.json",
+        "sha256": "f6fe3f8abaa6b87f6f20856c616792eb89b4b3e794bd244890bdff8fd3ba6ea9"
+      },
+      "observed_status": "RUNNING",
+      "error": "GeometryError('actual sealed failed DRC attempt required')",
+      "seconds": 0.03920867701526731,
+      "source_seal_equal": true,
+      "scope": "No DRC/LVS success. a1 observer retained RUNNING after real timed-out command/exit1; later observer fixes terminal failure accounting."
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-pen-process-a3/result.json",
+        "sha256": "7a20ea348a83b9bced9db373cb5f37ae372bd0532305bf5263c0dc182eadf879"
+      },
+      "observed_status": "FAIL",
+      "error": "CommandFailure('Deadline exceeded: /nix/store/g0n7zlrbf02035zi8fg120zzh8c4w1rh-magic-vlsi-8.3.681/bin/magic; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-pen-process-a3/import.log')",
+      "seconds": 30.084291975945234,
+      "source_seal_equal": true,
+      "scope": "No DRC/LVS success. a1 observer retained RUNNING after real timed-out command/exit1; later observer fixes terminal failure accounting."
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-pen-process-a4/result.json",
+        "sha256": "8c0206491936ead06d7fd6292ec5178d0b23009ea5da910062b5d678ec7a7266"
+      },
+      "observed_status": "FAIL",
+      "error": "CommandFailure('Deadline exceeded: /nix/store/g0n7zlrbf02035zi8fg120zzh8c4w1rh-magic-vlsi-8.3.681/bin/magic; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-pen-process-a4/import.log')",
+      "seconds": 30.081229121075012,
+      "source_seal_equal": true,
+      "scope": "No DRC/LVS success. a1 observer retained RUNNING after real timed-out command/exit1; later observer fixes terminal failure accounting."
+    }
+  ],
+  "active_microphone_first_stage": {
+    "result": {
+      "path": "build/multimodal/task009-microphone-a3/result.json",
+      "sha256": "46afcc450a378990cb99413782dbdd30b5e3179523e46f64b3aab2e6911efcd7"
+    },
+    "retained_failures": [
+      {
+        "path": "build/multimodal/task009-microphone-a1/result.json",
+        "sha256": "affea983366987e1f45d04f32d17fe118f58f863452add3eb86fded0e11e47be"
+      },
+      {
+        "path": "build/multimodal/task009-microphone-a2/result.json",
+        "sha256": "fafcb8531a347857f24c46df8be95649413c8de4408f68de0eeacfd8b065ecf6"
+      }
+    ],
+    "scope": "30 actual process-model circuit cases; no MEMS/ADC/controller/full acquisition, physical or safety qualification."
+  },
+  "checks": {
+    "silicon_host": {
+      "log": {
+        "path": "build/silicon/task009-silicon-host-final.log",
+        "sha256": "52e6fe61d744f3b1b22a49b868657ba1f2d7396535b11f3d16aef01996243b9c"
+      },
+      "count": 246,
+      "status": "PASS",
+      "scope": "Host tests only; not route/guest/process execution."
+    },
+    "scaffold": {
+      "metadata_log": {
+        "path": "build/silicon/task009-scaffold-final.log",
+        "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+      },
+      "host_log": {
+        "path": "build/silicon/task009-scaffold-host-final.log",
+        "sha256": "4e897d94150b446f899a14c7eb40b38f4b79da71e58b4efaa76d3f550ddf5c85"
+      },
+      "count": 31,
+      "status": "PASS",
+      "scope": "Metadata/host only; does not upgrade physical or guest qualification."
+    }
+  },
+  "remaining": {
+    "unfinished_designs": [
+      "working RAM/framebuffer physical implementation",
+      "boot/nonvolatile medium",
+      "full compute/interconnect and clock/reset/power domains",
+      "VDD/VSS/VDDARRAY power grid and connections",
+      "externally usable SRAM BIST/test access",
+      "pads, package pin/power assignment and board connectivity",
+      "tablet/headband interfaces and complete mixed-signal acquisition/output"
+    ],
+    "missing_or_unselected_inputs": [
+      "matched-temperature public fast stdcell/SRAM corner pair (public libraries are -40C/-55C respectively)",
+      "qualified open boot-NV implementation",
+      "MEMS/optical/transducer process/assembly and converter implementation",
+      "design-specific manufacturing/rights and physical/safety qualification"
+    ],
+    "important_correction": "Public typical and slow SRAM timing libraries exist and are assessed; they are not missing-input blockers."
+  },
+  "source_boundaries": {
+    "physical_execution": "a3 executed its archived source/tool recipe and current RTL. Later source-archive retention, unsupported-DEF indentation rejection and reporting/input-closure fixes are separate observer/tooling changes, not a new route. Fresh independent geometry validation consumes actual unchanged a3 DEF.",
+    "process": "Timed-out full process and import receipts are retained; a1 observer terminal RUNNING bug is corrected in current tool without editing that historical receipt. No transistor LVS/extracted-GDS result exists.",
+    "logic_comparison": "Private Yosys zero-delay correspondence trials retain async-FF/commutative-cutpoint/timeout failures; they do not establish connected layout-vs-netlist equivalence."
+  },
+  "final_rtl": {
+    "path": "sim/rtl/lemma_pen.sv",
+    "sha256": "e6310eb2f0f1e559ce9bb7d30082ec2f4efd99917069bd1ab7400fd9d4282550"
+  },
+  "final_protocol": {
+    "path": "build/silicon/task009-pen-counter-a2/result.json",
+    "sha256": "5566e16df8d1a234aaa90bd51ed652718189abcffa353b9690c45dde1c2c0eb8"
+  },
+  "retained_outputs_are_not_ephemeral_action_cache": "build/silicon/task009-* and build/multimodal/task009-*; receipt/archive identities above pin needed source and raw observations."
+}

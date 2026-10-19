@@ -1,10 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 # Signal-routing feasibility only, typical standard-cell corner.
-# No SRAM, pad ring, power-grid closure, GDS, process DRC or LVS claim.
+# Optional full-depth pen SRAM uses the original process macro collateral.
+# No pad ring, power-grid closure, GDS, process DRC or LVS claim.
 set_thread_count 4
-read_lef $pdk/lef/sg13g2_tech.lef
+if {[info exists tech_lef]} {read_lef $tech_lef} else {read_lef $pdk/lef/sg13g2_tech.lef}
 read_lef $pdk/lef/sg13g2_stdcell.lef
 read_liberty $pdk/lib/sg13g2_stdcell_typ_1p20V_25C.lib
+if {[info exists pen_sram]} {
+    read_lef $macro_lef
+    read_liberty $macro_lib
+}
 read_verilog $out/mapped.v
 link_design $top
 # OpenSTA creates logical one_/zero_ nets for unused Verilog don't-care
@@ -21,7 +26,11 @@ foreach name {zero_ one_} {
         odb::dbNet_destroy $net
     }
 }
-initialize_floorplan -utilization 25 -aspect_ratio 1 -core_space 5 -site CoreSite
+if {[info exists pen_sram]} {
+    source $pen_sram
+} else {
+    initialize_floorplan -utilization 25 -aspect_ratio 1 -core_space 5 -site CoreSite
+}
 foreach layer {Metal1 Metal2 Metal3 Metal4 Metal5} {
     make_tracks $layer -x_offset 0.0 -x_pitch 0.48 -y_offset 0.0 -y_pitch 0.42
 }
@@ -48,7 +57,14 @@ estimate_parasitics -placement
 repair_design
 detailed_placement
 check_placement -verbose
-clock_tree_synthesis -root_buf sg13g2_buf_16 -buf_list {sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2} -sink_clustering_enable -sink_clustering_size 8 -repair_clock_nets
+if {[info exists pen_sram]} {
+    # The SRAM input clock has a stricter slew limit than stdcell clocks.
+    # Cluster each hard macro independently and bound the register clusters.
+    clock_tree_synthesis -root_buf sg13g2_buf_16 -buf_list {sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4} -sink_clustering_enable -sink_clustering_size 4 -macro_clustering_size 1 -macro_clustering_max_diameter 100 -sink_buffer_max_cap_derate 0.5 -repair_clock_nets
+    repair_clock_nets -max_wire_length 100
+} else {
+    clock_tree_synthesis -root_buf sg13g2_buf_16 -buf_list {sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2} -sink_clustering_enable -sink_clustering_size 8 -repair_clock_nets
+}
 set_propagated_clock [get_clocks core]
 # Bound cell/buffer repair, retaining the declared clock and I/O constraints.
 estimate_parasitics -placement
@@ -118,6 +134,7 @@ report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 >
 write_db $out/routed.odb
 write_def $out/routed.def
 write_verilog $out/routed.v
+if {[info exists pen_sram]} {write_sdc $out/routed.sdc}
 set block [ord::get_db_block]
 set cell_area 0.0
 foreach inst [$block getInsts] {

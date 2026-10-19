@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task009 physical implementation increment</title><link rel="stylesheet" href="../documentation.css"></head>
+<body><nav><a href="../plan/CURRENT.html">Current development</a></nav><main>
+<h1>Task009 physical implementation increment</h1>
+<p>The selected successor machine uses the maintained full-depth SRAM pen circuit.
+Its 256 entries retain all181 bits, including full64-bit sequence and timestamp.
+Parallel16-bit timestamp and increment arithmetic isolates the real critical control paths without
+new architectural state, clocks or acceptance latency. The actual vendor-model/default-controller
+comparison covers accepted edges, immediate acknowledgements, both refill edges, full capacity,
+wrapping, losses, watchdog and reset, plus sequence/address mutants. An independent
+language-level oracle covers64-bit comparison/increment boundaries, randomized inputs and X/Z.
+Machine integration and guest execution have their own source-bound successor-profile receipts.</p>
+<p><a href="009-physical-integration.json">The scoped evidence inventory</a> binds every retained result,
+source archive and original failure. Physical closure remains <strong>UNVERIFIED</strong>.</p>
+<h2>Geometry and routed timing</h2>
+<p>The original technology is immutable. A derived copy repairs only Via1_DC2L's lowerMetal1
+left edge from−100nm to−105nm. Original process-deck Magic geometry checks retain the bad1/repaired0
+result. The independent routed fixed-via checker now rejects the real bad fixture even though
+its router report is empty, and accepts its repaired counterpart. It also checks every actual
+fixed-via use in the real routed DEF. Extra same-net metal cannot reduce an intrinsically
+satisfied enclosure. Generated DEF vias and unknown clauses fail closed.</p>
+<p>The original LEF observer skipped indented END statements. Correcting that parser increases
+fixed-definition rule checks132→204 and includes the ordinary vias actually used by the route.
+This check covers the original simple-enclosure subset only. Cell/macro internal cuts, spacing,
+width, antenna, connectivity and the remaining process rules still require their independent checks.
+The modern LEF58 adaptation remains an independent import experiment; production routing uses
+the repaired original rules and the separate fixed-via check.</p>
+<p>Retained routing attempts preserve their exact compact/widened geometry and failures.
+Actual routed parasitic extraction now consumes original public min/nom/max RC decks,
+followed by fresh setup/hold/electrical assessment. These results remain distinct from the old
+global-route RC estimates. Matched typical25C and slow125C standard-cell/SRAM libraries are available
+and assessed. Public fast libraries use−40C for standard cells and−55C for SRAM; that mixed-temperature
+diagnostic does not establish a matched fast PVT corner.</p>
+<p>The final compact-clock/counter attempt completes in768.679s with its original900s routing cap,
+but has790 router markers (659short,130spacing,1cutshort), versus the retained baseline388.
+Global-route setup improves−3.031467→−1.403807ns while hold worsens−0.184124→−0.810572ns.
+Actual nominal extracted setup is−22.962557ns, hold−1.758517ns, with1521 electrical violations.
+The input timestamp critical path has moved to clock/control/output paths; this is an unfinished
+design, not closure. Clock-level balancing and the resulting macro/register skew are the next
+specific implementation dependency. No clock, I/O delay, endpoint or process rule was waived.</p>
+<p>Full process checking imports original transistor standard-cell and SRAM GDS plus the real DEF.
+The bounded full-rule run and subsequent independent streaming attempts fail to complete within
+their declared limits. No DRC, transistor extraction or LVS success is inferred. Original unsupported
+Magic LEF antenna clauses remain visible in the logs. The arithmetic, physical route and process
+checks never imply fabrication acceptance or foundry signoff.</p>
+<h2>Next real active acquisition block</h2>
+<p><a href="../../engineering/multimodal/microphone-preamp-sg13g2.cir">The reusable differential microphone first stage</a>
+uses two original SG13G2 npn13G2 VBIC active devices, a resistor-derived bias and nominal passive
+components. It contains no ideal gain source. Original HBT model bytes and their license are retained
+without edits. The declared input is an external synthetic microphone voltage and the output is a
+future differential converter boundary; this is not a microphone MEMS or complete acquisition channel.</p>
+<p>Thirty actual ngspice cases cover three public HBT corners,−20/27/85C and1.1/1.2/1.3V,
+power interruption, nonlinear overload/recovery and reversed physical wiring. At nominal27C/1.2V,
+gain is8.9608V/V near1kHz, transient gain8.9325 and modeled output noise65.8437µVrms over20Hz–20kHz.
+The initial1µF bias capacitor caused post-power-loss backfeed. The corrected10nF bias capacitor
+reduces observed power-off output below4.957mV; post-restore samples remain unavailable for the
+tested89ms settling interval. The first shorter recovery window remains a failed observation.</p>
+<p>The100nF coupling and10nF bias capacitors require board component selection. Resistor/capacitor
+process layout, mismatch, measured noise, microphone materials/fabrication, converter resolution,
+controller validity/settling integration, pad/ESD/power isolation, safety and assembly remain open.
+No physiological, acoustic, safety or educational benefit claim follows from these circuit tests.</p>
+<h2>Reproduction</h2>
+<pre><code>nix-shell tooling/silicon/pen-sram.nix --run 'python3 scripts/check_pen_sram.py --pdk build/silicon/deps/ihp-open-pdk --work-dir build/silicon/pen-map-UNUSED --map'
+nix-shell tooling/silicon/eda.nix --run 'python3 scripts/silicon_pen_physical.py --mapping build/silicon/pen-map-UNUSED --pdk build/silicon/deps/ihp-open-pdk --work-dir build/silicon/pen-route-UNUSED'
+nix-shell tooling/silicon/eda.nix --run 'python3 scripts/silicon_pen_corners.py --route build/silicon/pen-route-UNUSED --pdk build/silicon/deps/ihp-open-pdk --work-dir build/silicon/pen-corners-UNUSED'
+nix-shell tooling/silicon/eda.nix --run 'python3 scripts/silicon_pen_process.py --route build/silicon/pen-route-UNUSED --mapping build/silicon/pen-map-UNUSED --pdk build/silicon/deps/ihp-open-pdk --work-dir build/silicon/pen-process-UNUSED'
+python3 scripts/check_sg13g2_microphone.py --pdk build/silicon/deps/ihp-open-pdk --ngspice /nix/store/4w4h8g70fbca93c8wyd3rpklgsdbi6bf-ngspice-45/bin/ngspice --work-dir build/multimodal/microphone-UNUSED
+</code></pre>
+<p>Select unused outputs and inspect the prospective memory/disk/runtime budgets before execution.
+The physical assessment exits unsuccessfully while physical closure is unverified. A cached or
+reused mapping remains production reuse; every new route, extraction or circuit simulation has
+its own execution identity. The process continuation option retains an explicitly source-matched
+failed DRC attempt while attempting the independent extraction dependency.</p>
+<h2>Remaining full-device predecessors</h2>
+<p>Unfinished designs include working RAM and framebuffer memory integration, boot/nonvolatile
+medium implementation, complete compute/interconnect closure, clock/reset/power domains,
+power grid, VDD/VSS/VDDARRAY connectivity, usable SRAM BIST/test access, pads, package and board,
+tablet/headband transport and mixed-signal acquisition/output circuits. The128MiB simulator RAM
+is not physical notebook memory. Board/package routing needs a selected pin/power assignment;
+it cannot be invented from the pen leaf. Open boot-NV, MEMS/optical/transducer manufacturing,
+qualified converter and assembly inputs remain unselected or absent. Available public models
+are not mislabeled unavailable to excuse unfinished engineering.</p>
+<p>P3 circuit engineering and scoped P4 implementation work advance. P4 closure, P5 fabrication/
+physical qualification and P6 educational qualification remain separate unfinished gates, as do
+the eight readiness dimensions in the adopted multimodal specification.</p>
+</main></body></html>

@@ -70,6 +70,7 @@ def main():
         require(revision == '5e6d592e4002946a4616f798c357f0f3c06cf3b6', 'unqualified PDK revision')
         inputs = [Path(__file__).resolve(), ROOT / 'sim/rtl/lemma_pen.sv',
                   ROOT / 'conformance/silicon/PenIngress.sv', ROOT / 'conformance/silicon/PenBanks.sv',
+                  ROOT / 'conformance/silicon/PenTimestamp.sv',
                   ROOT / 'tooling/silicon/physical-lock.json', ROOT / 'tooling/silicon/pen-sram.nix',
                   ROOT / 'scripts/silicon_synth.py', ROOT / 'flake.lock']
         report['source_inputs'] = {str(p.relative_to(ROOT)): sha(p) for p in inputs}
@@ -102,6 +103,13 @@ def main():
         (out / 'plan.json').write_text(json.dumps(report, indent=2) + '\n')
         iv = report['tools']['iverilog']['path']
         vvp = report['tools']['vvp']['path']
+        timestamp = out / 'timestamp.vvp'
+        invoke([iv, '-g2012', '-s', 'PenTimestamp', '-o', str(timestamp),
+                str(out / 'candidate.sv'), str(ROOT / 'conformance/silicon/PenTimestamp.sv')],
+               'timestamp-compile', 60)
+        text = invoke([vvp, str(timestamp)], 'timestamp-simulation', 30)
+        require(text.count('PEN-TIMESTAMP full64 relational boundary randomized XZ PASS') == 1,
+                'missing independent timestamp relation observation')
 
         def simulate(name, top, candidate, fixture, expected_failure=None):
             consumed = {str(p): sha(p) for p in

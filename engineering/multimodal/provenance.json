@@ -1,6 +1,9 @@
 {
   "schema": "lemma-multimodal-engineering/1",
-  "units": {"circuit": "SI with SPICE suffixes", "geometry": "mm"},
+  "units": {
+    "circuit": "SI with SPICE suffixes",
+    "geometry": "mm"
+  },
   "first_party_sources_license": "Apache-2.0",
   "public_model": {
     "repository": "https://github.com/IHP-GmbH/IHP-Open-PDK",
@@ -35,5 +38,49 @@
     "physical_closure": "UNVERIFIED",
     "physical_functional_safety_qualification": "UNVERIFIED; no body-connected activation",
     "educational_benefit": "UNVERIFIED by these fixtures"
+  },
+  "process_bound_microphone_first_stage": {
+    "design": "engineering/multimodal/microphone-preamp-sg13g2.cir",
+    "checker": "scripts/check_sg13g2_microphone.py",
+    "public_process_revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "model_closure": {
+      "cornerHBT.lib": {
+        "sha256": "bae3d705445de8d6b8de4aa798a0e3e5e7cab617d6495d9c56473bc5377de462",
+        "bytes": 3975
+      },
+      "sg13g2_hbt_mod_mismatch.lib": {
+        "sha256": "e7b462e4aa4fbcb00d8f618f7780fea87d65918f2faa4e86c1412d6262371357",
+        "bytes": 20486
+      },
+      "sg13g2_hbt_mod.lib": {
+        "sha256": "ae9288f885dd30fab24b07ed1e7e02e69eac9154022a0a6da576985183b0bd79",
+        "bytes": 20057
+      },
+      "sg13g2_hbt_stat.lib": {
+        "sha256": "80d1893eb06a3417d05400335d8e58c8309b9c80061ca96ceff8f8fd68c9a7db",
+        "bytes": 2463
+      }
+    },
+    "scope": "Two real SG13G2 npn13G2 VBIC active devices, resistor-derived bias and nominal external passives; synthetic external microphone voltage, differential converter-input boundary. Not a MEMS capsule, ADC or complete physical microphone channel.",
+    "operating_domain": {
+      "supply_V": [
+        1.1,
+        1.2,
+        1.3
+      ],
+      "temperature_C": [
+        -20,
+        27,
+        85
+      ],
+      "model_corners": [
+        "hbt_typ",
+        "hbt_bcs",
+        "hbt_wcs"
+      ],
+      "post_power_restore_unavailable_seconds": 0.089
+    },
+    "evidence": "docs/evidence/009-physical-integration.json",
+    "qualification": "SIMULATED_ONLY process-model circuit engineering; process/layout/assembly/mismatch and physical/safety qualification remain UNVERIFIED"
   }
 }
