@@ -498,7 +498,7 @@
     "hostSeconds": 244.863,
     "clientActionSeconds": 2.6038247529650107,
     "wholeSeconds": 248.55401870701462,
-    "command": "nix develop --no-write-lock-file --command python3 scripts/check_school.py --production build/school/host-task009-review-render-a2/production.json --host-timeout600 --work-dir build/school/task009-host-validation-a6",
+    "command": "nix develop --no-write-lock-file --command python3 scripts/check_school.py --production build/school/host-task009-review-render-a2/production.json --host-timeout 600 --work-dir build/school/task009-host-validation-a6",
     "limits": {
       "hostSeconds": 600,
       "clientSeconds": 120
@@ -881,8 +881,55 @@
       "host.log": 225.7755848740926,
       "client-validation.log": 1.8012605289695784
     },
-    "command": "nix develop --no-write-lock-file --command env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 python3 scripts/check_school.py --production build/school/host-task009-delivery-a2/production.json --host-timeout600 --work-dir build/school/task009-host-validation-final-a2",
+    "command": "nix develop --no-write-lock-file --command env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 python3 scripts/check_school.py --production build/school/host-task009-delivery-a2/production.json --host-timeout 600 --work-dir build/school/task009-host-validation-final-a2",
     "prospectiveBudget": "600seconds hosted corpus,120seconds separate Client Action; every command completed through existing owned action_worker and descendant reaping",
     "scope": "Fresh current63-test hosted semantics/authority/protectedHTTP/source ingestion/preview/operator/typed delivery/complete v2 submission suite and separate Client Action validation; reused exact binary/compiled imports, no fresh native/browser/RTL or physical execution implied. Earlier61-test v1 suite and obsolete source-gate cancellation retain their own identities."
+  },
+  "firstOrdinaryNativeCampaign": {
+    "result": "FAIL",
+    "receipt": {
+      "path": "build/school/task009-student-native-a2/terminal-fault.json",
+      "sha256": "8fd6e1d5c4ed355ebb2571dea01f5b01ba813dde51308a5f970471d06acba3af"
+    },
+    "bundle": {
+      "path": "build/task009/school23-native-a1/bundle.json",
+      "sha256": "639e46ff5c14715348237179f56d74e2eca362bbe51e2fe39772f1378c3f2b01"
+    },
+    "initializer": {
+      "path": "build/school/task009-student-native-a2/initializer/result.json",
+      "sha256": "1bc6e093a97583440c14d262477bc3246f65493f966d72aa809e2ae200233dce"
+    },
+    "scope": "Real compiled School23 native Student boot with fresh actual guest-initialized medium; no Ready/course/JOIN/submission observed. Hosted and browser component passes are separate.",
+    "functionalUnits": 400000000,
+    "fault": {
+      "cause": 13,
+      "pc": 16824700,
+      "stval": 3410736,
+      "tagF4": [
+        8263,
+        44,
+        0,
+        13
+      ],
+      "tagF5": [
+        8263,
+        662,
+        0,
+        667
+      ],
+      "tagF6": [
+        8263,
+        7407,
+        7986,
+        0
+      ]
+    },
+    "correctedAssociation": "Machine source/object inspection identifies PID8263 as Notebook (F1 index1/image2), not Store. PC0x100b97c maps Notebook.issue. stval0x340b30 is the new queue-ready flag read before multimodal initialization allocates its page. Original raw observation is retained; this is a separate scoped association.",
+    "retainedMedium": {
+      "path": "build/school/task009-student-native-a2/initialized-medium.raw",
+      "sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46",
+      "scope": "Actual041f acknowledged guest initialization, immutable copy verified before Notebook writes. This remains valid independently of subsequent Notebook boot failure."
+    },
+    "nextChangedInput": "Minimal target initialization ordering correction required before a new finite native workflow; do not rerun unchanged failing image."
   }
 }
