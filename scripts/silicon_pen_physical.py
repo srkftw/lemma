@@ -163,6 +163,22 @@ source {{{ROOT/'tooling/silicon/layout.tcl'}}}
 ''')
         if args.routed_eco_from:
             script.write_text(f'set prior {{{prior}}}\nset out {{{out}}}\nset pdk {{{std}}}\nset macro_lib {{{macro/"lib"/(MACRO+"_typ_1p20V_25C.lib")}}}\nsource {{{ROOT/"tooling/silicon/pen-extracted-eco.tcl"}}}\n')
+        # Preserve the real failed database, including GRT's stored overflow
+        # grid, before Tcl propagates an implementation error. A snapshot is
+        # diagnostic state only and never a completed routed layout.
+        recipe = script.read_text()
+        script.write_text('if {[catch {\n' + recipe + r"""
+} failure options]} {
+    set snapshot_errors {}
+    if {[catch {write_db $out/failed-layout.odb} reason]} {lappend snapshot_errors $reason}
+    if {[catch {write_def $out/failed-layout.def} reason]} {lappend snapshot_errors $reason}
+    set file [open $out/failed-layout.txt w]
+    puts $file $failure
+    puts $file "Snapshot errors: $snapshot_errors"
+    close $file
+    return -options $options $failure
+}
+""")
         report['question'] = args.question
         report['status'] = 'RUNNING'
         (out / 'plan.json').write_text(json.dumps(report, indent=2) + '\n')
@@ -216,6 +232,10 @@ report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 >
     except BaseException as error:
         report.update(status='FAIL', error=repr(error))
     finally:
+        snapshots = [out / name for name in ('failed-layout.odb', 'failed-layout.def', 'failed-layout.txt') if (out / name).is_file()]
+        if snapshots:
+            report['failed_layout_snapshots'] = {str(path): sha(path) for path in snapshots}
+            report['failed_layout_scope'] = 'Diagnostic failed database/placement and stored congestion only; not a completed routed layout'
         report['seconds'] = time.monotonic() - start
         report['source_seal_equal'] = all(sha(Path(v)) == digest for v, digest in report.get('source_inputs', {}).items())
         if not report['source_seal_equal']:

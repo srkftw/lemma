@@ -432,6 +432,32 @@
         "path": "build/silicon/task009-fault3-validation-group-a2/source-archive/manifest.json",
         "sha256": "710badd03ffd477cfcddd14963497ea89151a9d8edd5a37a80f19e76943c9eb5"
       }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-validation-aligned-a3/result.json",
+        "sha256": "decb68e2198e3c42225581f914b9fa2b6b67401e4609093e8deead5b303a4ce3"
+      },
+      "status": "FAIL",
+      "seconds": 35.235724468017,
+      "source_seal_equal": true,
+      "error": "CommandFailure('Command exited 1: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-fault3-validation-aligned-a3/layout.log')",
+      "failed_layout_snapshots": null
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-validation-congestion-observer-a1/result.json",
+        "sha256": "b42d4f87e1a6af5f953094c53c57feb0cfad6c7b2a526250176c3d3f7fae7176"
+      },
+      "status": "FAIL",
+      "seconds": 31.964589163078927,
+      "source_seal_equal": true,
+      "error": "CommandFailure('Command exited 1: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-validation-congestion-observer-a1/layout.log')",
+      "failed_layout_snapshots": {
+        "/home/sreekumaar/Downloads/lemma/build/silicon/task009-validation-congestion-observer-a1/failed-layout.odb": "1d18120e4aa9b26565bda5e5e7d5c0a0fa61e1b5a5fbcdaa5983e5afe9b71219",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/task009-validation-congestion-observer-a1/failed-layout.def": "cdf5d9b20e69c32dc0cb5cb51d29930a28ce0b28b7d042f882b411e7a3e4cabf",
+        "/home/sreekumaar/Downloads/lemma/build/silicon/task009-validation-congestion-observer-a1/failed-layout.txt": "869f7c6ee989bbdf2d0438b4c8524c095609dbb35bc6d54b24c40ca7d2f0696a"
+      }
     }
   ],
   "extracted_available_corners": [
@@ -600,7 +626,8 @@
   "source_boundaries": {
     "physical_execution": "Historical a3, isolated fault3, clock-auto and real extracted-load ECO each retain their own source-bound producers. Fault3 is now selected in canonical RTL and freshly mapped through the normal maintained path. Actual native/Wasm guest behavior is separate machine evidence. The latest completed physical ECO still fails all closure categories.",
     "process": "Original process/GDS/LEF/deck bytes stay immutable. Removing display expansion exposed full DRC; separate300s export and180s direct extraction attempts remain failed. Direct extraction reached real top-cell geometry. Complete process DRC and connected transistor LVS have not completed; no missing nominal process collateral is invented to excuse these tool/engineering failures.",
-    "logic_comparison": "Private Yosys zero-delay correspondence trials retain async-FF/commutative-cutpoint/timeout failures; they do not establish connected layout-vs-netlist equivalence."
+    "logic_comparison": "Private Yosys zero-delay correspondence trials retain async-FF/commutative-cutpoint/timeout failures; they do not establish connected layout-vs-netlist equivalence.",
+    "failure_snapshot_retention": "A corrected Tcl observer retains failed OpenDB/DEF and primary error before propagation, including stored real GRT congestion. A31.965s diagnostic reexecution of unchanged aligned geometry captured the single overflowing macro-edge cell; it is not a new design pass."
   },
   "final_rtl": {
     "path": "sim/rtl/lemma_pen.sv",
@@ -678,7 +705,35 @@
     "group_padding_crash": "build/silicon/task009-fault3-validation-group-a2/result.json",
     "aligned_small_probe": "build/silicon/task009-validation-group-aligned-a1/query.tcl",
     "alignment": "physical0.48um sites/3.78um rows: bbox500.16,476.28,700.80,589.68um; padding retained",
-    "active_bounded_full_run": "build/silicon/task009-fault3-validation-aligned-a3/plan.json",
-    "scope": "Two actual containment phases passed; no route/timing outcome yet. This optional candidate is not a closure claim."
+    "scope": "Optional placement candidate remains unselected and FAIL; latest completed extracted ECO is separate.",
+    "aligned_terminal": {
+      "path": "build/silicon/task009-fault3-validation-aligned-a3/result.json",
+      "sha256": "decb68e2198e3c42225581f914b9fa2b6b67401e4609093e8deead5b303a4ce3"
+    },
+    "aligned_scope": "Three actual containment checks passed with original one-site padding; global incremental routing rejected congestion after35.236s. No detailed route or extraction for this candidate.",
+    "congestion_observer": {
+      "path": "build/silicon/task009-validation-congestion-observer-a1/result.json",
+      "sha256": "b42d4f87e1a6af5f953094c53c57feb0cfad6c7b2a526250176c3d3f7fae7176"
+    },
+    "congestion_map": {
+      "path": "build/silicon/task009-validation-congestion-map-a1/summary.json",
+      "sha256": "6a4fa902b8530ed37701230185029e645e8c91d11fc3ebafdad045e27a5b9cc6"
+    },
+    "actual_overflow": {
+      "grid": [
+        145,
+        118
+      ],
+      "layer": "Metal3",
+      "x_um": 900,
+      "y_um": 180,
+      "capacity": 17,
+      "usage": 18,
+      "overflow": 1
+    },
+    "region_type_source": {
+      "url": "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD/26Q2/src/gpl/src/placerBase.cpp",
+      "finding": "GPL blocks every placement-group region from the top-level placement sites without checking INCLUSIVE/EXCLUSIVE/SUGGESTED; an enum-only change cannot free unused sites."
+    }
   }
 }
