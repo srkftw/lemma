@@ -110,10 +110,10 @@ def execute (state : State) (actor : String) (request : Json) (now : Nat) : Exce
   let response (commit : Nat) (reused : Bool) := object [("observation",toJson identity),
     ("commitSequence",toJson commit),("kind",toJson kind),("sequence",toJson sequence),
     ("reused",toJson reused),("scope",toJson (scope kind))]
-  if let some prior := state.latest "delivery-observation" identity then
+  if let some prior := state.latest "delivery" identity then
     require (prior.actor == actor && prior.data == data) "delivery content identity conflict"
     return (state,response prior.sequence true)
-  let next ← state.add "delivery-observation" identity actor now data
+  let next ← state.add "delivery" identity actor now data
   return (next,response next.records.size false)
 
 end Lemma.School.Delivery

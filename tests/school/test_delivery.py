@@ -14,6 +14,7 @@ import urllib.request
 
 import test_authority as harness
 import test_admission as admission
+import test_guest_submission as submission
 
 
 class Delivery(unittest.TestCase):
@@ -69,10 +70,22 @@ class Delivery(unittest.TestCase):
         self.enroll('alice');self.enroll('bob')
         alice=self.issue('alice');bob=self.issue('bob');teacher=self.issue('teacher')
         self.call('grant',subject='teacher',action='admin',resource='school')
+        self.call('grant',subject='teacher',action='review',resource='alice')
         self.addCleanup(self.stop);self.start()
-        ask=harness.Authority.ask(self)
+        ask=harness.Authority.ask(self);ask['revision']=1
         joined=self.client(alice,'join',course=1,revision=1,session='delivery-live',guestSession=41,
                            lifetimeMs=10000,ask=ask)
+        invitation=bytes.fromhex(joined['package_hex']);span=submission.word(invitation,112)
+        context=bytes.fromhex(invitation[span & 0xffffffff:(span & 0xffffffff)+(span>>32)].decode())
+        package=bytes.fromhex(self.client(alice,'client-course',course=1,revision=1)['package_hex'])
+        packagePath=self.base/'package.bin';packagePath.write_bytes(package)
+        contextPath=self.base/'context.bin';contextPath.write_bytes(context)
+        artifactPath=self.base/'actual-work.bin'
+        fixture=subprocess.run(['lake','env','lean','--run','tests/school/SubmissionFixture.lean',
+            str(packagePath),str(contextPath),str(artifactPath),'2','4'],cwd=harness.REPO,capture_output=True,timeout=40)
+        self.assertEqual(fixture.returncode,0,(fixture.stdout+fixture.stderr).decode())
+        artifact=artifactPath.read_bytes()
+        self.assertEqual(submission.word(artifact,56),ask['revision'])
         authored=self.client(alice,'assist',session='delivery-live',ask=ask)
         decision=authored['decision']
         digest=hashlib.sha256(b'exact retained opaque packet').hexdigest()
@@ -94,12 +107,12 @@ class Delivery(unittest.TestCase):
         observation('transport',dict(partial,admittedBytes=201),error='outside declared')
         observation('transport',dict(partial,visible=True),error='unknown delivery')
         observation('guest-raster',dict(record=[0x725,2,1,0,0],uartSHA256=uart),error='original ASK sequence')
-        observation('guest-rejected',dict(record=[0x724,0,3,99,0],uartSHA256=uart),error='rejection record')
-        observation('guest-rejected',dict(record=[0x724,4,3,100,0],uartSHA256=uart),error='original ASK context')
+        observation('guest-rejected',dict(record=[0x724,0,1,99,0],uartSHA256=uart),error='rejection record')
+        observation('guest-rejected',dict(record=[0x724,4,1,100,0],uartSHA256=uart),error='original ASK context')
         self.assertEqual(state()['records'],snapshot)
         accepted=observation('guest-raster',dict(record=[0x725,1,1,0,0],uartSHA256=uart))
         self.assertIn('panel completion',accepted['scope'])
-        rejection=observation('guest-rejected',dict(record=[0x724,4,3,99,0],uartSHA256=uart))
+        rejection=observation('guest-rejected',dict(record=[0x724,4,1,99,0],uartSHA256=uart))
         self.assertIn('no presentation',rejection['scope'])
         panel=dict(cycle=500,completed=7,accepted=8,busy=1,targetSHA256='a'*64,visibleSHA256='b'*64,hashEncoding='gray4')
         controller=observation('controller-snapshot',panel)
@@ -110,6 +123,12 @@ class Delivery(unittest.TestCase):
         observation('controller-snapshot',dict(panel,bodyVisible=True),error='unknown delivery')
         cancelled=observation('cancelled',dict(reason='user-cancel'))
         self.assertEqual(cancelled['commitSequence'],observation('cancelled',dict(reason='user-cancel'))['commitSequence'])
+        captured=self.client(alice,'guest-submit',hex=artifact.hex())
+        reviewed=self.client(teacher,'review-work',attempt=captured['attempt'])
+        exposure=reviewed['attempt']['data']['deliveryObservations']
+        self.assertEqual(len(exposure),5)
+        self.assertTrue(all(r['kind']=='delivery' and r['data']['schema']=='lemma-school-delivery-observation/1' for r in exposure))
+        self.assertEqual(reviewed['attempt']['data']['outcome'],4)
         self.client(alice,'cancel-session',session='delivery-live')
         self.client(alice,'assist',session='delivery-live',ask=ask,error='cancelled')
         self.assertEqual(observation('transport',partial)['commitSequence'],first['commitSequence'])
@@ -124,14 +143,14 @@ class Delivery(unittest.TestCase):
         self.client(teacher,'admission-revoke',tokenHash=hashlib.sha256(alice.encode()).hexdigest())
         observation('transport',partial,error='revoked')
         final=state();self.assertEqual(next(r for r in final['records'] if r['kind']=='decision'),original)
-        rows=[r for r in final['records'] if r['kind']=='delivery-observation']
+        rows=[r for r in final['records'] if r['kind']=='delivery']
         self.assertEqual(len(rows),6)
         self.assertTrue(all(r['data']['decision']==decision and r['data']['ask']==ask and r['data']['edition']==1 and
                             r['data']['artifact']==authored['artifact'] for r in rows))
-        self.assertFalse(any(r['kind']=='attempt' for r in final['records']))
+        self.assertEqual(len([r for r in final['records'] if r['kind']=='attempt']),1)
         print(json.dumps(dict(deliveryObservations=len(rows),transportPartial=True,originalDecisionUnchanged=True,
                               exactRetryCommit=first['commitSequence'],restartGeneration=final['generation'],
-                              rawRasterIsNotVisible=True,changedObserverDistinct=True,revocationEnforced=True)))
+                              rawRasterIsNotVisible=True,changedObserverDistinct=True,revocationEnforced=True,guestAttemptRetainsTypedObservations=len(exposure),teacherOriginalArtifactContext=True)))
 
 
 if __name__=='__main__':unittest.main()

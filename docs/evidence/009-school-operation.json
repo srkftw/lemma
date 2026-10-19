@@ -813,5 +813,58 @@
         "sha256": "af3e2b11b89879024763e8c65919c7fba6f0e625e8196fa821de5aa6c9c02f21"
       }
     }
+  },
+  "deliveryConsumerIntegration": {
+    "result": "PASS",
+    "production": {
+      "path": "build/school/host-task009-delivery-a2/production.json",
+      "sha256": "20590e982aebb17f1ff714d5455eea416e2ee76d7be331e69f07183526aa69c1"
+    },
+    "productionSeconds": 16.411583662964404,
+    "sourceInputsMatch": 61,
+    "repair": "Typed observations now use existing delivery record kind so maintained Submission.admit captures them. Schema/content identity and original decision remain unchanged.",
+    "test": {
+      "path": "tests/school/test_delivery.py",
+      "sha256": "214c3714423259cfa762883c3dca8ef38abd7d5cf9b97262c70d34f983d51de3"
+    },
+    "log": {
+      "path": "build/school/task009-delivery-prep/consumer-protected-tests-a2.log",
+      "sha256": "d17c57efdb66a8b33d75df9c966ebf4c9ab05e072a42812feb3dc1c9189f9e42"
+    },
+    "elapsedSeconds": 5.677,
+    "observations": "Actual maintained guest workspace/ink Actions generated the immutable original envelope; actual protected guest-submit committed it; actual protected teacher review-work returned5matching typed reports with original artifact/rubric and opaque outcome4. Six observations remain immutable; lost-ACK commit12 reused across real authority restart, wrong principal/revision/visibility fields and revoked credential rejected.",
+    "boundary": "Source-bound hosted Action+protectedHTTP consumer execution; actual native/browser guest execution stays separate.",
+    "retainedObserverFailure": {
+      "path": "build/school/task009-delivery-prep/consumer-protected-tests-a1.log",
+      "sha256": "29b0124c4bb98de8c9f13cb60c9b1647b6c1192e992c9c6c5fbe0aeb61674793"
+    },
+    "observerCorrection": "Initial observer ASK used revision3 while actual fixture document revision was1. The consuming filter correctly omitted those unrelated reports. Corrected observer uses the actual current document1, and all5matching reports reach the attempt/teacher.",
+    "obsoleteValidation": {
+      "path": "build/school/task009-host-validation-final-a1/validation.json",
+      "sha256": "52dd0068742a716c04882563c87ca4e92e7ddf3a7b9ef4179ef1167bdc3ffdef"
+    },
+    "obsoleteValidationScope": "Explicit cancellation of verified owned worker at111.139s for concrete consuming-path repair; kindcancelled/143 and descendants reaped, no partial pass.",
+    "browserByteRegressions": {
+      "result": "PASS",
+      "count": 5,
+      "elapsedSeconds": 0.099,
+      "log": {
+        "path": "build/school/task009-delivery-prep/browser-byte-regressions.log",
+        "sha256": "4471f798fec9b0011193f75aa6ac89f8691cbebcccb19b163ca3d88b713d0f4c"
+      }
+    },
+    "originalFiniteCampaign": {
+      "path": "build/school/task009-connected-a2/original-live-campaign-terminal.json",
+      "sha256": "08a4ddab5cfa16ae2c13d3cc38ae7917a7d4316490070b35da633273b109d3a4"
+    },
+    "ordinaryCampaignBudget": {
+      "path": "build/school/task009-connected-a2/ordinary-campaign-budget.json",
+      "sha256": "1fb2aa88f85e9fa22d58024caef24e16a904b0cdd20026dc65bd908a4a50ec49"
+    },
+    "ordinaryReady": {
+      "path": "build/school/task009-connected-a2/generation8-ordinary-ready.json",
+      "sha256": "5c18eadf748210a8e5244839a686e7959da7dbd76c3724838fe5f920cff25c21"
+    },
+    "campaignScope": "Original deadline reached with actual timeout124 terminal; a new independently budgeted3600s ordinary-client campaign starts generation8/epoch3 on the same29 acknowledged records, with separate source producer and deadline22:58:35UTC. No original deadline extension."
   }
 }
