@@ -14,6 +14,12 @@ open Lean Lemma.Core0.Memory Lemma.Courses Lemma.Documents
 
 def magic : UInt64  :=  0x31425553534d454c
 def version : UInt64  :=  1
+/-- Version1 remains immutable; version2 raises complete raw chunk capacity. -/
+def currentVersion : UInt64 := 2
+def maximumChunks (wireVersion : UInt64) : UInt64 :=
+  if wireVersion == 1 then 8 else if wireVersion == 2 then Ink.maximumEntries else 0
+def maximumMetadata (wireVersion : UInt64) : UInt64 :=
+  if wireVersion == 1 then 16384 else if wireVersion == 2 then 24576 else 0
 def headerBytes : Nat  :=  256
 def maximumBytes : Nat  :=  262144
 def queuePrefix : UInt64  :=  0x5351000000000000
@@ -80,6 +86,7 @@ structure Chunk where
   deriving Repr, FromJson, ToJson
 
 structure Envelope where
+  wireVersion : Nat
   queueObject : Nat
   captureFrontier : Nat
   documentNamespace : Nat
@@ -126,7 +133,8 @@ def decode (bytes : ByteArray) : Except String Envelope  :=  do
   require (bytes.size >= headerBytes + 3712 + 128 && bytes.size <= maximumBytes)
     "guest submission artifact length outside256..262144-byte envelope"
   let w  :=  word bytes
-  require ((← w 0) == magic && (← w 8) == version && (← w 16).toNat == bytes.size &&
+  let wireVersion ← w 8
+  require ((← w 0) == magic && maximumChunks wireVersion > 0 && (← w 16).toNat == bytes.size &&
     (← w 232) == 256 && (← w 240) == PackageWorkspace.bytes) "guest submission header/version/length differs"
   let queue ← w 24
   let frontier ← w 32
@@ -178,14 +186,15 @@ def decode (bytes : ByteArray) : Except String Envelope  :=  do
       (← w (selection+96)) == budget) "typed submission selection is stale or names another task"
   let indexBytes ← w 248
   let index  :=  256+3712
-  require (indexBytes >= 128 && indexBytes <= Ink.pageBytes && index+indexBytes.toNat <= bytes.size)
+  require (indexBytes >= 128 && indexBytes <= Ink.pageBytes && index+indexBytes.toNat <= bytes.size &&
+    index.toUInt64+indexBytes <= maximumMetadata wireVersion)
     "guest submission ink index length outside owned record"
   require ((← w index) == Ink.magic && (← w (index+8)) == 2 && (← w (index+16)) == 2 &&
     (← w (index+24)) == page) "guest submission packed ink index header differs"
   let count ← w (index+32)
   let edits ← w (index+40)
   let cursor ← w (index+48)
-  require (count <= 8 && edits <= Ink.maximumEdits && cursor <= edits &&
+  require (count <= maximumChunks wireVersion && edits <= Ink.maximumEdits && cursor <= edits &&
     indexBytes == 128 + count*24 + edits*16) "guest submission packed ink count/length differs"
   for i in [:9] do require ((← w (index+56+i*8)) == 0) "guest submission packed ink reserved field set"
   let mut chunks : Array Chunk  :=  #[]
@@ -223,6 +232,7 @@ def decode (bytes : ByteArray) : Except String Envelope  :=  do
   let mut events : Array (Array Nat)  :=  #[]
   for i in [:eventCount.toNat] do events  :=  events.push #[(← w (document+832+i*16)).toNat,(← w (document+840+i*16)).toNat]
   return {
+    wireVersion := wireVersion.toNat
     queueObject := queue.toNat
     captureFrontier := frontier.toNat
     documentNamespace := ns.toNat

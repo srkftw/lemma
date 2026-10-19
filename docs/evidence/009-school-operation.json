@@ -539,5 +539,162 @@
       "sha256": "573142dfbbdf8e36b1a78e1bba39c64cbd435ab089e81fbecb63e6d5c22d8417"
     },
     "scope": "Actual Tk/Xvfb fouractivity layout, native/HTTPLeanstatus and scopedlearnerchoicehistory; localqueryroutes to same authority and secondactualrun rejects. Guest writing/Schoolsubmission and new invitation/review-renderdialog interaction are separate actualproduct scenarios."
+  },
+  "guestSubmissionV2": {
+    "result": "PASS",
+    "contract": "docs/contracts/009-school-submission-v2.html",
+    "production": {
+      "path": "build/school/host-task009-submission-v2-a1/production.json",
+      "sha256": "3a2202d82a7372c72c2ace65ed217173d87b56e6fe27429bc873e2b06fa49810"
+    },
+    "productionSeconds": 47.92609832494054,
+    "binarySHA256": "a574a452fb599624d72ef1a847fd19acd598f2c222311edb5d5b92f64147e1d3",
+    "sourceCheck": {
+      "consumedInputs": 60,
+      "allMatchAfterQualification": true
+    },
+    "freshReused": "Fresh invalidated hosted Lean decoder/consumer elaboration and native linking; unchanged imported dependencies reused. No target compiler, QEMU, Wasm or RTL rebuild by this producer. Exact source closure is the retained producer receipt.",
+    "scope": "Hosted structural/admission/shared Rasterizer execution; actual target queue Action, native/browser Student and physical-controller observations are separately scoped. The earlier full61-test hosted suite belongs to its v1 producer and is not relabeled as v2 execution.",
+    "bounds": {
+      "version1": {
+        "chunks": 8,
+        "metadataBytes": 16384
+      },
+      "version2": {
+        "chunks": 512,
+        "metadataBytes": 24576
+      },
+      "unchangedTotalBytes": 262144
+    },
+    "structuralCases": {
+      "result": "PASS",
+      "count": 10,
+      "results": {
+        "path": "build/school/task009-submission-v2-prep/fixtures/results.json",
+        "sha256": "f929b056c348c0de6d954ded9fe1447731686d7206b167a98d8fc8caa2ebfb6e"
+      },
+      "fixture": {
+        "path": "tests/school/SubmissionCapacity.lean",
+        "sha256": "b0427d46b3328bd3f454820b976bf80e0a2dfbed68b543efd25fbd3224d6cee8"
+      },
+      "observations": [
+        {
+          "case": "32-strokes-odd-chunk-boundaries",
+          "chunks": 32,
+          "bytes": 12928
+        },
+        {
+          "case": "512-short-strokes-complete-index",
+          "chunks": 512,
+          "bytes": 126976
+        },
+        {
+          "case": "nine-full-chunks-under-byte-limit",
+          "chunks": 9,
+          "bytes": 254440
+        },
+        {
+          "case": "ten-full-chunks-over-byte-limit",
+          "rejected": "guest submission artifact length outside256..262144-byte envelope"
+        },
+        {
+          "case": "v1-cannot-advertise32",
+          "rejected": "guest submission packed ink count/length differs"
+        },
+        {
+          "case": "unknown-envelope-version",
+          "rejected": "guest submission header/version/length differs"
+        },
+        {
+          "case": "truncated-raw-body",
+          "rejected": "guest submission raw ink chunk truncated"
+        },
+        {
+          "case": "duplicate-original-raw-object",
+          "rejected": "guest submission ink identity/visibility differs"
+        },
+        {
+          "case": "original-v1-eight-chunk-bound",
+          "chunks": 8,
+          "bytes": 6304
+        },
+        {
+          "case": "original-v1-ninth-chunk-reject",
+          "rejected": "guest submission packed ink count/length differs"
+        }
+      ]
+    },
+    "focusedTests": [
+      {
+        "result": "PASS",
+        "count": 1,
+        "elapsedSeconds": 13.451,
+        "test": "tests/school/test_submission_capacity.py",
+        "log": {
+          "path": "build/school/task009-submission-v2-prep/protected-capacity-tests-a1.log",
+          "sha256": "e22cc7d8f146a74b8f4fa64369e1708a68986a0d92847ae3396f478b24118122"
+        },
+        "observations": "Actual protected HTTP admission of complete32/512/9 raw chunks (12928/126976/254440bytes), original v1 artifact unchanged, exact lost-ACK retry same commit, changed bytes rejected, over-byte upload rejected,32 actual Rasterizer segments and143changedpixels; cancelled binding rejects new work."
+      },
+      {
+        "result": "PASS",
+        "count": 4,
+        "elapsedSeconds": 27.229,
+        "test": "tests/school/test_guest_submission.py",
+        "log": {
+          "path": "build/school/task009-submission-v2-prep/v1-admission-regressions-a1.log",
+          "sha256": "55402e9fe6b96211ccb0812c4fafa9480b8737b6d822e113e00e9e4cf2ae20bc"
+        },
+        "observations": "Version1 exact/opaque immutable admission, retarget/revocation, original linked due-review/human-response lifecycle regressions."
+      },
+      {
+        "result": "PASS",
+        "count": 1,
+        "elapsedSeconds": 11.722,
+        "test": "tests/school/test_review_render.py",
+        "log": {
+          "path": "build/school/task009-submission-v2-prep/render-regressions-a1.log",
+          "sha256": "2c06964953e5519f7dd06d091bac7c8c5dbedd9c926799209afd99908158c5e0"
+        },
+        "observations": "Actual shared Rasterizer preview and scoped visibility/permission/pressure/revocation regressions;0.8862544s render,13changedpixels."
+      }
+    ],
+    "focusedCommand": "nix develop --no-write-lock-file --command env LEMMA_SCHOOL_TEST_BINARY=$PWD/build/school/host-task009-submission-v2-a1/school LEMMA_SCHOOL_TEST_CURRICULUM=$PWD/build/school/host-task009-submission-v2-a1/school-curriculum python3 -m unittest discover -s tests/school -p TEST_FILE -v",
+    "earlierNativeHistoryCompatibility": {
+      "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
+      "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
+    },
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "connectedUpgrade": {
+      "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
+      "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
+    },
+    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "retainedPreparationFailures": [
+      {
+        "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
+        "sha256": "cd77e3c55b130df60fc28bece06d6f2a919d2154d7ffeb4b3125fc77a9746a03"
+      },
+      {
+        "path": "build/school/task009-submission-v2-prep/decoder-elaboration-a2.log",
+        "sha256": "03b8076769cc426f4a2c1085dd2e7995181df47f6904ef39564213a95c974fb5"
+      },
+      {
+        "path": "build/school/task009-submission-v2-prep/capacity-fixture-a1.log",
+        "sha256": "4ca283702df09f2423f3dd65c320c68c0f43f0a8d8f41142c2291ebc0a35884e"
+      }
+    ],
+    "failureScope": "Initial isolated search path lacked Client import; second elaboration exceeded an explicitly too-small1GiB Lean memory cap. Corrected dependency path and prospectively4GiB bound passed; failed outputs retained. First fixture had a Lean observation syntax error; corrected fixture ran separately.",
+    "inputs": {
+      "Lemma/School/Submission.lean": "f13494e15ed6e60629114f168c5254d3eac8451e0effd067cf56e8f34ba40f2b",
+      "tests/school/SubmissionCapacity.lean": "b0427d46b3328bd3f454820b976bf80e0a2dfbed68b543efd25fbd3224d6cee8",
+      "tests/school/test_submission_capacity.py": "a204bfb332861d4169d321f2ca10dd176cc4ee8fb7a7771c467d54f5cc5d56d1"
+    },
+    "targetComponentCrossLink": {
+      "path": "build/courses/task009-submission-v2-source-a2/v2-component-result.json",
+      "sha256": "dd2613bdb3a9e9a1fe73c0e6c243d68696f326d25719c493600564b8cf3c40dc",
+      "index": "docs/evidence/009-course-queue.json",
+      "boundary": "Separate source-bound target Action+Store guard component result; actual native/browser machine execution is not implied. Exact wall elapsed not captured and not claimed."
+    }
   }
 }
