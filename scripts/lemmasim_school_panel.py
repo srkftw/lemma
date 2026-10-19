@@ -522,7 +522,7 @@ class Panel:
         from tkinter.scrolledtext import ScrolledText
         window=self.tk.Toplevel(self.window);window.title("Human review · "+attempt);window.geometry("1050x850")
         prompt=ScrolledText(window,height=15,wrap="word");prompt.pack(fill="both",expand=True,padx=10,pady=8)
-        context={key:result[key] for key in ("attempt","prompt","rubric","anchors","assistance","assessments")}
+        context={key:result[key] for key in ("attempt","prompt","rubric","sources","anchors","publication","assistance","assessments")}
         prompt.insert("end",json.dumps(context,indent=2,ensure_ascii=False));prompt.configure(state="disabled")
         preview=result.get('inkPreview')
         if preview:

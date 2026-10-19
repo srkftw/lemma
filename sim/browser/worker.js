@@ -3,7 +3,7 @@ import createMachine from './machine.mjs';
 import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState} from './guest_records.js';
 import {courseInstallFrame,courseInstallRows,courseSchoolFrames} from './course_transport.js';
 import {RunBudget,uint64} from './run_budget.js';
-import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission} from './school_transport.js';
+import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission,guestSchoolCapability,guestSchoolQueueState} from './school_transport.js';
 const school=new SchoolTransport();let schoolMachineEpoch=0;
 let core, handle, bootHandle, running=false, loaded=false, manifest, panelSequence='-1';
 let activeMediumName=null;
@@ -36,7 +36,7 @@ const hash=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-25
 // bounded geometry, byte lengths and run quanta, never clocks or addresses.
 function state(){return JSON.parse(core.ccall('lemma_inspect','string',[],[]).replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));}
 function check(name,types=[],args=[]){if(core.ccall(name,'number',types,args))throw Error(core.ccall('lemma_error','string',[],[]));}
-function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourse:guestCourseInstallState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
+function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourse:guestCourseInstallState(core.FS.readFile('/uart.bin'),guestOutputStart),guestQueue:guestSchoolQueueState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
  pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-timing.started)/1000,
  simulationCallSeconds:timing.runSeconds,backingCallSeconds:timing.backingSeconds,backingCallSecondsDuringRun:timing.backingRunSeconds,
  simulationOutsideBackingSeconds:Math.max(0,timing.runSeconds-timing.backingRunSeconds)}});return s;}
@@ -241,7 +241,7 @@ async function schoolActivity(message){
   if(busy)throw Error('Machine storage is busy; retry this school activity');
   const wasRunning=running,transaction=(BigInt(crypto.getRandomValues(new Uint32Array(1))[0])+1n).toString();
   if(result.ack_bytes){pause('school-ack');for(const row of courseInstallRows(result.ack_bytes,state().cycle))admitRaw(row,false);sendState();}
-  else admitCourseInstall({bytes:schoolPackage(result),transaction,schoolSelect:guestRecord(core.FS.readFile('/uart.bin'),guestOutputStart,'0000000000000731'),node:result.node??0});
+  else admitCourseInstall({bytes:schoolPackage(result),transaction,schoolSelect:guestSchoolCapability(core.FS.readFile('/uart.bin'),guestOutputStart)!==null,node:result.node??0});
   if(wasRunning){running=true;pauseReason=null;scheduleStep();}
   if(result.decision)await school.command({op:'delivery',decision:result.decision,stage:'transport-admitted',receipt:{transport:'lemma-school-browser-service/1',transaction}});
  }

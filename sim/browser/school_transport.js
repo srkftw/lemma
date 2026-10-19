@@ -1,6 +1,28 @@
 // SPDX-License-Identifier: Apache-2.0
 // Network bytes and complete guest ASK observations only. Lean owns admission,
 // publication, assistance policy, assessment and every durable transition.
+export function guestSchoolCapability(bytes,start=0){
+ if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length)throw Error('Invalid guest capability observation');
+ let capability=null;
+ for(const row of new TextDecoder().decode(bytes.subarray(start)).matchAll(/(?:^|\n)K1 0000000000000731 ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)/g)){
+  const [version,chunks,bytes,selection]=row.slice(1).map(x=>BigInt('0x'+x));
+  if(!((version===1n&&chunks===8n)||(version===2n&&chunks===512n))||bytes!==262144n||selection!==2n)throw Error('Unsupported guest school capability tuple');
+  capability={version:Number(version),maximumChunks:Number(chunks),maximumBytes:Number(bytes),selection:Number(selection)};
+ }
+ return capability;
+}
+export function guestSchoolQueueState(bytes,start=0){
+ if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length)throw Error('Invalid guest queue observation');
+ let state=null;
+ for(const row of new TextDecoder().decode(bytes.subarray(start)).matchAll(/(?:^|\n)K1 (000000000000072e|000000000000073[234]) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)/g)){
+  const [tag,a,b,c,d]=row.slice(1).map(x=>BigInt('0x'+x));
+  if(tag===0x732n)state={state:'failed',code:String(a),authority:'compiled-guest-report'};
+  else if(tag===0x72en)state={state:'pending',queue:String(a),localQueueCommit:String(b),bytes:String(c),authority:'compiled-guest-report'};
+  else if((d===2n&&b===0n)||(d===3n&&b>0n))state={state:d===2n?'cancelled':'acknowledged',queue:String(a),schoolCommit:String(b),observedFrontier:String(c),observation:tag===0x733n?'new-pointer-commit':'restored-pointer-read',authority:'compiled-guest-report'};
+  else throw Error('Malformed terminal guest queue report');
+ }
+ return state;
+}
 export function guestSchoolAsk(bytes,start=0){
  if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length)throw Error('Invalid guest observation boundary');
  const rows=new TextDecoder().decode(bytes.subarray(start)).matchAll(/(?:^|\n)K1 ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)/g);

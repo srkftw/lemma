@@ -23,6 +23,16 @@ from lemmasim_tutor import ask_context, uart_path
 from lemmasim_course import frame,selection_frame
 
 
+def school_capability(data):
+    result=None
+    for row in re.finditer(rb'(?:^|\n)K1 0000000000000731 ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)',data):
+        version,chunks,size,selection=(int(x,16) for x in row.groups())
+        if (version,chunks) not in ((1,8),(2,512)) or size!=262144 or selection!=2:
+            raise ValueError('unsupported guest school capability tuple')
+        result={'version':version,'maximumChunks':chunks,'maximumBytes':size,'selection':selection}
+    return result
+
+
 def submission_stream(data):
     """Copy one complete committed guest byte stream; never interpret its work."""
     if not isinstance(data,bytes) or len(data)>16*1048576:
@@ -112,10 +122,17 @@ class SchoolService:
         if operation=='observation':
             metadata=json.loads((self.session.directory/'session.json').read_text())
             data=uart_path(self.session.directory,metadata).read_bytes()
-            records={}
-            for row in re.finditer(rb'(?:^|\n)K1 (000000000000(?:04b1|04b9|0727|0732)) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)',data):
+            records={};queue=None
+            for row in re.finditer(rb'(?:^|\n)K1 (000000000000(?:04b1|04b9|0727|072e|0732|0733|0734)) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)',data):
                 key,*words=(int(x,16) for x in row.groups());records[hex(key)]=words
-            return {'authority':'complete compiled-guest console records','records':records}
+                if key==0x72e:queue={'state':'pending','queue':str(words[0]),'localQueueCommit':str(words[1]),'bytes':words[2]}
+                elif key==0x732:queue={'state':'failed','code':words[0]}
+                elif key in (0x733,0x734):
+                    a,b,c,d=words
+                    if not ((d==2 and b==0) or (d==3 and b>0)):raise ValueError('malformed terminal guest queue report')
+                    queue={'state':'cancelled' if d==2 else 'acknowledged','queue':str(a),'schoolCommit':str(b),'observedFrontier':str(c),
+                           'observation':'new-pointer-commit' if key==0x733 else 'restored-pointer-read'}
+            return {'authority':'complete compiled-guest console records','records':records,'outgoingQueue':queue,'capability':school_capability(data)}
         if operation=='poll':
             self.pump();job=self.jobs.get(value.get('id'))
             if job is None:raise ValueError('school request absent')
@@ -205,8 +222,7 @@ class SchoolService:
         transaction=uuid.uuid4().int%(2**63-2)+1
         packet=frame(1,identity,edition,len(payload),transaction,crc)+payload
         # Only the versioned guest advertises the v2 selected-publication path.
-        if re.search(rb'(?:^|\n)K1 0000000000000731 0000000000000001 [0-9a-f]{16} [0-9a-f]{16} 0000000000000002\r?\n',
-                     uart_path(self.session.directory,json.loads((self.session.directory/'session.json').read_text())).read_bytes()):
+        if school_capability(uart_path(self.session.directory,json.loads((self.session.directory/'session.json').read_text())).read_bytes()) is not None:
             packet+=selection_frame(identity,edition,transaction+1,crc,result.get('node',0))
         session=self.session;session.ensure_capture_certain()
         state=session.machine.call('inspect');cycle=state['cycle']

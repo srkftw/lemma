@@ -52,7 +52,10 @@ async function initializeGPU(){if(!navigator.gpu)return;
  target.configure({device:candidate,format,alphaMode:'opaque'});if(lost)return;
  cancelContact();canvas.replaceWith(next);canvas=next;context=null;device=candidate;pipeline=prepared;gpu=target;bindPointer();if(lastPlane)present(lastPlane);
 }
-function send(action,rest={},transfer=[]){worker.postMessage({action,...rest},transfer);}
+function send(action,rest={},transfer=[]){
+ if(action==='close'||action==='reset'||action==='restore')document.querySelector('#school-credential').value='';
+ worker.postMessage({action,...rest},transfer);
+}
 function download(name,bytes){const u=URL.createObjectURL(new Blob([bytes])),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 document.querySelector('#open').onclick=()=>{beginSelection();send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,paused:document.querySelector('#open-paused').checked});};
 document.querySelector('#initialize').onclick=()=>{beginSelection();send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,initialize:true,paused:document.querySelector('#open-paused').checked});};
@@ -155,7 +158,7 @@ worker.onmessage=({data:m})=>{
    for(const review of m.result.reviews){const option=document.createElement('option');option.value=review.id;option.textContent=review.courseTitle+' · '+review.title+' · '+review.course+'/'+review.edition;list.append(option);}}
  }
  if(m.type==='error'){stopPcm('Machine bridge error.');status.textContent=m.error;}
- if(m.type==='closed'){stopPcm('Machine closed.');beginSelection();selectionMachineName=null;displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
+ if(m.type==='closed'){document.querySelector('#school-installation').textContent='No running guest.';document.querySelector('#school-outgoing').textContent='No running guest.';document.querySelector('#school-status').textContent='School disconnected. Saved local work remains in the medium.';stopPcm('Machine closed.');beginSelection();selectionMachineName=null;displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
  if(m.type==='course-admission')document.querySelector('#course-admission').textContent=m.error?`Admitted ${m.accepted} of ${m.total} raw events; rejected remainder: ${m.error}. The accepted prefix remains queued. Close and cold-open backing before retrying.`:`Admitted ${m.bytes} package bytes to the guest. See the guest installation result below.`;
  if(m.type==='raw-admission')document.querySelector('#raw-result').textContent=m.error?`Accepted ${m.accepted} of ${m.total} events; rejected remainder: ${m.error}`:`Admitted ${m.accepted} raw events.`;
@@ -163,6 +166,8 @@ worker.onmessage=({data:m})=>{
   const course=m.guestCourse??null;
   document.querySelector('#course-result').textContent=course===null?'No installation result observed in this guest launch.':course.state==='installed'?`Guest reports installed package ${course.identity}, edition ${course.edition}, durable sequence ${course.sequence}.`:`Guest reports installation failure (${course.status}) for package ${course.identity}, edition ${course.edition}.`;
   document.querySelector('#school-installation').textContent=document.querySelector('#course-result').textContent;
+  const queue=m.guestQueue;
+  document.querySelector('#school-outgoing').textContent=queue===undefined||queue===null?'No committed outgoing work observed in this launch.':queue.state==='failed'?`Guest outgoing queue failed (${queue.code}); saved paper remains available.`:queue.state==='pending'?`Guest committed outgoing work ${queue.queue}; awaiting school acknowledgement.`:`Guest reports outgoing work ${queue.queue} ${queue.state}${queue.observation==='restored-pointer-read'?' after cold recovery':''}.`;
   const backing=m.backingMedium;
   if(backing&&typeof backing.name==='string'){
    if(backing.name!==selectionMachineName){beginSelection();selectionMachineName=backing.name;}

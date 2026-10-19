@@ -6136,7 +6136,7 @@ private def schoolSend : Action :=
   .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
   .boundedFoldU64 32 schoolHeaderClear 32 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
   .bind (schoolHeaderPut 0 Lemma.Courses.SchoolSubmission.magic) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (schoolHeaderPut 8 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 8 Lemma.Courses.SchoolSubmission.version) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (schoolHeaderPut 32 frontier) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (schoolHeaderPut 40 ns) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (schoolHeaderPut 48 page) fun s _ => if statusFailed s = true then .done s 0 else
@@ -6556,7 +6556,8 @@ private def mainMultimodalConfigured (bootArgument school : UInt64) : Action :=
   .bind multimodalBar fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
-  .bind (if school = 1 then CapabilityConsole.record console 0x731 1 8 262144 2 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if school = 1 then CapabilityConsole.record console 0x731 Lemma.Courses.SchoolSubmission.version
+    Lemma.Courses.SchoolSubmission.maximumChunks Lemma.Courses.SchoolSubmission.maximumBytes 2 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
   if statusFailed s = true then .done s 0 else .loop multimodalStep
 

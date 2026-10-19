@@ -8,7 +8,7 @@ import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState} fro
 import {courseInstallFrame,courseSchoolFrames} from './course_transport.js';
 import {RunBudget,uint64} from './run_budget.js';
 import {PcmEgress} from './pcm_egress.mjs';
-import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission} from './school_transport.js';
+import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission,guestSchoolCapability,guestSchoolQueueState} from './school_transport.js';
 const school=new SchoolTransport();let schoolMachineEpoch=0;
 const contract='lemma-browser-session-modes/2';
 const ordinary=new Set(['open','import','pause','resume','pen','button','reset','export','export-panel','close','school']);
@@ -44,7 +44,7 @@ async function inspect(full=false){
 }
 async function sendState(state){
  if(state===undefined)state=await inspect();
- postMessage({type:'state',state,mode,modeContract:contract,running,guestObservation:'boot',guestCommit:guestCommitState(uart(),guestStart),guestCourse:guestCourseInstallState(uart(),guestStart),backingMedium:{name:mediumName,private:false,ready:true},backingMetrics:backing.metrics,controlMetrics:control.metrics,pcmEgress:egress.inspect(),heapBytes,readyAt,hostSeconds:(performance.now()-started)/1000,pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-started)/1000,simulationCallSeconds:timing.runSeconds,backingCallSeconds:0,backingCallSecondsDuringRun:0,backingTimingAvailable:false}});
+ postMessage({type:'state',state,mode,modeContract:contract,running,guestObservation:'boot',guestCommit:guestCommitState(uart(),guestStart),guestCourse:guestCourseInstallState(uart(),guestStart),guestQueue:guestSchoolQueueState(uart(),guestStart),backingMedium:{name:mediumName,private:false,ready:true},backingMetrics:backing.metrics,controlMetrics:control.metrics,pcmEgress:egress.inspect(),heapBytes,readyAt,hostSeconds:(performance.now()-started)/1000,pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-started)/1000,simulationCallSeconds:timing.runSeconds,backingCallSeconds:0,backingCallSecondsDuringRun:0,backingTimingAvailable:false}});
 }
 async function panel(force=false,observation=null){
  if(!force){observation??=await inspect();if(panelSequence===observation.panel_completed)return;}
@@ -129,7 +129,7 @@ async function schoolActivity(message){
   if(result.package_hex!==undefined||result.ack_bytes!==undefined){
    if(coursePartial)throw Error('Cold-open before retrying partial course input');
    const wasRunning=running;pause('school-input');await stopped();
-   const transaction=(BigInt(crypto.getRandomValues(new Uint32Array(1))[0])+1n).toString(),frame=result.ack_bytes??courseSchoolFrames(schoolPackage(result),transaction,guestRecord(uart(),guestStart,'0000000000000731'),result.node??0),clock=await control.request('lemma-clock'),base=(BigInt(clock.virtual_ns)+9n)/10n*10n;
+   const transaction=(BigInt(crypto.getRandomValues(new Uint32Array(1))[0])+1n).toString(),frame=result.ack_bytes??courseSchoolFrames(schoolPackage(result),transaction,guestSchoolCapability(uart(),guestStart)!==null,result.node??0),clock=await control.request('lemma-clock'),base=(BigInt(clock.virtual_ns)+9n)/10n*10n;
    let accepted=0;
    // Reduced10KB/s serial input has one actual arrival per100us.
    // The additive queue API batches admission without making FIFO bursts.

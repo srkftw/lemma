@@ -8,7 +8,7 @@ import sys
 import unittest
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
-from lemmasim_school_service import submission_stream
+from lemmasim_school_service import submission_stream,school_capability
 
 QUEUE=0x5351000000000011
 
@@ -23,6 +23,26 @@ def fixture():
     return payload,records
 
 class SchoolByteTransport(unittest.TestCase):
+    def test_versioned_capability_and_actual_receipt_scope(self):
+        for version,chunks in ((1,8),(2,512)):
+            self.assertEqual(school_capability(row(0x731,version,chunks,262144,2))['maximumChunks'],chunks)
+        for version,chunks in ((3,512),(1,512),(2,513)):
+            with self.assertRaises(ValueError):school_capability(row(0x731,version,chunks,262144,2))
+        script=r"""
+import fs from 'node:fs/promises';import assert from 'node:assert/strict';
+const source=await fs.readFile('sim/browser/school_transport.js','utf8');
+const {guestSchoolCapability,guestSchoolQueueState}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const bytes=Uint8Array.from(Buffer.from(process.argv[1],'hex'));
+assert.deepEqual(guestSchoolCapability(bytes),{version:2,maximumChunks:512,maximumBytes:262144,selection:2});
+const queue=guestSchoolQueueState(bytes);assert.equal(queue.state,'acknowledged');assert.equal(queue.queue,process.argv[2]);
+assert.equal(queue.observation,'restored-pointer-read');assert.equal(queue.observedFrontier,'99');
+assert.equal(guestSchoolQueueState(bytes,bytes.length),null);
+assert.throws(()=>guestSchoolCapability(Uint8Array.from(Buffer.from(process.argv[3],'hex'))));
+"""
+        data=row(0x731,2,512,262144,2)+row(0x72e,QUEUE,23,4320,2)+row(0x733,QUEUE,71,31,3)+row(0x734,QUEUE,71,99,3)
+        result=subprocess.run(['node','--input-type=module','-e',script,data.hex(),str(QUEUE),row(0x731,1,512,262144,2).hex()],cwd=ROOT,capture_output=True,text=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+
     def test_full_width_identity_and_odd_word_boundary(self):
         payload,records=fixture();result=submission_stream(b''.join(records))
         self.assertEqual(result['queue'],QUEUE);self.assertEqual(result['commit'],23)
