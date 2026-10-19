@@ -309,7 +309,7 @@ def admit (state : Lemma.School.State) (actor : String) (envelope : Envelope)
   let activity ← (unit.activities.find? (fun activity => activity.node+1 == envelope.node)).toExcept "guest selected node is not a published activity"
   let goal := match activity.goal with | .fractionAddition => 1 | .binomialSquare => 2 | .unsupported => 3
   require ((envelope.workKind == 1 && goal != 3 && envelope.goal == goal) ||
-    (envelope.workKind == 2 && goal == 3)) "guest work kind/goal differs from original activity"
+    (envelope.workKind == 2)) "guest work kind/goal differs from original activity"
   let outcomes := Lemma.Documents.Mathematics.result envelope.goal.toUInt64
     envelope.values[0]!.toUInt64 envelope.values[1]!.toUInt64 envelope.values[2]!.toUInt64
     envelope.values[3]!.toUInt64 envelope.values[4]!.toUInt64 envelope.budget.toUInt64

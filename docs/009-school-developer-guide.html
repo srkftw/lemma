@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Develop school activities and bounded tutor models</title><body>
+<h1>Develop school activities and bounded tutor models</h1>
+<p><code>./scripts/lemma-school</code> is the maintained entry point. It enters the pinned development environment. Hosted Lean validates school semantics; the host tool only runs commands, preserves inputs and sends bounded requests. Develop, Teach and Operate are scoped activities. An actor name in the operator-local command is not a multi-user credential; learners use the separate protected admission path.</p>
+<h2>Build a useful Lean activity</h2>
+<p><a href="../examples/school/ConsecutiveSquares.lean">ConsecutiveSquares.lean</a> proves the successor-square expansion and difference, decodes the source-grounded <a href="../examples/school/consecutive-squares-unit.json">803/1 unit</a>, and calls the same <code>Authoring.validate</code>, <code>preview</code> and package compiler as teacher editing. The theorem is a reference; it does not interpret or verify handwriting.</p>
+<pre>./scripts/lemma-school develop build --output-dir build/school/my-803-1</pre>
+<p>The build elaborates the actual Lean source, compares its semantic preview with the explicit Unit JSON, and compiles <code>package.lcp</code>. It preserves the original definition, preview, consumed source closure, tool identities and exact command results. An existing output directory is refused so old editions survive. Lake reuses unchanged imported dependencies; the example elaboration and previews run freshly. This production result does not establish guest rendering.</p>
+<p>Edit a useful activity, its assistance rule or review policy in the shared Unit, and its real Lean reference where appropriate. Increment the course edition, update the edition/source anchors and preserve original rights. Keep the JSON named in <code>include_str</code> beside the example source. A copy elsewhere inside this checkout can be built explicitly:</p>
+<pre>./scripts/lemma-school develop build \
+  --lean path/to/ConsecutiveSquares.lean --unit path/to/consecutive-squares-unit.json \
+  --output-dir build/school/my-803-2
+./scripts/lemma-school develop publish --build-dir build/school/my-803-2 \
+  --root build/my-school --school my-school --actor operator --policy 1 \
+  --enroll learner-one --enroll learner-two</pre>
+<p>The authority recompiles and validates the definition before immutable publication and separately authorizes enrollment. A running owner-local authority receives the same command through its one local transport; an offline authority uses its process mutex. The learner selects the exact new title/identity/edition in the ordinary course catalogue and installs it through the guest package path. Use the actual native/browser guest to preview reading, ink, checking and Save. A JSON preview or package digest alone is not that preview. Earlier editions, attempts and policy versions remain unchanged.</p>
+<h2>Read actual capability and schema errors</h2>
+<pre>./scripts/lemma-school develop check --lean examples/core0/Positive.lean
+./scripts/lemma-school develop check --lean examples/core0/reject/HostedIO.lean</pre>
+<p>The second command deliberately fails with the actual Core0 <code>unsupported-type</code> diagnostic, declaration location and dependency path. Authoring rejects unknown fields with their exact JSON path rather than dropping them; malformed prerequisites, rights, anchors, rubric or checker references are rejected by shared Lean validation. A Lean preview that differs from the selected Unit is rejected with an instruction to emit <code>Authoring.preview</code> of that exact definition.</p>
+<p>The existing freestanding scalar extension path is also available through this entry point:</p>
+<pre>./scripts/lemma-school develop target-build --export-source examples/core0/Build.lean \
+  --output-dir build/my-rv64-extension --opt-level O2 --timeout 180</pre>
+<p>This delegates to the maintained genuine Lean frontend, Core0 restrictions, LLVM lowering, RV64 image builder and existing source/tool cache. Unsupported hosted IO, allocation, recursion, effects or primitive capabilities must receive the actual compiler diagnostic; this path supplies no foreign target-language escape. Its current scalar image profile is explicitly RV64IM with Zicsr/Zifencei, not RV64GC. Execute and audit a produced image using the existing developer machine route before claiming behavior. Runtime installation of arbitrary new services into an ordinary Student session remains a separate capability; curriculum publication is not the whole software SDK.</p>
+<h2>Train, evaluate, publish, select and roll back</h2>
+<p>The supported numerical consumer is a two-feature review-risk scorer with an authored/explainable baseline. A permitted dataset supplies explicit source, grant, independent label/transformation provenance, fixed disjoint group/record splits and the exact feature order. Each split has 1–4096 rows; training uses four-row batches, at most 100000 updates and bounded JSONL decoding. Missing independent assessment inputs retain the authored baseline. A supplied numerical configuration selects a positive immutable model version, finite learning rate in (0,0.25] and momentum in [0,0.95]. The actual Lean implementation, checkpoint state and Q10 parameter limits remain authoritative.</p>
+<pre>./scripts/lemma-school train --dataset DATASET_DIRECTORY --checkpoint CHECKPOINT.json \
+  --output-dir TRAINED_DIRECTORY --steps 32 --configuration examples/school/training-config.json
+./scripts/lemma-school evaluate --dataset DATASET_DIRECTORY --checkpoint CHECKPOINT.json \
+  --output-dir EVALUATION_DIRECTORY --configuration examples/school/training-config.json
+./scripts/lemma-school SCHOOL_ROOT publish-training --school SCHOOL --actor OPERATOR \
+  --directory TRAINED_DIRECTORY --dataset DATASET_DIRECTORY --checkpoint CHECKPOINT.json \
+  --configuration examples/school/training-config.json --rights 'EXPLICIT PERMITTED PROVENANCE'
+./scripts/lemma-school SCHOOL_ROOT models --school SCHOOL --actor OPERATOR
+./scripts/lemma-school SCHOOL_ROOT select-model --school SCHOOL --actor OPERATOR --version 9001
+./scripts/lemma-school SCHOOL_ROOT rollback-model --school SCHOOL --actor OPERATOR --version PREVIOUS_VERSION \
+  --reason 'Human-readable reason'</pre>
+<p>Training resumes its complete checkpoint; evaluate performs no optimizer update. Reusing a model version with changed parameters is rejected. Publication checks parameter bits against the checkpoint, dataset/split identity and declared artifact closure. Selection and rollback append school records. A committed inference job must still use the admitted unchanged-image RV64 worker and prepared independent learner context; publishing parameters alone is not inference. The retained Task009 worker workflow executes actual target scores and commits them under worker fencing. A held-out synthetic score is not demonstrated retention, transfer or learning benefit.</p>
+<p><code>./scripts/lemma-school training fixture NEW_DIRECTORY</code> creates the existing explicitly synthetic teaching fixture when a local example is useful. It is not a substitute for independently permitted school data. Hosted Float training, the bounded scorer, explanation delivery and human/exact assessment remain distinct. There is no general tensor compiler, resident large language model or provider-independent distributed training claim.</p>
+</body></html>

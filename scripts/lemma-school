@@ -2,6 +2,22 @@
 set -euo pipefail
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$repo_root"
+if [[ ${1:-} == develop || ${1:-} == train || ${1:-} == evaluate ]]; then
+  if [[ ${1:-} == develop ]]; then shift; fi
+  developer_output=$(mktemp "${TMPDIR:-/tmp}/lemma-school-output.XXXXXXXX")
+  trap 'rm -f "$developer_output"' EXIT
+  # The local budget wrapper may emit diagnostics before executing Nix. Keep
+  # them on stderr while preserving only the actual command's stdout bytes.
+  if nix develop --no-write-lock-file --command bash -c \
+      'output=$1; shift; exec python3 scripts/school_develop.py "$@" > "$output"' \
+      lemma-school "$developer_output" "$@" >&2; then
+    developer_status=0
+  else
+    developer_status=$?
+  fi
+  cat "$developer_output"
+  exit "$developer_status"
+fi
 if [[ ${1:-} == curriculum ]]; then
   shift
   exec nix develop --no-write-lock-file --command lake exe school-curriculum "$@"
@@ -14,7 +30,7 @@ if [[ ${1:-} == training ]]; then
   exec nix develop --no-write-lock-file --command lake env lean --run examples/school/Train.lean "$@"
 fi
 if [[ $# -lt 2 ]]; then
-  echo 'usage: lemma-school ROOT REQUEST_JSON | ROOT run | ROOT start/status/stop/backup/restore/fork --school ID --actor ID [options]' >&2
+  echo 'usage: lemma-school develop build/publish/check/target-build [options] | train/evaluate [options] | ROOT REQUEST_JSON | ROOT run | ROOT start/status/stop/backup/restore/fork --school ID --actor ID [options]' >&2
   exit 2
 fi
 nix develop --no-write-lock-file --command lake build school >&2

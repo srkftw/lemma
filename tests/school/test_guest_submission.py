@@ -96,6 +96,16 @@ class GuestSubmission(admission.Admission):
         self.client(token,'guest-submit',hex=artifact.hex(),error='revoked')
 
 
+    def test_unselected_exact_activity_retains_opaque_work_for_review(self):
+        self.enroll('alice')
+        token,artifact,_=self.fixture(kind=2,node=4)
+        receipt=self.client(token,'guest-submit',hex=artifact.hex())
+        self.assertEqual(receipt['outcome'],4)
+        attempt=self.client(token,'review-work',attempt=receipt['attempt'])['attempt']['data']
+        self.assertEqual(attempt['activity'],'coefficients')
+        self.assertEqual(attempt['guestEnvelope']['guestOutcome'],1)
+        self.assertIn('opaque',attempt['checkingScope'])
+
     def test_original_review_is_bound_before_capture_and_completed_by_human_response(self):
         self.enroll('alice')
         token,artifact,_=self.fixture(kind=2)

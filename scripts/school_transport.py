@@ -223,6 +223,20 @@ def main():
                 print(f"private pairing file: {args.to.resolve()} (token hash {token_digest})", file=sys.stderr)
             return emit_reply(reply)
         args.request = data.decode()
+    # Ordinary operator tooling uses structured JSON too. Route it through
+    # the single existing authority instead of racing its process mutex.
+    running = runtime(root)
+    if running and args.request not in {"serve", "run", "client-run"}:
+        if running.get("mode") == "client-run":
+            parser.exit(1, "protected-only transport has no operator endpoint; stop foreground process before local operation\n")
+        data = args.request.encode()
+        if len(data) > LIMIT:
+            parser.error("request byte limit exceeded")
+        try:
+            json.loads(data)
+        except ValueError:
+            parser.error("operator request must be JSON or a supported shortcut")
+        return emit_reply(post(running["port"], data))
     authority_status = 0
     with (root / "authority.lock").open("a+b") as lock:
         try:

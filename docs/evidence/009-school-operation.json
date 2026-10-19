@@ -217,5 +217,90 @@
     "filesystem/device barrier guarantees are declared assumptions; no measured host-crash or physical power-loss qualification",
     "full native/browser Student guest submission and delivery are separate root integration work",
     "single-host availability, resident language-model inference and educational benefit remain unqualified"
-  ]
+  ],
+  "guestSubmission": {
+    "scope": "Immutable guest envelope structural/admission checks in actual hosted Lean. RAM fixture executes maintained document/workspace/ink Actions; this is separate from target/native/browser guest execution.",
+    "production": {
+      "path": "build/school/host-task009-submission-a2/production.json",
+      "sha256": "32096d2ad4cc0b3f8bb544f6c70fd3d92b0b1a9c8b12bd2f45aa872b3478799e"
+    },
+    "contract": "docs/contracts/009-school-submission-v1.html",
+    "implementation": "Lemma/School/Submission.lean",
+    "tests": {
+      "result": "PASS",
+      "count": 4,
+      "elapsedSeconds": 22.616,
+      "observation": "Terminal unittest run; exact original guest-result/execution bytes, invisible raw ink/edit retention, changed-work same-queue conflict, original-commit retry, principal/enrollment/session revocation, opaque work on exact and written activities, JOIN-bound due review and distinct versioned human completion.",
+      "command": "nix develop --no-write-lock-file --command env LEMMA_SCHOOL_TEST_BINARY=build/school/host-task009-submission-a2/school LEMMA_SCHOOL_TEST_CURRICULUM=build/school/host-task009-submission-a2/school-curriculum python3 -m unittest discover -s tests/school -p test_guest_submission.py -v",
+      "testInputs": [
+        {
+          "path": "tests/school/SubmissionFixture.lean",
+          "sha256": "39612b11634265d32314655fff1658c6fe0bcbfa72bbf85e47b61fa2013b9f08"
+        },
+        {
+          "path": "tests/school/test_guest_submission.py",
+          "sha256": "edc18003c6d708d535d52948f90cf5597caf52b959561eb44ab0c6bf2c5f42d9"
+        }
+      ]
+    }
+  },
+  "developerWorkflow": {
+    "scope": "Actual maintained CLI and local running Lean authority; source-grounded Lean proof/example, shared validated package production, immutable publication803/1+803/2, two protected principal catalogues, configured model publication/select/rollback. Actual guest rendering/install/Save remain separate product evidence.",
+    "guide": "docs/009-school-developer-guide.html",
+    "build": {
+      "path": "build/school/developer-task009-revision-a2/build.json",
+      "sha256": "a3af4366ad3f7010350009427e7f4297c5274c5261f7010384f957ec5c1bbe64"
+    },
+    "package": {
+      "path": "build/school/developer-task009-revision-a2/package.lcp",
+      "sha256": "0fc39afd5d4b0351fc2a59272673d800ad8e7ffe4dd31014380ff484720eb42f"
+    },
+    "workflow": {
+      "path": "build/school/developer-task009-workflow-a3/workflow.json",
+      "sha256": "4659a3af249ec6ffe03e3e5f6ace4943286e6ba677a89370a59a62f1ba88db3b"
+    },
+    "commands": {
+      "path": "build/school/developer-task009-workflow-a3/commands.json",
+      "sha256": "3ae6182fdbdd5355c22d27cea55101dab4a56a6d35b98636b3676a467f69d586"
+    },
+    "reproductionScript": {
+      "path": "build/school/developer-task009-workflow-a3/run.py",
+      "sha256": "16cde036b1b4d9b6f9b2033422ae252dd41ed5720a67f1c2e095d8f0addf82b6"
+    },
+    "elapsedSeconds": 36.8772060200572,
+    "freshReused": "Lake reused unchanged imported dependencies; actual Lean example elaboration and preview were fresh. First803/1 observation: dependency build0.1674189s and fresh example elaboration1.3201272s. The actual trained worker producers remain separately identified above; CLI execution does not relabel old inference as fresh.",
+    "trainingCli": {
+      "inputCheckpoint": {
+        "path": "build/school/training-task009-a1/configured-checkpoint.json",
+        "sha256": "0eb510433f0e9eb3142bc80052c91a9af943d3c24c5da4bf4c2b0854b8022f2a"
+      },
+      "resumedCheckpoint": {
+        "path": "build/school/developer-task009-training/checkpoint.json",
+        "sha256": "c4d1fb619bdee898f225d19bc943d4434168e859069abdc4a1b7ddc3381b8691"
+      },
+      "evaluation": {
+        "path": "build/school/developer-task009-training/evaluation/evaluation.json",
+        "sha256": "39e8f3b91968e2b7772d5b2f9bcb8e2564303bf37bbd9248a530ea9cafd080c3"
+      },
+      "steps": "Actual configured hosted Lean resume32 to34; separate evaluation performed no optimizer update.",
+      "measured": "Held-out synthetic MSE0.006622, quantized MSE0.006571, constant baseline MSE0.017031; no educational benefit claim.",
+      "scope": "School-local model9001 at step34 is distinct from the earlier independent worker workflow model9001 at step32. No fresh target execution of the CLI34-step artifact is claimed."
+    },
+    "failures": [
+      {
+        "path": "build/school/developer-task009-workflow-a1",
+        "observation": "Publication succeeded but observer JSON decoding rejected the environment Nix-budget ADMIT prefix on stdout; owned authority stopped. New CLI routes preserve wrapper diagnostics on stderr and actual command output separately."
+      },
+      {
+        "path": "build/school/developer-task009-workflow-a2",
+        "observation": "Port preflight EADDRINUSE; no authority launched; successor used separate owned ports8828/8829."
+      }
+    ],
+    "diagnosticObservation": "Actual Core0 HostedIO source rejected with unsupported-type and declaration/dependency path. Original direct-FD3 output redirection was rejected because the Nix wrapper closes inherited descriptors; corrected with a private owned temporary output file and normal cleanup.",
+    "schemaDiagnostic": {
+      "result": "REJECTED_AS_EXPECTED",
+      "path": "build/school/developer-task009-schema-rejection-a1/build.json",
+      "observation": "Actual shared Lean decoder rejected unit.unknownEditorConstruct rather than dropping unrepresented content."
+    }
+  }
 }
