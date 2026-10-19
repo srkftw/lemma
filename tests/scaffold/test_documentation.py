@@ -76,6 +76,29 @@ class ConsumedContractTests(unittest.TestCase):
         with patch.object(Path, 'is_file', lambda path: False if path == ROOT / name else original(path)):
             with self.assertRaisesRegex(build_kernel.Core0Error, 'Missing required current contract'):
                 build_kernel.source_inputs(ROOT)
+    def test_new_registry_requires_its_actual_contract(self):
+        from unittest.mock import patch
+        import build_kernel
+        original = Path.is_file
+        for name, message in (("docs/contracts/009-core0-kernel-v0.10.html", "Missing required Integrated15 dependency"),
+                              ("docs/contracts/009-school-submission-v2.html", "Missing School dependency")):
+            with self.subTest(contract=name), patch.object(Path, 'is_file', lambda path: False if path == ROOT / name else original(path)):
+                with self.assertRaisesRegex(build_kernel.Core0Error, message):
+                    build_kernel.source_inputs(ROOT)
+        # A retained v1 registry consumes its original contract; removing the
+        # current v2 contract cannot silently retarget that archived cohort.
+        registry = ROOT / 'scripts/school_deployment.py'
+        original_read = Path.read_text
+        legacy_registry = registry.read_text().replace('lemma-school-notebook-deployment/2',
+                                                     'lemma-school-notebook-deployment/1')
+        def read_legacy(path, *args, **kwargs):
+            return legacy_registry if path == registry else original_read(path, *args, **kwargs)
+        with patch.object(Path, 'read_text', read_legacy):
+            self.assertIn('docs/contracts/009-school-submission-v1.html', build_kernel.source_inputs(ROOT))
+            missing = ROOT / 'docs/contracts/009-school-submission-v1.html'
+            with patch.object(Path, 'is_file', lambda path: False if path == missing else original(path)):
+                with self.assertRaisesRegex(build_kernel.Core0Error, 'Missing School dependency'):
+                    build_kernel.source_inputs(ROOT)
     def test_historical_archive_paths_remain_original(self):
         from unittest.mock import patch
         import build_kernel
@@ -84,7 +107,7 @@ class ConsumedContractTests(unittest.TestCase):
             if path == ROOT / 'docs/document-map.json' or path == ROOT / 'docs/contributor-guide.html': return False
             # The preserved historical layout also predates the new deployment
             # and its mandatory current HTML/specification dependency closure.
-            if path == ROOT / 'scripts/multimodal_deployment.py': return False
+            if path in (ROOT / 'scripts/multimodal_deployment.py', ROOT / 'scripts/integrated_deployment.py', ROOT / 'scripts/school_deployment.py'): return False
             if str(path).endswith('.html') and 'docs/contracts/' in str(path): return False
             if str(path).endswith('.md') and 'docs/contracts/' in str(path): return True
             return original(path)
