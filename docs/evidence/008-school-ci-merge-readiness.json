@@ -1,0 +1,195 @@
+{
+  "schema": "lemma-school-ci-merge-readiness/v1",
+  "result": "PASS_LOCAL_POLICY_CHECKS",
+  "sourceCommitBeforeRepair": "5f058cf941d604f9d9494581fbb04715122e9cca",
+  "sourceScope": "Exact workflow/test hashes below identify the uncommitted CI repair; all Lean application/numerical/target and client observer sources remain unchanged.",
+  "sourceInputs": {
+    ".github/workflows/core0.yml": "717eae8b9425044e5be85e9bd2ab64837c41fd7c9ca020402b2f165f3b1f4b7c",
+    ".github/workflows/preflight.yml": "54db10d0217ff098010f3e2b30d28489b305d8f5cf170fe261243a87e61a1890",
+    "tests/foundation/test_ci_workflow.py": "d5148c9270b427a53495fadb89f55b765eac8b5ead6d288defe97ff39fe99d33",
+    "scripts/verification_routes.json": "30010094a0db5b65cdf1b1dbee294134dd20c640038aa8316271c6a78d3e60a9"
+  },
+  "checks": [
+    {
+      "command": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/foundation",
+        "-v"
+      ],
+      "result": "PASS",
+      "tests": 485,
+      "skipped": 0,
+      "testSeconds": 38.594,
+      "wallSeconds": 41.168,
+      "rawLog": {
+        "path": "build/school/merge-foundation-host-a1.log",
+        "sha256": "c9f7ef21f82e7144559adda5e2f66ed4235ab2edf569a541cdb55ffb5a077f9a"
+      }
+    },
+    {
+      "command": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "env",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/foundation",
+        "-p",
+        "test_ci_workflow.py",
+        "-v"
+      ],
+      "result": "PASS",
+      "tests": 19,
+      "seconds": 0.063,
+      "rawLog": null,
+      "outputScope": "Actual subagent tool transcript; no filesystem log was produced. All 19 focused workflow cases also occur in the retained complete foundation log."
+    },
+    {
+      "command": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "env",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/ci",
+        "-v"
+      ],
+      "result": "PASS",
+      "tests": 20,
+      "seconds": 0.743,
+      "rawLog": null,
+      "outputScope": "Actual subagent tool transcript; no filesystem log was produced. All 19 focused workflow cases also occur in the retained complete foundation log."
+    },
+    {
+      "command": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "env",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/scaffold",
+        "-v"
+      ],
+      "result": "PASS",
+      "tests": 31,
+      "seconds": 9.115,
+      "rawLog": null,
+      "outputScope": "Actual subagent tool transcript; no filesystem log was produced. All 19 focused workflow cases also occur in the retained complete foundation log."
+    },
+    {
+      "command": [
+        "/nix/store/bwxcfsghzk4hyynxgl3lvjgmcnkc7qhf-actionlint-1.7.12/bin/actionlint",
+        ".github/workflows/core0.yml",
+        ".github/workflows/preflight.yml"
+      ],
+      "result": "PASS",
+      "version": "1.7.12",
+      "rawLog": null,
+      "outputScope": "Actual successful empty tool output; version separately observed."
+    },
+    {
+      "command": "Python stdin driver extracts each run: | block from both workflows, then invokes bash -n on each exact block and rejects any nonzero result",
+      "result": "PASS",
+      "blocks": 49,
+      "rawLog": null,
+      "outputScope": "Actual subagent tool transcript; syntax only, no CI execution claim."
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check_scaffold.py"
+      ],
+      "result": "PASS",
+      "rawLog": {
+        "path": "build/school/merge-scaffold-metadata-a1.log",
+        "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+      },
+      "scope": "current final documentation/metadata after new receipt and guide links"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/cache",
+        "-v"
+      ],
+      "result": "PASS",
+      "tests": 87,
+      "seconds": 13.033,
+      "rawLog": {
+        "path": "build/school/merge-cache-host-a1.log",
+        "sha256": "290407578ea3a180a20d1ae3aaf0a0772722bf6f2a74a8ce8f1bfa437e185d36"
+      },
+      "scope": "current verification routing and cache/status helpers"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "result": "PASS",
+      "rawLog": null
+    }
+  ],
+  "retainedOriginalLocalValidation": {
+    "path": "docs/evidence/008-school-ci.json",
+    "sha256": "1ed13cbfb8533eff2dd9634d3a9e4949c721638925ca237a9726935b7cde1efd"
+  },
+  "originalRemoteFailure": {
+    "head": "5f058cf941d604f9d9494581fbb04715122e9cca",
+    "runId": 39229237394,
+    "jobId": 117982903104,
+    "url": "https://github.com/srkftw/lemma/actions/runs/39229237394/job/117982903104",
+    "conclusion": "failure",
+    "suiteTests": 485,
+    "failures": 2,
+    "errors": 1,
+    "causes": [
+      "exact metadata log expectation omitted school additions",
+      "variable school-worker O0/O2 tee paths rejected by strict static log parser",
+      "exact timeout list omitted the separate8-minute school-worker step"
+    ]
+  },
+  "repair": [
+    "explicit O0/O2 commands with literal retained build/execution paths",
+    "exact expected metadata/legacy log inventories and timeout list updated without relaxing parser/assertions",
+    "clean metadata job explicitly builds Lemma.Numerics.Linear with2-minute bound before existing3-minute training command; independent job has no shared olean assumptions",
+    "workflow policy test asserts numerical preparation precedes training; exact test file is routed to qualification review"
+  ],
+  "preserved": [
+    "eleven acceptance jobs and separate aggregate, prior commands, job timeouts and dependencies",
+    "pipefail, per-command bounds, exact source checkout, action pins and always-upload retention",
+    "all prior hosted/client/corpus/training/target receipts with their original provenance and failures"
+  ],
+  "remoteAcceptance": "Not claimed by this local report; merge requires all applicable checks on the corrected published head to complete successfully."
+}

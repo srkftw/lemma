@@ -33,9 +33,9 @@ private def same (proposal context po co : UInt64) : Action :=
   .bind (Memory.read64 (context+co)) fun s b => if s = 0 then
   if a = b then .done 0 0 else .done 0 12 else .done s 0 else .done s 0
 
-def validate (proposal context now : UInt64) : Action :=
+def validateVersion (proposal context now expectedVersion : UInt64) : Action :=
   .bind (Memory.read64 proposal) fun s v => if s = 0 then
-  if different (v) (version) = true then .done 0 13 else
+  if different (v) (expectedVersion) = true then .done 0 13 else
   .bind (Memory.read64 (proposal+8)) fun s session => if s = 0 then
   .bind (Memory.read64 (proposal+16)) fun s consent => if s = 0 then
   .bind (Memory.read64 (proposal+24)) fun s revision => if s = 0 then
@@ -81,6 +81,11 @@ def validate (proposal context now : UInt64) : Action :=
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0
+
+/-- Historical v2 semantics and reserved-zero fields remain unchanged. The
+school v3 envelope separately checks its appended binding after these fields. -/
+def validate (proposal context now : UInt64) : Action :=
+  validateVersion proposal context now version
 
 /-- A receipt reports digital samples, not audibility. Cancel cannot undo an
 already consumed prefix. Invalid sink claims are rejected rather than clamped. -/

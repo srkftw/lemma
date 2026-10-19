@@ -250,14 +250,14 @@ class WorkflowPolicyTests(unittest.TestCase):
             for action in re.findall(r"^\s+uses:\s+([^\s#]+)", source, re.M):
                 self.assertRegex(action, r"^[^@\s]+@[0-9a-f]{40}$")
 
-    def test_only_exact_host_receipt_and_aggregate_dependencies_are_allowed(self):
+    def test_only_exact_host_and_shard_receipts_and_aggregate_dependencies_are_allowed(self):
         jobs = section(self.full, "jobs")
         names = re.findall(r"^  ([a-z0-9-]+):$", jobs, re.M)
         required = {"lemmasim-writing-rv64", "metadata", "kernel-managed-rv64",
                     "kernel-services-rv64", "legacy-rv64", "foundation-rv64",
                     "kernel-rv64", "kernel-source-negatives-rv64",
                     "kernel-architecture-rv64", "silicon-devices-rtl", "crypto-rv64"}
-        self.assertEqual(set(names), required | {"acceptance-summary"})
+        self.assertEqual(set(names), required | {"kernel-rv64-shard", "acceptance-summary"})
         for name in names:
             job = section(jobs, name, 2)
             if name == "acceptance-summary":
@@ -271,11 +271,42 @@ class WorkflowPolicyTests(unittest.TestCase):
             self.assertIn("scripts/ci_source.py", job)
             self.assertIn("build/ci/source.json", job)
             if name == "kernel-rv64":
+                self.assertEqual(scalar(job, "needs", 4), "[metadata, kernel-rv64-shard]")
+                self.assertEqual(job.count("download-artifact@"), 3)
+                for optimization in ("O0", "O2"):
+                    self.assertIn("name: kernel-A-E-shard-" + optimization + "-${{ github.run_id }}-${{ github.run_attempt }}", job)
+                    self.assertIn("path: build/ci/kernel-shard-artifacts/" + optimization, job)
+                    self.assertIn("--collect-shard build/kernel/ci-prefix/shards/" + optimization + "/result.json", job)
+                    self.assertIn("--manifest build/ci/kernel-shard-artifacts/" + optimization + "/kernel-AE-shard-" + optimization + ".pack.json", job)
+                    self.assertIn("--destination build/kernel/ci-prefix/shards/" + optimization, job)
+                    self.assertIn("--receipt build/ci/kernel-AE-shard-" + optimization + ".extract.json", job)
+                self.assertEqual(job.count("--collect-shard "), 2)
+                self.assertEqual(job.count("python3 scripts/kernel_shard_artifact.py unpack"), 2)
+                self.assertEqual(job.count("timeout --foreground --signal=TERM --kill-after=30s 2m"), 2)
+                self.assertNotIn("pattern:", job)
+                self.assertNotIn("--clean", job)
+                self.assertIn("--source-event build/ci/source.json", job)
+                self.assertIn("revalidate_collected", job)
+                self.assertIn("validate_retained_row_result", job)
+                self.assertIn("name: kernel-host-prerequisite-${{ github.run_id }}-${{ github.run_attempt }}", job)
+                self.assertIn("path: build/ci/metadata/kernel-host-prerequisite", job)
+                self.assertIn("--host-prerequisite build/ci/metadata/kernel-host-prerequisite/receipt.json", job)
+            elif name == "kernel-rv64-shard":
                 self.assertEqual(scalar(job, "needs", 4), "metadata")
                 self.assertEqual(job.count("download-artifact@"), 1)
                 self.assertIn("name: kernel-host-prerequisite-${{ github.run_id }}-${{ github.run_attempt }}", job)
                 self.assertIn("path: build/ci/metadata/kernel-host-prerequisite", job)
                 self.assertIn("--host-prerequisite build/ci/metadata/kernel-host-prerequisite/receipt.json", job)
+                self.assertIn("optimization: [O0, O2]", job)
+                self.assertIn("fail-fast: false", job)
+                for required_fragment in ("--shard ${{ matrix.optimization }}", "--source-event build/ci/source.json",
+                                          "--clean", "--jobs 1", "--timeout 300", "--qemu-timeout 90", "--deadline 2400",
+                                          "python3 scripts/kernel_shard_artifact.py pack",
+                                          "timeout --foreground --signal=TERM --kill-after=30s 2m",
+                                          "--archive build/ci/kernel-AE-shard-${{ matrix.optimization }}.tar",
+                                          "--receipt build/ci/kernel-AE-shard-${{ matrix.optimization }}.pack.json",
+                                          "name: kernel-A-E-shard-${{ matrix.optimization }}-${{ github.run_id }}-${{ github.run_attempt }}"):
+                    self.assertIn(required_fragment, job)
             else:
                 self.assertNotRegex(job, re.compile(r"^    needs:", re.M))
                 self.assertNotIn("download-artifact@", job)

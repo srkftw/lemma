@@ -1,0 +1,626 @@
+{
+  "format": "lemma-school-unit/1",
+  "course": {
+    "identity": "802",
+    "edition": "1",
+    "title": "Distributivity and the cross terms in a square",
+    "sourceAnchor": "AoPS Introduction to Algebra2007, sections1.4 and11.1; catalogue095fa482 rows11,679,680; owner outline LS2",
+    "editionAnchor": "AoPS First Printing2007; authored unit802/1",
+    "rightsAnchor": "Original paraphrased instructional activities with source/page metadata. Textbook bytes are excluded; third-party rights and repository license remain separate and unresolved.",
+    "nodes": [
+      {
+        "kind": "explanation",
+        "title": "Prepare by counting the same rectangle twice",
+        "body": "Draw a rectangle with four rows and a vertical split into widths two and three. Count cells by combining widths, then by combining the two smaller rectangles. Explain why both counts agree.",
+        "exampleText": "4*(2+3)=4*2+4*3. Name the common factor and the two summands.",
+        "hint": "Keep the number of rows fixed while splitting the width.",
+        "sourceAnchor": "aops07:distribution-p13",
+        "logicalPrerequisites": [],
+        "worked": "",
+        "exercise": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": "worked",
+        "title": "Account for every product in a square",
+        "body": "Write a square as a product of two identical sums. Each first-factor term multiplies each second-factor term. Combine the two equal cross products only after writing both.",
+        "worked": "(t+3)*(t+3)=t*t+t*3+3*t+3*3=t*t+6*t+9. The two cross products have different positions in the product table.",
+        "hint": "Use a two by two table with t and 3 on both sides.",
+        "sourceAnchor": "aops07:worked-p306",
+        "logicalPrerequisites": [
+          0
+        ],
+        "exampleText": "",
+        "exercise": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "Reconstruct what the identity means",
+        "body": "A binomial has two terms. An identity states an equality throughout a specified domain. Reconstruct these meanings and explain why a few matching substitutions do not provide the requested symbolic justification.",
+        "exercise": "Define a binomial square identity over Q and describe the quantifier in your own words.",
+        "hint": "Separate the names of the expressions from the claim that relates them for every input.",
+        "sourceAnchor": "aops07:identity-p307",
+        "logicalPrerequisites": [
+          0
+        ],
+        "exampleText": "",
+        "worked": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "binomialSquare"
+          }
+        },
+        "title": "Submit the exact coefficients",
+        "body": "Apply the four-product argument to the installed goal (x+1)*(x+1) over Q[x]. Enter constant, linear and quadratic coefficients. The exact checker supports this fixed goal, including invalid alternatives.",
+        "exercise": "Submit C0+C1*x+C2*x*x equal to (x+1)*(x+1).",
+        "hint": "Write all four products; compare how many contribute a term of degree one.",
+        "sourceAnchor": "aops07:identity-p307",
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "exampleText": "",
+        "worked": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "Find the missing cross products",
+        "body": "A proposed argument says that squaring u+v gives u*u+v*v because each term can be squared separately. Identify the unjustified step and use u=2,v=1 to refute the proposed identity.",
+        "exercise": "Give the two missing products and a counterexample. Distinguish refutation from proof of the correct general formula.",
+        "hint": "Compare the proposal with the full product table before substituting numbers.",
+        "sourceAnchor": "aops07:identity-p307",
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "exampleText": "",
+        "worked": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "Independent proof of a special case",
+        "body": "Work without hints. Prove the stated identity for every natural number x using distributivity. A checked reference theorem is available to the course reviewer; your handwritten argument still needs teacher review.",
+        "exercise": "For every x in Nat, prove (x+1)*(x+1)=x*x+2*x+1. State the domain and justify each equality.",
+        "sourceAnchor": "aops07:identity-p307",
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "exampleText": "",
+        "worked": "",
+        "hint": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "Transfer from expansion to recognition",
+        "body": "Reverse the reasoning: consider y*y+14*y+49. Recognize a square of a binomial and justify the middle term. Then explain what changes if 14*y is replaced by 12*y. This goal requires teacher review.",
+        "exercise": "Factor y*y+14*y+49 and explain why changing only the middle coefficient can destroy the square pattern.",
+        "hint": "A candidate square must account for its first, middle and final terms together.",
+        "sourceAnchor": "aops07:recognition-p308",
+        "logicalPrerequisites": [
+          1,
+          2
+        ],
+        "exampleText": "",
+        "worked": "",
+        "review": "",
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": "review",
+        "title": "Later reconstruction and error diagnosis",
+        "body": "After the scheduled delay, reconstruct the binomial-square argument with no hint. Explain why the cross term is doubled and diagnose the dropped-term argument with a fresh counterexample.",
+        "review": "Seven-day authored review policy. This schedule records due work, not measured retention. Keep the original course, policy, source and assistance references.",
+        "sourceAnchor": "aops07:identity-p307",
+        "logicalPrerequisites": [
+          2
+        ],
+        "exampleText": "",
+        "worked": "",
+        "exercise": "",
+        "hint": "",
+        "pedagogicalPrerequisites": []
+      }
+    ]
+  },
+  "learningGoals": [
+    "Explain distribution by comparing two decompositions",
+    "Account for both cross products in a binomial square",
+    "Distinguish identity, counterexample, exact coefficient evidence and informal proof",
+    "Recognize a square from all three coefficients and revisit reasoning after a delay"
+  ],
+  "notationGuide": [
+    "Q[x] is the routine exact coefficient-checker domain",
+    "Nat is the domain of the checked reference specialization",
+    "A universal identity is not established by trying a few values",
+    "Catalogue source record sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5#679 is the exact original 2.18.1 square of a binomial"
+  ],
+  "sources": {
+    "format": "lemma-source-registry/1",
+    "sources": [
+      {
+        "id": "aops-intro-algebra-2007",
+        "title": "Introduction to Algebra",
+        "authors": [
+          "Richard Rusczyk"
+        ],
+        "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+        "publication": "AoPS Incorporated; copyright2007; ISBN9781934124017",
+        "bibliographicStatus": "verified",
+        "bibliographicEvidence": "Title PDFpage1 and copyright PDFpage2 visually inspected; First Printing2007. File metadata alone did not establish edition.",
+        "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "mediaType": "application/pdf",
+        "ownerLocation": "build/school/corpus-a1/MyMathTextbooks/Introduction to algebra (the art of problem solving) -- Richard Rusczyk -- 1st edition, March 30, 20.pdf",
+        "rights": "Copyright2007 AoPS Incorporated, All Rights Reserved. Owner-supplied PDF remains external/private; redistribution permission is not inferred."
+      },
+      {
+        "id": "owner-topic-catalogue",
+        "title": "Owner mathematics topic catalogue",
+        "authors": [],
+        "edition": "sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+        "publication": "Owner-supplied archive member Curriculum.json; no external bibliographic authorship asserted",
+        "bibliographicStatus": "ambiguous",
+        "bibliographicEvidence": "Exact source bytes verified; authorship/publication information is unavailable",
+        "fileDigest": "095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+        "mediaType": "application/json",
+        "ownerLocation": "build/school/corpus-a1/MyMathTextbooks/Curriculum.json",
+        "rights": "Owner-supplied catalogue metadata; no blanket third-party textbook or repository redistribution grant inferred."
+      },
+      {
+        "id": "owner-course-outline",
+        "title": "Lower and Upper School Mathematics Sequence",
+        "authors": [],
+        "edition": "sha256:92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+        "publication": "Owner-supplied six-page outline; no author/year metadata asserted",
+        "bibliographicStatus": "ambiguous",
+        "bibliographicEvidence": "Exact bytes and LS2 text placement inspected; publication identity unavailable",
+        "fileDigest": "92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+        "mediaType": "application/pdf",
+        "ownerLocation": "build/school/corpus-a1/MyMathTextbooks/mathCurriculum.pdf",
+        "rights": "Owner-supplied course outline; no blanket redistribution grant inferred."
+      }
+    ]
+  },
+  "anchors": [
+    {
+      "id": "aops07:distribution-p13",
+      "sourceId": "aops-intro-algebra-2007",
+      "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+      "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+      "pdfPageIndex": 29,
+      "printedPageLabel": "13",
+      "sectionLabel": "1.4 Distribution and Factoring",
+      "exercise": "Problem1.8; independently authored rectangle example",
+      "verification": "verified",
+      "evidence": "Complete PDF page index29 rendered with Poppler26.05.0 at120dpi and visually inspected; printed label13 confirmed. OCR text is not sole authority.",
+      "extraction": {
+        "method": "pypdf extraction of existing OCR text layer plus independent Poppler page-image inspection",
+        "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+        "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "outputDigest": "cedeef6bbf1e04f90f4e7a0c6af92b55a8e1378237538c194ea2005998199414",
+        "parentOutputDigest": null
+      }
+    },
+    {
+      "id": "aops07:worked-p306",
+      "sourceId": "aops-intro-algebra-2007",
+      "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+      "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+      "pdfPageIndex": 322,
+      "printedPageLabel": "306",
+      "sectionLabel": "11.1 Squares of Binomials",
+      "exercise": "Worked solution11.1; independently authored t+3 example",
+      "verification": "verified",
+      "evidence": "Complete PDF page index322 rendered with Poppler26.05.0 at120dpi and visually inspected; printed label306 confirmed. OCR text is not sole authority.",
+      "extraction": {
+        "method": "pypdf extraction of existing OCR text layer plus independent Poppler page-image inspection",
+        "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+        "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "outputDigest": "21b1f1fb09f3aa55b93a868bc0c9e5cbad28915b2b8e57d406ff44c882f5f6f3",
+        "parentOutputDigest": null
+      }
+    },
+    {
+      "id": "aops07:identity-p307",
+      "sourceId": "aops-intro-algebra-2007",
+      "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+      "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+      "pdfPageIndex": 323,
+      "printedPageLabel": "307",
+      "sectionLabel": "11.1 Squares of Binomials",
+      "exercise": "General identity and cross-term argument",
+      "verification": "verified",
+      "evidence": "Complete PDF page index323 rendered with Poppler26.05.0 at120dpi and visually inspected; printed label307 confirmed. OCR text is not sole authority.",
+      "extraction": {
+        "method": "pypdf extraction of existing OCR text layer plus independent Poppler page-image inspection",
+        "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+        "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "outputDigest": "060dcf01e25fd301218a0dfa4a24ca77586c0ef6029cb9d5690e0e0eaccba129",
+        "parentOutputDigest": null
+      }
+    },
+    {
+      "id": "aops07:recognition-p308",
+      "sourceId": "aops-intro-algebra-2007",
+      "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+      "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+      "pdfPageIndex": 324,
+      "printedPageLabel": "308",
+      "sectionLabel": "11.1 Squares of Binomials",
+      "exercise": "Recognition discussion around Problem11.3; independently authored coefficients",
+      "verification": "verified",
+      "evidence": "Complete PDF page index324 rendered with Poppler26.05.0 at120dpi and visually inspected; printed label308 confirmed. OCR text is not sole authority.",
+      "extraction": {
+        "method": "pypdf extraction of existing OCR text layer plus independent Poppler page-image inspection",
+        "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+        "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "outputDigest": "038235e295b71b0bee9b6e045b829518d2862b7603a30c1c5e026cac4e0ad814",
+        "parentOutputDigest": null
+      }
+    },
+    {
+      "id": "catalogue:row-11",
+      "sourceId": "owner-topic-catalogue",
+      "edition": "sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+      "fileDigest": "095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+      "pdfPageIndex": null,
+      "printedPageLabel": null,
+      "sectionLabel": "zero-based source record 11; record id sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5#11",
+      "exercise": null,
+      "verification": "verified",
+      "evidence": "Exact preserved original: 1.1.12 distributive property; textbook mapping is an author-reviewed proposal, not inferred equivalence or raw-source authority.",
+      "extraction": null
+    },
+    {
+      "id": "catalogue:row-679",
+      "sourceId": "owner-topic-catalogue",
+      "edition": "sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+      "fileDigest": "095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+      "pdfPageIndex": null,
+      "printedPageLabel": null,
+      "sectionLabel": "zero-based source record 679; record id sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5#679",
+      "exercise": null,
+      "verification": "verified",
+      "evidence": "Exact preserved original: 2.18.1 square of a binomial; textbook mapping is an author-reviewed proposal, not inferred equivalence or raw-source authority.",
+      "extraction": null
+    },
+    {
+      "id": "catalogue:row-680",
+      "sourceId": "owner-topic-catalogue",
+      "edition": "sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+      "fileDigest": "095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5",
+      "pdfPageIndex": null,
+      "printedPageLabel": null,
+      "sectionLabel": "zero-based source record 680; record id sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5#680",
+      "exercise": null,
+      "verification": "verified",
+      "evidence": "Exact preserved original: 2.18.2 perfect square trinomials; textbook mapping is an author-reviewed proposal, not inferred equivalence or raw-source authority.",
+      "extraction": null
+    },
+    {
+      "id": "outline:lower-school-2",
+      "sourceId": "owner-course-outline",
+      "edition": "sha256:92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+      "fileDigest": "92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+      "pdfPageIndex": 0,
+      "printedPageLabel": null,
+      "sectionLabel": "Lower School course LS2; Algebra I with Introductory Counting",
+      "exercise": null,
+      "verification": "verified",
+      "evidence": "Outline PDF page0 rendered and visually inspected: LS2 lists AoPS Introduction to Algebra. Course placement is a reviewed author choice.",
+      "extraction": {
+        "method": "pypdf page text extraction and Poppler page-image inspection",
+        "toolVersion": "pypdf 6.10.0; Poppler26.05.0",
+        "inputDigest": "92f28106f1b4310b30675fe05e6bc6c9bba52e7b580447a5d5e3db7e10cd119c",
+        "outputDigest": "381640f4bce440aecf0b214cd2807c78a6198999fd8b0dd25a23938a0a966b72",
+        "parentOutputDigest": null
+      }
+    }
+  ],
+  "activities": [
+    {
+      "id": "prepare",
+      "node": 0,
+      "kind": "preparation",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "Show the two decompositions of the same rectangle",
+          "Explain the common factor without inventing new cells"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "worked",
+      "node": 1,
+      "kind": "preparation",
+      "goal": "unsupported",
+      "assistance": "worked",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "List all four products",
+          "Combine equal powers only after expansion"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "define",
+      "node": 2,
+      "kind": "definition",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "Specify the domain and universal quantifier",
+          "Distinguish expression terminology from an equality claim"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "coefficients",
+      "node": 3,
+      "kind": "routine",
+      "goal": "binomialSquare",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "lemma-exact/1:binomialSquare",
+        "criteria": [
+          "Use constant, linear, quadratic coefficient order",
+          "Match the exact fixed polynomial goal over Q[x]"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "invalid",
+      "node": 4,
+      "kind": "invalidArgument",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "Locate the omitted cross products",
+          "Provide a genuine counterexample and explain its logical force"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "reason",
+      "node": 5,
+      "kind": "independentReasoning",
+      "goal": "unsupported",
+      "assistance": "none",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "State the natural-number domain",
+          "Justify every equality using distribution and collection of terms"
+        ],
+        "independent": true,
+        "referenceTheorem": "Lemma.School.FixtureUnit.square_successor"
+      }
+    },
+    {
+      "id": "transfer",
+      "node": 6,
+      "kind": "transfer",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "Check all three coefficients of a proposed square",
+          "Explain why matching outer terms alone is insufficient"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "later-review",
+      "node": 7,
+      "kind": "review",
+      "goal": "unsupported",
+      "assistance": "none",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "Reconstruct without assistance after the declared delay",
+          "Explain the double cross term and refute a fresh false expansion"
+        ],
+        "independent": true,
+        "referenceTheorem": null
+      }
+    }
+  ],
+  "relations": [
+    {
+      "fromActivity": "prepare",
+      "toActivity": "worked",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "prepare",
+      "toActivity": "define",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "worked",
+      "toActivity": "coefficients",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "define",
+      "toActivity": "coefficients",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "worked",
+      "toActivity": "invalid",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "define",
+      "toActivity": "invalid",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "worked",
+      "toActivity": "reason",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "define",
+      "toActivity": "reason",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "worked",
+      "toActivity": "transfer",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "define",
+      "toActivity": "transfer",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "define",
+      "toActivity": "later-review",
+      "kind": "prerequisite",
+      "origin": "Task008 author review after inspecting AoPS2007 sections1.4 and11.1; pedagogical decision, not inferred from catalogue order",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": [
+        "Reviewed against source pages13,306-308 and existing fixed exact-checker scope"
+      ]
+    },
+    {
+      "fromActivity": "invalid",
+      "toActivity": "reason",
+      "kind": "related",
+      "origin": "Author-curated conceptual connection; no hard progression edge",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": []
+    },
+    {
+      "fromActivity": "reason",
+      "toActivity": "invalid",
+      "kind": "related",
+      "origin": "Author-curated conceptual connection; no hard progression edge",
+      "reviewed": true,
+      "confidencePermille": null,
+      "reviewHistory": []
+    }
+  ],
+  "review": {
+    "version": "lemma-review-schedule/1",
+    "delaySeconds": 604800,
+    "activityId": "later-review",
+    "uncertainty": "Author-selected seven-day review; uncertain provisional estimate; software scheduling does not establish retention or educational benefit"
+  }
+}

@@ -1,0 +1,340 @@
+{
+  "activeAuthorityMutexEnforced": true,
+  "actualNativeAndHttpTransport": true,
+  "committedScreenshots": [
+    {
+      "path": "docs/evidence/008-school-panel-tab-0.png",
+      "sha256": "82cfa4c403ee07303974a26c726243b6beb06f56a3651de2c6d7a72b9703cfee"
+    },
+    {
+      "path": "docs/evidence/008-school-panel-tab-1.png",
+      "sha256": "c1b1da1156633baa0863e9102af8f8470a8065e9724a1d499599bd779606b8c6"
+    },
+    {
+      "path": "docs/evidence/008-school-panel-tab-2.png",
+      "sha256": "4c019eba218509df78ced9cad9b306a9bd01038c10f60490322fc09685f65283"
+    },
+    {
+      "path": "docs/evidence/008-school-panel-tab-3.png",
+      "sha256": "53ee2e614637ada10e393bd6c074a6f97e59505695473ae5577f11d6fac02d4e"
+    },
+    {
+      "path": "docs/evidence/008-school-panel-choices.png",
+      "sha256": "4ed4d6f1418476607b8e0f57ea91fe1f5e9f45b84b7f36f102b24b921180c76d"
+    }
+  ],
+  "curriculumBinarySha256": "1c6d5820b86fa5f393c7526dec02d84298012a7984f06d5612372ef8ec0b3b05",
+  "executionScope": "fresh A8 native/Tk/Xvfb/real Lean HTTP execution; validated identical frontend sources, actual goal/challenge/history and rejected attempt override; no guest control/delivery claim",
+  "gui": {
+    "actualAttemptOverrideRejected": true,
+    "actualGoalChallengeAndHistoryDisplayed": true,
+    "actualLeanStatusDisplayed": true,
+    "authorityResultInsideVisibleWindow": true,
+    "learnerChoiceScreenshot": {
+      "path": "panel-study-choices.png",
+      "sha256": "4ed4d6f1418476607b8e0f57ea91fe1f5e9f45b84b7f36f102b24b921180c76d"
+    },
+    "result": "pass",
+    "scope": "actual Tk rendering and status RPC in isolated Xvfb; guest drawing is a separate maintained client acceptance",
+    "screenshotSha256": "82cfa4c403ee07303974a26c726243b6beb06f56a3651de2c6d7a72b9703cfee",
+    "tabScreenshots": {
+      "Create / teach": {
+        "path": "panel-tab-1.png",
+        "sha256": "c1b1da1156633baa0863e9102af8f8470a8065e9724a1d499599bd779606b8c6"
+      },
+      "Develop": {
+        "path": "panel-tab-3.png",
+        "sha256": "53ee2e614637ada10e393bd6c074a6f97e59505695473ae5577f11d6fac02d4e"
+      },
+      "Run / customize": {
+        "path": "panel-tab-2.png",
+        "sha256": "4c019eba218509df78ced9cad9b306a9bd01038c10f60490322fc09685f65283"
+      },
+      "Study / join": {
+        "path": "panel-tab-0.png",
+        "sha256": "82cfa4c403ee07303974a26c726243b6beb06f56a3651de2c6d7a72b9703cfee"
+      }
+    },
+    "tabs": [
+      "Study / join",
+      "Create / teach",
+      "Run / customize",
+      "Develop"
+    ],
+    "windowPixels": [
+      1080,
+      850
+    ]
+  },
+  "guide": {
+    "path": "docs/school-native-panel.html",
+    "sha256": "9f56eda2e463f4e0c2725225c2e56379ac2c294c3c7c53e1a61570fb258729ff"
+  },
+  "learnerChoices": {
+    "actualNativeGoalAndHttpChallenge": true,
+    "attemptOverrideRejected": true,
+    "originalAttempt": {
+      "actor": "owner",
+      "artifacts": [
+        "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e"
+      ],
+      "data": {
+        "activity": "coefficients",
+        "assisted": false,
+        "checker": "lemma-exact/1:binomialSquare",
+        "checkingScope": "hosted exact checker; typed values only",
+        "course": 1,
+        "definition": "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e",
+        "estimate": "uncertain; no educational-effect claim",
+        "independent": false,
+        "origin": "deliberately supplied local work",
+        "outcome": 1,
+        "policy": 1,
+        "request": {
+          "activity": "coefficients",
+          "actor": "owner",
+          "course": 1,
+          "id": "panel-explicit-work",
+          "op": "attempt",
+          "revision": 1,
+          "school": "panel-school",
+          "values": [
+            0,
+            1,
+            1,
+            2,
+            1
+          ]
+        },
+        "revision": 1
+      },
+      "key": "panel-explicit-work",
+      "kind": "attempt",
+      "sequence": 3,
+      "time": 964251878
+    },
+    "originalAttemptUnchanged": true,
+    "records": [
+      {
+        "actor": "owner",
+        "artifacts": [
+          "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e"
+        ],
+        "data": {
+          "course": 1,
+          "effect": "declared learner preference; published course requirements and assessment remain unchanged",
+          "learner": "owner",
+          "newGoal": "Independent reconstruction.",
+          "op": "goal-set",
+          "original": {
+            "actor": "owner",
+            "key": "panel-explicit-work",
+            "kind": "attempt",
+            "recordDigest": "54c66570b8ab527ec211755ba6f61fb5505635b76b70fb14354fefb7991650a0",
+            "sequence": 3
+          },
+          "policy": 1,
+          "reason": "I choose to reconstruct these coefficients independently.",
+          "request": {
+            "course": 1,
+            "id": "panel-local-goal",
+            "learner": "owner",
+            "newGoal": "Independent reconstruction.",
+            "op": "goal-set",
+            "policy": 1,
+            "reason": "I choose to reconstruct these coefficients independently.",
+            "reference": "panel-explicit-work",
+            "referenceKind": "attempt",
+            "revision": 1
+          },
+          "revision": 1,
+          "schema": "lemma-learner-choice/1"
+        },
+        "key": "f6c5cb33d5987084f0ca8475d4ad1a70ece7a37456ef423a7bddeb26368c636a",
+        "kind": "learner-choice",
+        "sequence": 5,
+        "time": 964252326
+      },
+      {
+        "actor": "owner",
+        "artifacts": [
+          "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e"
+        ],
+        "data": {
+          "course": 1,
+          "effect": "learner requests reconsideration; original observation, checker and interpretation are retained",
+          "learner": "owner",
+          "newGoal": null,
+          "op": "interpretation-challenge",
+          "original": {
+            "actor": "owner",
+            "key": "panel-explicit-work",
+            "kind": "attempt",
+            "recordDigest": "54c66570b8ab527ec211755ba6f61fb5505635b76b70fb14354fefb7991650a0",
+            "sequence": 3
+          },
+          "policy": 1,
+          "reason": "I choose to reconstruct these coefficients independently.",
+          "request": {
+            "course": 1,
+            "id": "panel-http-challenge",
+            "learner": "owner",
+            "newGoal": null,
+            "op": "interpretation-challenge",
+            "policy": 1,
+            "reason": "I choose to reconstruct these coefficients independently.",
+            "reference": "panel-explicit-work",
+            "referenceKind": "attempt",
+            "revision": 1
+          },
+          "revision": 1,
+          "schema": "lemma-learner-choice/1"
+        },
+        "key": "1873f69d95f52a0570067e63de3f10db95d42a4974dd9818d1e06cacee491612",
+        "kind": "learner-choice",
+        "sequence": 6,
+        "time": 964252814
+      },
+      {
+        "actor": "owner",
+        "artifacts": [
+          "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e"
+        ],
+        "data": {
+          "course": 1,
+          "effect": "declared learner preference; published course requirements and assessment remain unchanged",
+          "learner": "owner",
+          "newGoal": "Reconstruct the distributive coefficients independently.",
+          "op": "goal-set",
+          "original": {
+            "actor": "owner",
+            "key": "panel-explicit-work",
+            "kind": "attempt",
+            "recordDigest": "54c66570b8ab527ec211755ba6f61fb5505635b76b70fb14354fefb7991650a0",
+            "sequence": 3
+          },
+          "policy": 1,
+          "reason": "I request independent reconstruction of this original work.",
+          "request": {
+            "course": 1,
+            "id": "panel-gui-goal",
+            "learner": "owner",
+            "newGoal": "Reconstruct the distributive coefficients independently.",
+            "op": "goal-set",
+            "policy": 1,
+            "reason": "I request independent reconstruction of this original work.",
+            "reference": "panel-explicit-work",
+            "referenceKind": "attempt",
+            "revision": 1
+          },
+          "revision": 1,
+          "schema": "lemma-learner-choice/1"
+        },
+        "key": "8bea610f0a1b5112f71687ef0ddf6c89728b45ceeb01e9ce46b5b2cde8ea74b8",
+        "kind": "learner-choice",
+        "sequence": 7,
+        "time": 964253533
+      },
+      {
+        "actor": "owner",
+        "artifacts": [
+          "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e"
+        ],
+        "data": {
+          "course": 1,
+          "effect": "learner requests reconsideration; original observation, checker and interpretation are retained",
+          "learner": "owner",
+          "newGoal": null,
+          "op": "interpretation-challenge",
+          "original": {
+            "actor": "owner",
+            "key": "panel-explicit-work",
+            "kind": "attempt",
+            "recordDigest": "54c66570b8ab527ec211755ba6f61fb5505635b76b70fb14354fefb7991650a0",
+            "sequence": 3
+          },
+          "policy": 1,
+          "reason": "I request independent reconstruction of this original work.",
+          "request": {
+            "course": 1,
+            "id": "panel-gui-challenge",
+            "learner": "owner",
+            "newGoal": null,
+            "op": "interpretation-challenge",
+            "policy": 1,
+            "reason": "I request independent reconstruction of this original work.",
+            "reference": "panel-explicit-work",
+            "referenceKind": "attempt",
+            "revision": 1
+          },
+          "revision": 1,
+          "schema": "lemma-learner-choice/1"
+        },
+        "key": "acf1e4c85ee686141901e2da28c3e4d818d48640ef4ae00d0a4b710b84fd0ee2",
+        "kind": "learner-choice",
+        "sequence": 8,
+        "time": 964253640
+      }
+    ],
+    "scope": "deliberately supplied local typed attempt; no fabricated guest or model suggestion; positive actual RV64 override is in job-worker checker"
+  },
+  "receipt": {
+    "path": "build/school/panel-008-sample-a7/panel-evidence.json",
+    "sha256": "2d98a8ac2aa587d4c1d2c81c23527cad4c1b4d66fbd32a578f7d3140f82ed3c7"
+  },
+  "result": "pass",
+  "retainedAttempts": [
+    {
+      "path": "build/school/panel-008-a5/panel-evidence.json",
+      "result": "transport and Tk mechanical pass; visual review found results below visible window, fixed and rerun in final visible receipt"
+    },
+    {
+      "path": "build/school/panel-008-a5-visible/panel-evidence.json",
+      "result": "actual Tk/native/HTTP pass retained for historical default801; final sample rerun uses shared authored1/1 JSON and exact compiled/publication byte identity"
+    },
+    {
+      "path": "build/school/panel-008-sample-a2/panel-evidence.json",
+      "result": "sample GUI mechanical pass retained; final source assertion detected concurrently repaired transport; final post-freeze a3 rerun replaces its source-qualified scope"
+    },
+    {
+      "path": "build/school/panel-008-sample-a3/panel-evidence.json",
+      "result": "fresh A5 native UI pass retained; final A6 execution uses validated identical frontend sources and current prefix-capable authority"
+    },
+    {
+      "path": "build/school/panel-008-sample-a4/panel-evidence.json",
+      "result": "fresh A6 native/Tk pass retained; final A7 rerun adds learner declaration form and actual goal/challenge/history/rejected-override actions"
+    },
+    {
+      "path": "build/school/panel-008-sample-a5",
+      "result": "Retained checker-only FAIL: attempt operation returns its final scheduled-review append; assertion incorrectly compared that review sequence to the actual attempt. Original committed attempt/choices and transport logs retained; final checker reads the actual immutable attempt from progress."
+    },
+    {
+      "path": "build/school/panel-008-sample-a6/panel-evidence.json",
+      "result": "A7 actual UI/learner choices PASS retained; final A8 execution reuses identical frontend sources with current LocalProvider authority"
+    }
+  ],
+  "runnerSha256": "2c15970992bfd93a0c0fd957f13f1bba522b808e3830baab37350ca7fdce3836",
+  "sampleAuthoringSha256": "f14a9a328839f5146d3b9819867ea43db9eca18e209751d8992310f5e9ea1f81",
+  "sampleCompilation": {
+    "bytes": 4199,
+    "sha256": "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e"
+  },
+  "sampleDerivation": "sole teacher edit to actual original fixture: course.identity801 to1; original fixture preserved",
+  "sampleIdentity": [
+    1,
+    1
+  ],
+  "schema": "lemma-school-native-panel-summary/v1",
+  "schoolBinarySha256": "d88c2311c0a0fe1112133c32f1e2aac569eb1064d6f33101ccac1823b04ed7d1",
+  "schoolProductionSha256": "36a8d5d255fc396a0afc9070bc59211f8f0e0eeb2a5751f934c6533d2f11edbc",
+  "scopedEvidenceDenied": true,
+  "sessionScope": "Metadata from closed actual historical session client-native-a1/first only. No live guest/control/delivery claim in this panel smoke; separate connected client acceptance owns those gates.",
+  "sourceInputs": {
+    "examples/school/sample-unit.json": "f14a9a328839f5146d3b9819867ea43db9eca18e209751d8992310f5e9ea1f81",
+    "scripts/lemmasim": "e148d58f016d06a34676dba0a9a263b391a087dda3d3e219dde0bdeeaa0da946",
+    "scripts/lemmasim_school.py": "7c18022594ecd717c3a10d2ee72c2e432bee386b91cd8dc22e24a80761dc53ea",
+    "scripts/lemmasim_school_panel.py": "b3ba3a36d57b7c09697d8df334f34a07ac781ae711c9a1b2c24d3a3e70ee02a7",
+    "scripts/school_transport.py": "9082e0ae5df08d21844ede3f540b70574fbc0ceaf3aff19a3abfc0a63a38364f",
+    "tooling/lemmasim/session.nix": "5fa25e75a2f7e625ee719cbcd19d4a69789cf3bff343a104a35669c723a286c3"
+  }
+}

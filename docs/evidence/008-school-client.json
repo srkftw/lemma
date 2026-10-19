@@ -1,0 +1,1104 @@
+{
+  "schema": "lemma-school-client-evidence/1",
+  "status": "PASS_SCOPED_SCHOOL_REAL_CLIENT",
+  "scope": "Owner-local actual Lean authority and source-admitted0.14 Developer/Laboratory guest via public raw pen/UART; independent observations, no host document/framebuffer edits.",
+  "source_identity": {
+    "host_production": {
+      "path": "build/school/host-native-v3-a8/production.json",
+      "sha256": "36a8d5d255fc396a0afc9070bc59211f8f0e0eeb2a5751f934c6533d2f11edbc"
+    },
+    "school_binary": {
+      "path": "build/school/host-native-v3-a8/school",
+      "sha256": "d88c2311c0a0fe1112133c32f1e2aac569eb1064d6f33101ccac1823b04ed7d1"
+    },
+    "host_source_input_count": 42,
+    "host_source_inputs_canonical_sha256": "0abc5127a3116bda8af834a5cfd0ec40cd5ceddf805e52a3b8bc164cb85dcebc",
+    "scenario_private_binary_sha256": "d88c2311c0a0fe1112133c32f1e2aac569eb1064d6f33101ccac1823b04ed7d1",
+    "actual_consumed_host_inputs": {
+      "path": "build/school/client-native-a12/consumed-host-inputs.json",
+      "sha256": "bd7ed47de3d01e47060f861392291a27c6d7d48abe30f4a97bbcf71e9ef5a066"
+    },
+    "consumed_machine_observer_current_equal": true,
+    "current_key_sources": {
+      "Lemma/School/Client.lean": "eaf88fe83df1c0e58af4ed0385e23a860e28d2ce476d78867fad909795d0e303",
+      "Lemma/Multimodal/SchoolPacket.lean": "1c996d0eb4980cd3648a36fc7db72759d7e47129f124d2762e7c8a3eac7e3790",
+      "Lemma/Multimodal/TutorAction.lean": "ed6e180bfaecdd0ca94dbacb3625bc7461e6a3240e8b677789cc88291d5655c9",
+      "Lemma/Applications/Notebook.lean": "6a21a86875b326448d566f8f053380f30e6cc20a939e375a2d0db1f4a996f323",
+      "Lemma/User/Multimodal.lean": "6f6f73d09df36ad52ac9d61772611935bc05bfce4342dee2267c4875d28a70f1",
+      "scripts/lemmasim_school.py": "7c18022594ecd717c3a10d2ee72c2e432bee386b91cd8dc22e24a80761dc53ea",
+      "scripts/school_transport.py": "9082e0ae5df08d21844ede3f540b70574fbc0ceaf3aff19a3abfc0a63a38364f",
+      "scripts/check_school_client.py": "02485e7596b3a5e90b4d1f1646fb7eaedf7eb0957e7f1b329ae1c5fe0baaf6f1",
+      "scripts/multimodal_target.py": "dcb1fbce0f8cd757ed0dc94a9a08291d831e53ef6ffdd6fd4cc12a805cd2a869",
+      "tooling/multimodal-target-authority.json": "2bd5b3a38ac3c82b233c741a7f10d2f0c1dbde8732b6977d3164f30310528ac3",
+      "conformance/lemmasim/course_pixel_oracle.py": "dbcbe99a66e364c1f7f2c78f80bd58545a56367c310ab69516d1798e66295503",
+      "conformance/lemmasim/notebook_pixels.py": "e296b04f89e0395f59c8654ec637950ec1efd6be7d34bb68c3db5e77ecb27735",
+      "tests/multimodal/NotebookUIActions.lean.inc": "d17f5bbd76ef9fd13e700ad005cfcf9f3db8eb1aca80878b4c6b6fb14c5dc3e2",
+      "scripts/check_multimodal_notebook_ui.py": "96525866df50cb9db8467be4ed5f40009ab90ff041d5ca66daa77fd4e4713237",
+      "tests/multimodal/test_course_pixel_oracle.py": "e8bcaa8a5fa26bd69d09ce8899d8b768ff8913a57152937c3c6a6f51fb18513d",
+      "tests/multimodal/test_target_authority.py": "b953860c60602ba232ba1f130674d4243fa417d55f971959cbedc1f77f5bb77b",
+      "tests/school/Client.lean": "f714613bea66486d43005d934557aac8b3166bb2998d98768e49cd332b9ac9fd"
+    }
+  },
+  "qualified_guest": {
+    "production_and_full_audits": {
+      "path": "build/school/client-production-a15/result.json",
+      "sha256": "28b5dbfe69ed0e48f4e6a7a1ec326bec386c845c2aa07fab2b8ce81aeb99dd8d"
+    },
+    "genuine_authority_review": {
+      "path": "build/school/client-production-a14/authority-review.json",
+      "sha256": "48891b6c5d48a0de48629e921916baa3f14e6369bcd8e4cea3d17c03514d272e"
+    },
+    "valid_IR_consequential_body_mutant_rejected": {
+      "path": "build/school/client-production-a14/genuine-envelope-body-negative.json",
+      "sha256": "968892d2d9ffb8b45d5348b4fad2c8b176d747dcbce5d9537728a06a1b478431"
+    },
+    "pin_file_sha256": "2bd5b3a38ac3c82b233c741a7f10d2f0c1dbde8732b6977d3164f30310528ac3",
+    "review_scope": "All four genuine exports reviewed; twenty non-Notebook catalogs/pre/post corpora unchanged; four Notebook envelopes clear source-reader expectations. Full directed-edge coverage retained.",
+    "roles": [
+      {
+        "role": "base-notebook",
+        "configuration": "lemmasim-silicon-multimodal-notebook",
+        "full_audit": {
+          "path": "build/kernel/school-client-base-notebook-a15/audit.json",
+          "sha256": "79b588b30f2b43e351ae6957d56cabf518c2515f713420a7e54dc6be5a13f679"
+        },
+        "provenance": {
+          "path": "build/kernel/school-client-base-notebook-a15/provenance.json",
+          "sha256": "42674bcc26afe24b123e0f07271ec233c0bf4518250521d153f18a5d295bcf25"
+        },
+        "image_sha256": "344ade0692ad7ce1645eff46e22e764536f63426f363a80566552309928c9366",
+        "source_input_count": 521,
+        "source_inputs_canonical_sha256": "ce73203d1559e9ecefd7748ca97ccbbbd26ab4db813f119241ec17f1dc5d2189",
+        "source_inputs_current_equal": true,
+        "notebook_catalog_and_full_corpora": {
+          "catalog_sha256": "f1d5c3addd14aa94099df5c5844eb5b27572fdfdde46e471c5413d8affbdfd88",
+          "pre": {
+            "function_count": 1012,
+            "sha256": "343d203c556ee5fb0ac11a0a5d7953534e13043d930f06f712dc18dc5c62b78d"
+          },
+          "post": {
+            "function_count": 1010,
+            "sha256": "6becc515f5c1f2f72fa88e6eaf490f4c471e578f8641e3510d11eed949af4f09"
+          }
+        }
+      },
+      {
+        "role": "base-initialize",
+        "configuration": "lemmasim-silicon-multimodal-initialize",
+        "full_audit": {
+          "path": "build/kernel/school-client-base-initialize-a15/audit.json",
+          "sha256": "59356579e22e1af84efa9c8f2ec3fd6531ccca0dec8b9afc494014fd763a9f8a"
+        },
+        "provenance": {
+          "path": "build/kernel/school-client-base-initialize-a15/provenance.json",
+          "sha256": "064b7a88f84a42ba783b8a943333dcb9b68ab7c73876de33c2ef4c8379a22886"
+        },
+        "image_sha256": "3a3950c747fe6c2678e1a1fbff897079de9837e1611916159ccaf1eabebb7f69",
+        "source_input_count": 521,
+        "source_inputs_canonical_sha256": "ce73203d1559e9ecefd7748ca97ccbbbd26ab4db813f119241ec17f1dc5d2189",
+        "source_inputs_current_equal": true,
+        "notebook_catalog_and_full_corpora": {
+          "catalog_sha256": "ae443b026a5607b5e5b11b1dc0f567e163d775a8f2f03b0f163094afd4faa7cb",
+          "pre": {
+            "function_count": 1012,
+            "sha256": "343d203c556ee5fb0ac11a0a5d7953534e13043d930f06f712dc18dc5c62b78d"
+          },
+          "post": {
+            "function_count": 1010,
+            "sha256": "6becc515f5c1f2f72fa88e6eaf490f4c471e578f8641e3510d11eed949af4f09"
+          }
+        }
+      },
+      {
+        "role": "parameterized-notebook",
+        "configuration": "lemmasim-silicon-multimodal-parameterized-notebook",
+        "full_audit": {
+          "path": "build/kernel/school-client-parameterized-notebook-a15/audit.json",
+          "sha256": "77621cbb4743cfd556155dab3c2fb383fe8c49d9f768855ff68aa23fcba72267"
+        },
+        "provenance": {
+          "path": "build/kernel/school-client-parameterized-notebook-a15/provenance.json",
+          "sha256": "c9c399b37ae7faaa3fcc9ae136df020ae6163e9564e26c03606d85637e3be10e"
+        },
+        "image_sha256": "b2d35624b821c9e0b3f6ada69cef4db3608ea35e24e2060263eb4d3860146c7c",
+        "source_input_count": 521,
+        "source_inputs_canonical_sha256": "ce73203d1559e9ecefd7748ca97ccbbbd26ab4db813f119241ec17f1dc5d2189",
+        "source_inputs_current_equal": true,
+        "notebook_catalog_and_full_corpora": {
+          "catalog_sha256": "9049229d04972460000769e8d73c5facad74f6153e47382300a32184902a2e32",
+          "pre": {
+            "function_count": 1012,
+            "sha256": "343d203c556ee5fb0ac11a0a5d7953534e13043d930f06f712dc18dc5c62b78d"
+          },
+          "post": {
+            "function_count": 1010,
+            "sha256": "6becc515f5c1f2f72fa88e6eaf490f4c471e578f8641e3510d11eed949af4f09"
+          }
+        }
+      },
+      {
+        "role": "parameterized-initialize",
+        "configuration": "lemmasim-silicon-multimodal-parameterized-initialize",
+        "full_audit": {
+          "path": "build/kernel/school-client-parameterized-initialize-a15/audit.json",
+          "sha256": "77b155eccbb968093623f795779edf15f8ddeb8de75224750048210a30b12019"
+        },
+        "provenance": {
+          "path": "build/kernel/school-client-parameterized-initialize-a15/provenance.json",
+          "sha256": "54633cbb2a7f772a8b703826eb3a0fd70734064cb8f4faf16d916f4c5d43264d"
+        },
+        "image_sha256": "d91298ce05242c54278a4df7fd02860d67a0773030f38487db8e1447441383d8",
+        "source_input_count": 521,
+        "source_inputs_canonical_sha256": "ce73203d1559e9ecefd7748ca97ccbbbd26ab4db813f119241ec17f1dc5d2189",
+        "source_inputs_current_equal": true,
+        "notebook_catalog_and_full_corpora": {
+          "catalog_sha256": "4cb0d58ccba50ce9170d2dc7967c4a1f90273e0d4e9d525c5edd2433b5a46182",
+          "pre": {
+            "function_count": 1012,
+            "sha256": "343d203c556ee5fb0ac11a0a5d7953534e13043d930f06f712dc18dc5c62b78d"
+          },
+          "post": {
+            "function_count": 1010,
+            "sha256": "6becc515f5c1f2f72fa88e6eaf490f4c471e578f8641e3510d11eed949af4f09"
+          }
+        }
+      }
+    ],
+    "native_preparations": [
+      {
+        "path": "build/school/client-native-preparation-a10/result.json",
+        "sha256": "73f888e8787d5bf8f3917c6524c688969ef3bbcbf1fd5e07318dfcfa5171bf6d"
+      },
+      {
+        "path": "build/school/client-native-preparation-a11/result.json",
+        "sha256": "1605dafb60a70e2b100f529192d894298c8bd265682f73d1d27cea7a639429dd"
+      }
+    ],
+    "native_bundle": {
+      "path": "build/school/client-native-bundle-a5/bundle.json",
+      "sha256": "40487a65bdf43896c45684185662f586ee589cd3f9ebd4fb7d48c500ff827965"
+    },
+    "runtime_qemu_sha256": "d131ae7811ffbca4e4b7321e717ae534912ec1fcf1dfbee2523ae95402c624d5"
+  },
+  "actual_workflow": {
+    "result": {
+      "path": "build/school/client-native-a12/result.json",
+      "sha256": "d15e86903e2cabf04c4d7418b16ef94f79fad601216ede2ede2e9f228ae2b6c5"
+    },
+    "commands": {
+      "path": "build/school/client-native-a12/commands.jsonl",
+      "sha256": "4b9b1538e1f21bc484ebca7fd0ea79907684cb1437ca21559f87143f0e5cde55"
+    },
+    "scenario_source_sha256": "02485e7596b3a5e90b4d1f1646fb7eaedf7eb0957e7f1b329ae1c5fe0baaf6f1",
+    "elapsed_seconds": 371.8307338820305,
+    "execution_units": 3305100388,
+    "whole_limit_units": 4000000000,
+    "whole_limit_seconds": 1800,
+    "published_course": {
+      "identity": 1,
+      "edition": 2,
+      "bytes": 5263,
+      "sha256": "61a66c07afe8ddd7b0271e549dff1be04f6ca1957bff24e8a97ba20a5c038529",
+      "source": "examples/school/source-derived-client-unit.json"
+    },
+    "varying_exact_work": {
+      "guest_invalid": 2,
+      "guest_verified": 1,
+      "typed_coefficients": [
+        1,
+        2,
+        1
+      ],
+      "scope": "admitted fixed Q[x] goal; actual raw edits and isolated guest checker, separately retained hosted typed comparison"
+    },
+    "explicit_guest_join": {
+      "binding": {
+        "actor": "source-learner",
+        "authority": "ea553b4cb8525b8caef9ebcfbded2d2b392717b2a9a35bf0ec3fb71c40873e63",
+        "bindingRecord": 7,
+        "cancelled": false,
+        "course": 1,
+        "enrollment": "source-learner.1.2",
+        "expires": 100000,
+        "generation": 1,
+        "guestSession": 90981327,
+        "policy": 1,
+        "revision": 2,
+        "school": "source-school",
+        "session": "native-client-1"
+      },
+      "receipt727": true,
+      "complete_body_pixels": true,
+      "scope": "owner-local integrity; not authenticated remote enrollment"
+    },
+    "visible_hint": {
+      "package_sha256": "6695db27757d41d5461a21b948b8f8e6c657ad9950e5c16c4db5b92c28ad90a7",
+      "actual_guest_sequence": 15,
+      "body": "UNVERIFIED ASSISTANCE: Write all four products; compare how many contribute a term of degree one.",
+      "complete_body_pixels": true,
+      "panel_completed": 25
+    },
+    "assisted_resubmission": {
+      "assisted": true,
+      "independent": false,
+      "scope": "resubmission of the unchanged previously guest-verified typed work after visible assistance; no new proof claim"
+    },
+    "guest_revision_rejection": {
+      "ask": {
+        "session": 124123471,
+        "revision": 6,
+        "object": 5785718146287534081,
+        "sequence": 17,
+        "source": 1,
+        "edition": 2,
+        "task_id": 4,
+        "cutoff": 124123470,
+        "now": 124123470,
+        "consent": 1,
+        "deadline": 3124123470,
+        "grants": 1,
+        "modality": 1
+      },
+      "proposal_sha256": "562cc60e22f738b802ea680120421070c0c2ccd3d34d209668177af46195a2e4",
+      "reason": 3,
+      "new_raster_acceptances": 0,
+      "decision": "native-client-1.17",
+      "scope": "real guest document USE after joined proposal; no host document/framebuffer edits"
+    },
+    "authority_negative_requests": {
+      "cases": [
+        {
+          "case": "different-school",
+          "error": "Lean school rejected request: cross-school request rejected at authority admission",
+          "admitted": false
+        },
+        {
+          "case": "changed-document",
+          "error": "Lean school rejected request: guest ASK differs from the exact joined document/consent/sequence context",
+          "admitted": false
+        },
+        {
+          "case": "expired-school-session",
+          "error": "Lean school rejected request: school session expired",
+          "admitted": false
+        },
+        {
+          "case": "cancelled-school-session",
+          "error": "Lean school rejected request: school session is cancelled",
+          "admitted": false
+        }
+      ],
+      "scope": "real Lean authority; guest live checks are independently exercised by SchoolPacket Action tests and actual replay rejection"
+    },
+    "actual_local_mute": {
+      "receipt712": [
+        1810,
+        1,
+        0,
+        0,
+        0
+      ],
+      "cycle": 1934400225,
+      "modeled_controller": {
+        "enabled": true,
+        "tick": 1918608550,
+        "scope": "synthetic-aperture/1",
+        "physical_qualified": false,
+        "streams": [
+          {
+            "id": 0,
+            "state": 2,
+            "error": 0,
+            "count": 0,
+            "epoch": 1,
+            "sequence": 0,
+            "consent": 0,
+            "consumed": 0,
+            "submitted": 0
+          },
+          {
+            "id": 1,
+            "state": 2,
+            "error": 0,
+            "count": 0,
+            "epoch": 1,
+            "sequence": 0,
+            "consent": 0,
+            "consumed": 0,
+            "submitted": 0
+          },
+          {
+            "id": 2,
+            "state": 2,
+            "error": 0,
+            "count": 0,
+            "epoch": 1,
+            "sequence": 0,
+            "consent": 0,
+            "consumed": 0,
+            "submitted": 0
+          },
+          {
+            "id": 3,
+            "state": 2,
+            "error": 0,
+            "count": 0,
+            "epoch": 1,
+            "sequence": 0,
+            "consent": 0,
+            "consumed": 0,
+            "submitted": 0
+          },
+          {
+            "id": 4,
+            "state": 2,
+            "error": 0,
+            "count": 0,
+            "epoch": 1,
+            "sequence": 0,
+            "consent": 0,
+            "consumed": 0,
+            "submitted": 0
+          },
+          {
+            "id": 5,
+            "state": 2,
+            "error": 0,
+            "count": 0,
+            "epoch": 1,
+            "sequence": 0,
+            "consent": 0,
+            "consumed": 0,
+            "submitted": 0
+          },
+          {
+            "id": 6,
+            "state": 2,
+            "error": 0,
+            "count": 0,
+            "epoch": 1,
+            "sequence": 0,
+            "consent": 0,
+            "consumed": 0,
+            "submitted": 0
+          },
+          {
+            "id": 7,
+            "state": 2,
+            "error": 0,
+            "count": 0,
+            "epoch": 1,
+            "sequence": 0,
+            "consent": 0,
+            "consumed": 0,
+            "submitted": 0
+          },
+          {
+            "id": 8,
+            "state": 3,
+            "error": 0,
+            "count": 0,
+            "epoch": 1,
+            "sequence": 0,
+            "consent": 0,
+            "consumed": 0,
+            "submitted": 0
+          }
+        ]
+      },
+      "complete_bar_label_pixels": true,
+      "scope": "actual local privacy control and guest bar repaint before Save; no CAPTURE request in this scenario; no physical or remote microphone claim"
+    },
+    "independent_cold": {
+      "all_medium_bytes": 268435456,
+      "all_pixels": 3630000,
+      "no_live_assistance_replay": true
+    },
+    "actual_school_process_restart": {
+      "first_exit": -9,
+      "new_process_exit": 0,
+      "clock_scope": "controlled school milliseconds; predeclared604800-second production scheduling delay; no retention claim"
+    },
+    "original_due_review_opened": {
+      "identity": 1,
+      "edition": 2,
+      "node": 7,
+      "policy": 1,
+      "complete_body_pixels": true
+    },
+    "independent_work": {
+      "activity": "reason",
+      "node": 5,
+      "actual_guest_USE_rejection": 241,
+      "hosted_authority_outcome": 4,
+      "complete_stroke_pixels": true,
+      "assistance_refused": true,
+      "work_artifact_sha256": "e5405b3af352a177bc04c633f2c0d871a040a3ec8de897afbdb3bb9e54e57acb",
+      "scope": "actual raw drawing and explicit unsupported selection; authority typed metadata and teacher review, no guest arbitrary-proof verdict"
+    },
+    "independent_policy_negative_scope": "synthetic task-field mutation of the actual ASK; actual Lean policy refusal, no independent guest checking binding claimed",
+    "developer_extension": {
+      "definition_sha256": "25b4efa96f32792a11702d8be58aedb8cf98e21fcca150cd25c96cdab656c9be",
+      "package_sha256": "7bebcb25d4ae220b2177566680f9f9afb5d2316ea131e9e5b4f85603400783cc",
+      "edition": 3,
+      "delay_seconds": 60,
+      "actual_checker_outcome": 1,
+      "actual_due_review": {
+        "actor": "source-learner",
+        "artifacts": [
+          "7bebcb25d4ae220b2177566680f9f9afb5d2316ea131e9e5b4f85603400783cc",
+          "7eb4764a3b7a1e9686abed4265c4f319d9aa9092d2b52435d87adce7afee2211"
+        ],
+        "data": {
+          "activity": "later-review",
+          "assisted": false,
+          "course": 1,
+          "disabled": false,
+          "due": 604860100,
+          "learner": "source-learner",
+          "policy": 1,
+          "recommendation": "later independent review",
+          "reviewPolicy": "lemma-review-schedule/1",
+          "revision": 3,
+          "sourceAttempt": "developer-extension-verified"
+        },
+        "key": "developer-extension-verified",
+        "kind": "review",
+        "sequence": 24,
+        "time": 604800100
+      },
+      "complete_review_body_pixels": true,
+      "original_revision_attempt_preserved": true
+    },
+    "phase_observations": [
+      {
+        "name": "study-open-published-unit",
+        "initial_cycle": 344000016,
+        "final_cycle": 455000039,
+        "execution_units": 111000023,
+        "host_seconds": 14.252779389033094,
+        "cycle_limit": 400000000,
+        "host_limit": 600,
+        "budget_source": "existing CourseMathWorkflow.phase COURSEactualpackage/cold-reopen-installed-body400M",
+        "original_generic100M_view": "FAIL_ORIGINAL100M_CLOCK_CEILING"
+      },
+      {
+        "name": "actual-school-coefficients-Invalid",
+        "initial_cycle": 579000052,
+        "final_cycle": 613900067,
+        "execution_units": 34900015,
+        "host_seconds": 25.41633256105706,
+        "cycle_limit": 200000000,
+        "host_limit": 600,
+        "own_checker_saved_idle_panel": 11,
+        "completed_controls_panel": 12,
+        "complete_body_and_source_controls_pixels": true,
+        "first_actual_checker_reply_paper": {
+          "panel_completed": 11,
+          "paper": {
+            "status": 0,
+            "error": 0,
+            "completed": 11,
+            "pending_sequence": 11,
+            "target_sha256": "af3d3457b6d1bbaa7c7b223b81ac663dfd40315f05b12aebf4dfc5fb33b3713a",
+            "visible_sha256": "af3d3457b6d1bbaa7c7b223b81ac663dfd40315f05b12aebf4dfc5fb33b3713a",
+            "sequencer": {
+              "enabled": true,
+              "phase": 2,
+              "drive_remaining": 0,
+              "drive_clocks": 1577472,
+              "scan_beats": 788736,
+              "panel_beats": 262912,
+              "power": false
+            }
+          }
+        },
+        "own_checker_saved_idle_paper": {
+          "panel_completed": 11,
+          "paper": {
+            "status": 0,
+            "error": 0,
+            "completed": 11,
+            "pending_sequence": 11,
+            "target_sha256": "985e23be0ddeccf1f945285697a4895225244194ed84d6828e16f19def6d2c1e",
+            "visible_sha256": "af3d3457b6d1bbaa7c7b223b81ac663dfd40315f05b12aebf4dfc5fb33b3713a",
+            "sequencer": {
+              "enabled": true,
+              "phase": 2,
+              "drive_remaining": 0,
+              "drive_clocks": 1577472,
+              "scan_beats": 788736,
+              "panel_beats": 262912,
+              "power": false
+            }
+          }
+        },
+        "completed_controls_paper": {
+          "panel_completed": 12,
+          "paper": {
+            "status": 0,
+            "error": 0,
+            "completed": 12,
+            "pending_sequence": 12,
+            "target_sha256": "985e23be0ddeccf1f945285697a4895225244194ed84d6828e16f19def6d2c1e",
+            "visible_sha256": "985e23be0ddeccf1f945285697a4895225244194ed84d6828e16f19def6d2c1e",
+            "sequencer": {
+              "enabled": true,
+              "phase": 2,
+              "drive_remaining": 0,
+              "drive_clocks": 1577472,
+              "scan_beats": 788736,
+              "panel_beats": 262912,
+              "power": false
+            }
+          }
+        }
+      },
+      {
+        "name": "actual-school-coefficients-Verified",
+        "initial_cycle": 871900098,
+        "final_cycle": 909200112,
+        "execution_units": 37300014,
+        "host_seconds": 23.851588855031878,
+        "cycle_limit": 200000000,
+        "host_limit": 600,
+        "own_checker_saved_idle_panel": 19,
+        "completed_controls_panel": 20,
+        "complete_body_and_source_controls_pixels": true,
+        "first_actual_checker_reply_paper": {
+          "panel_completed": 19,
+          "paper": {
+            "status": 0,
+            "error": 0,
+            "completed": 19,
+            "pending_sequence": 19,
+            "target_sha256": "fe87fc0b07f93a62fe0d27cc0eddf31bd38fd44cdde6ead2b14cc12e5c1662a9",
+            "visible_sha256": "fe87fc0b07f93a62fe0d27cc0eddf31bd38fd44cdde6ead2b14cc12e5c1662a9",
+            "sequencer": {
+              "enabled": true,
+              "phase": 2,
+              "drive_remaining": 0,
+              "drive_clocks": 1577472,
+              "scan_beats": 788736,
+              "panel_beats": 262912,
+              "power": false
+            }
+          }
+        },
+        "own_checker_saved_idle_paper": {
+          "panel_completed": 19,
+          "paper": {
+            "status": 0,
+            "error": 0,
+            "completed": 19,
+            "pending_sequence": 19,
+            "target_sha256": "20378d63c37b739877ef98ade60d9867db302c099685dd809c5da2de2fb2fd6e",
+            "visible_sha256": "fe87fc0b07f93a62fe0d27cc0eddf31bd38fd44cdde6ead2b14cc12e5c1662a9",
+            "sequencer": {
+              "enabled": true,
+              "phase": 2,
+              "drive_remaining": 0,
+              "drive_clocks": 1577472,
+              "scan_beats": 788736,
+              "panel_beats": 262912,
+              "power": false
+            }
+          }
+        },
+        "completed_controls_paper": {
+          "panel_completed": 20,
+          "paper": {
+            "status": 0,
+            "error": 0,
+            "completed": 20,
+            "pending_sequence": 20,
+            "target_sha256": "4643ab5393efd4bc4a54df0dc0a01ef78820ab213cad4e23aa497bc611c46a9b",
+            "visible_sha256": "4643ab5393efd4bc4a54df0dc0a01ef78820ab213cad4e23aa497bc611c46a9b",
+            "sequencer": {
+              "enabled": true,
+              "phase": 2,
+              "drive_remaining": 0,
+              "drive_clocks": 1577472,
+              "scan_beats": 788736,
+              "panel_beats": 262912,
+              "power": false
+            }
+          }
+        }
+      },
+      {
+        "name": "explicit-guest-JOIN-school-session",
+        "initial_cycle": 929400118,
+        "final_cycle": 974400124,
+        "execution_units": 45000006,
+        "host_seconds": 4.896591578959487,
+        "cycle_limit": 100000000,
+        "host_limit": 600
+      },
+      {
+        "name": "actual-school-hint-visible",
+        "initial_cycle": 988400124,
+        "final_cycle": 1035400132,
+        "execution_units": 47000008,
+        "host_seconds": 4.334225393016823,
+        "cycle_limit": 100000000,
+        "host_limit": 600
+      },
+      {
+        "name": "guest-rejects-completed-hint-replay",
+        "initial_cycle": 1035400132,
+        "final_cycle": 1058400136,
+        "execution_units": 23000004,
+        "host_seconds": 1.4277874249964952,
+        "cycle_limit": 100000000,
+        "host_limit": 600
+      },
+      {
+        "name": "complete-home-after-replay-rejection",
+        "initial_cycle": 1058400136,
+        "final_cycle": 1240400147,
+        "execution_units": 182000011,
+        "host_seconds": 11.065432839095592,
+        "cycle_limit": 500000000,
+        "host_limit": 600
+      },
+      {
+        "name": "fresh-ASK-before-document-change",
+        "initial_cycle": 1240400147,
+        "final_cycle": 1249400153,
+        "execution_units": 9000006,
+        "host_seconds": 4.920481686014682,
+        "cycle_limit": 150000000,
+        "host_limit": 600
+      },
+      {
+        "name": "guest-rejects-school-proposal-after-document-change",
+        "initial_cycle": 1695400207,
+        "final_cycle": 1718400210,
+        "execution_units": 23000003,
+        "host_seconds": 1.2966781109571457,
+        "cycle_limit": 100000000,
+        "host_limit": 600
+      },
+      {
+        "name": "explicit-local-MUTE-before-Save",
+        "initial_cycle": 1918400222,
+        "final_cycle": 1934400225,
+        "execution_units": 16000003,
+        "host_seconds": 1.5459610159741715,
+        "cycle_limit": 150000000,
+        "host_limit": 600
+      },
+      {
+        "name": "acknowledged-drawing-before-explicit-Save",
+        "initial_cycle": 1934400225,
+        "final_cycle": 1934400225,
+        "execution_units": 0,
+        "host_seconds": 0.09783098299521953,
+        "cycle_limit": 300000000,
+        "host_limit": 600
+      },
+      {
+        "name": "explicit-Save-of-school-work",
+        "initial_cycle": 1934400225,
+        "final_cycle": 1942400226,
+        "execution_units": 8000001,
+        "host_seconds": 0.5694431229494512,
+        "cycle_limit": 150000000,
+        "host_limit": 600
+      },
+      {
+        "name": "new-CPU-cold-resume-acknowledged-school-work",
+        "initial_cycle": 0,
+        "final_cycle": 257000009,
+        "execution_units": 257000009,
+        "host_seconds": 16.313467743922956,
+        "cycle_limit": 1000000000,
+        "host_limit": 600
+      },
+      {
+        "name": "independent-USE-explicitly-unsupported",
+        "initial_cycle": 450000039,
+        "final_cycle": 453000040,
+        "execution_units": 3000001,
+        "host_seconds": 0.2565024350769818,
+        "cycle_limit": 100000000,
+        "host_limit": 600
+      },
+      {
+        "name": "ASK-after-unsupported-independent-selection",
+        "initial_cycle": 850000085,
+        "final_cycle": 863300093,
+        "execution_units": 13300008,
+        "host_seconds": 7.190994921023957,
+        "cycle_limit": 150000000,
+        "host_limit": 600
+      },
+      {
+        "name": "ordinary-reader-opens-developer-edition",
+        "initial_cycle": 978300103,
+        "final_cycle": 1081300120,
+        "execution_units": 103000017,
+        "host_seconds": 11.011380663025193,
+        "cycle_limit": 400000000,
+        "host_limit": 600,
+        "budget_source": "existing CourseMathWorkflow.phase COURSEactualpackage/cold-reopen-installed-body400M",
+        "original_generic100M_view": "FAIL_ORIGINAL100M_CLOCK_CEILING"
+      },
+      {
+        "name": "developer-edition-actual-Verified",
+        "initial_cycle": 1208300134,
+        "final_cycle": 1246700149,
+        "execution_units": 38400015,
+        "host_seconds": 21.39821660495363,
+        "cycle_limit": 200000000,
+        "host_limit": 600,
+        "own_checker_saved_idle_panel": 24,
+        "completed_controls_panel": 25,
+        "complete_body_and_source_controls_pixels": true,
+        "first_actual_checker_reply_paper": {
+          "panel_completed": 24,
+          "paper": {
+            "status": 0,
+            "error": 0,
+            "completed": 24,
+            "pending_sequence": 24,
+            "target_sha256": "bce2b36210bc3df42948ab628af396dfd58d15b8e837d5200bdb8b9f14a24256",
+            "visible_sha256": "bce2b36210bc3df42948ab628af396dfd58d15b8e837d5200bdb8b9f14a24256",
+            "sequencer": {
+              "enabled": true,
+              "phase": 2,
+              "drive_remaining": 0,
+              "drive_clocks": 1577472,
+              "scan_beats": 788736,
+              "panel_beats": 262912,
+              "power": false
+            }
+          }
+        },
+        "own_checker_saved_idle_paper": {
+          "panel_completed": 24,
+          "paper": {
+            "status": 0,
+            "error": 0,
+            "completed": 24,
+            "pending_sequence": 24,
+            "target_sha256": "a19231679440835cc02685a8a5621941b7271b1a57df1cd8bd0d246a064726d6",
+            "visible_sha256": "bce2b36210bc3df42948ab628af396dfd58d15b8e837d5200bdb8b9f14a24256",
+            "sequencer": {
+              "enabled": true,
+              "phase": 2,
+              "drive_remaining": 0,
+              "drive_clocks": 1577472,
+              "scan_beats": 788736,
+              "panel_beats": 262912,
+              "power": false
+            }
+          }
+        },
+        "completed_controls_paper": {
+          "panel_completed": 25,
+          "paper": {
+            "status": 0,
+            "error": 0,
+            "completed": 25,
+            "pending_sequence": 25,
+            "target_sha256": "f9c0991e4b0e796794487fee24654ec55b9ba4915e729384d67789c8c3759339",
+            "visible_sha256": "f9c0991e4b0e796794487fee24654ec55b9ba4915e729384d67789c8c3759339",
+            "sequencer": {
+              "enabled": true,
+              "phase": 2,
+              "drive_remaining": 0,
+              "drive_clocks": 1577472,
+              "scan_beats": 788736,
+              "panel_beats": 262912,
+              "power": false
+            }
+          }
+        }
+      }
+    ],
+    "unexecuted": [
+      "browser school workflow",
+      "protected remote enrollment/authentication",
+      "physical device",
+      "student free-form proof checking",
+      "all arbitrary school endpoint discovery/teacher editing controls"
+    ],
+    "actual_hint_image": {
+      "schema": "lemma-observed-panel-lossless-conversion/1",
+      "source": "build/school/client-native-a12/school-hint-controller-and-durable-bytes.ppm",
+      "source_sha256": "39a6cd97785574297d71c39f4194fe7a22a5f31ef2518d122439168fb6776404",
+      "png": "docs/evidence/008-school-client-hint.png",
+      "png_sha256": "810ee3b6acaa4c8dfd692c1e54187e9ec64465d5efa3432f0314e27b64001456",
+      "width": 1650,
+      "height": 2200,
+      "all_RGB_bytes_equal": true,
+      "rgb_sha256": "227e07e82b73a18da87bc32d503f35021a9b2be7c7bd9fa2c9416aa9f5a487f0",
+      "scope": "Format conversion only of the actual completed guest controller pixels; no crop, painting, resampling or synthetic image."
+    },
+    "original_review_delay_seconds": 604800
+  },
+  "focused_and_regression_validation": {
+    "actual_private_Actions_and_consequential_mutants": {
+      "path": "build/school/notebook-envelope-ui-a3/result.json",
+      "sha256": "f535534348728e029d39607e50b4cae56df8f1ad7ec14a43947452e08d94eb85"
+    },
+    "current_hosted40tests": {
+      "path": "build/school/host-validation-v3-a6/validation.json",
+      "sha256": "fc7b38df6f6e0f7468b349d1ba43030a25bec2de4766e027a09b6c1ca906efbb"
+    },
+    "current_multimodal66tests": {
+      "path": "build/school/multimodal-host-final-a6.log",
+      "sha256": "9aa598b7855bd3a90c4a1745a10b28156aed6664c88f40abb5ca7d10a97e76b8"
+    },
+    "oracle_font_literal_review": {
+      "path": "build/school/client-native-a4/font-literal-review.json",
+      "sha256": "d51aa8365314f45116e8e79e2c5c9ed088f64193cd019eafd2622c2f438ce52c"
+    }
+  },
+  "retained_failures": [
+    {
+      "run": 1,
+      "result": {
+        "path": "build/school/client-native-a1/result.json",
+        "sha256": "0d208891557926cb8ae11fdddf4a8a90145073269eed6be45af32b5fb7bc7247"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 104.23550783307292,
+      "error": "ValueError('original phase/whole limit learner-ASK-for-published-hint')",
+      "analysis": null,
+      "interpretation": "Old admitted guest lost ASK while ordinary display work was pending; explicit bounded guest intent retention added. Original150M failure retained."
+    },
+    {
+      "run": 2,
+      "result": {
+        "path": "build/school/client-native-a2/result.json",
+        "sha256": "5f70aa22e8b9b8be5bd3407910e9a7e8ba230d180bee10e9a46ba5567b01a332"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 57.48926515004132,
+      "error": "ValueError('original phase/whole limit study-open-published-unit')",
+      "analysis": {
+        "path": "build/school/client-native-a2/failure-analysis.json",
+        "sha256": "15a3c6237d51b022709f85e11e0bcb4e080d3673030efd3ef87959c04dd8575a"
+      },
+      "interpretation": "Original generic100M course-body deadline failed; later disk traces show package reads. Initial lost-LOAD inference was withdrawn."
+    },
+    {
+      "run": 3,
+      "result": {
+        "path": "build/school/client-native-a3/result.json",
+        "sha256": "41a1d19558c9527bb603dc122cb56fb5ebe1992b1a681ebda6aa23cead013dec"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 42.57922556903213,
+      "error": "ValueError('original phase/whole limit study-open-published-unit')",
+      "analysis": null,
+      "interpretation": "Queued chooser LOAD dispatched and actual disk reads occurred; generic100M body deadline failed. Separate diagnostic measured complete body111M under pre-existing course400M."
+    },
+    {
+      "run": 4,
+      "result": {
+        "path": "build/school/client-native-a4/result.json",
+        "sha256": "54a4284c19c56b4630fa530931ee07c96971ecaad227f7eb5f83c89dba3e610a"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 62.59956272295676,
+      "error": "ValueError('original phase clock budget study-node-3')",
+      "analysis": {
+        "path": "build/school/client-native-a4/failure-analysis.json",
+        "sha256": "7741b6b33b423fabc3dc395004fcd4952947cdb13bb9f1dc1ce9f608477ff7a9"
+      },
+      "interpretation": "Actual node3 was displayed. Independent oracle J literal was transcribed incorrectly; fixed rows, all55 literals reviewed, positive/negative pixel tests retained."
+    },
+    {
+      "run": 5,
+      "result": {
+        "path": "build/school/client-native-a5/result.json",
+        "sha256": "e68d57d84f07aaef10255ff01e57cceadb7d572e07416b311b51223bd6486a84"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 108.21842176897917,
+      "error": "ValueError('original phase clock budget fresh-ASK-before-document-change')",
+      "analysis": {
+        "path": "build/school/client-native-a5/failure-analysis.json",
+        "sha256": "8160151e294eca06d338baf4c375842482c4cc958b7afe7654b6d0e2045ee848"
+      },
+      "interpretation": "Visible joined hint and assisted record succeeded, then rejected presentation flags kept packageBusy forever. Guest clears exactly abandoned text/control/autoread and phase4, preserving rejection/highwater/document."
+    },
+    {
+      "run": 6,
+      "result": {
+        "path": "build/school/client-native-a6/result.json",
+        "sha256": "1bbf840c586ca46b5d841985dd43876de92e457f4a17f5dae365c4039c3df3d6"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 107.39636578096543,
+      "error": "ValueError('original phase/whole limit fresh-ASK-before-document-change')",
+      "analysis": {
+        "path": "build/school/client-native-a6/failure-analysis.json",
+        "sha256": "b01ded4fd7095a6511d0c694df1246c148020d3c814bdb46946467129af94c86"
+      },
+      "interpretation": "Replay receipt preceded full home redraw. Separate diagnostic completed freshASK183M including predecessor work; observer now verifies complete home under historical close500M before unchangedASK150M."
+    },
+    {
+      "run": 7,
+      "result": {
+        "path": "build/school/client-native-a7/result.json",
+        "sha256": "d6a5fca151aa2b739e562d6af403e35afe2150db063d68c2d1c6403f0e56c24a"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 156.38805634400342,
+      "error": "ValueError('original phase clock budget guest-rejects-school-proposal-after-document-change')",
+      "analysis": {
+        "path": "build/school/client-native-a7/failure-analysis.json",
+        "sha256": "f520a1749aacf06f814623bbe0a21bbde78ce1ce11d14e7bb60899017cc1c918"
+      },
+      "interpretation": "Source-reader CRC/node remained selected when loading a different school envelope, producing integrity243 before action admission. Explicit JOIN/LOAD clear those old expectations; full package/action validation retained."
+    },
+    {
+      "run": 8,
+      "result": {
+        "path": "build/school/client-native-a8/result.json",
+        "sha256": "d261c9eb3959e6d7a29ffc86e350b61a09b7f0dd47ec62acb4d7fc71b57d9f34"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 165.8531078590313,
+      "error": "ValueError('original phase clock budget explicit-Save-of-school-work')",
+      "analysis": {
+        "path": "build/school/client-native-a8/failure-analysis.json",
+        "sha256": "7fc0c7e875259da9fbba8959e482245d4edcf3ff48db7eac1df5ca4d97cfd2b7"
+      },
+      "interpretation": "Explicit Save received no Pending/newACK. Initial ink-pending-only inference was withdrawn aftera9. Own MUTE bar was not observed by generic click; original150M failure remains."
+    },
+    {
+      "run": 9,
+      "result": {
+        "path": "build/school/client-native-a9/result.json",
+        "sha256": "35b9610fd8790103a7bc404344a958c840edc678d13048ea81c464c69b875eef"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 164.4773395769298,
+      "error": "ValueError('original phase/whole limit explicit-Save-of-school-work')",
+      "analysis": {
+        "path": "build/school/client-native-a9/failure-analysis.json",
+        "sha256": "e99d44dd8b32cd8291365c8df03b7fb5f97d3d3808521c0a4b83b01ea4c4af0f"
+      },
+      "interpretation": "Actual post-stroke Saved ACK/label passed, but all6 MUTE bar labels were absent. Generic MUTE click accepted unrelated paper completion before its queued repaint. Observer now requires own control/consent/allbarpixels under original150M before firstSave; no retry/targetchange."
+    },
+    {
+      "run": 10,
+      "result": {
+        "path": "build/school/client-native-a10/result.json",
+        "sha256": "c241263f48ea4ec2e0876c67fe5826177f630e2a9539bdd9be91f31aa8295346"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 197.4173350490164,
+      "error": "ValueError('original phase clock budget independent-USE-explicitly-unsupported')",
+      "analysis": {
+        "path": "build/school/client-native-a10/failure-analysis.json",
+        "sha256": "87e0868888f010d9499b272f49b3fd0de58d50a488bf0ed406d392cb965513d1"
+      },
+      "interpretation": "Full acknowledged medium/pixel cold comparison and original review restart succeeded. Actual454/241 unsupported admission existed, but predicate required idle while error redraw remained. Receipt now observed separately under100M then full home under historical500M; a10 remainsFAIL."
+    },
+    {
+      "run": 11,
+      "result": {
+        "path": "build/school/client-native-a11/result.json",
+        "sha256": "b660018ffab74c8c0026dc71fc788d38eea2957e34c2bcd47de797652ca686ca"
+      },
+      "status": "FAIL_RETAINED",
+      "elapsed_seconds": 189.07760398101527,
+      "error": "KeyboardInterrupt()",
+      "analysis": {
+        "path": "build/school/client-native-a11/failure-analysis.json",
+        "sha256": "2b17522f123c602355280754367cf4c762f84d0fdff635d9c6e9e320db1a7db5"
+      },
+      "interpretation": "Deliberately interrupted by SIGINT130 before any observer edit after the separate developer diagnostic exposed an unfinished post-check controls frame. KeyboardInterrupt/fullFAIL/sourceEqual retained; no guest failure or full acceptance claimed."
+    }
+  ],
+  "retained_diagnostics": [
+    {
+      "path": "build/school/client-view-diagnostic-a1/result.json",
+      "sha256": "423c88831dea0bc4ce7774026a3ef5b530745667ebec532c5211a35da4735a05"
+    },
+    {
+      "path": "build/school/client-ask-diagnostic-a1/result.json",
+      "sha256": "e479300028970f89675456e691e95f3f9bcccd4179bf9019f7f17aab1e6307af"
+    },
+    {
+      "result": {
+        "path": "build/school/client-tail-diagnostic-a1/result.json",
+        "sha256": "a638c2b7e9039571c720a121fafbadbd6d8f543ea9cb3c36f483f1b8aeb46e6c"
+      },
+      "analysis": {
+        "path": "build/school/client-tail-diagnostic-a1/failure-analysis.json",
+        "sha256": "ca6eaee8d3a99ae669828329a4b7c3e16e05deb9149958f69c572adfafeec4ce"
+      }
+    },
+    {
+      "result": {
+        "path": "build/school/client-tail-diagnostic-a2/result.json",
+        "sha256": "d8a6018b7a570cde565df4822fa241cb9df00e0134cb158bee7bcc754148cd4f"
+      },
+      "analysis": {
+        "path": "build/school/client-tail-diagnostic-a2/failure-analysis.json",
+        "sha256": "6098337664645d2ba5e9ffab29048d4481aaa70836a2c35b3b90dd9ec60c98d7"
+      }
+    },
+    {
+      "result": {
+        "path": "build/school/client-tail-diagnostic-a3/result.json",
+        "sha256": "294b137b3b05c8c0e83e758a39723fd0bf083b8b86d3d8b32d9dc2bfba329584"
+      },
+      "analysis": {
+        "path": "build/school/client-tail-diagnostic-a3/failure-analysis.json",
+        "sha256": "3ea7fcd598176096347aa5be0cde08f0c32832c8075026a2e50658d144ebb171"
+      }
+    },
+    {
+      "result": {
+        "path": "build/school/client-developer-diagnostic-a1/result.json",
+        "sha256": "02cb0a8217baf0d0fd7e267a2fe60330bd59e79b883551053ed0a88a4098af10"
+      },
+      "analysis": {
+        "path": "build/school/client-developer-diagnostic-a1/failure-analysis.json",
+        "sha256": "653aadc0705f9dde1d074fd5b0854e2c0aaf01af4759b77e7d13051661262964"
+      }
+    },
+    {
+      "result": {
+        "path": "build/school/client-developer-diagnostic-a2/result.json",
+        "sha256": "3687b66ff691ffab8ffae63ca4a91b6070fc7f489865370962c5b6f1d2b3c38a"
+      },
+      "analysis": null
+    }
+  ],
+  "observation_corrections": {
+    "course_LOAD": "Pre-existing CourseMathWorkflow course400M applies only to explicit package-read phases; prior generic100M failures remain failed.",
+    "font": "Independent fixed J and < rows corrected against historical public glyph specification; expected pixels never provided to guest.",
+    "rejected_view_close": "Whole home body, Saved label and new controller completion under historical close500M before next ASK150M.",
+    "Save": "Own MUTE712/consent0/all6barlabelpixels under control150M and automatic-writing Saved ACK/label under ink300M precede first explicitSave150M/newACK. Earlier failed taps retained; exact busy variable unmeasured.",
+    "unsupported_admission": "454/241 receipt100M is separate from complete-home500M; tail diagnostic measured3M admission then184M redraw. Original100M idle-conflated failure retained.",
+    "postreceipt_presentation": "ASK150M and checker200M each retain their original whole phase bound. Baseline first own receipt plus required originalSaved/idle, then strictly newer controller completion and exact bar/source/body pixels;100k sampling and public paper watermarks retained. No extra ASK or COURSE action.",
+    "unsupported_reader_resume": "UnsupportedUSE commits no new selection; COURSE returns to acknowledged routine, then two normal NEXTs restore the independent task. Three-sample raw fixture retains the strict independent stroke oracle.",
+    "independent_work": "Unsupported USE241 and actual raw drawing submitted for teacher-review outcome4; no arbitrary-proof checker or independent guest checking binding is claimed."
+  },
+  "legacy_parent_metadata_retained": {
+    "hint_scope": "authored local hint; permissioned tutor transport remains unfinished",
+    "source_medium_scope": "Actual guest-installed packages; no package or document is installed by this observer",
+    "independent_oracle": "exact Fraction/coefficient, Doc8, immutable package provenance and ordered learner-event observers"
+  },
+  "legacy_parent_metadata_interpretation": "The immutable final receipt retains parent CourseMathWorkflow labels. Its inherited statement that permissioned tutor transport remains unfinished is superseded for the actual owner-local school-session/1 JOIN and assistance/3 path by the recorded727/725, complete hint pixels and exact durable bytes. Protected remote authentication remains unqualified. The observer transports raw UART package bytes; the guest installer alone owns Store publication. The inherited exact-math oracle label concerns the fixed admitted coefficients and typed records, not arbitrary proofs or educational benefit.",
+  "documentation": {
+    "guide": {
+      "path": "docs/school-client.html",
+      "sha256": "b59953bbce6bac2c48e1b2743ddd8edf5c12b008b0f6bdcbdc314bb20159663d"
+    },
+    "actual_hint_png_conversion": {
+      "path": "build/school/client-native-a12/hint-png-conversion.json",
+      "sha256": "946243290e6bb17d9c4188dcad157266121182ad85adeec25bbcee8e0e6722e2"
+    }
+  }
+}

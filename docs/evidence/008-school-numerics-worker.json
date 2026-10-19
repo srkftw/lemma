@@ -1,0 +1,965 @@
+{
+  "boundedLoad": {
+    "actualTargetJobsCompleted": 4,
+    "concurrentWorkers": 4,
+    "emulatorPeakRssKiBObserved": [
+      60592,
+      60416,
+      60660,
+      60500
+    ],
+    "enrolledLearnerRequests": {
+      "afterConcurrentRelease": {
+        "courseResponseSha256": "1e2baf32831224ffc651f238d714cfe7b20e10b3b926096f379e0ba6a5bb1f8e",
+        "courseSeconds": 0.08142672502435744,
+        "observedTypedAttempts": 1,
+        "packageBytes": 4199,
+        "packageSha256": "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e",
+        "progressResponseSha256": "566af63c49dc74240c6b905955d17fe12f5418827623b98f0cce71d92855b869",
+        "progressSeconds": 0.1102231260156259
+      },
+      "fourProcessesPausedAtExplicitBarrier": {
+        "courseResponseSha256": "1e2baf32831224ffc651f238d714cfe7b20e10b3b926096f379e0ba6a5bb1f8e",
+        "courseSeconds": 0.11285994097124785,
+        "observedTypedAttempts": 1,
+        "packageBytes": 4199,
+        "packageSha256": "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e",
+        "progressResponseSha256": "566af63c49dc74240c6b905955d17fe12f5418827623b98f0cce71d92855b869",
+        "progressSeconds": 0.11776676401495934
+      },
+      "progressScope": "one deliberately supplied hosted typed attempt; no guest observation invented"
+    },
+    "freshProcessRecoveredAllFourCompletedJobs": true,
+    "receipt": {
+      "path": "build/school/load-worker-008-a9/load-evidence.json",
+      "sha256": "91b8f55f6cf1f3d5aa797e09da941991c15828793e7fd4b0c4192747232108fd"
+    },
+    "rejections": [
+      "fifth active lease",
+      "bulk consumes interactive reserve",
+      "ninth queue item",
+      "4097-byte input"
+    ],
+    "result": "pass",
+    "schoolProduction": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/school/host-native-v3-a8/production.json",
+      "sha256": "36a8d5d255fc396a0afc9070bc59211f8f0e0eeb2a5751f934c6533d2f11edbc",
+      "sourceInputs": {
+        "Lemma/Core0/Execution.lean": "1eb46d0bba6ad1c13e9a2285a9cca70aef322c42a3ea35fbb53c30caa14642ae",
+        "Lemma/Core0/IR.lean": "125fca545e8107939ac9a9c08ec674ab7287d20a2cb00fa99d86a9f7e670c441",
+        "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+        "Lemma/Core0/Timer.lean": "d6a0d0dbc7ed2939a5825683abc21374ee4bcfd60bc010ee5575ed0296bd68f2",
+        "Lemma/Core0/Trap.lean": "bc40c4ac403d995bf026737af7b8b2ca25390399473cfe1389a0bd700fe078af",
+        "Lemma/Courses/Package.lean": "d2fa235ddebbe0a50160290b9b3e6d8b0f110269fac623a79674bdd2b8253e21",
+        "Lemma/Courses/PackageFormat.lean": "ee2e3a88c9016e8817d87c08559babedf99d3707ef7f1c928dbf04e7ac500e88",
+        "Lemma/Documents/Mathematics.lean": "cdc7a38753985251e526b3813df719a2b27b1783350ece5a49800d4d6cbbf4fa",
+        "Lemma/Mathematics/Exact.lean": "3cbeefed82f41a2b6692f96ecfd06a793d272fd8480bfb6ae662e08a0211c828",
+        "Lemma/Mathematics/ExecutionIdentity.lean": "611495044f1f620d23b8439c7147683b16654aa8a06c922636dabb111cd0a7b7",
+        "Lemma/Mathematics/ExecutionIdentityV2.lean": "bd19191c002bfcb1fd2d0e7bc14d6b9cf28fd16938000dcc0e036f3c716b683a",
+        "Lemma/Mathematics/ExecutionIdentityV3.lean": "ee7b35cc6829727bc016662fb7cec208d5a8dfdf65a77433db615246f78a97f1",
+        "Lemma/Mathematics/ExecutionIdentityV4.lean": "34126784408980975caf49097dc0ffdcdf6e76929b272377616e046879c34389",
+        "Lemma/Mathematics/OwnedSubmission.lean": "a6f76a484d21834365244c6c775fa288073b5e4a345329f205c18d2b046fd6eb",
+        "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903",
+        "Lemma/School/Authoring.lean": "abfc31f812c5a48c3443cad6b9c78469324cf6dbc990012774e511e02c0de30a",
+        "Lemma/School/Authority.lean": "d3f37abbe235134e5ab1a0f9c1cbe42d7f1da53ee8359c90d795113847dcc908",
+        "Lemma/School/Catalogue.lean": "ca2a22cb389d0713e24eb1202b356e6f6ce85182f7d224b5c4573c84b6dbd38b",
+        "Lemma/School/Client.lean": "eaf88fe83df1c0e58af4ed0385e23a860e28d2ce476d78867fad909795d0e303",
+        "Lemma/School/CurriculumMain.lean": "e74fea97a5f4994240aab47ba85b7583f87d4bd77040749f6afb81939fd76ee0",
+        "Lemma/School/Definition.lean": "566329be192ebb8439e274f6b266ced369f2ebf5faaf104c4a3f3ccd2972c434",
+        "Lemma/School/Digest.lean": "e776deed7d2437dc6b27648d6bfc662c56d48e11e92b35384bc1fc1439aabaa2",
+        "Lemma/School/FixtureUnit.lean": "d6f916fdfb74ff5dde941c99c4d35487d1a93e440b5295fbca893e56780ecc56",
+        "Lemma/School/LearnerChoice.lean": "882bada0b07ba0d8430513cb221fa8f82cfae91f240cc96f4e6dcef49d4f60b1",
+        "Lemma/School/LocalProvider.lean": "7ebf8cd92610661afb6916b855e744d86d0c0492b86f513b11649768cc767da5",
+        "Lemma/School/Main.lean": "d4af4a2d0772fcb7202d3afa122b8ec70e1f143790bbd8c86a70eb9c894bfcb9",
+        "Lemma/School/Model.lean": "32deff8d404d0a0f0340e0aa875c8c36492ce80551c948e4419f9ca89525e962",
+        "Lemma/School/Observation.lean": "43c74dbbe4035d0c4af401160c2ff5fd731057022f9b8a295b6cb088e5d8919f",
+        "Lemma/School/SourceRegistry.lean": "420cacb5257c771a88f44b7bee4751b875023819e43ad4dc4d066a082ce45292",
+        "Lemma/School/Store.lean": "d8434717861dd318199faed508c10cd333092e2f9420efe14bc7bc974f832856",
+        "Lemma/User/ABI.lean": "43f315ac5caf22ac47f0e6fb7f9dda5a1899a1e3436de695cee0f41653ed9259",
+        "Lemma/User/Memory.lean": "c04236eb3b42ff74a30a12dd04d18fb6dcbeb2bc74aaf000ad58fe4958265024",
+        "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+        "Lemma/User/Syscall.lean": "d405577a4fd2cf4a67bfa67a71ae26ade5be16ba377c7884a8f578589899ea66",
+        "fixtures/school/Distributivity.txt": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+        "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+        "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+        "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+        "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+        "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+        "scripts/build_school.py": "5967730a148e25a37af712e13f0d692889ac512d9afb2633aef650793346664c",
+        "tooling/toolchain-lock.json": "9615c3d43319431b04bce1807f711ddb0e822294904e3e21287863be6c4cd08a"
+      }
+    },
+    "targetRoundTripSeconds": {
+      "maximum": 0.012257763999514282,
+      "median": 0.00643881456926465,
+      "minimum": 0.004736047936603427
+    }
+  },
+  "durableJob": {
+    "bindingRejections": [
+      {
+        "actualResponseDigest": "d4245dd14d1e906477e2945ddf562fff840665621e9eba5575aabcd5178dbc5b",
+        "error": "actual target input words differ from declared parameters or features",
+        "executionReceiptSha256": "61c7b8de5ce1cf6252af12000c5d31db532ca7aaa5ed76b327618f222997468c",
+        "kind": "features"
+      },
+      {
+        "actualResponseDigest": "49f1effd9fde990e902e89da85d982b3afd2a78ab2c5cbce9a02c3313ce0a876",
+        "error": "worker response differs from declared job, model, image or lease",
+        "executionReceiptSha256": "b036b3a3875621a589b1a0c9b5262a7c5304218d420f6a3cc630264cfff9a493",
+        "kind": "model"
+      },
+      {
+        "actualResponseDigest": "e54f027f5e81744da8a5b2c0783043df4371a461af74793aa6d143cdc1406179",
+        "error": "worker response differs from declared job, model, image or lease",
+        "executionReceiptSha256": "b164d74b8f4d0356db807d1d5861271b77368e4937387e30585f49310f4e09f2",
+        "kind": "image"
+      }
+    ],
+    "evidenceArtifacts": [
+      "bc2f22df02c2c79dcfd9c322788654dae14ebdb541600bf2071d45dfae333e82",
+      "2e23bbc391e9a3e7a206faee4ec6e3b0e78496ea4d206ed50af8df29c2601501",
+      "2fa991a3bbeef66e86155c00b13028872e3b2ed68122965d369a778599833e02",
+      "8d16d1bcd4cda50f0744cf161cf9dd87bbcf548717dce0347f30995756289325",
+      "4ffa6b2a967f5d81c728b45101ae1a7b32d5394300238eb505e284af62158a4f"
+    ],
+    "learnerChoices": {
+      "fullRestorePreserved": true,
+      "originalActualSuggestionRetained": true,
+      "records": [
+        {
+          "actor": "learner",
+          "artifacts": [
+            "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e",
+            "c13ea3807b11b69ea6d77fc2f2c5a89e98bbd564e42f71f1e98868fff6036ebe",
+            "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+            "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+            "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+            "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+            "c7a863f2fd326929e8c4dc175bbcbc29915c2a7e3a48dd2325f72a4681a76f69",
+            "33eaffb1c2008934cccd6faa630855b4005afd73fc8c508a52132d067b5b6429"
+          ],
+          "data": {
+            "course": 1,
+            "effect": "declared learner preference; published course requirements and assessment remain unchanged",
+            "learner": "learner",
+            "newGoal": "Reconstruct the distributive coefficients independently.",
+            "op": "goal-set",
+            "original": {
+              "actor": "owner",
+              "key": "learner.inference-real-1",
+              "kind": "suggestion",
+              "recordDigest": "873ad147320f5f014002f247ba6f55c8528e0cb900c66d803b412cce4245f87b",
+              "sequence": 33
+            },
+            "policy": 1,
+            "reason": "I choose independent coefficient reconstruction as my next goal.",
+            "request": {
+              "course": 1,
+              "id": "rv64-goal-set",
+              "learner": "learner",
+              "newGoal": "Reconstruct the distributive coefficients independently.",
+              "op": "goal-set",
+              "policy": 1,
+              "reason": "I choose independent coefficient reconstruction as my next goal.",
+              "reference": "learner.inference-real-1",
+              "referenceKind": "suggestion",
+              "revision": 1
+            },
+            "revision": 1,
+            "schema": "lemma-learner-choice/1"
+          },
+          "key": "5aea96b228277155ea1519afa3ee44837236d82ac65a023afff42bc417d372ab",
+          "kind": "learner-choice",
+          "sequence": 34,
+          "time": 116
+        },
+        {
+          "actor": "learner",
+          "artifacts": [
+            "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e",
+            "c13ea3807b11b69ea6d77fc2f2c5a89e98bbd564e42f71f1e98868fff6036ebe",
+            "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+            "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+            "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+            "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+            "c7a863f2fd326929e8c4dc175bbcbc29915c2a7e3a48dd2325f72a4681a76f69",
+            "33eaffb1c2008934cccd6faa630855b4005afd73fc8c508a52132d067b5b6429"
+          ],
+          "data": {
+            "course": 1,
+            "effect": "learner requests reconsideration; original observation, checker and interpretation are retained",
+            "learner": "learner",
+            "newGoal": null,
+            "op": "interpretation-challenge",
+            "original": {
+              "actor": "owner",
+              "key": "learner.inference-real-1",
+              "kind": "suggestion",
+              "recordDigest": "873ad147320f5f014002f247ba6f55c8528e0cb900c66d803b412cce4245f87b",
+              "sequence": 33
+            },
+            "policy": 1,
+            "reason": "The synthetic risk estimate does not describe my confidence.",
+            "request": {
+              "course": 1,
+              "id": "rv64-interpretation-challenge",
+              "learner": "learner",
+              "newGoal": null,
+              "op": "interpretation-challenge",
+              "policy": 1,
+              "reason": "The synthetic risk estimate does not describe my confidence.",
+              "reference": "learner.inference-real-1",
+              "referenceKind": "suggestion",
+              "revision": 1
+            },
+            "revision": 1,
+            "schema": "lemma-learner-choice/1"
+          },
+          "key": "7546e3bf364392ea9311306123712924f2db0aff256074eba29024be949e28f8",
+          "kind": "learner-choice",
+          "sequence": 35,
+          "time": 116
+        },
+        {
+          "actor": "learner",
+          "artifacts": [
+            "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e",
+            "c13ea3807b11b69ea6d77fc2f2c5a89e98bbd564e42f71f1e98868fff6036ebe",
+            "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+            "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+            "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+            "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+            "c7a863f2fd326929e8c4dc175bbcbc29915c2a7e3a48dd2325f72a4681a76f69",
+            "33eaffb1c2008934cccd6faa630855b4005afd73fc8c508a52132d067b5b6429"
+          ],
+          "data": {
+            "course": 1,
+            "effect": "learner overrides a permitted recommendation; no checker result or assistance permission changes",
+            "learner": "learner",
+            "newGoal": null,
+            "op": "suggestion-override",
+            "original": {
+              "actor": "owner",
+              "key": "learner.inference-real-1",
+              "kind": "suggestion",
+              "recordDigest": "873ad147320f5f014002f247ba6f55c8528e0cb900c66d803b412cce4245f87b",
+              "sequence": 33
+            },
+            "policy": 1,
+            "reason": "I choose the permitted independent reconstruction instead of review.",
+            "request": {
+              "course": 1,
+              "id": "rv64-suggestion-override",
+              "learner": "learner",
+              "newGoal": null,
+              "op": "suggestion-override",
+              "policy": 1,
+              "reason": "I choose the permitted independent reconstruction instead of review.",
+              "reference": "learner.inference-real-1",
+              "referenceKind": "suggestion",
+              "revision": 1
+            },
+            "revision": 1,
+            "schema": "lemma-learner-choice/1"
+          },
+          "key": "0953dd0212d1b263ffe0c824468d5b9b9f096983162d766ac558da72eb79b95d",
+          "kind": "learner-choice",
+          "sequence": 36,
+          "time": 116
+        }
+      ],
+      "result": "pass",
+      "retryRecordsIdentical": true,
+      "selectedHistoryAndDefinitionsExcluded": true
+    },
+    "oversizedTarget": {
+      "declaredPayloadBytes": 80,
+      "deliveredHeaderBytes": 16,
+      "guestTerminalStatus": 16,
+      "result": "rejected"
+    },
+    "ownershipRecoveryScope": "Controlled lease clock; actual incomplete request and SIGKILL, offline report before expiry and convergent reconciliation, separate real stale guest; real monotonic expiry/cancellation exercised in host validation",
+    "receipt": {
+      "path": "build/school/job-worker-008-a9/job-worker-evidence.json",
+      "sha256": "6e424653ab2b4e0862b5d0c0d207225ecff1efef91cdd41de6a1362922bb75a3"
+    },
+    "restoration": {
+      "additionalPrivateWorkArtifact": "55e56b7919d94dd9c5cb50280694aa6f97f249fa82a76d424243c25a19e02112",
+      "export": {
+        "artifacts": 18,
+        "mode": "offline-authority history selection; private records included by current administrator grant",
+        "path": "/home/sreekumaar/Downloads/lemma/build/school/job-worker-008-a9/export",
+        "records": 49,
+        "sourceRecords": 49,
+        "throughSequence": 49
+      },
+      "generation": 2,
+      "mutableStorageAliasesOriginal": false,
+      "preExportLease": "rejected",
+      "resolvedRequiredArtifacts": 18,
+      "restoredLearnerAttempts": 1,
+      "result": "pass",
+      "targetTrainingReceiptArtifacts": 13
+    },
+    "result": "pass",
+    "reusableDefinition": {
+      "allArtifactAndMutableInodesIndependent": true,
+      "clone": {
+        "credentials": "excluded",
+        "externalSources": "owner source manifests retained; source bytes require explicit separate transfer",
+        "learnerRecords": 0,
+        "path": "/home/sreekumaar/Downloads/lemma/build/school/job-worker-008-a9/cloned-authority",
+        "records": 3,
+        "school": "worker-template-b"
+      },
+      "consumerRecordKinds": [
+        "publication",
+        "model",
+        "model-selection"
+      ],
+      "copiedArtifactDirectories": 4,
+      "definitionExport": {
+        "deploymentIdentity": "excluded",
+        "digest": "f37595135c549a07549ac3322a888867ea02a768f098de81f87096c3bba48d0d",
+        "learnerRecords": 0,
+        "path": "/home/sreekumaar/Downloads/lemma/build/school/job-worker-008-a9/definition-package",
+        "publications": 1,
+        "reusableModels": 1,
+        "schema": "lemma-school-package/1"
+      },
+      "excludedSourcePrivateKinds": [
+        "attempt",
+        "enrollment",
+        "grant",
+        "job",
+        "suggestion",
+        "learner-choice"
+      ],
+      "installation": {
+        "deployment": "worker-template-a-local",
+        "generation": 1,
+        "grants": "explicitly reconfigure in the new school",
+        "learnerRecords": 0,
+        "packageDigest": "f37595135c549a07549ac3322a888867ea02a768f098de81f87096c3bba48d0d",
+        "records": 3,
+        "school": "worker-template-a"
+      },
+      "lineageArtifacts": [
+        "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+        "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+        "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+        "c7a863f2fd326929e8c4dc175bbcbc29915c2a7e3a48dd2325f72a4681a76f69",
+        "33eaffb1c2008934cccd6faa630855b4005afd73fc8c508a52132d067b5b6429"
+      ],
+      "packageSha256": "f37595135c549a07549ac3322a888867ea02a768f098de81f87096c3bba48d0d",
+      "parameterArtifact": "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+      "privateResultsAndExecutionEvidenceExcluded": true,
+      "resolvedArtifacts": 7,
+      "result": "pass",
+      "selectedModel": 160,
+      "sourceProgressPreserved": true
+    },
+    "schoolProduction": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/school/host-native-v3-a8/production.json",
+      "sha256": "36a8d5d255fc396a0afc9070bc59211f8f0e0eeb2a5751f934c6533d2f11edbc",
+      "sourceInputs": {
+        "Lemma/Core0/Execution.lean": "1eb46d0bba6ad1c13e9a2285a9cca70aef322c42a3ea35fbb53c30caa14642ae",
+        "Lemma/Core0/IR.lean": "125fca545e8107939ac9a9c08ec674ab7287d20a2cb00fa99d86a9f7e670c441",
+        "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+        "Lemma/Core0/Timer.lean": "d6a0d0dbc7ed2939a5825683abc21374ee4bcfd60bc010ee5575ed0296bd68f2",
+        "Lemma/Core0/Trap.lean": "bc40c4ac403d995bf026737af7b8b2ca25390399473cfe1389a0bd700fe078af",
+        "Lemma/Courses/Package.lean": "d2fa235ddebbe0a50160290b9b3e6d8b0f110269fac623a79674bdd2b8253e21",
+        "Lemma/Courses/PackageFormat.lean": "ee2e3a88c9016e8817d87c08559babedf99d3707ef7f1c928dbf04e7ac500e88",
+        "Lemma/Documents/Mathematics.lean": "cdc7a38753985251e526b3813df719a2b27b1783350ece5a49800d4d6cbbf4fa",
+        "Lemma/Mathematics/Exact.lean": "3cbeefed82f41a2b6692f96ecfd06a793d272fd8480bfb6ae662e08a0211c828",
+        "Lemma/Mathematics/ExecutionIdentity.lean": "611495044f1f620d23b8439c7147683b16654aa8a06c922636dabb111cd0a7b7",
+        "Lemma/Mathematics/ExecutionIdentityV2.lean": "bd19191c002bfcb1fd2d0e7bc14d6b9cf28fd16938000dcc0e036f3c716b683a",
+        "Lemma/Mathematics/ExecutionIdentityV3.lean": "ee7b35cc6829727bc016662fb7cec208d5a8dfdf65a77433db615246f78a97f1",
+        "Lemma/Mathematics/ExecutionIdentityV4.lean": "34126784408980975caf49097dc0ffdcdf6e76929b272377616e046879c34389",
+        "Lemma/Mathematics/OwnedSubmission.lean": "a6f76a484d21834365244c6c775fa288073b5e4a345329f205c18d2b046fd6eb",
+        "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903",
+        "Lemma/School/Authoring.lean": "abfc31f812c5a48c3443cad6b9c78469324cf6dbc990012774e511e02c0de30a",
+        "Lemma/School/Authority.lean": "d3f37abbe235134e5ab1a0f9c1cbe42d7f1da53ee8359c90d795113847dcc908",
+        "Lemma/School/Catalogue.lean": "ca2a22cb389d0713e24eb1202b356e6f6ce85182f7d224b5c4573c84b6dbd38b",
+        "Lemma/School/Client.lean": "eaf88fe83df1c0e58af4ed0385e23a860e28d2ce476d78867fad909795d0e303",
+        "Lemma/School/CurriculumMain.lean": "e74fea97a5f4994240aab47ba85b7583f87d4bd77040749f6afb81939fd76ee0",
+        "Lemma/School/Definition.lean": "566329be192ebb8439e274f6b266ced369f2ebf5faaf104c4a3f3ccd2972c434",
+        "Lemma/School/Digest.lean": "e776deed7d2437dc6b27648d6bfc662c56d48e11e92b35384bc1fc1439aabaa2",
+        "Lemma/School/FixtureUnit.lean": "d6f916fdfb74ff5dde941c99c4d35487d1a93e440b5295fbca893e56780ecc56",
+        "Lemma/School/LearnerChoice.lean": "882bada0b07ba0d8430513cb221fa8f82cfae91f240cc96f4e6dcef49d4f60b1",
+        "Lemma/School/LocalProvider.lean": "7ebf8cd92610661afb6916b855e744d86d0c0492b86f513b11649768cc767da5",
+        "Lemma/School/Main.lean": "d4af4a2d0772fcb7202d3afa122b8ec70e1f143790bbd8c86a70eb9c894bfcb9",
+        "Lemma/School/Model.lean": "32deff8d404d0a0f0340e0aa875c8c36492ce80551c948e4419f9ca89525e962",
+        "Lemma/School/Observation.lean": "43c74dbbe4035d0c4af401160c2ff5fd731057022f9b8a295b6cb088e5d8919f",
+        "Lemma/School/SourceRegistry.lean": "420cacb5257c771a88f44b7bee4751b875023819e43ad4dc4d066a082ce45292",
+        "Lemma/School/Store.lean": "d8434717861dd318199faed508c10cd333092e2f9420efe14bc7bc974f832856",
+        "Lemma/User/ABI.lean": "43f315ac5caf22ac47f0e6fb7f9dda5a1899a1e3436de695cee0f41653ed9259",
+        "Lemma/User/Memory.lean": "c04236eb3b42ff74a30a12dd04d18fb6dcbeb2bc74aaf000ad58fe4958265024",
+        "Lemma/User/Runtime/Arena.lean": "218b49b4170321a7da368ad073cd3d3121bfe09c01bf0f4acd49b24f9420627a",
+        "Lemma/User/Syscall.lean": "d405577a4fd2cf4a67bfa67a71ae26ade5be16ba377c7884a8f578589899ea66",
+        "fixtures/school/Distributivity.txt": "8d619d7035ba6ffc6019e1f46df0c625a791184508c89f9e300df023b6aa2013",
+        "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+        "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+        "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+        "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+        "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+        "scripts/build_school.py": "5967730a148e25a37af712e13f0d692889ac512d9afb2633aef650793346664c",
+        "tooling/toolchain-lock.json": "9615c3d43319431b04bce1807f711ddb0e822294904e3e21287863be6c4cd08a"
+      }
+    },
+    "scoreQ20": 711424,
+    "selectedHistory": {
+      "actualInferenceResultPreserved": true,
+      "copiedArtifactInodesIndependent": true,
+      "exactCommittedRowsPreserved": true,
+      "export": {
+        "artifacts": 17,
+        "mode": "offline-authority history selection; private records included by current administrator grant",
+        "path": "/home/sreekumaar/Downloads/lemma/build/school/job-worker-008-a9/selected-export",
+        "records": 29,
+        "sourceRecords": 49,
+        "throughSequence": 29
+      },
+      "generation": 2,
+      "laterPrivateWorkAndRecordsExcluded": true,
+      "mode": "offline-authority committed-history prefix",
+      "preExportLease": "rejected",
+      "resolvedRequiredArtifacts": 17,
+      "result": "pass",
+      "throughSequence": 29
+    },
+    "suggestion": {
+      "actor": "owner",
+      "artifacts": [
+        "c13ea3807b11b69ea6d77fc2f2c5a89e98bbd564e42f71f1e98868fff6036ebe",
+        "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+        "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+        "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+        "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+        "c7a863f2fd326929e8c4dc175bbcbc29915c2a7e3a48dd2325f72a4681a76f69",
+        "33eaffb1c2008934cccd6faa630855b4005afd73fc8c508a52132d067b5b6429",
+        "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e"
+      ],
+      "data": {
+        "activity": "coefficients",
+        "course": 1,
+        "job": "inference-real-1",
+        "learner": "learner",
+        "model": 160,
+        "overrideAllowed": true,
+        "policy": 1,
+        "revision": 1,
+        "scoreQ20": 711424,
+        "suggestion": "review the authored explanation, then retry permitted practice",
+        "uncertainty": "synthetic estimate; baseline review remains available; not mastery or educational efficacy"
+      },
+      "key": "learner.inference-real-1",
+      "kind": "suggestion",
+      "sequence": 33,
+      "time": 116
+    },
+    "trainingLineageArtifacts": [
+      "762df04decc4528c1577734a86e9c36e7ea595560c9ee4fd6b3b7be5c6fce229",
+      "95ae878a3fe98ffb62bf0dfa276dd667629e7b017c1c1111db1ff209bf9475e7",
+      "d0bffcceb90cf32e769be9e23e89cfb0754a4220764a4b5e8f90fc929776cc37",
+      "c7a863f2fd326929e8c4dc175bbcbc29915c2a7e3a48dd2325f72a4681a76f69",
+      "33eaffb1c2008934cccd6faa630855b4005afd73fc8c508a52132d067b5b6429"
+    ],
+    "workerImageArtifact": "875377980f76559ce8338c506adae1c45f0c5f94519a66400034d284b23c8e52"
+  },
+  "durableJobHistoricalScope": {
+    "bindingRejections": [
+      {
+        "actualResponseDigest": "80c7fb72424babd8a3f885847e83b508b48f5c56b6036cd70bfbd909c98f61a3",
+        "error": "actual target input words differ from declared parameters or features",
+        "executionReceiptSha256": "83c26bbaf8ce6280c6d55b7e0f33f674421b591615120a379c47a0eb9ae95acb",
+        "kind": "features"
+      },
+      {
+        "actualResponseDigest": "2ceed290f25b88911dd29ad6da8c2b9eaf8dedcd80641e7b71bf09eb9ef2d418",
+        "error": "worker response differs from declared job, model, image or lease",
+        "executionReceiptSha256": "896b78e48f226a68443a7e4215dbe6c88154173e52adf31cf9b64502f18d079d",
+        "kind": "model"
+      },
+      {
+        "actualResponseDigest": "b966f439583c63ab5a1426bcb7267437366cf8c809021b630953c3402e3c2a7d",
+        "error": "worker response differs from declared job, model, image or lease",
+        "executionReceiptSha256": "0c8e75592e29424df6682944198ef997d896cbadd3854c25586cad1350eeada3",
+        "kind": "image"
+      }
+    ],
+    "receipt": {
+      "path": "build/school/job-worker-008-release/job-worker-evidence.json",
+      "sha256": "c17a40badb38d18d3f19aa3e34d59984f3df38fbac60942f8878bab4d7acbe64"
+    },
+    "result": "pass",
+    "scope": "actual SIGKILL, lease retry, late stale result, commit, idempotent retry, suggestion and reload; before required receipt closure enhancement",
+    "scoreQ20": 711424
+  },
+  "hostRegression": {
+    "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v",
+    "rawOutput": "retained in session tool transcript; no fabricated raw log digest",
+    "result": "pass",
+    "seconds": 1.505,
+    "tests": 49
+  },
+  "lifecycle": {
+    "allFirstScoresQ20": 711424,
+    "cacheScope": "5 sequential fresh QEMU processes and fresh 128MiB guest RAM allocations; image/parameter bytes pre-read and audit completed before trials. Host filesystem/page caches and QEMU executable cache are warm or uncontrolled; no cache drop or physical cold boot.",
+    "freshProcesses": 5,
+    "receipt": {
+      "path": "build/school/lifecycle-008-a1/lifecycle-evidence.json",
+      "sha256": "d137f9dbec40e3146892091cea4c2223a3ebf57bf88eb56ec704d9c1d7cc5382"
+    },
+    "result": "PASS",
+    "scope": "Finite two-feature synthetic worker on shared host TCG. Host observation boundaries are not exclusive guest stages, CPU-cycle measurements, native RV64 performance, large-model loading or a first-token benchmark.",
+    "summary": {
+      "path": "docs/evidence/008-school-worker-lifecycle.json",
+      "sha256": "ac3571b6b3591582b568bae43e5bf6a7bfaa6b26e14807cd72c3d10ecedcb284"
+    },
+    "summarySeconds": {
+      "creationToFirstResult": {
+        "maximum": 0.087145141,
+        "median": 0.07174888,
+        "minimum": 0.05949462
+      },
+      "creationToReady": {
+        "maximum": 0.084290059,
+        "median": 0.066935477,
+        "minimum": 0.055936334
+      },
+      "firstReplyRead": {
+        "maximum": 0.004772489,
+        "median": 0.003400139,
+        "minimum": 0.002574522
+      },
+      "packagePreparation": {
+        "maximum": 0.000205444,
+        "median": 0.000138197,
+        "minimum": 0.0001294
+      },
+      "preparationToFirstResult": {
+        "maximum": 0.087343345,
+        "median": 0.072070903,
+        "minimum": 0.059705556
+      },
+      "processCreationPopen": {
+        "maximum": 0.000544185,
+        "median": 0.000524537,
+        "minimum": 0.000489426
+      },
+      "readinessObservedAfterPopen": {
+        "maximum": 0.083797974,
+        "median": 0.066386832,
+        "minimum": 0.055410314
+      },
+      "requestAttachmentWriteFlush": {
+        "maximum": 0.000151089,
+        "median": 2.3518e-05,
+        "minimum": 1.5767e-05
+      },
+      "requestStartToFirstResult": {
+        "maximum": 0.00480534,
+        "median": 0.003551466,
+        "minimum": 0.002590645
+      }
+    }
+  },
+  "limitations": [
+    "hosted Lean upstream runtime for all training; no freestanding training",
+    "synthetic rows and outcomes only, no learning efficacy evidence",
+    "specialized reverse pass, not general tensor/AD compiler or JAX parity",
+    "integer-only freestanding worker under preserved Core0 v0.5; QEMU TCG measurements are not native-RISC-V measurements",
+    "process interruption and atomic rename only, no host-crash/power-loss or replicated availability claim",
+    "numerical fixtures remain synthetic; actual-textbook ingestion and source-derived unit gates use separate receipts",
+    "host-observed lifecycle intervals overlap guest work; warm/uncontrolled host caches and tiny two-feature TCG fixture do not characterize large-model loading or first token",
+    "cancellation is authority result-admission enforcement; no guest preemption or in-guest lease clock",
+    "decoder512-byte bound excludes hosted sha256sum integrity-process buffers/RSS",
+    "four-job host learner-RPC workload does not establish continuous compute overlap or tablet/browser drawing responsiveness",
+    "local provider resources are declared admission reservations; authorized health is not observed live VM attestation, cgroup or disk-quota enforcement"
+  ],
+  "localProvider": {
+    "actualCompletedReady": {
+      "observedReadyBytes": 21,
+      "path": "/home/sreekumaar/Downloads/lemma/build/school/job-worker-008-a9/current-target/responses.bin",
+      "scope": "Actual bytes from completed process; no assertion that that process remains alive.",
+      "sha256": "4ffa6b2a967f5d81c728b45101ae1a7b32d5394300238eb505e284af62158a4f"
+    },
+    "actualInterruptedReady": {
+      "observedReadyBytes": 21,
+      "path": "/home/sreekumaar/Downloads/lemma/build/school/job-worker-008-a9/killed-worker/responses.bin",
+      "scope": "Actual bytes from completed process; no assertion that that process remains alive.",
+      "sha256": "6e891e10e365cef275900d5fba2c603a7cd38c3dd6cd8d81dbdfc1280fc7f5dd"
+    },
+    "controller": "owner",
+    "healthScope": "Authorized ready-to-launch reports bind exact lease health epoch. Actual VM UART READY is separate retained evidence; successful report refresh happens after commit.",
+    "helper": {
+      "path": "scripts/school_provider_runner.py",
+      "sha256": "cab2e37976088f722cae071e949a27f1bb189604b1a8a2177b77956a49110d32"
+    },
+    "jobChecks": {
+      "activeLeaseCompletedWhileNodeAndWorkerDrained": true,
+      "admissionRejections": [
+        "unregistered worker",
+        "node draining",
+        "worker draining"
+      ],
+      "committedRetryAfterHealthRefreshIdentical": true,
+      "offlineReportedBeforeLeaseExpiry": true,
+      "operationalRegistryRecordsPreserved": 17,
+      "operationalRestoreRequiresFreshGenerationHealth": true,
+      "repeatedReconciliationRowsIdentical": true,
+      "reportedHealthIsObservedVmReady": false,
+      "reusableDefinitionsExcludeProviderKinds": [
+        "provider-health",
+        "provider-node",
+        "provider-node-drain",
+        "provider-worker",
+        "provider-worker-drain"
+      ]
+    },
+    "jobReceipt": {
+      "path": "build/school/job-worker-008-a9/job-worker-evidence.json",
+      "sha256": "6e424653ab2b4e0862b5d0c0d207225ecff1efef91cdd41de6a1362922bb75a3"
+    },
+    "loadObservedLiveReadyWorkers": 4,
+    "loadReadyObservationArtifacts": [
+      [
+        "6e891e10e365cef275900d5fba2c603a7cd38c3dd6cd8d81dbdfc1280fc7f5dd",
+        "196efdf40ed6c48a9f44875be0c0d7b2498af4a57fefffd1ddc14c35eb14f0d1"
+      ],
+      [
+        "6e891e10e365cef275900d5fba2c603a7cd38c3dd6cd8d81dbdfc1280fc7f5dd",
+        "2a42e766791bd5f728dd3dff5c4a1469029f5a410b909e6702fdf3355f5a1490"
+      ],
+      [
+        "6e891e10e365cef275900d5fba2c603a7cd38c3dd6cd8d81dbdfc1280fc7f5dd",
+        "af8594e9a23b1443cc93a781852bde449634aff318328b891f17fa63aeddc7ca"
+      ],
+      [
+        "6e891e10e365cef275900d5fba2c603a7cd38c3dd6cd8d81dbdfc1280fc7f5dd",
+        "999b3e2964aa854f6c4a4f99712120b32e828ea31b36fee37d64286c9135a0de"
+      ]
+    ],
+    "loadReceipt": {
+      "path": "build/school/load-worker-008-a9/load-evidence.json",
+      "sha256": "91b8f55f6cf1f3d5aa797e09da941991c15828793e7fd4b0c4192747232108fd"
+    },
+    "node": {
+      "capabilities": [
+        "school-linear-worker/1"
+      ],
+      "maxWorkers": 4,
+      "memoryBytes": 536870912,
+      "node": "local",
+      "profile": "core0-v0.5",
+      "provider": "local",
+      "schema": "lemma-local-node/1",
+      "storageBytes": 268435456,
+      "version": 1
+    },
+    "resourceScope": "Owner-reported one-host QEMU adapter; 1 vCPU/128MiB per guest, 4 concurrent slots, 512MiB aggregate declared VM RAM, 256MiB conservative concurrent CAS-closure reservation. No cgroup/disk quota, remote membership, physical availability or live-VM attestation claim.",
+    "result": "pass",
+    "workerEnvelope": {
+      "capabilities": [
+        "school-linear-worker/1"
+      ],
+      "cpuSlots": 1,
+      "imageSha256": "875377980f76559ce8338c506adae1c45f0c5f94519a66400034d284b23c8e52",
+      "inputBytes": 88,
+      "memoryBytes": 134217728,
+      "node": "local",
+      "outputBytes": 48,
+      "profile": "core0-v0.5",
+      "schema": "lemma-local-worker/1",
+      "scratchBytes": 16384,
+      "version": 1
+    }
+  },
+  "parameterArtifact": {
+    "path": "fixtures/school/numerics/parameters-step160.json",
+    "sha256": "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d"
+  },
+  "result": "implemented and exercised within declared hosted Lean / RV64 QEMU / owner-local process recovery scope",
+  "retainedAttempts": [
+    {
+      "path": "build/school/worker-008-O2",
+      "result": "failed genuine Lean elaboration: load32 result UInt64 was passed without explicit UInt32 conversion; partial output retained"
+    },
+    {
+      "path": "build/school/worker-008-O2-b",
+      "result": "failed exporter Lean structure layout; partial output retained"
+    },
+    {
+      "path": "build/school/worker-008-O2-c",
+      "result": "successful production; first audit rejected optimizer-inferred flags until exact bounded inventory was reviewed; original image retained"
+    },
+    {
+      "path": "build/school/training-008-a",
+      "result": "historical serialized-decimal checkpoint run; superseded by exact binary64-bit checkpoint codec and fresh final run"
+    },
+    {
+      "path": "build/school/training-008-b",
+      "result": "historical binary64-bit checkpoint run; final run adds bounded UTF8/manifest input and extra tensor operator checks"
+    },
+    {
+      "path": "build/school/job-worker-008-closure/source-binding-review.json",
+      "result": "runtime mechanical PASS retained; first copied binary/source snapshot raced unrelated clientv3 edit; not source-qualified; resolved by producer-validated v3 rerun"
+    },
+    {
+      "path": "build/school/load-worker-008-final/source-binding-review.json",
+      "result": "same original source-binding mismatch retained; resolved by producer-validated v3 rerun"
+    },
+    {
+      "path": "build/school/job-worker-008-v3/job-worker-evidence.json",
+      "result": "source-bound v3-a1 historical mechanical PASS, superseded by final current Definition/privacy/raw-frame-bound a5 authority run"
+    },
+    {
+      "path": "build/school/load-worker-008-v3/load-evidence.json",
+      "result": "source-bound v3-a1 historical four-worker PASS, superseded by final a5 run with fresh-process all-result recovery assertion"
+    },
+    {
+      "path": "build/school/load-worker-008-a5/load-evidence.json",
+      "result": "source-bound a5 four-worker PASS retained; final a6 adds enrolled course/progress service observations around the worker burst"
+    },
+    {
+      "path": "build/school/job-worker-008-a5/job-worker-evidence.json",
+      "result": "source-bound a5 worker/job/restore PASS retained; a6 additionally exercises effectful reusable model160 definition export, fresh init-package, clone, private-state exclusion and independent copied inodes"
+    },
+    {
+      "path": "build/school/job-worker-008-a6/job-worker-evidence.json",
+      "result": "a6 actual model-package scenario retained; final a7 rerun adds A6 current authority and exact actual-result history selection/private-work-byte exclusion"
+    },
+    {
+      "path": "build/school/load-worker-008-a6/load-evidence.json",
+      "result": "a6 learner service workload retained; final a7 rerun against current prefix-capable A6 authority"
+    },
+    {
+      "path": "build/school/job-worker-008-a7/job-worker-evidence.json",
+      "result": "A6-source prefix/model-package PASS retained; final A7-source a8 additionally exercises all three learner declarations against the genuine RV64 suggestion and their export/privacy boundaries"
+    },
+    {
+      "path": "build/school/load-worker-008-a7/load-evidence.json",
+      "result": "A6-source learner-service workload retained; final a8 repeats actual four-worker/RPC/result recovery against final A7 authority"
+    },
+    {
+      "path": "build/school/job-worker-008-a8/job-worker-evidence.json",
+      "result": "A7 model/learner-choice flow PASS retained; current A8 a9 adds actual local provider configuration, drain/admission/health/reconciliation, registry restore and template exclusion"
+    },
+    {
+      "path": "build/school/load-worker-008-a8/load-evidence.json",
+      "result": "A7 four-worker learner-RPC pass retained; A8 a9 adds declared node/worker resources and exact live READY observation artifacts"
+    }
+  ],
+  "review": {
+    "path": "docs/evidence/008-school-numerics-review.json",
+    "sha256": "3fcffe95226c468927f629aad6785ab36e0a738d76205b179050336ba7f1ffd5"
+  },
+  "schema": "lemma-school-numerics-worker-evidence/v1",
+  "sourceCommit": "3102aa4357dbe7d66032c8d6f905431289685906",
+  "sourceScope": "dirty task008 worktree with exact input digests; no clean publication/CI claim",
+  "training": {
+    "evaluation": {
+      "baseline": "fixed 0.5 risk; explainable due/error review remains operational fallback",
+      "baselineMse": 0.033906,
+      "maximumQuantizationDeviation": 0.000239,
+      "modelMse": 0.000321,
+      "quantizedMse": 0.000317,
+      "samples": 8,
+      "scope": "synthetic held-out session groups; no educational improvement claim"
+    },
+    "interruption": {
+      "bitwiseCheckpointEqual": true,
+      "epoch": 1,
+      "nextRecord": 12,
+      "observedStep": 7,
+      "resumedTotalSteps": 160,
+      "scope": "atomic replacement/process interruption, not host-power-loss durability",
+      "signal": "SIGKILL"
+    },
+    "receipt": {
+      "path": "build/school/training-008-final/training-evidence.json",
+      "sha256": "33eaffb1c2008934cccd6faa630855b4005afd73fc8c508a52132d067b5b6429"
+    },
+    "sourceInputs": {
+      "Lemma/Numerics/Linear.lean": "8f1a4a25c74df74edd6235e5e58c484ba203b62e625a05cd2f0ccb08cc2de71f",
+      "Lemma/Numerics/Quantized.lean": "43f628abd7e1dbeacebea6245895241c9941c8405acae3bce556e8ddd447297b",
+      "Lemma/Numerics/Tensor.lean": "987bfbb8767a5691e1c6dd84ba877dbc18099f486f42362fde26e197c4f295fe",
+      "examples/school/Train.lean": "d74f443d8243b43f91ac5818b7b1728b8edf076ee2e2e00ee2bb8d8fc431a3c8",
+      "lake-manifest.json": "c70942fdf7246adfff46f570a93c4e422969f0f84ee47e6aac2d192927e0fc13",
+      "lakefile.toml": "4b1416b38f35030e6ba113d45487912c90c69a2bf4fdca97b1eb33f1bb412bec",
+      "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b"
+    },
+    "streaming": {
+      "batchSize": 4,
+      "bytes": 78134,
+      "maximumReadBytes": 512,
+      "maximumReadBytesScope": "Lean JSONL/JSON decoder reads; excludes hosted sha256sum integrity subprocess",
+      "maximumRowBytes": 2048,
+      "records": 512,
+      "wholeDatasetResident": false,
+      "wholeDatasetResidentScope": "Lean decoder/batch path only; no claim about all upstream-runtime or checksum-process allocations"
+    }
+  },
+  "workerExecutions": [
+    {
+      "build": {
+        "path": "build/school/worker-008-O2-release/build.json",
+        "sha256": "26a8cb0ce9c4c585e6d572ee6447ca10e7672e64a76754145e13263a01628eab"
+      },
+      "cases": [
+        {
+          "case": "trained-model-job",
+          "emulatorPeakRssKiBObserved": 69144,
+          "latencySeconds": 0.003610605956055224,
+          "scoreQ20": 711424,
+          "status": 0
+        },
+        {
+          "case": "different-features",
+          "emulatorPeakRssKiBObserved": 69144,
+          "latencySeconds": 0.001887173973955214,
+          "scoreQ20": 142336,
+          "status": 0
+        },
+        {
+          "case": "different-trained-parameters",
+          "emulatorPeakRssKiBObserved": 69144,
+          "latencySeconds": 0.0018465060275048018,
+          "scoreQ20": 46848,
+          "status": 0
+        },
+        {
+          "case": "missing-feature-fallback",
+          "emulatorPeakRssKiBObserved": 69144,
+          "latencySeconds": 0.0020832859445363283,
+          "scoreQ20": 0,
+          "status": 31
+        },
+        {
+          "case": "parameter-bound-rejection",
+          "emulatorPeakRssKiBObserved": 69144,
+          "latencySeconds": 0.0018337819492444396,
+          "scoreQ20": 0,
+          "status": 30
+        },
+        {
+          "case": "feature-bound-rejection",
+          "emulatorPeakRssKiBObserved": 69144,
+          "latencySeconds": 0.0023094669450074434,
+          "scoreQ20": 0,
+          "status": 31
+        },
+        {
+          "case": "signed-minimum-accumulation",
+          "emulatorPeakRssKiBObserved": 69144,
+          "latencySeconds": 0.0020316229201853275,
+          "scoreQ20": -25165824,
+          "status": 0
+        },
+        {
+          "case": "signed-maximum-accumulation",
+          "emulatorPeakRssKiBObserved": 69144,
+          "latencySeconds": 0.0018243850208818913,
+          "scoreQ20": 25165824,
+          "status": 0
+        },
+        {
+          "case": "wrong-wire-version",
+          "emulatorPeakRssKiBObserved": 69144,
+          "latencySeconds": 0.002176756039261818,
+          "scoreQ20": 0,
+          "status": 14
+        }
+      ],
+      "imageSha256": "875377980f76559ce8338c506adae1c45f0c5f94519a66400034d284b23c8e52",
+      "optimization": "O2",
+      "receipt": {
+        "path": "build/school/execution-008-release/execution.json",
+        "sha256": "2531ab8e2510e4e519585614d458d791fe304266c12032f9dfe94e503d9e7d6a"
+      },
+      "result": "pass",
+      "route": "fresh-execution; validated LLVM action reuse where reported by build"
+    },
+    {
+      "build": {
+        "path": "build/school/worker-008-O0-release/build.json",
+        "sha256": "6be4cf08c7697c031bd7a9a44b6b2be4daf6b950d49b4043aa2a35fe8b1b932a"
+      },
+      "cases": [
+        {
+          "case": "trained-model-job",
+          "emulatorPeakRssKiBObserved": 69188,
+          "latencySeconds": 0.005977776017971337,
+          "scoreQ20": 711424,
+          "status": 0
+        },
+        {
+          "case": "different-features",
+          "emulatorPeakRssKiBObserved": 69188,
+          "latencySeconds": 0.001635599066503346,
+          "scoreQ20": 142336,
+          "status": 0
+        },
+        {
+          "case": "different-trained-parameters",
+          "emulatorPeakRssKiBObserved": 69188,
+          "latencySeconds": 0.0020941620459780097,
+          "scoreQ20": 46848,
+          "status": 0
+        },
+        {
+          "case": "missing-feature-fallback",
+          "emulatorPeakRssKiBObserved": 69188,
+          "latencySeconds": 0.0021198770264163613,
+          "scoreQ20": 0,
+          "status": 31
+        },
+        {
+          "case": "parameter-bound-rejection",
+          "emulatorPeakRssKiBObserved": 69192,
+          "latencySeconds": 0.0022246669977903366,
+          "scoreQ20": 0,
+          "status": 30
+        },
+        {
+          "case": "feature-bound-rejection",
+          "emulatorPeakRssKiBObserved": 69192,
+          "latencySeconds": 0.002151216031052172,
+          "scoreQ20": 0,
+          "status": 31
+        },
+        {
+          "case": "signed-minimum-accumulation",
+          "emulatorPeakRssKiBObserved": 69192,
+          "latencySeconds": 0.0021776689682155848,
+          "scoreQ20": -25165824,
+          "status": 0
+        },
+        {
+          "case": "signed-maximum-accumulation",
+          "emulatorPeakRssKiBObserved": 69192,
+          "latencySeconds": 0.004311900003813207,
+          "scoreQ20": 25165824,
+          "status": 0
+        },
+        {
+          "case": "wrong-wire-version",
+          "emulatorPeakRssKiBObserved": 69192,
+          "latencySeconds": 0.002179630915634334,
+          "scoreQ20": 0,
+          "status": 14
+        }
+      ],
+      "imageSha256": "be7af03a9fe25f327c735420478cdc117bbcdfdb14869901c6ba517347867688",
+      "optimization": "O0",
+      "receipt": {
+        "path": "build/school/execution-008-O0-release/execution.json",
+        "sha256": "b20e7001e4e59fbbed9f9b275be819e32217022fa56c02ae1dd4924baa23dd77"
+      },
+      "result": "pass",
+      "route": "fresh-execution; validated LLVM action reuse where reported by build"
+    }
+  ]
+}

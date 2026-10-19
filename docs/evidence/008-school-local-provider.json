@@ -1,0 +1,58 @@
+{
+  "schema": "lemma-school-local-provider-acceptance/1",
+  "release": "0.1.0",
+  "result": "PASS",
+  "focusedValidation": {
+    "path": "build/school/local-provider-a1/validation.json",
+    "sha256": "199d1c943d64e56f8d05e044881de7cddeba60796325bb5a37664ea593a8b500"
+  },
+  "production": {
+    "path": "build/school/host-native-v3-a8/production.json",
+    "sha256": "36a8d5d255fc396a0afc9070bc59211f8f0e0eeb2a5751f934c6533d2f11edbc"
+  },
+  "tests": {
+    "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/school -p test_local_provider.py -v",
+    "status": "PASS",
+    "count": 5,
+    "duration_seconds": 6.005,
+    "pure_synthetic_component_checks": 10
+  },
+  "coverage": [
+    "explicit local node and worker configuration; current image/profile/capability/controller and ready-to-launch report admission",
+    "missing artifact, absent registry/readiness, invalid resource/profile and unauthorized controller rejection",
+    "worker/node drain block new leases while assigned completion remains allowed",
+    "one active lease per worker; declared aggregate slots, guest-memory and conservative CAS closure storage reservations",
+    "offline report revokes ownership before expiry; reconciliation requeues and converges without duplicate records",
+    "offline-to-ready cannot resurrect old ownership; exact report sequence is lease-bound",
+    "actual authority serve restart requires fresh generation report; previous leases fenced",
+    "node budget configuration changes affect new work and preserve previously assigned completion"
+  ],
+  "sourceInputs": {
+    "Lemma/School/LocalProvider.lean": "7ebf8cd92610661afb6916b855e744d86d0c0492b86f513b11649768cc767da5",
+    "Lemma/School/Authority.lean": "d3f37abbe235134e5ab1a0f9c1cbe42d7f1da53ee8359c90d795113847dcc908",
+    "tests/school/LocalProviderMain.lean": "6744240873a9d4564e3ddd87bc499811083e3cdd9bc0d94355776a8172f817da",
+    "tests/school/test_local_provider.py": "cb5daa8db1836b30b6f065df639d7744d8781b401fc134666bb050bbcad50297"
+  },
+  "actualWorkerIntegration": {
+    "job": {
+      "path": "build/school/job-worker-008-a9/job-worker-evidence.json",
+      "sha256": "6e424653ab2b4e0862b5d0c0d207225ecff1efef91cdd41de6a1362922bb75a3"
+    },
+    "load": {
+      "path": "build/school/load-worker-008-a9/load-evidence.json",
+      "sha256": "91b8f55f6cf1f3d5aa797e09da941991c15828793e7fd4b0c4192747232108fd"
+    }
+  },
+  "scope": [
+    "native API fixtures deliberately configure synthetic image/preflight bytes, not executable RV64 or observed VM READY",
+    "ten pure component checks separately verify completion and configuration/report epochs",
+    "actual registered QEMU launch/execution and result commits remain separate source-bound job/load scenario evidence"
+  ],
+  "limitations": [
+    "single local provider; declared resources and controller reports, no cgroup enforcement or remote attestation",
+    "ready means ready-to-launch; actual VM readiness/execution is independent evidence",
+    "storage reservation charges whole concurrent job closures conservatively, including shared bytes; no filesystem free-space claim",
+    "generic preexisting owner-local job workflows unchanged; numerical worker inputs require registry"
+  ],
+  "retainedDevelopmentFailure": "initial structure literal layout failed Lean parsing; fixed before successful module/native builds and focused tests"
+}

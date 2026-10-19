@@ -1,0 +1,390 @@
+{
+  "schema": "lemma-school-ci-shard-qualification/v1",
+  "result": "PASS_LOCAL_FULL_COLD_SHARD_TRANSPORT_AND_COLLECTION",
+  "sourceScope": "Qualification orchestration only; no Lean, builder, worker or client source changes. Original receipts retain their exact producer identities.",
+  "retainedParallelFailure": {
+    "pullRequestHead": "8bfe5d16b51733dddddeaeb53b05ce9225a03e80",
+    "runId": 39242577092,
+    "jobId": 118035563167,
+    "url": "https://github.com/srkftw/lemma/actions/runs/39242577092/job/118035563167",
+    "status": "FAIL",
+    "error": "matrix row 18 supervisor failed; see retained row 18 receipt",
+    "elapsedSeconds": 2273.1550629500002,
+    "completedImages": 18,
+    "completedReports": 22,
+    "qemuSessions": 26,
+    "syscallUserInstances": 3,
+    "rootResult": {
+      "path": "build/school/merge-parallel-failure-a1/build/kernel/ci-prefix/result.json",
+      "sha256": "b1dd9adae6bf0eee464bc311dc63c49c4e6c6e64ac4a472432ee2948b040d934"
+    },
+    "artifact": {
+      "id": 12185835176,
+      "path": "build/school/merge-parallel-failure-a1.zip",
+      "sha256": "b4e43a78da984483ca71f5ec6caaabf3b1e84286fd437928939f055dbd7e71f4"
+    },
+    "timingAnalysis": {
+      "path": "build/school/merge-parallel-failure-a1/timing-analysis.json",
+      "sha256": "8ca56a921154ff00e205ad195b4f6fb4274d8ed8d92a62b1300d665d64b7a0a3"
+    },
+    "failedRow18": {
+      "path": "build/school/merge-parallel-failure-a1/build/kernel/ci-prefix/rows/18/result.json",
+      "sha256": "3f0be98ccaa9b6c1c504649887e907736edd34e6942f05837bc1596bae662e96"
+    },
+    "cancelledRow19": {
+      "path": "build/school/merge-parallel-failure-a1/build/kernel/ci-prefix/rows/19/result.json",
+      "sha256": "0cdbcb557340056e3e9846032b024b48d47ac9f00064ad0bf19e873e8ba66d7a"
+    },
+    "row18Supervisor": {
+      "path": "build/school/merge-parallel-failure-a1/build/kernel/ci-prefix/rows/18/supervisor.json",
+      "sha256": "f8059354a80c72b85becd2b2aae9d48df14066d45fdad903bf122c2fc88c1ef8"
+    },
+    "row19Supervisor": {
+      "path": "build/school/merge-parallel-failure-a1/build/kernel/ci-prefix/rows/19/supervisor.json",
+      "sha256": "3cb9ca9bbd5a713e39dd5fb5dfddc1b1bf104f34c447eb02ee1830ba13429ffa"
+    },
+    "cause": "Both rows completed cold dependency preparation; row 18 built but the unchanged 210-second complete-protocol guard refused the late check. Row 19 fresh build was cancelled through EOF/TERM. All owned descendants were reaped. CPU contention nearly doubled per-image cold preparation; zero target actions were reused.",
+    "otherTenRequiredJobs": "SUCCESS; exact-head snapshots retained in build/school/merge-final-ci-monitor/",
+    "scope": "FAIL remains FAIL; no skippedwork/capchange/cachedtargetsubstitution used to relabel it."
+  },
+  "retainedPreviousQualification": {
+    "path": "docs/evidence/008-school-ci-parallel-qualification.json",
+    "sha256": "f0095ecb10addc945acd376a970ebb897097450b779a6bb9191263d35c44098a"
+  },
+  "checks": [
+    {
+      "name": "kernel-host",
+      "command": "nix develop --no-write-lock-file --command env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/kernel -v",
+      "result": "PASS",
+      "tests": 521,
+      "elapsedSeconds": 27.248,
+      "skipped": 0,
+      "log": {
+        "path": "build/school/merge-shards-kernel-host-a1.log",
+        "sha256": "d768fdb672e9e3e0047ef4d3947b909357b22ff245afe94512e9074b63e8c8d4"
+      }
+    },
+    {
+      "name": "foundation-host",
+      "command": "nix develop --no-write-lock-file --command env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/foundation -v",
+      "result": "PASS",
+      "tests": 487,
+      "elapsedSeconds": 33.973,
+      "skipped": 0,
+      "log": {
+        "path": "build/school/merge-shards-foundation-host-a1.log",
+        "sha256": "6c8af74040bb6cc75e10708d5ffc6366e75240548cdffe033b448b03ba88e126"
+      }
+    },
+    {
+      "name": "cache-host",
+      "command": "python3 -m unittest discover -s tests/cache -v",
+      "result": "PASS",
+      "tests": 87,
+      "elapsedSeconds": 13.103,
+      "skipped": 0,
+      "log": {
+        "path": "build/school/merge-shards-cache-a1.log",
+        "sha256": "4fbbbfac246b5b5b26fc2032847f58d738905f64fbd25e422c53d454b852d248"
+      }
+    },
+    {
+      "name": "scaffold-host",
+      "command": "python3 -m unittest discover -s tests/scaffold -v",
+      "result": "PASS",
+      "tests": 31,
+      "elapsedSeconds": 9.355,
+      "skipped": 0,
+      "log": {
+        "path": "build/school/merge-shards-scaffold-tests-a1.log",
+        "sha256": "38585aef8f0048f5cd2b9d11081fe9fe1c08375f98d3b721dcd3d73782e8512b"
+      }
+    },
+    {
+      "name": "workflow-policy",
+      "command": "nix develop --no-write-lock-file --command env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/ci -v",
+      "result": "PASS",
+      "tests": 20,
+      "elapsedSeconds": 0.735,
+      "skipped": 0,
+      "log": {
+        "path": "build/school/merge-shards-workflow-a2/ci-policy.log",
+        "sha256": "1938a7d7b9be8a031a4265693666c58227e647c31c72618b57aaf953dd016940"
+      }
+    },
+    {
+      "name": "scaffold-metadata",
+      "command": "nix develop --no-write-lock-file --command env PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_scaffold.py",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-shards-scaffold-a2.log",
+        "sha256": "fdb4536bda4385c4b78e5bd52658fc3fda9d16b04ee0b2cc4f5119359d7a7c1c"
+      }
+    },
+    {
+      "name": "final-scaffold-metadata",
+      "command": "nix develop --no-write-lock-file --command env PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_scaffold.py",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-shards-final-scaffold-a1.log",
+        "sha256": "07572eb5367ddf2e5d9874a96f51d6990372bc04e5434a2fb7fd13b1a63ebb33"
+      }
+    },
+    {
+      "name": "final-scaffold-tests",
+      "command": "nix develop --no-write-lock-file --command env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/scaffold -v",
+      "result": "PASS",
+      "log": {
+        "path": "build/school/merge-shards-final-scaffold-tests-a1.log",
+        "sha256": "89f79d5fa9de04bf77b42612ed59707f276fe235145063d0cf7b96847465a322"
+      },
+      "tests": 31,
+      "elapsedSeconds": 8.873,
+      "skipped": 0
+    }
+  ],
+  "remoteAcceptance": "Not claimed here; all final-head required jobs and aggregate must pass before owner-authorized merge.",
+  "implementationCommit": "d3b094050096159c728860d9b584a4dce873dc97",
+  "implementationInputs": {
+    "scripts/check_kernel.py": "e44da161aa56ffa7e66b8aa0b92115dc961a989e0403d12bf7588cdab3550e61",
+    "scripts/kernel_shard_artifact.py": "609087df8ca55c9d9e42a114422772a6106b6499fe8ed33a5037923f608795ca",
+    "scripts/kernel_row_supervisor.py": "9452420319bdd2bc87225b86d44fccb01e5e7c279c5a49113bc2c1bd5eb88ac2",
+    "scripts/host_prerequisites.py": "e4bdc272de2ae0a41e14a55908de07ba12d755234b750d515e8161803ccb34dd",
+    "scripts/ci_source.py": "0f76b8f7990d9ab1ebf58ca10a8531b4b9adcca84c08016f33df2f1523eb43b6",
+    ".github/workflows/core0.yml": "a9e4c6af7a6bbd7b42a25b88d0ae0367ee4e2312c4cf0f7a2b7be110973a9860",
+    "tests/kernel/test_shard_collection.py": "66381e5fc955d694fa84fcf8bf067ec45f6aef94d5ee792e4cf29e7ad92dc1cf",
+    "tests/kernel/test_shard_artifact.py": "716d84b2aa886196c29f5d6e34778f228f5a42c1842054b9e3539821f4d4a4c3",
+    "tests/ci/test_workflow_policy.py": "1c5b3e131eb13cd68d74c1b8f3445f838b53486a1c190f44bd41195060ede68a",
+    "tests/foundation/test_ci_workflow.py": "81e3597b4887e7ebd754194ed3c150e75c3bf58e2b1b338e0d943b194c1616e1"
+  },
+  "workflowSyntax": {
+    "result": "PASS",
+    "bashBlocks": 53,
+    "pythonHeredocs": 11,
+    "inventory": {
+      "path": "build/school/merge-shards-workflow-a2/syntax.json",
+      "sha256": "b42a4060994f6aecff83ba08263d7db530b1ddfa3e4e5d5fa3675573b8b108f6"
+    },
+    "actionlint": {
+      "path": "build/school/merge-shards-workflow-a2/actionlint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "priorComparisonCommit": "8bfe5d16b51733dddddeaeb53b05ce9225a03e80",
+    "otherTenRequiredJobsAndAggregate": "byte-identical",
+    "triggersPermissionsConcurrency": "byte-identical"
+  },
+  "applicationConsumedInputs": {
+    "path": "build/school/merge-shards-application-inputs-a1.json",
+    "sha256": "4f939fcfb58bb084fd5984459ecdffa435f582a1f50c6f7c9bc6538b23c5e8e5"
+  },
+  "verificationRegistry": "Historical comparison base and 30 pending generic machine claims retained; this receipt does not waive them.",
+  "transportSemantics": "Bounded mode-preserving tar and manifest; reject links, special or escaping/duplicate paths, corruption, missing files, changed modes and preexisting destinations. Restore exact original canonical paths; revalidate original producer observations without relabeling execution.",
+  "budgetSemantics": "CI producers run on separate independent hosts, each preserves 2400/300/90-second bounds and 210/390-second protocol guards. Collector additionally bounds max validated producer elapsed plus own measured validation by 2400s; no shared cross-host monotonic elapsed claim. Local reproduction separately applies an actual 2400s parent clock including producers, transport and collection, after its fresh ordinary host prerequisite.",
+  "retainedLocalWrapperFailure": {
+    "result": "FAIL",
+    "qualification": {
+      "path": "build/kernel/merge-AE-shards-full-a1/qualification.json",
+      "sha256": "090dd16022f98f1630790323796473565ccc274606fa6d337f9644a94c74a7da"
+    },
+    "command": {
+      "path": "build/school/merge-AE-shards-full-host-a1-command.json",
+      "sha256": "1ecc682516e18b8f61f9be412a4672063560717ff74f6ad21c15997a4c9f30ed"
+    },
+    "supervisor": {
+      "path": "build/kernel/merge-AE-shards-full-a1/supervision/host-prerequisite.json",
+      "sha256": "8813dcf1ce795fa78f07e84579559567393d256bb9ad17cd2f6edaec46ce17eb"
+    },
+    "hostReceipt": {
+      "path": "build/school/merge-AE-shards-host-prerequisite-a1/receipt.json",
+      "sha256": "1f9c2b71da0b3b1ecec141cdd04e170e337b1952c3fa34558a9a229e1be55def"
+    },
+    "cause": "The unchanged host suite passed 521 tests, but the extra local whole-phase supervisor rejected three adopted dead test descendants at child exit. It reaped all three; cleanup complete. Kernel clock never started and no target production occurred. A fresh local wrapper must own and reap test orphans before exiting; retained FAIL is not relabeled."
+  },
+  "localFullQualification": {
+    "all_whole_phase_owned_processes_absent": true,
+    "cleanup_complete": true,
+    "cold_preparation": {
+      "O0": {
+        "count": 10,
+        "individual_seconds": [
+          124.11403067898937,
+          129.02866559498943,
+          133.22608626494184,
+          127.03198781900574,
+          134.26394251303282,
+          122.44893106608652,
+          126.14957408001646,
+          129.24075675592758,
+          121.66233184805606,
+          129.92972432402894
+        ],
+        "maximum_seconds": 134.26394251303282,
+        "minimum_seconds": 121.66233184805606,
+        "total_seconds": 1277.0960309450747
+      },
+      "O2": {
+        "count": 10,
+        "individual_seconds": [
+          129.89707147097215,
+          131.05463555909228,
+          130.3800818970194,
+          128.1572464769706,
+          130.77791479497682,
+          122.60893322399352,
+          126.82168151205406,
+          127.92410407704301,
+          129.7264377779793,
+          130.5601416430436
+        ],
+        "maximum_seconds": 131.05463555909228,
+        "minimum_seconds": 122.60893322399352,
+        "total_seconds": 1287.9082484331448
+      }
+    },
+    "collector": {
+      "bytes": 140256,
+      "path": "build/kernel/merge-AE-shards-full-a2/result.json",
+      "sha256": "616f35e129ffa91c324bf508de679861fb37eb4d1c63011f4cb6235907db0d64"
+    },
+    "collector_elapsed_seconds": 22.854543220018968,
+    "computed_critical_path_work_seconds": 1789.936846237979,
+    "counts": {
+      "fresh_target_actions": 340,
+      "images": 20,
+      "incremental_cold_preparations": 20,
+      "qemu_sessions": 28,
+      "reports": 24,
+      "reused_target_actions": 0,
+      "syscall_user_instances": 6
+    },
+    "driver": {
+      "bytes": 19270,
+      "path": "build/school/merge-AE-shards-full-driver-a2.py",
+      "sha256": "a465ed665b842c5e02d351c5d310403c8e3857c41f0dab70f59a6b4c96c75b12"
+    },
+    "host_owner_receipt": {
+      "bytes": 1783,
+      "path": "build/kernel/merge-AE-shards-full-a2/supervision/host-owner.json",
+      "sha256": "6ff2f7765966b8e40f897bb7b294dd8b28d7cdf76ab340d9fd3bd3f2e8153466"
+    },
+    "host_wrapper": {
+      "bytes": 4512,
+      "path": "build/school/merge-AE-shards-host-wrapper-a2.py",
+      "sha256": "85e13ee8ba4e4bbd240ea22bf540903de4883cce39c6a629e510a86b692d77da"
+    },
+    "metadata_host_prerequisite": {
+      "elapsed_seconds": 27.03561000805348,
+      "receipt": "build/school/merge-AE-shards-host-prerequisite-a2/receipt.json",
+      "sha256": "dd296828c23064d481fa3a4bd57c82d5b56583b7563b11fdb1cf53a24764491b",
+      "test_count": 521
+    },
+    "outer_command": {
+      "bytes": 1459,
+      "path": "build/school/merge-AE-shards-full-host-a2-command.json",
+      "sha256": "eec51f6a61174124a27aeda27e6533eef54d8dd34f1d7facd4f3eefe16bdfeb8"
+    },
+    "outer_log": {
+      "bytes": 6219,
+      "path": "build/school/merge-AE-shards-full-host-a2.log",
+      "sha256": "2eb9ecd4183c740b032a4c5480c24cbe1f0219da78bbf6c06d121519909467fc"
+    },
+    "outer_wall_seconds": 1830.5512876149733,
+    "parent_kernel_deadline_seconds": 2400,
+    "parent_kernel_elapsed_seconds": 1800.7487974829273,
+    "producer_deadline_seconds": 2400,
+    "producer_durations_seconds": {
+      "O0": 1767.08230301796,
+      "O2": 1763.5948121569818
+    },
+    "qualification": {
+      "bytes": 107591,
+      "path": "build/kernel/merge-AE-shards-full-a2/qualification.json",
+      "sha256": "f372a805b65a57d45917b645ba8b148c1af14832b1316966f184f18c32ca759f"
+    },
+    "remote_CI": "not_run by this local observation; full remote required",
+    "retained_predecessor_failure": {
+      "bytes": 77827,
+      "path": "build/kernel/merge-AE-shards-full-a1/qualification.json",
+      "sha256": "090dd16022f98f1630790323796473565ccc274606fa6d337f9644a94c74a7da"
+    },
+    "schema": "lemma-local-full-shard-receipt-summary/1",
+    "scope": "read-only digest/count summary of original retained local execution and real archive restoration",
+    "source": {
+      "clean": true,
+      "commit": "d3b094050096159c728860d9b584a4dce873dc97",
+      "tree": "9df3cff0b2db05e7c0f2deb4d5f34f3f1059dd72"
+    },
+    "source_census_closed": true,
+    "transport": [
+      {
+        "all_relative_bytes_and_modes_match": true,
+        "archive": "build/kernel/merge-AE-shards-full-a2/transport/O0.tar",
+        "archive_sha256": "e6aebc15be249b32bf1f888a9331604c2dea88a4e210e1353b391d0e1259d1eb",
+        "artifact_blob_mode": 420,
+        "cache_retained_in_original_only": true,
+        "extraction_receipt": "build/kernel/merge-AE-shards-full-a2/transport/O0.extract.json",
+        "extraction_receipt_info": {
+          "bytes": 620,
+          "path": "build/kernel/merge-AE-shards-full-a2/transport/O0.extract.json",
+          "sha256": "311091c4aac8b28866cf073af4f72c49b72195f0ad514b76fe299e645eef977c"
+        },
+        "extraction_receipt_sha256": "311091c4aac8b28866cf073af4f72c49b72195f0ad514b76fe299e645eef977c",
+        "file_bytes": 296332301,
+        "file_count": 6493,
+        "mode_counts": {
+          "0644": 6493
+        },
+        "optimization": "O0",
+        "original_directory_identity_preserved": true,
+        "pack_manifest": "build/kernel/merge-AE-shards-full-a2/transport/O0.pack.json",
+        "pack_manifest_receipt": {
+          "bytes": 1414560,
+          "path": "build/kernel/merge-AE-shards-full-a2/transport/O0.pack.json",
+          "sha256": "0ed0b04026e17ca5a32b8fcec2be4afdfac7d221b248b819b4662d0527f7a5e9"
+        },
+        "pack_manifest_sha256": "0ed0b04026e17ca5a32b8fcec2be4afdfac7d221b248b819b4662d0527f7a5e9",
+        "restored_destination": "build/kernel/merge-AE-shards-full-a2/shards/O0",
+        "retained_original": "build/kernel/merge-AE-shards-full-a2/retained-original-shards/O0",
+        "scope": "original execution provenance; restored copies materialize retained bytes, no new execution"
+      },
+      {
+        "all_relative_bytes_and_modes_match": true,
+        "archive": "build/kernel/merge-AE-shards-full-a2/transport/O2.tar",
+        "archive_sha256": "3bf874b527be5488f2c5ac8404c0cfd915ee0c5b2a6ffd668d096459ae18eda4",
+        "artifact_blob_mode": 420,
+        "cache_retained_in_original_only": true,
+        "extraction_receipt": "build/kernel/merge-AE-shards-full-a2/transport/O2.extract.json",
+        "extraction_receipt_info": {
+          "bytes": 620,
+          "path": "build/kernel/merge-AE-shards-full-a2/transport/O2.extract.json",
+          "sha256": "7fdc579784087b81a1a0a18395abc56e8a967cf569324909cbd95ab96927024f"
+        },
+        "extraction_receipt_sha256": "7fdc579784087b81a1a0a18395abc56e8a967cf569324909cbd95ab96927024f",
+        "file_bytes": 244167009,
+        "file_count": 6773,
+        "mode_counts": {
+          "0644": 6773
+        },
+        "optimization": "O2",
+        "original_directory_identity_preserved": true,
+        "pack_manifest": "build/kernel/merge-AE-shards-full-a2/transport/O2.pack.json",
+        "pack_manifest_receipt": {
+          "bytes": 1473387,
+          "path": "build/kernel/merge-AE-shards-full-a2/transport/O2.pack.json",
+          "sha256": "d1224ff535f2d4ec7bff4c945f53fdde60ed0858bd134079ffa554eb9da53085"
+        },
+        "pack_manifest_sha256": "d1224ff535f2d4ec7bff4c945f53fdde60ed0858bd134079ffa554eb9da53085",
+        "restored_destination": "build/kernel/merge-AE-shards-full-a2/shards/O2",
+        "retained_original": "build/kernel/merge-AE-shards-full-a2/retained-original-shards/O2",
+        "scope": "original execution provenance; restored copies materialize retained bytes, no new execution"
+      }
+    ],
+    "whole_including_host_elapsed_seconds": 1827.828359492938
+  },
+  "localFullQualificationSummary": {
+    "path": "build/school/merge-AE-shards-full-a2-summary.json",
+    "sha256": "df5d9b3b20d201fa59375eb7d696d48ff7d351fbd545a810a683aa94d5050220"
+  },
+  "independentAdmission": "Parent verified original qualification/collector/command/driver/log digests, exact clean source and 20/24/28/6 counts, eight strict phase supervisor receipts and actual PID/starttick absence after closure. Original result files unchanged.",
+  "transportModeScope": "All actual matrix files were 0644. The full matrix round trip compared every file byte and mode; a separate focused transport test exercised 0755\u21920644 artifact blob\u21920755 restoration. Do not infer executable files in the actual matrix archive."
+}

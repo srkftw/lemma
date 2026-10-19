@@ -1,4 +1,5 @@
 import Lemma.Multimodal.TutorPackage
+import Lemma.Multimodal.SchoolPacket
 import Lemma.Services.Arithmetic.ClientV8
 import Lemma.User.Multimodal
 import Lemma.Documents.MathematicsEntry
@@ -5763,6 +5764,8 @@ def mainPackageReaderChooser (bootArgument : UInt64) : Action :=
 private def tutorContext : UInt64 := Lemma.User.Multimodal.records + 1024
 private def tutorPacket : UInt64 := Lemma.User.Multimodal.records + 1536
 private def tutorState : UInt64 := Lemma.User.Multimodal.state + 144
+private def schoolContext : UInt64 := Lemma.User.Multimodal.records + 1152
+private def schoolPacket : UInt64 := Lemma.User.Multimodal.records + 1792
 private def tutorPut (offset value : UInt64) : Action := Memory.write64 (tutorContext + offset) value
 private def tutorGet (offset : UInt64) : Action := Memory.read64 (tutorContext + offset)
 
@@ -5802,15 +5805,33 @@ private def multimodalAsk : Action :=
   .bind (CapabilityConsole.record console 0x722 source edition task now) fun s _ => if statusFailed s = true then .done s 0 else
   CapabilityConsole.record console 0x723 1 (now + 3000000000) 1 0
 
+/-- Explicit envelope selection leaves the saved source reader's CRC/node
+expectation. The new package still passes its own full integrity validation
+and the separate current document/school/action admission checks. -/
 private def multimodalLoadTutor : Action :=
   .bind (Memory.read64 tutorState) fun s sequence => if statusFailed s = true then .done s 0 else
   if sequence = 0 then .done 244 0 else
   .bind cancelBookmarkWork fun s _ => if statusFailed s = true then .done s 0 else
   .bind cancelArithmetic fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 512 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 160 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 176 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (beginPackageRead 60001 sequence) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 128 60001) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Memory.write64 (tutorState + 8) 1) fun s _ => if statusFailed s = true then .done s 0 else
+  packagePut 136 sequence
+
+private def multimodalJoinSchool : Action :=
+  .bind (Memory.read64 tutorState) fun s sequence => if statusFailed s = true then .done s 0 else
+  if sequence = 0 then .done 244 0 else
+  .bind cancelBookmarkWork fun s _ => if statusFailed s = true then .done s 0 else
+  .bind cancelArithmetic fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 512 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 160 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 176 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (beginPackageRead 60000 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 128 60000) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (tutorState + 24) 1) fun s _ => if statusFailed s = true then .done s 0 else
   packagePut 136 sequence
 
 private def multimodalTutorDecision (reason : UInt64) : Action :=
@@ -5820,25 +5841,53 @@ private def multimodalTutorDecision (reason : UInt64) : Action :=
   .bind (CapabilityConsole.record console 0x724 reason revision object 0) fun s _ => if statusFailed s = true then .done s 0 else
   if reason = 0 then .done 0 1 else .done 244 reason
 
-private def multimodalAdmitTutor : Action :=
-  .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
-  if phase = 2 then
-  .bind (Memory.read64 (tutorState + 8)) fun s requested => if statusFailed s = true then .done s 0 else
-  .bind (packageGet 128) fun s selected => if statusFailed s = true then .done s 0 else
-  .bind (Memory.write64 (tutorState + 8) 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Multimodal.TutorPackage.decode packageBytes length tutorPacket) fun s marked => if statusFailed s = true then .done s 0 else
-  let markerReason := Lemma.Multimodal.TutorPackage.requiredMarkerReason requested selected marked
-  if 0 < markerReason then multimodalTutorDecision markerReason else
-  if marked = 0 then .done 0 0 else
+private def multimodalCurrentTutor : Action :=
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision => if statusFailed s = true then .done s 0 else
   .bind (tutorGet 16) fun s expectedRevision => if statusFailed s = true then .done s 0 else
   .bind (tutorGet 24) fun s object => if statusFailed s = true then .done s 0 else
-  if different expectedRevision revision = true then .done 244 0 else
-  if different object (Lemma.Courses.PackageWorkspace.object page) = true then .done 244 0 else
+  if different expectedRevision revision = true then .done 0 3 else
+  if different object (Lemma.Courses.PackageWorkspace.object page) = true then .done 0 4 else .done 0 0
+
+private def multimodalAdmitSchool (length requested : UInt64) : Action :=
+  .bind (Lemma.Multimodal.SchoolPacket.decode packageBytes length schoolPacket 1) fun s marked => if statusFailed s = true then .done s 0 else
+  if marked = 0 then if requested = 1 then multimodalTutorDecision 29 else .done 0 0 else
+  if requested = 0 then multimodalTutorDecision 29 else
+  .bind multimodalCurrentTutor fun s current => if statusFailed s = true then .done s 0 else
+  if different current 0 = true then multimodalTutorDecision current else
   .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Multimodal.TutorAction.validate tutorPacket tutorContext now) fun s reason => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Multimodal.SchoolPacket.acceptInvitation packageBytes schoolPacket schoolContext tutorContext now)
+    fun s reason => if statusFailed s = true then .done s 0 else
+  if different reason 0 = true then multimodalTutorDecision reason else
+  .bind (Memory.read64 (schoolContext + 48)) fun s binding => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (schoolContext + 56)) fun s generation => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (schoolContext + 72)) fun s policy => if statusFailed s = true then .done s 0 else
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x727 binding generation policy now) fun s _ => if statusFailed s = true then .done s 0 else .done 0 2
+
+private def multimodalAdmitTutor : Action :=
+  .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 2 then
+  .bind (Memory.read64 (tutorState + 8)) fun s requested => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (tutorState + 24)) fun s joinRequested => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 128) fun s selected => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (tutorState + 8) 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (tutorState + 24) 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+  .bind (multimodalAdmitSchool length joinRequested) fun s school => if statusFailed s = true then .done s 0 else
+  if school = 2 then .done 0 2 else
+  .bind (Lemma.Multimodal.SchoolPacket.decode packageBytes length tutorPacket 2) fun s schoolAction => if statusFailed s = true then .done s 0 else
+  .bind (if schoolAction = 1 then .done 0 1 else Lemma.Multimodal.TutorPackage.decode packageBytes length tutorPacket) fun s marked => if statusFailed s = true then .done s 0 else
+  let markerReason := Lemma.Multimodal.TutorPackage.requiredMarkerReason requested selected marked
+  if 0 < markerReason then multimodalTutorDecision markerReason else
+  if marked = 0 then .done 0 0 else
+  .bind multimodalCurrentTutor fun s current => if statusFailed s = true then .done s 0 else
+  if different current 0 = true then multimodalTutorDecision current else
+  .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
+  .bind (if schoolAction = 1 then Lemma.Multimodal.SchoolPacket.actionReason tutorPacket tutorContext schoolContext now else
+    .bind (Lemma.Multimodal.SchoolPacket.active schoolContext) fun s joined => if statusFailed s = true then .done s 0 else
+    if joined = 1 then .done 0 28 else Lemma.Multimodal.TutorAction.validate tutorPacket tutorContext now)
+    fun s reason => if statusFailed s = true then .done s 0 else
   .bind (if reason = 0 then Lemma.Multimodal.TutorPackage.annotationReason packageBytes tutorPacket else .done 0 reason)
     fun s decision => if statusFailed s = true then .done s 0 else multimodalTutorDecision decision
   else .done 0 0
@@ -5865,18 +5914,19 @@ private def multimodalCharacter (index enabled : UInt64) : UInt64 :=
     if index < 27 then (0x46464f20474545 >>> ((index - 20) * 8)) &&& 255 else 32
   else if index < 44 then
     if 36 ≤ index then if index < 39 then (0x4b5341 >>> ((index - 36) * 8)) &&& 255 else 32 else 32
-  else if index < 48 then (0x44414f4c >>> ((index - 44) * 8)) &&& 255 else 32
+  else if index < 48 then (0x44414f4c >>> ((index - 44) * 8)) &&& 255 else
+  if 52 ≤ index then if index < 56 then (0x4e494f4a >>> ((index - 52) * 8)) &&& 255 else 32 else 32
 
 private def multimodalBarStep (i _ : UInt32) (acc enabled width _ _ : UInt64) : Action :=
-  let x := i.toUInt64 % 312 * 2
-  let y := i.toUInt64 / 312
+  let x := i.toUInt64 % 360 * 2
+  let y := i.toUInt64 / 360
   let a := pixel x y enabled
   let b := pixel (x + 1) y enabled
   .bind (Memory.write8 (Surface.framebuffer + (132 + y) * ((width + 1) / 2) + 200 + x / 2) ((a <<< 4) ||| b)) fun s _ => .done s acc
 where
   pixel (x y enabled : UInt64) : UInt64 :=
     if x % 12 < 9 then
-      if (Surface.letter (multimodalCharacter (x / 12) enabled) >>> (14 - (y / 3 * 3 + x % 12 / 3))) &&& 1 = 1 then 0 else 15
+      if (Lemma.Courses.PackageRender.glyph (multimodalCharacter (x / 12) enabled) >>> (14 - (y / 3 * 3 + x % 12 / 3))) &&& 1 = 1 then 0 else 15
     else 15
 
 private def multimodalBarTile (i _ : UInt32) (acc width _ _ _ : UInt64) : Action :=
@@ -5885,16 +5935,77 @@ private def multimodalBarTile (i _ : UInt32) (acc width _ _ _ : UInt64) : Action
 private def multimodalBar : Action :=
   .bind Lemma.User.Multimodal.active fun s enabled => if mmFailed s = true then .done s 0 else
   .bind (get 32) fun s width => if mmFailed s = true then .done s 0 else
-  if width < 1024 then .done 16 0 else
-  .boundedFoldU64 4680 multimodalBarStep 4680 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
-  .boundedFoldU64 20 multimodalBarTile 20 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
-  dirty 400 132 1024 147
+  if width < 1120 then .done 16 0 else
+  .boundedFoldU64 5400 multimodalBarStep 5400 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+  .boundedFoldU64 23 multimodalBarTile 23 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+  dirty 400 132 1120 147
+
+private def multimodalBookLoad : Action :=
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (tutorState + 32)) fun s expectedPage => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 128) fun s identity => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 136) fun s edition => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (tutorState + 40)) fun s expectedIdentity => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (tutorState + 48)) fun s expectedEdition => if statusFailed s = true then .done s 0 else
+  if course = 1 then if page = expectedPage then if identity = expectedIdentity then if edition = expectedEdition then
+    packageControlPress 264 670
+  else .done 175 0 else .done 175 0 else .done 175 0 else .done 175 0
 
 private def multimodalControl (operation : UInt64) : Action :=
-  .bind (if operation = 3 then multimodalAsk else if operation = 4 then multimodalLoadTutor else Lemma.User.Multimodal.control operation) fun status result =>
+  .bind (if operation = 3 then multimodalAsk else if operation = 4 then multimodalLoadTutor else if operation = 5 then multimodalJoinSchool else if operation = 6 then multimodalBookLoad else Lemma.User.Multimodal.control operation) fun status result =>
   .bind (get 24) fun s console => if mmFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x712 operation status.toUInt64 result 0) fun s _ => if mmFailed s = true then .done s 0 else
   Memory.write64 (Lemma.User.Multimodal.state + 32) 1
+
+/-- ASK/LOAD taps are transient intents, retained before the ordinary busy
+math-tap queue. One pending intent is bounded; identical taps coalesce and a
+different second intent gets an explicit Busy receipt726/3. No school request,
+package read, framebuffer write or receipt712 happens until idle dispatch. -/
+private def multimodalQueueTutor (operation : UInt64) : Action :=
+  .bind (Memory.read64 (tutorState + 16)) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (if pending = 0 then Memory.write64 (tutorState + 16) operation else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x726 operation (if pending = 0 then 1 else if pending = operation then 2 else 3) 0 0
+
+/-- A chooser LOAD can arrive during the previous EDIT+ controller update.
+Retain the exact page/request pair without starting a read or touching pixels.
+The dispatcher refuses a different page or selected immutable publication. -/
+private def multimodalQueueBookLoad : Action :=
+  .bind (Memory.read64 (tutorState + 16)) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (if pending = 0 then
+    .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 128) fun s identity => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 136) fun s edition => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 (tutorState + 32) page) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 (tutorState + 40) identity) fun s _ => if statusFailed s = true then .done s 0 else
+    Memory.write64 (tutorState + 48) edition
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  multimodalQueueTutor 6
+
+/-- The pending intent never borrows a Store/checker/display buffer. Dispatch
+waits for the actual guest queues and paper ownership, then consumes it once.
+A fresh ASK snapshots the source/revision at dispatch, not at raw admission. -/
+private def multimodalPumpTutor : Action :=
+  .bind (Memory.read64 (tutorState + 16)) fun s operation => if statusFailed s = true then .done s 0 else
+  if operation = 0 then .done 0 0 else
+  .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s store => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
+  if stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then
+  .bind bookmarkBusy fun s work => if statusFailed s = true then .done s 0 else
+  .bind Lemma.Notebook.ControlBacklog.count fun s waiting => if statusFailed s = true then .done s 0 else
+  if work ||| waiting = 0 then
+  .bind (get 0) fun s surface => if statusFailed s = true then .done s 0 else
+  .bind (Surface.status surface) fun s status => if statusFailed s = true then .done s 0 else
+  if status &&& 1 = 0 then
+  .bind (Memory.write64 (tutorState + 16) 0) fun s _ => if statusFailed s = true then .done s 0 else
+  multimodalControl operation
+  else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0
 
 /-- Local inhibition never waits behind mathematical/Store/paper work. Only
 the named controller operation and an explicit receipt execute here. Rendering
@@ -5964,6 +6075,13 @@ where
     else
     .bind (get 432) fun s cancelled => if statusFailed s = true then .done s 0 else
     if cancelled = 1 then .done 0 0 else
+    if (if 132 ≤ safetyY then if safetyY < 160 then if 832 ≤ safetyX then if safetyX < 1120 then true else false else false else false else false) = true then
+      multimodalQueueTutor (if safetyX < 928 then 3 else if safetyX < 1024 then 4 else 5)
+    else
+    .bind (get 512) fun s selectedCourse => if statusFailed s = true then .done s 0 else
+    if (if selectedCourse = 1 then if 660 ≤ safetyY then if safetyY < 680 then if 216 ≤ safetyX then if safetyX < 312 then true else false else false else false else false else false) = true then
+      multimodalQueueBookLoad
+    else
     .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
     .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
     .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
@@ -6021,6 +6139,16 @@ where
     .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
     if count = 384 then .done Status.iterationStop (consumed + 1) else .done 0 (consumed + 1)
 
+/-- Rejected text is terminal presentation work. The ordinary error path
+leaves course mode, so it cannot later drain these flags. Retain the action
+rejection/high water and every document/Store byte while releasing only this
+unpublished view; otherwise packageBusy indefinitely blocks a fresh ASK. -/
+private def multimodalAbandonPresentation : Action :=
+  .bind (packagePut 72 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 144 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 152 0) fun s _ => if statusFailed s = true then .done s 0 else
+  packagePut 32 4
+
 private def multimodalPackageWork : Action :=
   .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
   if allocated = 12 then
@@ -6052,7 +6180,9 @@ private def multimodalPackageWork : Action :=
   .bind validateBookmarkPackage fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packageGet 72) fun s text => if statusFailed s = true then .done s 0 else
   .bind (if text = 1 then
-    .bind multimodalAdmitTutor fun s marked => if statusFailed s = true then courseError s else
+    .bind multimodalAdmitTutor fun s marked => if statusFailed s = true then
+      .bind multimodalAbandonPresentation fun cleanup _ => if statusFailed cleanup = true then .done cleanup 0 else courseError s
+    else
     .bind renderPackageText fun s _ => if statusFailed s = true then courseError s else
     .bind (if marked = 1 then multimodalTutorAccepted else .done 0 0) fun s _ => if statusFailed s = true then courseError s else packagePut 72 0
     else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
@@ -6071,6 +6201,7 @@ private def multimodalStep : Action :=
   .bind numericPumpPad fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else
   .bind multimodalPumpBar fun s _ => if statusFailed s = true then .done s 0 else
+  .bind multimodalPumpTutor fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpBookControlBacklog fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
   .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else

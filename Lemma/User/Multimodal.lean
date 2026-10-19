@@ -14,7 +14,11 @@ open Lemma.User
 
 def records : UInt64 := 0x340000
 /-- One explicitly allocated page: samples[0,512), tutor context[1024,1112),
-tutor proposal[1536,1728), state[2048,2304), config packet[2304,2368).
+tutor proposal[1536,1792), school context[1152,1256), JOIN packet[1792,1896),
+state[2048,2304), config packet[2304,2368).
+The Notebook uses state+160 for one transient ASK/LOAD/JOIN/chooser-LOAD intent,
++168 for an explicit pending JOIN read and+176/+184/+192 for the queued chooser
+page/request identity/edition. Legacy tutor action v2 remains192bytes.
 The original BSS20d00..20f20 remains owned by ControlBacklog. -/
 def state : UInt64 := records + 2048
 def packet : UInt64 := records + 2304
@@ -30,6 +34,7 @@ def «initialize» (console : UInt64) : Action :=
   .bind (Syscall.allocatePage records) fun s address => if mmFailed s = true then .done s 0 else
   if mmDifferent address records = true then .done 95 0 else
   .boundedFoldU64 32 clearStep 32 0 0 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (Memory.write64 (records + 1152) 0) fun s _ => if mmFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 4) fun s cap => if mmFailed s = true then .done s 0 else
   .bind (put 0 cap) fun s _ => if mmFailed s = true then .done s 0 else
   .bind (put 8 console) fun s _ => if mmFailed s = true then .done s 0 else

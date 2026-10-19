@@ -1,0 +1,244 @@
+{
+  "additionalDisclosures": {
+    "checkpointScope": "Exact resume compares the same fixed current host/toolchain run. Checkpoint implementation digests name Train.lean, Linear.lean and Tensor.lean; full recorded import/pin source identity is retained separately in training evidence.",
+    "lifecycle": "Five fresh real QEMU/RAM trials separately observe package preparation, Popen creation, actual READY, runtime frame write/flush and first useful reply. Host clocks can overlap child work; host/page caches warm or uncontrolled. Retained original build/action command timings are reused, not a fresh compilation. No large-model or first-token claim.",
+    "localProvider": "Authorized ready-to-launch reports bind exact lease health epoch. Actual VM UART READY is separate retained evidence; successful report refresh happens after commit. Owner-reported one-host QEMU adapter; 1 vCPU/128MiB per guest, 4 concurrent slots, 512MiB aggregate declared VM RAM, 256MiB conservative concurrent CAS-closure reservation. No cgroup/disk quota, remote membership, physical availability or live-VM attestation claim.",
+    "streaming": "512-byte reads and nonresident whole dataset describe the Lean decoder/four-row batch path. Hosted byte-integrity hashing uses sha256sum; its buffers and process RSS are not measured by that receipt."
+  },
+  "gates": {
+    "F": {
+      "boundary": "cancellation rejects result commit; guest does not preempt, poll school state or check lease clocks; no killed-process late reply is claimed",
+      "clockScope": "worker scenario uses controlled-ms; real monotonic service path is a separate host test",
+      "observed": "Actual QEMU READY, incomplete runtime request and SIGKILL; authorized offline report at101 before expiry110; reconciliation twice appends no duplicate transitions; new ownership produces actual711424 and separately observed stale reply is rejected. Drain blocks new assignments and allows the active result commit. Current A8 hosted40-test validation separately exercises real monotonic expiry, cancellation and restart."
+    },
+    "G": {
+      "actualLearnerDeclarations": {
+        "fullRestorePreservedAndSelectedHistoryDefinitionsExcluded": true,
+        "immutableOriginalSuggestionPreserved": true,
+        "laterTimeRetriesIdentical": true,
+        "ops": [
+          "goal-set",
+          "interpretation-challenge",
+          "suggestion-override"
+        ],
+        "originalSuggestionSequence": 33,
+        "referenceOriginalActualScoreQ20": 711424
+      },
+      "lifecycle": {
+        "allFirstScoresQ20": 711424,
+        "boundaryScope": "Finite two-feature synthetic worker on shared host TCG. Host observation boundaries are not exclusive guest stages, CPU-cycle measurements, native RV64 performance, large-model loading or a first-token benchmark.",
+        "cacheScope": "5 sequential fresh QEMU processes and fresh 128MiB guest RAM allocations; image/parameter bytes pre-read and audit completed before trials. Host filesystem/page caches and QEMU executable cache are warm or uncontrolled; no cache drop or physical cold boot.",
+        "creationToFirstResultSeconds": {
+          "maximum": 0.087145141,
+          "median": 0.07174888,
+          "minimum": 0.05949462
+        },
+        "freshProcesses": 5
+      },
+      "localProvider": {
+        "activeLeaseCompletedWhileNodeAndWorkerDrained": true,
+        "admissionRejections": [
+          "unregistered worker",
+          "node draining",
+          "worker draining"
+        ],
+        "committedRetryAfterHealthRefreshIdentical": true,
+        "offlineReportedBeforeLeaseExpiry": true,
+        "operationalRegistryRecordsPreserved": 17,
+        "operationalRestoreRequiresFreshGenerationHealth": true,
+        "repeatedReconciliationRowsIdentical": true,
+        "reportedHealthIsObservedVmReady": false,
+        "reusableDefinitionsExcludeProviderKinds": [
+          "provider-health",
+          "provider-node",
+          "provider-node-drain",
+          "provider-worker",
+          "provider-worker-drain"
+        ]
+      },
+      "observed": "O0/O2 genuinely elaborated RV64 images each retain nine runtime cases; same image per session receives changed features and trained parameters; raw response score matches independent integer oracle and committed suggestion",
+      "parameterArtifact": "f6e73bd7460ec8acdac64ad246f7e8737ead66a2da8208a0f8da52d70afe458d",
+      "productionScope": "validated LLVM action reuse where build receipts report it; fresh guest execution; no hosted inference substitute",
+      "profile": "core0-v0.5",
+      "scoreQ20": 711424
+    },
+    "H": {
+      "boundary": "synthetic pipeline behavior in the pinned hosted binary64 binding; specialized reverse pass; no private-data/freestanding trainer or learning-efficacy claim",
+      "observed": "160 actual hosted Lean momentum-SGD updates, independent forward/gradient/update and finite-difference checks, fixed disjoint synthetic fitting/evaluation groups, baseline/float/quantized metrics, actual step7 kill and complete bit-identical resumed state, saved/reloaded parameter artifact used by actual worker suggestion"
+    },
+    "I": {
+      "boundary": "one local authority and same supported clock domain; no coordinated simultaneous authorities, credential transfer, host-crash or cross-boot restoration claim",
+      "exportedRestoredRecordsEqual": true,
+      "fullExportResolvedArtifacts": 18,
+      "observed": "Full49-record/eighteen-artifact operational export restores exact records, learner progress, three actual target-suggestion declarations and seventeen provider registry records. New generation rejects old leases and stale readiness. Selected history through actual result sequence29 preserves exact29 rows/seventeen artifacts; later learner work and choices stay excluded. Reusable selected model160 installs/clones with seven public artifacts and no provider records.",
+      "privateStateExcludedFromDefinitions": [
+        "attempt",
+        "review",
+        "enrollment",
+        "grant",
+        "job",
+        "suggestion",
+        "private result and execution bytes",
+        "learner-choice",
+        "provider-health",
+        "provider-node",
+        "provider-node-drain",
+        "provider-worker",
+        "provider-worker-drain"
+      ],
+      "restoredLearnerAttempts": 1,
+      "restoredReviews": 1,
+      "selectedHistory": {
+        "actualInferenceResultPreserved": true,
+        "copiedArtifactInodesIndependent": true,
+        "exactCommittedRowsPreserved": true,
+        "export": {
+          "artifacts": 17,
+          "mode": "offline-authority history selection; private records included by current administrator grant",
+          "path": "/home/sreekumaar/Downloads/lemma/build/school/job-worker-008-a9/selected-export",
+          "records": 29,
+          "sourceRecords": 49,
+          "throughSequence": 29
+        },
+        "generation": 2,
+        "laterPrivateWorkAndRecordsExcluded": true,
+        "mode": "offline-authority committed-history prefix",
+        "preExportLease": "rejected",
+        "resolvedRequiredArtifacts": 17,
+        "result": "pass",
+        "throughSequence": 29
+      }
+    },
+    "K": {
+      "boundary": "tiny finite host learner-RPC workload; inference may finish before an RPC completes after release; no sustained compute overlap, tablet/browser drawing responsiveness, native-RISC-V speed or hyperscale claim",
+      "courseBytes": 4199,
+      "emulatorPeakRssKiBObserved": [
+        60592,
+        60416,
+        60660,
+        60500
+      ],
+      "learnerResponseLatencySeconds": {
+        "afterConcurrentRelease": {
+          "courseResponseSha256": "1e2baf32831224ffc651f238d714cfe7b20e10b3b926096f379e0ba6a5bb1f8e",
+          "courseSeconds": 0.08142672502435744,
+          "observedTypedAttempts": 1,
+          "packageBytes": 4199,
+          "packageSha256": "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e",
+          "progressResponseSha256": "566af63c49dc74240c6b905955d17fe12f5418827623b98f0cce71d92855b869",
+          "progressSeconds": 0.1102231260156259
+        },
+        "fourProcessesPausedAtExplicitBarrier": {
+          "courseResponseSha256": "1e2baf32831224ffc651f238d714cfe7b20e10b3b926096f379e0ba6a5bb1f8e",
+          "courseSeconds": 0.11285994097124785,
+          "observedTypedAttempts": 1,
+          "packageBytes": 4199,
+          "packageSha256": "3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e",
+          "progressResponseSha256": "566af63c49dc74240c6b905955d17fe12f5418827623b98f0cce71d92855b869",
+          "progressSeconds": 0.11776676401495934
+        },
+        "progressScope": "one deliberately supplied hosted typed attempt; no guest observation invented"
+      },
+      "observed": "four real QEMU inference jobs, fifth lease rejection, bulk reserve/queue/oversized-input rejection, recovered exact results, and actual enrolled course/progress responses at an explicit paused barrier and after release",
+      "sharedHostScope": "A8 job, bounded load and native panel observers ran concurrently on a shared host with other host/target work; no isolated performance claim.",
+      "targetRoundTripSeconds": {
+        "maximum": 0.012257763999514282,
+        "median": 0.00643881456926465,
+        "minimum": 0.004736047936603427
+      }
+    }
+  },
+  "hashAudit": {
+    "actualTargetSuggestionLearnerDeclarationsAndPrivacyBoundariesChecked": true,
+    "currentA8ProducerSourceInventoryExact": true,
+    "currentNativeLearnerChoiceFormAndScreenshotsChecked": true,
+    "currentProviderHelperHashMatchesJobAndLoad": true,
+    "currentTrainingJobLoadRunnerHashesMatch": true,
+    "explicitAggregateDataReceiptReferencesChecked": 18,
+    "fiveCurrentSummaryArtifactReferencesChecked": 56,
+    "fiveCurrentSummaryUniqueArtifactPathsChecked": 41,
+    "fiveProviderKindsExcludedFromReusableCopies": true,
+    "fourActualLiveReadyReceiptsVerified": true,
+    "fullFortyNineAndSelectedTwentyNineRecordsExact": true,
+    "lifecycleRawFramesStreamsAndClockOrderChecked": true,
+    "mismatches": [],
+    "providerLeaseHealthEpochsVerified": [
+      {
+        "fence": 1,
+        "healthSequence": 13,
+        "leaseSequence": 23
+      },
+      {
+        "fence": 2,
+        "healthSequence": 15,
+        "leaseSequence": 26
+      }
+    ],
+    "rawWorkerAuditAndRequestResponseStreamsMatchBothOptimizationReceipts": true,
+    "recordedSourceInputMismatches": [],
+    "reviewSelfReferenceCheckedSeparately": true,
+    "seventeenOperationalProviderRowsExactAfterRestore": true
+  },
+  "inputs": {
+    "hostValidation": {
+      "path": "build/school/host-validation-v3-a6/validation.json",
+      "sha256": "fc7b38df6f6e0f7468b349d1ba43030a25bec2de4766e027a09b6c1ca906efbb"
+    },
+    "job": {
+      "path": "build/school/job-worker-008-a9/job-worker-evidence.json",
+      "sha256": "6e424653ab2b4e0862b5d0c0d207225ecff1efef91cdd41de6a1362922bb75a3"
+    },
+    "lifecycle": {
+      "path": "build/school/lifecycle-008-a1/lifecycle-evidence.json",
+      "sha256": "d137f9dbec40e3146892091cea4c2223a3ebf57bf88eb56ec704d9c1d7cc5382"
+    },
+    "load": {
+      "path": "build/school/load-worker-008-a9/load-evidence.json",
+      "sha256": "91b8f55f6cf1f3d5aa797e09da941991c15828793e7fd4b0c4192747232108fd"
+    },
+    "nativeProducer": {
+      "path": "build/school/host-native-v3-a8/production.json",
+      "sha256": "36a8d5d255fc396a0afc9070bc59211f8f0e0eeb2a5751f934c6533d2f11edbc"
+    },
+    "panel": {
+      "path": "build/school/panel-008-sample-a7/panel-evidence.json",
+      "sha256": "2d98a8ac2aa587d4c1d2c81c23527cad4c1b4d66fbd32a578f7d3140f82ed3c7"
+    },
+    "training": {
+      "path": "build/school/training-008-final/training-evidence.json",
+      "sha256": "33eaffb1c2008934cccd6faa630855b4005afd73fc8c508a52132d067b5b6429"
+    },
+    "workerBuilds": [
+      {
+        "path": "build/school/worker-008-O2-release/build.json",
+        "sha256": "26a8cb0ce9c4c585e6d572ee6447ca10e7672e64a76754145e13263a01628eab"
+      },
+      {
+        "path": "build/school/worker-008-O0-release/build.json",
+        "sha256": "6be4cf08c7697c031bd7a9a44b6b2be4daf6b950d49b4043aa2a35fe8b1b932a"
+      }
+    ],
+    "workerExecutions": [
+      {
+        "path": "build/school/execution-008-release/execution.json",
+        "sha256": "2531ab8e2510e4e519585614d458d791fe304266c12032f9dfe94e503d9e7d6a"
+      },
+      {
+        "path": "build/school/execution-008-O0-release/execution.json",
+        "sha256": "b20e7001e4e59fbbed9f9b275be819e32217022fa56c02ae1dd4924baa23dd77"
+      }
+    ]
+  },
+  "method": "SHA-256 source/receipt checks, raw frame parsing and independent integer arithmetic, copied-artifact resolution, exported/restored JSON record comparison, plus a focused five-process actual lifecycle observation; no production or broad test rerun",
+  "result": "read-only artifact review passed within explicit scopes; no whole-school readiness inference",
+  "schema": "lemma-school-numerics-gate-review/v1",
+  "sourceInputs": {
+    "docs/contracts/008-school-worker-numerics-v1.html": "d8b1285ca1769b0594a74c34ed4232d0cb6ec0c0125e8dbcd165fa2e2c858a02",
+    "scripts/check_school_job_worker.py": "ae23b90eea06e137588e236c5757ae75caf545a8699b00636342e308a38253e7",
+    "scripts/check_school_load_worker.py": "6c948dcb2892f758f9d0e064bd9387c4895026f8fbb8223b0e28f5d73c1052e8",
+    "scripts/check_school_training.py": "c52b87a870f12b7c56d1e98e55db4c6c3de120e7a4dd7898530fa1f2e62cb30d",
+    "scripts/check_school_worker.py": "73384628c3012ffc90132dc3d159bc970b584cc2820d9745bcb5d140dfcba2f4",
+    "scripts/check_school_worker_lifecycle.py": "44769f88f8d4de8f7ca9212962ab3184d5eaa7c6688c35e6027aa0722229bffc",
+    "scripts/school_provider_runner.py": "cab2e37976088f722cae071e949a27f1bb189604b1a8a2177b77956a49110d32"
+  }
+}

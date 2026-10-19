@@ -138,10 +138,12 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
             'source layout historical control backlog differs')
     require(value(notebook,'tutorContext') == 'Lemma.User.Multimodal.records + 1024' and
             value(notebook,'tutorPacket') == 'Lemma.User.Multimodal.records + 1536' and
-            value(notebook,'tutorState') == 'Lemma.User.Multimodal.state + 144',
+            value(notebook,'tutorState') == 'Lemma.User.Multimodal.state + 144' and
+            value(notebook,'schoolContext') == 'Lemma.User.Multimodal.records + 1152' and
+            value(notebook,'schoolPacket') == 'Lemma.User.Multimodal.records + 1792',
             'source layout actual tutor consumers differ')
     page, page_size = 0x340000, 4096
-    windows = [('samples',0,8*64),('tutor context',1024,11*8),('tutor proposal',1536,24*8),
+    windows = [('samples',0,8*64),('tutor context',1024,11*8),('school context',1152,13*8),('tutor proposal',1536,32*8),('JOIN packet',1792,13*8),
                ('state',2048,32*8),('configuration packet',2304,8*8)]
     for index, (name, offset, length) in enumerate(windows):
         require(offset % 8 == 0 and length > 0 and offset+length <= page_size,
@@ -169,11 +171,11 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
     require(definition(notebook,'multimodalBar') == compact('''private def multimodalBar : Action :=
       .bind Lemma.User.Multimodal.active fun s enabled => if mmFailed s = true then .done s 0 else
       .bind (get 32) fun s width => if mmFailed s = true then .done s 0 else
-      if width < 1024 then .done 16 0 else
-      .boundedFoldU64 4680 multimodalBarStep 4680 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
-      .boundedFoldU64 20 multimodalBarTile 20 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
-      dirty 400 132 1024 147'''),
-      'source toolbar must bound width and enqueue all twenty intersected tiles before dirty')
+      if width < 1120 then .done 16 0 else
+      .boundedFoldU64 5400 multimodalBarStep 5400 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+      .boundedFoldU64 23 multimodalBarTile 23 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+      dirty 400 132 1120 147'''),
+      'source toolbar must bound width and enqueue all twenty-three intersected tiles before dirty')
     require(definition(notebook,'multimodalPumpBar') == compact('''private def multimodalPumpBar : Action :=
       .bind (Memory.read64 (Lemma.User.Multimodal.state + 32)) fun s pending => if mmFailed s = true then .done s 0 else
       if pending = 0 then .done 0 0 else
@@ -212,8 +214,57 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
     require('Geometry.pixel (Geometry.normalized x maxX) width' in prefix and
             'Geometry.pixel (Geometry.normalized y maxY) height' in prefix,
             'source safety coordinates bypass declared pen geometry')
+    intent_branch = compact('''if (if 132 ≤ safetyY then if safetyY < 160 then if 832 ≤ safetyX then if safetyX < 1120 then true else false else false else false else false) = true then
+      multimodalQueueTutor (if safetyX < 928 then 3 else if safetyX < 1024 then 4 else 5)
+    else .bind (get 512)''')
+    require(intent_branch in input_ and input_.index(intent_branch) < input_.index('.bind (get 160)'),
+            'source ASK/LOAD retention must precede the busy math queue')
+    book_branch=compact('''if (if selectedCourse = 1 then if 660 ≤ safetyY then if safetyY < 680 then if 216 ≤ safetyX then if safetyX < 312 then true else false else false else false else false else false) = true then
+      multimodalQueueBookLoad else .bind (get 136)''')
+    require(book_branch in input_ and input_.index(book_branch)<input_.index('.bind (get 160)'),
+            'source chooser LOAD retention must precede the busy math queue')
+    book_queue=definition(notebook,'multimodalQueueBookLoad')
+    require(all(token in book_queue for token in ('if pending = 0 then','get 80','packageGet 128','packageGet 136',
+        'Memory.write64 (tutorState + 32) page','Memory.write64 (tutorState + 40) identity',
+        'Memory.write64 (tutorState + 48) edition','multimodalQueueTutor 6')),
+        'source chooser LOAD lost its bounded page/publication snapshot')
+    book_dispatch=definition(notebook,'multimodalBookLoad')
+    require('if course = 1 then if page = expectedPage then if identity = expectedIdentity then if edition = expectedEdition then packageControlPress 264 670' in book_dispatch
+            and book_dispatch.count('.done 175 0')==4,'source queued chooser LOAD lost its page/publication cancellation')
+    queued = definition(notebook,'multimodalQueueTutor')
+    require(queued == compact('''private def multimodalQueueTutor (operation : UInt64) : Action :=
+      .bind (Memory.read64 (tutorState + 16)) fun s pending => if statusFailed s = true then .done s 0 else
+      .bind (if pending = 0 then Memory.write64 (tutorState + 16) operation else .done 0 0)
+        fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+      CapabilityConsole.record console 0x726 operation (if pending = 0 then 1 else if pending = operation then 2 else 3) 0 0'''),
+      'source pending intent must retain/coalesce or report bounded Busy without acquiring work')
+    pump = definition(notebook,'multimodalPumpTutor')
+    require('if stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then' in pump and
+            '.bind bookmarkBusy' in pump and '.bind Lemma.Notebook.ControlBacklog.count' in pump and
+            'if work ||| waiting = 0 then' in pump and '.bind (Surface.status surface)' in pump and
+            'if status &&& 1 = 0 then' in pump and
+            '.bind (Memory.write64 (tutorState + 16) 0)' in pump and
+            pump.index('if status &&& 1 = 0 then') < pump.index('Memory.write64 (tutorState + 16) 0') < pump.index('multimodalControl operation'),
+            'source tutor intent dispatch lost work/display ownership or exact-once consumption')
     step = definition(notebook,'multimodalStep')
-    require('.bind multimodalPumpBar' in step and '.bind (drainMultimodalInput input)' in step and
+    abandon=definition(notebook,'multimodalAbandonPresentation')
+    require(abandon == compact('''private def multimodalAbandonPresentation : Action :=
+      .bind (packagePut 72 0) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (packagePut 144 0) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (packagePut 152 0) fun s _ => if statusFailed s = true then .done s 0 else
+      packagePut 32 4'''), 'source rejected view must release only terminal presentation work')
+    work=definition(notebook,'multimodalPackageWork')
+    require(compact('''.bind multimodalAdmitTutor fun s marked => if statusFailed s = true then
+      .bind multimodalAbandonPresentation fun cleanup _ => if statusFailed cleanup = true then .done cleanup 0 else courseError s''') in work,
+      'source rejected view must abandon pending presentation before course error')
+    for name,identity in (('multimodalLoadTutor',60001),('multimodalJoinSchool',60000)):
+        envelope=definition(notebook,name)
+        reset=compact('''.bind (packagePut 160 0) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (packagePut 176 0) fun s _ => if statusFailed s = true then .done s 0 else''')
+        require(reset+' .bind (beginPackageRead '+str(identity)+' sequence)' in envelope,
+                'source school envelope inherited original reader CRC/node guards')
+    require('.bind multimodalPumpBar' in step and '.bind multimodalPumpTutor' in step and '.bind (drainMultimodalInput input)' in step and
             'else multimodalInputSample' in step, 'source idle/busy paths do not route new input/deferred redraw')
     drain = definition(notebook,'drainMultimodalInput')
     require('.bind multimodalInputSample' in drain and 'if s = 175 then .bind cancelBookmarkInput' in drain,
@@ -367,6 +418,20 @@ def semantics(ir, unit):
                               (prefix+'multimodalPumpBar', prefix+'multimodalBar'),
                               (prefix+'multimodalPumpBar', 'Lemma.Ink.Surface.status'),
                               (prefix+'multimodalStep', prefix+'multimodalPumpBar'),
+                              (prefix+'multimodalStep', prefix+'multimodalPumpTutor'),
+                              (prefix+'multimodalControl', prefix+'multimodalJoinSchool'),
+                              (prefix+'multimodalControl', prefix+'multimodalBookLoad'),
+                              (prefix+'multimodalBookLoad', prefix+'packageControlPress'),
+                              (prefix+'multimodalInputSample.acceptSample', prefix+'multimodalQueueBookLoad'),
+                              (prefix+'multimodalQueueBookLoad', prefix+'multimodalQueueTutor'),
+                              (prefix+'multimodalAdmitTutor', prefix+'multimodalAdmitSchool'),
+                              (prefix+'multimodalAdmitSchool', 'Lemma.Multimodal.SchoolPacket.decode'),
+                              (prefix+'multimodalAdmitSchool', 'Lemma.Multimodal.SchoolPacket.acceptInvitation'),
+                              (prefix+'multimodalAdmitTutor', 'Lemma.Multimodal.SchoolPacket.decode'),
+                              (prefix+'multimodalAdmitTutor', 'Lemma.Multimodal.SchoolPacket.actionReason'),
+                              (prefix+'multimodalAdmitTutor', 'Lemma.Multimodal.SchoolPacket.active'),
+                              ('Lemma.Multimodal.SchoolPacket.actionReason', 'Lemma.Multimodal.TutorAction.validateVersion'),
+                              ('Lemma.Multimodal.TutorAction.validate', 'Lemma.Multimodal.TutorAction.validateVersion'),
                               (prefix+'drainMultimodalInput.drainStep', prefix+'multimodalInputSample')):
             require(len(calls(owner, target)) == 1, 'Notebook omitted or repeated ' + target)
             checked.append((owner, target))
@@ -390,6 +455,7 @@ def semantics(ir, unit):
                 'reader lost the actual empty-selection guard')
         for owner, target in ((prefix+'multimodalStep',prefix+'multimodalPackageWork'),
                               (prefix+'multimodalPackageWork',prefix+'multimodalAdmitTutor'),
+                              (prefix+'multimodalPackageWork',prefix+'multimodalAbandonPresentation'),
                               (prefix+'multimodalAdmitTutor','Lemma.Multimodal.TutorPackage.decode'),
                               (prefix+'multimodalAdmitTutor','Lemma.Multimodal.TutorAction.validate'),
                               (prefix+'multimodalAsk','Lemma.Courses.BrowseHistory.location')):

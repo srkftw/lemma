@@ -1,17 +1,18 @@
 {
   "schema": "lemma-verification-routes/v1",
   "comparison_base": "8e75bc6541131189d7a2efe02e9ff77bde61194f",
-  "objective": "Implement the extended multimodal machine and workbook; preserve inherited pending verification",
-  "historical_checkpoint": "docs/plan/007-session-state.html",
+  "objective": "Implement school/cloud foundation 0.1.0; preserve inherited Task 007 and machine verification obligations",
+  "historical_checkpoint": "docs/plan/008-session-state.html",
   "resource_budgets": {
     "status": "Read-only Git/receipt inspection; each Git command at most 15 seconds; no build or execution",
     "host_export": "scripts/lean_export_host.py: two host Lean workers; 65536 KiB worker stack reservation",
     "ordinary_build": "Existing build entry points default to 300 seconds per bounded tool command",
-    "kernel_fresh_qualification": "scripts/check_kernel.py: deadline at most 2400 seconds, QEMU timeout default 90 seconds",
+    "kernel_fresh_qualification": "scripts/check_kernel.py: default full matrix has 2400-second whole deadline, QEMU default 90 seconds, one/two local row processes. CI uses two independent fixed O0/O2 producers, each one row process, deadline 2400s, tool 300s, QEMU 90s and cold private Lake per image; separate full collector revalidates exact 20/24/28/6. Do not combine host monotonic times into one elapsed claim.",
     "notebook_writing": "CI writing lane: 3500-second whole deadline; separate pinned QEMU build",
     "live_sessions": "Retain each session's original admission/budget receipt; do not restart or extend it from status",
     "incremental_notebook": "scripts/check_incremental_notebook.py: timeout300s per operation, boot30/action30 virtual seconds, whole deadline1200s; fresh instances and private media",
-    "multimodal": "New converter guest component <=5M RTL cycles/120 host seconds per backend; controller corpus bounded separately; original inherited campaign limits retained"
+    "multimodal": "New converter guest component <=5M RTL cycles/120 host seconds per backend; controller corpus bounded separately; original inherited campaign limits retained",
+    "school": "Hosted native one-authority process; max1MiB request/16MiB snapshot, default8MiB artifact,10000events,32queued/reserve4interactive/4leased; bounded actual worker/client/load checkers own declared limits"
   },
   "claims": {
     "cache-host": {
@@ -109,6 +110,34 @@
     "multimodal-notebook-ui": {
       "kind": "validation",
       "command": "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_notebook_ui.py --work-dir build/multimodal/UI-UNUSED; hosted real Lean Actions with source negatives, not RV64/display execution"
+    },
+    "school-host": {
+      "kind": "validation",
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_school.py --production HOST_PRODUCTION_JSON --work-dir build/school/host-UNUSED"
+    },
+    "school-corpus": {
+      "kind": "execution",
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_school_corpus.py --help; supply explicit owner corpus and source-bound hosted curriculum producer; inspect exact full-record oracle receipt"
+    },
+    "school-client": {
+      "kind": "execution",
+      "command": "Use scripts/check_school_client.py --help with actual admitted four-role LemmaSim bundle, source-derived publication and acknowledged initial medium; inspect joined v3 visible guest delivery, cancellation/revision/review and developer extension receipts"
+    },
+    "school-numerics": {
+      "kind": "execution",
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_school_training.py --work-dir build/school/training-UNUSED"
+    },
+    "school-worker": {
+      "kind": "execution",
+      "command": "Build via scripts/build_school_worker.py; run scripts/check_school_worker.py and scripts/check_school_job_worker.py with actual trained parameters, audited RV64 image, current hosted production receipt and unused outputs"
+    },
+    "school-load": {
+      "kind": "execution",
+      "command": "Run scripts/check_school_load_worker.py with actual RV64 image/trained parameters/current native producer; inspect bounded four-process jobs, backpressure, memory and responsiveness"
+    },
+    "school-panel": {
+      "kind": "validation",
+      "command": "Run scripts/check_school_panel.py with current hosted producer and existing session metadata; native Xvfb smoke does not substitute actual guest workflow"
     }
   },
   "boundaries": [
@@ -345,14 +374,30 @@
         ".github/workflows/*",
         "scripts/check_kernel.py",
         "scripts/check_kernel_*.py",
+        "scripts/kernel_row_supervisor.py",
+        "scripts/kernel_shard_artifact.py",
         "scripts/check-core0.sh",
         "scripts/check_core0.py",
         "scripts/check-foundation.sh",
         "scripts/check_foundation.py",
         "scripts/check_incremental_builds.py",
-        "scripts/host_prerequisites.py"
+        "scripts/host_prerequisites.py",
+        "tests/foundation/test_ci_workflow.py",
+        "tests/ci/test_workflow_policy.py"
       ],
       "claims": [
+        "fresh-qualification-review"
+      ],
+      "affects": []
+    },
+    {
+      "id": "kernel-shard-transport",
+      "inputs": [
+        "scripts/kernel_shard_artifact.py",
+        "tests/kernel/test_shard_artifact.py"
+      ],
+      "claims": [
+        "kernel-host",
         "fresh-qualification-review"
       ],
       "affects": []
@@ -540,6 +585,105 @@
         "multimodal-notebook-ui",
         "multimodal-workbook-native",
         "multimodal-workbook-browser"
+      ],
+      "affects": []
+    },
+    {
+      "id": "school-shared-semantics",
+      "inputs": [
+        "Lemma/School/*.lean",
+        "tests/school/*",
+        "scripts/build_school.py",
+        "scripts/check_school.py",
+        "scripts/lemma-school",
+        "scripts/school_transport.py",
+        "examples/school/QuickReview.lean",
+        "examples/school/*unit.json",
+        "examples/school/*mappings.json"
+      ],
+      "claims": [
+        "school-host",
+        "school-corpus",
+        "school-client",
+        "school-worker",
+        "school-load",
+        "school-panel"
+      ],
+      "affects": []
+    },
+    {
+      "id": "school-corpus-observer",
+      "inputs": [
+        "scripts/check_school_corpus.py",
+        "fixtures/school/catalogue*.json",
+        "fixtures/school/Distributivity.txt"
+      ],
+      "claims": [
+        "school-host",
+        "school-corpus"
+      ],
+      "affects": []
+    },
+    {
+      "id": "school-numerical-component",
+      "inputs": [
+        "Lemma/Numerics/*.lean",
+        "Lemma/Compiler/SchoolWorkerExport.lean",
+        "examples/school/Train.lean",
+        "examples/school/WorkerBuild.lean",
+        "fixtures/school/numerics/*",
+        "scripts/build_school_worker.py",
+        "scripts/check_school_training.py",
+        "scripts/check_school_worker.py",
+        "scripts/check_school_job_worker.py",
+        "scripts/check_school_load_worker.py",
+        "scripts/school_provider_runner.py",
+        "scripts/check_school_worker_lifecycle.py"
+      ],
+      "claims": [
+        "school-numerics",
+        "school-worker",
+        "school-load",
+        "core0-fresh"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation"
+      ]
+    },
+    {
+      "id": "school-client-bridge",
+      "inputs": [
+        "Lemma/Multimodal/SchoolPacket.lean",
+        "scripts/lemmasim_school.py",
+        "scripts/check_school_client.py",
+        "scripts/check_school_client_transport.py",
+        "tooling/multimodal-target-authority.json",
+        "conformance/lemmasim/course_pixel_oracle.py",
+        "conformance/lemmasim/notebook_pixels.py",
+        "tests/multimodal/test_course_pixel_oracle.py"
+      ],
+      "claims": [
+        "school-host",
+        "school-client",
+        "school-panel",
+        "multimodal-notebook-ui",
+        "multimodal-workbook-native"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation"
+      ]
+    },
+    {
+      "id": "school-native-panel",
+      "inputs": [
+        "scripts/lemmasim_school_panel.py",
+        "scripts/check_school_panel.py"
+      ],
+      "claims": [
+        "school-panel",
+        "school-client"
       ],
       "affects": []
     }

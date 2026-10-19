@@ -1,0 +1,35 @@
+[
+  {
+    "fromRecordId": "sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5#11",
+    "toRecordId": "aops07:distribution-p13",
+    "kind": "textbook-mapping",
+    "origin": "Author inspected exact catalogue row and rendered AoPS2007 page; proposal independent of raw catalogue import",
+    "status": "reviewed",
+    "confidencePermille": null,
+    "reviewHistory": [
+      "2026-10-18 visual/source review: source identity and page context verified; mapping does not assert mathematical equivalence or prerequisite order"
+    ]
+  },
+  {
+    "fromRecordId": "sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5#679",
+    "toRecordId": "aops07:identity-p307",
+    "kind": "textbook-mapping",
+    "origin": "Author inspected exact catalogue row and rendered AoPS2007 page; proposal independent of raw catalogue import",
+    "status": "reviewed",
+    "confidencePermille": null,
+    "reviewHistory": [
+      "2026-10-18 visual/source review: source identity and page context verified; mapping does not assert mathematical equivalence or prerequisite order"
+    ]
+  },
+  {
+    "fromRecordId": "sha256:095fa48292c4cc268a09fc8473001582706a68385ee8668ae98e2c474589cdf5#680",
+    "toRecordId": "aops07:recognition-p308",
+    "kind": "textbook-mapping",
+    "origin": "Author inspected exact catalogue row and rendered AoPS2007 page; proposal independent of raw catalogue import",
+    "status": "reviewed",
+    "confidencePermille": null,
+    "reviewHistory": [
+      "2026-10-18 visual/source review: source identity and page context verified; mapping does not assert mathematical equivalence or prerequisite order"
+    ]
+  }
+]

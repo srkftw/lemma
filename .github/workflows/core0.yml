@@ -503,6 +503,36 @@ jobs:
               raise RuntimeError("Silicon host suite is missing, empty or failing")
           PY
 
+      - name: Produce the source-bound hosted school executables
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/build_school.py --output-dir build/school/ci-host-native \
+            2>&1 | tee build/ci/metadata/school-host-production.log
+
+      - name: Check hosted school authority, authoring and client admission
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 8m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_school.py \
+                --production build/school/ci-host-native/production.json \
+                --work-dir build/school/ci-host-validation \
+            2>&1 | tee build/ci/metadata/school-host-validation.log
+
+      - name: Observe hosted synthetic training and exact checkpoint resume
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              lake build Lemma.Numerics.Linear \
+            2>&1 | tee build/ci/metadata/school-training-preparation.log
+          timeout --foreground --signal=TERM --kill-after=10s 3m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_school_training.py --work-dir build/school/ci-training \
+            2>&1 | tee build/ci/metadata/school-host-training.log
+
       - name: Retain host-suite logs
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -511,6 +541,9 @@ jobs:
           path: |
             build/ci/source.json
             build/ci/metadata/
+            build/school/ci-host-native/
+            build/school/ci-host-validation/
+            build/school/ci-training/
             build/lemmasim/compiler-power-ci/
             build/kernel/ci-user-word-inline/
           if-no-files-found: warn
@@ -671,6 +704,53 @@ jobs:
                 --clean \
             2>&1 | tee build/ci/legacy-rv64.log
 
+      - name: Build, audit and execute the separate school worker at O0 and O2
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              lake build Lemma.Numerics.Linear Lemma.Compiler.SchoolWorkerExport \
+            2>&1 | tee build/ci/school-worker-preparation.log
+          timeout --foreground --signal=TERM --kill-after=10s 1m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run examples/school/Train.lean fixture \
+                build/school/ci-worker-parameters/dataset \
+            2>&1 | tee build/ci/school-worker-fixture.log
+          timeout --foreground --signal=TERM --kill-after=10s 1m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run examples/school/Train.lean train \
+                build/school/ci-worker-parameters/dataset \
+                build/school/ci-worker-parameters/checkpoint.json \
+                build/school/ci-worker-parameters/early 1 0 \
+            2>&1 | tee build/ci/school-worker-parameters.log
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/build_school_worker.py --fresh \
+                --opt-level O0 --output-dir build/school/ci-worker-O0 \
+            2>&1 | tee build/ci/school-worker-O0-build.log
+          timeout --foreground --signal=TERM --kill-after=10s 1m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_school_worker.py \
+                --image build/school/ci-worker-O0/image.elf \
+                --parameters fixtures/school/numerics/parameters-step160.json \
+                --alternate-parameters build/school/ci-worker-parameters/early/parameters.json \
+                --work-dir build/school/ci-worker-execution-O0 \
+            2>&1 | tee build/ci/school-worker-O0-execution.log
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/build_school_worker.py --fresh \
+                --opt-level O2 --output-dir build/school/ci-worker-O2 \
+            2>&1 | tee build/ci/school-worker-O2-build.log
+          timeout --foreground --signal=TERM --kill-after=10s 1m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_school_worker.py \
+                --image build/school/ci-worker-O2/image.elf \
+                --parameters fixtures/school/numerics/parameters-step160.json \
+                --alternate-parameters build/school/ci-worker-parameters/early/parameters.json \
+                --work-dir build/school/ci-worker-execution-O2 \
+            2>&1 | tee build/ci/school-worker-O2-execution.log
+
       - name: Retain legacy RV64 evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -680,6 +760,8 @@ jobs:
             build/ci/source.json
             build/core0/ci-legacy/
             build/ci/legacy-rv64.log
+            build/ci/school-worker-*.log
+            build/school/ci-worker-*/
             docs/evidence/001-core0*
           if-no-files-found: warn
           retention-days: 14
@@ -751,9 +833,13 @@ jobs:
           retention-days: 14
           compression-level: 6
 
-  kernel-rv64:
-    name: Task 003 implemented Gates A-E RV64 acceptance
+  kernel-rv64-shard:
+    name: Task 003 cold A-E shard (${{ matrix.optimization }})
     needs: metadata
+    strategy:
+      fail-fast: false
+      matrix:
+        optimization: [O0, O2]
     runs-on: ubuntu-24.04
     timeout-minutes: 45
 
@@ -782,7 +868,140 @@ jobs:
       - name: Prepare Task 003 log directory
         run: mkdir -p build/ci
 
-      - name: Build, audit and execute the clean implemented kernel prefix
+      - name: Build, audit and execute one cold optimization shard
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 40m \
+            nix develop --no-write-lock-file --command \
+              nix shell --no-write-lock-file --inputs-from . nixpkgs#git --command \
+              python3 scripts/check_kernel.py \
+                --work-dir build/kernel/ci-prefix/shards/${{ matrix.optimization }} \
+                --host-prerequisite build/ci/metadata/kernel-host-prerequisite/receipt.json \
+                --source-event build/ci/source.json \
+                --shard ${{ matrix.optimization }} \
+                --clean \
+                --jobs 1 \
+                --timeout 300 \
+                --qemu-timeout 90 \
+                --deadline 2400 \
+            2>&1 | tee build/ci/kernel-rv64-shard.log
+
+      - name: Stage shard failure log and original source event
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          mkdir -p build/kernel/ci-prefix/shards/${{ matrix.optimization }}
+          if test -f build/ci/kernel-rv64-shard.log; then
+            cp build/ci/kernel-rv64-shard.log build/kernel/ci-prefix/shards/${{ matrix.optimization }}/ci.log
+          fi
+          if test -f build/ci/source.json; then
+            cp build/ci/source.json build/kernel/ci-prefix/shards/${{ matrix.optimization }}/ci-source-original.json
+          fi
+
+      - name: Package the shard with its exact file modes
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/kernel_shard_artifact.py pack \
+                --optimization ${{ matrix.optimization }} \
+                --shard-dir build/kernel/ci-prefix/shards/${{ matrix.optimization }} \
+                --archive build/ci/kernel-AE-shard-${{ matrix.optimization }}.tar \
+                --receipt build/ci/kernel-AE-shard-${{ matrix.optimization }}.pack.json \
+            2>&1 | tee build/ci/kernel-rv64-shard-pack.log
+
+      - name: Retain the exact cold optimization shard
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kernel-A-E-shard-${{ matrix.optimization }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/ci/kernel-AE-shard-${{ matrix.optimization }}.tar
+            build/ci/kernel-AE-shard-${{ matrix.optimization }}.pack.json
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+      - name: Retain shard source and transport failure logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kernel-A-E-shard-logs-${{ matrix.optimization }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/ci/source.json
+            build/ci/kernel-rv64-shard.log
+            build/ci/kernel-rv64-shard-pack.log
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+  kernel-rv64:
+    name: Task 003 implemented Gates A-E RV64 acceptance
+    needs: [metadata, kernel-rv64-shard]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Record the exact CI source and event
+        run: python3 scripts/ci_source.py --output build/ci/source.json
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Download this run's exact ordinary host prerequisite
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: kernel-host-prerequisite-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/ci/metadata/kernel-host-prerequisite
+
+      - name: Download this run's exact O0 producer
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: kernel-A-E-shard-O0-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/ci/kernel-shard-artifacts/O0
+
+      - name: Download this run's exact O2 producer
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: kernel-A-E-shard-O2-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/ci/kernel-shard-artifacts/O2
+
+      - name: Prepare Task 003 log directory
+        run: mkdir -p build/ci
+
+      - name: Restore both exact mode-preserving shard archives
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/kernel_shard_artifact.py unpack \
+                --optimization O0 \
+                --archive build/ci/kernel-shard-artifacts/O0/kernel-AE-shard-O0.tar \
+                --manifest build/ci/kernel-shard-artifacts/O0/kernel-AE-shard-O0.pack.json \
+                --destination build/kernel/ci-prefix/shards/O0 \
+                --receipt build/ci/kernel-AE-shard-O0.extract.json \
+            2>&1 | tee build/ci/kernel-rv64-shard-O0-unpack.log
+          timeout --foreground --signal=TERM --kill-after=30s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/kernel_shard_artifact.py unpack \
+                --optimization O2 \
+                --archive build/ci/kernel-shard-artifacts/O2/kernel-AE-shard-O2.tar \
+                --manifest build/ci/kernel-shard-artifacts/O2/kernel-AE-shard-O2.pack.json \
+                --destination build/kernel/ci-prefix/shards/O2 \
+                --receipt build/ci/kernel-AE-shard-O2.extract.json \
+            2>&1 | tee build/ci/kernel-rv64-shard-O2-unpack.log
+
+      - name: Collect and revalidate both exact cold producers
         run: |
           set -euo pipefail
           timeout --foreground --signal=TERM --kill-after=30s 40m \
@@ -791,9 +1010,9 @@ jobs:
               python3 scripts/check_kernel.py \
                 --work-dir build/kernel/ci-prefix \
                 --host-prerequisite build/ci/metadata/kernel-host-prerequisite/receipt.json \
-                --clean \
-                --timeout 300 \
-                --qemu-timeout 90 \
+                --source-event build/ci/source.json \
+                --collect-shard build/kernel/ci-prefix/shards/O0/result.json \
+                --collect-shard build/kernel/ci-prefix/shards/O2/result.json \
                 --deadline 2400 \
             2>&1 | tee build/ci/kernel-rv64.log
 
@@ -808,7 +1027,7 @@ jobs:
           from pathlib import Path
           sys.path.insert(0, "scripts")
           from build_kernel import source_inputs
-          from check_kernel import acceptance_inputs, matrix, source_identity, validate_session
+          from check_kernel import acceptance_inputs, matrix, revalidate_collected, source_identity, validate_retained_row_result, validate_session
           from check_kernel_syscall import DEFAULT_SEEDS
           def require(condition):
               if not condition:
@@ -817,14 +1036,30 @@ jobs:
               return hashlib.sha256(path.read_bytes()).hexdigest()
           result = Path("build/kernel/ci-prefix/result.json")
           value = json.loads(result.read_text())
+          revalidate_collected(Path.cwd(), Path("build/kernel/ci-prefix").resolve(), result.resolve(), Path("build/ci/source.json"))
           lean = json.loads(Path("tooling/toolchain-lock.json").read_text())["tools"]["lean"]
           require(value["status"] == "PASS" and value["source"]["clean"] is True)
           require(value["required_gate_prefix"] == "A-E" and value["highest_exercised_gate"] == "E")
           require(len(value["images"]) == 20 and len(value["observations"]) == 24)
           require(value["qemu_sessions"] == 28 and value["syscall_user_instances"] == 6)
+          require(value["production_route"] == "same-run-shards" and len(value["shard_producers"]) == 2)
+          require([producer["optimization"] for producer in value["shard_producers"]] == ["O0", "O2"])
+          require(len(value["matrix_rows"]) == 20)
+          require([row["index"] for row in value["matrix_rows"]] == list(range(20)))
           require(value["source"] == source_identity(Path.cwd()))
           require(value["source_inputs"] == source_inputs(Path.cwd()))
           require(value["acceptance_inputs"] == acceptance_inputs(Path.cwd()))
+          for row in value["matrix_rows"]:
+              request_path = Path(row["request"])
+              supervisor_path = Path(row["supervisor"])
+              require(digest(request_path) == row["request_sha256"] and digest(supervisor_path) == row["supervisor_sha256"])
+              require(digest(Path(row["result"])) == row["result_sha256"] and row["cleanup_complete"] is True)
+              request = json.loads(request_path.read_text())
+              require(request["source"] == value["source"] and request["source_inputs"] == value["source_inputs"])
+              require(request["acceptance_inputs"] == value["acceptance_inputs"] and request["slot"] in (0, 1))
+              admitted = validate_retained_row_result(Path.cwd(), Path(request["work_dir"]).resolve(), request,
+                                                     request_path.resolve(), row["request_sha256"], supervisor_path.resolve(), row)
+              require(admitted["supervision"] == row)
           from host_prerequisites import validate as validate_host_prerequisite
           admission = validate_host_prerequisite(Path.cwd(), Path("build/kernel/ci-prefix/host-prerequisite/receipt.json"))
           shared = [row for row in value["invocations"] if row.get("route") == "lemma-kernel-host-prerequisite/1"]
@@ -888,6 +1123,11 @@ jobs:
             build/ci/source.json
             build/kernel/ci-prefix/
             build/ci/kernel-rv64.log
+            build/ci/kernel-shard-artifacts/
+            build/ci/kernel-AE-shard-O0.extract.json
+            build/ci/kernel-AE-shard-O2.extract.json
+            build/ci/kernel-rv64-shard-O0-unpack.log
+            build/ci/kernel-rv64-shard-O2-unpack.log
             docs/evidence/003-*
           if-no-files-found: error
           retention-days: 14

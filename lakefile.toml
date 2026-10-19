@@ -5,3 +5,11 @@ weakLeanArgs = ["-j2"]
 
 [[lean_lib]]
 name = "Lemma"
+
+[[lean_exe]]
+name = "school"
+root = "Lemma.School.Main"
+
+[[lean_exe]]
+name = "school-curriculum"
+root = "Lemma.School.CurriculumMain"
