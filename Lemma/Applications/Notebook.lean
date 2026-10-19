@@ -5,6 +5,8 @@ import Lemma.User.Multimodal
 import Lemma.Documents.MathematicsEntry
 import Lemma.Courses.NumberPad
 import Lemma.Courses.PackageReader
+import Lemma.Courses.PackageCommand
+import Lemma.Courses.SchoolSubmission
 import Lemma.Courses.PackageRender
 import Lemma.Courses.ControlRender
 import Lemma.Courses.PackageWorkspace
@@ -55,6 +57,10 @@ private def different (a b : UInt64) : Bool := if a = b then false else true
 def state : UInt64 := 0x20800
 def raw : UInt64 := 0x20300
 def context : UInt64 := 0x20400
+private def schoolActivityFlag : UInt64 := state + 760
+private def schoolQueueReadyFlag : UInt64 := Lemma.User.Multimodal.records + 2864
+private def schoolQueueError : UInt64 := Lemma.User.Multimodal.records + 2872
+private def schoolSubmissionHeader : UInt64 := Lemma.User.Multimodal.records + 2560
 def outgoing : UInt64 := 0x20b00
 def incoming : UInt64 := 0x20c00
 def ink0 : UInt64 := 0x300000
@@ -103,6 +109,7 @@ private def allocateStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   if actual = address then .done 0 (acc + 1) else failed
 
 private def clearStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (if i = 0 then Memory.write64 schoolActivityFlag 0 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put (i.toUInt64 * 8) 0) fun s _ => .done s acc
 
 private def nextRequest : Action :=
@@ -110,13 +117,22 @@ private def nextRequest : Action :=
   if request < 0x7ffffffffffffffe then
   .bind (put 176 (request + 1)) fun s _ => .done s (request + 1) else .done 235 0
 
+/-- Concurrent school queue receipts can arrive before an older foreground
+reply is consumed. Preserve the greatest observed Store sequence; this is an
+observation floor, never a manufactured Save or queue acknowledgement. -/
+private def observeStoreSequence (sequence : UInt64) : Action :=
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  if school = 1 then
+    .bind (get 128) fun s prior => if statusFailed s = true then .done s 0 else put 128 (maximum prior sequence)
+  else put 128 sequence
+
 private def blocking (operation object transaction offset count source : UInt64) : Action :=
   .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Services.Store.Client.call endpoint outgoing incoming operation ns object transaction offset count source request)
     fun s sequence =>
-  .bind (put 128 sequence) fun stored _ => if statusFailed stored = true then .done stored 0 else .done s sequence
+  .bind (observeStoreSequence sequence) fun stored _ => if statusFailed stored = true then .done stored 0 else .done s sequence
 
 private def readPartStep (i _ : UInt32) (acc object target length _ : UInt64) : Action :=
   let offset := i.toUInt64 * 128
@@ -663,7 +679,7 @@ private def publishStatus : Action :=
   .boundedFoldU64 12 statusTileStep 12 0 surface (width ||| (height <<< 16)) 0 0 fun s _ =>
   if statusFailed s = true then .done s 0 else dirty 0 128 384 160
 
-private def issue (operation offset count source : UInt64) : Action :=
+private def issueStore (operation offset count source : UInt64) : Action :=
   .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 224) fun s object => if statusFailed s = true then .done s 0 else
@@ -677,6 +693,24 @@ private def issue (operation offset count source : UInt64) : Action :=
     fun s pending => if statusFailed s = true then .done s 0 else
   .bind (put 168 pending) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 232 operation) fun s _ => if statusFailed s = true then .done s 0 else put 448 count
+
+/-- A school queue staging transaction yields to ordinary page/ink Save.
+The retained Save buffers stay pending until the queue's actual Abort or Commit
+is terminal; no competing Store Begin can turn interactive work into Busy. -/
+private def issue (operation offset count source : UInt64) : Action :=
+  if operation = 2 then
+    .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+    if school = 1 then
+    .bind (Memory.read64 schoolQueueReadyFlag) fun s initialized => if statusFailed s = true then .done s 0 else
+    if initialized = 1 then
+      .bind Lemma.Courses.SchoolSubmission.suspend fun s _ => if statusFailed s = true then .done s 0 else
+      .bind Lemma.Courses.SchoolSubmission.writerActive fun s active => if statusFailed s = true then .done s 0 else
+      if active = 1 then
+        .bind (put 168 0) fun s _ => if statusFailed s = true then .done s 0 else put 160 8
+      else .bind (put 160 1) fun s _ => if statusFailed s = true then .done s 0 else issueStore operation offset count source
+    else issueStore operation offset count source
+    else issueStore operation offset count source
+  else issueStore operation offset count source
 
 private def startSave (source bytes object stage : UInt64) : Action :=
   .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
@@ -772,6 +806,9 @@ def failWriting (status : UInt8) : Action :=
 private def pumpSave : Action :=
   .bind (get 160) fun s phase => if statusFailed s = true then .done s 0 else
   if phase = 0 then .done 0 0 else
+  if phase = 8 then
+    .bind (get 216) fun s bytes => if statusFailed s = true then .done s 0 else issue 2 0 bytes 0
+  else
   if phase = 5 then
     .bind (get 504) fun s deadline => if statusFailed s = true then .done s 0 else
     .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
@@ -790,7 +827,7 @@ private def pumpSave : Action :=
     .bind (Lemma.Services.Store.Client.responseField incoming 48) fun s mode =>
     if statusFailed s = true then .done s 0 else .done (saveResponseStatus operation mode sequence prior) 0
     else .done 0 0) fun s _ => if statusFailed s = true then saveFailure s else
-  .bind (put 128 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (observeStoreSequence sequence) fun s _ => if statusFailed s = true then .done s 0 else
   if phase = 1 then issueNext else if phase = 2 then
     .bind (get 184) fun s offset => if statusFailed s = true then .done s 0 else
     .bind (get 448) fun s count => if statusFailed s = true then .done s 0 else
@@ -2722,13 +2759,18 @@ private def beginPackageRead (identity edition : UInt64) : Action :=
   if existing = 0 then
   .bind (packagePut 32 4) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
-  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 72) fun s documentNs => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  let ns := if school = 1 then Lemma.Courses.PackageCommand.selectedPackageNamespace else documentNs
   .bind (get 176) fun s request => if statusFailed s = true then .done s 0 else
   if 0x7ffffffffffffffe - 257 < request then .done 235 0 else
   .bind (put 176 (request + 257)) fun s _ => if statusFailed s = true then .done s 0 else
   .boundedFoldU64 9 packageConfigureStep 9 0 endpoint ns (identity ||| (edition <<< 16)) (request + 1)
     fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Courses.PackageReader.start packageContext) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if school = 1 then
+    .bind (get 128) fun s floor => if statusFailed s = true then .done s 0 else packagePut 256 floor
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
   if 0xffffffffffffffff - 300000000 < now then .done 235 0 else
   .bind (packagePut 40 (now + 300000000)) fun s _ => if statusFailed s = true then .done s 0 else
@@ -2742,8 +2784,11 @@ This never publishes durable success. EOF uses the separately reserved257th
 request after full CRC/identity validation; phase2 is visible only after EOF. -/
 private def packageReadFloor : Action :=
   .bind (Lemma.Services.Store.Client.responseField packageIncoming 40) fun s sequence => if statusFailed s = true then .done s 0 else
-  .bind (get 128) fun s prior => if statusFailed s = true then .done s 0 else
-  if sequence < prior then .done 234 0 else put 128 sequence
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  .bind (if school = 1 then packageGet 256 else get 128) fun s floor => if statusFailed s = true then .done s 0 else
+  if sequence < floor then .done 234 0 else
+  .bind (if school = 1 then packagePut 256 sequence else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  observeStoreSequence sequence
 
 private def packageReadComplete : Action :=
   .bind (packagePut 32 2) fun s _ => if statusFailed s = true then .done s 0 else
@@ -2751,7 +2796,7 @@ private def packageReadComplete : Action :=
 
 private def packageReadEOF (phase : UInt64) : Action :=
   .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
-  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageContext + 24)) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (packageGet 48) fun s identity => if statusFailed s = true then .done s 0 else
   .bind (packageGet 56) fun s edition => if statusFailed s = true then .done s 0 else
   .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
@@ -3023,6 +3068,10 @@ private def startPackageRecord (object target length headerOnly : UInt64) : Acti
   .bind (recordPut 64 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (recordPut 72 (now + 300000000)) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (recordPut 80 ns) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  .bind (if school = 1 then
+    .bind (get 128) fun s floor => if statusFailed s = true then .done s 0 else recordPut 96 floor
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (recordPut 88 headerOnly) fun s _ => if statusFailed s = true then .done s 0 else recordPut 56 0
   else .done 231 0
 
@@ -3072,9 +3121,11 @@ private def pollPackageRecordPiece (phase : UInt64) : Action :=
   if result = IPCABI.wouldBlock then .done 0 0 else
   .bind (recordPut 32 0) fun s _ => if statusFailed s = true then .done s 0 else
   if statusFailed result = true then stopPackageRecord result else
-  .bind (get 128) fun s prior => if statusFailed s = true then .done s 0 else
-  if sequence < prior then stopPackageRecord 234 else
-  .bind (put 128 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  .bind (if school = 1 then recordGet 96 else get 128) fun s floor => if statusFailed s = true then .done s 0 else
+  if sequence < floor then stopPackageRecord 234 else
+  .bind (if school = 1 then recordPut 96 sequence else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (observeStoreSequence sequence) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Services.Store.Client.responseField packageIncoming 48) fun s mode => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Services.Store.Client.responseField packageIncoming 56) fun s actual => if statusFailed s = true then .done s 0 else
   if mode = 1 then if phase = 3 then
@@ -3134,6 +3185,8 @@ where
 private def openPackageCourse : Action :=
   .bind allocateCourse fun s _ => if statusFailed s = true then courseError s else
   .bind allocatePackage fun s _ => if statusFailed s = true then courseError s else
+  .bind (packagePut 232 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 240 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (packagePut 120 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 32 0) fun s _ => if statusFailed s = true then .done s 0 else
@@ -3612,16 +3665,21 @@ private def pumpPackageWork : Action :=
 private def packageBusy : Action :=
   .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
   if allocated = 12 then
-  .bind (packageGet 96) fun s opening => if statusFailed s = true then .done s 0 else
-  .bind (packageGet 32) fun s reading => if statusFailed s = true then .done s 0 else
-  .bind (packageGet 72) fun s text => if statusFailed s = true then .done s 0 else
-  .bind (packageGet 144) fun s controls => if statusFailed s = true then .done s 0 else
-  .bind (packageGet 152) fun s automatic => if statusFailed s = true then .done s 0 else
-  if opening = 5 then .done 0 1 else
-  if 0 < opening then if opening < 4 then .done 0 1 else done reading text controls automatic
-  else done reading text controls automatic
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 232) fun s selecting => if statusFailed s = true then .done s 0 else
+  if school = 1 then if selecting = 1 then .done 0 1 else existing else existing
   else .done 0 0
 where
+  existing : Action :=
+    .bind (packageGet 96) fun s opening => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 32) fun s reading => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 72) fun s text => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 144) fun s controls => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 152) fun s automatic => if statusFailed s = true then .done s 0 else
+    if opening = 5 then .done 0 1 else
+    if 0 < opening then if opening < 4 then .done 0 1 else done reading text controls automatic
+    else done reading text controls automatic
+
   done (reading text controls automatic : UInt64) : Action :=
     if reading = 1 then .done 0 1 else if reading = 3 then .done 0 1 else if reading = 5 then .done 0 1 else
     .done 0 (text ||| controls ||| automatic)
@@ -4849,6 +4907,12 @@ private def bookmarkToolbar (button : UInt64) : Action :=
 private def cancelBookmarkWork : Action :=
   .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
   if allocated = 12 then
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 232) fun s selecting => if statusFailed s = true then .done s 0 else
+  .bind (if school = 1 then if selecting = 1 then
+    .bind cancelPackageRecord fun result _ =>
+    if result = IPCABI.canceled then packagePut 232 0 else .done result 0
+    else .done 0 0 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packageGet 96) fun s phase => if statusFailed s = true then .done s 0 else
   .bind (if phase = 8 then
     .bind cancelPackageRecord fun s _ => if s = IPCABI.canceled then .done 0 0 else .done s 0
@@ -4897,6 +4961,51 @@ private def pumpBookmarkOpen : Action :=
     else .done 0 0
   else .done 0 0 else if after = 4 then
     .bind (packagePut 216 0) fun s _ => if statusFailed s = true then .done s 0 else packagePut 208 1
+  else .done 0 0
+
+/-- Ordinary school selection is a guest Store record, admitted only after
+an installed package's identity/edition/CRC were checked by the installer.
+Read it with bounded IPC and an independent EOF. It chooses displayed source;
+it never edits a document, checking selection, or prior attempt. School22
+COURSE open follows this selected node, including a new due-review node in the
+same edition; mathematical/ink work resumes independently. Legacy reader roots
+retain bookmark-location precedence. -/
+private def schoolSelectionWork : Action :=
+  .bind (Memory.read64 schoolActivityFlag) fun s enabled => if statusFailed s = true then .done s 0 else
+  if enabled = 1 then
+  .bind (packageGet 232) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 2 then .done 0 0 else if phase = 0 then
+    .bind (startPackageRecord Lemma.Courses.PackageCommand.selectedObject packageBindingScratch
+      Lemma.Courses.PackageCommand.selectedBytes 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (recordPut 80 Lemma.Courses.PackageCommand.selectedNamespace) fun s _ => if statusFailed s = true then .done s 0 else
+    packagePut 232 1
+  else if phase = 1 then
+    .bind pumpPackageRecord fun result _ =>
+    if result = 230 then packagePut 232 2 else
+    if statusFailed result = true then .done result 0 else
+    .bind (recordGet 56) fun s terminal => if statusFailed s = true then .done s 0 else
+    if terminal = 4 then
+      .bind (Memory.read64 (packageBindingScratch + 0)) fun s tag => if statusFailed s = true then .done s 0 else
+      .bind (Memory.read64 (packageBindingScratch + 8)) fun s version => if statusFailed s = true then .done s 0 else
+      .bind (Memory.read64 (packageBindingScratch + 16)) fun s ns => if statusFailed s = true then .done s 0 else
+      .bind (Memory.read64 (packageBindingScratch + 24)) fun s identity => if statusFailed s = true then .done s 0 else
+      .bind (Memory.read64 (packageBindingScratch + 32)) fun s edition => if statusFailed s = true then .done s 0 else
+      .bind (Memory.read64 (packageBindingScratch + 40)) fun s crc => if statusFailed s = true then .done s 0 else
+      .bind (Memory.read64 (packageBindingScratch + 48)) fun s node => if statusFailed s = true then .done s 0 else
+      .bind (Memory.read64 (packageBindingScratch + 56)) fun s reserved => if statusFailed s = true then .done s 0 else
+      if Lemma.Courses.PackageCommand.selectionShape tag version ns identity edition crc node reserved = 1 then
+      .bind (packagePut 128 identity) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (packagePut 136 edition) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (packagePut 160 crc) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (packagePut 176 node) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (packagePut 208 3) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (packagePut 240 1) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (packagePut 144 1) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (packagePut 152 1) fun s _ => if statusFailed s = true then .done s 0 else
+      packagePut 232 2
+      else .done 240 0
+    else .done 0 0
+  else .done 240 0
   else .done 0 0
 
 private def validateBookmarkPackage : Action :=
@@ -5528,21 +5637,25 @@ installed package may be another edition. Keep the already rendered chooser
 available for EDIT+/LOAD. Saved reader/history contexts retain automatic load.
 This changes no submission, evidence, journal record or package bytes. -/
 private def readerPrepareSelection : Action :=
-  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
-  if allocated = 12 then
-  .bind (packageGet 152) fun s automatic => if statusFailed s = true then .done s 0 else
-  if automatic = 1 then
-  .bind (packageGet 208) fun s lookup => if statusFailed s = true then .done s 0 else
-  if lookup = 3 then
-  .bind (Memory.read64 (packageWorkspace + 48)) fun s mask => if statusFailed s = true then .done s 0 else
-  if (mask >>> 8) &&& 1 = 0 then
-  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
-  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Courses.BrowseHistory.location packageWorkspace ns page) fun s prior =>
-  if statusFailed s = true then .done s 0 else
-  if prior = 0 then packagePut 152 0 else .done 0 0
-  else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0
-
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 240) fun s selected => if statusFailed s = true then .done s 0 else
+  if school = 1 then if selected = 1 then .done 0 0 else prepare else prepare
+where
+  prepare : Action :=
+    .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
+    if allocated = 12 then
+    .bind (packageGet 152) fun s automatic => if statusFailed s = true then .done s 0 else
+    if automatic = 1 then
+    .bind (packageGet 208) fun s lookup => if statusFailed s = true then .done s 0 else
+    if lookup = 3 then
+    .bind (Memory.read64 (packageWorkspace + 48)) fun s mask => if statusFailed s = true then .done s 0 else
+    if (mask >>> 8) &&& 1 = 0 then
+    .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+    .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Courses.BrowseHistory.location packageWorkspace ns page) fun s prior =>
+    if statusFailed s = true then .done s 0 else
+    if prior = 0 then packagePut 152 0 else .done 0 0
+    else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0
 private def readerPackageWork : Action :=
   .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
   if allocated = 12 then
@@ -5769,14 +5882,34 @@ private def schoolPacket : UInt64 := Lemma.User.Multimodal.records + 1792
 private def tutorPut (offset value : UInt64) : Action := Memory.write64 (tutorContext + offset) value
 private def tutorGet (offset : UInt64) : Action := Memory.read64 (tutorContext + offset)
 
-/-- The local HELP request snapshots current, already validated mathematical
+/- The local HELP request snapshots current, already validated mathematical
 source anchors. A model cannot select these values through its package bytes.
 The action/publication sequence exceeds the guest-observed durable frontier,
 so cold boot cannot reuse a prior immutable assistance edition. -/
+/-- School ASK binds the currently validated rendered node, including ordinary
+written reasoning. It does not turn that source selection into a checker goal. -/
+private def multimodalAskLocation (ns page : UInt64) : Action :=
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  if school = 1 then
+    .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
+    if phase = 2 then
+    .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 8) fun s ordinal => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Courses.PackageTarget.select packageBytes length ordinal) fun s entry => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 (packageBytes + 24)) fun s identity => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 (packageBytes + 32)) fun s edition => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 entry) fun s node => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 (packageBindingScratch + 16) identity) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 (packageBindingScratch + 24) edition) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 (packageBindingScratch + 40) node) fun s _ => if statusFailed s = true then .done s 0 else
+    .done 0 packageBindingScratch
+    else .done 244 0
+  else Lemma.Courses.BrowseHistory.location packageWorkspace ns page
+
 private def multimodalAsk : Action :=
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Courses.BrowseHistory.location packageWorkspace ns page) fun s binding => if statusFailed s = true then .done s 0 else
+  .bind (multimodalAskLocation ns page) fun s binding => if statusFailed s = true then .done s 0 else
   if binding = 0 then .done 244 0 else
   .bind (Memory.read64 (binding + 16)) fun s source => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (binding + 24)) fun s edition => if statusFailed s = true then .done s 0 else
@@ -5863,7 +5996,19 @@ private def multimodalAdmitSchool (length requested : UInt64) : Action :=
   .bind (Memory.read64 (schoolContext + 56)) fun s generation => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (schoolContext + 72)) fun s policy => if statusFailed s = true then .done s 0 else
   .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
-  .bind (CapabilityConsole.record console 0x727 binding generation policy now) fun s _ => if statusFailed s = true then .done s 0 else .done 0 2
+  .bind (CapabilityConsole.record console 0x727 binding generation policy now) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  .bind (if school = 1 then
+    .bind (tutorGet 48) fun s source => if statusFailed s = true then .done s 0 else
+    .bind (tutorGet 56) fun s edition => if statusFailed s = true then .done s 0 else
+    .bind (tutorGet 64) fun s node => if statusFailed s = true then .done s 0 else
+    .bind (packagePut 128 source) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packagePut 136 edition) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packagePut 160 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packagePut 176 (node - 1)) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packagePut 208 3) fun s _ => if statusFailed s = true then .done s 0 else
+    beginPackageRead source edition
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else .done 0 2
 
 private def multimodalAdmitTutor : Action :=
   .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
@@ -5901,17 +6046,136 @@ private def multimodalTutorAccepted : Action :=
   .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
   CapabilityConsole.record console 0x725 sequence 1 0 0
 
+private def schoolQueueFailure (status : UInt8) : Action :=
+  .bind (Memory.write64 schoolQueueError status.toUInt64) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x732 status.toUInt64 0 0 0
+
+private def schoolQueueInitialize : Action :=
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  if school = 1 then
+    .bind (Memory.write64 schoolQueueReadyFlag 2) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (get 176) fun s request => if statusFailed s = true then .done s 0 else
+    if 0x7ffffffffffffffe - 1000000 < request then schoolQueueFailure 242 else
+    .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
+    .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+    .bind (put 176 (request + 1000000)) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Courses.SchoolSubmission.initializeQueue endpoint console (request + 1)) fun result _ =>
+    if statusFailed result = true then schoolQueueFailure result else
+    .bind (Memory.write64 schoolQueueReadyFlag 1) fun s _ => if statusFailed s = true then .done s 0 else
+    Lemma.Courses.SchoolSubmission.restore 1
+  else .done 0 0
+
+/-- Queue failures retain ordinary notebook use. A nonzero status is visible
+as a separate diagnostic; it can never manufacture Saved, school ACK, or proof. -/
+private def schoolQueuePump : Action :=
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
+  if school = 1 then
+  .bind (Memory.read64 schoolQueueReadyFlag) fun s initialized => if statusFailed s = true then .done s 0 else
+  if initialized = 1 then
+    .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+    .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+    .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+    .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
+    .bind (if pending ||| rawCount ||| rawPending ||| stroke = 0 then Lemma.Courses.SchoolSubmission.resume
+      else Lemma.Courses.SchoolSubmission.suspend) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind Lemma.Courses.SchoolSubmission.pump fun result _ =>
+    .bind (if statusFailed result = true then
+      .bind (Memory.write64 schoolQueueReadyFlag 2) fun s _ => if statusFailed s = true then .done s 0 else schoolQueueFailure result
+      else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind Lemma.Courses.SchoolSubmission.frontier fun s queueFrontier => if statusFailed s = true then .done s 0 else
+    .bind (get 128) fun s frontier => if statusFailed s = true then .done s 0 else put 128 (maximum frontier queueFrontier)
+  else .done 0 0 else .done 0 0
+
+private def schoolHeaderPut (offset value : UInt64) : Action := Memory.write64 (schoolSubmissionHeader + offset) value
+private def schoolHeaderClear (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (schoolHeaderPut (i.toUInt64 * 8) 0) fun s _ => .done s acc
+
+private def schoolWorkKind (revision identity edition node crc : UInt64) : Action :=
+  .bind (Lemma.Courses.PackageWorkspace.snapshotSelection packageWorkspace packageBindingScratch) fun result _ =>
+  if statusFailed result = true then .done 0 2 else
+  .bind (Memory.read64 (packageBindingScratch + 16)) fun s source => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBindingScratch + 24)) fun s published => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBindingScratch + 32)) fun s checksum => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBindingScratch + 40)) fun s task => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBindingScratch + 120)) fun s boundRevision => if statusFailed s = true then .done s 0 else
+  .done 0 (if source = identity then if published = edition then if task = node then if checksum = crc then
+    if boundRevision = revision then 1 else 2 else 2 else 2 else 2 else 2)
+
+private def schoolContextCopy (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (Memory.read64 (schoolContext + i.toUInt64 * 8)) fun s value => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut (128 + i.toUInt64 * 8) value) fun s _ => .done s acc
+
+/-- SEND captures the selected publication, immutable mathematical revision,
+full raw page references and already admitted school binding in guest Lean.
+An existing pending attempt is retried with its original bytes and identity. -/
+private def schoolSend : Action :=
+  .bind (Memory.read64 schoolQueueReadyFlag) fun s initialized => if statusFailed s = true then .done s 0 else
+  if initialized = 1 then
+  .bind (Memory.read64 Lemma.Courses.SchoolSubmission.arena) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 26 then Lemma.Courses.SchoolSubmission.retry else if phase = 45 then Lemma.Courses.SchoolSubmission.retry else
+  if (if phase = 0 then (1 : UInt64) else if phase = 29 then 1 else 0) = 1 then
+  .bind (get 136) fun s saved => if statusFailed s = true then .done s 0 else
+  if saved = 0 then
+  .bind (packageGet 32) fun s loaded => if statusFailed s = true then .done s 0 else
+  if loaded = 2 then
+  .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 8) fun s ordinal => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.PackageTarget.select packageBytes length ordinal) fun s entry => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes + 24)) fun s identity => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes + 32)) fun s edition => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes + 80)) fun s crc => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 entry) fun s node => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (schoolContext + 72)) fun s policy => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 96) fun s checker => if statusFailed s = true then .done s 0 else
+  .bind (schoolWorkKind revision identity edition node crc) fun s kind => if statusFailed s = true then .done s 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (get 128) fun s frontier => if statusFailed s = true then .done s 0 else
+  .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 32 schoolHeaderClear 32 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 0 Lemma.Courses.SchoolSubmission.magic) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 8 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 32 frontier) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 40 ns) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 48 page) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 56 revision) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 64 identity) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 72 edition) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 80 node) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 88 crc) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 96 policy) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 104 kind) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 112 now) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (schoolHeaderPut 120 checker) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 13 schoolContextCopy 13 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  Lemma.Courses.SchoolSubmission.start schoolSubmissionHeader packageWorkspace pageIndex
+  else .done 244 0 else .done 232 0 else .done 232 0
+  else .done 244 0
+
+private def schoolCancel : Action :=
+  .bind (Memory.read64 schoolQueueReadyFlag) fun s initialized => if statusFailed s = true then .done s 0 else
+  if initialized = 1 then
+  .bind (Memory.read64 (Lemma.Courses.SchoolSubmission.arena + 96)) fun s queue => if statusFailed s = true then .done s 0 else
+  Lemma.Courses.SchoolSubmission.cancel queue
+  else .done 244 0
+
 /-- Local diagnostic controls, guest-rasterized and submitted through paper.
 CAPTURE is synthetic, five seconds, no transmission/retention. MUTE is local. -/
 private def multimodalCharacter (index enabled : UInt64) : UInt64 :=
   if index < 12 then
-    if enabled = 1 then
+    if enabled &&& 1 = 1 then
       if index < 6 then (0x455649544341 >>> (index * 8)) &&& 255 else 32
     else if index < 8 then (0x45525554504143 >>> (index * 8)) &&& 255 else 32
   else if index < 20 then
     if index < 16 then (0x4554554d >>> ((index - 12) * 8)) &&& 255 else 32
   else if index < 30 then
     if index < 27 then (0x46464f20474545 >>> ((index - 20) * 8)) &&& 255 else 32
+  else if index < 36 then
+    if (enabled >>> 8) &&& 1 = 1 then
+      if index < 34 then (0x444e4553 >>> ((index - 30) * 8)) &&& 255 else if index = 35 then 88 else 32
+    else 32
   else if index < 44 then
     if 36 ≤ index then if index < 39 then (0x4b5341 >>> ((index - 36) * 8)) &&& 255 else 32 else 32
   else if index < 48 then (0x44414f4c >>> ((index - 44) * 8)) &&& 255 else
@@ -5934,6 +6198,8 @@ private def multimodalBarTile (i _ : UInt32) (acc width _ _ _ : UInt64) : Action
 
 private def multimodalBar : Action :=
   .bind Lemma.User.Multimodal.active fun s enabled => if mmFailed s = true then .done s 0 else
+  .bind (Memory.read64 schoolActivityFlag) fun s school => if mmFailed s = true then .done s 0 else
+  let enabled := enabled ||| (school <<< 8)
   .bind (get 32) fun s width => if mmFailed s = true then .done s 0 else
   if width < 1120 then .done 16 0 else
   .boundedFoldU64 5400 multimodalBarStep 5400 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
@@ -5953,7 +6219,7 @@ private def multimodalBookLoad : Action :=
   else .done 175 0 else .done 175 0 else .done 175 0 else .done 175 0
 
 private def multimodalControl (operation : UInt64) : Action :=
-  .bind (if operation = 3 then multimodalAsk else if operation = 4 then multimodalLoadTutor else if operation = 5 then multimodalJoinSchool else if operation = 6 then multimodalBookLoad else Lemma.User.Multimodal.control operation) fun status result =>
+  .bind (if operation = 3 then multimodalAsk else if operation = 4 then multimodalLoadTutor else if operation = 5 then multimodalJoinSchool else if operation = 6 then multimodalBookLoad else if operation = 7 then schoolSend else if operation = 8 then schoolCancel else Lemma.User.Multimodal.control operation) fun status result =>
   .bind (get 24) fun s console => if mmFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x712 operation status.toUInt64 result 0) fun s _ => if mmFailed s = true then .done s 0 else
   Memory.write64 (Lemma.User.Multimodal.state + 32) 1
@@ -6069,7 +6335,11 @@ where
       if 400 ≤ safetyX then if safetyX < 544 then Lemma.User.Multimodal.active
       else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0)
       fun s captureActive => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
     if different captureActive 0 = true then multimodalSafety 0 else
+    if (if school = 1 then if 132 ≤ safetyY then if safetyY < 160 then if 760 ≤ safetyX then if safetyX < 832 then true else false else false else false else false else false) = true then
+      if safetyX < 808 then multimodalQueueTutor 7 else multimodalControl 8
+    else
     if (if 132 ≤ safetyY then if safetyY < 160 then if 544 ≤ safetyX then if safetyX < 832 then true else false else false else false else false) = true then
       multimodalSafety (if safetyX < 640 then 1 else 2)
     else
@@ -6165,6 +6435,9 @@ private def multimodalPackageWork : Action :=
   if openedSave = 0 then
   .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
   if course = 1 then
+  .bind schoolSelectionWork fun s _ => if statusFailed s = true then bookmarkCourseError s else
+  .bind (packageGet 232) fun s selecting => if statusFailed s = true then .done s 0 else
+  if selecting = 1 then .done 0 0 else
   .bind readerPrepareSelection fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packageGet 152) fun s automatic => if statusFailed s = true then .done s 0 else
   .bind (if automatic = 1 then
@@ -6194,6 +6467,7 @@ private def multimodalPackageWork : Action :=
 
 private def multimodalStep : Action :=
   .bind Lemma.User.Multimodal.pump fun _ _ =>
+  .bind schoolQueuePump fun _ _ =>
   .bind pumpBookmarkSave fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpPackageArithmetic fun s _ => if statusFailed s = true then .done s 0 else
   .bind numericPumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
@@ -6227,9 +6501,10 @@ where
     .bind (drainMultimodalInput input) fun s consumed =>
     if statusFailed s = true then .done s 0 else if consumed = 0 then Syscall.sleep 10000 else .done 0 consumed
 
-def mainMultimodal (bootArgument : UInt64) : Action :=
+private def mainMultimodalConfigured (bootArgument school : UInt64) : Action :=
   if (if bootArgument = 2 then (1 : UInt64) else if bootArgument = 3 then 1 else 0) = 0 then failed else
   .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 schoolActivityFlag school) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Memory.write64 packageAllocationAddress 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 576 7) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 584 1) fun s _ => if statusFailed s = true then .done s 0 else
@@ -6276,12 +6551,22 @@ def mainMultimodal (bootArgument : UInt64) : Action :=
   .bind (if create = 1 then savePage 1 else .done 0 0)
     fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Lemma.User.Multimodal.initialize console) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 schoolQueueReadyFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind schoolQueueInitialize fun _ _ =>
   .bind multimodalBar fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
+  .bind (if school = 1 then CapabilityConsole.record console 0x731 1 8 262144 2 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
   if statusFailed s = true then .done s 0 else .loop multimodalStep
 
 
+
+/-- Legacy0.14 software keeps its existing chooser semantics. -/
+def mainMultimodal (bootArgument : UInt64) : Action := mainMultimodalConfigured bootArgument 0
+
+/-- Versioned ordinary school client: shared notebook plus durable selected
+publication admission. The flag is initialized before any package access. -/
+def mainMultimodalSchool (bootArgument : UInt64) : Action := mainMultimodalConfigured bootArgument 1
 
 end Lemma.Applications.Notebook
