@@ -45,6 +45,8 @@ replace('    object_class_property_add_str(klass,"virtual-time",lemma_virtual_ti
         '    object_class_property_add_str(klass,"raw-uart-version",lemma_uart_version,NULL);\n'
         '    object_class_property_add_str(klass,"enable-raw-uart",NULL,lemma_uart_enable);\n'
         '    object_class_property_add_str(klass,"external-uart",NULL,lemma_uart_inject);\n'
+        '    object_class_property_add_str(klass,"raw-uart-paced-version",lemma_uart_paced_version,NULL);\n'
+        '    object_class_property_add_str(klass,"external-uart-paced",NULL,lemma_uart_inject_paced);\n'
         '    object_class_property_add_str(klass,"raw-uart-state",lemma_uart_state,NULL);\n'
         '    object_class_property_add_str(klass,"virtual-time",lemma_virtual_time,NULL);')
 # The base load reads globalstate but omitted its saved paused runstate.

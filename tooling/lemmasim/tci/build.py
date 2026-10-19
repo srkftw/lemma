@@ -208,6 +208,7 @@ def admit(a):
         if sha(p)!=item['sha256'] or p.stat().st_size!=item['bytes']:raise ValueError('Retained compiled output differs:'+name)
         shutil.copyfile(p,out/name)
     for name in ('dependencies.json','lemma_browser_control.inc.c','patch_wasm.py','shell.nix','build.py','res_query_unavailable.c','patch_tci_helpers.py','typed_helpers.json','tci-typed-helpers.patch'):shutil.copyfile(HERE/name,out/name)
+    if r.get('production_mode') in ('incremental-controller-object-and-real-link/1','fresh-upstream-objects-and-real-link/1'):shutil.copyfile(HERE/'incremental_uart.py',out/'incremental_uart.py')
     shutil.copyfile(inventory,out/'source-inputs.json');shutil.copyfile(a.receipt,out/'original-build.json')
     shutil.copyfile(a.source_root/'COPYING',out/'COPYING.QEMU')
     for name in ('lemma_qemu.c','lemma_silicon_fast.h','lemma_model.c','lemma_model.h','lemma_multimodal.c','lemma_multimodal.h','lemma_multimodal_qemu.inc.c','lemma_fast_block.c','lemma_uart_ingress.h','lemma_uart_qemu.inc.c'):

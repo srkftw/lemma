@@ -143,6 +143,73 @@ static void lemma_uart_inject(Object *obj, const char *value, Error **errp)
     }
 }
 
+/* Additive external-stimulus admission. The historical equal-time packet and
+ * actual16550/poll implementation above remain unchanged. Each byte below has
+ * its own declared arrival time; no guest/device acknowledgement is implied. */
+static char *lemma_uart_paced_version(Object *obj, Error **errp)
+{
+    return g_strdup(LEMMA_PAPER_PEN(obj)->fast_binding ?
+                    "lemma-raw-uart-paced/1" : "disabled");
+}
+
+static void lemma_uart_inject_paced(Object *obj, const char *value, Error **errp)
+{
+    LemmaUARTIngress *u = &LEMMA_PAPER_PEN(obj)->uart_ingress;
+    g_auto(GStrv) words = g_strsplit(value, " ", -1);
+    GError *error = NULL;
+    uint64_t when, interval;
+    if (!u->enabled || runstate_is_running() || g_strv_length(words) != 3 ||
+        !g_ascii_string_to_unsigned(words[0], 10, 0, INT64_MAX - 10, &when, &error)) {
+        error_setg(errp, "paced UART requires an enabled paused port and when interval hex");
+        g_clear_error(&error);
+        return;
+    }
+    if (!g_ascii_string_to_unsigned(words[1], 10, 1, INT64_MAX - 10,
+                                    &interval, &error)) {
+        error_setg(errp, "paced UART interval must be positive bounded nanoseconds");
+        g_clear_error(&error);
+        return;
+    }
+    size_t hex = strlen(words[2]);
+    uint64_t amount = hex / 2;
+    if (!hex || hex % 2 || amount > LEMMA_UART_INGRESS_CAPACITY - u->count ||
+        amount > UINT64_MAX - u->accepted ||
+        when < (uint64_t)qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) ||
+        amount - 1 > (INT64_MAX - 10 - when) / interval) {
+        error_setg(errp, "paced UART capacity, timestamp or counter boundary exceeded");
+        return;
+    }
+    for (size_t i = 0; i < hex; i++) {
+        if (!g_ascii_isxdigit(words[2][i])) {
+            error_setg(errp, "paced UART payload is not hexadecimal");
+            return;
+        }
+    }
+    /* Merge backwards in logical ring order. Each destination is at or after
+     * its old source; the bounded active range never aliases unread bytes.
+     * Existing equal-time bytes precede newly admitted equal-time bytes. All
+     * validation precedes any mutation, including timer/counter updates. */
+    uint32_t old = u->count, incoming = amount, output = old + incoming;
+    while (incoming) {
+        uint64_t due = when + (uint64_t)(incoming - 1) * interval;
+        uint32_t at = (u->head + --output) % LEMMA_UART_INGRESS_CAPACITY;
+        uint32_t last = (u->head + old - 1) % LEMMA_UART_INGRESS_CAPACITY;
+        if (old && u->due[last] > due) {
+            u->bytes[at] = u->bytes[last];
+            u->due[at] = u->due[last];
+            old--;
+        } else {
+            incoming--;
+            u->bytes[at] = (g_ascii_xdigit_value(words[2][2 * incoming]) << 4) |
+                           g_ascii_xdigit_value(words[2][2 * incoming + 1]);
+            u->due[at] = due;
+        }
+    }
+    u->count += amount;
+    u->accepted += amount;
+    timer_mod_ns(u->timer, MAX(u->due[u->head], u->earliest_ns));
+}
+
 static char *lemma_uart_state(Object *obj, Error **errp)
 {
     LemmaUARTIngress *u = &LEMMA_PAPER_PEN(obj)->uart_ingress;
