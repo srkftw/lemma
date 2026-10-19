@@ -26,6 +26,25 @@ def sdc_commands(path):
                      if line.strip() and not line.lstrip().startswith('#'))
 
 
+def require_unmodified_routing_resources(paths):
+    # No derived capacity adaptation is admitted by this flow. Any future
+    # adaptation must first prove non-increase against actual before/after
+    # resources and blocked-zero/edge/interior geometry, with underflow and
+    # increased-capacity negative controls. Nominal route success is not proof.
+    for path in paths:
+        for line in path.read_text().splitlines():
+            if line.lstrip().startswith('#'):
+                continue
+            require(not any(name in line for name in
+                    ('set_global_routing_region_adjustment', 'set_global_routing_layer_adjustment',
+                     'set_global_routing_random', '-infinite_cap', '-allow_congestion')),
+                    'unadmitted derived routing resources or congestion bypass in ' + str(path))
+
+
+def require_no_capacity_underflow(log):
+    require('GRT-0113' not in log and 'Underflow in reduce' not in log,
+            'router capacity underflow invalidates all optimistic route results')
+
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
@@ -35,6 +54,7 @@ def main():
     clock.add_argument('--automatic-clock-wire-length', dest='automatic_clock_wire_length', action='store_true', default=True, help='Use actual pinned RC/driver wire optimum (default); all timing/electrical constraints remain')
     clock.add_argument('--historical-clock-wire-length', dest='automatic_clock_wire_length', action='store_false', help='Reproduce the historical100um clock-repair optimization bound')
     p.add_argument('--center-validation-cones', action='store_true', help='Fence real range-validation cones/collectors in the open middle macro channel; preserve all timing and macro OBS')
+    p.add_argument('--defer-global-eco', action='store_true', help='Keep placement/clock repairs and every constraint, but defer the failing global-RC ECO optimization until actual routed extraction; fresh timing failures remain failures')
     p.add_argument('--question',default='Do independent timestamp/counter arithmetic and bounded clock clusters remove observed defects at unchanged100MHz/full256 FIFO?',help='Prospective engineering question for this changed-input run')
     p.add_argument('--completed-eco-route-from', type=Path, help='Independently assess a source-sealed completed ECO route rejected only by the timestamp-sensitive SDC observer; never reroutes it')
     p.add_argument('--routed-eco-from', type=Path, help='Repair the exact sealed routed nominal-SPEF producer, then route and extract the changed physical netlist afresh')
@@ -50,7 +70,9 @@ def main():
               'launch_available_bytes': 8 << 30, 'file_bytes': 1 << 30,
               'output_budget_bytes': 12 << 30},
               'physical_closure': 'UNVERIFIED',
+              'derived_routing_capacity': 'NOT_ADMITTED: future adaptations require actual non-increase and blocked-zero/edge/interior plus underflow/increase negative controls',
               'validation_cone_placement': 'open-middle-channel' if args.center_validation_cones else 'unconstrained',
+              'global_rc_optimization': 'DEFERRED_UNTIL_ACTUAL_EXTRACTION' if args.defer_global_eco else 'ENABLED',
               'clock_wire_repair': 'pinned-driver-RC-optimum' if args.automatic_clock_wire_length else 'historical100um', 'power_grid': 'NOT_IMPLEMENTED',
               'process_drc': 'NOT_RUN', 'lvs': 'NOT_RUN',
               'remaining': ['power grid and power/test-pin connectivity',
@@ -71,6 +93,7 @@ def main():
 
     try:
         require(not (args.center_validation_cones and args.routed_eco_from), 'initial cone placement and retained-route ECO are separate questions')
+        require(not args.defer_global_eco or (args.center_validation_cones and not args.routed_eco_from), 'deferred optimization is scoped to the aligned validation-placement question')
         available = next(int(x.split()[1]) * 1024 for x in Path('/proc/meminfo').read_text().splitlines()
                          if x.startswith('MemAvailable:'))
         require(available >= 8 << 30, 'launch memory floor')
@@ -133,6 +156,7 @@ def main():
             report['reused_completed_route'] = {'path': str(completed), 'receipt_sha256': sha(completed / 'result.json'),
                                               'scope': 'actual completed routing reused; this observer performs new extraction only'}
         inputs += [std / 'lib/sg13g2_stdcell_typ_1p20V_25C.lib', macro / 'lib' / (MACRO+'_typ_1p20V_25C.lib')]
+        require_unmodified_routing_resources([path for path in inputs if path.suffix == '.tcl'])
         report['source_inputs'] = {str(v): sha(v) for v in inputs}
         archive = out / 'source-archive'
         archive.mkdir()
@@ -157,12 +181,13 @@ set clock_ns 10
 set clock_port clk
 set automatic_clock_wire_length {1 if args.automatic_clock_wire_length else 0}
 set center_validation_cones {1 if args.center_validation_cones else 0}
+set defer_global_eco {1 if args.defer_global_eco else 0}
 set validation_region_script {{{ROOT/"tooling/silicon/pen-validation-region.tcl"}}}
 set validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check.tcl"}}}
 source {{{ROOT/'tooling/silicon/layout.tcl'}}}
 ''')
         if args.routed_eco_from:
-            script.write_text(f'set prior {{{prior}}}\nset out {{{out}}}\nset pdk {{{std}}}\nset macro_lib {{{macro/"lib"/(MACRO+"_typ_1p20V_25C.lib")}}}\nsource {{{ROOT/"tooling/silicon/pen-extracted-eco.tcl"}}}\n')
+            script.write_text(f'set prior {{{prior}}}\nset out {{{out}}}\nset pdk {{{std}}}\nset macro_lib {{{macro/"lib"/(MACRO+"_typ_1p20V_25C.lib")}}}\nset validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check.tcl"}}}\nsource {{{ROOT/"tooling/silicon/pen-extracted-eco.tcl"}}}\n')
         # Preserve the real failed database, including GRT's stored overflow
         # grid, before Tcl propagates an implementation error. A snapshot is
         # diagnostic state only and never a completed routed layout.
@@ -184,6 +209,8 @@ source {{{ROOT/'tooling/silicon/layout.tcl'}}}
         (out / 'plan.json').write_text(json.dumps(report, indent=2) + '\n')
         if not args.completed_eco_route_from:
             invoke([str(openroad), '-no_init', '-exit', str(script)], 'layout', 900)
+        if not args.completed_eco_route_from:
+            require_no_capacity_underflow((out / 'layout.log').read_text())
         require((out / 'routed.def').is_file(), 'no completed route')
         if args.routed_eco_from:
             require(sha(out / 'pre-eco.v') == sha(prior / 'routed.v'), 'ECO database logical netlist differs from declared source route')
@@ -232,6 +259,12 @@ report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 >
     except BaseException as error:
         report.update(status='FAIL', error=repr(error))
     finally:
+        if (out / 'layout.log').is_file():
+            try:
+                require_no_capacity_underflow((out / 'layout.log').read_text())
+                report['router_capacity_underflow'] = 'NOT_OBSERVED_IN_THIS_EXECUTION'
+            except ValueError as error:
+                report.update(status='FAIL', router_capacity_underflow='REJECTED', capacity_error=repr(error))
         snapshots = [out / name for name in ('failed-layout.odb', 'failed-layout.def', 'failed-layout.txt') if (out / name).is_file()]
         if snapshots:
             report['failed_layout_snapshots'] = {str(path): sha(path) for path in snapshots}

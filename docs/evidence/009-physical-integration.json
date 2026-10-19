@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-19T21:55:45.855991+00:00",
+  "written_at": "2026-10-19T22:47:33.362432+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -458,6 +458,158 @@
         "/home/sreekumaar/Downloads/lemma/build/silicon/task009-validation-congestion-observer-a1/failed-layout.def": "cdf5d9b20e69c32dc0cb5cb51d29930a28ce0b28b7d042f882b411e7a3e4cabf",
         "/home/sreekumaar/Downloads/lemma/build/silicon/task009-validation-congestion-observer-a1/failed-layout.txt": "869f7c6ee989bbdf2d0438b4c8524c095609dbb35bc6d54b24c40ca7d2f0696a"
       }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-macro-edge-margin-a1/result.json",
+        "sha256": "bf448751f338b2da3e13e414fe438b08aca7c04c07ea6367780256c64eff65f5"
+      },
+      "status": "FAIL",
+      "seconds": 37.18204678897746,
+      "source_seal_equal": true,
+      "error": "CommandFailure('Command exited 1: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-fault3-macro-edge-margin-a1/layout.log')",
+      "scope": "REJECTED_CAPACITY_ADAPTATION: no detailed-route/extraction acceptance. Original receipt immutable; corrected interpretation in capacity_adaptation_rejection.",
+      "source_archive": {
+        "path": "build/silicon/task009-fault3-macro-edge-margin-a1/source-archive/manifest.json",
+        "sha256": "36a712497b77ba35b82f43ee30409d9ca6f80fc612902cfbe354b81ca7aa0aca"
+      }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-macro-edge-margin-a2/result.json",
+        "sha256": "902554b9bb36e762937b4bcca10dca1e43844646453f6eaf1666925b9bbf7164"
+      },
+      "status": "FAIL",
+      "seconds": 21.835510327946395,
+      "source_seal_equal": true,
+      "error": "CommandFailure('Command exited 1: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-fault3-macro-edge-margin-a2/layout.log')",
+      "scope": "REJECTED_CAPACITY_ADAPTATION: no detailed-route/extraction acceptance. Original receipt immutable; corrected interpretation in capacity_adaptation_rejection.",
+      "source_archive": {
+        "path": "build/silicon/task009-fault3-macro-edge-margin-a2/source-archive/manifest.json",
+        "sha256": "0e4fee572b0e8e415f796ed0b1e1db7d5404f72db08e1cc47377c22723f422d0"
+      }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-centered-extraction-a1/result.json",
+        "sha256": "67adec1df73139c0602c10c18fe6ee2d7636c9ab16026960e00614657cef819a"
+      },
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 479.44143772509415,
+      "source_seal_equal": true,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 681,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 388933.5936,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 44.78078404535414,
+        "instances": 8142,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -4.558227,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": -0.660092,
+        "hold_timing": "VIOLATED"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "0d39fdcb94ed022e6760894862e9a7917c9205e60259acecc9b310f197e4b7ed",
+          "setup": "worst slack max -24.949795",
+          "hold": "worst slack min -0.500136",
+          "electrical_violations": 1536
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "f40dee6f15e365e641b5f4410f4947912cb5c6f18e2f7eaf8ec044cfa9c0e413",
+          "setup": "worst slack max -29.453386",
+          "hold": "worst slack min -0.558973",
+          "electrical_violations": 1847
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "d685f6181f6df11a810724df2130b7790b267b6e733dfdceb6d6d5708667d8ce",
+          "setup": "worst slack max -33.768772",
+          "hold": "worst slack min -0.624454",
+          "electrical_violations": 2099
+        }
+      },
+      "candidate_only": true,
+      "scope": "Optional aligned real117cell group; global-RC optimization deferred until actual-SPEF ECO because incremental route failed. All constraints unchanged; fresh strict routing and extraction completed with regressed results. Unselected.",
+      "source_archive": {
+        "path": "build/silicon/task009-fault3-centered-extraction-a1/source-archive/manifest.json",
+        "sha256": "8eb393474f350f15bd7e2d96774dfefaba8408651b8f075f2192c0b9e66d7897"
+      }
+    },
+    {
+      "receipt": {
+        "path": "build/silicon/task009-fault3-centered-actual-eco-a1/result.json",
+        "sha256": "7f72435c59e4e0875b5ac3a58f6c19d2396767289152fab0c4a5b68512ab7494"
+      },
+      "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+      "seconds": 694.6455776860239,
+      "source_seal_equal": true,
+      "router_drc": {
+        "status": "FAIL",
+        "violations": 981,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "global_rc_after_route": {
+        "cell_area_um2": 392771.0496,
+        "core_area_um2": 868527.8784,
+        "utilization_percent": 45.222618567358126,
+        "instances": 8321,
+        "clock_period_ns": 10,
+        "timing_model": "global-route RC estimate after fresh ECO detailed signal routing",
+        "power_grid": "NOT_IMPLEMENTED",
+        "process_drc": "NOT_RUN",
+        "lvs": "NOT_RUN",
+        "setup_worst_slack_ns": -2.864247,
+        "setup_timing": "VIOLATED",
+        "hold_worst_slack_ns": -0.223189,
+        "hold_timing": "VIOLATED"
+      },
+      "extracted_rc": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "df315716141b39471081e7e9a4c420d6142a9d0c66f1646e6aa52826e9859c27",
+          "setup": "worst slack max -16.477877",
+          "hold": "worst slack min -0.110220",
+          "electrical_violations": 629
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "c5915d101343020e76ee6d61734fc43bef6ce13d2305b82ff122641ba76a5441",
+          "setup": "worst slack max -19.910982",
+          "hold": "worst slack min -0.084427",
+          "electrical_violations": 851
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "df8afbe1e0513d9b207ffa35da00f2aeef9be9fd50b3afe2f89b68b10ae60a30",
+          "setup": "worst slack max -22.989668",
+          "hold": "worst slack min -0.071411",
+          "electrical_violations": 1114
+        }
+      },
+      "candidate_only": true,
+      "scope": "Actual-SPEF ECO completes the deferred aligned117cell candidate. Fresh route/extraction; exact SDC commands preserved, real changed netlist, group containment before/after, capacity underflow absent. Still regresses routing/setup versus prior unconstrained ECO and remains unselected.",
+      "source_archive": {
+        "path": "build/silicon/task009-fault3-centered-actual-eco-a1/source-archive/manifest.json",
+        "sha256": "a4594c36b52dbd17d054c78f440905d14597bb8cd6294ac0e976ff5bfcb5b90e"
+      }
     }
   ],
   "extracted_available_corners": [
@@ -603,6 +755,20 @@
       "count": 31,
       "status": "PASS",
       "scope": "Metadata/host only; does not upgrade physical or guest qualification."
+    },
+    "scaffold_current_registry": {
+      "targeted_log": {
+        "path": "build/task009/host-final-a2/scaffold-documentation-corrected.log",
+        "sha256": "896a07f19fcaeda46a143a46da67d0c9310fffa472795ffbaa6400ac6d452d31"
+      },
+      "full_log": {
+        "path": "build/task009/host-final-a2/scaffold-corrected.log",
+        "sha256": "e06eee9df76277ddf3cb21ba7a5f48fa60a409c0c7fe9fc3c986646944176d2b"
+      },
+      "count": 32,
+      "status": "PASS",
+      "seconds": 15.757,
+      "scope": "Currentv2 consumed-contract negative and separate retainedv1 registry negative; source/host only. Original failing fixture/run preserved."
     }
   },
   "remaining": {
@@ -627,7 +793,7 @@
     "physical_execution": "Historical a3, isolated fault3, clock-auto and real extracted-load ECO each retain their own source-bound producers. Fault3 is now selected in canonical RTL and freshly mapped through the normal maintained path. Actual native/Wasm guest behavior is separate machine evidence. The latest completed physical ECO still fails all closure categories.",
     "process": "Original process/GDS/LEF/deck bytes stay immutable. Removing display expansion exposed full DRC; separate300s export and180s direct extraction attempts remain failed. Direct extraction reached real top-cell geometry. Complete process DRC and connected transistor LVS have not completed; no missing nominal process collateral is invented to excuse these tool/engineering failures.",
     "logic_comparison": "Private Yosys zero-delay correspondence trials retain async-FF/commutative-cutpoint/timeout failures; they do not establish connected layout-vs-netlist equivalence.",
-    "failure_snapshot_retention": "A corrected Tcl observer retains failed OpenDB/DEF and primary error before propagation, including stored real GRT congestion. A31.965s diagnostic reexecution of unchanged aligned geometry captured the single overflowing macro-edge cell; it is not a new design pass."
+    "failure_snapshot_retention": "A corrected Tcl observer retains failed OpenDB/DEF and primary error. The retained grid is a source-bound congestion heatmap, not an isolated physical-track overflow: pinned usage includes blockage and both directions. The original stronger interpretation is corrected separately without rewriting producer receipts."
   },
   "final_rtl": {
     "path": "sim/rtl/lemma_pen.sv",
@@ -719,7 +885,11 @@
       "path": "build/silicon/task009-validation-congestion-map-a1/summary.json",
       "sha256": "6a4fa902b8530ed37701230185029e645e8c91d11fc3ebafdad045e27a5b9cc6"
     },
-    "actual_overflow": {
+    "region_type_source": {
+      "url": "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD/26Q2/src/gpl/src/placerBase.cpp",
+      "finding": "GPL blocks every placement-group region from the top-level placement sites without checking INCLUSIVE/EXCLUSIVE/SUGGESTED; an enum-only change cannot free unused sites."
+    },
+    "heatmap_cell": {
       "grid": [
         145,
         118
@@ -729,11 +899,81 @@
       "y_um": 180,
       "capacity": 17,
       "usage": 18,
-      "overflow": 1
+      "overflow": 1,
+      "scope": "dbGCellGrid display capacity/usage; includes blockage and both directions. Difference1 is not proof of one isolated physical-track overflow."
     },
-    "region_type_source": {
-      "url": "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD/26Q2/src/gpl/src/placerBase.cpp",
-      "finding": "GPL blocks every placement-group region from the top-level placement sites without checking INCLUSIVE/EXCLUSIVE/SUGGESTED; an enum-only change cannot free unused sites."
+    "capacity_adaptation_rejection": {
+      "path": "build/silicon/task009-regional-capacity-rejection-a1/result.json",
+      "sha256": "b657ea3c3dd3f434a40fb6e58a4fa2525cf0f4ebddf33fc4066de914fbc8ebaf"
+    },
+    "capacity_adaptation_scope": "Two rejected changed-input attempts,37.182s and21.836s. Regional boundary behavior and unsigned blocked-edge underflow invalidate optimistic congestion results. Unsafe API removed before the next real placement route.",
+    "aligned_deferred_route": {
+      "path": "build/silicon/task009-fault3-centered-extraction-a1/result.json",
+      "sha256": "67adec1df73139c0602c10c18fe6ee2d7636c9ab16026960e00614657cef819a"
+    },
+    "aligned_deferred_route_scope": "479.441s fresh strict full global/detailed route and3RC. Router681; nominal extracted setup-29.453386ns/hold-0.558973ns/electrical1847. Regression versus existing actual ECO; unselected.",
+    "available_corners": {
+      "path": "build/silicon/task009-fault3-centered-corners-a1/result.json",
+      "sha256": "235a670bd7e92dd7ce18d07f2d975ec3931f02a200295fc09346b490c106faae"
+    },
+    "available_corners_scope": "19.338s,9cases allFAIL. Matchedslow125C1.08V nominal setup-53.211441ns/hold-0.650598ns/electrical2549; fast remains mixed-temperature diagnostic.",
+    "resource_guard_observer": {
+      "path": "build/silicon/task009-capacity-guard-a2/result.json",
+      "sha256": "d79d003160c0c202b064f089085c6a778bd8026befce3bbf1e80e126702ca939"
+    },
+    "resource_guard_scope": "Eight scoped host/source/log checks, including actual source recipe and real blocked-edge underflow log; no new physical pass. Derived adjustments/randomness/infinite capacity/allow congestion are rejected until separate actual non-increase and geometry qualification.",
+    "aligned_actual_SPEF_ECO": {
+      "path": "build/silicon/task009-fault3-centered-actual-eco-a1/result.json",
+      "sha256": "7f72435c59e4e0875b5ac3a58f6c19d2396767289152fab0c4a5b68512ab7494"
+    },
+    "aligned_actual_SPEF_ECO_scope": "694.646s; resized258,3electrical buffers,176hold buffers,2pin swaps. Fresh route981; nominal actual setup-19.910982ns/hold-0.084427ns/851electrical. Repairs centered pre-ECO failures but remains unselected versus earlier unconstrained ECO340/-15.191022/-0.108067/818.",
+    "aligned_actual_SPEF_corners": {
+      "path": "build/silicon/task009-fault3-centered-eco-corners-a1/result.json",
+      "sha256": "c1eab592048ae345237e1f4da8badd5e8efb6e78d1032bc1b940487e36d4eb09"
+    },
+    "aligned_actual_SPEF_corner_scope": {
+      "seconds": 14.196822797995992,
+      "all9cases": "FAIL",
+      "matched_slow_nominal": {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -38.874538,
+        "hold_ns": -0.073146,
+        "electrical_violations": 1797,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      "fast": "Mixed-temperature diagnostic only; no matched fast pair."
     }
+  },
+  "sequence_saturation_candidate": {
+    "status": "QUALIFIED_COMPONENT_AND_MAPPING_UNSELECTED",
+    "source": {
+      "path": "build/silicon/task009-sequence-prefix-prep-a1/candidate.sv",
+      "sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b"
+    },
+    "source_archive": {
+      "path": "build/silicon/task009-sequence-prefix-prep-a1/qualified-source.tar.gz",
+      "sha256": "62d3c70f0ebc065366bab4053e1cd5f2a0d1591de6ad1df14609696b83bd5325"
+    },
+    "qualification": {
+      "path": "build/silicon/task009-sequence-prefix-qualification-a1/result.json",
+      "sha256": "ed7166e6676b4074159d89c6273bf80796b64195a4cea826e0cd38243bf85cc1"
+    },
+    "consumer_negative": {
+      "path": "build/silicon/task009-sequence-prefix-consumer-negative-a1/result.json",
+      "sha256": "1a3809c45b57c33a5996407934eae9c4acc84d3315fc36ae4338417b81712a09"
+    },
+    "scope": "Private next RTL input after measured next_sequence[11] full64 saturation reduction. Canonical product RTL remains unchanged; no route/timing/guest/physical continuation qualification follows.",
+    "invariant": "After reset and every accepted counter update, cache[p] equals reduction-AND of next_sequence[p*16+:16]. Both counter and cache update on the same existing accepted branch; all other transitions preserve both. Reset counter1 implies four zero predicates.",
+    "capacity": 256,
+    "entry_bits": 181,
+    "sequence_bits": 64,
+    "cache_bits": 4,
+    "mapped_flip_flops": 809,
+    "mapped_cells": 7066,
+    "cases": "Real IHP models, every-edge reference miter and cache invariant, full256 two-wrap fields/high64 sequence/time, nine16/32/48/64 carry/equality/exhaustion seeds, stale-cache negative and independent public-consumer bypass negative. Seeded hidden state explicitly includes consistent redundant cache; not arbitrary old-state migration.",
+    "seconds": 11.891290999017656
   }
 }

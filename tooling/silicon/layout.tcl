@@ -87,21 +87,29 @@ detailed_placement
 check_placement -verbose
 if {[info exists center_validation_cones] && $center_validation_cones == 1} {source $validation_region_check_script}
 set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
-global_route -guide_file $out/route.guide -congestion_iterations 50
+global_route -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/global-congestion.rpt -verbose
 # Placement estimates differ from actual global RC. Repair once against live
 # routed parasitics, then regenerate guides and RC after all changed cells.
 estimate_parasitics -global_routing
 report_worst_slack -max -digits 6 > $out/pre-repair-setup-summary.rpt
 report_worst_slack -min -digits 6 > $out/pre-repair-hold-summary.rpt
 report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/pre-repair-electrical.rpt
-global_route -start_incremental
+if {![info exists defer_global_eco] || $defer_global_eco != 1} {
+global_route -start_incremental -congestion_report_file $out/incremental-congestion.rpt -verbose
 repair_design -slew_margin 5 -cap_margin 5
 repair_timing -setup -phases WNS_PATH -setup_margin 0.25 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
 repair_timing -hold -hold_margin 0.03 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose
 if {[info exists center_validation_cones] && $center_validation_cones == 1} {source $validation_region_check_script}
-global_route -end_incremental -guide_file $out/route.guide -congestion_iterations 50
+global_route -end_incremental -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/final-congestion.rpt -verbose
+} else {
+    # The aligned candidate's global-RC repair invokes a failing incremental
+    # router. Measure its real placement after fresh routing/extraction first;
+    # actual-SPEF ECO is a separate source-bound successor. No timing constraint
+    # or endpoint is removed, and every remaining violation is still reported.
+    puts "Global-RC ECO deferred; all constraints remain for actual extracted assessment"
+}
 # Persist completed global routing before bounded detailed-route refinement.
 write_db $out/global-route.odb
 write_def $out/global-route.def

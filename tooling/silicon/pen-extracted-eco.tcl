@@ -6,6 +6,8 @@ read_liberty $pdk/lib/sg13g2_stdcell_typ_1p20V_25C.lib
 read_liberty $macro_lib
 read_db $prior/routed.odb
 read_sdc $prior/routed.sdc
+set validation_group [[ord::get_db_block] findGroup pen_validation_middle]
+if {$validation_group != "NULL"} {source $validation_region_check_script}
 set_layer_rc -layer Metal2 -resistance 2.53519e-03 -capacitance 1.69121e-04
 set_layer_rc -layer Metal3 -resistance 1.54329e-03 -capacitance 1.82832e-04
 set_layer_rc -layer Metal4 -resistance 6.31424e-04 -capacitance 1.66454e-04
@@ -25,6 +27,7 @@ repair_timing -setup -phases WNS_PATH -setup_margin 0.25 -max_passes 2 -max_iter
 repair_timing -hold -hold_margin 0.03 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose
+if {$validation_group != "NULL"} {source $validation_region_check_script}
 write_verilog $out/post-eco-unrouted.v
 # Every signal is freshly routed and then independently re-extracted. An old
 # detailed wire may not stand in for the connectivity of a changed buffer/net.
@@ -33,7 +36,7 @@ foreach net [[ord::get_db_block] getNets] {
     if {$wire != "NULL"} {odb::dbWire_destroy $wire}
 }
 set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
-global_route -guide_file $out/route.guide -congestion_iterations 50
+global_route -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/global-congestion.rpt -verbose
 write_db $out/global-route.odb
 write_def $out/global-route.def
 estimate_parasitics -global_routing -spef_file $out/global-route-estimated.spef
