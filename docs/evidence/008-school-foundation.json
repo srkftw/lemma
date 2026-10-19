@@ -176,6 +176,10 @@
     "ciParallelQualification": {
       "path": "docs/evidence/008-school-ci-parallel-qualification.json",
       "sha256": "f0095ecb10addc945acd376a970ebb897097450b779a6bb9191263d35c44098a"
+    },
+    "ciShardQualification": {
+      "path": "docs/evidence/008-school-ci-shard-qualification.json",
+      "sha256": "cad6265e6d2c777aad678ed175e615aad3d102da9ecd37058301dd10b609712e"
     }
   },
   "gates": {
@@ -1074,10 +1078,14 @@
       "path": "docs/evidence/008-school-ci-merge-readiness.json",
       "sha256": "0da85b5846968c2a91f177d43996d00d22aef5eab9c407193ca7d66abf301cde"
     },
-    "applicationTargetChange": "Lean application, numerical and target sources and client observer unchanged. A-E host orchestration now uses bounded isolated row processes; current seven-file source closure, full host tests and genuine two-row diagnostic are separate from final remote acceptance.",
+    "applicationTargetChange": "Lean application, numerical and target sources and client observer remain unchanged. Independent O0/O2 cold CI producers plus a strict full-matrix collector are qualified by full pinned host suites and a genuine clean-source 20/24/28/6 local production/transport/collection run. Original receipts keep original execution identities; final-head remote acceptance remains separate.",
     "ciParallelQualification": {
       "path": "docs/evidence/008-school-ci-parallel-qualification.json",
       "sha256": "f0095ecb10addc945acd376a970ebb897097450b779a6bb9191263d35c44098a"
+    },
+    "ciShardQualification": {
+      "path": "docs/evidence/008-school-ci-shard-qualification.json",
+      "sha256": "cad6265e6d2c777aad678ed175e615aad3d102da9ecd37058301dd10b609712e"
     }
   }
 }
