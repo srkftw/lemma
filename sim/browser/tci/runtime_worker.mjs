@@ -1,3 +1,4 @@
+import {supportReport} from './diagnostics.js';
 // SPDX-License-Identifier: Apache-2.0
 // Host transport/presentation only. Every instruction and device runs in QEMU.
 import createQemu from './qemu-system-riscv64.js';
@@ -12,7 +13,7 @@ import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission,guest
 const notebookFault=new NotebookFaultObserver();
 const school=new SchoolTransport();let schoolMachineEpoch=0;
 const contract='lemma-browser-session-modes/2';
-const ordinary=new Set(['open','import','pause','resume','pen','button','reset','export','export-panel','close','school']);
+const ordinary=new Set(['open','import','pause','resume','pen','button','reset','export','export-panel','diagnostics','close','school']);
 const developer=new Set(['run','raw','raw-batch','course-install','inspect','events']);
 let core,control,handle,manifest,backing,loaded=false,running=false,mode='student',mediumName=null,initializing=false;
 let serial=Promise.resolve(),timer=null,budget=null,pauseReason=null,started=0,readyAt=null,loops=0,panelSequence=null,guestStart=0,capture=[],coursePartial=false,interruptEpoch=0;
@@ -187,6 +188,7 @@ onmessage=({data:m})=>{
   else if(m.action==='course-install'){if(coursePartial)throw Error('Cold-open before retrying partial course input');pause('course-input');await stopped();const frame=courseInstallFrame(m.bytes,m.transaction),clock=await control.request('lemma-clock'),base=(BigInt(clock.virtual_ns)+9n)/10n*10n;let accepted=0;try{const arrival=await admitUart(control,frame,base,uartPaced,n=>{accepted=n;},uartFlow);postMessage({type:'uart-arrival-admission',arrival});}catch(e){coursePartial=accepted>0;postMessage({type:'course-admission',accepted,total:frame.length,bytes:frame.length-64,error:String(e)});throw e;}postMessage({type:'course-admission',accepted,total:frame.length,bytes:frame.length-64,error:null});await sendState();}
   else if(m.action==='inspect'){await stopped();await sendState(await inspect(true));postMessage({type:'uart',text:new TextDecoder().decode(uart())});schedule();}
   else if(m.action==='reset'){school.disconnect();schoolMachineEpoch++;if(typeof m.cold!=='boolean')throw Error('Cold reset selector must be Boolean');pause('reset');await stopped();if(m.cold){postMessage({type:'runtime-closed',nextNotebook:true});return;}await control.request('lemma-waveform');egress.discard(core.FS.stat('/audio.bin').size);await control.request('system_reset');guestStart=uart().length;notebookFault.reset(guestStart);readyAt=null;budget=null;panelSequence=null;await sendState();await panel(true);}
+  else if(m.action==='diagnostics'){if(manifest.support_report_contract!=='lemma-client-support-report/1')throw Error('Support report contract unavailable');await stopped();const report=supportReport({manifest,state:await inspect(true),uart:uart(),guestStart,mode,readyAt,timing:{...timing,elapsedSeconds:(performance.now()-started)/1000},capture});report.state.multimodal=exactJson(await control.get('multimodal-state'));const bytes=new TextEncoder().encode(JSON.stringify(report,null,2)+'\n');postMessage({type:'export',name:'lemma-support.json',bytes},[bytes.buffer]);schedule();}
   else if(m.action==='export-panel'){await stopped();await panel(true);const result=await control.request('lemma-panel'),packed=core.FS.readFile(result.path),header=new TextEncoder().encode(`P5\n${result.width} ${result.height}\n255\n`),bytes=new Uint8Array(header.length+result.width*result.height);bytes.set(header);for(let y=0;y<result.height;y++)for(let x=0;x<result.width;x++){const p=packed[y*result.stride+(x>>1)];bytes[header.length+y*result.width+x]=((x&1)?p&15:p>>4)*17;}postMessage({type:'export',name:'lemma-controller.pgm',bytes},[bytes.buffer]);schedule();}
   else if(m.action==='export'){pause('export');await stopped();const bytes=new Uint8Array(268435456);for(let i=0;i<bytes.length;i+=1048576)if(handle.read(bytes.subarray(i,i+1048576),{at:i})!==1048576)throw Error('Backing export partial read');postMessage({type:'export',name:'lemma-backing.raw',bytes},[bytes.buffer]);await sendState();}
   else if(m.action==='events'){const bytes=new TextEncoder().encode(JSON.stringify({schema:'lemma-qemu-browser-raw-capture/1',events:capture}));postMessage({type:'export',name:'lemma-events.json',bytes},[bytes.buffer]);}

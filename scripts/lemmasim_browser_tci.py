@@ -33,6 +33,7 @@ UI_EXPORT='\n// Host execution observer uses the same UI transport.\nexport {wor
 UI_FILES=('app.js','style.css','guest_records.js','course_transport.js','run_budget.js','school_transport.js')
 BRIDGE_FILES=('worker.mjs','runtime_worker.mjs','control.mjs','opfs_backing.mjs','pcm_egress.mjs','uart_arrivals.mjs')
 PACKAGING_INPUTS={'scripts/lemmasim_browser_tci.py','sim/browser/index.html'}|{'sim/browser/'+name for name in UI_FILES}|{'sim/browser/tci/'+name for name in BRIDGE_FILES}
+SUPPORT_INPUTS=PACKAGING_INPUTS|{'sim/browser/diagnostics.js'}
 
 def sha(path):
     h=hashlib.sha256()
@@ -184,7 +185,7 @@ def bundle(args):
     import silicon_guest_bundle
     from multimodal_native_bundle import SCHEMA as NATIVE_SCHEMA
     if args.profile!=PROFILE or args.workbook not in ('ordinary','parameterized','school'):raise ValueError('TCI requires exact multimodal profile/workbook')
-    packaging_inputs={name:sha(ROOT/name) for name in sorted(PACKAGING_INPUTS)}
+    packaging_inputs={name:sha(ROOT/name) for name in sorted(SUPPORT_INPUTS)}
     runtime,admission=retained_runtime(args.wasm_build)
     archive=Path(args.guest_bundle).absolute();native=read(archive/'bundle.json')
     if native.get('schema')!=NATIVE_SCHEMA:raise ValueError('TCI requires the complete audited multimodal guest archive')
@@ -206,7 +207,7 @@ def bundle(args):
     m={'schema':SCHEMA,'profile':PROFILE,'execution_backend':BACKEND,
        'session_control_contract':'lemma-browser-session-modes/2','width':1650,'height':2200,
        'multimodal_workbook':args.workbook,'course_install_contract':'lemma-course-console-command/1',
-       'school_service_contract':'lemma-school-browser-service/1',
+       'school_service_contract':'lemma-school-browser-service/1','support_report_contract':'lemma-client-support-report/1',
        'checkpoint_contract':'UNSUPPORTED: no exact TCI continuation relation is admitted',
        'timing_scope':'instruction/virtual-timer boundary; not RTL processor-cycle parity',
        'boot':'ELF-preload development boot; no production identity or physical entropy claim',
@@ -231,7 +232,7 @@ def bundle(args):
     if getattr(args,'sample_course',None):
         if not 128<=Path(args.sample_course).stat().st_size<=32768:raise ValueError('Sample package bound rejected')
         m['sample_course']=add(args.sample_course,'sample.lcp')
-    for name in UI_FILES:add(ROOT/'sim/browser'/name,name,packaging_inputs['sim/browser/'+name])
+    for name in (*UI_FILES,'diagnostics.js'):add(ROOT/'sim/browser'/name,name,packaging_inputs['sim/browser/'+name])
     # Export existing UI transport for an external observer, retaining both exact
     # source and the declared suffix. This adds no ink, journal or checking path.
     original=add(ROOT/'sim/browser/app.js','ui-source/app.js',packaging_inputs['sim/browser/app.js'])
@@ -259,11 +260,16 @@ def validated_bundle(directory):
     if m.get('school_service_contract') is not None and (m['school_service_contract']!='lemma-school-browser-service/1' or 'school_transport.js' not in files):raise ValueError('Unsupported school service closure')
     if m.get('sample_course') is not None and (m['sample_course']!={'path':'sample.lcp','sha256':files.get('sample.lcp')} or not 128<=(directory/'sample.lcp').stat().st_size<=32768):raise ValueError('Unbound sample package')
     if not required<=files.keys():raise ValueError('Incomplete TCI launch bundle')
+    support=m.get('support_report_contract')
+    if support is not None and support!='lemma-client-support-report/1':raise ValueError('Unknown support report contract')
+    expected_inputs=SUPPORT_INPUTS if support else PACKAGING_INPUTS
+    ui_files=(*UI_FILES,'diagnostics.js') if support else UI_FILES
+    if support and 'diagnostics.js' not in files:raise ValueError('Missing support report implementation')
     if 'packaging_inputs' not in m:raise ValueError('Missing packaging source closure')
     if 'packaging_inputs' in m:
         inputs=m['packaging_inputs']
-        if not isinstance(inputs,dict) or set(inputs)!=(PACKAGING_INPUTS if m.get('school_service_contract') else PACKAGING_INPUTS-{'sim/browser/school_transport.js'}) or any(files.get('packaging-source/'+name)!=digest for name,digest in inputs.items()):raise ValueError('Incomplete packaging source closure')
-        for name in UI_FILES:
+        if not isinstance(inputs,dict) or set(inputs)!=(expected_inputs if m.get('school_service_contract') else expected_inputs-{'sim/browser/school_transport.js'}) or any(files.get('packaging-source/'+name)!=digest for name,digest in inputs.items()):raise ValueError('Incomplete packaging source closure')
+        for name in ui_files:
             if name=='school_transport.js' and not m.get('school_service_contract'):continue
             target='ui-source/app.js' if name=='app.js' else name
             if files.get(target)!=inputs['sim/browser/'+name]:raise ValueError('Changed packaged UI input')

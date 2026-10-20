@@ -1,3 +1,4 @@
+import {supportReport} from './diagnostics.js';
 // SPDX-License-Identifier: Apache-2.0
 import createMachine from './machine.mjs';
 import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,guestCourseRejection,NotebookFaultObserver} from './guest_records.js';
@@ -14,7 +15,7 @@ let guestOutputStart=0;
 let guestObservation='boot';
 let sessionMode='student';
 const SESSION_CONTROL_CONTRACT='lemma-browser-session-modes/2';
-const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','export-panel','restore','bind','close','school']);
+const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','export-panel','diagnostics','restore','bind','close','school']);
 const developerActions=new Set(['replay','run','raw','raw-batch','course-install','inspect','outcomes','events','capture','capture-outcomes']);
 function admission(message){
  if(!message||typeof message!=='object'||typeof message.action!=='string')throw Error('Invalid browser request');
@@ -284,6 +285,7 @@ onmessage=async({data:m})=>{
   postMessage({type:'export',name:'lemma-checkpoint.bin',bytes:b},[b.buffer]);sendState();}
  else if(m.action==='export'){pause('export');const path='/durable-'+loops+'.raw';check('lemma_export',['string'],[path]);
   const b=core.FS.readFile(path);core.FS.unlink(path);postMessage({type:'export',name:'lemma-backing.raw',bytes:b},[b.buffer]);sendState();}
+ else if(m.action==='diagnostics'){if(manifest.support_report_contract!=='lemma-client-support-report/1')throw Error('Support report contract unavailable');const report=supportReport({manifest,state:state(),uart:core.FS.readFile('/uart.bin'),guestStart:guestOutputStart,mode:sessionMode,readyAt,timing:{...timing,elapsedSeconds:(performance.now()-started)/1000},capture});const bytes=new TextEncoder().encode(JSON.stringify(report,null,2)+'\n');postMessage({type:'export',name:'lemma-support.json',bytes},[bytes.buffer]);}
  else if(m.action==='export-panel'){
   try{exportPanel();}catch(error){postMessage({type:'error',error:String(error)});return;}
  }

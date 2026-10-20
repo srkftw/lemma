@@ -8,12 +8,12 @@ import {webcrypto} from 'node:crypto';
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const MAX=18446744073709551615n;
 const record=(kind,sequence=0n)=>`K1 ${kind.toString(16).padStart(16,'0')} ${sequence.toString(16).padStart(16,'0')} 0000000000000001 0000000000000001 0000000000000000\n`;
-async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false,controlContract='lemma-browser-session-modes/2',courseContract=null,imageContract=null,checkpointContract=null,pixelPlane=new Uint8Array([0]),pixelCount=pixelPlane.length}={}){
+async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false,controlContract='lemma-browser-session-modes/2',courseContract=null,imageContract=null,checkpointContract=null,supportContract=null,pixelPlane=new Uint8Array([0]),pixelCount=pixelPlane.length}={}){
  let now=0,nextTimer=0,generation=0,finished=false,isolated=false,current=cycle,paper={completed:'0',accepted:'0'},uart=initialUART;
  const files=new Map([['/capture.io',encoder.encode('literal captured outcome bytes')]]),messages=[],timers=new Map(),calls=[],events=[];
  const bytes=encoder.encode('hash-validated fake ELF/descriptor/ROM');
  const digest=Buffer.from(await webcrypto.subtle.digest('SHA-256',bytes)).toString('hex');
- const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',session_control_contract:controlContract,course_install_contract:courseContract,controller_image_contract:imageContract,checkpoint_contract:checkpointContract,width:pixelPlane.length,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}}};
+ const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',session_control_contract:controlContract,course_install_contract:courseContract,controller_image_contract:imageContract,checkpoint_contract:checkpointContract,support_report_contract:supportContract,width:pixelPlane.length,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}}};
  const mediumCalls=[];const fault=name=>{mediumCalls.push(name);if(storageFault===name)throw Error('injected '+name+' failure');};
  const medium={read(b){now+=2;return b.length;},write(b){now+=3;return b.length;},flush(){fault('flush');now+=4;},getSize(){fault('getSize');return mediumSize;},close(){mediumCalls.push('close');if(closeFault)throw Error('secondary close failure');},truncate(){fault('truncate');}};
  const mediumNames=new Set(initialize?[]:['test.raw']);
@@ -55,6 +55,31 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  const state=()=>messages.filter(m=>m.type==='state').at(-1),exports=()=>messages.filter(m=>m.type==='export');
  await send('open',{name:'test',initialize,paused,mode});if(!paused)await send('pause');
  return {send,tick,drain,state,exports,messages,timers,calls,events,mediumCalls,mediumNames,setStorageFault:x=>{storageFault=x;},cycle:()=>current,advanceWall:n=>{now+=n;},setUART:x=>{uart=x;},setPaper:x=>{paper=x;}};
+}
+// A bounded maintenance observation never copies the pairing structure or
+// arbitrary future input fields into its portable report.
+{
+ const {supportReport}=await import('data:text/javascript;base64,'+Buffer.from(await fs.readFile('sim/browser/diagnostics.js')).toString('base64'));
+ const input={action:'pen',x:123,y:456,credential:{token:'private-pairing-token'}};
+ const report=supportReport({manifest:{schema:'source',privateCredential:'private-pairing-token'},state:{cycle:'9007199254740993'},uart:new Uint8Array([0,255]),guestStart:0,mode:'student',capture:[{ingress:'browser-pointer/1',input}],timing:{}});
+ assert.equal(report.console.tailHex,'00ff');assert.equal(report.input.tail[0].input.x,123);
+ assert.doesNotMatch(JSON.stringify(report),/private-pairing-token/);
+ assert.equal(input.credential.token,'private-pairing-token');
+}
+// Ordinary support export observes the paused machine without admitting raw input,
+// changing virtual time, or serializing an executable continuation.
+{
+ const literal='discarded-prefix:'+('x'.repeat(140000))+'literal-current-work';
+ const f=await fixture({mode:'student',paused:true,initialUART:literal,supportContract:'lemma-client-support-report/1'});
+ const before=f.cycle();await f.send('diagnostics');const output=f.exports().at(-1);
+ assert.equal(output.name,'lemma-support.json');const report=JSON.parse(decoder.decode(output.bytes));
+ assert.equal(report.schema,'lemma-client-support-report/1');assert.equal(f.cycle(),before);
+ assert.equal(report.state.cycle,String(before));assert.equal(report.mode,'student');
+ assert.equal(report.console.totalBytes,encoder.encode(literal).length);
+ assert.equal(report.console.tailStart,encoder.encode(literal).length-131072);
+ assert.equal(report.console.tailHex.length,262144);assert.match(report.scope,/Not a checkpoint/);
+ assert.equal(f.events.length,0);await f.send('raw',{row:'now pen 0 0 0 0 0 0 0'});
+ assert.equal(f.events.length,0);assert.match(f.messages.at(-1).error,/Developer or Laboratory/);
 }
 // Student Resume can bound host resource use without admitting raw/run actions.
 // Expiry pauses before executing another actual quantum; malformed replacement

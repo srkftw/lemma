@@ -190,8 +190,18 @@ def actual_campaign(archive: Path, output: Path) -> bool:
                     self.tmp.cleanup(); self.setUp()
                     self.reject(case, lambda: self.runtime('original-build.json', lambda d: d.update({key: value})))
 
+        def test_support_report_contract_requires_its_actual_implementation(self):
+            self.reject('unknown support contract', lambda: self.manifest.update(support_report_contract='unknown'), 'Unknown support report contract')
+            self.tmp.cleanup(); self.setUp()
+            def missing():
+                self.manifest['support_report_contract']='lemma-client-support-report/1'
+                if 'diagnostics.js' in self.manifest['files']:
+                    del self.manifest['files']['diagnostics.js']
+                    (self.root/'diagnostics.js').unlink()
+            self.reject('support contract without implementation', missing, 'Missing support report implementation')
+
         def test_runtime_wasm_bytes_and_source_bindings(self):
-            self.reject('wrong actual Wasm output bytes', lambda: self.runtime('original-build.json', lambda d: d['outputs']['qemu-system-riscv64.wasm'].update(bytes=1)), 'runtime output')
+            self.reject('wrong actual Wasm output bytes', lambda: self.runtime('original-build.json', lambda d: d['outputs']['qemu-system-riscv64.wasm'].update(bytes=1)), 'runtime output|PCM compiled output differs')
 
         def test_control_source_digest_cannot_be_relabelled(self):
             self.reject('control source ancestry changed', lambda: self.runtime('source-inputs.json', lambda d: d.update({'hw/riscv/lemma_browser_control.inc.c': '0' * 64})))
@@ -261,7 +271,7 @@ def actual_campaign(archive: Path, output: Path) -> bool:
                 digest = self.put('runtime-source/runtime.json', admission)
                 self.manifest['files']['runtime-source/runtime.json'] = digest
                 self.manifest['runtime_admission_sha256'] = digest
-            self.reject('runtime unknown inventoried source', mutate, 'runtime closure')
+            self.reject('runtime unknown inventoried source', mutate, 'runtime closure|Unknown/incomplete PCM runtime archive')
 
         def test_runtime_cannot_claim_a_different_board_binding(self):
             def mutate():

@@ -159,7 +159,7 @@ def bundle(args):
     result={'schema':'lemmasim-browser-bundle/1','profile':args.profile,'width':1650,'height':2200,
             'boot':'ELF-preload development boot','compiler':'native pinned Lean/LLVM helper; no browser compiler',
             'persistence':'OPFS SyncAccessHandle.flush; origin eviction and physical power loss unqualified',
-            'session_control_contract':'lemma-browser-session-modes/2',
+            'session_control_contract':'lemma-browser-session-modes/2','support_report_contract':'lemma-client-support-report/1',
             'controller_image_contract':'lemma-controller-gray4-image/1',
             'wasm_build_sha256':sha(source/'build.json'),'wasm_project_root':str(ROOT),'workloads':{}}
     if args.profile=='lemma-silicon-dev/0.14.0':
@@ -252,6 +252,9 @@ def validated_bundle(directory):
         if total>1024*1024*1024:raise ValueError('Browser bundle exceeds byte bound')
         if sha(path)!=digest:raise ValueError('Changed browser artifact: '+name)
     if not {'index.html','worker.js','app.js','machine.mjs','machine.wasm','boot.bin'}<=files.keys():raise ValueError('Incomplete browser launch bundle')
+    if m.get('support_report_contract') is not None:
+        if m['support_report_contract']!='lemma-client-support-report/1' or 'diagnostics.js' not in files:
+            raise ValueError('Unsupported or incomplete support report contract')
     product=m['profile']=='lemma-silicon-dev/0.15.0'
     if product:
         if m.get('product_boot_contract')!='lemma-browser-product-nv/1' or m.get('boot')!='immutable Lean ROM/NV' or set(m.get('workloads',{}))!={'notebook'}:raise ValueError('Unsupported Product15 boot contract')
@@ -400,7 +403,7 @@ def product_bundle(args):
       'boot':'immutable Lean ROM/NV','product_boot_contract':'lemma-browser-product-nv/1',
       'compiler':'native pinned Lean/LLVM helper; no browser compiler',
       'persistence':'separate OPFS boot/user SyncAccessHandles; flush primitives, origin eviction and physical power loss unqualified',
-      'session_control_contract':'lemma-browser-session-modes/2','controller_image_contract':'lemma-controller-gray4-image/1',
+      'session_control_contract':'lemma-browser-session-modes/2','support_report_contract':'lemma-client-support-report/1','controller_image_contract':'lemma-controller-gray4-image/1',
       'multimodal_contract':'synthetic-aperture/1',
       'checkpoint_contract':'initial sealed synthetic case only; ordinary Product checkpoint import/private boot persistence not admitted',
       'wasm_build_sha256':sha(source/'build.json'),'wasm_project_root':str(ROOT),
