@@ -27,6 +27,8 @@ structure Model where
   syscalls : Array (UInt8 × UInt64) := #[]
   writes : Array UInt64 := #[]
   forbiddenPage : Option UInt64 := none
+  failWrite : Option UInt64 := none
+  calls : Array (UInt64 × UInt64) := #[]
 private def word (m : Model) (a : UInt64) : UInt64 := m.words.getD a 0
 private def write (m : Model) (a v : UInt64) : Model :=
   {m with words := m.words.insert a v, writes := m.writes.push a}
@@ -44,7 +46,7 @@ partial def run (r : IO.Ref Model) : Action → IO (UInt8 × UInt64)
         let result ← run r (step i.toUInt32 count v a b c d)
         s := result.1; v := result.2
     run r (next s v)
-  | .platform op a b _ _ _ _ next => do
+  | .platform op a b _ _ requestArg _ next => do
     let m ← r.get
     if op == .virtualRead64 || op == .virtualWrite64 || op == .virtualRead8 || op == .virtualWrite8 then
       if m.forbiddenPage == some (a-a%4096) then
@@ -54,7 +56,8 @@ partial def run (r : IO.Ref Model) : Action → IO (UInt8 × UInt64)
       run r (next 0 (word m a))
     else if op == .virtualWrite64 then
       if a%8 != 0 then throw <| IO.userError "unaligned write"
-      r.set (write m a b); run r (next 0 0)
+      if m.failWrite == some a then run r (next 244 0)
+      else r.set (write m a b); run r (next 0 0)
     else if op == .virtualRead8 then
       run r (next 0 ((word m (a-a%8) >>> (a%8*8)) &&& 255))
     else if op == .virtualWrite8 then
@@ -63,7 +66,7 @@ partial def run (r : IO.Ref Model) : Action → IO (UInt8 × UInt64)
       r.set (write m (a-a%8) value); run r (next 0 0)
     else if op == .syscall then
       let some result := m.syscalls[0]? | throw <| IO.userError s!"unexpected actual syscall {a}"
-      r.set {m with syscalls := m.syscalls.extract 1 m.syscalls.size}
+      r.set {m with syscalls := m.syscalls.extract 1 m.syscalls.size, calls := m.calls.push (a,requestArg)}
       run r (next result.1 result.2)
     else throw <| IO.userError "undeclared actual primitive"
   | _ => throw <| IO.userError "unexpected actual Action"
@@ -222,10 +225,91 @@ private def notebookChecks : IO Unit := do
   expect ((← run r (schoolReduction% "cancelArithmetic")).1 == 0 && (← get r (base+536)) == 0 &&
     (← get r (doc+192)) == 8 && (← get r (doc+56)) == 10 && (← r.get).syscalls.isEmpty) "cancel applied tool or erased prepared uncertainty"
 
+private def freshIdentityChecks : IO Unit := do
+  let r ← fixture
+  prepare r; reply r
+  expect ((← run r (Lemma.Courses.LocalReduction.stageApplied workspace doc staged stagedWorkspace request event response 1 1)).1 == 0) "fresh-ID actual applied staging"
+  adopt r
+  let original ← r.get
+  -- Two independent cold/fork RAM owners retain the same immutable history.
+  -- Each may start its own new operation; exact old operation replay stays77.
+  for _ in [:2] do
+    let cold ← IO.mkRef original
+    expect ((← run cold (Lemma.Courses.LocalReduction.request workspace doc request event toolMeta 1 1 1)) == (0,78) &&
+      (← get cold (request+96)) == 78 && (← get cold (event+24)) == 78 &&
+      (← get cold (request+128)) == 0 && (← get cold (request+136)) == 0) "cold history reused old tool identity or corrupted reserved words"
+    expect ((← run cold (Lemma.Courses.LocalReduction.stagePrepared workspace doc staged stagedWorkspace event)).1 == 0) "new operation after cold could not prepare"
+    cold.modify fun m => {m with syscalls:=#[(0,55)]}
+    expect ((← run cold (Lemma.Services.Arithmetic.ClientV9.beginCall 5 request 78)) == (0,55) &&
+      (← cold.get).calls.back? == some (IPCABI.callBegin,78)) "chosen operation identity differs from actual IPC header request"
+    expect ((← run cold (Lemma.Services.Arithmetic.ClientV9.beginCall 5 request 77)).1 != 0) "old header request accepted for new payload"
+  expect ((← run r (Lemma.Documents.LocalToolEvents.freshRequestID doc 100 (request+128))) == (0,100)) "volatile counter ahead of history regressed"
+  -- Prepared-only, cancellation, service failure and stale results all reserve
+  -- their original identity; none permits a fresh request to reuse it.
+  for outcome in #[0,3,4,5] do
+    let pending ← fixture
+    prepare pending
+    if outcome != 0 then
+      expect ((← run pending (Lemma.Courses.LocalReduction.stageTerminal workspace doc staged stagedWorkspace event outcome 1 1)).1 == 0) "terminal staging for fresh-ID history"
+      adopt pending
+    expect ((← run pending (Lemma.Documents.LocalToolEvents.freshRequestID doc 1 (request+128))) == (0,78)) "pending/cancel/failure/stale request identity reused"
+    let beforeCount ← get pending (doc+192)
+    expect ((← run pending (Lemma.Documents.LocalToolEvents.append doc event)).1 == 0 &&
+      (← get pending (doc+192)) == beforeCount) "exact terminal/prepared replay lost idempotence"
+  -- Remote and tool payloads may contain larger integers resembling headers.
+  -- They must not become request maxima or cause artificial exhaustion.
+  let payload ← fixture
+  prepare payload
+  put payload (doc+832+40) 8; put payload (doc+832+48) 1; put payload (doc+832+56) 8
+  expect ((← run payload (Lemma.Documents.MathematicsClosure.validate doc 1 1)).1 == 0) "valid kind8-like payload context"
+  expect ((← run payload (Lemma.Documents.LocalToolEvents.freshRequestID doc 1 (request+128))) == (0,78)) "local-tool payload masqueraded as request header"
+  put payload (doc+192) 12
+  put payload (doc+832+8*16+8) ((7:UInt64) ||| ((1:UInt64)<<<8) ||| ((1:UInt64)<<<16) ||| ((4:UInt64)<<<24))
+  put payload (doc+832+9*16+8) 8
+  put payload (doc+832+9*16+24) 0x7ffffffffffffffe
+  expect ((← run payload (Lemma.Documents.LocalToolEvents.freshRequestID doc 1 (request+128))) == (0,78)) "remote payload masqueraded as request header"
+  put payload (doc+192) 11
+  expect ((← run payload (Lemma.Documents.LocalToolEvents.freshRequestID doc 1 (request+128))).1 == 234) "truncated typed group accepted by fresh-ID scan"
+  let limit : UInt64 := 0x7ffffffffffffffe
+  let empty ← fixture
+  expect ((← run empty (Lemma.Documents.LocalToolEvents.freshRequestID doc limit (request+128))) == (0,limit)) "last admitted full-width ID lost"
+  for candidate in #[0,limit+1] do
+    expect ((← run empty (Lemma.Documents.LocalToolEvents.freshRequestID doc candidate (request+128))).1 == 235) "out-of-domain candidate accepted"
+  for prior in #[limit-1,limit] do
+    let high ← fixture
+    put high (event+24) prior
+    prepare high
+    let expected : UInt8 × UInt64 := if prior == limit then (235,0) else (0,limit)
+    expect ((← run high (Lemma.Documents.LocalToolEvents.freshRequestID doc 1 (request+128))) == expected) "full63-bit maximum request boundary truncated or wrapped"
+    for (a,v) in #[(base+728,1),(base+520,3),(base+512,1),(base+528,5),(base+72,1),(base+80,1),(base+176,44)] do put high a v
+    let oldRevision ← get high (doc+40)
+    let oldCount ← get high (doc+192)
+    expect ((← run high (schoolReduction% "beginLocalReduction")).1 == 235 &&
+      (← get high (base+176)) == 44 && (← get high (base+552)) == 0 &&
+      (← get high (base+536)) == 0 && (← high.get).calls.isEmpty &&
+      (← get high (doc+40)) == oldRevision && (← get high (doc+192)) == oldCount) "exhausted durable identity advanced Notebook counter/work or began IPC"
+  let exhaustedCounter ← fixture
+  for (a,v) in #[(base+728,1),(base+520,3),(base+512,1),(base+528,5),(base+72,1),(base+80,1),(base+176,limit)] do put exhaustedCounter a v
+  let exhaustedWords := (← exhaustedCounter.get).words
+  expect ((← run exhaustedCounter (schoolReduction% "beginLocalReduction")).1 == 235 &&
+    (← exhaustedCounter.get).words == exhaustedWords && (← exhaustedCounter.get).calls.isEmpty) "exhausted volatile counter advanced state"
+  -- Stop at a declared publication access fault, after successful staging.
+  -- The chosen counter/captured request must already agree before any Store
+  -- or endpoint call. A later ordinary request advances beyond that ID.
+  let begin ← IO.mkRef original
+  for (a,v) in #[(base+728,1),(base+520,3),(base+512,1),(base+528,5),(base+72,1),(base+80,1),(base+176,0)] do put begin a v
+  begin.modify fun m => {m with failWrite:=some workspace}
+  expect ((← run begin (schoolReduction% "beginLocalReduction")).1 == 244 &&
+    (← get begin (base+176)) == 78 && (← get begin (base+552)) == 78 &&
+    (← get begin (request+96)) == 78 && (← get begin (event+24)) == 78 &&
+    (← begin.get).calls.isEmpty) "Notebook did not align fresh header/payload/captured/counter identity before publication"
+  expect ((← run begin (schoolReduction% "nextRequest")) == (0,79)) "later Store/IPC request reused chosen tool request"
+
 def main : IO Unit := do
   toolChecks
   provenanceChecks
   notebookChecks
+  freshIdentityChecks
   IO.println "PASS actual local reduction: durable-row staging/cold validation, 25 copied reply negatives, stale work, bounded resources, legacy/version/Commit/IPC/cancellation ownership"
 end LocalReductionTests
 

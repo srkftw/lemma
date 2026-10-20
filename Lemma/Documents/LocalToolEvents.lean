@@ -8,6 +8,43 @@ open Lemma.Core0.Memory Lemma.User
 private def read (p o : UInt64) : Action := Memory.read64 (p+o)
 private def write (p o v : UInt64) : Action := Memory.write64 (p+o) v
 
+/-- The accumulator keeps the entire request domain. Payload-row skipping uses
+one separate caller-owned scratch word, so high request bits are never packed
+or truncated. Only actual kind8 headers contribute to the maximum. -/
+private def freshRequestStep (i _ : UInt32) (acc buffer count scratch format : UInt64) : Action :=
+  if count ≤ i.toUInt64 then .done 0 acc else
+  .bind (read scratch 0) fun s skip => if s = 0 then
+  if 0 < skip then .bind (write scratch 0 (skip-1)) fun s _ => .done s acc else
+  let entry := buffer+832+i.toUInt64*16
+  .bind (read entry 8) fun s desc => if s = 0 then
+  if desc &&& 255 = 7 then
+    if format = 1 then .done 234 0 else if count < i.toUInt64+4 then .done 234 0 else
+    .bind (write scratch 0 3) fun s _ => .done s acc
+  else if desc &&& 255 = 8 then
+    if format = 3 then if count < i.toUInt64+8 then .done 234 0 else
+    .bind (read entry 24) fun s request => if s = 0 then
+    if request = 0 then .done 234 0 else if 0x7ffffffffffffffe < request then .done 234 0 else
+    .bind (write scratch 0 7) fun s _ => if s = 0 then
+    .done 0 (if acc < request then request else acc) else .done s 0
+    else .done s 0 else .done 234 0
+  else .done 0 acc else .done s 0 else .done s 0
+
+/-- Choose a new operation identity after both the caller's volatile counter
+and every durable local-tool identity, including unresolved preparations and
+all terminal scopes. Exact replay continues to use the stored old identity.
+Numerical exhaustion returns235 before changing document or caller counter.
+Scratch may alias a request reserved word which the subsequent encoder clears. -/
+def freshRequestID (buffer candidate scratch : UInt64) : Action :=
+  if candidate = 0 then .done 235 0 else if 0x7ffffffffffffffe < candidate then .done 235 0 else
+  .bind (read buffer 192) fun s count => if s = 0 then
+  .bind (read buffer 208) fun s format => if s = 0 then
+  if 64 < count then .done 235 0 else
+  if (if format = 1 then true else if format = 2 then true else format = 3) = true then
+  .bind (write scratch 0 0) fun s _ => if s = 0 then
+  .boundedFoldU64 64 freshRequestStep 64 (candidate-1) buffer count scratch format fun s greatest => if s = 0 then
+  if greatest < 0x7ffffffffffffffe then .done 0 (greatest+1) else .done 235 0
+  else .done s 0 else .done s 0 else .done 234 0 else .done s 0 else .done s 0
+
 def descriptor (scope outcome : UInt64) : UInt64 :=
   (8 : UInt64) ||| ((1 : UInt64) <<< 8) ||| (scope <<< 16) ||| ((8 : UInt64) <<< 24) ||| (outcome <<< 32)
 

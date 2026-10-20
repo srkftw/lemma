@@ -19,6 +19,7 @@ def request (workspace document outgoing event crcAddress ns page requestID : UI
   .bind (read document 64) fun s d => if s = 0 then
   .bind (read document 192) fun s count => if s = 0 then
   if goal = 1 then if count ≤ 48 then if d = 0 then .done 234 0 else
+  .bind (Lemma.Documents.LocalToolEvents.freshRequestID document requestID (outgoing+128)) fun s freshID => if s = 0 then
   .bind (read workspace 48) fun s mask => if s = 0 then
   .bind (if (mask >>> 8) &&& 1 = 1 then
     .bind (read (workspace+PackageWorkspace.selection) 16) fun s source => if s = 0 then
@@ -28,16 +29,16 @@ def request (workspace document outgoing event crcAddress ns page requestID : UI
     .bind (read (workspace+PackageWorkspace.selection) 64) fun s selectedGoal => if s = 0 then
     if selectedGoal = 1 then
     .bind (write crcAddress 0 crc) fun s _ => if s = 0 then
-    Lemma.Services.Arithmetic.ProtocolV9.request outgoing source edition (PackageWorkspace.object page) node revision ns page n d requestID 0 0
+    Lemma.Services.Arithmetic.ProtocolV9.request outgoing source edition (PackageWorkspace.object page) node revision ns page n d freshID 0 0
     else .done s 0 else .done 240 0
     else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
     else
       .bind (write crcAddress 0 0) fun s _ => if s = 0 then
-      Lemma.Services.Arithmetic.ProtocolV9.request outgoing 0 0 (PackageWorkspace.object page) 0 revision ns page n d requestID 0 0 else .done s 0)
+      Lemma.Services.Arithmetic.ProtocolV9.request outgoing 0 0 (PackageWorkspace.object page) 0 revision ns page n d freshID 0 0 else .done s 0)
     fun s _ => if s = 0 then
   .bind (read crcAddress 0) fun s crc => if s = 0 then
-  Lemma.Documents.LocalToolEvents.prepare event outgoing crc
-  else .done s 0 else .done s 0 else .done s 0
+  .bind (Lemma.Documents.LocalToolEvents.prepare event outgoing crc) fun s _ => .done s freshID
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done 235 0 else .done 234 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 

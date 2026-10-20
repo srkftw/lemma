@@ -3219,17 +3219,22 @@ private def beginLocalReduction : Action :=
   if endpoint = 0 then .done 241 0 else
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
-  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Courses.LocalReduction.request packageWorkspace mathematics mathematicsIO reductionEvent reductionMeta ns page request)
-    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 176) fun s counter => if statusFailed s = true then .done s 0 else
+  if counter < 0x7ffffffffffffffe then
+  .bind (Lemma.Courses.LocalReduction.request packageWorkspace mathematics mathematicsIO reductionEvent reductionMeta ns page (counter+1))
+    fun s request => if statusFailed s = true then .done s 0 else
+  if request < 0x7ffffffffffffffe then
   .bind reductionSourceLoaded fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Courses.LocalReduction.stagePrepared packageWorkspace mathematics packageDocumentStage mathematicsSave reductionEvent)
     fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 128) fun s frontier => if statusFailed s = true then .done s 0 else
   .bind (reductionPut 8 frontier) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 176 request) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 552 request) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 536 16) fun s _ => if statusFailed s = true then .done s 0 else
   .bind publishPackageWorkspace fun s _ => if statusFailed s = true then .done s 0 else reductionReport 0 0 frontier
+  else .done 235 0
+  else .done 235 0
   else .done 231 0 else .done 234 0 else .done 234 0 else .done 241 0
 
 /-- Phases16 prepared-Commit,17 real IPC,18 admitted reply,19 service error.
