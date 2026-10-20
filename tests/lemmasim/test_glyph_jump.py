@@ -1,5 +1,7 @@
 """Independent literal boundaries for the authored O2 toolbar and footer."""
 from pathlib import Path
+import copy
+import json
 import sys
 import unittest
 
@@ -309,6 +311,62 @@ done:
 
 
 class AuthoredSavePhaseJump(unittest.TestCase):
+    def actual_resume(self):
+        path=Path(__file__).resolve().parent/'fixtures/ordinary-notebook-save-phase8.json'
+        data=json.loads(path.read_text())
+        from audit_kernel import _ir_definition_body
+        return data,_ir_definition_body(data['optimized_ir'],data['symbol'])
+
+    def resume_default(self,data,body=None):
+        from audit_kernel import _ir_definition_body
+        if body is None:body=_ir_definition_body(data['optimized_ir'],data['symbol'])
+        return _jump_save_default(body,data['assembly'],data['symbol'],data['targets'],
+                                  [1,2,3,4,6],unit=data['unit'],optimized_ir=data['optimized_ir'])
+
+    def test_actual_ordinary_shared_resume_preserves_error_hole(self):
+        data,body=self.actual_resume()
+        result=self.resume_default(data)
+        self.assertEqual(result['wait_split_phases'],[0,5,8])
+        self.assertEqual((result['holes'],result['default_status'],result['default_value']),([5],234,0))
+        self.assertEqual(result['ordinary_shared_resume_body_sha256'],
+                         data['provenance']['normalized_body_sha256'])
+        # A separately supplied body cannot borrow the full module's good pin.
+        with self.assertRaises(Core0Error):self.resume_default(data,body.replace('i64 216','i64 217'))
+
+    def test_actual_resume_context_does_not_grant_another_root_or_profile(self):
+        data,_=self.actual_resume()
+        mutations=[lambda u:u.update(configuration='lemmasim-other'),
+                   lambda u:u.update(role='kernel'),lambda u:u.update(image_key='store'),
+                   lambda u:u.update(image_id=3),lambda u:u.update(contract_version='core0-user-v0.2'),
+                   lambda u:u.update(used_device_ops=[{'stable_id':'device.fake'}]),
+                   lambda u:u['roots'][0].update(source='Lemma.Applications.Notebook.mainMultimodalSchoolV3'),
+                   lambda u:u['roots'][0].update(id=2),lambda u:u['roots'][0].update(args=[])]
+        for mutate in mutations:
+            changed=copy.deepcopy(data);mutate(changed['unit'])
+            with self.subTest(unit=changed['unit']):
+                with self.assertRaises(Core0Error):self.resume_default(changed)
+        for field,value in [('args',['u64']),('effects',[])]:
+            changed=copy.deepcopy(data)
+            next(r for r in changed['unit']['functions'] if r['symbol']==changed['symbol'])[field]=value
+            with self.assertRaises(Core0Error):self.resume_default(changed)
+
+    def test_actual_resume_complete_body_and_machine_default_remain_closed(self):
+        data,_=self.actual_resume()
+        ir=data['optimized_ir']
+        for old,new in [('i64 216)','i64 217)'),('i64 2, i64 0,','i64 3, i64 0,'),
+                        ('i64 8, label','i64 7, label'),('i64 5, label','i64 7, label'),
+                        ('[ 234, %','[ 0, %'),('i64 160)','i64 168)')]:
+            self.assertIn(old,ir);changed=copy.deepcopy(data);changed['optimized_ir']=ir.replace(old,new,1)
+            with self.subTest(mutation=(old,new)):
+                with self.assertRaises(Core0Error):self.resume_default(changed)
+        changed=copy.deepcopy(data)
+        row=next(r for r in changed['unit']['functions'] if r['source'].endswith('.issue'))
+        row['source']=row['source'].replace('.issue','.issueOther')
+        with self.assertRaises(Core0Error):self.resume_default(changed)
+        for old,new in [('li\ts0, 234','li\ts0, 0'),('andi\ta0, s0, 255','andi\ta0, s1, 255')]:
+            self.assertIn(old,data['assembly']);changed=copy.deepcopy(data);changed['assembly']=changed['assembly'].replace(old,new,1)
+            with self.assertRaises(Core0Error):self.resume_default(changed)
+
     def test_exact_phase_domain_and_local_error_hole(self):
         source='Lemma.Applications.Notebook.pumpSave'
         self.assertEqual(LEMMASIM_BACKEND_JUMP_TABLES[source],

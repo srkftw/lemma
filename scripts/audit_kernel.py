@@ -4749,6 +4749,41 @@ def _jump_status_default(optimized_body: str, assembly: str, symbol: str,
     return {'holes':holes,'llvm_default':default,'machine_default':machine_default,'default_value':32}
 
 
+def _ordinary_notebook_save_resume(optimized_body: str, unit: dict,
+                                   optimized_ir: str | None, symbol: str) -> str:
+    """Bind only the ordinary main's genuine shared phase8 Save body.
+
+    The shared pumpSave now has the same deferred Store-writer resume in the
+    ordinary and School images. This is one complete optimized-body identity,
+    independently equal in the actual CI and genuine School25 exports. It
+    grants no School/controller root, and does not replace the ordinary source,
+    call, privilege, memory, object or phase5 default checks.
+    """
+    from surface_bulk_borrow import canonical, normalized_body
+    if (unit.get('configuration') != 'lemmasim-notebook' or unit.get('role') != 'user'
+            or unit.get('image_key') != 'notebook' or unit.get('image_id') != 2
+            or unit.get('contract_version') != 'core0-user-v0.1'
+            or unit.get('used_device_ops') != []
+            or [(canonical(r.get('source','')), r.get('id'), r.get('args'))
+                for r in unit.get('roots', [])] != [('Lemma.Applications.Notebook.main',1,['u64'])]):
+        raise Core0Error('ordinary shared Save resume escaped its exact root/profile')
+    rows = unit.get('functions', [])
+    names = {r.get('symbol'): canonical(r.get('source','')) for r in rows}
+    if (len(names) != len(rows) or len(set(names.values())) != len(rows)
+            or names.get(symbol) != 'Lemma.Applications.Notebook.pumpSave'):
+        raise Core0Error('ordinary shared Save resume owner/catalog differs')
+    owner = next(r for r in rows if r.get('symbol') == symbol)
+    if (owner.get('args') != [] or owner.get('effects') !=
+            ['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition']
+            or optimized_ir is None or _ir_definition_body(optimized_ir,symbol) != optimized_body
+            or not re.search(r'^define \{ i64, i64 \} @'+re.escape(symbol)+r'\(\)',optimized_ir,re.M)):
+        raise Core0Error('ordinary shared Save resume signature or complete owner differs')
+    identity = hashlib.sha256(normalized_body(optimized_body,names).encode()).hexdigest()
+    if identity != 'bd61e44e48e40c9d8891a271c32ecba24310ed6fbac68055a15f3c70699806c6':
+        raise Core0Error('ordinary shared Save resume complete body differs')
+    return identity
+
+
 def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
                        targets: list[str], cases: list[int], *, unit: dict | None = None,
                        optimized_ir: str | None = None) -> dict:
@@ -4760,6 +4795,7 @@ def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
         raise Core0Error('notebook Save lacks its exact phase/default switch')
     value,default,_=selected[0]
     wait_phases=[0,5]
+    ordinary_resume = None
     if unit is not None and unit.get('configuration') in SCHOOL_CONFIGURATIONS:
         from school_target import validate as validate_school
         if optimized_ir is None:raise Core0Error('School Save resume requires its complete genuine source corpus')
@@ -4767,6 +4803,11 @@ def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
         # Explicit School23 phase8 resumes the original Save after the durable
         # queue releases its Store writer. Its complete actual body is pinned;
         # the old phase5 rejecting hole/return/frame checks remain identical.
+        wait_phases=[0,5,8]
+    elif unit is not None and any(operand == value and
+            sorted(int(case) for case in re.findall(r'i64 (-?\d+), label',block)) == [0,5,8]
+            for operand,_default,block in switches):
+        ordinary_resume = _ordinary_notebook_save_resume(optimized_body,unit,optimized_ir,symbol)
         wait_phases=[0,5,8]
     waits=[block for operand,_default,block in switches if operand==value
            and sorted(int(case) for case in re.findall(r'i64 (-?\d+), label',block))==wait_phases]
@@ -4802,7 +4843,8 @@ def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
           ('li',['s0','234']),('bltu',['a0','s3',hole]),('slli',['s3','s3','3'])]):
         raise Core0Error('notebook Save default error/frame or phase guard differs')
     return {'holes':[5],'llvm_default':default,'machine_default':hole,
-            'default_status':234,'default_value':0,'wait_split_phases':wait_phases}
+            'default_status':234,'default_value':0,'wait_split_phases':wait_phases,
+            **({'ordinary_shared_resume_body_sha256':ordinary_resume} if ordinary_resume else {})}
 
 
 def validate_dtb_pair_body(ir: str, unit: dict, symbol: str) -> str:

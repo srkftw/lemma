@@ -2788,6 +2788,11 @@
       "source_inventory_sha256": "7c654bbe03e9386be1c400575945f2fb0cd51953b2790c3d944172607c247eaa",
       "runtime": "unchanged actual p81QEMU+derivation and publicstopTCIWasm; no runtime compiler action",
       "checkpoint": "regularMM2 only;24/25 pendingtool/stream cuts unqualified"
+    },
+    "ordinary_CI_shared_Save_guard": {
+      "path": "build/task009/ci-writing-save-wait-a1/result.json",
+      "sha256": "4af64cd694f812bd6c6ac1b7a88cb779ca3f3cb75d20a801a6d4c8aba3733d4e",
+      "scope": "ExactordinaryNotebookmain/image2/v0.1currentoptimizedSavebody matchesgenuineSchool25body; phase0/5/8 acceptedonlyaftercompletebody/typedcontext pin, phase5error234/machineframepreserved.12hostcasespass. Original0/5legacy unchanged. OriginalCIandtwoactualretainedauditpreflightFAILs preserved; nofullaudit/guest/CIacceptancefromclosedfixture."
     }
   },
   "current23_24_post25_fast": {
