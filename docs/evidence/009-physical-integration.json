@@ -8372,5 +8372,213 @@
       "fresh_SPICE_runs": 0,
       "historical_scope": "Original actual pilot and promotion did not seal consumed case/models copies. Current retained copies independently equal the sealed adopted models; this closed assessment cannot establish their historical immutability during execution. Maintained producer now seals complete files/directories before use and at final barrier, with changed/missing/extra/directory/symlink negatives."
     }
+  },
+  "two_measured_wireload_launch_precursor": {
+    "status": "PASS_COMPLETED_TWO_LOAD_BUF8_SOURCE_SITE_SPACER_PG_FOURSTATE_PRECURSOR_NOT_ROUTED",
+    "actual_failed_wrapper": {
+      "path": "build/silicon/task009-two-load-launch-preflight-a2/result.json",
+      "sha256": "96902d3ca71539ba0325162758c0097a6e8742072cc412be3f8674ad2907a115"
+    },
+    "actual_failed_wrapper_seconds": 15.666097628185526,
+    "actual_peak_owned_RSS_bytes": 826085376,
+    "completed_count_assessment": {
+      "path": "build/silicon/task009-two-load-launch-completed-a1/result.json",
+      "sha256": "94180fec90438a316c6311df49a12a340a74fb4bb8060be5ac26bf6575d33aa5"
+    },
+    "completed_assessment_seconds": 0.27564503508619964,
+    "fresh_native_runs_in_assessment": 0,
+    "retained14GiB_nonadmission": {
+      "path": "build/silicon/task009-two-load-launch-preflight-a1/admission-assessment.json",
+      "sha256": "1bc4c6b1810807bbe2cd099ea84583ee00e6a160ce4ac80aa12d48a2ba2561e2"
+    },
+    "original_failure_cause": "Observer wrongly counted fourtotalpinsperbuf inPGcount. Actualtwo supplypinsperbuf:98571+2*2−2*11+2*5=98563; originalFAILreceiptunchanged.",
+    "actual_geometry": {
+      "status": "PASS_TWO_MEASURED_LOAD_LAUNCH_SITE_SPACER_ENDPOINT_PRECURSOR_NOT_ROUTED",
+      "source_ODB_sha256": "5c43a20a33fe888af5c6cb683d3bc6e19b6d72396a95f7adaa904527fb9d6a9f",
+      "geometry_ODB_sha256": "37d86a7314d05b7c4b9367862b33348ceabb5dfab7b32c070643aef80d9a7070",
+      "actual_nominal_loads": [
+        {
+          "driver": "_06992_",
+          "master": "sg13g2_nand2_2",
+          "net": "_01842_",
+          "actual_nominal_total_pF": "0.558108",
+          "sink_cells": [
+            "sg13g2_nand3_1",
+            "sg13g2_nor4_1"
+          ]
+        },
+        {
+          "driver": "_08744_",
+          "master": "sg13g2_nor4_2",
+          "net": "_03075_",
+          "actual_nominal_total_pF": "0.311153",
+          "sink_cells": [
+            "sg13g2_a21oi_1"
+          ]
+        }
+      ],
+      "sites": [
+        {
+          "driver": "_06992_",
+          "new_cell": "task009_two_load_launch_0",
+          "location": [
+            615360,
+            476280
+          ],
+          "orientation": "R0",
+          "distance_nm": 5220
+        },
+        {
+          "driver": "_08744_",
+          "new_cell": "task009_two_load_launch_1",
+          "location": [
+            751200,
+            317520
+          ],
+          "orientation": "R0",
+          "distance_nm": 10080
+        }
+      ],
+      "old_functional_cells_moved": 0,
+      "old_functional_and_macro_instances": 9037,
+      "new_original_buf8": 2,
+      "old_spacers": 40247,
+      "new_spacers": 40241,
+      "spacers_removed": [
+        "task009_row_fill_015969",
+        "task009_row_fill_015970",
+        "task009_row_fill_015971",
+        "task009_row_fill_015972",
+        "task009_row_fill_020731",
+        "task009_row_fill_020732",
+        "task009_row_fill_020733",
+        "task009_row_fill_020734",
+        "task009_row_fill_020735",
+        "task009_row_fill_020736",
+        "task009_row_fill_020737"
+      ],
+      "spacers_added": [
+        {
+          "name": "task009_two_load_fill_15969",
+          "master": "sg13g2_fill_2",
+          "location": [
+            757440,
+            317520
+          ],
+          "origin": [
+            757440,
+            317520
+          ],
+          "orientation": "R0",
+          "row": "ROW_82",
+          "sites": 2
+        },
+        {
+          "name": "task009_two_load_fill_20728",
+          "master": "sg13g2_fill_2",
+          "location": [
+            614400,
+            476280
+          ],
+          "origin": [
+            614400,
+            476280
+          ],
+          "orientation": "R0",
+          "row": "ROW_124",
+          "sites": 2
+        },
+        {
+          "name": "task009_two_load_fill_20729",
+          "master": "sg13g2_fill_8",
+          "location": [
+            621600,
+            476280
+          ],
+          "origin": [
+            621600,
+            476280
+          ],
+          "orientation": "R0",
+          "row": "ROW_124",
+          "sites": 8
+        },
+        {
+          "name": "task009_two_load_fill_20730",
+          "master": "sg13g2_fill_8",
+          "location": [
+            625440,
+            476280
+          ],
+          "origin": [
+            625440,
+            476280
+          ],
+          "orientation": "R0",
+          "row": "ROW_124",
+          "sites": 8
+        },
+        {
+          "name": "task009_two_load_fill_20731",
+          "master": "sg13g2_fill_8",
+          "location": [
+            629280,
+            476280
+          ],
+          "origin": [
+            629280,
+            476280
+          ],
+          "orientation": "R0",
+          "row": "ROW_124",
+          "sites": 8
+        }
+      ],
+      "affected_rows_y_nm": [
+        317520,
+        476280
+      ],
+      "functional_padding_nm": 960,
+      "ports": 668,
+      "native_PG_shapes": 99128,
+      "new_supply_terminals_with_actual_row_overlap": 14,
+      "OBS": 18718,
+      "original33delays_preserved": true,
+      "negative_cases": [
+        "actual_new_A_retarget",
+        "actual_new_VDD_retarget",
+        "actual_launch_wrong_site_and_overlap",
+        "actual_BIST_disconnect",
+        "actual_new_spacer_supply_retarget"
+      ],
+      "seconds": 8.877531129168347,
+      "native_master_library_relation": {
+        "status": "PASS_LITERAL_NATIVE_LIBRARY_LEF_AND_MASTER_OBJECT_PROPERTIES_ONLY",
+        "libraries": 2,
+        "masters": 85,
+        "object_property_records": 8351,
+        "library_LEF_sha256": {
+          "sg13g2_stdcell": "fa92f0824a388458c56c912a6cea0aaf9e881b0e85e0bc445d5502e7c9dffa50",
+          "RM_IHPSG13_1P_256x64_c2_bm_bist": "a16cbcfabbc16b85ca7edbd44762f66c123747b54109824c6e84bfdaca12b33c"
+        },
+        "scope": "Original native library/master LEF pins/OBS bodies plus actuallibrary/master/MTerm/MPin/box properties. No normalization. Access vectors/unserializedOpenDBstate, originalGDSmaskunion, transistorLVS andprocessDRC remain separate."
+      },
+      "remaining": "ActualPGpin overlap/PSM, originalgate4state fixture, finalsource/master geometry, originalGDS/NWell, freshroute/native420/3RC/all9timing/process/LVS. No selection."
+    },
+    "actual_power": {
+      "status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+      "macro_power_pins": 9,
+      "preserved_BIST_pins": 423,
+      "all_power_terminals": 98563,
+      "voltages_V": {
+        "VDDlogic": 1.2,
+        "VDDARRAY": 1.2,
+        "VSS": 0
+      }
+    },
+    "actual_original_gate_four_state": "256 inputvectors/512 outputcomparisons positive; invertedbufferfails atvector0 asrequired. Originalpublic standardcell/UDP models used.",
+    "maintained_consumer": "scripts/silicon_pen_physical.py --two-load-launch-from build/silicon/task009-two-load-launch-preflight-a2 through scripts/silicon_two_load_launch.py",
+    "consumer_scope": "Exact archived originalpreparebody prefix and originalsourcecapsule, source/tool/model inputs,37dunroutedODB and40241updatedplan pinned. Future actualfixedgeometry/masterLEF/properties and freshroute/native420/3RC/all9 stillrequired. No newroute/STA/PEX yet, no selected0.6change.",
+    "independent_source_review": "Schoolagent read-only review found no additional material precursor acceptancehole. Wholeproducer stillowns code/LEF/planner pins and serializedreadback; no tool/passclaim fromreview."
   }
 }
