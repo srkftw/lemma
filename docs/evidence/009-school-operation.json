@@ -1198,5 +1198,49 @@
       "sha256": "327a55e06fd9f063e317e251b35f174c577fc187cbdf1d0905d9335c07716342"
     },
     "scope": "Livegen12 backup exactly38records/8artifacts; independentfork5publication-onlyrows, distinctschool/deployment/storage, nolearner/admission/session/assessment/jobhistory; actual secondauthorityrun/status/stop withownedcleanup. No concurrent duplicate-deployment restore claim."
+  },
+  "ordinaryGeneration13Plan": {
+    "plan": {
+      "path": "build/school/task009-connected-a2/ordinary-campaign-budget-a6.json",
+      "sha256": "afb54e7c52b67ed368124aa83d6b08b816162266f3ffa00df988d1244794a654"
+    },
+    "readiness": {
+      "path": "build/school/task009-connected-a2/generation13-ordinary-ready.json",
+      "sha256": "50f2710adecab5189a8fd2d1c898771896bb5ea0f9b4d93d1cadc89e9f489dd2"
+    },
+    "status": "RUNNING_WITH_ORIGINAL_04:02:52_UTC_DEADLINE",
+    "generation": 13,
+    "clockEpoch": 3,
+    "initialAcknowledgedRows": 38,
+    "scope": "New independent3600sexecution after generation12ownedterminal; samequalifiedhostedproducer/privatepairings, all38records unchanged, threeprotectedprincipalsauthorized. Target/sourceaudits andactualStudentJOIN/attempt remain separate."
+  },
+  "teacherRasterPresentationRepair": {
+    "result": "PASS_ACTUAL_TEACHER_ARTIFACT_PREVIEW",
+    "change": "Decode bounded Lean gray4 raster with explicit Tk binary PPM/PGM. A2x2area presentation reduction retains every sourcepixel position; nearest subsampling could erase thin strokes. Host displays rasterbytes and does not interpret ink or judge correctness.",
+    "guiGate": {
+      "path": "build/school/task009-panel-review-a1/panel-evidence.json",
+      "sha256": "6466ad3f813c12782de78a9d6af7ba0a4806128a04b97819f4ebd44c6a4a2b04"
+    },
+    "realArtifactPreview": {
+      "path": "build/school/task009-student-native-a6/teacher-exact-preview-a3/gesture.json",
+      "sha256": "58e0378d1ead9aeb03b238f9bd2f82abbecbcacf3e7c74a0a93d4139bf35d2ba"
+    },
+    "actualPixels": {
+      "path": "build/school/task009-student-native-a6/teacher-exact-preview-a3/photo-observations.json",
+      "sha256": "828b4e961a465d031b7f6194c4a23876ac85414d8d3f514c80d3ca29b9da8311"
+    },
+    "previewImage": {
+      "path": "build/school/task009-student-native-a6/teacher-exact-preview-a3/artifact-preview-0.png",
+      "sha256": "e0958be3c3463d90041fe64ca467eefa540aecadc4389b0911357a1f30af7e66"
+    },
+    "originalContext": {
+      "path": "build/school/task009-student-native-a6/teacher-exact-preview-a3/original-context.json",
+      "sha256": "20e34bbe0df4b30fb65a9a0fdf4e38ee440cb597631c0ead6848637cfc9e5550"
+    },
+    "retainedFailure": {
+      "path": "build/school/task009-student-native-a6/teacher-exact-preview/observer-assessment.json",
+      "sha256": "a7a383e24a13f36d1bf0fdf65bf63ff10feacc4a825dc70e5c6f90de8b1c56a1"
+    },
+    "scope": "Actual immutable guestattempt guest.39.6003579778261581853, original803/2policy2Node4prompt/rubric/source/assistance and savedVink. Originalwindow-only observer falselyreportedPASSafterTkcallbackerror; separatecorrectedobserver requires actual nonwhite rasterpixels beforePASS. Explicit subsequent versionedteacherfeedback is distinct from originalexactchecker."
   }
 }

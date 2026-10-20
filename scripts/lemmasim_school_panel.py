@@ -24,6 +24,26 @@ import webbrowser
 ROOT=Path(__file__).resolve().parents[1]
 SAMPLE=ROOT/"examples/school/sample-unit.json"
 
+
+def review_photo_image(tk, preview):
+    """Present the exact bounded Lean gray4 image through Tk's binary PGM reader."""
+    packed = bytes.fromhex(preview['gray4Hex'])
+    width, height, stride = preview['width'], preview['height'], preview['stride']
+    if (width, height, stride) != (1650, 2200, 825) or len(packed) != stride * height:
+        raise RuntimeError('Lean review image geometry differs')
+    # Area reduction is presentation only. Nearest-neighbor subsampling can
+    # erase an entire one-pixel horizontal/vertical stroke on the skipped row.
+    pixels = bytearray()
+    for y in range(0, height, 2):
+        upper, lower = y * stride, (y + 1) * stride
+        for x in range(stride):
+            a, b = packed[upper + x], packed[lower + x]
+            pixels.append(((a >> 4) + (a & 15) + (b >> 4) + (b & 15)) * 17 // 4)
+    pgm = f'P5\n{width // 2} {height // 2}\n255\n'.encode() + pixels
+    # Tk's PPM/PGM reader takes binary bytes. Base64 autodetection selects a
+    # different decoder in supported Tk builds and fails before displaying ink.
+    return tk.PhotoImage(data=pgm, format='PPM')
+
 @dataclass
 class Connection:
     school_root: Path
@@ -526,14 +546,7 @@ class Panel:
         prompt.insert("end",json.dumps(context,indent=2,ensure_ascii=False));prompt.configure(state="disabled")
         preview=result.get('inkPreview')
         if preview:
-            import base64
-            packed=bytes.fromhex(preview['gray4Hex'])
-            width,height=preview['width'],preview['height'];stride=preview['stride']
-            if (width,height,stride)!=(1650,2200,825) or len(packed)!=stride*height:
-                raise RuntimeError('Lean review image geometry differs')
-            pixels=bytes(component*17 for value in packed for component in (value>>4,value&15))
-            pgm=f'P5\n{width} {height}\n255\n'.encode()+pixels
-            image=self.tk.PhotoImage(data=base64.b64encode(pgm).decode()).subsample(2)
+            image=review_photo_image(self.tk,preview)
             paper=self.tk.Toplevel(window);paper.title('Original guest ink · hosted Lean raster preview')
             canvas=self.tk.Canvas(paper,width=840,height=680);scroll=self.ttk.Scrollbar(paper,orient='vertical',command=canvas.yview)
             canvas.configure(yscrollcommand=scroll.set);scroll.pack(side='right',fill='y');canvas.pack(fill='both',expand=True)

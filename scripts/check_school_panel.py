@@ -17,7 +17,7 @@ import zlib
 
 from core0_common import Core0Error,repo_root,sha256,write_json
 from check_school_job_worker import check_production
-from lemmasim_school_panel import Connection,Panel,SAMPLE
+from lemmasim_school_panel import Connection,Panel,SAMPLE,review_photo_image
 
 
 def capture(window,path):
@@ -141,6 +141,18 @@ def check(args):
                 if not select.select([xvfb.stdout],[],[],10)[0]:raise Core0Error("isolated GUI test server timeout")
                 os.environ["DISPLAY"]=":"+xvfb.stdout.readline().decode().strip()
                 window=tk.Tk()
+                # Exercise the actual Tk binary decoder, including sampled
+                # gray4 nibble order; a window alone does not prove ink rendered.
+                packed=bytearray([255])*(825*2200)
+                packed[:7]=bytes((0x0f,0xf0,0xff,0xff,0x7f,0xff,0x00))
+                packed[825:832]=bytes((0xff,0xff,0x0f,0xf0,0xff,0xff,0x00))
+                picture=review_photo_image(tk,dict(width=1650,height=2200,stride=825,gray4Hex=packed.hex()))
+                expected=((191,)*3,)*4+((221,)*3,(255,)*3,(0,)*3)
+                if (picture.width(),picture.height())!=(825,1100) or tuple(picture.get(x,0) for x in range(7))!=expected:
+                    raise Core0Error("actual Tk area reduction lost a source pixel or changed gray4 order")
+                try:review_photo_image(tk,dict(width=1650,height=2200,stride=825,gray4Hex='ff'))
+                except RuntimeError:pass
+                else:raise Core0Error("teacher preview accepted a truncated raster")
                 panel_args=argparse.Namespace(school=connection.school,actor="owner",session_dir=args.session_dir,
                     school_root=connection.school_root,school_executable=args.binary,curriculum_executable=args.curriculum,
                     controlled_now=None,school_endpoint=endpoint,port=port)
@@ -198,6 +210,8 @@ def check(args):
                      "tabScreenshots":screenshots,"authorityResultInsideVisibleWindow":True,
                      "learnerChoiceScreenshot":{"path":"panel-study-choices.png","sha256":sha256(out/"panel-study-choices.png")},
                      "actualGoalChallengeAndHistoryDisplayed":True,"actualAttemptOverrideRejected":True,
+                     "teacherRasterPresentation":{"pixels":[825,1100],"areaSamplesPreserveAllFourPixelPositions":True,
+                         "gray4OrderPreserved":True,"truncatedImageRejected":True,"decoder":"Tk binary PPM/PGM"},
                      "actualLeanStatusDisplayed":True,"windowPixels":[window.winfo_width(),window.winfo_height()],
                      "scope":"actual Tk rendering and status RPC in isolated Xvfb; guest drawing is a separate maintained client acceptance"}
                 window.destroy()
