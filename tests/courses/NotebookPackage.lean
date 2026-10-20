@@ -86,7 +86,7 @@ private def response (r : IO.Ref Model) (count mode sequence : UInt64) : IO Unit
 private def setupEOF (r : IO.Ref Model) (count mode sequence : UInt64) : IO Unit := do
   r.set ({} : Model)
   for (a,v) in #[(stateBase+16,9),(stateBase+72,1),(stateBase+128,7),
-    (context+64,10),(context+80,99),(app+0,4040),(app+32,5),(app+48,1),(app+56,1)] do set r a v
+    (context+24,1),(context+64,10),(context+80,99),(app+0,4040),(app+32,5),(app+48,1),(app+56,1)] do set r a v
   response r count mode sequence
   r.modify fun m => {m with returns := #[(0,128+count)]}
 

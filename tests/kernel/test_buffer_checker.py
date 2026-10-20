@@ -545,6 +545,35 @@ class BufferCheckerFailures(unittest.TestCase):
                 trace.observe((0x303,512,0x10000,100,100))
             trace.observe((0x303,512,0x10000,100,99))
 
+    def test_peer_destroy_completion_keeps_its_authenticated_server_epoch(self):
+        for variant in ('valid','epoch','server','owner','handle','round','response','confirmed'):
+            with self.subTest(variant=variant),tempfile.TemporaryDirectory() as tmp:
+                trace,_=self.fixture(Path(tmp))
+                peer=1536
+                trace.tasks[peer]['start']=True
+                self.actor_response(trace,peer,249,allocation=0x41000)
+                trace.observe((0x335,peer,5,64,1))
+                trace.peer_state[peer]['round']=79
+                self.actor_response(trace,peer,251,release=0x41000)
+                release=trace.actual_buffer_releases[-1]
+                # The old reply is complete; only its caller's witness is late.
+                trace.server=2560;trace.epoch=2;trace.current=peer
+                row=[0x337,peer,5,1,79]
+                if variant=='epoch':row[3]=2
+                elif variant=='server':release['server']=2560
+                elif variant=='owner':release['owner']=1024
+                elif variant=='handle':release['handle']=9
+                elif variant=='round':row[4]=78
+                elif variant=='response':trace.active_accept[512]['response'][3]=204
+                elif variant=='confirmed':release['confirmed']=True
+                if variant=='valid':
+                    trace.observe(tuple(row))
+                    self.assertTrue(release['confirmed'])
+                    self.assertEqual(trace.peer_state[peer]['temporary'],0)
+                    with self.assertRaises(Core0Error):trace.observe(tuple(row))
+                else:
+                    with self.assertRaises(Core0Error):trace.observe(tuple(row))
+
     def test_exact_inputs_and_semantic_cleanup_suffix_replay(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory=Path(tmp);trace,session=self.fixture(directory)
