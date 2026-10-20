@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T04:39:47.779933+00:00",
+  "written_at": "2026-10-20T05:56:46.735900+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -2169,20 +2169,24 @@
   "selected_implementation": {
     "authority": {
       "path": "tooling/silicon/physical-lock.json",
-      "sha256": "69129a03f20ea6d86edd270aef997c67cb5b3abc98719663d7207a5468019861"
+      "sha256": "3c67533606f95ee0577221c04bc6644ea63ee0da459e96d618d07e7257902d4b"
     },
-    "version": "lemma-pen-sg13g2-core-grid/1",
+    "version": "lemma-pen-sg13g2-launch-grid/1",
     "status": "FAIL_PHYSICAL_CLOSURE",
     "selected_geometry": {
-      "path": "build/silicon/task009-core-power-grid-metal4-assessment-a1/result.json",
-      "sha256": "3c3fa19efc626d4b1c6c7146633e24a0caeba4c07df72b286652712c94067a2a"
+      "path": "build/silicon/task009-accept-launch-route-a1/result.json",
+      "sha256": "deb6721c83874ba0d79e046d69f48c3c7481968c05671b8f856aa69deec9df8d"
     },
     "fresh_current_lock_protocol_and_mapping": {
-      "path": "build/silicon/task009-powered-selection-maintained-map-a1/result.json",
-      "sha256": "140520f3e5de73d044266be2e5ca7af60c91cc473e76eabcff1fc18354a0e736"
+      "path": "build/silicon/task009-launch-selection-maintained-map-a1/result.json",
+      "sha256": "9fb9031c741b9d6f13b5d82118ca9b8b7763b10a408cc4c58163da54914f56bc"
     },
-    "mapping_seconds": 5.786917941994034,
-    "source_boundary": "Retained route/corner producers bind their original frozen source/lock bytes; new lock selection and fresh remap do not rewrite their producer identities. Canonical RTL504f unchanged; existing native/Wasm keep their own source identities."
+    "mapping_seconds": 7.403884195024148,
+    "mapping_relation": {
+      "path": "build/silicon/task009-launch-selection-admission-a1/result.json",
+      "sha256": "75c7c49e00222c76389347137143c097f28482634ca63cfb495986c7eaf64056"
+    },
+    "source_boundary": "Retained route/corners consume frozen prior69129a lock/source; current selection0.3.0 binds their exact physical relation without relabeling original runtime/guest execution. Fresh current mapping reproduces unchanged504f RTL, tools, collateral and mapped bytes. Native/browser need no recompilation for this physical-only noninverting cell ECO."
   },
   "full_PG_geometry_candidate": {
     "status": "UNSELECTED_ROUTING_TIMING_ELECTRICAL_FAIL",
@@ -3005,5 +3009,296 @@
       "actual_PG_terminals_with_buffer": 17345
     },
     "remaining": "A fresh scoped route, extraction and all available timing/electrical corners are required before assessing the new launch. Canonical RTL and powered248 selection stay unchanged."
+  },
+  "metal_netbreaker_model_boundary": {
+    "scope": "Actual source-bound SRAM bitkit extraction and completed-source geometry relation only. No full bitkit/SRAM/controller parameterLVS or process closure.",
+    "original_rule": "Original Magic README documents unnamed ideal metal resistors pending lvsres support; original extract declarations use device resistor None rm1–rm7 in both styles.",
+    "derived_rule": "Exactly14 None→lvsres model-name replacements; all other original deck bytes remain exact. Original PDK untouched.",
+    "original_extract_deck_sha256": "1b57f6763dfd4d1ad3c6a897883bf1f62ffe91031a97765a0666bfaf2012be68",
+    "derived_extract_deck_sha256": "35a6f98ef09c0e3c54f008fe019a7a43c5e2c13972b4fd6b7fc9ffbd1e17cccc",
+    "original_extraction_and_converter_failure": {
+      "path": "build/silicon/task009-bitkit-lvsres-model-a1/result.json",
+      "sha256": "edda1a143af371b21750e003ca8b1df84414ba4c110e51b8d810c9b474ab06a9"
+    },
+    "original_seconds": 4.096155708073638,
+    "completed_conversion_unit_observer_failure": {
+      "path": "build/silicon/task009-bitkit-lvsres-conversion-a1/result.json",
+      "sha256": "7e97339d4a5618fe49fc68c9e50aae53fbc3036b307aa9463bdb3da10aeeb9bf"
+    },
+    "mistargeted_negative_observer_failure": {
+      "path": "build/silicon/task009-bitkit-lvsres-geometry-assessment-a1/result.json",
+      "sha256": "5c17142b20cb39a24df99b80fe37551e5494750d85f8d3c0de1a864434fc3242"
+    },
+    "independent_completed_geometry_relation": {
+      "path": "build/silicon/task009-bitkit-lvsres-geometry-assessment-a2/result.json",
+      "sha256": "428a813c3d08d912350b0b326abc38b5ab2a27d9346989510654c1d23ed5d318"
+    },
+    "fresh_reused_boundary": "Original/derived extraction executed freshly. Their completed .ext files are converted separately without GDS reimport/re-extraction. The final source-aware relation reuses both conversions and binds its actual observer source; no rerun of unchanged SPICE or routing.",
+    "dimension_binding": "Original cifinput10nm and saved magscale1/2 give5nm coordinates. Actual rm2/rm3 rectangles120×40 become l=.60µm/w=.20µm; both adjacent same-width metal endpoints are checked. Typed extraction preserves terminal pairs and every other native geometry byte except timestamps.",
+    "four_negative_cases": [
+      "nonzero extracted width change",
+      "nonzero extracted length change",
+      "actual R2 terminal retargeting",
+      "resistor polygon width change"
+    ],
+    "blocked_claim": "Original bitkit CDL uses l=.60µm/w=.26µm. Exact parameter binding needs a published dimensional mapping or reconciled original GDS/CDL/model input. No reference dimension change, resistor shorting or parameter waiver is admitted.",
+    "selection": "UNSELECTED derived-deck experiment. Current process flow keeps original deck and all failures."
+  },
+  "previous_selected_powered248": {
+    "authority": {
+      "path": "tooling/silicon/physical-lock.json",
+      "sha256": "69129a03f20ea6d86edd270aef997c67cb5b3abc98719663d7207a5468019861"
+    },
+    "version": "lemma-pen-sg13g2-core-grid/1",
+    "status": "FAIL_PHYSICAL_CLOSURE",
+    "selected_geometry": {
+      "path": "build/silicon/task009-core-power-grid-metal4-assessment-a1/result.json",
+      "sha256": "3c3fa19efc626d4b1c6c7146633e24a0caeba4c07df72b286652712c94067a2a"
+    },
+    "fresh_current_lock_protocol_and_mapping": {
+      "path": "build/silicon/task009-powered-selection-maintained-map-a1/result.json",
+      "sha256": "140520f3e5de73d044266be2e5ca7af60c91cc473e76eabcff1fc18354a0e736"
+    },
+    "mapping_seconds": 5.786917941994034,
+    "source_boundary": "Retained route/corner producers bind their original frozen source/lock bytes; new lock selection and fresh remap do not rewrite their producer identities. Canonical RTL504f unchanged; existing native/Wasm keep their own source identities."
+  },
+  "selected_acceptance_launch_ECO": {
+    "scope": "Actual existing powered-grid implementation with only one original-Lib adjacent noninverting buf8; full256×181 FIFO/allports/10ns unchanged. All old cells and geometry bindings preserved; fresh signalroute/3RC/9corners. No process/fullLVS/IR/EM or fabrication qualification.",
+    "route": {
+      "path": "build/silicon/task009-accept-launch-route-a1/result.json",
+      "sha256": "deb6721c83874ba0d79e046d69f48c3c7481968c05671b8f856aa69deec9df8d"
+    },
+    "route_seconds": 739.9049246660434,
+    "corners": {
+      "path": "build/silicon/task009-accept-launch-corners-a1/result.json",
+      "sha256": "0b90aed7dac7abf6c4288c5db81ab006b8dbced23b6e73edc902f1ae47483749"
+    },
+    "corner_seconds": 21.31605040305294,
+    "original_fixed_deadline": {
+      "path": "build/silicon/task009-accept-launch-route-admission-a1/campaign-deadline.json",
+      "sha256": "35fe62ebc51d9cc956163a9077cf26dacd3f46529a323613a62f45181258b707"
+    },
+    "endpoint_relation": {
+      "path": "build/silicon/task009-accept-launch-route-a1/launch-endpoints.json",
+      "sha256": "b7246fff8a5eaa42a2ae16bfd09882f24d09462092f0b02d6af1b7d1877089f2"
+    },
+    "diagnosis": {
+      "path": "build/silicon/task009-accept-launch-diagnosis-a1/assessment.json",
+      "sha256": "a1db013054cfe2261ef4f65527c4d80352a0e2d63393a16acefb25cffa31cf60"
+    },
+    "selected248_comparison": {
+      "path": "build/silicon/task009-accept-launch-diagnosis-a1/selected248-comparison.json",
+      "sha256": "e18011365c107a86d54aa9ef0aef0fb40bdcc7e86f9c45ce2d99a4238453de0e"
+    },
+    "markers": {
+      "path": "build/silicon/task009-accept-launch-diagnosis-a1/markers.json",
+      "sha256": "32e8b9f9d76551b2edb02fd54d45fab0cc6ed82a0fe72ae0a66033fe197c6be3"
+    },
+    "route_count": 115,
+    "short": 71,
+    "spacing": 44,
+    "supply_markers": [
+      {
+        "type": "Metal Spacing",
+        "nets": [
+          "delaynet_4_core",
+          "VSS"
+        ],
+        "bbox_um": [
+          526.34,
+          469.24,
+          526.54,
+          469.64
+        ],
+        "layer": "Metal5"
+      },
+      {
+        "type": "Metal Spacing",
+        "nets": [
+          "delaynet_4_core",
+          "VSS"
+        ],
+        "bbox_um": [
+          526.34,
+          469.24,
+          527.665,
+          469.64
+        ],
+        "layer": "Metal5"
+      }
+    ],
+    "actual_RC": {
+      "min": {
+        "status": "EXTRACTED",
+        "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+        "spef_sha256": "4c366d28bf1bd12f99163c5e5c1792a31e96833bc1f0aa04515116251c2be125",
+        "setup": "worst slack max -11.100238",
+        "hold": "worst slack min 0.017669",
+        "electrical_violations": 593
+      },
+      "nom": {
+        "status": "EXTRACTED",
+        "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+        "spef_sha256": "9026fe19a174d210e005d785aebe53fc50a8a5a712a4ac2f47c6f2f95ddf6977",
+        "setup": "worst slack max -13.438092",
+        "hold": "worst slack min 0.018284",
+        "electrical_violations": 736
+      },
+      "max": {
+        "status": "EXTRACTED",
+        "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+        "spef_sha256": "1b0ad2f405107b30e0068b454c62db2097ec429f9bdca02d3d1f674a4d6647bd",
+        "setup": "worst slack max -15.629151",
+        "hold": "worst slack min -0.065054",
+        "electrical_violations": 904
+      }
+    },
+    "available_PVT_RC": [
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "min",
+        "setup_ns": -11.100238,
+        "hold_ns": 0.017669,
+        "electrical_violations": 593,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -13.438092,
+        "hold_ns": 0.018284,
+        "electrical_violations": 736,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "max",
+        "setup_ns": -15.629151,
+        "hold_ns": -0.065054,
+        "electrical_violations": 904,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "min",
+        "setup_ns": -24.427654,
+        "hold_ns": -0.010823,
+        "electrical_violations": 1183,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -28.543386,
+        "hold_ns": 0.094949,
+        "electrical_violations": 1510,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "max",
+        "setup_ns": -32.217361,
+        "hold_ns": 0.20584,
+        "electrical_violations": 1869,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "min",
+        "setup_ns": -4.381918,
+        "hold_ns": -0.064269,
+        "electrical_violations": 402,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "nom",
+        "setup_ns": -5.72888,
+        "hold_ns": -0.13155,
+        "electrical_violations": 526,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "max",
+        "setup_ns": -6.953956,
+        "hold_ns": -0.203874,
+        "electrical_violations": 653,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      }
+    ],
+    "actual_NAND4_launch": {
+      "before": {
+        "fanout": 3,
+        "total_STA_load_pF": 0.719036,
+        "slew_ns": 7.650259,
+        "stage_delay_ns": 5.980114,
+        "arrival_ns": 25.888391,
+        "slack_ns": -15.183435
+      },
+      "after": {
+        "fanout": 1,
+        "total_STA_load_pF": 0.009449,
+        "slew_ns": 0.26234,
+        "stage_delay_ns": 0.331108,
+        "arrival_ns": 19.695925,
+        "slack_ns": -8.993661
+      }
+    },
+    "actual_route_lengths_um": {
+      "before": {
+        "_03226_": 1086.45
+      },
+      "after": {
+        "_03226_": 1078.98,
+        "task009_accept_driver": 2.28
+      }
+    },
+    "old_targeted_path": "sample_time[7]→contact_deadline[36]/D, arrival25.888391→19.695925ns; slack−15.183435→−8.993661ns",
+    "new_worst_nom_setup": {
+      "start": "contact_deadline[2]/Q",
+      "end": "next_sequence[18]/D",
+      "arrival_ns": 24.209137,
+      "required_ns": 10.771045,
+      "slack_ns": -13.438092,
+      "sample_ready_NOR3_stage_ns": 4.67594,
+      "acceptance_NAND3_stage_ns": 3.805252
+    },
+    "worst_typical_max_hold": {
+      "start": "ingress_entry[2]/Q",
+      "end": "pen_sram_lane0/A_DIN[2]",
+      "cells": [
+        "hold929",
+        "hold654",
+        "hold930"
+      ],
+      "arrival_ns": 2.168464,
+      "required_ns": 2.233518,
+      "slack_ns": -0.065054
+    },
+    "selected_tradeoff": "Versus prior powered248: all nine setup results improve0.203–0.742ns; markers248→115; nominal electrical747→736. Typical max hold+.008986→−.065054ns, slow min−.008674→−.010823; typical min/max electrical590→593/902→904, slow max1824→1869. All nine remainFAIL.",
+    "fresh_reused": "Original routed placement/netlist/PG inherited as source input; one fresh actual cell change, route, all extractions and corners. Later metadata0.3.0/fresh mapping does not rewrite that producer. Legacy runtime and guest archives retain original identities.",
+    "retained_observer_failures": [
+      "build/silicon/task009-accept-launch-diagnosis-a1/retained-parser-failure.json",
+      "build/silicon/task009-accept-launch-diagnosis-a1/wire-observer-failure.json"
+    ]
   }
 }

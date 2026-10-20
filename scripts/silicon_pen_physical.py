@@ -60,11 +60,23 @@ def require_fresh_power_recipe(args):
 def require_route_iterations(args):
     require(args.detail_route_iterations in (3, 8), 'unsupported detailed-route repair bound')
     if args.detail_route_iterations == 8:
-        require(args.core_power_grid and args.preserve_routed_netlist and
+        require(args.acceptance_launch_buffer or (args.core_power_grid and args.preserve_routed_netlist and
                 args.protect_sram_power_geometry and args.routed_eco_from and
                 not args.fresh_core_power_grid and not args.completed_eco_route_from and
-                not args.completed_power_grid_route_from and not args.completed_fresh_grid_route_from,
+                not args.completed_power_grid_route_from and not args.completed_fresh_grid_route_from),
                 'eight-iteration repair is scoped to fresh full-PGbody preserved-netlist routing')
+
+
+def require_launch_recipe(args, *, selected_binding=False):
+    if args.acceptance_launch_buffer:
+        require(args.routed_eco_from and args.detail_route_iterations == 8 and
+                (not args.selected_implementation or selected_binding) and
+                not any((args.preserve_routed_netlist,
+                         args.fresh_core_power_grid, args.vss_clock_grid_source,
+                         args.protect_sram_power_edges, args.protect_sram_power_geometry,
+                         args.completed_eco_route_from, args.completed_power_grid_route_from,
+                         args.completed_fresh_grid_route_from, args.defer_global_eco)),
+                'one-buffer launch requires only the exact completed powered46 route and unchanged existing PG geometry')
 
 
 def qualified_vss_grid_source(args):
@@ -115,6 +127,7 @@ def main():
     p.add_argument('--routed-eco-from', type=Path, help='Repair the exact sealed routed nominal-SPEF producer, then route and extract the changed physical netlist afresh')
     p.add_argument('--core-power-grid', action='store_true', help='Add the real separate VDDlogic/VDDARRAY/VSS core grid after actual-SPEF repair and before fresh signal routing; requires a prior route without PG geometry')
     p.add_argument('--fresh-core-power-grid', action='store_true', help='Integrate a fresh qualified mapped candidate, all normal placement/clock/resizer phases and three-supply grid before first GRT; requires full PG geometry protection, no prior netlist or deferred ECO')
+    p.add_argument('--acceptance-launch-buffer', action='store_true', help='Source-bound one-buf8 ECO on the exact completed46 powered route; preserve all existing grid/OBS/ports and old cells, then freshly route/extract every signal at unchanged constraints')
     p.add_argument('--vss-clock-grid-source', type=Path, help='Explicit source-qualified VSS-only+2um clock-channel grid candidate under build/; allpositive rails and declared constraints stay exact, no selection or closure implied')
     p.add_argument('--detail-route-iterations', type=int, choices=(3, 8), default=3, help='Bounded detailed-route repair input; legacy3 unchanged, explicit8 only for fresh full-PGbody preserved-netlist routing at unchanged900/1200-second limits')
     p.add_argument('--host-memory-gib', type=int, choices=(4, 6), default=6, help='Hard host AS budget; legacy6GiB/floor8GiB unchanged. Explicit4GiB/floor6GiB is scoped to the separately source-bound fresh-grid candidate; failure never extends the budget')
@@ -125,17 +138,36 @@ def main():
     p.add_argument('--work-dir', type=Path, required=True)
     args = p.parse_args()
     require_fresh_power_recipe(args)
+    require_launch_recipe(args)
     host_as_bytes, host_available_floor = host_memory_budget(args)
-    if args.fresh_core_power_grid:
+    if args.fresh_core_power_grid or args.acceptance_launch_buffer:
         args.core_power_grid = True
     selected = None
     if args.selected_implementation:
         selected = json.loads((ROOT / 'tooling/silicon/physical-lock.json').read_text())['selected_pen_implementation']
-        require(selected['version'] == 'lemma-pen-sg13g2-core-grid/1' and
-                selected['launch']['flags'] == ['--core-power-grid', '--core-power-grid-reroute'], 'unknown selected physical recipe')
+        if selected['version'] == 'lemma-pen-sg13g2-core-grid/1':
+            require(selected['launch']['flags'] == ['--core-power-grid', '--core-power-grid-reroute'], 'unknown historical selected grid recipe')
+            args.core_power_grid, args.preserve_routed_netlist = True, True
+        else:
+            require(selected['version'] == 'lemma-pen-sg13g2-launch-grid/1' and
+                    selected['launch']['flags'] == ['--acceptance-launch-buffer', '--detail-route-iterations', '8'],
+                    'unknown selected powered launch recipe')
+            predecessor = selected['launch']['predecessor']
+            prior = ROOT / predecessor['path']
+            require(sha(prior / 'result.json') == predecessor['receipt_sha256'] and
+                    sha(prior / 'routed.odb') == predecessor['routed_odb_sha256'], 'selected powered predecessor differs')
+            require(args.routed_eco_from is None or args.routed_eco_from.resolve() == prior.resolve(),
+                    'selected launch uses its exact declared completed powered predecessor')
+            args.routed_eco_from = prior
+            args.acceptance_launch_buffer, args.core_power_grid = True, True
+            args.detail_route_iterations = 8
+            entry = selected['launch']['source']
+            require(sha(ROOT / entry['path']) == entry['sha256'], 'selected launch source differs')
+            entry = selected['launch']['Liberty']
+            require(sha(args.pdk.resolve() / entry['path']) == entry['sha256'], 'selected original PDK Liberty differs')
+            require_launch_recipe(args, selected_binding=True)
         for entry in (selected['rtl'], selected['power_grid']['source'], selected['power_grid']['connectivity_check']):
             require(sha(ROOT / entry['path']) == entry['sha256'], 'selected physical source differs: ' + entry['path'])
-        args.core_power_grid, args.preserve_routed_netlist = True, True
         require(not args.completed_eco_route_from and not args.completed_power_grid_route_from, 'selected implementation launches new geometry; retained observer assessments keep original source identities')
     out, mapping, pdk = (v.resolve() for v in (args.work_dir, args.mapping, args.pdk))
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
@@ -288,7 +320,16 @@ def main():
                 inputs += [old_path, old_path.parent / 'mapped.v']
                 report['mapping_metadata_transition'] = {'original': previous['mapping_receipt'],
                     'current': report['mapping_receipt'], 'scope': 'Fresh mapping after physical-lock selection only; actual mapped bytes and all other source/tool/collateral identities equal'}
-            if args.core_power_grid:
+            if args.acceptance_launch_buffer:
+                require(previous.get('power_grid') == 'CONNECTED_CORE_GRID_ONLY_NO_IR_EM' and
+                        sha(prior / 'routed.odb') == '92c0e300a753a500d79ea4799e30953887bb98baf5b8972863a7580505be95bc' and
+                        previous['router_drc']['violations'] == 46,
+                        'launch ECO requires the reviewed completed46 powered layout, not an incomplete VSS route')
+                inputs += [ROOT / 'scripts/silicon_acceptance_launch.py', ROOT / 'scripts/silicon_buffered_pins.py',
+                           ROOT / 'scripts/silicon_power_ports.py', ROOT / 'tooling/silicon/pen-power-check.tcl']
+                report['power_grid_routing_question'] = 'Exact existing powered46 PG/OBS with only one original-Lib buf8 launch; no grid regeneration or unrelated resizer moves'
+                report['global_rc_optimization'] = 'EXPLICIT_SINGLE_BUFFER_FROM_ACTUAL_ROUTED_PATH'
+            elif args.core_power_grid:
                 require(previous.get('power_grid') == 'NOT_IMPLEMENTED', 'this first grid integration requires a prior route without PG geometry')
                 inputs += [ROOT / 'tooling/silicon/pen-power-grid.tcl', ROOT / 'tooling/silicon/pen-power-check.tcl', ROOT / 'scripts/silicon_power_ports.py']
                 if args.protect_sram_power_edges or args.protect_sram_power_geometry:
@@ -355,6 +396,36 @@ def main():
             require(sha(target) == report['source_inputs'][str(source)], 'archived source differs')
             archived[str(relative)] = sha(target)
         (archive / 'manifest.json').write_text(json.dumps(archived, indent=2) + '\n')
+        if args.acceptance_launch_buffer:
+            proof = out / 'launch-prepare.py'
+            proof.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\nfrom silicon_acceptance_launch import prepare\nprepare(Path({str(prior/"routed.odb")!r}), Path({str(std/"lib/sg13g2_stdcell_typ_1p20V_25C.lib")!r}), Path({str(out/"launch")!r}))\n')
+            invoke([str(openroad), '-python', '-exit', str(proof)], 'launch-prepare', 20)
+            report['launch_preparation'] = json.loads((out / 'launch/result.json').read_text())
+            report['launch_pre_route_vias'] = audit(out / 'enclosure/repaired-original.lef', out / 'launch/unrouted.def', allow_generated=True)
+            require(report['launch_pre_route_vias']['status'].startswith('PASS_'), 'launch pre-route fixed/generated via geometry fails')
+            baseline = out / 'launch-baseline.tcl'
+            baseline.write_text(f'''set_thread_count 1
+read_liberty {{{std/'lib/sg13g2_stdcell_typ_1p20V_25C.lib'}}}
+read_liberty {{{macro/'lib'/(MACRO+'_typ_1p20V_25C.lib')}}}
+read_db {{{prior/'routed.odb'}}}
+read_sdc {{{prior/'routed.sdc'}}}
+set_propagated_clock [get_clocks core]
+read_spef {{{prior/'nom.spef'}}}
+write_verilog {{{out/'pre-eco.v'}}}
+write_sdc {{{out/'pre-eco.sdc'}}}
+report_worst_slack -max -digits 6 > {{{out/'actual-pre-eco-setup.rpt'}}}
+report_worst_slack -min -digits 6 > {{{out/'actual-pre-eco-hold.rpt'}}}
+report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > {{{out/'actual-pre-eco-electrical.rpt'}}}
+''')
+            invoke([str(openroad), '-no_init', '-exit', str(baseline)], 'launch-baseline', 15)
+            from silicon_power_ports import signal_bytes
+            # read_db reclassifies the existing PG BTerms; the default logical
+            # export then omits exactly their three declarations/header names.
+            # Actual all668 physical ports/PG geometry are checked separately.
+            require((out / 'pre-eco.v').read_text() == signal_bytes((prior / 'routed.v').read_text()),
+                    'powered source export changed more than the exact three PG declarations')
+            require(sdc_commands(out / 'pre-eco.sdc') == sdc_commands(prior / 'routed.sdc'),
+                    'launch baseline changed an original timing command')
         script = out / 'layout.tcl'
         script.write_text(f'''set pdk {{{std}}}
 set macro_lef {{{macro/'lef'/ (MACRO+'.lef')}}}
@@ -378,6 +449,8 @@ source {{{ROOT/'tooling/silicon/layout.tcl'}}}
             script.write_text(f'set prior {{{prior}}}\nset out {{{out}}}\nset pdk {{{std}}}\nset macro_lib {{{macro/"lib"/(MACRO+"_typ_1p20V_25C.lib")}}}\nset validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check.tcl"}}}\nset group_button_bus {1 if report['button_bus_pin_placement'] == 'FULL64_ORDERED_TOP_EDGE' else 0}\nset button_pin_script {{{ROOT/"tooling/silicon/pen-button-pins.tcl"}}}\nsource {{{ROOT/"tooling/silicon/pen-extracted-eco.tcl"}}}\n')
             if args.core_power_grid:
                 script.write_text(f'set core_power_grid 1\nset preserve_routed_netlist {1 if args.preserve_routed_netlist else 0}\nset power_grid_script {{{grid_source}}}\nset power_check_script {{{ROOT/"tooling/silicon/pen-power-check.tcl"}}}\n' + script.read_text())
+            if args.acceptance_launch_buffer:
+                script.write_text(f'set acceptance_launch_db {{{out/"launch/unrouted.odb"}}}\nset existing_core_power_grid 1\n' + script.read_text())
         if args.protect_sram_power_edges:
             script.write_text(f'set power_edge_script {{{ROOT/"tooling/silicon/pen-power-edge.tcl"}}}\n' + script.read_text())
         if args.protect_sram_power_geometry:
@@ -449,8 +522,19 @@ lemma_check_power_grid $qualified_bindings $out after-route
             report['power_interface']['stage'] = 'Exact fresh placement immediately before/after PG addition; final endpoint geometry independently checked in Tcl, normal subsequent resizer changes retained'
             require(sdc_commands(out / 'pre-power/routed.sdc') == sdc_commands(out / 'routed.sdc'), 'fresh grid changed original timing commands')
         if args.routed_eco_from:
-            require(sha(out / 'pre-eco.v') == sha(prior / 'routed.v'), 'ECO database logical netlist differs from declared source route')
-            if args.preserve_routed_netlist:
+            if args.acceptance_launch_buffer:
+                require((out / 'pre-eco.v').read_text() == signal_bytes((prior / 'routed.v').read_text()),
+                        'launch baseline changed source logical netlist')
+            else:
+                require(sha(out / 'pre-eco.v') == sha(prior / 'routed.v'), 'ECO database logical netlist differs from declared source route')
+            if args.acceptance_launch_buffer:
+                proof = out / 'launch-endpoints.py'
+                proof.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\nfrom silicon_acceptance_launch import assess\nassess(Path({str(prior/"routed.odb")!r}), Path({str(out/"routed.odb")!r}), Path({str(std/"lib/sg13g2_stdcell_typ_1p20V_25C.lib")!r}), Path({str(out/"launch-endpoints.json")!r}))\n')
+                invoke([str(openroad), '-python', '-exit', str(proof)], 'launch-endpoints', 15)
+                report['launch_endpoints'] = json.loads((out / 'launch-endpoints.json').read_text())
+                require(sha(out / 'pre-eco.v') != sha(out / 'post-eco-unrouted.v') and
+                        sha(out / 'post-eco-unrouted.v') == sha(out / 'routed.v'), 'launch route changed another logical cell/net')
+            elif args.preserve_routed_netlist:
                 require(sha(out / 'pre-eco.v') == sha(out / 'post-eco-unrouted.v'), 'power-grid integration changed prior repaired cells/nets')
                 observer = out / 'power-interface.py'
                 observer.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\nfrom silicon_power_ports import assess\nassess(Path({str(prior)!r}), Path({str(out)!r}), Path({str(out/"power-interface.json")!r}))\n')

@@ -1,5 +1,5 @@
 {
-  "schema": "lemma-silicon-physical-inputs/0.2.0",
+  "schema": "lemma-silicon-physical-inputs/0.3.0",
   "nixpkgs_revision": "7dd199b0e2993e37b4775ed66b1c291699608c9f",
   "tools": {
     "verilator": "5.052",
@@ -38,7 +38,7 @@
     }
   },
   "selected_pen_implementation": {
-    "version": "lemma-pen-sg13g2-core-grid/1",
+    "version": "lemma-pen-sg13g2-launch-grid/1",
     "rtl": {
       "path": "sim/rtl/lemma_pen.sv",
       "sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b"
@@ -74,36 +74,51 @@
     "launch": {
       "script": "scripts/silicon_pen_physical.py",
       "flags": [
-        "--core-power-grid",
-        "--core-power-grid-reroute"
+        "--acceptance-launch-buffer",
+        "--detail-route-iterations",
+        "8"
       ],
-      "predecessor": "actual repaired signal route; new grid consumed before fresh signal routing",
-      "qualified_mapping_source": "check_pen_sram.py --map on the same selected RTL and lock"
+      "predecessor": {
+        "path": "build/silicon/task009-core-power-body-iter8-route-a1",
+        "receipt_sha256": "f4bf722922cb98b5363d4132b30ef1b5d72263024d94dc2c3caa8e3d39be7547",
+        "routed_odb_sha256": "92c0e300a753a500d79ea4799e30953887bb98baf5b8972863a7580505be95bc"
+      },
+      "source": {
+        "path": "scripts/silicon_acceptance_launch.py",
+        "sha256": "200926333bd7524e94213a119d461d96267dd67f4f8ded070af74852a39d5786"
+      },
+      "Liberty": {
+        "path": "ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib",
+        "sha256": "7677a8918689f452e80405ad16a83e744709342574f2aedcc507c2758986b396",
+        "source": "Original pinned public PDK, resolved from --pdk"
+      },
+      "qualified_mapping_source": "check_pen_sram.py --map on unchanged selected504f RTL and this new lock; source-bound mapping metadata transition only",
+      "operation": "One adjacent original-Lib noninverting buf8; all old cells/terminals/physical ports/PG shapes/OBS unchanged. All signal wires freshly routed/extracted. No old SPEF attached to changed launch nets."
     },
     "retained_route_producer": {
-      "path": "build/silicon/task009-core-power-grid-metal4-route-a1/result.json",
-      "sha256": "cb597458fcada77425674b72cd57ece671316dab1669784352d6cc2386e84f5c"
+      "path": "build/silicon/task009-accept-launch-route-a1/result.json",
+      "sha256": "deb6721c83874ba0d79e046d69f48c3c7481968c05671b8f856aa69deec9df8d"
     },
     "retained_geometry_assessment": {
-      "path": "build/silicon/task009-core-power-grid-metal4-assessment-a1/result.json",
-      "sha256": "3c3fa19efc626d4b1c6c7146633e24a0caeba4c07df72b286652712c94067a2a"
+      "path": "build/silicon/task009-accept-launch-route-a1/launch-endpoints.json",
+      "sha256": "b7246fff8a5eaa42a2ae16bfd09882f24d09462092f0b02d6af1b7d1877089f2"
     },
     "retained_corner_assessment": {
-      "path": "build/silicon/task009-core-power-grid-metal4-corners-a1/result.json",
-      "sha256": "3fbe1a32d58a781b5c67ad097d594f31d4faa0cb066c5e827ea65998cf8c8800"
+      "path": "build/silicon/task009-accept-launch-corners-a1/result.json",
+      "sha256": "0b90aed7dac7abf6c4288c5db81ab006b8dbced23b6e73edc902f1ae47483749"
     },
-    "source_scope": "Retained producers consume their frozen prior lock/source identities. This selection does not relabel them as executions of this metadata revision.",
+    "source_scope": "Actual producer archives retain their original69129a lock/source identities. This version selects the qualified exact one-buffer physical relation; it does not relabel retained runtime/guest/route executions as fresh builds of metadata0.3.0.",
     "status": "FAIL_PHYSICAL_CLOSURE",
-    "router_markers": 248,
-    "router_shorts": 144,
-    "router_spacing": 104,
-    "power_ground_terminals": 17343,
+    "router_markers": 115,
+    "router_shorts": 71,
+    "router_spacing": 44,
+    "power_ground_terminals": 17345,
     "nominal_extracted": {
-      "setup_wns_ns": -13.941463,
-      "hold_wns_ns": 0.052381,
-      "electrical_violations": 747
+      "setup_wns_ns": -13.438092,
+      "hold_wns_ns": 0.018284,
+      "electrical_violations": 736
     },
-    "min_rc_hold_wns_ns": -0.006855,
+    "min_rc_hold_wns_ns": 0.017669,
     "available_corners_passed": 0,
     "available_corners_total": 9,
     "unpowered_129_route": "comparison only; lacks selected core power grid",
@@ -113,6 +128,110 @@
       "matched-temperature fast standard-cell/SRAM pair",
       "power integrity, pads, package and board",
       "full-SoC and sensor active circuits, physical/fabrication and educational qualification"
-    ]
-  }
+    ],
+    "retained_path_diagnosis": {
+      "path": "build/silicon/task009-accept-launch-diagnosis-a1/assessment.json",
+      "sha256": "a1db013054cfe2261ef4f65527c4d80352a0e2d63393a16acefb25cffa31cf60"
+    },
+    "retained_comparison": {
+      "path": "build/silicon/task009-accept-launch-diagnosis-a1/selected248-comparison.json",
+      "sha256": "e18011365c107a86d54aa9ef0aef0fb40bdcc7e86f9c45ce2d99a4238453de0e"
+    },
+    "max_rc_hold_wns_ns": -0.065054,
+    "selection_reason": "Compared with prior powered248,133 router markers removed and setup improves at all nine available PVT/RC cases; targeted NAND4 stage5.980114→.331108ns. Still FAIL physical closure.",
+    "regressions": [
+      "Typical maxRC hold+.008986→−.065054ns; slow min hold−.008674→−.010823ns",
+      "Typical min/max electrical590→593/902→904; slow max1824→1869",
+      "All nine available timing/electrical cases remain FAIL; fast pair remains mixed-temperature diagnostic"
+    ],
+    "exact_preserved_geometry": {
+      "old_terminals": 43648,
+      "ports": 668,
+      "PG_shapes": 99128,
+      "obstructions": 18718,
+      "SRAM_PG": 9,
+      "BIST": 423
+    },
+    "historical_powered248": "Immutable source/producer receipts and complete selection retained in historical_pen_implementations; no longer selected."
+  },
+  "historical_pen_implementations": [
+    {
+      "version": "lemma-pen-sg13g2-core-grid/1",
+      "rtl": {
+        "path": "sim/rtl/lemma_pen.sv",
+        "sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b"
+      },
+      "storage": {
+        "macro": "RM_IHPSG13_1P_256x64_c2_bm_bist",
+        "instances": 3,
+        "entries": 256,
+        "entry_bits": 181
+      },
+      "constraints": {
+        "period_ns": 10,
+        "full_timestamp_bits": 64,
+        "button_input_bits": 64,
+        "timing_exceptions": "unchanged original SDC; no endpoint masking"
+      },
+      "power_grid": {
+        "source": {
+          "path": "tooling/silicon/pen-power-grid.tcl",
+          "sha256": "e90af2167e02cd2964c74bffdd02b5f67e6a2b915eb02d29dc72015043013889"
+        },
+        "connectivity_check": {
+          "path": "tooling/silicon/pen-power-check.tcl",
+          "sha256": "05d0c5585b5d9c5dfec8e0a9bcaae41e5b49eb1972f087f44ba164d31b2654a4"
+        },
+        "supplies_volts": {
+          "VDDlogic": 1.2,
+          "VDDARRAY": 1.2,
+          "VSS": 0.0
+        },
+        "scope": "Connected core grid only; no IR/EM or pad/package qualification"
+      },
+      "launch": {
+        "script": "scripts/silicon_pen_physical.py",
+        "flags": [
+          "--core-power-grid",
+          "--core-power-grid-reroute"
+        ],
+        "predecessor": "actual repaired signal route; new grid consumed before fresh signal routing",
+        "qualified_mapping_source": "check_pen_sram.py --map on the same selected RTL and lock"
+      },
+      "retained_route_producer": {
+        "path": "build/silicon/task009-core-power-grid-metal4-route-a1/result.json",
+        "sha256": "cb597458fcada77425674b72cd57ece671316dab1669784352d6cc2386e84f5c"
+      },
+      "retained_geometry_assessment": {
+        "path": "build/silicon/task009-core-power-grid-metal4-assessment-a1/result.json",
+        "sha256": "3c3fa19efc626d4b1c6c7146633e24a0caeba4c07df72b286652712c94067a2a"
+      },
+      "retained_corner_assessment": {
+        "path": "build/silicon/task009-core-power-grid-metal4-corners-a1/result.json",
+        "sha256": "3fbe1a32d58a781b5c67ad097d594f31d4faa0cb066c5e827ea65998cf8c8800"
+      },
+      "source_scope": "Retained producers consume their frozen prior lock/source identities. This selection does not relabel them as executions of this metadata revision.",
+      "status": "FAIL_PHYSICAL_CLOSURE",
+      "router_markers": 248,
+      "router_shorts": 144,
+      "router_spacing": 104,
+      "power_ground_terminals": 17343,
+      "nominal_extracted": {
+        "setup_wns_ns": -13.941463,
+        "hold_wns_ns": 0.052381,
+        "electrical_violations": 747
+      },
+      "min_rc_hold_wns_ns": -0.006855,
+      "available_corners_passed": 0,
+      "available_corners_total": 9,
+      "unpowered_129_route": "comparison only; lacks selected core power grid",
+      "remaining": [
+        "route/process DRC and transistor LVS",
+        "setup/hold/electrical closure at original10ns",
+        "matched-temperature fast standard-cell/SRAM pair",
+        "power integrity, pads, package and board",
+        "full-SoC and sensor active circuits, physical/fabrication and educational qualification"
+      ]
+    }
+  ]
 }

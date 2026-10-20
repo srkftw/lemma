@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from silicon_enclosure import GeometryError, read_tech
 from silicon_route_enclosure import audit
 from silicon_power_ports import signal_bytes
-from silicon_pen_physical import require_fresh_power_recipe, host_memory_budget
+from silicon_pen_physical import require_fresh_power_recipe, host_memory_budget, require_launch_recipe
 from types import SimpleNamespace
 
 
@@ -177,6 +177,23 @@ class RouteEnclosureTests(unittest.TestCase):
         for size, fresh in ((4, False), (2, True), (8, True)):
             with self.subTest(size=size, fresh=fresh), self.assertRaises(GeometryError):
                 host_memory_budget(SimpleNamespace(host_memory_gib=size, fresh_core_power_grid=fresh))
+
+    def test_launch_eco_cannot_relabel_another_grid_or_bypass_its_exact_scope(self):
+        valid = dict(acceptance_launch_buffer=True, routed_eco_from=Path('completed46'),
+            detail_route_iterations=8, selected_implementation=False, preserve_routed_netlist=False,
+            fresh_core_power_grid=False, vss_clock_grid_source=None, protect_sram_power_edges=False,
+            protect_sram_power_geometry=False, completed_eco_route_from=None,
+            completed_power_grid_route_from=None, completed_fresh_grid_route_from=None, defer_global_eco=False)
+        require_launch_recipe(SimpleNamespace(**valid))
+        for key in ('selected_implementation', 'preserve_routed_netlist', 'fresh_core_power_grid',
+                    'vss_clock_grid_source', 'protect_sram_power_edges', 'protect_sram_power_geometry',
+                    'completed_eco_route_from', 'completed_power_grid_route_from',
+                    'completed_fresh_grid_route_from', 'defer_global_eco'):
+            with self.subTest(key=key), self.assertRaises(GeometryError):
+                require_launch_recipe(SimpleNamespace(**{**valid, key: True}))
+        for changed in ({'routed_eco_from': None}, {'detail_route_iterations': 3}):
+            with self.subTest(changed=changed), self.assertRaises(GeometryError):
+                require_launch_recipe(SimpleNamespace(**{**valid, **changed}))
 
 
 if __name__ == '__main__':

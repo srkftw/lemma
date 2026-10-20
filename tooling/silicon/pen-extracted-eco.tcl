@@ -4,7 +4,13 @@
 set_thread_count 4
 read_liberty $pdk/lib/sg13g2_stdcell_typ_1p20V_25C.lib
 read_liberty $macro_lib
-read_db $prior/routed.odb
+if {[info exists acceptance_launch_db]} {
+    # The old actual-SPEF baseline is reported in a separate unchanged database.
+    # Never attach its old loads to this newly connected launch net.
+    read_db $acceptance_launch_db
+} else {
+    read_db $prior/routed.odb
+}
 set power_grid_state NOT_IMPLEMENTED
 if {[info exists group_button_bus] && $group_button_bus == 1} {
     source $button_pin_script
@@ -25,17 +31,21 @@ set_propagated_clock [get_clocks core]
 # negative runs. Restore real routing guides through the supported API first;
 # the following read_spef still supplies actual loads, not guide estimates.
 set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
-if {![info exists preserve_routed_netlist] || $preserve_routed_netlist != 1} {
+if {![info exists acceptance_launch_db] && (![info exists preserve_routed_netlist] || $preserve_routed_netlist != 1)} {
     read_guides $prior/route.guide
 }
-write_verilog $out/pre-eco.v
-write_sdc $out/pre-eco.sdc
-read_spef $prior/nom.spef
-report_worst_slack -max -digits 6 > $out/actual-pre-eco-setup.rpt
-report_worst_slack -min -digits 6 > $out/actual-pre-eco-hold.rpt
-report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/actual-pre-eco-electrical.rpt
+if {![info exists acceptance_launch_db]} {
+    write_verilog $out/pre-eco.v
+    write_sdc $out/pre-eco.sdc
+    read_spef $prior/nom.spef
+    report_worst_slack -max -digits 6 > $out/actual-pre-eco-setup.rpt
+    report_worst_slack -min -digits 6 > $out/actual-pre-eco-hold.rpt
+    report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/actual-pre-eco-electrical.rpt
+}
 # Unlike the historical flow, these repairs begin from actual extracted loads.
-if {![info exists preserve_routed_netlist] || $preserve_routed_netlist != 1} {
+if {[info exists acceptance_launch_db]} {
+    puts "Exact original-Lib buf8 launch only; old cells/grid/constraints preserved"
+} elseif {![info exists preserve_routed_netlist] || $preserve_routed_netlist != 1} {
     repair_design -slew_margin 5 -cap_margin 5
     repair_timing -setup -phases WNS_PATH -setup_margin 0.25 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
     repair_timing -hold -hold_margin 0.03 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
@@ -58,7 +68,9 @@ foreach net [[ord::get_db_block] getNets] {
 if {[info exists core_power_grid] && $core_power_grid == 1} {
     source $power_check_script
     set power_bindings_before [lemma_macro_bindings $out/power-macro-before.tsv]
-    source $power_grid_script
+    if {![info exists existing_core_power_grid] || $existing_core_power_grid != 1} {
+        source $power_grid_script
+    }
     lemma_check_power_grid $power_bindings_before $out before-route
     set power_grid_state CONNECTED_CORE_GRID_ONLY_NO_IR_EM
     write_db $out/power-grid-before-route.odb
