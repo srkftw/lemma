@@ -217,7 +217,7 @@ class SchoolService:
             payload=bytes.fromhex(encoded)
             if hashlib.sha256(payload).hexdigest()!='3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e':
                 raise ValueError('sample differs from the admitted source-grounded local package')
-            result={'package_hex':encoded,'sample':True};self.admit(result)
+            result={'package_hex':encoded,'sample':True};self.admit(result,select_publication=True)
             return {k:v for k,v in result.items() if k!='package_hex'}
         if operation=='connect':self.connect(value['credential'])
         if self.connection is None:raise ValueError('connect using a private school pairing file first')
@@ -283,7 +283,7 @@ class SchoolService:
         self.admit_packet(packet,state)
         result['guestAcknowledgement']='exact school commit bytes admitted to guest UART; durable queue acknowledgement is separate'
 
-    def admit(self, result):
+    def admit(self, result, *, select_publication=False):
         encoded=result.get('package_hex')
         if encoded is None:return
         if self.partial:raise ValueError('partial school transfer requires cold reopen before retry')
@@ -295,7 +295,7 @@ class SchoolService:
         transaction=uuid.uuid4().int%(2**63-2)+1
         packet=frame(1,identity,edition,len(payload),transaction,crc)+payload
         # Only the versioned guest advertises the v2 selected-publication path.
-        if school_capability(uart_path(self.session.directory,json.loads((self.session.directory/'session.json').read_text())).read_bytes()) is not None:
+        if select_publication and school_capability(uart_path(self.session.directory,json.loads((self.session.directory/'session.json').read_text())).read_bytes()) is not None:
             packet+=selection_frame(identity,edition,transaction+1,crc,result.get('node',0))
         session=self.session;session.ensure_capture_certain()
         state=session.machine.call('inspect');cycle=state['cycle']
@@ -348,7 +348,7 @@ class SchoolService:
                                        'cursor':path.stat().st_size,'partial':b'','accepted':False,'snapshots':0,'lastBusy':None}
                         self.delivery_next=0;self.delivery_error=None
                 if job['operation']=='submit':self.admit_acknowledgement(result,job['stream'])
-                else:self.admit(result)
+                else:self.admit(result,select_publication=job['operation'] in ('install','review'))
                 if job['operation']=='join':self.binding=job['binding']
                 if job['operation']=='review':self.review=job['review']
                 job.update(status='completed',result={k:v for k,v in result.items() if k!='package_hex'})

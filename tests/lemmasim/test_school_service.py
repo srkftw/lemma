@@ -9,6 +9,7 @@ import unittest
 import tempfile
 from types import SimpleNamespace
 from unittest.mock import patch
+from concurrent.futures import Future
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
 from lemmasim_school_service import submission_stream,school_capability,SchoolService
@@ -26,6 +27,57 @@ def fixture():
     return payload,records
 
 class SchoolByteTransport(unittest.TestCase):
+    def test_only_explicit_course_or_review_intent_selects_a_publication(self):
+        for operation in ('install','review','join','help'):
+            with self.subTest(operation=operation), tempfile.TemporaryDirectory() as name:
+                directory=Path(name);uart=directory/'uart.bin'
+                uart.write_bytes(row(0x731,2,512,262144,2));(directory/'session.json').write_text('{}')
+                state={'cycle':100,'devices':{'uart_ingress':{'enabled':True,'pending':0}}}
+                session=SimpleNamespace(directory=directory,machine=SimpleNamespace(call=lambda _:state),
+                                        ensure_capture_certain=lambda:None)
+                service=SchoolService(session)
+                identity=60000 if operation=='join' else 60001 if operation=='help' else 803
+                payload=bytearray(256);struct.pack_into('<2Q',payload,24,identity,2);struct.pack_into('<Q',payload,80,123)
+                result={'package_hex':payload.hex(),'node':3}
+                if operation=='help':result['decision']='help.1'
+                future=Future();future.set_result(result)
+                service.jobs['operation']={'status':'pending','operation':operation,'epoch':service.epoch,
+                    'binding':'joined-session','review':'original-review',
+                    'ask':{'sequence':1,'revision':5,'object':13},'future':future}
+                packets=[]
+                try:
+                    with patch('lemmasim_school_service.uart_path',return_value=uart), \
+                         patch.object(service,'admit_packet',side_effect=lambda packet,_:packets.append(packet)):
+                        service.pump()
+                    self.assertEqual(service.jobs['operation']['status'],'completed')
+                    self.assertEqual(len(packets),1);packet=packets[0]
+                    self.assertEqual(packet[64:320],payload)
+                    if operation in ('install','review'):
+                        self.assertEqual(len(packet),384)
+                        selection=struct.unpack('<8Q',packet[320:])
+                        self.assertEqual(selection[2:6],(9,803,2,3))
+                    else:
+                        self.assertEqual(len(packet),320,'invitation/help must not retarget the guest reader')
+                finally:service.close()
+
+    def test_selection_remains_opt_in_and_legacy_guest_gets_install_only(self):
+        with tempfile.TemporaryDirectory() as name:
+            directory=Path(name);uart=directory/'uart.bin';uart.write_bytes(b'')
+            (directory/'session.json').write_text('{}')
+            session=SimpleNamespace(directory=directory,machine=SimpleNamespace(call=lambda _: {
+                'cycle':100,'devices':{'uart_ingress':{'enabled':True,'pending':0}}}),ensure_capture_certain=lambda:None)
+            service=SchoolService(session);payload=bytearray(256)
+            struct.pack_into('<2Q',payload,24,803,2);struct.pack_into('<Q',payload,80,123)
+            packets=[]
+            try:
+                with patch('lemmasim_school_service.uart_path',return_value=uart), \
+                     patch.object(service,'admit_packet',side_effect=lambda packet,_:packets.append(packet)):
+                    service.admit({'package_hex':payload.hex()},select_publication=True)
+                    uart.write_bytes(row(0x731,2,512,262144,2))
+                    service.admit({'package_hex':payload.hex()})
+                self.assertEqual([len(packet) for packet in packets],[320,320])
+            finally:service.close()
+
     def test_delivery_keeps_original_peer_and_does_not_infer_visibility(self):
         with tempfile.TemporaryDirectory() as name:
             directory=Path(name);uart=directory/'uart.bin';uart.write_bytes(b'')
