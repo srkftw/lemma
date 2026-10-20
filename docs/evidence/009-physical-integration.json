@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T06:48:08.367479+00:00",
+  "written_at": "2026-10-20T07:26:04.516314+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -3697,5 +3697,241 @@
       "sha256": "04580b6ea7e225a3b2fd52c8dd1833eb1c4379d6bf8d12205f53be888ff31827"
     },
     "decision": "Selectunfinishedpadding-qualified30 asbase:85markersand103paddingpairsremoved/all31oldtargetspositive, withallglobaltiming/electricalregressions retained. No closure,fabrication,safety oreducationalqualification."
+  },
+  "three_control_launch_candidate": {
+    "status": "UNSELECTED_ALL_NINE_CORNERS_FAIL_ROUTING_REGRESSION",
+    "function_geometry_producer": {
+      "path": "build/silicon/task009-three-control-launch-preflight-a1/result.json",
+      "sha256": "5500a42f9854e6f537f629cacd87a974dd7d2e4bdabedfe185b3dea7112d51bb"
+    },
+    "maintained_observer_original_timeout": {
+      "path": "build/silicon/task009-maintained-control-launch-preflight-a1/result.json",
+      "sha256": "9088e7c4169828cb5cd21dafba2f0f78e2818f5d709fd8239c49f09048b6dcb2"
+    },
+    "maintained_observer_scoped_cost_correction": {
+      "path": "build/silicon/task009-maintained-control-launch-preflight-a2/result.json",
+      "sha256": "4a4b74ef98aa3548af7fa17386c634414b563af9d59cd2f84c2716ca04115b2e"
+    },
+    "flow_source": {
+      "path": "scripts/silicon_pen_physical.py",
+      "sha256": "e98f72f91264fa986813577e170660a978a9946dbc999c5a3a1341977783cd65"
+    },
+    "relation_source": {
+      "path": "scripts/silicon_control_launch.py",
+      "sha256": "bd24735bdb3712b6c0dac553082f1a13ff6f90e99b4b2fb9bb01ca79353e58b5"
+    },
+    "route": {
+      "path": "build/silicon/task009-three-control-launch-route-a1/result.json",
+      "sha256": "aef47c5083d99bbac03a1ee2e4f479dbc1fa05d657e92b5d25f1c7b43b3853d5"
+    },
+    "corners": {
+      "path": "build/silicon/task009-three-control-launch-corners-a1/result.json",
+      "sha256": "83144cc41d3730a292dbbb274ed3ea53fdc4cddc45896fdfc68c3bcb43242955"
+    },
+    "whole_campaign": {
+      "path": "build/silicon/task009-three-control-launch-route-admission-a1/result.json",
+      "sha256": "a72c4f52d5a4a5b1b1f75d9c669f331fd7bfe0ffb7a7acc127fd05732fef7dce"
+    },
+    "complete_endpoint_inventory": {
+      "path": "build/silicon/task009-three-control-launch-diagnosis-a1/result.json",
+      "sha256": "da3545ff1a99b6947cac4428f935631f49b45ca193fe50744188d12e003bbc86"
+    },
+    "same_polarity_same_path": {
+      "path": "build/silicon/task009-three-control-fixed-path-a1/result.json",
+      "sha256": "c69a4cb11dd42f6c7729db2b73c9e6c42cce565aa241f3b1be627b79cb0ecff5"
+    },
+    "whole_seconds": 776.2602192700142,
+    "route_seconds": 753.6581399020506,
+    "corner_seconds": 22.23024878895376,
+    "budgets": {
+      "route_seconds": 900,
+      "whole_seconds": 1200,
+      "AS_GiB": 6,
+      "output_GiB": 12
+    },
+    "router": {
+      "total": 104,
+      "short": 48,
+      "spacing": 56,
+      "selected30_comparison": "+74markers"
+    },
+    "fresh_RC": {
+      "min": {
+        "status": "EXTRACTED",
+        "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+        "spef_sha256": "50476243e3322d7dfbfd9e4639c5f21ec73e8de23b3f449fa8b16225f7f0eda8",
+        "setup": "worst slack max -10.579856",
+        "hold": "worst slack min -0.041020",
+        "electrical_violations": 561
+      },
+      "nom": {
+        "status": "EXTRACTED",
+        "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+        "spef_sha256": "4545491639dd9da0e6b238ab0da1cd5df60d13454cdb3a633165ed06fd25337b",
+        "setup": "worst slack max -12.796194",
+        "hold": "worst slack min 0.026453",
+        "electrical_violations": 745
+      },
+      "max": {
+        "status": "EXTRACTED",
+        "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+        "spef_sha256": "b0ac25c6a63a2ff43c1d445e7e37f3893678a1063513d36d5977b53abb79db74",
+        "setup": "worst slack max -14.848975",
+        "hold": "worst slack min 0.057512",
+        "electrical_violations": 938
+      }
+    },
+    "available_corner_cases": [
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "min",
+        "setup_ns": -10.579856,
+        "hold_ns": -0.04102,
+        "electrical_violations": 561,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -12.796194,
+        "hold_ns": 0.026453,
+        "electrical_violations": 745,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "max",
+        "setup_ns": -14.848975,
+        "hold_ns": 0.057512,
+        "electrical_violations": 938,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "min",
+        "setup_ns": -22.119171,
+        "hold_ns": -0.048463,
+        "electrical_violations": 1209,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -25.778229,
+        "hold_ns": 0.039941,
+        "electrical_violations": 1505,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "max",
+        "setup_ns": -29.155434,
+        "hold_ns": 0.114861,
+        "electrical_violations": 1840,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "min",
+        "setup_ns": -3.919359,
+        "hold_ns": -0.067604,
+        "electrical_violations": 409,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "nom",
+        "setup_ns": -5.324768,
+        "hold_ns": -0.068047,
+        "electrical_violations": 501,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "max",
+        "setup_ns": -6.615084,
+        "hold_ns": -0.065431,
+        "electrical_violations": 615,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      }
+    ],
+    "preserved": {
+      "canonical_RTL": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b",
+      "original_clock_ns": 10,
+      "FIFO": "256x181",
+      "original_ports": 668,
+      "native_PG_shapes": 99128,
+      "OBS": 18718,
+      "fixed_macros": 3,
+      "BIST_pins": 423,
+      "macro_PG_pins": 9,
+      "all_PG_terminals": 17417,
+      "old_cell_moves": 0,
+      "original_SRAM_delaycells": 33,
+      "sub960nm_padding_pairs": 0
+    },
+    "same_path_repair": {
+      "from": "now_ticks[54] falling",
+      "to": "next_sequence[17]/D",
+      "arrival_before_ns": 24.301954,
+      "arrival_after_ns": 14.136559,
+      "arrival_removed_ns": 10.165395,
+      "slack_before_ns": -13.563163,
+      "slack_after_ns": -3.367812,
+      "A22OI_total_C_pF": [
+        0.624653,
+        0.011727
+      ],
+      "NOR3_total_C_pF": [
+        0.744962,
+        0.011819
+      ],
+      "NAND3_total_C_pF": [
+        0.499613,
+        0.011423
+      ]
+    },
+    "hold_effect": {
+      "targeted31_all9_minimum_hold_ns": 0.051915,
+      "targeted31_minimum_setup_ns": 7.450081,
+      "other_unique_negative_endpoints": 156,
+      "new_SRAM": 6,
+      "old_control": 138,
+      "other_registers": 12
+    },
+    "remaining_worst_nominal": {
+      "from": "sample_time[3]",
+      "to": "epoch[19]/D",
+      "arrival_ns": 23.210632,
+      "required_ns": 10.414438,
+      "slack_ns": -12.796194,
+      "bounded_time_A221OI_delay_ns": 4.826688,
+      "epoch_control_NAND3_delay_ns": 4.017773
+    },
+    "decision": "Retain selected30 unchanged. Three launches remove a measured overloaded path, improve setup/hold in all9 cases and meet31target guardband, but routing30→104 and mixed electrical regressions forbid automatic selection. Next step is source-bound actualmaxcap/placement precursor, not unchanged rerouting or a deadline RTL edit.",
+    "limits": [
+      "router reports are not process DRC",
+      "all9 setup/electrical cases remain FAIL",
+      "full parameter/transistor LVS, IR/EM, pads/package/board and whole-device physical memory remain unfinished",
+      "no physical/fabrication/safety or educational qualification"
+    ]
   }
 }
