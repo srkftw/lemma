@@ -58,6 +58,7 @@ def state : UInt64 := 0x20800
 def raw : UInt64 := 0x20300
 def context : UInt64 := 0x20400
 private def rawCaptureReadyFlag : UInt64 := state + 736
+private def rawIndexDeferredFlag : UInt64 := state + 744
 private def schoolActivityFlag : UInt64 := state + 760
 -- These lifecycle gates are used by the first ordinary Save, before the
 -- optional multimodal/queue arenas exist. Keep them in the owned boot BSS,
@@ -111,7 +112,8 @@ private def reportCommitState (tag value object : UInt64) : Action :=
     .bind (Memory.read64 rawCaptureReadyFlag) fun s ready => if statusFailed s = true then .done s 0 else
     .bind (if ready = 1 then Memory.read64 (Lemma.User.Multimodal.records+2448) else .done 0 0)
       fun s captured => if statusFailed s = true then .done s 0 else
-    .done 0 (if tail ||| pinned ||| captured = 0 then tag else 0x423)
+    .bind (Memory.read64 rawIndexDeferredFlag) fun s deferred => if statusFailed s = true then .done s 0 else
+    .done 0 (if tail ||| pinned ||| captured ||| deferred = 0 then tag else 0x423)
     else .done 0 tag) fun s observedTag => if statusFailed s = true then .done s 0 else
   CapabilityConsole.record console observedTag value page ns object
 
@@ -123,6 +125,7 @@ private def allocateStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
 private def clearStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   .bind (if i = 0 then
     .bind (Memory.write64 rawCaptureReadyFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 rawIndexDeferredFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 schoolActivityFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 schoolQueueReadyFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
     Memory.write64 schoolQueueError 0
@@ -759,6 +762,27 @@ private def issueNext : Action :=
     issue 3 offset (minimum 128 (bytes - offset)) (source + offset)
   else .done 234 0
 
+/-- The raw record is already committed before this helper runs. While
+captured/current ink remains, retain its new reference in the private page
+index and release only the completed raw buffer. No Saved receipt is issued.
+The unchanged page/root records publish the batch at quiescence or before an
+ordered control. Legacy roots never enable this capture-owned optimization. -/
+private def finishRawReference (page : UInt64) : Action :=
+  .bind (Memory.read64 rawCaptureReadyFlag) fun s ready => if statusFailed s = true then .done s 0 else
+  .bind (if ready = 1 then Memory.read64 (Lemma.User.Multimodal.records+2448) else .done 0 0)
+    fun s captured => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s tail => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+  if ready = 1 then if different (captured ||| tail ||| active) 0 = true then
+    .bind (Memory.write64 rawIndexDeferredFlag 1) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 144 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 136 1) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
+    .bind (get 240) fun s stroke => if statusFailed s = true then .done s 0 else
+    .bind (reportCommitState 0x423 sequence stroke) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
+  else savePage page else savePage page
+
 private def finishRecord : Action :=
   .bind (get 200) fun s stage => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
@@ -771,7 +795,7 @@ private def finishRecord : Action :=
     .bind (Lemma.Documents.Ink.addEntry pageIndex object stroke) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (if lifecycle &&& 1 = 1 then Lemma.Documents.Ink.addEdit pageIndex 1 stroke else .done 0 0)
       fun s _ => if statusFailed s = true then .done s 0 else
-    savePage page
+    finishRawReference page
   else if stage = 1 then
     .bind (get 88) fun s pages => if statusFailed s = true then .done s 0 else
     .bind (get 272) fun s brush => if statusFailed s = true then .done s 0 else
@@ -779,12 +803,14 @@ private def finishRecord : Action :=
     startSave rootBuffer 64 1 2
   else if stage = 3 then
     .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 rawIndexDeferredFlag) fun s deferred => if statusFailed s = true then .done s 0 else
     .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
-    .bind (put 136 (if rawCount = 0 then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 136 (if rawCount ||| deferred = 0 then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (get 224) fun s object => if statusFailed s = true then .done s 0 else
     .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
     .bind (reportCommitState 0x421 sequence object) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
   else if stage = 2 then
+    .bind (Memory.write64 rawIndexDeferredFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
     .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (put 144 0) fun s _ => if statusFailed s = true then .done s 0 else
@@ -5135,6 +5161,7 @@ where
   changed : Action := Lemma.Notebook.ControlBacklog.deferFailure 243
 
 private def pumpBookControlBacklog : Action :=
+  .bind (Memory.read64 rawIndexDeferredFlag) fun s deferredIndex => if statusFailed s = true then .done s 0 else
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
   .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
@@ -5143,7 +5170,7 @@ private def pumpBookControlBacklog : Action :=
   .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
   .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
   .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
-  if pending ||| rawCount ||| rawPending ||| stroke ||| checking ||| recovery = 0 then
+  if deferredIndex ||| pending ||| rawCount ||| rawPending ||| stroke ||| checking ||| recovery = 0 then
   if status < 2 then if dirtyX = 0xffff then
   .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
   if course = 1 then
@@ -6091,6 +6118,7 @@ as a separate diagnostic; it can never manufacture Saved, school ACK, or proof. 
 /-- The scalar ABI has one pending call per task, including reader/checker
 calls. A pending foreground intent also wins the next idle slot. -/
 private def schoolForegroundWork : Action :=
+  .bind (Memory.read64 rawIndexDeferredFlag) fun s deferredIndex => if statusFailed s = true then .done s 0 else
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
   .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
@@ -6099,7 +6127,7 @@ private def schoolForegroundWork : Action :=
   .bind bookmarkBusy fun s reader => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (tutorState + 16)) fun s intent => if statusFailed s = true then .done s 0 else
   .bind Lemma.Notebook.ControlBacklog.count fun s waiting => if statusFailed s = true then .done s 0 else
-  .done 0 (pending ||| rawCount ||| rawPending ||| stroke ||| checking ||| reader ||| intent ||| waiting)
+  .done 0 (deferredIndex ||| pending ||| rawCount ||| rawPending ||| stroke ||| checking ||| reader ||| intent ||| waiting)
 
 private def schoolQueueOwnsIPC : Action :=
   .bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else
@@ -6375,10 +6403,11 @@ private def multimodalPumpTutor : Action :=
   .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
   .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 rawIndexDeferredFlag) fun s deferredIndex => if statusFailed s = true then .done s 0 else
   .bind (get 160) fun s store => if statusFailed s = true then .done s 0 else
   .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
   .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
-  if captured ||| stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then
+  if deferredIndex ||| captured ||| stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then
   .bind bookmarkBusy fun s work => if statusFailed s = true then .done s 0 else
   .bind Lemma.Notebook.ControlBacklog.count fun s waiting => if statusFailed s = true then .done s 0 else
   if work ||| waiting = 0 then
@@ -6591,7 +6620,13 @@ where
     .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
     .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
     if active = 0 then if control = true then
-      if pending ||| pinned ||| checking = 0 then if dirtyX = 0xffff then apply row head count x y flags else .done 0 0
+      if pending ||| pinned ||| checking = 0 then if dirtyX = 0xffff then
+        .bind (Memory.read64 rawIndexDeferredFlag) fun s deferred => if statusFailed s = true then .done s 0 else
+        if deferred = 1 then
+          .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+          .bind (savePage page) fun s _ => if statusFailed s = true then failWriting s else .done 0 0
+        else apply row head count x y flags
+      else .done 0 0
       else .done 0 0 else apply row head count x y flags
     else apply row head count x y flags
   apply (row head count x y flags : UInt64) : Action :=
@@ -6744,8 +6779,9 @@ Reconcile before controller upload, never from the preallocation Save path. -/
 private def multimodalRawStatus : Action :=
   .bind (rawGet 16) fun s captured => if statusFailed s = true then .done s 0 else
   .bind (rawGet 56) fun s overridden => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 rawIndexDeferredFlag) fun s deferredIndex => if statusFailed s = true then .done s 0 else
   .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
-  if 0 < captured then
+  if different (captured ||| deferredIndex) 0 = true then
     if status = 0 then
       .bind (rawPut 56 1) fun s _ => if statusFailed s = true then .done s 0 else
       .bind (put 136 1) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
@@ -6764,8 +6800,27 @@ private def multimodalRawStatus : Action :=
     else rawPut 56 0
   else .done 0 0
 
+/-- Publish a coalesced page/root after all earlier captured/raw work has
+retired. Ordered controls force the same publication before their dispatch.
+The dirty flag survives a failed publication and is cleared only by the real
+root Commit completion in finishRecord, never by elapsed time or empty input. -/
+private def multimodalPublishDeferredIndex : Action :=
+  .bind (Memory.read64 rawIndexDeferredFlag) fun s deferred => if statusFailed s = true then .done s 0 else
+  if deferred = 0 then .done 0 0 else if deferred = 1 then
+  .bind (rawGet 16) fun s captured => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s tail => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s pinned => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  if captured ||| active ||| tail ||| pinned ||| pending = 0 then if status < 2 then
+    .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+    .bind (savePage page) fun s _ => if statusFailed s = true then saveFailure s else .done 0 0
+  else .done 0 0 else .done 0 0 else .done 243 0
+
 private def multimodalStep : Action :=
   .bind multimodalRawPump fun s _ => if statusFailed s = true then .done s 0 else
+  .bind multimodalPublishDeferredIndex fun s _ => if statusFailed s = true then .done s 0 else
   .bind Lemma.User.Multimodal.pump fun _ _ =>
   .bind schoolQueuePump fun _ _ =>
   .bind schoolQueueOwnsIPC fun s queueOwns => if statusFailed s = true then .done s 0 else

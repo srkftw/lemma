@@ -410,5 +410,61 @@
       "sha256": "ac6a7303db0b4c5f9fa294b568b452a5a9705b8e99416016da0e8bba392eea0e"
     },
     "source_fix": "b3a5ae5"
+  },
+  "ordinary_native_exact_workflow": {
+    "path": "build/school/task009-student-native-a6/exact-workflow-assessment.json",
+    "sha256": "125f4db0270181b0c68376a994020881cd73200752b2077cb0bc3c49e704b89e",
+    "bytes": 4457
+  },
+  "retained_native_sustained_input_failure": {
+    "result": {
+      "path": "build/school/task009-student-native-a6/retained-overflow/result.json",
+      "sha256": "8fa9e16740d28ee69b3146e680d7d9eefad8c312c02a0c94a722217cf684d644",
+      "bytes": 1430
+    },
+    "status": "FAIL_COMPLETE_WRITTEN_RETENTION_WITH_EXPLICIT_CAPTURE_LOSS",
+    "strokes": 96,
+    "samples": 388,
+    "per_stroke_functional_units": 10000000,
+    "discarded_representation_rows": 132,
+    "scope": "Actual current128-row captured-input queue reports735 and retained partial work; unchanged96stroke pace remains new-source qualification target. Prior exact workflow has separate successful scope."
+  },
+  "raw_capture_store_throughput_diagnosis": {
+    "result": {
+      "path": "build/school/task009-ink-readonly-diagnostic-a1/result.json",
+      "sha256": "b3b597e9769dd471fedee511acab38224fb89ae849bdad0a18afd798a83839fd",
+      "bytes": 204501
+    },
+    "assessment": {
+      "path": "build/school/task009-ink-readonly-diagnostic-a1/assessment.json",
+      "sha256": "ca0364c12cc43085bd673e2ae1d51d18dd22278be509c8300f70ebe64e893b5b",
+      "bytes": 2037
+    },
+    "pc_assessment": {
+      "path": "build/school/task009-ink-readonly-diagnostic-a1/pc-assessment.json",
+      "sha256": "00d2be320e56311d6d5c21ccd314072f058a6419d2d9e463df5a010dcbccb7c9",
+      "bytes": 1301
+    },
+    "status": "ACTUAL_BACKLOG_DRAINS_BUT_PUBLICATION_THROUGHPUT_BELOW_INPUT",
+    "scope": "Read-only pausedRAM/PC snapshots of genuine oldguest with fixed external pointer stimulus, no host document mutation. Eight phase samples are not statistical CPU profiling. Device.input op1 proved nonblocking; no sleep/wait patch applied."
+  },
+  "raw_reference_publication_coalescing": {
+    "result": {
+      "path": "build/courses/task009-ink-coalescing-a2/result.json",
+      "sha256": "a78f9e55552bc3dde1c8437a4bd6b527ccc2e64d3eff8085acf008d9c5dd9df8",
+      "bytes": 5075
+    },
+    "source_archive": {
+      "path": "build/courses/task009-ink-coalescing-a2/source.tar.gz",
+      "sha256": "c67d2a4993b654243dc47a25bbd84e96330560689ad27e6efeed6f51beeaf353",
+      "bytes": 78934
+    },
+    "status": "PASS_HOSTED_RAW_REFERENCE_COALESCING_ACTIONS",
+    "notebook_sha256": "aec5e069aaacae9b90a6b5c065d1ec3f8538eb2e6ed509b89bf174ceb9b77348",
+    "contract_sha256": "b432899dc8e17a7f67af07b462b23551d40d3617dd07135b13ee3fd2bd7d5e19",
+    "scope": "Actual maintained Notebook Lean Actions over independent bounded RAM/IPC replies. Supplied successful raw/page/root Commit results are explicit. No CPU execution, journal interruption, input throughput or physical power-loss claim. Fresh CPU96stroke/10Munit pace and cold acknowledged-prefix checks remain required.",
+    "cases": 6,
+    "seconds": 135.27778877993114,
+    "native_browser_same_pace_execution": "PENDING_SOURCE_BOUND_IMAGE"
   }
 }

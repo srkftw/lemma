@@ -142,9 +142,9 @@ private def saveChecks : IO Unit := do
 
 private def bootGateCheck : IO Unit := do
   let r ← IO.mkRef ({forbiddenPage:=some Lemma.User.Multimodal.records} : Model)
-  put r (base+712) 99; put r (base+720) 99; put r (base+736) 99; put r (base+760) 99
+  put r (base+712) 99; put r (base+720) 99; put r (base+736) 99; put r (base+744) 99; put r (base+760) 99
   let cleared ← run r ((schoolNotebook% "clearStep") 0 80 0 0 0 0 0)
-  expect (cleared.1 == 0 && (← get r (base+712)) == 0 && (← get r (base+720)) == 0 && (← get r (base+736)) == 0 && (← get r (base+760)) == 0)
+  expect (cleared.1 == 0 && (← get r (base+712)) == 0 && (← get r (base+720)) == 0 && (← get r (base+736)) == 0 && (← get r (base+744)) == 0 && (← get r (base+760)) == 0)
     "boot did not clear always-mapped queue lifecycle gates before fresh Save"
   for school in #[0,1] do
     put r (base+760) school;put r (base+16) 7;put r (base+72) 1
@@ -403,9 +403,109 @@ private def rawCommitReceiptChecks : IO Unit := do
     expect (finished.1 == 0) "first preallocation Save read an unallocated multimodal page"
     expectConsoleTag r (if tail == 0 then "0000000000000421" else "0000000000000423")
 
+private def rawCoalescingChecks : IO Unit := do
+  let r ← rawFixture
+  let index := Lemma.Applications.Notebook.pageIndex
+  let source := Lemma.Applications.Notebook.ink0
+  let encoded := (schoolNotebook% "loadedInk")
+  let oldImage : UInt64 := 0x390000
+  let restored : UInt64 := 0x398000
+  let oldPacked ← run r (Lemma.Documents.Ink.encodePage index oldImage)
+  expect (oldPacked == (0,128)) "acknowledged empty packed page fixture failed"
+  -- These are independently supplied successful raw Commit bytes, not a
+  -- simulated journal or a manufactured durable page reference.
+  for (a,v) in #[(base+736,1),(base+744,0),(rawState+16,2),(base+112,0),
+      (base+104,0),(base+160,3),(base+200,0),(base+208,source),
+      (base+224,65547),(base+240,11),(base+128,17),
+      (source+32,11),(source+112,3)] do put r a v
+  r.modify fun m => {m with syscalls:=#[(0,88)],writes:=#[]}
+  let committed ← run r (schoolNotebook% "finishRecord")
+  expect (committed.1 == 0 && (← get r (base+744)) == 1 &&
+      (← get r (base+160)) == 0 && (← get r (base+144)) == 0 && (← get r (base+136)) == 1 &&
+      (← get r (index+32)) == 1 && (← get r (index+128)) == 65547 &&
+      (← get r (index+136)) == 11 && (← get r (index+48)) == 1 && (← get r (base+128)) == 17)
+    "raw Commit did not coalesce its exact ordered reference and release only the completed buffer"
+  expect (!((← r.get).writes.any fun a => encoded ≤ a && a < encoded+32768 || source ≤ a && a < source+32768))
+    "coalescing overwrote pinned raw bytes or published a page snapshot per stroke"
+  expectConsoleTag r "0000000000000423"
+  -- Fresh RAM can decode only the separately retained published prefix.
+  -- These are actual Ink codec/boot Actions over independent fixture bytes,
+  -- not a journal power-cut or CPU cold-recovery measurement.
+  let cold ← IO.mkRef ({forbiddenPage:=some Lemma.User.Multimodal.records} : Model)
+  for i in [:16] do put cold (oldImage+i.toUInt64*8) (← get r (oldImage+i.toUInt64*8))
+  put cold (base+744) 99
+  let reset ← run cold ((schoolNotebook% "clearStep") 0 80 0 0 0 0 0)
+  let recovered ← run cold (Lemma.Documents.Ink.decodePage oldImage restored 1 128)
+  expect (reset.1 == 0 && recovered.1 == 0 && (← get cold (base+744)) == 0 &&
+      (← get cold (restored+32)) == 0 && (← get r (index+32)) == 1)
+    "unpublished resident raw references leaked into the retained cold prefix"
+  r.modify fun m => {m with syscalls:=#[(0,88)]}
+  let _ ← run r ((schoolNotebook% "reportCommitState") 0x421 17 11)
+  expectConsoleTag r "0000000000000423"
+  put r (rawState+16) 0;put r (base+200) 3
+  r.modify fun m => {m with syscalls:=#[(0,88)]}
+  let inspected ← run r (schoolNotebook% "finishRecord")
+  expect (inspected.1 == 0 && (← get r (base+744)) == 1 && (← get r (base+136)) == 1)
+    "Inspect completion promoted unpublished references to Saved"
+  expectConsoleTag r "0000000000000423"
+  put r (base+136) 0
+  let _ ← run r (schoolNotebook% "multimodalRawStatus")
+  expect ((← get r (base+136)) == 1) "unpublished page index appeared Saved after capture drained"
+  for (a,v) in #[(base+112,0),(base+104,0),(base+144,0),(base+160,0),(base+536,0)] do put r a v
+  let work ← run r (schoolNotebook% "schoolForegroundWork")
+  expect (work == (0,1)) "school queue borrowed IPC while raw references were unpublished"
+  put r (Lemma.User.Multimodal.state+144+16) 3
+  let ask ← run r (schoolNotebook% "multimodalPumpTutor")
+  expect (ask.1 == 0 && (← get r (Lemma.User.Multimodal.state+144+16)) == 3 && (← r.get).syscalls.isEmpty)
+    "ASK consumed its intent before the deferred index publication"
+  put r (Lemma.User.Multimodal.state+144+16) 0
+  let nav ← run r (schoolNotebook% "pumpBookControlBacklog")
+  expect (nav.1 == 0 && (← get r (base+80)) == 1) "navigation escaped an unpublished page index"
+  -- An ordered Save stays at the raw head until the actual page/root chain
+  -- publishes all preceding committed raw chunks. It cannot inspect a stale
+  -- prefix and call that Save completion.
+  let _ ← captureSample r 100 7 54600 1907
+  -- Independently completed prior status upload; ordered control must still
+  -- wait for durable publication once the paper path is available.
+  put r (base+336) 65535
+  r.modify fun m => {m with syscalls:=#[(0,88),(0,42)]}
+  let waiting ← run r (schoolNotebook% "multimodalRawPump")
+  expect (waiting.1 == 0 && (← get r (base+744)) == 1 && (← get r (rawState+16)) == 1 &&
+      (← get r (base+200)) == 1 && (← get r (base+232)) == 2 && (← get r (base+224)) == 257 &&
+      (← get r (base+160)) == 1 && (← get r (index+32)) == 1)
+    "ordered control bypassed deferred page publication or consumed the captured control"
+  -- Even page Commit alone is not a saved prefix: the existing root Commit
+  -- must complete before the dirty flag is cleared.
+  put r (base+200) 1;put r (base+88) 1;put r (base+272) 512
+  r.modify fun m => {m with syscalls:=#[(0,88),(0,43)]}
+  let pageDone ← run r (schoolNotebook% "finishRecord")
+  expect (pageDone.1 == 0 && (← get r (base+744)) == 1 && (← get r (base+200)) == 2)
+    "page Commit prematurely cleared deferred durability before root Commit"
+  put r (base+200) 2;put r (base+128) 19
+  r.modify fun m => {m with syscalls:=#[(0,88)]}
+  let rootDone ← run r (schoolNotebook% "finishRecord")
+  expect (rootDone.1 == 0 && (← get r (base+744)) == 0 && (← get r (base+160)) == 0 &&
+      (← get r (index+32)) == 1 && (← get r (base+128)) == 19)
+    "actual root Commit failed to retire only the deferred publication flag"
+  expectConsoleTag r "0000000000000423"
+  -- A quiet batch starts the same unchanged page/root protocol. Failure
+  -- preserves the dirty state and cannot silently retry or claim Saved.
+  let q ← rawFixture
+  for (a,v) in #[(base+736,1),(base+744,1),(base+112,0),(base+104,0),(base+144,0),(base+160,0),
+      (rawState+16,0),(base+136,1)] do put q a v
+  q.modify fun m => {m with syscalls:=#[(0,88),(0,44)]}
+  let flushed ← run q (schoolNotebook% "multimodalPublishDeferredIndex")
+  expect (flushed.1 == 0 && (← get q (base+744)) == 1 && (← get q (base+160)) == 1 &&
+      (← get q (base+200)) == 1 && (← get q (base+224)) == 257)
+    "quiescent raw references did not start the real existing page publication"
+  put q (base+160) 0;put q (base+136) 2
+  let failed ← run q (schoolNotebook% "multimodalPublishDeferredIndex")
+  expect (failed.1 == 0 && (← get q (base+744)) == 1 && (← get q (base+136)) == 2 && (← q.get).syscalls.isEmpty)
+    "failed metadata publication discarded its pending references or manufactured Saved"
+
 def main : IO Unit := do
-  rawCommitReceiptChecks;rawStatusChecks;rawCaptureChecks;floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
-  IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control,actual JOIN async source/EOF presentation,32stroke full9word capture/replay,Save ordering,mute/full-buffer safety,overflow/gap/view-loss,captured-work Pending/Saved header+421/423 ownership; component only"
+  rawCoalescingChecks;rawCommitReceiptChecks;rawStatusChecks;rawCaptureChecks;floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
+  IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control,actual JOIN async source/EOF presentation,32stroke full9word capture/replay,Save ordering,mute/full-buffer safety,overflow/gap/view-loss,captured-work Pending/Saved header+421/423 ownership,burst raw-reference coalescing before ordered controls and actual page/root commit; component only"
 end NotebookSchoolTests
 
 def main : IO Unit := NotebookSchoolTests.main
