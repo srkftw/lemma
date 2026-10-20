@@ -664,12 +664,12 @@
       "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
       "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
     },
-    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1\u21922. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
     "connectedUpgrade": {
       "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
       "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
     },
-    "connectedObservation": "Normal owned stop/restart generation5\u21926, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
     "retainedPreparationFailures": [
       {
         "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
@@ -766,7 +766,7 @@
         "path": "tests/school/test_delivery.py",
         "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
       },
-      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2\u21923."
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
     },
     "browserTests": {
       "result": "PASS",
@@ -786,7 +786,7 @@
       "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
       "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
     },
-    "connectedScope": "All29 prior records unchanged, generation6\u21927/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
     "retainedObserverFailures": [
       {
         "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
@@ -1358,7 +1358,7 @@
       "sha256": "c4a73274c4c15b1d8c3cff13c164ffa90ac323a79d6aa66813002551e603efb0"
     },
     "status": "PASS_ORIGINAL_GUEST_ENVELOPE_REPLAY_AFTER_GENERATION_CHANGE",
-    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13\u219214. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
+    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13→14. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
   },
   "ordinary_live_model_release_cycle": {
     "result": {
@@ -2708,7 +2708,7 @@
       },
       "teacherTerminal": "build/school/task009-browser-review179-a1/teacher-terminal-result.json",
       "teacherTerminalSHA256": "36ceb6f93be2c7084ba42aecbf423cb2017dd4c42120340962dc88042c4bb2a3",
-      "performance": "Observedold16-byteK1chunksabout35\u201350payloadB/hostsecond; fullbrowserRSSunmeasured",
+      "performance": "Observedold16-byteK1chunksabout35–50payloadB/hostsecond; fullbrowserRSSunmeasured",
       "terminal": "build/school/task009-student-browser-school24-queue-recovery-a1/terminal-result.json",
       "terminalSHA256": "2789a14a307e74ed1bf23c4a94d898e2f90b4ac94bbd0e73cfa583a231b6cba1",
       "terminalBackingSHA256": "8e546d8fb5a765610d33626d7991a3e9444c4a35fa2962502061e1b3751b1016"
@@ -2865,5 +2865,138 @@
       "resourceLimit": "ownlaunch7.5/continue6.5GiBguards ran; stricterfuturefulljointreserved9.25GiBlaunch notseparatelyasserted. Not a fulljointresourceguardclaim."
     },
     "remaining": "Teacher189 requests the missing common-denominator argument. This case does not complete a written response, independent review, educational qualification or full-machine physical closure."
+  },
+  "ordinarySchool25NativeCaptureStreamReview": {
+    "status": "PASS_SCOPED_NATIVE25_CAPTURE_S1_COLD_REVIEW_FEEDBACK_AND_REVOKED_LOCAL_SAVE",
+    "scope": "Synthetic ordinaryStudentTkCanvas/Study +protectedTeacher. FreshactualQEMUfunctional0.14MM2execution ofgenuinelyproducedauditedreusedSchool25guest/p81runtime. Notfull0.16execution/CPUcontinuation/physicalorlearningqualification; help/RDC/new8042install notexecutedinthiscase.",
+    "receipt": "build/school/task009-school25-native-a1/terminal-result.json",
+    "receiptSHA256": "0a235d860afd2c0c71dcb6ba962100eba434a8808d9cece5ca7333716650cdc3",
+    "bundle": "build/school/task009-school25-sdk-a1/native",
+    "bundleManifestSHA256": "bb7b4b5e27a000b1b8cf891362253223cf9912ff981d8a88bcd819a8d9532ae8",
+    "sourceInputCount": 558,
+    "startedUTC": "2026-10-20T18:49:58.399757+00:00",
+    "originalDeadlineUTC": "2026-10-20T19:49:58.399757+00:00",
+    "normalClosedUTC": "2026-10-20T19:45:51.220842+00:00",
+    "wholeSeconds": 3352.821085,
+    "observedFunctionalUnits": 6650000081,
+    "capture": {
+      "strokes": 49,
+      "completeNineWordSamples": 378,
+      "groups": [
+        199,
+        179
+      ],
+      "guestDiscarded": 0,
+      "controllerLoss": 0,
+      "pixels": "ActualnativeviewerandprotectedTeacherrasterbothcontaincompleteunequalfractionargument.",
+      "rawRetentionAssessment": "raw-retention-assessment.json",
+      "comparison": "Oldbrowser352input/133guestdiscard baseline hasonlylast128traceentries; differentembodiment/newprestate, notexacttraceorbitwisepair. No sustained240Hzclaim."
+    },
+    "stream": {
+      "queueObject": 6003579778261581885,
+      "bytes": 39544,
+      "artifact": "a8618b01cc524dd3b183bb01f74c7c3c54ffc02ec05bcbe256ceed4b642d33ac",
+      "crc32": 1738195482,
+      "dataFrames": 596,
+      "firstCompleteObservedFunctionalUnitsIncludingQueuePreparation": 900000002,
+      "elapsedHostPhaseSeconds": 4.8374234130606055,
+      "observationQuantumUnits": 100000000,
+      "completionScope": "Firstobservedcomplete730in100Mquanta; notexactterminalclock. Nativehostspeednotbrowser/RTL/physicalthroughput."
+    },
+    "coldRetry": {
+      "normalCloseBeforeAnyGuest733": true,
+      "exactOriginalEnvelopeReplayed": true,
+      "elapsedPhaseSeconds": 5.908734654076397,
+      "functionalUnits": 1300000002,
+      "Ready400MPrefix": false,
+      "Ready500MPrefix": true,
+      "schoolReused": true,
+      "originalCommit": 205,
+      "guest733NewPointerCommit": 64,
+      "separateOriginalACKPendingMediumSHA256": "f96c013039e681171f5ea331617bf39e560218fb1bc3078b241ae6519216e412"
+    },
+    "teacherReview": {
+      "attempt": "guest.200.6003579778261581885",
+      "publication": 148,
+      "course": 804,
+      "edition": 1,
+      "policy": 1,
+      "originalCriteria": 2,
+      "workKind": "opaque2",
+      "schoolOutcome": "Unsupported4",
+      "guestOutcome": 0,
+      "humanAssessment": 206,
+      "judgment": "Syntheticoperationalreviewoftheactualfixedpointerargument; notproofkernelverificationoreducationalbenefit.",
+      "oldReviewId": "guest.162.6003579778261582035",
+      "completedOldReviewSequence": 207,
+      "nextReviewSequence": 208,
+      "nextOriginalDelayMilliseconds": 60000,
+      "feedback206ActuallyPresentedInOrdinaryScrollableStudy": true
+    },
+    "revocationAndLocalUse": {
+      "freshAliceRevoked": 209,
+      "oldPairingFeedbackDenied": true,
+      "newLocalSamples": 3,
+      "actualSaved421Frontier": 67,
+      "paperIdle": true,
+      "targetEqualsVisible": true,
+      "allSensorsDisarmedConsent0": true,
+      "localAudioOff": true,
+      "coldRecoveryOfFinalPostRevocationStroke": "NOT_RUN"
+    },
+    "resources": {
+      "nativePrefixPeakSampledRSSBytes": 157675520,
+      "coldNativePeakSampledRSSBytes": 132517888,
+      "maximumOutputBytes": 1830143422,
+      "guiPeakSampledRSSBytes": 136769536,
+      "allObservedNativeAndGUIOwnersGone": true,
+      "minimumObservedHostAvailableBytes": 13850791936,
+      "noDeadlineExtension": true
+    },
+    "retainedFailures": [
+      "FirstJOINbeforeinvitation60000actualinstallgave230; laterSENDintentvsJOINBusy7263andvalidation244visible732. Afteractualinstallandconsumedfailedintent, ordinaryfreshJOIN727succeeded; noattemptadmittedonthefailedSEND.",
+      "Observerrequestedunsupportedserviceoperationreceipts; actualGuestreceiptsusesobservation. Initialactioncloseunsupported; actualnormaldestroyfollowedwithnointerveningRun.",
+      "Read-onlycropobserverPILmodulemissingandoldP5converterrejectedactualnativeP6; actualViewer/Teacherrenderremainoriginalpixelobservations.",
+      "FirstcoldinlineobserverSyntaxErrorbeforeanyRun; correctedscopedobserverexecutedunderoriginalwholedeadline.",
+      "Gen27startobserverassumedHTTP403andstoppedwith197unchanged; actualGen28domainbodycheck/freshbudget/oldBobrevocationpassedseparately."
+    ],
+    "actualFinalViewer": "docs/evidence/009-school25-native-saved67.png",
+    "reproduction": "Normal public scripts/lemmasim session --native-bundle build/school/task009-school25-sdk-a1/native --backend qemu --profile lemma-silicon-dev/0.14.0 --workload notebook --disk NEW_COW --session-dir NEW_SESSION --mode student --headless --paused; ordinaryTkStudy/Teacher helpers, actualrawCanvasinput and prospectivephasecommands are retained in the receipt artifact inventory and ignored preparation HTML. No private credential values are in tracked evidence."
+  },
+  "hostedAcknowledgedGeneration28": {
+    "status": "LIVE_BOUNDED_SOURCE_UNCHANGED_197_PREFIX_RESTART_AND_NEW_ACKNOWLEDGED_WORK",
+    "generation": 28,
+    "originalDeadlineUTC": "2026-10-20T20:46:41.576857+00:00",
+    "readyReceipt": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation28/ready.json",
+    "readyReceiptSHA256": "9960b41215af0f51a5990660ad994f3d823c05a3d9a6331f2967fe26bf3329a1",
+    "priorHistoryRows": 197,
+    "oldHistoryPrefixUnchanged": true,
+    "originalAcknowledgedArtifacts": 69,
+    "sameClockEpochSequence": 5,
+    "staleActualWorkerCompletionRejected": true,
+    "oldBobAdmission197StillRevoked": true,
+    "freshTeacherIssuedStudyAdmissions": {
+      "alice": 198,
+      "bob": 199
+    },
+    "freshAliceAdmissionRevokedAfterSuccessfulReview": 209,
+    "rowsAfterNativeWorkflow": 209,
+    "resourcePlan": {
+      "seconds": 7200,
+      "addressBytes": 4294967296,
+      "sampledRecursiveOwnedRSSCap": 536870912,
+      "outputBytes": 2147483648,
+      "minimumContinuingHostAvailableBytes": 8589934592
+    },
+    "sourceProducer": "build/school/task009-local-tool-production-a3/production.json",
+    "sourceProducerSHA256": "eb1d568e9ae751bc008d70d8386895ef5630cd577a489a9bf4a63b3f0df1c50e",
+    "retainedGeneration27ObserverFailure": {
+      "receipt": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation27/terminal.json",
+      "result": "INTERRUPTED_OR_FAILED",
+      "rowsUnchanged": 197,
+      "allObservedOwnedProcessesGone": true,
+      "scope": "Incorrect observer assumed HTTP403 rather than inspecting Lean domain rejection insideHTTP200. It stopped immediately; no successful revocation check or startup RSS claim. Gen28 uses a separate fresh7200-second budget and records the actual rejection body."
+    },
+    "restartMeaning": "Normal same-root restart from actual stopped authority matching all197acknowledged rows and69artifacts. Persisted clock differs from later export snapshot while canonical snapshot digests validate. No new cross-clock restore or exact state-replay claim."
   }
 }
