@@ -138,6 +138,14 @@
     "school-panel": {
       "kind": "validation",
       "command": "Run scripts/check_school_panel.py with current hosted producer and existing session metadata; native Xvfb smoke does not substitute actual guest workflow"
+    },
+    "native-logical2": {
+      "kind": "execution",
+      "command": "Run scripts/check_native_logical2.py with the source-bound normal logical2 runtime, exact audited native bundle and isolated medium at Ready/blockedUART, converter, pending DMA/PCM/storage cuts; run actual unknown-callback rejection. Finite same-backend continuation, not cold recovery or cross-backend migration."
+    },
+    "multimodal-owned-io": {
+      "kind": "validation",
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_owned_io.py --work-dir build/multimodal/owned-UNUSED; hosted actual Lean ownership, complete-record copying and PCM policy Actions with consequential source negatives; neither guest execution nor controller timing."
     }
   },
   "boundaries": [
@@ -780,6 +788,44 @@
         "artifact-validation",
         "rtl-backend-or-observer",
         "qemu-backend-or-observer"
+      ]
+    },
+    {
+      "id": "native-logical2-continuation",
+      "inputs": [
+        "scripts/check_native_logical2.py",
+        "scripts/native_logical_relation.py",
+        "sim/host/lemma_softtlb2_qemu.inc.c",
+        "sim/host/lemma_multimodal_checkpoint.inc.c",
+        "sim/host/lemma_multimodal_checkpoint_valid.inc.c",
+        "tooling/lemmasim/native_logical2_reuse.py",
+        "tooling/lemmasim/patch_soft_tlb2.py",
+        "tooling/lemmasim/patch_multimodal_checkpoint.py",
+        "tooling/lemmasim/patch_logical2_lifecycle.py",
+        "tooling/lemmasim/qemu_logical2_reuse.nix"
+      ],
+      "claims": [
+        "native-logical2",
+        "cache-host"
+      ],
+      "affects": []
+    },
+    {
+      "id": "multimodal-owned-io-actions",
+      "inputs": [
+        "scripts/check_multimodal_owned_io.py",
+        "tests/multimodal/OwnedRecordActions.lean.inc",
+        "Lemma/Platform/LemmaSim/MultimodalService.lean"
+      ],
+      "claims": [
+        "multimodal-owned-io",
+        "multimodal-workbook-native",
+        "multimodal-workbook-browser",
+        "kernel-host"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation"
       ]
     }
   ],
