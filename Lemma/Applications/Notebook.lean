@@ -100,22 +100,112 @@ def saveResponseStatus (operation mode observed prior : UInt64) : UInt8 :=
   if operation = 8 then if mode = 1 then if prior ≤ observed then 0 else 234
   else 234 else 234
 
-/-- Developer observations originate in the authorized guest consumer. These
-bounded records describe UI commit state without host document parsing. -/
+/-- Transient commit receipt/2. This private interval follows the submission
+header in the already owned multimodal page. A candidate contains an actual
+Store ACK, never inferred durability; no preallocation path reads this page. -/
+private def deferredSaved : UInt64 := Lemma.User.Multimodal.records + 2816
+private def deferredSavedField (mode offset value : UInt64) : Action :=
+  if mode = 0 then
+    .bind (Memory.write64 (deferredSaved+offset) value) fun s _ => .done s 1
+  else .bind (Memory.read64 (deferredSaved+offset)) fun s expected =>
+    .done s (if expected = value then 1 else 0)
+
+private def deferredSavedContext (mode : UInt64) : Action :=
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (get 96) fun s inkRevision => if statusFailed s = true then .done s 0 else
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  .bind (get 520) fun s selection => if statusFailed s = true then .done s 0 else
+  .bind (get 752) fun s allocated => if statusFailed s = true then .done s 0 else
+  .bind (if course = 1 then Memory.read64 (mathematics+40) else .done 0 0) fun s revision => if statusFailed s = true then .done s 0 else
+  .bind (if course = 1 then if allocated = 1 then Memory.read64 (0x33c800+128) else .done 0 0 else .done 0 0) fun s identity => if statusFailed s = true then .done s 0 else
+  .bind (if course = 1 then if allocated = 1 then Memory.read64 (0x33c800+136) else .done 0 0 else .done 0 0) fun s edition => if statusFailed s = true then .done s 0 else
+  .bind (if course = 1 then if allocated = 1 then Memory.read64 (0x33c800+160) else .done 0 0 else .done 0 0) fun s crc => if statusFailed s = true then .done s 0 else
+  .bind (if course = 1 then if allocated = 1 then Memory.read64 (0x33c800+8) else .done 0 0 else .done 0 0) fun s node => if statusFailed s = true then .done s 0 else
+  .bind (deferredSavedField mode 24 ns) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .bind (deferredSavedField mode 32 page) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .bind (deferredSavedField mode 40 inkRevision) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .bind (deferredSavedField mode 48 course) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .bind (deferredSavedField mode 56 selection) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .bind (deferredSavedField mode 64 allocated) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .bind (deferredSavedField mode 72 revision) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .bind (deferredSavedField mode 80 identity) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .bind (deferredSavedField mode 88 edition) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .bind (deferredSavedField mode 96 crc) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .bind (deferredSavedField mode 104 node) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then .done 0 0 else
+  .done 0 1
+
+private def deferSavedReceipt (value object : UInt64) : Action :=
+  .bind (Memory.write64 deferredSaved 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (deferredSavedContext 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (deferredSaved+8) value) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (deferredSaved+16) object) fun s _ => if statusFailed s = true then .done s 0 else
+  Memory.write64 deferredSaved 1
+
+/-- Developer observations originate in the authorized guest consumer. Receipt2
+retains a suppressed Saved ACK for its exact document/publication/work context.
+Pending and failed observations cannot promote it; a later real ACK replaces it. -/
 private def reportCommitState (tag value object : UInt64) : Action :=
   .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 rawCaptureReadyFlag) fun s ready => if statusFailed s = true then .done s 0 else
   .bind (if tag = 0x421 then
     .bind (get 112) fun s tail => if statusFailed s = true then .done s 0 else
     .bind (get 144) fun s pinned => if statusFailed s = true then .done s 0 else
-    .bind (Memory.read64 rawCaptureReadyFlag) fun s ready => if statusFailed s = true then .done s 0 else
     .bind (if ready = 1 then Memory.read64 (Lemma.User.Multimodal.records+2448) else .done 0 0)
       fun s captured => if statusFailed s = true then .done s 0 else
     .bind (Memory.read64 rawIndexDeferredFlag) fun s deferred => if statusFailed s = true then .done s 0 else
-    .done 0 (if tail ||| pinned ||| captured ||| deferred = 0 then tag else 0x423)
-    else .done 0 tag) fun s observedTag => if statusFailed s = true then .done s 0 else
+    if tail ||| pinned ||| captured ||| deferred = 0 then
+      .bind (if ready = 1 then Memory.write64 deferredSaved 0 else .done 0 0) fun s _ =>
+      .done s tag
+    else .bind (if ready = 1 then deferSavedReceipt value object else .done 0 0) fun s _ =>
+      .done s 0x423
+    else .bind (if ready = 1 then
+      if tag = 0x423 then Memory.write64 deferredSaved 0 else
+      if tag = 0x424 then Memory.write64 deferredSaved 0 else .done 0 0
+      else .done 0 0) fun s _ => .done s tag) fun s observedTag => if statusFailed s = true then .done s 0 else
   CapabilityConsole.record console observedTag value page ns object
+
+/-- Re-present only the retained ACK after all captured/current work retires.
+The original tuple is emitted once, with no new Store operation or rewritten
+frontier. Context changes, loss and failures discard its presentation authority. -/
+private def pumpDeferredSavedReceipt : Action :=
+  .bind (Memory.read64 deferredSaved) fun s valid => if statusFailed s = true then .done s 0 else
+  if valid = 0 then .done 0 0 else if valid = 1 then
+  .bind (deferredSavedContext 1) fun s same => if statusFailed s = true then .done s 0 else
+  if same = 0 then Memory.write64 deferredSaved 0 else
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  if 1 < status then Memory.write64 deferredSaved 0 else if status = 1 then .done 0 0 else
+  .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s tail => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s pinned => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (Lemma.User.Multimodal.records+2448)) fun s captured => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 rawIndexDeferredFlag) fun s deferred => if statusFailed s = true then .done s 0 else
+  if active ||| tail ||| pinned ||| pending ||| checking ||| captured ||| deferred = 0 then
+  .bind (Memory.read64 (deferredSaved+8)) fun s value => if statusFailed s = true then .done s 0 else
+  .bind (get 128) fun s frontier => if statusFailed s = true then .done s 0 else
+  if frontier < value then Memory.write64 deferredSaved 0 else
+  .bind (Memory.read64 (deferredSaved+16)) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (deferredSaved+24)) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (deferredSaved+32)) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 deferredSaved 0) fun s _ => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x421 value page ns object
+  else .done 0 0 else .done 243 0
 
 private def allocateStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   let address := ink0 + i.toUInt64 * 4096
@@ -6101,6 +6191,108 @@ private def multimodalTutorAccepted : Action :=
   .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
   CapabilityConsole.record console 0x725 sequence 1 0 0
 
+/-- Transient ownership only. The durable identity is the four-row Doc8
+learner event, never this page. This span is disjoint from deferred receipts
+[2816,3008), submission header, samples and UserMM control state. -/
+private def remoteState : UInt64 := Lemma.User.Multimodal.records+3008
+private def remoteEvent : UInt64 := Lemma.User.Multimodal.records+3072
+private def remoteGet (offset : UInt64) : Action := Memory.read64 (remoteState+offset)
+private def remotePut (offset value : UInt64) : Action := Memory.write64 (remoteState+offset) value
+private def remoteDigestCopy (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (Memory.read64 (schoolContext+16+i.toUInt64*8)) fun s value => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (remoteEvent+32+i.toUInt64*8) value) fun s _ => .done s acc
+private def remoteDigestCompare (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (Memory.read64 (schoolContext+16+i.toUInt64*8)) fun s value => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (remoteEvent+32+i.toUInt64*8)) fun s saved => if statusFailed s = true then .done s 0 else
+  .done 0 (acc ||| (value ^^^ saved))
+
+private def remoteRefreshAndSave : Action :=
+  .bind (Lemma.Courses.PackageWorkspace.stageRefresh packageWorkspace mathematics mathematicsSave)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind adoptPackageWorkspace fun s _ => if statusFailed s = true then .done s 0 else savePackageWorkspace
+
+/-- Stage durable uncertain exposure before presenting any school text. The
+ordinary package text flag3 holds reader/queue/ordered-control ownership until
+both original Store transactions retire. Capacity rejects before rasterization. -/
+private def multimodalPrepareTutor : Action :=
+  .bind (Lemma.Multimodal.SchoolPacket.active schoolContext) fun s joined => if statusFailed s = true then .done s 0 else
+  if joined = 0 then .done 0 1 else
+  .bind (remoteGet 0) fun s active => if statusFailed s = true then .done s 0 else
+  if active > 0 then .done 231 0 else
+  .bind (Memory.read64 (tutorPacket+40)) fun s sequence => if statusFailed s = true then .done s 0 else
+  .bind (tutorGet 16) fun s revision => if statusFailed s = true then .done s 0 else
+  .bind (tutorGet 24) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (schoolContext+48)) fun s binding => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 48) fun s goal => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 remoteEvent revision) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (remoteEvent+8) ((7 : UInt64) ||| (goal <<< 8) ||| ((1 : UInt64) <<< 16) ||| ((4 : UInt64) <<< 24) ||| (sequence <<< 32))) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (remoteEvent+16) object) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (remoteEvent+24) binding) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 4 remoteDigestCopy 4 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.appendRemote mathematics remoteEvent) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (get 128) fun s frontier => if statusFailed s = true then .done s 0 else
+  .bind (remotePut 8 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (remotePut 16 ns) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (remotePut 24 page) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (remotePut 32 (frontier+1)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 72 3) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (remotePut 0 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind remoteRefreshAndSave fun s _ => if statusFailed s = true then .done s 0 else .done 0 3
+
+private def multimodalRemoteAbandon (reason : UInt64) : Action :=
+  .bind (remotePut 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 72 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 144 0) fun s _ => if statusFailed s = true then .done s 0 else
+  multimodalTutorDecision reason
+
+/-- The prepared event survives cold recovery even if interruption occurs
+before rasterization or its later observation Commit. Recheck exact work,
+authority, binding, sequence and expiry after the actual write-ahead Commit.
+A completed raster observation is separate from the controller/panel observer. -/
+private def multimodalPumpRemote : Action :=
+  .bind (remoteGet 0) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 0 then .done 0 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  if pending > 0 then .done 0 0 else
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  if 2 ≤ status then multimodalRemoteAbandon 30 else
+  .bind (remoteGet 32) fun s floor => if statusFailed s = true then .done s 0 else
+  .bind (get 128) fun s frontier => if statusFailed s = true then .done s 0 else
+  if frontier < floor then multimodalRemoteAbandon 30 else
+  if phase = 2 then
+    .bind (remotePut 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packagePut 72 0) fun s _ => if statusFailed s = true then .done s 0 else packagePut 144 1
+  else if phase = 1 then
+  .bind multimodalCurrentTutor fun s current => if statusFailed s = true then .done s 0 else
+  if current > 0 then multimodalRemoteAbandon current else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (remoteGet 16) fun s oldNs => if statusFailed s = true then .done s 0 else
+  .bind (remoteGet 24) fun s oldPage => if statusFailed s = true then .done s 0 else
+  if different ns oldNs = true then multimodalRemoteAbandon 4 else
+  if different page oldPage = true then multimodalRemoteAbandon 4 else
+  .bind (Memory.read64 (tutorPacket+40)) fun s sequence => if statusFailed s = true then .done s 0 else
+  .bind (remoteGet 8) fun s expected => if statusFailed s = true then .done s 0 else
+  if different sequence expected = true then multimodalRemoteAbandon 5 else
+  .bind (Memory.read64 (schoolContext+48)) fun s binding => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (remoteEvent+24)) fun s oldBinding => if statusFailed s = true then .done s 0 else
+  if different binding oldBinding = true then multimodalRemoteAbandon 22 else
+  .boundedFoldU64 4 remoteDigestCompare 4 0 0 0 0 0 fun s changed => if statusFailed s = true then .done s 0 else
+  if changed > 0 then multimodalRemoteAbandon 21 else
+  .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Multimodal.SchoolPacket.actionReason tutorPacket tutorContext schoolContext now) fun s reason => if statusFailed s = true then .done s 0 else
+  if reason > 0 then multimodalRemoteAbandon reason else
+  .bind renderPackageText fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (remoteEvent+8)) fun s descriptor => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (remoteEvent+8) ((descriptor &&& ~~~((255 : UInt64) <<< 16)) ||| ((2 : UInt64) <<< 16))) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.appendRemote mathematics remoteEvent) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (remotePut 0 2) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (remotePut 32 (frontier+1)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind remoteRefreshAndSave fun s _ => if statusFailed s = true then .done s 0 else multimodalTutorAccepted
+  else multimodalRemoteAbandon 30
+
 private def schoolQueueFailure (status : UInt8) : Action :=
   .bind (Memory.write64 schoolQueueError status.toUInt64) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
@@ -6470,13 +6662,16 @@ private def rawClearStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   .bind (rawPut (i.toUInt64*8) 0) fun s _ => .done s acc
 private def multimodalRawInitialize : Action :=
   .boundedFoldU64 4 rawAllocateStep 4 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
-  .boundedFoldU64 8 rawClearStep 8 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else rawPut 0 4
+  .boundedFoldU64 8 rawClearStep 8 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 deferredSaved 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (Lemma.User.Multimodal.records+3008) 0) fun s _ => if statusFailed s = true then .done s 0 else rawPut 0 4
 
 /-- reason1 discontinuity,2 capture capacity,3 controller loss,4 changed view.
 Discard only uncommitted capture/current raw tail, keep Store ownership and its
 pinned input untouched, inhibit held contact until release, and report loss.
 735 counts retained representation samples, not inferred missing sensor edges. -/
 private def multimodalRawLoss (reason : UInt64) : Action :=
+  .bind (Memory.write64 deferredSaved 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (rawGet 16) fun s queued => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s tail => if statusFailed s = true then .done s 0 else
   .bind (rawGet 24) fun s contact => if statusFailed s = true then .done s 0 else
@@ -6743,6 +6938,9 @@ private def multimodalPackageWork : Action :=
   .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
   .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
   if pending ||| rawCount ||| rawPending ||| stroke ||| checking = 0 then
+  .bind multimodalPumpRemote fun s _ => if statusFailed s = true then courseError s else
+  .bind (get 160) fun s remotePending => if statusFailed s = true then .done s 0 else
+  if remotePending > 0 then .done 0 0 else
   .bind pumpBookmarkOpen fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packageGet 208) fun s lookup => if statusFailed s = true then .done s 0 else
   if lookup = 1 then .done 0 0 else if lookup = 2 then .done 0 0 else
@@ -6774,6 +6972,10 @@ private def multimodalPackageWork : Action :=
     -- JOIN starts a new bounded original-publication read. It is not a text
     -- annotation and cannot rasterize until that read's validated EOF.
     if marked = 2 then .done 0 0 else
+    .bind (if marked = 1 then multimodalPrepareTutor else .done 0 marked) fun s prepared => if statusFailed s = true then
+      .bind (remotePut 0 0) fun cleared _ => if statusFailed cleared = true then .done cleared 0 else
+      .bind multimodalAbandonPresentation fun cleanup _ => if statusFailed cleanup = true then .done cleanup 0 else courseError s
+    else if prepared = 3 then .done 0 0 else
     .bind renderPackageText fun s _ => if statusFailed s = true then courseError s else
     .bind (if marked = 1 then multimodalTutorAccepted else .done 0 0) fun s _ => if statusFailed s = true then courseError s else packagePut 72 0
     else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
@@ -6788,6 +6990,7 @@ completion while captured input remains. The private marker records only our
 own status override, so an unrelated Pending/Failed state is never promoted.
 Reconcile before controller upload, never from the preallocation Save path. -/
 private def multimodalRawStatus : Action :=
+  .bind (
   .bind (rawGet 16) fun s captured => if statusFailed s = true then .done s 0 else
   .bind (rawGet 56) fun s overridden => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 rawIndexDeferredFlag) fun s deferredIndex => if statusFailed s = true then .done s 0 else
@@ -6810,6 +7013,8 @@ private def multimodalRawStatus : Action :=
       else .done 0 0
     else rawPut 56 0
   else .done 0 0
+
+  ) fun s _ => if statusFailed s = true then .done s 0 else pumpDeferredSavedReceipt
 
 /-- Publish a coalesced page/root after all earlier captured/raw work has
 retired. Ordered controls force the same publication before their dispatch.

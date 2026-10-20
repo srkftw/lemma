@@ -14,7 +14,7 @@ def source_inputs(root: Path) -> dict[str, str]:
                'tests/courses/GuardExport.lean','tests/courses/Install.lean','tests/courses/Guard.lean',
                'tests/courses/Mount.lean','tests/courses/Selection.lean','tests/courses/SelectionExport.lean','tests/courses/Submission.lean',
                'tests/courses/SubmissionExport.lean','tests/courses/SchoolGuardExport.lean','tests/courses/SchoolGuard.lean',
-               'tests/courses/NotebookSchool.lean']
+               'tests/courses/NotebookSchool.lean','tests/courses/RemoteProvenance.lean']
     while pending:
         name = pending.pop()
         if name in files:
@@ -85,6 +85,7 @@ def main():
             if a.school_submission:
                 run('notebook-build',[tools['lake'],'build','Lemma.Applications.Notebook'])
                 run('notebook-school-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/NotebookSchool.lean'])
+                run('remote-provenance-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/RemoteProvenance.lean'])
                 run('submission-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/Submission.lean'])
                 run('school-guard-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/SchoolGuard.lean'])
                 run('submission-export',[tools['lake'],'env','lean','-j2','tests/courses/SubmissionExport.lean'],

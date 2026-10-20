@@ -387,7 +387,7 @@
     },
     "status": "FAIL_SUSTAINED_WRITING_DROPS_NEW_CONTACTS",
     "bundle": "build/task009/school23-browser-a8/bundle.json",
-    "scope": "Actual Student browser803/2 node1→6; paused burst and paced strokes lost new contacts. ExplicitSave30 retained a partial prefix, not completed written proof. No JOIN/attempt/feedback/review executed.",
+    "scope": "Actual Student browser803/2 node1\u21926; paused burst and paced strokes lost new contacts. ExplicitSave30 retained a partial prefix, not completed written proof. No JOIN/attempt/feedback/review executed.",
     "saved_frontier": 30,
     "raw_chunks": 7,
     "full_nine_word_samples": 62,
@@ -532,5 +532,54 @@
     "originalDeadlineUTC": "2026-10-20T05:46:35.261998+00:00",
     "terminalUTC": "2026-10-20T05:29:45.369073+00:00",
     "scope": "Synthetic pen and widget stimuli through the actual ordinary Student and Teacher interfaces. Domain state, ink, checking, submission, journal recovery and policy run in the maintained Lean guest/authority. Fresh functional execution reused genuine audited guest/runtime/trained releases. Cold recovery is not exact continuation; unsupported handwriting plus human acceptance is not kernel verification. Browser completion, canonical timing, physical and educational qualification remain separate."
+  },
+  "durable_remote_assistance": {
+    "status": "PASS_HOSTED_ACTIONS_AND_CONSEQUENTIAL_NEGATIVES; corrected_CPU_path_NOT_YET_RUN",
+    "problem": "Actual accepted remote help changed only transient context. Cold/new-binding work could be falsely treated as unassisted despite its original decision/raster observation.",
+    "retained_failure": {
+      "path": "build/school/task009-assistance-cold-a1/consumer-resume2-result.json",
+      "sha256": "ac974702e071f4f881fbb718dcd92b38c38d9d8c6087e9a0f36d39bb9e77ec48"
+    },
+    "failure_scope": "Actual maintained acceptance Action\u2192workspace snapshot/isolated cold validator\u2192protected old authority decision/new generation submission/teacher review; finite RAM fixture, not CPU/journal/panel qualification. Earlier observer failures remain in same directory.",
+    "implementation": [
+      "Lemma/Documents/Mathematics.lean",
+      "Lemma/Applications/Notebook.lean",
+      "docs/contracts/009-school-submission-v2.html"
+    ],
+    "format": "Doc8 eventFormat2 in unchanged2496-byte document/3712-byte workspace; kind7 four-row full original authority/binding/ASK sequence/work identity. Prepared scope1 reserves8rows, real Store transaction precedes raster; scope2 requires identical earlier preparation and records guest raster completion in a second Store transaction.",
+    "current_source": {
+      "Lemma/Documents/Mathematics.lean": "40bfd7d64d25bf590925979e60c610dd84bd67d9cc8a5e8e84af5af68463c56d",
+      "Lemma/Applications/Notebook.lean": "096bbbc6f056a9e331e547728d7ef6708a28883941729db0cdcd16142a23b85c"
+    },
+    "joint_action_gate": {
+      "path": "build/school/task009-remote-provenance-a5/result.json",
+      "sha256": "12935557e2574cf8ff008c336b708ec6bf0f69f0a44f2a38e7bc8b3ed8689346"
+    },
+    "stronger_consumer_fixture": "tests/courses/RemoteProvenance.lean actual multimodalPackageWork admission\u2192preparation\u2192Store ownership, original Client.handleAssist package\u2192real guest PackageRender framebuffer\u2192second publication; Commit arrivals explicitly supplied by the finite observer, not journal execution.",
+    "source_negative_gate": {
+      "path": "build/school/task009-remote-provenance-source-gate-a1/result.json",
+      "sha256": "9749675a96edeb13d873e22ecfac84f1a9e971b55df807f59d3d34e7b5e425b2"
+    },
+    "negative_scope": "Fresh private full Notebook source; bypassing the connected preparation or pending-Commit gate makes the actual Action fixture fail. Legacy format, payload words2/6, idempotency, capacity reserve, malformed/unbacked raster scopes, changed revision/object/page/namespace/request/binding, and cold prepared workspace separately exercised.",
+    "fresh_reused": "Changed Mathematics and transitive modules genuinely compiled before qualification. Final joint gate genuinely rebuilt UserMM4.6s and Notebook39s, then freshly executed current NotebookSchool and Remote Actions; separate stronger body fixture freshly executed the real UNVERIFIED body renderer. Source-negative cases freshly elaborated their private Notebook source. These are host Actions, not fresh LLVM/CPU/storage/physical claims.",
+    "remaining": "Execute corrected audited guest through ordinary help, cold reopen/new school binding, same-work submission and teacher review; distinguish prepared uncertainty, guest raster receipt, controller observation and visible presentation.",
+    "ordinary_body_consumer_gate": {
+      "path": "build/school/task009-remote-provenance-a6/result.json",
+      "sha256": "d89f2e8434bbb1835f957393c6d97780031e0bed3dcdaa375e3e447365ef1759"
+    }
+  },
+  "deferred_commit_receipt_v2": {
+    "status": "PASS_HOSTED_ACTIONS_AND_SIX_CONSEQUENTIAL_NEGATIVES; actual_CPU_successor_NOT_YET_RUN",
+    "contract": "docs/contracts/009-notebook-commit-receipt-v2.html",
+    "source": "Lemma/Applications/Notebook.lean",
+    "receipt_gate": {
+      "path": "build/task009/notebook-deferred-receipt-a3/result.json",
+      "sha256": "e10d97e2e9e7218715930da7fc6803088fa68fbdbf6577386b20a4126d5aab09"
+    },
+    "scope": "Deferred421context retains original acknowledged frontier/namespace/page/object while capture or publication work remains, then emits once only after quiescence; initial preallocation Save never reads unmapped multimodal memory. Old Ready/Save observational gaps remain retained.",
+    "joint_current_actions": {
+      "path": "build/school/task009-remote-provenance-a5/result.json",
+      "sha256": "12935557e2574cf8ff008c336b708ec6bf0f69f0a44f2a38e7bc8b3ed8689346"
+    }
   }
 }

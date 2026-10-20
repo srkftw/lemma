@@ -80,7 +80,8 @@ class ConsumedContractTests(unittest.TestCase):
         from unittest.mock import patch
         import build_kernel
         original = Path.is_file
-        for name, message in (("docs/contracts/009-core0-kernel-v0.10.html", "Missing required Integrated15 dependency"),
+        for name, message in (("docs/contracts/009-notebook-commit-receipt-v2.html", "Missing required Notebook deferred commit receipt contract"),
+                              ("docs/contracts/009-core0-kernel-v0.10.html", "Missing required Integrated15 dependency"),
                               ("docs/contracts/009-school-submission-v2.html", "Missing School dependency"),
                               ("docs/contracts/009-multimodal-owned-io-v1.html", "Missing required owned record/PCM service contract")):
             with self.subTest(contract=name), patch.object(Path, 'is_file', lambda path: False if path == ROOT / name else original(path)):
@@ -114,6 +115,8 @@ class ConsumedContractTests(unittest.TestCase):
             if str(path).endswith('.md') and 'docs/contracts/' in str(path): return True
             return original(path)
         def historical_source(path, *args, **kwargs):
+            if path == ROOT / 'Lemma/Applications/Notebook.lean':
+                return '-- historical Notebook without deferred receipt2 declaration\n'
             if path == ROOT / 'Lemma/Platform/LemmaSim/MultimodalService.lean':
                 # This simulated pre-registry archive also predates the
                 # additive service-version/owned-I/O contract declaration.

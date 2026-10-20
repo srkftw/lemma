@@ -503,8 +503,86 @@ private def rawCoalescingChecks : IO Unit := do
   expect (failed.1 == 0 && (← get q (base+744)) == 1 && (← get q (base+136)) == 2 && (← q.get).syscalls.isEmpty)
     "failed metadata publication discarded its pending references or manufactured Saved"
 
+private def deferredSavedChecks : IO Unit := do
+  let receipt := Lemma.User.Multimodal.records+2816
+  let candidate : IO (IO.Ref Model) := do
+    let r ← rawFixture
+    for (a,v) in #[(base+736,1),(base+112,0),(base+144,0),(base+104,0),(base+160,0),
+        (base+128,17),(base+136,0),(rawState+16,1)] do put r a v
+    r.modify fun m => {m with syscalls:=#[(0,88)]}
+    let result ← run r ((schoolNotebook% "reportCommitState") 0x421 17 99)
+    expect (result.1 == 0 && (← get r receipt) == 1) "suppressed actual ACK was not retained"
+    expectConsoleTag r "0000000000000423"
+    return r
+  let r ← candidate
+  -- This is the observed real-machine sequence: root ACK while a pen-up is
+  -- captured, Pending reconciliation, then the last captured input retires.
+  let waiting ← run r (schoolNotebook% "multimodalRawStatus")
+  expect (waiting.1 == 0 && (← get r (base+136)) == 1 && (← get r receipt) == 1)
+    "pending presentation released a deferred Saved receipt too early"
+  put r (rawState+16) 0
+  r.modify fun m => {m with syscalls:=#[(0,88)]}
+  let finished ← run r (schoolNotebook% "multimodalRawStatus")
+  expect (finished.1 == 0 && (← get r receipt) == 0 && (← get r (base+136)) == 0 &&
+      (← get r (base+128)) == 17 && (← r.get).syscalls.isEmpty)
+    "quiescence did not re-present the exact acknowledged prefix once"
+  expectConsoleTag r "0000000000000421"
+  for (offset,text) in #[(20,"0000000000000011"),(37,"0000000000000001"),
+      (54,"0000000000000001"),(71,"0000000000000063")] do
+    for i in [:16] do
+      let address := Lemma.User.Console.packetAddress+offset+i.toUInt64
+      expect (((← get r (address-address%8)) >>> (address%8*8) &&& 255) == text.toUTF8[i]!.toUInt64)
+        "deferred Saved tuple was retargeted or its original ACK changed"
+  let duplicate ← run r (schoolNotebook% "multimodalRawStatus")
+  expect (duplicate.1 == 0 && (← r.get).syscalls.isEmpty) "deferred ACK emitted twice"
+  -- Every independent current-work owner prevents the deferred observation.
+  for offset in #[104,112,144,160,536,744] do
+    let p ← candidate
+    put p (rawState+16) 0;put p (base+offset) 1
+    let held ← run p (schoolNotebook% "pumpDeferredSavedReceipt")
+    expect (held.1 == 0 && (← get p receipt) == 1 && (← p.get).syscalls.isEmpty)
+      "deferred receipt escaped current capture/Store/checker ownership"
+  -- Exact document/work context and monotone ACK binding, not the latest
+  -- unrelated reply or current page, authorize this receipt.
+  for (offset,value) in #[(72,2),(80,2),(96,12),(512,1),(520,7),(752,1),(128,16),(136,2)] do
+    let p ← candidate
+    put p (rawState+16) 0;put p (base+offset) value
+    let rejected ← run p (schoolNotebook% "pumpDeferredSavedReceipt")
+    expect (rejected.1 == 0 && (← get p receipt) == 0 && (← p.get).syscalls.isEmpty)
+      "changed context, regressed frontier or failed state reused a stale Saved receipt"
+  for changed in #[Lemma.Applications.Notebook.mathematics+40,0x33c800+128,0x33c800+136,
+      0x33c800+160,0x33c800+8] do
+    let p ← candidate
+    for (address,value) in #[(base+512,1),(base+752,1),(base+520,9),
+        (Lemma.Applications.Notebook.mathematics+40,7),(0x33c800+128,803),
+        (0x33c800+136,2),(0x33c800+160,12345),(0x33c800+8,4)] do put p address value
+    p.modify fun m => {m with syscalls:=#[(0,88)]}
+    let captured ← run p ((schoolNotebook% "reportCommitState") 0x421 17 99)
+    expect (captured.1 == 0) "publication receipt fixture did not retain actual ACK"
+    put p (rawState+16) 0;put p changed ((← get p changed)+1)
+    let rejected ← run p (schoolNotebook% "pumpDeferredSavedReceipt")
+    expect (rejected.1 == 0 && (← get p receipt) == 0 && (← p.get).syscalls.isEmpty)
+      "changed publication/edition/source/node or exact mathematical revision reused Saved"
+  -- A new loss invalidates even when no samples were discarded, so the
+  -- retained ACK cannot silently present loss as completion of queued work.
+  let lost ← candidate
+  put lost (rawState+16) 0
+  lost.modify fun m => {m with syscalls:=#[(0,88)]}
+  let loss ← run lost ((schoolNotebook% "multimodalRawLoss") 3)
+  expect (loss.1 == 0 && (← get lost receipt) == 0) "loss retained deferred presentation authority"
+  put lost (base+136) 0
+  let afterLoss ← run lost (schoolNotebook% "pumpDeferredSavedReceipt")
+  expect (afterLoss.1 == 0 && (← lost.get).syscalls.isEmpty) "lost work acquired a deferred Saved receipt"
+  -- A new actual ACK supersedes the candidate; all original legacy tests
+  -- continue exercising preallocation with the whole MM page forbidden.
+  let replaced ← candidate
+  replaced.modify fun m => {m with syscalls:=#[(0,88)]}
+  let newer ← run replaced ((schoolNotebook% "reportCommitState") 0x421 18 101)
+  expect (newer.1 == 0 && (← get replaced (receipt+8)) == 18 &&
+      (← get replaced (receipt+16)) == 101) "new acknowledged receipt did not replace the old tuple"
+
 def main : IO Unit := do
-  rawCoalescingChecks;rawCommitReceiptChecks;rawStatusChecks;rawCaptureChecks;floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
+  deferredSavedChecks;rawCoalescingChecks;rawCommitReceiptChecks;rawStatusChecks;rawCaptureChecks;floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
   IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control,actual JOIN async source/EOF presentation,32stroke full9word capture/replay,Save ordering,mute/full-buffer safety,overflow/gap/view-loss,captured-work Pending/Saved header+421/423 ownership,burst raw-reference coalescing before ordered controls and actual page/root commit; component only"
 end NotebookSchoolTests
 

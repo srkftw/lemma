@@ -379,6 +379,12 @@ def source_inputs(root: Path) -> dict[str, str]:
         if not owned_io.is_file():
             raise Core0Error("Missing required owned record/PCM service contract")
         inputs.append(owned_io)
+    notebook = root / "Lemma/Applications/Notebook.lean"
+    if notebook.is_file() and re.search(r"^private def deferredSaved\s*:", notebook.read_text(), re.M):
+        receipt_contract = root / "docs/contracts/009-notebook-commit-receipt-v2.html"
+        if not receipt_contract.is_file():
+            raise Core0Error("Missing required Notebook deferred commit receipt contract")
+        inputs.append(receipt_contract)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
     # Historical immutable source archives predate additive Power-v2. Their
     # complete old inventories remain exact; selected 0.4 builds separately
