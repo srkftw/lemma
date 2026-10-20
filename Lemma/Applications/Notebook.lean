@@ -62,6 +62,10 @@ def context : UInt64 := 0x20400
 private def rawCaptureReadyFlag : UInt64 := state + 736
 private def rawIndexDeferredFlag : UInt64 := state + 744
 private def schoolActivityFlag : UInt64 := state + 760
+-- Version25 selects bounded capture progress and the batched Console wire.
+-- This word is outside the shortest boot clear fold, so clearStep resets it
+-- explicitly before any optional page exists.
+private def schoolStreamFlag : UInt64 := state + 656
 -- These lifecycle gates are used by the first ordinary Save, before the
 -- optional multimodal/queue arenas exist. Keep them in the owned boot BSS,
 -- below packageAllocationAddress and the outgoing Store packet at0x20b00.
@@ -219,6 +223,7 @@ private def clearStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
     .bind (Memory.write64 rawCaptureReadyFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 rawIndexDeferredFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 schoolActivityFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 schoolStreamFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 schoolQueueReadyFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 (state+728) 0) fun s _ => if statusFailed s = true then .done s 0 else
     Memory.write64 schoolQueueError 0
@@ -6461,6 +6466,9 @@ private def schoolQueueInitialize : Action :=
     .bind (put 176 (request + 1000000)) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Lemma.Courses.SchoolSubmission.initializeQueue endpoint console (request + 1)) fun result _ =>
     if statusFailed result = true then schoolQueueFailure result else
+    .bind (Memory.read64 schoolStreamFlag) fun s wire => if statusFailed s = true then .done s 0 else
+    .bind (if wire = 1 then Lemma.Courses.SchoolSubmission.enableWire96 else .done 0 0) fun s _ =>
+    if statusFailed s = true then schoolQueueFailure s else
     .bind (Memory.write64 schoolQueueReadyFlag 1) fun s _ => if statusFailed s = true then .done s 0 else
     Lemma.Courses.SchoolSubmission.restore 1
   else .done 0 0
@@ -7266,8 +7274,52 @@ private def multimodalPublishDeferredIndex : Action :=
     .bind (savePage page) fun s _ => if statusFailed s = true then saveFailure s else .done 0 0
   else .done 0 0 else .done 0 0 else .done 243 0
 
+/-- Retire a bounded captured prefix while advancing only the current real
+foreground Store owner between records. Other devices and UI still get one
+ordinary main-loop turn after at most eight rounds. Empty capture stops early;
+a blocked control with no Store owner yields to its normal paper/UI dependency.
+No buffer capacity, clock, record format or durable publication rule changes. -/
+private def multimodalAdvanceCaptured : Action :=
+  .boundedFoldU64 8 advance 8 0 0 0 0 0 fun status rounds =>
+    if status = Status.iterationStop then .done 0 rounds else .done status rounds
+where
+  advance (_ _ : UInt32) (rounds _ _ _ _ : UInt64) : Action :=
+    .bind (rawGet 16) fun s before => if statusFailed s = true then .done s 0 else
+    if before = 0 then .done Status.iterationStop rounds else
+    .bind multimodalRawPump fun s _ => if statusFailed s = true then .done s 0 else
+    .bind schoolQueueOwnsIPC fun s queueOwns => if statusFailed s = true then .done s 0 else
+    .bind (if queueOwns = 0 then pumpBookmarkSave else .done 0 0) fun s _ =>
+      if statusFailed s = true then .done s 0 else
+    .bind (rawGet 16) fun s after => if statusFailed s = true then .done s 0 else
+    .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+    if before = after then if pending = 0 then .done Status.iterationStop (rounds+1)
+      else .done 0 (rounds+1)
+    else .done 0 (rounds+1)
+
+/-- Older roots retain their single-sample scheduling; only the explicit
+version25 mode enables the bounded progress loop. -/
+private def multimodalAdvanceInput : Action :=
+  .bind (Memory.read64 schoolStreamFlag) fun s enabled => if statusFailed s = true then .done s 0 else
+  if enabled = 1 then multimodalAdvanceCaptured else multimodalRawPump
+
+/-- An empty hardware FIFO does not make retained capture idle. Version25
+returns its current timeslice while capture remains, allowing IRQ/device work
+and the next bounded progress round without the idle ten-thousand-tick sleep.
+Older modes and a genuinely empty capture retain the existing idle sleep. -/
+private def multimodalIdleInput : Action :=
+  .bind (Memory.read64 schoolStreamFlag) fun s enabled => if statusFailed s = true then .done s 0 else
+  if enabled = 1 then
+    .bind (rawGet 16) fun s captured => if statusFailed s = true then .done s 0 else
+    if 0 < captured then Syscall.yield else Syscall.sleep 10000
+  else Syscall.sleep 10000
+
+private def multimodalDrainInput (input : UInt64) : Action :=
+  .bind (drainMultimodalInput input) fun s consumed =>
+  if statusFailed s = true then .done s 0 else
+  if consumed = 0 then multimodalIdleInput else .done 0 consumed
+
 private def multimodalStep : Action :=
-  .bind multimodalRawPump fun s _ => if statusFailed s = true then .done s 0 else
+  .bind multimodalAdvanceInput fun s _ => if statusFailed s = true then .done s 0 else
   .bind multimodalPublishDeferredIndex fun s _ => if statusFailed s = true then .done s 0 else
   .bind Lemma.User.Multimodal.pump fun _ _ =>
   .bind schoolQueuePump fun _ _ =>
@@ -7295,19 +7347,16 @@ private def multimodalStep : Action :=
   if work = 0 then
     if (if checking = 0 then if pending = 0 then if recovery = 0 then if dirtyX = 0xffff then true else false else false else false else false) = true then
       .bind (Syscall.call 65 input 1 raw 0 0) fun s _ =>
-      if s = 175 then multimodalRawLoss 3 else if s = 174 then Syscall.sleep 10000 else
+      if s = 175 then multimodalRawLoss 3 else if s = 174 then multimodalIdleInput else
       if statusFailed s = true then .done s 0 else multimodalInputSample
-    else drain input
-  else drain input
-where
-  drain (input : UInt64) : Action :=
-    .bind (drainMultimodalInput input) fun s consumed =>
-    if statusFailed s = true then .done s 0 else if consumed = 0 then Syscall.sleep 10000 else .done 0 consumed
+    else multimodalDrainInput input
+  else multimodalDrainInput input
 
 private def configureSchoolMode (school : UInt64) : Action :=
-  if school ≤ 2 then
-  .bind (Memory.write64 schoolActivityFlag (if school = 2 then 1 else school)) fun s _ => if statusFailed s = true then .done s 0 else
-  Memory.write64 reductionEnabled (if school = 2 then 1 else 0)
+  if school ≤ 3 then
+  .bind (Memory.write64 schoolStreamFlag (if school = 3 then 1 else 0)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 schoolActivityFlag (if 2 ≤ school then 1 else school)) fun s _ => if statusFailed s = true then .done s 0 else
+  Memory.write64 reductionEnabled (if 2 ≤ school then 1 else 0)
   else .done 234 0
 
 private def mainMultimodalConfigured (bootArgument school : UInt64) : Action :=
@@ -7366,8 +7415,9 @@ private def mainMultimodalConfigured (bootArgument school : UInt64) : Action :=
   .bind multimodalBar fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
-  .bind (if (if school = 1 then true else school = 2) = true then CapabilityConsole.record console 0x731 Lemma.Courses.SchoolSubmission.version
+  .bind (if (if school = 1 then true else if school = 2 then true else school = 3) = true then CapabilityConsole.record console 0x731 Lemma.Courses.SchoolSubmission.version
     Lemma.Courses.SchoolSubmission.maximumChunks Lemma.Courses.SchoolSubmission.maximumBytes 2 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if school = 3 then CapabilityConsole.record console 0x740 1 96 230 256 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
   if statusFailed s = true then .done s 0 else .loop multimodalStep
 
@@ -7383,5 +7433,9 @@ def mainMultimodalSchool (bootArgument : UInt64) : Action := mainMultimodalConfi
 /-- School24 adds the bounded local-tool service consumer; modes0/1 retain
 ordinary School23 admission and have no REDUCE control authority. -/
 def mainMultimodalSchool24 (bootArgument : UInt64) : Action := mainMultimodalConfigured bootArgument 2
+
+/-- School25 keeps the School24 advisory and enables bounded capture progress
+and a batched, explicitly advertised Console submission transport. -/
+def mainMultimodalSchoolV3 (bootArgument : UInt64) : Action := mainMultimodalConfigured bootArgument 3
 
 end Lemma.Applications.Notebook

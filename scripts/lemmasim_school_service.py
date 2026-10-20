@@ -21,6 +21,7 @@ import uuid
 
 from lemmasim_tutor import ask_context, uart_path
 from lemmasim_course import frame,selection_frame
+from school_wire import frames as submission_frames
 
 
 def school_capability(data):
@@ -64,18 +65,21 @@ def submission_stream(data):
     if not isinstance(data,bytes) or len(data)>16*1048576:
         raise ValueError('guest submission observation exceeds16MiB')
     current=None;complete=None
-    rows=re.finditer(rb'(?:^|\n)K1 ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)',data)
-    for row in rows:
-        tag,a,b,c,d=(int(x,16) for x in row.groups())
+    for frame in submission_frames(data):
+        if frame[0] == 'chunk':
+            if current is None:
+                raise ValueError('guest chunk has no committed stream start')
+            _, queue, offset, payload = frame
+            if (queue != current['queue'] or offset != len(current['bytes']) or
+                    len(payload) > current['total']-offset):
+                raise ValueError('guest submission stream is missing, reordered or mixed')
+            current['bytes'].extend(payload)
+            continue
+        _, tag, a, b, c, d = frame
         if tag==0x72e:
             if a>>48!=0x5351 or b==0 or not 256<=c<=262144 or d not in (1,2):
                 raise ValueError('malformed guest submission stream start')
             current={'queue':a,'commit':b,'total':c,'bytes':bytearray()}
-        elif tag==0x72f and current is not None:
-            offset=b&((1<<48)-1);count=b>>48
-            if a!=current['queue'] or not 1<=count<=16 or offset!=len(current['bytes']) or count>current['total']-offset:
-                raise ValueError('guest submission stream is missing, reordered or mixed')
-            current['bytes'].extend(struct.pack('<2Q',c,d)[:count])
         elif tag==0x730 and current is not None:
             if (a,b,c,d)!=(current['queue'],current['commit'],current['total'],0) or len(current['bytes'])!=c:
                 raise ValueError('guest submission stream ended before its exact committed bytes')

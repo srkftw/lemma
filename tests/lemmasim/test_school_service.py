@@ -27,6 +27,44 @@ def fixture():
     return payload,records
 
 class SchoolByteTransport(unittest.TestCase):
+    def test_s1_native_browser_exact_bytes_and_failed_prefix_recovery(self):
+        payload=bytes(range(256))*155
+        def chunk(part,offset,queue=QUEUE):
+            return f'S1 {queue:016x} {offset|(len(part)<<48):016x} '.encode()+part.hex().encode()+b'\n'
+        capability=row(0x740,1,96,230,256)
+        start=b'\n'+row(0x72e,QUEUE,23,len(payload),2)
+        body=b''.join(chunk(payload[i:i+96],i) for i in range(0,len(payload),96))
+        ending=row(0x730,QUEUE,23,len(payload),0)
+        wire=capability+start+body+ending
+        recovered=capability+row(0x72e,QUEUE,23,len(payload),2)+chunk(payload[:96],0)[:61]+start+body+ending
+        for raw in (wire,recovered):
+            result=submission_stream(raw)
+            self.assertEqual(result['bytes'],payload)
+            self.assertEqual((result['queue'],result['commit']),(QUEUE,23))
+        invalid=[wire.replace(capability,b''),wire.replace(capability,row(0x740,2,96,230,256)),
+                 wire.replace(chunk(payload[:96],0),chunk(payload[:97],0),1),
+                 wire.replace(chunk(payload[:96],0),chunk(payload[:96],1),1),
+                 wire.replace(chunk(payload[:96],0),chunk(payload[:96],0,QUEUE+1),1),
+                 wire[:-1],wire.replace(chunk(payload[:96],0),chunk(payload[:96],0)[:-3]+b'\n',1),
+                 capability+start+chunk(payload[:96],0)[:61]+row(0x72e,QUEUE,23,len(payload),2)+body+ending]
+        for raw in invalid:
+            with self.assertRaises(ValueError):submission_stream(raw)
+        script=r"""
+import assert from 'node:assert/strict';
+import {guestSchoolSubmission,guestSchoolQueueState} from './sim/browser/school_transport.js';
+import {readFileSync} from 'node:fs';
+const input=JSON.parse(readFileSync(0,'utf8')),decode=x=>Uint8Array.from(Buffer.from(x,'hex'));
+for(const raw of input.valid){const bytes=decode(raw),stream=guestSchoolSubmission(bytes);
+ assert.equal(Buffer.from(stream.bytes).toString('hex'),input.payload);
+ assert.equal(guestSchoolQueueState(bytes).streamComplete,true);}
+for(const raw of input.invalid)assert.throws(()=>guestSchoolSubmission(decode(raw)));
+const partial=decode(input.valid[0]);assert.equal(guestSchoolQueueState(partial.subarray(0,partial.length-88)).streamComplete,false);
+"""
+        result=subprocess.run(['node','--input-type=module','-e',script],input=json.dumps({
+            'valid':[wire.hex(),recovered.hex()],'invalid':[r.hex() for r in invalid],'payload':payload.hex()}),
+            cwd=ROOT,capture_output=True,text=True,timeout=20)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+
     def test_only_explicit_course_or_review_intent_selects_a_publication(self):
         for operation in ('install','review','join','help'):
             with self.subTest(operation=operation), tempfile.TemporaryDirectory() as name:

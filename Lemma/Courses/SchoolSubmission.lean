@@ -3,10 +3,12 @@ import Lemma.Documents.Ink
 import Lemma.Multimodal.SchoolPacket
 import Lemma.Services.Store.Client
 import Lemma.User.CapabilityConsole
+import Lemma.Courses.SchoolStream
 
 /-! Guest-origin school submission/2. Eight private pages freeze metadata and
 stream original immutable Store chunks. Every pump admits at most one IPC
-transition or one16-byte Console record. Stream completion is transport output,
+transition or one bounded Console write. Versions23/24 retain16-byte K1
+chunks; version25 explicitly enables School wire S1 with up to96 payload bytes. Stream completion is transport output,
 never school admission or proof. Phase1..4 preflights raw headers/EOF;
 5..10 writes frozen metadata;11..16 publishes the pending pointer;
 20..25 streams bytes;26 awaits a school ACK;27..28 emit terminal receipts;
@@ -80,6 +82,14 @@ def initializeQueue (endpoint console firstRequest : UInt64) : Action :=
   .bind (put 32 (firstRequest+1000000)) fun s _ => if s = 0 then .done 0 (firstRequest+999999) else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else bad else releaseAllocated count s
+
+/-- Selected only by the version25 guest after fresh queue initialization.
+The durable pointer/envelope stay version2; this changes Console framing only. -/
+def enableWire96 : Action :=
+  .bind (get 0) fun s phase => if s = 0 then
+  .bind (get 336) fun s enabled => if s = 0 then
+  if phase = 0 then if enabled = 0 then put 336 1 else bad else bad
+  else .done s 0 else .done s 0
 
 private def halt (status : UInt8) : Action :=
   .bind (put 192 status.toUInt64) fun s _ => if s = 0 then
@@ -425,14 +435,18 @@ private def streamStart : Action :=
   .bind (get 152) fun s sequence => if s = 0 then
   .bind (get 112) fun s total => if s = 0 then
   .bind (get 88) fun s ns => if s = 0 then
-  .bind (record 0x72e queue sequence total ns) fun s _ => if s = 0 then
+  .bind (get 336) fun s wire => if s = 0 then
+  .bind (if wire = 1 then
+    .bind (get 16) fun s console => if s = 0 then
+    SchoolStream.start console queue sequence total ns else .done s 0
+    else record 0x72e queue sequence total ns) fun s _ => if s = 0 then
   .bind (put 272 0xffffffff) fun s _ => if s = 0 then
   .bind (put 160 0) fun s _ => if s = 0 then
   .bind (put 176 0) fun s _ => if s = 0 then
   .bind (put 128 0) fun s _ => if s = 0 then
   put 0 21
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 
 private def crcStep (i _ : UInt32) (crc source _ _ _ : UInt64) : Action :=
@@ -440,28 +454,35 @@ private def crcStep (i _ : UInt32) (crc source _ _ _ : UInt64) : Action :=
   .done 0 (PackageFormat.crcByte crc value) else .done s 0
 private def crcWords (source count : UInt64) : Action :=
   .bind (get 272) fun s crc => if s = 0 then
-  .boundedFoldU64 16 crcStep (minimum 16 count).toUInt32 crc source 0 0 0 fun s next =>
+  .boundedFoldU64 96 crcStep count.toUInt32 crc source 0 0 0 fun s next =>
   if s = 0 then put 272 next else .done s 0 else .done s 0
 
 private def emitWords (source available next : UInt64) : Action :=
   .bind (get 96) fun s queue => if s = 0 then
   .bind (get 160) fun s offset => if s = 0 then
-  .bind (field source 0) fun s a => if s = 0 then
-  .bind (if 8 < available then field source 8 else .done 0 0) fun s b => if s = 0 then
-  .bind (record 0x72f queue (offset ||| (minimum 16 available <<< 48)) a b) fun s _ => if s = 0 then
-  .bind (crcWords source available) fun s _ => if s = 0 then
-  .bind (put 160 (offset+minimum 16 available)) fun s _ => if s = 0 then
-  put 0 next
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0
+  .bind (get 336) fun s wire => if s = 0 then
+  let count := minimum (if wire = 1 then 96 else 16) available
+  .bind (if wire = 1 then
+    .bind (get 16) fun s console => if s = 0 then
+    SchoolStream.send console queue offset source count else .done s 0
+    else
+    .bind (field source 0) fun s a => if s = 0 then
+    .bind (if 8 < count then field source 8 else .done 0 0) fun s b => if s = 0 then
+    record 0x72f queue (offset ||| (count <<< 48)) a b
+    else .done s 0 else .done s 0) fun s _ => if s = 0 then
+  .bind (crcWords source count) fun s _ => if s = 0 then
+  .bind (put 160 (offset+count)) fun s _ => if s = 0 then
+  .bind (put 0 next) fun s _ => .done s count
+  else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0
 
 
 private def streamMetadata : Action :=
   .bind (get 176) fun s offset => if s = 0 then
   .bind (get 104) fun s bytes => if s = 0 then
   if offset < bytes then
-  .bind (emitWords (metadata+offset) (bytes-offset) 21) fun s _ => if s = 0 then
-  .bind (put 176 (offset+minimum 16 (bytes-offset))) fun s _ => if s = 0 then
+  .bind (emitWords (metadata+offset) (bytes-offset) 21) fun s sent => if s = 0 then
+  .bind (put 176 (offset+sent)) fun s _ => if s = 0 then
   .done 0 0
   else .done s 0 else .done s 0
   else
@@ -506,8 +527,8 @@ private def streamRawEmit : Action :=
   .bind (get 216) fun s count => if s = 0 then
   .bind (get 224) fun s offset => if s = 0 then
   if offset < count then
-  .bind (emitWords (Client.responseData incoming+offset) (count-offset) 24) fun s _ => if s = 0 then
-  .bind (put 224 (offset+minimum 16 (count-offset))) fun s _ => if s = 0 then
+  .bind (emitWords (Client.responseData incoming+offset) (count-offset) 24) fun s sent => if s = 0 then
+  .bind (put 224 (offset+sent)) fun s _ => if s = 0 then
   .done 0 0
   else .done s 0 else .done s 0
   else

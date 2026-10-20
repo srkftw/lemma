@@ -26,6 +26,7 @@ structure Model where
   words : Std.HashMap UInt64 UInt64 := {}
   syscalls : Array (UInt8 × UInt64) := #[]
   writes : Array UInt64 := #[]
+  syscallArguments : Array (Array UInt64) := #[]
   forbiddenPage : Option UInt64 := none
 private def word (m : Model) (a : UInt64) : UInt64 := m.words.getD a 0
 private def write (m : Model) (a v : UInt64) : Model :=
@@ -44,7 +45,7 @@ partial def run (r : IO.Ref Model) : Action → IO (UInt8 × UInt64)
         let result ← run r (step i.toUInt32 count v a b c d)
         s := result.1; v := result.2
     run r (next s v)
-  | .platform op a b _ _ _ _ next => do
+  | .platform op a b c d e f next => do
     let m ← r.get
     if op == .virtualRead64 || op == .virtualWrite64 || op == .virtualRead8 || op == .virtualWrite8 then
       if m.forbiddenPage == some (a-a%4096) then
@@ -63,7 +64,7 @@ partial def run (r : IO.Ref Model) : Action → IO (UInt8 × UInt64)
       r.set (write m (a-a%8) value); run r (next 0 0)
     else if op == .syscall then
       let some result := m.syscalls[0]? | throw <| IO.userError s!"unexpected actual syscall {a}"
-      r.set {m with syscalls := m.syscalls.extract 1 m.syscalls.size}
+      r.set {m with syscalls := m.syscalls.extract 1 m.syscalls.size, syscallArguments:=m.syscallArguments.push #[a,b,c,d,e,f]}
       run r (next result.1 result.2)
     else throw <| IO.userError "undeclared actual primitive"
   | _ => throw <| IO.userError "unexpected actual Action"
@@ -142,9 +143,9 @@ private def saveChecks : IO Unit := do
 
 private def bootGateCheck : IO Unit := do
   let r ← IO.mkRef ({forbiddenPage:=some Lemma.User.Multimodal.records} : Model)
-  put r (base+712) 99; put r (base+720) 99; put r (base+736) 99; put r (base+744) 99; put r (base+760) 99
+  put r (base+656) 99; put r (base+712) 99; put r (base+720) 99; put r (base+736) 99; put r (base+744) 99; put r (base+760) 99
   let cleared ← run r ((schoolNotebook% "clearStep") 0 80 0 0 0 0 0)
-  expect (cleared.1 == 0 && (← get r (base+712)) == 0 && (← get r (base+720)) == 0 && (← get r (base+736)) == 0 && (← get r (base+744)) == 0 && (← get r (base+760)) == 0)
+  expect (cleared.1 == 0 && (← get r (base+656)) == 0 && (← get r (base+712)) == 0 && (← get r (base+720)) == 0 && (← get r (base+736)) == 0 && (← get r (base+744)) == 0 && (← get r (base+760)) == 0)
     "boot did not clear always-mapped queue lifecycle gates before fresh Save"
   for school in #[0,1] do
     put r (base+760) school;put r (base+16) 7;put r (base+72) 1
@@ -259,6 +260,83 @@ private def rawFixture : IO (IO.Ref Model) := do
   let empty ← run r (Lemma.Documents.Ink.emptyPage Lemma.Applications.Notebook.pageIndex 1)
   expect (empty.1 == 0) "raw fixture empty page failed"
   return r
+private def capturedMicrobatchChecks : IO Unit := do
+  IO.println "CAPTURE_CASE:r"
+  let r ← rawFixture
+  for a in #[base+112,base+136,base+144,base+160] do put r a 0
+  let mut captured : Array (Array UInt64) := #[]
+  for i in [:96] do
+    captured := captured.push (← captureSample r (100+i.toUInt64) 7 (40000+i.toUInt64) 40000)
+  -- The real first contact cancels an idle arithmetic view and emits458.
+  -- This is an exact88-byte Console acknowledgement, not an IPC grant.
+  r.modify fun m => {m with syscalls:=#[(0,88)]}
+  let progressed ← run r (schoolNotebook% "multimodalAdvanceCaptured")
+  expect (progressed == (0,8) && (← get r (rawState+16)) == 88 &&
+      (← get r (base+112)) == 8 && (← get r (base+104)) != 0 && (← r.get).syscalls.isEmpty)
+    "microbatch did not retire exactly its bounded eight eligible captured samples"
+  let cancelTag := "0000000000000458"
+  for i in [:16] do
+    let address := Lemma.User.Console.packetAddress+3+i.toUInt64
+    expect (((← get r (address-address%8)) >>> (address%8*8) &&& 255) == cancelTag.toUTF8[i]!.toUInt64)
+      "eligible first stroke did not emit its exact idle-checker cancellation observation"
+  for i in [:8] do
+    for j in [:9] do
+      expect ((← get r (Lemma.Applications.Notebook.ink1+128+i.toUInt64*72+j.toUInt64*8)) == captured[i]![j]!)
+        "microbatch altered a full-width ordered controller record"
+  IO.println "CAPTURE_CASE:empty"
+  let empty ← rawFixture
+  let untouched ← run empty (schoolNotebook% "multimodalAdvanceCaptured")
+  expect (untouched == (0,0) && (← empty.get).syscalls.isEmpty && (← get empty (base+160)) == 1)
+    "empty capture polled or modified another foreground transaction"
+  IO.println "CAPTURE_CASE:blocked"
+  let blocked ← rawFixture
+  let _ ← captureSample blocked 1 7 40000 40000
+  blocked.modify fun m => {m with syscalls := (Array.range 8).map fun _ => (IPCABI.wouldBlock,0)}
+  let waiting ← run blocked (schoolNotebook% "multimodalAdvanceCaptured")
+  expect (waiting == (0,8) && (← get blocked (rawState+16)) == 1 &&
+      (← get blocked (base+112)) == 2 && (← get blocked (base+160)) == 1 &&
+      (← blocked.get).syscalls.isEmpty)
+    "blocked raw buffers were overwritten or real owned Store polls were omitted/unbounded"
+  -- A validated actual Commit reply advances the real owner and releases
+  -- only its raw buffer. The other completed tail cannot be skipped merely
+  -- because more capture is waiting; main-loop enqueue still owns that step.
+  IO.println "CAPTURE_CASE:completed"
+  let completed ← rawFixture
+  let _ ← captureSample completed 1 7 40000 40000
+  let ownedSource := Lemma.Applications.Notebook.ink0
+  for (a,v) in #[(base+736,1),(base+760,1),(base+160,3),(base+168,42),
+      (base+200,0),(base+208,ownedSource),(base+224,65547),(base+232,4),
+      (base+176,7),(ownedSource+32,11),(ownedSource+112,3)] do put completed a v
+  reply completed Lemma.Applications.Notebook.incoming 4 1 65547 7 11 0 0
+  completed.modify fun m => {m with syscalls:=#[(0,128),(0,88)],writes:=#[]}
+  let acknowledged ← run completed (schoolNotebook% "multimodalAdvanceCaptured")
+  expect (acknowledged == (0,1) && (← get completed (rawState+16)) == 1 &&
+      (← get completed (base+112)) == 2 && (← get completed (base+144)) == 0 &&
+      (← get completed (base+160)) == 0 && (← get completed (base+744)) == 1 &&
+      (← get completed (base+128)) == 11 &&
+      (← get completed (Lemma.Applications.Notebook.pageIndex+32)) == 1 &&
+      (← completed.get).syscalls.isEmpty)
+    "real Commit did not release exactly its completed owner while preserving captured/tail ordering"
+  expect (!((← completed.get).writes.any fun a => ownedSource ≤ a && a < ownedSource+32768))
+    "Store progress rewrote its pinned raw artifact"
+  IO.println "CAPTURE_CASE:queue"
+  let queue ← rawFixture
+  let _ ← captureSample queue 1 7 40000 40000
+  put queue (base+760) 1;put queue (base+712) 1;put queue SchoolSubmission.arena 41
+  let guarded ← run queue (schoolNotebook% "multimodalAdvanceCaptured")
+  expect (guarded == (0,8) && (← get queue (rawState+16)) == 1 &&
+      (← get queue (base+160)) == 1 && (← queue.get).syscalls.isEmpty)
+    "microbatch borrowed the queue's actual in-flight read endpoint"
+  IO.println "CAPTURE_CASE:paper"
+  let paper ← rawFixture
+  for a in #[base+112,base+144,base+160] do put paper a 0
+  put paper (base+336) 0
+  let _ ← captureSample paper 1 7 54600 1907
+  let yielded ← run paper (schoolNotebook% "multimodalAdvanceCaptured")
+  expect (yielded == (0,1) && (← get paper (rawState+16)) == 1 && (← paper.get).syscalls.isEmpty)
+    "paper-only control dependency spun instead of yielding to ordinary display/safety/device work"
+
+
 private def rawCaptureChecks : IO Unit := do
   let r ← rawFixture
   let mut captured : Array (Array UInt64) := #[]
@@ -722,8 +800,77 @@ private def warmSubmissionChecks : IO Unit := do
   expect ((← run retry (schoolNotebook% "multimodalAsk")).1 == 244 &&
       (← get retry (tutor+112)) == 0) "help overlay became source authority for a new ASK"
 
+private def capturedIdleSchedulingChecks : IO Unit := do
+  let r ← rawFixture
+  for a in #[base+112,base+136,base+144,base+160] do put r a 0
+  put r (base+656) 1
+  for i in [:16] do
+    let _ ← captureSample r (100+i.toUInt64) 7 40000 40000
+    pure ()
+  r.modify fun m => {m with syscalls:=#[(0,88)]}
+  expect ((← run r (schoolNotebook% "multimodalAdvanceInput")).1 == 0 &&
+      (← get r (rawState+16)) == 8) "idle scheduling fixture did not retain its ordered captured suffix"
+  -- This is the real existing op1 nonblocking FIFO take. Its actual empty174
+  -- result reaches the maintained suffix; only the new mode chooses yield.
+  r.modify fun m => {m with syscalls:=#[(174,0),(0,0)],syscallArguments:=#[]}
+  let empty ← run r ((schoolNotebook% "multimodalDrainInput") 7)
+  expect (empty.1 == 0 && (← get r (rawState+16)) == 8 &&
+      (← r.get).syscalls.isEmpty && (← r.get).syscallArguments ==
+      #[#[65,7,1,Lemma.Applications.Notebook.raw,0,0],#[3,0,0,0,0,0]])
+    "pending capture slept on an empty nonblocking FIFO instead of yielding its timeslice"
+  let next ← run r (schoolNotebook% "multimodalAdvanceInput")
+  expect (next.1 == 0 && (← get r (rawState+16)) == 0 && (← get r (base+112)) == 16)
+    "next progress turn required new hardware input or skipped the captured suffix"
+  r.modify fun m => {m with syscalls:=#[(174,0),(0,0)],syscallArguments:=#[]}
+  let idle ← run r ((schoolNotebook% "multimodalDrainInput") 7)
+  expect (idle.1 == 0 && (← r.get).syscallArguments ==
+      #[#[65,7,1,Lemma.Applications.Notebook.raw,0,0],#[4,10000,0,0,0,0]])
+    "empty capture lost the existing bounded idle sleep"
+  for enabled in #[0,1] do
+    for captured in #[0,1] do
+      let old ← rawFixture
+      put old (base+656) enabled;put old (rawState+16) captured
+      old.modify fun m => {m with syscalls:=#[(0,0)],syscallArguments:=#[]}
+      let result ← run old (schoolNotebook% "multimodalIdleInput")
+      let expected : Array UInt64 := if enabled == 1 && captured == 1 then #[3,0,0,0,0,0] else #[4,10000,0,0,0,0]
+      expect (result.1 == 0 && (← old.get).syscallArguments == #[expected] &&
+          (← get old (rawState+16)) == captured)
+        "capture idle scheduling changed a legacy mode or mutated retained samples"
+
+private def schoolWireModeChecks : IO Unit := do
+  for mode in #[0,1,2,3] do
+    let r ← IO.mkRef ({} : Model)
+    put r (base+656) 9
+    let result ← run r ((schoolNotebook% "configureSchoolMode") mode)
+    expect (result.1 == 0 && (← get r (base+656)) == (if mode == 3 then 1 else 0) &&
+        (← get r (base+728)) == (if 2 ≤ mode then 1 else 0) &&
+        (← get r (base+760)) == (if 2 ≤ mode then 1 else mode))
+      "school mode did not explicitly reset legacy wire/capture authority"
+    let captured ← rawFixture
+    for a in #[base+112,base+136,base+144,base+160] do put captured a 0
+    for i in [:16] do
+      let _ ← captureSample captured (100+i.toUInt64) 7 40000 40000
+      pure ()
+    put captured (base+656) (if mode == 3 then 1 else 0)
+    captured.modify fun m => {m with syscalls:=#[(0,88)]}
+    let advanced ← run captured (schoolNotebook% "multimodalAdvanceInput")
+    expect (advanced.1 == 0 && (← get captured (rawState+16)) == (if mode == 3 then 8 else 15))
+      "bounded capture progress changed a legacy root or was absent in version25"
+    let q ← IO.mkRef ({} : Model)
+    put q (base+760) 1;put q (base+656) (if mode == 3 then 1 else 0);put q (base+176) 7
+    q.modify fun m => {m with syscalls:=(Array.range 8).map fun i => (0,SchoolSubmission.arena+i.toUInt64*4096)}
+    let initialized ← run q (schoolNotebook% "schoolQueueInitialize")
+    expect (initialized.1 == 0 && (← get q (SchoolSubmission.arena+336)) == (if mode == 3 then 1 else 0) &&
+        (← get q (base+712)) == 1 && (← get q SchoolSubmission.arena) == 40 && (← q.get).syscalls.isEmpty)
+      "school queue selected a wire mode before initialization or leaked new wire authority to a legacy root"
+  let invalid ← IO.mkRef ({} : Model)
+  put invalid (base+656) 9
+  let rejected ← run invalid ((schoolNotebook% "configureSchoolMode") 4)
+  expect (rejected.1 == 234 && (← get invalid (base+656)) == 9 && (← invalid.get).writes.size == 1)
+    "unknown school mode was admitted or mutated startup authority"
+
 def main : IO Unit := do
-  warmSubmissionChecks;deferredSavedChecks;rawCoalescingChecks;rawCommitReceiptChecks;rawStatusChecks;rawCaptureChecks;floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
+  capturedIdleSchedulingChecks;schoolWireModeChecks;capturedMicrobatchChecks;warmSubmissionChecks;deferredSavedChecks;rawCoalescingChecks;rawCommitReceiptChecks;rawStatusChecks;rawCaptureChecks;floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
   IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS warm-help original-publication CHECK/SEND and visible732 rejection/source isolation, reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control,actual JOIN async source/EOF presentation,32stroke full9word capture/replay,Save ordering,mute/full-buffer safety,overflow/gap/view-loss,captured-work Pending/Saved header+421/423 ownership,burst raw-reference coalescing before ordered controls and actual page/root commit; component only"
 end NotebookSchoolTests
 

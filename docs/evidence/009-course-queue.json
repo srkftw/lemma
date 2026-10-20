@@ -586,5 +586,96 @@
       "path": "build/school/task009-remote-provenance-a5/result.json",
       "sha256": "12935557e2574cf8ff008c336b708ec6bf0f69f0a44f2a38e7bc8b3ed8689346"
     }
+  },
+  "school25_capture_progress_component": {
+    "status": "PASS_ACTUAL_LEAN_COMPONENT_ONLY",
+    "consumer": "Version25 ordinary notebook pen capture, Save and immutable school queue transport. Older modes retain their single-sample schedule and ordinary idle sleep.",
+    "source": {
+      "path": "Lemma/Applications/Notebook.lean",
+      "sha256": "ae46039607e7bd4967fe72f0e226e7a6fb0b6f0acd4d2dec01b21e5152915615",
+      "fixture": "tests/courses/NotebookSchool.lean",
+      "fixture_sha256": "faf405caeaa66c2c6affbd03327d4c68917c973aafd2378fd8534e797b01e45c",
+      "root": "Lemma.Applications.Notebook.mainMultimodalSchoolV3",
+      "configured_mode": 3
+    },
+    "observed_predecessor": {
+      "support": {
+        "path": "build/school/task009-student-browser-school24-a1/writing-loss-prefix-support.json",
+        "sha256": "022e06ca53c58e475108390f7732f142919ae4bfffe892c5b0b33bb0ec8b6018",
+        "bytes": 151207
+      },
+      "controller_samples": 352,
+      "declared_discarded_capture_samples": 133,
+      "controller_loss": 0,
+      "scope": "Actual older School24 browser input failure. No pre-writing backing export exists, so a successor must use a genuinely prepared new prestate and disclose differences; no bitwise paired comparison is claimed."
+    },
+    "change": {
+      "capture_round_bound": 8,
+      "captured_capacity_unchanged": 128,
+      "controller_capacity_unchanged": 256,
+      "raw_words_preserved": 9,
+      "store_progress": "Only actual foreground pumpBookmarkSave between bounded captured-record applications, and never while schoolQueueOwnsIPC. Empty input stops early; blocked paper/control with no Store owner yields to ordinary work.",
+      "mode25_idle": "An actual empty nonblocking input op1 returns174. With retained capture, explicit syscall3 yields the timeslice; no capture and all older modes retain syscall4 sleep10000. This does not change the kernel input controller or claim to repair a blocking receive.",
+      "wire": "Only mode3 enables SchoolSubmission.enableWire96 after successful initializeQueue and before restore. Runtime flag state+656 is explicitly cleared at boot and overwritten in all supported modes. UART740 advertises1,96,230,256; legacy731 remains unchanged."
+    },
+    "actual_cases": [
+      "Eight eligible records retire in exact order with all nine words unchanged; empty capture performs no polling.",
+      "Occupied buffers advance only the real Store owner for eight bounded rounds; a real Commit releases exactly its own pinned source and preserves the tail.",
+      "A queue-owned actual IPC read cannot be borrowed. Paper/control blocking without a Store owner yields after one round.",
+      "Actual8-record retained suffix plus empty FIFO174 chooses syscall3, then the next helper turn retires all8 without new hardware input. Quiescent capture and legacy modes retain exact idle sleep.",
+      "Modes0,1,2 explicitly disable the new wire/capture flag; mode3 enables it; queue enable occurs only after successful initialization."
+    ],
+    "qualification": {
+      "result": {
+        "path": "build/school/task009-school25-components-a3/result.json",
+        "sha256": "fa8e543bf211b5adab13656801890d242285fb717bb93c9cfe44abfef6b897a6",
+        "bytes": 1636
+      },
+      "source_inputs": {
+        "path": "build/school/task009-school25-components-a3/source-inputs.json",
+        "sha256": "4f365e64c057229446f5737ef5df5fa240a619d0954e55ff5f46e1562ba10485",
+        "bytes": 14230
+      },
+      "produced_artifacts": {
+        "path": "build/school/task009-school25-components-a3/produced-artifacts.json",
+        "sha256": "583ee762caf3e81b50f4440ccd032876e441d33b38e4e8837821abbd8d3198d7",
+        "bytes": 1455
+      },
+      "seconds": 49.41269765398465,
+      "peak_owned_rss_bytes": 2188759040,
+      "fresh": "Latest genuine changed Notebook module build9.488s plus actual NotebookSchool Actions39.866s. SchoolStream and SchoolSubmission elaboration from unchanged exact source was reused from the earlier actual module build.",
+      "earlier_module_build": {
+        "path": "build/school/task009-school25-components-a1/result.json",
+        "sha256": "ce133dd148e563515277292fb8aad2d64233874c422e9fd05e6240109dac15fa",
+        "bytes": 1638
+      },
+      "earlier_resource_observer_correction": {
+        "path": "build/school/task009-school25-components-a1/observer-assessment.json",
+        "sha256": "a88a90ee76154d3ac4138e3cfa057e40772f2eb8a6ec04bdc8e901776354e4b1",
+        "bytes": 1564
+      },
+      "direct_prior_source_action_assessment": {
+        "path": "build/school/task009-school25-components-a2/result.json",
+        "sha256": "95aab9c54edf8c9794fb36ad84c89f852d3fe4c13cbc75b3256d83ca04bc1cb2",
+        "bytes": 1285
+      },
+      "helper_positive_and_five_consequential_negatives": {
+        "path": "build/school/task009-capture-throughput-private-a1/combined-helper-assessment.json",
+        "sha256": "5952fc5a34c85dbd04724632eef37135111c55557273f6b2c91918dc67a05d61",
+        "bytes": 2772
+      },
+      "retained_original_expected_message_gate_failure": {
+        "path": "build/school/task009-capture-throughput-private-a1/body-qualifier-a7/result.json",
+        "sha256": "b5d83c96526a77f2c09b5e4dc251f4a49d993f8d0bda918ef3822781ef5febb5",
+        "bytes": 20085
+      },
+      "isolated_paper_negative": {
+        "path": "build/school/task009-capture-throughput-private-a1/body-qualifier-a8/result.json",
+        "sha256": "3dd820840a1646e7ce6059c080088b8ca8c0e648a0464c970a0bb3cb019c0e0a",
+        "bytes": 17633
+      }
+    },
+    "scope": "Actual maintained Lean elaboration and finite copied RAM/IPC/scheduling Actions. No whole-image export, target audit, actual CPU no-loss burst, sustained handwriting throughput, canonical timing, browser usability or physical qualification is established. Existing23/24 archived body pins remain historical; new shared-source exports need their own admission.",
+    "next_exit": "Genuine source-bound version25 export and strict audit, followed by ordinary prepared-state native/browser handwriting, Save, actual complete envelope transfer and cold recovery with measured cycles/wall/loss and unchanged full raw provenance."
   }
 }

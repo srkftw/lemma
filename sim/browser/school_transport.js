@@ -11,27 +11,60 @@ export function guestSchoolCapability(bytes,start=0){
  }
  return capability;
 }
+// Only complete console frames carry bytes. A fresh complete K1 start is
+// the resynchronization boundary after an abandoned irreversible prefix.
+function* schoolFrames(bytes,start=0){
+ if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length||bytes.length-start>16*1048576)throw Error('Invalid bounded guest submission observation');
+ let text=new TextDecoder().decode(bytes.subarray(start)),wire=false;
+ for(const row of text.matchAll(/(?:^|\n)K1 0000000000000740 ((?:[0-9a-f]{16} ){3}[0-9a-f]{16})\r?(?=\n)/g)){
+  const words=row[1].split(' ').map(x=>BigInt('0x'+x));
+  if(words.some((v,i)=>v!==[1n,96n,230n,256n][i]))throw Error('Unsupported guest school wire capability');
+  wire=true;
+ }
+ const starts=[...text.matchAll(/(?:^|\n)K1 000000000000072e (?:[0-9a-f]{16} ){3}[0-9a-f]{16}\r?(?=\n)/g)];
+ if(starts.length)text=text.slice(starts.at(-1).index);
+ for(const line of text.split('\n').slice(0,-1)){
+  const old=/^K1 ((?:[0-9a-f]{16} ){4}[0-9a-f]{16})\r?$/.exec(line);
+  if(old){
+   const words=old[1].split(' ').map(x=>BigInt('0x'+x));
+   if(words[0]!==0x72fn){yield {record:words};continue;}
+   const [,queue,packed,a,b]=words,count=Number(packed>>48n),offset=packed&((1n<<48n)-1n);
+   if(count<1||count>16)throw Error('Invalid legacy chunk length');
+   const view=new DataView(new ArrayBuffer(16));view.setBigUint64(0,a,true);view.setBigUint64(8,b,true);
+   yield {queue,offset,payload:new Uint8Array(view.buffer,0,count)};
+  }else if(line.startsWith('S1')){
+   if(!wire)throw Error('S1 chunk has no admitted guest wire capability');
+   const row=/^S1 ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]+)\r?$/.exec(line);
+   if(!row||line.replace(/\r$/,'').length>229)throw Error('Malformed S1 guest chunk');
+   const queue=BigInt('0x'+row[1]),packed=BigInt('0x'+row[2]),offset=packed&((1n<<48n)-1n),count=Number(packed>>48n);
+   if(queue>>48n!==0x5351n||(queue&((1n<<48n)-1n))===0n||count<1||count>96||offset>=262144n||BigInt(count)>262144n-offset||row[3].length!==count*2)throw Error('Invalid bounded S1 guest chunk');
+   yield {queue,offset,payload:Uint8Array.from(row[3].match(/../g),x=>parseInt(x,16))};
+  }
+ }
+}
 export function guestSchoolQueueState(bytes,start=0){
  if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length)throw Error('Invalid guest queue observation');
  let state=null;
- for(const row of new TextDecoder().decode(bytes.subarray(start)).matchAll(/(?:^|\n)K1 (000000000000072[ef]|000000000000073[0234]) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)/g)){
-  const [tag,a,b,c,d]=row.slice(1).map(x=>BigInt('0x'+x));
+ for(const frame of schoolFrames(bytes,start)){
+  if(frame.payload){
+   if(state?.state!=='pending')continue;
+   const {queue,offset,payload}=frame,count=BigInt(payload.length);
+   if(String(queue)!==state.queue||state.streamComplete||offset!==BigInt(state.streamedBytes)||offset+count>BigInt(state.bytes))throw Error('Guest submission stream is missing, reordered or mixed');
+   state.streamedBytes=String(offset+count);continue;
+  }
+  const [tag,a,b,c,d]=frame.record;
   if(tag===0x732n)state={state:'failed',code:String(a),authority:'compiled-guest-report'};
   else if(tag===0x72en){
    if(a>>48n!==0x5351n||b===0n||c<256n||c>262144n||(d!==1n&&d!==2n))throw Error('Malformed guest submission stream start');
    state={state:'pending',queue:String(a),localQueueCommit:String(b),bytes:String(c),streamedBytes:'0',streamComplete:false,authority:'compiled-guest-report'};
-  }else if(tag===0x72fn){
-   if(state?.state!=='pending')continue;
-   const offset=b&((1n<<48n)-1n),count=b>>48n;
-   if(String(a)!==state.queue||state.streamComplete||count<1n||count>16n||offset!==BigInt(state.streamedBytes)||offset+count>BigInt(state.bytes))throw Error('Guest submission stream is missing, reordered or mixed');
-   state.streamedBytes=String(offset+count);
   }else if(tag===0x730n){
    if(state?.state!=='pending')continue;
    if(String(a)!==state.queue||String(b)!==state.localQueueCommit||String(c)!==state.bytes||d!==0n||state.streamedBytes!==state.bytes)throw Error('Guest submission ended before its exact committed bytes');
    state.streamComplete=true;
+  }else if(tag===0x733n||tag===0x734n){
+   if((d===2n&&b===0n)||(d===3n&&b>0n))state={state:d===2n?'cancelled':'acknowledged',queue:String(a),schoolCommit:String(b),observedFrontier:String(c),observation:tag===0x733n?'new-pointer-commit':'restored-pointer-read',authority:'compiled-guest-report'};
+   else throw Error('Malformed terminal guest queue report');
   }
-  else if((d===2n&&b===0n)||(d===3n&&b>0n))state={state:d===2n?'cancelled':'acknowledged',queue:String(a),schoolCommit:String(b),observedFrontier:String(c),observation:tag===0x733n?'new-pointer-commit':'restored-pointer-read',authority:'compiled-guest-report'};
-  else throw Error('Malformed terminal guest queue report');
  }
  return state;
 }
@@ -53,17 +86,18 @@ export function guestSchoolAsk(bytes,start=0){
 }
 export function guestSchoolSubmission(bytes,start=0){
  if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length||bytes.length-start>16*1048576)throw Error('Invalid bounded guest submission observation');
- const rows=new TextDecoder().decode(bytes.subarray(start)).matchAll(/(?:^|\n)K1 ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)/g);
  let current=null,complete=null;
- for(const row of rows){const [tag,a,b,c,d]=row.slice(1).map(x=>BigInt('0x'+x));
+ for(const frame of schoolFrames(bytes,start)){
+  if(frame.payload){
+   if(!current)throw Error('Guest chunk has no committed stream start');
+   const {queue,offset,payload}=frame;
+   if(queue!==current.queue||offset!==BigInt(current.used)||payload.length>current.total-current.used)throw Error('Guest submission stream is missing, reordered or mixed');
+   current.bytes.set(payload,current.used);current.used+=payload.length;continue;
+  }
+  const [tag,a,b,c,d]=frame.record;
   if(tag===0x72en){
    if(a>>48n!==0x5351n||b===0n||c<256n||c>262144n||(d!==1n&&d!==2n))throw Error('Malformed guest submission stream start');
    current={queue:a,commit:b,total:Number(c),bytes:new Uint8Array(Number(c)),used:0};
-  }else if(tag===0x72fn&&current){
-   const offset=Number(b&((1n<<48n)-1n)),count=Number(b>>48n);
-   if(a!==current.queue||count<1||count>16||offset!==current.used||count>current.total-offset)throw Error('Guest submission stream is missing, reordered or mixed');
-   const words=new DataView(new ArrayBuffer(16));words.setBigUint64(0,c,true);words.setBigUint64(8,d,true);
-   current.bytes.set(new Uint8Array(words.buffer,0,count),offset);current.used+=count;
   }else if(tag===0x730n&&current){
    if(a!==current.queue||b!==current.commit||c!==BigInt(current.total)||d!==0n||current.used!==current.total)throw Error('Guest submission ended before its exact committed bytes');
    complete=current;current=null;
