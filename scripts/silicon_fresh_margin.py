@@ -22,6 +22,18 @@ MACRO = 'RM_IHPSG13_1P_256x64_c2_bm_bist'
 SUPPLIES = {'VDD!': 'VDDlogic', 'VDDARRAY!': 'VDDARRAY', 'VSS!': 'VSS'}
 
 
+def require_macro_placement(inst, x, y, orientation):
+    """Use the pinned public dbBox coordinate API, preserving exact extents."""
+    require(inst is not None and inst.getMaster().getName() == MACRO,
+            'original physical macro master differs')
+    box = inst.getBBox()
+    require(box.xMin() == x and box.yMin() == y and
+            box.xMax() - box.xMin() == 784480 and
+            box.yMax() - box.yMin() == 118780 and
+            inst.getOrient() == orientation,
+            'original physical macro placement or extents differ')
+
+
 def require_recipe(args):
     if not getattr(args, 'fresh_native_margin_grid', False):
         return
@@ -116,11 +128,7 @@ def observations(block, liberty):
     native = Counter()
     for name, x, y, orientation in fixed:
         inst = block.findInst(name)
-        require(inst is not None and inst.getMaster().getName() == MACRO and
-                inst.getBBox().xMin() == x and inst.getBBox().yMin() == y and
-                inst.getBBox().dx() == 784480 and inst.getBBox().dy() == 118780 and
-                inst.getOrient() == orientation,
-                'original physical macro placement/master differs: ' + name)
+        require_macro_placement(inst, x, y, orientation)
         for term in inst.getITerms():
             pin = term.getMTerm().getName(); net = term.getNet()
             require(net is not None, 'unconnected actual macro pin: ' + pin)

@@ -8,12 +8,30 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from silicon_enclosure import GeometryError
-from silicon_fresh_margin import require_recipe, reviewed_grid, prepare, GRID_SHA
+from silicon_fresh_margin import require_recipe, reviewed_grid, prepare, GRID_SHA, MACRO, require_macro_placement
 from silicon_pen_physical import require_clock_layer_recipe, require_route_iterations, qualified_clock_layer_inputs
 from silicon_synth import ROOT, sha
 
 
 class FreshMarginTests(unittest.TestCase):
+    def test_public_dbBox_coordinates_preserve_exact_macro_extent_and_orientation(self):
+        # Pinned OpenDB Python exposes coordinates, not the C++ Rect dx/dy API.
+        def instance(x=120000, y=100000, width=784480, height=118780,
+                     orientation='R0', master=MACRO):
+            return SimpleNamespace(
+                getMaster=lambda: SimpleNamespace(getName=lambda: master),
+                getBBox=lambda: SimpleNamespace(xMin=lambda: x, yMin=lambda: y,
+                                                xMax=lambda: x + width, yMax=lambda: y + height),
+                getOrient=lambda: orientation)
+        require_macro_placement(instance(), 120000, 100000, 'R0')
+        require_macro_placement(instance(y=600000, orientation='MX'), 120000, 600000, 'MX')
+        for changes in ({'width': 784479}, {'height': 118779}, {'x': 120001},
+                        {'y': 100001}, {'orientation': 'MX'}, {'master': 'other'}):
+            with self.subTest(changes=changes), self.assertRaises(GeometryError):
+                require_macro_placement(instance(**changes), 120000, 100000, 'R0')
+        with self.assertRaises(GeometryError):
+            require_macro_placement(None, 120000, 100000, 'R0')
+
     def recipe(self, **changes):
         args = dict(fresh_native_margin_grid=True, fresh_core_power_grid=True,
                     protect_sram_power_geometry=True, group_button_bus=True,
