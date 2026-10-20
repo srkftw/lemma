@@ -6325,10 +6325,10 @@
       "New3GiBAS/1GiBcombinedRSS resolvesallocation: peak500772864RSS/1237872640virtual. Explicitvia1tableoriginaldependencyerror atline404 retainsfailedwhole12.683s; fullinvertercomponentsfinish.",
       "Originaldefaultfullmain forbothViafixtures fixesonlysupportedtableselection, unchangeddeck/geometry;8.863s pairedPASS,493907968RSS/1199202304virtual."
     ],
-    "remaining": "Actualselected0.6 nativeGDS generation/readback+completeoriginalmain/maximal/density/antenna controllerchecks. OriginalMagicfull-layout timeouts/LVS failures remain; no controllerprocess/fabrication claim."
+    "remaining": "Selected0.6 originalGDSmaster/transform and allnativeconductivemask unions nowPASS asseparatescope; GDSstreamout/readback+completeoriginalmain/maximal/density/antenna controllerchecksandconnectedLVSremainunfinished. OriginalMagicfailuresretained."
   },
   "measured_read_decode_launch_candidate": {
-    "status": "UNSELECTED_FINITE_GEOMETRY_QUALIFIED_ROUTE_NOT_EXECUTED",
+    "status": "REJECTED_ACTUAL_THREE_DECODE_BUFFERS_ALL9_FAIL_WITH_SETUP_HOLD_REGRESSIONS",
     "source_selected_version": "lemma-pen-sg13g2-slew-native-margin-grid/1",
     "source_ODB_sha256": "43ffc744714d5f216227035ffa4eca2e77b87f27b61b4f39fa6296a4091f7852",
     "actual_geometry_diagnosis": {
@@ -6504,6 +6504,537 @@
       "launch_available_bytes": 12884901888,
       "continuing_available_bytes": 8589934592
     },
-    "scope": "Zero9034oldmoves/full668ports/33delays/3earliercontrol+327capacity+3slew buffers/nativePG/OBS/960nmpadding andexactrdata6outputidentity preserved; freshGRT/PA/DRT/3RC/native420/all9 required before timing claim. Selection0.6 remains unchanged."
+    "scope": "Zero9034oldmoves/full668ports/33delays/3earliercontrol+327capacity+3slew buffers/nativePG/OBS/960nmpadding andexactrdata6outputidentity preserved; freshGRT/PA/DRT/3RC/native420/all9 required before timing claim. Selection0.6 remains unchanged.",
+    "selection": "Selectedphysical0.6 remains unchanged; realrdata6repairdoesnotjustify matchedhold/slowsetupregressions",
+    "actual_whole": {
+      "path": "build/silicon/task009-selected-decode-route-admission-a2/result.json",
+      "sha256": "3b5c01abd12b1977495711b35c949b83f3c1a35803689dab592c6d25012c633d"
+    },
+    "actual_route": {
+      "path": "build/silicon/task009-selected-decode-route-a1/result.json",
+      "sha256": "7e94d0afbd50d892e2d7f0716cd599617b356e3c9b1baae19beffe4d02faa54f"
+    },
+    "actual_corners": {
+      "path": "build/silicon/task009-selected-decode-corners-a1/result.json",
+      "sha256": "f68b985913c91b96b8deb65c607218b88ae7ab61fcc3eaeddc6414a30297c017"
+    },
+    "whole_seconds": 666.6180948251858,
+    "route_seconds": 648.7561294210609,
+    "peak_combined_owned_RSS_bytes": 2031468544,
+    "output_bytes": 385141857,
+    "actual_cases": [
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "min",
+        "setup_ns": -3.063744,
+        "hold_ns": -0.007207,
+        "electrical_violations": 88,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -4.057702,
+        "hold_ns": 0.052976,
+        "electrical_violations": 166,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "max",
+        "setup_ns": -4.954371,
+        "hold_ns": 0.056119,
+        "electrical_violations": 258,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "min",
+        "setup_ns": -9.420054,
+        "hold_ns": -0.010514,
+        "electrical_violations": 274,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -10.937344,
+        "hold_ns": 0.086399,
+        "electrical_violations": 325,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "max",
+        "setup_ns": -12.546224,
+        "hold_ns": 0.166512,
+        "electrical_violations": 407,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "min",
+        "setup_ns": 0.506781,
+        "hold_ns": -0.049817,
+        "electrical_violations": 60,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "nom",
+        "setup_ns": -0.160497,
+        "hold_ns": -0.084886,
+        "electrical_violations": 99,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "max",
+        "setup_ns": -0.777247,
+        "hold_ns": -0.139204,
+        "electrical_violations": 137,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      }
+    ],
+    "router_violations": {
+      "status": "PASS",
+      "violations": 0,
+      "scope": "Detailed-router geometric checks; separate from process DRC"
+    },
+    "native420_violations": 0,
+    "actual_simple_enclosure_vias_checked": 70171,
+    "actual_endpoint_inventory": {
+      "path": "build/silicon/task009-decode-hold-inventory-a1/result.json",
+      "sha256": "84ffe00a2802bd54e1b2cb5c4c387679d894c88db2e2651ec1e25883687ebe96"
+    },
+    "inventory_seconds": 17.389785008970648,
+    "delayed31_min_hold_ns": 0.17137,
+    "delayed31_min_setup_ns": 7.322627,
+    "negative_hold_union": {
+      "total": 152,
+      "old_control": 135,
+      "other_register": 14,
+      "SRAM": 3
+    },
+    "matched_PVT_negative_SRAM": {
+      "typ_min_lane2_DIN39_ns": -0.007207,
+      "slow_min_lane2_DIN39_ns": -0.010514,
+      "slow_min_lane1_DIN26_ns": -0.009651
+    },
+    "matched_rising_reports": [
+      {
+        "path": "build/silicon/task009-matched-decode-rise-report-a1/result.json",
+        "sha256": "ba2f85926716b7186183c30d486818d041e955dcdf687689ac7cbe18b752386f"
+      },
+      {
+        "path": "build/silicon/task009-matched-decode-rise-report-a2/result.json",
+        "sha256": "304fcf6fba46a8bb2b8048931c9a61165b72f62b47fe5aa0883a1d0d9824afae"
+      }
+    ],
+    "matched_rising_stage_ns": [
+      {
+        "pin": "_06323_/Y",
+        "old_stage": 2.545943,
+        "new_stage": 0.138574,
+        "new_buf8_stage": 0.155635
+      },
+      {
+        "pin": "fanout329/X",
+        "old_stage": 0.965033,
+        "new_stage": 0.251917,
+        "new_buf8_stage": 0.159968
+      },
+      {
+        "pin": "_06651_/Y",
+        "old_stage": 2.093429,
+        "new_stage": 0.105409,
+        "new_buf8_stage": 0.168242
+      }
+    ],
+    "rdata6_nominal_slack_ns": {
+      "old": -4.287679,
+      "candidate": 0.46597
+    },
+    "new_critical": {
+      "nominal": "sample_time[11] to _09754_/D contact_deadline63",
+      "nominal_setup_ns": -4.057702,
+      "slow_max_setup_ns": -12.546224,
+      "selected06_slow_max_setup_ns": -11.933522,
+      "fast_max_hold_ns": -0.139204,
+      "selected06_fast_max_hold_ns": -0.085361
+    },
+    "retained_observer_failure": "Matchedrisea1 emitsoriginalreports then ambiguousTclclear FAIL1.875s; a2 reusescompletedoldreportsandexecutesnewreports once1.725s. No receipt relabeled.",
+    "resource_revision": "Original12GiBfreshfloor nonadmission retained before process/deadline; separately approved11GiBlaunch/3GiBownedRSS/6GiBAS, unchanged900/1200/12GiBoutput/8GiBcontinuous floors."
+  },
+  "actual_original_GDS_geometry_predecessor": {
+    "status": "PASS_SELECTED06_ORIGINAL_MASTER_TRANSFORMS_AND_NATIVE_CONDUCTIVE_MASK_UNION_ONLY",
+    "selected_version": "lemma-pen-sg13g2-slew-native-margin-grid/1",
+    "source_ODB_sha256": "43ffc744714d5f216227035ffa4eca2e77b87f27b61b4f39fa6296a4091f7852",
+    "master_producer": {
+      "path": "build/silicon/task009-klayout-native-master-pilot-a3/result.json",
+      "sha256": "ae1c7f2ec07380e74e33b3641afbc67071b7872358b75beb8f3877afab0f9775"
+    },
+    "master_seconds": 2.932254487881437,
+    "native_exporter": {
+      "path": "build/silicon/task009-native-geometry-export-a1/result.json",
+      "sha256": "8ec363a2ea468f7211a333448edf61cdd6f6f9bee93ceb25cde0ba41ef6fa02f"
+    },
+    "native_export_seconds": 6.401447203941643,
+    "native_export_peak_RSS_bytes": 424833024,
+    "native_export_summary": {
+      "nets": 9717,
+      "ports": 668,
+      "native_RECT_dimensions_bound": 11142,
+      "signal_vias": 59961,
+      "shape_kinds": {
+        "signal_wire_or_rect": 76699,
+        "signal_via": 179883,
+        "special_wire": 462,
+        "special_via": 98666
+      },
+      "layers": {
+        "Metal2": 105148,
+        "Metal3": 63022,
+        "Metal4": 14888,
+        "Metal5": 5505,
+        "Via2": 33029,
+        "Metal1": 29048,
+        "Via1": 31476,
+        "Via3": 9681,
+        "Via4": 58757,
+        "TopMetal1": 657,
+        "TopVia1": 3568,
+        "TopMetal2": 203,
+        "TopVia2": 728
+      }
+    },
+    "byte_identical_original_ODB_roundtrip": true,
+    "union_producer": {
+      "path": "build/silicon/task009-native-gds-mask-union-a1/result.json",
+      "sha256": "c57b8b48e56330c369d5fd69f7ef6b9620fd0d2778095234a54188e639fc2470"
+    },
+    "union_seconds": 14.998890546150506,
+    "union_peak_combined_RSS_bytes": 830742528,
+    "union_component": {
+      "path": "build/silicon/task009-native-gds-mask-union-a1/geometry.json",
+      "sha256": "a4517bdb3617e26bdd793753d0f75e57ebac95ce5dd9869ba782cca8b41c1498"
+    },
+    "mask_union": {
+      "status": "PASS_ORIGINAL_GDS_MASTER_TRANSFORM_AND_NATIVE_ROUTED_MASK_UNION_ONLY",
+      "scope": "KLayout host adapter: original GDS/DEF versus independent native mask union.\n\nInvoke with the pinned KLayout Python runtime, -b -r this-file -rd config_path=.\nGeometry equivalence is not connected layout/netlist comparison or process DRC.\n",
+      "native_geometry": {
+        "nets": 9717,
+        "ports": 668,
+        "native_RECT_dimensions_bound": 11142,
+        "signal_vias": 59961,
+        "shape_kinds": {
+          "signal_wire_or_rect": 76699,
+          "signal_via": 179883,
+          "special_wire": 462,
+          "special_via": 98666
+        },
+        "layers": {
+          "Metal2": 105148,
+          "Metal3": 63022,
+          "Metal4": 14888,
+          "Metal5": 5505,
+          "Via2": 33029,
+          "Metal1": 29048,
+          "Via1": 31476,
+          "Via3": 9681,
+          "Via4": 58757,
+          "TopMetal1": 657,
+          "TopVia1": 3568,
+          "TopMetal2": 203,
+          "TopVia2": 728
+        }
+      },
+      "top_instances": 9037,
+      "original_masters": 45,
+      "actual_routing_shapes_imported": 357082,
+      "actual_via_cells": [
+        "VIA_Via1_XY",
+        "VIA_Via1_YY",
+        "VIA_Via2_YX",
+        "VIA_Via3_XY",
+        "VIA_Via4_YX",
+        "VIA_via1_2_1200_330_1_2_480_480",
+        "VIA_via2_3_1200_330_1_2_480_480",
+        "VIA_via3_4_1200_330_1_2_480_480",
+        "VIA_via4_5_1200_2500_5_2_480_480",
+        "VIA_via4_5_2810_1295_3_6_480_480",
+        "VIA_via4_5_2810_2500_5_6_480_480",
+        "VIA_via5_6_2560_2500_2_2_840_840",
+        "VIA_via5_6_4000_2500_2_4_840_840",
+        "VIA_via6_7_4000_4000_2_2_1960_1960"
+      ],
+      "layers": [
+        {
+          "GDS_layer_datatype": [
+            8,
+            0
+          ],
+          "native_union_area_nm2": 77761075200,
+          "GDS_union_area_nm2": 77761075200,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            8,
+            2
+          ],
+          "native_union_area_nm2": 0,
+          "GDS_union_area_nm2": 0,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            10,
+            0
+          ],
+          "native_union_area_nm2": 44834587625,
+          "GDS_union_area_nm2": 44834587625,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            10,
+            2
+          ],
+          "native_union_area_nm2": 57600000,
+          "GDS_union_area_nm2": 57600000,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            19,
+            0
+          ],
+          "native_union_area_nm2": 1136283600,
+          "GDS_union_area_nm2": 1136283600,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            29,
+            0
+          ],
+          "native_union_area_nm2": 1192346900,
+          "GDS_union_area_nm2": 1192346900,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            30,
+            0
+          ],
+          "native_union_area_nm2": 92899957250,
+          "GDS_union_area_nm2": 92899957250,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            30,
+            2
+          ],
+          "native_union_area_nm2": 38160000,
+          "GDS_union_area_nm2": 38160000,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            49,
+            0
+          ],
+          "native_union_area_nm2": 349484100,
+          "GDS_union_area_nm2": 349484100,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            50,
+            0
+          ],
+          "native_union_area_nm2": 60227060475,
+          "GDS_union_area_nm2": 60227060475,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            50,
+            2
+          ],
+          "native_union_area_nm2": 0,
+          "GDS_union_area_nm2": 0,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            66,
+            0
+          ],
+          "native_union_area_nm2": 2121127700,
+          "GDS_union_area_nm2": 2121127700,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            67,
+            0
+          ],
+          "native_union_area_nm2": 155006397000,
+          "GDS_union_area_nm2": 155006397000,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            67,
+            2
+          ],
+          "native_union_area_nm2": 0,
+          "GDS_union_area_nm2": 0,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            125,
+            0
+          ],
+          "native_union_area_nm2": 629395200,
+          "GDS_union_area_nm2": 629395200,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            126,
+            0
+          ],
+          "native_union_area_nm2": 80020500000,
+          "GDS_union_area_nm2": 80020500000,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            126,
+            2
+          ],
+          "native_union_area_nm2": 0,
+          "GDS_union_area_nm2": 0,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            133,
+            0
+          ],
+          "native_union_area_nm2": 589680000,
+          "GDS_union_area_nm2": 589680000,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            134,
+            0
+          ],
+          "native_union_area_nm2": 87333120000,
+          "GDS_union_area_nm2": 87333120000,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        },
+        {
+          "GDS_layer_datatype": [
+            134,
+            2
+          ],
+          "native_union_area_nm2": 87333120000,
+          "GDS_union_area_nm2": 87333120000,
+          "XOR_area_nm2": 0,
+          "XOR_polygons": 0
+        }
+      ],
+      "negatives": [
+        "deleted_actual_Via1_cut",
+        "added_actual_mapped_conductor",
+        "widened_actual_TopMetal2_PG",
+        "deleted_actual_port_mask"
+      ],
+      "original_map_metadata_shapes": {
+        "original_component_or_diearea:(189, 4)": 1,
+        "text:(10, 25)": 400,
+        "text:(30, 25)": 265,
+        "text:(134, 25)": 3
+      },
+      "not_checked": [
+        "net-connected transistor LVS",
+        "process DRC/EOL/area/density/antenna",
+        "IR/EM",
+        "pads/package/board",
+        "GDS streamout/readback",
+        "BLOCKAGE/LEFOBS are router constraints, not conducting masks; original map omits BLOCKAGE"
+      ],
+      "seconds": 13.18946754699573,
+      "source_seal_equal": true
+    },
+    "recoverable_source_capsule": {
+      "path": "build/silicon/task009-native-gds-source-capsule-a1/result.json",
+      "sha256": "5f2d8c6ae941510397aa0420f57a0bf2a33f33fc442d15484d7fa655da19510c"
+    },
+    "host_only_sources": [
+      {
+        "path": "tooling/silicon/opendb-geometry-export.cpp",
+        "sha256": "9dfcde59d4b9e568ded21eaa8aa51ef919be4efc78a492d03f2315395dcf9a3c"
+      },
+      {
+        "path": "scripts/silicon_geometry_export.py",
+        "sha256": "97bd6b57074d2761fe31c4a4f28d10550fd785ecd712198a2ac404fdea88240d"
+      },
+      {
+        "path": "scripts/silicon_gds_geometry.py",
+        "sha256": "8f9d6994dedae70923a1ab7e208b67e872681b4c4dd101704e7e5df1f1070709"
+      }
+    ],
+    "retained_failures": [
+      "Original10GiBmasterpilot nonadmission beforeprocess/deadline.",
+      "a2nativeoriginalGDSmasterpositive but square-bracketbit-label observerFAIL4.310s; originalGDSusesA_DIN<17>.",
+      "OriginalAPproducerwhole900sFAIL907.669 remains; onlyitscompleted4.719s hostcompile/header/coreABI componentreused.",
+      "OriginalMagicfullprocess300s andLVS/extractionfailures unchanged."
+    ],
+    "scope": "Exactoriginal45physicalGDSmasterhierarchies/9037transforms plus fullnative signal/RECT/via/cut/specialPG/668portconductivemask unions across20layer-purposepairs. No unresolvedconductivelayer omitted; originalBLOCKAGEwarnings areexplicitrouterconstraintmetadata. Globalmaskunion is notnetconnectivity/transistorLVS. GDSstreamout/readback andactualoriginalfulldeckprocesschecksremainnext."
   }
 }
