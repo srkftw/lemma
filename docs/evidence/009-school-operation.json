@@ -664,12 +664,12 @@
       "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
       "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
     },
-    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1\u21922. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
     "connectedUpgrade": {
       "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
       "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
     },
-    "connectedObservation": "Normal owned stop/restart generation5\u21926, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
     "retainedPreparationFailures": [
       {
         "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
@@ -766,7 +766,7 @@
         "path": "tests/school/test_delivery.py",
         "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
       },
-      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2\u21923."
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
     },
     "browserTests": {
       "result": "PASS",
@@ -786,7 +786,7 @@
       "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
       "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
     },
-    "connectedScope": "All29 prior records unchanged, generation6\u21927/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
     "retainedObserverFailures": [
       {
         "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
@@ -1358,7 +1358,7 @@
       "sha256": "c4a73274c4c15b1d8c3cff13c164ffa90ac323a79d6aa66813002551e603efb0"
     },
     "status": "PASS_ORIGINAL_GUEST_ENVELOPE_REPLAY_AFTER_GENERATION_CHANGE",
-    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13\u219214. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
+    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13→14. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
   },
   "ordinary_live_model_release_cycle": {
     "result": {
