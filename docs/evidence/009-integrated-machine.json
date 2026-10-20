@@ -2067,6 +2067,52 @@
       "preserve current-source defaultSchool23 Fast/initializer/Integrated15/Integrated16 production and strict audits before final push",
       "genuine School24 Integrated16 producer/audit and actual canonical ROM/NV execution; the old03914f run is a different guest",
       "School24 continuation remains unsupported until actual new preparedStore/IPC/reply cuts and transactional adoption qualify"
-    ]
+    ],
+    "full16_followup": {
+      "status": "RESOURCE_FAILED_PREPARATION_NO_FULL_IMAGE_OR_AUDIT",
+      "scope": "Genuine selected full0.16 School24 configuration is separate from Fast SDK and old03914f canonical run. Original plans/failures preserved; no deadline extension, FastELF transplant, runtime/RTL rebuild or manual cache edits.",
+      "configuration": "lemmasim-silicon-integrated-pcm-school24-notebook",
+      "unstarted_2_5GiB_plan": {
+        "path": "build/task009/school24-integrated16-bootstrap-a1/admission.json",
+        "sha256": "bb8fa1c379c2ccced0cc4cdccd0a90e51bb33b1739170434962e9b2694bb96fe"
+      },
+      "actual_2_25GiB_attempt": {
+        "path": "build/task009/school24-integrated16-bootstrap-a2/result.json",
+        "sha256": "32812914088c161560d3586f05f84ff36a4f7aaa19195286c8e9a4656998815e"
+      },
+      "actual_seconds": 14.861471991986036,
+      "actual_peak_owned_RSS_bytes": 2977964032,
+      "declared_cap_bytes": 2415919104,
+      "cleanup_closed": {
+        "path": "build/task009/school24-integrated16-bootstrap-a2/cleanup-closed.json",
+        "sha256": "174dcc4c617e2d40e7594fc1ce6f8f4b8300340972a76e5ef0e4fe26f1906121"
+      },
+      "completed_prefix": "Actual closed four-image catalog only; no Firmware/Kernel/User/image PASS",
+      "source_inventory_sha256": "776e11d1c44afb07d565c13dfe8d5bb6b6ba5b59dedc69a0f252c243a889174b",
+      "cache_diagnostic": {
+        "path": "build/task009/school24-integrated16-bootstrap-a2/cache-diagnostic.json",
+        "sha256": "31e0e8f2275cce0a5c1f7e0e3a8bac21ac2a784fb1c8a838fde661b219efb2d6"
+      },
+      "cache_scope": "All1600 prior compiled files remain identical;2unadmitted setup files make the protected inventory invalid. Normal helper must invalidate incomplete state; nothing was manually deleted or certified.",
+      "dependency_preparation": {
+        "prepared_only_2_25GiB_plan": {
+          "path": "build/task009/school24-dependency-preparation-a1/unstarted-observation.json",
+          "sha256": "e6d270a050d548a8c1deeb7fec1924ea2513b3c8145497eaa034dfd42816df63"
+        },
+        "distinct_2GiB_actual_preflight": {
+          "path": "build/task009/school24-dependency-preparation-a2/result.json",
+          "sha256": "8dd2a5804d8ab18b40915712a9ccb423cd5134a618247c180c5e2567308ffd36"
+        },
+        "scope": "No producer or deadline admitted; exact209-module actual-catalog DAG is prepared for normal sequential command_invoker calls, with no source/tool/worker policy change."
+      }
+    },
+    "current23_preservation": {
+      "status": "PENDING_RESOURCE_ADMISSION",
+      "Fast_preflight_refusal": {
+        "path": "build/task009/school23-current-fast-bootstrap-a1/result.json",
+        "sha256": "d6ffe109ef0b215bf93f6908c95111fc1dbb400e9ff5466618440754a4c62150"
+      },
+      "scope": "No target command or source capture admitted. All four current configurations still require genuine exports and strict audits; old immutable23 archives keep historical admission."
+    }
   }
 }

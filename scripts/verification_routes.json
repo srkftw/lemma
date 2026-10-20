@@ -417,6 +417,7 @@
         "scripts/silicon_geometry_export.py",
         "scripts/silicon_gds_geometry.py",
         "scripts/silicon_filler_source.py",
+        "tests/silicon/test_filler_source.py",
         "tooling/silicon/opendb-geometry-export.cpp",
         "tests/silicon/test_gds_geometry.py",
         "tests/silicon/test_power_margin.py"
