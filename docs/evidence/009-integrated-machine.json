@@ -526,7 +526,7 @@
         "save_cycles": 200000000,
         "save_seconds": 1800
       },
-      "scope": "ActualROM/Ready succeeded661Mcycles; actualSavefrontier2→5 stores exactlinkedraw/index. Observerwronglyrequiredheader1payloadchange. Finalpanel/resetnotobserved. OriginalFAILunchanged.",
+      "scope": "ActualROM/Ready succeeded661Mcycles; actualSavefrontier2\u21925 stores exactlinkedraw/index. Observerwronglyrequiredheader1payloadchange. Finalpanel/resetnotobserved. OriginalFAILunchanged.",
       "result": "build/task009/integrated15-school23-positive-a2/result.json",
       "seconds": 5353.874020740041,
       "aggregate_cycles": 699000000
@@ -537,10 +537,10 @@
     },
     "canonical_durable_assessment": "build/task009/integrated15-school23-durable-assessment-a1/result.json",
     "corrected_positive_run": {
-      "status": "PLANNED",
+      "status": "RUNNING_ORIGINAL_BUDGET",
       "plan": "build/task009/integrated15-school23-positive-a3-plan.json",
       "directory": "build/task009/integrated15-school23-positive-a3",
-      "scope": "Newobserver/newexecution, no oldfailurepromotion; exactsameoriginallimits"
+      "scope": "New observer and execution; original failure unchanged. Exact same original limits. Progress file is a live observation, not a terminal receipt."
     }
   },
   "uart_flow": {
@@ -591,12 +591,12 @@
     "remaining": "Ordinarynative/browserselectedpackage+paper/Saveworkflow, activeblockedcontinuation and broadacquisition performance remain separate. No generalCPUwakefix or rawstreamthroughputclaim."
   },
   "native_logical_checkpoint_private": {
-    "status": "PRIVATE_SCOPED_INITIAL_CASE_ONLY_PUBLIC_GUARD_RETAINS",
-    "runtime": "build/task009/mm-checkpoint-private-a6/qemu",
+    "status": "PASS_PRIVATE_READY_AND_ACTIVE_CONVERTER_CUTS_PUBLIC_GUARD_RETAINS",
+    "runtime": "build/task009/mm-checkpoint-private-a13/qemu",
     "initial_pending_uart": "build/task009/mm-checkpoint-initial-a4/result.json",
     "paused_scope_assessment": "build/task009/mm-checkpoint-paused-assessment-a2/result.json",
-    "relation": "lemma-native-logical-observation-relation/1",
-    "scope": "Freshprocessnativeprelaunch/pausedrestore; actualfullMMVMState+22mode logicaltranslations. Exactlytwo named hostexecutionclockoffsets excluded, allguestclock/icount/controller/memory/mapping payload remainscompared. No publicFast0.14admission, activeacquisition/blockedflow/ordinarycheckpointclaim.",
+    "relation": "lemma-native-logical-observation-relation/2",
+    "scope": "Fresh-process native prelaunch/paused restore of the old540-input School23 guest, with full MM VMState and22 logical translation modes. Only two named validated host execution-clock offsets are excluded; every guest clock/icount, controller, memory, mapping and logical wake payload remains compared. Public Fast0.14 admission is still guarded.",
     "ready_failures": [
       {
         "path": "build/task009/mm-checkpoint-ready-flow-a1/result.json",
@@ -605,7 +605,138 @@
       {
         "path": "build/task009/mm-checkpoint-ready-flow-a2/result.json",
         "scope": "ActualReady/blockedrestore+suffixedcontrollers/backingequal; strictcompleteVMState detects realPLICsource13pendingbit causedbyrestoreIRQreassertion. No activeMM/correctpubliccontinuationclaim."
+      },
+      {
+        "path": "build/task009/mm-checkpoint-ready-flow-a3/result.json",
+        "scope": "After the real PLIC correction, a fresh candidate still rejects its exactly identified pending icount-deadline wake; retained failure motivates typed Sidecar2."
       }
-    ]
+    ],
+    "changed_runtime": "Restore suppresses a duplicate already-migrated PLIC edge. Sidecar2 preserves bounded callbacks only when their exact implementation is the pinned icount-deadline wake with NULL data; unknown callbacks remain rejected. No source work queue is drained or modified by capture.",
+    "compile_failures": [
+      {
+        "path": "build/task009/mm-checkpoint-private-a10/build.log",
+        "scope": "Ambiguous mechanical allocation anchor; failed before compilation."
+      },
+      {
+        "path": "build/task009/mm-checkpoint-private-a11/build.log",
+        "scope": "Actual compiler rejected a new witness local colliding with an existing total variable."
+      },
+      {
+        "path": "build/task009/mm-checkpoint-private-a12/build.log",
+        "scope": "Actual compiler rejected a too-broad private patch rename; retained failure."
+      }
+    ],
+    "fresh_runtime_compilation": {
+      "log": "build/task009/mm-checkpoint-private-a13/build.log",
+      "scope": "Three actual affected C objects plus real link from the independently retained configured private a9 source/object archive; original archives and failed patches remain retained. This private seed is distinct from the normal canonical native-flow runtime.",
+      "source_archive": "/nix/store/532kp9djjmg5kzlbbz3qrjg60zm2ir27-lemmasim-qemu-private-logical-wakes-v2-11.1.1/share/lemma-build/consumed-build.tar.gz",
+      "patch": "build/task009/mm-checkpoint-private-a13/wakes.py",
+      "corrected_source_observer": "build/task009/mm-checkpoint-private-a13/preflight-corrected-observer.json",
+      "original_cheap_observer_failure": "build/task009/mm-checkpoint-private-a13/preflight-observer-failure.json"
+    },
+    "qualified_cuts": [
+      {
+        "receipt": "build/task009/mm-checkpoint-ready-flow-a4/result.json",
+        "receipt_sha256": "aef2bf9bff3eda87d6470faa8938ea73f2ebc2701771c85c50ad8c30cb601bbc",
+        "status": "PASS_PRIVATE_READY_BLOCKED_FLOW_SUFFIX",
+        "seconds": 19.649701049900614,
+        "scope": "Actual guest Ready, queued raw pen and4096 admitted UART bytes under real receiver backpressure.",
+        "cut": {
+          "bytes": 27215395,
+          "sha256": "f033c3d36d86f76772cf55cfe2e619c4b56672e4b926bb5240768174701d162f",
+          "logical_bytes": 58448,
+          "logical_sha256": "68160234d455c7a2e19711e180813d747fa96c5b742f232ebb22fb60316cb78e",
+          "backing_sha256": "7cacc364bf7f700426335f7329a2d0fa78a9e37413045aa5dd5357f9fbb25f3c"
+        },
+        "full_controller_and_uart_suffix_equal": true,
+        "durable_suffix_equal": true,
+        "vmstate_relation": {
+          "version": "lemma-native-logical-observation-relation/2",
+          "raw_equal": false,
+          "bytes": 27215359,
+          "host_fields": [
+            {
+              "name": "timer.cpu_ticks_offset",
+              "offset": 3620421,
+              "left": 11469995110,
+              "right": 11561520307
+            },
+            {
+              "name": "timer.cpu_clock_offset",
+              "offset": 3620437,
+              "left": 4266985899,
+              "right": 4301034473
+            }
+          ],
+          "all_other_bytes_equal": true
+        },
+        "logical_translation_relation": {
+          "version": "lemma-native-logical-observation-relation/2",
+          "bytes": 60694,
+          "all_translation_and_witness_payload_equal": true,
+          "file_binding_and_integrity_checked": true
+        },
+        "coherently_forged_vmstate_rejected_after_partial_load": true,
+        "original_unchanged": true,
+        "owned_processes_reaped": true
+      },
+      {
+        "receipt": "build/task009/mm-checkpoint-active-flow-a1/result.json",
+        "receipt_sha256": "96cc9607ebec3d9c66f6a8d3a724415513e67906da8f92ffbfa0908a00968eb5",
+        "status": "PASS_PRIVATE_READY_BLOCKED_FLOW_SUFFIX",
+        "seconds": 16.543397824047133,
+        "scope": "Actual guest Capture tap starts acquisition; stream4 has count4 and converter in-flight at its real next-timer+8ns boundary, plus blocked UART.",
+        "cut": {
+          "bytes": 27227662,
+          "sha256": "7447e7ccb2d6dd4c94929532ad9195620d12c3ddcb2a62f0529bc974d609ea46",
+          "logical_bytes": 49246,
+          "logical_sha256": "fb4b5d797c987c763973e408740f4e6beb34060384773760248b4244a0e852e1",
+          "backing_sha256": "7cacc364bf7f700426335f7329a2d0fa78a9e37413045aa5dd5357f9fbb25f3c"
+        },
+        "full_controller_and_uart_suffix_equal": true,
+        "durable_suffix_equal": true,
+        "vmstate_relation": {
+          "version": "lemma-native-logical-observation-relation/2",
+          "raw_equal": false,
+          "bytes": 27227644,
+          "host_fields": [
+            {
+              "name": "timer.cpu_ticks_offset",
+              "offset": 3632706,
+              "left": 7011126964,
+              "right": 7075407142
+            },
+            {
+              "name": "timer.cpu_clock_offset",
+              "offset": 3632722,
+              "left": 2608229849,
+              "right": 2632142825
+            }
+          ],
+          "all_other_bytes_equal": true
+        },
+        "logical_translation_relation": {
+          "version": "lemma-native-logical-observation-relation/2",
+          "bytes": 51472,
+          "all_translation_and_witness_payload_equal": true,
+          "file_binding_and_integrity_checked": true
+        },
+        "coherently_forged_vmstate_rejected_after_partial_load": true,
+        "original_unchanged": true,
+        "owned_processes_reaped": true
+      }
+    ],
+    "remaining": "Actual guest DMA/audio and pending storage cuts, explicit unknown-callback rejection, normal source-bound runtime selection and public transactional fork/admission. These finite old-guest cases do not qualify economy acquisition or browser continuation."
+  },
+  "school23_join_and_ink_successors": {
+    "join_source": "build/task009/school23-join-source-a1",
+    "join_inventory_sha256": "f02378c94e45221b0bdf0a197ff9318f0f1cb469eab532966a43ce09c003ffc5",
+    "join_producers": "build/task009/school23-join-producer-a1/result.json",
+    "join_collected_six_role_pins": "build/task009/school23-join-producer-a1/collected-join-authority.json",
+    "scope": "Three actual cached JOIN-repair producers pass; not audited or packaged as the final ordinary workflow.",
+    "ink_failed_producer": "build/task009/school23-ink-producer-a1/result.json",
+    "ink_failure": "Actual LLVM/object/link completed, but source_before/after rejects a consumed contract document change. Original failure and generated action receipts retained; no admitted build from this run.",
+    "ink_source": "build/task009/school23-ink-source-a1",
+    "ink_inventory_sha256": "8d5d6352ec95d47ca3061b08dccac0fd46c1d378bdf6c42b9fcde734d2be6724"
   }
 }
