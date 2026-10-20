@@ -9908,5 +9908,261 @@
       "fabrication/physical functional or safety qualification",
       "educational benefit"
     ]
+  },
+  "private_deadline_valid_predicate": {
+    "status": "UNSELECTED_FINITE_MAPPED_AND_ZERO_WIRE_OBSERVATION_NOT_PHYSICAL_TIMING",
+    "patch": {
+      "path": "tooling/silicon/candidates/009-deadline-predicate.patch",
+      "sha256": "cd324ffe2f81f94295c57e66b360c41dbb1da0ee0a716f737c1f06ffc3e1ed61",
+      "original_RTL_sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b",
+      "candidate_RTL_sha256": "b0ff2cab1826c3bbd4cb85a08d20cf2715b330148df17faafe02e3fa111bb4d9"
+    },
+    "measured_cause": "Actual routed joint candidate contact_deadline[2]→[20] watchdog/control feedback; no finished timing claim for retained joint layout.",
+    "implementation": "One derived deadline-nonzero state bit, cleared at reset/mark_loss and updated at each actual accepted edge; original four16bit comparison helper. Full64deadline payload/+10000000, FIFO256x181, acceptededge/order/ACK unchanged. Default-register path retains original predicate.",
+    "invariant": "Known accepted timestamps≤0xffffffff_ff67697f cannot wrap +10000000 to zero; contactflag equals deadline-nonzero. Explicit duplicate parity-X poison preserves original vector-add unknown result for unknown-time samples accepted by original procedural X behavior.",
+    "components": [
+      {
+        "path": "build/silicon/task009-deadline-predicate-finite-a2/result.json",
+        "sha256": "ca08d188c0b4240802b0511aa4d2981bc5a9d705ea72705714657e0a04de98cc",
+        "status": "PASS_PRIVATE_DEADLINE_PREDICATE_FOURSTATE_FULL_PROTOCOL_AND_FIVE_MUTANTS_ONLY",
+        "seconds": 2.760875181062147,
+        "source_seal_equal": true
+      },
+      {
+        "path": "build/silicon/task009-deadline-predicate-mapping-a1/result.json",
+        "sha256": "bfd8417b2e6dca7b8f477c8d882e7f399db4946a5e39c2c8a0b160256001820f",
+        "status": "PASS_PRIVATE_DEADLINE_PREDICATE_ACTUAL_MAPPING_FULLWIDTH_AND_FEEDBACK_GRAPH_ONLY",
+        "seconds": 9.870651087956503,
+        "source_seal_equal": true
+      },
+      {
+        "path": "build/silicon/task009-deadline-predicate-cone-diagnosis-a1/result.json",
+        "sha256": "2b9f1df34842c8ddf493b81212e709c85652ee7f8a485a12391a2e66119f9826",
+        "status": "OBSERVED_PRIVATE_DEADLINE_PREDICATE_MAPPED_CAUSAL_CONE_NOT_STA_OR_SELECTION",
+        "seconds": 0.11058329185470939,
+        "source_seal_equal": true
+      },
+      {
+        "path": "build/silicon/task009-deadline-predicate-zero-wire-a1/result.json",
+        "sha256": "ad160759b2c7ee6848e26ff4df47f1d938811c980bebd9b1537cd214291bcdec",
+        "status": "OBSERVED_PRIVATE_DEADLINE_PREDICATE_ZERO_WIRE_ORIGINAL_CONSTRAINT_COMPARISON_ONLY",
+        "seconds": 10.433369455859065,
+        "source_seal_equal": true
+      },
+      {
+        "path": "build/silicon/task009-deadline-predicate-patch-reproduction-a1/result.json",
+        "sha256": "aa82e3db079c8cd5486c5ab29f556c0e728176de6c088ca84e3ab0816dd6876b",
+        "status": "PASS_EXACT_PRIVATE_PREDICATE_PATCH_REPRODUCTION_ONLY",
+        "seconds": 0.002358929021283984,
+        "source_seal_equal": true
+      }
+    ],
+    "original_refusal": {
+      "receipt": {
+        "path": "build/silicon/task009-deadline-predicate-finite-a1/result.json",
+        "sha256": "b6a1af99dd5956f581e4e475a1b3f6888ed3f8886d333497b6229566aa37a313",
+        "status": "FAIL",
+        "seconds": 0.023611003998667,
+        "source_seal_equal": true
+      },
+      "meaning": "NOT_ADMITTED before Icarus; available12521459712<12GiB,commands[]; preserved. Distincta2 after observed headroom change passes samefloor."
+    },
+    "finite": {
+      "whole_seconds": 2.760875181062147,
+      "peak_owned_RSS_bytes": 35971072,
+      "cases": [
+        {
+          "name": "sram-ingress",
+          "expected_negative": false,
+          "exit_code": 0
+        },
+        {
+          "name": "sram-banks",
+          "expected_negative": false,
+          "exit_code": 0
+        },
+        {
+          "name": "default-ingress",
+          "expected_negative": false,
+          "exit_code": 0
+        },
+        {
+          "name": "lost-loss-clear",
+          "expected_negative": true,
+          "exit_code": 1
+        },
+        {
+          "name": "lost-reset-clear",
+          "expected_negative": true,
+          "exit_code": 1
+        },
+        {
+          "name": "unknown-time-not-poisoned",
+          "expected_negative": true,
+          "exit_code": 1
+        },
+        {
+          "name": "missed-equality",
+          "expected_negative": true,
+          "exit_code": 1
+        },
+        {
+          "name": "truncated-watchdog",
+          "expected_negative": true,
+          "exit_code": 1
+        }
+      ],
+      "scope": "Current504f reference, actualvendorSRAM ingress/fullBanks/defaultpublic protocol; exact64watchdog boundaries/reset/ACK and acceptedX/Z invariant, five real mutants. Not unbounded formal equivalence or physical qualification."
+    },
+    "mapping": {
+      "cells": 7025,
+      "flipflops": 810,
+      "baseline_cells": 7066,
+      "baseline_flipflops": 809,
+      "memory_macros": 3,
+      "full181bit_fifo_capacity": 256,
+      "cached_predicate_width": 1,
+      "port_names": 22,
+      "mapped_verilog_sha256": "a0dc9bfa51bd9251c2919fad61ae28e516d056d6223cc041f02cce0af02d44b9",
+      "mapped_JSON_sha256": "fb395da70a8a6fc0f081348eb81a431bde80f3df1e2fae56c22def1873e32e52",
+      "scope": "Actual logical mapping/source-model width+constant bindings and graph only; graph depth is not sensitized STA or physical timing."
+    },
+    "mapping_budget": {
+      "whole_seconds": 45,
+      "tool_seconds": 40,
+      "combined_owned_RSS_bytes": 536870912,
+      "AS_bytes": 3221225472,
+      "output_bytes": 134217728,
+      "launch_available_bytes": 12884901888,
+      "continuing_host_available_bytes": 8589934592
+    },
+    "mapping_peak_owned_RSS_bytes": 177250304,
+    "logical_graph": {
+      "deadline2_to_20_stages": [
+        23,
+        21
+      ],
+      "maximum64deadline_to_deadline_stages": [
+        23,
+        23
+      ],
+      "allFF_feedback_max_stages": [
+        24,
+        25
+      ],
+      "old_max_endpoint": "sequence_all_ones[0]",
+      "new_max_endpoint": "head[7]",
+      "direct_deadline_Q_input_pin_uses": [
+        245,
+        211
+      ],
+      "meaning": "Connectivity graph is not sensitized STA; stagecount alone does not establish timing improvement."
+    },
+    "zero_wire_budget": {
+      "whole_seconds": 30,
+      "each_STA_seconds": 10,
+      "combined_owned_RSS_bytes": 536870912,
+      "AS_bytes": 3221225472,
+      "output_bytes": 134217728,
+      "launch_available_bytes": 12884901888,
+      "continuing_host_available_bytes": 8589934592
+    },
+    "zero_wire_peak_owned_RSS_bytes": 164179968,
+    "zero_wire_cases": [
+      {
+        "name": "baseline",
+        "actual_typed_semantic_pins": 129,
+        "global_summary": "worst slack max -3.964620\nworst slack min -0.672674",
+        "exact_deadline2_to_20": {
+          "startpoint": "_09693_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09711_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 4.018103,
+          "arrival_ns": 5.586873,
+          "report_paths": 1
+        },
+        "all_deadline64_feedback": {
+          "startpoint": "_09692_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09729_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 3.92091,
+          "arrival_ns": 5.676723,
+          "report_paths": 64
+        },
+        "allFF_deadline_feedback": {
+          "startpoint": "_09693_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_10185_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": -1.595905,
+          "arrival_ns": 11.025411,
+          "report_paths": 5
+        },
+        "head7_feedback": {
+          "startpoint": "_09692_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09978_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 6.598655,
+          "arrival_ns": 3.049381,
+          "report_paths": 1
+        }
+      },
+      {
+        "name": "candidate",
+        "actual_typed_semantic_pins": 130,
+        "global_summary": "worst slack max -3.691342\nworst slack min -0.672674",
+        "exact_deadline2_to_20": {
+          "startpoint": "_09350_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09368_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 5.73736,
+          "arrival_ns": 3.856562,
+          "report_paths": 1
+        },
+        "all_deadline64_feedback": {
+          "startpoint": "_09379_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09369_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 4.678684,
+          "arrival_ns": 4.90694,
+          "report_paths": 64
+        },
+        "allFF_deadline_feedback": {
+          "startpoint": "_09379_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09842_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": -1.367893,
+          "arrival_ns": 10.79643,
+          "report_paths": 5
+        },
+        "head7_feedback": {
+          "startpoint": "_09379_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09635_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 6.408967,
+          "arrival_ns": 3.239082,
+          "report_paths": 1
+        },
+        "cache_feedback": {
+          "startpoint": "_09379_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09347_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 4.899607,
+          "arrival_ns": 4.686018,
+          "report_paths": 1
+        }
+      }
+    ],
+    "constraints": "Same original10ns clock,2ns I/O delays,0.006pF outputloads,0.25ns uncertainty,0.15ns clocktransition,originalBUF4 inputdrive,typ25C standard/SRAM Lib. No wireRC/placement/CTS/pad/package, no endpoint/clock masking. Pin names bound from actual OpenDB semanticnets rather than JSON private auto-names.",
+    "global_remaining_unplaced_cause": {
+      "source": "addr[2]",
+      "target": "head_entry[0]",
+      "weak_gate": "_06935_/Y sg13g2_a21oi_1",
+      "fanout": 362,
+      "pin_capacitance_pF": 1.31888,
+      "stage_delay_ns": 7.68157,
+      "whole_setup_slack_ns": -3.691342,
+      "meaning": "Actual original-library zero-wire control-load problem; additional route or RTL correction needed."
+    },
+    "selected_physical_lock": "UNCHANGED0.6.0",
+    "runtime_rebuild": "NOT_REQUESTED_OR_CLAIMED",
+    "fresh_route_PEX_process": "NOT_RUN",
+    "remaining": [
+      "globalsetup and unplacedhold failure",
+      "existing routedsetup/hold/electricalall9FAIL",
+      "fullconnectedLVS/processDRC",
+      "fabrication/physicalfunctional/safetyqualification",
+      "educationalbenefit"
+    ]
   }
 }
