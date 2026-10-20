@@ -664,12 +664,12 @@
       "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
       "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
     },
-    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1\u21922. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
     "connectedUpgrade": {
       "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
       "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
     },
-    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "connectedObservation": "Normal owned stop/restart generation5\u21926, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
     "retainedPreparationFailures": [
       {
         "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
@@ -766,7 +766,7 @@
         "path": "tests/school/test_delivery.py",
         "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
       },
-      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2\u21923."
     },
     "browserTests": {
       "result": "PASS",
@@ -786,7 +786,7 @@
       "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
       "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
     },
-    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "connectedScope": "All29 prior records unchanged, generation6\u21927/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
     "retainedObserverFailures": [
       {
         "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
@@ -1358,7 +1358,7 @@
       "sha256": "c4a73274c4c15b1d8c3cff13c164ffa90ac323a79d6aa66813002551e603efb0"
     },
     "status": "PASS_ORIGINAL_GUEST_ENVELOPE_REPLAY_AFTER_GENERATION_CHANGE",
-    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13→14. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
+    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13\u219214. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
   },
   "ordinary_live_model_release_cycle": {
     "result": {
@@ -2527,5 +2527,139 @@
       "sourceSHA256": "b05abd42e016d6727823300687dac36607d91d86a07d149d3343ede68ebe9533",
       "tests": "python3 -m unittest tests.silicon.test_viewer_pixels tests.silicon.test_live_session.LifecycleFailures.test_pointer_clock_preserves_mtime_and_literal_contact_hover_fields tests.silicon.test_live_session.LifecycleFailures.test_pointer_clock_failure_cannot_admit_a_sample"
     }
+  },
+  "ordinarySchool24Browser": {
+    "scope": "Actual ordinaryStudent on sealedSchool24 MM2functional0.14 subset; not full0.16, exactcontinuation, physicaltiming, handwritingproof or educationalbenefit.",
+    "sourceInventorySHA256": "776e11d1c44afb07d565c13dfe8d5bb6b6ba5b59dedc69a0f252c243a889174b",
+    "browserBundleSHA256": "b1e7a0c7ebff32af3f4b3b6f486a1edb193c3417d1ca8792d6e308b026470348",
+    "warm": {
+      "result": "CLOSED_INCOMPLETE_RETAINED_FAILURES",
+      "terminal": "build/school/task009-student-browser-school24-a1/terminal-result.json",
+      "terminalSHA256": "16e38a86e85ba1850303a042bf47892e0d917964067605bc85a3970ba24f8124",
+      "actualLocalReductionRequest": 1000585,
+      "typedResult": [
+        5,
+        6
+      ],
+      "authoredHelpSequence": 40,
+      "authoredHelpSaved": 43,
+      "guestAttempt": "guest.171.6003579778261581870",
+      "schoolCommit": 180,
+      "guestAck": 733,
+      "finalSaved": 50,
+      "backingSHA256": "e6a5581dcfde37ab9fa74500bede914974356c3f82536ec4477faa463c9c094a",
+      "writtenBurstLostSamples": 133,
+      "teacherClarification": 181,
+      "clarificationAtWarmClose": "NOT_PRESENTED",
+      "remainingAtWarmClose": [
+        "independent coldrecovery",
+        "subsequent originalreview response",
+        "permissions"
+      ],
+      "strictExecutionBoundary": null,
+      "originalWholeSeconds": 3000,
+      "absoluteWholeCasePass": false,
+      "server": "Unexpected earlierSIGTERM/-15 at1142.294s; original normal-exit label is not proof of requestedstop. Causeunknown."
+    },
+    "cold": {
+      "result": "CLOSED_INCOMPLETE_OUTGOING_STREAM",
+      "plan": "build/school/task009-student-browser-school24-cold-a1/plan.json",
+      "originalDeadlineUTC": "2026-10-20T16:04:12.196375+00:00",
+      "recovery": "build/school/task009-student-browser-school24-cold-a1/cold-recovery-assessment.json",
+      "recoverySHA256": "ac4291faa2b35cdf1bd7b429993e6a5628bdf89dadbd34e84e23349ac836b1bd",
+      "readyHostSeconds": 208.9661700000763,
+      "readyFunctionalUnits": 298500000,
+      "backingByteIdenticalToSaved50": true,
+      "guestAcknowledgedOldQueueAfterCold": 734,
+      "teacher181": "Actual readableprotectedUI+visible screenshot; typed checking separate from clarification.",
+      "originalDue": 179,
+      "originalPublication": [
+        804,
+        1
+      ],
+      "writtenResponse": "Actual47keyboardstrokes plus2ordinarymouse corrections, nativecontrollerpixels retained, Saved113 before checking and118 aftercorrections; no new reportedloss.",
+      "writtenController": "build/school/task009-student-browser-school24-cold-a1/review-complete-controller.pgm",
+      "writtenControllerSHA256": "be5c07c0f1016925f6368198d664a253023e3787fb86230868e049ee6a66d707",
+      "newCommittedQueue": "6003579778261581944",
+      "newEnvelopeBytes": 39544,
+      "schoolCommitForNewQueue": "NOT_YET_OBSERVED; actual modeled stream partial",
+      "newReviewCompletion": "NOT_OBSERVED; opening is not completion",
+      "performanceScope": "Measured decoded stream about50B/hostsecond; wholephase deadline unchanged, no directhost envelope bypass. FullbrowserRSSunavailable.",
+      "terminal": "build/school/task009-student-browser-school24-cold-a1/terminal-result.json",
+      "terminalSHA256": "82d885e8a77225d7c43ab608e7359091b78b85d77a94b001781b9e344f12f3b0",
+      "terminalCycle": "3741934133",
+      "terminalTiming": {
+        "runSeconds": 1683.677775006506,
+        "elapsedSeconds": 3499.360105000019
+      },
+      "cpuStopped": true,
+      "strictBoundary": null,
+      "inputSamples": 394,
+      "controllerPen": {
+        "count": "0",
+        "epoch": "1",
+        "loss": "0",
+        "resync": false,
+        "head_sequence": "0"
+      },
+      "terminalBackingSHA256": "a2bc80517ac244ee6b0039d7ac939fa7d06e1b15c9a3a085173eaf7729d4f6f2",
+      "partialEnvelopeBytes": 16616,
+      "closedObservedUTC": "2026-10-20T16:03:42.436071+00:00",
+      "serverTerminal": {
+        "returncode": 0,
+        "terminal_unix": 1792512249.805716,
+        "elapsed_seconds": 3615.6494920253754,
+        "original_deadline_utc": "2026-10-20T16:13:54.156225+00:00",
+        "reason": "normal server exit",
+        "failure": null,
+        "server_peak_rss_bytes": 71294976,
+        "host_min_MemAvailable_bytes": 9014005760,
+        "browser_peak_rss_bytes": null,
+        "cleanup": "owned server process group reaped; browser guest must be Closed through ordinary UI separately"
+      },
+      "currentDefaultTypedCheck": {
+        "request": "0xf4729",
+        "revision": 1,
+        "goal": 1,
+        "outcome": 2,
+        "scope": "Defaulttypedworkspace only; this is not a checker judgment of the independentwrittenactivity6."
+      }
+    },
+    "queuedColdSuccessor": {
+      "result": "RUNNING_SEPARATE_COLD_QUESTION",
+      "plan": "build/school/task009-student-browser-school24-queue-recovery-a1/plan.json",
+      "originalDeadlineUTC": "2026-10-20T16:46:24.918676+00:00",
+      "scope": "Actualordinarycoldreplay of pendingdurablequeue; prior3600sphase remainsincomplete. Sameauditedtarget, no host envelope bypass or checkpoint. Assessment/review/permissions stillpending."
+    }
+  },
+  "hostedAcknowledgedGeneration26": {
+    "ready": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation26/ready.json",
+    "readySHA256": "2225bd4ab00ffc5bdbb7eb169d6388e0a14c94cc4b12efeef38a1249b0b193e6",
+    "originalDeadlineUTC": "2026-10-20T17:03:05.627757+00:00",
+    "priorRecordsUnchanged": 181,
+    "sameClockEpochSequence": 5,
+    "scopedPrincipals": [
+      "alice",
+      "bob",
+      "teacher"
+    ],
+    "actualStaleWorkerRejected": true,
+    "priorBackup": {
+      "records": 181,
+      "artifacts": 65,
+      "seconds": 9.390127371996641
+    },
+    "priorStop": {
+      "seconds": 0.17086816392838955,
+      "normalCLIacknowledged": true,
+      "portsClosed": [
+        8890,
+        8891
+      ],
+      "ownedPID483172Gone": true,
+      "outerMonitorTerminal": "MISSING; sessionexit143; causenotestablished",
+      "separateAssessment": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation25/independent-stop-assessment.json"
+    },
+    "scope": "Ordinary sameclock normalrestart, notnewcrossclockrestore or physicalpowerloss; privateOSrandomsynthetic admissions remainloopback."
   }
 }
