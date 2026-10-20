@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T21:06:42.864455+00:00",
+  "written_at": "2026-10-20T22:30:02.457402+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -10161,6 +10161,308 @@
       "globalsetup and unplacedhold failure",
       "existing routedsetup/hold/electricalall9FAIL",
       "fullconnectedLVS/processDRC",
+      "fabrication/physicalfunctional/safetyqualification",
+      "educationalbenefit"
+    ]
+  },
+  "private_first_head_bypass": {
+    "status": "UNSELECTED_FINITE_MAPPED_AND_POSITIVE_ZERO_WIRE_SETUP_ONLY_HOLD_AND_PHYSICAL_CLOSURE_OPEN",
+    "patch": {
+      "path": "tooling/silicon/candidates/009-first-head-bypass.patch",
+      "sha256": "f0ed6a83ff1ebee407d2d96cc2d14cda3ed05541cad73e7c08a5452eb4269303",
+      "original_RTL_sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b",
+      "candidate_RTL_sha256": "97b077796078558fdc84ebcb36bcd7cffc70fd2056653a1269478d250dbedded",
+      "includes_prior_deadline_predicate": true
+    },
+    "measured_cause": "The predicate-only actual zero-wire addr[2]→head_entry[0] path uses a 362-load/1.318880pF A21OI with 7.681570ns driven delay. The complex accepted/ACK/watchdog control writes the entire181bit head.",
+    "implementation": "One first_head_pending state bit selects the existing full181bit ingress register on the first accepted edge. The next edge copies the previous ingress value under nonblocking semantics; simultaneous second raw capture cannot retarget that value. Empty physical head is count-masked to exactzero, including all8MMIO fields, preserving original explicit clears. Default-register path remains literal. Prior derived deadline predicate/comparator is included; full64counter/time/order/ACK/loss/reset and FIFO256x181 unchanged.",
+    "components": [
+      {
+        "path": "build/silicon/task009-head-bypass-finite-a2/result.json",
+        "sha256": "d7c0217dceb07727ac99e01c3eee9d841e1c3184e140750bfb33a1c13c3af1f6",
+        "status": "PASS_PRIVATE_FIRST_HEAD_BYPASS_FULL181_FOURSTATE_PROTOCOL_AND_SIX_MUTANTS_ONLY",
+        "seconds": 1.7060771470423788,
+        "source_seal_equal": true,
+        "all_owned_reaped": true,
+        "source_archive_sha256": "b130ebea4ec7deac454c2bc065673410b41a768b2d992175f738bbc84f9e6989"
+      },
+      {
+        "path": "build/silicon/task009-head-bypass-mapping-a1/result.json",
+        "sha256": "51b345733302857e9b55ea6736c32cb40ac55b424342273ec53e5c3247194d1b",
+        "status": "PASS_PRIVATE_HEAD_BYPASS_ACTUAL_MAPPING_FULLWIDTH_AND_FEEDBACK_GRAPH_ONLY",
+        "seconds": 10.095150348031893,
+        "source_seal_equal": true,
+        "all_owned_reaped": true,
+        "source_archive_sha256": "1e8040121dad683e8bc3b11ad428f866893468fd7d8edbd73b64c3bcfbcadb4e"
+      },
+      {
+        "path": "build/silicon/task009-head-bypass-zero-wire-a1/result.json",
+        "sha256": "78a2505d7c3b9a2f1b1f728347980967a8217435e00d11aeea2413d09e281ac0",
+        "status": "OBSERVED_PRIVATE_HEAD_BYPASS_ZERO_WIRE_ORIGINAL_CONSTRAINT_COMPARISON_ONLY",
+        "seconds": 10.6211222759448,
+        "source_seal_equal": true,
+        "all_owned_reaped": true,
+        "source_archive_sha256": "d39c97f67b0c287aaa09b87c399137a13a40feb4b90a0c50a3b14e8897dd07fc"
+      },
+      {
+        "path": "build/silicon/task009-head-bypass-patch-reproduction-a1/result.json",
+        "sha256": "71502997b8b48c7caf0ea35273f3142fe5f0c959f22fe4acbe2d23cd9bca6056",
+        "status": "PASS_EXACT_PRIVATE_HEAD_BYPASS_PATCH_REPRODUCTION_ONLY",
+        "seconds": 0.003304164856672287,
+        "source_seal_equal": true,
+        "all_owned_reaped": true
+      }
+    ],
+    "retained_failure": {
+      "receipt": {
+        "path": "build/silicon/task009-head-bypass-finite-a1/result.json",
+        "sha256": "84d693734f8c0b8aad0114bd1d19fbba4e249474811963a520deea03f4b7a9f6",
+        "status": "FAIL",
+        "seconds": 0.3702845510561019,
+        "source_seal_equal": true,
+        "all_owned_reaped": true,
+        "source_archive_sha256": "a66770795a4c4dd7c43dfabf3ce2a81e642e154fc9ffe045e1697b9c75439965"
+      },
+      "meaning": "Original source placed visible_head assignment before count declaration. Icarus compile2; no simulation. Distinct candidate only moves assignment below declared count. Original failure and source retained unchanged."
+    },
+    "finite": {
+      "budget": {
+        "whole_seconds": 60,
+        "each_compile_seconds": 8,
+        "each_simulation_seconds": 8,
+        "combined_owned_RSS_bytes": 536870912,
+        "AS_bytes": 2147483648,
+        "output_bytes": 134217728,
+        "launch_available_bytes": 12884901888,
+        "continuing_host_available_bytes": 8589934592
+      },
+      "peak_owned_RSS_bytes": 35520512,
+      "output_bytes": 2773246,
+      "cases": [
+        {
+          "name": "sram-ingress",
+          "expected_negative": false,
+          "exit_code": 0
+        },
+        {
+          "name": "sram-banks",
+          "expected_negative": false,
+          "exit_code": 0
+        },
+        {
+          "name": "default-ingress",
+          "expected_negative": false,
+          "exit_code": 0
+        },
+        {
+          "name": "no-first-edge-bypass",
+          "expected_negative": true,
+          "exit_code": 1
+        },
+        {
+          "name": "lost-pending-copy",
+          "expected_negative": true,
+          "exit_code": 1
+        },
+        {
+          "name": "stale-pending-ACK",
+          "expected_negative": true,
+          "exit_code": 1
+        },
+        {
+          "name": "pending-never-clears",
+          "expected_negative": true,
+          "exit_code": 1
+        },
+        {
+          "name": "missing-empty-mask",
+          "expected_negative": true,
+          "exit_code": 1
+        },
+        {
+          "name": "copies-new-raw-not-prior-ingress",
+          "expected_negative": true,
+          "exit_code": 1
+        }
+      ],
+      "scope": "Actual vendor SRAM ingress/fullBanks/default protocol; canonical504f parallel reference, every-edge full181visible_head equality and externalMMIO; firstedge/immediateACK, secondrawcapture+ACK, loss/reset while pending, fullFIFO/overflow and acceptedX/Z. Six actual compiled mutants reject. Bounded finite evidence, not unbounded formal equivalence."
+    },
+    "mapping": {
+      "cells": 7095,
+      "flipflops": 811,
+      "baseline_cells": 7066,
+      "baseline_flipflops": 809,
+      "memory_macros": 3,
+      "full181bit_fifo_capacity": 256,
+      "cached_predicate_width": 1,
+      "port_names": 22,
+      "mapped_verilog_sha256": "87de577e9d8d40e3ecbc9a9c540a4b3b9ae1f68b019f313a4fea9a97e2f11584",
+      "mapped_JSON_sha256": "072414e4f3ec47929f86783dec54b41aec2300f486ffa8130644a15ce2431e76",
+      "scope": "Actual logical mapping/source-model width+constant bindings and graph only; graph depth is not sensitized STA or physical timing."
+    },
+    "mapping_budget": {
+      "whole_seconds": 45,
+      "tool_seconds": 40,
+      "combined_owned_RSS_bytes": 536870912,
+      "AS_bytes": 3221225472,
+      "output_bytes": 134217728,
+      "launch_available_bytes": 12884901888,
+      "continuing_host_available_bytes": 8589934592
+    },
+    "mapping_peak_owned_RSS_bytes": 176840704,
+    "zero_wire_budget": {
+      "whole_seconds": 30,
+      "each_STA_seconds": 10,
+      "combined_owned_RSS_bytes": 536870912,
+      "AS_bytes": 3221225472,
+      "output_bytes": 134217728,
+      "launch_available_bytes": 12884901888,
+      "continuing_host_available_bytes": 8589934592
+    },
+    "zero_wire_peak_owned_RSS_bytes": 164225024,
+    "zero_wire_cases": [
+      {
+        "name": "baseline",
+        "actual_typed_state_pins": 130,
+        "summary": "worst slack max -3.691342\nworst slack min -0.672674",
+        "global_setup": {
+          "startpoint": "addr[2] (input port clocked by core)",
+          "endpoint": "_09842_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": -3.691342,
+          "arrival_ns": 13.119879,
+          "report_paths": 5
+        },
+        "global_hold": {
+          "startpoint": "_09661_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "physical_storage.field_bank[0].memory",
+          "slack_ns": -0.672674,
+          "arrival_ns": 0.219386,
+          "report_paths": 5
+        },
+        "exact_deadline2_to_20": {
+          "startpoint": "_09350_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09368_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 5.73736,
+          "arrival_ns": 3.856562,
+          "report_paths": 1
+        },
+        "all_deadline64_feedback": {
+          "startpoint": "_09379_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09369_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 4.678684,
+          "arrival_ns": 4.90694,
+          "report_paths": 64
+        },
+        "allFF_deadline_feedback": {
+          "startpoint": "_09379_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09842_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": -1.367893,
+          "arrival_ns": 10.79643,
+          "report_paths": 5
+        },
+        "head7_feedback": {
+          "startpoint": "_09379_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09635_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 6.408967,
+          "arrival_ns": 3.239082,
+          "report_paths": 1
+        },
+        "head_payload0": {
+          "startpoint": "addr[2] (input port clocked by core)",
+          "endpoint": "_09842_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": -3.691342,
+          "arrival_ns": 13.119879,
+          "report_paths": 1
+        }
+      },
+      {
+        "name": "candidate",
+        "actual_typed_state_pins": 133,
+        "summary": "worst slack max 1.992360\nworst slack min -0.653249",
+        "global_setup": {
+          "startpoint": "addr[2] (input port clocked by core)",
+          "endpoint": "_09518_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 1.99236,
+          "arrival_ns": 7.621941,
+          "report_paths": 5
+        },
+        "global_hold": {
+          "startpoint": "_09799_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "physical_storage.field_bank[0].memory",
+          "slack_ns": -0.653249,
+          "arrival_ns": 0.226934,
+          "report_paths": 5
+        },
+        "exact_deadline2_to_20": {
+          "startpoint": "_09487_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09505_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 5.250222,
+          "arrival_ns": 4.390675,
+          "report_paths": 1
+        },
+        "all_deadline64_feedback": {
+          "startpoint": "_09516_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09518_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 4.396507,
+          "arrival_ns": 5.217794,
+          "report_paths": 64
+        },
+        "allFF_deadline_feedback": {
+          "startpoint": "_09516_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09549_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 3.946407,
+          "arrival_ns": 5.654692,
+          "report_paths": 5
+        },
+        "head7_feedback": {
+          "startpoint": "_09516_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09772_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 6.254558,
+          "arrival_ns": 3.394505,
+          "report_paths": 1
+        },
+        "head_payload0": {
+          "startpoint": "_10162_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09980_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 4.77863,
+          "arrival_ns": 4.852305,
+          "report_paths": 1
+        },
+        "cache_feedback": {
+          "startpoint": "_09516_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "_09484_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 5.020227,
+          "arrival_ns": 4.620669,
+          "report_paths": 1
+        },
+        "pending_Q": {
+          "startpoint": "_09798_ (rising edge-triggered flip-flop clocked by core)",
+          "endpoint": "rdata[0] (output port clocked by core)",
+          "slack_ns": 3.340639,
+          "arrival_ns": 4.409361,
+          "report_paths": 5
+        },
+        "pending_D": {
+          "startpoint": "now_ticks[31] (input port clocked by core)",
+          "endpoint": "_09798_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": 2.33578,
+          "arrival_ns": 7.229355,
+          "report_paths": 1
+        }
+      }
+    ],
+    "constraints": "Original10ns clock,2ns I/O delays,.006pF outputloads,.25ns uncertainty,.15ns clocktransition,originalBUF4 inputdrive,typ25C standard/SRAMLib. Actual native semantic nets bind133 candidate and130 predicate-only state pins. Ideal clocks/no wireRC/placement/CTS/pad/package; no endpoints masked.",
+    "tradeoffs": "Actual7095cells/811FF versus canonical7066/809 and predicate7025/810. Global unplacedsetup−3.691342→+1.992360ns and headDarrival13.119879→4.852305ns; allFFdeadline feedbackslack−1.367893→+3.946407ns. Exactdeadline2→20 arrival worsens3.856562→4.390675ns and64deadlinefeedback4.906940→5.217794ns, still positive in this ideal model. Holdremains−.653249ns. Positive lowerboundsetup does not establish routed timing.",
+    "selected_RTL_and_physical_lock": "UNCHANGED504f_AND0.6.0",
+    "standard_product_mapping_receipt": "NOT_YET_RUN; private producer schema is not silently substituted for check_pen_sram.py physical-input admission",
+    "fresh_placement_route_PEX_process": "NOT_RUN_FOR_THIS_RTL",
+    "runtime_rebuild": "NOT_REQUESTED_OR_CLAIMED",
+    "next_physical_dependency": "Produce the supported candidate-only mapping receipt, then fresh source-specific placement/grid/routing and all available extracted RC/PVT/nativegeometry/connectivity/process checks; old ABC cell placements and well moves cannot be relabeled as this new RTL.",
+    "remaining": [
+      "unplacedholdfailure",
+      "all9 selectedextractedtiming/electricalFAIL",
+      "fullconnectedLVS/processDRC",
+      "matchedfastmodel/rules/powerintegrity",
       "fabrication/physicalfunctional/safetyqualification",
       "educationalbenefit"
     ]
