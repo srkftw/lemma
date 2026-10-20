@@ -526,7 +526,7 @@
         "save_cycles": 200000000,
         "save_seconds": 1800
       },
-      "scope": "ActualROM/Ready succeeded661Mcycles; actualSavefrontier2\u21925 stores exactlinkedraw/index. Observerwronglyrequiredheader1payloadchange. Finalpanel/resetnotobserved. OriginalFAILunchanged.",
+      "scope": "ActualROM/Ready succeeded661Mcycles; actualSavefrontier2→5 stores exactlinkedraw/index. Observerwronglyrequiredheader1payloadchange. Finalpanel/resetnotobserved. OriginalFAILunchanged.",
       "result": "build/task009/integrated15-school23-positive-a2/result.json",
       "seconds": 5353.874020740041,
       "aggregate_cycles": 699000000
@@ -1139,7 +1139,7 @@
     "user_multimodal_sha256": "dd3500b3d3264c3574f90ef2cbf8a18170b986a302ffa5e51d0b858fae3991f7",
     "actual_body_producer": "build/task009/school23-mm-producer-a3/result.json",
     "cached_provenance_refresh": "build/task009/school23-mm-producer-a5/result.json",
-    "fresh_reused": "a3 genuinely produces changed Kernel/Notebook Lean\u2192Core0\u2192LLVM O2\u2192RV64IM objects; a5 reuses those original actions and binds corrected strict observer/contract source. Cached compilation is not execution.",
+    "fresh_reused": "a3 genuinely produces changed Kernel/Notebook Lean→Core0→LLVM O2→RV64IM objects; a5 reuses those original actions and binds corrected strict observer/contract source. Cached compilation is not execution.",
     "strict_audits": {
       "receipt": "build/task009/school23-mm-audit-a4/result.json",
       "result": "PASS",
@@ -1181,7 +1181,7 @@
       ]
     },
     "service_scope": "Version2: owned64-byte record DMA and bounded1..16 signed16 PCM batches, arm/prefill/start; ordinary CAPTURE and explicit sixteen-sample AUDIO TEST are actual consumers. Full frames, continuous audio and economy acquisition remain unsupported.",
-    "finite_domain_admission": "Service.call12\u219219 only with actual pure version2; Notebook control6\u21927 only with actual testAudio consumer. Legacy authority remains scoped and current source safety validates28 tiles/raw replay/coalescing.",
+    "finite_domain_admission": "Service.call12→19 only with actual pure version2; Notebook control6→7 only with actual testAudio consumer. Legacy authority remains scoped and current source safety validates28 tiles/raw replay/coalescing.",
     "retained_failures": [
       "build/task009/school23-mm-producer-a1/result.json",
       "build/task009/school23-mm-producer-a2/result.json",
@@ -2659,7 +2659,7 @@
       },
       "original_terminal_unchanged": true,
       "bundle_manifest_sha256": "8f213d6eecebd7da9d090d9db105cb6c3d50ba7c1bfdf251ea2c82184c4670c7",
-      "first_reduction": "Actual V9 request1000374:10/12\u21925/6; Prepared22/Applied23",
+      "first_reduction": "Actual V9 request1000374:10/12→5/6; Prepared22/Applied23",
       "cold_reduction": "ExplicitSave24/normalClose/newCPU0samebacking; request1000375 AlreadyCanonical2; Prepared25/Applied26",
       "original_submission": "Actual804/1publication148 remains immutable after804/2policy2 publication; School157/guest733frontier138,teacher161 againstoriginal two criteria",
       "due_response": "Opaque original work remains Unsupported4; actualSchool167/guest733frontier214,Teacher168,old1reviewdelay60000ms andFeedback161/168",
@@ -3368,5 +3368,162 @@
       },
       "remaining_exact_start_owned": []
     }
+  },
+  "optical17_standalone_controller_relation": {
+    "status": "PASS_FINITE_STANDALONE_C_RTL_ONLY",
+    "interface": {
+      "path": "build/task009/optical-connected-preparation-a1/interface.json",
+      "sha256": "6f1ca6edfab322c616129c4d92564d9ff0346560e36ee5e40ee0c4b88cb16322"
+    },
+    "normative_contract": {
+      "path": "docs/contracts/009-optical-frame-v1.html",
+      "sha256": "af73ec7604d40a8bf611ffb07e02e03624cac79fed72c3a4d01d41e8fd81f33c"
+    },
+    "ownership_regression": {
+      "path": "build/task009/optical-checker-ownership-a1/result.json",
+      "sha256": "1b450f104d56d96769561ca6b8c0b701c9edf43877fe11a5203734915648f0da"
+    },
+    "retained_attempts": [
+      {
+        "receipt": {
+          "path": "build/task009/optical-controller-components-a1/result.json",
+          "sha256": "d4c460dc601ce76befbab05dc1865e22d45402669f84c6b58a49235db5cc28ab"
+        },
+        "plan": {
+          "path": "build/task009/optical-controller-components-a1/plan.json",
+          "sha256": "65cafa2e48d81b36ae49b802478e01bbbf3eacfa2875109e3184fb55c707fb7c"
+        },
+        "status": "FAIL",
+        "elapsed_seconds": 2.4418731490150094,
+        "peak_combined_owned_RSS_bytes": 290652160,
+        "minimum_host_available_bytes": 14232690688,
+        "output_bytes": 548717,
+        "source_unchanged": true,
+        "remaining_exact_start_owned": [],
+        "actual_protocol": null,
+        "scope": "Original C warning-as-error failure; no actual C/RTL relation executed.",
+        "compiled_sources": {
+          "sim/host/lemma_optical.c": "005b65fa1d4558108b4275f1b7b580ae30e53fc6d1eac676eceaf7959bc06161",
+          "sim/host/lemma_optical.h": "0c366417c1b621330ad018034ae28095d6ea82528deb94a8e071a6139a243689",
+          "sim/rtl/lemma_optical.sv": "8b7639d4bf785375d313588ffb0b0caf61fc3c0aef8ec9490841c8f4b3ff7798",
+          "sim/rtl/tests/optical_tb.cpp": "52317e3178b8946a546c710526ec4f951a88867b9ceed2dc33b0ca445473e635"
+        }
+      },
+      {
+        "receipt": {
+          "path": "build/task009/optical-controller-components-a2/result.json",
+          "sha256": "88019eee4a2216842824c15ea761f481b9f7b58e6a74bcb3292e0afbc04f178f"
+        },
+        "plan": {
+          "path": "build/task009/optical-controller-components-a2/plan.json",
+          "sha256": "8f0075b66376305280f67a19fdd7d2575cebb1f66773dc8e222c90ba3665af18"
+        },
+        "status": "FAIL",
+        "elapsed_seconds": 3.5367782718967646,
+        "peak_combined_owned_RSS_bytes": 289931264,
+        "minimum_host_available_bytes": 14159556608,
+        "output_bytes": 595626,
+        "source_unchanged": true,
+        "remaining_exact_start_owned": [],
+        "actual_protocol": null,
+        "scope": "Original SystemVerilog reserved identifier parser failure; no actual C/RTL relation executed.",
+        "compiled_sources": {
+          "sim/host/lemma_optical.c": "0d004f13c9f96906bd3365ec45b47cabac11aed082beb2c0ad0f48fe325339f2",
+          "sim/host/lemma_optical.h": "0c366417c1b621330ad018034ae28095d6ea82528deb94a8e071a6139a243689",
+          "sim/rtl/lemma_optical.sv": "8b7639d4bf785375d313588ffb0b0caf61fc3c0aef8ec9490841c8f4b3ff7798",
+          "sim/rtl/tests/optical_tb.cpp": "52317e3178b8946a546c710526ec4f951a88867b9ceed2dc33b0ca445473e635"
+        }
+      },
+      {
+        "receipt": {
+          "path": "build/task009/optical-controller-components-a3/result.json",
+          "sha256": "1970f17f854742bb80fd6f886c4104d4e95a0f5e4729683d1e08aa9847c2f34c"
+        },
+        "plan": {
+          "path": "build/task009/optical-controller-components-a3/plan.json",
+          "sha256": "d4a797d2eea2ffb1f14060717dcef4cc396bed038d17fd4f0fe91f428991a1e7"
+        },
+        "status": "PASS_STANDALONE_OPTICAL1_RELATION",
+        "elapsed_seconds": 35.86831395118497,
+        "peak_combined_owned_RSS_bytes": 861442048,
+        "minimum_host_available_bytes": 13192904704,
+        "output_bytes": 177189196,
+        "source_unchanged": true,
+        "remaining_exact_start_owned": [],
+        "actual_protocol": "PASS optical-frame/1 cases=52 checks=16956816",
+        "scope": "Actual 52-case aligned-payload relation. It did not cover later legal partial-beat deadlock or arbitrary odd LE16 splits.",
+        "compiled_sources": {
+          "sim/host/lemma_optical.c": "0d004f13c9f96906bd3365ec45b47cabac11aed082beb2c0ad0f48fe325339f2",
+          "sim/host/lemma_optical.h": "0c366417c1b621330ad018034ae28095d6ea82528deb94a8e071a6139a243689",
+          "sim/rtl/lemma_optical.sv": "ff989865f49f33b5ca63b6f32bd7b47777f4adeab30aa51309182462c9f5eb3d",
+          "sim/rtl/tests/optical_tb.cpp": "52317e3178b8946a546c710526ec4f951a88867b9ceed2dc33b0ca445473e635"
+        }
+      },
+      {
+        "receipt": {
+          "path": "build/task009/optical-controller-partial-baseline-a1/result.json",
+          "sha256": "cf979a8475a131c658a3013b02b3b583781fa000866fdc0dca5d794cd7d8b7b5"
+        },
+        "plan": {
+          "path": "build/task009/optical-controller-partial-baseline-a1/plan.json",
+          "sha256": "6dd3a5003cec49167f794f1d8bc2b03481e2d2ea4387bd87fb4e88dde3b5241f"
+        },
+        "status": "FAIL",
+        "elapsed_seconds": 29.300519248005003,
+        "peak_combined_owned_RSS_bytes": 861839360,
+        "minimum_host_available_bytes": 13261664256,
+        "output_bytes": 177195899,
+        "source_unchanged": true,
+        "remaining_exact_start_owned": [],
+        "actual_protocol": null,
+        "scope": "Changed finite fixture against prior controller concretely fails legal four-byte then eight-byte source bounded progress; compiler actions pass and the actual relation fails. Original bytes remain retained.",
+        "compiled_sources": {
+          "sim/host/lemma_optical.c": "0d004f13c9f96906bd3365ec45b47cabac11aed082beb2c0ad0f48fe325339f2",
+          "sim/host/lemma_optical.h": "0c366417c1b621330ad018034ae28095d6ea82528deb94a8e071a6139a243689",
+          "sim/rtl/lemma_optical.sv": "ff989865f49f33b5ca63b6f32bd7b47777f4adeab30aa51309182462c9f5eb3d",
+          "sim/rtl/tests/optical_tb.cpp": "961acf671c3d56cc8f12bbcb6cbcd68a4aad848469eec2d53bb80593c46afea3"
+        }
+      }
+    ],
+    "fixed_partial_byte_relation": {
+      "receipt": {
+        "path": "build/task009/optical-controller-partial-fixed-a1/result.json",
+        "sha256": "01c6c474930cafcfc9bc8d627b42897bfdcfb288b16a0770d6b85791ab7c7e68"
+      },
+      "plan": {
+        "path": "build/task009/optical-controller-partial-fixed-a1/plan.json",
+        "sha256": "68ca0d6b2604a3b31994e2a0e50df44c6e8ed5f48115e74fb20b1dec6a884acb"
+      },
+      "status": "PASS_STANDALONE_OPTICAL1_RELATION",
+      "elapsed_seconds": 40.00280454196036,
+      "peak_combined_owned_RSS_bytes": 931774464,
+      "minimum_host_available_bytes": 12735262720,
+      "output_bytes": 178226929,
+      "source_unchanged": true,
+      "remaining_exact_start_owned": [],
+      "actual_protocol": "PASS optical-frame/1 cases=56 checks=16925642",
+      "scope": "Actual 56 cases /16,925,642 checks: C and RTL every-edge registers, source ready, immutable DMA and IRQ; complete independently amplified G8/LE16 payloads; arbitrary one-to-eight-byte splits including 1+8 and7+8/cross-row timing; bounded carry backpressure, held write retirement and reset with partial pixels; SG, permissions, pinning, expiry and finite forced exhaustion.",
+      "compiled_sources": {
+        "sim/host/lemma_optical.c": "912e3bd2af9e35f63b8c9f2fd333001b3fb989b5bdd042642f03730d7d530129",
+        "sim/host/lemma_optical.h": "2d19188e88b2fed319fae11281706289d3c36ac5739dbfc8980da83b9fd50ca2",
+        "sim/rtl/lemma_optical.sv": "0972498c75fa1d4ad8f9b93ede475a1870799e68006c331c782416ac2a5d1d11",
+        "sim/rtl/tests/optical_tb.cpp": "6c0af80aa5a15fd1c2bbced3b76f6045fb6bf2c15235391bc9cac3237d7d7384"
+      }
+    },
+    "bounds": {
+      "whole_seconds": 300,
+      "command_seconds": 120,
+      "aggregate_owned_RSS_bytes": 1610612736,
+      "address_space_bytes": 17179869184,
+      "output_bytes": 536870912,
+      "launch_available_bytes": 12884901888,
+      "continuing_available_bytes": 8589934592
+    },
+    "actual_tools": {
+      "path": "build/task009/optical-controller-partial-fixed-a1/tools.json",
+      "sha256": "0b9b020bddc6533cf1e01223dd4b82944f1f81adf61f364db144681074be916e"
+    },
+    "source_changes": "Two complete output words plus one raw low LE16 byte replace the single-word packer. Gain/clamping occurs only after a full pixel; completion shifts unconsumed carry only after the immutable old beat retires. Pre-edge readiness remains conservative. No register/header, timing clock, permission, capacity or reset-taxonomy relaxation.",
+    "scope": "Standalone synthetic digital controller/model finite relation only. Sealed profile/SoC/PMP/descriptor sources were not executed by this producer. No SoC fabric-reset, Lean/compiler/kernel, native QEMU, Wasm/browser, guest/tutor, analog acquisition, physical timing, economy throughput or checkpoint/continuation admission. Earlier aligned-only PASS and legal partial-beat FAIL remain separate immutable scopes."
   }
 }
