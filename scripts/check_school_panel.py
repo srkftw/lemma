@@ -174,6 +174,27 @@ def check(args):
                     deadline=time.monotonic()+10
                     while panel.busy and time.monotonic()<deadline:window.update();time.sleep(.01)
                     if panel.busy:raise Core0Error("actual GUI learner declaration timed out")
+                revision=json.loads(json.dumps(fixture));revision["course"]["edition"]="2"
+                panel.editor.delete("1.0","end");panel.editor.insert("1.0",json.dumps(revision))
+                panel.publication_policy.set("2");panel.unit_action(True);wait_activity()
+                def publications():
+                    stored=json.loads((connection.school_root/"state.json").read_text())["payload"]
+                    return [record for record in stored["records"] if record["kind"]=="publication"]
+                actual_publications=publications()
+                if (len(actual_publications)!=2 or actual_publications[0]!=published["record"] or
+                    actual_publications[1]["data"]["revision"]!=2 or actual_publications[1]["data"]["policy"]!=2):
+                    raise Core0Error("teacher panel lost the selected publication policy or changed the original edition")
+                panel.editor.delete("1.0","end");panel.editor.insert("1.0",json.dumps(fixture))
+                panel.unit_action(True);wait_activity()
+                if "immutable publication conflict" not in panel.output.get("1.0","end") or publications()!=actual_publications:
+                    raise Core0Error("teacher panel silently retargeted an old publication policy")
+                revision["course"]["edition"]="3"
+                panel.editor.delete("1.0","end");panel.editor.insert("1.0",json.dumps(revision))
+                panel.publication_policy.set("0");panel.unit_action(True);wait_activity()
+                if "policy version must be in the admitted signed range" not in panel.output.get("1.0","end") or publications()!=actual_publications:
+                    raise Core0Error("teacher panel bypassed the actual Lean policy-version rejection")
+                panel.editor.delete("1.0","end");panel.editor.insert("1.0",json.dumps(fixture))
+                panel.publication_policy.set("2")
                 panel.choice_kind.set("attempt");panel.choice_reference.set(attempt["key"])
                 panel.choice_policy.set("1");panel.choice_reason.set("I request independent reconstruction of this original work.")
                 panel.choice_goal.set("Reconstruct the distributive coefficients independently.")
@@ -210,6 +231,8 @@ def check(args):
                      "tabScreenshots":screenshots,"authorityResultInsideVisibleWindow":True,
                      "learnerChoiceScreenshot":{"path":"panel-study-choices.png","sha256":sha256(out/"panel-study-choices.png")},
                      "actualGoalChallengeAndHistoryDisplayed":True,"actualAttemptOverrideRejected":True,
+                     "publicationPolicySelection":{"newEdition":2,"newPolicy":2,"originalEditionUnchanged":True,
+                         "oldEditionPolicyConflictRejected":True,"zeroPolicyRejectedByLean":True},
                      "teacherRasterPresentation":{"pixels":[825,1100],"areaSamplesPreserveAllFourPixelPositions":True,
                          "gray4OrderPreserved":True,"truncatedImageRejected":True,"decoder":"Tk binary PPM/PGM"},
                      "actualLeanStatusDisplayed":True,"windowPixels":[window.winfo_width(),window.winfo_height()],

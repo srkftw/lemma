@@ -2289,5 +2289,35 @@
     "originalDeadlineUTC": "2026-10-20T15:12:11.694904+00:00",
     "resourceScope": "New7200s execution after normal old stop; no original deadline extension or overlapping authority. Prospective9GiB launch/6GiB continuing host available memory accommodates planned actual browser/native workloads;512MiB sampled recursive owned transport/Lean/barrier RSS,4GiB address,2GiB file bounds. No unmeasured shared Chromium peak claim.",
     "remaining": "Actual School24 target whole-image audits and ordinary native/browser execution remain separate. This normal same-host restart is not a new cross-clock restore, host crash or physical power-loss measurement."
+  },
+  "teacherPublicationPolicyControl": {
+    "status": "PASS_ACTUAL_NATIVE_PANEL_AND_HOSTED_LEAN_AUTHORITY",
+    "admission": {
+      "path": "build/school/task009-panel-policy-admission-a1/result.json",
+      "sha256": "7d5c8128bff804383a9ccc80810f637a777a3657623c0e935d8e03b8982f1d56"
+    },
+    "producer": {
+      "path": "build/school/task009-panel-policy-a1/panel-evidence.json",
+      "sha256": "9286fa7e4821d2982af00e1e26ff6fdcf66495fbb4f84951ede8ff90419249d0"
+    },
+    "seconds": 9.575934967957437,
+    "peakSampledOwnedRSSBytes": 331337728,
+    "ownedProcessesReaped": true,
+    "originalWholeSeconds": 120,
+    "presentation": {
+      "path": "docs/evidence/009-teacher-publication-policy.png",
+      "sha256": "3a0d117a6928c962f02e49482f1d4294195bd43cf88cd974afa2a5f32d89c276"
+    },
+    "sourceInputs": {
+      "scripts/lemmasim_school_panel.py": "8957b405e91014c6bf742a5be1352c03d3664db9f9f9061523db09f30fd38eb1",
+      "scripts/check_school_panel.py": "936469a1114e4b673716474fe247dd4bcde9d09bdd45a13ef37ed9c3a65e97fa"
+    },
+    "actualSelectedPolicy": 2,
+    "actualNewEdition": 2,
+    "oldEditionPolicyPreserved": true,
+    "immutableOldPolicyChangeRejected": true,
+    "zeroPolicyRejectedByLean": true,
+    "freshReused": "Fresh existing Tk/actual Lean scenario on separate synthetic testschool; reuses exact current66-input hosted producer-a3 and native session metadata for path display. No target compile or live generation25 mutation.",
+    "scope": "Practical teacher control replaces a hardwired policy1. Same Authoring decode/compile and Authority publication; host parses the chosen integer only. Isolated Xvfb presentation and actual hosted admission do not establish learner guest rendering, production authentication or educational benefit."
   }
 }

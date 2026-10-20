@@ -394,6 +394,11 @@ class Panel:
         ttk.Button(row,text="Validate / preview",command=lambda:self.unit_action(False)).pack(side="left",padx=(0,8))
         ttk.Button(row,text="Publish immutable revision",command=lambda:self.unit_action(True)).pack(side="left")
         ttk.Button(row,text="Edit activity visually",command=self.activity_editor).pack(side="left",padx=8)
+        publication=ttk.Frame(frame);publication.pack(fill="x",pady=(6,0))
+        self.publication_policy=self.tk.StringVar(value="1")
+        ttk.Label(publication,text="Publication policy version").pack(side="left",padx=(0,8))
+        ttk.Entry(publication,textvariable=self.publication_policy,width=12).pack(side="left")
+        ttk.Label(publication,text="Lean validates the version; older publications keep their original policy.").pack(side="left",padx=8)
         ttk.Button(frame,text='Preview published edition as learner on tablet',command=self.preview_learner).pack(anchor='w',pady=6)
         catalogue=ttk.Frame(frame);catalogue.pack(fill="x",pady=(8,0))
         self.catalogue_key=self.tk.StringVar(value="my-topics");self.catalogue_revision=self.tk.StringVar(value="")
@@ -590,10 +595,10 @@ class Panel:
         name=filedialog.askopenfilename(title="Authoring unit JSON",filetypes=[("Unit JSON","*.json")])
         if name:self.editor.delete("1.0","end");self.editor.insert("1.0",Path(name).read_text(encoding="utf-8"))
     def unit_action(self,publish):
-        connection=self.connection();text=self.editor.get("1.0","end-1c")
+        connection=self.connection();text=self.editor.get("1.0","end-1c");policy=self.publication_policy.get()
         def execute():
             path=connection.edited_unit(text)
-            return (connection.command("publish",definition=json.loads(text),policy=1) if connection.credential else connection.command("publish",path=str(path),policy=1)) if publish else connection.curriculum_command("preview",path)
+            return (connection.command("publish",definition=json.loads(text),policy=int(policy)) if connection.credential else connection.command("publish",path=str(path),policy=int(policy))) if publish else connection.curriculum_command("preview",path)
         self.run("Publish" if publish else "Validate and preview",execute)
     def import_catalogue(self):
         from tkinter import filedialog
