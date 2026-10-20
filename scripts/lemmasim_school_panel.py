@@ -25,6 +25,26 @@ ROOT=Path(__file__).resolve().parents[1]
 SAMPLE=ROOT/"examples/school/sample-unit.json"
 
 
+def activity_result_summary(result):
+    """Keep review pixels out of the activity log, preserving the full callback.
+
+    The exact image still reaches ``review_window``. Logging its hex encoding
+    again adds several megabytes per review without helping read its context.
+    This projection changes only that named presentation field, never evidence
+    or the result object consumed by the review callback.
+    """
+    if not isinstance(result, dict):
+        return result
+    preview = result.get('inkPreview')
+    if not isinstance(preview, dict) or not isinstance(preview.get('gray4Hex'), str):
+        return result
+    summary = dict(preview)
+    encoded = summary.pop('gray4Hex')
+    summary['gray4HexSummary'] = {'omittedFromActivityLog': True,
+                                  'encodedCharacters': len(encoded)}
+    return {**result, 'inkPreview': summary}
+
+
 def review_photo_image(tk, preview):
     """Present the exact bounded Lean gray4 image through Tk's binary PGM reader."""
     packed = bytes.fromhex(preview['gray4Hex'])
@@ -228,7 +248,7 @@ class Panel:
                 label,ok,result,on_success=self.messages.get_nowait();self.busy=False
                 if ok and on_success:on_success(result)
                 self.output.insert("end",label+(" · completed\n" if ok else " · rejected / unavailable\n")+
-                                   (json.dumps(result,indent=2,ensure_ascii=False) if isinstance(result,(dict,list)) else str(result))+"\n\n")
+                                   (json.dumps(activity_result_summary(result),indent=2,ensure_ascii=False) if isinstance(result,(dict,list)) else str(result))+"\n\n")
                 self.output.see("end");self.status.set("Ready" if ok else "Read the diagnostic above and retry after correcting it.")
         except queue.Empty:pass
         self.window.after(100,self.poll)
