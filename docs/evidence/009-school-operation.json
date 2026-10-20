@@ -2046,5 +2046,88 @@
       "actualTerminalUTC": "2026-10-20T11:57:17.541255+00:00",
       "scope": "Maintained normal operator stop after a separately acknowledged backup; no deadline extension, no overlapping authority. Gen24 hosted readiness and protected principal admission are separate successor receipts."
     }
+  },
+  "hostedLocalToolGeneration24": {
+    "status": "LIVE_BOUNDED_AUTHORITY_NOT_TERMINAL",
+    "producer": {
+      "path": "build/school/task009-local-tool-production-a2/production.json",
+      "sha256": "7238d4639b74bfe3d05e7e01f331657d43eaf98e2f5cd1fbf514e2ee4c20f5da"
+    },
+    "sourceInputs": 66,
+    "sourceArchive": "build/school/task009-local-tool-production-a2/action-source",
+    "producerSeconds": 19.036930870031938,
+    "freshReused": "Normal Lake rebuilds invalidated hosted modules and reuses unchanged imports; both hosted executables copied and hashed. Source bytes are automatically retained before production.",
+    "readiness": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation24/ready.json",
+      "sha256": "28e9ae68fe3e700689a30ea9adb48088c2750fb019c02e1531804e461ee05949"
+    },
+    "generation": 24,
+    "preservedPrefixRows": 147,
+    "staleWorkerCompletionRejected": true,
+    "originalDeadlineUTC": "2026-10-20T13:58:41.002561+00:00",
+    "acknowledgedBackup": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation24/bounded-backup-result.json",
+      "sha256": "e8e96b30124868749ebdc7ab0686a4836f73f91a9b2369800c811013ab9d5340"
+    },
+    "backupRows": 147,
+    "backupArtifacts": 55,
+    "backupReplySeconds": 10.341189716011286,
+    "retainedFailure": "Original10secondreplywait timedout while serverfinished147rowexport; original stdout/stderr/export retained, no acknowledgedbackup claim for that call.",
+    "maintenance": "Maintained operator reply wait defaults60s, finite1..300; timeout reports uncertain outcome rather than cancellation. Domain commit policy remains in Lean.",
+    "resourceScope": "Live wrapper samples transport+direct Lean child, not short-lived barrier grandchildren; no whole-owned-tree RSS qualification."
+  },
+  "fractionEquivalence804": {
+    "status": "AUTHORED_BUILT_PUBLISHED_ENROLLED_GUEST_PREVIEW_PENDING",
+    "source": "examples/school/FractionEquivalence.lean",
+    "definition": "examples/school/fraction-equivalence-unit.json",
+    "build": {
+      "path": "build/school/task009-fraction-authoring-a1/package-build-a2/build.json",
+      "sha256": "823bd394f72fe95a182cd6776045dc2ecf3a98f9eee4c534c808b45c812b58d2"
+    },
+    "publish": {
+      "path": "build/school/task009-fraction-authoring-a1/developer-publish.log",
+      "sha256": "f855515afbdc6e6172a45935e7c5bf658c7cdde79aa341a69e7685735a195e5a"
+    },
+    "packageSHA256": "09412d53709a2db8be4c4eed3f41e7991a9d3fd51283f4641a50cfd8431c788b",
+    "bytes": 4061,
+    "course": 804,
+    "edition": 1,
+    "publicationSequence": 148,
+    "enrollments": [
+      {
+        "learner": "alice",
+        "sequence": 149
+      },
+      {
+        "learner": "bob",
+        "sequence": 150
+      }
+    ],
+    "consumers": "Six original authored nodes: representation, worked common denominator, supported exact addition/local REDUCE, invalid-argument counterexample, cancellation-domain transfer, and later independent written review.",
+    "provenance": "Reuses verified supplied corpus manifest. Complete private PDF indices65/66, printed49/50, section2.4 visually inspected; original source bytes remain private. Original tasks and numerical examples are independently authored.",
+    "renderReceipt": {
+      "path": "build/school/task009-fraction-authoring-a1/render.json",
+      "sha256": "8faeb29a4bf6a75cc50d48636370fb5fd9fecc863954d03fd01ce2e039e12953"
+    },
+    "retainedFailure": {
+      "path": "build/school/task009-fraction-authoring-a1/package-build/build.json",
+      "sha256": "b8a59bbf552e0ddaabf1fb148e97784500c0ab881fb8791411a530a205bd1545"
+    },
+    "correction": "Shared validator correctly rejects unknown review-policy version. Corrected definition explicitly uses lemma-review-schedule/1; no validation bypass.",
+    "freshReused": "Fresh example elaboration5.297584s, preview.359s, compile.049s; unchanged hosted dependencies reused. No actual learner rendering or educational benefit inferred."
+  },
+  "privateActualChromiumClockRetry": {
+    "status": "NOT_ENCOUNTERED_PRIVATE_FINITE_PREFIX_ORIGINAL_FAILURE_REMAINS",
+    "receipt": {
+      "path": "build/task009/tci-chromium-valid-ack-witness-a1/result.json",
+      "sha256": "3cc20149b43e46cbdd94c57484300ed142ffcb621fb82b7c555eaf27bbe17ceb"
+    },
+    "cuts": 7620,
+    "maximumExcessNs": 7,
+    "executedSeconds": 569.3265,
+    "actual": "CUA Student UI imports isolated OPFS medium, cold-opens, uses10 actual keyboard-pointer records/five Save pairs, retries guest-produced complete envelope to exact protected school136, observes733/frontier45 and retrieves teacher137. Worker/tab/server closed; original artifacts retained.",
+    "scope": "Private passive witness Wasm6170e346 and old545guest/pre-scheduler-fix worker. No new assessment, public runtime admission, new successor guest qualification or causal clock fix.",
+    "resourceLimit": "Shared Chromium process peak RSS was unmeasured;2GiB Wasm heap reported. Do not infer the planned5GiB cap passed.",
+    "remaining": "Originala15 target15064308193ns/observed15064308697ns(504ns) remains unresolved; strict run guard unchanged."
   }
 }
