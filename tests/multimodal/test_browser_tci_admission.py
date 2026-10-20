@@ -190,6 +190,15 @@ def actual_campaign(archive: Path, output: Path) -> bool:
                     self.tmp.cleanup(); self.setUp()
                     self.reject(case, lambda: self.runtime('original-build.json', lambda d: d.update({key: value})))
 
+        def test_cpu_stop_feature_requires_bound_runtime(self):
+            self.reject('unbound CPU stop acknowledgement',
+                lambda: self.manifest.update(stop_boundary_contract='unknown'), 'CPU stop acknowledgement')
+
+        def test_cpu_stop_production_contract_cannot_be_invented(self):
+            self.reject('invented runtime CPU stop contract',
+                lambda: self.runtime('original-build.json', lambda d: d.update(stop_boundary_contract='unknown')),
+                'CPU stop observation')
+
         def test_support_report_contract_requires_its_actual_implementation(self):
             self.reject('unknown support contract', lambda: self.manifest.update(support_report_contract='unknown'), 'Unknown support report contract')
             self.tmp.cleanup(); self.setUp()
@@ -349,6 +358,12 @@ def pcm_runtime_campaign(runtime: Path, output: Path) -> bool:
     exercise('unknown execution binding', 'runtime.json', lambda x:x.update(execution_binding='full-integrated16'))
     exercise('controller ABI downgrade', 'runtime.json', lambda x:x.update(multimodal_controller_abi=1))
     exercise('controller contract downgrade', 'runtime.json', lambda x:x.update(controller_contract='lemma-multimodal-converter/1'))
+    exercise('unknown CPU stop contract', 'runtime.json', lambda x:x.update(stop_boundary_contract='unknown'))
+    exercise('invented producer stop contract', 'original-build.json', lambda x:x.update(stop_boundary_contract='unknown'))
+    if admitted.get('stop_boundary_contract') is not None:
+        exercise('missing CPU stop declaration', 'runtime.json', lambda x:x.pop('stop_boundary_contract'))
+        exercise('unbound actual CPU stop bridge', 'original-build.json',
+                 lambda x:x['inputs'].update({'tooling/lemmasim/tci/lemma_browser_control.inc.c':'0'*64}))
     exercise('two fresh objects claimed', 'original-build.json', lambda x:x.update(fresh_object_count=2))
     exercise('boolean object count', 'original-build.json', lambda x:x.update(fresh_object_count=True))
     exercise('missing dependency closure', 'original-build.json', lambda x:x.update(dependency_affected_objects=[]))

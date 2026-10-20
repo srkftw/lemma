@@ -1,5 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // Serialized asynchronous transport to actual QMP. No notebook policy.
+export const CPU_STOP_CONTRACT='lemma-qemu-cpu-stop/1';
+export function cpuStopObservation(clock){
+ if(clock.stop_boundary_contract!==CPU_STOP_CONTRACT||clock.cpu_count!==1||
+    !Number.isInteger(clock.cpus_stopped)||clock.cpus_stopped<0||clock.cpus_stopped>clock.cpu_count||
+    typeof clock.all_cpus_stopped!=='boolean'||clock.all_cpus_stopped!==(clock.cpus_stopped===clock.cpu_count))
+  throw Error('Missing or inconsistent actual CPU stop acknowledgement');
+ return {contract:CPU_STOP_CONTRACT,count:clock.cpu_count,stopped:clock.cpus_stopped,allStopped:clock.all_cpus_stopped};
+}
 export class Control{
  constructor(module,timeoutMs=60000){this.module=module;this.id=0;this.tail=Promise.resolve();this.timeoutMs=timeoutMs;this.metrics={requests:0,seconds:0,commands:{}};}
  call(name,type='number',types=[],args=[]){return this.module.ccall(name,type,types,args);}
@@ -19,4 +27,21 @@ export class Control{
  }
  get(property,path='/machine/lemma-hardware'){return this.request('qom-get',{path,property});}
  set(property,value,path='/machine/lemma-hardware'){return this.request('qom-set',{path,property,value});}
+ async stopped(contract=null,deadline=performance.now()+this.timeoutMs){
+  if(contract!==null&&contract!==CPU_STOP_CONTRACT)throw Error('Unknown CPU stop acknowledgement contract');
+  const check=()=>{if(contract!==null&&performance.now()>=deadline)throw Error('Original CPU stop acknowledgement deadline');};
+  check();
+  let status=await this.request('query-status');
+  if(status.running){await this.request('stop');status=null;}
+  if(contract===null)return;
+  for(;;){
+   // QMP PAUSED can precede pause_all_vcpus. Only the actual stopped field
+   // acknowledges a CPU thread; guest WFI/idle and runstate are insufficient.
+   check();if(status===null)status=await this.request('query-status');
+   const clock=await this.request('lemma-clock');check();
+   if(!status.running&&cpuStopObservation(clock).allStopped)return;
+   status=null;
+   await new Promise(r=>setTimeout(r,5));
+  }
+ }
 }

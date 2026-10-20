@@ -28,9 +28,10 @@ EXPECTED = {'hw/riscv/' + name for name in (
     'lemma_multimodal_v2.h', 'lemma_multimodal_checkpoint_valid.inc.c',
     'lemma_browser_control.inc.c')}
 OBJECT = 'libqemu-riscv64-softmmu.a.p/hw_riscv_lemma_qemu.c.o'
+STOP_CONTRACT = 'lemma-qemu-cpu-stop/1'
 
 
-def capture_sources(out, initial, validator, validator_sha):
+def capture_sources(out, initial, validator, validator_sha, cpu_stop=False):
     """Capture consumed tools before compilation, for later ordinary admission."""
     destination = out / 'producer-sources'
     destination.mkdir(exist_ok=False)
@@ -41,6 +42,11 @@ def capture_sources(out, initial, validator, validator_sha):
         shutil.copyfile(path, destination / name)
     require(producer.sha(validator) == validator_sha, 'Validator changed before source capture')
     shutil.copyfile(validator, destination / 'runtime_validator.py')
+    if cpu_stop:
+        path = producer.HERE / 'lemma_browser_control.inc.c'
+        require(producer.sha(path) == initial[str(path.relative_to(producer.ROOT))],
+                'CPU stop bridge changed before source capture')
+        shutil.copyfile(path, destination / path.name)
 
 
 def freeze_overlay(out):
@@ -76,6 +82,23 @@ def select_pcm_observer(source):
     bridge.write_text(body)
 
 
+def select_stop_observer(source):
+    """Add the explicit acknowledgement without replacing other old controls."""
+    bridge = source / 'hw/riscv/lemma_browser_control.inc.c'
+    old = bridge.read_text()
+    body = (producer.HERE / 'lemma_browser_control.inc.c').read_text()
+    begin = '/* BEGIN lemma-qemu-cpu-stop/1:'
+    end = '/* END lemma-qemu-cpu-stop/1. */\n'
+    require(body.count(begin) == body.count(end) == 1, 'CPU stop observation block differs')
+    start, finish = body.index(begin), body.index(end)+len(end)
+    legacy = body[:start] + body[finish:]
+    for added in ('#include "hw/core/cpu.h"\n', '  lemma_browser_cpu_stop_observation(value);\n'):
+        require(legacy.count(added) == 1, 'CPU stop observation anchor differs')
+        legacy = legacy.replace(added, '')
+    require(legacy == old, 'CPU stop addition changes another original control')
+    bridge.write_text(body)
+
+
 def build(a):
     out = a.output_dir.resolve()
     out.mkdir(exist_ok=False)
@@ -90,7 +113,9 @@ def build(a):
         initial = producer.sources()
         validator = producer.ROOT / "scripts/lemmasim_browser_tci.py"
         validator_sha = producer.sha(validator)
-        capture_sources(out, initial, validator, validator_sha)
+        capture_sources(out, initial, validator, validator_sha, a.cpu_stop)
+        if a.cpu_stop:
+            report['stop_boundary_contract'] = STOP_CONTRACT
         parent, admission = retained_runtime(a.predecessor_runtime)
         require(admission['schema'] == 'lemma-tci-retained-runtime/2',
                 'MM2 requires the nonrecursive admitted flow predecessor')
@@ -133,6 +158,8 @@ def build(a):
             began + a.timeout, report)
         # The PCM observer must read the selected controller, retaining the
         # exact output protocol and original waveform bytes for both ABIs.
+        if a.cpu_stop:
+            select_stop_observer(copy)
         select_pcm_observer(copy)
         current = producer.identity(copy)
         changed = {n for n in current.keys() | previous.keys() if current.get(n) != previous.get(n)}
@@ -244,16 +271,30 @@ def admit(a):
         'original_build':{'path':str(a.receipt.resolve()),'sha256':producer.sha(a.receipt)},
         'files':producer.identity(out),
         'scope':'One freshly compiled MM2 hardware object and real Wasm link over the retained complete flow-runtime closure; functional subset, no Integrated16 union, exact continuation, or fresh upstream compilation claim.'}
+    if r.get('stop_boundary_contract') is not None:
+        require(r['stop_boundary_contract'] == STOP_CONTRACT, 'Unknown CPU stop observation contract')
+        m['stop_boundary_contract'] = STOP_CONTRACT
     producer.write(out / 'runtime.json', m)
     retained_runtime(out)
     print(out / 'runtime.json')
 
 
 def main():
+    if sys.argv[1:2] == ['admit']:
+        p = argparse.ArgumentParser(description='Admit actual completed one-object compiler outputs; no compilation or guest execution')
+        p.add_argument('--build-dir', type=Path, required=True)
+        p.add_argument('--output-dir', type=Path, required=True)
+        a = p.parse_args(sys.argv[2:])
+        a.build_dir = a.build_dir.resolve()
+        a.receipt = a.build_dir / 'build.json'
+        a.source_root = a.build_dir / 'source'
+        admit(a)
+        return 0
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--predecessor-runtime', type=Path, required=True)
     p.add_argument('--receipt', type=Path, required=True)
     p.add_argument('--overlay', type=Path, help='Optional exact historical overlay; default freezes maintained MM2 sources')
+    p.add_argument('--cpu-stop', action='store_true', help='Bind actual direct stopped-CPU acknowledgements in the clock observer')
     p.add_argument('--output-dir', type=Path, required=True)
     p.add_argument('--timeout', type=int, default=300)
     a = p.parse_args()

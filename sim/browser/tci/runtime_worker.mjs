@@ -2,7 +2,7 @@ import {supportReport,runBudgetFailure} from './diagnostics.js';
 // SPDX-License-Identifier: Apache-2.0
 // Host transport/presentation only. Every instruction and device runs in QEMU.
 import createQemu from './qemu-system-riscv64.js';
-import {Control} from './control.mjs';
+import {Control,CPU_STOP_CONTRACT,cpuStopObservation} from './control.mjs';
 import {admitUart} from './uart_arrivals.mjs';
 import {attachOpfsFile} from './opfs_backing.mjs';
 import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,guestCourseRejection,NotebookFaultObserver} from './guest_records.js';
@@ -26,6 +26,7 @@ const quantumUnits=100000n;
 const exactJson=text=>JSON.parse(text.replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));
 let heapBytes=null,uartPaced=false,uartFlow=false;
 let executionBoundary=null;
+let stopContract=null;
 const egress=new PcmEgress();
 async function pcm(){
  const result=await control.request('lemma-waveform');
@@ -48,6 +49,7 @@ async function inspect(full=false){
  const cycle=(BigInt(clock.virtual_ns)+9n)/10n;
  observeFault();
  const state={cycle:String(cycle),ticks:clock.mtime_ticks,virtual_ns:clock.virtual_ns,panel_completed:clock.paper_completed,panel_sequence:clock.paper_accepted,paper_busy:String(BigInt(clock.paper_status)&1n),panel_power:clock.paper_power?'1':'0',isolated_medium:false,backend:'qemu-tci-wasm64/1',timingScope:'instruction/virtual-timer boundary; not RTL processor-cycle parity'};
+ if(stopContract!==null)state.cpu_stop=cpuStopObservation(clock);
  if(full){state.paper=exactJson(await control.get('device-state'));state.storage=exactJson(await control.get('storage-state','/machine/lemma-block'));state.power=exactJson(await control.get('power-state'));state.uart_ingress=exactJson(await control.get('raw-uart-state'));state.fullInspectionVirtualNs=clock.virtual_ns;}
  if(readyAt===null&&guestPageReady(uart(),guestStart,{accepted:clock.paper_accepted,completed:clock.paper_completed}))readyAt={cycle:state.cycle,hostSeconds:(performance.now()-started)/1000};
  return state;
@@ -86,6 +88,8 @@ async function load(m){
  if(m.paused!==undefined&&typeof m.paused!=='boolean')throw Error('Open paused must be Boolean');
  const response=await fetch('./bundle.json');if(!response.ok)throw Error('Bundle unavailable');manifest=await response.json();if(manifest.schema!=='lemmasim-browser-qemu-tci/1'||manifest.execution_backend!=='qemu-tci-wasm64/1'||manifest.session_control_contract!==contract||manifest.profile!=='lemma-silicon-dev/0.14.0')throw Error('Unsupported admitted QEMU Wasm bundle');
  const pcm2=manifest.execution_binding==='lemma-silicon-fast-mm2-subset/0.1.0';
+ stopContract=manifest.stop_boundary_contract??null;
+ if(stopContract!==null&&stopContract!==CPU_STOP_CONTRACT)throw Error('Unsupported actual CPU stop acknowledgement contract');
  if(pcm2?(manifest.multimodal_controller_abi!==2||manifest.controller_contract!=='lemma-multimodal-converter/2'):(manifest.execution_binding!==undefined||manifest.multimodal_controller_abi!==undefined||manifest.controller_contract!==undefined))throw Error('Unsupported PCM controller binding');
  const controllerArguments=pcm2?['-global','lemma-paper-pen.multimodal-controller-abi=2']:[];
  handle=await openMedium(m.name,!!m.initialize);mediumName=m.name;
@@ -101,7 +105,7 @@ async function load(m){
  loaded=true;executionBoundary=null;initializing=!!m.initialize;guestStart=uart().length;notebookFault.reset(guestStart);running=!m.paused;pauseReason=m.paused?'opened-paused':null;
  await sendState();await panel(true);schedule();
 }
-async function stopped(){if((await control.request('query-status')).running)await control.request('stop');}
+async function stopped(deadline=performance.now()+60000){await control.stopped(stopContract,deadline);}
 async function input(m){
  await stopped();const clock=await control.request('lemma-clock'),delivery=String((BigInt(clock.virtual_ns)+9n)/10n*10n);
  if(m.action==='pen'){
@@ -129,7 +133,9 @@ async function step(){
  const target=(BigInt(before.cycle)+quantum)*10n-7n,start=performance.now();
  await control.set('run-until',String(target));if(entryEpoch!==interruptEpoch)return;await control.request('cont');
  while((await control.request('query-status')).running){if(budget?.hostExpired(performance.now())){pause('host-limit');await stopped();break;}if(performance.now()-start>60000){pause('execution-quantum');await stopped();const observed=await inspect(true),elapsedSeconds=(performance.now()-start)/1000;timing.runSeconds+=elapsedSeconds;postMessage({type:'execution-boundary',contract:'lemma-tci-quantum-observation/1',result:'Original60s execution quantum deadline',before,targetVirtualNs:String(target),observed,elapsedSeconds});await sendState(observed);throw Error('Original60s execution quantum deadline');}await sleep(5);}
- timing.runSeconds+=(performance.now()-start)/1000;loops++;
+ try{if(stopContract!==null)await stopped(start+60000);}
+ finally{timing.runSeconds+=(performance.now()-start)/1000;}
+ loops++;
  const after=await inspect();if(notebookFault.fault){await panel(true);await sendState(after);return;}if(BigInt(after.cycle)<BigInt(before.cycle)||(after.cycle===before.cycle&&entryEpoch===interruptEpoch))throw Error('Actual guest made no virtual-clock progress');
  if(budget)try{budget.observe(after.cycle,quantum);}catch(error){
   executionBoundary=runBudgetFailure(before,after,target,quantum,budget,(performance.now()-start)/1000);

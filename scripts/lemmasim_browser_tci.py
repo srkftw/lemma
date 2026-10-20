@@ -140,6 +140,8 @@ def retained_pcm_runtime(directory,m):
     if parent.get('schema')!=RUNTIME_SCHEMA_WITH_HELPERS:raise ValueError('PCM predecessor must be a nonrecursive admitted flow runtime')
     _,parent=retained_runtime(directory/'predecessor')
     r=read(directory/'original-build.json')
+    stop=m.get('stop_boundary_contract')
+    if stop not in (None,'lemma-qemu-cpu-stop/1') or r.get('stop_boundary_contract')!=stop:raise ValueError('Unbound CPU stop observation contract')
     if r.get('schema')!='lemma-tci-public-build/1' or r.get('production_mode')!='incremental-mm2-object-and-real-link/1' or r.get('result')!='BUILT_WASM64_QEMU_TCI' or type(r.get('exit_code')) is not int or r['exit_code']!=0:raise ValueError('Unbound actual PCM production')
     if type(r.get('fresh_object_count')) is not int or type(r.get('reused_object_count')) is not int or (r['fresh_object_count'],r['reused_object_count'])!=(1,1046):raise ValueError('PCM invalidation must replace exactly one hardware object')
     object_name='libqemu-riscv64-softmmu.a.p/hw_riscv_lemma_qemu.c.o'
@@ -158,6 +160,15 @@ def retained_pcm_runtime(directory,m):
         if files.get(dest)!=r.get('inputs',{}).get('tooling/lemmasim/tci/'+name):raise ValueError('PCM producer source differs:'+name)
     required.add('producer-source/runtime_validator.py')
     if files.get('producer-source/runtime_validator.py')!=r.get('runtime_validator',{}).get('sha256'):raise ValueError('PCM original validator source differs')
+    if stop is not None:
+        name='producer-source/lemma_browser_control.inc.c';required.add(name)
+        if files.get(name)!=r.get('inputs',{}).get('tooling/lemmasim/tci/lemma_browser_control.inc.c'):raise ValueError('Unbound CPU stop bridge producer')
+        body=(directory/name).read_text()
+        for counter in ('consumed','submitted','epoch'):
+            old='s->multimodal.stream[8].'+counter
+            if body.count(old)!=1:raise ValueError('CPU stop bridge PCM observer differs')
+            body=body.replace(old,'lemma_mm_core(s)->stream[8].'+counter)
+        if hashlib.sha256(body.encode()).hexdigest()!=after.get('hw/riscv/lemma_browser_control.inc.c'):raise ValueError('CPU stop bridge differs from compiled source')
     overlay_names=set()
     for path,item in r.get('overlay_inputs',{}).items():
         name=Path(path).name
@@ -217,6 +228,7 @@ def bundle(args):
        'runtime_admission_sha256':sha(runtime/'runtime.json'),'workloads':{},'runtime':{},
        'packaging_inputs':packaging_inputs}
     if native_pcm:m.update(execution_binding=PCM_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2',execution_scope='Fast0.14 functional controller extension only; excludes Integrated16 boot/NV/clockedUSB/power union')
+    if admission.get('stop_boundary_contract') is not None:m['stop_boundary_contract']=admission['stop_boundary_contract']
     for name,digest in admission['files'].items():add(runtime/name,'runtime-source/'+name,digest)
     add(runtime/'runtime.json','runtime-source/runtime.json')
     for name in ('qemu-system-riscv64.js','qemu-system-riscv64.wasm'):
@@ -284,6 +296,7 @@ def validated_bundle(directory):
         if adapter!={'contract':'lemma-ui-existing-transport-export/1','source':{'path':'ui-source/app.js','sha256':files.get('ui-source/app.js')}} or 'ui-source/app.js' not in files:raise ValueError('Unbound UI transport adapter')
         if (directory/'app.js').read_text(encoding='utf-8')!=(directory/'ui-source/app.js').read_text(encoding='utf-8')+UI_EXPORT:raise ValueError('Changed UI transport adapter')
     _,admission=retained_runtime(directory/'runtime-source')
+    if m.get('stop_boundary_contract')!=admission.get('stop_boundary_contract'):raise ValueError('Unbound browser CPU stop acknowledgement contract')
     pcm=admission.get('schema')==RUNTIME_SCHEMA_WITH_PCM
     if pcm:
         if m.get('execution_binding')!=PCM_BINDING or m.get('multimodal_controller_abi')!=2 or m.get('controller_contract')!='lemma-multimodal-converter/2':raise ValueError('Unbound browser PCM execution binding')
