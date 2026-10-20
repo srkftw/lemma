@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T11:49:23.779936+00:00",
+  "written_at": "2026-10-20T21:06:42.864455+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -8578,7 +8578,676 @@
     },
     "actual_original_gate_four_state": "256 inputvectors/512 outputcomparisons positive; invertedbufferfails atvector0 asrequired. Originalpublic standardcell/UDP models used.",
     "maintained_consumer": "scripts/silicon_pen_physical.py --two-load-launch-from build/silicon/task009-two-load-launch-preflight-a2 through scripts/silicon_two_load_launch.py",
-    "consumer_scope": "Exact archived originalpreparebody prefix and originalsourcecapsule, source/tool/model inputs,37dunroutedODB and40241updatedplan pinned. Future actualfixedgeometry/masterLEF/properties and freshroute/native420/3RC/all9 stillrequired. No newroute/STA/PEX yet, no selected0.6change.",
-    "independent_source_review": "Schoolagent read-only review found no additional material precursor acceptancehole. Wholeproducer stillowns code/LEF/planner pins and serializedreadback; no tool/passclaim fromreview."
+    "consumer_scope": "Exact source-qualified two-buffer/40241-spacer successor was freshly routed, independently geometry-checked and extracted at three RC cases; all nine available timing/electrical cases FAIL. It remains unselected. Original precursor observer/count failures and original selected0.6 receipts remain unchanged.",
+    "independent_source_review": "Schoolagent read-only review found no additional material precursor acceptancehole. Wholeproducer stillowns code/LEF/planner pins and serializedreadback; no tool/passclaim fromreview.",
+    "fresh_route_and_corner_assessment": {
+      "status": "ASSESSED_UNSELECTED_TWO_LOAD_UPDATED_SPACER_ROUTE_AND_AVAILABLE_CORNERS_CLOSURE_UNVERIFIED",
+      "whole_receipt": {
+        "path": "build/silicon/task009-two-load-route-admission-a2/result.json",
+        "sha256": "7077bf3792234e5f7747287ba9a66dfa11b0cbe10d398671db700dd3cf3d9b24"
+      },
+      "route_receipt": {
+        "path": "build/silicon/task009-two-load-route-a2/result.json",
+        "sha256": "59eaff98db7fd0d1d1fce166fe849be50661dcd2206fa1bf995fd52c24ef2f8a"
+      },
+      "corner_receipt": {
+        "path": "build/silicon/task009-two-load-corners-a2/result.json",
+        "sha256": "d9b9aac9f6646dc4406d437ec1fb4ee973a05ff94a6105c0edcd977512f4116e"
+      },
+      "read_only_inventory": {
+        "path": "build/silicon/task009-two-load-hold-inventory-a1/result.json",
+        "sha256": "edd0b142d5b3f71c7c048fc77520d74aae662234d95edd375f9083afae0edd93"
+      },
+      "closed_comparison": {
+        "path": "build/silicon/task009-two-load-closed-comparison-a1/result.json",
+        "sha256": "4193c3978c298be0f24f7379ba2da692dca8e9a51381c0411fbaf317a37f4a0d"
+      },
+      "original14GiB_nonadmission": {
+        "path": "build/silicon/task009-two-load-route-admission-a1/admission-assessment.json",
+        "sha256": "f8b51aca197400fae5251de27a1ee194f8b9cf879b1a44a05be804316eac5595"
+      },
+      "whole_seconds": 620.0692008710466,
+      "owned_peak_RSS_bytes": 1614258176,
+      "aggregate_output_bytes": 620725553,
+      "source_seal_equal": true,
+      "deadline_met": true,
+      "all_owned_reaped": true,
+      "prospective_bounds": {
+        "route_seconds": 900,
+        "whole_seconds": 1200,
+        "AS_bytes": 6442450944,
+        "output_budget_bytes": 12884901888,
+        "combined_owned_RSS_bytes": 2684354560,
+        "launch_available_floor": 14227079168,
+        "continuing_host_available_floor": 8589934592
+      },
+      "separate_resource_allocation": {
+        "allocation_GiB": {
+          "physical": 2.5,
+          "canonical": 1,
+          "authority": 0.5,
+          "new_native": 1,
+          "host_reserve": 8,
+          "margin": 0.25
+        },
+        "parent_approved_before_launch": true,
+        "prior_not_admitted_receipt": "build/silicon/task009-two-load-route-admission-a1/result.json",
+        "prior_not_admitted_receipt_sha256": "dd8373d07ee5493f899d5a191b119c7190597a5395346e03a341e68078d38e5a",
+        "no_old_deadline_extension": true
+      },
+      "routed_ODB": {
+        "path": "build/silicon/task009-two-load-route-a2/routed.odb",
+        "sha256": "8bc1121b7e62f022a4f60819f74618fb5e5410bf89817a454ea46c31dcc92bf6"
+      },
+      "router": {
+        "status": "PASS",
+        "violations": 0,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "geometry": {
+        "status": "PASS_TWO_MEASURED_LOAD_BUFFERS_UPDATED_SPACERS_FIXED_ENDPOINTS_AND_MASTER_RELATION",
+        "source_ODB_sha256": "5c43a20a33fe888af5c6cb683d3bc6e19b6d72396a95f7adaa904527fb9d6a9f",
+        "geometry_ODB_sha256": "8bc1121b7e62f022a4f60819f74618fb5e5410bf89817a454ea46c31dcc92bf6",
+        "fixed_geometry_ODB_sha256": "37d86a7314d05b7c4b9367862b33348ceabb5dfab7b32c070643aef80d9a7070",
+        "old_functional_and_macro_instances": 9037,
+        "old_functional_cells_moved": 0,
+        "new_original_buf8": 2,
+        "original_spacers": 40247,
+        "updated_spacers": 40241,
+        "removed_spacers": 11,
+        "added_spacers": 5,
+        "functional_padding_nm": 960,
+        "ports": 668,
+        "native_PG_shapes": 99128,
+        "OBS": 18718,
+        "original33_SRAM_delaycells_preserved": true,
+        "native_master_library": {
+          "status": "PASS_LITERAL_NATIVE_LIBRARY_LEF_AND_MASTER_OBJECT_PROPERTIES_ONLY",
+          "libraries": 2,
+          "masters": 85,
+          "object_property_records": 8351,
+          "library_LEF_sha256": {
+            "sg13g2_stdcell": "fa92f0824a388458c56c912a6cea0aaf9e881b0e85e0bc445d5502e7c9dffa50",
+            "RM_IHPSG13_1P_256x64_c2_bm_bist": "a16cbcfabbc16b85ca7edbd44762f66c123747b54109824c6e84bfdaca12b33c"
+          },
+          "scope": "Original native library/master LEF pins/OBS bodies plus actuallibrary/master/MTerm/MPin/box properties. No normalization. Access vectors/unserializedOpenDBstate, originalGDSmaskunion, transistorLVS andprocessDRC remain separate."
+        },
+        "finite_qualified_receipt_sha256": "94180fec90438a316c6311df49a12a340a74fb4bb8060be5ac26bf6575d33aa5",
+        "scope": "Exact original gate/buffer finite proof and actual fixed native physical endpoint relation; fresh route/RC/PVT/process/LVS remain separate"
+      },
+      "native420": {
+        "status": "PASS_ACTUAL_NATIVE420NM_RECTANGLE_SUBSET_ONLY",
+        "scope": "Actual signal metal versus native PG: original420nm rectangle subset only.\n\nRun check() inside the pinned OpenROAD Python interpreter. Every DEF segment,\nvia and patch binds the actual native wire decoder; unknown grammar fails.\nNo process DRC/LVS/connectivity/IR/EM/timing qualification follows.\n",
+        "native_signal_nets_bound": 9705,
+        "native_wire_via_patch_shapes_checked": 168476,
+        "actual_DEF_RECT_patches_bound": 11165,
+        "unique_native_PG_metal_rectangles": 13418,
+        "violation_pairs": 0,
+        "first_200_violation_pairs": [],
+        "not_checked": [
+          "process DRC/EOL/area/density/antenna",
+          "full connected layout/netlist comparison",
+          "timing",
+          "IR/EM",
+          "pads/package/board"
+        ]
+      },
+      "intrinsic_via_subset": {
+        "status": "PASS_FIXED_VIA_INTRINSIC_ENCLOSURE",
+        "scope": "Cover the demonstrated router fixed-via enclosure gap on actual DEF routes.\n\nChecks intrinsic fixed-via metal/cut unions against the original process simple\nenclosure rules. Additional same-net wire metal can only increase enclosure.\nGenerated DEF arrays require explicit admission against the original generator\nand every individual cut's enclosure. Unfamiliar clauses fail closed. This is\nan independent sufficient check of this subset, never complete process DRC.\n",
+        "technology_sha256": "fb6f0aa5647efc822ad6551a11b57002a278d7d3f98ac20a12cb9f7a65e81d2d",
+        "routed_def_sha256": "95ac5ca4f5b8b4059b5c44eee27176c45edd2bb9311beded3d206f4e1289054b",
+        "routed_nets": 9708,
+        "via_instances": 70152,
+        "via_counts": {
+          "Via4_YX": 1622,
+          "Via2_YX": 27529,
+          "Via3_XY": 4127,
+          "Via1_XY": 11185,
+          "Via1_YY": 14995,
+          "via5_6_4000_2500_2_4_840_840": 443,
+          "via4_5_2810_2500_5_6_480_480": 1772,
+          "via6_7_4000_4000_2_2_1960_1960": 182,
+          "via5_6_2560_2500_2_2_840_840": 6,
+          "via4_5_2810_1295_3_6_480_480": 64,
+          "via4_5_1200_2500_5_2_480_480": 277,
+          "via3_4_1200_330_1_2_480_480": 2650,
+          "via2_3_1200_330_1_2_480_480": 2650,
+          "via1_2_1200_330_1_2_480_480": 2650
+        },
+        "fixed_definition_rule_checks": 364,
+        "violations": [],
+        "generated_array_definitions": 9,
+        "specialnet_geometry_checked": true,
+        "uncovered": [
+          "cell/macro internal cuts",
+          "wire spacing/width/area",
+          "connectivity",
+          "antenna",
+          "all other process rules"
+        ]
+      },
+      "connected_power": {
+        "before-route": {
+          "status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+          "macro_power_pins": 9,
+          "preserved_BIST_pins": 423,
+          "all_power_terminals": 98563,
+          "voltages_V": {
+            "VDDlogic": 1.2,
+            "VDDARRAY": 1.2,
+            "VSS": 0
+          }
+        },
+        "after-route": {
+          "status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+          "macro_power_pins": 9,
+          "preserved_BIST_pins": 423,
+          "all_power_terminals": 98563,
+          "voltages_V": {
+            "VDDlogic": 1.2,
+            "VDDARRAY": 1.2,
+            "VSS": 0
+          }
+        }
+      },
+      "fresh_extracted_RC": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "551c740d37d269301070a91dbf60addf9db44de397bf8818d5dee74f22d19782",
+          "setup": "worst slack max -3.510906",
+          "hold": "worst slack min -0.012975",
+          "electrical_violations": 91
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "6f1afb7cf2998dc2c909b735cb037771a5ef553ac85e5f3eb555b6b9b5110878",
+          "setup": "worst slack max -4.486089",
+          "hold": "worst slack min 0.044178",
+          "electrical_violations": 143
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "7443dee4594cf7ff053aa46c7a1c493f8408b3c7886216cfddb9b01e3d887965",
+          "setup": "worst slack max -5.448257",
+          "hold": "worst slack min 0.055932",
+          "electrical_violations": 229
+        }
+      },
+      "available_cases": [
+        {
+          "corner": "typical",
+          "matched_PVT": true,
+          "RC": "min",
+          "setup_ns": -3.510906,
+          "hold_ns": -0.012975,
+          "electrical_violations": 91,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "typical",
+          "matched_PVT": true,
+          "RC": "nom",
+          "setup_ns": -4.486089,
+          "hold_ns": 0.044178,
+          "electrical_violations": 143,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "typical",
+          "matched_PVT": true,
+          "RC": "max",
+          "setup_ns": -5.448257,
+          "hold_ns": 0.055932,
+          "electrical_violations": 229,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "slow",
+          "matched_PVT": true,
+          "RC": "min",
+          "setup_ns": -9.051727,
+          "hold_ns": -0.040749,
+          "electrical_violations": 248,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "slow",
+          "matched_PVT": true,
+          "RC": "nom",
+          "setup_ns": -10.598889,
+          "hold_ns": 0.051416,
+          "electrical_violations": 330,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "slow",
+          "matched_PVT": true,
+          "RC": "max",
+          "setup_ns": -12.131176,
+          "hold_ns": 0.125715,
+          "electrical_violations": 406,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "matched_PVT": false,
+          "RC": "min",
+          "setup_ns": -0.108741,
+          "hold_ns": -0.049689,
+          "electrical_violations": 63,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "matched_PVT": false,
+          "RC": "nom",
+          "setup_ns": -0.72235,
+          "hold_ns": -0.064685,
+          "electrical_violations": 100,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "matched_PVT": false,
+          "RC": "max",
+          "setup_ns": -1.322564,
+          "hold_ns": -0.135369,
+          "electrical_violations": 136,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        }
+      ],
+      "selection": "REJECTED; selected0.6 unchanged",
+      "comparison_to_selected0.6": {
+        "cases": [
+          {
+            "corner": "typical",
+            "RC": "min",
+            "matched_PVT": true,
+            "new_setup_ns": -3.510906,
+            "new_hold_ns": -0.012975,
+            "new_electrical_violations": 91,
+            "setup_delta_ns": -0.205871,
+            "hold_delta_ns": -0.02158,
+            "electrical_delta": 3
+          },
+          {
+            "corner": "typical",
+            "RC": "nom",
+            "matched_PVT": true,
+            "new_setup_ns": -4.486089,
+            "new_hold_ns": 0.044178,
+            "new_electrical_violations": 143,
+            "setup_delta_ns": -0.19841,
+            "hold_delta_ns": -0.01382,
+            "electrical_delta": -32
+          },
+          {
+            "corner": "typical",
+            "RC": "max",
+            "matched_PVT": true,
+            "new_setup_ns": -5.448257,
+            "new_hold_ns": 0.055932,
+            "new_electrical_violations": 229,
+            "setup_delta_ns": -0.223045,
+            "hold_delta_ns": -0.00545,
+            "electrical_delta": -45
+          },
+          {
+            "corner": "slow",
+            "RC": "min",
+            "matched_PVT": true,
+            "new_setup_ns": -9.051727,
+            "new_hold_ns": -0.040749,
+            "new_electrical_violations": 248,
+            "setup_delta_ns": 0.169072,
+            "hold_delta_ns": -0.042566,
+            "electrical_delta": -9
+          },
+          {
+            "corner": "slow",
+            "RC": "nom",
+            "matched_PVT": true,
+            "new_setup_ns": -10.598889,
+            "new_hold_ns": 0.051416,
+            "new_electrical_violations": 330,
+            "setup_delta_ns": 0.071948,
+            "hold_delta_ns": -0.047772,
+            "electrical_delta": -9
+          },
+          {
+            "corner": "slow",
+            "RC": "max",
+            "matched_PVT": true,
+            "new_setup_ns": -12.131176,
+            "new_hold_ns": 0.125715,
+            "new_electrical_violations": 406,
+            "setup_delta_ns": -0.197654,
+            "hold_delta_ns": -0.069333,
+            "electrical_delta": -21
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "min",
+            "matched_PVT": false,
+            "new_setup_ns": -0.108741,
+            "new_hold_ns": -0.049689,
+            "new_electrical_violations": 63,
+            "setup_delta_ns": -0.139913,
+            "hold_delta_ns": 0.004723,
+            "electrical_delta": -1
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "nom",
+            "matched_PVT": false,
+            "new_setup_ns": -0.72235,
+            "new_hold_ns": -0.064685,
+            "new_electrical_violations": 100,
+            "setup_delta_ns": -0.136791,
+            "hold_delta_ns": -0.012422,
+            "electrical_delta": 4
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "max",
+            "matched_PVT": false,
+            "new_setup_ns": -1.322564,
+            "new_hold_ns": -0.135369,
+            "new_electrical_violations": 136,
+            "setup_delta_ns": -0.150863,
+            "hold_delta_ns": -0.050008,
+            "electrical_delta": -7
+          }
+        ],
+        "setup_regressions": 7,
+        "hold_regressions": 8,
+        "electrical_count_regressions": 2
+      },
+      "comparison_to_unselected_well_precursor": {
+        "cases": [
+          {
+            "corner": "typical",
+            "RC": "min",
+            "matched_PVT": true,
+            "new_setup_ns": -3.510906,
+            "new_hold_ns": -0.012975,
+            "new_electrical_violations": 91,
+            "setup_delta_ns": -0.469176,
+            "hold_delta_ns": -0.050934,
+            "electrical_delta": -8
+          },
+          {
+            "corner": "typical",
+            "RC": "nom",
+            "matched_PVT": true,
+            "new_setup_ns": -4.486089,
+            "new_hold_ns": 0.044178,
+            "new_electrical_violations": 143,
+            "setup_delta_ns": -0.50175,
+            "hold_delta_ns": -0.01028,
+            "electrical_delta": -23
+          },
+          {
+            "corner": "typical",
+            "RC": "max",
+            "matched_PVT": true,
+            "new_setup_ns": -5.448257,
+            "new_hold_ns": 0.055932,
+            "new_electrical_violations": 229,
+            "setup_delta_ns": -0.621462,
+            "hold_delta_ns": -0.002363,
+            "electrical_delta": -14
+          },
+          {
+            "corner": "slow",
+            "RC": "min",
+            "matched_PVT": true,
+            "new_setup_ns": -9.051727,
+            "new_hold_ns": -0.040749,
+            "new_electrical_violations": 248,
+            "setup_delta_ns": 0.505184,
+            "hold_delta_ns": -0.091429,
+            "electrical_delta": -19
+          },
+          {
+            "corner": "slow",
+            "RC": "nom",
+            "matched_PVT": true,
+            "new_setup_ns": -10.598889,
+            "new_hold_ns": 0.051416,
+            "new_electrical_violations": 330,
+            "setup_delta_ns": 0.442811,
+            "hold_delta_ns": -0.104651,
+            "electrical_delta": -17
+          },
+          {
+            "corner": "slow",
+            "RC": "max",
+            "matched_PVT": true,
+            "new_setup_ns": -12.131176,
+            "new_hold_ns": 0.125715,
+            "new_electrical_violations": 406,
+            "setup_delta_ns": 0.243055,
+            "hold_delta_ns": -0.116163,
+            "electrical_delta": -14
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "min",
+            "matched_PVT": false,
+            "new_setup_ns": -0.108741,
+            "new_hold_ns": -0.049689,
+            "new_electrical_violations": 63,
+            "setup_delta_ns": -0.412441,
+            "hold_delta_ns": 0.004328,
+            "electrical_delta": -2
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "nom",
+            "matched_PVT": false,
+            "new_setup_ns": -0.72235,
+            "new_hold_ns": -0.064685,
+            "new_electrical_violations": 100,
+            "setup_delta_ns": -0.439934,
+            "hold_delta_ns": -0.004288,
+            "electrical_delta": 6
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "max",
+            "matched_PVT": false,
+            "new_setup_ns": -1.322564,
+            "new_hold_ns": -0.135369,
+            "new_electrical_violations": 136,
+            "setup_delta_ns": -0.452769,
+            "hold_delta_ns": -0.023071,
+            "electrical_delta": -1
+          }
+        ],
+        "setup_regressions": 6,
+        "hold_regressions": 8,
+        "electrical_count_regressions": 1
+      },
+      "driver_capacitance_pF": {
+        "_01842_": {
+          "pF": "0.568241",
+          "actual_connections": [
+            "*I *12605:C I *D sg13g2_nand3_1",
+            "*I *10827:C I *D sg13g2_nor4_1",
+            "*I *59004:X O *D sg13g2_buf_8"
+          ]
+        },
+        "_03075_": {
+          "pF": "0.398562",
+          "actual_connections": [
+            "*I *12578:B1 I *D sg13g2_a21oi_1",
+            "*I *59005:X O *D sg13g2_buf_8"
+          ]
+        },
+        "task009_two_load_launch_0_driver": {
+          "pF": "0.000739298",
+          "actual_connections": [
+            "*I *59004:A I *D sg13g2_buf_8",
+            "*I *10825:Y O *D sg13g2_nand2_2"
+          ]
+        },
+        "task009_two_load_launch_1_driver": {
+          "pF": "0.00598516",
+          "actual_connections": [
+            "*I *59005:A I *D sg13g2_buf_8",
+            "*I *12577:Y O *D sg13g2_nor4_2"
+          ]
+        }
+      },
+      "same_polarity_target_stages": {
+        "original_worst_path": {
+          "startpoint": "sample_time[3] (input port clocked by core)",
+          "endpoint": "_09822_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": -12.374231,
+          "stages": {
+            "_06992_/Y": {
+              "stage_delay_ns": 2.580699,
+              "arrival_ns": 11.424266,
+              "transition": "v",
+              "master": "sg13g2_nand2_2"
+            },
+            "_08744_/Y": {
+              "stage_delay_ns": 3.428362,
+              "arrival_ns": 22.725023,
+              "transition": "^",
+              "master": "sg13g2_nor4_2"
+            }
+          }
+        },
+        "new_through_path": {
+          "startpoint": "sample_time[2] (input port clocked by core)",
+          "endpoint": "_09822_ (rising edge-triggered flip-flop clocked by core)",
+          "slack_ns": -8.133393,
+          "stages": {
+            "_06992_/Y": {
+              "stage_delay_ns": 0.231067,
+              "arrival_ns": 10.145304,
+              "transition": "v",
+              "master": "sg13g2_nand2_2"
+            },
+            "_08744_/Y": {
+              "stage_delay_ns": 0.38022,
+              "arrival_ns": 18.388668,
+              "transition": "^",
+              "master": "sg13g2_nor4_2"
+            },
+            "task009_two_load_launch_0/X": {
+              "stage_delay_ns": 0.349194,
+              "arrival_ns": 10.494497,
+              "transition": "v",
+              "master": "sg13g2_buf_8"
+            },
+            "task009_two_load_launch_1/X": {
+              "stage_delay_ns": 0.394053,
+              "arrival_ns": 18.782722,
+              "transition": "^",
+              "master": "sg13g2_buf_8"
+            }
+          }
+        },
+        "scope": "Worst startpoint differs; same endpoint and driver transitions, no identical-input waveform claim"
+      },
+      "all_endpoint_inventory": {
+        "negative_union": 159,
+        "classes": {
+          "NEW_SRAM": 9,
+          "OLD_CONTROL147": 138,
+          "OTHER": 12
+        },
+        "delayed31_min_hold_ns": 0.069905,
+        "delayed31_min_setup_ns": 7.471648,
+        "other_SRAM": [
+          {
+            "endpoint": "pen_sram_lane0/A_ADDR[0]",
+            "worst_hold_ns": -0.135369,
+            "minimum_setup_ns": -1.439578,
+            "kind": "NEW_SRAM"
+          },
+          {
+            "endpoint": "pen_sram_lane0/A_DIN[49]",
+            "worst_hold_ns": -0.020959,
+            "minimum_setup_ns": 8.533502,
+            "kind": "NEW_SRAM"
+          },
+          {
+            "endpoint": "pen_sram_lane0/A_DIN[50]",
+            "worst_hold_ns": -0.023881,
+            "minimum_setup_ns": 8.539618,
+            "kind": "NEW_SRAM"
+          },
+          {
+            "endpoint": "pen_sram_lane0/A_DIN[53]",
+            "worst_hold_ns": -0.038019,
+            "minimum_setup_ns": 8.567495,
+            "kind": "NEW_SRAM"
+          },
+          {
+            "endpoint": "pen_sram_lane1/A_DIN[17]",
+            "worst_hold_ns": -0.000512,
+            "minimum_setup_ns": 8.984903,
+            "kind": "NEW_SRAM"
+          },
+          {
+            "endpoint": "pen_sram_lane1/A_DIN[23]",
+            "worst_hold_ns": -0.013855,
+            "minimum_setup_ns": 9.023713,
+            "kind": "NEW_SRAM"
+          },
+          {
+            "endpoint": "pen_sram_lane1/A_DIN[24]",
+            "worst_hold_ns": -0.011473,
+            "minimum_setup_ns": 9.019084,
+            "kind": "NEW_SRAM"
+          },
+          {
+            "endpoint": "pen_sram_lane1/A_DIN[26]",
+            "worst_hold_ns": -0.040749,
+            "minimum_setup_ns": 9.053347,
+            "kind": "NEW_SRAM"
+          },
+          {
+            "endpoint": "pen_sram_lane2/A_DIN[39]",
+            "worst_hold_ns": -0.029125,
+            "minimum_setup_ns": 9.088674,
+            "kind": "NEW_SRAM"
+          }
+        ]
+      },
+      "inventory_seconds": 34.34650451387279,
+      "inventory_owned_peak_RSS_bytes": 258252800,
+      "fresh_tools_in_closed_comparison": 0,
+      "closed_comparison_seconds": 0.420336680021137,
+      "retained_limits": [
+        "Zero router markers, native420 and intrinsic via subsets do not establish full original process DRC or connected transistor LVS.",
+        "No originalGDS/NWell check was rerun on the changed two-buffer/two-row spacer geometry in this campaign. Original NWell0 remains a predecessor-only result.",
+        "No original clock/ports/FIFO/timestamps/sequence/order/ACK/loss/reset behavior changed; physical buffering is original-library noninverting equivalence.",
+        "Available fast libraries are a mixed-temperature standard-cell/SRAM diagnostic, not matched fast-corner signoff.",
+        "Eight non-targeted DIN hold endpoints retain positive setup margin but need a separately qualified local hold correction; lane0/A_ADDR0 also has negative setup, so blanket delay is refused.",
+        "Read-decode and timestamp/control paths, electrical limits, process/LVS, IR/EM, full device memory/pads/package/board and physical qualification remain unfinished."
+      ],
+      "independent_read_only_review": {
+        "path": "build/task009/two-load-readonly-review-a1/result.json",
+        "sha256": "97b971183925e3e01ae4a996ecd7f8521c30e84da804e866b0d3cab1844c3965"
+      }
+    }
   }
 }
