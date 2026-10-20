@@ -1362,5 +1362,69 @@
       "sha256": "f3e1bc3d3a08c2ca6d007ddb10c48bb8951334a8cfa891664dff98b8d7994611"
     },
     "scope": "Maintained liveexport preserves all90 actual acknowledged guest/teacher/review/admission rows and35 artifact references. Independent8-row fork contains5publications,2explicitlyreusable permittedmodel releases andactive selection; private learner/admission/work/job/assessment/transport history excluded. Old5-row observer assertion failed because reusable models are now intended content; separate current assessment checked the existing outputs without rerunning commands. Operational restore awaits original gen15 deadline."
+  },
+  "generation15_ordinary_terminal": {
+    "result": {
+      "path": "build/school/task009-connected-a2/generation15-ordinary-terminal.json",
+      "sha256": "0b2694ca16bbfef0ae9dd2efdd7e9e1b1c67647de2d65920cda29d15eb716908"
+    },
+    "scope": "Original06:03:11.737949UTC deadline observed06:03:11.812997, ownedPID290039gone,90 acknowledgedrows andoriginal68rowprefix unchanged. No deadlineextension."
+  },
+  "acknowledged90_offline_restore_and_real_clock_recovery": {
+    "status": "PASS_RESTORED_HISTORY_FENCING_AND_FRESH_ACKNOWLEDGED_WORK; NORMAL_AUTHORITY_LIVE_UNTIL_OWNED_DEADLINE",
+    "backupAssessment": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/assessment.json",
+      "sha256": "2309316a6d3ffc5eb1c606b9fb5d28f0e744d8efb5449e3cf8baa4b0780c0f25"
+    },
+    "restorePlan": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/restore-plan.json",
+      "sha256": "fe336cb3e9c44884b84f919f02ba3f1d4be3d67f237e4433785e15d06e6f8175"
+    },
+    "restoreResult": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/restore-result.json",
+      "sha256": "6ccec7f1dc47c21a01574e312cf1ecd8261585f08b2b92118c113ddadbd30b1b"
+    },
+    "normalBudget": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/realclock-budget.json",
+      "sha256": "83b7b5b60129f8aa9f8434d54849c2cf0a8a2c1dd4ed9810c9e0fe94c0f0cde6"
+    },
+    "normalReadiness": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/realclock-ready.json",
+      "sha256": "741ca6734fe26886a17fb33a420f59226987827a4f823d0f05d015ee62c70b87"
+    },
+    "normalOldAccessRejections": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/realclock-old-access-rejections.json",
+      "sha256": "6dce36f85d71c18eedf0c5561e73792e924ab7f4e218bde11a49021529b07b1f"
+    },
+    "memoryObservation": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/realclock-memory-observation.json",
+      "sha256": "1f4785d5e37ddf675b449a1532d00cbc6a8de580d08318049e046551c47eed7b"
+    },
+    "hostResourcePolicy": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/operator-resource-qualification.json",
+      "sha256": "a66960a62c85ce51bb16cd6466877abed5d29d605e694e7f077c0a1213691863"
+    },
+    "retainedFailures": [
+      {
+        "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/restore-startup-failure-a1/result.json",
+        "sha256": "cee50b9001a59d3d7dd4d73e4b6200c6c4da66b4306d33442fd421a03f90f96f"
+      },
+      {
+        "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/restore-startup-failure-a2/result.json",
+        "sha256": "c9d88ed7022633ca633842d5542088d407ccf286628f795d1d0dc7571080eb3e"
+      },
+      {
+        "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/new-protected-work.stdout",
+        "sha256": "a69fba7fc1b800873d983f10d8a14d4bc05ba7f24463e94f5277051f6882bf12"
+      }
+    ],
+    "scope": "Actual90 acknowledgedguest/teacher/review rows and35artifactclosure restored into freshstorage only after originalgen15stopped. ExplicitTESTboot/mono1000softwarestimulus rebasesclockseq4/freezesunknownofflineelapsed, rejectsoldactualRV64completion andoldprivatepairing, commitsnewprivateadmission91. CorrectedprotectedTeacherquery succeeds after a retainedmissinglearnerfield error. ActualLinuxclock thenopensgeneration20/clockseq5, preserveshistory, acknowledgesfreshAlice/Bob/Teacherpairings andprotectedaccess. Separate original3600sdeadline07:09:34.391511UTC, ownedtransport321166/native321167 remainslive intentionally. NativeVmSize2548756KiB andHWM82520KiB are separatefrom4GiBAScap; nohostreboot/physicalpowerloss/publicidentityclaim."
+  },
+  "restored_authority_fresh_current_evidence_inference": {
+    "result": {
+      "path": "build/school/task009-live-model-cycle-a1/alice-restored-evidence-gen20-a3/result.json",
+      "sha256": "5c732f7f14f4bd05e1783d65d7fed10247c44e8e466790d6302b709d14a58aab"
+    },
+    "scope": "Actualpreparedfeatures[0,2]/presence3 from originalguestattempts59/82 andhumanassessments62/86, unchangedauditedRV64image/model9001. Freshgeneration20/fence1 execution returns343372Q20 in2.011603s, commits99 andsuggestion100; old90rowhistory unchanged. Missingoldroothelperpath andLLVMtoolenvironment failures retained in priora1/a2 directories. Modeltraining/builds reused; nofreshtraining/newlearnerattempt/freshguestdelivery or educationalimprovementclaim."
   }
 }

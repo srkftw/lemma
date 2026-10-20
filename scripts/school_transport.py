@@ -13,6 +13,7 @@ import http.server
 import json
 import os
 from pathlib import Path
+import resource
 import signal
 import secrets
 import stat
@@ -24,9 +25,29 @@ import urllib.request
 import urllib.parse
 
 LIMIT = 1048576
+AUTHORITY_MIN_ADDRESS_BYTES = 4 << 30
 SHORTCUTS = {"status": "status", "stop": "stop", "backup": "export", "restore": "restore", "fork": "clone", "pair": "admission-issue"}
 SHORTCUTS.update({"publish-training": "training-publish", "models": "models", "select-model": "model-select", "rollback-model": "model-rollback"})
 SHORTCUTS["revoke-pair"] = "admission-revoke"
+
+
+def authority_environment(base):
+    """Bound the host worker pool and diagnose the native runtime reservation.
+
+    The native entry thread still reserves1GiB before the Lean environment
+    setting takes effect; mimalloc reserves another1GiB. Virtual address space
+    is separate from resident memory. Never raise an operator's inherited cap.
+    Explicit worker/stack settings remain the operator's choice.
+    """
+    maximum, _ = resource.getrlimit(resource.RLIMIT_AS)
+    if maximum != resource.RLIM_INFINITY and maximum < AUTHORITY_MIN_ADDRESS_BYTES:
+        raise ValueError("native Lean authority requires at least 4096 MiB virtual address space; "
+                         "its startup allocator and thread reservations exceed 2 GiB. "
+                         "Resident memory is separate; raise the inherited address limit or leave it unlimited")
+    environment = dict(base)
+    environment.setdefault("LEAN_NUM_THREADS", "2")
+    environment.setdefault("LEAN_STACK_SIZE_KB", "65536")
+    return environment
 
 
 def boot_id():
@@ -171,6 +192,10 @@ def pair(args, parser):
 def launch(args, root, data, parser):
     if runtime(root):
         parser.exit(1, "school transport is already running; use status\n")
+    try:
+        environment = authority_environment(os.environ)
+    except ValueError as error:
+        parser.exit(1, str(error) + "\n")
     log_path = root / "transport.log"
     command = [sys.executable, str(Path(__file__).resolve()), "--binary", str(args.binary.resolve()),
                "--barrier-helper", str(args.barrier_helper), str(root), "run", "--port", str(args.port)]
@@ -180,7 +205,7 @@ def launch(args, root, data, parser):
         command.extend(["--browser-origin", origin])
     with log_path.open("ab") as log:
         child = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=log, stderr=log,
-                                 start_new_session=True)
+                                 start_new_session=True, env=environment)
     deadline = time.monotonic() + 10
     try:
         while time.monotonic() < deadline:
@@ -301,6 +326,10 @@ def main():
         except ValueError:
             parser.error("operator request must be JSON or a supported shortcut")
         return emit_reply(post(running["port"], data))
+    try:
+        environment = authority_environment(environment)
+    except ValueError as error:
+        parser.exit(1, str(error) + "\n")
     authority_status = 0
     with (root / "authority.lock").open("a+b") as lock:
         try:
