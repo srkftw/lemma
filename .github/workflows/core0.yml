@@ -492,16 +492,19 @@ jobs:
           set -euo pipefail
           timeout --foreground --signal=TERM --kill-after=30s 10m \
             nix develop --no-write-lock-file --command \
-              python3 -m unittest discover -s tests/silicon -v \
-            2>&1 | tee build/ci/metadata/silicon-host-unittest.log
-          python3 - <<'PY'
-          import re
+              python3 -c '
+          import json
+          import sys
           from pathlib import Path
-          value = Path("build/ci/metadata/silicon-host-unittest.log").read_text()
-          count = re.search(r"Ran ([0-9]+) tests?", value)
-          if not count or int(count[1]) <= 0 or not re.search(r"^OK$", value, re.M):
-              raise RuntimeError("Silicon host suite is missing, empty or failing")
-          PY
+          sys.path.insert(0, "scripts")
+          from ci_preflight import run_suite, SILICON_RETAINED_SKIPS
+          value = run_suite(Path("tests/silicon"), sys.stdout,
+                            allowed_skips=SILICON_RETAINED_SKIPS)
+          Path("build/ci/metadata/silicon-host-result.json").write_text(json.dumps(value, indent=2) + "\n")
+          print(json.dumps(value, indent=2), flush=True)
+          raise SystemExit(0 if value["status"] == "PASS" else 1)
+          ' \
+            2>&1 | tee build/ci/metadata/silicon-host-unittest.log
 
       - name: Produce the source-bound hosted school executables
         run: |
