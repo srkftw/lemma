@@ -387,7 +387,7 @@
     },
     "status": "FAIL_SUSTAINED_WRITING_DROPS_NEW_CONTACTS",
     "bundle": "build/task009/school23-browser-a8/bundle.json",
-    "scope": "Actual Student browser803/2 node1\u21926; paused burst and paced strokes lost new contacts. ExplicitSave30 retained a partial prefix, not completed written proof. No JOIN/attempt/feedback/review executed.",
+    "scope": "Actual Student browser803/2 node1→6; paused burst and paced strokes lost new contacts. ExplicitSave30 retained a partial prefix, not completed written proof. No JOIN/attempt/feedback/review executed.",
     "saved_frontier": 30,
     "raw_chunks": 7,
     "full_nine_word_samples": 62,
@@ -503,6 +503,34 @@
       "sha256": "e42eab2cd5f73e2553a936a06f6b6ab2d95837c87ce4668877faf6729710d54c"
     },
     "retained_failure": "EarlyJOINbefore60000/166guestinstallation reported230; prematureSENDrejected244, noassessment. OriginalboundedstreamobserverFAIL2.3B retained written-stream.json; actualvalidretry newphase followed727binding57/gen14. Early100Mpage-reopenprefixes didnotprovecompletednavigation; actualpublicbackingreads advancedandqueuedpage4completion measured300Madditionalunits/2.138383s.",
-    "scope": "RealunchangedpaceCPUwriting/Save, immutablev2opaqueartifact/humanreview, actualSchoolcommitwithlostunconsumedguestACK, byte-identicalcoldpendingreplay/singleSchooladmission/actual733pointerCommit177. Coldstorage recovery isnotexactmicrostatecontinuation; outcome4Unsupportedremainsdistinctfromhumanacceptance. Noeducational/physicalqualification. Campaignremainssame24B/05:46:35deadline; due-responseandselected-helpdeliverypending."
+    "scope": "RealunchangedpaceCPUwriting/Save, immutablev2opaqueartifact/humanreview, actualSchoolcommitwithlostunconsumedguestACK, byte-identicalcoldpendingreplay/singleSchooladmission/actual733pointerCommit177. Coldstorage recovery isnotexactmicrostatecontinuation; outcome4Unsupportedremainsdistinctfromhumanacceptance. Noeducational/physicalqualification. Original24B/05:46:35deadline preserved; terminal successor below records actual due-response and selected-help delivery."
+  },
+  "ordinary_native_review_permissions_terminal": {
+    "status": "PASS_NATIVE_ORDINARY_WORKFLOW_WITH_DECLARED_FUNCTIONAL_SCOPE",
+    "result": {
+      "path": "build/school/task009-student-native-a7/terminal-result.json",
+      "sha256": "6ac0d066d8cb0d21fc691aa443f0f8d4df1d61611669d1cb81a66db8900d128f"
+    },
+    "reviewRawRetention": {
+      "path": "build/school/task009-student-native-a7/cold-pending/review-nine-word-retention.json",
+      "sha256": "fed5ddcf191b9d758600d0cabd71a5e14d67aa7f4432ad8dfb02c4836d271a46"
+    },
+    "reviewDomainLifecycle": {
+      "path": "build/school/task009-student-native-a7/cold-pending/review-terminal-domain.json",
+      "sha256": "929f2a61707b9d1dd3aa3a5a4e149acde065d8586343711acb44c0c8d39d89b4"
+    },
+    "reviewStream": {
+      "path": "build/school/task009-student-native-a7/cold-pending/review-stream.json",
+      "sha256": "eda427a008220475dd5bd703b0bf7e3d31173b902ca876b75c09b3259082edac"
+    },
+    "selectedHelp": {
+      "path": "build/school/task009-student-native-a7/cold-pending/selected-help-result.json",
+      "sha256": "f32a1c4394fc875b048997b1fb4b01085c119c063fc5c634d161ffa9bd601601"
+    },
+    "wholeUnits": 23779000096,
+    "wholeLimit": 24000000000,
+    "originalDeadlineUTC": "2026-10-20T05:46:35.261998+00:00",
+    "terminalUTC": "2026-10-20T05:29:45.369073+00:00",
+    "scope": "Synthetic pen and widget stimuli through the actual ordinary Student and Teacher interfaces. Domain state, ink, checking, submission, journal recovery and policy run in the maintained Lean guest/authority. Fresh functional execution reused genuine audited guest/runtime/trained releases. Cold recovery is not exact continuation; unsupported handwriting plus human acceptance is not kernel verification. Browser completion, canonical timing, physical and educational qualification remain separate."
   }
 }
