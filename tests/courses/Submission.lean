@@ -31,6 +31,11 @@ structure Model where
   records : Array (Array UInt64) := #[]
   stream : ByteArray := ByteArray.empty
   streamEnds : UInt64 := 0
+  consoleBytes : ByteArray := ByteArray.empty
+  consoleWrites : Array ByteArray := #[]
+  wireChunks : Array (UInt64 × UInt64) := #[]
+  consoleFailurePrefix : Option UInt64 := none
+  consoleFailureStatus : UInt8 := 0
   slowPoll : Bool := true
   busyBegin : Bool := true
   lostCommit : Bool := false
@@ -56,13 +61,14 @@ private def extract (m : Model) (address count : UInt64) : ByteArray :=
   m.memory.extract (address-base).toNat (address-base+count).toNat
 private def objectBytes (m : Model) (ns object : UInt64) : Option ByteArray :=
   (m.objects.find? (fun (a,b,_) => a == ns && b == object)).map (·.2.2)
+private def parseDigit (m : Model) (address : UInt64) : IO UInt64 := do
+  let byte ← IO.ofExcept <| read m address 1
+  if 48 ≤ byte && byte ≤ 57 then return byte-48
+  if 97 ≤ byte && byte ≤ 102 then return byte-87
+  throw <| IO.userError "guest emitted malformed lowercase hex"
 private def parseHex (m : Model) (address : UInt64) : IO UInt64 := do
   let mut value : UInt64 := 0
-  for i in [:16] do
-    let byte ← IO.ofExcept <| read m (address+i.toUInt64) 1
-    let digit := if byte ≤ 57 then byte-48 else byte-87
-    if digit > 15 then throw <| IO.userError "guest emitted malformed hex"
-    value := value*16+digit
+  for i in [:16] do value := value*16+(← parseDigit m (address+i.toUInt64))
   return value
 private def syscall (state : IO.Ref Model) (number a b c d e : UInt64) : IO (UInt8 × UInt64) := do
   if number == CapabilityABI.console || number == IPCABI.callBegin || number == 67 then
@@ -80,12 +86,45 @@ private def syscall (state : IO.Ref Model) (number a b c d e : UInt64) : IO (UIn
     return (0,1)
   else if number == ABI.time then return (0,m.clock)
   else if number == CapabilityABI.console then
-    if a != 17 || b != 0 || c != Console.packetAddress || d != 88 then throw <| IO.userError "queue acquired other Console authority"
-    let mut values := #[]
-    for offset in #[3,20,37,54,71] do values := values.push (← parseHex m (c+offset))
-    let tag := values[0]!
+    if a != 17 || b != 0 || c != Console.packetAddress || d == 0 || 256 < d || e != 0 then
+      throw <| IO.userError "queue acquired other Console authority"
     if m.commits < 2 then throw <| IO.userError "bytes escaped before both real Store Commit replies"
-    let mut next := m
+    let bytes := extract m c d
+    if let some count := m.consoleFailurePrefix then
+      if d ≤ count then throw <| IO.userError "fixture failure prefix is not partial"
+      state.set {m with
+        consoleBytes:=m.consoleBytes ++ bytes.extract 0 count.toNat
+        consoleWrites:=m.consoleWrites.push (bytes.extract 0 count.toNat)
+        consoleFailurePrefix:=none}
+      return (m.consoleFailureStatus,count)
+    let mut next := {m with consoleBytes:=m.consoleBytes ++ bytes,consoleWrites:=m.consoleWrites.push bytes}
+    if bytes[0]! == 83 && bytes[1]! == 49 then
+      if bytes[0]! != 83 || bytes[1]! != 49 || bytes[2]! != 32 || bytes[19]! != 32 ||
+          bytes[36]! != 32 || bytes[(d-1).toNat]! != 10 then
+        throw <| IO.userError "guest emitted malformed S1 boundaries"
+      let queue ← parseHex m (c+3)
+      let packed ← parseHex m (c+20)
+      let offset := packed &&& 0x0000ffffffffffff
+      let count := packed >>> 48
+      if queue >>> 48 != 0x5351 || queue &&& 0x0000ffffffffffff == 0 ||
+          count == 0 || 96 < count || d != 38+count*2 || offset != m.stream.size.toUInt64 then
+        throw <| IO.userError "S1 stream changed queue/length/order or exceeded bounded write"
+      let mut stream := m.stream
+      for i in [:count.toNat] do
+        let high ← parseDigit m (c+37+i.toUInt64*2)
+        let low ← parseDigit m (c+38+i.toUInt64*2)
+        stream := stream.push (high*16+low).toUInt8
+      state.set {next with stream,wireChunks:=next.wireChunks.push (offset,count)}
+      return (0,d)
+    if d != 88 && d != 89 then throw <| IO.userError "queue emitted another bounded wire shape"
+    let shift : UInt64 := if d == 89 then 1 else 0
+    if d == 89 && bytes[0]! != 10 then throw <| IO.userError "cold stream omitted leading LF resynchronization"
+    if bytes[shift.toNat]! != 75 || bytes[(shift+1).toNat]! != 49 || bytes[(shift+2).toNat]! != 32 ||
+        bytes[(d-1).toNat]! != 10 then throw <| IO.userError "queue emitted malformed K1 boundary"
+    let mut values := #[]
+    for offset in #[3,20,37,54,71] do values := values.push (← parseHex m (c+shift+offset))
+    let tag := values[0]!
+    if d == 89 && tag != 0x72e then throw <| IO.userError "leading LF changed another queue record"
     if tag == 0x72e then
       if values[1]! >>> 48 != 0x5351 || values[2]! == 0 then throw <| IO.userError "missing stable stream queue/commit"
       next := {next with stream := ByteArray.empty}
@@ -107,7 +146,7 @@ private def syscall (state : IO.Ref Model) (number a b c d e : UInt64) : IO (UIn
       if values[3]! != m.sequence || (values[4]! != 2 && values[4]! != 3) then throw <| IO.userError "restored receipt is not the observed READ frontier"
     else throw <| IO.userError "queue emitted another Console protocol"
     state.set {next with records := next.records.push values}
-    return (0,88)
+    return (0,d)
   else if number == IPCABI.callBegin then
     if m.pending || a != 16 || b != Lemma.Courses.SchoolSubmission.outgoing || e != 300000000 then throw <| IO.userError "queue changed IPC authority/deadline"
     let get (offset : UInt64) := IO.ofExcept <| read m (b+offset) 8
@@ -361,6 +400,9 @@ def check : IO Unit := do
     let _ ← ok large (Ink.addEdit ink 1 stroke)
     let _ ← ok large (Ink.chunk raw 1 stroke 512 4095)
     for (offset,value) in #[(72,1000),(80,1000),(96,1024),(104,768)] do set large (raw+offset) value
+    let sample : Array UInt64 := #[0x1234000000000000+stroke,0xfedcba9800000000+stroke,
+      40000+stroke,30000+stroke,2047,6,0x123456789abcdef0,0xfedcba9876543210,9]
+    for (value,j) in sample.zipIdx do set large (raw+128+j.toUInt64*8) value
     let count ← ok large (Ink.finishChunk raw 1 3)
     rawObjects := rawObjects.push (1,object,extract (← large.get) raw count)
   large.modify fun m => {m with objects := rawObjects}
@@ -405,6 +447,126 @@ def check : IO Unit := do
   let observed := (← terminalRestored.get).records
   if observed != #[#[0x734,largeQueue,888,terminal.sequence+17,3]] then
     throw <| IO.userError "cold terminal restore manufactured an original Commit instead of READ frontier"
+  -- The same32-stroke original objects pass through the actual version25
+  -- queue, not an isolated encoder. Every raw128-byte read becomes96+32.
+  let wide ← IO.mkRef {largeComplete with
+    objects:=rawObjects
+    stage:=ByteArray.empty
+    stageObject:=0
+    stageNS:=0
+    pending:=false
+    sequence:=100
+    commits:=0
+    calls:=0
+    records:=#[]
+    stream:=ByteArray.empty
+    streamEnds:=0
+    allocated:=#[]
+    consoleBytes:=ByteArray.empty
+    consoleWrites:=#[]
+    wireChunks:=#[]
+    busyBegin:=true
+    slowPoll:=true}
+  let _ ← ok wide (SchoolSubmission.initializeQueue 16 17 40000)
+  let _ ← ok wide SchoolSubmission.enableWire96
+  let wideQueue ← ok wide (SchoolSubmission.start header workspace ink)
+  advanceTo wide 26
+  let wideComplete ← wide.get
+  let wideFrozen := (objectBytes wideComplete 2 wideQueue).get!
+  let expectedWide := rawObjects.foldl (fun acc row => acc ++ row.2.2) wideFrozen
+  let wideCRC := (expectedWide.data.foldl (fun crc byte => PackageFormat.crcByte crc byte.toUInt64) 0xffffffff) ^^^ 0xffffffff
+  if wideComplete.stream != expectedWide || wideComplete.commits != 2 ||
+      (← word wide (SchoolSubmission.arena+280)) != wideCRC || wideComplete.wireChunks.isEmpty ||
+      (wideComplete.consoleWrites[0]!).size != 89 || (wideComplete.consoleWrites[0]!)[0]! != 10 then
+    throw <| IO.userError "actual S1 queue lost original32-stroke bytes/CRC/commit or cold line boundary"
+  let rawChunks := wideComplete.wireChunks.filter fun entry => wideFrozen.size.toUInt64 ≤ entry.1
+  if rawChunks.size != 96 then throw <| IO.userError "S1 lost one of three exact writes per200byte rawobject"
+  for i in [:32] do
+    let offset := wideFrozen.size.toUInt64+i.toUInt64*200
+    if rawChunks[i*3]! != (offset,96) || rawChunks[i*3+1]! != (offset+96,32) ||
+        rawChunks[i*3+2]! != (offset+128,72) then
+      throw <| IO.userError "actual raw128 response was not drained as96+32 before its72byte remainder"
+  IO.println "SCHOOL_S1_PHASE:32stroke-full9word-exact-bytes-crc-and-96+32+72-splits"
+  let _ ← ok wide SchoolSubmission.retry
+  let _ ← ok wide SchoolSubmission.pump
+  advanceTo wide 26
+  if (← wide.get).stream != expectedWide || (← wide.get).commits != 2 then
+    throw <| IO.userError "S1 retry changed immutable queue bytes or committed a new identity"
+  let cold ← IO.mkRef ({
+    objects:=wideComplete.objects
+    sequence:=wideComplete.sequence
+    commits:=wideComplete.commits
+    busyBegin:=false} : Model)
+  let _ ← ok cold (SchoolSubmission.initializeQueue 16 17 50000)
+  let _ ← ok cold SchoolSubmission.enableWire96
+  let _ ← ok cold (SchoolSubmission.restore 1)
+  advanceTo cold 21
+  let metadataReady ← cold.get
+  advanceTo cold 24
+  let rawReady ← cold.get
+  advanceTo cold 26
+  if (← cold.get).stream != expectedWide || (← cold.get).commits != 2 then
+    throw <| IO.userError "S1 cold replay retargeted the immutable pending pointer/envelope"
+  -- No CRC, global offset or local suboffset may advance after an actual
+  -- irreversible Console prefix, whether it is a short success or an error.
+  for (ready,prefixBytes,status) in #[(metadataReady,39,0),(rawReady,17,Console.failure)] do
+    let failed ← IO.mkRef {ready with consoleFailurePrefix:=some prefixBytes,consoleFailureStatus:=status}
+    let before := (← word failed (SchoolSubmission.arena+0),← word failed (SchoolSubmission.arena+160),
+      ← word failed (SchoolSubmission.arena+176),← word failed (SchoolSubmission.arena+224),
+      ← word failed (SchoolSubmission.arena+272))
+    let outcome ← run failed SchoolSubmission.pump
+    let after := (← word failed (SchoolSubmission.arena+0),← word failed (SchoolSubmission.arena+160),
+      ← word failed (SchoolSubmission.arena+176),← word failed (SchoolSubmission.arena+224),
+      ← word failed (SchoolSubmission.arena+272))
+    if outcome.1 != Console.failure || before != after || (← failed.get).stream != ready.stream ||
+        (← failed.get).consoleBytes.size != ready.consoleBytes.size+prefixBytes.toNat ||
+        (← failed.get).objects != ready.objects then
+      throw <| IO.userError "partial S1 Console write advanced payload/CRC/suboffset or durable objects"
+    let recovery ← IO.mkRef ({
+      objects:=ready.objects
+      sequence:=ready.sequence
+      commits:=ready.commits
+      busyBegin:=false} : Model)
+    let _ ← ok recovery (SchoolSubmission.initializeQueue 16 17 60000)
+    let _ ← ok recovery SchoolSubmission.enableWire96
+    let _ ← ok recovery (SchoolSubmission.restore 1)
+    advanceTo recovery 26
+    if (← recovery.get).stream != expectedWide || (← recovery.get).commits != ready.commits ||
+        ((← recovery.get).consoleWrites[0]!).size != 89 ||
+        ((← recovery.get).consoleWrites[0]!)[0]! != 10 then
+      throw <| IO.userError "cold S1 replay did not resynchronize with LF and exact original bytes"
+  -- Wrong queue, old local pointer or changed CRC is not school admission.
+  let localCommit ← word cold (SchoolSubmission.arena+152)
+  for (q,oldLocal,crc) in #[(wideQueue+1,localCommit,wideCRC),(wideQueue,localCommit+1,wideCRC),
+      (wideQueue,localCommit,wideCRC ^^^ 1)] do
+    let badAck := (#[SchoolSubmission.ackMagic,1,q,999,oldLocal,crc,0,0]).foldl (fun bytes value =>
+      (List.range 8).foldl (fun out i => out.push ((value >>> (i.toUInt64*8)).toUInt8)) bytes) ByteArray.empty
+    cold.modify fun m => {m with objects:=(m.objects.filter (fun (ns,obj,_) => ns != 2 || obj != SchoolSubmission.ackObject)).push (2,SchoolSubmission.ackObject,badAck),clock:=m.clock+5000001}
+    advanceTo cold 45
+    advanceTo cold 26
+    if (← cold.get).commits != 2 || (← word cold (SchoolSubmission.arena+184)) != 1 ||
+        (← cold.get).records.any (fun row => row[0]! == 0x733) then
+      throw <| IO.userError "old/mixed S1 school ACK advanced the immutable pending pointer"
+  let goodAck := (#[SchoolSubmission.ackMagic,1,wideQueue,999,localCommit,wideCRC,0,0]).foldl (fun bytes value =>
+    (List.range 8).foldl (fun out i => out.push ((value >>> (i.toUInt64*8)).toUInt8)) bytes) ByteArray.empty
+  cold.modify fun m => {m with objects:=(m.objects.filter (fun (ns,obj,_) => ns != 2 || obj != SchoolSubmission.ackObject)).push (2,SchoolSubmission.ackObject,goodAck),clock:=m.clock+5000001}
+  advanceTo cold 29
+  let acknowledgedWide ← cold.get
+  if !(acknowledgedWide.records.contains #[0x733,wideQueue,999,acknowledgedWide.sequence,3]) then
+    throw <| IO.userError "S1 queue lacked its actual bound ACK pointer-Commit receipt"
+  let restoredWide ← IO.mkRef ({
+    objects:=acknowledgedWide.objects
+    sequence:=acknowledgedWide.sequence+17
+    commits:=acknowledgedWide.commits
+    busyBegin:=false} : Model)
+  let _ ← ok restoredWide (SchoolSubmission.initializeQueue 16 17 70000)
+  let _ ← ok restoredWide SchoolSubmission.enableWire96
+  let _ ← ok restoredWide (SchoolSubmission.restore 1)
+  advanceTo restoredWide 29
+  if (← restoredWide.get).records != #[#[0x734,wideQueue,999,acknowledgedWide.sequence+17,3]] ||
+      !(← restoredWide.get).stream.isEmpty then
+    throw <| IO.userError "S1 cold terminal pointer replay invented a Commit or sent an admitted attempt again"
+  IO.println s!"SCHOOL_S1_QUEUE_ACTIONS:PASS exact{expectedWide.size}byte32stroke/fullraw128to96+32/CRC/retry/cold/short39+error17-noadvance/LFresync/oldACKreject/733Commit/734Read; finite actualActions only"
   IO.println s!"SCHOOL_SUBMISSION_ACTIONS:PASS exact{expected.size}-byte frozen/rawstream,16-byte boundaries,Busy/wouldBlock,retry,coldpendingrestore,boundACKdurablepointer,suspend/Abort/resume,partialstreamcancel,ninthchunkreject,allocationrollback,lostCommitnooutput; v2-32-stroke-exact-stream/coldrestore/ACK;733actualCommit;734READfrontier; one-combined-IPC-poll/Console-per-pump;pendingCommit-cancel-order;ACK-cancel-rejection; single-task-IPC-read-suspend-drain; component only"
 end SubmissionTests
 
