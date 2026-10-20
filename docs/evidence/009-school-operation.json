@@ -3114,5 +3114,50 @@
       "path": "build/school/task009-browser-school25-review218-a1/terminal-result.json",
       "sha256": "06d3aecedda5701b591f1287340ae60d934fee89b5249ca1959e9e5372229d0c"
     }
+  },
+  "hostedProducerThreadDefaults": {
+    "result": "PASS normal hosted production with bounded default compiler environment",
+    "change": "build_school.py uses the existing two-thread/65536KiB-stack defaults when unset, preserves explicit operator settings and records the effective environment.",
+    "fresh": "Normal guarded Nix launch and Lake build validation, retained source66 and executable copying.",
+    "reused": "Unchanged maintained Lean build outputs; school and curriculum executable bytes exactly equal the preceding activity-selector producer. No fresh guest, controller, inference or authority execution is claimed.",
+    "effectiveCompilerEnvironment": {
+      "LEAN_NUM_THREADS": "2",
+      "LEAN_STACK_SIZE_KB": "65536"
+    },
+    "productionReceipt": {
+      "path": "build/school/task009-host-thread-defaults-production-a2/production.json",
+      "sha256": "b1cbac4ae188cfb21639f4da05418a258a94207bc03bc71aca61b684bfcf13b5",
+      "seconds": 1.0000330470502377,
+      "sourceInputCount": 66
+    },
+    "boundedObservation": {
+      "path": "build/task009/host-thread-defaults-a2/result.json",
+      "sha256": "b8e1eeb2d48abf599adb9d3e875993477d8641c679728440bd10881d6269e945",
+      "seconds": 6.460740291047841,
+      "peakOwnedRSSBytes": 432467968,
+      "remainingExactStartOwners": [],
+      "limits": {
+        "wholeSeconds": 90,
+        "ownedRSSBytes": 536870912,
+        "addressSpaceBytes": 8589934592,
+        "outputBytes": 536870912,
+        "launchMemAvailableBytes": 12884901888,
+        "continuingMemAvailableBytes": 8589934592
+      }
+    },
+    "binaryComparison": {
+      "school": "8a6353aabd3d5d8c8d23fe8144fad31d4d0da138138fb4ad596b912da276a5d7",
+      "school-curriculum": "1c6d5820b86fa5f393c7526dec02d84298012a7984f06d5612372ef8ec0b3b05"
+    },
+    "retainedFailures": [
+      {
+        "path": "build/school/task009-activity-selection-production-a1",
+        "scope": "Original normal producer thread-creation abort; later explicit environment production is separate."
+      },
+      {
+        "path": "build/task009/host-thread-defaults-a1/result.json",
+        "scope": "Original90s/512MiB-RSS/128MiB-output case stopped after5.174s while copying the first binary. No complete producer receipt. Its failure is not promoted; the new unused case prospectively budgets512MiB output against the measured290187854-byte prior closure."
+      }
+    ]
   }
 }

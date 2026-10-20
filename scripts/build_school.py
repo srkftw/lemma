@@ -6,6 +6,7 @@ from the Core0 RV64 worker. Lake may reuse validated ordinary host build outputs
 """
 import argparse
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -34,7 +35,13 @@ def main():
     before = inputs(root)
     start = time.monotonic()
     command = ["lake", "build", "school", "school-curriculum"]
+    environment = os.environ.copy()
+    # Use the existing build-action compiler defaults for this hosted entry
+    # point too. Explicit operator resource settings remain authoritative.
+    for key, value in (("LEAN_NUM_THREADS", "2"), ("LEAN_STACK_SIZE_KB", "65536")):
+        environment.setdefault(key, value)
     result = {"schema": "lemma-school-host-production/1", "result": "FAIL", "command": command,
+              "compilerEnvironment": {key: environment[key] for key in ("LEAN_NUM_THREADS", "LEAN_STACK_SIZE_KB")},
               "sourceInputs": before, "boundary": "hosted Lean native executable with upstream host runtime; no freestanding server claim"}
     try:
         # A digest alone cannot reproduce uncommitted consumed inputs after
@@ -42,7 +49,7 @@ def main():
         # archive, before compiling or copying an executable for operation.
         result["sourceRoot"] = str(retain_source(root, output, before))
         with (output / "production.log").open("x") as log:
-            process = subprocess.run(command, cwd=root, stdout=log, stderr=subprocess.STDOUT, timeout=300)
+            process = subprocess.run(command, cwd=root, stdout=log, stderr=subprocess.STDOUT, timeout=300, env=environment)
         if process.returncode:
             raise RuntimeError("actual Lake production failed; inspect retained production.log")
         if inputs(root) != before:
