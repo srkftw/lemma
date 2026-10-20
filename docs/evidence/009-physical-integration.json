@@ -7651,5 +7651,110 @@
       },
       "scope": "Completed original immutable main/defaultdeep/nwell context. Every93actualcurrentmarker is exactlypresent in4557baseline; no countcomparison to unmatched3717partialfullmain or fullprocessDRC/LVS/physicalqualification."
     }
+  },
+  "process_bound_sample_hold": {
+    "status": "PASS_DECLARED_PROCESS_SAMPLE_HOLD_NOMINAL_AND_FAILURE_CONTROLS_ONLY",
+    "actual_receipt": {
+      "path": "build/multimodal/task009-sample-hold-pilot-a1/result.json",
+      "sha256": "a9db0034b114eb944de7bed6cad9d9339d18f6271b766c8bd6471d748dbd9c41",
+      "seconds": 15.550805892096832,
+      "peak_owned_RSS_bytes": 111124480,
+      "source_seal_equal": true,
+      "resource_errors": [],
+      "owned_observed_PIDs_absent": true
+    },
+    "maintained_design": "engineering/multimodal/differential-sample-hold-sg13g2.cir",
+    "maintained_design_sha256": "2b3392a517d7a2d0f59f9a255059bdc775564836ec3543cc26ca5f61c49e910a",
+    "maintained_checker": "scripts/check_sg13g2_sample_hold.py",
+    "promotion_assessment": {
+      "path": "build/multimodal/task009-sample-hold-promotion-a1/result.json",
+      "sha256": "c657fd06c27505c5cfce54afec12698e0e82e5bf1de059668054cf6aff0c73b0"
+    },
+    "actual_cases": [
+      {
+        "name": "nominal",
+        "status": "PASS_DECLARED_NOMINAL_MODEL_OPERATION",
+        "seconds": 5.031250478001311,
+        "observations": {
+          "acquisition": 2550,
+          "held_positive": 1350,
+          "held_negative": 1200,
+          "direct_positive": 1350,
+          "direct_negative": 1200,
+          "preamp_positive": 300,
+          "preamp_negative": 450,
+          "reset": 2550
+        },
+        "measures": {
+          "max_acquisition_error_V": 1.199999999368373e-08,
+          "max_held_differential_error_V": 4.0440999999993496e-05,
+          "peak_supply_current_A": 0.000657418866
+        },
+        "recorded_failure_checks": []
+      },
+      {
+        "name": "continuous-track",
+        "status": "PASS_REJECTED_ACTUAL_FAILURE_CONTROL",
+        "seconds": 4.979993090033531,
+        "observations": {
+          "acquisition": 2550,
+          "held_positive": 1350,
+          "held_negative": 1200,
+          "direct_positive": 1350,
+          "direct_negative": 1200,
+          "preamp_positive": 300,
+          "preamp_negative": 450,
+          "reset": 2550
+        },
+        "measures": {
+          "max_acquisition_error_V": 1.5000000019860238e-08,
+          "max_held_differential_error_V": 0.020000020999999972,
+          "peak_supply_current_A": 0.000642446265
+        },
+        "recorded_failure_checks": [
+          "direct_positive",
+          "held_positive"
+        ]
+      },
+      {
+        "name": "crossed-held-pair",
+        "status": "PASS_REJECTED_ACTUAL_FAILURE_CONTROL",
+        "seconds": 5.1809811380226165,
+        "observations": {
+          "acquisition": 2550,
+          "held_positive": 1350,
+          "held_negative": 1200,
+          "direct_positive": 1350,
+          "direct_negative": 1200,
+          "preamp_positive": 300,
+          "preamp_negative": 450,
+          "reset": 2550
+        },
+        "measures": {
+          "max_acquisition_error_V": 1.199999999368373e-08,
+          "max_held_differential_error_V": 4.0440999999993496e-05,
+          "peak_supply_current_A": 0.000657418866
+        },
+        "recorded_failure_checks": [
+          "direct_positive"
+        ]
+      }
+    ],
+    "original_CAP_include_closure": {
+      "ihp-sg13g2/libs.tech/ngspice/models/cornerCAP.lib": "4fc4a0f17ca2aef66ca38c2d2e7cead3307b69508d304ed073129565ec1c3e56",
+      "ihp-sg13g2/libs.tech/ngspice/models/capacitors_mod_mismatch.lib": "6c550362c762362e276f0ed0a4f875616ab6a9de853f1a8f6851b52676ea6f77",
+      "ihp-sg13g2/libs.tech/ngspice/models/cap_cmomf.lib": "410001def252a236f221442efcea6353874d1614db593db4142ea3b8a499a207",
+      "ihp-sg13g2/libs.tech/ngspice/models/cap_cmomi.lib": "ae6270ea4abf6ad409065d6d24df2a9aa5b121cba3d6facbc14d6a3ceb7b424f",
+      "ihp-sg13g2/libs.tech/ngspice/models/capacitors_mod.lib": "ff9eb4cc9fdccc0645d9db0bd37e25e9fee2a633765910a7f55ac2084c49695f",
+      "ihp-sg13g2/libs.tech/ngspice/models/capacitors_stat.lib": "68d2ef41174bcfae5997b355c4fd3dbe4f2b8ec4be30ff79d474052b3be1715a"
+    },
+    "scope": "MaintainedexperimentalTT1.2V27C20cycle component. PublicCLIarg/resource/source-admission changes do not count as fresh execution; exactcircuit/teststimulus/classifier inputs retain original15.551s producer. NoPVT/noise/mismatch/ADCresolution/digitalvalid/layout/safety/manufacturing qualification.",
+    "copied_model_seal_correction": {
+      "path": "build/multimodal/task009-sample-hold-promotion-a2/result.json",
+      "sha256": "3df4b8739e711593b1b6992d80695eeac1d1060160070e0cf38588c79dc4ae3a",
+      "status": "PASS_COMPLETED_COPIED_MODEL_BYTES_AND_EXACT_PHYSICS_PROMOTION_NO_NEW_SPICE",
+      "fresh_SPICE_runs": 0,
+      "historical_scope": "Original actual pilot and promotion did not seal consumed case/models copies. Current retained copies independently equal the sealed adopted models; this closed assessment cannot establish their historical immutability during execution. Maintained producer now seals complete files/directories before use and at final barrier, with changed/missing/extra/directory/symlink negatives."
+    }
   }
 }

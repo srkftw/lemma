@@ -1,0 +1,15 @@
+* SPDX-License-Identifier: Apache-2.0
+* Unselected process-bound track/hold predecessor, NOT a complete ADC.
+* Both original PSP LV transmission gates share an original inverter clock.
+* Hold capacitors bind original cap_cmim geometry/process/temperature models.
+* Top/bottom plate parasitics await actual layout extraction; no noise,
+* mismatch, resolution, safety or manufacturing qualification is implied.
+.subckt lemma_diff_sample_hold inputp inputn sample vdd holdp holdn vss
+Xsamplebar samplebar sample vdd vss sg13g2_inv_1
+Xtracknp holdp sample inputp vss sg13_lv_nmos w=4u l=0.13u
+Xtrackpp holdp samplebar inputp vdd sg13_lv_pmos w=8u l=0.13u
+Xtracknn holdn sample inputn vss sg13_lv_nmos w=4u l=0.13u
+Xtrackpn holdn samplebar inputn vdd sg13_lv_pmos w=8u l=0.13u
+Xholdp holdp vss cap_cmim w=26u l=26u
+Xholdn holdn vss cap_cmim w=26u l=26u
+.ends lemma_diff_sample_hold

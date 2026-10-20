@@ -87,7 +87,7 @@
     "design": "engineering/multimodal/clocked-comparator-sg13g2.cir",
     "checker": "scripts/check_sg13g2_comparator.py",
     "public_process_revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
-    "consumer": "The maintained HBT microphone preamplifier directly drives the process-bound clocked decision stage and original sg13g2_inv_1 transistor loads. Complete ADC, sample/hold, reference and controller binding remain unfinished.",
+    "consumer": "Maintained HBTmicrophonepreamp directly drives process-bound clockeddecisionstage with originalsg13g2_inv_1 loads. An additionaloriginal-process CMIM/TG samplehold now has TT-only linked operatingevidence; completeADC/reference/decisionvalid/controller/layout remain unfinished.",
     "scope": "Eleven real SG13G2 LV PSP MOS transistors plus four original inverter transistors per instance. Clock, microphone voltage and external loads are declared test stimuli. Internal gain and regeneration use actual process transistors.",
     "port_contract": {
       "clock_low": "Both decision outputs return low after precharge.",
@@ -187,5 +187,60 @@
     "tail_design": "A real long/narrow clocked tail MOS (W0.5um/L2um) limits amplification-phase current; original input devices remain W4um/L0.26um. Fixed original buffer input connections restore the external contract after this bias correction.",
     "selection_assessment": "build/multimodal/task009-comparator-selection-a1/result.json",
     "digital_binding": "The selected0.15 profile still declares synthetic-aperture/1; lemma_multimodal.sv defaults exposure to8 core ticks. This10MHz analog decision block is not its ADC. Sample/hold, reference/DAC, conversion state and decision-valid clock/controller binding remain unfinished."
+  },
+  "process_bound_sample_hold": {
+    "design": "engineering/multimodal/differential-sample-hold-sg13g2.cir",
+    "design_sha256": "2b3392a517d7a2d0f59f9a255059bdc775564836ec3543cc26ca5f61c49e910a",
+    "checker": "scripts/check_sg13g2_sample_hold.py",
+    "status": "EXPERIMENTAL_ORIGINAL_PROCESS_NOMINAL_AND_REAL_FAILURE_CONTROLS_ONLY",
+    "consumer": "Actual HBTpreamp→PSPtransmissiongates+originalCMIM→unchangedclockedcomparator, also independent10mV heldinputtest. Reference/decisionvalid/ADCcontroller integration remainsunfinished.",
+    "original_PDK_revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "model_binding": "OriginalQS/NQSPspOSDI compilationexplicitlyreused withproducerreceipts; originalCAPincludechain+26um×26um cap_cmim geometry. CMC compact-model terms remain separate from Apache-2.0 circuit design.",
+    "operating_scope": {
+      "MOS": "tt",
+      "HBT": "typ",
+      "CAP": "typ",
+      "supply_V": 1.2,
+      "temperature_C": 27,
+      "clock_Hz": 10000000,
+      "cycles": 20,
+      "output_load_each_F": 2e-14,
+      "direct_differential_input_V": 0.01
+    },
+    "actual_receipt": {
+      "path": "build/multimodal/task009-sample-hold-pilot-a1/result.json",
+      "sha256": "a9db0034b114eb944de7bed6cad9d9339d18f6271b766c8bd6471d748dbd9c41",
+      "seconds": 15.550805892096832,
+      "peak_owned_RSS_bytes": 111124480
+    },
+    "promotion_assessment": {
+      "path": "build/multimodal/task009-sample-hold-promotion-a1/result.json",
+      "sha256": "c657fd06c27505c5cfce54afec12698e0e82e5bf1de059668054cf6aff0c73b0"
+    },
+    "nominal_measures": {
+      "max_acquisition_error_V": 1.199999999368373e-08,
+      "max_held_differential_error_V": 4.0440999999993496e-05,
+      "peak_supply_current_A": 0.000657418866
+    },
+    "controls": [
+      "continuous-track must fail heldsign and decision",
+      "actual crossed heldpair must fail decision"
+    ],
+    "remaining": [
+      "PVT operating range",
+      "noise/mismatch/reference",
+      "extracted top/bottomplate/switch parasitics",
+      "decision-valid and realADCcontroller/service binding",
+      "ADC resolution/rate specification",
+      "layout/processDRC/LVS",
+      "physical sensor/safety/manufacturing qualification"
+    ],
+    "copied_model_seal_correction": {
+      "path": "build/multimodal/task009-sample-hold-promotion-a2/result.json",
+      "sha256": "3df4b8739e711593b1b6992d80695eeac1d1060160070e0cf38588c79dc4ae3a",
+      "status": "PASS_COMPLETED_COPIED_MODEL_BYTES_AND_EXACT_PHYSICS_PROMOTION_NO_NEW_SPICE",
+      "fresh_SPICE_runs": 0,
+      "historical_scope": "Original actual pilot and promotion did not seal consumed case/models copies. Current retained copies independently equal the sealed adopted models; this closed assessment cannot establish their historical immutability during execution. Maintained producer now seals complete files/directories before use and at final barrier, with changed/missing/extra/directory/symlink negatives."
+    }
   }
 }
