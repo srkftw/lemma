@@ -2064,8 +2064,7 @@
     },
     "remaining": [
       "ordinary native and browser edit/install/exercise through the real School24 service",
-      "preserve current-source defaultSchool23 Fast/initializer/Integrated15/Integrated16 production and strict audits before final push",
-      "genuine School24 Integrated16 producer/audit and actual canonical ROM/NV execution; the old03914f run is a different guest",
+      "actual School24 full0.16 canonical ROM/NV Ready/pen/Save/reset result; genuine producer/archive/audit already pass, and old03914f run remains a different guest",
       "School24 continuation remains unsupported until actual new preparedStore/IPC/reply cuts and transactional adoption qualify"
     ],
     "full16_followup": {
@@ -2273,7 +2272,7 @@
         "scope": "Fresh package/tag and actual hosted Lean factory author6.502s; normal validation reuses exact historical full16 runtime and ROM. Complete raw size, metadata fields/CRC, both metadata sectors, tag and payload extents checked; final source/observer/deadline/cleanup sealed. No guest execution claim from artifacts."
       },
       "canonical_execution": {
-        "status": "RUNNING_AT_LAUNCH_RECORD",
+        "status": "RUNNING_AFTER_ACTUAL_KERNEL_AND_V9_SERVICE_STARTUP",
         "plan": {
           "path": "build/task009/school24-integrated16-canonical-plan-a1/plan.json",
           "sha256": "6fec304a6324be213ed5d45bb003fd27695c286cf85e0dec15852bb66095fb6d"
@@ -2282,22 +2281,319 @@
         "observer_progress_live": "build/task009/school24-integrated16-canonical-positive-a1/progress.json",
         "start_UTC": "2026-10-20T15:40:45.326426+00:00",
         "original_deadline_UTC": "2026-10-20T19:00:45.326426+00:00",
-        "scope": "Fresh actual ROM/NV cold authentication of new687616B School24 image. Original12000s/1.5Baggregate,Ready1.2998B/10500s,Save200M/1800s,reset200k/single512MiB/2GiBoutput. Exact739RDC service startup required in addition731; no checkpoint/ELF/DTB preload, update-install or full post-reset reopening claim."
+        "scope": "Fresh actual ROM/NV cold authentication of new687616B School24 image. Original12000s/1.5Baggregate,Ready1.2998B/10500s,Save200M/1800s,reset200k/single512MiB/2GiBoutput. Exact739RDC service startup required in addition731; no checkpoint/ELF/DTB preload, update-install or full post-reset reopening claim.",
+        "observed_startup_prefix": {
+          "path": "build/task009/school24-integrated16-startup-prefix-a1/result.json",
+          "sha256": "8ba123c29be1e99021fee371b21501e5107e15605e56aa6ba81deb4073e2d204"
+        },
+        "prefix_scope": "At16:35:43UTC actual kernel and739RDCservice startup observed at414Mcharged-progress. Prefix/progress are independently sampled, not a synchronous cut; Ready/Save/reset remain pending in original boundedrun."
       }
     },
     "current23_preservation": {
-      "status": "RUNNING_CURRENT_FOUR_CONFIGURATION_PRODUCTION_AFTER_CACHEFIX",
+      "status": "PASS_FOUR_GENUINE_CURRENT23_PRODUCERS_REVIEWED_AUTHORITY_REFRESH_AND_STRICT_ARCHIVED_AUDITS",
+      "scope": "Preservation of four current-source defaultSchool23 configurations at exact555-input7bd archive after maintained cache rollback18026e0. Production, source/LLVM authority admission, literal artifact equality, strict audit and ordinary guest execution retain separate meanings. No later source or guest workflow inherits this result.",
       "Fast_preflight_refusal": {
         "path": "build/task009/school23-current-fast-bootstrap-a1/result.json",
         "sha256": "d6ffe109ef0b215bf93f6908c95111fc1dbb400e9ff5466618440754a4c62150"
       },
-      "scope": "All four unused current-source default23 outputs are selected for normal genuine production under separate original1800/900/300 bounds, after maintained cache rollback18026e0. Production, exact body-authority review and strict archived audits remain separate; noPASS inferred from old archives.",
-      "plan": {
+      "original_plan": {
         "path": "build/task009/school23-current-all-bootstrap-a3/plan.json",
         "sha256": "a7c6110a19ffc475454ee540139ac137a0bcf9bb280911df1d6c54ac4a10281d"
       },
-      "live_result": "build/task009/school23-current-all-bootstrap-a3/result.json",
-      "inventory_sha256": "82c6cb1b8688de0118a02cbf9344949ec67e6afdc5a5708b99dfa4cf66dde3fc"
+      "original_Fast_pair_wrapper_FAIL": {
+        "path": "build/task009/school23-current-all-bootstrap-a3/result.json",
+        "sha256": "d95c5d89c9baffd6bd88cd43b4baa25cead28496906173fb32cf4a185f6d8923"
+      },
+      "Fast_pair_closed_assessment": {
+        "path": "build/task009/school23-current-all-bootstrap-a3/closed-Fast-pair-assessment.json",
+        "sha256": "d5dd305398a7e73dbee68e9d4dc74a1a70b1f66b93a2dacf896d115a0e57b4b9"
+      },
+      "scope_of_original_wrapper_failure": "Both genuineFast producer commands pass; wrapper stops beforeIntegrated15 because a selected output directory already exists. OriginalFAIL unchanged, noFast rerun. Remainingpair uses distinct unused outputs with all-output prechecks.",
+      "Integrated_pair_guard_interruption": {
+        "path": "build/task009/school23-current-integrated-bootstrap-a4/outer-storage-preflight-interruption.json",
+        "sha256": "1e8f35825f32ea1d6387c842cfdd99e4db36de9769c38e862a1da74fbf82bca8"
+      },
+      "Integrated_pair_actual_successor": {
+        "path": "build/task009/school23-current-integrated-bootstrap-a4/result.json",
+        "sha256": "4b216a94d2cb34effbe05ebc1e6f6405ab624eda78bd5967f03c4eac6f7dcc97"
+      },
+      "closed_four_production": {
+        "path": "build/task009/school23-current-body-admission-a1/closed-four-production.json",
+        "sha256": "955257cbe747bb73ec42f42c65bd7dc5925ced5a75a53b21c7fcd7c886b4056d"
+      },
+      "genuine_production_source_inventory_sha256": "82c6cb1b8688de0118a02cbf9344949ec67e6afdc5a5708b99dfa4cf66dde3fc",
+      "genuine_producers": [
+        {
+          "build": "build/kernel/task009-school23-notebook-a32",
+          "configuration": "lemmasim-silicon-school-notebook",
+          "build_sha256": "32484142b1ecdd3c14444ac85f90b54f20cfa2c3b7cc2bffde8b6d7f6e6a786f",
+          "provenance_sha256": "649e16a679d23ef6a9f2f262a86f77d984b0599cc2b5e97b4f4facd0985cc678",
+          "artifacts": 696,
+          "image_ELF_sha256": "0ff0ea6c7d1dcb74de57ed691ce7dcca1130e1894708106d1fd877e4f9c7cc3c",
+          "seconds": 267.58013248443604,
+          "peak_combined_RSS_bytes": 1902616576,
+          "action_counts": {
+            "fresh": 39,
+            "incremental": 2,
+            "reused": 0
+          },
+          "all_observed_owned_PIDs_absent": true
+        },
+        {
+          "build": "build/kernel/task009-school23-initialize-a31",
+          "configuration": "lemmasim-silicon-school-initialize",
+          "build_sha256": "21d94013ebf19b160e7692717abeafd0422d6e8bec0fa33eab1cca502ba86520",
+          "provenance_sha256": "000b9d66a80bb4285dcac0b9e506bc9fdd210ceb3682d575d75644b1e7fa4d53",
+          "artifacts": 696,
+          "image_ELF_sha256": "99c574738cf7359a5b47ae10950a0b14974961e1a2d58a54a771f0566ee12ff7",
+          "seconds": 251.1076145172119,
+          "peak_combined_RSS_bytes": 1902583808,
+          "action_counts": {
+            "fresh": 13,
+            "incremental": 2,
+            "reused": 26
+          },
+          "all_observed_owned_PIDs_absent": true
+        },
+        {
+          "build": "build/kernel/task009-school23-current-integrated15-a1",
+          "configuration": "lemmasim-silicon-integrated-school-notebook",
+          "build_sha256": "c185e69f59a2928157401bb153674ccb27702b60c19093ce034a4fa70f51de53",
+          "provenance_sha256": "34e19297f29eb67f17f54178a52b0e4d47649996196e93d45db684a88c8bee5c",
+          "artifacts": 696,
+          "image_ELF_sha256": "f1b1faa821d824d305f9d0f553f014897f664b12cdcbca7240f0c9a9d64c9df8",
+          "seconds": 267.98012256622314,
+          "peak_combined_RSS_bytes": 1891577856,
+          "action_counts": {
+            "fresh": 34,
+            "incremental": 2,
+            "reused": 5
+          },
+          "all_observed_owned_PIDs_absent": true
+        },
+        {
+          "build": "build/kernel/task009-school23-current-integrated16-a1",
+          "configuration": "lemmasim-silicon-integrated-pcm-school-notebook",
+          "build_sha256": "c2effd90c27535830faa1d44a6fb9dee36e4a56531cc1fc632f0adabeea302f7",
+          "provenance_sha256": "971e10ab6ee88f09e46d3e10386d2df3c0a0cd542f7550415fc0c8e02070f8e0",
+          "artifacts": 696,
+          "image_ELF_sha256": "a278be3b0193fc17e7c5e67503b114fd6bf555639d0704fc9c55d52bbbb73e9b",
+          "seconds": 257.4248585700989,
+          "peak_combined_RSS_bytes": 1921605632,
+          "action_counts": {
+            "fresh": 13,
+            "incremental": 2,
+            "reused": 26
+          },
+          "all_observed_owned_PIDs_absent": true
+        }
+      ],
+      "reviewed_authority": {
+        "file": "tooling/school-target-authority.json",
+        "sha256": "9adf75e4598e748755e9cd4c7686de2d106f40c2c08e7910a5638d446e5d7778",
+        "scope": "Exactly20Notebook leaf values in4default23 configurations change. Otherroles/configurationvalues and original JSON field ordering are preserved. Two unconsumed ordering-only intermediates remain in Git history, not attributed to any producer.",
+        "commits": [
+          "6c74f54",
+          "4b55d58",
+          "c136531"
+        ],
+        "final_value_and_order_assessment": {
+          "path": "build/task009/school23-current-body-admission-a1/final-order.json",
+          "sha256": "a409d3499d6dc6d2d4e54bf3ec35dd064ab302b0c217cbba3462bc76d54457d6"
+        },
+        "Fast_admission": {
+          "path": "build/task009/school23-current-body-admission-a1/Fast-admission-validation.json",
+          "sha256": "ccfddf0eac87331f8c44505eadda62179747a9162a860c2061725f2c105d7d95"
+        },
+        "Integrated_admission": {
+          "path": "build/task009/school23-current-body-admission-a1/Integrated-admission-validation.json",
+          "sha256": "7d97fe976c207087c487819d6438b8959cfd58236d4275ea68d6067570e0d698"
+        },
+        "positive_cases": 48,
+        "consequential_negative_cases": 88,
+        "negative_scope": "Full pre/post body mutations, role/rootID, complete postcase9Audio/case10REDUCE retargeting, mode1rootarg1to2 and forbiddenServerV9root in23",
+        "independent_actual_IR_review": {
+          "path": "build/school/task009-current23-independent-review-a1/result.json",
+          "sha256": "a4f83e0b1c96c42741671b3f9f87122179cdafa86c8be2e054c91dd9dacdeeba"
+        },
+        "legacy_execution_scope": "Actual23root selects configured mode1 and reductionEnabled0; localREDUCE rejects before workspace/staging/IPC. Arithmetic retainsV8main/192-byte request192-byte reply/checkerIdentity0x2000000000001. SharedDoc8event3 compatibility does not authorize localtool execution."
+      },
+      "final_archive": {
+        "source": "build/task009/school23-current-final-source-a5/action-source",
+        "inputs": 555,
+        "inventory_sha256": "7bd8193123f10aba9611caea4b1ae5cdb230bf7fe27a7430e38d41314a544c80",
+        "normal_refresh": {
+          "path": "build/task009/school23-current-finalize-a5/result.json",
+          "sha256": "0bfae2b36fe038ff52c3ef7844318abe5321957a0355bdf6554316111ea3b8ec"
+        },
+        "fresh_target_actions_per_configuration": 0,
+        "reused_target_actions_per_configuration": 39,
+        "incremental_Lake_preparations_per_configuration": 2,
+        "literal_target_file_equalities": 180,
+        "rows": [
+          {
+            "role": "notebook",
+            "build": "build/kernel/task009-school23-current-admitted-notebook-a1",
+            "seconds": 12.626498222351074,
+            "target_equalities": 45
+          },
+          {
+            "role": "initializer",
+            "build": "build/kernel/task009-school23-current-admitted-initializer-a1",
+            "seconds": 12.061048746109009,
+            "target_equalities": 45
+          },
+          {
+            "role": "integrated",
+            "build": "build/kernel/task009-school23-current-admitted-integrated15-a1",
+            "seconds": 13.318996667861938,
+            "target_equalities": 45
+          },
+          {
+            "role": "integrated-pcm",
+            "build": "build/kernel/task009-school23-current-admitted-integrated16-a1",
+            "seconds": 14.297075986862183,
+            "target_equalities": 45
+          }
+        ]
+      },
+      "strict_archived_audits": {
+        "receipt": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/task009/school23-current-strict-audits-a1/result.json",
+          "sha256": "288688492007b271a098c49d7cded10eda5fca0c89b7dfc2ece8567b5c4d0be7"
+        },
+        "closed_source_deadline_output_and_observed_owner_assessment": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/task009/school23-current-strict-audits-a1/closed-assessment.json",
+          "sha256": "7da6c8dac05720524d2b6dce0b3036b9caba38c2e84d07e7a631c88d0789c86c"
+        },
+        "seconds": 653.0829826379195,
+        "rows": [
+          {
+            "role": "notebook",
+            "build": "build/kernel/task009-school23-current-admitted-notebook-a1",
+            "audit_sha256": "9673df832a9690d2d5548b6adf126c19b06f33c36b5e6ee9b03c5757a973fd51",
+            "configuration": "lemmasim-silicon-school-notebook",
+            "seconds": 162.92366708512418,
+            "peak_combined_owned_RSS_bytes": 335876096,
+            "sampled_maximum_owned_Lean_processes": 0,
+            "original_auditor_PID": 552856,
+            "process_group_members_after_terminal": {}
+          },
+          {
+            "role": "initializer",
+            "build": "build/kernel/task009-school23-current-admitted-initializer-a1",
+            "audit_sha256": "1cd635dea043dd8afae93b5ca18b54e2e9ffa4d83c76efad41561c69bcbc5e5e",
+            "configuration": "lemmasim-silicon-school-initialize",
+            "seconds": 161.2922479279805,
+            "peak_combined_owned_RSS_bytes": 338010112,
+            "sampled_maximum_owned_Lean_processes": 0,
+            "original_auditor_PID": 553560,
+            "process_group_members_after_terminal": {}
+          },
+          {
+            "role": "integrated15",
+            "build": "build/kernel/task009-school23-current-admitted-integrated15-a1",
+            "audit_sha256": "1addfe94536b77eefedec62a7da885897400327e0bce147c4f26c5ad4da61053",
+            "configuration": "lemmasim-silicon-integrated-school-notebook",
+            "seconds": 163.81472362508066,
+            "peak_combined_owned_RSS_bytes": 351719424,
+            "sampled_maximum_owned_Lean_processes": 0,
+            "original_auditor_PID": 554906,
+            "process_group_members_after_terminal": {}
+          },
+          {
+            "role": "integrated16",
+            "build": "build/kernel/task009-school23-current-admitted-integrated16-a1",
+            "audit_sha256": "1ce214af9abe98f2fd88e2d74796e9f485b00f787f4f893f1b2d1e60eae00eb1",
+            "configuration": "lemmasim-silicon-integrated-pcm-school-notebook",
+            "seconds": 164.34165901411325,
+            "peak_combined_owned_RSS_bytes": 349827072,
+            "sampled_maximum_owned_Lean_processes": 0,
+            "original_auditor_PID": 555902,
+            "process_group_members_after_terminal": {}
+          }
+        ],
+        "limits": {
+          "whole_seconds": 1800,
+          "per_audit_seconds": 900,
+          "owned_RSS_bytes": 1073741824,
+          "minimum_launch_bytes": 9663676416,
+          "continuing_host_available_bytes": 8589934592,
+          "output_bytes": 2147483648
+        },
+        "remaining_observed_owned_pids": [],
+        "scope": "Actual4serialnormal audit_kernel commands with exact archived/currentsource7bd, noLean/compiler/guest execution. Closed assessment separately checks real terminal elapsed/output and absence of all observed owners/auditor processgroups; generic rapid-detached-child wrapper limitation remains explicit."
+      },
+      "maintained_readonly_status": {
+        "fix_commit": "9555a44",
+        "qualification": {
+          "path": "build/task009/dev-status-role-input-a1/result.json",
+          "sha256": "2dbf18705e392072cd4c58a2a63d325c5001e574bd9de6a06580e172fdbfb850"
+        },
+        "actual_four_commands": {
+          "path": "build/task009/dev-status-current23-final-a1/command-results.json",
+          "sha256": "39eb365fbccd92559f5f267841adbe4b43db3f419fee1684af7c75c57f87483a"
+        },
+        "rows": [
+          {
+            "role": "notebook",
+            "receipt": {
+              "path": "build/task009/dev-status-current23-final-a1/notebook.json",
+              "sha256": "b6cb28367373f6c07fdbc6314ed6f194ceb34e2bea7a16d276543c03908b375c"
+            },
+            "production_disposition": "reused",
+            "production_counts": {
+              "incremental": 2,
+              "reused": 39
+            },
+            "reasons": [],
+            "aggregate_functional_complete": false
+          },
+          {
+            "role": "initializer",
+            "receipt": {
+              "path": "build/task009/dev-status-current23-final-a1/initializer.json",
+              "sha256": "6990a2ca3413c6ca1e86b28089b8a2ea38bd87155d82d21f32f4449527168e70"
+            },
+            "production_disposition": "reused",
+            "production_counts": {
+              "incremental": 2,
+              "reused": 39
+            },
+            "reasons": [],
+            "aggregate_functional_complete": false
+          },
+          {
+            "role": "integrated15",
+            "receipt": {
+              "path": "build/task009/dev-status-current23-final-a1/integrated15.json",
+              "sha256": "cfdf46b8f52f8a2d808e82dc3bd5d77c45616ef4b0f46bb5960ae63e5596db13"
+            },
+            "production_disposition": "reused",
+            "production_counts": {
+              "incremental": 2,
+              "reused": 39
+            },
+            "reasons": [],
+            "aggregate_functional_complete": false
+          },
+          {
+            "role": "integrated16",
+            "receipt": {
+              "path": "build/task009/dev-status-current23-final-a1/integrated16.json",
+              "sha256": "6424c9840162927c3033b8fe19eb7f51e185da3f07c136b964bc4199dc259147"
+            },
+            "production_disposition": "reused",
+            "production_counts": {
+              "incremental": 2,
+              "reused": 39
+            },
+            "reasons": [],
+            "aggregate_functional_complete": false
+          }
+        ],
+        "scope": "Exact role-relative opt/llc inputs resolve only through preceding admitted generated-output metadata.19actualfilesystem hosttests include rootdecoy/tamper/missingprior/crossrole/splitparent/metadata negatives. All4current finalbuilds validate reused production with no reasons; functional aggregate remainsFalse."
+      }
     },
     "ordinary_native_consumption": {
       "status": "SCOPED_WORKFLOW_PASS_WITH_SEPARATE_PRESENTATION_CORRECTION",
