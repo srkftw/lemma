@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T07:26:04.516314+00:00",
+  "written_at": "2026-10-20T07:51:43.542364+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -3933,5 +3933,125 @@
       "full parameter/transistor LVS, IR/EM, pads/package/board and whole-device physical memory remain unfinished",
       "no physical/fabrication/safety or educational qualification"
     ]
+  },
+  "nominal_capacitance_drive_candidate": {
+    "status": "UNSELECTED_ROUTE_DEADLINE_FAIL_NO_ROUTED_EXTRACTION_OR_CORNERS",
+    "finite_source_geometry_power_producer": {
+      "path": "build/silicon/task009-capacity-drive-preflight-a1/result.json",
+      "sha256": "48c7c36561d1b1897dfad0792e1402581e3f337e06522b738e34f5c728408d1f"
+    },
+    "maintained_relation": {
+      "path": "build/silicon/task009-maintained-capacity-launch-preflight-a1/result.json",
+      "sha256": "503614f7a3392c902cb92e7459aea399e28345477b7633926c13f7f75f5dce09"
+    },
+    "original_output_model_relation": {
+      "path": "build/silicon/task009-capacity-output-model-relation-a1/result.json",
+      "sha256": "38fcd87ae20e20bcd182d27c824ea6cd15b3ed5edbe6fe2b453f7babf271d1c2"
+    },
+    "retained_all9_corner_obligations": {
+      "path": "build/silicon/task009-capacity-corner-obligations-a1/result.json",
+      "sha256": "a4f34d9af4198236bceb5b94a711d7ac46ee923cff4a4116201cf8d31b57180f"
+    },
+    "maintained_source": {
+      "path": "scripts/silicon_capacity_launch.py",
+      "sha256": "fb5a9279d69301551fdf65459b0fda13b86bc6dd8a9a59cf591a7dc81d1d66a1"
+    },
+    "route": {
+      "path": "build/silicon/task009-capacity-launch-route-a1/result.json",
+      "sha256": "fb481e7d3c4f2cf12a2c53f817a1289a1bae7c630349814cd18ca9cd22901751"
+    },
+    "whole_campaign": {
+      "path": "build/silicon/task009-capacity-launch-route-admission-a1/result.json",
+      "sha256": "916e6a9361bce7745de84199cd6aabc8f4cd1774e1a6af4ad39c2a8934c51c59"
+    },
+    "question": "Repair measured nominal capacitance overload on single-driver internal nonclock/nonreset/nontristate nets with original vendorbuf8, preserving full256x181FIFO/10ns/oldsites/33delays/3controls/PG/OBS/ports; measure newly routed all9 setup/hold/electrical and congestion rather than infer closure from old wireload.",
+    "nominal_report_maxcap_pins": 364,
+    "eligible_original_buf8_insertions": 327,
+    "excluded_obligations": {
+      "reset_distribution": 11,
+      "input_ports": 2,
+      "output_interface_nets": 5,
+      "SRAM_output_model_pins": 19,
+      "clock_test_supply_multidriver_tristate_report_pins": 0
+    },
+    "protected_clock_reset": "Actual clk/reset_n roots propagated through original buffer/inverter/delay cells; actual clock/reset/test sink names and types protected. Zero excluded-category cap rows is not full-system qualification.",
+    "all9_maxcap_union": 418,
+    "additional_pins_outside_nominal": 54,
+    "all9_pins_untouched_by_candidate": 91,
+    "original327_all9_largest_actual_cap_pF": 1.152391,
+    "original_buf8_maxcap_pF": 2.4,
+    "old_cap_load_limit_scope": "Predecessor measurements support the repair question only; new signal routing is incomplete and new actual cap/slew/timing remain unmeasured.",
+    "finite_geometry": {
+      "seconds": 10.788674395997077,
+      "maintained_relation_seconds": 8.536859986023046,
+      "original_model_assessment_seconds": 0.1459123910171911,
+      "old_cells_moved": 0,
+      "maximum_driver_distance_um": 23.94,
+      "sub960nm_pairs": 0,
+      "old_ports": 668,
+      "native_PG_shapes": 99128,
+      "OBS": 18718,
+      "original_SRAM_delaycells": 33,
+      "original_control_buffers": 3,
+      "connected_PG_terminals": 18071,
+      "macro_PG_pins": 9,
+      "BIST_pins": 423,
+      "original_model_pairs": 22,
+      "final_primitive_arity_forms": 8,
+      "four_state_vectors": 256
+    },
+    "actual_negatives": [
+      "inverted_original_buffer",
+      "crossed_input",
+      "wrong_new_supply",
+      "overlap_original_padding",
+      "original_SRAM_bit_swap",
+      "original_BIST_disconnect",
+      "wrong_source_geometry",
+      "wrong_Lib_identity",
+      "unqualified_producer_path"
+    ],
+    "geometry_ODB_sha256": "5eb7e784ce0da5f94846df4737f27d59dfaadf58659d608a2d45d16d9c41b421",
+    "route_failure": {
+      "tool_budget_seconds": 900,
+      "tool_seconds": 900.27,
+      "whole_producer_seconds": 909.7929875910049,
+      "whole_wrapper_seconds": 910.1101667479379,
+      "original_whole_budget_seconds": 1200,
+      "AS_GiB": 6,
+      "output_GiB": 12,
+      "source_seal_equal": true,
+      "owned_processes_reaped": true,
+      "last_observation": "Unfinished8th stubborn-tile iteration,38intermediate markers at20%; no completed router report/layout.",
+      "available_snapshots": [
+        "global-route.odb",
+        "power-grid-before-route.odb"
+      ],
+      "final_routed_ODB": null,
+      "fresh_RC": null,
+      "available9_corner_assessment": null
+    },
+    "GRT_estimates_only": {
+      "setup_ns": -0.58895,
+      "hold_ns": -0.138267,
+      "scope": "Global-route RC estimate before unfinished detailed route, not extracted routed timing."
+    },
+    "selection": "Original-padding-qualified30-marker physical-lock0.4.0 remains selected and all9 previous failures remain. No unchanged rerun or deadline extension authorized by this failure."
+  },
+  "full_drc_performance_metadata": {
+    "receipt": {
+      "path": "build/silicon/task009-full-drc-rule-metadata-a1/result.json",
+      "sha256": "18e827ccef921ef25b1017ac5612e1a2af3b38d49cc112cc9834e808afc6a283"
+    },
+    "status": "ORIGINAL_RULE_METADATA_ONLY_NO_GEOMETRY_CHECK",
+    "seconds": 1.2535972440382466,
+    "specified_rules": 379,
+    "remaining_optimized_edge_rules": 39136,
+    "halo_internal_units": 30000,
+    "halo_rule_units": 150000,
+    "step_internal_units": 480000,
+    "step_rule_units": 2400000,
+    "ratio": 16,
+    "scope": "Pinned original Magic command reference permits step-size performance experiments. Halo reduction explicitly misses rules and is not admitted. No rule/deck/halo/source geometry change or process rerun. Original inverter3.076scontrol remains PASS only at smallcell scope; controller300sfailures remain."
   }
 }

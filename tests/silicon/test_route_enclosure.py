@@ -8,7 +8,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from silicon_enclosure import GeometryError, read_tech
 from silicon_route_enclosure import audit
 from silicon_power_ports import signal_bytes
-from silicon_pen_physical import require_fresh_power_recipe, host_memory_budget, require_launch_recipe, require_padded_hold_recipe, require_control_launch_recipe
+from silicon_pen_physical import require_fresh_power_recipe, host_memory_budget, require_launch_recipe, require_padded_hold_recipe, require_control_launch_recipe, require_capacity_launch_recipe
+from silicon_capacity_launch import admit as admit_capacity_launch
 from silicon_sram_input_hold import endpoint_cells, admit as admit_padded_hold
 from types import SimpleNamespace
 
@@ -65,6 +66,32 @@ END SPECIALNETS
 
 
 class RouteEnclosureTests(unittest.TestCase):
+    def test_capacity_launch_requires_exact_separate_finite_source(self):
+        valid = dict(capacity_launch_buffer_from=Path('build/geometry'),
+            routed_eco_from=Path('build/source'), detail_route_iterations=8,
+            selected_implementation=False, acceptance_launch_buffer=False,
+            padded_sram_input_delay_from=None, control_launch_buffer_from=None,
+            preserve_routed_netlist=False, fresh_core_power_grid=False,
+            vss_clock_grid_source=None, protect_sram_power_edges=False,
+            protect_sram_power_geometry=False, completed_eco_route_from=None,
+            completed_power_grid_route_from=None, completed_fresh_grid_route_from=None,
+            defer_global_eco=False, center_validation_cones=False, group_button_bus=False)
+        require_capacity_launch_recipe(SimpleNamespace(**valid))
+        for key in ('selected_implementation', 'acceptance_launch_buffer',
+                    'padded_sram_input_delay_from', 'control_launch_buffer_from',
+                    'preserve_routed_netlist', 'fresh_core_power_grid',
+                    'vss_clock_grid_source', 'protect_sram_power_edges',
+                    'protect_sram_power_geometry', 'completed_eco_route_from',
+                    'completed_power_grid_route_from', 'completed_fresh_grid_route_from',
+                    'defer_global_eco', 'center_validation_cones', 'group_button_bus'):
+            with self.subTest(key=key), self.assertRaises(GeometryError):
+                require_capacity_launch_recipe(SimpleNamespace(**{**valid, key: True}))
+        for key, value in [('routed_eco_from', None), ('detail_route_iterations', 3)]:
+            with self.subTest(key=key), self.assertRaises(GeometryError):
+                require_capacity_launch_recipe(SimpleNamespace(**{**valid, key: value}))
+        with tempfile.TemporaryDirectory() as directory, self.assertRaises(GeometryError):
+            admit_capacity_launch(Path(directory))
+
     def test_control_launch_cannot_mix_other_physical_recipes(self):
         valid = dict(control_launch_buffer_from=Path('build/geometry'),
             routed_eco_from=Path('build/source'), detail_route_iterations=8,
