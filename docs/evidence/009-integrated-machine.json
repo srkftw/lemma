@@ -2789,5 +2789,106 @@
       "runtime": "unchanged actual p81QEMU+derivation and publicstopTCIWasm; no runtime compiler action",
       "checkpoint": "regularMM2 only;24/25 pendingtool/stream cuts unqualified"
     }
+  },
+  "current23_24_post25_fast": {
+    "status": "FOUR_CURRENT_SOURCE_FAST_CONFIGURATIONS_STRICT_PASS",
+    "scope": "Genuine current23/24 production, reviewed Notebook body admission and normal0fresh authority-only refresh followed by four strict audits. Historical interruptedwrapper andpartialfourth output remain retained. No new guest execution or full-integrated claim.",
+    "source_inputs": 558,
+    "source_inventory_sha256": "1812714a67a408f0d9fcb1636030e8bcd67edbb614232e8993a4e11676844e39",
+    "genuine_first_three_and_interrupted_fourth": {
+      "path": "build/task009/school23-24-post25-fast-a1/completed-closed-assessment.json",
+      "sha256": "3a006dbc7a8d15f8513ae787afcb2a7daff3d71c5578353b5c582dc325d2cee3"
+    },
+    "original_interrupted_wrapper": {
+      "path": "build/task009/school23-24-post25-fast-a1/result.json",
+      "sha256": "52f94cbe6d025bc4eb2e79d457fff14c1766796757111fd485eb08fbdb360282"
+    },
+    "fourth_within_original_absolute_deadline": {
+      "path": "build/task009/school24-post25-initialize-successor-a2/closed-assessment.json",
+      "sha256": "48338e9100deb51e276f904c0ef8ac79cf5fa617bc055e21b9fb03734e172212"
+    },
+    "independent23_review": {
+      "path": "build/school/task009-school23-post25-independent-a1/assessment.json",
+      "sha256": "4a793cc69120e5e6645162cbf87c0e490f89d1d38de44bd2ea0ec5c2c8cbf20e"
+    },
+    "independent24_review": {
+      "path": "build/school/task009-school24-post25-independent-a1/assessment.json",
+      "sha256": "3009225898cc929b83aeaeb8641630555c358ea2b9456e9ff7e3ef4e043a9ff1"
+    },
+    "authority_promotion": {
+      "path": "build/task009/school23-24-post25-candidates-a1/promotion.json",
+      "sha256": "41340c6617b052c7a26b209f90cafda9ee891b5cdb625069b8c714810bf43577"
+    },
+    "actual48positive72negative_admission": {
+      "path": "build/task009/school23-24-post25-authority-a1/admission-validation.json",
+      "sha256": "bf0039ccb63583214d2e97b55af3913f258dfc1706e9e039fb3f6ecf0761d426"
+    },
+    "normal_warm4_strict4": {
+      "path": "build/task009/school23-24-post25-warm-strict-a1/result.json",
+      "sha256": "bd39f0120c7e5da45cec074d47a7bff324a3560f576406a0d4044faabebd6402"
+    },
+    "literal104_target_equalities": {
+      "path": "build/task009/school23-24-post25-warm-strict-a1/warm-target-equality.json",
+      "sha256": "13899aa320164af5702585eb63b68e532e2933db45a6392bb1069c8d62ff7ef0"
+    },
+    "closed_assessment": {
+      "path": "build/task009/school23-24-post25-warm-strict-a1/closed-assessment.json",
+      "sha256": "6c8c262e01af7d99728bbac2ab7778467720cb2243b84a55ab3af7dadf165616"
+    },
+    "retained_closed_observer_missing_field": {
+      "path": "build/task009/school23-24-post25-warm-strict-a1/close-a1-failure.json",
+      "sha256": "abc7c9f3f4fa09d68f294c70fbe24984b268873e0e3c96af875cf139b9eba8de"
+    },
+    "strict_seconds": [
+      158.37609525606968,
+      154.66463499097154,
+      155.14203000301495,
+      153.79904414201155
+    ],
+    "whole_seconds": 1180.4754724029917,
+    "peak_combined_owned_RSS_bytes": 333819904,
+    "cleanup_scope": "Original wrapper checks exact descendant start ticks in memory and reportsnone; full descendanttick inventory was notpersisted. Closedassessment independentlychecks eightrecordedleaders/processgroups absent."
+  },
+  "school25_full_integrated_production": {
+    "status": "GENUINE_FULL4_AND_EXACT_BODY_ADMISSION_PASS_STRICT_PENDING",
+    "scope": "Genuine full0.16 School25 plus currentlegacy full23Integrated15/full23PCM/full24PCM. No Fast image relabel; strict audits, runtime package and canonical execution remain separate.",
+    "source_inputs": 558,
+    "source_inventory_sha256": "1812714a67a408f0d9fcb1636030e8bcd67edbb614232e8993a4e11676844e39",
+    "producer": {
+      "path": "build/task009/school25-legacy-integrated-producer-a1/result.json",
+      "sha256": "0dc2c3ce946e762579eafd5749915ae0c9f7e05d56139f10bfd142eca18458d0"
+    },
+    "closed_registered_artifacts_and_actual_candidates": {
+      "path": "build/task009/school25-legacy-integrated-candidates-a1/result.json",
+      "sha256": "2b127ef7c4ceeb5b56a3b3ed03eef20ae87cc05c680b754a420c430c01d54d29"
+    },
+    "whole_seconds": 787.8233243001159,
+    "role_seconds": [
+      206.11056925705634,
+      206.3018185789697,
+      205.71872208314016,
+      169.41204903181642
+    ],
+    "peak_combined_owned_RSS_bytes": 1947512832,
+    "artifact_count": 2796,
+    "existing_changed_authority_roles": [
+      "notebook"
+    ],
+    "remaining": [
+      "normal0freshrefresh+fullstrictaudits",
+      "sameSchool25guestactualROM/NVpenSavereset"
+    ],
+    "independent_complete_pre_post_review": {
+      "path": "build/school/task009-school25-full-and-legacy-independent-a1/assessment.json",
+      "sha256": "6def0b0357d06bb81dad1b396a3f5762beab50c4206905d5dac3e58e96e0d561"
+    },
+    "authority_promotion": {
+      "path": "build/task009/school25-legacy-integrated-candidates-a1/promotion.json",
+      "sha256": "ab710dacc5ea758db0e1ced5282aa3153499410559c2f3037023dda6afecca7d"
+    },
+    "actual48positive72negative_admission": {
+      "path": "build/task009/school25-legacy-integrated-authority-a1/admission-validation.json",
+      "sha256": "44060d5aa2957e0950a2598f66efffdda2a3e47e92bf35902739110ff8bacfd8"
+    }
   }
 }

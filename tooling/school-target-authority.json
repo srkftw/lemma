@@ -46,14 +46,14 @@
         }
       },
       "notebook": {
-        "catalog_sha256": "f55cb3a21bb5dbc57e038fdfccf0346d4a4218ceb209522db34e1ab63ebb8771",
+        "catalog_sha256": "8de35d125fbe1890e6f0d6233758b9e660df6a9f7e3295c8f3ef0dbc1d159e3b",
         "post": {
-          "function_count": 1269,
-          "sha256": "3341866ee8982f29483288718e1434b3508984b6318384a957b377871f57e61c"
+          "function_count": 1287,
+          "sha256": "4bad6058d0505ac628653d04babb70743f55bc7e8bf9f70215e43d5fe2bc3fc7"
         },
         "pre": {
-          "function_count": 1271,
-          "sha256": "4eb5add1d5d557bbccc39390adc23875e78c6f9604dcfc1748fb1ce5a6008f4d"
+          "function_count": 1289,
+          "sha256": "a9fb85f3b54d42f26ae3a76980464a07363564c1fcc9fdd9741da3a60fd4c1f3"
         }
       },
       "store": {
@@ -114,18 +114,86 @@
         }
       },
       "notebook": {
-        "catalog_sha256": "24525be0ffeac6a3ffa4797df41872e6f5c21f6be6c8ed57fedb1862a65d3672",
+        "catalog_sha256": "741f6362d7874de09002c5b58805582888709f7839db8d86df4f0f39b644c235",
         "post": {
-          "function_count": 1269,
-          "sha256": "d16ab07b7cb1e9fd94f897ea4cd5f8d59af321752b0ea2a3d0c4b78af962c158"
+          "function_count": 1287,
+          "sha256": "753cf75a7fd92c63f7cc132a89386fc939dd9e69e74cb6f88cbcd6482af95a6d"
         },
         "pre": {
-          "function_count": 1271,
-          "sha256": "e68f01f14769bc097296483998521eeebfa38bbeb3a348d50d7ee28ca930ff32"
+          "function_count": 1289,
+          "sha256": "9f68fa5067e95f3b96e28b376b0dff8fca747c768553411801c4091130473312"
         }
       },
       "store": {
         "catalog_sha256": "6b385cadb8045d61db558f3d70ab0c16f296995ed0f2d4fbf33d71f253326cfc",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    },
+    "lemmasim-silicon-integrated-pcm-school25-notebook": {
+      "arithmetic": {
+        "catalog_sha256": "6a258b69618583c5f23ec73254959963f208044b8983122673339f3d7d4e088c",
+        "post": {
+          "function_count": 199,
+          "sha256": "3e5a40fec3faa8b7a3ff4ae602c6d8899ece78642889e5122008883628dc9309"
+        },
+        "pre": {
+          "function_count": 199,
+          "sha256": "9b81fbb55e3f7c66711f7010a481f765d7a1e1ce149b6015eccbb29647b8dea3"
+        }
+      },
+      "course": {
+        "catalog_sha256": "d9127294765f41b88786352bfb40fec4b3fbdbb6278b226df6c34befe78de9d2",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "b0c134724e74c2c351a8204b0616021ec2a7f1bd094489d145892cf14aa7bb51",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "a90f6d573908c060a55a6e2a166e401ab40677b764f960add4b96c1c51f85e52",
+        "post": {
+          "function_count": 1402,
+          "sha256": "ac0f27ccb8c95f9c523ab71be6f4fc9f34682a49bf59b023039450d35f7616b7"
+        },
+        "pre": {
+          "function_count": 1402,
+          "sha256": "b2639372a5da22d640b786a97c30ca12bbaf8398794d054fed73156554302ff6"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "78c02b088b60ca1d72627b06c94a0b8e51c59ba4181f44dea1b60e7e9c8eb238",
+        "post": {
+          "function_count": 1287,
+          "sha256": "391004a6985a0c7cb0104efb13afdfe75d04b39a56cdb3427df7136a21bbaf73"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "37f8859e46c05edb7c15876260035e34386e0b615fe6e68573e0f33c1eee9e95"
+        }
+      },
+      "store": {
+        "catalog_sha256": "b7a69b7abe63deb7cf3d5a6940412ad6ece2747bdcd45db70b4b5061fc53e494",
         "post": {
           "function_count": 305,
           "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
@@ -182,14 +250,14 @@
         }
       },
       "notebook": {
-        "catalog_sha256": "c09aa38547ef94fef7f56191aa7686639c23080389e254c8e440c8190255769c",
+        "catalog_sha256": "f675805539c13ad41e208cfe75505f09d576e98ea3d082991ea31a5ce6450ff6",
         "post": {
-          "function_count": 1269,
-          "sha256": "3341866ee8982f29483288718e1434b3508984b6318384a957b377871f57e61c"
+          "function_count": 1287,
+          "sha256": "4bad6058d0505ac628653d04babb70743f55bc7e8bf9f70215e43d5fe2bc3fc7"
         },
         "pre": {
-          "function_count": 1271,
-          "sha256": "4eb5add1d5d557bbccc39390adc23875e78c6f9604dcfc1748fb1ce5a6008f4d"
+          "function_count": 1289,
+          "sha256": "a9fb85f3b54d42f26ae3a76980464a07363564c1fcc9fdd9741da3a60fd4c1f3"
         }
       },
       "store": {
