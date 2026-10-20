@@ -59,6 +59,25 @@ class ReductionSource(unittest.TestCase):
             ('if 16 ≤ phase then if phase ≤ 19 then true else false else false','if 16 ≤ phase then false else false')):
             with self.subTest(before=before):self.reject('notebook',before,after)
 
+    def test_cold_tool_ID_uses_full_history_and_retains_counter_on_failure(self):
+        for key,before,after in (
+            ('notebook','if counter < 0x7ffffffffffffffe then','if counter ≤ 0x7ffffffffffffffe then'),
+            ('notebook','if request < 0x7ffffffffffffffe then\n  .bind reductionSourceLoaded',
+             'if request ≤ 0x7ffffffffffffffe then\n  .bind reductionSourceLoaded'),
+            ('notebook','put 176 request','put 176 (counter+1)'),
+            ('notebook','(counter+1))\n    fun s request => if statusFailed s = true then .done s 0 else',
+             '(counter+1))\n    fun s request => if statusFailed s = true then .done 0 0 else'),
+            ('events','.boundedFoldU64 64 freshRequestStep 64 (candidate-1)','.boundedFoldU64 63 freshRequestStep 63 (candidate-1)'),
+            ('events','if greatest < 0x7ffffffffffffffe then','if greatest ≤ 0x7ffffffffffffffe then'),
+            ('events','(if acc < request then request else acc)','(if acc < request then request &&& 0xffffff else acc)'),
+            ('events','write scratch 0 3','write scratch 0 2'),
+            ('events','write scratch 0 7','write scratch 0 0'),
+            ('events','if format = 3 then if count < i.toUInt64+8 then','if format = 2 then if count < i.toUInt64+8 then'),
+            ('local','freshRequestID document requestID (outgoing+128)','freshRequestID outgoing requestID (outgoing+128)'),
+            ('local','n d freshID 0 0','n d requestID 0 0'),
+            ('local','fun s _ => .done s freshID','fun s _ => .done s requestID')):
+            with self.subTest(key=key,before=before):self.reject(key,before,after)
+
     def test_service_envelope_and_client_echo_are_required(self):
         for key,before,after in (
             ('protocol','def requestBytes : UInt64 := 144','def requestBytes : UInt64 := 136'),

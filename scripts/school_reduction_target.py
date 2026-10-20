@@ -57,9 +57,14 @@ def notebook_source(source):
  require(prefix in begin and prefix in pump,'tool start/pump lost the opt-in mode gate')
  require('if allocated = 3 then if course = 1 then if phase ||| pending ||| rawCount ||| rawPending ||| stroke = 0 then' in begin,
          'tool start lost allocation/course/idle/current-input ownership')
- required=['Lemma.Courses.LocalReduction.request packageWorkspace mathematics mathematicsIO reductionEvent reductionMeta ns page request',
+ require('.bind (get 176) fun s counter' in begin and 'if counter < 0x7ffffffffffffffe then' in begin and
+         'nextRequest' not in begin and 'else .done 235 0' in begin,
+         'tool request lost its unchanged-on-exhaustion counter gate')
+ required=['Lemma.Courses.LocalReduction.request packageWorkspace mathematics mathematicsIO reductionEvent reductionMeta ns page (counter+1)',
+  'fun s request => if statusFailed s = true then .done s 0 else',
+  'if request < 0x7ffffffffffffffe then',
   'Lemma.Courses.LocalReduction.stagePrepared packageWorkspace mathematics packageDocumentStage mathematicsSave reductionEvent',
-  'reductionPut 8 frontier','put 552 request','put 536 16','publishPackageWorkspace']
+  'reductionPut 8 frontier','put 176 request','put 552 request','put 536 16','publishPackageWorkspace']
  require(all(fragment in begin for fragment in required) and [begin.index(fragment) for fragment in required]==sorted(begin.index(fragment) for fragment in required),
          'prepared work/request/floor/publication order differs')
  require('ClientV9.beginCall' not in begin,'tool call precedes real prepared Store commit')
@@ -103,6 +108,41 @@ def sources(values):
  src={key:_lean_without_comments(value) for key,value in values.items()}
  result=notebook_source(src['notebook'])
  p=src['protocol'];client=src['client'];local=src['local'];math=src['math']
+ events=src['events']
+ require(definition(events,'freshRequestID')==compact('''def freshRequestID (buffer candidate scratch : UInt64) : Action :=
+  if candidate = 0 then .done 235 0 else if 0x7ffffffffffffffe < candidate then .done 235 0 else
+  .bind (read buffer 192) fun s count => if s = 0 then
+  .bind (read buffer 208) fun s format => if s = 0 then
+  if 64 < count then .done 235 0 else
+  if (if format = 1 then true else if format = 2 then true else format = 3) = true then
+  .bind (write scratch 0 0) fun s _ => if s = 0 then
+  .boundedFoldU64 64 freshRequestStep 64 (candidate-1) buffer count scratch format fun s greatest => if s = 0 then
+  if greatest < 0x7ffffffffffffffe then .done 0 (greatest+1) else .done 235 0
+  else .done s 0 else .done s 0 else .done 234 0 else .done s 0 else .done s 0'''),
+  'fresh tool identity lost its full-domain bounded durable-history maximum/exhaustion guard')
+ require(definition(events,'freshRequestStep')==compact('''private def freshRequestStep (i _ : UInt32) (acc buffer count scratch format : UInt64) : Action :=
+  if count ≤ i.toUInt64 then .done 0 acc else
+  .bind (read scratch 0) fun s skip => if s = 0 then
+  if 0 < skip then .bind (write scratch 0 (skip-1)) fun s _ => .done s acc else
+  let entry := buffer+832+i.toUInt64*16
+  .bind (read entry 8) fun s desc => if s = 0 then
+  if desc &&& 255 = 7 then
+    if format = 1 then .done 234 0 else if count < i.toUInt64+4 then .done 234 0 else
+    .bind (write scratch 0 3) fun s _ => .done s acc
+  else if desc &&& 255 = 8 then
+    if format = 3 then if count < i.toUInt64+8 then .done 234 0 else
+    .bind (read entry 24) fun s request => if s = 0 then
+    if request = 0 then .done 234 0 else if 0x7ffffffffffffffe < request then .done 234 0 else
+    .bind (write scratch 0 7) fun s _ => if s = 0 then
+    .done 0 (if acc < request then request else acc) else .done s 0
+    else .done s 0 else .done 234 0
+  else .done 0 acc else .done s 0 else .done s 0'''),
+  'fresh tool identity lost exact kind7/8 payload skipping or full request bits')
+ request=definition(local,'request')
+ require('.bind (Lemma.Documents.LocalToolEvents.freshRequestID document requestID (outgoing+128)) fun s freshID => if s = 0 then' in request and
+         request.count('n d freshID 0 0')==2 and
+         '.bind (Lemma.Documents.LocalToolEvents.prepare event outgoing crc) fun s _ => .done s freshID' in request,
+         'request/event encoding or return lost the selected fresh durable identity')
  for name,value in [('requestBytes','144'),('replyBytes','176'),('serviceIdentity','0x0001000052444331')]:
   require(definition(p,name)==f'def {name} : UInt64 := {value}','protocol identity/extent differs: '+name)
  require(definition(p,'validContext')==compact('''def validContext (source edition object node revision ns page request session policy : UInt64) : Bool :=
@@ -169,7 +209,7 @@ def llvm_semantics(ir,rows,role):
  from audit_kernel import (_ir_definition_body,_local_call_arguments,_local_checked_result,
   _structured_ir_blocks,_structured_successors,
   validate_boolean_gate,validate_checked_call_gate,validate_failed_call_gate,validate_fixed_fold)
- require(role in {'arithmetic','notebook','client'},'unknown emitted component role')
+ require(role in {'arithmetic','notebook','client','local'},'unknown emitted component role')
  var=r'%[A-Za-z0-9_.$-]+'
  reverse={row['symbol']:name for name,row in rows.items()}
  def symbol(name):
@@ -283,6 +323,35 @@ def llvm_semantics(ir,rows,role):
    'echo returned a different status/value instead of the actual admitted merge')
   checks.append({'echo_values_compared':True,'comparison':echo_comparison,
    'success':success,'failure':failure,'mismatch_status':101,'matched_accumulator':'%arg2'})
+ def fresh_identity():
+  events='Lemma.Documents.LocalToolEvents.';fresh=events+'freshRequestID';request=local+'request'
+  selected=one(request,fresh).split(', ')
+  require(len(selected)==3 and selected[:2]==['i64 %arg1','i64 %arg7'],
+   'fresh identity must scan the current document with the actual candidate')
+  equal_address(request,selected[2],{'%arg2':1},128)
+  fresh_value=value(request,fresh,', '.join(selected))
+  encoded=calls(request,protocol+'request')
+  require(len(encoded)==2 and all(len(args.split(', '))==13 and args.split(', ')[0]=='i64 %arg2' and
+   args.split(', ')[10]=='i64 '+fresh_value for args in encoded),
+   'known/opaque request encoders lost the same selected fresh identity')
+  checks.append(validate_checked_call_gate(body(request),symbol(fresh),symbol(protocol+'request')))
+  # Follow the returned aggregate through only genuine finite i64 result joins.
+  # Failure values may be zero; the only nonzero leaf is the selected identity.
+  returned=re.findall(r'ret \{ i64, i64 \} ('+var+r')$',body(request),re.M)
+  values=re.findall(re.escape(returned[0] if len(returned)==1 else '<missing>')+
+   r' = insertvalue \{ i64, i64 \} '+var+r', i64 ('+var+r'|0), 1$',body(request),re.M)
+  def leaves(operand,seen=None):
+   if operand in {'0',fresh_value}:return {operand}
+   seen=set() if seen is None else set(seen);require(operand not in seen,'cyclic fresh identity return join');seen.add(operand)
+   phis=re.findall(re.escape(operand)+r' = phi i64 ([^\n]+)$',body(request),re.M)
+   incoming=re.findall(r'\[ ('+var+r'|0), %[A-Za-z0-9_.$-]+ \]',phis[0]) if len(phis)==1 else []
+   require(incoming,'unaccounted fresh identity return value')
+   result=set()
+   for entry in incoming:result|=leaves(entry,seen)
+   return result
+  require(len(values)==1 and leaves(values[0])=={'0',fresh_value},
+   'local request returned a candidate or lost its selected fresh identity')
+  checks.append(validate_fixed_fold(body(fresh),symbol(events+'freshRequestStep'),64))
  if role=='arithmetic':
   process=server+'processCopied';evaluate=protocol+'evaluate';read=one(process,memory+'read64')
   equal_address(process,read,{},0x20300+64+96)
@@ -304,10 +373,24 @@ def llvm_semantics(ir,rows,role):
   checks.append(validate_fixed_fold(body(protocol+'reply'),symbol(protocol+'copyStep'),18))
   checks.append(validate_fixed_fold(body('Lemma.Services.Arithmetic.ReductionV1.calculate'),symbol('Lemma.Services.Arithmetic.ReductionV1.gcdStep'),32))
  elif role=='notebook':
-  begin=n+'beginLocalReduction';pump=n+'pumpLocalReduction'
+  begin=n+'beginLocalReduction';pump=n+'pumpLocalReduction';request=local+'request'
   for owner,protected in ((begin,local+'request'),(pump,client+'beginCall')):
    read=one(owner,memory+'read64');equal_address(owner,read,{},0x20800+728)
    enabled=value(owner,memory+'read64',read);checks.append(constant_gate(owner,enabled,1,protected))
+  fresh_identity()
+  counter=value(begin,n+'get','i64 176');begin_args=one(begin,request)
+  candidate=begin_args.split(', ')[-1]
+  additions=re.findall('('+var+r') = add i64 '+re.escape(counter)+r', 1$',body(begin),re.M)
+  require(len(additions)==1 and candidate=='i64 '+additions[0],
+   'tool candidate lost the actual volatile counter increment')
+  checks.append(gate(begin,'ult',counter,'9223372036854775806',request))
+  request_value=value(begin,request,begin_args)
+  checks.append(gate(begin,'ult',request_value,'9223372036854775806',local+'stagePrepared'))
+  require(calls(begin,n+'put')==['i64 176, i64 '+request_value,'i64 552, i64 '+request_value,'i64 536, i64 16'],
+   'tool counter/pending ownership lost the selected fresh request')
+  for checked in (request,local+'stagePrepared'):
+   checks.append(validate_failed_call_gate(body(begin),symbol(checked),symbol(n+'put'),
+    symbol(n+'statusFailed'),body(n+'statusFailed')))
   floor=value(pump,n+'reductionGet','i64 8');frontier=value(pump,n+'get','i64 128')
   checks.append(gate(pump,'ult',floor,frontier,client+'beginCall'))
   checks.append(validate_failed_call_gate(body(pump),symbol(local+'current'),symbol(client+'beginCall'),
@@ -323,4 +406,5 @@ def llvm_semantics(ir,rows,role):
   equal_address(begun,invoke[2],{},144)
   client_echo()
  elif role=='client':client_echo()
+ elif role=='local':fresh_identity()
  return {'role':role,'checked_value_CFG_gates':checks,'scope':'genuine pre-LLVM value/CFG checks; separate complete pre/post pins remain required; not a guest execution claim'}
