@@ -2321,7 +2321,7 @@
     "scope": "Practical teacher control replaces a hardwired policy1. Same Authoring decode/compile and Authority publication; host parses the chosen integer only. Isolated Xvfb presentation and actual hosted admission do not establish learner guest rendering, production authentication or educational benefit."
   },
   "ordinarySchool24NativeReduction": {
-    "status": "SCOPED_WORKFLOW_PASS_WITH_RETAINED_PRESENTATION_DEFECT",
+    "status": "SCOPED_NATIVE_WORKFLOW_PASS_WITH_CORRECTED_PRESENTATION_OBSERVER",
     "terminal": {
       "path": "build/school/task009-native-reduction-a1/terminal-result.json",
       "sha256": "a4abef8266b4b5a52de729c762741b7f28c88ca86c7731feef8caab2bee9cafd"
@@ -2441,7 +2441,7 @@
       "unsupported1.4BRunrequestrefusedbeforeexecution; full1,400,000,001unitreservationremainscharged",
       "queuedpage/coursecontextnavigationdiscarded3bufferedcontrols:735reason4,cumulative3; no reviewwritingenteredthen",
       "X_GetImageBadMatchafteractual47reviewstrokes/panelcaptures; observerwindowcapturefailed; later3000x2000XvfbactualSave/ASKcapturepassedwithoutrewritinginput",
-      "actualreviewlivepaperretainsmissingsegmentsdespiteSaved209,192rawsamplesexactandcompleteLeanTeacherartifactpreview. Causalpresentationdefectremainsopen; nofullvisiblelive-reviewinkclaim."
+      "The original decimated diagnostic falsely suggested missing native paper segments. A separately pinned full-resolution controller assessment corrects that observer; the original terminal and PNG remain retained."
     ],
     "resources": [
       {
@@ -2499,7 +2499,7 @@
     },
     "reproduceLaunch": "python3 scripts/lemmasim session --native-bundle build/school/task009-school24-sdk-a1/native --backend qemu --profile lemma-silicon-dev/0.14.0 --workload notebook --disk NEW_ISOLATED_INITIALIZED_MEDIUM --session-dir NEW_SESSION --mode student --headless --paused --quantum 1000000 --timeout 3000",
     "ordinaryControls": "Maintained native viewer Canvas and Study pairing/catalogue/install/Bind ASK/Send/Feedback; actual Teacher Panel artifact/render and versioned human assessment. Fixed synthetic pointer geometry/teacher judgments are explicitly scenario inputs, not measured human learning.",
-    "remaining": "Actual live review paper still omits segments although the complete raw artifact replays correctly in the Lean Teacher renderer. No School24 checkpoint, full0.16 Fast union, arbitrary extension plugin, physical qualification or educational-benefit claim. Browser School24 remains a separate owned campaign.",
+    "remaining": "New host viewer resampling is qualified as an image component over actual recorded output; a successor sealed host bundle/ordinary launch is separate. No School24 checkpoint, full0.16 Fast union, arbitrary runtime plugin, physical qualification or measured educational-benefit claim. Browser School24 is a separate owned campaign.",
     "sourceCommit": "c47658388e89865396b6d4893796e1a691bd9c1c",
     "sourcesSHA256": "7a581fda1ae00a31ea5081b7cc90d6ccf9e2c2279cabd92af93a7496538bccf5",
     "targetSources": {
@@ -2508,6 +2508,24 @@
       "Lemma/Courses/LocalReduction.lean": "2e2d48bfb8b95471b5e6104e9d902ce5302641b16f859d5a6b55b56c5a840d1f",
       "Lemma/Services/Arithmetic/ServerV9.lean": "d6a2fb74e1b12cda7dd4f2e65d4149fa6cdf6ce5db100271241c68b60bc9e2c8",
       "Lemma/Services/Arithmetic/ProtocolV9.lean": "61a52285d622e291bb42da80971c4568e2bd87b3776de36dd5ddea68b63ff2ca"
+    },
+    "nativePixelObserverCorrection": {
+      "assessment": "build/school/task009-native-reduction-a1/native-pixel-assessment.json",
+      "sha256": "c3aa3fce0ab8cc82f3f3b7d6da41b216038aa20d83888c312bce1281556065f6",
+      "scope": "The original terminal receipt remains unchanged. Direct full-resolution inspection of its exact controller P6 shows every formula segment. The earlier point-decimated PNG had a false-negative for one-pixel ink; no guest/raw/paper-controller defect is established by that image.",
+      "hostViewerRepair": "Actual Tk viewer similarly used PhotoImage.subsample3; new bounded darkest-existing-pixel minification preserves thin controller ink. This is host presentation only, with no source-pixel/guest/state/input changes.",
+      "actualTkComponent": "build/school/task009-native-reduction-a1/viewer-presentation-replay/result.json",
+      "actualTkComponentSHA256": "78ff381ce51ce962eac343929fee91631a24ae457704a555e254b5591b29ec03",
+      "componentWallSeconds": 1.187181290006265,
+      "fullNativeFrameResamplingSeconds": 0.10373385110870004,
+      "focusedTests": 13,
+      "retainedObserverErrors": [
+        "Wrong two unittest class selectors before corrected13PASS; original11pixelcases passed in both invocations.",
+        "Original GUI capture X_GetImageBadMatch and two preciselyownedservercleanups retained."
+      ],
+      "freshReused": "Fresh pure-format/pixel tests and actual maintained Tk viewer component over recorded final controller output. No new guestRun or newordinarymachineexecution; original sealedSDK hostbytes unchanged.",
+      "sourceSHA256": "b05abd42e016d6727823300687dac36607d91d86a07d149d3343ede68ebe9533",
+      "tests": "python3 -m unittest tests.silicon.test_viewer_pixels tests.silicon.test_live_session.LifecycleFailures.test_pointer_clock_preserves_mtime_and_literal_contact_hover_fields tests.silicon.test_live_session.LifecycleFailures.test_pointer_clock_failure_cannot_admit_a_sample"
     }
   }
 }

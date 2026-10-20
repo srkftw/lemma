@@ -1274,6 +1274,102 @@ def _sample_pointer(directory, x, y, contact, width, height, scale):
     return request(directory, {'action': 'inject', 'kind': 'pen', 'words': words})
 
 
+def paper_view_pixels(pixels, width, height, channels, scale):
+    """Minify controller output, retaining the darkest existing pixel per cell.
+
+    This is display resampling only. It does not change controller pixels,
+    pointer coordinates, guest ink, hashes, or delivery evidence. Point sampling
+    can erase a one-pixel stroke at every position except the sampled position.
+    """
+    if (type(width) is not int or type(height) is not int or type(scale) is not int or
+            not 1 <= width <= 4096 or not 1 <= height <= 4096 or
+            not 1 <= scale <= 16 or type(channels) is not int or channels not in (1, 3, 4)):
+        raise ValueError('invalid bounded paper-view geometry')
+    if not isinstance(pixels, bytes) or len(pixels) != width * height * channels:
+        raise ValueError('paper-view pixel length differs from geometry')
+    if scale == 1:
+        return width, height, pixels
+    out_width = (width + scale - 1) // scale
+    out_height = (height + scale - 1) // scale
+    gray = pixels if channels == 1 else pixels[0::channels]
+    monochrome = (channels == 1 or
+                  (gray == pixels[1::channels] == pixels[2::channels] and
+                   (channels != 4 or pixels[3::4] == b'\xff' * (width * height))))
+    if monochrome:
+        # Sliced lanes keep the normal Gray4 presentation bounded and avoid a
+        # Python loop for each source pixel. Missing edge lanes are white.
+        pooled = bytearray()
+        for y in range(0, height, scale):
+            lanes = []
+            for dy in range(min(scale, height - y)):
+                row = gray[(y + dy) * width:(y + dy + 1) * width]
+                for dx in range(min(scale, width)):
+                    lane = row[dx::scale]
+                    lanes.append(lane + b'\xff' * (out_width - len(lane)))
+            pooled.extend(map(min, zip(*lanes)))
+        if channels == 1:
+            return out_width, out_height, bytes(pooled)
+        result = bytearray(out_width * out_height * channels)
+        for c in range(3):
+            result[c::channels] = pooled
+        if channels == 4:
+            result[3::4] = b'\xff' * len(pooled)
+        return out_width, out_height, bytes(result)
+    result = bytearray()
+    for y in range(0, height, scale):
+        for x in range(0, width, scale):
+            choices = (pixels[(yy * width + xx) * channels:(yy * width + xx + 1) * channels]
+                       for yy in range(y, min(height, y + scale))
+                       for xx in range(x, min(width, x + scale)))
+            # Retain a real source RGB(A) tuple; componentwise minima could
+            # invent a color. Transparent RGBA pixels are scored over white.
+            def darkness(pixel):
+                alpha = pixel[3] if channels == 4 else 255
+                return alpha * sum(pixel[:3]) + (255 - alpha) * 765
+            result.extend(min(choices, key=darkness))
+    return out_width, out_height, bytes(result)
+
+
+def paper_view_ppm(data, scale, expected_geometry=None):
+    """Read a bounded binary P5/P6 controller frame and return display PPM."""
+    if not isinstance(data, bytes) or len(data) > 4 * 4096 * 4096 + 4096:
+        raise ValueError('paper-view frame exceeds its byte bound')
+    position = 0
+    tokens = []
+    for _ in range(4):
+        while position < len(data):
+            if data[position] in b' \t\r\n':
+                position += 1
+            elif data[position] == 35:
+                end = data.find(b'\n', position)
+                if end < 0:
+                    raise ValueError('unterminated paper-view header comment')
+                position = end + 1
+            else:
+                break
+            if position > 4096:
+                raise ValueError('paper-view header exceeds its byte bound')
+        begin = position
+        while position < len(data) and data[position] not in b' \t\r\n':
+            position += 1
+            if position > 4096:
+                raise ValueError('paper-view header exceeds its byte bound')
+        tokens.append(data[begin:position])
+    if tokens[0] not in (b'P5', b'P6') or tokens[3] != b'255':
+        raise ValueError('unsupported paper-view pixel encoding')
+    if not tokens[1].isdigit() or not tokens[2].isdigit() or position == len(data):
+        raise ValueError('invalid paper-view frame header')
+    width, height = int(tokens[1]), int(tokens[2])
+    if expected_geometry is not None and (width, height) != expected_geometry:
+        raise ValueError('paper-view frame differs from machine geometry')
+    # Consume only the raster delimiter, never a whitespace-valued first pixel.
+    position += 2 if data[position:position + 2] == b'\r\n' else 1
+    channels = 1 if tokens[0] == b'P5' else 3
+    out_width, out_height, pixels = paper_view_pixels(
+        data[position:], width, height, channels, scale)
+    return tokens[0] + f'\n{out_width} {out_height}\n255\n'.encode() + pixels
+
+
 def view(directory):
     """Raw synthetic pointer bridge + controller-produced pixels, no host ink."""
     import tkinter as tk
@@ -1384,9 +1480,8 @@ def view(directory):
                 request(directory, {'action': 'panel', 'path': str(path)})
                 current_hash = digest(path)
                 if current_hash != last_hash:
-                    frame = tk.PhotoImage(file=str(path))
-                    if scale > 1:
-                        frame = frame.subsample(scale, scale)
+                    frame = tk.PhotoImage(data=paper_view_ppm(
+                        path.read_bytes(), scale, (width, height)))
                     canvas.delete('frame')
                     canvas.create_image(0, 0, anchor='nw', image=frame, tags='frame')
                     last_hash = current_hash
