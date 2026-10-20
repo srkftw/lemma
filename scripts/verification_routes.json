@@ -396,6 +396,7 @@
         "scripts/silicon_buffered_pins.py",
         "scripts/silicon_acceptance_launch.py",
         "scripts/silicon_sram_input_hold.py",
+        "scripts/silicon_control_launch.py",
         "tests/silicon/test_process_comparator.py",
         "scripts/silicon_route_enclosure.py",
         "tooling/silicon/pen-*.tcl",
