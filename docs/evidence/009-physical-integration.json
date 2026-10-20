@@ -4210,7 +4210,7 @@
         "path": "build/silicon/task009-openDB-development-preflight-a1/result.json",
         "sha256": "6193628d304d0bb1221138e765ff1b3a17d6863408a9187d65d46e3f960d6a86"
       },
-      "next_dependency": "A safely guarded maintained preference-only route consumer must preserve the exact unselected327 clock-M3 baseline PA and two instance preferences; no PA/GRT regeneration. Selected30 unchanged. Original unavailable-Python-vector observation is real; initial no-exported-symbol claim inspected only16KiB launcher and is explicitly corrected by actual112MiB wrappedcore symbol/ABI execution.",
+      "next_dependency": "Correct the actual routing representation without weakening original420nm native-PG clearance orCTS420nm. One repaired via moves back into the declared keepout; another meets native clearance but is additionally spaced from already-expandedOBS. NativePG/ports/clock/fullprocess obligations remain. No unchanged route retry.",
       "exact_core_host_export": {
         "status": "ORIGINAL_WHOLE900_FAIL907.669477_COMPONENTS_SCOPED_PASSES",
         "whole_producer": {
@@ -4259,7 +4259,7 @@
         ]
       },
       "two_instance_preference_candidate": {
-        "status": "QUALIFIED_SCOPED_PREFERENCE_INPUT_UNSELECTED_NOT_ROUTED",
+        "status": "SCOPED_PREFERENCE_CORRECTION_CONSUMED_UNSELECTED_ROUTE_DEADLINE_FAIL",
         "lineage": "Unselected327buffer clock-M3 globalroute, realbaselinePA; not selected30. ActualGRTODB e8c5f718959b9a67eea724d23a81645635b1abf7d8088d83a5b8ce61f6d8ab4c andguide3b49b6110badf23a2c163960efb569fc48548af4435dcf2da18089fdb0a4e4f0.",
         "proposal": {
           "path": "build/silicon/task009-opendb-access-metadata-a1/two-instance-proposal.json",
@@ -4332,7 +4332,7 @@
         "negatives": 15,
         "actual_candidate_roundtrip_byte_identical": true,
         "geometry": "Actual readback preservesallcells/ports/netlist/PG/OBS/9SRAMpower423BIST/960nmpadding; noAP/direction/via/point changes.",
-        "remaining": "No route/PEX/corner/processqualification or selectionchange. DRT-no_pin_access actualconsumption must be demonstrated bymaintainedconsumer underfreshbudget.",
+        "remaining": "Selected padded30/all9timingFAIL unchanged. Actual initialAP4 consumption proven, but DRT later moved one chosen via into the original420nm keepout. No final route/PEX/corners/process qualification.",
         "maintained_route_consumer": {
           "version": "lemma-two-instance-retained-access-route/1",
           "source": {
@@ -4361,7 +4361,7 @@
           },
           "guide_RC_observer": "81EST0026missingterminalroutewarnings; rawguideRCreportsunadmitted, actualroutePEXrequired",
           "full_run": {
-            "status": "RUNNING_NO_RESULT_OR_SELECTION_CLAIM",
+            "status": "FAIL_ORIGINAL900SECOND_DETAIL_ROUTE_DEADLINE_NO_FINAL_ODB_PEX_OR_CORNERS",
             "plan": {
               "path": "build/silicon/task009-two-preferred-route-admission-a1/plan.json",
               "sha256": "24b229d04ad091dc7a11ae08007bf4e2bfad8aa54ae97508b6431d62a0b84cc6"
@@ -4373,9 +4373,351 @@
               "output_bytes": 12884901888,
               "available_floor_bytes": 8589934592
             },
-            "snapshots": "PinnedDRTsnapshotdebug writesactualODBafterclosedrepairiteration; atmost8withinoriginaldeadline/outputbudget. Incompletefileisnotadmitted."
+            "snapshots": "PinnedDRTsnapshotdebug writesactualODBafterclosedrepairiteration; atmost8withinoriginaldeadline/outputbudget. Incompletefileisnotadmitted.",
+            "whole_campaign": {
+              "path": "build/silicon/task009-two-preferred-route-admission-a1/result.json",
+              "sha256": "9d8bf9108e8cf05e46976aeeadfb0eea546f13cb3d5a6a6157bfac51368e3cf1"
+            },
+            "producer": {
+              "path": "build/silicon/task009-two-preferred-route-a1/result.json",
+              "sha256": "1cae392cdb142e7db0c16355d11d6aba29f25cfad55efbdf8d308a9ba2660755"
+            },
+            "whole_seconds": 916.692853129,
+            "producer_seconds": 916.076857786,
+            "sampled_combined_peak_RSS_bytes": 2266558464,
+            "output_bytes": 414618625,
+            "source_seal_equal": true,
+            "owned_processes_reaped": true,
+            "phase_deadline": "Original900s detailed-route deadline reached during repair iteration7; original1200s whole budget met. No extension/retry/finalODB/PEX/corners.",
+            "last_closed_iteration": {
+              "iteration": 6,
+              "ODB": {
+                "path": "build/silicon/task009-two-preferred-route-a1/route-snapshots/drt_iter6.odb",
+                "sha256": "c2938f8db07cf4f74af1b38c4f3dc3f1fc9364afcb7b5fdda1735e3f62907e1c"
+              },
+              "markers": 35,
+              "short": 9,
+              "spacing": 26,
+              "prior_clock3_closed6_markers": 35,
+              "prior_short": 11,
+              "prior_spacing": 24,
+              "scope": "Intermediate geometry only; no final35-marker routing result."
+            }
           },
           "focused_tests": "3accesspreference+16routeenclosure testsPASS;14documentationPASS. Source/hosttestsnotroutequalification."
+        },
+        "actual_initial_chosen_via_observation": {
+          "assessment": {
+            "path": "build/silicon/task009-two-preferred-iter0-observer-a1/classification-result.json",
+            "sha256": "5197d071f223b248eb6c6d8db37f658ef53ed465e17925f4e07888081010ba97"
+          },
+          "scope": "Actual closediteration0 ODB/DEF shows originalVia1_YY at both exactAP4 centers. FullAPmetadata observer originallyFAIL; separate completed classification retains original records and identifies only source-explained BPinAP copies.",
+          "BPin_copy_behavior": {
+            "all_original_APs": 11123,
+            "all_original_patterns": 495,
+            "all_original_ITerms": 45104,
+            "exact_appended_BPin_APs": 6055,
+            "extended_BPin_vectors": 665,
+            "total_BPIns": 668,
+            "source": "PinnedfrBTerm has_pin_access_update defaults true; writer.updateDbAccessPoints copies BTermAPs even with -no_pin_access before clearing flag. Current strict finalmetadata consumer would reject this extension; no finalguard PASS is inferred."
+          }
+        },
+        "closed6_native_conductor_relation": {
+          "assessment": {
+            "path": "build/silicon/task009-two-preferred-last6-PG-a5/result.json",
+            "sha256": "e1ef9882edf6a5e9bd2c0f1885ef5e8792ec12a9769f470059cd45b8945dc398"
+          },
+          "seconds": 0.7766256870236248,
+          "native_PG_OBS_pairs": 7942,
+          "DEF_patch_counts": {
+            "_05224_": 6,
+            "_05266_": 2,
+            "delaynet_4_core": 2
+          },
+          "completed_native_geometry": {
+            "path": "build/silicon/task009-two-preferred-last6-PG-a2/geometry.json",
+            "sha256": "5024882f612d9f844b01c5fa6584156634ed680bed562be8640569d09c199494"
+          },
+          "completed_original_DEF": {
+            "path": "build/silicon/task009-two-preferred-last6-PG-a2/actual.def",
+            "sha256": "2428a3d2c2c99438104b6ed70a810dd7c8670945a44bc6f8cfee26a1656641bb"
+          },
+          "original_LEF": {
+            "path": "build/silicon/task009-padded-sram-hold-route-a2/enclosure/repaired-original.lef",
+            "sha256": "fb6f0aa5647efc822ad6551a11b57002a278d7d3f98ac20a12cb9f7a65e81d2d"
+          },
+          "source_420nm_keepout": {
+            "path": "tooling/silicon/pen-power-edge.tcl",
+            "sha256": "4a14a2b5c7295d2708b9389598a8c8817a7b5f09620f887fb7cf91c2b9ea543c"
+          },
+          "scope": "Every actual target segment/via independently matches publicOpenDB shape; everyRECT binds originaldefout relativepoint/extension semantics. All7942 nativeM2/M5PG rectangles match original420nm expansion. Pure completed-data assessment; no further EDAexecution.",
+          "targets": [
+            {
+              "net": "_05224_",
+              "initial_AP4_center_nm": [
+                454560,
+                272980
+              ],
+              "closed_iteration6_actual_signal": {
+                "kind": "via",
+                "name": "Via1_YY",
+                "center_nm": [
+                  454560,
+                  272845
+                ],
+                "layer": "Metal2",
+                "box_nm": [
+                  454460,
+                  272700,
+                  454660,
+                  272990
+                ]
+              },
+              "via_move_from_initial_AP4_nm": [
+                0,
+                -135
+              ],
+              "native_PG": {
+                "net": "VSS",
+                "via": "via2_3_1200_330_1_2_480_480",
+                "layer": "Metal2",
+                "box_nm": [
+                  454940,
+                  272015,
+                  455620,
+                  272305
+                ]
+              },
+              "source_420nm_OBS": [
+                454520,
+                271595,
+                456040,
+                272725
+              ],
+              "native_axis_separations_nm": [
+                280,
+                395
+              ],
+              "native_rectangular_clearance_nm": 395,
+              "gap_to_source_OBS_nm": 0,
+              "widths_nm": [
+                200,
+                290
+              ],
+              "LEF_table_spacing_all_PRL_nm": 210,
+              "original_420nm_rectangular_margin_met": false,
+              "LEF_conductor_table_subset_met": true
+            },
+            {
+              "net": "_05266_",
+              "initial_AP4_center_nm": [
+                334560,
+                514900
+              ],
+              "closed_iteration6_actual_signal": {
+                "kind": "via",
+                "name": "Via1_YY",
+                "center_nm": [
+                  334560,
+                  514900
+                ],
+                "layer": "Metal2",
+                "box_nm": [
+                  334460,
+                  514755,
+                  334660,
+                  515045
+                ]
+              },
+              "via_move_from_initial_AP4_nm": [
+                0,
+                0
+              ],
+              "native_PG": {
+                "net": "VSS",
+                "via": "via2_3_1200_330_1_2_480_480",
+                "layer": "Metal2",
+                "box_nm": [
+                  334940,
+                  513935,
+                  335620,
+                  514225
+                ]
+              },
+              "source_420nm_OBS": [
+                334520,
+                513515,
+                336040,
+                514645
+              ],
+              "native_axis_separations_nm": [
+                280,
+                530
+              ],
+              "native_rectangular_clearance_nm": 530,
+              "gap_to_source_OBS_nm": 110,
+              "widths_nm": [
+                200,
+                290
+              ],
+              "LEF_table_spacing_all_PRL_nm": 210,
+              "original_420nm_rectangular_margin_met": true,
+              "LEF_conductor_table_subset_met": true
+            }
+          ],
+          "nearest_clock_native_PG": [
+            {
+              "signal": {
+                "kind": "wire",
+                "layer": "Metal5",
+                "box_nm": [
+                  424660,
+                  468200,
+                  424860,
+                  469240
+                ]
+              },
+              "native_PG": {
+                "net": "VSS",
+                "layer": "Metal5",
+                "box_nm": [
+                  34680,
+                  469640,
+                  995880,
+                  472140
+                ]
+              },
+              "widths_nm": [
+                200,
+                2500
+              ],
+              "native_rectangular_clearance_nm": 400,
+              "maximum_LEF_table_spacing_in_actual_width_domain_nm": 240,
+              "original_CTS_spacing_nm": 420,
+              "CTS_spacing_met": false,
+              "LEF_conductor_table_subset_met": true
+            },
+            {
+              "signal": {
+                "kind": "wire",
+                "layer": "Metal5",
+                "box_nm": [
+                  424660,
+                  469040,
+                  426340,
+                  469240
+                ]
+              },
+              "native_PG": {
+                "net": "VSS",
+                "layer": "Metal5",
+                "box_nm": [
+                  34680,
+                  469640,
+                  995880,
+                  472140
+                ]
+              },
+              "widths_nm": [
+                200,
+                2500
+              ],
+              "native_rectangular_clearance_nm": 400,
+              "maximum_LEF_table_spacing_in_actual_width_domain_nm": 240,
+              "original_CTS_spacing_nm": 420,
+              "CTS_spacing_met": false,
+              "LEF_conductor_table_subset_met": true
+            },
+            {
+              "signal": {
+                "kind": "via",
+                "name": "Via4_YX",
+                "center_nm": [
+                  426240,
+                  469140
+                ],
+                "layer": "Metal5",
+                "box_nm": [
+                  426095,
+                  469040,
+                  426385,
+                  469240
+                ]
+              },
+              "native_PG": {
+                "net": "VSS",
+                "layer": "Metal5",
+                "box_nm": [
+                  34680,
+                  469640,
+                  995880,
+                  472140
+                ]
+              },
+              "widths_nm": [
+                200,
+                2500
+              ],
+              "native_rectangular_clearance_nm": 400,
+              "maximum_LEF_table_spacing_in_actual_width_domain_nm": 240,
+              "original_CTS_spacing_nm": 420,
+              "CTS_spacing_met": false,
+              "LEF_conductor_table_subset_met": true
+            }
+          ],
+          "consequential_controls": [
+            {
+              "label": "actual_diagonal_source_margin_boundary_419nm",
+              "accepted": false
+            },
+            {
+              "label": "actual_diagonal_source_margin_boundary_420nm",
+              "accepted": true
+            },
+            {
+              "label": "actual_diagonal_source_margin_boundary_421nm",
+              "accepted": true
+            },
+            {
+              "label": "translated_same_width_LEF_boundary_209nm",
+              "accepted": false
+            },
+            {
+              "label": "translated_same_width_LEF_boundary_210nm",
+              "accepted": true
+            },
+            {
+              "label": "missing_actual_target_patch",
+              "accepted": false
+            },
+            {
+              "label": "unknown_actual_target_clause",
+              "accepted": false
+            }
+          ],
+          "preserved_failed_observers": [
+            {
+              "path": "build/silicon/task009-two-preferred-last6-PG-a1/result.json",
+              "sha256": "90374198596d2467a39b1a0d2b9daabfa8dc90542e0cd981f8b32a3dcbae4aab"
+            },
+            {
+              "path": "build/silicon/task009-two-preferred-last6-PG-a2/result.json",
+              "sha256": "1b88cf3054c64d87b99731435d67c5c981e2c4d410280613f4936b8744e6a4f6"
+            },
+            {
+              "path": "build/silicon/task009-two-preferred-last6-PG-a3/result.json",
+              "sha256": "180f9c39c4b03ab5db75334769781d7ea3755a08b2fe89dce7021b024cfcd1db"
+            },
+            {
+              "path": "build/silicon/task009-two-preferred-last6-PG-a4/result.json",
+              "sha256": "53f42f62e87451196ab054dc0c188ac1c0096f4186316d3c0f6e8d3a34019810"
+            }
+          ],
+          "limits": [
+            "Clock CTS420nm fails by20nm; _05224_ source420nm keepout fails by25nm; _05266_ source420nm met with110nm gap to already expanded OBS.",
+            "Rectangular source keepout metric is not Euclidean distance. Exact original process EOL/cut/area/density/antenna/model completeness remains unfinished.",
+            "No geometry or source changes, no route, no extraction; original900s routing failure and no PEX/corners retained. Selected30/all9timingFAIL unchanged."
+          ]
         }
       }
     }
