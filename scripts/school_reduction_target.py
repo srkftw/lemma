@@ -33,7 +33,12 @@ def definition(source,name):
 def notebook_source(source):
  from multimodal_target import _lean_without_comments
  source=_lean_without_comments(source)
- require(definition(source,'configureSchoolMode')==compact('''private def configureSchoolMode (school : UInt64) : Action :=
+ stream=any(marker in source for marker in ('mainMultimodalSchoolV3','schoolStreamFlag','multimodalAdvanceCaptured',
+                                          'multimodalAdvanceInput','multimodalIdleInput','multimodalDrainInput','enableWire96','0x740'))
+ if stream:
+  from school_stream_target import notebook_source as stream_source
+  stream_source(source)
+ else:require(definition(source,'configureSchoolMode')==compact('''private def configureSchoolMode (school : UInt64) : Action :=
  if school ≤ 2 then
  .bind (Memory.write64 schoolActivityFlag (if school = 2 then 1 else school)) fun s _ => if statusFailed s = true then .done s 0 else
  Memory.write64 reductionEnabled (if school = 2 then 1 else 0) else .done 234 0'''),
@@ -98,7 +103,7 @@ def notebook_source(source):
  require('if enabled = 1 then if 1352 ≤ width then' in render and
          '.boundedFoldU64 1080 reductionBarStep 1080' in render and
          'dirty 1280 132 1352 147' in render,'tool presentation lost mode/geometry/fixed raster bounds')
- return {'mode':2,'legacy_School_mode':1,'enabled_offset':728,'IO_windows':[
+ return {'mode':2,'enabled_modes':[2,3] if stream else [2],'legacy_School_mode':1,'enabled_offset':728,'IO_windows':[
   ['request',0,144],['reply_with_IPC_header',256,240],['metadata',512,16],['event',640,128]],
   'phases':[16,17,18,19],'control':10,'raster_pixels':1080,'scope':'source admission only; complete actual LLVM pins and execution required'}
 

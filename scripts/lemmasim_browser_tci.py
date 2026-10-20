@@ -210,7 +210,7 @@ def bundle(args):
     school_pair(school_version)
     if args.workbook=='school':
         if native.get('configurations')!=school_pair(school_version):raise ValueError('School browser requires the exact selected School native pair')
-    elif school_version!=23 or native.get('configurations') in (school_pair(23),school_pair(24)):
+    elif school_version!=23 or native.get('configurations') in (school_pair(23),school_pair(24),school_pair(25)):
         raise ValueError('School roots require explicit school workbook/version identity')
     prepared={w:silicon_guest_bundle.prepared(archive,'qemu',role,PROFILE) for w,role in roles.items()}
     out=Path(args.output_dir).absolute();out.mkdir(parents=True,exist_ok=False)
@@ -232,9 +232,9 @@ def bundle(args):
        'source_commit':native['source_commit'],'guest_archive_sha256':sha(archive/'bundle.json'),
        'runtime_admission_sha256':sha(runtime/'runtime.json'),'workloads':{},'runtime':{},
        'packaging_inputs':packaging_inputs}
-    if args.workbook=='school' and school_version==24:
+    if args.workbook=='school' and school_version in (24,25):
         from school_deployment import software_deployment_for
-        m.update(school_notebook_version=24,software_deployment=software_deployment_for(school_pair(24)['notebook']))
+        m.update(school_notebook_version=school_version,software_deployment=software_deployment_for(school_pair(school_version)['notebook']))
     if native_pcm:m.update(execution_binding=PCM_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2',execution_scope='Fast0.14 functional controller extension only; excludes Integrated16 boot/NV/clockedUSB/power union')
     if admission.get('stop_boundary_contract') is not None:m['stop_boundary_contract']=admission['stop_boundary_contract']
     for name,digest in admission['files'].items():add(runtime/name,'runtime-source/'+name,digest)
@@ -338,7 +338,7 @@ def validated_bundle(directory):
             from school_deployment import configuration_for,software_deployment_for
             version=m.get('school_notebook_version',23)
             configuration=configuration_for(version,'initialize' if w=='initializer' else 'notebook')
-            if (version==24 or 'software_deployment' in m) and m.get('software_deployment')!=software_deployment_for(configuration_for(version,'notebook')):
+            if (version in (24,25) or 'software_deployment' in m) and m.get('software_deployment')!=software_deployment_for(configuration_for(version,'notebook')):
                 raise ValueError('School browser deployment metadata differs')
         elif 'school_notebook_version' in m or 'software_deployment' in m:
             raise ValueError('Non-School browser acquired School deployment authority')

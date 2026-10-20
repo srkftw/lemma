@@ -36,7 +36,7 @@ LOCAL_REDUCTION_REGISTRY = {**PARAMETERIZED_REGISTRY,
                      'service_id':0x0001000052444331,'gcd_steps':32,
                      'maximum_magnitude':1000000,'required_budget':34}}
 from school_deployment import configurations_for as school_configurations_for, software_deployment_for as school_software
-LOCAL_REDUCTION_CONFIGURATIONS = frozenset(school_configurations_for(24))
+LOCAL_REDUCTION_CONFIGURATIONS = frozenset(school_configurations_for(24)+school_configurations_for(25))
 from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS
 from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS
 from closure_deployment import ALL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS

@@ -94,6 +94,47 @@ class TargetAuthorityTests(unittest.TestCase):
             self.assertEqual(dirty_batch_notebook_target.numeric_contract(unit)[1]['package_notebook_version'],21)
             with self.assertRaisesRegex(Core0Error,'authority unavailable'):target.validate('',unit,optimized=False)
 
+class OrdinaryNotebookScratchTests(unittest.TestCase):
+    def fixture(self):
+        prefix='Lemma.User.Multimodal.'
+        rows=[{'source':prefix+name,'symbol':symbol,'args':[],'effects':[]}
+              for name,symbol in [('records','records'),('state','state')]]
+        unit={'configuration':'lemmasim-notebook','role':'user','image_key':'notebook','image_id':2,
+              'contract_version':'core0-user-v0.1','used_device_ops':[],
+              'roots':[{'source':'Lemma.Applications.Notebook.main','id':1,'args':['u64']}],
+              'functions':rows}
+        ir=('define i64 @records() {\nentry:\n ret i64 3407872\n}\n'
+            'define i64 @state() {\nentry:\n %base = call i64 @records()\n'
+            ' %address = add i64 %base, 2048\n ret i64 %address\n}\n')
+        return unit,ir
+    def test_only_exact_pure_shared_addresses_are_ordinary(self):
+        unit,ir=self.fixture()
+        self.assertIsNone(target.validate(ir,unit,optimized=False))
+        folded=ir[:ir.index('define i64 @state')]+('define noundef i64 @state() {\nentry:\n ret i64 3409920\n}\n')
+        self.assertIsNone(target.validate(folded,unit,optimized=True))
+        with self.assertRaises(Core0Error):target.validate(folded,unit,optimized=False)
+    def test_context_catalog_scalar_body_and_hardware_escalation_reject(self):
+        unit,ir=self.fixture()
+        for key,value in [('configuration','unknown'),('image_key','store'),('image_id',3),
+                          ('contract_version','core0-user-v0.2'),('used_device_ops',[{'op':'MMIO'}])]:
+            changed=copy.deepcopy(unit);changed[key]=value
+            with self.subTest(key=key),self.assertRaises(Core0Error):target.validate(ir,changed,optimized=False)
+        for key,value in [('args',['u64']),('effects',['syscall'])]:
+            changed=copy.deepcopy(unit);changed['functions'][0][key]=value
+            with self.subTest(key=key),self.assertRaises(Core0Error):target.validate(ir,changed,optimized=False)
+        changed=copy.deepcopy(unit);changed['roots'][0]['source']=target.NOTEBOOK_ROOT
+        with self.assertRaises(Core0Error):target.validate(ir,changed,optimized=False)
+        for changed in [ir.replace('3407872','3407873'),ir.replace('2048','2040'),
+                        ir.replace('add i64 %base','sub i64 %base'),ir.replace('ret i64 %address','ret i64 %base'),
+                        ir.replace('define i64 @records','define { i64, i64 } @records'),
+                        ir.replace('%base = call i64 @records()','%base = call i64 @state()'),
+                        ir.replace('ret i64 3407872','store i64 1, ptr null\n ret i64 3407872')]:
+            with self.subTest(changed=changed),self.assertRaises(Core0Error):target.validate(changed,unit,optimized=False)
+        for source in ['Lemma.User.Multimodal.testAudio','Lemma.Drivers.Multimodal.read',
+                       'Lemma.Kernel.Process.initMultimodal',target.PREFIX+'constructCourseMultimodal']:
+            changed=copy.deepcopy(unit);changed['functions'].append({'source':source,'symbol':'forged','args':[],'effects':[]})
+            with self.subTest(source=source),self.assertRaises(Core0Error):target.validate(ir,changed,optimized=False)
+
 class NotebookSafetySourceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

@@ -323,7 +323,7 @@ private def schoolArithmeticBorrower (configuration role : String)
     (image? : Option UserImageSpec) : Bool :=
   isSchoolNotebookConfiguration configuration && role == "user" && image?.any fun image =>
     image.key == "arithmetic" && image.id == 3 &&
-      (if isSchool24Configuration configuration then
+      (if isSchoolLocalToolConfiguration configuration then
         image.moduleName == `Lemma.Services.Arithmetic.ServerV9 && image.root == `Lemma.Services.Arithmetic.ServerV9.main
       else image.moduleName == `Lemma.Services.Arithmetic.ServerV8 && image.root == `Lemma.Services.Arithmetic.ServerV8.main)
 
@@ -333,7 +333,7 @@ def schoolArithmeticBorrowedModuleImport (configuration role source : String)
     (image? : Option UserImageSpec) : Bool :=
   schoolArithmeticBorrower configuration role image? &&
     (source == "Lemma.Services.Arithmetic.ServerV7" ||
-      (isSchool24Configuration configuration && source == "Lemma.Services.Arithmetic.ServerV8"))
+      (isSchoolLocalToolConfiguration configuration && source == "Lemma.Services.Arithmetic.ServerV8"))
 
 /-- The copied older engines remain libraries of only these reviewed helpers.
 No sibling main, step or future declaration is admitted by a module import. -/
@@ -342,7 +342,7 @@ def schoolArithmeticBorrowedSource (configuration role source : String)
   schoolArithmeticBorrower configuration role image? &&
     ((#["incoming", "outgoing", "state", "get", "respondV7", "delayedStep", "delayed", "reclaimed", "processV7", "processCopied"].any
       (fun suffix => source == "Lemma.Services.Arithmetic.ServerV7." ++ suffix)) ||
-      (isSchool24Configuration configuration &&
+      (isSchoolLocalToolConfiguration configuration &&
         #["state", "get", "processCopied"].any (fun suffix => source == "Lemma.Services.Arithmetic.ServerV8." ++ suffix)))
 
 private def selectedExecutableSource (configuration role source : String)
@@ -929,7 +929,7 @@ private def unitManifest (env : Environment) (configuration role : String) (suit
       (← ManagedClosureMetadata.managedClosureFields env (image?.any (·.key == "arithmetic")) suite lowered) ++
       (← ManagedClosureMetadata.executionFields (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration)
         (image?.any (·.key == "arithmetic")) role suite (isMultimodalNotebookConfiguration configuration)
-        (isSchool24Configuration configuration && schoolArithmeticBorrower configuration role image?)) ++
+        (isSchoolLocalToolConfiguration configuration && schoolArithmeticBorrower configuration role image?)) ++
       (← arithmeticArrayExecutionFields configuration role image? suite) ++
       (← arithmeticStringExecutionFields configuration role image? suite) ++
       (← arithmeticBytesExecutionFields configuration role image? suite) ++

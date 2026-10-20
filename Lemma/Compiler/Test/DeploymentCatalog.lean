@@ -213,11 +213,30 @@ run_cmd do
     match validateImages configuration school24NotebookImages with
     | .ok _ => throwError "School24 roots entered historical School23"
     | .error _ => pure ()
-  for configuration in #["lemmasim-silicon-school25-notebook", "lemmasim-silicon-school24-arithmetic",
+  for configuration in #["lemmasim-silicon-school25-notebook", "lemmasim-silicon-school25-initialize",
+      "lemmasim-silicon-integrated-school25-notebook", "lemmasim-silicon-integrated-pcm-school25-notebook"] do
+    let images ← match imagesFor configuration with
+      | .ok images => pure images
+      | .error error => throwError error
+    unless images == school25NotebookImages && images.size == 4 &&
+        images[0]! == school24NotebookImages[0]! && images[2]! == school24NotebookImages[2]! &&
+        images[3]! == school24NotebookImages[3]! && images[1]!.id == 2 &&
+        images[1]!.root == `Lemma.Applications.Notebook.mainMultimodalSchoolV3 &&
+        images[1]!.bootRole? == some .notebook do
+      throwError "School25 changed another service, identifier or boot authority"
+    for prior in #[schoolNotebookImages, school24NotebookImages] do
+      match validateImages configuration prior with
+      | .ok _ => throwError "another Notebook version entered School25"
+      | .error _ => pure ()
+    for prior in #["lemmasim-silicon-school-notebook", "lemmasim-silicon-school24-notebook"] do
+      match validateImages prior images with
+      | .ok _ => throwError "School25 Notebook entered an older deployment"
+      | .error _ => pure ()
+  for configuration in #["lemmasim-silicon-school26-notebook", "lemmasim-silicon-school24-arithmetic",
       "lemmasim-silicon-school24-notebook/../initialize"] do
     match imagesFor configuration with
     | .ok _ => throwError "unknown School deployment acquired root authority"
     | .error _ => pure ()
-  logInfo "PASS: genuine source selection, closed registries, School23/24 separation and per-image startup/managed authority fail closed"
+  logInfo "PASS: genuine source selection, closed registries, School23/24/25 separation and per-image startup/managed authority fail closed"
 
 end Lemma.Compiler.Test.DeploymentCatalog

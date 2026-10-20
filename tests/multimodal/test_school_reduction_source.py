@@ -29,8 +29,8 @@ class ReductionSource(unittest.TestCase):
     def test_startup_mode_and_partial_removal_cannot_downgrade(self):
         for before,after in (
             ('mainMultimodalConfigured bootArgument 2','mainMultimodalConfigured bootArgument 1'),
-            ('Memory.write64 reductionEnabled (if school = 2 then 1 else 0)','Memory.write64 reductionEnabled 1'),
-            ('Memory.write64 schoolActivityFlag (if school = 2 then 1 else school)','Memory.write64 schoolActivityFlag school'),
+            ('Memory.write64 reductionEnabled (if 2 ≤ school then 1 else 0)','Memory.write64 reductionEnabled 1'),
+            ('Memory.write64 schoolActivityFlag (if 2 ≤ school then 1 else school)','Memory.write64 schoolActivityFlag school'),
             ('private def configureSchoolMode','private def renamedConfigureSchoolMode'),
             ('Memory.write64 (state+728) 0','Memory.write64 (state+728) 1')):
             with self.subTest(before=before):self.reject('notebook',before,after)

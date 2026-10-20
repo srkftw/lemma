@@ -251,7 +251,7 @@ def main():
     target.add_argument('--output-dir',type=Path,required=True);target.add_argument('--opt-level',choices=['O0','O2'],default='O2')
     target.add_argument('--timeout',type=float,default=180)
     service=sub.add_parser('service-build',help='build/audit an admitted closed School service plus its real notebook consumer and select local native/browser software bundles')
-    service.add_argument('--notebook-version',type=int,choices=[23,24],default=24)
+    service.add_argument('--notebook-version',type=int,choices=[23,24,25],default=24)
     service.add_argument('--output-dir',type=Path,required=True)
     service.add_argument('--sample-course',type=Path,required=True,
                          help='existing canonical account-free package; publish/install authored courses through school admission')

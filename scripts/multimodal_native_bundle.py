@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """Exact0.14 QEMU-only source/runtime archive; no new execution/physical claims."""
 from __future__ import annotations
+import ast
 import copy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -15,7 +17,8 @@ CONFIGURATIONS={'notebook':'lemmasim-silicon-multimodal-notebook',
 SCHOOL={'notebook':'lemmasim-silicon-school-notebook','initializer':'lemmasim-silicon-school-initialize'}
 SCHOOL_SAMPLE_SHA='3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e'
 LEGACY_CONTROLS=('scripts/lemmasim','scripts/lemmasim_fast.py','scripts/lemmasim_session.py','scripts/silicon_guest_bundle.py','scripts/multimodal_native_bundle.py')
-SCHOOL_CONTROLS=LEGACY_CONTROLS+('scripts/lemmasim_school_service.py','scripts/lemmasim_course.py','scripts/lemmasim_tutor.py','scripts/lemmasim_school_panel.py')
+SCHOOL_LEGACY_CONTROLS=LEGACY_CONTROLS+('scripts/lemmasim_school_service.py','scripts/lemmasim_course.py','scripts/lemmasim_tutor.py','scripts/lemmasim_school_panel.py')
+SCHOOL_CONTROLS=SCHOOL_LEGACY_CONTROLS+('scripts/school_wire.py',)
 PARAMETERIZED={'parameterized-notebook':'lemmasim-silicon-multimodal-parameterized-notebook','parameterized-initializer':'lemmasim-silicon-multimodal-parameterized-initialize'}
 
 def school_pair(version=23):
@@ -23,7 +26,7 @@ def school_pair(version=23):
     return {'notebook':configuration_for(version,'notebook'),'initializer':configuration_for(version,'initialize')}
 
 def school_version_for_pair(selected):
-    for version in (23,24):
+    for version in (23,24,25):
         if selected==school_pair(version):return version
     raise ValueError('Multimodal immutable School deployment pair differs')
 
@@ -46,6 +49,27 @@ def _origin_destination(manifest,path,digest):
     return destination
 
 
+def school_controls(directory,manifest,version):
+    """Bind the new host import while retaining old source-closed archives."""
+    school_pair(version)
+    controls=manifest.get('host_controls')
+    service='scripts/lemmasim_school_service.py'
+    if not isinstance(controls,dict) or service not in controls:
+        raise ValueError('Archived School service control is missing')
+    destination=_origin_destination(manifest,Path(__file__).resolve().parents[1]/service,controls[service])
+    source=Path(directory)/destination
+    if not source.is_file() or source.is_symlink():raise ValueError('Archived School service control differs')
+    try:
+        code=source.read_bytes()
+        if hashlib.sha256(code).hexdigest()!=controls[service]:raise ValueError('Archived School service bytes differ')
+        tree=ast.parse(code)
+    except (OSError,UnicodeError,SyntaxError) as error:raise ValueError('Archived School service imports are malformed') from error
+    uses_wire=any((isinstance(node,ast.ImportFrom) and node.module=='school_wire') or
+                 (isinstance(node,ast.Import) and any(alias.name=='school_wire' for alias in node.names))
+                 for node in ast.walk(tree))
+    return SCHOOL_CONTROLS if version==25 or uses_wire else SCHOOL_LEGACY_CONTROLS
+
+
 def pack(args):
     guest,bundle,fast=_modules()
     from build_kernel import source_inputs
@@ -53,7 +77,7 @@ def pack(args):
     school=bool(getattr(args,'school_deployment',False))
     school_version=getattr(args,'school_notebook_version',23)
     selected_school=school_pair(school_version)
-    if school_version!=23 and not school:raise ValueError('School24 packaging requires explicit School deployment')
+    if school_version!=23 and not school:raise ValueError('School24/25 packaging requires explicit School deployment')
     conflicts=('base_bundle','refresh_fast','expected_fast_sha256','rtl_build','rtl_source_root',
             'usb_recovery_deployment','usb_closure_recovery_deployment','usb_package_recovery_deployment',
             'usb_package_entry2_deployment','usb_companion_reader_deployment')
@@ -69,8 +93,8 @@ def pack(args):
         sources=source_inputs(source_root)
         if source_inputs(other)!=sources:raise ValueError('School23/v2 initializer source inventory differs')
         data=copy.deepcopy(bundle.read_json(fast.prepared_path(PROFILE)))
-        if school_version==24 and data.get('checkpoint_binding') is not None:
-            raise ValueError('School24 prepared local-tool IPC continuation is not qualified; package the regular MM2 pair')
+        if school_version in (24,25) and data.get('checkpoint_binding') is not None:
+            raise ValueError('School24/25 prepared local-tool IPC continuation is not qualified; package the regular MM2 pair')
         if (data.get('schema')!='lemmasim-fast-prepared/1' or data.get('profile')!=PROFILE or
             data.get('profile_sha256')!=guest.sha(profile_path(PROFILE)) or data.get('sources')!=fast.sources(PROFILE) or
             data.get('cpu')!=fast.CPU or data.get('icount_shift')!=3):
@@ -78,7 +102,7 @@ def pack(args):
         for key in ('qemu','derivation'):guest.validate(data[key])
         fast.validate_checkpoint_binding(data)
         selected=selected_school;data['workloads']={};data.pop('guest_archive',None)
-        if school_version==24:data['school_notebook_version']=24
+        if school_version in (24,25):data['school_notebook_version']=school_version
         else:data.pop('school_notebook_version',None)
         data.pop('guest_source_root',None)
         for role in selected:
@@ -110,7 +134,7 @@ def pack(args):
             guest.verify_guest_build(base,selected[role],bundle.read_json(base/'build.json')['optimization'])
     out=args.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
     manifest={'schema':SCHEMA,'profile':PROFILE,'boot':'ELF-preload development',
-              'scope':(('audited School24 local-tool guest pair and exact QEMU source/runtime archive; regular MM2 only, prepared local-tool IPC continuation unqualified; packaging is not execution or physical qualification' if school_version==24 else 'audited School23/v2 guest pair and exact QEMU source/runtime archive; packaging is not execution or physical qualification') if school else 'unchanged fully audited ordinary0.14 guest pair and exact QEMU source/runtime archive; no RTL,checkpoint,realtime,physical or educational qualification'),
+              'scope':((f'audited School{school_version} local-tool guest pair and exact QEMU source/runtime archive; regular MM2 only, prepared local-tool IPC continuation unqualified; packaging is not execution or physical qualification' if school_version in (24,25) else 'audited School23/v2 guest pair and exact QEMU source/runtime archive; packaging is not execution or physical qualification') if school else 'unchanged fully audited ordinary0.14 guest pair and exact QEMU source/runtime archive; no RTL,checkpoint,realtime,physical or educational qualification'),
               'configurations':selected,'sources':sources,'source_commit':bundle.read_json(Path(data['workloads']['notebook']['provenance']['path']))['source_commit'],
               'host_controls':{name:guest.sha(guest.ROOT/name) for name in (SCHOOL_CONTROLS if school else LEGACY_CONTROLS)},
               'origins':{},'host_dependencies':{'qemu':bundle.host_dependencies(data['qemu']['path'])},'backends':{}}
@@ -170,9 +194,9 @@ def prepared_archive(directory,backend,workload,name=None):
     if m.get('schema')!=SCHEMA or m.get('profile')!=PROFILE or name not in (None,PROFILE) or backend!='qemu' or workload not in {**CONFIGURATIONS,**PARAMETERIZED,**SCHOOL}:
         raise ValueError('Multimodal native archive requires exact0.14 ordinary QEMU role')
     selected=m.get('configurations')
-    if selected not in (CONFIGURATIONS,{**CONFIGURATIONS,**PARAMETERIZED},school_pair(23),school_pair(24)) or workload not in selected:raise ValueError('Multimodal immutable deployment pair differs')
+    if selected not in (CONFIGURATIONS,{**CONFIGURATIONS,**PARAMETERIZED},school_pair(23),school_pair(24),school_pair(25)) or workload not in selected:raise ValueError('Multimodal immutable deployment pair differs')
     bundle.inventory(directory,m)
-    school=selected in (school_pair(23),school_pair(24))
+    school=selected in (school_pair(23),school_pair(24),school_pair(25))
     school_version=school_version_for_pair(selected) if school else None
     if school:
         from school_deployment import software_deployment_for
@@ -188,7 +212,7 @@ def prepared_archive(directory,backend,workload,name=None):
             (directory/'sample.lcp').stat().st_size!=4199):
             raise ValueError('Account-free sample descriptor differs from exact inventoried compiled sample')
     controls=m.get('host_controls')
-    required=SCHOOL_CONTROLS if school else LEGACY_CONTROLS
+    required=school_controls(directory,m,school_version) if school else LEGACY_CONTROLS
     if not isinstance(controls,dict) or set(controls)!=set(required):raise ValueError('Archived host control inventory differs')
     for path,h in controls.items():_origin_destination(m,guest.ROOT/path,h)
     root=directory/'source'

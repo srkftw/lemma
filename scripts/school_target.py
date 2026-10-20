@@ -28,8 +28,8 @@ def catalog(unit):
     version=version_for_configuration(configuration)
     v9='Lemma.Services.Arithmetic.ServerV9.'
     if any(source.startswith(v9) for source in names):
-        require(version==24 and key=='arithmetic','V9 executable escaped its exact School24 isolated role')
-    if version==24:
+        require(version in (24,25) and key=='arithmetic','V9 executable escaped its exact School24/25 isolated role')
+    if version in (24,25):
         v8='Lemma.Services.Arithmetic.ServerV8.';v7='Lemma.Services.Arithmetic.ServerV7.'
         if any(source.startswith((v7,v8)) for source in names):
             require(key=='arithmetic','borrowed arithmetic executable escaped its isolated role')
@@ -174,16 +174,20 @@ def semantics(ir,unit):
         require(owner in rows and target in rows,'missing semantic edge '+owner+' -> '+target)
         return _local_call_arguments(_ir_definition_body(ir,rows[owner]['symbol']),rows[target]['symbol'])
     n='Lemma.Applications.Notebook.';q='Lemma.Courses.SchoolSubmission.';p='Lemma.Courses.PackageInstaller.'
-    edges=[];warm=None;reduction=None
+    edges=[];warm=None;reduction=None;stream=None
     if key=='notebook':
         version=version_for_configuration(unit['configuration']);root=user_roots_for(unit['configuration'])['notebook'][0]
         edges=[(root,n+'mainMultimodalConfigured'),(n+'multimodalStep',n+'schoolQueuePump'),(n+'schoolQueueInitialize',q+'initializeQueue'),(n+'schoolQueueInitialize',q+'restore'),(n+'schoolCancel',q+'cancel'),(n+'schoolQueuePump',q+'pump'),(n+'schoolQueuePump',q+'frontier'),(n+'issue',q+'suspend'),(n+'issue',q+'writerActive')]
-        mode=2 if version==24 else 1
+        mode={23:1,24:2,25:3}[version]
         require(calls(root,n+'mainMultimodalConfigured')==['i64 %arg0, i64 '+str(mode)],'School root must explicitly enable its exact queue/extension mode')
+        if n+'multimodalAdvanceInput' in rows:
+            from school_stream_target import source_root as stream_source,llvm_semantics as stream_llvm
+            stream={'source':stream_source(ROOT),'LLVM':stream_llvm(ir,rows,unit['configuration'])}
+        elif version==25:require(False,'School25 omitted its actual bounded capture/stream consumer')
         if n+'beginLocalReduction' in rows:
             from school_reduction_target import source_root,llvm_semantics
             reduction={'source':source_root(ROOT),'LLVM':llvm_semantics(ir,rows,key)}
-        elif version==24:require(False,'School24 omitted the actual local-tool consumer')
+        elif version in (24,25):require(False,'School24 omitted the actual local-tool consumer')
         if n+'schoolSendSource' in rows:
             warm=warm_send_semantics(ir,rows)
             edges += [(n+'multimodalStep',n+'multimodalPumpTutor'),(n+'multimodalPumpTutor',n+'multimodalControl'),(n+'multimodalControl',n+'schoolSend'),(n+'schoolSend',n+'schoolSendAttempt'),(n+'schoolSend',n+'schoolQueueFailure'),(n+'schoolSendAttempt',q+'start'),(n+'schoolSendAttempt',q+'retry'),(n+'schoolSendAttempt',n+'schoolSendSource'),(n+'schoolSendAttempt',n+'schoolWorkKind'),(n+'schoolSendSource','Lemma.Courses.PackageWorkspace.validate'),(n+'schoolSendSource','Lemma.Courses.PackageTarget.select'),(n+'schoolSendSource',n+'schoolSendSource.store')]
@@ -194,11 +198,11 @@ def semantics(ir,unit):
     elif key=='course':
         loops=unit.get('used_loops',[])
         require(len(loops)==1 and canonical(loops[0].get('callback',''))==p+'stepSelected','selected installer loop differs')
-    elif key=='arithmetic' and version_for_configuration(unit['configuration'])==24:
+    elif key=='arithmetic' and version_for_configuration(unit['configuration']) in (24,25):
         from school_reduction_target import source_root,llvm_semantics
         reduction={'source':source_root(ROOT),'LLVM':llvm_semantics(ir,rows,key)}
     for owner,target in edges:require(calls(owner,target),'omitted actual call edge '+owner+' -> '+target)
-    return {'role':key,'explicit_call_edges':edges,**({'warm_submission':warm} if warm is not None else {}),**({'local_reduction_source':reduction} if reduction is not None else {}),'scope':'complete genuine source/LLVM authority; connected UI execution remains separate'}
+    return {'role':key,'explicit_call_edges':edges,**({'warm_submission':warm} if warm is not None else {}),**({'local_reduction_source':reduction} if reduction is not None else {}),**({'school_stream_source':stream} if stream is not None else {}),'scope':'complete genuine source/LLVM authority; connected UI execution remains separate'}
 def authority(unit):
     from multimodal_target import digest
     key,_=catalog(unit)

@@ -487,6 +487,12 @@ def source_inputs(root: Path) -> dict[str, str]:
             required=root/relative
             if not required.is_file():raise Core0Error('Missing School24 local reduction contract: '+relative)
             if required not in inputs:inputs.append(required)
+        if ('lemma-school-console-stream/1' in school_registry or
+                (notebook.is_file() and 'def mainMultimodalSchoolV3' in notebook.read_text())):
+            for relative in ('docs/contracts/009-school-console-stream-v1.html','scripts/school_stream_target.py'):
+                required=root/relative
+                if not required.is_file():raise Core0Error('Missing School25 console stream dependency: '+relative)
+                inputs.append(required)
         authority=root/"tooling/school-target-authority.json"
         if authority.is_file():inputs.append(authority)
     inputs += sorted((root / "Lemma").rglob("*.lean"))

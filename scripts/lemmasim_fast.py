@@ -106,8 +106,11 @@ def validate_execution_binding(data):
 def validate_checkpoint_binding(data):
     # True selects the logical sidecar engine, not permission to export state.
     # The independent public admission check also requires the qualified flag.
-    if data.get('school_notebook_version')==24 and data.get('checkpoint_binding') is not None:
-        raise ValueError('School24 prepared local-tool IPC continuation is not qualified; use regular MM2 and durable cold recovery')
+    version=data.get('school_notebook_version',23)
+    from school_deployment import configuration_for
+    configuration_for(version,'notebook')
+    if version in (24,25) and data.get('checkpoint_binding') is not None:
+        raise ValueError(f'School{version} prepared local-tool IPC continuation is not qualified; use regular MM2 and durable cold recovery')
     if validate_execution_binding(data):return data.get('checkpoint_binding')==MM2_CHECKPOINT_BINDING
     binding=data.get('checkpoint_binding')
     if binding is None:return False
@@ -187,10 +190,10 @@ def workload_configurations(name,school_notebook_version=23):
     from school_deployment import configuration_for
     configuration_for(school_notebook_version,'notebook')
     selected=guest.configurations(name)
-    if school_notebook_version==24:
-        if name!='lemma-silicon-dev/0.14.0':raise ValueError('School24 Fast preparation requires0.14')
-        selected={**selected,'school-notebook':configuration_for(24,'notebook'),
-                  'school-initializer':configuration_for(24,'initialize')}
+    if school_notebook_version in (24,25):
+        if name!='lemma-silicon-dev/0.14.0':raise ValueError('School24/25 Fast preparation requires0.14')
+        selected={**selected,'school-notebook':configuration_for(school_notebook_version,'notebook'),
+                  'school-initializer':configuration_for(school_notebook_version,'initialize')}
     return selected
 
 
@@ -201,10 +204,10 @@ def build(args):
     version=getattr(args,'school_notebook_version',23)
     selected = workload_configurations(name,version)
     workload = args.workload or 'notebook'
-    if version==24 and (mm2_checkpoint_selected(name) or (logical2_selected(name) and not mm2_selected(name))):
-        raise ValueError('School24 prepared local-tool IPC continuation is not qualified; use regular MM2 and durable cold recovery')
-    if version==24 and workload not in ('school-notebook','school-initializer'):
-        raise ValueError('School24 preparation requires an explicit School workload')
+    if version in (24,25) and (mm2_checkpoint_selected(name) or (logical2_selected(name) and not mm2_selected(name))):
+        raise ValueError('School24/25 prepared local-tool IPC continuation is not qualified; use regular MM2 and durable cold recovery')
+    if version in (24,25) and workload not in ('school-notebook','school-initializer'):
+        raise ValueError('School24/25 preparation requires an explicit School workload')
     if workload not in selected:
         raise ValueError('Workload is not admitted by this binding')
     source_root = Path(getattr(args,'guest_source_root',None) or ROOT).resolve()
@@ -272,7 +275,7 @@ def build(args):
             'qemu':guest.identified(binary),'derivation':guest.identified(closure['derivation']),
             'sources':before,'cpu':CPU,'icount_shift':3,'workloads':{workload:entry},
             'boot':'ELF-preload development; QEMU reset-ROM handoff to identical Lean guest ELF and supplied DTB'}
-    if version==24:data['school_notebook_version']=24
+    if version in (24,25):data['school_notebook_version']=version
     if mm2_selected(name):
         data.update(execution_binding=MM2_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2')
         if mm2_checkpoint_selected(name):
@@ -331,8 +334,8 @@ def prepared(workload,name=None):
     data = json.loads(prepared_path(name).read_text())
     version=data.get('school_notebook_version',23)
     selected=workload_configurations(name,version)
-    if version==24 and workload not in ('school-notebook','school-initializer'):
-        raise ValueError('School24 preparation contains a non-School workload')
+    if version in (24,25) and workload not in ('school-notebook','school-initializer'):
+        raise ValueError('School24/25 preparation contains a non-School workload')
     if data.get('schema') != 'lemmasim-fast-prepared/1' or data.get('profile') != name or data.get('profile_sha256') != digest(profile_path(name)):
         raise ValueError('Unsupported/stale fast preparation')
     if data.get('sources') != sources(name) or data.get('cpu') != CPU or data.get('icount_shift') != 3:

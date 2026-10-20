@@ -127,9 +127,13 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
     """
     mm, notebook, backlog = map(_lean_without_comments, (multimodal_source, notebook_source, backlog_source))
     local_reduction=any(marker in notebook for marker in ('mainMultimodalSchool24','reductionEnabled','LocalReduction.','ClientV9.'))
+    stream_capture=any(marker in notebook for marker in ('mainMultimodalSchoolV3','schoolStreamFlag','multimodalAdvanceCaptured','multimodalIdleInput'))
     if local_reduction:
         from school_reduction_target import notebook_source as reduction_source
         reduction_source(notebook)
+    elif stream_capture:
+        from school_stream_target import notebook_source as stream_source
+        stream_source(notebook)
     compact = lambda value: ' '.join(value.split())
     def definition(source, name):
         matches = list(re.finditer(r'^(?:private )?def '+re.escape(name)+r'(?=\s|\()', source, re.M))
@@ -428,7 +432,8 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
         require(reset+' .bind (beginPackageRead '+str(identity)+' sequence)' in envelope,
                 'source school envelope inherited original reader CRC/node guards')
     tutor_route = ('.bind (if queueOwns = 0 then multimodalPumpTutor else .done 0 0)' if raw_capture else '.bind multimodalPumpTutor')
-    require('.bind multimodalPumpBar' in step and tutor_route in step and '.bind (drainMultimodalInput input)' in step and
+    input_route='else multimodalDrainInput input' if stream_capture else '.bind (drainMultimodalInput input)'
+    require('.bind multimodalPumpBar' in step and tutor_route in step and input_route in step and
             'else multimodalInputSample' in step, 'source idle/busy paths do not route new input/deferred redraw')
     drain = definition(notebook,'drainMultimodalInput')
     loss = ('if s = 175 then .bind (multimodalRawLoss 3)' if raw_capture else 'if s = 175 then .bind cancelBookmarkInput')
@@ -750,6 +755,39 @@ def authority(unit):
     return key, pin
 
 
+def ordinary_notebook_scratch_scalars(ir, unit, rows, *, optimized):
+    """Shared ordinary Notebook scratch addresses grant no controller action.
+
+    The historical main also uses the common deferred-save scratch window.
+    Admit only its two genuine pure address expressions; the ordinary complete
+    source, privilege, memory and object audits still apply independently.
+    """
+    from audit_core0 import _ir_definition_body
+    prefix='Lemma.User.Multimodal.'
+    require(unit.get('configuration')=='lemmasim-notebook' and unit.get('role')=='user' and
+            unit.get('image_key')=='notebook' and unit.get('image_id')==2 and
+            unit.get('contract_version')=='core0-user-v0.1' and unit.get('used_device_ops')==[] and
+            [(canonical(r.get('source','')),r.get('id'),r.get('args')) for r in unit.get('roots',[])]==
+            [('Lemma.Applications.Notebook.main',1,['u64'])],
+            'shared scratch scalars escaped the exact ordinary Notebook root/profile')
+    names={canonical(row.get('source','')):row for row in rows}
+    require(len(rows)==len(names)==2 and set(names)=={prefix+'records',prefix+'state'} and
+            all(row.get('args')==[] and row.get('effects')==[] for row in rows),
+            'ordinary Notebook acquired a Multimodal action or changed scalar catalog')
+    def body(name):
+        symbol=names[prefix+name].get('symbol','')
+        require(re.search(r'^define (?:noundef )?i64 @'+re.escape(symbol)+r'\(\)',ir,re.M),
+                'ordinary scratch scalar signature differs')
+        return ' '.join(_ir_definition_body(ir,symbol).split())
+    require(body('records')=='entry: ret i64 3407872','ordinary scratch records address/body differs')
+    variable=r'%[A-Za-z0-9_.$-]+'
+    state=body('state');record=re.escape(names[prefix+'records']['symbol'])
+    expression=(r'entry: ('+variable+r') = call i64 @'+record+r'\(\) ('+variable+
+                r') = add i64 \1, 2048 ret i64 \2')
+    require(re.fullmatch(expression,state) or (optimized and state=='entry: ret i64 3409920'),
+            'ordinary scratch state address/body differs')
+
+
 def validate(ir, unit, *, optimized):
     from school_target import selected as school_selected, validate as school_validate
     if school_selected(unit):return school_validate(ir,unit,optimized=optimized)
@@ -763,9 +801,14 @@ def validate(ir, unit, *, optimized):
                         PREFIX+'constructCourseMultimodal','Lemma.Kernel.Process.initMultimodal',
                         'Lemma.Kernel.Memory.AddressSpace.addMultimodalAliases',
                         *(PREFIX+name for name in BOOT_ROOTS.values())}
-        require(not any(canonical(r.get('source','')).startswith(hardware_prefixes) or
-                        canonical(r.get('source','')) in hardware_roots for r in unit.get('functions', [])),
-                'multimodal source escaped its exact deployment')
+        escaped=[r for r in unit.get('functions',[]) if
+                 canonical(r.get('source','')).startswith(hardware_prefixes) or
+                 canonical(r.get('source','')) in hardware_roots]
+        if escaped:
+            require({canonical(r.get('source','')) for r in escaped}=={
+                    'Lemma.User.Multimodal.records','Lemma.User.Multimodal.state'},
+                    'multimodal source escaped its exact deployment')
+            ordinary_notebook_scratch_scalars(ir,unit,escaped,optimized=optimized)
         return None
     key, pin = authority(unit)
     phase = 'post' if optimized else 'pre'

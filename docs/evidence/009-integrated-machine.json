@@ -2701,5 +2701,66 @@
       "exact_original_guests_sources_QEMU_derivation": true,
       "scope": "Normal strict MM2 explicit-pair packaging reads unchanged current prepared runtime, with mandatory equality to sealed original SDK before/after. Base flag remains rejected as required by existing MM2 guard. No new compilation, Run, ordinary workflow or School24 continuation claim."
     }
+  },
+  "school25_actual_production_admission": {
+    "status": "GENUINE_PAIR_AND_SOURCE_BODY_ADMISSION_PASS_SDK_AND_EXECUTION_PENDING",
+    "scope": "Explicit School25 software mode3 only. Exact Fast0.14 MM2 subset; full0.16 union and actual ordinary throughput/School consumption remain separate. New School24/25 continuation remains failclosed.",
+    "source": {
+      "count": 558,
+      "inventory_sha256": "12796ffffe6733081e9cf65f4e143c04144387f870fa2fffdaa5ee29820b56b3",
+      "archive": "build/task009/school25-source-a1/action-source",
+      "Notebook_sha256": "ae46039607e7bd4967fe72f0e226e7a6fb0b6f0acd4d2dec01b21e5152915615"
+    },
+    "metadata": {
+      "path": "build/task009/school25-metadata-admission-a1/result.json",
+      "sha256": "620b569fa143e98661f9226df20fe70b5b8d2c8af57182dee2cad3283f064caa"
+    },
+    "host_source_guards": {
+      "path": "build/task009/school25-host-admission-a1/result.json",
+      "sha256": "e4d4e856ca61f01559ba0c663e320460d0695cfc4fb5606d98092d4365f4919d"
+    },
+    "genuine_pair": {
+      "path": "build/task009/school25-bootstrap-a1/result.json",
+      "sha256": "7dac70e9ab61068b4866ee53c2b66408193d389bf38ef5962049b370bb0f6c7b"
+    },
+    "body_review": {
+      "path": "build/school/task009-school25-independent-role-review-a1/assessment.json",
+      "sha256": "41dd94d048ffd72d7e5da65ac69f3700f147d489bc0c115e5ce3cfdc83bf5077"
+    },
+    "emitted_operands_and_negatives": {
+      "path": "build/task009/school25-emitted-admission-a1/result.json",
+      "sha256": "78bdef98b299bffc852edb7c39384b041614d3cdb2119d7f52dddf85d298dfba"
+    },
+    "authority_promotion": {
+      "path": "build/task009/school25-body-candidates-a1/promotion.json",
+      "sha256": "89b1ca864d84c2d7c6eb04ba6ebae92215833930ef4a285ff21b76e4d69f3b12"
+    },
+    "actual_complete_body_validation": {
+      "path": "build/task009/school25-authority-admission-a2/admission-validation.json",
+      "sha256": "8296ff6dbacae5305847ee1e009149e38b914823dbb323cd803d851b4f661d3d"
+    },
+    "retained_observer_failure": {
+      "receipt": {
+        "path": "build/task009/school25-authority-admission-a1/admission-validation.json",
+        "sha256": "73d0cf17be8273ef0ca90c39df9109b9f3dec73084b85bca1acdd290e5eea559"
+      },
+      "cause": "Closed mutation observer selected a nonunique body string; successor mutates the uniquely named actual function span. No guest or compiler rerun."
+    },
+    "preserved_native_archives": {
+      "path": "build/task009/school25-retained-native-validation-a2/result.json",
+      "sha256": "fd8eda2a902bed04f2c3b6975279a08da63011687afd71a3a3c70b5c081f475a"
+    },
+    "ordinary_CI_scalar_gate": {
+      "path": "build/task009/ci-writing-ordinary-scratch-a1/result.json",
+      "sha256": "0912da9e513ed24c3c8a235d97f64cbe127747036c837843860207a0d1b7a52c"
+    },
+    "old_authority_values_unchanged": true,
+    "remaining": [
+      "maintained normalSDK build/audit/native/browser",
+      "actual ordinary25capture/S1/Save/School consumers",
+      "current23/24 body admission after shared source changes",
+      "full0.16 sameguest production and canonical execution",
+      "School24/25 pending localtool/S1 continuation cuts"
+    ]
   }
 }

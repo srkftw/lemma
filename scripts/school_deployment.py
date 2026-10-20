@@ -20,7 +20,12 @@ _CONFIGURATIONS={23:dict(zip(_ROLES,CONFIGURATIONS)),24:{
  'notebook':'lemmasim-silicon-school24-notebook',
  'initialize':'lemmasim-silicon-school24-initialize',
  'integrated':'lemmasim-silicon-integrated-school24-notebook',
- 'integrated-pcm':'lemmasim-silicon-integrated-pcm-school24-notebook'}}
+ 'integrated-pcm':'lemmasim-silicon-integrated-pcm-school24-notebook'},25:{
+ 'notebook':'lemmasim-silicon-school25-notebook',
+ 'initialize':'lemmasim-silicon-school25-initialize',
+ 'integrated':'lemmasim-silicon-integrated-school25-notebook',
+ 'integrated-pcm':'lemmasim-silicon-integrated-pcm-school25-notebook'}}
+VERSIONS=tuple(_CONFIGURATIONS)
 
 def configuration_for(version,role):
  if type(version) is not int or version not in _CONFIGURATIONS or role not in _ROLES:
@@ -38,16 +43,16 @@ def version_for_configuration(configuration):
 def user_roots_for(configuration):
  version=version_for_configuration(configuration)
  roots=dict(USER_ROOTS)
- if version==24:
-  roots['notebook']=('Lemma.Applications.Notebook.mainMultimodalSchool24',2,'core0-user-v0.2')
+ if version in (24,25):
+  roots['notebook']=('Lemma.Applications.Notebook.'+('mainMultimodalSchoolV3' if version==25 else 'mainMultimodalSchool24'),2,'core0-user-v0.2')
   roots['arithmetic']=('Lemma.Services.Arithmetic.ServerV9.main',3,'core0-user-v0.7')
  return roots
 
-ALL_CONFIGURATIONS=configurations_for(23)+configurations_for(24)
-ALL_FAST_CONFIGURATIONS=tuple(configuration_for(version,role) for version in (23,24) for role in ('notebook','initialize'))
-ALL_INTEGRATED_CONFIGURATIONS=tuple(configuration_for(version,role) for version in (23,24) for role in ('integrated','integrated-pcm'))
-ALL_PCM_CONFIGURATIONS=tuple(configuration_for(version,'integrated-pcm') for version in (23,24))
-ALL_BOOT_ROOTS={configuration_for(version,role):root for version in (23,24) for role,root in
+ALL_CONFIGURATIONS=tuple(configuration for version in VERSIONS for configuration in configurations_for(version))
+ALL_FAST_CONFIGURATIONS=tuple(configuration_for(version,role) for version in VERSIONS for role in ('notebook','initialize'))
+ALL_INTEGRATED_CONFIGURATIONS=tuple(configuration_for(version,role) for version in VERSIONS for role in ('integrated','integrated-pcm'))
+ALL_PCM_CONFIGURATIONS=tuple(configuration_for(version,'integrated-pcm') for version in VERSIONS)
+ALL_BOOT_ROOTS={configuration_for(version,role):root for version in VERSIONS for role,root in
  [('notebook','siliconMultimodalBoot'),('initialize','siliconMultimodalInitializeMedium')]}
 
 def software_deployment_for(configuration):
@@ -60,8 +65,10 @@ def software_deployment_for(configuration):
  'user_profiles':{'store':'core0-user-v0.2','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.7','course':'core0-user-v0.1'}}
  if configuration in ALL_INTEGRATED_CONFIGURATIONS:value['boot_image_contract']='lemma-product10-image-compatibility/1'
  if configuration in ALL_PCM_CONFIGURATIONS:value.update(contract_version='lemma-school-notebook-deployment/3',stream_contract='lemma-multimodal-converter/2',multimodal_service_version=3)
- if version==24:value.update(contract_version='lemma-school-notebook-deployment/4',
+ if version in (24,25):value.update(contract_version='lemma-school-notebook-deployment/4',
   extension_contract='lemma-school-exact-reduction-advisory/1',assistance_event_format=3)
+ if version==25:value.update(contract_version='lemma-school-notebook-deployment/5',
+  submission_stream_contract='lemma-school-console-stream/1')
  return value
 
 FAST_CONFIGURATIONS=(FAST,INITIALIZE)

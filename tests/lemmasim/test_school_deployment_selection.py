@@ -56,12 +56,107 @@ class SchoolDeploymentSelection(unittest.TestCase):
             self.assertEqual({key:roots[key] for key in ('store','course')},
                              {key:school.USER_ROOTS[key] for key in ('store','course')})
 
+
+    def test_stream_successor_changes_only_selected_notebook_and_software_contract(self):
+        expected=('lemmasim-silicon-school25-notebook','lemmasim-silicon-school25-initialize',
+                  'lemmasim-silicon-integrated-school25-notebook','lemmasim-silicon-integrated-pcm-school25-notebook')
+        self.assertEqual(school.configurations_for(25),expected)
+        for role,configuration in zip(('notebook','initialize','integrated','integrated-pcm'),expected):
+            prior=school.configuration_for(24,role);roots=school.user_roots_for(configuration)
+            self.assertEqual(roots['notebook'],('Lemma.Applications.Notebook.mainMultimodalSchoolV3',2,'core0-user-v0.2'))
+            self.assertEqual({k:v for k,v in roots.items() if k!='notebook'},
+                             {k:v for k,v in school.user_roots_for(prior).items() if k!='notebook'})
+            self.assertEqual(school.software_deployment_for(configuration),school.software_deployment_for(prior)|{
+                'contract_version':'lemma-school-notebook-deployment/5','notebook_version':25,
+                'submission_stream_contract':'lemma-school-console-stream/1'})
+            self.assertNotIn('submission_stream_contract',school.software_deployment_for(prior))
+
+    def test_stream_successor_cli_requires_explicit_pair_and_preserves_student_rights(self):
+        base={'school_notebook_version':25,'profile':'lemma-silicon-dev/0.14.0',
+              'command':'build','backend':'qemu','workload':'school-notebook',
+              'school_deployment':True,'engine':'qemu-tci','workbook':'school','mode':'student'}
+        with mock.patch.dict(os.environ,{},clear=True):
+            for command in ('build','native-bundle-build','browser-build'):
+                args=SimpleNamespace(**(base|{'command':command}));cli.select_school_notebook_version(args)
+                self.assertEqual(args.mode,'student');self.assertEqual(dict(os.environ),{})
+            for change in ({'profile':'lemma-silicon-dev/0.16.0'}, {'backend':'rtl'},
+                           {'workload':'notebook'}, {'command':'native-bundle-build','school_deployment':False},
+                           {'command':'browser-build','workbook':'ordinary'}, {'command':'browser-build','engine':'rtl'},
+                           {'checkpoint_binding':'native-mm2-logical2'}, {'checkpoint_binding':'native-logical2'}):
+                with self.subTest(change=change),self.assertRaises(cli.Failure):
+                    cli.select_school_notebook_version(SimpleNamespace(**(base|change)))
+                self.assertEqual(dict(os.environ),{})
+        prepared=fast.workload_configurations('lemma-silicon-dev/0.14.0',25)
+        self.assertEqual(prepared['school-notebook'],school.configuration_for(25,'notebook'))
+        self.assertEqual(prepared['school-initializer'],school.configuration_for(25,'initialize'))
+        with self.assertRaises(ValueError):fast.workload_configurations('lemma-silicon-dev/0.16.0',25)
+        for selected in (native.school_pair(25)|{'initializer':school.configuration_for(24,'initialize')},
+                         native.school_pair(24)|{'notebook':school.configuration_for(25,'notebook')}):
+            with self.assertRaises(ValueError):native.school_version_for_pair(selected)
+
+    def test_stream_ready_requires_all_five_actual_startup_fields_only_for25(self):
+        from check_integrated_boot import school_transport_ready
+        exact=(0x740,1,96,230,256)
+        for role in ('integrated','integrated-pcm'):
+            configuration=school.configuration_for(25,role)
+            self.assertFalse(school_transport_ready(configuration,[]))
+            for column in range(5):
+                changed=list(exact);changed[column]+=1
+                self.assertFalse(school_transport_ready(configuration,[tuple(changed)]))
+            self.assertTrue(school_transport_ready(configuration,[exact]))
+            for version in (23,24):self.assertTrue(school_transport_ready(school.configuration_for(version,role),[]))
+
+
+    def test_native_controls_bind_wire_import_and_preserve_old_archives(self):
+        import hashlib,tempfile
+        with tempfile.TemporaryDirectory() as name:
+            directory=Path(name);path=directory/'controls/scripts/lemmasim_school_service.py'
+            path.parent.mkdir(parents=True)
+            def manifest(code,controls):
+                path.write_text(code);digest=hashlib.sha256(path.read_bytes()).hexdigest()
+                service='scripts/lemmasim_school_service.py'
+                value={'schema':native.SCHEMA,'host_controls':{key:'0'*64 for key in controls},
+                       'origins':{str(ROOT/service):{digest:str(path.relative_to(directory))}},
+                       'files':{str(path.relative_to(directory)):{'sha256':digest}}}
+                value['host_controls'][service]=digest
+                return value
+            legacy=manifest('def frames(data): return data\n',native.SCHOOL_LEGACY_CONTROLS)
+            for version in (23,24):self.assertEqual(native.school_controls(directory,legacy,version),native.SCHOOL_LEGACY_CONTROLS)
+            self.assertEqual(native.school_controls(directory,legacy,25),native.SCHOOL_CONTROLS)
+            for statement in ('from school_wire import frames','import school_wire as decoder'):
+                current=manifest(statement+'\n',native.SCHOOL_CONTROLS)
+                for version in school.VERSIONS:self.assertEqual(native.school_controls(directory,current,version),native.SCHOOL_CONTROLS)
+                path.write_text('def frames(data): return data\n')
+                with self.assertRaisesRegex(ValueError,'bytes differ'):native.school_controls(directory,current,25)
+            malformed=manifest('from school_wire import (\n',native.SCHOOL_CONTROLS)
+            with self.assertRaisesRegex(ValueError,'imports are malformed'):native.school_controls(directory,malformed,25)
+
+
+    def test_stream_source_closure_requires_contract_and_observer_without_registry_downgrade(self):
+        import build_kernel
+        sources=build_kernel.source_inputs(ROOT)
+        names=('docs/contracts/009-school-console-stream-v1.html','scripts/school_stream_target.py')
+        original=Path.is_file
+        for name in names:
+            self.assertIn(name,sources)
+            with self.subTest(name=name),mock.patch.object(Path,'is_file',lambda p:False if p==ROOT/name else original(p)):
+                with self.assertRaisesRegex(Core0Error,'Missing School25 console stream dependency'):
+                    build_kernel.source_inputs(ROOT)
+        read=Path.read_text;registry=ROOT/'scripts/school_deployment.py'
+        def no_marker(path,*args,**kwargs):
+            value=read(path,*args,**kwargs)
+            return value.replace('lemma-school-console-stream/1','removed-stream-marker') if path==registry else value
+        with mock.patch.object(Path,'read_text',no_marker):
+            with mock.patch.object(Path,'is_file',lambda p:False if p==ROOT/names[0] else original(p)):
+                with self.assertRaisesRegex(Core0Error,'Missing School25 console stream dependency'):
+                    build_kernel.source_inputs(ROOT)
+
     def test_unknown_or_coerced_selection_rejects(self):
-        for version in (None,True,23.0,'24',22,25,object()):
+        for version in (None,True,23.0,'24',22,26,object()):
             with self.subTest(version=version),self.assertRaises(ValueError):school.configuration_for(version,'notebook')
         for role in ('initializer','arithmetic','main','../notebook',None):
             with self.subTest(role=role),self.assertRaises(ValueError):school.configuration_for(24,role)
-        for configuration in ('lemmasim-silicon-school25-notebook',school.FAST+'-other','Lemma.Services.Arithmetic.ServerV9.main',None):
+        for configuration in ('lemmasim-silicon-school26-notebook',school.FAST+'-other','Lemma.Services.Arithmetic.ServerV9.main',None):
             with self.subTest(configuration=configuration),self.assertRaises(ValueError):school.user_roots_for(configuration)
 
     def test_returned_roots_cannot_change_shared_authority(self):
@@ -73,7 +168,7 @@ class SchoolDeploymentSelection(unittest.TestCase):
     def test_integrated_ready_requires_actual_school_queue_for_both_versions(self):
         from check_integrated_boot import school_queue_ready
         ready=[(0x47c,15,8,9,0),(0x420,0,0,0,0)]
-        for version in (23,24):
+        for version in school.VERSIONS:
             for role in ('integrated','integrated-pcm'):
                 configuration=school.configuration_for(version,role)
                 self.assertFalse(school_queue_ready(configuration,ready))
@@ -100,7 +195,7 @@ class SchoolDeploymentSelection(unittest.TestCase):
         from closure_deployment import software_deployment_for as closure_software
         from course_await_deployment import software_deployment_for as await_software
         from managed_records import recovery_store_profile_allowed,contract
-        for version in (23,24):
+        for version in school.VERSIONS:
             for configuration in school.configurations_for(version):
                 expected=school.software_deployment_for(configuration)
                 self.assertEqual(configuration_profile(configuration),expected['silicon_profile'])
@@ -114,7 +209,7 @@ class SchoolDeploymentSelection(unittest.TestCase):
                 with self.assertRaises(Core0Error):contract(changed)
 
     def test_native_pair_rejects_mixed_version_or_arbitrary_role(self):
-        for version in (23,24):
+        for version in school.VERSIONS:
             self.assertEqual(native.school_version_for_pair(native.school_pair(version)),version)
         for selected in (native.school_pair(24)|{'initializer':school.INITIALIZE},
                          native.school_pair(23)|{'arithmetic':'arbitrary'},
@@ -142,10 +237,14 @@ class SchoolDeploymentSelection(unittest.TestCase):
 
     def test_successor_cannot_inherit_legacy_checkpoint_admission(self):
         # Reject before loading any runtime or validating a candidate medium.
-        for binding in (fast.MM2_CHECKPOINT_BINDING,fast.LOGICAL2_BINDING):
-            with self.subTest(binding=binding),self.assertRaisesRegex(ValueError,'local-tool IPC continuation'):
-                fast.validate_checkpoint_binding({'school_notebook_version':24,'checkpoint_binding':binding})
-        self.assertFalse(fast.validate_checkpoint_binding({'school_notebook_version':24}))
+        for version in (24,25):
+            for binding in (fast.MM2_CHECKPOINT_BINDING,fast.LOGICAL2_BINDING):
+                with self.subTest(version=version,binding=binding),self.assertRaisesRegex(ValueError,'local-tool IPC continuation'):
+                    fast.validate_checkpoint_binding({'school_notebook_version':version,'checkpoint_binding':binding})
+            self.assertFalse(fast.validate_checkpoint_binding({'school_notebook_version':version}))
+        for version in (None,True,25.0,'25',26):
+            with self.subTest(version=version),self.assertRaises(ValueError):
+                fast.validate_checkpoint_binding({'school_notebook_version':version})
 
     def test_preparation_selects_only_complete_versioned_pair(self):
         legacy=fast.workload_configurations('lemma-silicon-dev/0.14.0')
@@ -183,7 +282,7 @@ class SchoolDeploymentSelection(unittest.TestCase):
                'ReductionV1.calculate','ProtocolV7.reply','ProtocolV7.validateRequest','ProtocolV8.reply']
         rows=[{'source':'Lemma.Services.Arithmetic.'+name,'symbol':'symbol'+str(i)} for i,name in enumerate(names)]
         rows.append({'source':'Lemma.Multimodal.Parameterized.evaluate','symbol':'checker'})
-        for configuration in school.configurations_for(24):
+        for configuration in school.configurations_for(24)+school.configurations_for(25):
             unit={'configuration':configuration,'software_deployment':school.software_deployment_for(configuration),
                   'role':'user','image_key':'arithmetic','image_id':3,'contract_version':'core0-user-v0.7',
                   'functions':rows,'roots':[{'source':'Lemma.Services.Arithmetic.ServerV9.main','id':1,'args':['u64']}],
