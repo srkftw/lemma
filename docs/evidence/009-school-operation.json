@@ -1254,5 +1254,23 @@
     "fork_publications": 5,
     "seconds": 3.0646431089844555,
     "scope": "Maintained operator local commands preserve actual guest attempt, delivery and teacher judgment in backup. Independent definition fork contains only5publication rows, independent identity/storage/inodes, excludes all real learner/admission/attempt/assessment/private history. No operational-restore/coldguest/physical-loss claim."
+  },
+  "generation13_ordinary_terminal": {
+    "result": {
+      "path": "build/school/task009-connected-a2/generation13-ordinary-terminal.json",
+      "sha256": "f930b6ce2ae1dc3e94ead392db719043d79deb016188a778e2c5c517e6457e76"
+    },
+    "scope": "Original04:02:52.140149UTC deadline terminal; ownedPID226676gone,49 acknowledgedrows and priorhistoryprefix unchanged; no deadlineextension."
+  },
+  "generation14_ordinary_readiness": {
+    "budget": {
+      "path": "build/school/task009-connected-a2/ordinary-campaign-budget-a7.json",
+      "sha256": "4f0a9011851ad648ccb5e5a162db0229793e3e8e1959fbd5017e44dd02ccce7e"
+    },
+    "result": {
+      "path": "build/school/task009-connected-a2/generation14-ordinary-ready.json",
+      "sha256": "0ab1adf8ca19e0d0e886969a1a2d8b59dcd5b34aca62203be8e55302cb9308b3"
+    },
+    "scope": "Separate3600second generation14 execution after originalgen13terminal, deadline05:02:57.607961UTC; samequalified61input hostedproducer, all49records intact,3protectedprincipals authorized; currentguestmustfreshASK/JOIN."
   }
 }
