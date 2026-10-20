@@ -267,14 +267,14 @@ def admit(directory):
     require(current.startswith(original),'promoted preparation bytes differ from actual producer')
     tail=ast.parse(current[len(original):]).body
     names={'JOINT_GEOMETRY_SHA','JOINT_PREPARE_SHA','JOINT_READBACK_SHA','JOINT_GDS_SHA','JOINT_NWELL_SHA'}
-    require(len(tail)==8,'only five literal pins and three reviewed consumer definitions may extend original preparation')
+    require(len(tail)==9,'only five literal pins and four reviewed consumer definitions may extend original preparation')
     seen=set()
     for node in tail:
         if isinstance(node,ast.Assign):
             require(len(node.targets)==1 and isinstance(node.targets[0],ast.Name)and node.targets[0].id in names and
                     isinstance(node.value,ast.Constant)and type(node.value.value)is str,'unreviewed top-level preparation extension')
             seen.add(node.targets[0].id)
-        else:require(isinstance(node,ast.FunctionDef)and node.name in('admit','assess','require_recipe')and
+        else:require(isinstance(node,ast.FunctionDef)and node.name in('admit','assess','completed_route_inputs','require_recipe')and
                      not node.decorator_list and not node.args.defaults and all(x is None or isinstance(x,ast.Constant)and x.value is None for x in node.args.kw_defaults),
                      'unreviewed preparation consumer definition')
     require(seen==names,'literal qualification identities missing')
@@ -330,7 +330,7 @@ def assess(source,geometry,lib,output,*,fixed_geometry=None):
     require({k:v for k,v in after[1].items()if k not in fills and k not in added}=={k:v for k,v in before[1].items()if k not in oldfills}and
             after[2:]==before[2:],'old sites/master/668ports/nativePG/OBS changed')
     require(snapshot(ref.getChip().getBlock())==after,'routing changed fixed qualified joint sites/pins/spacers')
-    native=master_library_relation(old,new,Path(output).parent/'joint-master-library')
+    native=master_library_relation(old,new,Path(output).parent/(Path(output).stem+'-joint-master-library'))
     r={'status':'PASS_EXACT_JOINT_DECODE_HOLD_FIXED_ENDPOINTS_MASTER_PADDING_SPACERS','source_ODB_sha256':SOURCE_SHA,
         'geometry_ODB_sha256':sha(geometry),'fixed_geometry_ODB_sha256':JOINT_GEOMETRY_SHA,'old_functional_and_macro_instances':9039,
         'old_functional_cells_moved':0,'new_original_buf8':2,'new_original_delaycells':8,'original_spacers':40241,'updated_spacers':40229,
@@ -341,7 +341,48 @@ def assess(source,geometry,lib,output,*,fixed_geometry=None):
     Path(output).write_text(json.dumps(r,indent=2)+'\n');return r
 
 
+def completed_route_inputs(directory):
+    """Admit only the exact completed route rejected by the output collision."""
+    directory=directory.resolve();receipt=directory/'result.json'
+    require(sha(receipt)=='ae92616047d923b7091f06c92520a8f77f184a88e7f2d4b1f704726629e826bd',
+            'exact failed joint-route producer required')
+    result=json.loads(receipt.read_text())
+    require(result['status']=='FAIL'and result['source_seal_equal']and
+            result.get('error')=="CommandFailure('Command exited 1: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-joint-hold-decode-route-a3/padded-hold-endpoints.log')"and
+            sha(directory/'routed.odb')=='508127ff1be74773320cf0e59d2a6f65a90a7a1b4a3db39d6c8c70b632fd1943'and
+            (directory/'router-drc-count.txt').read_text().strip()=='0'and
+            'FileExistsError: [Errno 17] File exists:' in(directory/'padded-hold-endpoints.log').read_text()and
+            "joint-master-library'"in(directory/'padded-hold-endpoints.log').read_text(),
+            'only exact completed zero-marker output-collision failure may continue')
+    inputs=[receipt,directory/'padded-hold-endpoints.log'];historical=[]
+    artifact=directory/'padded-hold-preparation.json'
+    require(json.loads(artifact.read_text())==result['padded_hold_preparation']and
+            result['padded_hold_preparation']['geometry_ODB_sha256']==JOINT_GEOMETRY_SHA,
+            'original exact fixed-source preparation component changed')
+    inputs.append(artifact)
+    for name,digest in result['source_inputs'].items():
+        path=Path(name)
+        if path.is_file()and sha(path)==digest:inputs.append(path);continue
+        require(path in(ROOT/'scripts/silicon_pen_physical.py',ROOT/'scripts/silicon_hold_decode.py'),
+                'original physical/tool/model input changed')
+        archive=directory/'source-archive'/path.relative_to(ROOT)
+        require(sha(archive)==digest,'exact failed observer source not retained')
+        inputs.append(archive);historical.append({'path':name,'original_sha256':digest,'archive':str(archive)})
+    require((directory/'post-eco-unrouted.v').read_bytes()==(directory/'routed.v').read_bytes(),
+            'routing changed actual physical/functional netlist')
+    for stage in('before-route','after-route'):
+        power=directory/('power-grid-'+stage+'.json')
+        require(json.loads(power.read_text())==result['core_power_grid'][stage],
+                'original actual power-grid component changed')
+        inputs.append(power)
+    return {'status':'ADMITTED_EXACT_COMPLETED_JOINT_ROUTE_NOT_A_LATE_PRODUCER_PASS',
+            'original_failure':str(receipt),'ODB_sha256':sha(directory/'routed.odb'),
+            'scope':'Completed routing only reused; fresh fixed/master relation, native420/vias/3RC/all9 required'},inputs,historical
+
+
 def require_recipe(args):
+    require(not getattr(args,'completed_hold_decode_route_from',None)or getattr(args,'hold_decode_from',None),
+            'completed joint assessment requires exact joint source recipe')
     if not getattr(args,'hold_decode_from',None):return
     require(args.routed_eco_from and args.clock_min_routing_layer=='Metal3'and args.detail_route_iterations==8 and
             args.host_memory_gib==6 and not getattr(args,'selected_implementation',False)and

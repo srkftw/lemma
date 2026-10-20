@@ -9249,5 +9249,664 @@
         "sha256": "97b971183925e3e01ae4a996ecd7f8521c30e84da804e866b0d3cab1844c3965"
       }
     }
+  },
+  "joint_read_decode_hold_precursor": {
+    "status": "ASSESSED_UNSELECTED_JOINT_ROUTE_ALL9_STILL_FAIL",
+    "consumer": "scripts/silicon_pen_physical.py --hold-decode-from build/silicon/task009-joint-hold-decode-preflight-a1 --routed-eco-from build/silicon/task009-two-load-route-a2 --clock-min-routing-layer Metal3 --detail-route-iterations 8",
+    "selected_physical_lock_unchanged": "0.6.0/6c09be7b08710004d3045a843edf5e2e3f579ee6614567f4d1357d38d46812ec",
+    "source_ODB": "8bc1121b7e62f022a4f60819f74618fb5e5410bf89817a454ea46c31dcc92bf6",
+    "prepared_ODB": "cf942d361ca31d36fa11e3f7906d47a03f7cd1ed74a6e3bae9bfd2eb3cf6c41c",
+    "measured_causes": [
+      {
+        "driver": "_06323_/Y",
+        "master": "sg13g2_nor3_2",
+        "net": "_01245_",
+        "actual_nominal_wire_pF": 0.666955,
+        "slow_max_stage_ns": 4.994335
+      },
+      {
+        "driver": "_06651_/Y",
+        "master": "sg13g2_a21oi_2",
+        "net": "rdata[6]",
+        "actual_nominal_wire_pF": 0.705495,
+        "unchanged_output_load_pF": 0.006,
+        "slow_max_stage_ns": 3.487602
+      }
+    ],
+    "correction": {
+      "original_buf8_count": 2,
+      "original_dlygate4sd3_count": 8,
+      "DIN_endpoints": [
+        "pen_sram_lane0/A_DIN[49]",
+        "pen_sram_lane0/A_DIN[50]",
+        "pen_sram_lane0/A_DIN[53]",
+        "pen_sram_lane1/A_DIN[17]",
+        "pen_sram_lane1/A_DIN[23]",
+        "pen_sram_lane1/A_DIN[24]",
+        "pen_sram_lane1/A_DIN[26]",
+        "pen_sram_lane2/A_DIN[39]"
+      ],
+      "minimum_source_setup_ns": 8.533502,
+      "excluded_negative_setup_endpoint": "pen_sram_lane0/A_ADDR[0]",
+      "excluded_setup_ns": -1.439578,
+      "full_clock_ns": 10,
+      "old_functional_macro_sites_unchanged": 9039,
+      "new_functional_macro_total": 9049,
+      "physical_spacers": 40229,
+      "changed_spacer_rows_nm": [
+        7560,
+        83160,
+        90720,
+        241920,
+        340200,
+        729540
+      ],
+      "functional_padding_nm": 960,
+      "native_PG_shapes": 99128,
+      "OBS": 18718,
+      "ports": 668,
+      "prior_delays_preserved": 33,
+      "BIST_bindings": 423,
+      "connected_PG_terminals": 98559,
+      "SRAM_PG_pins": 9
+    },
+    "fresh_components": [
+      {
+        "path": "build/silicon/task009-joint-hold-decode-preflight-a1/result.json",
+        "sha256": "4449eedb3d0044e15859c4c2d0067f7a81e8d688dd9ab1ca83613560ea149460",
+        "status": "PASS_PRIVATE_JOINT_TWO_DECODE_EIGHT_DIN_SOURCE_SITES_SPACERS_PG_FOURSTATE_NOT_ROUTED",
+        "seconds": 15.272130748955533,
+        "source_seal_equal": true
+      },
+      {
+        "path": "build/silicon/task009-joint-hold-decode-readback-a2/result.json",
+        "sha256": "84ee925b12ad652f6cc9d2826da1919a01946a8cf57af154fa23215a662e9579",
+        "status": "PASS_FRESH_JOINT_NATIVE_READBACK_WITH_COMPLETE_CURRENT_HELPER_INPUTS_NOT_PROCESS_OR_TIMING",
+        "seconds": 21.64683515485376,
+        "source_seal_equal": true
+      },
+      {
+        "path": "build/silicon/task009-joint-hold-decode-gds-a2/result.json",
+        "sha256": "2c8865cce528e666b10f8b66c3938257ca1825edaf4dfbd174cd42dfbba0a6e4",
+        "status": "PASS_JOINT_ORIGINAL_GDS_SOURCE_MASK_RELATION_NOT_PROCESS_OR_TIMING",
+        "seconds": 6.176731965970248,
+        "source_seal_equal": true
+      },
+      {
+        "path": "build/silicon/task009-joint-hold-decode-original-nwell-a1/result.json",
+        "sha256": "662684dc35e1a704b3cd60b1079639bc166f62f8df5d4c58d0e16257801f55ff",
+        "status": "PASS_SCOPED_ORIGINAL_NWELL_TABLE_ONLY_NOT_FULL_DRC",
+        "seconds": 31.92219832004048,
+        "source_seal_equal": true
+      },
+      {
+        "path": "build/silicon/task009-joint-hold-decode-maintained-prefix-a3/result.json",
+        "sha256": "c57fa7644dc35cc3be58d829dfc1062672b54a4f9bd5033ab81601503ad1260a",
+        "status": "PASS_MAINTAINED_JOINT_NATIVE_SOURCE_QUALIFIED_PREFIX_ONLY_NOT_ROUTED",
+        "seconds": 7.625117456074804,
+        "source_seal_equal": true
+      }
+    ],
+    "finite_models": {
+      "vectors": 256,
+      "four_state_comparisons": 768,
+      "actual_inverse_buffer_and_delay_controls": "both reject",
+      "meaning": "original Liberty/Verilog noninverting relation, not full transistor LVS"
+    },
+    "original_GDS_scope": {
+      "actual_instances": 49278,
+      "original_master_cells": 49,
+      "master_context": "all historical functional masters plus exact four original physical spacer GDS hashes",
+      "PG_and_port_masks": 20,
+      "all_mask_XORs_zero": true,
+      "regular_signal_wires": "deleted before fresh route; no routed mask claim"
+    },
+    "original_process_scope": {
+      "original_main_default_deep_NWell_table_findings": 0,
+      "meaning": "scoped unrouted-source table only, not full process DRC"
+    },
+    "retained_failures": [
+      {
+        "path": "build/silicon/task009-joint-hold-decode-readback-a1/result.json",
+        "seconds": 22.013249667,
+        "reason": "strict DEF byte check after deliberately reconnecting a wrong spacer supply; native writer terminal order changed; corrected observer exports before destructive controls and restores logical snapshot"
+      },
+      {
+        "path": "build/silicon/task009-joint-hold-decode-gds-a1/result.json",
+        "seconds": 2.486119302,
+        "reason": "historical selected master hash table lacked original fill_4; successor explicitly seals all four source spacer GDS cells"
+      },
+      {
+        "path": "build/silicon/task009-joint-hold-decode-maintained-prefix-a1/result.json",
+        "reason": "13.5GiB admission refused, no tools"
+      },
+      {
+        "path": "build/silicon/task009-joint-hold-decode-route-admission-a1/result.json",
+        "reason": "13.5GiB admission refused, no tools"
+      },
+      {
+        "path": "build/silicon/task009-joint-hold-decode-route-admission-a2/result.json",
+        "seconds": 7.723314658,
+        "reason": "real common preparation caller omitted strict fixed_geometry; no DRT; corrected exact caller4ddb84a and generated-call negative, actual native prefixa3 passes"
+      },
+      {
+        "path": "build/silicon/task009-joint-hold-decode-route-admission-a3/result.json",
+        "sha256": "6e9714a76ad138a5e20cd518812eff51450c6aff5eea61b3d8239d18029029df",
+        "seconds": 396.13143716705963,
+        "reason": "actual routing completed0markers/all3supplies; strict final native observer FileExistsError because initial and final master exports shared one directory; no extraction in original producer",
+        "source_seal_equal": true,
+        "owned_processes_reaped": true
+      }
+    ],
+    "historical_source_gap": "Initial private precursor omitted two transitive geometry helper inputs. Its enumerated-input seal is retained with that limit. Fresh native, GDS and original NWell components independently pin actual helpers; current long campaign seals all silicon helper files before tool invocation.",
+    "route_campaign": {
+      "original": {
+        "path": "build/silicon/task009-joint-hold-decode-route-admission-a3/result.json",
+        "sha256": "6e9714a76ad138a5e20cd518812eff51450c6aff5eea61b3d8239d18029029df",
+        "status": "FAIL",
+        "seconds": 396.13143716705963,
+        "source_seal_equal": true
+      },
+      "original_inner": {
+        "path": "build/silicon/task009-joint-hold-decode-route-a3/result.json",
+        "sha256": "ae92616047d923b7091f06c92520a8f77f184a88e7f2d4b1f704726629e826bd",
+        "status": "FAIL",
+        "seconds": 392.9090549540706,
+        "source_seal_equal": true
+      },
+      "original_deadline_UTC": "2026-10-20T21:59:57.796330+00:00",
+      "original_DRT": "completed0markers, reused only",
+      "original_peak_owned_RSS_bytes": 1854140416,
+      "distinct_completed_assessment": {
+        "path": "build/silicon/task009-joint-hold-decode-completed-assessment-a1/result.json",
+        "sha256": "d16c1638110b08cfaafbfbfeb4f1e7832852977886623d1d307d21929c74e7a0",
+        "status": "ASSESSED_REUSED_FAILED_JOINT_ROUTE_FRESH_NATIVE_3RC_ALL9_NOT_SELECTED_OR_CLOSURE",
+        "seconds": 40.10835033794865,
+        "source_seal_equal": true
+      },
+      "completed_native_and_3RC": {
+        "path": "build/silicon/task009-joint-hold-decode-completed-route-a1/result.json",
+        "sha256": "b6d708b69a9442b15b9158a3bd84a69e4bac40d48b1a09ca8f43f2c1ed2d3e46",
+        "status": "ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED",
+        "seconds": 21.087780663045123,
+        "source_seal_equal": true
+      },
+      "corners": {
+        "path": "build/silicon/task009-joint-hold-decode-completed-corners-a1/result.json",
+        "sha256": "da33554d5e763573dd1f71a4e48e71556ff8c3601f300ad08873f6a656d89758",
+        "status": "FAIL",
+        "seconds": 15.717815374024212,
+        "source_seal_equal": true
+      },
+      "endpoint_inventory": {
+        "path": "build/silicon/task009-joint-hold-decode-hold-inventory-a1/result.json",
+        "sha256": "2e1d10ab3403b79a517cdf4de7cd595b2030b004b45ba22928d8145dc187b4a3",
+        "status": "OBSERVED_COMPLETE_JOINT_HOLD_DECODE_ALL9_MIN_MAX_ENDPOINT_INVENTORY",
+        "seconds": 19.52723457594402,
+        "source_seal_equal": true
+      },
+      "closed_comparison": {
+        "path": "build/silicon/task009-joint-hold-decode-closed-comparison-a1/result.json",
+        "sha256": "2a2540d0ca27c775573930c20c8c4594d747787e9a18fd61bc5e0bbd69ca506c",
+        "status": "OBSERVED_CLOSED_JOINT_ROUTE_CORNER_ENDPOINT_AND_DRIVER_COMPARISON_NOT_SELECTED",
+        "seconds": 0.3531013410538435,
+        "source_seal_equal": true
+      },
+      "completed_assessment_bounds": {
+        "route_seconds": 0,
+        "whole_seconds": 180,
+        "native_seconds": 45,
+        "each_extraction_seconds": 60,
+        "AS_bytes": 6442450944,
+        "output_budget_bytes": 2147483648,
+        "combined_owned_RSS_bytes": 1073741824,
+        "launch_available_floor": 11811160064,
+        "continuing_host_available_floor": 8589934592
+      },
+      "completed_assessment_peak_owned_RSS_bytes": 995057664,
+      "original_route_reused_not_rerun": true,
+      "completed_route_ODB_sha256": "508127ff1be74773320cf0e59d2a6f65a90a7a1b4a3db39d6c8c70b632fd1943",
+      "native420": {
+        "status": "PASS_ACTUAL_NATIVE420NM_RECTANGLE_SUBSET_ONLY",
+        "scope": "Actual signal metal versus native PG: original420nm rectangle subset only.\n\nRun check() inside the pinned OpenROAD Python interpreter. Every DEF segment,\nvia and patch binds the actual native wire decoder; unknown grammar fails.\nNo process DRC/LVS/connectivity/IR/EM/timing qualification follows.\n",
+        "native_signal_nets_bound": 9715,
+        "native_wire_via_patch_shapes_checked": 170621,
+        "actual_DEF_RECT_patches_bound": 11211,
+        "unique_native_PG_metal_rectangles": 13418,
+        "violation_pairs": 0,
+        "first_200_violation_pairs": [],
+        "not_checked": [
+          "process DRC/EOL/area/density/antenna",
+          "full connected layout/netlist comparison",
+          "timing",
+          "IR/EM",
+          "pads/package/board"
+        ]
+      },
+      "intrinsic_via_subset": {
+        "actual_vias": 70702,
+        "original_fixed_definition_checks": 364,
+        "generated_definitions": 9,
+        "violations": 0
+      },
+      "fresh_corner_cases": [
+        {
+          "corner": "typical",
+          "matched_PVT": true,
+          "RC": "min",
+          "setup_ns": -2.633999,
+          "hold_ns": 0.04263,
+          "electrical_violations": 87,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "typical",
+          "matched_PVT": true,
+          "RC": "nom",
+          "setup_ns": -3.567344,
+          "hold_ns": 0.046289,
+          "electrical_violations": 168,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "typical",
+          "matched_PVT": true,
+          "RC": "max",
+          "setup_ns": -4.424241,
+          "hold_ns": 0.049554,
+          "electrical_violations": 238,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "slow",
+          "matched_PVT": true,
+          "RC": "min",
+          "setup_ns": -8.947375,
+          "hold_ns": 0.079534,
+          "electrical_violations": 242,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "slow",
+          "matched_PVT": true,
+          "RC": "nom",
+          "setup_ns": -10.723044,
+          "hold_ns": 0.188665,
+          "electrical_violations": 323,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "slow",
+          "matched_PVT": true,
+          "RC": "max",
+          "setup_ns": -12.282081,
+          "hold_ns": 0.226454,
+          "electrical_violations": 423,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "matched_PVT": false,
+          "RC": "min",
+          "setup_ns": 0.762311,
+          "hold_ns": -0.054479,
+          "electrical_violations": 58,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "matched_PVT": false,
+          "RC": "nom",
+          "setup_ns": 0.135018,
+          "hold_ns": -0.059413,
+          "electrical_violations": 97,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "matched_PVT": false,
+          "RC": "max",
+          "setup_ns": -0.445515,
+          "hold_ns": -0.11609,
+          "electrical_violations": 137,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        }
+      ],
+      "all9_closure": "FAIL",
+      "global_matched_PVT_hold": "all six available matched cases positive; mixed fast still fails",
+      "comparison_vs_selected0.6": {
+        "cases": [
+          {
+            "corner": "typical",
+            "RC": "min",
+            "matched_PVT": true,
+            "new_setup_ns": -2.633999,
+            "new_hold_ns": 0.04263,
+            "new_electrical_violations": 87,
+            "setup_delta_ns": 0.671036,
+            "hold_delta_ns": 0.034025,
+            "electrical_delta": -1
+          },
+          {
+            "corner": "typical",
+            "RC": "nom",
+            "matched_PVT": true,
+            "new_setup_ns": -3.567344,
+            "new_hold_ns": 0.046289,
+            "new_electrical_violations": 168,
+            "setup_delta_ns": 0.720335,
+            "hold_delta_ns": -0.011709,
+            "electrical_delta": -7
+          },
+          {
+            "corner": "typical",
+            "RC": "max",
+            "matched_PVT": true,
+            "new_setup_ns": -4.424241,
+            "new_hold_ns": 0.049554,
+            "new_electrical_violations": 238,
+            "setup_delta_ns": 0.800971,
+            "hold_delta_ns": -0.011828,
+            "electrical_delta": -36
+          },
+          {
+            "corner": "slow",
+            "RC": "min",
+            "matched_PVT": true,
+            "new_setup_ns": -8.947375,
+            "new_hold_ns": 0.079534,
+            "new_electrical_violations": 242,
+            "setup_delta_ns": 0.273424,
+            "hold_delta_ns": 0.077717,
+            "electrical_delta": -15
+          },
+          {
+            "corner": "slow",
+            "RC": "nom",
+            "matched_PVT": true,
+            "new_setup_ns": -10.723044,
+            "new_hold_ns": 0.188665,
+            "new_electrical_violations": 323,
+            "setup_delta_ns": -0.052207,
+            "hold_delta_ns": 0.089477,
+            "electrical_delta": -16
+          },
+          {
+            "corner": "slow",
+            "RC": "max",
+            "matched_PVT": true,
+            "new_setup_ns": -12.282081,
+            "new_hold_ns": 0.226454,
+            "new_electrical_violations": 423,
+            "setup_delta_ns": -0.348559,
+            "hold_delta_ns": 0.031406,
+            "electrical_delta": -4
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "min",
+            "matched_PVT": false,
+            "new_setup_ns": 0.762311,
+            "new_hold_ns": -0.054479,
+            "new_electrical_violations": 58,
+            "setup_delta_ns": 0.731139,
+            "hold_delta_ns": -6.7e-05,
+            "electrical_delta": -6
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "nom",
+            "matched_PVT": false,
+            "new_setup_ns": 0.135018,
+            "new_hold_ns": -0.059413,
+            "new_electrical_violations": 97,
+            "setup_delta_ns": 0.720577,
+            "hold_delta_ns": -0.00715,
+            "electrical_delta": 1
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "max",
+            "matched_PVT": false,
+            "new_setup_ns": -0.445515,
+            "new_hold_ns": -0.11609,
+            "new_electrical_violations": 137,
+            "setup_delta_ns": 0.726186,
+            "hold_delta_ns": -0.030729,
+            "electrical_delta": -6
+          }
+        ],
+        "setup_regressions": 2,
+        "hold_regressions": 5,
+        "electrical_count_regressions": 1
+      },
+      "comparison_vs_two_load_precursor": {
+        "cases": [
+          {
+            "corner": "typical",
+            "RC": "min",
+            "matched_PVT": true,
+            "new_setup_ns": -2.633999,
+            "new_hold_ns": 0.04263,
+            "new_electrical_violations": 87,
+            "setup_delta_ns": 0.876907,
+            "hold_delta_ns": 0.055605,
+            "electrical_delta": -4
+          },
+          {
+            "corner": "typical",
+            "RC": "nom",
+            "matched_PVT": true,
+            "new_setup_ns": -3.567344,
+            "new_hold_ns": 0.046289,
+            "new_electrical_violations": 168,
+            "setup_delta_ns": 0.918745,
+            "hold_delta_ns": 0.002111,
+            "electrical_delta": 25
+          },
+          {
+            "corner": "typical",
+            "RC": "max",
+            "matched_PVT": true,
+            "new_setup_ns": -4.424241,
+            "new_hold_ns": 0.049554,
+            "new_electrical_violations": 238,
+            "setup_delta_ns": 1.024016,
+            "hold_delta_ns": -0.006378,
+            "electrical_delta": 9
+          },
+          {
+            "corner": "slow",
+            "RC": "min",
+            "matched_PVT": true,
+            "new_setup_ns": -8.947375,
+            "new_hold_ns": 0.079534,
+            "new_electrical_violations": 242,
+            "setup_delta_ns": 0.104352,
+            "hold_delta_ns": 0.120283,
+            "electrical_delta": -6
+          },
+          {
+            "corner": "slow",
+            "RC": "nom",
+            "matched_PVT": true,
+            "new_setup_ns": -10.723044,
+            "new_hold_ns": 0.188665,
+            "new_electrical_violations": 323,
+            "setup_delta_ns": -0.124155,
+            "hold_delta_ns": 0.137249,
+            "electrical_delta": -7
+          },
+          {
+            "corner": "slow",
+            "RC": "max",
+            "matched_PVT": true,
+            "new_setup_ns": -12.282081,
+            "new_hold_ns": 0.226454,
+            "new_electrical_violations": 423,
+            "setup_delta_ns": -0.150905,
+            "hold_delta_ns": 0.100739,
+            "electrical_delta": 17
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "min",
+            "matched_PVT": false,
+            "new_setup_ns": 0.762311,
+            "new_hold_ns": -0.054479,
+            "new_electrical_violations": 58,
+            "setup_delta_ns": 0.871052,
+            "hold_delta_ns": -0.00479,
+            "electrical_delta": -5
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "nom",
+            "matched_PVT": false,
+            "new_setup_ns": 0.135018,
+            "new_hold_ns": -0.059413,
+            "new_electrical_violations": 97,
+            "setup_delta_ns": 0.857368,
+            "hold_delta_ns": 0.005272,
+            "electrical_delta": -3
+          },
+          {
+            "corner": "fast_mixed_temperature",
+            "RC": "max",
+            "matched_PVT": false,
+            "new_setup_ns": -0.445515,
+            "new_hold_ns": -0.11609,
+            "new_electrical_violations": 137,
+            "setup_delta_ns": 0.877049,
+            "hold_delta_ns": 0.019279,
+            "electrical_delta": 1
+          }
+        ],
+        "setup_regressions": 2,
+        "hold_regressions": 2,
+        "electrical_count_regressions": 4
+      },
+      "actual_nominal_wire_loads": {
+        "_01245_": {
+          "pF": "0.558931",
+          "actual_connections": [
+            "*I *17256:A I *D sg13g2_buf_8",
+            "*I *17255:A I *D sg13g2_buf_1",
+            "*I *39503:X O *D sg13g2_buf_8"
+          ]
+        },
+        "rdata[6]": {
+          "pF": "0.613063",
+          "actual_connections": [
+            "*P rdata[6] O",
+            "*I *39500:X O *D sg13g2_buf_8"
+          ]
+        },
+        "task009_hold_decode_launch_0_driver": {
+          "pF": "0.0061216",
+          "actual_connections": [
+            "*I *39503:A I *D sg13g2_buf_8",
+            "*I *10166:Y O *D sg13g2_nor3_2"
+          ]
+        },
+        "task009_hold_decode_launch_1_driver": {
+          "pF": "0.00347342",
+          "actual_connections": [
+            "*I *39500:A I *D sg13g2_buf_8",
+            "*I *10494:Y O *D sg13g2_a21oi_2"
+          ]
+        }
+      },
+      "same_endpoint_polarity_comparison": {
+        "original_worst_path": {
+          "startpoint": "addr[2] (input port clocked by core)",
+          "endpoint": "rdata[6] (output port clocked by core)",
+          "slack_ns": -12.131176,
+          "stages": {
+            "_06323_/Y": {
+              "stage_delay_ns": 4.994335,
+              "arrival_ns": 7.01596,
+              "transition": "^",
+              "master": "sg13g2_nor3_2"
+            },
+            "_06651_/Y": {
+              "stage_delay_ns": 3.487602,
+              "arrival_ns": 19.479427,
+              "transition": "^",
+              "master": "sg13g2_a21oi_2"
+            }
+          }
+        },
+        "new_through_path": {
+          "startpoint": "addr[3] (input port clocked by core)",
+          "endpoint": "rdata[6] (output port clocked by core)",
+          "slack_ns": -4.263079,
+          "stages": {
+            "_06651_/Y": {
+              "stage_delay_ns": 0.185533,
+              "arrival_ns": 11.299294,
+              "transition": "^",
+              "master": "sg13g2_a21oi_2"
+            },
+            "task009_hold_decode_launch_1/X": {
+              "stage_delay_ns": 0.369858,
+              "arrival_ns": 11.669152,
+              "transition": "^",
+              "master": "sg13g2_buf_8"
+            }
+          }
+        },
+        "scope": "Worst startpoint differs; same endpoint and driver transitions, no identical-input waveform claim"
+      },
+      "endpoint_summary": {
+        "negative_union": 155,
+        "classes": {
+          "NEW_SRAM": 1,
+          "OLD_CONTROL147": 137,
+          "OTHER": 17
+        },
+        "delayed31_min_hold_ns": 0.083826,
+        "delayed31_min_setup_ns": 7.444691,
+        "delayed8_min_hold_ns": 0.201077,
+        "delayed8_min_setup_ns": 7.634301,
+        "other_SRAM": [
+          {
+            "endpoint": "pen_sram_lane1/A_DIN[61]",
+            "worst_hold_ns": -0.017174,
+            "minimum_setup_ns": 8.931551,
+            "kind": "NEW_SRAM"
+          }
+        ]
+      },
+      "next_actual_global_path": {
+        "from": "contact_deadline[2] / _09693_/Q",
+        "to": "contact_deadline[20] / _09711_/D",
+        "corner": "slow/max",
+        "arrival_ns": 23.288294,
+        "required_ns": 11.006214,
+        "slack_ns": -12.282081,
+        "cause": "full-width watchdog comparison/reduction followed by accepted-edge/high-fanout payload-hold feedback",
+        "proof": "exact mapped source and actual extracted min/max path; no next RTL fix inferred"
+      },
+      "not_selected": true
+    },
+    "not_established": [
+      "full process DRC on completed routed geometry",
+      "full connected transistor LVS",
+      "matched-temperature fast standard-cell/SRAM model pair",
+      "timing/electrical closure: all9 stillFAIL",
+      "IR/EM and pad/package/board closure",
+      "fabrication/physical functional or safety qualification",
+      "educational benefit"
+    ]
   }
 }

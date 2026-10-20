@@ -232,6 +232,7 @@ def main():
     p.add_argument('--completed-power-grid-route-from', type=Path, help='Independently assess completed grid geometry rejected only by the exact-byte observer seeing the three required physical PG ports; never reroutes it')
     p.add_argument('--completed-fresh-grid-route-from', type=Path, help='Independently validate/finalize sealed fresh-grid geometry rejected after completed detail routing by the historical exact SRAM input-net-name guard; original-Lib buffered endpoint proof and actual PG/port checks remain mandatory; no reroute')
     p.add_argument('--completed-well-fill-route-from',type=Path,help='Separately assess exact completed zero-marker well/spacer route rejected by old byte guard; strict original-CDL serialization, fresh3RC/corners, no routing or oldproducerPASS')
+    p.add_argument('--completed-hold-decode-route-from',type=Path,help='Assess only the exact completed joint route rejected by the output-directory collision; fresh fixed/master/native420/vias/3RC, no reroute or late original PASS')
     p.add_argument('--routed-eco-from', type=Path, help='Repair the exact sealed routed nominal-SPEF producer, then route and extract the changed physical netlist afresh')
     p.add_argument('--core-power-grid', action='store_true', help='Add the real separate VDDlogic/VDDARRAY/VSS core grid after actual-SPEF repair and before fresh signal routing; requires a prior route without PG geometry')
     p.add_argument('--fresh-core-power-grid', action='store_true', help='Integrate a fresh qualified mapped candidate, all normal placement/clock/resizer phases and three-supply grid before first GRT; requires full PG geometry protection, no prior netlist or deferred ECO')
@@ -280,6 +281,9 @@ def main():
     if args.completed_well_fill_route_from:
         require(args.well_fill_from and not args.completed_eco_route_from,'completed well assessment requires its exact well-source recipe only')
         args.completed_eco_route_from=args.completed_well_fill_route_from
+    if args.completed_hold_decode_route_from:
+        require(args.hold_decode_from and not args.completed_eco_route_from,'completed joint assessment requires its exact joint source recipe only')
+        args.completed_eco_route_from=args.completed_hold_decode_route_from
     host_as_bytes, host_available_floor = host_memory_budget(args)
     if args.fresh_core_power_grid or args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or (args.slew_launch_buffer_from or args.decode_launch_buffer_from or args.well_fill_from or args.two_load_launch_from or args.hold_decode_from):
         args.core_power_grid = True
@@ -341,7 +345,7 @@ def main():
     out.mkdir(parents=True)
     start = time.monotonic()
     report = {'schema': 'lemma-pen-physical/3', 'status': 'FAIL', 'scope': __doc__,
-              'commands': [], 'bounds': {'whole_seconds': 600 if args.completed_well_fill_route_from else 30 if args.preferred_access_preflight_only else 240 if args.completed_fresh_grid_route_from else 1200, 'route_seconds': 0 if args.completed_well_fill_route_from or args.preferred_access_preflight_only or args.completed_fresh_grid_route_from else 900,
+              'commands': [], 'bounds': {'whole_seconds': 180 if args.completed_hold_decode_route_from else 600 if args.completed_well_fill_route_from else 30 if args.preferred_access_preflight_only else 240 if args.completed_fresh_grid_route_from else 1200, 'route_seconds': 0 if args.completed_hold_decode_route_from or args.completed_well_fill_route_from or args.preferred_access_preflight_only or args.completed_fresh_grid_route_from else 900,
               'extraction_each_seconds': 60, 'AS_bytes': host_as_bytes,
               'launch_available_bytes': host_available_floor, 'file_bytes': 1 << 30,
               'output_budget_bytes': 12 << 30},
@@ -376,7 +380,7 @@ def main():
         require(not (args.center_validation_cones and args.routed_eco_from), 'initial cone placement and retained-route ECO are separate questions')
         require(not args.defer_global_eco or (args.center_validation_cones and not args.routed_eco_from), 'deferred optimization is scoped to the aligned validation-placement question')
         require(not args.group_button_bus or not args.routed_eco_from, 'a new input-pin placement requires a fresh initial physical implementation')
-        require(not args.core_power_grid or args.completed_well_fill_route_from or args.fresh_core_power_grid or (args.routed_eco_from and not args.completed_eco_route_from), 'new power-grid integration requires its actual source mapping or route')
+        require(not args.core_power_grid or args.completed_hold_decode_route_from or args.completed_well_fill_route_from or args.fresh_core_power_grid or (args.routed_eco_from and not args.completed_eco_route_from), 'new power-grid integration requires its actual source mapping or route')
         require(not args.preserve_routed_netlist or args.core_power_grid, 'preserved-netlist rerouting is scoped only to real new power-grid integration')
         require(not args.completed_power_grid_route_from or (args.core_power_grid and args.preserve_routed_netlist and not args.completed_eco_route_from), 'completed grid assessment requires the exact core-grid interface question')
         require(not args.protect_sram_power_edges or (args.core_power_grid and args.preserve_routed_netlist and not args.completed_power_grid_route_from), 'PG edge clearance requires fresh routing against the actual preserved-netlist grid')
@@ -620,7 +624,14 @@ def main():
             require(args.routed_eco_from is not None, 'completed ECO requires its original source route')
             completed = args.completed_eco_route_from.resolve()
             producer = json.loads((completed / 'result.json').read_text())
-            if args.completed_well_fill_route_from:
+            if args.completed_hold_decode_route_from:
+                from silicon_hold_decode import completed_route_inputs
+                relation,closed_inputs,historical=completed_route_inputs(completed)
+                inputs+=closed_inputs
+                report['completed_joint_route_relation']=relation
+                report['padded_hold_preparation']=producer['padded_hold_preparation']
+                report['original_observer_archive_binding']=historical
+            elif args.completed_well_fill_route_from:
                 from silicon_well_fill_route import completed_route_inputs
                 relation,closed_inputs,historical=completed_route_inputs(completed)
                 inputs+=closed_inputs
@@ -637,12 +648,12 @@ def main():
             retained = ('routed.odb', 'routed.def', 'routed.v', 'routed.sdc', 'pre-eco.v', 'pre-eco.sdc',
                         'post-eco-unrouted.v', 'layout-summary.json', 'router-drc-count.txt', 'setup-summary.rpt',
                         'hold-summary.rpt', 'actual-pre-eco-setup.rpt', 'actual-pre-eco-hold.rpt')
-            if args.completed_well_fill_route_from:
+            if args.completed_well_fill_route_from or args.completed_hold_decode_route_from:
                 retained+=tuple(name for name in('setup.rpt','hold.rpt','unconstrained.rpt','constraints.rpt','electrical.rpt',
                     'global-setup.rpt','global-hold.rpt','global-setup-summary.rpt','global-hold-summary.rpt','global-electrical.rpt',
                     'power-grid-before-route.json','power-grid-after-route.json','power-connected.v',
                     'power-all-terminals-before-route.tsv','power-all-terminals-after-route.tsv',
-                    'power-macro-before-route.tsv','power-macro-after-route.tsv')if name not in retained)
+                    'power-macro-before-route.tsv','power-macro-after-route.tsv','layout.log','route.drc')if name not in retained)
             inputs += [completed / 'result.json'] + [completed / name for name in retained]
             for name in retained:
                 shutil.copyfile(completed / name, out / name)
@@ -686,7 +697,7 @@ def main():
             require(sha(target) == report['source_inputs'][str(source)], 'archived source differs')
             archived[str(relative)] = sha(target)
         (archive / 'manifest.json').write_text(json.dumps(archived, indent=2) + '\n')
-        if (args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or (args.slew_launch_buffer_from or args.decode_launch_buffer_from or args.well_fill_from or args.two_load_launch_from or args.hold_decode_from)) and not args.completed_well_fill_route_from:
+        if (args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or (args.slew_launch_buffer_from or args.decode_launch_buffer_from or args.well_fill_from or args.two_load_launch_from or args.hold_decode_from)) and not (args.completed_well_fill_route_from or args.completed_hold_decode_route_from):
             if args.acceptance_launch_buffer:
                 proof = out / 'launch-prepare.py'
                 proof.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\nfrom silicon_acceptance_launch import prepare\nprepare(Path({str(prior/"routed.odb")!r}), Path({str(std/"lib/sg13g2_stdcell_typ_1p20V_25C.lib")!r}), Path({str(out/"launch")!r}))\n')
