@@ -26,7 +26,7 @@ for(const operation of [2n,3n,8n,9n,10n]){
  assert.equal(guestCourseInstallState(encode(receipt+row(0xe301n,0n)+selected),0).state,'failed');
 }
 assert.equal(guestCourseInstallState(encode(receipt+row(1n,0n)+row(9n)),0),null);
-assert.equal(guestCourseInstallState(encode(receipt+row(9n)+row(1n,7n,0x20803n)),0).identity,'2051');
+assert.equal(guestCourseInstallState(encode(receipt+row(9n)+row(1n,7n,0x20323n)),0).identity,'803');
 assert.equal(guestCourseInstallState(encode(receipt+row(1n,7n).slice(0,-1)),0).sequence,'9007199254740993');
 """
         run=subprocess.run(['node','--input-type=module','-e',script],cwd=ROOT,capture_output=True,text=True,timeout=15)
