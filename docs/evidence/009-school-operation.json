@@ -1835,5 +1835,72 @@
       "scope": "Host/closed-transcript qualification; new distributed browser execution remains required."
     },
     "remaining": "Fix measured TCI stop-boundary discrepancy; run repaired warm guest/new UI in actual browser, retrieve feedback, demonstrate exact guest acknowledgement/retry and linked due response. Native, canonical RTL, physical and educational scopes remain separate."
+  },
+  "actual_native_warm_help_submission": {
+    "status": "PASS_ACTUAL_NATIVE_WARM_HELP_CHECK_SAVE_SUBMIT_TEACHER_FEEDBACK",
+    "result": "build/school/task009-native-warm-a1/terminal-result.json",
+    "resultSHA256": "7f226389375808d2677a170b9b8713d769e7ea7603b5d99d1d72f4181ea0bcfe",
+    "source": {
+      "bundle": "build/task009/school23-mm2-native-a4",
+      "manifestSHA256": "a323d365dffe9a3a88ffc8ba7cb27e653c7fd99a16c0087d25d8aa963a8c5365",
+      "source545InventorySHA256": "a79ae7b47f1a5bea37648486e15b88ab79b869d1526c1bd330276e93e49aa6d4",
+      "NotebookSHA256": "d4855f51de2a6c84e6f18af0c6892270f1999ee7cdc1e52d508b70d13d3cb756",
+      "allSourceInputsUnchanged": true,
+      "sourceInputCount": 545,
+      "hostControlsUnchanged": true,
+      "hostControlCount": 9,
+      "executionBinding": "lemma-silicon-fast-mm2-subset/0.1.0",
+      "freshVsReused": "Fresh genuine warm target exports and fresh520.676s strict4audit qualification; exactp81nativeQEMU/controller and61inputSchoolproducer reused. This campaign executes fresh; no C/compiler/runtime/circuit rebuild claimed."
+    },
+    "budget": {
+      "startedUTC": "2026-10-20T10:48:31.167842+00:00",
+      "originalDeadlineUTC": "2026-10-20T11:38:31.167842+00:00",
+      "terminalUTC": "2026-10-20T10:58:05.451350+00:00",
+      "actualWholeWallSeconds": 574.283508,
+      "hardWholeWallSeconds": 3000,
+      "actualWholeFunctionalUnits": 2800000004,
+      "hardWholeFunctionalUnits": 12000000000,
+      "streamPhaseUnits": 500000000,
+      "streamPhaseScope": "100M SEND observation plus400M drain; coarse fixed boundary, not measured earliest completion",
+      "ownedProcessGone": true,
+      "ownedPID": 429789,
+      "normalExitCode": 0
+    },
+    "attempt": "guest.138.6003579778261581857",
+    "schoolCommit": 146,
+    "artifact": "d908a2b024b99ea4858b4e899ac48b801319437015831f5bfc291634a79c668c",
+    "originalPublication": [
+      803,
+      2,
+      4
+    ],
+    "documentRevision": 6,
+    "actualGuest733": [
+      6003579778261581857,
+      146,
+      36,
+      3
+    ],
+    "finalExplicitSaved421": 37,
+    "teacherAssessment": 147,
+    "teacherAssessmentScope": "Scripted synthetic review; original exact fixed-goal verification remains separate.",
+    "learnerOrdinaryFeedbackRetrieved": true,
+    "originalHelpPage60001StillOpenAtSend": true,
+    "reloadedOriginalPublicationAfterHelp": false,
+    "rawRetention": {
+      "status": "PASS_FULL_RAW_NINE_WORD_RETENTION",
+      "sourceFrontier": 23,
+      "finalFrontier": 37,
+      "rawChunkBytes": 416,
+      "rawSampleBytes": 72,
+      "rawSamples": 4,
+      "allRawHeaderAndNineWordBytesEqual": true,
+      "originalMediumSHA256": "4906d6a50b005e97b2c8f09e1e966106e0397c2af4d231321d55f5c2799ffa8c",
+      "envelopeSHA256": "d908a2b024b99ea4858b4e899ac48b801319437015831f5bfc291634a79c668c",
+      "finalMediumSHA256": "ff02e28e0ed5de1f2b99354393c5d2761b6f28de20e15bc0dae4563aae27d7b2"
+    },
+    "presentation": "Actual controller paper reviewed; prepared/raster/controller observations do not assert whole-body visibility.",
+    "freshVsReused": "Fresh genuine warm target exports and fresh520.676s strict4audit qualification; exactp81nativeQEMU/controller and61inputSchoolproducer reused. This campaign executes fresh; no C/compiler/runtime/circuit rebuild claimed.",
+    "remaining": "Corresponding distributed browser warm path remains required. Closed service SDK extension, full16 Fast union, physical closure and educational qualification remain incomplete."
   }
 }
