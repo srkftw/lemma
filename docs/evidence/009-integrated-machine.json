@@ -884,7 +884,43 @@
     "final_audit_inventory_sha256": "a3912724ffa06d83943c0e737ddc868dd7a90d823362fa3828775c5f083da7c3",
     "final_cached_refresh": "build/task009/school23-ink-producer-a4/result.json",
     "fresh_strict_audits": "build/task009/school23-ink-audit-a2/result.json",
-    "current_scope": "Freshstrictaudits running; no newordinaryStudent completion claim from compilation or componentAction checks."
+    "current_scope": "All three fresh strictaudits PASS; nativebundlea8 admitted. Actual newStudent015fe6 Ready+explicitSave observed. Full ordinary Student/review qualification remains separate.",
+    "strict_audit_results": {
+      "status": "PASS",
+      "whole_seconds": 246.434,
+      "rows": {
+        "notebook": 203.565,
+        "initializer": 221.038,
+        "integrated": 246.433
+      },
+      "owned_processes_reaped": true
+    },
+    "native_bundle": {
+      "path": "build/task009/school23-native-a8/bundle.json",
+      "sha256": "13855a02c8061979ce07b4527ed59df4f1391a2512ed96063b347389374d00a4",
+      "package_receipt": "build/task009/school23-native-package-a3/result.json",
+      "package_seconds": 8.302,
+      "scope": "Original full guest/archive authority retained; configured native flow runtime reused; hostpackaging is not fresh target compilation"
+    },
+    "actual_ready_save": {
+      "receipt": "build/school/task009-student-native-a6/first-save-ready.json",
+      "sha256": "5478234777cb64102d2d5fae384b8fed28605d640a5f1799d004d3fd6271e5df",
+      "Ready_at_functional_units": 400000001,
+      "explicitSave_at_functional_units": 500000001,
+      "CAP731": [
+        2,
+        512,
+        262144,
+        2
+      ],
+      "Save421": [
+        24,
+        1,
+        1,
+        0
+      ],
+      "scope": "Actual fresh Student session; no full ordinary school lifecycle claim from this boot/save receipt"
+    }
   },
   "selected_powered_physical": {
     "selection": "lemma-pen-sg13g2-core-grid/1",
