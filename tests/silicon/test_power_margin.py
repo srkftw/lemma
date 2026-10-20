@@ -152,4 +152,19 @@ class PowerMarginTests(unittest.TestCase):
                 with self.subTest(binding=name),self.assertRaises(GeometryError):bind(SimpleNamespace(**defaults),bad)
 
 
+    def test_decode_launch_retains_output_and_current_implementation_boundary(self):
+        from silicon_decode_launch import require_recipe as require_decode
+        valid=dict(decode_launch_buffer_from=Path('build/decode'),routed_eco_from=Path('build/0.6'),
+                   clock_min_routing_layer='Metal3',detail_route_iterations=8,host_memory_gib=6)
+        require_decode(SimpleNamespace(**valid))
+        for name,value in [('routed_eco_from',None),('clock_min_routing_layer','Metal2'),
+                           ('detail_route_iterations',3),('host_memory_gib',4),
+                           ('selected_implementation',True),('preferred_access_from',Path('build/old')),
+                           ('power_margin_from',Path('build/regenerate')),('preserve_routed_netlist',True),
+                           ('slew_launch_buffer_from',Path('build/prior')),
+                           ('completed_eco_route_from',Path('build/old-loads'))]:
+            with self.subTest(argument=name),self.assertRaises(GeometryError):
+                require_decode(SimpleNamespace(**{**valid,name:value}))
+
+
 if __name__=='__main__':unittest.main()

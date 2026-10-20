@@ -6264,5 +6264,246 @@
       "sha256": "def012e27adaeccf6a865dcbeeb153f6a7d9a8f53502963f9c297e6e6b166816"
     },
     "source_boundary": "Measuredroute/corner sources are sealed under the original0.4.0 lock and immutableproducerarchives. This0.5.0 selects their exact physicalimplementation relation; it neither relabels earlier runtime/guest/native/browser builds nor qualifies fullprocess/timing."
+  },
+  "original_klayout_process_predecessor": {
+    "status": "ORIGINAL_FULLMAIN_VIA_CONTROLS_AND_INVERTER_COMPONENTS_OBSERVED_NOT_CONTROLLER_PROCESS_QUALIFICATION",
+    "maintained_host_tool_recipe": {
+      "path": "tooling/silicon/klayout.nix",
+      "sha256": "54307f94447bce412ff5fb6e45b0660bef7c4deddb2e62a25d7b99417c55c183"
+    },
+    "cache_only_tool_admission": {
+      "path": "build/silicon/task009-klayout-cache-admission-a1/result.json",
+      "sha256": "15ca8fbd4c3187315a607b295e6fb3bc6f11e07698704bf0f124afe99477fe07"
+    },
+    "cache_only_seconds": 21.099227680824697,
+    "original_source_archive_manifest": {
+      "path": "build/silicon/task009-klayout-original-controls-a1/original-source-manifest.json",
+      "sha256": "e4a90ccbfe4899b7654d155371a89ea0a5e1d64637fd645564d04c37e653bae0"
+    },
+    "source_revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "source_licence": "Original IHP source/deck Apache-2.0 notices retained; KLayout GPL-2.0-or-later is a host tool, not target code.",
+    "cache_download_MiB": 195.3,
+    "cache_unpacked_MiB": 731.98,
+    "compile_fallback": false,
+    "original_parameter_json": {
+      "path": "ihp-sg13g2/libs.tech/klayout/tech/drc/rule_decks/sg13g2_tech_default.json",
+      "sha256": "07930b016cdffe14c2cb82b47fbec193643347607db6d44aa1abfdece056cd2f",
+      "scope": "Exactoriginalrunnerfallback: generatedsg13g2_tech_mod.json absentfrompinnedGit; no modifiedrules."
+    },
+    "fullmain_via_control": {
+      "path": "build/silicon/task009-klayout-fullmain-via-controls-a1/result.json",
+      "sha256": "ba36552f80d30e8517662a4acce892b5a80dac2d52bf94b0e6f0faa59b2f8825"
+    },
+    "fullmain_via_seconds": 8.863418685039505,
+    "original_bad_Via1_c": 1,
+    "repaired_Via1_c": 0,
+    "completed_inverter_components_from_failed_whole_observer": {
+      "path": "build/silicon/task009-klayout-address-budget-controls-a1/result.json",
+      "sha256": "711b1ecb1da51cafea16feb66ec80e04fdee69e7e5b267d16adf0a348d499c93"
+    },
+    "inverter_main_findings": 0,
+    "inverter_maximal_findings": 0,
+    "inverter_density_findings": 9,
+    "inverter_antenna_findings": 0,
+    "original_failures": [
+      {
+        "path": "build/silicon/task009-klayout-original-controls-a1/result.json",
+        "sha256": "9bdbca401a2cc7ebb97221a858a26ae7c22c89ae60a18fffdfed4ed257f8198c"
+      },
+      {
+        "path": "build/silicon/task009-klayout-flat-controls-a1/result.json",
+        "sha256": "682c34c3dcd6ca4163ab7b740fc56bf6410ca63302f315c78deb58c93b2fa43f"
+      },
+      {
+        "path": "build/silicon/task009-klayout-address-budget-controls-a1/result.json",
+        "sha256": "711b1ecb1da51cafea16feb66ec80e04fdee69e7e5b267d16adf0a348d499c93"
+      }
+    ],
+    "failure_causes": [
+      "Original8sdeep firstmain phase timeout13.109s includingownedcleanup.",
+      "Original1GiBAS flatmain/maximal allocationfailures9.669s whole; retaineddensity9/antenna0 components.",
+      "New3GiBAS/1GiBcombinedRSS resolvesallocation: peak500772864RSS/1237872640virtual. Explicitvia1tableoriginaldependencyerror atline404 retainsfailedwhole12.683s; fullinvertercomponentsfinish.",
+      "Originaldefaultfullmain forbothViafixtures fixesonlysupportedtableselection, unchangeddeck/geometry;8.863s pairedPASS,493907968RSS/1199202304virtual."
+    ],
+    "remaining": "Actualselected0.6 nativeGDS generation/readback+completeoriginalmain/maximal/density/antenna controllerchecks. OriginalMagicfull-layout timeouts/LVS failures remain; no controllerprocess/fabrication claim."
+  },
+  "measured_read_decode_launch_candidate": {
+    "status": "UNSELECTED_FINITE_GEOMETRY_QUALIFIED_ROUTE_NOT_EXECUTED",
+    "source_selected_version": "lemma-pen-sg13g2-slew-native-margin-grid/1",
+    "source_ODB_sha256": "43ffc744714d5f216227035ffa4eca2e77b87f27b61b4f39fa6296a4091f7852",
+    "actual_geometry_diagnosis": {
+      "path": "build/silicon/task009-selected-read-decode-diagnosis-a1/result.json",
+      "sha256": "0fd3b9834fb4275ca863313ef6dc9c5eb2cf5e6af324eca584d12c4ad8629475"
+    },
+    "actual_STA_report": {
+      "path": "build/silicon/task009-completed-slew-driver-diagnosis-a1/new-decode.rpt",
+      "sha256": "3a4834efecd08550857c6ad9c858fe4d90587636230e17b7e3105377308b78e6"
+    },
+    "measured_drivers": [
+      {
+        "pin": "_06323_/Y",
+        "master": "sg13g2_nor3_2",
+        "fanout": 2,
+        "cap_pF": 0.601387,
+        "original_maxcap_pF": 0.6,
+        "stage_ns": 2.545943,
+        "sink_span_y_um": [
+          11,
+          302
+        ]
+      },
+      {
+        "pin": "fanout329/X",
+        "master": "sg13g2_buf_2",
+        "fanout": 5,
+        "cap_pF": 0.670954,
+        "original_maxcap_pF": 0.6,
+        "stage_ns": 0.965033,
+        "sink_span_y_um": [
+          257,
+          506
+        ]
+      },
+      {
+        "pin": "_06651_/Y",
+        "master": "sg13g2_a21oi_2",
+        "output": "rdata[6]",
+        "cap_pF": 0.764069,
+        "original_maxcap_pF": 0.6,
+        "stage_ns": 2.093429,
+        "actual_external_load_pF": 0.006,
+        "actual_output_delay_ns": 2
+      }
+    ],
+    "proposed_original_buf8_maxcap_pF": 2.4,
+    "finite_geometry_power": {
+      "path": "build/silicon/task009-selected-decode-launch-preflight-a1/result.json",
+      "sha256": "32b2c3f75803ab3e051fbdd359009aafc5cbd6acf5ec412b965db2db4accdfe5"
+    },
+    "finite_seconds": 14.282082176068798,
+    "original_model_four_state_cases": 256,
+    "original_model_output_comparisons": 768,
+    "inverted_buffer_negative_rejected": true,
+    "preparation": {
+      "status": "PASS_THREE_ORIGINAL_BUF8_LEGAL_PADDED_CUT_ROW_BOOLEAN_ENDPOINT_POWER_PRECURSOR",
+      "scope": "Three exact original noninverting buf8 measured-slew launches on selected9034-cell native-margin geometry, finite Boolean and actual legal-site/PG/padding/port proof only. No STA/DPL/route/PEX or source selection.",
+      "sites": [
+        {
+          "driver": "_06323_",
+          "master": "sg13g2_nor3_2",
+          "old_net": "_01245_",
+          "new_cell": "task009_decode_launch_0",
+          "xy_DBU": [
+            383520,
+            7560
+          ],
+          "orientation": "R0",
+          "cut_row_bbox_DBU": [
+            5280,
+            7560,
+            1044960,
+            11340
+          ],
+          "Manhattan_driver_distance_DBU": 8820
+        },
+        {
+          "driver": "fanout329",
+          "master": "sg13g2_buf_2",
+          "old_net": "net329",
+          "new_cell": "task009_decode_launch_1",
+          "xy_DBU": [
+            370560,
+            264600
+          ],
+          "orientation": "R0",
+          "cut_row_bbox_DBU": [
+            5280,
+            264600,
+            1044960,
+            268380
+          ],
+          "Manhattan_driver_distance_DBU": 4980
+        },
+        {
+          "driver": "_06651_",
+          "master": "sg13g2_a21oi_2",
+          "old_net": "rdata[6]",
+          "new_cell": "task009_decode_launch_2",
+          "xy_DBU": [
+            481920,
+            241920
+          ],
+          "orientation": "R0",
+          "cut_row_bbox_DBU": [
+            5280,
+            241920,
+            1044960,
+            245700
+          ],
+          "Manhattan_driver_distance_DBU": 4740
+        }
+      ],
+      "negatives": [
+        "crossed_launch_input",
+        "new_supply_retarget",
+        "actual_overlap_and_padding",
+        "BIST_disconnect"
+      ],
+      "old_ports": 668,
+      "old_terminals": 45116,
+      "native_PG_shapes": 99128,
+      "old_OBS": 18718,
+      "old_cells_moved": 0,
+      "retained_original_delaycells": 33,
+      "padding": {
+        "rows": 193,
+        "stdcells": 9037,
+        "violating_pairs": 0,
+        "required_gap_DBU": 960
+      },
+      "added_cells": 3,
+      "expected_PG_terminals": 18083,
+      "unrouted_ODB_sha256": "b5110855615052f78c3bb4c4a1010ab1866552a4c7446d0cd380f11845ea5920",
+      "seconds": 10.689743258990347
+    },
+    "power": {
+      "status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+      "macro_power_pins": 9,
+      "preserved_BIST_pins": 423,
+      "all_power_terminals": 18083,
+      "voltages_V": {
+        "VDDlogic": 1.2,
+        "VDDARRAY": 1.2,
+        "VSS": 0
+      }
+    },
+    "maintained_relation": {
+      "path": "build/silicon/task009-maintained-decode-launch-preflight-a1/result.json",
+      "sha256": "76175b7aa0a02378213528c65ea3b961aa20d83a8a50a041bfbc97dc6f1e7b5b"
+    },
+    "maintained_relation_seconds": 3.5069563849829137,
+    "actual_pin_negatives": [
+      "crossed_input",
+      "wrong_new_supply",
+      "retargeted_rdata6_output"
+    ],
+    "maintained_helper": {
+      "path": "scripts/silicon_decode_launch.py",
+      "sha256": "0ada2dd4b9baf8ebe370674ed59982b0514e8ed9d499089ba664263912b3f44a"
+    },
+    "maintained_consumer": {
+      "path": "scripts/silicon_pen_physical.py",
+      "sha256": "8d82b24abc75fb2361bdfa2c9f67fbd78a27546b270456bf9283a64a4d4b8528"
+    },
+    "new_option": "--decode-launch-buffer-from",
+    "prospective_budget": {
+      "route_seconds": 900,
+      "whole_seconds": 1200,
+      "AS_and_owned_RSS_bytes": 6442450944,
+      "output_bytes": 12884901888,
+      "launch_available_bytes": 12884901888,
+      "continuing_available_bytes": 8589934592
+    },
+    "scope": "Zero9034oldmoves/full668ports/33delays/3earliercontrol+327capacity+3slew buffers/nativePG/OBS/960nmpadding andexactrdata6outputidentity preserved; freshGRT/PA/DRT/3RC/native420/all9 required before timing claim. Selection0.6 remains unchanged."
   }
 }
