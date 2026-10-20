@@ -10,6 +10,7 @@ from silicon_enclosure import GeometryError
 from silicon_power_margin import corner_proof
 from silicon_power_margin_route import require_recipe, bind_selected, PILOT
 from silicon_synth import ROOT
+from silicon_slew_launch import require_recipe as require_slew_recipe
 from silicon_power_clearance import parse_paths, rectangular_clearance
 from silicon_enclosure import Rect
 
@@ -92,6 +93,19 @@ class PowerMarginTests(unittest.TestCase):
                 else:bad['launch'][name]['path']='build/other'
                 with self.subTest(binding=name),self.assertRaises(GeometryError):
                     bind_selected(SimpleNamespace(**defaults),bad)
+
+    def test_slew_launch_cannot_replace_selected_recipe_or_import_old_loads(self):
+        valid=dict(slew_launch_buffer_from=Path('build/slew'),routed_eco_from=Path('build/zero'),
+                   clock_min_routing_layer='Metal3',detail_route_iterations=8,host_memory_gib=6)
+        require_slew_recipe(SimpleNamespace(**valid))
+        for name,value in [('routed_eco_from',None),('clock_min_routing_layer','Metal2'),
+                           ('detail_route_iterations',3),('host_memory_gib',4),
+                           ('selected_implementation',True),('preferred_access_from',Path('build/old')),
+                           ('power_margin_from',Path('build/regenerate')),('preserve_routed_netlist',True),
+                           ('capacity_launch_buffer_from',Path('build/327')),
+                           ('completed_eco_route_from',Path('build/old-loads'))]:
+            with self.subTest(argument=name),self.assertRaises(GeometryError):
+                require_slew_recipe(SimpleNamespace(**{**valid,name:value}))
 
 
 if __name__=='__main__':unittest.main()

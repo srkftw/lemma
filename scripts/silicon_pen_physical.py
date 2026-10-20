@@ -77,7 +77,7 @@ def require_fresh_power_recipe(args):
 def require_route_iterations(args):
     require(args.detail_route_iterations in (3, 8), 'unsupported detailed-route repair bound')
     if args.detail_route_iterations == 8:
-        require(args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or getattr(args, 'capacity_launch_buffer_from', None) or (args.core_power_grid and args.preserve_routed_netlist and
+        require(args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or getattr(args, 'capacity_launch_buffer_from', None) or getattr(args, 'slew_launch_buffer_from', None) or (args.core_power_grid and args.preserve_routed_netlist and
                 args.protect_sram_power_geometry and args.routed_eco_from and
                 not args.fresh_core_power_grid and not args.completed_eco_route_from and
                 not args.completed_power_grid_route_from and not args.completed_fresh_grid_route_from),
@@ -141,7 +141,7 @@ def require_capacity_launch_recipe(args, *, selected_binding=False):
 def require_clock_layer_recipe(args, *, selected_binding=False):
     require(args.clock_min_routing_layer in ('Metal2', 'Metal3'), 'unknown clock minimum layer')
     if args.clock_min_routing_layer == 'Metal3':
-        require(args.capacity_launch_buffer_from and args.routed_eco_from and
+        require((args.capacity_launch_buffer_from or getattr(args,'slew_launch_buffer_from',None)) and args.routed_eco_from and
                 args.detail_route_iterations == 8 and
                 (not args.selected_implementation or selected_binding),
                 'clockMetal3 is scoped to the exact327 source-qualified pilot or selected binding')
@@ -223,6 +223,7 @@ def main():
     p.add_argument('--padded-sram-input-delay-from', type=Path, help='Consume exact qualified completed original-padding geometry with33 original delaycells on31 SRAM inputs; no repeated legalization/resizer, fresh signal routing/extraction and all original constraints')
     p.add_argument('--control-launch-buffer-from', type=Path, help='Explicit unselected finite-qualified three-original-buf8 geometry on padded30 baseline; all old cells/33delays/PG/OBS/padding preserved, fresh routing/extraction only')
     p.add_argument('--capacity-launch-buffer-from', type=Path, help='Explicit unselected finite-qualified327 original buf8 launches from actual104 nominal maxcap inventory; all old sites/33delays/3controls/PG/OBS/ports preserved, fresh routing/extraction only')
+    p.add_argument('--slew-launch-buffer-from',type=Path,help='Exact finite-qualified three originalbuf8 launches on zero-router/native420 geometry; old placements/PG/OBS/delays/padding preserved, fresh GRT/PA/3RC')
     p.add_argument('--power-margin-from',type=Path,help='Exact qualified actual327 VSS+2um/conservative275nm M2 routing precursor; independent native420nm guard required, fresh GRT/PA/route at unchanged constraints')
     p.add_argument('--preferred-access-from', type=Path, help='Exact separately sealed two-instance preferredAP1->existingAP4 on unselected327 clockM3 baseline; reuse original guides/PA with -no_pin_access, no GRT or geometry regeneration')
     p.add_argument('--preferred-access-preflight-only', action='store_true', help='Bounded30s/2GiB actual retained-guide/AP/power prefix; stop before detailed routing, no closure claim')
@@ -246,8 +247,10 @@ def main():
     require_preferred_recipe(args)
     from silicon_power_margin_route import require_recipe as require_margin_recipe
     require_margin_recipe(args)
+    from silicon_slew_launch import require_recipe as require_slew_recipe
+    require_slew_recipe(args)
     host_as_bytes, host_available_floor = host_memory_budget(args)
-    if args.fresh_core_power_grid or args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from:
+    if args.fresh_core_power_grid or args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or args.slew_launch_buffer_from:
         args.core_power_grid = True
     if args.preferred_access_preflight_only:
         host_as_bytes, host_available_floor = 2 << 30, 4 << 30
@@ -445,7 +448,7 @@ def main():
                 # design/tool/collateral input are unchanged. Require a fresh
                 # current mapping and retain the old receipt independently.
                 old_path = Path(previous['mapping_receipt']['path'])
-                require((selected or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from) and sha(old_path) == previous['mapping_receipt']['sha256'], 'ECO mapping producer differs')
+                require((selected or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or args.slew_launch_buffer_from) and sha(old_path) == previous['mapping_receipt']['sha256'], 'ECO mapping producer differs')
                 old = json.loads(old_path.read_text())
                 lock_name = 'tooling/silicon/physical-lock.json'
                 require({k:v for k,v in old['source_inputs'].items() if k != lock_name} ==
@@ -457,7 +460,26 @@ def main():
                 inputs += [old_path, old_path.parent / 'mapped.v']
                 report['mapping_metadata_transition'] = {'original': previous['mapping_receipt'],
                     'current': report['mapping_receipt'], 'scope': 'Fresh mapping after physical-lock selection only; actual mapped bytes and all other source/tool/collateral identities equal'}
-            if args.capacity_launch_buffer_from:
+            if args.slew_launch_buffer_from:
+                from silicon_slew_launch import admit, SOURCE_SHA
+                prepared_geometry,geometry_assessment,geometry_inputs=admit(args.slew_launch_buffer_from)
+                require(previous.get('power_grid')=='CONNECTED_CORE_GRID_ONLY_NO_IR_EM' and
+                        sha(prior/'routed.odb')==SOURCE_SHA and previous['router_drc']['violations']==0 and
+                        previous['native_power_margin']['actual_final_relation']['status']=='PASS_ACTUAL_NATIVE420NM_RECTANGLE_SUBSET_ONLY',
+                        'slew launches require the exact completedzero/native420 source')
+                inputs += geometry_inputs+[geometry_assessment,prepared_geometry,ROOT/'scripts/silicon_slew_launch.py',
+                    ROOT/'scripts/silicon_sram_input_hold.py',ROOT/'scripts/silicon_acceptance_launch.py',
+                    ROOT/'scripts/silicon_buffered_pins.py',ROOT/'scripts/silicon_power_clearance.py',
+                    ROOT/'scripts/silicon_power_ports.py',ROOT/'tooling/silicon/pen-power-check.tcl']
+                report['prepared_slew_geometry']={'path':str(prepared_geometry),'sha256':sha(prepared_geometry),
+                    'assessment':str(geometry_assessment),'assessment_sha256':sha(geometry_assessment),
+                    'scope':'Three originalbuf8 on actualselectedNOR4_2/NOR4_1/INV1 slowoutputs; zero9031oldmoves,668ports/33delays/327capacitybuffers/nativePG/OBS/960nmpadding preserved.'}
+                report['native_power_margin']={'version':'lemma-native420-conservative-M2-and-VSS-grid/1',
+                    'scope':'Inherited exact native420-qualified PG/OBS from source; final independent actualwire/via/patch margin mandatory, never inferred from oldroute.'}
+                report['PG_edge_clearance']='ORIGINAL_NATIVE420NM_RECTANGLE_WITH_CONSERVATIVE_M2_ROUTER275_REPRESENTATION'
+                report['power_grid_routing_question']='Exact9034cells: actualselectedzero-route grid plus3 originalbuf8 on measuredslowdrivers; freshGRT/PA/DRT/3RC, all10ns/ports/PG/test/padding preserved'
+                report['global_rc_optimization']='EXACT_THREE_MEASURED_SLEW_BUF8_GEOMETRY_NO_RESIZER_OR_OLD_SPEF'
+            elif args.capacity_launch_buffer_from:
                 from silicon_capacity_launch import admit, SOURCE_SHA
                 prepared_geometry, geometry_assessment, geometry_inputs = admit(args.capacity_launch_buffer_from)
                 require(previous.get('power_grid') == 'CONNECTED_CORE_GRID_ONLY_NO_IR_EM' and
@@ -605,7 +627,7 @@ def main():
             require(sha(target) == report['source_inputs'][str(source)], 'archived source differs')
             archived[str(relative)] = sha(target)
         (archive / 'manifest.json').write_text(json.dumps(archived, indent=2) + '\n')
-        if args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from:
+        if args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or args.slew_launch_buffer_from:
             if args.acceptance_launch_buffer:
                 proof = out / 'launch-prepare.py'
                 proof.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\nfrom silicon_acceptance_launch import prepare\nprepare(Path({str(prior/"routed.odb")!r}), Path({str(std/"lib/sg13g2_stdcell_typ_1p20V_25C.lib")!r}), Path({str(out/"launch")!r}))\n')
@@ -614,7 +636,7 @@ def main():
                 prepared_geometry = out / 'launch/unrouted.odb'
                 prepared_def = out / 'launch/unrouted.def'
             else:
-                module = ('silicon_power_margin_route' if args.power_margin_from else 'silicon_capacity_launch' if args.capacity_launch_buffer_from else
+                module = ('silicon_slew_launch' if args.slew_launch_buffer_from else 'silicon_power_margin_route' if args.power_margin_from else 'silicon_capacity_launch' if args.capacity_launch_buffer_from else
                           'silicon_control_launch' if args.control_launch_buffer_from else 'silicon_sram_input_hold')
                 proof = out / 'padded-hold-prepare.py'
                 proof.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\nfrom {module} import assess\nassess(Path({str(prior/"routed.odb")!r}), Path({str(prepared_geometry)!r}), Path({str(std/"lib/sg13g2_stdcell_typ_1p20V_25C.lib")!r}), Path({str(out/"padded-hold-preparation.json")!r}))\n')
@@ -642,7 +664,7 @@ report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 >
             # read_db reclassifies the existing PG BTerms; the default logical
             # export then omits exactly their three declarations/header names.
             # Actual all668 physical ports/PG geometry are checked separately.
-            expected_baseline = ((prior / 'routed.v').read_text() if (args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from)
+            expected_baseline = ((prior / 'routed.v').read_text() if (args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or args.slew_launch_buffer_from)
                                  else signal_bytes((prior / 'routed.v').read_text()))
             require((out / 'pre-eco.v').read_text() == expected_baseline,
                     'powered source export changed more than the exact three PG declarations')
@@ -672,11 +694,11 @@ source {{{ROOT/'tooling/silicon/layout.tcl'}}}
             script.write_text(f'set clock_min_routing_layer {args.clock_min_routing_layer}\n' + script.read_text())
             if args.preferred_access_from:
                 script.write_text(f'set retained_access_guides {{{preferred["guides"]}}}\nset retained_access_metadata {{{preferred["metadata"]}}}\nset retained_access_exporter {{{preferred["exporter"]}}}\nset retained_access_writer_check {{{ROOT/"scripts/silicon_access_writer.py"}}}\nset retained_access_python {{{sys.executable}}}\nset preferred_access_probe_only {1 if args.preferred_access_preflight_only else 0}\n' + script.read_text())
-            if args.power_margin_from:
+            if args.power_margin_from or args.slew_launch_buffer_from:
                 script.write_text('set power_margin_prepared 1\n'+script.read_text())
             if args.core_power_grid:
                 script.write_text(f'set core_power_grid 1\nset preserve_routed_netlist {1 if args.preserve_routed_netlist else 0}\nset power_grid_script {{{grid_source}}}\nset power_check_script {{{ROOT/"tooling/silicon/pen-power-check.tcl"}}}\n' + script.read_text())
-            if args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from:
+            if args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or args.slew_launch_buffer_from:
                 script.write_text(f'set prepared_physical_db {{{prepared_geometry}}}\nset existing_core_power_grid 1\nset prepared_physical_question {{{report["power_grid_routing_question"]}}}\n' + script.read_text())
         if args.protect_sram_power_edges:
             script.write_text(f'set power_edge_script {{{ROOT/"tooling/silicon/pen-power-edge.tcl"}}}\n' + script.read_text())
@@ -754,9 +776,9 @@ lemma_check_power_grid $qualified_bindings $out after-route
             report['power_interface']['stage'] = 'Exact fresh placement immediately before/after PG addition; final endpoint geometry independently checked in Tcl, normal subsequent resizer changes retained'
             require(sdc_commands(out / 'pre-power/routed.sdc') == sdc_commands(out / 'routed.sdc'), 'fresh grid changed original timing commands')
         if args.routed_eco_from:
-            if args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from:
+            if args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or args.slew_launch_buffer_from:
                 from silicon_power_ports import signal_bytes
-                expected_baseline = ((prior / 'routed.v').read_text() if (args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from)
+                expected_baseline = ((prior / 'routed.v').read_text() if (args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or args.slew_launch_buffer_from)
                                      else signal_bytes((prior / 'routed.v').read_text()))
                 require((out / 'pre-eco.v').read_text() == expected_baseline,
                         'launch baseline changed source logical netlist')
@@ -769,8 +791,8 @@ lemma_check_power_grid $qualified_bindings $out after-route
                 report['launch_endpoints'] = json.loads((out / 'launch-endpoints.json').read_text())
                 require(sha(out / 'pre-eco.v') != sha(out / 'post-eco-unrouted.v') and
                         sha(out / 'post-eco-unrouted.v') == sha(out / 'routed.v'), 'launch route changed another logical cell/net')
-            elif args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from:
-                module = ('silicon_power_margin_route' if args.power_margin_from else 'silicon_capacity_launch' if args.capacity_launch_buffer_from else
+            elif args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from or args.slew_launch_buffer_from:
+                module = ('silicon_slew_launch' if args.slew_launch_buffer_from else 'silicon_power_margin_route' if args.power_margin_from else 'silicon_capacity_launch' if args.capacity_launch_buffer_from else
                           'silicon_control_launch' if args.control_launch_buffer_from else 'silicon_sram_input_hold')
                 proof = out / 'padded-hold-endpoints.py'
                 proof.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\nfrom {module} import assess\nassess(Path({str(prior/"routed.odb")!r}), Path({str(out/"routed.odb")!r}), Path({str(std/"lib/sg13g2_stdcell_typ_1p20V_25C.lib")!r}), Path({str(out/"padded-hold-endpoints.json")!r}), fixed_geometry=Path({str(prepared_base_geometry if args.preferred_access_from else prepared_geometry)!r}))\n')
@@ -793,7 +815,7 @@ lemma_check_power_grid $qualified_bindings $out after-route
         if args.preferred_access_from:
             from silicon_preferred_route import check_final_access
             report['retained_preferred_access']['actual_final_relation'] = check_final_access(out, preferred)
-        if args.power_margin_from:
+        if args.power_margin_from or args.slew_launch_buffer_from:
             guard=out/'native-power-margin.py'
             guard.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0,{str(ROOT/"scripts")!r})\nfrom silicon_power_clearance import check\ncheck(Path({str(out/"routed.odb")!r}),Path({str(out/"enclosure/repaired-original.lef")!r}),Path({str(out/"native-power-margin.json")!r}))\n')
             invoke([str(openroad),'-python','-exit',str(guard)],'native-power-margin',45)

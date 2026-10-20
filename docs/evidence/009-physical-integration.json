@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T11:39:56.279625+00:00",
+  "written_at": "2026-10-20T11:49:23.779936+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -5719,5 +5719,166 @@
     ],
     "cause": "Changedfactoring exposes acceptanceNOR3 fanout78/.255693pF/2.299131ns then362fanout/1.318880pF/7.785515ns holdcontrol. Carrylogic change alone does not improve the actualdesign floor.",
     "decision": "No route or source selection; canonical504f/native-margin-grid0.5 remains unchanged. ActualselectedremainingNOR4/inputdriver physicalslew/load examined separately."
+  },
+  "selected_remaining_slew_physical_candidate": {
+    "status": "UNSELECTED_PRECURSOR_QUALIFIED_NOT_ROUTED",
+    "actual_selected_load_diagnosis": {
+      "path": "build/silicon/task009-selected-slew-diagnosis-a1/result.json",
+      "sha256": "257422d740300007746d782cbf15a965481c2b884d7d8e3598816c1783f0d621"
+    },
+    "actual_load_report": {
+      "path": "build/silicon/task009-selected-slew-diagnosis-a1/critical.rpt",
+      "sha256": "9e90394f38b539d57c4019b51abb2ceced23bc9477e2f7e9de66fb5cdbf5d6be"
+    },
+    "driver_and_sink_geometry": {
+      "path": "build/silicon/task009-selected-slew-diagnosis-a1/geometry.json",
+      "sha256": "cfb8dc3cc5da3322bce4edcd8f3a3190f66a4007e3aca96f9c369c7c180c5cb3"
+    },
+    "drivers": [
+      {
+        "instance": "_08936_",
+        "master": "sg13g2_nor4_2",
+        "fanout": 5,
+        "cap_pF": 0.482285,
+        "slew_ns": 4.006618,
+        "stage_ns": 2.976149
+      },
+      {
+        "instance": "_08932_",
+        "master": "sg13g2_nor4_1",
+        "fanout": 4,
+        "cap_pF": 0.057198,
+        "stage_ns": 1.254149
+      },
+      {
+        "instance": "_06061_",
+        "master": "sg13g2_inv_1",
+        "fanout": 3,
+        "cap_pF": 0.262514,
+        "stage_ns": 1.611723
+      }
+    ],
+    "finite_geometry_power_producer": {
+      "path": "build/silicon/task009-selected-slew-launch-preflight-a1/result.json",
+      "sha256": "479e13ad7414734043eaebaae393dc3cf211367b61f806167e8f6757051bc80c"
+    },
+    "seconds": 16.889582745032385,
+    "preparation": {
+      "path": "build/silicon/task009-selected-slew-launch-preflight-a1/preparation.json",
+      "sha256": "72785ec7dcba5cf8d513f401f7f0c477a8b038145e823cf7d05d687049aa3864"
+    },
+    "sites": [
+      {
+        "driver": "_08936_",
+        "master": "sg13g2_nor4_2",
+        "old_net": "_03201_",
+        "new_cell": "task009_slew_launch_0",
+        "xy_DBU": [
+          411360,
+          302400
+        ],
+        "orientation": "R0",
+        "cut_row_bbox_DBU": [
+          5280,
+          302400,
+          1044960,
+          306180
+        ],
+        "Manhattan_driver_distance_DBU": 6240
+      },
+      {
+        "driver": "_08932_",
+        "master": "sg13g2_nor4_1",
+        "old_net": "_03197_",
+        "new_cell": "task009_slew_launch_1",
+        "xy_DBU": [
+          336960,
+          291060
+        ],
+        "orientation": "MX",
+        "cut_row_bbox_DBU": [
+          5280,
+          291060,
+          1044960,
+          294840
+        ],
+        "Manhattan_driver_distance_DBU": 8580
+      },
+      {
+        "driver": "_06061_",
+        "master": "sg13g2_inv_1",
+        "old_net": "_00983_",
+        "new_cell": "task009_slew_launch_2",
+        "xy_DBU": [
+          607680,
+          75600
+        ],
+        "orientation": "R0",
+        "cut_row_bbox_DBU": [
+          5280,
+          75600,
+          1044960,
+          79380
+        ],
+        "Manhattan_driver_distance_DBU": 4980
+      }
+    ],
+    "power": {
+      "status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+      "macro_power_pins": 9,
+      "preserved_BIST_pins": 423,
+      "all_power_terminals": 18077,
+      "voltages_V": {
+        "VDDlogic": 1.2,
+        "VDDARRAY": 1.2,
+        "VSS": 0
+      }
+    },
+    "padding": {
+      "rows": 193,
+      "stdcells": 9034,
+      "violating_pairs": 0,
+      "required_gap_DBU": 960
+    },
+    "old_cell_moves": 0,
+    "old_ports": 668,
+    "native_PG_shapes": 99128,
+    "OBS": 18718,
+    "original_SRAM_delays": 33,
+    "original_capacity_buffers": 327,
+    "original_control_buffers": 3,
+    "full_old_cell_and_pin_relation_preserved_except_declared3_driver_outputs": true,
+    "original_gate_model_four_state_cases": 256,
+    "original_gate_model_output_comparisons": 768,
+    "inverted_buffer_negative_rejected": true,
+    "geometry_negatives": [
+      "crossed_launch_input",
+      "new_supply_retarget",
+      "actual_overlap_and_padding",
+      "BIST_disconnect"
+    ],
+    "maintained_relation": {
+      "path": "build/silicon/task009-maintained-slew-launch-preflight-a1/result.json",
+      "sha256": "174af7533c34d67023eeba5ecebd7a22d0b2f98627e5060d7689264bae371fc9"
+    },
+    "maintained_source": {
+      "path": "scripts/silicon_slew_launch.py",
+      "sha256": "78dac79a047814bde349d1b31babe1aa2921e41de4e80491a7afc52b6f35c10d"
+    },
+    "consumer": {
+      "path": "scripts/silicon_pen_physical.py",
+      "sha256": "b1dfd0ed72d9085cff3a12d1983365058d6a5c8fe20b24992bed3107d14b467a"
+    },
+    "new_route_option": "--slew-launch-buffer-from",
+    "prospective_question": "Freshroute/3RC/all9 timing-electrical comparison on exactzero-route baseline+3buf8, original10ns/fullports/960nmpadding/native420/PG preserved. No oldSPEF on changednets.",
+    "prospective_budget": {
+      "route_seconds": 900,
+      "whole_seconds": 1200,
+      "AS_bytes": 6442450944,
+      "aggregate_output_bytes": 12884901888,
+      "launch_available_floor_bytes": 12884901888,
+      "disk_floor_bytes": 12884901888
+    },
+    "selection": "native-margin-grid/1/lock0.5.0/RTL504f stays selected until separately completed comparison."
   }
 }
