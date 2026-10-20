@@ -2,10 +2,10 @@
   "format": "lemma-school-unit/1",
   "course": {
     "identity": "804",
-    "edition": "1",
+    "edition": "2",
     "title": "Equal fractions, exact sums, and legal cancellation",
     "sourceAnchor": "AoPS Introduction to Algebra2007 section2.4 printed49-50; original authored bridge from exact numerical fractions to rational-expression assumptions",
-    "editionAnchor": "First Printing2007; original authored unit804/1",
+    "editionAnchor": "First Printing2007; original authored unit804/2; explicit local-tool disclosure and domain rubric revision",
     "rightsAnchor": "Original instructional text and source metadata only. Supplied copyrighted PDF and rendered pages remain private outside Git; possession implies no redistribution grant.",
     "nodes": [
       {
@@ -44,8 +44,8 @@
         },
         "title": "Calculate, then check the exact task",
         "body": "The supported task is1/2+1/3=N/D over rational numbers. Enter10/12, use REDUCE if helpful, and observe the changed representation. REDUCE clears current checking; press CHECK separately before Save and SEND. Local calculator use is permitted for this practice and remains disclosed to the teacher.",
-        "exercise": "Submit a fraction equal to1/2+1/3. Explain the common denominator in ink.",
-        "hint": "Rewrite both summands with denominator6. Equal fractions can use other nonzero denominators.",
+        "exercise": "Submit a fraction equal to1/2+1/3. Write the common-denominator argument, and identify any calculator or hint you used.",
+        "hint": "Use denominator6:1/2=3/6 and1/3=2/6. Explain why these replacements preserve value. REDUCE only edits the representation; a later CHECK addresses the exact addition task.",
         "worked": "",
         "exampleText": "",
         "review": "",
@@ -83,7 +83,7 @@
         },
         "title": "Transfer cancellation to a variable",
         "body": "For rational t, compare(t*t-9)/(t-3) with t+3. State the original expression's domain, factor the numerator, and justify every cancellation. Decide what happens at t=3. This written argument requires teacher review.",
-        "exercise": "Give the equality with all assumptions and explain the excluded input.",
+        "exercise": "State the original rational domain, factor the numerator and justify cancellation under its nonzero assumption. At t=3 compare whether each displayed expression is defined; equality does not restore an excluded input.",
         "hint": "",
         "worked": "",
         "exampleText": "",
@@ -230,8 +230,9 @@
       "assessment": {
         "checker": "lemma-exact/1:fractionAddition",
         "criteria": [
-          "State the domain and any nonzero denominator assumption",
-          "Justify equality using factors or a common denominator"
+          "Give a fraction equal to the supported exact sum",
+          "Explain value-preserving common-denominator replacements in the written work",
+          "Keep calculator and delivered-hint exposure distinct from the argument"
         ],
         "independent": false,
         "referenceTheorem": null
@@ -378,8 +379,8 @@
   ],
   "review": {
     "version": "lemma-review-schedule/1",
-    "delaySeconds": 60,
+    "delaySeconds": 600,
     "activityId": "later-review",
-    "uncertainty": "One response does not demonstrate retention or transfer. Due review requires a new independent response and separate human assessment."
+    "uncertainty": "The authored ten-minute delay is an operational schedule, not evidence of retention or benefit. Original804/1 attempts retain their sixty-second policy and require a distinct subsequent response and assessment."
   }
 }

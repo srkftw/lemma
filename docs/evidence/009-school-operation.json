@@ -2126,7 +2126,26 @@
       "sha256": "b8a59bbf552e0ddaabf1fb148e97784500c0ab881fb8791411a530a205bd1545"
     },
     "correction": "Shared validator correctly rejects unknown review-policy version. Corrected definition explicitly uses lemma-review-schedule/1; no validation bypass.",
-    "freshReused": "Fresh example elaboration5.297584s, preview.359s, compile.049s; unchanged hosted dependencies reused. No actual learner rendering or educational benefit inferred."
+    "freshReused": "Fresh example elaboration5.297584s, preview.359s, compile.049s; unchanged hosted dependencies reused. No actual learner rendering or educational benefit inferred.",
+    "revision2": {
+      "status": "GENUINELY_BUILT_NOT_YET_PUBLISHED",
+      "producer": {
+        "path": "build/school/task009-fraction-revision-a1/package-build/build.json",
+        "sha256": "01a07f03d9eb09ddab890c299553922c7ec2d32027dc0c79037a0278b32e63e2"
+      },
+      "campaign": {
+        "path": "build/school/task009-fraction-revision-a1/result.json",
+        "sha256": "c892d9c368ed7f358e44bbf5c7c4408ebfc46632ca9d5c1e4cd33ce37da7082b"
+      },
+      "packageSHA256": "5690f1bb88954c68917d3dab93e889c67a27eabc4be47e480a17dd77dbcc1d3c",
+      "packageBytes": 4391,
+      "seconds": 6.584475568961352,
+      "peakSampledCombinedRSSBytes": 1768456192,
+      "allObservedOwnersGone": true,
+      "changes": "Three-criterion exact-work rubric separates value, common-denominator reasoning and tool exposure; explicit t=3 domain counterexample; authored600s review instead of60s. No learning claim.",
+      "oldEditionPreserved": "Publication148/package09412d53709a2db8be4c4eed3f41e7991a9d3fd51283f4641a50cfd8431c788b and original18-input package-build-a2 source archive unchanged; old learner attempts will resolve that immutable definition.",
+      "scope": "Same maintained developer entry, genuine Lean elaboration/validation and incremental package compilation. No publication2/guest rendering/assessment yet."
+    }
   },
   "privateActualChromiumClockRetry": {
     "status": "NOT_ENCOUNTERED_PRIVATE_FINITE_PREFIX_ORIGINAL_FAILURE_REMAINS",
