@@ -14,11 +14,12 @@ import silicon_wasm
 
 class NativePortableAdmission(unittest.TestCase):
     def test_unqualified_profiles_reject_before_native_inputs_or_build(self):
-        with mock.patch.object(silicon_guest,'native_source_archive',side_effect=AssertionError('input access')):
+        with mock.patch.object(silicon_guest,'native_source_archive',side_effect=AssertionError('input access')) as inputs:
             for profile in ('lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.14.0'):
                 with self.subTest(profile=profile):
-                    with self.assertRaisesRegex(ValueError,'Clocked13 only'):
+                    with self.assertRaisesRegex(ValueError,'Native-to-portable source admission'):
                         silicon_wasm.archived_native_build('/unused','/unused',profile)
+            inputs.assert_not_called()
 
     def test_canonical_missing_archive_does_not_consult_current_profile(self):
         with mock.patch.object(silicon_guest,'profile',side_effect=AssertionError('mutable profile fallback')):

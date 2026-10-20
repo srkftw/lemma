@@ -50,7 +50,11 @@ class PublishTests(unittest.TestCase):
         self.log = tmp/'calls.jsonl'
         self.env = dict(os.environ, PATH=str(binpath)+os.pathsep+os.environ['PATH'],
                         MOCK_LOG=str(self.log), MOCK_STATE=str(tmp/'created'),
-                        GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1', GIT_TERMINAL_PROMPT='0')
+                        GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1', GIT_TERMINAL_PROMPT='0',
+                        # These disposable repositories must have no detached
+                        # writer when TemporaryDirectory removes their objects.
+                        GIT_CONFIG_COUNT='2', GIT_CONFIG_KEY_0='gc.auto', GIT_CONFIG_VALUE_0='0',
+                        GIT_CONFIG_KEY_1='maintenance.auto', GIT_CONFIG_VALUE_1='false')
     def tearDown(self):
         self.temp.cleanup()
     def run_publish(self, **overrides):

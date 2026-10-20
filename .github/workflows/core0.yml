@@ -710,7 +710,7 @@ jobs:
           set -euo pipefail
           timeout --foreground --signal=TERM --kill-after=10s 2m \
             nix develop --no-write-lock-file --command \
-              lake build Lemma.Numerics.Linear Lemma.Compiler.SchoolWorkerExport \
+              lake build Lemma.Numerics.Linear Lemma.School.Store Lemma.Compiler.SchoolWorkerExport \
             2>&1 | tee build/ci/school-worker-preparation.log
           timeout --foreground --signal=TERM --kill-after=10s 1m \
             nix develop --no-write-lock-file --command \
