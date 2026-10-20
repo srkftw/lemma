@@ -12,6 +12,12 @@ class BrowserWorker(unittest.TestCase):
         self.assertEqual(run.returncode,0,run.stdout+run.stderr)
         self.assertIn('PASS actual CPU stop transport helper',run.stdout)
 
+    def test_tci_pointer_admission_cannot_duplicate_queued_execution(self):
+        run=subprocess.run(['node','--experimental-vm-modules','tests/lemmasim/tci_schedule.mjs'],cwd=ROOT,
+                           capture_output=True,text=True,timeout=15)
+        self.assertEqual(run.returncode,0,run.stdout+run.stderr)
+        self.assertIn('PASS actual TCI scheduler',run.stdout)
+
     def test_actual_worker_with_bounded_machine_and_storage_fixtures(self):
         run=subprocess.run(['node','--experimental-vm-modules',
                             'tests/lemmasim/browser_worker_protocol.mjs'],cwd=ROOT,

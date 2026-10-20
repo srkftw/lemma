@@ -16,7 +16,7 @@ const contract='lemma-browser-session-modes/2';
 const ordinary=new Set(['open','import','pause','resume','pen','button','reset','export','export-panel','diagnostics','close','school']);
 const developer=new Set(['run','raw','raw-batch','course-install','inspect','events']);
 let core,control,handle,manifest,backing,loaded=false,running=false,mode='student',mediumName=null,initializing=false;
-let serial=Promise.resolve(),timer=null,budget=null,pauseReason=null,started=0,readyAt=null,loops=0,panelSequence=null,guestStart=0,capture=[],coursePartial=false,interruptEpoch=0;
+let serial=Promise.resolve(),timer=null,stepQueued=false,budget=null,pauseReason=null,started=0,readyAt=null,loops=0,panelSequence=null,guestStart=0,capture=[],coursePartial=false,interruptEpoch=0;
 const timing={runSeconds:0},sleep=ms=>new Promise(r=>setTimeout(r,ms));
 // Paced package parsing is substantially more expensive than idle boot in
 // the TCI interpreter. Keep the original60s deadline, but yield after at most
@@ -38,7 +38,15 @@ async function pcm(){
 const sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');
 function enqueue(f){const next=serial.then(f);serial=next.catch(async e=>{pause('error');let stopError=null;if(loaded&&control)try{await stopped();}catch(error){stopError=String(error);}postMessage({type:'error',error:String(e),stopError});if(stopError||!loaded)postMessage({type:'runtime-closed'});});return next;}
 function pause(reason){running=false;pauseReason=reason;if(timer!==null){clearTimeout(timer);timer=null;}}
-function schedule(){if(running&&timer===null)timer=setTimeout(()=>{timer=null;enqueue(step);},0);}
+function schedule(){
+ // An input command can await QMP while a timer has already queued its next
+ // turn behind that command. Keep ownership until the queued step finishes;
+ // pointer completion must not add another parallel chain of execution turns.
+ if(running&&timer===null&&!stepQueued)timer=setTimeout(()=>{
+  timer=null;stepQueued=true;
+  enqueue(async()=>{try{await step();}finally{stepQueued=false;schedule();}});
+ },0);
+}
 function uart(){try{return core.FS.readFile('/uart.bin');}catch{return new Uint8Array();}}
 function observeFault(){const fault=notebookFault.observe(uart(),guestStart);if(fault)pause('notebook-fault');return fault;}
 async function inspect(full=false){
