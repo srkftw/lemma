@@ -3,6 +3,8 @@
 """Prepared matched-profile QEMU and lifecycle transport; no guest policy."""
 from __future__ import annotations
 import copy
+import hashlib
+import struct
 import json
 import os
 import re
@@ -24,6 +26,33 @@ RAW_UART_ADAPTER = 'lemmasim-fast-adapter/5'
 RAW_UART_FLOW_ADAPTER = 'lemmasim-fast-adapter/6'
 MAX_NS = (1 << 63) - 1
 CLOCK_SCHEMA = 'lemmasim-fast-clock/1'
+LOGICAL2_BINDING = 'lemma-silicon-fast-softtlb/0.2.0'
+# Promotion requires actual pending DMA/PCM/storage and public transaction gates.
+# Selecting/building the source-bound runtime alone does not admit checkpoints.
+LOGICAL2_CHECKPOINT_ADMITTED = False
+LOGICAL2_CACHE_SEED = '/nix/store/1nqjws03faak74p8f8y781s779rfklq1-lemmasim-qemu-raw-uart-logical-v2-retained-11.1.1'
+LOGICAL2_NORMAL_REFERENCE = '/nix/store/fz255cis6w7pzd7kv6g6klb3w7fr9i2l-lemmasim-qemu-raw-uart-v1-11.1.1'
+
+
+def logical2_selected(name):
+    value=os.environ.get('LEMMA_FAST_LOGICAL2','')
+    cached=os.environ.get('LEMMA_FAST_LOGICAL2_CACHE','')
+    if value not in ('','1') or cached not in ('','1'):
+        raise ValueError('Logical2 selections admit only the explicit value1')
+    if cached and not value:raise ValueError('Logical2 retained cache requires explicit logical2 selection')
+    if value and (profile(name)['profile']!='lemma-silicon-dev/0.14.0' or not raw_uart_selected(name)):
+        raise ValueError('Logical2 requires explicit rawUART and exactFast0.14')
+    return value=='1'
+
+
+def validate_checkpoint_binding(data):
+    binding=data.get('checkpoint_binding')
+    if binding is None:return False
+    if (binding!=LOGICAL2_BINDING or data.get('profile')!='lemma-silicon-dev/0.14.0' or
+            'tooling/lemmasim/patch_soft_tlb2.py' not in data.get('sources',{})):
+        raise ValueError('Unsupported native logical checkpoint binding/source authority')
+    return True
+
 
 
 def read_clock(path):
@@ -56,13 +85,15 @@ def raw_uart_selected(name):
 
 
 def qemu_recipe(name):
+    if logical2_selected(name) and os.environ.get('LEMMA_FAST_LOGICAL2_CACHE')=='1':
+        return ROOT/'tooling/lemmasim/qemu_logical2_reuse.nix'
     return ROOT / ('tooling/lemmasim/qemu_uart.nix' if raw_uart_selected(name)
                    else 'tooling/lemmasim/qemu.nix')
 
 
 def prepared_path(name=None):
     version = profile(name)['profile'].split('/')[1]
-    prefix = 'fast-uart1' if raw_uart_selected(name) else 'fast'
+    prefix = ('fast-uart1-logical2' if logical2_selected(name) else 'fast-uart1') if raw_uart_selected(name) else 'fast'
     return ROOT / f'build/lemmasim/{prefix}-prepared-{version}.json'
 
 
@@ -72,6 +103,11 @@ def sources(name):
     if raw_uart_selected(name):
         paths += [qemu_recipe(name), ROOT/'tooling/lemmasim/patch_uart_ingress.py',
                   ROOT/'tooling/lemmasim/uart_build_budget.py']
+    if logical2_selected(name):
+        paths += [ROOT/'tooling/lemmasim'/name for name in (
+            'patch_soft_tlb.py','patch_soft_tlb2.py','patch_multimodal_checkpoint.py',
+            'patch_logical2_lifecycle.py','qemu_uart.nix','qemu_logical2_reuse.nix',
+            'native_logical2_reuse.py')]
     if profile(name)['profile'] in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0','lemma-silicon-dev/0.14.0'):
         paths.append(ROOT/'tooling/lemmasim/patch_counter_clock.py')
     if profile(name)['profile']=='lemma-silicon-dev/0.4.0':paths += [ROOT/'tooling/lemmasim/patch_power_safety.py',ROOT/'scripts/silicon_power_guest_archive.py']
@@ -98,14 +134,25 @@ def build(args):
         archived=archived_guest(archive_path,workload,name)
         archived_build=json.loads(Path(archived['workloads'][workload]['build']['path']).read_text())
         if archived_build['optimization']!=args.opt_level:raise ValueError('Archived guest optimization differs')
-    link = ROOT / ('build/lemmasim/qemu-fast-' + ('uart1-' if raw_uart_selected(name) else '') + name.split('/')[1])
+    link = ROOT / ('build/lemmasim/qemu-fast-' + (('uart1-logical2-' if logical2_selected(name) else 'uart1-') if raw_uart_selected(name) else '') + name.split('/')[1])
     recipe = qemu_recipe(name)
     before = sources(name)
     limits = ['--cores', '2', '--max-jobs', '1', '--builders', ''] if raw_uart_selected(name) else []
+    runtime_arguments=[];runtime_expression=''
+    if logical2_selected(name):
+        if os.environ.get('LEMMA_FAST_LOGICAL2_CACHE')=='1':
+            if not all(Path(p).is_dir() for p in (LOGICAL2_CACHE_SEED,LOGICAL2_NORMAL_REFERENCE)):
+                raise ValueError('Qualified local logical2 cache is absent; unsetLEMMA_FAST_LOGICAL2_CACHE for the maintained cold build')
+            for key,path in [('seed',LOGICAL2_CACHE_SEED),('normalReference',LOGICAL2_NORMAL_REFERENCE)]:
+                runtime_arguments+=['--arg',key,'builtins.storePath '+json.dumps(path)]
+                runtime_expression+=' '+key+' = builtins.storePath '+json.dumps(path)+';'
+        else:
+            runtime_arguments=['--arg','logicalSoftTlb','true']
+            runtime_expression=' logicalSoftTlb = true;'
     guest.run_command(['nix-build', recipe, *limits, '--arg', 'siliconProfile',
-                       profile_path(name), '-o', link], timeout=2400)
+                       profile_path(name), *runtime_arguments, '-o', link], timeout=2400)
     binary = link.resolve()/'bin/qemu-system-riscv64'
-    expression = 'let q = import (builtins.toPath ' + json.dumps(str(recipe)) + ') { siliconProfile = builtins.path { path = builtins.toPath ' + json.dumps(str(profile_path(name))) + '; }; }; in { output = q.outPath; derivation = q.drvPath; }'
+    expression = 'let q = import (builtins.toPath ' + json.dumps(str(recipe)) + ') { siliconProfile = builtins.path { path = builtins.toPath ' + json.dumps(str(profile_path(name))) + '; };'+runtime_expression+' }; in { output = q.outPath; derivation = q.drvPath; }'
     evaluated = subprocess.run(['nix-instantiate', '--eval', '--strict', '--json', '--expr', expression],
                                cwd=ROOT, capture_output=True, text=True, timeout=120, check=True)
     closure = json.loads(evaluated.stdout)
@@ -138,6 +185,7 @@ def build(args):
             'qemu':guest.identified(binary),'derivation':guest.identified(closure['derivation']),
             'sources':before,'cpu':CPU,'icount_shift':3,'workloads':{workload:entry},
             'boot':'ELF-preload development; QEMU reset-ROM handoff to identical Lean guest ELF and supplied DTB'}
+    if logical2_selected(name):data['checkpoint_binding']=LOGICAL2_BINDING
     if source_root != ROOT:
         from build_kernel import source_inputs
         data['guest_source_root']={'path':str(source_root),'sources':source_inputs(source_root)}
@@ -148,7 +196,7 @@ def build(args):
     path = prepared_path(name)
     try:
         previous = json.loads(path.read_text())
-        if previous.get('guest_archive')==data.get('guest_archive') and previous.get('guest_source_root')==data.get('guest_source_root') and all(previous[k] == data[k] for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift')):
+        if previous.get('guest_archive')==data.get('guest_archive') and previous.get('guest_source_root')==data.get('guest_source_root') and all(previous.get(k) == data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift','checkpoint_binding')):
             for key, old in previous['workloads'].items():
                 if key == workload or key not in selected: continue
                 try:
@@ -192,6 +240,7 @@ def prepared(workload,name=None):
         raise ValueError('Unsupported/stale fast preparation')
     if data.get('sources') != sources(name) or data.get('cpu') != CPU or data.get('icount_shift') != 3:
         raise ValueError('Fast implementation changed; prepare current sources')
+    validate_checkpoint_binding(data)
     guest.validate(data['qemu']); guest.validate(data['derivation'])
     entry = data['workloads'][workload]
     for item in entry.values(): guest.validate(item)
@@ -285,6 +334,7 @@ class Fast:
                     self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode,
                                                                    source_root=args.guest_source_root)
         else:self.data=prepared(args.workload,args.profile)
+        self.native_logical2=validate_checkpoint_binding(self.data)
         self.identity={'backend':'qemu','profile':self.data['profile'],'runtime':self.data['qemu']['sha256'],
                        'adapter':ADAPTER,
                        'derivation':self.data['derivation']['sha256'],'guest':self.data['workloads'][args.workload]['image']['sha256'],
@@ -297,6 +347,7 @@ class Fast:
         override_archive=self.data.get('guest_override',{}).get('source_archive')
         if override_archive is not None:
             self.identity['development_guest_source_archive']={key:override_archive[key] for key in ('inventory','build','provenance','audit','image','configuration','source_commit','dirty_paths','inputs','scope')}
+        if self.native_logical2:self.identity['checkpoint_binding']=LOGICAL2_BINDING
         self.clock_hz=profile(self.data['profile'])['clock_hz']
         self.mtime_address=profile(self.data['profile'])['devices']['timer']['mtime']
         self.power_enabled=bool(profile(self.data['profile']).get('power_enabled',0))
@@ -314,6 +365,7 @@ class Fast:
                             'writer':str(peer['writer']),'helper':str(ROOT/'sim/companion/os_io.py')}
         self.has_medium=self.medium is not None or self.companion is not None
         self.checkpoint_files={'machine.chk','clock.json','durable.raw'} if self.has_medium else {'machine.chk','clock.json'}
+        if self.native_logical2:self.checkpoint_files.add('logical.tlb')
         self.time_origin_ns=0
         self.generation=0
         self.replay_path=None
@@ -332,7 +384,7 @@ class Fast:
         socket_directory=tempfile.TemporaryDirectory(prefix='lemma-qmp-',dir='/tmp')
         self.socket_directory=socket_directory
         path=Path(socket_directory.name)/'qmp.sock'
-        command=[self.data['qemu']['path'],'-machine','lemma-silicon-fast','-cpu',CPU,'-m','128M','-smp','1',
+        command=[self.data['qemu']['path'],'-machine','lemma-silicon-fast-softtlb' if self.native_logical2 else 'lemma-silicon-fast','-cpu',CPU,'-m','128M','-smp','1',
                  '-bios','none','-kernel',entry['image']['path'],'-dtb',entry['dtb']['path'],
                  '-display','none','-monitor','none','-serial',f'file:{self.directory}/uart-{self.generation}.bin',
                  '-qmp',f'unix:{path},server=on,wait=off','-S','-no-shutdown',
@@ -478,7 +530,38 @@ class Fast:
             raise RuntimeError('Backing persistence unresolved; machine paused without acknowledgment. Restart the companion/outbox to reconcile; this machine cannot snapshot pending work.')
         return self.clock()
 
+    def checkpoint_admission(self):
+        if self.data.get('profile')=='lemma-silicon-dev/0.14.0':
+            if not getattr(self,'native_logical2',False):
+                raise ValueError('Profile0.14 exact checkpoint and live restore are explicitly unsupported; no snapshot file or candidate was created')
+            if not LOGICAL2_CHECKPOINT_ADMITTED:
+                raise ValueError('Native logical2 checkpoint qualification remains guarded; no snapshot file or candidate was created')
+            if self.companion is not None:
+                raise ValueError('Logical2 continuation requires isolated local backing; externalcompanion state is not admitted')
+
+    def preflight_checkpoint(self,path,expected_cycle):
+        self.checkpoint_admission()
+        path=Path(path)
+        origin=read_clock(path.with_name('clock.json'))
+        if type(expected_cycle) is not int or not 0<=expected_cycle<(1<<64):raise ValueError('Invalid checkpoint cycle')
+        if self.native_logical2:
+            side=path.with_name('logical.tlb')
+            if side.is_symlink() or not side.is_file() or not 88<=side.stat().st_size<=64*1024*1024:
+                raise ValueError('Missing or oversized logical2 sidecar')
+            value=side.read_bytes();length=struct.unpack_from('<Q',value,16)[0]
+            if (value[:8]!=b'LMTLB02\0' or struct.unpack_from('<Q',value,8)[0]!=2 or
+                    length!=len(LOGICAL2_BINDING) or value[24:24+length]!=LOGICAL2_BINDING.encode() or
+                    value[24+length:56+length]!=bytes.fromhex(digest(path)) or
+                    value[-32:]!=hashlib.sha256(value[:-32]).digest()):
+                raise ValueError('Logical2 sidecar version, mainbinding or integrity differs')
+        if self.has_medium:
+            medium=path.with_name('durable.raw')
+            if medium.is_symlink() or not medium.is_file() or medium.stat().st_size!=256*1024*1024:
+                raise ValueError('Checkpoint requires exact isolated256MiB backing')
+        return origin
+
     def restore_checkpoint(self,path,expected_ns=None):
+        self.checkpoint_admission()
         path=Path(path)
         origin=read_clock(path.with_name('clock.json'))
         if expected_ns is not None and (type(expected_ns) is not int or not origin<=expected_ns<=MAX_NS):
@@ -500,9 +583,14 @@ class Fast:
                 if not self.has_medium:raise ValueError('Backing replay requires checkpoint durable bytes')
                 candidate.replay_path=Path(replay).resolve()
             candidate.start()
-            candidate.qmp.execute('lemma-load-machine',{'filename':str(path)})
+            candidate.qmp.execute('lemma-load-machine-softtlb' if getattr(self,'native_logical2',False) else 'lemma-load-machine',
+                                  {'filename':str(path),**({'cache-filename':str(path.with_name('logical.tlb'))} if getattr(self,'native_logical2',False) else {})})
             if expected_ns is not None and candidate.clock()['virtual_ns']!=expected_ns:
                 raise ValueError('Snapshot metadata differs from its saved virtual phase')
+            # Complete every observer that can reject before retiring the
+            # currently interactive machine. A failed inspection belongs to
+            # this disposable candidate just like a partial VMState load.
+            restored=candidate.inspect()
         except BaseException:
             # QEMU may reject after partially reading VMState. Only this
             # disposable fork was exposed; the current machine stays intact.
@@ -513,12 +601,11 @@ class Fast:
             raise
         self.stop()
         self.__dict__.update(candidate.__dict__)
-        return self.inspect()
+        return restored
 
     def call(self,command):
         action,_,text=command.partition(' ')
-        if self.data.get('profile')=='lemma-silicon-dev/0.14.0' and action in ('snapshot','restore'):
-            raise ValueError('Profile0.14 exact checkpoint and live restore are explicitly unsupported; no snapshot file or candidate was created')
+        if action in ('snapshot','restore'):self.checkpoint_admission()
         if action=='inspect':return self.inspect()
         if action=='pause':
             if self.qmp.execute('query-status')['running']:self.qmp.execute('stop')
@@ -564,7 +651,8 @@ class Fast:
             path=Path(text)
             clock_path=path.with_name('clock.json')
             if clock_path.exists():raise FileExistsError('Fast clock snapshot already exists')
-            self.qmp.execute('lemma-save-machine',{'filename':str(path)})
+            self.qmp.execute('lemma-save-machine-softtlb' if getattr(self,'native_logical2',False) else 'lemma-save-machine',
+                             {'filename':str(path),**({'cache-filename':str(path.with_name('logical.tlb'))} if getattr(self,'native_logical2',False) else {})})
             with clock_path.open('x') as stream:
                 json.dump({'schema':CLOCK_SCHEMA,'time_origin_ns':self.time_origin_ns},stream)
                 stream.write('\n');stream.flush();os.fsync(stream.fileno())

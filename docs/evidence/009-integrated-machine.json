@@ -860,7 +860,7 @@
         "owned_processes_reaped": true
       }
     ],
-    "remaining": "Actual guest DMA/audio and pending storage cuts, explicit unknown-callback rejection, normal source-bound runtime selection and public transactional fork/admission. These finite old-guest cases do not qualify economy acquisition or browser continuation."
+    "remaining": "The private oldguest cuts retain their original scope. The separately source-bound normal runtime, unknown-callback negative, storagepending and guarded Session successors below advance those dependencies; actualnewguest DMA/PCM admission remains unfinished."
   },
   "school23_join_and_ink_successors": {
     "join_source": "build/task009/school23-join-source-a1",
@@ -1004,6 +1004,47 @@
           }
         ],
         "sampled_owned_RSS_bytes": 248717312
+      },
+      {
+        "receipt": "build/task009/mm-logical2-storage-a1/result.json",
+        "receipt_sha256": "5dd9190da136db4f483da4b741be53d4b97899924bcf1bcc43de81f2714e3aad",
+        "status": "PASS_ACTUAL_NATIVE_LOGICAL2_SUFFIX",
+        "seconds": 14.959562245057896,
+        "guest": "native-a8 exact015fe6 Notebook",
+        "scope": "Actual guest initial journal Save before acknowledgment; explicit2s first-media-write delay, pending phase8 kind1, writes/flushes0 atcut; later actualSave421 after media completion",
+        "runtime": {
+          "path": "/nix/store/1nirimaaikhpbkf7af763zp3fj8yg6z2-lemmasim-qemu-raw-uart-logical-v2-retained-11.1.1/bin/qemu-system-riscv64",
+          "sha256": "c541546d6acd38a465024a944f2f5629490c91ab4dc07e5b41c59054248e9eac"
+        },
+        "pending_storage": {
+          "backend": "lemma-fast-block/3",
+          "phase": 8,
+          "kind": 1,
+          "word_index": 0,
+          "status": 15,
+          "irq": 0,
+          "pending_sectors": 0,
+          "writes": 0,
+          "flushes": 0,
+          "durable_flush": 0,
+          "deadline_ns": 3258427380,
+          "media_deadline_ns": 3258427380,
+          "backing_next_id": 4,
+          "backing_completed": 3,
+          "backing_durable_barrier": 0,
+          "backing_observed_write": 0,
+          "backing_phase": 2,
+          "backing_poisoned": 0,
+          "retry_ready": 0,
+          "flush_cursor": 0,
+          "external_orphan": 0
+        },
+        "full_controller_UART_durable_suffix_equal": true,
+        "relation": "lemma-native-logical-observation-relation/2",
+        "all22mode_translation_and_typed_wake_payloads_equal": true,
+        "malformed_candidate_rejected_original_unchanged": true,
+        "owned_processes_reaped": true,
+        "sampled_owned_RSS_bytes": 224460800
       }
     ],
     "failures": [
@@ -1014,6 +1055,71 @@
       "build/task009/logical2-native-maintained-a5/result.json",
       "build/task009/mm-checkpoint-maintained-ready-a1/result.json"
     ],
-    "remaining": "Actual unknowncallback negative, new maintained guest DMA/PCM and storagepending cuts, publicfork/Sessiontransactionality and explicitnormalpreparedselection remain unfinished. Sourcebound normalruntime alone doesnotremoveguard."
+    "remaining": "Actual newly maintained guest record-DMA and PCM pending/IRQ cuts and their ordinary Session paths remain required before opening the default public guard. Current finite Ready/converter/storage and guarded Session cases are old015fe6-guest scopes; no arbitrary crossbackend or browser continuation claim.",
+    "normal_fast_preparation": {
+      "receipt": "build/task009/logical2-fast-prepare-a1/result.json",
+      "receipt_sha256": "d29886b4c21ae9208ec8e491c07ea17f3ff51244bd6c3d3092b926e105269f12",
+      "runtime": {
+        "path": "/nix/store/1nirimaaikhpbkf7af763zp3fj8yg6z2-lemmasim-qemu-raw-uart-logical-v2-retained-11.1.1/bin/qemu-system-riscv64",
+        "sha256": "c541546d6acd38a465024a944f2f5629490c91ab4dc07e5b41c59054248e9eac"
+      },
+      "checkpoint_binding": "lemma-silicon-fast-softtlb/0.2.0",
+      "builder_seconds": 16.574096604948863,
+      "baseline_reproduced": true,
+      "baseline_actual_compiles": [],
+      "changed_actual_compiles": [],
+      "archive": {
+        "path": "/nix/store/1nirimaaikhpbkf7af763zp3fj8yg6z2-lemmasim-qemu-raw-uart-logical-v2-retained-11.1.1/share/lemma-build/consumed-build.tar.gz",
+        "sha256": "6f33bdfcbb44fee70080fa2e6002dfdc115b268a9ab54db7f632ab8328744321"
+      },
+      "scope": "Actual maintained Fast prepare of exact archived015fe6 guest;0 target actions,0 C compiles, real baseline+new output links; publiccheckpoint guard remainsfalse"
+    },
+    "ordinary_session_qualification": {
+      "receipt": "build/task009/logical2-session-a1/result.json",
+      "receipt_sha256": "c99a9c1d560d5c0d387a0ac1752eee1f179c969d15e0e4b6379141d2bb8fc9e9",
+      "status": "PASS_ACTUAL_GUARDED_NATIVE_SESSION_FORK",
+      "seconds": 13.091834802064113,
+      "scope": "Explicit ignored admission experiment; committed public guard remains false. Real Fast/Session same-backend isolated fork, current guest and in-flight UART; host-only domain authority sentinels separately scoped.",
+      "public_guard": false,
+      "loaded_boundary_equal": true,
+      "failed_restore_transactional": true,
+      "isolated_owned_backing": true,
+      "old_medium_unchanged": true,
+      "failed_restore_preserves_authority": true,
+      "successful_restore_invalidates_authority": true,
+      "authority_scope": "host-only School/adapter sentinels prove ordering, not network admission replay",
+      "observer_sources_unchanged": true,
+      "owned_processes_reaped": true
+    },
+    "unknown_callback": {
+      "receipt": "build/task009/logical2-unknown-callback-a1/result.json",
+      "receipt_sha256": "03cf2214e298664949c41c7e083f5c95c0f816d94eacf86cf0cd58bd7bdf84a9",
+      "scope": "Ignored host-only QOMinstrumentation; actual unknown callback rejected under BQL, no guest CPUexecution/drain/retry/outputpair; queue retained1 and sentinel0",
+      "builder_seconds": 5.440133424010128,
+      "execution_seconds": 2.431751425960101,
+      "artifact_wall_seconds": 35.6299307346344,
+      "runtime_promoted": false,
+      "status": "PASS_ACTUAL_COMPONENT_UNKNOWN_CALLBACK_REJECTED_WITHOUT_DRAIN",
+      "actual_locked_call_witness": {
+        "before_total": 0,
+        "before_wakes": 0,
+        "injected_total": 1,
+        "injected_wakes": 0,
+        "after_total": 1,
+        "after_wakes": 0,
+        "sentinel_at_boundary": 0,
+        "rejected": true,
+        "unknown_one": true,
+        "time_before": 0,
+        "time_after": 0,
+        "halted_before": 0,
+        "halted_after": 0,
+        "irq_before": 2,
+        "irq_after": 2,
+        "exception_before": -1,
+        "exception_after": -1
+      },
+      "owned_processes_reaped": true
+    }
   }
 }

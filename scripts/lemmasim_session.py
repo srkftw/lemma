@@ -131,6 +131,38 @@ def checkpoint_inventory(source, manifest):
     return names
 
 
+
+def stage_checkpoint_inputs(source, manifest, destination):
+    """Copy validated bytes into an exclusively owned immutable restore input set.
+
+    Recheck the copied bytes against the already parsed manifest. A concurrent
+    source replacement cannot retarget a verified restore or overwrite a medium.
+    """
+    source,destination=Path(source),Path(destination)
+    for item in manifest['files']:
+        original=source/item['path'];target=destination/item['path']
+        target.parent.mkdir(parents=True,exist_ok=True)
+        fd=os.open(original,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
+        try:
+            info=os.fstat(fd)
+            if not stat.S_ISREG(info.st_mode) or info.st_size!=item['bytes']:
+                raise ValueError('Restore source changed before its immutable copy')
+            with os.fdopen(fd,'rb',closefd=False) as reader, target.open('xb') as writer:
+                count=0
+                while block:=reader.read(1024*1024):
+                    count+=len(block)
+                    if count>item['bytes']:raise ValueError('Restore source grew during copy')
+                    if block.count(0)==len(block):writer.seek(len(block),os.SEEK_CUR)
+                    else:writer.write(block)
+                if count!=item['bytes']:raise ValueError('Restore source shrank during copy')
+                writer.truncate(count);writer.flush();os.fsync(writer.fileno())
+            if digest(target)!=item['sha256']:
+                raise ValueError('Restore source changed during immutable copy')
+        finally:os.close(fd)
+    checkpoint_inventory(destination,manifest)
+    return destination
+
+
 def startup_restore_medium(args):
     """Choose optional fast backing from verified state, never a user disk."""
     if not args.restore:
@@ -574,7 +606,7 @@ class Session:
         self.notebook_lifecycle.reset()
         self.notebook_observation_path = None
         self.notebook_observation_offset = 0
-        path = self.directory / (f'uart-{getattr(self.machine,"generation",0)}.bin'
+        path = (getattr(self.machine,'directory',self.directory) if self.machine.identity.get('backend') == 'qemu' else self.directory) / (f'uart-{getattr(self.machine,"generation",0)}.bin'
             if self.machine.identity.get('backend') == 'qemu' else 'uart.bin')
         if path.is_file():
             self.notebook_observation_path = path
@@ -587,7 +619,7 @@ class Session:
     def observe_notebook(self):
         if not self.observe_notebook_fault:
             return
-        path = self.directory / (f'uart-{getattr(self.machine,"generation",0)}.bin'
+        path = (getattr(self.machine,'directory',self.directory) if self.machine.identity.get('backend') == 'qemu' else self.directory) / (f'uart-{getattr(self.machine,"generation",0)}.bin'
             if self.machine.identity.get('backend') == 'qemu' else 'uart.bin')
         if not path.is_file():
             return
@@ -673,6 +705,7 @@ class Session:
 
     def snapshot(self, destination):
         self.ensure_capture_certain()
+        if hasattr(self.machine,'checkpoint_admission'):self.machine.checkpoint_admission()
         destination = Path(destination).resolve()
         destination.mkdir(parents=True, exist_ok=False)
         result = self.machine.call('snapshot ' + str(destination / 'machine.chk'))
@@ -693,8 +726,8 @@ class Session:
         return {'snapshot': str(destination), 'machine': result}
 
     def restore(self, source):
-        if getattr(self,'school_service',None) is not None:self.school_service.invalidate()
         self.ensure_capture_certain()
+        if hasattr(self.machine,'checkpoint_admission'):self.machine.checkpoint_admission()
         source = Path(source).resolve()
         if (source / 'snapshot.json').stat().st_size > MAX_REQUEST:
             raise ValueError('Snapshot manifest exceeds its bound')
@@ -716,21 +749,43 @@ class Session:
         names = checkpoint_inventory(source, manifest)
         if names!=getattr(self.machine,'checkpoint_files',{'machine.chk'}):
             raise ValueError('Checkpoint inventory differs from required backend state')
-        if hasattr(self.machine, 'preflight_checkpoint'):
-            self.machine.preflight_checkpoint(source / 'machine.chk', cycle)
-        if self.disconnect_adapter:
-            self.disconnect_adapter()
-        result = (self.machine.restore_checkpoint(source/'machine.chk',phase)
-                  if hasattr(self.machine,'restore_checkpoint') else self.machine.call('restore ' + str(source / 'machine.chk')))
-        if result['cycle']!=cycle:raise ValueError('Snapshot metadata differs from its saved virtual cycle')
+        staged=None;restore_source=source
+        try:
+            if getattr(self.machine,'native_logical2',False):
+                staged=tempfile.TemporaryDirectory(prefix='restore-inputs-',dir=self.directory)
+                restore_source=stage_checkpoint_inputs(source,manifest,Path(staged.name))
+            if hasattr(self.machine, 'preflight_checkpoint'):
+                self.machine.preflight_checkpoint(restore_source / 'machine.chk', cycle)
+            result = (self.machine.restore_checkpoint(restore_source/'machine.chk',phase)
+                      if hasattr(self.machine,'restore_checkpoint') else self.machine.call('restore ' + str(restore_source / 'machine.chk')))
+            if result['cycle']!=cycle:raise ValueError('Snapshot metadata differs from its saved virtual cycle')
+        finally:
+            if staged is not None:staged.cleanup()
         self.automatic = manifest['automatic']
         self.quantum = quantum
         self.event_cursor = cursor
         self.presentation_generation += 1
         self.restored_parent = source
-        self.notebook_epoch()
+        # Only successful machine adoption changes interactive transport/domain
+        # authority. Failed manifest, preflight or private load leaves it intact.
+        post_errors=[]
+        try:self.notebook_epoch()
+        except OSError as error:
+            post_errors.append('notebook observation unavailable after restore: '+str(error))
+        if getattr(self,'school_service',None) is not None:
+            try:self.school_service.invalidate()
+            except Exception as error:
+                self.school_service=None
+                post_errors.append('school connection detached after restore: '+str(error))
+        if self.disconnect_adapter:
+            try:self.disconnect_adapter()
+            except Exception as error:
+                self.adapter=None;self.disconnect_adapter=None
+                post_errors.append('external adapter detached after restore: '+str(error))
+        if post_errors:self.last_error='; '.join(post_errors)
         return {'restored': str(source), 'machine': result,
-                'medium': 'isolated snapshot fork', 'external_event_cursor': manifest['external_event_cursor']}
+                'medium': 'isolated snapshot fork', 'external_event_cursor': manifest['external_event_cursor'],
+                **({'post_restore_errors':post_errors} if post_errors else {})}
 
     def replay(self, source, capture, until, until_ns=None):
         """Replay admitted external requests at their original owner boundaries."""

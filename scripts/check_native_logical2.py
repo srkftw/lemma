@@ -12,7 +12,7 @@ from native_logical_relation import compare_machine,compare_logical
 parser=argparse.ArgumentParser(description='Actual maintained native logical2 continuation; no host guest policy.')
 parser.add_argument('--qemu',type=Path,required=True);parser.add_argument('--bundle',type=Path,required=True)
 parser.add_argument('--medium',type=Path,required=True);parser.add_argument('--output-dir',type=Path,required=True)
-parser.add_argument('--cut',choices=['ready','converter'],default='ready');parser.add_argument('--timeout',type=int,default=300)
+parser.add_argument('--cut',choices=['ready','converter','storage'],default='ready');parser.add_argument('--timeout',type=int,default=300)
 a=parser.parse_args()
 if not 1<=a.timeout<=900:parser.error('timeout must be1..900 seconds')
 root=a.output_dir.resolve();root.mkdir(parents=True,exist_ok=False)
@@ -38,10 +38,12 @@ def launch(name,backing):
  d=root/name;d.mkdir();disk=d/'medium.raw';subprocess.run(['cp','--reflink=auto','--sparse=always',str(backing),str(disk)],check=True);disk.chmod(0o600)
  socket_directory=tempfile.TemporaryDirectory(prefix='lemma-l2-',dir='/tmp');sockets.append(socket_directory);socket_path=Path(socket_directory.name)/'qmp.sock'
  argv=[str(binary),'-machine','lemma-silicon-fast-softtlb','-cpu',CPU,'-m','128M','-smp','1','-bios','none','-kernel',entry['image']['path'],'-dtb',entry['dtb']['path'],'-display','none','-monitor','none','-serial','file:'+str(d/'uart.bin'),'-S','-no-shutdown','-icount','shift=3,align=off,sleep=off','-global','lemma-fast-block.medium='+str(disk),'-qmp','unix:'+str(socket_path)+',server=on,wait=off']
+ if a.cut=='storage':argv+=['-global','lemma-fast-block.delay-write-ns=2000000000']
  log=(d/'machine.log').open('xb');p=subprocess.Popen(argv,stdout=log,stderr=subprocess.STDOUT,start_new_session=True);owned=[p,None,log];live.append(owned);q=QMP(socket_path,p,min(10,max(1,deadline-time.monotonic())));owned[1]=q;put(q,'enable-raw-uart','lemma-raw-uart/1');put(q,'enable-raw-uart-flow','lemma-raw-uart-flow/1');return q,d
 def get(q,k):return q.execute('qom-get',{'path':'/machine/lemma-hardware','property':k})
 def put(q,k,v):return q.execute('qom-set',{'path':'/machine/lemma-hardware','property':k,'value':v})
-def observed(q):return {k:get(q,k) for k in ['virtual-time','device-state','multimodal-state','raw-uart-state','execution-state']}
+def storage(q):return json.loads(q.execute('qom-get',{'path':'/machine/lemma-block','property':'storage-state'}))
+def observed(q):return {**{k:get(q,k) for k in ['virtual-time','device-state','multimodal-state','raw-uart-state','execution-state']},'storage':storage(q)}
 def run(q,until):
  resources();require(time.monotonic()<deadline,'original whole deadline');put(q,'run-until',str(until));q.execute('cont')
  while q.execute('query-status')['running']:
@@ -66,9 +68,22 @@ for module in list(sys.modules.values()):
   target=archive/relative;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(path.read_bytes())
 report['observer_source_closure']=local_sources
 try:
- q,d=launch('original',medium);run(q,4000000000);events=guest_events(d/'uart.bin');report['boot_events']=events;require(any(x[0]==0x420 for x in events) and any(x[0]==0x421 for x in events),'actual Ready/Save not observed')
- now=int(get(q,'virtual-time'));stream=Input(1650,2200,now//10+1,100,100);stream.sample(472,144,512,True);stream.sample(472,144,0,False)
- for event in stream.events:put(q,'external-event',' '.join(str(x) for x in [event[1]*10,*event[1:8]]))
+ q,d=launch('original',medium)
+ if a.cut=='storage':
+  report['declared_storage_stimulus']={'first_write_delay_ns':2000000000,'scope':'actual first guest journal Save; no host request or acknowledgment synthesized'}
+  for quantum in range(40):
+   run(q,int(get(q,'virtual-time'))+100000000);pending=storage(q)
+   if pending['kind']==1 and pending['media_deadline_ns']>int(get(q,'virtual-time')):break
+  require(pending['kind']==1 and pending['media_deadline_ns']>int(get(q,'virtual-time')),'actual guest write did not reach declared media-delay boundary')
+  report['pending_storage']=pending
+ else:run(q,4000000000)
+ events=guest_events(d/'uart.bin');report['boot_events']=events
+ if a.cut!='storage':require(any(x[0]==0x420 for x in events) and any(x[0]==0x421 for x in events),'actual Ready/Save not observed')
+ else:require(any(x[0]==0x423 for x in events) and not any(x[0]==0x421 for x in events),'storage boundary must be genuine unacknowledged guest Save')
+ now=int(get(q,'virtual-time'))
+ if a.cut!='storage':
+  stream=Input(1650,2200,now//10+1,100,100);stream.sample(472,144,512,True);stream.sample(472,144,0,False)
+  for event in stream.events:put(q,'external-event',' '.join(str(x) for x in [event[1]*10,*event[1:8]]))
  if a.cut=='converter':
   report['capture_guest_progress']=[]
   for quantum in range(10):
@@ -88,7 +103,8 @@ try:
  active=[x for x in json.loads(get(q,'execution-state'))['mm_streams'] if x['converting']]
  report['active_mm_streams']=active;report['active_mm_qualified']=bool(active)
  before=observed(q);cut,tlb=save(q,d,'cut');cutmedium=export(q,d,'cut-medium.raw');require(observed(q)==before,'capture/export changed digital state');uart_start=(d/'uart.bin').stat().st_size
- until=int(get(q,'virtual-time'))+1000000;run(q,until);left=observed(q);leftmain,lefttlb=save(q,d,'suffix');leftmedium=export(q,d,'suffix-medium.raw');leftuart=(d/'uart.bin').read_bytes()[uart_start:]
+ until=(pending['media_deadline_ns']+2000000000 if a.cut=='storage' else int(get(q,'virtual-time'))+1000000);run(q,until);left=observed(q);leftmain,lefttlb=save(q,d,'suffix');leftmedium=export(q,d,'suffix-medium.raw');leftuart=(d/'uart.bin').read_bytes()[uart_start:]
+ if a.cut=='storage':require(any(x[0]==0x421 for x in guest_events(d/'uart.bin')),'pending Save did not later acknowledge after actual media completion')
  f,fd=launch('fork',cutmedium);f.execute('lemma-load-machine-softtlb',{'filename':str(cut),'cache-filename':str(tlb)});require(observed(f)==before,'loaded Ready/blocked boundary differs');fork_start=(fd/'uart.bin').stat().st_size;run(f,until);right=observed(f);rightmain,righttlb=save(f,fd,'suffix');rightmedium=export(f,fd,'suffix-medium.raw');require(left==right,'suffix controller observation differs');require(leftuart==(fd/'uart.bin').read_bytes()[fork_start:],'suffix actual UART bytes differ');require(sha(leftmedium)==sha(rightmedium),'suffix durable medium differs')
  report['controller_and_uart_suffix_equal']=True;report['durable_suffix_equal']=True
  relation=compare_machine(leftmain.read_bytes(),rightmain.read_bytes());translations=compare_logical(lefttlb.read_bytes(),righttlb.read_bytes(),leftmain.read_bytes(),rightmain.read_bytes())

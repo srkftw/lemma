@@ -21,6 +21,10 @@ let
       || (type == "regular" && (builtins.match "sim/host/[^/]+" relative != null || builtins.match "sim/companion/backing_[^/]+" relative != null));
   };
 in assert selected.profile == "lemma-silicon-dev/0.14.0";
+assert builtins.elem (builtins.hashFile "sha256" (seed + "/share/lemma-build/consumed-build.tar.gz")) [
+  "2050b67858e74648d8be03a938d847a9f4ab0a1f5c4af31b510377488cac898f"
+  "d0cd825a4ef187f5db5d2418551ea6d02d1e337429c1c6d37df93843742c70c5"
+];
 base.overrideAttrs (old: {
   pname = "lemmasim-qemu-raw-uart-logical-v2-retained";
   separateDebugInfo = false;
@@ -41,8 +45,8 @@ base.overrideAttrs (old: {
     mkdir -p "$out/bin" "$out/share/lemma-build"
     cp build/qemu-system-riscv64 "$out/bin/"
     cp -r ${inputs} "$out/share/lemma-build/producer-inputs"
-    cp logical2-reuse/result.json "$out/share/lemma-build/result.json"
-    cp logical2-reuse/retained-objects.json "$out/share/lemma-build/retained-objects.json"
+    cp logical2-reuse-current/result.json "$out/share/lemma-build/result.json"
+    cp logical2-reuse-current/retained-objects.json "$out/share/lemma-build/retained-objects.json"
     tar -czf "$out/share/lemma-build/consumed-build.tar.gz" .
   '';
   preInstall = ""; postInstall = "";

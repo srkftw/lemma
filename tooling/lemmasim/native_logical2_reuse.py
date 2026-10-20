@@ -21,7 +21,7 @@ p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--reference',type=Path,required=True)
 p.add_argument('--inputs',type=Path,required=True)
 a=p.parse_args()
-root=Path.cwd();out=root/'logical2-reuse';out.mkdir()
+root=Path.cwd();out=root/'logical2-reuse-current';out.mkdir()
 start=time.monotonic();deadline=start+360
 report={'schema':'lemma-native-logical2-retained-build/1','status':'FAIL',
         'scope':__doc__,'commands':[], 'bounds':{'whole_seconds':360,'tree_rss_bytes':1<<30,
@@ -57,7 +57,7 @@ def run(argv,phase,env=None):
     return (out/(phase+'.log')).read_text()
 def objects():return {str(p):sha(p) for p in sorted((root/'build').rglob('*')) if p.is_file() and p.suffix in ('.o','.a')}
 try:
-    require(sha(root/'accel/tcg/lemma_softtlb_qemu.inc.c')=='aebe0aace1b1a463e2837f01b6edbf91b96dbf695b2cf34fe5d3aba688a28eb5','Expected qualified schema2 predecessor helper')
+    require(sha(root/'accel/tcg/lemma_softtlb_qemu.inc.c') in ('aebe0aace1b1a463e2837f01b6edbf91b96dbf695b2cf34fe5d3aba688a28eb5','4701a3ae4bd50beb1bcc91e90a31f048cd0af3b8b2a0a520a2b020162740a9fa'),'Expected qualified schema2 predecessor helper')
     # Reconstruct the maintained cold-patch result from the independently pinned
     # normal configured source. Version5 is temporarily changed to counter3 only
     # to reproduce the cold recipe order (counter -> MM -> logical -> rawUART).
@@ -95,6 +95,7 @@ try:
     (out/'retained-objects.json').write_text(json.dumps(bound,sort_keys=True,indent=2)+'\n')
     report['retained_inventory_sha256']=sha(out/'retained-objects.json')
     binary=root/'build/qemu-system-riscv64';baseline=sha(binary);report['baseline_binary_sha256']=baseline
+    require(baseline in ('8a1858f57253c634890b776d91a0c9b39ac9a89cbb8065fecaf124921690c5e2','dd2ba2f41bdcde80a925fbc0054bb46ad5a15773b51f682afbc063364e4aa98f'),'Exact qualified predecessor ELF identity differs')
     shutil.copyfile(binary,out/'baseline-original.qemu')
     binary.unlink()
     dry=run(['ninja','-C','build','-n','qemu-system-riscv64'],'baseline-plan')
@@ -113,7 +114,7 @@ try:
     original_runpath=re.findall(r'Library runpath: \[([^]]+)\]',dynamic)
     require(len(original_runpath)==1,'Exact original ELF RUNPATH required')
     original_prefix=original_runpath[0].split(':')[0]
-    require(original_prefix=='/nix/store/532kp9djjmg5kzlbbz3qrjg60zm2ir27-lemmasim-qemu-private-logical-wakes-v2-11.1.1/lib','Qualified baseline output prefix differs')
+    require(original_prefix in ('/nix/store/532kp9djjmg5kzlbbz3qrjg60zm2ir27-lemmasim-qemu-private-logical-wakes-v2-11.1.1/lib','/nix/store/1nqjws03faak74p8f8y781s779rfklq1-lemmasim-qemu-raw-uart-logical-v2-retained-11.1.1/lib'),'Qualified baseline output prefix differs')
     environment=os.environ.copy();current_prefix=environment['out']+'/lib'
     needle='-rpath '+current_prefix
     require(environment.get('NIX_LDFLAGS','').count(needle)==1,'Exact Nix wrapper output RUNPATH injection required')
@@ -132,19 +133,24 @@ try:
         report['baseline_difference']={'old_bytes':len(old),'new_bytes':len(new),'unequal_common_bytes':len(diff),'first':diff[:32],'last':diff[-32:]}
     require(sha(binary)==baseline and objects()==bound,'Baseline real link must reproduce original binary byte-for-byte without object changes')
     report['baseline_reproduced']=True
-    helper=root/'accel/tcg/lemma_softtlb_qemu.inc.c';helper.write_bytes((host/'lemma_softtlb2_qemu.inc.c').read_bytes())
+    helper=root/'accel/tcg/lemma_softtlb_qemu.inc.c';new_helper=(host/'lemma_softtlb2_qemu.inc.c').read_bytes()
+    changed_helper=helper.read_bytes()!=new_helper
+    if changed_helper:helper.write_bytes(new_helper)
+    # A reused current helper needs no compiler. The new output environment
+    # still requires a real link; force only that target after the baseline.
+    binary.unlink()
     dry=run(['ninja','-C','build','-n','qemu-system-riscv64'],'changed-plan')
     report['changed_plan']=dry[-12000:]
     planned=set(re.findall(r'Compiling C object (\S+)',dry))
     expected_object='libsystem.a.p/accel_tcg_cputlb.c.o'
-    require(expected_object in planned and planned<=version_consumers|{expected_object} and 'Linking target qemu-system-riscv64' in dry,'Unexpected changed dependency invalidation')
+    require((expected_object in planned)==changed_helper and planned<=version_consumers|{expected_object} and 'Linking target qemu-system-riscv64' in dry,'Unexpected changed dependency invalidation')
     actual=run(['ninja','-C','build','-j2','qemu-system-riscv64'],'changed-object-link')
     report['changed_actual_compiles']=re.findall(r'Compiling C object (\S+)',actual)
-    require(set(report['changed_actual_compiles'])=={expected_object},'Changed action compiled unexpected objects')
+    require(set(report['changed_actual_compiles'])==({expected_object} if changed_helper else set()),'Changed action compiled unexpected objects')
     after=objects();changed=[n for n in bound if after.get(n)!=bound[n]]
-    require(changed==[str(root/'build/libsystem.a.p/accel_tcg_cputlb.c.o')],'Unexpected retained object change')
+    require(changed==([str(root/'build/libsystem.a.p/accel_tcg_cputlb.c.o')] if changed_helper else []),'Unexpected retained object change')
     report.update(status='PASS_MAINTAINED_LOGICAL2_OBJECT_AND_REAL_LINK',changed_objects=changed,
-                  fresh_object_count=1,reused_object_and_archive_count=len(bound)-1,binary_sha256=sha(binary))
+                  fresh_object_count=len(changed),reused_object_and_archive_count=len(bound)-len(changed),binary_sha256=sha(binary))
 except BaseException as error:
     report['error']=repr(error);raise
 finally:
