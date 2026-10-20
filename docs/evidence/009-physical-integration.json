@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T04:25:10.299435+00:00",
+  "written_at": "2026-10-20T04:39:47.779933+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -2478,11 +2478,11 @@
   "process_bound_clocked_comparator": {
     "design": {
       "path": "engineering/multimodal/clocked-comparator-sg13g2.cir",
-      "sha256": "d035310a9ccca3bbab376c06abe02a31f26bc6b2a1479da6b3a0c2322a70b0dd"
+      "sha256": "35ba47e1114925944ec7e298fe1bbb30d6af138fce6508f6beaadfb7e0dbcda1"
     },
     "checker": {
       "path": "scripts/check_sg13g2_comparator.py",
-      "sha256": "244b5d476943729f0b78e67201dee0d8be0a89af2e9958ccbf5fa89bffdde696"
+      "sha256": "a47b286e97d5a7cda349a43978b9d5ef5f94ed3e6857fce8eb24e9c5e9c888a3"
     },
     "consumer": "Existing real HBT microphone preamp output drives an eleven-MOS clocked differential stage with original process inverter loads. The physical acquisition predecessor now has maintained active circuit/model/test sources; the complete converter and digital controller binding remain unfinished.",
     "model_capsule": {
@@ -2533,15 +2533,22 @@
       "path": "build/multimodal/task009-comparator-pilot-a5/expired-budget-negative.json",
       "sha256": "726a7bc15ee7f18c57612dd2bd870ebfbd70a094a3ecef45d28682dc97487d9d"
     },
-    "matrix": {
+    "remaining": [
+      "Measured noise, mismatch and broader/common-mode/input/resource domains beyond the declared deterministic cases.",
+      "Joint MOS/HBT process correlation, mismatch and transient-noise characterization.",
+      "Sample/hold, reference/DAC, complete converter and digital decision/valid/clock binding.",
+      "Layout, extraction, DRC/LVS, pads/package/assembly, manufacturing and physical safety qualification."
+    ],
+    "qualification": "P3 process-model circuit engineering. Declared deterministic operation passes; ADC resolution, physical layout/manufacturing/safety and educational qualification remain UNVERIFIED. Powered248/penRTL504f unchanged.",
+    "initial_matrix": {
       "path": "build/multimodal/task009-comparator-operating-a1/result.json",
       "sha256": "ea0db720c50e0fb13811c7496c357c5ff9266032dd760f7933d41a25e9b92a80"
     },
-    "stronger_endpoint_assessment": {
+    "initial_stronger_endpoint_assessment": {
       "path": "build/multimodal/task009-comparator-operating-assessment-a1/result.json",
       "sha256": "aa59ef63507751e4b5c48b12416ce58e55357d226801264fdf3e072fc16ec75d"
     },
-    "matrix_result": {
+    "initial_matrix_result": {
       "status": "FAIL_NOT_ADMITTED",
       "seconds": 168.12793313793372,
       "points": 27,
@@ -2576,13 +2583,60 @@
         "Actual100fF external load passes at nominal tt/27C/1.2V."
       ]
     },
-    "observer_boundary": "The original exact consumed checker remains archived. A separate stronger assessment verifies exact2us endpoints and≤101ps gaps for all13 positive/control cases; no failed transient is promoted. Maintained expiry/endpoint/gap checks have3 regression negatives and no SPICE rerun.",
-    "remaining": [
-      "Robust comparator sizing/bias/common-mode behavior across the failing operating points.",
-      "Joint MOS/HBT process correlation, mismatch and transient-noise characterization.",
-      "Sample/hold, reference/DAC, complete converter and digital decision/valid/clock binding.",
-      "Layout, extraction, DRC/LVS, pads/package/assembly, manufacturing and physical safety qualification."
-    ],
-    "qualification": "P3 process-model design engineering only; not an admitted ADC, operating-domain-qualified comparator or physical sensor. Selected powered248/RTL504f remain unchanged."
+    "initial_observer_boundary": "The original exact consumed checker remains archived. A separate stronger assessment verifies exact2us endpoints and≤101ps gaps for all13 positive/control cases; no failed transient is promoted. Maintained expiry/endpoint/gap checks have3 regression negatives and no SPICE rerun.",
+    "matrix": {
+      "path": "build/multimodal/task009-comparator-tail-operating-a1/result.json",
+      "sha256": "96741607ce2682f7afa114714af5e143f5b71b0aa11fb2da0bf3a0fa122f70a5"
+    },
+    "matrix_result": {
+      "status": "PASS_DECLARED_PROCESS_MODEL_TESTS_ONLY",
+      "seconds": 115.54411397804506,
+      "operating_points": 27,
+      "operating_passes": 27,
+      "controls_pass": 3,
+      "MOS_corners": [
+        "mos_tt",
+        "mos_ss",
+        "mos_ff"
+      ],
+      "HBT_corner": "hbt_typ",
+      "supply_V": [
+        1.1,
+        1.2,
+        1.3
+      ],
+      "temperature_C": [
+        -20,
+        27,
+        85
+      ],
+      "clock_Hz": 10000000,
+      "clock_edges_ps": 500,
+      "window_us": 2,
+      "maximum_timestep_ps": 100,
+      "source_seals_equal": true,
+      "full_raw_and_endpoint_checks": "Every actual trace reaches2us with≤101ps gaps, finite samples and unchanged decision/reset windows. The original wrong-wiring, held-low clock and100fF controls all pass their distinct expectations."
+    },
+    "causal_candidates": {
+      "task009-comparator-geometry-a1": {
+        "path": "build/multimodal/task009-comparator-geometry-a1/result.json",
+        "sha256": "e798cde3f64716a11aec8c9701fa2393aa341d22d751ae310db64c7d729cf68d"
+      },
+      "task009-comparator-tail-a1": {
+        "path": "build/multimodal/task009-comparator-tail-a1/result.json",
+        "sha256": "bdbf4039336413fff379ce6a81027261a36b718b671799bbfc92ae4d60f75e49"
+      },
+      "task009-comparator-tail-wiring-a1": {
+        "path": "build/multimodal/task009-comparator-tail-wiring-a1/result.json",
+        "sha256": "081335007905a15b00568ad5cd4a8c88017fe9628bada5ea0330a11a4ebaa693"
+      }
+    },
+    "tail_cause": "Input-geometry enlargement failed. The real weaker clocktail changes the observed order: output differential develops before both input drains collapse. A stable inverse output mapping then becomes an explicit physical buffer-wire correction. No observer polarity condition changes.",
+    "source_selection": {
+      "path": "build/multimodal/task009-comparator-selection-a1/result.json",
+      "sha256": "f7980de4fb12998349272f85a604243cfd018cbbc8ec79a1f2a78a9285a3103a"
+    },
+    "fresh_reused_boundary": "Fresh30caseSPICE executed the exact private35ba47e1 source using the maintained candidate option. Original QS/NQS OSDI/model producer components are reused. Path promotion is separately byte-checked and does not rerun SPICE. Initial failed matrix/observers/candidates remain immutable.",
+    "digital_boundary": "Current0.15/synthetic-aperture1/exposure8ticks is not this10MHz analog cell. Full converter, decision-valid and clock/controller binding are unimplemented."
   }
 }

@@ -91,7 +91,7 @@
     "scope": "Eleven real SG13G2 LV PSP MOS transistors plus four original inverter transistors per instance. Clock, microphone voltage and external loads are declared test stimuli. Internal gain and regeneration use actual process transistors.",
     "port_contract": {
       "clock_low": "Both decision outputs return low after precharge.",
-      "clock_high": "A positive input difference requires decisionp high and decisionn low; a negative difference requires the opposite. The operating domain is not admitted: fifteen functional cases still violate this contract."
+      "clock_high": "A positive input difference requires decisionp high and decisionn low; a negative difference requires the opposite. All declared process-model operating cases now satisfy the checked windows. Noise, mismatch and physical operating qualification remain separate."
     },
     "models": {
       "MOS_parameters": "Original cornerMOSlv and recursive parameter includes; Apache-2.0.",
@@ -129,6 +129,53 @@
       ],
       "base_external_load_F": 1e-14,
       "additional_load_control_F": 1e-13,
+      "actual_seconds": 115.54411397804506,
+      "operating_points": 27,
+      "operating_passes": 27,
+      "functional_limits": 0,
+      "SPICE_convergence_limits": 0,
+      "controls_pass": 3,
+      "result": "PASS_DECLARED_PROCESS_MODEL_TESTS_ONLY"
+    },
+    "retained_failures": [
+      "The original 400-second campaign ended without a circuit pass; its 20-microsecond transient hit the original 20-second phase limit.",
+      "The first original QS compilation lacked a host linker. A separate binding with pinned Clang completed.",
+      "Missing NQS definitions produced strict unknown-model warnings. Compiling the original NQS module and loading both modules removed that dependency.",
+      "The initial short/wide-tail design exhibited nominal inverted decisions and fifteen functional/two convergence failures in its original matrix. Its sources/results remain unchanged.",
+      "A larger input-pair candidate caused three phase timeouts and one functional failure. The weak-tail-only candidate completed all four cases with stable reversed port polarity; restoring the physical buffer inputs then passed all four cases and the full original matrix."
+    ],
+    "evidence": "docs/evidence/009-physical-integration.json",
+    "qualification": "P3 process-model circuit engineering only. ADC precision, noise, mismatch, layout, extraction, manufacturing, physical safety and educational qualification remain UNVERIFIED.",
+    "design_sha256": "35ba47e1114925944ec7e298fe1bbb30d6af138fce6508f6beaadfb7e0dbcda1",
+    "initial_operating_matrix": {
+      "MOS_corners": [
+        "mos_tt",
+        "mos_ss",
+        "mos_ff"
+      ],
+      "HBT_corner": "hbt_typ",
+      "supply_V": [
+        1.1,
+        1.2,
+        1.3
+      ],
+      "temperature_C": [
+        -20,
+        27,
+        85
+      ],
+      "clock_Hz": 10000000,
+      "clock_edge_seconds": 5e-10,
+      "transient_seconds": 2e-06,
+      "maximum_timestep_seconds": 1e-10,
+      "direct_input_differential_V": [
+        0.002,
+        0.01,
+        -0.002,
+        -0.01
+      ],
+      "base_external_load_F": 1e-14,
+      "additional_load_control_F": 1e-13,
       "actual_seconds": 168.127933138,
       "operating_points": 27,
       "operating_passes": 10,
@@ -137,14 +184,8 @@
       "controls_pass": 3,
       "result": "FAIL_NOT_ADMITTED"
     },
-    "retained_failures": [
-      "The original 400-second campaign ended without a circuit pass; its 20-microsecond transient hit the original 20-second phase limit.",
-      "The first original QS compilation lacked a host linker. A separate binding with pinned Clang completed.",
-      "Missing NQS definitions produced strict unknown-model warnings. Compiling the original NQS module and loading both modules removed that dependency.",
-      "The original buffer connection reversed the nominal fine-step decision. Crossing its actual input wires preserves the declared external contract; an actual original-wiring negative catches the mismatch.",
-      "Fifteen decision/reset violations and two SPICE convergence limits remain. Nominal success does not qualify the operating domain."
-    ],
-    "evidence": "docs/evidence/009-physical-integration.json",
-    "qualification": "P3 process-model circuit engineering only. ADC precision, noise, mismatch, layout, extraction, manufacturing, physical safety and educational qualification remain UNVERIFIED."
+    "tail_design": "A real long/narrow clocked tail MOS (W0.5um/L2um) limits amplification-phase current; original input devices remain W4um/L0.26um. Fixed original buffer input connections restore the external contract after this bias correction.",
+    "selection_assessment": "build/multimodal/task009-comparator-selection-a1/result.json",
+    "digital_binding": "The selected0.15 profile still declares synthetic-aperture/1; lemma_multimodal.sv defaults exposure to8 core ticks. This10MHz analog decision block is not its ADC. Sample/hold, reference/DAC, conversion state and decision-valid clock/controller binding remain unfinished."
   }
 }

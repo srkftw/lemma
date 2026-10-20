@@ -165,6 +165,21 @@ def validate_waveform(rows):
             'raw transient has a gap larger than the declared100ps maximum')
 
 
+def reverse_buffer_inputs(design):
+    lines = design.splitlines(keepends=True)
+    selected = {}
+    for index, line in enumerate(lines):
+        match = re.fullmatch(r'(Xload[ pn]+ decision[ pn]+ )([^ ]+)( vdd vss sg13g2_inv_1\n?)', line)
+        if match:
+            selected[match[1].split()[0]] = (index, match)
+    require(set(selected) == {'Xloadp', 'Xloadn'}, 'two original output buffers required')
+    left, right = selected['Xloadp'], selected['Xloadn']
+    require({left[1][2], right[1][2]} == {'outp', 'outn'}, 'distinct original buffer inputs required')
+    lines[left[0]] = left[1][1]+right[1][2]+left[1][3]
+    lines[right[0]] = right[1][1]+left[1][2]+right[1][3]
+    return ''.join(lines)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--pdk', type=Path, required=True)
@@ -172,17 +187,22 @@ def main():
     parser.add_argument('--model-capsule', type=Path, required=True,
         help='Explicit source-bound original QS/NQS component compilation receipts; no implicit cache adoption')
     parser.add_argument('--work-dir', type=Path, required=True)
+    parser.add_argument('--candidate', type=Path, help='Explicit unselected circuit under ignored build/; never selected by this command')
     args = parser.parse_args()
     out = args.work_dir.resolve()
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
     out.mkdir(parents=True)
     started, deadline = time.monotonic(), time.monotonic()+180
     ngspice = args.ngspice.resolve()
-    circuit = ROOT / 'engineering/multimodal/clocked-comparator-sg13g2.cir'
+    selected = ROOT / 'engineering/multimodal/clocked-comparator-sg13g2.cir'
+    circuit = args.candidate.resolve() if args.candidate else selected
+    if args.candidate:
+        require(circuit.is_relative_to(ROOT/'build') and circuit.is_file() and circuit.stat().st_size <= 65536, 'candidate must be a bounded ignored build source')
     preamp = ROOT / 'engineering/multimodal/microphone-preamp-sg13g2.cir'
     capsule = json.loads(args.model_capsule.read_text())
     report = {'schema': 'lemma-process-clocked-comparator/1', 'status': 'FAIL',
-        'scope': __doc__, 'process_revision': REVISION,
+        'scope': __doc__, 'process_revision': REVISION, 'candidate_only': args.candidate is not None,
+        'selected_design': {'path': str(selected), 'sha256': sha(selected)},
         'bounds': {'whole_seconds': 180, 'each_seconds': 8, 'AS_bytes': 1 << 30,
                    'output_bytes': 512 << 20}, 'source_inputs': {
             str(p): sha(p) for p in [Path(__file__).resolve(), circuit, preamp, args.model_capsule.resolve(), ngspice]},
@@ -217,8 +237,7 @@ def main():
                 shutil.copyfile(original, directory/target)
             used = design
             if control == 'wrong-wire':
-                used = used.replace('Xloadp decisionp outn', 'Xloadp decisionp outp').replace(
-                    'Xloadn decisionn outp', 'Xloadn decisionn outn')
+                used = reverse_buffer_inputs(used)
                 require(used != design, 'wiring negative did not change source')
             (directory/'comparator.cir').write_text(used)
             cm = .935*supply/1.2
@@ -286,7 +305,7 @@ quit
         require(all(x['status'].startswith('PASS_') for x in report['cases']), 'one or more actual operating limits')
         require(all(sha(p) == value for p, value in report['source_inputs'].items()), 'source drift')
         require(all(sha(p) == value for p, value in report['adopted_inputs'].items()), 'adopted model drift')
-        report['status'] = 'PASS_SIMULATED_PROCESS_COMPARATOR_PREAMP_MATRIX_AND_NEGATIVES'
+        report['status'] = ('PASS_PRIVATE' if args.candidate else 'PASS_SIMULATED') + '_PROCESS_COMPARATOR_PREAMP_MATRIX_AND_NEGATIVES'
     except Exception as error:
         report['error'] = repr(error)
     finally:
