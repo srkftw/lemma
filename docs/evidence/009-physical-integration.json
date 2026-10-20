@@ -8093,6 +8093,179 @@
       "remaining_master_scope": "Finalsnapshot seals names/orientation/transformedITermgeometry/PG/ports; independentfullfinaldbMasterbody/propertyseal remains unfinished. Pre-routeoriginalGDSbodybinding is separate.",
       "fresh_route_runs": 0,
       "fresh_extraction_runs": 0
+    },
+    "completed_zero_marker_fresh_extraction_assessment": {
+      "status": "ASSESSED_COMPLETED_WELL_FILL_ROUTE_FRESH3RC_AVAILABLE9CORNERS_CLOSURE_UNVERIFIED",
+      "whole": {
+        "path": "build/silicon/task009-well-fill-completed-assessment-a2/result.json",
+        "sha256": "1b32795f62ae7db706c322a94389a0206029dbb35e0eaee34238814b02d1387b"
+      },
+      "whole_seconds": 39.84095972497016,
+      "peak_owned_RSS_bytes": 411144192,
+      "output_bytes": 540813146,
+      "owned_processes_reaped": true,
+      "source_seal_equal": true,
+      "original_deadline_met": true,
+      "original14GiB_nonadmission": {
+        "path": "build/silicon/task009-well-fill-completed-assessment-a1/admission-refusal.json",
+        "sha256": "24e9d942c71a38765b77d92d344604b17688f8587416939954ebcafc0f63ef04"
+      },
+      "new_declared_resource_admission": "Before execution13.25GiB fresh =3GiB physical +8GiB hostreserve +2.25GiB futureconsumer growth allowance. Browser fullRSSownership unknown; exact parentcaseIDs residentinventory recorded. Same600/60extract/3RSS/6AS/12output/8reserve.",
+      "route": {
+        "path": "build/silicon/task009-well-fill-completed-route-a2/result.json",
+        "sha256": "e1b213aa7b5963c7e7d2bad02f48873bf219f3c7850a5b7127b1001bc19d5eac"
+      },
+      "geometry_ODB_sha256": "5c43a20a33fe888af5c6cb683d3bc6e19b6d72396a95f7adaa904527fb9d6a9f",
+      "fresh_route_runs": 0,
+      "original_route_observer_failure_immutable": true,
+      "endpoint_component": "Reused original24.404s pins/PG/functionalpadding component on exactsame5c43ODB; no fullfinaldbMasterbodyseal",
+      "fresh_native420_relation": {
+        "status": "PASS_ACTUAL_NATIVE420NM_RECTANGLE_SUBSET_ONLY",
+        "scope": "Actual signal metal versus native PG: original420nm rectangle subset only.\n\nRun check() inside the pinned OpenROAD Python interpreter. Every DEF segment,\nvia and patch binds the actual native wire decoder; unknown grammar fails.\nNo process DRC/LVS/connectivity/IR/EM/timing qualification follows.\n",
+        "native_signal_nets_bound": 9703,
+        "native_wire_via_patch_shapes_checked": 170282,
+        "actual_DEF_RECT_patches_bound": 11139,
+        "unique_native_PG_metal_rectangles": 13418,
+        "violation_pairs": 0,
+        "first_200_violation_pairs": [],
+        "not_checked": [
+          "process DRC/EOL/area/density/antenna",
+          "full connected layout/netlist comparison",
+          "timing",
+          "IR/EM",
+          "pads/package/board"
+        ]
+      },
+      "fresh_intrinsic_via_subset": {
+        "status": "PASS_FIXED_VIA_INTRINSIC_ENCLOSURE",
+        "scope": "Cover the demonstrated router fixed-via enclosure gap on actual DEF routes.\n\nChecks intrinsic fixed-via metal/cut unions against the original process simple\nenclosure rules. Additional same-net wire metal can only increase enclosure.\nGenerated DEF arrays require explicit admission against the original generator\nand every individual cut's enclosure. Unfamiliar clauses fail closed. This is\nan independent sufficient check of this subset, never complete process DRC.\n",
+        "technology_sha256": "fb6f0aa5647efc822ad6551a11b57002a278d7d3f98ac20a12cb9f7a65e81d2d",
+        "routed_def_sha256": "ca940ec974024fbc09539a4166e2713ec07810ff90135be0cf31efa74ae0d78a",
+        "routed_nets": 9706,
+        "via_instances": 70555,
+        "via_counts": {
+          "Via2_YX": 27700,
+          "Via3_XY": 4311,
+          "Via1_XY": 11166,
+          "Via1_YY": 14999,
+          "Via4_YX": 1685,
+          "via5_6_4000_2500_2_4_840_840": 443,
+          "via4_5_2810_2500_5_6_480_480": 1772,
+          "via6_7_4000_4000_2_2_1960_1960": 182,
+          "via5_6_2560_2500_2_2_840_840": 6,
+          "via4_5_2810_1295_3_6_480_480": 64,
+          "via4_5_1200_2500_5_2_480_480": 277,
+          "via3_4_1200_330_1_2_480_480": 2650,
+          "via2_3_1200_330_1_2_480_480": 2650,
+          "via1_2_1200_330_1_2_480_480": 2650
+        },
+        "fixed_definition_rule_checks": 364,
+        "violations": [],
+        "generated_array_definitions": 9,
+        "specialnet_geometry_checked": true,
+        "uncovered": [
+          "cell/macro internal cuts",
+          "wire spacing/width/area",
+          "connectivity",
+          "antenna",
+          "all other process rules"
+        ]
+      },
+      "fresh3RC": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "d5a522fd25250640d21ae32a02e7d0a9343201ee61091609b2dd44dc1126fbda",
+          "setup": "worst slack max -3.041730",
+          "hold": "worst slack min 0.037959",
+          "electrical_violations": 99
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "f8689c3eef464baff07edc15c5992789404e2031c574806c361b4f604815c771",
+          "setup": "worst slack max -3.984339",
+          "hold": "worst slack min 0.054458",
+          "electrical_violations": 166
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "f9d697d0ec0f759a9656ddde596014918220ffe8dc6eb418faf3c62cecf8f585",
+          "setup": "worst slack max -4.826795",
+          "hold": "worst slack min 0.058295",
+          "electrical_violations": 243
+        }
+      },
+      "corners": {
+        "path": "build/silicon/task009-well-fill-completed-corners-a2/result.json",
+        "sha256": "16fbbc194491b0396e040d470ee9de4ea591f023f5bc3040ae5d478ea3189dc0"
+      },
+      "all9_status": "FAIL",
+      "all9_comparison": {
+        "path": "build/silicon/task009-well-fill-completed-comparison-a1/result.json",
+        "sha256": "5517030ffa21ada3f289a58e209ea4af52fa1ca33174c1cfd5162fe95200e53f"
+      },
+      "scope": "No newroute or originalFAILpromotion. OriginalNWell0 applies to sourceprecursor. FullselectedfinalGDS/processDRC/transistorLVS/resistor/bulk/RCmodelqualification/fabrication/safety/education unfinished. Currentselected0.6 unchanged pendingendpointinventory.",
+      "actual_endpoint_inventory": {
+        "path": "build/silicon/task009-well-fill-hold-inventory-a1/result.json",
+        "sha256": "e39c07836d49be524a9ec54d2fbf615449db1f8f47769992fccda387913d41c4",
+        "seconds": 21.957961277104914,
+        "peak_owned_RSS_bytes": 257933312,
+        "all_owned_reaped": true,
+        "source_seal_equal": true,
+        "original_deadline_met": true,
+        "negative_endpoint_union": 144,
+        "old_selected_negative_union": 151,
+        "negative_new_ordinary_endpoints": [
+          "_09594_/D",
+          "_09784_/D",
+          "_09787_/D",
+          "_10155_/D"
+        ],
+        "new_negative_SRAM": 0,
+        "delayed31_worst_available_hold_ns": 0.199101,
+        "delayed31_minimum_available_setup_ns": 7.343273,
+        "matched_six_cases_negative_hold": 0,
+        "scope": "All9actualmin/maxpathinventory;133oldcontroland11otherfastmixednegativeendpoints; no matchedfasttemperaturemodel signoff. Globalsetup/electricalfailuresremain."
+      },
+      "native_master_LEF_property_relation": {
+        "components_and_retained_failures": [
+          {
+            "path": "build/silicon/task009-well-fill-master-body-a1/result.json",
+            "sha256": "938852225ccb1f6db0dfaa5176238a95f95cfb34e8c29744a71c06fc95891d46",
+            "status": "FAIL",
+            "seconds": 0.37916608108207583,
+            "scope": null
+          },
+          {
+            "path": "build/silicon/task009-well-fill-master-body-a2/result.json",
+            "sha256": "8d4769d8180ca9a228cfb91eb798448496f197e03dbb1d6f41680f7e8872c24e",
+            "status": "FAIL",
+            "seconds": 0.8932692259550095,
+            "scope": null
+          },
+          {
+            "path": "build/silicon/task009-well-fill-master-body-closed-a1/result.json",
+            "sha256": "9caf3c6bd0831a5a420a5f9f1da826e5a4e48f1229bce89f10298304ae7c7d46",
+            "status": "FAIL_CLOSED_ASSESSMENT_ASSERTION",
+            "seconds": null,
+            "scope": "Read-only firstassessment assertion failed; no native/geometry/core/tool execution. Originalproducerfailuresunchanged."
+          },
+          {
+            "path": "build/silicon/task009-well-fill-master-body-closed-a2/result.json",
+            "sha256": "3580bdfd00799560bf441acb446ca46dbd482608a59a57bb08ab67dabe6b831f",
+            "status": "PASS_COMPLETED_MASTER_LEF_PROPERTY_POSITIVE_AND_ATOMIC_MUTANT_DELTAS_ONLY",
+            "seconds": 0.16244820808060467,
+            "scope": "Completedfilesonly; zero native/core/route/extraction. Originala2wholeRESTOREFAIL remains. Actualpositive outputs equal exactly;4mutants evaluatedbyexactatomicdeltas. Not arbitraryunserializedOpenDBstate/originalGDSmask/LVS/process qualification."
+          }
+        ],
+        "actual_native_positive": "Exact c851source→5c43routed2libraryLEFfiles equal before mutation;85masters,8349master/MTerm/MPin/shapeproperties",
+        "consequential_actual_controls": "1nmwidth, Xpinrectangle, OBSrectangle, arbitrarymasterproperty+LEFdefinition; closedexactatomicdeltas qualified, not a rewrittenproducerPASS",
+        "restoration_failure": "Original dbBox::destroy explicitly returns forMASTER/MPIN. OnlyprivateRAM mutated; allsourceODBbytessealed andneverwritten. Originala2wholeFAIL remains. Firsta1OpenBLASstartupFAIL andfirstclosedproperty-definitionobserverFAIL remain.",
+        "maintained_relation": "silicon_well_fill_route.master_library_relation now performs literal LEF+object-property equality in ordinarynativeassess; fiveunit tests pass. Addedlibrarypropertyrecords strengthen the maintainedfunction but have not yet been independentlyexecuted. No freshnative/processclaim frompromotion.",
+        "scope": "Originalnative abstractgeometry and properties only. Accessvectors/unserializedOpenDBstate, actualfinaloriginalGDSmaskunion, fullprocessDRC andconnectedtransistorLVS remain separate."
+      }
     }
   },
   "process_bound_sample_hold": {

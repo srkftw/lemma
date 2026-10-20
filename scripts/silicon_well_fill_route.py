@@ -105,6 +105,57 @@ def spacer_serialization(reference,candidate,plan,original_cdl):
         'scope':'Exact source-plan empty-port physical declarations only. Native endpoint/PG proof remains separate; this is not transistor LVS.'}
 
 
+def require_master_exports(before, after):
+    """Compare literal native LEF bytes and properties, with no normalization."""
+    for value in (before, after):
+        require(type(value) is dict and set(value) == {'libraries', 'properties'}, 'closed master export schema')
+        for name in ('libraries', 'properties'):
+            require(type(value[name]) is dict and value[name] and
+                    all(type(k) is str and type(v) is str for k,v in value[name].items()),
+                    'literal master export strings required')
+        require(all(re.fullmatch(r'[0-9a-f]{64}', v) for v in value['libraries'].values()),
+                'native complete library LEF digests required')
+    require(before == after, 'native master/library LEF geometry or object properties changed')
+
+
+def master_library_relation(before_db, after_db, directory):
+    """Native abstract-library geometry; never a substitute for original GDS/LVS.
+
+    The original writer includes all MPin/OBS shapes but omits arbitrary master
+    properties. Export those separately. Access vectors and other unserialized
+    OpenDB state are outside this relation, as is transistor/process geometry.
+    """
+    import odb
+    directory.mkdir()
+    def capture(db, stage):
+        where=directory/stage;where.mkdir();libraries={};properties={};masters=0
+        for index, lib in enumerate(db.getLibs()):
+            path=where/(str(index)+'.lef')
+            require(odb.write_lef(lib,str(path)) == 1, 'actual original native library writer failed')
+            require(lib.getName() not in libraries, 'duplicate native library name')
+            libraries[lib.getName()]=sha(path)
+            properties[lib.getName()]=odb.dbProperty.writeProperties(lib)
+            for master in lib.getMasters():
+                masters+=1;key=lib.getName()+'/'+master.getName()
+                properties[key]=odb.dbProperty.writeProperties(master)
+                for term in master.getMTerms():
+                    name=key+'/'+term.getName();properties[name]=odb.dbProperty.writeProperties(term)
+                    for i,pin in enumerate(term.getMPins()):
+                        pin_name=name+'/pin'+str(i);properties[pin_name]=odb.dbProperty.writeProperties(pin)
+                        for j,box in enumerate(pin.getGeometry(False)):
+                            properties[pin_name+'/box'+str(j)]=odb.dbProperty.writeProperties(box)
+                for i,box in enumerate(master.getObstructions(False)):
+                    properties[key+'/OBS'+str(i)]=odb.dbProperty.writeProperties(box)
+        (where/'properties.json').write_text(json.dumps(properties,sort_keys=True,indent=2)+'\n')
+        return {'libraries':libraries,'properties':properties},masters
+    before,count=capture(before_db,'source');after,other=capture(after_db,'routed')
+    require_master_exports(before,after);require(count == other, 'native master count changed')
+    return {'status':'PASS_LITERAL_NATIVE_LIBRARY_LEF_AND_MASTER_OBJECT_PROPERTIES_ONLY',
+        'libraries':len(before['libraries']),'masters':count,'object_property_records':len(before['properties']),
+        'library_LEF_sha256':before['libraries'],
+        'scope':'Original native library/master LEF pins/OBS bodies plus actuallibrary/master/MTerm/MPin/box properties. No normalization. Access vectors/unserializedOpenDBstate, originalGDSmaskunion, transistorLVS andprocessDRC remain separate.'}
+
+
 def assess(source, geometry, lib, output, *, fixed_geometry=None):
     import odb
     from silicon_acceptance_launch import snapshot
@@ -121,6 +172,7 @@ def assess(source, geometry, lib, output, *, fixed_geometry=None):
     old_db, db = odb.dbDatabase.create(), odb.dbDatabase.create()
     odb.read_db(old_db, str(source)); odb.read_db(db, str(geometry))
     before = snapshot(old_db.getChip().getBlock()); block = db.getChip().getBlock(); after = snapshot(block)
+    masters=master_library_relation(old_db,db,output.parent/(output.stem+'-masters'))
     added = {row['name']: row for row in plan['fillers']}
     expected_cells = {name: (master, orient, (loc[0]+shifts.get(name,0), loc[1]))
                       for name,(master,orient,loc) in before[1].items()}
@@ -180,6 +232,7 @@ def assess(source, geometry, lib, output, *, fixed_geometry=None):
         'source_ODB_sha256':sha(source),'geometry_ODB_sha256':sha(geometry),'fixed_geometry_ODB_sha256':sha(fixed_geometry)if fixed_geometry else None,
         'old_functional_and_macro_instances':9037,'functional_site_moves':32,'original_spacers':40247,
         'functional_padding_nm':960,'physical_spacer_padding_scope':'Only source-qualified physical CORE_SPACERs fill functional padding sites; all9034functional cells retain960nm separation',
+        'native_master_library_geometry':masters,
         'original33_SRAM_delaycells_preserved':True,'ports':len(after[2]),'native_PG_shapes':sum(after[3].values()),
         'OBS':len(after[4]),'negative_cases':['actual_new_spacer_wrong_supply','actual_moved_functional_wrong_site','actual_old_functional_retarget'],'assessment_seconds':time.monotonic()-started,
         'remaining':'Inherited conservativeMetal1finding; fullprocess/LVS, freshsignal/clockroute andall3RC/9timingcorners remain separate'}

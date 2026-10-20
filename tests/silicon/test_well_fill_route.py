@@ -7,7 +7,7 @@ import sys
 import unittest
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
-from silicon_well_fill_route import admit,require_recipe,require_predecessor_relations,spacer_serialization,completed_route_inputs
+from silicon_well_fill_route import admit,require_recipe,require_predecessor_relations,spacer_serialization,completed_route_inputs,require_master_exports
 
 
 class WellFillRoute(unittest.TestCase):
@@ -31,6 +31,19 @@ class WellFillRoute(unittest.TestCase):
         for changed in ({'total':1,'category_counts':{'NW.b':1}}, {'total':False,'category_counts':{}},
                         {'total':0,'category_counts':{'NW.b':1}}):
             with self.assertRaises(ValueError):require_predecessor_relations(gds,dict(nwell,results=[changed]))
+
+    def test_literal_master_library_and_object_properties(self):
+        before={'libraries':{'original':'a'*64},'properties':{'lib/master':'literal body'}}
+        require_master_exports(before,deepcopy(before))
+        for label in ('missing_library','changed_shape','changed_property','missing_property','float','extra_field'):
+            bad=deepcopy(before)
+            if label=='missing_library':bad['libraries'].clear()
+            elif label=='changed_shape':bad['libraries']['original']='b'*64
+            elif label=='changed_property':bad['properties']['lib/master']='other body'
+            elif label=='missing_property':bad['properties'].clear()
+            elif label=='float':bad['properties']['lib/master']=1.0
+            else:bad['ignored']=True
+            with self.subTest(label=label),self.assertRaises(ValueError):require_master_exports(before,bad)
 
     def test_exact_actual_spacer_serialization_and_consequential_negatives(self):
         route=ROOT/'build/silicon/task009-well-fill-route-a1'
