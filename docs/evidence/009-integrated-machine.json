@@ -1760,7 +1760,7 @@
     }
   },
   "Integrated16_receipt2_WAL_canonical": {
-    "status": "RUNNING_UNDER_ORIGINAL_BOUNDS_NO_SUCCESS_CLAIM",
+    "status": "PASS_ACTUAL_INTEGRATED_FACTORY_ROM_NOTEBOOK_PEN_SAVE_RESET",
     "approved_plan": {
       "path": "build/task009/integrated16-school23-receipt-plan-a2/plan.json",
       "sha256": "7dffdb20bd4f731451d8be0e4a6e3e064f97c350eabda9cf05085730391a694e"
@@ -1797,7 +1797,7 @@
       "runtime_identity": "f0c116ccaf86d789e86c0fb2e6df3ec2e27fe7b3ea93ff949571eca73338ad2d",
       "source_inputs": 259,
       "frozen_physical_lock": "3923f9988c82bce5977977e2f751dff303702bd94aed4013cd5d734f8d077403",
-      "physical_scope": "Original frozen115 engineeringselection remains padding/timing-unqualified. Current selected30 metadata does not retroactively rebind this runtime; unchangedpenRTL504f and digital profile16 logic."
+      "physical_scope": "Original frozen115 engineering selection remains padding/timing-unqualified. Later physical selections do not retroactively rebind this runtime; unchanged penRTL504f and digital profile16 logic."
     },
     "ROM_sha256": "8a853ef5ef9fa3414c1db85afb22f10835b054e02fd912b1f3262d56280aa5a4",
     "authentication_scope": "Actual ROM must verify every loaded payload byte using PUBLIC DEVELOPMENT HMAC KEY only; productionidentity andantirollback remainOPEN. Factory authoring is not update or qualification.",
@@ -1820,8 +1820,253 @@
       "launch_free_bytes": 8589934592,
       "launch_available_bytes": 8589934592
     },
-    "fresh_reused": "Fresh descriptor/package/tag and hosted Lean factory author evaluation; retained actual strictaudited target objects, source259 full16 runtime and source16 ROM reused; no guest/ROM/RTL execution yet Freshcanonicalexecutionrunsseparately; noReadycheckpointhybrid orELF/DTBpreload.",
+    "fresh_reused": "Fresh actual canonical ROM/NV Ready, pen/Save and200k reset execution of exact frozen03914f guest; retained audited guest/ROM/RTL runtime and separate genuine factory authoring. Closed assessment adds0 guest/compiler units; no ELF/DTB preload or substituted Ready state.",
     "user_medium": "New isolated sparse copy of actual guestinitialized c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46; original remains unchanged",
-    "retained_old_failure": "Integrated15 older983guest Ready668M then200MSave/no421 FAIL remains unchanged; independent durablefrontier5 and Readyfork diagnosis do not promote that failure."
+    "retained_old_failure": "Integrated15 older983guest Ready668M then200MSave/no421 FAIL remains unchanged; independent durablefrontier5 and Readyfork diagnosis do not promote that failure.",
+    "original_evidence_disposition": "RUNNING_UNDER_ORIGINAL_BOUNDS_NO_SUCCESS_CLAIM: retained original report before actual execution completed",
+    "execution_receipt": {
+      "path": "build/task009/integrated16-school23-receipt-positive-a1/result.json",
+      "sha256": "4c8bb0d2a5a51a79791d60eb8c3f5b94a079160fc55efca04de8020e72abd7a3"
+    },
+    "closed_artifact_assessment": {
+      "path": "build/task009/integrated16-school23-receipt-closed-a1/result.json",
+      "sha256": "1382e40d0ae889a9cfb7689cd8e2aff73da35b3a3212a8219910e401553fae47",
+      "status": "PASS_CLOSED_ORIGINAL_INTEGRATED16_SOURCE_WORK_RESET_AND_CLEANUP",
+      "seconds": 5.908402235014364,
+      "guest_units_added": 0,
+      "compiler_actions_added": 0
+    },
+    "original_wrapper": {
+      "path": "build/task009/integrated16-school23-receipt-runner-a1/result.json",
+      "sha256": "c5e57772870c6f483e29c22a0168d854ce8deca2c47d3c710b574db6a0bdfef3",
+      "published_status": "RUNNING",
+      "returncode": "UNAVAILABLE: wrapper did not publish terminal result; original receipt remains unchanged",
+      "original_owners_absent": [
+        398517,
+        398523
+      ]
+    },
+    "actual_execution": {
+      "seconds": 6654.458127412014,
+      "total_canonical_cycles": 743200000,
+      "Ready_cycles": 674000000,
+      "pen_Save_cycles": 69000000,
+      "reset_cycles": 200000,
+      "independently_linked_work": {
+        "frontier_before": 2,
+        "frontier_after": 5,
+        "namespace": 1,
+        "page": 1,
+        "index_object": 257,
+        "raw_object": 65539,
+        "stroke": 3,
+        "raw_samples": 3,
+        "complete_sample_fields_equal": true,
+        "artifact_before_reference": true,
+        "index_changed": true,
+        "root_header_changed": false,
+        "prior_work_preserved": true,
+        "scope": "independent offline durable linked work; no pixel or reset observation"
+      },
+      "reset_acknowledged_medium_exact": true,
+      "remaining_original_owners": []
+    },
+    "remaining_scope": "This exact old03914f guest and finite full0.16 scenario do not qualify full post-reset reopening, authenticated update installation, the new School24 guest, full RV64GC or arbitrary union behavior. Native/browser0.14 functional subsets retain separate execution identities."
+  },
+  "School24_exact_reduction_SDK": {
+    "status": "PASS_GENUINE_FAST_PAIR_STRICT_AUDITS_AND_MAINTAINED_SDK_PACKAGING",
+    "scope": "Existing Core0 profiles and exact isolated image/grant authority; host orchestration does not construct work or implement target arithmetic. Ordinary user execution is separate; current-source School23 preservation and new full0.16 School24 convergence remain required.",
+    "implementation_commits": [
+      "dba329a",
+      "fd43cdd",
+      "a60da15",
+      "c476583"
+    ],
+    "deployment": {
+      "notebook_version": 24,
+      "deployment_contract": "lemma-school-deployment/4",
+      "extension_contract": "lemma-school-exact-reduction-advisory/1",
+      "assistance_event_format": 3,
+      "whole_service_identity": "lemma-arithmetic-execution-identity-v8",
+      "whole_implementation_id": "0x0009000100000001",
+      "preserved_checker_wire_id": "0x0002000000000001",
+      "service_id": "0x0001000052444331",
+      "request_bytes": 144,
+      "reply_bytes": 176,
+      "arithmetic_profile": "core0-user-v0.7",
+      "grant_change": false,
+      "runtime_loader_in_course_package": false
+    },
+    "genuine_pair": {
+      "receipt": {
+        "path": "build/task009/school24-bootstrap-a7/result.json",
+        "sha256": "1743914c041b52d972d684ba4bd9cfd2c2693389e99162383982bad0e6563879"
+      },
+      "source_archive": "build/task009/school24-source-a7/action-source",
+      "source_inventory_sha256": "79bf899f023c29eb33f3e7b6f8d05f3da2dbd70484d005498c9646eb8769ae61",
+      "input_count": 555,
+      "seconds": 327.5938144370448,
+      "rows": [
+        {
+          "role": "notebook",
+          "configuration": "lemmasim-silicon-school24-notebook",
+          "output": "build/kernel/task009-school24-notebook-a7",
+          "seconds": 160.64097023010254,
+          "peak_combined_rss_bytes": 1854504960,
+          "remaining_observed_pids": []
+        },
+        {
+          "role": "initialize",
+          "configuration": "lemmasim-silicon-school24-initialize",
+          "output": "build/kernel/task009-school24-initialize-a7",
+          "seconds": 166.81680130958557,
+          "peak_combined_rss_bytes": 1836642304,
+          "remaining_observed_pids": []
+        }
+      ]
+    },
+    "reviewed_authority": {
+      "file": "tooling/school-target-authority.json",
+      "sha256": "1caa7a217b0fcda3ece2948e96d2d4422f71e1c27dd112cc8006589ebb2b7514",
+      "only_new_configurations": [
+        "lemmasim-silicon-school24-notebook",
+        "lemmasim-silicon-school24-initialize"
+      ],
+      "old_entries_preserved": true,
+      "actual_candidate_validation": {
+        "path": "build/task009/school24-authority-admission-a2/admission-validation.json",
+        "sha256": "c7aa7a34756fcdc197239f6139e778a920b864c484e75b6bc028e9b91c499c7c"
+      },
+      "actual_whole_notebook_fresh_ID_negatives": {
+        "path": "build/task009/school24-notebook-fresh-id-closed-a1/result.json",
+        "sha256": "06b14340b90ba39d452b6faa72868cc0e138254a56904ac51e8bfab9e3ce7c32"
+      },
+      "actual_whole_arithmetic_negatives": {
+        "path": "build/task009/school24-arithmetic-closed-a1/result.json",
+        "sha256": "7105a327c8b5cae38be83ed405447b69b169a7b0a0c3c84105b315524281e21d"
+      },
+      "independent_body_reviews": [
+        {
+          "path": "build/school/task009-school24-fresh-id-body-review-a1/result.json",
+          "sha256": "776af50d15330515b9411480b01ec5ff6f0fbe8c16c3ee689d11542b1961c00d"
+        },
+        {
+          "path": "build/school/task009-school24-arithmetic-body-review-a1/result.json",
+          "sha256": "9bb62e9ab4e37ad78a8756f18d94c6a3158890b5a9262b447381fd34aefb8c2c"
+        },
+        {
+          "path": "build/school/task009-school24-course-body-review-a1/result.json",
+          "sha256": "e8a6f01c241caeb16b841704ed128d3ff950640d7fadd0098a361fbc25d198db"
+        }
+      ]
+    },
+    "maintained_SDK": {
+      "receipt": {
+        "path": "build/school/task009-school24-sdk-a1/service-build.json",
+        "sha256": "4e99ae0156be821a2d84ab7f3e6b482eff510f0c8d492312e4e7d987ec24fa56"
+      },
+      "monitor": {
+        "path": "build/task009/school24-sdk-runner-a1/result.json",
+        "sha256": "5f40bbca0952c8b4f72cdaa278451760ca842f70ce3212423f2587e6ecc050c0"
+      },
+      "sealed_assessment": {
+        "path": "build/task009/school24-sdk-runner-a1/sealed-assessment-a2.json",
+        "sha256": "18246c0a979055fa15c90fc7a746f1ea2b3a9c2ff37be057988cfbb9d0b46a84"
+      },
+      "producer_equality": {
+        "path": "build/task009/school24-sdk-runner-a1/producer-equality.json",
+        "sha256": "ba543cd631faedb43931b2e29a1933362e828d8e7b236a0a2ed705c804b1e24e"
+      },
+      "command": [
+        "./scripts/lemma-school",
+        "develop",
+        "service-build",
+        "--notebook-version",
+        "24",
+        "--sample-course",
+        "build/task009/school23-mm2-browser-a3/sample.lcp",
+        "--output-dir",
+        "build/school/task009-school24-sdk-a1",
+        "--wasm-build",
+        "build/task009/mm2-tci-stop-runtime-a1"
+      ],
+      "source_archive": "build/school/task009-school24-sdk-a1/action-source",
+      "source_inventory_sha256": "776e11d1c44afb07d565c13dfe8d5bb6b6ba5b59dedc69a0f252c243a889174b",
+      "input_count": 555,
+      "service_seconds": 307.6101763320621,
+      "monitored_seconds": 312.2060408720281,
+      "sampled_peak_owned_rss_bytes": 462516224,
+      "minimum_observed_host_available_bytes": 11402911744,
+      "remaining_observed_pids": [],
+      "fresh_target_actions": 0,
+      "reused_target_actions_per_role": 39,
+      "incremental_Lake_preparations_per_role": 2,
+      "compiled_artifact_equalities": 52,
+      "strict_audit_seconds": {
+        "notebook": 138.3028869649861,
+        "initializer": 134.49965156195685
+      },
+      "native": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/school/task009-school24-sdk-a1/native",
+        "manifestSHA256": "8f213d6eecebd7da9d090d9db105cb6c3d50ba7c1bfdf251ea2c82184c4670c7"
+      },
+      "browser": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/school/task009-school24-sdk-a1/browser",
+        "manifestSHA256": "b1e7a0c7ebff32af3f4b3b6f486a1edb193c3417d1ca8792d6e308b026470348"
+      },
+      "runtime_identity": {
+        "normal_preparation_seconds": [
+          4.419462866848335,
+          3.7768601649440825
+        ],
+        "preexisting_native_output": "/nix/store/p81aqvs2hh228w25f51a8bfr2j7p42sf-lemmasim-qemu-mm2-subset-retained-11.1.1",
+        "derivation": "/nix/store/2xkz00vih98zhjx024vpk19iyddyq4hj-lemmasim-qemu-mm2-subset-retained-11.1.1.drv",
+        "ELF_sha256": "4f052aaf5497b84046d93c08f475bab4f0665babf5fe1f9cc6ddb7b02398b729",
+        "derivation_sha256": "d9146ef20623179ba4fc3160e47b6cebac54c6a69a1a6f90ae74e10c6c8503ef",
+        "public_TCI_runtime": "build/task009/mm2-tci-stop-runtime-a1",
+        "public_TCI_wasm_sha256": "bcebc89a6e4468f74044cf3961a089d4fef9ec6d6a3d8fa33727b3ac4662fcd9",
+        "scope": "Normal preparations select the unchanged retained runtime; original runtime production remains historical."
+      }
+    },
+    "retained_failures_and_unadmitted_plans": [
+      {
+        "path": "build/task009/school24-bootstrap-a1/result.json",
+        "sha256": "5313d41f259e530126a562b69ad4b8067d51f37a2f1475b19d46afe6eba22352"
+      },
+      {
+        "path": "build/task009/school24-bootstrap-a2/result.json",
+        "sha256": "b1c7bc4c9e730f82ff5316d9a20a5e37f19261bdb12c1f2b5eed9a952ca1ff2e"
+      },
+      {
+        "path": "build/task009/school24-bootstrap-a3/result.json",
+        "sha256": "bb55bd2ba63b881fd3099fa8c624d415237dae31ab4be119d890a8960594a644"
+      },
+      {
+        "path": "build/task009/school24-bootstrap-a4/result.json",
+        "sha256": "26e435e6135b37d7b6d8695439b9bb660c7071332c358ff61dee9fb1c322a2ea"
+      },
+      {
+        "path": "build/task009/school24-bootstrap-a5/result.json",
+        "sha256": "f1e5df6e246163cb2d1d55647e088461542576416f68c5d1727f35676c022444"
+      },
+      {
+        "path": "build/task009/school24-bootstrap-a6/admission.json",
+        "sha256": "69de069371384c0a106473e88f9633f3a89c4c70a460fd6577a333196f768315"
+      },
+      {
+        "path": "build/task009/school24-authority-candidates-a1/admission-validation.json",
+        "sha256": "bf62360c112f795067e69bc91a2422a7adfa67effc9e368d308f614f442ff022"
+      }
+    ],
+    "retained_seal_observer_failure": {
+      "path": "build/task009/school24-sdk-runner-a1/seal.py",
+      "scope": "Original tuple-as-manifest observer failure after ordinary archive validation; a2 corrects only the observer and retains exact package bytes."
+    },
+    "remaining": [
+      "ordinary native and browser edit/install/exercise through the real School24 service",
+      "preserve current-source defaultSchool23 Fast/initializer/Integrated15/Integrated16 production and strict audits before final push",
+      "genuine School24 Integrated16 producer/audit and actual canonical ROM/NV execution; the old03914f run is a different guest",
+      "School24 continuation remains unsupported until actual new preparedStore/IPC/reply cuts and transactional adoption qualify"
+    ]
   }
 }
