@@ -2850,7 +2850,7 @@
     "cleanup_scope": "Original wrapper checks exact descendant start ticks in memory and reportsnone; full descendanttick inventory was notpersisted. Closedassessment independentlychecks eightrecordedleaders/processgroups absent."
   },
   "school25_full_integrated_production": {
-    "status": "GENUINE_FULL4_AND_EXACT_BODY_ADMISSION_PASS_STRICT_PENDING",
+    "status": "GENUINE_FULL4_STRICT_PASS_FACTORY_SEALED_CANONICAL_RUNNING",
     "scope": "Genuine full0.16 School25 plus currentlegacy full23Integrated15/full23PCM/full24PCM. No Fast image relabel; strict audits, runtime package and canonical execution remain separate.",
     "source_inputs": 558,
     "source_inventory_sha256": "1812714a67a408f0d9fcb1636030e8bcd67edbb614232e8993a4e11676844e39",
@@ -2875,8 +2875,9 @@
       "notebook"
     ],
     "remaining": [
-      "normal0freshrefresh+fullstrictaudits",
-      "sameSchool25guestactualROM/NVpenSavereset"
+      "actualSchool25full0.16ROM/NVReadypenSavereset",
+      "fullpostresetNotebookreopen/updateinstall/broaderISAdevicecoverage",
+      "School24/25pendingtool/S1continuationcuts"
     ],
     "independent_complete_pre_post_review": {
       "path": "build/school/task009-school25-full-and-legacy-independent-a1/assessment.json",
@@ -2889,6 +2890,86 @@
     "actual48positive72negative_admission": {
       "path": "build/task009/school25-legacy-integrated-authority-a1/admission-validation.json",
       "sha256": "44060d5aa2957e0950a2598f66efffdda2a3e47e92bf35902739110ff8bacfd8"
+    },
+    "normal_warm4_strict4": {
+      "path": "build/task009/school25-legacy-integrated-warm-strict-a1/result.json",
+      "sha256": "424aec1c8efbc8ab5446361341b6aa5160b7d790db4e60cf331378393289529c"
+    },
+    "literal104_compiled_target_equalities": {
+      "path": "build/task009/school25-legacy-integrated-warm-strict-a1/warm-target-equality.json",
+      "sha256": "d188e8760b502d4fa1ed4080a86f87cfe576c65fd14711ae7997995a2283d538"
+    },
+    "closed_four_full_strict_assessment": {
+      "path": "build/task009/school25-legacy-integrated-warm-strict-a1/closed-assessment.json",
+      "sha256": "e96f6b9c1313d9d57a631acc57fd5c7dc49f2b12ce9f1e9de89c0c9398df845e"
+    },
+    "strict_seconds": [
+      164.638253553072,
+      157.45107949711382,
+      160.67846498801373,
+      164.5698193500284
+    ],
+    "normal_warm_counts": {
+      "fresh": 0,
+      "incremental": 2,
+      "reused": 39
+    },
+    "strict_whole_seconds": 686.0310422619805,
+    "final_archive": {
+      "path": "build/task009/school25-legacy-integrated-admitted-source-a1/action-source",
+      "source_inputs": 558,
+      "inventory_sha256": "748e84981c47d82ec7e15cbcb3987f478a9af019eaa91922968bb05bb91ade59"
+    },
+    "normal_outer_guard_refusal": {
+      "path": "build/task009/school25-legacy-integrated-warm-strict-a1/outer-nix-refusal-a1.json",
+      "sha256": "7530758c8b0b5c69fd0fec9cc00921a6772594c49375594c213be11628e0650f"
+    },
+    "guard_refusal_scope": "Scheduledsparsemaintenance before anycampaign/deadline; actualservicecompleted beforefreshnormalguardadmission. No bypass.",
+    "fresh_factory_artifacts": {
+      "original_receipt": {
+        "path": "build/task009/school25-integrated16-artifacts-a1/result.json",
+        "sha256": "a53dec23a02b90319f8dcdd73b31fd6b41234a9b21663e6d9aea52659f395583"
+      },
+      "closed_assessment": {
+        "path": "build/task009/school25-integrated16-artifacts-a1/closed-assessment.json",
+        "sha256": "b27fce80215b34e88bad552b02e558086accccb051f40ccd92c0d4be3cc5eb78"
+      },
+      "seconds": 8.94894946506247,
+      "peak_combined_owned_RSS_bytes": 1750839296,
+      "factory_bytes": 33558528,
+      "factory_sha256": "10925b9f4b171ebf568ab810d37bd788190e1fa4df8f9a9f01e61f3ebd3b493e",
+      "guest_ELF_sha256": "d650439a72c4dbc55287560400f78c6296b924f3d12ffa3e4ecb805777cc9fa1",
+      "image_sha256": "8859cd1fec887adeeb762613bd6de78fd33e6b04250fa6db71d8b49ec8218865",
+      "runtime_identity": "f0c116ccaf86d789e86c0fb2e6df3ec2e27fe7b3ea93ff949571eca73338ad2d",
+      "source_scope": "Freshdescriptor/package/tag andactualhostedLean factoryevaluation; exactretainedactualfull16runtime/ROMreused. No guestexecutionfromartifactauthor.",
+      "retained_label_error": "Originalsuccesslabel copiedSchool24; originalretained unchanged. Closedassessment requires actualSchool25configuration/imageID/rawlayout/seals/deadline/output/cleanup anddoesnotrelyonexit0alone."
+    },
+    "canonical_live": {
+      "plan": {
+        "path": "build/task009/school25-integrated16-canonical-plan-a1/plan.json",
+        "sha256": "f705b4e093dc090b0d62f299a385d8e367dd063339baf08b42a8ac4f174ad6a0"
+      },
+      "runner_receipt_live": "build/task009/school25-integrated16-canonical-runner-a1/result.json",
+      "observer_progress_live": "build/task009/school25-integrated16-canonical-positive-a1/progress.json",
+      "start_UTC": "2026-10-20T20:23:31.878924+00:00",
+      "original_deadline_UTC": "2026-10-20T23:43:31.878924+00:00",
+      "initial_state": "ActualfactoryROM/NV coldboot, noELF/DTBpreload; actualc79initializedemptymedium",
+      "limits": {
+        "whole_seconds": 12000,
+        "aggregate_canonical_cycles": 1500000000,
+        "Ready_cycles": 1299800000,
+        "Ready_seconds": 10500,
+        "Save_cycles": 200000000,
+        "Save_seconds": 1800,
+        "reset_cycles": 200000,
+        "runtime_single_process_RSS_bytes": 536870912,
+        "combined_owned_RSS_bytes": 1073741824,
+        "output_bytes": 2147483648,
+        "launch_available_bytes": 9663676416,
+        "continuing_available_bytes": 8589934592,
+        "launch_free_bytes": 8589934592
+      },
+      "scope": "RUNNING only. Actual739+740+731/Ready, complete9fieldpen/Save/reset stillrequired. No bootupdate/fullreopen/arbitraryISA/device/physicalclaim."
     }
   }
 }
