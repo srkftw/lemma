@@ -63,6 +63,7 @@ def pack(args):
             raise ValueError('School23/v2 archive requires current prepared QEMU runtime sources')
         for key in ('qemu','derivation'):guest.validate(data[key])
         selected=dict(SCHOOL);data['workloads']={};data.pop('guest_archive',None)
+        data.pop('guest_source_root',None)
         for role in selected:
             base=Path(getattr(args,role+'_build')).resolve()
             guest.verify_guest_build(base,selected[role],bundle.read_json(base/'build.json')['optimization'],source_root=source_root)

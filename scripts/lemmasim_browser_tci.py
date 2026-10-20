@@ -84,8 +84,25 @@ def retained_runtime(directory):
     if build.get('production_mode') in ('incremental-controller-object-and-real-link/1','fresh-upstream-objects-and-real-link/1'):
         required.add('incremental_uart.py')
         if build.get('inputs',{}).get('tooling/lemmasim/tci/incremental_uart.py')!=files.get('incremental_uart.py'):raise ValueError('Unbound incremental controller producer')
+    if build.get('production_mode')=='incremental-flow-objects-and-real-link/1':
+        required|={'incremental_flow.py','patch_uart_flow.py','retained-closure.json','retained-closure-inputs.json',
+                   'retained-closure-source/incremental_flow.py','retained-closure-source/build.py','retained-closure-source/shell.nix',
+                   'flow-source/chardev/char-fe.c','flow-source/hw/char/serial.c'}
+        if build.get('inputs',{}).get('tooling/lemmasim/tci/incremental_flow.py')!=files.get('incremental_flow.py'):raise ValueError('Unbound incremental flow producer')
+        observed=read(directory/'retained-closure.json')
+        if observed.get('status')!='PASS_NEWLY_OBSERVED_RETAINED_CLOSURE_AND_BYTE_IDENTICAL_LINK' or observed.get('observed_object_count')!=1047 or build.get('fresh_object_count')!=3 or build.get('reused_object_count')!=1044:raise ValueError('Incomplete independently observed flow object closure')
+        if sha(directory/'retained-closure.json')!=build.get('retained_closure_observation',{}).get('sha256') or sha(directory/'retained-closure-inputs.json')!=observed.get('observed_inputs_sha256') or read(directory/'retained-closure-inputs.json')!=observed.get('observed_inputs') or observed.get('observed_inputs')!=build.get('retained_inputs'):raise ValueError('Changed retained closure observation')
+        if observed.get('predecessor',{}).get('sha256')!=build.get('predecessor',{}).get('sha256') or observed.get('outputs')!=build.get('predecessor',{}).get('outputs') or observed.get('original_source_closure_sha256')!=build.get('predecessor',{}).get('source_closure_sha256'):raise ValueError('Retained baseline production differs')
+        for name in ('incremental_flow.py','build.py','shell.nix'):
+            expected=[v['sha256'] for k,v in observed.get('inputs',{}).items() if Path(k).name==name]
+            if len(expected)!=1 or expected[0]!=files.get('retained-closure-source/'+name):raise ValueError('Unbound retained observer source')
+        patch=[v['sha256'] for k,v in build.get('overlay_inputs',{}).items() if k.endswith('/tooling/lemmasim/patch_uart_flow.py')]
+        if patch!=[files.get('patch_uart_flow.py')]:raise ValueError('Unbound frozen UART flow overlay')
     if set(files)!=required:raise ValueError('Unknown or incomplete admitted runtime closure')
     source=read(directory/'source-inputs.json')
+    if build.get('production_mode')=='incremental-flow-objects-and-real-link/1':
+        for name in ('chardev/char-fe.c','hw/char/serial.c'):
+            if source.get(name)!=files.get('flow-source/'+name):raise ValueError('Unbound changed UART source')
     if type(build.get('exit_code')) is not int or type(build.get('source_file_count')) is not int:raise ValueError('Runtime production counters must be exact integers')
     if build.get('schema')=='lemma-tci-public-build/1':
         origin=build.get('producer_input_root')
