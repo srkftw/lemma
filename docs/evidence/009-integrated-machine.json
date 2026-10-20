@@ -537,10 +537,144 @@
     },
     "canonical_durable_assessment": "build/task009/integrated15-school23-durable-assessment-a1/result.json",
     "corrected_positive_run": {
-      "status": "RUNNING_ORIGINAL_BUDGET",
+      "status": "PASS_ACTUAL_INTEGRATED_FACTORY_ROM_NOTEBOOK_PEN_SAVE_RESET",
       "plan": "build/task009/integrated15-school23-positive-a3-plan.json",
       "directory": "build/task009/integrated15-school23-positive-a3",
-      "scope": "New observer and execution; original failure unchanged. Exact same original limits. Progress file is a live observation, not a terminal receipt."
+      "scope": "Fresh actual ROM/NV cold authentication of declared factory bytes, old540-input sharedSchool23 guest, selected full256-entry IHP SRAM pen, linked durable work, independently observed newink pixels and actual reset/ROM re-entry. No update/install, independent coldNotebook reopen or physicalclosure claim. Originala2 failure remains unchanged.",
+      "receipt": "build/task009/integrated15-school23-positive-a3/result.json",
+      "receipt_sha256": "8cfcbc74b771984a45ad5f7ecd29573e26be42e99d7053d910c76e8baec697bb",
+      "seconds": 4515.1071104139555,
+      "aggregate_cycles": 699200000,
+      "phases": [
+        {
+          "name": "combined-kernel-and-notebook-Ready",
+          "cycles": 661000000,
+          "end_cycle": 661000000,
+          "seconds": 4176.117407016922
+        },
+        {
+          "name": "actual-pen-and-Save",
+          "cycles": 38000000,
+          "end_cycle": 699000000,
+          "seconds": 332.098428376019
+        }
+      ],
+      "saved": {
+        "store_sequence": 5,
+        "user_sha256": "a4a734d07dab1ca74a5778d33da95280f3af9aa0ff179bc41d058c5b5bb35d38",
+        "boot_sha256": "fc7de9e9727561d03cfa757575c8416f5b43e4074c61e841672d32829099ae85",
+        "events": [
+          [
+            1,
+            66109999,
+            32788,
+            4769,
+            0,
+            2,
+            1,
+            0,
+            1
+          ],
+          [
+            2,
+            66209999,
+            13115,
+            50664,
+            1024,
+            3,
+            1,
+            0,
+            1
+          ],
+          [
+            3,
+            66309999,
+            13513,
+            50724,
+            1216,
+            3,
+            1,
+            0,
+            1
+          ],
+          [
+            4,
+            66409999,
+            13513,
+            50724,
+            0,
+            2,
+            1,
+            0,
+            1
+          ],
+          [
+            5,
+            66509999,
+            54527,
+            1908,
+            2048,
+            3,
+            1,
+            0,
+            1
+          ],
+          [
+            6,
+            66609999,
+            54527,
+            1908,
+            0,
+            2,
+            1,
+            0,
+            1
+          ]
+        ],
+        "old_work_preserved": true,
+        "new_ink_pixels": 11,
+        "committed_page_index_changed": true,
+        "linked_work": {
+          "frontier_before": 2,
+          "frontier_after": 5,
+          "namespace": 1,
+          "page": 1,
+          "index_object": 257,
+          "raw_object": 65539,
+          "stroke": 3,
+          "raw_samples": 3,
+          "complete_sample_fields_equal": true,
+          "artifact_before_reference": true,
+          "index_changed": true,
+          "root_header_changed": false,
+          "prior_work_preserved": true,
+          "scope": "independent offline durable linked work; no pixel or reset observation"
+        }
+      },
+      "reset": {
+        "cycles": 200000,
+        "acknowledged_user_bytes_unchanged": true,
+        "scope": "actual reset and initial ROM/NV re-entry; full cold notebook reopening remains separate"
+      },
+      "ready_checkpoint": {
+        "result": "CAPTURED",
+        "path": "/home/sreekumaar/Downloads/lemma/build/task009/integrated15-school23-positive-a3/ready-checkpoint",
+        "manifest_sha256": "554fd6054778a93a550f8b657d3b6fa11bf326675a0a6af3b9682fc134d7b985",
+        "scope": "Actual Ready state captured; no restore or continuation claim from capture alone"
+      },
+      "observed_resources": {
+        "output_bytes": 1026772093,
+        "peak_single_owned_process_rss_bytes": 156561408
+      },
+      "owned_processes_reaped": true,
+      "excluded": [
+        "independent cold reopen",
+        "whole-panel oracle",
+        "enabled simultaneous raw acquisition",
+        "wired service traffic",
+        "ordinary Student school workflow",
+        "physical or educational qualification"
+      ]
     }
   },
   "uart_flow": {
@@ -737,7 +871,20 @@
     "ink_failed_producer": "build/task009/school23-ink-producer-a1/result.json",
     "ink_failure": "Actual LLVM/object/link completed, but source_before/after rejects a consumed contract document change. Original failure and generated action receipts retained; no admitted build from this run.",
     "ink_source": "build/task009/school23-ink-source-a1",
-    "ink_inventory_sha256": "8d5d6352ec95d47ca3061b08dccac0fd46c1d378bdf6c42b9fcde734d2be6724"
+    "ink_inventory_sha256": "8d5d6352ec95d47ca3061b08dccac0fd46c1d378bdf6c42b9fcde734d2be6724",
+    "final_ink_qualified_source": "build/task009/school23-ink-source-a2",
+    "final_ink_qualified_inventory_sha256": "86d2cc96e0a9c577498be9627aba0ac9148762d2f481744edaa3c61296190263",
+    "final_pin_source": "build/task009/school23-ink-source-a3",
+    "final_pin_inventory_sha256": "65cc5925b6edaf2045aca4d4bbd5891cd5a9cec04fc5c07e353f77aad7be1b86",
+    "first_strict_audits": "build/task009/school23-ink-audit-a1/result.json",
+    "first_strict_audit_failure": "Allthree correctly reject actual LLVM uadd.sat.i64 generated for the new saturating loss counter. No foreign runtime or unrelated declarations were observed.",
+    "bounded_lowering_gate": "build/task009/school23-loss-admission-a1/result.json",
+    "bounded_lowering_tests": "Six meaningful negative/owner/width/pre/post tests; full529kernelhosttestsPASS27.446s at build/task009/school23-loss-admission-a1/kernel-host.log",
+    "final_audit_source": "build/task009/school23-ink-source-a4",
+    "final_audit_inventory_sha256": "a3912724ffa06d83943c0e737ddc868dd7a90d823362fa3828775c5f083da7c3",
+    "final_cached_refresh": "build/task009/school23-ink-producer-a4/result.json",
+    "fresh_strict_audits": "build/task009/school23-ink-audit-a2/result.json",
+    "current_scope": "Freshstrictaudits running; no newordinaryStudent completion claim from compilation or componentAction checks."
   },
   "selected_powered_physical": {
     "selection": "lemma-pen-sg13g2-core-grid/1",

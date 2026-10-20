@@ -403,8 +403,64 @@ def optimizer_intrinsics(unit: dict) -> set[str]:
     # genuine store/notebook consumer authorizes these observed optimizations.
     return (OPTIMIZER_INTRINSICS
             | ({"llvm.usub.sat.i64", "llvm.fshl.i64"} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else set())
+            | ({"llvm.uadd.sat.i64"} if _notebook_loss_intrinsic_owner(unit) else set())
             | ({"llvm.bitreverse.i4"} if unit.get("configuration") in BLE_CONFIGURATIONS
                and unit.get("role")=="kernel" else set()))
+
+
+NOTEBOOK_LOSS_SOURCE = "Lemma.Applications.Notebook.multimodalRawLoss"
+NOTEBOOK_LOSS_SHAPES = {
+    False: "c498a2cbab6f59971ef0c2f7ad04aefe99bae6a950c5d589185b8c497174c80e",
+    True: "7b424e9f0401d2f6afa72509cf7d9e5df672f4bdc5d9b2167510dd1d41ce0687",
+}
+
+def _notebook_loss_intrinsic_owner(unit: dict) -> bool:
+    return (unit.get("role") == "user" and unit.get("image_key") == "notebook"
+            and any(re.sub(r"^_private\..*?\.[0-9]+\.", "", row.get("source", "")) == NOTEBOOK_LOSS_SOURCE
+                    for row in unit.get("functions", [])))
+
+
+def validate_notebook_loss_intrinsic(ir: str, unit: dict, *, optimized: bool,
+                                     optimization: str | None = None) -> dict:
+    """The genuine checked loss-counter expression, not general intrinsic access.
+
+    The complete source-pinned corpus is checked separately. This additional
+    gate binds both exact pre/post bodies, the sole owner and actual64-bit
+    intrinsic site. Actual object/undefined-symbol/ISA audits still follow.
+    """
+    intrinsic = "llvm.uadd.sat.i64"
+    sites = [line.strip() for line in ir.splitlines() if "@" + intrinsic + "(" in line]
+    if not _notebook_loss_intrinsic_owner(unit):
+        if sites: raise Core0Error("Notebook loss intrinsic escapes its actual owner")
+        return {}
+    sources = [re.sub(r"^_private\..*?\.[0-9]+\.", "", row["source"]) for row in unit["functions"]]
+    if len(sources) != len(set(sources)):
+        raise Core0Error("Notebook loss source inventory duplicates declarations")
+    rows = dict(zip(sources, unit["functions"]))
+    row = rows[NOTEBOOK_LOSS_SOURCE]
+    effects = ["checked-access", "io-order", "virtual-read", "virtual-write", "user-syscall", "privilege-transition"]
+    if row.get("args") != ["u64"] or row.get("effects") != effects:
+        raise Core0Error("Notebook loss lacks its genuine one-word checked Action")
+    names = {value["symbol"]: key for key, value in rows.items()}
+    body = _ir_definition_body(ir, row["symbol"])
+    rebound = re.sub(r"@([^ (]+)", lambda match: "@" + names.get(match[1], match[1]), body)
+    normalized = " ".join(" ".join(line.split(";", 1)[0].strip() for line in rebound.splitlines()).split())
+    transformed = optimized and optimization != "O0"
+    digest = hashlib.sha256(normalized.encode()).hexdigest()
+    if digest != NOTEBOOK_LOSS_SHAPES[transformed]:
+        raise Core0Error("Notebook loss differs from its checked saturating-counter body")
+    if transformed:
+        call = "%spec.select = call i64 @llvm.uadd.sat.i64(i64 %action.call.value21, i64 %bin48)"
+        declaration = r"declare i64 @llvm\.uadd\.sat\.i64\(i64, i64\)(?: #[0-9]+)?"
+        if (len(sites) != 2 or sites.count(call) != 1 or call not in body
+                or sum(re.fullmatch(declaration, line) is not None for line in sites) != 1):
+            raise Core0Error("Notebook loss intrinsic has an extra site or changed width/signature/owner")
+    elif sites:
+        raise Core0Error("Notebook loss intrinsic appears before selected O2 optimization")
+    return {"contract_version": "lemma-notebook-loss-saturation/1", "source": NOTEBOOK_LOSS_SOURCE,
+            "body_sha256": digest, "optimized": transformed,
+            "intrinsic": intrinsic if transformed else None, "bits": 64,
+            "semantics": "min(UINT64_MAX, previous + discarded)", "foreign_runtime": False}
 
 
 BLE_HEADER_SHAPES = {
@@ -5509,6 +5565,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     from paper_bulk import validate as validate_surface_v2
     if multimodal_report is None: validate_surface_v2(ir,unit,optimized=optimized)
     ble_header = validate_ble_header_intrinsic(ir,unit,optimized=optimized,optimization=optimization)
+    notebook_loss = validate_notebook_loss_intrinsic(ir,unit,optimized=optimized,optimization=optimization)
     definitions, declarations, calls = parse_definitions_and_calls(ir)
     functions = {row["symbol"] for row in unit["functions"]}
     primitives = {row["primitive_symbol"] for row in unit["used_execution_ops"] if row["primitive_symbol"] is not None}
@@ -5657,6 +5714,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             **({"managed_bytes":bytes_report} if bytes_report is not None else {}),
             **({"arithmetic_bytes_execution_identity":bytes_execution_report} if bytes_execution_report is not None else {}),
             **({"ble_header_intrinsic":ble_header} if ble_header else {}),
+            **({"notebook_loss_intrinsic":notebook_loss} if notebook_loss else {}),
             **({"lemmasim_device_lowering":sim_devices} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else {})}
 
 
