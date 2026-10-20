@@ -3178,5 +3178,195 @@
       ],
       "scope": "Fresh real full0.16 School25 ROM/NV cold authentication, pen/Save, complete3x9word raw retention,11 new pixels and200k reset preserving acknowledged backing. No ELF/DTB preload, update-install, full postreset Notebook reopen, arbitrary ISA/device/cross-backend or physical claim. No guest rerun for closed observer corrections."
     }
+  },
+  "buffered_reader_cancellation_admission": {
+    "status": "PASS_GENUINE_FAST25_PRODUCTION_AND_EXACT_BODY_ADMISSION",
+    "source_commit": "c921807",
+    "authority_commit": "50dd71d",
+    "source_input_count": 558,
+    "source_inventory_sha256": "e2248333e760d5ab25b0209d2325da0848b37a5fa151398b3752496fca8a4ae7",
+    "producer": {
+      "path": "/home/sreekumaar/.codex/worktrees/task009-reader-fix/lemma/build/task009/buffered-reader-fast-pair-a2/result.json",
+      "sha256": "7e6ad5b20d91e42f52ec84ba4e588181e79fd52173e7b6ed98e0ddb1c3c4659e"
+    },
+    "producer_seconds": 342.5367987451609,
+    "peak_combined_owned_RSS_bytes": 1969811456,
+    "configuration_rows": [
+      {
+        "role": "notebook",
+        "configuration": "lemmasim-silicon-school25-notebook",
+        "output": "build/kernel/task009-school25-buffered-reader-notebook-a1",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/build_kernel.py",
+          "--stage",
+          "supervisor",
+          "--opt-level",
+          "O2",
+          "--configuration",
+          "lemmasim-silicon-school25-notebook",
+          "--output-dir",
+          "build/kernel/task009-school25-buffered-reader-notebook-a1",
+          "--cache-dir",
+          "/home/sreekumaar/Downloads/lemma/build/action-cache",
+          "--timeout",
+          "300"
+        ],
+        "preflight": {
+          "available_bytes": 13866422272,
+          "disk_free_bytes": 302711832576
+        },
+        "status": "PASS",
+        "started_unix": 1792536461.675838,
+        "owner_PID": 689896,
+        "peak_combined_owned_RSS_bytes": 1969811456,
+        "maximum_Lean_processes": 1,
+        "returncode": 0,
+        "seconds": 172.97829186613671,
+        "log_sha256": "1e46bc3d59534918118bce33b27256c07b522067df3f87b8513bc86a6c05e1d9",
+        "action_counts": {
+          "fresh": 39,
+          "incremental": 2,
+          "reused": 0
+        }
+      },
+      {
+        "role": "initialize",
+        "configuration": "lemmasim-silicon-school25-initialize",
+        "output": "build/kernel/task009-school25-buffered-reader-initialize-a1",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/build_kernel.py",
+          "--stage",
+          "supervisor",
+          "--opt-level",
+          "O2",
+          "--configuration",
+          "lemmasim-silicon-school25-initialize",
+          "--output-dir",
+          "build/kernel/task009-school25-buffered-reader-initialize-a1",
+          "--cache-dir",
+          "/home/sreekumaar/Downloads/lemma/build/action-cache",
+          "--timeout",
+          "300"
+        ],
+        "preflight": {
+          "available_bytes": 13323649024,
+          "disk_free_bytes": 302637289472
+        },
+        "status": "PASS",
+        "started_unix": 1792536634.6793842,
+        "owner_PID": 691077,
+        "peak_combined_owned_RSS_bytes": 1935880192,
+        "maximum_Lean_processes": 1,
+        "returncode": 0,
+        "seconds": 169.3518151070457,
+        "log_sha256": "a94c75e864e004e524bf2ce9efa4841004677d22d52e5562ff9805fdbdc46029",
+        "action_counts": {
+          "fresh": 13,
+          "incremental": 2,
+          "reused": 26
+        }
+      }
+    ],
+    "remaining_exact_start_owned": [],
+    "independent_notebook_review": {
+      "path": "build/school/task009-buffered-reader-independent-review-a1/result.json",
+      "sha256": "f0d80d2c2d49eb736e1ae73160fa1ad848bd8c5584c8062a080056ee9de2a31b"
+    },
+    "independent_initializer_review": {
+      "path": "build/school/task009-buffered-reader-independent-review-a1/initializer/result.json",
+      "sha256": "40a62f8548abcbf72c3af17cbe700eacec35710876c215575f52f08fd4d27793"
+    },
+    "authority_qualification": {
+      "path": "build/school/task009-buffered-reader-independent-review-a1/qualification.json",
+      "sha256": "80877a307e445e4833dcfded6bb4bbf30b6a1842872a11cd595abd8d173d8ae8"
+    },
+    "complete_pre_post_positives": 24,
+    "consequential_cancellation_negatives": 12,
+    "authority_changes": [
+      [
+        "lemmasim-silicon-school25-notebook",
+        "notebook",
+        "pre",
+        "37f8859e46c05edb7c15876260035e34386e0b615fe6e68573e0f33c1eee9e95",
+        "f6b3a821493566701c1574cd6b99aeef260d4d471d5d6ded49556dda0b49c4f1"
+      ],
+      [
+        "lemmasim-silicon-school25-notebook",
+        "notebook",
+        "post",
+        "391004a6985a0c7cb0104efb13afdfe75d04b39a56cdb3427df7136a21bbaf73",
+        "6077a90a00975c05df2f06b3b4bf9a885b186a91205842d875b35493ff9d250f"
+      ],
+      [
+        "lemmasim-silicon-school25-initialize",
+        "notebook",
+        "pre",
+        "37f8859e46c05edb7c15876260035e34386e0b615fe6e68573e0f33c1eee9e95",
+        "f6b3a821493566701c1574cd6b99aeef260d4d471d5d6ded49556dda0b49c4f1"
+      ],
+      [
+        "lemmasim-silicon-school25-initialize",
+        "notebook",
+        "post",
+        "391004a6985a0c7cb0104efb13afdfe75d04b39a56cdb3427df7136a21bbaf73",
+        "6077a90a00975c05df2f06b3b4bf9a885b186a91205842d875b35493ff9d250f"
+      ]
+    ],
+    "authority_sha256": "4985c704ccd61796617ad056698012a58935e75a93f9ef0f57f3cc86aaea5772",
+    "review": "Each actual25 configuration changes only bufferedBookInk. Checked cancelBookmarkWork now precedes pad overdraw, beginStroke and appendRaw. All five other roles and all other Notebook bodies, signatures/effects, globals and declarations match the prior actual25 producer after exact source-symbol alpha naming.",
+    "scope": "Genuine normal O2 production at clean c921807 plus reviewed exact Fast25 body admission and maintained strict-audited SDK at clean379e168. Actual changed-source JOIN-to-ink replay is separate. Optical work in progress is excluded. Other23/24/full25 configuration pins were not changed; immutable archived results keep original source identities.",
+    "maintained_sdk": {
+      "status": "PASS_SEALED_MAINTAINED_SCHOOL25_SDK",
+      "receipt": {
+        "path": "/home/sreekumaar/.codex/worktrees/task009-reader-fix/lemma/build/task009/buffered-reader-sdk-a1/sealed-assessment.json",
+        "sha256": "ea6c961d4b25348064986bc4976dad4c41b4d0c99be1634bbd7b73a689de0a9b"
+      },
+      "native": {
+        "path": "/home/sreekumaar/.codex/worktrees/task009-reader-fix/lemma/build/school/task009-school25-buffered-reader-sdk-a1/native",
+        "manifestSHA256": "d535368c491568690a836f0c4386a419b840bbcf81f2c955e7712b55d3093de9"
+      },
+      "browser": {
+        "path": "/home/sreekumaar/.codex/worktrees/task009-reader-fix/lemma/build/school/task009-school25-buffered-reader-sdk-a1/browser",
+        "manifestSHA256": "187e05f8dbad403bbc977f5815dbb5febf849484fb508f7a85e6f322e650e9ba"
+      },
+      "source_input_count": 558,
+      "source_inventory_sha256": "d5f202a97263fe6e3eed7b98c21cfeb4647eb2d7f6ac3c17b07af58fcaf37a42",
+      "audit_seconds": {
+        "notebook": 130.39472360583022,
+        "initializer": 120.49445474613458
+      },
+      "service_seconds": 285.59571884199977,
+      "monitor_seconds": 288.8740700930357,
+      "peak_combined_owned_RSS_bytes": 627519488,
+      "normal_archive_validator_seconds": 2.6520722850691527,
+      "normal_p81_qemu": {
+        "path": "runtime/qemu/qemu-system-riscv64",
+        "sha256": "4f052aaf5497b84046d93c08f475bab4f0665babf5fe1f9cc6ddb7b02398b729"
+      },
+      "normal_p81_derivation": {
+        "path": "runtime/qemu/2xkz00vih98zhjx024vpk19iyddyq4hj-lemmasim-qemu-mm2-subset-retained-11.1.1.drv",
+        "sha256": "d9146ef20623179ba4fc3160e47b6cebac54c6a69a1a6f90ae74e10c6c8503ef"
+      },
+      "TCI_runtime": {
+        "factory": {
+          "path": "qemu-system-riscv64.js",
+          "sha256": "59d0ebfbbcd61d935157bd928e0f196ad313b5be001d124bd5ff24d3b550cb76"
+        },
+        "wasm": {
+          "path": "qemu-system-riscv64.wasm",
+          "sha256": "bcebc89a6e4468f74044cf3961a089d4fef9ec6d6a3d8fa33727b3ac4662fcd9"
+        }
+      },
+      "scope": "Actual maintained native/browser archive admission, complete target artifact equality and unchanged p81/TCI/sample identities. No guest execution, full0.16 or continuation claim.",
+      "target_artifact_equalities": 52,
+      "per_configuration_action_counts": {
+        "fresh": 0,
+        "incremental": 2,
+        "reused": 39
+      },
+      "remaining_exact_start_owned": []
+    }
   }
 }
