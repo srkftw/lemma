@@ -2998,5 +2998,121 @@
       "scope": "Incorrect observer assumed HTTP403 rather than inspecting Lean domain rejection insideHTTP200. It stopped immediately; no successful revocation check or startup RSS claim. Gen28 uses a separate fresh7200-second budget and records the actual rejection body."
     },
     "restartMeaning": "Normal same-root restart from actual stopped authority matching all197acknowledged rows and69artifacts. Persisted clock differs from later export snapshot while canonical snapshot digests validate. No new cross-clock restore or exact state-replay claim."
+  },
+  "school25_browser_first_closed_prefix": {
+    "status": "CLOSED_INCOMPLETE_NAVIGATION_AND_REDUCTION",
+    "wholeWorkflowPass": false,
+    "source": {
+      "normalSDK": "build/task009/school25-sdk-runner-a1/sealed-assessment.json",
+      "nativeManifest": "bb7b4b5e27a000b1b8cf891362253223cf9912ff981d8a88bcd819a8d9532ae8",
+      "browserManifest": "19c7f51553b259c610a98fc6b114955541f8b75eb2b7e7635744e0ff0d8c2add",
+      "sourceInputs": 558,
+      "sourceInventory": "7c654bbe03e9386be1c400575945f2fb0cd51953b2790c3d944172607c247eaa",
+      "profile": "0.14 MM2 functional subset; not full0.16"
+    },
+    "originalBudget": {
+      "seconds": 3600,
+      "functionalUnits": 5000000000,
+      "deadlineUTC": "2026-10-20T19:41:41.960854+00:00"
+    },
+    "closedObservedUTC": "2026-10-20T19:40:53.089181+00:00",
+    "closedBeforeOriginalDeadline": true,
+    "observed": "Actualpointertap/drag thenexplicitSaved6; account-free1/1install7/select8; protectedBob199 catalogue and804/2install9/select10; actualexactactivityrender/USE/Saved12. Batchedviewchangesdiscard17queuedtaps with735reason4; this isnotcapture-capacityorcontroller-loss evidence. NumericpadupdatesremaininflightatClose; noRDCcompletion/check/submission/help/feedback/reviewclaim.",
+    "terminal": {
+      "path": "build/school/task009-student-browser-school25-a1/terminal-result.json",
+      "sha256": "931d78429293abfe24a5a7b384e4cf4215552f763fc01c58ed76d8fc5a185539",
+      "files": {
+        "terminal-support.json": {
+          "bytes": 82409,
+          "sha256": "1f444e7c1d8e22fbc291beac124c37a9b4386a6bc5c4bc28dd3645d33dc60777"
+        },
+        "terminal-backing.raw": {
+          "bytes": 268435456,
+          "sha256": "51ba9a876e745c89b1b8c39fc4c0a530cc811c3bdb52aefd5e0b2c135752a390"
+        },
+        "terminal-controller.pgm": {
+          "bytes": 3630017,
+          "sha256": "a51cbdf6116c6c14a6005ad614e1eb6e6e38abdc70ddef2bac0a4e70f8d35386"
+        }
+      }
+    },
+    "staticServer": {
+      "first": "UnexpectedexternalSIGTERM/exit143 retained. Sender/causeunknown.",
+      "recovery": "Same sealeddistribution withsameabsoluteserverdeadline, noCPUreload; normalSIGINT/exit0/reaped afterguestClose.",
+      "receipt": "build/school/task009-student-browser-school25-a1/server-recovery-a1/server-terminal.json"
+    },
+    "remaining": "A separate ordinarycold case nowtests actualpendingSave16 recovery fromsameOPFSmedium. It cannotpassor extendthisfailedcase."
+  },
+  "ordinarySchool25BrowserColdCheckingFeedback": {
+    "result": "PASS for this closed prefix; complete ordinary browser review and revocation remain unfinished",
+    "source": {
+      "guest": "same sealed School25 SDK as the preceding browser case",
+      "nativeManifestSHA256": "bb7b4b5e27a000b1b8cf891362253223cf9912ff981d8a88bcd819a8d9532ae8",
+      "browserManifestSHA256": "19c7f51553b259c610a98fc6b114955541f8b75eb2b7e7635744e0ff0d8c2add",
+      "deviceProfile": "lemma-silicon-dev/0.14.0",
+      "executionBinding": "lemma-silicon-fast-mm2-subset/0.1.0",
+      "fresh": "ordinary Open of the existing named OPFS medium; no imported backing or checkpoint",
+      "reused": "guest binaries, p81 native runtime, retained TCI/Wasm runtime; no compilation"
+    },
+    "ordinaryActions": [
+      "Cold recovery preserved pending Save16 work as N10/D1.",
+      "Actual guest REDUCE request1000297 produced5/6; independent CHECK request1000312 verified document revision6.",
+      "Guest ASK joined protected binding210 for804/2 policy2; invitation23 and authored help24 committed, guest725 accepted and actual paper showed the assistance.",
+      "Guest SEND committed5296 envelope bytes in queue6003579778261581852. School acknowledgement218 and guest733 pointerCommit31 name the same queue.",
+      "Teacher opened the exact artifact and original two-criterion equivalence task, then committed clarification219. Browser displayed that feedback.",
+      "School disconnected; work remained in the same medium. Due review196 selected original804/1 node5 with durable selection33; subsequent response and assessment remain unfinished."
+    ],
+    "assessmentSeparation": {
+      "localCheck": "Verified for the saved numeric calculation",
+      "submission": "Unsupported opaque work for the source activity requiring a written equality/domain justification",
+      "humanAssessment": "Clarification219: saved diagonal ink does not supply that justification",
+      "educationalBenefit": "not measured"
+    },
+    "measurements": {
+      "cycle": "2365100879",
+      "timing": {
+        "runSeconds": 999.9075999770108,
+        "elapsedSeconds": 2917.5935099999906
+      },
+      "penControllerLoss": "0",
+      "executionBoundary": null,
+      "browserRSS": "not measured;2GiB Wasm heap is not a complete browser RSS observation"
+    },
+    "terminal": {
+      "path": "build/school/task009-student-browser-school25-cold-a1/terminal-result.json",
+      "sha256": "528cbb973de70bfccb279c85958474647b0fdb980b302d62b98a0dbba7e88ceb",
+      "observedClosedUTC": "2026-10-20T20:44:04.234690+00:00",
+      "originalDeadlineUTC": "2026-10-20T20:44:34.033172+00:00",
+      "exports": {
+        "terminal-support.json": {
+          "sha256": "3d5ae639e3949e7221fdb4e87eb36e527b2b49ddc72f592d02267e78dd2c70af",
+          "bytes": 74441
+        },
+        "terminal-backing.raw": {
+          "sha256": "68abcc184cd98a7bff24472dc5e87f67f0bf1bea1d545e86a1eee5b63281ddbf",
+          "bytes": 268435456
+        },
+        "terminal-controller.pgm": {
+          "sha256": "2c778a41a8536780962f36aaa9b7463c1e4600deb7e04aff7e4becd2ae481f00",
+          "bytes": 3630017
+        }
+      },
+      "server": {
+        "returncode": 0,
+        "terminal_unix": 1792529057.2980123,
+        "elapsed_seconds": 3133.7606954574585,
+        "original_deadline_utc": "2026-10-20T20:52:03.537317+00:00",
+        "reason": "normal server exit",
+        "failure": null,
+        "server_peak_rss_bytes": 71553024,
+        "host_min_MemAvailable_bytes": 13060440064,
+        "browser_peak_rss_bytes": null,
+        "cleanup": "owned server process group reaped; browser guest must be Closed through ordinary UI separately"
+      }
+    },
+    "teacherEvidence": {
+      "path": "build/school/task009-browser-school25-review218-a1/terminal-result.json",
+      "sha256": "06d3aecedda5701b591f1287340ae60d934fee89b5249ca1959e9e5372229d0c"
+    }
   }
 }
