@@ -456,8 +456,10 @@
         "scripts/check_foundation.py",
         "scripts/check_incremental_builds.py",
         "scripts/host_prerequisites.py",
+        "scripts/ci_preflight.py",
         "tests/foundation/test_ci_workflow.py",
-        "tests/ci/test_workflow_policy.py"
+        "tests/ci/test_workflow_policy.py",
+        "tests/ci/test_ci_orchestration.py"
       ],
       "claims": [
         "fresh-qualification-review"
