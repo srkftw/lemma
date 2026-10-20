@@ -1,6 +1,8 @@
 import Lemma.Multimodal.TutorPackage
 import Lemma.Multimodal.SchoolPacket
 import Lemma.Services.Arithmetic.ClientV8
+import Lemma.Services.Arithmetic.ClientV9
+import Lemma.Courses.LocalReduction
 import Lemma.User.Multimodal
 import Lemma.Documents.MathematicsEntry
 import Lemma.Courses.NumberPad
@@ -218,6 +220,7 @@ private def clearStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
     .bind (Memory.write64 rawIndexDeferredFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 schoolActivityFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 schoolQueueReadyFlag 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 (state+728) 0) fun s _ => if statusFailed s = true then .done s 0 else
     Memory.write64 schoolQueueError 0
     else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put (i.toUInt64 * 8) 0) fun s _ => .done s acc
@@ -1105,12 +1108,13 @@ private def upgradeArithmetic (ns page : UInt64) : Action :=
 reply already accepted by the kernel is discarded without publishing evidence. -/
 private def cancelArithmetic : Action :=
   .bind (get 536) fun s phase => if statusFailed s = true then .done s 0 else
-  .bind (if phase = 1 then
+  .bind (if (if phase = 1 then true else phase = 17) = true then
     .bind (get 544) fun s transaction => if statusFailed s = true then .done s 0 else
     .bind (get 552) fun s request => if statusFailed s = true then .done s 0 else
     .bind (IPC.cancel transaction) fun canceled _ =>
     if (if canceled = 0 then true else if canceled = IPCABI.alreadyCompleted then true else false) = true then
-    .bind (pollArithmetic transaction (mathematicsIO + 256) mathematicsIO request) fun terminal _ =>
+    .bind (if phase = 17 then Lemma.Services.Arithmetic.ClientV9.pollCall transaction (mathematicsIO + 256) mathematicsIO request
+      else pollArithmetic transaction (mathematicsIO + 256) mathematicsIO request) fun terminal _ =>
     if terminal = IPCABI.wouldBlock then .done IPCABI.invalidTransaction 0 else .done 0 terminal.toUInt64
     else .done canceled 0
     else .done 0 0) fun s terminal => if statusFailed s = true then .done s 0 else
@@ -1359,7 +1363,7 @@ priority: cancel and consume a pending check before starting an ink stroke,
 so its later Store call owns the slot without discarding raw samples. -/
 private def beginStroke : Action :=
   .bind (get 536) fun s phase => if statusFailed s = true then .done s 0 else
-  .bind (if phase = 1 then cancelArithmetic else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if (if phase = 1 then true else if 16 ≤ phase then if phase ≤ 19 then true else false else false) = true then cancelArithmetic else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (preflightChunk pageIndex 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
   .bind (get 96) fun s next => if statusFailed s = true then .done s 0 else
@@ -3155,8 +3159,140 @@ private def stagePackageCompletion : Action :=
   else .done 240 0
   else .done 240 0 else .done 234 0 else .done 234 0
 
+/-- School24 alone enables this owned local tool. State+728 is below
+Store.outgoing; its request/reply/event spans remain disjoint inside the already
+allocated mathematicsIO page. Legacy modes never access these scratch spans. -/
+private def reductionEnabled : UInt64 := state+728
+private def reductionMeta : UInt64 := mathematicsIO+512
+private def reductionEvent : UInt64 := mathematicsIO+640
+private def reductionGet (offset : UInt64) : Action := Memory.read64 (reductionMeta+offset)
+private def reductionPut (offset value : UInt64) : Action := Memory.write64 (reductionMeta+offset) value
+private def reductionReport (stage status value : UInt64) : Action :=
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (get 552) fun s request => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x73b request stage status value
+
+/-- A known task must still have its complete original publication loaded.
+The old immutable source binding alone is not a new checking-selection capture.
+A help overlay is diagnosed before preparation, never silently retargeted. -/
+private def reductionSourceLoaded : Action :=
+  .bind (Memory.read64 (mathematicsIO+24)) fun s source => if statusFailed s = true then .done s 0 else
+  if source = 0 then .done 0 0 else
+  .bind (Memory.read64 (mathematicsIO+32)) fun s edition => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (mathematicsIO+48)) fun s node => if statusFailed s = true then .done s 0 else
+  .bind (reductionGet 0) fun s crc => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 32) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 2 then
+  .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.PackageTarget.select packageBytes length (node-1)) fun s entry => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes+24)) fun s actualSource => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes+32)) fun s actualEdition => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes+80)) fun s actualCRC => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 entry) fun s actualNode => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (entry+16)) fun s goal => if statusFailed s = true then .done s 0 else
+  if source = actualSource then if edition = actualEdition then if crc = actualCRC then if node = actualNode then
+  if goal = 1 then .done 0 0 else .done 240 0 else .done 240 0 else .done 240 0 else .done 240 0 else .done 240 0
+  else .done 240 0
+private def reductionRecapture : Action :=
+  .bind reductionSourceLoaded fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (mathematicsIO+24)) fun s source => if statusFailed s = true then .done s 0 else
+  if source = 0 then .done 0 0 else
+  .bind (Memory.read64 (mathematicsIO+48)) fun s node => if statusFailed s = true then .done s 0 else
+  .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+  Lemma.Courses.PackageWorkspace.captureSelection mathematicsSave packageBytes length (node-1) packageBindingScratch
+
+/-- Begin writes the exact original work/operands as a prepared workspace.
+The actual endpoint call starts only after the real Store Commit advances the
+frontier. RAM validation and drawing do not stand in for this barrier. -/
+private def beginLocalReduction : Action :=
+  .bind (Memory.read64 reductionEnabled) fun s enabled => if statusFailed s = true then .done s 0 else
+  if enabled = 1 then
+  .bind (get 520) fun s allocated => if statusFailed s = true then .done s 0 else
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s phase => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
+  if allocated = 3 then if course = 1 then if phase ||| pending ||| rawCount ||| rawPending ||| stroke = 0 then
+  .bind (get 528) fun s endpoint => if statusFailed s = true then .done s 0 else
+  if endpoint = 0 then .done 241 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.LocalReduction.request packageWorkspace mathematics mathematicsIO reductionEvent reductionMeta ns page request)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind reductionSourceLoaded fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.LocalReduction.stagePrepared packageWorkspace mathematics packageDocumentStage mathematicsSave reductionEvent)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 128) fun s frontier => if statusFailed s = true then .done s 0 else
+  .bind (reductionPut 8 frontier) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 552 request) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 536 16) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind publishPackageWorkspace fun s _ => if statusFailed s = true then .done s 0 else reductionReport 0 0 frontier
+  else .done 231 0 else .done 234 0 else .done 234 0 else .done 241 0
+
+/-- Phases16 prepared-Commit,17 real IPC,18 admitted reply,19 service error.
+Input cancellation consumes phase17 through the same per-task IPC owner and
+retains prepared uncertainty; no canceled response can become an applied edit.
+Only idle current-work staging may publish after reply consumption. -/
+private def pumpLocalReduction : Action :=
+  .bind (Memory.read64 reductionEnabled) fun s enabled => if statusFailed s = true then .done s 0 else
+  if enabled = 1 then
+  .bind (get 536) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 16 then
+    .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+    .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+    if pending ||| status = 0 then
+    .bind (get 128) fun s frontier => if statusFailed s = true then .done s 0 else
+    .bind (reductionGet 8) fun s floor => if statusFailed s = true then .done s 0 else
+    if floor < frontier then
+    .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+    .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Courses.LocalReduction.current packageWorkspace mathematics mathematicsIO reductionEvent ns page)
+      fun s _ => if statusFailed s = true then .bind (put 536 0) fun _ _ => courseError s else
+    .bind (get 528) fun s endpoint => if statusFailed s = true then .done s 0 else
+    .bind (get 552) fun s request => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Services.Arithmetic.ClientV9.beginCall endpoint mathematicsIO request) fun result transaction =>
+    .bind (put 568 result.toUInt64) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 544 transaction) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 536 (if result = 0 then 17 else 19)) fun s _ => if statusFailed s = true then .done s 0 else
+    reductionReport 1 result.toUInt64 frontier
+    else .done 0 0 else .done 0 0
+  else if phase = 17 then
+    .bind (get 544) fun s transaction => if statusFailed s = true then .done s 0 else
+    .bind (get 552) fun s request => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Services.Arithmetic.ClientV9.pollCall transaction (mathematicsIO+256) mathematicsIO request) fun result outcome =>
+    if result = IPCABI.wouldBlock then .done 0 0 else
+    .bind (put 560 outcome) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 568 result.toUInt64) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 536 (if result = 0 then 18 else 19)) fun s _ => if statusFailed s = true then .done s 0 else
+    reductionReport 2 result.toUInt64 outcome
+  else if (if phase = 18 then true else phase = 19) = true then
+    .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+    .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+    .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+    .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
+    if pending ||| rawCount ||| rawPending ||| stroke = 0 then
+    .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+    .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+    .bind (if phase = 18 then Lemma.Courses.LocalReduction.stageApplied packageWorkspace mathematics packageDocumentStage mathematicsSave
+        mathematicsIO reductionEvent (mathematicsIO+256) ns page
+      else Lemma.Courses.LocalReduction.stageTerminal packageWorkspace mathematics packageDocumentStage mathematicsSave reductionEvent 4 ns page)
+      fun result _ =>
+    .bind (put 536 0) fun s _ => if statusFailed s = true then .done s 0 else
+    if statusFailed result = true then
+      .bind (reductionReport 3 result.toUInt64 0) fun s _ => if statusFailed s = true then .done s 0 else courseError result
+    else
+      .bind (if phase = 18 then reductionRecapture else .done 0 0) fun s _ => if statusFailed s = true then courseError s else
+      .bind publishPackageWorkspace fun s _ => if statusFailed s = true then .done s 0 else
+      reductionReport 3 0 phase
+    else .done 0 0
+  else .done 234 0 else .done 241 0
+
 private def pumpPackageArithmetic : Action :=
   .bind (get 536) fun s phase => if statusFailed s = true then .done s 0 else
+  if 16 ≤ phase then pumpLocalReduction else
   if phase = 0 then .done 0 0 else
   .bind (if phase = 1 then
     .bind (get 544) fun s transaction => if statusFailed s = true then .done s 0 else
@@ -6540,6 +6676,23 @@ where
 private def multimodalBarTile (i _ : UInt32) (acc width _ _ _ : UInt64) : Action :=
   .bind (markDirtyTile (4 * ((width + 31) / 32) + 12 + i.toUInt64)) fun s _ => .done s acc
 
+private def reductionBarStep (i _ : UInt32) (acc width _ _ _ : UInt64) : Action :=
+  let x := i.toUInt64 % 72
+  let y := i.toUInt64 / 72
+  let code : UInt64 := (0x454355444552 >>> ((x/12)*8)) &&& 255
+  let ink : UInt64 := if x%12 < 9 then if (Lemma.Courses.PackageRender.glyph code >>> (14-(y/3*3+x%12/3))) &&& 1 = 1 then 0 else 15 else 15
+  let address := Surface.framebuffer+(132+y)*((width+1)/2)+(1280+x)/2
+  .bind (Memory.read8 address) fun s old => if statusFailed s = true then .done s 0 else
+  Memory.write8 address (if x%2 = 0 then (old &&& (15 : UInt64)) ||| (ink <<< 4) else (old &&& (240 : UInt64)) ||| ink)
+private def renderReductionControl (width : UInt64) : Action :=
+  .bind (Memory.read64 reductionEnabled) fun s enabled => if statusFailed s = true then .done s 0 else
+  if enabled = 1 then if 1352 ≤ width then
+  .boundedFoldU64 1080 reductionBarStep 1080 0 width 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (markDirtyTile (4*((width+31)/32)+40)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (markDirtyTile (4*((width+31)/32)+41)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (markDirtyTile (4*((width+31)/32)+42)) fun s _ => if statusFailed s = true then .done s 0 else dirty 1280 132 1352 147
+  else .done 0 0 else .done 0 0
+
 private def multimodalBar : Action :=
   .bind Lemma.User.Multimodal.active fun s enabled => if mmFailed s = true then .done s 0 else
   .bind (Memory.read64 schoolActivityFlag) fun s school => if mmFailed s = true then .done s 0 else
@@ -6549,7 +6702,7 @@ private def multimodalBar : Action :=
   if width < 1264 then .done 16 0 else
   .boundedFoldU64 6480 multimodalBarStep 6480 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
   .boundedFoldU64 28 multimodalBarTile 28 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
-  dirty 400 132 1264 147
+  .bind (dirty 400 132 1264 147) fun s _ => if statusFailed s = true then .done s 0 else renderReductionControl width
 
 private def multimodalBookLoad : Action :=
   .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
@@ -6564,7 +6717,7 @@ private def multimodalBookLoad : Action :=
   else .done 175 0 else .done 175 0 else .done 175 0 else .done 175 0
 
 private def multimodalControl (operation : UInt64) : Action :=
-  .bind (if operation = 3 then multimodalAsk else if operation = 4 then multimodalLoadTutor else if operation = 5 then multimodalJoinSchool else if operation = 6 then multimodalBookLoad else if operation = 7 then schoolSend else if operation = 8 then schoolCancel else if operation = 9 then Lemma.User.Multimodal.testAudio else Lemma.User.Multimodal.control operation) fun status result =>
+  .bind (if operation = 3 then multimodalAsk else if operation = 4 then multimodalLoadTutor else if operation = 5 then multimodalJoinSchool else if operation = 6 then multimodalBookLoad else if operation = 7 then schoolSend else if operation = 8 then schoolCancel else if operation = 9 then Lemma.User.Multimodal.testAudio else if operation = 10 then beginLocalReduction else Lemma.User.Multimodal.control operation) fun status result =>
   .bind (get 24) fun s console => if mmFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x712 operation status.toUInt64 result 0) fun s _ => if mmFailed s = true then .done s 0 else
   Memory.write64 (Lemma.User.Multimodal.state + 32) 1
@@ -6854,7 +7007,7 @@ private def multimodalApplySample (x y flags : UInt64) : Action :=
   if py < 160 then if 132 ≤ py then
     if 400 ≤ px then if px < 544 then multimodalControl 0 else
       if px < 640 then multimodalControl 1 else if px < 832 then multimodalControl 2 else
-      if px < 928 then multimodalControl 3 else if px < 1024 then multimodalControl 4 else if 1120 ≤ px then if px < 1264 then multimodalControl 9 else .done 0 0 else .done 0 0
+      if px < 928 then multimodalControl 3 else if px < 1024 then multimodalControl 4 else if 1120 ≤ px then if px < 1264 then multimodalControl 9 else if 1280 ≤ px then if px < 1352 then multimodalControl 10 else .done 0 0 else .done 0 0 else .done 0 0
     else if 288 ≤ px then if px < 360 then numericToggleCourse else .done 0 0 else .done 0 0
     else .done 0 0 else
   .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
@@ -7146,10 +7299,16 @@ where
     .bind (drainMultimodalInput input) fun s consumed =>
     if statusFailed s = true then .done s 0 else if consumed = 0 then Syscall.sleep 10000 else .done 0 consumed
 
+private def configureSchoolMode (school : UInt64) : Action :=
+  if school ≤ 2 then
+  .bind (Memory.write64 schoolActivityFlag (if school = 2 then 1 else school)) fun s _ => if statusFailed s = true then .done s 0 else
+  Memory.write64 reductionEnabled (if school = 2 then 1 else 0)
+  else .done 234 0
+
 private def mainMultimodalConfigured (bootArgument school : UInt64) : Action :=
   if (if bootArgument = 2 then (1 : UInt64) else if bootArgument = 3 then 1 else 0) = 0 then failed else
   .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (Memory.write64 schoolActivityFlag school) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (configureSchoolMode school) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Memory.write64 packageAllocationAddress 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 576 7) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 584 1) fun s _ => if statusFailed s = true then .done s 0 else
@@ -7202,7 +7361,7 @@ private def mainMultimodalConfigured (bootArgument school : UInt64) : Action :=
   .bind multimodalBar fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
-  .bind (if school = 1 then CapabilityConsole.record console 0x731 Lemma.Courses.SchoolSubmission.version
+  .bind (if (if school = 1 then true else school = 2) = true then CapabilityConsole.record console 0x731 Lemma.Courses.SchoolSubmission.version
     Lemma.Courses.SchoolSubmission.maximumChunks Lemma.Courses.SchoolSubmission.maximumBytes 2 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
   if statusFailed s = true then .done s 0 else .loop multimodalStep
@@ -7215,5 +7374,9 @@ def mainMultimodal (bootArgument : UInt64) : Action := mainMultimodalConfigured 
 /-- Versioned ordinary school client: shared notebook plus durable selected
 publication admission. The flag is initialized before any package access. -/
 def mainMultimodalSchool (bootArgument : UInt64) : Action := mainMultimodalConfigured bootArgument 1
+
+/-- School24 adds the bounded local-tool service consumer; modes0/1 retain
+ordinary School23 admission and have no REDUCE control authority. -/
+def mainMultimodalSchool24 (bootArgument : UInt64) : Action := mainMultimodalConfigured bootArgument 2
 
 end Lemma.Applications.Notebook

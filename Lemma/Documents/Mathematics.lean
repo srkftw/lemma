@@ -1,4 +1,5 @@
 import Lemma.User.Memory
+import Lemma.Documents.LocalToolEvents
 import Lemma.Mathematics.OwnedSubmission
 import Lemma.Mathematics.ExecutionIdentity
 import Lemma.Mathematics.ExecutionIdentityV2
@@ -255,7 +256,7 @@ private def remoteFindStep (i _ : UInt32) (acc buffer count event prepared : UIn
         if difference = 0 then .done 0 (i.toUInt64+1) else .done 234 0 else .done s 0
       else .done 0 768 else .done s 0 else .done s 0
     else .done 0 768 else .done s 0
-  else .done 0 acc else .done s 0
+  else if descriptor &&& 255 = 8 then .done 0 (7*256) else .done 0 acc else .done s 0
 private def requireRemotePrepared (buffer count event : UInt64) : Action :=
   .boundedFoldU64 64 remoteFindStep 64 0 buffer count event 1 fun s found => if s = 0 then
   if (0 : UInt64) < (found &&& 255) then .done 0 0 else .done 234 0 else .done s 0
@@ -278,7 +279,7 @@ private def appendRemoteUnchecked (buffer event : UInt64) : Action :=
   .bind (field event 16) fun s object => if s = 0 then
   .bind (field event 24) fun s binding => if s = 0 then
   let scope := (descriptor >>> 16) &&& 255
-  if (if format = 1 then true else format = 2) = false then .done 234 0 else
+  if (if format = 1 then true else if format = 2 then true else format = 3) = false then .done 234 0 else
   if expected = revision then if goal = ((descriptor >>> 8) &&& 255) then
   if descriptor &&& 255 = 7 then if (descriptor >>> 24) &&& 255 = 4 then
   if (0 : UInt64) < (descriptor >>> 32) then if (if scope = 1 then true else scope = 2) = true then
@@ -290,7 +291,7 @@ private def appendRemoteUnchecked (buffer event : UInt64) : Action :=
   if (0 : UInt64) < (found &&& 255) then .done 0 (found &&& 255) else
   if (if scope = 1 then 56 else 60) < count then .done 235 0 else
   .boundedFoldU64 8 remoteCopyStep 8 0 event (buffer+legacyBytes+count*16) 0 0 fun s _ => if s = 0 then
-  .bind (put buffer 208 2) fun s _ => if s = 0 then
+  .bind (put buffer 208 (if format = 3 then 3 else 2)) fun s _ => if s = 0 then
   .bind (put buffer 192 (count+4)) fun s _ => if s = 0 then .done 0 (count+1) else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done 234 0 else .done 234 0 else .done 234 0 else .done 234 0
@@ -306,6 +307,29 @@ def appendRemote (buffer event : UInt64) : Action :=
   .bind (if (descriptor >>> 16) &&& 255 = 2 then requireRemotePrepared buffer count event else .done 0 0)
     fun s _ => if s = 0 then appendRemoteUnchecked buffer event else .done s 0
   else .done s 0 else .done s 0
+
+/-- Stage one local tool application after its actual isolated reply. The
+prepared event is already part of this copied document; the caller publishes
+this separate staging page through the same actual workspace Store barrier. -/
+def applyLocalTool (buffer event : UInt64) : Action :=
+  .bind (field event 0) fun s expected => if s = 0 then
+  .bind (field buffer 40) fun s revision => if s = 0 then
+  .bind (field buffer 48) fun s goal => if s = 0 then
+  .bind (field event 80) fun s oldN => if s = 0 then
+  .bind (field event 88) fun s oldD => if s = 0 then
+  .bind (field buffer 56) fun s n => if s = 0 then
+  .bind (field buffer 64) fun s d => if s = 0 then
+  .bind (field event 96) fun s nextN => if s = 0 then
+  .bind (field event 104) fun s nextD => if s = 0 then
+  if expected = revision then if goal = 1 then if n = oldN then if d = oldD then
+  if 99 < nextN then .done 234 0 else if nextD = 0 then .done 234 0 else if 99 < nextD then .done 234 0 else
+  .bind (revise buffer) fun s _ => if s = 0 then
+  .bind (put buffer 56 nextN) fun s _ => if s = 0 then
+  .bind (put buffer 64 nextD) fun s _ => if s = 0 then LocalToolEvents.append buffer event
+  else .done s 0 else .done s 0 else .done s 0
+  else .done 234 0 else .done 234 0 else .done 234 0 else .done 234 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 private def validateOperandStep (i _ : UInt32) (acc buffer _ _ _ : UInt64) : Action :=
   .bind (field buffer (56 + i.toUInt64 * 8)) fun s value => if s = 0 then
@@ -353,7 +377,7 @@ private def validateEventStep (i _ : UInt32) (acc buffer count revision attempts
   let index := (descriptor >>> 24) &&& 255
   if kind = 7 then
     .bind (field buffer 208) fun s format => if s = 0 then
-    if format = 2 then if (0 : UInt64) < goal then if goal ≤ 3 then
+    if (if format = 2 then true else format = 3) = true then if (0 : UInt64) < goal then if goal ≤ 3 then
     if (if value = 1 then true else value = 2) = true then
     if index = 4 then if (0 : UInt64) < (descriptor >>> 32) then if i.toUInt64+4 ≤ count then
     .bind (field entry 16) fun s object => if s = 0 then
@@ -370,6 +394,17 @@ private def validateEventStep (i _ : UInt32) (acc buffer count revision attempts
     else .done s 0 else .done s 0 else .done s 0
     else .done 234 0 else .done 234 0 else .done 234 0 else .done 234 0
     else .done 234 0 else .done 234 0 else .done 234 0 else .done s 0
+  else if kind = 8 then
+    .bind (field buffer 208) fun s format => if s = 0 then
+    .bind (field buffer 32) fun s page => if s = 0 then
+    if format = 3 then if goal = 1 then if i.toUInt64+8 ≤ count then
+    .bind (LocalToolEvents.validate entry revision page) fun s _ => if s = 0 then
+    .bind (LocalToolEvents.validatePrior buffer i.toUInt64 entry) fun s _ => if s = 0 then
+    .bind (if value = 1 then .done 0 0 else LocalToolEvents.requirePrepared buffer i.toUInt64 entry) fun s _ => if s = 0 then
+    .done 0 (acc ||| ((7 : UInt64) <<< 32))
+    else .done s 0 else .done s 0 else .done s 0
+    else .done 234 0 else .done 234 0 else .done 234 0
+    else .done s 0 else .done s 0
   else if descriptor >>> 32 = 0 then
   if goal = 0 then .done 234 0 else if 3 < goal then .done 234 0 else
   if kind = 1 then
@@ -408,7 +443,7 @@ private def validateExtension (buffer revision attempts : UInt64) : Action :=
   .bind (field buffer 216) fun s showReason => if s = 0 then
   .bind (field buffer 152) fun s hints => if s = 0 then
   if identity = policyIdentity then if mode ≤ 4 then if count ≤ 64 then
-  if uncertainty = 1 then if (if eventVersion = 1 then true else eventVersion = 2) = true then if showReason ≤ 1 then
+  if uncertainty = 1 then if (if eventVersion = 1 then true else if eventVersion = 2 then true else eventVersion = 3) = true then if showReason ≤ 1 then
   .boundedFoldU64 4 validatePolicyReservedStep 4 0 buffer 0 0 0 fun s _ => if s = 0 then
   .boundedFoldU64 64 validateEventStep 64 0 buffer count revision attempts fun s summary => if s = 0 then
   if summary &&& 255 = attempts then if (summary >>> 8) &&& 255 = hints then

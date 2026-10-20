@@ -1902,5 +1902,84 @@
     "presentation": "Actual controller paper reviewed; prepared/raster/controller observations do not assert whole-body visibility.",
     "freshVsReused": "Fresh genuine warm target exports and fresh520.676s strict4audit qualification; exactp81nativeQEMU/controller and61inputSchoolproducer reused. This campaign executes fresh; no C/compiler/runtime/circuit rebuild claimed.",
     "remaining": "Corresponding distributed browser warm path remains required. Closed service SDK extension, full16 Fast union, physical closure and educational qualification remain incomplete."
+  },
+  "localExactReductionExtension": {
+    "scope": "Implemented Lean service/client/Notebook and durable local-tool semantics; component and hosted checks only. Actual School24 whole-image, native and browser consumption remain pending.",
+    "contract": "docs/contracts/009-school-exact-reduction-v1.html",
+    "software": "School24; deployment/4; lemma-school-exact-reduction-advisory/1; existing guest submission/2; eventFormat3",
+    "userBehavior": "Explicit REDUCE stages prepared original work before actual isolated RPC; canonical fraction edits one revision, clears current checking and retains previous attempts. Ordinary CHECK remains separate. Known work requires original loaded publication and genuine full-source recapture; help overlay rejects before preparation.",
+    "wire": {
+      "requestBytes": 144,
+      "replyBytes": 176,
+      "maximumIPCPayloadBytes": 192,
+      "serviceIdentity": "0x0001000052444331",
+      "maximumMagnitude": 1000000,
+      "arithmeticBudget": 34,
+      "UIOperands": "nonnegative0..99; positive denominator"
+    },
+    "sources": {
+      "Lemma/Documents/LocalToolEvents.lean": "023f65ebc3e3a93c57af38b077228447730e4c673ecafdff1b73b72c7358249b",
+      "Lemma/Documents/Mathematics.lean": "9cdad4961bed778ee95d709c375d57218b916127e1003a22b614e3fc85645a58",
+      "Lemma/Courses/LocalReduction.lean": "b6089f88f436ce3b183f45fd8209cb3d6de0532ba1886ba9d373032fd9782110",
+      "Lemma/Services/Arithmetic/ReductionV1.lean": "d55ba6512b9847947c673a71c992c897016ad7703b606fefca8d06c7bfe30556",
+      "Lemma/Services/Arithmetic/ProtocolV9.lean": "61a52285d622e291bb42da80971c4568e2bd87b3776de36dd5ddea68b63ff2ca",
+      "Lemma/Services/Arithmetic/ClientV9.lean": "3422f1cbc2a07e00c921ea97ba664e59fcd46b9d8f67894686de240ba1fd37de",
+      "Lemma/Services/Arithmetic/ServerV9.lean": "d6a2fb74e1b12cda7dd4f2e65d4149fa6cdf6ce5db100271241c68b60bc9e2c8",
+      "Lemma/Applications/Notebook.lean": "70d9b156426b51f89607cfc78ae37376427b9558bc25565d7bcdf71cc23db11d"
+    },
+    "freshComponents": {
+      "path": "build/school/task009-school24-source/final-components-a1.json",
+      "sha256": "a9aa9dae7d5acce084f1a7ec569f44761fcd21c1c6828870e7ef6a8f3afb9efa",
+      "status": "PASS",
+      "seconds": 53.43786701303907,
+      "moduleBuildSeconds": 37.43345830193721,
+      "actionSeconds": 7.204416525084525,
+      "frontendLLVMSeconds": 8.793954811058939,
+      "functions": 410,
+      "peakRSSKiB": 1997872
+    },
+    "mapping": {
+      "path": "build/school/task009-school24-source/v9-mapping-equality.json",
+      "sha256": "234b8021f6d5cbc893c22dc8d75324e11ce4f9400c057c4643e91dfcd36a12e4",
+      "LLVMByteIdentical": true,
+      "sha256LLVM": "05c1d124a6c613d1ba3089bd483c5481cf3c379a5af48722009b9b375ba4ff1b"
+    },
+    "sourceNegatives": {
+      "path": "build/school/task009-reduction-source-negatives-a1/result.json",
+      "sha256": "f601238aa76e811b4c7f968519641f8d49aa752e35d2e35caf6094b0f1672de1",
+      "status": "PASS",
+      "seconds": 108.69933568593115,
+      "positive": 1,
+      "consequentialMutants": 5,
+      "scope": "Actual full Notebook private copies plus actual Actions; legacy grant, premature call, captured CRC, unconsumed call, fake full-source recapture"
+    },
+    "primitiveFeasibility": {
+      "path": "build/school/task009-reduce-feasibility-a1/result.json",
+      "sha256": "d6c646a947792e7fa2ede2824d59243bae4f70377901c5ecdc736e0b059e6768",
+      "status": "PASS",
+      "scope": "Genuine bounded Euclid frontend/LLVM plus real RV64 object REMU/DIVU; eleven finite Actions; no CPU consumer claim"
+    },
+    "maintainedChecks": [
+      "nix develop --no-write-lock-file --command lake build Lemma.Applications.Notebook Lemma.Services.Arithmetic.ServerV9",
+      "nix develop --no-write-lock-file --command lake env lean -j2 --run tests/courses/LocalReduction.lean",
+      "nix develop --no-write-lock-file --command python3 scripts/check_course_install.py --school-submission --output-dir build/courses/UNUSED"
+    ],
+    "hostedConsumer": {
+      "implementationCommit": "2353684",
+      "freshFrozenHTTP": "Three protected local-tool consumer cases plus legacy remote cases pass against separately closed hosted producer; exact producer is refreshed after final Bool-only source lowering correction. Gen24 not yet started by this receipt.",
+      "semantics": "Prepared potential use, Applied edit and terminal no-application observations remain separate. Current activity tool exposure remains distinct from AI decisions, hints and proof. Independent assessment rejects current exposure; remote permissions remain separately required."
+    },
+    "retainedFailures": [
+      "Private Python math.py helper shadowed standard-library import before compiler; corrected helper renamed.",
+      "Initial new component/Notebook fixture syntax and UInt64 mask inference errors.",
+      "Actual new changed-object negative caught and corrected LocalReduction.current dangling-else admission error.",
+      "Genuine component Core0 rejected proposition-valued findStep conditional; explicit equivalent Boolean branches now lower without compiler relaxation."
+    ],
+    "unqualified": [
+      "No whole School24 ELF/CFI audit claimed by component evidence",
+      "No ordinary native or distributed browser REDUCE execution yet",
+      "No School24 continuation admission; new pending V9 boundary requires separate scope",
+      "No runtime course plugin loader, general SDK coverage, general theorem/proof verification, physical or educational qualification"
+    ]
   }
 }
