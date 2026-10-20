@@ -2103,7 +2103,73 @@
           "path": "build/task009/school24-dependency-preparation-a2/result.json",
           "sha256": "8dd2a5804d8ab18b40915712a9ccb423cd5134a618247c180c5e2567308ffd36"
         },
-        "scope": "No producer or deadline admitted; exact209-module actual-catalog DAG is prepared for normal sequential command_invoker calls, with no source/tool/worker policy change."
+        "scope": "Normal protected209-module topological preparation is distinct from target production. One-module calls avoid concurrent Lean compilers; original refusal, observer failure and hard resource failure remain failed. No manual cache edits.",
+        "actual_observer_failed_a3": {
+          "result": {
+            "path": "build/task009/school24-dependency-preparation-a3/result.json",
+            "sha256": "f77dccb02291e471b9096e55042dfa131ae2c1cabb2c6f39e967b1a8383aa19e"
+          },
+          "supplemental_observer": {
+            "path": "build/task009/school24-dependency-preparation-a3/observer-correction-a1/result.json",
+            "sha256": "a6a262894780a3080aa445bf813f126064db9b2aac1a1277de9856f700c65e8d"
+          },
+          "closed": {
+            "path": "build/task009/school24-dependency-preparation-a3/closed-assessment.json",
+            "sha256": "a6d0e2ec05d28ca92c0493029bb31d11bc4fc4deb5eded2b89693e995d26b233"
+          },
+          "completed_module_receipts": 105,
+          "seconds": 211.59012296795845,
+          "scope": "Original monitor undercounted the pinned .lean-wrapped name; a supplemental observer then terminated the job on a transient non-atomic result JSON read. Compiler/RSS/reserve did not fail. No whole-preparation PASS."
+        },
+        "actual_hard_resource_failed_a4": {
+          "result": {
+            "path": "build/task009/school24-dependency-preparation-a4/result.json",
+            "sha256": "62ce6f51bde8624bbc8f6e7003b4d9684fcbdc8f4d20334a6e8335e3b4820279"
+          },
+          "closed": {
+            "path": "build/task009/school24-dependency-preparation-a4/closed-assessment.json",
+            "sha256": "f8116e8bee376fb436b87c22f16293af91993d9f89181a62580fd027a2d95796"
+          },
+          "completed_module_receipts": 166,
+          "seconds": 348.5741357021034,
+          "declared_cap_bytes": 2147483648,
+          "sampled_peak_bytes": 2150039552,
+          "hard_violation_bytes": 2555904,
+          "maximum_actual_Lean_processes": 1,
+          "minimum_host_available_bytes": 10763079680,
+          "scope": "Corrected single monitor counts lean and .lean-wrapped. Full Notebook preparation crossed the original2GiB combined cap; all owners are now absent. Original receipt keeps three temporarily terminating PIDs."
+        },
+        "separate_prospective_a5_plan": {
+          "path": "build/task009/school24-dependency-preparation-a5/admission-plan.json",
+          "sha256": "a024c46a9d18f372f8ad5601a15b65f46260629d34d6d5e00bbf1e8d56cde1db"
+        },
+        "cache_transactionality_remaining": {
+          "status": "UNFINISHED_MAINTAINED_TRANSACTIONAL_PREPARATION",
+          "helper": {
+            "path": "scripts/build_actions.py",
+            "sha256": "9feb0232ede706b42f887425677da9c4ebb6d2e3da5a52858cc9025c0abb0085"
+          },
+          "actual_recurrence": [
+            "A3: all840 baseline compiled files unchanged; one ProtocolV9.setup.json extra",
+            "A4: all1328 baseline compiled files unchanged; one Notebook.setup.json extra"
+          ],
+          "meaning": "Normal byte-exact admission correctly rejects the incomplete inventory and discards completed dependency outputs. An atomic preparation/rollback improvement is required later; no cached object or metadata was manually repaired."
+        }
+      },
+      "canonical_followup_plan": {
+        "path": "build/task009/school24-integrated16-followup-plan-a2/plan.json",
+        "sha256": "4e7ee40381fa91ee48fca533eb93e47612dd46f3059529312ed0d4c71897ec1c"
+      },
+      "factory_author_source_equality": {
+        "path": "build/task009/school24-integrated16-followup-plan-a2/author-source-equality.json",
+        "sha256": "41933e0880f14e9f9d1ef50934f9bdf869efe0116fba703d84bf818b51a1faa1"
+      },
+      "School24_runtime_startup_predicate": {
+        "qualification": {
+          "path": "build/task009/school24-integrated16-followup-plan-a2/observer-qualification.json",
+          "sha256": "dc9f6073b06fee0590b6e9ab29c5af6c4078328e5e6d1c821404ada899fa7e09"
+        },
+        "scope": "Exact actual739(version1,serviceID0x0001000052444331,144,176) is required in24 Ready in addition to731;13focused selection tests pass. Legacy23 predicate and all original cycle/time limits remain unchanged; new execution remains pending."
       }
     },
     "current23_preservation": {
@@ -2113,6 +2179,40 @@
         "sha256": "d6ffe109ef0b215bf93f6908c95111fc1dbb400e9ff5466618440754a4c62150"
       },
       "scope": "No target command or source capture admitted. All four current configurations still require genuine exports and strict audits; old immutable23 archives keep historical admission."
+    },
+    "ordinary_native_consumption": {
+      "status": "SCOPED_WORKFLOW_PASS_WITH_SEPARATE_PRESENTATION_CORRECTION",
+      "terminal": {
+        "path": "build/school/task009-native-reduction-a1/terminal-result.json",
+        "sha256": "a4abef8266b4b5a52de729c762741b7f28c88ca86c7731feef8caab2bee9cafd"
+      },
+      "original_terminal_unchanged": true,
+      "bundle_manifest_sha256": "8f213d6eecebd7da9d090d9db105cb6c3d50ba7c1bfdf251ea2c82184c4670c7",
+      "first_reduction": "Actual V9 request1000374:10/12\u21925/6; Prepared22/Applied23",
+      "cold_reduction": "ExplicitSave24/normalClose/newCPU0samebacking; request1000375 AlreadyCanonical2; Prepared25/Applied26",
+      "original_submission": "Actual804/1publication148 remains immutable after804/2policy2 publication; School157/guest733frontier138,teacher161 againstoriginal two criteria",
+      "due_response": "Opaque original work remains Unsupported4; actualSchool167/guest733frontier214,Teacher168,old1reviewdelay60000ms andFeedback161/168",
+      "normal_close_UTC": "2026-10-20T14:29:49.724667+00:00",
+      "original_deadline_UTC": "2026-10-20T14:46:58.178616+00:00",
+      "charged_units": 11830000191,
+      "observed_units": 10430000040,
+      "cap_units": 12000000000,
+      "all_observed_owners_gone": true,
+      "native_controller_pixels_closed_assessment": {
+        "path": "build/school/task009-native-reduction-a1/native-pixel-assessment.json",
+        "sha256": "c3aa3fce0ab8cc82f3f3b7d6da41b216038aa20d83888c312bce1281556065f6"
+      },
+      "viewer_component_correction": {
+        "path": "build/school/task009-native-reduction-a1/viewer-presentation-replay/result.json",
+        "sha256": "78ff381ce51ce962eac343929fee91631a24ae457704a555e254b5591b29ec03"
+      },
+      "presentation_scope": "Original partial-segment assessment remains retained. A closed full-resolution controller assessment rejects its nearest-decimation false negative; complete actual formulae are present. Current min-pool Tk component passes on the retained realP6 with noRun, independently of the old sealed bundle host identity. No new ordinary guest execution on that viewer successor claimed.",
+      "exclusions": [
+        "No full0.16 execution",
+        "No School24 CPU continuation admission",
+        "No measured educational benefit or handwriting kernel proof",
+        "Browser ordinary workflow remains separately owned/in progress"
+      ]
     }
   }
 }

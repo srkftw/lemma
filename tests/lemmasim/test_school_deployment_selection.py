@@ -81,6 +81,20 @@ class SchoolDeploymentSelection(unittest.TestCase):
                 self.assertTrue(school_queue_ready(configuration,ready+[(0x731,2,512,262144,2)]))
         self.assertTrue(school_queue_ready('lemmasim-silicon-integrated-notebook',ready))
 
+    def test_integrated_successor_ready_requires_exact_actual_v9_startup(self):
+        from check_integrated_boot import school_arithmetic_ready
+        ready=[(0x47c,15,8,9,0),(0x420,1,1,0,0),(0x731,2,512,262144,2)]
+        exact=(0x739,1,0x0001000052444331,144,176)
+        for role in ('integrated','integrated-pcm'):
+            successor=school.configuration_for(24,role)
+            self.assertFalse(school_arithmetic_ready(successor,ready))
+            for column in range(len(exact)):
+                changed=list(exact);changed[column]+=1
+                self.assertFalse(school_arithmetic_ready(successor,ready+[tuple(changed)]))
+            self.assertTrue(school_arithmetic_ready(successor,ready+[exact]))
+            self.assertTrue(school_arithmetic_ready(school.configuration_for(23,role),ready))
+        self.assertTrue(school_arithmetic_ready('lemmasim-silicon-integrated-notebook',ready))
+
     def test_shared_deployment_consumers_select_the_exact_versioned_tuple(self):
         from silicon_profile import configuration_profile
         from closure_deployment import software_deployment_for as closure_software
