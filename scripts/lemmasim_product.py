@@ -52,7 +52,7 @@ def profile_discovery(data,out,dtc):
   'generator_sha256':inputs.sha(path),'dtc':{'path':str(tool),'sha256':inputs.sha(tool),'version':version},
   'dtb_bytes':extent,'dts_sha256':inputs.sha(out/'discovery.dts'),'dtb_sha256':inputs.sha(out/'discovery.dtb'),
   'descriptor_sha256':inputs.sha(out/'descriptor.bin'),
-  **({'compatibility_view':view['profile'],'compatibility_profile_sha256':inputs.sha(ROOT/'sim/profiles/lemma-silicon-dev-0.10.0.json'),'extension_scope':'Integrated15 extra endpoints remain available through versioned MMIO discovery; Product10 guest does not consume them'} if view is not profile else {}),
+  **({'compatibility_view':view['profile'],'compatibility_profile_sha256':inputs.sha(ROOT/'sim/profiles/lemma-silicon-dev-0.10.0.json'),'extension_scope':'Integrated'+profile['profile'].split('/')[1].split('.')[1]+' extra endpoints remain available through versioned MMIO discovery; Product10 guest does not consume them'} if view is not profile else {}),
   'scope':'static profile-bound base hardware discovery registers; generated discovery.dtb is never preloaded into guest RAM'}
 
 def validate_discovery(data,path):
@@ -62,7 +62,7 @@ def validate_discovery(data,path):
  for name,key in [('discovery.dts','dts_sha256'),('discovery.dtb','dtb_sha256'),('descriptor.bin','descriptor_sha256')]:
   if inputs.sha(path/name)!=row[key]:raise ValueError('Changed product discovery artifact: '+name)
  view=discovery_view(generator,profile)
- if profile['profile'] in inputs.INTEGRATED_PROFILES and (row.get('compatibility_view')!=view['profile'] or row.get('compatibility_profile_sha256')!=inputs.sha(ROOT/'sim/profiles/lemma-silicon-dev-0.10.0.json')):raise ValueError('Changed explicit Integrated15 base discovery compatibility')
+ if profile['profile'] in inputs.INTEGRATED_PROFILES and (row.get('compatibility_view')!=view['profile'] or row.get('compatibility_profile_sha256')!=inputs.sha(ROOT/'sim/profiles/lemma-silicon-dev-0.10.0.json')):raise ValueError('Changed explicit Integrated base discovery compatibility')
  if (path/'discovery.dts').read_text()!=generator.dts(view) or (path/'descriptor.bin').read_bytes()!=generator.descriptor(profile,row['dtb_bytes']):
   raise ValueError('Product discovery registers differ from the native profile')
  if not 40<=row['dtb_bytes']<=3072 or (path/'discovery.dtb').stat().st_size!=row['dtb_bytes']:

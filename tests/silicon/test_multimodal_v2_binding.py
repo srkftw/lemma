@@ -1,5 +1,5 @@
 """Versioned machine/controller admission; no controller execution claim."""
-import copy,importlib.machinery,importlib.util,json,os,sys,unittest
+import copy,importlib.machinery,importlib.util,json,os,sys,tempfile,unittest
 from pathlib import Path
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT/'scripts'))
@@ -33,6 +33,16 @@ class BindingTests(unittest.TestCase):
   old=ROOT/'build/task009/school23-mm-source-a6'
   if not old.is_dir():self.skipTest('optional retained local source archive')
   self.assertEqual(build_kernel.source_inputs(old),json.loads((old/'source-inputs.json').read_text()))
+ def test_native_receipt_records_prior_union_validation_dependency(self):
+  # A source-manifest fixture only: no mocked core/SRAM is executable evidence.
+  import silicon_compute
+  for version in (14,16):
+   with self.subTest(version=version),tempfile.TemporaryDirectory() as directory:
+    with patch.object(silicon_compute,'sources',return_value=[]),patch('silicon_sram.materialize',return_value=([],{'fixture':'manifest-only'})):
+     manifest=silicon_compute.source_manifest(Path(directory)/'cvw',f'lemma-silicon-dev/0.{version}.0')
+    inputs=manifest['binding_generator_inputs'];prior='sim/profiles/lemma-silicon-dev-0.15.0.json'
+    self.assertEqual(prior in inputs,version==16)
+    if version==16:self.assertEqual(inputs[prior],silicon_compute.hashlib.sha256(profiles.INTEGRATED_PROFILE.read_bytes()).hexdigest())
 
 class SubsetTests(unittest.TestCase):
  def metadata(self):return {'profile':'lemma-silicon-dev/0.14.0','execution_binding':fast.MM2_BINDING,'multimodal_controller_abi':2,'controller_contract':'lemma-multimodal-converter/2','sources':{'sim/host/lemma_multimodal_v2.c':'fixture'}}

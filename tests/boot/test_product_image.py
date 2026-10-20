@@ -12,6 +12,19 @@ def image():
  dtb=struct.pack('>10I',0xd00dfeed,40,0,0,0,17,16,0,0,0)
  return elf,dtb
 class ProductImageTests(unittest.TestCase):
+ def test_integrated_binding_versions_cannot_be_substituted(self):
+  for configuration,profile in (
+   ('lemmasim-silicon-integrated-pcm-school-notebook','lemma-silicon-dev/0.15.0'),
+   ('lemmasim-silicon-integrated-school-notebook','lemma-silicon-dev/0.16.0'),
+   ('lemmasim-silicon-school-notebook','lemma-silicon-dev/0.14.0')):
+   with self.subTest(configuration=configuration),tempfile.TemporaryDirectory() as directory:
+    root=Path(directory);guest=root/'guest';guest.mkdir()
+    (guest/'build.json').write_text(json.dumps({'status':'BUILT','configuration':configuration}))
+    (guest/'audit.json').write_text(json.dumps({'status':'PASS','configuration':configuration}))
+    (guest/'binding.json').write_text(json.dumps({'profile':profile}))
+    with self.assertRaisesRegex(ValueError,'matching product configuration/profile'):
+     package(guest,root/'rejected',23)
+    self.assertFalse((root/'rejected').exists())
  def test_original_source_archive_is_required_and_complete(self):
   # A retained image has advanced current sources. Only the complete source
   # receipt bound to its original provenance authorizes archive reuse.

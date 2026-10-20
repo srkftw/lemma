@@ -53,7 +53,10 @@ def package(guest,out,identity,source_archive=None):
  integrated=build.get('configuration') in INTEGRATED_CONFIGURATIONS
  executed_profile=integrated or build.get('configuration') in ('lemmasim-silicon-product-executed-bulk-notebook',)+PRODUCT_READER_CONFIGURATIONS
  next_profile=build.get('configuration')==NEXT_CONFIGURATION
- if build.get('status')!='BUILT' or audit.get('status')!='PASS' or (not next_profile and not executed_profile and build.get('configuration') not in CONFIGURATIONS) or audit.get('configuration')!=build['configuration'] or binding.get('profile')!=('lemma-silicon-dev/0.15.0' if integrated else 'lemma-silicon-dev/0.10.0' if executed_profile else 'lemma-silicon-dev/0.9.0' if next_profile else 'lemma-silicon-dev/0.7.0'):raise ValueError('packaging requires a strictly audited selected product7 guest')
+ from silicon_profile import configuration_profile
+ supported=next_profile or executed_profile or build.get('configuration') in CONFIGURATIONS
+ expected_profile=configuration_profile(build['configuration']) if supported else None
+ if build.get('status')!='BUILT' or audit.get('status')!='PASS' or not supported or audit.get('configuration')!=build['configuration'] or binding.get('profile')!=expected_profile:raise ValueError('packaging requires a strictly audited matching product configuration/profile')
  for name in ('image.elf','platform.dtb'):
   if build.get('artifacts',{}).get(name)!=sha(guest/name):raise ValueError('compiled product artifact identity differs: '+name)
  if audit.get('image_sha256')!=sha(guest/'image.elf'):raise ValueError('product ELF audit identity differs')
@@ -87,7 +90,7 @@ def package(guest,out,identity,source_archive=None):
    folder=Path(temporary);(folder/'base.dts').write_text(source)
    subprocess.run([str(tool),'-I','dts','-O','dtb','-o',str(folder/'base.dtb'),str(folder/'base.dts')],check=True,capture_output=True,timeout=30)
    dtb=(folder/'base.dtb').read_bytes()
-  compatibility_view={'contract_version':'lemma-product10-image-compatibility/1','profile':selected['profile'],'generator_sha256':sha(path),'profile_sha256':sha(generator.profile_path(selected['profile'])),'dtc':{'path':str(tool),'sha256':sha(tool),'version':version},'dtb_sha256':hashlib.sha256(dtb).hexdigest(),'dts_sha256':hashlib.sha256(source.encode()).hexdigest(),'scope':'MAC-bound legacy base view; full0.15 selection plus converter MMIO identity checked separately'}
+  compatibility_view={'contract_version':'lemma-product10-image-compatibility/1','profile':selected['profile'],'generator_sha256':sha(path),'profile_sha256':sha(generator.profile_path(selected['profile'])),'dtc':{'path':str(tool),'sha256':sha(tool),'version':version},'dtb_sha256':hashlib.sha256(dtb).hexdigest(),'dts_sha256':hashlib.sha256(source.encode()).hexdigest(),'scope':'MAC-bound legacy base view; full'+expected_profile.split('/')[1].removesuffix('.0')+' selection plus converter MMIO identity checked separately'}
  wire,layout=pack_elf((guest/'image.elf').read_bytes(),dtb,identity,EXECUTED_COMPATIBILITY if executed_profile else NEXT_COMPATIBILITY if next_profile else COMPATIBILITY)
  out.mkdir(parents=True);(out/'image.bin').write_bytes(wire)
  if integrated:

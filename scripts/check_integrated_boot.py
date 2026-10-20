@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded actual Integrated15 development-ROM install, notebook and Save.
+"""Bounded actual Integrated development-ROM install, notebook and Save.
 
 The host transports opaque image sectors and raw pen input. It never constructs
 boot metadata, guest page tables, notebook data, checking or health receipts.
@@ -26,6 +26,7 @@ def require(value,message):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--profile',choices=('lemma-silicon-dev/0.15.0','lemma-silicon-dev/0.16.0'),default='lemma-silicon-dev/0.15.0',help='Exact full SoC binding; Fast MM2 subset cannot qualify this path')
     for name in ('prepared','package','tag','user-medium','work-dir'):parser.add_argument('--'+name,type=Path,required=True)
     parser.add_argument('--capture-ready-checkpoint',action='store_true',help='Attempt ordinary nonmutating sealed checkpoint after actual Ready; no restore or guest execution shortcut')
     parser.add_argument('--factory-boot',type=Path,help='Offline hosted-Lean provisioned raw boot artifact; actual ROM still authenticates it')
@@ -58,6 +59,10 @@ def main():
       'observer_inputs':observer_inputs,'observer_archive_sha256':sha(source/'source-inputs.json'),'phases':[],'receipts':[],'compilation':'reused source-audited integrated guest/ROM/RTL; this run is fresh actual canonical execution'}
     if factory:
         report.update(schema='lemma-integrated15-factory-cold-guest/1',scope='Actual ROM/NV cold authentication of explicitly factory-provisioned bytes, then shared guest pen/Save/reset; not an update/install operation',limits={'whole_seconds':12000,'aggregate_cycles':1500000000,'Ready_cycles':1299800000,'Ready_seconds':10500,'Save_cycles':200000000,'Save_seconds':1800,'reset_cycles':200000,'output_bytes':2147483648,'runtime_rss_bytes':536870912})
+    if args.profile.endswith('/0.16.0'):
+        report['schema']=report['schema'].replace('integrated15','integrated16')
+    report['selected_profile']=args.profile
+    report['kernel_beacon']={'version':15,'meaning':'retained IntegratedKernel/Product10 guest interface; full selected machine identity is checked independently'}
     def publish():(out/'progress.json').write_text(json.dumps(report,indent=2)+'\n')
     def call(value):
         require(time.monotonic()<whole,'original whole deadline')
@@ -91,11 +96,14 @@ def main():
             report['current']={'phase':name,'cycles':state['cycle']-begin,'cycle':state['cycle'],'seconds':time.monotonic()-started,'total_cycles':total};publish()
         report['phases'].append({'name':name,'cycles':state['cycle']-begin,'end_cycle':state['cycle'],'seconds':time.monotonic()-started});publish();print(name,state['cycle'],flush=True);return state
     try:
-        admission,_,_=auth.prepared(args.prepared);require(admission['profile']=='lemma-silicon-dev/0.15.0','exact Integrated15 machine required')
+        admission,_,_=auth.prepared(args.prepared);require(admission['profile']==args.profile,'exact selected Integrated machine required')
         package,wire,tag=load_package(args.package,args.tag,sha)
         from integrated_deployment import CONFIGURATIONS
         require(package.get('configuration') in CONFIGURATIONS,'exact integrated guest required')
-        school=package.get('configuration')=='lemmasim-silicon-integrated-school-notebook'
+        from silicon_profile import configuration_profile
+        from school_deployment import INTEGRATED_CONFIGURATIONS
+        require(configuration_profile(package['configuration'])==args.profile,'compiled image configuration differs from selected full SoC profile')
+        school=package.get('configuration') in INTEGRATED_CONFIGURATIONS
         report['inputs']={str(path.resolve()):sha(path) for path in (args.prepared/'prepared.json',args.package/'package.json',args.package/'image.bin',args.tag,args.user_medium)}
         boot=out/'boot.raw';disk=out/'user.raw'
         if factory:

@@ -7,7 +7,7 @@ from action_cache import write_if_changed
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tooling/silicon'))
 from apply_cvw import apply
-from silicon_profile import profile, profile_path, constants, POWER_PROFILE
+from silicon_profile import profile, profile_path, constants, POWER_PROFILE, INTEGRATED_PROFILE
 REV='20f2af74e7aa76513e94012231d16567fa42648a'
 SIM_SHELL=ROOT/'tooling/silicon/sim.nix'
 BUILD_OPTIONS={'host_cflags':'-O3 -std=c++17',
@@ -76,7 +76,7 @@ def source_manifest(dep, profile_name=None):
             'host_binding_sha256':hashlib.sha256(header.read_bytes()).hexdigest(),
             'profile':selected['profile'],
             'profile_sha256':hashlib.sha256(profile_path(profile_name).read_bytes()).hexdigest(),
-            'binding_generator_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in dict.fromkeys((ROOT/'scripts/silicon_profile.py',POWER_PROFILE,profile_path(profile_name),*([ROOT/'scripts/silicon_sram.py',ROOT/'tooling/silicon/physical-lock.json'] if sram_model else [])))},
+            'binding_generator_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in dict.fromkeys((ROOT/'scripts/silicon_profile.py',POWER_PROFILE,profile_path(profile_name),*([INTEGRATED_PROFILE] if selected['profile']=='lemma-silicon-dev/0.16.0' else []),*([ROOT/'scripts/silicon_sram.py',ROOT/'tooling/silicon/physical-lock.json'] if sram_model else [])))},
             'sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
             'host_adapter':{'path':'sim/rtl/host/main.cpp','sha256':hashlib.sha256((ROOT/'sim/rtl/host/main.cpp').read_bytes()).hexdigest()},
             'host_runtime':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted([ROOT/'sim/host/panel_pending.h',ROOT/'sim/host/usb_clock.h',*(ROOT/'sim/rtl/host').glob('machine_runtime.*'),*(ROOT/'sim/host').glob('backing_io*'),*(ROOT/'sim/companion').glob('backing_peer.*'),*(ROOT/'sim/radio').glob('ble_peer_transport.*'),*(ROOT/'sim/usb').glob('usb_transport.*')])},
