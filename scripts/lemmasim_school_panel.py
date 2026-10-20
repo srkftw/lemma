@@ -705,9 +705,18 @@ def open_study(parent,directory):
     connection=Connection(Path('.'),directory,'','',Path(),Path())
     output=ScrolledText(shell,height=8,wrap='word')
     pending=queue.Queue();busy=[False];generation=[0];cursor=[0];kind=['courses'];rows=[]
+    activity_choices=[]
     listing=ttk.Treeview(shell,columns=('title','identity','task'),show='headings',height=8)
     for key,label,width in (('title','Course',360),('identity','Edition',100),('task','Task',280)):
         listing.heading(key,text=label);listing.column(key,width=width)
+    def choose_activity(_event=None):
+        activity_choices.clear()
+        selected=listing.selection()
+        if selected and kind[0]=='courses':
+            activity_choices.extend(rows[int(selected[0])].get('activities',[]))
+        activities['values']=['First page']+[a['title']+' · '+a['id'] for a in activity_choices]
+        activities.current(0)
+    listing.bind('<<TreeviewSelect>>',choose_activity)
     def show(result):
         output.delete('1.0','end');output.insert('end',json.dumps(result,indent=2,ensure_ascii=False))
         for key in ('courses','reviews'):
@@ -715,6 +724,7 @@ def open_study(parent,directory):
                 kind[0]=key;rows[:]=result[key];cursor[0]=result['next'];listing.delete(*listing.get_children())
                 for i,row in enumerate(rows):
                     listing.insert('','end',iid=str(i),values=(row.get('courseTitle',row.get('title','')),str(row['course'])+'/'+str(row.get('edition',row.get('revision'))),row.get('title','') if key=='reviews' else ''))
+                choose_activity()
     def run(operation,**fields):
         if busy[0] and operation not in ('cancel','disconnect'):show({'status':'A school request is pending. Local pen and Save remain available.'});return
         generation[0]+=1;intent=generation[0]
@@ -754,8 +764,13 @@ def open_study(parent,directory):
         if not selected:return
         row=rows[int(selected[0])]
         if kind[0]=='reviews':run('review',id=row['id'])
-        else:run('install',course=row['course'],revision=row['revision'])
+        else:
+            index=activities.current()-1
+            fields={'activity':activity_choices[index]['id']} if 0<=index<len(activity_choices) else {}
+            run('install',course=row['course'],revision=row['revision'],**fields)
     controls=ttk.Frame(shell);controls.pack(fill='x',pady=8)
+    ttk.Label(controls,text='Activity').pack(side='left',padx=(0,6))
+    activities=ttk.Combobox(controls,state='readonly',width=42,values=['First page']);activities.current(0);activities.pack(side='left',padx=(0,6))
     ttk.Button(controls,text='Install / open selected task',command=select).pack(side='left')
     ttk.Button(controls,text='Next page',command=lambda:run('reviews' if kind[0]=='reviews' else 'catalogue',after=cursor[0])).pack(side='left')
     ttk.Label(shell,text='After installation tap COURSE. Tap ASK, bind it below, then tap JOIN on the paper. Save and tap SEND before sending committed work.',wraplength=800).pack(anchor='w',pady=8)

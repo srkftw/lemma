@@ -156,7 +156,18 @@ function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.te
  }catch(e){fallback();}
  else if(context){const image=context.createImageData(m.width,m.height);for(let i=0;i<m.pixels.length;i++){const gray=m.pixels[i]*17;image.data[4*i]=image.data[4*i+1]=image.data[4*i+2]=gray;image.data[4*i+3]=255;}context.putImageData(image,0,0);}}
 let schoolCursor=0,reviewCursor=0,feedbackCursor=0;
+let schoolCourses=[];
 const schoolStatus=document.querySelector('#school-status');
+function schoolActivities(){
+ const selected=document.querySelector('#school-course').selectedIndex;
+ const list=document.querySelector('#school-task');list.replaceChildren();
+ const first=document.createElement('option');first.value='';first.textContent='First page';list.append(first);
+ for(const activity of schoolCourses[selected]?.activities??[]){
+  const option=document.createElement('option');option.value=activity.id;
+  option.textContent=activity.title+' · '+activity.id;list.append(option);
+ }
+}
+document.querySelector('#school-course').onchange=schoolActivities;
 function resetFeedback(){feedbackCursor=0;document.querySelector('#school-feedback-next').disabled=true;}
 function teacherFeedback(result){
  if(!Array.isArray(result?.feedback))return JSON.stringify(result,null,2);
@@ -184,7 +195,8 @@ document.querySelector('#school-next').onclick=()=>schoolAction('catalogue',{aft
 document.querySelector('#school-install').onclick=()=>{
  const selected=document.querySelector('#school-course').selectedOptions[0];
  if(!selected){schoolStatus.textContent='Connect and select an enrolled publication first.';return;}
- schoolAction('install',{course:Number(selected.dataset.course),revision:Number(selected.dataset.revision)});
+ const activity=document.querySelector('#school-task').value;
+ schoolAction('install',{course:Number(selected.dataset.course),revision:Number(selected.dataset.revision),...(activity?{activity}:{})});
 };
 for(const operation of ['join','help','receipts','submit','cancel','disconnect'])document.querySelector('#school-'+operation).onclick=()=>schoolAction(operation);
 document.querySelector('#school-feedback').onclick=()=>{resetFeedback();schoolAction('feedback',{after:0});};
@@ -202,8 +214,8 @@ worker.onmessage=({data:m})=>{
  if(m.type==='school'){
   schoolStatus.textContent=m.error?m.error:teacherFeedback(m.result);
   if(!m.error&&Array.isArray(m.result?.feedback)){feedbackCursor=m.result.next;document.querySelector('#school-feedback-next').disabled=m.result.more!==true;}
-  if(m.result?.courses){schoolCursor=m.result.next;const list=document.querySelector('#school-course');list.replaceChildren();
-   for(const course of m.result.courses){const option=document.createElement('option');option.textContent=course.title+' · '+course.course+'/'+course.revision;option.dataset.course=course.course;option.dataset.revision=course.revision;list.append(option);}}
+  if(m.result?.courses){schoolCursor=m.result.next;schoolCourses=m.result.courses;const list=document.querySelector('#school-course');list.replaceChildren();
+   for(const course of schoolCourses){const option=document.createElement('option');option.textContent=course.title+' · '+course.course+'/'+course.revision;option.dataset.course=course.course;option.dataset.revision=course.revision;list.append(option);}schoolActivities();}
   if(m.result?.reviews){reviewCursor=m.result.next;const list=document.querySelector('#school-review');list.replaceChildren();
    for(const review of m.result.reviews){const option=document.createElement('option');option.value=review.id;option.textContent=review.courseTitle+' · '+review.title+' · '+review.course+'/'+review.edition;list.append(option);}}
  }

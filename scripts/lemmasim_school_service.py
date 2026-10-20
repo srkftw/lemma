@@ -278,6 +278,11 @@ class SchoolService:
             if type(course) is not int or not 1<=course<=65535 or type(revision) is not int or not 1<=revision<=0xffffffff:
                 raise ValueError('select a bounded publication identity and edition')
             command={'op':'client-course','course':course,'revision':revision}
+            if 'activity' in value:
+                activity=value['activity']
+                if not isinstance(activity,str) or not 1<=len(activity)<=128:
+                    raise ValueError('select a bounded activity identity from this publication')
+                command['activity']=activity
         elif operation=='join':
             ask=self.context();binding=f"native-{ask['session']}-{ask['source']}-{ask['edition']}"
             command={'op':'join','course':ask['source'],'revision':ask['edition'],'session':binding,

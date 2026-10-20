@@ -275,7 +275,12 @@ export class SchoolTransport {
   if(message.operation==='install'){
    this.review=null;
    if(!Number.isSafeInteger(message.course)||!Number.isSafeInteger(message.revision)||message.course<1||message.course>65535||message.revision<1||message.revision>0xffffffff)throw Error('Select a bounded published course and edition');
-   return this.command({op:'client-course',course:message.course,revision:message.revision});
+   const command={op:'client-course',course:message.course,revision:message.revision};
+   if(Object.hasOwn(message,'activity')){
+    if(typeof message.activity!=='string'||message.activity.length<1||message.activity.length>128)throw Error('Select a bounded activity identity from this publication');
+    command.activity=message.activity;
+   }
+   return this.command(command);
   }
   if(message.operation==='join'){
    const context=ask();this.session='browser-'+context.session+'-'+context.source+'-'+context.edition;
