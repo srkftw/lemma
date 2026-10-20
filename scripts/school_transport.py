@@ -80,6 +80,24 @@ def post(port, data, timeout=10):
         return result
 
 
+def operator_timeout(value):
+    try:
+        seconds = float(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError("operator timeout must be 1..300 seconds")
+    if not 1 <= seconds <= 300:
+        raise argparse.ArgumentTypeError("operator timeout must be finite and 1..300 seconds")
+    return seconds
+
+
+def operator_reply(port, data, timeout, parser):
+    try:
+        return post(port, data, timeout=timeout)
+    except TimeoutError:
+        parser.exit(1, f"school operator reply exceeded {timeout:g}s; the admitted operation may still finish. "
+                    "Inspect status and the destination before retrying; do not infer cancellation.\n")
+
+
 def credential_binding(path):
     """Read only a private handoff; no secret appears in child args or logs."""
     descriptor = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
@@ -246,6 +264,8 @@ def main():
     parser.add_argument("--browser-origin", action="append", default=[], help="exact opt-in loopback browser origin for learner CORS only")
     parser.add_argument("--school")
     parser.add_argument("--actor")
+    parser.add_argument("--operator-timeout", type=operator_timeout, default=60,
+                        help="bounded local operator reply wait,1..300seconds; timeout does not cancel an admitted operation")
     parser.add_argument("--to", type=Path)
     parser.add_argument("--from", dest="source", type=Path)
     parser.add_argument("--new-school")
@@ -307,7 +327,7 @@ def main():
                 parser.exit(1, "protected-only transport has no operator endpoint; stop foreground process before local operation\n")
             if args.request == "restore":
                 parser.exit(1, "restore destination has a running authority; choose fresh storage\n")
-            reply = post(running["port"], data)
+            reply = operator_reply(running["port"], data, args.operator_timeout, parser)
             if token_digest:
                 print(f"private pairing file: {args.to.resolve()} (token hash {token_digest})", file=sys.stderr)
             return emit_reply(reply)
@@ -325,7 +345,7 @@ def main():
             json.loads(data)
         except ValueError:
             parser.error("operator request must be JSON or a supported shortcut")
-        return emit_reply(post(running["port"], data))
+        return emit_reply(operator_reply(running["port"], data, args.operator_timeout, parser))
     try:
         environment = authority_environment(environment)
     except ValueError as error:
@@ -411,7 +431,11 @@ def main():
                                 self.send_header("Content-Length", str(len(reply)))
                                 self.end_headers()
                                 self.wfile.write(reply)
-                            except (ValueError, RuntimeError, BrokenPipeError):
+                            except BrokenPipeError:
+                                # A lost client reply does not roll back or
+                                # cancel an already admitted Lean operation.
+                                pass
+                            except (ValueError, RuntimeError):
                                 self.send_error(503)
                         def log_message(self, *_args):
                             pass

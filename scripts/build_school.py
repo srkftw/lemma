@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import time
 
-from build_actions import lean_source_inputs
+from build_actions import lean_source_inputs, retain_source
 from core0_common import repo_root, sha256
 
 
@@ -37,6 +37,10 @@ def main():
     result = {"schema": "lemma-school-host-production/1", "result": "FAIL", "command": command,
               "sourceInputs": before, "boundary": "hosted Lean native executable with upstream host runtime; no freestanding server claim"}
     try:
+        # A digest alone cannot reproduce uncommitted consumed inputs after
+        # the next edit. Retain their exact bytes with the existing build-action
+        # archive, before compiling or copying an executable for operation.
+        result["sourceRoot"] = str(retain_source(root, output, before))
         with (output / "production.log").open("x") as log:
             process = subprocess.run(command, cwd=root, stdout=log, stderr=subprocess.STDOUT, timeout=300)
         if process.returncode:
