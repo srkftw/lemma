@@ -16,6 +16,7 @@ sys.path.insert(0,str(ROOT/'conformance/lemmasim'))
 from store_oracle import recover
 from notebook_input import Input
 from check_canonical_pen_pixels import expected_stroke
+from check_integrated_saved_work import qualify as qualify_saved_work
 from check_live_notebook import guest_events,visible_pixels
 
 
@@ -26,6 +27,7 @@ def require(value,message):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ('prepared','package','tag','user-medium','work-dir'):parser.add_argument('--'+name,type=Path,required=True)
+    parser.add_argument('--capture-ready-checkpoint',action='store_true',help='Attempt ordinary nonmutating sealed checkpoint after actual Ready; no restore or guest execution shortcut')
     parser.add_argument('--factory-boot',type=Path,help='Offline hosted-Lean provisioned raw boot artifact; actual ROM still authenticates it')
     parser.add_argument('--factory-reject',choices=('metadata','tag'),help='Separate negative ROM case on a private corrupted factory copy; no notebook success claim')
     args=parser.parse_args();out=args.work_dir.resolve()
@@ -38,7 +40,10 @@ def main():
     observer_paths={Path(__file__).relative_to(ROOT).as_posix(),
       'conformance/lemmasim/store_oracle.py','conformance/lemmasim/notebook_input.py',
       'conformance/lemmasim/check_canonical_pen_pixels.py',
-      'scripts/check_live_notebook.py',*prepared_record.get('host_scripts',{})}
+      'scripts/check_live_notebook.py','scripts/check_integrated_saved_work.py',
+      'conformance/lemmasim/inspect_notebook.py','conformance/lemmasim/math_oracle.py',
+      'conformance/lemmasim/check_notebook_workflow.py','conformance/lemmasim/notebook_pixels.py',
+      'scripts/lemmasim_readonly.py',*prepared_record.get('host_scripts',{})}
     observer_inputs={}
     for name in sorted(observer_paths):
         original=ROOT/name;target=source/name;target.parent.mkdir(parents=True,exist_ok=True)
@@ -49,6 +54,7 @@ def main():
     start=time.monotonic();whole=start+(12000 if factory else 10800);process=None;log=None;total=0
     report={'schema':'lemma-integrated15-authenticated-guest/1','result':'FAIL','scope':__doc__,
       'limits':{'whole_seconds':10800,'install_cycles':600000000,'install_seconds':3600,'Ready_cycles':1300000000,'Ready_seconds':5400,'Save_cycles':300000000,'Save_seconds':1800},
+      'observer_python':{'path':str(Path(sys.executable).resolve()),'sha256':sha(Path(sys.executable).resolve()),'version':sys.version},
       'observer_inputs':observer_inputs,'observer_archive_sha256':sha(source/'source-inputs.json'),'phases':[],'receipts':[],'compilation':'reused source-audited integrated guest/ROM/RTL; this run is fresh actual canonical execution'}
     if factory:
         report.update(schema='lemma-integrated15-factory-cold-guest/1',scope='Actual ROM/NV cold authentication of explicitly factory-provisioned bytes, then shared guest pen/Save/reset; not an update/install operation',limits={'whole_seconds':12000,'aggregate_cycles':1500000000,'Ready_cycles':1299800000,'Ready_seconds':10500,'Save_cycles':200000000,'Save_seconds':1800,'reset_cycles':200000,'output_bytes':2147483648,'runtime_rss_bytes':536870912})
@@ -143,19 +149,32 @@ def main():
         _,pen_sequence,pen_before=recover(baseline.read_bytes())
         require((1,1) in pen_before,'ready notebook lacks its committed page')
         report['before_pen']={'store_sequence':pen_sequence,'user_sha256':sha(baseline)}
+        if args.capture_ready_checkpoint:
+            before_snapshot=call({'action':'inspect'})['machine']
+            try:
+                checkpoint=call({'action':'snapshot','path':str(out/'ready-checkpoint')})
+            except RuntimeError as error:
+                report['ready_checkpoint']={'result':'REJECTED','error':str(error),'scope':'Optional normal checkpoint; original guest execution continues independently'}
+            else:
+                report['ready_checkpoint']={'result':'CAPTURED','path':str(out/'ready-checkpoint'),
+                    'manifest_sha256':sha(out/'ready-checkpoint/snapshot.json'),
+                    'scope':'Actual Ready state captured; no restore or continuation claim from capture alone'}
+            require(call({'action':'inspect'})['machine']==before_snapshot,'Ready checkpoint changed digital observation')
+            publish()
+
         stream=Input(width,height,ready['ticks']+10000,100000,0);stream.sample(width//2,160,0,False);stream.stroke('integrated-written-work',1,1,3,1700);stroke=stream.events[1:].copy();stream.tool(7,'explicit Save')
         for event in stream.events:call({'action':'inject','kind':'pen','cycle':event[1]*10,'words':list(event[1:8])})
         saved=phase('actual-pen-and-Save',200000000 if factory else 300000000,1800,lambda state,rows:any(r[0]==0x421 and r[1]>=pen_sequence+3 for r in rows) and not any(state[k] for k in ('event_queue','pen_queue','paper_busy','panel_pending_pixels','block_state','dma_outstanding')))
         ack=out/'acknowledged-user.raw';nv=out/'acknowledged-boot.raw';call({'action':'export-medium','path':str(ack)});call({'action':'export-boot-medium','path':str(nv)})
         _,after_sequence,after=recover(ack.read_bytes());require(after_sequence>=pen_sequence+3,'pen Save missing new actual journal commits')
-        require(after[(1,1)].payload!=pen_before[(1,1)].payload,'pen Save left committed page unchanged')
+        linked_work=qualify_saved_work(baseline.read_bytes(),ack.read_bytes(),stroke)
         painted=out/'saved.ppm';call({'action':'panel','path':str(painted)});saved_width,saved_height,saved_pixels=visible_pixels(painted)
         require((saved_width,saved_height)==(width,height),'saved panel geometry changed')
         ink=expected_stroke(stroke,width,height)[1]
         require(ink and all(saved_pixels[(y*width+x)*3:(y*width+x)*3+3]==bytes(3) for x,y in ink),'actual pen pixels absent from controller output')
         require(any(pixels[(y*width+x)*3:(y*width+x)*3+3]!=bytes(3) for x,y in ink),'stroke adds no independently visible ink')
         require(all(after[key].payload==old.payload for key,old in before.items() if key not in ((1,1),(1,257))),'prior immutable work changed')
-        report['saved']={'store_sequence':after_sequence,'user_sha256':sha(ack),'boot_sha256':sha(nv),'events':stream.events,'old_work_preserved':True,'new_ink_pixels':len(ink),'committed_page_changed':True}
+        report['saved']={'store_sequence':after_sequence,'user_sha256':sha(ack),'boot_sha256':sha(nv),'events':stream.events,'old_work_preserved':True,'new_ink_pixels':len(ink),'committed_page_index_changed':True,'linked_work':linked_work}
         if factory:
             call({'action':'warm-reset'});call({'action':'run','cycles':200000});total+=200000
             reset=call({'action':'inspect'})['machine'];require(not reset['finished'] and reset['event_queue']==0 and reset['pen_queue']==0,'actual reset did not clear pending input')

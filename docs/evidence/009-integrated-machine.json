@@ -421,7 +421,7 @@
       "seconds": 944.715140337008,
       "scope": "actual ROM structural tag rejection/fallback/recovery beacon; arbitrary wrong MAC remains separate"
     },
-    "positive_notebook_cold_execution": "Running separately underoriginal12000s budget at selected_cache_runtime.positive_run; no final success admitted."
+    "positive_notebook_cold_execution": "Originala2 actualReady661Mcycles, durableSave separatelyassessed; originalobserverFAILretained. Correctedfulla3 execution separate."
   },
   "native_fault3": {
     "producer": "build/silicon/task009-integrated15-native-a4/build.json",
@@ -514,7 +514,7 @@
     "finite_relation": "build/task009/integrated15-cache-relation-assessment-a1/result.json",
     "finite_checkpoint_bytes": 145881087,
     "positive_run": {
-      "status": "RUNNING_NOT_READY_YET",
+      "status": "FAIL_ORACLE_HEADER_ASSUMPTION",
       "plan": "build/task009/integrated15-school23-positive-a2-plan.json",
       "progress": "build/task009/integrated15-school23-positive-a2/progress.json",
       "result_directory": "build/task009/integrated15-school23-positive-a2",
@@ -526,11 +526,21 @@
         "save_cycles": 200000000,
         "save_seconds": 1800
       },
-      "scope": "ActualROMfactoryauthenticatedSchool23image,noELF/DTBpreload; Ready/pen/Save/reset not yet admitted"
+      "scope": "ActualROM/Ready succeeded661Mcycles; actualSavefrontier2→5 stores exactlinkedraw/index. Observerwronglyrequiredheader1payloadchange. Finalpanel/resetnotobserved. OriginalFAILunchanged.",
+      "result": "build/task009/integrated15-school23-positive-a2/result.json",
+      "seconds": 5353.874020740041,
+      "aggregate_cycles": 699000000
     },
     "finite_native_observer_limitation": {
       "assessment": "build/task009/integrated15-cache-observer-assessment-a1/result.json",
       "scope": "The original_mtime_before_edit label was populated from the maintained source mtime at retention, after a subsequent observer edit. It does not establish prelaunch observer source identity. The original descriptor remains unchanged. The native finite execution did not hash/archive its complete observer source beforelaunch; exact retained source is afterterminal evidence only. Future observer versions now capture their own hash at entry."
+    },
+    "canonical_durable_assessment": "build/task009/integrated15-school23-durable-assessment-a1/result.json",
+    "corrected_positive_run": {
+      "status": "PLANNED",
+      "plan": "build/task009/integrated15-school23-positive-a3-plan.json",
+      "directory": "build/task009/integrated15-school23-positive-a3",
+      "scope": "Newobserver/newexecution, no oldfailurepromotion; exactsameoriginallimits"
     }
   },
   "uart_flow": {
@@ -586,6 +596,16 @@
     "initial_pending_uart": "build/task009/mm-checkpoint-initial-a4/result.json",
     "paused_scope_assessment": "build/task009/mm-checkpoint-paused-assessment-a2/result.json",
     "relation": "lemma-native-logical-observation-relation/1",
-    "scope": "Freshprocessnativeprelaunch/pausedrestore; actualfullMMVMState+22mode logicaltranslations. Exactlytwo named hostexecutionclockoffsets excluded, allguestclock/icount/controller/memory/mapping payload remainscompared. No publicFast0.14admission, activeacquisition/blockedflow/ordinarycheckpointclaim."
+    "scope": "Freshprocessnativeprelaunch/pausedrestore; actualfullMMVMState+22mode logicaltranslations. Exactlytwo named hostexecutionclockoffsets excluded, allguestclock/icount/controller/memory/mapping payload remainscompared. No publicFast0.14admission, activeacquisition/blockedflow/ordinarycheckpointclaim.",
+    "ready_failures": [
+      {
+        "path": "build/task009/mm-checkpoint-ready-flow-a1/result.json",
+        "scope": "ActualReady+blockedUART; pendingCPUwork guard rejects capture withoutdraining."
+      },
+      {
+        "path": "build/task009/mm-checkpoint-ready-flow-a2/result.json",
+        "scope": "ActualReady/blockedrestore+suffixedcontrollers/backingequal; strictcompleteVMState detects realPLICsource13pendingbit causedbyrestoreIRQreassertion. No activeMM/correctpubliccontinuationclaim."
+      }
+    ]
   }
 }
