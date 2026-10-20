@@ -129,5 +129,33 @@
     "seconds": 314.26036829699297,
     "notebook_action_log": "build/courses/task009-notebook-submission-actions-a1/notebook-school-actions.stdout.log",
     "scope": "Existing school-submission component qualification now actually runs the maintained NotebookSchool Actions with its genuine Notebook dependency build and transitive observer source closure. It also freshly elaborates/lowers the five existing component exports. This is not native, browser, canonical RTL, persistent-medium or educational execution."
+  },
+  "audited_native_browser_successor": {
+    "source_archive": "build/task009/school23-mm-source-a6",
+    "source_count": 541,
+    "source_inventory_sha256": "983c807bb2bee74c7246482b721c9188d53c2ee464a82ec5a24ee6395dfca569",
+    "receipts": {
+      "strict_target_audits": {
+        "path": "build/task009/school23-mm-audit-a4/result.json",
+        "sha256": "7ad0c4f11c0afa77e9f10f79c9a2b9efa3a497a15f66c733326e9906a17df1f0"
+      },
+      "native_bundle": {
+        "path": "build/task009/school23-native-a9/bundle.json",
+        "sha256": "124c02d6389172ae246bc63d805ad71ac00d5f385d4574caa4a5b9fe1b506853"
+      },
+      "browser_bundle": {
+        "path": "build/task009/school23-browser-owned-io-a1/bundle.json",
+        "sha256": "72e250136fd472e5427a36f2e5e257d820b5f2a2228f0afcc92eb2ffe19b004c"
+      },
+      "actual_pcm_continuation": {
+        "path": "build/task009/mm-logical2-pcm-a1/result.json",
+        "sha256": "71871c28aaab37b4c2d2ba5044d12f537eeea76ee1d0649ae126b778b6c45b4d"
+      },
+      "actual_dma_continuation": {
+        "path": "build/task009/mm-logical2-dma-a1/result.json",
+        "sha256": "e3f6f56dd746c207e81c0bac04bde38f17a7d3218b0b4d040e0749392e4c48bf"
+      }
+    },
+    "scope": "All three strict target audits pass. Native actualReady/explicitSave passes. New guest ordinary AUDIO TEST reaches real PCM RUNNING with16 submitted/2 consumed/14 queued at cut; a1ms suffix completes consumption and matches a fresh restored process. Ordinary CAPTURE reaches actual eight-beat DMA atword0/active1, found by deterministic fresh-prefix narrowing; a1ms suffix matches. Both include malformed-candidate rejection and isolate backing. Neither establishes arbitrary continuation, continuous audio, full acquisition economy, physical sensing or educational benefit. Complete new native/browser student workflows remain in progress."
   }
 }
