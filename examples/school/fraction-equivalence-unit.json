@@ -1,0 +1,385 @@
+{
+  "format": "lemma-school-unit/1",
+  "course": {
+    "identity": "804",
+    "edition": "1",
+    "title": "Equal fractions, exact sums, and legal cancellation",
+    "sourceAnchor": "AoPS Introduction to Algebra2007 section2.4 printed49-50; original authored bridge from exact numerical fractions to rational-expression assumptions",
+    "editionAnchor": "First Printing2007; original authored unit804/1",
+    "rightsAnchor": "Original instructional text and source metadata only. Supplied copyrighted PDF and rendered pages remain private outside Git; possession implies no redistribution grant.",
+    "nodes": [
+      {
+        "kind": "explanation",
+        "title": "Equal values, different representations",
+        "body": "A fraction represents a quotient with a nonzero denominator. Multiplying its numerator and denominator by the same nonzero integer preserves its value. Reducing changes representation; it does not explain why an answer solves a task.",
+        "exercise": "Explain why10/12 and5/6 have equal values.",
+        "hint": "Compare the two cross products10*6 and5*12.",
+        "worked": "",
+        "exampleText": "",
+        "review": "",
+        "sourceAnchor": "aops07:fractions-p49",
+        "logicalPrerequisites": [],
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": "worked",
+        "title": "A worked common denominator",
+        "body": "Rewrite each summand using a common denominator before adding. Then check which common factors can be cancelled.",
+        "exercise": "Explain each equality in the worked example.",
+        "hint": "Distinguish adding fractions from multiplying their denominators.",
+        "worked": "For3/8+1/4, rewrite1/4 as2/8; add to get5/8. Its numerator and denominator have no common factor larger than1.",
+        "exampleText": "",
+        "review": "",
+        "sourceAnchor": "aops07:fractions-p49",
+        "logicalPrerequisites": [
+          0
+        ],
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "fractionAddition"
+          }
+        },
+        "title": "Calculate, then check the exact task",
+        "body": "The supported task is1/2+1/3=N/D over rational numbers. Enter10/12, use REDUCE if helpful, and observe the changed representation. REDUCE clears current checking; press CHECK separately before Save and SEND. Local calculator use is permitted for this practice and remains disclosed to the teacher.",
+        "exercise": "Submit a fraction equal to1/2+1/3. Explain the common denominator in ink.",
+        "hint": "Rewrite both summands with denominator6. Equal fractions can use other nonzero denominators.",
+        "worked": "",
+        "exampleText": "",
+        "review": "",
+        "sourceAnchor": "aops07:fractions-p49",
+        "logicalPrerequisites": [
+          0,
+          1
+        ],
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "Find the illegal rule",
+        "body": "A learner proposes adding numerators and denominators separately, obtaining2/5 for1/2+1/3. Give an exact comparison that identifies the error. A calculator answer alone is not the requested explanation.",
+        "exercise": "Write a counterexample and name the invalid operation.",
+        "hint": "Compare both proposed values after expressing them with denominator30.",
+        "worked": "",
+        "exampleText": "",
+        "review": "",
+        "sourceAnchor": "aops07:fractions-p49",
+        "logicalPrerequisites": [
+          1
+        ],
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "Transfer cancellation to a variable",
+        "body": "For rational t, compare(t*t-9)/(t-3) with t+3. State the original expression's domain, factor the numerator, and justify every cancellation. Decide what happens at t=3. This written argument requires teacher review.",
+        "exercise": "Give the equality with all assumptions and explain the excluded input.",
+        "hint": "",
+        "worked": "",
+        "exampleText": "",
+        "review": "",
+        "sourceAnchor": "aops07:fractions-p50",
+        "logicalPrerequisites": [
+          0,
+          3
+        ],
+        "pedagogicalPrerequisites": []
+      },
+      {
+        "kind": {
+          "exercise": {
+            "goal": "unsupported"
+          }
+        },
+        "title": "Later independent reconstruction",
+        "body": "Without copying the worked example, explain why common denominators preserve fraction values. Give your own pair of unequal fractions exposing the add-numerators-and-denominators rule, then justify a valid sum. This is written reasoning; the exact numeric checker cannot certify it.",
+        "exercise": "Write a new response for independent teacher review.",
+        "hint": "",
+        "worked": "",
+        "exampleText": "",
+        "review": "",
+        "sourceAnchor": "aops07:fractions-p50",
+        "logicalPrerequisites": [
+          3,
+          4
+        ],
+        "pedagogicalPrerequisites": []
+      }
+    ]
+  },
+  "learningGoals": [
+    "Distinguish equal rational values from the form of a fraction",
+    "Use a common denominator and factors to justify equality",
+    "Separate a local calculator result from checking and an independent written argument",
+    "Retain original domain restrictions after cancelling a variable factor"
+  ],
+  "notationGuide": [
+    "N/D uses a nonzero positive denominator in the current numeric UI.",
+    "REDUCE is a local advisory edit; CHECK is a separate exact task check.",
+    "Written variable reasoning remains opaque work for a human assessment."
+  ],
+  "sources": {
+    "format": "lemma-source-registry/1",
+    "sources": [
+      {
+        "id": "aops-intro-algebra-2007",
+        "title": "Introduction to Algebra",
+        "authors": [
+          "Richard Rusczyk"
+        ],
+        "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+        "publication": "AoPS Incorporated; copyright2007; ISBN9781934124017",
+        "bibliographicStatus": "verified",
+        "bibliographicEvidence": "Title PDFpage1 and copyright PDFpage2 visually inspected; First Printing2007. File metadata alone did not establish edition.",
+        "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "mediaType": "application/pdf",
+        "ownerLocation": "build/school/corpus-a1/MyMathTextbooks/Introduction to algebra (the art of problem solving) -- Richard Rusczyk -- 1st edition, March 30, 20.pdf",
+        "rights": "Copyright2007 AoPS Incorporated, All Rights Reserved. Owner-supplied PDF remains external/private; redistribution permission is not inferred."
+      }
+    ]
+  },
+  "anchors": [
+    {
+      "id": "aops07:fractions-p49",
+      "sourceId": "aops-intro-algebra-2007",
+      "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+      "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+      "pdfPageIndex": 65,
+      "printedPageLabel": "49",
+      "sectionLabel": "2.4 Fractions",
+      "exercise": "Independently authored activity; conceptual source factor cancellation and common denominators",
+      "verification": "verified",
+      "evidence": "Complete supplied PDF page index65 rendered with Poppler at120dpi and visually inspected on2026-10-20; printed page49 and full section/problem context confirmed. No source page bytes are published.",
+      "extraction": {
+        "method": "Poppler whole-page raster, independent visual anchor review",
+        "toolVersion": "Bundled Poppler; exact executable SHA256 in private render receipt",
+        "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "outputDigest": "58976217819c7b6e17d94f23fa318c7b760cafee9a125e3f942a3c009292a7f7",
+        "parentOutputDigest": null
+      }
+    },
+    {
+      "id": "aops07:fractions-p50",
+      "sourceId": "aops-intro-algebra-2007",
+      "edition": "First Printing 2007; ISBN 978-1-934124-01-7",
+      "fileDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+      "pdfPageIndex": 66,
+      "printedPageLabel": "50",
+      "sectionLabel": "2.4 Fractions",
+      "exercise": "Independently authored activity; conceptual source factoring before cancellation",
+      "verification": "verified",
+      "evidence": "Complete supplied PDF page index66 rendered with Poppler at120dpi and visually inspected on2026-10-20; printed page50 and full section/problem context confirmed. No source page bytes are published.",
+      "extraction": {
+        "method": "Poppler whole-page raster, independent visual anchor review",
+        "toolVersion": "Bundled Poppler; exact executable SHA256 in private render receipt",
+        "inputDigest": "0a58ddf126b86d9d93c63977722c299093ea7a64bfe39bb0f3a5ba123037d7cd",
+        "outputDigest": "762a46288b5ad5e67bdb65cbabde08f9af33b8c8fe13d830e99ff992ece0b522",
+        "parentOutputDigest": null
+      }
+    }
+  ],
+  "activities": [
+    {
+      "id": "equivalence",
+      "node": 0,
+      "kind": "preparation",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "State the domain and any nonzero denominator assumption",
+          "Justify equality using factors or a common denominator"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "worked",
+      "node": 1,
+      "kind": "preparation",
+      "goal": "unsupported",
+      "assistance": "worked",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "State the domain and any nonzero denominator assumption",
+          "Justify equality using factors or a common denominator"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "exact-sum",
+      "node": 2,
+      "kind": "routine",
+      "goal": "fractionAddition",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "lemma-exact/1:fractionAddition",
+        "criteria": [
+          "State the domain and any nonzero denominator assumption",
+          "Justify equality using factors or a common denominator"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "invalid",
+      "node": 3,
+      "kind": "invalidArgument",
+      "goal": "unsupported",
+      "assistance": "hint",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "State the domain and any nonzero denominator assumption",
+          "Justify equality using factors or a common denominator"
+        ],
+        "independent": false,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "transfer",
+      "node": 4,
+      "kind": "transfer",
+      "goal": "unsupported",
+      "assistance": "none",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "State the domain and any nonzero denominator assumption",
+          "Justify equality using factors or a common denominator"
+        ],
+        "independent": true,
+        "referenceTheorem": null
+      }
+    },
+    {
+      "id": "later-review",
+      "node": 5,
+      "kind": "review",
+      "goal": "unsupported",
+      "assistance": "none",
+      "assessment": {
+        "checker": "teacher-review/1",
+        "criteria": [
+          "State the domain and any nonzero denominator assumption",
+          "Justify equality using factors or a common denominator"
+        ],
+        "independent": true,
+        "referenceTheorem": null
+      }
+    }
+  ],
+  "relations": [
+    {
+      "fromActivity": "equivalence",
+      "toActivity": "worked",
+      "kind": "prerequisite",
+      "origin": "Original authored progression reviewed against supplied section2.4; not an automatic catalogue lesson",
+      "confidencePermille": null,
+      "reviewed": true,
+      "reviewHistory": [
+        "2026-10-20 authored dependency reviewed; same edge encoded in guest node"
+      ]
+    },
+    {
+      "fromActivity": "equivalence",
+      "toActivity": "exact-sum",
+      "kind": "prerequisite",
+      "origin": "Original authored progression reviewed against supplied section2.4; not an automatic catalogue lesson",
+      "confidencePermille": null,
+      "reviewed": true,
+      "reviewHistory": [
+        "2026-10-20 authored dependency reviewed; same edge encoded in guest node"
+      ]
+    },
+    {
+      "fromActivity": "worked",
+      "toActivity": "exact-sum",
+      "kind": "prerequisite",
+      "origin": "Original authored progression reviewed against supplied section2.4; not an automatic catalogue lesson",
+      "confidencePermille": null,
+      "reviewed": true,
+      "reviewHistory": [
+        "2026-10-20 authored dependency reviewed; same edge encoded in guest node"
+      ]
+    },
+    {
+      "fromActivity": "worked",
+      "toActivity": "invalid",
+      "kind": "prerequisite",
+      "origin": "Original authored progression reviewed against supplied section2.4; not an automatic catalogue lesson",
+      "confidencePermille": null,
+      "reviewed": true,
+      "reviewHistory": [
+        "2026-10-20 authored dependency reviewed; same edge encoded in guest node"
+      ]
+    },
+    {
+      "fromActivity": "equivalence",
+      "toActivity": "transfer",
+      "kind": "prerequisite",
+      "origin": "Original authored progression reviewed against supplied section2.4; not an automatic catalogue lesson",
+      "confidencePermille": null,
+      "reviewed": true,
+      "reviewHistory": [
+        "2026-10-20 authored dependency reviewed; same edge encoded in guest node"
+      ]
+    },
+    {
+      "fromActivity": "invalid",
+      "toActivity": "transfer",
+      "kind": "prerequisite",
+      "origin": "Original authored progression reviewed against supplied section2.4; not an automatic catalogue lesson",
+      "confidencePermille": null,
+      "reviewed": true,
+      "reviewHistory": [
+        "2026-10-20 authored dependency reviewed; same edge encoded in guest node"
+      ]
+    },
+    {
+      "fromActivity": "invalid",
+      "toActivity": "later-review",
+      "kind": "prerequisite",
+      "origin": "Original authored progression reviewed against supplied section2.4; not an automatic catalogue lesson",
+      "confidencePermille": null,
+      "reviewed": true,
+      "reviewHistory": [
+        "2026-10-20 authored dependency reviewed; same edge encoded in guest node"
+      ]
+    },
+    {
+      "fromActivity": "transfer",
+      "toActivity": "later-review",
+      "kind": "prerequisite",
+      "origin": "Original authored progression reviewed against supplied section2.4; not an automatic catalogue lesson",
+      "confidencePermille": null,
+      "reviewed": true,
+      "reviewHistory": [
+        "2026-10-20 authored dependency reviewed; same edge encoded in guest node"
+      ]
+    }
+  ],
+  "review": {
+    "version": "lemma-review-schedule/1",
+    "delaySeconds": 60,
+    "activityId": "later-review",
+    "uncertainty": "One response does not demonstrate retention or transfer. Due review requires a new independent response and separate human assessment."
+  }
+}
