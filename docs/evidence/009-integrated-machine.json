@@ -738,5 +738,28 @@
     "ink_failure": "Actual LLVM/object/link completed, but source_before/after rejects a consumed contract document change. Original failure and generated action receipts retained; no admitted build from this run.",
     "ink_source": "build/task009/school23-ink-source-a1",
     "ink_inventory_sha256": "8d5d6352ec95d47ca3061b08dccac0fd46c1d378bdf6c42b9fcde734d2be6724"
+  },
+  "selected_powered_physical": {
+    "selection": "lemma-pen-sg13g2-core-grid/1",
+    "lock": "tooling/silicon/physical-lock.json",
+    "lock_sha256": "69129a03f20ea6d86edd270aef997c67cb5b3abc98719663d7207a5468019861",
+    "rtl": {
+      "path": "sim/rtl/lemma_pen.sv",
+      "sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b"
+    },
+    "router_markers": 248,
+    "router_shorts": 144,
+    "router_spacing": 104,
+    "power_ground_terminals": 17343,
+    "nominal_extracted": {
+      "setup_wns_ns": -13.941463,
+      "hold_wns_ns": 0.052381,
+      "electrical_violations": 747
+    },
+    "min_rc_hold_wns_ns": -0.006855,
+    "available_corners_passed": 0,
+    "available_corners_total": 9,
+    "status": "FAIL_PHYSICAL_CLOSURE",
+    "scope": "Powered core-grid selection is maintained physical source. Existing native/Wasm runtimes consume the same504f RTL from their own frozen prior source closures; no physical-layout or source-lock rebinding is claimed."
   }
 }
