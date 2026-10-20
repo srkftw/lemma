@@ -390,6 +390,8 @@
         "scripts/silicon_lvs_alias.py",
         "scripts/silicon_power_ports.py",
         "scripts/silicon_buffered_pins.py",
+        "scripts/silicon_acceptance_launch.py",
+        "tests/silicon/test_process_comparator.py",
         "scripts/silicon_route_enclosure.py",
         "tooling/silicon/pen-*.tcl",
         "tooling/silicon/candidates/*.patch"
@@ -800,6 +802,8 @@
       "inputs": [
         "scripts/check_native_logical2.py",
         "scripts/native_logical_relation.py",
+        "tests/silicon/test_logical2_admission.py",
+        "docs/contracts/009-qemu-logical-softtlb-v2.html",
         "sim/host/lemma_softtlb2_qemu.inc.c",
         "sim/host/lemma_multimodal_checkpoint.inc.c",
         "sim/host/lemma_multimodal_checkpoint_valid.inc.c",

@@ -39,6 +39,19 @@
         "scripts/check_multimodal_notebook_ui.py": "4802a865c28318ea314079b1745cc60e6d664401de6fcc4d1029d12a2a4ca5b7"
       },
       "child_peak_rss_kib": null
+    },
+    {
+      "receipt": "build/task009/mm-bar-redraw-ui-a1/result.json",
+      "sha256": "6d8be8e8bb55cec80dbadda9c5874b66b6cd8fe7665561d44a15f9332d8d3084",
+      "status": "PASS_HOSTED_LEAN_ACTIONS",
+      "seconds": 160.20849183492828,
+      "source_inputs": {
+        "Lemma/Applications/Notebook.lean": "1a9d489fc6ec533fa9a897e998ee2fd458f3aad5ef2080b6cfe29cddf1e0ee05",
+        "tests/multimodal/NotebookUIActions.lean.inc": "d79979105eb2ac0d4d350d9f8818145d089e55e78e662ff1b6e6cfa01cfd9d4d",
+        "scripts/lean_export_host.py": "c9e989f302ce176a0467a2837d5108563b0caa59d5c7b5bd089eec35b8469b9d",
+        "scripts/check_multimodal_notebook_ui.py": "2239b2d0609a9c557e5b604082f615346ce3b44780e4170366d421506d0875de"
+      },
+      "scope": "Actual Notebook redraw-request/bar Actions, including missing request and premature unallocated access negatives; subsequent MM2 imports and target execution are separate"
     }
   ],
   "genuine_module_build": {
@@ -157,5 +170,70 @@
       }
     },
     "scope": "All three strict target audits pass. Native actualReady/explicitSave passes. New guest ordinary AUDIO TEST reaches real PCM RUNNING with16 submitted/2 consumed/14 queued at cut; a1ms suffix completes consumption and matches a fresh restored process. Ordinary CAPTURE reaches actual eight-beat DMA atword0/active1, found by deterministic fresh-prefix narrowing; a1ms suffix matches. Both include malformed-candidate rejection and isolate backing. Neither establishes arbitrary continuation, continuous audio, full acquisition economy, physical sensing or educational benefit. Complete new native/browser student workflows remain in progress."
+  },
+  "browser_a12": {
+    "receipt": "build/school/task009-student-browser-a12/terminal-result.json",
+    "sha256": "54cfa093c169d610bcb8431a71cf1a97eb4e2ac42105020b92f76dde9964fe35",
+    "status": "PARTIAL_STUDY_COLD_RECOVERY_PASS",
+    "guest_inventory": "983c807bb2bee74c7246482b721c9188d53c2ee464a82ec5a24ee6395dfca569",
+    "cold_ready_units": 196742891,
+    "cold_elapsed_seconds": 347.4,
+    "cold_simulation_calls_seconds": 117.0,
+    "final_saved": 15,
+    "final_backing_sha256": "266ab1b57643535f037a14dfe19161174b51556cdecf74d76e7479f21e5132b6",
+    "failures": [
+      "changed-view navigation2samples discarded",
+      "intended exact activity not reached",
+      "checkpoint export unsupported but offered"
+    ],
+    "not_executed": [
+      "exact check",
+      "submission",
+      "help",
+      "feedback",
+      "review completion"
+    ],
+    "controller_image": {
+      "path": "docs/evidence/009-browser-cold-local-work.png",
+      "sha256": "85c998c284b99a52f4458c67a0cf4f9e2b020c42275b40ec548f5c506a3ccd53",
+      "scope": "Lossless PNG conversion of actual cold-reopened controller Gray4 export after new local ink and Save15; sensor-disabled synthetic keyboard pen, not canvas reconstruction"
+    }
+  },
+  "owned_ring_service3": {
+    "status": "PASS_HOSTED_ACTIONS_AND_GENUINE_MODULE_BUILD",
+    "result": {
+      "path": "build/task009/mm-ring-actions-a1/result.json",
+      "sha256": "ff193a2178769c2a43e80acd5f9ee78e4634f74bb003da9e867722143a8ea0b8"
+    },
+    "incrementalBuild": {
+      "path": "build/task009/mm-ring-actions-a1/incremental-build.json",
+      "sha256": "35e9af61c0735616d203a1db9182d967a7a2466989361daae7d078b05c01b2f8"
+    },
+    "serviceSHA256": "21dda5464a344b90031db2dfc0c61dd660fbeeb8ff300536395f47a7c04d32cc",
+    "userSHA256": "99ff8f36fe54c606ea9e038931d3a58784382fc26560a4aeee4cbebdf285f03b",
+    "commands": [
+      "nix develop --no-write-lock-file --command lake build Lemma.Platform.LemmaSim.MultimodalService Lemma.User.Multimodal",
+      "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_ring.py --work-dir build/task009/mm-ring-actions-NEW"
+    ],
+    "kernel": "One lifetime-owned privateFrames.allocate1purpose1 page, capacity2048 S16 samples; packet1..512 exactexpectedProducer, atomicpublishafterpermission/controller-epoch recheck;8budgetbytes/sample; EOF exact/idempotent; descriptor+grant-epoch rawstatusafterrevocation; heldreadkind2 includingcancel258 forbidsreuse. No caller DMA pointer or framefree/wipe.",
+    "user": "AUDIO TEST on service3 prefills2048, pumps512-sample packets of4099 arbitrary S16 values, wraps, sends odd3-sampleEOF and waits for actualconsumed completion. Backpressure preservesnextindex. Legacy service2 remains16 samples. No host audio shortcut.",
+    "receipts": {
+      "715": "[testSequence,grantEpoch,totalSamples,period] start",
+      "716": "[testSequence,actualSubmittedDelta,actualConsumedDelta,reason] terminal;0complete/1mute/2expiry/3failure/4superseded",
+      "717": "[testSequence,acceptedRingFrontier,fetchedRingFrontier,actualFIFOsubmittedDelta] afteracceptedpacket",
+      "718": "[testSequence,actualConsumedDelta,gapCounter,heldBusRaw] terminalraw;kindlow8,cancelbit8"
+    },
+    "cases": "Actual legacy+ring Actions positives and10 consequential source negatives PASS67.558322s; wrongDMApointer/heldreadreuse/wirebytecharge/foreignowner/changedcontrollerepoch/postcopyexpiry/accepted-as-consumed/repeatedwave/mutenorevoke/successorrevocation rejected.",
+    "retainedObserverFailures": [
+      "Initial privateAction source had missingnamespaceopen and fixture multiline record syntax errors; correctedsource has separate terminalpositive. Productionmodule elaborations passed."
+    ],
+    "scope": "Finite hosted RAM/MMIO/service fixtures execute actual maintained Lean Actions and real capability/frame/usercopy policy. Target compilation/audit, real controller DMA, canonicalRTL, native/browser CPU playback, exactcontinuation, full economyrate, physical audibility/safety and educational qualification require separate evidence."
+  },
+  "browser_checkpoint_controls": {
+    "receipt": "build/task009/browser-checkpoint-controls-a1/result.json",
+    "sha256": "8844a2d019624b4e1a39d0974a2a6a76d14ba14a56395a7363bba5bcc44dc122",
+    "status": "PASS_HOST_PROTOCOL",
+    "seconds": 1.897,
+    "scope": "Actual app/worker host fixtures: unsupported exact continuation is disabled/rejected before clock/snapshot/backing effects; durable export remains usable. No fresh guest/browser execution."
   }
 }
