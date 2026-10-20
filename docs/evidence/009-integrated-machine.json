@@ -2792,7 +2792,21 @@
     "ordinary_CI_shared_Save_guard": {
       "path": "build/task009/ci-writing-save-wait-a1/result.json",
       "sha256": "4af64cd694f812bd6c6ac1b7a88cb779ca3f3cb75d20a801a6d4c8aba3733d4e",
-      "scope": "ExactordinaryNotebookmain/image2/v0.1currentoptimizedSavebody matchesgenuineSchool25body; phase0/5/8 acceptedonlyaftercompletebody/typedcontext pin, phase5error234/machineframepreserved.12hostcasespass. Original0/5legacy unchanged. OriginalCIandtwoactualretainedauditpreflightFAILs preserved; nofullaudit/guest/CIacceptancefromclosedfixture."
+      "scope": "ExactordinaryNotebookmain/image2/v0.1currentoptimizedSavebody matchesgenuineSchool25body; phase0/5/8 acceptedonlyaftercompletebody/typedcontext pin, phase5error234/machineframepreserved.12hostcasespass. Original0/5legacy unchanged. Closedfixture and separateactualretainedfullstrictaudit qualifytheirobservedscopes; nofreshguest/fullCIacceptance.",
+      "retained_full_strict_audit": {
+        "path": "build/task009/ci-writing-save-audit-a3/closed-assessment.json",
+        "sha256": "2e7d6db9da8116a786e60a154a1f9e717e12623f26af3968225ce93b87594342",
+        "status": "PASS_ACTUAL_RETAINED_ORDINARY_O2_STRICT_AUDIT_CLOSED",
+        "seconds": 91.7246911318507,
+        "configuration": "lemmasim-notebook",
+        "optimization": "O2",
+        "original_CI_source_commit": "020803d7686fda2fd2a7056756e356f3e38ea89c",
+        "peak_combined_owned_RSS_bytes": 294129664,
+        "minimum_observed_available_bytes": 14629347328,
+        "unchanged_original_extracted_files": 753,
+        "remaining_exact_start_owned": [],
+        "scope": "Normalcurrentstrictobserverat exactoriginalconstructionpath, sameactualretainedIR/objects/image andarchivedproducer. NoLean/targetcompilation ornewguest/fullCIacceptance. Earlier2preflightFAILs unchanged."
+      }
     }
   },
   "current23_24_post25_fast": {
