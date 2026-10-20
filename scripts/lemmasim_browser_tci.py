@@ -200,6 +200,8 @@ def bundle(args):
     runtime,admission=retained_runtime(args.wasm_build)
     archive=Path(args.guest_bundle).absolute();native=read(archive/'bundle.json')
     if native.get('schema')!=NATIVE_SCHEMA:raise ValueError('TCI requires the complete audited multimodal guest archive')
+    if native.get('checkpoint_binding')=='lemma-silicon-fast-mm2-softtlb/0.1.0':
+        raise ValueError('TCI cannot import native MM2 continuation; select the MM2 subset archive without checkpoints')
     native_pcm=native.get('backends',{}).get('qemu',{}).get('execution_binding')==PCM_BINDING
     if native_pcm!=(admission.get('schema')==RUNTIME_SCHEMA_WITH_PCM):raise ValueError('Guest execution binding and MM2 runtime must be selected together')
     roles={w:('parameterized-'+w if args.workbook=='parameterized' else w) for w in ('notebook','initializer')}

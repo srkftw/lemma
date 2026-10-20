@@ -17,6 +17,8 @@ import sys
 import tempfile
 import time
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
@@ -25,6 +27,21 @@ import lemmasim_browser as server
 
 
 class ManifestParsing(unittest.TestCase):
+    def test_native_mm2_continuation_rejects_before_browser_output(self):
+        # Host admission boundary only: no invented successful runtime/guest.
+        # Skip runtime inspection to isolate the subsequent native-scope check.
+        from multimodal_native_bundle import SCHEMA
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);archive=root/'native';archive.mkdir();out=root/'must-not-exist'
+            (archive/'bundle.json').write_text(json.dumps({'schema':SCHEMA,
+                'checkpoint_binding':'lemma-silicon-fast-mm2-softtlb/0.1.0'}))
+            args=SimpleNamespace(profile=subject.PROFILE,workbook='school',
+                wasm_build=root/'not-inspected',guest_bundle=archive,output_dir=out)
+            with patch.object(subject,'retained_runtime',return_value=(root,{})):
+                with self.assertRaisesRegex(ValueError,'TCI cannot import native MM2 continuation'):
+                    subject.bundle(args)
+            self.assertFalse(out.exists())
+
     def test_duplicate_members_reject_at_each_object_depth(self):
         for text in ('{"x":1,"x":2}', '{"outer":{"x":1,"x":2}}'):
             with self.subTest(text=text), tempfile.TemporaryDirectory() as tmp:
