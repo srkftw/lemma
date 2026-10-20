@@ -1674,5 +1674,64 @@
     },
     "source_finding": "reportCommitState421 is suppressedto423 whilecapturedSaveUPremains. LatermultimodalRawStatus canrestoreSavedrasteraftercaptureempties withoutre-emittingthedeferred421receipt. ActualActions exercise the newretainedACK/contextrepair separately; this cut doesnotclaim thelastUP/rastercompletion, hardwarefault, generalizeddeadlock or a newSavedreceipt.",
     "scope": "Oneactualisolatedsame-runtimeReadyrestore +originalsixevents/60Mcycles. No668Mcoldbootrepeat, clocknormalization, oldFAILrewrite, crossbackendmigration or physicaltimingqualification."
+  },
+  "browser_run_budget_triage": {
+    "status": "BOUNDED_STOP_PREFIX_PASS_FAILURE_CAUSE_UNRESOLVED",
+    "actual_student_failure": {
+      "path": "build/school/task009-student-browser-a14/terminal-result.json",
+      "sha256": "0f1570c6af255b5a08f3feb10a89d30e2a08ab961fb7fe31150d5fbf324ce5f2"
+    },
+    "actual_failure_support": {
+      "path": "build/school/task009-student-browser-a14/run-budget-failure-support.json",
+      "sha256": "f20835934884f263dd13ed34625de2a775872464cbdf60c87beee80a95e20e48"
+    },
+    "actual_failure_cycle": "1938044650",
+    "actual_failure_virtual_ns": "19380446497",
+    "original_missing_observation": "before/request/target/budget.cycle not retained by prior worker; no definitive backend overshoot attribution",
+    "startup_budget_failure": {
+      "path": "build/task009/tci-run-boundary-a1/monitor-result.json",
+      "sha256": "73b4c4c885830e19305ea273f95cbdd5d91a503488c395f9b1592828cbc6c57a"
+    },
+    "bounded_successor": {
+      "path": "build/task009/tci-run-boundary-a2/result.json",
+      "sha256": "c57d12fd2af1591d7ac0d493c9970c9440a06a1aba119c640d543b0221f63db7"
+    },
+    "bounded_successor_monitor": {
+      "path": "build/task009/tci-run-boundary-a2/monitor-result.json",
+      "sha256": "4475b31647616c9fde4a2c9e86676d6f927aa47fee7b3fbebfbe83736f79a26f"
+    },
+    "fresh_execution": {
+      "quanta": 2200,
+      "units_per_quantum": 100000,
+      "total_units": 220000000,
+      "wall_seconds": 130.91271698,
+      "sampled_timer_overshoot_ns": [
+        0,
+        1,
+        3,
+        5,
+        7
+      ],
+      "strict_budget_total": 220000000,
+      "peak_rss_bytes": 4211580928,
+      "owned_processes_reaped": true
+    },
+    "runtime_reused": "actual eff3f360 Wasm bytes, exact prior35f3 guest/native b74bfc0b archive and a14 terminal backing; no compilation",
+    "limits": "Original3GiB attempt stopped/reaped at3,466,047,488B. Separately authorized original180s/4GiB successor. No guard/C/clock change. No explicit CPUhalted/WFI or interrupt qualification from this prefix.",
+    "interrupted_probe_resource_failures": [
+      {
+        "path": "build/task009/tci-run-boundary-a3/monitor-result.json",
+        "sha256": "f1737f9723fa0ea2b422ca90bb047c31e8a3896f3d8783f4dea940bdc9b02b88",
+        "peak_rss_bytes": 4464558080,
+        "owned_reaped": true
+      },
+      {
+        "path": "build/task009/tci-run-boundary-a4/monitor-result.json",
+        "sha256": "b74d9a0d3b143e80a99bfb0e2c2bc12d91e374d662d04fe7ac82817902a64fe9",
+        "peak_rss_bytes": 4330496000,
+        "owned_reaped": true
+      }
+    ],
+    "interrupted_probe_disposition": "Both original180s/4GiB interrupted-probe attempts stopped at RSS limit during13M-or-earlier bootstrap, before interruption phase. Streaming4MiB hashes and256MiB JS heap did not fit. No further variants; actual futureordinaryrun diagnostics retain missing boundary fields. C/guard unchanged."
   }
 }

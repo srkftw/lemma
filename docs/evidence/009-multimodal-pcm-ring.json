@@ -630,5 +630,60 @@
       "whole_functional_units": 746000008,
       "normal_cleanup_confirmed": true
     }
+  },
+  "private_MM2_continuation": {
+    "public_guard_enabled": false,
+    "original_probe": {
+      "path": "build/task009/mm2-logical2-ring-probe-a1/execution/result.json",
+      "sha256": "01a66598e97cf3969ce3097387f97249891343345bf4c9cb6507aa6ac94cab3a"
+    },
+    "original_result": "FAIL actualPCMfile offsetobserver before stdioflush; original13.978s observationunchanged",
+    "closed_assessment": {
+      "path": "build/task009/mm2-logical2-ring-probe-a1/closed-output-assessment/result.json",
+      "sha256": "4be3244f28700374bc86a72dc4bc1782395e426d605b940fe6e62581261078c1"
+    },
+    "scope": "Separateindependentassessmentofalreadyretainedsource/forksuffixes +onefreshpausedmalformedcandidate withinoriginal300s; no guest rerun/publiccheckpointpromotion",
+    "actual_cut": {
+      "source": "current43be/35f3normalguestAUDIO TEST",
+      "ring_capacity": 2048,
+      "accepted": 2048,
+      "fetched": 16,
+      "submitted": 16,
+      "consumed": 1,
+      "FIFO_count": 15,
+      "EOF": 0,
+      "held_read": false
+    },
+    "actual_suffix": {
+      "full_consumed": 4099,
+      "PCM_suffix_records_equal": 4098,
+      "VMState_bytes": 27278081,
+      "relation": "lemma-native-MM2-logical-observation-relation/3",
+      "all_VMState_bytes_equal_except": "twoexplicitinheritedhostCPUtimeoffsetfields; allguestclock/CPU/RAM/device/ring/timerfieldschecked",
+      "logical_sidecar_bytes": 56862,
+      "logical_relation": "alltranslation/witnesspayloadsequalandactualfile/integritybindingschecked"
+    },
+    "malformed": "Coherentlyrehashedproducer15<fetch16state rejectedbyactualv2post-loadhook(-22), originalsourcefilesunchanged andcandidate discarded/reaped",
+    "not_qualified": [
+      "publicSessionMM2transactionalrestore",
+      "instruction-boundaryheldread/bus-cancel",
+      "permissionchange/endingcuts beyondthetestedrunning-ring/refill\u2192EOFsuffix",
+      "newtargetsuccessorafterreceipt/exposurefix",
+      "crossbackendmigration"
+    ],
+    "observer_sources": {
+      "probe.py": {
+        "path": "build/task009/mm2-logical2-ring-probe-a1/probe.py",
+        "sha256": "ad5111437d450a8c81c476d878a04e3c8858a4e4ce18b095035406806682083f"
+      },
+      "native_logical_relation.py": {
+        "path": "build/task009/mm2-logical2-ring-probe-a1/native_logical_relation.py",
+        "sha256": "594a62781ff3ff0c613b8346fdce9e84aafd704d15531ddcedf685994ae97f29"
+      },
+      "assess.py": {
+        "path": "build/task009/mm2-logical2-ring-probe-a1/assess.py",
+        "sha256": "286e8b949b8493caff2adde2cb1cc78b295092ac34deaf6b32f13ce26e5e6658"
+      }
+    }
   }
 }
