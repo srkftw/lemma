@@ -171,10 +171,80 @@ def literal := "/- this string is not an unterminated comment"
                                 (compiled.parent / "Foreign.olean").write_bytes(b"unadmitted compiled output")
                             raise Core0Error("rejected export")
                     with lean_workspace(self.root, cache, tools, inputs):
-                        self.assertFalse(compiled.exists())
+                        self.assertEqual(compiled.exists(), mutation == "new")
                         self.assertFalse((compiled.parent / "Foreign.olean").exists())
-                        compiled.parent.mkdir(parents=True)
+                        compiled.parent.mkdir(parents=True, exist_ok=True)
                         compiled.write_bytes(b"previous successful compiler output")
+
+    def test_abrupt_pending_addition_rollback_preserves_only_exact_admitted_bytes(self):
+        source = self.fixture()
+        inputs = lean_source_inputs(self.root, [source])
+        tools = {"lean": "fixture-lean", "lake": "fixture-lake"}
+        with patch("action_cache.tool_identity", side_effect=lambda name: {"path": name, "sha256": "fixture-tool"}):
+            cache = self.root / "abrupt-cache"
+            with lean_workspace(self.root, cache, tools, inputs) as tree:
+                compiled = tree / ".lake/build/lib/lean/App.olean"
+                compiled.parent.mkdir(parents=True)
+                compiled.write_bytes(b"previous successful compiler output")
+            # A separate real process exits without Python finally. The parent
+            # then takes the real lock and recovers only unadmitted additions.
+            pid = os.fork()
+            if pid == 0:
+                with lean_workspace(self.root, cache, tools, inputs):
+                    (compiled.parent / "RecoveryExecuted.setup.json").write_text("partial")
+                    os._exit(17)
+            _, status = os.waitpid(pid, 0)
+            self.assertEqual(os.waitstatus_to_exitcode(status), 17)
+            base = tree.parent
+            self.assertTrue((base / "compiled-pending.json").is_file())
+            with lean_workspace(self.root, cache, tools, inputs):
+                self.assertEqual(compiled.read_bytes(), b"previous successful compiler output")
+                self.assertFalse((compiled.parent / "RecoveryExecuted.setup.json").exists())
+            self.assertFalse((base / "compiled-pending.json").exists())
+
+    def test_pending_changed_or_deleted_baseline_and_bad_marker_invalidate(self):
+        source = self.fixture()
+        inputs = lean_source_inputs(self.root, [source])
+        tools = {"lean": "fixture-lean", "lake": "fixture-lake"}
+        from core0_common import write_json
+        for failure in ("changed", "deleted", "symlink", "malformed", "wrong-metadata"):
+            with self.subTest(failure=failure), patch("action_cache.tool_identity", side_effect=lambda name: {"path": name, "sha256": "fixture-tool"}):
+                cache = self.root / ("pending-" + failure)
+                with lean_workspace(self.root, cache, tools, inputs) as tree:
+                    compiled = tree / ".lake/build/lib/lean/App.olean"
+                    compiled.parent.mkdir(parents=True)
+                    compiled.write_bytes(b"admitted")
+                base = tree.parent
+                marker = base / "compiled-pending.json"
+                write_json(marker, {"schema": "lemma-lake-addition-rollback/1", "metadata_sha256": sha256(base / "compiled.json")})
+                extra = compiled.parent / "extra.setup.json"
+                extra.write_bytes(b"unadmitted")
+                if failure == "changed": compiled.write_bytes(b"changed")
+                elif failure == "deleted": compiled.unlink()
+                elif failure == "symlink":
+                    extra.unlink()
+                    outside = self.write("outside-"+failure, "external-preserve")
+                    extra.symlink_to(outside)
+                elif failure == "malformed": marker.write_text("{partial")
+                elif failure == "wrong-metadata":
+                    write_json(marker, {"schema": "lemma-lake-addition-rollback/1", "metadata_sha256": "0"*64})
+                with lean_workspace(self.root, cache, tools, inputs):
+                    self.assertFalse(compiled.exists())
+                    self.assertFalse(extra.exists())
+                if failure == "symlink": self.assertEqual(outside.read_text(), "external-preserve")
+
+    def test_pending_marker_symlink_rejects_without_touching_external_bytes(self):
+        source = self.fixture()
+        inputs = lean_source_inputs(self.root, [source])
+        tools = {"lean": "fixture-lean", "lake": "fixture-lake"}
+        with patch("action_cache.tool_identity", side_effect=lambda name: {"path": name, "sha256": "fixture-tool"}):
+            cache = self.root / "pending-symlink"
+            with lean_workspace(self.root, cache, tools, inputs) as tree: pass
+            outside = self.write("outside-pending", "external-preserve")
+            (tree.parent / "compiled-pending.json").symlink_to(outside)
+            with self.assertRaisesRegex(Core0Error, "pending-state metadata.*symlink"):
+                with lean_workspace(self.root, cache, tools, inputs): pass
+            self.assertEqual(outside.read_text(), "external-preserve")
 
     def test_initial_failed_compilation_never_admits_new_compiled_bytes(self):
         source = self.fixture()

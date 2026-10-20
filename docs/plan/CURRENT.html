@@ -115,6 +115,7 @@ revalidates source/tool/artifact/raw/cleanup identities, and requires the comple
 20-image/24-report/28-session/six-instance matrix. Producer execution and their separate
 host clocks remain distinct from collector validation. A skipped or failed producer prevents
 the required acceptance job from passing; the aggregate rejects every non-success disposition.</p>
+<p>Interrupted protected Lake preparation now retains its admitted dependencies when every admitted byte is unchanged: a locked pending marker permits removing only new, unadmitted files. Changed/deleted bytes, symlinks or malformed recovery metadata still invalidate the compiled tree; unmarked foreign files retain the existing rejection behavior. Actual abrupt-child-exit and filesystem negatives pass with the92-test cache suite (16.862s). This is cache recovery, not fresh target execution or promotion of interrupted compiler output.</p>
 <p>Cleanup respects active actions and explicit pins. Published claims must own their
 producer receipts, output copies and source archives outside the ephemeral cache.
 Do not edit cached objects. Materialized outputs are private copies.</p>
