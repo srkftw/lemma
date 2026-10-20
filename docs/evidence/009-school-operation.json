@@ -1242,5 +1242,17 @@
       "sha256": "a7a383e24a13f36d1bf0fdf65bf63ff10feacc4a825dc70e5c6f90de8b1c56a1"
     },
     "scope": "Actual immutable guestattempt guest.39.6003579778261581853, original803/2policy2Node4prompt/rubric/source/assistance and savedVink. Originalwindow-only observer falselyreportedPASSafterTkcallbackerror; separatecorrectedobserver requires actual nonwhite rasterpixels beforePASS. Explicit subsequent versionedteacherfeedback is distinct from originalexactchecker."
+  },
+  "actual_guest_history_backup_and_definition_fork": {
+    "result": {
+      "path": "build/school/task009-connected-a2/acknowledged49-operation-a1/result.json",
+      "sha256": "3e473dc46e7c904534d8d07972dfe3dc090a53d8952313e8ecd83f21f493eb66"
+    },
+    "status": "PASS_LIVE_BACKUP_AND_PRIVATE_HISTORY_EXCLUDING_DEFINITION_FORK",
+    "source_records": 49,
+    "backup_records": 49,
+    "fork_publications": 5,
+    "seconds": 3.0646431089844555,
+    "scope": "Maintained operator local commands preserve actual guest attempt, delivery and teacher judgment in backup. Independent definition fork contains only5publication rows, independent identity/storage/inodes, excludes all real learner/admission/attempt/assessment/private history. No operational-restore/coldguest/physical-loss claim."
   }
 }
