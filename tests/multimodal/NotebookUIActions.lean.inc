@@ -231,7 +231,7 @@ def uiMain : IO Unit := do
   let contact ← IO.mkRef (uiWrite (uiWrite (uiFixture 1) (state+408) 1) (Lemma.User.Multimodal.records+2456) 1)
   uiCheck ((← uiExecute contact multimodalInputSample).1 = 0) "held contact failed"
   uiCheck ((← contact.get).calls.isEmpty) "held contact repeated control"
-  IO.println "NOTEBOOK21_UI_ACTIONS_PASS actual23tilequeue/bitmap/pixels/coalescing/extent; narrow/owned-negative; busy-stop9revokes/raw-wipe/no-Store-checker-mutation; retained busyASK/coalescedASK/boundedLOAD/owned-paper/exact-once; rejected-view cleanup/fresh-ASK dispatch; inactive/held-contact noacquisition"
+  IO.println "NOTEBOOK21_UI_ACTIONS_PASS actual28tilequeue/bitmap/pixels/coalescing/extent; narrow/owned-negative; busy-stop9revokes/raw-wipe/no-Store-checker-mutation; retained busyASK/coalescedASK/boundedLOAD/owned-paper/exact-once; rejected-view cleanup/fresh-ASK dispatch; inactive/held-contact noacquisition"
 end Lemma.Applications.Notebook
 
 def main : IO Unit := Lemma.Applications.Notebook.uiMain

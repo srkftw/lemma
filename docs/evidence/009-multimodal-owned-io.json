@@ -119,5 +119,15 @@
       }
     ]
   },
-  "observation_note": "Retained UI console footer says23tiles; its executed source assertions check all28 and extent1264. No footer text is used as a routing, timing or presentation claim."
+  "observation_note": "Retained UI campaign console footer says23tiles; its executed assertions check all28 and extent1264. The maintained footer label is subsequently corrected to28 only; the retained producer source/receipt stays unchanged, and no fresh execution is claimed for that label correction. Footer text is not a routing, timing or presentation claim.",
+  "maintained_notebook_school_action_entrypoint": {
+    "command": "nix develop --no-write-lock-file --command python3 scripts/check_course_install.py --school-submission --output-dir build/courses/task009-notebook-submission-actions-a1",
+    "receipt": "build/courses/task009-notebook-submission-actions-a1/result.json",
+    "sha256": "236ce5b59c975434d13243f4328cbe8c1eb225711458b462a7b65d3f18563fb5",
+    "status": "PASS_SCHOOL_SUBMISSION_STORE_COMPONENTS",
+    "source_count": 150,
+    "seconds": 314.26036829699297,
+    "notebook_action_log": "build/courses/task009-notebook-submission-actions-a1/notebook-school-actions.stdout.log",
+    "scope": "Existing school-submission component qualification now actually runs the maintained NotebookSchool Actions with its genuine Notebook dependency build and transitive observer source closure. It also freshly elaborates/lowers the five existing component exports. This is not native, browser, canonical RTL, persistent-medium or educational execution."
+  }
 }

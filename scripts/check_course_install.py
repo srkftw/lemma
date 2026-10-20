@@ -13,7 +13,8 @@ def source_inputs(root: Path) -> dict[str, str]:
     pending = ['Lemma/Compiler/CourseInstallExport.lean','tests/courses/InstallExport.lean',
                'tests/courses/GuardExport.lean','tests/courses/Install.lean','tests/courses/Guard.lean',
                'tests/courses/Mount.lean','tests/courses/Selection.lean','tests/courses/SelectionExport.lean','tests/courses/Submission.lean',
-               'tests/courses/SubmissionExport.lean','tests/courses/SchoolGuardExport.lean','tests/courses/SchoolGuard.lean']
+               'tests/courses/SubmissionExport.lean','tests/courses/SchoolGuardExport.lean','tests/courses/SchoolGuard.lean',
+               'tests/courses/NotebookSchool.lean']
     while pending:
         name = pending.pop()
         if name in files:
@@ -42,7 +43,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__,allow_abbrev=False)
     p.add_argument('--output-dir',type=Path,required=True)
     p.add_argument('--selection',action='store_true',help='also qualify the additive selected-publication v2 root and faults')
-    p.add_argument('--school-submission',action='store_true',help='also qualify the guest outgoing queue and append-only Store successor')
+    p.add_argument('--school-submission',action='store_true',help='also qualify notebook ordering/ink Actions, the guest outgoing queue and append-only Store successor')
     a=p.parse_args(); a.selection |= a.school_submission; root=Path(__file__).resolve().parents[1]; out=a.output_dir.resolve()
     if not out.is_relative_to(root/'build/courses') or out.exists(): p.error('unused build/courses output required')
     out.mkdir(parents=True); started=time.monotonic(); commands=[]
@@ -82,6 +83,8 @@ def main():
                 run('selection-export',[tools['lake'],'env','lean','-j2','tests/courses/SelectionExport.lean'],
                     dict(env,LEMMA_COURSE_SELECTION_OUT=str(out/'selection')))
             if a.school_submission:
+                run('notebook-build',[tools['lake'],'build','Lemma.Applications.Notebook'])
+                run('notebook-school-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/NotebookSchool.lean'])
                 run('submission-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/Submission.lean'])
                 run('school-guard-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/SchoolGuard.lean'])
                 run('submission-export',[tools['lake'],'env','lean','-j2','tests/courses/SubmissionExport.lean'],
