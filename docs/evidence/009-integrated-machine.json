@@ -222,6 +222,26 @@
       "path": "build/task009/school23-startup-diagnosis-a1/result.json",
       "result": "FAIL_ACTUAL_STARTUP",
       "scope": "native and browser shared guest startup fault; prior linked image audits remain audits, no Ready claim"
+    },
+    {
+      "path": "build/task009/uart-flow-canonical-native-a1/build.log",
+      "result": "CANCELED_KNOWN_FCR_READINESS_GAP",
+      "scope": "OwnedNixclientSIGINTduringconfigure after realupstreamFCRgap found; no finalcanonicalbinary. Original900s limit not extended."
+    },
+    {
+      "path": "build/task009/uart-flow-native-boundaries-a1/result.json",
+      "result": "FAIL_OBSERVER_BOUNDARY",
+      "scope": "Actualnative runboundarycouldovershoot8ns; due-4 observerreachedarrival. Successorusesdue-16; controller/source not altered for thisobservercorrection."
+    },
+    {
+      "path": "build/task009/uart-flow-tci-boundaries-a1/result.json",
+      "result": "FAIL_OBSERVER_MODE_SELECTION",
+      "scope": "Flow is reset-only; comparisonrequiresfreshmachines. Retainedoldobserver; correctedfreshownedmachines actuala3passes."
+    },
+    {
+      "path": "build/task009/uart-flow-tci-boundaries-a2/result.json",
+      "result": "FAIL_OBSERVER_INTEGER_TIME",
+      "scope": "Separateobserverinteger-typefailure retained; controllerbytesunchanged."
     }
   ],
   "school22": {
@@ -401,7 +421,7 @@
       "seconds": 944.715140337008,
       "scope": "actual ROM structural tag rejection/fallback/recovery beacon; arbitrary wrong MAC remains separate"
     },
-    "positive_notebook_cold_execution": "held before launch after actual shared guest23 startup fault; source-corrected successor required"
+    "positive_notebook_cold_execution": "Running separately underoriginal12000s budget at selected_cache_runtime.positive_run; no final success admitted."
   },
   "native_fault3": {
     "producer": "build/silicon/task009-integrated15-native-a4/build.json",
@@ -420,7 +440,7 @@
     "scope": "fresh portable actual compilation from complete258-input exact native source archive; not browser ordinary workflow"
   },
   "school23_serialized": {
-    "status": "AUDIT_AND_EXECUTION_PENDING",
+    "status": "AUDIT_PASS_NATIVE_FRESH_SAVE_READY_ORDINARY_WORKFLOW_INCOMPLETE",
     "qualified_source_commit": "a688c79",
     "notebook_sha256": "bf6f4c920be1a6ea3a6282aabbdd4e1682885ddbbe0bb74ebfd855209168a7a7",
     "queue_sha256": "b562820c9c4d59a2fe362ae0c3e288ddc7e33627116f751c18d72a5ab5f8625c",
@@ -450,14 +470,28 @@
       "browser_successor_execution": "withheld after native proved same guest fault"
     },
     "correction": "Defer queue init and new IO until all foreground endpoint owners idle; drain accepted queue read replies before handing endpoint back; preserve safety/raw ink and context-bound queued controls",
-    "scope": "Actual builds and focused object admission; complete audits, corrected native/browser ordinary workflow and canonical positive remain pending",
+    "scope": "AllthreewholeauditsPASS; actualnativefreshSave421+Ready420+CAP731. Ordinarycourse/paper/Studentworkflow remainsunfinished and oldpacedruns retain performance/liveness failures.",
     "final_archive": "build/task009/school23-serialized-source-a3",
     "final_inventory_sha256": "3ac35e189f6590f342ca54556657904a3d6008f0eb0803ab73c94afcdea5f2bd",
     "final_producer_receipts": [
       "build/kernel/task009-school23-notebook-a10/build.json",
       "build/kernel/task009-school23-initialize-a9/build.json",
       "build/kernel/task009-school23-integrated-a7/build.json"
-    ]
+    ],
+    "final_audits": [
+      "build/kernel/task009-school23-notebook-a10/audit.json",
+      "build/kernel/task009-school23-initialize-a9/audit.json",
+      "build/kernel/task009-school23-integrated-a7/audit.json"
+    ],
+    "native_ready": {
+      "receipt": "build/school/task009-student-native-a4/boot-400M.json",
+      "observation": "build/school/task009-student-native-a4/boot-observe.json",
+      "functional_units": 400000001,
+      "observed": "420Ready;731[2,512,262144,2];421[2,1,1,0];no732/424/F4"
+    },
+    "native_flow_bundle": "build/task009/school23-native-a6/bundle.json",
+    "browser_flow_bundle": "build/task009/school23-browser-a6/bundle.json",
+    "fresh_reused": "Final540inputreceiptrefresh reused admitted target actions; original producer receipts remain authoritative. Audits and execution are separate fresh observations."
   },
   "selected_cache_runtime": {
     "native": "build/silicon/task009-integrated15-native-a5/build.json",
@@ -467,13 +501,87 @@
     "pen_sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b",
     "physical_commit": "f66ea99",
     "wasm": "build/silicon/task009-integrated15-wasm-a4/build.json",
-    "scope": "Fresh native compilation of selected exact four-predicate cache; earlier finite executions retain earlier runtime identities; routing and all extracted corner failures remain separate",
+    "scope": "FreshselectedexactfourpredicateRTLnative/Wasm producers, new200kcycleROMfinitechecks+samebackendrestore; activeNotebookpositive remainsrunning underoriginalbudget. Physical extractedall9cornersFAIL.",
     "wasm_outputs": {
       "machine.mjs": "53481fbbb43ac1c563171e1dcd6a6a1e880b84931d98bf292f20f741190fc680",
       "machine.wasm": "ac07b4589e1cad7b6040e7cb899e39884d0fb4cc0f379fe9977aad0bf1ee6f3a"
     },
     "wasm_runtime_identity": "38382f26146fc97225d07ff5fd8d78fa3bdd401fa1c28e9279daa7f827b91810",
     "wasm_seconds": 225.74096904299222,
-    "wasm_source_archive": "build/task009/integrated15-wasm-source-a4/consumed-source-root"
+    "wasm_source_archive": "build/task009/integrated15-wasm-source-a4/consumed-source-root",
+    "finite_native": "build/task009/integrated15-cache-checkpoint-a1/result.json",
+    "finite_wasm": "build/task009/integrated15-cache-wasm-rom-a1/result.json",
+    "finite_relation": "build/task009/integrated15-cache-relation-assessment-a1/result.json",
+    "finite_checkpoint_bytes": 145881087,
+    "positive_run": {
+      "status": "RUNNING_NOT_READY_YET",
+      "plan": "build/task009/integrated15-school23-positive-a2-plan.json",
+      "progress": "build/task009/integrated15-school23-positive-a2/progress.json",
+      "result_directory": "build/task009/integrated15-school23-positive-a2",
+      "original_limits": {
+        "whole_seconds": 12000,
+        "aggregate_cycles": 1500000000,
+        "ready_cycles": 1299800000,
+        "ready_seconds": 10500,
+        "save_cycles": 200000000,
+        "save_seconds": 1800
+      },
+      "scope": "ActualROMfactoryauthenticatedSchool23image,noELF/DTBpreload; Ready/pen/Save/reset not yet admitted"
+    }
+  },
+  "uart_flow": {
+    "contract": "lemma-raw-uart-flow/1",
+    "contract_path": "docs/contracts/009-raw-uart-flow-v1.html",
+    "status": "PASS_ACTUAL_CONTROLLER_BOUNDARIES_WORKFLOW_PENDING",
+    "source_archive": "build/task009/uart-flow-source-a2",
+    "native": {
+      "build": "build/task009/uart-flow-canonical-native-a2/result.json",
+      "binary_sha256": "3de39e7e5ef8db20c5e4bc29ec9624fa71f48df910f2da4a609cab874f673352",
+      "configured_source_object_archive_bytes": 280496906,
+      "boundaries": "build/task009/uart-flow-native-boundaries-a2/result.json",
+      "boundary_seconds": 0.8423036490567029,
+      "legacy_paced": "build/task009/uart-flow-native-paced-a1/result.json",
+      "prepared": "build/lemmasim/fast-uart1-prepared-0.14.0.json",
+      "bundle": "build/task009/school23-native-a6/bundle.json",
+      "compile": "Genuine1798-action canonicalNixbuild, not privateMM/logicalcandidate. Configuredsource/objectarchive retained for future cache."
+    },
+    "tci": {
+      "build": "build/task009/uart-flow-tci-a1/build.json",
+      "runtime": "build/task009/uart-flow-tci-runtime-a1/runtime.json",
+      "baseline": "build/task009/uart-flow-retained-closure-a1/result.json",
+      "boundaries": "build/task009/uart-flow-tci-boundaries-a3/result.json",
+      "legacy_paced": "build/task009/uart-flow-tci-paced-execution-a1/result.json",
+      "negative_admission": "build/task009/uart-flow-runtime-negatives-a1/result.json",
+      "wasm_sha256": "71a27e1d3d3ac8a1924614ab30088a72e6abecfe5089499bad6f923432141617",
+      "fresh_reused": "A new independently inventoried1047object closure first reproduced originalJS+Wasm byteexactly in32.189s. Actualcompilerdepclosure invalidated exactly3objects;1044independentlyobserved retainedobjects+realnewlink54.306s. No invented originalobjecthashreceipts.",
+      "bundle": "build/task009/school23-browser-a6/bundle.json"
+    },
+    "observed": {
+      "legacy_full_fifo_polls": [
+        251,
+        502
+      ],
+      "flow_full_fifo_polls": [
+        2,
+        2
+      ],
+      "flow_blocked_timer_pending": false,
+      "real_guest_readiness_wakes": 1,
+      "real_guest_postreset_delivered": [
+        2,
+        16
+      ],
+      "pending_after_real_guest_readiness": 17
+    },
+    "host_tests": "14PASS/0.590s at build/task009/uart-flow-canonical-native-a2/host-transport-tests.log",
+    "remaining": "Ordinarynative/browserselectedpackage+paper/Saveworkflow, activeblockedcontinuation and broadacquisition performance remain separate. No generalCPUwakefix or rawstreamthroughputclaim."
+  },
+  "native_logical_checkpoint_private": {
+    "status": "PRIVATE_SCOPED_INITIAL_CASE_ONLY_PUBLIC_GUARD_RETAINS",
+    "runtime": "build/task009/mm-checkpoint-private-a6/qemu",
+    "initial_pending_uart": "build/task009/mm-checkpoint-initial-a4/result.json",
+    "paused_scope_assessment": "build/task009/mm-checkpoint-paused-assessment-a2/result.json",
+    "relation": "lemma-native-logical-observation-relation/1",
+    "scope": "Freshprocessnativeprelaunch/pausedrestore; actualfullMMVMState+22mode logicaltranslations. Exactlytwo named hostexecutionclockoffsets excluded, allguestclock/icount/controller/memory/mapping payload remainscompared. No publicFast0.14admission, activeacquisition/blockedflow/ordinarycheckpointclaim."
   }
 }

@@ -15,6 +15,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'conformance/lemmasim'))
 from store_oracle import recover
 from notebook_input import Input
+from check_canonical_pen_pixels import expected_stroke
 from check_live_notebook import guest_events,visible_pixels
 
 
@@ -36,6 +37,7 @@ def main():
     prepared_record=json.loads((args.prepared/'prepared.json').read_text())
     observer_paths={Path(__file__).relative_to(ROOT).as_posix(),
       'conformance/lemmasim/store_oracle.py','conformance/lemmasim/notebook_input.py',
+      'conformance/lemmasim/check_canonical_pen_pixels.py',
       'scripts/check_live_notebook.py',*prepared_record.get('host_scripts',{})}
     observer_inputs={}
     for name in sorted(observer_paths):
@@ -105,6 +107,7 @@ def main():
                     file.seek(offset);value=file.read(1);file.seek(offset);file.write(bytes([value[0]^1]))
             report['negative_stimulus']={'kind':args.factory_reject,'scope':'corrupt structural magic in private backing; no CRC or MAC repair','offsets':[0,512] if args.factory_reject=='metadata' else [1024]}
         subprocess.run(['cp','--reflink=auto','--sparse=always',str(args.user_medium),str(disk)],check=True)
+        disk.chmod(0o600)
         _,sequence,before=recover(disk.read_bytes());report['initial_store_sequence']=sequence
         argv=[sys.executable,str(ROOT/'scripts/lemmasim_auth.py'),'--public-development-key','launch','--prepared',str(args.prepared.resolve()),'--session-dir',str(out/'session'),'--boot-medium',str(boot),'--disk',str(disk),'--paused','--headless','--mode','laboratory','--host-threads','1','--timeout','120']
         if not factory:argv.append('--recovery')
@@ -132,15 +135,27 @@ def main():
             require(row['value']==0x80000000,'actual ROM handoff entry differs')
             report['install']={'cycles':client.used,'seconds':time.monotonic()-staged,'sectors':len(wire)//512,'image_preloaded':False};publish()
         else:report['cold_boot']={'source':'explicit factory raw backing','elf_or_dtb_preloaded':False,'installed_via_uart':False}
-        ready=phase('combined-kernel-and-notebook-Ready',1299800000 if factory else 1300000000,10500 if factory else 5400,lambda state,rows:any(r[:4]==(0x47c,15,8,9) for r in rows) and (not school or any(r==(0x731,2,512,262144,2) for r in rows)) and any(r[0]==0x420 for r in rows) and state['panel_completed']>0 and not state['paper_busy'] and not state['panel_pending_pixels'])
+        ready=phase('combined-kernel-and-notebook-Ready',1299800000 if factory else 1300000000,10500 if factory else 5400,lambda state,rows:any(r[:4]==(0x47c,15,8,9) for r in rows) and (not school or any(r==(0x731,2,512,262144,2) for r in rows)) and any(r[0]==0x420 for r in rows) and ((1,1) in before or any(r[0]==0x421 for r in rows)) and state['panel_completed']>0 and not state['paper_busy'] and not state['panel_pending_pixels'])
         panel=out/'ready.ppm';call({'action':'panel','path':str(panel)});width,height,pixels=visible_pixels(panel);require((width,height)==(1650,2200),'actual controller geometry differs')
-        stream=Input(width,height,ready['ticks']+10000,100000,0);stream.sample(width//2,160,0,False);stream.stroke('integrated-written-work',1,1,4,1700);stream.tool(7,'explicit Save')
+        # Establish the actual journal frontier after any fresh-page Save. Its
+        # receipt cannot satisfy the distinct pen-and-Save observation below.
+        baseline=out/'before-pen-user.raw';call({'action':'export-medium','path':str(baseline)})
+        _,pen_sequence,pen_before=recover(baseline.read_bytes())
+        require((1,1) in pen_before,'ready notebook lacks its committed page')
+        report['before_pen']={'store_sequence':pen_sequence,'user_sha256':sha(baseline)}
+        stream=Input(width,height,ready['ticks']+10000,100000,0);stream.sample(width//2,160,0,False);stream.stroke('integrated-written-work',1,1,3,1700);stroke=stream.events[1:].copy();stream.tool(7,'explicit Save')
         for event in stream.events:call({'action':'inject','kind':'pen','cycle':event[1]*10,'words':list(event[1:8])})
-        saved=phase('actual-pen-and-Save',200000000 if factory else 300000000,1800,lambda state,rows:any(r[0]==0x421 and r[1]>=sequence+3 for r in rows) and not any(state[k] for k in ('event_queue','pen_queue','paper_busy','panel_pending_pixels','block_state','dma_outstanding')))
+        saved=phase('actual-pen-and-Save',200000000 if factory else 300000000,1800,lambda state,rows:any(r[0]==0x421 and r[1]>=pen_sequence+3 for r in rows) and not any(state[k] for k in ('event_queue','pen_queue','paper_busy','panel_pending_pixels','block_state','dma_outstanding')))
         ack=out/'acknowledged-user.raw';nv=out/'acknowledged-boot.raw';call({'action':'export-medium','path':str(ack)});call({'action':'export-boot-medium','path':str(nv)})
-        _,after_sequence,after=recover(ack.read_bytes());require(after_sequence>=sequence+3,'acknowledged Save missing actual journal commits')
+        _,after_sequence,after=recover(ack.read_bytes());require(after_sequence>=pen_sequence+3,'pen Save missing new actual journal commits')
+        require(after[(1,1)].payload!=pen_before[(1,1)].payload,'pen Save left committed page unchanged')
+        painted=out/'saved.ppm';call({'action':'panel','path':str(painted)});saved_width,saved_height,saved_pixels=visible_pixels(painted)
+        require((saved_width,saved_height)==(width,height),'saved panel geometry changed')
+        ink=expected_stroke(stroke,width,height)[1]
+        require(ink and all(saved_pixels[(y*width+x)*3:(y*width+x)*3+3]==bytes(3) for x,y in ink),'actual pen pixels absent from controller output')
+        require(any(pixels[(y*width+x)*3:(y*width+x)*3+3]!=bytes(3) for x,y in ink),'stroke adds no independently visible ink')
         require(all(after[key].payload==old.payload for key,old in before.items() if key not in ((1,1),(1,257))),'prior immutable work changed')
-        report['saved']={'store_sequence':after_sequence,'user_sha256':sha(ack),'boot_sha256':sha(nv),'events':stream.events,'old_work_preserved':True}
+        report['saved']={'store_sequence':after_sequence,'user_sha256':sha(ack),'boot_sha256':sha(nv),'events':stream.events,'old_work_preserved':True,'new_ink_pixels':len(ink),'committed_page_changed':True}
         if factory:
             call({'action':'warm-reset'});call({'action':'run','cycles':200000});total+=200000
             reset=call({'action':'inspect'})['machine'];require(not reset['finished'] and reset['event_queue']==0 and reset['pen_queue']==0,'actual reset did not clear pending input')

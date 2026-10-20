@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Execute Integrated15's unchanged admitted Product10 guest through ROM/NV.
+"""Execute Integrated15's admitted guest through Product10-compatible ROM/NV.
 
 Uses acknowledged input media, real raw pen, explicit Save and a new cold CPU.
 The optional finite checkpoint case is sealed synthetic same-backend execution;
@@ -44,7 +44,7 @@ def main():
     report={'schema':'lemma-integrated15-product-execution/1','result':'FAIL','scope':__doc__,
             'bounds':{'whole_seconds':300 if a.checkpoint_only else 18000,'cold_each_cycles':1300000000,'cold_each_seconds':7200,'save_cycles':300000000,'save_seconds':1800,'checkpoint_suffix_cycles':200000},
             'phases':[],'inputs':{str(path.resolve()):sha(path) for path in (a.prepared/'prepared.json',a.boot_medium,a.user_medium)},
-            'commands':[],'compilation':'reused original audited Product10 guest and public-development-key ROM; fresh Integrated15 RTL execution'}
+            'commands':[],'observer':{'path':str(Path(__file__).resolve()),'sha256':sha(Path(__file__))},'compilation':'reused source-bound runtime, opaque boot image and public-development-key ROM; fresh Integrated15 RTL execution'}
     live=[]
     def publish():(out/'progress.json').write_text(json.dumps(report,indent=2)+'\n')
     def call(directory,value,timeout=120):
