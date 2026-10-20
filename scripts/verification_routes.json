@@ -195,7 +195,8 @@
         "scripts/action_worker.py",
         "scripts/arithmetic_closure_identity.py",
         "scripts/surface_word_inline.py",
-        "tooling/FactoryBootMain.lean"
+        "tooling/FactoryBootMain.lean",
+        "scripts/archive_guest_sources.py"
       ],
       "claims": [
         "cache-host",
@@ -263,7 +264,9 @@
         "scripts/build_admission.py",
         "scripts/arithmetic_closure_identity.py",
         "scripts/surface_word_inline.py",
-        "scripts/check_course_install.py"
+        "scripts/check_course_install.py",
+        "scripts/archive_guest_sources.py",
+        "tests/boot/test_product_image.py"
       ],
       "claims": [
         "kernel-host",
@@ -296,7 +299,9 @@
         "conformance/lemmasim/inspect_notebook.py",
         "conformance/lemmasim/math_oracle.py",
         "scripts/lemmasim_fast.py",
-        "scripts/check_live_notebook.py"
+        "scripts/check_live_notebook.py",
+        "scripts/check_uart_flow.py",
+        "scripts/lemmasim_course_fast.py"
       ],
       "claims": [
         "notebook-qemu"
@@ -356,7 +361,8 @@
         "scripts/lemmasim_browser_tci.py",
         "sim/browser/tci/*",
         "tooling/lemmasim/tci/*",
-        "scripts/check_tci_uart.mjs"
+        "scripts/check_tci_uart.mjs",
+        "scripts/check_tci_uart_flow.mjs"
       ],
       "claims": [
         "browser",
@@ -422,7 +428,8 @@
         "tests/silicon/test_filler_source.py",
         "tooling/silicon/opendb-geometry-export.cpp",
         "tests/silicon/test_gds_geometry.py",
-        "tests/silicon/test_power_margin.py"
+        "tests/silicon/test_power_margin.py",
+        "scripts/check_silicon_lvs_connectivity.py"
       ],
       "claims": [
         "physical-flow"
@@ -614,7 +621,9 @@
         "docs/multimodal-engineering.html",
         "docs/evidence/007-multimodal-engineering.json",
         "scripts/check_sg13g2_microphone.py",
-        "scripts/check_sg13g2_comparator.py"
+        "scripts/check_sg13g2_comparator.py",
+        "scripts/check_sg13g2_sample_hold.py",
+        "tests/silicon/test_sample_hold.py"
       ],
       "claims": [
         "multimodal-engineering",
@@ -664,7 +673,8 @@
         "examples/school/*unit.json",
         "examples/school/*mappings.json",
         "scripts/school_develop.py",
-        "scripts/school_fs_barrier.py"
+        "scripts/school_fs_barrier.py",
+        "examples/school/FractionEquivalence.lean"
       ],
       "claims": [
         "school-host",
@@ -758,6 +768,7 @@
       "id": "school-student-service",
       "inputs": [
         "scripts/lemmasim_school_service.py",
+        "scripts/school_wire.py",
         "sim/browser/school_transport.js",
         "tests/lemmasim/test_school_service.py",
         "Lemma/Courses/SchoolSubmission.lean",
@@ -765,8 +776,10 @@
         "scripts/school_deployment.py",
         "scripts/school_target.py",
         "scripts/school_reduction_target.py",
+        "scripts/school_stream_target.py",
         "tests/lemmasim/test_school_deployment_selection.py",
         "tests/multimodal/test_school_reduction_source.py",
+        "tests/multimodal/test_school_stream_source.py",
         "Lemma/Courses/LocalReduction.lean",
         "Lemma/Courses/DocumentEventRows.lean",
         "Lemma/Documents/LocalToolEvents.lean",
@@ -775,6 +788,8 @@
         "Lemma/Services/Arithmetic/ClientV9.lean",
         "Lemma/Services/Arithmetic/ServerV9.lean",
         "docs/contracts/009-school-exact-reduction-v1.html",
+        "docs/contracts/009-school-console-stream-v1.html",
+        "Lemma/Courses/SchoolStream.lean",
         "tests/courses/LocalReduction.lean",
         "tests/courses/Submission*.lean",
         "tests/courses/NotebookSchool.lean",
@@ -784,7 +799,10 @@
         "scripts/check_course_install.py",
         "scripts/lemmasim_course.py",
         "tests/courses/SelectionExport.lean",
-        "tooling/school-target-authority.json"
+        "tooling/school-target-authority.json",
+        "scripts/lemmasim_course_fast.py",
+        "tests/courses/DocumentEventConsumers.lean",
+        "tests/courses/RemoteProvenance.lean"
       ],
       "claims": [
         "school-host",
@@ -821,7 +839,8 @@
         "tooling/FactoryBootMain.lean",
         "Lemma/Platform/Silicon/BindingIntegratedPCM.lean",
         "sim/profiles/lemma-silicon-dev-0.16.0.json",
-        "tests/silicon/test_multimodal_v2_binding.py"
+        "tests/silicon/test_multimodal_v2_binding.py",
+        "tests/boot/test_product_image.py"
       ],
       "claims": [
         "rtl-devices",
