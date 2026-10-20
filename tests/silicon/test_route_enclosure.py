@@ -8,7 +8,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from silicon_enclosure import GeometryError, read_tech
 from silicon_route_enclosure import audit
 from silicon_power_ports import signal_bytes
-from silicon_pen_physical import require_fresh_power_recipe, host_memory_budget, require_launch_recipe
+from silicon_pen_physical import require_fresh_power_recipe, host_memory_budget, require_launch_recipe, require_padded_hold_recipe
+from silicon_sram_input_hold import endpoint_cells, admit as admit_padded_hold
 from types import SimpleNamespace
 
 
@@ -64,6 +65,36 @@ END SPECIALNETS
 
 
 class RouteEnclosureTests(unittest.TestCase):
+    def test_padded_hold_source_admission_and_exact_branch_scope(self):
+        chains = endpoint_cells()
+        self.assertEqual(len(chains), 31)
+        self.assertEqual(sum(map(len, chains.values())), 33)
+        self.assertEqual(len(chains['pen_sram_lane0/A_DIN[1]']), 2)
+        self.assertEqual(len(chains['pen_sram_lane0/A_DIN[2]']), 2)
+        valid = dict(padded_sram_input_delay_from=Path('build/geometry'),
+            routed_eco_from=Path('build/source'), detail_route_iterations=8,
+            selected_implementation=False, acceptance_launch_buffer=False,
+            preserve_routed_netlist=False, fresh_core_power_grid=False,
+            vss_clock_grid_source=None, protect_sram_power_edges=False,
+            protect_sram_power_geometry=False, completed_eco_route_from=None,
+            completed_power_grid_route_from=None, completed_fresh_grid_route_from=None,
+            defer_global_eco=False, center_validation_cones=False, group_button_bus=False)
+        require_padded_hold_recipe(SimpleNamespace(**valid))
+        for key in ('selected_implementation', 'acceptance_launch_buffer',
+                    'preserve_routed_netlist', 'fresh_core_power_grid',
+                    'vss_clock_grid_source', 'protect_sram_power_edges',
+                    'protect_sram_power_geometry', 'completed_eco_route_from',
+                    'completed_power_grid_route_from', 'completed_fresh_grid_route_from',
+                    'defer_global_eco', 'center_validation_cones', 'group_button_bus'):
+            with self.subTest(key=key), self.assertRaises(GeometryError):
+                require_padded_hold_recipe(SimpleNamespace(**{**valid, key: True}))
+        for key, value in [('routed_eco_from', None), ('detail_route_iterations', 3)]:
+            with self.subTest(key=key), self.assertRaises(GeometryError):
+                require_padded_hold_recipe(SimpleNamespace(**{**valid, key: value}))
+        # An arbitrary host directory cannot substitute for retained geometry.
+        with tempfile.TemporaryDirectory() as directory, self.assertRaises(GeometryError):
+            admit_padded_hold(Path(directory))
+
     def make(self, directory, edge, routed=DEF):
         tech, route = Path(directory) / 'tech.lef', Path(directory) / 'route.def'
         tech.write_text(TECH.format(edge=edge))

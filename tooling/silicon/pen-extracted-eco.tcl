@@ -4,10 +4,10 @@
 set_thread_count 4
 read_liberty $pdk/lib/sg13g2_stdcell_typ_1p20V_25C.lib
 read_liberty $macro_lib
-if {[info exists acceptance_launch_db]} {
+if {[info exists prepared_physical_db]} {
     # The old actual-SPEF baseline is reported in a separate unchanged database.
     # Never attach its old loads to this newly connected launch net.
-    read_db $acceptance_launch_db
+    read_db $prepared_physical_db
 } else {
     read_db $prior/routed.odb
 }
@@ -31,10 +31,10 @@ set_propagated_clock [get_clocks core]
 # negative runs. Restore real routing guides through the supported API first;
 # the following read_spef still supplies actual loads, not guide estimates.
 set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
-if {![info exists acceptance_launch_db] && (![info exists preserve_routed_netlist] || $preserve_routed_netlist != 1)} {
+if {![info exists prepared_physical_db] && (![info exists preserve_routed_netlist] || $preserve_routed_netlist != 1)} {
     read_guides $prior/route.guide
 }
-if {![info exists acceptance_launch_db]} {
+if {![info exists prepared_physical_db]} {
     write_verilog $out/pre-eco.v
     write_sdc $out/pre-eco.sdc
     read_spef $prior/nom.spef
@@ -43,8 +43,8 @@ if {![info exists acceptance_launch_db]} {
     report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/actual-pre-eco-electrical.rpt
 }
 # Unlike the historical flow, these repairs begin from actual extracted loads.
-if {[info exists acceptance_launch_db]} {
-    puts "Exact original-Lib buf8 launch only; old cells/grid/constraints preserved"
+if {[info exists prepared_physical_db]} {
+    puts $prepared_physical_question
 } elseif {![info exists preserve_routed_netlist] || $preserve_routed_netlist != 1} {
     repair_design -slew_margin 5 -cap_margin 5
     repair_timing -setup -phases WNS_PATH -setup_margin 0.25 -max_passes 2 -max_iterations 50 -max_buffer_percent 20

@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T05:56:46.735900+00:00",
+  "written_at": "2026-10-20T06:24:49.691242+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -1378,7 +1378,7 @@
     "important_correction": "Public typical and slow SRAM timing libraries exist and are assessed; they are not missing-input blockers."
   },
   "source_boundaries": {
-    "physical_execution": "Selected powered core variant has248routermarkers(144short/104spacing),17343connectedPGterminals, nominal extracted−13.941463nssetup/+.052381nshold/747electrical, minRChold−.006855ns; all9availablecorner/RCchecksFAIL. Original10ns/full665signalports preserved plus3realPGports. Unpowered129layout is comparison only. CanonicalRTL504f unchanged; every runtime keeps its own original frozen source identity. A fresh5.787s maintained mapping after lock metadata versioning produces byte-identical0781e43d mappedVerilog.",
+    "physical_execution": "Current engineering selection is powered115 (71short/44spacing),17345PGterminals, nominal extracted−13.438092/+0.018284ns/736electrical; maxRChold−.065054ns/all9FAIL. A separate original-placement-padding observer additionally rejects103 adjacent pairs below960nm. Original powered248 and46 each have102 inherited padding violations. No original route,PEX or compiled-runtime receipt is rewritten. Original10ns/full665signal+3PGports/full256x181FIFO remain; canonicalRTL504f unchanged. Exact completed padded33-cell geometry is unselected pending freshroute/3RC/9corners.",
     "process": "Original process/GDS/LEF/deck bytes stay immutable. Removing display expansion exposed full DRC; separate300s export and180s direct extraction attempts remain failed. Direct extraction reached real top-cell geometry. Complete process DRC and connected transistor LVS have not completed; no missing nominal process collateral is invented to excuse these tool/engineering failures. Completed146s transistor extraction and300s directDRC/45s Netgen failures bind the preceding170marker geometry; they are not process qualification for the later129marker variant. The selected powered248geometry has actual connected-PG/signal reference export comparison but no completed process DRC or transistor LVS; earlier process results never qualify it. The new powered248 producer now completes actualtransistorextraction87.667s after originalSRAMimportfix; Netgenfails45.114s and total139.925s, allwarningskept. This removes the powered-geometry extraction predecessor but does not establish processDRC/LVS.",
     "logic_comparison": "Private Yosys zero-delay correspondence trials retain async-FF/commutative-cutpoint/timeout failures; they do not establish connected layout-vs-netlist equivalence.",
     "failure_snapshot_retention": "A corrected Tcl observer retains failed OpenDB/DEF and primary error. The retained grid is a source-bound congestion heatmap, not an isolated physical-track overflow: pinned usage includes blockage and both directions. The original stronger interpretation is corrected separately without rewriting producer receipts."
@@ -2169,24 +2169,32 @@
   "selected_implementation": {
     "authority": {
       "path": "tooling/silicon/physical-lock.json",
-      "sha256": "3c67533606f95ee0577221c04bc6644ea63ee0da459e96d618d07e7257902d4b"
+      "sha256": "3923f9988c82bce5977977e2f751dff303702bd94aed4013cd5d734f8d077403"
     },
     "version": "lemma-pen-sg13g2-launch-grid/1",
-    "status": "FAIL_PHYSICAL_CLOSURE",
+    "status": "FAIL_PHYSICAL_CLOSURE_AND_ORIGINAL_PLACEMENT_PADDING",
     "selected_geometry": {
       "path": "build/silicon/task009-accept-launch-route-a1/result.json",
       "sha256": "deb6721c83874ba0d79e046d69f48c3c7481968c05671b8f856aa69deec9df8d"
     },
     "fresh_current_lock_protocol_and_mapping": {
-      "path": "build/silicon/task009-launch-selection-maintained-map-a1/result.json",
-      "sha256": "9fb9031c741b9d6f13b5d82118ca9b8b7763b10a408cc4c58163da54914f56bc"
+      "path": "build/silicon/task009-padded-hold-current-map-a1/result.json",
+      "sha256": "ed897f8d17dc01222d807503c51d3e73a3e3e15692f2975936a6ee4365abe86f"
     },
-    "mapping_seconds": 7.403884195024148,
+    "mapping_seconds": 6.473219351028092,
     "mapping_relation": {
       "path": "build/silicon/task009-launch-selection-admission-a1/result.json",
       "sha256": "75c7c49e00222c76389347137143c097f28482634ca63cfb495986c7eaf64056"
     },
-    "source_boundary": "Retained route/corners consume frozen prior69129a lock/source; current selection0.3.0 binds their exact physical relation without relabeling original runtime/guest execution. Fresh current mapping reproduces unchanged504f RTL, tools, collateral and mapped bytes. Native/browser need no recompilation for this physical-only noninverting cell ECO."
+    "source_boundary": "Retained route/corners consume frozen prior69129a lock/source; current selection0.3.0 binds their exact physical relation without relabeling original runtime/guest execution. Fresh current mapping reproduces unchanged504f RTL, tools, collateral and mapped bytes. Native/browser need no recompilation for this physical-only noninverting cell ECO. Qualification-only0.3.1 labels the separately observed103 original-padding violations; old0.16/runtime/route source identities remain exact. Fresh0.3.1 mapping reproduces the same0781e43d bytes; it is not a fresh physical execution.",
+    "prior_selection_authority_0_3_0": {
+      "path": "tooling/silicon/physical-lock.json",
+      "sha256": "3c67533606f95ee0577221c04bc6644ea63ee0da459e96d618d07e7257902d4b"
+    },
+    "prior_current_lock_protocol_and_mapping": {
+      "path": "build/silicon/task009-launch-selection-maintained-map-a1/result.json",
+      "sha256": "9fb9031c741b9d6f13b5d82118ca9b8b7763b10a408cc4c58163da54914f56bc"
+    }
   },
   "full_PG_geometry_candidate": {
     "status": "UNSELECTED_ROUTING_TIMING_ELECTRICAL_FAIL",
@@ -3299,6 +3307,99 @@
     "retained_observer_failures": [
       "build/silicon/task009-accept-launch-diagnosis-a1/retained-parser-failure.json",
       "build/silicon/task009-accept-launch-diagnosis-a1/wire-observer-failure.json"
-    ]
+    ],
+    "later_qualification": "FAIL_ORIGINAL_ONE_SITE_LEFT_RIGHT_PADDING:103 actual adjacent pairs below960nm. Existing route and PEX measurements remain scoped observations, not original-placement-constraint acceptance."
+  },
+  "original_placement_padding_and_hold_correction": {
+    "padding_failure": {
+      "path": "build/silicon/task009-launch-padding-assessment-a1/result.json",
+      "sha256": "60d19fd1add0f997d56298d43e8894a1ed355b0165bc0afcd5651b84f83a2186"
+    },
+    "matched_history": {
+      "path": "build/silicon/task009-launch-padding-assessment-a1/matched-history.json",
+      "sha256": "d5c1048c094bc1cd6d51b0b5ef446ad1e9b8e48e88cdf75f2bf0a1d626b34d58"
+    },
+    "required_original_constraint": {
+      "left_sites": 1,
+      "right_sites": 1,
+      "site_nm": 480,
+      "neighbor_gap_nm": 960
+    },
+    "cause": "OpenDB reload does not restore set_placement_padding -global -left1 -right1; overlap-only checks missed real source constraints. Selected NAND/launch had0nm gap. Original floorplan constraint is retained.",
+    "full_hold_inventory_original_failure": {
+      "path": "build/silicon/task009-launch-hold-inventory-a1/result.json",
+      "sha256": "668b8e4eb75077cbf8769814ff1afb572bb11228db0940d5bc18e3728c1ebe30"
+    },
+    "full_completed_inventory_assessment": {
+      "path": "build/silicon/task009-launch-hold-inventory-assessment-a1/result.json",
+      "sha256": "7c21501d30182703e5e96342ef02e5d39fead2e58e12786361c3d37b3e10fa93"
+    },
+    "inventory": {
+      "negative_endpoints": 178,
+      "SRAM_inputs_positive_setup": 31,
+      "unmodified_control_endpoints": 147,
+      "all_SRAM_setup_margin_at_least_ns": 8.496,
+      "matched_negative_SRAM_cases": [
+        "typical_max:lane0DIN1,2",
+        "slow_min:lane1DIN25,28"
+      ],
+      "scope": "All nine available cases retained; mixed-temperature fast diagnostics are additional failures, not matched PVT closure. Blanket endpoint delay is rejected where setup is already negative."
+    },
+    "single_row_site_failure": {
+      "path": "build/silicon/task009-launch-sram-hold-preflight-a1/result.json",
+      "sha256": "8494c4f64df8c465f46da564ec1660b9051166a5d8e123074dfc9d5a53fedb37"
+    },
+    "legalization_producer_observer_failure": {
+      "path": "build/silicon/task009-launch-full-padding-hold-preflight-a1/result.json",
+      "sha256": "2e9a822332a7f793f1f40d2c40025b64827b81073ef835a185b2a37a2eb48cca"
+    },
+    "completed_geometry_assessment": {
+      "path": "build/silicon/task009-launch-full-padding-completed-a1/result.json",
+      "sha256": "b50011db4e5eb9a16c15ff892b28188a8f55e909e41d02044f7cdeabb60c06a9"
+    },
+    "completed_geometry_verification": {
+      "path": "build/silicon/task009-launch-full-padding-completed-a1/verification.json",
+      "sha256": "45a548851471815bb1c72a9f6c430d6c9bfc8119bc2effc80582d1b431c01178"
+    },
+    "maintained_helper_assessment": {
+      "path": "build/silicon/task009-maintained-padded-hold-preflight-a1/result.json",
+      "sha256": "2c58497991464d7c9f4ffe0223b7aae4977c362cbbb2180f35098ed8e3ccaeab"
+    },
+    "completed_geometry": {
+      "path": "build/silicon/task009-launch-full-padding-hold-preflight-a1/legalized.odb",
+      "sha256": "1c1e617d8c4d64d63182926f37d40fb8ecac420489e5e1668fefe0603e195978"
+    },
+    "effect": {
+      "bad_pairs_before": 103,
+      "bad_pairs_after": 0,
+      "old_cells_moved": 243,
+      "added_original_delaycells": 33,
+      "SRAM_input_branches": 31,
+      "physical_ports": 668,
+      "native_PG_shapes": 99128,
+      "obstructions": 18718,
+      "connected_PG_terminals": 17411,
+      "SRAM_PG": 9,
+      "BIST": 423,
+      "NAND_to_buf_gap_nm": 960
+    },
+    "scope": "Actual full original-padding legalization+functional endpoint+native PG/OBS/fixedmacro geometry only. Original11.197s observer FAIL retained; separate6.960s completed assessment and fresh3.598s maintained-helper assessment do not rerun legalization/STA/route/extraction. No postmove timing claim. Exact candidate is unselected.",
+    "source": {
+      "path": "scripts/silicon_sram_input_hold.py",
+      "sha256": "d10319fa012c14a2e33395e56a56f887cca1ff02e1789989b11548055b6b10fe"
+    },
+    "route_plan": {
+      "path": "build/silicon/task009-padded-sram-hold-route-admission-a2/plan.json",
+      "sha256": "04c26cfe1a65ff107b87cbbdf8b8f20ce990b709e80976f610e6cb38fcc3c6a8"
+    },
+    "first_consumer_observer_failure": {
+      "path": "build/silicon/task009-padded-sram-hold-route-a1/result.json",
+      "sha256": "7314250e26695d7760e7430516010811fab9ae20a5942359d16aecb8c668e48e"
+    },
+    "exact115_baseline_relation": {
+      "path": "build/silicon/task009-padded-hold-baseline-assessment-a1/result.json",
+      "sha256": "fedc7fda4ac22834dc1d15ff41230432c8308360b1d006bd4da756584d42ffc5"
+    },
+    "first_consumer_failure_scope": "Fresh maintained preparation succeeds; baseline observer incorrectly applied original46 threePGport export adapter to115 logicalexport, already byte-identical. FAIL6.7505s before anyrouting; separate exactlogicalrelation rejects3actualsignalmutants whilefullphysicalPG/port checks remain. Fresha2 usescorrect exactbytes, nooldreceipt rewritten."
   }
 }
