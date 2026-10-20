@@ -238,8 +238,8 @@ private def remotePreparedCompareStep (i _ : UInt32) (acc a b _ _ : UInt64) : Ac
   .done 0 (acc ||| ((x ^^^ y) &&& mask)) else .done s 0 else .done s 0
 private def remoteFindStep (i _ : UInt32) (acc buffer count event prepared : UInt64) : Action :=
   if count ≤ i.toUInt64 then .done 0 acc else
-  if acc &&& 255 > 0 then .done 0 acc else
-  if acc >>> 8 > 0 then .done 0 (acc-256) else
+  if (0 : UInt64) < (acc &&& 255) then .done 0 acc else
+  if (0 : UInt64) < (acc >>> 8) then .done 0 (acc-256) else
   let entry := buffer+legacyBytes+i.toUInt64*16
   .bind (field entry 8) fun s descriptor => if s = 0 then
   if descriptor &&& 255 = 7 then
@@ -258,7 +258,7 @@ private def remoteFindStep (i _ : UInt32) (acc buffer count event prepared : UIn
   else .done 0 acc else .done s 0
 private def requireRemotePrepared (buffer count event : UInt64) : Action :=
   .boundedFoldU64 64 remoteFindStep 64 0 buffer count event 1 fun s found => if s = 0 then
-  if found &&& 255 > 0 then .done 0 0 else .done 234 0 else .done s 0
+  if (0 : UInt64) < (found &&& 255) then .done 0 0 else .done 234 0 else .done s 0
 private def remoteCopyStep (i _ : UInt32) (acc source target _ _ : UInt64) : Action :=
   .bind (field source (i.toUInt64*8)) fun s value => if s = 0 then
   .bind (put target (i.toUInt64*8) value) fun s _ => .done s acc else .done s 0
@@ -281,13 +281,13 @@ private def appendRemoteUnchecked (buffer event : UInt64) : Action :=
   if (if format = 1 then true else format = 2) = false then .done 234 0 else
   if expected = revision then if goal = ((descriptor >>> 8) &&& 255) then
   if descriptor &&& 255 = 7 then if (descriptor >>> 24) &&& 255 = 4 then
-  if descriptor >>> 32 > 0 then if (if scope = 1 then true else scope = 2) = true then
+  if (0 : UInt64) < (descriptor >>> 32) then if (if scope = 1 then true else scope = 2) = true then
   if object = (0x504b000000000000 ||| page) then
-  if binding > 0 then if binding ≤ 0x7ffffffffffffffe then if count ≤ 64 then
+  if (0 : UInt64) < binding then if binding ≤ 0x7ffffffffffffffe then if count ≤ 64 then
   .boundedFoldU64 4 remoteDigestStep 4 0 event 0 0 0 fun s digest => if s = 0 then
   if digest = 0 then .done 234 0 else
   .boundedFoldU64 64 remoteFindStep 64 0 buffer count event 0 fun s found => if s = 0 then
-  if found &&& 255 > 0 then .done 0 (found &&& 255) else
+  if (0 : UInt64) < (found &&& 255) then .done 0 (found &&& 255) else
   if (if scope = 1 then 56 else 60) < count then .done 235 0 else
   .boundedFoldU64 8 remoteCopyStep 8 0 event (buffer+legacyBytes+count*16) 0 0 fun s _ => if s = 0 then
   .bind (put buffer 208 2) fun s _ => if s = 0 then
@@ -342,7 +342,7 @@ private def validateHistoryStep (i _ : UInt32) (acc buffer count revision _ : UI
 private def validateEventStep (i _ : UInt32) (acc buffer count revision attempts : UInt64) : Action :=
   let count := count &&& 0xffffffff
   let entry := buffer + legacyBytes + i.toUInt64 * 16
-  if acc >>> 32 > 0 then .done 0 (acc-((1 : UInt64) <<< 32)) else
+  if (0 : UInt64) < (acc >>> 32) then .done 0 (acc-((1 : UInt64) <<< 32)) else
   .bind (field entry 0) fun s eventRevision => if s = 0 then
   .bind (field entry 8) fun s descriptor => if s = 0 then
   if count ≤ i.toUInt64 then if eventRevision ||| descriptor = 0 then .done 0 acc else .done 234 0 else
@@ -353,16 +353,16 @@ private def validateEventStep (i _ : UInt32) (acc buffer count revision attempts
   let index := (descriptor >>> 24) &&& 255
   if kind = 7 then
     .bind (field buffer 208) fun s format => if s = 0 then
-    if format = 2 then if goal > 0 then if goal ≤ 3 then
+    if format = 2 then if (0 : UInt64) < goal then if goal ≤ 3 then
     if (if value = 1 then true else value = 2) = true then
-    if index = 4 then if descriptor >>> 32 > 0 then if i.toUInt64+4 ≤ count then
+    if index = 4 then if (0 : UInt64) < (descriptor >>> 32) then if i.toUInt64+4 ≤ count then
     .bind (field entry 16) fun s object => if s = 0 then
     .bind (field entry 24) fun s binding => if s = 0 then
     .bind (field buffer 32) fun s page => if s = 0 then
     if object = (0x504b000000000000 ||| page) then
-    if binding > 0 then if binding ≤ 0x7ffffffffffffffe then
+    if (0 : UInt64) < binding then if binding ≤ 0x7ffffffffffffffe then
     .boundedFoldU64 4 remoteDigestStep 4 0 entry 0 0 0 fun s digest => if s = 0 then
-    if digest > 0 then
+    if (0 : UInt64) < digest then
       .bind (if value = 2 then requireRemotePrepared buffer i.toUInt64 entry else .done 0 0)
         fun s _ => if s = 0 then .done 0 (acc ||| ((3 : UInt64) <<< 32)) else .done s 0
     else .done 234 0 else .done s 0

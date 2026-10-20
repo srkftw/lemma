@@ -6218,7 +6218,7 @@ private def multimodalPrepareTutor : Action :=
   .bind (Lemma.Multimodal.SchoolPacket.active schoolContext) fun s joined => if statusFailed s = true then .done s 0 else
   if joined = 0 then .done 0 1 else
   .bind (remoteGet 0) fun s active => if statusFailed s = true then .done s 0 else
-  if active > 0 then .done 231 0 else
+  if 0 < active then .done 231 0 else
   .bind (Memory.read64 (tutorPacket+40)) fun s sequence => if statusFailed s = true then .done s 0 else
   .bind (tutorGet 16) fun s revision => if statusFailed s = true then .done s 0 else
   .bind (tutorGet 24) fun s object => if statusFailed s = true then .done s 0 else
@@ -6255,7 +6255,7 @@ private def multimodalPumpRemote : Action :=
   .bind (remoteGet 0) fun s phase => if statusFailed s = true then .done s 0 else
   if phase = 0 then .done 0 0 else
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
-  if pending > 0 then .done 0 0 else
+  if 0 < pending then .done 0 0 else
   .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
   if 2 ≤ status then multimodalRemoteAbandon 30 else
   .bind (remoteGet 32) fun s floor => if statusFailed s = true then .done s 0 else
@@ -6266,7 +6266,7 @@ private def multimodalPumpRemote : Action :=
     .bind (packagePut 72 0) fun s _ => if statusFailed s = true then .done s 0 else packagePut 144 1
   else if phase = 1 then
   .bind multimodalCurrentTutor fun s current => if statusFailed s = true then .done s 0 else
-  if current > 0 then multimodalRemoteAbandon current else
+  if 0 < current then multimodalRemoteAbandon current else
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (remoteGet 16) fun s oldNs => if statusFailed s = true then .done s 0 else
@@ -6280,10 +6280,10 @@ private def multimodalPumpRemote : Action :=
   .bind (Memory.read64 (remoteEvent+24)) fun s oldBinding => if statusFailed s = true then .done s 0 else
   if different binding oldBinding = true then multimodalRemoteAbandon 22 else
   .boundedFoldU64 4 remoteDigestCompare 4 0 0 0 0 0 fun s changed => if statusFailed s = true then .done s 0 else
-  if changed > 0 then multimodalRemoteAbandon 21 else
+  if 0 < changed then multimodalRemoteAbandon 21 else
   .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Multimodal.SchoolPacket.actionReason tutorPacket tutorContext schoolContext now) fun s reason => if statusFailed s = true then .done s 0 else
-  if reason > 0 then multimodalRemoteAbandon reason else
+  if 0 < reason then multimodalRemoteAbandon reason else
   .bind renderPackageText fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (remoteEvent+8)) fun s descriptor => if statusFailed s = true then .done s 0 else
   .bind (Memory.write64 (remoteEvent+8) ((descriptor &&& ~~~((255 : UInt64) <<< 16)) ||| ((2 : UInt64) <<< 16))) fun s _ => if statusFailed s = true then .done s 0 else
@@ -6940,7 +6940,7 @@ private def multimodalPackageWork : Action :=
   if pending ||| rawCount ||| rawPending ||| stroke ||| checking = 0 then
   .bind multimodalPumpRemote fun s _ => if statusFailed s = true then courseError s else
   .bind (get 160) fun s remotePending => if statusFailed s = true then .done s 0 else
-  if remotePending > 0 then .done 0 0 else
+  if 0 < remotePending then .done 0 0 else
   .bind pumpBookmarkOpen fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packageGet 208) fun s lookup => if statusFailed s = true then .done s 0 else
   if lookup = 1 then .done 0 0 else if lookup = 2 then .done 0 0 else

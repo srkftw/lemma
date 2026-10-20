@@ -548,17 +548,17 @@
     ],
     "format": "Doc8 eventFormat2 in unchanged2496-byte document/3712-byte workspace; kind7 four-row full original authority/binding/ASK sequence/work identity. Prepared scope1 reserves8rows, real Store transaction precedes raster; scope2 requires identical earlier preparation and records guest raster completion in a second Store transaction.",
     "current_source": {
-      "Lemma/Documents/Mathematics.lean": "40bfd7d64d25bf590925979e60c610dd84bd67d9cc8a5e8e84af5af68463c56d",
-      "Lemma/Applications/Notebook.lean": "096bbbc6f056a9e331e547728d7ef6708a28883941729db0cdcd16142a23b85c"
+      "Lemma/Documents/Mathematics.lean": "bfef29b1648f4bd9e0885a3f963db635bd92022357afe3ed6343638cf1cf815a",
+      "Lemma/Applications/Notebook.lean": "8b8783dcd03114599a0777decf5d8308af038626f834ef97397348d36c45ccaf"
     },
     "joint_action_gate": {
-      "path": "build/school/task009-remote-provenance-a5/result.json",
-      "sha256": "12935557e2574cf8ff008c336b708ec6bf0f69f0a44f2a38e7bc8b3ed8689346"
+      "path": "build/school/task009-remote-provenance-lt-a2/result.json",
+      "sha256": "73447bb46b14d378c72b3e48a363070824cb2dccb268ad4ecdd2e32ace4e52b3"
     },
     "stronger_consumer_fixture": "tests/courses/RemoteProvenance.lean actual multimodalPackageWork admission\u2192preparation\u2192Store ownership, original Client.handleAssist package\u2192real guest PackageRender framebuffer\u2192second publication; Commit arrivals explicitly supplied by the finite observer, not journal execution.",
     "source_negative_gate": {
-      "path": "build/school/task009-remote-provenance-source-gate-a1/result.json",
-      "sha256": "9749675a96edeb13d873e22ecfac84f1a9e971b55df807f59d3d34e7b5e425b2"
+      "path": "build/school/task009-remote-provenance-source-lt-a1/result.json",
+      "sha256": "0f9be8e5053552b054e7e09618a5366e0ba78c7cec48edf099e7b527ec9f8994"
     },
     "negative_scope": "Fresh private full Notebook source; bypassing the connected preparation or pending-Commit gate makes the actual Action fixture fail. Legacy format, payload words2/6, idempotency, capacity reserve, malformed/unbacked raster scopes, changed revision/object/page/namespace/request/binding, and cold prepared workspace separately exercised.",
     "fresh_reused": "Changed Mathematics and transitive modules genuinely compiled before qualification. Final joint gate genuinely rebuilt UserMM4.6s and Notebook39s, then freshly executed current NotebookSchool and Remote Actions; separate stronger body fixture freshly executed the real UNVERIFIED body renderer. Source-negative cases freshly elaborated their private Notebook source. These are host Actions, not fresh LLVM/CPU/storage/physical claims.",
@@ -566,7 +566,12 @@
     "ordinary_body_consumer_gate": {
       "path": "build/school/task009-remote-provenance-a6/result.json",
       "sha256": "d89f2e8434bbb1835f957393c6d97780031e0bed3dcdaa375e3e447365ef1759"
-    }
+    },
+    "retained_target_export_failure": {
+      "path": "build/kernel/task009-school23-notebook-a25/action-failure.json",
+      "sha256": "f89bfdb647a152a547cbdfd489dcba5ae6e0b58bf7712baf9df3d9b5a68f6f13"
+    },
+    "target_lowering_correction": "Actual Core0 export rejected newly written GT.gt predicates. Only those predicates were rewritten as typed UInt64 LT with reversed operands; compiler admission and behavior/protocol are unchanged. The first shifted-operand LT elaboration needed an explicit UInt64 zero; that terminal failure is retained in build/school/task009-remote-provenance-lt-a1/result.json."
   },
   "deferred_commit_receipt_v2": {
     "status": "PASS_HOSTED_ACTIONS_AND_SIX_CONSEQUENTIAL_NEGATIVES; actual_CPU_successor_NOT_YET_RUN",
