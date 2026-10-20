@@ -411,6 +411,7 @@
         "scripts/silicon_power_margin.py",
         "scripts/silicon_power_margin_route.py",
         "scripts/silicon_power_clearance.py",
+        "scripts/silicon_slew_launch.py",
         "tests/silicon/test_power_margin.py"
       ],
       "claims": [
