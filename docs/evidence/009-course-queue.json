@@ -329,5 +329,29 @@
     },
     "status": "PASS_BOUNDED_TERMINAL_RECEIPTS_AND_CANCEL_ORDER",
     "scope": "actual private candidate target Actions in finite RAM/IPC; no CPU/durable-medium claim"
+  },
+  "joined_source_reader": {
+    "result": {
+      "path": "build/courses/task009-join-reader-a1/result.json",
+      "sha256": "ca2207f6168f02634bdc7769d96198c89a41682e1f48457a9074d4000797b136"
+    },
+    "source_archive": {
+      "path": "build/courses/task009-join-reader-a1/source.tar.gz",
+      "sha256": "b76046713b8a375bd902d171c35f3523b4c8f9aa6b107c77bb1e828e63692a3d"
+    },
+    "notebook_sha256": "c2f06005bcd7b4e0de1039da82475cd1f3bba1c31f4021aa6fb1df6029f118ac",
+    "fixture_sha256": "5157c2b2b4056f80dfb82663e431f7f89efdb81e20fe50e45864706e5b3bb924",
+    "status": "PASS_HOSTED_JOIN_READER_ACTIONS",
+    "scope": "Actual private Notebook Actions over independently framed finite RAM/IPC and genuine hosted Lean invitation bytes; not CPU/controller or visible-paper qualification.",
+    "retained_native_failure": {
+      "receipt": "build/school/task009-student-native-a5/phase2/join-failure.json",
+      "binding": 33,
+      "generation": 11,
+      "source": 803,
+      "edition": 2,
+      "task": 4,
+      "result": "727 then454244",
+      "nativeFixedExecution": "pending new source-bound image"
+    }
   }
 }

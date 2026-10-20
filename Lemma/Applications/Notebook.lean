@@ -6014,6 +6014,11 @@ private def multimodalAdmitSchool (length requested : UInt64) : Action :=
     .bind (packagePut 160 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (packagePut 176 (node - 1)) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (packagePut 208 3) fun s _ => if statusFailed s = true then .done s 0 else
+    -- The invitation view is consumed. Its text/control flags must not publish
+    -- against the asynchronously reloading original source. EOF of that source
+    -- alone re-enables both flags through packageReadComplete.
+    .bind (packagePut 72 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (packagePut 144 0) fun s _ => if statusFailed s = true then .done s 0 else
     beginPackageRead source edition
     else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else .done 0 2
 
@@ -6564,6 +6569,9 @@ private def multimodalPackageWork : Action :=
     .bind multimodalAdmitTutor fun s marked => if statusFailed s = true then
       .bind multimodalAbandonPresentation fun cleanup _ => if statusFailed cleanup = true then .done cleanup 0 else courseError s
     else
+    -- JOIN starts a new bounded original-publication read. It is not a text
+    -- annotation and cannot rasterize until that read's validated EOF.
+    if marked = 2 then .done 0 0 else
     .bind renderPackageText fun s _ => if statusFailed s = true then courseError s else
     .bind (if marked = 1 then multimodalTutorAccepted else .done 0 0) fun s _ => if statusFailed s = true then courseError s else packagePut 72 0
     else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else

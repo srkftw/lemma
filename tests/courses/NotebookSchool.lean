@@ -1,4 +1,5 @@
 import Lean
+import Lemma.School.Client
 import Lemma.Applications.Notebook
 import Std.Data.HashMap
 
@@ -196,9 +197,54 @@ private def queueHandoffCheck : IO Unit := do
   let original ← run r (schoolNotebook% "schoolControlContext")
   expect (original.1 == 0) "unchanged original home control was rejected"
 
+private def schoolJoinCheck : IO Unit := do
+  let tutor := Lemma.User.Multimodal.records+1024
+  let tutorState := Lemma.User.Multimodal.state+144
+  let school := Lemma.User.Multimodal.records+1152
+  let ask : Lemma.School.Client.GuestAsk := {
+    session:=99,consent:=1,revision:=7,object:=0x504b000000000001,sequence:=11,
+    source:=803,edition:=2,task_id:=4,cutoff:=100,now:=101,deadline:=140,grants:=1 }
+  let binding : Lemma.School.Client.SessionBinding := {
+    school:="component-school",actor:="learner-a",enrollment:="enrolled",session:="session-a",
+    guestSession:=99,course:=803,revision:=2,policy:=2,generation:=12,expires:=500,
+    authority:="0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20",bindingRecord:=27 }
+  let invitation ← IO.ofExcept <| Lemma.School.Client.invitation binding ask
+  let r ← IO.mkRef ({} : Model)
+  -- The complete invitation has already passed the actual reader's EOF. Both
+  -- pending presentation flags are still set, exactly as in native 727→454244.
+  for (a,v) in #[(base+760,1),(base+752,12),(base+512,1),(base+80,1),
+      (base+72,1),(base+176,100),(base+128,20),(base+24,3),
+      (app,invitation.size.toUInt64),(app+32,2),(app+72,1),(app+144,1),
+      (app+128,60000),(app+136,11),(app+232,2),(app+240,1),
+      (tutorState+24,1),(Lemma.Applications.Notebook.mathematics+40,7)] do put r a v
+  for (value,i) in (#[99,1,7,0x504b000000000001,10,1,803,2,4,512,0] : Array UInt64).zipIdx do
+    put r (tutor+i.toUInt64*8) value
+  for i in [:invitation.size] do
+    let a := (0x332000 : UInt64)+i.toUInt64
+    r.modify fun m => write m (a-a%8) ((word m (a-a%8)) ||| (invitation[i]!.toUInt64 <<< (a%8*8)))
+  r.modify fun m => {m with syscalls:=#[(0,101),(0,88),(0,101)],writes:=#[]}
+  let result ← run r (schoolNotebook% "multimodalPackageWork")
+  expect (result.1 == 0 && (← get r school) == Lemma.Multimodal.SchoolPacket.magic &&
+    (← get r (school+48)) == 27 && (← get r (base+512)) == 1)
+    "successful actual JOIN abandoned the course or failed its joined context"
+  expect ((← get r (app+32)) == 1 && (← get r (app+48)) == 803 &&
+    (← get r (app+56)) == 2 && (← get r (app+176)) == 3 &&
+    (← get r (app+72)) == 0 && (← get r (app+144)) == 0 &&
+    (← get r (base+176)) == 357 && (← r.get).syscalls.isEmpty)
+    "JOIN rendered stale invitation flags before original publication EOF or lost source/node/request ownership"
+  let writes := (← r.get).writes
+  expect (!(writes.any fun a => (0x329000 ≤ a && a < 0x32a000) ||
+      (0x33b000 ≤ a && a < 0x33c000) || (Lemma.Ink.Surface.framebuffer ≤ a && a < Lemma.Ink.Surface.framebuffer+1815000)))
+    "JOIN changed saved mathematics/workspace or rasterized before original source EOF"
+  -- Only a completed, validated source read authorizes its fresh presentation.
+  let ready ← run r (schoolNotebook% "packageReadComplete")
+  expect (ready.1 == 0 && (← get r (app+32)) == 2 &&
+    (← get r (app+72)) == 1 && (← get r (app+144)) == 1)
+    "original source EOF did not release its own text/control presentation"
+
 def main : IO Unit := do
-  floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck
-  IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control; component only"
+  floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
+  IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control,actual JOIN async source/EOF presentation; component only"
 end NotebookSchoolTests
 
 def main : IO Unit := NotebookSchoolTests.main
