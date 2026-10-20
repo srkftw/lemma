@@ -413,6 +413,13 @@ NOTEBOOK_LOSS_SHAPES = {
     False: "c498a2cbab6f59971ef0c2f7ad04aefe99bae6a950c5d589185b8c497174c80e",
     True: "7b424e9f0401d2f6afa72509cf7d9e5df672f4bdc5d9b2167510dd1d41ce0687",
 }
+# Receipt/2 invalidates its retained Saved authority before any loss work.
+# These are separate genuine pre/post bodies; the original loss contract and
+# its exact SSA site remain admitted for immutable earlier source archives.
+NOTEBOOK_LOSS_RECEIPT2_SHAPES = {
+    False: "8f8546617cf6905e8d586d2a0231a405726dd5088ff31513ece19e4a4f32cbdb",
+    True: "a5c58e2c5f3b3fabb23b7323cd7b2a91cf30d2f3261a4c0e7d45562832392e16",
+}
 
 def _notebook_loss_intrinsic_owner(unit: dict) -> bool:
     return (unit.get("role") == "user" and unit.get("image_key") == "notebook"
@@ -447,20 +454,42 @@ def validate_notebook_loss_intrinsic(ir: str, unit: dict, *, optimized: bool,
     normalized = " ".join(" ".join(line.split(";", 1)[0].strip() for line in rebound.splitlines()).split())
     transformed = optimized and optimization != "O0"
     digest = hashlib.sha256(normalized.encode()).hexdigest()
-    if digest != NOTEBOOK_LOSS_SHAPES[transformed]:
+    receipt = rows.get("Lemma.Applications.Notebook.deferredSaved")
+    if receipt is not None:
+        marker = _ir_definition_body(ir, receipt["symbol"])
+        if transformed:
+            marker_ok = re.fullmatch(r"\s*entry:\s*ret i64 3410688\s*", marker) is not None
+        else:
+            records = rows.get("Lemma.User.Multimodal.records")
+            marker_ok = (records is not None and records.get("args") == [] and
+                         records.get("effects") == [] and
+                         re.fullmatch(r"\s*entry:\s*ret i64 3407872\s*",
+                                      _ir_definition_body(ir, records["symbol"])) is not None and
+                         re.fullmatch(r"\s*entry:\s*%call0 = call i64 @" +
+                                      re.escape(records["symbol"]) +
+                                      r"\(\)\s*%bin1 = add i64 %call0, 2816\s*ret i64 %bin1\s*",
+                                      marker) is not None)
+        if receipt.get("args") != [] or receipt.get("effects") != [] or not marker_ok:
+            raise Core0Error("Notebook receipt2 loss lacks its exact owned invalidation address")
+    shapes = NOTEBOOK_LOSS_RECEIPT2_SHAPES if receipt is not None else NOTEBOOK_LOSS_SHAPES
+    if digest != shapes[transformed]:
         raise Core0Error("Notebook loss differs from its checked saturating-counter body")
     if transformed:
-        call = "%spec.select = call i64 @llvm.uadd.sat.i64(i64 %action.call.value21, i64 %bin48)"
+        operands = ("%action.call.value28, i64 %bin55" if receipt is not None
+                    else "%action.call.value21, i64 %bin48")
+        call = "%spec.select = call i64 @llvm.uadd.sat.i64(i64 " + operands + ")"
         declaration = r"declare i64 @llvm\.uadd\.sat\.i64\(i64, i64\)(?: #[0-9]+)?"
         if (len(sites) != 2 or sites.count(call) != 1 or call not in body
                 or sum(re.fullmatch(declaration, line) is not None for line in sites) != 1):
             raise Core0Error("Notebook loss intrinsic has an extra site or changed width/signature/owner")
     elif sites:
         raise Core0Error("Notebook loss intrinsic appears before selected O2 optimization")
-    return {"contract_version": "lemma-notebook-loss-saturation/1", "source": NOTEBOOK_LOSS_SOURCE,
+    return {"contract_version": "lemma-notebook-loss-saturation/2" if receipt is not None else "lemma-notebook-loss-saturation/1", "source": NOTEBOOK_LOSS_SOURCE,
             "body_sha256": digest, "optimized": transformed,
             "intrinsic": intrinsic if transformed else None, "bits": 64,
-            "semantics": "min(UINT64_MAX, previous + discarded)", "foreign_runtime": False}
+            "semantics": "min(UINT64_MAX, previous + discarded)", "foreign_runtime": False,
+            **({"receipt_contract": "lemma-notebook-commit-receipt/2",
+                "first_invalidation_address": 3410688} if receipt is not None else {})}
 
 
 BLE_HEADER_SHAPES = {

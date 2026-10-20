@@ -65,4 +65,53 @@ class NotebookLossIntrinsicTests(unittest.TestCase):
         with self.assertRaises(Core0Error): self.check(unit=unit)
 
 
+class NotebookReceiptLossIntrinsicTests(NotebookLossIntrinsicTests):
+    @classmethod
+    def setUpClass(cls):
+        cls.fixture = json.loads((Path(__file__).with_name('fixtures') / 'notebook_loss_receipt2.json').read_text())
+
+    def test_receipt_invalidation_precedes_loss(self):
+        for optimized in (False, True):
+            result = self.check(optimized=optimized)
+            self.assertEqual(result['contract_version'], 'lemma-notebook-loss-saturation/2')
+            self.assertEqual(result['first_invalidation_address'], 3410688)
+
+    def test_wrong_counter_operand_or_width_rejected(self):
+        ir = self.fixture['ir']['post']
+        for before, after in [('i64 %action.call.value28, i64 %bin55', 'i64 %action.call.value10, i64 %bin55'),
+                              ('llvm.uadd.sat.i64', 'llvm.uadd.sat.i32')]:
+            self.assertIn(before, ir)
+            with self.assertRaises(Core0Error): self.check(ir=ir.replace(before, after))
+
+    def test_wrong_pre_overflow_condition_or_published_field_rejected(self):
+        ir = self.fixture['ir']['pre']
+        self.assertIn('add i64 %call0, 2816', ir)
+        for before, after in [('add i64 %call0, 2816', 'add i64 %call0, 2824'),
+                              ('ret i64 3407872', 'ret i64 3407880'),
+                              ('icmp ult i64 %bin49, %bin55', 'icmp ugt i64 %bin49, %bin55'),
+                              ('(i64 32, i64 %if.result64)', '(i64 40, i64 %if.result64)')]:
+            self.assertIn(before, ir)
+            with self.assertRaises(Core0Error): self.check(ir=ir.replace(before, after), optimized=False)
+
+    def test_missing_or_wrong_first_invalidation_rejected(self):
+        ir = self.fixture['ir']['post']
+        clear = '  store volatile i64 0, ptr inttoptr (i64 3410688 to ptr), align 256\n'
+        self.assertIn(clear, ir)
+        for bad in (ir.replace(clear, ''), ir.replace(clear, clear.replace('3410688', '3410696'))):
+            with self.assertRaises(Core0Error): self.check(ir=bad)
+
+    def test_receipt_marker_cannot_select_legacy_body(self):
+        unit = copy.deepcopy(self.fixture['unit'])
+        unit['functions'] = [row for row in unit['functions'] if not row['source'].endswith('.deferredSaved')]
+        for optimized in (False, True):
+            with self.assertRaises(Core0Error): self.check(unit=unit, optimized=optimized)
+
+    def test_receipt_marker_requires_pure_zero_argument_definition(self):
+        for field, value in [('args', ['u64']), ('effects', ['virtual-read'])]:
+            unit = copy.deepcopy(self.fixture['unit'])
+            marker = next(row for row in unit['functions'] if row['source'].endswith('.deferredSaved'))
+            marker[field] = value
+            with self.assertRaises(Core0Error): self.check(unit=unit)
+
+
 if __name__ == '__main__': unittest.main()
