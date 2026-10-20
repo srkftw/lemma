@@ -1,4 +1,4 @@
-import {supportReport} from './diagnostics.js';
+import {supportReport,runBudgetFailure} from './diagnostics.js';
 // SPDX-License-Identifier: Apache-2.0
 // Host transport/presentation only. Every instruction and device runs in QEMU.
 import createQemu from './qemu-system-riscv64.js';
@@ -25,6 +25,7 @@ const timing={runSeconds:0},sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const quantumUnits=100000n;
 const exactJson=text=>JSON.parse(text.replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));
 let heapBytes=null,uartPaced=false,uartFlow=false;
+let executionBoundary=null;
 const egress=new PcmEgress();
 async function pcm(){
  const result=await control.request('lemma-waveform');
@@ -97,7 +98,7 @@ async function load(m){
   if(await control.get('raw-uart-flow-version')!=='lemma-raw-uart-flow/1'||!uartPaced)throw Error('Unsupported receiver-ready UART capability');
   await control.set('enable-raw-uart-flow','lemma-raw-uart-flow/1');uartFlow=true;
  }
- loaded=true;initializing=!!m.initialize;guestStart=uart().length;notebookFault.reset(guestStart);running=!m.paused;pauseReason=m.paused?'opened-paused':null;
+ loaded=true;executionBoundary=null;initializing=!!m.initialize;guestStart=uart().length;notebookFault.reset(guestStart);running=!m.paused;pauseReason=m.paused?'opened-paused':null;
  await sendState();await panel(true);schedule();
 }
 async function stopped(){if((await control.request('query-status')).running)await control.request('stop');}
@@ -130,7 +131,10 @@ async function step(){
  while((await control.request('query-status')).running){if(budget?.hostExpired(performance.now())){pause('host-limit');await stopped();break;}if(performance.now()-start>60000){pause('execution-quantum');await stopped();const observed=await inspect(true),elapsedSeconds=(performance.now()-start)/1000;timing.runSeconds+=elapsedSeconds;postMessage({type:'execution-boundary',contract:'lemma-tci-quantum-observation/1',result:'Original60s execution quantum deadline',before,targetVirtualNs:String(target),observed,elapsedSeconds});await sendState(observed);throw Error('Original60s execution quantum deadline');}await sleep(5);}
  timing.runSeconds+=(performance.now()-start)/1000;loops++;
  const after=await inspect();if(notebookFault.fault){await panel(true);await sendState(after);return;}if(BigInt(after.cycle)<BigInt(before.cycle)||(after.cycle===before.cycle&&entryEpoch===interruptEpoch))throw Error('Actual guest made no virtual-clock progress');
- if(budget)budget.observe(after.cycle,quantum);
+ if(budget)try{budget.observe(after.cycle,quantum);}catch(error){
+  executionBoundary=runBudgetFailure(before,after,target,quantum,budget,(performance.now()-start)/1000);
+  postMessage({type:'execution-boundary',...executionBoundary});throw error;
+ }
  if(initializing&&guestRecord(uart(),guestStart,'000000000000041f')){pause('initializer-complete');await sendState(after);postMessage({type:'runtime-closed',nextNotebook:true,backingMetrics:backing.metrics});return;}
  if(budget?.remaining===0n)pause('cycle-limit');else if(budget?.stopOnReady&&readyAt!==null)pause('guest-ready');else if(budget?.panelCompleted(after))pause('panel-complete');
  await pcm();await panel(false,after);if(loops%5===0||!running)await sendState(after);schedule();
@@ -188,7 +192,7 @@ onmessage=({data:m})=>{
   else if(m.action==='course-install'){if(coursePartial)throw Error('Cold-open before retrying partial course input');pause('course-input');await stopped();const frame=courseInstallFrame(m.bytes,m.transaction),clock=await control.request('lemma-clock'),base=(BigInt(clock.virtual_ns)+9n)/10n*10n;let accepted=0;try{const arrival=await admitUart(control,frame,base,uartPaced,n=>{accepted=n;},uartFlow);postMessage({type:'uart-arrival-admission',arrival});}catch(e){coursePartial=accepted>0;postMessage({type:'course-admission',accepted,total:frame.length,bytes:frame.length-64,error:String(e)});throw e;}postMessage({type:'course-admission',accepted,total:frame.length,bytes:frame.length-64,error:null});await sendState();}
   else if(m.action==='inspect'){await stopped();await sendState(await inspect(true));postMessage({type:'uart',text:new TextDecoder().decode(uart())});schedule();}
   else if(m.action==='reset'){school.disconnect();schoolMachineEpoch++;if(typeof m.cold!=='boolean')throw Error('Cold reset selector must be Boolean');pause('reset');await stopped();if(m.cold){postMessage({type:'runtime-closed',nextNotebook:true});return;}await control.request('lemma-waveform');egress.discard(core.FS.stat('/audio.bin').size);await control.request('system_reset');guestStart=uart().length;notebookFault.reset(guestStart);readyAt=null;budget=null;panelSequence=null;await sendState();await panel(true);}
-  else if(m.action==='diagnostics'){if(manifest.support_report_contract!=='lemma-client-support-report/1')throw Error('Support report contract unavailable');await stopped();const report=supportReport({manifest,state:await inspect(true),uart:uart(),guestStart,mode,readyAt,timing:{...timing,elapsedSeconds:(performance.now()-started)/1000},capture});report.state.multimodal=exactJson(await control.get('multimodal-state'));const bytes=new TextEncoder().encode(JSON.stringify(report,null,2)+'\n');postMessage({type:'export',name:'lemma-support.json',bytes},[bytes.buffer]);schedule();}
+  else if(m.action==='diagnostics'){if(manifest.support_report_contract!=='lemma-client-support-report/1')throw Error('Support report contract unavailable');await stopped();const report=supportReport({manifest,state:await inspect(true),uart:uart(),guestStart,mode,readyAt,timing:{...timing,elapsedSeconds:(performance.now()-started)/1000},capture,executionBoundary});report.state.multimodal=exactJson(await control.get('multimodal-state'));const bytes=new TextEncoder().encode(JSON.stringify(report,null,2)+'\n');postMessage({type:'export',name:'lemma-support.json',bytes},[bytes.buffer]);schedule();}
   else if(m.action==='export-panel'){await stopped();await panel(true);const result=await control.request('lemma-panel'),packed=core.FS.readFile(result.path),header=new TextEncoder().encode(`P5\n${result.width} ${result.height}\n255\n`),bytes=new Uint8Array(header.length+result.width*result.height);bytes.set(header);for(let y=0;y<result.height;y++)for(let x=0;x<result.width;x++){const p=packed[y*result.stride+(x>>1)];bytes[header.length+y*result.width+x]=((x&1)?p&15:p>>4)*17;}postMessage({type:'export',name:'lemma-controller.pgm',bytes},[bytes.buffer]);schedule();}
   else if(m.action==='export'){pause('export');await stopped();const bytes=new Uint8Array(268435456);for(let i=0;i<bytes.length;i+=1048576)if(handle.read(bytes.subarray(i,i+1048576),{at:i})!==1048576)throw Error('Backing export partial read');postMessage({type:'export',name:'lemma-backing.raw',bytes},[bytes.buffer]);await sendState();}
   else if(m.action==='events'){const bytes=new TextEncoder().encode(JSON.stringify({schema:'lemma-qemu-browser-raw-capture/1',events:capture}));postMessage({type:'export',name:'lemma-events.json',bytes},[bytes.buffer]);}

@@ -59,12 +59,23 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
 // A bounded maintenance observation never copies the pairing structure or
 // arbitrary future input fields into its portable report.
 {
- const {supportReport}=await import('data:text/javascript;base64,'+Buffer.from(await fs.readFile('sim/browser/diagnostics.js')).toString('base64'));
+ const {supportReport,runBudgetFailure}=await import('data:text/javascript;base64,'+Buffer.from(await fs.readFile('sim/browser/diagnostics.js')).toString('base64'));
+ const {RunBudget}=await import('data:text/javascript;base64,'+Buffer.from(await fs.readFile('sim/browser/run_budget.js')).toString('base64'));
+ const budget=new RunBudget('9007199254740993','100000',false,null,0);
+ const before={cycle:'9007199254740993',virtual_ns:'90071992547409925',credential:'private-pairing-token'};
+ const after={cycle:'9007199254840994',virtual_ns:'90071992548409937'};
+ assert.throws(()=>budget.observe(after.cycle,'100000'),/Machine advanced outside/);
+ const boundary=runBudgetFailure(before,after,90071992548409923n,100000n,budget,0.125);
+ assert.equal(boundary.budget.cycle,before.cycle);assert.equal(boundary.budget.used,'0');
+ assert.equal(boundary.observed.cycle,after.cycle);assert.equal(boundary.targetVirtualNs,'90071992548409923');
+ assert.equal(boundary.quantum,'100000');assert.doesNotMatch(JSON.stringify(boundary),/private-pairing-token/);
+ budget.observe('9007199254740994','1');assert.equal(boundary.budget.used,'0');
  const input={action:'pen',x:123,y:456,credential:{token:'private-pairing-token'}};
- const report=supportReport({manifest:{schema:'source',privateCredential:'private-pairing-token'},state:{cycle:'9007199254740993'},uart:new Uint8Array([0,255]),guestStart:0,mode:'student',capture:[{ingress:'browser-pointer/1',input}],timing:{}});
+ const report=supportReport({manifest:{schema:'source',privateCredential:'private-pairing-token'},state:{cycle:'9007199254740993'},uart:new Uint8Array([0,255]),guestStart:0,mode:'student',capture:[{ingress:'browser-pointer/1',input}],timing:{},executionBoundary:boundary});
  assert.equal(report.console.tailHex,'00ff');assert.equal(report.input.tail[0].input.x,123);
  assert.doesNotMatch(JSON.stringify(report),/private-pairing-token/);
  assert.equal(input.credential.token,'private-pairing-token');
+ assert.equal(report.executionBoundary.observed.cycle,after.cycle);
 }
 // Ordinary support export observes the paused machine without admitting raw input,
 // changing virtual time, or serializing an executable continuation.
