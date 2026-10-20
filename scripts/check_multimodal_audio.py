@@ -45,8 +45,8 @@ def main():
          'armPCM 1 16000 32 (ticks + 100000000)'),
         ('early-consumption-receipt', 'if 16 ≤ observed then stopAudio 0 0 else',
          'if 0 ≤ observed then stopAudio 0 0 else'),
-        ('stale-revokes-successor', 'if current ≠ epoch then audioReceipt 4 else',
-         'if current ≠ epoch then .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else audioReceipt 4 else')]
+        ('stale-revokes-successor', 'if mmDifferent (current) (epoch) = true then audioReceipt 4 else',
+         'if mmDifferent (current) (epoch) = true then .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else audioReceipt 4 else')]
     report = {'status': 'FAIL', 'scope': __doc__, 'source_inputs': inputs,
               'started_unix': time.time(), 'cases': [], 'host_policy': policy(2),
               'limits': {'whole_seconds': 240, 'case_seconds': 30,

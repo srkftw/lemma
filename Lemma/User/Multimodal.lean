@@ -105,7 +105,7 @@ private def stopAudio (reason force : UInt64) : Action :=
   if mmFailed status = true then
     if force = 1 then .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else audioReceipt reason
     else .done status 0
-  else if current ≠ epoch then
+  else if mmDifferent (current) (epoch) = true then
     if force = 1 then .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else audioReceipt reason
     else audioReceipt 4
   else
@@ -166,7 +166,7 @@ private def finishSample : Action :=
 
 private def sampleStep (i _ : UInt32) (acc cursor _ _ _ : UInt64) : Action :=
   .bind (get 48) fun s pending => if mmFailed s = true then .done s 0 else
-  if pending ≠ 0 then .done 0 acc else
+  if mmDifferent (pending) (0) = true then .done 0 acc else
   let stream := (cursor + i.toUInt64) % 8
   .bind (get (64 + stream * 8)) fun s epoch => if mmFailed s = true then .done s 0 else
   if epoch = 0 then .done 0 acc else
@@ -230,12 +230,12 @@ def testAudio : Action :=
   .bind (get 128) fun s allocated => if mmFailed s = true then .done s 0 else
   .bind (if allocated = 0 then
     .bind (Syscall.allocatePage audioPage) fun s address => if mmFailed s = true then .done s 0 else
-    if address ≠ audioPage then .done 95 0 else
+    if mmDifferent (address) (audioPage) = true then .done 95 0 else
     .bind (audioPut 0 0) fun s _ => if mmFailed s = true then .done s 0 else
     .bind (audioPut 56 0) fun s _ => if mmFailed s = true then .done s 0 else put 128 1
     else .done 0 0) fun s _ => if mmFailed s = true then .done s 0 else
   .bind (audioGet 0) fun s running => if mmFailed s = true then .done s 0 else
-  if running ≠ 0 then .done 6 0 else
+  if mmDifferent (running) (0) = true then .done 6 0 else
   .bind (audioGet 56) fun s previous => if mmFailed s = true then .done s 0 else
   if previous = 0xffffffffffffffff then .done 14 0 else
   .bind (invoke 10 0 0 0) fun s ticks => if mmFailed s = true then .done s 0 else
@@ -256,7 +256,7 @@ def testAudio : Action :=
   .bind (submitPCM (audioPage+64) epoch) fun status accepted =>
   .bind (audioPut 16 accepted) fun s _ => if mmFailed s = true then .done s 0 else
   if mmFailed status = true then .bind (stopAudio 3 0) fun _ _ => .done status 0 else
-  if accepted ≠ 16 then .bind (stopAudio 3 0) fun _ _ => .done 6 accepted else
+  if mmDifferent (accepted) (16) = true then .bind (stopAudio 3 0) fun _ _ => .done 6 accepted else
   .bind (startPCM epoch) fun status _ =>
   if mmFailed status = true then .bind (stopAudio 3 0) fun _ _ => .done status 0 else
   .bind (get 8) fun s console => if mmFailed s = true then .done s 0 else
@@ -280,7 +280,7 @@ private def pumpAudio : Action :=
   .bind (audioGet 8) fun s epoch => if mmFailed s = true then .done s 0 else
   .bind (invoke 11 8 0 0) fun status current =>
   if mmFailed status = true then stopAudio 3 0 else
-  if current ≠ epoch then audioReceipt 4 else
+  if mmDifferent (current) (epoch) = true then audioReceipt 4 else
   .bind (invoke 15 8 0 0) fun status counter =>
   if mmFailed status = true then stopAudio 3 0 else
   .bind (audioGet 24) fun s baseline => if mmFailed s = true then .done s 0 else

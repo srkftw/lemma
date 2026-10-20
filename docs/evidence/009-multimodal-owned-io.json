@@ -64,5 +64,60 @@
     "physical audibility/sensors/safety",
     "3,902,720B/s economy or full raw link",
     "educational benefit"
-  ]
+  ],
+  "admitted_comparison_successor": {
+    "reason": "Actual target exporter rejected new PropNe comparison. Source conditions now use the existing admitted UInt64 equality helper, preserving predicates without changing compiler admission. Original failed export retained.",
+    "failed_target_receipt": "build/kernel/task009-school23-notebook-a17/action-failure.json",
+    "source_inputs": {
+      "Lemma/Platform/LemmaSim/MultimodalService.lean": "74cac42b9123b0981cf6fdcfecb9e4d4f884a5c1412d1a1da57ceb079854e6e0",
+      "Lemma/User/Multimodal.lean": "dd3500b3d3264c3574f90ef2cbf8a18170b986a302ffa5e51d0b858fae3991f7",
+      "Lemma/Applications/Notebook.lean": "b7935c1cf06b5d0feb16e10a22f784f2b96470512de02c45a01f6c83b0c14957"
+    },
+    "fresh_module_build": {
+      "log": "build/task009/mm-audio-consumer-draft-a1/admitted-comparisons-build.log",
+      "sha256": "276814e8175c1ec085d7b3d8b5bf72ba2e785c1b512f50f809b21735c6a5efff",
+      "result": "PASS_113_JOBS",
+      "changed_Service_seconds": 5.3,
+      "changed_User_seconds": 5.3,
+      "changed_Notebook_seconds": 10
+    },
+    "results": [
+      {
+        "receipt": "build/task009/mm-owned-record-admitted-a1/result.json",
+        "sha256": "8fc0bb1e8b7d2795bd46393f5e5db6b11653d36fed4d8ddb17f80d2454e5d9e7",
+        "status": "PASS_HOSTED_OWNED_IO_ACTIONS",
+        "seconds": 40.431884285993874,
+        "source_inputs": {
+          "Lemma/Platform/LemmaSim/MultimodalService.lean": "74cac42b9123b0981cf6fdcfecb9e4d4f884a5c1412d1a1da57ceb079854e6e0",
+          "tests/multimodal/OwnedRecordActions.lean.inc": "1ce0a2d011001fcb3ea3b97dd1735a9025a77115c0406d3e8d6da3d806f65504",
+          "scripts/check_multimodal_owned_io.py": "49d538a54fd0205b3abc9778f24feb1c6c7ff0e38b90d544bfaa9a7c3af76e6a"
+        }
+      },
+      {
+        "receipt": "build/task009/mm-audio-admitted-a1/result.json",
+        "sha256": "58dc18d91399e95fd812df02f58cb497c491b5be5091fb0b97224aeec7c462cc",
+        "status": "PASS_HOSTED_NOTEBOOK_AUDIO_ACTIONS",
+        "seconds": 25.91386964789126,
+        "source_inputs": {
+          "Lemma/User/Multimodal.lean": "dd3500b3d3264c3574f90ef2cbf8a18170b986a302ffa5e51d0b858fae3991f7",
+          "tests/multimodal/NotebookAudioActions.lean.inc": "38e6c0ea73d74d5594db7f2c67da3f119e5595574923d65ee3d9a8a2c2d73c8f",
+          "scripts/lean_export_host.py": "c9e989f302ce176a0467a2837d5108563b0caa59d5c7b5bd089eec35b8469b9d",
+          "scripts/check_multimodal_audio.py": "0cffea72b72763152871b979c3191b82f688f9819fbd8e0c52cc93a6d672d0e0"
+        }
+      }
+    ],
+    "positive_regressions": [
+      {
+        "log": "build/task009/mm-audio-consumer-draft-a1/admitted-comparisons-NotebookSchool.log",
+        "sha256": "d6fbec6d8599d4e43af4ac271089dd588916c6a8cb653160dfd7999210e8e512",
+        "status": "PASS_ACTUAL_ACTIONS"
+      },
+      {
+        "log": "build/task009/mm-audio-consumer-draft-a1/admitted-comparisons-UI.log",
+        "sha256": "5d5576c87bd07e9201a351d2cb644c6d5ae3af1639efe5c4b5c6e1e682a74fcc",
+        "status": "PASS_ACTUAL_ACTIONS"
+      }
+    ]
+  },
+  "observation_note": "Retained UI console footer says23tiles; its executed source assertions check all28 and extent1264. No footer text is used as a routing, timing or presentation claim."
 }

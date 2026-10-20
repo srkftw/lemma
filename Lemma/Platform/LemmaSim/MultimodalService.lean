@@ -158,7 +158,7 @@ private def reclaimRetiredRecord : Action :=
   .bind (get (row stream + 16)) fun s bits => if mmFailed s = true then fatal else
   .bind (get (row stream + 24)) fun s expiry => if mmFailed s = true then fatal else
   .bind now fun s ticks => if mmFailed s = true then .done s 0 else
-  if oldEpoch = actualEpoch then if bits ≠ 0 then if ticks < expiry then .done 6 0
+  if oldEpoch = actualEpoch then if mmDifferent (bits) (0) = true then if ticks < expiry then .done 6 0
     else reclaim stream else reclaim stream else reclaim stream
 where
   reclaim (stream : UInt64) : Action :=
@@ -175,7 +175,7 @@ private def beginRecord (descriptor stream pointer epoch : UInt64) : Action :=
   .bind (current stream epoch 3) fun s _ => if mmFailed s = true then .done s 0 else
   .bind reclaimRetiredRecord fun s _ => if mmFailed s = true then .done s 0 else
   .bind (Lemma.Drivers.Multimodal.read stream 16) fun s fault => if mmFailed s = true then .done s 0 else
-  if fault ≠ 0 then .done (faultStatus fault) 0 else
+  if mmDifferent (fault) (0) = true then .done (faultStatus fault) 0 else
   .bind (get (row stream + 32)) fun s remaining => if mmFailed s = true then fatal else
   if remaining < 64 then .done 9 0 else
   .bind (UserCopy.validateWrite descriptor pointer 64) fun s _ => if mmFailed s = true then .done s 0 else
@@ -200,29 +200,29 @@ private def beginRecord (descriptor stream pointer epoch : UInt64) : Action :=
 private def finishRecord (descriptor stream pointer epoch : UInt64) : Action :=
   if 8 ≤ stream then .done 2 0 else
   .bind (get 40) fun s active => if mmFailed s = true then fatal else
-  if active ≠ stream + 1 then .done 5 0 else
+  if mmDifferent (active) (stream + 1) = true then .done 5 0 else
   .bind (get 24) fun s owner => if mmFailed s = true then fatal else
   .bind (get 32) fun s destination => if mmFailed s = true then fatal else
   .bind (get 48) fun s requestedEpoch => if mmFailed s = true then fatal else
-  if owner ≠ descriptor then .done 7 0 else
-  if destination ≠ pointer then .done 4 0 else
-  if requestedEpoch ≠ epoch then .done 4 0 else
+  if mmDifferent (owner) (descriptor) = true then .done 7 0 else
+  if mmDifferent (destination) (pointer) = true then .done 4 0 else
+  if mmDifferent (requestedEpoch) (epoch) = true then .done 4 0 else
   .bind (Lemma.Drivers.Multimodal.read stream 184) fun s status => if mmFailed s = true then .done s 0 else
   if status = 1 then .done 6 0 else
-  if status ≠ 2 then .bind releaseRecord fun s _ => if mmFailed s = true then fatal else .done 5 0 else
+  if mmDifferent (status) (2) = true then .bind releaseRecord fun s _ => if mmFailed s = true then fatal else .done 5 0 else
   .bind (current stream epoch 3) fun s _ =>
   if mmFailed s = true then .bind releaseRecord fun cleanup _ => if mmFailed cleanup = true then fatal else .done s 0 else
   .bind (Lemma.Drivers.Multimodal.read stream 16) fun s fault =>
   if mmFailed s = true then .bind releaseRecord fun cleanup _ => if mmFailed cleanup = true then fatal else .done s 0 else
-  if fault ≠ 0 then .bind releaseRecord fun cleanup _ => if mmFailed cleanup = true then fatal else .done (faultStatus fault) 0 else
+  if mmDifferent (fault) (0) = true then .bind releaseRecord fun cleanup _ => if mmFailed cleanup = true then fatal else .done (faultStatus fault) 0 else
   .bind (get 16) fun s handle => if mmFailed s = true then fatal else
   .bind (Frames.resolvePurpose 1 handle 1) fun s address => if mmFailed s = true then fatal else
   .bind (get 56) fun s expectedSequence => if mmFailed s = true then fatal else
   .bind (get (row stream + 48)) fun s expectedEpoch => if mmFailed s = true then fatal else
   .bind (Access.read64 (address + 32)) fun s sequence => if mmFailed s = true then fatal else
   .bind (Access.read64 (address + 40)) fun s actualEpoch => if mmFailed s = true then fatal else
-  if sequence ≠ expectedSequence then .bind releaseRecord fun _ _ => .done 4 0 else
-  if actualEpoch ≠ expectedEpoch then .bind releaseRecord fun _ _ => .done 4 0 else
+  if mmDifferent (sequence) (expectedSequence) = true then .bind releaseRecord fun _ _ => .done 4 0 else
+  if mmDifferent (actualEpoch) (expectedEpoch) = true then .bind releaseRecord fun _ _ => .done 4 0 else
   .bind (UserCopy.copyToUser descriptor pointer handle 0 64) fun s _ =>
   if mmFailed s = true then .bind releaseRecord fun cleanup _ => if mmFailed cleanup = true then fatal else .done s 0 else
   .bind (get (row stream + 32)) fun s remaining => if mmFailed s = true then fatal else
@@ -241,18 +241,18 @@ private def pcmStep (i _ : UInt32) (accepted data epoch _ _ : UInt64) : Action :
   if before = 0xffffffffffffffff then .done 14 accepted else
   .bind (Lemma.Drivers.Multimodal.write 8 112 (low + high * 256)) fun s _ => if mmFailed s = true then .done s accepted else
   .bind (Lemma.Drivers.Multimodal.read 8 240) fun s after => if mmFailed s = true then .done s accepted else
-  if after ≠ before + 1 then .done 6 accepted else .done 0 (accepted + 1)
+  if mmDifferent (after) (before + 1) = true then .done 6 accepted else .done 0 (accepted + 1)
 
 private def pcmBatch (descriptor stream pointer epoch : UInt64) : Action :=
-  if stream ≠ 8 then .done 2 0 else
+  if mmDifferent (stream) (8) = true then .done 2 0 else
   .bind (current 8 epoch 64) fun s _ => if mmFailed s = true then .done s 0 else
   .bind (metadata descriptor pointer 32) fun s data => if mmFailed s = true then .done s 0 else
   .bind (Access.read64 data) fun s magic => if mmFailed s = true then fatal else
   .bind (Access.read64 (data + 8)) fun s format => if mmFailed s = true then fatal else
   .bind (Access.read64 (data + 16)) fun s count => if mmFailed s = true then fatal else
   .bind (Access.read64 (data + 24)) fun s reserved => if mmFailed s = true then fatal else
-  if magic ≠ 0x31424350 then .done 2 0 else if format ≠ 1 then .done 2 0 else
-  if reserved ≠ 0 then .done 2 0 else if count = 0 then .done 3 0 else if 16 < count then .done 3 0 else
+  if mmDifferent (magic) (0x31424350) = true then .done 2 0 else if mmDifferent (format) (1) = true then .done 2 0 else
+  if mmDifferent (reserved) (0) = true then .done 2 0 else if count = 0 then .done 3 0 else if 16 < count then .done 3 0 else
   .bind (get (row 8 + 32)) fun s remaining => if mmFailed s = true then fatal else
   if remaining < count * 8 then .done 9 0 else
   .bind (Lemma.Drivers.Multimodal.read 8 144) fun s queued => if mmFailed s = true then .done s 0 else
@@ -300,10 +300,10 @@ def call (descriptor handle operation stream pointer epoch : UInt64) : Action :=
   if operation = 14 then pcmBatch descriptor stream pointer epoch else
   if operation = 15 then if stream = 8 then Lemma.Drivers.Multimodal.read 8 232 else .done 2 0 else
   if operation = 16 then
-    if stream ≠ 8 then .done 2 0 else
+    if mmDifferent (stream) (8) = true then .done 2 0 else
     .bind (current 8 epoch 64) fun s _ => if mmFailed s = true then .done s 0 else Lemma.Drivers.Multimodal.command 8 3
   else if operation = 17 then
-    if stream ≠ 8 then .done 2 0 else
+    if mmDifferent (stream) (8) = true then .done 2 0 else
     .bind (current 8 epoch 64) fun s _ => if mmFailed s = true then .done s 0 else Lemma.Drivers.Multimodal.command 8 4
   else if operation = 18 then .done 0 version else .done 2 0
   else .done 2 0
