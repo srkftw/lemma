@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T07:51:43.542364+00:00",
+  "written_at": "2026-10-20T11:27:05.475162+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -1357,6 +1357,18 @@
       },
       "status": "PASS_REJECTED_UNRELATED_MAPPING_BEFORE_EXTERNAL_TOOL",
       "scope": "Real retained route and separate mapping receipt; admission-only negative, not process or guest execution."
+    },
+    "typed_BPin_writer_guard": {
+      "qualified_private_actual_export": {
+        "path": "build/silicon/task009-pinned-bpin-writer-type-prep-a1/result.json",
+        "sha256": "60f6185c1503431b1095cfd673184ac14858f518bd601c1958cfa4f30cb8258a"
+      },
+      "maintained_source": {
+        "path": "scripts/silicon_access_writer.py",
+        "sha256": "8ae2ecd0d7bd6d031e8c6d9dccac35240b34817d4d6c466092f1417df99cec84"
+      },
+      "status": "PASS_ACTUAL_LITERAL_COPY_WITH_EXACT_JSON_TYPES_AND_CLOSED_SCHEMA",
+      "scope": "Independentreview found Pythonbool/int/floatcoercion hole. Exactoriginalprefix,clones,vectors,owners andclosedknownmetadata now reject sevenconsequentialrepresentationnegatives; originalroutecohortbeforebytes/exporteralready pinned. No route evidence changed."
     }
   },
   "remaining": {
@@ -2169,28 +2181,32 @@
   "selected_implementation": {
     "authority": {
       "path": "tooling/silicon/physical-lock.json",
-      "sha256": "d3d8029d36cae1b9b232d0ca902afa01982dab1b08b3182d9957d7dcef82da6b"
+      "sha256": "a5d07fb1921db893de4b7ef534a51ec791435d77eb01f02173899bc317a3b40f"
     },
-    "version": "lemma-pen-sg13g2-padded-sram-grid/1",
+    "version": "lemma-pen-sg13g2-native-margin-grid/1",
     "status": "FAIL_PHYSICAL_CLOSURE",
     "selected_geometry": {
-      "path": "build/silicon/task009-padded-sram-hold-route-a2/result.json",
-      "sha256": "66055d34758565d7e7c1c1803f18fc1361ff5be06c236b3c12b1cd507fc75518"
+      "path": "build/silicon/task009-native-margin-route-a1/result.json",
+      "sha256": "ea856edd1f34d675670c7b842ac2cd77368d0e7cfbb05443b03b55ea1e719494"
     },
     "fresh_current_lock_protocol_and_mapping": {
-      "path": "build/silicon/task009-padded-selection-current-map-a1/result.json",
-      "sha256": "db53d3feccd72a05c1de42f6ade64c71819d120f03f7e1be83f0541c15cd9a9e"
+      "path": "build/silicon/task009-native-margin-selected-current-map-a1/result.json",
+      "sha256": "aa964a1b9bec1c000320ab847c5fc5170ea7dc772068a69795cb06f8f043ef04"
     },
-    "mapping_seconds": 7.6922662609722465,
-    "mapping_relation": {
-      "path": "build/silicon/task009-padded-selection-admission-a1/result.json",
-      "sha256": "3850fe7310ab15eb9ffd0799379b5fdfd8ab8bdb8eb42ecf9fc6b7e43703a006"
+    "mapping_seconds": 5.952199219958857,
+    "original_mapping_wrapper_observer_failure": {
+      "path": "build/silicon/task009-native-margin-selection-map-admission-a1/observer-failure.txt",
+      "sha256": "4e2efede7593a87309ab4fba8cd0474fb63c069a039c3e96c2c1f09bd7b8601a"
+    },
+    "mapping_completed_byte_assessment": {
+      "path": "build/silicon/task009-native-margin-selection-map-assessment-a1/result.json",
+      "sha256": "b020531457542ecfa5eabaa44376388634c76517e23edc4933813d2550c2afc3"
     },
     "selected_source_admission": {
-      "path": "build/silicon/task009-padded-selection-admission-a1/selected-source-admission.json",
-      "sha256": "0744ea84e678af52bee5398e14da6d926088bb4bb7c1d7db5f6270401609f053"
+      "path": "build/silicon/task009-native-margin-selection-map-assessment-a1/selected-source-admission.json",
+      "sha256": "def012e27adaeccf6a865dcbeeb153f6a7d9a8f53502963f9c297e6e6b166816"
     },
-    "source_boundary": "Original actual route/corner archives keep0.3.1/3923 source. New0.4.0 selects exact final paddedgeometry/33delay relation and retains old115paddingFAIL historically. Native0.15/0.16 258/259inputsourcearchives keep their ownphysical-lock identities; no runtime is relabeled or rebuilt solelyfor thisphysicalmetadata. Freshmapping changesonlylockinput and yieldsbyteidentical0781e43d."
+    "source_boundary": "Measuredroute/corner sources are sealed under the original0.4.0 lock and immutableproducerarchives. This0.5.0 selects their exact physicalimplementation relation; it neither relabels earlier runtime/guest/native/browser builds nor qualifies fullprocess/timing."
   },
   "full_PG_geometry_candidate": {
     "status": "UNSELECTED_ROUTING_TIMING_ELECTRICAL_FAIL",
@@ -5160,5 +5176,480 @@
     "source_seal_equal": true,
     "owned_processes_reaped": true,
     "limit": "Original fullprocessDRC remains unfinished. No count/qualification from timeout, ruleidentity or smallcontrols; extraction/LVS notrun."
+  },
+  "previous_selected_padded30": {
+    "authority": {
+      "path": "tooling/silicon/physical-lock.json",
+      "sha256": "d3d8029d36cae1b9b232d0ca902afa01982dab1b08b3182d9957d7dcef82da6b"
+    },
+    "version": "lemma-pen-sg13g2-padded-sram-grid/1",
+    "status": "FAIL_PHYSICAL_CLOSURE",
+    "selected_geometry": {
+      "path": "build/silicon/task009-padded-sram-hold-route-a2/result.json",
+      "sha256": "66055d34758565d7e7c1c1803f18fc1361ff5be06c236b3c12b1cd507fc75518"
+    },
+    "fresh_current_lock_protocol_and_mapping": {
+      "path": "build/silicon/task009-padded-selection-current-map-a1/result.json",
+      "sha256": "db53d3feccd72a05c1de42f6ade64c71819d120f03f7e1be83f0541c15cd9a9e"
+    },
+    "mapping_seconds": 7.6922662609722465,
+    "mapping_relation": {
+      "path": "build/silicon/task009-padded-selection-admission-a1/result.json",
+      "sha256": "3850fe7310ab15eb9ffd0799379b5fdfd8ab8bdb8eb42ecf9fc6b7e43703a006"
+    },
+    "selected_source_admission": {
+      "path": "build/silicon/task009-padded-selection-admission-a1/selected-source-admission.json",
+      "sha256": "0744ea84e678af52bee5398e14da6d926088bb4bb7c1d7db5f6270401609f053"
+    },
+    "source_boundary": "Original actual route/corner archives keep0.3.1/3923 source. New0.4.0 selects exact final paddedgeometry/33delay relation and retains old115paddingFAIL historically. Native0.15/0.16 258/259inputsourcearchives keep their ownphysical-lock identities; no runtime is relabeled or rebuilt solelyfor thisphysicalmetadata. Freshmapping changesonlylockinput and yieldsbyteidentical0781e43d."
+  },
+  "selected_native_margin_capacity_ECO": {
+    "status": "SELECTED_UNFINISHED_IMPLEMENTATION_ALL9_TIMING_ELECTRICAL_FAIL",
+    "whole_campaign": {
+      "path": "build/silicon/task009-native-margin-admission-a1/result.json",
+      "sha256": "3e9e44e365101dd8e90e71491216c2b255f484545e5da5f0bedbdb4d0a5af638"
+    },
+    "whole_seconds": 890.3153012308758,
+    "original_deadline_met": true,
+    "owned_processes_reaped": true,
+    "route": {
+      "path": "build/silicon/task009-native-margin-route-a1/result.json",
+      "sha256": "ea856edd1f34d675670c7b842ac2cd77368d0e7cfbb05443b03b55ea1e719494"
+    },
+    "route_seconds": 865.8598011040594,
+    "source_archive": {
+      "path": "build/silicon/task009-native-margin-route-a1/source-archive/manifest.json",
+      "sha256": "449c5ab2765100d659921585882da03c4fe0943ac9d02ce07e644bdfce493121"
+    },
+    "completed_outer_source_preservation": {
+      "path": "build/silicon/task009-native-margin-admission-a1/completed-source-preservation.json",
+      "sha256": "b0d188163f8264fad3980a01b98775ad36bc6d291747875c124f0ecb90e9ad72"
+    },
+    "router": {
+      "status": "PASS",
+      "violations": 0,
+      "scope": "Detailed-router geometric checks; separate from process DRC"
+    },
+    "geometry": {
+      "path": "build/silicon/task009-native-margin-route-a1/padded-hold-endpoints.json",
+      "sha256": "2e4fe4700f9ad2993281d197e3c817965e87c5c7558e6148934a39e395679576"
+    },
+    "native420_margin": {
+      "path": "build/silicon/task009-native-margin-route-a1/native-power-margin.json",
+      "sha256": "1f231dd6d52ccf69da6f90b61cce2f0302b12731f98df3adb7b87f9c9f0103d3"
+    },
+    "native420_scope": {
+      "status": "PASS_ACTUAL_NATIVE420NM_RECTANGLE_SUBSET_ONLY",
+      "scope": "Actual signal metal versus native PG: original420nm rectangle subset only.\n\nRun check() inside the pinned OpenROAD Python interpreter. Every DEF segment,\nvia and patch binds the actual native wire decoder; unknown grammar fails.\nNo process DRC/LVS/connectivity/IR/EM/timing qualification follows.\n",
+      "native_signal_nets_bound": 9700,
+      "native_wire_via_patch_shapes_checked": 168372,
+      "actual_DEF_RECT_patches_bound": 11162,
+      "unique_native_PG_metal_rectangles": 13418,
+      "violation_pairs": 0,
+      "first_200_violation_pairs": [],
+      "not_checked": [
+        "process DRC/EOL/area/density/antenna",
+        "full connected layout/netlist comparison",
+        "timing",
+        "IR/EM",
+        "pads/package/board"
+      ]
+    },
+    "power": {
+      "before-route": {
+        "status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+        "macro_power_pins": 9,
+        "preserved_BIST_pins": 423,
+        "all_power_terminals": 18071,
+        "voltages_V": {
+          "VDDlogic": 1.2,
+          "VDDARRAY": 1.2,
+          "VSS": 0
+        }
+      },
+      "after-route": {
+        "status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+        "macro_power_pins": 9,
+        "preserved_BIST_pins": 423,
+        "all_power_terminals": 18071,
+        "voltages_V": {
+          "VDDlogic": 1.2,
+          "VDDARRAY": 1.2,
+          "VSS": 0
+        }
+      }
+    },
+    "original_via_enclosure_subset": {
+      "status": "PASS_FIXED_VIA_INTRINSIC_ENCLOSURE",
+      "scope": "Cover the demonstrated router fixed-via enclosure gap on actual DEF routes.\n\nChecks intrinsic fixed-via metal/cut unions against the original process simple\nenclosure rules. Additional same-net wire metal can only increase enclosure.\nGenerated DEF arrays require explicit admission against the original generator\nand every individual cut's enclosure. Unfamiliar clauses fail closed. This is\nan independent sufficient check of this subset, never complete process DRC.\n",
+      "technology_sha256": "fb6f0aa5647efc822ad6551a11b57002a278d7d3f98ac20a12cb9f7a65e81d2d",
+      "routed_def_sha256": "a07ad25df0ef3512d3a88030dcfed784bd01f499a8ba2f7006ee2ca742fcc8a3",
+      "routed_nets": 9703,
+      "via_instances": 70094,
+      "via_counts": {
+        "Via1_YY": 15000,
+        "Via2_YX": 27387,
+        "Via3_XY": 4208,
+        "Via4_YX": 1635,
+        "Via1_XY": 11170,
+        "via5_6_4000_2500_2_4_840_840": 443,
+        "via4_5_2810_2500_5_6_480_480": 1772,
+        "via6_7_4000_4000_2_2_1960_1960": 182,
+        "via5_6_2560_2500_2_2_840_840": 6,
+        "via4_5_2810_1295_3_6_480_480": 64,
+        "via4_5_1200_2500_5_2_480_480": 277,
+        "via3_4_1200_330_1_2_480_480": 2650,
+        "via2_3_1200_330_1_2_480_480": 2650,
+        "via1_2_1200_330_1_2_480_480": 2650
+      },
+      "fixed_definition_rule_checks": 364,
+      "violations": [],
+      "generated_array_definitions": 9,
+      "specialnet_geometry_checked": true,
+      "uncovered": [
+        "cell/macro internal cuts",
+        "wire spacing/width/area",
+        "connectivity",
+        "antenna",
+        "all other process rules"
+      ]
+    },
+    "original_Via1_controls_reused": "OriginalimmutableMagicbad1/repaired0androuteremptyreportfalse-negative receipts remain under known_via_gap; no unchangedfullprocess/LVS rerun. All70094actualsignal/specialvias newlyassessed with364fixeddefinition checks and9originalgeneratedarraydefinitions. Internalcell/macro cuts and remainingprocessrules unfinished.",
+    "fresh3RC": {
+      "min": {
+        "status": "EXTRACTED",
+        "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+        "spef_sha256": "25027bf783354c0bbeca1357a1e2ee0e100fa0efacd8763b4d95501493c855cf",
+        "setup": "worst slack max -7.070715",
+        "hold": "worst slack min -0.016500",
+        "electrical_violations": 95
+      },
+      "nom": {
+        "status": "EXTRACTED",
+        "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+        "spef_sha256": "0e746107af1d5267d58ee0bfd65220190c1be88a6479fbe543894d0a66b1637f",
+        "setup": "worst slack max -8.702966",
+        "hold": "worst slack min 0.041933",
+        "electrical_violations": 165
+      },
+      "max": {
+        "status": "EXTRACTED",
+        "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+        "spef_sha256": "1178697cf9118dd814c6cbdeb21ac70c0f50f9350ca76f68af8e793709d7d938",
+        "setup": "worst slack max -10.219812",
+        "hold": "worst slack min 0.057747",
+        "electrical_violations": 243
+      }
+    },
+    "corners": {
+      "path": "build/silicon/task009-native-margin-corners-a1/result.json",
+      "sha256": "59df3bfc0ddb8318b46d823e2765bf9fd323180aee17e461240026445c3b69bc"
+    },
+    "corner_seconds": 23.43857441889122,
+    "all9_cases": [
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "min",
+        "setup_ns": -7.070715,
+        "hold_ns": -0.0165,
+        "electrical_violations": 95,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -8.702966,
+        "hold_ns": 0.041933,
+        "electrical_violations": 165,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "max",
+        "setup_ns": -10.219812,
+        "hold_ns": 0.057747,
+        "electrical_violations": 243,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "min",
+        "setup_ns": -15.7353,
+        "hold_ns": -0.027729,
+        "electrical_violations": 263,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -18.23982,
+        "hold_ns": 0.049295,
+        "electrical_violations": 343,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "max",
+        "setup_ns": -20.556904,
+        "hold_ns": 0.126982,
+        "electrical_violations": 448,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "min",
+        "setup_ns": -2.100144,
+        "hold_ns": -0.054472,
+        "electrical_violations": 61,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "nom",
+        "setup_ns": -3.185141,
+        "hold_ns": -0.082825,
+        "electrical_violations": 108,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "max",
+        "setup_ns": -4.214121,
+        "hold_ns": -0.136229,
+        "electrical_violations": 152,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      }
+    ],
+    "comparison_against_padded30": [
+      {
+        "corner": "typical",
+        "RC": "min",
+        "matched_PVT": true,
+        "old": {
+          "setup_ns": -11.16018,
+          "hold_ns": -0.166896,
+          "electrical_violations": 602
+        },
+        "new": {
+          "setup_ns": -7.070715,
+          "hold_ns": -0.0165,
+          "electrical_violations": 95
+        },
+        "setup_improves": true,
+        "hold_improves": true,
+        "electrical_improves": true
+      },
+      {
+        "corner": "typical",
+        "RC": "nom",
+        "matched_PVT": true,
+        "old": {
+          "setup_ns": -13.563163,
+          "hold_ns": -0.14329,
+          "electrical_violations": 770
+        },
+        "new": {
+          "setup_ns": -8.702966,
+          "hold_ns": 0.041933,
+          "electrical_violations": 165
+        },
+        "setup_improves": true,
+        "hold_improves": true,
+        "electrical_improves": true
+      },
+      {
+        "corner": "typical",
+        "RC": "max",
+        "matched_PVT": true,
+        "old": {
+          "setup_ns": -15.682097,
+          "hold_ns": -0.117361,
+          "electrical_violations": 918
+        },
+        "new": {
+          "setup_ns": -10.219812,
+          "hold_ns": 0.057747,
+          "electrical_violations": 243
+        },
+        "setup_improves": true,
+        "hold_improves": true,
+        "electrical_improves": true
+      },
+      {
+        "corner": "slow",
+        "RC": "min",
+        "matched_PVT": true,
+        "old": {
+          "setup_ns": -24.156607,
+          "hold_ns": -0.204045,
+          "electrical_violations": 1153
+        },
+        "new": {
+          "setup_ns": -15.7353,
+          "hold_ns": -0.027729,
+          "electrical_violations": 263
+        },
+        "setup_improves": true,
+        "hold_improves": true,
+        "electrical_improves": true
+      },
+      {
+        "corner": "slow",
+        "RC": "nom",
+        "matched_PVT": true,
+        "old": {
+          "setup_ns": -28.530518,
+          "hold_ns": -0.164805,
+          "electrical_violations": 1534
+        },
+        "new": {
+          "setup_ns": -18.23982,
+          "hold_ns": 0.049295,
+          "electrical_violations": 343
+        },
+        "setup_improves": true,
+        "hold_improves": true,
+        "electrical_improves": true
+      },
+      {
+        "corner": "slow",
+        "RC": "max",
+        "matched_PVT": true,
+        "old": {
+          "setup_ns": -32.423283,
+          "hold_ns": -0.121891,
+          "electrical_violations": 1851
+        },
+        "new": {
+          "setup_ns": -20.556904,
+          "hold_ns": 0.126982,
+          "electrical_violations": 448
+        },
+        "setup_improves": true,
+        "hold_improves": true,
+        "electrical_improves": true
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "RC": "min",
+        "matched_PVT": false,
+        "old": {
+          "setup_ns": -4.191071,
+          "hold_ns": -0.163944,
+          "electrical_violations": 426
+        },
+        "new": {
+          "setup_ns": -2.100144,
+          "hold_ns": -0.054472,
+          "electrical_violations": 61
+        },
+        "setup_improves": true,
+        "hold_improves": true,
+        "electrical_improves": true
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "RC": "nom",
+        "matched_PVT": false,
+        "old": {
+          "setup_ns": -5.574559,
+          "hold_ns": -0.140054,
+          "electrical_violations": 533
+        },
+        "new": {
+          "setup_ns": -3.185141,
+          "hold_ns": -0.082825,
+          "electrical_violations": 108
+        },
+        "setup_improves": true,
+        "hold_improves": true,
+        "electrical_improves": true
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "RC": "max",
+        "matched_PVT": false,
+        "old": {
+          "setup_ns": -6.804926,
+          "hold_ns": -0.11589,
+          "electrical_violations": 627
+        },
+        "new": {
+          "setup_ns": -4.214121,
+          "hold_ns": -0.136229,
+          "electrical_violations": 152
+        },
+        "setup_improves": true,
+        "hold_improves": false,
+        "electrical_improves": true
+      }
+    ],
+    "hold_inventory": {
+      "path": "build/silicon/task009-native-margin-hold-inventory-a2/result.json",
+      "sha256": "1b67a3edf9acdce281bc8527be84fdeb3b5744bf71ec7b497804ef1c233a0989"
+    },
+    "hold_inventory_seconds": 26.400963993975893,
+    "failed_initial_inventory_observer": {
+      "path": "build/silicon/task009-native-margin-hold-inventory-a1/result.json",
+      "sha256": "8fb1a993d18432d5bfea1bd22c622af32ffbfba35d3ae317660f93e250820a66"
+    },
+    "hold_effect": {
+      "all31_targeted_inputs_positive_in_all9": true,
+      "minimum_target_hold_ns": 0.0529,
+      "minimum_target_setup_ns": 7.471788,
+      "negative_endpoints_union": 156,
+      "negative_classes": {
+        "OLD_CONTROL147": 135,
+        "OTHER": 18,
+        "NEW_SRAM": 3
+      },
+      "matched_typical_slow_min_only_failure": "pen_sram_lane2/A_DIN[39]",
+      "all9_machine_timing": "FAIL"
+    },
+    "regressions": [
+      "Mixed-temperature fast/maxRC hold−.115890→−.136229ns; this is not a matched fast signoff corner.",
+      "The31 delayed SRAM inputs retain positive setup but their minimum margin7.534358→7.471788ns.",
+      "All9 available timing/electrical cases FAIL; matched typical/slow minimumRC each retain lane2DIN39 hold failures−.016500/−.027729ns. Mixed-temperature register hold remains.",
+      "Zero router count, independent native420nm margin and via-enclosure subsets do not establish fullprocess DRC, transistor LVS, IR/EM or physical qualification."
+    ],
+    "remaining": [
+      "Original10ns setup/hold/electrical closure;156 negativehold endpoints across all available cases (3SRAM+153registers).",
+      "Fulloriginalprocess DRC and transistor LVS; retained bounded full-layout failures remain unresolved.",
+      "Matched-temperature fast standard-cell/SRAM pair; original public libraries have differentfast temperatures.",
+      "Power integrity, SRAM BIST/test access beyond preserved tiedoff bindings, pads, package and board.",
+      "FullSoC working RAM/framebuffer/NV/compute/interconnect and sensor active-circuit implementation; fabrication, safety and educational qualification."
+    ],
+    "worst_nominal_setup": {
+      "start": "sample_time[10]",
+      "endpoint": "_09754_/D",
+      "arrival_ns": 19.353842,
+      "required_ns": 10.650876,
+      "slack_ns": -8.702966,
+      "largest_stage": "_08936_/Y sg13g2_nor4_2",
+      "largest_stage_ns": 2.976149,
+      "report": {
+        "path": "build/silicon/task009-native-margin-route-a1/nom-setup.rpt",
+        "sha256": "c7ac9e5e13ef489b5541d120d0be480480dfd53baa003cf9c2e2f25e05bcd837"
+      }
+    },
+    "mapped_behavior_scope": "Original504fRTL and capacity/acceptededge/ack/reset/loss protocol unchanged. OriginalLib noninverting chains prove each newbuffer/delay relation; preparedgeometry preservesfull668ports/3macros/33delays/3controlbufs/327capacitybufs/960nmpadding/423BIST and nativePG/OBS exactly through routing. Fulltransistorlayout-netlist comparison remains unfinished."
   }
 }

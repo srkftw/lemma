@@ -14,37 +14,52 @@ from pathlib import Path
 from silicon_access_metadata import require
 
 
+METADATA_KEYS = {'schema','scope','block','db_units_per_micron','access_points',
+                 'master_pin_patterns','instance_terminals','block_terminals'}
+
+
+def exact(left, right):
+    """JSON literal equality; bool/int and integral-float substitutions differ."""
+    if type(left) is not type(right):return False
+    if isinstance(left,dict):
+        return left.keys()==right.keys() and all(exact(left[k],right[k])for k in left)
+    if isinstance(left,(list,tuple)):
+        return len(left)==len(right) and all(exact(a,b)for a,b in zip(left,right))
+    return left==right
+
+
 def relation(before, after):
-    require(set(before) == set(after), 'router changed metadata fields')
+    require(set(before) == set(after) == METADATA_KEYS, 'closed pinned metadata schema')
+    require(before['schema']=='lemma-opendb-access-export/1' and type(before['db_units_per_micron'])is int and before['db_units_per_micron']==1000, 'pinned schema/units')
     for key in before:
         if key not in ('access_points', 'block_terminals'):
-            require(before[key] == after[key], 'router changed original ' + key)
+            require(exact(before[key],after[key]), 'router changed original ' + key)
     original, final = before['access_points'], after['access_points']
-    require(final[:len(original)] == original, 'router changed/deleted original AP records')
+    require(exact(final[:len(original)],original), 'router changed/deleted original AP records')
     ids = [a['id'] for a in original]
     require(ids and len(ids) == len(set(ids)) and all(type(i) is int and i > 0 for i in ids), 'invalid original AP identity')
     original_by_id = {a['id']: a for a in original}
     added = final[len(original):]
-    require([a['id'] for a in added] == list(range(max(ids)+1, max(ids)+1+len(added))), 'nonconsecutive/duplicate added AP identities')
+    require(all(type(a['id'])is int for a in added) and [a['id'] for a in added] == list(range(max(ids)+1, max(ids)+1+len(added))), 'nonconsecutive/duplicate added AP identities')
     added_by_id = {a['id']: a for a in added}
     require(len(before['block_terminals']) == len(after['block_terminals']), 'router changed block pin inventory')
     used = set(); copied = 0; extended = 0
     owners = set()
     for old, new in zip(before['block_terminals'], after['block_terminals']):
         require(set(old) == set(new) == {'terminal', 'bpin_id', 'access'}, 'unexpected block pin fields')
-        require((old['terminal'], old['bpin_id']) == (new['terminal'], new['bpin_id']), 'router changed/reordered BPin owner')
+        require(exact((old['terminal'],old['bpin_id']),(new['terminal'],new['bpin_id'])), 'router changed/reordered BPin owner')
         owner_key = (old['terminal'], old['bpin_id'])
         require(owner_key not in owners, 'duplicate BPin owner'); owners.add(owner_key)
         old_ids = old['access']; new_ids = new['access']
         require(len(old_ids) == len(set(old_ids)), 'duplicate original BPin AP')
-        require(new_ids[:len(old_ids)] == old_ids and len(new_ids) == 2*len(old_ids), 'expected exactly one BPin AP copy')
+        require(exact(new_ids[:len(old_ids)],old_ids) and all(type(i)is int for i in new_ids) and len(new_ids) == 2*len(old_ids), 'expected exactly one BPin AP copy')
         expected_owner = {'kind':'block_pin', 'bterm':old['terminal'], 'bpin_id':old['bpin_id']}
         for old_id, new_id in zip(old_ids, new_ids[len(old_ids):]):
             require(old_id in original_by_id and new_id in added_by_id and new_id not in used, 'missing/shared/wrong added BPin AP')
             source, clone = original_by_id[old_id], added_by_id[new_id]
-            require(source['owner'] == expected_owner and clone['owner'] == expected_owner, 'BPin AP owner changed')
-            require({k:v for k,v in source.items() if k != 'id'} ==
-                    {k:v for k,v in clone.items() if k != 'id'}, 'BPin copy changed point/layer/via/segment/direction')
+            require(exact(source['owner'],expected_owner) and exact(clone['owner'],expected_owner), 'BPin AP owner changed')
+            require(exact({k:v for k,v in source.items() if k != 'id'},
+                          {k:v for k,v in clone.items() if k != 'id'}), 'BPin copy changed point/layer/via/segment/direction')
             used.add(new_id); copied += 1
         extended += bool(old_ids)
     require(used == set(added_by_id) and copied == len(added), 'unbound extra AP records')

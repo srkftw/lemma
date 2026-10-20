@@ -124,10 +124,11 @@ def require_control_launch_recipe(args):
                 'three control launches require exact finite-qualified geometry, original padded30 baseline and fresh8 routing only')
 
 
-def require_capacity_launch_recipe(args):
+def require_capacity_launch_recipe(args, *, selected_binding=False):
     if args.capacity_launch_buffer_from:
         require(args.routed_eco_from and args.detail_route_iterations == 8 and
-                not any((args.selected_implementation, args.acceptance_launch_buffer,
+                (not args.selected_implementation or selected_binding) and
+                not any((args.acceptance_launch_buffer,
                          args.padded_sram_input_delay_from, args.control_launch_buffer_from,
                          args.preserve_routed_netlist, args.fresh_core_power_grid,
                          args.vss_clock_grid_source, args.protect_sram_power_edges,
@@ -137,12 +138,13 @@ def require_capacity_launch_recipe(args):
                 'capacity launches require exact finite-qualified327 geometry, actual104 baseline and fresh8 routing only')
 
 
-def require_clock_layer_recipe(args):
+def require_clock_layer_recipe(args, *, selected_binding=False):
     require(args.clock_min_routing_layer in ('Metal2', 'Metal3'), 'unknown clock minimum layer')
     if args.clock_min_routing_layer == 'Metal3':
         require(args.capacity_launch_buffer_from and args.routed_eco_from and
-                args.detail_route_iterations == 8 and not args.selected_implementation,
-                'clockMetal3 is scoped to the exact unselected327 source-qualified pilot')
+                args.detail_route_iterations == 8 and
+                (not args.selected_implementation or selected_binding),
+                'clockMetal3 is scoped to the exact327 source-qualified pilot or selected binding')
 
 
 def qualified_clock_layer_inputs(args):
@@ -252,7 +254,12 @@ def main():
     selected = None
     if args.selected_implementation:
         selected = json.loads((ROOT / 'tooling/silicon/physical-lock.json').read_text())['selected_pen_implementation']
-        if selected['version'] == 'lemma-pen-sg13g2-core-grid/1':
+        if selected['version'] == 'lemma-pen-sg13g2-native-margin-grid/1':
+            from silicon_power_margin_route import bind_selected
+            bind_selected(args,selected)
+            require_capacity_launch_recipe(args,selected_binding=True)
+            require_clock_layer_recipe(args,selected_binding=True)
+        elif selected['version'] == 'lemma-pen-sg13g2-core-grid/1':
             require(selected['launch']['flags'] == ['--core-power-grid', '--core-power-grid-reroute'], 'unknown historical selected grid recipe')
             args.core_power_grid, args.preserve_routed_netlist = True, True
         else:

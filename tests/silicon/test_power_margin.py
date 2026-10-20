@@ -2,12 +2,14 @@
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 from types import SimpleNamespace
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
 from silicon_enclosure import GeometryError
 from silicon_power_margin import corner_proof
-from silicon_power_margin_route import require_recipe
+from silicon_power_margin_route import require_recipe, bind_selected, PILOT
+from silicon_synth import ROOT
 from silicon_power_clearance import parse_paths, rectangular_clearance
 from silicon_enclosure import Rect
 
@@ -57,6 +59,39 @@ class PowerMarginTests(unittest.TestCase):
                           ('detail_route_iterations',3),('host_memory_gib',4),('selected_implementation',True),
                           ('preferred_access_from',Path('build/oldguide')),('preferred_access_preflight_only',True)]:
             with self.subTest(key=key),self.assertRaises(GeometryError):require_recipe(SimpleNamespace(**{**valid,key:value}))
+
+    def test_selected_product_binds_exact_measured_new_grid_recipe(self):
+        from copy import deepcopy
+        flags=['--routed-eco-from','build/silicon/task009-three-control-launch-route-a1',
+               '--capacity-launch-buffer-from','build/silicon/task009-capacity-drive-preflight-a1',
+               '--clock-min-routing-layer','Metal3','--detail-route-iterations','8',
+               '--power-margin-from',str(PILOT.relative_to(ROOT))]
+        selected={'version':'lemma-pen-sg13g2-native-margin-grid/1','launch':{
+            'flags':flags,'predecessor':{'path':flags[1],'receipt_sha256':'digest','routed_odb_sha256':'digest'},
+            'sources':[{'path':'scripts/silicon_power_margin_route.py','sha256':'digest'}],
+            'prepared_geometry':{'path':str((PILOT/'routed.odb').relative_to(ROOT)),'sha256':'digest'},
+            'preparation_receipt':{'path':str((PILOT/'result.json').relative_to(ROOT)),'sha256':'digest'}}}
+        defaults=dict(selected_implementation=True,routed_eco_from=None,capacity_launch_buffer_from=None,
+                      power_margin_from=None,clock_min_routing_layer='Metal2',detail_route_iterations=3,
+                      host_memory_gib=6,preferred_access_from=None,preferred_access_preflight_only=False)
+        with patch('silicon_power_margin_route.sha',return_value='digest'),patch(
+                'silicon_power_margin_route.admit',return_value=(PILOT/'routed.odb',PILOT/'result.json',[])):
+            args=SimpleNamespace(**defaults);bind_selected(args,selected)
+            self.assertEqual(args.clock_min_routing_layer,'Metal3')
+            self.assertEqual(args.capacity_launch_buffer_from,ROOT/flags[3])
+            self.assertTrue(args.core_power_grid)
+            for name,value in [('host_memory_gib',4),('routed_eco_from',Path('build/other')),
+                               ('preferred_access_from',Path('build/old-guides')),('group_button_bus',True)]:
+                with self.subTest(argument=name),self.assertRaises(GeometryError):
+                    bind_selected(SimpleNamespace(**{**defaults,name:value}),selected)
+            for name in ['flags','sources','prepared_geometry','predecessor']:
+                bad=deepcopy(selected)
+                if name=='flags':bad['launch'][name][-1]='build/other'
+                elif name=='sources':bad['launch'][name][0]['sha256']='changed'
+                elif name=='prepared_geometry':bad['launch'][name]['sha256']='changed'
+                else:bad['launch'][name]['path']='build/other'
+                with self.subTest(binding=name),self.assertRaises(GeometryError):
+                    bind_selected(SimpleNamespace(**defaults),bad)
 
 
 if __name__=='__main__':unittest.main()

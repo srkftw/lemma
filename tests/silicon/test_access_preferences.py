@@ -73,7 +73,9 @@ class AccessPreferenceTests(unittest.TestCase):
         master = {'id':1, 'point_nm':[2880,820], 'owner':{'kind':'master_pin'}, 'segments':[]}
         pin = {'id':2, 'point_nm':[200,300], 'owner':{'kind':'block_pin','bterm':'addr[0]','bpin_id':7},
                'layer':'Metal2','via_groups':[], 'segments':[], 'directions':['NORTH']}
-        before = {'schema':'lemma-opendb-access-export/1','block':'lemma_pen','db_units_per_micron':1000,
+        before = {'schema':'lemma-opendb-access-export/1',
+                  'scope':'Read-only public OpenDB metadata; no physical or routing qualification',
+                  'block':'lemma_pen','db_units_per_micron':1000,
                   'access_points':[master,pin], 'master_pin_patterns':[{'patterns':[[1]]}],
                   'instance_terminals':[{'instance':'target','preferred':[1]}],
                   'block_terminals':[{'terminal':'addr[0]','bpin_id':7,'access':[2]},
@@ -92,6 +94,11 @@ class AccessPreferenceTests(unittest.TestCase):
             'clone_segment_invented':lambda x:x['access_points'][2]['segments'].append([0,0,1,1]),
             'clone_via_changed':lambda x:x['access_points'][2]['via_groups'].append(['Via1_YY']),
             'clone_id_renumbered':lambda x:x['access_points'][2].__setitem__('id',4),
+            'original_coordinate_float':lambda x:x['access_points'][0]['point_nm'].__setitem__(0,2880.0),
+            'original_id_bool':lambda x:x['access_points'][0].__setitem__('id',True),
+            'clone_id_float':lambda x:x['access_points'][2].__setitem__('id',3.0),
+            'clone_vector_float':lambda x:x['block_terminals'][0]['access'].__setitem__(1,3.0),
+            'units_float':lambda x:x.__setitem__('db_units_per_micron',1000.0),
             'clone_vector_missing':lambda x:x['block_terminals'][0]['access'].pop(),
             'clone_vector_double':lambda x:x['block_terminals'][0]['access'].append(3),
             'block_owner_retargeted':lambda x:x['block_terminals'][0].__setitem__('terminal','addr[1]'),
@@ -104,6 +111,11 @@ class AccessPreferenceTests(unittest.TestCase):
                 relation(before,value)
         with self.assertRaises(AccessMetadataError):
             relation(before,before)
+        for key,value in [('hidden',True),('schema','unknown-export/1')]:
+            original=copy.deepcopy(before);final=copy.deepcopy(after)
+            original[key]=value;final[key]=value
+            with self.subTest(shared_invalid_field=key),self.assertRaises(AccessMetadataError):
+                relation(original,final)
 
 
 if __name__ == '__main__':
