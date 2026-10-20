@@ -664,12 +664,12 @@
       "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
       "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
     },
-    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1\u21922. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
     "connectedUpgrade": {
       "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
       "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
     },
-    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "connectedObservation": "Normal owned stop/restart generation5\u21926, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
     "retainedPreparationFailures": [
       {
         "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
@@ -766,7 +766,7 @@
         "path": "tests/school/test_delivery.py",
         "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
       },
-      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2\u21923."
     },
     "browserTests": {
       "result": "PASS",
@@ -786,7 +786,7 @@
       "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
       "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
     },
-    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "connectedScope": "All29 prior records unchanged, generation6\u21927/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
     "retainedObserverFailures": [
       {
         "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
@@ -1358,7 +1358,7 @@
       "sha256": "c4a73274c4c15b1d8c3cff13c164ffa90ac323a79d6aa66813002551e603efb0"
     },
     "status": "PASS_ORIGINAL_GUEST_ENVELOPE_REPLAY_AFTER_GENERATION_CHANGE",
-    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13→14. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
+    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13\u219214. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
   },
   "ordinary_live_model_release_cycle": {
     "result": {
@@ -1547,7 +1547,7 @@
     }
   },
   "generation21_normal_restart": {
-    "status": "PASS_LIVE_ORIGINAL_DEADLINE_RETAINED",
+    "status": "PASS_TERMINAL_CONTROLLED_PRODUCER_TRANSITION",
     "ready": {
       "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation21/ready.json",
       "sha256": "e19487689357755f09fb806d185c1fcbe8125b637aa2a47f9401b3153b006041"
@@ -1561,7 +1561,15 @@
       "sha256": "4fd83b571f14f3656e7ed1eff808ea0a007eacb616b1ee2c1f69594e6a066661"
     },
     "scope": "Generation20 naturally ended at its original2026-10-20T07:09:34.391511Z deadline. A separate prospective7200-second run started generation21 on the same epoch5/restored root, retained all107 acknowledged rows byte-for-byte, retained private principal admissions and rejected an actual stale RV64 worker completion. Original new deadline2026-10-20T09:13:07.292430Z; no deadline extension, new clock-domain restore or concurrent authoritative copy claimed.",
-    "planned_successor": "New protected provenance consumer requires a separately recorded controlled stop/terminal and new generation22. That prepared runner is not an executed restore result."
+    "planned_successor": "New protected provenance consumer requires a separately recorded controlled stop/terminal and new generation22. That prepared runner is not an executed restore result.",
+    "terminal": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation21/terminal.json",
+      "sha256": "bf2a0e3ecd6816c2f73591f21f622908dc011a55dd974cb5eceb8c15f425f1ad"
+    },
+    "controlled_stop": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation21/planned-stop.json",
+      "sha256": "bf67ebef8355a37dbc8eb3df7df2f26df236f4747676da5434d195162ec9bd79"
+    }
   },
   "durableRemoteAssistanceConsumer": {
     "implementation": [
@@ -1599,5 +1607,27 @@
       "First fixture rejected missing do/else and missing Inhabited indexed exposure; corrected fixture uses exact Option extraction.",
       "Second fixture rejected nonexistent Except.isError; corrected fixture retains actual strict Except.isOk assertion. These were test observer compilation errors, not passing parser executions."
     ]
+  },
+  "generation22_provenance_successor": {
+    "status": "PASS_LIVE_ORIGINAL_NEW_DEADLINE_RETAINED",
+    "production": {
+      "path": "build/school/task009-assistance-production-a3/production.json",
+      "sha256": "26cf26dff462941057c7707db018323d5f434c139e66a75e4c2665584b206a7f"
+    },
+    "focused_validation": {
+      "path": "build/school/task009-remote-host-focused-a3/validation.json",
+      "sha256": "954d4443db6e9109300a4d363a86d0db076cbd7a8f2bc340d08af655c766deec"
+    },
+    "ready": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation22/ready.json",
+      "sha256": "359e9c423e4736a79340fddf218ebbcc17881e92feca7ee03237a471b8a010ba"
+    },
+    "budget": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation22/budget.json",
+      "sha256": "42c227765a5ee31d8668d1a8c7287aeebf1bf1391aba40573fe275ceb59c3818"
+    },
+    "source_difference": "Only Mathematics GT predicates changed to behavior-equivalent typed UInt64 LT relative to the earlier source-bound70test producer. Genuine successor production20.86566199013032s; fresh9focused protected/admission tests plus actualClient/RemoteEvents Actions63.41934124403633s. Earlier70test PASS remains scoped to its original producer.",
+    "operation": "Controlled generation21 stop observed2026-10-20T08:06:59.403558Z, all107 acknowledged rows unchanged. Separate generation22 starts on same epoch5 with existing private principal admissions; old actual RV64 completion rejected; originalNEW7200s deadline2026-10-20T10:07:22.885038Z. No two concurrent authoritative copies or extension of21 claimed.",
+    "remaining": "Execute new audited guest write-ahead help/cold/new-binding submission consumer. Hosted structural/authority cases do not establish that native/browser guest result."
   }
 }
