@@ -62,6 +62,7 @@ def pack(args):
             data.get('cpu')!=fast.CPU or data.get('icount_shift')!=3):
             raise ValueError('School23/v2 archive requires current prepared QEMU runtime sources')
         for key in ('qemu','derivation'):guest.validate(data[key])
+        fast.validate_checkpoint_binding(data)
         selected=dict(SCHOOL);data['workloads']={};data.pop('guest_archive',None)
         data.pop('guest_source_root',None)
         for role in selected:
@@ -83,7 +84,7 @@ def pack(args):
         selected={**CONFIGURATIONS,**(PARAMETERIZED if set(PARAMETERIZED)<=available else {})}
         data=copy.deepcopy(prepared['notebook'])
         for role,item in prepared.items():
-            if any(item.get(k)!=data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift')):
+            if any(item.get(k)!=data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift','checkpoint_binding')):
                 raise ValueError('Multimodal fast guest roles have different runtime/source identities')
             data['workloads'][role]=copy.deepcopy(item['workloads'][role])
         if set(data['workloads'])!=set(selected):raise ValueError('Multimodal fast archive requires complete ordinary pair')
@@ -173,6 +174,7 @@ def prepared_archive(directory,backend,workload,name=None):
     data=copy.deepcopy(m['backends']['qemu'])
     if data.get('schema')!='lemmasim-fast-prepared/1' or data.get('profile')!=PROFILE or data.get('cpu')!=fast.CPU or data.get('icount_shift')!=3:
         raise ValueError('Multimodal fast execution contract differs')
+    fast.validate_checkpoint_binding(data)
     if data.get('profile_sha256')!=guest.sha(profile_path(PROFILE)):
         raise ValueError('Archived0.14 binding differs from its retained version')
     _origin_destination(m,profile_path(PROFILE),data['profile_sha256'])

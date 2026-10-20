@@ -1006,10 +1006,10 @@
         "sampled_owned_RSS_bytes": 248717312
       },
       {
-        "receipt": "build/task009/mm-logical2-storage-a1/result.json",
-        "receipt_sha256": "5dd9190da136db4f483da4b741be53d4b97899924bcf1bcc43de81f2714e3aad",
+        "receipt": "build/task009/mm-logical2-storage-a2/result.json",
+        "receipt_sha256": "049efa2e1ef50158f2e1136c100527840f07c9f75bfddb7523fd1626d3b91046",
         "status": "PASS_ACTUAL_NATIVE_LOGICAL2_SUFFIX",
-        "seconds": 14.959562245057896,
+        "seconds": 12.401048045954667,
         "guest": "native-a8 exact015fe6 Notebook",
         "scope": "Actual guest initial journal Save before acknowledgment; explicit2s first-media-write delay, pending phase8 kind1, writes/flushes0 atcut; later actualSave421 after media completion",
         "runtime": {
@@ -1044,7 +1044,9 @@
         "all22mode_translation_and_typed_wake_payloads_equal": true,
         "malformed_candidate_rejected_original_unchanged": true,
         "owned_processes_reaped": true,
-        "sampled_owned_RSS_bytes": 224460800
+        "sampled_owned_RSS_bytes": 225136640,
+        "prospective_virtual_suffix_bound_ns": 4001000000,
+        "actual_virtual_suffix_ns": 3957427380
       }
     ],
     "failures": [
@@ -1053,7 +1055,12 @@
       "build/task009/logical2-native-maintained-a3/result.json",
       "build/task009/logical2-native-maintained-a4/result.json",
       "build/task009/logical2-native-maintained-a5/result.json",
-      "build/task009/mm-checkpoint-maintained-ready-a1/result.json"
+      "build/task009/mm-checkpoint-maintained-ready-a1/result.json",
+      {
+        "receipt": "build/task009/mm-logical2-storage-a1/result.json",
+        "receipt_sha256": "5dd9190da136db4f483da4b741be53d4b97899924bcf1bcc43de81f2714e3aad",
+        "scope": "Original observer reportsPASS but incorrectly inherited1ms suffix metadata despite running3.957s virtual tocomplete declared2s media delay. Originalreceipt unchanged; no scoped PASS is admitted from its wronglimit. Corrected observera2 explicitly bounds4.001s virtual suffix and independently reexecutes."
+      }
     ],
     "remaining": "Actual newly maintained guest record-DMA and PCM pending/IRQ cuts and their ordinary Session paths remain required before opening the default public guard. Current finite Ready/converter/storage and guarded Session cases are old015fe6-guest scopes; no arbitrary crossbackend or browser continuation claim.",
     "normal_fast_preparation": {

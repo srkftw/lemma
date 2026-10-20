@@ -1,5 +1,27 @@
 import hashlib,struct
 VERSION='lemma-native-logical-observation-relation/2'
+def multimodal_payload(data):
+ """Pure observer of the pinned v1 subsection, never an admission parser.
+
+ Field order is the complete maintained lemma_multimodal_checkpoint.inc.c
+ schema. Full VMState comparison below still checks every serialized byte.
+ """
+ name=b'lemma-paper-pen/1/multimodal-v1';marker=b'\x05'+bytes([len(name)])+name+b'\0\0\0\1'
+ assert data.count(marker)==1
+ at=data.index(marker)+len(marker)
+ def words(count):
+  nonlocal at
+  values=struct.unpack_from('>'+str(count)+'Q',data,at);at+=count*8;return values
+ model_names='tick mask inhibit link pending pcm_valid pcm_data pcm_position pcm_tick dma_stream dma_index dma_active dma_cancel'.split()
+ record_names='data capture available quality sequence epoch config selector'.split()
+ stream_names='state error epoch sequence gain period exposure selector consent calibration lease quiet consent_floor config next capture available latched_quality latched_reference dma_addr dma_words dma_status consumed submitted start input reference latched history'.split()
+ model=dict(zip(model_names,words(13)));model['dma_record']=dict(zip(record_names,words(8)));model['streams']=[]
+ for identifier in range(9):
+  stream={'id':identifier,**dict(zip(stream_names,words(29)))}
+  stream['fifo']=[dict(zip(record_names,words(8))) for _ in range(16)]
+  stream.update(zip(('head','count','converting','source_quality'),words(4)));model['streams'].append(stream)
+ model['timer_expires_ns']=struct.unpack_from('>q',data,at)[0]
+ return model
 def compare_machine(left,right):
  marker=b'\x05timer\x00\x00\x00\x00\x00\x00\x00\x02';assert left.count(marker)==right.count(marker)==1
  at=left.index(marker)+len(marker);assert right.index(marker)+len(marker)==at

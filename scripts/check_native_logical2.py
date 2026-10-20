@@ -19,7 +19,7 @@ root=a.output_dir.resolve();root.mkdir(parents=True,exist_ok=False)
 start=time.monotonic();deadline=start+a.timeout;live=[];sockets=[]
 sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
 bundle=a.bundle.resolve();entry=prepared_archive(bundle,'qemu','notebook','lemma-silicon-dev/0.14.0')['workloads']['notebook'];binary=a.qemu.resolve();medium=a.medium.resolve()
-report={'schema':'lemma-native-logical-checkpoint/2','status':'FAIL','scope':'Actual maintained guest, Ready or activeconverter cut, blockedUART, freshprocess native logical2 continuation and coherently forged malformedcandidate. Publiccheckpointguard stays until separately qualified full path.','limits':{'whole_seconds':a.timeout,'boot_ns':4000000000,'suffix_ns':1000000,'output_bytes':2<<30,'owned_rss_bytes':1<<30},'inputs':{str(p):sha(p) for p in [binary,bundle/'bundle.json',medium,Path(__file__),Path(__file__).with_name('native_logical_relation.py'),Path('conformance/lemmasim/check_notebook_workflow.py'),Path('conformance/lemmasim/notebook_input.py')]}}
+report={'schema':'lemma-native-logical-checkpoint/2','status':'FAIL','scope':'Actual maintained guest, Ready, activeconverter or pendingstorage cut, blockedUART, freshprocess native logical2 continuation and coherently forged malformedcandidate. Publiccheckpointguard stays until separately qualified full path.','limits':{'whole_seconds':a.timeout,'boot_ns':4000000000,'suffix_ns':4001000000 if a.cut=='storage' else 1000000,'output_bytes':2<<30,'owned_rss_bytes':1<<30},'inputs':{str(p):sha(p) for p in [binary,bundle/'bundle.json',medium,Path(__file__),Path(__file__).with_name('native_logical_relation.py'),Path('conformance/lemmasim/check_notebook_workflow.py'),Path('conformance/lemmasim/notebook_input.py')]}}
 def require(v,m):
  if not v:raise RuntimeError(m)
 def resources():
@@ -103,7 +103,9 @@ try:
  active=[x for x in json.loads(get(q,'execution-state'))['mm_streams'] if x['converting']]
  report['active_mm_streams']=active;report['active_mm_qualified']=bool(active)
  before=observed(q);cut,tlb=save(q,d,'cut');cutmedium=export(q,d,'cut-medium.raw');require(observed(q)==before,'capture/export changed digital state');uart_start=(d/'uart.bin').stat().st_size
- until=(pending['media_deadline_ns']+2000000000 if a.cut=='storage' else int(get(q,'virtual-time'))+1000000);run(q,until);left=observed(q);leftmain,lefttlb=save(q,d,'suffix');leftmedium=export(q,d,'suffix-medium.raw');leftuart=(d/'uart.bin').read_bytes()[uart_start:]
+ suffix_start=int(get(q,'virtual-time'));until=(pending['media_deadline_ns']+2000000000 if a.cut=='storage' else suffix_start+1000000)
+ require(0<=until-suffix_start<=report['limits']['suffix_ns'],'prospective virtual suffix bound');report['actual_suffix_ns']=until-suffix_start
+ run(q,until);left=observed(q);leftmain,lefttlb=save(q,d,'suffix');leftmedium=export(q,d,'suffix-medium.raw');leftuart=(d/'uart.bin').read_bytes()[uart_start:]
  if a.cut=='storage':require(any(x[0]==0x421 for x in guest_events(d/'uart.bin')),'pending Save did not later acknowledge after actual media completion')
  f,fd=launch('fork',cutmedium);f.execute('lemma-load-machine-softtlb',{'filename':str(cut),'cache-filename':str(tlb)});require(observed(f)==before,'loaded Ready/blocked boundary differs');fork_start=(fd/'uart.bin').stat().st_size;run(f,until);right=observed(f);rightmain,righttlb=save(f,fd,'suffix');rightmedium=export(f,fd,'suffix-medium.raw');require(left==right,'suffix controller observation differs');require(leftuart==(fd/'uart.bin').read_bytes()[fork_start:],'suffix actual UART bytes differ');require(sha(leftmedium)==sha(rightmedium),'suffix durable medium differs')
  report['controller_and_uart_suffix_equal']=True;report['durable_suffix_equal']=True
