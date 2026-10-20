@@ -23,7 +23,7 @@ class CheckpointTransaction(unittest.TestCase):
             identity={'backend':'qemu','implementation':'transaction fixture'}
             checkpoint_files={'machine.chk','clock.json','logical.tlb','durable.raw'}
             clock_hz=100000000
-            def __init__(machine):machine.cycle=10;machine.directory=directory;machine.failure=None;machine.applied=[]
+            def __init__(machine):machine.cycle=10;machine.directory=directory;machine.failure=None;machine.applied=[];machine.argv=['old UART/output capture']
             def call(machine,command):
                 if command.startswith('snapshot '):
                     path=Path(command[9:]);path.write_bytes(b'current VMState')
@@ -42,7 +42,7 @@ class CheckpointTransaction(unittest.TestCase):
                 self.assertEqual(path.with_name('durable.raw').read_bytes(),b'acknowledged work')
                 self.assertEqual(self.school.binding,'current school admission')
                 if machine.failure=='load':raise ValueError('Partial private candidate rejected')
-                self.events.append('adopted');machine.cycle=phase//10
+                self.events.append('adopted');machine.cycle=phase//10;machine.argv=['new generation UART/output capture']
                 return {'cycle':machine.cycle,'virtual_ns':phase}
             def close(machine):pass
         self.machine=Machine()
@@ -99,6 +99,28 @@ class CheckpointTransaction(unittest.TestCase):
         self.assertEqual(result['medium'],'isolated snapshot fork')
         self.assertEqual((self.source/'durable.raw').read_bytes(),b'acknowledged work')
         self.assertEqual(list(self.session.directory.glob('restore-inputs-*')),[])
+
+    def test_live_observers_follow_only_a_successfully_adopted_generation(self):
+        path=self.session.directory/'session.json'
+        metadata={'schema':'lemmasim-live/1','identity':self.machine.identity,'argv':self.machine.argv,
+                  'mode':'student','pid':123,'socket':'unchanged owner control'}
+        path.write_text(json.dumps(metadata));before=path.read_bytes()
+        self.machine.failure='load'
+        with self.assertRaisesRegex(ValueError,'private candidate'):self.session.restore(self.source)
+        self.assertEqual(path.read_bytes(),before)
+        self.machine.failure=None
+        self.session.restore(self.source)
+        current=json.loads(path.read_text())
+        self.assertEqual(current['argv'],['new generation UART/output capture'])
+        self.assertEqual({k:v for k,v in current.items() if k!='argv'},
+                         {k:v for k,v in metadata.items() if k!='argv'})
+
+    def test_bad_presentation_metadata_does_not_retain_external_authority_after_adoption(self):
+        (self.session.directory/'session.json').write_text('[]')
+        result=self.session.restore(self.source)
+        self.assertEqual(self.events,['candidate','adopted','invalidate','disconnect'])
+        self.assertIsNone(self.school.binding)
+        self.assertIn('live observation metadata unavailable',result['post_restore_errors'][0])
 
 
 if __name__=='__main__':unittest.main()

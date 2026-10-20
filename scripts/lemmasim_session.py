@@ -770,6 +770,20 @@ class Session:
         # Only successful machine adoption changes interactive transport/domain
         # authority. Failed manifest, preflight or private load leaves it intact.
         post_errors=[]
+        metadata_path=self.directory/'session.json'
+        if hasattr(self.machine,'argv') and metadata_path.is_file():
+            try:
+                if metadata_path.stat().st_size>MAX_REQUEST:raise ValueError('live metadata exceeds its bound')
+                metadata=json.loads(metadata_path.read_text())
+                if (not isinstance(metadata,dict) or metadata.get('schema')!='lemmasim-live/1' or
+                        metadata.get('identity')!=self.machine.identity):
+                    raise ValueError('live metadata identity differs after adoption')
+                # Observers must follow the adopted generation's UART/output
+                # files, without restoring credentials or external handles.
+                metadata['argv']=self.machine.argv
+                write_json(metadata_path,metadata)
+            except (OSError,ValueError,TypeError) as error:
+                post_errors.append('live observation metadata unavailable after restore: '+str(error))
         try:self.notebook_epoch()
         except OSError as error:
             post_errors.append('notebook observation unavailable after restore: '+str(error))
