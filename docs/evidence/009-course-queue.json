@@ -466,5 +466,43 @@
     "cases": 6,
     "seconds": 135.27778877993114,
     "native_browser_same_pace_execution": "PENDING_SOURCE_BOUND_IMAGE"
+  },
+  "ordinary_native_written_and_cold_retry": {
+    "status": "PASS_FOR_WRITING_RETENTION_TEACHER_REVIEW_AND_REAL_LOST_ACK_COLD_RETRY",
+    "native_bundle": "build/task009/school23-native-a9",
+    "manifest_sha256": "124c02d6389172ae246bc63d805ad71ac00d5f385d4574caa4a5b9fe1b506853",
+    "guest_notebook_sha256": "b7935c1cf06b5d0feb16e10a22f784f2b96470512de02c45a01f6c83b0c14957",
+    "profile": "lemma-silicon-dev/0.14.0 ordinaryStudent School23",
+    "proof": "Actual96strokes/388samples atunchanged10Munits/stroke;44.101051s externalstimulus. All388complete9wordcontrollerrecords matchimmutableguestartifact first96chunks byte-for-byte. Fiveadditionalpost-proofnavigationcontacts remainexplicitlyretainedandalsomatchexactcontrollerrecords;101totalchunks.",
+    "first_ready": {
+      "path": "build/school/task009-student-native-a7/first-save-ready.json",
+      "sha256": "be857dc34c388208c13d0441479300664a6298d547460023acd2361a1d8e1c83"
+    },
+    "full_raw_retention": {
+      "path": "build/school/task009-student-native-a7/written-nine-word-retention.json",
+      "sha256": "52982b7aae11c3148181826b683c9f86fdcaa3445be4f1ed179e874ac9215746"
+    },
+    "stream": {
+      "path": "build/school/task009-student-native-a7/written-valid-stream.json",
+      "sha256": "340eb3b4462deade45e42cc0b189c800e4e17a5686c4c25bbadca98297090393"
+    },
+    "lost_ack": {
+      "path": "build/school/task009-student-native-a7/lost-ack-before-close.json",
+      "sha256": "7876b54d08d096500d46ab82c690c415ca5b8fd5d03ccd9ef813303bc5e2c8d7"
+    },
+    "cold_idempotent_ack": {
+      "path": "build/school/task009-student-native-a7/lost-ack-cold-result.json",
+      "sha256": "113c380b0e8ca494d4262d605dc0b892f7ea4d50567b7bb9e8fbfce44df764d0"
+    },
+    "teacher_assessment": {
+      "path": "build/school/task009-student-native-a7/teacher-written-assessment.json",
+      "sha256": "00c4268db757c4b4494e8d36a715784bd4bd74f69b5846123382e74931c3de13"
+    },
+    "cold_page_restore": {
+      "path": "build/school/task009-student-native-a7/cold-pending/cold-page-restore-result.json",
+      "sha256": "e42eab2cd5f73e2553a936a06f6b6ab2d95837c87ce4668877faf6729710d54c"
+    },
+    "retained_failure": "EarlyJOINbefore60000/166guestinstallation reported230; prematureSENDrejected244, noassessment. OriginalboundedstreamobserverFAIL2.3B retained written-stream.json; actualvalidretry newphase followed727binding57/gen14. Early100Mpage-reopenprefixes didnotprovecompletednavigation; actualpublicbackingreads advancedandqueuedpage4completion measured300Madditionalunits/2.138383s.",
+    "scope": "RealunchangedpaceCPUwriting/Save, immutablev2opaqueartifact/humanreview, actualSchoolcommitwithlostunconsumedguestACK, byte-identicalcoldpendingreplay/singleSchooladmission/actual733pointerCommit177. Coldstorage recovery isnotexactmicrostatecontinuation; outcome4Unsupportedremainsdistinctfromhumanacceptance. Noeducational/physicalqualification. Campaignremainssame24B/05:46:35deadline; due-responseandselected-helpdeliverypending."
   }
 }

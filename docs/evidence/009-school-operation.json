@@ -1311,5 +1311,41 @@
     "original_assessment_sequence": 48,
     "new_assessment_sequence": 56,
     "scope": "Real protected teacher UI displays exact immutable guest Vartifact/originalrubric and appends version2 clarification. Original exact checker result retained, V remainsopaque; no independent mathematical-learning result."
+  },
+  "generation14_ordinary_terminal": {
+    "path": "build/school/task009-connected-a2/generation14-ordinary-terminal.json",
+    "sha256": "623b3bcfd622c19dee786659feabcd84f15c6cc6b8d037d3f0d7b00266e383cd"
+  },
+  "generation15_ordinary_readiness": {
+    "path": "build/school/task009-connected-a2/generation15-ordinary-ready.json",
+    "sha256": "b43adc07813f0ba912994409a84909a1d982b476300d4f205cdc9fc99e18191f"
+  },
+  "actual_worker_result_fenced_across_authority_restart": {
+    "old_held": {
+      "path": "build/school/task009-live-model-cycle-a1/alice-independent-hold-gen14/held-result.json",
+      "sha256": "c5fa1bd6a765a93700eeaa037cab883c94c790cf864e85f990581be88b7e98b1"
+    },
+    "stale_rejected": {
+      "path": "build/school/task009-live-model-cycle-a1/stale-held-result-gen15/result.json",
+      "sha256": "11893db6290765a5deb86993e80f8d9d17d4d32725c968a259f2e1f2f3275709"
+    },
+    "actual_reexecution": {
+      "path": "build/school/task009-live-model-cycle-a1/alice-independent-resumed-gen15/result.json",
+      "sha256": "d89daf1b8da650aae1c1394ba3a6bbc5f10f3e2559c2445d08a1b8b8bc5179e4"
+    },
+    "scope": "Actual independent Student opaque proof and distinct human assessment62 produced Lean features with presence3. The unchanged audited RV64 response under old14/fence1 was rejected with4110ms left on the lease. Actual15/fence2 reexecution committed score343040 and its numerical suggestion. Training, evaluation and ELF were reused; inference execution was fresh. Its ordinary guest consumer is separately indexed below."
+  },
+  "ordinary_actual_rv64_selected_guest_help": {
+    "result": {
+      "path": "build/school/task009-student-native-a7/cold-pending/selected-help-result.json",
+      "sha256": "f32a1c4394fc875b048997b1fb4b01085c119c063fc5c634d161ffa9bd601601"
+    },
+    "teacher_assessed_source_attempt": "guest.57.6003579778261581998",
+    "human_assessment": 62,
+    "model": 9001,
+    "actual_rv64_job": "alice-independent-hold-gen14",
+    "current_generation": 15,
+    "current_fence": 2,
+    "scope": "Actual admitted numerical inference changes advice in ordinary Student help; actual guest725 and manually reviewed controller output are retained separately from typed raw delivery observations. Authored hint is the fallback and remains in the delivered body. No general tensor compiler, resident language model, or educational qualification claim."
   }
 }
