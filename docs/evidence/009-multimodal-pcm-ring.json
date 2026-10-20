@@ -685,5 +685,114 @@
         "sha256": "286e8b949b8493caff2adde2cb1cc78b295092ac34deaf6b32f13ce26e5e6658"
       }
     }
+  },
+  "receipt2_WAL_completion_successor": {
+    "status": "STRICT_AUDITS_AND_NATIVE_PACKAGE_PASS_ORDINARY_WORKFLOW_IN_PROGRESS",
+    "source_archive": "build/task009/school23-mm2-source-a8",
+    "source_inputs": 545,
+    "source_inventory_sha256": "03914f7cea4a400cc3761f8fe7974f76b300db7a9e14a3abd3c21b1c3aadbcd6",
+    "target_sources": {
+      "Notebook": "8b8783dcd03114599a0777decf5d8308af038626f834ef97397348d36c45ccaf",
+      "Mathematics": "bfef29b1648f4bd9e0885a3f963db635bd92022357afe3ed6343638cf1cf815a",
+      "UserMultimodal": "3559022714096f61e5658791add171d4b6ae3cb411f3b8acb6900d8179b3fc07",
+      "Service": "21dda5464a344b90031db2dfc0c61dd660fbeeb8ff300536395f47a7c04d32cc"
+    },
+    "changes": "Deferred Saved presentation binds the exact acknowledged work/context; remote assistance is durably prepared before rendering; PCM DONE observes a fresh consumed frontier instead of treating sequential reads as simultaneous.",
+    "producer": {
+      "path": "build/task009/school23-mm2-producer-a4/result.json",
+      "sha256": "cb31e5cbb061918c41dad68a7f3ff0deb3f6fe55bf9bd40a64403de614befd7c"
+    },
+    "genuine_builds": [
+      {
+        "role": "notebook",
+        "output": "build/kernel/task009-school23-notebook-a26",
+        "elapsed_seconds": 171.26852750778198,
+        "peak_combined_rss_bytes": 3402178560
+      },
+      {
+        "role": "initialize",
+        "output": "build/kernel/task009-school23-initialize-a25",
+        "elapsed_seconds": 117.26904916763306,
+        "peak_combined_rss_bytes": 1857060864
+      },
+      {
+        "role": "integrated",
+        "output": "build/kernel/task009-school23-integrated-a23",
+        "elapsed_seconds": 126.07964444160461,
+        "peak_combined_rss_bytes": 1875718144
+      },
+      {
+        "role": "integrated-pcm",
+        "output": "build/kernel/task009-school23-integrated-pcm-a6",
+        "elapsed_seconds": 120.65026950836182,
+        "peak_combined_rss_bytes": 1876926464
+      }
+    ],
+    "actual_pre_post_scalar_authority": {
+      "path": "build/task009/school23-mm2-pins-a1/result.json",
+      "sha256": "e0912fc5fb74f5d307e78e111cafac79a574ecc1c4eb961ca7b28ba0713b97df"
+    },
+    "receipt2_intrinsic_gate": {
+      "path": "build/task009/notebook-loss-receipt2-a1/result.json",
+      "sha256": "c6206da59914f65f8bd5511dc638372f2c0cc96cc85fd740d9cd045779097617"
+    },
+    "intrinsic_gate_scope": "Exact versioned receipt2 loss-body hashes and first clear permit the unchanged saturating arithmetic; legacy body remains exact, 16 old/new host tests and all eight actual pre/post corpora pass. No general intrinsic or compiler widening.",
+    "final_cached_receipt_refresh": {
+      "path": "build/task009/school23-mm2-refresh-a4/result.json",
+      "sha256": "e28f967bca2e5b395cb140814f7acc2d7f8a8a2c6b44187e61afb4051e791298"
+    },
+    "refresh_scope": "Final source/audit-contract provenance refresh reuses admitted target compilation and original producer receipts; not fresh LLVM compilation or execution.",
+    "strict_audits": {
+      "path": "build/task009/school23-mm2-audit-a4/result.json",
+      "sha256": "76e46bc5b8860cfe8c0def34fd50d6145d48542d220b371bddf484461bff7f67"
+    },
+    "audit_whole_seconds": 433.9801678657532,
+    "audit_combined_sampled_peak_RSS_bytes": 668999680,
+    "final_builds": {
+      "notebook": "build/kernel/task009-school23-notebook-a28",
+      "initialize": "build/kernel/task009-school23-initialize-a27",
+      "integrated": "build/kernel/task009-school23-integrated-a25",
+      "integrated-pcm": "build/kernel/task009-school23-integrated-pcm-a8"
+    },
+    "retained_failures": [
+      {
+        "path": "build/kernel/task009-school23-notebook-a25/action-failure.json",
+        "scope": "Actual unsupported GT.gt in new Mathematics validation; corrected by typed UInt64 LT operand reversal, preserving the failure."
+      },
+      {
+        "path": "build/task009/school23-mm2-audit-a3/result.json",
+        "scope": "All four strict audits rejected the new receipt2 first-clear body under the legacy saturating-loss hash. A distinct exact-body gate and final source-bound cached refresh precede fresh passing audits; target compilation is reused."
+      }
+    ],
+    "native_package": {
+      "path": "build/task009/school23-mm2-native-package-a4/result.json",
+      "sha256": "6b9eb31683a8625ed7ad101850c30ea74464487d24c20f2ff04172f950d4463f"
+    },
+    "native_bundle": "build/task009/school23-mm2-native-a3",
+    "manifest_sha256": "5041fb9f71b6ab18749d1f438ff26f9199306c6fe7ee53e8c372263c11c97b8b",
+    "files": 1996,
+    "package_seconds": 13.610122418031096,
+    "package_sampled_peak_RSS_bytes": 531890176,
+    "runtime_reuse": {
+      "binding": "lemma-silicon-fast-mm2-subset/0.1.0",
+      "profile": "lemma-silicon-dev/0.14.0",
+      "ELF_sha256": "4f052aaf5497b84046d93c08f475bab4f0665babf5fe1f9cc6ddb7b02398b729",
+      "compilation": "Actual unchanged MM2 C runtime reused; no runtime compilation for this guest successor"
+    },
+    "native_first_Save": {
+      "path": "build/school/task009-native-provenance-a1/initial-save-gate.json",
+      "sha256": "d75f9539cefecc5b25d76579d69e92066fee34fba810f9af3b034e982387fb26"
+    },
+    "native_first_Save_scope": "Actual Student Ready by400M and explicit421 Saved at500000001 functional units, visible Saved header, no guest fault. An initial observer treated normal loader F1 descriptors as faults; assessment of those same retained bytes uses the existing Session decoder, without rerun.",
+    "browser_archive": {
+      "manifest_sha256": "146c9476414dfb32283dddbd0da251a94859e1b4628ef4f1ec794034c8604940",
+      "files": 665,
+      "package_seconds": 22.565,
+      "archive_checks": 24,
+      "archive_check_seconds": 16.477,
+      "scope": "Parent observed actual packaging/admission; ordinary new browser session is a separate in-progress workflow. CPU-stop runtime archive7949a9a6254aaa273cc29d23b2f826361524e0d1b468bf9bb9b6a9f8bc8f1c68; no new compilation is claimed from packaging."
+    },
+    "public_MM2_checkpoint": false,
+    "pending": "Execute final same-source4099 PCM/DONE2, writeahead assistance and connected school lifecycle in native/browser; actual full-profile16 ROM/pen/Save/reset remains a separate canonical question."
   }
 }

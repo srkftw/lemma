@@ -1732,6 +1732,96 @@
         "owned_reaped": true
       }
     ],
-    "interrupted_probe_disposition": "Both original180s/4GiB interrupted-probe attempts stopped at RSS limit during13M-or-earlier bootstrap, before interruption phase. Streaming4MiB hashes and256MiB JS heap did not fit. No further variants; actual futureordinaryrun diagnostics retain missing boundary fields. C/guard unchanged."
+    "interrupted_probe_disposition": "Both original180s/4GiB interrupted-probe attempts stopped at RSS limit during13M-or-earlier bootstrap, before interruption phase. Streaming4MiB hashes and256MiB JS heap did not fit. No further variants; actual futureordinaryrun diagnostics retain missing boundary fields. C/guard unchanged.",
+    "actual_cpu_stop_successor": {
+      "result": {
+        "path": "build/task009/tci-cpu-stop-boundary-a1/result.json",
+        "sha256": "fbdefeb786729fdd10d090cc7d920b2653bc32cb0b5cf432f387a62075062646"
+      },
+      "monitor": {
+        "path": "build/task009/tci-cpu-stop-boundary-a1/monitor-result.json",
+        "sha256": "be33a6626474e7529ea4ef7ee90c36f591f90bed9365df0cbf7910110110c5cb"
+      },
+      "runtime": {
+        "path": "build/task009/mm2-tci-stop-runtime-a1/runtime.json",
+        "sha256": "7949a9a6254aaa273cc29d23b2f826361524e0d1b468bf9bb9b6a9f8bc8f1c68"
+      },
+      "contract": "lemma-qemu-cpu-stop/1",
+      "actual_running_observations": 40,
+      "manual_QMP_stops": 20,
+      "timer_stops": 20,
+      "timer_stop_each_units": 1000000,
+      "actual_total_units": 20580082,
+      "execution_seconds": 10.615523957,
+      "monitored_seconds": 14.904703313019127,
+      "combined_peak_rss_bytes": 4070727680,
+      "owned_processes_reaped": true,
+      "scope": "PureactualCPUState.stopped/count underBQL. Workerbarrierwaitsandpreservesactualclock/strictdelta. Noa14causalattribution, Ready, browserworkflow or generalpendingcontrollercontinuationclaim."
+    }
+  },
+  "Integrated16_receipt2_WAL_canonical": {
+    "status": "RUNNING_UNDER_ORIGINAL_BOUNDS_NO_SUCCESS_CLAIM",
+    "approved_plan": {
+      "path": "build/task009/integrated16-school23-receipt-plan-a2/plan.json",
+      "sha256": "7dffdb20bd4f731451d8be0e4a6e3e064f97c350eabda9cf05085730391a694e"
+    },
+    "question": "Actual full profile16 ROM/NV cold authentication of final joint545 guest, Ready, original pen/Save and reset; exact deferred Saved receipt through full SRAM-backed SoC.",
+    "artifacts": {
+      "path": "build/task009/integrated16-school23-receipt-artifacts-a1/result.json",
+      "sha256": "3c532a85ef2054fe07816cd14c87a9ef58f371bb0d1be625cc5963a2ed008034"
+    },
+    "artifact_author_seconds": 8.087385716149583,
+    "artifact_author_peak_combined_RSS_bytes": 1734230016,
+    "prepared": {
+      "path": "build/task009/integrated16-auth-prepared-a3/prepared.json",
+      "sha256": "6bd94de983c221ef82f39717e020979322ac63a6333182d3e67b8cb949bdafd8"
+    },
+    "package": {
+      "path": "build/boot/task009-integrated16-school23-receipt-image-a1/package.json",
+      "sha256": "49f326cad4be67253f600851cd08b8613ccce2eab1b85a3e4534fb4169fe67a1"
+    },
+    "image_sha256": "739d41123cdb9898a5b6a8a720c7fb75b4caffaca906f07bdd83c140365fae22",
+    "image_bytes": 668672,
+    "image_identity": "0x10001700000002",
+    "tag_sha256": "6ce6a0523eefe7a9166c8f28b47e4311489dc4a692cbebf550ea277b79fcc6c1",
+    "factory_sha256": "712813fc30b35b8866f639e92ffd783bc3a59c359a29ed90528af84eed722baf",
+    "factory_bytes": 33558528,
+    "descriptor_bytes": 2973,
+    "descriptor_capacity_bytes": 3072,
+    "guest_source_archive": "build/task009/school23-mm2-source-a8",
+    "guest_source_inventory_sha256": "03914f7cea4a400cc3761f8fe7974f76b300db7a9e14a3abd3c21b1c3aadbcd6",
+    "guest_ELF_sha256": "db6db008edc5fb249a834645b89b666d731bcb3d0d49be5534f9c5c87353dec8",
+    "full16_native_runtime": {
+      "build": "build/silicon/task009-integrated16-native-a2",
+      "ELF_sha256": "514124215706c2c9c070f18acbff8aa3fa038d36a0414977bd63cf8994433340",
+      "runtime_identity": "f0c116ccaf86d789e86c0fb2e6df3ec2e27fe7b3ea93ff949571eca73338ad2d",
+      "source_inputs": 259,
+      "frozen_physical_lock": "3923f9988c82bce5977977e2f751dff303702bd94aed4013cd5d734f8d077403",
+      "physical_scope": "Original frozen115 engineeringselection remains padding/timing-unqualified. Current selected30 metadata does not retroactively rebind this runtime; unchangedpenRTL504f and digital profile16 logic."
+    },
+    "ROM_sha256": "8a853ef5ef9fa3414c1db85afb22f10835b054e02fd912b1f3262d56280aa5a4",
+    "authentication_scope": "Actual ROM must verify every loaded payload byte using PUBLIC DEVELOPMENT HMAC KEY only; productionidentity andantirollback remainOPEN. Factory authoring is not update or qualification.",
+    "runner": "build/task009/integrated16-school23-receipt-runner-a1/result.json",
+    "execution": "build/task009/integrated16-school23-receipt-positive-a1/result.json",
+    "start_UTC": "2026-10-20T09:01:41.210731+00:00",
+    "original_whole_deadline_UTC": "2026-10-20T12:21:41.210731+00:00",
+    "limits": {
+      "whole_seconds": 12000,
+      "aggregate_canonical_cycles": 1500000000,
+      "Ready_cycles": 1299800000,
+      "Ready_seconds": 10500,
+      "Save_cycles": 200000000,
+      "Save_seconds": 1800,
+      "reset_cycles": 200000,
+      "output_bytes": 2147483648,
+      "runtime_rss_bytes": 536870912,
+      "factory_author_separate_whole_seconds": 240,
+      "factory_author_separate_combined_rss_bytes": 3221225472,
+      "launch_free_bytes": 8589934592,
+      "launch_available_bytes": 8589934592
+    },
+    "fresh_reused": "Fresh descriptor/package/tag and hosted Lean factory author evaluation; retained actual strictaudited target objects, source259 full16 runtime and source16 ROM reused; no guest/ROM/RTL execution yet Freshcanonicalexecutionrunsseparately; noReadycheckpointhybrid orELF/DTBpreload.",
+    "user_medium": "New isolated sparse copy of actual guestinitialized c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46; original remains unchanged",
+    "retained_old_failure": "Integrated15 older983guest Ready668M then200MSave/no421 FAIL remains unchanged; independent durablefrontier5 and Readyfork diagnosis do not promote that failure."
   }
 }
