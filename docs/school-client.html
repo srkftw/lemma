@@ -10,22 +10,24 @@
 <p>The browser distribution exposes the same Study actions and executes the same guest. Select Student mode, create a fresh medium through the real initializer, or reopen an existing named OPFS medium. Close/Open runs cold recovery from its durable bytes. Pairing credentials are live connection state and are cleared by reset, restore and close.</p>
 <p><strong>Qualification in progress:</strong> source-bound queue, compiler, controller and protected school cases are separate from the complete native/browser workflow. Current execution status and exact source-bound reproduction paths are in the <a href="plan/009-session-state.html">Task009 checkpoint</a>. The diagnostic commands below retain their historical scope and admission restrictions.</p>
 <h2>Export and restore native state</h2>
-<p>The explicitly packaged native logical2 edition supports execution checkpoints in Student mode. Its bundle manifest declares <code>lemma-silicon-fast-softtlb/0.2.0</code>. Launch that bundle normally; no environment variables or Developer injection controls are needed. In the drawing window choose Pause, then Export state and a new directory. Restore selects a previous state directory and creates an isolated fork. The source medium remains unchanged. Reconnect Study and bind a fresh ASK after restore; school credentials and live tablet handles are detached. A rejected state preserves the running machine and current admission.</p>
-<p>Save remains the guest operation for durable notebook work. Export state additionally captures pending execution, clocks, timers, interrupts, storage, queued transport, DMA and audio. Restore requires the exact native runtime, profile, guest and source identity. This edition does not import browser/RTL microstate or external companion storage. The <a href="contracts/009-qemu-logical-softtlb-v2.html">version2 continuation contract</a> and <a href="evidence/009-integrated-machine.html">finite qualification</a> give those limits.</p>
-<p>For a local source build, prepare and package the exact audited pair with the public selector. The source archive and build directories below are the retained Task009 cohort; use new output directories.</p>
-<pre><code>python3 scripts/lemmasim build --checkpoint-binding native-logical2 \
-  --backend qemu --profile lemma-silicon-dev/0.14.0 --workload school-notebook \
-  --guest-build build/kernel/task009-school23-notebook-a20 \
-  --guest-source-root build/task009/school23-mm-source-a6
-python3 scripts/lemmasim native-bundle-build --checkpoint-binding native-logical2 \
-  --profile lemma-silicon-dev/0.14.0 --school-deployment \
-  --notebook-build build/kernel/task009-school23-notebook-a20 \
-  --initializer-build build/kernel/task009-school23-initialize-a19 \
-  --guest-source-root build/task009/school23-mm-source-a6 \
+<p>Choose an explicitly packaged native checkpoint edition. The current MM2 edition declares <code>lemma-silicon-fast-mm2-softtlb/0.1.0</code> and <a href="contracts/009-native-mm2-continuation-v1.html">native MM2 continuation/1</a>. The earlier ABI1 logical2 edition retains <code>lemma-silicon-fast-softtlb/0.2.0</code> and its <a href="contracts/009-qemu-logical-softtlb-v2.html">version2 contract</a>. A regular MM2 bundle has no checkpoint admission; select the explicit edition below. Student mode requires no environment override or diagnostic injection.</p>
+<p>In the drawing window choose Pause, Export state and a new directory. Restore selects a compatible previous directory, including one exported by an earlier closed session, and creates an isolated durable fork. The old medium remains unchanged. The window reports the successful export or restored cycle. Reconnect Study and bind a fresh ASK after restore; School credentials and live tablet handles are detached only after successful adoption. A rejected state preserves the current machine and admission.</p>
+<p>Save remains the guest operation for durable notebook work. Export state captures pending execution, clocks, timers, interrupts, storage, bounded transport and controller DMA/PCM state under the declared binding. Exact runtime, profile, guest and source identities must match. An in-flight cancelled read (<code>held_cancel=1</code>) cannot be captured or loaded; a safe earlier checkpoint can still restore while the current cut is unsupported. Browser/RTL microstate migration and external companion storage remain outside this edition. Native presentation consists of paper and a raw PCM audit file; this path does not restore host speaker, sensor or transmission permissions.</p>
+<p>Wait for the visible paper before selecting a control. Guest initialization receipt420 can precede the completed first frame, and durable Saved receipt421 can precede its visible header. Ordinary AUDIO TEST→Export/Restore and a fresh-session Restore→pen/Save now pass with the actual admitted bundle. The latter checks completed SAVED pixels and every nine-word controller record in the durable work. Exact receipts, original failed observations and source scopes are in the <a href="evidence/009-multimodal-pcm-ring.html">native MM2 evidence</a>.</p>
+<p>Prepare and package the retained exact audited pair with the public selectors and an unused output directory:</p>
+<pre><code>python3 scripts/lemmasim build --checkpoint-binding native-mm2-logical2 \
+  --backend qemu --profile lemma-silicon-dev/0.14.0 --controller-binding mm2-subset \
+  --workload school-notebook --guest-build build/kernel/task009-school23-notebook-a31 \
+  --guest-source-root build/task009/school23-mm2-source-a10
+python3 scripts/lemmasim native-bundle-build --checkpoint-binding native-mm2-logical2 \
+  --profile lemma-silicon-dev/0.14.0 --controller-binding mm2-subset --school-deployment \
+  --notebook-build build/kernel/task009-school23-notebook-a31 \
+  --initializer-build build/kernel/task009-school23-initialize-a30 \
+  --guest-source-root build/task009/school23-mm2-source-a10 \
   --sample-course build/school/task009-sources-a1/sample.lcp \
-  --output-dir build/task009/school23-native-logical2-NEW
+  --output-dir build/task009/school23-native-mm2-logical2-NEW
 python3 scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.14.0 \
-  --native-bundle build/task009/school23-native-logical2-NEW \
+  --native-bundle build/task009/school23-native-mm2-logical2-NEW \
   --workload notebook --mode student --disk YOUR_SAVED_MEDIUM.raw \
   --session-dir build/task009/student-state-NEW --paused
 </code></pre>

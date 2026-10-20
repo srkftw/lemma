@@ -1,18 +1,21 @@
 {
   "schema": "lemma-task009-owned-pcm-ring-evidence/1",
-  "status": "PASS_ACTUAL_BOUNDED_4099_PCM_AND_PARTIAL_MUTE_REMAINING_PRODUCT_GATES_OPEN",
+  "status": "PASS_BOUNDED_PCM_SCOPED_NATIVE_MM2_CONTINUATION_AND_ORDINARY_STUDENT_WORKFLOW_REMAINING_GATES_OPEN",
   "implementation_commit": "c05808d",
-  "purpose": "Replace the sixteen-sample maintenance fragment with a service-owned4KiB S16 ring, wrap/refill and exactEOF through real DMA/controller interfaces. CorrectedactualStudent4099sampleplayback and452samplepartialMUTE nowpass; fullsensor/economy/explanation/qualification obligationsremain.",
+  "purpose": "Source-bound owned PCM ring, finite native MM2 continuation, and ordinary Student Export/Restore followed by durable ink and completed visible Saved. Historical cohorts and failures retain their original identities. Full sensor/economy/explanation/physical and educational obligations remain.",
   "bindings": {
     "full_union": "lemma-silicon-dev/0.16.0",
     "predecessor_union": "lemma-silicon-dev/0.15.0",
-    "full_union_relation": "All predecessor profile fields unchanged except profile identity; ABI2 and boundedring metadata added. Real fullSoC built; nofull16 guestexecution claimed here.",
+    "full_union_relation": "All predecessor profile fields unchanged except profile identity; ABI2 and bounded ring metadata added. Actual original03914f full16 ROM/NV Ready, pen/Save and reset is separately bound below; Fast14 native remains an explicit functional subset.",
     "functional_subset": "lemma-silicon-fast-mm2-subset/0.1.0",
     "subset_profile": "lemma-silicon-dev/0.14.0",
     "controller_contract": "lemma-multimodal-converter/2",
     "service_version": 3,
-    "public_MM2_checkpoint_admitted": false,
-    "ISA": "RV64IM +Zicsr/Zifencei; A/F/D/C disabled"
+    "public_MM2_checkpoint_admitted": true,
+    "ISA": "RV64IM +Zicsr/Zifencei; A/F/D/C disabled",
+    "checkpoint_binding": "lemma-silicon-fast-mm2-softtlb/0.1.0",
+    "checkpoint_contract": "lemma-native-mm2-continuation/1",
+    "checkpoint_observation_relation": "lemma-native-MM2-logical-observation-relation/3"
   },
   "target": {
     "source_archive": "build/task009/school23-mm2-source-a2",
@@ -434,12 +437,12 @@
     "build/school/task009-native-mm2-a1/pcm-full-phase.json"
   ],
   "remaining_scope": [
-    "Actual4099 guest waveform/knownconsumed completion after independently qualifiedUser correction",
-    "Full0.16 ROM/NV coldboot and connected pen/Save/controller execution, with exactprofile-aware image packaging",
-    "MM2 samebackend pendingring/heldread/EOF/permission checkpoint cuts and transactional faults before public admission",
-    "Controller-owned longPCM does not establish speech/explanations, sensors, safety, economy3,902,720B/s, physicalclosure, fabrication or educationalbenefit",
-    "Fast14MM2 remains a functional subset; BootNV/clockedUSB/power-v2/radio/fullPaper-v3 controllers are not silently supplied",
-    "DirectC clockUINT64_MAX remains outside admittedQEMU signednanosecond/time range; no sentinel-end behavior claim"
+    "held_cancel=1 capture is unsupported and refuses before writing state; malformed/cancel1 candidates refuse before adoption. Safe earlier restore is allowed from an unsupported current cut. Actual cancel1 search ended NOT_ENCOUNTERED and does not qualify that cut.",
+    "Exact declared runtime/profile/guest/source binding and finite documented guards are required. Arbitrary cuts, cross-backend migration, browser exact continuation and external companion storage are not admitted.",
+    "Original full16 Ready/pen/Save/reset does not qualify enabled simultaneous economy acquisition, wired/radio service traffic, independent cold reopening or ordinary school workflow on that full union.",
+    "Controller-owned PCM and native paper/raw audit output do not establish speech/explanations, sensors, safety, economy3,902,720B/s, physical closure, fabrication or educational benefit.",
+    "Fast14 MM2 remains a functional subset; BootNV/clockedUSB/power-v2/radio/fullPaper-v3 controllers are not silently supplied.",
+    "Direct C clockUINT64_MAX remains outside admitted QEMU signed-nanosecond/time range; no sentinel-end behavior claim."
   ],
   "historical_incomplete_SoC_compile": {
     "receipt": {
@@ -687,7 +690,7 @@
     }
   },
   "receipt2_WAL_completion_successor": {
-    "status": "STRICT_AUDITS_AND_NATIVE_PACKAGE_PASS_ORDINARY_WORKFLOW_IN_PROGRESS",
+    "status": "HISTORICAL_03914F_NATIVE_WORKFLOW_4099_PCM_AND_FULL16_FINITE_EXECUTION_PASS",
     "source_archive": "build/task009/school23-mm2-source-a8",
     "source_inputs": 545,
     "source_inventory_sha256": "03914f7cea4a400cc3761f8fe7974f76b300db7a9e14a3abd3c21b1c3aadbcd6",
@@ -793,6 +796,168 @@
       "scope": "Parent observed actual packaging/admission; ordinary new browser session is a separate in-progress workflow. CPU-stop runtime archive7949a9a6254aaa273cc29d23b2f826361524e0d1b468bf9bb9b6a9f8bc8f1c68; no new compilation is claimed from packaging."
     },
     "public_MM2_checkpoint": false,
-    "pending": "Execute final same-source4099 PCM/DONE2, writeahead assistance and connected school lifecycle in native/browser; actual full-profile16 ROM/pen/Save/reset remains a separate canonical question."
+    "pending": "This03914f guest predates the warm-SEND repair. Its actual waveform/WAL/continuation/full16 receipts are recorded below. Old bundle public_MM2_checkpoint remains false."
+  },
+  "native_03914f_completion": {
+    "source_archive": "build/task009/school23-mm2-source-a8",
+    "source_inventory_sha256": "03914f7cea4a400cc3761f8fe7974f76b300db7a9e14a3abd3c21b1c3aadbcd6",
+    "ordinary_native": {
+      "path": "build/school/task009-native-provenance-a1/terminal-result.json",
+      "sha256": "6a09af08a495d63d6a9b95f1bb384d47be8f2cdf0f0d937857c6e8a54777285a"
+    },
+    "PCM": {
+      "path": "build/school/task009-native-provenance-a1/cold/pcm-output-assessment.json",
+      "sha256": "3eda03f636b808df078b9055e1ad526355b8ac5bc0e703c6b51bda36fddf79d2"
+    },
+    "PCM_output": {
+      "path": "build/school/task009-native-provenance-a1/cold/session/audio-0.bin",
+      "sha256": "e804dbaf07751e506683fc73e6bc2ed8caeb266655b0c9bc202cc2609f1aa73a"
+    },
+    "PCM_scope": "4099 exact S16 waveform records, positions1..4099,6250-tick spacing; accepted=fetched=submitted=consumed4099,gaps0/held0. Dedicated phase29,000,005units/1.274205s; no repeat run.",
+    "held_read_MUTE": {
+      "path": "build/task009/mm2-logical2-held-read-a1/execution/result.json",
+      "sha256": "d782fcc2935f80e15b599c6ccb7b49c5bb2275b38dfa455e87e2b0c13fb3b394"
+    },
+    "WAL_original_observer_FAILURE": {
+      "path": "build/task009/mm2-logical2-wal-a1/execution/result.json",
+      "sha256": "8d8c4204d8cea1b8c0d38ea2bf064094fdc13ebf70c948937156e3e8c203c142"
+    },
+    "WAL_closed_assessment": {
+      "path": "build/task009/mm2-logical2-wal-a1/closed-assessment-a1/result.json",
+      "sha256": "2e0f46e6d2145e9b1d5dcf7dbf4c1aab247f79318ee4bda839ecd352f161e630"
+    },
+    "maintained_relation_assessment": {
+      "path": "build/task009/mm2-maintained-relation-a2/result.json",
+      "sha256": "995f5368d2d4239c6b666dfec9925c8b5521e8a0acf8747297a7672f945f0a1c"
+    },
+    "full16_actual": {
+      "path": "build/task009/integrated16-school23-receipt-positive-a1/result.json",
+      "sha256": "4c8bb0d2a5a51a79791d60eb8c3f5b94a079160fc55efca04de8020e72abd7a3"
+    },
+    "full16_closed_cleanup": {
+      "path": "build/task009/integrated16-school23-receipt-closed-a1/result.json",
+      "sha256": "1382e40d0ae889a9cfb7689cd8e2aff73da35b3a3212a8219910e401553fae47"
+    },
+    "held_read_scope": "Actual held kind2/cancel0 read; ordinary MUTE suffixes preserve identical logical/VMState/fullRAM/backing/PCM.64.228s; older guest is not relabeled warmd485.",
+    "WAL_scope": "Original53.394s execution retains ABI1-observer FAIL. Pure closed assessment uses exact copied MM2 relation3 over both already-present original1Bns suffixes. Actual remotephase1/request20/floor22, Notebookfrontier21/Savephase2/IPC331,Mathscope1. Exact RAM/VMState/logical/durable/UART suffix; no phase8 held-media claim.",
+    "maintained_relation_scope": "Additive ABI/version-guarded maintained MM2 relation3 applied to retained old03914f WAL/held-read pairs and actual ABI1 bytes, zero guest execution; relation2 preserved.",
+    "full16_scope": "Actual canonical0.16 ROM/NV factory cold authentication, Ready674Mcycles/5925.994290s,pen/Save69M/716.955955s,reset200k;total743.2M/6654.458127s within original1.5B/12000s. Independent linked full9 raw/index/root frontier2\u21925 and exact reset backing. Stale wrapper RUNNING publication preserved; unavailable wrapper exit code not inferred. No warmd485/full16 or enabled economy/transport claim."
+  },
+  "scoped_native_MM2_continuation": {
+    "status": "PUBLIC_EXPLICIT_BINDING_ADMITTED_AND_ACTUAL_ORDINARY_STUDENT_PASS",
+    "contract": "docs/contracts/009-native-mm2-continuation-v1.html",
+    "binding": "lemma-silicon-fast-mm2-softtlb/0.1.0",
+    "execution_binding": "lemma-silicon-fast-mm2-subset/0.1.0",
+    "relation": "lemma-native-MM2-logical-observation-relation/3",
+    "implementation_commits": [
+      "db80bae",
+      "0cba81b",
+      "e7237e2"
+    ],
+    "host_qualification": {
+      "path": "build/task009/mm2-admission-host-a2/result.json",
+      "sha256": "e5e2842077e87772bf0a4d80ea2c9bba6462f8d2cd294753757b63672ad2587d"
+    },
+    "private_guarded_session": {
+      "path": "build/task009/mm2-guarded-session-a1/result.json",
+      "sha256": "1f8de267cb1295040fb9a260c1f837f4904c35d3fb6f56519a83605cd3ec8441"
+    },
+    "cancel_cut_qualification": {
+      "path": "build/task009/mm2-cancel-cut-scope-a3/result.json",
+      "sha256": "ca3990acc7fe4ca4f6f86c818b9a751264220adb28d411a7340ec3f444c6562a"
+    },
+    "actual_cancel_search": {
+      "path": "build/task009/mm2-logical2-cancel-read-a1/execution/result.json",
+      "sha256": "4a2231ad1d90aea6fa5edae48dc325700203d784564db8886ad820f5e7272a01"
+    },
+    "host_scope": "111 nonempty unskipped cases: relation7,new admission11,legacy logical5,transaction7,Session46,MM2binding16,legacyobserver11,Schoolservice8. Exact source hashes retained. Meaningful wrongABI/incomplete/ringmutation/offset-only and coherently rehashed candidate negatives.",
+    "private_scope": "Older false archive refuses normally before process-local private qualification of actual ring2048 and blockedUART4082. Public ordinary UI below uses normal true archive with no override.",
+    "cancel_scope": "Zero guest instructions: held_cancel1 candidate refused before adoption, capture creates nofiles/no clockadvance, prior backing/authority preserved; safe earlier restore succeeds from unsupported current cut. Earlier failed harness retained. Separate actual search NOT_ENCOUNTERED51.682s does not qualify cancel1 continuation.",
+    "transaction": "Candidate validation uses fresh never-run QEMU and isolated backing. Failure retains original PID/backing/authority. Adoption alone invalidates School connection, detaches tablet, increments presentation generation and discards old futures; output metadata then follows adopted generation.",
+    "presentation_scope": "Native viewer presents paper; controller audio is a generation-specific raw PCM audit file. No speaker sink/queued audible presentation/mute preference, microphone/sensor acquisition or external transmission permission is implemented or revived here."
+  },
+  "warm_native_and_MM2_ordinary_UI": {
+    "source_archive": "build/task009/school23-mm2-source-a10",
+    "input_count": 545,
+    "source_inventory_sha256": "a79ae7b47f1a5bea37648486e15b88ab79b869d1526c1bd330276e93e49aa6d4",
+    "Notebook_sha256": "d4855f51de2a6c84e6f18af0c6892270f1999ee7cdc1e52d508b70d13d3cb756",
+    "genuine_target_source_archive": "build/task009/school23-mm2-source-a9",
+    "genuine_target_source_inventory_sha256": "645f0dac26beab9fe4b3b20067bf05385595d3abaf0e21e60846e583cfdaf17a",
+    "genuine_producer": {
+      "path": "build/task009/school23-mm2-producer-a6/result.json",
+      "sha256": "e4a02327e3aa8f1013c117badbc4794759edda4bb66d8950f86caf98c1512143"
+    },
+    "original_pre_action_FAILURE": {
+      "path": "build/task009/school23-mm2-producer-a5/result.json",
+      "sha256": "78157d05b275d87f906d3129d1690a7e9890764e8a2db8a57e1e67cff20b020e"
+    },
+    "original_audit_FAILURE": {
+      "path": "build/task009/school23-mm2-audit-a5/result.json",
+      "sha256": "43b6592ffac231eb02b64b11396cecd3b214bde58aa20d5d2032ee44a8ebc226"
+    },
+    "LLVM_audit_guard_gate": {
+      "path": "build/task009/school23-warm-audit-admission-a2/result.json",
+      "sha256": "0ca3048d9a8016506317744b75537d82065853bb2eb5a0cf70f71cf308ede790"
+    },
+    "cached_provenance_refresh": {
+      "path": "build/task009/school23-mm2-refresh-a5/result.json",
+      "sha256": "cb8fea199a7cd700c603ac6fefdb13d811a733bed5f8b262bc937558d05ba69f"
+    },
+    "strict_audits": {
+      "path": "build/task009/school23-mm2-audit-a6/result.json",
+      "sha256": "0c7e46cdf08e7d21522d7865ede99a7e1ef2546c9675d64f29c49f2e17ea8ddf"
+    },
+    "normal_package": {
+      "path": "build/task009/school23-mm2-native-package-a6/result.json",
+      "sha256": "f975d7b129dfc9a21df293c404919ef3c7e542d462f5c14318816fbb044c72fc"
+    },
+    "explicit_checkpoint_package": {
+      "path": "build/task009/mm2-admitted-native-package-a2/result.json",
+      "sha256": "5c4655cad52d0a6e26e919d8cffbed7401f8607a274a045ca88056d80c0c0cf2"
+    },
+    "ordinary_UI_original_FAILURE": {
+      "path": "build/task009/mm2-student-ui-a1/result.json",
+      "sha256": "0b8218200b8b1c22158a20c94e8c59b12bf47043ca71c906b715fc0c9ded0264"
+    },
+    "ordinary_UI_export_restore": {
+      "path": "build/task009/mm2-student-ui-a2/result.json",
+      "sha256": "f9826fa8b028d93c9369996f00cdfad98c23fd1fb8b8efbc250aaef2fcc39303"
+    },
+    "ordinary_UI_reopen_visible_saved": {
+      "path": "build/task009/mm2-student-ui-a3/result.json",
+      "sha256": "ad01a36b41bfc02c1b532b772cccefb6dc389d77a9b521f3b228b20a42dcb575"
+    },
+    "warm_source_gate": {
+      "path": "build/school/task009-warm-submit-source-a1/result.json",
+      "sha256": "056fd4288a997f7c7705f35b410d7aa3cedc6bffccf3eccd5b8caeb05d3b3258"
+    },
+    "source_audit_guard_gate": {
+      "path": "build/school/task009-warm-source-admission-a3/result.json",
+      "sha256": "f0752a5f1a055d0dad5ebd90d901f8328f06f90a3bbf8d4621bd0732972e1e02"
+    },
+    "warm_Student_school": {
+      "path": "build/school/task009-native-warm-a1/terminal-result.json",
+      "sha256": "7f226389375808d2677a170b9b8713d769e7ea7603b5d99d1d72f4181ea0bcfe"
+    },
+    "genuine_production_scope": "Four genuine Lean/LLVM rows951.464827s whole. Pre-action immutable-Nix failure producer-a5 retained; successor selects original immutable child tool preserving outer guard.",
+    "audit_guard_scope": "Actual4 pre/post corpora and13 missingguard/retarget LLVM mutations; legacy03914f preserved. Source gate10warm+23existing cases; newoffset88/96/104/112 use requires full120B context, genuine legacy88B retained.",
+    "refresh_scope": "a79 differs from645 only multimodal_target.py,school_target.py,typed authority pins. Each20payload artifacts per role equals genuine a6;fresh0/reused39/incremental2 per row. Authority/provenance refresh53.604495s; no target/C compilation.",
+    "strict_audit_scope": "Four strict auditsPASS520.676202s,682,209,280Bcombined sampledRSS; original900s/300sinspection/3GiB/2GiB retained and owners reaped.",
+    "normal_bundle": "build/task009/school23-mm2-native-a4",
+    "normal_bundle_manifest_sha256": "a323d365dffe9a3a88ffc8ba7cb27e653c7fd99a16c0087d25d8aa963a8c5365",
+    "normal_bundle_checkpoint_admitted": false,
+    "explicit_checkpoint_bundle": "build/task009/school23-mm2-native-logical2-a1",
+    "explicit_checkpoint_manifest_sha256": "fed8d8278e727a36e2fbe1aa4067c6655aa2a4f1389dffc2e3a8ec4478cc90a3",
+    "explicit_checkpoint_admitted": true,
+    "runtime_scope": "Both normalCLI packages reuse exactp81 runtimeELF4f052aaf5497b84046d93c08f475bab4f0665babf5fe1f9cc6ddb7b02398b729 and same auditedguest.17.177366sregular/15.659120sexplicit; no compiler or privateoverride.",
+    "warm_Student_scope": "Actual803/2 help remains open60001; CHECK/Save/SEND reaches school146+733pointer36,syntheticteacher147,ordinaryAliceFeedback,explicitSave37,fourfull9raw preserved.2,800,000,004units/574.283508s within12B/3000s;normaldestroy/sourcesunchanged. ExistingVopaqueannotation, no newwrittenproof/browser/full16 claim.",
+    "ordinary_UI_export_restore_scope": "NormalStudentTk CanvasAUDIO TEST +Pause/Export/Resume/Restore. Visibleidlecompletedpaper180,500,071;activeringcut182,700,071;changed600k;exactrestore,oldbackingunchanged;pen/Save43,700,014 and full9durable exact.54.041419s/254,574,592B. Finala2screenshot stillPENDING after421; completedvisibleSaved not claimed froma2.",
+    "ordinary_UI_reopen_scope": "FreshStudentcycle0 restores existinga2export182,700,071. Actualpointerink/Save48,900,021\u2192231,600,092;frontier2\u21925. All9fields including actualcontrollersequence3/4/5+epoch1 matchdurable. LiteralcompletedcontrollerSAVEDfooter24,132,336,16 ANDordinaryviewer exact.28.792419s/254,451,712B;300s/1GiB/3GiB/150Msuffix unchanged;ownersreaped,sourcesunchanged.",
+    "visible_saved_screenshot": {
+      "path": "docs/evidence/009-native-mm2-restored-saved.png",
+      "sha256": "94399738376e84d7bfe087a4be8f0113aea4a99a426c258d2c7f06e59333856f"
+    },
+    "operation_status": "Viewer retains Exported/Restored state at cycle result. UART420 initializes guest before optical firstframe;421 acknowledges durable current work before later header completion. Accepted/target/completed/visible frontiers remain separate. Native status never advertises UART420 as Ready.",
+    "permissions": "Ordinary synthetic pointer and controls only; no Student diagnosticUART injection/privateoverride/host-synthesizedguestwork or speaker/sensor/transmissionauthority."
   }
 }
