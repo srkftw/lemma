@@ -7650,6 +7650,374 @@
         "right560nm": 27
       },
       "scope": "Completed original immutable main/defaultdeep/nwell context. Every93actualcurrentmarker is exactlypresent in4557baseline; no countcomparison to unmatched3717partialfullmain or fullprocessDRC/LVS/physicalqualification."
+    },
+    "original_source_owners_of_all93": {
+      "path": "build/silicon/task009-original-macro-well-owners-a1/result.json",
+      "sha256": "8a9f229f9f51f8b2924979350ab4fc6d4fe54f02f2810fe85d355a2c338042cf",
+      "status": "PASS_EXACT_ORIGINAL_FUNCTIONAL_SOURCE_OWNERS_OF93_NWELL_EDGES_NOT_MOVED",
+      "seconds": 2.897032629000023,
+      "peak_RSS_bytes": 515371008,
+      "source_seal_equal": true,
+      "scope": "Each actual93reportedge binds exact originalGDS sourceconductor+actualmastertransform;24owners18left+6right,8additionalpaddingneighbors required. Retarget+shift negatives reject."
+    },
+    "unselected32_site_placement_precursor": {
+      "path": "build/silicon/task009-macro-well-placement-a1/result.json",
+      "sha256": "764817955e7cc6ac953306712ece844540564134a40eede0c398a80ab2c5429a",
+      "status": "PASS_SOURCE_BOUND32_MACRO_WELL_PLACEMENT_REPAIRS_UNROUTED_NOT_PROCESS_CLOSURE",
+      "seconds": 9.35625889711082,
+      "peak_RSS_bytes": 591278080,
+      "source_seal_equal": true,
+      "scope": "Actualoriginal24sourceowners+8forcedpaddingneighbors;32one-site moves preservefull9037functional/macroidentities,668ports/nativePG/OBS/64movedPGrailterminals,9034functionalpadding. All9703signal/clockwirestreams explicitlyinvalidated; zero newroute/PEX/timing/processclaim."
+    },
+    "unselected32_site_original_spacer_insertion": {
+      "path": "build/silicon/task009-repaired-spacer-insertion-a1/result.json",
+      "sha256": "74a45045a992c547b811db021b8944fa1455bf3c12a1882b8509e99825ef9451",
+      "status": "PASS_SOURCE_BOUND_ORIGINAL_ALLROW_FILLER_INSERTION_AND_SIGNALS_NOT_PROCESS_DRC",
+      "seconds": 11.33093248005025,
+      "peak_RSS_bytes": 743763968,
+      "source_seal_equal": true,
+      "original_whole_deadline_met": true,
+      "resource_errors": [],
+      "geometry": {
+        "status": "PASS_ORIGINAL_ALLROW_FILLER_NATIVE_PLACEMENT_PG_OVERLAP_SIGNALS_UNCHANGED_NOT_PROCESS_DRC",
+        "source_odb_sha256": "cd1b0b572c7d844dc77560bfdf1141b6aae9d57a2ff3ef9eeaf53448a7a974d9",
+        "plan_sha256": "993b940511465d3fb1c2f8af1266c8abc97b432d5eb7ceebf6e72e8fdb4dcd5d",
+        "filled_odb_sha256": "c8516006ab3866f70b94526980ac4e1ec4c417411491cfcedd72b40bc0dcef4b",
+        "filled_def_sha256": "0a74004afb462d73d4d0d938d56e858fccbefce715c5799582d63ca4ab8fb26b",
+        "old_placements_preserved": 9037,
+        "old_ports_preserved": 668,
+        "old_native_PG_shapes_preserved": 99128,
+        "old_OBS_preserved": 18718,
+        "original_signal_wire_streams_preserved": 0,
+        "explicitly_unrouted32_move_source": true,
+        "original_fillers_added": 40247,
+        "new_PG_terminals": 80494,
+        "native_pin_correct_rail_overlap": true,
+        "macro_right_spacer_keepout": {
+          "extra_sites": 2,
+          "site_nm": 480,
+          "actual_macro_right_nm": 904480,
+          "original_filler_well_overhang_nm": 240,
+          "original_NW_b_spacing_nm": 620,
+          "minimum_filler_bbox_left_nm": 905340,
+          "actual_first_filler_bbox_left_nm": 905760,
+          "new_well_gap_nm": 1040,
+          "preserved_functional_cells_in_spacer_keepout": [
+            "_11492_"
+          ],
+          "scope": "Actual322 macro-right seam correction; other fullprocess/LVS obligations remain"
+        },
+        "macro_left_spacer_keepout": {
+          "extra_sites": 2,
+          "site_nm": 480,
+          "actual_macro_left_nm": 120000,
+          "original_SRAM_Metal1_left_local_nm": 60,
+          "original_SRAM_NWell_left_local_nm": 0,
+          "original_filler_NWell_overhang_nm": 240,
+          "maximum_filler_bbox_right_nm": 119040,
+          "minimum_Metal1_gap_nm": 1020,
+          "minimum_NWell_gap_nm": 720,
+          "original_NW_b_spacing_nm": 620,
+          "declared_conservative_Metal1_spacing_nm": 220,
+          "preserved_functional_cells_in_spacer_keepout": [
+            "_11429_"
+          ],
+          "scope": "Exact original source extent correction for new left-edge spacer clearance; full process and six old right-edge wells remain"
+        },
+        "functional_padding_policy": "Original960nm functional-cell separation remains; physical spacers fill unused sites",
+        "negative_cases": [
+          "wrong_site",
+          "wrong_orientation",
+          "wrong_supply",
+          "actual_macro_right_80nm_well_gap",
+          "actual_macro_left_240nm_well_gap",
+          "new_unadmitted_signal_wire"
+        ],
+        "remaining": [
+          "original GDS filler masks and all partial NW.b findings",
+          "new PG/signal geometry clearance",
+          "full original process rules",
+          "connected LVS",
+          "post-fill extraction/timing scope",
+          "IR/EM"
+        ]
+      }
+    },
+    "unselected32_site_unrouted_GDS": {
+      "path": "build/silicon/task009-repaired-spacer-gds-a1/result.json",
+      "sha256": "4918f653b3305a4a522e0810912c0e24a7b18e7b38d5a587b7205387928d0974",
+      "status": "FAIL",
+      "seconds": 28.42952212691307,
+      "peak_RSS_bytes": 913502208,
+      "source_seal_equal": true,
+      "original_whole_deadline_met": true,
+      "resource_errors": [],
+      "geometry": {
+        "status": "FAIL_FILLER_GAP_OR_METAL_SUBSET",
+        "actual_original_masters": 49,
+        "actual_original_instances": 49284,
+        "original_filler_instances": 40247,
+        "original_master_hashes": {
+          "sg13g2_nor2_1": "982168b516c80eda822d09bbf1b75b560be87d78c3d661005804aa4c7d856f7e",
+          "sg13g2_buf_16": "6526fd13226886fb2e37876114c685efe6ebd9d569a07f9de9f0ddb1651989cf",
+          "sg13g2_and4_1": "ae173ba102d164ed113e34beaf7f4d59f124e8c8046dc6e1c5d64cfbae3f9345",
+          "sg13g2_nand2b_1": "0eb0e56f3d4ebc558275efbfbb5c4ae46ed54ec001450efd0ec3d187b159b87f",
+          "sg13g2_buf_2": "959fc99d59d6c523d10e82db67c1029c6510beeb3400385f9ebc8885545d9dcc",
+          "sg13g2_nor3_2": "08ee5bffa2433c99edfa8224456665cb7b7f39cb09d87484f38ec98af59000e9",
+          "sg13g2_mux2_1": "e5dd56138af280500529a764665a4b128b0773fc22b806bf9ed21775cc80b66d",
+          "sg13g2_nand3_1": "dee4b36eba8872924b4f5065758bb4ba8304ce309388066cd2d38309ec0487aa",
+          "sg13g2_nand3b_1": "f28eb7d88a908e16c835aa1119429d125128cd44e288511d07b8fb0405c2c341",
+          "sg13g2_a21o_1": "77b1ef9bee544f2edbf2afad22f90d8b53d5c3081e054e2f03f24574ec9e1a6d",
+          "sg13g2_nor4_2": "a6f4b8fc9c5913670806045207cf1769b63b75bfad90dd47a2c53b01002115c0",
+          "sg13g2_a21oi_2": "4e168f7fc3e1c17ecbe93d0c8898ff43bcc6a91e2b56bd1204449ac9c5ccde1c",
+          "sg13g2_dlygate4sd3_1": "b93ea0732cd151d5e597e662a6a192dd1e75c762465422e404c02eacff7e08ea",
+          "sg13g2_or3_1": "e093f6202adc9de953da13d72701ad7b761b77402e52214e051635a9570d6be3",
+          "sg13g2_or3_2": "73069eacc3780f890145c7bb06ba82f6870f7502d47e6cd93fb0e44db8374125",
+          "sg13g2_buf_8": "da5d11cea78c10f243bda93b42d50557a135b414f6644e234b3365db25efeaca",
+          "sg13g2_fill_2": "3d1404290084282d6f90aa13aa904d3e0487d0f9b2150607e5446b28b7cb8663",
+          "sg13g2_xor2_1": "e3b491818e6ac0b1cbee738f5cd0e2ef0b8dea6355602672b0e6e71c7d8b2c7c",
+          "sg13g2_xnor2_1": "6619ec2d780bdfb263dedb3c1002577d11731b667dc31544d4752be92f76425f",
+          "sg13g2_nor2b_2": "3a7ab1883ebe47288a23b66d4f6bb6af6523a4bde483345f87ad2ce17c21bd38",
+          "sg13g2_o21ai_1": "cb49477e6c841501e476482389463d89f7fb5e260cc1d8961bf8a2eae088d80d",
+          "sg13g2_nand4_1": "3a6d89d154b123002640a6489db763b81ba2cbb473325ca2208bfdf49f902fca",
+          "sg13g2_or2_1": "5b3fb7dd9006cb56db94ba31961ff807cb57d97c96aeb95ddb585ccd71ba8bdd",
+          "sg13g2_nor2_2": "73d49cae59d4bfca7bfecdfb5a806cd47225afcccaa0bb62368d9229195d0c78",
+          "sg13g2_inv_2": "d1ebd6c70b852a0f98e5e0da4174cec4467deead71162c13e587db56d704cbec",
+          "sg13g2_dfrbpq_2": "43131fb9248a9d73d2d7479cfbdba15ea0c21bda85898b957f7141cc8deef409",
+          "sg13g2_tielo": "0dd57fe06b462cd4b0bd67d11f66b71c91c6e28c4c85fad6b4f19635562dbb7f",
+          "sg13g2_a22oi_1": "230a9fee2b8ed4768891eedce61071b9b8b4bcbc1751335d276780cbfc6a222f",
+          "sg13g2_and2_2": "f7631455a53d9cba36c389bb55283e851d6e18213d31aa81f0d9e1431d0db998",
+          "sg13g2_and2_1": "2f80742d63d3d811ec48158b10b049a6b68128e2be2c93610b3c47f914a8244a",
+          "sg13g2_nor4_1": "2840db9419d8eeafa22296a02b14ce05c9ee9fe0cbabb40930399b0ede710430",
+          "sg13g2_nor2b_1": "f165c0fca47c0ab819518c0e744fca0cb87bee691cf7d9919e83d9f92f6703b1",
+          "sg13g2_buf_4": "721d41d3f99661f6cb45eaf9c2c786872a1002fd7637455783b77e265658bd58",
+          "sg13g2_tiehi": "3c2e9d1d37c33cf29a6376842a4eff6e9775c032e05aab45c11553bbcee3028d",
+          "sg13g2_nor3_1": "7579d19fa7f66d37d5f6f57984288cce240fbdb1f84d9ca10f3828823f02178a",
+          "sg13g2_fill_4": "22f614f74a192be07e97384c756c4ba904da759ee7951a908fb3b6d2a2e8675f",
+          "sg13g2_dfrbpq_1": "909306f60ae781c2d2f0fa450e4e31bf617d378ebcf8eb6b6d555f46f6e95a60",
+          "RM_IHPSG13_1P_256x64_c2_bm_bist": "9709338076e4c1dea5e1084320d8479c849f566c2345b17c3162aa185517d006",
+          "sg13g2_a221oi_1": "5be0d279d9080b1bc549ed2cb9e3bbf947182864495413079ce1eca84e77e45c",
+          "sg13g2_and3_1": "f9a06b1d93c72dac49d9c82257e1712de587429f6f61556e793dc9c7fa9ee02a",
+          "sg13g2_inv_1": "eeee6e3762f4573be7c5dce3ce4e0e2d19dac1d5e3806063826fe0d8b256cd80",
+          "sg13g2_buf_1": "b315d09071af8f5817c9abca52cf5ae36688d1f20740002215c8ba90bfbb2673",
+          "sg13g2_or4_1": "c45c88df031401cca8d29194a691b61236e626759672b24eb4904de61f267ddf",
+          "sg13g2_a21oi_1": "da85749a86ca34647fc0076fa987b360f9ab3e0ae3ad749b4d8b699b9433e37e",
+          "sg13g2_fill_1": "26bd01c9c3cca35b2ad82d352fb6596220600d1bfd68e622274a9b344e46c459",
+          "sg13g2_nand2b_2": "d9138c0cf683f6d4c84df087ca19d1ded00cd051bcbc27778719383d739ef46e",
+          "sg13g2_nand2_1": "52eaf064b1b13baa43227c2cd7a3a962257a9e7e8990bd2610ab780ffbaa152a",
+          "sg13g2_fill_8": "d55ef0ebce01db6e7b13c305e1908b79b84a209de25a6cf45cc881abfea8cad5",
+          "sg13g2_nand2_2": "e2f40af38c5887d04132c20470841a94b387c64e347e562a2c3c341b71fbd383"
+        },
+        "unchanged_routing_shapes": 100500,
+        "unchanged_routing_mask_union": [
+          {
+            "layer_datatype": [
+              8,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              8,
+              2
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              10,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              10,
+              2
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              19,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              29,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              30,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              30,
+              2
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              49,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              50,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              50,
+              2
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              66,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              67,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              67,
+              2
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              125,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              126,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              126,
+              2
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              133,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              134,
+              0
+            ],
+            "XOR_area_nm2": 0
+          },
+          {
+            "layer_datatype": [
+              134,
+              2
+            ],
+            "XOR_area_nm2": 0
+          }
+        ],
+        "partial_original_NW_b_corridors": null,
+        "uncovered_original_corridors": null,
+        "original_corridor_scope": "Not reused for moved-source geometry; fresh original nwell table is mandatory",
+        "tangent_witness_policy": "12 actual touching-y edge pairs require new well coverage on both sides in a conservative1DBU band; no process rule is changed",
+        "scope": "Actual32-move originalmaster geometry and exact nativePG/port masks only; no signal/clock routes and no oldgap coverage claim; freshprocess required",
+        "new_filler_Metal1_rule_subset": [
+          {
+            "net": "VDDlogic",
+            "conservative_margin_nm": 220,
+            "signal_conflict_area_nm2": 0,
+            "positive_area_conductor_intersection_nm2": 0,
+            "opposite_native_supply_conflict_area_nm2": 0,
+            "opposite_native_supply_scope": "VDDlogic versus VSS only; VDDARRAY remains in the conservative other-conductor set",
+            "already_within_known_original_PG_clearance_nm2": 0,
+            "newly_introduced_clearance_area_nm2": 0,
+            "newly_introduced_positive_area_intersection_nm2": 0,
+            "baseline_scope": "Actual native PG plus source-GDS metal within literal original core PG ports; SRAM internal power remains unassigned",
+            "signal_conflict_bbox_nm": null
+          },
+          {
+            "net": "VSS",
+            "conservative_margin_nm": 220,
+            "signal_conflict_area_nm2": 7564375,
+            "positive_area_conductor_intersection_nm2": 0,
+            "opposite_native_supply_conflict_area_nm2": 0,
+            "opposite_native_supply_scope": "VDDlogic versus VSS only; VDDARRAY remains in the conservative other-conductor set",
+            "already_within_known_original_PG_clearance_nm2": 7564375,
+            "newly_introduced_clearance_area_nm2": 0,
+            "newly_introduced_positive_area_intersection_nm2": 0,
+            "baseline_scope": "Actual native PG plus source-GDS metal within literal original core PG ports; SRAM internal power remains unassigned",
+            "signal_conflict_bbox_nm": "(14505,14680;1029420,801800)"
+          }
+        ],
+        "negative_cases": [
+          "actual_filler_rail_as_signal_short",
+          "removed_actual_filler_well"
+        ],
+        "failures": [
+          "conservative220nm filler-to-conductor clearance subset remains nonempty; SRAM internal net assignment is unresolved"
+        ],
+        "GDS_sha256": "e36848d828be382c3dc7d8dc20518258bba8e285295dc6d8b048db5507111184",
+        "GDS_bytes": 5139716,
+        "seconds": 24.72680564993061,
+        "source_seal_equal": true
+      }
+    },
+    "unselected32_site_original_nwell_table": {
+      "path": "build/silicon/task009-repaired32-original-deep-nwell-a1/result.json",
+      "sha256": "540c530ad83e0032ae646071a798f279924d01b5b2865e496cf5003412f16698",
+      "status": "PASS_SCOPED_ORIGINAL_NWELL_TABLE_ONLY_NOT_FULL_DRC",
+      "seconds": 20.161222767084837,
+      "peak_RSS_bytes": 716529664,
+      "source_seal_equal": true,
+      "original_whole_deadline_met": true,
+      "resource_errors": [],
+      "owned_observed_PIDs_absent": true,
+      "results": [
+        {
+          "label": "repaired32_fill40247",
+          "GDS_sha256": "e36848d828be382c3dc7d8dc20518258bba8e285295dc6d8b048db5507111184",
+          "category_counts": {},
+          "total": 0,
+          "NW_b": 0,
+          "report_sha256": "75a84eea98eadf2b5757de973db7ecec95b7ad8ed01720ef20c45e914ef14fa5"
+        }
+      ],
+      "comparison": "Same originalmain/defaultdeep/table/source-manifest/controls as completedselected4557→bilateral93; changed32-move/unrouted+40247spacerGDS now0. Prior3717partialcontext remainsseparate. No fullprocess/LVS/route/PEX/timing or selectedpromotion."
     }
   },
   "process_bound_sample_hold": {

@@ -9,7 +9,7 @@ import tarfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]/'scripts'))
-from silicon_filler_source import all_row_plan, lef_masters
+from silicon_filler_source import all_row_plan, lef_masters, macro_well_move_plan, filler_source_pair, SELECTED_SOURCE_ODB, SELECTED_PLAN_SHA, REPAIRED_UNROUTED_ODB, REPAIRED_BILATERAL_PLAN_SHA
 from silicon_filler_geometry import report_gaps, original_pg_rectangles, insertion_source_binding, source_inputs_unchanged
 from silicon_row_filler import require_reserve, source_changes
 
@@ -31,6 +31,13 @@ def fixture():
 
 
 class OriginalRowFillerTests(unittest.TestCase):
+    def test_routed_and_repaired_unrouted_source_plan_cannot_be_crossed(self):
+        self.assertFalse(filler_source_pair(SELECTED_SOURCE_ODB,SELECTED_PLAN_SHA))
+        self.assertTrue(filler_source_pair(REPAIRED_UNROUTED_ODB,REPAIRED_BILATERAL_PLAN_SHA))
+        for source,plan in ((SELECTED_SOURCE_ODB,REPAIRED_BILATERAL_PLAN_SHA),(REPAIRED_UNROUTED_ODB,SELECTED_PLAN_SHA),
+                            ('0'*64,REPAIRED_BILATERAL_PLAN_SHA),(REPAIRED_UNROUTED_ODB,'0'*64)):
+            with self.assertRaises(ValueError): filler_source_pair(source,plan)
+
     def test_original_multirect_power_pin_preserves_all_fingers_and_rejects_unknowns(self):
         body = '  PIN VDD\n    USE POWER ;\n    PORT\n      LAYER Metal1 ;\n        RECT 0 3.56 3.36 4 ;\n        RECT 2.405 2.585 2.665 4 ;\n        RECT 0.81 2.14 1.07 4 ;\n    END\n  END VDD\n'
         self.assertEqual(original_pg_rectangles(body, 'VDD'),
@@ -147,6 +154,28 @@ class OriginalRowFillerTests(unittest.TestCase):
                    cell['location'][0]//480+cell['sites'])}
         self.assertFalse(covered & {6, 7, 8, 9, 10, 11, 12})
         self.assertEqual(result['macro_left_clearance_keepout']['preserved_functional_cells_in_spacer_keepout'], [])
+
+    def test_actual_source_well_move_plan_preserves_nonowners_and_exact_padding_neighbors(self):
+        import json
+        root = Path(__file__).resolve().parents[2]
+        config = root/'build/silicon/task009-maintained-native-gds-prepare-a1/config.json'
+        proof = root/'build/silicon/task009-original-macro-well-owners-a1/geometry.json'
+        if not config.exists() or not proof.exists(): self.skipTest('exact external physical source/owner proof not retained')
+        basis = json.loads(config.read_text()); masters = {}
+        for name in basis['lef_files'][1:]: masters.update(lef_masters(Path(name).read_text()))
+        native = json.loads(Path(basis['native_instances']).read_text()); before = deepcopy(native)
+        owners = json.loads(proof.read_text()); text = Path(basis['routed_def']).read_text()
+        plan = macro_well_move_plan(text, native, masters, owners)
+        self.assertEqual(native, before)
+        self.assertEqual(hashlib.sha256((json.dumps(plan, indent=2)+'\n').encode()).hexdigest(),
+                         'eacc87505e6baf3a8de4baac059c10bcb0fc6c60d5fac4ac7d7fc94b160f0b00')
+        self.assertEqual(len(plan['moves']), 32)
+        self.assertEqual(sum(x['reason'].endswith('padding_neighbor') for x in plan['moves']), 8)
+        self.assertFalse({'_11429_', '_11492_'} & {x['name'] for x in plan['moves']})
+        changed = deepcopy(owners); changed['markers'].pop()
+        with self.assertRaises(ValueError): macro_well_move_plan(text, native, masters, changed)
+        changed = deepcopy(owners); changed['markers'][0]['side'] = 'unknown'
+        with self.assertRaises(ValueError): macro_well_move_plan(text, native, masters, changed)
 
     def test_wrong_grid_orientation_padding_macro_and_filler_interface_refuse(self):
         mutations = [lambda n, m: n['instances'][0]['location'].__setitem__(0, 961),

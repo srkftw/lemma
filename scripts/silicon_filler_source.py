@@ -20,6 +20,17 @@ SELECTED_SOURCE_ODB = '43ffc744714d5f216227035ffa4eca2e77b87f27b61b4f39fa6296a40
 SELECTED_PLAN_SHA = 'f46d751c9d7fdcb30b601c46ffa104e48d39ae73ac1aaec60ce2382ab2799b39'
 RIGHT_KEEPOUT_PLAN_SHA = '6004367eac69ec9a07937f2eefd4530a018fe58d15e41bceaaffa047f9dbcf54'
 BILATERAL_KEEPOUT_PLAN_SHA = 'dcebfc0a34ad026c66c683b5b4f586110bcd96db3ec198a0f8e943ec83d7fdde'
+REPAIRED_UNROUTED_ODB = 'cd1b0b572c7d844dc77560bfdf1141b6aae9d57a2ff3ef9eeaf53448a7a974d9'
+REPAIRED_BILATERAL_PLAN_SHA = '993b940511465d3fb1c2f8af1266c8abc97b432d5eb7ceebf6e72e8fdb4dcd5d'
+
+
+def filler_source_pair(source_sha,plan_sha):
+    require((source_sha == SELECTED_SOURCE_ODB and plan_sha in
+             (SELECTED_PLAN_SHA,RIGHT_KEEPOUT_PLAN_SHA,BILATERAL_KEEPOUT_PLAN_SHA)) or
+            (source_sha == REPAIRED_UNROUTED_ODB and plan_sha == REPAIRED_BILATERAL_PLAN_SHA),
+            'exact selected routed or source-proved32-move unrouted source/plan pair required')
+    return source_sha == REPAIRED_UNROUTED_ODB
+
 
 
 def lef_masters(text):
@@ -199,17 +210,17 @@ def insert_original_fillers(source, plan_path, output):
     from silicon_synth import sha
     source, plan_path, output = map(Path, (source, plan_path, output))
     plan_sha = sha(plan_path)
-    require(sha(source) == SELECTED_SOURCE_ODB and plan_sha in (SELECTED_PLAN_SHA, RIGHT_KEEPOUT_PLAN_SHA, BILATERAL_KEEPOUT_PLAN_SHA),
-            'exact selected0.6 routed source and independently generated all-row plan required')
+    unrouted = filler_source_pair(sha(source),plan_sha)
     plan = json.loads(plan_path.read_text())
-    bilateral = plan_sha == BILATERAL_KEEPOUT_PLAN_SHA
-    keepout = plan_sha in (RIGHT_KEEPOUT_PLAN_SHA, BILATERAL_KEEPOUT_PLAN_SHA)
+    bilateral = plan_sha in (BILATERAL_KEEPOUT_PLAN_SHA,REPAIRED_BILATERAL_PLAN_SHA)
+    keepout = bilateral or plan_sha == RIGHT_KEEPOUT_PLAN_SHA
     require(plan['schema'] == 'lemma-original-row-filler-plan/'+('3' if bilateral else '2' if keepout else '1') and
             plan['status'] == 'PLANNED_ORIGINAL_PHYSICAL_SPACERS_NOT_PLACED' and
             (plan['functional_instances'], plan['macro_instances'], len(plan['rows']),
              plan['all_row_sites'], plan['functional_sites'], plan['outward_rounded_macro_sites'],
              plan['filler_sites'], len(plan['fillers'])) ==
-            ((9034, 3, 221, 478686, 69106, 160596, 248984, 40264) if bilateral else
+            ((9034, 3, 221, 478686, 69106, 160620, 248960, 40247) if unrouted else
+             (9034, 3, 221, 478686, 69106, 160596, 248984, 40264) if bilateral else
              (9034, 3, 221, 478686, 69106, 160419, 249161, 40336) if keepout else
              (9034, 3, 221, 478686, 69106, 160230, 249350, 40349)),
             'exact selected all-row filler coverage required')
@@ -217,6 +228,7 @@ def insert_original_fillers(source, plan_path, output):
     db = odb.dbDatabase.create(); odb.read_db(db, str(source))
     block = db.getChip().getBlock()
     before = snapshot(block); wires = signal_wire_identity(block)
+    require(len(wires) == (0 if unrouted else 9703),'fresh32-move source must remain completely unrouted; selected source must retain original routes')
     require(len(before[1]) == 9037 and len(before[2]) == 668 and sum(before[3].values()) == 99128 and
             len(before[4]) == 18718 and not any(name.startswith('task009_row_fill_') for name in before[1]),
             'actual selected functional/macro/port/PG/OBS inventory differs')
@@ -324,10 +336,16 @@ def insert_original_fillers(source, plan_path, output):
             negatives.append('actual_macro_left_240nm_well_gap')
         else: raise ValueError('actual unsafe macro-left spacer admitted')
         cell.setLocation(*record['location']); validate_cell(record, cell)
-    wire_net = next(net for net in block.getNets() if net.getWire() is not None)
-    wire = wire_net.getWire(); wire.detach()
-    require(signal_wire_identity(block) != wires, 'detached actual routed wire negative admitted')
-    negatives.append('detached_actual_signal_wire'); wire.attach(wire_net)
+    if unrouted:
+        wire_net = next(net for net in block.getNets() if net.getSigType() not in ('POWER','GROUND'))
+        wire = odb.dbWire_create(wire_net)
+        require(signal_wire_identity(block) != wires,'new unadmitted signal route negative admitted')
+        negatives.append('new_unadmitted_signal_wire'); odb.dbWire_destroy(wire)
+    else:
+        wire_net = next(net for net in block.getNets() if net.getWire() is not None)
+        wire = wire_net.getWire(); wire.detach()
+        require(signal_wire_identity(block) != wires, 'detached actual routed wire negative admitted')
+        negatives.append('detached_actual_signal_wire'); wire.attach(wire_net)
     require(signal_wire_identity(block) == wires, 'negative did not restore exact native route')
     require(snapshot(block) == after, 'negative did not restore every placement/terminal/PG/port/OBS record')
     odb.write_db(db, str(output/'filled.odb')); odb.write_def(block, str(output/'filled.def'))
@@ -336,7 +354,7 @@ def insert_original_fillers(source, plan_path, output):
               'filled_odb_sha256': sha(output/'filled.odb'), 'filled_def_sha256': sha(output/'filled.def'),
               'old_placements_preserved': len(before[1]), 'old_ports_preserved': len(before[2]),
               'old_native_PG_shapes_preserved': sum(before[3].values()), 'old_OBS_preserved': len(before[4]),
-              'original_signal_wire_streams_preserved': len(wires), 'original_fillers_added': len(names),
+              'original_signal_wire_streams_preserved': len(wires), 'explicitly_unrouted32_move_source':unrouted, 'original_fillers_added': len(names),
               'new_PG_terminals': 2*len(names), 'native_pin_correct_rail_overlap': True,
               'macro_right_spacer_keepout': plan.get('macro_right_well_keepout'),
               'macro_left_spacer_keepout': plan.get('macro_left_clearance_keepout'),
@@ -446,3 +464,201 @@ def original_filler_probe(config, source_layouts, expected):
             'original_filler_sources': filler, 'first_3_actual_gap_bridges': rows,
             'not_checked': ['native filler placement/padding policy', 'actual filler PG connection',
                             'new signal/PG/OBS collisions', 'full process rules', 'LVS', 'timing']}
+
+
+def macro_well_move_plan(def_text, expected, masters, owner_geometry):
+    """Plan only the one-site repairs forced by actual old macro well edges.
+
+    Neighbor propagation preserves the original960nm functional padding. This
+    does not move a native cell or preserve stale routed endpoint geometry.
+    """
+    # Reuse the maintained actual-row/grid/macro/padding admission.
+    rows = all_row_plan(def_text, expected, masters)['rows']
+    require(owner_geometry['status'] == 'PASS_EXACT_ORIGINAL_FUNCTIONAL_SOURCE_OWNERS_OF93_NWELL_EDGES_NOT_MOVED'
+            and len(owner_geometry['markers']) == 93, 'exact original source-owner proof required')
+    source = {cell['name']: cell for cell in expected['instances']}
+    shifts = {}; reasons = {}
+    for marker in owner_geometry['markers']:
+        require(marker['side'] in ('left', 'right'), 'unknown macro well side')
+        delta = -480 if marker['side'] == 'left' else 480
+        for owner in marker['source_edge_owners']:
+            name = owner['instance']; require(name in source, 'missing original well owner')
+            require(name not in shifts or shifts[name] == delta, 'conflicting source well directions')
+            shifts[name] = delta; reasons[name] = 'actual_original_NW_b_source_owner'
+    require(len(shifts) == 24 and sum(delta < 0 for delta in shifts.values()) == 18,
+            'exact eighteen left and six right source owners required')
+    by_y = {row['y_nm']: [] for row in rows}
+    for cell in expected['instances']:
+        if masters[cell['master']]['class'] == 'CORE': by_y[cell['location'][1]].append(cell)
+    for cells in by_y.values(): cells.sort(key=lambda cell: cell['location'][0])
+    changed = True
+    while changed:
+        changed = False
+        for cells in by_y.values():
+            for a, b in zip(cells, cells[1:]):
+                old_gap = b['location'][0]-a['location'][0]-masters[a['master']]['size_nm'][0]
+                require(old_gap >= 960, 'original functional padding differs')
+                da, db = shifts.get(a['name'], 0), shifts.get(b['name'], 0)
+                if old_gap+db-da >= 960: continue
+                if db == -480 and da == 0: name, delta = a['name'], -480
+                elif da == 480 and db == 0: name, delta = b['name'], 480
+                else: raise ValueError('one-site well shifts require a different placement solution')
+                shifts[name] = delta; reasons[name] = 'required_original960nm_padding_neighbor'; changed = True
+    moved = []
+    row_by_y = {row['y_nm']: row for row in rows}
+    for name, delta in sorted(shifts.items()):
+        old = source[name]; width, height = masters[old['master']]['size_nm']; x, y = old['location']; row = row_by_y[y]
+        require(height == 3780 and row['x_nm'] <= x+delta and x+delta+width <= row['x_nm']+row['sites']*480,
+                'well repair leaves original core sites')
+        moved.append({'name': name, 'master': old['master'], 'orientation': old['orientation'],
+            'from_location': old['location'], 'to_location': [x+delta, y], 'from_origin': old['origin'],
+            'to_origin': [old['origin'][0]+delta, old['origin'][1]], 'delta_x_nm': delta, 'reason': reasons[name]})
+    require(len(moved) == 32 and sum(record['reason'].endswith('padding_neighbor') for record in moved) == 8,
+            'exact minimal one-site neighbor propagation differs')
+    return {'schema': 'lemma-original-macro-well-move-plan/1',
+        'status': 'PLANNED_SOURCE_BOUND32_FUNCTIONAL_SITE_MOVES_NOT_APPLIED',
+        'moves': moved, 'functional_padding_nm': 960, 'original_source_owners': 24,
+        'forced_padding_neighbors': 8, 'functional_cells_moved': 32,
+        'clock_related_instances': sorted(name for name in shifts if name.startswith(('clkbuf', 'clkload'))),
+        'scope': 'Source placement plan only; originalnetlist/ports/capacity unchanged. Any native application must remove stale signal routing and require fresh route/extraction/all9timing/process checks.'}
+
+
+def place_macro_well_repairs(source, plan_path, native_instances, output):
+    """Apply the exact32 source-proved site moves; explicitly invalidate routing."""
+    import odb
+    from collections import defaultdict
+    from silicon_acceptance_launch import snapshot
+    from silicon_sram_input_hold import padding
+    from silicon_synth import sha
+    source, plan_path, native_instances, output = map(Path, (source, plan_path, native_instances, output))
+    require(sha(source) == SELECTED_SOURCE_ODB and
+            sha(plan_path) == 'eacc87505e6baf3a8de4baac059c10bcb0fc6c60d5fac4ac7d7fc94b160f0b00' and
+            sha(native_instances) == '0964432c4d7e79e4c56b197a1ea01c581065ad531bdc035ae87a019d74700b0b',
+            'exact selected0.6 source/32-site plan/native inventory required')
+    plan = json.loads(plan_path.read_text()); original = json.loads(native_instances.read_text())
+    output.mkdir(exist_ok=False)
+    db = odb.dbDatabase.create(); odb.read_db(db, str(source)); block = db.getChip().getBlock()
+    before = snapshot(block); wires = signal_wire_identity(block)
+    require(before[1] == {cell['name']: (cell['master'], cell['orientation'], tuple(cell['location']))
+                          for cell in original['instances']} and len(before[1]) == 9037 and
+            len(before[2]) == 668 and sum(before[3].values()) == 99128 and len(before[4]) == 18718 and len(wires) == 9703,
+            'original functional/macro/port/PG/OBS/wire inventory changed')
+    shifts = {record['name']: record['delta_x_nm'] for record in plan['moves']}
+    require(len(shifts) == 32 and all(delta in (-480, 480) for delta in shifts.values()), 'exact32 one-site moves')
+    for record in plan['moves']:
+        cell = block.findInst(record['name'])
+        require(cell is not None and cell.getMaster().getName() == record['master'] and
+                cell.getOrient() == record['orientation'] and list(cell.getLocation()) == record['from_location'] and
+                list(cell.getOrigin()) == record['from_origin'], 'original native moved-cell identity differs')
+        cell.setLocation(*record['to_location'])
+        require(list(cell.getOrigin()) == record['to_origin'], 'native move changed orientation/origin relation')
+    expected_instances = {name: (master, orient, (location[0]+shifts.get(name, 0), location[1]))
+                          for name, (master, orient, location) in before[1].items()}
+    expected_terms = {key: (net, [(layer, a+shifts.get(key[0], 0), c, d+shifts.get(key[0], 0), e)
+                                        for layer, a, c, d, e in boxes])
+                      for key, (net, boxes) in before[0].items()}
+    def validate():
+        after = snapshot(block)
+        require(after[0] == expected_terms and after[1] == expected_instances and after[2:] == before[2:],
+                'native placement changed beyond exact32 x-translations, or signal/BIST/power/port/PG/OBS changed')
+        result = padding(block)
+        require(result['stdcells'] == 9034, 'functional inventory changed')
+        return after, result
+    after, pad = validate()
+    macros = [cell.getBBox() for cell in block.getInsts() if cell.getMaster().getType() == 'BLOCK']
+    require(len(macros) == 3, 'three unchanged full-depth SRAM macros')
+    rails = defaultdict(list); pg_buckets = defaultdict(list)
+    for (net, layer, a, c, d, e), count in before[3].items():
+        if layer == 'Metal1': rails[net].append((a, c, d, e))
+        if layer in ('Metal2', 'Metal3', 'Metal4', 'Metal5'):
+            for xx in range((a-420)//50000, (d+420)//50000+1):
+                for yy in range((c-420)//50000, (e+420)//50000+1):
+                    pg_buckets[layer, xx, yy].append((a-420, c-420, d+420, e+420))
+    # Include the actual fixed SRAM power-pin footprints as well as its
+    # routed supply metal; a long pin rectangle is not an invisible obstacle.
+    for macro in block.getInsts():
+        if macro.getMaster().getType() != 'BLOCK': continue
+        for term in macro.getITerms():
+            if term.getSigType() not in ('POWER', 'GROUND'): continue
+            for layer, q in term.getGeometries():
+                if layer.getName() not in ('Metal2', 'Metal3', 'Metal4', 'Metal5'): continue
+                a, c, d, e = q.xMin(), q.yMin(), q.xMax(), q.yMax()
+                for xx in range((a-420)//50000, (d+420)//50000+1):
+                    for yy in range((c-420)//50000, (e+420)//50000+1):
+                        pg_buckets[layer.getName(), xx, yy].append((a-420, c-420, d+420, e+420))
+    moved_PG_pins = checked_signal_pins = 0
+    for name in shifts:
+        cell = block.findInst(name); box = cell.getBBox()
+        require(not any(min(box.xMax(), m.xMax()) > max(box.xMin(), m.xMin()) and
+                        min(box.yMax(), m.yMax()) > max(box.yMin(), m.yMin()) for m in macros),
+                'moved functional cell enters a fixed SRAM macro')
+        for term in cell.getITerms():
+            if term.getSigType() in ('POWER', 'GROUND'):
+                require(term.getNet() is not None and term.getNet().getName() in ('VDDlogic', 'VSS'),
+                        'moved cell supply changed')
+                require(any(layer.getName() == 'Metal1' and
+                            any(min(q.xMax(), d) > max(q.xMin(), a) and min(q.yMax(), e) > max(q.yMin(), c)
+                                for a, c, d, e in rails[term.getNet().getName()])
+                            for layer, q in term.getGeometries()), 'moved PG terminal misses its real native row rail')
+                moved_PG_pins += 1
+            else:
+                for layer, q in term.getGeometries():
+                    if layer.getName() not in ('Metal2', 'Metal3', 'Metal4', 'Metal5'): continue
+                    a, c, d, e = q.xMin(), q.yMin(), q.xMax(), q.yMax()
+                    for xx in range(a//50000, d//50000+1):
+                        for yy in range(c//50000, e//50000+1):
+                            require(not any(min(d, z) > max(a, x) and min(e, w) > max(c, y)
+                                            for x, y, z, w in pg_buckets[layer.getName(), xx, yy]),
+                                    'moved real signal pin enters original420nm native PG clearance')
+                    checked_signal_pins += 1
+    negatives = []
+    neighbor = next(record for record in plan['moves'] if record['reason'].endswith('padding_neighbor'))
+    cell = block.findInst(neighbor['name']); cell.setLocation(*neighbor['from_location'])
+    try: padding(block)
+    except ValueError: negatives.append('omit_actual_forced_padding_neighbor')
+    else: raise ValueError('missing required original-padding neighbor move admitted')
+    cell.setLocation(*neighbor['to_location']); validate()
+    owner = next(record for record in plan['moves'] if record['reason'].endswith('source_owner'))
+    cell = block.findInst(owner['name']); cell.setLocation(owner['to_location'][0]+480, owner['to_location'][1])
+    try: validate()
+    except ValueError: negatives.append('actual_well_owner_wrong_site')
+    else: raise ValueError('wrong actual source-owner site admitted')
+    cell.setLocation(*owner['to_location']); validate()
+    pin = cell.findITerm('VDD'); require(pin is not None, 'actual moved original supply pin')
+    saved = pin.getNet(); pin.connect(block.findNet('VSS'))
+    try: validate()
+    except ValueError: negatives.append('actual_moved_cell_wrong_supply')
+    else: raise ValueError('wrong moved-cell supply admitted')
+    pin.connect(saved); validate()
+    # A placement repair cannot inherit old wire coordinates. All real
+    # signal/clock routes are removed explicitly; the three native PG special
+    # wires and every original endpoint/net binding remain unchanged.
+    removed = 0
+    for net in block.getNets():
+        wire = net.getWire()
+        if wire is not None:
+            require(net.getSigType() not in ('POWER', 'GROUND'), 'unexpected nonspecial PG route')
+            odb.dbWire_destroy(wire); removed += 1
+    require(removed == 9703 and not signal_wire_identity(block), 'stale signal/clock routing remains')
+    final, pad = validate()
+    require(final == after, 'negative controls or route invalidation changed physical endpoint/PG state')
+    odb.write_db(db, str(output/'unrouted.odb')); odb.write_def(block, str(output/'unrouted.def'))
+    updated = json.loads(native_instances.read_text())
+    for cell in updated['instances']:
+        if cell['name'] in shifts:
+            cell['location'][0] += shifts[cell['name']]; cell['origin'][0] += shifts[cell['name']]
+    (output/'instances.json').write_text(json.dumps(updated, indent=2)+'\n')
+    result = {'status': 'PASS_EXACT32_MACRO_WELL_SITE_REPAIRS_PG_AND_PADDING_UNROUTED_NOT_PROCESS_CLOSURE',
+        'source_odb_sha256': sha(source), 'move_plan_sha256': sha(plan_path),
+        'unrouted_odb_sha256': sha(output/'unrouted.odb'), 'unrouted_def_sha256': sha(output/'unrouted.def'),
+        'native_instances_sha256': sha(output/'instances.json'), 'functional_cell_moves': 32,
+        'source_owners': 24, 'required_padding_neighbors': 8, 'padding': pad,
+        'moved_PG_terminals_with_real_rail_overlap': moved_PG_pins,
+        'moved_signal_pin_shapes_checked420nm': checked_signal_pins,
+        'old_ports': len(before[2]), 'old_native_PG_shapes': sum(before[3].values()), 'old_OBS': len(before[4]),
+        'old_signal_clock_wire_streams_invalidated': removed,
+        'all_signal_BIST_supply_bindings_and_masters_preserved': True,
+        'clock_related_instances': plan['clock_related_instances'], 'negative_cases': negatives,
+        'scope': 'Source-equivalent physical placement precursor only. No signal route, extraction, timing, fullprocess/LVS or selected implementation qualification.'}
+    (output/'placement.json').write_text(json.dumps(result, indent=2)+'\n')
+    return result

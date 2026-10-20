@@ -357,6 +357,19 @@ def check(config):
     baseline = Path(config['baseline']); prepared = Path(config['preparation'])
     old = json.loads((baseline/'result.json').read_text()); basis = json.loads((baseline/'config.json').read_text())
     produced = json.loads((prepared/'result.json').read_text()); insertion = json.loads((prepared/'candidate/insertion.json').read_text())
+    repaired=bool(config.get('unrouted_well_repair'))
+    if repaired:
+        repair=Path(config['unrouted_well_repair'])
+        require(sha(repair/'result.json')=='764817955e7cc6ac953306712ece844540564134a40eede0c398a80ab2c5429a' and
+                sha(repair/'candidate/unrouted.odb')=='cd1b0b572c7d844dc77560bfdf1141b6aae9d57a2ff3ef9eeaf53448a7a974d9' and
+                sha(repair/'candidate/unrouted.def')=='e67a5f5135df4c986e440e748d419366342271d860e0543bd34964ac033de6e0' and
+                sha(repair/'candidate/instances.json')=='ad9e5b065eab9a8cbf65cea2ee5a23286afb2d32415dcc82c10a7c746e6a50b7' and
+                insertion['explicitly_unrouted32_move_source'] and insertion['original_signal_wire_streams_preserved']==0,
+                'exact32-move source and wholly unrouted insertion required')
+        basis=dict(basis,source_odb=str(repair/'candidate/unrouted.odb'),
+                   routed_def=str(repair/'candidate/unrouted.def'),native_instances=str(repair/'candidate/instances.json'))
+    else:
+        require(not insertion.get('explicitly_unrouted32_move_source'),'unrouted repair requires its exact explicit lineage')
     require(old['status'] == 'PASS_NATIVE_ORIGINAL_GDS_ROUTED_MASK_UNION_AND_STREAM_READBACK_NOT_NET_LVS_OR_PROCESS_DRC'
             and old['source_seal_equal'] and not old['resource_errors'] and
             old['geometry']['stream_readback']['sha256'] == sha(baseline/'layout.gds'), 'actual native/master/stream baseline')
@@ -369,7 +382,7 @@ def check(config):
     historical_code = insertion_source_binding(produced, prepared)
     plan = json.loads((prepared/'row-plan.json').read_text())
     require(insertion['plan_sha256'] == sha(prepared/'row-plan.json') and
-            len(plan['fillers']) == (40264 if plan['schema'] == 'lemma-original-row-filler-plan/3' else
+            len(plan['fillers']) == (40247 if repaired else 40264 if plan['schema'] == 'lemma-original-row-filler-plan/3' else
                                      40336 if plan['schema'] == 'lemma-original-row-filler-plan/2' else 40349),
             'exact native filler plan')
     original = json.loads(Path(basis['native_instances']).read_text())
@@ -414,7 +427,9 @@ def check(config):
         actual[master, cardinal_angle(tr.angle), bool(tr.is_mirror()), tr.disp.x, tr.disp.y] += 1
     require(actual == wanted, 'all actual original master/placement/transform records differ')
     draw, pins = layer_mapping(basis['layer_map']); keys = set(draw.values()) | set(pins.values())
-    baseline_layout = pya.Layout(); baseline_layout.read(str(baseline/'layout.gds'))
+    baseline_layout = pya.Layout()
+    if repaired: baseline_layout.read(basis['routed_def'],options)
+    else: baseline_layout.read(str(baseline/'layout.gds'))
     old_regions, old_shapes = routed_regions(baseline_layout, baseline_layout.cell(original['top']),
                                             {cell['master'] for cell in original['instances']}, keys)
     new_regions, new_shapes = routed_regions(layout, top, masters, keys)
@@ -436,7 +451,7 @@ def check(config):
     (out/'prefix-geometry.json').write_text(json.dumps(prefix, indent=2)+'\n')
     del baseline_layout, old_regions, new_regions; gc.collect()
     filler_wells, filler_pg = original_filler_regions(source, plan)
-    gaps = report_gaps(config['partial_process_report']); uncovered = []
+    gaps = [] if repaired else report_gaps(config['partial_process_report']); uncovered = []
     witnesses = pya.Region()
     for text, box in gaps: witnesses.insert(pya.Box(*box))
     # A single exact Boolean difference replaces3717 repeated differences
@@ -455,9 +470,10 @@ def check(config):
         'actual_original_masters': len(masters), 'actual_original_instances': sum(actual.values()),
         'original_filler_instances': len(plan['fillers']), 'original_master_hashes': actual_hashes,
         'unchanged_routing_shapes': new_shapes, 'unchanged_routing_mask_union': union,
-        'partial_original_NW_b_corridors': len(gaps), 'uncovered_original_corridors': len(uncovered),
+        'partial_original_NW_b_corridors': None if repaired else len(gaps), 'uncovered_original_corridors': None if repaired else len(uncovered),
+        'original_corridor_scope':'Not reused for moved-source geometry; fresh original nwell table is mandatory'if repaired else'Old source corridor coverage only',
         'tangent_witness_policy': '12 actual touching-y edge pairs require new well coverage on both sides in a conservative1DBU band; no process rule is changed',
-        'scope': 'Actual original source geometry and unchanged native route; partial old gap coverage is not fresh process DRC'}
+        'scope': 'Actual32-move originalmaster geometry and exact nativePG/port masks only; no signal/clock routes and no oldgap coverage claim; freshprocess required'if repaired else'Actual original source geometry and unchanged native route; partial old gap coverage is not fresh process DRC'}
     (out/'filler-source-observation.json').write_text(json.dumps(result, indent=2)+'\n')
     # A retained original gap does not prevent the independent new-metal
     # collision check. Accumulate both outcomes; neither becomes a pass.
@@ -474,10 +490,10 @@ def check(config):
     # Consequential negatives use the actual new rail and original partial gap.
     first_rail = next(filler_pg['VDDlogic'].each())
     require(not (pya.Region(first_rail) & filler_pg['VDDlogic']).is_empty(), 'actual same-metal short control')
-    gap = pya.Region(pya.Box(*gaps[0][1]))
+    gap=pya.Region(next(filler_wells.each()))if repaired else pya.Region(pya.Box(*gaps[0][1]))
     require(not (gap-(filler_wells-gap)).is_empty(), 'removed actual well bridge negative')
-    result['negative_cases'] = ['actual_filler_rail_as_signal_short', 'removed_actual_original_well_bridge']
-    result.update(status='PASS_ACTUAL_ORIGINAL_ALLROW_FILLER_GDS_AND_OLD_GAP_COVERAGE_NOT_PROCESS_DRC'
+    result['negative_cases'] = ['actual_filler_rail_as_signal_short', 'removed_actual_filler_well'if repaired else'removed_actual_original_well_bridge']
+    result.update(status=('PASS_ACTUAL_ORIGINAL32_MOVE_UNROUTED_FILLER_GDS_PG_PORT_MASKS_NOT_PROCESS_DRC'if repaired else'PASS_ACTUAL_ORIGINAL_ALLROW_FILLER_GDS_AND_OLD_GAP_COVERAGE_NOT_PROCESS_DRC')
                   if not uncovered and metal_ok else 'FAIL_FILLER_GAP_OR_METAL_SUBSET',
                   failures=(['some actual original partial NW.b corridors remain uncovered'] if uncovered else [])+
                            ([] if metal_ok else ['conservative220nm filler-to-conductor clearance subset remains nonempty; SRAM internal net assignment is unresolved']),

@@ -2,8 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """Bounded original SG13G2 row-filler correction on selected0.6 routed geometry.
 
-This adds physical CORE SPACERs only. Functional cells, all signal wires and
-the native power grid stay fixed. Original process/LVS/RC checks remain separate.
+The default adds original physical CORE SPACERs while preserving functional
+placements and signal wires. The explicit source-proved macro-well repair mode
+performs32 site moves and removes stale signal routing. Native PG stays fixed;
+original process/LVS/RC/timing checks remain separate.
 """
 import argparse
 import hashlib
@@ -19,14 +21,14 @@ import time
 HOST_INPUTS = ('silicon_row_filler.py', 'silicon_filler_source.py', 'silicon_gds_geometry.py',
                'silicon_geometry_export.py', 'silicon_pen_process.py', 'silicon_synth.py',
                'silicon_acceptance_launch.py', 'silicon_buffered_pins.py', 'silicon_enclosure.py',
-               'silicon_power_ports.py', 'silicon_lvs_alias.py')
+               'silicon_power_ports.py', 'silicon_lvs_alias.py', 'silicon_sram_input_hold.py')
 STARTUP_INPUTS = {str(Path(__file__).resolve().with_name(name)):
                   hashlib.sha256(Path(__file__).resolve().with_name(name).read_bytes()).hexdigest()
                   for name in HOST_INPUTS}
 
 # Freeze repository host sources before importing their executable policies.
 # The before-use and final seals reject ordinary concurrent source edits.
-from silicon_filler_source import all_row_plan, lef_masters, SELECTED_PLAN_SHA, RIGHT_KEEPOUT_PLAN_SHA, BILATERAL_KEEPOUT_PLAN_SHA, SELECTED_SOURCE_ODB
+from silicon_filler_source import all_row_plan, lef_masters, SELECTED_PLAN_SHA, RIGHT_KEEPOUT_PLAN_SHA, BILATERAL_KEEPOUT_PLAN_SHA, SELECTED_SOURCE_ODB, REPAIRED_UNROUTED_ODB, REPAIRED_BILATERAL_PLAN_SHA, macro_well_move_plan
 from silicon_geometry_export import require
 from silicon_pen_process import OwnedProcessStop
 from silicon_synth import ROOT, CommandFailure, run, sha
@@ -58,7 +60,15 @@ def main():
                         help='Exact two-site physical-spacer keepout for the observed322 macro-right NWell seams; old cells stay fixed')
     parser.add_argument('--macro-edge-clearance-keepout', action='store_true',
                         help='Exact bilateral two-site spacer keepout for actual original SRAM NWell and new Metal1 clearance; old cells stay fixed')
+    parser.add_argument('--repair-macro-well-placement-from', type=Path,
+                        help='Exact retained source-owner proof for32 padding-preserving site moves; output is explicitly unrouted')
+    parser.add_argument('--from-unrouted-well-repair',type=Path,
+                        help='Exact qualified32-move unrouted producer; insert original bilateral spacers before fresh routing')
     args = parser.parse_args()
+    require(not args.from_unrouted_well_repair or not(args.repair_macro_well_placement_from or args.macro_right_well_keepout or args.macro_edge_clearance_keepout),
+            'unrouted insertion consumes its exact qualified bilateral plan')
+    require(not args.repair_macro_well_placement_from or not (args.macro_right_well_keepout or args.macro_edge_clearance_keepout),
+            'placement repair is a distinct explicitly unrouted question')
     require(not (args.macro_right_well_keepout and args.macro_edge_clearance_keepout),
             'choose one declared spacer keepout version')
     out = args.work_dir.resolve(); basis = args.native_descriptor.resolve(); tool = args.openroad.resolve()
@@ -116,24 +126,63 @@ def main():
         require(sha(tool) == '2d49fb4cc8b03f39d089090015e24b8a783d08949491200e119048b158b6649d' and
                 sha(tool.parent/'.openroad-wrapped') == 'ada97e26cd2f192265ed3b217fa00c67b5e009c4ea23b1f7b38f69beacccaaca',
                 'exact pinned native OpenDB core required')
+        if args.from_unrouted_well_repair:
+            proof=args.from_unrouted_well_repair.resolve()
+            paths=[proof/'result.json',proof/'row-plan.json',proof/'source-closure.tar.gz',
+                   proof/'candidate/placement.json',proof/'candidate/unrouted.odb',
+                   proof/'candidate/unrouted.def',proof/'candidate/instances.json']
+            report['source_inputs'].update({str(path):sha(path)for path in paths});inputs+=paths
+            require(sha(proof/'result.json')=='764817955e7cc6ac953306712ece844540564134a40eede0c398a80ab2c5429a' and
+                    sha(proof/'candidate/unrouted.odb')==REPAIRED_UNROUTED_ODB and
+                    sha(proof/'candidate/unrouted.def')=='e67a5f5135df4c986e440e748d419366342271d860e0543bd34964ac033de6e0' and
+                    sha(proof/'candidate/instances.json')=='ad9e5b065eab9a8cbf65cea2ee5a23286afb2d32415dcc82c10a7c746e6a50b7',
+                    'exact completed32-move native source required')
+            producer=json.loads((proof/'result.json').read_text())
+            require(producer['status']=='PASS_SOURCE_BOUND32_MACRO_WELL_PLACEMENT_REPAIRS_UNROUTED_NOT_PROCESS_CLOSURE' and
+                    producer['source_seal_equal'] and not producer['resource_errors'] and producer['original_whole_deadline_met'],
+                    '32-move source producer did not complete')
+            source=proof/'candidate/unrouted.odb'
+            config=dict(config,routed_def=str(proof/'candidate/unrouted.def'),native_instances=str(proof/'candidate/instances.json'))
+            report['source_lineage']='selected0.6→exact32-functional-site-repair→unrouted→original-bilateral-spacers; all signal/clock routing must be regenerated'
         masters = {}
         for name in config['lef_files'][1:]:
             actual = lef_masters(Path(name).read_text())
             require(not set(masters) & set(actual), 'ambiguous original source master')
             masters.update(actual)
-        plan = all_row_plan(Path(config['routed_def']).read_text(),
-                            json.loads(Path(config['native_instances']).read_text()), masters,
-                            macro_right_extra_sites=2 if args.macro_right_well_keepout or args.macro_edge_clearance_keepout else 0,
-                            macro_left_extra_sites=2 if args.macro_edge_clearance_keepout else 0)
+        original_instances = json.loads(Path(config['native_instances']).read_text())
+        if args.repair_macro_well_placement_from:
+            proof = args.repair_macro_well_placement_from.resolve()
+            paths = [proof/'result.json', proof/'geometry.json', proof/'config.json', proof/'source-closure.tar.gz']
+            report['source_inputs'].update({str(path): sha(path) for path in paths}); inputs += paths
+            require(sha(proof/'result.json') == '8a9f229f9f51f8b2924979350ab4fc6d4fe54f02f2810fe85d355a2c338042cf' and
+                    sha(proof/'geometry.json') == '36cd650a86e977566ef7afa58895a6f8864403561a0c6041b58dd42a77dbb368',
+                    'exact completed93-edge original source-owner proof required')
+            producer = json.loads((proof/'result.json').read_text()); owners = json.loads((proof/'geometry.json').read_text())
+            require(producer['status'] == 'PASS_EXACT_ORIGINAL_FUNCTIONAL_SOURCE_OWNERS_OF93_NWELL_EDGES_NOT_MOVED' and
+                    producer['source_seal_equal'] and not producer['resource_errors'] and
+                    producer['original_whole_deadline_met'] and producer['owned_observed_PIDs_absent'] and
+                    producer['geometry'] == owners, 'source-owner producer did not complete its exact scope')
+            plan = macro_well_move_plan(Path(config['routed_def']).read_text(), original_instances, masters, owners)
+        else:
+            plan = all_row_plan(Path(config['routed_def']).read_text(), original_instances, masters,
+                                macro_right_extra_sites=2 if args.macro_right_well_keepout or args.macro_edge_clearance_keepout or args.from_unrouted_well_repair else 0,
+                                macro_left_extra_sites=2 if args.macro_edge_clearance_keepout or args.from_unrouted_well_repair else 0)
         plan_path = out/'row-plan.json'; plan_path.write_text(json.dumps(plan, indent=2)+'\n')
-        require(sha(plan_path) == (BILATERAL_KEEPOUT_PLAN_SHA if args.macro_edge_clearance_keepout else
-                                 RIGHT_KEEPOUT_PLAN_SHA if args.macro_right_well_keepout else SELECTED_PLAN_SHA),
-                'source-bound selected row plan differs')
+        expected_plan = ('eacc87505e6baf3a8de4baac059c10bcb0fc6c60d5fac4ac7d7fc94b160f0b00'
+                         if args.repair_macro_well_placement_from else REPAIRED_BILATERAL_PLAN_SHA if args.from_unrouted_well_repair else BILATERAL_KEEPOUT_PLAN_SHA if args.macro_edge_clearance_keepout else
+                         RIGHT_KEEPOUT_PLAN_SHA if args.macro_right_well_keepout else SELECTED_PLAN_SHA)
+        require(sha(plan_path) == expected_plan, 'source-bound selected physical plan differs')
         driver = out/'insert.py'
-        driver.write_text('import sys\nfrom pathlib import Path\nsys.path.insert(0,'+repr(str(ROOT/'scripts'))+')\n'
-                          'from silicon_filler_source import insert_original_fillers\n'
-                          'insert_original_fillers(Path('+repr(str(source))+'),Path('+repr(str(plan_path))+'),'
-                          'Path('+repr(str(out/'candidate'))+'))\n')
+        if args.repair_macro_well_placement_from:
+            driver.write_text('import sys\nfrom pathlib import Path\nsys.path.insert(0,'+repr(str(ROOT/'scripts'))+')\n'
+                              'from silicon_filler_source import place_macro_well_repairs\n'
+                              'place_macro_well_repairs(Path('+repr(str(source))+'),Path('+repr(str(plan_path))+'),'
+                              'Path('+repr(config['native_instances'])+'),Path('+repr(str(out/'candidate'))+'))\n')
+        else:
+            driver.write_text('import sys\nfrom pathlib import Path\nsys.path.insert(0,'+repr(str(ROOT/'scripts'))+')\n'
+                              'from silicon_filler_source import insert_original_fillers\n'
+                              'insert_original_fillers(Path('+repr(str(source))+'),Path('+repr(str(plan_path))+'),'
+                              'Path('+repr(str(out/'candidate'))+'))\n')
         inputs += [ROOT/'scripts'/name for name in HOST_INPUTS]+[driver, plan_path]
         report['source_inputs'].update({str(path): sha(path) for path in (driver, plan_path)})
         require(not source_changes(report['source_inputs']) and not failures,
@@ -146,10 +195,14 @@ def main():
         (out/'plan.json').write_text(json.dumps(report, indent=2)+'\n')
         report['commands'].append(run([str(tool), '-python', '-exit', str(driver)], out/'insertion.log',
                                       min(deadline-8, time.monotonic()+30)))
-        result = json.loads((out/'candidate/insertion.json').read_text())
-        require(result['status'] == 'PASS_ORIGINAL_ALLROW_FILLER_NATIVE_PLACEMENT_PG_OVERLAP_SIGNALS_UNCHANGED_NOT_PROCESS_DRC'
-                and not failures, 'actual native filler correction failed')
-        report.update(status='PASS_SOURCE_BOUND_ORIGINAL_ALLROW_FILLER_INSERTION_AND_SIGNALS_NOT_PROCESS_DRC', geometry=result)
+        result = json.loads((out/('candidate/placement.json' if args.repair_macro_well_placement_from else 'candidate/insertion.json')).read_text())
+        require(result['status'] == ('PASS_EXACT32_MACRO_WELL_SITE_REPAIRS_PG_AND_PADDING_UNROUTED_NOT_PROCESS_CLOSURE'
+                                    if args.repair_macro_well_placement_from else
+                                    'PASS_ORIGINAL_ALLROW_FILLER_NATIVE_PLACEMENT_PG_OVERLAP_SIGNALS_UNCHANGED_NOT_PROCESS_DRC')
+                and not failures, 'actual native physical correction failed')
+        report.update(status=('PASS_SOURCE_BOUND32_MACRO_WELL_PLACEMENT_REPAIRS_UNROUTED_NOT_PROCESS_CLOSURE'
+                              if args.repair_macro_well_placement_from else
+                              'PASS_SOURCE_BOUND_ORIGINAL_ALLROW_FILLER_INSERTION_AND_SIGNALS_NOT_PROCESS_DRC'), geometry=result)
     except BaseException as error:
         report['error'] = repr(error)
         if isinstance(error, CommandFailure): report['commands'].append(error.record)
