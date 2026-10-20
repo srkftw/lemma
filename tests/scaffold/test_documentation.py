@@ -81,7 +81,8 @@ class ConsumedContractTests(unittest.TestCase):
         import build_kernel
         original = Path.is_file
         for name, message in (("docs/contracts/009-core0-kernel-v0.10.html", "Missing required Integrated15 dependency"),
-                              ("docs/contracts/009-school-submission-v2.html", "Missing School dependency")):
+                              ("docs/contracts/009-school-submission-v2.html", "Missing School dependency"),
+                              ("docs/contracts/009-multimodal-owned-io-v1.html", "Missing required owned record/PCM service contract")):
             with self.subTest(contract=name), patch.object(Path, 'is_file', lambda path: False if path == ROOT / name else original(path)):
                 with self.assertRaisesRegex(build_kernel.Core0Error, message):
                     build_kernel.source_inputs(ROOT)
@@ -103,6 +104,7 @@ class ConsumedContractTests(unittest.TestCase):
         from unittest.mock import patch
         import build_kernel
         original = Path.is_file
+        original_read = Path.read_text
         def archived(path):
             if path == ROOT / 'docs/document-map.json' or path == ROOT / 'docs/contributor-guide.html': return False
             # The preserved historical layout also predates the new deployment
@@ -111,7 +113,13 @@ class ConsumedContractTests(unittest.TestCase):
             if str(path).endswith('.html') and 'docs/contracts/' in str(path): return False
             if str(path).endswith('.md') and 'docs/contracts/' in str(path): return True
             return original(path)
-        with patch.object(Path, 'is_file', archived), patch.object(build_kernel, 'sha256', return_value='fixture-hash'):
+        def historical_source(path, *args, **kwargs):
+            if path == ROOT / 'Lemma/Platform/LemmaSim/MultimodalService.lean':
+                # This simulated pre-registry archive also predates the
+                # additive service-version/owned-I/O contract declaration.
+                return '-- historical service without an additive version declaration\n'
+            return original_read(path, *args, **kwargs)
+        with patch.object(Path, 'is_file', archived), patch.object(Path, 'read_text', historical_source), patch.object(build_kernel, 'sha256', return_value='fixture-hash'):
             sources = build_kernel.source_inputs(ROOT)
         self.assertIn('docs/contracts/006-notebook-control-backlog-v2.md', sources)
         self.assertNotIn('docs/contracts/006-notebook-control-backlog-v2.html', sources)

@@ -12,6 +12,7 @@ import fcntl
 import json
 import math
 import os
+import re
 from pathlib import Path
 import sys
 from typing import Sequence
@@ -368,6 +369,16 @@ def source_inputs(root: Path) -> dict[str, str]:
     for helper in ("surface_word_inline.py", "package_closure_deployment.py", "package_notebook_target.py","package_companion_deployment.py","package_entry2_deployment.py","package_entry2_target.py","package_companion_target.py","aligned_notebook_target.py", "control_notebook_target.py", "task_entry_borrow.py", "usb_closure_recovery_deployment.py", "usb_closure_recovery_target.py", "kernel_source_workspace.py","surface_bulk_borrow.py","usercopy_page_words.py","course_deployment.py","course_await_deployment.py","ipc_poll_borrow.py","ipc_call_borrow.py","ipc_rpc_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py", "managed_array.py", "arithmetic_array_identity.py", "managed_string.py", "arithmetic_string_identity.py", "closure_deployment.py", "managed_closure.py", "arithmetic_closure_identity.py", "paper_next.py", "paper_executed.py", "paper_wire.py", "paper_clocked.py", "usb_recovery_target.py", "wifi_common.py", "wifi_owned_read.py"):
         additive = root / "scripts" / helper
         if additive.is_file():inputs.append(additive)
+    # Legacy archives predate the additive owned-record/PCM service version.
+    # A tree declaring that service must retain its actual contract; deleting
+    # the current contract cannot downgrade it to the legacy input closure.
+    multimodal_service = root / "Lemma/Platform/LemmaSim/MultimodalService.lean"
+    if (multimodal_service.is_file() and re.search(
+            r"^def version\s*:\s*UInt64\s*:=", multimodal_service.read_text(), re.M)):
+        owned_io = root / "docs/contracts/009-multimodal-owned-io-v1.html"
+        if not owned_io.is_file():
+            raise Core0Error("Missing required owned record/PCM service contract")
+        inputs.append(owned_io)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
     # Historical immutable source archives predate additive Power-v2. Their
     # complete old inventories remain exact; selected 0.4 builds separately

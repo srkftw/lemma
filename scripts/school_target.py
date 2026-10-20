@@ -91,6 +91,16 @@ QUEUE_PHASES=[*range(17),*range(20,31),40,41,42,43,45]
 QUEUE_JUMPS={QUEUE_DISPATCH:(46,QUEUE_PHASES,[]),
     'Lemma.Courses.SchoolSubmission.pump':(42,[1,3,5,7,9,11,13,15,22,26,40,42],[[46,47]]),
     'Lemma.Applications.Notebook.multimodalControl':(6,[3,4,5,6,7,8],[])}
+def queue_jump_domain(ir,rows,source):
+    count,cases,others=QUEUE_JUMPS[source]
+    audio='Lemma.User.Multimodal.testAudio'
+    if source=='Lemma.Applications.Notebook.multimodalControl' and audio in rows:
+        from audit_kernel import _ir_definition_body,_local_call_arguments
+        require(rows[audio]['args']==[] and _local_call_arguments(
+            _ir_definition_body(ir,rows[source]['symbol']),rows[audio]['symbol'])==[''],
+            'local audio test jump lacks its exact no-argument guest consumer')
+        return 7,[3,4,5,6,7,8,9],[]
+    return count,cases,others
 def jump_spec(ir,unit,source,symbol):
     if not selected(unit) or source not in QUEUE_JUMPS:return None
     key,rows=catalog(unit)
@@ -99,7 +109,7 @@ def jump_spec(ir,unit,source,symbol):
     # actual optimized source corpus to the genuine producer before admitting
     # this precise phase domain; ordinary object/guard/relocation checks follow.
     validate(ir,unit,optimized=True)
-    count,cases,_=QUEUE_JUMPS[source]
+    count,cases,_=queue_jump_domain(ir,rows,source)
     return ('user',count,['u64'] if source=='Lemma.Applications.Notebook.multimodalControl' else [],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],cases)
 
 def jump_default(ir,unit,assembly,symbol,targets):
@@ -108,7 +118,7 @@ def jump_default(ir,unit,assembly,symbol,targets):
     _,rows=catalog(unit)
     owners=[name for name,row in rows.items() if row['symbol']==symbol]
     require(len(owners)==1 and owners[0] in QUEUE_JUMPS,'queue table default owner differs')
-    source=owners[0];spec=jump_spec(ir,unit,source,symbol);_,cases,others=QUEUE_JUMPS[source]
+    source=owners[0];spec=jump_spec(ir,unit,source,symbol);_,cases,others=queue_jump_domain(ir,rows,source)
     body=_ir_definition_body(ir,symbol)
     switches=re.findall(r'switch i64 %[^,]+, label %([A-Za-z0-9_.$-]+) \[([^]]+)\]',body,re.S)
     decoded=[(default,sorted(int(v) for v in re.findall(r'i64 (-?\d+), label',block))) for default,block in switches]

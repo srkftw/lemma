@@ -174,14 +174,32 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
     require(definition(notebook,'multimodalBarTile') == compact('''private def multimodalBarTile (i _ : UInt32) (acc width _ _ _ : UInt64) : Action :=
       .bind (markDirtyTile (4 * ((width + 31) / 32) + 12 + i.toUInt64)) fun s _ => .done s acc'''),
       'source toolbar tile row/column/index differs')
-    require(definition(notebook,'multimodalBar') == compact('''private def multimodalBar : Action :=
+    raw_capture = 'private def multimodalRawBase : UInt64 := 0x350000' in notebook
+    owned_pcm = 'private def audioPage : UInt64 := 0x360000' in mm
+    school = 'private def schoolActivityFlag : UInt64 :=' in notebook
+    require(not owned_pcm or school, 'source toolbar owned PCM requires the selected school layout')
+    extent, packed, tiles = (1264,6480,28) if owned_pcm else (1120,5400,23)
+    school_bar = compact('''.bind (Memory.read64 schoolActivityFlag) fun s school => if mmFailed s = true then .done s 0 else
+      .bind (Memory.read64 (Lemma.User.Multimodal.records+2480)) fun s lost => if mmFailed s = true then .done s 0 else
+      let enabled := enabled ||| (school <<< 8) ||| (lost <<< 16)''') if school else ''
+    expected_bar = compact('''private def multimodalBar : Action :=
       .bind Lemma.User.Multimodal.active fun s enabled => if mmFailed s = true then .done s 0 else
+      SCHOOL_BAR
       .bind (get 32) fun s width => if mmFailed s = true then .done s 0 else
       if width < 1120 then .done 16 0 else
       .boundedFoldU64 5400 multimodalBarStep 5400 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
       .boundedFoldU64 23 multimodalBarTile 23 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
-      dirty 400 132 1120 147'''),
-      'source toolbar must bound width and enqueue all twenty-three intersected tiles before dirty')
+      dirty 400 132 1120 147''').replace('SCHOOL_BAR',school_bar).replace('1120',str(extent)).replace('5400',str(packed)).replace('23 multimodalBarTile 23',f'{tiles} multimodalBarTile {tiles}')
+    require(definition(notebook,'multimodalBar') == compact(expected_bar),
+      'source toolbar must match its versioned width, raster size and every intersected tile')
+    if owned_pcm:
+        require(value(mm,'audioPage') == '0x360000', 'source toolbar PCM page differs')
+        require('let x := i.toUInt64 % 432 * 2 let y := i.toUInt64 / 432' in definition(notebook,'multimodalBarStep'),
+                'source toolbar packed PCM raster extent differs')
+        require('if operation = 9 then Lemma.User.Multimodal.testAudio' in definition(notebook,'multimodalControl'),
+                'source toolbar PCM action no longer invokes the maintained consumer')
+        require('if 1120 ≤ px then if px < 1264 then multimodalControl 9 else .done 0 0 else .done 0 0' in definition(notebook,'multimodalApplySample' if raw_capture else 'multimodalInputSample'),
+                'source toolbar PCM input extent differs')
     require(definition(notebook,'multimodalPumpBar') == compact('''private def multimodalPumpBar : Action :=
       .bind (Memory.read64 (Lemma.User.Multimodal.state + 32)) fun s pending => if mmFailed s = true then .done s 0 else
       if pending = 0 then .done 0 0 else
@@ -196,7 +214,8 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
         .bind multimodalBar fun s _ => if mmFailed s = true then .done s 0 else
         Memory.write64 (Lemma.User.Multimodal.state + 32) 0
       else .done 0 0 else .done 0 0 else .done 0 0'''), 'source deferred toolbar lost idle/frame ownership gates')
-    input_ = definition(notebook,'multimodalInputSample')
+    input_ = definition(notebook,'multimodalApplySample' if raw_capture else 'multimodalInputSample')
+    capture = definition(notebook,'multimodalInputSample') if raw_capture else input_
     safety_branch = compact('''if (if 132 ≤ safetyY then if safetyY < 160 then if 544 ≤ safetyX then if safetyX < 832 then true else false else false else false else false) = true then
       multimodalSafety (if safetyX < 640 then 1 else 2)
     else .bind (get 432)''')
@@ -207,6 +226,10 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
       else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0)
       fun s captureActive => if statusFailed s = true then .done s 0 else
       if different captureActive 0 = true then multimodalSafety 0 else''')
+    if school:
+        capture_branch = capture_branch.replace('if different captureActive', compact('''.bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else''')+' if different captureActive')
+        capture_branch += ' '+compact('''if (if school = 1 then if 132 ≤ safetyY then if safetyY < 160 then if 760 ≤ safetyX then if safetyX < 832 then true else false else false else false else false else false) = true then
+          if safetyX < 808 then multimodalQueueTutor 7 else multimodalControl 8 else''')
     require(capture_branch+' '+safety_branch in input_,
             'source CAPTURE may only inhibit an active session before the busy queue')
     require(all(token not in prefix for token in ('queueBookTap','get 160','get 536','ControlBacklog.count','cancelBookmarkWork')),
@@ -216,7 +239,7 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
     require('if different active 0 = true then appendRaw else if flags &&& 1 = 0 then .done 0 0 else if previousContact = 1 then .done 0 0 else' in prefix,
             'source safety bypass changed pen contact/raw-stroke handling')
     for offset in (288,296,304):
-        require('put '+str(offset) in prefix, 'source safety omitted original pen sequence/time/epoch tracking')
+        require('put '+str(offset) in capture if raw_capture else 'put '+str(offset) in prefix, 'source safety omitted original pen sequence/time/epoch tracking')
     require('Geometry.pixel (Geometry.normalized x maxX) width' in prefix and
             'Geometry.pixel (Geometry.normalized y maxY) height' in prefix,
             'source safety coordinates bypass declared pen geometry')
@@ -246,7 +269,11 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
       CapabilityConsole.record console 0x726 operation (if pending = 0 then 1 else if pending = operation then 2 else 3) 0 0'''),
       'source pending intent must retain/coalesce or report bounded Busy without acquiring work')
     pump = definition(notebook,'multimodalPumpTutor')
-    require('if stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then' in pump and
+    deferred = 'private def rawIndexDeferredFlag : UInt64 :=' in notebook
+    pump_gate = ('if deferredIndex ||| captured ||| stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then' if deferred else
+                 'if captured ||| stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then' if school else
+                 'if stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then')
+    require(pump_gate in pump and
             '.bind bookmarkBusy' in pump and '.bind Lemma.Notebook.ControlBacklog.count' in pump and
             'if work ||| waiting = 0 then' in pump and '.bind (Surface.status surface)' in pump and
             'if status &&& 1 = 0 then' in pump and
@@ -270,12 +297,33 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
           .bind (packagePut 176 0) fun s _ => if statusFailed s = true then .done s 0 else''')
         require(reset+' .bind (beginPackageRead '+str(identity)+' sequence)' in envelope,
                 'source school envelope inherited original reader CRC/node guards')
-    require('.bind multimodalPumpBar' in step and '.bind multimodalPumpTutor' in step and '.bind (drainMultimodalInput input)' in step and
+    tutor_route = ('.bind (if queueOwns = 0 then multimodalPumpTutor else .done 0 0)' if raw_capture else '.bind multimodalPumpTutor')
+    require('.bind multimodalPumpBar' in step and tutor_route in step and '.bind (drainMultimodalInput input)' in step and
             'else multimodalInputSample' in step, 'source idle/busy paths do not route new input/deferred redraw')
     drain = definition(notebook,'drainMultimodalInput')
-    require('.bind multimodalInputSample' in drain and 'if s = 175 then .bind cancelBookmarkInput' in drain,
+    loss = ('if s = 175 then .bind (multimodalRawLoss 3)' if raw_capture else 'if s = 175 then .bind cancelBookmarkInput')
+    if raw_capture:
+        require('if resync = 0 then multimodalRawPush else if flags &&& 1 = 0 then rawPut 40 0 else .done 0 0' in capture,
+                'source raw capture lost input/resync ownership')
+        require('if (if flags &&& 1 = 1 then if previousContact = 0 then true else false else false) = true then' in capture and
+                'if 544 ≤ px then if px < 760 then' in capture and
+                'multimodalSafety (if px < 640 then 1 else 2)' in capture and
+                'if school = 1 then if px < 808 then multimodalQueueTutor 7 else multimodalControl 8 else multimodalSafety 2' in capture and
+                'if capture = 1 then multimodalSafety 0 else ordinary resync flags' in capture,
+                'source raw capture lost local inhibition before retained work')
+        require(not any(token in capture for token in ('get 160','get 536','Surface.framebuffer','Surface.status','ControlBacklog.count','multimodalControl 9')),
+                'source raw capture safety waits for work or starts PCM before ordered replay')
+        require('if different sequence (previousSequence+1) = true then true else time < previousTime) = true then multimodalRawLoss 1' in capture,
+                'source raw capture lost sequence/time discontinuity detection')
+        require('Lemma.Services.Store.Format.copy raw row 72' in definition(notebook,'multimodalRawPush') and
+                'Lemma.Services.Store.Format.copy row raw 72' in definition(notebook,'multimodalRawPump') and
+                'multimodalApplySample x y flags' in definition(notebook,'multimodalRawPump'),
+                'source raw capture lost exact record copy or ordered replay')
+    require('.bind multimodalInputSample' in drain and loss in drain,
             'source busy input lost safety routing or lost-contact cancellation')
-    return {'allocated_page':page,'page_bytes':page_size,'disjoint_windows':windows,
+    return {'toolbar_variant': 'school23-owned-pcm2' if owned_pcm else 'school23' if school else 'legacy21',
+            'toolbar_extent':extent,'toolbar_tiles':tiles,'coalesced_index':deferred,'captured_input':raw_capture,
+            'allocated_page':page,'page_bytes':page_size,'disjoint_windows':windows,
             'historical_backlog':[0x20d00,0x20d00+32+8*64],
             'checks':['allocate/status/exact-address before clear','local inhibition before busy queues',
                       'no framebuffer work in local inhibition','deferred refresh requires idle framebuffer',
@@ -288,12 +336,53 @@ def notebook_safety_source(root=ROOT):
         'Lemma/User/Multimodal.lean','Lemma/Applications/Notebook.lean','Lemma/Notebook/ControlBacklog.lean')))
 
 
+def owned_io_semantics(ir, rows):
+    """Version2 only: closed source/IR edges and private-frame value flow."""
+    from audit_kernel import _ir_definition_body, _local_call_arguments, _local_checked_result
+    service='Lemma.Platform.LemmaSim.MultimodalService.'
+    version=service+'version'
+    if version not in rows:return None
+    def body(source):
+        require(source in rows,'ownedIO source absent: '+source)
+        return _ir_definition_body(ir,rows[source]['symbol'])
+    def calls(owner,target):
+        require(target in rows,'ownedIO target absent: '+target)
+        return _local_call_arguments(body(owner),rows[target]['symbol'])
+    def value(owner,target,args):return _local_checked_result(body(owner),rows[target]['symbol'],args)[1]
+    require(re.fullmatch(r'\s*entry:\s*ret i64 2\s*',body(version)) is not None,'ownedIO service version differs')
+    allocate='Lemma.Kernel.Memory.Frames.allocate';resolve='Lemma.Kernel.Memory.Frames.resolvePurpose'
+    configure=service+'configure';put=service+'put';get=service+'get'
+    require(calls(configure,allocate)==['i64 1, i64 1']*2,'ownedIO private/metadata allocations differ')
+    allocations=re.findall(r'(%[\w.$-]+) = call \{ i64, i64 \} @'+re.escape(rows[allocate]['symbol'])+r'\(i64 1, i64 1\)',body(configure))
+    handles=[]
+    for call in allocations:
+        matches=re.findall(r'(%[\w.$-]+) = extractvalue \{ i64, i64 \} '+re.escape(call)+r', 1$',body(configure),re.M)
+        require(len(matches)==1,'ownedIO allocation result differs');handles+=matches
+    require(handles[0]!=handles[1] and calls(configure,put)==['i64 0, i64 %arg0','i64 8, i64 '+handles[0],'i64 16, i64 '+handles[1]],'ownedIO frame identities alias or metadata/private slots differ')
+    begin=service+'beginRecord';finish=service+'finishRecord';current=service+'current'
+    require(calls(begin,current)==['i64 %arg1, i64 %arg3, i64 3'],'ownedIO begin current permission differs')
+    require(calls(finish,current)==['i64 %arg1, i64 %arg3, i64 3'],'ownedIO finish current permission differs')
+    handle=value(begin,get,'i64 16');destination=value(begin,resolve,'i64 1, i64 '+handle+', i64 1')
+    require(calls(begin,'Lemma.Kernel.Memory.UserCopy.validateWrite')==['i64 %arg0, i64 %arg2, i64 64'],'ownedIO begin writable logical span differs')
+    require(calls(begin,'Lemma.Drivers.Multimodal.write')==['i64 %arg1, i64 160, i64 '+destination,'i64 %arg1, i64 168, i64 8','i64 %arg1, i64 176, i64 1'],'ownedIO DMA escaped private resolved frame or eight-word command')
+    handle=value(finish,get,'i64 16')
+    require(calls(finish,'Lemma.Kernel.Memory.UserCopy.copyToUser')==['i64 %arg0, i64 %arg2, i64 '+handle+', i64 0, i64 64'],'ownedIO finish logical copy differs')
+    edges=[(service+'call',service+name) for name in ('beginRecord','finishRecord','pcmBatch')]
+    edges += [(begin,service+'reclaimRetiredRecord'),(finish,service+'releaseRecord'),(service+'pcmStep',current)]
+    for owner,target in edges:require(calls(owner,target),'ownedIO actual semantic edge omitted: '+owner+' -> '+target)
+    require(calls(service+'call',begin)==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'] and calls(service+'call',finish)==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'] and calls(service+'call',service+'pcmBatch')==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'],'ownedIO public call substituted owner/stream/logicaldest/epoch')
+    require(calls(service+'pcmBatch',current)==['i64 8, i64 %arg3, i64 64'],'ownedIO batch grant differs')
+    require(calls(service+'pcmStep',current)==['i64 8, i64 %arg4, i64 64'],'ownedIO per-sample live grant differs')
+    return {'service_version':2,'metadata_frame_slot':8,'private_DMA_frame_slot':16,'record_bytes':64,'DMA_words':8,'actual_edges':edges,'scope':'exact compiled source/call/value binding; operating and fault behavior requires actual execution'}
+
+
 def semantics(ir, unit):
     from school_target import selected as school_selected, semantics as school_semantics
     if school_selected(unit):return school_semantics(ir,unit)
     """Connect the complete pinned bodies to actual boot, grants and UI paths."""
     from audit_kernel import _ir_definition_body, _local_call_arguments
     key, rows = catalog(unit)
+    owned_record_pcm=None
     def body(source):
         require(source in rows, 'semantic source absent: ' + source)
         return _ir_definition_body(ir, rows[source]['symbol'])
@@ -377,8 +466,9 @@ def semantics(ir, unit):
                               (service+'call', service+'revoke'), (service+'call', service+'configureStream'),
                               (service+'call', service+'take'), (service+'take', service+'current'),
                               (service+'configureStream', service+'current')):
-            require(len(calls(owner, target)) == 1, 'grant/current-epoch operation edge differs: ' + owner)
+            require(len(calls(owner, target)) == (2 if owner==service+'configure' and target=='Lemma.Kernel.Memory.Frames.allocate' and service+'version' in rows else 1), 'grant/current-epoch operation edge differs: ' + owner)
             checked.append((owner, target))
+        owned_record_pcm=owned_io_semantics(ir,rows)
     elif key == 'arithmetic':
         server = 'Lemma.Services.Arithmetic.ServerV8.'
         for owner, target in ((server+'main', 'Lemma.User.Runtime.Arena.ensure'),
@@ -470,6 +560,7 @@ def semantics(ir, unit):
             require(len(calls(owner,target)) == 1, 'anchored tutor admission/guest context edge differs: '+owner)
             checked.append((owner,target))
     return {'role': key, 'explicit_call_edges': checked,
+            **({'owned_record_pcm':owned_record_pcm} if owned_record_pcm is not None else {}),
             'scope': 'complete source/LLVM authority plus selected direct edges; connected execution remains separate'}
 
 
@@ -772,6 +863,14 @@ JUMP_SPECS = {
 
 def jump_spec(ir, unit, source, symbol):
     spec=JUMP_SPECS.get(source)
+    if source=='Lemma.Platform.LemmaSim.MultimodalService.call':
+        version=[row for row in unit.get('functions',[]) if canonical(row['source'])=='Lemma.Platform.LemmaSim.MultimodalService.version']
+        if version:
+            from audit_kernel import _ir_definition_body
+            require(len(version)==1 and version[0]['args']==[] and version[0]['effects']==[] and
+                    re.fullmatch(r'\s*entry:\s*ret i64 2\s*',_ir_definition_body(ir,version[0]['symbol'])),
+                    'ownedIO jump owner lacks exact service version2')
+            spec=('kernel',19,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(19)))
     if unit.get('configuration') in INTEGRATED_CONFIGURATIONS and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepExecuted':
         spec=('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9])
     if not selected(unit) or spec is None: return None

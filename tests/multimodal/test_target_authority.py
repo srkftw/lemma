@@ -14,12 +14,13 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/'scripts'))
 import multimodal_target as target
+from multimodal_deployment import LEGACY_CONFIGURATIONS
 from core0_common import Core0Error
 
 class TargetAuthorityTests(unittest.TestCase):
     def fixture(self):
         row = {'source':'Lemma.Services.Store.ServerAwait.main', 'symbol':'lemma_user_store_main', 'args':['u64'], 'effects':[]}
-        unit = {'configuration':target.CONFIGURATIONS[0], 'role':'user', 'image_key':'store', 'image_id':1,
+        unit = {'configuration':LEGACY_CONFIGURATIONS[0], 'role':'user', 'image_key':'store', 'image_id':1,
                 'contract_version':'core0-user-v0.1', 'software_deployment':target.SOFTWARE_DEPLOYMENT,
                 'functions':[row], 'roots':[{'source':row['source'], 'symbol':row['symbol'], 'id':1, 'args':['u64']}],
                 'used_device_ops':[], 'used_execution_ops':[], 'used_loops':[]}
@@ -31,7 +32,7 @@ class TargetAuthorityTests(unittest.TestCase):
                'post':{'function_count':1, 'sha256':target.digest(body)}}
         return {'schema':target.VERSION, 'configurations':{
             configuration:{role:copy.deepcopy(pin) for role in target.ROLES}
-            for configuration in target.CONFIGURATIONS}}
+            for configuration in LEGACY_CONFIGURATIONS}}
     def test_missing_authority_never_passes(self):
         unit, ir = self.fixture()
         with tempfile.TemporaryDirectory() as directory, patch.object(target, 'AUTHORITY', Path(directory)/'absent.json'):
@@ -101,7 +102,7 @@ class NotebookSafetySourceTests(unittest.TestCase):
 
     def reject(self, source_index, before, after, message):
         changed = list(self.sources)
-        self.assertIn(before, changed[source_index])
+        self.assertTrue(before in changed[source_index], 'missing mutation anchor: '+repr(before))
         changed[source_index] = changed[source_index].replace(before, after, 1)
         with self.assertRaisesRegex(Core0Error,message): target.notebook_safety_sources(*changed)
 
@@ -135,10 +136,10 @@ class NotebookSafetySourceTests(unittest.TestCase):
     def test_busy_queue_contact_and_loss_shortcuts_reject(self):
         self.reject(1,'multimodalSafety (if safetyX < 640 then 1 else 2)',
                     'queueBookTap x y','precede busy')
-        start=self.sources[1].index('private def multimodalInputSample')
+        start=self.sources[1].index('private def multimodalApplySample')
         changed=self.sources[1][:start]+self.sources[1][start:].replace(
-            'if different active 0 = true then appendRaw else\n    if flags',
-            'if different active 0 = true then .done 0 0 else\n    if flags',1)
+            'if different active 0 = true then appendRaw else\n  if flags',
+            'if different active 0 = true then .done 0 0 else\n  if flags',1)
         with self.assertRaisesRegex(Core0Error,'raw-stroke'):
             target.notebook_safety_sources(self.sources[0],changed,self.sources[2])
         start=self.sources[1].index('private def drainMultimodalInput')
@@ -152,19 +153,19 @@ class NotebookSafetySourceTests(unittest.TestCase):
                     'queueBookTap x y','retention')
         self.reject(1,'Memory.write64 (tutorState + 16) operation',
                     '.done 0 0','retain/coalesce')
-        self.reject(1,'if stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then',
-                    'if stroke ||| rawCount ||| rawPending ||| store ||| checking = 1 then','dispatch')
+        self.reject(1,'if deferredIndex ||| captured ||| stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then',
+                    'if deferredIndex ||| captured ||| stroke ||| rawCount ||| rawPending ||| store ||| checking = 1 then','dispatch')
         self.reject(1,'.bind (Memory.write64 (tutorState + 16) 0) fun s _ =>',
                     '.bind (.done 0 0) fun s _ =>','exact-once')
 
     def test_toolbar_requires_every_intersected_tile_and_width_guard(self):
-        # x400..1119 and y132..146 intersect exactly row4, columns12..34.
-        columns = set(x // 32 for x in range(400,1120))
+        # x400..1263 and y132..146 intersect exactly row4, columns12..39.
+        columns = set(x // 32 for x in range(400,1264))
         rows = set(y // 32 for y in range(132,147))
-        self.assertEqual((rows, columns), ({4},set(range(12,35))))
+        self.assertEqual((rows, columns), ({4},set(range(12,40))))
         for before,after in (
-            ('if width < 1120 then .done 16 0 else','if width < 624 then .done 16 0 else'),
-            ('.boundedFoldU64 23 multimodalBarTile 23','.boundedFoldU64 1 multimodalBarTile 1'),
+            ('if width < 1264 then .done 16 0 else','if width < 624 then .done 16 0 else'),
+            ('.boundedFoldU64 28 multimodalBarTile 28','.boundedFoldU64 1 multimodalBarTile 1'),
             ('4 * ((width + 31) / 32) + 12 + i.toUInt64','3 * ((width + 31) / 32) + 12 + i.toUInt64'),
             ('4 * ((width + 31) / 32) + 12 + i.toUInt64','4 * ((width + 31) / 32) + 13 + i.toUInt64'),
             ('4 * ((width + 31) / 32) + 12 + i.toUInt64','4 * ((width + 31) / 32) + 12')):
@@ -184,7 +185,7 @@ class NotebookSafetySourceTests(unittest.TestCase):
 
     def test_chooser_load_retains_exact_page_publication_and_cancels_stale_request(self):
         for before,after in (
-            ('      multimodalQueueBookLoad\n','      .done 0 0\n'),
+            ('    multimodalQueueBookLoad\n','    .done 0 0\n'),
             ('Memory.write64 (tutorState + 40) identity','Memory.write64 (tutorState + 40) 0'),
             ('if course = 1 then if page = expectedPage then if identity = expectedIdentity then if edition = expectedEdition then',
              'if course = 1 then if page = page then if identity = expectedIdentity then if edition = expectedEdition then'),
@@ -204,6 +205,35 @@ class NotebookSafetySourceTests(unittest.TestCase):
   .bind (packagePut 176 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (beginPackageRead 60001 sequence)'''
         self.reject(1,before,before.replace('packagePut 160 0','packagePut 160 1'),'source school envelope')
+
+    def test_owned_pcm_and_raw_capture_sources_keep_distinct_ownership(self):
+        result = target.notebook_safety_sources(*self.sources)
+        self.assertEqual((result['toolbar_variant'],result['toolbar_extent'],result['toolbar_tiles']),
+                         ('school23-owned-pcm2',1264,28))
+        self.assertTrue(result['captured_input'] and result['coalesced_index'])
+        for before,after,message in (
+            ('if operation = 9 then Lemma.User.Multimodal.testAudio',
+             'if operation = 9 then .done 0 0','source toolbar PCM'),
+            ('if 1120 ≤ px then if px < 1264 then multimodalControl 9',
+             'if 1120 ≤ px then if px < 1121 then multimodalControl 9','source toolbar PCM'),
+            ('if 544 ≤ px then if px < 760 then',
+             'if 544 ≤ px then if px < 545 then','source raw capture lost local inhibition'),
+            ('if different sequence (previousSequence+1) = true then true else time < previousTime) = true then multimodalRawLoss 1',
+             'if different sequence (previousSequence+2) = true then true else time < previousTime) = true then multimodalRawLoss 1',
+             'source raw capture lost sequence/time'),
+            ('Lemma.Services.Store.Format.copy raw row 72','Lemma.Services.Store.Format.copy raw row 64',
+             'source raw capture lost exact record'),
+            ('Lemma.Services.Store.Format.copy row raw 72','Lemma.Services.Store.Format.copy row raw 64',
+             'source raw capture lost exact record'),
+            ('if deferredIndex ||| captured ||| stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then',
+             'if captured ||| stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then',
+             'source tutor intent dispatch')):
+            with self.subTest(after=after): self.reject(1,before,after,message)
+        source=list(self.sources)
+        head='private def multimodalInputSample : Action :=\n'
+        source[1]=source[1].replace(head,head+'  .bind (get 160) fun _ _ =>\n',1)
+        with self.assertRaisesRegex(Core0Error,'raw capture safety waits for work'):
+            target.notebook_safety_sources(*source)
 
 class ReadonlyGuardTests(unittest.TestCase):
     def fixture(self):
