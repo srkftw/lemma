@@ -8,6 +8,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from silicon_enclosure import GeometryError, read_tech
 from silicon_route_enclosure import audit
 from silicon_power_ports import signal_bytes
+from silicon_pen_physical import require_fresh_power_recipe, host_memory_budget
+from types import SimpleNamespace
 
 
 TECH = '''UNITS
@@ -151,6 +153,30 @@ class RouteEnclosureTests(unittest.TestCase):
         self.assertEqual(signal_bytes(reloaded, reloaded_power=True), signal_bytes(original))
         self.assertNotEqual(signal_bytes(reloaded.replace('.VDD(VDDlogic)', '.VDD(VSS)'), reloaded_power=True), signal_bytes(original))
         with self.assertRaises(ValueError):signal_bytes(reloaded.replace('    VSS,\n    addr,', '    extra,\n    VSS,\n    addr,'), reloaded_power=True)
+
+    def test_fresh_power_recipe_rejects_historical_netlist_or_repair_bypass(self):
+        valid = dict(fresh_core_power_grid=True, selected_implementation=False,
+            routed_eco_from=None, completed_eco_route_from=None,
+            completed_power_grid_route_from=None, preserve_routed_netlist=False,
+            protect_sram_power_edges=False, protect_sram_power_geometry=True,
+            defer_global_eco=False)
+        require_fresh_power_recipe(SimpleNamespace(**valid))
+        for key in ('selected_implementation', 'routed_eco_from', 'completed_eco_route_from',
+                    'completed_power_grid_route_from', 'preserve_routed_netlist',
+                    'protect_sram_power_edges', 'defer_global_eco'):
+            with self.subTest(key=key), self.assertRaises(GeometryError):
+                require_fresh_power_recipe(SimpleNamespace(**{**valid, key: True}))
+        with self.assertRaises(GeometryError):
+            require_fresh_power_recipe(SimpleNamespace(**{**valid, 'protect_sram_power_geometry': False}))
+
+    def test_host_budget_keeps_legacy_floor_and_rejects_unadmitted_reduction(self):
+        self.assertEqual(host_memory_budget(SimpleNamespace(host_memory_gib=6,
+                         fresh_core_power_grid=False)), (6 << 30, 8 << 30))
+        self.assertEqual(host_memory_budget(SimpleNamespace(host_memory_gib=4,
+                         fresh_core_power_grid=True)), (4 << 30, 6 << 30))
+        for size, fresh in ((4, False), (2, True), (8, True)):
+            with self.subTest(size=size, fresh=fresh), self.assertRaises(GeometryError):
+                host_memory_budget(SimpleNamespace(host_memory_gib=size, fresh_core_power_grid=fresh))
 
 
 if __name__ == '__main__':

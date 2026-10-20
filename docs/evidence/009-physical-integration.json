@@ -2302,7 +2302,7 @@
     "negative_controls": "NOT_RUNbecauseoriginalpositivefailed"
   },
   "deadline_banked_private_candidate": {
-    "status": "FUNCTIONAL_AND_MAPPED_CONE_QUALIFIED_NOT_SELECTED_NOT_ROUTED",
+    "status": "ROUTED_AND_INDEPENDENTLY_ASSESSED_FAIL_UNSELECTED",
     "source": {
       "path": "build/silicon/task009-watchdog-banked-prep-a2/candidate.sv",
       "sha256": "5f90a24e35f554e04523b1dd5e8044546dcc8ebc2b6aba42563ebd812c52f037"
@@ -2344,6 +2344,117 @@
         "path": "build/silicon/task009-watchdog-banked-timing-a2/result.json",
         "sha256": "b06f092da0a8e0034fd83d2d936a5ab3eec1c84cfb75009056c6b25880d74784"
       }
-    ]
+    ],
+    "fresh_powered_path": {
+      "sources": [
+        {
+          "path": "scripts/silicon_pen_physical.py",
+          "sha256": "5194f01a9c41f4dad22d0fb06afeb420485e13d914ff3c61a84b55d9bab007fa"
+        },
+        {
+          "path": "scripts/silicon_buffered_pins.py",
+          "sha256": "f3b64ee38af97267f5bc396861916d1c4d8809e45ec638a2dea9756d06e8f422"
+        },
+        {
+          "path": "tooling/silicon/pen-fresh-power.tcl",
+          "sha256": "fedd1b999c134e27d7fcf8967465fedb9f474896b6ee996b4a2b401cce6c220f"
+        },
+        {
+          "path": "tooling/silicon/layout.tcl",
+          "sha256": "96d7ca9ceb5c61359180a1ef0e081198fe497d419470ed007f63a72d10543a49"
+        }
+      ],
+      "placement": {
+        "path": "build/silicon/task009-watchdog-banked-powered-placement-a1/result.json",
+        "sha256": "dd07a1e933247fd54c4071fe8982cf3e8867b8af63c1fda942d238e0f74c8d00"
+      },
+      "placement_result": "PASS12.903645s;actualnormalplacement/CTS/setup+holdrepairs,8817cells;3PSM/17643PGterminals/9macroPG/423BIST/18718exclusions;actualBISTdropandtimestamp-portdeletionnegativecontrolsreject",
+      "route": {
+        "path": "build/silicon/task009-watchdog-banked-powered-route-a1/result.json",
+        "sha256": "a8637da0418232ccd642369d3df8588910f3dde683cbae1a6f5ee33385718efd"
+      },
+      "route_result": "OriginalFAIL413.156731s afteractualcompletedDRT324markers: oldpreserved-netlistpowerguardrejectedlegitimatehold-ECO SRAM inputnetnamechange. Realfailure retained, no reroute.",
+      "assessment": {
+        "path": "build/silicon/task009-watchdog-banked-powered-assessment-a1/result.json",
+        "sha256": "51fdaf664f41c4f2f484189759e2a5841f1376d248307fc1a9b6421477b9f33c"
+      },
+      "assessment_seconds": 13.962846170994453,
+      "endpoint_proof": "OriginalLibfunction+unateness validatesonlybuffer/delay/inverterchains tosameoriginaldriver/pin/type/polarity for89functionalinputs;958remainingterminalnetnamesexact;all668finalportnets/types/shapesexact;actualbit-swap/array-supplyretarget/BISTdisconnect/supply-portdelete reject. Notwhole-netlistLVS.",
+      "observer_failures": [
+        {
+          "path": "build/silicon/task009-watchdog-banked-repair-qualification-a1/result.json",
+          "sha256": "969de129d78ccff87d52aa97f97f1f8b1c2c2160c21f1bfc621149764f60b7aa"
+        },
+        {
+          "path": "build/silicon/task009-watchdog-banked-repair-qualification-a2/result.json",
+          "sha256": "037632bbb2cddf34c516fba2dde6b8f104c5b63a08a9498f1665c53eb653bcb5"
+        }
+      ],
+      "observer_failure_scope": "StrictobserverfirstrejectedquotedoriginalLibertydirections, thenoriginalinverter!(A)spelling; exactfailedobserverbytesretained beforecorrection. Geometry neverrerouted.",
+      "qualified_relation": {
+        "path": "build/silicon/task009-watchdog-banked-repair-qualification-a3/result.json",
+        "sha256": "a83c10da91a5285eedda0ce3ff346f427107677ec8b0c5216612f5cad35d73db"
+      },
+      "PG": "Actual3PSMnetshapesconnected;17643before/18177afterterminals,9SRAMsupplies/423BISTpreserved;all668portshapesunchanged",
+      "router_markers": {
+        "total": 324,
+        "metal_short": 195,
+        "cut_short": 1,
+        "metal_spacing": 128,
+        "supply": 0
+      },
+      "classification": {
+        "path": "build/silicon/task009-watchdog-banked-route-clusters-a1/result.json",
+        "sha256": "d4ccecd6d92ba4ed9cb2be4d678371848f8916c3dda4dae3e2e603c5165f09a8"
+      },
+      "actual_PEX_typical": {
+        "min": [
+          -13.969136,
+          -0.233794,
+          1083
+        ],
+        "nom": [
+          -16.469742,
+          -0.213739,
+          1335
+        ],
+        "max": [
+          -18.830345,
+          -0.208643,
+          1584
+        ]
+      },
+      "corners": {
+        "path": "build/silicon/task009-watchdog-banked-powered-corners-a1/result.json",
+        "sha256": "f754024041170a1e2dff943105231e24fdbcf0b4afd43bb6793352a6a4a00237"
+      },
+      "corner_result": "All9FAIL14.532284s;matchedslow125Cnom−32.039055ns/−.289658ns/2110electrical. Fasttemperaturepairremainsmixeddiagnostic.",
+      "remaining_worst_setup": "sample_time[11]→sequence_all_ones[0]/D arrival26.986847ns,required10.517105ns; oldnow_ticks→64deadlineholdcone removed,but remainingtimestamp/accept-controlfanoutdominates",
+      "remaining_worst_hold": "ingress_entry[173]→hold809→lane2/A_DIN45 arrival1.507084ns,required1.740879ns; minRCslack−.233794ns",
+      "host_budget": "Explicitfresh-grid-host-budget/1 hard4GiBAS/floor6GiB,original900/1200sroute/whole; basedprior1.38GiBactualpeak+5%mappedcells; actualnewpeak1.33GiB. Legacy6/8defaultsandoldpreflightFAILremain. Chip10ns/fullwidth/endpoints unchanged.",
+      "selection": "REJECTED:retainsselectedpowered248/RTL504f. ZerorouterPGmarkers doesnotreplaceprocessDRC; routing/timing/electricalallFAIL."
+    },
+    "retained_source_patch": {
+      "status": "PASS_UNSELECTED_RTL_PATCH_REPRODUCES_EXACT_QUALIFIED_CANDIDATE_BYTES",
+      "original_RTL_sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b",
+      "patch": "tooling/silicon/candidates/009-deadline-banks.patch",
+      "patch_sha256": "939e7c28d2c2901e334e85c5430a580162c573df60b5eff82ba847f9815bab4b",
+      "result_sha256": "5f90a24e35f554e04523b1dd5e8044546dcc8ebc2b6aba42563ebd812c52f037"
+    }
+  },
+  "canonical_product_consumption": {
+    "receipt": {
+      "path": "build/task009/integrated15-school23-positive-a3/result.json",
+      "sha256": "8cfcbc74b771984a45ad5f7ecd29573e26be42e99d7053d910c76e8baec697bb"
+    },
+    "result": "PASS_ACTUAL_INTEGRATED_FACTORY_ROM_NOTEBOOK_PEN_SAVE_RESET",
+    "profile": "lemma-silicon-dev/0.15.0",
+    "RTL": {
+      "path": "sim/rtl/lemma_pen.sv",
+      "sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b"
+    },
+    "seconds": 4515.107,
+    "cycles": 699200000,
+    "scope": "FreshcanonicalIHP-SRAMSoCexecutionofreusedauditedold540guest/ROM/RTL:factoryROM/NVReady,actualpen3full9-fieldrawsamples,linkedStorefrontier2→5,11newindependentinkpixels,resetpreservesacknowledgedbytes/ROMreentry. Laboratorydiagnostic,notordinaryStudentsession,independentcoldreopen,exactrestore,simultaneousrawstreamorphysicalqualification. PrivatebankedcandidateNOTconsumed."
   }
 }

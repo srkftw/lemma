@@ -79,10 +79,10 @@ proc lemma_power_geometry_box {block layer x1 y1 x2 y2 records_name} {
     lappend records [linsert $box 0 $name]
 }
 
-proc lemma_add_power_geometry_clearance {out prior standard_tech} {
+proc lemma_add_power_geometry_clearance {out original_cts_def standard_tech} {
     set block [ord::get_db_block]
     if {[$block getDbUnitsPerMicron] != 1000 || [llength [$block getObstructions]] != 0} {error "Unexpected original PG geometry context"}
-    set f [open $prior/routed.def r]
+    set f [open $original_cts_def r]
     set data [read $f]
     close $f
     if {![regexp {NONDEFAULTRULES 2 ;(.*?)END NONDEFAULTRULES} $data all ndr]} {error "Missing original CTS rules"}

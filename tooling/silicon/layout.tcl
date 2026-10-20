@@ -3,6 +3,7 @@
 # Optional full-depth pen SRAM uses the original process macro collateral.
 # No pad ring, power-grid closure, GDS, process DRC or LVS claim.
 set_thread_count 4
+set power_grid_state NOT_IMPLEMENTED
 if {[info exists tech_lef]} {read_lef $tech_lef} else {read_lef $pdk/lef/sg13g2_tech.lef}
 read_lef $pdk/lef/sg13g2_stdcell.lef
 read_liberty $pdk/lib/sg13g2_stdcell_typ_1p20V_25C.lib
@@ -88,6 +89,7 @@ repair_timing -hold -max_passes 2 -max_iterations 20 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose
 if {[info exists center_validation_cones] && $center_validation_cones == 1} {source $validation_region_check_script}
+if {[info exists fresh_power_script]} {source $fresh_power_script}
 set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
 global_route -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/global-congestion.rpt -verbose
 # Placement estimates differ from actual global RC. Repair once against live
@@ -134,9 +136,19 @@ set cell_area [expr {$cell_area / ($units * $units)}]
 set core [$block getCoreArea]
 set core_area [expr {[$core dx] * [$core dy] / double($units * $units)}]
 set file [open $out/global-route-summary.json w]
-puts $file "{\"cell_area_um2\": $cell_area, \"core_area_um2\": $core_area, \"utilization_percent\": [expr {100.0 * $cell_area / $core_area}], \"instances\": [llength [$block getInsts]], \"clock_period_ns\": $clock_ns, \"timing_model\": \"global-route RC estimate before detailed signal routing\", \"power_grid\": \"NOT_IMPLEMENTED\", \"process_drc\": \"NOT_RUN\", \"lvs\": \"NOT_RUN\"}"
+puts $file "{\"cell_area_um2\": $cell_area, \"core_area_um2\": $core_area, \"utilization_percent\": [expr {100.0 * $cell_area / $core_area}], \"instances\": [llength [$block getInsts]], \"clock_period_ns\": $clock_ns, \"timing_model\": \"global-route RC estimate before detailed signal routing\", \"power_grid\": \"$power_grid_state\", \"process_drc\": \"NOT_RUN\", \"lvs\": \"NOT_RUN\"}"
 close $file
 detailed_route -output_drc $out/route.drc -output_maze $out/route.maze -droute_end_iter 3 -verbose 1
+if {[info exists fresh_power_script]} {
+    global_connect
+    # Normal global-RC resizer phases legitimately add hold buffers at SRAM
+    # inputs. The Python flow independently proves original-Lib endpoint
+    # chains/ports, then runs the original strict final PG checker. No final
+    # PG or closure claim is made from this intermediate export alone.
+    lemma_check_fresh_power_ports $fresh_power_ports_before
+    lemma_check_power_geometry_clearance $power_geometry_clearance
+    write_verilog -include_pwr_gnd $out/power-connected.v
+}
 set route_violations [detailed_route_num_drvs]
 set drv_file [open $out/router-drc-count.txt w]
 puts $drv_file $route_violations
@@ -166,5 +178,5 @@ set cell_area [expr {$cell_area / ($units * $units)}]
 set core [$block getCoreArea]
 set core_area [expr {[$core dx] * [$core dy] / double($units * $units)}]
 set file [open $out/layout-summary.json w]
-puts $file "{\"cell_area_um2\": $cell_area, \"core_area_um2\": $core_area, \"utilization_percent\": [expr {100.0 * $cell_area / $core_area}], \"instances\": [llength [$block getInsts]], \"clock_period_ns\": $clock_ns, \"timing_model\": \"global-route RC estimate after detailed signal routing\", \"power_grid\": \"NOT_IMPLEMENTED\", \"process_drc\": \"NOT_RUN\", \"lvs\": \"NOT_RUN\"}"
+puts $file "{\"cell_area_um2\": $cell_area, \"core_area_um2\": $core_area, \"utilization_percent\": [expr {100.0 * $cell_area / $core_area}], \"instances\": [llength [$block getInsts]], \"clock_period_ns\": $clock_ns, \"timing_model\": \"global-route RC estimate after detailed signal routing\", \"power_grid\": \"$power_grid_state\", \"process_drc\": \"NOT_RUN\", \"lvs\": \"NOT_RUN\"}"
 close $file

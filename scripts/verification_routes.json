@@ -377,8 +377,10 @@
         "scripts/silicon_pen_*.py",
         "scripts/silicon_lvs_alias.py",
         "scripts/silicon_power_ports.py",
+        "scripts/silicon_buffered_pins.py",
         "scripts/silicon_route_enclosure.py",
-        "tooling/silicon/pen-*.tcl"
+        "tooling/silicon/pen-*.tcl",
+        "tooling/silicon/candidates/*.patch"
       ],
       "claims": [
         "physical-flow"

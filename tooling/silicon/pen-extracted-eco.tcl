@@ -71,7 +71,7 @@ if {[info exists core_power_grid] && $core_power_grid == 1} {
     }
     if {[info exists power_geometry_script]} {
         source $power_geometry_script
-        set power_geometry_clearance [lemma_add_power_geometry_clearance $out $prior $pdk/lef/sg13g2_tech.lef]
+        set power_geometry_clearance [lemma_add_power_geometry_clearance $out $prior/routed.def $pdk/lef/sg13g2_tech.lef]
         lemma_check_power_geometry_clearance $power_geometry_clearance
         write_db $out/power-geometry-before-route.odb
         write_def $out/power-geometry-before-route.def
