@@ -490,8 +490,10 @@ class CiWorkflowTests(unittest.TestCase):
                         self.kernel.index("python3 scripts/check_kernel.py"))
         restore = self.kernel.split("      - name: Restore both exact mode-preserving shard archives\n", 1)[1].split("      - name:", 1)[0]
         self.assertEqual(restore.count("timeout --foreground --signal=TERM --kill-after=30s 2m"), 2)
-        self.assertEqual(restore.count("nix develop --no-write-lock-file --command"), 2)
-        self.assertEqual(restore.count("python3 scripts/kernel_shard_artifact.py unpack"), 2)
+        self.assertNotIn("nix develop", restore)
+        self.assertEqual(restore.count("python3 -I scripts/kernel_shard_artifact.py unpack"), 2)
+        self.assertIn('"executable_sha256": digest.hexdigest()', restore)
+        self.assertIn('"isolated": sys.flags.isolated', restore)
         for optimization in ("O0", "O2"):
             for required in ("--optimization " + optimization,
                              "--archive build/ci/kernel-shard-artifacts/" + optimization + "/kernel-AE-shard-" + optimization + ".tar",
@@ -504,7 +506,7 @@ class CiWorkflowTests(unittest.TestCase):
         retain = self.kernel.split("      - name: Retain Task 003 prefix evidence\n", 1)[1]
         for required in ("build/ci/kernel-shard-artifacts/", "build/ci/kernel-AE-shard-O0.extract.json",
                          "build/ci/kernel-AE-shard-O2.extract.json", "build/ci/kernel-rv64-shard-O0-unpack.log",
-                         "build/ci/kernel-rv64-shard-O2-unpack.log"):
+                         "build/ci/kernel-rv64-shard-O2-unpack.log", "build/ci/kernel-shard-transport-python.json"):
             self.assertIn(required, retain)
         self.assertNotIn("chmod", self.kernel)
         self.assertNotIn("tar -", self.kernel)
