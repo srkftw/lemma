@@ -12,6 +12,13 @@ base.overrideAttrs (old: {
     test -x build/qemu-system-riscv64
     runHook postBuild
   '';
+  # Preserve the consumed configured source and actual native object closure.
+  # A future bounded incremental producer must still verify this immutable seed
+  # and bind its own changed-object/link result; this is not fresh execution.
+  postInstall = (old.postInstall or "") + ''
+    mkdir -p "$out/share/lemma-build"
+    tar -czf "$out/share/lemma-build/consumed-build.tar.gz" .
+  '';
   postPatch = old.postPatch + ''
     python3 ${./patch_uart_ingress.py} . \
       --header ${../../sim/host/lemma_uart_ingress.h} \

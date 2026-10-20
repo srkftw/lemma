@@ -21,6 +21,7 @@ from lemmasim_session import digest, write_json, ROOT, MAX_REQUEST
 CPU = 'rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0'
 ADAPTER = 'lemmasim-fast-adapter/4'
 RAW_UART_ADAPTER = 'lemmasim-fast-adapter/5'
+RAW_UART_FLOW_ADAPTER = 'lemmasim-fast-adapter/6'
 MAX_NS = (1 << 63) - 1
 CLOCK_SCHEMA = 'lemmasim-fast-clock/1'
 
@@ -87,6 +88,9 @@ def build(args):
     workload = args.workload or 'notebook'
     if workload not in selected:
         raise ValueError('Workload is not admitted by this binding')
+    source_root = Path(getattr(args,'guest_source_root',None) or ROOT).resolve()
+    if source_root != ROOT and (name != 'lemma-silicon-dev/0.14.0' or workload not in ('school-notebook','school-initializer') or not args.guest_build):
+        raise ValueError('Archived Fast sources require explicit School23/v2 audited0.14 guest')
     archived=None
     archive_path=getattr(args,'guest_bundle',None)
     if archive_path is not None:
@@ -121,7 +125,12 @@ def build(args):
         guest.run_command(guest_command, timeout=1500)
         guest.run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_kernel.py',directory],timeout=600)
     if archived is None:
-        guest.verify_guest_build(directory, selected[workload], args.opt_level)
+        guest.verify_guest_build(directory, selected[workload], args.opt_level, source_root=source_root)
+        if source_root != ROOT:
+            from silicon_guest_bundle import _audited_guest_archive
+            _audited_guest_archive(directory,source_root,selected[workload],
+                'lemma-school-guest-source-archive/1',
+                'actual audited frozen School23/v2 source; current runtime preparation is not target compilation')
         entry = {k: guest.identified(directory/p) for k,p in
                  [('image','image.elf'),('build','build.json'),('provenance','provenance.json'),
                   ('audit','audit.json'),('dtb','platform.dtb'),('descriptor','descriptor.bin')]}
@@ -129,6 +138,9 @@ def build(args):
             'qemu':guest.identified(binary),'derivation':guest.identified(closure['derivation']),
             'sources':before,'cpu':CPU,'icount_shift':3,'workloads':{workload:entry},
             'boot':'ELF-preload development; QEMU reset-ROM handoff to identical Lean guest ELF and supplied DTB'}
+    if source_root != ROOT:
+        from build_kernel import source_inputs
+        data['guest_source_root']={'path':str(source_root),'sources':source_inputs(source_root)}
     if archived is not None:
         data['guest_archive']={'path':str(Path(archive_path).resolve()),'manifest_sha256':digest(archive_manifest(archive_path,name)),
                                'scope':'unchanged archived genuine guest; new backend, not fresh target compilation'}
@@ -136,7 +148,7 @@ def build(args):
     path = prepared_path(name)
     try:
         previous = json.loads(path.read_text())
-        if previous.get('guest_archive')==data.get('guest_archive') and all(previous[k] == data[k] for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift')):
+        if previous.get('guest_archive')==data.get('guest_archive') and previous.get('guest_source_root')==data.get('guest_source_root') and all(previous[k] == data[k] for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift')):
             for key, old in previous['workloads'].items():
                 if key == workload or key not in selected: continue
                 try:
@@ -144,7 +156,7 @@ def build(args):
                     if archived is not None:validate_archived_entry(previous,key)
                     else:
                         old_dir = Path(old['build']['path']).parent
-                        guest.verify_guest_build(old_dir,selected[key],json.loads((old_dir/'build.json').read_text())['optimization'])
+                        guest.verify_guest_build(old_dir,selected[key],json.loads((old_dir/'build.json').read_text())['optimization'],source_root=source_root)
                     data['workloads'][key] = old
                 except (ValueError,KeyError,OSError): pass
     except FileNotFoundError: pass
@@ -186,7 +198,19 @@ def prepared(workload,name=None):
     if 'guest_archive' in data:validate_archived_entry(data,workload)
     else:
         directory = Path(entry['build']['path']).parent
-        guest.verify_guest_build(directory,guest.configurations(name)[workload],json.loads((directory/'build.json').read_text())['optimization'])
+        original = data.get('guest_source_root')
+        source_root = ROOT
+        if original is not None:
+            from build_kernel import source_inputs
+            from silicon_guest_bundle import _audited_guest_archive
+            if (not isinstance(original,dict) or set(original)!={'path','sources'} or
+                    name!='lemma-silicon-dev/0.14.0' or workload not in ('school-notebook','school-initializer')):
+                raise ValueError('Unsupported frozen Fast guest source authority')
+            source_root=Path(original['path']).resolve()
+            if source_inputs(source_root)!=original['sources']:raise ValueError('Frozen Fast guest source closure changed')
+            _audited_guest_archive(directory,source_root,guest.configurations(name)[workload],
+                'lemma-school-guest-source-archive/1','actual frozen audited School23/v2 target source')
+        guest.verify_guest_build(directory,guest.configurations(name)[workload],json.loads((directory/'build.json').read_text())['optimization'],source_root=source_root)
     return data
 
 
@@ -349,6 +373,8 @@ class Fast:
                 raise ValueError('Malformed backend property inventory')
             self.raw_uart = False
             self.raw_uart_paced = False
+            self.raw_uart_flow = False
+            self.execution_state = any(row.get("name") == "execution-state" for row in properties)
             self.input_kinds = self.input_kinds - {'uart'}
             self.identity = {**self.identity, 'adapter':ADAPTER}
             if any(row.get('name') == 'raw-uart-version' for row in properties):
@@ -363,6 +389,16 @@ class Fast:
                     if self.get('raw-uart-paced-version') != 'lemma-raw-uart-paced/1':
                         raise ValueError('Unsupported paced UART backend contract')
                     self.raw_uart_paced = True
+                if (self.data['profile'] == 'lemma-silicon-dev/0.14.0' and
+                        any(row.get('name') == 'raw-uart-flow-version' for row in properties)):
+                    if self.get('raw-uart-flow-version') != 'lemma-raw-uart-flow/1':
+                        raise ValueError('Unsupported UART backpressure flow contract')
+                    self.qmp.execute('qom-set', {'path':'/machine/lemma-hardware',
+                                               'property':'enable-raw-uart-flow',
+                                               'value':'lemma-raw-uart-flow/1'})
+                    self.raw_uart_flow = True
+                    self.identity = {**self.identity, 'adapter':RAW_UART_FLOW_ADAPTER,
+                                     'uart_flow':'lemma-raw-uart-flow/1'}
         except BaseException:
             if self.process is not None:
                 if self.process.poll() is None:os.killpg(self.process.pid,signal.SIGKILL)
@@ -398,6 +434,7 @@ class Fast:
         if getattr(self,'power_enabled',False):devices['power']=json.loads(self.get('power-state'))
         if getattr(self,'raw_uart',False):
             devices['uart_ingress']={**json.loads(self.get('raw-uart-state')), 'paced':getattr(self,'raw_uart_paced',False)}
+        if getattr(self,'execution_state',False):devices['execution']=json.loads(self.get('execution-state'))
         return {**self.clock(),'devices':devices,
                 'storage':json.loads(self.qmp.execute('qom-get',{'path':'/machine/lemma-block','property':'storage-state'})),
                 'cpu_registers':self.qmp.execute('human-monitor-command',{'command-line':'info registers'}),

@@ -20,8 +20,13 @@ def send(args):
             metadata.get('backend') != 'qemu'):
         raise ValueError('Fast course command requires a Developer/Laboratory fast session')
     identity = metadata.get('identity', {})
+    adapter = identity.get('adapter')
+    negotiated = adapter == 'lemmasim-fast-adapter/5' or (
+        adapter == 'lemmasim-fast-adapter/6' and
+        identity.get('profile') == 'lemma-silicon-dev/0.14.0' and
+        identity.get('uart_flow') == 'lemma-raw-uart-flow/1')
     if (identity.get('profile') not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0') or
-            identity.get('adapter') != 'lemmasim-fast-adapter/5'):
+            not negotiated):
         raise ValueError('Fast course command requires negotiated canonical/multimodal raw UART1')
     argv = metadata.get('argv', [])
     if not isinstance(argv, list) or argv.count('-kernel') != 1:
@@ -43,7 +48,7 @@ def send(args):
     if observed.get('identity') != identity or observed.get('running') is not False:
         raise ValueError('Pause the exact fast session before a course command')
     uart = observed.get('machine', {}).get('devices', {}).get('uart_ingress', {})
-    if uart.get('enabled') is not True:
+    if uart.get('enabled') is not True or (adapter == 'lemmasim-fast-adapter/6' and uart.get('flow') is not True):
         raise ValueError('Actual fast raw UART is disabled')
     operation = {'course-install': 1, 'course-load': 2, 'course-delete-probe': 3}[args.command]
     payload = b''
