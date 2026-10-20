@@ -145,6 +145,34 @@ def _quiesce_uart(process, capture, deadline, record, *, budget=5, max_cycles=64
         record["resumes"] += 1
         transport._read_exact(process, needed, deadline=finish_by, capture=capture,
                               context="completing an actual UART frame or service boundary before cleanup")
+        if not tail and boundary_ready is not None:
+            # Let the already observed release/reply sequence progress while
+            # the group is running. Stopping again after each single byte can
+            # exhaust all64 stop attempts before its real confirmation, even
+            # with nearly the entire five-second budget remaining. No new
+            # input is sent, and every complete prefix is still validated.
+            # A ready prefix only requests the next fresh stop: the stopped
+            # drain and semantic check above remain the acceptance boundary.
+            while True:
+                remaining()
+                if len(capture.received) > 131072 * 200:
+                    raise Core0Error("UART cleanup exceeds the finite service capture budget")
+                events, progress_tail = decode_uart(bytes(capture.received[validated:]), allow_partial=True)
+                validated += sum(event["bytes"] for event in events)
+                remaining()
+                if not progress_tail:
+                    ready = boundary_ready(bytes(capture.received))
+                    if type(ready) is not bool:
+                        raise Core0Error("UART semantic boundary did not return an actual Boolean")
+                    record["semantic_progress_checks"] = record.get("semantic_progress_checks", 0) + 1
+                    remaining()
+                    if ready:
+                        break
+                needed = _partial_frame_needed(progress_tail) if progress_tail else 1
+                if not 0 < needed <= 200:
+                    raise Core0Error("partial UART frame lacks a bounded exact remainder")
+                transport._read_exact(process, needed, deadline=finish_by, capture=capture,
+                                      context="settling the actual UART service boundary before refreeze")
     raise Core0Error("UART cleanup stop-cycle budget exhausted")
 
 
@@ -182,6 +210,10 @@ def validate_quiescence(report: dict, rawstdout: bytes, rawstderr: bytes) -> dic
                 or not 0 < facts["semantic_checks"] <= facts["cycles"]
                 or facts.get("semantic_ready") is not True):
             raise Core0Error("Buffer terminal semantic boundary is unconfirmed")
+    if "semantic_progress_checks" in facts:
+        if (type(facts["semantic_progress_checks"]) is not int
+                or not 0 < facts["semantic_progress_checks"] <= facts["frozen_boundary_bytes"]):
+            raise Core0Error("Buffer running semantic progress inventory is malformed")
     stops = facts.get("observed_stops")
     expected = {"pid": report["pid"], "code": os.CLD_STOPPED, "signal": signal.SIGSTOP}
     if (not isinstance(stops, list) or len(stops) != facts["cycles"]
