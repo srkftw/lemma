@@ -1272,5 +1272,34 @@
       "sha256": "0ab1adf8ca19e0d0e886969a1a2d8b59dcd5b34aca62203be8e55302cb9308b3"
     },
     "scope": "Separate3600second generation14 execution after originalgen13terminal, deadline05:02:57.607961UTC; samequalified61input hostedproducer, all49records intact,3protectedprincipals authorized; currentguestmustfreshASK/JOIN."
+  },
+  "actual_guest_envelope_retry_after_authority_restart": {
+    "result": {
+      "path": "build/school/task009-connected-a2/generation14-old-envelope-replay.json",
+      "sha256": "c4a73274c4c15b1d8c3cff13c164ffa90ac323a79d6aa66813002551e603efb0"
+    },
+    "status": "PASS_ORIGINAL_GUEST_ENVELOPE_REPLAY_AFTER_GENERATION_CHANGE",
+    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13\u219214. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
+  },
+  "ordinary_live_model_release_cycle": {
+    "result": {
+      "path": "build/school/task009-live-model-cycle-a1/result.json",
+      "sha256": "f9e6cd73f925a8c1e74a954a57fb51b124563067813a267707c722a62687837c"
+    },
+    "plan": {
+      "path": "build/school/task009-live-model-cycle-a1/plan.json",
+      "sha256": "9337d8c7aec64bdcc39865db4594672d3711c2c092e9424822f3a4867f8f01f1"
+    },
+    "worker_static_audit": {
+      "path": "build/school/task009-live-model-cycle-a1/worker-audit-result.json",
+      "sha256": "20438ad582dfd7b4ed4e79899a4434be444e788af639947892dbf7dc9437442b"
+    },
+    "status": "PASS_LIVE_MODEL_PUBLICATION_SELECTION_ROLLBACK_AND_REAL_MISSINGNESS_FALLBACK",
+    "registered_versions": [
+      9001,
+      9002
+    ],
+    "selected_after_rollback": 9001,
+    "scope": "Live operator publishes existing genuinely trained permittedsynthetic releases, selects both androllsback9001. ExistingAliceexactactivity ispractice(independent=false), soactualLeanpreparation mask0 and numericaljob rejection preserveauthoredbaseline. No newtraining/inference/educationalbenefit claim; targetscorer currentclosedELF/sourceaudit passes onisolatedbytecopy; actualinferencewaits genuineindependentassessment."
   }
 }
