@@ -16,7 +16,11 @@ import signal
 import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 import build as producer
+
+ACTIVE_GROUPS = set()
+GROUP_LOCK = Lock()
 
 
 def require(condition, message):
@@ -49,12 +53,16 @@ def run(argv, cwd, out, phase, env, deadline, report):
         with (out / (phase + '.log')).open('wb') as log:
             child = subprocess.Popen(argv, cwd=cwd, env=env, stdout=log,
                                      stderr=subprocess.STDOUT, start_new_session=True)
+            with GROUP_LOCK:
+                ACTIVE_GROUPS.add(child.pid)
             while child.poll() is None:
                 rss = 0
+                with GROUP_LOCK:
+                    groups = set(ACTIVE_GROUPS)
                 for stat in Path('/proc').glob('[0-9]*/stat'):
                     try:
                         fields = stat.read_text().rsplit(')', 1)[1].split()
-                        if int(fields[2]) == child.pid:
+                        if int(fields[2]) in groups:
                             rss += int(fields[21]) * os.sysconf('SC_PAGE_SIZE')
                     except (OSError, ValueError, IndexError):
                         pass
@@ -74,6 +82,9 @@ def run(argv, cwd, out, phase, env, deadline, report):
                 os.killpg(child.pid, signal.SIGKILL)
                 child.wait()
             row['exit_code'] = child.returncode
+        if child is not None:
+            with GROUP_LOCK:
+                ACTIVE_GROUPS.discard(child.pid)
         row['seconds'] = time.monotonic() - start
         report['commands'].append(row)
 
