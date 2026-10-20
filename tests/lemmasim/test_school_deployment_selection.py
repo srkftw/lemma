@@ -162,5 +162,33 @@ class SchoolDeploymentSelection(unittest.TestCase):
                         {'roots':[{'source':'Lemma.Services.Arithmetic.ServerV8.main','id':1,'args':['u64']}]}):
             with self.subTest(changes=changes),self.assertRaises(Core0Error):target.catalog(unit|changes)
 
+    def test_whole_V9_identity_keeps_checker_wire_and_closes_deployment_dispatch(self):
+        import arithmetic_closure_identity as identity
+        names=['ServerV9.main','ServerV9.step','ServerV9.processCopied','ServerV8.processCopied',
+               'ServerV7.processCopied','ProtocolV9.evaluate','ProtocolV9.reply','ProtocolV9.serviceIdentity',
+               'ReductionV1.calculate','ProtocolV7.reply','ProtocolV7.validateRequest','ProtocolV8.reply']
+        rows=[{'source':'Lemma.Services.Arithmetic.'+name,'symbol':'symbol'+str(i)} for i,name in enumerate(names)]
+        rows.append({'source':'Lemma.Multimodal.Parameterized.evaluate','symbol':'checker'})
+        for configuration in school.configurations_for(24):
+            unit={'configuration':configuration,'software_deployment':school.software_deployment_for(configuration),
+                  'role':'user','image_key':'arithmetic','image_id':3,'contract_version':'core0-user-v0.7',
+                  'functions':rows,'roots':[{'source':'Lemma.Services.Arithmetic.ServerV9.main','id':1,'args':['u64']}],
+                  identity.FIELD:copy.deepcopy(identity.LOCAL_REDUCTION_REGISTRY)}
+            self.assertEqual(identity.contract(unit)['parameterized'],identity.PARAMETERIZED_REGISTRY['parameterized'])
+            with mock.patch('multimodal_target.validate',return_value='multimodal') as mm,\
+                 mock.patch('integrated_target.validate',return_value='integrated') as integrated:
+                expected='integrated' if configuration in school.ALL_INTEGRATED_CONFIGURATIONS else 'multimodal'
+                self.assertEqual(identity.validate('unexecuted host-routing fixture',unit,optimized=False),expected)
+                (integrated if expected=='integrated' else mm).assert_called_once()
+                (mm if expected=='integrated' else integrated).assert_not_called()
+            for changes in ({identity.FIELD:identity.PARAMETERIZED_REGISTRY}, {'image_id':2},
+                            {'contract_version':'core0-user-v0.6'}, {'configuration':school.FAST},
+                            {'software_deployment':school.software_deployment_for(school.FAST)},
+                            {'roots':[{'source':'Lemma.Services.Arithmetic.ServerV8.main','id':1,'args':['u64']}]},
+                            {'functions':rows+[{'source':'Lemma.Services.Arithmetic.ServerV8.main','symbol':'sibling'}]},
+                            {'functions':[row for row in rows if row['source']!='Lemma.Services.Arithmetic.ReductionV1.calculate']}):
+                with self.subTest(configuration=configuration,changes=changes),self.assertRaises(Core0Error):
+                    identity.contract(unit|changes)
+
 
 if __name__=='__main__':unittest.main()

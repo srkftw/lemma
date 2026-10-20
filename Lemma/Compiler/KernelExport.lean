@@ -928,7 +928,8 @@ private def unitManifest (env : Environment) (configuration role : String) (suit
       (← managedStringFields env configuration image? suite lowered) ++
       (← ManagedClosureMetadata.managedClosureFields env (image?.any (·.key == "arithmetic")) suite lowered) ++
       (← ManagedClosureMetadata.executionFields (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration)
-        (image?.any (·.key == "arithmetic")) role suite (isMultimodalNotebookConfiguration configuration)) ++
+        (image?.any (·.key == "arithmetic")) role suite (isMultimodalNotebookConfiguration configuration)
+        (isSchool24Configuration configuration && schoolArithmeticBorrower configuration role image?)) ++
       (← arithmeticArrayExecutionFields configuration role image? suite) ++
       (← arithmeticStringExecutionFields configuration role image? suite) ++
       (← arithmeticBytesExecutionFields configuration role image? suite) ++
