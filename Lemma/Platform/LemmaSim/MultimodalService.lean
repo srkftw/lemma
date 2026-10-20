@@ -16,8 +16,8 @@ open Lemma.Kernel
 open Lemma.Kernel.Memory
 open Lemma.User
 
-/-- Additive syscall69 service version; converter hardware discovery stays1. -/
-def version : UInt64 := 2
+/-- Additive syscall69 service version; legacy controller1 remains supported. -/
+def version : UInt64 := 3
 def state : UInt64 := 0x804e0300
 private def get (offset : UInt64) : Action := Access.read64 (state + offset)
 private def put (offset value : UInt64) : Action := Access.write64 (state + offset) value
@@ -28,11 +28,13 @@ private def clearStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
 
 def configure (key : UInt64) : Action :=
   .bind Lemma.Drivers.Multimodal.discover fun s _ => if mmFailed s = true then .done s 0 else
-  .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if mmFailed s = true then fatal else
+  .boundedFoldU64 104 clearStep 104 0 0 0 0 0 fun s _ => if mmFailed s = true then fatal else
   .bind (Frames.allocate 1 1) fun s scratch => if mmFailed s = true then .done s 0 else
   .bind (put 0 key) fun s _ => if mmFailed s = true then fatal else
   .bind (put 8 scratch) fun s _ => if mmFailed s = true then fatal else
-  .bind (Frames.allocate 1 1) fun s dma => if mmFailed s = true then .done s 0 else put 16 dma
+  .bind (Frames.allocate 1 1) fun s dma => if mmFailed s = true then .done s 0 else
+  .bind (put 16 dma) fun s _ => if mmFailed s = true then fatal else
+  .bind (Frames.allocate 1 1) fun s ring => if mmFailed s = true then .done s 0 else put 640 ring
 
 private def authorize (descriptor handle : UInt64) : Action :=
   .bind (Capability.lookup descriptor handle CapabilityABI.endpointType CapabilityABI.endpointCall) fun s key =>
@@ -261,12 +263,162 @@ private def pcmBatch (descriptor stream pointer epoch : UInt64) : Action :=
   .boundedFoldU64 16 pcmStep count.toUInt32 0 data epoch 0 0 fun status accepted =>
   .bind (put (row 8 + 32) (remaining - accepted * 8)) fun s _ => if mmFailed s = true then fatal else .done status accepted
 
+/-- Controller2's playback ring has one lifetime-owned kernel frame. State640
+holds its frame handle;648..704 bind descriptor, grant and controller epochs,
+accepted frontier, raw counter baselines, ownership and the exact EOF frontier.
+The controller may retain a read after cancellation. Neither a new owner nor a
+revoked caller can free, wipe or reuse that frame until the held read retires. -/
+private def ringABI : Action :=
+  .bind (IO.read64 (Lemma.Drivers.Multimodal.base + 8)) fun s abi => if mmFailed s = true then .done s 0 else
+  if abi = 2 then .done 0 2 else .done 2 0
+private def ringRead (offset : UInt64) : Action := IO.read64 (Lemma.Drivers.Multimodal.base + offset)
+private def ringWrite (offset value : UInt64) : Action := IO.write64 (Lemma.Drivers.Multimodal.base + offset) value
+
+private def ringOwner (descriptor epoch : UInt64) : Action :=
+  .bind (get 696) fun s owned => if mmFailed s = true then fatal else
+  if owned = 0 then .done 5 0 else
+  .bind (get 648) fun s owner => if mmFailed s = true then fatal else
+  if mmDifferent owner descriptor = true then .done 7 0 else
+  .bind (get 656) fun s requested => if mmFailed s = true then fatal else
+  if mmDifferent requested epoch = true then .done 4 0 else .done 0 0
+
+private def ringCurrent (descriptor epoch : UInt64) : Action :=
+  .bind (ringOwner descriptor epoch) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (current 8 epoch 64) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (get 688) fun s saved => if mmFailed s = true then fatal else
+  .bind (Lemma.Drivers.Multimodal.read 8 32) fun s actual => if mmFailed s = true then .done s 0 else
+  if mmDifferent actual saved = true then .done 4 0 else .done 0 0
+
+private def beginRing (descriptor stream pointer epoch : UInt64) : Action :=
+  if mmDifferent stream 8 = true then .done 2 0 else
+  .bind ringABI fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (current 8 epoch 64) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringRead 144) fun s status => if mmFailed s = true then .done s 0 else
+  if status = 1 then .done 6 0 else
+  .bind (ringRead 168) fun s held => if mmFailed s = true then .done s 0 else
+  if held &&& 255 = 2 then .done 6 0 else
+  .bind (metadata descriptor pointer 32) fun s data => if mmFailed s = true then .done s 0 else
+  .bind (Access.read64 data) fun s magic => if mmFailed s = true then fatal else
+  .bind (Access.read64 (data + 8)) fun s format => if mmFailed s = true then fatal else
+  .bind (Access.read64 (data + 16)) fun s capacity => if mmFailed s = true then fatal else
+  .bind (Access.read64 (data + 24)) fun s reserved => if mmFailed s = true then fatal else
+  if mmDifferent magic 0x32474e52 = true then .done 2 0 else
+  if mmDifferent format 1 = true then .done 2 0 else
+  if mmDifferent capacity 2048 = true then .done 3 0 else
+  if mmDifferent reserved 0 = true then .done 2 0 else
+  .bind (get 640) fun s handle => if mmFailed s = true then fatal else
+  .bind (Frames.resolvePurpose 1 handle 1) fun s physical => if mmFailed s = true then fatal else
+  .bind (Lemma.Drivers.Multimodal.read 8 32) fun s controllerEpoch => if mmFailed s = true then .done s 0 else
+  .bind (Lemma.Drivers.Multimodal.read 8 240) fun s submitted => if mmFailed s = true then .done s 0 else
+  .bind (Lemma.Drivers.Multimodal.read 8 232) fun s consumed => if mmFailed s = true then .done s 0 else
+  .bind (ringWrite 104 physical) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringWrite 112 2048) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (current 8 epoch 64) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringWrite 136 1) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringRead 144) fun s enabled => if mmFailed s = true then .done s 0 else
+  if mmDifferent enabled 1 = true then .done 6 0 else
+  .bind (put 648 descriptor) fun s _ => if mmFailed s = true then fatal else
+  .bind (put 656 epoch) fun s _ => if mmFailed s = true then fatal else
+  .bind (put 664 0) fun s _ => if mmFailed s = true then fatal else
+  .bind (put 672 submitted) fun s _ => if mmFailed s = true then fatal else
+  .bind (put 680 consumed) fun s _ => if mmFailed s = true then fatal else
+  .bind (put 688 controllerEpoch) fun s _ => if mmFailed s = true then fatal else
+  .bind (put 704 0xffffffffffffffff) fun s _ => if mmFailed s = true then fatal else
+  .bind (put 696 1) fun s _ => .done s 0
+
+private def ringCopyStep (i _ : UInt32) (acc data destination producer _ : UInt64) : Action :=
+  let offset := (producer + i.toUInt64) % 2048 * 2
+  .bind (Access.read8 (data + 32 + i.toUInt64 * 2)) fun s low => if mmFailed s = true then .done s acc else
+  .bind (Access.read8 (data + 33 + i.toUInt64 * 2)) fun s high => if mmFailed s = true then .done s acc else
+  .bind (Access.write8 (destination + offset) low) fun s _ => if mmFailed s = true then .done s acc else
+  .bind (Access.write8 (destination + offset + 1) high) fun s _ => .done s (acc + 1)
+
+private def ringPacket (data count producer : UInt64) : Action :=
+  .bind (Access.read64 data) fun s magic => if mmFailed s = true then fatal else
+  .bind (Access.read64 (data + 8)) fun s format => if mmFailed s = true then fatal else
+  .bind (Access.read64 (data + 16)) fun s actualCount => if mmFailed s = true then fatal else
+  .bind (Access.read64 (data + 24)) fun s actualProducer => if mmFailed s = true then fatal else
+  if mmDifferent magic 0x32424350 = true then .done 2 0 else
+  if mmDifferent format 1 = true then .done 2 0 else
+  if mmDifferent actualCount count = true then .done 4 0 else
+  if mmDifferent actualProducer producer = true then .done 4 0 else .done 0 0
+
+/-- A packet is admitted atomically. Unpublished bytes never grant playback;
+permission and controller identity are rechecked after the bounded copy. Ring
+space uses the DMA fetch frontier, not the FIFO submission or consumed counter. -/
+private def enqueueRing (descriptor stream pointer epoch : UInt64) : Action :=
+  if mmDifferent stream 8 = true then .done 2 0 else
+  .bind ringABI fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringCurrent descriptor epoch) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (get 704) fun s eof => if mmFailed s = true then fatal else
+  if mmDifferent eof 0xffffffffffffffff = true then .done 5 0 else
+  .bind (metadata descriptor pointer 32) fun s data => if mmFailed s = true then .done s 0 else
+  .bind (Access.read64 (data + 16)) fun s count => if mmFailed s = true then fatal else
+  .bind (Access.read64 (data + 24)) fun s producer => if mmFailed s = true then fatal else
+  if count = 0 then .done 3 0 else if 512 < count then .done 3 0 else
+  .bind (ringPacket data count producer) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (get 664) fun s expected => if mmFailed s = true then fatal else
+  if mmDifferent producer expected = true then .done 4 0 else
+  if 0xffffffffffffffff - count < producer then .done 14 0 else
+  .bind (ringRead 120) fun s actual => if mmFailed s = true then .done s 0 else
+  if mmDifferent actual producer = true then .done 4 0 else
+  .bind (ringRead 128) fun s fetched => if mmFailed s = true then .done s 0 else
+  if producer < fetched then .done 4 0 else
+  if 2048 < producer - fetched then .done 4 0 else
+  if 2048 - (producer - fetched) < count then .done 6 0 else
+  .bind (get (row 8 + 32)) fun s remaining => if mmFailed s = true then fatal else
+  if remaining < count * 8 then .done 9 0 else
+  .bind (metadata descriptor pointer (32 + count * 2)) fun s data => if mmFailed s = true then .done s 0 else
+  .bind (ringPacket data count producer) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (get 640) fun s handle => if mmFailed s = true then fatal else
+  .bind (Frames.resolvePurpose 1 handle 1) fun s destination => if mmFailed s = true then fatal else
+  .boundedFoldU64 512 ringCopyStep count.toUInt32 0 data destination producer 0 fun s copied => if mmFailed s = true then .done s 0 else
+  if mmDifferent copied count = true then fatal else
+  .bind (ringCurrent descriptor epoch) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringWrite 120 (producer + count)) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringRead 120) fun s published => if mmFailed s = true then .done s 0 else
+  if mmDifferent published (producer + count) = true then .done 6 0 else
+  .bind (put (row 8 + 32) (remaining - count * 8)) fun s _ => if mmFailed s = true then fatal else
+  .bind (put 664 published) fun s _ => .done s published
+
+private def finishRing (descriptor stream producer epoch : UInt64) : Action :=
+  if mmDifferent stream 8 = true then .done 2 0 else
+  .bind ringABI fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringCurrent descriptor epoch) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (get 664) fun s expected => if mmFailed s = true then fatal else
+  if mmDifferent producer expected = true then .done 4 0 else
+  .bind (get 704) fun s eof => if mmFailed s = true then fatal else
+  if eof = producer then .done 0 producer else
+  if mmDifferent eof 0xffffffffffffffff = true then .done 4 0 else
+  .bind (ringWrite 136 2) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringRead 152) fun s actual => if mmFailed s = true then .done s 0 else
+  if mmDifferent actual producer = true then .done 6 0 else
+  .bind (put 704 producer) fun s _ => .done s producer
+
+/-- Raw observations of an owned ring remain available after revocation. They
+cannot submit samples, borrow another descriptor's ring, or reveal its address. -/
+private def ringStatus (descriptor stream selector epoch : UInt64) : Action :=
+  if mmDifferent stream 8 = true then .done 2 0 else
+  .bind ringABI fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringOwner descriptor epoch) fun s _ => if mmFailed s = true then .done s 0 else
+  if selector = 0 then ringRead 144 else
+  if selector = 1 then ringRead 120 else
+  if selector = 2 then ringRead 128 else
+  if selector = 3 then Lemma.Drivers.Multimodal.read 8 240 else
+  if selector = 4 then Lemma.Drivers.Multimodal.read 8 232 else
+  if selector = 5 then ringRead 160 else
+  if selector = 6 then ringRead 168 else
+  if selector = 7 then Lemma.Drivers.Multimodal.read 8 16 else
+  if selector = 8 then Lemma.Drivers.Multimodal.read 8 32 else
+  if selector = 9 then ringRead 112 else .done 2 0
+
 /-- syscall69 cap/op/stream/pointer/epoch. 0 discover;1 status;2 bounded grant;
 3 configure;4 arm+start;5 drain;6 revoke;7 take64;8 submit PCM;9 queue count;
 10 clock;11 consent epoch;12 begin owned record-DMA;13 finish/copy record;
 14 bounded S16_LE PCM batch;15 raw monotonic consumed PCM counter;
 16 arm PCM without starting;17 start prefilled PCM;18 service
-version. Counter15 has no packet, grant or presentation authority. Legacy operations retain
+version;19 begin owned controller2 ring;20 enqueue1..512 S16 samples atomically;
+21 exact EOF frontier;22 raw owned ring counters. Counter15 has no packet, grant or presentation authority. Legacy operations retain
 their meanings; no arbitrary application MMIO/DMA address is exposed. -/
 def call (descriptor handle operation stream pointer epoch : UInt64) : Action :=
   .bind (authorize descriptor handle) fun s _ => if mmFailed s = true then .done s 0 else
@@ -305,7 +457,13 @@ def call (descriptor handle operation stream pointer epoch : UInt64) : Action :=
   else if operation = 17 then
     if mmDifferent (stream) (8) = true then .done 2 0 else
     .bind (current 8 epoch 64) fun s _ => if mmFailed s = true then .done s 0 else Lemma.Drivers.Multimodal.command 8 4
-  else if operation = 18 then .done 0 version else .done 2 0
+  else if operation = 18 then
+    .bind (IO.read64 (Lemma.Drivers.Multimodal.base + 8)) fun s abi => if mmFailed s = true then .done s 0 else
+    .done 0 (if abi = 2 then version else 2)
+  else if operation = 19 then beginRing descriptor stream pointer epoch else
+  if operation = 20 then enqueueRing descriptor stream pointer epoch else
+  if operation = 21 then finishRing descriptor stream pointer epoch else
+  if operation = 22 then ringStatus descriptor stream pointer epoch else .done 2 0
   else .done 2 0
 
 end Lemma.Platform.LemmaSim.MultimodalService

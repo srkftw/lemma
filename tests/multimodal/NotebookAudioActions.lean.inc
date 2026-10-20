@@ -12,6 +12,13 @@ structure AudioFixture where
   receipts : Array String := #[]
   revoked : Nat := 0
   allocated : Nat := 0
+  ringAccepted : UInt64 := 0
+  ringFetched : UInt64 := 0
+  ringSubmitted : UInt64 := 500
+  ringMode : UInt64 := 0
+  ringEOF : Bool := false
+  ringGaps : UInt64 := 0
+  ringHeld : UInt64 := 0
   deriving Inhabited
 private def afRead (s : AudioFixture) (address : UInt64) : UInt64 := s.words.getD address 0
 private def afPut (s : AudioFixture) (address value : UInt64) : AudioFixture :=
@@ -66,9 +73,10 @@ partial def afExecute (r : IO.Ref AudioFixture) (action : Action) : IO (UInt8 ×
         else if c = 10 then afExecute r (next 0 s.ticks)
         else if c = 15 then afExecute r (next 0 s.consumed)
         else if c = 2 then
+          let ring := afRead s (state+136) == 3
           afCheck (afRead s e = 0x31474d4d && afRead s (e+16) = 64 &&
-            afRead s (e+24) = 16000 && afRead s (e+32) = 128 &&
-            afRead s (e+40) = s.ticks+100000000 && afRead s (e+48) = s.epoch) "audio grant widened scope or budget"
+            afRead s (e+24) = 16000 && afRead s (e+32) = (if ring then 4099*8 else 128) &&
+            afRead s (e+40) = s.ticks+(if ring then 500000000 else 100000000) && afRead s (e+48) = s.epoch) "audio grant widened scope or budget"
           r.modify fun s => {s with epoch := s.epoch+1}
           afExecute r (next 0 (s.epoch+1))
         else if c = 3 then
@@ -85,8 +93,31 @@ partial def afExecute (r : IO.Ref AudioFixture) (action : Action) : IO (UInt8 ×
           r.modify fun s => {s with packets := s.packets.push values}
           afExecute r (next 0 s.accepts)
         else if c = 6 then
-          r.modify fun s => {s with revoked := s.revoked+1, epoch := s.epoch+1}
+          r.modify fun s => {s with revoked := s.revoked+1, epoch := s.epoch+1,ringMode := 3}
           afExecute r (next 0 0)
+        else if c = 19 then
+          afCheck (f = s.epoch && afRead s e = 0x32474e52 && afRead s (e+8) = 1 &&
+            afRead s (e+16) = 2048 && afRead s (e+24) = 0) "wrong owned-ring begin packet"
+          r.modify fun s => {s with ringAccepted := 0,ringFetched := 0,ringMode := 1,ringEOF := false}
+          afExecute r (next 0 0)
+        else if c = 20 then
+          let count := afRead s (e+16)
+          afCheck (f = s.epoch && afRead s e = 0x32424350 && afRead s (e+8) = 1 &&
+            0 < count && count ≤ 512 && afRead s (e+24) = s.ringAccepted && !s.ringEOF) "wrong owned-ring sample packet"
+          if 2048-(s.ringAccepted-s.ringFetched) < count then afExecute r (next 6 0) else
+          let values := (Array.range count.toNat).map fun i =>
+            (afRead s (e+32+(i/4).toUInt64*8) >>> ((i%4).toUInt64*16)) &&& 65535
+          r.modify fun s => {s with packets := s.packets.push values,ringAccepted := s.ringAccepted+count}
+          afExecute r (next 0 (s.ringAccepted+count))
+        else if c = 21 then
+          afCheck (f = s.epoch && e = s.ringAccepted) "wrong owned-ring EOF"
+          r.modify fun s => {s with ringEOF := true}
+          afExecute r (next 0 e)
+        else if c = 22 then
+          afExecute r (next 0 (if e = 0 then s.ringMode else if e = 1 then s.ringAccepted else
+            if e = 2 then s.ringFetched else if e = 3 then s.ringSubmitted else if e = 4 then s.consumed else
+            if e = 5 then s.ringGaps else if e = 6 then s.ringHeld else if e = 7 then 0 else
+            if e = 8 then 17 else if e = 9 then 2048 else 0))
         else throw <| IO.userError s!"unexpected audio service operation {c}"
       else throw <| IO.userError s!"unexpected syscall {a}"
     | _ => throw <| IO.userError "unexpected platform Action"

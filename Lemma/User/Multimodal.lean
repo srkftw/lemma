@@ -43,7 +43,8 @@ def «initialize» (console : UInt64) : Action :=
   .bind (put 8 console) fun s _ => if mmFailed s = true then .done s 0 else
   .bind (invoke 0 0 0 0) fun s features => if mmFailed s = true then .done s 0 else
   .bind (invoke 18 0 0 0) fun s version => if mmFailed s = true then .done s 0 else
-  if mmDifferent version 2 = true then .done 15 0 else
+  if (if version = 2 then true else if version = 3 then true else false) = false then .done 15 0 else
+  .bind (put 136 version) fun s _ => if mmFailed s = true then .done s 0 else
   CapabilityConsole.record console 0x710 features version 0 0
 
 private def startStep (i _ : UInt32) (acc expiry _ _ _ : UInt64) : Action :=
@@ -92,6 +93,62 @@ private def audioReceipt (reason : UInt64) : Action :=
   .bind (get 8) fun s console => if mmFailed s = true then .done s 0 else
   CapabilityConsole.record console 0x716 sequence submitted consumed reason
 
+/-- Ring packets occupy audioPage+128..1184. Separate metadata at+3584 keeps
+both the legacy packet and all accepted/fetched/submitted/consumed frontiers. -/
+private def ringGet (offset : UInt64) : Action := Memory.read64 (audioPage + 3584 + offset)
+private def ringPut (offset value : UInt64) : Action := Memory.write64 (audioPage + 3584 + offset) value
+private def ringField (offset value : UInt64) : Action := Memory.write64 (audioPage + 128 + offset) value
+
+def beginOwnedPCM (pointer epoch : UInt64) : Action := invoke 19 8 pointer epoch
+def enqueueOwnedPCM (pointer epoch : UInt64) : Action := invoke 20 8 pointer epoch
+def finishOwnedPCM (producer epoch : UInt64) : Action := invoke 21 8 producer epoch
+/-- Raw owned controller observations, including after revocation. None grants
+playback or turns accepted bytes into a presentation acknowledgement. -/
+def statusOwnedPCM (selector epoch : UInt64) : Action := invoke 22 8 selector epoch
+
+private def observeRing : Action :=
+  .bind (audioGet 8) fun s epoch => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 1 epoch) fun s accepted => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 2 epoch) fun s fetched => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 3 epoch) fun s submitted => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 4 epoch) fun s consumed => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 5 epoch) fun s gaps => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 6 epoch) fun s held => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 0 epoch) fun s mode => if mmFailed s = true then .done s 0 else
+  .bind (ringGet 16) fun s submittedBase => if mmFailed s = true then .done s 0 else
+  .bind (ringGet 24) fun s consumedBase => if mmFailed s = true then .done s 0 else
+  if submitted < submittedBase then .done 4 0 else if consumed < consumedBase then .done 4 0 else
+  if accepted < fetched then .done 4 0 else if fetched < submitted - submittedBase then .done 4 0 else
+  if submitted - submittedBase < consumed - consumedBase then .done 4 0 else
+  .bind (ringPut 0 accepted) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 8 fetched) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 16 (submitted - submittedBase)) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 32 (consumed - consumedBase)) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 48 gaps) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 56 held) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 72 mode) fun s _ => .done s (consumed - consumedBase)
+
+private def ringReceipt (reason : UInt64) : Action :=
+  .bind (audioGet 56) fun s sequence => if mmFailed s = true then .done s 0 else
+  .bind (audioGet 32) fun s consumed => if mmFailed s = true then .done s 0 else
+  .bind (ringGet 48) fun s gaps => if mmFailed s = true then .done s 0 else
+  .bind (ringGet 56) fun s held => if mmFailed s = true then .done s 0 else
+  .bind (get 8) fun s console => if mmFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x718 sequence consumed gaps held) fun s _ =>
+  if mmFailed s = true then .done s 0 else audioReceipt reason
+
+private def stopRing (reason force : UInt64) : Action :=
+  .bind (audioGet 8) fun s epoch => if mmFailed s = true then .done s 0 else
+  .bind (invoke 11 8 0 0) fun status current =>
+  if mmFailed status = true then .done status 0 else
+  if mmDifferent current epoch = true then
+    if force = 1 then .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else ringReceipt reason
+    else ringReceipt 4
+  else
+  .bind observeRing fun _ _ =>
+  .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind observeRing fun _ _ => ringReceipt reason
+
 /-- A background completion may stop only its own epoch. Explicit MUTE may
 revoke any current local output grant. A superseded test retains its last known
 prefix; it never attributes the successor grant's samples to the old packet. -/
@@ -100,6 +157,7 @@ private def stopAudio (reason force : UInt64) : Action :=
   if allocated = 0 then if force = 1 then invoke 6 8 0 0 else .done 0 0 else
   .bind (audioGet 0) fun s running => if mmFailed s = true then .done s 0 else
   if running = 0 then if force = 1 then invoke 6 8 0 0 else .done 0 0 else
+  if running = 2 then stopRing reason force else
   .bind (audioGet 8) fun s epoch => if mmFailed s = true then .done s 0 else
   .bind (invoke 11 8 0 0) fun status current =>
   if mmFailed status = true then
@@ -226,7 +284,7 @@ def consumedPCM : Action := invoke 15 8 0 0
 /-- An explicit digital-controller self-test, not a continuous-audio or
 physical-audibility claim: sixteen arbitrary signed16 samples at16kHz. The
 controller budget is128 bytes (16×8); the packet carries32 payload bytes. -/
-def testAudio : Action :=
+private def testLegacyAudio : Action :=
   .bind (get 128) fun s allocated => if mmFailed s = true then .done s 0 else
   .bind (if allocated = 0 then
     .bind (Syscall.allocatePage audioPage) fun s address => if mmFailed s = true then .done s 0 else
@@ -272,7 +330,7 @@ where
     .bind (audioPut 112 0xd960e270f0000000) fun s _ => if mmFailed s = true then .done s 0 else
     audioPut 120 0xf000e270d960d600
 
-private def pumpAudio : Action :=
+private def pumpLegacyAudio : Action :=
   .bind (get 128) fun s allocated => if mmFailed s = true then .done s 0 else
   if allocated = 0 then .done 0 0 else
   .bind (audioGet 0) fun s running => if mmFailed s = true then .done s 0 else
@@ -292,6 +350,132 @@ private def pumpAudio : Action :=
   if mmFailed status = true then stopAudio 3 0 else
   .bind (audioGet 40) fun s expiry => if mmFailed s = true then .done s 0 else
   if expiry ≤ ticks then stopAudio 2 0 else .done 0 observed
+
+private def ringWave (index : UInt64) : UInt64 := (index * 7919 + 311) &&& 65535
+private def ringWaveStep (i _ : UInt32) (acc producer _ _ _ : UInt64) : Action :=
+  let n := producer + i.toUInt64 * 4
+  let packed := ringWave n ||| (ringWave (n + 1) <<< 16) |||
+    (ringWave (n + 2) <<< 32) ||| (ringWave (n + 3) <<< 48)
+  .bind (ringField (32 + i.toUInt64 * 8) packed) fun s _ => .done s acc
+
+/-- Refill one bounded packet per turn. Backpressure preserves the next sample
+index; it never substitutes silence, drops a sample, or busy-waits. -/
+private def refillRing : Action :=
+  .bind (audioGet 8) fun s epoch => if mmFailed s = true then .done s 0 else
+  .bind (ringGet 0) fun s producer => if mmFailed s = true then .done s 0 else
+  .bind (ringGet 32) fun s total => if mmFailed s = true then .done s 0 else
+  if total ≤ producer then .done 0 producer else
+  .bind (statusOwnedPCM 2 epoch) fun s fetched => if mmFailed s = true then .done s 0 else
+  if producer < fetched then .done 4 0 else if 2048 < producer - fetched then .done 4 0 else
+  let count := if 512 < total - producer then 512 else total - producer
+  if 2048 - (producer - fetched) < count then .done 0 producer else
+  .bind (ringField 0 0x32424350) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringField 8 1) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringField 16 count) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringField 24 producer) fun s _ => if mmFailed s = true then .done s 0 else
+  .boundedFoldU64 128 ringWaveStep ((count + 3) / 4).toUInt32 0 producer 0 0 0 fun s _ =>
+  if mmFailed s = true then .done s 0 else
+  .bind (enqueueOwnedPCM (audioPage + 128) epoch) fun status next =>
+  if status = 6 then .done 0 producer else if mmFailed status = true then .done status 0 else
+  if mmDifferent next (producer + count) = true then .done 4 0 else
+  .bind (ringPut 0 next) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 2 epoch) fun s fetched => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 3 epoch) fun s submitted => if mmFailed s = true then .done s 0 else
+  .bind (ringGet 16) fun s baseline => if mmFailed s = true then .done s 0 else
+  if submitted < baseline then .done 4 0 else
+  .bind (audioGet 56) fun s sequence => if mmFailed s = true then .done s 0 else
+  .bind (get 8) fun s console => if mmFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x717 sequence next fetched (submitted - baseline)) fun s _ => .done s next
+
+private def prefillRingStep (_ _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind refillRing fun s _ => .done s acc
+
+private def testRingAudio : Action :=
+  .bind (get 128) fun s allocated => if mmFailed s = true then .done s 0 else
+  .bind (if allocated = 0 then
+    .bind (Syscall.allocatePage audioPage) fun s address => if mmFailed s = true then .done s 0 else
+    if mmDifferent address audioPage = true then .done 95 0 else
+    .bind (audioPut 0 0) fun s _ => if mmFailed s = true then .done s 0 else
+    .bind (audioPut 56 0) fun s _ => if mmFailed s = true then .done s 0 else put 128 1
+    else .done 0 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioGet 0) fun s running => if mmFailed s = true then .done s 0 else
+  if mmDifferent running 0 = true then .done 6 0 else
+  .bind (audioGet 56) fun s previous => if mmFailed s = true then .done s 0 else
+  if previous = 0xffffffffffffffff then .done 14 0 else
+  .bind (invoke 10 0 0 0) fun s ticks => if mmFailed s = true then .done s 0 else
+  if 0x7ffffffffffffffe - 500000000 < ticks then .done 14 0 else
+  .bind (armPCM 1 16000 (4099 * 8) (ticks + 500000000) 1 6250) fun s epoch => if mmFailed s = true then .done s 0 else
+  .bind (invoke 15 8 0 0) fun status consumedBase =>
+  if mmFailed status = true then .bind (invoke 6 8 0 0) fun _ _ => .done status 0 else
+  if 0xffffffffffffffff - 4099 < consumedBase then .bind (invoke 6 8 0 0) fun _ _ => .done 14 0 else
+  .bind (ringField 0 0x32474e52) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringField 8 1) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringField 16 2048) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringField 24 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (beginOwnedPCM (audioPage + 128) epoch) fun status _ =>
+  if mmFailed status = true then .bind (invoke 6 8 0 0) fun _ _ => .done status 0 else
+  .bind (statusOwnedPCM 3 epoch) fun s submittedBase => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 8 epoch) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 16 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 24 consumedBase) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 32 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 40 (ticks + 500000000)) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 56 (previous + 1)) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 0 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 8 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 16 submittedBase) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 24 consumedBase) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 32 4099) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 40 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 48 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (ringPut 56 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 0 2) fun s _ => if mmFailed s = true then .done s 0 else
+  .boundedFoldU64 4 prefillRingStep 4 0 0 0 0 0 fun status _ =>
+  if mmFailed status = true then .bind (stopRing 3 0) fun _ _ => .done status 0 else
+  .bind (startPCM epoch) fun status _ =>
+  if mmFailed status = true then .bind (stopRing 3 0) fun _ _ => .done status 0 else
+  .bind (get 8) fun s console => if mmFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x715 (previous + 1) epoch 4099 6250
+
+private def pumpRingAudio : Action :=
+  .bind (audioGet 8) fun s epoch => if mmFailed s = true then .done s 0 else
+  .bind (invoke 11 8 0 0) fun status current =>
+  if mmFailed status = true then .done status 0 else
+  if mmDifferent current epoch = true then ringReceipt 4 else
+  .bind observeRing fun status consumed =>
+  if mmFailed status = true then stopRing 3 0 else
+  .bind (ringGet 32) fun s total => if mmFailed s = true then .done s 0 else
+  .bind (ringGet 72) fun s mode => if mmFailed s = true then .done s 0 else
+  .bind (ringGet 48) fun s gaps => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 7 epoch) fun s fault => if mmFailed s = true then .done s 0 else
+  if mmDifferent fault 0 = true then stopRing 3 0 else
+  if mmDifferent gaps 0 = true then stopRing 3 0 else
+  if total = consumed then if mode = 2 then stopRing 0 0 else .done 0 consumed else
+  .bind (invoke 10 0 0 0) fun status ticks =>
+  if mmFailed status = true then stopRing 3 0 else
+  .bind (audioGet 40) fun s expiry => if mmFailed s = true then .done s 0 else
+  if expiry ≤ ticks then stopRing 2 0 else
+  if mmDifferent mode 1 = true then stopRing 3 0 else
+  .bind refillRing fun status _ => if mmFailed status = true then stopRing 3 0 else
+  .bind (ringGet 0) fun s accepted => if mmFailed s = true then .done s 0 else
+  .bind (ringGet 40) fun s eof => if mmFailed s = true then .done s 0 else
+  if accepted = total then if eof = 0 then
+    .bind (finishOwnedPCM accepted epoch) fun status _ => if mmFailed status = true then stopRing 3 0 else
+    .bind (ringPut 40 1) fun s _ => .done s consumed
+    else .done 0 consumed
+  else .done 0 consumed
+
+/-- Version3 negotiates an actual wrap/refill4099-sample owned-ring test. The
+version2 path retains the original sixteen-sample packet and controller meaning. -/
+def testAudio : Action :=
+  .bind (get 136) fun s service => if mmFailed s = true then .done s 0 else
+  if service = 3 then testRingAudio else testLegacyAudio
+
+private def pumpAudio : Action :=
+  .bind (get 128) fun s allocated => if mmFailed s = true then .done s 0 else
+  if allocated = 0 then .done 0 0 else
+  .bind (audioGet 0) fun s running => if mmFailed s = true then .done s 0 else
+  if running = 2 then pumpRingAudio else pumpLegacyAudio
 
 /-- Acquisition and local output have separate grants. Poll without a busy
 wait; acquisition errors never prevent an explicit MUTE from revoking output. -/

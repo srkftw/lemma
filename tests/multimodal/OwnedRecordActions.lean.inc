@@ -14,6 +14,8 @@ structure State where
   pcm : Array UInt64 := #[]
   expireAfter : Nat := 0
   capHandle : UInt64 := 0
+  ringCopied : Nat := 0
+  ringExpireAfter : Nat := 0
 
 def word (s : State) (a : UInt64) : UInt64 := s.words.getD a 0
 def put (s : State) (a v : UInt64) : State :=
@@ -55,6 +57,14 @@ partial def execute (state : IO.Ref State) (action : Action) : IO (UInt8 × UInt
     else if op == .deviceRead64 then execute state (next 0 (word s a))
     else if op == .deviceWrite64 then
       state.modify fun s => put s a b
+      if a == Lemma.Drivers.Multimodal.base + 136 then
+        state.modify fun s =>
+          if b == 1 then
+            put (put (put (put s (Lemma.Drivers.Multimodal.base+144) 1)
+              (Lemma.Drivers.Multimodal.base+120) 0) (Lemma.Drivers.Multimodal.base+128) 0)
+              (Lemma.Drivers.Multimodal.base+152) 0xffffffffffffffff
+          else if b == 2 then put s (Lemma.Drivers.Multimodal.base+152) (word s (Lemma.Drivers.Multimodal.base+120))
+          else if b == 3 then put s (Lemma.Drivers.Multimodal.base+144) 3 else s
       if a == Lemma.Drivers.Multimodal.base + 256 + 176 then
         state.modify fun s => put s (Lemma.Drivers.Multimodal.base + 256 + 184) 1
       if a == Lemma.Drivers.Multimodal.base + 256 + 8*256 + 112 then
@@ -85,6 +95,11 @@ partial def execute (state : IO.Ref State) (action : Action) : IO (UInt8 × UInt
         else execute state (next 0 (byte (← state.get) a))
       | .physicalWrite8 =>
         state.modify fun s => { (putByte s a b) with writes := s.writes + 1 }
+        let ringPhysical := word s (Lemma.Drivers.Multimodal.base+104)
+        if s.ringExpireAfter > 0 && ringPhysical ≤ a && a < ringPhysical+4096 then
+          state.modify fun s =>
+            let s := {s with ringCopied := s.ringCopied+1}
+            if s.ringCopied == s.ringExpireAfter then put s (Lemma.Drivers.Multimodal.base+24) 1000000 else s
         execute state (next 0 0)
       | _ => throw <| IO.userError "unexpected primitive"
   | _ => throw <| IO.userError "unexpected Action"

@@ -34,8 +34,9 @@ def main():
     inputs = {str(p.relative_to(ROOT)): sha(p.read_bytes()) for p in paths}
     source, fixture = paths[0].read_text(), paths[1].read_text()
     mutations = [
-        ('accepted-is-consumed', '  .bind (audioPut 32 0) fun s _ =>',
-         '  .bind (audioPut 32 16) fun s _ =>'),
+        ('accepted-is-consumed',
+         '  .bind (audioPut 32 0) fun s _ => if mmFailed s = true then .done s 0 else\n  .bind (audioPut 40 (ticks + 100000000))',
+         '  .bind (audioPut 32 16) fun s _ => if mmFailed s = true then .done s 0 else\n  .bind (audioPut 40 (ticks + 100000000))'),
         ('mute-does-not-revoke', '  .bind (stopAudio 1 1) fun s _ =>',
          '  .bind (.done 0 0) fun s _ =>'),
         ('skip-real-PCM-submission',

@@ -227,7 +227,15 @@
     "retainedObserverFailures": [
       "Initial privateAction source had missingnamespaceopen and fixture multiline record syntax errors; correctedsource has separate terminalpositive. Productionmodule elaborations passed."
     ],
-    "scope": "Finite hosted RAM/MMIO/service fixtures execute actual maintained Lean Actions and real capability/frame/usercopy policy. Target compilation/audit, real controller DMA, canonicalRTL, native/browser CPU playback, exactcontinuation, full economyrate, physical audibility/safety and educational qualification require separate evidence."
+    "scope": "Finite hosted RAM/MMIO/service fixtures execute actual maintained Lean Actions and real capability/frame/usercopy policy. Target compilation/audit, real controller DMA, canonicalRTL, native/browser CPU playback, exactcontinuation, full economyrate, physical audibility/safety and educational qualification require separate evidence.",
+    "legacyAudioRegression": {
+      "path": "build/task009/mm-ring-legacy-audio-a1/result.json",
+      "sha256": "b9ea93b37a58d37cf9c07f1f7b1d565b439709b4a708bea55c6a235f880aeca3",
+      "status": "PASS_HOSTED_NOTEBOOK_AUDIO_ACTIONS",
+      "seconds": 28.217570800101385,
+      "cases": 7,
+      "observerChange": "The legacy accepted-is-consumed negative now includes the100M expiry context to distinguish its original initialization from the additive500M ring initialization."
+    }
   },
   "browser_checkpoint_controls": {
     "receipt": "build/task009/browser-checkpoint-controls-a1/result.json",
