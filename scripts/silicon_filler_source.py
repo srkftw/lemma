@@ -18,6 +18,7 @@ from silicon_gds_geometry import fingerprint
 
 SELECTED_SOURCE_ODB = '43ffc744714d5f216227035ffa4eca2e77b87f27b61b4f39fa6296a4091f7852'
 SELECTED_PLAN_SHA = 'f46d751c9d7fdcb30b601c46ffa104e48d39ae73ac1aaec60ce2382ab2799b39'
+RIGHT_KEEPOUT_PLAN_SHA = '6004367eac69ec9a07937f2eefd4530a018fe58d15e41bceaaffa047f9dbcf54'
 
 
 def lef_masters(text):
@@ -36,7 +37,7 @@ def lef_masters(text):
     return result
 
 
-def all_row_plan(def_text, expected, masters):
+def all_row_plan(def_text, expected, masters, *, macro_right_extra_sites=0):
     """Tile the actual free row sites with original physical CORE SPACER cells.
 
     Functional placements and their one-site left/right separation stay fixed.
@@ -46,6 +47,8 @@ def all_row_plan(def_text, expected, masters):
     Macro exclusion rounds outward to native sites and never clips a macro.
     This is a plan, not a claim of placed/PG-connected or process-clean cells.
     """
+    require(type(macro_right_extra_sites) is int and macro_right_extra_sites in (0, 2),
+            'only original or exact reviewed two-site macro-right keepout')
     require(expected['dbu_per_micron'] == 1000 and
             re.search(r'(?m)^UNITS DISTANCE MICRONS 1000 ;$', def_text), 'literal1000 DBU/um required')
     raw = re.findall(r'^ROW (\S+) (\S+) (\d+) (\d+) (\S+) DO (\d+) BY (\d+) STEP (\d+) (\d+) ;',
@@ -90,6 +93,7 @@ def all_row_plan(def_text, expected, masters):
                 'original source filler dimensions/class/power interface differs')
     fill = []
     source_sites = blocked_sites = 0
+    preserved_keepout_cells = set()
     for row in rows:
         x0, y0, count = row['x_nm'], row['y_nm'], row['sites']
         occupied = bytearray(count)
@@ -109,6 +113,15 @@ def all_row_plan(def_text, expected, masters):
             if last <= first: continue
             require(not any(occupied[first:last]), 'original functional cell overlaps actual macro exclusion')
             occupied[first:last] = bytes([2])*(last-first); blocked_sites += last-first
+            # This is a physical-spacer keepout, not permission to displace or
+            # mask a preexisting functional cell. Preserve those old cells and
+            # their remaining original process obligations explicitly.
+            extra_last = min(count, last+macro_right_extra_sites)
+            for index in range(last, extra_last):
+                if not occupied[index]: occupied[index] = 2; blocked_sites += 1
+            for cell_left, cell_right, cell_name in cells:
+                if cell_left < x0+extra_last*480 and cell_right > x0+last*480:
+                    preserved_keepout_cells.add(cell_name)
         start = 0
         while start < count:
             if occupied[start]: start += 1; continue
@@ -124,7 +137,8 @@ def all_row_plan(def_text, expected, masters):
                     cursor += size
             require(cursor == end, 'unfilled native row site')
             start = end
-    return {'schema': 'lemma-original-row-filler-plan/1', 'status': 'PLANNED_ORIGINAL_PHYSICAL_SPACERS_NOT_PLACED',
+    result = {'schema': 'lemma-original-row-filler-plan/'+('2' if macro_right_extra_sites else '1'),
+            'status': 'PLANNED_ORIGINAL_PHYSICAL_SPACERS_NOT_PLACED',
             'rows': rows, 'functional_instances': len(functional), 'macro_instances': len(macros),
             'all_row_sites': sum(row['sites'] for row in rows), 'functional_sites': source_sites,
             'outward_rounded_macro_sites': blocked_sites, 'filler_sites': sum(cell['sites'] for cell in fill),
@@ -132,6 +146,14 @@ def all_row_plan(def_text, expected, masters):
             'physical_spacers_may_occupy_reserved_functional_padding': True,
             'remaining': ['actual original filler FEOL/PG source relation', 'native insertion and PG connectivity',
                           'signal/PG/OBS collision relation', 'complete original process rules and connected LVS']}
+    if macro_right_extra_sites:
+        result['macro_right_well_keepout'] = {'extra_sites': 2, 'site_nm': 480,
+            'actual_macro_right_nm': 904480, 'original_filler_well_overhang_nm': 240,
+            'original_NW_b_spacing_nm': 620, 'minimum_filler_bbox_left_nm': 905340,
+            'actual_first_filler_bbox_left_nm': 905760, 'new_well_gap_nm': 1040,
+            'preserved_functional_cells_in_spacer_keepout': sorted(preserved_keepout_cells),
+            'scope': 'Actual322 macro-right seam correction; other fullprocess/LVS obligations remain'}
+    return result
 
 
 def signal_wire_identity(block):
@@ -157,14 +179,18 @@ def insert_original_fillers(source, plan_path, output):
     from silicon_acceptance_launch import snapshot
     from silicon_synth import sha
     source, plan_path, output = map(Path, (source, plan_path, output))
-    require(sha(source) == SELECTED_SOURCE_ODB and sha(plan_path) == SELECTED_PLAN_SHA,
+    plan_sha = sha(plan_path)
+    require(sha(source) == SELECTED_SOURCE_ODB and plan_sha in (SELECTED_PLAN_SHA, RIGHT_KEEPOUT_PLAN_SHA),
             'exact selected0.6 routed source and independently generated all-row plan required')
     plan = json.loads(plan_path.read_text())
-    require(plan['schema'] == 'lemma-original-row-filler-plan/1' and
+    keepout = plan_sha == RIGHT_KEEPOUT_PLAN_SHA
+    require(plan['schema'] == 'lemma-original-row-filler-plan/'+('2' if keepout else '1') and
             plan['status'] == 'PLANNED_ORIGINAL_PHYSICAL_SPACERS_NOT_PLACED' and
             (plan['functional_instances'], plan['macro_instances'], len(plan['rows']),
              plan['all_row_sites'], plan['functional_sites'], plan['outward_rounded_macro_sites'],
-             plan['filler_sites'], len(plan['fillers'])) == (9034, 3, 221, 478686, 69106, 160230, 249350, 40349),
+             plan['filler_sites'], len(plan['fillers'])) ==
+            ((9034, 3, 221, 478686, 69106, 160419, 249161, 40336) if keepout else
+             (9034, 3, 221, 478686, 69106, 160230, 249350, 40349)),
             'exact selected all-row filler coverage required')
     output.mkdir(exist_ok=False)
     db = odb.dbDatabase.create(); odb.read_db(db, str(source))
@@ -193,6 +219,10 @@ def insert_original_fillers(source, plan_path, output):
         require(cell is not None and cell.getMaster().getName() == record['master'] and
                 cell.getOrient() == record['orientation'] and list(cell.getLocation()) == record['location'] and
                 list(cell.getOrigin()) == record['origin'], 'new physical filler master/site/orientation differs')
+        if keepout and record['location'][0] >= 904480 and any(
+                record['location'][1] < bottom+118780 and record['location'][1]+3780 > bottom
+                for bottom in (100000, 350000, 600000)):
+            require(record['location'][0]-240-904480 >= 620, 'new original filler violates actual macro NWell spacing')
         require({pin.getMTerm().getName() for pin in cell.getITerms()} == {'VDD', 'VSS'},
                 'filler has unexpected signal pin')
         for pin in cell.getITerms():
@@ -224,18 +254,39 @@ def insert_original_fillers(source, plan_path, output):
     record = plan['fillers'][0]; cell = block.findInst(record['name'])
     for label in ('wrong_site', 'wrong_orientation', 'wrong_supply'):
         if label == 'wrong_site': cell.setLocation(record['location'][0]+480, record['location'][1])
-        elif label == 'wrong_orientation': cell.setOrient('MX'); cell.setLocation(*record['location'])
+        elif label == 'wrong_orientation':
+            cell.setOrient('MX' if record['orientation'] == 'R0' else 'R0'); cell.setLocation(*record['location'])
         else: cell.findITerm('VDD').connect(block.findNet('VSS'))
         try: validate_cell(record, cell)
         except ValueError: negatives.append(label)
         else: raise ValueError('consequential actual filler negative admitted: '+label)
         cell.setOrient(record['orientation']); cell.setLocation(*record['location'])
         cell.findITerm('VDD').connect(block.findNet('VDDlogic')); validate_cell(record, cell)
+    if keepout:
+        # Exercise the actual observed unsafe seam independently of the exact
+        # placement relation: the altered record and instance agree, but its
+        # original well overhang leaves only80nm to the SRAM well edge.
+        record = next(record for record in plan['fillers']
+                      if record['location'][0] == 905760 and any(
+                          record['location'][1] < bottom+118780 and record['location'][1]+3780 > bottom
+                          for bottom in (100000, 350000, 600000)))
+        cell = block.findInst(record['name'])
+        unsafe = dict(record, location=[record['location'][0]-960, record['location'][1]],
+                      origin=[record['origin'][0]-960, record['origin'][1]])
+        cell.setLocation(*unsafe['location'])
+        try: validate_cell(unsafe, cell)
+        except ValueError as error:
+            require(str(error) == 'new original filler violates actual macro NWell spacing',
+                    'macro-right negative did not exercise the actual original well rule')
+            negatives.append('actual_macro_right_80nm_well_gap')
+        else: raise ValueError('actual unsafe macro-right spacer admitted')
+        cell.setLocation(*record['location']); validate_cell(record, cell)
     wire_net = next(net for net in block.getNets() if net.getWire() is not None)
     wire = wire_net.getWire(); wire.detach()
     require(signal_wire_identity(block) != wires, 'detached actual routed wire negative admitted')
     negatives.append('detached_actual_signal_wire'); wire.attach(wire_net)
     require(signal_wire_identity(block) == wires, 'negative did not restore exact native route')
+    require(snapshot(block) == after, 'negative did not restore every placement/terminal/PG/port/OBS record')
     odb.write_db(db, str(output/'filled.odb')); odb.write_def(block, str(output/'filled.def'))
     result = {'status': 'PASS_ORIGINAL_ALLROW_FILLER_NATIVE_PLACEMENT_PG_OVERLAP_SIGNALS_UNCHANGED_NOT_PROCESS_DRC',
               'source_odb_sha256': sha(source), 'plan_sha256': sha(plan_path),
@@ -244,6 +295,7 @@ def insert_original_fillers(source, plan_path, output):
               'old_native_PG_shapes_preserved': sum(before[3].values()), 'old_OBS_preserved': len(before[4]),
               'original_signal_wire_streams_preserved': len(wires), 'original_fillers_added': len(names),
               'new_PG_terminals': 2*len(names), 'native_pin_correct_rail_overlap': True,
+              'macro_right_spacer_keepout': plan.get('macro_right_well_keepout'),
               'functional_padding_policy': 'Original960nm functional-cell separation remains; physical spacers fill unused sites',
               'negative_cases': negatives,
               'remaining': ['original GDS filler masks and all partial NW.b findings', 'new PG/signal geometry clearance',

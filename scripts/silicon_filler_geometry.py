@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import re
 import sys
+import tarfile
 import time
 import xml.etree.ElementTree as ET
 from decimal import Decimal
@@ -18,6 +19,58 @@ from decimal import Decimal
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from silicon_gds_geometry import sha, cardinal_angle, fingerprint, layer_mapping
 from silicon_geometry_export import require
+
+
+def original_pg_rectangles(body, name):
+    """All literal original Metal1 pin rectangles, including internal fingers.
+
+    This classifies source-declared power metal; it does not merge supplies or
+    waive a spacing rule. Unknown layers, polygons and fractional DBU reject.
+    """
+    require(name in ('VDD', 'VSS'), 'literal original supply name required')
+    pin = re.search(r'^  PIN '+re.escape(name)+r'\n(.*?)^  END '+re.escape(name)+r'$', body, re.M | re.S)
+    require(pin is not None and re.search(r'(?m)^\s*USE '+('POWER' if name == 'VDD' else 'GROUND')+r' ;$', pin[1]),
+            'original core PG pin/use identity')
+    ports = re.findall(r'(?ms)^\s*PORT\s*\n(.*?)^\s*END\s*$', pin[1])
+    require(len(ports) == 1, 'one literal original PG PORT required')
+    lines = [line.strip() for line in ports[0].splitlines() if line.strip()]
+    require(lines and lines[0] == 'LAYER Metal1 ;', 'original core PG Metal1 interface')
+    result = []
+    for line in lines[1:]:
+        match = re.fullmatch(r'RECT ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+) ;', line)
+        require(match is not None, 'unqualified original PG geometry')
+        coords = [Decimal(value)*1000 for value in match.groups()]
+        require(all(value == int(value) for value in coords) and coords[0] < coords[2] and coords[1] < coords[3],
+                'integer nonempty original PG rectangle')
+        result.append(tuple(map(int, coords)))
+    require(result and len(set(result)) == len(result), 'all unique original PG rectangles required')
+    return result
+
+
+def insertion_source_binding(produced, prepared):
+    """Bind completed insertion inputs without relabeling its old code producer.
+
+    New observer code may differ only when the exact old script bytes remain in
+    its original sealed source capsule. Physical inputs and tools stay literal.
+    """
+    archive_path = prepared/'source-closure.tar.gz'
+    require(sha(archive_path) == produced['source_archive_sha256'], 'original insertion source capsule differs')
+    scripts = Path(__file__).resolve().parent
+    archived = None
+    reused = []
+    for name, digest in produced['source_inputs'].items():
+        path = Path(name)
+        if path.exists() and sha(path) == digest: continue
+        require(path.parent == scripts and path.suffix == '.py', 'insertion physical/tool input changed')
+        if archived is None:
+            import hashlib
+            with tarfile.open(archive_path, 'r:gz') as archive:
+                archived = [(Path(member.name).name, hashlib.sha256(archive.extractfile(member).read()).hexdigest())
+                            for member in archive.getmembers() if member.isfile()]
+        require([value for label, value in archived if label.endswith('-'+path.name)] == [digest],
+                'exact original insertion script absent or ambiguous in source capsule')
+        reused.append({'path': name, 'original_sha256': digest, 'binding': 'Original completed producer capsule; no fresh insertion'})
+    return reused
 
 
 def report_gaps(path):
@@ -85,18 +138,31 @@ def check(config):
             and produced['source_seal_equal'] and not produced['resource_errors'] and produced['geometry'] == insertion and
             insertion['filled_odb_sha256'] == sha(prepared/'candidate/filled.odb') and
             insertion['filled_def_sha256'] == sha(prepared/'candidate/filled.def') and
-            insertion['source_odb_sha256'] == sha(basis['source_odb']) and
-            all(sha(name) == digest for name, digest in produced['source_inputs'].items()),
+            insertion['source_odb_sha256'] == sha(basis['source_odb']),
             'source-bound real native filler/wire/PG insertion required')
+    historical_code = insertion_source_binding(produced, prepared)
     plan = json.loads((prepared/'row-plan.json').read_text())
-    require(insertion['plan_sha256'] == sha(prepared/'row-plan.json') and len(plan['fillers']) == 40349, 'exact native filler plan')
+    require(insertion['plan_sha256'] == sha(prepared/'row-plan.json') and
+            len(plan['fillers']) == (40336 if plan['schema'] == 'lemma-original-row-filler-plan/2' else 40349),
+            'exact native filler plan')
     original = json.loads(Path(basis['native_instances']).read_text())
     expected = original['instances']+plan['fillers']; masters = {cell['master'] for cell in expected}
     options = pya.LoadLayoutOptions(); cfg = options.lefdef_config
     cfg.dbu = .001; cfg.map_file = basis['layer_map']; cfg.read_lef_with_def = False
     cfg.lef_files = basis['lef_files']; cfg.macro_resolution_mode = 2; cfg.macro_layout_files = basis['original_gds']
     options.lefdef_config = cfg
-    layout = pya.Layout(); layout.read(str(prepared/'candidate/filled.def'), options)
+    closed = config.get('completed_gds_prefix')
+    if closed:
+        prior = Path(closed); prefix = json.loads((prior/'prefix-geometry.json').read_text())
+        producer = json.loads((prior/'result.json').read_text())
+        require(producer['source_seal_equal'] and not producer['resource_errors'] and
+                prefix['status'] == 'PASS_ACTUAL_ORIGINAL_FILLER_MASTER_AND_ROUTING_MASK_PREFIX_NOT_PROCESS_DRC' and
+                prefix['source_seal_equal'] and prefix['GDS_sha256'] == sha(prior/'filled.gds') and
+                json.loads((prior/'config.json').read_text())['preparation'] == str(prepared),
+                'exact completed original-GDS prefix required; failed whole is not promoted')
+        layout = pya.Layout(); layout.read(str(prior/'filled.gds'))
+    else:
+        layout = pya.Layout(); layout.read(str(prepared/'candidate/filled.def'), options)
     top = layout.cell(original['top']); require(top is not None and layout.dbu == .001, 'actual filled top/units')
     source = pya.Layout(); source.read(basis['original_gds'][0]); require(source.dbu == .001, 'original standard GDS units')
     original_hashes = old['geometry']['original_master_hashes'] if 'original_master_hashes' in old['geometry'] else \
@@ -129,12 +195,15 @@ def check(config):
              for key in sorted(keys)]
     require(all(row['XOR_area_nm2'] == 0 for row in union) and old_shapes == new_shapes,
             'native routing/PG/port masks changed beyond original filler masters')
-    stream = out/'filled.gds'; layout.write(str(stream))
+    stream = Path(closed)/'filled.gds' if closed else out/'filled.gds'
+    if not closed: layout.write(str(stream))
     require(stream.read_bytes()[-4:] == bytes((0, 4, 4, 0)), 'complete filled GDS ENDLIB')
     prefix = {'status': 'PASS_ACTUAL_ORIGINAL_FILLER_MASTER_AND_ROUTING_MASK_PREFIX_NOT_PROCESS_DRC',
               'original_master_hashes': actual_hashes, 'actual_original_instances': sum(actual.values()),
               'unchanged_routing_mask_union': union, 'unchanged_routing_shapes': new_shapes,
               'GDS_sha256': sha(stream), 'GDS_bytes': stream.stat().st_size,
+              'stream_reused_from': str(stream) if closed else None,
+              'historical_insertion_code_binding': historical_code,
               'source_seal_equal': all(sha(name) == digest for name, digest in config['source_inputs'].items())}
     require(prefix['source_seal_equal'], 'filled GDS prefix source changed')
     (out/'prefix-geometry.json').write_text(json.dumps(prefix, indent=2)+'\n')
@@ -142,22 +211,33 @@ def check(config):
     # Fillers have only these two original Metal1 supply rails, with actual
     # contacts and well/tap layers retained through the exact source masters.
     filler_wells = pya.Region(); filler_pg = {'VDDlogic': pya.Region(), 'VSS': pya.Region()}
-    for record in plan['fillers']:
-        cell = source.cell(record['master']); width = record['sites']*480
+    templates = {}
+    for name in {record['master'] for record in plan['fillers']}:
+        cell = source.cell(name); width = int(name.rsplit('_', 1)[1])*480
         local = pya.Region(cell.begin_shapes_rec(source.find_layer(8, 0))); local.merge()
         vdd, vss = pya.Region(pya.Box(0, 3560, width, 4000)), pya.Region(pya.Box(0, -220, width, 220))
         require((local^(vdd+vss)).is_empty(), 'original filler contains unknown non-PG Metal1')
+        templates[name] = (vdd, vss, pya.Region(cell.begin_shapes_rec(source.find_layer(31, 0))))
+    for record in plan['fillers']:
+        vdd, vss, well = templates[record['master']]
         a, mirror = orientations[record['orientation']]; tr = pya.ICplxTrans(1, a, mirror, *record['origin'])
         filler_pg['VDDlogic'].insert(vdd.transformed(tr)); filler_pg['VSS'].insert(vss.transformed(tr))
-        filler_wells.insert(pya.Region(cell.begin_shapes_rec(source.find_layer(31, 0))).transformed(tr))
+        filler_wells.insert(well.transformed(tr))
     filler_wells.merge()
     for region in filler_pg.values(): region.merge()
     require((filler_pg['VDDlogic'] & filler_pg['VSS']).is_empty(), 'opposite filler supplies intersect')
     gaps = report_gaps(config['partial_process_report']); uncovered = []
-    for text, box in gaps:
-        missing = pya.Region(pya.Box(*box))-filler_wells
-        if not missing.is_empty(): uncovered.append({'original_edge_pair': text, 'uncovered_area_nm2': missing.area(),
-                                                     'uncovered_bbox_nm': str(missing.bbox())})
+    witnesses = pya.Region()
+    for text, box in gaps: witnesses.insert(pya.Box(*box))
+    # A single exact Boolean difference replaces3717 repeated differences
+    # against the same large region. Only a nonempty result needs per-witness
+    # attribution; a zero result proves every inserted witness is covered.
+    missing_all = witnesses-filler_wells
+    if not missing_all.is_empty():
+        for text, box in gaps:
+            missing = pya.Region(pya.Box(*box)) & missing_all
+            if not missing.is_empty(): uncovered.append({'original_edge_pair': text, 'uncovered_area_nm2': missing.area(),
+                                                         'uncovered_bbox_nm': str(missing.bbox())})
     (out/'remaining-original-NW-b-corridors.json').write_text(json.dumps(uncovered, indent=2)+'\n')
     # Preserve this actual geometry observation even if the later whole check
     # finds an uncovered original corridor or new signal-metal constraint.
@@ -169,7 +249,8 @@ def check(config):
         'tangent_witness_policy': '12 actual touching-y edge pairs require new well coverage on both sides in a conservative1DBU band; no process rule is changed',
         'scope': 'Actual original source geometry and unchanged native route; partial old gap coverage is not fresh process DRC'}
     (out/'filler-source-observation.json').write_text(json.dumps(result, indent=2)+'\n')
-    require(not uncovered, 'some actual original partial NW.b corridors remain uncovered')
+    # A retained original gap does not prevent the independent new-metal
+    # collision check. Accumulate both outcomes; neither becomes a pass.
     # Net-aware new Metal1 checks include real routed segments/via landings and
     # original functional-master metal, not just the abstract native row rail.
     # Use a conservative220nm rectangle margin: the original Metal1 table's
@@ -200,13 +281,7 @@ def check(config):
                 require(body is not None, 'original standard-cell LEF identity')
                 pg = pya.Region()
                 for name in ('VDD', 'VSS'):
-                    pin = re.search(r'^  PIN '+name+r'\n(.*?)^  END '+name+r'$', body[1], re.M | re.S)
-                    require(pin is not None and 'LAYER Metal1' in pin[1], 'original core PG interface')
-                    values = re.findall(r'RECT ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+) ;', pin[1])
-                    require(len(values) == 1, 'one original core PG rail rectangle')
-                    coords = [Decimal(value)*1000 for value in values[0]]
-                    require(all(value == int(value) for value in coords), 'integer original PG rail')
-                    pg.insert(pya.Box(*map(int, coords)))
+                    for coords in original_pg_rectangles(body[1], name): pg.insert(pya.Box(*coords))
                 local -= pg
             # All SRAM Metal1 stays conservative signal/unknown-net here. A
             # source-side same-supply alias could otherwise hide a real short.
@@ -224,15 +299,18 @@ def check(config):
                         'signal_conflict_bbox_nm': str(collision.bbox()) if not collision.is_empty() else None})
     result['new_filler_Metal1_rule_subset'] = spacing
     (out/'filler-source-observation.json').write_text(json.dumps(result, indent=2)+'\n')
-    require(all(row['signal_conflict_area_nm2'] == row['opposite_native_supply_conflict_area_nm2'] == 0
-                for row in spacing), 'new filler Metal1 conflicts with actual signal or opposite supply')
+    metal_ok = all(row['signal_conflict_area_nm2'] == row['opposite_native_supply_conflict_area_nm2'] == 0
+                   for row in spacing)
     # Consequential negatives use the actual new rail and original partial gap.
     first_rail = next(filler_pg['VDDlogic'].each())
     require(not (pya.Region(first_rail) & filler_pg['VDDlogic']).is_empty(), 'actual same-metal short control')
     gap = pya.Region(pya.Box(*gaps[0][1]))
     require(not (gap-(filler_wells-gap)).is_empty(), 'removed actual well bridge negative')
     result['negative_cases'] = ['actual_filler_rail_as_signal_short', 'removed_actual_original_well_bridge']
-    result.update(status='PASS_ACTUAL_ORIGINAL_ALLROW_FILLER_GDS_AND_OLD_GAP_COVERAGE_NOT_PROCESS_DRC',
+    result.update(status='PASS_ACTUAL_ORIGINAL_ALLROW_FILLER_GDS_AND_OLD_GAP_COVERAGE_NOT_PROCESS_DRC'
+                  if not uncovered and metal_ok else 'FAIL_FILLER_GAP_OR_METAL_SUBSET',
+                  failures=(['some actual original partial NW.b corridors remain uncovered'] if uncovered else [])+
+                           ([] if metal_ok else ['new filler Metal1 conflicts with actual signal or opposite supply']),
                   GDS_sha256=sha(stream), GDS_bytes=stream.stat().st_size)
     return result
 

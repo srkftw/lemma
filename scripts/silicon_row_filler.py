@@ -6,6 +6,7 @@ This adds physical CORE SPACERs only. Functional cells, all signal wires and
 the native power grid stay fixed. Original process/LVS/RC checks remain separate.
 """
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -15,17 +16,32 @@ import tarfile
 import threading
 import time
 
-from silicon_filler_source import all_row_plan, lef_masters, SELECTED_PLAN_SHA, SELECTED_SOURCE_ODB
+HOST_INPUTS = ('silicon_row_filler.py', 'silicon_filler_source.py', 'silicon_gds_geometry.py',
+               'silicon_geometry_export.py', 'silicon_pen_process.py', 'silicon_synth.py',
+               'silicon_acceptance_launch.py', 'silicon_buffered_pins.py', 'silicon_enclosure.py',
+               'silicon_power_ports.py', 'silicon_lvs_alias.py')
+STARTUP_INPUTS = {str(Path(__file__).resolve().with_name(name)):
+                  hashlib.sha256(Path(__file__).resolve().with_name(name).read_bytes()).hexdigest()
+                  for name in HOST_INPUTS}
+
+# Freeze repository host sources before importing their executable policies.
+# The before-use and final seals reject ordinary concurrent source edits.
+from silicon_filler_source import all_row_plan, lef_masters, SELECTED_PLAN_SHA, RIGHT_KEEPOUT_PLAN_SHA, SELECTED_SOURCE_ODB
 from silicon_geometry_export import require
 from silicon_pen_process import OwnedProcessStop
 from silicon_synth import ROOT, CommandFailure, run, sha
 
 OWNED_RSS = 1 << 30
-HOST_RESERVE = int(6.5*(1 << 30))
-HOST_INPUTS = ('silicon_row_filler.py', 'silicon_filler_source.py', 'silicon_gds_geometry.py',
-               'silicon_geometry_export.py', 'silicon_pen_process.py', 'silicon_synth.py',
-               'silicon_acceptance_launch.py', 'silicon_buffered_pins.py', 'silicon_enclosure.py',
-               'silicon_power_ports.py', 'silicon_lvs_alias.py')
+HOST_RESERVE = 8 << 30
+
+
+def source_changes(inputs):
+    changes = []
+    for name, digest in inputs.items():
+        try:
+            if sha(Path(name)) != digest: changes.append({'path': name, 'reason': 'changed'})
+        except OSError as error: changes.append({'path': name, 'reason': repr(error)})
+    return changes
 
 
 def require_reserve(available, owned_cap=OWNED_RSS, host_reserve=HOST_RESERVE):
@@ -38,6 +54,8 @@ def main():
     parser.add_argument('--native-descriptor', required=True, type=Path)
     parser.add_argument('--openroad', required=True, type=Path)
     parser.add_argument('--work-dir', required=True, type=Path)
+    parser.add_argument('--macro-right-well-keepout', action='store_true',
+                        help='Exact two-site physical-spacer keepout for the observed322 macro-right NWell seams; old cells stay fixed')
     args = parser.parse_args()
     out = args.work_dir.resolve(); basis = args.native_descriptor.resolve(); tool = args.openroad.resolve()
     require(not out.exists() and out.is_relative_to(ROOT/'build'), 'unused ignored row-fill output required')
@@ -50,7 +68,9 @@ def main():
     report = {'schema': 'lemma-original-row-filler/1', 'status': 'FAIL', 'scope': __doc__,
               'bounds': {'whole_seconds': 40, 'tool_seconds': 30, 'AS_bytes': 3 << 30,
                          'combined_RSS_bytes': OWNED_RSS, 'host_reserve_bytes': HOST_RESERVE,
-                         'output_bytes': 128 << 20}, 'source_inputs': {}, 'commands': [], 'peak_RSS_bytes': 0}
+                         'output_bytes': 128 << 20,
+                         'RSS_sampling_scope': 'Includes main preparation and owned tool; module import precedes sampler'},
+              'source_inputs': dict(STARTUP_INPUTS), 'commands': [], 'peak_RSS_bytes': 0}
     stopped = threading.Event(); failures = []; stopper = OwnedProcessStop()
     def monitor():
         while not stopped.wait(.05):
@@ -78,9 +98,14 @@ def main():
                          if line.startswith('MemAvailable:'))
         require_reserve(available); require(shutil.disk_usage(out).free >= 1 << 30, 'free output floor')
         report['launch_available_bytes'] = available
-        config = json.loads(basis.read_text()); source = Path(config['source_odb'])
+        thread.start()
+        require(not source_changes(STARTUP_INPUTS), 'repository host source changed during module loading')
+        raw_config = basis.read_bytes(); config = json.loads(raw_config); source = Path(config['source_odb'])
         inputs = [basis, source, Path(config['native_instances']), Path(config['routed_def']),
                   *map(Path, config['lef_files'][1:]), tool, tool.parent/'.openroad-wrapped']
+        report['source_inputs'].update({str(path): sha(path) for path in inputs})
+        require(report['source_inputs'][str(basis)] == hashlib.sha256(raw_config).hexdigest(),
+                'descriptor changed while being read')
         require(sha(source) == SELECTED_SOURCE_ODB and
                 all(config['source_inputs'][str(path)] == sha(path) for path in inputs[1:-2]),
                 'original native route/instance/DEF/LEF closure differs')
@@ -93,23 +118,26 @@ def main():
             require(not set(masters) & set(actual), 'ambiguous original source master')
             masters.update(actual)
         plan = all_row_plan(Path(config['routed_def']).read_text(),
-                            json.loads(Path(config['native_instances']).read_text()), masters)
+                            json.loads(Path(config['native_instances']).read_text()), masters,
+                            macro_right_extra_sites=2 if args.macro_right_well_keepout else 0)
         plan_path = out/'row-plan.json'; plan_path.write_text(json.dumps(plan, indent=2)+'\n')
-        require(sha(plan_path) == SELECTED_PLAN_SHA, 'source-bound selected row plan differs')
+        require(sha(plan_path) == (RIGHT_KEEPOUT_PLAN_SHA if args.macro_right_well_keepout else SELECTED_PLAN_SHA),
+                'source-bound selected row plan differs')
         driver = out/'insert.py'
         driver.write_text('import sys\nfrom pathlib import Path\nsys.path.insert(0,'+repr(str(ROOT/'scripts'))+')\n'
                           'from silicon_filler_source import insert_original_fillers\n'
                           'insert_original_fillers(Path('+repr(str(source))+'),Path('+repr(str(plan_path))+'),'
                           'Path('+repr(str(out/'candidate'))+'))\n')
         inputs += [ROOT/'scripts'/name for name in HOST_INPUTS]+[driver, plan_path]
-        report['source_inputs'] = {str(path): sha(path) for path in dict.fromkeys(inputs)}
+        report['source_inputs'].update({str(path): sha(path) for path in (driver, plan_path)})
+        require(not source_changes(report['source_inputs']) and not failures,
+                'source/resource changed during preparation')
         with tarfile.open(out/'source-closure.tar.gz', 'x:gz') as archive:
             for index, path in enumerate(dict.fromkeys(inputs)):
                 if path.suffix in ('.py', '.json', '.lef'):
                     archive.add(path, arcname=f'inputs/{index:03d}-{path.name}')
         report['source_archive_sha256'] = sha(out/'source-closure.tar.gz')
         (out/'plan.json').write_text(json.dumps(report, indent=2)+'\n')
-        thread.start()
         report['commands'].append(run([str(tool), '-python', '-exit', str(driver)], out/'insertion.log',
                                       min(deadline-8, time.monotonic()+30)))
         result = json.loads((out/'candidate/insertion.json').read_text())
@@ -122,9 +150,9 @@ def main():
     finally:
         stopped.set()
         if thread.is_alive(): thread.join()
+        changes = source_changes(report['source_inputs'])
         report.update(seconds=time.monotonic()-started, original_whole_deadline_met=time.monotonic() <= deadline,
-                      resource_errors=failures,
-                      source_seal_equal=all(sha(name) == digest for name, digest in report['source_inputs'].items()))
+                      resource_errors=failures, source_changes=changes, source_seal_equal=not changes)
         if failures or not report['source_seal_equal'] or not report['original_whole_deadline_met']:
             report['status'] = 'FAIL'
         (out/'result.json').write_text(json.dumps(report, indent=2)+'\n')

@@ -7102,7 +7102,7 @@
     }
   },
   "original_row_filler_correction": {
-    "status": "NATIVE_CORRECTED_UNSELECTED_PROCESS_CHECK_PENDING",
+    "status": "CORRECTED_KEEPOUT_NATIVE_AND_GDS_PREFIX_EXECUTED_UNSELECTED_PROCESS_AND_METAL_PENDING",
     "source": "scripts/silicon_filler_source.py",
     "selected_implementation_unchanged": "physical0.6, every previous setup/hold/electrical result remains FAIL",
     "cause": "960nm functional bbox gap minus two240nm original NWell overhangs gives480nm, below original620nm NW.b; physical row spacers were absent",
@@ -7148,7 +7148,7 @@
     ],
     "maintained_entrypoint": "scripts/silicon_row_filler.py",
     "original_GDS_relation_source": "scripts/silicon_filler_geometry.py",
-    "native_insertion_scope": "Actual insertion uses maintained exact mutator. New ordinary CLI delegates that frozen function; its wrapper is source/fixture checked, not separately executed.",
+    "native_insertion_scope": "Both the maintained mutator and ordinaryCLI executed. Fresh17.100s keepout CLI retains its exact source closure; later observer source changes do not become fresh insertion.",
     "original_GDS_first_failure": {
       "path": "build/silicon/task009-original-allrow-filler-gds-a1/result.json",
       "sha256": "1f9209c9364456642a29164dec52a9b41553a49f5e3700d202813154993c2ae2",
@@ -7191,7 +7191,9 @@
     "retained_failures": [
       "GDSa1:12real tangent-y NW.b witnesses rejected by rectangle-only observer; corrected conservative1DBU witness bands do not change process rules",
       "GDSa2:40s whole expires during per-filler observer; child37s timeout plus5s cleanup produces42.043s failed whole. Complete original-GDS/mask prefix retained separately.",
-      "Exact immutable main tables=nwell on changed GDS resourceFAIL19.849s;1GiB RSS trigger,1.190GB observed peak with0.5s KILL cleanup. No completed NW.b report or claim of3717 eliminated findings."
+      "Exact immutable main tables=nwell on changed GDS resourceFAIL19.849s;1GiB RSS trigger,1.190GB observed peak with0.5s KILL cleanup. No completed NW.b report or claim of3717 eliminated findings.",
+      "Completed original deep nwell table fails322NW.b at newly introduced80nm macro-right spacer seams. Corrected two-site source plan is not a new layout or process result.",
+      "KeepoutGDSa1:24.838s/sourceclean/938.5MB; completed49373originalmaster+20route-masks prefix, later observer fails on legitimate multirectPGLEF. Corrected literalgeometry observer uses existingcompletedGDS; no sourceimport rerun."
     ],
     "counts": {
       "rows": 221,
@@ -7203,6 +7205,109 @@
       "spacer_sites": 249350,
       "spacers": 40349,
       "new_PG_terminals": 80698
+    },
+    "nwell_supported_mode_controls": {
+      "path": "build/silicon/task009-original-nwell-mode-controls-a1/result.json",
+      "sha256": "e9a6639e1b7ee20c5daaa8bde608c345f11ead1d6086bae0f31fa222664ed938",
+      "status": "PASS_ORIGINAL_NWELL_DEEP_FLAT_ACTUAL_BAD_REPAIRED_MODE_CONTROLS_NOT_FULL_PROCESS",
+      "seconds": 10.193558016093448,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": null,
+      "scope": "Four original runner-supported explicit-nwell checks: deep/flat each find exactly1NW.b in the same real bad gap and0 in originalfill2 repair, with actual native PG stripes. Reports match byte-for-byte across modes. No full-layout equivalence or full-process claim."
+    },
+    "completed_original_deep_nwell": {
+      "path": "build/silicon/task009-original-allrow-deep-nwell-rule-a1/result.json",
+      "sha256": "e5c13a48b06fbf79dc139fe16261f12cc321789dad4f402b3604c31e80cb1378",
+      "status": "FAIL_ORIGINAL_NWELL_TABLE_RULE_VIOLATIONS",
+      "seconds": 30.16110146488063,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": null,
+      "findings": {
+        "NW.b": 322,
+        "other_nwell_categories": 0
+      },
+      "report_sha256": "5d9ecaba8e486de55ed7da6c2eb749da9499b63e89bea6990ab27d5f058c1dff",
+      "scope": "Exact immutable original main/default-deep table with original run_drc.py switches no_feol/no_beol/no_forbidden/no_pin=true for explicit table. Complete nwell scope fails; no full-process DRC. Prior3717 is a partial fullmain result in a different context, so a matched original0.6 deep/table baseline is still required before attributing any total-count delta."
+    },
+    "actual_macro_right_seam_classification": {
+      "path": "build/silicon/task009-original-allrow-deep-nwell-rule-a1/macro-right-seam-assessment.json",
+      "sha256": "d3a628ccaa9b369d3d53d572f577c156c1e964377ccf8096aa9d6b6ad57f07e9",
+      "status": "OBSERVED_ALL322_NEW_MACRO_RIGHT_FILLER_SEAMS_NOT_CORRECTED",
+      "seconds": null,
+      "source_seal_equal": null,
+      "peak_owned_RSS_bytes": null,
+      "all_findings": 322,
+      "lane_counts": {
+        "0": 106,
+        "1": 107,
+        "2": 109
+      },
+      "macro_right_nm": 904480,
+      "actual_filler_well_left_nm": 904560,
+      "actual_gap_nm": 80,
+      "required_original_NW_b_nm": 620,
+      "scope": "Every completed finding maps to an actual newly added spacer at the SRAM right edge; outward site rounding creates this new80nm seam. No previous failure is erased."
+    },
+    "macro_right_keepout_source_plan": {
+      "path": "build/silicon/task009-macro-right-keepout-plan-a2/source-qualification.json",
+      "sha256": "04b30260c518a4242a1d99d9060325ff550421a556c96f8c0ded62a61d083f80",
+      "status": "PASS_EXACT_SOURCE_ROW_PLANS_LEGACY_BYTES_AND_KEEPOUT_NOT_PLACED",
+      "seconds": 0.5432694819755852,
+      "source_seal_equal": null,
+      "peak_owned_RSS_bytes": null,
+      "plan_sha256": "6004367eac69ec9a07937f2eefd4530a018fe58d15e41bceaaffa047f9dbcf54",
+      "spacers": 40336,
+      "spacer_sites": 249161,
+      "additional_spacer_excluded_sites": 189,
+      "new_first_spacer_bbox_left_nm": 905760,
+      "new_well_gap_nm": 1040,
+      "preserved_functional_cells": [
+        "_11492_",
+        "_11644_",
+        "_11785_",
+        "hold1114",
+        "hold1144",
+        "hold821",
+        "hold822"
+      ],
+      "scope": "Source plan only: two additional480nm sites excluded only from new spacers. Seven old functional cells are preserved with their unresolved original process obligations. Actual native insertion/GDS/original-rule checks pending; source qualification retains its original consumed helper identity."
+    },
+    "maintained_wrapper_guard_scope": "Source hashes captured before policy imports/use; RSS sampler covers main preparation plus owned tool (moduleimports excluded); final changed/deleted input/resource/deadline rejects status/exit. Actualkeepout action meets1GiBcap+8GiBhostreserve and all source/resource/deadline seals. Nine current host fixtures pass; laterobserver changes retain the genuineproduceridentity.",
+    "macro_right_keepout_native": {
+      "path": "build/silicon/task009-macro-right-keepout-insertion-a1/result.json",
+      "sha256": "2e8cfd2b6cffc0ed6a97e75b733201974ccd79e5c53397be034d1e6e116fde32",
+      "status": "PASS_SOURCE_BOUND_ORIGINAL_ALLROW_FILLER_INSERTION_AND_SIGNALS_NOT_PROCESS_DRC",
+      "seconds": 17.099640951957554,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 747700224,
+      "original_fillers": 40336,
+      "new_PG_terminals": 80672,
+      "filled_odb_sha256": "e229c663a6e36b72c62a99c95d335fc88d317a77d772282d1b2fab2f4b2b390e",
+      "filled_def_sha256": "f489f0a849db657d01d3b09bcbbffa9480e27bb53aa0069cf40bcbffa1a75a06",
+      "scope": "Fresh maintained ordinary CLI: all9037oldplacements,668ports,99128nativePG,18718OBS,9703signalwirestreams exact; allnewPGpins overlapcorrectrails. Wrongsite/orientation/supply, actual80nmwellgap, detachedwire negatives reject and fullsnapshotrestores. Original functional padding remains; selected0.6unchanged."
+    },
+    "macro_right_keepout_GDS_whole_failure": {
+      "path": "build/silicon/task009-macro-right-keepout-gds-a1/result.json",
+      "sha256": "e05b4cada83e406856b180c1f60e95f341610def17f44c23027915199485ec5d",
+      "status": "FAIL",
+      "seconds": 24.83771773101762,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 938475520,
+      "scope": "Actual original49373master/transform+20maskunion and completeGDS prefix succeed. Later observer rejects legitimate multirectangle originalLEF PG; no wholepass, no completed Metal1 relation or originalnwell result."
+    },
+    "macro_right_keepout_completed_GDS_prefix": {
+      "path": "build/silicon/task009-macro-right-keepout-gds-a1/prefix-geometry.json",
+      "sha256": "a6f150079024be4073574b352a0c11a75d4ed7df2311d4c7c293a15cf5c06e84",
+      "status": "PASS_ACTUAL_ORIGINAL_FILLER_MASTER_AND_ROUTING_MASK_PREFIX_NOT_PROCESS_DRC",
+      "seconds": null,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": null,
+      "GDS_sha256": "79367153f37808fdaffb23f9579f3d5ffe6ece30d967cc7336f3793c5e67b3d2",
+      "GDS_bytes": 13186360,
+      "actual_original_instances": 49373,
+      "unchanged_routing_shapes": 357082,
+      "all20route_mask_XOR_areas_nm2": 0,
+      "scope": "Completed component in failedwhole; six originalwellcorridors remain by independent sourcewitness, not a freshprocesscount."
     }
   }
 }
