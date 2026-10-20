@@ -257,7 +257,11 @@ def main():
     selected = None
     if args.selected_implementation:
         selected = json.loads((ROOT / 'tooling/silicon/physical-lock.json').read_text())['selected_pen_implementation']
-        if selected['version'] == 'lemma-pen-sg13g2-native-margin-grid/1':
+        if selected['version'] == 'lemma-pen-sg13g2-slew-native-margin-grid/1':
+            from silicon_slew_launch import bind_selected
+            bind_selected(args,selected)
+            require_clock_layer_recipe(args,selected_binding=True)
+        elif selected['version'] == 'lemma-pen-sg13g2-native-margin-grid/1':
             from silicon_power_margin_route import bind_selected
             bind_selected(args,selected)
             require_capacity_launch_recipe(args,selected_binding=True)

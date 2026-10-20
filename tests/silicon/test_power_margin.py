@@ -108,4 +108,48 @@ class PowerMarginTests(unittest.TestCase):
                 require_slew_recipe(SimpleNamespace(**{**valid,name:value}))
 
 
+    def test_selected_slew_binds_predecessor_geometry_and_complete_sources(self):
+        import copy
+        from silicon_slew_launch import bind_selected as bind, GEOMETRY_SHA, SOURCE_SHA, RECEIPT_SHA, LIB_SHA
+        flags=['--routed-eco-from','build/silicon/task009-native-margin-route-a1',
+               '--slew-launch-buffer-from','build/silicon/task009-selected-slew-launch-preflight-a1',
+               '--clock-min-routing-layer','Metal3','--detail-route-iterations','8']
+        prep=ROOT/flags[3]
+        paths=['scripts/silicon_slew_launch.py','scripts/silicon_power_clearance.py',
+               'scripts/silicon_power_margin.py','scripts/silicon_sram_input_hold.py',
+               'tooling/silicon/pen-power-edge.tcl']
+        selected={'version':'lemma-pen-sg13g2-slew-native-margin-grid/1','launch':{
+            'flags':flags,'predecessor':{'path':flags[1],'receipt_sha256':'receipt','routed_odb_sha256':SOURCE_SHA},
+            'sources':[{'path':p,'sha256':'source'}for p in paths],
+            'Liberty':{'path':'ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib',
+                       'sha256':LIB_SHA,'source':'Original pinned public PDK, resolved from --pdk'},
+            'prepared_geometry':{'path':str((prep/'unrouted.odb').relative_to(ROOT)),'sha256':GEOMETRY_SHA},
+            'preparation_receipt':{'path':str((prep/'result.json').relative_to(ROOT)),'sha256':RECEIPT_SHA}}}
+        defaults=dict(selected_implementation=True,routed_eco_from=None,slew_launch_buffer_from=None,
+                      clock_min_routing_layer='Metal2',detail_route_iterations=3,host_memory_gib=6)
+        def digest(path):
+            return 'receipt' if path.name=='result.json' else SOURCE_SHA if path.name=='routed.odb' else 'source'
+        with patch('silicon_slew_launch.sha',side_effect=digest),patch(
+                'silicon_slew_launch.admit',return_value=(prep/'unrouted.odb',prep/'result.json',[])):
+            args=SimpleNamespace(**defaults);bind(args,selected)
+            self.assertEqual(args.routed_eco_from,ROOT/flags[1]);self.assertTrue(args.core_power_grid)
+            self.assertEqual(args.clock_min_routing_layer,'Metal3')
+            for name,value in [('host_memory_gib',4),('selected_implementation',False),
+                               ('routed_eco_from',ROOT/'build/other'),('power_margin_from',ROOT/'build/regenerate'),
+                               ('capacity_launch_buffer_from',ROOT/'build/327'),('preferred_access_from',ROOT/'build/old'),
+                               ('group_button_bus',True)]:
+                with self.subTest(argument=name),self.assertRaises(GeometryError):
+                    bind(SimpleNamespace(**{**defaults,name:value}),selected)
+            for name in ['version','flags','sources','missing-source','duplicate-source','Liberty','prepared_geometry','predecessor']:
+                bad=copy.deepcopy(selected)
+                if name=='version':bad[name]='other'
+                elif name=='flags':bad['launch'][name][-1]='3'
+                elif name=='sources':bad['launch'][name][0]['sha256']='changed'
+                elif name=='missing-source':bad['launch']['sources'].pop()
+                elif name=='duplicate-source':bad['launch']['sources'][-1]=bad['launch']['sources'][0]
+                elif name in ('Liberty','prepared_geometry'):bad['launch'][name]['sha256']='changed'
+                else:bad['launch'][name]['path']='build/other'
+                with self.subTest(binding=name),self.assertRaises(GeometryError):bind(SimpleNamespace(**defaults),bad)
+
+
 if __name__=='__main__':unittest.main()

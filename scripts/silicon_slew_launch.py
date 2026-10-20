@@ -128,15 +128,55 @@ def assess(source, geometry, lib, output, *, fixed_geometry=None):
     return result
 
 
-def require_recipe(args):
+def require_recipe(args, *, selected_binding=False):
     if not getattr(args,'slew_launch_buffer_from',None):return
     require(args.routed_eco_from and args.clock_min_routing_layer=='Metal3' and
             args.detail_route_iterations==8 and args.host_memory_gib==6 and
+            (not getattr(args,'selected_implementation',False) or selected_binding) and
             not any(getattr(args,name,False) for name in
-                ('selected_implementation','acceptance_launch_buffer','padded_sram_input_delay_from',
+                ('acceptance_launch_buffer','padded_sram_input_delay_from',
                  'control_launch_buffer_from','capacity_launch_buffer_from','power_margin_from',
                  'preferred_access_from','preferred_access_preflight_only','preserve_routed_netlist',
                  'fresh_core_power_grid','vss_clock_grid_source','protect_sram_power_edges',
                  'protect_sram_power_geometry','completed_eco_route_from','completed_power_grid_route_from',
                  'completed_fresh_grid_route_from','defer_global_eco','center_validation_cones','group_button_bus')),
             'three-slew launches require exactzero-route source/native420/full8/clockM3/6GiB, no other recipe')
+
+
+def bind_selected(args, selected):
+    """Select the measured physical relation without relabeling its producer."""
+    require(selected['version']=='lemma-pen-sg13g2-slew-native-margin-grid/1',
+            'unknown selected three-slew implementation')
+    flags=['--routed-eco-from','build/silicon/task009-native-margin-route-a1',
+           '--slew-launch-buffer-from','build/silicon/task009-selected-slew-launch-preflight-a1',
+           '--clock-min-routing-layer','Metal3','--detail-route-iterations','8']
+    require(args.selected_implementation and selected['launch']['flags']==flags,
+            'selected three-slew exact measured recipe required')
+    for name,path in [('routed_eco_from',ROOT/flags[1]),('slew_launch_buffer_from',ROOT/flags[3])]:
+        value=getattr(args,name,None)
+        require(value is None or Path(value).resolve()==path,'selected three-slew predecessor differs: '+name)
+        setattr(args,name,path)
+    predecessor=selected['launch']['predecessor']
+    require(predecessor['path']==flags[1] and
+            sha(args.routed_eco_from/'result.json')==predecessor['receipt_sha256'] and
+            sha(args.routed_eco_from/'routed.odb')==SOURCE_SHA==predecessor['routed_odb_sha256'],
+            'selected three-slew source route differs')
+    entries=selected['launch']['sources']
+    required_sources={'scripts/silicon_slew_launch.py','scripts/silicon_power_clearance.py',
+                      'scripts/silicon_power_margin.py','scripts/silicon_sram_input_hold.py',
+                      'tooling/silicon/pen-power-edge.tcl'}
+    require(len(entries)==len(required_sources) and {entry['path']for entry in entries}==required_sources,
+            'selected three-slew complete source identity required')
+    require(selected['launch']['Liberty']=={
+            'path':'ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib',
+            'sha256':LIB_SHA,'source':'Original pinned public PDK, resolved from --pdk'},
+            'selected three-slew original Liberty identity differs')
+    for entry in entries:
+        require(sha(ROOT/entry['path'])==entry['sha256'],'selected three-slew source differs: '+entry['path'])
+    geometry,receipt,_=admit(args.slew_launch_buffer_from)
+    require(selected['launch']['prepared_geometry']=={'path':str(geometry.relative_to(ROOT)),
+            'sha256':GEOMETRY_SHA} and selected['launch']['preparation_receipt']=={
+            'path':str(receipt.relative_to(ROOT)),'sha256':RECEIPT_SHA},
+            'selected three-slew preparation differs')
+    args.clock_min_routing_layer='Metal3';args.detail_route_iterations=8;args.core_power_grid=True
+    require_recipe(args,selected_binding=True)
