@@ -406,7 +406,12 @@
         "scripts/silicon_access_preference.py",
         "scripts/silicon_preferred_route.py",
         "tooling/silicon/opendb-access-export.cpp",
-        "tests/silicon/test_access_preferences.py"
+        "tests/silicon/test_access_preferences.py",
+        "scripts/silicon_access_writer.py",
+        "scripts/silicon_power_margin.py",
+        "scripts/silicon_power_margin_route.py",
+        "scripts/silicon_power_clearance.py",
+        "tests/silicon/test_power_margin.py"
       ],
       "claims": [
         "physical-flow"
