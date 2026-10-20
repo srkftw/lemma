@@ -1,3 +1,4 @@
+import ast
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -5,6 +6,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from silicon_hold_decode import require_recipe
+from silicon_pen_physical import prepared_assessment_script
 
 
 class JointRecipe(unittest.TestCase):
@@ -25,6 +27,22 @@ class JointRecipe(unittest.TestCase):
                         dict(routed_eco_from=None), dict(selected_implementation=True)):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 require_recipe(self.arguments(**changes))
+
+    def test_real_preparation_call_retains_fixed_reference(self):
+        fixed = Path('build/qualified-joint/unrouted.odb')
+        source = prepared_assessment_script('silicon_hold_decode', Path('old.odb'), fixed,
+            Path('original.lib'), Path('evidence.json'), fixed_geometry=fixed)
+        calls = [node for node in ast.walk(ast.parse(source)) if isinstance(node, ast.Call)
+                 and isinstance(node.func, ast.Name) and node.func.id == 'assess']
+        self.assertEqual(len(calls), 1)
+        self.assertEqual([key.arg for key in calls[0].keywords], ['fixed_geometry'])
+        self.assertEqual(ast.literal_eval(calls[0].keywords[0].value.args[0]), str(fixed))
+        with self.assertRaises(ValueError):
+            prepared_assessment_script('silicon_hold_decode', Path('old.odb'), fixed,
+                                       Path('original.lib'), Path('evidence.json'))
+        legacy = prepared_assessment_script('silicon_two_load_launch', Path('old.odb'),
+                                            fixed, Path('original.lib'), Path('evidence.json'))
+        self.assertNotIn('fixed_geometry=', legacy)
 
     def test_no_mixed_geometry_or_completion_recipe(self):
         for flag in ('two_load_launch_from', 'well_fill_from', 'fresh_core_power_grid',

@@ -21,6 +21,21 @@ from silicon_synth import ROOT, CommandFailure, layout_reports, router_drc, run,
 MACRO = 'RM_IHPSG13_1P_256x64_c2_bm_bist'
 
 
+
+def prepared_assessment_script(module, source, geometry, liberty, output, *, fixed_geometry=None):
+    """Use the same explicit fixed reference in pre-route and final joint checks."""
+    require(module in ('silicon_hold_decode','silicon_two_load_launch','silicon_well_fill_route',
+            'silicon_decode_launch','silicon_slew_launch','silicon_power_margin_route',
+            'silicon_capacity_launch','silicon_control_launch','silicon_sram_input_hold'),
+            'unknown physical assessment module')
+    require(module != 'silicon_hold_decode' or fixed_geometry is not None,
+            'joint preparation requires its exact admitted fixed geometry')
+    suffix = f', fixed_geometry=Path({str(fixed_geometry)!r})' if fixed_geometry is not None else ''
+    return (f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\n'
+            f'from {module} import assess\nassess(Path({str(source)!r}), Path({str(geometry)!r}), '
+            f'Path({str(liberty)!r}), Path({str(output)!r}){suffix})\n')
+
+
 def sdc_commands(path):
     # write_sdc adds a timestamp comment. Ignore only whole comment/blank lines;
     # every command, endpoint, value and exception must remain byte-identical.
@@ -683,7 +698,9 @@ def main():
                 module = ('silicon_hold_decode'if args.hold_decode_from else'silicon_two_load_launch'if args.two_load_launch_from else'silicon_well_fill_route'if args.well_fill_from else'silicon_decode_launch' if args.decode_launch_buffer_from else 'silicon_slew_launch' if (args.slew_launch_buffer_from or args.decode_launch_buffer_from or args.well_fill_from or args.two_load_launch_from or args.hold_decode_from) else 'silicon_power_margin_route' if args.power_margin_from else 'silicon_capacity_launch' if args.capacity_launch_buffer_from else
                           'silicon_control_launch' if args.control_launch_buffer_from else 'silicon_sram_input_hold')
                 proof = out / 'padded-hold-prepare.py'
-                proof.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\nfrom {module} import assess\nassess(Path({str(prior/"routed.odb")!r}), Path({str(prepared_geometry)!r}), Path({str(std/"lib/sg13g2_stdcell_typ_1p20V_25C.lib")!r}), Path({str(out/"padded-hold-preparation.json")!r}))\n')
+                proof.write_text(prepared_assessment_script(module, prior/'routed.odb', prepared_geometry,
+                    std/'lib/sg13g2_stdcell_typ_1p20V_25C.lib', out/'padded-hold-preparation.json',
+                    fixed_geometry=prepared_geometry if args.hold_decode_from else None))
                 invoke([str(openroad), '-python', '-exit', str(proof)], 'padded-hold-prepare', 45 if args.hold_decode_from else 40 if args.two_load_launch_from else 30 if args.well_fill_from else 20)
                 report['padded_hold_preparation'] = json.loads((out / 'padded-hold-preparation.json').read_text())
                 prepared_def = (prepared_base_geometry if args.preferred_access_from else prepared_geometry).with_suffix('.def')
