@@ -31,8 +31,8 @@ MAX_EVENTS = 1000000
 
 
 class NotebookFaultObserver:
-    """Bounded kernel lifecycle presentation, never notebook/domain policy."""
-    record = re.compile(rb'K1 (00000000000000f[14]) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?')
+    """Bounded lifecycle/input-loss presentation, never notebook/domain policy."""
+    record = re.compile(rb'K1 (00000000000000f[14]|0000000000000735) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?')
 
     def __init__(self):
         self.reset()
@@ -42,6 +42,8 @@ class NotebookFaultObserver:
         self.boundary = True
         self.descriptor = None
         self.fault = None
+        self.ink_loss = None
+        self.ink_loss_total = 0
 
     def feed(self, data):
         for byte in data:
@@ -49,6 +51,15 @@ class NotebookFaultObserver:
                 match = self.record.fullmatch(self.tail) if self.boundary else None
                 if match:
                     kind, descriptor, code, value, cause = match.groups()
+                    if kind == b'0000000000000735':
+                        reason, discarded, cumulative, sequence = (int(x,16) for x in (descriptor,code,value,cause))
+                        valid = 1 <= reason <= 4 and discarded <= cumulative and self.ink_loss_total <= cumulative
+                        self.ink_loss = dict(authority='compiled-guest-report',
+                            contract='lemma-notebook-input-loss/1',
+                            state='loss' if valid else 'malformed',
+                            reason=str(reason),discarded=str(discarded),cumulative=str(cumulative),lastCapturedSequence=str(sequence))
+                        if valid:
+                            self.ink_loss_total = cumulative
                     if kind.endswith(b'1') and code == b'0000000000000001' and self.descriptor is None:
                         self.descriptor = descriptor
                     if (kind.endswith(b'4') and descriptor == self.descriptor and cause != b'0000000000000000'
@@ -860,6 +871,7 @@ class Session:
                     'capture_uncertain':self.capture_uncertain,
                     'last_failed_operation':self.last_error,
                     'guest_fault':self.notebook_lifecycle.fault,
+                    'guest_ink_loss':self.notebook_lifecycle.ink_loss,
                     'performance': {'run_seconds': self.run_seconds, 'requested_cycles': self.run_cycles,
                                     'cycles_per_second': self.run_cycles / self.run_seconds if self.run_seconds else None}}
         if action == 'pause':
@@ -1281,7 +1293,10 @@ def view(directory):
                 power_text+=' · '+{1:'suspend Busy',2:'invalid power access'}.get(power['error'],'power error '+str(power['error']))
             fault=state.get('guest_fault')
             fault_text=(f" · Notebook fault (kernel cause0x{fault['cause']}, exit0x{fault['exitCode']}). Export the medium before recovery." if fault else '')
-            status.set(f"cycle {produced['cycle']} · ticks {produced['ticks']} · " + ('running' if state['running'] else 'paused')+power_text+fault_text)
+            loss=state.get('guest_ink_loss')
+            loss_text=(' · Input loss report invalid; inspect the retained work.' if loss and loss['state']=='malformed' else
+                f" · Input loss: {loss['discarded']} buffered samples discarded ({loss['cumulative']} total). Saved covers retained work; missing controller samples may be uncounted." if loss else '')
+            status.set(f"cycle {produced['cycle']} · ticks {produced['ticks']} · " + ('running' if state['running'] else 'paused')+power_text+fault_text+loss_text)
             paper=produced.get('devices',{}).get('paper',{})
             panel=(state.get('presentation_generation',0),paper.get('visible_sha256',produced.get('panel_completed')))
             if panel != last_panel:

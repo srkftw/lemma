@@ -176,6 +176,7 @@ document.querySelector('#school-review-open').onclick=()=>{
 };
 worker.onmessage=({data:m})=>{
  if(m.type==='closed')document.querySelector('#serial-status').textContent='No running serial transfer.';
+ if(m.type==='closed')document.querySelector('#ink-loss-status').textContent='No running guest. Retain an export before recovery.';
  if(m.type==='school'){
   schoolStatus.textContent=m.error?m.error:JSON.stringify(m.result,null,2);
   if(m.result?.courses){schoolCursor=m.result.next;const list=document.querySelector('#school-course');list.replaceChildren();
@@ -190,6 +191,10 @@ worker.onmessage=({data:m})=>{
  if(m.type==='course-admission')document.querySelector('#course-admission').textContent=m.error?`Admitted ${m.accepted} of ${m.total} raw events; rejected remainder: ${m.error}. The accepted prefix remains queued. Close and cold-open backing before retrying.`:`Admitted ${m.bytes} package bytes to the guest. See the guest installation result below.`;
  if(m.type==='raw-admission')document.querySelector('#raw-result').textContent=m.error?`Accepted ${m.accepted} of ${m.total} events; rejected remainder: ${m.error}`:`Admitted ${m.accepted} raw events.`;
  if(m.type==='state'){const reported=m.guestCommit??null;
+  const loss=m.guestInkLoss;
+  document.querySelector('#ink-loss-status').textContent=loss==null?'No input loss reported in this guest launch.':loss.state==='malformed'?
+   'Input loss report invalid; inspect the retained work.':
+   `Input loss: ${loss.discarded} buffered samples discarded (${loss.cumulative} total); reason ${loss.reason}. Saved covers retained work. Missing controller samples may be additional and uncounted.`;
   const serial=m.state.uart_ingress;
   document.querySelector('#serial-status').textContent=serial===undefined?'Serial transfer status unavailable.':
    `Serial bytes: ${serial.delivered} delivered, ${serial.pending} queued, ${serial.canceled} cancelled of ${serial.accepted} accepted${serial.blocked?' · waiting for guest receiver':''}. Byte delivery is not an installation receipt.`;

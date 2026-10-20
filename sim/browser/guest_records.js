@@ -69,14 +69,16 @@ export function guestCourseInstallState(bytes,start){
  return result;
 }
 
-// Incremental presentation of the admitted notebook's kernel lifecycle. Image
+// Incremental presentation of kernel lifecycle and guest-reported input loss.
+// Saved cannot clear loss; only a new guest execution resets this observer.
+// Image
 // index1 is the primary notebook in the maintained notebook deployments. A
 // helper exit (including an arithmetic failure) must not stop usable paper.
 // This observes the kernel's own F1/F4 reports; it never diagnoses document
 // contents or infers a fault from a timeout, a partial line, or an old boot.
 export class NotebookFaultObserver {
  constructor(){this.reset(0);}
- reset(start){this.start=start;this.cursor=start;this.tail='';this.descriptor=null;this.fault=null;this.boundary=null;}
+ reset(start){this.start=start;this.cursor=start;this.tail='';this.descriptor=null;this.fault=null;this.inkLoss=null;this.inkLossTotal=0n;this.boundary=null;}
  observe(bytes,start){
   if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length)
    throw Error('Invalid notebook lifecycle observation boundary');
@@ -87,8 +89,15 @@ export class NotebookFaultObserver {
    const byte=bytes[i];
    if(byte===10){
     if(this.boundary){
-     const match=/^K1 (00000000000000f[14]) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?$/.exec(this.tail);
+     const match=/^K1 (00000000000000f[14]|0000000000000735) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?$/.exec(this.tail);
      if(match){
+      if(match[1]==='0000000000000735'){
+       const [reason,discarded,cumulative,sequence]=match.slice(2).map(x=>BigInt('0x'+x)),valid=reason>=1n&&reason<=4n&&discarded<=cumulative&&this.inkLossTotal<=cumulative;
+       this.inkLoss={authority:'compiled-guest-report',contract:'lemma-notebook-input-loss/1',
+        state:valid?'loss':'malformed',
+        reason:String(reason),discarded:String(discarded),cumulative:String(cumulative),lastCapturedSequence:String(sequence)};
+       if(valid)this.inkLossTotal=cumulative;
+      }
       if(match[1].endsWith('1')&&match[3]==='0000000000000001'&&this.descriptor===null)this.descriptor=match[2];
       // Successful User exit is a handled U-mode ecall (cause8/code0),
       // including the ordinary initializer's acknowledged completion.

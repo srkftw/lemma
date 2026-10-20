@@ -17,6 +17,49 @@ def row(kind, *fields):
 
 
 class NotebookFault(unittest.TestCase):
+    def test_input_loss_is_exact_latched_and_does_not_become_a_kernel_fault(self):
+        data = row(0x735,2,129,129,9007199254740993)
+        observer = NotebookFaultObserver()
+        self.assertIsNone(observer.feed(data[:-1]))
+        self.assertIsNone(observer.ink_loss)
+        self.assertIsNone(observer.feed(b'\n'))
+        found = dict(observer.ink_loss)
+        self.assertEqual(found['discarded'],'129')
+        self.assertEqual(found['lastCapturedSequence'],'9007199254740993')
+        observer.feed(row(0x421,7,1,1,0))
+        self.assertEqual(observer.ink_loss,found)
+        for fields in [(5,1,130,2),(1,131,130,2),(1,1,128,2)]:
+            observer.feed(row(0x735,*fields))
+            self.assertEqual(observer.ink_loss['state'],'malformed')
+        observer.feed(row(0x735,3,0,129,2))
+        self.assertEqual(observer.ink_loss['state'],'loss')
+        maximum=(1<<64)-1
+        observer.feed(row(0x735,1,maximum,maximum,maximum))
+        self.assertEqual(observer.ink_loss['cumulative'],str(maximum))
+        observer.reset()
+        observer.feed(b'prefix'+data)
+        self.assertIsNone(observer.ink_loss)
+        observer.feed(data.replace(b'\n',b'\r\n'))
+        self.assertEqual(observer.ink_loss,found)
+        script = '''
+import {NotebookFaultObserver} from './sim/browser/guest_records.js';
+import assert from 'node:assert/strict';
+const rows=JSON.parse(process.argv[1]), enc=x=>new TextEncoder().encode(x),o=new NotebookFaultObserver();
+let text=rows.loss.slice(0,-1);assert.equal(o.observe(enc(text),0),null);assert.equal(o.inkLoss,null);
+text+='\\n';o.observe(enc(text),0);const found={...o.inkLoss};assert.deepEqual(found,rows.expected);
+text+=rows.saved;o.observe(enc(text),0);assert.deepEqual(o.inkLoss,found);
+for(const invalid of rows.invalid){text+=invalid;o.observe(enc(text),0);assert.equal(o.inkLoss.state,'malformed');}
+text+=rows.gap;o.observe(enc(text),0);assert.equal(o.inkLoss.state,'loss');
+text+=rows.maximum;o.observe(enc(text),0);assert.equal(o.inkLoss.cumulative,'18446744073709551615');
+assert.equal(o.fault,null);o.reset(text.length);o.observe(enc(text+rows.saved),text.length);assert.equal(o.inkLoss,null);
+'''
+        run=subprocess.run(['node','--input-type=module','-e',script,json.dumps(dict(
+            loss=data.decode(),expected=found,saved=row(0x421,7,1,1,0).decode(),
+            invalid=[row(0x735,*x).decode() for x in [(5,1,130,2),(1,131,130,2),(1,1,128,2)]],
+            gap=row(0x735,3,0,129,2).decode(),maximum=row(0x735,1,maximum,maximum,maximum).decode()))],
+            cwd=ROOT,capture_output=True,text=True,timeout=15)
+        self.assertEqual(run.returncode,0,run.stdout+run.stderr)
+
     def test_only_current_primary_kernel_fault_stops_pacing(self):
         primary = row(0xf1, 0x2047, 1, 2, 0x100000)
         trap = row(0xf4, 0x2047, 227, 0, 13)
@@ -74,6 +117,10 @@ assert.equal(o.observe(enc(text),0).cause,'000000000000000d');
                 uart.write_bytes(row(0xf1, 0x2047, 1, 2, 0) + row(0xf4, 0x2087, 227, 0, 13))
                 session.run(1000)
                 self.assertTrue(session.automatic)
+                with uart.open('ab') as stream: stream.write(row(0x735,3,0,0,7))
+                session.run(1000)
+                self.assertTrue(session.automatic)
+                self.assertEqual(session.dispatch({'action':'inspect'})['guest_ink_loss']['reason'],'3')
                 with uart.open('ab') as stream: stream.write(row(0xf4, 0x2047, 227, 0, 13))
                 session.run(1000)
                 self.assertFalse(session.automatic)
@@ -83,5 +130,6 @@ assert.equal(o.observe(enc(text),0).cause,'000000000000000d');
                 session.run(1000)
                 self.assertTrue(session.automatic)
                 self.assertIsNone(session.notebook_lifecycle.fault)
+                self.assertIsNone(session.notebook_lifecycle.ink_loss)
             finally:
                 session.close()

@@ -344,6 +344,18 @@ for(const phase of ['adapter','device']){
   await f.node('#install-course').onclick();assert.equal(f.sent.length,count);
  }
 }
+// A new Saved report covers retained work and must not erase reported loss.
+{
+ const f=await appFixture(undefined),loss={state:'loss',reason:'2',discarded:'129',cumulative:'9007199254740993'};
+ const emit=(guestInkLoss,guestCommit)=>f.worker.onmessage({data:{type:'state',guestInkLoss,guestCommit,state:{cycle:'19'},running:false,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ emit(loss,null);assert.match(f.node('#ink-loss-status').textContent,/129 buffered samples discarded \(9007199254740993 total\)/);
+ emit(loss,{state:'saved',value:'30',page:'1',namespace:'1'});
+ assert.match(f.node('#commit-status').textContent,/Saved 30/);
+ assert.match(f.node('#ink-loss-status').textContent,/Saved covers retained work/);
+ assert.match(f.node('#ink-loss-status').textContent,/Missing controller samples may be additional/);
+ emit({...loss,state:'malformed'},null);assert.match(f.node('#ink-loss-status').textContent,/report invalid/);
+ emit(null,null);assert.match(f.node('#ink-loss-status').textContent,/No input loss reported/);
+}
 // Keyboard pen uses the same raw input boundary, including contact cancellation.
 {
  const f=await appFixture(undefined),paper=f.canvas();paper.width=1650;paper.height=2200;
