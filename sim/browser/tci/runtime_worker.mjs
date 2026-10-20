@@ -52,6 +52,9 @@ async function inspect(full=false){
 }
 async function sendState(state){
  if(state===undefined)state=await inspect();
+ // Ordinary transfer progress is a pure controller counter observation. Do
+ // not expose queued payloads or interpret byte delivery as guest installation.
+ state.uart_ingress=exactJson(await control.get('raw-uart-state'));
  void school.observeDelivery(uart(),guestStart,{cycle:state.cycle,completed:state.panel_completed,accepted:state.panel_sequence,busy:state.paper_busy}).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));
  postMessage({type:'state',state,guestFault:observeFault(),mode,modeContract:contract,running,guestObservation:'boot',guestCommit:guestCommitState(uart(),guestStart),guestCourse:guestCourseInstallState(uart(),guestStart),guestQueue:guestSchoolQueueState(uart(),guestStart),backingMedium:{name:mediumName,private:false,ready:true},backingMetrics:backing.metrics,controlMetrics:control.metrics,pcmEgress:egress.inspect(),heapBytes,readyAt,hostSeconds:(performance.now()-started)/1000,pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-started)/1000,simulationCallSeconds:timing.runSeconds,backingCallSeconds:0,backingCallSecondsDuringRun:0,backingTimingAvailable:false}});
 }

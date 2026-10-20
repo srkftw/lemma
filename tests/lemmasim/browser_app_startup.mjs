@@ -321,6 +321,15 @@ for(const phase of ['adapter','device']){
  assert.match(f.node('#course-admission').textContent,/guest installation result below/);
  const emit=guestCourse=>f.worker.onmessage({data:{type:'state',guestCourse,state:{cycle:'1'},running:false,guestObservation:'boot',readyAt:null,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
  emit(null);assert.match(f.node('#course-result').textContent,/No installation result/);
+ const transfer=uart_ingress=>f.worker.onmessage({data:{type:'state',state:{cycle:'2',uart_ingress},running:false,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ transfer({delivered:'16',pending:'9007199254740993',canceled:'0',accepted:'9007199254741009',blocked:true});
+ assert.match(f.node('#serial-status').textContent,/16 delivered, 9007199254740993 queued/);
+ assert.match(f.node('#serial-status').textContent,/waiting for guest receiver/);
+ assert.match(f.node('#course-result').textContent,/No installation result/);
+ transfer({delivered:'4040',pending:'0',canceled:'0',accepted:'4040',blocked:false});
+ assert.doesNotMatch(f.node('#serial-status').textContent,/waiting/);
+ assert.match(f.node('#serial-status').textContent,/Byte delivery is not an installation receipt/);
+ assert.match(f.node('#course-result').textContent,/No installation result/);
  emit({state:'installed',identity:'1',edition:'2',sequence:'9007199254740993'});
  assert.match(f.node('#course-result').textContent,/Guest reports installed package 1, edition 2, durable sequence 9007199254740993/);
  assert.doesNotMatch(f.node('#course-admission').textContent,/awaiting/);
@@ -329,6 +338,7 @@ for(const phase of ['adapter','device']){
  f.worker.onmessage({data:{type:'course-admission',accepted:2,total:37,bytes:4040,error:'queue exhausted'}});
  assert.match(f.node('#course-admission').textContent,/Admitted 2 of 37/);assert.match(f.node('#course-admission').textContent,/Close and cold-open/);
  f.worker.onmessage({data:{type:'closed'}});assert.match(f.node('#course-result').textContent,/No running guest/);
+ assert.match(f.node('#serial-status').textContent,/No running serial transfer/);
  for(const size of [127,32769]){
   const count=f.sent.length;f.node('#course-package').files=[{size,arrayBuffer:async()=>{throw Error('must not read unbounded file');}}];
   await f.node('#install-course').onclick();assert.equal(f.sent.length,count);
