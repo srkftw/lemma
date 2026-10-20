@@ -664,12 +664,12 @@
       "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
       "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
     },
-    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1\u21922. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
     "connectedUpgrade": {
       "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
       "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
     },
-    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "connectedObservation": "Normal owned stop/restart generation5\u21926, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
     "retainedPreparationFailures": [
       {
         "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
@@ -766,7 +766,7 @@
         "path": "tests/school/test_delivery.py",
         "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
       },
-      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2\u21923."
     },
     "browserTests": {
       "result": "PASS",
@@ -786,7 +786,7 @@
       "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
       "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
     },
-    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "connectedScope": "All29 prior records unchanged, generation6\u21927/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
     "retainedObserverFailures": [
       {
         "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
@@ -1279,7 +1279,7 @@
       "sha256": "c4a73274c4c15b1d8c3cff13c164ffa90ac323a79d6aa66813002551e603efb0"
     },
     "status": "PASS_ORIGINAL_GUEST_ENVELOPE_REPLAY_AFTER_GENERATION_CHANGE",
-    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13→14. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
+    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13\u219214. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
   },
   "ordinary_live_model_release_cycle": {
     "result": {
@@ -1466,5 +1466,22 @@
       },
       "scope": "Real acknowledged state restored into explicit clock domain and normal generation20; actual RV64 job99 commits suggestion100, which changes ordinary current-work help and is accepted725/rendered through the real guest. Three delivery observations remain transport/guest-raster/raw-controller scopes. Actual paper shows UNVERIFIED ASSISTANCE plus authored hint. No new learnerattempt, proofverification, learningeffect, fullIntegrated16, full4099PCM or economyperformance claim. Native campaign retained separate real PCM/acquisition failures, then closed normally before original deadline."
     }
+  },
+  "generation21_normal_restart": {
+    "status": "PASS_LIVE_ORIGINAL_DEADLINE_RETAINED",
+    "ready": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation21/ready.json",
+      "sha256": "e19487689357755f09fb806d185c1fcbe8125b637aa2a47f9401b3153b006041"
+    },
+    "budget": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation21/budget.json",
+      "sha256": "fe8d5893c855f3014fa39470920b1c2b71b4d9f48726b3ffa8d6f60b3b307fd5"
+    },
+    "prior_terminal": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/realclock-terminal.json",
+      "sha256": "4fd83b571f14f3656e7ed1eff808ea0a007eacb616b1ee2c1f69594e6a066661"
+    },
+    "scope": "Generation20 naturally ended at its original2026-10-20T07:09:34.391511Z deadline. A separate prospective7200-second run started generation21 on the same epoch5/restored root, retained all107 acknowledged rows byte-for-byte, retained private principal admissions and rejected an actual stale RV64 worker completion. Original new deadline2026-10-20T09:13:07.292430Z; no deadline extension, new clock-domain restore or concurrent authoritative copy claimed.",
+    "planned_successor": "New protected provenance consumer requires a separately recorded controlled stop/terminal and new generation22. That prepared runner is not an executed restore result."
   }
 }
