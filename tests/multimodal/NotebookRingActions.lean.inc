@@ -33,6 +33,15 @@ def afRingMain : IO Unit := do
   ringCheckNoFault r pumpAudio "idle completion"
   afCheck ((← r.get).receipts.size = receipts) "terminal ring receipt duplicated"
   let r ← IO.mkRef ringInitial
+  ringCheckNoFault r testAudio "advancing observation start"
+  r.modify fun s => {s with ringFetched := 400,ringSubmitted := 900,consumed := 1284,advanceRing := true,calls := #[]}
+  ringCheckNoFault r pumpAudio "advancing independent controller observations"
+  let advanced ← r.get
+  afCheck (advanced.revoked = 0 && afRead advanced audioPage = 2) "valid advancing playback was falsely cancelled"
+  afCheck (((advanced.calls.filter (fun x => x.1 == 22)).extract 0 4).map (fun (_,_,selector,_) => selector) == #[4,3,2,1]) "frontiers were not observed in causal order"
+  afCheck (afRead advanced (audioPage+32) = 388 && afRead advanced (audioPage+16) = 408 &&
+    afRead advanced (audioPage+3584+8) = 412) "separate observations were normalized into a simultaneous snapshot"
+  let r ← IO.mkRef ringInitial
   ringCheckNoFault r testAudio "mute start"
   r.modify fun s => {s with ringFetched := 1024,ringSubmitted := 1400,consumed := 1400,ringHeld := 258,calls := #[]}
   ringCheckNoFault r (control 1) "explicit local mute"
@@ -49,7 +58,7 @@ def afRingMain : IO Unit := do
   r.modify fun s => {s with ticks := 500001000}
   ringCheckNoFault r pumpAudio "expiry stop"
   afCheck ((← r.get).revoked = 1 && afRead (← r.get) audioPage = 0) "expired ring continued"
-  IO.println "NOTEBOOK_RING_ACTIONS_PASS4099/arbitrary-S16/prefill/refill/wrap/odd-EOF/backpressure/consumed/mute/supersession/expiry"
+  IO.println "NOTEBOOK_RING_ACTIONS_PASS4099/arbitrary-S16/prefill/refill/wrap/odd-EOF/backpressure/causal-observations/consumed/mute/supersession/expiry"
 end Lemma.User.Multimodal
 
 def main : IO Unit := do

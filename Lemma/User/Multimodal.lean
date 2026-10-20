@@ -108,10 +108,13 @@ def statusOwnedPCM (selector epoch : UInt64) : Action := invoke 22 8 selector ep
 
 private def observeRing : Action :=
   .bind (audioGet 8) fun s epoch => if mmFailed s = true then .done s 0 else
-  .bind (statusOwnedPCM 1 epoch) fun s accepted => if mmFailed s = true then .done s 0 else
-  .bind (statusOwnedPCM 2 epoch) fun s fetched => if mmFailed s = true then .done s 0 else
-  .bind (statusOwnedPCM 3 epoch) fun s submitted => if mmFailed s = true then .done s 0 else
+  -- These are separate advancing controller observations. Read the downstream
+  -- frontier first: earlier consumed <= later submitted <= later fetched <=
+  -- later accepted. The opposite read order falsely rejects valid playback.
   .bind (statusOwnedPCM 4 epoch) fun s consumed => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 3 epoch) fun s submitted => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 2 epoch) fun s fetched => if mmFailed s = true then .done s 0 else
+  .bind (statusOwnedPCM 1 epoch) fun s accepted => if mmFailed s = true then .done s 0 else
   .bind (statusOwnedPCM 5 epoch) fun s gaps => if mmFailed s = true then .done s 0 else
   .bind (statusOwnedPCM 6 epoch) fun s held => if mmFailed s = true then .done s 0 else
   .bind (statusOwnedPCM 0 epoch) fun s mode => if mmFailed s = true then .done s 0 else

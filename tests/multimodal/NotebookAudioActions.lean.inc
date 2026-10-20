@@ -19,6 +19,7 @@ structure AudioFixture where
   ringEOF : Bool := false
   ringGaps : UInt64 := 0
   ringHeld : UInt64 := 0
+  advanceRing : Bool := false
   deriving Inhabited
 private def afRead (s : AudioFixture) (address : UInt64) : UInt64 := s.words.getD address 0
 private def afPut (s : AudioFixture) (address value : UInt64) : AudioFixture :=
@@ -114,9 +115,15 @@ partial def afExecute (r : IO.Ref AudioFixture) (action : Action) : IO (UInt8 ×
           r.modify fun s => {s with ringEOF := true}
           afExecute r (next 0 e)
         else if c = 22 then
-          afExecute r (next 0 (if e = 0 then s.ringMode else if e = 1 then s.ringAccepted else
-            if e = 2 then s.ringFetched else if e = 3 then s.ringSubmitted else if e = 4 then s.consumed else
-            if e = 5 then s.ringGaps else if e = 6 then s.ringHeld else if e = 7 then 0 else
+          -- A legal controller continues fetching/submitting/consuming between
+          -- service calls. Each instantaneous state obeys its own inequalities;
+          -- the caller must not assume these individually read values are atomic.
+          if s.advanceRing then
+            r.modify fun s => {s with ringFetched := s.ringFetched+4,ringSubmitted := s.ringSubmitted+4,consumed := s.consumed+4}
+          let sampled ← r.get
+          afExecute r (next 0 (if e = 0 then sampled.ringMode else if e = 1 then sampled.ringAccepted else
+            if e = 2 then sampled.ringFetched else if e = 3 then sampled.ringSubmitted else if e = 4 then sampled.consumed else
+            if e = 5 then sampled.ringGaps else if e = 6 then sampled.ringHeld else if e = 7 then 0 else
             if e = 8 then 17 else if e = 9 then 2048 else 0))
         else throw <| IO.userError s!"unexpected audio service operation {c}"
       else throw <| IO.userError s!"unexpected syscall {a}"
