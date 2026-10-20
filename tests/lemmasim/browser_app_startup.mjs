@@ -58,6 +58,13 @@ async function appFixture(gpu){
  f.worker.onmessage({data:{type:'error',error:'Different launch failure'}});
  assert.equal(f.node('#status').textContent,'Different launch failure');
 }
+{
+ const f=await appFixture(undefined);f.node('#resume-seconds').value='600';
+ f.actions.find(n=>n.dataset.action==='resume').onclick();
+ assert.equal(f.sent.at(-1).action,'resume');assert.equal(f.sent.at(-1).hostSeconds,'600');
+ f.node('#resume-seconds').value='';f.actions.find(n=>n.dataset.action==='resume').onclick();
+ assert.equal(f.sent.at(-1).hostSeconds,null);
+}
 // Hidden-page notification cancels real queued sink sources in the actual app.
 // Browser DOM/AudioContext fixtures verify host behavior only, not audibility.
 {

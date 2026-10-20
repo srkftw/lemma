@@ -2,7 +2,7 @@
 import createMachine from './machine.mjs';
 import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,NotebookFaultObserver} from './guest_records.js';
 import {courseInstallFrame,courseInstallRows,courseSchoolFrames} from './course_transport.js';
-import {RunBudget,uint64} from './run_budget.js';
+import {RunBudget,uint64,resumeBudget,hostSecondsLimit} from './run_budget.js';
 import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission,guestSchoolCapability,guestSchoolQueueState} from './school_transport.js';
 const notebookFault=new NotebookFaultObserver();
 const school=new SchoolTransport();let schoolMachineEpoch=0;
@@ -253,7 +253,7 @@ async function schoolActivity(message){
 onmessage=async({data:m})=>{
  // Admission is outside the mutation/error-pause path. A denied control must
  // not cancel scheduled clocks, touch backing storage or alter live state.
- let nextMode;try{nextMode=admission(m);}catch(e){postMessage({type:'error',error:String(e)});return;}
+ let nextMode;try{nextMode=admission(m);if(m.action==='resume')hostSecondsLimit(m.hostSeconds);}catch(e){postMessage({type:'error',error:String(e)});return;}
  if(m.action==='school'){schoolActivity(m).catch(e=>postMessage({type:'school',operation:m.operation,error:String(e)}));return;}
  if(busy){postMessage({type:'error',error:'A storage or restore operation is pending'});return;}
  busy=true;try{
@@ -268,7 +268,7 @@ onmessage=async({data:m})=>{
  }
  if(!loaded)throw Error('Open a machine first');
  if(m.action==='pause'){pause('user');sendState();}
- else if(m.action==='resume'){if(!backingReady)throw Error('Private origin backing is incomplete; retry binding before continuing');budget=null;pauseReason=null;running=true;scheduleStep();}
+ else if(m.action==='resume'){if(!backingReady)throw Error('Private origin backing is incomplete; retry binding before continuing');const observed=state();const next=resumeBudget(observed.cycle,m.hostSeconds);budget=next;pauseReason=null;running=true;sendState();scheduleStep();}
  else if(m.action==='run'){if(!backingReady)throw Error('Private origin backing is incomplete; retry binding before continuing');
   if(m.stopOnPanel!==undefined&&typeof m.stopOnPanel!=='boolean')throw Error('Panel stop must be a boolean');
   const initial=state(),next=new RunBudget(initial.cycle,m.cycles,m.stopOnReady??false,m.hostSeconds??null,performance.now(),m.stopOnPanel?initial.panel_completed:null);pause(null);budget=next;running=true;sendState();scheduleStep();}

@@ -64,7 +64,8 @@ function download(name,bytes){const u=URL.createObjectURL(new Blob([bytes])),a=d
 document.querySelector('#open').onclick=()=>{beginSelection();send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,paused:document.querySelector('#open-paused').checked});};
 document.querySelector('#initialize').onclick=()=>{beginSelection();send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,initialize:true,paused:document.querySelector('#open-paused').checked});};
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{
- if(b.dataset.action==='close'){beginSelection();cancelContact();cancelPower();}send(b.dataset.action);});
+ if(b.dataset.action==='close'){beginSelection();cancelContact();cancelPower();}
+ send(b.dataset.action,b.dataset.action==='resume'?{hostSeconds:document.querySelector('#resume-seconds').value||null}:{});});
 document.querySelector('#run-bounded').onclick=()=>send('run',{cycles:document.querySelector('#run-cycles').value,stopOnReady:document.querySelector('#stop-ready').checked,stopOnPanel:document.querySelector('#stop-panel').checked,hostSeconds:document.querySelector('#run-seconds').value||null});
 document.querySelector('#admit-raw').onclick=()=>send('raw',{row:document.querySelector('#raw-event').value});
 document.querySelector('#admit-batch').onclick=()=>send('raw-batch',{rows:document.querySelector('#raw-batch').value});

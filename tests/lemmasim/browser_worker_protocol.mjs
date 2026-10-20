@@ -56,6 +56,23 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  await send('open',{name:'test',initialize,paused,mode});if(!paused)await send('pause');
  return {send,tick,drain,state,exports,messages,timers,calls,events,mediumCalls,mediumNames,setStorageFault:x=>{storageFault=x;},cycle:()=>current,advanceWall:n=>{now+=n;},setUART:x=>{uart=x;},setPaper:x=>{paper=x;}};
 }
+// Student Resume can bound host resource use without admitting raw/run actions.
+// Expiry pauses before executing another actual quantum; malformed replacement
+// limits leave an already admitted budget and machine untouched.
+{
+ const f=await fixture({cycle:0n,paused:true,mode:'student'});
+ await f.send('resume',{hostSeconds:'1'});assert.equal(f.state().running,true);
+ assert.equal(f.state().budget.hostSecondsLimit,1);
+ const budget=JSON.stringify(f.state().budget),timers=[...f.timers.keys()];
+ for(const bad of ['0','7201','1.5',600]){
+  await f.send('resume',{hostSeconds:bad});assert.equal(f.messages.at(-1).type,'error');
+  assert.equal(JSON.stringify(f.state().budget),budget);assert.deepEqual([...f.timers.keys()],timers);
+ }
+ f.advanceWall(1001);await f.drain();assert.equal(f.cycle(),0n);
+ assert.equal(f.state().pauseReason,'host-limit');assert.equal(f.state().running,false);
+ await f.send('raw',{row:'now button 1'});assert.equal(f.messages.at(-1).type,'error');
+ await f.send('run',{cycles:'1'});assert.equal(f.messages.at(-1).type,'error');
+}
 // Controller export reads actual worker plane bytes only, including every
 // Gray4 level and a clock above2^53. It never advances or writes the machine.
 for(const mode of ['student','developer','laboratory']){

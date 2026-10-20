@@ -6,7 +6,7 @@ import {admitUart} from './uart_arrivals.mjs';
 import {attachOpfsFile} from './opfs_backing.mjs';
 import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,NotebookFaultObserver} from './guest_records.js';
 import {courseInstallFrame,courseSchoolFrames} from './course_transport.js';
-import {RunBudget,uint64} from './run_budget.js';
+import {RunBudget,uint64,resumeBudget,hostSecondsLimit} from './run_budget.js';
 import {PcmEgress} from './pcm_egress.mjs';
 import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission,guestSchoolCapability,guestSchoolQueueState} from './school_transport.js';
 const notebookFault=new NotebookFaultObserver();
@@ -155,6 +155,7 @@ onmessage=({data:m})=>{
  // Capability-mode rejection precedes scheduling, backing or machine mutation.
  const opening=m?.action==='open'||m?.action==='import',chosen=opening?(m.mode??'student'):mode;
  if(!m||typeof m.action!=='string'||!['student','developer','laboratory'].includes(chosen)||(!opening&&m.mode!==undefined)||(!ordinary.has(m.action)&&!(chosen!=='student'&&developer.has(m.action)))){postMessage({type:'error',error:'Unsupported action or session capability'});return;}
+ if(m.action==='resume')try{hostSecondsLimit(m.hostSeconds);}catch(e){postMessage({type:'error',error:String(e)});return;}
  m={...m,hostArrivalMs:performance.now()};
  if(m.action==='school'){schoolActivity(m).catch(e=>postMessage({type:'school',operation:m.operation,error:String(e)}));return;}
  // Input/control can interrupt a running quantum through real QMP stop. It
@@ -168,7 +169,7 @@ onmessage=({data:m})=>{
   if(m.action==='import'){if(loaded)throw Error('Close the machine first');if(!(m.bytes instanceof ArrayBuffer))throw Error('Import requires opaque ArrayBuffer bytes');const bytes=new Uint8Array(m.bytes);if(bytes.length!==268435456)throw Error('Expected a256MiB raw medium');const expected=await sha(bytes),file=await openMedium(m.name,true);let zeroBytes=0,copiedBytes=0;try{for(let i=0;i<bytes.length;i+=1048576){const chunk=bytes.subarray(i,i+1048576);if(chunk.some(value=>value!==0)){if(file.write(chunk,{at:i})!==chunk.length)throw Error('Partial import');copiedBytes+=chunk.length;}else zeroBytes+=chunk.length;}file.flush();const observed=new Uint8Array(bytes.length);for(let i=0;i<observed.length;i+=1048576)if(file.read(observed.subarray(i,i+1048576),{at:i})!==1048576)throw Error('Partial import readback');if(await sha(observed)!==expected)throw Error('Opaque import readback differs');}finally{file.close();}postMessage({type:'imported',sha256:expected,copiedBytes,zeroBytes,fullReadback:true});postMessage({type:'runtime-closed'});return;}
   if(!loaded){if(m.action==='close'){postMessage({type:'runtime-closed'});return;}throw Error('Machine is not open');}
   if(m.action==='pause'){pause('user');await stopped();await sendState();}
-  else if(m.action==='resume'){budget=null;running=true;pauseReason=null;schedule();}
+  else if(m.action==='resume'){const state=await inspect();const next=resumeBudget(state.cycle,m.hostSeconds,performance.now(),922337203685477580n);budget=next;running=true;pauseReason=null;await sendState(state);schedule();}
   else if(m.action==='run'){if(m.stopOnPanel!==undefined&&typeof m.stopOnPanel!=='boolean')throw Error('Panel stop must be Boolean');await stopped();const state=await inspect();const next=new RunBudget(state.cycle,m.cycles,m.stopOnReady??false,m.hostSeconds??null,performance.now(),m.stopOnPanel?state.panel_completed:null);if(next.limit>922337203685477580n)throw Error('Run exceeds signed virtual-nanosecond clock');budget=next;running=true;pauseReason=null;await sendState(state);schedule();}
   else if(m.action==='pen'||m.action==='button'){if(capture.length>=1000000)throw Error('Raw capture bound exhausted');await input(m);schedule();}
   else if(m.action==='raw'||m.action==='raw-batch'){await stopped();const rows=m.action==='raw'?[m.row]:typeof m.rows==='string'&&m.rows.length<=65536?m.rows.split(/\r?\n/).filter(r=>r.trim()):[];if(rows.length<1||rows.length>1024||capture.length+rows.length>1000000)throw Error('Raw batch bounds');let accepted=0;try{for(const row of rows){await raw(row);accepted++;}}finally{postMessage({type:'raw-admission',accepted,total:rows.length,error:accepted===rows.length?null:'Remainder rejected; accepted prefix retained'});}await sendState();schedule();}
