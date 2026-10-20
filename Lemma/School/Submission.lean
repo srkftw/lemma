@@ -4,6 +4,7 @@ import Lemma.School.Review
 import Lemma.School.Digest
 import Lemma.Courses.PackageWorkspace
 import Lemma.Documents.Ink
+import Lemma.Services.Arithmetic.ProtocolV9
 
 /-! Decoder for the exact immutable bytes exported by an ordinary guest.
 The read-only interpreter executes the maintained document/workspace validators;
@@ -138,6 +139,43 @@ structure RemoteExposure where
   authority : String
   deriving BEq, Repr, FromJson, ToJson
 
+/-- An advisory local calculation is distinct from checker evidence and remote
+assistance. Every row, including an interrupted prepared request, is retained. -/
+structure LocalToolExposure where
+  documentRevision : Nat
+  postRevision : Nat
+  goal : Nat
+  scope : Nat
+  outcome : Nat
+  requestSequence : Nat
+  serviceIdentity : Nat
+  source : Nat
+  edition : Nat
+  node : Nat
+  packageCRC : Nat
+  workObject : Nat
+  beforeNumerator : Nat
+  beforeDenominator : Nat
+  afterNumerator : Nat
+  afterDenominator : Nat
+  session : Nat
+  policy : Nat
+  deriving BEq, Repr, FromJson, ToJson
+
+structure ParsedEvents where
+  ordinary : Array (Array Nat) := #[]
+  remote : Array RemoteExposure := #[]
+  localTools : Array LocalToolExposure := #[]
+  deriving Repr
+
+private def preparedTool (event : LocalToolExposure) : LocalToolExposure :=
+  {event with
+    scope := 1
+    outcome := 0
+    postRevision := 0
+    afterNumerator := 0
+    afterDenominator := 0}
+
 private def authorityHex (words : Array Nat) : String := hex <| Id.run do
   let mut bytes := ByteArray.empty
   for value in words do
@@ -146,20 +184,21 @@ private def authorityHex (words : Array Nat) : String := hex <| Id.run do
 
 /-- Payload rows are never interpreted as local hints or learner events.
 The original raw rows remain in the envelope. -/
-def parseEvents (format : Nat) (rows : Array (Array Nat)) :
-    Except String (Array (Array Nat) × Array RemoteExposure) := do
-  require (format == 1 || format == 2) "unsupported document event format"
+def parseDocumentEvents (format : Nat) (rows : Array (Array Nat)) :
+    Except String ParsedEvents := do
+  require (format == 1 || format == 2 || format == 3) "unsupported document event format"
   require (rows.size <= 64 && rows.all (fun row => row.size == 2 &&
     row.all (· <= 0xffffffffffffffff))) "document event rows exceed bounded word format"
   let mut ordinary := #[]
   let mut remote : Array RemoteExposure := #[]
+  let mut localTools : Array LocalToolExposure := #[]
   let mut skip := 0
   for i in [:rows.size] do
     if skip > 0 then skip := skip-1 else
       let row := rows[i]!
       let tag := row[1]!
       if tag % 256 == 7 then
-        require (format == 2 && i+3 < rows.size && (tag >>> 24) % 256 == 4)
+        require (format >= 2 && i+3 < rows.size && (tag >>> 24) % 256 == 4)
           "remote event requires four complete format2 rows"
         let scope := (tag >>> 16) % 256
         let authority := authorityHex #[rows[i+2]![0]!,rows[i+2]![1]!,rows[i+3]![0]!,rows[i+3]![1]!]
@@ -180,10 +219,67 @@ def parseEvents (format : Nat) (rows : Array (Array Nat)) :
           prior.scope == event.scope))) "duplicate remote event identity"
         remote := remote.push event
         skip := 3
+      else if tag % 256 == 8 then
+        require (format == 3 && i+7 < rows.size && (tag >>> 24) % 256 == 8)
+          "local tool event requires eight complete format3 rows"
+        let event : LocalToolExposure := {
+          documentRevision := row[0]!, postRevision := rows[i+1]![0]!,
+          goal := (tag >>> 8) % 256, scope := (tag >>> 16) % 256,
+          outcome := tag >>> 32, requestSequence := rows[i+1]![1]!,
+          serviceIdentity := rows[i+2]![0]!, source := rows[i+2]![1]!,
+          edition := rows[i+3]![0]!, node := rows[i+3]![1]!,
+          packageCRC := rows[i+4]![0]!, workObject := rows[i+4]![1]!,
+          beforeNumerator := rows[i+5]![0]!, beforeDenominator := rows[i+5]![1]!,
+          afterNumerator := rows[i+6]![0]!, afterDenominator := rows[i+6]![1]!,
+          session := rows[i+7]![0]!, policy := rows[i+7]![1]! }
+        let knownSource := if event.source == 0 then
+            event.edition == 0 && event.node == 0 && event.packageCRC == 0 else
+            event.source <= 65535 && event.source != 60000 && event.source != 60001 &&
+            event.edition > 0 && event.edition <= 0xffffffff && event.node > 0 &&
+            event.node <= 16 && event.packageCRC <= 0xffffffff
+        require (event.documentRevision > 0 && event.documentRevision <= 0x7ffffffffffffffe &&
+          event.goal == 1 && event.requestSequence > 0 && event.requestSequence <= 0x7ffffffffffffffe &&
+          event.serviceIdentity == Lemma.Services.Arithmetic.ProtocolV9.serviceIdentity.toNat &&
+          knownSource && event.workObject > 0x504b000000000000 && event.workObject <= 0x504b000000000040 &&
+          event.beforeNumerator <= 99 && event.beforeDenominator > 0 && event.beforeDenominator <= 99 &&
+          event.session <= 0x7ffffffffffffffe && event.policy <= 0x7ffffffffffffffe &&
+          ((event.session == 0) == (event.policy == 0))) "local tool context outside admitted format"
+        if event.scope == 1 then
+          require (event.outcome == 0 && event.postRevision == 0 &&
+            event.afterNumerator == 0 && event.afterDenominator == 0)
+            "prepared local tool contains a terminal result"
+          require (!(localTools.any (fun prior => prior.requestSequence == event.requestSequence)))
+            "duplicate local tool request identity"
+        else
+          require (localTools.any (fun prior => prior == preparedTool event))
+            "local tool terminal lacks its exact prepared event"
+          require (!(localTools.any (fun prior => prior.requestSequence == event.requestSequence && prior.scope != 1)))
+            "conflicting local tool terminal"
+          if event.scope == 2 then
+            let same := event.afterNumerator == event.beforeNumerator &&
+              event.afterDenominator == event.beforeDenominator
+            require (event.documentRevision < 0x7ffffffffffffffe &&
+              event.postRevision == event.documentRevision+1 &&
+              event.afterNumerator <= 99 && event.afterDenominator > 0 && event.afterDenominator <= 99 &&
+              event.outcome == (if same then 2 else 1)) "applied local tool revision/result differs"
+          else
+            require (event.scope == 3 && event.outcome >= 3 && event.outcome <= 5 &&
+              event.postRevision == 0 && event.afterNumerator == 0 && event.afterDenominator == 0)
+              "unsupported local tool terminal outcome"
+        localTools := localTools.push event
+        skip := 7
       else
         require (tag % 256 > 0 && tag % 256 <= 6) "unsupported learner event kind"
         ordinary := ordinary.push row
-  return (ordinary,remote)
+  return {ordinary,remote,localTools}
+
+/-- The legacy pair-returning API cannot silently drop a format3 calculation.
+New admission consumes parseDocumentEvents and all three provenance classes. -/
+def parseEvents (format : Nat) (rows : Array (Array Nat)) :
+    Except String (Array (Array Nat) × Array RemoteExposure) := do
+  require (format == 1 || format == 2) "use parseDocumentEvents for local tool event format3"
+  let parsed ← parseDocumentEvents format rows
+  return (parsed.ordinary, parsed.remote)
 
 /-- Validate bounded headers and the complete Doc8, including exact typed
 results and their original Known/Unknown execution identities. Opaque work is
@@ -292,7 +388,9 @@ def decode (bytes : ByteArray) : Except String Envelope  :=  do
   let mut events : Array (Array Nat)  :=  #[]
   for i in [:eventCount.toNat] do events  :=  events.push #[(← w (document+832+i*16)).toNat,(← w (document+840+i*16)).toNat]
   let eventFormat := (← w (document+208)).toNat
-  let _ ← parseEvents eventFormat events
+  let parsed ← parseDocumentEvents eventFormat events
+  require (parsed.localTools.all (fun event => event.documentRevision <= revision.toNat &&
+    event.postRevision <= revision.toNat)) "local tool refers to a future document revision"
   return {
     wireVersion := wireVersion.toNat
     queueObject := queue.toNat
@@ -411,6 +509,38 @@ def remoteAssistance (state : Lemma.School.State) (actor : String) (envelope : E
           ("presentation",toJson presentation)])
   return (exposed,uncertain,decisions,observations)
 
+/-- Classification consumes the complete immutable event history. A later
+cancellation cannot erase an applied result; a prepared request is uncertain
+only until its exact no-apply/applied terminal is present. Unknown offline
+source context remains conservative on the same document and goal. -/
+def localToolAssistance (events : Array LocalToolExposure)
+    (page revision course edition node crc policy goal : Nat) : Bool × Bool × Array Json := Id.run do
+  let mut exposed := false
+  let mut uncertain := false
+  let mut observations : Array Json := #[]
+  for event in events do
+    let known := event.source != 0
+    let contextMatches := known && event.source == course && event.edition == edition &&
+      event.node == node && event.packageCRC == crc && (event.policy == 0 || event.policy == policy)
+    let applies := event.workObject == (PackageWorkspace.object page.toUInt64).toNat &&
+      event.documentRevision <= revision && event.postRevision <= revision &&
+      (known || event.goal == goal) && (!known || contextMatches)
+    let terminal := events.find? (fun later => later.scope != 1 && preparedTool later == preparedTool event)
+    let unresolved := event.scope == 1 && terminal.isNone
+    let delivered := event.scope == 2
+    let potential := unresolved || delivered
+    exposed := exposed || (applies && potential)
+    uncertain := uncertain || (applies && potential && (unresolved || !known))
+    let presentation := if delivered then "local advisory calculation applied; checker invalidated; no proof claim"
+      else if unresolved then "prepared local calculation; application uncertain after interruption"
+      else if event.scope == 1 then "prepared local calculation has an exact terminal observation"
+      else "local calculation terminated without application"
+    observations := observations.push (Lemma.School.object [("event",toJson event),
+      ("appliesToCurrentWork",toJson applies),("contextMatched",toJson contextMatches),
+      ("sourceKnown",toJson known),("unresolvedPrepared",toJson unresolved),
+      ("deliveredLocalCalculation",toJson delivered),("presentation",toJson presentation)])
+  return (exposed,uncertain,observations)
+
 
 /-- A durable queue object names one immutable work artifact under its original
 joined binding. An exact retry returns its original commit even after a session
@@ -466,16 +596,20 @@ def admit (state : Lemma.School.State) (actor : String) (envelope : Envelope)
         input.revision == binding.revision && input.policy == binding.policy &&
         input.generation == binding.generation && input.ask == ask
     | .error _ => false)
-  let (ordinaryEvents,remoteEvents) ← parseEvents envelope.eventFormat envelope.events
+  let parsed ← parseDocumentEvents envelope.eventFormat envelope.events
+  let ordinaryEvents := parsed.ordinary
   let (remoteExposure,remoteUncertain,historicalDecisions,remoteObservations) :=
-    remoteAssistance state actor envelope remoteEvents
+    remoteAssistance state actor envelope parsed.remote
+  let (toolExposure,toolUncertain,toolObservations) := localToolAssistance parsed.localTools
+    envelope.page envelope.documentRevision envelope.course envelope.edition envelope.node
+    envelope.packageCRC envelope.policy envelope.goal
   let decisions := historicalDecisions.foldl (fun rows row =>
     if rows.any (fun old => old.sequence == row.sequence) then rows else rows.push row) currentDecisions
   let delivery := state.records.filter (fun row => row.kind == "delivery" &&
     decisions.any (fun decision => Lemma.School.optionalStr row.data "decision" == decision.key))
   let currentHint := ordinaryEvents.any (fun event => event[0]! == envelope.documentRevision && event[1]! % 256 == 2)
   let unknownHint := ordinaryEvents.any (fun event => event[1]! % 256 == 6)
-  let assisted := !decisions.isEmpty || currentHint || unknownHint || remoteExposure
+  let assisted := !decisions.isEmpty || currentHint || unknownHint || remoteExposure || toolExposure
   require (!(activity.assessment.independent && assisted)) "guest independent assessment contains assistance exposure"
   let reviewId := Lemma.School.optionalStr invitation.data "reviewId"
   let request := Lemma.School.object [("id",toJson id),("course",toJson envelope.course),
@@ -493,6 +627,9 @@ def admit (state : Lemma.School.State) (actor : String) (envelope : Envelope)
     ("localHintExposure",toJson currentHint),("legacyHintExposureUnknown",toJson unknownHint),
     ("remoteAssistance",toJson remoteObservations),("remoteCurrentWorkExposure",toJson remoteExposure),
     ("remotePresentationUncertain",toJson remoteUncertain),
+    ("localToolObservations",toJson toolObservations),("localToolCurrentWorkExposure",toJson toolExposure),
+    ("localToolApplicationUncertain",toJson toolUncertain),
+    ("localToolScope",toJson "local advisory calculation; distinct from remote assistance and checked correctness"),
     ("assistanceScope",toJson "conservative exposure flag; decision and transport acknowledgement alone do not establish visible presentation"),
     ("estimate",toJson "uncertain; no educational-effect claim")]
   let refs := publication.artifacts.push digest

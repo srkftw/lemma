@@ -30,7 +30,7 @@ if [[ ${1:-} == training ]]; then
   exec nix develop --no-write-lock-file --command lake env lean --run examples/school/Train.lean "$@"
 fi
 if [[ $# -lt 2 ]]; then
-  echo 'usage: lemma-school develop build/publish/check/target-build [options] | train/evaluate [options] | ROOT REQUEST_JSON | ROOT run | ROOT start/status/stop/backup/restore/fork --school ID --actor ID [options]' >&2
+  echo 'usage: lemma-school develop build/publish/check/target-build/service-build [options] | train/evaluate [options] | ROOT REQUEST_JSON | ROOT run | ROOT start/status/stop/backup/restore/fork --school ID --actor ID [options]' >&2
   exit 2
 fi
 nix develop --no-write-lock-file --command lake build school >&2

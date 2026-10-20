@@ -8,6 +8,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
+import os
+import time
 import re
 from pathlib import Path
 import shutil
@@ -25,8 +28,8 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def invoke(command, records, timeout=180):
-    result=run_bounded([str(x) for x in command],cwd=ROOT,timeout_seconds=timeout)
+def invoke(command, records, timeout=180, env=None):
+    result=run_bounded([str(x) for x in command],cwd=ROOT,timeout_seconds=timeout,env=env)
     records.append(dict(argv=[str(x) for x in command],returncode=result.returncode,
                         elapsedSeconds=result.elapsed_seconds,
                         stdout=result.stdout.decode(errors='replace'),stderr=result.stderr.decode(errors='replace')))
@@ -124,6 +127,97 @@ def training(args):
     sys.stdout.buffer.write(data)
 
 
+
+def service_build(args):
+    """Build the selected closed service and its real notebook consumer together.
+
+    The existing deployment/exporter remains the capability authority. This
+    command cannot add a service, grant, runtime loader or foreign target code.
+    """
+    from build_kernel import source_inputs
+    import school_deployment
+    select=getattr(school_deployment,'configuration_for',None)
+    if select is None:
+        raise Core0Error('this source has no versioned School service deployment authority; select an admitted source edition')
+    configurations={role:select(args.notebook_version,name) for role,name in
+                    [('notebook','notebook'),('initializer','initialize')]}
+    if not math.isfinite(args.timeout) or not 0 < args.timeout <= 7200:
+        raise Core0Error('service build requires a finite whole deadline in (0,7200] seconds')
+    output=args.output_dir.absolute()
+    try:relative=output.relative_to(ROOT/'build/school')
+    except ValueError:raise Core0Error('service build output must be a new build/school subdirectory')
+    if (not relative.parts or '..' in relative.parts or output.exists() or
+            any(path.is_symlink() for path in (output,*output.parents))):
+        raise Core0Error('unused non-symlinked service build output required; older builds are never replaced')
+    if not args.sample_course.is_file():raise Core0Error('select an existing genuinely compiled account-free sample package')
+    # Keep the caller's outer Nix resource guard. Only the child compiler's Nix
+    # identity resolves the exact immutable executable consumed by producers.
+    locked=json.loads((ROOT/'tooling/toolchain-lock.json').read_text())
+    nix=Path(locked['tools']['host_environment']['nix']['executable'])
+    if not nix.is_file() or not str(nix).startswith('/nix/store/') or not os.access(nix,os.X_OK):
+        raise Core0Error('locked immutable Nix is unavailable; no service build started')
+    child_env=dict(os.environ);child_env['PATH']=str(nix.parent)+os.pathsep+child_env.get('PATH','')
+    token=hashlib.sha256(str(output).encode()).hexdigest()[:12]
+    builds={role:ROOT/'build/kernel'/('school-sdk-'+token+'-'+role) for role in configurations}
+    if any(path.exists() for path in builds.values()):
+        raise Core0Error('service build owns existing target output; choose a new output version')
+    def preflight():
+        available=next(int(line.split()[1])*1024 for line in Path('/proc/meminfo').read_text().splitlines()
+                       if line.startswith('MemAvailable:'))
+        free=shutil.disk_usage(ROOT).free
+        if available < 8*1024**3 or free < 8*1024**3:
+            raise Core0Error('service build requires8GiB available memory and8GiB free storage before each phase')
+        return dict(availableBytes=available,freeBytes=free)
+    resources=preflight();output.mkdir(parents=True)
+    before=source_inputs(ROOT);source=retain_source(ROOT,output,before);commands=[]
+    report=dict(schema='lemma-school-service-build/1',result='FAIL',notebookVersion=args.notebook_version,
+                configurations=configurations,sourceInputs=before,sourceRoot=str(source),
+                targetBuilds={role:str(path) for role,path in builds.items()},commands=commands,
+                scope='genuine closed service/notebook build, audit and local software bundle selection; no runtime code in course packages or authenticated ROM installation claim',
+                limits=dict(wholeSeconds=args.timeout,commandSeconds=900,compilerActionSeconds=300,
+                            minimumAvailableBytes=8*1024**3,minimumFreeBytes=8*1024**3),
+                preflight=resources,entryInputs={name:digest(ROOT/name) for name in
+                    ['scripts/school_develop.py','scripts/lemma-school','scripts/school_deployment.py']},
+                childNix=str(nix),execution='not executed by building; use the actual ordinary Student native/browser paths')
+    began=time.monotonic()
+    def phase(argv):
+        preflight();left=args.timeout-(time.monotonic()-began)
+        if left<=0:raise Core0Error('original service build whole deadline reached')
+        if source_inputs(ROOT)!=before:raise Core0Error('consumed target source changed; preserve this failed build and restart from a frozen edition')
+        return invoke(argv,commands,timeout=min(900,left),env=child_env)
+    try:
+        for role,configuration in configurations.items():
+            phase([sys.executable,ROOT/'scripts/build_kernel.py','--configuration',configuration,
+                   '--stage','supervisor','--opt-level',args.opt_level,'--output-dir',builds[role],'--timeout','300'])
+            phase([sys.executable,ROOT/'scripts/audit_kernel.py',builds[role],'--source-root',source])
+            if json.loads((builds[role]/'audit.json').read_text()).get('status')!='PASS':
+                raise Core0Error('actual target source/LLVM/object/ISA/capability audit failed; no bundle produced')
+        version=['--school-notebook-version',str(args.notebook_version)]
+        for role,workload in [('notebook','school-notebook'),('initializer','school-initializer')]:
+            phase([sys.executable,ROOT/'scripts/lemmasim','build','--backend','qemu','--profile','lemma-silicon-dev/0.14.0',
+                   '--controller-binding','mm2-subset','--workload',workload,'--guest-build',builds[role],
+                   '--guest-source-root',source,*version])
+        phase([sys.executable,ROOT/'scripts/lemmasim','native-bundle-build','--school-deployment',
+               '--controller-binding','mm2-subset','--profile','lemma-silicon-dev/0.14.0',*version,
+               '--notebook-build',builds['notebook'],'--initializer-build',builds['initializer'],
+               '--guest-source-root',source,'--sample-course',args.sample_course.resolve(),'--output-dir',output/'native'])
+        report['native']=dict(path=str(output/'native'),manifestSHA256=digest(output/'native/bundle.json'))
+        if args.wasm_build is not None:
+            phase([sys.executable,ROOT/'scripts/lemmasim','browser-build','--engine','qemu-tci','--workbook','school',
+                   '--profile','lemma-silicon-dev/0.14.0',*version,'--reuse-wasm','--wasm-build',args.wasm_build.resolve(),
+                   '--guest-bundle',output/'native','--sample-course',args.sample_course.resolve(),'--output-dir',output/'browser'])
+            report['browser']=dict(path=str(output/'browser'),manifestSHA256=digest(output/'browser/bundle.json'))
+        if source_inputs(ROOT)!=before:
+            raise Core0Error('consumed target source changed before the service build completed; retained artifacts are from the recorded original edition')
+        if time.monotonic()-began > args.timeout:
+            raise Core0Error('original service build whole deadline reached during final admission')
+        report.update(result='PASS',incremental='unchanged admitted actions and runtime objects may be reused; producer receipts retain their original fresh/reused identities')
+    finally:
+        report['elapsedSeconds']=time.monotonic()-began
+        (output/'service-build.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(json.dumps({key:report[key] for key in ['result','notebookVersion','native',*(['browser'] if 'browser' in report else [])]}))
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
@@ -142,6 +236,13 @@ def main():
     target.add_argument('--export-source',type=Path,default=Path('examples/core0/Build.lean'))
     target.add_argument('--output-dir',type=Path,required=True);target.add_argument('--opt-level',choices=['O0','O2'],default='O2')
     target.add_argument('--timeout',type=float,default=180)
+    service=sub.add_parser('service-build',help='build/audit an admitted closed School service plus its real notebook consumer and select local native/browser software bundles')
+    service.add_argument('--notebook-version',type=int,choices=[23,24],default=24)
+    service.add_argument('--output-dir',type=Path,required=True)
+    service.add_argument('--sample-course',type=Path,required=True)
+    service.add_argument('--wasm-build',type=Path,help='optional existing admitted TCI runtime; no Wasm/compiler rebuild')
+    service.add_argument('--opt-level',choices=['O0','O2'],default='O2')
+    service.add_argument('--timeout',type=float,default=3600,help='original whole build/audit/package deadline, seconds')
     for name in ['train','evaluate']:
         item=sub.add_parser(name,help='run the real bounded Lean numerical training/evaluation implementation')
         item.add_argument('--dataset',type=Path,required=True);item.add_argument('--checkpoint',type=Path,required=True)
@@ -150,7 +251,8 @@ def main():
         if name=='train':item.add_argument('--steps',type=int,required=True)
     args=parser.parse_args()
     try:
-        if args.command=='build':author_build(args)
+        if args.command=='service-build':service_build(args)
+        elif args.command=='build':author_build(args)
         elif args.command=='publish':publish(args)
         elif args.command in {'train','evaluate'}:training(args)
         elif args.command=='check':

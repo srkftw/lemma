@@ -130,6 +130,10 @@ def execute (state : State) (actor : String) (request : Json) (now : Nat) : Exce
       ("assistanceScope",toJson (if linked.isOk then "exact immutable guest-work attribution" else
         "legacy activity history; not exact work attribution")),
       ("activityAssistanceHistory",toJson activityDecisions),
+      ("localToolObservations",(field attempt.data "localToolObservations").toOption.getD (toJson (#[] : Array Json))),
+      ("localToolCurrentWorkExposure",toJson (flag attempt.data "localToolCurrentWorkExposure")),
+      ("localToolApplicationUncertain",toJson (flag attempt.data "localToolApplicationUncertain")),
+      ("localToolScope",toJson "original local advisory calculation observations; no proof or remote tutor claim"),
       ("assessments",toJson (state.records.filter (fun r => r.kind == "human-assessment" && r.key == id)))])
   | "human-assess" =>
     let id ← str request "attempt"

@@ -43,7 +43,7 @@ private def ok (memory : IO.Ref ByteArray) (action : Action) : IO UInt64 := do
   return value
 
 private def build (package context : ByteArray) (kind node : Nat)
-    (remote : ByteArray := ByteArray.empty) (edit : Bool := false) : IO ByteArray := do
+    (remote : ByteArray := ByteArray.empty) (edit : Bool := false) (localTool : Bool := false) : IO ByteArray := do
   if context.size != 104 then throw (IO.userError "fixture context must be104bytes")
   let memory ← IO.mkRef (ByteArray.mk (Array.replicate 131072 0))
   let doc : UInt64 := 0x10000
@@ -54,15 +54,22 @@ private def build (package context : ByteArray) (kind node : Nat)
   let scratch : UInt64 := 0x1f000
   memory.modify fun bytes => (List.range package.size).foldl (fun bytes i => bytes.set! (source.toNat+i) package[i]!) bytes
   let _ ← ok memory (MathematicsClosure.create doc 1 1)
-  for (offset,value) in #[(48,2),(120,2),(56,0),(64,1),(72,1),(80,2),(88,1)] do
+  let fields : Array (Nat × UInt64) := if localTool then #[(48,1),(120,1),(56,10),(64,12),(72,0),(80,0),(88,0)]
+    else #[(48,2),(120,2),(56,0),(64,1),(72,1),(80,2),(88,1)]
+  for (offset,value) in fields do
     memory.modify fun bytes => setWord bytes (doc.toNat+offset) value
-  let _ ← ok memory (MathematicsClosure.completeExecution doc 1 2 1 11 8)
-  if remote.size % 64 != 0 || remote.size > 128 then
+  let _ ← ok memory (MathematicsClosure.completeExecution doc 1 (if localTool then 1 else 2) 1 11 8)
+  let width := if localTool then 128 else 64
+  if remote.size % width != 0 || remote.size > width*2 then
     throw (IO.userError "fixture remote groups must be complete and bounded")
-  for group in [:remote.size / 64] do
-    memory.modify fun bytes => (List.range 64).foldl (fun bytes i =>
-      bytes.set! (scratch.toNat+i) remote[group*64+i]!) bytes
-    let _ ← ok memory (Mathematics.appendRemote doc scratch)
+  for group in [:remote.size / width] do
+    memory.modify fun bytes => (List.range width).foldl (fun bytes i =>
+      bytes.set! (scratch.toNat+i) remote[group*width+i]!) bytes
+    let descriptor ← readWord (← memory.get) (scratch.toNat+8)
+    let _ ← ok memory (if localTool then
+      if (descriptor >>> 16) &&& 255 == 2 then
+        Mathematics.applyLocalTool doc scratch else LocalToolEvents.append doc scratch
+      else Mathematics.appendRemote doc scratch)
     pure ()
   if edit then
     let _ ← ok memory (Mathematics.edit doc 80 1)
@@ -98,6 +105,13 @@ private def build (package context : ByteArray) (kind node : Nat)
 
 def main (args : List String) : IO UInt32 := do
   match args with
+  | [package,context,output,kind,node,events,"local-tool"] =>
+    let bytes ← build (← IO.FS.readBinFile package) (← IO.FS.readBinFile context)
+      (kind.toNat?.getD 1) (node.toNat?.getD 4) (← IO.FS.readBinFile events) false true
+    let decoded ← IO.ofExcept (Lemma.School.Submission.decode bytes)
+    IO.FS.writeBinFile output bytes
+    IO.println (toJson decoded).compress
+    return 0
   | [package,context,output,kind,node,remote,edit] =>
     let bytes ← build (← IO.FS.readBinFile package) (← IO.FS.readBinFile context)
       (kind.toNat?.getD 2) (node.toNat?.getD 4) (← IO.FS.readBinFile remote) (edit == "edit")
