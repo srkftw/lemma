@@ -74,7 +74,15 @@ class ArithmeticCatalog(unittest.TestCase):
         'lemmasim-silicon-school-initialize',
         'lemmasim-silicon-integrated-notebook',
         'lemmasim-silicon-integrated-school-notebook',
-        'lemmasim-silicon-integrated-pcm-school-notebook'})
+        'lemmasim-silicon-integrated-pcm-school-notebook',
+        'lemmasim-silicon-school24-notebook',
+        'lemmasim-silicon-school24-initialize',
+        'lemmasim-silicon-integrated-school24-notebook',
+        'lemmasim-silicon-integrated-pcm-school24-notebook',
+        'lemmasim-silicon-school25-notebook',
+        'lemmasim-silicon-school25-initialize',
+        'lemmasim-silicon-integrated-school25-notebook',
+        'lemmasim-silicon-integrated-pcm-school25-notebook'})
         for config,(server,profile,kernel) in expected.items():
             with self.subTest(configuration=config):
                 rows=image_specs(config)
