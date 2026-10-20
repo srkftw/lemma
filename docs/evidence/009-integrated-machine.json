@@ -2807,6 +2807,42 @@
         "remaining_exact_start_owned": [],
         "scope": "Normalcurrentstrictobserverat exactoriginalconstructionpath, sameactualretainedIR/objects/image andarchivedproducer. NoLean/targetcompilation ornewguest/fullCIacceptance. Earlier2preflightFAILs unchanged."
       }
+    },
+    "ordinary_CI_initializer_context": {
+      "status": "PASS_RETAINED_ACTUAL_INITIALIZER_O2_STRICT_AUDIT",
+      "cause": "Actual initializer User image has the same Notebook.main/image2/v0.1 root, function catalog and byte-identical complete pre/post IR as the same CI ordinary Notebook image. Only the configuration field differs. Existing two pure shared scratch scalars and complete Save body are admitted for exactly lemmasim-initialize as well as lemmasim-notebook. No controller action or new root is admitted.",
+      "literal_IR": {
+        "pre": "334d365fd9341ff00b3bb47416ceab3dd90fb1016c74db7f67e5f95508e224aa",
+        "post": "ea53a9160b971c9337fd7b4d9d5e67b24e07865300f133b76f8e60ff6474b4ca"
+      },
+      "body_and_negative_assessment": {
+        "path": "build/task009/ci-initialize-scratch-a1/result.json",
+        "sha256": "a35136fbc02de1ca64e181996edf66c2d2d13dc0b4f555deb065790b3d2f4d3b",
+        "tests": 10,
+        "scope": "Captured actual definitions/context and meaningful metadata/scalar/Save refusal tests. Broader26 target-authority and13 glyph/Save cases pass separately."
+      },
+      "strict_audit_closed": {
+        "path": "build/task009/ci-initialize-scratch-audit-a2/closed-assessment.json",
+        "sha256": "57d8234641e06a9f20e00aaccb0044df337746248a486ea932c59fc058bf1307",
+        "seconds": 80.04062393098138,
+        "peak_combined_owned_RSS_bytes": 293167104,
+        "minimum_observed_available_bytes": 13924925440,
+        "unchanged_original_files": 731,
+        "source_commit": "79a844d0f388d1487949abd46d3c8f16eb4675d6",
+        "remaining_exact_start_owned": []
+      },
+      "fresh_CI_ordinary_notebook": {
+        "run": 39495367648,
+        "source_commit": "79a844d0f388d1487949abd46d3c8f16eb4675d6",
+        "status": "PASS",
+        "scope": "Fresh ordinary Notebook strict audit passes in the retained failed CI run; initializer failure remains original."
+      },
+      "resource_admission": "Original14GiB read-only refusal is retained with commands=[], no Popen/deadline. Distinct13GiB prospective admission retains300s/1GiB RSS/8GiB continuing reserve.",
+      "exclusions": [
+        "No target or runtime recompilation",
+        "No new guest execution",
+        "No full fresh CI acceptance; other failing lanes remain separate"
+      ]
     }
   },
   "current23_24_post25_fast": {

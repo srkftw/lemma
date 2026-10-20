@@ -4760,7 +4760,7 @@ def _ordinary_notebook_save_resume(optimized_body: str, unit: dict,
     call, privilege, memory, object or phase5 default checks.
     """
     from surface_bulk_borrow import canonical, normalized_body
-    if (unit.get('configuration') != 'lemmasim-notebook' or unit.get('role') != 'user'
+    if (unit.get('configuration') not in ('lemmasim-notebook','lemmasim-initialize') or unit.get('role') != 'user'
             or unit.get('image_key') != 'notebook' or unit.get('image_id') != 2
             or unit.get('contract_version') != 'core0-user-v0.1'
             or unit.get('used_device_ops') != []

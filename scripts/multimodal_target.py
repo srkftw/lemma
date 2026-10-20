@@ -759,12 +759,13 @@ def ordinary_notebook_scratch_scalars(ir, unit, rows, *, optimized):
     """Shared ordinary Notebook scratch addresses grant no controller action.
 
     The historical main also uses the common deferred-save scratch window.
+    Its initializer configuration contains the identical genuine User image.
     Admit only its two genuine pure address expressions; the ordinary complete
     source, privilege, memory and object audits still apply independently.
     """
     from audit_core0 import _ir_definition_body
     prefix='Lemma.User.Multimodal.'
-    require(unit.get('configuration')=='lemmasim-notebook' and unit.get('role')=='user' and
+    require(unit.get('configuration') in ('lemmasim-notebook','lemmasim-initialize') and unit.get('role')=='user' and
             unit.get('image_key')=='notebook' and unit.get('image_id')==2 and
             unit.get('contract_version')=='core0-user-v0.1' and unit.get('used_device_ops')==[] and
             [(canonical(r.get('source','')),r.get('id'),r.get('args')) for r in unit.get('roots',[])]==

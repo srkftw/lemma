@@ -113,6 +113,38 @@ class OrdinaryNotebookScratchTests(unittest.TestCase):
         folded=ir[:ir.index('define i64 @state')]+('define noundef i64 @state() {\nentry:\n ret i64 3409920\n}\n')
         self.assertIsNone(target.validate(folded,unit,optimized=True))
         with self.assertRaises(Core0Error):target.validate(folded,unit,optimized=False)
+
+    def test_actual_initializer_has_the_same_closed_scalar_images(self):
+        fixture=json.loads((Path(__file__).parent/'ordinary-initializer-scratch.json').read_text())
+        unit=fixture['unit']
+        self.assertEqual(unit['configuration'],'lemmasim-initialize')
+        for optimized,phase in [(False,'pre'),(True,'post')]:
+            ir=fixture[phase+'_ir']
+            self.assertIsNone(target.validate(ir,unit,optimized=optimized))
+            for key,value in [('configuration','lemmasim-isolation-development'),
+                              ('role','kernel'),('image_key','store'),('image_id',1),
+                              ('contract_version','core0-user-v0.2'),
+                              ('used_device_ops',[{'stable_id':'device.read64'}])]:
+                changed=copy.deepcopy(unit);changed[key]=value
+                with self.subTest(phase=phase,key=key),self.assertRaises(Core0Error):
+                    target.validate(ir,changed,optimized=optimized)
+            for key,value in [('source','Lemma.Applications.Notebook.initializeMedium'),
+                              ('id',2),('args',[])]:
+                changed=copy.deepcopy(unit);changed['roots'][0][key]=value
+                with self.subTest(phase=phase,root=key),self.assertRaises(Core0Error):
+                    target.validate(ir,changed,optimized=optimized)
+            for key,value in [('args',['u64']),('effects',['user-syscall'])]:
+                changed=copy.deepcopy(unit);changed['functions'][0][key]=value
+                with self.assertRaises(Core0Error):target.validate(ir,changed,optimized=optimized)
+            for before,after in [('3407872','3407873'),
+                                 (('3409920','3409912') if optimized else ('2048','2040'))]:
+                self.assertIn(before,ir)
+                with self.assertRaises(Core0Error):
+                    target.validate(ir.replace(before,after),unit,optimized=optimized)
+            changed=copy.deepcopy(unit)
+            changed['functions'].append({'source':'Lemma.User.Multimodal.testAudio',
+                                         'symbol':'foreign','args':[],'effects':[]})
+            with self.assertRaises(Core0Error):target.validate(ir,changed,optimized=optimized)
     def test_context_catalog_scalar_body_and_hardware_escalation_reject(self):
         unit,ir=self.fixture()
         for key,value in [('configuration','unknown'),('image_key','store'),('image_id',3),

@@ -333,6 +333,16 @@ class AuthoredSavePhaseJump(unittest.TestCase):
         # A separately supplied body cannot borrow the full module's good pin.
         with self.assertRaises(Core0Error):self.resume_default(data,body.replace('i64 216','i64 217'))
 
+    def test_initializer_same_main_preserves_full_resume_body(self):
+        data,_=self.actual_resume()
+        data['unit']['configuration']='lemmasim-initialize'
+        result=self.resume_default(data)
+        self.assertEqual(result['wait_split_phases'],[0,5,8])
+        self.assertEqual(result['ordinary_shared_resume_body_sha256'],
+                         data['provenance']['normalized_body_sha256'])
+        data['unit']['roots'][0]['source']='Lemma.Applications.Notebook.initializeMedium'
+        with self.assertRaises(Core0Error):self.resume_default(data)
+
     def test_actual_resume_context_does_not_grant_another_root_or_profile(self):
         data,_=self.actual_resume()
         mutations=[lambda u:u.update(configuration='lemmasim-other'),
