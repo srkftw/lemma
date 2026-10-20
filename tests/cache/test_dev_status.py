@@ -223,6 +223,118 @@ class StatusTests(unittest.TestCase):
         self.write("scripts/verification_routes.json", config)
         self.assertEqual(status.collect(self.root, changed=[])["aggregate"]["counts"]["pending"], 1)
 
+    def derived_build(self, *, extra_output=False):
+        """Two real host byte transformations with role-scoped action receipts."""
+        from action_cache import ActionCache
+        for name in ("build_actions.py", "audit_kernel.py", "build_admission.py",
+                     "core0_common.py", "action_worker.py", "build_dependencies.py"):
+            self.write("scripts/" + name, "fixture-" + name)
+        source = self.write("source.lean", "fixture source bytes")
+        directory = self.root / "build/derived"
+        role = directory / "users/notebook"
+        role.mkdir(parents=True)
+        cache = ActionCache(self.root, self.root / "cache")
+        action = {"schema": "lemma-build-actions/1",
+                  "recipe_sha256": status.digest(self.root / "scripts/build_actions.py"),
+                  "execution_helpers": {name: status.digest(self.root / "scripts" / name) for name in
+                                        ("core0_common.py", "action_worker.py", "build_dependencies.py")},
+                  "host_python": {"path": sys.executable, "sha256": status.digest(Path(sys.executable))},
+                  "tools": {"python": {"path": sys.executable, "sha256": status.digest(Path(sys.executable))}}}
+        validator = {"schema": "lemma-build-actions/1",
+                     "audit_kernel_sha256": status.digest(self.root / "scripts/audit_kernel.py"),
+                     "build_admission_sha256": status.digest(self.root / "scripts/build_admission.py")}
+        receipts = []
+        for kind, input_name, input_path, output_name in (
+                ("fixture-export", "source.lean", source, "program.ll"),
+                ("opt", "program.ll", role / "program.ll", "program.opt.ll")):
+            outputs = {output_name: role / output_name}
+            if kind == "opt" and extra_output:
+                outputs["opt.meta"] = role / "opt.meta"
+            def produce(work, input_name=input_name, output_name=output_name):
+                argv = [sys.executable, "-c",
+                        "from pathlib import Path; import sys; "
+                        "Path(sys.argv[2]).write_bytes(Path(sys.argv[1]).read_bytes().upper()); "
+                        "[Path(p).write_bytes(b'fixture metadata') for p in sys.argv[3:]]",
+                        str(work.inputs[input_name]), str(work.outputs[output_name]),
+                        *(str(path) for name, path in work.outputs.items() if name != output_name)]
+                result = subprocess.run(argv, check=True)
+                return {"commands": [{"argv": argv, "returncode": result.returncode}]}
+            receipt = cache.run({**action, "kind": kind}, {input_name: input_path}, outputs, produce,
+                                provenance={"commit": "original-fixture"}, validator=validator)
+            receipt.update(materialized={name: str(path.relative_to(directory)) for name, path in outputs.items()},
+                           requested_argv=["fixture-byte-transformation", input_name, output_name])
+            receipts.append(receipt)
+        def journal(rows):
+            commands = []
+            for index, receipt in enumerate(rows):
+                relative = f"action-receipts/{index:04}.json"
+                path = directory / relative
+                path.parent.mkdir(exist_ok=True)
+                path.write_text(json.dumps(receipt))
+                commands.append({"route": "lemma-build-actions/1", "admission": relative,
+                                 "admission_sha256": status.digest(path)})
+            (directory / "commands.json").write_text(json.dumps(commands))
+            (directory / "actions.json").write_text(json.dumps({"schema": "lemma-build-actions/1",
+                "counts": {"fresh": len(rows)}, "actions": [
+                    {"status": "fresh", "action_key": row["action_key"]} for row in rows]}))
+        journal(receipts)
+        return directory, receipts, journal
+
+    def test_role_generated_input_is_bound_and_root_decoy_cannot_shadow_it(self):
+        directory, _, _ = self.derived_build()
+        self.write("program.ll", "unrelated checkout file")
+        row = status.assess_build(self.root, directory)
+        self.assertEqual(row["disposition"], "reused", row)
+        self.assertIn("pending", row["functional_result"])
+        (directory / "users/notebook/program.ll").write_text("tampered actual role input")
+        row = status.assess_build(self.root, directory)
+        self.assertEqual(row["disposition"], "pending", row)
+        self.assertIn("production input changed: program.ll", row["reasons"])
+
+    def test_generated_input_without_earlier_admitted_output_rejects(self):
+        directory, receipts, journal = self.derived_build()
+        journal(receipts[1:])
+        row = status.assess_build(self.root, directory)
+        self.assertEqual(row["disposition"], "pending", row)
+        self.assertTrue(any("unbound generated production input" in reason for reason in row["reasons"]))
+
+    def test_cross_role_same_bytes_cannot_substitute_for_generated_input(self):
+        directory, receipts, journal = self.derived_build()
+        other = directory / "users/arithmetic"
+        other.mkdir()
+        for name in ("program.ll", "program.opt.ll"):
+            (other / name).write_bytes((directory / "users/notebook" / name).read_bytes())
+        receipts[1]["materialized"]["program.opt.ll"] = "users/arithmetic/program.opt.ll"
+        journal(receipts)
+        row = status.assess_build(self.root, directory)
+        self.assertEqual(row["disposition"], "pending", row)
+        self.assertTrue(any("unbound generated production input" in reason for reason in row["reasons"]))
+
+    def test_ambiguous_generated_input_output_scopes_reject(self):
+        directory, receipts, journal = self.derived_build(extra_output=True)
+        self.assertEqual(status.assess_build(self.root, directory)["disposition"], "reused")
+        other = directory / "users/arithmetic"
+        other.mkdir()
+        (other / "opt.meta").write_bytes((directory / "users/notebook/opt.meta").read_bytes())
+        receipts[1]["materialized"]["opt.meta"] = "users/arithmetic/opt.meta"
+        journal(receipts)
+        row = status.assess_build(self.root, directory)
+        self.assertEqual(row["disposition"], "unavailable", row)
+        self.assertIn("ambiguous generated production input scope", row["reasons"][0])
+
+    def test_generated_input_metadata_must_match_earlier_output(self):
+        directory, receipts, journal = self.derived_build()
+        receipt = receipts[1]
+        producer = receipt["producer"]
+        producer["request"]["inputs"]["program.ll"]["size"] += 1
+        key = status.canonical_digest(producer["request"])
+        producer["action_key"] = receipt["action_key"] = key
+        receipt["producer_receipt_id"] = status.canonical_digest(producer)
+        journal(receipts)
+        row = status.assess_build(self.root, directory)
+        self.assertEqual(row["disposition"], "pending", row)
+        self.assertTrue(any("unbound generated production input" in reason for reason in row["reasons"]))
+
     def test_registry_cannot_retag_another_claim_and_external_jobs_need_ownership(self):
         path = self.assessment()
         config = {"claims": {"different": {"kind": "validation"}},
