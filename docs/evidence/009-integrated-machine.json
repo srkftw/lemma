@@ -2703,7 +2703,7 @@
     }
   },
   "school25_actual_production_admission": {
-    "status": "GENUINE_PAIR_AND_SOURCE_BODY_ADMISSION_PASS_SDK_AND_EXECUTION_PENDING",
+    "status": "SEALED_MAINTAINED_SDK_PASS_ORDINARY_EXECUTION_PENDING",
     "scope": "Explicit School25 software mode3 only. Exact Fast0.14 MM2 subset; full0.16 union and actual ordinary throughput/School consumption remain separate. New School24/25 continuation remains failclosed.",
     "source": {
       "count": 558,
@@ -2756,11 +2756,38 @@
     },
     "old_authority_values_unchanged": true,
     "remaining": [
-      "maintained normalSDK build/audit/native/browser",
       "actual ordinary25capture/S1/Save/School consumers",
       "current23/24 body admission after shared source changes",
       "full0.16 sameguest production and canonical execution",
       "School24/25 pending localtool/S1 continuation cuts"
-    ]
+    ],
+    "normal_SDK_seal": {
+      "path": "build/task009/school25-sdk-runner-a1/sealed-assessment.json",
+      "sha256": "f40b5c864b9f84f593ee7f0eb4c0f576e3dd88d8f40705726250552be9d9e672"
+    },
+    "normal_SDK_scope": {
+      "service_seconds": 294.0457565779798,
+      "monitor_seconds": 298.5352830418851,
+      "strict_audit_seconds": {
+        "notebook": 134.18211461603642,
+        "initializer": 120.65396759286523
+      },
+      "peak_combined_owned_RSS_bytes": 687124480,
+      "literal_target_equalities": 52,
+      "fresh_target_actions": 0,
+      "reused_target_actions_per_role": 39,
+      "incremental_preparations_per_role": 2,
+      "native": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/school/task009-school25-sdk-a1/native",
+        "manifestSHA256": "bb7b4b5e27a000b1b8cf891362253223cf9912ff981d8a88bcd819a8d9532ae8"
+      },
+      "browser": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/school/task009-school25-sdk-a1/browser",
+        "manifestSHA256": "19c7f51553b259c610a98fc6b114955541f8b75eb2b7e7635744e0ff0d8c2add"
+      },
+      "source_inventory_sha256": "7c654bbe03e9386be1c400575945f2fb0cd51953b2790c3d944172607c247eaa",
+      "runtime": "unchanged actual p81QEMU+derivation and publicstopTCIWasm; no runtime compiler action",
+      "checkpoint": "regularMM2 only;24/25 pendingtool/stream cuts unqualified"
+    }
   }
 }
