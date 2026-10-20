@@ -80,6 +80,8 @@ class RouteEnclosureTests(unittest.TestCase):
             completed_power_grid_route_from=None, completed_fresh_grid_route_from=None,
             defer_global_eco=False, center_validation_cones=False, group_button_bus=False)
         require_padded_hold_recipe(SimpleNamespace(**valid))
+        require_padded_hold_recipe(SimpleNamespace(**{**valid, 'selected_implementation': True}),
+                                   selected_binding=True)
         for key in ('selected_implementation', 'acceptance_launch_buffer',
                     'preserve_routed_netlist', 'fresh_core_power_grid',
                     'vss_clock_grid_source', 'protect_sram_power_edges',

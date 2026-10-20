@@ -79,10 +79,11 @@ def require_launch_recipe(args, *, selected_binding=False):
                 'one-buffer launch requires only the exact completed powered46 route and unchanged existing PG geometry')
 
 
-def require_padded_hold_recipe(args):
+def require_padded_hold_recipe(args, *, selected_binding=False):
     if args.padded_sram_input_delay_from:
         require(args.routed_eco_from and args.detail_route_iterations == 8 and
-                not any((args.selected_implementation, args.acceptance_launch_buffer,
+                (not args.selected_implementation or selected_binding) and
+                not any((args.acceptance_launch_buffer,
                          args.preserve_routed_netlist, args.fresh_core_power_grid,
                          args.vss_clock_grid_source, args.protect_sram_power_edges,
                          args.protect_sram_power_geometry, args.completed_eco_route_from,
@@ -163,9 +164,9 @@ def main():
             require(selected['launch']['flags'] == ['--core-power-grid', '--core-power-grid-reroute'], 'unknown historical selected grid recipe')
             args.core_power_grid, args.preserve_routed_netlist = True, True
         else:
-            require(selected['version'] == 'lemma-pen-sg13g2-launch-grid/1' and
-                    selected['launch']['flags'] == ['--acceptance-launch-buffer', '--detail-route-iterations', '8'],
-                    'unknown selected powered launch recipe')
+            require(selected['version'] in ('lemma-pen-sg13g2-launch-grid/1',
+                                            'lemma-pen-sg13g2-padded-sram-grid/1'),
+                    'unknown selected powered physical recipe')
             predecessor = selected['launch']['predecessor']
             prior = ROOT / predecessor['path']
             require(sha(prior / 'result.json') == predecessor['receipt_sha256'] and
@@ -173,13 +174,28 @@ def main():
             require(args.routed_eco_from is None or args.routed_eco_from.resolve() == prior.resolve(),
                     'selected launch uses its exact declared completed powered predecessor')
             args.routed_eco_from = prior
-            args.acceptance_launch_buffer, args.core_power_grid = True, True
+            args.core_power_grid = True
             args.detail_route_iterations = 8
             entry = selected['launch']['source']
             require(sha(ROOT / entry['path']) == entry['sha256'], 'selected launch source differs')
             entry = selected['launch']['Liberty']
             require(sha(args.pdk.resolve() / entry['path']) == entry['sha256'], 'selected original PDK Liberty differs')
-            require_launch_recipe(args, selected_binding=True)
+            if selected['version'] == 'lemma-pen-sg13g2-launch-grid/1':
+                require(selected['launch']['flags'] == ['--acceptance-launch-buffer', '--detail-route-iterations', '8'],
+                        'unknown selected launch flags')
+                args.acceptance_launch_buffer = True
+                require_launch_recipe(args, selected_binding=True)
+            else:
+                prepared = selected['launch']['prepared_geometry']
+                geometry = ROOT / prepared['path']
+                require(selected['launch']['flags'] == ['--padded-sram-input-delay-from',
+                        str(geometry.parent.relative_to(ROOT)), '--detail-route-iterations', '8'] and
+                        sha(geometry) == prepared['sha256'], 'selected completed padded geometry differs')
+                require(args.padded_sram_input_delay_from is None or
+                        args.padded_sram_input_delay_from.resolve() == geometry.parent,
+                        'selected padded source differs')
+                args.padded_sram_input_delay_from = geometry.parent
+                require_padded_hold_recipe(args, selected_binding=True)
         for entry in (selected['rtl'], selected['power_grid']['source'], selected['power_grid']['connectivity_check']):
             require(sha(ROOT / entry['path']) == entry['sha256'], 'selected physical source differs: ' + entry['path'])
         require(not args.completed_eco_route_from and not args.completed_power_grid_route_from, 'selected implementation launches new geometry; retained observer assessments keep original source identities')

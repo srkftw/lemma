@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T06:24:49.691242+00:00",
+  "written_at": "2026-10-20T06:48:08.367479+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -1378,7 +1378,7 @@
     "important_correction": "Public typical and slow SRAM timing libraries exist and are assessed; they are not missing-input blockers."
   },
   "source_boundaries": {
-    "physical_execution": "Current engineering selection is powered115 (71short/44spacing),17345PGterminals, nominal extracted−13.438092/+0.018284ns/736electrical; maxRChold−.065054ns/all9FAIL. A separate original-placement-padding observer additionally rejects103 adjacent pairs below960nm. Original powered248 and46 each have102 inherited padding violations. No original route,PEX or compiled-runtime receipt is rewritten. Original10ns/full665signal+3PGports/full256x181FIFO remain; canonicalRTL504f unchanged. Exact completed padded33-cell geometry is unselected pending freshroute/3RC/9corners.",
+    "physical_execution": "Selectedunfinished30-marker poweredpen:6short/24spacing, zerooriginal1siteL/Rpaddingviolations,33originalnoninvertingdelaycells on31SRAMinputs and243oldcellmoves. All17,411PGterminals/9SRAMpowerpins/423BIST/668ports/nativePGshapes/OBS/fixedmacros preserved. NominalactualPEX−13.563163setup/−.143290hold/770electrical; all9FAIL. All31targetsholdpositiveacross9 but20newSRAM+136oldcontrol+16otherregister endpoints failhold. FullprocessDRC/transistorLVS/IR/EM andfullnotebookmemoryunfinished. CanonicalRTL504f unchanged; eachruntime keepsitsoriginalsourceidentity.",
     "process": "Original process/GDS/LEF/deck bytes stay immutable. Removing display expansion exposed full DRC; separate300s export and180s direct extraction attempts remain failed. Direct extraction reached real top-cell geometry. Complete process DRC and connected transistor LVS have not completed; no missing nominal process collateral is invented to excuse these tool/engineering failures. Completed146s transistor extraction and300s directDRC/45s Netgen failures bind the preceding170marker geometry; they are not process qualification for the later129marker variant. The selected powered248geometry has actual connected-PG/signal reference export comparison but no completed process DRC or transistor LVS; earlier process results never qualify it. The new powered248 producer now completes actualtransistorextraction87.667s after originalSRAMimportfix; Netgenfails45.114s and total139.925s, allwarningskept. This removes the powered-geometry extraction predecessor but does not establish processDRC/LVS.",
     "logic_comparison": "Private Yosys zero-delay correspondence trials retain async-FF/commutative-cutpoint/timeout failures; they do not establish connected layout-vs-netlist equivalence.",
     "failure_snapshot_retention": "A corrected Tcl observer retains failed OpenDB/DEF and primary error. The retained grid is a source-bound congestion heatmap, not an isolated physical-track overflow: pinned usage includes blockage and both directions. The original stronger interpretation is corrected separately without rewriting producer receipts."
@@ -2169,32 +2169,28 @@
   "selected_implementation": {
     "authority": {
       "path": "tooling/silicon/physical-lock.json",
-      "sha256": "3923f9988c82bce5977977e2f751dff303702bd94aed4013cd5d734f8d077403"
+      "sha256": "d3d8029d36cae1b9b232d0ca902afa01982dab1b08b3182d9957d7dcef82da6b"
     },
-    "version": "lemma-pen-sg13g2-launch-grid/1",
-    "status": "FAIL_PHYSICAL_CLOSURE_AND_ORIGINAL_PLACEMENT_PADDING",
+    "version": "lemma-pen-sg13g2-padded-sram-grid/1",
+    "status": "FAIL_PHYSICAL_CLOSURE",
     "selected_geometry": {
-      "path": "build/silicon/task009-accept-launch-route-a1/result.json",
-      "sha256": "deb6721c83874ba0d79e046d69f48c3c7481968c05671b8f856aa69deec9df8d"
+      "path": "build/silicon/task009-padded-sram-hold-route-a2/result.json",
+      "sha256": "66055d34758565d7e7c1c1803f18fc1361ff5be06c236b3c12b1cd507fc75518"
     },
     "fresh_current_lock_protocol_and_mapping": {
-      "path": "build/silicon/task009-padded-hold-current-map-a1/result.json",
-      "sha256": "ed897f8d17dc01222d807503c51d3e73a3e3e15692f2975936a6ee4365abe86f"
+      "path": "build/silicon/task009-padded-selection-current-map-a1/result.json",
+      "sha256": "db53d3feccd72a05c1de42f6ade64c71819d120f03f7e1be83f0541c15cd9a9e"
     },
-    "mapping_seconds": 6.473219351028092,
+    "mapping_seconds": 7.6922662609722465,
     "mapping_relation": {
-      "path": "build/silicon/task009-launch-selection-admission-a1/result.json",
-      "sha256": "75c7c49e00222c76389347137143c097f28482634ca63cfb495986c7eaf64056"
+      "path": "build/silicon/task009-padded-selection-admission-a1/result.json",
+      "sha256": "3850fe7310ab15eb9ffd0799379b5fdfd8ab8bdb8eb42ecf9fc6b7e43703a006"
     },
-    "source_boundary": "Retained route/corners consume frozen prior69129a lock/source; current selection0.3.0 binds their exact physical relation without relabeling original runtime/guest execution. Fresh current mapping reproduces unchanged504f RTL, tools, collateral and mapped bytes. Native/browser need no recompilation for this physical-only noninverting cell ECO. Qualification-only0.3.1 labels the separately observed103 original-padding violations; old0.16/runtime/route source identities remain exact. Fresh0.3.1 mapping reproduces the same0781e43d bytes; it is not a fresh physical execution.",
-    "prior_selection_authority_0_3_0": {
-      "path": "tooling/silicon/physical-lock.json",
-      "sha256": "3c67533606f95ee0577221c04bc6644ea63ee0da459e96d618d07e7257902d4b"
+    "selected_source_admission": {
+      "path": "build/silicon/task009-padded-selection-admission-a1/selected-source-admission.json",
+      "sha256": "0744ea84e678af52bee5398e14da6d926088bb4bb7c1d7db5f6270401609f053"
     },
-    "prior_current_lock_protocol_and_mapping": {
-      "path": "build/silicon/task009-launch-selection-maintained-map-a1/result.json",
-      "sha256": "9fb9031c741b9d6f13b5d82118ca9b8b7763b10a408cc4c58163da54914f56bc"
-    }
+    "source_boundary": "Original actual route/corner archives keep0.3.1/3923 source. New0.4.0 selects exact final paddedgeometry/33delay relation and retains old115paddingFAIL historically. Native0.15/0.16 258/259inputsourcearchives keep their ownphysical-lock identities; no runtime is relabeled or rebuilt solelyfor thisphysicalmetadata. Freshmapping changesonlylockinput and yieldsbyteidentical0781e43d."
   },
   "full_PG_geometry_candidate": {
     "status": "UNSELECTED_ROUTING_TIMING_ELECTRICAL_FAIL",
@@ -3308,7 +3304,8 @@
       "build/silicon/task009-accept-launch-diagnosis-a1/retained-parser-failure.json",
       "build/silicon/task009-accept-launch-diagnosis-a1/wire-observer-failure.json"
     ],
-    "later_qualification": "FAIL_ORIGINAL_ONE_SITE_LEFT_RIGHT_PADDING:103 actual adjacent pairs below960nm. Existing route and PEX measurements remain scoped observations, not original-placement-constraint acceptance."
+    "later_qualification": "FAIL_ORIGINAL_ONE_SITE_LEFT_RIGHT_PADDING:103 actual adjacent pairs below960nm. Existing route and PEX measurements remain scoped observations, not original-placement-constraint acceptance.",
+    "selection_status": "PREVIOUS_SELECTION_RETAINED_WITH_SEPARATE_ORIGINAL_PADDING_FAIL"
   },
   "original_placement_padding_and_hold_correction": {
     "padding_failure": {
@@ -3400,6 +3397,305 @@
       "path": "build/silicon/task009-padded-hold-baseline-assessment-a1/result.json",
       "sha256": "fedc7fda4ac22834dc1d15ff41230432c8308360b1d006bd4da756584d42ffc5"
     },
-    "first_consumer_failure_scope": "Fresh maintained preparation succeeds; baseline observer incorrectly applied original46 threePGport export adapter to115 logicalexport, already byte-identical. FAIL6.7505s before anyrouting; separate exactlogicalrelation rejects3actualsignalmutants whilefullphysicalPG/port checks remain. Fresha2 usescorrect exactbytes, nooldreceipt rewritten."
+    "first_consumer_failure_scope": "Fresh maintained preparation succeeds; baseline observer incorrectly applied original46 threePGport export adapter to115 logicalexport, already byte-identical. FAIL6.7505s before anyrouting; separate exactlogicalrelation rejects3actualsignalmutants whilefullphysicalPG/port checks remain. Fresha2 usescorrect exactbytes, nooldreceipt rewritten.",
+    "final_fresh_route": {
+      "path": "build/silicon/task009-padded-sram-hold-route-a2/result.json",
+      "sha256": "66055d34758565d7e7c1c1803f18fc1361ff5be06c236b3c12b1cd507fc75518"
+    },
+    "final_decision": "SELECTED_UNFINISHED_PADDING_QUALIFIED30_BASE_ALL9_TIMING_FAIL"
+  },
+  "previous_selected_powered115": {
+    "authority": {
+      "path": "tooling/silicon/physical-lock.json",
+      "sha256": "3923f9988c82bce5977977e2f751dff303702bd94aed4013cd5d734f8d077403"
+    },
+    "version": "lemma-pen-sg13g2-launch-grid/1",
+    "status": "FAIL_PHYSICAL_CLOSURE_AND_ORIGINAL_PLACEMENT_PADDING",
+    "selected_geometry": {
+      "path": "build/silicon/task009-accept-launch-route-a1/result.json",
+      "sha256": "deb6721c83874ba0d79e046d69f48c3c7481968c05671b8f856aa69deec9df8d"
+    },
+    "fresh_current_lock_protocol_and_mapping": {
+      "path": "build/silicon/task009-padded-hold-current-map-a1/result.json",
+      "sha256": "ed897f8d17dc01222d807503c51d3e73a3e3e15692f2975936a6ee4365abe86f"
+    },
+    "mapping_seconds": 6.473219351028092,
+    "mapping_relation": {
+      "path": "build/silicon/task009-launch-selection-admission-a1/result.json",
+      "sha256": "75c7c49e00222c76389347137143c097f28482634ca63cfb495986c7eaf64056"
+    },
+    "source_boundary": "Retained route/corners consume frozen prior69129a lock/source; current selection0.3.0 binds their exact physical relation without relabeling original runtime/guest execution. Fresh current mapping reproduces unchanged504f RTL, tools, collateral and mapped bytes. Native/browser need no recompilation for this physical-only noninverting cell ECO. Qualification-only0.3.1 labels the separately observed103 original-padding violations; old0.16/runtime/route source identities remain exact. Fresh0.3.1 mapping reproduces the same0781e43d bytes; it is not a fresh physical execution.",
+    "prior_selection_authority_0_3_0": {
+      "path": "tooling/silicon/physical-lock.json",
+      "sha256": "3c67533606f95ee0577221c04bc6644ea63ee0da459e96d618d07e7257902d4b"
+    },
+    "prior_current_lock_protocol_and_mapping": {
+      "path": "build/silicon/task009-launch-selection-maintained-map-a1/result.json",
+      "sha256": "9fb9031c741b9d6f13b5d82118ca9b8b7763b10a408cc4c58163da54914f56bc"
+    }
+  },
+  "selected_padded_SRAM_input_ECO": {
+    "scope": "Actualqualifiedoriginalpadding+33inputdelayphysicalbase at unchanged10ns/fullports/full256x181FIFO, notphysicalclosure. Alloldfixedmacros/nativePG/OBS/ports andfunctionaldrivers preserved withdeclaredpositiveoriginalLibchains.",
+    "route": {
+      "path": "build/silicon/task009-padded-sram-hold-route-a2/result.json",
+      "sha256": "66055d34758565d7e7c1c1803f18fc1361ff5be06c236b3c12b1cd507fc75518"
+    },
+    "route_seconds": 748.3550423529232,
+    "source_archive": {
+      "path": "build/silicon/task009-padded-sram-hold-route-a2/source-archive/manifest.json",
+      "sha256": "eb6c009b8c429f0c1b4a73e3a5e890cd94172cb40bfa80f22c1cd34dcbccafa8"
+    },
+    "campaign": {
+      "path": "build/silicon/task009-padded-sram-hold-route-admission-a2/result.json",
+      "sha256": "034e9e7233ad77750980654ffe6a483e226e876e2902fe88b2eac198047cfda6"
+    },
+    "campaign_seconds": 767.9491544739576,
+    "corners": {
+      "path": "build/silicon/task009-padded-sram-hold-corners-a2/result.json",
+      "sha256": "41a35abc042968d37d46283922b90bb724e63ffb2a9ddf772a6ce76e4a58bada"
+    },
+    "corners_seconds": 19.257457927102223,
+    "all9_cases": [
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "min",
+        "setup_ns": -11.16018,
+        "hold_ns": -0.166896,
+        "electrical_violations": 602,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -13.563163,
+        "hold_ns": -0.14329,
+        "electrical_violations": 770,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "typical",
+        "matched_PVT": true,
+        "RC": "max",
+        "setup_ns": -15.682097,
+        "hold_ns": -0.117361,
+        "electrical_violations": 918,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "min",
+        "setup_ns": -24.156607,
+        "hold_ns": -0.204045,
+        "electrical_violations": 1153,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "nom",
+        "setup_ns": -28.530518,
+        "hold_ns": -0.164805,
+        "electrical_violations": 1534,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "slow",
+        "matched_PVT": true,
+        "RC": "max",
+        "setup_ns": -32.423283,
+        "hold_ns": -0.121891,
+        "electrical_violations": 1851,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "min",
+        "setup_ns": -4.191071,
+        "hold_ns": -0.163944,
+        "electrical_violations": 426,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "nom",
+        "setup_ns": -5.574559,
+        "hold_ns": -0.140054,
+        "electrical_violations": 533,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      },
+      {
+        "corner": "fast_mixed_temperature",
+        "matched_PVT": false,
+        "RC": "max",
+        "setup_ns": -6.804926,
+        "hold_ns": -0.11589,
+        "electrical_violations": 627,
+        "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+        "status": "FAIL"
+      }
+    ],
+    "router_markers": {
+      "status": "FAIL",
+      "violations": 30,
+      "scope": "Detailed-router geometric checks; separate from process DRC"
+    },
+    "marker_classification": {
+      "path": "build/silicon/task009-padded-sram-hold-route-a2/marker-classification.json",
+      "sha256": "8a45973f47e38cd01d35b9e091ef716517fe5a34d83ccde33c1dc6187f364d98"
+    },
+    "geometry": {
+      "path": "build/silicon/task009-padded-sram-hold-route-a2/padded-hold-endpoints.json",
+      "sha256": "f702e59ff98ca18e1aaca4abf128d7b8833146f66e3c5cd3e4582332cbe662e6"
+    },
+    "original_padding_bad_pairs": 0,
+    "NAND_buf_gap_nm": 960,
+    "old_cells_moved": 243,
+    "new_original_delaycells": 33,
+    "power": {
+      "before-route": {
+        "status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+        "macro_power_pins": 9,
+        "preserved_BIST_pins": 423,
+        "all_power_terminals": 17411,
+        "voltages_V": {
+          "VDDlogic": 1.2,
+          "VDDARRAY": 1.2,
+          "VSS": 0
+        }
+      },
+      "after-route": {
+        "status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+        "macro_power_pins": 9,
+        "preserved_BIST_pins": 423,
+        "all_power_terminals": 17411,
+        "voltages_V": {
+          "VDDlogic": 1.2,
+          "VDDARRAY": 1.2,
+          "VSS": 0
+        }
+      }
+    },
+    "fixed_generated_via_subset": {
+      "status": "PASS_FIXED_VIA_INTRINSIC_ENCLOSURE",
+      "scope": "Cover the demonstrated router fixed-via enclosure gap on actual DEF routes.\n\nChecks intrinsic fixed-via metal/cut unions against the original process simple\nenclosure rules. Additional same-net wire metal can only increase enclosure.\nGenerated DEF arrays require explicit admission against the original generator\nand every individual cut's enclosure. Unfamiliar clauses fail closed. This is\nan independent sufficient check of this subset, never complete process DRC.\n",
+      "technology_sha256": "fb6f0aa5647efc822ad6551a11b57002a278d7d3f98ac20a12cb9f7a65e81d2d",
+      "routed_def_sha256": "400bb6b590b942b0fdbfa72a3ebace84bfa8a31b9b576b8cac5a8b23f48ed223",
+      "routed_nets": 9373,
+      "via_instances": 69256,
+      "via_counts": {
+        "Via1_YY": 14553,
+        "Via2_YX": 27244,
+        "Via1_XY": 10925,
+        "Via3_XY": 4098,
+        "Via4_YX": 1742,
+        "via5_6_4000_2500_2_4_840_840": 443,
+        "via4_5_2810_2500_5_6_480_480": 1772,
+        "via6_7_4000_4000_2_2_1960_1960": 182,
+        "via5_6_2560_2500_2_2_840_840": 6,
+        "via4_5_2810_1295_3_6_480_480": 64,
+        "via4_5_1200_2500_5_2_480_480": 277,
+        "via3_4_1200_330_1_2_480_480": 2650,
+        "via2_3_1200_330_1_2_480_480": 2650,
+        "via1_2_1200_330_1_2_480_480": 2650
+      },
+      "fixed_definition_rule_checks": 364,
+      "violations": [],
+      "generated_array_definitions": 9,
+      "specialnet_geometry_checked": true,
+      "uncovered": [
+        "cell/macro internal cuts",
+        "wire spacing/width/area",
+        "connectivity",
+        "antenna",
+        "all other process rules"
+      ]
+    },
+    "fresh_RC": {
+      "min": {
+        "status": "EXTRACTED",
+        "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+        "spef_sha256": "443162bd8bd46c4c8b3a1d8abc42890628aa8c9afb931c763252297209682346",
+        "setup": "worst slack max -11.160180",
+        "hold": "worst slack min -0.166896",
+        "electrical_violations": 602
+      },
+      "nom": {
+        "status": "EXTRACTED",
+        "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+        "spef_sha256": "cc61417323f08ad4b362eb11f312f0b93be6d71d840da2b9425b8b4f40d986ee",
+        "setup": "worst slack max -13.563163",
+        "hold": "worst slack min -0.143290",
+        "electrical_violations": 770
+      },
+      "max": {
+        "status": "EXTRACTED",
+        "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+        "spef_sha256": "9f41d98f486d32a2bf920da83a5aa37b9ac785e9e7d82d119082f17ba82003c2",
+        "setup": "worst slack max -15.682097",
+        "hold": "worst slack min -0.117361",
+        "electrical_violations": 918
+      }
+    },
+    "full_new_hold_inventory": {
+      "path": "build/silicon/task009-padded-hold-inventory-a1/result.json",
+      "sha256": "7c609563dc0d3cb3b248d033664707984a8df305a9b4ad38df4222b53234477a"
+    },
+    "hold_inventory_seconds": 22.474539729068056,
+    "hold_effect": {
+      "targeted31_all9_nonnegative": true,
+      "minimum_target_hold_ns": 0.008712,
+      "minimum_target_setup_ns": 7.534358,
+      "target_guardband_0p03_status": "NOT_MET in mixedfastmax despite nonegative targetedendpoints",
+      "unique_other_negative_endpoints": 172,
+      "new_SRAM": 20,
+      "old_control": 136,
+      "other_registers": 16,
+      "matched_new_SRAM": [
+        "lane2DIN31",
+        "lane2DIN32",
+        "lane2DIN35",
+        "lane2DIN39"
+      ],
+      "worst_matched": "slowmin ingress_entry167→hold790→lane2DIN39,arrival2.380345required2.584390slack−.204045ns"
+    },
+    "actual_worst_nominal_setup": {
+      "from": "now_ticks[54]",
+      "to": "next_sequence[17]/D",
+      "arrival_ns": 24.301954,
+      "required_ns": 10.738792,
+      "slack_ns": -13.563163
+    },
+    "actual_worst_slow_max_setup": {
+      "from": "contact_deadline[62]/Q",
+      "to": "next_sequence[17]/D",
+      "arrival_ns": 43.629784,
+      "required_ns": 11.2065,
+      "slack_ns": -32.423283,
+      "A22OI_stage_ns": 6.315491,
+      "NOR3_stage_ns": 6.983634,
+      "NAND3_stage_ns": 5.794153
+    },
+    "comparison": {
+      "path": "build/silicon/task009-padded-sram-hold-route-a2/selection-comparison.json",
+      "sha256": "fb27f98f77d9845f4452b8b685c77ce4b5609fbe4f143f1421af3d9caf3ca98b"
+    },
+    "next_actual_wire_load_diagnosis": {
+      "path": "build/silicon/task009-padded-sram-hold-route-a2/control-load-diagnosis.json",
+      "sha256": "04580b6ea7e225a3b2fd52c8dd1833eb1c4379d6bf8d12205f53be888ff31827"
+    },
+    "decision": "Selectunfinishedpadding-qualified30 asbase:85markersand103paddingpairsremoved/all31oldtargetspositive, withallglobaltiming/electricalregressions retained. No closure,fabrication,safety oreducationalqualification."
   }
 }
