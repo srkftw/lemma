@@ -527,6 +527,10 @@
         "save_seconds": 1800
       },
       "scope": "ActualROMfactoryauthenticatedSchool23image,noELF/DTBpreload; Ready/pen/Save/reset not yet admitted"
+    },
+    "finite_native_observer_limitation": {
+      "assessment": "build/task009/integrated15-cache-observer-assessment-a1/result.json",
+      "scope": "The original_mtime_before_edit label was populated from the maintained source mtime at retention, after a subsequent observer edit. It does not establish prelaunch observer source identity. The original descriptor remains unchanged. The native finite execution did not hash/archive its complete observer source beforelaunch; exact retained source is afterterminal evidence only. Future observer versions now capture their own hash at entry."
     }
   },
   "uart_flow": {
