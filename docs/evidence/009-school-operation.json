@@ -1173,11 +1173,16 @@
       "path": "build/school/task009-connected-a2/ordinary-campaign-budget-a5.json",
       "sha256": "9a083d617f65d6de51159b1eb5ddc0760a7986bd144d693fcd1e6cf7f902e884"
     },
-    "status": "RUNNING_WITH_ORIGINAL_02:55:52_UTC_DEADLINE",
+    "status": "ORIGINAL_DEADLINE_TERMINAL",
     "generation": 12,
     "clockEpoch": 3,
     "initialAcknowledgedRows": 38,
-    "scope": "Same qualified hostedproducer, sameepochprivatepairings, newexecutiongeneration fences earlierbindings/workers. Actual newguestJOIN required."
+    "scope": "Same qualified hosted producer, same-epoch private pairings, independent execution generation. Original02:55:52.124497UTC deadline observed terminal02:55:52.141330UTC, ownedPID195413 gone, all38acknowledgedrecords unchanged. No Studentattempt or newJOIN occurred during this run; successor requires a new prospectivebudget and executiongeneration.",
+    "terminal": {
+      "path": "build/school/task009-connected-a2/generation12-ordinary-terminal.json",
+      "sha256": "e62b970751f5b81ebe40766fad628a38b2b4cedb43757bb8ba5f5297377a5646"
+    },
+    "terminalAcknowledgedRows": 38
   },
   "liveIndependentDefinitionFork": {
     "result": {
