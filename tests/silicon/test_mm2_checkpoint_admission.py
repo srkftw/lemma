@@ -60,9 +60,13 @@ class MM2CheckpointAdmission(unittest.TestCase):
         self.assertTrue(fast.validate_checkpoint_binding(metadata()))
         for change in ({'checkpoint_binding':fast.LOGICAL2_BINDING},{'multimodal_controller_abi':1},
                        {'checkpoint_contract':'other'},{'observation_relation':'other'},
-                       {'checkpoint_admitted':1},{'sources':{'sim/host/lemma_multimodal_v2.c':'source'}}):
+                       {'checkpoint_admitted':1},{'checkpoint_admitted':True},
+                       {'sources':{'sim/host/lemma_multimodal_v2.c':'source'}}):
             with self.subTest(change=change),self.assertRaises(ValueError):
                 fast.validate_checkpoint_binding(metadata()|change)
+        admitted=metadata();admitted['checkpoint_admitted']=True
+        admitted['sources']['scripts/native_logical_relation.py']='current maintained relation'
+        self.assertTrue(fast.validate_checkpoint_binding(admitted))
 
     def test_default_mm2_and_legacy_logical2_metadata_are_unchanged(self):
         data=metadata()

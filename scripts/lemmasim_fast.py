@@ -95,7 +95,8 @@ def validate_execution_binding(data):
         if (data.get('checkpoint_contract')!=MM2_CHECKPOINT_CONTRACT or
                 data.get('observation_relation')!='lemma-native-MM2-logical-observation-relation/3' or
                 type(data.get('checkpoint_admitted')) is not bool or
-                'tooling/lemmasim/patch_soft_tlb2.py' not in data.get('sources',{})):
+                'tooling/lemmasim/patch_soft_tlb2.py' not in data.get('sources',{}) or
+                (data['checkpoint_admitted'] and 'scripts/native_logical_relation.py' not in data.get('sources',{}))):
             raise ValueError('Unsupported MM2 continuation contract/source authority')
     elif any(k in data for k in ('checkpoint_contract','observation_relation','checkpoint_admitted')):
         raise ValueError('Unbound MM2 continuation metadata')
@@ -177,7 +178,7 @@ def sources(name):
     paths += sorted(p for p in (ROOT/'sim/host').glob('*') if p.is_file())
     paths += sorted(p for p in (ROOT/'sim/companion').glob('backing_*') if p.is_file())
     if mm2_selected(name):paths += [ROOT/'tooling/lemmasim'/n for n in ('qemu_mm2_reuse.nix','native_mm2_reuse.py','patch_multimodal_v2.py')];paths.append(ROOT/'docs/contracts/009-multimodal-pcm-ring-v1.html')
-    if mm2_checkpoint_selected(name):paths.append(ROOT/'docs/contracts/009-native-mm2-continuation-v1.html')
+    if mm2_checkpoint_selected(name):paths += [ROOT/'docs/contracts/009-native-mm2-continuation-v1.html',ROOT/'scripts/native_logical_relation.py']
     return {str(p.relative_to(ROOT)): digest(p) for p in paths}
 
 
