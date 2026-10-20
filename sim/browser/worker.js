@@ -25,6 +25,7 @@ function admission(message){
  if(opening&&loaded&&message.mode!==undefined&&message.mode!==sessionMode)
   throw Error('Session mode is fixed until the machine is closed');
  const mode=opening&&!loaded?(message.mode??'student'):sessionMode;
+ if(['snapshot','restore'].includes(message.action)&&typeof manifest?.checkpoint_contract==='string'&&manifest.checkpoint_contract.startsWith('UNSUPPORTED:'))throw Error(manifest.checkpoint_contract);
  if(!['student','developer','laboratory'].includes(mode))throw Error('Unknown browser session mode');
  if(!ordinaryActions.has(message.action)&&!(mode!=='student'&&developerActions.has(message.action)))
   throw Error(developerActions.has(message.action)?'This control requires Developer or Laboratory mode':'Unsupported browser action');

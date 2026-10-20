@@ -21,8 +21,11 @@ let active=null,activeTool=0,activeTransform=null,last={x:0,y:0};
 let context=canvas.getContext('2d'),gpu=null,pipeline=null,device=null;
 const displayScale=document.querySelector('#display-scale');
 const sessionMode=document.querySelector('#session-mode');
+let checkpointRestriction='Checkpoint capability has not been loaded';
 fetch('./bundle.json').then(response=>{if(!response.ok)throw Error('Bundle unavailable');return response.json();}).then(bundle=>{
  document.querySelector('#machine-build').textContent=(bundle.backend??bundle.profile??'Local machine')+(bundle.initialization?' · '+bundle.initialization:'');
+ checkpointRestriction=typeof bundle.checkpoint_contract==='string'&&bundle.checkpoint_contract.startsWith('UNSUPPORTED:')?bundle.checkpoint_contract:null;
+ for(const id of ['#checkpoint-export','#restore']){const control=document.querySelector(id);control.disabled=checkpointRestriction!==null||(id==='#restore'&&bundle.product_boot_contract==='lemma-browser-product-nv/1');control.title=checkpointRestriction??(control.disabled?'Product restore needs independent persistent boot backing':'Finite same-binding checkpoint scope; cold recovery is separate');}
  if(bundle.initialization?.startsWith('copy exact guest-produced'))document.querySelector('#initialize').textContent='Create from guest-produced seed';
  else if(bundle.initialization?.startsWith('requires imported')){document.querySelector('#initialize').disabled=true;document.querySelector('#initialize').title=bundle.initialization;}
 }).catch(error=>{document.querySelector('#machine-build').textContent=String(error);});
@@ -56,6 +59,7 @@ async function initializeGPU(){if(!navigator.gpu)return;
  cancelContact();canvas.replaceWith(next);canvas=next;context=null;device=candidate;pipeline=prepared;gpu=target;bindPointer();if(lastPlane)present(lastPlane);
 }
 function send(action,rest={},transfer=[]){
+ if((action==='snapshot'||action==='restore')&&checkpointRestriction!==null){status.textContent=checkpointRestriction;return;}
  if(action==='open')executionBoundary=null;
  if(action==='close'||action==='reset'||action==='restore')document.querySelector('#school-credential').value='';
  worker.postMessage({action,...rest},transfer);

@@ -8,12 +8,12 @@ import {webcrypto} from 'node:crypto';
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const MAX=18446744073709551615n;
 const record=(kind,sequence=0n)=>`K1 ${kind.toString(16).padStart(16,'0')} ${sequence.toString(16).padStart(16,'0')} 0000000000000001 0000000000000001 0000000000000000\n`;
-async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false,controlContract='lemma-browser-session-modes/2',courseContract=null,imageContract=null,pixelPlane=new Uint8Array([0]),pixelCount=pixelPlane.length}={}){
+async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false,controlContract='lemma-browser-session-modes/2',courseContract=null,imageContract=null,checkpointContract=null,pixelPlane=new Uint8Array([0]),pixelCount=pixelPlane.length}={}){
  let now=0,nextTimer=0,generation=0,finished=false,isolated=false,current=cycle,paper={completed:'0',accepted:'0'},uart=initialUART;
  const files=new Map([['/capture.io',encoder.encode('literal captured outcome bytes')]]),messages=[],timers=new Map(),calls=[],events=[];
  const bytes=encoder.encode('hash-validated fake ELF/descriptor/ROM');
  const digest=Buffer.from(await webcrypto.subtle.digest('SHA-256',bytes)).toString('hex');
- const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',session_control_contract:controlContract,course_install_contract:courseContract,controller_image_contract:imageContract,width:pixelPlane.length,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}}};
+ const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',session_control_contract:controlContract,course_install_contract:courseContract,controller_image_contract:imageContract,checkpoint_contract:checkpointContract,width:pixelPlane.length,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}}};
  const mediumCalls=[];const fault=name=>{mediumCalls.push(name);if(storageFault===name)throw Error('injected '+name+' failure');};
  const medium={read(b){now+=2;return b.length;},write(b){now+=3;return b.length;},flush(){fault('flush');now+=4;},getSize(){fault('getSize');return mediumSize;},close(){mediumCalls.push('close');if(closeFault)throw Error('secondary close failure');},truncate(){fault('truncate');}};
  const mediumNames=new Set(initialize?[]:['test.raw']);
@@ -427,5 +427,17 @@ for(const [storageFault,expected] of [['truncate',['truncate','close']],['flush'
  await partial.send('course-install',{bytes:packageBytes,transaction:'1'});assert(partial.events.length>2);
  await partial.send('restore',{bytes:encoder.encode('17').buffer});const before=partial.events.length;
  await partial.send('course-install',{bytes:packageBytes,transaction:'1'});assert.equal(partial.events.length,before);
+}
+// A known unsupported checkpoint must reject before pause, machine calls,
+// backing mutation or snapshot bookkeeping. Ordinary execution continues.
+{
+ const reason='UNSUPPORTED: no exact TCI continuation relation is admitted';
+ const f=await fixture({checkpointContract:reason,paused:false});
+ await f.send('resume');assert(f.timers.size>0);
+ const before=f.cycle();await f.send('snapshot');
+ assert.match(f.messages.filter(m=>m.type==='error').at(-1).error,/UNSUPPORTED: no exact TCI continuation/);
+ assert.equal(f.cycle(),before);assert(!f.calls.some(c=>c[0]==='lemma_snapshot'));
+ assert(f.timers.size>0,'unsupported export paused the running guest');
+ await f.send('pause');await f.send('export');assert(f.exports().length>0);
 }
 console.log('PASS host worker protocol: exact budgets, cooperative pause, genuine Ready observation, initializer carry, passive snapshots, single-file exports, timing separation, actual UI handlers');

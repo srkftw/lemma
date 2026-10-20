@@ -7,7 +7,7 @@ import vm from 'node:vm';
 const source=await fs.readFile('sim/browser/app.js','utf8');
 const deferred=()=>{let resolve,reject;const promise=new Promise((r,e)=>{resolve=r;reject=e;});return {promise,resolve,reject};};
 const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
-async function appFixture(gpu){
+async function appFixture(gpu,bundle={}){
  const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[],viewportListeners=new Map(),documentListeners=new Map(),audioSources=[];let worker,current,rect={left:0,top:0,width:100,height:100};
  const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},addEventListener(name,callback){(this.listeners??=new Map()).set(name,callback);},setPointerCapture(){},releasePointerCapture(){}});return nodes.get(id);};
  function canvas(){const c={width:3,height:1,style:{},setPointerCapture(){},releasePointerCapture(){},getBoundingClientRect:()=>rect,
@@ -16,7 +16,7 @@ async function appFixture(gpu){
  current=canvas();const actions=['pause','resume','snapshot','export','capture-outcomes','events','bind','inspect','close'].map(action=>({dataset:{action}}));
  node('#session-mode').value='student';
  const document={hidden:false,addEventListener:(name,callback)=>documentListeners.set(name,callback),querySelector:id=>id==='canvas'?current:node(id),querySelectorAll:()=>actions,createElement:()=>({click(){}})};
- const context=vm.createContext({fetch:async url=>{assert.equal(url,'./bundle.json');return {ok:true,json:async()=>({backend:'fixture-machine'})};},document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,AudioContext:class{constructor(){this.state='running';this.currentTime=0;this.destination={};}async resume(){}createBuffer(_channels,length,rate){return {duration:length/rate,getChannelData:()=>new Float32Array(length)};}createBufferSource(){const source={connect(){},start(){this.started=true;},stop(){this.stopped=true;}};audioSources.push(source);return source;}},GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
+ const context=vm.createContext({fetch:async url=>{assert.equal(url,'./bundle.json');return {ok:true,json:async()=>({backend:'fixture-machine',...bundle})};},document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,AudioContext:class{constructor(){this.state='running';this.currentTime=0;this.destination={};}async resume(){}createBuffer(_channels,length,rate){return {duration:length/rate,getChannelData:()=>new Float32Array(length)};}createBufferSource(){const source={connect(){},start(){this.started=true;},stop(){this.stopped=true;}};audioSources.push(source);return source;}},GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
  const module=new vm.SourceTextModule(source,{context});await module.link(()=>{throw Error('unexpected app import');});
  let watchdog;try{await Promise.race([module.evaluate(),new Promise((_resolve,reject)=>{watchdog=setTimeout(()=>reject(Error('renderer initialization blocked actual app registration')),250);})]);}finally{clearTimeout(watchdog);}
  function exercise(){node('#medium').value='owned';node('#open').onclick();assert.equal(sent.at(-1).action,'open');assert.equal(sent.at(-1).name,'owned');assert.equal(sent.at(-1).mode,'student');
@@ -29,6 +29,15 @@ async function appFixture(gpu){
   assert.deepEqual(images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
  }
  exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,actions,setRect:r=>rect=r,resize:()=>viewportListeners.get('resize')?.(),visibility:hidden=>{document.hidden=hidden;documentListeners.get('visibilitychange')?.();},audioSources,trigger:(id,name)=>node(id).listeners?.get(name)?.()};
+}
+{
+ const reason='UNSUPPORTED: no exact TCI continuation relation is admitted';
+ const f=await appFixture(undefined,{checkpoint_contract:reason});await settle();
+ assert.equal(f.node('#checkpoint-export').disabled,true);assert.equal(f.node('#restore').disabled,true);
+ const before=f.sent.length;f.actions.find(n=>n.dataset.action==='snapshot').onclick();
+ assert.equal(f.sent.length,before,'unsupported checkpoint reached the worker');
+ assert.equal(f.node('#status').textContent,reason);
+ f.actions.find(n=>n.dataset.action==='export').onclick();assert.equal(f.sent.at(-1).action,'export','durable cold-recovery export remains usable');
 }
 {
  const f=await appFixture(undefined);
