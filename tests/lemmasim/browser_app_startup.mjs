@@ -375,7 +375,7 @@ for(const phase of ['adapter','device']){
  emit({...queue,streamedBytes:'16'});assert.match(f.node('#school-outgoing').textContent,/16\/264/);
  emit({...queue,streamedBytes:'264',streamComplete:true});assert.equal(f.node('#school-submit').disabled,false);
  assert.match(f.node('#school-outgoing').textContent,/Complete outgoing work 6003579778261581866/);
- assert.match(f.node('#school-outgoing').textContent,/acknowledgement has not been observed/);
+ assert.match(f.node('#school-outgoing').textContent,/no guest acknowledgement receipt yet/);
  emit({state:'acknowledged',queue:queue.queue});assert.match(f.node('#school-outgoing').textContent,/acknowledged/);
  emit({state:'failed',code:'240'});assert.match(f.node('#school-outgoing').textContent,/failed \(240\); saved paper remains available/);
  emit(null);assert.match(f.node('#school-outgoing').textContent,/No committed outgoing work/);
