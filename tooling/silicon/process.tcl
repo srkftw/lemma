@@ -14,10 +14,15 @@ if {[catch {
     # Publish complete imported geometry before independent DRC. A DRC timeout
     # must not discard a finished input for separately bounded extraction.
     gds write $out/layout.gds
+    puts "LEMMA_PROCESS enter-full-style"
     drc style drc(full)
+    puts "LEMMA_PROCESS leave-full-style"
     drc on
+    puts "LEMMA_PROCESS leave-drc-on"
     drc check
+    puts "LEMMA_PROCESS leave-drc-check"
     drc catchup
+    puts "LEMMA_PROCESS leave-drc-catchup"
     set count [drc list count total]
     set file [open $out/process-drc-count.txt w]
     puts $file $count

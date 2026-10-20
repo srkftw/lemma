@@ -1487,6 +1487,14 @@
       "path": "build/silicon/task009-process-source-retention-a1/producer-sources.tar.gz",
       "sha256": "f7b0c78ce6eb16406ce2b9d95ea7a251ae61c08b48a1f4872413d8b29c94e02e"
     },
-    "retention_fix": "Future process launches archive exact caller/recipe/tool/process input bytes before expensive work. Failed owned Magic recovery databases are copied before automatic Nix-shell temporary cleanup. Original failed temporary database was already cleaned; sourceGDS/DEF/logs retained. Neither prior producer is rewritten."
+    "retention_fix": "Future process launches archive exact caller/recipe/tool/process input bytes before expensive work. Failed owned Magic recovery databases are copied before automatic Nix-shell temporary cleanup. Original failed temporary database was already cleaned; sourceGDS/DEF/logs retained. Neither prior producer is rewritten.",
+    "original_full_DRC_phase_probe": {
+      "receipt": {
+        "path": "build/silicon/task009-full-drc-phase-probe-a1/result.json",
+        "sha256": "d16fc26daa3fb2c6515785ef16eb4bf5c9fdd285fbd458768ffeea02ed8366de"
+      },
+      "scope": "Original public inverter only, count0 in3.076s. Style/on/check/catchup markers allcomplete; not fullcontrollerprocessqualification. Loading DRC CIF style appears inside catchup. The fullcontroller300s failure is not evidence of absent original rules or generic startup failure.",
+      "future_recipe": "Explicit phase markers now retained by maintained process.tcl; oldproducerlogreceipts unchanged."
+    }
   }
 }
