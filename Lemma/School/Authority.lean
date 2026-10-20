@@ -447,26 +447,33 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     lift (Client.admit binding input)
     let joined ← lift <| (state.latest "invitation" (toString binding.bindingRecord)).toExcept "school invitation context absent"
     need ((← lift (field joined.data "ask")) == toJson ask) "guest ASK differs from the exact joined document/consent/sequence context"
-    let text := unit.course.nodes[activity.node]?.map (·.hint) |>.getD ""
-    let bytes ← lift (Client.handleAssist binding input text)
     let id := s!"{session}.{ask.sequence}"
     if let some prior := state.latest "decision" id then
       need (flag request "admittedLearner") "replayed assistance sequence"
       let original : Client.AssistInput ← lift (field prior.data "input" >>= fromJson?)
-      need (prior.actor == actor && toJson {original with now := now} == toJson input &&
-        optionalStr prior.data "artifact" == Digest.sha256Bytes bytes) "assistance retry differs from immutable original context"
+      need (prior.actor == actor && toJson {original with now := now} == toJson input)
+        "assistance retry differs from immutable original context"
       let digest := optionalStr prior.data "artifact"
       requireArtifact root digest 32768
+      let bytes ← readBounded (artifactPath root digest) 32768
+      need (Digest.sha256Bytes bytes == digest) "assistance artifact changed during retry"
       return (state,object [("decision",toJson id),("package_hex",toJson (hex bytes)),
-        ("identity",toJson (60001:Nat)),("edition",toJson ask.sequence),("artifact",toJson digest),("reused",toJson true)])
+        ("identity",toJson (60001:Nat)),("edition",toJson ask.sequence),("artifact",toJson digest),
+        ("selector",(field prior.data "selector").toOption.getD Json.null),("reused",toJson true)])
     let prior := (state.allLatest "decision").filter (fun r => optionalStr r.data "session" == session)
     need (prior.all (fun r => optionalNat r.data "sequence" < ask.sequence)) "out-of-order assistance sequence"
+    let hint := unit.course.nodes[activity.node]?.map (·.hint) |>.getD ""
+    let selected := Recommendation.deliverySelection state actor activity.id
+      binding.course binding.revision binding.policy now hint
+    let bytes ← lift (Client.handleAssist binding input selected.text)
     let digest ← putBytes root bytes 32768
     let data := object [("session",toJson session),("sequence",toJson ask.sequence),
-      ("input",toJson input),("artifact",toJson digest),("stage",toJson "decision-authored; delivery-unobserved")]
-    let next ← lift (state.add "decision" id actor now data #[digest])
+      ("input",toJson input),("artifact",toJson digest),("selector",selected.provenance),
+      ("stage",toJson "decision-authored; delivery-unobserved")]
+    let next ← lift (state.add "decision" id actor now data (#[digest] ++ selected.artifacts))
     return (next,object [("decision",toJson id),("package_hex",toJson (hex bytes)),
-      ("identity",toJson (60001:Nat)),("edition",toJson ask.sequence),("artifact",toJson digest)])
+      ("identity",toJson (60001:Nat)),("edition",toJson ask.sequence),("artifact",toJson digest),
+      ("selector",selected.provenance)])
   | "cancel-session" =>
     let id ← lift (str request "session")
     let row ← lift <| (state.latest "session" id).toExcept "session absent"

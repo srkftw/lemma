@@ -70,7 +70,7 @@ def main():
     report = {"schema": "lemma-school-host-validation/1", "result": "FAIL",
               "sourceInputs": consumed, "commands": [], "productionReceipt": str(args.production.resolve()),
               "productionReceiptSha256": sha256(args.production),
-              "limits":{"hostSeconds":args.host_timeout,"clientSeconds":120,"cleanup":"existing action_worker subreaper owns each command until descendants reaped"},
+              "limits":{"hostSeconds":args.host_timeout,"clientSeconds":120,"tutorSelectionSeconds":120,"cleanup":"existing action_worker subreaper owns each command until descendants reaped"},
               "scope": "hosted school semantics, authoring, importer fixtures, consent, client validators, local recovery; actual RV64/client/real-corpus receipts remain separate"}
     start = time.monotonic()
     try:
@@ -89,6 +89,7 @@ def main():
         commands = [
             ([sys.executable, "-m", "unittest", "discover", "-s", "tests/school", "-v"], "host.log", args.host_timeout),
             (["lake", "env", "lean", "--run", "tests/school/Client.lean"], "client-validation.log", 120),
+            (["lake", "env", "lean", "--run", "tests/school/TutorSelection.lean"], "tutor-selection.log", 120),
         ]
         for command, log_name, timeout in commands:
             began = time.monotonic()

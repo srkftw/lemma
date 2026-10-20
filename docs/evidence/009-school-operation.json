@@ -870,19 +870,20 @@
   "currentFinalHostedValidation": {
     "result": "PASS",
     "receipt": {
-      "path": "build/school/task009-host-validation-context-a1/validation.json",
-      "sha256": "20d5a56016c87d75a92f56b53c3eb0fb8483f84b777c8f0509fdbc3fc60a05e4"
+      "path": "build/school/task009-host-validation-tutor-a1/validation.json",
+      "sha256": "b82228e62b32e2abbd5af3b91414964ff79b245f61fd7c67c8c52f5e1d65c4b2"
     },
-    "production": "build/school/host-task009-context-a1/production.json",
-    "productionReceiptSHA256": "89e5484b5b888f231a5bbcfb1df1c5314a225f65552826f787adc700e8b32935",
-    "binarySHA256": "736daea17ec93f34a15b9b0fe6b7d7471bc1d617d0f5e777c5c66ed355ef70cb",
+    "production": "build/school/host-task009-tutor-selector-a1/production.json",
+    "productionReceiptSHA256": "8a7d0a20bde8c8398f73941d56bacf3143d4ec8610ed3ebd40f462f2ec9bdc1e",
+    "binarySHA256": "5faffcf0d32d874e84d5eba53854b5af80b8b9af62e0125062079b36b2c1fe4b",
     "hostTests": 64,
-    "hostSeconds": 405.2130356589332,
-    "clientActionSeconds": 2.4794404429849237,
-    "wholeSeconds": 408.1379172890447,
-    "command": "nix develop --no-write-lock-file --command env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 python3 scripts/check_school.py --production build/school/host-task009-context-a1/production.json --host-timeout 600 --work-dir build/school/task009-host-validation-context-a1",
-    "prospectiveBudget": "600seconds hosted corpus,120seconds separate Client Action; every command completed through existing owned action_worker and descendant reaping",
-    "scope": "Fresh current64-test hosted semantics/authority/protectedHTTP/source ingestion/preview/operator/typed delivery/exact declared context consumption/complete v2 submission suite and separate Client Action validation; reused exact binary/compiled imports, no fresh native/browser/RTL or physical execution implied. Earlier61/63-test producer gates and failed unrelated-context observation retain their own identities."
+    "hostSeconds": 275.5356253819773,
+    "clientActionSeconds": 2.0159233319573104,
+    "tutorSelectionActionSeconds": 1.7206276929937303,
+    "wholeSeconds": 279.6007739660563,
+    "command": "nix develop --no-write-lock-file --command env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 python3 scripts/check_school.py --production build/school/host-task009-tutor-selector-a1/production.json --host-timeout 600 --work-dir build/school/task009-host-validation-tutor-a1",
+    "prospectiveBudget": "600s hosted corpus;120s separate Client Action;120s separate TutorSelection Action. Every command completed and owned descendants reaped.",
+    "scope": "Fresh current64-test hosted semantics/admission/delivery/preview/operator/submission corpus plus Client and TutorSelection Action checks. Compiled imports and exact produced host binary reused. Actual RV64 numerical consumer and native/browser/physical execution retain separate receipts."
   },
   "firstOrdinaryNativeCampaign": {
     "result": "FAIL",
@@ -992,33 +993,21 @@
     "consumerQualification": "Notebook caller sequencing and gates are a separately coordinated change; next real native/browser producer must execute them. Current failed native receipts remain unchanged."
   },
   "ordinaryClientAuthorityCampaign": {
-    "result": "ORIGINAL_DEADLINE_TERMINAL_124",
-    "generation": 10,
+    "result": "READY_FOR_CONSUMER_EXECUTION",
+    "generation": 11,
     "clockEpochSequence": 3,
     "acknowledgedRows": 29,
-    "historyUnchanged": true,
-    "deadlineUTC": "2026-10-20T00:29:39.749518+00:00",
-    "producer": "build/school/host-task009-context-a1/production.json",
-    "matchedConsumedSourceInputs": 61,
-    "receipts": {
-      "generation9-ordinary-terminal.json": {
-        "path": "build/school/task009-connected-a2/generation9-ordinary-terminal.json",
-        "sha256": "af88e6c7e5e97bb2db40048af14822aedaeeaaa68a9bd1d4d6dd566916b30d22"
-      },
-      "generation10-context-ready.json": {
-        "path": "build/school/task009-connected-a2/generation10-context-ready.json",
-        "sha256": "8703417727357656ce0e87ff2bbfe506b2cfe54ccce93480e4f4c84cfcce6af9"
-      },
-      "ordinary-campaign-budget-a3.json": {
-        "path": "build/school/task009-connected-a2/ordinary-campaign-budget-a3.json",
-        "sha256": "9a6e61d6273583baf4341de71983a8104219bc743e8d30e6486eefc476e70900"
-      }
+    "deadlineUTC": "2026-10-20T01:53:03.121145+00:00",
+    "producer": "build/school/host-task009-tutor-selector-a1/production.json",
+    "readyReceipt": {
+      "path": "build/school/task009-connected-a2/generation11-tutor-ready.json",
+      "sha256": "166295eac7ba2a9b7d803445c858f781484deadecf0fae83af5f613ae8d481c6"
     },
-    "scope": "Original gen10 ended at its unchanged3600sdeadline(exit124), ownedPIDgone,29acknowledgedrows retained. ActualStudentpair/catalogue/selectedpackage transport occurred; no guestJOIN or assessmentattempt. NewTutorSelection/source-upgrade campaign requires separate prospectivebudget andgeneration.",
-    "terminalReceipt": {
-      "path": "build/school/task009-connected-a2/generation10-ordinary-terminal.json",
-      "sha256": "fb8e3e61d711ab7168d7f65499a1f5d89695d9829997eab5b151f8036a30b9bc"
-    }
+    "budget": {
+      "path": "build/school/task009-connected-a2/ordinary-campaign-budget-a4.json",
+      "sha256": "a1132c60210cbf89ed9538644ffe56936f486a096bca03e83e0aebcfc565192a"
+    },
+    "scope": "New3600s gen11 campaign after originalgen10terminal; exact29acknowledgedrows and existingprivateadmissions retained. No source-upgrade claim rewrites prior observed work. Numerical suggestions are not injected into live learner history. Ordinary native/browser consumer qualification remains separate."
   },
   "deliveryDeclaredContextConsumer": {
     "result": "PASS_PROTECTED_COMPONENT",
@@ -1049,6 +1038,23 @@
       "command": "nix develop --no-write-lock-file --command env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 python3 scripts/check_school.py --production build/school/host-task009-delivery-a2/production.json --host-timeout 600 --work-dir build/school/task009-host-validation-final-a2",
       "prospectiveBudget": "600seconds hosted corpus,120seconds separate Client Action; every command completed through existing owned action_worker and descendant reaping",
       "scope": "Fresh current63-test hosted semantics/authority/protectedHTTP/source ingestion/preview/operator/typed delivery/complete v2 submission suite and separate Client Action validation; reused exact binary/compiled imports, no fresh native/browser/RTL or physical execution implied. Earlier61-test v1 suite and obsolete source-gate cancellation retain their own identities."
+    },
+    {
+      "result": "PASS",
+      "receipt": {
+        "path": "build/school/task009-host-validation-context-a1/validation.json",
+        "sha256": "20d5a56016c87d75a92f56b53c3eb0fb8483f84b777c8f0509fdbc3fc60a05e4"
+      },
+      "production": "build/school/host-task009-context-a1/production.json",
+      "productionReceiptSHA256": "89e5484b5b888f231a5bbcfb1df1c5314a225f65552826f787adc700e8b32935",
+      "binarySHA256": "736daea17ec93f34a15b9b0fe6b7d7471bc1d617d0f5e777c5c66ed355ef70cb",
+      "hostTests": 64,
+      "hostSeconds": 405.2130356589332,
+      "clientActionSeconds": 2.4794404429849237,
+      "wholeSeconds": 408.1379172890447,
+      "command": "nix develop --no-write-lock-file --command env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 python3 scripts/check_school.py --production build/school/host-task009-context-a1/production.json --host-timeout 600 --work-dir build/school/task009-host-validation-context-a1",
+      "prospectiveBudget": "600seconds hosted corpus,120seconds separate Client Action; every command completed through existing owned action_worker and descendant reaping",
+      "scope": "Fresh current64-test hosted semantics/authority/protectedHTTP/source ingestion/preview/operator/typed delivery/exact declared context consumption/complete v2 submission suite and separate Client Action validation; reused exact binary/compiled imports, no fresh native/browser/RTL or physical execution implied. Earlier61/63-test producer gates and failed unrelated-context observation retain their own identities."
     }
   ],
   "thirdOrdinaryNativeCampaign": {
@@ -1059,5 +1065,100 @@
     },
     "sourceBundle": "build/task009/school23-native-a3/bundle.json",
     "scope": "Fresh actualStudent execution atgeometry1650x2200/profile0.14/QEMU; firstSave421+Ready and genuine cold reopenPASS, ordinaryTkpairing/cataloguePASS, actual803/2 install+selectedmarker commitsPASS. Actualpaper remainedblank and newpen/Saveworkpending; noJOIN, attempt, feedback or due-reviewcompletion claimed.1215000003functionalunits,513.4499112693593sactiveRun across two processes, same original3600s/12B wholebound, normalexit0 and ownedprocessesgone. Source-bound target compilation reused; execution fresh."
-  }
+  },
+  "committedTutorSelection": {
+    "result": "PASS_ACTUAL_RV64_PROTECTED_CONSUMER",
+    "contract": "lemma-tutor-selection/1",
+    "workflow": {
+      "path": "build/school/training-workflow-task009-help-a2/workflow.json",
+      "sha256": "d410c107875f981abebced6e2ed85113dd968549743feff9f7254b732c320bab"
+    },
+    "runner": {
+      "path": "scripts/check_school_training_workflow.py",
+      "sha256": "62be20e20498e7f7459341c32e3460df4112ecf8cfd65b76dda4c979a886eb0d"
+    },
+    "qualification": {
+      "path": "build/school/task009-tutor-selection-a1/source-bound-consumer-result.json",
+      "sha256": "30ffd54c07c6549b42bcbd1d567038196915cfa615f1b9185e38aea2be296e5d"
+    },
+    "production": {
+      "path": "build/school/host-task009-tutor-selector-a1/production.json",
+      "sha256": "8a7d0a20bde8c8398f73941d56bacf3143d4ec8610ed3ebd40f462f2ec9bdc1e"
+    },
+    "focusedAdmissionDelivery": {
+      "path": "build/school/task009-tutor-selection-a1/focused-results.json",
+      "sha256": "3d294bd192f239a6b7fed83bc8d17f19b2f3281b3886119806de1f17cec044ba"
+    },
+    "retainedEarlierObserver": {
+      "path": "build/school/training-workflow-task009-help-a1/workflow.json",
+      "sha256": "4c2d51229e0c78eded10809a842a716fa76c051ce2f1838c72286ac8352a852d"
+    },
+    "scoresQ20": [
+      673792,
+      770048
+    ],
+    "protectedConsumer": {
+      "deliveryRetryCommit": 30,
+      "packetSHA256": "808ddd4222a6b9343ec76081e8f31c0abad5411f214bdace341432bb2e12a14d",
+      "reselectedAdvice": true,
+      "result": "PASS",
+      "rollbackRetryBytesIdentical": true,
+      "scope": "Actual admitted protected HTTP help packet, with explicitly synthetic ASK/independent work/raw receipt fixtures. No device transport, guest rendering, visible delivery or educational benefit claim.",
+      "selector": {
+        "action": "practice",
+        "job": "configured-first",
+        "mechanism": "committed-rv64-selector",
+        "model": 9001,
+        "overrideAllowed": true,
+        "preparation": "review-input",
+        "result": "bec13ed9df3fcc8ffd005015b6a55ee88ea14af1b30fe27c7d81e41cb0fc0a20",
+        "schema": "lemma-tutor-selection/1",
+        "scope": "practice advice; authored hint retained; no mathematical verification or learning-effect claim",
+        "scoreQ20": 673792,
+        "suggestion": "learner.configured-first",
+        "suggestionSequence": 25
+      },
+      "staleModelUsesAuthoredBaseline": true,
+      "syntheticTransportObservation": true,
+      "transcriptSha256": "76d4068ef3e18387824326db53f7281a07e27cbc034ed257f87947488d053575"
+    },
+    "sourceSHA256": {
+      "Lemma/School/Authority.lean": "0820206c897005a3cff9c8cf71b7d32d4303ec243d8d609ae359f80032453533",
+      "Lemma/School/Recommendation.lean": "7922c03e2e5a036799f944d2fe09320dacad6bfc398d6ac9ac73ad186fb0e0ac",
+      "tests/school/TutorSelection.lean": "f26159084814932343719ab170490df3545b9862946803f0593cf63733e101e3"
+    },
+    "freshReused": "Existing genuine hosted Lean training parameters/checkpoints/dataset and audited byte-identical RV64 worker image reused; two new actual RV64 QEMU executions, new authority commits and protected assistance packets.",
+    "scope": "New ordinary assistance domain consumer selects a bounded practice action from an actually committed RV64 result and retains authored mathematical content. Two fresh QEMU inferences/new fenced commits and protected HTTP assistance are real. Dataset/independent written work/ASK/raw receipt inputs are explicitly synthetic component fixtures; no actual Student envelope, guest rendering, learning effect or resident explanation model claim. Original less-complete source observer retained separately; qualified second observer hashes11transport/worker sources before/after."
+  },
+  "retainedAuthorityCampaigns": [
+    {
+      "result": "ORIGINAL_DEADLINE_TERMINAL_124",
+      "generation": 10,
+      "clockEpochSequence": 3,
+      "acknowledgedRows": 29,
+      "historyUnchanged": true,
+      "deadlineUTC": "2026-10-20T00:29:39.749518+00:00",
+      "producer": "build/school/host-task009-context-a1/production.json",
+      "matchedConsumedSourceInputs": 61,
+      "receipts": {
+        "generation9-ordinary-terminal.json": {
+          "path": "build/school/task009-connected-a2/generation9-ordinary-terminal.json",
+          "sha256": "af88e6c7e5e97bb2db40048af14822aedaeeaaa68a9bd1d4d6dd566916b30d22"
+        },
+        "generation10-context-ready.json": {
+          "path": "build/school/task009-connected-a2/generation10-context-ready.json",
+          "sha256": "8703417727357656ce0e87ff2bbfe506b2cfe54ccce93480e4f4c84cfcce6af9"
+        },
+        "ordinary-campaign-budget-a3.json": {
+          "path": "build/school/task009-connected-a2/ordinary-campaign-budget-a3.json",
+          "sha256": "9a6e61d6273583baf4341de71983a8104219bc743e8d30e6486eefc476e70900"
+        }
+      },
+      "scope": "Original gen10 ended at its unchanged3600sdeadline(exit124), ownedPIDgone,29acknowledgedrows retained. ActualStudentpair/catalogue/selectedpackage transport occurred; no guestJOIN or assessmentattempt. NewTutorSelection/source-upgrade campaign requires separate prospectivebudget andgeneration.",
+      "terminalReceipt": {
+        "path": "build/school/task009-connected-a2/generation10-ordinary-terminal.json",
+        "sha256": "fb8e3e61d711ab7168d7f65499a1f5d89695d9829997eab5b151f8036a30b9bc"
+      }
+    }
+  ]
 }
