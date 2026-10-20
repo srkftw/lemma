@@ -28,6 +28,11 @@ structure Model where
   writes : Array UInt64 := #[]
   syscallArguments : Array (Array UInt64) := #[]
   forbiddenPage : Option UInt64 := none
+  enforceIPC : Bool := false
+  ipcOwner : UInt64 := 0
+  ipcCanceled : Bool := false
+  cancelStatus : UInt8 := 0
+  terminalStatus : UInt8 := IPCABI.canceled
 private def word (m : Model) (a : UInt64) : UInt64 := m.words.getD a 0
 private def write (m : Model) (a v : UInt64) : Model :=
   {m with words := m.words.insert a v, writes := m.writes.push a}
@@ -63,6 +68,24 @@ partial def run (r : IO.Ref Model) : Action → IO (UInt8 × UInt64)
       let value := (word m (a-a%8) &&& ~~~((255 : UInt64) <<< shift)) ||| ((b &&& 255) <<< shift)
       r.set (write m (a-a%8) value); run r (next 0 0)
     else if op == .syscall then
+      if m.enforceIPC then
+        r.set {m with syscallArguments:=m.syscallArguments.push #[a,b,c,d,e,f]}
+        if a == IPCABI.cancel then
+          if b != m.ipcOwner || b == 0 then throw <| IO.userError "cancellation borrowed a different IPC owner"
+          if m.cancelStatus == 0 || m.cancelStatus == IPCABI.alreadyCompleted then
+            r.modify fun state => {state with ipcCanceled:=true}
+          return ← run r (next m.cancelStatus 0)
+        else if a == 67 then
+          if b != m.ipcOwner || !m.ipcCanceled then throw <| IO.userError "terminal wait did not name the cancelled owner"
+          if m.terminalStatus != IPCABI.wouldBlock then r.modify fun state => {state with ipcOwner:=0,ipcCanceled:=false}
+          return ← run r (next m.terminalStatus 0)
+        else if a == IPCABI.callBegin then
+          if m.ipcOwner != 0 then return ← run r (next IPCABI.inFlight 0)
+          r.modify fun state => {state with ipcOwner:=900}
+          return ← run r (next 0 900)
+        else if a == Lemma.User.CapabilityABI.console then return ← run r (next 0 e)
+        else if a == ABI.time then return ← run r (next 0 1000000)
+        else throw <| IO.userError s!"unexpected ownership-fixture syscall {a}"
       let some result := m.syscalls[0]? | throw <| IO.userError s!"unexpected actual syscall {a}"
       r.set {m with syscalls := m.syscalls.extract 1 m.syscalls.size, syscallArguments:=m.syscallArguments.push #[a,b,c,d,e,f]}
       run r (next result.1 result.2)
@@ -837,6 +860,72 @@ private def capturedIdleSchedulingChecks : IO Unit := do
           (← get old (rawState+16)) == captured)
         "capture idle scheduling changed a legacy mode or mutated retained samples"
 
+private def bufferedReaderFixture (readerPhase owner queuePhase : UInt64) : IO (IO.Ref Model) := do
+  let r ← rawFixture
+  for a in #[base+104,base+112,base+144,base+160] do put r a 0
+  for (a,v) in #[(base+16,7),(base+176,100),(base+752,12),(base+760,1),(base+712,1),
+      (base+512,1),(app+32,readerPhase),(context,7),(context+8,context+512),
+      (context+16,incoming),(context+24,1),(context+32,804),(context+40,1),
+      (context+48,0x332000),(context+56,32768),(context+64,1),
+      (context+72,1),(context+80,if readerPhase == 1 || readerPhase == 5 then owner else 0),
+      (SchoolSubmission.arena,queuePhase)] do put r a v
+  r.modify fun m => {m with enforceIPC:=true,ipcOwner:=owner,syscallArguments:=#[]}
+  return r
+
+private def bufferedReaderStroke (r : IO.Ref Model) : IO (UInt8 × UInt64) := do
+  let raw := Lemma.Applications.Notebook.raw
+  for (v,i) in (#[701,0x100000001,40000,40000,2047,7,0x123456789abcdef0,0xfedcba9876543210,9] : Array UInt64).zipIdx do put r (raw+i.toUInt64*8) v
+  let down ← run r (schoolNotebook% "bufferedBookInk")
+  if down.1 != 0 || (← get r (base+136)) ≥ 2 then return down
+  for (v,i) in (#[702,0x100000002,40000,40000,0,6,0x123456789abcdef0,0xfedcba9876543210,9] : Array UInt64).zipIdx do put r (raw+i.toUInt64*8) v
+  run r (schoolNotebook% "appendRaw")
+
+private def bufferedReaderChecks (baseline : Bool := false) : IO Unit := do
+  for readerPhase in (if baseline then #[1] else #[1,5]) do
+    for terminal in (if baseline then #[IPCABI.canceled] else #[IPCABI.canceled,0]) do
+      let r ← bufferedReaderFixture readerPhase 42 29
+      r.modify fun m => {m with terminalStatus:=terminal,cancelStatus:=(if terminal == 0 then IPCABI.alreadyCompleted else 0)}
+      let result ← bufferedReaderStroke r
+      if baseline then
+        expect ((← get r (base+424)) == IPCABI.inFlight.toUInt64 && (← get r (base+136)) == 2 &&
+            (← r.get).ipcOwner == 42 && !(← r.get).syscallArguments.any (fun args => args[0]! == IPCABI.cancel))
+          "old buffered path did not reproduce inFlight99 with a live original-package read"
+        IO.println "BUFFERED_READER_BASELINE:actual first stroke Store Begin rejected99; reader42 retained; writing Failed"
+      else
+        let calls := (← r.get).syscallArguments
+        expect (result.1 == 0 && (← get r (base+136)) == 1 && (← get r (base+160)) == 1 &&
+            (← get r (base+168)) == 900 && (← get r (context+80)) == 0 && (← get r (app+32)) == 4 &&
+            calls.size ≥ 4 && calls[0]! == #[25,42,0,0,0,0] && calls[1]! == #[67,42,incoming,256,0,0] &&
+            calls[3]![0]! == IPCABI.callBegin)
+          "buffered ink did not cancel and consume the exact read/EOF owner before its Store Begin"
+        for sample in [:2] do
+          let expected : Array UInt64 := if sample == 0 then #[701,0x100000001,40000,40000,2047,7,0x123456789abcdef0,0xfedcba9876543210,9]
+            else #[702,0x100000002,40000,40000,0,6,0x123456789abcdef0,0xfedcba9876543210,9]
+          for (v,i) in expected.zipIdx do
+            expect ((← get r (Lemma.Applications.Notebook.ink1+128+sample.toUInt64*72+i.toUInt64*8)) == v)
+              "reader cancellation changed an original nine-word raw sample"
+  unless baseline do
+    for cancelStatus in #[IPCABI.revoked,IPCABI.denied] do
+      let r ← bufferedReaderFixture 1 42 29
+      r.modify fun m => {m with cancelStatus:=cancelStatus}
+      let _ ← bufferedReaderStroke r
+      expect ((← r.get).ipcOwner == 42 && (← get r (base+424)) == cancelStatus.toUInt64 &&
+          !(← r.get).syscallArguments.any (fun args => args[0]! == IPCABI.callBegin))
+        "reader cancellation failure was hidden or a new Store call began anyway"
+    let pending ← bufferedReaderFixture 1 42 29
+    pending.modify fun m => {m with terminalStatus:=IPCABI.wouldBlock}
+    let _ ← bufferedReaderStroke pending
+    expect ((← get pending (base+424)) == IPCABI.invalidTransaction.toUInt64 && (← pending.get).ipcOwner == 42 &&
+        !(← pending.get).syscallArguments.any (fun args => args[0]! == IPCABI.callBegin))
+      "an unconsumed cancelled read was treated as an available call slot"
+    let queue ← bufferedReaderFixture 2 77 41
+    let kept ← bufferedReaderStroke queue
+    expect (kept.1 == 0 && (← queue.get).ipcOwner == 77 && (← get queue (base+160)) == 8 &&
+        (← get queue (base+144)) == Lemma.Applications.Notebook.ink1 &&
+        !(← queue.get).syscallArguments.any (fun args => args[0]! == IPCABI.cancel || args[0]! == IPCABI.callBegin))
+      "buffered ink canceled an unrelated queue owner or bypassed its existing phase8 handoff"
+    IO.println "BUFFERED_READER_ACTIONS:PASS READ/EOF exact-owner cancel+terminal before Store Begin; two full9 raw records; completed/canceled and failure/queue-owner boundaries"
+
 private def schoolWireModeChecks : IO Unit := do
   for mode in #[0,1,2,3] do
     let r ← IO.mkRef ({} : Model)
@@ -869,9 +958,12 @@ private def schoolWireModeChecks : IO Unit := do
   expect (rejected.1 == 234 && (← get invalid (base+656)) == 9 && (← invalid.get).writes.size == 1)
     "unknown school mode was admitted or mutated startup authority"
 
-def main : IO Unit := do
+def main (args : List String) : IO Unit := do
+  if args == ["buffered-reader-baseline"] then return ← bufferedReaderChecks true
+  if args == ["buffered-reader"] then return ← bufferedReaderChecks
+  bufferedReaderChecks
   capturedIdleSchedulingChecks;schoolWireModeChecks;capturedMicrobatchChecks;warmSubmissionChecks;deferredSavedChecks;rawCoalescingChecks;rawCommitReceiptChecks;rawStatusChecks;rawCaptureChecks;floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
   IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS warm-help original-publication CHECK/SEND and visible732 rejection/source isolation, reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control,actual JOIN async source/EOF presentation,32stroke full9word capture/replay,Save ordering,mute/full-buffer safety,overflow/gap/view-loss,captured-work Pending/Saved header+421/423 ownership,burst raw-reference coalescing before ordered controls and actual page/root commit; component only"
 end NotebookSchoolTests
 
-def main : IO Unit := NotebookSchoolTests.main
+def main (args : List String) : IO Unit := NotebookSchoolTests.main args

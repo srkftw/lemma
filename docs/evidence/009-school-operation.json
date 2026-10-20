@@ -3345,5 +3345,214 @@
       "Initial corrected transport suite fails only a new negative fixture error-message expectation, then corrected75-case execution passes."
     ],
     "scope": "Host cleanup scheduling/observation repair only. It does not change guest policy, task source, artifacts, original CI failure disposition or successful remote-campaign requirements."
+  },
+  "hostedAcknowledgedGeneration30": {
+    "status": "PASS_SCOPED_NORMAL_GENERATION30_AFTER_RETAINED_GENERATION29_EXTERNAL_FAILURE",
+    "priorGeneration29": {
+      "disposition": "INTERRUPTED_OR_FAILED",
+      "exitCode": -15,
+      "terminalUTC": "2026-10-20T21:14:13.470704+00:00",
+      "originalDeadlineUTC": "2026-10-20T22:45:54.401029+00:00",
+      "normalStopClaim": false,
+      "cause": "Unknown; a timing correlation is not causal evidence.",
+      "terminalReceipt": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation29/terminal.json",
+      "terminalSHA256": "1370ad3e7f34ca74d5f59932b1c40c519cf47dda5949d581f0e48b459029d1a5",
+      "allObservedOwnersGoneBeforeRestart": true
+    },
+    "acknowledgedOfflineBackup": {
+      "rows": 228,
+      "artifacts": 76,
+      "seconds": 7.398303390014917,
+      "peakSampledOwnedRSSBytes": 130269184,
+      "normalCLIExit": 0,
+      "exactHistoryAndArtifactDigests": true,
+      "receipt": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation30-transition/backup-result.json",
+      "sha256": "f7e62eec89a1e79eb5e83a637a82ad4b150cee620e293fa36345e4f841fb62f9"
+    },
+    "generation30": {
+      "actualStartUTC": "2026-10-20T21:49:44.491597+00:00",
+      "originalDeadlineUTC": "2026-10-20T23:49:44.491597+00:00",
+      "newWallSeconds": 7200,
+      "RSSBytes": 536870912,
+      "ASBytes": 4294967296,
+      "outputBytes": 2147483648,
+      "continuingAvailableBytes": 8589934592,
+      "preservedHistoryPrefix": 228,
+      "preservedArtifacts": 76,
+      "sameClockEpochSequence": 5,
+      "oldBob197AndAlice209StillRevoked": true,
+      "staleActualWorkerCompletionRejected": true,
+      "hostProducerSHA256": "b1cbac4ae188cfb21639f4da05418a258a94207bc03bc71aca61b684bfcf13b5",
+      "schoolBinarySHA256": "8a6353aabd3d5d8c8d23fe8144fad31d4d0da138138fb4ad596b912da276a5d7",
+      "readyReceipt": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation30/ready.json",
+      "readySHA256": "eab05c2f6a23804b6d050383d5387f466c9b10fc329fd689fa9bd362f0a847fd",
+      "freshTeacherPairedBobAdmission": 229,
+      "pairReceipt": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation30/bob-pair-assessment.json",
+      "pairSHA256": "20c3116110833ec2642ea7f331b303342494e558a4b228c7abb445b14c6dca41"
+    },
+    "scope": "Distinct bounded restart with actual protected checks; no overlapping authority, extension of generation29, new learner workflow completion or public deployment claim. Private credentials are omitted."
+  },
+  "bufferedInkReaderOwnershipRepair": {
+    "status": "PASS_SCOPED_ACTUAL_ACTION_REPAIR_CPU_CONSUMER_PENDING",
+    "retainedBrowserFailure": {
+      "boundary": "build/school/task009-student-browser-school25-activity-a2/failed99-boundary.json",
+      "boundarySHA256": "9c0c37653f326ac31abbd0e72a9ecf5e06be641294d2ab362e7b683ef8e43c3f",
+      "support": "build/school/task009-student-browser-school25-activity-a2/failed99-support.json",
+      "supportSHA256": "ec862b29649d48a58a9c87851221a626a35c5f2e25f0b361cf20e2cce007809d",
+      "actualGuestTag": "424",
+      "actualStatus": 99,
+      "meaning": "IPCABI.inFlight",
+      "JOIN": {
+        "binding": 230,
+        "generation": 30
+      },
+      "controllerLoss": 0,
+      "scope": "Original ordinary browser failure stays failed; only a first glyph fragment was visible. No complete written proof or guest fix execution is claimed."
+    },
+    "cause": "JOIN727 starts an asynchronous original-publication reader. When paper/control is busy, queueBookTap calls bufferedBookInk, which formerly skipped the cancelBookmarkWork boundary used by ordinary ink. A subsequent foreground Store Begin collided with the read/EOF owner.",
+    "source": {
+      "originalNotebookSHA256": "ae46039607e7bd4967fe72f0e226e7a6fb0b6f0acd4d2dec01b21e5152915615",
+      "changedNotebookSHA256": "f69389a4a70f9ddaf839c66e02eb47b2b5732cd8f3236eabe76ad2fc02246f71",
+      "fixtureSHA256": "3d2e152b413cb9e5affee2fffcc38457f6384736d5cfbf38dd35399a263811f7",
+      "change": "Cancel and consume the exact package reader before beginning a buffered stroke; retain existing failure and unrelated queue handoff semantics."
+    },
+    "qualification": [
+      {
+        "phase": "baseline",
+        "receipt": "build/school/task009-buffered-reader-baseline-a1/result.json",
+        "sha256": "8def155f58f867f1a5c41b49f35c3a43a94944c679b4033f240b32f4af597ef6",
+        "seconds": 32.96563915605657,
+        "peakOwnedRSSBytes": 1882329088,
+        "bounds": {
+          "wholeSeconds": 240,
+          "ownedRSSBytes": 2415919104,
+          "launchAvailableBytes": 12884901888,
+          "continuingAvailableBytes": 8589934592,
+          "ASBytes": 17179869184,
+          "LeanHeapMiB": 2048,
+          "outputBytes": 134217728,
+          "threads": 2
+        },
+        "rows": [
+          {
+            "label": "build",
+            "argv": [
+              "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+              "build",
+              "Lemma.Applications.Notebook"
+            ],
+            "exitCode": 0,
+            "seconds": 0.4668430008459836,
+            "logSHA256": "dd6722260265066c2fa0e320168d1f8d2db5b87c0c2a261c12a17eaf84f615c0"
+          },
+          {
+            "label": "notebook-school-actions",
+            "argv": [
+              "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+              "env",
+              "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+              "-j2",
+              "-M2048",
+              "--run",
+              "tests/courses/NotebookSchool.lean",
+              "buffered-reader-baseline"
+            ],
+            "exitCode": 0,
+            "seconds": 32.4499466328416,
+            "logSHA256": "7d4bbe676a094ee00c9f6915d94838b14094bd70f4a448683adc424e471863da"
+          }
+        ]
+      },
+      {
+        "phase": "fix",
+        "receipt": "build/school/task009-buffered-reader-fix-a1/result.json",
+        "sha256": "6ad24e0a2b04cfc0a090ba5fd0c2877333c4f595b776d9be83adb8ad7037b022",
+        "seconds": 41.12227529496886,
+        "peakOwnedRSSBytes": 2179538944,
+        "bounds": {
+          "wholeSeconds": 240,
+          "ownedRSSBytes": 2415919104,
+          "launchAvailableBytes": 12884901888,
+          "continuingAvailableBytes": 8589934592,
+          "ASBytes": 17179869184,
+          "LeanHeapMiB": 2048,
+          "outputBytes": 134217728,
+          "threads": 2
+        },
+        "rows": [
+          {
+            "label": "build",
+            "argv": [
+              "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+              "build",
+              "Lemma.Applications.Notebook"
+            ],
+            "exitCode": 0,
+            "seconds": 11.144072436960414,
+            "logSHA256": "e6f00369b4083fd7261b42bb9b532373a7653b3ca46a013c516b1986042050f9"
+          },
+          {
+            "label": "notebook-school-actions",
+            "argv": [
+              "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+              "env",
+              "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+              "-j2",
+              "-M2048",
+              "--run",
+              "tests/courses/NotebookSchool.lean",
+              "buffered-reader"
+            ],
+            "exitCode": 0,
+            "seconds": 29.938682965002954,
+            "logSHA256": "00d400ff527cfa730cb05acd3b29c86157dd4bcf797baf813d70f8709769ef66"
+          }
+        ]
+      },
+      {
+        "phase": "regression",
+        "receipt": "build/school/task009-buffered-reader-regression-a1/result.json",
+        "sha256": "f3c753e01b5b57d217576a32f7dd524fa5f2af080c3d7010baf8847f157aac24",
+        "seconds": 33.94640143890865,
+        "peakOwnedRSSBytes": 1896820736,
+        "bounds": {
+          "wholeSeconds": 180,
+          "ownedRSSBytes": 2415919104,
+          "launchAvailableBytes": 12884901888,
+          "continuingAvailableBytes": 8589934592,
+          "ASBytes": 17179869184,
+          "LeanHeapMiB": 2048,
+          "outputBytes": 134217728,
+          "threads": 2
+        },
+        "rows": [
+          {
+            "label": "notebook-school-actions",
+            "argv": [
+              "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+              "env",
+              "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+              "-j2",
+              "-M2048",
+              "--run",
+              "tests/courses/NotebookSchool.lean"
+            ],
+            "exitCode": 0,
+            "seconds": 33.89981698687188,
+            "logSHA256": "91b782d94b4135e9f14d6d9ce9256cf3ec2ab24ab02958d755c34b010686ef25"
+          }
+        ]
+      }
+    ],
+    "actualActionCases": [
+      "Original unmodified body reproduces first Store Begin99 with live reader42 and Failed writing.",
+      "READ and EOF readers cancel exact token42 and consume its terminal reply before Store Begin900.",
+      "Both canceled and already-completed reader terminals are consumed.",
+      "Two original nine-word samples remain exact.",
+      "Denied/revoked cancellation and still-wouldBlock terminal forbid a new Store Begin.",
+      "Unrelated SchoolSubmission owner77 is never canceled; buffered Save retains its ordinary deferred phase8.",
+      "All existing NotebookSchool capture/coalescing/Save/safety/JOIN/warm-submission cases pass."
+    ],
+    "limits": "No host99 normalization, suppression, buffer enlargement, target guard loosening, optical build, whole guest/audit, CPU handwriting or improved rate claim. A changed sealed guest and ordinary immediate-JOIN ink consumer remain required."
   }
 }

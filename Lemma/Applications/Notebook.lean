@@ -5337,6 +5337,10 @@ private def bufferedBookInk : Action :=
   if status < 2 then
   .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
   if count = 0 then
+  -- The busy-paper path has the same writing priority as ordinary ink.
+  -- JOIN may still own the original package READ/EOF transaction. Retire
+  -- that exact reader before retaining a stroke that will need Store IPC.
+  .bind cancelBookmarkWork fun s _ => if statusFailed s = true then failWriting s else
   .bind numericMarkPadOverdraw fun s _ => if statusFailed s = true then failWriting s else
   .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
   else .done 0 0 else .done 0 0
