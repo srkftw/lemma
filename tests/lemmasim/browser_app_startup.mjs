@@ -366,6 +366,20 @@ for(const phase of ['adapter','device']){
  emit({...loss,state:'malformed'},null);assert.match(f.node('#ink-loss-status').textContent,/report invalid/);
  emit(null,null);assert.match(f.node('#ink-loss-status').textContent,/No input loss reported/);
 }
+// A durable local queue precedes its UART envelope. Do not invite transport
+// until the complete ordered stream has actually been observed.
+{
+ const f=await appFixture(undefined),queue={state:'pending',queue:'6003579778261581866',bytes:'264',streamedBytes:'0',streamComplete:false};
+ const emit=guestQueue=>f.worker.onmessage({data:{type:'state',state:{cycle:'1'},guestQueue,running:false,readyAt:null,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ emit(queue);assert.equal(f.node('#school-submit').disabled,true);assert.match(f.node('#school-outgoing').textContent,/receiving envelope 0\/264 bytes/);
+ emit({...queue,streamedBytes:'16'});assert.match(f.node('#school-outgoing').textContent,/16\/264/);
+ emit({...queue,streamedBytes:'264',streamComplete:true});assert.equal(f.node('#school-submit').disabled,false);
+ assert.match(f.node('#school-outgoing').textContent,/Complete outgoing work 6003579778261581866/);
+ assert.match(f.node('#school-outgoing').textContent,/acknowledgement has not been observed/);
+ emit({state:'acknowledged',queue:queue.queue});assert.match(f.node('#school-outgoing').textContent,/acknowledged/);
+ emit({state:'failed',code:'240'});assert.match(f.node('#school-outgoing').textContent,/failed \(240\); saved paper remains available/);
+ emit(null);assert.match(f.node('#school-outgoing').textContent,/No committed outgoing work/);
+}
 // Keyboard pen uses the same raw input boundary, including contact cancellation.
 {
  const f=await appFixture(undefined),paper=f.canvas();paper.width=1650;paper.height=2200;

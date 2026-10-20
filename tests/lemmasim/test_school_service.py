@@ -130,6 +130,28 @@ assert.throws(()=>guestSchoolCapability(Uint8Array.from(Buffer.from(process.argv
         self.assertEqual(result['queue'],QUEUE);self.assertEqual(result['commit'],23)
         self.assertEqual(bytes(result['bytes']),payload)
 
+    def test_browser_queue_progress_requires_complete_ordered_guest_stream(self):
+        _,records=fixture()
+        script=r"""
+import assert from 'node:assert/strict';
+import {guestSchoolQueueState} from './sim/browser/school_transport.js';
+const rows=JSON.parse(process.argv[1]),encode=x=>new TextEncoder().encode(x),observe=x=>guestSchoolQueueState(encode(x));
+const initial=observe(rows[0]);assert.equal(initial.streamedBytes,'0');assert.equal(initial.streamComplete,false);
+assert.equal(observe(rows.slice(0,2).join('')).streamedBytes,'16');
+const prefix=rows.slice(0,-1).join('');assert.equal(observe(prefix).streamedBytes,'264');assert.equal(observe(prefix).streamComplete,false);
+assert.equal(observe(prefix+rows.at(-1).slice(0,-1)).streamComplete,false,'partial terminal record is not complete');
+const complete=rows.join('');assert.equal(observe(complete).streamComplete,true);
+assert.equal(observe(complete+rows[0]).streamComplete,false,'old completion cannot complete a new stream');
+assert.equal(observe(complete+rows[0]).streamedBytes,'0');
+assert.equal(guestSchoolQueueState(encode(complete),complete.length),null);
+assert.equal(observe(rows.at(-1)),null,'a suffix cannot invent its missing start');
+for(const invalid of [rows[0]+rows[2]+rows[1],rows[0]+rows.at(-1),prefix+rows.at(-1).replace('0000000000000017','0000000000000018'),complete+rows[1]])assert.throws(()=>observe(invalid));
+const failure='K1 0000000000000732 00000000000000f0 0000000000000000 0000000000000000 0000000000000000\n';
+assert.equal(observe(complete+failure).state,'failed');assert.equal(observe(complete+failure+rows[0]).streamComplete,false);
+"""
+        result=subprocess.run(['node','--input-type=module','-e',script,json.dumps([r.decode() for r in records])],cwd=ROOT,capture_output=True,text=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+
     def test_partial_new_mixed_reordered_and_false_end_reject(self):
         _,records=fixture()
         for data in (b''.join(records[:-1]),b''.join(records)+records[0],

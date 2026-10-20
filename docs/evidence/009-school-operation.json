@@ -664,12 +664,12 @@
       "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
       "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
     },
-    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1\u21922. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
     "connectedUpgrade": {
       "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
       "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
     },
-    "connectedObservation": "Normal owned stop/restart generation5\u21926, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
     "retainedPreparationFailures": [
       {
         "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
@@ -766,7 +766,7 @@
         "path": "tests/school/test_delivery.py",
         "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
       },
-      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2\u21923."
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
     },
     "browserTests": {
       "result": "PASS",
@@ -786,7 +786,7 @@
       "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
       "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
     },
-    "connectedScope": "All29 prior records unchanged, generation6\u21927/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
     "retainedObserverFailures": [
       {
         "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
@@ -1358,7 +1358,7 @@
       "sha256": "c4a73274c4c15b1d8c3cff13c164ffa90ac323a79d6aa66813002551e603efb0"
     },
     "status": "PASS_ORIGINAL_GUEST_ENVELOPE_REPLAY_AFTER_GENERATION_CHANGE",
-    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13\u219214. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
+    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13→14. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
   },
   "ordinary_live_model_release_cycle": {
     "result": {
@@ -1682,5 +1682,158 @@
       "retain stale error after retry"
     ],
     "scope": "Actual fresh maintained Lean elaboration and finite Action execution. Store ACK/checker reply are explicit component premises. Five source mutations each fail their expected consumer assertion. Genuine target production/audits and new native/browser execution are separate pending gates; prior cold native success did not qualify warm SEND."
+  },
+  "ordinaryBrowserReceipt2A15": {
+    "result": "FAIL_STRICT_BACKEND_BUDGET_AFTER_SCHOOL_COMMIT",
+    "source": {
+      "bundle": "build/task009/school23-mm2-browser-a3/bundle.json",
+      "bundleSHA256": "146c9476414dfb32283dddbd0da251a94859e1b4628ef4f1ec794034c8604940",
+      "nativeBundleSHA256": "5041fb9f71b6ab18749d1f438ff26f9199306c6fe7ee53e8c372263c11c97b8b",
+      "source545InventorySHA256": "03914f7cea4a400cc3761f8fe7974f76b300db7a9e14a3abd3c21b1c3aadbcd6",
+      "runtime": "build/task009/mm2-tci-stop-runtime-a1/runtime.json",
+      "runtimeSHA256": "7949a9a6254aaa273cc29d23b2f826361524e0d1b468bf9bb9b6a9f8bc8f1c68",
+      "controllerABI": 2,
+      "executionBinding": "lemma-silicon-fast-mm2-subset/0.1.0",
+      "stopBoundaryContract": "lemma-qemu-cpu-stop/1"
+    },
+    "mode": "Student; ordinary controls and synthetic keyboard pointer input; no diagnostic injection",
+    "student": {
+      "stableTitleCourse": "803/2",
+      "originalNode": 4,
+      "typedVerifiedRevision": 7,
+      "actualInkStrokes": 11,
+      "actualNineWordRawSamples": 61,
+      "actualSampleSequenceRange": [
+        13,
+        73
+      ],
+      "explicitSaved": 33,
+      "exactRawAssessment": {
+        "path": "build/school/task009-student-browser-a15/ink-save33-assessment.json",
+        "sha256": "e4f1f14538de1629740af0ccc2e4e762e504c5fd910116ddd1065aa29b2da6ab"
+      },
+      "help": {
+        "decision": "browser-162168570-803-2.34",
+        "binding": 114,
+        "preparedCommit": 36,
+        "rasterCommit": 37,
+        "actualVisibleText": "Write all four products before collecting coefficients. State the domain explicitly.",
+        "authority": "authored-baseline, unverified assistance"
+      },
+      "explicitSaveAfterHelp": 39,
+      "warmSEND": {
+        "status": 240,
+        "queueCreated": false,
+        "scope": "Retained real defect; later cold original-package path does not qualify warm-overlay submission."
+      },
+      "independentColdReopen": {
+        "readyUnits": 250900000,
+        "readySeconds": 213.9523150000572,
+        "originalDeadlineUTC": "2026-10-20T09:51:20.070857+00:00",
+        "actualSavedAnnotationRecovered": true,
+        "newBinding": 132,
+        "sameSourceEditionNode": [
+          803,
+          2,
+          4
+        ],
+        "recheckedVerifiedRevision": 7,
+        "saved": 40,
+        "newPenLoss": 0
+      },
+      "actualCompleteEnvelopeBytes": 10336,
+      "actualOrderedWireChunks": 647,
+      "schoolAttempt": "guest.132.6003579778261581866",
+      "schoolCommit": 136,
+      "artifact": "e6b393536103893068b6b6228a2f518f8a28740085eb17b015ee99438f663b8a",
+      "guestACKBytesDelivered": 64,
+      "actual733Observed": false
+    },
+    "teacher": {
+      "assessment": 137,
+      "result": "accepted synthetic workflow assessment; not a human experiment, mastery or proof-kernel verification",
+      "originalImmutableTypedOutcome": "Verified",
+      "handwriting": "opaque",
+      "visibleInkChunks": 11,
+      "hostedPreviewNonWhitePixels": 374,
+      "oldExposureDecision": "browser-162168570-803-2.34",
+      "oldExposureBinding": 114,
+      "newSubmissionBinding": 132,
+      "receipt": "build/school/task009-bob-review136-a1/result.json",
+      "receiptSHA256": "03fef7ec6836cb3a9146eb21b82fa96ae03303804fac69d84e35b34e188f7fa3",
+      "feedbackRetrievedByBrowser": false
+    },
+    "retainedFailure": {
+      "result": "FAIL",
+      "boundary": {
+        "contract": "lemma-tci-quantum-observation/1",
+        "result": "Strict execution-budget rejection",
+        "before": {
+          "cycle": "1506330820",
+          "virtual_ns": "15063308200"
+        },
+        "observed": {
+          "cycle": "1506430870",
+          "virtual_ns": "15064308697"
+        },
+        "targetVirtualNs": "15064308193",
+        "quantum": "100000",
+        "elapsedSeconds": 0.08076499998569489,
+        "budget": {
+          "requested": "922337202551246760",
+          "used": "372100000",
+          "remaining": "922337202179146760",
+          "limit": "922337203685477580",
+          "stopOnReady": false,
+          "hostSecondsLimit": 300,
+          "panelBoundary": null,
+          "cycle": "1506330820"
+        }
+      },
+      "school_commit": 136,
+      "attempt": "guest.132.6003579778261581866",
+      "artifact": "e6b393536103893068b6b6228a2f518f8a28740085eb17b015ee99438f663b8a",
+      "envelope_bytes": 10336,
+      "all_envelope_bytes_streamed": true,
+      "guest_ACK_bytes_delivered": 64,
+      "actual733_observed": false,
+      "cold_functional_units": 1506430870,
+      "prior_warm_observed_units": 2943989844,
+      "whole_observed_functional_units": 4450420714,
+      "limit": 24000000000,
+      "terminal_support_sha256": "29e306ac2386456fa116cf0090d333480c1c371f19716973a063d4a9b0e4ab74",
+      "terminal_backing_sha256": "7f9a554515948f54e21509868ea24a888e0948217c0949c10ea5042059b8e967",
+      "ordinary_Close_observed": true,
+      "terminal_utc": "2026-10-20T10:05:39.358439+00:00",
+      "scope": "Actual schoolcommit136 plus retained guest/budget failure. No ordinarybrowser completion or new runtime cause is inferred."
+    },
+    "cleanup": {
+      "returncode": -15,
+      "terminal_unix": 1792490739.4116478,
+      "elapsed_seconds": 4435.989637374878,
+      "original_deadline_utc": "2026-10-20T11:21:43.422011+00:00",
+      "reason": "owned caller stop or server exit",
+      "cleanup": "owned server process group reaped; browser guest must be Closed through ordinary UI separately"
+    },
+    "evidence": {
+      "terminalReceipt": "build/school/task009-student-browser-a15/terminal-result.json",
+      "terminalReceiptSHA256": "42f2e5d8afca3def00f832f2e17cc8aff75bd436e6d5b882b34b9ac287ac5bcb",
+      "recoveredImage": "docs/evidence/009-browser-recovered-annotation.png",
+      "recoveredImageSHA256": "cffd83960c9a089af48f4a482992b301cf67ddb14425533823d8c5fc05c4af2a",
+      "imageScope": "Actual cold-recovered controller pixels; no fabricated guest marks."
+    },
+    "transportUIRepair": {
+      "implementation": [
+        "sim/browser/school_transport.js",
+        "sim/browser/app.js"
+      ],
+      "change": "Observe existing ordered byte offsets/end record before exposing ready-to-send; show progress and disable Submit while incomplete. No target policy or acknowledgement is inferred.",
+      "hostCases": 8,
+      "appFixture": "PASS",
+      "actualClosedTranscriptAssessment": "build/task009/browser-queue-progress-a2/result.json",
+      "actualClosedTranscriptSeconds": 0.046,
+      "scope": "Host/closed-transcript qualification; new distributed browser execution remains required."
+    },
+    "remaining": "Fix measured TCI stop-boundary discrepancy; run repaired warm guest/new UI in actual browser, retrieve feedback, demonstrate exact guest acknowledgement/retry and linked due response. Native, canonical RTL, physical and educational scopes remain separate."
   }
 }

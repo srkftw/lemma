@@ -14,10 +14,22 @@ export function guestSchoolCapability(bytes,start=0){
 export function guestSchoolQueueState(bytes,start=0){
  if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length)throw Error('Invalid guest queue observation');
  let state=null;
- for(const row of new TextDecoder().decode(bytes.subarray(start)).matchAll(/(?:^|\n)K1 (000000000000072e|000000000000073[234]) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)/g)){
+ for(const row of new TextDecoder().decode(bytes.subarray(start)).matchAll(/(?:^|\n)K1 (000000000000072[ef]|000000000000073[0234]) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)/g)){
   const [tag,a,b,c,d]=row.slice(1).map(x=>BigInt('0x'+x));
   if(tag===0x732n)state={state:'failed',code:String(a),authority:'compiled-guest-report'};
-  else if(tag===0x72en)state={state:'pending',queue:String(a),localQueueCommit:String(b),bytes:String(c),authority:'compiled-guest-report'};
+  else if(tag===0x72en){
+   if(a>>48n!==0x5351n||b===0n||c<256n||c>262144n||(d!==1n&&d!==2n))throw Error('Malformed guest submission stream start');
+   state={state:'pending',queue:String(a),localQueueCommit:String(b),bytes:String(c),streamedBytes:'0',streamComplete:false,authority:'compiled-guest-report'};
+  }else if(tag===0x72fn){
+   if(state?.state!=='pending')continue;
+   const offset=b&((1n<<48n)-1n),count=b>>48n;
+   if(String(a)!==state.queue||state.streamComplete||count<1n||count>16n||offset!==BigInt(state.streamedBytes)||offset+count>BigInt(state.bytes))throw Error('Guest submission stream is missing, reordered or mixed');
+   state.streamedBytes=String(offset+count);
+  }else if(tag===0x730n){
+   if(state?.state!=='pending')continue;
+   if(String(a)!==state.queue||String(b)!==state.localQueueCommit||String(c)!==state.bytes||d!==0n||state.streamedBytes!==state.bytes)throw Error('Guest submission ended before its exact committed bytes');
+   state.streamComplete=true;
+  }
   else if((d===2n&&b===0n)||(d===3n&&b>0n))state={state:d===2n?'cancelled':'acknowledged',queue:String(a),schoolCommit:String(b),observedFrontier:String(c),observation:tag===0x733n?'new-pointer-commit':'restored-pointer-read',authority:'compiled-guest-report'};
   else throw Error('Malformed terminal guest queue report');
  }

@@ -401,7 +401,12 @@
         "tests/silicon/test_process_comparator.py",
         "scripts/silicon_route_enclosure.py",
         "tooling/silicon/pen-*.tcl",
-        "tooling/silicon/candidates/*.patch"
+        "tooling/silicon/candidates/*.patch",
+        "scripts/silicon_access_metadata.py",
+        "scripts/silicon_access_preference.py",
+        "scripts/silicon_preferred_route.py",
+        "tooling/silicon/opendb-access-export.cpp",
+        "tests/silicon/test_access_preferences.py"
       ],
       "claims": [
         "physical-flow"
@@ -822,7 +827,11 @@
         "tooling/lemmasim/patch_soft_tlb2.py",
         "tooling/lemmasim/patch_multimodal_checkpoint.py",
         "tooling/lemmasim/patch_logical2_lifecycle.py",
-        "tooling/lemmasim/qemu_logical2_reuse.nix"
+        "tooling/lemmasim/qemu_logical2_reuse.nix",
+        "docs/contracts/009-native-mm2-continuation-v1.html",
+        "tests/silicon/test_mm2_checkpoint_admission.py",
+        "tests/silicon/test_native_logical_relation.py",
+        "tests/silicon/test_checkpoint_transaction.py"
       ],
       "claims": [
         "native-logical2",
