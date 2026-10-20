@@ -19,6 +19,15 @@ for(const text of [receipt.slice(0,-1),'prefix'+receipt,row(2n),row(1n,0n),row(0
 const failure=guestCourseInstallState(encode(row(0xdf01n,0n)),0);
 assert.equal(failure.state,'failed');assert.equal(failure.status,'223');assert.equal(failure.sequence,'0');
 assert.equal(guestCourseInstallState(encode(receipt+row(0xe301n,0n)),0).status,'227');
+for(const operation of [2n,3n,8n,9n,10n]){
+ const selected=row(operation,4n);
+ assert.deepEqual(guestCourseInstallState(encode(receipt+selected),0),guestCourseInstallState(encode(receipt),0));
+ assert.equal(guestCourseInstallState(encode(receipt+selected),receipt.length),null);
+ assert.equal(guestCourseInstallState(encode(receipt+row(0xe301n,0n)+selected),0).state,'failed');
+}
+assert.equal(guestCourseInstallState(encode(receipt+row(1n,0n)+row(9n)),0),null);
+assert.equal(guestCourseInstallState(encode(receipt+row(9n)+row(1n,7n,0x20803n)),0).identity,'2051');
+assert.equal(guestCourseInstallState(encode(receipt+row(1n,7n).slice(0,-1)),0).sequence,'9007199254740993');
 """
         run=subprocess.run(['node','--input-type=module','-e',script],cwd=ROOT,capture_output=True,text=True,timeout=15)
         self.assertEqual(run.returncode,0,run.stdout+run.stderr)

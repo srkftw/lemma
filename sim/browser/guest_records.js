@@ -49,16 +49,24 @@ export function guestCommitState(bytes,start){
 // Observe only complete guest installer reports. Transport admission, parsing
 // and a queued write never establish installation or durability here.
 export function guestCourseInstallState(bytes,start){
- const fields=guestRecordFields(bytes,start,'00000000000004b1');
- if(fields===null)return null;
- const [outcome,sequence,object,crc]=fields.map(value=>BigInt('0x'+value));
+ if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length)
+  throw Error('Guest UART history was truncated or has an invalid observation boundary');
+ const records=new TextDecoder().decode(bytes.subarray(start)).matchAll(/(?:^|\n)K1 00000000000004b1 ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)/g);
+ let result=null;
+ for(const row of records){
+ const [outcome,sequence,object,crc]=row.slice(1).map(value=>BigInt('0x'+value));
  const operation=outcome&255n,status=outcome>>8n;
- if(operation!==1n||status>255n||object>>48n||crc>0xffffffffn)return null;
+ // Selection, ACK and help commands share this report tag. They cannot erase
+ // the last complete install report; their own receipt has a separate meaning.
+ if(operation!==1n)continue;
+ if(status>255n||object>>48n||crc>0xffffffffn){result=null;continue;}
  const identity=object&65535n,edition=object>>16n;
- if(identity===0n||edition===0n||(status===0n&&sequence===0n))return null;
- return {authority:'compiled-guest-report',state:status===0n?'installed':'failed',
+ if(identity===0n||edition===0n||(status===0n&&sequence===0n)){result=null;continue;}
+ result={authority:'compiled-guest-report',state:status===0n?'installed':'failed',
   status:status.toString(),identity:identity.toString(),edition:edition.toString(),
   sequence:sequence.toString(),crc32:crc.toString()};
+ }
+ return result;
 }
 
 // Incremental presentation of the admitted notebook's kernel lifecycle. Image
