@@ -3159,5 +3159,107 @@
         "scope": "Original90s/512MiB-RSS/128MiB-output case stopped after5.174s while copying the first binary. No complete producer receipt. Its failure is not promoted; the new unused case prospectively budgets512MiB output against the measured290187854-byte prior closure."
       }
     ]
+  },
+  "ordinaryNativeActivityTitleSelection": {
+    "result": "PASS scoped ordinary title selection to supported exact-task submission and Teacher feedback; no complete written proof or Task009 completion",
+    "terminalReceipt": {
+      "path": "build/school/task009-native-activity-selector-a1/terminal-result.json",
+      "sha256": "5e78521a944bedb4517a9b154c691721d4f5c70c858a20923b8989c85118547f"
+    },
+    "closedLedgerAssessment": {
+      "path": "build/school/task009-native-activity-selector-a1/closed-assessment.json",
+      "sha256": "aacb9ba584ac789d544a3bcbb7cd0e45a1464111c55a06e9b2f9b4656075e16c",
+      "scope": "Original receipt grouped the200M BindASK packet run with math; closed actual schedule allocates math1,300,000,002 and join/stream/ACK700,000,000 under their original1.5B limits. No new Run, budget extension or cap change."
+    },
+    "nativeBundleManifestSHA256": "03e034e17ca3c6f7b1dd64a9ae7caec2d29e4d4796322fbdabae3105d32e5e7d",
+    "freshExecution": "Ordinary Student25/Tk Study consumes the host-only title-selector package; same previously audited guest/source/p81 runtime, no new target compilation.",
+    "authority": {
+      "generation": 29,
+      "originalDeadlineUTC": "2026-10-20T22:45:54.401029+00:00",
+      "startupAcknowledgedRows": 220,
+      "startupArtifacts": 74,
+      "sameClockEpochSequence": 5,
+      "allPriorHistoryUnchanged": true,
+      "oldBob197AndAlice209StillRevoked": true,
+      "staleActualWorkerRejected": true,
+      "freshNativeAdmission": 221,
+      "freshBrowserAdmission": 222,
+      "transitionReceipt": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation29/transition-assessment.json",
+      "transitionSHA256": "94d8c2dcb9032282ef6d7791a8e12641b14022da4ff52831c2eec4315e1805a0"
+    },
+    "selection": {
+      "publication": 158,
+      "course": 804,
+      "edition": 2,
+      "policy": 2,
+      "activity": "exact-sum",
+      "title": "Calculate, then check the exact task",
+      "nodeZeroBased": 2,
+      "guestTask": 3,
+      "packageSHA256": "5690f1bb88954c68917d3dab93e889c67a27eabc4be47e480a17dd77dbcc1d3c",
+      "guestInstall": 3,
+      "guestSelected": 4,
+      "sameCutActualPaperAndPrivateFramebufferPackedSHA256": "18f7335380e64c94a60055ae7eb13cd901b618a8645766e9671fa57f045c0628",
+      "observerCorrection": "Earlier1.5B small-view/450 workspace observation was treated as unresolved reader progress. The retained private same-input1800M cut validates all4391 bytes; exact full-frame hash equals the actual Student paper. No reader/publication defect or guest source repair is established."
+    },
+    "actualWorkflow": {
+      "localReductionRequest": 1000326,
+      "before": [
+        10,
+        12
+      ],
+      "after": [
+        5,
+        6
+      ],
+      "preparedCommit": 14,
+      "appliedCommit": 15,
+      "separateGuestCHECK": {
+        "revision": 8,
+        "outcome": 1
+      },
+      "explicitSaved": 17,
+      "ASKTask": 3,
+      "binding": 223,
+      "S1Bytes": 4096,
+      "envelopeCRC32": 4154245551,
+      "attempt": "guest.223.6003579778261581843",
+      "schoolCommit": 227,
+      "artifact": "63aef8b32f98f1094c7addd31ddad2ee84b9777a1babf80d36cb0c260732c35f",
+      "workKind": 1,
+      "hostedExactOutcome": 1,
+      "guest733Pointer": 22,
+      "localToolCurrentWorkExposure": true,
+      "remoteHelpExposure": false,
+      "writtenInkChunks": 0
+    },
+    "teacher": {
+      "assessment": 228,
+      "originalCriteria": 3,
+      "criteria": [
+        "met",
+        "unclear",
+        "met"
+      ],
+      "disposition": "clarification",
+      "blankTypedOnlyPreview": true,
+      "visibleOrdinaryStudyFeedback": true,
+      "scope": "Synthetic Teacher judgment retains the exact numeric result and disclosed local tool use, and requests the missing common-denominator argument."
+    },
+    "terminal": {
+      "observedUTC": "2026-10-20T21:13:12.752535+00:00",
+      "originalDeadlineUTC": "2026-10-20T21:22:38.532138+00:00",
+      "originalWholeSeconds": 1800,
+      "actualFunctionalUnits": 3800000003,
+      "originalWholeFunctionalUnits": 8000000000,
+      "peakNativeRSSBytes": 158568448,
+      "allOwnersGone": true,
+      "mediumSHA256": "7bc53a43c7b17f295e311ebd2214de0aeaa764d50c484f9b651638aebf051b26"
+    },
+    "limits": [
+      "No remote help presentation, complete handwritten reasoning, due-response completion, sustained capture rate, new throughput comparison or educational benefit claimed.",
+      "The focused4096-byte queue does not replace the earlier actual39544-byte cold-replay evidence.",
+      "Original prelaunch reservation refusal, GUI log-path collision and earlier reader observations remain retained."
+    ]
   }
 }
