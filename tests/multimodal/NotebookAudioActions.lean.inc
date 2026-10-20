@@ -20,6 +20,8 @@ structure AudioFixture where
   ringGaps : UInt64 := 0
   ringHeld : UInt64 := 0
   advanceRing : Bool := false
+  finishAfterConsumed : Bool := false
+  failDoneConsumed : Bool := false
   deriving Inhabited
 private def afRead (s : AudioFixture) (address : UInt64) : UInt64 := s.words.getD address 0
 private def afPut (s : AudioFixture) (address value : UInt64) : AudioFixture :=
@@ -118,13 +120,19 @@ partial def afExecute (r : IO.Ref AudioFixture) (action : Action) : IO (UInt8 ×
           -- A legal controller continues fetching/submitting/consuming between
           -- service calls. Each instantaneous state obeys its own inequalities;
           -- the caller must not assume these individually read values are atomic.
-          if s.advanceRing then
-            r.modify fun s => {s with ringFetched := s.ringFetched+4,ringSubmitted := s.ringSubmitted+4,consumed := s.consumed+4}
-          let sampled ← r.get
-          afExecute r (next 0 (if e = 0 then sampled.ringMode else if e = 1 then sampled.ringAccepted else
-            if e = 2 then sampled.ringFetched else if e = 3 then sampled.ringSubmitted else if e = 4 then sampled.consumed else
-            if e = 5 then sampled.ringGaps else if e = 6 then sampled.ringHeld else if e = 7 then 0 else
-            if e = 8 then 17 else if e = 9 then 2048 else 0))
+          if s.failDoneConsumed && e == 4 && s.ringMode == 2 then
+            r.modify fun s => {s with failDoneConsumed:=false}
+            afExecute r (next 7 0)
+          else
+            if s.advanceRing then
+              r.modify fun s => {s with ringFetched := s.ringFetched+4,ringSubmitted := s.ringSubmitted+4,consumed := s.consumed+4}
+            if s.finishAfterConsumed && e == 3 then
+              r.modify fun s => {s with consumed:=4999,ringFetched:=4099,ringSubmitted:=4599,ringMode:=2,finishAfterConsumed:=false}
+            let sampled ← r.get
+            afExecute r (next 0 (if e = 0 then sampled.ringMode else if e = 1 then sampled.ringAccepted else
+              if e = 2 then sampled.ringFetched else if e = 3 then sampled.ringSubmitted else if e = 4 then sampled.consumed else
+              if e = 5 then sampled.ringGaps else if e = 6 then sampled.ringHeld else if e = 7 then 0 else
+              if e = 8 then 17 else if e = 9 then 2048 else 0))
         else throw <| IO.userError s!"unexpected audio service operation {c}"
       else throw <| IO.userError s!"unexpected syscall {a}"
     | _ => throw <| IO.userError "unexpected platform Action"
@@ -190,5 +198,7 @@ def afMain : IO Unit := do
   afCheck ((← r.get).revoked = 1 && (← r.get).packets.isEmpty && (← r.get).receipts.isEmpty) "counter overflow enqueued or fabricated output"
   IO.println "NOTEBOOK_AUDIO_ACTIONS_PASS"
 end Lemma.User.Multimodal
+
+
 
 def main : IO Unit := Lemma.User.Multimodal.afMain

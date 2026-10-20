@@ -24,6 +24,25 @@ def afRingMain : IO Unit := do
   for i in [:4099] do
     afCheck (samples[i]! = ((i.toUInt64*7919+311) &&& 65535)) s!"arbitrary signed sample changed at{i}"
   afCheck (afRead filled (audioPage+32) < 4099 && afRead filled audioPage = 2) "accepted packet claimed completion"
+  let edge ← IO.mkRef {filled with ringFetched:=4099,ringSubmitted:=4599,consumed:=4998,ringMode:=1,finishAfterConsumed:=true}
+  ringCheckNoFault edge pumpAudio "controller completes after earlier consumed read"
+  let terminal ← edge.get
+  afCheck (terminal.receipts.any (fun x => x.startsWith "K1 0000000000000716" && x.endsWith " 0000000000000000\n"))
+    "legal DONE transition after consumed read falsely reported failure"
+  let short ← IO.mkRef {filled with ringFetched:=4099,ringSubmitted:=4599,consumed:=4998,ringMode:=2}
+  ringCheckNoFault short pumpAudio "DONE with short raw consumed rejects completion"
+  afCheck ((← short.get).receipts.any (fun x => x.startsWith "K1 0000000000000716" && x.endsWith " 0000000000000003\n"))
+    "DONE alone invented a consumed sample"
+  let failed ← IO.mkRef {filled with
+    ringFetched := 4099
+    ringSubmitted := 4599
+    consumed := 4998
+    ringMode := 1
+    finishAfterConsumed := true
+    failDoneConsumed := true}
+  ringCheckNoFault failed pumpAudio "DONE fresh consumed read fails closed"
+  afCheck ((← failed.get).receipts.any (fun x => x.startsWith "K1 0000000000000716" && x.endsWith " 0000000000000003\n"))
+    "failed fresh raw query became completed playback"
   r.modify fun s => {s with ringFetched := 4099,ringSubmitted := 4599,consumed := 4999,ringMode := 2}
   ringCheckNoFault r pumpAudio "exact consumed completion"
   let completed ← r.get

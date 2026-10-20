@@ -452,7 +452,16 @@ private def pumpRingAudio : Action :=
   .bind (statusOwnedPCM 7 epoch) fun s fault => if mmFailed s = true then .done s 0 else
   if mmDifferent fault 0 = true then stopRing 3 0 else
   if mmDifferent gaps 0 = true then stopRing 3 0 else
-  if total = consumed then if mode = 2 then stopRing 0 0 else .done 0 consumed else
+  -- These are separate service calls: DONE may become visible after the
+  -- earlier consumed observation. Require a fresh exact raw consumed count;
+  -- neither accepted/fetched nor DONE alone invents a consumed prefix.
+  if mode = 2 then
+    if total = consumed then stopRing 0 0 else
+    .bind (statusOwnedPCM 4 epoch) fun s actual => if mmFailed s = true then stopRing 3 0 else
+    .bind (ringGet 24) fun s base => if mmFailed s = true then .done s 0 else
+    if actual < base then stopRing 3 0 else
+    if actual-base = total then stopRing 0 0 else stopRing 3 0
+  else if total = consumed then .done 0 consumed else
   .bind (invoke 10 0 0 0) fun status ticks =>
   if mmFailed status = true then stopRing 3 0 else
   .bind (audioGet 40) fun s expiry => if mmFailed s = true then .done s 0 else
