@@ -5,6 +5,7 @@ roots, effects and call closure. Collection is not execution evidence.
 """
 from pathlib import Path
 import json
+import re
 from core0_common import Core0Error
 from paper_next import canonical
 from school_deployment import CONFIGURATIONS, USER_ROOTS, INTEGRATED_CONFIGURATIONS, BOOT_ROOTS, software_deployment_for
@@ -36,6 +37,111 @@ def catalog(unit):
         require((unit.get('image_id'),unit.get('contract_version'))==(identifier,profile) and roots==[(source,1,['u64'])] and unit.get('used_device_ops')==[],'isolated root/profile/device authority differs')
     return key,names
 
+def warm_send_semantics(ir, rows):
+    """Reviewed warm overlay path; complete pre/post pins remain mandatory.
+
+    Follow actual checked LLVM values rather than recognizing function names.
+    Source guards separately bind the structured rejection paths and layout.
+    """
+    from audit_kernel import _ir_definition_body, _local_call_arguments, _local_checked_result
+    n='Lemma.Applications.Notebook.';memory='Lemma.User.Memory.';workspace='Lemma.Courses.PackageWorkspace.'
+    def body(name):
+        require(name in rows,'warm SEND source absent: '+name)
+        return _ir_definition_body(ir,rows[name]['symbol'])
+    def calls(owner,target):
+        require(target in rows,'warm SEND target absent: '+target)
+        return _local_call_arguments(body(owner),rows[target]['symbol'])
+    def value(owner,target,args):return _local_checked_result(body(owner),rows[target]['symbol'],args)[1]
+    var=r'%[A-Za-z0-9_.$-]+'
+    def scalar(owner,target,args=''):
+        require(target in rows,'warm SEND scalar absent: '+target)
+        found=re.findall('('+var+r') = call i64 @'+re.escape(rows[target]['symbol'])+r'\('+re.escape(args)+r'\)',body(owner))
+        require(found,'warm SEND scalar value absent: '+target)
+        return found
+    def add(owner,left,right):
+        found=re.findall('('+var+r') = add i64 '+re.escape(left)+', '+re.escape(right)+r'$',body(owner),re.M)
+        require(len(found)==1,'warm SEND exact address addition differs')
+        return found[0]
+    def read_at(owner,base,offset):
+        found=[]
+        for pointer in scalar(owner,base):
+            match=re.findall('('+var+r') = add i64 '+re.escape(pointer)+', '+str(offset)+r'$',body(owner),re.M)
+            for address in match:found.append(value(owner,memory+'read64','i64 '+address))
+        require(len(found)==1,'warm SEND exact source address differs: '+base+'/'+str(offset))
+        return found[0]
+    def compare(owner,predicate,left,right):
+        found=re.findall('('+var+r') = icmp '+predicate+' i64 '+re.escape(left)+', '+re.escape(right)+r'$',body(owner),re.M)
+        require(len(found)==1 and re.search(r'br i1 '+re.escape(found[0])+r', label %[^,]+, label %[^\n]+',body(owner)),
+                'warm SEND original-context comparison differs: '+predicate+' '+left+'/'+right)
+    source=n+'schoolSendSource';attempt=n+'schoolSendAttempt';wrapper=n+'schoolSend'
+    require(calls(wrapper,attempt)==[''] and calls(attempt,source)==[''],'warm SEND wrapper/attempt/source route differs')
+    source_body=body(source)
+    require(calls(source,memory+'write64')==[],'warm SEND source helper wrote outside its private scratch')
+    scratch_store=n+'schoolSendSource.store';writes=[]
+    for offset,argument in ((16,0),(24,1),(32,3),(40,2)):
+        matches=[]
+        for base in scalar(scratch_store,n+'packageBindingScratch'):
+            found=re.findall('('+var+r') = add i64 '+re.escape(base)+', '+str(offset)+r'$',body(scratch_store),re.M)
+            matches+=found
+        require(len(matches)==1,'warm SEND scratch address differs')
+        writes.append('i64 '+matches[0]+', i64 %arg'+str(argument))
+    require(calls(scratch_store,memory+'write64')==writes,'warm SEND scratch publication changed tuple or ownership')
+    value(wrapper,attempt,'')
+    attempt_call=re.findall('('+var+r') = call \{ i64, i64 \} @'+re.escape(rows[attempt]['symbol'])+r'\(\)',body(wrapper))
+    status_word=re.findall('('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(attempt_call[0])+r', 0$',body(wrapper),re.M)
+    status=re.findall('('+var+r') = trunc i64 '+re.escape(status_word[0])+r' to i8$',body(wrapper),re.M) if len(status_word)==1 else []
+    require(len(status)==1 and calls(wrapper,n+'schoolQueueFailure')==['i8 zeroext '+status[0]],'warm SEND rejection lost original status')
+    ns=value(source,n+'get','i64 72');page=value(source,n+'get','i64 80')
+    bases=scalar(source,n+'packageWorkspace')
+    require(calls(source,workspace+'validate')==['i64 '+bases[0]+', i64 '+ns+', i64 '+page],
+            'warm SEND escaped current namespace/page validation')
+    loaded=read_at(source,n+'packageBytes',24);compare(source,'eq',loaded,'60001')
+    fields={offset:value(source,n+'tutorGet','i64 '+str(offset)) for offset in (112,96,104,24,16,0,48,56,64,88)}
+    current_revision_calls=calls(source,'Lemma.Documents.Mathematics.field')
+    require(len(current_revision_calls)==1 and current_revision_calls[0].endswith(', i64 40'),'warm SEND current mathematical revision differs')
+    revision=value(source,'Lemma.Documents.Mathematics.field',current_revision_calls[0])
+    obj=scalar(source,workspace+'object','i64 '+page)
+    require(len(obj)==1,'warm SEND page object differs')
+    comparisons=[('eq',fields[112],'1'),('eq',ns,fields[96]),('eq',page,fields[104]),
+                 ('eq',fields[24],obj[0]),('ult','0',fields[16]),('ule',fields[16],revision),
+                 ('eq',fields[0],read_at(source,n+'schoolContext',80)),
+                 ('eq',fields[48],read_at(source,n+'schoolContext',88)),
+                 ('eq',fields[56],read_at(source,n+'schoolContext',96)),
+                 ('eq',fields[48],'60000'),('eq',fields[48],'60001')]
+    for predicate,left,right in comparisons:compare(source,predicate,left,right)
+    # Known workspace provenance compares all three original values. A source
+    # overlay cannot become a publication, nor substitute its CRC or task.
+    selection=scalar(source,workspace+'selection')
+    selected=[]
+    for offset in (16,24,32):
+        candidates=[]
+        for base in bases:
+            for select in selection:
+                start=re.findall('('+var+r') = add i64 '+re.escape(base)+', '+re.escape(select)+r'$',source_body,re.M)
+                for pointer in start:
+                    address=re.findall('('+var+r') = add i64 '+re.escape(pointer)+', '+str(offset)+r'$',source_body,re.M)
+                    for item in address:candidates.append(value(source,memory+'read64','i64 '+item))
+        require(len(candidates)==1,'warm SEND known workspace source tuple differs')
+        selected+=candidates
+    for left,right in zip((fields[48],fields[56],fields[88]),selected):compare(source,'eq',left,right)
+    stores=calls(source,n+'schoolSendSource.store')
+    require(len(stores)==2 and stores[0]==', '.join('i64 '+fields[offset] for offset in (48,56,64,88)),
+            'warm SEND retargeted original ASK source/edition/node/CRC')
+    require(calls(attempt,'Lemma.Courses.SchoolSubmission.retry')==['',''] and len(calls(attempt,'Lemma.Courses.SchoolSubmission.start'))==1,
+            'warm SEND immutable pending retry/start route differs')
+    require(body(attempt).index('@'+rows['Lemma.Courses.SchoolSubmission.retry']['symbol']+'(')<body(attempt).index('@'+rows[source]['symbol']+'('),
+            'warm SEND validates new context before immutable pending retry')
+    # Checking kind remains the present work selection, with the resolved source
+    # scratch tuple; original ASK is never a proof/checking-selection binding.
+    args=calls(attempt,n+'schoolWorkKind')
+    require(len(args)==1,'warm SEND current work kind absent')
+    scratch={offset:read_at(attempt,n+'packageBindingScratch',offset) for offset in (16,24,32,40)}
+    revisions=[argument for argument in calls(attempt,'Lemma.Documents.Mathematics.field') if argument.endswith(', i64 40')]
+    require(len(revisions)==1 and args[0].split(', ')[0]=='i64 '+value(attempt,'Lemma.Documents.Mathematics.field',revisions[0]),'warm SEND checking kind lost current revision')
+    require(args[0].split(', ')[1:]==['i64 '+scratch[offset] for offset in (16,24,40,32)],'warm SEND kind/source tuple retargeted')
+    return {'original_ASK_offsets':[48,56,64,88,96,104,112],'known_workspace_checks':['source','edition','CRC'],
+            'current_work_kind':True,'immutable_pending_retry_first':True,'scope':'exact checked LLVM value flow plus separately reviewed source guards and complete body pins'}
+
 def semantics(ir,unit):
     from audit_kernel import _ir_definition_body,_local_call_arguments
     key,rows=catalog(unit)
@@ -53,10 +159,14 @@ def semantics(ir,unit):
         require(owner in rows and target in rows,'missing semantic edge '+owner+' -> '+target)
         return _local_call_arguments(_ir_definition_body(ir,rows[owner]['symbol']),rows[target]['symbol'])
     n='Lemma.Applications.Notebook.';q='Lemma.Courses.SchoolSubmission.';p='Lemma.Courses.PackageInstaller.'
-    edges=[]
+    edges=[];warm=None
     if key=='notebook':
-        edges=[(n+'mainMultimodalSchool',n+'mainMultimodalConfigured'),(n+'multimodalStep',n+'schoolQueuePump'),(n+'schoolQueueInitialize',q+'initializeQueue'),(n+'schoolQueueInitialize',q+'restore'),(n+'schoolSend',q+'start'),(n+'schoolSend',q+'retry'),(n+'schoolCancel',q+'cancel'),(n+'schoolQueuePump',q+'pump'),(n+'schoolQueuePump',q+'frontier'),(n+'issue',q+'suspend'),(n+'issue',q+'writerActive')]
+        edges=[(n+'mainMultimodalSchool',n+'mainMultimodalConfigured'),(n+'multimodalStep',n+'schoolQueuePump'),(n+'schoolQueueInitialize',q+'initializeQueue'),(n+'schoolQueueInitialize',q+'restore'),(n+'schoolCancel',q+'cancel'),(n+'schoolQueuePump',q+'pump'),(n+'schoolQueuePump',q+'frontier'),(n+'issue',q+'suspend'),(n+'issue',q+'writerActive')]
         require(calls(n+'mainMultimodalSchool',n+'mainMultimodalConfigured')==['i64 %arg0, i64 1'],'School root must explicitly enable queue/selection')
+        if n+'schoolSendSource' in rows:
+            warm=warm_send_semantics(ir,rows)
+            edges += [(n+'multimodalStep',n+'multimodalPumpTutor'),(n+'multimodalPumpTutor',n+'multimodalControl'),(n+'multimodalControl',n+'schoolSend'),(n+'schoolSend',n+'schoolSendAttempt'),(n+'schoolSend',n+'schoolQueueFailure'),(n+'schoolSendAttempt',q+'start'),(n+'schoolSendAttempt',q+'retry'),(n+'schoolSendAttempt',n+'schoolSendSource'),(n+'schoolSendAttempt',n+'schoolWorkKind'),(n+'schoolSendSource','Lemma.Courses.PackageWorkspace.validate'),(n+'schoolSendSource','Lemma.Courses.PackageTarget.select'),(n+'schoolSendSource',n+'schoolSendSource.store')]
+        else:edges += [(n+'schoolSend',q+'start'),(n+'schoolSend',q+'retry')]
     elif key=='store':
         s='Lemma.Services.Store.ServerSchool.'
         edges=[(s+'applicationAwait','Lemma.Services.Store.Server.schoolApplication'),(s+'applicationAwait','Lemma.Services.Store.ServerAwait.awaitApplication'),(s+'applicationAwait','Lemma.Services.Store.ServerRecovery.application'),(s+'stepAwait','Lemma.Services.Store.ServerRecovery.pumpRecoveryPhase'),(s+'stepAwait','Lemma.Services.Store.Server.courseService'),(s+'stepAwait','Lemma.Services.Store.ServerAwait.settleWaiters')]
@@ -64,7 +174,7 @@ def semantics(ir,unit):
         loops=unit.get('used_loops',[])
         require(len(loops)==1 and canonical(loops[0].get('callback',''))==p+'stepSelected','selected installer loop differs')
     for owner,target in edges:require(calls(owner,target),'omitted actual call edge '+owner+' -> '+target)
-    return {'role':key,'explicit_call_edges':edges,'scope':'complete genuine source/LLVM authority; connected UI execution remains separate'}
+    return {'role':key,'explicit_call_edges':edges,**({'warm_submission':warm} if warm is not None else {}),'scope':'complete genuine source/LLVM authority; connected UI execution remains separate'}
 def authority(unit):
     from multimodal_target import digest
     key,_=catalog(unit)

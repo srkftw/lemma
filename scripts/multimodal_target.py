@@ -148,8 +148,11 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
             value(notebook,'schoolContext') == 'Lemma.User.Multimodal.records + 1152' and
             value(notebook,'schoolPacket') == 'Lemma.User.Multimodal.records + 1792',
             'source layout actual tutor consumers differ')
+    warm_submission = (any(re.search(r'^(?:private )?def '+name+r'(?=\s|\()', notebook, re.M)
+                           for name in ('schoolSendSource', 'schoolSendAttempt')) or
+                       re.search(r'\btutor(?:Get|Put) (?:88|96|104|112)\b', notebook) is not None)
     page, page_size = 0x340000, 4096
-    windows = [('samples',0,8*64),('tutor context',1024,11*8),('school context',1152,13*8),('tutor proposal',1536,32*8),('JOIN packet',1792,13*8),
+    windows = [('samples',0,8*64),('tutor context',1024,(15 if warm_submission else 11)*8),('school context',1152,13*8),('tutor proposal',1536,32*8),('JOIN packet',1792,13*8),
                ('state',2048,32*8),('configuration packet',2304,8*8)]
     for index, (name, offset, length) in enumerate(windows):
         require(offset % 8 == 0 and length > 0 and offset+length <= page_size,
@@ -157,6 +160,113 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
         for other, start, size in windows[index+1:]:
             require(offset+length <= start or start+size <= offset, 'source layout windows overlap: '+name+'/'+other)
         require(page+offset >= 0x20d00+32+8*64, 'source layout aliases old control backlog')
+    if warm_submission:
+        ask = definition(notebook, 'multimodalAsk')
+        require(ask.startswith(compact('''private def multimodalAsk : Action :=
+          .bind (tutorPut 112 0) fun s _ => if statusFailed s = true then .done s 0 else''')),
+          'source warm ASK must invalidate the original-source snapshot first')
+        ask_location = definition(notebook, 'multimodalAskLocation')
+        require(compact('''if phase = 2 then
+          .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+          .bind (packageGet 8) fun s ordinal => if statusFailed s = true then .done s 0 else
+          .bind (Lemma.Courses.PackageTarget.select packageBytes length ordinal) fun s entry => if statusFailed s = true then .done s 0 else''') in ask_location and
+          compact('''if identity = 60000 then .done 244 0 else if identity = 60001 then .done 244 0 else
+          .bind (Memory.write64 (packageBindingScratch + 32) crc)''') in ask_location,
+          'source warm ASK requires a validated original package and rejects reserved envelopes')
+        require(all(fragment in ask_location for fragment in (
+                    '(Memory.read64 (packageBytes + 24)) fun s identity',
+                    '(Memory.read64 (packageBytes + 32)) fun s edition',
+                    '(Memory.read64 entry) fun s node',
+                    '(Memory.read64 (packageBytes + 80)) fun s crc')) and
+                all(fragment in ask for fragment in (
+                    '(multimodalAskLocation ns page) fun s binding',
+                    'if binding = 0 then .done 244 0 else',
+                    '(Memory.read64 (binding + 16)) fun s source',
+                    '(Memory.read64 (binding + 24)) fun s edition',
+                    '(Memory.read64 (binding + 40)) fun s task',
+                    '(Memory.read64 (binding + 32)) fun s crc')),
+                'source warm ASK must read its exact validated original source/node/CRC binding')
+        snapshot = compact('''.bind (tutorPut 88 crc) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (tutorPut 96 ns) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (tutorPut 104 page) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (tutorPut 112 1) fun s _ => if statusFailed s = true then .done s 0 else''')
+        require(snapshot in ask and ask.count('tutorPut 112 0') == ask.count('tutorPut 112 1') == 1 and
+          all('tutorPut '+offset+' '+value in ask and
+              ask.index('tutorPut '+offset+' '+value) < ask.index('tutorPut 112 1') for offset,value in
+              (('0','(now + 1)'),('16','revision'),('24','(Lemma.Courses.PackageWorkspace.object page)'),
+               ('48','source'),('56','edition'),('64','task'))),
+          'source warm ASK must publish complete CRC/namespace/page/work/source context last')
+        source = definition(notebook, 'schoolSendSource')
+        require(compact('''.bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+          .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+          .bind (Lemma.Courses.PackageWorkspace.validate packageWorkspace ns page) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (Memory.read64 (packageBytes + 24)) fun s loaded => if statusFailed s = true then .done s 0 else
+          if loaded = 60001 then''') in source,
+          'source warm SEND must validate the current workspace and distinguish only the help overlay')
+        for fragment in (
+            '.bind (tutorGet 112) fun s ready', '.bind (tutorGet 96) fun s expectedNS',
+            '.bind (tutorGet 104) fun s expectedPage', '.bind (tutorGet 24) fun s object',
+            '.bind (tutorGet 16) fun s previousRevision',
+            '.bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision',
+            '.bind (tutorGet 0) fun s session', '.bind (Memory.read64 (schoolContext+80)) fun s joinedSession',
+            '.bind (tutorGet 48) fun s identity', '.bind (tutorGet 56) fun s edition',
+            '.bind (tutorGet 64) fun s node', '.bind (tutorGet 88) fun s crc',
+            '.bind (Memory.read64 (schoolContext+88)) fun s joinedSource',
+            '.bind (Memory.read64 (schoolContext+96)) fun s joinedEdition'):
+            require(fragment in source, 'source warm SEND omitted original/current context read: '+fragment)
+        require(compact('''if ready = 1 then if ns = expectedNS then if page = expectedPage then
+          if object = Lemma.Courses.PackageWorkspace.object page then
+          if 0 < previousRevision then if previousRevision ≤ revision then if session = joinedSession then''') in source and
+          compact('''if identity = joinedSource then if edition = joinedEdition then
+          if identity = 60000 then .done 240 0 else if identity = 60001 then .done 240 0 else''') in source,
+          'source warm SEND lost ready/work/revision/session/original publication guards')
+        require(compact('''.bind (Memory.read64 (packageWorkspace+48)) fun s mask => if statusFailed s = true then .done s 0 else
+          .bind (if (mask >>> 8) &&& 1 = 1 then
+          .bind (Memory.read64 (packageWorkspace+Lemma.Courses.PackageWorkspace.selection+16)) fun s selectedSource => if statusFailed s = true then .done s 0 else
+          .bind (Memory.read64 (packageWorkspace+Lemma.Courses.PackageWorkspace.selection+24)) fun s selectedEdition => if statusFailed s = true then .done s 0 else
+          .bind (Memory.read64 (packageWorkspace+Lemma.Courses.PackageWorkspace.selection+32)) fun s selectedCRC => if statusFailed s = true then .done s 0 else
+          if identity = selectedSource then if edition = selectedEdition then if crc = selectedCRC then .done 0 0 else .done 240 0 else .done 240 0 else .done 240 0''') in source,
+          'source warm SEND lost known-workspace exact source/edition/CRC checks')
+        require(compact('''else .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+          .bind (packageGet 8) fun s ordinal => if statusFailed s = true then .done s 0 else
+          .bind (Lemma.Courses.PackageTarget.select packageBytes length ordinal) fun s entry => if statusFailed s = true then .done s 0 else''') in source and
+          'store loaded edition node crc' in source,
+          'source warm SEND normal package path lost full validation or its original identity')
+        scratch = compact('''where store (identity edition node crc : UInt64) : Action :=
+          .bind (Memory.write64 (packageBindingScratch+16) identity) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (Memory.write64 (packageBindingScratch+24) edition) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (Memory.write64 (packageBindingScratch+32) crc) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (Memory.write64 (packageBindingScratch+40) node) fun s _ => .done s 0''')
+        require(source.endswith(scratch) and source.count('Memory.write64') == 4 and
+          source.count('store identity edition node crc') == 1,
+          'source warm SEND may publish only its local source scratch tuple')
+        kind = definition(notebook, 'schoolWorkKind')
+        require('Lemma.Courses.PackageWorkspace.snapshotSelection packageWorkspace packageBindingScratch' in kind and
+          all(f'Memory.read64 (packageBindingScratch + {offset})) fun s {name}' in kind for offset,name in
+              ((16,'source'),(24,'published'),(32,'checksum'),(40,'task'),(120,'boundRevision'))) and
+          compact('''.done 0 (if source = identity then if published = edition then if task = node then if checksum = crc then
+          if boundRevision = revision then 1 else 2 else 2 else 2 else 2 else 2)''') in kind,
+          'source warm SEND changed the current exact selection/revision requirement for typed work')
+        attempt = definition(notebook, 'schoolSendAttempt')
+        require(compact('''if phase = 26 then Lemma.Courses.SchoolSubmission.retry else if phase = 45 then Lemma.Courses.SchoolSubmission.retry else''') in attempt and
+          all(token in attempt for token in ('.bind schoolSendSource','schoolWorkKind revision identity edition node crc','Lemma.Courses.SchoolSubmission.start')) and
+          attempt.index('Lemma.Courses.SchoolSubmission.retry') < attempt.index('.bind schoolSendSource') and
+          attempt.index('.bind schoolSendSource') < attempt.index('schoolWorkKind revision identity edition node crc') < attempt.index('Lemma.Courses.SchoolSubmission.start') and
+          'packageBytes' not in attempt,
+          'source warm SEND must retry frozen bytes before any new source capture')
+        require(all(f'Memory.read64 (packageBindingScratch+{offset})) fun s {name}' in attempt for offset,name in
+                    ((16,'identity'),(24,'edition'),(32,'crc'),(40,'node'))),
+                'source warm SEND must consume the exact validated local source tuple')
+        for offset,expected_field in ((64,'identity'),(72,'edition'),(80,'node'),(88,'crc'),(104,'kind')):
+            require(f'schoolHeaderPut {offset} {expected_field}' in attempt,
+                    'source warm SEND envelope source/work kind differs')
+        require(definition(notebook, 'schoolSend') == compact('''private def schoolSend : Action :=
+          .bind schoolSendAttempt fun result value =>
+          if statusFailed result = true then
+          .bind (schoolQueueFailure result) fun s _ => if statusFailed s = true then .done s 0 else .done result value
+          else .bind (Memory.write64 schoolQueueError 0) fun s _ => if statusFailed s = true then .done s 0 else .done result value''') and
+          'CapabilityConsole.record console 0x732 status.toUInt64 0 0 0' in definition(notebook,'schoolQueueFailure'),
+          'source warm SEND must report rejection, retain its status and clear errors only on successful start/retry')
     initialize = definition(mm,'«initialize»')
     expected = compact('''def «initialize» (console : UInt64) : Action :=
       .bind (Syscall.allocatePage records) fun s address => if mmFailed s = true then .done s 0 else
@@ -332,6 +442,7 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
             'source busy input lost safety routing or lost-contact cancellation')
     return {'toolbar_variant': 'school23-owned-pcm2' if owned_pcm else 'school23' if school else 'legacy21',
             'toolbar_extent':extent,'toolbar_tiles':tiles,'coalesced_index':deferred,'captured_input':raw_capture,
+            'warm_submission':warm_submission,
             'allocated_page':page,'page_bytes':page_size,'disjoint_windows':windows,
             'historical_backlog':[0x20d00,0x20d00+32+8*64],
             'checks':['allocate/status/exact-address before clear','local inhibition before busy queues',
