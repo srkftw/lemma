@@ -705,7 +705,8 @@ class Session:
 
     def snapshot(self, destination):
         self.ensure_capture_certain()
-        if hasattr(self.machine,'checkpoint_admission'):self.machine.checkpoint_admission()
+        if hasattr(self.machine,'checkpoint_capture_admission'):self.machine.checkpoint_capture_admission()
+        elif hasattr(self.machine,'checkpoint_admission'):self.machine.checkpoint_admission()
         destination = Path(destination).resolve()
         destination.mkdir(parents=True, exist_ok=False)
         result = self.machine.call('snapshot ' + str(destination / 'machine.chk'))
@@ -1274,8 +1275,13 @@ def view(directory):
     controls = tk.Frame(window)
     controls.pack(fill='x')
     status = tk.StringVar(value='Virtual time is authoritative; host speed controls pacing')
-    logical2 = metadata['identity'].get('checkpoint_binding') == 'lemma-silicon-fast-softtlb/0.2.0'
+    logical2 = metadata['identity'].get('checkpoint_binding') in ('lemma-silicon-fast-softtlb/0.2.0','lemma-silicon-fast-mm2-softtlb/0.1.0')
+    checkpoint_enabled = (metadata['identity'].get('execution_binding')!='lemma-silicon-fast-mm2-subset/0.1.0' or
+                          metadata['identity'].get('checkpoint_admitted') is True)
+    if not checkpoint_enabled:status.set('State export is unavailable for this runtime')
     tk.Label(window, textvariable=status).pack(fill='x')
+    last_operation = tk.StringVar(value='')
+    tk.Label(window, textvariable=last_operation, anchor='w', wraplength=view_width).pack(fill='x')
     canvas = tk.Canvas(window, width=view_width, height=view_height, background='white')
     canvas.pack()
     held = False
@@ -1292,17 +1298,21 @@ def view(directory):
     def save():
         name = filedialog.asksaveasfilename(title='New state directory' if logical2 else 'New checkpoint directory')
         if name:
-            operation({'action': 'snapshot', 'path': name})
+            result=operation({'action': 'snapshot', 'path': name})
+            if result:last_operation.set(f"Exported state at cycle {result['machine']['cycle']} to {result['snapshot']}")
 
     def restore():
         name = filedialog.askdirectory(title='Checkpoint directory')
         if name:
-            operation({'action': 'restore', 'path': name})
+            result=operation({'action': 'restore', 'path': name})
+            if result:last_operation.set(f"Restored state at cycle {result['machine']['cycle']} from {result['restored']}")
 
     for label, action in [('Pause', 'pause'), ('Resume', 'resume'), ('Warm reset', 'warm-reset'), ('Cold cycle', 'cold-cycle')]:
         tk.Button(controls, text=label, command=lambda a=action: operation({'action': a})).pack(side='left')
-    tk.Button(controls, text='Export state' if logical2 else 'Snapshot', command=save).pack(side='left')
-    tk.Button(controls, text='Restore', command=restore).pack(side='left')
+    tk.Button(controls, text='Export state' if logical2 else 'Snapshot', command=save,
+              state='normal' if checkpoint_enabled else 'disabled').pack(side='left')
+    tk.Button(controls, text='Restore', command=restore,
+              state='normal' if checkpoint_enabled else 'disabled').pack(side='left')
     if metadata['identity']['profile'] in ('lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.15.0'):
         def study():
             from lemmasim_school_panel import open_study

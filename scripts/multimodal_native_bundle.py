@@ -84,7 +84,7 @@ def pack(args):
         selected={**CONFIGURATIONS,**(PARAMETERIZED if set(PARAMETERIZED)<=available else {})}
         data=copy.deepcopy(prepared['notebook'])
         for role,item in prepared.items():
-            if any(item.get(k)!=data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift','checkpoint_binding','execution_binding','multimodal_controller_abi','controller_contract')):
+            if any(item.get(k)!=data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift','checkpoint_binding','checkpoint_contract','observation_relation','checkpoint_admitted','execution_binding','multimodal_controller_abi','controller_contract')):
                 raise ValueError('Multimodal fast guest roles have different runtime/source identities')
             data['workloads'][role]=copy.deepcopy(item['workloads'][role])
         if set(data['workloads'])!=set(selected):raise ValueError('Multimodal fast archive requires complete ordinary pair')
@@ -99,7 +99,9 @@ def pack(args):
               'host_controls':{name:guest.sha(guest.ROOT/name) for name in (SCHOOL_CONTROLS if school else LEGACY_CONTROLS)},
               'origins':{},'host_dependencies':{'qemu':bundle.host_dependencies(data['qemu']['path'])},'backends':{}}
     if fast.validate_checkpoint_binding(data):
-        manifest['checkpoint_binding']=fast.LOGICAL2_BINDING
+        manifest['checkpoint_binding']=data['checkpoint_binding']
+        if data['checkpoint_binding']==fast.MM2_CHECKPOINT_BINDING:
+            manifest.update({k:data[k] for k in ('checkpoint_contract','observation_relation','checkpoint_admitted')})
     if fast.validate_execution_binding(data):
         manifest.update(execution_binding=fast.MM2_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2')
     def add(original,name,expected=None,executable=False):
@@ -135,7 +137,7 @@ def pack(args):
             raise ValueError('Account-free sample must be the exact compiled canonical local sample')
         decode(image)
         manifest['sample_course']=add(original,'sample.lcp',SCHOOL_SAMPLE_SHA)
-    continuation=('Explicit native logical2 continuation with isolated local backing; exact same runtime/guest/source only. ' if 'checkpoint_binding' in manifest else 'Profile0.14 checkpoint unsupported. ')
+    continuation=('MM2 continuation remains qualification-guarded; no public state export/restore. ' if manifest.get('checkpoint_binding')==fast.MM2_CHECKPOINT_BINDING and not manifest['checkpoint_admitted'] else 'Explicit native MM2 continuation with isolated local backing; exact same runtime/guest/source only; cancelled held-read capture unsupported. ' if manifest.get('checkpoint_binding')==fast.MM2_CHECKPOINT_BINDING else 'Explicit native logical2 continuation with isolated local backing; exact same runtime/guest/source only. ' if 'checkpoint_binding' in manifest else 'Profile0.14 checkpoint unsupported. ')
     (out/'DEPENDENCIES.txt').write_text('Local development archive only. QEMU11.1.1 GPL-2.0-or-later. Exact external Nix host loader/libraries and pinned Lean source/tools remain required. Project-wide redistribution rights unresolved. No current compilation or execution claim. '+continuation+'No physical output authorization.\n')
     if sources!=source_inputs(source_root) or data['sources']!=fast.sources(PROFILE):raise ValueError('Consumed source changed while packing')
     manifest['files']={str(p.relative_to(out)):{'sha256':guest.sha(p),'bytes':p.stat().st_size,'executable':os.access(p,os.X_OK)} for p in sorted(out.rglob('*')) if p.is_file()}
@@ -183,7 +185,7 @@ def prepared_archive(directory,backend,workload,name=None):
     mm2=fast.validate_execution_binding(data)
     if mm2!=('execution_binding' in m) or any(m.get(k)!=data.get(k) for k in ('execution_binding','multimodal_controller_abi','controller_contract')):
         raise ValueError('Native manifest MM2 execution scope differs from its backend')
-    if 'checkpoint_binding' in m and m['checkpoint_binding']!=data.get('checkpoint_binding'):
+    if any(m.get(k)!=data.get(k) for k in ('checkpoint_binding','checkpoint_contract','observation_relation','checkpoint_admitted')):
         raise ValueError('Native manifest continuation binding differs from its backend')
     if data.get('profile_sha256')!=guest.sha(profile_path(PROFILE)):
         raise ValueError('Archived0.14 binding differs from its retained version')
