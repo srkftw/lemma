@@ -400,7 +400,8 @@ class Fast:
             devices['uart_ingress']={**json.loads(self.get('raw-uart-state')), 'paced':getattr(self,'raw_uart_paced',False)}
         return {**self.clock(),'devices':devices,
                 'storage':json.loads(self.qmp.execute('qom-get',{'path':'/machine/lemma-block','property':'storage-state'})),
-                'cpu_registers':self.qmp.execute('human-monitor-command',{'command-line':'info registers'})}
+                'cpu_registers':self.qmp.execute('human-monitor-command',{'command-line':'info registers'}),
+                'cpu_info':self.qmp.execute('human-monitor-command',{'command-line':'info cpus'})}
 
     def stop(self):
         try:
