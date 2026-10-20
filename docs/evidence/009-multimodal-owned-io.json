@@ -318,6 +318,19 @@
       "complete Integrated16 canonical relation",
       "continuous permissioned tutor audio session",
       "admitted full economy performance"
-    ]
+    ],
+    "maintained_entrypoint": {
+      "source_capture": "build/task009/tci-auto-producer-source-a1/result.json",
+      "overlay_equivalence": "build/task009/tci-maintained-overlay-equivalence-a1/result.json",
+      "scope": "Ordinary producer automatically captures exact tool sources before compilation and freezes maintained overlay by default; actual43248-source identity matches prior compiled eff3 runtime; no second compilation claimed."
+    }
+  },
+  "browser_course_rejection": {
+    "contract": "compiled guest454 receipt only",
+    "host_tests": {
+      "receipt_parser": 4,
+      "actual_app_worker_fixtures": 2
+    },
+    "scope": "Displays recoverable course rejection from complete current-launch guest records, preserving64bit context and storage/checker separation; actual new browser consumption pending"
   }
 }

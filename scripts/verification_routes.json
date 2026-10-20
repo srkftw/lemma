@@ -145,11 +145,15 @@
     },
     "multimodal-owned-io": {
       "kind": "validation",
-      "command": "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_owned_io.py --work-dir build/multimodal/owned-UNUSED; hosted actual Lean ownership, complete-record copying and PCM policy Actions with consequential source negatives; neither guest execution nor controller timing."
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_owned_io.py --work-dir build/multimodal/owned-UNUSED; hosted actual Lean ownership, complete-record copying and PCM policy Actions with consequential source negatives; neither guest execution nor controller timing. For controller2/service3 also run nix develop --no-write-lock-file --command python3 scripts/check_multimodal_ring.py --work-dir build/multimodal/ring-UNUSED (owned kernel frame, bounded arbitrary PCM, immediate revocation, EOF and independent counters)."
     },
     "multimodal-audio-consumer": {
       "kind": "validation",
       "command": "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_audio.py --work-dir build/multimodal/audio-UNUSED; actual maintained User PCM lifecycle Actions with partial consumption, mute, expiry, superseded grants and consequential source negatives. Guest/controller/audio presentation remain separate."
+    },
+    "integrated16-product": {
+      "kind": "execution",
+      "command": "Run scripts/check_integrated_boot.py with --profile lemma-silicon-dev/0.16.0 and exact newly audited Integrated16 package/tag/factory/ROM/runtime inputs; require actual ABI2 controller and inherited15 union, preserving legacy Product10 beacon interpretation. Fast MM2 subset remains separate."
     }
   },
   "boundaries": [
@@ -391,6 +395,7 @@
         "scripts/silicon_power_ports.py",
         "scripts/silicon_buffered_pins.py",
         "scripts/silicon_acceptance_launch.py",
+        "scripts/silicon_sram_input_hold.py",
         "tests/silicon/test_process_comparator.py",
         "scripts/silicon_route_enclosure.py",
         "tooling/silicon/pen-*.tcl",
@@ -778,7 +783,10 @@
         "scripts/lemmasim_auth.py",
         "scripts/lemmasim_product.py",
         "scripts/package_product_image.py",
-        "tooling/FactoryBootMain.lean"
+        "tooling/FactoryBootMain.lean",
+        "Lemma/Platform/Silicon/BindingIntegratedPCM.lean",
+        "sim/profiles/lemma-silicon-dev-0.16.0.json",
+        "tests/silicon/test_multimodal_v2_binding.py"
       ],
       "claims": [
         "rtl-devices",
@@ -788,7 +796,8 @@
         "kernel-host",
         "multimodal-host",
         "multimodal-controller",
-        "multimodal-guest"
+        "multimodal-guest",
+        "integrated16-product"
       ],
       "affects": [
         "artifact-production",
@@ -824,7 +833,11 @@
       "inputs": [
         "scripts/check_multimodal_owned_io.py",
         "tests/multimodal/OwnedRecordActions.lean.inc",
-        "Lemma/Platform/LemmaSim/MultimodalService.lean"
+        "Lemma/Platform/LemmaSim/MultimodalService.lean",
+        "scripts/check_multimodal_ring.py",
+        "tests/multimodal/OwnedRingActions.lean.inc",
+        "tests/multimodal/NotebookRingActions.lean.inc",
+        "docs/contracts/009-multimodal-pcm-ring-v1.html"
       ],
       "claims": [
         "multimodal-owned-io",
