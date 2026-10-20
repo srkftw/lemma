@@ -664,12 +664,12 @@
       "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
       "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
     },
-    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1\u21922. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
     "connectedUpgrade": {
       "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
       "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
     },
-    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "connectedObservation": "Normal owned stop/restart generation5\u21926, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
     "retainedPreparationFailures": [
       {
         "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
@@ -766,7 +766,7 @@
         "path": "tests/school/test_delivery.py",
         "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
       },
-      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2\u21923."
     },
     "browserTests": {
       "result": "PASS",
@@ -786,7 +786,7 @@
       "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
       "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
     },
-    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "connectedScope": "All29 prior records unchanged, generation6\u21927/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
     "retainedObserverFailures": [
       {
         "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
@@ -1160,5 +1160,38 @@
         "sha256": "fb8e3e61d711ab7168d7f65499a1f5d89695d9829997eab5b151f8036a30b9bc"
       }
     }
-  ]
+  ],
+  "ordinaryGeneration11Terminal": {
+    "result": {
+      "path": "build/school/task009-connected-a2/generation11-ordinary-terminal.json",
+      "sha256": "1381c053b3f2c0c5e0e4433151c718348398776757c5463763f08cb1c9803882"
+    },
+    "scope": "Original01:53:03UTC deadline terminal; ownedPID gone, all38acknowledgedrows and historicalprefix unchanged. Newgeneration12 is a separate bounded run, not extension."
+  },
+  "ordinaryGeneration12Plan": {
+    "plan": {
+      "path": "build/school/task009-connected-a2/ordinary-campaign-budget-a5.json",
+      "sha256": "9a083d617f65d6de51159b1eb5ddc0760a7986bd144d693fcd1e6cf7f902e884"
+    },
+    "status": "RUNNING_WITH_ORIGINAL_02:55:52_UTC_DEADLINE",
+    "generation": 12,
+    "clockEpoch": 3,
+    "initialAcknowledgedRows": 38,
+    "scope": "Same qualified hostedproducer, sameepochprivatepairings, newexecutiongeneration fences earlierbindings/workers. Actual newguestJOIN required."
+  },
+  "liveIndependentDefinitionFork": {
+    "result": {
+      "path": "build/school/task009-connected-a2/operator-definition-a2/result.json",
+      "sha256": "6268846ca955724a097772369e3e4a93f1fa54fc02ea9e387a5c7e41fe113f52"
+    },
+    "runStatusStop": {
+      "path": "build/school/task009-connected-a2/operator-definition-a2/fork-run-a2-result.json",
+      "sha256": "123e3588ac045d202ace798aad691e3f2982fe1c0f4dbc7727da4cf0ab9258cf"
+    },
+    "retainedObserverFailure": {
+      "path": "build/school/task009-connected-a2/operator-definition-a2/fork-run-result.json",
+      "sha256": "327a55e06fd9f063e317e251b35f174c577fc187cbdf1d0905d9335c07716342"
+    },
+    "scope": "Livegen12 backup exactly38records/8artifacts; independentfork5publication-onlyrows, distinctschool/deployment/storage, nolearner/admission/session/assessment/jobhistory; actual secondauthorityrun/status/stop withownedcleanup. No concurrent duplicate-deployment restore claim."
+  }
 }
