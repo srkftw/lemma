@@ -664,12 +664,12 @@
       "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
       "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
     },
-    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1\u21922. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
     "connectedUpgrade": {
       "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
       "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
     },
-    "connectedObservation": "Normal owned stop/restart generation5\u21926, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
     "retainedPreparationFailures": [
       {
         "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
@@ -766,7 +766,7 @@
         "path": "tests/school/test_delivery.py",
         "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
       },
-      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2\u21923."
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
     },
     "browserTests": {
       "result": "PASS",
@@ -786,7 +786,7 @@
       "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
       "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
     },
-    "connectedScope": "All29 prior records unchanged, generation6\u21927/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
     "retainedObserverFailures": [
       {
         "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
@@ -1358,7 +1358,7 @@
       "sha256": "c4a73274c4c15b1d8c3cff13c164ffa90ac323a79d6aa66813002551e603efb0"
     },
     "status": "PASS_ORIGINAL_GUEST_ENVELOPE_REPLAY_AFTER_GENERATION_CHANGE",
-    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13\u219214. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
+    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13→14. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
   },
   "ordinary_live_model_release_cycle": {
     "result": {
@@ -2661,5 +2661,111 @@
       "separateAssessment": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation25/independent-stop-assessment.json"
     },
     "scope": "Ordinary sameclock normalrestart, notnewcrossclockrestore or physicalpowerloss; privateOSrandomsynthetic admissions remainloopback."
+  },
+  "ordinarySchool24NativeEdition2": {
+    "status": "scoped typed edition2 workflow PASS; no complete written-reasoning claim",
+    "receipt": "build/school/task009-native-revision-a1/corrected-terminal-result.json",
+    "receiptSHA256": "9c8d3b559268610661ff3aa374b43399b198eaafa732f975a16c47a1adb2ed2e",
+    "originalFailureReceipt": "build/school/task009-native-revision-a1/terminal-result.json",
+    "originalFailureSHA256": "c4b5a64d55e66db423a0f332ccb7223253f63e31ce28d54d33a988c0cd00f2e6",
+    "correctedReaderAssessment": "build/school/task009-native-revision-a1/corrected-reader-assessment.json",
+    "correctionScope": "Full native P6 and actual private read-only RAM assessment disprove the initial tiny-image/450 observer claim. Original failed observer remains unchanged. No guest or reader repair occurred.",
+    "plan": "build/school/task009-native-revision-a1/prospective-plan.json",
+    "bundleManifestSHA256": "707701bafaa2d48aaaa66858e9ef5d75eaf080cebc7958f555b26997aaf4d752",
+    "freshAndReused": "Fresh ordinary Student execution and protected School26 operations; exact previously audited School24 guest pair/source555, unchanged p81 runtime. Current maintained host controls are separately pinned by Session identity; this is not fresh compilation or new bundle production.",
+    "edition": {
+      "course": 804,
+      "edition": 2,
+      "policy": 2,
+      "node": 3,
+      "packageBytes": 4391,
+      "packageSHA256": "5690f1bb88954c68917d3dab93e889c67a27eabc4be47e480a17dd77dbcc1d3c",
+      "CRC32": 1305940488,
+      "publicationSequence": 158,
+      "installedCommit": 3,
+      "selectedCommit": 4
+    },
+    "reduction": {
+      "request": 1000319,
+      "input": [
+        10,
+        12
+      ],
+      "output": [
+        5,
+        6
+      ],
+      "preparedCommit": 14,
+      "appliedCommit": 15,
+      "outcome": 1,
+      "scope": "local advisory Changed; notVerified"
+    },
+    "checking": {
+      "request": 1000334,
+      "documentRevision": 8,
+      "guestOutcome": 1,
+      "hostedOutcome": 1,
+      "commit": 16,
+      "scope": "exact fixedfractionAddition only; nohandwritingproof"
+    },
+    "explicitSaveCommit": 17,
+    "submission": {
+      "artifact": "82cddf3e48ec6d91a9334ac11de1048c1e3a5d6f8738f378069e57a7ff4c15c2",
+      "attempt": "guest.184.6003579778261581843",
+      "bindingRecord": 184,
+      "commitSequence": 188,
+      "course": 804,
+      "documentRevision": 8,
+      "edition": 2,
+      "envelopeCRC32": 567985862,
+      "outcome": 1,
+      "policy": 2,
+      "queueObject": 6003579778261581843,
+      "reused": false,
+      "guestAcknowledgement": "exact school commit bytes admitted to guest UART; durable queue acknowledgement is separate",
+      "guestACKPointerCommit": 22,
+      "wireVersion": 2,
+      "eventFormat": 3,
+      "bytes": 4096,
+      "rawInkChunks": 0,
+      "localToolCurrentWorkExposure": true,
+      "remoteCurrentWorkExposure": false
+    },
+    "teacher": {
+      "assessmentSequence": 189,
+      "attemptSequence": 186,
+      "publication": 158,
+      "criteria": [
+        "met",
+        "unclear",
+        "met"
+      ],
+      "disposition": "clarification",
+      "scope": "synthetichumanclarification; actualtypedanswercorrect, writtencommon-denominatorreasoningmissing, originalchecker unchanged",
+      "feedbackSequenceVisibleInOrdinaryStudy": 189
+    },
+    "actualPresentation": "009-school24-edition2-native.png",
+    "actualPaperSHA256": "44c22519082c060170916130c469c74b6f7caf9abab5a4d8802c251e8f863604",
+    "closedAtUTC": "2026-10-20T16:12:30.888066+00:00",
+    "originalDeadlineUTC": "2026-10-20T16:17:51.334984+00:00",
+    "chargedUnits": 6900000036,
+    "observedUnits": 6900000006,
+    "wholeFunctionalCap": 8000000000,
+    "allOwnedProcessesGone": true,
+    "actualFinalMediumSHA256": "c3010fcfd103e412c65526ea33072524597aa394a26689876465b06ba281f3bc",
+    "retainedObserverFailures": [
+      "frozencontrolsnotstandaloneentry",
+      "newCOWinheritedreadonly0400",
+      "wrongASKcoordinateactualcancel240/noASK",
+      "ink-onlyTeacherhelperwronglyassumednonwhitefortypedonlyartifact; correctedtyped-onlyhelperkeepsblank"
+    ],
+    "privateDiagnostic": {
+      "receipt": "build/school/task009-native-reader-diagnostic-a1/monitor-result.json",
+      "seconds": 8.398307404015213,
+      "peakOwnedRSSBytes": 292765696,
+      "scope": "Actual same-source Developer COW read-only state diagnosis, not a Student debug grant. Reader phase3 copied and validated all4391 bytes; staging capacity32768.",
+      "resourceLimit": "ownlaunch7.5/continue6.5GiBguards ran; stricterfuturefulljointreserved9.25GiBlaunch notseparatelyasserted. Not a fulljointresourceguardclaim."
+    },
+    "remaining": "Teacher189 requests the missing common-denominator argument. This case does not complete a written response, independent review, educational qualification or full-machine physical closure."
   }
 }
