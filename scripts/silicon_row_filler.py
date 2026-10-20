@@ -26,7 +26,7 @@ STARTUP_INPUTS = {str(Path(__file__).resolve().with_name(name)):
 
 # Freeze repository host sources before importing their executable policies.
 # The before-use and final seals reject ordinary concurrent source edits.
-from silicon_filler_source import all_row_plan, lef_masters, SELECTED_PLAN_SHA, RIGHT_KEEPOUT_PLAN_SHA, SELECTED_SOURCE_ODB
+from silicon_filler_source import all_row_plan, lef_masters, SELECTED_PLAN_SHA, RIGHT_KEEPOUT_PLAN_SHA, BILATERAL_KEEPOUT_PLAN_SHA, SELECTED_SOURCE_ODB
 from silicon_geometry_export import require
 from silicon_pen_process import OwnedProcessStop
 from silicon_synth import ROOT, CommandFailure, run, sha
@@ -56,7 +56,11 @@ def main():
     parser.add_argument('--work-dir', required=True, type=Path)
     parser.add_argument('--macro-right-well-keepout', action='store_true',
                         help='Exact two-site physical-spacer keepout for the observed322 macro-right NWell seams; old cells stay fixed')
+    parser.add_argument('--macro-edge-clearance-keepout', action='store_true',
+                        help='Exact bilateral two-site spacer keepout for actual original SRAM NWell and new Metal1 clearance; old cells stay fixed')
     args = parser.parse_args()
+    require(not (args.macro_right_well_keepout and args.macro_edge_clearance_keepout),
+            'choose one declared spacer keepout version')
     out = args.work_dir.resolve(); basis = args.native_descriptor.resolve(); tool = args.openroad.resolve()
     require(not out.exists() and out.is_relative_to(ROOT/'build'), 'unused ignored row-fill output required')
     out.mkdir(parents=True)
@@ -119,9 +123,11 @@ def main():
             masters.update(actual)
         plan = all_row_plan(Path(config['routed_def']).read_text(),
                             json.loads(Path(config['native_instances']).read_text()), masters,
-                            macro_right_extra_sites=2 if args.macro_right_well_keepout else 0)
+                            macro_right_extra_sites=2 if args.macro_right_well_keepout or args.macro_edge_clearance_keepout else 0,
+                            macro_left_extra_sites=2 if args.macro_edge_clearance_keepout else 0)
         plan_path = out/'row-plan.json'; plan_path.write_text(json.dumps(plan, indent=2)+'\n')
-        require(sha(plan_path) == (RIGHT_KEEPOUT_PLAN_SHA if args.macro_right_well_keepout else SELECTED_PLAN_SHA),
+        require(sha(plan_path) == (BILATERAL_KEEPOUT_PLAN_SHA if args.macro_edge_clearance_keepout else
+                                 RIGHT_KEEPOUT_PLAN_SHA if args.macro_right_well_keepout else SELECTED_PLAN_SHA),
                 'source-bound selected row plan differs')
         driver = out/'insert.py'
         driver.write_text('import sys\nfrom pathlib import Path\nsys.path.insert(0,'+repr(str(ROOT/'scripts'))+')\n'

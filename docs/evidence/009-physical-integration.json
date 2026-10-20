@@ -7102,7 +7102,7 @@
     }
   },
   "original_row_filler_correction": {
-    "status": "CORRECTED_KEEPOUT_NATIVE_AND_GDS_PREFIX_EXECUTED_UNSELECTED_PROCESS_AND_METAL_PENDING",
+    "status": "CORRECTED_KEEPOUT_ORIGINAL_NWELL_27_AND_METAL1_SUBSET_FAIL_UNSELECTED",
     "source": "scripts/silicon_filler_source.py",
     "selected_implementation_unchanged": "physical0.6, every previous setup/hold/electrical result remains FAIL",
     "cause": "960nm functional bbox gap minus two240nm original NWell overhangs gives480nm, below original620nm NW.b; physical row spacers were absent",
@@ -7140,10 +7140,11 @@
     },
     "scope": "40349 original CORE SPACERs fill249350 unused sites across221 rows, outward-rounded3macro exclusions; all9037 old placements/668ports/99128nativePG shapes/18718OBS/9703wire opcode/data streams remain exact.80698 new PG terminals overlap correct row rails. Missing/wrongsite/orientation/supply and detached actual wire controls reject. Physical spacers occupy unused sites; original960nm functional-to-functional padding remains. No process/LVS/RC/timing/IR/EM qualification inferred.",
     "remaining": [
-      "New filler Metal1 signal/opposite-supply spacing subset incomplete",
-      "Original nwell and complete main/maximal/density/antenna process checks",
+      "Correct conservative new SRAM-left M1 clearance while preserving actual NWell/PG/source geometry; direct conductor intersections are zero. Exact SRAM net assignment and complete process rule treatment remain unresolved.",
+      "Six oldfunctional macro-edge wells remain560nm below620nm; any placement repair requires fullpadding/PG and affected routing reconstruction",
+      "Complete original main/maximal/density/antenna process checks",
       "Connected transistor LVS",
-      "Appropriate post-fill extraction/timing model scope; all9 oldselected timing/electrical cases remainFAIL",
+      "Appropriate post-fill extraction/timing scope; all9 oldselected timing/electrical cases remainFAIL",
       "IR/EM, full-device power, pad/package/board"
     ],
     "maintained_entrypoint": "scripts/silicon_row_filler.py",
@@ -7193,7 +7194,10 @@
       "GDSa2:40s whole expires during per-filler observer; child37s timeout plus5s cleanup produces42.043s failed whole. Complete original-GDS/mask prefix retained separately.",
       "Exact immutable main tables=nwell on changed GDS resourceFAIL19.849s;1GiB RSS trigger,1.190GB observed peak with0.5s KILL cleanup. No completed NW.b report or claim of3717 eliminated findings.",
       "Completed original deep nwell table fails322NW.b at newly introduced80nm macro-right spacer seams. Corrected two-site source plan is not a new layout or process result.",
-      "KeepoutGDSa1:24.838s/sourceclean/938.5MB; completed49373originalmaster+20route-masks prefix, later observer fails on legitimate multirectPGLEF. Corrected literalgeometry observer uses existingcompletedGDS; no sourceimport rerun."
+      "KeepoutGDSa1:24.838s/sourceclean/938.5MB; completed49373originalmaster+20route-masks prefix, later observer fails on legitimate multirectPGLEF. Corrected literalgeometry observer uses existingcompletedGDS; no sourceimport rerun.",
+      "Keepout originaldeepnwell completes37.001s/786.2MB, still27NW.b in matched322context; six unchangedoldfunctional wells have560nmgaps.",
+      "CompletedGDS-Metal1 relation completes30.255s/928.6MB, sources/resources clean, but six oldwellwitnesses and actual conservative220nm clearance subset fail. Originalstderr incorrectly says source changed; actual sourceseal istrue. Maintained message now reports actual failure categories.",
+      "First owner probe hits its original22s tool deadline; failedwhole27.098s/sourceclean/890.6MB. A new45s-tool/60s-whole source-bound ROI/local-coordinate algorithm finishes45.583s/876.3MB, preserving the old timeout. Diagnosis pass does not promote failedphysical220nm margin or oldwhole receipts."
     ],
     "counts": {
       "rows": 221,
@@ -7308,6 +7312,156 @@
       "unchanged_routing_shapes": 357082,
       "all20route_mask_XOR_areas_nm2": 0,
       "scope": "Completed component in failedwhole; six originalwellcorridors remain by independent sourcewitness, not a freshprocesscount."
+    },
+    "macro_right_keepout_original_nwell": {
+      "path": "build/silicon/task009-macro-right-keepout-deep-nwell-a1/result.json",
+      "sha256": "1a750ef0c3543bbc84c24ddda4999906d9e6befa771d7db6334ef9077e16753e",
+      "status": "FAIL_ORIGINAL_NWELL_TABLE_RULE_VIOLATIONS",
+      "seconds": 37.0009510028176,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 786235392,
+      "findings": {
+        "NW.b": 27,
+        "other_nwell_categories": 0
+      },
+      "scope": "Fresh exact original main/defaultdeep/explicitnwell source/table/switches matched to previous322. All27 remaining edges are560nm to unchangedfunctional cells. No32280nm spacer-seam markers remain. Fullmain/maximal/density/antenna and connectedLVS are not established; no count comparison to unmatched3717 partial baseline."
+    },
+    "macro_right_keepout_remaining_functional_edges": {
+      "path": "build/silicon/task009-macro-right-keepout-deep-nwell-a1/remaining-functional-well-assessment.json",
+      "sha256": "48edd0c56514a70f99f0eb2cf5c3a71a78a2675e8888d97607a7b3ed237e26fa",
+      "status": "OBSERVED_ALL27_OLD560NM_MACRO_TO_FUNCTIONAL_WELL_EDGES_NEW80NM_SEAMS_ABSENT",
+      "seconds": null,
+      "source_seal_equal": null,
+      "peak_owned_RSS_bytes": null,
+      "scope": "Read-only geometric attribution to six native instances; actual future source GDS/well, PG, site and route proof is required before any movement/selection."
+    },
+    "macro_right_keepout_Metal1_completed_failure": {
+      "path": "build/silicon/task009-macro-right-keepout-gds-metal-a1/result.json",
+      "sha256": "2cafae50c17359a3a5a38bfa8604f419802513d42413b2051db011bf9dee3315",
+      "status": "FAIL",
+      "seconds": 30.254554448882118,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 928612352,
+      "geometry": {
+        "path": "build/silicon/task009-macro-right-keepout-gds-metal-a1/geometry.json",
+        "sha256": "d63af42fff20d32fd886db03f5adcec299296fbb85b0f59af36fd83c9df453d1",
+        "status": "FAIL_FILLER_GAP_OR_METAL_SUBSET",
+        "seconds": 25.680249257944524,
+        "source_seal_equal": true,
+        "peak_owned_RSS_bytes": null
+      },
+      "scope": "Completed-source GDS readback, no repeatedDEF import/insertion.301literalPGrectangles on44usedcoremasters replace invalidone-rectangle assumption; allsame49originalmasters/49373transforms/20route-unions remain. Six oldwellwitnesses and conservative220nm margin subset fail. The later scoped owner diagnosis separately establishes zero directpositivearea intersections and actual conservative source owners; no fullprocess short claim.",
+      "VDDlogic_clearance_conflict_area_nm2": 1211200,
+      "VSS_clearance_conflict_area_nm2": 8757975,
+      "opposite_native_supply_conflict_area_nm2": 0,
+      "opposite_native_supply_scope": "VDDlogic versus VSS only; VDDARRAY is conservatively retained in the other-conductor region, not admitted as same net."
+    },
+    "Metal1_owner_diagnosis_first_timeout": {
+      "path": "build/silicon/task009-filler-metal1-owner-diagnosis-a1/result.json",
+      "sha256": "45505f606a13f198fadbcb95607a88bf4b9f1d8682675a172a76db8b684063f2",
+      "status": "FAIL",
+      "seconds": 27.09797635511495,
+      "peak_owned_RSS_bytes": 890585088,
+      "source_seal_equal": true,
+      "resource_errors": [],
+      "owned_observed_PIDs_absent": true
+    },
+    "Metal1_owner_diagnosis": {
+      "path": "build/silicon/task009-filler-metal1-owner-diagnosis-a2/result.json",
+      "sha256": "e080ecd3a01bf085e281db9a6891ce81979b5584346c583199006257f982c94e",
+      "status": "PASS_SOURCE_BOUND_FAILED_METAL1_GEOMETRY_DIAGNOSIS_NOT_PROCESS_DRC",
+      "seconds": 45.583347640000284,
+      "peak_owned_RSS_bytes": 876310528,
+      "source_seal_equal": true,
+      "resource_errors": [],
+      "owned_observed_PIDs_absent": true,
+      "geometry": {
+        "path": "build/silicon/task009-filler-metal1-owner-diagnosis-a2/geometry.json",
+        "sha256": "c3354675d186b18953afbbe7330b4928879e4d9676a6f950f41847b77bbdf274"
+      },
+      "assessment": {
+        "path": "build/silicon/task009-filler-metal1-owner-diagnosis-a2/owner-assessment.json",
+        "sha256": "03ffb3775f8a97a2023708c8613d70b530e0387402a7797b3ecff116254ad6de"
+      },
+      "boundary_controls": 10,
+      "relations": [
+        {
+          "net": "VDDlogic",
+          "conservative_margin_nm": 220,
+          "signal_conflict_area_nm2": 1211200,
+          "positive_area_conductor_intersection_nm2": 0,
+          "opposite_native_supply_conflict_area_nm2": 0,
+          "opposite_native_supply_scope": "VDDlogic versus VSS only; VDDARRAY remains in the conservative other-conductor set",
+          "already_within_known_original_PG_clearance_nm2": 1064000,
+          "newly_introduced_clearance_area_nm2": 147200,
+          "newly_introduced_positive_area_intersection_nm2": 0,
+          "baseline_scope": "Actual native PG plus source-GDS metal within literal original core PG ports; SRAM internal power remains unassigned",
+          "signal_conflict_bbox_nm": "(120060,147305;120220,669335)"
+        },
+        {
+          "net": "VSS",
+          "conservative_margin_nm": 220,
+          "signal_conflict_area_nm2": 8757975,
+          "positive_area_conductor_intersection_nm2": 0,
+          "opposite_native_supply_conflict_area_nm2": 0,
+          "opposite_native_supply_scope": "VDDlogic versus VSS only; VDDARRAY remains in the conservative other-conductor set",
+          "already_within_known_original_PG_clearance_nm2": 8601175,
+          "newly_introduced_clearance_area_nm2": 156800,
+          "newly_introduced_positive_area_intersection_nm2": 0,
+          "baseline_scope": "Actual native PG plus source-GDS metal within literal original core PG ports; SRAM internal power remains unassigned",
+          "signal_conflict_bbox_nm": "(14505,14680;1029420,801800)"
+        }
+      ],
+      "source_capsule": {
+        "path": "build/silicon/task009-filler-metal1-owner-diagnosis-a2/source-closure.tar.gz",
+        "sha256": "452a246dedb68054e4a0147953492e2932b657406e86182dc17b9b42a150248c"
+      },
+      "scope": "Direct positive-area conductor intersections are zero in the declared complete M1 set. This is not net-LVS or a full process rule assessment; 220nm conservative rectangles remain failing. All new margin area belongs to source SRAM M1 without net assignment; core/native findings were already inside known-old PG clearance. Areas per owner can overlap and must not be summed as a union."
+    },
+    "original_SRAM_left_source_resource_failure": {
+      "path": "build/silicon/task009-original-SRAM-left-source-a1/result.json",
+      "sha256": "644d43cda22e204de982b7246b966d14510188e70e6b7cf8b1c4b9d66b9deb75",
+      "status": "FAIL",
+      "seconds": 4.587693882873282,
+      "peak_owned_RSS_bytes": 552894464,
+      "bounds": {
+        "whole_seconds": 10,
+        "tool_seconds": 7,
+        "AS_bytes": 3221225472,
+        "combined_owned_RSS_bytes": 536870912,
+        "continuing_host_available_floor_bytes": 8589934592,
+        "output_bytes": 134217728,
+        "canonical_existing_cap_bytes": 536870912,
+        "launch_required_bytes": 9126805504,
+        "admission_scope": "Parent-approved exact original source query; audit overlap only under fresh jointreserve proof"
+      },
+      "source_seal_equal": true,
+      "owned_observed_PIDs_absent": true,
+      "scope": "Unselected originalsource whole-SRAM recursive M1 region materialization exceeds512MiBcap; no geometry output, no cellchange or latepromotion. Changed cardinal/array extent helper is separate, unexecuted at this receipt."
+    },
+    "original_SRAM_left_source_bound": {
+      "path": "build/silicon/task009-original-SRAM-left-source-a2/result.json",
+      "sha256": "22e06cad93ce005af32eb7b9b787cd2c696f48e2f380b4b9b1abf088e244ec36",
+      "status": "PASS_EXACT_ORIGINAL_SOURCE_LEFT_EDGE_AND_TWO_SITE_CANDIDATE_NOT_PLACED",
+      "seconds": 6.207312101032585,
+      "peak_owned_RSS_bytes": 615464960,
+      "source_seal_equal": true,
+      "owned_observed_PIDs_absent": true,
+      "scope": "No flattened SRAM region. Exactcardinal/arrayhierarchyextents133cells/86M1arrays with tinyactualfullmaskoracle, fractional/scale/1nmnegatives. SourceM1left60/NWellleft0;one480nmsiteretreatclearsM1butcreates240nmwellgap,two720nmwell/1020nmM1. Readonlysource;no cellplacement/processruleexecution."
+    },
+    "bilateral_spacer_source_plan": {
+      "path": "build/silicon/task009-bilateral-spacer-source-plan-a1/source-qualification.json",
+      "sha256": "c836289db3b0decc0a97622f8cada1bc816ba8262f2e1d4a71a91ad47478754b",
+      "status": "PASS_EXACT_SOURCE_BILATERAL_PLAN_LEGACY_BYTES_AND_SPACING_NOT_PLACED",
+      "seconds": 1.2631093729287386,
+      "peak_owned_RSS_bytes": null,
+      "source_seal_equal": true,
+      "owned_observed_PIDs_absent": null,
+      "spacers": 40264,
+      "spacer_sites": 248984,
+      "plan_sha256": "dcebfc0a34ad026c66c683b5b4f586110bcd96db3ec198a0f8e943ec83d7fdde",
+      "maintained_flag": "--macro-edge-clearance-keepout",
+      "scope": "Pure source qualification only. Botholdplanbytesexact;19left+7rightoldfunctionalcellsremainunchanged. ActualnativePG/ODB/GDS/originalnwellchecks pending; sixoldrightedgewellgaps and globaltiming/LVS remainopen."
     }
   }
 }

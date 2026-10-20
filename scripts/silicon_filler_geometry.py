@@ -21,6 +21,13 @@ from silicon_gds_geometry import sha, cardinal_angle, fingerprint, layer_mapping
 from silicon_geometry_export import require
 
 
+def source_inputs_unchanged(inputs):
+    try:
+        return all(sha(name) == digest for name, digest in inputs.items())
+    except OSError:
+        return False
+
+
 def original_pg_rectangles(body, name):
     """All literal original Metal1 pin rectangles, including internal fingers.
 
@@ -125,6 +132,225 @@ def routed_regions(layout, top, masters, keys):
     return result, shapes
 
 
+def original_filler_regions(source, plan):
+    """Bound all new physical-only masks to the original spacer source."""
+    import pya
+    orientations = {'R0': (0, False), 'MX': (0, True)}
+    # Fillers have only these two original Metal1 supply rails, with actual
+    # contacts and well/tap layers retained through the exact source masters.
+    filler_wells = pya.Region(); filler_pg = {'VDDlogic': pya.Region(), 'VSS': pya.Region()}
+    templates = {}
+    for name in {record['master'] for record in plan['fillers']}:
+        cell = source.cell(name); width = int(name.rsplit('_', 1)[1])*480
+        local = pya.Region(cell.begin_shapes_rec(source.find_layer(8, 0))); local.merge()
+        vdd, vss = pya.Region(pya.Box(0, 3560, width, 4000)), pya.Region(pya.Box(0, -220, width, 220))
+        require((local^(vdd+vss)).is_empty(), 'original filler contains unknown non-PG Metal1')
+        templates[name] = (vdd, vss, pya.Region(cell.begin_shapes_rec(source.find_layer(31, 0))))
+    for record in plan['fillers']:
+        vdd, vss, well = templates[record['master']]
+        a, mirror = orientations[record['orientation']]; tr = pya.ICplxTrans(1, a, mirror, *record['origin'])
+        filler_pg['VDDlogic'].insert(vdd.transformed(tr)); filler_pg['VSS'].insert(vss.transformed(tr))
+        filler_wells.insert(well.transformed(tr))
+    filler_wells.merge()
+    for region in filler_pg.values(): region.merge()
+    require((filler_pg['VDDlogic'] & filler_pg['VSS']).is_empty(), 'opposite filler supplies intersect')
+    return filler_wells, filler_pg
+
+
+
+def original_layer_bounds(layout, top, layer):
+    """Exact original-mask extents without flattening repeated SRAM geometry.
+
+    Bounding boxes commute with cardinal isometries and array translations.
+    This proves conservative source separation only, not mask connectivity.
+    """
+    import pya
+    cache = {}; active = set(); cells = shapes = arrays = 0
+    def visit(cell):
+        nonlocal cells, shapes, arrays
+        key = cell.cell_index()
+        if key in cache: return cache[key]
+        require(key not in active, 'cyclic original mask hierarchy')
+        active.add(key); cells += 1; result = pya.Box()
+        for shape in cell.shapes(layer).each():
+            if shape.is_text(): continue
+            require(shape.is_box() or shape.is_path() or shape.is_polygon(), 'unknown original mask shape')
+            result += shape.bbox(); shapes += 1
+        for inst in cell.each_inst():
+            tr = inst.cplx_trans
+            require(tr.mag == 1, 'nonunit original mask hierarchy')
+            cardinal_angle(tr.angle)
+            child = visit(layout.cell(inst.cell_index))
+            if child.empty(): continue
+            box = child.transformed(tr)
+            if inst.is_regular_array():
+                require(type(inst.na) is int and type(inst.nb) is int and inst.na > 0 and inst.nb > 0,
+                        'invalid original mask array')
+                arrays += 1
+                for i in (0, inst.na-1):
+                    for j in (0, inst.nb-1):
+                        result += box.moved(i*inst.a.x+j*inst.b.x, i*inst.a.y+j*inst.b.y)
+            else: result += box
+        active.remove(key); cache[key] = result; return result
+    result = visit(top)
+    require(not result.empty(), 'empty original mask layer')
+    return {'bbox_nm': [result.left, result.bottom, result.right, result.top],
+            'unique_cells': cells, 'literal_shapes': shapes, 'source_arrays': arrays,
+            'relation': 'Exact cardinal-unit hierarchy/array source mask extents; no flattening or connectivity inference'}
+
+
+def observe_metal1(basis, layout, source, original, filler_pg, out):
+    """Retain actual direct/clearance masks and source-conservative owners."""
+    import pya
+    orientations = {'R0': (0, False), 'MX': (0, True)}
+    started = time.monotonic()
+    def phase(name, **values):
+        record = dict(phase=name, seconds=time.monotonic()-started, **values)
+        (out/'Metal1-phase.json').write_text(json.dumps(record, indent=2)+'\n')
+        print('METAL1_PHASE', json.dumps(record), flush=True)
+    def retain_regions(stem, groups):
+        retained = pya.Layout(); retained.dbu = .001; cell = retained.create_cell('observed_filler_metal1_conflicts')
+        layers = []
+        for index, name in enumerate(('VDDlogic', 'VSS')):
+            for offset, (regions, relation) in enumerate(groups):
+                layer = 100+4*index+offset
+                cell.shapes(retained.layer(layer, 0)).insert(regions[name])
+                layers.append({'layer': layer, 'datatype': 0, 'supply': name, 'relation': relation})
+        retained.write(str(out/(stem+'.gds')))
+        (out/(stem+'.json')).write_text(json.dumps({'dbu_um': .001, 'layers': layers,
+            'source_scope': 'Exact diagnostic masks; original chip GDS is unchanged; not processDRC/LVS',
+            'sha256': sha(out/(stem+'.gds'))}, indent=2)+'\n')
+    phase('begin')
+    tech = Path(basis['lef_files'][0]).read_text()
+    table = re.search(r'^LAYER Metal1\n(.*?)^END Metal1$', tech, re.M | re.S)
+    require(table is not None and re.search(r'WIDTH 0\.30\s+0\.18\s+0\.22\s+0\.22', table[1]),
+            'original width/PRL Metal1 rule identity differs')
+    signal_m1 = pya.Region(); opposing_pg = {'VDDlogic': pya.Region(), 'VSS': pya.Region()}
+    old_known_pg = {'VDDlogic': pya.Region(), 'VSS': pya.Region()}
+    native = json.loads(Path(basis['native_geometry']).read_text()); native_m1_records = []
+    for net in native['nets']:
+        for shape in net['shapes']:
+            if shape['layer'] != 'Metal1' or shape['kind'] == 'decoder_rect_witness': continue
+            polygon = pya.Box(*shape['rect_nm'])
+            if net['name'] in opposing_pg:
+                opposing_pg[net['name']].insert(polygon); old_known_pg[net['name']].insert(polygon)
+            else:
+                signal_m1.insert(polygon); native_m1_records.append((net['name'], tuple(shape['rect_nm'])))
+    del native; gc.collect()
+    phase('native_conductors_loaded', native_Metal1_records=len(native_m1_records))
+    # Original standard-cell PG boxes are literal in the pinned LEF. Removing
+    # them here only classifies same-net abutment, never suppresses process rules.
+    lef = Path(basis['lef_files'][1]).read_text(); body_cache = {}; body_pg_cache = {}
+    for record in original['instances']:
+        master = record['master']; cell = layout.cell(master)
+        if master not in body_cache:
+            local = pya.Region(cell.begin_shapes_rec(layout.find_layer(8, 0)))
+            body_pg_cache[master] = {}
+            if source.cell(master) is not None:
+                body = re.search(r'^MACRO '+re.escape(master)+r'\n(.*?)^END '+re.escape(master)+r'$', lef, re.M | re.S)
+                require(body is not None, 'original standard-cell LEF identity')
+                pg = pya.Region()
+                for name in ('VDD', 'VSS'):
+                    one = pya.Region()
+                    for coords in original_pg_rectangles(body[1], name): one.insert(pya.Box(*coords))
+                    # Only actual source-GDS metal within a declared power
+                    # port contributes to the known old baseline, never an
+                    # abstract LEF rectangle in otherwise empty space.
+                    body_pg_cache[master]['VDDlogic' if name == 'VDD' else 'VSS'] = local & one
+                    pg.insert(one)
+                local -= pg
+            # All SRAM Metal1 stays conservative signal/unknown-net here. A
+            # source-side same-supply alias could otherwise hide a real short.
+            local.merge(); body_cache[master] = local
+        angle, mirror = orientations[record['orientation']]
+        transform = pya.ICplxTrans(1, angle, mirror, *record['origin'])
+        signal_m1.insert(body_cache[master].transformed(transform))
+    phase('original_master_signal_regions_collected', masters=len(body_cache))
+    signal_m1.merge()
+    spacing = []; margin_regions = {}; direct_regions = {}; introduced_margin_regions = {}; introduced_direct_regions = {}
+    for name, region in filler_pg.items():
+        margin_regions[name] = region.sized(220) & signal_m1
+        direct_regions[name] = region & signal_m1
+    retain_regions('Metal1-initial-failed-regions', [(margin_regions, 'conservative220nm_clearance'),
+                   (direct_regions, 'positive_area_conductor_intersection')])
+    phase('exact_failed_masks_retained', areas={name: region.area() for name, region in margin_regions.items()})
+    # Only old power geometry within220nm of a failed point can contribute to
+    # this attribution. Preserve the complete candidate failure masks above;
+    # cropping a baseline never removes a candidate failure or changes DRC.
+    # This avoids merging every old core power finger across the full chip.
+    roi = {name: region.sized(220) for name, region in margin_regions.items()}
+    for name in old_known_pg:
+        complete_native = old_known_pg[name].sized(220) & margin_regions[name]
+        old_known_pg[name] &= roi[name]
+        require(((old_known_pg[name].sized(220) & margin_regions[name])^complete_native).is_empty(),
+                'actual native PG ROI changed the complete failed-point baseline')
+    for record in original['instances']:
+        angle, mirror = orientations[record['orientation']]; x, y = record['origin']
+        transform = pya.ICplxTrans(1, angle, mirror, x, y)
+        inverse = pya.ICplxTrans(1, angle, mirror, -x, y if mirror else -y)
+        for name, local in body_pg_cache[record['master']].items():
+            clipped = local & roi[name].transformed(inverse)
+            if not clipped.is_empty(): old_known_pg[name].insert(clipped.transformed(transform))
+    for region in old_known_pg.values(): region.merge()
+    phase('known_original_PG_ROI_ready')
+    for name, region in filler_pg.items():
+        collision = margin_regions[name]; direct = direct_regions[name]
+        old_margin = old_known_pg[name].sized(220)
+        introduced_margin_regions[name] = collision-old_margin
+        introduced_direct_regions[name] = direct-old_known_pg[name]
+        require(introduced_margin_regions[name].area()+(collision & old_margin).area() == collision.area() and
+                introduced_direct_regions[name].area()+(direct & old_known_pg[name]).area() == direct.area(),
+                'exact old/new metal relation must partition every observed failed area')
+        other = opposing_pg['VSS' if name == 'VDDlogic' else 'VDDlogic']; other.merge()
+        wrong_supply = region.sized(220) & other
+        spacing.append({'net': name, 'conservative_margin_nm': 220,
+                        'signal_conflict_area_nm2': collision.area(),
+                        'positive_area_conductor_intersection_nm2': direct.area(), 'opposite_native_supply_conflict_area_nm2': wrong_supply.area(),
+                        'opposite_native_supply_scope': 'VDDlogic versus VSS only; VDDARRAY remains in the conservative other-conductor set',
+                        'already_within_known_original_PG_clearance_nm2': (collision & old_margin).area(),
+                        'newly_introduced_clearance_area_nm2': introduced_margin_regions[name].area(),
+                        'newly_introduced_positive_area_intersection_nm2': introduced_direct_regions[name].area(),
+                        'baseline_scope': 'Actual native PG plus source-GDS metal within literal original core PG ports; SRAM internal power remains unassigned',
+                        'signal_conflict_bbox_nm': str(collision.bbox()) if not collision.is_empty() else None})
+    # Preserve exact failed geometry and conservative ownership, so a failed
+    # checker does not force another complete import merely to diagnose it.
+    # SRAM source metal has no net assignment here: a geometric intersection
+    # is not silently promoted to an independently established signal short.
+    owners = []
+    def attribute(identity, region):
+        for supply, failed in margin_regions.items():
+            overlap = region & failed
+            if overlap.is_empty(): continue
+            direct = region & direct_regions[supply]
+            owners.append(dict(identity, new_filler_supply=supply,
+                conservative220nm_intersection_area_nm2=overlap.area(),
+                positive_area_conductor_intersection_nm2=direct.area(),
+                newly_introduced_clearance_area_nm2=(region & introduced_margin_regions[supply]).area(),
+                newly_introduced_positive_area_intersection_nm2=(region & introduced_direct_regions[supply]).area(),
+                intersection_bbox_nm=str(overlap.bbox())))
+    for name, box in native_m1_records:
+        attribute({'source_kind': 'native_net_conductor', 'net': name, 'rect_nm': list(box)},
+                  pya.Region(pya.Box(*box)))
+    all_failed = margin_regions['VDDlogic']+margin_regions['VSS']
+    for record in original['instances']:
+        master = record['master']; angle, mirror = orientations[record['orientation']]
+        x, y = record['origin']; inverse = pya.ICplxTrans(1, angle, mirror, -x, y if mirror else -y)
+        local = body_cache[master] & all_failed.transformed(inverse)
+        if local.is_empty(): continue
+        region = local.transformed(pya.ICplxTrans(1, angle, mirror, x, y))
+        attribute({'source_kind': 'original_core_metal_excluding_literal_PG_ports'
+                   if source.cell(master) is not None else 'original_SRAM_metal_net_unassigned',
+                   'instance': record['name'], 'master': master, 'origin_nm': record['origin'],
+                   'orientation': record['orientation']}, region)
+    (out/'Metal1-conflict-owners.json').write_text(json.dumps(owners, indent=2)+'\n')
+    retain_regions('Metal1-conflict-regions', [(margin_regions, 'conservative220nm_clearance'),
+            (direct_regions, 'positive_area_conductor_intersection'),
+            (introduced_margin_regions, 'newly_introduced_clearance_against_known_original_PG'),
+            (introduced_direct_regions, 'newly_introduced_positive_area_against_known_original_PG')])
+    phase('complete', owners=len(owners))
+    return spacing
+
+
 def check(config):
     import pya
     out = Path(config['output_directory'])
@@ -143,7 +369,8 @@ def check(config):
     historical_code = insertion_source_binding(produced, prepared)
     plan = json.loads((prepared/'row-plan.json').read_text())
     require(insertion['plan_sha256'] == sha(prepared/'row-plan.json') and
-            len(plan['fillers']) == (40336 if plan['schema'] == 'lemma-original-row-filler-plan/2' else 40349),
+            len(plan['fillers']) == (40264 if plan['schema'] == 'lemma-original-row-filler-plan/3' else
+                                     40336 if plan['schema'] == 'lemma-original-row-filler-plan/2' else 40349),
             'exact native filler plan')
     original = json.loads(Path(basis['native_instances']).read_text())
     expected = original['instances']+plan['fillers']; masters = {cell['master'] for cell in expected}
@@ -208,24 +435,7 @@ def check(config):
     require(prefix['source_seal_equal'], 'filled GDS prefix source changed')
     (out/'prefix-geometry.json').write_text(json.dumps(prefix, indent=2)+'\n')
     del baseline_layout, old_regions, new_regions; gc.collect()
-    # Fillers have only these two original Metal1 supply rails, with actual
-    # contacts and well/tap layers retained through the exact source masters.
-    filler_wells = pya.Region(); filler_pg = {'VDDlogic': pya.Region(), 'VSS': pya.Region()}
-    templates = {}
-    for name in {record['master'] for record in plan['fillers']}:
-        cell = source.cell(name); width = int(name.rsplit('_', 1)[1])*480
-        local = pya.Region(cell.begin_shapes_rec(source.find_layer(8, 0))); local.merge()
-        vdd, vss = pya.Region(pya.Box(0, 3560, width, 4000)), pya.Region(pya.Box(0, -220, width, 220))
-        require((local^(vdd+vss)).is_empty(), 'original filler contains unknown non-PG Metal1')
-        templates[name] = (vdd, vss, pya.Region(cell.begin_shapes_rec(source.find_layer(31, 0))))
-    for record in plan['fillers']:
-        vdd, vss, well = templates[record['master']]
-        a, mirror = orientations[record['orientation']]; tr = pya.ICplxTrans(1, a, mirror, *record['origin'])
-        filler_pg['VDDlogic'].insert(vdd.transformed(tr)); filler_pg['VSS'].insert(vss.transformed(tr))
-        filler_wells.insert(well.transformed(tr))
-    filler_wells.merge()
-    for region in filler_pg.values(): region.merge()
-    require((filler_pg['VDDlogic'] & filler_pg['VSS']).is_empty(), 'opposite filler supplies intersect')
+    filler_wells, filler_pg = original_filler_regions(source, plan)
     gaps = report_gaps(config['partial_process_report']); uncovered = []
     witnesses = pya.Region()
     for text, box in gaps: witnesses.insert(pya.Box(*box))
@@ -256,47 +466,7 @@ def check(config):
     # Use a conservative220nm rectangle margin: the original Metal1 table's
     # .30um-width row requires.22um at its longer PRL columns. These new.44um
     # rails do not justify dropping that width rule to the180nm minimum.
-    tech = Path(basis['lef_files'][0]).read_text()
-    table = re.search(r'^LAYER Metal1\n(.*?)^END Metal1$', tech, re.M | re.S)
-    require(table is not None and re.search(r'WIDTH 0\.30\s+0\.18\s+0\.22\s+0\.22', table[1]),
-            'original width/PRL Metal1 rule identity differs')
-    signal_m1 = pya.Region(); opposing_pg = {'VDDlogic': pya.Region(), 'VSS': pya.Region()}
-    native = json.loads(Path(basis['native_geometry']).read_text())
-    for net in native['nets']:
-        for shape in net['shapes']:
-            if shape['layer'] != 'Metal1' or shape['kind'] == 'decoder_rect_witness': continue
-            polygon = pya.Box(*shape['rect_nm'])
-            if net['name'] in opposing_pg: opposing_pg[net['name']].insert(polygon)
-            else: signal_m1.insert(polygon)
-    del native; gc.collect()
-    # Original standard-cell PG boxes are literal in the pinned LEF. Removing
-    # them here only classifies same-net abutment, never suppresses process rules.
-    lef = Path(basis['lef_files'][1]).read_text(); body_cache = {}
-    for record in original['instances']:
-        master = record['master']; cell = layout.cell(master)
-        if master not in body_cache:
-            local = pya.Region(cell.begin_shapes_rec(layout.find_layer(8, 0)))
-            if source.cell(master) is not None:
-                body = re.search(r'^MACRO '+re.escape(master)+r'\n(.*?)^END '+re.escape(master)+r'$', lef, re.M | re.S)
-                require(body is not None, 'original standard-cell LEF identity')
-                pg = pya.Region()
-                for name in ('VDD', 'VSS'):
-                    for coords in original_pg_rectangles(body[1], name): pg.insert(pya.Box(*coords))
-                local -= pg
-            # All SRAM Metal1 stays conservative signal/unknown-net here. A
-            # source-side same-supply alias could otherwise hide a real short.
-            local.merge(); body_cache[master] = local
-        angle, mirror = orientations[record['orientation']]
-        signal_m1.insert(body_cache[master].transformed(pya.ICplxTrans(1, angle, mirror, *record['origin'])))
-    signal_m1.merge()
-    spacing = []
-    for name, region in filler_pg.items():
-        collision = region.sized(220) & signal_m1
-        other = opposing_pg['VSS' if name == 'VDDlogic' else 'VDDlogic']; other.merge()
-        wrong_supply = region.sized(220) & other
-        spacing.append({'net': name, 'conservative_margin_nm': 220,
-                        'signal_conflict_area_nm2': collision.area(), 'opposite_native_supply_conflict_area_nm2': wrong_supply.area(),
-                        'signal_conflict_bbox_nm': str(collision.bbox()) if not collision.is_empty() else None})
+    spacing = observe_metal1(basis, layout, source, original, filler_pg, out)
     result['new_filler_Metal1_rule_subset'] = spacing
     (out/'filler-source-observation.json').write_text(json.dumps(result, indent=2)+'\n')
     metal_ok = all(row['signal_conflict_area_nm2'] == row['opposite_native_supply_conflict_area_nm2'] == 0
@@ -319,16 +489,17 @@ def main(config_path):
     config = json.loads(Path(config_path).read_text()); out = Path(config['output_directory']); start = time.monotonic()
     result = {'status': 'FAIL'}
     try:
-        require(all(sha(name) == digest for name, digest in config['source_inputs'].items()), 'filler geometry input seal')
+        require(source_inputs_unchanged(config['source_inputs']), 'filler geometry input seal')
         result = check(config)
     except BaseException as error:
         result.update(status='FAIL', error=repr(error))
     finally:
         result.update(seconds=time.monotonic()-start,
-                      source_seal_equal=all(sha(name) == digest for name, digest in config['source_inputs'].items()))
+                      source_seal_equal=source_inputs_unchanged(config['source_inputs']))
         if not result['source_seal_equal']: result['status'] = 'FAIL'
         (out/'geometry.json').write_text(json.dumps(result, indent=2)+'\n')
-    require(result['status'].startswith('PASS_'), result.get('error', 'filler geometry source changed'))
+    require(result['status'].startswith('PASS_'), result.get('error') or
+            '; '.join(result.get('failures', [])) or 'filler geometry failed')
 
 
 if __name__ == '__main__':

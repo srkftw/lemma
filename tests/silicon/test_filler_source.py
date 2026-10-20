@@ -10,7 +10,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]/'scripts'))
 from silicon_filler_source import all_row_plan, lef_masters
-from silicon_filler_geometry import report_gaps, original_pg_rectangles, insertion_source_binding
+from silicon_filler_geometry import report_gaps, original_pg_rectangles, insertion_source_binding, source_inputs_unchanged
 from silicon_row_filler import require_reserve, source_changes
 
 
@@ -74,11 +74,14 @@ class OriginalRowFillerTests(unittest.TestCase):
             path = Path(directory)/'source'; path.write_bytes(b'first')
             inputs = {str(path): hashlib.sha256(path.read_bytes()).hexdigest()}
             self.assertEqual(source_changes(inputs), [])
+            self.assertTrue(source_inputs_unchanged(inputs))
             path.write_bytes(b'changed')
             self.assertEqual(source_changes(inputs), [{'path': str(path), 'reason': 'changed'}])
+            self.assertFalse(source_inputs_unchanged(inputs))
             path.unlink()
             self.assertEqual(source_changes(inputs)[0]['path'], str(path))
             self.assertIn('FileNotFoundError', source_changes(inputs)[0]['reason'])
+            self.assertFalse(source_inputs_unchanged(inputs))
 
     def test_admission_adds_literal_owned_cap_and_reserve_without_shift_precedence(self):
         cap, reserve = 1 << 30, 8 << 30
@@ -125,6 +128,25 @@ class OriginalRowFillerTests(unittest.TestCase):
         self.assertEqual(result['functional_instances'], 3)
         self.assertEqual(result['macro_right_well_keepout']['preserved_functional_cells_in_spacer_keepout'], ['old_fixed'])
         self.assertEqual(result['outward_rounded_macro_sites'], 3)
+
+    def test_bilateral_keepout_preserves_functionals_and_rejects_unreviewed_site_counts(self):
+        text, native, masters = fixture(); before = deepcopy(native)
+        result = all_row_plan(text, native, masters, macro_right_extra_sites=2, macro_left_extra_sites=2)
+        self.assertEqual(native, before)
+        self.assertEqual(result['schema'], 'lemma-original-row-filler-plan/3')
+        self.assertEqual(result['macro_left_clearance_keepout']['preserved_functional_cells_in_spacer_keepout'], ['b'])
+        self.assertEqual(result['functional_instances'], 2)
+        self.assertEqual(result['all_row_sites'], result['functional_sites']+
+                         result['outward_rounded_macro_sites']+result['filler_sites'])
+        for right, left in ((0, 2), (2, 1), (2, -2), (2, True), (2, 2.0)):
+            with self.subTest(right=right, left=left), self.assertRaises(ValueError):
+                all_row_plan(text, native, masters, macro_right_extra_sites=right, macro_left_extra_sites=left)
+        native['instances'] = [cell for cell in native['instances'] if cell['name'] != 'b']
+        result = all_row_plan(text, native, masters, macro_right_extra_sites=2, macro_left_extra_sites=2)
+        covered = {site for cell in result['fillers'] for site in range(cell['location'][0]//480,
+                   cell['location'][0]//480+cell['sites'])}
+        self.assertFalse(covered & {6, 7, 8, 9, 10, 11, 12})
+        self.assertEqual(result['macro_left_clearance_keepout']['preserved_functional_cells_in_spacer_keepout'], [])
 
     def test_wrong_grid_orientation_padding_macro_and_filler_interface_refuse(self):
         mutations = [lambda n, m: n['instances'][0]['location'].__setitem__(0, 961),
