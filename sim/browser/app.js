@@ -155,9 +155,25 @@ function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.te
   pass.setBindGroup(0,device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[{binding:0,resource:texture.createView()}]}));pass.draw(3);pass.end();device.queue.submit([encoder.finish()]);device.queue.onSubmittedWorkDone().then(()=>texture.destroy()).catch(()=>{if(device===renderer)fallback();});
  }catch(e){fallback();}
  else if(context){const image=context.createImageData(m.width,m.height);for(let i=0;i<m.pixels.length;i++){const gray=m.pixels[i]*17;image.data[4*i]=image.data[4*i+1]=image.data[4*i+2]=gray;image.data[4*i+3]=255;}context.putImageData(image,0,0);}}
-let schoolCursor=0,reviewCursor=0;
+let schoolCursor=0,reviewCursor=0,feedbackCursor=0;
 const schoolStatus=document.querySelector('#school-status');
-function schoolAction(operation,fields={}){send('school',{operation,...fields});schoolStatus.textContent='School '+operation+' pending · local pen and Save remain available';}
+function resetFeedback(){feedbackCursor=0;document.querySelector('#school-feedback-next').disabled=true;}
+function teacherFeedback(result){
+ if(!Array.isArray(result?.feedback))return JSON.stringify(result,null,2);
+ if(result.feedback.length===0)return 'No teacher feedback on this page.';
+ return result.feedback.map(row=>{
+  const data=row.data;
+  if(!data||typeof data.comment!=='string'||!Array.isArray(data.criteria)||!Array.isArray(data.rubric?.criteria))
+   return 'Feedback format unavailable. Retained record:\n'+JSON.stringify(row,null,2);
+  const disposition=({'accepted':'Criteria met','needs-revision':'Revision requested','clarification':'Clarification requested'})[data.disposition]??data.disposition;
+  const lines=[`Work ${row.key} · assessment ${data.version}`,`${disposition} · ${row.actor}`,data.comment];
+  for(let i=0;i<data.rubric.criteria.length;i++)lines.push(`${data.criteria[i]??'No judgment recorded'}: ${data.rubric.criteria[i]}`);
+  if(data.previousSequence)lines.push(`Reconsiders assessment record ${data.previousSequence}.`);
+  lines.push('Teacher judgment; mathematical checking remains separate.');
+  return lines.join('\n');
+ }).join('\n\n');
+}
+function schoolAction(operation,fields={}){if(operation==='connect'||operation==='disconnect')resetFeedback();send('school',{operation,...fields});schoolStatus.textContent='School '+operation+' pending · local pen and Save remain available';}
 document.querySelector('#school-connect').onclick=async()=>{
  const file=document.querySelector('#school-credential').files[0];
  if(!file||file.size>4096){schoolStatus.textContent='Choose the bounded private school pairing file.';return;}
@@ -170,7 +186,9 @@ document.querySelector('#school-install').onclick=()=>{
  if(!selected){schoolStatus.textContent='Connect and select an enrolled publication first.';return;}
  schoolAction('install',{course:Number(selected.dataset.course),revision:Number(selected.dataset.revision)});
 };
-for(const operation of ['join','help','feedback','receipts','submit','cancel','disconnect'])document.querySelector('#school-'+operation).onclick=()=>schoolAction(operation);
+for(const operation of ['join','help','receipts','submit','cancel','disconnect'])document.querySelector('#school-'+operation).onclick=()=>schoolAction(operation);
+document.querySelector('#school-feedback').onclick=()=>{resetFeedback();schoolAction('feedback',{after:0});};
+document.querySelector('#school-feedback-next').onclick=()=>schoolAction('feedback',{after:feedbackCursor});
 document.querySelector('#school-reviews').onclick=()=>schoolAction('reviews',{after:0});
 document.querySelector('#school-reviews-next').onclick=()=>schoolAction('reviews',{after:reviewCursor});
 document.querySelector('#school-review-open').onclick=()=>{
@@ -182,7 +200,8 @@ worker.onmessage=({data:m})=>{
  if(m.type==='closed')document.querySelector('#serial-status').textContent='No running serial transfer.';
  if(m.type==='closed')document.querySelector('#ink-loss-status').textContent='No running guest. Retain an export before recovery.';
  if(m.type==='school'){
-  schoolStatus.textContent=m.error?m.error:JSON.stringify(m.result,null,2);
+  schoolStatus.textContent=m.error?m.error:teacherFeedback(m.result);
+  if(!m.error&&Array.isArray(m.result?.feedback)){feedbackCursor=m.result.next;document.querySelector('#school-feedback-next').disabled=m.result.more!==true;}
   if(m.result?.courses){schoolCursor=m.result.next;const list=document.querySelector('#school-course');list.replaceChildren();
    for(const course of m.result.courses){const option=document.createElement('option');option.textContent=course.title+' · '+course.course+'/'+course.revision;option.dataset.course=course.course;option.dataset.revision=course.revision;list.append(option);}}
   if(m.result?.reviews){reviewCursor=m.result.next;const list=document.querySelector('#school-review');list.replaceChildren();
@@ -190,7 +209,7 @@ worker.onmessage=({data:m})=>{
  }
  if(m.type==='execution-boundary'){executionBoundary=m;status.textContent=boundaryText().slice(3);}
  if(m.type==='error'){stopPcm('Machine bridge error.');status.textContent=m.error+boundaryText();}
- if(m.type==='closed'){document.querySelector('#course-view-status').textContent='No running guest.';document.querySelector('#school-installation').textContent='No running guest.';document.querySelector('#school-outgoing').textContent='No running guest.';document.querySelector('#school-status').textContent='School disconnected. Saved local work remains in the medium.';stopPcm('Machine closed.');beginSelection();selectionMachineName=null;displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
+ if(m.type==='closed'){resetFeedback();document.querySelector('#course-view-status').textContent='No running guest.';document.querySelector('#school-installation').textContent='No running guest.';document.querySelector('#school-outgoing').textContent='No running guest.';document.querySelector('#school-status').textContent='School disconnected. Saved local work remains in the medium.';stopPcm('Machine closed.');beginSelection();selectionMachineName=null;displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
  if(m.type==='course-admission')document.querySelector('#course-admission').textContent=m.error?`Admitted ${m.accepted} of ${m.total} raw events; rejected remainder: ${m.error}. The accepted prefix remains queued. Close and cold-open backing before retrying.`:`Admitted ${m.bytes} package bytes to the guest. See the guest installation result below.`;
  if(m.type==='raw-admission')document.querySelector('#raw-result').textContent=m.error?`Accepted ${m.accepted} of ${m.total} events; rejected remainder: ${m.error}`:`Admitted ${m.accepted} raw events.`;

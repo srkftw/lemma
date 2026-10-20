@@ -380,6 +380,29 @@ for(const phase of ['adapter','device']){
  emit({state:'failed',code:'240'});assert.match(f.node('#school-outgoing').textContent,/failed \(240\); saved paper remains available/);
  emit(null);assert.match(f.node('#school-outgoing').textContent,/No committed outgoing work/);
 }
+// The actual client presents versioned human judgments and preserves the
+// authority's exact pagination cursor, without promoting a judgment to proof.
+{
+ const f=await appFixture(undefined),next=f.node('#school-feedback-next');
+ f.node('#school-feedback').onclick();assert.equal(f.sent.at(-1).operation,'feedback');assert.equal(f.sent.at(-1).after,0);
+ const row={key:'guest.132.6003579778261581866',actor:'teacher',sequence:147,data:{version:2,previousSequence:137,
+  disposition:'needs-revision',comment:'Explain why t=3 is excluded. <script>untrusted</script>',criteria:['met','unclear'],
+  rubric:{criteria:['Factor the numerator','State the original domain']}}};
+ f.worker.onmessage({data:{type:'school',operation:'feedback',result:{feedback:[row],next:'9007199254740993',more:true}}});
+ const text=f.node('#school-status').textContent;
+ assert.match(text,/assessment 2/);assert.match(text,/Revision requested · teacher/);
+ assert.match(text,/Explain why t=3 is excluded\. <script>untrusted<\/script>/);
+ assert.match(text,/unclear: State the original domain/);assert.match(text,/Reconsiders assessment record 137/);
+ assert.match(text,/Teacher judgment; mathematical checking remains separate/);assert.doesNotMatch(text,/Verified/);
+ assert.equal(next.disabled,false);next.onclick();assert.equal(f.sent.at(-1).after,'9007199254740993');
+ f.worker.onmessage({data:{type:'school',operation:'feedback',result:{feedback:[],next:'9007199254740993',more:false}}});
+ assert.equal(next.disabled,true);assert.equal(f.node('#school-status').textContent,'No teacher feedback on this page.');
+ f.node('#school-feedback').onclick();assert.equal(f.sent.at(-1).after,0);
+ f.worker.onmessage({data:{type:'school',operation:'feedback',result:{feedback:[row],next:147,more:true}}});
+ f.node('#school-disconnect').onclick();assert.equal(next.disabled,true);
+ f.worker.onmessage({data:{type:'school',operation:'feedback',result:{feedback:[row],next:147,more:true}}});
+ f.worker.onmessage({data:{type:'closed'}});assert.equal(next.disabled,true);
+}
 // Keyboard pen uses the same raw input boundary, including contact cancellation.
 {
  const f=await appFixture(undefined),paper=f.canvas();paper.width=1650;paper.height=2200;
