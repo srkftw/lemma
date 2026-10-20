@@ -2057,6 +2057,61 @@
       "selectedOfflineSample": "Existing canonical4199-byte package3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e; new804/1 is separately published/enrolled and installed through protected catalogue.",
       "boundary": "No Student package-injection guard relaxed; all source/capability validation remains. Whole SDK production and ordinary guest consumption remain separately pending.",
       "retainedFailure": "a1 result observer used output-flag index as a path after command completion; original stdout/stderr/failure retained. Corrected observer executed separately in a2."
+    },
+    "coldFreshRequestIdentity": {
+      "implementationCommit": "ad0d862",
+      "actualFailure": {
+        "receipt": {
+          "path": "build/school/task009-school24-cold-id-a1/consumer-before-small-a1-result.json",
+          "sha256": "fbbd550d1e987c4fce684b9931b6f7b19f5ef9cac4929e2e8773da07537a6e78"
+        },
+        "observation": "Actual request/prepared/V9 reply/applied history at77 rejects a newly created operation with cold-reused77 as234.",
+        "seconds": 6.27194988890551,
+        "peakOwnedRSSBytes": 1741352960
+      },
+      "change": "A bounded64-row current-document scan chooses after both volatile counter and all prepared/terminal local-tool identities, skipping typed payloads without truncating63-bit IDs. The chosen result binds payload, event, captured state and actualIPC header. Notebook aligns the counter only after successful preparation, before publication/Store. Identity exhaustion and selected final-domain ID refuse235 before staging/counter advance. Exact stored retries stay byte-idempotent. This is per-document identity; later multi-request Store transport can independently exhaust near the numerical limit.",
+      "actualComponent": {
+        "receipt": {
+          "path": "build/school/task009-school24-cold-id-a1/consumer-after-small-a6-result.json",
+          "sha256": "5f66f44dea38425253fb660596a46a09b88577c40000034f22077252e0524224"
+        },
+        "seconds": 32.61171790701337,
+        "freshNotebookModuleSeconds": 15.478744691004977,
+        "actualActionSeconds": 9.676531539065763,
+        "actualLoweringSeconds": 7.4563585829455405,
+        "peakOwnedRSSBytes": 2130776064,
+        "functions": 412,
+        "LLVM": {
+          "path": "build/school/task009-school24-cold-id-a1/v9-fresh-id-lowered-a2/program.ll",
+          "sha256": "f9fea09f658597021021fc24c8aa1ec94b3f6da3aed6cfd5a865fce4e1c05ac2"
+        }
+      },
+      "consequentialChecks": {
+        "receipt": {
+          "path": "build/school/task009-school24-cold-id-negatives-a3/result.json",
+          "sha256": "bf90fbdb134b6d07c9cb1b4e43f4b4d20bc2040d9a466445f95c639652a9896d"
+        },
+        "seconds": 25.390559567837045,
+        "actualMaintainedActionsSeconds": 8.171722131082788,
+        "sourcePositive": 1,
+        "consequentialSourceMutants": 5,
+        "completeGenuineMapping": {
+          "path": "build/school/task009-school24-cold-id-negatives-a3/v9-mapping-a1/unit.json",
+          "sha256": "a42c5ccc456286dd148531982976ab28e0cb11c4d9fb23265766c8e45de186b2"
+        },
+        "LLVMByteIdenticalToActualComponent": true,
+        "covered": "Cold/fork applied histories; unresolved prepared and canceled/failure/stale identities; exact replay; full63-bit and candidate/exhaustion limits; local/remote payload masquerade; exact actualIPC header/payload ID and later Notebook counter; publication access fault before Store; no state advance on exhaustion.",
+        "allOwnedProcessesReaped": true
+      },
+      "retainedFailures": [
+        "Two ordinary parallel Lake preparation attempts crossed their original2GiB/3GiB combined RSS budgets before Actions; both were stopped/reaped.",
+        "Serialized23 invalidated module builds completed, then a single Notebook elaboration crossed2GiB; a new prospective2.5GiB gate completed with unchanged time/floors.",
+        "Two observer fixture syntax/type errors stopped before Actions; corrected receipt retained separately.",
+        "Private mutant harness first lacked an unused Store.Protocol import; no mutant ran.",
+        "The local-payload skip mutant initially survived because that observer lacked a kind8-like payload. Strengthened structurally valid source8/node8 cases reject it in a separate gate."
+      ],
+      "reproduction": "python3 scripts/check_course_install.py --school-submission --output-dir build/courses/<unused-output>",
+      "scope": "Fresh actual finite RAM/IPC Actions and genuine component lowering. Ordinary School24 cold-reopen REDUCE and whole ELF audits remain separate pending consumers; no CPU, durable-barrier or educational claim here."
     }
   },
   "hostedLocalToolGeneration24": {
