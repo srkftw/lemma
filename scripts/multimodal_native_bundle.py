@@ -98,6 +98,8 @@ def pack(args):
               'configurations':selected,'sources':sources,'source_commit':bundle.read_json(Path(data['workloads']['notebook']['provenance']['path']))['source_commit'],
               'host_controls':{name:guest.sha(guest.ROOT/name) for name in (SCHOOL_CONTROLS if school else LEGACY_CONTROLS)},
               'origins':{},'host_dependencies':{'qemu':bundle.host_dependencies(data['qemu']['path'])},'backends':{}}
+    if fast.validate_checkpoint_binding(data):
+        manifest['checkpoint_binding']=fast.LOGICAL2_BINDING
     def add(original,name,expected=None,executable=False):
         original=Path(original).resolve();h=guest.sha(original)
         if expected is not None and h!=expected:raise ValueError('Archive consumed input changed: '+str(original))
@@ -131,7 +133,8 @@ def pack(args):
             raise ValueError('Account-free sample must be the exact compiled canonical local sample')
         decode(image)
         manifest['sample_course']=add(original,'sample.lcp',SCHOOL_SAMPLE_SHA)
-    (out/'DEPENDENCIES.txt').write_text('Local development archive only. QEMU11.1.1 GPL-2.0-or-later. Exact external Nix host loader/libraries and pinned Lean source/tools remain required. Project-wide redistribution rights unresolved. No current compilation or execution claim. Profile0.14 checkpoint unsupported. No physical output authorization.\n')
+    continuation=('Explicit native logical2 continuation with isolated local backing; exact same runtime/guest/source only. ' if 'checkpoint_binding' in manifest else 'Profile0.14 checkpoint unsupported. ')
+    (out/'DEPENDENCIES.txt').write_text('Local development archive only. QEMU11.1.1 GPL-2.0-or-later. Exact external Nix host loader/libraries and pinned Lean source/tools remain required. Project-wide redistribution rights unresolved. No current compilation or execution claim. '+continuation+'No physical output authorization.\n')
     if sources!=source_inputs(source_root) or data['sources']!=fast.sources(PROFILE):raise ValueError('Consumed source changed while packing')
     manifest['files']={str(p.relative_to(out)):{'sha256':guest.sha(p),'bytes':p.stat().st_size,'executable':os.access(p,os.X_OK)} for p in sorted(out.rglob('*')) if p.is_file()}
     (out/'bundle.json').write_text(json.dumps(manifest,indent=2)+'\n')
@@ -175,6 +178,8 @@ def prepared_archive(directory,backend,workload,name=None):
     if data.get('schema')!='lemmasim-fast-prepared/1' or data.get('profile')!=PROFILE or data.get('cpu')!=fast.CPU or data.get('icount_shift')!=3:
         raise ValueError('Multimodal fast execution contract differs')
     fast.validate_checkpoint_binding(data)
+    if 'checkpoint_binding' in m and m['checkpoint_binding']!=data.get('checkpoint_binding'):
+        raise ValueError('Native manifest continuation binding differs from its backend')
     if data.get('profile_sha256')!=guest.sha(profile_path(PROFILE)):
         raise ValueError('Archived0.14 binding differs from its retained version')
     _origin_destination(m,profile_path(PROFILE),data['profile_sha256'])

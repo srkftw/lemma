@@ -8,24 +8,24 @@ from lemmasim_fast import QMP,CPU
 from multimodal_native_bundle import prepared_archive
 from check_notebook_workflow import guest_events
 from notebook_input import Input
-from native_logical_relation import compare_machine,compare_logical
+from native_logical_relation import compare_machine,compare_logical,multimodal_payload
 parser=argparse.ArgumentParser(description='Actual maintained native logical2 continuation; no host guest policy.')
 parser.add_argument('--qemu',type=Path,required=True);parser.add_argument('--bundle',type=Path,required=True)
 parser.add_argument('--medium',type=Path,required=True);parser.add_argument('--output-dir',type=Path,required=True)
-parser.add_argument('--cut',choices=['ready','converter','storage'],default='ready');parser.add_argument('--timeout',type=int,default=300)
+parser.add_argument('--cut',choices=['ready','converter','storage','dma','pcm'],default='ready');parser.add_argument('--timeout',type=int,default=300)
 a=parser.parse_args()
 if not 1<=a.timeout<=900:parser.error('timeout must be1..900 seconds')
 root=a.output_dir.resolve();root.mkdir(parents=True,exist_ok=False)
 start=time.monotonic();deadline=start+a.timeout;live=[];sockets=[]
 sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
 bundle=a.bundle.resolve();entry=prepared_archive(bundle,'qemu','notebook','lemma-silicon-dev/0.14.0')['workloads']['notebook'];binary=a.qemu.resolve();medium=a.medium.resolve()
-report={'schema':'lemma-native-logical-checkpoint/2','status':'FAIL','scope':'Actual maintained guest, Ready, activeconverter or pendingstorage cut, blockedUART, freshprocess native logical2 continuation and coherently forged malformedcandidate. Publiccheckpointguard stays until separately qualified full path.','limits':{'whole_seconds':a.timeout,'boot_ns':4000000000,'suffix_ns':4001000000 if a.cut=='storage' else 1000000,'output_bytes':2<<30,'owned_rss_bytes':1<<30},'inputs':{str(p):sha(p) for p in [binary,bundle/'bundle.json',medium,Path(__file__),Path(__file__).with_name('native_logical_relation.py'),Path('conformance/lemmasim/check_notebook_workflow.py'),Path('conformance/lemmasim/notebook_input.py')]}}
+report={'schema':'lemma-native-logical-checkpoint/2','status':'FAIL','scope':'Actual maintained guest, Ready, activeconverter or pendingstorage cut, blockedUART, freshprocess native logical2 continuation and coherently forged malformedcandidate. Publiccheckpointguard stays until separately qualified full path.','limits':{'whole_seconds':a.timeout,'boot_ns':4000000000,'suffix_ns':4001000000 if a.cut=='storage' else 1000000,'output_bytes':(4 if a.cut in ('dma','pcm') else 2)<<30,'owned_rss_bytes':1<<30},'inputs':{str(p):sha(p) for p in [binary,bundle/'bundle.json',medium,Path(__file__),Path(__file__).with_name('native_logical_relation.py'),Path('conformance/lemmasim/check_notebook_workflow.py'),Path('conformance/lemmasim/notebook_input.py')]}}
 def require(v,m):
  if not v:raise RuntimeError(m)
 def resources():
  total=sum(p.stat().st_size for p in root.rglob('*') if p.is_file())
  report['output_bytes']=total
- require(total<=2<<30,'Original2GiB output budget')
+ require(total<=report['limits']['output_bytes'],'Original declared output budget')
  rss=0
  for pid in {os.getpid()}|{p.pid for p,q,log in live if p.poll() is None}:
   try:rss+=int(Path('/proc',str(pid),'statm').read_text().split()[1])*os.sysconf('SC_PAGE_SIZE')
@@ -82,8 +82,9 @@ try:
  else:require(any(x[0]==0x423 for x in events) and not any(x[0]==0x421 for x in events),'storage boundary must be genuine unacknowledged guest Save')
  now=int(get(q,'virtual-time'))
  if a.cut!='storage':
-  stream=Input(1650,2200,now//10+1,100,100);stream.sample(472,144,512,True);stream.sample(472,144,0,False)
-  for event in stream.events:put(q,'external-event',' '.join(str(x) for x in [event[1]*10,*event[1:8]]))
+  if a.cut not in ('dma','pcm'):
+   stream=Input(1650,2200,now//10+1,100,100);stream.sample(472,144,512,True);stream.sample(472,144,0,False)
+   for event in stream.events:put(q,'external-event',' '.join(str(x) for x in [event[1]*10,*event[1:8]]))
  if a.cut=='converter':
   report['capture_guest_progress']=[]
   for quantum in range(10):
@@ -100,12 +101,62 @@ try:
   timer=json.loads(get(q,'execution-state'));require(timer['mm_timer_pending'],'actual active acquisition timer absent')
   run(q,timer['mm_timer_expires_ns']+8);report['inside_conversion']=observed(q)
   require(any(x['converting'] for x in json.loads(get(q,'execution-state'))['mm_streams']),'actual nexttimer+8ns did not retain conversion')
+ if a.cut in ('dma','pcm'):
+  # Only ordinary raw pen input starts the maintained guest consumer. QOM
+  # observations and VMState decoding below never start controller work.
+  now=int(get(q,'virtual-time'));x=472 if a.cut=='dma' else 1192
+  pen=Input(1650,2200,now//10+1,100,100);pen.sample(x,144,512,True);pen.sample(x,144,0,False)
+  for event in pen.events:put(q,'external-event',' '.join(str(v) for v in [event[1]*10,*event[1:8]]))
+  report['consumer_pen_input']={'control':'CAPTURE' if a.cut=='dma' else 'AUDIO TEST','events':pen.events}
+  if a.cut=='pcm':
+   for quantum in range(4000):
+    run(q,int(get(q,'virtual-time'))+100000)
+    audio=json.loads(get(q,'multimodal-state'))['streams'][8]
+    if audio['state']==5 and audio['submitted']==16 and 0<audio['count']<16:break
+   require(audio['state']==5 and audio['submitted']==16 and 0<audio['count']<16,'actual guest AUDIO TEST did not reach pending PCM boundary within400ms')
+   report['active_pcm']=audio
+  else:
+   # DMA is eight real one-word timer transactions. Locate the first actual
+   # guest DMA address write by deterministic fresh-process prefix replay,
+   # then advance in instruction-sized cuts until that real DMA is active.
+   base,base_tlb=save(q,d,'dma-search-base');base_medium=export(q,d,'dma-search-medium.raw')
+   low=int(get(q,'virtual-time'));high=low+400000000
+   search=[]
+   def probe(until):
+    name='probe-'+str(len(search));pq,pd=launch(name,base_medium)
+    pq.execute('lemma-load-machine-softtlb',{'filename':str(base),'cache-filename':str(base_tlb)})
+    run(pq,until);pm,pt=save(pq,pd,'probe');payload=multimodal_payload(pm.read_bytes())
+    row={'until_ns':until,'dma_address_seen':any(s['dma_addr'] for s in payload['streams']),'vmstate_sha256':sha(pm),'logical_sha256':sha(pt)};search.append(row)
+    owned=next(v for v in live if v[1] is pq);pq.execute('quit');owned[0].wait(timeout=5);pq.close();owned[2].close();live.remove(owned)
+    # Probe state is disposable and independently hash-observed; the base,
+    # selected real cut, suffixes and original machine remain retained.
+    import shutil
+    shutil.rmtree(pd)
+    return row['dma_address_seen']
+   require(probe(high),'guest record DMA address absent within400ms')
+   while high-low>8:
+    middle=((high+low)//16)*8
+    if probe(middle):high=middle
+    else:low=middle
+   selected,selected_dir=launch('dma-selected',base_medium)
+   selected.execute('lemma-load-machine-softtlb',{'filename':str(base),'cache-filename':str(base_tlb)})
+   run(selected,high)
+   for step in range(12500):
+    state=json.loads(get(selected,'execution-state'))
+    if state['mm_dma_active']:break
+    run(selected,int(get(selected,'virtual-time'))+8)
+   require(state['mm_dma_active'] and 0<=state['mm_dma_word']<8,'guest owned record DMA did not become active within100us after address setup')
+   q,d=selected,selected_dir;report['dma_prefix_search']=search;report['active_dma']=state
  active=[x for x in json.loads(get(q,'execution-state'))['mm_streams'] if x['converting']]
  report['active_mm_streams']=active;report['active_mm_qualified']=bool(active)
  before=observed(q);cut,tlb=save(q,d,'cut');cutmedium=export(q,d,'cut-medium.raw');require(observed(q)==before,'capture/export changed digital state');uart_start=(d/'uart.bin').stat().st_size
  suffix_start=int(get(q,'virtual-time'));until=(pending['media_deadline_ns']+2000000000 if a.cut=='storage' else suffix_start+1000000)
  require(0<=until-suffix_start<=report['limits']['suffix_ns'],'prospective virtual suffix bound');report['actual_suffix_ns']=until-suffix_start
  run(q,until);left=observed(q);leftmain,lefttlb=save(q,d,'suffix');leftmedium=export(q,d,'suffix-medium.raw');leftuart=(d/'uart.bin').read_bytes()[uart_start:]
+ if a.cut=='pcm':require(json.loads(get(q,'multimodal-state'))['streams'][8]['consumed']==16,'actual PCM suffix did not consume exactly the submitted16 samples')
+ if a.cut=='dma':
+  completed=multimodal_payload(leftmain.read_bytes());owner=report['active_dma']['mm_dma_owner']
+  require(completed['streams'][owner]['dma_status']==2 and not completed['dma_active'],'actual owned record DMA did not complete in suffix')
  if a.cut=='storage':require(any(x[0]==0x421 for x in guest_events(d/'uart.bin')),'pending Save did not later acknowledge after actual media completion')
  f,fd=launch('fork',cutmedium);f.execute('lemma-load-machine-softtlb',{'filename':str(cut),'cache-filename':str(tlb)});require(observed(f)==before,'loaded Ready/blocked boundary differs');fork_start=(fd/'uart.bin').stat().st_size;run(f,until);right=observed(f);rightmain,righttlb=save(f,fd,'suffix');rightmedium=export(f,fd,'suffix-medium.raw');require(left==right,'suffix controller observation differs');require(leftuart==(fd/'uart.bin').read_bytes()[fork_start:],'suffix actual UART bytes differ');require(sha(leftmedium)==sha(rightmedium),'suffix durable medium differs')
  report['controller_and_uart_suffix_equal']=True;report['durable_suffix_equal']=True

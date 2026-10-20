@@ -526,7 +526,7 @@
         "save_cycles": 200000000,
         "save_seconds": 1800
       },
-      "scope": "ActualROM/Ready succeeded661Mcycles; actualSavefrontier2\u21925 stores exactlinkedraw/index. Observerwronglyrequiredheader1payloadchange. Finalpanel/resetnotobserved. OriginalFAILunchanged.",
+      "scope": "ActualROM/Ready succeeded661Mcycles; actualSavefrontier2→5 stores exactlinkedraw/index. Observerwronglyrequiredheader1payloadchange. Finalpanel/resetnotobserved. OriginalFAILunchanged.",
       "result": "build/task009/integrated15-school23-positive-a2/result.json",
       "seconds": 5353.874020740041,
       "aggregate_cycles": 699000000
@@ -1127,6 +1127,360 @@
         "exception_after": -1
       },
       "owned_processes_reaped": true
+    }
+  },
+  "school23_owned_io": {
+    "status": "STRICT_AUDITED_NATIVE_PACKAGED_AND_READY",
+    "source_archive": "build/task009/school23-mm-source-a6",
+    "source_inputs": 541,
+    "inventory_sha256": "983c807bb2bee74c7246482b721c9188d53c2ee464a82ec5a24ee6395dfca569",
+    "notebook_sha256": "b7935c1cf06b5d0feb16e10a22f784f2b96470512de02c45a01f6c83b0c14957",
+    "service_sha256": "74cac42b9123b0981cf6fdcfecb9e4d4f884a5c1412d1a1da57ceb079854e6e0",
+    "user_multimodal_sha256": "dd3500b3d3264c3574f90ef2cbf8a18170b986a302ffa5e51d0b858fae3991f7",
+    "actual_body_producer": "build/task009/school23-mm-producer-a3/result.json",
+    "cached_provenance_refresh": "build/task009/school23-mm-producer-a5/result.json",
+    "fresh_reused": "a3 genuinely produces changed Kernel/Notebook Lean→Core0→LLVM O2→RV64IM objects; a5 reuses those original actions and binds corrected strict observer/contract source. Cached compilation is not execution.",
+    "strict_audits": {
+      "receipt": "build/task009/school23-mm-audit-a4/result.json",
+      "result": "PASS",
+      "seconds": 265.22100496292114,
+      "peak_combined_rss_bytes": 553734144,
+      "rows": [
+        {
+          "role": "notebook",
+          "build": "build/kernel/task009-school23-notebook-a20",
+          "seconds": 229.23190879821777,
+          "result": "PASS"
+        },
+        {
+          "role": "initialize",
+          "build": "build/kernel/task009-school23-initialize-a19",
+          "seconds": 229.23193740844727,
+          "result": "PASS"
+        },
+        {
+          "role": "integrated",
+          "build": "build/kernel/task009-school23-integrated-a17",
+          "seconds": 265.11917877197266,
+          "result": "PASS"
+        }
+      ]
+    },
+    "native": {
+      "bundle": "build/task009/school23-native-a9/bundle.json",
+      "sha256": "124c02d6389172ae246bc63d805ad71ac00d5f385d4574caa4a5b9fe1b506853",
+      "package_seconds": 7.032527923583984,
+      "ready_save_receipt": "build/school/task009-student-native-a7/first-save-ready.json",
+      "actual_ready_units": 400000001,
+      "actual_explicit_save_units": 500000001,
+      "actual_save": [
+        24,
+        1,
+        1,
+        0
+      ]
+    },
+    "service_scope": "Version2: owned64-byte record DMA and bounded1..16 signed16 PCM batches, arm/prefill/start; ordinary CAPTURE and explicit sixteen-sample AUDIO TEST are actual consumers. Full frames, continuous audio and economy acquisition remain unsupported.",
+    "finite_domain_admission": "Service.call12→19 only with actual pure version2; Notebook control6→7 only with actual testAudio consumer. Legacy authority remains scoped and current source safety validates28 tiles/raw replay/coalescing.",
+    "retained_failures": [
+      "build/task009/school23-mm-producer-a1/result.json",
+      "build/task009/school23-mm-producer-a2/result.json",
+      "build/task009/school23-mm-audit-a1/result.json",
+      "build/task009/school23-mm-audit-a2/result.json",
+      "build/task009/school23-mm-audit-a3/result.json"
+    ],
+    "factory": {
+      "receipt": "build/task009/school23-mm-integrated-artifacts-a2/result.json",
+      "image": "build/boot/task009-integrated15-school23-mm-image-a1/package.json",
+      "source_archive": "build/task009/school23-mm-integrated-source-a1/consumed-source-root",
+      "identity": 4222223434907652,
+      "discovery_bytes": 2973,
+      "descriptor_bound_bytes": 3072,
+      "factory_sha256": "afb23d1e8fea0b4be9bda0e59deb7000301fe6ea0eeee572d71656d0136ea7df",
+      "factory_bytes": 33558528,
+      "seconds": 9.358399159973487,
+      "peak_rss_bytes": 1731829760,
+      "retained_original_rss_failure": "build/task009/school23-mm-integrated-artifacts-a1/result.json"
+    },
+    "canonical_execution": {
+      "status": "RUNNING_SEPARATE_FRESH_EXECUTION",
+      "receipt": "build/task009/integrated15-school23-mm-positive-a1/result.json",
+      "scope": "Actual ROM/NV cold authentication of new image4 and complete current guest; original12000s/1.5B cycles, no old Ready checkpoint/payload substitution"
+    }
+  },
+  "native_logical_checkpoint_current_guest": {
+    "status": "PUBLIC_OPT_IN_NATIVE_LOGICAL2_ADMITTED",
+    "runtime_sha256": "c541546d6acd38a465024a944f2f5629490c91ab4dc07e5b41c59054248e9eac",
+    "guest_bundle": "build/task009/school23-native-a9/bundle.json",
+    "cases": {
+      "pcm": {
+        "receipt": "build/task009/mm-logical2-pcm-a1/result.json",
+        "result": "PASS_ACTUAL_NATIVE_LOGICAL2_SUFFIX",
+        "seconds": 16.922860088991,
+        "peak_owned_rss_bytes": 248446976,
+        "actual_suffix_ns": 1000000,
+        "boundary": {
+          "id": 8,
+          "state": 5,
+          "error": 0,
+          "count": 14,
+          "epoch": 2,
+          "sequence": 0,
+          "consent": 1,
+          "consumed": 2,
+          "submitted": 16
+        },
+        "vmstate_relation": {
+          "version": "lemma-native-logical-observation-relation/2",
+          "raw_equal": false,
+          "bytes": 27264489,
+          "host_fields": [
+            {
+              "name": "timer.cpu_ticks_offset",
+              "offset": 3669561,
+              "left": 8598835645,
+              "right": 8664402953
+            },
+            {
+              "name": "timer.cpu_clock_offset",
+              "offset": 3669577,
+              "left": 3198871457,
+              "right": 3223263748
+            }
+          ],
+          "all_other_bytes_equal": true
+        },
+        "malformed_candidate_rejected": true,
+        "source_unchanged": true,
+        "owned_processes_reaped": true
+      },
+      "dma": {
+        "receipt": "build/task009/mm-logical2-dma-a1/result.json",
+        "result": "PASS_ACTUAL_NATIVE_LOGICAL2_SUFFIX",
+        "seconds": 118.93108945898712,
+        "peak_owned_rss_bytes": 306454528,
+        "actual_suffix_ns": 1000000,
+        "boundary": {
+          "schema": "lemma-execution-state/1",
+          "cpu_halted": 0,
+          "cpu_interrupt_request": 0,
+          "virtual_ns": 4016994280,
+          "pen_irq": true,
+          "pen_count": 1,
+          "mm_dma_active": 1,
+          "mm_dma_owner": 0,
+          "mm_dma_word": 0,
+          "mm_streams": [
+            {
+              "id": 0,
+              "state": 5,
+              "count": 2,
+              "converting": 0,
+              "next": 402427451,
+              "available": 401427455
+            },
+            {
+              "id": 1,
+              "state": 5,
+              "count": 2,
+              "converting": 0,
+              "next": 402585993,
+              "available": 401585997
+            },
+            {
+              "id": 2,
+              "state": 5,
+              "count": 1,
+              "converting": 0,
+              "next": 401744536,
+              "available": 400744540
+            },
+            {
+              "id": 3,
+              "state": 5,
+              "count": 1,
+              "converting": 0,
+              "next": 401903078,
+              "available": 400903082
+            },
+            {
+              "id": 4,
+              "state": 5,
+              "count": 1,
+              "converting": 0,
+              "next": 402061621,
+              "available": 401061625
+            },
+            {
+              "id": 5,
+              "state": 5,
+              "count": 1,
+              "converting": 0,
+              "next": 402220163,
+              "available": 401220167
+            },
+            {
+              "id": 6,
+              "state": 5,
+              "count": 1,
+              "converting": 0,
+              "next": 402378297,
+              "available": 401378301
+            },
+            {
+              "id": 7,
+              "state": 5,
+              "count": 1,
+              "converting": 0,
+              "next": 402536430,
+              "available": 401536434
+            },
+            {
+              "id": 8,
+              "state": 2,
+              "count": 0,
+              "converting": 0,
+              "next": 0,
+              "available": 0
+            }
+          ],
+          "mm_timer_pending": true,
+          "mm_timer_expires_ns": 4016994290
+        },
+        "vmstate_relation": {
+          "version": "lemma-native-logical-observation-relation/2",
+          "raw_equal": false,
+          "bytes": 27264489,
+          "host_fields": [
+            {
+              "name": "timer.cpu_ticks_offset",
+              "offset": 3669561,
+              "left": 10629361973,
+              "right": 10695773645
+            },
+            {
+              "name": "timer.cpu_clock_offset",
+              "offset": 3669577,
+              "left": 3954251780,
+              "right": 3978957852
+            }
+          ],
+          "all_other_bytes_equal": true
+        },
+        "malformed_candidate_rejected": true,
+        "source_unchanged": true,
+        "owned_processes_reaped": true
+      }
+    },
+    "relation": "Every guest VMState/controller/timer/IRQ/RAM/translation/wake payload retained, except the two named validated host execution-clock offsets. Same backend only.",
+    "scope": "Ordinary pen starts maintained guest CAPTURE/AUDIO TEST. DMA prefix search replays deterministic real guest work; no host controller start, register write, synthetic DMA delay or guest state construction. Pending PCM has16 submitted/2 consumed/14 queued.",
+    "public_guard": true,
+    "current_storage": {
+      "receipt": "build/task009/mm-logical2-current-storage-a1/result.json",
+      "result": "PASS_ACTUAL_NATIVE_LOGICAL2_SUFFIX",
+      "seconds": 19.159672237932682,
+      "peak_owned_rss_bytes": 223481856,
+      "owned_processes_reaped": true,
+      "pending_storage": {
+        "backend": "lemma-fast-block/3",
+        "phase": 8,
+        "kind": 1,
+        "word_index": 0,
+        "status": 15,
+        "irq": 0,
+        "pending_sectors": 0,
+        "writes": 0,
+        "flushes": 0,
+        "durable_flush": 0,
+        "deadline_ns": 3261803532,
+        "media_deadline_ns": 3261803532,
+        "backing_next_id": 4,
+        "backing_completed": 3,
+        "backing_durable_barrier": 0,
+        "backing_observed_write": 0,
+        "backing_phase": 2,
+        "backing_poisoned": 0,
+        "retry_ready": 0,
+        "flush_cursor": 0,
+        "external_orphan": 0
+      },
+      "actual_suffix_ns": 3960803528
+    },
+    "public_student_session": {
+      "receipt": "build/task009/logical2-public-session-a1/result.json",
+      "result": "PASS_ACTUAL_PUBLIC_STUDENT_NATIVE_SESSION_FORK",
+      "seconds": 15.63549376197625,
+      "peak_owned_rss_bytes": 169705472,
+      "owned_processes_reaped": true,
+      "active_pcm": {
+        "id": 8,
+        "state": 5,
+        "error": 0,
+        "count": 14,
+        "epoch": 2,
+        "sequence": 0,
+        "consent": 1,
+        "consumed": 2,
+        "submitted": 16
+      },
+      "isolated_backing": true,
+      "failed_restore_preserves_authority": true,
+      "successful_restore_invalidates_authority": true
+    },
+    "student_view": {
+      "receipt": "build/task009/logical2-student-view-a1/result.json",
+      "result": "PASS_ACTUAL_STUDENT_VIEW_EXPORT_RESTORE",
+      "seconds": 9.427575791021809,
+      "peak_owned_rss_bytes": 223506432,
+      "owned_processes_reaped": true,
+      "buttons": [
+        "Pause",
+        "Resume",
+        "Warm reset",
+        "Cold cycle",
+        "Export state",
+        "Restore",
+        "Study"
+      ],
+      "snapshot_cycle": 400000000,
+      "changed_cycle": 400010000,
+      "restored_cycle": 400000000,
+      "old_medium_unchanged": true,
+      "screenshot": {
+        "path": "docs/evidence/009-native-logical2-student.png",
+        "sha256": "a9b432f461354959e5b9bfb041e450eb51dd5d2e58f0138b9c783713f922dca8",
+        "origin": "build/task009/logical2-student-view-a1/student-export-restore.png",
+        "scope": "Actual isolated X server pixels from native Student viewer connected through normal private controlserver; Export state and Restore callbacks executed"
+      }
+    },
+    "bundle": {
+      "path": "build/task009/school23-native-logical2-a1/bundle.json",
+      "sha256": "44ae0090938f4fc084b81b3992b3010ad34de208aceea0202e21bbe9604ca67d",
+      "files": 1978,
+      "binding": "lemma-silicon-fast-softtlb/0.2.0"
+    },
+    "selection": "scripts/lemmasim build and native-bundle-build --checkpoint-binding native-logical2; packaged Student launches normally without environment variables",
+    "contract": "docs/contracts/009-qemu-logical-softtlb-v2.html",
+    "guide": "docs/school-client.html",
+    "guards": [
+      "default profile0.14 raw runtime rejects exact checkpoints",
+      "externalcompanion storage excluded",
+      "exact runtime/profile/guest/source identity required",
+      "unknown CPU callback rejected without drain or outputpair",
+      "candidate validated/loaded before original retirement or School invalidation",
+      "local private backing ownership; old live medium unchanged",
+      "no cross-backend microstate migration"
+    ],
+    "retained_observer_failure": "build/task009/logical2-current-session-a1/result.json",
+    "current_guarded_transaction": "build/task009/logical2-current-session-a2/result.json",
+    "host_tests": {
+      "admission": 5,
+      "transaction": 5,
+      "live_session": 46,
+      "transport": 8,
+      "native_bundle": 14,
+      "relocation": 3,
+      "logs": "build/task009/logical2-public-prepare-a1/"
     }
   }
 }

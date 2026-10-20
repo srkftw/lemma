@@ -9,6 +9,26 @@
 <p>Feedback opens the learner's bounded feedback list. Due reviews selects the original publication and task; bind a fresh ASK after opening it so the subsequent guest response retains its review identity. Opening alone does not complete a review. The school requires the linked exact response or versioned human assessment before completion and the next schedule.</p>
 <p>The browser distribution exposes the same Study actions and executes the same guest. Select Student mode, create a fresh medium through the real initializer, or reopen an existing named OPFS medium. Close/Open runs cold recovery from its durable bytes. Pairing credentials are live connection state and are cleared by reset, restore and close.</p>
 <p><strong>Qualification in progress:</strong> source-bound queue, compiler, controller and protected school cases are separate from the complete native/browser workflow. Current execution status and exact source-bound reproduction paths are in the <a href="plan/009-session-state.html">Task009 checkpoint</a>. The diagnostic commands below retain their historical scope and admission restrictions.</p>
+<h2>Export and restore native state</h2>
+<p>The explicitly packaged native logical2 edition supports execution checkpoints in Student mode. Its bundle manifest declares <code>lemma-silicon-fast-softtlb/0.2.0</code>. Launch that bundle normally; no environment variables or Developer injection controls are needed. In the drawing window choose Pause, then Export state and a new directory. Restore selects a previous state directory and creates an isolated fork. The source medium remains unchanged. Reconnect Study and bind a fresh ASK after restore; school credentials and live tablet handles are detached. A rejected state preserves the running machine and current admission.</p>
+<p>Save remains the guest operation for durable notebook work. Export state additionally captures pending execution, clocks, timers, interrupts, storage, queued transport, DMA and audio. Restore requires the exact native runtime, profile, guest and source identity. This edition does not import browser/RTL microstate or external companion storage. The <a href="contracts/009-qemu-logical-softtlb-v2.html">version2 continuation contract</a> and <a href="evidence/009-integrated-machine.html">finite qualification</a> give those limits.</p>
+<p>For a local source build, prepare and package the exact audited pair with the public selector. The source archive and build directories below are the retained Task009 cohort; use new output directories.</p>
+<pre><code>python3 scripts/lemmasim build --checkpoint-binding native-logical2 \
+  --backend qemu --profile lemma-silicon-dev/0.14.0 --workload school-notebook \
+  --guest-build build/kernel/task009-school23-notebook-a20 \
+  --guest-source-root build/task009/school23-mm-source-a6
+python3 scripts/lemmasim native-bundle-build --checkpoint-binding native-logical2 \
+  --profile lemma-silicon-dev/0.14.0 --school-deployment \
+  --notebook-build build/kernel/task009-school23-notebook-a20 \
+  --initializer-build build/kernel/task009-school23-initialize-a19 \
+  --guest-source-root build/task009/school23-mm-source-a6 \
+  --sample-course build/school/task009-sources-a1/sample.lcp \
+  --output-dir build/task009/school23-native-logical2-NEW
+python3 scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.14.0 \
+  --native-bundle build/task009/school23-native-logical2-NEW \
+  --workload notebook --mode student --disk YOUR_SAVED_MEDIUM.raw \
+  --session-dir build/task009/student-state-NEW --paused
+</code></pre>
 <h2>Historical owner-local diagnostic bridge</h2>
 <p>The school client bridge uses the existing Lean course publisher, immutable package installer, Store, workbook, exact checker, drawing surface and tutor-action admission. School enrollment, publication and assistance decisions execute in <code>Lemma.School.Authority</code>. Python conveys JSON and package bytes through the normal modeled UART. It does not construct documents, install journal records, draw hints or decide school policy.</p>
 <p>This foundation supports an owner-local Developer or Laboratory session with the admitted <code>lemma-silicon-dev/0.14.0</code> guest. The local OS owner is the trust boundary. An explicit guest JOIN admits a versioned invitation, and school assistance/3 must match its full authority digest, durable binding record, generation, guest deadline and policy. The hosted authority resolves that record to the principal and enrollment. This integrity boundary does not establish authenticated remote enrollment. Endpoint discovery inside the guest and arbitrary course identifiers with practical selector latency remain unfinished.</p>

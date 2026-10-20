@@ -27,9 +27,10 @@ RAW_UART_FLOW_ADAPTER = 'lemmasim-fast-adapter/6'
 MAX_NS = (1 << 63) - 1
 CLOCK_SCHEMA = 'lemmasim-fast-clock/1'
 LOGICAL2_BINDING = 'lemma-silicon-fast-softtlb/0.2.0'
-# Promotion requires actual pending DMA/PCM/storage and public transaction gates.
-# Selecting/building the source-bound runtime alone does not admit checkpoints.
-LOGICAL2_CHECKPOINT_ADMITTED = False
+# Admitted only for the explicitly selected version2 binding/local backing.
+# Current guest DMA, PCM, storage, unknown work and Session transaction cases
+# are indexed in docs/evidence/009-integrated-machine.html.
+LOGICAL2_CHECKPOINT_ADMITTED = True
 LOGICAL2_CACHE_SEED = '/nix/store/1nqjws03faak74p8f8y781s779rfklq1-lemmasim-qemu-raw-uart-logical-v2-retained-11.1.1'
 LOGICAL2_NORMAL_REFERENCE = '/nix/store/fz255cis6w7pzd7kv6g6klb3w7fr9i2l-lemmasim-qemu-raw-uart-v1-11.1.1'
 
@@ -108,6 +109,7 @@ def sources(name):
             'patch_soft_tlb.py','patch_soft_tlb2.py','patch_multimodal_checkpoint.py',
             'patch_logical2_lifecycle.py','qemu_uart.nix','qemu_logical2_reuse.nix',
             'native_logical2_reuse.py')]
+        paths.append(ROOT/'docs/contracts/009-qemu-logical-softtlb-v2.html')
     if profile(name)['profile'] in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0','lemma-silicon-dev/0.14.0'):
         paths.append(ROOT/'tooling/lemmasim/patch_counter_clock.py')
     if profile(name)['profile']=='lemma-silicon-dev/0.4.0':paths += [ROOT/'tooling/lemmasim/patch_power_safety.py',ROOT/'scripts/silicon_power_guest_archive.py']

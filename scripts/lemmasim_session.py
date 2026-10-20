@@ -1274,6 +1274,7 @@ def view(directory):
     controls = tk.Frame(window)
     controls.pack(fill='x')
     status = tk.StringVar(value='Virtual time is authoritative; host speed controls pacing')
+    logical2 = metadata['identity'].get('checkpoint_binding') == 'lemma-silicon-fast-softtlb/0.2.0'
     tk.Label(window, textvariable=status).pack(fill='x')
     canvas = tk.Canvas(window, width=view_width, height=view_height, background='white')
     canvas.pack()
@@ -1289,7 +1290,7 @@ def view(directory):
             messagebox.showerror('Machine operation', str(error))
 
     def save():
-        name = filedialog.asksaveasfilename(title='New checkpoint directory')
+        name = filedialog.asksaveasfilename(title='New state directory' if logical2 else 'New checkpoint directory')
         if name:
             operation({'action': 'snapshot', 'path': name})
 
@@ -1300,7 +1301,7 @@ def view(directory):
 
     for label, action in [('Pause', 'pause'), ('Resume', 'resume'), ('Warm reset', 'warm-reset'), ('Cold cycle', 'cold-cycle')]:
         tk.Button(controls, text=label, command=lambda a=action: operation({'action': a})).pack(side='left')
-    tk.Button(controls, text='Snapshot', command=save).pack(side='left')
+    tk.Button(controls, text='Export state' if logical2 else 'Snapshot', command=save).pack(side='left')
     tk.Button(controls, text='Restore', command=restore).pack(side='left')
     if metadata['identity']['profile'] in ('lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.15.0'):
         def study():
