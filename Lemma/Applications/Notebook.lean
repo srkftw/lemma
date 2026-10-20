@@ -620,10 +620,18 @@ private def redrawEntryStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   if different copied bytes = true then .done 234 0 else
   .bind (renderLoadedChunk page stroke copied) fun s _ => .done s (acc + 1)
 
+/-- A page redraw erases the optional control bar. Legacy notebooks and early
+boot have no multimodal allocation; only the initialized client may request
+its ordinary idle renderer after the framebuffer ownership is released. -/
+private def requestMultimodalBarAfterRedraw : Action :=
+  .bind (Memory.read64 rawCaptureReadyFlag) fun s ready => if statusFailed s = true then .done s 0 else
+  if ready = 1 then Memory.write64 (Lemma.User.Multimodal.state + 32) 1 else .done 0 0
+
 private def redraw : Action :=
   .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
   .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
   .bind (Surface.background width height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind requestMultimodalBarAfterRedraw fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Documents.Ink.field pageIndex 32) fun s count => if statusFailed s = true then .done s 0 else
   if 512 < count then .done 234 0 else
   .boundedFoldU64 512 redrawEntryStep count.toUInt32 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else

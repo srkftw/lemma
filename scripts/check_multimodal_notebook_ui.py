@@ -26,6 +26,8 @@ def main():
   .bind (packagePut 176 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (beginPackageRead 60001 sequence)'''
     cases=[('actual-maintained',text,True),
+           ('quarantined-redraw-loses-bar',text.replace('if ready = 1 then Memory.write64 (Lemma.User.Multimodal.state + 32) 1 else .done 0 0','if ready = 1 then .done 0 0 else .done 0 0',1),False),
+           ('quarantined-legacy-redraw-touches-unallocated-bar',text.replace('if ready = 1 then Memory.write64 (Lemma.User.Multimodal.state + 32) 1 else .done 0 0','Memory.write64 (Lemma.User.Multimodal.state + 32) 1',1),False),
            ('quarantined-missing-dirty-enqueue',text.replace(enqueue,'',1),False),
            ('quarantined-stop-waits-behind-busy',text.replace(stop,'if capture = 1 then .done 0 0 else ordinary resync flags',1),False),
            ('quarantined-inactive-start-bypass',text.replace(stop,'if capture = 1 then multimodalSafety 0 else multimodalSafety 0',1),False),

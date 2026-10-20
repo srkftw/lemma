@@ -206,6 +206,12 @@ class NotebookSafetySourceTests(unittest.TestCase):
   .bind (beginPackageRead 60001 sequence)'''
         self.reject(1,before,before.replace('packagePut 160 0','packagePut 160 1'),'source school envelope')
 
+    def test_redraw_schedules_only_initialized_optional_bar(self):
+        self.reject(1, '.bind requestMultimodalBarAfterRedraw fun s _ => if statusFailed s = true then .done s 0 else',
+                    '.bind (.done 0 0) fun s _ => if statusFailed s = true then .done s 0 else', 'source redraw omitted')
+        self.reject(1, 'if ready = 1 then Memory.write64 (Lemma.User.Multimodal.state + 32) 1 else .done 0 0',
+                    'Memory.write64 (Lemma.User.Multimodal.state + 32) 1', 'source redraw bar allocation')
+
     def test_owned_pcm_and_raw_capture_sources_keep_distinct_ownership(self):
         result = target.notebook_safety_sources(*self.sources)
         self.assertEqual((result['toolbar_variant'],result['toolbar_extent'],result['toolbar_tiles']),

@@ -75,6 +75,15 @@ def uiFixture (enabled : UInt64) : UIState := Id.run do
 def uiByte (s : UIState) (a : UInt64) : UInt64 := (uiRead s (a-a%8) >>> (a%8*8)) &&& 255
 
 def uiMain : IO Unit := do
+  -- Early/legacy redraw cannot access the optional allocation; an initialized
+  -- redraw schedules the actual idle bar without acquiring the framebuffer.
+  let legacy ← IO.mkRef (uiFixture 0)
+  uiCheck ((← uiExecute legacy requestMultimodalBarAfterRedraw).1 = 0) "legacy redraw request failed"
+  uiCheck ((← legacy.get).writes = 0) "legacy redraw touched unallocated multimodal memory"
+  let initialized ← IO.mkRef (uiWrite (uiFixture 0) rawCaptureReadyFlag 1)
+  uiCheck ((← uiExecute initialized requestMultimodalBarAfterRedraw).1 = 0) "initialized redraw request failed"
+  uiCheck (uiRead (← initialized.get) (Lemma.User.Multimodal.state+32) = 1) "redraw lost the optional control bar"
+  uiCheck ((← initialized.get).calls.isEmpty) "redraw request acquired controller ownership"
   let bar ← IO.mkRef (uiFixture 1)
   uiCheck ((← uiExecute bar multimodalBar).1 = 0) "actual bar failed"
   let s ← bar.get

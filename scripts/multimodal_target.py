@@ -176,6 +176,15 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
       'source toolbar tile row/column/index differs')
     raw_capture = 'private def multimodalRawBase : UInt64 := 0x350000' in notebook
     owned_pcm = 'private def audioPage : UInt64 := 0x360000' in mm
+    if 'private def requestMultimodalBarAfterRedraw' in notebook:
+        require(definition(notebook,'requestMultimodalBarAfterRedraw') == compact('''private def requestMultimodalBarAfterRedraw : Action :=
+          .bind (Memory.read64 rawCaptureReadyFlag) fun s ready => if statusFailed s = true then .done s 0 else
+          if ready = 1 then Memory.write64 (Lemma.User.Multimodal.state + 32) 1 else .done 0 0'''),
+          'source redraw bar allocation/deferral differs')
+        redraw = definition(notebook,'redraw')
+        require(compact('''.bind (Surface.background width height) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind requestMultimodalBarAfterRedraw fun s _ => if statusFailed s = true then .done s 0 else''') in redraw,
+          'source redraw omitted optional bar request')
     school = 'private def schoolActivityFlag : UInt64 :=' in notebook
     require(not owned_pcm or school, 'source toolbar owned PCM requires the selected school layout')
     extent, packed, tiles = (1264,6480,28) if owned_pcm else (1120,5400,23)
