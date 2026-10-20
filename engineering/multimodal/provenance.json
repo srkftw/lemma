@@ -82,5 +82,69 @@
     },
     "evidence": "docs/evidence/009-physical-integration.json",
     "qualification": "SIMULATED_ONLY process-model circuit engineering; process/layout/assembly/mismatch and physical/safety qualification remain UNVERIFIED"
+  },
+  "process_bound_clocked_comparator": {
+    "design": "engineering/multimodal/clocked-comparator-sg13g2.cir",
+    "checker": "scripts/check_sg13g2_comparator.py",
+    "public_process_revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "consumer": "The maintained HBT microphone preamplifier directly drives the process-bound clocked decision stage and original sg13g2_inv_1 transistor loads. Complete ADC, sample/hold, reference and controller binding remain unfinished.",
+    "scope": "Eleven real SG13G2 LV PSP MOS transistors plus four original inverter transistors per instance. Clock, microphone voltage and external loads are declared test stimuli. Internal gain and regeneration use actual process transistors.",
+    "port_contract": {
+      "clock_low": "Both decision outputs return low after precharge.",
+      "clock_high": "A positive input difference requires decisionp high and decisionn low; a negative difference requires the opposite. The operating domain is not admitted: fifteen functional cases still violate this contract."
+    },
+    "models": {
+      "MOS_parameters": "Original cornerMOSlv and recursive parameter includes; Apache-2.0.",
+      "HBT": "Original cornerHBT hbt_typ only. Joint MOS/HBT corner correlation is unqualified.",
+      "PSP_implementation": "Separate original CMC terms apply to PSP103 QS/NQS implementation, rather than the root Apache licence alone. NXP Semiconductors, Delft University of Technology and CEA-Leti notices and acknowledgement requirements remain; the terms restrict charging for the model code itself.",
+      "rights_source": "ihp-sg13g2/libs.tech/verilog-a/psp103/releasenotesPSP103.8.2.txt",
+      "closure": "Seventeen original Verilog-A files, ten original model parameter files, original standard-cell SPICE and PDK licence: twenty-nine immutable Git objects."
+    },
+    "operating_matrix": {
+      "MOS_corners": [
+        "mos_tt",
+        "mos_ss",
+        "mos_ff"
+      ],
+      "HBT_corner": "hbt_typ",
+      "supply_V": [
+        1.1,
+        1.2,
+        1.3
+      ],
+      "temperature_C": [
+        -20,
+        27,
+        85
+      ],
+      "clock_Hz": 10000000,
+      "clock_edge_seconds": 5e-10,
+      "transient_seconds": 2e-06,
+      "maximum_timestep_seconds": 1e-10,
+      "direct_input_differential_V": [
+        0.002,
+        0.01,
+        -0.002,
+        -0.01
+      ],
+      "base_external_load_F": 1e-14,
+      "additional_load_control_F": 1e-13,
+      "actual_seconds": 168.127933138,
+      "operating_points": 27,
+      "operating_passes": 10,
+      "functional_limits": 15,
+      "SPICE_convergence_limits": 2,
+      "controls_pass": 3,
+      "result": "FAIL_NOT_ADMITTED"
+    },
+    "retained_failures": [
+      "The original 400-second campaign ended without a circuit pass; its 20-microsecond transient hit the original 20-second phase limit.",
+      "The first original QS compilation lacked a host linker. A separate binding with pinned Clang completed.",
+      "Missing NQS definitions produced strict unknown-model warnings. Compiling the original NQS module and loading both modules removed that dependency.",
+      "The original buffer connection reversed the nominal fine-step decision. Crossing its actual input wires preserves the declared external contract; an actual original-wiring negative catches the mismatch.",
+      "Fifteen decision/reset violations and two SPICE convergence limits remain. Nominal success does not qualify the operating domain."
+    ],
+    "evidence": "docs/evidence/009-physical-integration.json",
+    "qualification": "P3 process-model circuit engineering only. ADC precision, noise, mismatch, layout, extraction, manufacturing, physical safety and educational qualification remain UNVERIFIED."
   }
 }

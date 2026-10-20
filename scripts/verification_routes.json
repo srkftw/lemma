@@ -583,7 +583,8 @@
         "scripts/check_multimodal_engineering.py",
         "docs/multimodal-engineering.html",
         "docs/evidence/007-multimodal-engineering.json",
-        "scripts/check_sg13g2_microphone.py"
+        "scripts/check_sg13g2_microphone.py",
+        "scripts/check_sg13g2_comparator.py"
       ],
       "claims": [
         "multimodal-engineering",

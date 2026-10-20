@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T01:57:30.792203+00:00",
+  "written_at": "2026-10-20T04:25:10.299435+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -2456,5 +2456,133 @@
     "seconds": 4515.107,
     "cycles": 699200000,
     "scope": "FreshcanonicalIHP-SRAMSoCexecutionofreusedauditedold540guest/ROM/RTL:factoryROM/NVReady,actualpen3full9-fieldrawsamples,linkedStorefrontier2→5,11newindependentinkpixels,resetpreservesacknowledgedbytes/ROMreentry. Laboratorydiagnostic,notordinaryStudentsession,independentcoldreopen,exactrestore,simultaneousrawstreamorphysicalqualification. PrivatebankedcandidateNOTconsumed."
+  },
+  "rejected_sequence_lookahead": {
+    "assessment": {
+      "path": "build/silicon/task009-sequence-lookahead-assessment-a1/result.json",
+      "sha256": "df6492492d55682028bb04849f7dc246c1fca8ab5afddb9732a15f20cfe30724"
+    },
+    "candidate_RTL_sha256": "d0eb5c55889484f2dc4a5867bb8d42a2a8d29fd7fb8782dc43f48261d7cacab0",
+    "base": "Unselected deadline-bank5f candidate; canonical504f and powered248 remain selected.",
+    "functional": "Full256 pen protocol, carries/exhaustion, ACK/reset/watchdog and exhaustive16-bit predicate relation pass12.510s. Forgotten upper carry and missing global X poison reject.",
+    "mapping": "Three real SRAMs and876FF preserved;7446→7485cells. Increment-output cone to all4predicateD removed; timestamp acceptance still reaches all4D.",
+    "zero_interconnect_original_constraints": {
+      "whole_WNS_before_ns": -3.758133,
+      "whole_WNS_after_ns": -3.940439,
+      "sample_to_predicate_arrival_before_ns": 6.521406,
+      "sample_to_predicate_arrival_after_ns": 7.578017,
+      "scope": "Real original typ25C libraries/full10ns/2nsI/O/.25nsuncertainty/driver/load. ZERO INTERCONNECT preflight only; no physical timing pass."
+    },
+    "decision": "Rejected before routing because the actual acceptance factor and whole timing regress. No new route or source selection. Two pre-tool alias-observer failures remain separately retained."
+  },
+  "process_bound_clocked_comparator": {
+    "design": {
+      "path": "engineering/multimodal/clocked-comparator-sg13g2.cir",
+      "sha256": "d035310a9ccca3bbab376c06abe02a31f26bc6b2a1479da6b3a0c2322a70b0dd"
+    },
+    "checker": {
+      "path": "scripts/check_sg13g2_comparator.py",
+      "sha256": "244b5d476943729f0b78e67201dee0d8be0a89af2e9958ccbf5fa89bffdde696"
+    },
+    "consumer": "Existing real HBT microphone preamp output drives an eleven-MOS clocked differential stage with original process inverter loads. The physical acquisition predecessor now has maintained active circuit/model/test sources; the complete converter and digital controller binding remain unfinished.",
+    "model_capsule": {
+      "path": "build/multimodal/task009-comparator-model-capsule-a1/model-capsule.json",
+      "sha256": "7356004a6a7b8985b310fa474e871c9575e35a258990268c86796dd93f84c34d"
+    },
+    "model_binding": "Original QS and NQS modules compiled with cached pinned OpenVAF-reloaded package24.0.1 (its actual banner says unknown) and pinned Clang. Original parameter/VA/CDL-independent inverter SPICE bytes remain immutable. Actual original compile components are reused; matrix SPICE is fresh.",
+    "rights": {
+      "parameter_files": "IHP PDK Apache2",
+      "PSP_implementation": "Separate CMC terms from originalreleasenotesPSP103.8.2.txt: modifications/redistribution permitted; attribution+notice and modelcodecharging restriction retained",
+      "notice": "PSP implementation developed by NXP Semiconductors, Delft University of Technology, and CEA-Leti."
+    },
+    "retained_attempts": {
+      "task009-comparator-pilot-a1": {
+        "path": "build/multimodal/task009-comparator-pilot-a1/result.json",
+        "sha256": "ef7d627c83eec563c613a04d02da0c0794b81d25f4e4465abb8636d117b62d03"
+      },
+      "task009-comparator-pilot-a2": {
+        "path": "build/multimodal/task009-comparator-pilot-a2/result.json",
+        "sha256": "3d560718ce181428eedd981f8265c7feb7d70e2aafb522ecde7142cddac90846"
+      },
+      "task009-comparator-pilot-a3": {
+        "path": "build/multimodal/task009-comparator-pilot-a3/result.json",
+        "sha256": "7caabf06545f742fa97530717423936a56c357fceb28590b83f18552d6947c3b"
+      },
+      "task009-comparator-pilot-a5": {
+        "path": "build/multimodal/task009-comparator-pilot-a5/result.json",
+        "sha256": "1e919bade33e13320c5a1482769b54b4ce839d03b372a229338ca0fc8b6d5f64"
+      },
+      "task009-comparator-diagnosis-a1": {
+        "path": "build/multimodal/task009-comparator-diagnosis-a1/result.json",
+        "sha256": "5e46950af90c009eb9934b2d81303f589fe12f63c91e8840c7afbd4fa5c96df8"
+      }
+    },
+    "fetch_observer_failure": {
+      "path": "build/multimodal/task009-comparator-pilot-a1/fetch-result.json",
+      "sha256": "ed1fc3ee766528b6b297e7c30d8578dce7e0f2b953b67e87b18e1b55db4f36a2"
+    },
+    "fetch_separate_assessment": {
+      "path": "build/multimodal/task009-comparator-pilot-a1/fetch-assessment.json",
+      "sha256": "028c7b630cc972581de52a39a36b2135c432d3dcd5545f2de2df8c69adc4d5fd"
+    },
+    "expired_original_budget_attempt": {
+      "path": "build/multimodal/task009-comparator-pilot-a4/nqs-result.json",
+      "sha256": "1e9087bee6e9b995c61692bd3909dcb5f2b6aecee6da1d435730652020d054d4"
+    },
+    "expired_budget_negative": {
+      "path": "build/multimodal/task009-comparator-pilot-a5/expired-budget-negative.json",
+      "sha256": "726a7bc15ee7f18c57612dd2bd870ebfbd70a094a3ecef45d28682dc97487d9d"
+    },
+    "matrix": {
+      "path": "build/multimodal/task009-comparator-operating-a1/result.json",
+      "sha256": "ea0db720c50e0fb13811c7496c357c5ff9266032dd760f7933d41a25e9b92a80"
+    },
+    "stronger_endpoint_assessment": {
+      "path": "build/multimodal/task009-comparator-operating-assessment-a1/result.json",
+      "sha256": "aa59ef63507751e4b5c48b12416ce58e55357d226801264fdf3e072fc16ec75d"
+    },
+    "matrix_result": {
+      "status": "FAIL_NOT_ADMITTED",
+      "seconds": 168.12793313793372,
+      "points": 27,
+      "operating_passes": 10,
+      "decision_or_reset_limits": 15,
+      "SPICE_convergence_limits": 2,
+      "controls_pass": 3,
+      "MOS_corners": [
+        "mos_tt",
+        "mos_ss",
+        "mos_ff"
+      ],
+      "HBT_corner": "hbt_typ",
+      "supply_V": [
+        1.1,
+        1.2,
+        1.3
+      ],
+      "temperature_C": [
+        -20,
+        27,
+        85
+      ],
+      "clock_Hz": 10000000,
+      "clock_edges_ps": 500,
+      "window_us": 2,
+      "maximum_timestep_ps": 100,
+      "source_bound_buffer_correction": "The two final original inverter input wires cross. The independent external polarity contract and observation conditions remain fixed; actual original-wiring negative rejects.",
+      "controls": [
+        "Actual original wrong wiring rejects.",
+        "Held-low clock keeps both outputs in reset.",
+        "Actual100fF external load passes at nominal tt/27C/1.2V."
+      ]
+    },
+    "observer_boundary": "The original exact consumed checker remains archived. A separate stronger assessment verifies exact2us endpoints and≤101ps gaps for all13 positive/control cases; no failed transient is promoted. Maintained expiry/endpoint/gap checks have3 regression negatives and no SPICE rerun.",
+    "remaining": [
+      "Robust comparator sizing/bias/common-mode behavior across the failing operating points.",
+      "Joint MOS/HBT process correlation, mismatch and transient-noise characterization.",
+      "Sample/hold, reference/DAC, complete converter and digital decision/valid/clock binding.",
+      "Layout, extraction, DRC/LVS, pads/package/assembly, manufacturing and physical safety qualification."
+    ],
+    "qualification": "P3 process-model design engineering only; not an admitted ADC, operating-domain-qualified comparator or physical sensor. Selected powered248/RTL504f remain unchanged."
   }
 }
