@@ -8018,6 +8018,42 @@
         }
       ],
       "comparison": "Same originalmain/defaultdeep/table/source-manifest/controls as completedselected4557→bilateral93; changed32-move/unrouted+40247spacerGDS now0. Prior3717partialcontext remainsseparate. No fullprocess/LVS/route/PEX/timing or selectedpromotion."
+    },
+    "unselected_actual_route_consumer_relation": {
+      "path": "build/silicon/task009-well-fill-route-relation-a1/result.json",
+      "sha256": "4f0fc6857e417f18755ad2466b8a0eb2cbb990ef1bd666b54aec2055d6fcc8f9",
+      "status": "PASS_ACTUAL32_MOVE_WELL_FILL_ROUTE_RELATION_ONLY_NOT_ROUTED",
+      "seconds": 19.661495405016467,
+      "peak_RSS_bytes": 815013888,
+      "source_seal_equal": true,
+      "original_whole_deadline_met": true,
+      "resource_errors": [],
+      "owned_observed_PIDs_absent": true,
+      "geometry": {
+        "status": "PASS_EXACT32_MOVES_ORIGINAL_SPACERS_FUNCTIONAL_PADDING_AND_PG_RELATION_NOT_PROCESS_LVS",
+        "source_ODB_sha256": "43ffc744714d5f216227035ffa4eca2e77b87f27b61b4f39fa6296a4091f7852",
+        "geometry_ODB_sha256": "c8516006ab3866f70b94526980ac4e1ec4c417411491cfcedd72b40bc0dcef4b",
+        "fixed_geometry_ODB_sha256": null,
+        "old_functional_and_macro_instances": 9037,
+        "functional_site_moves": 32,
+        "original_spacers": 40247,
+        "functional_padding_nm": 960,
+        "physical_spacer_padding_scope": "Only source-qualified physical CORE_SPACERs fill functional padding sites; all9034functional cells retain960nm separation",
+        "original33_SRAM_delaycells_preserved": true,
+        "ports": 668,
+        "native_PG_shapes": 99128,
+        "OBS": 18718,
+        "negative_cases": [
+          "actual_new_spacer_wrong_supply",
+          "actual_moved_functional_wrong_site",
+          "actual_old_functional_retarget"
+        ],
+        "assessment_seconds": 16.44348976202309,
+        "remaining": "Inherited conservativeMetal1finding; fullprocess/LVS, freshsignal/clockroute andall3RC/9timingcorners remain separate"
+      },
+      "maintained_consumer": "scripts/silicon_pen_physical.py --well-fill-from",
+      "helper": "scripts/silicon_well_fill_route.py",
+      "scope": "Freshrouteconsumer source+actualendpoint/PG/functionalpadding proof only; no actualGRT/DRT/PEX/timing yet. Selected0.6 unchanged."
     }
   },
   "process_bound_sample_hold": {
