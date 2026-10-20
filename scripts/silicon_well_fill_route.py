@@ -6,7 +6,9 @@ This is a physical-only successor to selected0.6. The qualified NWell table
 does not waive the inherited conservative Metal1 finding or full process/LVS.
 Signal/clock routes and all extracted timing must be produced afresh.
 """
+import hashlib
 import json
+import re
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -65,6 +67,42 @@ def require_predecessor_relations(gds,nwell):
             len(nwell['results'])==1 and type(nwell['results'][0]['total'])is int and
             nwell['results'][0]['total']==0 and nwell['results'][0]['category_counts']=={},
             'original full NWell table did not complete without findings')
+
+
+def spacer_serialization(reference,candidate,plan,original_cdl):
+    """Remove only the exact source-qualified PG-only empty declarations.
+
+    No functional line or unknown physical instance may be normalized. The
+    original CDL and actual CORE_SPACER/native-pin relation have distinct roles:
+    this check proves logical serialization, not transistor/process closure.
+    """
+    require(hashlib.sha256(original_cdl.encode()).hexdigest()==
+            '6f629dc6b0d21df83fba7deb462a11217dd4b0737e99cd18a0a05ab876667c9a',
+            'exact original standard-cell CDL required')
+    require(hashlib.sha256((json.dumps(plan,indent=2)+'\n').encode()).hexdigest()==
+            '993b940511465d3fb1c2f8af1266c8abc97b432d5eb7ceebf6e72e8fdb4dcd5d',
+            'exact original40247-spacer plan required')
+    for size in(1,2,4,8):
+        body=re.findall(r'(?ims)^\.SUBCKT sg13g2_fill_'+str(size)+r' VDD VSS\n(.*?)^\.ENDS[^\n]*',original_cdl)
+        require(len(body)==1 and all(not line.strip()or line.lstrip().startswith('*')for line in body[0].splitlines()),
+                'original spacer has active elements or a different supply-only interface')
+    expected={f" {row['master']} {row['name']} ();\n":row['name']for row in plan['fillers']}
+    require(len(expected)==40247 and len(set(expected.values()))==40247,'all original physical spacer names required')
+    observed=set();rest=[]
+    for line in candidate.splitlines(keepends=True):
+        if line in expected:
+            name=expected[line];require(name not in observed,'duplicate physical spacer declaration')
+            observed.add(name)
+        else:
+            require('task009_row_fill_'not in line,'unknown/changed/connected physical-spacer serialization')
+            rest.append(line)
+    require(observed==set(expected.values())and ''.join(rest)==reference,
+            'missing physical spacer or functional netlist changed')
+    return {'status':'PASS_EXACT40247_ORIGINAL_PG_ONLY_SPACER_SERIALIZATION_FUNCTIONAL_TEXT_EQUAL',
+        'original_physical_spacer_declarations':len(observed),'functional_bytes_equal':True,
+        'original_CDL_sha256':hashlib.sha256(original_cdl.encode()).hexdigest(),
+        'plan_sha256':hashlib.sha256((json.dumps(plan,indent=2)+'\n').encode()).hexdigest(),
+        'scope':'Exact source-plan empty-port physical declarations only. Native endpoint/PG proof remains separate; this is not transistor LVS.'}
 
 
 def assess(source, geometry, lib, output, *, fixed_geometry=None):
@@ -147,6 +185,44 @@ def assess(source, geometry, lib, output, *, fixed_geometry=None):
         'remaining':'Inherited conservativeMetal1finding; fullprocess/LVS, freshsignal/clockroute andall3RC/9timingcorners remain separate'}
     output.write_text(json.dumps(result,indent=2)+'\n')
     return result
+
+
+def completed_route_inputs(directory):
+    """Admit only the retained completed route rejected by the old byte guard."""
+    directory=directory.resolve();receipt=directory/'result.json'
+    require(sha(receipt)=='bf5f632cab6ce5064c733c4ef2299215ad6e7f9d75e3736c15a2b76dfde0bb71',
+            'exact failed well-route producer required')
+    result=json.loads(receipt.read_text())
+    require(result['status']=='FAIL'and result['source_seal_equal']and
+            result.get('error')=="GeometryError('well/spacer physical repair changed functional netlist')"and
+            sha(directory/'routed.odb')=='5c43a20a33fe888af5c6cb683d3bc6e19b6d72396a95f7adaa904527fb9d6a9f'and
+            (directory/'router-drc-count.txt').read_text().strip()=='0'and
+            result['padded_hold_endpoints']['geometry_ODB_sha256']==sha(directory/'routed.odb'),
+            'only the completed zero-marker source/pin/PG relation and exact serialization failure may continue')
+    inputs=[receipt];historical=[]
+    for name,key in(('padded-hold-preparation.json','padded_hold_preparation'),('padded-hold-endpoints.json','padded_hold_endpoints')):
+        artifact=directory/name
+        require(json.loads(artifact.read_text())==result[key],'original completed endpoint component changed')
+        inputs.append(artifact)
+    for name,digest in result['source_inputs'].items():
+        path=Path(name)
+        if path.is_file()and sha(path)==digest:inputs.append(path);continue
+        require(path in(ROOT/'scripts/silicon_pen_physical.py',ROOT/'scripts/silicon_well_fill_route.py'),
+                'original physical/tool input changed')
+        archive=directory/'source-archive'/path.relative_to(ROOT)
+        require(sha(archive)==digest,'exact original observer source not retained')
+        inputs.append(archive);historical.append({'path':name,'original_sha256':digest,'archive':str(archive)})
+    plan=ROOT/'build/silicon/task009-repaired-spacer-insertion-a1/row-plan.json'
+    cdl=ROOT/'build/silicon/deps/ihp-open-pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/cdl/sg13g2_stdcell.cdl'
+    relation=spacer_serialization((directory/'pre-eco.v').read_text(),(directory/'post-eco-unrouted.v').read_text(),
+                                  json.loads(plan.read_text()),cdl.read_text())
+    require((directory/'post-eco-unrouted.v').read_bytes()==(directory/'routed.v').read_bytes(),
+            'routing changed the actual logical/physical instance netlist')
+    for stage in('before-route','after-route'):
+        power=directory/('power-grid-'+stage+'.json')
+        require(json.loads(power.read_text())==result['core_power_grid'][stage],'actual original grid report changed')
+        inputs.append(power)
+    return relation,inputs+[plan,cdl],historical
 
 
 def require_recipe(args):

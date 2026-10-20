@@ -7,7 +7,7 @@ import sys
 import unittest
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
-from silicon_well_fill_route import admit,require_recipe,require_predecessor_relations
+from silicon_well_fill_route import admit,require_recipe,require_predecessor_relations,spacer_serialization,completed_route_inputs
 
 
 class WellFillRoute(unittest.TestCase):
@@ -32,6 +32,24 @@ class WellFillRoute(unittest.TestCase):
                         {'total':0,'category_counts':{'NW.b':1}}):
             with self.assertRaises(ValueError):require_predecessor_relations(gds,dict(nwell,results=[changed]))
 
+    def test_exact_actual_spacer_serialization_and_consequential_negatives(self):
+        route=ROOT/'build/silicon/task009-well-fill-route-a1'
+        cdl=ROOT/'build/silicon/deps/ihp-open-pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/cdl/sg13g2_stdcell.cdl'
+        plan_path=ROOT/'build/silicon/task009-repaired-spacer-insertion-a1/row-plan.json'
+        if not(route/'routed.v').exists():self.skipTest('actual completed route not retained')
+        original=(route/'pre-eco.v').read_text();actual=(route/'routed.v').read_text()
+        plan=json.loads(plan_path.read_text());source=cdl.read_text()
+        self.assertTrue(spacer_serialization(original,actual,plan,source)['functional_bytes_equal'])
+        first=plan['fillers'][0];line=f" {first['master']} {first['name']} ();\n"
+        for label,changed in [('missing',actual.replace(line,'',1)),('duplicate',actual+line),
+            ('master',actual.replace(line,line.replace(first['master'],'sg13g2_inv_1'),1)),
+            ('logic_pin',actual.replace(line,line.replace('();','(.A(clk));'),1)),
+            ('unknown_name',actual.replace(line,line.replace(first['name'],'task009_row_fill_UNKNOWN'),1)),
+            ('functional',actual.replace('input clk;','input WRONGclk;',1))]:
+            self.assertNotEqual(changed,actual)
+            with self.subTest(label=label),self.assertRaises(ValueError):spacer_serialization(original,changed,plan,source)
+        with self.assertRaises(ValueError):spacer_serialization(original,actual,plan,source.replace('*.PININFO VDD:B VSS:B','Rbad VDD VSS 1',1))
+
     def test_recipe_preserves_clock_limits_and_requires_fresh_route(self):
         args=Namespace(well_fill_from=Path('exact'),routed_eco_from=Path('selected06'),
                        clock_min_routing_layer='Metal3',detail_route_iterations=8,host_memory_gib=6,
@@ -50,6 +68,12 @@ class WellFillRoute(unittest.TestCase):
         self.assertEqual(geometry,directory/'candidate/filled.odb')
         self.assertEqual(receipt,directory/'result.json')
         self.assertGreater(len(inputs),100)
+        completed=ROOT/'build/silicon/task009-well-fill-route-a1'
+        if(completed/'result.json').exists():
+            relation,closed,history=completed_route_inputs(completed)
+            self.assertTrue(relation['functional_bytes_equal'])
+            self.assertEqual({Path(row['path']).name for row in history},{'silicon_pen_physical.py','silicon_well_fill_route.py'})
+            self.assertTrue(any(path.name=='sg13g2_stdcell.cdl'for path in closed))
 
 
 if __name__=='__main__':unittest.main()

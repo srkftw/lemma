@@ -8054,6 +8054,45 @@
       "maintained_consumer": "scripts/silicon_pen_physical.py --well-fill-from",
       "helper": "scripts/silicon_well_fill_route.py",
       "scope": "Freshrouteconsumer source+actualendpoint/PG/functionalpadding proof only; no actualGRT/DRT/PEX/timing yet. Selected0.6 unchanged."
+    },
+    "original_zero_marker_route_failed_observer": {
+      "path": "build/silicon/task009-well-fill-route-admission-a1/result.json",
+      "sha256": "abe67ed6cdf1d1833a7f7839582d661a19458ba3524837d588cc3e0598ff26d7",
+      "status": "FAIL",
+      "seconds": 438.74402832379565,
+      "scope": "Can exact32 source-bound one-site moves plus40247 original spacers remove actualoriginalNWell93findings while preserving freshsignalroute/PG/native420margin and actual3RC/all9setup-hold-electrical against selected0.6? No logicchange, all9034functional960nmpadding/668ports/full256FIFO/181bits/33delays/423BIST/10ns/fullSDC kept. InheritedconservativeMetal1FAIL stays explicit; no fullprocess/LVS/fabrication qualification.",
+      "inner_route_receipt": {
+        "path": "build/silicon/task009-well-fill-route-a1/result.json",
+        "sha256": "bf5f632cab6ce5064c733c4ef2299215ad6e7f9d75e3736c15a2b76dfde0bb71"
+      },
+      "original_failure": "GeometryError('well/spacer physical repair changed functional netlist')",
+      "completed_DRTruntime_seconds": 367,
+      "closed_router_marker_count": 0,
+      "router_scope": "ActualcompletedDRTfile, distinctfromfailedproducerstatus; no PEX/corners atoriginalterminal",
+      "routed_ODB_sha256": "5c43a20a33fe888af5c6cb683d3bc6e19b6d72396a95f7adaa904527fb9d6a9f",
+      "original_source_seal_equal": true,
+      "original_owned_processes_reaped": true
+    },
+    "strict_spacer_serialization_closed_assessment": {
+      "path": "build/silicon/task009-spacer-netlist-observer-a1/result.json",
+      "sha256": "a4b6ce5e47466161e01f57c1e89b72a4ae0889a612be6b33fbb865c41c482099",
+      "status": "PASS_COMPLETED_ACTUAL_ROUTE_SOURCE_QUALIFIED_SPACER_SERIALIZATION_ONLY",
+      "seconds": 0.876479912083596,
+      "scope": "Newclosedartifactassessment; original438.744s campaign/netlistguardFAIL remains immutable. No newrouting/OpenROAD/PEX execution and no lateoriginalproducerPASS.",
+      "actual_source_declarations": 40247,
+      "original_CDL_sha256": "6f629dc6b0d21df83fba7deb462a11217dd4b0737e99cd18a0a05ab876667c9a",
+      "negative_cases": [
+        "missing",
+        "duplicate",
+        "master",
+        "logic_pin",
+        "unknown_name",
+        "functional_net"
+      ],
+      "old_observer_assess_AST_unchanged": true,
+      "remaining_master_scope": "Finalsnapshot seals names/orientation/transformedITermgeometry/PG/ports; independentfullfinaldbMasterbody/propertyseal remains unfinished. Pre-routeoriginalGDSbodybinding is separate.",
+      "fresh_route_runs": 0,
+      "fresh_extraction_runs": 0
     }
   },
   "process_bound_sample_hold": {
