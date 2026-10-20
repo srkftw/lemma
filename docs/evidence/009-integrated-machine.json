@@ -2905,7 +2905,7 @@
     "cleanup_scope": "Original wrapper checks exact descendant start ticks in memory and reportsnone; full descendanttick inventory was notpersisted. Closedassessment independentlychecks eightrecordedleaders/processgroups absent."
   },
   "school25_full_integrated_production": {
-    "status": "GENUINE_FULL4_STRICT_PASS_FACTORY_SEALED_CANONICAL_RUNNING",
+    "status": "GENUINE_FULL4_STRICT_PASS_FACTORY_SEALED_ACTUAL_FULL16_CANONICAL_PASS",
     "scope": "Genuine full0.16 School25 plus currentlegacy full23Integrated15/full23PCM/full24PCM. No Fast image relabel; strict audits, runtime package and canonical execution remain separate.",
     "source_inputs": 558,
     "source_inventory_sha256": "1812714a67a408f0d9fcb1636030e8bcd67edbb614232e8993a4e11676844e39",
@@ -2930,7 +2930,6 @@
       "notebook"
     ],
     "remaining": [
-      "actualSchool25full0.16ROM/NVReadypenSavereset",
       "fullpostresetNotebookreopen/updateinstall/broaderISAdevicecoverage",
       "School24/25pendingtool/S1continuationcuts"
     ],
@@ -3024,7 +3023,160 @@
         "continuing_available_bytes": 8589934592,
         "launch_free_bytes": 8589934592
       },
-      "scope": "RUNNING only. Actual739+740+731/Ready, complete9fieldpen/Save/reset stillrequired. No bootupdate/fullreopen/arbitraryISA/device/physicalclaim."
+      "scope": "Original prospective plan and immutable start/deadline. Terminal PASS is separately sealed below; no deadline extension."
+    },
+    "canonical_terminal": {
+      "status": "PASS_CLOSED_ACTUAL_SCHOOL25_FULL16_ROM_NV_PEN_SAVE_RESET",
+      "runner": {
+        "path": "build/task009/school25-integrated16-canonical-runner-a1/result.json",
+        "sha256": "4ee88e708680c640d4c5ffd2bfa614adb6d116f979b90dedac53ea6322f9852e"
+      },
+      "observer": {
+        "path": "build/task009/school25-integrated16-canonical-positive-a1/result.json",
+        "sha256": "a7e54d94c651e2895b88b9cdb4ddb30f6b6b2aec14a4927f726839847f62fadd"
+      },
+      "closed_assessment": {
+        "path": "build/task009/school25-integrated16-canonical-runner-a1/closed-assessment.json",
+        "sha256": "add39bc4a6d73b73b2130d4d5d87e7a9f179a59b42ed01b704a1066eeda77703"
+      },
+      "actual_seconds": 4547.55502301408,
+      "runner_seconds": 4548.811226816149,
+      "total_cycles": 741200000,
+      "phases": [
+        {
+          "name": "combined-kernel-and-notebook-Ready",
+          "cycles": 681000000,
+          "end_cycle": 681000000,
+          "seconds": 4237.649782880908
+        },
+        {
+          "name": "actual-pen-and-Save",
+          "cycles": 60000000,
+          "end_cycle": 741000000,
+          "seconds": 304.6596958870068
+        }
+      ],
+      "complete_nineword_samples": [
+        [
+          2,
+          68209999,
+          13115,
+          50664,
+          1024,
+          3,
+          1,
+          0,
+          1
+        ],
+        [
+          3,
+          68309999,
+          13513,
+          50724,
+          1216,
+          3,
+          1,
+          0,
+          1
+        ],
+        [
+          4,
+          68409999,
+          13513,
+          50724,
+          0,
+          2,
+          1,
+          0,
+          1
+        ]
+      ],
+      "durable_linked_work": {
+        "frontier_before": 2,
+        "frontier_after": 5,
+        "namespace": 1,
+        "page": 1,
+        "index_object": 257,
+        "raw_object": 65539,
+        "stroke": 3,
+        "raw_samples": 3,
+        "complete_sample_fields_equal": true,
+        "artifact_before_reference": true,
+        "index_changed": true,
+        "root_header_changed": false,
+        "prior_work_preserved": true,
+        "scope": "independent offline durable linked work; no pixel or reset observation"
+      },
+      "new_ink_pixels": 11,
+      "acknowledged_medium_sha256": "6a48ea30a8a8608a775168d1d25da77a6df8e606a8b48caafa749a2981658f64",
+      "boot_sha256": "10925b9f4b171ebf568ab810d37bd788190e1fa4df8f9a9f01e61f3ebd3b493e",
+      "reset_cycles": 200000,
+      "reset_acknowledged_bytes_unchanged": true,
+      "startup_rows": [
+        [
+          1148,
+          15,
+          8,
+          9,
+          0
+        ],
+        [
+          1849,
+          1,
+          281476356916017,
+          144,
+          176
+        ],
+        [
+          1841,
+          2,
+          512,
+          262144,
+          2
+        ],
+        [
+          1856,
+          1,
+          96,
+          230,
+          256
+        ],
+        [
+          1056,
+          9448928052850,
+          1,
+          1,
+          0
+        ]
+      ],
+      "peak_combined_owned_RSS_bytes": 261218304,
+      "minimum_observed_available_bytes": 11721175040,
+      "output_bytes": 1149468772,
+      "remaining_exact_start_owned": [],
+      "cleanup_scope": "Exact identities of all observed descendants/owned-session members. Sampling is not a generic proof of arbitrary between-sample escaped descendants.",
+      "generated_archive_cache": {
+        "path": "build/task009/school25-integrated16-guest-source-a1/consumed-source-root/scripts/__pycache__/silicon_profile.cpython-314.pyc",
+        "sha256": "4b02a2d761770bbcdb6f97c684d5d10888042c56d1b9da16528a25f86b05a29f",
+        "bytes": 43851,
+        "source_sha256": "cd8ab5b0ab73f030c4fad58c12812a8233332e8f29739bc56fee5b0da70bc166",
+        "exact_pinned_python_code_equal": true,
+        "scope": "Normal imported profile helper bytecode, inventoried separately from declared source; not a new target or source input."
+      },
+      "retained_closed_observer_failures": [
+        {
+          "path": "build/task009/school25-integrated16-canonical-runner-a1/closed-assessment-a1-failure.json",
+          "sha256": "6dccd72762abebc1e3315824c66ffb04fb3bc071a8c2c8f97ed36f3b7cf7bce3"
+        },
+        {
+          "path": "build/task009/school25-integrated16-canonical-runner-a1/closed-assessment-a2-failure.json",
+          "sha256": "626cced57ddca3e12898dd2da065f9994ea38a41e1b4b07c33f08bb6a9b7ea67"
+        },
+        {
+          "path": "build/task009/school25-integrated16-canonical-runner-a1/closed-assessment-a3-failure.json",
+          "sha256": "662ef2d9fa7b1a0c692b2616b60ddadc8be78798ae3c842cd68f7ddf1d36922e"
+        }
+      ],
+      "scope": "Fresh real full0.16 School25 ROM/NV cold authentication, pen/Save, complete3x9word raw retention,11 new pixels and200k reset preserving acknowledged backing. No ELF/DTB preload, update-install, full postreset Notebook reopen, arbitrary ISA/device/cross-backend or physical claim. No guest rerun for closed observer corrections."
     }
   }
 }
