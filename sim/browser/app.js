@@ -158,6 +158,21 @@ function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.te
 let schoolCursor=0,reviewCursor=0,feedbackCursor=0;
 let schoolCourses=[];
 const schoolStatus=document.querySelector('#school-status');
+const schoolDetails=document.querySelector('#school-response-details');
+function schoolSummary(operation,result){
+ if(Array.isArray(result?.feedback))return teacherFeedback(result);
+ if(Array.isArray(result?.courses))return `${result.courses.length} enrolled publications on this page. Choose a title and activity.${result.more===true?' More publications are available with Next courses.':''}`;
+ if(Array.isArray(result?.reviews))return `${result.reviews.length} due reviews on this page.${result.more===true?' More reviews are available with Next reviews.':''} Opening a task does not complete its review.`;
+ if(result?.binding?.bindingRecord!==undefined)return `School binding ${result.binding.bindingRecord} received. Wait for the guest invitation installation, then tap JOIN on the paper. Wait for the original task to reload before writing.`;
+ if(result?.commitSequence!==undefined)return `School commit ${result.commitSequence} received. Wait for the guest's durable acknowledgement below.`;
+ if(result?.identity!==undefined&&result?.edition!==undefined)return `Publication ${result.identity}/${result.edition} sent to the guest. Wait for its installation or selection receipt below.`;
+ if(result?.sample===true)return 'Local sample sent to the guest. Wait for its installation receipt below.';
+ if(operation==='disconnect')return 'School disconnected. Local writing and Save remain available.';
+ if(operation==='help')return 'School help response received. Use guest LOAD; paper presentation is acknowledged separately.';
+ if(operation==='cancel')return 'School cancellation response received. See response details for its recorded scope.';
+ if(operation==='receipts')return 'Delivery observations received. See response details for partial, cancelled and completed presentation.';
+ return 'School response received. See response details.';
+}
 function schoolActivities(){
  const selected=document.querySelector('#school-course').selectedIndex;
  const list=document.querySelector('#school-task');list.replaceChildren();
@@ -184,7 +199,7 @@ function teacherFeedback(result){
   return lines.join('\n');
  }).join('\n\n');
 }
-function schoolAction(operation,fields={}){if(operation==='connect'||operation==='disconnect')resetFeedback();send('school',{operation,...fields});schoolStatus.textContent='School '+operation+' pending · local pen and Save remain available';}
+function schoolAction(operation,fields={}){if(operation==='connect'||operation==='disconnect')resetFeedback();schoolDetails.textContent='';send('school',{operation,...fields});schoolStatus.textContent='School '+operation+' pending · local pen and Save remain available';}
 document.querySelector('#school-connect').onclick=async()=>{
  const file=document.querySelector('#school-credential').files[0];
  if(!file||file.size>4096){schoolStatus.textContent='Choose the bounded private school pairing file.';return;}
@@ -209,10 +224,12 @@ document.querySelector('#school-review-open').onclick=()=>{
  schoolAction('review',{id});
 };
 worker.onmessage=({data:m})=>{
+ if(m.type==='closed')schoolDetails.textContent='';
  if(m.type==='closed')document.querySelector('#serial-status').textContent='No running serial transfer.';
  if(m.type==='closed')document.querySelector('#ink-loss-status').textContent='No running guest. Retain an export before recovery.';
  if(m.type==='school'){
-  schoolStatus.textContent=m.error?m.error:teacherFeedback(m.result);
+  schoolStatus.textContent=m.error?m.error:schoolSummary(m.operation,m.result);
+  schoolDetails.textContent=m.error?'':JSON.stringify(m.result??null,null,2);
   if(!m.error&&Array.isArray(m.result?.feedback)){feedbackCursor=m.result.next;document.querySelector('#school-feedback-next').disabled=m.result.more!==true;}
   if(m.result?.courses){schoolCursor=m.result.next;schoolCourses=m.result.courses;const list=document.querySelector('#school-course');list.replaceChildren();
    for(const course of schoolCourses){const option=document.createElement('option');option.textContent=course.title+' · '+course.course+'/'+course.revision;option.dataset.course=course.course;option.dataset.revision=course.revision;list.append(option);}schoolActivities();}
