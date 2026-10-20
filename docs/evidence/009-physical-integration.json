@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T22:30:02.457402+00:00",
+  "written_at": "2026-10-20T22:47:30.217228+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -10454,7 +10454,40 @@
     "constraints": "Original10ns clock,2ns I/O delays,.006pF outputloads,.25ns uncertainty,.15ns clocktransition,originalBUF4 inputdrive,typ25C standard/SRAMLib. Actual native semantic nets bind133 candidate and130 predicate-only state pins. Ideal clocks/no wireRC/placement/CTS/pad/package; no endpoints masked.",
     "tradeoffs": "Actual7095cells/811FF versus canonical7066/809 and predicate7025/810. Global unplacedsetup−3.691342→+1.992360ns and headDarrival13.119879→4.852305ns; allFFdeadline feedbackslack−1.367893→+3.946407ns. Exactdeadline2→20 arrival worsens3.856562→4.390675ns and64deadlinefeedback4.906940→5.217794ns, still positive in this ideal model. Holdremains−.653249ns. Positive lowerboundsetup does not establish routed timing.",
     "selected_RTL_and_physical_lock": "UNCHANGED504f_AND0.6.0",
-    "standard_product_mapping_receipt": "FIRST_STANDARD_PRODUCER_ATTEMPT_FAILED_BEFORE_ICARUS_YOSYS; corrected caller prepared, not yet executed",
+    "standard_product_mapping_receipt": {
+      "path": "build/silicon/task009-head-bypass-standard-mapping-a2/mapping/result.json",
+      "sha256": "8a7f111d3c40d55ee6f3703bd3206b163e13c77d182b5406b1f37fdf9a07894a",
+      "status": "PASS_ISOLATED_CANDIDATE_PEN_PROTOCOL_AND_THREE_REAL_SRAM_MAPPING",
+      "seconds": 4.747267924016342,
+      "mapping_cells": 7095,
+      "mapping_flipflops": 811,
+      "mapping_SRAMs": 3,
+      "actual_verilog_equal_prior_private_zeroSTA_input": true,
+      "mapped_verilog_sha256": "87de577e9d8d40e3ecbc9a9c540a4b3b9ae1f68b019f313a4fea9a97e2f11584",
+      "mapped_JSON_sha256": "be1b857a52e01f96c5d416d8cce9135a71bc03dbf2947691fee1c89120df05ca",
+      "outer_admission": {
+        "path": "build/silicon/task009-head-bypass-standard-mapping-a2/result.json",
+        "sha256": "92d8939420ba0d2f74db6691b5575eedac855ad5db1e4cb420c7af25503524e8",
+        "seconds": 12.448706915136427,
+        "peak_owned_RSS_bytes": 177790976,
+        "output_bytes": 46347789,
+        "source_seal_equal": true,
+        "all_owned_reaped": true,
+        "original_deadline_met": true,
+        "source_archive_sha256": "059a095ded67537f75769757fd42b32b16f297ec574f9b6e6da1e6774d8ef543",
+        "bounds": {
+          "whole_seconds": 45,
+          "inner_checker_original_whole_seconds": 300,
+          "combined_owned_RSS_bytes": 536870912,
+          "AS_bytes": 4294967296,
+          "per_file_bytes": 1073741824,
+          "output_bytes": 134217728,
+          "launch_available_bytes": 13421772800,
+          "continuing_host_available_bytes": 8589934592
+        }
+      },
+      "scope": "Actual fresh maintained candidate-only protocol/mapping producer; cached compiler/toolchain binaries reused. Prior private producer and failedcaller keep originalidentities. Not placement/RC/routedtiming/processqualification."
+    },
     "fresh_placement_route_PEX_process": "NOT_RUN_FOR_THIS_RTL",
     "runtime_rebuild": "NOT_REQUESTED_OR_CLAIMED",
     "next_physical_dependency": "Produce the supported candidate-only mapping receipt, then fresh source-specific placement/grid/routing and all available extracted RC/PVT/nativegeometry/connectivity/process checks; old ABC cell placements and well moves cannot be relabeled as this new RTL.",
@@ -10484,7 +10517,7 @@
         "scripts/silicon_pen_physical.py",
         "tooling/silicon/layout.tcl"
       ],
-      "scope": "New standard97b077 mapped source only; fresh placement/clocks/three supplies; exact reviewed b6aVSS source and275M2 router representation with actual native420 final guard. No old327 ODB/cell/guide/RC substitution. Every normal placement/resizer phase retained. Actual native macro signal/test/power pins, original195delay/maskties,423BIST,668ports,PG-derivedOBS and960nm padding require pre-GRT readback and final readback; actual mutations and original400nmPG-gap control precede signal route. New standard receipt/native prefix/route have not passed.",
+      "scope": "New standard97b077 mapped source only; fresh placement/clocks/three supplies; exact reviewed b6aVSS source and275M2 router representation with actual native420 final guard. No old327 ODB/cell/guide/RC substitution. Every normal placement/resizer phase retained. Actual native macro signal/test/power pins, original195delay/maskties,423BIST,668ports,PG-derivedOBS and960nm padding require pre-GRT readback and final readback; actual mutations and original400nmPG-gap control precede signal route. Actual supported standard receipt is now admitted; native prefix/route have not executed.",
       "prospective_after_qualified_inputs": {
         "whole_seconds": 1200,
         "layout_DRT_seconds": 900,
@@ -10494,7 +10527,47 @@
         "launch_available_bytes": 15032385536,
         "continuing_host_available_bytes": 8589934592
       },
-      "resource_authorization": "Plan only; new SDK heavy producer has priority. Separate root handoff/fresh resource check required before Popen."
+      "resource_authorization": "Plan only; new SDK heavy producer has priority. Separate root handoff/fresh resource check required before Popen.",
+      "actual_source_recipe_admission": {
+        "path": "build/silicon/task009-head-bypass-fresh-recipe-a1/result.json",
+        "sha256": "5da6e46c15e92a492f605c289569750b13aa6e2f7ae172270212685ad90eae86",
+        "status": "PASS_ACTUAL_STANDARD_INPUT_FRESH_RECIPE_AND_FIVE_COPIED_NEGATIVES_NO_EDA",
+        "seconds": 0.038112411042675376,
+        "source_seal_equal": true,
+        "negative_controls": [
+          {
+            "name": "private_receipt",
+            "rejected": true,
+            "reason": "fresh margin requires actual standard97b077 candidate admission"
+          },
+          {
+            "name": "different_candidate",
+            "rejected": true,
+            "reason": "fresh margin requires actual standard97b077 candidate admission"
+          },
+          {
+            "name": "mapped_bytes",
+            "rejected": true,
+            "reason": "fresh mapped source or emitted netlist differs"
+          },
+          {
+            "name": "memory_capacity",
+            "rejected": true,
+            "reason": "fresh mapped full-width state/macro inventory differs"
+          },
+          {
+            "name": "collateral_byte",
+            "rejected": true,
+            "reason": "standard producer collateral differs"
+          }
+        ],
+        "scope": "Host-only actual standard input and exact grid emission/five actual copied-input rejection cases. No OpenDB/EDA execution."
+      },
+      "prospective_plan": {
+        "path": "build/silicon/task009-head-bypass-fresh-route-proposal-a1/proposal.json",
+        "sha256": "f1d65b2839196a5dd13a33b0cbd2d539b8c732b30ed34e6ed5d670b854beb52b",
+        "status": "HELD_FOR_SDK_RESOURCE_HANDOFF_NO_POPEN_NO_CASE_DEADLINE"
+      }
     }
   }
 }
