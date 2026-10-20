@@ -92,7 +92,13 @@ if {[info exists core_power_grid] && $core_power_grid == 1} {
     }
 }
 set_routing_layers -signal Metal2-Metal5 -clock ${clock_min_routing_layer}-Metal5
-global_route -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/global-congestion.rpt -verbose
+if {[info exists retained_access_guides]} {
+    read_guides $retained_access_guides
+    file copy $retained_access_guides $out/route.guide
+    puts "Retaining exact qualified clock-M3 guides and original baseline pin access"
+} else {
+    global_route -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/global-congestion.rpt -verbose
+}
 write_db $out/global-route.odb
 write_def $out/global-route.def
 estimate_parasitics -global_routing -spef_file $out/global-route-estimated.spef
@@ -105,7 +111,35 @@ if {![info exists detail_route_iterations]} {set detail_route_iterations 3}
 if {$detail_route_iterations ni {3 8}} {error "Unadmitted detailed-route repair bound"}
 # Retain real intermediate net/rule markers even when the original hard route
 # deadline expires before the final report. Reporting does not extend routing.
-detailed_route -output_drc $out/route.drc -drc_report_iter_step 1 -output_maze $out/route.maze -droute_end_iter $detail_route_iterations -verbose 1
+set retained_access_route_flags {}
+if {[info exists retained_access_guides]} {
+    load $retained_access_exporter Lemmaap
+    proc lemma_check_retained_access {stage} {
+        global out retained_access_metadata
+        write_db $out/preferred-$stage.odb
+        lemma_ap_export $out/preferred-$stage.odb $out/preferred-$stage.json
+        set file [open $retained_access_metadata rb]
+        set expected [read $file]
+        close $file
+        set file [open $out/preferred-$stage.json rb]
+        set actual [read $file]
+        close $file
+        if {$expected ne $actual} {error "Retained original AP metadata/pattern/preference changed"}
+    }
+    lemma_check_retained_access before-route
+    lappend retained_access_route_flags -no_pin_access
+    file mkdir $out/route-snapshots
+    set_debug_level DRT snapshot 1
+    detailed_route_debug -snapshot_dir $out/route-snapshots
+    if {[info exists preferred_access_probe_only] && $preferred_access_probe_only == 1} {
+        set file [open $out/preferred-prefix-ready.txt w]
+        puts $file "EXACT_RETAINED_ACCESS_GUIDES_POWER_PREFIX_NO_DRT"
+        close $file
+        return
+    }
+}
+detailed_route {*}$retained_access_route_flags -output_drc $out/route.drc -drc_report_iter_step 1 -output_maze $out/route.maze -droute_end_iter $detail_route_iterations -verbose 1
+if {[info exists retained_access_guides]} {lemma_check_retained_access after-route}
 if {[info exists core_power_grid] && $core_power_grid == 1} {
     global_connect
     lemma_check_power_grid $power_bindings_before $out after-route

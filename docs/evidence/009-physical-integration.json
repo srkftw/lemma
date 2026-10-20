@@ -4146,7 +4146,238 @@
         "offactualM2track",
         "offoriginalmanufacturinggrid"
       ],
-      "decision": "Keep12cellsfixed; legaloriginalVia1witnesses rejectphysicalimpossibility/movehypothesis. Inspectactualrouteraccess/guidecontrols before anynewcandidate; noGRT rerun or speculativefullroute."
+      "decision": "Keep12cellsfixed; legaloriginalVia1witnesses rejectphysicalimpossibility/movehypothesis. Inspectactualrouteraccess/guidecontrols before anynewcandidate; noGRT rerun or speculativefullroute.",
+      "actual_PA_changed_constraint": {
+        "producer": {
+          "path": "build/silicon/task009-clock3-pin-access-pilot-a1/result.json",
+          "sha256": "0c281d9596a873870270eaa9c28dd98273d61a6cdb32e960da98cdbd4fe89f1b"
+        },
+        "status": "FAIL_GLOBAL_VIA_IN_PIN_REMOVES_TWO_NAND4_ACCESS_PINS",
+        "whole_seconds": 17.298863265,
+        "baseline_seconds": 11.588,
+        "changed_failure_seconds": 5.676,
+        "baseline_reported_stdcell_pins": 25887,
+        "baseline_stdcell_and_macro_NoAP": 0,
+        "changed_failed_pins": [
+          "_06324_/A",
+          "_06621_/A"
+        ],
+        "changed_ODB": null,
+        "allpin_changed_coverage": "NOT_QUALIFIED",
+        "bounds": {
+          "whole_seconds": 30,
+          "AS_GiB": 1,
+          "output_GiB": 1
+        },
+        "selected_layout_changed": false
+      },
+      "completed_baseline_preferred_points": {
+        "first_unbound_map_failure": {
+          "path": "build/silicon/task009-clock3-completed-baseline-AP-a1/result.json",
+          "sha256": "88763518064dd58b7b512dc659cd68a44eb6fdf628541f1eaf23731b197eb6bb"
+        },
+        "point_type_failure": {
+          "path": "build/silicon/task009-clock3-completed-baseline-AP-a2/result.json",
+          "sha256": "78c29aabe97c6231e74239d4ecee81b458bb1d23ab1fb88a01fe72b02c86ce00"
+        },
+        "narrow_corrected_preferred_points": {
+          "path": "build/silicon/task009-clock3-completed-baseline-AP-a3/result.json",
+          "sha256": "df9f97b7fd4087563d8c7ff5ea24205bf151219262c5fabc903f7f09fcd8c9bb"
+        },
+        "original_fixedVia1_geometry_relation": {
+          "path": "build/silicon/task009-clock3-completed-baseline-AP-a4/result.json",
+          "sha256": "e74d5c4fdc35f96a2d8e65e3e9e9f0999c6565e53860894639aae960cf77f642"
+        },
+        "total_assessment_seconds": 8.121565175,
+        "scope": "FirstfailuregetAccessPoints mapunbound; secondgetPoint actualPythonlist. Fixedgeometryliteralassertion retained infailedsecondreceipt; narrowcorrectionreusesactualODB withoutrepeatPA. No fullAP coverage/actualchosenDRTvia inferred.",
+        "actual_two_bad_preferred_points_nm": {
+          "_12224_/A2": [
+            454560,
+            272790
+          ],
+          "_12280_/A2": [
+            334560,
+            514710
+          ]
+        },
+        "fixedVia1_PG_overlap": "Eachpreferredpoint65nmabovePGMetal2clearanceOBS; everyoriginalfixedVia1 overlapsatleast35nm. Allother10preferredpointshaveclearoriginalfixedVia1choices. Legallandingsforthese2exist35–45nmhigherwithoutcellmoves."
+      },
+      "localized_COW_feasibility": {
+        "path": "build/silicon/task009-two-pin-AP-COW-feasibility-a1/result.json",
+        "sha256": "17cf9ff3441a5fc86eb0b15230392d866fec55c01fce4aaae936b17b548a5582"
+      },
+      "host_development_predecessor": {
+        "path": "build/silicon/task009-openDB-development-preflight-a1/result.json",
+        "sha256": "6193628d304d0bb1221138e765ff1b3a17d6863408a9187d65d46e3f960d6a86"
+      },
+      "next_dependency": "A safely guarded maintained preference-only route consumer must preserve the exact unselected327 clock-M3 baseline PA and two instance preferences; no PA/GRT regeneration. Selected30 unchanged. Original unavailable-Python-vector observation is real; initial no-exported-symbol claim inspected only16KiB launcher and is explicitly corrected by actual112MiB wrappedcore symbol/ABI execution.",
+      "exact_core_host_export": {
+        "status": "ORIGINAL_WHOLE900_FAIL907.669477_COMPONENTS_SCOPED_PASSES",
+        "whole_producer": {
+          "path": "build/silicon/task009-opendb-access-export-a1/result.json",
+          "sha256": "c45929fe22f54d4b2f1fbfb7b8dc8ce027ad57a31c266f182bd0ffd83c5f8210"
+        },
+        "late_finalization_failure": {
+          "path": "build/silicon/task009-opendb-access-export-a1/late-finalization-assessment.json",
+          "sha256": "94383805cb760dc11d2db8e704732c74f706a7addd00f478bd3262da42677ebc"
+        },
+        "source_revision": "553ed63bc9f65277418adc82dffe1762c20aec9f",
+        "original_source_NAR_SRI": "sha256-dB9PfPlp6vZ9+Th8LJE65BW9YeuUL0G4JtjzQxg6UpQ=",
+        "original_source_NAR_bytes": 1841158056,
+        "source_identity_scope": "Fresh verified Nix cache substitution, original3Nixpatches applied only to private overlay; exact immutable core/header/GCC16.2/Tcl ABI. No standalone OpenDB/tool/target compilation.",
+        "launcher_only_observer_correction": "Earlier development preflight inspected bin/openroad Qt wrapper and incorrectly inferred no exportedOpenDBsymbols. Actual .openroad-wrapped exports requiredpublicC++ABI; original failedobservation retained.",
+        "core_sha256": "ada97e26cd2f192265ed3b217fa00c67b5e009c4ea23b1f7b38f69beacccaaca",
+        "actual_helper_compiles": 1,
+        "actual_helper_compile_seconds": 4.718896301,
+        "compile_peak_RSS_bytes": 433856512,
+        "module_sha256": "2e260331ab2f50eb06b4f2d4cefb0f248ecddeaeaae30ae8c06f9aa5ab68095a",
+        "actual_export_seconds": 1.094887609,
+        "actual_baseline_roundtrip_sha256": "e24b92cdd6626337461ddfb73f5ae0eef53de1f2cfd931ee46abbdc930ad8a78",
+        "baseline_ODB_roundtrip_byte_identical": true,
+        "metadata_sha256": "53a25b62cf9b3ca147a5c9cc97572cf7905e0492b2978984ce06823117237c03",
+        "component_pattern_crosscheck_seconds": 8.54619784,
+        "completed_metadata_admission": {
+          "path": "build/silicon/task009-opendb-access-metadata-a1/result.json",
+          "sha256": "85ea0809d941c93e12a11ccbd405eb0f383176f87d851c0a93a46738db989e2f"
+        },
+        "completed_admission_seconds": 25.755049845,
+        "completed_admission_peak_RSS_bytes": 836673536,
+        "access_points": 11123,
+        "master_pin_patterns": 495,
+        "instance_terminals": 45104,
+        "block_pins": 668,
+        "original_fixed_via_objects": {
+          "Via1_YY": 2285,
+          "Via1_XY": 1935
+        },
+        "segments": "All11123empty; unexpected nonemptysegments failclosed. This is not general segment qualification.",
+        "consequential_metadata_negatives": 26,
+        "scope": "Read-only source-bound fullpattern/AP/via/direction/emptysegment metadata admission. Separate new60s assessment reused actual artifacts; original900s producer staysFAIL. No APwrite/route/physicalclosure fromexport.",
+        "limitations": [
+          "Directmodulecommand itself checks pathstrings only; all qualified calls useddistinctunusedoutputs and immutable sourcehashes. Guardedconsumer enforces resolvedunusedpaths before anyfuturewrite.",
+          "No sharedpatternCOW implementation or arbitraryAPmutation admitted."
+        ]
+      },
+      "two_instance_preference_candidate": {
+        "status": "QUALIFIED_SCOPED_PREFERENCE_INPUT_UNSELECTED_NOT_ROUTED",
+        "lineage": "Unselected327buffer clock-M3 globalroute, realbaselinePA; not selected30. ActualGRTODB e8c5f718959b9a67eea724d23a81645635b1abf7d8088d83a5b8ce61f6d8ab4c andguide3b49b6110badf23a2c163960efb569fc48548af4435dcf2da18089fdb0a4e4f0.",
+        "proposal": {
+          "path": "build/silicon/task009-opendb-access-metadata-a1/two-instance-proposal.json",
+          "sha256": "88882e4c4e512cfb4e5ce5ccb1f3e75b940739a581189209bb1730e0f033db95"
+        },
+        "actual_mutation_with_final_path_observer_failure": {
+          "path": "build/silicon/task009-two-preferred-AP-a1/result.json",
+          "sha256": "3fc167be67bfbd8cdfb16d2722bc943730507cd6ad7e8cb771e61b9de2d17a1b"
+        },
+        "actual_producer_seconds": 15.212263845,
+        "completed_assessment_with_final_negative_order_observer_failure": {
+          "path": "build/silicon/task009-two-preferred-AP-assessment-a1/result.json",
+          "sha256": "ce13310778a38dd679f9d0ea6911ebe78c95aaa62807718593f8edebd79eff5e"
+        },
+        "completed_assessment_seconds": 7.171704865,
+        "final_manifest_only_seal": {
+          "path": "build/silicon/task009-two-preferred-AP-seal-a1/result.json",
+          "sha256": "94cab20b1e21fad65ad845d7f255885c8e37be3bee37c8d7e1c703ba6132540f"
+        },
+        "final_manifest_only_seconds": 0.483344277,
+        "candidate_ODB": {
+          "path": "build/silicon/task009-two-preferred-AP-a1/candidate.odb",
+          "sha256": "9e3a45ccf1980a6e662bfaa69e560c99a0858fdb414848cc922b7e4dc107b5ed"
+        },
+        "candidate_metadata": {
+          "path": "build/silicon/task009-two-preferred-AP-a1/metadata.json",
+          "sha256": "0f668b4c2851a81b3ac4435053d84a772c3bfda96f77ae22b392c0ef869f21ae"
+        },
+        "actual_correction": "Only_12224_/A2 and_12280_/A2 preferredAP1->existingAP4; originalpoint/via/patternalternatives are preserved. No COW is needed.",
+        "new_existing_AP4": {
+          "raw_oriented_point_nm": [
+            2880,
+            820
+          ],
+          "via": "Via1_YY",
+          "tech_via_id": 7,
+          "directions": [
+            "UP"
+          ],
+          "segments": [],
+          "absolute_points_nm": {
+            "_12224_/A2": [
+              454560,
+              272980
+            ],
+            "_12280_/A2": [
+              334560,
+              514900
+            ]
+          },
+          "expanded_PG_Metal2_OBS_clearance_nm": 110
+        },
+        "original_AP1_actual_YY_overlap_nm": 80,
+        "shared_metadata_relation": "All11123publicAPrecords/495patterns/45104patternindices/668BPins exactlyunchanged; only2preferredvectors change1->4. All45102otherpreferredvectors/netidentities unchanged.",
+        "serialized_relation": {
+          "AP4_reverse_refs_before": 0,
+          "AP4_reverse_refs_appended": [
+            32023,
+            32330
+          ],
+          "AP4_reverse_vector_offset": 4672028,
+          "preferred_word_offsets": [
+            2115620,
+            2130663
+          ],
+          "other_bytes_identical": true,
+          "ODB_length_delta": 8
+        },
+        "serialization_scope": "Independent source-bound originalOpenDBlittleendian recordrelation: exactAP4reversevectorappend plus2itermmapwords; no privatememorymutation. Ambiguity/version/extra-byte changes reject.",
+        "negatives": 15,
+        "actual_candidate_roundtrip_byte_identical": true,
+        "geometry": "Actual readback preservesallcells/ports/netlist/PG/OBS/9SRAMpower423BIST/960nmpadding; noAP/direction/via/point changes.",
+        "remaining": "No route/PEX/corner/processqualification or selectionchange. DRT-no_pin_access actualconsumption must be demonstrated bymaintainedconsumer underfreshbudget.",
+        "maintained_route_consumer": {
+          "version": "lemma-two-instance-retained-access-route/1",
+          "source": {
+            "path": "scripts/silicon_preferred_route.py",
+            "sha256": "8994f547af6f0e454a6a987fd0ba5b027c92efb2fdb1510244c45569d0d9772d"
+          },
+          "flow": {
+            "path": "scripts/silicon_pen_physical.py",
+            "sha256": "b453ba2ae88873f9ffd3addfed1b2d3ef9688b414155b3699307992fdedc80a9"
+          },
+          "Tcl": {
+            "path": "tooling/silicon/pen-extracted-eco.tcl",
+            "sha256": "57e798d498e2ef89f61c09e7c7a861eb8520f47f9d99a2a10800bac271c77c30"
+          },
+          "prefix": {
+            "path": "build/silicon/task009-two-preferred-prefix-a1/result.json",
+            "sha256": "66494402d92536180b994c8d78fb83cf5b2c39597639ff63474624602011ff73"
+          },
+          "prefix_seconds": 24.161330508,
+          "prefix_scope": "Originalretainedguide/APmetadata byteidentical/all327logic/padding/PG/test unchanged; noGRT/PA/DRT/resizer/DPL/gridgeneration. Prefixreceiptkeepsitsoriginalflowidentity; subsequentreadonlyfinalcheck/model-label additions are separatelysourcebound in fullrun.",
+          "prefix_power_terminals": 18071,
+          "original_stdcell_padding": {
+            "cells": 9031,
+            "required_gap_nm": 960,
+            "violations": 0
+          },
+          "guide_RC_observer": "81EST0026missingterminalroutewarnings; rawguideRCreportsunadmitted, actualroutePEXrequired",
+          "full_run": {
+            "status": "RUNNING_NO_RESULT_OR_SELECTION_CLAIM",
+            "plan": {
+              "path": "build/silicon/task009-two-preferred-route-admission-a1/plan.json",
+              "sha256": "24b229d04ad091dc7a11ae08007bf4e2bfad8aa54ae97508b6431d62a0b84cc6"
+            },
+            "bounds": {
+              "route_seconds": 900,
+              "whole_seconds": 1200,
+              "AS_bytes": 6442450944,
+              "output_bytes": 12884901888,
+              "available_floor_bytes": 8589934592
+            },
+            "snapshots": "PinnedDRTsnapshotdebug writesactualODBafterclosedrepairiteration; atmost8withinoriginaldeadline/outputbudget. Incompletefileisnotadmitted."
+          },
+          "focused_tests": "3accesspreference+16routeenclosure testsPASS;14documentationPASS. Source/hosttestsnotroutequalification."
+        }
+      }
     }
   },
   "full_drc_checker_tiling": {
