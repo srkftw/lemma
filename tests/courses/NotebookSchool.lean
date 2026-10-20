@@ -142,9 +142,9 @@ private def saveChecks : IO Unit := do
 
 private def bootGateCheck : IO Unit := do
   let r ← IO.mkRef ({forbiddenPage:=some Lemma.User.Multimodal.records} : Model)
-  put r (base+712) 99; put r (base+720) 99; put r (base+760) 99
+  put r (base+712) 99; put r (base+720) 99; put r (base+736) 99; put r (base+760) 99
   let cleared ← run r ((schoolNotebook% "clearStep") 0 80 0 0 0 0 0)
-  expect (cleared.1 == 0 && (← get r (base+712)) == 0 && (← get r (base+720)) == 0 && (← get r (base+760)) == 0)
+  expect (cleared.1 == 0 && (← get r (base+712)) == 0 && (← get r (base+720)) == 0 && (← get r (base+736)) == 0 && (← get r (base+760)) == 0)
     "boot did not clear always-mapped queue lifecycle gates before fresh Save"
   for school in #[0,1] do
     put r (base+760) school;put r (base+16) 7;put r (base+72) 1
@@ -242,9 +242,170 @@ private def schoolJoinCheck : IO Unit := do
     (← get r (app+72)) == 1 && (← get r (app+144)) == 1)
     "original source EOF did not release its own text/control presentation"
 
+private def rawState : UInt64 := Lemma.User.Multimodal.records+2432
+private def captureSample (r : IO.Ref Model) (sequence flags x y : UInt64) : IO (Array UInt64) := do
+  let words := #[sequence,0x100000000+sequence,x,y,2047,flags,0x123456789abcdef0,0xfedcba9876543210,9]
+  for (value,i) in words.zipIdx do put r (Lemma.Applications.Notebook.raw+i.toUInt64*8) value
+  let accepted ← run r (schoolNotebook% "multimodalInputSample")
+  expect (accepted.1 == 0) "bounded raw capture rejected a well-formed sample"
+  return words
+private def rawFixture : IO (IO.Ref Model) := do
+  let r ← IO.mkRef ({} : Model)
+  for (a,v) in #[(rawState,4),(base+32,1650),(base+40,2200),(base+48,65535),
+      (base+56,65535),(base+64,2047),(base+72,1),(base+80,1),(base+96,11),
+      (base+120,Lemma.Applications.Notebook.ink1),(base+128,10),(base+136,1),
+      (base+144,Lemma.Applications.Notebook.ink0),(base+160,1),(base+24,3),
+      (base+112,2),(base+272,512),(base+336,65535)] do put r a v
+  let empty ← run r (Lemma.Documents.Ink.emptyPage Lemma.Applications.Notebook.pageIndex 1)
+  expect (empty.1 == 0) "raw fixture empty page failed"
+  return r
+private def rawCaptureChecks : IO Unit := do
+  let r ← rawFixture
+  let mut captured : Array (Array UInt64) := #[]
+  for i in [:96] do
+    captured := captured.push (← captureSample r (100+i.toUInt64) (if i%3 == 2 then 6 else 7) (40000+(i%3).toUInt64*20) 40000)
+  expect ((← get r (rawState+16)) == 96 && (← get r (base+112)) == 2 && (← get r (base+408)) == 0)
+    "occupied buffers silently consumed a new stroke instead of retaining it"
+  for i in [:96] do
+    for j in [:9] do
+      expect ((← get r (0x350000+i.toUInt64*128+j.toUInt64*8)) == captured[i]![j]!)
+        "raw backlog truncated/reordered one of nine controller words"
+  let blocked ← run r (schoolNotebook% "multimodalRawPump")
+  expect (blocked.1 == 0 && (← get r (rawState+16)) == 96)
+    "new stroke overwrote an occupied complete raw buffer"
+  -- The finite observer releases an independently assumed prior Store/buffer
+  -- completion. This is not a journal execution claim. Every following sample
+  -- is applied by the actual Notebook Actions, finished by the real Ink codec,
+  -- then copied before the observer releases that completed buffer in turn.
+  put r (base+112) 0;put r (base+136) 0;put r (base+144) 0
+  for i in [:96] do
+    let applied ← run r (schoolNotebook% "multimodalRawPump")
+    expect (applied.1 == 0 && (← get r (rawState+16)) == 95-i.toUInt64)
+      "bounded replay failed progress after raw buffer became available"
+    if i%3 == 2 then
+      expect ((← get r (base+112)) == 3 && (← get r (base+104)) == 0)
+        "replay lost stroke down/move/release boundaries"
+      let buffer := Lemma.Applications.Notebook.ink1
+      let finished ← run r (Lemma.Documents.Ink.finishChunk buffer 3 3)
+      expect (finished == (0,344)) "actual replayed raw chunk failed full codec finish"
+      for k in [:3] do
+        for j in [:9] do
+          expect ((← get r (buffer+128+k.toUInt64*72+j.toUInt64*8)) == captured[i-2+k]![j]!)
+            "applied raw stroke changed full sequence/timestamp/availability/epoch fields"
+      put r (base+112) 0;put r (base+136) 0
+  expect ((← get r (rawState+16)) == 0 && (← get r (base+96)) == 43)
+    "32 real stroke admissions were merged or silently discarded"
+  put r (base+336) 65535
+  let _ ← captureSample r 196 7 54500 1900
+  let _ ← captureSample r 197 6 54500 1900
+  let waiting ← run r (schoolNotebook% "multimodalRawPump")
+  expect (waiting.1 == 0 && (← get r (rawState+16)) == 2 && (← get r (base+160)) == 1)
+    "Save consumed before preceding Store operation completed"
+  -- Real local inhibition is observed despite an occupied raw backlog. Only
+  -- the declared controller syscall and its console receipt may execute.
+  put r (rawState+24) 0
+  r.modify fun m => {m with syscalls:=#[(0,0),(0,88)]}
+  let _ ← captureSample r 198 7 22000 4200
+  expect ((← get r (rawState+16)) == 2 && (← get r (base+160)) == 1 && (← r.get).syscalls.isEmpty)
+    "mute waited behind captured ink or changed Store ownership"
+  let saturated ← rawFixture
+  put saturated (base+112) 384
+  let _ ← captureSample saturated 1 6 40000 40000
+  -- Seed the next genuine controller response without advancing the capture
+  -- cursor. Even a completely full Ink buffer must drain local MUTE input.
+  for (offset,value) in #[(0,2),(8,0x100000002),(16,22000),(24,4200),(40,7),(64,9)] do
+    put saturated (Lemma.Applications.Notebook.raw+offset) value
+  saturated.modify fun m => {m with syscalls:=#[(0,0),(0,0),(0,88)]}
+  let drained ← run saturated ((schoolNotebook% "drainMultimodalInput") 2)
+  expect (drained == (0,1) && (← saturated.get).syscalls.isEmpty && (← get saturated (base+112)) == 384)
+    "full raw buffer prevented controller MUTE input from bypassing capture backlog"
+  let full ← rawFixture
+  put full (base+112) 2
+  for i in [:128] do
+    let _ ← captureSample full (1000+i.toUInt64) 7 40000 40000
+  full.modify fun m => {m with syscalls:=#[(0,88)]}
+  let _ ← captureSample full 1128 7 40000 40000
+  expect ((← get full (rawState+16)) == 0 && (← get full (rawState+32)) == 131 &&
+      (← get full (rawState+40)) == 1 && (← get full (rawState+48)) == 1 &&
+      (← get full (base+160)) == 1 && (← get full (base+144)) == Lemma.Applications.Notebook.ink0)
+    "overflow hid loss, failed held-contact resync, or released pinned Store bytes"
+  let _ ← captureSample full 1129 7 40000 40000
+  expect ((← get full (rawState+16)) == 0) "overflow resumed halfway through held stroke"
+  let _ ← captureSample full 1130 6 40000 40000
+  let _ ← captureSample full 1131 7 40000 40000
+  expect ((← get full (rawState+16)) == 1 && (← get full (rawState+40)) == 0)
+    "fresh contact after release could not resume bounded capture"
+  let changed ← rawFixture
+  let _ ← captureSample changed 1 7 40000 40000
+  put changed (base+112) 0;put changed (base+80) 2
+  changed.modify fun m => {m with syscalls:=#[(0,88)]}
+  let rejected ← run changed (schoolNotebook% "multimodalRawPump")
+  expect (rejected.1 == 0 && (← get changed (rawState+16)) == 0 && (← get changed (rawState+48)) == 1 &&
+      (← get changed (base+160)) == 1)
+    "captured ink was silently retargeted to another notebook page"
+  let gap ← rawFixture
+  let _ ← captureSample gap 1 7 40000 40000
+  gap.modify fun m => {m with syscalls:=#[(0,88)]}
+  let _ ← captureSample gap 3 7 40000 40000
+  expect ((← get gap (rawState+16)) == 0 && (← get gap (rawState+40)) == 1 &&
+      (← get gap (rawState+48)) == 1 && (← get gap (base+160)) == 1)
+    "capture discontinuity crossed retained sample order without declared loss"
+
+private def rawStatusChecks : IO Unit := do
+  let r ← rawFixture
+  put r (base+112) 0;put r (base+144) 0;put r (base+160) 0;put r (base+136) 0
+  put r (rawState+16) 3;put r (rawState+48) 1
+  let waiting ← run r (schoolNotebook% "multimodalRawStatus")
+  expect (waiting.1 == 0 && (← get r (base+136)) == 1 && (← get r (rawState+56)) == 1 &&
+      (← get r (rawState+48)) == 1)
+    "Saved hid captured unsaved input or cleared its LOSS latch"
+  put r (rawState+16) 0;put r (base+160) 1
+  let pending ← run r (schoolNotebook% "multimodalRawStatus")
+  expect (pending.1 == 0 && (← get r (base+136)) == 1 && (← get r (rawState+56)) == 1)
+    "capture status promoted Saved before the last Store completion"
+  put r (base+160) 0;put r (base+128) 17
+  let complete ← run r (schoolNotebook% "multimodalRawStatus")
+  expect (complete.1 == 0 && (← get r (base+136)) == 0 && (← get r (rawState+56)) == 0 &&
+      (← get r (base+128)) == 17 && (← get r (rawState+48)) == 1 && (← r.get).syscalls.isEmpty)
+    "completed capture left a false Pending state, changed durable frontier or erased LOSS"
+  put r (base+136) 1
+  let unrelated ← run r (schoolNotebook% "multimodalRawStatus")
+  expect (unrelated.1 == 0 && (← get r (base+136)) == 1)
+    "capture status promoted unrelated Pending work to Saved"
+  put r (base+136) 2;put r (rawState+56) 1
+  let failed ← run r (schoolNotebook% "multimodalRawStatus")
+  expect (failed.1 == 0 && (← get r (base+136)) == 2)
+    "capture status replaced a Failed state with Saved"
+
+private def expectConsoleTag (r : IO.Ref Model) (tag : String) : IO Unit := do
+  for i in [:16] do
+    let a := Lemma.User.Console.packetAddress+3+i.toUInt64
+    expect (((← get r (a-a%8)) >>> (a%8*8) &&& 255) == tag.toUTF8[i]!.toUInt64)
+      "Save receipt described captured/uncommitted input as all-input Saved"
+private def rawCommitReceiptChecks : IO Unit := do
+  for stage in #[2,3] do
+    let r ← rawFixture
+    for (a,v) in #[(base+736,1),(rawState+16,2),(base+112,0),(base+144,0),
+        (base+200,stage),(base+128,17),(base+224,99)] do put r a v
+    r.modify fun m => {m with syscalls:=#[(0,88)]}
+    let finished ← run r (schoolNotebook% "finishRecord")
+    expect (finished.1 == 0 && (← get r (base+128)) == 17 && (← get r (base+160)) == 0)
+      "completed actual record changed its acknowledged frontier"
+    expectConsoleTag r "0000000000000423"
+    let shown ← run r (schoolNotebook% "multimodalRawStatus")
+    expect (shown.1 == 0 && (← get r (base+136)) == 1)
+      "post-commit controller publication hid captured input behind Saved"
+  for tail in #[0,1] do
+    let r ← rawFixture
+    r.modify fun m => {m with forbiddenPage:=some Lemma.User.Multimodal.records,syscalls:=#[(0,88)]}
+    for (a,v) in #[(base+736,0),(base+112,tail),(base+144,0),(base+200,3),(base+128,17)] do put r a v
+    let finished ← run r (schoolNotebook% "finishRecord")
+    expect (finished.1 == 0) "first preallocation Save read an unallocated multimodal page"
+    expectConsoleTag r (if tail == 0 then "0000000000000421" else "0000000000000423")
+
 def main : IO Unit := do
-  floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
-  IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control,actual JOIN async source/EOF presentation; component only"
+  rawCommitReceiptChecks;rawStatusChecks;rawCaptureChecks;floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
+  IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control,actual JOIN async source/EOF presentation,32stroke full9word capture/replay,Save ordering,mute/full-buffer safety,overflow/gap/view-loss,captured-work Pending/Saved header+421/423 ownership; component only"
 end NotebookSchoolTests
 
 def main : IO Unit := NotebookSchoolTests.main

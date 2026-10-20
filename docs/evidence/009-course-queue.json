@@ -353,5 +353,62 @@
       "result": "727 then454244",
       "nativeFixedExecution": "pending new source-bound image"
     }
+  },
+  "raw_capture_backpressure": {
+    "status": "PASS_RAW_CAPTURE_ACTION_COMPONENTS",
+    "scope": "Genuine Lean maintained Notebook Actions over bounded independently observed RAM/IPC; prior Store/buffer completions explicitly supplied, not CPU/controller, durable medium or real-time qualification.",
+    "result": {
+      "path": "build/courses/task009-ink-backlog-a1/result.json",
+      "sha256": "cc6c3f0469dede37dd78fd8317ecd31eafb35d1169d218f5d0555364c738c623",
+      "bytes": 63656
+    },
+    "source_archive": {
+      "path": "build/courses/task009-ink-backlog-a1/final-source.tar.gz",
+      "sha256": "86aaad6b544c5b2b3e2c3ebb91148a75a9b54fc820b28fa76cc2a6724a513142",
+      "bytes": 1549261
+    },
+    "notebook_sha256": "015fe6f73d7a8c18636fc79574126fbfad04ce3111318fae5c7f73f4fc373444",
+    "contract_sha256": "03a823ed401707bf17e9ceb1d9c01ebc4615eaf4919cee1bdf0ceb3406b7a052",
+    "native_browser_corrected_execution": "PENDING",
+    "final_ui_gate": {
+      "path": "build/multimodal/task009-ink-ui-a2/result.json",
+      "sha256": "ec894e7a0892090b9eb9698b1b30697721bc350277778e13e456572d121bc246",
+      "status": "PASS_HOSTED_LEAN_ACTIONS",
+      "cases": 9,
+      "seconds": 105.84471673099324,
+      "scope": "Fresh exactmaintainedNotebook source + actualUIActions; positive and eight consequential source negatives. Corrected observer retains original6casefail separately."
+    }
+  },
+  "retained_browser_sustained_input_failure": {
+    "result": {
+      "path": "build/school/task009-student-browser-a10/result.json",
+      "sha256": "1550345e4149e6d077a4eddc288266952a20bdc6b93dd40f3bb00134b362a943",
+      "bytes": 12752
+    },
+    "status": "FAIL_SUSTAINED_WRITING_DROPS_NEW_CONTACTS",
+    "bundle": "build/task009/school23-browser-a8/bundle.json",
+    "scope": "Actual Student browser803/2 node1\u21926; paused burst and paced strokes lost new contacts. ExplicitSave30 retained a partial prefix, not completed written proof. No JOIN/attempt/feedback/review executed.",
+    "saved_frontier": 30,
+    "raw_chunks": 7,
+    "full_nine_word_samples": 62,
+    "backing": {
+      "path": "build/school/task009-student-browser-a10/explicit-save30-partial-work.raw",
+      "bytes": 268435456,
+      "sha256": "1bc9c7f71bd73b7f100fa26e1890594d975bda64a43fa5b0e510411f88493977"
+    }
+  },
+  "retained_native_join_reader_failure": {
+    "result": {
+      "path": "build/school/task009-student-native-a5/phase2/terminal.json",
+      "sha256": "2a5f13c5decbfcdf9bf73b2601691fdcc8fa25ba21a218c60949d7dbdf1d5940",
+      "bytes": 822
+    },
+    "scope": "Actual native Student cold-recovered803/2 checked1/2/1 and annotation. Successful727 followed454244 before repaired target; actual help transport only, noattempt/725/visible delivery claim. Original campaign closed normally before deadline.",
+    "functional_units": 3800000006,
+    "medium": {
+      "path": "build/school/task009-student-native-a5/phase2/joined-cancelled-medium.raw",
+      "sha256": "ac6a7303db0b4c5f9fa294b568b452a5a9705b8e99416016da0e8bba392eea0e"
+    },
+    "source_fix": "b3a5ae5"
   }
 }

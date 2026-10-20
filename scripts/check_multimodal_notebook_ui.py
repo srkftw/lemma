@@ -19,17 +19,17 @@ def main():
     inputs={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in (source,fixture,Path(__file__).resolve())}
     text=source.read_text();test=fixture.read_text();report={'status':'FAIL','scope':__doc__,'source_inputs':inputs,'cases':[]};start=time.monotonic()
     enqueue='  .boundedFoldU64 23 multimodalBarTile 23 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else\n'
-    stop='if different captureActive 0 = true then multimodalSafety 0 else'
+    stop='if capture = 1 then multimodalSafety 0 else ordinary resync flags'
     guard='if width < 1120 then .done 16 0 else'
     envelope='''  .bind (packagePut 160 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 176 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (beginPackageRead 60001 sequence)'''
     cases=[('actual-maintained',text,True),
            ('quarantined-missing-dirty-enqueue',text.replace(enqueue,'',1),False),
-           ('quarantined-stop-waits-behind-busy',text.replace(stop,'if different captureActive 0 = true then .done 0 0 else',1),False),
-           ('quarantined-inactive-start-bypass',text.replace('if safetyX < 544 then Lemma.User.Multimodal.active','if safetyX < 544 then .done 0 1',1),False),
+           ('quarantined-stop-waits-behind-busy',text.replace(stop,'if capture = 1 then .done 0 0 else ordinary resync flags',1),False),
+           ('quarantined-inactive-start-bypass',text.replace(stop,'if capture = 1 then multimodalSafety 0 else multimodalSafety 0',1),False),
            ('quarantined-dropped-busy-ASK',text.replace('Memory.write64 (tutorState + 16) operation','.done 0 0',1),False),
-           ('quarantined-dropped-busy-chooser-LOAD',text.replace('      multimodalQueueBookLoad\n','      .done 0 0\n',1),False),
+           ('quarantined-dropped-busy-chooser-LOAD',text.replace('  else if (if course = 1 then if 660 ≤ py then if py < 680 then if 216 ≤ px then if px < 312 then true else false else false else false else false else false) = true then\n    multimodalQueueBookLoad','  else if (if course = 1 then if 660 ≤ py then if py < 680 then if 216 ≤ px then if px < 312 then true else false else false else false else false else false) = true then\n    .done 0 0',1),False),
            ('quarantined-rejected-view-remains-busy',text.replace('private def multimodalAbandonPresentation : Action :=\n  .bind (packagePut 72 0)', 'private def multimodalAbandonPresentation : Action :=\n  .bind (packagePut 72 1)',1),False),
            ('quarantined-envelope-retains-original-reader-CRC',text.replace(envelope,envelope.replace('packagePut 160 0','packagePut 160 1'),1),False),
            ('quarantined-missing-width-guard',text.replace(guard,'if width < 1 then .done 16 0 else',1),False)]

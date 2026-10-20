@@ -66,7 +66,7 @@ def uiCheck (p : Bool) (message : String) : IO Unit :=
 def uiFixture (enabled : UInt64) : UIState := Id.run do
   let mut s : UIState := {}
   for (a,v) in #[(state+32,1650),(state+40,2200),(state+48,65535),(state+56,65535),
-      (state+336,65535),(state+344,65535),(Lemma.User.Multimodal.state,99),
+      (Lemma.User.Multimodal.records+2432,4),(state+336,65535),(state+344,65535),(Lemma.User.Multimodal.state,99),
       (Lemma.User.Multimodal.state+16,enabled),(raw,1),(raw+8,100),(raw+16,17885),
       (raw+24,4173),(raw+40,3),(raw+64,1)] do
     s := uiWrite s a v
@@ -208,7 +208,7 @@ def uiMain : IO Unit := do
     uiCheck (uiRead selected (packageContext+32) = identity && uiRead selected (packageContext+40) = 17 &&
       uiRead selected (packageState+32) = 1) "explicit envelope did not start its requested immutable package"
     uiCheck (uiRead selected tutorState = 17 && uiRead selected (state+160) = 0) "envelope read changed its sequence or Store ownership"
-  let contact ← IO.mkRef (uiWrite (uiFixture 1) (state+408) 1)
+  let contact ← IO.mkRef (uiWrite (uiWrite (uiFixture 1) (state+408) 1) (Lemma.User.Multimodal.records+2456) 1)
   uiCheck ((← uiExecute contact multimodalInputSample).1 = 0) "held contact failed"
   uiCheck ((← contact.get).calls.isEmpty) "held contact repeated control"
   IO.println "NOTEBOOK21_UI_ACTIONS_PASS actual23tilequeue/bitmap/pixels/coalescing/extent; narrow/owned-negative; busy-stop9revokes/raw-wipe/no-Store-checker-mutation; retained busyASK/coalescedASK/boundedLOAD/owned-paper/exact-once; rejected-view cleanup/fresh-ASK dispatch; inactive/held-contact noacquisition"
