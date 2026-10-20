@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T11:27:05.475162+00:00",
+  "written_at": "2026-10-20T11:39:56.279625+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -5651,5 +5651,73 @@
       }
     },
     "mapped_behavior_scope": "Original504fRTL and capacity/acceptededge/ack/reset/loss protocol unchanged. OriginalLib noninverting chains prove each newbuffer/delay relation; preparedgeometry preservesfull668ports/3macros/33delays/3controlbufs/327capacitybufs/960nmpadding/423BIST and nativePG/OBS exactly through routing. Fulltransistorlayout-netlist comparison remains unfinished."
+  },
+  "rejected_contact_deadline_constant_add": {
+    "status": "REJECTED_UNSELECTED_AFTER_FUNCTIONAL_PASS_ZERO_WIRE_REGRESSION",
+    "candidate_RTL": {
+      "path": "build/silicon/task009-deadline-add-prep-a1/candidate.sv",
+      "sha256": "9824a6ce15bbc42bb6b80fb84819875568531bc75eb6834bc3728f2686fdc01b"
+    },
+    "source_patch": {
+      "path": "build/silicon/task009-deadline-add-prep-a1/candidate.patch",
+      "sha256": "3465963b8036d6364a11f5a5744e4f498fc107170359607024fb7c603830f77a"
+    },
+    "question": "Measuredselectedsample_time10→contact_deadline63 constantadditioncriticalcone; explicitparallel16bitconstantchunks/generate-propagate, full64sum/globalXZpoison and no state/latencychange.",
+    "finite_original_failed_campaign": {
+      "path": "build/silicon/task009-deadline-add-qualified-a1/result.json",
+      "sha256": "c7be9099571eff1d515137bc368591e964e710acafcb0092e63e1edeaeac1926"
+    },
+    "positive_cases": 806562,
+    "consequential_mutants_rejected": [
+      "forgot-low-carry",
+      "forgot-upper-carry",
+      "wrong-constant",
+      "truncated-upper",
+      "missing-global-XZ-poison"
+    ],
+    "actual_full_pen_protocol_and_mapping": {
+      "path": "build/silicon/task009-deadline-add-qualified-a2/mapping/result.json",
+      "sha256": "09560cd1f369f53e09b7d561cedab6e8738521c99beb21bedb8b7ebde1e76815"
+    },
+    "mapping_seconds": 8.451874462887645,
+    "cells_before": 7066,
+    "cells_after": 7201,
+    "FF_bits": 809,
+    "SRAM_instances": 3,
+    "timing_completed_source_binding": {
+      "path": "build/silicon/task009-deadline-add-zero-wire-binding-a3/result.json",
+      "sha256": "08a03894a7844da4602c5c44741e45acade51a8852b76bfb31adb8f4f2312d8e"
+    },
+    "timing_cases": [
+      {
+        "case": "baseline",
+        "whole_WNS_ns": -3.96462,
+        "sample_deadline_arrival_ns": 6.983084,
+        "sample_deadline_slack_ns": 2.61455
+      },
+      {
+        "case": "candidate",
+        "whole_WNS_ns": -5.299867,
+        "sample_deadline_arrival_ns": 8.62705,
+        "sample_deadline_slack_ns": 0.976283
+      }
+    ],
+    "timing_scope": "Matchedoriginaltyp25Cstd/SRAM/10ns/2nsI/O/.25nsuncertainty, ZERO_INTERCONNECT only. Not routedtiming; no oldSPEF on changednets.",
+    "retained_observer_failures": [
+      {
+        "path": "build/silicon/task009-deadline-add-qualified-a2/result.json",
+        "sha256": "176990ad5987d85a89595d76ed83936bbf8228c79afd21042a0b4360eb067c33"
+      },
+      {
+        "path": "build/silicon/task009-deadline-add-zero-wire-binding-a1/result.json",
+        "sha256": "5fa04e3c58d4da016c71401f0c85e92338a437e39e0d7506c9cad080c1cc7655"
+      },
+      {
+        "path": "build/silicon/task009-deadline-add-zero-wire-binding-a2/result.json",
+        "sha256": "a85f3d31c329991443e26622883add0bd4771c9d130020c20f0079f96b3cdd52"
+      }
+    ],
+    "cause": "Changedfactoring exposes acceptanceNOR3 fanout78/.255693pF/2.299131ns then362fanout/1.318880pF/7.785515ns holdcontrol. Carrylogic change alone does not improve the actualdesign floor.",
+    "decision": "No route or source selection; canonical504f/native-margin-grid0.5 remains unchanged. ActualselectedremainingNOR4/inputdriver physicalslew/load examined separately."
   }
 }
