@@ -944,5 +944,76 @@
     "available_corners_total": 9,
     "status": "FAIL_PHYSICAL_CLOSURE",
     "scope": "Powered core-grid selection is maintained physical source. Existing native/Wasm runtimes consume the same504f RTL from their own frozen prior source closures; no physical-layout or source-lock rebinding is claimed."
+  },
+  "native_logical_checkpoint_maintained": {
+    "status": "PASS_MAINTAINED_LOGICAL2_OBJECT_AND_REAL_LINK",
+    "runtime": {
+      "path": "/nix/store/1nqjws03faak74p8f8y781s779rfklq1-lemmasim-qemu-raw-uart-logical-v2-retained-11.1.1/bin/qemu-system-riscv64",
+      "sha256": "4cd5bf158bfabb35152b37adf2569c95109bdc9ff585c40cc26f6c30258309be"
+    },
+    "receipt": "build/task009/logical2-native-maintained-a6/result.json",
+    "receipt_sha256": "be4fb732e87fed996e6cc6fdb9df9951e76e7e5d448a4c40985d0309f5ce2ec6",
+    "builder_seconds": 17.154362232075073,
+    "fresh_objects": 1,
+    "newly_observed_retained_objects_and_archives": 1456,
+    "baseline_original_ELF_reproduced_exactly": true,
+    "baseline_fresh_compiles": 0,
+    "baseline_link_environment": "Reproduces exact originalNixwrapperoutputRUNPATH; allotherflags unchanged. Changedcompile/link uses newoutput environment. No ELFnormalization.",
+    "archive": {
+      "path": "/nix/store/1nqjws03faak74p8f8y781s779rfklq1-lemmasim-qemu-raw-uart-logical-v2-retained-11.1.1/share/lemma-build/consumed-build.tar.gz",
+      "sha256": "d0cd825a4ef187f5db5d2418551ea6d02d1e337429c1c6d37df93843742c70c5"
+    },
+    "cold_recipe": "tooling/lemmasim/qemu_uart.nix with siliconProfile0.14 and logicalSoftTlb=true; cold normalrecipe itself was not rerun",
+    "retained_recipe": "tooling/lemmasim/qemu_logical2_reuse.nix",
+    "legacy_default_derivation_unchanged": "/nix/store/dis882fhyifdd8k6g7qzcgkbsw9pqq57-lemmasim-qemu-raw-uart-v1-11.1.1.drv",
+    "public_admission": "Fast0.14 guard unchanged; no public exact checkpoint claim yet",
+    "cases": [
+      {
+        "receipt": "build/task009/mm-logical2-ready-a2/result.json",
+        "receipt_sha256": "4530014bfd81c0c0eac21ef84aeda436c7dc2f6d3b547fe97f6d67e392d0e6d0",
+        "status": "PASS_ACTUAL_NATIVE_LOGICAL2_SUFFIX",
+        "seconds": 12.052664902992547,
+        "guest": "native-a8 exact015fe6 Notebook",
+        "full_controller_UART_durable_suffix_equal": true,
+        "relation": "lemma-native-logical-observation-relation/2",
+        "all22mode_translation_and_typed_wake_payloads_equal": true,
+        "malformed_candidate_rejected_original_unchanged": true,
+        "owned_processes_reaped": true,
+        "active_converter": [],
+        "sampled_owned_RSS_bytes": null
+      },
+      {
+        "receipt": "build/task009/mm-logical2-converter-a1/result.json",
+        "receipt_sha256": "81bf9d0864cbfb9f76092c1bb555b38e9a8fc6ccefdd8a3c97e1afbb3010cd71",
+        "status": "PASS_ACTUAL_NATIVE_LOGICAL2_SUFFIX",
+        "seconds": 8.831786805996671,
+        "guest": "native-a8 exact015fe6 Notebook",
+        "full_controller_UART_durable_suffix_equal": true,
+        "relation": "lemma-native-logical-observation-relation/2",
+        "all22mode_translation_and_typed_wake_payloads_equal": true,
+        "malformed_candidate_rejected_original_unchanged": true,
+        "owned_processes_reaped": true,
+        "active_converter": [
+          {
+            "id": 5,
+            "state": 5,
+            "count": 5,
+            "converting": 1,
+            "next": 411184867,
+            "available": 410184871
+          }
+        ],
+        "sampled_owned_RSS_bytes": 248717312
+      }
+    ],
+    "failures": [
+      "build/task009/logical2-native-maintained-a1/result.json",
+      "build/task009/logical2-native-maintained-a2/result.json",
+      "build/task009/logical2-native-maintained-a3/result.json",
+      "build/task009/logical2-native-maintained-a4/result.json",
+      "build/task009/logical2-native-maintained-a5/result.json",
+      "build/task009/mm-checkpoint-maintained-ready-a1/result.json"
+    ],
+    "remaining": "Actual unknowncallback negative, new maintained guest DMA/PCM and storagepending cuts, publicfork/Sessiontransactionality and explicitnormalpreparedselection remain unfinished. Sourcebound normalruntime alone doesnotremoveguard."
   }
 }

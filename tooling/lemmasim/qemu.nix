@@ -21,8 +21,14 @@ let
   safetyPatch = if selectedProfile.profile == "lemma-silicon-dev/0.4.0" then ''
     ${pkgs.python3}/bin/python3 ${./patch_power_safety.py} .
   '' else "";
+  logical2 = logicalSoftTlb && selectedProfile.profile == "lemma-silicon-dev/0.14.0";
+  multimodalCheckpointPatch = if logical2 then ''
+    ${pkgs.python3}/bin/python3 ${./patch_multimodal_checkpoint.py} . \
+      --qemu-helper ${../../sim/host/lemma_multimodal_checkpoint.inc.c} \
+      --model-helper ${../../sim/host/lemma_multimodal_checkpoint_valid.inc.c}
+  '' else "";
   softTlbPatch = if logicalSoftTlb then ''
-    ${pkgs.python3}/bin/python3 ${./patch_soft_tlb.py} . --helper ${../../sim/host/lemma_softtlb_qemu.inc.c}
+    ${pkgs.python3}/bin/python3 ${if logical2 then ./patch_soft_tlb2.py else ./patch_soft_tlb.py} . --helper ${if logical2 then ../../sim/host/lemma_softtlb2_qemu.inc.c else ../../sim/host/lemma_softtlb_qemu.inc.c}
   '' else "";
   hardwareSources = builtins.path {
     path = ../../sim/host;
@@ -37,9 +43,9 @@ let
     filter = path: type: type == "directory" || builtins.elem (builtins.baseNameOf path)
       [ "backing_peer.h" "backing_peer.cpp" "backing_c.h" "backing_c.cpp" ];
   };
-in assert !logicalSoftTlb || selectedProfile.profile == "lemma-silicon-dev/0.3.0";
+in assert !logicalSoftTlb || builtins.elem selectedProfile.profile [ "lemma-silicon-dev/0.3.0" "lemma-silicon-dev/0.14.0" ];
 base.overrideAttrs (old: {
-  pname = if logicalSoftTlb then "lemmasim-qemu-softtlb-v1" else "lemmasim-qemu";
+  pname = if logical2 then "lemmasim-qemu-softtlb-v2" else if logicalSoftTlb then "lemmasim-qemu-softtlb-v1" else "lemmasim-qemu";
   nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.python3Packages.qemu-qmp ];
   buildInputs = old.buildInputs ++ [ pkgs.pixman ];
   buildPhase = ''
@@ -63,5 +69,5 @@ base.overrideAttrs (old: {
   '';
   postPatch = (old.postPatch or "") + ''
     ${pkgs.python3}/bin/python3 ${./apply_qemu.py} . --host-source ${hardwareSources} --companion-source ${companionSources} --silicon-profile ${siliconProfile}
-  '' + counterPatch + safetyPatch + softTlbPatch;
+  '' + counterPatch + safetyPatch + multimodalCheckpointPatch + softTlbPatch;
 })
