@@ -145,7 +145,6 @@ private def stopRing (reason force : UInt64) : Action :=
     if force = 1 then .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else ringReceipt reason
     else ringReceipt 4
   else
-  .bind observeRing fun _ _ =>
   .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else
   .bind observeRing fun _ _ => ringReceipt reason
 

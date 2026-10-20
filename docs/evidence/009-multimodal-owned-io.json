@@ -235,6 +235,29 @@
       "seconds": 28.217570800101385,
       "cases": 7,
       "observerChange": "The legacy accepted-is-consumed negative now includes the100M expiry context to distinguish its original initialization from the additive500M ring initialization."
+    },
+    "mutePrioritySuccessor": {
+      "result": {
+        "path": "build/task009/mm-ring-actions-a2/result.json",
+        "sha256": "3630847dd4ff1737e320d36d0d0e7367f0301a09593b64281dda60afcb5f8b48"
+      },
+      "legacyRegression": {
+        "path": "build/task009/mm-ring-legacy-audio-a2/result.json",
+        "sha256": "f14585d252ab6fc493c1172ddb6408e1ae6cda80e66f80c80dc992018ce22596"
+      },
+      "userSHA256": "e59569686d35d15f7f2f58ad8289a27d39802478ca593e203eac2fd52f1b2b9f",
+      "change": "After confirming its own grant epoch, MUTE revokes before any ring-status query. Post-revocation raw owned status supplies the final counters. The actual Action fixture asserts operation order11,6,22 and a new consequential negative rejects the previous pre-revoke observation order.",
+      "cases": 13,
+      "seconds": 69.90141175594181,
+      "legacyCases": 7,
+      "legacySeconds": 30.193585064960644,
+      "genuineBuild": {
+        "command": "nix develop --no-write-lock-file --command timeout120 lake build Lemma.User.Multimodal",
+        "exit_code": 0,
+        "jobs": 15,
+        "newUserBuildSeconds": 3.8,
+        "scope": "Actual final User module rebuilt incrementally; no target export or runtime result inferred."
+      }
     }
   },
   "browser_checkpoint_controls": {

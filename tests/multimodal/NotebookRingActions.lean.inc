@@ -34,9 +34,10 @@ def afRingMain : IO Unit := do
   afCheck ((← r.get).receipts.size = receipts) "terminal ring receipt duplicated"
   let r ← IO.mkRef ringInitial
   ringCheckNoFault r testAudio "mute start"
-  r.modify fun s => {s with ringFetched := 1024,ringSubmitted := 1400,consumed := 1400,ringHeld := 258}
+  r.modify fun s => {s with ringFetched := 1024,ringSubmitted := 1400,consumed := 1400,ringHeld := 258,calls := #[]}
   ringCheckNoFault r (control 1) "explicit local mute"
   let muted ← r.get
+  afCheck (muted.calls[0]!.1 = 11 && muted.calls[1]!.1 = 6 && muted.calls[2]!.1 = 22) "MUTE queried counters before actual revocation"
   afCheck (muted.revoked = 1 && afRead muted audioPage = 0 && afRead muted (audioPage+16) = 900 && afRead muted (audioPage+32) = 500 && afRead muted (audioPage+3584+56) = 258) "mute invented completion or discarded actual prefixes/held read"
   let r ← IO.mkRef ringInitial
   ringCheckNoFault r testAudio "supersession start"

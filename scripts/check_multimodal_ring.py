@@ -36,8 +36,11 @@ def main():
       ('accepted-claims-consumed','user','audioPut 32 (consumed - consumedBase)','audioPut 32 accepted'),
       ('refill-repeats-old-data','user','let n := producer + i.toUInt64 * 4','let n := i.toUInt64 * 4'),
       ('ring-mute-skips-revoke','user',
-        '.bind observeRing fun _ _ =>\n  .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else\n  .bind observeRing',
-        '.bind observeRing fun _ _ =>\n  .bind (.done 0 0) fun s _ => if mmFailed s = true then .done s 0 else\n  .bind observeRing'),
+        'else\n  .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else\n  .bind observeRing',
+        'else\n  .bind (.done 0 0) fun s _ => if mmFailed s = true then .done s 0 else\n  .bind observeRing'),
+      ('ring-mute-observes-before-revoke','user',
+        'else\n  .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else\n  .bind observeRing',
+        'else\n  .bind observeRing fun _ _ =>\n  .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else\n  .bind observeRing'),
       ('ring-stale-revokes-successor','user','if mmDifferent current epoch = true then ringReceipt 4 else',
         'if mmDifferent current epoch = true then .bind (invoke 6 8 0 0) fun _ _ => ringReceipt 4 else')]
     report={'status':'FAIL','scope':__doc__,'source_inputs':source_inputs,'cases':[],
