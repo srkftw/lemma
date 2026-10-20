@@ -1,0 +1,352 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+"""Original SG13G2 filler source, all-row plan and exact native insertion.
+
+Source probes remain read-only. The explicit insertion function creates a
+separate physical candidate and never promotes partial process findings.
+"""
+import hashlib
+import json
+import re
+import struct
+import xml.etree.ElementTree as ET
+from decimal import Decimal
+from functools import lru_cache
+from pathlib import Path
+from silicon_geometry_export import require
+from silicon_gds_geometry import fingerprint
+
+SELECTED_SOURCE_ODB = '43ffc744714d5f216227035ffa4eca2e77b87f27b61b4f39fa6296a4091f7852'
+SELECTED_PLAN_SHA = 'f46d751c9d7fdcb30b601c46ffa104e48d39ae73ac1aaec60ce2382ab2799b39'
+
+
+def lef_masters(text):
+    """Literal original LEF dimensions/classes, in the selected1000 DBU/um."""
+    result = {}
+    for name, body in re.findall(r'^MACRO (\S+)\n(.*?)^END \1$', text, re.M | re.S):
+        size = re.search(r'(?m)^\s*SIZE ([\d.]+) BY ([\d.]+) ;', body)
+        kind = re.search(r'(?m)^\s*CLASS ([^;]+) ;', body)
+        require(size is not None and kind is not None and name not in result,
+                'unique original LEF master dimensions/class required')
+        values = tuple(Decimal(value)*1000 for value in size.groups())
+        require(all(value == int(value) and value > 0 for value in values), 'integer native master dimensions')
+        result[name] = {'size_nm': tuple(map(int, values)), 'class': kind[1].strip(),
+                        'pins': re.findall(r'^  PIN (\S+)', body, re.M)}
+    require(result, 'original LEF masters required')
+    return result
+
+
+def all_row_plan(def_text, expected, masters):
+    """Tile the actual free row sites with original physical CORE SPACER cells.
+
+    Functional placements and their one-site left/right separation stay fixed.
+    Spacers deliberately occupy unused sites, including those separating two
+    functional cells. They have no signal pins; treating a physical spacer as
+    another functional cell needing its own padding would defeat well filling.
+    Macro exclusion rounds outward to native sites and never clips a macro.
+    This is a plan, not a claim of placed/PG-connected or process-clean cells.
+    """
+    require(expected['dbu_per_micron'] == 1000 and
+            re.search(r'(?m)^UNITS DISTANCE MICRONS 1000 ;$', def_text), 'literal1000 DBU/um required')
+    raw = re.findall(r'^ROW (\S+) (\S+) (\d+) (\d+) (\S+) DO (\d+) BY (\d+) STEP (\d+) (\d+) ;',
+                     def_text, re.M)
+    require(len(raw) == len(re.findall(r'(?m)^ROW ', def_text)) and raw, 'all actual rows must be understood')
+    rows = []
+    for name, site, x, y, orientation, nx, ny, dx, dy in raw:
+        x, y, nx, ny, dx, dy = map(int, (x, y, nx, ny, dx, dy))
+        require(site == 'CoreSite' and orientation in ('N', 'FS') and nx > 0 and
+                (ny, dx, dy) == (1, 480, 0), 'original one-dimensional480nm CoreSite row required')
+        rows.append({'name': name, 'x_nm': x, 'y_nm': y, 'sites': nx,
+                     'orientation': {'N': 'R0', 'FS': 'MX'}[orientation]})
+    require(len({row['name'] for row in rows}) == len(rows) and
+            len({row['y_nm'] for row in rows}) == len(rows), 'unique unfragmented selected rows required')
+    rows.sort(key=lambda row: row['y_nm'])
+    require(all(b['y_nm']-a['y_nm'] == 3780 for a, b in zip(rows, rows[1:])), 'complete original3780nm rows')
+    instances = expected['instances']
+    require(len({cell['name'] for cell in instances}) == len(instances), 'duplicate native instance')
+    by_y = {row['y_nm']: [] for row in rows}
+    row_orientations = {row['y_nm']: row['orientation'] for row in rows}
+    macros = []
+    functional = []
+    for cell in instances:
+        master = masters[cell['master']]
+        width, height = master['size_nm']; x, y = cell['location']
+        require(cell['orientation'] in ('R0', 'MX'), 'selected source row/macro orientation required')
+        require(cell['origin'] == [x, y+(height if cell['orientation'] == 'MX' else 0)],
+                'actual origin/location/orientation relation differs')
+        if master['class'] == 'BLOCK':
+            macros.append((x, y, x+width, y+height, cell['name']))
+        else:
+            require(master['class'] == 'CORE' and height == 3780 and y in by_y,
+                    'only original single-height functional cells in source')
+            require(cell['orientation'] == row_orientations[y], 'functional cell differs from actual row orientation')
+            by_y[y].append((x, x+width, cell['name']))
+            functional.append(cell['name'])
+    require(len(macros) == 3 and all('pen_sram_lane'+str(index) in {box[4] for box in macros}
+                                   for index in range(3)), 'all three native SRAM exclusions required')
+    for sites in (1, 2, 4, 8):
+        master = masters['sg13g2_fill_'+str(sites)]
+        require(master == {'size_nm': (480*sites, 3780), 'class': 'CORE SPACER', 'pins': ['VDD', 'VSS']},
+                'original source filler dimensions/class/power interface differs')
+    fill = []
+    source_sites = blocked_sites = 0
+    for row in rows:
+        x0, y0, count = row['x_nm'], row['y_nm'], row['sites']
+        occupied = bytearray(count)
+        cells = sorted(by_y[y0])
+        require(all(b[0]-a[1] >= 960 for a, b in zip(cells, cells[1:])),
+                'original functional one-site left/right padding differs')
+        for left, right, name in cells:
+            require((left-x0) % 480 == (right-x0) % 480 == 0 and x0 <= left < right <= x0+count*480,
+                    'source functional cell off actual row/site')
+            first, last = (left-x0)//480, (right-x0)//480
+            require(not any(occupied[first:last]), 'overlapping original functional cells')
+            occupied[first:last] = bytes([1])*(last-first); source_sites += last-first
+        for left, bottom, right, top, name in macros:
+            if y0+3780 <= bottom or y0 >= top: continue
+            first = max(0, (left-x0)//480)
+            last = min(count, (right-x0+479)//480)
+            if last <= first: continue
+            require(not any(occupied[first:last]), 'original functional cell overlaps actual macro exclusion')
+            occupied[first:last] = bytes([2])*(last-first); blocked_sites += last-first
+        start = 0
+        while start < count:
+            if occupied[start]: start += 1; continue
+            end = start
+            while end < count and not occupied[end]: end += 1
+            cursor = start
+            for size in (8, 4, 2, 1):
+                while end-cursor >= size:
+                    x = x0+480*cursor
+                    fill.append({'name': f'task009_row_fill_{len(fill):06d}', 'master': f'sg13g2_fill_{size}',
+                                 'location': [x, y0], 'origin': [x, y0+(3780 if row['orientation'] == 'MX' else 0)],
+                                 'orientation': row['orientation'], 'row': row['name'], 'sites': size})
+                    cursor += size
+            require(cursor == end, 'unfilled native row site')
+            start = end
+    return {'schema': 'lemma-original-row-filler-plan/1', 'status': 'PLANNED_ORIGINAL_PHYSICAL_SPACERS_NOT_PLACED',
+            'rows': rows, 'functional_instances': len(functional), 'macro_instances': len(macros),
+            'all_row_sites': sum(row['sites'] for row in rows), 'functional_sites': source_sites,
+            'outward_rounded_macro_sites': blocked_sites, 'filler_sites': sum(cell['sites'] for cell in fill),
+            'fillers': fill, 'functional_placements_changed': 0, 'functional_padding_nm': 960,
+            'physical_spacers_may_occupy_reserved_functional_padding': True,
+            'remaining': ['actual original filler FEOL/PG source relation', 'native insertion and PG connectivity',
+                          'signal/PG/OBS collision relation', 'complete original process rules and connected LVS']}
+
+
+def signal_wire_identity(block):
+    """Exact native wire opcode/data stream, including RECT, via and ITerm IDs."""
+    result = {}
+    for net in block.getNets():
+        wire = net.getWire()
+        if wire is None: continue
+        digest = hashlib.sha256()
+        for index in range(wire.length()):
+            digest.update(struct.pack('<Bi', wire.getOpcode(index), wire.getData(index)))
+        result[net.getName()] = (wire.length(), digest.hexdigest())
+    return result
+
+
+def insert_original_fillers(source, plan_path, output):
+    """Pinned host-OpenDB correction; never routes or moves a functional cell.
+
+    Execute only under the ordinary bounded EDA owner. The result is a separate
+    unfinished physical candidate, not a replacement timing/process receipt.
+    """
+    import odb
+    from silicon_acceptance_launch import snapshot
+    from silicon_synth import sha
+    source, plan_path, output = map(Path, (source, plan_path, output))
+    require(sha(source) == SELECTED_SOURCE_ODB and sha(plan_path) == SELECTED_PLAN_SHA,
+            'exact selected0.6 routed source and independently generated all-row plan required')
+    plan = json.loads(plan_path.read_text())
+    require(plan['schema'] == 'lemma-original-row-filler-plan/1' and
+            plan['status'] == 'PLANNED_ORIGINAL_PHYSICAL_SPACERS_NOT_PLACED' and
+            (plan['functional_instances'], plan['macro_instances'], len(plan['rows']),
+             plan['all_row_sites'], plan['functional_sites'], plan['outward_rounded_macro_sites'],
+             plan['filler_sites'], len(plan['fillers'])) == (9034, 3, 221, 478686, 69106, 160230, 249350, 40349),
+            'exact selected all-row filler coverage required')
+    output.mkdir(exist_ok=False)
+    db = odb.dbDatabase.create(); odb.read_db(db, str(source))
+    block = db.getChip().getBlock()
+    before = snapshot(block); wires = signal_wire_identity(block)
+    require(len(before[1]) == 9037 and len(before[2]) == 668 and sum(before[3].values()) == 99128 and
+            len(before[4]) == 18718 and not any(name.startswith('task009_row_fill_') for name in before[1]),
+            'actual selected functional/macro/port/PG/OBS inventory differs')
+    masters = {}
+    for sites in (1, 2, 4, 8):
+        name = 'sg13g2_fill_'+str(sites)
+        matches = [lib.findMaster(name) for lib in db.getLibs() if lib.findMaster(name)]
+        require(len(matches) == 1, 'original filler native master identity')
+        master = matches[0]
+        require((master.getWidth(), master.getHeight(), master.getType()) == (480*sites, 3780, 'CORE_SPACER') and
+                {term.getName(): term.getSigType() for term in master.getMTerms()} ==
+                {'VDD': 'POWER', 'VSS': 'GROUND'}, 'original native physical-only filler/PG type')
+        masters[name] = master
+    # Correct net names alone do not prove physical connection. Each new PG
+    # pin must overlap its immutable existing native row rail. Full original
+    # GDS metal spacing is a separate following check.
+    rails = {}
+    for net, layer, left, bottom, right, top in before[3]:
+        if layer == 'Metal1': rails.setdefault(net, []).append((left, bottom, right, top))
+    def validate_cell(record, cell):
+        require(cell is not None and cell.getMaster().getName() == record['master'] and
+                cell.getOrient() == record['orientation'] and list(cell.getLocation()) == record['location'] and
+                list(cell.getOrigin()) == record['origin'], 'new physical filler master/site/orientation differs')
+        require({pin.getMTerm().getName() for pin in cell.getITerms()} == {'VDD', 'VSS'},
+                'filler has unexpected signal pin')
+        for pin in cell.getITerms():
+            net = {'VDD': 'VDDlogic', 'VSS': 'VSS'}[pin.getMTerm().getName()]
+            require(pin.getNet() is not None and pin.getNet().getName() == net, 'actual filler supply changed')
+            shapes = list(pin.getGeometries())
+            require(shapes and all(layer.getName() == 'Metal1' for layer, box in shapes),
+                    'original filler row-rail interface differs')
+            for layer, box in shapes:
+                require(any(min(right, box.xMax()) > max(left, box.xMin()) and
+                            min(top, box.yMax()) > max(bottom, box.yMin())
+                            for left, bottom, right, top in rails[net]), 'filler PG pin misses actual native row rail')
+    for record in plan['fillers']:
+        require(block.findInst(record['name']) is None and record['master'] in masters,
+                'duplicate/unqualified filler instance')
+        cell = odb.dbInst_create(block, masters[record['master']], record['name'])
+        cell.setOrient(record['orientation']); cell.setLocation(*record['location']); cell.setPlacementStatus('PLACED')
+        cell.findITerm('VDD').connect(block.findNet('VDDlogic')); cell.findITerm('VSS').connect(block.findNet('VSS'))
+        validate_cell(record, cell)
+    after = snapshot(block)
+    names = {record['name'] for record in plan['fillers']}
+    require(len(names) == len(plan['fillers']) and set(after[1]) == set(before[1]) | names and
+            {name: value for name, value in after[1].items() if name not in names} == before[1] and
+            {key: value for key, value in after[0].items() if key[0] not in names} == before[0] and
+            after[2:] == before[2:] and len(after[0]) == len(before[0])+2*len(names),
+            'old functional/test/supply terminals, placement, nativePG, OBS or ports changed')
+    require(signal_wire_identity(block) == wires, 'actual original signal wire opcode/RECT/via stream changed')
+    negatives = []
+    record = plan['fillers'][0]; cell = block.findInst(record['name'])
+    for label in ('wrong_site', 'wrong_orientation', 'wrong_supply'):
+        if label == 'wrong_site': cell.setLocation(record['location'][0]+480, record['location'][1])
+        elif label == 'wrong_orientation': cell.setOrient('MX'); cell.setLocation(*record['location'])
+        else: cell.findITerm('VDD').connect(block.findNet('VSS'))
+        try: validate_cell(record, cell)
+        except ValueError: negatives.append(label)
+        else: raise ValueError('consequential actual filler negative admitted: '+label)
+        cell.setOrient(record['orientation']); cell.setLocation(*record['location'])
+        cell.findITerm('VDD').connect(block.findNet('VDDlogic')); validate_cell(record, cell)
+    wire_net = next(net for net in block.getNets() if net.getWire() is not None)
+    wire = wire_net.getWire(); wire.detach()
+    require(signal_wire_identity(block) != wires, 'detached actual routed wire negative admitted')
+    negatives.append('detached_actual_signal_wire'); wire.attach(wire_net)
+    require(signal_wire_identity(block) == wires, 'negative did not restore exact native route')
+    odb.write_db(db, str(output/'filled.odb')); odb.write_def(block, str(output/'filled.def'))
+    result = {'status': 'PASS_ORIGINAL_ALLROW_FILLER_NATIVE_PLACEMENT_PG_OVERLAP_SIGNALS_UNCHANGED_NOT_PROCESS_DRC',
+              'source_odb_sha256': sha(source), 'plan_sha256': sha(plan_path),
+              'filled_odb_sha256': sha(output/'filled.odb'), 'filled_def_sha256': sha(output/'filled.def'),
+              'old_placements_preserved': len(before[1]), 'old_ports_preserved': len(before[2]),
+              'old_native_PG_shapes_preserved': sum(before[3].values()), 'old_OBS_preserved': len(before[4]),
+              'original_signal_wire_streams_preserved': len(wires), 'original_fillers_added': len(names),
+              'new_PG_terminals': 2*len(names), 'native_pin_correct_rail_overlap': True,
+              'functional_padding_policy': 'Original960nm functional-cell separation remains; physical spacers fill unused sites',
+              'negative_cases': negatives,
+              'remaining': ['original GDS filler masks and all partial NW.b findings', 'new PG/signal geometry clearance',
+                            'full original process rules', 'connected LVS', 'post-fill extraction/timing scope', 'IR/EM']}
+    (output/'insertion.json').write_text(json.dumps(result, indent=2)+'\n')
+    return result
+
+
+def original_filler_probe(config, source_layouts, expected):
+    """Read-only original-cell geometry on already observed partial NW.b gaps.
+
+    Nothing is placed in the product database. This establishes the exact next
+    row-well predecessor without treating a partial process report as complete.
+    """
+    import pya
+    report = ET.parse(config['partial_process_report']).getroot()
+    require(report.tag == 'report-database' and report.findtext('top-cell') == expected['top'],
+            'actual selected-layout partial process report required')
+    examples = [item.findtext('./values/value') for item in report.findall('./items/item')
+                if item.findtext('category', '').strip("'") == 'NW.b']
+    require(examples, 'actual partial NW.b findings required')
+    lef = Path(config['lef_files'][1]).read_text()
+    sizes = {}
+    for name, body in re.findall(r'^MACRO (\S+)\n(.*?)^END \1$', lef, re.M|re.S):
+        size = re.search(r'(?m)^\s*SIZE ([\d.]+) BY ([\d.]+) ;', body)
+        require(size is not None, 'original standard-cell LEF size')
+        sizes[name] = tuple(int(Decimal(value)*1000) for value in size.groups())
+    def original_cell(name):
+        matches = [(ly, ly.cell(name)) for ly in source_layouts if ly.cell(name) is not None]
+        require(len(matches) == 1, 'exact original filler/standard-cell master required')
+        return matches[0]
+    @lru_cache(maxsize=None)
+    def well(name):
+        ly, cell = original_cell(name)
+        layer = ly.find_layer(31, 0)
+        require(layer is not None, 'original NWell31/0 required')
+        region = pya.Region(cell.begin_shapes_rec(layer)); region.merge()
+        return region
+    filler = []
+    for name in ('sg13g2_fill_1', 'sg13g2_fill_2', 'sg13g2_fill_4', 'sg13g2_fill_8'):
+        ly, cell = original_cell(name)
+        geometry = []
+        for layer in ly.layer_indexes():
+            info = ly.get_info(layer)
+            for shape in cell.shapes(layer).each():
+                geometry.append({'layer_datatype': [info.layer, info.datatype], 'shape': shape.to_s()})
+        body = re.search(r'^MACRO '+name+r'\n(.*?)^END '+name+'$', lef, re.M|re.S)[1]
+        require('CLASS CORE SPACER' in body and re.findall(r'^  PIN (\S+)', body, re.M) == ['VDD', 'VSS'],
+                'original physical spacer with both PG pins required')
+        require(not well(name).is_empty(), 'original source filler NWell required')
+        filler.append({'master': name, 'LEF_size_nm': sizes[name],
+                       'NWell_local_polygons_nm': [str(p) for p in well(name).each()],
+                       'original_master_sha256': fingerprint(ly, cell), 'original_all_layer_geometry': geometry})
+    orientation = {'R0': (0, False), 'MX': (0, True), 'MY': (180, True), 'R180': (180, False)}
+    placed = []
+    for inst in expected['instances']:
+        if inst['master'] not in sizes or inst['orientation'] not in orientation: continue
+        a, mirror = orientation[inst['orientation']]
+        transform = pya.ICplxTrans(1, a, mirror, *inst['origin'])
+        region = well(inst['master']).transformed(transform)
+        if region.is_empty(): continue
+        placed.append((inst, region, region.bbox()))
+    rows = []
+    for raw in examples[:3]:
+        values = [int(Decimal(value)*1000) for value in re.findall(r'-?\d+(?:\.\d+)?', raw)]
+        require(len(values) == 8 and values[0] == values[2] and values[4] == values[6], 'vertical partial NW.b example')
+        left, right = sorted((values[0], values[4]))
+        lower, upper = max(min(values[1:4:2]), min(values[5:8:2])), min(max(values[1:4:2]), max(values[5:8:2]))
+        pairs = []
+        for a, ar, aw in placed:
+            if aw.right != left or aw.bottom > lower or aw.top < upper: continue
+            for b, br, bw in placed:
+                if bw.left != right or bw.bottom > lower or bw.top < upper: continue
+                if a['location'][1] != b['location'][1] or a['orientation'] != b['orientation']: continue
+                gap = b['location'][0]-(a['location'][0]+sizes[a['master']][0])
+                if gap != 960: continue
+                pairs.append((a, ar, aw, b, br, bw))
+        require(len(pairs) == 1, 'unique original same-row960nm functional gap required')
+        a, ar, aw, b, br, bw = pairs[0]
+        x, y = a['location'][0]+sizes[a['master']][0], a['location'][1]
+        require(sizes['sg13g2_fill_2'] == (960, 3780), 'original exact2site spacer size')
+        angle, mirror = orientation[a['orientation']]
+        origin = (x, y+3780) if mirror else (x, y)
+        fill_well = well('sg13g2_fill_2').transformed(pya.ICplxTrans(1, angle, mirror, *origin))
+        corridor = pya.Region(pya.Box(left, lower, right, upper))
+        require((corridor-fill_well).is_empty() and (corridor-(ar+br)).area() > 0 and
+                not (fill_well & ar).is_empty() and not (fill_well & br).is_empty(),
+                'actual source filler must bridge both separated original wells')
+        wrong_site = fill_well.transformed(pya.ICplxTrans(1, 0, False, 960, 0))
+        wrong_orientation = well('sg13g2_fill_2').transformed(
+            pya.ICplxTrans(1, angle, not mirror, x, y if mirror else y+3780))
+        require(not corridor.is_empty() and not (corridor-wrong_site).is_empty() and
+                not (corridor-wrong_orientation).is_empty(),
+                'missing/wrong-site/wrong-orientation original filler negatives must reject')
+        rows.append({'partial_original_edge_pair': raw, 'left_owner': a, 'right_owner': b,
+                     'left_NWell_nm': str(aw), 'right_NWell_nm': str(bw), 'well_gap_nm': right-left,
+                     'functional_bbox_gap_nm': 960, 'proposed_original_fill_2_origin_nm': origin,
+                     'proposed_orientation': a['orientation'],
+                     'fill_NWell_polygons_nm': [str(p) for p in fill_well.each()],
+                     'source_filler_covers_actual_gap': True,
+                     'negative_cases': ['missing_filler', 'shifted_one_gap', 'opposite_row_orientation']})
+    return {'status': 'OBSERVED_ORIGINAL_FILLER_WELL_BRIDGE_GEOMETRY_ONLY_NOT_PLACED',
+            'partial_report_NW_b_findings': len(examples), 'partial_report_is_not_full_DRC': True,
+            'original_filler_sources': filler, 'first_3_actual_gap_bridges': rows,
+            'not_checked': ['native filler placement/padding policy', 'actual filler PG connection',
+                            'new signal/PG/OBS collisions', 'full process rules', 'LVS', 'timing']}

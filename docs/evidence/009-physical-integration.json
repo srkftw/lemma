@@ -1369,6 +1369,12 @@
       },
       "status": "PASS_ACTUAL_LITERAL_COPY_WITH_EXACT_JSON_TYPES_AND_CLOSED_SCHEMA",
       "scope": "Independentreview found Pythonbool/int/floatcoercion hole. Exactoriginalprefix,clones,vectors,owners andclosedknownmetadata now reject sevenconsequentialrepresentationnegatives; originalroutecohortbeforebytes/exporteralready pinned. No route evidence changed."
+    },
+    "row_filler_source": {
+      "source": "tests/silicon/test_filler_source.py",
+      "status": "PASS",
+      "cases": 5,
+      "scope": "Row sites/orientation/macro exclusions/original-onlyPGinterface; actual3717report with12tangent witnesses; literal resource admission. Host tests, not process evidence."
     }
   },
   "remaining": {
@@ -7035,6 +7041,168 @@
       "OriginalAPproducerwhole900sFAIL907.669 remains; onlyitscompleted4.719s hostcompile/header/coreABI componentreused.",
       "OriginalMagicfullprocess300s andLVS/extractionfailures unchanged."
     ],
-    "scope": "Exactoriginal45physicalGDSmasterhierarchies/9037transforms plus fullnative signal/RECT/via/cut/specialPG/668portconductivemask unions across20layer-purposepairs. No unresolvedconductivelayer omitted; originalBLOCKAGEwarnings areexplicitrouterconstraintmetadata. Globalmaskunion is notnetconnectivity/transistorLVS. GDSstreamout/readback andactualoriginalfulldeckprocesschecksremainnext."
+    "scope": "Exactoriginal45physicalGDSmasterhierarchies/9037transforms plus fullnative signal/RECT/via/cut/specialPG/668portconductivemask unions across20layer-purposepairs. No unresolvedconductivelayer omitted; originalBLOCKAGEwarnings areexplicitrouterconstraintmetadata. Globalmaskunion is notnetconnectivity/transistorLVS. GDSstreamout/readback andactualoriginalfulldeckprocesschecksremainnext.",
+    "stream_readback": {
+      "path": "build/silicon/task009-native-gds-readback-a1/result.json",
+      "sha256": "bf6fb8f0b65f49a1ef4991e7ef6bd4c281d79d8447c7573a8f383f0fb0783302",
+      "status": "PASS_NATIVE_ORIGINAL_GDS_ROUTED_MASK_UNION_AND_STREAM_READBACK_NOT_NET_LVS_OR_PROCESS_DRC",
+      "seconds": 24.623571804957464,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 743841792
+    },
+    "current_guard_prepare": {
+      "path": "build/silicon/task009-maintained-native-gds-prepare-a1/result.json",
+      "sha256": "00f3c7d3cc932d4488e38d570ae0e06d3fbafdf31aab7b6f41f9013c96a36d48",
+      "status": "PASS_NATIVE_ORIGINAL_GDS_ROUTED_MASK_UNION_AND_STREAM_READBACK_NOT_NET_LVS_OR_PROCESS_DRC",
+      "seconds": 26.456534440163523,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 781123584
+    },
+    "host_guard_corrections": {
+      "meaning": "Separate correction and fresh execution, previous receipts retain original code/results",
+      "corrected": [
+        "Reject literal fractional/nonfinite/bool master rotations before original master skip",
+        "Source changes downgrade component and exit status; inputs-only final status owns exit",
+        "TERM-ignoring owned child escalates to SIGKILL after0.5seconds",
+        "Complete imported host input inventory and exact producer/component/config consistency"
+      ],
+      "fault_cases": "8 GDS geometry tests pass, including actual TERM-ignoring child, source mutation and whole-deadline refusal",
+      "retained_readback_guards_failure": {
+        "path": "build/silicon/task009-native-gds-readback-guards-a2/result.json",
+        "sha256": "31c4a18d51a94d981188c62722ac081bdeee45fe9e5d72fe0d4dfc40b9bf5314",
+        "status": "FAIL",
+        "seconds": 22.465272061061114,
+        "source_seal_equal": true,
+        "peak_owned_RSS_bytes": 749215744
+      },
+      "closed_source_query": {
+        "path": "build/silicon/task009-completed-gds-nwell-source-a1/result.json",
+        "sha256": "664ef6524a55fdf6e0e1022f71c4ee60a3c93c9655ff24d60f034862f02e0332",
+        "status": "PASS_CLOSED_GDS_BODY_CARDINAL_AND_ORIGINAL_NWELL_QUERY_NOT_FULL_PRODUCER",
+        "seconds": 3.3003979180939496,
+        "source_seal_equal": true,
+        "peak_owned_RSS_bytes": 711176192
+      },
+      "date_only_stream_difference": "193 valid BGNLIB/BGNSTR date-record payloads; every other GDS record byte is identical; XY/UNITS mutations reject"
+    },
+    "actual_selected_original_fullmain": {
+      "path": "build/silicon/task009-selected-original-klayout-process-a1/result.json",
+      "sha256": "00b7a4096cae719484fc8ca4fea473f88d6e45181d7241417bf6c213c1a843e5",
+      "status": "FAIL",
+      "seconds": 135.17558584501967,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 2518360064,
+      "scope": "Actual original fullmain resource failure, incomplete process findings only; maximal/density/antenna not run",
+      "partial_original_NW_b_findings": 3717,
+      "actual_minimum_observed_gap_nm": 480,
+      "original_required_NW_b_spacing_nm": 620,
+      "resource_failure_first_RSS_bytes": 2154106880,
+      "observed_cleanup_peak_RSS_bytes": 2518360064,
+      "cleanup": "Original SIGTERM-deferred overshoot retained; new guard now escalates0.5s and real TERM-ignoring child regression passes"
+    }
+  },
+  "original_row_filler_correction": {
+    "status": "NATIVE_CORRECTED_UNSELECTED_PROCESS_CHECK_PENDING",
+    "source": "scripts/silicon_filler_source.py",
+    "selected_implementation_unchanged": "physical0.6, every previous setup/hold/electrical result remains FAIL",
+    "cause": "960nm functional bbox gap minus two240nm original NWell overhangs gives480nm, below original620nm NW.b; physical row spacers were absent",
+    "original_source_geometry": {
+      "path": "build/silicon/task009-original-filler-source-a2/result.json",
+      "sha256": "972a622415147e65eb4e2f1604ebf18b7b637218aeb9d0f430272f9f55b519ae",
+      "status": "PASS_ORIGINAL_FILLER_SOURCE_GAP_BRIDGES_AND_NEGATIVES_NOT_PLACED",
+      "seconds": 1.8541608829982579,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 489095168
+    },
+    "all_row_plan": {
+      "path": "build/silicon/task009-original-allrow-fill-plan-a1/result.json",
+      "sha256": "13c18e8dec368635f76f91525c269079458383cb75120f1d4103acdf9d8c7af3",
+      "status": "PASS_SOURCE_BOUND_ALLROW_ORIGINAL_FILLER_PLAN_ONLY_NOT_PLACED",
+      "seconds": 0.29478826094418764,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": null
+    },
+    "native_insertion": {
+      "path": "build/silicon/task009-original-allrow-filler-insertion-a2/result.json",
+      "sha256": "4940f333ce3859d9a006d16c6c0b4d04a77bc6349854fd4965120000087a9554",
+      "status": "PASS_SOURCE_BOUND_ORIGINAL_ALLROW_FILLER_INSERTION_AND_SIGNALS_NOT_PROCESS_DRC",
+      "seconds": 14.480132040102035,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 581885952
+    },
+    "retained_observer_nonadmission": {
+      "path": "build/silicon/task009-original-allrow-filler-insertion-a1/result.json",
+      "sha256": "ee3ade640aae59c78c7c512c75e6dffae53f032dede425115ccc709329be35b3",
+      "status": "FAIL",
+      "seconds": 0.7626632961910218,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 71507968
+    },
+    "scope": "40349 original CORE SPACERs fill249350 unused sites across221 rows, outward-rounded3macro exclusions; all9037 old placements/668ports/99128nativePG shapes/18718OBS/9703wire opcode/data streams remain exact.80698 new PG terminals overlap correct row rails. Missing/wrongsite/orientation/supply and detached actual wire controls reject. Physical spacers occupy unused sites; original960nm functional-to-functional padding remains. No process/LVS/RC/timing/IR/EM qualification inferred.",
+    "remaining": [
+      "New filler Metal1 signal/opposite-supply spacing subset incomplete",
+      "Original nwell and complete main/maximal/density/antenna process checks",
+      "Connected transistor LVS",
+      "Appropriate post-fill extraction/timing model scope; all9 oldselected timing/electrical cases remainFAIL",
+      "IR/EM, full-device power, pad/package/board"
+    ],
+    "maintained_entrypoint": "scripts/silicon_row_filler.py",
+    "original_GDS_relation_source": "scripts/silicon_filler_geometry.py",
+    "native_insertion_scope": "Actual insertion uses maintained exact mutator. New ordinary CLI delegates that frozen function; its wrapper is source/fixture checked, not separately executed.",
+    "original_GDS_first_failure": {
+      "path": "build/silicon/task009-original-allrow-filler-gds-a1/result.json",
+      "sha256": "1f9209c9364456642a29164dec52a9b41553a49f5e3700d202813154993c2ae2",
+      "status": "FAIL",
+      "seconds": 24.081149733858183,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 768794624
+    },
+    "original_GDS_budget_failure": {
+      "path": "build/silicon/task009-original-allrow-filler-gds-a2/result.json",
+      "sha256": "c5f9abc939606bc6724f5a4c1b88f7a8b97a1c948d3fa4e2581a249b58579d82",
+      "status": "FAIL",
+      "seconds": 42.04328051302582,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 817401856
+    },
+    "completed_GDS_prefix": {
+      "path": "build/silicon/task009-original-allrow-filler-gds-a2/prefix-geometry.json",
+      "sha256": "c9e0f421ec921fdc99d84f4c59a26eb6c7fa1ce2e382deab58804a746442b8b2",
+      "status": "PASS_ACTUAL_ORIGINAL_FILLER_MASTER_AND_ROUTING_MASK_PREFIX_NOT_PROCESS_DRC",
+      "seconds": null,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": null,
+      "scope": "Completed component within failed42.043s whole observer; no whole promotion",
+      "GDS_sha256": "cf91ea5c65915e1f8e6dbf27823a3f9bb3513888d0c56b981dd1202a221e0477",
+      "GDS_bytes": 13187332,
+      "actual_original_instances": 49386,
+      "actual_original_masters": 49,
+      "unchanged_routing_shapes": 357082,
+      "all20route_mask_XOR_areas_nm2": 0
+    },
+    "original_nwell_table": {
+      "path": "build/silicon/task009-original-allrow-nwell-rule-a1/result.json",
+      "sha256": "285fcb92615952666d1623ad1ce55eb39df15f3914b097d6cfd0a764ce4336d2",
+      "status": "FAIL",
+      "seconds": 19.849167059874162,
+      "source_seal_equal": true,
+      "peak_owned_RSS_bytes": 1189847040
+    },
+    "retained_failures": [
+      "GDSa1:12real tangent-y NW.b witnesses rejected by rectangle-only observer; corrected conservative1DBU witness bands do not change process rules",
+      "GDSa2:40s whole expires during per-filler observer; child37s timeout plus5s cleanup produces42.043s failed whole. Complete original-GDS/mask prefix retained separately.",
+      "Exact immutable main tables=nwell on changed GDS resourceFAIL19.849s;1GiB RSS trigger,1.190GB observed peak with0.5s KILL cleanup. No completed NW.b report or claim of3717 eliminated findings."
+    ],
+    "counts": {
+      "rows": 221,
+      "functional_instances_unchanged": 9034,
+      "macros_unchanged": 3,
+      "all_row_sites": 478686,
+      "functional_sites": 69106,
+      "outward_rounded_macro_sites": 160230,
+      "spacer_sites": 249350,
+      "spacers": 40349,
+      "new_PG_terminals": 80698
+    }
   }
 }

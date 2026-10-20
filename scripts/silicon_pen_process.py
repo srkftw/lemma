@@ -6,18 +6,322 @@ Imports original standard-cell and SRAM GDS and original process deck. Missing
 or partial geometry, unconnected power, and comparison failures never pass.
 """
 import argparse
+from collections import Counter
 import json
 import os
 from pathlib import Path
 import resource
 import re
 import shutil
+import signal
 import tarfile
+import threading
 import time
+import xml.etree.ElementTree as ET
 from silicon_enclosure import require
 from silicon_power_ports import signal_bytes
 from silicon_lvs_alias import cdl_alias, verilog_alias, require_originals
 from silicon_synth import CommandFailure, ROOT, lvs_matches, run, sha
+
+HOST_INPUTS = ('silicon_pen_process.py', 'silicon_gds_geometry.py', 'silicon_geometry_export.py',
+               'silicon_synth.py', 'silicon_enclosure.py', 'silicon_power_ports.py', 'silicon_lvs_alias.py')
+
+
+def klayout_report_counts(path, top, deck):
+    counts = Counter()
+    parsed = ET.iterparse(path, events=('end',))
+    for event, element in parsed:
+        if element.tag == 'item':
+            category = element.findtext('category')
+            require(category, 'original process item missing category')
+            counts[category] += 1
+            element.clear()
+    root = parsed.root
+    require(root.tag == 'report-database' and root.find('items') is not None and
+            root.find('categories') is not None and root.findtext('top-cell') == top and
+            "script='"+str(deck)+"'" in root.findtext('generator', ''),
+            'complete original deck/top process report required')
+    return counts
+
+
+class OwnedProcessStop:
+    """Escalate only the already observed owned descendants after0.5seconds.
+
+    KLayout may defer SIGTERM during a geometry operation or its destructor.
+    A resource violation always fails; cleanup cannot keep increasing RSS
+    indefinitely while repeated polite signals are deferred.
+    """
+    def __init__(self):
+        self.started = None
+        self.killed = False
+
+    def stop(self, pids):
+        now = time.monotonic()
+        if self.started is None:
+            self.started = now
+            number = signal.SIGTERM
+        elif now-self.started >= .5:
+            number = signal.SIGKILL
+            self.killed = True
+        else:
+            return
+        for pid in pids:
+            try: os.kill(pid, number)
+            except ProcessLookupError: pass
+
+
+def prepare_original_gds_inputs(args, out, route, basis, tool, report):
+    """Freshly execute current guards on unchanged physical descriptor inputs.
+
+    Refreshing host code here never relabels an older producer as fresh. The
+    physical/native/model inputs must still have their exact original hashes.
+    """
+    source = basis/'config.json' if basis.is_dir() else basis
+    config = json.loads(source.read_text())
+    require(config['schema'] == 'lemma-native-gds-geometry-inputs/1', 'native physical descriptor version')
+    require(config['source_odb'] == str(route/'routed.odb') and config['routed_def'] == str(route/'routed.def'),
+            'fresh GDS must consume the caller actual route')
+    paths = [Path(config[key]) for key in ('native_geometry', 'native_receipt', 'source_odb',
+             'native_instances', 'master_relation', 'master_producer', 'routed_def', 'layer_map')]
+    paths += list(map(Path, config['lef_files']+config['original_gds']))
+    require(all(config['source_inputs'][str(path)] == sha(path) for path in paths),
+            'a physical/native/master/model input changed; cannot refresh only adapter code')
+    macro = 'RM_IHPSG13_1P_256x64_c2_bm_bist'
+    expected = [args.pdk.resolve()/'ihp-sg13g2/libs.ref/sg13g2_stdcell/gds/sg13g2_stdcell.gds',
+                args.mapping.resolve()/'pdk/ihp-sg13g2/libs.ref/sg13g2_sram/gds'/(macro+'.gds')]
+    require(Counter((path.name, sha(path)) for path in expected) ==
+            Counter((Path(path).name, sha(Path(path))) for path in config['original_gds']),
+            'fresh original GDS differs from caller PDK/mapping')
+    require(sha(tool) == '34dc0492696ec1de33cd83a643a940e89d92e9d97d84e894ea493412d1f1507f' and
+            sha(tool.parent/'.klayout-wrapped') == 'fc3cfde45fb063496ba83de8192d4a592d638c89e3eceb660ed83eab86c80847',
+            'qualified original-control KLayout required')
+    config['output_directory'] = str(out); config['stream_output'] = str(out/'layout.gds')
+    config.pop('partial_process_report', None)
+    # Incidental filler diagnostics have a separate source/run; their edits
+    # cannot force repeat compilation/import of the real geometry consumer.
+    paths += [ROOT/'scripts'/name for name in HOST_INPUTS]
+    config['source_inputs'] = {str(path): sha(path) for path in dict.fromkeys(paths)}
+    config_file = out/'config.json'; config_file.write_text(json.dumps(config, indent=2)+'\n')
+    inputs = paths+[source, config_file, tool, tool.parent/'.klayout-wrapped']
+    report['source_inputs'] = {str(path): sha(path) for path in dict.fromkeys(inputs)}
+    report['fresh_host_guard_execution'] = {'basis': str(source), 'basis_sha256': sha(source),
+        'reused': 'Exact native/controller/model/master inputs; previous execution receipts remain original',
+        'fresh': 'Actual current host guards, original-GDS import/native-mask union and GDS write/readback'}
+    with tarfile.open(out/'source-closure.tar.gz', 'x:gz') as archive:
+        for index, path in enumerate(dict.fromkeys(inputs)):
+            if path.suffix in ('.py', '.cpp', '.json', '.map', '.lef'):
+                archive.add(path, arcname=f'inputs/{index:04d}-{path.name}')
+    report['source_archive'] = {'path': str(out/'source-closure.tar.gz'), 'sha256': sha(out/'source-closure.tar.gz')}
+    (out/'plan.json').write_text(json.dumps(report, indent=2)+'\n')
+    return config_file
+
+
+def admit_original_klayout_inputs(args, out, route, verified, original, tool, report):
+    """Bind exact produced geometry, source, tools and all original rules."""
+    initial_inputs = [Path(__file__).resolve(), verified/'result.json', verified/'geometry.json',
+                      verified/'config.json', verified/'layout.gds', route/'result.json',
+                      args.mapping.resolve()/'result.json', tool]
+    report['source_inputs'] = {str(path): sha(path) for path in initial_inputs if path.is_file()}
+    report['launch_available_bytes'] = next(int(line.split()[1])*1024
+        for line in Path('/proc/meminfo').read_text().splitlines() if line.startswith('MemAvailable:'))
+    require(report['launch_available_bytes'] >= 8 << 30 and shutil.disk_usage(out).free >= 1 << 30,
+            'fresh original-process memory/disk floor')
+    producer_file = verified/'result.json'; geometry_file = verified/'geometry.json'
+    producer = json.loads(producer_file.read_text()); geometry = json.loads(geometry_file.read_text())
+    config_file = verified/'config.json'; config = json.loads(config_file.read_text())
+    gds = verified/'layout.gds'
+    require(producer['status'] == 'PASS_NATIVE_ORIGINAL_GDS_ROUTED_MASK_UNION_AND_STREAM_READBACK_NOT_NET_LVS_OR_PROCESS_DRC'
+            and producer['source_seal_equal'] and not producer['resource_errors'], 'completed verified GDS producer required')
+    require(producer['source_inputs'][str(config_file)] == sha(config_file) and
+            all(producer['source_inputs'][name] == digest for name, digest in config['source_inputs'].items()) and
+            json.dumps(producer['geometry'], sort_keys=True, separators=(',', ':')) ==
+            json.dumps(geometry, sort_keys=True, separators=(',', ':')),
+            'original producer config/component identities differ; no hybrid metadata admission')
+    stream = geometry['stream_readback']
+    require(geometry['status'] == 'PASS_ORIGINAL_GDS_NATIVE_ROUTED_MASK_UNION_AND_STREAM_READBACK_ONLY' and
+            geometry['source_seal_equal'] and stream['complete_ENDLIB'] and
+            stream['actual_independent_mask_union_readback'] and stream['original_master_and_transform_readback'] and
+            stream['original_top_labels_readback'] == 668 and stream['sha256'] == sha(gds) and
+            gds.read_bytes()[-4:] == bytes((0, 4, 4, 0)), 'actual complete native mask/source/port GDS required')
+    require(config['source_odb'] == str(route/'routed.odb') and config['routed_def'] == str(route/'routed.def') and
+            all(sha(Path(name)) == digest for name, digest in config['source_inputs'].items()),
+            'verified selected route/GDS source closure differs')
+    macro = 'RM_IHPSG13_1P_256x64_c2_bm_bist'
+    original_gds = [args.pdk.resolve()/'ihp-sg13g2/libs.ref/sg13g2_stdcell/gds/sg13g2_stdcell.gds',
+                    args.mapping.resolve()/'pdk/ihp-sg13g2/libs.ref/sg13g2_sram/gds'/(macro+'.gds')]
+    # Physical-lock metadata successors may retain identical original GDS
+    # under another mapping output path. Bind original filename AND bytes;
+    # never rewrite either mapping producer's actual source identity.
+    require(Counter((Path(path).name, sha(Path(path))) for path in config['original_gds']) ==
+            Counter((path.name, sha(path)) for path in original_gds),
+            'caller mapping/PDK differs from actual original GDS source bytes')
+    mapped = args.mapping.resolve()/'result.json'; mapping = json.loads(mapped.read_text())
+    route_receipt = route/'result.json'; routed = json.loads(route_receipt.read_text())
+    require(routed['source_seal_equal'] and routed['mapping_receipt']['sha256'] == sha(mapped) and
+            mapping['status'].startswith(('PASS_MAINTAINED_', 'PASS_ISOLATED_CANDIDATE_')) and
+            routed['core_power_grid']['after-route']['macro_power_pins'] == 9 and
+            routed['core_power_grid']['after-route']['preserved_BIST_pins'] == 423,
+            'source-bound real mapped SRAM/power/test connection treatment required')
+    manifest_file = original.parent/'original-source-manifest.json'
+    require(sha(manifest_file) == 'e4a90ccbfe4899b7654d155371a89ea0a5e1d64637fd645564d04c37e653bae0',
+            'exact immutable original PDK rule/dependency closure required')
+    manifest = json.loads(manifest_file.read_text())
+    require(all(sha(original/name) == digest for name, digest in manifest.items()), 'original PDK/deck changed')
+    require(sha(tool) == '34dc0492696ec1de33cd83a643a940e89d92e9d97d84e894ea493412d1f1507f' and
+            sha(tool.parent/'.klayout-wrapped') == 'fc3cfde45fb063496ba83de8192d4a592d638c89e3eceb660ed83eab86c80847',
+            'original qualified cached KLayout tool required')
+    controls = ROOT/'build/silicon/task009-klayout-fullmain-via-controls-a1/result.json'
+    control = json.loads(controls.read_text())
+    require(control['status'] == 'PASS_ORIGINAL_FULLMAIN_BAD_REPAIRED_VIA1_ENCLOSURE_CONTROLS_NOT_CONTROLLER_QUALIFICATION'
+            and control['source_seal_equal'] and
+            all(sha(Path(name)) == digest for name, digest in control['source_inputs'].items()),
+            'actual original full-main bad/repaired Via1 controls required')
+    inputs = [Path(__file__).resolve(), producer_file, geometry_file, config_file, gds, route_receipt, mapped,
+              route/'routed.odb', route/'routed.def', route/'power-connected.v', manifest_file, tool,
+              tool.parent/'.klayout-wrapped', controls, ROOT/'scripts/silicon_synth.py']
+    inputs += [Path(name) for name in config['source_inputs']] + [original/name for name in manifest]
+    inputs += [ROOT/'scripts'/name for name in HOST_INPUTS]
+    report['source_inputs'] = {str(p): sha(p) for p in dict.fromkeys(inputs)}
+    report.update(verified_input={'path': str(gds), 'sha256': sha(gds), 'producer': str(producer_file),
+                 'producer_sha256': sha(producer_file), 'reuse': 'Completed native/master/mask/stream execution; no reimport'},
+                  power_grid='REUSED_ACTUAL_9_SRAM_PG_AND_423_BIST_BINDINGS_NO_IR_EM',
+                  process_revision='5e6d592e4002946a4616f798c357f0f3c06cf3b6',
+                  original_default_parameter_fallback='Unchanged original defaultJSON as original runner specifies; generated tech_mod absent')
+    # Preserve executable adapters and original rule bytes before starting.
+    with tarfile.open(out/'source-closure.tar.gz', 'x:gz') as archive:
+        for index, path in enumerate(dict.fromkeys(inputs)):
+            if path.suffix in ('.py', '.cpp', '.tcl', '.drc', '.json', '.map'):
+                archive.add(path, arcname=f'inputs/{index:04d}-{path.name}')
+    report['source_archive'] = {'path': str(out/'source-closure.tar.gz'), 'sha256': sha(out/'source-closure.tar.gz')}
+    (out/'plan.json').write_text(json.dumps(report, indent=2)+'\n')
+    deck = original/'ihp-sg13g2/libs.tech/klayout/tech/drc'
+    return gds, deck, deck/'rule_decks/sg13g2_tech_default.json'
+
+
+def klayout_original_process(args):
+    """Independent original four-deck check of the verified native GDS input.
+
+    Reuses completed import/stream evidence; no layout, PA, route or extraction
+    is repeated. Every original rule remains active. A timeout or nonzero count
+    remains a failed process result; conductive mask equality is not LVS.
+    """
+    prepare = args.klayout_prepare_from is not None
+    out, route = args.work_dir.resolve(), args.route.resolve()
+    verified = (args.klayout_prepare_from if prepare else args.klayout_verified_gds).resolve()
+    original = args.klayout_rules_source.resolve() if args.klayout_rules_source else None
+    tool = args.klayout_bin.resolve()
+    require(not out.exists() and out.is_relative_to(ROOT/'build'), 'unused ignored process output required')
+    require(1 <= args.process_seconds <= 180 and 20 <= args.whole_seconds <= 400,
+            'prospective original KLayout phase/whole budget')
+    require(not prepare or (1 <= args.import_seconds <= 40 and args.whole_seconds <= 60 and
+                            not args.klayout_inputs_only), 'prospective actual GDS prepare budget')
+    require(not (args.process_drc_only or args.drc_step_microns or args.direct_import_extraction or
+                 args.connectivity_only_extraction or args.continue_from_drc_attempt),
+            'original KLayout and Magic/extraction campaigns have distinct scopes')
+    out.mkdir(parents=True)
+    (out/'producer-source.py').write_bytes(Path(__file__).read_bytes())
+    started = time.monotonic(); deadline = started+args.whole_seconds
+    memory_cap = (1 if prepare else 2) << 30
+    output_cap = (128 if prepare else 512) << 20
+    address_cap = (3 if prepare else 4) << 30
+    resource.setrlimit(resource.RLIMIT_AS, (address_cap, address_cap))
+    resource.setrlimit(resource.RLIMIT_FSIZE, (output_cap, output_cap))
+    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+    os.environ.update(QT_QPA_PLATFORM='offscreen', OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1')
+    report = {'schema': 'lemma-pen-process/2', 'status': 'FAIL', 'engine': 'original-pinned-KLayout',
+              'scope': klayout_original_process.__doc__, 'question': args.question,
+              'process_drc': [], 'lvs': 'NOT_RUN', 'transistor_extraction': 'NOT_RUN',
+              'physical_closure': 'UNVERIFIED', 'commands': [], 'source_inputs': {},
+              'bounds': {'whole_seconds': args.whole_seconds, 'main_seconds': args.process_seconds,
+                         'each_other_seconds': 60, 'AS_bytes': address_cap, 'combined_RSS_bytes': memory_cap,
+                         'fresh_available_floor_bytes': 8 << 30, 'continuing_available_floor_bytes': 6 << 30,
+                         'aggregate_output_bytes': output_cap, 'threads': 1}, 'peak_combined_owned_RSS_bytes': 0}
+    stop = threading.Event(); errors = []; owned_stop = OwnedProcessStop()
+    def monitor():
+        while not stop.wait(.1):
+            queue = [os.getpid()]; seen = set(); rss = 0
+            while queue:
+                pid = queue.pop()
+                if pid in seen: continue
+                seen.add(pid)
+                try:
+                    rss += int(Path(f'/proc/{pid}/statm').read_text().split()[1])*os.sysconf('SC_PAGE_SIZE')
+                    queue.extend(map(int, Path(f'/proc/{pid}/task/{pid}/children').read_text().split()))
+                except (OSError, ValueError, IndexError): pass
+            report['peak_combined_owned_RSS_bytes'] = max(report['peak_combined_owned_RSS_bytes'], rss)
+            available = next(int(line.split()[1])*1024 for line in Path('/proc/meminfo').read_text().splitlines()
+                             if line.startswith('MemAvailable:'))
+            output = sum(p.stat().st_size for p in out.rglob('*') if p.is_file())
+            if rss > memory_cap or available < (6.5 if prepare else 6)*(1 << 30) or output > output_cap:
+                if not errors:
+                    errors.append({'owned_RSS_bytes': rss, 'host_available_bytes': available, 'output_bytes': output})
+            if errors:
+                owned_stop.stop(seen-{os.getpid()})
+    thread = threading.Thread(target=monitor, daemon=True)
+    try:
+        if prepare:
+            report['bounds']['import_seconds'] = args.import_seconds
+            report['bounds']['continuing_available_floor_bytes'] = int(6.5*(1 << 30))
+            report['launch_available_bytes'] = next(int(line.split()[1])*1024 for line
+                in Path('/proc/meminfo').read_text().splitlines() if line.startswith('MemAvailable:'))
+            require(report['launch_available_bytes'] >= 8 << 30 and shutil.disk_usage(out).free >= 1 << 30,
+                    'fresh original-GDS memory/disk floor')
+            config_file = prepare_original_gds_inputs(args, out, route, verified, tool, report)
+            thread.start()
+            report['commands'].append(run([str(tool), '-b', '-r', str(ROOT/'scripts/silicon_gds_geometry.py'),
+                '-rd', 'config_path='+str(config_file)], out/'GDS.log',
+                min(deadline-8, time.monotonic()+args.import_seconds)))
+            geometry = json.loads((out/'geometry.json').read_text())
+            require(geometry['status'] == 'PASS_ORIGINAL_GDS_NATIVE_ROUTED_MASK_UNION_AND_STREAM_READBACK_ONLY'
+                    and geometry['source_seal_equal'] and not errors, 'actual fresh GDS component failed')
+            report.update(status='PASS_NATIVE_ORIGINAL_GDS_ROUTED_MASK_UNION_AND_STREAM_READBACK_NOT_NET_LVS_OR_PROCESS_DRC',
+                          geometry=geometry, resource_errors=[])
+        else:
+            gds, deck, default = admit_original_klayout_inputs(args, out, route, verified, original, tool, report)
+            if not args.klayout_inputs_only: thread.start()
+            jobs = [] if args.klayout_inputs_only else [('main', 'ihp-sg13g2.drc', args.process_seconds),
+                    ('maximal', 'rule_decks/sg13g2_maximal.drc', 60),
+                    ('density', 'rule_decks/density.drc', 60),
+                    ('antenna', 'rule_decks/antenna.drc', 60)]
+            for label, relative, seconds in jobs:
+                require(not errors and time.monotonic() < deadline-8, 'original budget/resource exhausted before next deck')
+                report_file = out/(label+'.lyrdb')
+                argv = [str(tool), '-b', '-r', str(deck/relative)]
+                for key, value in {'input': gds, 'topcell': 'lemma_pen', 'report': report_file,
+                                   'log': out/(label+'.deck.log'), 'threads': 1, 'run_mode': 'flat',
+                                   'tables': 'main', 'drc_json': default, 'drc_json_default': default}.items():
+                    argv += ['-rd', key+'='+str(value)]
+                case = {'deck': label, 'original_deck_sha256': sha(deck/relative), 'status': 'FAIL'}
+                try:
+                    report['commands'].append(run(argv, out/(label+'.log'), min(deadline-8, time.monotonic()+seconds)))
+                    counts = klayout_report_counts(report_file, 'lemma_pen', deck/relative)
+                    case.update(status='PASS' if not counts else 'FAIL_RULE_VIOLATIONS', total=sum(counts.values()),
+                                category_counts=dict(counts), report_sha256=sha(report_file))
+                except BaseException as error:
+                    case['error'] = repr(error)
+                    if isinstance(error, CommandFailure): report['commands'].append(error.record)
+                report['process_drc'].append(case)
+                print(label, case['status'], case.get('total'), flush=True)
+            if args.klayout_inputs_only:
+                report['status'] = 'PASS_ORIGINAL_NATIVE_GDS_PROCESS_INPUTS_ONLY_NO_DRC_OR_LVS'
+            elif len(report['process_drc']) == 4 and all(c['status'] == 'PASS' for c in report['process_drc']):
+                report['status'] = 'PASS_SCOPED_ORIGINAL_FOUR_DECK_PROCESS_ONLY_LVS_PHYSICAL_CLOSURE_UNVERIFIED'
+            else:
+                report['status'] = 'FAIL_ORIGINAL_SELECTED_LAYOUT_PROCESS_ASSESSMENT'
+    except BaseException as error:
+        report['error'] = repr(error)
+    finally:
+        stop.set()
+        if thread.is_alive(): thread.join()
+        report.update(seconds=time.monotonic()-started, original_whole_deadline_met=time.monotonic() <= deadline,
+                      resource_failures=errors,
+                      owned_cleanup={'TERM_to_KILL_seconds': .5, 'SIGKILL_sent': owned_stop.killed},
+                      source_seal_equal=all(sha(Path(name)) == digest for name, digest in report['source_inputs'].items()))
+        if errors or not report['source_seal_equal'] or not report['original_whole_deadline_met']:
+            report['status'] = 'FAIL'
+        (out/'result.json').write_text(json.dumps(report, indent=2)+'\n')
+        print(report['status'], report.get('error'), report['seconds'], flush=True)
+    return 0 if report['status'].startswith('PASS_') else 1
 
 
 def power_reference_script(route, out, standard_liberty, sram_liberty):
@@ -92,7 +396,21 @@ def main():
     p.add_argument('--connectivity-only-extraction', action='store_true', help='LVS-only: disable parasitic capacitance/coupling, preserving transistor devices, geometry and terminal connectivity; never timing extraction')
     p.add_argument('--continue-from-drc-attempt', type=Path,
                    help='Retain a source-matched failed DRC attempt and independently continue GDS extraction/LVS')
+    p.add_argument('--klayout-verified-gds', type=Path,
+                   help='Use completed original-GDS/native-mask/stream-readback producer; run original four KLayout process decks, independently of Magic/LVS')
+    p.add_argument('--klayout-prepare-from', type=Path,
+                   help='Freshly execute current geometry guards/import/stream on exact physical inputs of a prior descriptor; refresh only host adapter source identities, no process DRC')
+    p.add_argument('--klayout-rules-source', type=Path,
+                   help='Exact original PDK source root with pinned original-source-manifest.json in its parent')
+    p.add_argument('--klayout-bin', type=Path, help='Exact cached, original-control-qualified KLayout executable')
+    p.add_argument('--klayout-inputs-only', action='store_true',
+                   help='Only admit exact native-GDS/rule/tool/source inputs; no process deck or LVS execution')
     args = p.parse_args()
+    if any((args.klayout_verified_gds, args.klayout_prepare_from, args.klayout_rules_source, args.klayout_bin, args.klayout_inputs_only)):
+        require(args.klayout_bin and bool(args.klayout_prepare_from) != bool(args.klayout_verified_gds) and
+                (args.klayout_prepare_from or args.klayout_rules_source),
+                'one original KLayout prepare or verified-process input and its required tool/rules required')
+        return klayout_original_process(args)
     out, route, mapping, pdk = (v.resolve() for v in (args.work_dir, args.route, args.mapping, args.pdk))
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
     out.mkdir(parents=True)

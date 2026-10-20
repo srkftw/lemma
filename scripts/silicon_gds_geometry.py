@@ -6,8 +6,10 @@ Invoke with the pinned KLayout Python runtime, -b -r this-file -rd config_path=.
 Geometry equivalence is not connected layout/netlist comparison or process DRC.
 """
 from collections import Counter, defaultdict
+import gc
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import sys
@@ -19,6 +21,12 @@ from silicon_geometry_export import validate, require
 
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def cardinal_angle(angle):
+    require(type(angle) in (int, float) and math.isfinite(angle) and angle % 90 == 0,
+            'exact cardinal master angle required')
+    return int(angle % 360)
 
 
 def layer_mapping(path):
@@ -108,8 +116,22 @@ def check(config):
         if name not in masters: continue
         tr = inst.cplx_trans
         require(tr.mag == 1 and not inst.is_regular_array(), 'nonunit/unqualified physical master transform')
-        observed[name, int(tr.angle)%360, bool(tr.is_mirror()), tr.disp.x, tr.disp.y] += 1
+        observed[name, cardinal_angle(tr.angle), bool(tr.is_mirror()), tr.disp.x, tr.disp.y] += 1
     require(observed == instances, 'actual full physical master placement/transform relation')
+    transform_negatives = []
+    # The old int(angle) observer could truncate0.1degrees to0 while the
+    # routing union intentionally skips original masters. Exercise the real
+    # instance transform and reject before such a master can be skipped.
+    original_instance = next(inst for inst in top.each_inst() if layout.cell(inst.cell_index).name in masters)
+    saved_transform = original_instance.cplx_trans
+    try:
+        original_instance.cplx_trans = pya.ICplxTrans(1, saved_transform.angle+.1,
+            saved_transform.is_mirror(), saved_transform.disp.x, saved_transform.disp.y)
+        try: cardinal_angle(original_instance.cplx_trans.angle)
+        except ValueError: transform_negatives.append('actual_fractional_master_transform')
+        else: raise ValueError('fractional actual master transform was truncated or admitted')
+    finally:
+        original_instance.cplx_trans = saved_transform
     draw, pins = layer_mapping(config['layer_map'])
     expected_regions = {value: pya.Region() for value in set(draw.values()) | set(pins.values())}
     native_pg = defaultdict(list)
@@ -126,6 +148,9 @@ def check(config):
             box = pya.Box(*shape['rect_nm'])
             expected_regions[draw[shape['layer']]].insert(box)
             expected_regions[pins[shape['layer']]].insert(box)
+    top_name = native['top']
+    del native
+    gc.collect()
     actual_regions = {key: pya.Region() for key in expected_regions}
     ignored, via_cells, wire_shapes = Counter(), set(), 0
     def visit(cell, transform):
@@ -169,7 +194,7 @@ def check(config):
     # actual failed relation, never silently dropped because the map omits it.
     (out/'mask-differences.json').write_text(json.dumps({'layers': rows, 'differences': differences}, indent=2)+'\n')
     require(not differences, 'actual native versus imported route/PG/port mask union differs')
-    negatives = []
+    negatives = transform_negatives[:]
     def reject(label, wanted, changed):
         require(not (wanted ^ changed).is_empty(), 'consequential mask negative accepted: '+label)
         negatives.append(label)
@@ -190,14 +215,66 @@ def check(config):
     # Independent masks for purpose2 ports must also survive streamout/import.
     port_key = next(key for key in pins.values() if not actual_regions[key].is_empty())
     reject('deleted_actual_port_mask', expected_regions[port_key], pya.Region())
+    imported_shapes = wire_shapes
+    stream = None
+    if config.get('stream_output'):
+        target = Path(config['stream_output']).resolve()
+        require(target.parent == out.resolve() and not target.exists(), 'unused owned GDS stream required')
+        def labels(ly, cell):
+            return sorted((ly.get_info(layer).layer, ly.get_info(layer).datatype, shape.to_s())
+                          for layer in ly.layer_indexes() for shape in cell.shapes(layer).each() if shape.is_text())
+        old_labels = labels(layout, top)
+        layout.write(str(target))
+        require(target.stat().st_size <= 128 << 20 and
+                target.read_bytes()[-4:] == bytes((0, 4, 4, 0)), 'complete bounded GDS ENDLIB required')
+        # Reuse the one layout allocation rather than retaining both full
+        # native layouts. The expected independent OpenDB regions stay alive.
+        top = None
+        layout.clear()
+        actual_regions = {key: pya.Region() for key in expected_regions}
+        layout.read(str(target)); top = layout.cell(top_name)
+        require(layout.dbu == .001 and top is not None, 'streamed GDS top/units changed')
+        require(labels(layout, top) == old_labels, 'streamed original port/net labels changed')
+        for name in masters:
+            require(layout.cell(name) is not None and
+                    fingerprint(layout, layout.cell(name)) == prior['master_hashes'][name],
+                    'streamed original GDS master geometry/text changed: '+name)
+        readback_instances = Counter()
+        for inst in top.each_inst():
+            name = layout.cell(inst.cell_index).name
+            if name not in masters: continue
+            tr = inst.cplx_trans
+            require(tr.mag == 1 and not inst.is_regular_array(), 'streamed master transform representation changed')
+            readback_instances[name, cardinal_angle(tr.angle), bool(tr.is_mirror()), tr.disp.x, tr.disp.y] += 1
+        require(readback_instances == instances, 'streamed physical master placement/transform changed')
+        visit(top, pya.ICplxTrans())
+        for key in expected_regions:
+            require((actual_regions[key] ^ expected_regions[key]).is_empty(),
+                    'streamed actual conductor/cut/PG/port mask changed: '+str(key))
+        stream = {'path': str(target), 'sha256': sha(target), 'bytes': target.stat().st_size,
+                  'complete_ENDLIB': True, 'actual_independent_mask_union_readback': True,
+                  'original_master_and_transform_readback': True, 'original_top_labels_readback': len(old_labels),
+                  'actual_routing_shapes_readback': wire_shapes-imported_shapes}
     result = {'status': 'PASS_ORIGINAL_GDS_MASTER_TRANSFORM_AND_NATIVE_ROUTED_MASK_UNION_ONLY',
               'scope': __doc__, 'native_geometry': counts, 'top_instances': sum(instances.values()),
-              'original_masters': len(masters), 'actual_routing_shapes_imported': wire_shapes,
+              'original_masters': len(masters), 'actual_routing_shapes_imported': imported_shapes,
               'actual_via_cells': sorted(via_cells), 'layers': rows, 'negatives': negatives,
               'original_map_metadata_shapes': dict(ignored),
               'not_checked': ['net-connected transistor LVS', 'process DRC/EOL/area/density/antenna',
                               'IR/EM', 'pads/package/board', 'GDS streamout/readback',
                               'BLOCKAGE/LEFOBS are router constraints, not conducting masks; original map omits BLOCKAGE']}
+    if stream:
+        result['status'] = 'PASS_ORIGINAL_GDS_NATIVE_ROUTED_MASK_UNION_AND_STREAM_READBACK_ONLY'
+        result['stream_readback'] = stream
+        result['not_checked'].remove('GDS streamout/readback')
+    if config.get('partial_process_report'):
+        source = Path(__file__).with_name('silicon_filler_source.py').resolve()
+        require(config['source_inputs'].get(str(source)) == sha(source), 'optional filler source closure required')
+        from silicon_filler_source import original_filler_probe
+        # Keep completed components if this independent source-design probe
+        # fails. Such a failed whole producer is never promoted to a pass.
+        (out/'geometry-before-filler-probe.json').write_text(json.dumps(result, indent=2)+'\n')
+        result['original_filler_probe'] = original_filler_probe(config, source_layouts, expected)
     return result
 
 
@@ -216,6 +293,8 @@ def main(config_path):
     finally:
         r.update(seconds=time.monotonic()-start, source_seal_equal=all(sha(name) == digest
                  for name, digest in config.get('source_inputs', {}).items()))
+        if not r['source_seal_equal']:
+            r.update(status='FAIL', error='Source changed after initial geometry admission')
         result_path.write_text(json.dumps(r, indent=2)+'\n')
     require(r['status'].startswith('PASS_'), r.get('error', 'geometry relation failed'))
 
