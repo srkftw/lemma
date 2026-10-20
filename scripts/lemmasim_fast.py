@@ -106,6 +106,8 @@ def validate_execution_binding(data):
 def validate_checkpoint_binding(data):
     # True selects the logical sidecar engine, not permission to export state.
     # The independent public admission check also requires the qualified flag.
+    if data.get('school_notebook_version')==24 and data.get('checkpoint_binding') is not None:
+        raise ValueError('School24 prepared local-tool IPC continuation is not qualified; use regular MM2 and durable cold recovery')
     if validate_execution_binding(data):return data.get('checkpoint_binding')==MM2_CHECKPOINT_BINDING
     binding=data.get('checkpoint_binding')
     if binding is None:return False
@@ -181,13 +183,28 @@ def sources(name):
     if mm2_checkpoint_selected(name):paths += [ROOT/'docs/contracts/009-native-mm2-continuation-v1.html',ROOT/'scripts/native_logical_relation.py']
     return {str(p.relative_to(ROOT)): digest(p) for p in paths}
 
+def workload_configurations(name,school_notebook_version=23):
+    from school_deployment import configuration_for
+    configuration_for(school_notebook_version,'notebook')
+    selected=guest.configurations(name)
+    if school_notebook_version==24:
+        if name!='lemma-silicon-dev/0.14.0':raise ValueError('School24 Fast preparation requires0.14')
+        selected={**selected,'school-notebook':configuration_for(24,'notebook'),
+                  'school-initializer':configuration_for(24,'initialize')}
+    return selected
+
 
 def build(args):
     name = profile(args.profile)['profile']
     if name in ('lemma-silicon-dev/0.15.0','lemma-silicon-dev/0.16.0'):
         raise ValueError('Integrated0.15 requires canonical RTL/native or RTL/Wasm; fast BootNV/clockedUSB/power-v2 models are not implemented')
-    selected = guest.configurations(name)
+    version=getattr(args,'school_notebook_version',23)
+    selected = workload_configurations(name,version)
     workload = args.workload or 'notebook'
+    if version==24 and (mm2_checkpoint_selected(name) or (logical2_selected(name) and not mm2_selected(name))):
+        raise ValueError('School24 prepared local-tool IPC continuation is not qualified; use regular MM2 and durable cold recovery')
+    if version==24 and workload not in ('school-notebook','school-initializer'):
+        raise ValueError('School24 preparation requires an explicit School workload')
     if workload not in selected:
         raise ValueError('Workload is not admitted by this binding')
     source_root = Path(getattr(args,'guest_source_root',None) or ROOT).resolve()
@@ -255,6 +272,7 @@ def build(args):
             'qemu':guest.identified(binary),'derivation':guest.identified(closure['derivation']),
             'sources':before,'cpu':CPU,'icount_shift':3,'workloads':{workload:entry},
             'boot':'ELF-preload development; QEMU reset-ROM handoff to identical Lean guest ELF and supplied DTB'}
+    if version==24:data['school_notebook_version']=24
     if mm2_selected(name):
         data.update(execution_binding=MM2_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2')
         if mm2_checkpoint_selected(name):
@@ -271,7 +289,7 @@ def build(args):
     path = prepared_path(name)
     try:
         previous = json.loads(path.read_text())
-        if previous.get('guest_archive')==data.get('guest_archive') and previous.get('guest_source_root')==data.get('guest_source_root') and all(previous.get(k) == data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift','checkpoint_binding','checkpoint_contract','observation_relation','checkpoint_admitted','execution_binding','multimodal_controller_abi','controller_contract')):
+        if previous.get('guest_archive')==data.get('guest_archive') and previous.get('guest_source_root')==data.get('guest_source_root') and all(previous.get(k) == data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift','checkpoint_binding','checkpoint_contract','observation_relation','checkpoint_admitted','execution_binding','multimodal_controller_abi','controller_contract','school_notebook_version')):
             for key, old in previous['workloads'].items():
                 if key == workload or key not in selected: continue
                 try:
@@ -311,6 +329,10 @@ def validate_archived_entry(data,workload):
 def prepared(workload,name=None):
     name = profile(name)['profile']
     data = json.loads(prepared_path(name).read_text())
+    version=data.get('school_notebook_version',23)
+    selected=workload_configurations(name,version)
+    if version==24 and workload not in ('school-notebook','school-initializer'):
+        raise ValueError('School24 preparation contains a non-School workload')
     if data.get('schema') != 'lemmasim-fast-prepared/1' or data.get('profile') != name or data.get('profile_sha256') != digest(profile_path(name)):
         raise ValueError('Unsupported/stale fast preparation')
     if data.get('sources') != sources(name) or data.get('cpu') != CPU or data.get('icount_shift') != 3:
@@ -332,9 +354,9 @@ def prepared(workload,name=None):
                 raise ValueError('Unsupported frozen Fast guest source authority')
             source_root=Path(original['path']).resolve()
             if source_inputs(source_root)!=original['sources']:raise ValueError('Frozen Fast guest source closure changed')
-            _audited_guest_archive(directory,source_root,guest.configurations(name)[workload],
+            _audited_guest_archive(directory,source_root,selected[workload],
                 'lemma-school-guest-source-archive/1','actual frozen audited School23/v2 target source')
-        guest.verify_guest_build(directory,guest.configurations(name)[workload],json.loads((directory/'build.json').read_text())['optimization'],source_root=source_root)
+        guest.verify_guest_build(directory,selected[workload],json.loads((directory/'build.json').read_text())['optimization'],source_root=source_root)
     return data
 
 

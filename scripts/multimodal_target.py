@@ -126,6 +126,10 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
     Lean verifier or an end-to-end response-latency qualification.
     """
     mm, notebook, backlog = map(_lean_without_comments, (multimodal_source, notebook_source, backlog_source))
+    local_reduction=any(marker in notebook for marker in ('mainMultimodalSchool24','reductionEnabled','LocalReduction.','ClientV9.'))
+    if local_reduction:
+        from school_reduction_target import notebook_source as reduction_source
+        reduction_source(notebook)
     compact = lambda value: ' '.join(value.split())
     def definition(source, name):
         matches = list(re.finditer(r'^(?:private )?def '+re.escape(name)+r'(?=\s|\()', source, re.M))
@@ -309,6 +313,10 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
       .boundedFoldU64 5400 multimodalBarStep 5400 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
       .boundedFoldU64 23 multimodalBarTile 23 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
       dirty 400 132 1120 147''').replace('SCHOOL_BAR',school_bar).replace('1120',str(extent)).replace('5400',str(packed)).replace('23 multimodalBarTile 23',f'{tiles} multimodalBarTile {tiles}')
+    if local_reduction:
+        require(owned_pcm,'source local tool requires the owned PCM School toolbar')
+        expected_bar=expected_bar.replace('dirty 400 132 1264 147',
+          '.bind (dirty 400 132 1264 147) fun s _ => if statusFailed s = true then .done s 0 else renderReductionControl width')
     require(definition(notebook,'multimodalBar') == compact(expected_bar),
       'source toolbar must match its versioned width, raster size and every intersected tile')
     if owned_pcm:
@@ -317,7 +325,10 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
                 'source toolbar packed PCM raster extent differs')
         require('if operation = 9 then Lemma.User.Multimodal.testAudio' in definition(notebook,'multimodalControl'),
                 'source toolbar PCM action no longer invokes the maintained consumer')
-        require('if 1120 ≤ px then if px < 1264 then multimodalControl 9 else .done 0 0 else .done 0 0' in definition(notebook,'multimodalApplySample' if raw_capture else 'multimodalInputSample'),
+        input_extent='if 1120 ≤ px then if px < 1264 then multimodalControl 9 else '+(
+          'if 1280 ≤ px then if px < 1352 then multimodalControl 10 else .done 0 0 else .done 0 0 else .done 0 0' if local_reduction else
+          '.done 0 0 else .done 0 0')
+        require(input_extent in definition(notebook,'multimodalApplySample' if raw_capture else 'multimodalInputSample'),
                 'source toolbar PCM input extent differs')
     require(definition(notebook,'multimodalPumpBar') == compact('''private def multimodalPumpBar : Action :=
       .bind (Memory.read64 (Lemma.User.Multimodal.state + 32)) fun s pending => if mmFailed s = true then .done s 0 else

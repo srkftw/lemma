@@ -20,6 +20,16 @@ private def effects (value : EffectSet) : Json :=
     let interior := String.ofList (value.render.toList.drop 1 |>.reverse |>.drop 1 |>.reverse)
     .arr ((interior.splitOn ",").toArray.map Json.str)
 
+/-- Doc event validation borrows only the bounded pure numerical transcript
+validator and its scalar service identity. It cannot import an RPC client,
+server loop, request encoder or another executable through this exception. -/
+def submissionReductionDependency (submission : Bool) (source : String) : Bool :=
+  submission && #["Lemma.Services.Arithmetic.ReductionV1.maximumMagnitude",
+    "Lemma.Services.Arithmetic.ReductionV1.requiredBudget",
+    "Lemma.Services.Arithmetic.ReductionV1.gcdStep",
+    "Lemma.Services.Arithmetic.ReductionV1.calculate",
+    "Lemma.Services.Arithmetic.ProtocolV9.serviceIdentity"].contains source
+
 def exportFiles (env : Environment) (directory : System.FilePath) (guard : Bool := false) (selection : Bool := false) (submission : Bool := false) (school : Bool := false) : IO Unit := do
   if ← directory.pathExists then throw <| IO.userError "course decoder exporter refuses retained output"
   let roots := if school then #[``Lemma.Services.Store.ServerSchool.main] else
@@ -48,7 +58,8 @@ def exportFiles (env : Environment) (directory : System.FilePath) (guard : Bool 
       "Lemma.Courses.PackageAwaitProtocol.","Lemma.Services.Store.","Lemma.User."].any
         (fun stem => source.startsWith stem) || source == "Lemma.Core0.Memory.Status.iterationStop" ||
       (submission && #["Lemma.Courses.","Lemma.Documents.","Lemma.Mathematics.",
-        "Lemma.Ink.","Lemma.Multimodal."].any (fun stem => source.startsWith stem)) do
+        "Lemma.Ink.","Lemma.Multimodal."].any (fun stem => source.startsWith stem)) ||
+      submissionReductionDependency submission source do
       throw <| IO.userError s!"unaccounted course-install dependency {name}"
   let preserved := suite.scalarFunctions.map (·.name) ++ suite.actionFunctions.map (·.name)
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution .user_v0_2 suite {

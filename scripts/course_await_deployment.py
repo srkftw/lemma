@@ -19,7 +19,7 @@ from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS, P
 from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as INTEGRATED_SOFTWARE
 ALL_CONFIGURATIONS=INTEGRATED_CONFIGURATIONS+CONFIGURATIONS+PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS+READER_CONFIGURATIONS+PRODUCT_READER_CONFIGURATIONS+CHOOSER_CONFIGURATIONS+MULTIMODAL_CONFIGURATIONS
 def software_deployment_for(configuration):
- from school_deployment import CONFIGURATIONS as school, software_deployment_for as school_software
+ from school_deployment import ALL_CONFIGURATIONS as school, software_deployment_for as school_software
  if configuration in school:return school_software(configuration)
  if configuration in INTEGRATED_CONFIGURATIONS:return INTEGRATED_SOFTWARE
  if configuration in MULTIMODAL_CONFIGURATIONS:return MULTIMODAL_SOFTWARE
@@ -120,7 +120,7 @@ def validate_mount_reply(ir,unit,*,optimized):
      unit['image_id']==4 and unit.get('contract_version')=='core0-user-v0.1' and
      unit.get('boot_role')=='course-installer' and
      [{k:r.get(k) for k in ('source','id','args')} for r in unit.get('roots',[])]==
-    [{'source':('Lemma.Courses.PackageInstaller.mainAwaitSelected' if unit.get('configuration') in __import__('school_deployment').CONFIGURATIONS else 'Lemma.Courses.PackageInstaller.mainParameterized' if unit.get('configuration') in
+    [{'source':('Lemma.Courses.PackageInstaller.mainAwaitSelected' if unit.get('configuration') in __import__('school_deployment').ALL_CONFIGURATIONS else 'Lemma.Courses.PackageInstaller.mainParameterized' if unit.get('configuration') in
       MULTIMODAL_PARAMETERIZED_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS else INSTALLER_ROOT),'id':1,'args':['u64']}])
  package_root=USER_ROOTS['notebook'][1] if unit.get('configuration') in JOINED_CONFIGURATIONS else 'Lemma.Applications.Notebook.mainPackageClosureBulk'
  from dirty_batch_notebook_target import numeric_candidate,numeric_contract,numeric_root

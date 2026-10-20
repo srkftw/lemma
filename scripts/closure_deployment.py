@@ -33,7 +33,7 @@ from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS, S
 from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as INTEGRATED_SOFTWARE_DEPLOYMENT
 ALL_CONFIGURATIONS=INTEGRATED_CONFIGURATIONS+KERNEL_CONFIGURATIONS+RECOVERY3_CONFIGURATIONS+PACKAGE_RECOVERY_CONFIGURATIONS+MULTIMODAL_CONFIGURATIONS
 def software_deployment_for(configuration):
- from school_deployment import CONFIGURATIONS as school, software_deployment_for as school_software
+ from school_deployment import ALL_CONFIGURATIONS as school, software_deployment_for as school_software
  if configuration in school:return school_software(configuration)
  if configuration in INTEGRATED_CONFIGURATIONS:return INTEGRATED_SOFTWARE_DEPLOYMENT
  if configuration in MULTIMODAL_CONFIGURATIONS:return MULTIMODAL_SOFTWARE_DEPLOYMENT

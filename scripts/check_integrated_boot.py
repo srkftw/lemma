@@ -24,6 +24,12 @@ def require(value,message):
     if not value:raise RuntimeError(message)
 
 
+def school_queue_ready(configuration, rows):
+    from school_deployment import ALL_INTEGRATED_CONFIGURATIONS
+    return configuration not in ALL_INTEGRATED_CONFIGURATIONS or any(
+        row == (0x731,2,512,262144,2) for row in rows)
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--profile',choices=('lemma-silicon-dev/0.15.0','lemma-silicon-dev/0.16.0'),default='lemma-silicon-dev/0.15.0',help='Exact full SoC binding; Fast MM2 subset cannot qualify this path')
@@ -41,7 +47,7 @@ def main():
     observer_paths={Path(__file__).relative_to(ROOT).as_posix(),
       'conformance/lemmasim/store_oracle.py','conformance/lemmasim/notebook_input.py',
       'conformance/lemmasim/check_canonical_pen_pixels.py',
-      'scripts/check_live_notebook.py','scripts/check_integrated_saved_work.py',
+      'scripts/check_live_notebook.py','scripts/check_integrated_saved_work.py','scripts/school_deployment.py',
       'conformance/lemmasim/inspect_notebook.py','conformance/lemmasim/math_oracle.py',
       'conformance/lemmasim/check_notebook_workflow.py','conformance/lemmasim/notebook_pixels.py',
       'scripts/lemmasim_readonly.py',*prepared_record.get('host_scripts',{})}
@@ -101,9 +107,7 @@ def main():
         from integrated_deployment import CONFIGURATIONS
         require(package.get('configuration') in CONFIGURATIONS,'exact integrated guest required')
         from silicon_profile import configuration_profile
-        from school_deployment import INTEGRATED_CONFIGURATIONS
         require(configuration_profile(package['configuration'])==args.profile,'compiled image configuration differs from selected full SoC profile')
-        school=package.get('configuration') in INTEGRATED_CONFIGURATIONS
         report['inputs']={str(path.resolve()):sha(path) for path in (args.prepared/'prepared.json',args.package/'package.json',args.package/'image.bin',args.tag,args.user_medium)}
         boot=out/'boot.raw';disk=out/'user.raw'
         if factory:
@@ -149,7 +153,7 @@ def main():
             require(row['value']==0x80000000,'actual ROM handoff entry differs')
             report['install']={'cycles':client.used,'seconds':time.monotonic()-staged,'sectors':len(wire)//512,'image_preloaded':False};publish()
         else:report['cold_boot']={'source':'explicit factory raw backing','elf_or_dtb_preloaded':False,'installed_via_uart':False}
-        ready=phase('combined-kernel-and-notebook-Ready',1299800000 if factory else 1300000000,10500 if factory else 5400,lambda state,rows:any(r[:4]==(0x47c,15,8,9) for r in rows) and (not school or any(r==(0x731,2,512,262144,2) for r in rows)) and any(r[0]==0x420 for r in rows) and ((1,1) in before or any(r[0]==0x421 for r in rows)) and state['panel_completed']>0 and not state['paper_busy'] and not state['panel_pending_pixels'])
+        ready=phase('combined-kernel-and-notebook-Ready',1299800000 if factory else 1300000000,10500 if factory else 5400,lambda state,rows:any(r[:4]==(0x47c,15,8,9) for r in rows) and school_queue_ready(package['configuration'],rows) and any(r[0]==0x420 for r in rows) and ((1,1) in before or any(r[0]==0x421 for r in rows)) and state['panel_completed']>0 and not state['paper_busy'] and not state['panel_pending_pixels'])
         panel=out/'ready.ppm';call({'action':'panel','path':str(panel)});width,height,pixels=visible_pixels(panel);require((width,height)==(1650,2200),'actual controller geometry differs')
         # Establish the actual journal frontier after any fresh-page Save. Its
         # receipt cannot satisfy the distinct pen-and-Save observation below.

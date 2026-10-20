@@ -205,10 +205,13 @@ def bundle(args):
     native_pcm=native.get('backends',{}).get('qemu',{}).get('execution_binding')==PCM_BINDING
     if native_pcm!=(admission.get('schema')==RUNTIME_SCHEMA_WITH_PCM):raise ValueError('Guest execution binding and MM2 runtime must be selected together')
     roles={w:('parameterized-'+w if args.workbook=='parameterized' else w) for w in ('notebook','initializer')}
+    school_version=getattr(args,'school_notebook_version',23)
+    from multimodal_native_bundle import school_pair
+    school_pair(school_version)
     if args.workbook=='school':
-        from multimodal_native_bundle import SCHOOL
-        if native.get('configurations')!=SCHOOL:raise ValueError('School browser requires the exact School22 native pair')
-    elif native.get('configurations')==__import__('multimodal_native_bundle').SCHOOL:raise ValueError('School roots require explicit school workbook identity')
+        if native.get('configurations')!=school_pair(school_version):raise ValueError('School browser requires the exact selected School native pair')
+    elif school_version!=23 or native.get('configurations') in (school_pair(23),school_pair(24)):
+        raise ValueError('School roots require explicit school workbook/version identity')
     prepared={w:silicon_guest_bundle.prepared(archive,'qemu',role,PROFILE) for w,role in roles.items()}
     out=Path(args.output_dir).absolute();out.mkdir(parents=True,exist_ok=False)
     def add(path,name,expected=None):
@@ -229,6 +232,9 @@ def bundle(args):
        'source_commit':native['source_commit'],'guest_archive_sha256':sha(archive/'bundle.json'),
        'runtime_admission_sha256':sha(runtime/'runtime.json'),'workloads':{},'runtime':{},
        'packaging_inputs':packaging_inputs}
+    if args.workbook=='school' and school_version==24:
+        from school_deployment import software_deployment_for
+        m.update(school_notebook_version=24,software_deployment=software_deployment_for(school_pair(24)['notebook']))
     if native_pcm:m.update(execution_binding=PCM_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2',execution_scope='Fast0.14 functional controller extension only; excludes Integrated16 boot/NV/clockedUSB/power union')
     if admission.get('stop_boundary_contract') is not None:m['stop_boundary_contract']=admission['stop_boundary_contract']
     for name,digest in admission['files'].items():add(runtime/name,'runtime-source/'+name,digest)
@@ -329,8 +335,13 @@ def validated_bundle(directory):
         prefix='lemmasim-silicon-multimodal-'+('parameterized-' if m['multimodal_workbook']=='parameterized' else '')
         configuration=prefix+('initialize' if w=='initializer' else 'notebook')
         if m['multimodal_workbook']=='school':
-            from school_deployment import FAST,INITIALIZE
-            configuration=INITIALIZE if w=='initializer' else FAST
+            from school_deployment import configuration_for,software_deployment_for
+            version=m.get('school_notebook_version',23)
+            configuration=configuration_for(version,'initialize' if w=='initializer' else 'notebook')
+            if (version==24 or 'software_deployment' in m) and m.get('software_deployment')!=software_deployment_for(configuration_for(version,'notebook')):
+                raise ValueError('School browser deployment metadata differs')
+        elif 'school_notebook_version' in m or 'software_deployment' in m:
+            raise ValueError('Non-School browser acquired School deployment authority')
         for report in (build,audit,provenance):
             if report.get('schema_version')!=2 or report.get('artifact_category')!='development-kernel-boot-package' or report.get('configuration')!=configuration or report.get('stage')!='supervisor' or report.get('optimization') not in ('O0','O2'):raise ValueError('Incompatible actual guest qualification')
         if len({report['optimization'] for report in (build,audit,provenance)})!=1:raise ValueError('Inconsistent guest optimization')

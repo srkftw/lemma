@@ -18,6 +18,15 @@ LEGACY_CONTROLS=('scripts/lemmasim','scripts/lemmasim_fast.py','scripts/lemmasim
 SCHOOL_CONTROLS=LEGACY_CONTROLS+('scripts/lemmasim_school_service.py','scripts/lemmasim_course.py','scripts/lemmasim_tutor.py','scripts/lemmasim_school_panel.py')
 PARAMETERIZED={'parameterized-notebook':'lemmasim-silicon-multimodal-parameterized-notebook','parameterized-initializer':'lemmasim-silicon-multimodal-parameterized-initialize'}
 
+def school_pair(version=23):
+    from school_deployment import configuration_for
+    return {'notebook':configuration_for(version,'notebook'),'initializer':configuration_for(version,'initialize')}
+
+def school_version_for_pair(selected):
+    for version in (23,24):
+        if selected==school_pair(version):return version
+    raise ValueError('Multimodal immutable School deployment pair differs')
+
 def _modules():
     import silicon_guest as guest
     import silicon_guest_bundle as bundle
@@ -42,6 +51,9 @@ def pack(args):
     from build_kernel import source_inputs
     from silicon_profile import profile_path
     school=bool(getattr(args,'school_deployment',False))
+    school_version=getattr(args,'school_notebook_version',23)
+    selected_school=school_pair(school_version)
+    if school_version!=23 and not school:raise ValueError('School24 packaging requires explicit School deployment')
     conflicts=('base_bundle','refresh_fast','expected_fast_sha256','rtl_build','rtl_source_root',
             'usb_recovery_deployment','usb_closure_recovery_deployment','usb_package_recovery_deployment',
             'usb_package_entry2_deployment','usb_companion_reader_deployment')
@@ -57,13 +69,17 @@ def pack(args):
         sources=source_inputs(source_root)
         if source_inputs(other)!=sources:raise ValueError('School23/v2 initializer source inventory differs')
         data=copy.deepcopy(bundle.read_json(fast.prepared_path(PROFILE)))
+        if school_version==24 and data.get('checkpoint_binding') is not None:
+            raise ValueError('School24 prepared local-tool IPC continuation is not qualified; package the regular MM2 pair')
         if (data.get('schema')!='lemmasim-fast-prepared/1' or data.get('profile')!=PROFILE or
             data.get('profile_sha256')!=guest.sha(profile_path(PROFILE)) or data.get('sources')!=fast.sources(PROFILE) or
             data.get('cpu')!=fast.CPU or data.get('icount_shift')!=3):
             raise ValueError('School23/v2 archive requires current prepared QEMU runtime sources')
         for key in ('qemu','derivation'):guest.validate(data[key])
         fast.validate_checkpoint_binding(data)
-        selected=dict(SCHOOL);data['workloads']={};data.pop('guest_archive',None)
+        selected=selected_school;data['workloads']={};data.pop('guest_archive',None)
+        if school_version==24:data['school_notebook_version']=24
+        else:data.pop('school_notebook_version',None)
         data.pop('guest_source_root',None)
         for role in selected:
             base=Path(getattr(args,role+'_build')).resolve()
@@ -94,7 +110,7 @@ def pack(args):
             guest.verify_guest_build(base,selected[role],bundle.read_json(base/'build.json')['optimization'])
     out=args.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
     manifest={'schema':SCHEMA,'profile':PROFILE,'boot':'ELF-preload development',
-              'scope':('audited School23/v2 guest pair and exact QEMU source/runtime archive; packaging is not execution or physical qualification' if school else 'unchanged fully audited ordinary0.14 guest pair and exact QEMU source/runtime archive; no RTL,checkpoint,realtime,physical or educational qualification'),
+              'scope':(('audited School24 local-tool guest pair and exact QEMU source/runtime archive; regular MM2 only, prepared local-tool IPC continuation unqualified; packaging is not execution or physical qualification' if school_version==24 else 'audited School23/v2 guest pair and exact QEMU source/runtime archive; packaging is not execution or physical qualification') if school else 'unchanged fully audited ordinary0.14 guest pair and exact QEMU source/runtime archive; no RTL,checkpoint,realtime,physical or educational qualification'),
               'configurations':selected,'sources':sources,'source_commit':bundle.read_json(Path(data['workloads']['notebook']['provenance']['path']))['source_commit'],
               'host_controls':{name:guest.sha(guest.ROOT/name) for name in (SCHOOL_CONTROLS if school else LEGACY_CONTROLS)},
               'origins':{},'host_dependencies':{'qemu':bundle.host_dependencies(data['qemu']['path'])},'backends':{}}
@@ -128,7 +144,7 @@ def pack(args):
     manifest['backends']['qemu']=data
     if school:
         from school_deployment import software_deployment_for
-        manifest['software_deployment']=software_deployment_for(SCHOOL['notebook'])
+        manifest['software_deployment']=software_deployment_for(selected['notebook'])
         manifest['school_service_contract']='lemma-school-native-service/1'
     if getattr(args,'sample_course',None) is not None:
         from course_package import decode
@@ -154,12 +170,13 @@ def prepared_archive(directory,backend,workload,name=None):
     if m.get('schema')!=SCHEMA or m.get('profile')!=PROFILE or name not in (None,PROFILE) or backend!='qemu' or workload not in {**CONFIGURATIONS,**PARAMETERIZED,**SCHOOL}:
         raise ValueError('Multimodal native archive requires exact0.14 ordinary QEMU role')
     selected=m.get('configurations')
-    if selected not in (CONFIGURATIONS,{**CONFIGURATIONS,**PARAMETERIZED},SCHOOL) or workload not in selected:raise ValueError('Multimodal immutable deployment pair differs')
+    if selected not in (CONFIGURATIONS,{**CONFIGURATIONS,**PARAMETERIZED},school_pair(23),school_pair(24)) or workload not in selected:raise ValueError('Multimodal immutable deployment pair differs')
     bundle.inventory(directory,m)
-    school=selected==SCHOOL
+    school=selected in (school_pair(23),school_pair(24))
+    school_version=school_version_for_pair(selected) if school else None
     if school:
         from school_deployment import software_deployment_for
-        if (m.get('software_deployment')!=software_deployment_for(SCHOOL['notebook']) or
+        if (m.get('software_deployment')!=software_deployment_for(selected['notebook']) or
             m.get('school_service_contract')!='lemma-school-native-service/1'):
             raise ValueError('School23/v2 software/service contract differs')
     elif 'software_deployment' in m or 'school_service_contract' in m:
@@ -179,6 +196,8 @@ def prepared_archive(directory,backend,workload,name=None):
         raise ValueError('Multimodal archive complete target source closure differs')
     if set(m.get('backends',{}))!={'qemu'}:raise ValueError('Multimodal fast archive acquired another backend')
     data=copy.deepcopy(m['backends']['qemu'])
+    if data.get('school_notebook_version',23)!=(school_version or 23) or type(data.get('school_notebook_version',23)) is not int:
+        raise ValueError('Native School version differs from its immutable guest pair')
     if data.get('schema')!='lemmasim-fast-prepared/1' or data.get('profile')!=PROFILE or data.get('cpu')!=fast.CPU or data.get('icount_shift')!=3:
         raise ValueError('Multimodal fast execution contract differs')
     fast.validate_checkpoint_binding(data)

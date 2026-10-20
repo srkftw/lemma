@@ -183,6 +183,41 @@ run_cmd do
     match validateImages "lemmasim-isolation-development" forged with
     | .ok _ => throwError "forged isolation startup/source/catalog admitted"
     | .error _ => pure ()
-  logInfo "PASS: genuine source selection, exact closed F/G/H/I/K registries and per-image startup/managed authority fail closed"
+  for configuration in #["lemmasim-silicon-school24-notebook", "lemmasim-silicon-school24-initialize",
+      "lemmasim-silicon-integrated-school24-notebook", "lemmasim-silicon-integrated-pcm-school24-notebook"] do
+    let images ← match imagesFor configuration with
+      | .ok images => pure images
+      | .error error => throwError error
+    unless images == school24NotebookImages && images.size == 4 &&
+        images[0]! == schoolNotebookImages[0]! && images[3]! == schoolNotebookImages[3]! &&
+        images[1]!.id == 2 && images[2]!.id == 3 &&
+        images[1]!.root == `Lemma.Applications.Notebook.mainMultimodalSchool24 &&
+        images[2]!.root == `Lemma.Services.Arithmetic.ServerV9.main &&
+        images[1]!.bootRole? == some .notebook && images[2]!.bootRole? == some .arithmeticServer do
+      throwError "School24 changed unrelated images, identifiers or boot authority"
+    match validateImages configuration schoolNotebookImages with
+    | .ok _ => throwError "School23 roots entered School24"
+    | .error _ => pure ()
+    for key in #["notebook", "arithmetic"] do
+      let image ← match imageFor configuration key with
+        | .ok image => pure image
+        | .error error => throwError error
+      match validateSelection configuration key #[image.root] with
+      | .ok _ => pure ()
+      | .error error => throwError error
+      match validateSelection configuration key #[schoolNotebookImages[if key == "notebook" then 1 else 2]!.root] with
+      | .ok _ => throwError "another version acquired an exact School24 role"
+      | .error _ => pure ()
+  for configuration in #["lemmasim-silicon-school-notebook", "lemmasim-silicon-school-initialize",
+      "lemmasim-silicon-integrated-school-notebook", "lemmasim-silicon-integrated-pcm-school-notebook"] do
+    match validateImages configuration school24NotebookImages with
+    | .ok _ => throwError "School24 roots entered historical School23"
+    | .error _ => pure ()
+  for configuration in #["lemmasim-silicon-school25-notebook", "lemmasim-silicon-school24-arithmetic",
+      "lemmasim-silicon-school24-notebook/../initialize"] do
+    match imagesFor configuration with
+    | .ok _ => throwError "unknown School deployment acquired root authority"
+    | .error _ => pure ()
+  logInfo "PASS: genuine source selection, closed registries, School23/24 separation and per-image startup/managed authority fail closed"
 
 end Lemma.Compiler.Test.DeploymentCatalog

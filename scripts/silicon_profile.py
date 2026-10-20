@@ -124,9 +124,8 @@ def profile_path(name=None):
     raise ValueError('unsupported silicon binding')
 
 def configuration_profile(configuration):
-    from school_deployment import CONFIGURATIONS as SCHOOL, INTEGRATED as SCHOOL_INTEGRATED
-    if configuration=='lemmasim-silicon-integrated-pcm-school-notebook':return 'lemma-silicon-dev/0.16.0'
-    if configuration in SCHOOL:return 'lemma-silicon-dev/0.15.0' if configuration==SCHOOL_INTEGRATED else 'lemma-silicon-dev/0.14.0'
+    from school_deployment import ALL_CONFIGURATIONS as SCHOOL, software_deployment_for as school_software
+    if configuration in SCHOOL:return school_software(configuration)['silicon_profile']
     if configuration=="lemmasim-silicon-integrated-notebook":return "lemma-silicon-dev/0.15.0"
     if configuration.startswith("lemmasim-silicon-multimodal-"):return "lemma-silicon-dev/0.14.0"
     from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS

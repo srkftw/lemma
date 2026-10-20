@@ -351,13 +351,13 @@ AWAIT_NOTEBOOK_CONFIGURATIONS += INTEGRATED_CONFIGURATIONS
 MANAGED_POLICIES.update({configuration:'lemma-notebook-arithmetic-v1' for configuration in INTEGRATED_CONFIGURATIONS})
 
 
-from school_deployment import CONFIGURATIONS as SCHOOL_CONFIGURATIONS, USER_ROOTS as SCHOOL_ROOTS
+from school_deployment import ALL_CONFIGURATIONS as SCHOOL_CONFIGURATIONS, user_roots_for as school_roots_for
 MULTI_USER_CONFIGURATIONS.update({configuration:tuple(
-    {**row,"module":SCHOOL_ROOTS[row["key"]][0].rsplit(".",1)[0],"source":SCHOOL_ROOTS[row["key"]][0]}
+    {**row,"module":school_roots_for(configuration)[row["key"]][0].rsplit(".",1)[0],"source":school_roots_for(configuration)[row["key"]][0]}
     for row in READER_NOTEBOOK_IMAGES) for configuration in SCHOOL_CONFIGURATIONS})
 
 def software_deployment_fields(configuration):
-    from school_deployment import CONFIGURATIONS as school, software_deployment_for as school_software
+    from school_deployment import ALL_CONFIGURATIONS as school, software_deployment_for as school_software
     if configuration in school:return {"software_deployment":school_software(configuration)}
     if configuration in INTEGRATED_CONFIGURATIONS:
         return {"software_deployment":INTEGRATED_SOFTWARE_DEPLOYMENT}

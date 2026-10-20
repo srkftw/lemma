@@ -319,10 +319,38 @@ private def serviceExecutableSource (source : String) : Bool :=
     source.startsWith "Lemma.Services.Buffer.Server." || source == "Lemma.User.Development.BufferFault" ||
     source.startsWith "Lemma.User.Development.BufferFault."
 
+private def schoolArithmeticBorrower (configuration role : String)
+    (image? : Option UserImageSpec) : Bool :=
+  isSchoolNotebookConfiguration configuration && role == "user" && image?.any fun image =>
+    image.key == "arithmetic" && image.id == 3 &&
+      (if isSchool24Configuration configuration then
+        image.moduleName == `Lemma.Services.Arithmetic.ServerV9 && image.root == `Lemma.Services.Arithmetic.ServerV9.main
+      else image.moduleName == `Lemma.Services.Arithmetic.ServerV8 && image.root == `Lemma.Services.Arithmetic.ServerV8.main)
+
+/-- Import headers admit these two exact module names, not their executable
+declarations. Reachable declarations pass the separate helper allowlist. -/
+def schoolArithmeticBorrowedModuleImport (configuration role source : String)
+    (image? : Option UserImageSpec) : Bool :=
+  schoolArithmeticBorrower configuration role image? &&
+    (source == "Lemma.Services.Arithmetic.ServerV7" ||
+      (isSchool24Configuration configuration && source == "Lemma.Services.Arithmetic.ServerV8"))
+
+/-- The copied older engines remain libraries of only these reviewed helpers.
+No sibling main, step or future declaration is admitted by a module import. -/
+def schoolArithmeticBorrowedSource (configuration role source : String)
+    (image? : Option UserImageSpec) : Bool :=
+  schoolArithmeticBorrower configuration role image? &&
+    ((#["incoming", "outgoing", "state", "get", "respondV7", "delayedStep", "delayed", "reclaimed", "processV7", "processCopied"].any
+      (fun suffix => source == "Lemma.Services.Arithmetic.ServerV7." ++ suffix)) ||
+      (isSchool24Configuration configuration &&
+        #["state", "get", "processCopied"].any (fun suffix => source == "Lemma.Services.Arithmetic.ServerV8." ++ suffix)))
+
 private def selectedExecutableSource (configuration role source : String)
     (image? : Option UserImageSpec) : Bool :=
   if isSchoolNotebookConfiguration configuration then
     let executable := serviceExecutableSource source ||
+      #["ServerV7", "ServerV8", "ServerV9"].any (fun name =>
+        source == "Lemma.Services.Arithmetic." ++ name || source.startsWith ("Lemma.Services.Arithmetic." ++ name ++ ".")) ||
       source == "Lemma.Services.Store.ServerRecovery" || source.startsWith "Lemma.Services.Store.ServerRecovery." ||
       source == "Lemma.Services.Store.ServerAwait" || source.startsWith "Lemma.Services.Store.ServerAwait." ||
       source == "Lemma.Services.Store.ServerSchool" || source.startsWith "Lemma.Services.Store.ServerSchool."
@@ -330,6 +358,7 @@ private def selectedExecutableSource (configuration role source : String)
     if role != "user" then false else
     image?.any fun image =>
       source == image.moduleName.toString || source.startsWith (image.moduleName.toString ++ ".") ||
+      schoolArithmeticBorrowedSource configuration role source image? ||
       (image.key == "store" && image.moduleName == `Lemma.Services.Store.ServerSchool &&
         image.root == `Lemma.Services.Store.ServerSchool.main &&
         (((source == "Lemma.Services.Store.Server" || source.startsWith "Lemma.Services.Store.Server.") &&
@@ -988,7 +1017,8 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   let profile ← IO.ofExcept (roleProfile role configuration image?)
   IO.ofExcept <| validateSelectedRoots configuration role names image?
   for imported in env.header.moduleNames do
-    unless selectedExecutableSource configuration role imported.toString image? do
+    unless selectedExecutableSource configuration role imported.toString image? ||
+        schoolArithmeticBorrowedModuleImport configuration role imported.toString image? do
       throw <| IO.userError s!"{configuration} {role} imports sibling executable module `{imported}`"
     if (configuration == "tasks-fault-development" || (managedPolicyFor configuration).isSome) &&
         (imported.toString == "Lemma.Compiler.Test" || imported.toString.startsWith "Lemma.Compiler.Test.") then

@@ -42,8 +42,8 @@ def catalog(unit):
     from multimodal_deployment import CONFIGURATIONS as MULTIMODAL, SOFTWARE_DEPLOYMENT as MULTIMODAL_SOFTWARE, NOTEBOOK_ROOT as MULTIMODAL_ROOT
     from integrated_deployment import CONFIGURATIONS as INTEGRATED, SOFTWARE_DEPLOYMENT as INTEGRATED_SOFTWARE
     if unit.get('configuration') in MULTIMODAL + INTEGRATED: selected_root = MULTIMODAL_ROOT
-    from school_deployment import CONFIGURATIONS as SCHOOL, NOTEBOOK_ROOT as SCHOOL_ROOT, software_deployment_for as school_software
-    if unit.get('configuration') in SCHOOL:selected_root=SCHOOL_ROOT
+    from school_deployment import ALL_CONFIGURATIONS as SCHOOL, user_roots_for as school_roots, software_deployment_for as school_software
+    if unit.get('configuration') in SCHOOL:selected_root=school_roots(unit['configuration'])['notebook'][0]
     from package_companion_deployment import software_deployment_for as package_software
     if joined: JOINED_SOFTWARE=package_software(unit['configuration'])
     selected_software=INTEGRATED_SOFTWARE if unit.get('configuration') in INTEGRATED else MULTIMODAL_SOFTWARE if unit.get('configuration') in MULTIMODAL else CHOOSER_SOFTWARE if unit.get('configuration') in CHOOSER else product_reader_software(unit['configuration']) if unit.get('configuration') in PRODUCT_READER else READER_SOFTWARE if unit.get('configuration') in READER else JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT

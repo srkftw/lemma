@@ -45,5 +45,18 @@ class ClosedInlineTests(unittest.TestCase):
  def test_optimized_attribute_groups_cannot_grant_unlisted_authority(self):
   bad='define i64 @rogue(i64 %arg0) #3 {\nentry:\nret i64 %arg0\n}\nattributes #3 = { nounwind alwaysinline }\n'
   with self.assertRaises(Core0Error):ci.validate(bad,self.unit,optimized=True)
+ def test_closed_school24_metadata_keeps_exact_existing_physical_guards(self):
+  from school_deployment import configurations_for,software_deployment_for
+  for configuration in configurations_for(24)[:2]:
+   unit=copy.deepcopy(self.unit);unit.update(configuration=configuration,contract_version='core0-kernel-v0.9',
+    software_deployment=software_deployment_for(configuration))
+   unit['checked_inline'].update(user_wrapper_contract=ci.USER_WRAPPER,user_wrappers=[])
+   self.assertEqual(ci.validate(self.ir,unit,optimized=False)['physical_wrappers'],1)
+   for field,value in [('software_deployment',software_deployment_for('lemmasim-silicon-school-notebook')),
+                       ('contract_version','core0-kernel-v0.10'),('role','user'),
+                       ('configuration',configuration+'-unknown')]:
+    changed=copy.deepcopy(unit);changed[field]=value
+    with self.subTest(configuration=configuration,field=field),self.assertRaises(Core0Error):
+     ci.validate(self.ir,changed,optimized=False)
 
 if __name__=='__main__':unittest.main()

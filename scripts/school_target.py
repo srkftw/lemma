@@ -8,7 +8,9 @@ import json
 import re
 from core0_common import Core0Error
 from paper_next import canonical
-from school_deployment import CONFIGURATIONS, USER_ROOTS, INTEGRATED_CONFIGURATIONS, BOOT_ROOTS, software_deployment_for
+from school_deployment import (ALL_CONFIGURATIONS as CONFIGURATIONS, user_roots_for,
+ ALL_INTEGRATED_CONFIGURATIONS as INTEGRATED_CONFIGURATIONS, ALL_BOOT_ROOTS as BOOT_ROOTS,
+ software_deployment_for, version_for_configuration)
 VERSION='lemma-school-target-authority/1'
 ROOT=Path(__file__).resolve().parents[1]
 AUTHORITY=ROOT/'tooling/school-target-authority.json'
@@ -23,6 +25,19 @@ def catalog(unit):
     rows=unit.get('functions');require(isinstance(rows,list) and rows,'empty genuine source catalog')
     names={canonical(row.get('source','')):row for row in rows}
     require(len(names)==len(rows) and len({row.get('symbol') for row in rows})==len(rows),'duplicate source/symbol')
+    version=version_for_configuration(configuration)
+    v9='Lemma.Services.Arithmetic.ServerV9.'
+    if any(source.startswith(v9) for source in names):
+        require(version==24 and key=='arithmetic','V9 executable escaped its exact School24 isolated role')
+    if version==24:
+        v8='Lemma.Services.Arithmetic.ServerV8.';v7='Lemma.Services.Arithmetic.ServerV7.'
+        if any(source.startswith((v7,v8)) for source in names):
+            require(key=='arithmetic','borrowed arithmetic executable escaped its isolated role')
+            require(all(source[len(v8):] in {'processCopied','get','state'} for source in names if source.startswith(v8)),
+                    'V9 borrowed another V8 executable or unknown source')
+            allowed={'incoming','outgoing','state','get','respondV7','delayedStep','delayed','reclaimed','processV7','processCopied'}
+            require(all(source[len(v7):] in allowed for source in names if source.startswith(v7)),
+                    'V9 borrowed another V7 executable or unknown source')
     roots=[(canonical(row.get('source','')),row.get('id'),row.get('args')) for row in unit.get('roots',[])]
     if key=='kernel':
         if configuration in INTEGRATED_CONFIGURATIONS:
@@ -33,7 +48,7 @@ def catalog(unit):
             expected=[(prefix+BOOT_ROOTS[configuration],1,[]),(prefix+'dispatchMultimodalBulk',2,['u64']*3)];profile='core0-kernel-v0.9'
         require(unit.get('contract_version')==profile and roots==expected,'kernel root/profile differs')
     elif key!='firmware':
-        source,identifier,profile=USER_ROOTS[key]
+        source,identifier,profile=user_roots_for(configuration)[key]
         require((unit.get('image_id'),unit.get('contract_version'))==(identifier,profile) and roots==[(source,1,['u64'])] and unit.get('used_device_ops')==[],'isolated root/profile/device authority differs')
     return key,names
 
@@ -159,10 +174,16 @@ def semantics(ir,unit):
         require(owner in rows and target in rows,'missing semantic edge '+owner+' -> '+target)
         return _local_call_arguments(_ir_definition_body(ir,rows[owner]['symbol']),rows[target]['symbol'])
     n='Lemma.Applications.Notebook.';q='Lemma.Courses.SchoolSubmission.';p='Lemma.Courses.PackageInstaller.'
-    edges=[];warm=None
+    edges=[];warm=None;reduction=None
     if key=='notebook':
-        edges=[(n+'mainMultimodalSchool',n+'mainMultimodalConfigured'),(n+'multimodalStep',n+'schoolQueuePump'),(n+'schoolQueueInitialize',q+'initializeQueue'),(n+'schoolQueueInitialize',q+'restore'),(n+'schoolCancel',q+'cancel'),(n+'schoolQueuePump',q+'pump'),(n+'schoolQueuePump',q+'frontier'),(n+'issue',q+'suspend'),(n+'issue',q+'writerActive')]
-        require(calls(n+'mainMultimodalSchool',n+'mainMultimodalConfigured')==['i64 %arg0, i64 1'],'School root must explicitly enable queue/selection')
+        version=version_for_configuration(unit['configuration']);root=user_roots_for(unit['configuration'])['notebook'][0]
+        edges=[(root,n+'mainMultimodalConfigured'),(n+'multimodalStep',n+'schoolQueuePump'),(n+'schoolQueueInitialize',q+'initializeQueue'),(n+'schoolQueueInitialize',q+'restore'),(n+'schoolCancel',q+'cancel'),(n+'schoolQueuePump',q+'pump'),(n+'schoolQueuePump',q+'frontier'),(n+'issue',q+'suspend'),(n+'issue',q+'writerActive')]
+        mode=2 if version==24 else 1
+        require(calls(root,n+'mainMultimodalConfigured')==['i64 %arg0, i64 '+str(mode)],'School root must explicitly enable its exact queue/extension mode')
+        if n+'beginLocalReduction' in rows:
+            from school_reduction_target import source_root,llvm_semantics
+            reduction={'source':source_root(ROOT),'LLVM':llvm_semantics(ir,rows,key)}
+        elif version==24:require(False,'School24 omitted the actual local-tool consumer')
         if n+'schoolSendSource' in rows:
             warm=warm_send_semantics(ir,rows)
             edges += [(n+'multimodalStep',n+'multimodalPumpTutor'),(n+'multimodalPumpTutor',n+'multimodalControl'),(n+'multimodalControl',n+'schoolSend'),(n+'schoolSend',n+'schoolSendAttempt'),(n+'schoolSend',n+'schoolQueueFailure'),(n+'schoolSendAttempt',q+'start'),(n+'schoolSendAttempt',q+'retry'),(n+'schoolSendAttempt',n+'schoolSendSource'),(n+'schoolSendAttempt',n+'schoolWorkKind'),(n+'schoolSendSource','Lemma.Courses.PackageWorkspace.validate'),(n+'schoolSendSource','Lemma.Courses.PackageTarget.select'),(n+'schoolSendSource',n+'schoolSendSource.store')]
@@ -173,8 +194,11 @@ def semantics(ir,unit):
     elif key=='course':
         loops=unit.get('used_loops',[])
         require(len(loops)==1 and canonical(loops[0].get('callback',''))==p+'stepSelected','selected installer loop differs')
+    elif key=='arithmetic' and version_for_configuration(unit['configuration'])==24:
+        from school_reduction_target import source_root,llvm_semantics
+        reduction={'source':source_root(ROOT),'LLVM':llvm_semantics(ir,rows,key)}
     for owner,target in edges:require(calls(owner,target),'omitted actual call edge '+owner+' -> '+target)
-    return {'role':key,'explicit_call_edges':edges,**({'warm_submission':warm} if warm is not None else {}),'scope':'complete genuine source/LLVM authority; connected UI execution remains separate'}
+    return {'role':key,'explicit_call_edges':edges,**({'warm_submission':warm} if warm is not None else {}),**({'local_reduction_source':reduction} if reduction is not None else {}),'scope':'complete genuine source/LLVM authority; connected UI execution remains separate'}
 def authority(unit):
     from multimodal_target import digest
     key,_=catalog(unit)
@@ -200,15 +224,31 @@ QUEUE_DISPATCH='Lemma.Courses.SchoolSubmission.activePump'
 QUEUE_PHASES=[*range(17),*range(20,31),40,41,42,43,45]
 QUEUE_JUMPS={QUEUE_DISPATCH:(46,QUEUE_PHASES,[]),
     'Lemma.Courses.SchoolSubmission.pump':(42,[1,3,5,7,9,11,13,15,22,26,40,42],[[46,47]]),
+    'Lemma.Applications.Notebook.pumpLocalReduction':(4,[16,17,18,19],[]),
     'Lemma.Applications.Notebook.multimodalControl':(6,[3,4,5,6,7,8],[])}
 def queue_jump_domain(ir,rows,source):
     count,cases,others=QUEUE_JUMPS[source]
     audio='Lemma.User.Multimodal.testAudio'
+    local='Lemma.Applications.Notebook.beginLocalReduction'
+    if source=='Lemma.Applications.Notebook.pumpLocalReduction':
+        from audit_kernel import _ir_definition_body,_local_checked_result
+        require(rows[source]['args']==[] and local in rows,'local tool phase table lost its exact guest consumer')
+        body=_ir_definition_body(ir,rows[source]['symbol'])
+        actual=_local_checked_result(body,rows['Lemma.Applications.Notebook.get']['symbol'],'i64 536')[1]
+        require(re.search(r'switch i64 '+re.escape(actual)+r', label %[A-Za-z0-9_.$-]+ \[',body) is not None,
+                'local tool phase table no longer selects actual Notebook phase536')
     if source=='Lemma.Applications.Notebook.multimodalControl' and audio in rows:
         from audit_kernel import _ir_definition_body,_local_call_arguments
         require(rows[audio]['args']==[] and _local_call_arguments(
             _ir_definition_body(ir,rows[source]['symbol']),rows[audio]['symbol'])==[''],
             'local audio test jump lacks its exact no-argument guest consumer')
+        if local in rows:
+            require(rows[local]['args']==[] and _local_call_arguments(
+                _ir_definition_body(ir,rows[source]['symbol']),rows[local]['symbol'])==[''] and
+                re.search(r'switch i64 %arg0, label %[A-Za-z0-9_.$-]+ \[',
+                    _ir_definition_body(ir,rows[source]['symbol'])) is not None,
+                'local tool control table lost its exact argument/guarded no-argument consumer')
+            return 8,[3,4,5,6,7,8,9,10],[]
         return 7,[3,4,5,6,7,8,9],[]
     return count,cases,others
 def jump_spec(ir,unit,source,symbol):
@@ -269,7 +309,7 @@ def jump_default(ir,unit,assembly,symbol,targets):
         coalesced={'llvm_alias':alias,'helper':'Lemma.Courses.SchoolSubmission.normalPump','checked_status_mask':255,'value':0,'machine_merge':merged[0]}
     holes=[v for v in range(min(cases),max(cases)+1) if v not in cases]
     require(len(targets)==spec[1] and len(labels)==1 and all(targets[v-min(cases)]==labels[0] for v in holes),'queue table hole escaped genuine default')
-    return {'contract_version':'lemma-school-queue-phase-table/1','source':source,'phase_domain':cases,'outer_switches':others,'holes':holes,'llvm_default':default,'machine_default':labels[0],**({'coalesced_checked_return':coalesced} if coalesced else {}),'scope':'complete source-pinned owner plus ordinary actual object/unsigned-guard/local relocation coverage'}
+    return {'contract_version':('lemma-school-queue-phase-table/2' if 'Lemma.Applications.Notebook.beginLocalReduction' in rows else 'lemma-school-queue-phase-table/1'),'source':source,'phase_domain':cases,'outer_switches':others,'holes':holes,'llvm_default':default,'machine_default':labels[0],**({'coalesced_checked_return':coalesced} if coalesced else {}),'scope':'complete source-pinned owner plus ordinary actual object/unsigned-guard/local relocation coverage'}
 
 def collect(directory):
     from multimodal_target import complete,digest

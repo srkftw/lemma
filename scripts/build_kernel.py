@@ -318,7 +318,7 @@ def user_artifact_category(configuration: str) -> str:
 
 
 def service_executable_module(module: str) -> bool:
-    return (module in {"Lemma.Services.Arithmetic.ServerV7", "Lemma.Services.Arithmetic.ServerV8"} or module == "Lemma.Courses.PackageInstaller" or module.startswith("Lemma.Courses.PackageInstaller.")
+    return (module in {"Lemma.Services.Arithmetic.ServerV7", "Lemma.Services.Arithmetic.ServerV8", "Lemma.Services.Arithmetic.ServerV9"} or module == "Lemma.Courses.PackageInstaller" or module.startswith("Lemma.Courses.PackageInstaller.")
             or module.startswith("Lemma.Applications.") or module == "Lemma.Services.Store.Server"
             or module.startswith("Lemma.Services.Store.Server.") or module == "Lemma.Services.Store.ServerSchool" or module.startswith("Lemma.Services.Store.ServerSchool.") or module == "Lemma.Services.Buffer.Server"
             or module.startswith("Lemma.Services.Buffer.Server.") or module == "Lemma.User.Development.BufferFault"
@@ -475,6 +475,18 @@ def source_inputs(root: Path) -> dict[str, str]:
             required=root/relative
             if not required.is_file():raise Core0Error("Missing School dependency: "+relative)
             inputs.append(required)
+        if 'lemma-school-exact-reduction-advisory/1' in school_registry:
+            for relative in ('scripts/school_reduction_target.py','docs/contracts/009-school-exact-reduction-v1.html'):
+                required=root/relative
+                if not required.is_file():raise Core0Error('Missing School24 local reduction dependency: '+relative)
+                inputs.append(required)
+        protocol=root/'Lemma/Services/Arithmetic/ProtocolV9.lean'
+        notebook=root/'Lemma/Applications/Notebook.lean'
+        if protocol.is_file() and notebook.is_file() and 'def mainMultimodalSchool24' in notebook.read_text():
+            relative='docs/contracts/009-school-exact-reduction-v1.html'
+            required=root/relative
+            if not required.is_file():raise Core0Error('Missing School24 local reduction contract: '+relative)
+            if required not in inputs:inputs.append(required)
         authority=root/"tooling/school-target-authority.json"
         if authority.is_file():inputs.append(authority)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
@@ -508,8 +520,10 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
     course_await_library = (allow_course_await_library
                             and selected_executable_module == "Lemma.Services.Store.ServerAwait"
                             and module == "Lemma.Services.Store.Server")
-    parameterized_library = (selected_executable_module == "Lemma.Services.Arithmetic.ServerV8"
-                             and module == "Lemma.Services.Arithmetic.ServerV7")
+    parameterized_library = ((selected_executable_module == "Lemma.Services.Arithmetic.ServerV8"
+                              and module == "Lemma.Services.Arithmetic.ServerV7") or
+                             (selected_executable_module == "Lemma.Services.Arithmetic.ServerV9"
+                              and module in {"Lemma.Services.Arithmetic.ServerV7", "Lemma.Services.Arithmetic.ServerV8"}))
     if selected_executable_module is not None and service_executable_module(module) and module != selected_executable_module and not recovery_library and not course_await_library and not parameterized_library:
         raise Core0Error(f"user dependency imports another executable module: {module}")
     if ".Test." in module or module.startswith("Lemma.Compiler.Test") or "Mutation" in module:

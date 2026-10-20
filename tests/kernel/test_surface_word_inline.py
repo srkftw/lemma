@@ -47,21 +47,22 @@ class SurfaceWordInlineCatalog(unittest.TestCase):
                 changed=deepcopy(u);changed[key]=value
                 with self.subTest(cfg=cfg,key=key),self.assertRaises(Core0Error):catalog(changed)
     def test_school_catalog_requires_selected_software_and_school_root(self):
-        from school_deployment import software_deployment_for
-        for cfg in ('lemmasim-silicon-school-notebook','lemmasim-silicon-school-initialize',
-                    'lemmasim-silicon-integrated-school-notebook',
-                    'lemmasim-silicon-integrated-pcm-school-notebook'):
+        from school_deployment import ALL_CONFIGURATIONS,software_deployment_for,user_roots_for
+        for cfg in ALL_CONFIGURATIONS:
             u=fixture();u.update(configuration=cfg,software_deployment=software_deployment_for(cfg))
-            root='Lemma.Applications.Notebook.mainMultimodalSchool'
+            root=user_roots_for(cfg)['notebook'][0]
             u['roots'][0]['source']=root;u['functions'][0]['source']=root
             self.assertEqual(removed_symbols(u),{'word0','word1'})
-            for change in ('legacy-root','legacy-software','wrong-image','unknown-configuration'):
+            for change in ('legacy-root','legacy-software','wrong-image','unknown-configuration','wrong-school-version'):
                 changed=deepcopy(u)
                 if change=='legacy-root':
                     changed['roots'][0]['source']='Lemma.Applications.Notebook.mainMultimodal'
                     changed['functions'][0]['source']='Lemma.Applications.Notebook.mainMultimodal'
                 elif change=='legacy-software':changed['software_deployment']=SOFTWARE_DEPLOYMENT
                 elif change=='wrong-image':changed['image_id']=3
+                elif change=='wrong-school-version':
+                    wrong='Lemma.Applications.Notebook.mainMultimodalSchool' if root.endswith('School24') else 'Lemma.Applications.Notebook.mainMultimodalSchool24'
+                    changed['roots'][0]['source']=wrong;changed['functions'][0]['source']=wrong
                 else:changed['configuration']=cfg+'-unknown'
                 with self.subTest(cfg=cfg,change=change),self.assertRaises(Core0Error):catalog(changed)
     def test_wrong_identity(self):
