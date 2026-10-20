@@ -115,7 +115,7 @@ set retained_access_route_flags {}
 if {[info exists retained_access_guides]} {
     load $retained_access_exporter Lemmaap
     proc lemma_check_retained_access {stage} {
-        global out retained_access_metadata
+        global out retained_access_metadata retained_access_python retained_access_writer_check
         write_db $out/preferred-$stage.odb
         lemma_ap_export $out/preferred-$stage.odb $out/preferred-$stage.json
         set file [open $retained_access_metadata rb]
@@ -124,19 +124,25 @@ if {[info exists retained_access_guides]} {
         set file [open $out/preferred-$stage.json rb]
         set actual [read $file]
         close $file
-        if {$expected ne $actual} {error "Retained original AP metadata/pattern/preference changed"}
+        if {$stage eq "before-route"} {
+            if {$expected ne $actual} {error "Retained original AP metadata/pattern/preference changed"}
+        } elseif {$stage eq "after-route"} {
+            exec $retained_access_python $retained_access_writer_check --before $retained_access_metadata --after $out/preferred-$stage.json --output $out/preferred-writer-relation.json
+        } else {error "Unknown retained access observation stage"}
     }
     lemma_check_retained_access before-route
     lappend retained_access_route_flags -no_pin_access
-    file mkdir $out/route-snapshots
-    set_debug_level DRT snapshot 1
-    detailed_route_debug -snapshot_dir $out/route-snapshots
     if {[info exists preferred_access_probe_only] && $preferred_access_probe_only == 1} {
         set file [open $out/preferred-prefix-ready.txt w]
         puts $file "EXACT_RETAINED_ACCESS_GUIDES_POWER_PREFIX_NO_DRT"
         close $file
         return
     }
+}
+if {[info exists retained_access_guides] || [info exists power_margin_prepared]} {
+    file mkdir $out/route-snapshots
+    set_debug_level DRT snapshot 1
+    detailed_route_debug -snapshot_dir $out/route-snapshots
 }
 detailed_route {*}$retained_access_route_flags -output_drc $out/route.drc -drc_report_iter_step 1 -output_maze $out/route.maze -droute_end_iter $detail_route_iterations -verbose 1
 if {[info exists retained_access_guides]} {lemma_check_retained_access after-route}

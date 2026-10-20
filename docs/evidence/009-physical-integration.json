@@ -4718,6 +4718,388 @@
             "Rectangular source keepout metric is not Euclidean distance. Exact original process EOL/cut/area/density/antenna/model completeness remains unfinished.",
             "No geometry or source changes, no route, no extraction; original900s routing failure and no PEX/corners retained. Selected30/all9timingFAIL unchanged."
           ]
+        },
+        "conservative_native_margin_successor": {
+          "version": "lemma-native420-conservative-M2-and-VSS-grid/1",
+          "status": "UNSELECTED_ACTUAL_NEW_PG_PREDECESSOR_PASS_NO_NEW_SIGNAL_ROUTE",
+          "maintained_consumer": "scripts/silicon_pen_physical.py --power-margin-from build/silicon/task009-327-native-margin-pilot-a1 with exact327/clockM3/full8 source; freshGRT/PA, no resizer/DPL/grid regeneration during signal routing. Original420nm independent wire/via/patch guard mandatory.",
+          "actual_grid_pilot": {
+            "path": "build/silicon/task009-327-native-margin-pilot-a1/result.json",
+            "sha256": "f704c8f54ffd0bd59f87a79c1c3c8e30d733fe5cf3946a8f18377f5bb77ca96e"
+          },
+          "seconds": 15.406967010116205,
+          "commands_seconds": [
+            4.225,
+            5.427,
+            4.977
+          ],
+          "bounds": {
+            "whole_seconds": 60,
+            "AS_bytes": 3221225472,
+            "output_bytes": 1073741824,
+            "available_floor_bytes": 5368709120
+          },
+          "geometry": {
+            "status": "PASS_ACTUAL327_NEW_GRID_AND_CONSERVATIVE_M2_PREDECESSOR_NOT_ROUTED",
+            "padding": {
+              "rows": 193,
+              "stdcells": 9031,
+              "violating_pairs": 0,
+              "required_gap_DBU": 960
+            },
+            "source_native_PG_shapes": 99128,
+            "new_native_PG_shapes": 99128,
+            "positive_rails_exact": true,
+            "VSS_shifted_stripes": 14,
+            "VSS_via_relation_exact": true,
+            "all_native_PG_OBS_relations": 18718,
+            "real_signal_pin_shapes_checked_420nm": 1703,
+            "geometry_relation_negatives": [
+              "missing_native_PG_obstruction",
+              "M2_bloat_underprotects_5nm",
+              "M2_silently_reverts_420nm"
+            ],
+            "actual_old_clock_M5_gap_nm": 400,
+            "same_clock_coordinates_new_native_gap_nm": 2400,
+            "original420nm_legal_Via4_centers_nm": [
+              469560,
+              469980,
+              470400,
+              470820
+            ],
+            "corner_proof": {
+              "physical_rectangle_margin_nm": 420,
+              "M2_router_bloat_nm": 275,
+              "minimum_original_Euclidean_spacing_nm": 210,
+              "worst_inside_corner_squared_nm2": 42050,
+              "minimum_spacing_squared_nm2": 44100,
+              "unsafe210_plus210_diagonal_nm": [
+                380,
+                380
+              ],
+              "controls": [
+                {
+                  "axis_gaps_nm": [
+                    0,
+                    419
+                  ],
+                  "router_admitted": false
+                },
+                {
+                  "axis_gaps_nm": [
+                    419,
+                    0
+                  ],
+                  "router_admitted": false
+                },
+                {
+                  "axis_gaps_nm": [
+                    419,
+                    419
+                  ],
+                  "router_admitted": false
+                },
+                {
+                  "axis_gaps_nm": [
+                    415,
+                    415
+                  ],
+                  "router_admitted": false
+                },
+                {
+                  "axis_gaps_nm": [
+                    280,
+                    395
+                  ],
+                  "router_admitted": false
+                },
+                {
+                  "axis_gaps_nm": [
+                    280,
+                    530
+                  ],
+                  "router_admitted": true
+                },
+                {
+                  "axis_gaps_nm": [
+                    0,
+                    485
+                  ],
+                  "router_admitted": true
+                },
+                {
+                  "axis_gaps_nm": [
+                    485,
+                    0
+                  ],
+                  "router_admitted": true
+                }
+              ],
+              "scope": "Conservative representation, independent actual420nm checking still mandatory; no process closure."
+            }
+          },
+          "power_grid": {
+            "status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+            "macro_power_pins": 9,
+            "preserved_BIST_pins": 423,
+            "all_power_terminals": 18071,
+            "voltages_V": {
+              "VDDlogic": 1.2,
+              "VDDARRAY": 1.2,
+              "VSS": 0
+            }
+          },
+          "available_original_via_rule_subset": {
+            "status": "PASS_FIXED_VIA_INTRINSIC_ENCLOSURE",
+            "scope": "Cover the demonstrated router fixed-via enclosure gap on actual DEF routes.\n\nChecks intrinsic fixed-via metal/cut unions against the original process simple\nenclosure rules. Additional same-net wire metal can only increase enclosure.\nGenerated DEF arrays require explicit admission against the original generator\nand every individual cut's enclosure. Unfamiliar clauses fail closed. This is\nan independent sufficient check of this subset, never complete process DRC.\n",
+            "technology_sha256": "fb6f0aa5647efc822ad6551a11b57002a278d7d3f98ac20a12cb9f7a65e81d2d",
+            "routed_def_sha256": "be107a6e98cc924d824132fa85139a81388afd4dfd615e97567dc81ff1398d9f",
+            "routed_nets": 3,
+            "via_instances": 10694,
+            "via_counts": {
+              "via5_6_4000_2500_2_4_840_840": 443,
+              "via4_5_2810_2500_5_6_480_480": 1772,
+              "via6_7_4000_4000_2_2_1960_1960": 182,
+              "via5_6_2560_2500_2_2_840_840": 6,
+              "via4_5_2810_1295_3_6_480_480": 64,
+              "via4_5_1200_2500_5_2_480_480": 277,
+              "via3_4_1200_330_1_2_480_480": 2650,
+              "via2_3_1200_330_1_2_480_480": 2650,
+              "via1_2_1200_330_1_2_480_480": 2650
+            },
+            "fixed_definition_rule_checks": 364,
+            "violations": [],
+            "generated_array_definitions": 9,
+            "specialnet_geometry_checked": true,
+            "uncovered": [
+              "cell/macro internal cuts",
+              "wire spacing/width/area",
+              "connectivity",
+              "antenna",
+              "all other process rules"
+            ]
+          },
+          "actual_prepared_ODB": {
+            "path": "build/silicon/task009-327-native-margin-pilot-a1/routed.odb",
+            "sha256": "19bf987a14cb082f160a6ed9f864f082263c7f98cbdec66602e481acc7f170a8"
+          },
+          "original_source_inventory_limit": "Original pilot omits four imported helper files from its prospective inventory. Original receipt and actual execution remain unchanged; a separate completed input binding archives their unchanged Git bytes, without PG reexecution.",
+          "separate_completed_helper_binding": {
+            "path": "build/silicon/task009-327-native-margin-pilot-a1/completed-input-binding.json",
+            "sha256": "c69b2d2174dcf2112904f305729bb968dbe574cad4b7df5861a81751053aa117"
+          },
+          "ordinary_producer_inventory_correction": "The maintained producer now inventories silicon_capacity_launch.py/silicon_synth.py/silicon_enclosure.py/silicon_route_enclosure.py prospectively. The original producer script is archived separately; it is not relabeled as the corrected version.",
+          "full_native_guard": {
+            "source": {
+              "path": "scripts/silicon_power_clearance.py",
+              "sha256": "1f83fb04c86208fbb29d6ae159038ca1aabcd6d6cda48d9d0b0828898be46dde"
+            },
+            "first_indentation_failure": {
+              "path": "build/silicon/task009-full-native-margin-guard-a1/result.json",
+              "sha256": "b2b59bdbfdbe724789b67a552db800d08c4ad554f1371bff183f3c4db614c6f7"
+            },
+            "corrected_observer": {
+              "path": "build/silicon/task009-full-native-margin-guard-a2/result.json",
+              "sha256": "c0dd49de17225e32fc40f49046aae4ea226ed7fdc7e5a604bc9613dde658394b"
+            },
+            "seconds": 5.790208708960563,
+            "whole_budget_seconds": 28,
+            "actual_coverage": {
+              "status": "FAIL_NATIVE420NM_RECTANGLE_MARGIN",
+              "scope": "Actual signal metal versus native PG: original420nm rectangle subset only.\n\nRun check() inside the pinned OpenROAD Python interpreter. Every DEF segment,\nvia and patch binds the actual native wire decoder; unknown grammar fails.\nNo process DRC/LVS/connectivity/IR/EM/timing qualification follows.\n",
+              "native_signal_nets_bound": 9700,
+              "native_wire_via_patch_shapes_checked": 170161,
+              "actual_DEF_RECT_patches_bound": 11212,
+              "unique_native_PG_metal_rectangles": 13418,
+              "violation_pairs": 7,
+              "not_checked": [
+                "process DRC/EOL/area/density/antenna",
+                "full connected layout/netlist comparison",
+                "timing",
+                "IR/EM",
+                "pads/package/board"
+              ]
+            },
+            "actual_all_seven_failures": [
+              {
+                "net": "_05224_",
+                "kind": "via",
+                "layer": "Metal2",
+                "signal_box_nm": [
+                  454460,
+                  272700,
+                  454660,
+                  272990
+                ],
+                "native_PG_box_nm": [
+                  454940,
+                  272015,
+                  455620,
+                  272305
+                ],
+                "actual_rectangular_clearance_nm": 395
+              },
+              {
+                "net": "net313",
+                "kind": "wire",
+                "layer": "Metal5",
+                "signal_box_nm": [
+                  178660,
+                  466520,
+                  178860,
+                  469240
+                ],
+                "native_PG_box_nm": [
+                  34680,
+                  469640,
+                  995880,
+                  472140
+                ],
+                "actual_rectangular_clearance_nm": 400
+              },
+              {
+                "net": "net313",
+                "kind": "wire",
+                "layer": "Metal5",
+                "signal_box_nm": [
+                  178460,
+                  469040,
+                  178860,
+                  469240
+                ],
+                "native_PG_box_nm": [
+                  34680,
+                  469640,
+                  995880,
+                  472140
+                ],
+                "actual_rectangular_clearance_nm": 400
+              },
+              {
+                "net": "net313",
+                "kind": "via",
+                "layer": "Metal5",
+                "signal_box_nm": [
+                  178415,
+                  469040,
+                  178705,
+                  469240
+                ],
+                "native_PG_box_nm": [
+                  34680,
+                  469640,
+                  995880,
+                  472140
+                ],
+                "actual_rectangular_clearance_nm": 400
+              },
+              {
+                "net": "delaynet_4_core",
+                "kind": "wire",
+                "layer": "Metal5",
+                "signal_box_nm": [
+                  424660,
+                  468200,
+                  424860,
+                  469240
+                ],
+                "native_PG_box_nm": [
+                  34680,
+                  469640,
+                  995880,
+                  472140
+                ],
+                "actual_rectangular_clearance_nm": 400
+              },
+              {
+                "net": "delaynet_4_core",
+                "kind": "wire",
+                "layer": "Metal5",
+                "signal_box_nm": [
+                  424660,
+                  469040,
+                  426340,
+                  469240
+                ],
+                "native_PG_box_nm": [
+                  34680,
+                  469640,
+                  995880,
+                  472140
+                ],
+                "actual_rectangular_clearance_nm": 400
+              },
+              {
+                "net": "delaynet_4_core",
+                "kind": "via",
+                "layer": "Metal5",
+                "signal_box_nm": [
+                  426095,
+                  469040,
+                  426385,
+                  469240
+                ],
+                "native_PG_box_nm": [
+                  34680,
+                  469640,
+                  995880,
+                  472140
+                ],
+                "actual_rectangular_clearance_nm": 400
+              }
+            ],
+            "scope": "Read-only completedclosed6; original1.554s failure retained, no routing/PEX. All196312 DEF signal shapes bind actual native segments/vias/extensions and11212patch origins/originalwriter semantics;170161uniqueM2-M5signalshapes tested. Not fullprocessDRC/LVS/connectivity."
+          },
+          "pinned_BPin_writer_guard": {
+            "source": {
+              "path": "scripts/silicon_access_writer.py",
+              "sha256": "10b1bce98652cdaa8f7ad6bc076037a6bbeb1b8eb3a54b1a7054e15156e5eeba"
+            },
+            "actual_relation": {
+              "path": "build/silicon/task009-pinned-bpin-writer-a1/relation.json",
+              "sha256": "bcf500dee6748743db7eadc2bc957eaf9f1b6b82848b42cad51713a6e998acba"
+            },
+            "input": {
+              "path": "build/silicon/task009-two-preferred-AP-a1/metadata.json",
+              "sha256": "0f668b4c2851a81b3ac4435053d84a772c3bfda96f77ae22b392c0ef869f21ae"
+            },
+            "actual_closed0_output": {
+              "path": "build/silicon/task009-two-preferred-iter0-observer-a1/metadata.json",
+              "sha256": "f097970cf4a3f804713f7c8d2cb314e95ae96930b72733b606c592bda43e3174"
+            },
+            "relation": {
+              "status": "PASS_PINNED_SINGLE_BPIN_WRITE_COPY_ONLY_ORIGINAL_ACCESS_EXACT",
+              "original_access_points": 11123,
+              "literal_added_BPin_copies": 6055,
+              "extended_BPin_vectors": 665,
+              "block_pins": 668,
+              "original_patterns_and_ITerms_exact": true,
+              "scope": "Only the pinned first BTerm writer copy; no route geometry/process/timing qualification."
+            },
+            "controls": "15 consequential clone/owner/geometry/via/segment/preference/extra/missing/order mutations in four access tests; original strict pre-route metadata and AP4 reverse-reference checks retained. Only pinned one-copy BPin serialization admitted."
+          },
+          "focused_tests": "4power-margin+4access+16enclosure+14documentation tests PASS; source/functional guard checks distinct from routing/process/timing.",
+          "sources": {
+            "scripts/silicon_power_margin.py": "a00da0298537a7da7b2d31bbb51880e61fc73133486c11ccaad705df3f9b9eed",
+            "scripts/silicon_power_margin_route.py": "97f15751e53d8fd2930158ae486399250bc98e0b5cf62fc0a203afae6ad86543",
+            "scripts/silicon_access_writer.py": "10b1bce98652cdaa8f7ad6bc076037a6bbeb1b8eb3a54b1a7054e15156e5eeba",
+            "scripts/silicon_power_clearance.py": "1f83fb04c86208fbb29d6ae159038ca1aabcd6d6cda48d9d0b0828898be46dde",
+            "scripts/silicon_pen_physical.py": "d00253dc036d8c48a928a242651effa61012e4519257e128f1b5c7fe45d416ec",
+            "scripts/silicon_preferred_route.py": "188a04282f0ec5ecf06d78ec35b228acb138c887fa6c39911dffe3fbd5c408ba",
+            "tooling/silicon/pen-power-edge.tcl": "db03d2eee1261bc1d641d3dda0a2be097b6e53fd1b300029d67234d292df2d92",
+            "tooling/silicon/pen-extracted-eco.tcl": "e053618e7a46e2eda45bb9d38c4e431babe40a6efe5b86f231908031a8f33fbb"
+          },
+          "remaining": "No new signal routing/PEX/corners yet. Selected padded30/all9timingFAIL unchanged; native source420 remains independent of conservative routing representation. Fullprocess/LVS/IR/EM/pads/package/board/functional/safety/educational qualification remain unfinished.",
+          "next_route_budget": {
+            "status": "APPROVED_NOT_YET_LAUNCHED_AT_THIS_CHECKPOINT",
+            "layout_DRT_seconds": 900,
+            "whole_seconds": 1200,
+            "AS_bytes": 6442450944,
+            "output_bytes": 12884901888,
+            "launch_available_floor_bytes": 8589934592,
+            "free_disk_floor_bytes": 12884901888,
+            "scope": "One changed-source actual PG275/VSS+2um successor; fresh GRT/PA, native420 geometry check, fresh3RC/all9 only if route completes; no fullprocessDRC rerun or selection."
+          }
         }
       }
     }

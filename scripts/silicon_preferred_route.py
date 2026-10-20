@@ -62,7 +62,9 @@ def require_tcl(text):
         'file copy $retained_access_guides $out/route.guide',
         '} else {\n    global_route -guide_file $out/route.guide',
         'load $retained_access_exporter Lemmaap',
+        'if {$stage eq "before-route"} {',
         'if {$expected ne $actual} {error "Retained original AP metadata/pattern/preference changed"}',
+        'exec $retained_access_python $retained_access_writer_check --before $retained_access_metadata --after $out/preferred-$stage.json --output $out/preferred-writer-relation.json',
         'lemma_check_retained_access before-route',
         'lappend retained_access_route_flags -no_pin_access',
         'set_debug_level DRT snapshot 1',
@@ -80,8 +82,12 @@ def check_final_access(output, admitted):
     """Final public records and AP4 reverse refs must retain the admitted input."""
     import struct
     output = Path(output)
-    require((output / 'preferred-before-route.json').read_bytes() == admitted['metadata'].read_bytes() ==
-            (output / 'preferred-after-route.json').read_bytes(), 'actual router changed original AP/pattern/preference records')
+    from silicon_access_writer import relation
+    require((output / 'preferred-before-route.json').read_bytes() == admitted['metadata'].read_bytes(),
+            'actual pre-route AP/pattern/preference records changed')
+    writer = relation(json.loads(admitted['metadata'].read_text()),
+                      json.loads((output / 'preferred-after-route.json').read_text()))
+    require(writer == json.loads((output / 'preferred-writer-relation.json').read_text()), 'actual final writer relation differs')
     ids = json.loads((DIRECTORY / 'apply.json').read_text())['AP4_owner_serialization_ids']
     prefix = struct.pack('<iiIIIII', 2880, 820, *(ids[k] for k in ('layer_id', 'lib_id', 'master_id', 'mpin_id', 'bpin_id'))) + bytes([0, 0, 0, 0, 1, 0])
     records = []
@@ -96,4 +102,5 @@ def check_final_access(output, admitted):
     require(records[0] == records[1], 'router changed reverse references')
     return {'status': 'PASS_ORIGINAL_AP_METADATA_PATTERNS_ALL_PREFERENCES_AND_AP4_REVERSE_REFS_PRESERVED',
             'APs': 11123, 'patterns': 495, 'ITerms': 45104, 'BPins': 668,
+            'pinned_writer_relation': writer,
             'input_ODB_sha256': CANDIDATE_SHA, 'final_ODB_sha256': sha(output / 'routed.odb')}

@@ -68,7 +68,15 @@ proc lemma_power_geometry_box {block layer x1 y1 x2 y2 records_name} {
     set name [$layer getName]
     if {$name ni {Metal2 Metal3 Metal4 Metal5}} {return}
     if {min($x2-$x1,$y2-$y1) <= 0 || min($x2-$x1,$y2-$y1) >= 10000} {error "PG geometry outside original spacing-table domain"}
-    set box [list [expr {$x1-420}] [expr {$y1-420}] [expr {$x2+420}] [expr {$y2+420}]]
+    set route_bloat 420
+    if {[info exists ::lemma_M2_route_bloat_nm]} {
+        if {$::lemma_M2_route_bloat_nm != 275} {error "Unadmitted M2 routing representation"}
+        if {$name == "Metal2"} {set route_bloat 275}
+    }
+    # The source physical margin remains420nm. With original minimum210nm
+    # Euclidean router spacing,275nm bloat conservatively protects its corners:
+    # 2*(420-275)^2 <210^2. Independent native420nm checking is still required.
+    set box [list [expr {$x1-$route_bloat}] [expr {$y1-$route_bloat}] [expr {$x2+$route_bloat}] [expr {$y2+$route_bloat}]]
     lassign $box a b c d
     set die [$block getDieArea]
     if {$a < [$die xMin] || $b < [$die yMin] || $c > [$die xMax] || $d > [$die yMax]} {error "PG body clearance outside die"}
@@ -135,7 +143,11 @@ proc lemma_add_power_geometry_clearance {out original_cts_def standard_tech} {
     foreach record $records {puts $f [join $record \t]}
     close $f
     set f [open $out/power-geometry-clearance.json w]
-    puts $f {{"status":"ADDED_ACTUAL_FULL_PG_GEOMETRY_NOT_ROUTED_QUALIFICATION","added_obstructions":18718,"clearance_um":0.42,"source":"max(original_process_spacing,original_CTS_NDR)","power_geometry_and_pins_preserved":true}}
+    if {[info exists ::lemma_M2_route_bloat_nm]} {
+        puts $f {{"status":"ADDED_ACTUAL_FULL_PG_GEOMETRY_NOT_ROUTED_QUALIFICATION","added_obstructions":18718,"physical_margin_nm":420,"routing_M2_bloat_nm":275,"other_routing_bloat_nm":420,"source":"max(original_process_spacing,original_CTS_NDR)","power_geometry_and_pins_preserved":true}}
+    } else {
+        puts $f {{"status":"ADDED_ACTUAL_FULL_PG_GEOMETRY_NOT_ROUTED_QUALIFICATION","added_obstructions":18718,"clearance_um":0.42,"source":"max(original_process_spacing,original_CTS_NDR)","power_geometry_and_pins_preserved":true}}
+    }
     close $f
     return $records
 }

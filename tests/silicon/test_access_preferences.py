@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 from pathlib import Path
+import copy
 from types import SimpleNamespace
 import sys
 import tempfile
@@ -7,6 +8,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from silicon_access_metadata import AccessMetadataError
+from silicon_access_writer import relation
 from silicon_access_preference import unused_output
 from silicon_preferred_route import admit, require_recipe, require_tcl
 from silicon_enclosure import GeometryError
@@ -42,6 +44,7 @@ class AccessPreferenceTests(unittest.TestCase):
                      ('file copy $retained_access_guides $out/route.guide', ''),
                      ('if {$expected ne $actual}', 'if {0}'),
                      ('load $retained_access_exporter Lemmaap', ''),
+                     ('exec $retained_access_python $retained_access_writer_check', 'puts'),
                      ('-drc_report_iter_step 1', '-drc_report_iter_step 0')]
         for old, new in mutations:
             with self.subTest(mutation=old), self.assertRaises(GeometryError):
@@ -65,6 +68,42 @@ class AccessPreferenceTests(unittest.TestCase):
             with self.assertRaises(AccessMetadataError):
                 unused_output(source, output)
             self.assertEqual(source.read_bytes(), b'original')
+
+    def test_pinned_writer_copies_only_original_BPin_APs_once(self):
+        master = {'id':1, 'point_nm':[2880,820], 'owner':{'kind':'master_pin'}, 'segments':[]}
+        pin = {'id':2, 'point_nm':[200,300], 'owner':{'kind':'block_pin','bterm':'addr[0]','bpin_id':7},
+               'layer':'Metal2','via_groups':[], 'segments':[], 'directions':['NORTH']}
+        before = {'schema':'lemma-opendb-access-export/1','block':'lemma_pen','db_units_per_micron':1000,
+                  'access_points':[master,pin], 'master_pin_patterns':[{'patterns':[[1]]}],
+                  'instance_terminals':[{'instance':'target','preferred':[1]}],
+                  'block_terminals':[{'terminal':'addr[0]','bpin_id':7,'access':[2]},
+                                     {'terminal':'empty','bpin_id':8,'access':[]}]}
+        after = copy.deepcopy(before)
+        after['access_points'].append({**copy.deepcopy(pin),'id':3})
+        after['block_terminals'][0]['access'].append(3)
+        self.assertEqual(relation(before,after)['literal_added_BPin_copies'],1)
+        mutations = {
+            'wrong_original_preference':lambda x:x['instance_terminals'][0]['preferred'].__setitem__(0,2),
+            'wrong_shared_pattern':lambda x:x['master_pin_patterns'][0]['patterns'][0].append(2),
+            'original_AP_changed':lambda x:x['access_points'][0]['point_nm'].__setitem__(0,2885),
+            'clone_owner_crossed':lambda x:x['access_points'][2]['owner'].__setitem__('bpin_id',8),
+            'clone_point_changed':lambda x:x['access_points'][2]['point_nm'].__setitem__(0,205),
+            'clone_direction_changed':lambda x:x['access_points'][2]['directions'].append('UP'),
+            'clone_segment_invented':lambda x:x['access_points'][2]['segments'].append([0,0,1,1]),
+            'clone_via_changed':lambda x:x['access_points'][2]['via_groups'].append(['Via1_YY']),
+            'clone_id_renumbered':lambda x:x['access_points'][2].__setitem__('id',4),
+            'clone_vector_missing':lambda x:x['block_terminals'][0]['access'].pop(),
+            'clone_vector_double':lambda x:x['block_terminals'][0]['access'].append(3),
+            'block_owner_retargeted':lambda x:x['block_terminals'][0].__setitem__('terminal','addr[1]'),
+            'unbound_extra_AP':lambda x:x['access_points'].append({**copy.deepcopy(pin),'id':4}),
+            'original_AP_deleted':lambda x:x['access_points'].pop(0),
+            'unknown_metadata_field':lambda x:x.__setitem__('hidden',True)}
+        for label,mutate in mutations.items():
+            value=copy.deepcopy(after);mutate(value)
+            with self.subTest(label=label),self.assertRaises(AccessMetadataError):
+                relation(before,value)
+        with self.assertRaises(AccessMetadataError):
+            relation(before,before)
 
 
 if __name__ == '__main__':
