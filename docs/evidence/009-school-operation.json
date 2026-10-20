@@ -2060,7 +2060,7 @@
     }
   },
   "hostedLocalToolGeneration24": {
-    "status": "LIVE_BOUNDED_AUTHORITY_NOT_TERMINAL",
+    "status": "NORMAL_OPERATOR_TERMINAL_HISTORY_PRESERVED",
     "producer": {
       "path": "build/school/task009-local-tool-production-a2/production.json",
       "sha256": "7238d4639b74bfe3d05e7e01f331657d43eaf98e2f5cd1fbf514e2ee4c20f5da"
@@ -2086,7 +2086,21 @@
     "backupReplySeconds": 10.341189716011286,
     "retainedFailure": "Original10secondreplywait timedout while serverfinished147rowexport; original stdout/stderr/export retained, no acknowledgedbackup claim for that call.",
     "maintenance": "Maintained operator reply wait defaults60s, finite1..300; timeout reports uncertain outcome rather than cancellation. Domain commit policy remains in Lean.",
-    "resourceScope": "Live wrapper samples transport+direct Lean child, not short-lived barrier grandchildren; no whole-owned-tree RSS qualification."
+    "resourceScope": "Live wrapper samples transport+direct Lean child, not short-lived barrier grandchildren; no whole-owned-tree RSS qualification.",
+    "terminal": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation24/terminal.json",
+      "sha256": "ae86d65490c8200d2cb7c67cd65724eee3be9c8a2ec2e6c73e485d4305c75fc8"
+    },
+    "finalAcknowledgedBackup": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation24/acknowledged150-backup-result.json",
+      "sha256": "8a21e04b0cfd8f4d4a594bb3287269e9ecadaac87b52081d6d73f0652ba67070"
+    },
+    "finalBackupRows": 150,
+    "finalBackupArtifacts": 56,
+    "normalStop": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation24/normal-stop-result.json",
+      "sha256": "ae3593baa648fc7cd9c91c17b4b2a60dd3d79c23555d50026d4334029509aad1"
+    }
   },
   "fractionEquivalence804": {
     "status": "AUTHORED_BUILT_PUBLISHED_ENROLLED_GUEST_PREVIEW_PENDING",
@@ -2169,5 +2183,56 @@
     "status": "PASS_ACTUAL_APP_HOST_FIXTURE_ORDINARY_BROWSER_EXECUTION_PENDING",
     "behavior": "Display exact teacher comments/criteria/version/reconsideration as human feedback; bounded Next feedback preserves exact authority cursor and clears on disconnect/close. Render comment through textContent; no HTML interpretation, automatic presentation acknowledgement, mathematical checking or assessment decision.",
     "freshReused": "Changed app/HTML only; no target or runtime compilation. Existing actual protected feedback admission remains its original scope."
+  },
+  "hostedColdIDGeneration25": {
+    "status": "LIVE_BOUNDED_AUTHORITY_NOT_TERMINAL",
+    "producer": {
+      "path": "build/school/task009-local-tool-production-a3/production.json",
+      "sha256": "eb1d568e9ae751bc008d70d8386895ef5630cd577a489a9bf4a63b3f0df1c50e"
+    },
+    "productionAdmission": {
+      "path": "build/school/task009-local-tool-production-a3-admission/result.json",
+      "sha256": "be190c5830f3e34c5a76c6c38ea6a9e4a1921f4fa6b27f20c0c455dc8b31a6a6"
+    },
+    "sourceInputs": 66,
+    "sourceArchive": "build/school/task009-local-tool-production-a3/action-source",
+    "schoolBinarySHA256": "3728c6c6c6ecbc9089755ab285b3cc3dc815d511084adad6c18fa08b14b7ef30",
+    "hostProducerSeconds": 19.229244501097128,
+    "hostAdmissionSeconds": 23.75997245614417,
+    "peakSampledOwnedProductionRSSBytes": 1956225024,
+    "productionOwnedProcessesReaped": true,
+    "freshReused": "Normal Lake recompiles invalidated shared document and hosted authority outputs; unchanged curriculum executable hash is reused. All66 consumed source bytes retained before production. No target guest run.",
+    "priorTerminal": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation24/terminal.json",
+      "sha256": "ae86d65490c8200d2cb7c67cd65724eee3be9c8a2ec2e6c73e485d4305c75fc8"
+    },
+    "acknowledgedBackup": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation24/acknowledged150-backup-result.json",
+      "sha256": "8a21e04b0cfd8f4d4a594bb3287269e9ecadaac87b52081d6d73f0652ba67070"
+    },
+    "backupRows": 150,
+    "backupArtifacts": 56,
+    "backupAcknowledgementSeconds": 5.588772895047441,
+    "readiness": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation25/ready.json",
+      "sha256": "aad56cee4aeea8df7547ff5aaaa3805e975055c98b021b78c6202171de9472b1"
+    },
+    "budget": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation25/budget.json",
+      "sha256": "f48b245ea08ad676859f3a118316b43f6be1dc706c3acfbbfd8617e567b0ed34"
+    },
+    "generation": 25,
+    "preservedPrefixRows": 150,
+    "sameClockEpoch": true,
+    "clockEpochSequence": 5,
+    "protectedPrincipals": [
+      "alice",
+      "bob",
+      "teacher"
+    ],
+    "staleWorkerCompletionRejected": true,
+    "originalDeadlineUTC": "2026-10-20T15:12:11.694904+00:00",
+    "resourceScope": "New7200s execution after normal old stop; no original deadline extension or overlapping authority. Prospective9GiB launch/6GiB continuing host available memory accommodates planned actual browser/native workloads;512MiB sampled recursive owned transport/Lean/barrier RSS,4GiB address,2GiB file bounds. No unmeasured shared Chromium peak claim.",
+    "remaining": "Actual School24 target whole-image audits and ordinary native/browser execution remain separate. This normal same-host restart is not a new cross-clock restore, host crash or physical power-loss measurement."
   }
 }
