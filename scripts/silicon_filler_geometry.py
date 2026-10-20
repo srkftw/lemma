@@ -412,7 +412,7 @@ def check(config):
         tr = inst.cplx_trans
         require(not inst.is_regular_array() and tr.mag == 1, 'nonunit filled master transform')
         actual[master, cardinal_angle(tr.angle), bool(tr.is_mirror()), tr.disp.x, tr.disp.y] += 1
-    require(actual == wanted, 'all49386 actual original master/placement/transform records differ')
+    require(actual == wanted, 'all actual original master/placement/transform records differ')
     draw, pins = layer_mapping(basis['layer_map']); keys = set(draw.values()) | set(pins.values())
     baseline_layout = pya.Layout(); baseline_layout.read(str(baseline/'layout.gds'))
     old_regions, old_shapes = routed_regions(baseline_layout, baseline_layout.cell(original['top']),
@@ -480,7 +480,7 @@ def check(config):
     result.update(status='PASS_ACTUAL_ORIGINAL_ALLROW_FILLER_GDS_AND_OLD_GAP_COVERAGE_NOT_PROCESS_DRC'
                   if not uncovered and metal_ok else 'FAIL_FILLER_GAP_OR_METAL_SUBSET',
                   failures=(['some actual original partial NW.b corridors remain uncovered'] if uncovered else [])+
-                           ([] if metal_ok else ['new filler Metal1 conflicts with actual signal or opposite supply']),
+                           ([] if metal_ok else ['conservative220nm filler-to-conductor clearance subset remains nonempty; SRAM internal net assignment is unresolved']),
                   GDS_sha256=sha(stream), GDS_bytes=stream.stat().st_size)
     return result
 

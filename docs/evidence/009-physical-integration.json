@@ -7140,8 +7140,8 @@
     },
     "scope": "40349 original CORE SPACERs fill249350 unused sites across221 rows, outward-rounded3macro exclusions; all9037 old placements/668ports/99128nativePG shapes/18718OBS/9703wire opcode/data streams remain exact.80698 new PG terminals overlap correct row rails. Missing/wrongsite/orientation/supply and detached actual wire controls reject. Physical spacers occupy unused sites; original960nm functional-to-functional padding remains. No process/LVS/RC/timing/IR/EM qualification inferred.",
     "remaining": [
-      "Correct conservative new SRAM-left M1 clearance while preserving actual NWell/PG/source geometry; direct conductor intersections are zero. Exact SRAM net assignment and complete process rule treatment remain unresolved.",
-      "Six oldfunctional macro-edge wells remain560nm below620nm; any placement repair requires fullpadding/PG and affected routing reconstruction",
+      "ActualbilateralGDSremovesallnew220nmM1marginanddirectoverlaps. RemainingoldVSS conservative7,564,375nm² and source-net/process context require fullrule/LVS treatment.",
+      "Matchedoriginalnwell93oldfindings remain:66left240nm and27right560nm macro-to-functional edges. Actualoriginalcellsource/padding/PG and reconstructedroute/PEX/all9corners required before movement/selection.",
       "Complete original main/maximal/density/antenna process checks",
       "Connected transistor LVS",
       "Appropriate post-fill extraction/timing scope; all9 oldselected timing/electrical cases remainFAIL",
@@ -7461,7 +7461,195 @@
       "spacer_sites": 248984,
       "plan_sha256": "dcebfc0a34ad026c66c683b5b4f586110bcd96db3ec198a0f8e943ec83d7fdde",
       "maintained_flag": "--macro-edge-clearance-keepout",
-      "scope": "Pure source qualification only. Botholdplanbytesexact;19left+7rightoldfunctionalcellsremainunchanged. ActualnativePG/ODB/GDS/originalnwellchecks pending; sixoldrightedgewellgaps and globaltiming/LVS remainopen."
+      "scope": "Pure source qualification only. Botholdplanbytesexact;19left+7rightoldfunctionalcellsremainunchanged. LaterfreshnativeCLIreceipt is separate; sourceGDS/originalprocess checks pending. Sixoldrightedgewellgaps and globaltiming/LVS remainopen."
+    },
+    "bilateral_spacer_native_insertion": {
+      "path": "build/silicon/task009-bilateral-spacer-insertion-a1/result.json",
+      "sha256": "50c08acb9d554ab8b0fba3a49873e441ed8023fb31441f0c01433c47027a41ec",
+      "status": "PASS_SOURCE_BOUND_ORIGINAL_ALLROW_FILLER_INSERTION_AND_SIGNALS_NOT_PROCESS_DRC",
+      "seconds": 23.714351408882067,
+      "peak_owned_RSS_bytes": 749133824,
+      "source_seal_equal": true,
+      "resource_errors": [],
+      "original_whole_deadline_met": true,
+      "geometry": {
+        "status": "PASS_ORIGINAL_ALLROW_FILLER_NATIVE_PLACEMENT_PG_OVERLAP_SIGNALS_UNCHANGED_NOT_PROCESS_DRC",
+        "source_odb_sha256": "43ffc744714d5f216227035ffa4eca2e77b87f27b61b4f39fa6296a4091f7852",
+        "plan_sha256": "dcebfc0a34ad026c66c683b5b4f586110bcd96db3ec198a0f8e943ec83d7fdde",
+        "filled_odb_sha256": "03ea7064c4d02d2ab2d8f4f33b079e0785edfefa8807b116c43c0a41a3900bdb",
+        "filled_def_sha256": "68e7a49735f2c3e737c6ae934d1bf73206213ed517a7a8bbedf040557691a964",
+        "old_placements_preserved": 9037,
+        "old_ports_preserved": 668,
+        "old_native_PG_shapes_preserved": 99128,
+        "old_OBS_preserved": 18718,
+        "original_signal_wire_streams_preserved": 9703,
+        "original_fillers_added": 40264,
+        "new_PG_terminals": 80528,
+        "native_pin_correct_rail_overlap": true,
+        "macro_right_spacer_keepout": {
+          "extra_sites": 2,
+          "site_nm": 480,
+          "actual_macro_right_nm": 904480,
+          "original_filler_well_overhang_nm": 240,
+          "original_NW_b_spacing_nm": 620,
+          "minimum_filler_bbox_left_nm": 905340,
+          "actual_first_filler_bbox_left_nm": 905760,
+          "new_well_gap_nm": 1040,
+          "preserved_functional_cells_in_spacer_keepout": [
+            "_11492_",
+            "_11644_",
+            "_11785_",
+            "hold1114",
+            "hold1144",
+            "hold821",
+            "hold822"
+          ],
+          "scope": "Actual322 macro-right seam correction; other fullprocess/LVS obligations remain"
+        },
+        "macro_left_spacer_keepout": {
+          "extra_sites": 2,
+          "site_nm": 480,
+          "actual_macro_left_nm": 120000,
+          "original_SRAM_Metal1_left_local_nm": 60,
+          "original_SRAM_NWell_left_local_nm": 0,
+          "original_filler_NWell_overhang_nm": 240,
+          "maximum_filler_bbox_right_nm": 119040,
+          "minimum_Metal1_gap_nm": 1020,
+          "minimum_NWell_gap_nm": 720,
+          "original_NW_b_spacing_nm": 620,
+          "declared_conservative_Metal1_spacing_nm": 220,
+          "preserved_functional_cells_in_spacer_keepout": [
+            "_07041_",
+            "_08042_",
+            "_09589_",
+            "_09591_",
+            "_10004_",
+            "_10005_",
+            "_11429_",
+            "_11581_",
+            "_11722_",
+            "clkbuf_6_2_0_clk_regs",
+            "fanout538",
+            "hold1094",
+            "hold1100",
+            "hold1104",
+            "hold731",
+            "hold824",
+            "hold933",
+            "hold934",
+            "task009_hold_0_0"
+          ],
+          "scope": "Exact original source extent correction for new left-edge spacer clearance; full process and six old right-edge wells remain"
+        },
+        "functional_padding_policy": "Original960nm functional-cell separation remains; physical spacers fill unused sites",
+        "negative_cases": [
+          "wrong_site",
+          "wrong_orientation",
+          "wrong_supply",
+          "actual_macro_right_80nm_well_gap",
+          "actual_macro_left_240nm_well_gap",
+          "detached_actual_signal_wire"
+        ],
+        "remaining": [
+          "original GDS filler masks and all partial NW.b findings",
+          "new PG/signal geometry clearance",
+          "full original process rules",
+          "connected LVS",
+          "post-fill extraction/timing scope",
+          "IR/EM"
+        ]
+      },
+      "scope": "Fresh maintainedordinaryCLI,23.714s/1GiBcap+8GiBreserve. Allnewphysicalpins overlapcorrectrails; source/literalunsafeleft/rightwell and nativecell/wire negatives reject and fullsnapshot restores. Source/mask/originalrule checks stillpending; allsixoldfunctionalwell gaps and selected0.6timingfailures retained."
+    },
+    "bilateral_original_GDS": {
+      "path": "build/silicon/task009-bilateral-spacer-gds-a1/result.json",
+      "sha256": "069f86205ac46bc60bdb34df4e82ec0e8632be5a23727a773461605459604968",
+      "status": "FAIL",
+      "seconds": 66.19740603910759,
+      "peak_owned_RSS_bytes": 936939520,
+      "source_seal_equal": true,
+      "resource_errors": [],
+      "original_whole_deadline_met": true,
+      "owned_observed_PIDs_absent": true,
+      "GDS_sha256": "094dbdf5f24f1801b8d4eeec2af8a53cd4c474ac4c48d7de8302eff22d5099e5",
+      "GDS_bytes": 13180972,
+      "actual_original_instances": 49301,
+      "actual_original_masters": 49,
+      "unchanged_routing_shapes": 357082,
+      "all20route_mask_XOR_areas_nm2": 0,
+      "uncovered_original_witness_corridors": 26,
+      "new_filler_Metal1_rule_subset": [
+        {
+          "net": "VDDlogic",
+          "conservative_margin_nm": 220,
+          "signal_conflict_area_nm2": 0,
+          "positive_area_conductor_intersection_nm2": 0,
+          "opposite_native_supply_conflict_area_nm2": 0,
+          "opposite_native_supply_scope": "VDDlogic versus VSS only; VDDARRAY remains in the conservative other-conductor set",
+          "already_within_known_original_PG_clearance_nm2": 0,
+          "newly_introduced_clearance_area_nm2": 0,
+          "newly_introduced_positive_area_intersection_nm2": 0,
+          "baseline_scope": "Actual native PG plus source-GDS metal within literal original core PG ports; SRAM internal power remains unassigned",
+          "signal_conflict_bbox_nm": null
+        },
+        {
+          "net": "VSS",
+          "conservative_margin_nm": 220,
+          "signal_conflict_area_nm2": 7564375,
+          "positive_area_conductor_intersection_nm2": 0,
+          "opposite_native_supply_conflict_area_nm2": 0,
+          "opposite_native_supply_scope": "VDDlogic versus VSS only; VDDARRAY remains in the conservative other-conductor set",
+          "already_within_known_original_PG_clearance_nm2": 7564375,
+          "newly_introduced_clearance_area_nm2": 0,
+          "newly_introduced_positive_area_intersection_nm2": 0,
+          "baseline_scope": "Actual native PG plus source-GDS metal within literal original core PG ports; SRAM internal power remains unassigned",
+          "signal_conflict_bbox_nm": "(14505,14680;1029420,801800)"
+        }
+      ],
+      "scope": "CompleteGDSandoriginalmaster/route-union component passes; wholephysicalsubset remainsFAIL. Directpositivearea and newlyintroduced220nm margins nowzero bothrails. RemainingVSS7,564,375nm² entirelywithinactualoldPGmargin; nofullprocess/netLVSclaim.26oldwitnesscorridorsremain(6right+20left), actualoriginalnwellpairedcheckpending; nofunctionalcellmove/selection."
+    },
+    "matched_original_bilateral_nwell": {
+      "path": "build/silicon/task009-original-vs-bilateral-deep-nwell-a1/result.json",
+      "sha256": "a3a9d1cf6d0a3e06a2015a7911ea9d34de15fa1b41bf5f3a0816565a79fe7402",
+      "status": "FAIL_ORIGINAL_NWELL_TABLE_RULE_VIOLATIONS",
+      "assessment_status": "COMPLETED_MATCHED_ORIGINAL_NWELL_TABLE_COMPARISON_NOT_FULL_DRC",
+      "seconds": 59.82240146398544,
+      "peak_owned_RSS_bytes": 791552000,
+      "source_seal_equal": true,
+      "resource_errors": [],
+      "owned_observed_PIDs_absent": true,
+      "results": [
+        {
+          "label": "original_selected06",
+          "GDS_sha256": "9dfce491ed54ce2c49954ebfb311b795bd301384cd16524068cfb0b34729bf2e",
+          "category_counts": {
+            "'NW.b'": 4557
+          },
+          "total": 4557,
+          "NW_b": 4557,
+          "report_sha256": "80f2a4861ba87ec8ee5f163255657ff7c0552dfbeb711480560a3d2e4f536c0f"
+        },
+        {
+          "label": "bilateral40264",
+          "GDS_sha256": "094dbdf5f24f1801b8d4eeec2af8a53cd4c474ac4c48d7de8302eff22d5099e5",
+          "category_counts": {
+            "'NW.b'": 93
+          },
+          "total": 93,
+          "NW_b": 93,
+          "report_sha256": "a58c04ee82ea18cf7426dbeeb194f81f8647b844c0a4f8d9144735196141c4bf"
+        }
+      ],
+      "classification": {
+        "path": "build/silicon/task009-original-vs-bilateral-deep-nwell-a1/marker-assessment.json",
+        "sha256": "17deea4a5bea41f57d93b9f2835d1e7005739792296c05f1cfc8a71fac84ed32",
+        "exact_original_markers_removed": 4464,
+        "remaining_original_markers": 93,
+        "new_marker_strings": 0,
+        "left240nm": 66,
+        "right560nm": 27
+      },
+      "scope": "Completed original immutable main/defaultdeep/nwell context. Every93actualcurrentmarker is exactlypresent in4557baseline; no countcomparison to unmatched3717partialfullmain or fullprocessDRC/LVS/physicalqualification."
     }
   }
 }
