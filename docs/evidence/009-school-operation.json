@@ -664,12 +664,12 @@
       "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
       "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
     },
-    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1\u21922. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
     "connectedUpgrade": {
       "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
       "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
     },
-    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "connectedObservation": "Normal owned stop/restart generation5\u21926, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
     "retainedPreparationFailures": [
       {
         "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
@@ -766,7 +766,7 @@
         "path": "tests/school/test_delivery.py",
         "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
       },
-      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2\u21923."
     },
     "browserTests": {
       "result": "PASS",
@@ -786,7 +786,7 @@
       "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
       "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
     },
-    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "connectedScope": "All29 prior records unchanged, generation6\u21927/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
     "retainedObserverFailures": [
       {
         "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
@@ -1358,7 +1358,7 @@
       "sha256": "c4a73274c4c15b1d8c3cff13c164ffa90ac323a79d6aa66813002551e603efb0"
     },
     "status": "PASS_ORIGINAL_GUEST_ENVELOPE_REPLAY_AFTER_GENERATION_CHANGE",
-    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13→14. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
+    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13\u219214. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
   },
   "ordinary_live_model_release_cycle": {
     "result": {
@@ -1962,7 +1962,8 @@
     "maintainedChecks": [
       "nix develop --no-write-lock-file --command lake build Lemma.Applications.Notebook Lemma.Services.Arithmetic.ServerV9",
       "nix develop --no-write-lock-file --command lake env lean -j2 --run tests/courses/LocalReduction.lean",
-      "nix develop --no-write-lock-file --command python3 scripts/check_course_install.py --school-submission --output-dir build/courses/UNUSED"
+      "nix develop --no-write-lock-file --command python3 scripts/check_course_install.py --school-submission --output-dir build/courses/UNUSED",
+      "nix develop --no-write-lock-file --command lake env lean -j2 --run tests/courses/DocumentEventConsumers.lean"
     ],
     "hostedConsumer": {
       "implementationCommit": "2353684",
@@ -1980,6 +1981,70 @@
       "No ordinary native or distributed browser REDUCE execution yet",
       "No School24 continuation admission; new pending V9 boundary requires separate scope",
       "No runtime course plugin loader, general SDK coverage, general theorem/proof verification, physical or educational qualification"
-    ]
+    ],
+    "documentConsumers": {
+      "implementationCommit": "ff2d626",
+      "userBehavior": "Actual authored hints remain usable after formats2/3 and REDUCE; typed remote/tool payload words cannot overwrite a checking observation or invent a hint. Offline review conservatively retains possible same-goal assistance without making a delivery or assessment claim.",
+      "sources": {
+        "Lemma/Courses/DocumentEventRows.lean": "0035b363bf8b2dec11eb6a4110dec85dcfd5a57388b9b0ea02b1b099ddea3936",
+        "Lemma/Courses/HintVisibility.lean": "c77f8c0070cffa2a328b160eabdf20ee3ff2fa4011ea8665be3b2549c63b5d86",
+        "Lemma/Courses/Review.lean": "b36d5ee117906db70261d349a0356e630d4751a43dc76c684c7e105a565805e5",
+        "tests/courses/DocumentEventConsumers.lean": "cf8fcb6ab63f3e3cdbe50be06bec4433634f26e4eafc4d3600b0a3fe0aa1e399"
+      },
+      "retainedActualFailure": {
+        "path": "build/school/task009-school24-source/consumer-before-small-a4-result.json",
+        "sha256": "2e9f2877025f3269452d2578c0d00252a9f120c5e05c8aff3e396641769f5756",
+        "seconds": 4.765922229969874,
+        "actual": "Valid source257 local-tool metadata produced review9 instead of17 and hid the actual authored hint. This is finite target Action execution over valid synthetic records, not a learner/CPU result."
+      },
+      "finalComponents": {
+        "path": "build/school/task009-school24-source/consumer-final-a1.json",
+        "sha256": "af9ead6de8d1e72d71319063f102c8b69c4e4a603aff27f0f7a9142073fd0260",
+        "status": "PASS",
+        "seconds": 64.75565939885564,
+        "peakOwnedRSSBytes": 1776881664,
+        "actionSeconds": 1.7922355020418763,
+        "rendererRegressionSeconds": 59.75157254608348,
+        "frontendLLVMSeconds": 2.2257119067944586,
+        "functions": 14,
+        "LLVM": {
+          "path": "build/school/task009-school24-source/event-consumers-lowered-a1/program.ll",
+          "sha256": "f4b01750894878ffb8c0bfcd6b9e324ca0a17085a6b6f6012acd60f850d10f68"
+        }
+      },
+      "actualChecks": [
+        "Actual local reduction request, prepared staging, genuine V9 calculation/reply admission and applied staging followed by an authored hint; reduction remains distinct from the later explicit checker completion.",
+        "Structurally valid source257 and remote digest hint-masquerade payloads; mixed kind7/8 groups; formats1/2/3, revision/goal, read-only state, malformed counts and truncated groups.",
+        "Existing real renderer fixture compares all30720 bytes, 4820 versus27360 stores, write-failure prefixes, read failure and odd-stride fallback."
+      ],
+      "consequentialSourceMutants": {
+        "path": "build/school/task009-school24-consumer-negatives-a1/result.json",
+        "sha256": "e1de555793ae22a53e7c43e10179097e903dc4fbdf88e47dac95bcd08db28cf8",
+        "status": "PASS",
+        "seconds": 8.812765727983788,
+        "positive": 1,
+        "mutants": 4,
+        "guards": "kind8 seven-row skip, kind7 three-row skip, format3 admission and conservative header assistance"
+      },
+      "freshReused": "Only invalidated hint/review/helper/renderer modules were freshly built; unchanged compiler/dependencies were reused. Actual new consumer Actions, renderer comparison and two-root frontend/LLVM execution are fresh. No whole Notebook/410-function rerun or CPU claim.",
+      "retainedObserverAndResourceFailures": [
+        "Initial11GiB resource preflight refused before compiler.",
+        "Initial4GiB virtual-space run failed loading an existing Lean library file; no consumer observation resulted.",
+        "Prospective1GiB owned RSS cap stopped the child before Actions; later2GiB budget was separately declared.",
+        "The first2GiB Lake run built independent roots in parallel and was stopped at the owned sum limit. Sequential builds completed under the same2GiB cap.",
+        "Reserved local/meta fixture identifiers failed syntax before Actions; corrected fixture has a separate passing receipt."
+      ],
+      "scope": "Target read-only consumer components and actual finite RAM Actions only. Full School24 ELF audits and ordinary native/browser consumption remain separately pending."
+    },
+    "normalGeneration23Stop": {
+      "path": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation23/terminal.json",
+      "sha256": "c40bdad7aaf244c737eb5bfe3b4c1d763c7de43e908ce1199e27683dcaa516e7",
+      "rows": 147,
+      "priorHistoryPrefixUnchanged": true,
+      "ownedProcessGone": true,
+      "originalDeadlineUTC": "2026-10-20T12:07:33.515857+00:00",
+      "actualTerminalUTC": "2026-10-20T11:57:17.541255+00:00",
+      "scope": "Maintained normal operator stop after a separately acknowledged backup; no deadline extension, no overlapping authority. Gen24 hosted readiness and protected principal admission are separate successor receipts."
+    }
   }
 }
