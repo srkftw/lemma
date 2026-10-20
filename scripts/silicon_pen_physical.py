@@ -42,6 +42,22 @@ def require_unmodified_routing_resources(paths):
                     'unadmitted derived routing resources or congestion bypass in ' + str(path))
 
 
+def require_iteration_drc_reports(paths):
+    """Fail before routing if a future timeout would lose its marker identities."""
+    for path in paths:
+        commands = list(re.finditer(r'(?m)^[ \t]*detailed_route[ \t]+([^\n]*)', path.read_text()))
+        require(len(commands) == 1, 'one maintained detailed-route command required: ' + str(path))
+        for match in commands:
+            arguments = match[1].split()
+            require(arguments.count('-drc_report_iter_step') == 1 and
+                    arguments[arguments.index('-drc_report_iter_step') + 1:
+                              arguments.index('-drc_report_iter_step') + 2] == ['1'] and
+                    arguments.count('-output_drc') == 1 and
+                    arguments[arguments.index('-output_drc') + 1:
+                              arguments.index('-output_drc') + 2] == ['$out/route.drc'],
+                    'every detailed route must retain actual per-iteration DRC markers: ' + str(path))
+
+
 def require_no_capacity_underflow(log):
     require('GRT-0113' not in log and 'Underflow in reduce' not in log,
             'router capacity underflow invalidates all optimistic route results')
@@ -120,6 +136,38 @@ def require_capacity_launch_recipe(args):
                 'capacity launches require exact finite-qualified327 geometry, actual104 baseline and fresh8 routing only')
 
 
+def require_clock_layer_recipe(args):
+    require(args.clock_min_routing_layer in ('Metal2', 'Metal3'), 'unknown clock minimum layer')
+    if args.clock_min_routing_layer == 'Metal3':
+        require(args.capacity_launch_buffer_from and args.routed_eco_from and
+                args.detail_route_iterations == 8 and not args.selected_implementation,
+                'clockMetal3 is scoped to the exact unselected327 source-qualified pilot')
+
+
+def qualified_clock_layer_inputs(args):
+    if args.clock_min_routing_layer == 'Metal2':
+        return []
+    pilot = ROOT / 'build/silicon/task009-capacity-clock3-grt-preflight-a1'
+    closure = ROOT / 'build/silicon/task009-capacity-clock3-completed-closure-a2/result.json'
+    require(sha(closure) == '065ded893c82b26b7c60b37bdb14a40e5e33b0088b2a6bd08e05a438182702bd' and
+            sha(pilot / 'result.json') == '5c671f754ddbc200bf727dec0224eca70cb8efb36f28c3ec710d3788f8e01622',
+            'exact reviewed clockM3 pilot and separate complete source assessment required')
+    assessment = json.loads(closure.read_text())
+    require(assessment['status'] == 'PASS_SEPARATE_COMPLETED_CLOCK3_SOURCE_CLOSURE_AND_ORIGINAL_CONSTRAINTS'
+            and assessment['source_seal_equal'], 'sealed clockM3 source assessment required')
+    require(sha(pilot / 'route.guide') == assessment['source_inputs'][str(pilot / 'route.guide')],
+            'reviewed clockM3 guide bytes differ')
+    # Historical source identities stay in their exact archive. They are not
+    # silently reinterpreted as this successor's explicit clock-layer argument.
+    inputs = [closure, pilot / 'result.json', pilot / 'route.guide']
+    for original, entry in assessment['archived_inputs'].items():
+        path = ROOT / entry['path']
+        require(sha(path) == entry['sha256'] == assessment['source_inputs'][original],
+                'reviewed clockM3 source archive differs: ' + original)
+        inputs.append(path)
+    return inputs
+
+
 def qualified_vss_grid_source(args):
     original = ROOT / 'tooling/silicon/pen-power-grid.tcl'
     if args.vss_clock_grid_source is None:
@@ -172,6 +220,7 @@ def main():
     p.add_argument('--padded-sram-input-delay-from', type=Path, help='Consume exact qualified completed original-padding geometry with33 original delaycells on31 SRAM inputs; no repeated legalization/resizer, fresh signal routing/extraction and all original constraints')
     p.add_argument('--control-launch-buffer-from', type=Path, help='Explicit unselected finite-qualified three-original-buf8 geometry on padded30 baseline; all old cells/33delays/PG/OBS/padding preserved, fresh routing/extraction only')
     p.add_argument('--capacity-launch-buffer-from', type=Path, help='Explicit unselected finite-qualified327 original buf8 launches from actual104 nominal maxcap inventory; all old sites/33delays/3controls/PG/OBS/ports preserved, fresh routing/extraction only')
+    p.add_argument('--clock-min-routing-layer', choices=('Metal2', 'Metal3'), default='Metal2', help='Legacy clockMetal2 unchanged; explicitMetal3 only on exact327-source GRT-qualified candidate, preserving every original clock/SDC/pin obligation')
     p.add_argument('--vss-clock-grid-source', type=Path, help='Explicit source-qualified VSS-only+2um clock-channel grid candidate under build/; allpositive rails and declared constraints stay exact, no selection or closure implied')
     p.add_argument('--detail-route-iterations', type=int, choices=(3, 8), default=3, help='Bounded detailed-route repair input; legacy3 unchanged, explicit8 only for fresh full-PGbody preserved-netlist routing at unchanged900/1200-second limits')
     p.add_argument('--host-memory-gib', type=int, choices=(4, 6), default=6, help='Hard host AS budget; legacy6GiB/floor8GiB unchanged. Explicit4GiB/floor6GiB is scoped to the separately source-bound fresh-grid candidate; failure never extends the budget')
@@ -186,6 +235,7 @@ def main():
     require_padded_hold_recipe(args)
     require_control_launch_recipe(args)
     require_capacity_launch_recipe(args)
+    require_clock_layer_recipe(args)
     host_as_bytes, host_available_floor = host_memory_budget(args)
     if args.fresh_core_power_grid or args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from:
         args.core_power_grid = True
@@ -247,6 +297,7 @@ def main():
               'global_rc_optimization': 'DEFERRED_UNTIL_ACTUAL_EXTRACTION' if args.defer_global_eco else 'ENABLED',
               'clock_wire_repair': 'pinned-driver-RC-optimum' if args.automatic_clock_wire_length else 'historical100um', 'power_grid': 'NOT_IMPLEMENTED',
               'detail_route_iterations': args.detail_route_iterations,
+              'clock_routing_layers': args.clock_min_routing_layer + '-Metal5',
               'process_drc': 'NOT_RUN', 'lvs': 'NOT_RUN',
               'remaining': ['power grid and power/test-pin connectivity',
                  'process DRC and transistor LVS', 'matched-temperature fast stdcell/SRAM timing pair',
@@ -277,6 +328,7 @@ def main():
         require(not args.protect_sram_power_geometry or (args.core_power_grid and (args.preserve_routed_netlist or args.fresh_core_power_grid) and not args.protect_sram_power_edges and not args.completed_power_grid_route_from), 'full PG geometry is a separate fresh routing question')
         require_route_iterations(args)
         grid_source = qualified_vss_grid_source(args)
+        clock_layer_inputs = qualified_clock_layer_inputs(args)
         available = next(int(x.split()[1]) * 1024 for x in Path('/proc/meminfo').read_text().splitlines()
                          if x.startswith('MemAvailable:'))
         require(available >= host_available_floor, 'launch memory floor')
@@ -314,6 +366,12 @@ def main():
                   ROOT / 'scripts/silicon_synth.py', ROOT / 'tooling/silicon/eda.nix',
                   ROOT / 'tooling/silicon/pen-floorplan.tcl', ROOT / 'tooling/silicon/pen-validation-region.tcl', ROOT / 'tooling/silicon/pen-validation-check.tcl', ROOT / 'tooling/silicon/pen-button-pins.tcl', mapping / 'candidate.sv',
                   mapping / 'mapped.v', mapping / 'result.json', openroad]
+        inputs += clock_layer_inputs
+        if clock_layer_inputs:
+            report['clock_layer_pilot'] = {'version': 'lemma-pen-clock-route-floor/1',
+                'scope': 'Unselected327-source clockM3pilot, same312clock/9388signalguide identities, target172.8umM2trunk removed; otherlongM2obligations remain. Separate archived source assessment adds originally omitted helper/Lib/tool without rerunning GRT.',
+                'completed_source_assessment': str(clock_layer_inputs[0]),
+                'sha256': sha(clock_layer_inputs[0])}
         if selected:
             inputs += [ROOT / 'tooling/silicon/physical-lock.json']
             report['selected_implementation'] = {'version': selected['version'], 'source': 'tooling/silicon/physical-lock.json',
@@ -491,6 +549,11 @@ def main():
                 'scope': 'Exact completed grid routing reused; new required-PG-port observation and fresh3RC extraction, not fresh routing'}
         inputs += [std / 'lib/sg13g2_stdcell_typ_1p20V_25C.lib', macro / 'lib' / (MACRO+'_typ_1p20V_25C.lib')]
         require_unmodified_routing_resources([path for path in inputs if path.suffix == '.tcl'])
+        # Historical source archives keep their original report behavior. This
+        # guard binds the maintained scripts used by a new route, not a newly
+        # invented requirement for already completed retained geometry.
+        require_iteration_drc_reports([ROOT / 'tooling/silicon/layout.tcl',
+                                       ROOT / 'tooling/silicon/pen-extracted-eco.tcl'])
         report['source_inputs'] = {str(v): sha(v) for v in inputs}
         archive = out / 'source-archive'
         archive.mkdir()
@@ -567,6 +630,7 @@ source {{{ROOT/'tooling/silicon/layout.tcl'}}}
 ''')
         if args.routed_eco_from:
             script.write_text(f'set prior {{{prior}}}\nset out {{{out}}}\nset pdk {{{std}}}\nset macro_lib {{{macro/"lib"/(MACRO+"_typ_1p20V_25C.lib")}}}\nset validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check.tcl"}}}\nset group_button_bus {1 if report['button_bus_pin_placement'] == 'FULL64_ORDERED_TOP_EDGE' else 0}\nset button_pin_script {{{ROOT/"tooling/silicon/pen-button-pins.tcl"}}}\nsource {{{ROOT/"tooling/silicon/pen-extracted-eco.tcl"}}}\n')
+            script.write_text(f'set clock_min_routing_layer {args.clock_min_routing_layer}\n' + script.read_text())
             if args.core_power_grid:
                 script.write_text(f'set core_power_grid 1\nset preserve_routed_netlist {1 if args.preserve_routed_netlist else 0}\nset power_grid_script {{{grid_source}}}\nset power_check_script {{{ROOT/"tooling/silicon/pen-power-check.tcl"}}}\n' + script.read_text())
             if args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or args.capacity_launch_buffer_from:

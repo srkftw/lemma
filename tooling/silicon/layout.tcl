@@ -138,7 +138,7 @@ set core_area [expr {[$core dx] * [$core dy] / double($units * $units)}]
 set file [open $out/global-route-summary.json w]
 puts $file "{\"cell_area_um2\": $cell_area, \"core_area_um2\": $core_area, \"utilization_percent\": [expr {100.0 * $cell_area / $core_area}], \"instances\": [llength [$block getInsts]], \"clock_period_ns\": $clock_ns, \"timing_model\": \"global-route RC estimate before detailed signal routing\", \"power_grid\": \"$power_grid_state\", \"process_drc\": \"NOT_RUN\", \"lvs\": \"NOT_RUN\"}"
 close $file
-detailed_route -output_drc $out/route.drc -output_maze $out/route.maze -droute_end_iter 3 -verbose 1
+detailed_route -output_drc $out/route.drc -drc_report_iter_step 1 -output_maze $out/route.maze -droute_end_iter 3 -verbose 1
 if {[info exists fresh_power_script]} {
     global_connect
     # Normal global-RC resizer phases legitimately add hold buffers at SRAM

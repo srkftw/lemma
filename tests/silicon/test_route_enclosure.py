@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from silicon_enclosure import GeometryError, read_tech
 from silicon_route_enclosure import audit
 from silicon_power_ports import signal_bytes
-from silicon_pen_physical import require_fresh_power_recipe, host_memory_budget, require_launch_recipe, require_padded_hold_recipe, require_control_launch_recipe, require_capacity_launch_recipe
+from silicon_pen_physical import require_fresh_power_recipe, host_memory_budget, require_launch_recipe, require_padded_hold_recipe, require_control_launch_recipe, require_capacity_launch_recipe, require_iteration_drc_reports, require_clock_layer_recipe
 from silicon_capacity_launch import admit as admit_capacity_launch
 from silicon_sram_input_hold import endpoint_cells, admit as admit_padded_hold
 from types import SimpleNamespace
@@ -66,6 +66,34 @@ END SPECIALNETS
 
 
 class RouteEnclosureTests(unittest.TestCase):
+    def test_clock_floor_cannot_escape_qualified_unselected327_recipe(self):
+        valid = dict(clock_min_routing_layer='Metal3', capacity_launch_buffer_from=Path('build/source'),
+                     routed_eco_from=Path('build/prior'), detail_route_iterations=8, selected_implementation=False)
+        require_clock_layer_recipe(SimpleNamespace(**valid))
+        require_clock_layer_recipe(SimpleNamespace(**{**valid, 'clock_min_routing_layer': 'Metal2'}))
+        for key, value in [('clock_min_routing_layer', 'Metal1'), ('clock_min_routing_layer', 'Metal4'),
+                           ('capacity_launch_buffer_from', None), ('routed_eco_from', None),
+                           ('detail_route_iterations', 3), ('selected_implementation', True)]:
+            with self.subTest(key=key, value=value), self.assertRaises(GeometryError):
+                require_clock_layer_recipe(SimpleNamespace(**{**valid, key: value}))
+
+    def test_route_timeout_cannot_silently_drop_intermediate_marker_identity(self):
+        root = Path(__file__).resolve().parents[2]
+        require_iteration_drc_reports([root / 'tooling/silicon/layout.tcl',
+                                       root / 'tooling/silicon/pen-extracted-eco.tcl'])
+        command = 'detailed_route -output_drc $out/route.drc -drc_report_iter_step 1 -droute_end_iter 8\n'
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'route.tcl'
+            for mutant in ('', command.replace('-drc_report_iter_step 1 ', ''),
+                           command.replace('-drc_report_iter_step 1', '-drc_report_iter_step 0'),
+                           command.replace('-drc_report_iter_step 1', '-drc_report_iter_step'),
+                           command.replace('-output_drc $out/route.drc ', ''),
+                           command.replace('$out/route.drc', '/tmp/unowned-marker-report'),
+                           command.replace('-drc_report_iter_step 1', '-drc_report_iter_step 1 -drc_report_iter_step 0')):
+                path.write_text(mutant)
+                with self.subTest(mutant=mutant), self.assertRaises(GeometryError):
+                    require_iteration_drc_reports([path])
+
     def test_capacity_launch_requires_exact_separate_finite_source(self):
         valid = dict(capacity_launch_buffer_from=Path('build/geometry'),
             routed_eco_from=Path('build/source'), detail_route_iterations=8,

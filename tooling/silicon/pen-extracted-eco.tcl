@@ -30,7 +30,9 @@ set_propagated_clock [get_clocks core]
 # SwapPinsMove and BufferMove dereferenced that absent context in retained
 # negative runs. Restore real routing guides through the supported API first;
 # the following read_spef still supplies actual loads, not guide estimates.
-set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
+if {![info exists clock_min_routing_layer]} {set clock_min_routing_layer Metal2}
+if {$clock_min_routing_layer ni {Metal2 Metal3}} {error "Unadmitted clock routing floor"}
+set_routing_layers -signal Metal2-Metal5 -clock ${clock_min_routing_layer}-Metal5
 if {![info exists prepared_physical_db] && (![info exists preserve_routed_netlist] || $preserve_routed_netlist != 1)} {
     read_guides $prior/route.guide
 }
@@ -89,7 +91,7 @@ if {[info exists core_power_grid] && $core_power_grid == 1} {
         write_def $out/power-geometry-before-route.def
     }
 }
-set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
+set_routing_layers -signal Metal2-Metal5 -clock ${clock_min_routing_layer}-Metal5
 global_route -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/global-congestion.rpt -verbose
 write_db $out/global-route.odb
 write_def $out/global-route.def
@@ -101,7 +103,9 @@ report_worst_slack -min -digits 6 > $out/global-hold-summary.rpt
 report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/global-electrical.rpt
 if {![info exists detail_route_iterations]} {set detail_route_iterations 3}
 if {$detail_route_iterations ni {3 8}} {error "Unadmitted detailed-route repair bound"}
-detailed_route -output_drc $out/route.drc -output_maze $out/route.maze -droute_end_iter $detail_route_iterations -verbose 1
+# Retain real intermediate net/rule markers even when the original hard route
+# deadline expires before the final report. Reporting does not extend routing.
+detailed_route -output_drc $out/route.drc -drc_report_iter_step 1 -output_maze $out/route.maze -droute_end_iter $detail_route_iterations -verbose 1
 if {[info exists core_power_grid] && $core_power_grid == 1} {
     global_connect
     lemma_check_power_grid $power_bindings_before $out after-route

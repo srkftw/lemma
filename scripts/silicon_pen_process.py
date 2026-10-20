@@ -30,6 +30,51 @@ write_verilog -include_pwr_gnd {{{out/'observed-power.v'}}}
 '''
 
 
+def connected_reference_signal_bytes(text):
+    """Admit the two exact OpenROAD physical-PG serializations only.
+
+    A route exported before its database reload puts the three PG ports last;
+    a later read_db export puts them before the vector ports. All remaining
+    bytes, including every cell's power and signal connections, stay intact.
+    """
+    try:
+        return signal_bytes(text)
+    except ValueError:
+        return signal_bytes(text, reloaded_power=True)
+
+
+def process_tiling_script(process, step_microns):
+    """Change checker tiling only; leave original halo and every rule intact."""
+    if step_microns is None:
+        return process
+    require(step_microns == 600, 'only finite-qualified600um process step admitted')
+    anchor = '    drc style drc(full)\n'
+    require(process.count(anchor) == 1 and
+            not re.search(r'(?m)^\s*drc\s+(?:ignore\b|\*halo\s+\S)', process),
+            'one original full-rule style with no halo/rule waiver required')
+    return process.replace(anchor, anchor + '''    puts "LEMMA_TILING original-halo"
+    drc *halo
+    puts "LEMMA_TILING original-step"
+    drc *stepsize
+    puts "LEMMA_TILING microns-per-unit [cif scale out]"
+    drc printrules $out/process-rules-before-step.txt
+    drc *stepsize 600um
+    puts "LEMMA_TILING retained-halo"
+    drc *halo
+    puts "LEMMA_TILING selected-step"
+    drc *stepsize
+    drc printrules $out/process-rules-after-step.txt
+    set before_file [open $out/process-rules-before-step.txt r]
+    set after_file [open $out/process-rules-after-step.txt r]
+    set before_rules [read $before_file]
+    set after_rules [read $after_file]
+    close $before_file
+    close $after_file
+    if {$before_rules ne $after_rules} {error "Checker step changed original rule table"}
+    puts "LEMMA_TILING original-rule-table-identical"
+''', 1)
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--route', type=Path, required=True)
@@ -42,6 +87,7 @@ def main():
     p.add_argument('--whole-seconds', type=int, default=240)
     p.add_argument('--question', default='Can the bounded original process deck complete on the declared real three-SRAM routed geometry?')
     p.add_argument('--process-drc-only', action='store_true', help='Run original drc(full) directly on original GDS+actual DEF; skip only redundant GDS re-stream, with no extraction/LVS claim')
+    p.add_argument('--drc-step-microns', type=int, choices=(600,), help='Explicit finite-qualified600um checker tiling only for full original-deck DRC; no halo/rule reduction or timing/process pass implied')
     p.add_argument('--direct-import-extraction', action='store_true', help='Independently extract original GDS+actual DEF without GDS re-stream; process DRC remains separate and NOT_RUN unless an exact prior failure is bound')
     p.add_argument('--connectivity-only-extraction', action='store_true', help='LVS-only: disable parasitic capacitance/coupling, preserving transistor devices, geometry and terminal connectivity; never timing extraction')
     p.add_argument('--continue-from-drc-attempt', type=Path,
@@ -97,6 +143,8 @@ def main():
 
     try:
         require(not args.process_drc_only or not (args.direct_import_extraction or args.continue_from_drc_attempt or args.connectivity_only_extraction), 'independent full DRC and extraction are separate questions')
+        require(args.drc_step_microns is None or args.process_drc_only,
+                'changed checker tiling is scoped only to original full-process DRC')
         macro = 'RM_IHPSG13_1P_256x64_c2_bm_bist'
         std = pdk / 'ihp-sg13g2/libs.ref/sg13g2_stdcell'
         sram = mapping / 'pdk/ihp-sg13g2/libs.ref/sg13g2_sram'
@@ -136,6 +184,19 @@ def main():
                    route / 'enclosure/repaired-original.lef', sram / 'lef' / (macro+'.lef'),
                    pdk / 'ihp-sg13g2/libs.tech/netgen/ihp-sg13g2_setup.tcl']
         inputs += sorted(path for path in rc.parent.rglob('*') if path.is_file())
+        if args.drc_step_microns is not None:
+            control = ROOT / 'build/silicon/task009-full-drc-tiling-controls-a1/result.json'
+            require(sha(control) == '34ccb415c6b3188fcf16916ec3ecc0e6237a0e8dbd82476f599d325c0767bda3',
+                    'exact original-deck default/600um control producer required')
+            qualification = json.loads(control.read_text())
+            require(qualification['status'] == 'PASS_ORIGINAL_FULL_DECK_TILING_RULE_IDENTITY_AND_INVERTER_VIA_NEGATIVE_CONTROLS_NOT_CONTROLLER'
+                    and qualification['source_seal_equal'] and
+                    all(sha(Path(name)) == digest for name, digest in qualification['source_inputs'].items()),
+                    'actual source-sealed inverter/badVia1/repairedVia1 controls required')
+            inputs += [control] + [Path(name) for name in qualification['source_inputs']]
+            report['checker_tiling'] = {'version': 'lemma-original-full-drc-step/1',
+                'microns': 600, 'control_receipt': str(control), 'sha256': sha(control),
+                'scope': 'Checker work partition only; original full-rule deck/halo/geometry unchanged, no full-controller result inferred from small-cell controls'}
         if core_grid:
             openroad = Path(shutil.which('openroad') or '').resolve()
             require(openroad.is_file(), 'actual OpenROAD required for connected PG reference comparison')
@@ -174,6 +235,7 @@ def main():
         if args.process_drc_only:
             process = process.replace('    gds write $out/layout.gds', '    # Direct full DRC on the same imported original GDS and actual routed DEF; no re-stream.')
             report['geometry_mode'] = 'DIRECT_ORIGINAL_GDS_AND_ACTUAL_DEF_NO_RESTREAM'
+        process = process_tiling_script(process, args.drc_step_microns)
         header = f'set connectivity_only_extraction {1 if args.connectivity_only_extraction else 0}\nset pdk {{{pdk/"ihp-sg13g2"}}}\nset out {{{out}}}\nset top lemma_pen\n'
         (out / 'process.tcl').write_text(header + process)
         report['status'] = 'RUNNING'
@@ -190,9 +252,16 @@ def main():
                 std/'lib/sg13g2_stdcell_typ_1p20V_25C.lib',
                 sram/'lib'/(macro+'_typ_1p20V_25C.lib')))
             invoke([str(openroad), '-no_init', '-exit', str(check)], 'power-reference', 10)
-            require((out / 'observed-signal.v').read_text() == signal_bytes((route / 'routed.v').read_text()), 'final database signal reference differs')
+            observed_signal = (out / 'observed-signal.v').read_text()
+            original_signal = (route / 'routed.v').read_text()
+            # Newer routed exports already omit physical PG ports; older
+            # exports retain their exact three-name suffix. Compare bytes
+            # directly first, and only normalize the explicit PG interface.
+            if observed_signal != original_signal:
+                require(observed_signal == connected_reference_signal_bytes(original_signal),
+                        'final database signal reference differs')
             require(signal_bytes((out / 'observed-power.v').read_text(), reloaded_power=True) ==
-                    signal_bytes(reference_netlist.read_text()), 'final database connected PG reference differs')
+                    connected_reference_signal_bytes(reference_netlist.read_text()), 'final database connected PG reference differs')
             report['connected_reference'] = {'path': str(reference_netlist), 'sha256': sha(reference_netlist),
                 'source_ODB_sha256': sha(route / 'routed.odb'), 'scope': 'Actual final database power/test pins retained; signal netlist independently identical'}
         if args.direct_import_extraction and not args.continue_from_drc_attempt:

@@ -4053,5 +4053,157 @@
     "step_rule_units": 2400000,
     "ratio": 16,
     "scope": "Pinned original Magic command reference permits step-size performance experiments. Halo reduction explicitly misses rules and is not admitted. No rule/deck/halo/source geometry change or process rerun. Original inverter3.076scontrol remains PASS only at smallcell scope; controller300sfailures remain."
+  },
+  "capacity_clock_layer_candidate": {
+    "status": "UNSELECTED_ORIGINAL900SECOND_ROUTE_DEADLINE_FAIL_NO_FINAL_ODB_PEX_OR_CORNERS",
+    "question": "Remove measured172.8umMetal2clock trunk with explicitly qualifiedMetal3-Metal5clock floor on exact327 geometry; keep10ns/fullports/padding/PG/OBS/test/source unchanged.",
+    "GRT_pilot": {
+      "path": "build/silicon/task009-capacity-clock3-grt-preflight-a1/result.json",
+      "sha256": "5c671f754ddbc200bf727dec0224eca70cb8efb36f28c3ec710d3788f8e01622"
+    },
+    "GRT_pilot_seconds": 25.881398275,
+    "completed_source_closure": {
+      "path": "build/silicon/task009-capacity-clock3-completed-closure-a2/result.json",
+      "sha256": "065ded893c82b26b7c60b37bdb14a40e5e33b0088b2a6bd08e05a438182702bd"
+    },
+    "closure_scope": "Separate assessment archives omittedSDC helper/actualLibs/tool after originalpilot; originalpilotinputlist remains incomplete, no GRT reexecution or retroactive identity.",
+    "route": {
+      "path": "build/silicon/task009-capacity-clock3-route-a1/result.json",
+      "sha256": "649000c2f6c99d630c874513ff27ba0b3a1835a6aec37c72291a9ec9f115ff3a"
+    },
+    "whole_campaign": {
+      "path": "build/silicon/task009-capacity-clock3-route-admission-a1/result.json",
+      "sha256": "96587d3ffd70a45512e4dc3a3b9ec9a41d8de5ac91a36a1598f9e1abffcc41fc"
+    },
+    "route_seconds": 912.950698153,
+    "whole_seconds": 913.153418297,
+    "budgets": {
+      "route_seconds": 900,
+      "whole_seconds": 1200,
+      "AS_GiB": 6,
+      "output_GiB": 12
+    },
+    "retention_fix": "Actual supported -drc_report_iter_step1 retains each closediteration1..6; seven consequential source mutations reject missing/zero/duplicate/retargeted output. Default clock routing remainsMetal2, explicitMetal3 admitted only exactunselected327source.",
+    "last_closed_iteration": {
+      "path": "build/silicon/task009-capacity-clock3-last-closed-clusters-a1/result.json",
+      "sha256": "fab4991022c0419138496feb4c150f729187f6f11da20002a826d4e9494dedf7"
+    },
+    "intermediate_scope_only": {
+      "iteration": 6,
+      "markers": 35,
+      "short": 11,
+      "spacing": 24,
+      "Metal2": 27,
+      "Metal5": 6,
+      "Metal4": 2,
+      "clock_only": 4,
+      "supply": 2,
+      "signal_or_obstruction": 29,
+      "candidate_buffer_nets": 9,
+      "old_clknet6_48_markers": 0,
+      "old104_dense62marker_cluster": 0,
+      "remaining_clock_PG": "delaynet4 Metal4 macroclearance2/Metal5clearanceOBS2/VSSclockspacing2; Metal5gap0.400 versusoriginalCTS0.420um"
+    },
+    "GRT_estimates_only": {
+      "setup_ns": -0.73361,
+      "hold_ns": -0.177085,
+      "wire_um": 1083463,
+      "guide_net_identities": 9700,
+      "clock_nets": 312,
+      "signal_nets": 9388,
+      "scope": "Before unfinished detailedroute, not actualroutedPEX. ClockM2rectangles2094→1809, long>14.4um330→172; otherlongM2routes remain."
+    },
+    "selection": "Selectedpaddingqualified30 and all9FAIL remain unchanged. No unchangedroute retry/deadlineextension.",
+    "owned_processes_reaped": true,
+    "pin_access_observation": {
+      "M2_same_layer_pin_OBS_assessment": {
+        "path": "build/silicon/task009-clock3-pin-obstruction-diagnosis-a2/result.json",
+        "sha256": "7eb2228593582dd241be383019ea2e0b606a8051e0826f234e5d023a7f43e33d"
+      },
+      "M1_to_M2_projection_assessment": {
+        "path": "build/silicon/task009-clock3-pin-obstruction-diagnosis-a3/result.json",
+        "sha256": "a04352bf231ac1bf0e46b209a3b23a9987af787f2c0fabac4af4e494048426ad"
+      },
+      "actual_fixed_Via1_witnesses": {
+        "path": "build/silicon/task009-clock3-via1-access-preflight-a2/result.json",
+        "sha256": "c67ab4d85cd8b9d1da32eb76b3579d3cc8788220d0a0c2b432fe33e472d7f06f"
+      },
+      "scope": "Closediter6intermediatemarkers vs exactfixed327 geometry.24/27M2markers at12distinct realM1pins project overPGM2clearanceOBS; zeroactualsame-layerM2pin/OBSoverlap. No chosenintermediateDRTwire/via geometry retained; no finalroute or fullprocessclaim.",
+      "legal_landing_witnesses": {
+        "all_12_pins": true,
+        "and2_A_pin_both_tracks": 10,
+        "a21o_A2_off_M1Y_required": 2,
+        "M2_Xtrack_nm": [
+          480,
+          2187,
+          480
+        ],
+        "manufacturing_grid_nm": 5
+      },
+      "geometry_negatives": [
+        "coveractualM2landing",
+        "retargetoutsideactualM1pin",
+        "offactualM2track",
+        "offoriginalmanufacturinggrid"
+      ],
+      "decision": "Keep12cellsfixed; legaloriginalVia1witnesses rejectphysicalimpossibility/movehypothesis. Inspectactualrouteraccess/guidecontrols before anynewcandidate; noGRT rerun or speculativefullroute."
+    }
+  },
+  "full_drc_checker_tiling": {
+    "status": "SMALL_CONTROL_PASS_SELECTED30_FULL_DECK300SECOND_DEADLINE_FAIL",
+    "controls": {
+      "path": "build/silicon/task009-full-drc-tiling-controls-a1/result.json",
+      "sha256": "34ccb415c6b3188fcf16916ec3ecc0e6237a0e8dbd82476f599d325c0767bda3"
+    },
+    "seconds": 16.763127274,
+    "step_microns": {
+      "default_observed": 2399.999946,
+      "selected_observed": 599.999987
+    },
+    "halo_internal_units": 30000,
+    "halo_rule_units": 150000,
+    "unchanged_full_rule_table_sha256": "f5bf5229ba531944b2df1d182f42a1abf059b2ad84e43451292b4039a4ee4cae",
+    "actual_controls_both_steps": {
+      "inverter": 0,
+      "original_bad_Via1": 1,
+      "repaired_Via1": 0
+    },
+    "scope": "Original deck/mapping/halo/ruleidentities; partition only. No wholecontroller/physicalqualification from smallcontrol.",
+    "first_selected_layout_observer_failure": {
+      "path": "build/silicon/task009-selected30-step600-process-a1/result.json",
+      "sha256": "56d8aaaa29a60b8fe984c1f08bfd5e8dd5140315e01ff600113352a612dcc66e"
+    },
+    "first_failure_seconds": 6.492116354,
+    "first_failure_scope": "NOT_RUN DRC: actualOpenROAD PG export succeeded; oldobserver assumedPGsuffix in already-signalrouted.v and reloadedPGprefix powerreference.",
+    "first_completed_reference_assessment_failure": {
+      "path": "build/silicon/task009-selected30-power-reference-assessment-a1/result.json",
+      "sha256": "54ca4ae1cfc5dc69835e5d7c6f519e6ccde48cbdcf4646d347c15414d3c256a3"
+    },
+    "corrected_completed_reference_assessment": {
+      "path": "build/silicon/task009-selected30-power-reference-assessment-a2/result.json",
+      "sha256": "4a37074a9d1fa96af738ab2c5dd7d8408e911d5d96e23ed98313f6772e5633d8"
+    },
+    "reference_scope": "Exactcompletedactualexports reused; byteidenticalbare signal or exactthreePGprefix/suffix only. Wrongpower,bit,extraPGport/missingor duplicateddeclaration rejected. No newlayout/export/DRC inferred.",
+    "selected30_process": {
+      "path": "build/silicon/task009-selected30-step600-process-a2/result.json",
+      "sha256": "d12da913030bd307c3592b38cc94fd95a1d3dd86ad1a73132361fc5ec3aad5cf"
+    },
+    "selected30_whole_campaign": {
+      "path": "build/silicon/task009-selected30-step600-process-admission-a2/result.json",
+      "sha256": "fcbf77793bb000bf399e4ded120b27ceb60439a47fd75fce1940ddc2b254d3e5"
+    },
+    "selected30_producer_seconds": 315.343499704,
+    "selected30_wrapper_seconds": 315.600704141,
+    "phase_seconds": 300.033,
+    "whole_budget_seconds": 360,
+    "AS_GiB": 4,
+    "output_GiB": 2,
+    "full_rule_table_before_after_bytes": 21705403,
+    "full_rule_table_before_after_sha256": "f5bf5229ba531944b2df1d182f42a1abf059b2ad84e43451292b4039a4ee4cae",
+    "final_phase": "Fullstyle/on/check complete; Loading DRC CIF style before original300secondcatchup timeout",
+    "completed_process_count": null,
+    "source_seal_equal": true,
+    "owned_processes_reaped": true,
+    "limit": "Original fullprocessDRC remains unfinished. No count/qualification from timeout, ruleidentity or smallcontrols; extraction/LVS notrun."
   }
 }
