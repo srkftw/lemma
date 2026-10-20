@@ -526,7 +526,7 @@
         "save_cycles": 200000000,
         "save_seconds": 1800
       },
-      "scope": "ActualROM/Ready succeeded661Mcycles; actualSavefrontier2→5 stores exactlinkedraw/index. Observerwronglyrequiredheader1payloadchange. Finalpanel/resetnotobserved. OriginalFAILunchanged.",
+      "scope": "ActualROM/Ready succeeded661Mcycles; actualSavefrontier2\u21925 stores exactlinkedraw/index. Observerwronglyrequiredheader1payloadchange. Finalpanel/resetnotobserved. OriginalFAILunchanged.",
       "result": "build/task009/integrated15-school23-positive-a2/result.json",
       "seconds": 5353.874020740041,
       "aggregate_cycles": 699000000
@@ -1139,7 +1139,7 @@
     "user_multimodal_sha256": "dd3500b3d3264c3574f90ef2cbf8a18170b986a302ffa5e51d0b858fae3991f7",
     "actual_body_producer": "build/task009/school23-mm-producer-a3/result.json",
     "cached_provenance_refresh": "build/task009/school23-mm-producer-a5/result.json",
-    "fresh_reused": "a3 genuinely produces changed Kernel/Notebook Lean→Core0→LLVM O2→RV64IM objects; a5 reuses those original actions and binds corrected strict observer/contract source. Cached compilation is not execution.",
+    "fresh_reused": "a3 genuinely produces changed Kernel/Notebook Lean\u2192Core0\u2192LLVM O2\u2192RV64IM objects; a5 reuses those original actions and binds corrected strict observer/contract source. Cached compilation is not execution.",
     "strict_audits": {
       "receipt": "build/task009/school23-mm-audit-a4/result.json",
       "result": "PASS",
@@ -1181,7 +1181,7 @@
       ]
     },
     "service_scope": "Version2: owned64-byte record DMA and bounded1..16 signed16 PCM batches, arm/prefill/start; ordinary CAPTURE and explicit sixteen-sample AUDIO TEST are actual consumers. Full frames, continuous audio and economy acquisition remain unsupported.",
-    "finite_domain_admission": "Service.call12→19 only with actual pure version2; Notebook control6→7 only with actual testAudio consumer. Legacy authority remains scoped and current source safety validates28 tiles/raw replay/coalescing.",
+    "finite_domain_admission": "Service.call12\u219219 only with actual pure version2; Notebook control6\u21927 only with actual testAudio consumer. Legacy authority remains scoped and current source safety validates28 tiles/raw replay/coalescing.",
     "retained_failures": [
       "build/task009/school23-mm-producer-a1/result.json",
       "build/task009/school23-mm-producer-a2/result.json",
@@ -1482,5 +1482,197 @@
       "relocation": 3,
       "logs": "build/task009/logical2-public-prepare-a1/"
     }
+  },
+  "school23_owned_io_canonical_actual": {
+    "original": {
+      "path": "build/task009/integrated15-school23-mm-positive-a1/result.json",
+      "sha256": "153aaebe910af5b5b42122b3b38ed3d0dfc0f211db61aa31c002a8142bdb7af1"
+    },
+    "status": "PARTIAL_READY_PASS_PEN_SAVE_BOUND_FAIL",
+    "Ready_cycles": 668000000,
+    "Ready_seconds": 4834.658178,
+    "whole_seconds": 6384.28367,
+    "Save_phase_cycle_bound": 200000000,
+    "Saved_receipt_observed": false,
+    "fault_observed": false,
+    "independent_closed_store": {
+      "path": "build/task009/integrated15-school23-mm-store-assessment-a1/result.json",
+      "sha256": "aa8da9e854f50de4ec21f59f70d9cc7a7baefe175e25f15f70dfd278fda195d9"
+    },
+    "scope": "ActualdevelopmentROM/NV authenticatedcoldReady; originalpenSavephasefailedits200Mcyclebound. Actualclosedbytes separatelyshow durablelinkedthreefull72Brawsamples atfrontier5; no Savedreceipt/reset/coldreopenpromotion."
+  },
+  "school23_ready_fork_readonly_diagnostic": {
+    "result": {
+      "path": "build/task009/integrated15-ready-save-diagnostic-a2/result.json",
+      "sha256": "81556a7198531b9217f9a1a7db97bac61119c7a6613afd86f210a31618a2853f"
+    },
+    "status": "PASS_BOUNDED_READONLY_DIAGNOSTIC",
+    "seconds": 713.3681906579295,
+    "peak_combined_RSS_bytes": 272801792,
+    "Ready_checkpoint_sha256": "d4e791f4a0eef273ab031c441668fca77a500e662c551e6c2f1989b751a4f385",
+    "runtime_binary_sha256": "992cfc3c1c0c82cea1f57c9b5c1a6b0dc2c1d863ce447714b7c4a1e1a92ff04f",
+    "source_archive": "/home/sreekumaar/Downloads/lemma/build/task009/integrated15-native-source-a5/consumed-source-root",
+    "original_six_events_sha256": "c6e163431d4aa65dffa46c51682733c738047ef61d3b5814937dad711370085c",
+    "baseline": "Independentretainedobjecthashes +realbaseline link byte-identicaloriginalELF; newlyboundobservation, not originalobjectreceipts",
+    "compile_link_commands": [
+      {
+        "name": "baseline-link",
+        "argv": [
+          "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++",
+          "backing_peer.o",
+          "backing_io.o",
+          "backing_io_posix.o",
+          "ble_peer_transport.o",
+          "machine_runtime.o",
+          "main.o",
+          "usb_transport.o",
+          "verilated.o",
+          "verilated_dpi.o",
+          "verilated_save.o",
+          "verilated_threads.o",
+          "Vlemma_soc__ALL.a",
+          "-pthread",
+          "-lpthread",
+          "-latomic",
+          "-o",
+          "/home/sreekumaar/Downloads/lemma/build/task009/integrated15-ready-save-diagnostic-a2/baseline-lemma-rtl"
+        ],
+        "cwd": "/home/sreekumaar/Downloads/lemma/build/silicon/task009-integrated15-native-a5/obj",
+        "returncode": 0,
+        "seconds": 0.4701319229789078
+      },
+      {
+        "name": "observer-compile",
+        "argv": [
+          "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++",
+          "-O3",
+          "-std=c++17",
+          "-I/home/sreekumaar/Downloads/lemma/build/silicon/task009-integrated15-native-a5/obj",
+          "-I/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/share/verilator/include",
+          "-I/nix/store/byap8v9aasg1dxjkz1hkpc5m8jxmaxwj-verilator-5.052/share/verilator/include/vltstd",
+          "-I/home/sreekumaar/Downloads/lemma/build/silicon/task009-integrated15-native-a5/generated",
+          "-I/home/sreekumaar/Downloads/lemma/build/silicon/deps/binding-lemma-silicon-dev-0.15.0",
+          "-DVERILATOR=1",
+          "-DVM_COVERAGE=0",
+          "-DVM_SC=0",
+          "-DVM_TIMING=0",
+          "-DVM_TRACE=0",
+          "-DVM_TRACE_FST=0",
+          "-DVM_TRACE_VCD=0",
+          "-DVM_TRACE_SAIF=0",
+          "-DVM_VPI=0",
+          "-faligned-new",
+          "-fcf-protection=none",
+          "-MMD",
+          "-MF",
+          "/home/sreekumaar/Downloads/lemma/build/task009/integrated15-ready-save-diagnostic-a2/observer.d",
+          "-c",
+          "/home/sreekumaar/Downloads/lemma/build/task009/integrated15-ready-save-diagnostic-a2/observer.cpp",
+          "-o",
+          "/home/sreekumaar/Downloads/lemma/build/task009/integrated15-ready-save-diagnostic-a2/observer.o"
+        ],
+        "cwd": "/home/sreekumaar/Downloads/lemma/build/silicon/task009-integrated15-native-a5/obj",
+        "returncode": 0,
+        "seconds": 3.986657661967911
+      },
+      {
+        "name": "observer-link",
+        "argv": [
+          "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++",
+          "backing_peer.o",
+          "backing_io.o",
+          "backing_io_posix.o",
+          "ble_peer_transport.o",
+          "machine_runtime.o",
+          "/home/sreekumaar/Downloads/lemma/build/task009/integrated15-ready-save-diagnostic-a2/observer.o",
+          "usb_transport.o",
+          "verilated.o",
+          "verilated_dpi.o",
+          "verilated_save.o",
+          "verilated_threads.o",
+          "Vlemma_soc__ALL.a",
+          "-pthread",
+          "-lpthread",
+          "-latomic",
+          "-o",
+          "/home/sreekumaar/Downloads/lemma/build/task009/integrated15-ready-save-diagnostic-a2/observer"
+        ],
+        "cwd": "/home/sreekumaar/Downloads/lemma/build/silicon/task009-integrated15-native-a5/obj",
+        "returncode": 0,
+        "seconds": 0.22505019197706133
+      }
+    ],
+    "source_CPP": {
+      "path": "build/task009/integrated15-ready-save-diagnostic-a2/observer.cpp",
+      "sha256": "2c3abff25cc7b46550ac9d99b1133ec49ee9d24bf5274b8b046822db2b5dc0f1"
+    },
+    "source_driver": {
+      "path": "build/task009/integrated15-ready-save-diagnostic-a2/run.py",
+      "sha256": "d9a77e972e79d324a54f9f182de3ee935dd32020b15d938301d47078e2ebed75"
+    },
+    "source_interpreter": {
+      "path": "build/task009/integrated15-ready-save-diagnostic-a2/interpret.py",
+      "sha256": "0f76a5b3a6749d093f839de9be0f7e1fb5496a40c7ac74b0ae611cfa8af2e659"
+    },
+    "cuts": {
+      "restored-ready": {
+        "path": "build/task009/integrated15-ready-save-diagnostic-a2/execution/restored-ready.interpreted.json",
+        "sha256": "b6f0c89fa4f0ef12cc13a1ce25a72fe6b36ffa53926b3fbe0d26c1f8e34dd64f"
+      },
+      "committed-five": {
+        "path": "build/task009/integrated15-ready-save-diagnostic-a2/execution/committed-five.interpreted.json",
+        "sha256": "82266f89c46e2747d8cca6e9a7e8b15b8005d099108752fd31019956753de1ab"
+      },
+      "terminal": {
+        "path": "build/task009/integrated15-ready-save-diagnostic-a2/execution/terminal.interpreted.json",
+        "sha256": "1e457b07db89b286e65e8bbe17ce416c696f068eb1ecdd3ca7f2e65892db0484"
+      }
+    },
+    "first_baseline_failure": {
+      "path": "build/task009/integrated15-ready-save-diagnostic-a1/result.json",
+      "sha256": "6ca4001c3bb55ebb165666fdb3344599c013355e4b69b9b1640f8f360fb15b8f"
+    },
+    "first_failure_scope": "Broadnix-developinjected anotherRUNPATH; baselineequalityfailedbeforeobservercompile/guestexecution. Exactarchivedsim.nix environmentcorrectedseparately.",
+    "observations": {
+      "Ready": {
+        "cycle": 668000000,
+        "Store_sequence": 2,
+        "Notebook_frontier": 2,
+        "Save_phase": 0,
+        "raw_count": 0,
+        "captured_count": 0
+      },
+      "commit5": {
+        "cycle": 715000000,
+        "Notebook_frontier": 4,
+        "Save_phase": 3,
+        "Store_engine_operation": 3,
+        "Store_engine_phase": 21,
+        "Store_sequence": 4,
+        "actual_durable_frontier": 5,
+        "captured_count": 2,
+        "deferred_index": 1,
+        "controller_pending": false,
+        "Notebook_dispatches": 1702,
+        "Store_dispatches": 149,
+        "pc": "0x802015c0 Frames.handleValid"
+      },
+      "terminal": {
+        "cycle": 728000000,
+        "actual_cycles_after_Ready": 60000000,
+        "Store_sequence": 5,
+        "Store_engine_idle": true,
+        "Notebook_frontier": 5,
+        "Save_phase": 0,
+        "IPC_idle": true,
+        "deferred_index": 0,
+        "captured_count": 1,
+        "pc": "0x01000cb4 Notebook.statusPixel",
+        "panel_completed": 5,
+        "Saved_receipt_observed": false
+      }
+    },
+    "source_finding": "reportCommitState421 is suppressedto423 whilecapturedSaveUPremains. LatermultimodalRawStatus canrestoreSavedrasteraftercaptureempties withoutre-emittingthedeferred421receipt. ActualActions exercise the newretainedACK/contextrepair separately; this cut doesnotclaim thelastUP/rastercompletion, hardwarefault, generalizeddeadlock or a newSavedreceipt.",
+    "scope": "Oneactualisolatedsame-runtimeReadyrestore +originalsixevents/60Mcycles. No668Mcoldbootrepeat, clocknormalization, oldFAILrewrite, crossbackendmigration or physicaltimingqualification."
   }
 }

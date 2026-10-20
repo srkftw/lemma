@@ -1,8 +1,8 @@
 {
   "schema": "lemma-task009-owned-pcm-ring-evidence/1",
-  "status": "PARTIAL_FIRST_GUEST_PLAYBACK_FAILED",
+  "status": "PASS_ACTUAL_BOUNDED_4099_PCM_AND_PARTIAL_MUTE_REMAINING_PRODUCT_GATES_OPEN",
   "implementation_commit": "c05808d",
-  "purpose": "Replace the sixteen-sample maintenance fragment with a service-owned4KiB S16 ring, wrap/refill and exactEOF through real DMA/controller interfaces. Actual useful sustained guestplayback remains unqualified after the first ordinarytest stopped.",
+  "purpose": "Replace the sixteen-sample maintenance fragment with a service-owned4KiB S16 ring, wrap/refill and exactEOF through real DMA/controller interfaces. CorrectedactualStudent4099sampleplayback and452samplepartialMUTE nowpass; fullsensor/economy/explanation/qualification obligationsremain.",
   "bindings": {
     "full_union": "lemma-silicon-dev/0.16.0",
     "predecessor_union": "lemma-silicon-dev/0.15.0",
@@ -491,7 +491,7 @@
     "scope": "Actualpackage positivity after rejecting15\u219416 mismatches, using priorf869audited guest with known temporalPCMbug. Packageonly; notexecuted as correctedguest."
   },
   "temporal_successor": {
-    "status": "ALL_FOUR_STRICT_AUDITS_AND_NATIVE_PACKAGE_PASS_ACTUAL_PLAYBACK_PENDING",
+    "status": "PASS_ACTUAL_4099_PCM_AND_PARTIAL_MUTE",
     "User_source_sha256": "35f3dad089b539c2efb81fd281c9ee3e5a776950beb964678bd5126e5be7a2ba",
     "actual_Action_gate": {
       "path": "build/task009/mm-ring-temporal-actions-a2/result.json",
@@ -601,6 +601,34 @@
     "bundle": "build/task009/school23-mm2-native-a2",
     "manifest_sha256": "b74bfc0bd75c6e6c6e69e9215715d04432e6b4403a70421328550b11d51310ab",
     "packaging_seconds": 18.177285693003796,
-    "packaging_files": 1993
+    "packaging_files": 1993,
+    "actual_student": {
+      "full_phase": {
+        "path": "build/school/task009-native-mm2-a2/pcm-full-phase.json",
+        "sha256": "f960aeb92689fbdbbe63aa96b1553e5df3bd04628d51aaf18e500884b105524c"
+      },
+      "output_assessment": {
+        "path": "build/school/task009-native-mm2-a2/pcm-output-assessment.json",
+        "sha256": "8f0999fbe42a9b6a31fb97da2fac7324d07192e574279f9588b28bec16bc56f4"
+      },
+      "full_functional_units": 29000007,
+      "full_phase_seconds": 1.525,
+      "full_samples": 4099,
+      "packets": "512\u00d78+3",
+      "ring_samples": 2048,
+      "partial_mute_consumed": 452,
+      "partial_mute_submitted": 468,
+      "gaps": 0,
+      "held_bus": 0,
+      "output_bytes": 109232,
+      "source_binding": "exact43be/a24+init23/nativeb74bfc; sameC4f052 runtime",
+      "scope": "ActualordinaryStudentAUDIO TEST witharbitraryS16controlleroutput. All4551valuesandpositionsmatch,6250tickspacingwithinbothfull+partialsegments; realrefill/wrap/EOF andconcurrentrecordDMA/MUTE. No speech,audibility, sensor,economy, educationalbenefit orMM2exactcheckpointclaim. FinalrepeatSave423/no421retainedseparately; initialSaved450wasobserved.",
+      "terminal": {
+        "path": "build/school/task009-native-mm2-a2/terminal-result.json",
+        "sha256": "4df41e3a8fcff7609bec9bb2c3faa097e3d4342d18fed7a58d7780187b607645"
+      },
+      "whole_functional_units": 746000008,
+      "normal_cleanup_confirmed": true
+    }
   }
 }
