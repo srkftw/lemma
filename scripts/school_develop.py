@@ -149,7 +149,17 @@ def service_build(args):
     if (not relative.parts or '..' in relative.parts or output.exists() or
             any(path.is_symlink() for path in (output,*output.parents))):
         raise Core0Error('unused non-symlinked service build output required; older builds are never replaced')
-    if not args.sample_course.is_file():raise Core0Error('select an existing genuinely compiled account-free sample package')
+    # The current Student sample path admits one source-grounded package.
+    # Diagnose that existing capability before any expensive target action;
+    # newly authored publications use the protected catalogue/install path.
+    from multimodal_native_bundle import SCHOOL_SAMPLE_SHA
+    from course_package import decode
+    sample=args.sample_course.resolve()
+    if not sample.is_file() or sample.stat().st_size!=4199 or digest(sample)!=SCHOOL_SAMPLE_SHA:
+        raise Core0Error('this native Student sample binding requires the canonical4199-byte account-free package '
+                         f'(SHA256 {SCHOOL_SAMPLE_SHA}); publish newly authored courses with develop publish '
+                         'and select their exact edition through the protected school catalogue. No target build started.')
+    decode(sample.read_bytes())
     # Keep the caller's outer Nix resource guard. Only the child compiler's Nix
     # identity resolves the exact immutable executable consumed by producers.
     locked=json.loads((ROOT/'tooling/toolchain-lock.json').read_text())
@@ -178,12 +188,16 @@ def service_build(args):
                             minimumAvailableBytes=8*1024**3,minimumFreeBytes=8*1024**3),
                 preflight=resources,entryInputs={name:digest(ROOT/name) for name in
                     ['scripts/school_develop.py','scripts/lemma-school','scripts/school_deployment.py']},
+                accountFreeSample=dict(path=str(sample),sha256=SCHOOL_SAMPLE_SHA,bytes=4199,
+                                       scope='existing canonical Student sample binding; authored publications are installed through school admission'),
                 childNix=str(nix),execution='not executed by building; use the actual ordinary Student native/browser paths')
     began=time.monotonic()
     def phase(argv):
         preflight();left=args.timeout-(time.monotonic()-began)
         if left<=0:raise Core0Error('original service build whole deadline reached')
         if source_inputs(ROOT)!=before:raise Core0Error('consumed target source changed; preserve this failed build and restart from a frozen edition')
+        if not sample.is_file() or sample.stat().st_size!=4199 or digest(sample)!=SCHOOL_SAMPLE_SHA:
+            raise Core0Error('account-free sample changed after preflight; preserve this failed build and select the original package')
         return invoke(argv,commands,timeout=min(900,left),env=child_env)
     try:
         for role,configuration in configurations.items():
@@ -200,12 +214,12 @@ def service_build(args):
         phase([sys.executable,ROOT/'scripts/lemmasim','native-bundle-build','--school-deployment',
                '--controller-binding','mm2-subset','--profile','lemma-silicon-dev/0.14.0',*version,
                '--notebook-build',builds['notebook'],'--initializer-build',builds['initializer'],
-               '--guest-source-root',source,'--sample-course',args.sample_course.resolve(),'--output-dir',output/'native'])
+               '--guest-source-root',source,'--sample-course',sample,'--output-dir',output/'native'])
         report['native']=dict(path=str(output/'native'),manifestSHA256=digest(output/'native/bundle.json'))
         if args.wasm_build is not None:
             phase([sys.executable,ROOT/'scripts/lemmasim','browser-build','--engine','qemu-tci','--workbook','school',
                    '--profile','lemma-silicon-dev/0.14.0',*version,'--reuse-wasm','--wasm-build',args.wasm_build.resolve(),
-                   '--guest-bundle',output/'native','--sample-course',args.sample_course.resolve(),'--output-dir',output/'browser'])
+                   '--guest-bundle',output/'native','--sample-course',sample,'--output-dir',output/'browser'])
             report['browser']=dict(path=str(output/'browser'),manifestSHA256=digest(output/'browser/bundle.json'))
         if source_inputs(ROOT)!=before:
             raise Core0Error('consumed target source changed before the service build completed; retained artifacts are from the recorded original edition')
@@ -239,7 +253,8 @@ def main():
     service=sub.add_parser('service-build',help='build/audit an admitted closed School service plus its real notebook consumer and select local native/browser software bundles')
     service.add_argument('--notebook-version',type=int,choices=[23,24],default=24)
     service.add_argument('--output-dir',type=Path,required=True)
-    service.add_argument('--sample-course',type=Path,required=True)
+    service.add_argument('--sample-course',type=Path,required=True,
+                         help='existing canonical account-free package; publish/install authored courses through school admission')
     service.add_argument('--wasm-build',type=Path,help='optional existing admitted TCI runtime; no Wasm/compiler rebuild')
     service.add_argument('--opt-level',choices=['O0','O2'],default='O2')
     service.add_argument('--timeout',type=float,default=3600,help='original whole build/audit/package deadline, seconds')

@@ -2045,6 +2045,18 @@
       "originalDeadlineUTC": "2026-10-20T12:07:33.515857+00:00",
       "actualTerminalUTC": "2026-10-20T11:57:17.541255+00:00",
       "scope": "Maintained normal operator stop after a separately acknowledged backup; no deadline extension, no overlapping authority. Gen24 hosted readiness and protected principal admission are separate successor receipts."
+    },
+    "SDKSampleCapabilityDiagnostic": {
+      "receipt": {
+        "path": "build/school/task009-sdk-sample-admission-a2/result.json",
+        "sha256": "3d24bdd01110587feb0dd1567f75554f6cd04fef9c870bc914d31a946346de4f"
+      },
+      "result": "PASS_ACTUAL_UPFRONT_CAPABILITY_DIAGNOSTIC",
+      "seconds": 3.395949766971171,
+      "actual": "Maintained lemma-school develop service-build rejects the valid804/1 authored publication as an unsupported canonical sample, before creating service or target outputs. ActualCLI return1 and exact actionable error observed.",
+      "selectedOfflineSample": "Existing canonical4199-byte package3f1900b5ede7a4197086dc6cb30176e66fb75ac24aaee68f8cabcf689bb1093e; new804/1 is separately published/enrolled and installed through protected catalogue.",
+      "boundary": "No Student package-injection guard relaxed; all source/capability validation remains. Whole SDK production and ordinary guest consumption remain separately pending.",
+      "retainedFailure": "a1 result observer used output-flag index as a path after command completion; original stdout/stderr/failure retained. Corrected observer executed separately in a2."
     }
   },
   "hostedLocalToolGeneration24": {
