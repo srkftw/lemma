@@ -2183,5 +2183,167 @@
     },
     "mapping_seconds": 5.786917941994034,
     "source_boundary": "Retained route/corner producers bind their original frozen source/lock bytes; new lock selection and fresh remap do not rewrite their producer identities. Canonical RTL504f unchanged; existing native/Wasm keep their own source identities."
+  },
+  "full_PG_geometry_candidate": {
+    "status": "UNSELECTED_ROUTING_TIMING_ELECTRICAL_FAIL",
+    "sources": [
+      {
+        "path": "tooling/silicon/pen-power-edge.tcl",
+        "sha256": "efeeb9f2332a8df8fb93033a6c9afe9d52e5a298ffff2ced35b58b21460318e6"
+      },
+      {
+        "path": "tooling/silicon/pen-extracted-eco.tcl",
+        "sha256": "c523744f24301678a037f8d3f3c4bbe162f8b087b53413fad9318b307a3e58ba"
+      },
+      {
+        "path": "scripts/silicon_pen_physical.py",
+        "sha256": "cafbdcce2ab77e4bb7fe2591fc1b8dfa0ffe61b0c5c4fb39c87eb19e1b8bfb24"
+      }
+    ],
+    "pilots": [
+      {
+        "path": "build/silicon/task009-powered-body-clearance-a3/result.json",
+        "sha256": "c9b0f1149e9634f7643d6a688ad1cda4f4145a2bf8acdb15a3f09984dd9f9da0"
+      },
+      {
+        "path": "build/silicon/task009-powered-body-pg-check-a1/result.json",
+        "sha256": "d74ed38620755fc5a7941db484aef8f0d6531279096e3e933461d08b2b4a23e5"
+      },
+      {
+        "path": "build/silicon/task009-powered-body-maintained-pilot-a3/result.json",
+        "sha256": "489dd3b3bd4dd8a2f44f6b773b0421a692ad84f10c32604100c5fb492262ef36"
+      },
+      {
+        "path": "build/silicon/task009-powered-native-clearance-assessment-a1/result.json",
+        "sha256": "82822b5a99cb2a6d3ea931071d9284ce7398af4d3aa990b07fa53e3cb90696e1"
+      }
+    ],
+    "geometry": "18718actualsignal-onlyexclusions:600fullSRAMPGpinrectangles+18118actualnativeSPECIALNETstripe/viaM2-M5rectangles; unchangedoriginalCTS0.42ummaximumspacing; alloriginalpins/placementretained, zero1703signalpinshapeintersections; actualnativeendcapsindependentlycontainedinconservativeDEFsuperset",
+    "prelaunch_failure": {
+      "path": "build/silicon/task009-core-power-body-route-a1/result.json",
+      "sha256": "ff13f54ea259c2f7aa39822345f3f9805b189d97899aa54c52d65eb05307a4a6"
+    },
+    "route": {
+      "path": "build/silicon/task009-core-power-body-route-a2/result.json",
+      "sha256": "acd7ae7f0e21ac6a3e89ac70fba2e78b03ca5b5874421308483249a1cffa2cda"
+    },
+    "route_seconds": 437.61771967296954,
+    "router_markers": {
+      "total": 467,
+      "short": 313,
+      "spacing": 154,
+      "supply": 2,
+      "signal_only": 465
+    },
+    "classification": {
+      "path": "build/silicon/task009-core-power-body-clusters-a1/result.json",
+      "sha256": "47a07aa99b9bae2d1e183793dfb2e57b7aa25ba7252b41148db4ff5b010035d3"
+    },
+    "old_regions": "All8selected248supplymarkerlayer/boxes havezerooverlappingnewroutermarkers; supplyshorts3to0, supplymarkers8to2. New2Metal5clockdelaynet_4_core/VSSspacingat601.78..603.025,469.24..469.64um. Signalcongestionregresses, largest50umbin96M2short+70M3short+48M2spacing at100..150,450..500um.",
+    "global_RC_estimate_after_route": {
+      "setup_ns": -0.894326,
+      "hold_ns": -0.022826,
+      "scope": "Global-routeRCestimateonly; nottheactualPEXnumbers"
+    },
+    "actual_PEX_typical": {
+      "min": [
+        -12.784945,
+        -0.036212,
+        616
+      ],
+      "nom": [
+        -15.190079,
+        0.018139,
+        793
+      ],
+      "max": [
+        -17.411627,
+        -0.063787,
+        948
+      ]
+    },
+    "corner_receipt": {
+      "path": "build/silicon/task009-core-power-body-corners-a1/result.json",
+      "sha256": "e61d3d8033d92b097516ebe63c888180ff0209ceb75ca3e0419af6f1194dcad6"
+    },
+    "corners": "All9FAIL29.262s; matchedslow125Cnom−30.871729ns/+0.037765ns/1506electrical; publicfastmixedtemperature remainsdiagnostic",
+    "retained_paths": [
+      "build/silicon/task009-core-power-body-route-a2/nom-setup.rpt",
+      "build/silicon/task009-core-power-body-route-a2/min-hold.rpt",
+      "build/silicon/task009-core-power-body-route-a2/max-hold.rpt"
+    ],
+    "critical_cause": "Nominalsample_time[7]→timestamp/acceptcontrol→contact_deadline[36]/D arrival25.894392ns,required10.704312ns. Theunchanged64bitdeadlinehold/controlcone remainsphysicalcritical; bankedcandidatebelowattemptsitsremoval.",
+    "selected_implementation": "UNCHANGEDpowered248; fullbodycandidateisNOTselected",
+    "scope": "Actualchangedgeometry, freshroute+3RC+9corners; nofullprocess/LVS/IR/EM/pad/packageclosure",
+    "process_drc": {
+      "receipt": {
+        "path": "build/silicon/task009-core-power-body-process-a1/result.json",
+        "sha256": "184a77524b7dd60610519d9bdbf1ae4f5bfca6485a1acd41bc964138057ecf17"
+      },
+      "status": "FAIL",
+      "seconds": 307.2042902120156,
+      "original_deck_seconds": 300.065,
+      "scope": "Exactchangedactualgeometry/directoriginalGDS+DEF;originalrecommendedSRAMhelperandimmutablefullDRCdeck; allstyle/on/checkmarkerscompleted but no result afterLoadingDRCCIFstyle. Original300sdeadline/SIGTERMretained; ownedprocessreaped, recoverydatabasearchived. NoDRCcount/LVS/extractionpass."
+    },
+    "detailed_path_observer": {
+      "path": "build/silicon/task009-powered-critical-path-comparison-a1/result.json",
+      "sha256": "263832905f39ab3203fd0955d18acbdc57269ea953c42947ee1f3cdfa9990f05"
+    }
+  },
+  "SRAM_peripheral_leaf_attempt": {
+    "receipt": {
+      "path": "build/silicon/task009-sram-periphery-connectivity-a1/result.json",
+      "sha256": "3b7df5679d162fb53898e58fe146a2871ed459f9b07074b5bef9733d93dd42d9"
+    },
+    "status": "FAIL",
+    "seconds": 1.782275664,
+    "scope": "ActualoriginalGDScellCOLDEC2vsoriginalCDLclosed7cellhierarchy, originalrecommendedimport/deck; notfullmacro/controllerLVS",
+    "blocker": "ActualstandaloneGDSextractionleavesVDD_uq0on26PMOSsource/bulk, remaining70onVDD;originalreferenceall96onVDD. Parent-supplycontextnotresolved. Noresistorinthisleafclosure, noresistorwaiver/aliasbetweenbulknets.",
+    "negative_controls": "NOT_RUNbecauseoriginalpositivefailed"
+  },
+  "deadline_banked_private_candidate": {
+    "status": "FUNCTIONAL_AND_MAPPED_CONE_QUALIFIED_NOT_SELECTED_NOT_ROUTED",
+    "source": {
+      "path": "build/silicon/task009-watchdog-banked-prep-a2/candidate.sv",
+      "sha256": "5f90a24e35f554e04523b1dd5e8044546dcc8ebc2b6aba42563ebd812c52f037"
+    },
+    "canonical_source": {
+      "path": "sim/rtl/lemma_pen.sv",
+      "sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b"
+    },
+    "implementation": "Twofull64bitinactive-writepayloadbanks, sameedgeacceptedslotselectandactiveflag; unacceptedwritesonlyinactivebank. Legacyregisterpathpreserved. Samewatchdogclear/reset/ACK/FIFOcapacityandpublicbehavior; privateadditionalimplementationstate hasnooldmicrostatemigrationclaim.",
+    "protocol_mapping": {
+      "path": "build/silicon/task009-watchdog-banked-qualification-a1/result.json",
+      "sha256": "3f922f9d8f42563f8d05ceacfd2df57b00910761c7497d6332ca208b13bd5c2d"
+    },
+    "projection_fixture": {
+      "path": "build/silicon/task009-watchdog-banked-projection-a2/result.json",
+      "sha256": "b897caecf4be5a52bf7feb058ab7a81abbbdd715f4cb2094877e9231d9989993"
+    },
+    "projection": "PASS2.068693s canonicalarchitecturaldeadline/publicbus everyedge;fullcapacity,carry/equality/reset/watchdog/overflow/ACK/XZ,66naturalcarrycases plus396seededboundarycases;3actualmutantsrejected",
+    "mapped_cone": {
+      "path": "build/silicon/task009-watchdog-banked-cone-a1/result.json",
+      "sha256": "f2d0ec2be7fc13946bb04eb10433c24c35ec6c77d9721362be31832f9260a170"
+    },
+    "cone": "Originalnow_ticksreach64/64deadlineD;candidateZERO/128payloadD,slotD1positivecontrol;sample_timeall128payloadD. +380cells/+67FF,7446cells/876FF/3SRAM.",
+    "preflight": {
+      "path": "build/silicon/task009-watchdog-banked-timing-a3/result.json",
+      "sha256": "c96a0b62a14c2d0bc1d67602a53c255c7e57e576412a7bc5d80ec94f9d468552"
+    },
+    "preflight_scope": "Originalrealtyp25Clibraries/10ns/2nsI/O/.25uncertainty/drivers/loads,ZERO INTERCONNECT lowerboundONLY; originalnow→deadlinearrival7.451369ns,candidateNO_PATH,sample→bank7.114247ns;overallWNSstillFAIL−3.964620→−3.758133ns(addrdecodefanout362/1.318880pF). Noactualroutedtiminginferred.",
+    "retained_observer_failures": [
+      {
+        "path": "build/silicon/task009-watchdog-banked-projection-a1/result.json",
+        "sha256": "a360e589dd8e05cf3b001d718d6fb3265e4e7dd5735f91d4b0151f4172dc52ac"
+      },
+      {
+        "path": "build/silicon/task009-watchdog-banked-timing-a1/result.json",
+        "sha256": "7575e3ae525fff2bae5f0339eb92334924c4a54f82238b4c00e0b1ae45e79b54"
+      },
+      {
+        "path": "build/silicon/task009-watchdog-banked-timing-a2/result.json",
+        "sha256": "b06f092da0a8e0034fd83d2d936a5ab3eec1c84cfb75009056c6b25880d74784"
+      }
+    ]
   }
 }

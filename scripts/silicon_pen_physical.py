@@ -64,6 +64,7 @@ def main():
     p.add_argument('--core-power-grid-reroute', dest='preserve_routed_netlist', action='store_true', help='For the core-grid question only, retain the exact already repaired logical netlist/placement and reroute against new real power geometry; no further resizer repair claim')
     p.add_argument('--selected-implementation', action='store_true', help='Consume the existing physical-lock selected powered pen configuration; requires its repaired signal-route predecessor and a current qualified mapping')
     p.add_argument('--protect-sram-power-edges', action='store_true', help='Physical-only changed candidate: preserve PG pins and add original Metal4 spacing clearance for signals at real macro PG boundaries')
+    p.add_argument('--protect-sram-power-geometry', action='store_true', help='Physical-only candidate: protect full actual PG pin bodies and special-wire/via metal using unchanged original process/CTS spacing')
     p.add_argument('--work-dir', type=Path, required=True)
     args = p.parse_args()
     selected = None
@@ -115,6 +116,7 @@ def main():
         require(not args.preserve_routed_netlist or args.core_power_grid, 'preserved-netlist rerouting is scoped only to real new power-grid integration')
         require(not args.completed_power_grid_route_from or (args.core_power_grid and args.preserve_routed_netlist and not args.completed_eco_route_from), 'completed grid assessment requires the exact core-grid interface question')
         require(not args.protect_sram_power_edges or (args.core_power_grid and args.preserve_routed_netlist and not args.completed_power_grid_route_from), 'PG edge clearance requires fresh routing against the actual preserved-netlist grid')
+        require(not args.protect_sram_power_geometry or (args.core_power_grid and args.preserve_routed_netlist and not args.protect_sram_power_edges and not args.completed_power_grid_route_from), 'full PG geometry is a separate fresh routing question')
         available = next(int(x.split()[1]) * 1024 for x in Path('/proc/meminfo').read_text().splitlines()
                          if x.startswith('MemAvailable:'))
         require(available >= 8 << 30, 'launch memory floor')
@@ -179,9 +181,11 @@ def main():
             if args.core_power_grid:
                 require(previous.get('power_grid') == 'NOT_IMPLEMENTED', 'this first grid integration requires a prior route without PG geometry')
                 inputs += [ROOT / 'tooling/silicon/pen-power-grid.tcl', ROOT / 'tooling/silicon/pen-power-check.tcl', ROOT / 'scripts/silicon_power_ports.py']
-                if args.protect_sram_power_edges:
+                if args.protect_sram_power_edges or args.protect_sram_power_geometry:
                     inputs += [ROOT / 'tooling/silicon/pen-power-edge.tcl']
-                    report['PG_edge_clearance'] = 'CANDIDATE_ORIGINAL_METAL4_0.24UM_SIGNAL_ONLY'
+                    report['PG_edge_clearance'] = ('CANDIDATE_ACTUAL_FULL_PG_GEOMETRY_ORIGINAL_PROCESS_CTS_0.42UM' if args.protect_sram_power_geometry else 'CANDIDATE_ORIGINAL_METAL4_0.24UM_SIGNAL_ONLY')
+                    if args.protect_sram_power_geometry:
+                        inputs += [std / 'lef/sg13g2_tech.lef']
                 report['power_grid_routing_question'] = 'Exact retained repaired signal netlist with new grid obstacles; no further ECO' if args.preserve_routed_netlist else 'New actual-SPEF ECO and new grid obstacles'
             require(sha(prior / 'routed.def') == previous['route_enclosure']['routed_def_sha256'], 'original route DEF differs')
             require(sha(prior / 'nom.spef') == previous['extracted_rc']['nom']['spef_sha256'], 'original nominal SPEF differs')
@@ -266,6 +270,8 @@ source {{{ROOT/'tooling/silicon/layout.tcl'}}}
                 script.write_text(f'set core_power_grid 1\nset preserve_routed_netlist {1 if args.preserve_routed_netlist else 0}\nset power_grid_script {{{ROOT/"tooling/silicon/pen-power-grid.tcl"}}}\nset power_check_script {{{ROOT/"tooling/silicon/pen-power-check.tcl"}}}\n' + script.read_text())
         if args.protect_sram_power_edges:
             script.write_text(f'set power_edge_script {{{ROOT/"tooling/silicon/pen-power-edge.tcl"}}}\n' + script.read_text())
+        if args.protect_sram_power_geometry:
+            script.write_text(f'set power_geometry_script {{{ROOT/"tooling/silicon/pen-power-edge.tcl"}}}\n' + script.read_text())
         # Preserve the real failed database, including GRT's stored overflow
         # grid, before Tcl propagates an implementation error. A snapshot is
         # diagnostic state only and never a completed routed layout.

@@ -69,6 +69,13 @@ if {[info exists core_power_grid] && $core_power_grid == 1} {
         set power_edge_clearance [lemma_add_power_edge_clearance $out]
         lemma_check_power_edge_clearance $power_edge_clearance
     }
+    if {[info exists power_geometry_script]} {
+        source $power_geometry_script
+        set power_geometry_clearance [lemma_add_power_geometry_clearance $out $prior $pdk/lef/sg13g2_tech.lef]
+        lemma_check_power_geometry_clearance $power_geometry_clearance
+        write_db $out/power-geometry-before-route.odb
+        write_def $out/power-geometry-before-route.def
+    }
 }
 set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
 global_route -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/global-congestion.rpt -verbose
@@ -85,6 +92,7 @@ if {[info exists core_power_grid] && $core_power_grid == 1} {
     global_connect
     lemma_check_power_grid $power_bindings_before $out after-route
     if {[info exists power_edge_clearance]} {lemma_check_power_edge_clearance $power_edge_clearance}
+    if {[info exists power_geometry_clearance]} {lemma_check_power_geometry_clearance $power_geometry_clearance}
 }
 set file [open $out/router-drc-count.txt w]
 puts $file [detailed_route_num_drvs]
