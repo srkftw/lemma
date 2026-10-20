@@ -33,6 +33,32 @@ def school_capability(data):
     return result
 
 
+def publication_observations(data):
+    """Present separate complete guest install/validated-selection receipts.
+
+    A selection Commit follows the guest's bounded package read and validation.
+    It never changes the status of a distinct immutable installation attempt.
+    """
+    if not isinstance(data, bytes) or len(data)>16*1048576:
+        raise ValueError('guest publication observation exceeds16MiB')
+    result={'installation':None,'selectedPublication':None}
+    for row in re.finditer(rb'(?:^|\n)K1 (000000000000(?:04b1|04b9)) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)',data):
+        tag,outcome,sequence,object,crc=(int(x,16) for x in row.groups())
+        if tag==0x4b1:
+            if outcome & 255 != 1:continue
+            key='installation';status=outcome >> 8;success='installed'
+        else:key='selectedPublication';status=outcome;success='selected'
+        identity,edition=object & 65535,object >> 16
+        if (status>255 or sequence>0x7ffffffffffffffe or object >> 48 or crc>0xffffffff or
+                identity==0 or edition==0 or status==0 and sequence==0):
+            result[key]=None
+            continue
+        result[key]={'authority':'compiled-guest-report','state':success if status==0 else 'failed',
+                     'status':str(status),'identity':str(identity),'edition':str(edition),
+                     'sequence':str(sequence),'crc32':str(crc)}
+    return result
+
+
 def submission_stream(data):
     """Copy one complete committed guest byte stream; never interpret its work."""
     if not isinstance(data,bytes) or len(data)>16*1048576:
@@ -202,6 +228,7 @@ class SchoolService:
                     queue={'state':'cancelled' if d==2 else 'acknowledged','queue':str(a),'schoolCommit':str(b),'observedFrontier':str(c),
                            'observation':'new-pointer-commit' if key==0x733 else 'restored-pointer-read'}
             return {'authority':'complete compiled-guest console records','records':records,'outgoingQueue':queue,'capability':school_capability(data),
+                    **publication_observations(data),
                     'deliveryReports':[{k:v for k,v in r.items() if k in ('status','result','error')} for r in self.receipts.values()],
                     'deliveryObserverError':getattr(self,'delivery_error',None)}
         if operation=='poll':

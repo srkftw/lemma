@@ -403,6 +403,27 @@ for(const phase of ['adapter','device']){
  f.worker.onmessage({data:{type:'school',operation:'feedback',result:{feedback:[row],next:147,more:true}}});
  f.worker.onmessage({data:{type:'closed'}});assert.equal(next.disabled,true);
 }
+// A validated selection has its own meaning after a refused immutable install.
+// Only the exact full tuple can be described as the matching stored bytes.
+{
+ const f=await appFixture(undefined),failure={authority:'compiled-guest-report',state:'failed',status:'223',identity:'804',edition:'1',sequence:'0',crc32:'123'};
+ const selected={authority:'compiled-guest-report',state:'selected',status:'0',identity:'804',edition:'1',sequence:'9007199254740993',crc32:'123'};
+ const emit=(course,selection)=>f.worker.onmessage({data:{type:'state',state:{cycle:'1'},guestCourse:course,guestCourseSelection:selection,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ emit(failure,selected);let text=f.node('#school-installation').textContent;
+ assert.match(text,/installation failure \(223\)/);assert.match(text,/matching already-stored publication/);
+ assert.match(text,/durable selection sequence 9007199254740993/);assert.match(text,/not a new installation receipt/);
+ assert.doesNotMatch(text,/reports installed package/);
+ emit(failure,{...selected,crc32:'124'});text=f.node('#school-installation').textContent;
+ assert.match(text,/CRCs differ/);assert.doesNotMatch(text,/matching already-stored/);
+ emit(failure,{...selected,identity:'803'});text=f.node('#school-installation').textContent;
+ assert.match(text,/selected stored package 803, edition 1/);assert.doesNotMatch(text,/matching already-stored/);
+ emit(failure,{...selected,edition:'2'});assert.doesNotMatch(f.node('#school-installation').textContent,/matching already-stored/);
+ emit(failure,null);assert.doesNotMatch(f.node('#school-installation').textContent,/selected/);
+ emit(null,selected);assert.match(f.node('#school-installation').textContent,/No installation result/);
+ assert.match(f.node('#school-installation').textContent,/selected stored package 804, edition 1/);
+ emit(failure,{...selected,state:'failed',status:'227',sequence:'0'});assert.match(f.node('#school-installation').textContent,/selection failure \(227\)/);
+ f.worker.onmessage({data:{type:'closed'}});assert.equal(f.node('#school-installation').textContent,'No running guest.');
+}
 // Keyboard pen uses the same raw input boundary, including contact cancellation.
 {
  const f=await appFixture(undefined),paper=f.canvas();paper.width=1650;paper.height=2200;

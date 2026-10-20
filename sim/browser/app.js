@@ -223,7 +223,15 @@ worker.onmessage=({data:m})=>{
   document.querySelector('#serial-status').textContent=serial===undefined?'Serial transfer status unavailable.':
    `Serial bytes: ${serial.delivered} delivered, ${serial.pending} queued, ${serial.canceled} cancelled of ${serial.accepted} accepted${serial.blocked?' · waiting for guest receiver':''}. Byte delivery is not an installation receipt.`;
   const course=m.guestCourse??null;
-  document.querySelector('#course-result').textContent=course===null?'No installation result observed in this guest launch.':course.state==='installed'?`Guest reports installed package ${course.identity}, edition ${course.edition}, durable sequence ${course.sequence}.`:`Guest reports installation failure (${course.status}) for package ${course.identity}, edition ${course.edition}.`;
+  let publication=course===null?'No installation result observed in this guest launch.':course.state==='installed'?`Guest reports installed package ${course.identity}, edition ${course.edition}, durable sequence ${course.sequence}.`:`Guest reports installation failure (${course.status}) for package ${course.identity}, edition ${course.edition}.`;
+  const selected=m.guestCourseSelection??null;
+  if(selected?.state==='selected'){
+   const matching=course!==null&&course.identity===selected.identity&&course.edition===selected.edition&&course.crc32===selected.crc32;
+   publication+=` Guest separately validated and selected ${matching&&course.state==='failed'&&course.status==='223'?'the matching already-stored publication':'stored package '+selected.identity+', edition '+selected.edition}, durable selection sequence ${selected.sequence}. Tap COURSE to read it; this is not a new installation receipt.`;
+   if(course?.identity===selected.identity&&course?.edition===selected.edition&&course?.crc32!==selected.crc32)
+    publication+=' Installation and selection CRCs differ; these observations concern different package bytes.';
+  }else if(selected?.state==='failed')publication+=` Guest reports selection failure (${selected.status}) for package ${selected.identity}, edition ${selected.edition}.`;
+  document.querySelector('#course-result').textContent=publication;
   document.querySelector('#school-installation').textContent=document.querySelector('#course-result').textContent;
   const queue=m.guestQueue;
   document.querySelector('#school-outgoing').textContent=queue===undefined||queue===null?'No committed outgoing work observed in this launch.':queue.state==='failed'?`Guest outgoing queue failed (${queue.code}); saved paper remains available.`:queue.state==='pending'?(queue.streamComplete?`Complete outgoing work ${queue.queue}; no guest acknowledgement receipt yet.`:`Guest committed outgoing work ${queue.queue}; receiving envelope ${queue.streamedBytes??'0'}/${queue.bytes} bytes. Writing and Save remain available.`):`Guest reports outgoing work ${queue.queue} ${queue.state}${queue.observation==='restored-pointer-read'?' after cold recovery':''}.`;

@@ -5,7 +5,7 @@ import createQemu from './qemu-system-riscv64.js';
 import {Control,CPU_STOP_CONTRACT,cpuStopObservation} from './control.mjs';
 import {admitUart} from './uart_arrivals.mjs';
 import {attachOpfsFile} from './opfs_backing.mjs';
-import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,guestCourseRejection,NotebookFaultObserver} from './guest_records.js';
+import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,guestCourseSelectionState,guestCourseRejection,NotebookFaultObserver} from './guest_records.js';
 import {courseInstallFrame,courseSchoolFrames,schoolSelectionRequested} from './course_transport.js';
 import {RunBudget,uint64,resumeBudget,hostSecondsLimit} from './run_budget.js';
 import {PcmEgress} from './pcm_egress.mjs';
@@ -68,7 +68,7 @@ async function sendState(state){
  // not expose queued payloads or interpret byte delivery as guest installation.
  state.uart_ingress=exactJson(await control.get('raw-uart-state'));
  void school.observeDelivery(uart(),guestStart,{cycle:state.cycle,completed:state.panel_completed,accepted:state.panel_sequence,busy:state.paper_busy}).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));
- postMessage({type:'state',state,guestFault:observeFault(),guestInkLoss:notebookFault.inkLoss,mode,modeContract:contract,running,guestObservation:'boot',guestCommit:guestCommitState(uart(),guestStart),guestCourse:guestCourseInstallState(uart(),guestStart),guestCourseRejection:guestCourseRejection(uart(),guestStart),guestQueue:guestSchoolQueueState(uart(),guestStart),backingMedium:{name:mediumName,private:false,ready:true},backingMetrics:backing.metrics,controlMetrics:control.metrics,pcmEgress:egress.inspect(),heapBytes,readyAt,hostSeconds:(performance.now()-started)/1000,pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-started)/1000,simulationCallSeconds:timing.runSeconds,backingCallSeconds:0,backingCallSecondsDuringRun:0,backingTimingAvailable:false}});
+ postMessage({type:'state',state,guestFault:observeFault(),guestInkLoss:notebookFault.inkLoss,mode,modeContract:contract,running,guestObservation:'boot',guestCommit:guestCommitState(uart(),guestStart),guestCourse:guestCourseInstallState(uart(),guestStart),guestCourseSelection:guestCourseSelectionState(uart(),guestStart),guestCourseRejection:guestCourseRejection(uart(),guestStart),guestQueue:guestSchoolQueueState(uart(),guestStart),backingMedium:{name:mediumName,private:false,ready:true},backingMetrics:backing.metrics,controlMetrics:control.metrics,pcmEgress:egress.inspect(),heapBytes,readyAt,hostSeconds:(performance.now()-started)/1000,pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-started)/1000,simulationCallSeconds:timing.runSeconds,backingCallSeconds:0,backingCallSecondsDuringRun:0,backingTimingAvailable:false}});
 }
 async function panel(force=false,observation=null){
  if(!force){observation??=await inspect();if(panelSequence===observation.panel_completed)return;}

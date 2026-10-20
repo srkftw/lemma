@@ -69,6 +69,19 @@ export function guestCourseInstallState(bytes,start){
  return result;
 }
 
+// Selection has its own guest-validated read and Store Commit. It does not
+// convert an earlier immutable-edition refusal into a new installation.
+export function guestCourseSelectionState(bytes,start){
+ const row=guestRecordFields(bytes,start,'00000000000004b9');if(row===null)return null;
+ const [status,sequence,object,crc]=row.map(value=>BigInt('0x'+value));
+ if(status>255n||sequence>0x7ffffffffffffffen||object>>48n||crc>0xffffffffn)return null;
+ const identity=object&65535n,edition=object>>16n;
+ if(identity===0n||edition===0n||(status===0n&&sequence===0n))return null;
+ return {authority:'compiled-guest-report',state:status===0n?'selected':'failed',
+  status:status.toString(),identity:identity.toString(),edition:edition.toString(),
+  sequence:sequence.toString(),crc32:crc.toString()};
+}
+
 // A course-admission rejection is recoverable and is not a storage failure.
 // Present the guest's complete receipt; do not infer its cause from host timing.
 export function guestCourseRejection(bytes,start){
