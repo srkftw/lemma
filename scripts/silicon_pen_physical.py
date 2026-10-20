@@ -92,7 +92,7 @@ def require_fresh_power_recipe(args):
 def require_route_iterations(args):
     require(args.detail_route_iterations in (3, 8), 'unsupported detailed-route repair bound')
     if args.detail_route_iterations == 8:
-        require(args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or getattr(args, 'capacity_launch_buffer_from', None) or getattr(args, 'slew_launch_buffer_from', None) or getattr(args, 'decode_launch_buffer_from', None) or getattr(args,'well_fill_from',None) or getattr(args,'two_load_launch_from',None) or getattr(args,'hold_decode_from',None) or (args.core_power_grid and args.preserve_routed_netlist and
+        require(getattr(args, 'fresh_native_margin_grid', False) or args.acceptance_launch_buffer or args.padded_sram_input_delay_from or args.control_launch_buffer_from or getattr(args, 'capacity_launch_buffer_from', None) or getattr(args, 'slew_launch_buffer_from', None) or getattr(args, 'decode_launch_buffer_from', None) or getattr(args,'well_fill_from',None) or getattr(args,'two_load_launch_from',None) or getattr(args,'hold_decode_from',None) or (args.core_power_grid and args.preserve_routed_netlist and
                 args.protect_sram_power_geometry and args.routed_eco_from and
                 not args.fresh_core_power_grid and not args.completed_eco_route_from and
                 not args.completed_power_grid_route_from and not args.completed_fresh_grid_route_from),
@@ -156,6 +156,10 @@ def require_capacity_launch_recipe(args, *, selected_binding=False):
 def require_clock_layer_recipe(args, *, selected_binding=False):
     require(args.clock_min_routing_layer in ('Metal2', 'Metal3'), 'unknown clock minimum layer')
     if args.clock_min_routing_layer == 'Metal3':
+        if getattr(args, 'fresh_native_margin_grid', False):
+            from silicon_fresh_margin import require_recipe
+            require_recipe(args)
+            return
         require((args.capacity_launch_buffer_from or getattr(args,'slew_launch_buffer_from',None) or getattr(args,'decode_launch_buffer_from',None) or getattr(args,'well_fill_from',None) or getattr(args,'two_load_launch_from',None) or getattr(args,'hold_decode_from',None)) and args.routed_eco_from and
                 args.detail_route_iterations == 8 and
                 (not args.selected_implementation or selected_binding),
@@ -163,6 +167,10 @@ def require_clock_layer_recipe(args, *, selected_binding=False):
 
 
 def qualified_clock_layer_inputs(args):
+    if getattr(args, 'fresh_native_margin_grid', False):
+        from silicon_fresh_margin import require_recipe
+        require_recipe(args)
+        return []
     if args.clock_min_routing_layer == 'Metal2':
         return []
     pilot = ROOT / 'build/silicon/task009-capacity-clock3-grt-preflight-a1'
@@ -236,6 +244,7 @@ def main():
     p.add_argument('--routed-eco-from', type=Path, help='Repair the exact sealed routed nominal-SPEF producer, then route and extract the changed physical netlist afresh')
     p.add_argument('--core-power-grid', action='store_true', help='Add the real separate VDDlogic/VDDARRAY/VSS core grid after actual-SPEF repair and before fresh signal routing; requires a prior route without PG geometry')
     p.add_argument('--fresh-core-power-grid', action='store_true', help='Integrate a fresh qualified mapped candidate, all normal placement/clock/resizer phases and three-supply grid before first GRT; requires full PG geometry protection, no prior netlist or deferred ECO')
+    p.add_argument('--fresh-native-margin-grid', action='store_true', help='Fresh standard-admitted97b077 mapping only: regenerate placement/PG/clockM3/8DRT with reviewedVSS source and275nm M2 router representation; independent native420 final guard remains mandatory')
     p.add_argument('--acceptance-launch-buffer', action='store_true', help='Source-bound one-buf8 ECO on the exact completed46 powered route; preserve all existing grid/OBS/ports and old cells, then freshly route/extract every signal at unchanged constraints')
     p.add_argument('--padded-sram-input-delay-from', type=Path, help='Consume exact qualified completed original-padding geometry with33 original delaycells on31 SRAM inputs; no repeated legalization/resizer, fresh signal routing/extraction and all original constraints')
     p.add_argument('--control-launch-buffer-from', type=Path, help='Explicit unselected finite-qualified three-original-buf8 geometry on padded30 baseline; all old cells/33delays/PG/OBS/padding preserved, fresh routing/extraction only')
@@ -258,6 +267,9 @@ def main():
     p.add_argument('--protect-sram-power-geometry', action='store_true', help='Physical-only candidate: protect full actual PG pin bodies and special-wire/via metal using unchanged original process/CTS spacing')
     p.add_argument('--work-dir', type=Path, required=True)
     args = p.parse_args()
+    if args.fresh_native_margin_grid:
+        from silicon_fresh_margin import require_recipe as require_fresh_margin_recipe
+        require_fresh_margin_recipe(args)
     require_fresh_power_recipe(args)
     require_launch_recipe(args)
     require_padded_hold_recipe(args)
@@ -445,6 +457,29 @@ def main():
             inputs += [std / 'lef/sg13g2_tech.lef']
             report['power_grid_routing_question'] = 'Fresh qualified mapped source, normal resizer phases, actual grid and full PG geometry before first GRT; no historical netlist'
             report['PG_edge_clearance'] = 'CANDIDATE_ACTUAL_FULL_PG_GEOMETRY_ORIGINAL_PROCESS_CTS_0.42UM'
+        if args.fresh_native_margin_grid:
+            from silicon_fresh_margin import prepare as prepare_fresh_margin
+            grid_source = out / 'fresh-reviewed-power-grid.tcl'
+            report['native_power_margin'] = prepare_fresh_margin(
+                mapping, ROOT / 'tooling/silicon/pen-power-grid.tcl', grid_source)
+            report['power_grid_routing_question'] = 'Fresh97b077 RTL/mapping/placement/clocks/3railPG; reviewedVSSphase+275M2representation, independent native420 guard; no old327 cell/ODB/guide/RC substitution'
+            inputs += [grid_source, ROOT / 'tooling/silicon/pen-power-grid.tcl']
+            # These policies are used by the native pre-route readback child.
+            # Capture their complete local import closure before that child runs.
+            from silicon_fresh_margin import assess as fresh_margin_assess
+            from silicon_power_margin import pg_geometry
+            from silicon_power_clearance import rectangular_clearance
+            from silicon_sram_input_hold import padding
+            from silicon_acceptance_launch import snapshot
+            import silicon_buffered_pins
+            inputs += [Path(module.__file__).resolve() for module in list(sys.modules.values())
+                       if getattr(module, '__file__', None) and
+                       Path(module.__file__).resolve().is_relative_to(ROOT / 'scripts')]
+            fresh_proof = out / 'fresh-native-prefix.py'
+            fresh_proof.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0,{str(ROOT/"scripts")!r})\nfrom silicon_fresh_margin import assess\nassess(Path({str(out/"power-geometry-before-route.odb")!r}),Path({str(std/"lib/sg13g2_stdcell_typ_1p20V_25C.lib")!r}),Path({str(out/"fresh-native-prefix.json")!r}))\n')
+            fresh_final = out / 'fresh-native-final.py'
+            fresh_final.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0,{str(ROOT/"scripts")!r})\nfrom silicon_fresh_margin import assess\nassess(Path({str(out/"routed.odb")!r}),Path({str(std/"lib/sg13g2_stdcell_typ_1p20V_25C.lib")!r}),Path({str(out/"fresh-native-final.json")!r}))\n')
+            inputs += [fresh_proof, fresh_final]
         if args.completed_fresh_grid_route_from:
             completed = args.completed_fresh_grid_route_from.resolve()
             producer = json.loads((completed / 'result.json').read_text())
@@ -778,6 +813,8 @@ source {{{ROOT/'tooling/silicon/layout.tcl'}}}
             script.write_text(f'set power_geometry_script {{{ROOT/"tooling/silicon/pen-power-edge.tcl"}}}\n' + script.read_text())
         if args.fresh_core_power_grid:
             script.write_text(f'set fresh_power_script {{{ROOT/"tooling/silicon/pen-fresh-power.tcl"}}}\nset power_grid_script {{{grid_source}}}\nset power_check_script {{{ROOT/"tooling/silicon/pen-power-check.tcl"}}}\n' + script.read_text())
+        if args.fresh_native_margin_grid:
+            script.write_text(f'set clock_min_routing_layer Metal3\nset detail_route_iterations 8\nset ::lemma_M2_route_bloat_nm 275\nset fresh_native_openroad {{{openroad}}}\nset fresh_native_preflight_script {{{fresh_proof}}}\n' + script.read_text())
         # Preserve the real failed database, including GRT's stored overflow
         # grid, before Tcl propagates an implementation error. A snapshot is
         # diagnostic state only and never a completed routed layout.
@@ -824,6 +861,12 @@ write_sdc {{{out/'routed.sdc'}}}
             require_no_capacity_underflow((out / 'layout.log').read_text())
         require((out / 'routed.def').is_file(), 'no completed route')
         if args.fresh_core_power_grid:
+            if args.fresh_native_margin_grid:
+                report['fresh_native_prefix'] = json.loads((out / 'fresh-native-prefix.json').read_text())
+                require(report['fresh_native_prefix']['status'] == 'PASS_FRESH_MAPPED_NATIVE_PG_PADDING_PIN_PRECURSOR_NOT_ROUTED',
+                        'actual fresh native PG/pin/padding precursor required')
+                invoke([str(openroad), '-python', '-exit', str(fresh_final)], 'fresh-native-final', 30)
+                report['fresh_native_final'] = json.loads((out / 'fresh-native-final.json').read_text())
             proof = out / 'buffered-endpoints.py'
             proof.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\nfrom silicon_buffered_pins import assess\nassess(Path({str(out/"post-power/routed.odb")!r}), Path({str(out/"routed.odb")!r}), Path({str(std/"lib/sg13g2_stdcell_typ_1p20V_25C.lib")!r}), Path({str(out/"buffered-endpoints.json")!r}))\n')
             invoke([str(openroad), '-python', '-exit', str(proof)], 'buffered-endpoints', 15)
@@ -898,7 +941,7 @@ lemma_check_power_grid $qualified_bindings $out after-route
         if args.preferred_access_from:
             from silicon_preferred_route import check_final_access
             report['retained_preferred_access']['actual_final_relation'] = check_final_access(out, preferred)
-        if args.power_margin_from or (args.slew_launch_buffer_from or args.decode_launch_buffer_from or args.well_fill_from or args.two_load_launch_from or args.hold_decode_from):
+        if args.fresh_native_margin_grid or args.power_margin_from or (args.slew_launch_buffer_from or args.decode_launch_buffer_from or args.well_fill_from or args.two_load_launch_from or args.hold_decode_from):
             guard=out/'native-power-margin.py'
             guard.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0,{str(ROOT/"scripts")!r})\nfrom silicon_power_clearance import check\ncheck(Path({str(out/"routed.odb")!r}),Path({str(out/"enclosure/repaired-original.lef")!r}),Path({str(out/"native-power-margin.json")!r}))\n')
             invoke([str(openroad),'-python','-exit',str(guard)],'native-power-margin',45)

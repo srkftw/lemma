@@ -90,7 +90,17 @@ detailed_placement
 check_placement -verbose
 if {[info exists center_validation_cones] && $center_validation_cones == 1} {source $validation_region_check_script}
 if {[info exists fresh_power_script]} {source $fresh_power_script}
-set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
+if {[info exists fresh_native_preflight_script]} {
+    # This is a readback of the actual newly placed/powered database. The
+    # child rejects real supply/BIST/delay/padding mutations and restores them;
+    # it does not import an old layout or create a signal-routing result.
+    puts "Reading back actual fresh PG/pin/padding source before signal routing"
+    exec $fresh_native_openroad -python -exit $fresh_native_preflight_script > $out/fresh-native-prefix.log 2>@1
+    puts "Fresh native PG/pin/padding precursor completed; no signal-route qualification"
+}
+if {![info exists clock_min_routing_layer]} {set clock_min_routing_layer Metal2}
+if {$clock_min_routing_layer ni {Metal2 Metal3}} {error "Unsupported clock routing floor"}
+set_routing_layers -signal Metal2-Metal5 -clock ${clock_min_routing_layer}-Metal5
 global_route -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/global-congestion.rpt -verbose
 # Placement estimates differ from actual global RC. Repair once against live
 # routed parasitics, then regenerate guides and RC after all changed cells.
@@ -138,7 +148,9 @@ set core_area [expr {[$core dx] * [$core dy] / double($units * $units)}]
 set file [open $out/global-route-summary.json w]
 puts $file "{\"cell_area_um2\": $cell_area, \"core_area_um2\": $core_area, \"utilization_percent\": [expr {100.0 * $cell_area / $core_area}], \"instances\": [llength [$block getInsts]], \"clock_period_ns\": $clock_ns, \"timing_model\": \"global-route RC estimate before detailed signal routing\", \"power_grid\": \"$power_grid_state\", \"process_drc\": \"NOT_RUN\", \"lvs\": \"NOT_RUN\"}"
 close $file
-detailed_route -output_drc $out/route.drc -drc_report_iter_step 1 -output_maze $out/route.maze -droute_end_iter 3 -verbose 1
+if {![info exists detail_route_iterations]} {set detail_route_iterations 3}
+if {$detail_route_iterations ni {3 8}} {error "Unsupported detailed-route repair bound"}
+detailed_route -output_drc $out/route.drc -drc_report_iter_step 1 -output_maze $out/route.maze -droute_end_iter $detail_route_iterations -verbose 1
 if {[info exists fresh_power_script]} {
     global_connect
     # Normal global-RC resizer phases legitimately add hold buffers at SRAM

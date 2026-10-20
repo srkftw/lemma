@@ -10454,7 +10454,7 @@
     "constraints": "Original10ns clock,2ns I/O delays,.006pF outputloads,.25ns uncertainty,.15ns clocktransition,originalBUF4 inputdrive,typ25C standard/SRAMLib. Actual native semantic nets bind133 candidate and130 predicate-only state pins. Ideal clocks/no wireRC/placement/CTS/pad/package; no endpoints masked.",
     "tradeoffs": "Actual7095cells/811FF versus canonical7066/809 and predicate7025/810. Global unplacedsetup−3.691342→+1.992360ns and headDarrival13.119879→4.852305ns; allFFdeadline feedbackslack−1.367893→+3.946407ns. Exactdeadline2→20 arrival worsens3.856562→4.390675ns and64deadlinefeedback4.906940→5.217794ns, still positive in this ideal model. Holdremains−.653249ns. Positive lowerboundsetup does not establish routed timing.",
     "selected_RTL_and_physical_lock": "UNCHANGED504f_AND0.6.0",
-    "standard_product_mapping_receipt": "NOT_YET_RUN; private producer schema is not silently substituted for check_pen_sram.py physical-input admission",
+    "standard_product_mapping_receipt": "FIRST_STANDARD_PRODUCER_ATTEMPT_FAILED_BEFORE_ICARUS_YOSYS; corrected caller prepared, not yet executed",
     "fresh_placement_route_PEX_process": "NOT_RUN_FOR_THIS_RTL",
     "runtime_rebuild": "NOT_REQUESTED_OR_CLAIMED",
     "next_physical_dependency": "Produce the supported candidate-only mapping receipt, then fresh source-specific placement/grid/routing and all available extracted RC/PVT/nativegeometry/connectivity/process checks; old ABC cell placements and well moves cannot be relabeled as this new RTL.",
@@ -10465,6 +10465,36 @@
       "matchedfastmodel/rules/powerintegrity",
       "fabrication/physicalfunctional/safetyqualification",
       "educationalbenefit"
-    ]
+    ],
+    "retained_standard_producer_boundary_failure": {
+      "path": "build/silicon/task009-head-bypass-standard-mapping-a1/result.json",
+      "sha256": "ce25baf28718a8e093a0c8bb2e93cca66e12f93c0a448e2d01b2cde8978a7886",
+      "status": "FAIL",
+      "seconds": 7.428019332932308,
+      "source_seal_equal": true,
+      "all_owned_reaped": true,
+      "meaning": "Outer per-file128MiB hard limit conflicted with the maintained checker literal1GiB RLIMIT_FSIZE before Icarus/Yosys. Corrected prospective caller retains the original checker4GiB AS/1GiB perfile while aggregate output128MiB, whole45s and aggregateRSS512MiB remain. No standard producer pass or late replacement."
+    },
+    "fresh_native_margin_consumer": {
+      "status": "IMPLEMENTED_FOCUSED_HOST_TESTS_ONLY_NOT_EDA_EXECUTED",
+      "flag": "--fresh-native-margin-grid",
+      "source": "scripts/silicon_fresh_margin.py",
+      "test": "tests/silicon/test_fresh_margin.py",
+      "integration": [
+        "scripts/silicon_pen_physical.py",
+        "tooling/silicon/layout.tcl"
+      ],
+      "scope": "New standard97b077 mapped source only; fresh placement/clocks/three supplies; exact reviewed b6aVSS source and275M2 router representation with actual native420 final guard. No old327 ODB/cell/guide/RC substitution. Every normal placement/resizer phase retained. Actual native macro signal/test/power pins, original195delay/maskties,423BIST,668ports,PG-derivedOBS and960nm padding require pre-GRT readback and final readback; actual mutations and original400nmPG-gap control precede signal route. New standard receipt/native prefix/route have not passed.",
+      "prospective_after_qualified_inputs": {
+        "whole_seconds": 1200,
+        "layout_DRT_seconds": 900,
+        "combined_owned_RSS_bytes": 3221225472,
+        "AS_bytes": 6442450944,
+        "output_bytes": 12884901888,
+        "launch_available_bytes": 15032385536,
+        "continuing_host_available_bytes": 8589934592
+      },
+      "resource_authorization": "Plan only; new SDK heavy producer has priority. Separate root handoff/fresh resource check required before Popen."
+    }
   }
 }
