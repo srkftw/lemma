@@ -87,7 +87,9 @@ report_checks -path_delay min -group_path_count 10 -digits 6 > $out/global-hold.
 report_worst_slack -max -digits 6 > $out/global-setup-summary.rpt
 report_worst_slack -min -digits 6 > $out/global-hold-summary.rpt
 report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/global-electrical.rpt
-detailed_route -output_drc $out/route.drc -output_maze $out/route.maze -droute_end_iter 3 -verbose 1
+if {![info exists detail_route_iterations]} {set detail_route_iterations 3}
+if {$detail_route_iterations ni {3 8}} {error "Unadmitted detailed-route repair bound"}
+detailed_route -output_drc $out/route.drc -output_maze $out/route.maze -droute_end_iter $detail_route_iterations -verbose 1
 if {[info exists core_power_grid] && $core_power_grid == 1} {
     global_connect
     lemma_check_power_grid $power_bindings_before $out after-route

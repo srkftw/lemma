@@ -57,6 +57,40 @@ def require_fresh_power_recipe(args):
                 'fresh grid requires actual power geometry and all ordinary resizer phases')
 
 
+def require_route_iterations(args):
+    require(args.detail_route_iterations in (3, 8), 'unsupported detailed-route repair bound')
+    if args.detail_route_iterations == 8:
+        require(args.core_power_grid and args.preserve_routed_netlist and
+                args.protect_sram_power_geometry and args.routed_eco_from and
+                not args.fresh_core_power_grid and not args.completed_eco_route_from and
+                not args.completed_power_grid_route_from and not args.completed_fresh_grid_route_from,
+                'eight-iteration repair is scoped to fresh full-PGbody preserved-netlist routing')
+
+
+def qualified_vss_grid_source(args):
+    original = ROOT / 'tooling/silicon/pen-power-grid.tcl'
+    if args.vss_clock_grid_source is None:
+        return original
+    require(args.selected_implementation and args.core_power_grid and
+            args.preserve_routed_netlist and args.protect_sram_power_geometry and
+            args.detail_route_iterations == 8 and args.routed_eco_from and
+            not args.fresh_core_power_grid and not args.completed_eco_route_from and
+            not args.completed_power_grid_route_from and not args.completed_fresh_grid_route_from,
+            'VSS clock-channel source requires the scoped fresh8 full-PGbody preserved-netlist recipe')
+    candidate = args.vss_clock_grid_source.resolve()
+    require(candidate.is_relative_to(ROOT / 'build') and candidate.is_file() and
+            candidate.stat().st_size <= 16384, 'bounded explicit ignored PG candidate required')
+    line = 'add_pdn_stripe -grid pen_core -layer Metal5 -width 2.5 -pitch 80 -offset 10 -nets {VDDlogic VDDARRAY VSS}'
+    source = original.read_text()
+    replacement = '\n'.join(f'add_pdn_stripe -grid pen_core -layer Metal5 -width 2.5 -pitch 80 -offset {offset} -nets {{{net}}}'
+        for net, offset in [('VDDlogic', '10'), ('VDDARRAY', '36.665'), ('VSS', '65.330')])
+    require(source.count(line) == 1 and candidate.read_text() == source.replace(line, replacement),
+            'PG candidate changes more than the explicit VSS phase and equivalent one-net definitions')
+    require(sha(candidate) == 'b6a3315d233f16e01a6d7a30279867964cdece162a1839b6bed3e01b735fb38e',
+            'PG candidate differs from the source-qualified actual-grid pilot')
+    return candidate
+
+
 def host_memory_budget(args):
     require(args.host_memory_gib in (4, 6), 'unsupported bounded host-memory profile')
     require(args.host_memory_gib == 6 or args.fresh_core_power_grid,
@@ -81,6 +115,8 @@ def main():
     p.add_argument('--routed-eco-from', type=Path, help='Repair the exact sealed routed nominal-SPEF producer, then route and extract the changed physical netlist afresh')
     p.add_argument('--core-power-grid', action='store_true', help='Add the real separate VDDlogic/VDDARRAY/VSS core grid after actual-SPEF repair and before fresh signal routing; requires a prior route without PG geometry')
     p.add_argument('--fresh-core-power-grid', action='store_true', help='Integrate a fresh qualified mapped candidate, all normal placement/clock/resizer phases and three-supply grid before first GRT; requires full PG geometry protection, no prior netlist or deferred ECO')
+    p.add_argument('--vss-clock-grid-source', type=Path, help='Explicit source-qualified VSS-only+2um clock-channel grid candidate under build/; allpositive rails and declared constraints stay exact, no selection or closure implied')
+    p.add_argument('--detail-route-iterations', type=int, choices=(3, 8), default=3, help='Bounded detailed-route repair input; legacy3 unchanged, explicit8 only for fresh full-PGbody preserved-netlist routing at unchanged900/1200-second limits')
     p.add_argument('--host-memory-gib', type=int, choices=(4, 6), default=6, help='Hard host AS budget; legacy6GiB/floor8GiB unchanged. Explicit4GiB/floor6GiB is scoped to the separately source-bound fresh-grid candidate; failure never extends the budget')
     p.add_argument('--core-power-grid-reroute', dest='preserve_routed_netlist', action='store_true', help='For the core-grid question only, retain the exact already repaired logical netlist/placement and reroute against new real power geometry; no further resizer repair claim')
     p.add_argument('--selected-implementation', action='store_true', help='Consume the existing physical-lock selected powered pen configuration; requires its repaired signal-route predecessor and a current qualified mapping')
@@ -116,6 +152,7 @@ def main():
               'button_bus_pin_placement': 'FULL64_ORDERED_TOP_EDGE' if args.group_button_bus else 'UNCONSTRAINED',
               'global_rc_optimization': 'DEFERRED_UNTIL_ACTUAL_EXTRACTION' if args.defer_global_eco else 'ENABLED',
               'clock_wire_repair': 'pinned-driver-RC-optimum' if args.automatic_clock_wire_length else 'historical100um', 'power_grid': 'NOT_IMPLEMENTED',
+              'detail_route_iterations': args.detail_route_iterations,
               'process_drc': 'NOT_RUN', 'lvs': 'NOT_RUN',
               'remaining': ['power grid and power/test-pin connectivity',
                  'process DRC and transistor LVS', 'matched-temperature fast stdcell/SRAM timing pair',
@@ -144,6 +181,8 @@ def main():
         require(not args.completed_power_grid_route_from or (args.core_power_grid and args.preserve_routed_netlist and not args.completed_eco_route_from), 'completed grid assessment requires the exact core-grid interface question')
         require(not args.protect_sram_power_edges or (args.core_power_grid and args.preserve_routed_netlist and not args.completed_power_grid_route_from), 'PG edge clearance requires fresh routing against the actual preserved-netlist grid')
         require(not args.protect_sram_power_geometry or (args.core_power_grid and (args.preserve_routed_netlist or args.fresh_core_power_grid) and not args.protect_sram_power_edges and not args.completed_power_grid_route_from), 'full PG geometry is a separate fresh routing question')
+        require_route_iterations(args)
+        grid_source = qualified_vss_grid_source(args)
         available = next(int(x.split()[1]) * 1024 for x in Path('/proc/meminfo').read_text().splitlines()
                          if x.startswith('MemAvailable:'))
         require(available >= host_available_floor, 'launch memory floor')
@@ -185,6 +224,9 @@ def main():
             inputs += [ROOT / 'tooling/silicon/physical-lock.json']
             report['selected_implementation'] = {'version': selected['version'], 'source': 'tooling/silicon/physical-lock.json',
                 'scope': 'Powered selected recipe; original retained producers keep their original source identities'}
+        if args.vss_clock_grid_source is not None:
+            inputs.append(grid_source)
+            report['power_grid_variant'] = {'version': 'lemma-pen-core-vss-clock-clearance/1', 'source': str(grid_source), 'sha256': sha(grid_source), 'scope': 'Unselected actual pilot-qualified VSS-only2um phase shift; original core widths/pitch/positive geometry/PG bindings and constraints retained'}
         if args.fresh_core_power_grid:
             inputs += [ROOT / name for name in ('tooling/silicon/pen-power-grid.tcl',
                 'tooling/silicon/pen-power-check.tcl', 'tooling/silicon/pen-fresh-power.tcl',
@@ -335,16 +377,18 @@ source {{{ROOT/'tooling/silicon/layout.tcl'}}}
         if args.routed_eco_from:
             script.write_text(f'set prior {{{prior}}}\nset out {{{out}}}\nset pdk {{{std}}}\nset macro_lib {{{macro/"lib"/(MACRO+"_typ_1p20V_25C.lib")}}}\nset validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check.tcl"}}}\nset group_button_bus {1 if report['button_bus_pin_placement'] == 'FULL64_ORDERED_TOP_EDGE' else 0}\nset button_pin_script {{{ROOT/"tooling/silicon/pen-button-pins.tcl"}}}\nsource {{{ROOT/"tooling/silicon/pen-extracted-eco.tcl"}}}\n')
             if args.core_power_grid:
-                script.write_text(f'set core_power_grid 1\nset preserve_routed_netlist {1 if args.preserve_routed_netlist else 0}\nset power_grid_script {{{ROOT/"tooling/silicon/pen-power-grid.tcl"}}}\nset power_check_script {{{ROOT/"tooling/silicon/pen-power-check.tcl"}}}\n' + script.read_text())
+                script.write_text(f'set core_power_grid 1\nset preserve_routed_netlist {1 if args.preserve_routed_netlist else 0}\nset power_grid_script {{{grid_source}}}\nset power_check_script {{{ROOT/"tooling/silicon/pen-power-check.tcl"}}}\n' + script.read_text())
         if args.protect_sram_power_edges:
             script.write_text(f'set power_edge_script {{{ROOT/"tooling/silicon/pen-power-edge.tcl"}}}\n' + script.read_text())
         if args.protect_sram_power_geometry:
             script.write_text(f'set power_geometry_script {{{ROOT/"tooling/silicon/pen-power-edge.tcl"}}}\n' + script.read_text())
         if args.fresh_core_power_grid:
-            script.write_text(f'set fresh_power_script {{{ROOT/"tooling/silicon/pen-fresh-power.tcl"}}}\nset power_grid_script {{{ROOT/"tooling/silicon/pen-power-grid.tcl"}}}\nset power_check_script {{{ROOT/"tooling/silicon/pen-power-check.tcl"}}}\n' + script.read_text())
+            script.write_text(f'set fresh_power_script {{{ROOT/"tooling/silicon/pen-fresh-power.tcl"}}}\nset power_grid_script {{{grid_source}}}\nset power_check_script {{{ROOT/"tooling/silicon/pen-power-check.tcl"}}}\n' + script.read_text())
         # Preserve the real failed database, including GRT's stored overflow
         # grid, before Tcl propagates an implementation error. A snapshot is
         # diagnostic state only and never a completed routed layout.
+        if args.routed_eco_from:
+            script.write_text(f'set detail_route_iterations {args.detail_route_iterations}\n' + script.read_text())
         recipe = script.read_text()
         script.write_text('if {[catch {\n' + recipe + r"""
 } failure options]} {

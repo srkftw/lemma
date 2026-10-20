@@ -54,3 +54,48 @@ def restore_verilog(derived):
 def require_originals(derived_cdl, original_cdl, derived_verilog, original_verilog):
     if restore_cdl(derived_cdl) != original_cdl or restore_verilog(derived_verilog) != original_verilog:
         raise ValueError('Reference adapter changed a device, bit, connection, or source byte')
+
+
+
+def coldec2_zero_defaults(raw, reference, original_psp):
+    """Expand only the reviewed connected COLDEC2 leaf's absent zero defaults.
+
+    All503 layout MOS devices and all44 reference NRS/NRD values are required.
+    Existing parameters are never overwritten. This exact source relation covers
+    the demonstrated Netgen parallel-MOS property false negative; it is not a
+    general model adapter, resistor waiver or parameter-LVS qualification.
+    """
+    def need(value, message):
+        if not value:
+            raise ValueError(message)
+
+    need(re.match(r'^\.subckt RM_IHPSG13_1P_COLDEC2\b', raw), 'unsupported default-only leaf')
+    need(len(re.findall(r'^\.subckt\b', raw, re.M)) == 1, 'one exact extracted leaf required')
+    for key in ('NRS', 'NRD'):
+        declarations = re.findall(r'`IPRnb\(' + key + r'\s*,([^,]+),', original_psp)
+        need(declarations and [x.strip() for x in declarations] == ['0.0'],
+             'original PSP default must be explicitly0.0: ' + key)
+        values = re.findall(r'(?i)\b' + key + r'\s*=\s*([^\s]+)', reference)
+        need(len(values) == 44 and set(values) == {'0'},
+             'all44 actual reference values must be exact zero: ' + key)
+    need(not re.search(r'(?i)\bnrs\s*=|\bnrd\s*=', raw),
+         'present NRS/NRD is outside the default-only domain')
+    joined = re.sub(r'\n\+\s*', ' ', raw)
+    devices = [line for line in joined.splitlines() if line.startswith('M')]
+    need(len(devices) == 503, 'exact503 extracted MOS devices required')
+    for line in devices:
+        fields = line.split()
+        need(len(fields) >= 8 and fields[5] in ('sg13_lv_nmos', 'sg13_lv_pmos'),
+             'unreviewed MOS model or terminal arity')
+        keys = re.findall(r'\b([A-Za-z_][A-Za-z_0-9]*)\s*=', line)
+        need(len(keys) == len(set(keys)) and set(keys) <= {'w', 'l', 'ad', 'pd', 'as', 'ps'}
+             and {'w', 'l'} <= set(keys), 'unexpected or duplicate extracted device parameter')
+    derived = re.sub(r'(?m)^(M\S+[^\n]*)', r'\1 nrs=0 nrd=0', raw)
+    need(re.sub(r' nrs=0 nrd=0(?=\n|$)', '', derived) == raw,
+         'default expansion changed another source byte')
+    return derived
+
+
+def require_coldec2_defaults(raw, derived, reference, original_psp):
+    if coldec2_zero_defaults(raw, reference, original_psp) != derived:
+        raise ValueError('derived default, device or another source byte changed')
