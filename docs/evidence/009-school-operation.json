@@ -3261,5 +3261,89 @@
       "The focused4096-byte queue does not replace the earlier actual39544-byte cold-replay evidence.",
       "Original prelaunch reservation refusal, GUI log-path collision and earlier reader observations remain retained."
     ]
+  },
+  "sourceNegativeUartCleanup": {
+    "result": "PASS scoped host repair, real OS regression and one unchanged archived CI O2 control; full remote source-negative campaign remains to rerun",
+    "implementationCommit": "b7c01a8",
+    "retainedRemoteFailure": {
+      "run": 39495367648,
+      "sourceCommit": "fac89f6a95e99353e0db675f0aa924b1704ef522",
+      "artifact": 12297729475,
+      "zipBytes": 39940981,
+      "zipSHA256": "406ec3fe917da52b137c344748857191384309527f232eb6de87afdad9f5a347",
+      "selectedExtractionBytes": 5664920,
+      "failure": "append-O2-control-observe: UART cleanup stop-cycle budget exhausted",
+      "boundary": "64 fresh stop notifications/63 resumes/32 semantic checks; an actually observed Peer Destroy92 release lacked its later confirmation. Original report/raw remain failed."
+    },
+    "repair": "After a complete frame has an unresolved semantic effect, resume and validate subsequent complete UART prefixes while running until the same semantic predicate is ready. Then request a fresh group stop, drain and recheck the full frozen boundary. No new guest input; no weakened release predicate.",
+    "preservedBounds": {
+      "cleanupSeconds": 5,
+      "maximumRealStops": 64,
+      "rawBytes": 26214400,
+      "exactReadRemainderBytes": 200,
+      "originalGuestDeadline": true,
+      "freshStoppedAndPostKillHashValidation": true
+    },
+    "causalHostRegression": {
+      "oldObserver": "Real OS byte-writer fixture fails the old four-stop budget in0.040s.",
+      "correctedObserver": "Same96 scheduler/noise frames plus a real confirmation frame finish with2 fresh stops/1 resume; malformed suffix, missing confirmation, non-Boolean predicate and forged progress facts reject.",
+      "hostTests": 75,
+      "seconds": 2.194125236943364,
+      "peakSampledOwnedRSSBytes": 55554048,
+      "allObservedOwnersGone": true,
+      "receipt": {
+        "path": "build/task009/ci-source-negative-fac89-host-a3/host-qualification.json",
+        "sha256": "dc51d46f6140fedffe0f0038d5b78bad9f04b0fec8a1e6287b4d141d0b8d6101"
+      }
+    },
+    "actualArchivedControl": {
+      "result": "PASS",
+      "imageSHA256": "815ed949c0e5c65faf58fcefca3e2e5f759fc06c4e03108cf2651564b1dbf5e6",
+      "originalAuditSHA256": "98ed8c9037e4f803578e5f6b71893d00f1c7f396f4d2468458a3b8d21be5b358",
+      "all558SourceInputsMatched": true,
+      "freshNormalArtifactAudit": true,
+      "freshTargetBuild": false,
+      "ordinaryRPCs": 306,
+      "binaryAppendReference": true,
+      "completePostKillRawReplay": true,
+      "wholeSeconds": 22.96659244899638,
+      "peakSampledOwnedRSSBytes": 230068224,
+      "allObservedOwnersGone": true,
+      "limits": {
+        "wholeSeconds": 450,
+        "guestSeconds": 300,
+        "freshAuditSeconds": 60,
+        "cleanupReplayAllowanceSeconds": 60,
+        "ownedRSSBytes": 536870912,
+        "outputBytes": 268435456,
+        "jointLaunchMemAvailableBytes": 14227079168,
+        "continuingMemAvailableBytes": 8589934592
+      },
+      "cleanup": {
+        "freshStops": 2,
+        "resumes": 1,
+        "partialBytes": 0,
+        "frozenHashUnchangedAfterKill": true,
+        "runningSemanticBranch": "NOT_ENCOUNTERED in this guest run; its causal coverage is the actual OS regression."
+      },
+      "receipt": {
+        "path": "build/task009/ci-source-negative-control-a1/monitor-result.json",
+        "sha256": "dfe797eeb8cfd05d6497fbae395e883a78459dc99438bbebae074c63b1563356"
+      },
+      "normalGuestReport": {
+        "path": "build/task009/ci-source-negative-control-a1/fac89-control/build/kernel/fixed-control-run/result.json",
+        "sha256": "59492da127b584c35ce71c1addbaf6a2154df3f1ef8e0ebd35e53588863d5738"
+      }
+    },
+    "oldRawStillRejected": {
+      "path": "build/task009/ci-source-negative-fac89-a2/original-raw-rejection.json",
+      "sha256": "dde8f609df33d5b732a43ddbdb442cdd164921a2f2b8be2813610744e9f70bac",
+      "error": "service contains unmatched or unconfirmed actual page releases"
+    },
+    "retainedLocalFailures": [
+      "Pinned gh/cgo acquisition under1GiB virtual-address cap aborts before downloading bytes; distinct bounded4GiB-address/two-Go-worker acquisition succeeds.",
+      "Initial corrected transport suite fails only a new negative fixture error-message expectation, then corrected75-case execution passes."
+    ],
+    "scope": "Host cleanup scheduling/observation repair only. It does not change guest policy, task source, artifacts, original CI failure disposition or successful remote-campaign requirements."
   }
 }
