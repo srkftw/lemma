@@ -4,7 +4,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
-from silicon_buffered_pins import buffer_kind
+from silicon_buffered_pins import buffer_kind, repairable_signal_input
 
 
 def library(kind, pin, function, sense):
@@ -16,6 +16,16 @@ def library(kind, pin, function, sense):
 
 
 class OriginalBufferFunctions(unittest.TestCase):
+    def test_read_enable_is_an_original_signal_input_with_closed_exclusions(self):
+        for pin in ('A_DIN[0]', 'A_DIN[63]', 'A_ADDR[0]', 'A_ADDR[7]',
+                    'A_MEN', 'A_REN', 'A_WEN'):
+            self.assertTrue(repairable_signal_input(pin, 'INPUT'), pin)
+            self.assertFalse(repairable_signal_input(pin, 'OUTPUT'), pin)
+            self.assertFalse(repairable_signal_input(pin, 'INOUT'), pin)
+        for pin in ('A_CLK', 'A_BIST_REN', 'A_BIST_DIN[0]', 'A_DLY', 'A_BM[0]',
+                    'A_DOUT[0]', 'VDD!', 'VDDARRAY!', 'VSS!', 'A_REN_suffix'):
+            self.assertFalse(repairable_signal_input(pin, 'INPUT'), pin)
+
     def test_original_quoted_direction_and_parenthesized_inverter(self):
         self.assertEqual(buffer_kind('sg13g2_dlygate4sd3_1', library(
             'sg13g2_dlygate4sd3_1', 'X', 'A', 'positive_unate')), ('X', 0))

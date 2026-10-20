@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T22:47:30.217228+00:00",
+  "written_at": "2026-10-20T23:17:29.444354+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -10488,9 +10488,9 @@
       },
       "scope": "Actual fresh maintained candidate-only protocol/mapping producer; cached compiler/toolchain binaries reused. Prior private producer and failedcaller keep originalidentities. Not placement/RC/routedtiming/processqualification."
     },
-    "fresh_placement_route_PEX_process": "NOT_RUN_FOR_THIS_RTL",
+    "fresh_placement_route_PEX_process": "GRT_COMPONENT_QUALIFIED_ORIGINALWHOLEFAIL_FIRST_DRT_3RC_ALL9_PENDING",
     "runtime_rebuild": "NOT_REQUESTED_OR_CLAIMED",
-    "next_physical_dependency": "Produce the supported candidate-only mapping receipt, then fresh source-specific placement/grid/routing and all available extracted RC/PVT/nativegeometry/connectivity/process checks; old ABC cell placements and well moves cannot be relabeled as this new RTL.",
+    "next_physical_dependency": "ActualfirstDRT/3RC/all9 fromexactqualifiedwholeGRT, thenallendpoint/native420/processcomparisons beforecanonicalRTL/physical-lock decision.",
     "remaining": [
       "unplacedholdfailure",
       "all9 selectedextractedtiming/electricalFAIL",
@@ -10509,7 +10509,7 @@
       "meaning": "Outer per-file128MiB hard limit conflicted with the maintained checker literal1GiB RLIMIT_FSIZE before Icarus/Yosys. Corrected prospective caller retains the original checker4GiB AS/1GiB perfile while aggregate output128MiB, whole45s and aggregateRSS512MiB remain. No standard producer pass or late replacement."
     },
     "fresh_native_margin_consumer": {
-      "status": "IMPLEMENTED_FOCUSED_HOST_TESTS_ONLY_NOT_EDA_EXECUTED",
+      "status": "ACTUAL_FRESH_GRT_REBUILD_COMPONENT_QUALIFIED_ORIGINAL_WHOLE_FAIL_FIRST_DRT_CONSUMER_READY",
       "flag": "--fresh-native-margin-grid",
       "source": "scripts/silicon_fresh_margin.py",
       "test": "tests/silicon/test_fresh_margin.py",
@@ -10517,7 +10517,7 @@
         "scripts/silicon_pen_physical.py",
         "tooling/silicon/layout.tcl"
       ],
-      "scope": "New standard97b077 mapped source only; fresh placement/clocks/three supplies; exact reviewed b6aVSS source and275M2 router representation with actual native420 final guard. No old327 ODB/cell/guide/RC substitution. Every normal placement/resizer phase retained. Actual native macro signal/test/power pins, original195delay/maskties,423BIST,668ports,PG-derivedOBS and960nm padding require pre-GRT readback and final readback; actual mutations and original400nmPG-gap control precede signal route. Actual supported standard receipt is now admitted; native prefix/route have not executed.",
+      "scope": "New standard97b077 mapped source only; fresh placement/clocks/three supplies; exact reviewed b6aVSS source and275M2 router representation with actual native420 final guard. No old327 ODB/cell/guide/RC substitution. Every normal placement/resizer phase retained. Actual native macro signal/test/power pins, original195delay/maskties,423BIST,668ports,PG-derivedOBS and960nm padding require pre-GRT readback and final readback; actual mutations and original400nmPG-gap control precede signal route. Actual supported standard receipt is now admitted; native prefix has executed; freshGRT/DRT/extractedtiming are still required.",
       "prospective_after_qualified_inputs": {
         "whole_seconds": 1200,
         "layout_DRT_seconds": 900,
@@ -10567,6 +10567,230 @@
         "path": "build/silicon/task009-head-bypass-fresh-route-proposal-a1/proposal.json",
         "sha256": "f1d65b2839196a5dd13a33b0cbd2d539b8c732b30ed34e6ed5d670b854beb52b",
         "status": "HELD_FOR_SDK_RESOURCE_HANDOFF_NO_POPEN_NO_CASE_DEADLINE"
+      },
+      "retained_source_inventory_failure": {
+        "path": "build/silicon/task009-head-bypass-fresh-route-admission-a1/inventory-failure.json",
+        "sha256": "20a586e4fa2b00c9ad127c312538c0494bda937cea187d1c3e956e8544e04fda",
+        "status": "FAIL_BEFORE_RESOURCE_ADMISSION_AND_EDA_POPEN",
+        "error": "FileNotFoundError during original source_inputs dictionary construction; actual maintained physical producer uses admitted mapping/pdk SRAM collateral instead",
+        "commands": []
+      },
+      "original14GiB_resource_preflight": {
+        "path": "build/silicon/task009-head-bypass-fresh-resource-preflight-a1/result.json",
+        "sha256": "d3e029e25e08ddd6858290776a79b743f038eaa1c427394292b2452814c8a773",
+        "status": "NOT_ADMITTED",
+        "commands": [],
+        "MemAvailable_bytes": 13135286272,
+        "launch_floor_bytes": 15032385536
+      },
+      "retained_tool_environment_failure": {
+        "path": "build/silicon/task009-head-bypass-fresh-route-admission-a3/result.json",
+        "sha256": "1c9866a4df4d92e114131dd3453855643e2dcfcf3ae2ed8a51d9babac41b95d0",
+        "status": "FAIL",
+        "seconds": 2.1938078741077334,
+        "error": "GeometryError('pinned Magic/OpenROAD tools required')",
+        "source_seal_equal": true,
+        "owned_processes_reaped": true,
+        "original_deadline_met": true,
+        "combined_owned_RSS_bytes": 49655808,
+        "commands": [
+          {
+            "argv": [
+              "python3",
+              "scripts/silicon_pen_physical.py",
+              "--mapping",
+              "build/silicon/task009-head-bypass-standard-mapping-a2/mapping",
+              "--pdk",
+              "build/silicon/deps/ihp-open-pdk",
+              "--fresh-core-power-grid",
+              "--fresh-native-margin-grid",
+              "--protect-sram-power-geometry",
+              "--group-button-bus",
+              "--clock-min-routing-layer",
+              "Metal3",
+              "--detail-route-iterations",
+              "8",
+              "--question",
+              "Does exact97b077 accepted-edge/full181 first-head ingress bypass plus derived deadline predicate remove measured routed watchdog/head-control feedback at original10ns after fresh source-specific placement/clock/resizer/three-supplyPG/GRT/PA/DRT and actual3RC/all9PVT? Lower-bound setup+1.992360ns is only a preflight, not predicted closure. Generate exact reviewedb6a PGsource+275M2 route representation, retain native420 and originalPGgap/padding/BIST/delay/mask controls. No old327/canonical504f placements/32wellmoves/33physicaldelays/fillers/guide/SPEF substitution. Full665signals+3PG/256x181/64bit/order/ACK/loss/reset preserved by source and standard finite producer; existing stronger full181/XZ/six-mutant finite scope retained. All actual timing/electrical/hold/newroute defects must remain; selected0.6 unchanged until independent comparison. Newplaced-well/filler/process/layoutLVS/IR-EM/package/fab/safety/education not inferred.",
+              "--work-dir",
+              "build/silicon/task009-head-bypass-fresh-route-a1"
+            ],
+            "exit_code": 1,
+            "seconds": 0.164,
+            "log": "/home/sreekumaar/Downloads/lemma/build/silicon/task009-head-bypass-fresh-route-admission-a3/route.log",
+            "log_sha256": "dc16a70636236755788e09dc80550f319cca409384b2ad92dbf84e148c76e1d4",
+            "timed_out": false
+          }
+        ],
+        "resources": {
+          "MemAvailable_bytes": 13223542784,
+          "free_bytes": 302097362944,
+          "free_inodes": 52355788
+        }
+      },
+      "retained_dbBox_API_failure": {
+        "path": "build/silicon/task009-head-bypass-fresh-route-admission-a4/result.json",
+        "sha256": "dbbf44669fc593d3e27ec1dac011c585355f52a12380c11db93664863caf10bd",
+        "status": "FAIL",
+        "seconds": 18.50022182893008,
+        "error": "CommandFailure('Command exited 1: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-head-bypass-fresh-route-a2/layout.log')",
+        "source_seal_equal": true,
+        "owned_processes_reaped": true,
+        "original_deadline_met": true,
+        "combined_owned_RSS_bytes": 588599296,
+        "commands": [
+          {
+            "argv": [
+              "python3",
+              "scripts/silicon_pen_physical.py",
+              "--mapping",
+              "build/silicon/task009-head-bypass-standard-mapping-a2/mapping",
+              "--pdk",
+              "build/silicon/deps/ihp-open-pdk",
+              "--fresh-core-power-grid",
+              "--fresh-native-margin-grid",
+              "--protect-sram-power-geometry",
+              "--group-button-bus",
+              "--clock-min-routing-layer",
+              "Metal3",
+              "--detail-route-iterations",
+              "8",
+              "--question",
+              "Does exact97b077 accepted-edge/full181 first-head ingress bypass plus derived deadline predicate remove measured routed watchdog/head-control feedback at original10ns after fresh source-specific placement/clock/resizer/three-supplyPG/GRT/PA/DRT and actual3RC/all9PVT? Lower-bound setup+1.992360ns is only a preflight, not predicted closure. Generate exact reviewedb6a PGsource+275M2 route representation, retain native420 and originalPGgap/padding/BIST/delay/mask controls. No old327/canonical504f placements/32wellmoves/33physicaldelays/fillers/guide/SPEF substitution. Full665signals+3PG/256x181/64bit/order/ACK/loss/reset preserved by source and standard finite producer; existing stronger full181/XZ/six-mutant finite scope retained. All actual timing/electrical/hold/newroute defects must remain; selected0.6 unchanged until independent comparison. Newplaced-well/filler/process/layoutLVS/IR-EM/package/fab/safety/education not inferred.",
+              "--work-dir",
+              "build/silicon/task009-head-bypass-fresh-route-a2"
+            ],
+            "exit_code": 1,
+            "seconds": 16.753,
+            "log": "/home/sreekumaar/Downloads/lemma/build/silicon/task009-head-bypass-fresh-route-admission-a4/route.log",
+            "log_sha256": "b2a70a8804f855dd5ef55af3f6bf9fa43ca5bc0c43ec6f8f7a8278facd624cb3",
+            "timed_out": false
+          }
+        ],
+        "resources": {
+          "MemAvailable_bytes": 13433835520,
+          "free_bytes": 302097084416,
+          "free_inodes": 52355719
+        }
+      },
+      "actual_completed_geometry_changed_observer": {
+        "path": "build/silicon/task009-head-bypass-fresh-native-prefix-assessment-a1/result.json",
+        "sha256": "2071faab487479a6be7a4f9ec3457f19dacc3b95a9e96a4e0958362cec1394de",
+        "status": "PASS_COMPLETED_FRESH_POWER_GEOMETRY_CHANGED_OBSERVER_ONLY",
+        "seconds": 3.7789141659159213,
+        "source_seal_equal": true,
+        "owned_processes_reaped": true,
+        "original_deadline_met": true,
+        "combined_owned_RSS_bytes": 363679744,
+        "commands": [
+          {
+            "argv": [
+              "/nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad",
+              "-python",
+              "-exit",
+              "/home/sreekumaar/Downloads/lemma/build/silicon/task009-head-bypass-fresh-native-prefix-assessment-a1/native.py"
+            ],
+            "exit_code": 0,
+            "seconds": 3.574,
+            "log": "/home/sreekumaar/Downloads/lemma/build/silicon/task009-head-bypass-fresh-native-prefix-assessment-a1/native.log",
+            "log_sha256": "3c682db895e9aa57662ac1b3e1877de60a969c7ce579883f022293761a69df0f",
+            "timed_out": false
+          }
+        ],
+        "native": {
+          "rows": 177,
+          "stdcells": 8352,
+          "violating_pairs": 0,
+          "required_gap_DBU": 960,
+          "macro_power_pins": 9,
+          "preserved_BIST_pins": 423,
+          "original_delay_mask_pins": 195,
+          "all_power_terminals": 16713,
+          "physical_ports": 668,
+          "obstructions": 18718,
+          "clock_via_window": {
+            "physical_margin_nm": 420,
+            "legal_actual_M5_Via4_tracks_nm": [
+              469560,
+              469980,
+              470400,
+              470820
+            ],
+            "retained_original_gap_negative_nm": 400,
+            "scope": "Actual PG/source-track feasibility, not a chosen signal route or process DRC pass."
+          },
+          "status": "PASS_FRESH_MAPPED_NATIVE_PG_PADDING_PIN_PRECURSOR_NOT_ROUTED",
+          "geometry_sha256": "d806f0387bf47c74ebe107bf1ec6fc1f9fa27f825941db3a81af51ba161cb381",
+          "negative_controls": [
+            "wrong_array_supply",
+            "wrong_BIST_constant",
+            "wrong_delay_constant",
+            "actual_padding_overlap"
+          ],
+          "scope": "Actual fresh native pins/PG/OBS/padding readback only; no signal native420, routing, timing, process DRC or LVS result."
+        },
+        "scope": "ExactretainedfreshpowerODB d806f038… readback only; no repeatedplacement/routing/timing, no originalfailure replacement. OriginaldbBoxAPIfix uses xMax−xMin/yMax−yMin preserving exactwidth/height andorientation; sixfocusedtests pass with coordinate-onlyAPI and sixextent/master/site/orientation negatives."
+      },
+      "current_fresh_production": {
+        "status": "FAIL",
+        "plan": "build/silicon/task009-head-bypass-fresh-route-admission-a5/plan.json",
+        "plan_sha256": "8da76dc16301ca19eb6c0d8e6a6ab406b491fb12127c688ac2cc22ab1d26453c",
+        "layout": "build/silicon/task009-head-bypass-fresh-route-a3",
+        "corners": "build/silicon/task009-head-bypass-fresh-corners-a3",
+        "scope": "ActualfirstfullGRTzerooverflow, incrementalholdrepairFAILEDGRT0232beforeDRT. NoPEX/all9/selection.226addedcells/265moves retained inexactfailedstate.",
+        "path": "build/silicon/task009-head-bypass-fresh-route-admission-a5/result.json",
+        "sha256": "6bac6f01aae92b193a0e4560c58a6a39cab5ae4f1d632b74b3c8e2be18162011",
+        "seconds": 32.995375343132764,
+        "error": "CommandFailure('Command exited 1: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/task009-head-bypass-fresh-route-a3/layout.log')",
+        "combined_owned_RSS_bytes": 676933632,
+        "source_seal_equal": true,
+        "owned_processes_reaped": true,
+        "original_deadline_met": true
+      },
+      "retained_incremental_failure_diagnosis": {
+        "path": "build/silicon/task009-head-bypass-congestion-diagnosis-a1/result.json",
+        "sha256": "42173faf6054dfef4fe6cd33680a85d2f2f8484fec5e5504ba5681f0491cb5d3",
+        "status": "OBSERVED_READ_ONLY_INCREMENTAL_FAILURE_CAUSE_AND_ESTIMATED_PLACEMENT_STA",
+        "seconds": 2.254150919150561,
+        "combined_owned_RSS_bytes": 272154624,
+        "source_seal_equal": true,
+        "owned_processes_reaped": true,
+        "original_deadline_met": true
+      },
+      "retained_full_GRT_guard_failure": {
+        "path": "build/silicon/task009-head-bypass-full-GRT-pilot-a2/result.json",
+        "sha256": "115716cf9ae569e965c9b62cb9908ab51b322ac379597cb995235956486a1ad0",
+        "status": "FAIL",
+        "seconds": 18.336201504105702,
+        "error": "AssertionError('actualwholeGRTstillcongested')",
+        "combined_owned_RSS_bytes": 768692224,
+        "source_seal_equal": true,
+        "owned_processes_reaped": true,
+        "original_deadline_met": true
+      },
+      "completed_whole_raw_map_observation": {
+        "path": "build/silicon/task009-head-bypass-full-GRT-completed-a2/result.json",
+        "sha256": "8083995821c414124c12fd2687d4895ec23eab242fd4f61ff35b754a1de896bb",
+        "status": "OBSERVED_COMPLETED_ARTIFACT_NATIVE_CONGESTION_METADATA_NO_NEW_GRT",
+        "seconds": 0.8451736210845411,
+        "combined_owned_RSS_bytes": 213086208,
+        "source_seal_equal": true,
+        "owned_processes_reaped": true,
+        "original_deadline_met": true,
+        "scope": "All68440Metal2–5nativecapacityentriesidentical; oldexactoneM3[125,56]raw19/18excess removed/newnone. Storedusage includesblockage/capacityincludesreductions. InheritedGlobalroutecategoryretainsliteraloldmarker becausepinnedutility.cpp onlyreplacescategorywhennew2Dmarkerlistnonempty. Originalwhole18.336sFAIL stays; no marker deletion/no newroutehere."
+      },
+      "maintained_completed_GRT_consumer": {
+        "entry": "scripts/silicon_pen_physical.py --completed-fresh-global-from",
+        "source": "scripts/silicon_fresh_global.py",
+        "test": "tests/silicon/test_fresh_global.py",
+        "host_admission": {
+          "path": "build/silicon/task009-head-bypass-full-GRT-admission-a1/result.json",
+          "sha256": "7cc9eac2fad10a84851d2353b45e992dc69a89f6703d75da0b175b5e9b272b28",
+          "status": "QUALIFIED_COMPLETED_FULL_GRT_COMPONENT_ORIGINAL_WHOLE_FAIL_RETAINED",
+          "seconds": 0.504489985993132
+        },
+        "scope": "Exact97globalODB/guide/SDC/netlist/components. FirstDRT only, no GRT/DPL/resizer replay. Actualpre/postfullsnapshots/RENawareoriginaldriverchains/PG/padding/native420/vias/3RC required. Originalcandidate/test/clock/capacity unchanged; no process/LVS/selection claim. Existingall9cornerproducer follows separately withinwholebudget.",
+        "unit_tests": "14focusedtestsPASS; wholemapcapacity/excess/partial/duplicate/booleanindex/oldfailure negatives; originalREN/inputonlyclock-BIST-supply exclusions andactualREN→WENnegative."
       }
     }
   }

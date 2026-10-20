@@ -241,6 +241,7 @@ def main():
     p.add_argument('--completed-fresh-grid-route-from', type=Path, help='Independently validate/finalize sealed fresh-grid geometry rejected after completed detail routing by the historical exact SRAM input-net-name guard; original-Lib buffered endpoint proof and actual PG/port checks remain mandatory; no reroute')
     p.add_argument('--completed-well-fill-route-from',type=Path,help='Separately assess exact completed zero-marker well/spacer route rejected by old byte guard; strict original-CDL serialization, fresh3RC/corners, no routing or oldproducerPASS')
     p.add_argument('--completed-hold-decode-route-from',type=Path,help='Assess only the exact completed joint route rejected by the output-directory collision; fresh fixed/master/native420/vias/3RC, no reroute or late original PASS')
+    p.add_argument('--completed-fresh-global-from', type=Path, help='Consume exact separately qualified fresh97 whole-GRT artifacts after the retained incremental failure; first DRT/3RC only, no placement/resizer/GRT replay or original producer PASS')
     p.add_argument('--routed-eco-from', type=Path, help='Repair the exact sealed routed nominal-SPEF producer, then route and extract the changed physical netlist afresh')
     p.add_argument('--core-power-grid', action='store_true', help='Add the real separate VDDlogic/VDDARRAY/VSS core grid after actual-SPEF repair and before fresh signal routing; requires a prior route without PG geometry')
     p.add_argument('--fresh-core-power-grid', action='store_true', help='Integrate a fresh qualified mapped candidate, all normal placement/clock/resizer phases and three-supply grid before first GRT; requires full PG geometry protection, no prior netlist or deferred ECO')
@@ -290,6 +291,9 @@ def main():
     require_two_load_recipe(args)
     from silicon_hold_decode import require_recipe as require_hold_decode_recipe
     require_hold_decode_recipe(args)
+    if args.completed_fresh_global_from:
+        from silicon_fresh_global import main as completed_fresh_global
+        return completed_fresh_global(args)
     if args.completed_well_fill_route_from:
         require(args.well_fill_from and not args.completed_eco_route_from,'completed well assessment requires its exact well-source recipe only')
         args.completed_eco_route_from=args.completed_well_fill_route_from

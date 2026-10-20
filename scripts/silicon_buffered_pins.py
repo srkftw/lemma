@@ -44,6 +44,12 @@ def buffer_kind(kind, liberty):
     return pin, inverted
 
 
+def repairable_signal_input(name, direction):
+    """Only original data/address/enables may acquire proved repair chains."""
+    return direction == 'INPUT' and re.fullmatch(
+        r'A_(?:DIN\[\d+\]|ADDR\[\d+\]|MEN|REN|WEN)', name) is not None
+
+
 def assess(before_path, after_path, liberty_path, output):
     import odb
     started = time.monotonic()
@@ -118,8 +124,7 @@ def assess(before_path, after_path, liberty_path, output):
                 if old == new:
                     exact += 1
                     continue
-                if (ta.getMTerm().getIoType() != 'INPUT' or
-                        not re.fullmatch(r'A_(?:DIN\[\d+\]|ADDR\[\d+\]|MEN|WEN)', name)):
+                if not repairable_signal_input(name, ta.getMTerm().getIoType()):
                     raise ValueError('Changed BIST/supply/output/clock or unsupported pin: ' + name)
                 src, dst = trace(na), trace(nb)
                 if src[:2] != dst[:2]:
@@ -133,6 +138,7 @@ def assess(before_path, after_path, liberty_path, output):
     inst = after.findInst('pen_sram_lane0')
     for label, term, replacement in [
             ('literal_data_bit_swap', inst.findITerm('A_DIN[32]'), inst.findITerm('A_DIN[33]').getNet()),
+            ('read_enable_driver_swap', inst.findITerm('A_REN'), inst.findITerm('A_WEN').getNet()),
             ('array_supply_retarget', inst.findITerm('VDDARRAY!'), after.findNet('VSS')),
             ('BIST_disconnect', inst.findITerm('A_BIST_DIN[32]'), None)]:
         saved = term.getNet()
