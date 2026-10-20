@@ -20,6 +20,9 @@ export function courseInstallFrame(bytes,transaction){
 }
 
 // Additive guest-selected publication command. Old installers keep v1 only.
+export function schoolSelectionRequested(operation,guestSupportsSelection){
+ return guestSupportsSelection&&['sample','install','review'].includes(operation);
+}
 export function courseSelectionFrame(bytes,transaction,node=0){
  const packet=courseInstallFrame(bytes,transaction).slice(0,64),view=new DataView(packet.buffer);
  if(!Number.isSafeInteger(node)||node<0||node>15)throw Error('Selected node ordinal exceeds its bound');

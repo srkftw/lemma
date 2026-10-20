@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import createMachine from './machine.mjs';
 import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,NotebookFaultObserver} from './guest_records.js';
-import {courseInstallFrame,courseInstallRows,courseSchoolFrames} from './course_transport.js';
+import {courseInstallFrame,courseInstallRows,courseSchoolFrames,schoolSelectionRequested} from './course_transport.js';
 import {RunBudget,uint64,resumeBudget,hostSecondsLimit} from './run_budget.js';
 import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission,guestSchoolCapability,guestSchoolQueueState} from './school_transport.js';
 const notebookFault=new NotebookFaultObserver();
@@ -245,7 +245,7 @@ async function schoolActivity(message){
   if(busy)throw Error('Machine storage is busy; retry this school activity');
   const wasRunning=running,transaction=(BigInt(crypto.getRandomValues(new Uint32Array(1))[0])+1n).toString();
   if(result.ack_bytes){pause('school-ack');for(const row of courseInstallRows(result.ack_bytes,state().cycle))admitRaw(row,false);sendState();}
-  else admitCourseInstall({bytes:schoolPackage(result),transaction,schoolSelect:guestSchoolCapability(core.FS.readFile('/uart.bin'),guestOutputStart)!==null,node:result.node??0,delivery:!!result.decision});
+  else admitCourseInstall({bytes:schoolPackage(result),transaction,schoolSelect:schoolSelectionRequested(message.operation,guestSchoolCapability(core.FS.readFile('/uart.bin'),guestOutputStart)!==null),node:result.node??0,delivery:!!result.decision});
   if(wasRunning){running=true;pauseReason=null;scheduleStep();}
  }
  const {package_hex,ack_bytes,...view}=result;postMessage({type:'school',operation:message.operation,result:view});

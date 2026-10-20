@@ -5,7 +5,7 @@ import {Control} from './control.mjs';
 import {admitUart} from './uart_arrivals.mjs';
 import {attachOpfsFile} from './opfs_backing.mjs';
 import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,NotebookFaultObserver} from './guest_records.js';
-import {courseInstallFrame,courseSchoolFrames} from './course_transport.js';
+import {courseInstallFrame,courseSchoolFrames,schoolSelectionRequested} from './course_transport.js';
 import {RunBudget,uint64,resumeBudget,hostSecondsLimit} from './run_budget.js';
 import {PcmEgress} from './pcm_egress.mjs';
 import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission,guestSchoolCapability,guestSchoolQueueState} from './school_transport.js';
@@ -147,7 +147,7 @@ async function schoolActivity(message){
   if(result.package_hex!==undefined||result.ack_bytes!==undefined){
    if(coursePartial)throw Error('Cold-open before retrying partial course input');
    const wasRunning=running;pause('school-input');await stopped();
-   const transaction=(BigInt(crypto.getRandomValues(new Uint32Array(1))[0])+1n).toString(),frame=result.ack_bytes??courseSchoolFrames(schoolPackage(result),transaction,guestSchoolCapability(uart(),guestStart)!==null,result.node??0),clock=await control.request('lemma-clock'),base=(BigInt(clock.virtual_ns)+9n)/10n*10n;
+   const transaction=(BigInt(crypto.getRandomValues(new Uint32Array(1))[0])+1n).toString(),frame=result.ack_bytes??courseSchoolFrames(schoolPackage(result),transaction,schoolSelectionRequested(message.operation,guestSchoolCapability(uart(),guestStart)!==null),result.node??0),clock=await control.request('lemma-clock'),base=(BigInt(clock.virtual_ns)+9n)/10n*10n;
    let accepted=0;
    // Reduced10KB/s serial input has one actual arrival per100us.
    // The additive queue API batches admission without making FIFO bursts.
