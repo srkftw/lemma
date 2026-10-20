@@ -2064,7 +2064,7 @@
     },
     "remaining": [
       "ordinary native and browser edit/install/exercise through the real School24 service",
-      "actual School24 full0.16 canonical ROM/NV Ready/pen/Save/reset result; genuine producer/archive/audit already pass, and old03914f run remains a different guest",
+      "full post-reset reopening, authenticated later update installation and broader full-device/ISA behavior remain beyond the passed finite School24 full0.16 ROM/NV pen/Save/reset scenario",
       "School24 continuation remains unsupported until actual new preparedStore/IPC/reply cuts and transactional adoption qualify"
     ],
     "full16_followup": {
@@ -2272,7 +2272,7 @@
         "scope": "Fresh package/tag and actual hosted Lean factory author6.502s; normal validation reuses exact historical full16 runtime and ROM. Complete raw size, metadata fields/CRC, both metadata sectors, tag and payload extents checked; final source/observer/deadline/cleanup sealed. No guest execution claim from artifacts."
       },
       "canonical_execution": {
-        "status": "RUNNING_AFTER_ACTUAL_KERNEL_AND_V9_SERVICE_STARTUP",
+        "status": "PASS_ACTUAL_INTEGRATED_FACTORY_ROM_NOTEBOOK_PEN_SAVE_RESET",
         "plan": {
           "path": "build/task009/school24-integrated16-canonical-plan-a1/plan.json",
           "sha256": "6fec304a6324be213ed5d45bb003fd27695c286cf85e0dec15852bb66095fb6d"
@@ -2281,12 +2281,68 @@
         "observer_progress_live": "build/task009/school24-integrated16-canonical-positive-a1/progress.json",
         "start_UTC": "2026-10-20T15:40:45.326426+00:00",
         "original_deadline_UTC": "2026-10-20T19:00:45.326426+00:00",
-        "scope": "Fresh actual ROM/NV cold authentication of new687616B School24 image. Original12000s/1.5Baggregate,Ready1.2998B/10500s,Save200M/1800s,reset200k/single512MiB/2GiBoutput. Exact739RDC service startup required in addition731; no checkpoint/ELF/DTB preload, update-install or full post-reset reopening claim.",
+        "scope": "Fresh actual full0.16 ROM/NV cold authentication of genuine687616B School24 image, exactV9739/queue731, Ready681M/penSave72M/reset200k underoriginal12000s/1.5B/Ready10500s/Save1800s/single512MiB/2GiBoutput. Three complete9field rawsamples/11newpixels/frontier2to5/priorwork andresetackbytespreserved. Originald2source, all696buildartifacts/planinputs/capturedobservers andobservedcleanup revalidated closedwithoutguest/compilerrepeat. No fullpostresetreopen/updateinstallation/arbitrarydevice/ISA/physicalclaim.",
         "observed_startup_prefix": {
           "path": "build/task009/school24-integrated16-startup-prefix-a1/result.json",
           "sha256": "8ba123c29be1e99021fee371b21501e5107e15605e56aa6ba81deb4073e2d204"
         },
-        "prefix_scope": "At16:35:43UTC actual kernel and739RDCservice startup observed at414Mcharged-progress. Prefix/progress are independently sampled, not a synchronous cut; Ready/Save/reset remain pending in original boundedrun."
+        "prefix_scope": "At16:35:43UTC actual kernel and739RDCservice startup observed at414Mcharged-progress. Prefix/progress are independently sampled, not a synchronous cut; Ready/Save/reset remain pending in original boundedrun.",
+        "runner_receipt": {
+          "path": "build/task009/school24-integrated16-canonical-runner-a1/result.json",
+          "sha256": "05f15e764acd4fc634cd9eac37133b03aa1ac5c8a5e3ee7757e315948d3034ed"
+        },
+        "execution_receipt": {
+          "path": "build/task009/school24-integrated16-canonical-positive-a1/result.json",
+          "sha256": "e997140a3122b06361af3772d8cd1d5dcc59f75c0182b6927d68264012f47997"
+        },
+        "closed_assessment": {
+          "path": "build/task009/school24-integrated16-canonical-closed-a2/result.json",
+          "sha256": "5efdc103c36acba9a17cf347ef090a62909e04052f9a10f8b9d9dabe416ca2ea"
+        },
+        "retained_closed_observer_failure": {
+          "path": "build/task009/school24-integrated16-canonical-closed-a1/result.json",
+          "sha256": "622a360eb30ce9494f28b99d68a6e6621a90eaba50d74487a52928bdb766a4c3"
+        },
+        "actual_seconds": 5526.983071743045,
+        "total_canonical_cycles": 753200000,
+        "phases": [
+          {
+            "name": "combined-kernel-and-notebook-Ready",
+            "cycles": 681000000,
+            "end_cycle": 681000000,
+            "seconds": 5101.836417714134
+          },
+          {
+            "name": "actual-pen-and-Save",
+            "cycles": 72000000,
+            "end_cycle": 753000000,
+            "seconds": 419.13553743599914
+          }
+        ],
+        "reset_cycles": 200000,
+        "independent_linked_work": {
+          "frontier_before": 2,
+          "frontier_after": 5,
+          "namespace": 1,
+          "page": 1,
+          "index_object": 257,
+          "raw_object": 65539,
+          "stroke": 3,
+          "raw_samples": 3,
+          "complete_sample_fields_equal": true,
+          "artifact_before_reference": true,
+          "index_changed": true,
+          "root_header_changed": false,
+          "prior_work_preserved": true,
+          "scope": "independent offline durable linked work; no pixel or reset observation"
+        },
+        "new_ink_pixels": 11,
+        "reset_acknowledged_medium_exact": true,
+        "remaining_observed_owned_pids": [],
+        "peak_single_owned_process_RSS_bytes": 156332032,
+        "normal_outer_returncode": 0,
+        "closed_assessment_seconds": 1.5598886848893017,
+        "closed_scope": "Original immutable d2 source and captured observers are checked; subsequent25 target/observer edits retain their separate cohort identity"
       }
     },
     "current23_preservation": {
