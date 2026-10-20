@@ -1655,5 +1655,32 @@
     "budget": "Original3000s/12B campaign ends normally2352.836301s and10,161,000,022 units; both owned sessions reaped before original2026-10-20T09:41:17.963238Z deadline. Final actual421 frontier53.",
     "retainedObservations": "First loader-F1 observer failure, incorrect LOAD classification (separate corrected controller hash proves803/2 visible by300M), unsupported close action, read-only medium-copy permission failure, incomplete compressed-workspace observer and changed-view735 control losses remain retained. No annotation data loss was hidden.",
     "remaining": "Actual browser warm-help overlay Save39 then SEND returns240 without queue. The native successful cold path reloaded original803 before SEND and does not qualify that warm path. Browser full workflow, full16/canonical parity, physical qualification and educational benefit remain separate."
+  },
+  "warm_overlay_submission_source_ownership": {
+    "status": "PASS_COMPONENT_ACTIONS_GENUINE_TARGET_PRODUCTION_PENDING",
+    "implementation": [
+      "Lemma/Applications/Notebook.lean",
+      "tests/courses/NotebookSchool.lean",
+      "docs/contracts/009-school-submission-v2.html"
+    ],
+    "assessment": {
+      "path": "build/school/task009-warm-submit-source-a1/final-assessment.json",
+      "sha256": "eadd784e0bf088fcddf988760ba8f26e03e180e492300728dcdb4e8c11fa4aed"
+    },
+    "cause": "Actual browser a15 Save39 then SEND returned712/7/240 because the loaded60001 help overlay was mistaken for the original publication; no queue or732 was produced. Original support report is retained.",
+    "change": "ASK snapshots its fully validated original CRC/namespace/page with existing work object/revision/source/edition/node/session; SEND while help remains open rechecks exact work, admitted school session and known workspace source. The original task is frozen; exact current typed applicability remains independent. A later edit with stale typed binding is explicit opaque unverified work. Validation failures emit732 without changing the original status; successful retry clears local error and existing pending retries retain exact original bytes.",
+    "genuineModuleSeconds": 22.875573276076466,
+    "maintainedModuleActionsSeconds": 54.20095866895281,
+    "finalCompleteSourcePositiveSeconds": 66.49796772794798,
+    "finalSixCaseSeconds": 366.6194578751456,
+    "childPeakRSSKiB": 1951448,
+    "negativeCases": [
+      "use overlay as publication",
+      "ignore original work object",
+      "ignore source CRC",
+      "hide732 rejection",
+      "retain stale error after retry"
+    ],
+    "scope": "Actual fresh maintained Lean elaboration and finite Action execution. Store ACK/checker reply are explicit component premises. Five source mutations each fail their expected consumer assertion. Genuine target production/audits and new native/browser execution are separate pending gates; prior cold native success did not qualify warm SEND."
   }
 }

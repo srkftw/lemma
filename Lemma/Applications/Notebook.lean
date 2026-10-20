@@ -6039,6 +6039,9 @@ private def multimodalAskLocation (ns page : UInt64) : Action :=
     .bind (Memory.read64 (packageBytes + 24)) fun s identity => if statusFailed s = true then .done s 0 else
     .bind (Memory.read64 (packageBytes + 32)) fun s edition => if statusFailed s = true then .done s 0 else
     .bind (Memory.read64 entry) fun s node => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 (packageBytes + 80)) fun s crc => if statusFailed s = true then .done s 0 else
+    if identity = 60000 then .done 244 0 else if identity = 60001 then .done 244 0 else
+    .bind (Memory.write64 (packageBindingScratch + 32) crc) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 (packageBindingScratch + 16) identity) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 (packageBindingScratch + 24) edition) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Memory.write64 (packageBindingScratch + 40) node) fun s _ => if statusFailed s = true then .done s 0 else
@@ -6047,6 +6050,9 @@ private def multimodalAskLocation (ns page : UInt64) : Action :=
   else Lemma.Courses.BrowseHistory.location packageWorkspace ns page
 
 private def multimodalAsk : Action :=
+  -- The spare local words are not companion packet fields. Invalidate first;
+  -- only the complete validated original ASK publishes its source snapshot.
+  .bind (tutorPut 112 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (multimodalAskLocation ns page) fun s binding => if statusFailed s = true then .done s 0 else
@@ -6054,6 +6060,7 @@ private def multimodalAsk : Action :=
   .bind (Memory.read64 (binding + 16)) fun s source => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (binding + 24)) fun s edition => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (binding + 40)) fun s task => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (binding + 32)) fun s crc => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 tutorState) fun s previous => if statusFailed s = true then .done s 0 else
   .bind (get 128) fun s durableFrontier => if statusFailed s = true then .done s 0 else
@@ -6072,6 +6079,10 @@ private def multimodalAsk : Action :=
   .bind (tutorPut 64 task) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (tutorPut 72 512) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (tutorPut 80 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 88 crc) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 96 ns) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 104 page) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (tutorPut 112 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Memory.write64 tutorState (sequence + 1)) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x721 (now + 1) revision (Lemma.Courses.PackageWorkspace.object page) (sequence + 1)) fun s _ => if statusFailed s = true then .done s 0 else
@@ -6373,10 +6384,66 @@ private def schoolContextCopy (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   .bind (Memory.read64 (schoolContext + i.toUInt64 * 8)) fun s value => if statusFailed s = true then .done s 0 else
   .bind (schoolHeaderPut (128 + i.toUInt64 * 8) value) fun s _ => .done s acc
 
+/-- A help overlay owns the package reader buffer, not the learner's task.
+Use only the complete original validated ASK source, still bound to this work
+and admitted school session. A known workspace source must agree; browsing
+history alone cannot create a submission or transfer it to another edition.
+The scratch tuple is local and never a proof/checking-selection binding. -/
+private def schoolSendSource : Action :=
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.PackageWorkspace.validate packageWorkspace ns page) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBytes + 24)) fun s loaded => if statusFailed s = true then .done s 0 else
+  if loaded = 60001 then
+    .bind (tutorGet 112) fun s ready => if statusFailed s = true then .done s 0 else
+    .bind (tutorGet 96) fun s expectedNS => if statusFailed s = true then .done s 0 else
+    .bind (tutorGet 104) fun s expectedPage => if statusFailed s = true then .done s 0 else
+    .bind (tutorGet 24) fun s object => if statusFailed s = true then .done s 0 else
+    .bind (tutorGet 16) fun s previousRevision => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision => if statusFailed s = true then .done s 0 else
+    .bind (tutorGet 0) fun s session => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 (schoolContext+80)) fun s joinedSession => if statusFailed s = true then .done s 0 else
+    if ready = 1 then if ns = expectedNS then if page = expectedPage then
+    if object = Lemma.Courses.PackageWorkspace.object page then
+    if 0 < previousRevision then if previousRevision ≤ revision then if session = joinedSession then
+    .bind (tutorGet 48) fun s identity => if statusFailed s = true then .done s 0 else
+    .bind (tutorGet 56) fun s edition => if statusFailed s = true then .done s 0 else
+    .bind (tutorGet 64) fun s node => if statusFailed s = true then .done s 0 else
+    .bind (tutorGet 88) fun s crc => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 (schoolContext+88)) fun s joinedSource => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 (schoolContext+96)) fun s joinedEdition => if statusFailed s = true then .done s 0 else
+    if identity = joinedSource then if edition = joinedEdition then
+    if identity = 60000 then .done 240 0 else if identity = 60001 then .done 240 0 else
+    .bind (Memory.read64 (packageWorkspace+48)) fun s mask => if statusFailed s = true then .done s 0 else
+    .bind (if (mask >>> 8) &&& 1 = 1 then
+      .bind (Memory.read64 (packageWorkspace+Lemma.Courses.PackageWorkspace.selection+16)) fun s selectedSource => if statusFailed s = true then .done s 0 else
+      .bind (Memory.read64 (packageWorkspace+Lemma.Courses.PackageWorkspace.selection+24)) fun s selectedEdition => if statusFailed s = true then .done s 0 else
+      .bind (Memory.read64 (packageWorkspace+Lemma.Courses.PackageWorkspace.selection+32)) fun s selectedCRC => if statusFailed s = true then .done s 0 else
+      if identity = selectedSource then if edition = selectedEdition then if crc = selectedCRC then .done 0 0 else .done 240 0 else .done 240 0 else .done 240 0
+      else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+    store identity edition node crc
+    else .done 240 0 else .done 240 0
+    else .done 240 0 else .done 240 0 else .done 240 0 else .done 240 0
+    else .done 240 0 else .done 240 0 else .done 240 0
+  else
+    .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+    .bind (packageGet 8) fun s ordinal => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Courses.PackageTarget.select packageBytes length ordinal) fun s entry => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 (packageBytes + 32)) fun s edition => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 (packageBytes + 80)) fun s crc => if statusFailed s = true then .done s 0 else
+    .bind (Memory.read64 entry) fun s node => if statusFailed s = true then .done s 0 else
+    store loaded edition node crc
+where
+  store (identity edition node crc : UInt64) : Action :=
+    .bind (Memory.write64 (packageBindingScratch+16) identity) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 (packageBindingScratch+24) edition) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 (packageBindingScratch+32) crc) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Memory.write64 (packageBindingScratch+40) node) fun s _ => .done s 0
+
 /-- SEND captures the selected publication, immutable mathematical revision,
 full raw page references and already admitted school binding in guest Lean.
 An existing pending attempt is retried with its original bytes and identity. -/
-private def schoolSend : Action :=
+private def schoolSendAttempt : Action :=
   .bind (Memory.read64 schoolQueueReadyFlag) fun s initialized => if statusFailed s = true then .done s 0 else
   if initialized = 1 then
   .bind (Memory.read64 Lemma.Courses.SchoolSubmission.arena) fun s phase => if statusFailed s = true then .done s 0 else
@@ -6386,13 +6453,11 @@ private def schoolSend : Action :=
   if saved = 0 then
   .bind (packageGet 32) fun s loaded => if statusFailed s = true then .done s 0 else
   if loaded = 2 then
-  .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
-  .bind (packageGet 8) fun s ordinal => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Courses.PackageTarget.select packageBytes length ordinal) fun s entry => if statusFailed s = true then .done s 0 else
-  .bind (Memory.read64 (packageBytes + 24)) fun s identity => if statusFailed s = true then .done s 0 else
-  .bind (Memory.read64 (packageBytes + 32)) fun s edition => if statusFailed s = true then .done s 0 else
-  .bind (Memory.read64 (packageBytes + 80)) fun s crc => if statusFailed s = true then .done s 0 else
-  .bind (Memory.read64 entry) fun s node => if statusFailed s = true then .done s 0 else
+  .bind schoolSendSource fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBindingScratch+16)) fun s identity => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBindingScratch+24)) fun s edition => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBindingScratch+32)) fun s crc => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (packageBindingScratch+40)) fun s node => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (schoolContext + 72)) fun s policy => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Documents.Mathematics.field mathematics 96) fun s checker => if statusFailed s = true then .done s 0 else
@@ -6420,6 +6485,15 @@ private def schoolSend : Action :=
   Lemma.Courses.SchoolSubmission.start schoolSubmissionHeader packageWorkspace pageIndex
   else .done 244 0 else .done 232 0 else .done 232 0
   else .done 244 0
+
+/-- Validation rejection is ordinary visible queue state. Retain the exact
+status for712, keep notebook work usable, and clear only after a real successful
+start/retry. This never changes frozen attempt bytes or fabricates an ACK. -/
+private def schoolSend : Action :=
+  .bind schoolSendAttempt fun result value =>
+  if statusFailed result = true then
+    .bind (schoolQueueFailure result) fun s _ => if statusFailed s = true then .done s 0 else .done result value
+  else .bind (Memory.write64 schoolQueueError 0) fun s _ => if statusFailed s = true then .done s 0 else .done result value
 
 private def schoolCancel : Action :=
   .bind (Memory.read64 schoolQueueReadyFlag) fun s initialized => if statusFailed s = true then .done s 0 else

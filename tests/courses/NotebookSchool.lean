@@ -581,9 +581,150 @@ private def deferredSavedChecks : IO Unit := do
   expect (newer.1 == 0 && (← get replaced (receipt+8)) == 18 &&
       (← get replaced (receipt+16)) == 101) "new acknowledged receipt did not replace the old tuple"
 
+private def writeImage (r : IO.Ref Model) (address : UInt64) (image : ByteArray) : IO Unit := do
+  for i in [:image.size] do
+    let a := address+i.toUInt64
+    let old ← get r (a-a%8)
+    put r (a-a%8) ((old &&& ~~~((255:UInt64)<<<(a%8*8))) ||| (image[i]!.toUInt64<<<(a%8*8)))
+
+private def warmSubmissionChecks : IO Unit := do
+  let doc := Lemma.Applications.Notebook.mathematics
+  let work : UInt64 := 0x33b000
+  let tutor := Lemma.User.Multimodal.records+1024
+  let tutorState := Lemma.User.Multimodal.state+144
+  let school := Lemma.User.Multimodal.records+1152
+  let q := SchoolSubmission.arena
+  let image ← IO.ofExcept <| (Package.encode {
+    identity:=803,edition:=2,title:="Original algebra",sourceAnchor:="owned fixture source",
+    editionAnchor:="fixture edition2",rightsAnchor:="fixture authored text",
+    nodes:=#[{kind:=.explanation,title:="Definitions",body:="A sum.",sourceAnchor:="source1"},
+      {kind:=.worked,title:="Expansion",body:="Four products.",sourceAnchor:="source2"},
+      {kind:=.explanation,title:="Assumptions",body:="For integers.",sourceAnchor:="source3"},
+      {kind:=.exercise .binomialSquare,title:="Expand",body:="Expand (N+1)^2.",exercise:="Give coefficients.",sourceAnchor:="source4"}] }).mapError (·.render)
+  let r ← IO.mkRef ({} : Model)
+  for (a,v) in #[(base+72,1),(base+80,1),(base+24,3),(base+128,40),(base+176,100),
+      (base+752,12),(base+760,1),(base+512,1),(base+712,1),(base+32,1650),
+      (base+40,2200),(base+336,65535),(base+16,7),(base+576,7),(app,image.size.toUInt64),
+      (app+8,3),(app+16,1),(app+32,2),(app+48,803),(app+56,2),(base+528,9)] do put r a v
+  writeImage r 0x332000 image
+  expect ((← run r (Lemma.Documents.MathematicsClosure.create doc 1 1)).1 == 0) "warm original Doc8"
+  for (offset,value) in #[(72,1),(80,2),(88,1)] do put r (doc+offset) value
+  expect ((← run r (PackageWorkspace.create work doc 1 1)).1 == 0) "warm original workspace"
+  expect ((← run r ((schoolNotebook% "stagePackageExercise") 3)).1 == 0) "warm actual USE selection"
+  expect ((← run r (schoolNotebook% "adoptPackageWorkspace")).1 == 0) "warm selected workspace publication"
+  let crc ← get r (0x332000+80)
+  r.modify fun m => {m with syscalls:=#[(0,1),(0,88),(0,88),(0,88)]}
+  expect ((← run r (schoolNotebook% "multimodalAsk")).1 == 0 && (← get r (tutor+112)) == 1 &&
+      (← get r (tutor+88)) == crc && (← get r (tutor+96)) == 1 && (← get r (tutor+104)) == 1)
+    "ASK did not freeze exact validated source before overlay"
+  let ask : Lemma.School.Client.GuestAsk := {
+    session:=2,consent:=1,revision:=2,object:=(PackageWorkspace.object 1).toNat,sequence:=41,
+    source:=803,edition:=2,task_id:=4,cutoff:=1,now:=1,deadline:=10000,grants:=1 }
+  let binding : Lemma.School.Client.SessionBinding := {
+    school:="fixture",actor:="learner",enrollment:="enrolled",session:="session",
+    guestSession:=2,course:=803,revision:=2,policy:=2,generation:=22,expires:=10000,
+    authority:="020000000000000006000000000000007856341200000000efcdab0000000000",bindingRecord:=27 }
+  let input : Lemma.School.Client.AssistInput := {
+    school:="fixture",actor:="learner",session:="session",course:=803,revision:=2,
+    policy:=2,generation:=22,now:=1,ask:=ask }
+  let overlay ← IO.ofExcept (Lemma.School.Client.handleAssist binding input "Expand into four products.")
+  writeImage r 0x332000 overlay
+  for (offset,value) in #[(0,Lemma.Multimodal.SchoolPacket.magic),(8,1),(16,2),(24,6),(32,0x12345678),
+      (40,0xabcdef),(48,27),(56,22),(64,10000),(72,2),(80,2),(88,803),(96,2)] do put r (school+offset) value
+  for (a,v) in #[(app,overlay.size.toUInt64),(app+8,0),(app+32,2),(app+128,60001),
+      (app+136,41),(app+72,1),(app+96,4),(app+208,5),(app+232,2),(app+240,1),
+      (tutorState+8,1)] do put r a v
+  r.modify fun m => {m with syscalls:=#[(0,1),(0,88),(0,88),(0,42)]}
+  expect ((← run r (schoolNotebook% "multimodalPackageWork")).1 == 0 &&
+      (← get r (Lemma.User.Multimodal.records+3008)) == 1 && (← get r (base+160)) == 1)
+    "warm help did not reach actual prepared write-ahead consumer"
+  -- Explicit component premise: actual Store ACKs, separately exercised by
+  -- native545 evidence, authorize the same maintained completion actions.
+  put r (base+128) 41;put r (base+160) 3;put r (base+200) 3
+  r.modify fun m => {m with syscalls:=#[(0,88)]}
+  expect ((← run r (schoolNotebook% "finishRecord")).1 == 0) "warm prepared ACK completion"
+  r.modify fun m => {m with syscalls:=#[(0,1),(0,88),(0,43),(0,88)]}
+  expect ((← run r (schoolNotebook% "multimodalPumpRemote")).1 == 0 &&
+      (← get r (tutor+32)) == 41 && (← get r (work+64+192)) == 9)
+    "warm actual guest raster/observation consumer"
+  put r (base+128) 42;put r (base+160) 0;put r (base+136) 0
+  r.modify fun m => {m with syscalls:=#[]}
+  expect ((← run r (schoolNotebook% "multimodalPumpRemote")).1 == 0) "warm raster ACK release"
+  -- CHECK snapshots the existing original binding even though reader bytes
+  -- still contain60001. A terminal checker result is an explicit premise,
+  -- never inferred from assistance or from this component observer.
+  r.modify fun m => {m with syscalls:=#[(0,55),(0,88)]}
+  expect ((← run r (schoolNotebook% "beginPackageArithmetic")).1 == 0 &&
+      (← get r (app+80)) == 1) "warm CHECK lost original typed source"
+  put r (base+560) 1
+  expect ((← run r (schoolNotebook% "stagePackageCompletion")).1 == 0) "warm checker completion binding"
+  expect ((← run r (schoolNotebook% "adoptPackageWorkspace")).1 == 0) "warm checked workspace publication"
+  put r (base+536) 0;put r (base+136) 0
+  expect ((← get r (0x332000+24)) == 60001 && (← get r (doc+96)) == 1)
+    "test silently reloaded original package or changed checker result"
+  expect ((← run r (Lemma.Documents.Ink.emptyPage Lemma.Applications.Notebook.pageIndex 1)).1 == 0) "warm empty ink page"
+  let original ← r.get
+  r.modify fun m => {m with syscalls:=#[(0,2)]}
+  let sent ← run r (schoolNotebook% "schoolSend")
+  expect (sent.1 == 0 && (← get r q) == 1 && (← get r (SchoolSubmission.metadata+64)) == 803 &&
+      (← get r (SchoolSubmission.metadata+72)) == 2 && (← get r (SchoolSubmission.metadata+80)) == 4 &&
+      (← get r (SchoolSubmission.metadata+88)) == crc && (← get r (SchoolSubmission.metadata+104)) == 1 &&
+      (← get r (base+720)) == 0 && (← r.get).syscalls.isEmpty)
+    "warm SEND retargeted original work to help overlay or failed to start queue"
+  -- Cross-work/source/session and missing snapshot cases reject before a
+  -- queue phase or output stream exists, but emit a usable ordinary732 error.
+  for (address,value) in #[(tutor+112,0),(tutor+96,2),(tutor+104,2),
+      (tutor+24,PackageWorkspace.object 2),(tutor+16,3),(tutor+0,3),
+      (tutor+48,802),(tutor+56,3),(tutor+88,crc+1),(school+88,802),(school+96,3),
+      (work+PackageWorkspace.selection+16,802),(work+PackageWorkspace.selection+24,3),
+      (work+PackageWorkspace.selection+32,crc+1)] do
+    let bad ← IO.mkRef original
+    put bad address value
+    bad.modify fun m => {m with syscalls:=#[(0,88)]}
+    let refused ← run bad (schoolNotebook% "schoolSend")
+    expect (refused.1 == 240 && (← get bad q) == 0 && (← get bad (base+720)) == 240 &&
+      (← bad.get).syscalls.isEmpty) "warm changed source/work/session was not rejected visibly before queue start"
+    expectConsoleTag bad "0000000000000732"
+  -- Retry after validation failure uses the corrected original context and
+  -- clears only its error field. Existing queue retry never rewrites metadata.
+  let retry ← IO.mkRef original
+  put retry (tutor+112) 0
+  retry.modify fun m => {m with syscalls:=#[(0,88)]}
+  expect ((← run retry (schoolNotebook% "schoolSend")).1 == 240) "retry failure fixture"
+  put retry (tutor+112) 1
+  retry.modify fun m => {m with syscalls:=#[(0,2)]}
+  expect ((← run retry (schoolNotebook% "schoolSend")).1 == 0 &&
+      (← get retry (base+720)) == 0 && (← get retry q) == 1) "successful retry retained stale queue error"
+  -- A changed answer with a stale typed binding remains usable opaque work;
+  -- its old exact checker outcome is never inherited as current verification.
+  let edited ← IO.mkRef original
+  expect ((← run edited (Lemma.Documents.Mathematics.edit doc 72 1)).1 == 0) "warm edit fixture"
+  expect ((← run edited (PackageWorkspace.stageRefresh work doc Lemma.Applications.Notebook.mathematicsSave)).1 == 0) "warm edit staging"
+  expect ((← run edited (schoolNotebook% "adoptPackageWorkspace")).1 == 0) "warm edit publication"
+  edited.modify fun m => {m with syscalls:=#[(0,2)]}
+  expect ((← run edited (schoolNotebook% "schoolSend")).1 == 0 &&
+      (← get edited (SchoolSubmission.metadata+104)) == 2 &&
+      (← get edited (SchoolSubmission.metadata+56)) == 3 && (← get edited (doc+96)) == 0)
+    "warm edited work inherited stale typed/Verified identity or was discarded"
+  -- An already frozen pending attempt ignores later source selection: retry
+  -- means its original immutable bytes and queue, never a new validation.
+  let pending ← IO.mkRef (← r.get)
+  let oldQueue ← get pending (q+96)
+  let oldRevision ← get pending (SchoolSubmission.metadata+56)
+  for (a,v) in #[(q,26),(q+152,43),(tutor+48,802),(base+720,240)] do put pending a v
+  pending.modify fun m => {m with syscalls:=#[]}
+  expect ((← run pending (schoolNotebook% "schoolSend")).1 == 0 && (← get pending (q+304)) == 1 &&
+      (← get pending (q+96)) == oldQueue && (← get pending (SchoolSubmission.metadata+64)) == 803 &&
+      (← get pending (SchoolSubmission.metadata+56)) == oldRevision && (← get pending (base+720)) == 0)
+    "pending retry retargeted frozen bytes or retained stale validation error"
+  -- An overlay can never become a new original school ASK.
+  retry.modify fun m => {m with syscalls:=#[]}
+  expect ((← run retry (schoolNotebook% "multimodalAsk")).1 == 244 &&
+      (← get retry (tutor+112)) == 0) "help overlay became source authority for a new ASK"
+
 def main : IO Unit := do
-  deferredSavedChecks;rawCoalescingChecks;rawCommitReceiptChecks;rawStatusChecks;rawCaptureChecks;floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
-  IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control,actual JOIN async source/EOF presentation,32stroke full9word capture/replay,Save ordering,mute/full-buffer safety,overflow/gap/view-loss,captured-work Pending/Saved header+421/423 ownership,burst raw-reference coalescing before ordered controls and actual page/root commit; component only"
+  warmSubmissionChecks;deferredSavedChecks;rawCoalescingChecks;rawCommitReceiptChecks;rawStatusChecks;rawCaptureChecks;floorChecks; recordChecks; selectedNodeCheck; saveChecks; bootGateCheck;queueHandoffCheck;schoolJoinCheck
+  IO.println "NOTEBOOK_SCHOOL_ACTIONS:PASS warm-help original-publication CHECK/SEND and visible732 rejection/source isolation, reader-local floor/global maximum,regression rejection,exact record copy,same-edition review node,old Save reply,mapped first Save,foreground IPC handoff and context-bound control,actual JOIN async source/EOF presentation,32stroke full9word capture/replay,Save ordering,mute/full-buffer safety,overflow/gap/view-loss,captured-work Pending/Saved header+421/423 ownership,burst raw-reference coalescing before ordered controls and actual page/root commit; component only"
 end NotebookSchoolTests
 
 def main : IO Unit := NotebookSchoolTests.main
