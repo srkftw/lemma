@@ -16,6 +16,7 @@ import tarfile
 import time
 from silicon_enclosure import require
 from silicon_power_ports import signal_bytes
+from silicon_lvs_alias import cdl_alias, verilog_alias, require_originals
 from silicon_synth import CommandFailure, ROOT, lvs_matches, run, sha
 
 
@@ -127,7 +128,7 @@ def main():
         magic, netgen = (Path(shutil.which(v) or '').resolve() for v in ('magic', 'netgen'))
         require(magic.is_file() and netgen.is_file(), 'actual Magic/Netgen required')
         rc = pdk / 'ihp-sg13g2/libs.tech/magic/ihp-sg13g2.magicrc'
-        inputs = [Path(__file__).resolve(), ROOT / 'scripts/silicon_power_ports.py', ROOT / 'scripts/silicon_synth.py',
+        inputs = [Path(__file__).resolve(), ROOT / 'scripts/silicon_power_ports.py', ROOT / 'scripts/silicon_lvs_alias.py', ROOT / 'scripts/silicon_synth.py',
                   ROOT / 'tooling/silicon/process.tcl', ROOT / 'tooling/silicon/extract.tcl',
                   route / 'result.json', mapping / 'result.json', route / 'routed.def', route / 'routed.v', macro_gds, macro_cdl,
                   std / 'gds/sg13g2_stdcell.gds', std / 'cdl/sg13g2_stdcell.cdl', rc, magic, netgen]
@@ -161,7 +162,10 @@ def main():
         process = process.replace('    gds readonly true', '    drc off\n    gds readonly true', 1)
         process = process.replace('gds read $pdk/libs.ref/sg13g2_stdcell/gds/sg13g2_stdcell.gds',
             'gds read $pdk/libs.ref/sg13g2_stdcell/gds/sg13g2_stdcell.gds\n' +
+            f'    source {{{pdk / "ihp-sg13g2/libs.tech/magic/read_sram_gds.tcl"}}}\n' +
             f'    gds read {{{macro_gds}}}')
+        report['SRAM_import'] = {'original_helper': str(pdk / 'ihp-sg13g2/libs.tech/magic/read_sram_gds.tcl'),
+            'scope': 'Original recommended six flatten patterns before SRAM GDS import; retains devices, geometry, bulk and net-breaker connectivity. Generic ideal resistor versus CDL lvsres model remains an explicit unresolved comparison.'}
         process = process.replace('lef read $pdk/libs.ref/sg13g2_stdcell/lef/sg13g2_tech.lef',
             f'lef read {{{route / "enclosure/repaired-original.lef"}}}')
         process = process.replace('lef read $pdk/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef',
@@ -257,10 +261,27 @@ quit -noprompt
             invoke([str(magic), '-dnull', '-noconsole', '-rcfile', str(rc)], 'extract', args.extraction_seconds, extract)
             require((out / 'extracted.spice').stat().st_size > 1000, 'empty transistor extraction')
             report['transistor_extraction'] = {'status': 'EXTRACTED', 'sha256': sha(out / 'extracted.spice')}
+            extraction_log = (out / 'extract.log').read_text(errors='replace')
+            report['transistor_extraction']['warnings'] = {
+                'cell_error_counts': re.findall(r'^([^\n]+): (\d+) errors?$', extraction_log, re.M),
+                'subscript_warning_count': extraction_log.count("Number of subscripts doesn't match"),
+                'scope': 'Completed netlist does not establish error-free geometry or LVS; all original warnings retained in extract.log'}
+            # The original CDL spells bus bits <n>; Netgen's Verilog reader
+            # binds [n], and mishandles escaped ! PG port names. Adapt only
+            # reference spelling, with exact original-byte roundtrip guards.
+            adapted_cdl = out / 'reference-sram-alias.cdl'
+            adapted_verilog = out / 'reference-power-alias.v'
+            original_cdl, original_verilog = macro_cdl.read_text(), reference_netlist.read_text()
+            adapted_cdl.write_text(cdl_alias(original_cdl))
+            adapted_verilog.write_text(verilog_alias(original_verilog, core_grid))
+            require_originals(adapted_cdl.read_text(), original_cdl, adapted_verilog.read_text(), original_verilog)
+            report['reference_spelling_adapter'] = {'original_CDL_sha256': sha(macro_cdl),
+                'original_Verilog_sha256': sha(reference_netlist), 'derived_CDL_sha256': sha(adapted_cdl),
+                'derived_Verilog_sha256': sha(adapted_verilog), 'scope': 'Exactly reversible bit/PG-port spelling only; all devices, parameter values, connection arguments and bit identities preserved; lvsres models unchanged'}
             compare = out / 'lvs.tcl'
             compare.write_text(f'''set reference [readnet spice {{{std/'cdl/sg13g2_stdcell.cdl'}}}]
-    readnet spice {{{macro_cdl}}} $reference
-    readnet verilog {{{reference_netlist}}} $reference
+    readnet spice {{{adapted_cdl}}} $reference
+    readnet verilog {{{adapted_verilog}}} $reference
     lvs {{{out/'extracted.spice'} lemma_pen}} [list lemma_pen $reference] {{{pdk/'ihp-sg13g2/libs.tech/netgen/ihp-sg13g2_setup.tcl'}}} {{{out/'lvs.rpt'}}} -json
     ''')
             invoke([str(netgen), '-batch', 'source', str(compare)], 'lvs', 45)

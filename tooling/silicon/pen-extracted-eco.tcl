@@ -64,6 +64,11 @@ if {[info exists core_power_grid] && $core_power_grid == 1} {
     write_db $out/power-grid-before-route.odb
     write_def $out/power-grid-before-route.def
     write_verilog -include_pwr_gnd $out/power-connected.v
+    if {[info exists power_edge_script]} {
+        source $power_edge_script
+        set power_edge_clearance [lemma_add_power_edge_clearance $out]
+        lemma_check_power_edge_clearance $power_edge_clearance
+    }
 }
 set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
 global_route -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/global-congestion.rpt -verbose
@@ -79,6 +84,7 @@ detailed_route -output_drc $out/route.drc -output_maze $out/route.maze -droute_e
 if {[info exists core_power_grid] && $core_power_grid == 1} {
     global_connect
     lemma_check_power_grid $power_bindings_before $out after-route
+    if {[info exists power_edge_clearance]} {lemma_check_power_edge_clearance $power_edge_clearance}
 }
 set file [open $out/router-drc-count.txt w]
 puts $file [detailed_route_num_drvs]
