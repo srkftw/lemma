@@ -17,7 +17,10 @@ async function appFixture(gpu,bundle={}){
  node('#session-mode').value='student';
  const document={hidden:false,addEventListener:(name,callback)=>documentListeners.set(name,callback),querySelector:id=>id==='canvas'?current:node(id),querySelectorAll:()=>actions,createElement:()=>({dataset:{},click(){}})};
  const context=vm.createContext({fetch:async url=>{assert.equal(url,'./bundle.json');return {ok:true,json:async()=>({backend:'fixture-machine',...bundle})};},document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,AudioContext:class{constructor(){this.state='running';this.currentTime=0;this.destination={};}async resume(){}createBuffer(_channels,length,rate){return {duration:length/rate,getChannelData:()=>new Float32Array(length)};}createBufferSource(){const source={connect(){},start(){this.started=true;},stop(){this.stopped=true;}};audioSources.push(source);return source;}},GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
- const module=new vm.SourceTextModule(source,{context});await module.link(()=>{throw Error('unexpected app import');});
+ const imports=[];
+ const module=new vm.SourceTextModule(source,{context,importModuleDynamically:spec=>{
+  assert.equal(spec,'./optical_transport.js');const pending=(async()=>{const child=new vm.SourceTextModule(await fs.readFile('sim/browser/optical_transport.js','utf8'),{context});await child.link(()=>{throw Error('unexpected optical import');});await child.evaluate();return child;})();imports.push(pending);return pending;
+ }});await module.link(()=>{throw Error('unexpected app import');});
  let watchdog;try{await Promise.race([module.evaluate(),new Promise((_resolve,reject)=>{watchdog=setTimeout(()=>reject(Error('renderer initialization blocked actual app registration')),250);})]);}finally{clearTimeout(watchdog);}
  function exercise(){node('#medium').value='owned';node('#open').onclick();assert.equal(sent.at(-1).action,'open');assert.equal(sent.at(-1).name,'owned');assert.equal(sent.at(-1).mode,'student');
   actions.find(n=>n.dataset.action==='inspect').onclick();assert.equal(sent.at(-1).action,'inspect');
@@ -29,6 +32,7 @@ async function appFixture(gpu,bundle={}){
   worker.onmessage({data:{type:'panel',pixels:new Uint8Array([0,8,15]),width:3,height:1}});
   assert.deepEqual(images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
  }
+ await settle();await Promise.all(imports);await settle();
  exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,actions,setRect:r=>rect=r,resize:()=>viewportListeners.get('resize')?.(),visibility:hidden=>{document.hidden=hidden;documentListeners.get('visibilitychange')?.();},audioSources,trigger:(id,name)=>node(id).listeners?.get(name)?.()};
 }
 {
@@ -479,3 +483,19 @@ for(const phase of ['adapter','device']){
  assert.equal(f.images.length,images,'keyboard input must not manufacture controller pixels');
 }
 console.log('PASS actual app host fixture: unresolved GPU leaves controls, worker observation and exact Gray4 fallback functional; qualified switch/loss safely cancel contact');
+
+// Actual UI sends raw bytes only under the exact new binding and explicit
+// Developer selection. No guest permission, interpretation or capture receipt.
+{
+ const f=await appFixture(undefined,{profile:'lemma-silicon-dev/0.17.0',execution_binding:'lemma-optical17-functional-mm2/1',optical_controller_abi:1,optical_frame_contract:'lemma-optical-frame/1'});
+ assert.equal(f.node('#optical-controls').hidden,false);
+ const before=f.sent.length;f.node('#optical-frame').onclick();assert.equal(f.sent.length,before);
+ assert.match(f.node('#optical-result').textContent,/Developer or Laboratory/);
+ f.node('#session-mode').value='laboratory';f.node('#session-mode').onchange();
+ f.node('#optical-endpoint').value='3';f.node('#optical-format').value='face320-gray8';f.node('#optical-frame').onclick();
+ const frame=f.sent.at(-1);assert.equal(frame.action,'optical-frame');assert.equal(frame.endpoint,'3');assert.equal(frame.bytes.byteLength,76800);
+ assert(!('captureTime' in frame));assert(!('grant' in frame));assert(!('document' in frame));
+ f.worker.onmessage({data:{type:'optical-admission',accepted:1024,total:9602,bytes:76800,error:'Remainder rejected; accepted prefix retained'}});
+ assert.match(f.node('#optical-result').textContent,/1024 of 9602/);assert.match(f.node('#optical-result').textContent,/prefix retained/);
+ f.node('#optical-endpoint').value='1';const count=f.sent.length;f.node('#optical-frame').onclick();assert.equal(f.sent.length,count);assert.match(f.node('#optical-result').textContent,/incompatible/);
+}

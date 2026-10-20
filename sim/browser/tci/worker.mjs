@@ -29,5 +29,5 @@ onmessage=({data})=>{
  }
  if(!runtime){postMessage({type:'error',error:'Open a machine first'});return;}
  if(data.action==='close')closing=true;
- runtime.postMessage(data);
+ runtime.postMessage(data,data.action==='optical-frame'&&data.bytes instanceof ArrayBuffer?[data.bytes]:[]);
 };

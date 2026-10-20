@@ -14,7 +14,7 @@ const notebookFault=new NotebookFaultObserver();
 const school=new SchoolTransport();let schoolMachineEpoch=0;
 const contract='lemma-browser-session-modes/2';
 const ordinary=new Set(['open','import','pause','resume','pen','button','reset','export','export-panel','diagnostics','close','school']);
-const developer=new Set(['run','raw','raw-batch','course-install','inspect','events']);
+const developer=new Set(['run','raw','raw-batch','optical-frame','course-install','inspect','events']);
 let core,control,handle,manifest,backing,loaded=false,running=false,mode='student',mediumName=null,initializing=false;
 let serial=Promise.resolve(),timer=null,stepQueued=false,budget=null,pauseReason=null,started=0,readyAt=null,loops=0,panelSequence=null,guestStart=0,capture=[],coursePartial=false,interruptEpoch=0;
 const timing={runSeconds:0},sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -26,7 +26,7 @@ const quantumUnits=100000n;
 const exactJson=text=>JSON.parse(text.replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));
 let heapBytes=null,uartPaced=false,uartFlow=false;
 let executionBoundary=null;
-let stopContract=null;
+let stopContract=null,opticalTransport=null;
 const egress=new PcmEgress();
 async function pcm(){
  const result=await control.request('lemma-waveform');
@@ -58,7 +58,7 @@ async function inspect(full=false){
  observeFault();
  const state={cycle:String(cycle),ticks:clock.mtime_ticks,virtual_ns:clock.virtual_ns,panel_completed:clock.paper_completed,panel_sequence:clock.paper_accepted,paper_busy:String(BigInt(clock.paper_status)&1n),panel_power:clock.paper_power?'1':'0',isolated_medium:false,backend:'qemu-tci-wasm64/1',timingScope:'instruction/virtual-timer boundary; not RTL processor-cycle parity'};
  if(stopContract!==null)state.cpu_stop=cpuStopObservation(clock);
- if(full){state.paper=exactJson(await control.get('device-state'));state.storage=exactJson(await control.get('storage-state','/machine/lemma-block'));state.power=exactJson(await control.get('power-state'));state.uart_ingress=exactJson(await control.get('raw-uart-state'));state.fullInspectionVirtualNs=clock.virtual_ns;}
+ if(full){state.paper=exactJson(await control.get('device-state'));state.storage=exactJson(await control.get('storage-state','/machine/lemma-block'));state.power=exactJson(await control.get('power-state'));state.uart_ingress=exactJson(await control.get('raw-uart-state'));state.fullInspectionVirtualNs=clock.virtual_ns;if(opticalTransport)state.optical=exactJson(await control.get('optical-state'));}
  if(readyAt===null&&guestPageReady(uart(),guestStart,{accepted:clock.paper_accepted,completed:clock.paper_completed}))readyAt={cycle:state.cycle,hostSeconds:(performance.now()-started)/1000};
  return state;
 }
@@ -94,17 +94,24 @@ async function load(m){
  if(loaded)throw Error('Close this machine first');if(!['student','developer','laboratory'].includes(m.mode??'student'))throw Error('Unknown session mode');mode=m.mode??'student';
  if(m.initialize!==undefined&&typeof m.initialize!=='boolean')throw Error('Initialize must be Boolean');
  if(m.paused!==undefined&&typeof m.paused!=='boolean')throw Error('Open paused must be Boolean');
- const response=await fetch('./bundle.json');if(!response.ok)throw Error('Bundle unavailable');manifest=await response.json();if(manifest.schema!=='lemmasim-browser-qemu-tci/1'||manifest.execution_backend!=='qemu-tci-wasm64/1'||manifest.session_control_contract!==contract||manifest.profile!=='lemma-silicon-dev/0.14.0')throw Error('Unsupported admitted QEMU Wasm bundle');
- const pcm2=manifest.execution_binding==='lemma-silicon-fast-mm2-subset/0.1.0';
+ const response=await fetch('./bundle.json');if(!response.ok)throw Error('Bundle unavailable');manifest=await response.json();if(manifest.schema!=='lemmasim-browser-qemu-tci/1'||manifest.execution_backend!=='qemu-tci-wasm64/1'||manifest.session_control_contract!==contract||!['lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.17.0'].includes(manifest.profile))throw Error('Unsupported admitted QEMU Wasm bundle');
+ opticalTransport=null;
+ if(manifest.profile==='lemma-silicon-dev/0.17.0'||manifest.optical_controller_abi!==undefined||manifest.optical_frame_contract!==undefined||manifest.execution_binding?.startsWith('lemma-optical17-')){
+  const transport=await import('./optical_transport.js');
+  if(!transport.opticalBinding(manifest)||manifest.execution_binding!=='lemma-optical17-functional-mm2/1')throw Error('Unsupported functional optical binding');opticalTransport=transport;
+ }
+ const pcm2=manifest.execution_binding==='lemma-silicon-fast-mm2-subset/0.1.0'||opticalTransport!==null;
  stopContract=manifest.stop_boundary_contract??null;
  if(stopContract!==null&&stopContract!==CPU_STOP_CONTRACT)throw Error('Unsupported actual CPU stop acknowledgement contract');
  if(pcm2?(manifest.multimodal_controller_abi!==2||manifest.controller_contract!=='lemma-multimodal-converter/2'):(manifest.execution_binding!==undefined||manifest.multimodal_controller_abi!==undefined||manifest.controller_contract!==undefined))throw Error('Unsupported PCM controller binding');
  const controllerArguments=pcm2?['-global','lemma-paper-pen.multimodal-controller-abi=2']:[];
+ if(opticalTransport)controllerArguments.push('-global','lemma-paper-pen.optical-controller-abi=1');
  handle=await openMedium(m.name,!!m.initialize);mediumName=m.name;
  const workload=manifest.workloads[m.initialize?'initializer':'notebook'],elf=await artifact(workload.image),dtb=await artifact(workload.dtb),wasm=await artifact(manifest.runtime.wasm);
  const logs=[];started=performance.now();
  core=await createQemu({arguments:[...controllerArguments,'-machine','lemma-silicon-fast','-cpu','rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0','-m','128M','-smp','1','-bios','none','-kernel','/image.elf','-dtb','/machine.dtb','-display','none','-monitor','none','-serial','file:/uart.bin','-S','-no-shutdown','-icount','shift=3,align=off,sleep=off','-seed','0x4c454d4d413031','-global','lemma-fast-block.medium=/medium.raw','-global','lemma-paper-pen.multimodal-audio-output=/audio.bin'],preRun:[module=>{module.FS.writeFile('/image.elf',elf);module.FS.writeFile('/machine.dtb',dtb);backing=attachOpfsFile(module,'/medium.raw',handle);}],print:t=>{if(logs.length<256)logs.push(String(t));},printErr:t=>{if(logs.length<256)logs.push(String(t));},onAbort:t=>postMessage({type:'error',error:'QEMU abort:'+t,logs})});
  control=new Control(core);await control.ready();if(await control.get('raw-uart-version')!=='lemma-raw-uart/1')throw Error('UART raw transport absent');await control.set('enable-raw-uart','lemma-raw-uart/1');const properties=await control.request('qom-list',{path:'/machine/lemma-hardware'});uartPaced=properties.some(p=>p.name==='raw-uart-paced-version')&&await control.get('raw-uart-paced-version')==='lemma-raw-uart-paced/1';
+ if(opticalTransport&&(!['optical-version','optical-source','optical-source-batch','optical-state'].every(name=>properties.some(p=>p.name===name))||await control.get('optical-version')!=='lemma-optical-frame/1'))throw Error('Actual optical source/controller ABI is absent');
  uartFlow=false;
  if(properties.some(p=>p.name==='raw-uart-flow-version')){
   if(await control.get('raw-uart-flow-version')!=='lemma-raw-uart-flow/1'||!uartPaced)throw Error('Unsupported receiver-ready UART capability');
@@ -125,11 +132,28 @@ async function input(m){
 async function raw(row){
  if(typeof row!=='string'||row.length>256)throw Error('Raw event exceeds256 characters');const f=row.trim().split(/\s+/),clock=await control.request('lemma-clock'),cycle=(BigInt(clock.virtual_ns)+9n)/10n;
  if(f[0]==='now')f[0]=String(cycle);const c=uint64(f[0]);if(c<cycle)throw Error('Raw event is stale');const delivery=c*10n;
- if(f[1]==='uart'&&f.length===3&&/^(?:[a-fA-F0-9]{2}){1,112}$/.test(f[2]))await control.set('external-uart',`${delivery} ${f[2]}`);
+ if(f[1]==='optical-frame'){if(!opticalTransport||f.length!==7||c!==cycle)throw Error('Optical source requires the admitted binding and current cycle');f.splice(2,5,...opticalTransport.opticalWords(f.slice(2)));await control.set('optical-source',f.slice(2).join(' '));}
+ else if(f[1]==='uart'&&f.length===3&&/^(?:[a-fA-F0-9]{2}){1,112}$/.test(f[2]))await control.set('external-uart',`${delivery} ${f[2]}`);
  else if(f[1]==='multimodal'&&f.length===6&&c===cycle&&f.slice(2).every(v=>/^(0|[1-9][0-9]{0,9})$/.test(v)))await control.set('multimodal-stimulus',f.slice(2).join(' '));
  else if(f[1]==='pen'&&f.length===9){if(f[2]==='now')f[2]=clock.mtime_ticks;if(!f.slice(2).every(v=>/^(0|[1-9][0-9]{0,19})$/.test(v)))throw Error('Invalid raw pen fields');await control.set('external-event',[String(delivery),...f.slice(2)].join(' '));}
  else if(f[1]==='button'&&f.length===3&&['0','1'].includes(f[2]))await control.set('external-button',`${delivery} ${f[2]}`);
  else throw Error('Unsupported raw event for this profile');capture.push(f.join(' '));
+}
+async function queueOpticalSource(m){
+ if(!opticalTransport)throw Error('Optical source is absent from this bundle');
+ if(!(m.bytes instanceof ArrayBuffer))throw Error('Optical frame requires raw ArrayBuffer bytes');
+ const beats=opticalTransport.opticalFrameBeats(m.endpoint,new Uint8Array(m.bytes));
+ if(capture.length+beats.length>1000000)throw Error('Raw capture bound exhausted');
+ await stopped();const clock=await control.request('lemma-clock'),cycle=String((BigInt(clock.virtual_ns)+9n)/10n);let accepted=0;
+ try{for(let at=0;at<beats.length;at+=1024){
+  const batch=beats.slice(at,at+1024),wire=batch.map(beat=>beat.join(' ')).join('\n');
+  if(wire.length>65536)throw Error('Optical source batch exceeds its actual wire bound');
+  // This actual device property validates the whole batch and queue capacity
+  // before appending. A rejected batch contributes no invented prefix.
+  await control.set('optical-source-batch',wire);
+  for(const beat of batch)capture.push(`${cycle} optical-frame ${beat.join(' ')}`);
+  accepted+=batch.length;
+ }}finally{postMessage({type:'optical-admission',accepted,total:beats.length,bytes:m.bytes.byteLength,error:accepted===beats.length?null:'Remainder rejected; accepted prefix retained'});}
 }
 async function step(){
  if(!running)return;
@@ -203,6 +227,7 @@ onmessage=({data:m})=>{
   else if(m.action==='run'){if(m.stopOnPanel!==undefined&&typeof m.stopOnPanel!=='boolean')throw Error('Panel stop must be Boolean');await stopped();const state=await inspect();const next=new RunBudget(state.cycle,m.cycles,m.stopOnReady??false,m.hostSeconds??null,performance.now(),m.stopOnPanel?state.panel_completed:null);if(next.limit>922337203685477580n)throw Error('Run exceeds signed virtual-nanosecond clock');budget=next;running=true;pauseReason=null;await sendState(state);schedule();}
   else if(m.action==='pen'||m.action==='button'){if(capture.length>=1000000)throw Error('Raw capture bound exhausted');await input(m);schedule();}
   else if(m.action==='raw'||m.action==='raw-batch'){await stopped();const rows=m.action==='raw'?[m.row]:typeof m.rows==='string'&&m.rows.length<=65536?m.rows.split(/\r?\n/).filter(r=>r.trim()):[];if(rows.length<1||rows.length>1024||capture.length+rows.length>1000000)throw Error('Raw batch bounds');let accepted=0;try{for(const row of rows){await raw(row);accepted++;}}finally{postMessage({type:'raw-admission',accepted,total:rows.length,error:accepted===rows.length?null:'Remainder rejected; accepted prefix retained'});}await sendState();schedule();}
+  else if(m.action==='optical-frame'){await queueOpticalSource(m);await sendState();schedule();}
   else if(m.action==='course-install'){if(coursePartial)throw Error('Cold-open before retrying partial course input');pause('course-input');await stopped();const frame=courseInstallFrame(m.bytes,m.transaction),clock=await control.request('lemma-clock'),base=(BigInt(clock.virtual_ns)+9n)/10n*10n;let accepted=0;try{const arrival=await admitUart(control,frame,base,uartPaced,n=>{accepted=n;},uartFlow);postMessage({type:'uart-arrival-admission',arrival});}catch(e){coursePartial=accepted>0;postMessage({type:'course-admission',accepted,total:frame.length,bytes:frame.length-64,error:String(e)});throw e;}postMessage({type:'course-admission',accepted,total:frame.length,bytes:frame.length-64,error:null});await sendState();}
   else if(m.action==='inspect'){await stopped();await sendState(await inspect(true));postMessage({type:'uart',text:new TextDecoder().decode(uart())});schedule();}
   else if(m.action==='reset'){school.disconnect();schoolMachineEpoch++;if(typeof m.cold!=='boolean')throw Error('Cold reset selector must be Boolean');pause('reset');await stopped();if(m.cold){postMessage({type:'runtime-closed',nextNotebook:true});return;}await control.request('lemma-waveform');egress.discard(core.FS.stat('/audio.bin').size);await control.request('system_reset');guestStart=uart().length;notebookFault.reset(guestStart);readyAt=null;budget=null;panelSequence=null;await sendState();await panel(true);}

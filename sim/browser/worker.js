@@ -12,11 +12,12 @@ let activeMediumName=null;
 let loops=0, capture=[], checkpoints={}, readyAt=null, started=0,initializing=false;
 let busy=false,backingReady=true,replayUntil=null;
 let guestOutputStart=0;
+let opticalTransport=null;
 let guestObservation='boot';
 let sessionMode='student';
 const SESSION_CONTROL_CONTRACT='lemma-browser-session-modes/2';
 const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','export-panel','diagnostics','restore','bind','close','school']);
-const developerActions=new Set(['replay','run','raw','raw-batch','course-install','inspect','outcomes','events','capture','capture-outcomes']);
+const developerActions=new Set(['replay','run','raw','raw-batch','optical-frame','course-install','inspect','outcomes','events','capture','capture-outcomes']);
 function admission(message){
  if(!message||typeof message!=='object'||typeof message.action!=='string')throw Error('Invalid browser request');
  const opening=['open','replay','import'].includes(message.action);
@@ -76,7 +77,8 @@ function admit(e){if(replayUntil!==null)throw Error('Offline replay accepts its 
 function admitRaw(text,observe=true){if(replayUntil!==null)throw Error('Offline replay accepts its recorded events only');
  if(typeof text!=='string'||text.length>256||capture.length>=1000000)throw Error('Raw event exceeds its bound');
  const fields=text.trim().split(/\s+/),s=state();
- if(!['pen','button','uart'].includes(fields[1])&&!(manifest.multimodal_contract==='synthetic-aperture/1'&&fields[1]==='multimodal'))throw Error('Raw input endpoint is absent from this bundle');
+ if(fields[1]==='optical-frame'){if(!opticalTransport||fields.length!==7)throw Error('Optical source is absent or malformed');fields.splice(2,5,...opticalTransport.opticalWords(fields.slice(2)));}
+ if(!['pen','button','uart'].includes(fields[1])&&!(opticalTransport&&fields[1]==='optical-frame')&&!(manifest.multimodal_contract==='synthetic-aperture/1'&&fields[1]==='multimodal'))throw Error('Raw input endpoint is absent from this bundle');
  if(fields[0]==='now')fields[0]=s.cycle;if(fields[1]==='pen'&&fields[2]==='now')fields[2]=s.ticks;
  const row=fields.join(' ');check('lemma_event',['string'],[row]);capture.push(row);if(observe)sendState();}
 function admitBatch(text){
@@ -177,6 +179,11 @@ async function seedProductUser(next){
 async function load(message){if(loaded)throw Error('Close this machine before opening another');
  if(message.paused!==undefined&&typeof message.paused!=='boolean')throw Error('Open paused must be a Boolean');
  manifest=await(await fetch('./bundle.json')).json();if(manifest.schema!=='lemmasim-browser-bundle/1')throw Error('Unsupported bundle');
+ opticalTransport=null;
+ if(manifest.profile==='lemma-silicon-dev/0.17.0'||manifest.optical_controller_abi!==undefined||manifest.optical_frame_contract!==undefined||manifest.execution_binding?.startsWith('lemma-optical17-')){
+  const transport=await import('./optical_transport.js');
+  if(!transport.opticalBinding(manifest)||manifest.execution_binding!=='lemma-optical17-canonical/1')throw Error('Unsupported canonical optical binding');opticalTransport=transport;
+ }
  if(manifest.session_control_contract!==SESSION_CONTROL_CONTRACT)throw Error('Browser control contract differs from this worker');
  if(!navigator.storage?.getDirectory)throw Error('Browser OPFS persistence is required');
  const product=manifest.product_boot_contract==='lemma-browser-product-nv/1';
@@ -277,6 +284,16 @@ onmessage=async({data:m})=>{
  else if(m.action==='pen'||m.action==='button'){admit(m);}
  else if(m.action==='raw'){admitRaw(m.row);}
  else if(m.action==='raw-batch'){admitBatch(m.rows);}
+ else if(m.action==='optical-frame'){
+  if(!opticalTransport)throw Error('Optical source is absent from this bundle');
+  if(!(m.bytes instanceof ArrayBuffer))throw Error('Optical frame requires raw ArrayBuffer bytes');
+  const beats=opticalTransport.opticalFrameBeats(m.endpoint,new Uint8Array(m.bytes));
+  if(capture.length+beats.length>1000000)throw Error('Raw capture bound exhausted');
+  const cycle=state().cycle;let accepted=0;
+  try{for(const beat of beats){admitRaw(`${cycle} optical-frame ${beat.join(' ')}`,false);accepted++;}}
+  finally{postMessage({type:'optical-admission',accepted,total:beats.length,bytes:m.bytes.byteLength,error:accepted===beats.length?null:'Remainder rejected; accepted prefix retained'});}
+  sendState();
+ }
  else if(m.action==='course-install')admitCourseInstall(m);
  else if(m.action==='inspect'){sendState();postMessage({type:'uart',text:new TextDecoder().decode(core.FS.readFile('/uart.bin'))});}
  else if(m.action==='reset'){school.disconnect();schoolMachineEpoch++;if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');pause('reset');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;notebookFault.reset(guestOutputStart);guestObservation='boot';check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}

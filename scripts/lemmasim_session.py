@@ -193,9 +193,36 @@ def startup_restore_medium(args):
     return 'durable.raw' in names
 
 
+def optical_source_words(words):
+    if not isinstance(words,list) or len(words)!=5:
+        raise ValueError('Optical source requires endpoint,kind,data,bytes,quality')
+    for word,(low,high) in zip(words,((1,3),(0,3),(0,(1<<64)-1),(0,8),(0,65535))):
+        bounded(word,low,high,'Optical source field')
+    return list(words)
+
+
+def optical_source_batch(wire):
+    if not isinstance(wire,str) or not wire.isascii() or not 1<=len(wire)<=65536:
+        raise ValueError('Optical batch requires1..65536 ASCII bytes')
+    rows=wire.split('\n')
+    if not 1<=len(rows)<=1024:raise ValueError('Optical batch requires1..1024 rows')
+    normalized=[]
+    for row in rows:
+        fields=row.split()
+        if len(fields)!=5 or any(re.fullmatch(r'0|[1-9][0-9]{0,19}',word) is None for word in fields):
+            raise ValueError('Optical batch rows require five unsigned decimal words')
+        words=optical_source_words([int(word) for word in fields])
+        normalized.append(' '.join(map(str,words)))
+    return '\n'.join(normalized)
+
+
 def external_command(value, current):
     if not isinstance(value,dict):raise ValueError('External request must be an object')
     if value.get('action') in ('warm-reset','cold-cycle','companion-retry'):return value['action'],dict(value)
+    if value.get('action')=='optical-source-batch':
+        cycle=bounded(value.get('cycle',current),current,current,'Optical batch cycle')
+        wire=optical_source_batch(value.get('rows'))
+        return f'optical-source-batch {cycle} {wire}',dict(value,cycle=cycle,rows=wire)
     if value.get('action')!='inject':raise ValueError('Unsupported external action')
     cycle=bounded(value.get('cycle',current),current,(1<<64)-1,'Event cycle')
     kind=value.get('kind')
@@ -210,6 +237,9 @@ def external_command(value, current):
         if not isinstance(words,list) or len(words)!=4:raise ValueError('Multimodal stimulus needs id,u32-code,u32-reference,quality')
         for word,(low,high) in zip(words,((0,7),(0,(1<<32)-1),(0,(1<<32)-1),(0,65535))):bounded(word,low,high,'Multimodal stimulus')
         command=f'inject {cycle} multimodal '+' '.join(map(str,words))
+    elif kind=='optical-frame':
+        words=optical_source_words(value.get('words'))
+        command=f'inject {cycle} optical-frame '+' '.join(map(str,words))
     elif kind=='uart':
         payload=value.get('hex','')
         if not isinstance(payload,str) or not 2<=len(payload)<=8192 or len(payload)%2 or any(c not in '0123456789abcdefABCDEF' for c in payload):
@@ -918,7 +948,7 @@ class Session:
                 from lemmasim_school_service import SchoolService
                 self.school_service=SchoolService(self)
             return self.school_service.dispatch(value)
-        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes','usb-outcomes','export-usb-replay','usb-fault','usb-reconnect'):
+        if action in ('run','resume','inject','optical-source-batch','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes','usb-outcomes','export-usb-replay','usb-fault','usb-reconnect'):
             self.ensure_capture_certain()
         if value.get('source')=='tablet' and (not self.adapter or not self.adapter().get('tablet',{}).get('connected')):
             raise ValueError('Live tablet is disconnected; use recorded replay or reconnect explicitly')
@@ -959,6 +989,8 @@ class Session:
         if action == 'replay':
             return self.replay(value['snapshot'],value['capture'],value.get('until_cycle'),value.get('until_ns'))
         if action == 'inject':
+            if value.get('kind')=='optical-frame' and self.mode=='student':
+                raise ValueError('Raw optical source injection requires Developer or Laboratory mode')
             if value.get('kind') in ('pgood','brownout','ble-coex') and self.mode!='laboratory':raise ValueError('Supply fault inputs require Laboratory mode')
             # Admission consumes only the exact current cycle and virtual
             # phase. Keep the full post-injection observer returned by call.
@@ -967,6 +999,12 @@ class Session:
             if value.get('kind') not in getattr(self.machine,'input_kinds',{'pen','uart'}):
                 raise ValueError('Input is unsupported by this backend/profile')
             return self.external(actual, state, command)
+        if action == 'optical-source-batch':
+            if self.mode=='student':raise ValueError('Raw optical source injection requires Developer or Laboratory mode')
+            if not getattr(self.machine,'optical',False):raise ValueError('Atomic optical source batches require the admitted native optical controller')
+            state=self.machine.clock()
+            command,actual=external_command(value,state['cycle'])
+            return self.external(actual,state,command)
         if action in ('warm-reset', 'cold-cycle'):
             if getattr(self,'school_service',None) is not None:self.school_service.invalidate()
             state = self.machine.call('inspect')

@@ -18,7 +18,7 @@ import tempfile
 
 from silicon_profile import profile, profile_path
 import silicon_guest as guest
-from lemmasim_session import digest, write_json, ROOT, MAX_REQUEST
+from lemmasim_session import digest, write_json, ROOT, MAX_REQUEST, external_command
 
 CPU = 'rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0'
 ADAPTER = 'lemmasim-fast-adapter/4'
@@ -28,6 +28,7 @@ MAX_NS = (1 << 63) - 1
 CLOCK_SCHEMA = 'lemmasim-fast-clock/1'
 LOGICAL2_BINDING = 'lemma-silicon-fast-softtlb/0.2.0'
 MM2_BINDING = 'lemma-silicon-fast-mm2-subset/0.1.0'
+OPTICAL_BINDING = 'lemma-optical17-functional-mm2/1'
 MM2_CHECKPOINT_BINDING = 'lemma-silicon-fast-mm2-softtlb/0.1.0'
 MM2_CHECKPOINT_CONTRACT = 'lemma-native-mm2-continuation/1'
 # Explicit same-backend/local-backing admission; archived false flags remain
@@ -81,6 +82,22 @@ def validate_mm2_checkpoint_cut(state):
 
 def validate_execution_binding(data):
     value=data.get('execution_binding')
+    if (data.get('profile')=='lemma-silicon-dev/0.17.0' or
+            any(k in data for k in ('optical_controller_abi','optical_frame_contract')) or value==OPTICAL_BINDING):
+        required={'sim/host/lemma_optical.c','sim/host/lemma_optical.h',
+                  'sim/host/lemma_optical_qemu.inc.c','tooling/lemmasim/patch_optical.py',
+                  'sim/profiles/lemma-silicon-dev-0.17.0.json','sim/host/lemma_multimodal_v2.c'}
+        sources=data.get('sources')
+        if (data.get('profile')!='lemma-silicon-dev/0.17.0' or value!=OPTICAL_BINDING or
+                type(data.get('optical_controller_abi')) is not int or data.get('optical_controller_abi')!=1 or
+                data.get('optical_frame_contract')!='lemma-optical-frame/1' or
+                type(data.get('multimodal_controller_abi')) is not int or data.get('multimodal_controller_abi')!=2 or
+                data.get('controller_contract')!='lemma-multimodal-converter/2' or
+                data.get('checkpoint_binding') is not None or ('checkpoint_admitted' in data and data['checkpoint_admitted'] is not False) or
+                not isinstance(sources,dict) or not required.issubset(sources) or
+                any(not isinstance(sources[k],str) or re.fullmatch('[0-9a-f]{64}',sources[k]) is None for k in required)):
+            raise ValueError('Unsupported optical17 functional/controller/source authority')
+        return True
     if value is None:
         if any(k in data for k in ('multimodal_controller_abi','controller_contract')):
             raise ValueError('Unbound controller extension metadata')
@@ -436,13 +453,14 @@ class Fast:
         else:self.data=prepared(args.workload,args.profile)
         self.native_logical2=validate_checkpoint_binding(self.data)
         self.mm2_subset=validate_execution_binding(self.data)
+        self.optical=self.data.get('execution_binding')==OPTICAL_BINDING
         self.identity={'backend':'qemu','profile':self.data['profile'],'runtime':self.data['qemu']['sha256'],
                        'adapter':ADAPTER,
                        'derivation':self.data['derivation']['sha256'],'guest':self.data['workloads'][args.workload]['image']['sha256'],
                        'dtb':self.data['workloads'][args.workload]['dtb']['sha256'],
                        'descriptor':self.data['workloads'][args.workload]['descriptor']['sha256'],
                        'cpu':CPU,'icount_shift':3}
-        if self.data['profile']=='lemma-silicon-dev/0.14.0':
+        if self.data['profile'] in ('lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.17.0'):
             self.identity['host_controls']={name:digest(ROOT/name) for name in ('scripts/lemmasim','scripts/lemmasim_fast.py','scripts/lemmasim_session.py','scripts/silicon_guest_bundle.py','scripts/multimodal_native_bundle.py','scripts/lemmasim_school_service.py','scripts/lemmasim_school_panel.py','scripts/lemmasim_course.py','scripts/lemmasim_tutor.py')}
             if isinstance(self.data.get('native_bundle'),dict):self.identity['native_bundle']=dict(self.data['native_bundle'])
         override_archive=self.data.get('guest_override',{}).get('source_archive')
@@ -453,13 +471,14 @@ class Fast:
             self.identity.update(checkpoint_contract=MM2_CHECKPOINT_CONTRACT,
                                  observation_relation=self.data['observation_relation'],
                                  checkpoint_admitted=bool(self.data['checkpoint_admitted'] and MM2_CHECKPOINT_ADMITTED))
-        if self.mm2_subset:self.identity.update(execution_binding=MM2_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2')
+        if self.mm2_subset:self.identity.update(execution_binding=self.data['execution_binding'],multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2')
+        if self.optical:self.identity.update(optical_controller_abi=1,optical_frame_contract='lemma-optical-frame/1')
         self.clock_hz=profile(self.data['profile'])['clock_hz']
         self.mtime_address=profile(self.data['profile'])['devices']['timer']['mtime']
         self.power_enabled=bool(profile(self.data['profile']).get('power_enabled',0))
         self.input_kinds={'pen','button'} if self.power_enabled else {'pen'}
         if self.data['profile']=='lemma-silicon-dev/0.4.0':self.input_kinds.update(('pgood','brownout'))
-        if self.data['profile']=='lemma-silicon-dev/0.14.0':self.input_kinds.add('multimodal')
+        if self.data['profile'] in ('lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.17.0'):self.input_kinds.add('multimodal')
         self.medium=args.disk.resolve() if args.disk else None
         self.companion=None
         if getattr(args,'companion',None) is not None:
@@ -498,6 +517,7 @@ class Fast:
                  '-global',f'lemma-paper-pen.raw-output={self.directory}/input-{self.generation}.bin']
         if self.mm2_subset:command+=['-global','lemma-paper-pen.multimodal-controller-abi=2',
                                      '-global',f'lemma-paper-pen.multimodal-audio-output={self.directory}/audio-{self.generation}.bin']
+        if self.optical:command+=['-global','lemma-paper-pen.optical-controller-abi=1']
         if self.medium:
             command+=['-global',f'lemma-fast-block.medium={self.medium}']
         if self.companion:
@@ -536,9 +556,15 @@ class Fast:
             self.raw_uart_flow = False
             self.execution_state = any(row.get("name") == "execution-state" for row in properties)
             self.input_kinds = self.input_kinds - {'uart'}
+            if self.optical:
+                names={row['name'] for row in properties}
+                if (not {'optical-version','optical-source','optical-source-batch','optical-state'}.issubset(names) or
+                        self.get('optical-version')!='lemma-optical-frame/1'):
+                    raise ValueError('Actual optical source/controller ABI is absent')
+                self.input_kinds=self.input_kinds|{'optical-frame'}
             self.identity = {**self.identity, 'adapter':ADAPTER}
             if any(row.get('name') == 'raw-uart-version' for row in properties):
-                if self.data['profile'] not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0') or self.get('raw-uart-version') != 'lemma-raw-uart/1':
+                if self.data['profile'] not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.17.0') or self.get('raw-uart-version') != 'lemma-raw-uart/1':
                     raise ValueError('Unsupported raw UART backend/profile')
                 self.qmp.execute('qom-set', {'path':'/machine/lemma-hardware',
                                            'property':'enable-raw-uart','value':'lemma-raw-uart/1'})
@@ -590,7 +616,8 @@ class Fast:
 
     def inspect(self):
         devices=json.loads(self.get('device-state'))
-        if self.data['profile']=='lemma-silicon-dev/0.14.0':devices['multimodal']=json.loads(self.get('multimodal-state'))
+        if self.data['profile'] in ('lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.17.0'):devices['multimodal']=json.loads(self.get('multimodal-state'))
+        if getattr(self,'optical',False):devices['optical']=json.loads(self.get('optical-state'))
         if getattr(self,'power_enabled',False):devices['power']=json.loads(self.get('power-state'))
         if getattr(self,'raw_uart',False):
             devices['uart_ingress']={**json.loads(self.get('raw-uart-state')), 'paced':getattr(self,'raw_uart_paced',False)}
@@ -640,6 +667,8 @@ class Fast:
 
     def checkpoint_admission(self):
         data=getattr(self,'data',{})
+        if data.get('profile')=='lemma-silicon-dev/0.17.0':
+            raise ValueError('Optical pending source/DMA/lease continuation is not qualified; no checkpoint or candidate created')
         if getattr(self,'mm2_subset',False):
             if (not MM2_CHECKPOINT_ADMITTED or data.get('checkpoint_binding')!=MM2_CHECKPOINT_BINDING or
                     data.get('checkpoint_admitted') is not True):
@@ -739,6 +768,14 @@ class Fast:
             ns=self.time_origin_ns+int(self.get('virtual-time'))+int(text)*1000000000//self.clock_hz
             return self.run_until_ns(ns)
         if action=='run-until-ns':return self.run_until_ns(int(text))
+        if action=='optical-source-batch':
+            if not getattr(self,'optical',False):raise ValueError('Actual optical source is absent')
+            cycle,separator,wire=text.partition(' ')
+            if not separator or re.fullmatch(r'0|[1-9][0-9]{0,19}',cycle) is None:
+                raise ValueError('Optical batch requires an exact current cycle')
+            _,request=external_command({'action':'optical-source-batch','cycle':int(cycle),'rows':wire},self.clock()['cycle'])
+            self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'optical-source-batch','value':request['rows']})
+            return self.inspect()
         if action=='inject':
             fields=text.split();cycle=int(fields[0]);kind=fields[1]
             if ('uart' if kind=='uart-paced' else kind) not in self.input_kinds: raise ValueError('Fast input is unsupported by this profile')
@@ -748,6 +785,14 @@ class Fast:
             if kind == 'multimodal':
                 if len(fields)!=6 or cycle!=self.clock()['cycle']:raise ValueError('Fast multimodal stimulus requires current cycle; future scheduled stimuli are not admitted')
                 self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'multimodal-stimulus','value':' '.join(fields[2:])})
+                return self.inspect()
+            if kind == 'optical-frame':
+                if (not getattr(self,'optical',False) or len(fields)!=7 or cycle!=self.clock()['cycle'] or
+                        any(re.fullmatch(r'0|[1-9][0-9]{0,19}',word) is None for word in fields[2:])):
+                    raise ValueError('Fast optical source requires the admitted binding and exact current cycle')
+                words=[int(word) for word in fields[2:]]
+                external_command({'action':'inject','kind':'optical-frame','words':words},cycle)
+                self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'optical-source','value':' '.join(map(str,words))})
                 return self.inspect()
             if kind == 'uart-paced':
                 if not getattr(self,'raw_uart_paced',False):raise ValueError('Backend lacks paced UART admission')

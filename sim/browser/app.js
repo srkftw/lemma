@@ -22,7 +22,9 @@ let context=canvas.getContext('2d'),gpu=null,pipeline=null,device=null;
 const displayScale=document.querySelector('#display-scale');
 const sessionMode=document.querySelector('#session-mode');
 let checkpointRestriction='Checkpoint capability has not been loaded';
-fetch('./bundle.json').then(response=>{if(!response.ok)throw Error('Bundle unavailable');return response.json();}).then(bundle=>{
+let opticalTransport=null;
+fetch('./bundle.json').then(response=>{if(!response.ok)throw Error('Bundle unavailable');return response.json();}).then(async bundle=>{
+ if(bundle.profile==='lemma-silicon-dev/0.17.0'){const transport=await import('./optical_transport.js');if(transport.opticalBinding(bundle)){opticalTransport=transport;document.querySelector('#optical-controls').hidden=false;}}
  document.querySelector('#machine-build').textContent=(bundle.backend??bundle.profile??'Local machine')+(bundle.execution_binding?' · '+bundle.execution_binding:'')+(bundle.initialization?' · '+bundle.initialization:'');
  checkpointRestriction=typeof bundle.checkpoint_contract==='string'&&bundle.checkpoint_contract.startsWith('UNSUPPORTED:')?bundle.checkpoint_contract:null;
  for(const id of ['#checkpoint-export','#restore']){const control=document.querySelector(id);control.disabled=checkpointRestriction!==null||(id==='#restore'&&bundle.product_boot_contract==='lemma-browser-product-nv/1');control.title=checkpointRestriction??(control.disabled?'Product restore needs independent persistent boot backing':'Finite same-binding checkpoint scope; cold recovery is separate');}
@@ -73,6 +75,13 @@ document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{
 document.querySelector('#run-bounded').onclick=()=>send('run',{cycles:document.querySelector('#run-cycles').value,stopOnReady:document.querySelector('#stop-ready').checked,stopOnPanel:document.querySelector('#stop-panel').checked,hostSeconds:document.querySelector('#run-seconds').value||null});
 document.querySelector('#admit-raw').onclick=()=>send('raw',{row:document.querySelector('#raw-event').value});
 document.querySelector('#admit-batch').onclick=()=>send('raw-batch',{rows:document.querySelector('#raw-batch').value});
+document.querySelector('#optical-frame').onclick=()=>{
+ try{if(!opticalTransport||sessionMode.value==='student')throw Error('Raw optical source requires an admitted optical binding and Developer or Laboratory mode');
+  const endpoint=document.querySelector('#optical-endpoint').value,bytes=opticalTransport.syntheticOpticalFrame(endpoint,document.querySelector('#optical-format').value);
+  document.querySelector('#optical-result').textContent='Raw source queue pending; acquisition permission and completion remain guest/controller observations.';
+  send('optical-frame',{endpoint,bytes:bytes.buffer},[bytes.buffer]);
+ }catch(e){document.querySelector('#optical-result').textContent=String(e);}
+};
 document.querySelector('#warm').onclick=()=>{beginSelection();cancelContact();send('reset',{cold:false});};
 document.querySelector('#cold').onclick=()=>{beginSelection();cancelContact();send('reset',{cold:true});};
 document.querySelector('#install-course').onclick=async()=>{
@@ -241,6 +250,7 @@ worker.onmessage=({data:m})=>{
  if(m.type==='closed'){resetFeedback();document.querySelector('#course-view-status').textContent='No running guest.';document.querySelector('#school-installation').textContent='No running guest.';document.querySelector('#school-outgoing').textContent='No running guest.';document.querySelector('#school-status').textContent='School disconnected. Saved local work remains in the medium.';stopPcm('Machine closed.');beginSelection();selectionMachineName=null;displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
  if(m.type==='course-admission')document.querySelector('#course-admission').textContent=m.error?`Admitted ${m.accepted} of ${m.total} raw events; rejected remainder: ${m.error}. The accepted prefix remains queued. Close and cold-open backing before retrying.`:`Admitted ${m.bytes} package bytes to the guest. See the guest installation result below.`;
+ if(m.type==='optical-admission')document.querySelector('#optical-result').textContent=`Queued ${m.accepted} of ${m.total} raw source beats (${m.bytes} pixel bytes). ${m.error??'Controller acceptance and completed acquisition remain separate.'}`;
  if(m.type==='raw-admission')document.querySelector('#raw-result').textContent=m.error?`Accepted ${m.accepted} of ${m.total} events; rejected remainder: ${m.error}`:`Admitted ${m.accepted} raw events.`;
  if(m.type==='state'){const reported=m.guestCommit??null;
   const rejected=m.guestCourseRejection;document.querySelector('#course-view-status').textContent=rejected?`Earlier course action rejected by the guest (status ${rejected.status}, page ${rejected.page}, namespace ${rejected.namespace}). Saved work remains available.`:'No course rejection observed in this guest launch.';
