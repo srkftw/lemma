@@ -7,7 +7,7 @@ from pathlib import Path
 import json
 from core0_common import Core0Error
 from paper_next import canonical
-from school_deployment import CONFIGURATIONS, USER_ROOTS, INTEGRATED, BOOT_ROOTS, software_deployment_for
+from school_deployment import CONFIGURATIONS, USER_ROOTS, INTEGRATED_CONFIGURATIONS, BOOT_ROOTS, software_deployment_for
 VERSION='lemma-school-target-authority/1'
 ROOT=Path(__file__).resolve().parents[1]
 AUTHORITY=ROOT/'tooling/school-target-authority.json'
@@ -24,7 +24,7 @@ def catalog(unit):
     require(len(names)==len(rows) and len({row.get('symbol') for row in rows})==len(rows),'duplicate source/symbol')
     roots=[(canonical(row.get('source','')),row.get('id'),row.get('args')) for row in unit.get('roots',[])]
     if key=='kernel':
-        if configuration==INTEGRATED:
+        if configuration in INTEGRATED_CONFIGURATIONS:
             from integrated_deployment import BOOT_ROOT,DISPATCH_ROOT
             expected=[(BOOT_ROOT,1,[]),(DISPATCH_ROOT,2,['u64']*3)];profile='core0-kernel-v0.10'
         else:
@@ -40,7 +40,7 @@ def semantics(ir,unit):
     from audit_kernel import _ir_definition_body,_local_call_arguments
     key,rows=catalog(unit)
     if key=='kernel':
-        if unit['configuration']==INTEGRATED:
+        if unit['configuration'] in INTEGRATED_CONFIGURATIONS:
             from integrated_target import semantics as old_semantics
             from integrated_deployment import SOFTWARE_DEPLOYMENT
             cfg='lemmasim-silicon-integrated-notebook'

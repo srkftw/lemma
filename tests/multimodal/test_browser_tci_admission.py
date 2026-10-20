@@ -303,9 +303,69 @@ def actual_campaign(archive: Path, output: Path) -> bool:
     return result.wasSuccessful()
 
 
+def pcm_runtime_campaign(runtime: Path, output: Path) -> bool:
+    """Consequential corruption checks over an actual one-object producer."""
+    output.mkdir(parents=True, exist_ok=False)
+    original = subject.sha(runtime / 'runtime.json')
+    _, admitted = subject.retained_runtime(runtime)
+    if admitted['schema'] != subject.RUNTIME_SCHEMA_WITH_PCM:
+        raise ValueError('Actual admitted PCM runtime required')
+    began = time.monotonic()
+    cases = []
+    def exercise(label, target, change):
+        with tempfile.TemporaryDirectory(prefix='lemma-pcm-admission-', dir=output) as tmp:
+            clone = Path(tmp) / 'runtime'
+            shutil.copytree(runtime, clone, copy_function=os.link)
+            manifest = subject.read(clone / 'runtime.json')
+            path = clone / target
+            body = subject.read(path)
+            change(body)
+            temporary = path.with_suffix('.replace')
+            temporary.write_text(json.dumps(body, indent=2) + '\n')
+            temporary.replace(path)  # Never mutate original hard-linked bytes.
+            if target != 'runtime.json':
+                manifest['files'][target] = subject.sha(path)
+                if target == 'original-build.json':
+                    manifest['original_build']['sha256'] = subject.sha(path)
+                temporary = clone / 'manifest.replace'
+                temporary.write_text(json.dumps(manifest, indent=2) + '\n')
+                temporary.replace(clone / 'runtime.json')
+            try:
+                subject.retained_runtime(clone)
+            except ValueError as error:
+                cases.append({'case':label,'result':'REJECTED','reason':str(error)})
+            else:
+                cases.append({'case':label,'result':'UNEXPECTED_ACCEPT'})
+    exercise('unknown execution binding', 'runtime.json', lambda x:x.update(execution_binding='full-integrated16'))
+    exercise('controller ABI downgrade', 'runtime.json', lambda x:x.update(multimodal_controller_abi=1))
+    exercise('controller contract downgrade', 'runtime.json', lambda x:x.update(controller_contract='lemma-multimodal-converter/1'))
+    exercise('two fresh objects claimed', 'original-build.json', lambda x:x.update(fresh_object_count=2))
+    exercise('boolean object count', 'original-build.json', lambda x:x.update(fresh_object_count=True))
+    exercise('missing dependency closure', 'original-build.json', lambda x:x.update(dependency_affected_objects=[]))
+    exercise('floating source count', 'original-build.json', lambda x:x.update(source_file_count=float(x['source_file_count'])))
+    exercise('unrelated source overlay', 'original-build.json', lambda x:x['changed_sources'].update({'tcg/tci.c':{'before':'0'*64,'after':'1'*64}}))
+    exercise('forged observed helper route', 'runtime.json', lambda x:x.update(direct_helpers=not x['direct_helpers']))
+    exercise('recursive predecessor', 'predecessor/runtime.json', lambda x:x.update(schema=subject.RUNTIME_SCHEMA_WITH_PCM))
+    exercise('unknown compiler command', 'commands.json', lambda x:x['compile'][0].update(output='uncompiled-object.o'))
+    exercise('wrong actual object size', 'original-build.json', lambda x:next(v for k,v in x['fresh_object_inputs'].items() if k.endswith('/multimodal.o')).update(bytes=1))
+    if subject.sha(runtime / 'runtime.json') != original:
+        raise RuntimeError('Original admitted runtime changed')
+    passed = all(x['result']=='REJECTED' for x in cases)
+    report = {'schema':'lemma-browser-pcm-runtime-negatives/1','status':'PASS' if passed else 'FAIL',
+        'runtime':str(runtime),'runtime_sha256':original,'cases':cases,
+        'seconds':time.monotonic()-began,'validator_sha256':subject.sha(Path(subject.__file__)),
+        'scope':'Actual admitted compiler output and rehashed metadata corruption controls; no fresh compilation or guest/browser execution.'}
+    (output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(json.dumps({'status':report['status'],'cases':len(cases),'seconds':report['seconds']}))
+    return passed
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--archive', type=Path, required=True)
+    selected=parser.add_mutually_exclusive_group(required=True)
+    selected.add_argument('--archive', type=Path)
+    selected.add_argument('--runtime', type=Path)
     parser.add_argument('--output-dir', type=Path, required=True)
     args = parser.parse_args()
-    raise SystemExit(0 if actual_campaign(args.archive.absolute(), args.output_dir.absolute()) else 1)
+    passed = pcm_runtime_campaign(args.runtime.absolute(),args.output_dir.absolute()) if args.runtime else actual_campaign(args.archive.absolute(), args.output_dir.absolute())
+    raise SystemExit(0 if passed else 1)

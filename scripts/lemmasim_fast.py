@@ -27,6 +27,8 @@ RAW_UART_FLOW_ADAPTER = 'lemmasim-fast-adapter/6'
 MAX_NS = (1 << 63) - 1
 CLOCK_SCHEMA = 'lemmasim-fast-clock/1'
 LOGICAL2_BINDING = 'lemma-silicon-fast-softtlb/0.2.0'
+MM2_BINDING = 'lemma-silicon-fast-mm2-subset/0.1.0'
+MM2_CACHE_SEED = '/nix/store/1nirimaaikhpbkf7af763zp3fj8yg6z2-lemmasim-qemu-raw-uart-logical-v2-retained-11.1.1'
 # Admitted only for the explicitly selected version2 binding/local backing.
 # Current guest DMA, PCM, storage, unknown work and Session transaction cases
 # are indexed in docs/evidence/009-integrated-machine.html.
@@ -46,7 +48,29 @@ def logical2_selected(name):
     return value=='1'
 
 
+def mm2_selected(name):
+    value=os.environ.get('LEMMA_FAST_MM2','')
+    if value not in ('','1'):raise ValueError('MM2 subset selection admits only explicit value1')
+    if value and (profile(name)['profile']!='lemma-silicon-dev/0.14.0' or not logical2_selected(name)):
+        raise ValueError('MM2 functional subset requires explicit rawUART logical engine and Fast0.14')
+    return value=='1'
+
+
+def validate_execution_binding(data):
+    value=data.get('execution_binding')
+    if value is None:
+        if any(k in data for k in ('multimodal_controller_abi','controller_contract')):
+            raise ValueError('Unbound controller extension metadata')
+        return False
+    if (value!=MM2_BINDING or data.get('profile')!='lemma-silicon-dev/0.14.0' or
+            data.get('multimodal_controller_abi')!=2 or data.get('controller_contract')!='lemma-multimodal-converter/2' or
+            data.get('checkpoint_binding') is not None or 'sim/host/lemma_multimodal_v2.c' not in data.get('sources',{})):
+        raise ValueError('Unsupported MM2 subset/controller/source authority')
+    return True
+
+
 def validate_checkpoint_binding(data):
+    if validate_execution_binding(data):return False
     binding=data.get('checkpoint_binding')
     if binding is None:return False
     if (binding!=LOGICAL2_BINDING or data.get('profile')!='lemma-silicon-dev/0.14.0' or
@@ -86,6 +110,7 @@ def raw_uart_selected(name):
 
 
 def qemu_recipe(name):
+    if mm2_selected(name):return ROOT/'tooling/lemmasim/qemu_mm2_reuse.nix'
     if logical2_selected(name) and os.environ.get('LEMMA_FAST_LOGICAL2_CACHE')=='1':
         return ROOT/'tooling/lemmasim/qemu_logical2_reuse.nix'
     return ROOT / ('tooling/lemmasim/qemu_uart.nix' if raw_uart_selected(name)
@@ -94,7 +119,7 @@ def qemu_recipe(name):
 
 def prepared_path(name=None):
     version = profile(name)['profile'].split('/')[1]
-    prefix = ('fast-uart1-logical2' if logical2_selected(name) else 'fast-uart1') if raw_uart_selected(name) else 'fast'
+    prefix = ('fast-uart1-mm2' if mm2_selected(name) else 'fast-uart1-logical2' if logical2_selected(name) else 'fast-uart1') if raw_uart_selected(name) else 'fast'
     return ROOT / f'build/lemmasim/{prefix}-prepared-{version}.json'
 
 
@@ -115,12 +140,13 @@ def sources(name):
     if profile(name)['profile']=='lemma-silicon-dev/0.4.0':paths += [ROOT/'tooling/lemmasim/patch_power_safety.py',ROOT/'scripts/silicon_power_guest_archive.py']
     paths += sorted(p for p in (ROOT/'sim/host').glob('*') if p.is_file())
     paths += sorted(p for p in (ROOT/'sim/companion').glob('backing_*') if p.is_file())
+    if mm2_selected(name):paths += [ROOT/'tooling/lemmasim'/n for n in ('qemu_mm2_reuse.nix','native_mm2_reuse.py','patch_multimodal_v2.py')];paths.append(ROOT/'docs/contracts/009-multimodal-pcm-ring-v1.html')
     return {str(p.relative_to(ROOT)): digest(p) for p in paths}
 
 
 def build(args):
     name = profile(args.profile)['profile']
-    if name == 'lemma-silicon-dev/0.15.0':
+    if name in ('lemma-silicon-dev/0.15.0','lemma-silicon-dev/0.16.0'):
         raise ValueError('Integrated0.15 requires canonical RTL/native or RTL/Wasm; fast BootNV/clockedUSB/power-v2 models are not implemented')
     selected = guest.configurations(name)
     workload = args.workload or 'notebook'
@@ -136,12 +162,16 @@ def build(args):
         archived=archived_guest(archive_path,workload,name)
         archived_build=json.loads(Path(archived['workloads'][workload]['build']['path']).read_text())
         if archived_build['optimization']!=args.opt_level:raise ValueError('Archived guest optimization differs')
-    link = ROOT / ('build/lemmasim/qemu-fast-' + (('uart1-logical2-' if logical2_selected(name) else 'uart1-') if raw_uart_selected(name) else '') + name.split('/')[1])
+    link = ROOT / ('build/lemmasim/qemu-fast-' + (('uart1-mm2-' if mm2_selected(name) else 'uart1-logical2-' if logical2_selected(name) else 'uart1-') if raw_uart_selected(name) else '') + name.split('/')[1])
     recipe = qemu_recipe(name)
     before = sources(name)
     limits = ['--cores', '2', '--max-jobs', '1', '--builders', ''] if raw_uart_selected(name) else []
     runtime_arguments=[];runtime_expression=''
-    if logical2_selected(name):
+    if mm2_selected(name):
+        if not Path(MM2_CACHE_SEED).is_dir():raise ValueError('Exact qualified MM2 retained seed is absent')
+        runtime_arguments=['--arg','seed','builtins.storePath '+json.dumps(MM2_CACHE_SEED)]
+        runtime_expression=' seed = builtins.storePath '+json.dumps(MM2_CACHE_SEED)+';'
+    elif logical2_selected(name):
         if os.environ.get('LEMMA_FAST_LOGICAL2_CACHE')=='1':
             if not all(Path(p).is_dir() for p in (LOGICAL2_CACHE_SEED,LOGICAL2_NORMAL_REFERENCE)):
                 raise ValueError('Qualified local logical2 cache is absent; unsetLEMMA_FAST_LOGICAL2_CACHE for the maintained cold build')
@@ -187,7 +217,8 @@ def build(args):
             'qemu':guest.identified(binary),'derivation':guest.identified(closure['derivation']),
             'sources':before,'cpu':CPU,'icount_shift':3,'workloads':{workload:entry},
             'boot':'ELF-preload development; QEMU reset-ROM handoff to identical Lean guest ELF and supplied DTB'}
-    if logical2_selected(name):data['checkpoint_binding']=LOGICAL2_BINDING
+    if mm2_selected(name):data.update(execution_binding=MM2_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2')
+    elif logical2_selected(name):data['checkpoint_binding']=LOGICAL2_BINDING
     if source_root != ROOT:
         from build_kernel import source_inputs
         data['guest_source_root']={'path':str(source_root),'sources':source_inputs(source_root)}
@@ -198,7 +229,7 @@ def build(args):
     path = prepared_path(name)
     try:
         previous = json.loads(path.read_text())
-        if previous.get('guest_archive')==data.get('guest_archive') and previous.get('guest_source_root')==data.get('guest_source_root') and all(previous.get(k) == data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift','checkpoint_binding')):
+        if previous.get('guest_archive')==data.get('guest_archive') and previous.get('guest_source_root')==data.get('guest_source_root') and all(previous.get(k) == data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift','checkpoint_binding','execution_binding','multimodal_controller_abi','controller_contract')):
             for key, old in previous['workloads'].items():
                 if key == workload or key not in selected: continue
                 try:
@@ -337,6 +368,7 @@ class Fast:
                                                                    source_root=args.guest_source_root)
         else:self.data=prepared(args.workload,args.profile)
         self.native_logical2=validate_checkpoint_binding(self.data)
+        self.mm2_subset=validate_execution_binding(self.data)
         self.identity={'backend':'qemu','profile':self.data['profile'],'runtime':self.data['qemu']['sha256'],
                        'adapter':ADAPTER,
                        'derivation':self.data['derivation']['sha256'],'guest':self.data['workloads'][args.workload]['image']['sha256'],
@@ -350,6 +382,7 @@ class Fast:
         if override_archive is not None:
             self.identity['development_guest_source_archive']={key:override_archive[key] for key in ('inventory','build','provenance','audit','image','configuration','source_commit','dirty_paths','inputs','scope')}
         if self.native_logical2:self.identity['checkpoint_binding']=LOGICAL2_BINDING
+        if self.mm2_subset:self.identity.update(execution_binding=MM2_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2')
         self.clock_hz=profile(self.data['profile'])['clock_hz']
         self.mtime_address=profile(self.data['profile'])['devices']['timer']['mtime']
         self.power_enabled=bool(profile(self.data['profile']).get('power_enabled',0))
@@ -386,12 +419,14 @@ class Fast:
         socket_directory=tempfile.TemporaryDirectory(prefix='lemma-qmp-',dir='/tmp')
         self.socket_directory=socket_directory
         path=Path(socket_directory.name)/'qmp.sock'
-        command=[self.data['qemu']['path'],'-machine','lemma-silicon-fast-softtlb' if self.native_logical2 else 'lemma-silicon-fast','-cpu',CPU,'-m','128M','-smp','1',
+        command=[self.data['qemu']['path'],'-machine','lemma-silicon-fast-softtlb' if self.native_logical2 or self.mm2_subset else 'lemma-silicon-fast','-cpu',CPU,'-m','128M','-smp','1',
                  '-bios','none','-kernel',entry['image']['path'],'-dtb',entry['dtb']['path'],
                  '-display','none','-monitor','none','-serial',f'file:{self.directory}/uart-{self.generation}.bin',
                  '-qmp',f'unix:{path},server=on,wait=off','-S','-no-shutdown',
                  '-icount','shift=3,align=off,sleep=off','-seed','0x4c454d4d413031',
                  '-global',f'lemma-paper-pen.raw-output={self.directory}/input-{self.generation}.bin']
+        if self.mm2_subset:command+=['-global','lemma-paper-pen.multimodal-controller-abi=2',
+                                     '-global',f'lemma-paper-pen.multimodal-audio-output={self.directory}/audio-{self.generation}.bin']
         if self.medium:
             command+=['-global',f'lemma-fast-block.medium={self.medium}']
         if self.companion:
@@ -533,6 +568,7 @@ class Fast:
         return self.clock()
 
     def checkpoint_admission(self):
+        if getattr(self,'mm2_subset',False):raise ValueError('MM2 pending ring continuation is not publicly admitted; no checkpoint or candidate created')
         if self.data.get('profile')=='lemma-silicon-dev/0.14.0':
             if not getattr(self,'native_logical2',False):
                 raise ValueError('Profile0.14 exact checkpoint and live restore are explicitly unsupported; no snapshot file or candidate was created')

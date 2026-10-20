@@ -29,7 +29,7 @@ def discovery_view(generator,selected):
  # additional self-describing endpoints, but deliberately retains that image
  # ABI. Publishing this explicit compatibility view never rewrites the old
  # signed image's DTB or claims that its guest consumes the new endpoints.
- if selected['profile']!=inputs.INTEGRATED_PROFILE:return selected
+ if selected['profile'] not in inputs.INTEGRATED_PROFILES:return selected
  # This compatibility selection is a new host input, separately bound below;
  # it is never attributed to an older native compiler's consumed archive.
  from silicon_profile import profile
@@ -62,7 +62,7 @@ def validate_discovery(data,path):
  for name,key in [('discovery.dts','dts_sha256'),('discovery.dtb','dtb_sha256'),('descriptor.bin','descriptor_sha256')]:
   if inputs.sha(path/name)!=row[key]:raise ValueError('Changed product discovery artifact: '+name)
  view=discovery_view(generator,profile)
- if profile['profile']==inputs.INTEGRATED_PROFILE and (row.get('compatibility_view')!=view['profile'] or row.get('compatibility_profile_sha256')!=inputs.sha(ROOT/'sim/profiles/lemma-silicon-dev-0.10.0.json')):raise ValueError('Changed explicit Integrated15 base discovery compatibility')
+ if profile['profile'] in inputs.INTEGRATED_PROFILES and (row.get('compatibility_view')!=view['profile'] or row.get('compatibility_profile_sha256')!=inputs.sha(ROOT/'sim/profiles/lemma-silicon-dev-0.10.0.json')):raise ValueError('Changed explicit Integrated15 base discovery compatibility')
  if (path/'discovery.dts').read_text()!=generator.dts(view) or (path/'descriptor.bin').read_bytes()!=generator.descriptor(profile,row['dtb_bytes']):
   raise ValueError('Product discovery registers differ from the native profile')
  if not 40<=row['dtb_bytes']<=3072 or (path/'discovery.dtb').stat().st_size!=row['dtb_bytes']:
@@ -147,7 +147,7 @@ class ProductRTL(sessions.RTL):
   if args.recovery:
    (directory/'initial-uart').write_bytes(b'R');command+=['--uart-input',str(directory/'initial-uart')]
   self.argv=command;self.timeout=args.timeout;self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'}
-  if data['profile']==inputs.INTEGRATED_PROFILE:self.input_kinds.add('multimodal')
+  if data['profile'] in inputs.INTEGRATED_PROFILES:self.input_kinds.add('multimodal')
   self.process=subprocess.Popen(command,cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=self.log,start_new_session=True,bufsize=0)
   self.reader=selectors.DefaultSelector();self.reader.register(self.process.stdout,selectors.EVENT_READ);self.pending=bytearray()
   try:
@@ -157,7 +157,7 @@ class ProductRTL(sessions.RTL):
  def preflight_checkpoint(self,path,expected_cycle):
   path=Path(path)
   with path.open('rb') as f:h=f.read(128)
-  if len(h)!=128 or h[:8]!=b'LMSSRTL1' or int.from_bytes(h[8:16],'little')!=(12 if self.identity['profile']==inputs.INTEGRATED_PROFILE else 7) or h[16:80]!=self.checkpoint_identity.encode():raise ValueError('Product checkpoint version/runtime mismatch')
+  if len(h)!=128 or h[:8]!=b'LMSSRTL1' or int.from_bytes(h[8:16],'little')!=(12 if self.identity['profile'] in inputs.INTEGRATED_PROFILES else 7) or h[16:80]!=self.checkpoint_identity.encode():raise ValueError('Product checkpoint version/runtime mismatch')
   wrapper=int.from_bytes(h[80:88],'little');model=int.from_bytes(h[88:96],'little')
   if wrapper<16 or not 0<model<=64*1024*1024 or 112+wrapper+model!=path.stat().st_size or int.from_bytes(h[120:128],'little')!=expected_cycle:raise ValueError('Product checkpoint boundary/length mismatch')
  def close(self):

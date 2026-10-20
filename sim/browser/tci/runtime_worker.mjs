@@ -4,7 +4,7 @@ import createQemu from './qemu-system-riscv64.js';
 import {Control} from './control.mjs';
 import {admitUart} from './uart_arrivals.mjs';
 import {attachOpfsFile} from './opfs_backing.mjs';
-import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,NotebookFaultObserver} from './guest_records.js';
+import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,guestCourseRejection,NotebookFaultObserver} from './guest_records.js';
 import {courseInstallFrame,courseSchoolFrames,schoolSelectionRequested} from './course_transport.js';
 import {RunBudget,uint64,resumeBudget,hostSecondsLimit} from './run_budget.js';
 import {PcmEgress} from './pcm_egress.mjs';
@@ -56,7 +56,7 @@ async function sendState(state){
  // not expose queued payloads or interpret byte delivery as guest installation.
  state.uart_ingress=exactJson(await control.get('raw-uart-state'));
  void school.observeDelivery(uart(),guestStart,{cycle:state.cycle,completed:state.panel_completed,accepted:state.panel_sequence,busy:state.paper_busy}).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));
- postMessage({type:'state',state,guestFault:observeFault(),guestInkLoss:notebookFault.inkLoss,mode,modeContract:contract,running,guestObservation:'boot',guestCommit:guestCommitState(uart(),guestStart),guestCourse:guestCourseInstallState(uart(),guestStart),guestQueue:guestSchoolQueueState(uart(),guestStart),backingMedium:{name:mediumName,private:false,ready:true},backingMetrics:backing.metrics,controlMetrics:control.metrics,pcmEgress:egress.inspect(),heapBytes,readyAt,hostSeconds:(performance.now()-started)/1000,pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-started)/1000,simulationCallSeconds:timing.runSeconds,backingCallSeconds:0,backingCallSecondsDuringRun:0,backingTimingAvailable:false}});
+ postMessage({type:'state',state,guestFault:observeFault(),guestInkLoss:notebookFault.inkLoss,mode,modeContract:contract,running,guestObservation:'boot',guestCommit:guestCommitState(uart(),guestStart),guestCourse:guestCourseInstallState(uart(),guestStart),guestCourseRejection:guestCourseRejection(uart(),guestStart),guestQueue:guestSchoolQueueState(uart(),guestStart),backingMedium:{name:mediumName,private:false,ready:true},backingMetrics:backing.metrics,controlMetrics:control.metrics,pcmEgress:egress.inspect(),heapBytes,readyAt,hostSeconds:(performance.now()-started)/1000,pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-started)/1000,simulationCallSeconds:timing.runSeconds,backingCallSeconds:0,backingCallSecondsDuringRun:0,backingTimingAvailable:false}});
 }
 async function panel(force=false,observation=null){
  if(!force){observation??=await inspect();if(panelSequence===observation.panel_completed)return;}
@@ -83,10 +83,13 @@ async function load(m){
  if(m.initialize!==undefined&&typeof m.initialize!=='boolean')throw Error('Initialize must be Boolean');
  if(m.paused!==undefined&&typeof m.paused!=='boolean')throw Error('Open paused must be Boolean');
  const response=await fetch('./bundle.json');if(!response.ok)throw Error('Bundle unavailable');manifest=await response.json();if(manifest.schema!=='lemmasim-browser-qemu-tci/1'||manifest.execution_backend!=='qemu-tci-wasm64/1'||manifest.session_control_contract!==contract||manifest.profile!=='lemma-silicon-dev/0.14.0')throw Error('Unsupported admitted QEMU Wasm bundle');
+ const pcm2=manifest.execution_binding==='lemma-silicon-fast-mm2-subset/0.1.0';
+ if(pcm2?(manifest.multimodal_controller_abi!==2||manifest.controller_contract!=='lemma-multimodal-converter/2'):(manifest.execution_binding!==undefined||manifest.multimodal_controller_abi!==undefined||manifest.controller_contract!==undefined))throw Error('Unsupported PCM controller binding');
+ const controllerArguments=pcm2?['-global','lemma-paper-pen.multimodal-controller-abi=2']:[];
  handle=await openMedium(m.name,!!m.initialize);mediumName=m.name;
  const workload=manifest.workloads[m.initialize?'initializer':'notebook'],elf=await artifact(workload.image),dtb=await artifact(workload.dtb),wasm=await artifact(manifest.runtime.wasm);
  const logs=[];started=performance.now();
- core=await createQemu({arguments:['-machine','lemma-silicon-fast','-cpu','rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0','-m','128M','-smp','1','-bios','none','-kernel','/image.elf','-dtb','/machine.dtb','-display','none','-monitor','none','-serial','file:/uart.bin','-S','-no-shutdown','-icount','shift=3,align=off,sleep=off','-seed','0x4c454d4d413031','-global','lemma-fast-block.medium=/medium.raw','-global','lemma-paper-pen.multimodal-audio-output=/audio.bin'],preRun:[module=>{module.FS.writeFile('/image.elf',elf);module.FS.writeFile('/machine.dtb',dtb);backing=attachOpfsFile(module,'/medium.raw',handle);}],print:t=>{if(logs.length<256)logs.push(String(t));},printErr:t=>{if(logs.length<256)logs.push(String(t));},onAbort:t=>postMessage({type:'error',error:'QEMU abort:'+t,logs})});
+ core=await createQemu({arguments:[...controllerArguments,'-machine','lemma-silicon-fast','-cpu','rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0','-m','128M','-smp','1','-bios','none','-kernel','/image.elf','-dtb','/machine.dtb','-display','none','-monitor','none','-serial','file:/uart.bin','-S','-no-shutdown','-icount','shift=3,align=off,sleep=off','-seed','0x4c454d4d413031','-global','lemma-fast-block.medium=/medium.raw','-global','lemma-paper-pen.multimodal-audio-output=/audio.bin'],preRun:[module=>{module.FS.writeFile('/image.elf',elf);module.FS.writeFile('/machine.dtb',dtb);backing=attachOpfsFile(module,'/medium.raw',handle);}],print:t=>{if(logs.length<256)logs.push(String(t));},printErr:t=>{if(logs.length<256)logs.push(String(t));},onAbort:t=>postMessage({type:'error',error:'QEMU abort:'+t,logs})});
  control=new Control(core);await control.ready();if(await control.get('raw-uart-version')!=='lemma-raw-uart/1')throw Error('UART raw transport absent');await control.set('enable-raw-uart','lemma-raw-uart/1');const properties=await control.request('qom-list',{path:'/machine/lemma-hardware'});uartPaced=properties.some(p=>p.name==='raw-uart-paced-version')&&await control.get('raw-uart-paced-version')==='lemma-raw-uart-paced/1';
  uartFlow=false;
  if(properties.some(p=>p.name==='raw-uart-flow-version')){

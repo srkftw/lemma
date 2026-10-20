@@ -85,12 +85,17 @@ def isUSBPackageReaderNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-clocked-reader-entry2-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-clocked-reader-entry2-bulk-initialize"
 
+def isIntegratedPCMConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-integrated-pcm-school-notebook"
+
 def isSchoolNotebookConfiguration (configuration : String) : Bool :=
+  isIntegratedPCMConfiguration configuration ||
   configuration == "lemmasim-silicon-school-notebook" ||
     configuration == "lemmasim-silicon-school-initialize" ||
     configuration == "lemmasim-silicon-integrated-school-notebook"
 
 def isIntegratedNotebookConfiguration (configuration : String) : Bool :=
+  isIntegratedPCMConfiguration configuration ||
   configuration == "lemmasim-silicon-integrated-notebook" ||
     configuration == "lemmasim-silicon-integrated-school-notebook"
 
@@ -238,12 +243,12 @@ def isSumsNotebookConfiguration (configuration : String) : Bool :=
 def softwareDeploymentFields (configuration : String) : List (String × Json) :=
   if isSchoolNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj ([
-    ("contract_version", .str "lemma-school-notebook-deployment/2"),
+    ("contract_version", .str (if isIntegratedPCMConfiguration configuration then "lemma-school-notebook-deployment/3" else "lemma-school-notebook-deployment/2")),
     ("notebook_version", toJson (23 : Nat)),
-    ("silicon_profile", .str (if isIntegratedNotebookConfiguration configuration then
+    ("silicon_profile", .str (if isIntegratedPCMConfiguration configuration then "lemma-silicon-dev/0.16.0" else if isIntegratedNotebookConfiguration configuration then
       "lemma-silicon-dev/0.15.0" else "lemma-silicon-dev/0.14.0")),
     ("machine_profile", .str "lemma-one-multimodal/0.2.0"),
-    ("stream_contract", .str "lemma-multimodal-converter/1"),
+    ("stream_contract", .str (if isIntegratedPCMConfiguration configuration then "lemma-multimodal-converter/2" else "lemma-multimodal-converter/1")),
     ("reader_contract", .str "lemma-course-reader-location/1"),
     ("chooser_contract", .str "lemma-course-empty-selection-chooser/1"),
     ("selection_contract", .str "lemma-school-course-selection/1"),
@@ -251,6 +256,7 @@ def softwareDeploymentFields (configuration : String) : List (String × Json) :=
     ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.2"),
       ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
       ("course", .str "core0-user-v0.1")])] ++
+    (if isIntegratedPCMConfiguration configuration then [("multimodal_service_version", toJson (3 : Nat))] else []) ++
     (if isIntegratedNotebookConfiguration configuration then
       [("boot_image_contract", .str "lemma-product10-image-compatibility/1")] else [])))]
   else if isIntegratedNotebookConfiguration configuration then

@@ -30,7 +30,7 @@ rep('    LemmaDevices *s=opaque;if(s->multimodal_enabled)return -ENOTSUP;', ''' 
     /* Exact capture does not advance the original paper/converter state. */
     if(lemma_mm_checkpoint_selected())return 0;''')
 rep('.minimum_version_id=3,.pre_save=lemma_pre_save,.post_load=lemma_post_load,', '''.minimum_version_id=3,.pre_load=lemma_pre_load,.pre_save=lemma_pre_save,.post_load=lemma_post_load,
-    .subsections=(const VMStateDescription * const[]){&lemma_mm_checkpoint_vmstate,NULL},''')
+    .subsections=(const VMStateDescription * const[]){&lemma_mm_checkpoint_vmstate,&lemma_mm2_checkpoint_vmstate,NULL},''')
 path.write_text(s)
 path=a.source/'hw/riscv/lemma_multimodal.c';path.write_text(path.read_text()+'\n'+a.model_helper.read_text())
 path=a.source/'hw/riscv/lemma_multimodal.h';s=path.read_text();assert s.count('#endif')==1

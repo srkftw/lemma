@@ -21,6 +21,16 @@ class Failure(Exception):pass
 
 def select_checkpoint_binding(args):
     """Select one versioned native runtime without changing simulator rights."""
+    if getattr(args,'controller_binding',None) is not None:
+        if args.controller_binding!='mm2-subset' or getattr(args,'checkpoint_binding',None) is not None or args.profile!='lemma-silicon-dev/0.14.0':
+            raise Failure('MM2 subset requires Fast0.14 and excludes public checkpoint selection')
+        if args.command=='build':
+            if args.backend!='qemu' or args.workload not in ('school-notebook','school-initializer'):raise Failure('MM2 subset preparation requires an explicit QEMU School guest')
+        elif args.command=='native-bundle-build':
+            if not args.school_deployment:raise Failure('MM2 subset packaging requires an explicit School pair')
+        else:raise Failure('Unsupported controller binding selection command')
+        os.environ.update(LEMMA_FAST_RAW_UART='1',LEMMA_FAST_LOGICAL2='1',LEMMA_FAST_MM2='1')
+        return
     if getattr(args,'checkpoint_binding',None) is None:return
     if args.checkpoint_binding!='native-logical2' or args.profile!='lemma-silicon-dev/0.14.0':
         raise Failure('Native logical2 requires the explicit Fast0.14 profile')
@@ -867,6 +877,7 @@ def main():
     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--port',type=int,default=8767)
     p=sub.add_parser('native-bundle-build',help='Pack exact source-validated native RTL/QEMU development artifacts')
     p.add_argument('--checkpoint-binding',choices=('native-logical2',),help='Fast0.14 School only: version2 same-backend continuation with isolated local backing')
+    p.add_argument('--controller-binding',choices=('mm2-subset',),help='Fast0.14 MM2 functional controller subset; excludes Integrated16 boot/USB/power union and public checkpoints')
     p.add_argument('--sample-course',type=Path,help='Actually compiled, inventoried account-free local course package')
     p.add_argument('--school-deployment',action='store_true',help='Explicit School23 publication selection and durable guest queue; preserves legacy notebook bundles')
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--output-dir',type=Path,required=True)
@@ -939,6 +950,7 @@ def main():
     end=p.add_mutually_exclusive_group(required=True);end.add_argument('--until-cycle',type=int);end.add_argument('--until-ns',type=int,help='Exact fast-backend virtual clock phase')
     p=sub.add_parser('build');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','school-notebook','school-initializer','parameterized-notebook','parameterized-initializer','managed-notebook','managed-initializer','devices','power','ble','usb','usb-bulk-notebook','usb-bulk-initializer','usb-next-bulk-notebook','usb-next-bulk-initializer','usb-wire-bulk-notebook','usb-wire-bulk-initializer','usb-clocked-bulk-notebook','usb-clocked-bulk-initializer','usb-clocked-retry-bulk-notebook','usb-clocked-retry-bulk-initializer','usb-clocked-closure-retry-bulk-notebook','usb-clocked-closure-retry-bulk-initializer','usb-clocked-package-retry-bulk-notebook','usb-clocked-package-retry-bulk-initializer','usb-clocked-package-entry2-bulk-notebook','usb-clocked-package-entry2-bulk-initializer','usb-clocked-reader-entry2-bulk-notebook','usb-clocked-reader-entry2-bulk-initializer'));p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.add_argument('--guest-build',type=Path);p.add_argument('--guest-bundle',type=Path,help='QEMU: fully validated archived genuine guest with a freshly built backend');p.add_argument('--rtl-build',type=Path);p.add_argument('--silicon-deps',dest='deps',type=Path,help='RTL only: explicitly selected immutable CVW checkout; all source/tool identities remain validated');p.add_argument('--rtl-source-root',type=Path,help='USB6/8/11/13 RTL: explicit complete native source archive, requires --rtl-build');p.add_argument('--guest-source-root',type=Path,help='USB6/8/11/13 RTL or School23/v2 Fast: complete original audited source archive, requires --guest-build');p.set_defaults(function=build)
     p.add_argument('--checkpoint-binding',choices=('native-logical2',),help='Fast0.14 School only: prepare version2 same-backend native continuation')
+    p.add_argument('--controller-binding',choices=('mm2-subset',),help='Fast0.14 MM2 functional controller subset; excludes Integrated16 boot/USB/power union and public checkpoints')
     p.add_argument('--fresh',action='store_true',help='Execute target/reset-ROM actions without cache reads; audits remain fresh')
     p.add_argument('--cache-dir',type=Path,help='Local validated action-cache directory')
     p=sub.add_parser('init');p.add_argument('--workload',choices=('initializer','parameterized-initializer'),default='initializer');p.add_argument('--native-bundle',type=Path);p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--disk',type=Path,required=True);p.add_argument('--size-mib',type=int,default=256);p.add_argument('--force',action='store_true');p.add_argument('--session-dir',type=Path);p.add_argument('--timeout',type=int,default=900);p.set_defaults(function=initialize)

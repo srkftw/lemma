@@ -346,7 +346,7 @@ def notebook_safety_source(root=ROOT):
 
 
 def owned_io_semantics(ir, rows):
-    """Version2 only: closed source/IR edges and private-frame value flow."""
+    """Versioned owned I/O: closed source/IR edges and private-frame value flow."""
     from audit_kernel import _ir_definition_body, _local_call_arguments, _local_checked_result
     service='Lemma.Platform.LemmaSim.MultimodalService.'
     version=service+'version'
@@ -358,16 +358,20 @@ def owned_io_semantics(ir, rows):
         require(target in rows,'ownedIO target absent: '+target)
         return _local_call_arguments(body(owner),rows[target]['symbol'])
     def value(owner,target,args):return _local_checked_result(body(owner),rows[target]['symbol'],args)[1]
-    require(re.fullmatch(r'\s*entry:\s*ret i64 2\s*',body(version)) is not None,'ownedIO service version differs')
+    marker=re.fullmatch(r'\s*entry:\s*ret i64 ([23])\s*',body(version))
+    require(marker is not None,'ownedIO service version differs')
+    service_version=int(marker[1]);frame_count=3 if service_version==3 else 2
     allocate='Lemma.Kernel.Memory.Frames.allocate';resolve='Lemma.Kernel.Memory.Frames.resolvePurpose'
     configure=service+'configure';put=service+'put';get=service+'get'
-    require(calls(configure,allocate)==['i64 1, i64 1']*2,'ownedIO private/metadata allocations differ')
+    require(calls(configure,allocate)==['i64 1, i64 1']*frame_count,'ownedIO private/metadata allocations differ')
     allocations=re.findall(r'(%[\w.$-]+) = call \{ i64, i64 \} @'+re.escape(rows[allocate]['symbol'])+r'\(i64 1, i64 1\)',body(configure))
     handles=[]
     for call in allocations:
         matches=re.findall(r'(%[\w.$-]+) = extractvalue \{ i64, i64 \} '+re.escape(call)+r', 1$',body(configure),re.M)
         require(len(matches)==1,'ownedIO allocation result differs');handles+=matches
-    require(handles[0]!=handles[1] and calls(configure,put)==['i64 0, i64 %arg0','i64 8, i64 '+handles[0],'i64 16, i64 '+handles[1]],'ownedIO frame identities alias or metadata/private slots differ')
+    expected_puts=['i64 0, i64 %arg0','i64 8, i64 '+handles[0],'i64 16, i64 '+handles[1]]
+    if service_version==3:expected_puts.append('i64 640, i64 '+handles[2])
+    require(len(set(handles))==frame_count and calls(configure,put)==expected_puts,'ownedIO frame identities alias or metadata/private slots differ')
     begin=service+'beginRecord';finish=service+'finishRecord';current=service+'current'
     require(calls(begin,current)==['i64 %arg1, i64 %arg3, i64 3'],'ownedIO begin current permission differs')
     require(calls(finish,current)==['i64 %arg1, i64 %arg3, i64 3'],'ownedIO finish current permission differs')
@@ -382,7 +386,17 @@ def owned_io_semantics(ir, rows):
     require(calls(service+'call',begin)==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'] and calls(service+'call',finish)==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'] and calls(service+'call',service+'pcmBatch')==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'],'ownedIO public call substituted owner/stream/logicaldest/epoch')
     require(calls(service+'pcmBatch',current)==['i64 8, i64 %arg3, i64 64'],'ownedIO batch grant differs')
     require(calls(service+'pcmStep',current)==['i64 8, i64 %arg4, i64 64'],'ownedIO per-sample live grant differs')
-    return {'service_version':2,'metadata_frame_slot':8,'private_DMA_frame_slot':16,'record_bytes':64,'DMA_words':8,'actual_edges':edges,'scope':'exact compiled source/call/value binding; operating and fault behavior requires actual execution'}
+    ring=None
+    if service_version==3:
+        start=service+'beginRing';handle=value(start,get,'i64 640');physical=value(start,resolve,'i64 1, i64 '+handle+', i64 1')
+        require(calls(start,service+'ringWrite')==['i64 104, i64 '+physical,'i64 112, i64 2048','i64 136, i64 1'],'owned ring DMA escaped its exact private frame/capacity/start')
+        require(calls(start,current)==['i64 8, i64 %arg3, i64 64']*2,'owned ring begin lost both live playback permission checks')
+        ring_edges=[(service+'call',service+name) for name in ('beginRing','enqueueRing','finishRing','ringStatus')]
+        for owner,target in ring_edges:
+            require(calls(owner,target)==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'],'owned ring public call substituted owner/stream/logical packet/epoch')
+        edges+=ring_edges
+        ring={'private_frame_slot':640,'owned_bytes':4096,'capacity_samples':2048,'maximum_packet_samples':512,'permission_bits':64,'controller_abi':2}
+    return {'service_version':service_version,**({'ring':ring} if ring else {}),'metadata_frame_slot':8,'private_DMA_frame_slot':16,'record_bytes':64,'DMA_words':8,'actual_edges':edges,'scope':'exact compiled source/call/value binding; operating and fault behavior requires actual execution'}
 
 
 def semantics(ir, unit):
@@ -475,7 +489,8 @@ def semantics(ir, unit):
                               (service+'call', service+'revoke'), (service+'call', service+'configureStream'),
                               (service+'call', service+'take'), (service+'take', service+'current'),
                               (service+'configureStream', service+'current')):
-            require(len(calls(owner, target)) == (2 if owner==service+'configure' and target=='Lemma.Kernel.Memory.Frames.allocate' and service+'version' in rows else 1), 'grant/current-epoch operation edge differs: ' + owner)
+            allocation_count=(3 if re.fullmatch(r'\s*entry:\s*ret i64 3\s*',body(service+'version')) else 2) if service+'version' in rows else 1
+            require(len(calls(owner, target)) == (allocation_count if owner==service+'configure' and target=='Lemma.Kernel.Memory.Frames.allocate' else 1), 'grant/current-epoch operation edge differs: ' + owner)
             checked.append((owner, target))
         owned_record_pcm=owned_io_semantics(ir,rows)
     elif key == 'arithmetic':
@@ -876,10 +891,37 @@ def jump_spec(ir, unit, source, symbol):
         version=[row for row in unit.get('functions',[]) if canonical(row['source'])=='Lemma.Platform.LemmaSim.MultimodalService.version']
         if version:
             from audit_kernel import _ir_definition_body
-            require(len(version)==1 and version[0]['args']==[] and version[0]['effects']==[] and
-                    re.fullmatch(r'\s*entry:\s*ret i64 2\s*',_ir_definition_body(ir,version[0]['symbol'])),
-                    'ownedIO jump owner lacks exact service version2')
-            spec=('kernel',19,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(19)))
+            require(len(version)==1 and version[0]['args']==[] and version[0]['effects']==[],
+                    'ownedIO jump owner has invalid version source type/effects')
+            marker=re.fullmatch(r'\s*entry:\s*ret i64 ([23])\s*',_ir_definition_body(ir,version[0]['symbol']))
+            require(marker is not None,'ownedIO jump owner lacks exact service version2/3')
+            count=23 if marker[1]=='3' else 19
+            spec=('kernel',count,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(count)))
+    if source=='Lemma.Platform.LemmaSim.MultimodalService.ringStatus':
+        # Observed in the genuine LLVM20 O2 Service3 object, not an extension
+        # of the general service dispatcher. This selector reads ten fixed
+        # counters after ABI and saved-owner checks, including after revoke.
+        # Complete source/IR pins and the ordinary machine table/guard checks
+        # remain mandatory below and in audit_kernel.
+        from audit_kernel import _ir_definition_body, _local_call_arguments
+        prefix='Lemma.Platform.LemmaSim.MultimodalService.'
+        rows={canonical(row['source']):row for row in unit.get('functions',[])}
+        require(prefix+'version' in rows and re.fullmatch(r'\s*entry:\s*ret i64 3\s*',
+            _ir_definition_body(ir,rows[prefix+'version']['symbol'])) is not None,
+            'owned ring status table requires the exact service3 version')
+        require(source in rows and rows[source]['symbol']==symbol,
+                'owned ring status table source/symbol differs')
+        body=_ir_definition_body(ir,symbol)
+        def calls(target):
+            require(target in rows,'owned ring status missing checked reader: '+target)
+            return _local_call_arguments(body,rows[target]['symbol'])
+        require(calls(prefix+'ringABI')==[''] and
+                calls(prefix+'ringOwner')==['i64 %arg0, i64 %arg3'],
+                'owned ring status lost ABI/saved-owner admission')
+        require(calls(prefix+'ringRead')==['i64 '+str(n) for n in (144,120,128,160,168,112)] and
+                calls('Lemma.Drivers.Multimodal.read')==['i64 8, i64 '+str(n) for n in (240,232,16,32)],
+                'owned ring status ten-counter read domain differs')
+        spec=('kernel',10,['u64']*4,['checked-access','mmio-read','io-order','physical-read'],list(range(10)))
     if unit.get('configuration') in INTEGRATED_CONFIGURATIONS and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepExecuted':
         spec=('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9])
     if not selected(unit) or spec is None: return None

@@ -101,7 +101,7 @@ class AuthRTL(product.ProductRTL):
   if args.recovery:
    (directory/'initial-uart').write_bytes(b'R');command+=['--uart-input',str(directory/'initial-uart')]
   self.argv=command;self.timeout=args.timeout;self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'}
-  if data['profile']==inputs.INTEGRATED_PROFILE:self.input_kinds.add('multimodal')
+  if data['profile'] in inputs.INTEGRATED_PROFILES:self.input_kinds.add('multimodal')
   self.process=subprocess.Popen(command,cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=self.log,start_new_session=True,bufsize=0)
   self.reader=selectors.DefaultSelector();self.reader.register(self.process.stdout,selectors.EVENT_READ);self.pending=bytearray()
   try:

@@ -2,6 +2,7 @@
 // Synthetic-aperture/1: digital converter/readout/control circuitry, not sensor physics.
 // One retained transaction per DMA beat. No target application or tutor policy.
 module lemma_multimodal #(
+ parameter logic [63:0] CONTROLLER_ABI=1,
  parameter logic [63:0] DMA_BASE=64'h82000000,DMA_BYTES=64'h2000000
 )(input logic clk,reset,
  input logic valid,write,input logic [12:0] addr,input logic [2:0] size,input logic [63:0] wdata,
@@ -9,7 +10,7 @@ module lemma_multimodal #(
  input logic [255:0] stimulus,reference_input,input logic [127:0] source_quality,
  output logic pcm_valid,output logic [63:0] pcm_data,pcm_position,pcm_tick,
  output logic dma_valid,dma_write,output logic [63:0] dma_addr,dma_wdata,
- output logic [2:0] dma_size,input logic dma_ready,dma_error,
+ output logic [2:0] dma_size,input logic dma_ready,dma_error,input logic [63:0] dma_rdata,
  output logic [63:0] acquisition_tick
 );
  localparam integer IDLE=2,CONFIGURED=3,ARMED=4,RUNNING=5,DRAINING=6,FAULT=7,DISCONNECTED=8;
@@ -20,6 +21,9 @@ module lemma_multimodal #(
  logic [63:0] head[9],count[9],converting[9];
  logic [63:0] records[9][16][8],dma_record[8];
  logic dma_active,dma_cancel;integer dma_stream,dma_index;
+ logic [63:0] ring_base,ring_capacity,producer,fetch,eof_end,ring_eof,ring_enabled,ring_status;
+ logic [63:0] owner_epoch,owner_consent,owner_config,submitted_base,consumed_base,gaps;
+ logic [63:0] bus_kind,bus_address,bus_data,bus_samples,bus_cancel,turn;
  integer i,j,k,s,o,index;
  logic signed [63:0] value,source,refvalue;
  logic [63:0] q,raw;
@@ -33,20 +37,45 @@ module lemma_multimodal #(
   if(dma_active&&dma_stream==n)begin dma_cancel=1;end
   pending=pending|(64'd1<<n);
  endtask
+ function automatic logic ring_permitted();
+  return link!=0&&inhibit==0&&calibration[8]==1&&consent[8]!=0&&lease[8]>tick&&
+   epoch[8]==owner_epoch&&consent[8]==owner_consent&&config_revision[8]==owner_config&&(state[8]==ARMED||state[8]==RUNNING);
+ endfunction
+ task automatic cancel_ring(input logic [63:0] status,input logic [63:0] code);
+  ring_enabled=0;ring_status=status;if(bus_kind==2)bus_cancel=1;
+  state[8]=code!=0?FAULT:((state[8]==IDLE||state[8]==FAULT||state[8]==DISCONNECTED)?state[8]:CONFIGURED);count[8]=0;head[8]=0;lease[8]=0;
+  if(code!=0)fault[8]=code;pending=pending|256;
+ endtask
+ task automatic finish_ring();
+  if(ring_enabled!=0&&ring_eof!=0&&fetch==eof_end&&count[8]==0&&bus_kind!=2)cancel_ring(2,0);
+ endtask
+ task automatic prepare_bus();
+  if(bus_kind==0)begin
+   if(ring_enabled!=0&&ring_permitted()&&count[8]<=12&&producer!=fetch&&(producer-fetch>=4||ring_eof!=0)&&(!dma_active||turn==1))begin
+    bus_kind=2;bus_address=ring_base+((fetch&(ring_capacity-1))*2);bus_data=0;
+    bus_samples=producer-fetch<4?producer-fetch:4;bus_cancel=0;
+   end else if(dma_active)begin
+    bus_kind=1;bus_address=dma_pointer[dma_stream]+64'(dma_index)*8;bus_data=dma_record[dma_index];bus_samples=0;bus_cancel=0;
+   end
+  end
+ endtask
  assign acquisition_tick=tick;
- assign dma_valid=dma_active&&!reset;
- assign dma_write=1;
- assign dma_addr=dma_pointer[dma_stream]+64'(dma_index)*8;
- assign dma_wdata=dma_record[dma_index];
+ assign dma_valid=(CONTROLLER_ABI==1?dma_active:bus_kind!=0)&&!reset;
+ assign dma_write=CONTROLLER_ABI==1?1:bus_kind==1;
+ assign dma_addr=CONTROLLER_ABI==1?dma_pointer[dma_stream]+64'(dma_index)*8:bus_address;
+ assign dma_wdata=CONTROLLER_ABI==1?dma_record[dma_index]:bus_data;
  assign dma_size=3;
  always_comb begin
   ready=valid;error=valid&&(size!=3||addr[2:0]!=0||addr>=13'ha00);
-  rdata=0;busy=dma_active;irq=0;
+  rdata=0;busy=dma_active||bus_kind!=0||ring_enabled!=0;irq=0;
   for(integer n=0;n<9;n++)begin if(state[n]==RUNNING||converting[n]!=0)busy=1;if(mask[n]&&(pending[n]||count[n]!=0))irq=1;end
   if(addr<256)case(addr)
-   0:rdata=64'h4c4d4d32;8:rdata=1;16:rdata=511;24:rdata=tick;
+   0:rdata=64'h4c4d4d32;8:rdata=CONTROLLER_ABI;16:rdata=511;24:rdata=tick;
    32:begin rdata=pending;for(integer n=0;n<9;n++)if(count[n]!=0)rdata[n]=1;end
-   40:rdata=mask;56:rdata=inhibit;64:rdata=link;72:rdata=100000000;80:rdata=16;88:rdata=64;96:rdata=0;default:rdata=0;
+   40:rdata=mask;56:rdata=inhibit;64:rdata=link;72:rdata=100000000;80:rdata=16;88:rdata=64;96:rdata=0;
+   104:rdata=CONTROLLER_ABI==2?(ring_base):0;112:rdata=CONTROLLER_ABI==2?(ring_capacity):0;120:rdata=CONTROLLER_ABI==2?(producer):0;128:rdata=CONTROLLER_ABI==2?(fetch):0;
+   136:rdata=0;144:rdata=CONTROLLER_ABI==2?(ring_status):0;152:rdata=CONTROLLER_ABI==2?(ring_eof!=0?eof_end:64'hffffffffffffffff):0;
+   160:rdata=CONTROLLER_ABI==2?(gaps):0;168:rdata=CONTROLLER_ABI==2?(bus_kind|(bus_cancel<<8)):0;default:rdata=0;
   endcase
   else if(addr<2560)begin
    case(addr[7:0])
@@ -70,6 +99,9 @@ module lemma_multimodal #(
   if(reset)begin
    tick=0;mask=0;inhibit=1;link=1;pending=0;dma_active=0;dma_cancel=0;dma_stream=0;dma_index=0;
    pcm_valid=0;pcm_data=0;pcm_position=0;pcm_tick=0;
+   ring_base=0;ring_capacity=0;producer=0;fetch=0;eof_end=0;ring_eof=0;ring_enabled=0;ring_status=0;
+   owner_epoch=0;owner_consent=0;owner_config=0;submitted_base=0;consumed_base=0;gaps=0;
+   bus_kind=0;bus_address=0;bus_data=0;bus_samples=0;bus_cancel=0;turn=0;
    for(i=0;i<9;i++)begin
     state[i]=IDLE;fault[i]=0;epoch[i]=1;sequence_no[i]=0;gain[i]=1;period[i]=100000;exposure[i]=8;selector[i]=0;consent[i]=0;calibration[i]=0;lease[i]=0;quiet_until[i]=0;
     consent_floor[i]=0;config_revision[i]=0;next_sample[i]=0;capture[i]=0;available[i]=0;quality[i]=0;latched_reference[i]=0;dma_pointer[i]=0;dma_words[i]=0;dma_status[i]=0;consumed[i]=0;submitted[i]=0;scheduled_start[i]=0;
@@ -79,11 +111,31 @@ module lemma_multimodal #(
    for(k=0;k<8;k++)dma_record[k]=0;
   end else begin
    tick=tick+1;pcm_valid=0;
-   if(dma_active&&dma_ready)begin
+   if(bus_kind==2&&dma_ready)begin
+    if(bus_cancel!=0||ring_enabled==0||!ring_permitted())begin bus_kind=0;bus_cancel=0;if(ring_enabled!=0)cancel_ring(3,0);turn=0;end
+    else if(dma_error)begin bus_kind=0;cancel_ring(4,3);end
+    else if(submitted[8]>64'hffffffffffffffff-bus_samples)begin bus_kind=0;cancel_ring(4,14);end
+    else if(count[8]+bus_samples>16)begin bus_kind=0;cancel_ring(4,9);end
+    else begin
+     for(j=0;j<4;j++)if(64'(j)<bus_samples)begin
+      index=int'((head[8]+count[8])%16);for(k=0;k<8;k++)records[8][index][k]=0;
+      records[8][index][0]=(dma_rdata>>(16*j))&65535;records[8][index][5]=owner_consent;count[8]=count[8]+1;
+     end
+     submitted[8]=submitted[8]+bus_samples;fetch=fetch+bus_samples;pending=pending|256;bus_kind=0;turn=0;
+    end
+   end else if(bus_kind==1&&dma_ready)begin
+    bus_kind=0;turn=1;
     if(dma_cancel)begin dma_status[dma_stream]=3;dma_active=0;dma_cancel=0;end
     else if(dma_error)begin dma_status[dma_stream]=3;reject(dma_stream,3);dma_active=0;end
     else if(dma_index==7)begin dma_status[dma_stream]=2;head[dma_stream]=(head[dma_stream]+1)%16;count[dma_stream]=count[dma_stream]-1;pending=pending|(64'd1<<dma_stream);dma_active=0;end
     else dma_index=dma_index+1;
+   end
+   finish_ring();
+   if(ring_enabled!=0&&state[8]==RUNNING&&next_sample[8]==tick)begin
+    if(count[8]!=0&&consumed[8]==64'hffffffffffffffff)cancel_ring(4,14);
+    else if(count[8]==0&&!(ring_eof!=0&&fetch==eof_end))begin
+     if(gaps==64'hffffffffffffffff)cancel_ring(4,14);else gaps=gaps+1;
+    end
    end
    for(i=0;i<9;i++)if(state[i]==RUNNING||state[i]==DRAINING)begin
     if(!enabled(i))begin reject(i,consent[i]!=0?15:7);stop_stream(i,CONFIGURED);end
@@ -142,6 +194,29 @@ module lemma_multimodal #(
      40:if(wdata<=511)mask=wdata;
      48:if(wdata<=511)pending=pending&~wdata;
      56:if(wdata<=1)begin inhibit=wdata;if(wdata!=0)for(i=0;i<9;i++)if(output_stream(i))stop_stream(i,CONFIGURED);end
+     104,112:if(CONTROLLER_ABI==2)begin
+      if(ring_enabled!=0||bus_kind==2||count[8]!=0||(state[8]!=CONFIGURED&&state[8]!=ARMED))reject(8,6);
+      else if(addr==104)ring_base=wdata;else ring_capacity=wdata;
+     end
+     120:if(CONTROLLER_ABI==2)begin
+      if(ring_enabled==0||ring_eof!=0||!ring_permitted())reject(8,7);
+      else if(wdata<producer)reject(8,4);
+      else if(wdata-fetch>ring_capacity)reject(8,3);else producer=wdata;
+     end
+     136:if(CONTROLLER_ABI==2)case(wdata)
+      1:begin
+       if(ring_enabled!=0||bus_kind==2||state[8]!=ARMED||count[8]!=0)reject(8,6);
+       else if(ring_capacity<16||ring_capacity>2048||(ring_capacity&(ring_capacity-1))!=0||ring_base<DMA_BASE||(ring_base&7)!=0||ring_base>DMA_BASE+DMA_BYTES-ring_capacity*2)reject(8,3);
+       else begin
+        owner_epoch=epoch[8];owner_consent=consent[8];owner_config=config_revision[8];
+        if(!ring_permitted())reject(8,7);
+        else begin producer=0;fetch=0;eof_end=0;ring_eof=0;ring_enabled=1;ring_status=1;submitted_base=submitted[8];consumed_base=consumed[8];gaps=0;end
+       end
+      end
+      2:if(ring_enabled==0||!ring_permitted())reject(8,7);else begin if(ring_eof==0)begin ring_eof=1;eof_end=producer;end finish_ring();end
+      3:cancel_ring(3,0);
+      default:reject(8,2);
+     endcase
      64:if(wdata<=1)begin link=wdata;if(wdata==0)for(i=0;i<9;i++)begin reject(i,11);stop_stream(i,DISCONNECTED);consent[i]=0;end end
      default:begin end
     endcase
@@ -165,7 +240,8 @@ module lemma_multimodal #(
      end else if(o==152)begin
       if(wdata!=1||count[s]==0||dma_status[s]==1)reject(s,dma_status[s]==1?6:5);else begin head[s]=(head[s]+1)%16;count[s]=count[s]-1;end
      end else if(o==112&&s==8)begin
-      if(!enabled(s)||(state[s]!=ARMED&&state[s]!=RUNNING))reject(s,7);
+      if(ring_enabled!=0||bus_kind==2)reject(8,6);
+      else if(!enabled(s)||(state[s]!=ARMED&&state[s]!=RUNNING))reject(s,7);
       else if(submitted[s]==64'hffffffffffffffff)reject(s,14);else if(count[s]==16)reject(s,9);
       else begin index=int'((head[s]+count[s])%16);records[s][index][0]=wdata;records[s][index][5]=consent[s];count[s]=count[s]+1;submitted[s]=submitted[s]+1;end
      end else if(o==160||o==168)begin
@@ -184,6 +260,8 @@ module lemma_multimodal #(
      endcase
     end
    end
+   if(ring_enabled!=0&&!ring_permitted())cancel_ring(3,0);
+   finish_ring();prepare_bus();
   end
  end
 endmodule

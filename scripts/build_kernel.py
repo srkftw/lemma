@@ -459,6 +459,11 @@ def source_inputs(root: Path) -> dict[str, str]:
         if authority.is_file(): inputs.append(authority)
     if (root / "scripts/school_deployment.py").is_file():
         school_registry=(root / "scripts/school_deployment.py").read_text()
+        if "INTEGRATED_PCM=" in school_registry:
+            for relative in ("docs/contracts/009-multimodal-pcm-ring-v1.html", "sim/profiles/lemma-silicon-dev-0.16.0.json"):
+                required=root/relative
+                if not required.is_file():raise Core0Error("Missing Integrated16 owned PCM dependency: "+relative)
+                inputs.append(required)
         school_contract="docs/contracts/009-school-submission-v2.html" if "lemma-school-notebook-deployment/2" in school_registry else "docs/contracts/009-school-submission-v1.html"
         for relative in ("scripts/school_deployment.py", "scripts/school_target.py", school_contract):
             required=root/relative

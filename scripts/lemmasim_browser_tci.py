@@ -20,6 +20,8 @@ MAX_FILES=2048
 MAX_BYTES=128*1024*1024
 RUNTIME_SCHEMA='lemma-tci-retained-runtime/1'
 RUNTIME_SCHEMA_WITH_HELPERS='lemma-tci-retained-runtime/2'
+RUNTIME_SCHEMA_WITH_PCM='lemma-tci-retained-runtime/3'
+PCM_BINDING='lemma-silicon-fast-mm2-subset/0.1.0'
 HELPER_FILES={'patch_tci_helpers.py','typed_helpers.json','tci-typed-helpers.patch'}
 HELPER_SOURCES={'include/tcg/helper-info.h','include/exec/helper-info.c.inc','tcg/tci.c','tcg/tci/tcg-target.c.inc','accel/tcg/tcg-runtime.h'}
 RUNTIME_BUILD_SCHEMAS={'lemma-tci-wasm-build/1','lemma-tci-public-build/1'}
@@ -75,6 +77,7 @@ def inventory(directory,files,extras):
 
 def retained_runtime(directory):
     directory=Path(directory).absolute();m=read(directory/'runtime.json')
+    if m.get('schema')==RUNTIME_SCHEMA_WITH_PCM:return retained_pcm_runtime(directory,m)
     if m.get('schema') not in (RUNTIME_SCHEMA,RUNTIME_SCHEMA_WITH_HELPERS) or m.get('abi')!='lemma-qemu-wasm-control/1':raise ValueError('Runtime requires maintained retained-build admission')
     if m['schema']==RUNTIME_SCHEMA and 'direct_helpers' in m:raise ValueError('Legacy runtime cannot declare a new helper route')
     files=inventory(directory,m.get('files'),{'runtime.json'})
@@ -128,6 +131,55 @@ def retained_runtime(directory):
             if not isinstance(item,dict) or set(item)!={'before','after'} or any(not isinstance(v,str) or not re.fullmatch('[a-f0-9]{64}',v) for v in item.values()) or source.get(name)!=item['after' if selected else 'before']:raise ValueError('Typed-helper route differs from compiled sources')
     return directory,m
 
+def retained_pcm_runtime(directory,m):
+    """Additive one-object admission; never reinterpret the old producer."""
+    if m.get('abi')!='lemma-qemu-wasm-control/1' or m.get('execution_binding')!=PCM_BINDING or m.get('multimodal_controller_abi')!=2 or m.get('controller_contract')!='lemma-multimodal-converter/2':raise ValueError('Unknown PCM runtime binding')
+    files=inventory(directory,m.get('files'),{'runtime.json'})
+    parent=read(directory/'predecessor/runtime.json')
+    if parent.get('schema')!=RUNTIME_SCHEMA_WITH_HELPERS:raise ValueError('PCM predecessor must be a nonrecursive admitted flow runtime')
+    _,parent=retained_runtime(directory/'predecessor')
+    r=read(directory/'original-build.json')
+    if r.get('schema')!='lemma-tci-public-build/1' or r.get('production_mode')!='incremental-mm2-object-and-real-link/1' or r.get('result')!='BUILT_WASM64_QEMU_TCI' or type(r.get('exit_code')) is not int or r['exit_code']!=0:raise ValueError('Unbound actual PCM production')
+    if type(r.get('fresh_object_count')) is not int or type(r.get('reused_object_count')) is not int or (r['fresh_object_count'],r['reused_object_count'])!=(1,1046):raise ValueError('PCM invalidation must replace exactly one hardware object')
+    object_name='libqemu-riscv64-softmmu.a.p/hw_riscv_lemma_qemu.c.o'
+    if r.get('dependency_affected_objects')!=[object_name]:raise ValueError('PCM dependency closure differs')
+    if sha(directory/'original-build.json')!=m.get('original_build',{}).get('sha256') or sha(directory/'predecessor/runtime.json')!=r.get('predecessor',{}).get('runtime_sha256'):raise ValueError('PCM producer/predecessor identity differs')
+    old=read(directory/'predecessor/original-build.json');before=read(directory/'predecessor/source-inputs.json');after=read(directory/'source-inputs.json')
+    if sha(directory/'predecessor/original-build.json')!=r['predecessor'].get('build_sha256') or old.get('source_closure_sha256')!=r['predecessor'].get('source_sha256'):raise ValueError('PCM predecessor source differs')
+    changed={n for n in before.keys()|after.keys() if before.get(n)!=after.get(n)}
+    expected={'hw/riscv/'+n for n in ('lemma_qemu.c','lemma_multimodal_qemu.inc.c','lemma_multimodal_v2.c','lemma_multimodal_v2.h','lemma_multimodal_checkpoint_valid.inc.c','lemma_browser_control.inc.c')}
+    if changed!=expected or r.get('changed_sources')!={n:{'before':before.get(n),'after':after[n]} for n in changed}:raise ValueError('PCM source overlay differs')
+    if sha(directory/'source-inputs.json')!=r.get('source_closure_sha256') or type(r.get('source_file_count')) is not int or r['source_file_count']!=len(after):raise ValueError('PCM source inventory differs')
+    required=RUNTIME_OUTPUTS|{'original-build.json','source-inputs.json','commands.json','hardware-object.o','hardware-dependencies.d','compile.log','link.log'}
+    required|={'predecessor/'+n for n in parent['files']}|{'predecessor/runtime.json'}
+    for name in ('incremental_multimodal.py','incremental_flow.py','build.py','shell.nix'):
+        dest='producer-source/'+name;required.add(dest)
+        if files.get(dest)!=r.get('inputs',{}).get('tooling/lemmasim/tci/'+name):raise ValueError('PCM producer source differs:'+name)
+    required.add('producer-source/runtime_validator.py')
+    if files.get('producer-source/runtime_validator.py')!=r.get('runtime_validator',{}).get('sha256'):raise ValueError('PCM original validator source differs')
+    overlay_names=set()
+    for path,item in r.get('overlay_inputs',{}).items():
+        name=Path(path).name
+        if name in overlay_names:raise ValueError('Aliased PCM overlay inputs')
+        overlay_names.add(name);dest='overlay-source/'+name;required.add(dest)
+        if files.get(dest)!=item.get('sha256'):raise ValueError('PCM frozen overlay source differs')
+    if not {'apply.py','source-inputs.json','lemma_multimodal_v2.c','lemma_multimodal_v2.h','lemma_multimodal_qemu.inc.c'}<=overlay_names:raise ValueError('Incomplete PCM overlay input closure')
+    for name in CONTROLLERS|{'lemma_multimodal_v2.c','lemma_multimodal_v2.h','lemma_multimodal_checkpoint_valid.inc.c','lemma_browser_control.inc.c'}:
+        dest='controller-source/'+name;required.add(dest)
+        if files.get(dest)!=after.get('hw/riscv/'+name):raise ValueError('PCM compiled controller source differs:'+name)
+    if set(files)!=required:raise ValueError('Unknown/incomplete PCM runtime archive')
+    if set(r.get('outputs',{}))!=RUNTIME_OUTPUTS:raise ValueError('PCM output inventory differs')
+    for name,item in r['outputs'].items():
+        if files[name]!=item.get('sha256') or (directory/name).stat().st_size!=item.get('bytes'):raise ValueError('PCM compiled output differs')
+    commands=read(directory/'commands.json')
+    if len(commands.get('compile',[]))!=1 or commands['compile'][0].get('output')!=object_name:raise ValueError('PCM actual compiler command differs')
+    fresh=r.get('fresh_object_inputs',{})
+    for name,target in [('multimodal.o','hardware-object.o'),('multimodal.o.d','hardware-dependencies.d')]:
+        entries=[v for k,v in fresh.items() if Path(k).name==name]
+        if len(entries)!=1 or entries[0].get('sha256')!=files[target] or entries[0].get('bytes')!=(directory/target).stat().st_size:raise ValueError('PCM fresh object/dependency differs')
+    if m.get('direct_helpers')!=parent.get('direct_helpers'):raise ValueError('PCM changed upstream helper route')
+    return directory,m
+
 def bundle(args):
     import silicon_guest_bundle
     from multimodal_native_bundle import SCHEMA as NATIVE_SCHEMA
@@ -136,6 +188,8 @@ def bundle(args):
     runtime,admission=retained_runtime(args.wasm_build)
     archive=Path(args.guest_bundle).absolute();native=read(archive/'bundle.json')
     if native.get('schema')!=NATIVE_SCHEMA:raise ValueError('TCI requires the complete audited multimodal guest archive')
+    native_pcm=native.get('backends',{}).get('qemu',{}).get('execution_binding')==PCM_BINDING
+    if native_pcm!=(admission.get('schema')==RUNTIME_SCHEMA_WITH_PCM):raise ValueError('Guest execution binding and MM2 runtime must be selected together')
     roles={w:('parameterized-'+w if args.workbook=='parameterized' else w) for w in ('notebook','initializer')}
     if args.workbook=='school':
         from multimodal_native_bundle import SCHOOL
@@ -161,6 +215,7 @@ def bundle(args):
        'source_commit':native['source_commit'],'guest_archive_sha256':sha(archive/'bundle.json'),
        'runtime_admission_sha256':sha(runtime/'runtime.json'),'workloads':{},'runtime':{},
        'packaging_inputs':packaging_inputs}
+    if native_pcm:m.update(execution_binding=PCM_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2',execution_scope='Fast0.14 functional controller extension only; excludes Integrated16 boot/NV/clockedUSB/power union')
     for name,digest in admission['files'].items():add(runtime/name,'runtime-source/'+name,digest)
     add(runtime/'runtime.json','runtime-source/runtime.json')
     for name in ('qemu-system-riscv64.js','qemu-system-riscv64.wasm'):
@@ -223,6 +278,10 @@ def validated_bundle(directory):
         if adapter!={'contract':'lemma-ui-existing-transport-export/1','source':{'path':'ui-source/app.js','sha256':files.get('ui-source/app.js')}} or 'ui-source/app.js' not in files:raise ValueError('Unbound UI transport adapter')
         if (directory/'app.js').read_text(encoding='utf-8')!=(directory/'ui-source/app.js').read_text(encoding='utf-8')+UI_EXPORT:raise ValueError('Changed UI transport adapter')
     _,admission=retained_runtime(directory/'runtime-source')
+    pcm=admission.get('schema')==RUNTIME_SCHEMA_WITH_PCM
+    if pcm:
+        if m.get('execution_binding')!=PCM_BINDING or m.get('multimodal_controller_abi')!=2 or m.get('controller_contract')!='lemma-multimodal-converter/2':raise ValueError('Unbound browser PCM execution binding')
+    elif any(k in m for k in ('execution_binding','multimodal_controller_abi','controller_contract')):raise ValueError('Legacy browser runtime cannot claim PCM extension')
     if sha(directory/'runtime-source/runtime.json')!=m.get('runtime_admission_sha256'):raise ValueError('Unbound retained runtime admission')
     # The entire admitted runtime closure is preserved, not only its executable.
     runtime_files=admission.get('files')

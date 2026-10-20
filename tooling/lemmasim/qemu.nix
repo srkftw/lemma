@@ -34,7 +34,7 @@ let
     path = ../../sim/host;
     name = "lemmasim-host-hardware";
     filter = path: type: type == "directory" || builtins.elem (builtins.baseNameOf path)
-      [ "lemma_multimodal.c" "lemma_multimodal.h" "lemma_multimodal_qemu.inc.c" "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_power_abi.h" "lemma_durable.c" "lemma_fast_block.c" "lemma_power_safety.h" "lemma_power_safety.c" "lemma_power_clock.h" "lemma_power_clock.c" "lemma_power_qemu.inc.c"
+      [ "lemma_multimodal.c" "lemma_multimodal.h" "lemma_multimodal_v2.c" "lemma_multimodal_v2.h" "lemma_multimodal_checkpoint_valid.inc.c" "lemma_multimodal_qemu.inc.c" "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_power_abi.h" "lemma_durable.c" "lemma_fast_block.c" "lemma_power_safety.h" "lemma_power_safety.c" "lemma_power_clock.h" "lemma_power_clock.c" "lemma_power_qemu.inc.c"
         "backing_io.h" "backing_io.cpp" "backing_io_posix.h" "backing_io_posix.cpp" ];
   };
   companionSources = builtins.path {

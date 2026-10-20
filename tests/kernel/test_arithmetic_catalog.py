@@ -73,7 +73,8 @@ class ArithmeticCatalog(unittest.TestCase):
         'lemmasim-silicon-school-notebook',
         'lemmasim-silicon-school-initialize',
         'lemmasim-silicon-integrated-notebook',
-        'lemmasim-silicon-integrated-school-notebook'})
+        'lemmasim-silicon-integrated-school-notebook',
+        'lemmasim-silicon-integrated-pcm-school-notebook'})
         for config,(server,profile,kernel) in expected.items():
             with self.subTest(configuration=config):
                 rows=image_specs(config)
@@ -105,10 +106,11 @@ class ArithmeticCatalog(unittest.TestCase):
             with self.assertRaises(Core0Error):configuration_roots(name)
 
     def test_school_and_integrated_successors_keep_exact_roles_and_legacy_distinct(self):
-        for configuration, integrated in (
-                ('lemmasim-silicon-school-notebook', False),
-                ('lemmasim-silicon-school-initialize', False),
-                ('lemmasim-silicon-integrated-school-notebook', True)):
+        for configuration, profile in (
+                ('lemmasim-silicon-school-notebook', 14),
+                ('lemmasim-silicon-school-initialize', 14),
+                ('lemmasim-silicon-integrated-school-notebook', 15),
+                ('lemmasim-silicon-integrated-pcm-school-notebook', 16)):
             with self.subTest(configuration=configuration):
                 rows=list(image_specs(configuration))
                 self.assertEqual([(r['key'],r['id'],r['source'],r['boot_role']) for r in rows], [
@@ -117,12 +119,14 @@ class ArithmeticCatalog(unittest.TestCase):
                     ('arithmetic',3,'Lemma.Services.Arithmetic.ServerV8.main','arithmetic-server'),
                     ('course',4,'Lemma.Courses.PackageInstaller.mainAwaitSelected','course-installer')])
                 software=software_deployment_fields(configuration)['software_deployment']
-                self.assertEqual(software['contract_version'],'lemma-school-notebook-deployment/2')
+                self.assertEqual(software['contract_version'],'lemma-school-notebook-deployment/3' if profile==16 else 'lemma-school-notebook-deployment/2')
                 self.assertEqual(software['notebook_version'],23)
                 self.assertEqual(software['submission_contract'],'lemma-school-guest-submission/2')
                 self.assertEqual(software['user_profiles']['store'],'core0-user-v0.2')
-                self.assertEqual(kernel_contract(configuration),'core0-kernel-v0.10' if integrated else 'core0-kernel-v0.9')
-                self.assertEqual(configuration_profile(configuration),'lemma-silicon-dev/0.15.0' if integrated else 'lemma-silicon-dev/0.14.0')
+                self.assertEqual(software['stream_contract'],'lemma-multimodal-converter/2' if profile==16 else 'lemma-multimodal-converter/1')
+                self.assertEqual(software.get('multimodal_service_version'),3 if profile==16 else None)
+                self.assertEqual(kernel_contract(configuration),'core0-kernel-v0.10' if profile>=15 else 'core0-kernel-v0.9')
+                self.assertEqual(configuration_profile(configuration),f'lemma-silicon-dev/0.{profile}.0')
                 value={'schema_version':1,'contract_version':'lemma-user-image-catalog-v1',
                     'configuration':configuration,'stage':'supervisor','image_count':4,'images':rows,
                     **managed_fields(configuration),**software_deployment_fields(configuration)}

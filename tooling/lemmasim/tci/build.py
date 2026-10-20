@@ -185,6 +185,9 @@ def retained_source_identity(report,inventory,source_root):
 
 def admit(a):
     """Retain exact already-built prototype outputs, with a separate admission receipt."""
+    if read(a.receipt).get('production_mode')=='incremental-mm2-object-and-real-link/1':
+        from incremental_multimodal import admit as admit_pcm
+        return admit_pcm(a)
     initial=sources()
     if shutil.disk_usage(a.output_dir.resolve().parent).free<MIN_FREE+32*1024*1024:raise RuntimeError('2GiB free-space floor plus32MiB retained runtime staging')
     r=read(a.receipt);inventory=a.receipt.parent/'source-inputs.json'

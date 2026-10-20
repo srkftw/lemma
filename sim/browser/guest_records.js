@@ -69,6 +69,15 @@ export function guestCourseInstallState(bytes,start){
  return result;
 }
 
+// A course-admission rejection is recoverable and is not a storage failure.
+// Present the guest's complete receipt; do not infer its cause from host timing.
+export function guestCourseRejection(bytes,start){
+ const row=guestRecordFields(bytes,start,'0000000000000454');if(row===null)return null;
+ const [status,page,namespace,detail]=row.map(v=>BigInt('0x'+v));
+ if(status===0n||status>255n||page===0n||namespace===0n||detail!==0n)return null;
+ return {authority:'compiled-guest-report',status:String(status),page:String(page),namespace:String(namespace)};
+}
+
 // Incremental presentation of kernel lifecycle and guest-reported input loss.
 // Saved cannot clear loss; only a new guest execution resets this observer.
 // Image

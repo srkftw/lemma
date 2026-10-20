@@ -84,7 +84,7 @@ def pack(args):
         selected={**CONFIGURATIONS,**(PARAMETERIZED if set(PARAMETERIZED)<=available else {})}
         data=copy.deepcopy(prepared['notebook'])
         for role,item in prepared.items():
-            if any(item.get(k)!=data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift','checkpoint_binding')):
+            if any(item.get(k)!=data.get(k) for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift','checkpoint_binding','execution_binding','multimodal_controller_abi','controller_contract')):
                 raise ValueError('Multimodal fast guest roles have different runtime/source identities')
             data['workloads'][role]=copy.deepcopy(item['workloads'][role])
         if set(data['workloads'])!=set(selected):raise ValueError('Multimodal fast archive requires complete ordinary pair')
@@ -100,6 +100,8 @@ def pack(args):
               'origins':{},'host_dependencies':{'qemu':bundle.host_dependencies(data['qemu']['path'])},'backends':{}}
     if fast.validate_checkpoint_binding(data):
         manifest['checkpoint_binding']=fast.LOGICAL2_BINDING
+    if fast.validate_execution_binding(data):
+        manifest.update(execution_binding=fast.MM2_BINDING,multimodal_controller_abi=2,controller_contract='lemma-multimodal-converter/2')
     def add(original,name,expected=None,executable=False):
         original=Path(original).resolve();h=guest.sha(original)
         if expected is not None and h!=expected:raise ValueError('Archive consumed input changed: '+str(original))
@@ -178,6 +180,9 @@ def prepared_archive(directory,backend,workload,name=None):
     if data.get('schema')!='lemmasim-fast-prepared/1' or data.get('profile')!=PROFILE or data.get('cpu')!=fast.CPU or data.get('icount_shift')!=3:
         raise ValueError('Multimodal fast execution contract differs')
     fast.validate_checkpoint_binding(data)
+    mm2=fast.validate_execution_binding(data)
+    if mm2!=('execution_binding' in m) or any(m.get(k)!=data.get(k) for k in ('execution_binding','multimodal_controller_abi','controller_contract')):
+        raise ValueError('Native manifest MM2 execution scope differs from its backend')
     if 'checkpoint_binding' in m and m['checkpoint_binding']!=data.get('checkpoint_binding'):
         raise ValueError('Native manifest continuation binding differs from its backend')
     if data.get('profile_sha256')!=guest.sha(profile_path(PROFILE)):

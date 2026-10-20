@@ -6,6 +6,20 @@ import unittest
 ROOT=Path(__file__).resolve().parents[2]
 
 class BrowserGuestRecords(unittest.TestCase):
+    def test_recoverable_course_rejection_needs_complete_current_guest_receipt(self):
+        script=r"""
+import {guestCourseRejection} from './sim/browser/guest_records.js';
+import assert from 'node:assert/strict';
+const encode=x=>new TextEncoder().encode(x);
+const row=(status=175n,page=1n,ns=1n,detail=0n)=>'K1 '+[0x454n,status,page,ns,detail].map(x=>x.toString(16).padStart(16,'0')).join(' ')+'\n';
+const text=row();assert.deepEqual(guestCourseRejection(encode(text),0),{authority:'compiled-guest-report',status:'175',page:'1',namespace:'1'});
+for(const invalid of [text.slice(0,-1),'prefix'+text,row(0n),row(256n),row(1n,0n),row(1n,1n,0n),row(1n,1n,1n,2n)])assert.equal(guestCourseRejection(encode(invalid),0),null);
+assert.equal(guestCourseRejection(encode(text),text.length),null);
+assert.equal(guestCourseRejection(encode(text+row(230n,9007199254740993n)),0).page,'9007199254740993');
+"""
+        run=subprocess.run(['node','--input-type=module','-e',script],cwd=ROOT,capture_output=True,text=True,timeout=15)
+        self.assertEqual(run.returncode,0,run.stdout+run.stderr)
+
     def test_only_complete_current_installation_receipt_can_present_success(self):
         script=r"""
 import {guestCourseInstallState} from './sim/browser/guest_records.js';

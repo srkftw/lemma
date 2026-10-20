@@ -77,9 +77,9 @@ static const VMStateDescription lemma_mm_model_vmstate = {
 static int lemma_mm_checkpoint_validate(LemmaDevices *s)
 {
  if (!s->multimodal_enabled || !lemma_mm_checkpoint_selected() ||
-     !lemma_mm_checkpoint_valid(&s->multimodal)) return -EINVAL;
- uint64_t next=lemma_mm_next(&s->multimodal);
- if(s->multimodal.dma_active)next=MIN(next,s->multimodal.tick+1);
+     !(s->multimodal_controller_abi==2?lemma_mm2_valid(&s->multimodal_v2):lemma_mm_checkpoint_valid(&s->multimodal))) return -EINVAL;
+ LemmaMM*core=lemma_mm_core(s);uint64_t next=lemma_mm_next(core);
+ if(s->multimodal_controller_abi==2?s->multimodal_v2.bus_kind!=0:core->dma_active)next=MIN(next,core->tick+1);
  if(next>INT64_MAX/10) {
   if(timer_pending(s->multimodal_timer))return -EINVAL;
  } else if(!timer_pending(s->multimodal_timer) ||
@@ -88,12 +88,12 @@ static int lemma_mm_checkpoint_validate(LemmaDevices *s)
 }
 static bool lemma_mm_checkpoint_needed(void *opaque)
 {
- return ((LemmaDevices *)opaque)->multimodal_enabled;
+ LemmaDevices*s=opaque;return s->multimodal_enabled&&s->multimodal_controller_abi==1;
 }
 static int lemma_mm_checkpoint_post_load(void *opaque,int version)
 {
  LemmaDevices *s=opaque;
- if(lemma_mm_checkpoint_validate(s))return -EINVAL;
+ if(s->multimodal_controller_abi!=1||lemma_mm_checkpoint_validate(s))return -EINVAL;
  s->multimodal_state_loaded=true;
  /* The migrated PLIC already owns the pending/claimed observation. A saved
   * high converter level is not a new interrupt assertion during loading. */
@@ -104,4 +104,48 @@ static const VMStateDescription lemma_mm_checkpoint_vmstate = {
  .needed=lemma_mm_checkpoint_needed, .post_load=lemma_mm_checkpoint_post_load,
  .fields=(const VMStateField[]){
   VMSTATE_STRUCT(multimodal,LemmaDevices,0,lemma_mm_model_vmstate,LemmaMM),
+  VMSTATE_TIMER_PTR(multimodal_timer,LemmaDevices),VMSTATE_END_OF_LIST()}};
+
+/* ABI2 includes the immutable outstanding read/record owner, all ring
+ * positions and permission stamps. It is never loaded as ABI1 state. */
+static const VMStateDescription lemma_mm2_model_vmstate = {
+ .name="lemma-mm-model/2",.version_id=2,.minimum_version_id=2,
+ .fields=(const VMStateField[]){
+  VMSTATE_STRUCT(legacy,LemmaMM2,0,lemma_mm_model_vmstate,LemmaMM),
+  VMSTATE_UINT64(base,LemmaMM2),
+  VMSTATE_UINT64(capacity,LemmaMM2),
+  VMSTATE_UINT64(producer,LemmaMM2),
+  VMSTATE_UINT64(fetch,LemmaMM2),
+  VMSTATE_UINT64(end,LemmaMM2),
+  VMSTATE_UINT64(eof,LemmaMM2),
+  VMSTATE_UINT64(enabled,LemmaMM2),
+  VMSTATE_UINT64(status,LemmaMM2),
+  VMSTATE_UINT64(owner_epoch,LemmaMM2),
+  VMSTATE_UINT64(owner_consent,LemmaMM2),
+  VMSTATE_UINT64(owner_config,LemmaMM2),
+  VMSTATE_UINT64(submitted_base,LemmaMM2),
+  VMSTATE_UINT64(consumed_base,LemmaMM2),
+  VMSTATE_UINT64(gaps,LemmaMM2),
+  VMSTATE_UINT64(bus_kind,LemmaMM2),
+  VMSTATE_UINT64(bus_addr,LemmaMM2),
+  VMSTATE_UINT64(bus_data,LemmaMM2),
+  VMSTATE_UINT64(bus_samples,LemmaMM2),
+  VMSTATE_UINT64(bus_cancel,LemmaMM2),
+  VMSTATE_UINT64(turn,LemmaMM2),
+  VMSTATE_END_OF_LIST()}};
+static bool lemma_mm2_checkpoint_needed(void*opaque)
+{
+ LemmaDevices*s=opaque;return s->multimodal_enabled&&s->multimodal_controller_abi==2;
+}
+static int lemma_mm2_checkpoint_post_load(void*opaque,int version)
+{
+ LemmaDevices*s=opaque;
+ if(s->multimodal_controller_abi!=2||lemma_mm_checkpoint_validate(s))return -EINVAL;
+ s->multimodal_state_loaded=true;return 0;
+}
+static const VMStateDescription lemma_mm2_checkpoint_vmstate = {
+ .name="lemma-paper-pen/1/multimodal-v2",.version_id=2,.minimum_version_id=2,
+ .needed=lemma_mm2_checkpoint_needed,.post_load=lemma_mm2_checkpoint_post_load,
+ .fields=(const VMStateField[]){
+  VMSTATE_STRUCT(multimodal_v2,LemmaDevices,0,lemma_mm2_model_vmstate,LemmaMM2),
   VMSTATE_TIMER_PTR(multimodal_timer,LemmaDevices),VMSTATE_END_OF_LIST()}};

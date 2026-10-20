@@ -23,8 +23,9 @@ async function appFixture(gpu,bundle={}){
   actions.find(n=>n.dataset.action==='inspect').onclick();assert.equal(sent.at(-1).action,'inspect');
   node('#run-cycles').value='9007199254740993';node('#run-bounded').onclick();assert.equal(sent.at(-1).cycles,'9007199254740993');
   node('#import').onchange({target:{files:[]}});assert.equal(typeof node('#import').onchange,'function');
-  worker.onmessage({data:{type:'state',state:{cycle:'9007199254740993'},running:false,guestObservation:'continuation',readyAt:null,heapBytes:1048576,pauseReason:'cycle-limit',timing:{elapsedSeconds:12,simulationCallSeconds:2,backingCallSecondsDuringRun:1}}});
+  worker.onmessage({data:{type:'state',state:{cycle:'9007199254740993'},running:false,guestObservation:'continuation',guestCourseRejection:{status:'230',page:'1',namespace:'1'},readyAt:null,heapBytes:1048576,pauseReason:'cycle-limit',timing:{elapsedSeconds:12,simulationCallSeconds:2,backingCallSecondsDuringRun:1}}});
   assert.match(node('#status').textContent,/9007199254740993/);
+  assert.match(node('#course-view-status').textContent,/status 230, page 1, namespace 1/);
   worker.onmessage({data:{type:'panel',pixels:new Uint8Array([0,8,15]),width:3,height:1}});
   assert.deepEqual(images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
  }

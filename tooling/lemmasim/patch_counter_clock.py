@@ -198,7 +198,9 @@ replace('hw/char/serial.c','    s->iir = UART_IIR_NO_INT;',
 # Selected profile0.3 pen clock and hardware reset. Historical derivations do
 # not consume this script. Keep software RESET1's loss/resync transition intact.
 name = 'hw/riscv/lemma_qemu.c'
-if hashlib.sha256((root/name).read_bytes()).hexdigest() != 'ecd2060f6a437e262444f854578eb2c66bb64f34e8fd9eb94f674fa6cf9e71e9':
+# Both exact maintained base revisions share this clock/reset transformation.
+# The successor adds the separately selected ABI2 hardware composition.
+if hashlib.sha256((root/name).read_bytes()).hexdigest() not in ('ecd2060f6a437e262444f854578eb2c66bb64f34e8fd9eb94f674fa6cf9e71e9', 'a8a7dd1f858c5c5cfcc1736d5f303018f107f150e8c416970b9db87dd3629195'):
  raise SystemExit('unsupported pen adapter source identity: '+name)
 replace(name,'    uint64_t ingress_sequence;',
  '''    uint64_t ingress_sequence;

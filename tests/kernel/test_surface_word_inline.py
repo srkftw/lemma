@@ -49,7 +49,8 @@ class SurfaceWordInlineCatalog(unittest.TestCase):
     def test_school_catalog_requires_selected_software_and_school_root(self):
         from school_deployment import software_deployment_for
         for cfg in ('lemmasim-silicon-school-notebook','lemmasim-silicon-school-initialize',
-                    'lemmasim-silicon-integrated-school-notebook'):
+                    'lemmasim-silicon-integrated-school-notebook',
+                    'lemmasim-silicon-integrated-pcm-school-notebook'):
             u=fixture();u.update(configuration=cfg,software_deployment=software_deployment_for(cfg))
             root='Lemma.Applications.Notebook.mainMultimodalSchool'
             u['roots'][0]['source']=root;u['functions'][0]['source']=root

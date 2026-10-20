@@ -241,6 +241,44 @@ class NotebookSafetySourceTests(unittest.TestCase):
         with self.assertRaisesRegex(Core0Error,'raw capture safety waits for work'):
             target.notebook_safety_sources(*source)
 
+class RingStatusGuardTests(unittest.TestCase):
+    def fixture(self):
+        prefix='Lemma.Platform.LemmaSim.MultimodalService.'
+        rows=[{'source':prefix+'ringStatus','symbol':'owned_status','args':['u64']*4,
+               'effects':['checked-access','mmio-read','io-order','physical-read']}]
+        for name,symbol in [('version','owned_version'),('ringABI','owned_abi'),
+                            ('ringOwner','owned_owner'),('ringRead','owned_read')]:
+            rows.append({'source':prefix+name,'symbol':symbol,'args':[],'effects':[]})
+        rows.append({'source':'Lemma.Drivers.Multimodal.read','symbol':'stream_read','args':['u64']*2,'effects':[]})
+        calls=['  %abi = call { i64, i64 } @owned_abi()',
+               '  %owner = call { i64, i64 } @owned_owner(i64 %arg0, i64 %arg3)']
+        calls += [f'  %global{i} = call {{ i64, i64 }} @owned_read(i64 {offset})'
+                  for i,offset in enumerate((144,120,128,160,168,112))]
+        calls += [f'  %stream{i} = call {{ i64, i64 }} @stream_read(i64 8, i64 {offset})'
+                  for i,offset in enumerate((240,232,16,32))]
+        ir='define i64 @owned_version() {\nentry:\n  ret i64 3\n}\n'
+        ir+='define { i64, i64 } @owned_status(i64 %arg0, i64 %arg1, i64 %arg2, i64 %arg3) {\nentry:\n'
+        ir+='\n'.join(calls)+'\n  ret { i64, i64 } zeroinitializer\n}\n'
+        return {'configuration':LEGACY_CONFIGURATIONS[0],'role':'kernel','functions':rows},ir,prefix+'ringStatus'
+    def test_exact_domain_still_requires_complete_pin(self):
+        unit,ir,source=self.fixture()
+        with patch.object(target,'validate',return_value={'fixture_only':True}) as validation:
+            spec=target.jump_spec(ir,unit,source,'owned_status')
+            self.assertEqual((spec[1],spec[4]),(10,list(range(10))))
+            self.assertNotIn('mmio-write',spec[3]);validation.assert_called_once_with(ir,unit,optimized=True)
+        with patch.object(target,'validate',side_effect=Core0Error('complete pin rejected')):
+            with self.assertRaisesRegex(Core0Error,'complete pin rejected'):
+                target.jump_spec(ir,unit,source,'owned_status')
+    def test_changed_owner_abi_or_counter_is_not_admitted(self):
+        unit,ir,source=self.fixture()
+        for changed in (ir.replace('ret i64 3','ret i64 2'),
+                        ir.replace('@owned_owner(i64 %arg0, i64 %arg3)','@owned_owner(i64 %arg1, i64 %arg3)'),
+                        ir.replace('@owned_read(i64 112)','@owned_read(i64 120)'),
+                        ir.replace('@stream_read(i64 8, i64 16)','@stream_read(i64 8, i64 24)'),
+                        ir.replace('@owned_abi()','@unowned_abi()')):
+            with self.subTest(changed=changed),patch.object(target,'validate',return_value={'fixture_only':True}):
+                with self.assertRaises(Core0Error):target.jump_spec(changed,unit,source,'owned_status')
+
 class ReadonlyGuardTests(unittest.TestCase):
     def fixture(self):
         unit={'functions':[{'source':'Lemma.Fixture.lookup','symbol':'lemma_lookup','args':['u64'],'effects':[]}], 'role':'kernel'}

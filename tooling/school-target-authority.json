@@ -13,14 +13,14 @@
         }
       },
       "kernel": {
-        "catalog_sha256": "1d67e41a82abf06dafde18f836aa70508e8c6bd3a81270bce6dbad81ee0ea732",
+        "catalog_sha256": "b77e22c8683799c87abcb797de417b4a806b10534ece369decb499d67c5a92b2",
         "pre": {
-          "function_count": 1391,
-          "sha256": "37d21c104d90904031748954f2290da80f6ef9dc8b49cf0d786251e8541a3386"
+          "function_count": 1402,
+          "sha256": "b2639372a5da22d640b786a97c30ca12bbaf8398794d054fed73156554302ff6"
         },
         "post": {
-          "function_count": 1391,
-          "sha256": "de882634ddd61f10acd90b30023078a2689d3164325771e34da48c2c4f9f33b3"
+          "function_count": 1402,
+          "sha256": "ac0f27ccb8c95f9c523ab71be6f4fc9f34682a49bf59b023039450d35f7616b7"
         }
       },
       "store": {
@@ -35,14 +35,14 @@
         }
       },
       "notebook": {
-        "catalog_sha256": "7a1dfc5605113030e746f01f998116f20dc0b6e473b4c57d97196e9084b08ef3",
+        "catalog_sha256": "21327f7bda240c79ae3d45c437ecab9c9787dcffc5460f00633b0d65c2f76815",
         "pre": {
-          "function_count": 1167,
-          "sha256": "8aac5035f897d5524512efed2782b633919b3f81f905e0e289ae3dc60d2afb1f"
+          "function_count": 1186,
+          "sha256": "a3aa13ca21e57daf7c433dc480c2f9a87823935d10802c4591c0acb49d69e0ee"
         },
         "post": {
-          "function_count": 1165,
-          "sha256": "65be1a12a424c2f52683cce051741fe7c235a314d1bb9093382dcec5978e8b04"
+          "function_count": 1184,
+          "sha256": "4d2f45df83677cf265ed28f38b157db3b647079903abcc1d021f46c13c0cc54c"
         }
       },
       "arithmetic": {
@@ -81,14 +81,14 @@
         }
       },
       "kernel": {
-        "catalog_sha256": "2636a2513eda61f584a5631d397ee633f2133fbfe4212cc4229b819f2e9b7449",
+        "catalog_sha256": "377ed0bf17dc43aa80fb52a643b423bbe6dbd8b7194e8a5fdfab9c97011e0ab5",
         "pre": {
-          "function_count": 1265,
-          "sha256": "9071ff98c96f8505694293ab65900c3107265bb8debd90a725ffed1028e6a596"
+          "function_count": 1276,
+          "sha256": "bad61a1d650ccd3605c3ef2bb4b7cd91641d9c2b642e04b3f9bc2cae101c69cb"
         },
         "post": {
-          "function_count": 1265,
-          "sha256": "fc96819541157e1c72451fd3caebb489e284859f37ec065db8869af2b5d56544"
+          "function_count": 1276,
+          "sha256": "0a1e3c4e862e330c8a95139d4367cb96e3ff23ea82a7873a4997d501034d5443"
         }
       },
       "store": {
@@ -103,14 +103,14 @@
         }
       },
       "notebook": {
-        "catalog_sha256": "fb10284a9cb882218c4066925490286b151a0bf18b345d25939d73d7b47e121b",
+        "catalog_sha256": "0ab23da3b58db0e88f420066c934c7c283546325ede7a0cd1b92f5a0e89b2488",
         "pre": {
-          "function_count": 1167,
-          "sha256": "8aac5035f897d5524512efed2782b633919b3f81f905e0e289ae3dc60d2afb1f"
+          "function_count": 1186,
+          "sha256": "a3aa13ca21e57daf7c433dc480c2f9a87823935d10802c4591c0acb49d69e0ee"
         },
         "post": {
-          "function_count": 1165,
-          "sha256": "65be1a12a424c2f52683cce051741fe7c235a314d1bb9093382dcec5978e8b04"
+          "function_count": 1184,
+          "sha256": "4d2f45df83677cf265ed28f38b157db3b647079903abcc1d021f46c13c0cc54c"
         }
       },
       "arithmetic": {
@@ -149,14 +149,14 @@
         }
       },
       "kernel": {
-        "catalog_sha256": "1d03234b052b159f7a93c583db8ff6e1d741ece87ff30f14f1a3b34f8c5b22b7",
+        "catalog_sha256": "2a235ec029d7d9e8c5625af06f6ed0d125bf189f738bd61f06373ef9286d004a",
         "pre": {
-          "function_count": 1265,
-          "sha256": "21db8054edaf5ac752fdda7c91fdc4565e42efcbb5b676995f076bdb18514814"
+          "function_count": 1276,
+          "sha256": "dec96a385c8ab5f18ae3743b39d87db5275b7938723b5108a93edcbf8a4774da"
         },
         "post": {
-          "function_count": 1265,
-          "sha256": "6a0ebbcba05bde7209636e3d5376ab14a44ca9659dd03131e5de945c5f68b772"
+          "function_count": 1276,
+          "sha256": "e80d76af2896c647ae6467699cd58595ae5c2458f235123f5888a2f857eb014e"
         }
       },
       "store": {
@@ -171,14 +171,14 @@
         }
       },
       "notebook": {
-        "catalog_sha256": "bbb0963a4aacb28e0e0f2b320b88a083cbd0d8971eb26de46379719128ce8e33",
+        "catalog_sha256": "d48ff93851ffda2a3c0d0e66388bf7af4a10a409066f0d2388b343f089fc9e30",
         "pre": {
-          "function_count": 1167,
-          "sha256": "8aac5035f897d5524512efed2782b633919b3f81f905e0e289ae3dc60d2afb1f"
+          "function_count": 1186,
+          "sha256": "a3aa13ca21e57daf7c433dc480c2f9a87823935d10802c4591c0acb49d69e0ee"
         },
         "post": {
-          "function_count": 1165,
-          "sha256": "65be1a12a424c2f52683cce051741fe7c235a314d1bb9093382dcec5978e8b04"
+          "function_count": 1184,
+          "sha256": "4d2f45df83677cf265ed28f38b157db3b647079903abcc1d021f46c13c0cc54c"
         }
       },
       "arithmetic": {
@@ -194,6 +194,74 @@
       },
       "course": {
         "catalog_sha256": "c59392e48db6166dd1ea3f5700d9d299a697a4e8ff38d2ecdba083702b84b82d",
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        },
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        }
+      }
+    },
+    "lemmasim-silicon-integrated-pcm-school-notebook": {
+      "firmware": {
+        "catalog_sha256": "67f137ebd97984df133e77c2208233c53229f6ce9a4ba8c354fe49459500e2f3",
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        },
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "1f053ff3c9657a29b0b14ed366e7d705d0b90a59aa4c8be5039fd0d56b44d996",
+        "pre": {
+          "function_count": 1402,
+          "sha256": "b2639372a5da22d640b786a97c30ca12bbaf8398794d054fed73156554302ff6"
+        },
+        "post": {
+          "function_count": 1402,
+          "sha256": "ac0f27ccb8c95f9c523ab71be6f4fc9f34682a49bf59b023039450d35f7616b7"
+        }
+      },
+      "store": {
+        "catalog_sha256": "d49d9e3ab2aae4a83c428c9f96397be5a814f640af5278f0d64274af49b0b075",
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        },
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "ae2509d3bf2a954a3a4dd251da52f063f51db3a0c81e5fd48b606d1c8cdbec0b",
+        "pre": {
+          "function_count": 1186,
+          "sha256": "a3aa13ca21e57daf7c433dc480c2f9a87823935d10802c4591c0acb49d69e0ee"
+        },
+        "post": {
+          "function_count": 1184,
+          "sha256": "4d2f45df83677cf265ed28f38b157db3b647079903abcc1d021f46c13c0cc54c"
+        }
+      },
+      "arithmetic": {
+        "catalog_sha256": "e2a93b727cbf94f0863bc17dce2daa96da151be36a1318c4633d4f2898832870",
+        "pre": {
+          "function_count": 184,
+          "sha256": "5c07cb5b00ba86b594da935659dd328ba7e1d3b3103aa9ef43fd507eb1579a98"
+        },
+        "post": {
+          "function_count": 184,
+          "sha256": "3c1ef8a2ef50860220d28250320743450bf9ff8eea63751e6d2898c8a83fb3f4"
+        }
+      },
+      "course": {
+        "catalog_sha256": "e653f115482a08ee45b2d45fefbb1a415a69f75aba4c9550f390aa3d9209e67c",
         "pre": {
           "function_count": 196,
           "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"

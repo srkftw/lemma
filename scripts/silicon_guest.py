@@ -40,6 +40,9 @@ USB_PACKAGE_ENTRY2_CONFIGURATIONS={'usb-clocked-package-entry2-bulk-notebook':'l
 
 from silicon_guest_bundle import USB_COMPANION_READER_CONFIGURATIONS
 def configurations(name=None):
+    if name=="lemma-silicon-dev/0.16.0":
+        profile(name)
+        return {"school-notebook":"lemmasim-silicon-integrated-pcm-school-notebook"}
     if name=="lemma-silicon-dev/0.14.0":
         profile(name)
         return {"notebook":"lemmasim-silicon-multimodal-notebook","initializer":"lemmasim-silicon-multimodal-initialize","parameterized-notebook":"lemmasim-silicon-multimodal-parameterized-notebook","parameterized-initializer":"lemmasim-silicon-multimodal-parameterized-initialize","school-notebook":"lemmasim-silicon-school-notebook","school-initializer":"lemmasim-silicon-school-initialize"}
@@ -47,6 +50,9 @@ def configurations(name=None):
     if name==USB_CLOCKED_PROFILE_NAME:return {**USB_CLOCKED_CONFIGURATIONS,**USB_RECOVERY_CONFIGURATIONS,**USB_CLOSURE_RECOVERY_CONFIGURATIONS,**USB_PACKAGE_RECOVERY_CONFIGURATIONS,**USB_PACKAGE_ENTRY2_CONFIGURATIONS,**USB_COMPANION_READER_CONFIGURATIONS}
     return USB_CLOCKED_CONFIGURATIONS if name=='lemma-silicon-dev/0.13.0' else USB_WIRE_CONFIGURATIONS if name=='lemma-silicon-dev/0.11.0' else PRODUCT_EXECUTED_CONFIGURATIONS if name=='lemma-silicon-dev/0.10.0' else PRODUCT_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.9.0' else USB_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.8.0' else USB_CONFIGURATIONS if name=='lemma-silicon-dev/0.6.0' else BLE_CONFIGURATIONS if name=='lemma-silicon-dev/0.5.0' else SAFETY_CONFIGURATIONS if name=='lemma-silicon-dev/0.4.0' else POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
 def prepared_path(name=None):
+    if name=="lemma-silicon-dev/0.16.0":
+        profile(name)
+        return ROOT/"build/lemmasim/rtl-prepared-0.16.0.json"
     if name=="lemma-silicon-dev/0.14.0":
         profile(name)
         return ROOT/"build/lemmasim/rtl-prepared-0.14.0.json"
