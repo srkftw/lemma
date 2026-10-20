@@ -1,5 +1,5 @@
 {
-  "schema": "lemma-silicon-physical-inputs/0.1.0",
+  "schema": "lemma-silicon-physical-inputs/0.2.0",
   "nixpkgs_revision": "7dd199b0e2993e37b4775ed66b1c291699608c9f",
   "tools": {
     "verilator": "5.052",
@@ -16,7 +16,7 @@
     "standard_cells": "ihp-sg13g2/libs.ref/sg13g2_stdcell",
     "mapping_corner": "sg13g2_stdcell_typ_1p20V_25C.lib",
     "status": "PROVISIONAL_PUBLIC_INPUTS",
-    "memories": "No macro substituted implicitly. RTL register memories are mapped explicitly. Public sg13g2_sram collateral exists but is not qualified or integrated by this recipe."
+    "memories": "Selected pen storage is three pinned RM_IHPSG13_1P_256x64_c2_bm_bist macros preserving the full256-entry181-bit FIFO. Public functional models, real mapping, routed geometry and extracted timing are integrated; physical closure and full notebook memory are unfinished."
   },
   "tool_sources": {
     "openroad": {
@@ -36,5 +36,83 @@
         "third-party/abc": "17cadca080b33edc5a13c8e6e8e8092f8c350b25"
       }
     }
+  },
+  "selected_pen_implementation": {
+    "version": "lemma-pen-sg13g2-core-grid/1",
+    "rtl": {
+      "path": "sim/rtl/lemma_pen.sv",
+      "sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b"
+    },
+    "storage": {
+      "macro": "RM_IHPSG13_1P_256x64_c2_bm_bist",
+      "instances": 3,
+      "entries": 256,
+      "entry_bits": 181
+    },
+    "constraints": {
+      "period_ns": 10,
+      "full_timestamp_bits": 64,
+      "button_input_bits": 64,
+      "timing_exceptions": "unchanged original SDC; no endpoint masking"
+    },
+    "power_grid": {
+      "source": {
+        "path": "tooling/silicon/pen-power-grid.tcl",
+        "sha256": "e90af2167e02cd2964c74bffdd02b5f67e6a2b915eb02d29dc72015043013889"
+      },
+      "connectivity_check": {
+        "path": "tooling/silicon/pen-power-check.tcl",
+        "sha256": "05d0c5585b5d9c5dfec8e0a9bcaae41e5b49eb1972f087f44ba164d31b2654a4"
+      },
+      "supplies_volts": {
+        "VDDlogic": 1.2,
+        "VDDARRAY": 1.2,
+        "VSS": 0.0
+      },
+      "scope": "Connected core grid only; no IR/EM or pad/package qualification"
+    },
+    "launch": {
+      "script": "scripts/silicon_pen_physical.py",
+      "flags": [
+        "--core-power-grid",
+        "--core-power-grid-reroute"
+      ],
+      "predecessor": "actual repaired signal route; new grid consumed before fresh signal routing",
+      "qualified_mapping_source": "check_pen_sram.py --map on the same selected RTL and lock"
+    },
+    "retained_route_producer": {
+      "path": "build/silicon/task009-core-power-grid-metal4-route-a1/result.json",
+      "sha256": "cb597458fcada77425674b72cd57ece671316dab1669784352d6cc2386e84f5c"
+    },
+    "retained_geometry_assessment": {
+      "path": "build/silicon/task009-core-power-grid-metal4-assessment-a1/result.json",
+      "sha256": "3c3fa19efc626d4b1c6c7146633e24a0caeba4c07df72b286652712c94067a2a"
+    },
+    "retained_corner_assessment": {
+      "path": "build/silicon/task009-core-power-grid-metal4-corners-a1/result.json",
+      "sha256": "3fbe1a32d58a781b5c67ad097d594f31d4faa0cb066c5e827ea65998cf8c8800"
+    },
+    "source_scope": "Retained producers consume their frozen prior lock/source identities. This selection does not relabel them as executions of this metadata revision.",
+    "status": "FAIL_PHYSICAL_CLOSURE",
+    "router_markers": 248,
+    "router_shorts": 144,
+    "router_spacing": 104,
+    "power_ground_terminals": 17343,
+    "nominal_extracted": {
+      "setup_wns_ns": -13.941463,
+      "hold_wns_ns": 0.052381,
+      "electrical_violations": 747
+    },
+    "min_rc_hold_wns_ns": -0.006855,
+    "available_corners_passed": 0,
+    "available_corners_total": 9,
+    "unpowered_129_route": "comparison only; lacks selected core power grid",
+    "remaining": [
+      "route/process DRC and transistor LVS",
+      "setup/hold/electrical closure at original10ns",
+      "matched-temperature fast standard-cell/SRAM pair",
+      "power integrity, pads, package and board",
+      "full-SoC and sensor active circuits, physical/fabrication and educational qualification"
+    ]
   }
 }

@@ -15,7 +15,18 @@ import shutil
 import tarfile
 import time
 from silicon_enclosure import require
+from silicon_power_ports import signal_bytes
 from silicon_synth import CommandFailure, ROOT, lvs_matches, run, sha
+
+
+def power_reference_script(route, out, standard_liberty, sram_liberty):
+    """Export both references in the actual producer's Liberty-aware context."""
+    return f'''read_liberty {{{standard_liberty}}}
+read_liberty {{{sram_liberty}}}
+read_db {{{route/'routed.odb'}}}
+write_verilog {{{out/'observed-signal.v'}}}
+write_verilog -include_pwr_gnd {{{out/'observed-power.v'}}}
+'''
 
 
 def main():
@@ -98,6 +109,17 @@ def main():
         require(producer['mapping_receipt']['sha256'] == report['mapping_receipt']['sha256'], 'route mapping producer differs')
         require(producer['route_enclosure']['routed_def_sha256'] == sha(route / 'routed.def'), 'actual routed geometry differs')
         report['route_receipt'] = {'path': str(route / 'result.json'), 'sha256': sha(route / 'result.json')}
+        reference_netlist = route / 'routed.v'
+        core_grid = producer.get('power_grid') == 'CONNECTED_CORE_GRID_ONLY_NO_IR_EM'
+        if core_grid:
+            connected = producer.get('core_power_grid', {}).get('after-route', {})
+            require(connected.get('status') == 'CONNECTED_CORE_GRID_ONLY_NO_IR_EM' and
+                    connected.get('macro_power_pins') == 9 and connected.get('preserved_BIST_pins') == 423,
+                    'actual after-route three-supply/test terminal assessment required')
+            reference_netlist = route / 'power-connected.v'
+            require(reference_netlist.is_file() and (route / 'routed.odb').is_file(), 'actual connected PG netlist/database required')
+            report['power_grid'] = 'CONNECTED_CORE_GRID_ONLY_NO_IR_EM'
+            report['power_grid_scope'] = 'Actual three-supply terminal connectivity only; no IR/EM, pad/package, sequencing or full power qualification'
         require(report['candidate_only'] == admitted['status'].startswith('PASS_ISOLATED_CANDIDATE_'), 'mapping candidate scope differs')
         for path in (macro_gds, macro_cdl):
             name = str(path.relative_to(mapping / 'pdk'))
@@ -105,7 +127,7 @@ def main():
         magic, netgen = (Path(shutil.which(v) or '').resolve() for v in ('magic', 'netgen'))
         require(magic.is_file() and netgen.is_file(), 'actual Magic/Netgen required')
         rc = pdk / 'ihp-sg13g2/libs.tech/magic/ihp-sg13g2.magicrc'
-        inputs = [Path(__file__).resolve(), ROOT / 'scripts/silicon_synth.py',
+        inputs = [Path(__file__).resolve(), ROOT / 'scripts/silicon_power_ports.py', ROOT / 'scripts/silicon_synth.py',
                   ROOT / 'tooling/silicon/process.tcl', ROOT / 'tooling/silicon/extract.tcl',
                   route / 'result.json', mapping / 'result.json', route / 'routed.def', route / 'routed.v', macro_gds, macro_cdl,
                   std / 'gds/sg13g2_stdcell.gds', std / 'cdl/sg13g2_stdcell.cdl', rc, magic, netgen]
@@ -113,6 +135,12 @@ def main():
                    route / 'enclosure/repaired-original.lef', sram / 'lef' / (macro+'.lef'),
                    pdk / 'ihp-sg13g2/libs.tech/netgen/ihp-sg13g2_setup.tcl']
         inputs += sorted(path for path in rc.parent.rglob('*') if path.is_file())
+        if core_grid:
+            openroad = Path(shutil.which('openroad') or '').resolve()
+            require(openroad.is_file(), 'actual OpenROAD required for connected PG reference comparison')
+            inputs += [reference_netlist, route / 'routed.odb', route / 'power-grid-after-route.json', openroad,
+                       std / 'lib/sg13g2_stdcell_typ_1p20V_25C.lib',
+                       sram / 'lib' / (macro + '_typ_1p20V_25C.lib')]
         report['source_inputs'] = {str(path): sha(path) for path in inputs}
         # A source hash alone cannot recover an uncommitted adapter after a
         # later fix. Retain exact caller, recipe, tool and process input bytes
@@ -146,6 +174,23 @@ def main():
         (out / 'process.tcl').write_text(header + process)
         report['status'] = 'RUNNING'
         (out / 'plan.json').write_text(json.dumps(report, indent=2) + '\n')
+        if core_grid:
+            # Bind the archived PG reference to the actual final database. The
+            # ordinary signal netlist must also be byte-identical; PG handling
+            # cannot silently change an endpoint or hide a different circuit.
+            check = out / 'power-reference.tcl'
+            # Default read_db exports omit physical PG ports; explicit power
+            # exports move exactly those three ports before the vector ports.
+            # Compare the exact remaining bytes, including all PG connections.
+            check.write_text(power_reference_script(route, out,
+                std/'lib/sg13g2_stdcell_typ_1p20V_25C.lib',
+                sram/'lib'/(macro+'_typ_1p20V_25C.lib')))
+            invoke([str(openroad), '-no_init', '-exit', str(check)], 'power-reference', 10)
+            require((out / 'observed-signal.v').read_text() == signal_bytes((route / 'routed.v').read_text()), 'final database signal reference differs')
+            require(signal_bytes((out / 'observed-power.v').read_text(), reloaded_power=True) ==
+                    signal_bytes(reference_netlist.read_text()), 'final database connected PG reference differs')
+            report['connected_reference'] = {'path': str(reference_netlist), 'sha256': sha(reference_netlist),
+                'source_ODB_sha256': sha(route / 'routed.odb'), 'scope': 'Actual final database power/test pins retained; signal netlist independently identical'}
         if args.direct_import_extraction and not args.continue_from_drc_attempt:
             count = None
             report['process_drc'] = {'status': 'NOT_RUN', 'scope': 'Independent transistor connectivity extraction; no process DRC result inferred for this geometry'}
@@ -160,7 +205,7 @@ def main():
                 previous.get('commands') and previous['commands'][-1].get('timed_out') is True)
             require(terminal_failure and previous['source_seal_equal'], 'actual sealed failed DRC attempt required')
             require(all(previous['source_inputs'][str(path)] == sha(path)
-                        for path in (route / 'routed.def', route / 'routed.v', macro_gds, macro_cdl)),
+                        for path in dict.fromkeys((route / 'routed.def', route / 'routed.v', reference_netlist, macro_gds, macro_cdl))),
                     'prior DRC source/geometry differs')
             report['process_drc'] = {'status': 'REUSED_FAILURE', 'receipt': str(prior / 'result.json'),
                                      'sha256': sha(prior / 'result.json')}
@@ -215,15 +260,17 @@ quit -noprompt
             compare = out / 'lvs.tcl'
             compare.write_text(f'''set reference [readnet spice {{{std/'cdl/sg13g2_stdcell.cdl'}}}]
     readnet spice {{{macro_cdl}}} $reference
-    readnet verilog {{{route/'routed.v'}}} $reference
+    readnet verilog {{{reference_netlist}}} $reference
     lvs {{{out/'extracted.spice'} lemma_pen}} [list lemma_pen $reference] {{{pdk/'ihp-sg13g2/libs.tech/netgen/ihp-sg13g2_setup.tcl'}}} {{{out/'lvs.rpt'}}} -json
     ''')
             invoke([str(netgen), '-batch', 'source', str(compare)], 'lvs', 45)
             match = lvs_matches((out / 'lvs.rpt').read_text())
             report['lvs'] = {'status': 'PASS' if match else 'FAIL', 'report_sha256': sha(out / 'lvs.rpt')}
             require(count == 0 and match, 'actual process DRC/LVS failed')
-            # Even a local comparison cannot establish the absent power grid.
-            report['status'] = 'PASS_SCOPED_PROCESS_DRC_LVS_POWER_UNIMPLEMENTED'
+            # A connected core mesh still does not establish IR/EM or complete
+            # power/pad/package qualification, even if DRC and LVS both pass.
+            report['status'] = ('PASS_SCOPED_PROCESS_DRC_LVS_CORE_GRID_IR_EM_UNQUALIFIED' if core_grid
+                                else 'PASS_SCOPED_PROCESS_DRC_LVS_POWER_UNIMPLEMENTED')
     except BaseException as error:
         report.update(status='FAIL', error=repr(error))
     finally:

@@ -58,9 +58,22 @@ def main():
     p.add_argument('--defer-global-eco', action='store_true', help='Keep placement/clock repairs and every constraint, but defer the failing global-RC ECO optimization until actual routed extraction; fresh timing failures remain failures')
     p.add_argument('--question',default='Do independent timestamp/counter arithmetic and bounded clock clusters remove observed defects at unchanged100MHz/full256 FIFO?',help='Prospective engineering question for this changed-input run')
     p.add_argument('--completed-eco-route-from', type=Path, help='Independently assess a source-sealed completed ECO route rejected only by the timestamp-sensitive SDC observer; never reroutes it')
+    p.add_argument('--completed-power-grid-route-from', type=Path, help='Independently assess completed grid geometry rejected only by the exact-byte observer seeing the three required physical PG ports; never reroutes it')
     p.add_argument('--routed-eco-from', type=Path, help='Repair the exact sealed routed nominal-SPEF producer, then route and extract the changed physical netlist afresh')
+    p.add_argument('--core-power-grid', action='store_true', help='Add the real separate VDDlogic/VDDARRAY/VSS core grid after actual-SPEF repair and before fresh signal routing; requires a prior route without PG geometry')
+    p.add_argument('--core-power-grid-reroute', dest='preserve_routed_netlist', action='store_true', help='For the core-grid question only, retain the exact already repaired logical netlist/placement and reroute against new real power geometry; no further resizer repair claim')
+    p.add_argument('--selected-implementation', action='store_true', help='Consume the existing physical-lock selected powered pen configuration; requires its repaired signal-route predecessor and a current qualified mapping')
     p.add_argument('--work-dir', type=Path, required=True)
     args = p.parse_args()
+    selected = None
+    if args.selected_implementation:
+        selected = json.loads((ROOT / 'tooling/silicon/physical-lock.json').read_text())['selected_pen_implementation']
+        require(selected['version'] == 'lemma-pen-sg13g2-core-grid/1' and
+                selected['launch']['flags'] == ['--core-power-grid', '--core-power-grid-reroute'], 'unknown selected physical recipe')
+        for entry in (selected['rtl'], selected['power_grid']['source'], selected['power_grid']['connectivity_check']):
+            require(sha(ROOT / entry['path']) == entry['sha256'], 'selected physical source differs: ' + entry['path'])
+        args.core_power_grid, args.preserve_routed_netlist = True, True
+        require(not args.completed_eco_route_from and not args.completed_power_grid_route_from, 'selected implementation launches new geometry; retained observer assessments keep original source identities')
     out, mapping, pdk = (v.resolve() for v in (args.work_dir, args.mapping, args.pdk))
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
     out.mkdir(parents=True)
@@ -97,6 +110,9 @@ def main():
         require(not (args.center_validation_cones and args.routed_eco_from), 'initial cone placement and retained-route ECO are separate questions')
         require(not args.defer_global_eco or (args.center_validation_cones and not args.routed_eco_from), 'deferred optimization is scoped to the aligned validation-placement question')
         require(not args.group_button_bus or not args.routed_eco_from, 'a new input-pin placement requires a fresh initial physical implementation')
+        require(not args.core_power_grid or (args.routed_eco_from and not args.completed_eco_route_from), 'new power-grid integration requires its actual source route')
+        require(not args.preserve_routed_netlist or args.core_power_grid, 'preserved-netlist rerouting is scoped only to real new power-grid integration')
+        require(not args.completed_power_grid_route_from or (args.core_power_grid and args.preserve_routed_netlist and not args.completed_eco_route_from), 'completed grid assessment requires the exact core-grid interface question')
         available = next(int(x.split()[1]) * 1024 for x in Path('/proc/meminfo').read_text().splitlines()
                          if x.startswith('MemAvailable:'))
         require(available >= 8 << 30, 'launch memory floor')
@@ -132,16 +148,43 @@ def main():
                   ROOT / 'scripts/silicon_synth.py', ROOT / 'tooling/silicon/eda.nix',
                   ROOT / 'tooling/silicon/pen-floorplan.tcl', ROOT / 'tooling/silicon/pen-validation-region.tcl', ROOT / 'tooling/silicon/pen-validation-check.tcl', ROOT / 'tooling/silicon/pen-button-pins.tcl', mapping / 'candidate.sv',
                   mapping / 'mapped.v', mapping / 'result.json', openroad]
+        if selected:
+            inputs += [ROOT / 'tooling/silicon/physical-lock.json']
+            report['selected_implementation'] = {'version': selected['version'], 'source': 'tooling/silicon/physical-lock.json',
+                'scope': 'Powered selected recipe; original retained producers keep their original source identities'}
         if args.routed_eco_from:
             prior = args.routed_eco_from.resolve()
             previous = json.loads((prior / 'result.json').read_text())
             require(previous['status'] == 'ASSESSED_PHYSICAL_CLOSURE_UNVERIFIED' and previous['source_seal_equal'], 'sealed actual route producer required')
-            require(previous['mapping_receipt']['sha256'] == sha(mapping / 'result.json'), 'ECO mapping producer differs')
+            if previous['mapping_receipt']['sha256'] != sha(mapping / 'result.json'):
+                # Versioning the physical selection invalidates the mapping
+                # receipt's lock input, even when actual mapped bytes and every
+                # design/tool/collateral input are unchanged. Require a fresh
+                # current mapping and retain the old receipt independently.
+                old_path = Path(previous['mapping_receipt']['path'])
+                require(selected and sha(old_path) == previous['mapping_receipt']['sha256'], 'ECO mapping producer differs')
+                old = json.loads(old_path.read_text())
+                lock_name = 'tooling/silicon/physical-lock.json'
+                require({k:v for k,v in old['source_inputs'].items() if k != lock_name} ==
+                        {k:v for k,v in admitted['source_inputs'].items() if k != lock_name} and
+                        old['collateral'] == admitted['collateral'] and old['tools'] == admitted['tools'] and
+                        old['mapping'] == admitted['mapping'] and
+                        sha(old_path.parent / 'mapped.v') == sha(mapping / 'mapped.v'),
+                        'new selected mapping changes an actual design/tool/collateral input')
+                inputs += [old_path, old_path.parent / 'mapped.v']
+                report['mapping_metadata_transition'] = {'original': previous['mapping_receipt'],
+                    'current': report['mapping_receipt'], 'scope': 'Fresh mapping after physical-lock selection only; actual mapped bytes and all other source/tool/collateral identities equal'}
+            if args.core_power_grid:
+                require(previous.get('power_grid') == 'NOT_IMPLEMENTED', 'this first grid integration requires a prior route without PG geometry')
+                inputs += [ROOT / 'tooling/silicon/pen-power-grid.tcl', ROOT / 'tooling/silicon/pen-power-check.tcl', ROOT / 'scripts/silicon_power_ports.py']
+                report['power_grid_routing_question'] = 'Exact retained repaired signal netlist with new grid obstacles; no further ECO' if args.preserve_routed_netlist else 'New actual-SPEF ECO and new grid obstacles'
             require(sha(prior / 'routed.def') == previous['route_enclosure']['routed_def_sha256'], 'original route DEF differs')
             require(sha(prior / 'nom.spef') == previous['extracted_rc']['nom']['spef_sha256'], 'original nominal SPEF differs')
             require((prior / 'route.guide').is_file() and (prior / 'route.guide').stat().st_size > 1000, 'real prior routing guides required to initialize GRT net/grid context')
             report['button_bus_pin_placement'] = previous.get('button_bus_pin_placement', 'UNCONSTRAINED')
             report['routed_eco_from'] = {'path': str(prior), 'receipt_sha256': sha(prior / 'result.json'), 'guides_sha256': sha(prior / 'route.guide'), 'guide_scope': 'Newly source-bound real prior guide input initializes net/grid context; timing remains original actual SPEF, not guide estimates'}
+            if args.preserve_routed_netlist:
+                report['routed_eco_from']['guide_scope'] = 'Retained prior source identity only; fresh global routing does not import old guides or run another resizer ECO'
             inputs += [ROOT / 'tooling/silicon/pen-extracted-eco.tcl'] + [prior / name for name in ('result.json', 'routed.odb', 'routed.def', 'routed.v', 'routed.sdc', 'nom.spef', 'route.guide')]
         if args.completed_eco_route_from:
             require(args.routed_eco_from is not None, 'completed ECO requires its original source route')
@@ -160,6 +203,25 @@ def main():
                 shutil.copyfile(completed / name, out / name)
             report['reused_completed_route'] = {'path': str(completed), 'receipt_sha256': sha(completed / 'result.json'),
                                               'scope': 'actual completed routing reused; this observer performs new extraction only'}
+        if args.completed_power_grid_route_from:
+            completed = args.completed_power_grid_route_from.resolve()
+            producer = json.loads((completed / 'result.json').read_text())
+            require(producer['status'] == 'FAIL' and producer['source_seal_equal'] and
+                    producer.get('error') == "GeometryError('power-grid rerouting changed the retained signal netlist')",
+                    'only the retained three-PG-port observer failure may continue')
+            require(producer['mapping_receipt']['sha256'] == sha(mapping / 'result.json') and
+                    producer['routed_eco_from']['receipt_sha256'] == sha(prior / 'result.json') and
+                    producer.get('power_grid') == 'CONNECTED_CORE_GRID_ONLY_NO_IR_EM' and
+                    producer.get('router_capacity_underflow') == 'NOT_OBSERVED_IN_THIS_EXECUTION', 'completed grid source differs')
+            retained = ('routed.odb', 'routed.def', 'routed.v', 'routed.sdc', 'pre-eco.v', 'pre-eco.sdc',
+                        'post-eco-unrouted.v', 'layout-summary.json', 'router-drc-count.txt', 'route.drc', 'route.guide',
+                        'setup-summary.rpt', 'hold-summary.rpt', 'actual-pre-eco-setup.rpt', 'actual-pre-eco-hold.rpt',
+                        'power-connected.v', 'power-grid-before-route.json', 'power-grid-after-route.json')
+            inputs += [completed / 'result.json'] + [completed / name for name in retained]
+            for name in retained:
+                shutil.copyfile(completed / name, out / name)
+            report['reused_completed_route'] = {'path': str(completed), 'receipt_sha256': sha(completed / 'result.json'),
+                'scope': 'Exact completed grid routing reused; new required-PG-port observation and fresh3RC extraction, not fresh routing'}
         inputs += [std / 'lib/sg13g2_stdcell_typ_1p20V_25C.lib', macro / 'lib' / (MACRO+'_typ_1p20V_25C.lib')]
         require_unmodified_routing_resources([path for path in inputs if path.suffix == '.tcl'])
         report['source_inputs'] = {str(v): sha(v) for v in inputs}
@@ -195,6 +257,8 @@ source {{{ROOT/'tooling/silicon/layout.tcl'}}}
 ''')
         if args.routed_eco_from:
             script.write_text(f'set prior {{{prior}}}\nset out {{{out}}}\nset pdk {{{std}}}\nset macro_lib {{{macro/"lib"/(MACRO+"_typ_1p20V_25C.lib")}}}\nset validation_region_check_script {{{ROOT/"tooling/silicon/pen-validation-check.tcl"}}}\nset group_button_bus {1 if report['button_bus_pin_placement'] == 'FULL64_ORDERED_TOP_EDGE' else 0}\nset button_pin_script {{{ROOT/"tooling/silicon/pen-button-pins.tcl"}}}\nsource {{{ROOT/"tooling/silicon/pen-extracted-eco.tcl"}}}\n')
+            if args.core_power_grid:
+                script.write_text(f'set core_power_grid 1\nset preserve_routed_netlist {1 if args.preserve_routed_netlist else 0}\nset power_grid_script {{{ROOT/"tooling/silicon/pen-power-grid.tcl"}}}\nset power_check_script {{{ROOT/"tooling/silicon/pen-power-check.tcl"}}}\n' + script.read_text())
         # Preserve the real failed database, including GRT's stored overflow
         # grid, before Tcl propagates an implementation error. A snapshot is
         # diagnostic state only and never a completed routed layout.
@@ -214,21 +278,28 @@ source {{{ROOT/'tooling/silicon/layout.tcl'}}}
         report['question'] = args.question
         report['status'] = 'RUNNING'
         (out / 'plan.json').write_text(json.dumps(report, indent=2) + '\n')
-        if not args.completed_eco_route_from:
+        if not (args.completed_eco_route_from or args.completed_power_grid_route_from):
             invoke([str(openroad), '-no_init', '-exit', str(script)], 'layout', 900)
-        if not args.completed_eco_route_from:
+        if not (args.completed_eco_route_from or args.completed_power_grid_route_from):
             require_no_capacity_underflow((out / 'layout.log').read_text())
         require((out / 'routed.def').is_file(), 'no completed route')
         if args.routed_eco_from:
             require(sha(out / 'pre-eco.v') == sha(prior / 'routed.v'), 'ECO database logical netlist differs from declared source route')
-            require(sha(out / 'pre-eco.v') != sha(out / 'post-eco-unrouted.v'), 'ECO made no physical netlist change')
+            if args.preserve_routed_netlist:
+                require(sha(out / 'pre-eco.v') == sha(out / 'post-eco-unrouted.v'), 'power-grid integration changed prior repaired cells/nets')
+                observer = out / 'power-interface.py'
+                observer.write_text(f'import sys\nfrom pathlib import Path\nsys.path.insert(0, {str(ROOT/"scripts")!r})\nfrom silicon_power_ports import assess\nassess(Path({str(prior)!r}), Path({str(out)!r}), Path({str(out/"power-interface.json")!r}))\n')
+                invoke([str(openroad), '-python', '-exit', str(observer)], 'power-interface', 15)
+                report['power_interface'] = json.loads((out / 'power-interface.json').read_text())
+            else:
+                require(sha(out / 'pre-eco.v') != sha(out / 'post-eco-unrouted.v'), 'ECO made no physical netlist change')
             require(sdc_commands(out / 'pre-eco.sdc') == sdc_commands(out / 'routed.sdc') == sdc_commands(prior / 'routed.sdc'), 'ECO changed admitted timing commands')
             report['eco_netlist'] = {name: sha(out / name) for name in ('pre-eco.v', 'post-eco-unrouted.v', 'routed.v', 'pre-eco.sdc', 'routed.sdc')}
             report['eco_netlist']['pre_setup'] = (out / 'actual-pre-eco-setup.rpt').read_text().strip()
             report['eco_netlist']['pre_hold'] = (out / 'actual-pre-eco-hold.rpt').read_text().strip()
         report['router_drc'] = router_drc((out / 'router-drc-count.txt').read_text())
         report['global_rc_after_route'] = layout_reports(out)
-        report['route_enclosure'] = audit(out / 'enclosure/repaired-original.lef', out / 'routed.def')
+        report['route_enclosure'] = audit(out / 'enclosure/repaired-original.lef', out / 'routed.def', allow_generated=args.core_power_grid)
         (out / 'route-enclosure.json').write_text(json.dumps(report['route_enclosure'], indent=2) + '\n')
         # Extract actual route shapes using all public RC decks. Liberty stays
         # typical: RC-min/max are not new transistor/process/PVT corners.
@@ -266,6 +337,22 @@ report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 >
     except BaseException as error:
         report.update(status='FAIL', error=repr(error))
     finally:
+        grid_reports = {}
+        for stage in ('before-route', 'after-route'):
+            path = out / ('power-grid-' + stage + '.json')
+            if path.is_file():
+                try:
+                    grid_reports[stage] = json.loads(path.read_text())
+                except (OSError, ValueError) as error:
+                    report.update(status='FAIL', power_grid_report_error=repr(error))
+        if grid_reports:
+            report['core_power_grid'] = grid_reports
+            report['power_grid'] = 'CONNECTED_CORE_GRID_ONLY_NO_IR_EM' if 'after-route' in grid_reports else 'GRID_CONNECTED_BEFORE_ROUTE_ONLY'
+            report['power_grid_limits'] = ['provisional widths/pitch require real current/IR/EM closure',
+                'no chip ring: original5um margin cannot fit three supplies',
+                'BIST bindings preserved but still tiedoff, no usable manufacturing test path',
+                'independent simple geometry checks do not establish full process DRC/LVS',
+                'no power sequencing, power gating, pads/package/board qualification']
         if (out / 'layout.log').is_file():
             try:
                 require_no_capacity_underflow((out / 'layout.log').read_text())

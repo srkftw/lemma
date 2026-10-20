@@ -7,6 +7,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from silicon_enclosure import GeometryError, read_tech
 from silicon_route_enclosure import audit
+from silicon_power_ports import signal_bytes
 
 
 TECH = '''UNITS
@@ -39,6 +40,24 @@ NETS 1 ;
   NEW Metal2 ( 5000 5000 ) ( 5500 * ) ;
 END NETS
 END DESIGN
+'''
+
+GENERATOR = '''VIARULE via1Array GENERATE
+ LAYER Metal1 ;
+ ENCLOSURE 0.05 0.01 ;
+ LAYER Metal2 ;
+ ENCLOSURE 0.05 0.01 ;
+ LAYER Via1 ;
+ RECT -0.095 -0.095 0.095 0.095 ;
+ SPACING 0.48 BY 0.48 ;
+END via1Array
+'''
+ARRAY = '''VIAS 1 ;
+- generated + VIARULE via1Array + CUTSIZE 190 190 + LAYERS Metal1 Via1 Metal2 + CUTSPACING 290 290 + ENCLOSURE 50 10 50 10 + ROWCOL 1 2 ;
+END VIAS
+SPECIALNETS 1 ;
+- VDD + USE POWER + ROUTED Metal1 0 + SHAPE STRIPE ( 2000 2000 ) generated ;
+END SPECIALNETS
 '''
 
 
@@ -86,6 +105,52 @@ class RouteEnclosureTests(unittest.TestCase):
                 tech, route = self.make(directory, '-0.105', routed)
                 with self.assertRaises(GeometryError):
                     audit(tech, route)
+
+    def test_explicit_generated_power_array_checks_each_cut(self):
+        with tempfile.TemporaryDirectory() as directory:
+            tech, route = self.make(directory, '-0.105', ARRAY + DEF)
+            tech.write_text(tech.read_text() + GENERATOR)
+            fixed = audit(tech, route, allow_generated=True)
+            self.assertEqual(fixed['status'], 'PASS_FIXED_VIA_INTRINSIC_ENCLOSURE')
+            self.assertEqual(fixed['generated_array_definitions'], 1)
+            self.assertTrue(fixed['specialnet_geometry_checked'])
+            self.assertEqual(fixed['via_counts']['generated'], 1)
+            # A5nm enclosure deficit is a physical violation, not a parser error.
+            route.write_text((ARRAY + DEF).replace('ENCLOSURE 50 10 50 10', 'ENCLOSURE 45 10 50 10'))
+            bad = audit(tech, route, allow_generated=True)
+            self.assertEqual(bad['status'], 'FAIL')
+            self.assertEqual([r['side'] for r in bad['violations']], ['lower', 'lower'])
+
+    def test_generated_arrays_reject_pitch_shadow_and_unseen_clauses(self):
+        with tempfile.TemporaryDirectory() as directory:
+            tech, route = self.make(directory, '-0.105')
+            tech.write_text(tech.read_text() + GENERATOR)
+            for text, reason in ((ARRAY.replace('290 290', '220 220'), 'pitch'),
+                    (ARRAY.replace('- generated +', '- Via1_DC2L +'), 'shadowed'),
+                    (ARRAY.replace('ROWCOL 1 2', 'ROWCOL 1 2 + ORIGIN 10 0'), 'clauses'),
+                    (ARRAY.replace('ROWCOL 1 2', 'ROWCOL 0 2'), 'bound')):
+                with self.subTest(reason=reason):
+                    route.write_text(text + DEF)
+                    with self.assertRaisesRegex(GeometryError, reason):audit(tech, route, allow_generated=True)
+
+    def test_power_interface_removes_only_exact_required_additions(self):
+        old = 'module lemma_pen(\n    wdata);\n input [63:0] wdata;\nendmodule\n'
+        new = old.replace('    wdata);', '    wdata,\n    VDDlogic,\n    VDDARRAY,\n    VSS);')
+        new = new.replace(' input [63:0]', ' inout VDDlogic;\n inout VDDARRAY;\n inout VSS;\n input [63:0]')
+        self.assertEqual(signal_bytes(new), old)
+        for changed in (new.replace('    VSS);', '    extra,\n    VSS);'),
+                        new.replace(' inout VSS;\n', ''), new + ' inout VDDlogic;\n'):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):signal_bytes(changed)
+
+    def test_reloaded_power_export_retains_connections(self):
+        suffix = 'module lemma_pen(\n    write,\n    addr,\n    wdata,\n    VDDlogic,\n    VDDARRAY,\n    VSS);\n'
+        declarations = ' inout VDDlogic;\n inout VDDARRAY;\n inout VSS;\n'
+        body = ' cell u (.VDD(VDDlogic), .VSS(VSS), .A(addr));\nendmodule\n'
+        original = suffix + declarations + body
+        reloaded = original.replace('    write,\n    addr,', '    write,\n    VDDlogic,\n    VDDARRAY,\n    VSS,\n    addr,').replace('    wdata,\n    VDDlogic,\n    VDDARRAY,\n    VSS);', '    wdata);')
+        self.assertEqual(signal_bytes(reloaded, reloaded_power=True), signal_bytes(original))
+        self.assertNotEqual(signal_bytes(reloaded.replace('.VDD(VDDlogic)', '.VDD(VSS)'), reloaded_power=True), signal_bytes(original))
+        with self.assertRaises(ValueError):signal_bytes(reloaded.replace('    VSS,\n    addr,', '    extra,\n    VSS,\n    addr,'), reloaded_power=True)
 
 
 if __name__ == '__main__':
