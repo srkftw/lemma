@@ -2319,5 +2319,195 @@
     "zeroPolicyRejectedByLean": true,
     "freshReused": "Fresh existing Tk/actual Lean scenario on separate synthetic testschool; reuses exact current66-input hosted producer-a3 and native session metadata for path display. No target compile or live generation25 mutation.",
     "scope": "Practical teacher control replaces a hardwired policy1. Same Authoring decode/compile and Authority publication; host parses the chosen integer only. Isolated Xvfb presentation and actual hosted admission do not establish learner guest rendering, production authentication or educational benefit."
+  },
+  "ordinarySchool24NativeReduction": {
+    "status": "SCOPED_WORKFLOW_PASS_WITH_RETAINED_PRESENTATION_DEFECT",
+    "terminal": {
+      "path": "build/school/task009-native-reduction-a1/terminal-result.json",
+      "sha256": "a4abef8266b4b5a52de729c762741b7f28c88ca86c7731feef8caab2bee9cafd"
+    },
+    "bundle": "build/school/task009-school24-sdk-a1/native",
+    "bundleManifestSHA256": "8f213d6eecebd7da9d090d9db105cb6c3d50ba7c1bfdf251ea2c82184c4670c7",
+    "sourceClosure": "555 consumed inputs, sealed SDK source closure; exact complete source-input map is retained in the native manifest and current SDK producer, not inferred from the observer.",
+    "freshAndReused": "Fresh ordinary School24 Student execution and controller/School/UI observations. Reused sealed genuinely elaborated/lowered/audited target pair, unchanged p81 QEMU runtime and actual guest-initialized medium; this scenario does not relabel any compilation as fresh.",
+    "startedUTC": "2026-10-20T13:56:58.178616+00:00",
+    "originalDeadlineUTC": "2026-10-20T14:46:58.178616+00:00",
+    "terminalUTC": "2026-10-20T14:29:49.724667+00:00",
+    "functionalUnits": {
+      "hardCap": 12000000000,
+      "actualObserved": 10430000040,
+      "conservativelyCharged": 11830000191,
+      "rejectedNoExecutionReservation": 1400000001
+    },
+    "firstReduction": {
+      "request": 1000374,
+      "input": [
+        10,
+        12
+      ],
+      "output": [
+        5,
+        6
+      ],
+      "outcome": 1,
+      "preparedCommit": 22,
+      "appliedCommit": 23
+    },
+    "coldReduction": {
+      "request": 1000375,
+      "input": [
+        5,
+        6
+      ],
+      "output": [
+        5,
+        6
+      ],
+      "outcome": 2,
+      "preparedCommit": 25,
+      "appliedCommit": 26,
+      "coldRecovery": "explicitSave24/normalClose/newCPU0Session/sameactualbacking; noCPUcheckpoint"
+    },
+    "submission": {
+      "attempt": "guest.153.6003579778261581959",
+      "schoolCommit": 157,
+      "guestACKPointerCommit": 138,
+      "artifact": "582a2ef28784f202f405b4661ac3c3f4fd290b4d04aa292359e66a82b9be6421",
+      "bytes": 38728,
+      "originalPublication": 148,
+      "edition": 1,
+      "policy": 1,
+      "revision": 15,
+      "typedOutcome": 1,
+      "localToolCurrentWorkExposure": true,
+      "authoredHintExposure": true,
+      "teacherAssessment": 161,
+      "originalRubricCriteria": 2,
+      "rawSamples": 299,
+      "rawChunks": 78
+    },
+    "newPublicationBarrier": {
+      "order": "Rootpublished/enrolled804/2policy2afteractual1queue733andbeforeTeacheropen. ActualTeacherretainsold148/twocriteria; new2threecriteria/600snotreinterpreted.",
+      "actualPublicationReceipt": "build/school/task009-fraction-revision-a1/publication-result.json",
+      "actualPublicationReceiptSHA256": "37449cfa6f8416d0293103498e99b9ed0ba72990cf9f8990444872d6f245c4b9",
+      "actualMaintainEntryLog": "build/school/task009-fraction-revision-a1/developer-publish.log",
+      "wallSeconds": 1.869
+    },
+    "review": {
+      "sourceAttempt": "guest.153.6003579778261581959",
+      "originalDueRecord": 156,
+      "response": "guest.162.6003579778261582035",
+      "schoolCommit": 167,
+      "guestACKPointerCommit": 214,
+      "artifact": "9f5cae0cf1771f9fadbb557df6ccd38dab02e82a823bdb032f80c077a5173509",
+      "bytes": 25816,
+      "originalPublication": 148,
+      "edition": 1,
+      "policy": 1,
+      "revision": 1,
+      "outcome": 4,
+      "workKind": "opaque original writtenwork, humanreview; Unsupportedunchanged",
+      "currentAssistance": false,
+      "localToolCurrentWorkExposure": false,
+      "rawSamples": 192,
+      "rawChunks": 47,
+      "teacherAssessment": 168,
+      "completedSourceRecord": 169,
+      "nextReviewRecord": 170,
+      "nextScheduleDelayMs": 60000,
+      "learnerFeedbackReceived": [
+        161,
+        168
+      ]
+    },
+    "exactRawRetention": {
+      "initial": {
+        "sha256": "c5f2ba9be98e0ccb0a7b7095e09e7d1518c0ab84ce2d6da9cba6c00592b086a0",
+        "bytes": 1108
+      },
+      "review": {
+        "sha256": "c9c434d7703651b955b13c8f584ad2be4eb74609a77dc84aca34fb224996ee5e",
+        "bytes": 546
+      },
+      "totalSamples": 491,
+      "totalBytesCompared": 35352,
+      "allNineWordsPreserved": true
+    },
+    "retainedFailures": [
+      "initialclockobserverKeyErrorbeforeanyRun(cycle0); correctednestedmachinecycle",
+      "initialunmappedCanvasobserveremittedzerorawedges; weakoriginalPASSreclassifiedobserverFAIL",
+      "initial130samplepointergeometryusedfinalvertexasUPwithoutcontactmotion; partialglyphprefixretainedthen169samplecompleteredraw",
+      "SEND240/732beforeexactcurrenttaskandactualguestJOIN; nocapturedattemptuntilvalidbinding153",
+      "unsupported1.4BRunrequestrefusedbeforeexecution; full1,400,000,001unitreservationremainscharged",
+      "queuedpage/coursecontextnavigationdiscarded3bufferedcontrols:735reason4,cumulative3; no reviewwritingenteredthen",
+      "X_GetImageBadMatchafteractual47reviewstrokes/panelcaptures; observerwindowcapturefailed; later3000x2000XvfbactualSave/ASKcapturepassedwithoutrewritinginput",
+      "actualreviewlivepaperretainsmissingsegmentsdespiteSaved209,192rawsamplesexactandcompleteLeanTeacherartifactpreview. Causalpresentationdefectremainsopen; nofullvisiblelive-reviewinkclaim."
+    ],
+    "resources": [
+      {
+        "result": "NORMAL_TERMINAL",
+        "exitCode": 0,
+        "ownedPID": 496278,
+        "ownedProcessGone": true,
+        "allObservedOwnedProcessesGone": true,
+        "peakOwnedRSSBytes": 130879488,
+        "minimumHostAvailableBytes": 9315557376,
+        "maximumOutputBytes": 530997413,
+        "originalDeadlineUTC": "2026-10-20T14:46:58.178616+00:00",
+        "observedTerminalUTC": "2026-10-20T14:08:10.856920+00:00"
+      },
+      {
+        "result": "NORMAL_TERMINAL",
+        "exitCode": 0,
+        "ownedPID": 499243,
+        "ownedProcessGone": true,
+        "allObservedOwnedProcessesGone": true,
+        "peakOwnedRSSBytes": 144973824,
+        "minimumHostAvailableBytes": 10189045760,
+        "maximumOutputBytes": 2501971492,
+        "originalDeadlineUTC": "2026-10-20T14:46:58.178616+00:00",
+        "observedTerminalUTC": "2026-10-20T14:29:49.724667+00:00"
+      }
+    ],
+    "ownedGUICleanup": [
+      {
+        "pid": 502821,
+        "identity": "/run/current-system/sw/bin/Xvfb -displayfd 1 -screen 0 1200x1000x24 -nolisten tcp ",
+        "cause": "X_GetImagefatalobserverexit bypassed Pythonfinally",
+        "identifiedByExactOwnedLogFD": [
+          "/home/sreekumaar/Downloads/lemma/build/school/task009-native-reduction-a1/review-reader-reopen/xvfb.log"
+        ],
+        "terminated": true,
+        "processAbsent": true,
+        "scope": "Only these two preciselyowned Xvfb processes; no shared browser/app servers touched."
+      },
+      {
+        "pid": 502917,
+        "identity": "/run/current-system/sw/bin/Xvfb -displayfd 1 -screen 0 1200x1600x24 -nolisten tcp ",
+        "cause": "X_GetImagefatalobserverexit bypassed Pythonfinally",
+        "identifiedByExactOwnedLogFD": [
+          "/home/sreekumaar/Downloads/lemma/build/school/task009-native-reduction-a1/review-written/xvfb.log"
+        ],
+        "terminated": true,
+        "processAbsent": true,
+        "scope": "Only these two preciselyowned Xvfb processes; no shared browser/app servers touched."
+      }
+    ],
+    "finalMedium": {
+      "sha256": "4ee7a32a8ce16767a9ccb8fb67e2ab308f6818c3d28a4988625ed54d61e717e6",
+      "bytes": 268435456
+    },
+    "reproduceLaunch": "python3 scripts/lemmasim session --native-bundle build/school/task009-school24-sdk-a1/native --backend qemu --profile lemma-silicon-dev/0.14.0 --workload notebook --disk NEW_ISOLATED_INITIALIZED_MEDIUM --session-dir NEW_SESSION --mode student --headless --paused --quantum 1000000 --timeout 3000",
+    "ordinaryControls": "Maintained native viewer Canvas and Study pairing/catalogue/install/Bind ASK/Send/Feedback; actual Teacher Panel artifact/render and versioned human assessment. Fixed synthetic pointer geometry/teacher judgments are explicitly scenario inputs, not measured human learning.",
+    "remaining": "Actual live review paper still omits segments although the complete raw artifact replays correctly in the Lean Teacher renderer. No School24 checkpoint, full0.16 Fast union, arbitrary extension plugin, physical qualification or educational-benefit claim. Browser School24 remains a separate owned campaign.",
+    "sourceCommit": "c47658388e89865396b6d4893796e1a691bd9c1c",
+    "sourcesSHA256": "7a581fda1ae00a31ea5081b7cc90d6ccf9e2c2279cabd92af93a7496538bccf5",
+    "targetSources": {
+      "Lemma/Applications/Notebook.lean": "f6d2b97045c937ad6d01d971553bef67b5581f1be6aa77d97c234349a1668747",
+      "Lemma/Documents/LocalToolEvents.lean": "66a3d0ecb8d38b9b91b7a8644cafbe59d9a5bdbc12186ccf25229f5aee98032d",
+      "Lemma/Courses/LocalReduction.lean": "2e2d48bfb8b95471b5e6104e9d902ce5302641b16f859d5a6b55b56c5a840d1f",
+      "Lemma/Services/Arithmetic/ServerV9.lean": "d6a2fb74e1b12cda7dd4f2e65d4149fa6cdf6ce5db100271241c68b60bc9e2c8",
+      "Lemma/Services/Arithmetic/ProtocolV9.lean": "61a52285d622e291bb42da80971c4568e2bd87b3776de36dd5ddea68b63ff2ca"
+    }
   }
 }
