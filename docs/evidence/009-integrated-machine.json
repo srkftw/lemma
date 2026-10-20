@@ -2069,8 +2069,8 @@
       "School24 continuation remains unsupported until actual new preparedStore/IPC/reply cuts and transactional adoption qualify"
     ],
     "full16_followup": {
-      "status": "RESOURCE_FAILED_PREPARATION_NO_FULL_IMAGE_OR_AUDIT",
-      "scope": "Genuine selected full0.16 School24 configuration is separate from Fast SDK and old03914f canonical run. Original plans/failures preserved; no deadline extension, FastELF transplant, runtime/RTL rebuild or manual cache edits.",
+      "status": "PASS_GENUINE_FULL16_PRODUCTION_AND_STRICT_AUDIT_CANONICAL_RUNNING",
+      "scope": "Genuine full0.16 School24 export/body authority, exact source audit and fresh factory artifacts now pass. The separately bounded canonical ROM/NV run is live. Original resource and observer failures remain unchanged; no FastELF transplant, unchanged compiler rerun, runtime rebuild or physical promotion.",
       "configuration": "lemmasim-silicon-integrated-pcm-school24-notebook",
       "unstarted_2_5GiB_plan": {
         "path": "build/task009/school24-integrated16-bootstrap-a1/admission.json",
@@ -2144,7 +2144,7 @@
           "sha256": "a024c46a9d18f372f8ad5601a15b65f46260629d34d6d5e00bbf1e8d56cde1db"
         },
         "cache_transactionality_remaining": {
-          "status": "UNFINISHED_MAINTAINED_TRANSACTIONAL_PREPARATION",
+          "status": "HISTORICAL_DEFECT_REPAIRED_IN_SUCCESSOR18026e0",
           "helper": {
             "path": "scripts/build_actions.py",
             "sha256": "9feb0232ede706b42f887425677da9c4ebb6d2e3da5a52858cc9025c0abb0085"
@@ -2153,7 +2153,22 @@
             "A3: all840 baseline compiled files unchanged; one ProtocolV9.setup.json extra",
             "A4: all1328 baseline compiled files unchanged; one Notebook.setup.json extra"
           ],
-          "meaning": "Normal byte-exact admission correctly rejects the incomplete inventory and discards completed dependency outputs. An atomic preparation/rollback improvement is required later; no cached object or metadata was manually repaired."
+          "meaning": "Normal byte-exact admission correctly rejects the incomplete inventory and discards completed dependency outputs. An atomic preparation/rollback improvement is required later; no cached object or metadata was manually repaired.",
+          "successor": "Maintained build_actions rollback preserves an unchanged admitted baseline and removes only scoped unadmitted additions; current23 source capture includes this changed helper. Original failed preparation receipts are unchanged."
+        },
+        "actual_passed_a5": {
+          "result": {
+            "path": "build/task009/school24-dependency-preparation-a5/result.json",
+            "sha256": "3ba6c75ba07cd032afaff8fa5196b85f99c213b8023dd245d4fd9857a4b9a6ec"
+          },
+          "closed": {
+            "path": "build/task009/school24-dependency-preparation-a5/closed-assessment.json",
+            "sha256": "aa7591e7288418b489b6fcc80a916e34b7db378157ecc4018ee7e463c8b770d7"
+          },
+          "module_count": 209,
+          "seconds": 453.160771869,
+          "peak_owned_RSS_bytes": 2267385856,
+          "scope": "Normal protected sequentialone-module preparation, maxoneLean; source/cache/cleanup independently sealed, no manual cache edits"
         }
       },
       "canonical_followup_plan": {
@@ -2170,15 +2185,119 @@
           "sha256": "dc9f6073b06fee0590b6e9ab29c5af6c4078328e5e6d1c821404ada899fa7e09"
         },
         "scope": "Exact actual739(version1,serviceID0x0001000052444331,144,176) is required in24 Ready in addition to731;13focused selection tests pass. Legacy23 predicate and all original cycle/time limits remain unchanged; new execution remains pending."
+      },
+      "genuine_producer": {
+        "build": "build/kernel/task009-school24-integrated-pcm-a3",
+        "source": "build/task009/school24-integrated16-source-a3/action-source",
+        "inventory_sha256": "776e11d1c44afb07d565c13dfe8d5bb6b6ba5b59dedc69a0f252c243a889174b",
+        "original_wrapper_FAIL": {
+          "path": "build/task009/school24-integrated16-bootstrap-a3/result.json",
+          "sha256": "840315efab82d57038669751fe45c92f8cb05f0abc4f90eed79a13ecc701204f"
+        },
+        "closed_production": {
+          "path": "build/task009/school24-integrated16-bootstrap-a3/closed-production-assessment.json",
+          "sha256": "251f19ff590c2ff79707787febb10af0a84a98d7d1d9eaa63f2a06b4fd7d44da"
+        },
+        "actual_seconds": 177.496039841,
+        "peak_owned_RSS_bytes": 1952669696,
+        "retained_status_gap": {
+          "path": "build/task009/school24-integrated16-bootstrap-a3/closed-dev-status.json",
+          "sha256": "5886417d71cdb0cb818eb67bf8d5aea50855dce47316bb9bf50496322dbb3c01"
+        },
+        "scope": "Actual producer exits0 with all696 artifacts complete. Original wrapper falsely included itself/outerguard in descendant cleanup and remains FAIL. Closed source/artifact/actual-owner assessment passes; normal dev_status remains pending on12 role-relative production-input lookups and is not cited asPASS."
+      },
+      "authority_body_admission": {
+        "candidate": {
+          "path": "build/task009/school24-full16-authority-candidate-a1/result.json",
+          "sha256": "0982a51126b85a2907a2677c6994ba5ef0caa1523da156c865a5be96f287f2fe"
+        },
+        "negatives": {
+          "path": "build/task009/school24-full16-authority-candidate-a1/admission-validation.json",
+          "sha256": "6548888acc08ea6ae5e76cc3185ab8617befe0f327b371df851233cd692df395"
+        },
+        "independent_six_role_review": {
+          "path": "build/school/task009-full16-independent-review-a1/result.json",
+          "sha256": "94fa1cc0f3d8f9471f6f154e3487d47bf973b92e1a1597d371d94f3e6fd363d0"
+        },
+        "commit": "042bc10",
+        "scope": "Third24 exact configuration only. Complete pre/post bodies, signatures/effects/globals and independent external declarations equal selected original fullFirmware/Kernel plus genuine24 users under exact declared source-symbol alpha rename; no semantic proof or literal wholefile identity claim.12positives/20 consequential fullpin/rootID/case9/10 negatives."
+      },
+      "strict_final_archive": {
+        "build": "build/kernel/task009-school24-integrated-pcm-a4",
+        "source": "build/task009/school24-integrated16-final-source-a2/action-source",
+        "inventory_sha256": "d2ea0b712a0c169018b81392472620c23a2f18e00ff181df6c544d8062f0bed3",
+        "inputs": 555,
+        "normal_authority_only_refresh": {
+          "path": "build/task009/school24-integrated16-finalize-a2/result.json",
+          "sha256": "be81eaf040241936496978bad090e9fd47ab694eafdea24eb189554beca674b9"
+        },
+        "target_equality": {
+          "path": "build/task009/school24-integrated16-finalize-a2/target-equality.json",
+          "sha256": "c2e9446a8f8d4b97b0dca74db0052bb7d2fde7ade7b8c2fbf9de673112c285df"
+        },
+        "strict_audit": {
+          "path": "build/task009/school24-integrated16-audit-a1/result.json",
+          "sha256": "1f3b05646889d1d61112d9b1abf2e1d6680f77c2ae9144d65ddb05dcee3c2ceb"
+        },
+        "strict_audit_seconds": 187.95007276185788,
+        "strict_peak_RSS_bytes": 308424704,
+        "target_file_equalities": 45,
+        "scope": "Normal0fresh/39reused+2incremental refresh preserves genuine target bytes; full source-archived strict audit passes, all owned audit processes absent. Root cache successor later changes current helper source, not this archive."
+      },
+      "factory_artifacts": {
+        "result": {
+          "path": "build/task009/school24-integrated16-artifacts-a2/result.json",
+          "sha256": "394801676595d7add400e5bf014d14b1bfc2905936ef316de37f6d5489b564c4"
+        },
+        "closed_assessment": {
+          "path": "build/task009/school24-integrated16-artifacts-a2/closed-assessment.json",
+          "sha256": "6b19effd19a33002b64b451f67b202a6b1eff5081392c3ae5dde35f37f57ceb8"
+        },
+        "plan": {
+          "path": "build/task009/school24-integrated16-artifacts-a2/plan.json",
+          "sha256": "0bfc54addc8990a9f201dad1c7982ba8d0606397606ba43ceac16487824a4772"
+        },
+        "seconds": 8.659695798996836,
+        "peak_RSS_bytes": 1729847296,
+        "package": "build/boot/task009-integrated16-school24-image-a2",
+        "image_id": "0x0010001800000001",
+        "image_bytes": 687616,
+        "image_sha256": "bb896cb5d2ca10ea0c220100a78cf67d66cb28030f90a55780d7409846f77462",
+        "tag_sha256": "3264b20cb6c99c0493f8dc221c9ff1067c49c3496dc2abae4374b8f20d1eb07c",
+        "factory_bytes": 33558528,
+        "factory_sha256": "78a42470a6754d3ca6f93fd432595baa1ffd419f0ef2e1fc2cfbc498c1bb930e",
+        "prepared": "build/task009/school24-integrated16-auth-prepared-a2",
+        "runtime_identity": "f0c116ccaf86d789e86c0fb2e6df3ec2e27fe7b3ea93ff949571eca73338ad2d",
+        "native_ELF_sha256": "514124215706c2c9c070f18acbff8aa3fa038d36a0414977bd63cf8994433340",
+        "ROM_sha256": "8a853ef5ef9fa3414c1db85afb22f10835b054e02fd912b1f3262d56280aa5a4",
+        "scope": "Fresh package/tag and actual hosted Lean factory author6.502s; normal validation reuses exact historical full16 runtime and ROM. Complete raw size, metadata fields/CRC, both metadata sectors, tag and payload extents checked; final source/observer/deadline/cleanup sealed. No guest execution claim from artifacts."
+      },
+      "canonical_execution": {
+        "status": "RUNNING_AT_LAUNCH_RECORD",
+        "plan": {
+          "path": "build/task009/school24-integrated16-canonical-plan-a1/plan.json",
+          "sha256": "6fec304a6324be213ed5d45bb003fd27695c286cf85e0dec15852bb66095fb6d"
+        },
+        "runner_receipt_live": "build/task009/school24-integrated16-canonical-runner-a1/result.json",
+        "observer_progress_live": "build/task009/school24-integrated16-canonical-positive-a1/progress.json",
+        "start_UTC": "2026-10-20T15:40:45.326426+00:00",
+        "original_deadline_UTC": "2026-10-20T19:00:45.326426+00:00",
+        "scope": "Fresh actual ROM/NV cold authentication of new687616B School24 image. Original12000s/1.5Baggregate,Ready1.2998B/10500s,Save200M/1800s,reset200k/single512MiB/2GiBoutput. Exact739RDC service startup required in addition731; no checkpoint/ELF/DTB preload, update-install or full post-reset reopening claim."
       }
     },
     "current23_preservation": {
-      "status": "PENDING_RESOURCE_ADMISSION",
+      "status": "RUNNING_CURRENT_FOUR_CONFIGURATION_PRODUCTION_AFTER_CACHEFIX",
       "Fast_preflight_refusal": {
         "path": "build/task009/school23-current-fast-bootstrap-a1/result.json",
         "sha256": "d6ffe109ef0b215bf93f6908c95111fc1dbb400e9ff5466618440754a4c62150"
       },
-      "scope": "No target command or source capture admitted. All four current configurations still require genuine exports and strict audits; old immutable23 archives keep historical admission."
+      "scope": "All four unused current-source default23 outputs are selected for normal genuine production under separate original1800/900/300 bounds, after maintained cache rollback18026e0. Production, exact body-authority review and strict archived audits remain separate; noPASS inferred from old archives.",
+      "plan": {
+        "path": "build/task009/school23-current-all-bootstrap-a3/plan.json",
+        "sha256": "a7c6110a19ffc475454ee540139ac137a0bcf9bb280911df1d6c54ac4a10281d"
+      },
+      "live_result": "build/task009/school23-current-all-bootstrap-a3/result.json",
+      "inventory_sha256": "82c6cb1b8688de0118a02cbf9344949ec67e6afdc5a5708b99dfa4cf66dde3fc"
     },
     "ordinary_native_consumption": {
       "status": "SCOPED_WORKFLOW_PASS_WITH_SEPARATE_PRESENTATION_CORRECTION",
@@ -2213,6 +2332,22 @@
         "No measured educational benefit or handwriting kernel proof",
         "Browser ordinary workflow remains separately owned/in progress"
       ]
+    },
+    "native_host_presentation_successor": {
+      "status": "PASS_SEALED_NATIVE_PRESENTATION_SUCCESSOR",
+      "receipt": {
+        "path": "build/task009/school24-native-presentation-runner-a1/result.json",
+        "sha256": "e0eb013ff187ebc7fc86009735a9c3e1702f0dfe3a4bb1c074a62d74a44d53f1"
+      },
+      "bundle": "build/school/task009-school24-native-presentation-a1",
+      "manifest_sha256": "707701bafaa2d48aaaa66858e9ef5d75eaf080cebc7958f555b26997aaf4d752",
+      "seconds": 6.688016897067428,
+      "file_changes": [
+        "controls/scripts/lemmasim_session.py"
+      ],
+      "source_sha256": "b05abd42e016d6727823300687dac36607d91d86a07d149d3343ede68ebe9533",
+      "exact_original_guests_sources_QEMU_derivation": true,
+      "scope": "Normal strict MM2 explicit-pair packaging reads unchanged current prepared runtime, with mandatory equality to sealed original SDK before/after. Base flag remains rejected as required by existing MM2 guard. No new compilation, Run, ordinary workflow or School24 continuation claim."
     }
   }
 }
