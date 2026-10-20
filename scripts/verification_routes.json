@@ -146,6 +146,10 @@
     "multimodal-owned-io": {
       "kind": "validation",
       "command": "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_owned_io.py --work-dir build/multimodal/owned-UNUSED; hosted actual Lean ownership, complete-record copying and PCM policy Actions with consequential source negatives; neither guest execution nor controller timing."
+    },
+    "multimodal-audio-consumer": {
+      "kind": "validation",
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_audio.py --work-dir build/multimodal/audio-UNUSED; actual maintained User PCM lifecycle Actions with partial consumption, mute, expiry, superseded grants and consequential source negatives. Guest/controller/audio presentation remain separate."
     }
   },
   "boundaries": [
@@ -822,6 +826,24 @@
         "multimodal-workbook-native",
         "multimodal-workbook-browser",
         "kernel-host"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation"
+      ]
+    },
+    {
+      "id": "multimodal-local-audio-consumer",
+      "inputs": [
+        "scripts/check_multimodal_audio.py",
+        "tests/multimodal/NotebookAudioActions.lean.inc",
+        "Lemma/User/Multimodal.lean"
+      ],
+      "claims": [
+        "multimodal-audio-consumer",
+        "multimodal-notebook-ui",
+        "multimodal-workbook-native",
+        "multimodal-workbook-browser"
       ],
       "affects": [
         "artifact-production",

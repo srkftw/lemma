@@ -1,0 +1,68 @@
+{
+  "schema": "lemma-task009-multimodal-owned-io-evidence/1",
+  "scope": "Actual hosted Lean service ownership/local User audio/Notebook UI Actions; target and controller execution remain pending",
+  "results": [
+    {
+      "receipt": "build/task009/mm-owned-record-qualified-a2/result.json",
+      "sha256": "8b88452f3a74eb4330a83fc89dfa6366f9546b35ab13fd38225b4a135048cb3e",
+      "status": "PASS_HOSTED_OWNED_IO_ACTIONS",
+      "seconds": 51.45192700601183,
+      "source_inputs": {
+        "Lemma/Platform/LemmaSim/MultimodalService.lean": "0ecc5dad65a59bc9bdfdbb36fe2b04b4cde2fb567d893dfd7e18a869ae74d9ff",
+        "tests/multimodal/OwnedRecordActions.lean.inc": "1ce0a2d011001fcb3ea3b97dd1735a9025a77115c0406d3e8d6da3d806f65504",
+        "scripts/check_multimodal_owned_io.py": "6dc900da7a89052f2fc9fe570f23850e510303a0206b0e654ba1eb054cf743b2"
+      },
+      "child_peak_rss_kib": null
+    },
+    {
+      "receipt": "build/task009/mm-audio-consumer-qualified-a1/result.json",
+      "sha256": "93e512fd9fdacf4e8cb460bc0d71d462c9bf132338d303360b7b07d249e1a184",
+      "status": "PASS_HOSTED_NOTEBOOK_AUDIO_ACTIONS",
+      "seconds": 28.647823370061815,
+      "source_inputs": {
+        "Lemma/User/Multimodal.lean": "3429ed3ffdd1b6d6f6f66951be1db1275e900ca1331055de4a0ff8ee87fdf4cf",
+        "tests/multimodal/NotebookAudioActions.lean.inc": "38e6c0ea73d74d5594db7f2c67da3f119e5595574923d65ee3d9a8a2c2d73c8f",
+        "scripts/lean_export_host.py": "c9e989f302ce176a0467a2837d5108563b0caa59d5c7b5bd089eec35b8469b9d",
+        "scripts/check_multimodal_audio.py": "189964b4817f3059c60e6fba496f97e45af0e928d1e9f25f6d8ceab5e96fff81"
+      },
+      "child_peak_rss_kib": 1611188
+    },
+    {
+      "receipt": "build/task009/mm-audio-ui-qualified-a1/result.json",
+      "sha256": "219a44144bed29da3c4780b15fa7eec447579d45d85ad01d02f637e5d1d74b61",
+      "status": "PASS_HOSTED_LEAN_ACTIONS",
+      "seconds": 136.4221231219126,
+      "source_inputs": {
+        "Lemma/Applications/Notebook.lean": "b7935c1cf06b5d0feb16e10a22f784f2b96470512de02c45a01f6c83b0c14957",
+        "tests/multimodal/NotebookUIActions.lean.inc": "f58d21c99151030bf927b774c6142dc345cab837a67d168a636afb8982d8bcfa",
+        "scripts/lean_export_host.py": "c9e989f302ce176a0467a2837d5108563b0caa59d5c7b5bd089eec35b8469b9d",
+        "scripts/check_multimodal_notebook_ui.py": "4802a865c28318ea314079b1745cc60e6d664401de6fcc4d1029d12a2a4ca5b7"
+      },
+      "child_peak_rss_kib": null
+    }
+  ],
+  "genuine_module_build": {
+    "log": "build/task009/mm-audio-consumer-draft-a1/maintained-build.log",
+    "sha256": "026c68a96fb575005333ccae41796071dc00341f95d3ccd5fa5cbbadc54ac1c7",
+    "result": "PASS",
+    "jobs": 85,
+    "changed_UserMM_seconds": 6.2,
+    "changed_Notebook_seconds": 11
+  },
+  "combined_coalescing_regression": {
+    "log": "build/task009/mm-audio-consumer-draft-a1/combined-NotebookSchool.log",
+    "sha256": "bdda49d5cfdbb3f998c39f455565e9e6b00dfe01103a97d1015b0ac3b0d6eccf",
+    "result": "PASS_ACTUAL_ACTIONS",
+    "command": "lake env lean -j2 -M2048 --run tests/courses/NotebookSchool.lean"
+  },
+  "retained_private_development_observations": "build/task009/mm-audio-consumer-draft-a1/development-observations.json",
+  "not_qualified": [
+    "RV64 target compilation and strict audits",
+    "actual controller DMA/PCM in ordinary native/browser guest",
+    "same-backend DMA/audio continuation",
+    "continuous or underrun-free PCM",
+    "physical audibility/sensors/safety",
+    "3,902,720B/s economy or full raw link",
+    "educational benefit"
+  ]
+}

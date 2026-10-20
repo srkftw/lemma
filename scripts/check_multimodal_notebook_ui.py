@@ -6,7 +6,8 @@ fixture so private Actions can be evaluated without exposing target test APIs.
 Quarantined source-negative variants must fail. This is neither guest execution
 nor a paper-controller/presentation or timing qualification.
 """
-import argparse,hashlib,json,shutil,subprocess,time
+import argparse,hashlib,json,os,resource,shutil,subprocess,time
+from lean_export_host import environment, policy
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -16,11 +17,11 @@ def main():
     parser.add_argument('--work-dir',type=Path,required=True)
     args=parser.parse_args();out=args.work_dir.resolve();out.mkdir(parents=True,exist_ok=False)
     source=ROOT/'Lemma/Applications/Notebook.lean';fixture=ROOT/'tests/multimodal/NotebookUIActions.lean.inc'
-    inputs={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in (source,fixture,Path(__file__).resolve())}
-    text=source.read_text();test=fixture.read_text();report={'status':'FAIL','scope':__doc__,'source_inputs':inputs,'cases':[]};start=time.monotonic()
-    enqueue='  .boundedFoldU64 23 multimodalBarTile 23 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else\n'
+    inputs={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in (source,fixture,ROOT/"scripts/lean_export_host.py",Path(__file__).resolve())}
+    text=source.read_text();test=fixture.read_text();report={'status':'FAIL','scope':__doc__,'source_inputs':inputs,'host_policy':policy(2),'limits':{'whole_seconds':240,'case_seconds':180,'Lean_heap_MiB':2048},'cases':[]};start=time.monotonic()
+    enqueue='  .boundedFoldU64 28 multimodalBarTile 28 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else\n'
     stop='if capture = 1 then multimodalSafety 0 else ordinary resync flags'
-    guard='if width < 1120 then .done 16 0 else'
+    guard='if width < 1264 then .done 16 0 else'
     envelope='''  .bind (packagePut 160 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 176 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (beginPackageRead 60001 sequence)'''
@@ -32,6 +33,7 @@ def main():
            ('quarantined-dropped-busy-chooser-LOAD',text.replace('  else if (if course = 1 then if 660 ≤ py then if py < 680 then if 216 ≤ px then if px < 312 then true else false else false else false else false else false) = true then\n    multimodalQueueBookLoad','  else if (if course = 1 then if 660 ≤ py then if py < 680 then if 216 ≤ px then if px < 312 then true else false else false else false else false else false) = true then\n    .done 0 0',1),False),
            ('quarantined-rejected-view-remains-busy',text.replace('private def multimodalAbandonPresentation : Action :=\n  .bind (packagePut 72 0)', 'private def multimodalAbandonPresentation : Action :=\n  .bind (packagePut 72 1)',1),False),
            ('quarantined-envelope-retains-original-reader-CRC',text.replace(envelope,envelope.replace('packagePut 160 0','packagePut 160 1'),1),False),
+           ('quarantined-skipped-AUDIO-TEST',text.replace('else if operation = 9 then Lemma.User.Multimodal.testAudio','else if operation = 9 then .done 0 0',1),False),
            ('quarantined-missing-width-guard',text.replace(guard,'if width < 1 then .done 16 0 else',1),False)]
     try:
         lake=Path(shutil.which('lake') or '');lean=Path(shutil.which('lean') or '')
@@ -41,8 +43,8 @@ def main():
         for label,body,positive in cases:
             if not positive and body==text:raise ValueError('source-negative mutation absent '+label)
             directory=out/label;directory.mkdir();program=directory/'NotebookUI.lean';program.write_text(body+test)
-            command=[str(lake),'env','lean','--run',str(program)]
-            began=time.monotonic();result=subprocess.run(command,cwd=ROOT,capture_output=True,timeout=180)
+            command=[str(lake),'env','lean','-j2','-M2048','--run',str(program)]
+            began=time.monotonic();result=subprocess.run(command,cwd=ROOT,capture_output=True,env={**os.environ,**environment(policy(2))},timeout=min(180,240-(began-start)))
             output=result.stdout+result.stderr;(directory/'output.log').write_bytes(output)
             observed=result.returncode==0 and b'NOTEBOOK21_UI_ACTIONS_PASS' in output
             report['cases'].append({'case':label,'expected_success':positive,'observed_success':observed,'exit_code':result.returncode,'seconds':time.monotonic()-began,'source_prefix_sha256':sha(body.encode()),'compiled_input_sha256':sha(program.read_bytes()),'command':command,'raw_output_sha256':sha(output)})

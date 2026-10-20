@@ -77,7 +77,48 @@ private def wipe (stream : UInt64) : Action :=
 private def wipeAllStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   .bind (wipe i.toUInt64) fun s _ => .done s acc
 
+/-- Lazily allocated only after the explicit local AUDIO TEST control. It is
+not a retained document or transmission buffer. A test has one bounded packet;
+accepted samples and the independently observed consumed prefix remain distinct. -/
+private def audioPage : UInt64 := 0x360000
+private def audioGet (offset : UInt64) : Action := Memory.read64 (audioPage + offset)
+private def audioPut (offset value : UInt64) : Action := Memory.write64 (audioPage + offset) value
+
+private def audioReceipt (reason : UInt64) : Action :=
+  .bind (audioGet 56) fun s sequence => if mmFailed s = true then .done s 0 else
+  .bind (audioGet 16) fun s submitted => if mmFailed s = true then .done s 0 else
+  .bind (audioGet 32) fun s consumed => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 0 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (get 8) fun s console => if mmFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x716 sequence submitted consumed reason
+
+/-- A background completion may stop only its own epoch. Explicit MUTE may
+revoke any current local output grant. A superseded test retains its last known
+prefix; it never attributes the successor grant's samples to the old packet. -/
+private def stopAudio (reason force : UInt64) : Action :=
+  .bind (get 128) fun s allocated => if mmFailed s = true then .done s 0 else
+  if allocated = 0 then if force = 1 then invoke 6 8 0 0 else .done 0 0 else
+  .bind (audioGet 0) fun s running => if mmFailed s = true then .done s 0 else
+  if running = 0 then if force = 1 then invoke 6 8 0 0 else .done 0 0 else
+  .bind (audioGet 8) fun s epoch => if mmFailed s = true then .done s 0 else
+  .bind (invoke 11 8 0 0) fun status current =>
+  if mmFailed status = true then
+    if force = 1 then .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else audioReceipt reason
+    else .done status 0
+  else if current ≠ epoch then
+    if force = 1 then .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else audioReceipt reason
+    else audioReceipt 4
+  else
+  .bind (invoke 15 8 0 0) fun status counter =>
+  .bind (if mmFailed status = true then .done 0 0 else
+    .bind (audioGet 24) fun s baseline => if mmFailed s = true then .done s 0 else
+    if counter < baseline then .done 0 0 else
+    let observed := counter - baseline
+    audioPut 32 (if 16 < observed then 16 else observed)) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else audioReceipt reason
+
 def revokeAll : Action :=
+  .bind (stopAudio 1 0) fun s _ => if mmFailed s = true then .done s 0 else
   .bind (put 16 0) fun s _ => if mmFailed s = true then .done s 0 else
   .bind (put 32 1) fun s _ => if mmFailed s = true then .done s 0 else
   .boundedFoldU64 9 revokeStep 9 0 0 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
@@ -85,7 +126,7 @@ def revokeAll : Action :=
 
 def control (operation : UInt64) : Action :=
   if operation = 1 then
-    .bind (invoke 6 8 0 0) fun s _ => if mmFailed s = true then .done s 0 else put 32 1
+    .bind (stopAudio 1 1) fun s _ => if mmFailed s = true then .done s 0 else put 32 1
   else
   if operation = 2 then
     .bind (invoke 6 0 0 0) fun s _ => if mmFailed s = true then .done s 0 else
@@ -139,7 +180,7 @@ private def sampleStep (i _ : UInt32) (acc cursor _ _ _ : UInt64) : Action :=
 /-- Poll one completed owned record per turn and fairly begin at most one
 successor. There is no busy wait. Revocation keeps polling only to reclaim the
 private transfer; a revoked completion cannot be copied into application RAM. -/
-def pump : Action :=
+private def pumpAcquisition : Action :=
   .bind finishSample fun s completed => if mmFailed s = true then .done s 0 else
   .bind (get 16) fun s enabled => if mmFailed s = true then .done s 0 else
   if enabled = 0 then .done 0 completed else
@@ -181,6 +222,83 @@ def submitPCM (pointer epoch : UInt64) : Action := invoke 14 8 pointer epoch
 /-- Raw machine counter only: callers must retain their own grant/packet
 baselines and actual completion before deriving any presentation receipt. -/
 def consumedPCM : Action := invoke 15 8 0 0
+
+/-- An explicit digital-controller self-test, not a continuous-audio or
+physical-audibility claim: sixteen arbitrary signed16 samples at16kHz. The
+controller budget is128 bytes (16×8); the packet carries32 payload bytes. -/
+def testAudio : Action :=
+  .bind (get 128) fun s allocated => if mmFailed s = true then .done s 0 else
+  .bind (if allocated = 0 then
+    .bind (Syscall.allocatePage audioPage) fun s address => if mmFailed s = true then .done s 0 else
+    if address ≠ audioPage then .done 95 0 else
+    .bind (audioPut 0 0) fun s _ => if mmFailed s = true then .done s 0 else
+    .bind (audioPut 56 0) fun s _ => if mmFailed s = true then .done s 0 else put 128 1
+    else .done 0 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioGet 0) fun s running => if mmFailed s = true then .done s 0 else
+  if running ≠ 0 then .done 6 0 else
+  .bind (audioGet 56) fun s previous => if mmFailed s = true then .done s 0 else
+  if previous = 0xffffffffffffffff then .done 14 0 else
+  .bind (invoke 10 0 0 0) fun s ticks => if mmFailed s = true then .done s 0 else
+  if 0x7ffffffffffffffe - 100000000 < ticks then .done 14 0 else
+  .bind (armPCM 1 16000 128 (ticks + 100000000) 1 6250) fun s epoch => if mmFailed s = true then .done s 0 else
+  .bind (invoke 15 8 0 0) fun status baseline =>
+  if mmFailed status = true then .bind (invoke 6 8 0 0) fun _ _ => .done status 0 else
+  if 0xffffffffffffffff - 16 < baseline then .bind (invoke 6 8 0 0) fun _ _ => .done 14 0 else
+  .bind (audioPut 8 epoch) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 16 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 24 baseline) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 32 0) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 40 (ticks + 100000000)) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 56 (previous+1)) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind (audioPut 0 1) fun s _ => if mmFailed s = true then .done s 0 else
+  .bind audioPacket fun status _ =>
+  if mmFailed status = true then .bind (stopAudio 3 0) fun _ _ => .done status 0 else
+  .bind (submitPCM (audioPage+64) epoch) fun status accepted =>
+  .bind (audioPut 16 accepted) fun s _ => if mmFailed s = true then .done s 0 else
+  if mmFailed status = true then .bind (stopAudio 3 0) fun _ _ => .done status 0 else
+  if accepted ≠ 16 then .bind (stopAudio 3 0) fun _ _ => .done 6 accepted else
+  .bind (startPCM epoch) fun status _ =>
+  if mmFailed status = true then .bind (stopAudio 3 0) fun _ _ => .done status 0 else
+  .bind (get 8) fun s console => if mmFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x715 (previous+1) epoch 16 6250
+where
+  audioPacket : Action :=
+    .bind (audioPut 64 0x31424350) fun s _ => if mmFailed s = true then .done s 0 else
+    .bind (audioPut 72 1) fun s _ => if mmFailed s = true then .done s 0 else
+    .bind (audioPut 80 16) fun s _ => if mmFailed s = true then .done s 0 else
+    .bind (audioPut 88 0) fun s _ => if mmFailed s = true then .done s 0 else
+    .bind (audioPut 96 0x26a01d9010000000) fun s _ => if mmFailed s = true then .done s 0 else
+    .bind (audioPut 104 0x10001d9026a02a00) fun s _ => if mmFailed s = true then .done s 0 else
+    .bind (audioPut 112 0xd960e270f0000000) fun s _ => if mmFailed s = true then .done s 0 else
+    audioPut 120 0xf000e270d960d600
+
+private def pumpAudio : Action :=
+  .bind (get 128) fun s allocated => if mmFailed s = true then .done s 0 else
+  if allocated = 0 then .done 0 0 else
+  .bind (audioGet 0) fun s running => if mmFailed s = true then .done s 0 else
+  if running = 0 then .done 0 0 else
+  .bind (audioGet 8) fun s epoch => if mmFailed s = true then .done s 0 else
+  .bind (invoke 11 8 0 0) fun status current =>
+  if mmFailed status = true then stopAudio 3 0 else
+  if current ≠ epoch then audioReceipt 4 else
+  .bind (invoke 15 8 0 0) fun status counter =>
+  if mmFailed status = true then stopAudio 3 0 else
+  .bind (audioGet 24) fun s baseline => if mmFailed s = true then .done s 0 else
+  if counter < baseline then stopAudio 3 0 else
+  let observed := counter - baseline
+  .bind (audioPut 32 (if 16 < observed then 16 else observed)) fun s _ => if mmFailed s = true then .done s 0 else
+  if 16 ≤ observed then stopAudio 0 0 else
+  .bind (invoke 10 0 0 0) fun status ticks =>
+  if mmFailed status = true then stopAudio 3 0 else
+  .bind (audioGet 40) fun s expiry => if mmFailed s = true then .done s 0 else
+  if expiry ≤ ticks then stopAudio 2 0 else .done 0 observed
+
+/-- Acquisition and local output have separate grants. Poll without a busy
+wait; acquisition errors never prevent an explicit MUTE from revoking output. -/
+def pump : Action :=
+  .bind pumpAcquisition fun status count =>
+  .bind pumpAudio fun audioStatus _ =>
+  if mmFailed status = true then .done status count else .done audioStatus count
 
 def active : Action := get 16
 

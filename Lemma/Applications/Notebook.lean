@@ -6231,6 +6231,9 @@ private def schoolCancel : Action :=
 /-- Local diagnostic controls, guest-rasterized and submitted through paper.
 CAPTURE is synthetic, five seconds, no transmission/retention. MUTE is local. -/
 private def multimodalCharacter (index enabled : UInt64) : UInt64 :=
+  if 60 ≤ index then
+    if index < 66 then (0x204f49445541 >>> ((index-60)*8)) &&& 255 else
+    if index < 70 then (0x54534554 >>> ((index-66)*8)) &&& 255 else 32 else
   if index < 12 then
     if enabled &&& 1 = 1 then
       if index < 6 then (0x455649544341 >>> (index * 8)) &&& 255 else 32
@@ -6249,8 +6252,8 @@ private def multimodalCharacter (index enabled : UInt64) : UInt64 :=
   if 52 ≤ index then if index < 56 then (0x4e494f4a >>> ((index - 52) * 8)) &&& 255 else if enabled >>> 16 = 1 then if index < 60 then (0x53534f4c >>> ((index-56)*8)) &&& 255 else 32 else 32 else 32
 
 private def multimodalBarStep (i _ : UInt32) (acc enabled width _ _ : UInt64) : Action :=
-  let x := i.toUInt64 % 360 * 2
-  let y := i.toUInt64 / 360
+  let x := i.toUInt64 % 432 * 2
+  let y := i.toUInt64 / 432
   let a := pixel x y enabled
   let b := pixel (x + 1) y enabled
   .bind (Memory.write8 (Surface.framebuffer + (132 + y) * ((width + 1) / 2) + 200 + x / 2) ((a <<< 4) ||| b)) fun s _ => .done s acc
@@ -6269,10 +6272,10 @@ private def multimodalBar : Action :=
   .bind (Memory.read64 (Lemma.User.Multimodal.records+2480)) fun s lost => if mmFailed s = true then .done s 0 else
   let enabled := enabled ||| (school <<< 8) ||| (lost <<< 16)
   .bind (get 32) fun s width => if mmFailed s = true then .done s 0 else
-  if width < 1120 then .done 16 0 else
-  .boundedFoldU64 5400 multimodalBarStep 5400 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
-  .boundedFoldU64 23 multimodalBarTile 23 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
-  dirty 400 132 1120 147
+  if width < 1264 then .done 16 0 else
+  .boundedFoldU64 6480 multimodalBarStep 6480 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+  .boundedFoldU64 28 multimodalBarTile 28 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
+  dirty 400 132 1264 147
 
 private def multimodalBookLoad : Action :=
   .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
@@ -6287,7 +6290,7 @@ private def multimodalBookLoad : Action :=
   else .done 175 0 else .done 175 0 else .done 175 0 else .done 175 0
 
 private def multimodalControl (operation : UInt64) : Action :=
-  .bind (if operation = 3 then multimodalAsk else if operation = 4 then multimodalLoadTutor else if operation = 5 then multimodalJoinSchool else if operation = 6 then multimodalBookLoad else if operation = 7 then schoolSend else if operation = 8 then schoolCancel else Lemma.User.Multimodal.control operation) fun status result =>
+  .bind (if operation = 3 then multimodalAsk else if operation = 4 then multimodalLoadTutor else if operation = 5 then multimodalJoinSchool else if operation = 6 then multimodalBookLoad else if operation = 7 then schoolSend else if operation = 8 then schoolCancel else if operation = 9 then Lemma.User.Multimodal.testAudio else Lemma.User.Multimodal.control operation) fun status result =>
   .bind (get 24) fun s console => if mmFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x712 operation status.toUInt64 result 0) fun s _ => if mmFailed s = true then .done s 0 else
   Memory.write64 (Lemma.User.Multimodal.state + 32) 1
@@ -6574,7 +6577,7 @@ private def multimodalApplySample (x y flags : UInt64) : Action :=
   if py < 160 then if 132 ≤ py then
     if 400 ≤ px then if px < 544 then multimodalControl 0 else
       if px < 640 then multimodalControl 1 else if px < 832 then multimodalControl 2 else
-      if px < 928 then multimodalControl 3 else if px < 1024 then multimodalControl 4 else .done 0 0
+      if px < 928 then multimodalControl 3 else if px < 1024 then multimodalControl 4 else if 1120 ≤ px then if px < 1264 then multimodalControl 9 else .done 0 0 else .done 0 0
     else if 288 ≤ px then if px < 360 then numericToggleCourse else .done 0 0 else .done 0 0
     else .done 0 0 else
   .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else

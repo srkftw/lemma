@@ -78,13 +78,13 @@ def uiMain : IO Unit := do
   let bar ← IO.mkRef (uiFixture 1)
   uiCheck ((← uiExecute bar multimodalBar).1 = 0) "actual bar failed"
   let s ← bar.get
-  uiCheck (uiRead s (state+456) = 23) "bar did not enqueue all23 intersecting controller tiles"
-  for i in [:23] do
+  uiCheck (uiRead s (state+456) = 28) "bar did not enqueue all28 intersecting controller tiles"
+  for i in [:28] do
     let index := (220+i).toUInt64
     let word := uiRead s (dirtyQueue+(i/4).toUInt64*8)
     uiCheck (((word >>> ((i%4).toUInt64*16)) &&& 65535) = index) "wrong actual dirty queue tile"
     uiCheck (uiByte s (dirtyBitmap+index/8) &&& ((1:UInt64) <<< (index%8)) ≠ 0) "queued tile lacks bitmap ownership"
-  uiCheck ((uiRead s (state+336),uiRead s (state+344),uiRead s (state+352),uiRead s (state+360)) = (400,132,1120,147)) "wrong actual dirty extent"
+  uiCheck ((uiRead s (state+336),uiRead s (state+344),uiRead s (state+352),uiRead s (state+360)) = (400,132,1264,147)) "wrong actual dirty extent"
   -- Independent row-major3x5 ACTIVE glyph literals, not producer expectations.
   for (i,bits) in ( #[(0,0x2bed),(1,0x7927),(2,0x7492),(3,0x7497),(4,0x5b6a),(5,0x79a7)] : Array (UInt64 × UInt64)) do
     for y in [:15] do
@@ -102,9 +102,29 @@ def uiMain : IO Unit := do
         let actual := (byte >>> (if px%2 = 0 then 4 else 0)) &&& 15
         let expected := if x < 9 && (bits >>> (14-(y/3*3+x/3).toUInt64)) &&& 1 = 1 then 0 else 15
         uiCheck (actual = expected) "JOIN label pixels differ from independent glyph literal"
+  for (i,bits) in (#[(0,0x2bed),(1,0x5b6f),(2,0x6b6e),(3,0x7497),(4,0x7b6f),(5,0),(6,0x7492),(7,0x79a7),(8,0x79cf),(9,0x7492)] : Array (UInt64 × UInt64)) do
+    for y in [:15] do
+      for x in [:12] do
+        let px := 1120+i*12+x.toUInt64
+        let byte := uiByte s (Surface.framebuffer+(132+y.toUInt64)*825+px/2)
+        let actual := (byte >>> (if px%2 = 0 then 4 else 0)) &&& 15
+        let expected := if x < 9 && (bits >>> (14-(y/3*3+x/3).toUInt64)) &&& 1 = 1 then 0 else 15
+        uiCheck (actual = expected) "AUDIO TEST pixels differ from independent glyph literals"
+  let audio ← IO.mkRef (uiFixture 0)
+  audio.modify fun s => uiWrite (uiWrite s (Lemma.User.Multimodal.state+128) 1) 0x360000 1
+  uiCheck ((← uiExecute audio (multimodalApplySample 46074 4173 1)).1 = 0) "actual AUDIO TEST contact dispatch failed"
+  let audioReceipt := "K1 0000000000000712 0000000000000009 0000000000000006 0000000000000000 0000000000000000\n".toUTF8
+  for i in [:audioReceipt.size] do
+    uiCheck (uiByte (← audio.get) (Console.packetAddress+i.toUInt64) = audioReceipt[i]!.toUInt64) "AUDIO TEST did not reach the actual bounded User consumer"
+  let queuedAudio ← IO.mkRef (uiWrite (uiWrite (uiFixture 0) (state+160) 1) (raw+16) 46074)
+  uiCheck ((← uiExecute queuedAudio multimodalInputSample).1 = 0) "busy AUDIO TEST raw admission failed"
+  let queuedAudioState ← queuedAudio.get
+  uiCheck (queuedAudioState.calls.isEmpty && uiRead queuedAudioState (Lemma.User.Multimodal.records+2448) = 1) "busy AUDIO TEST started output or lost its ordered tap"
+  for i in [:9] do
+    uiCheck (uiRead queuedAudioState (0x350000+i.toUInt64*8) = uiRead queuedAudioState (raw+i.toUInt64*8)) "queued AUDIO TEST changed a complete raw field"
   uiCheck ((← uiExecute bar multimodalBar).1 = 0) "repaint failed"
-  uiCheck (uiRead (← bar.get) (state+456) = 23) "bar duplicated already queued tile"
-  let narrow ← IO.mkRef (uiWrite (uiFixture 0) (state+32) 1119)
+  uiCheck (uiRead (← bar.get) (state+456) = 28) "bar duplicated already queued tile"
+  let narrow ← IO.mkRef (uiWrite (uiFixture 0) (state+32) 1263)
   let before ← narrow.get
   uiCheck ((← uiExecute narrow multimodalBar).1 = 16) "undersized framebuffer accepted"
   uiCheck ((← narrow.get).writes = before.writes) "rejected bar modified memory"
