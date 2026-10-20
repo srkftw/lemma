@@ -375,6 +375,8 @@
         "scripts/check_pen_sram.py",
         "scripts/silicon_enclosure.py",
         "scripts/silicon_pen_*.py",
+        "scripts/silicon_lvs_alias.py",
+        "scripts/silicon_power_ports.py",
         "scripts/silicon_route_enclosure.py",
         "tooling/silicon/pen-*.tcl"
       ],
