@@ -23,7 +23,7 @@ const timing={runSeconds:0},sleep=ms=>new Promise(r=>setTimeout(r,ms));
 // The retained package run advanced896,748units before its60s deadline.
 const quantumUnits=100000n;
 const exactJson=text=>JSON.parse(text.replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));
-let heapBytes=null,uartPaced=false;
+let heapBytes=null,uartPaced=false,uartFlow=false;
 const egress=new PcmEgress();
 async function pcm(){
  const result=await control.request('lemma-waveform');
@@ -85,6 +85,11 @@ async function load(m){
  const logs=[];started=performance.now();
  core=await createQemu({arguments:['-machine','lemma-silicon-fast','-cpu','rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0','-m','128M','-smp','1','-bios','none','-kernel','/image.elf','-dtb','/machine.dtb','-display','none','-monitor','none','-serial','file:/uart.bin','-S','-no-shutdown','-icount','shift=3,align=off,sleep=off','-seed','0x4c454d4d413031','-global','lemma-fast-block.medium=/medium.raw','-global','lemma-paper-pen.multimodal-audio-output=/audio.bin'],preRun:[module=>{module.FS.writeFile('/image.elf',elf);module.FS.writeFile('/machine.dtb',dtb);backing=attachOpfsFile(module,'/medium.raw',handle);}],print:t=>{if(logs.length<256)logs.push(String(t));},printErr:t=>{if(logs.length<256)logs.push(String(t));},onAbort:t=>postMessage({type:'error',error:'QEMU abort:'+t,logs})});
  control=new Control(core);await control.ready();if(await control.get('raw-uart-version')!=='lemma-raw-uart/1')throw Error('UART raw transport absent');await control.set('enable-raw-uart','lemma-raw-uart/1');const properties=await control.request('qom-list',{path:'/machine/lemma-hardware'});uartPaced=properties.some(p=>p.name==='raw-uart-paced-version')&&await control.get('raw-uart-paced-version')==='lemma-raw-uart-paced/1';
+ uartFlow=false;
+ if(properties.some(p=>p.name==='raw-uart-flow-version')){
+  if(await control.get('raw-uart-flow-version')!=='lemma-raw-uart-flow/1'||!uartPaced)throw Error('Unsupported receiver-ready UART capability');
+  await control.set('enable-raw-uart-flow','lemma-raw-uart-flow/1');uartFlow=true;
+ }
  loaded=true;initializing=!!m.initialize;guestStart=uart().length;notebookFault.reset(guestStart);running=!m.paused;pauseReason=m.paused?'opened-paused':null;
  await sendState();await panel(true);schedule();
 }
@@ -143,7 +148,7 @@ async function schoolActivity(message){
    let accepted=0;
    // Reduced10KB/s serial input has one actual arrival per100us.
    // The additive queue API batches admission without making FIFO bursts.
-   let arrival;try{arrival=await admitUart(control,frame,base,uartPaced,n=>{accepted=n;});postMessage({type:'uart-arrival-admission',arrival});}
+   let arrival;try{arrival=await admitUart(control,frame,base,uartPaced,n=>{accepted=n;},uartFlow);postMessage({type:'uart-arrival-admission',arrival});}
    catch(e){coursePartial=accepted>0;throw Error('School transfer admitted '+accepted+' of '+frame.length+' bytes; cold-open before retry: '+e);}
    finally{if(result.decision)void school.transportDelivery(frame,accepted).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));}
    if(wasRunning){running=true;pauseReason=null;schedule();}await sendState();
@@ -173,7 +178,7 @@ onmessage=({data:m})=>{
   else if(m.action==='run'){if(m.stopOnPanel!==undefined&&typeof m.stopOnPanel!=='boolean')throw Error('Panel stop must be Boolean');await stopped();const state=await inspect();const next=new RunBudget(state.cycle,m.cycles,m.stopOnReady??false,m.hostSeconds??null,performance.now(),m.stopOnPanel?state.panel_completed:null);if(next.limit>922337203685477580n)throw Error('Run exceeds signed virtual-nanosecond clock');budget=next;running=true;pauseReason=null;await sendState(state);schedule();}
   else if(m.action==='pen'||m.action==='button'){if(capture.length>=1000000)throw Error('Raw capture bound exhausted');await input(m);schedule();}
   else if(m.action==='raw'||m.action==='raw-batch'){await stopped();const rows=m.action==='raw'?[m.row]:typeof m.rows==='string'&&m.rows.length<=65536?m.rows.split(/\r?\n/).filter(r=>r.trim()):[];if(rows.length<1||rows.length>1024||capture.length+rows.length>1000000)throw Error('Raw batch bounds');let accepted=0;try{for(const row of rows){await raw(row);accepted++;}}finally{postMessage({type:'raw-admission',accepted,total:rows.length,error:accepted===rows.length?null:'Remainder rejected; accepted prefix retained'});}await sendState();schedule();}
-  else if(m.action==='course-install'){if(coursePartial)throw Error('Cold-open before retrying partial course input');pause('course-input');await stopped();const frame=courseInstallFrame(m.bytes,m.transaction),clock=await control.request('lemma-clock'),base=(BigInt(clock.virtual_ns)+9n)/10n*10n;let accepted=0;try{const arrival=await admitUart(control,frame,base,uartPaced,n=>{accepted=n;});postMessage({type:'uart-arrival-admission',arrival});}catch(e){coursePartial=accepted>0;postMessage({type:'course-admission',accepted,total:frame.length,bytes:frame.length-64,error:String(e)});throw e;}postMessage({type:'course-admission',accepted,total:frame.length,bytes:frame.length-64,error:null});await sendState();}
+  else if(m.action==='course-install'){if(coursePartial)throw Error('Cold-open before retrying partial course input');pause('course-input');await stopped();const frame=courseInstallFrame(m.bytes,m.transaction),clock=await control.request('lemma-clock'),base=(BigInt(clock.virtual_ns)+9n)/10n*10n;let accepted=0;try{const arrival=await admitUart(control,frame,base,uartPaced,n=>{accepted=n;},uartFlow);postMessage({type:'uart-arrival-admission',arrival});}catch(e){coursePartial=accepted>0;postMessage({type:'course-admission',accepted,total:frame.length,bytes:frame.length-64,error:String(e)});throw e;}postMessage({type:'course-admission',accepted,total:frame.length,bytes:frame.length-64,error:null});await sendState();}
   else if(m.action==='inspect'){await stopped();await sendState(await inspect(true));postMessage({type:'uart',text:new TextDecoder().decode(uart())});schedule();}
   else if(m.action==='reset'){school.disconnect();schoolMachineEpoch++;if(typeof m.cold!=='boolean')throw Error('Cold reset selector must be Boolean');pause('reset');await stopped();if(m.cold){postMessage({type:'runtime-closed',nextNotebook:true});return;}await control.request('lemma-waveform');egress.discard(core.FS.stat('/audio.bin').size);await control.request('system_reset');guestStart=uart().length;notebookFault.reset(guestStart);readyAt=null;budget=null;panelSequence=null;await sendState();await panel(true);}
   else if(m.action==='export-panel'){await stopped();await panel(true);const result=await control.request('lemma-panel'),packed=core.FS.readFile(result.path),header=new TextEncoder().encode(`P5\n${result.width} ${result.height}\n255\n`),bytes=new Uint8Array(header.length+result.width*result.height);bytes.set(header);for(let y=0;y<result.height;y++)for(let x=0;x<result.width;x++){const p=packed[y*result.stride+(x>>1)];bytes[header.length+y*result.width+x]=((x&1)?p&15:p>>4)*17;}postMessage({type:'export',name:'lemma-controller.pgm',bytes},[bytes.buffer]);schedule();}
