@@ -74,7 +74,11 @@ def execute (state : State) (actor : String) (request : Json) (now : Nat) : Exce
           rows := rows.push (object [("course",toJson (optionalNat row.data "course")),
             ("revision",toJson (optionalNat row.data "revision")),("title",toJson unit.course.title),
             ("policy",toJson (optionalNat row.data "policy")),("artifact",toJson (optionalStr row.data "artifact")),
-            ("publicationSequence",toJson row.sequence)])
+            ("publicationSequence",toJson row.sequence),
+            ("activities",toJson (unit.activities.map fun activity =>
+              object [("id",toJson activity.id),("title",toJson unit.course.nodes[activity.node]!.title),
+                ("node",toJson activity.node),("kind",toJson activity.kind),("goal",toJson activity.goal),
+                ("independent",toJson activity.assessment.independent),("assistance",toJson activity.assistance)]))])
           cursor := row.sequence
         else more := true
     return (state,object [("courses",toJson rows),("next",toJson cursor),("more",toJson more)])

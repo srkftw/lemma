@@ -366,10 +366,22 @@ def execute (root : FilePath) (state : State) (request : Json) : IO (State × Js
     let revision ← lift (nat request "revision")
     enrolled state actor course revision
     let pub ← publication state course revision
+    need (!(field request "node").isOk && !(field request "ordinal").isOk)
+      "select a published activity identity; caller node ordinals are not admitted"
+    let selected ← match field request "activity" with
+      | .error _ => pure none
+      | .ok value => do
+        let activityId ← lift value.getStr?
+        let unit ← definition pub
+        let activity ← lift <| (unit.activities.find? (fun activity => activity.id == activityId)).toExcept
+          "activity absent from selected publication"
+        pure (some activity)
     let digest ← lift (str pub.data "artifact")
     let bytes ← readBounded (artifactPath root digest) 32768
     return (state,object [("package_hex",toJson (hex bytes)),("identity",toJson course),("edition",toJson revision),
-      ("policy",toJson (optionalNat pub.data "policy")),("artifact",toJson digest)])
+      ("policy",toJson (optionalNat pub.data "policy")),("artifact",toJson digest),
+      ("publicationSequence",toJson pub.sequence),("node",toJson (selected.map (·.node) |>.getD 0)),
+      ("activity",toJson (selected.map (·.id) |>.getD ""))])
   | "join" =>
     let course ← lift (nat request "course")
     let revision ← lift (nat request "revision")
