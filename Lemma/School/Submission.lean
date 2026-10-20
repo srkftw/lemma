@@ -119,11 +119,71 @@ structure Envelope where
   documentPolicy : Nat
   documentReviewMode : Nat
   events : Array (Array Nat)
+  eventFormat : Nat := 1
   inkIndexBytes : Nat
   inkEditCount : Nat
   inkEditCursor : Nat
   chunks : Array Chunk
   deriving Repr, FromJson, ToJson
+
+/-- Durable remote assistance provenance. A prepared event has uncertain
+presentation; raster completion is not panel visibility. -/
+structure RemoteExposure where
+  documentRevision : Nat
+  goal : Nat
+  scope : Nat
+  requestSequence : Nat
+  workObject : Nat
+  bindingRecord : Nat
+  authority : String
+  deriving BEq, Repr, FromJson, ToJson
+
+private def authorityHex (words : Array Nat) : String := hex <| Id.run do
+  let mut bytes := ByteArray.empty
+  for value in words do
+    for i in [:8] do bytes := bytes.push ((value >>> (i*8)) % 256).toUInt8
+  return bytes
+
+/-- Payload rows are never interpreted as local hints or learner events.
+The original raw rows remain in the envelope. -/
+def parseEvents (format : Nat) (rows : Array (Array Nat)) :
+    Except String (Array (Array Nat) × Array RemoteExposure) := do
+  require (format == 1 || format == 2) "unsupported document event format"
+  require (rows.size <= 64 && rows.all (fun row => row.size == 2 &&
+    row.all (· <= 0xffffffffffffffff))) "document event rows exceed bounded word format"
+  let mut ordinary := #[]
+  let mut remote : Array RemoteExposure := #[]
+  let mut skip := 0
+  for i in [:rows.size] do
+    if skip > 0 then skip := skip-1 else
+      let row := rows[i]!
+      let tag := row[1]!
+      if tag % 256 == 7 then
+        require (format == 2 && i+3 < rows.size && (tag >>> 24) % 256 == 4)
+          "remote event requires four complete format2 rows"
+        let scope := (tag >>> 16) % 256
+        let authority := authorityHex #[rows[i+2]![0]!,rows[i+2]![1]!,rows[i+3]![0]!,rows[i+3]![1]!]
+        let event : RemoteExposure := {
+          documentRevision := row[0]!, goal := (tag >>> 8) % 256,
+          scope, requestSequence := tag >>> 32,
+          workObject := rows[i+1]![0]!, bindingRecord := rows[i+1]![1]!, authority }
+        require (event.documentRevision > 0 && event.goal > 0 && event.goal <= 3 &&
+          (scope == 1 || scope == 2) && event.requestSequence > 0 &&
+          event.workObject > 0x504b000000000000 && event.workObject <= 0x504b000000000040 &&
+          event.bindingRecord > 0 && event.bindingRecord <= 0x7ffffffffffffffe &&
+          authority != String.ofList (List.replicate 64 '0')) "remote event context outside admitted format"
+        if scope == 2 then
+          require (remote.any (fun prior => {prior with scope := 2} == event))
+            "remote raster completion lacks its exact prepared event"
+        require (!(remote.any (fun prior => prior.authority == event.authority &&
+          prior.bindingRecord == event.bindingRecord && prior.requestSequence == event.requestSequence &&
+          prior.scope == event.scope))) "duplicate remote event identity"
+        remote := remote.push event
+        skip := 3
+      else
+        require (tag % 256 > 0 && tag % 256 <= 6) "unsupported learner event kind"
+        ordinary := ordinary.push row
+  return (ordinary,remote)
 
 /-- Validate bounded headers and the complete Doc8, including exact typed
 results and their original Known/Unknown execution identities. Opaque work is
@@ -231,6 +291,8 @@ def decode (bytes : ByteArray) : Except String Envelope  :=  do
   let eventCount ← w (document+192)
   let mut events : Array (Array Nat)  :=  #[]
   for i in [:eventCount.toNat] do events  :=  events.push #[(← w (document+832+i*16)).toNat,(← w (document+840+i*16)).toNat]
+  let eventFormat := (← w (document+208)).toNat
+  let _ ← parseEvents eventFormat events
   return {
     wireVersion := wireVersion.toNat
     queueObject := queue.toNat
@@ -275,11 +337,79 @@ def decode (bytes : ByteArray) : Except String Envelope  :=  do
     
     documentReviewMode := (← w (document+184)).toNat
     events
+    eventFormat
     inkIndexBytes := indexBytes.toNat
     
     inkEditCount := edits.toNat
     inkEditCursor := cursor.toNat
     chunks}
+
+/-- Resolve historical provenance without requiring an expired or cancelled
+session to become live again. This grants no admission or execution authority. -/
+private def remoteContext (state : Lemma.School.State) (actor : String)
+    (event : RemoteExposure) : Except String (Client.SessionBinding × Client.GuestAsk) := do
+  let row ← (state.records.find? (fun row => row.sequence == event.bindingRecord &&
+    row.kind == "session")).toExcept "remote original school binding absent"
+  let binding : Client.SessionBinding ← fromJson? row.data
+  require (row.actor == actor && binding.actor == actor && binding.school == state.school &&
+    binding.bindingRecord == event.bindingRecord && binding.authority == event.authority)
+    "remote original principal or authority differs"
+  let invitation ← (state.latest "invitation" (toString event.bindingRecord)).toExcept
+    "remote original invitation absent"
+  let ask : Client.GuestAsk ← Lemma.School.field invitation.data "ask" >>= fromJson?
+  require (invitation.actor == actor && ask.session == binding.guestSession &&
+    ask.sequence == event.requestSequence && ask.object == event.workObject &&
+    ask.revision == event.documentRevision && ask.source == binding.course &&
+    ask.edition == binding.revision) "remote event differs from immutable original ASK"
+  return (binding,ask)
+
+private def remoteDecision (state : Lemma.School.State) (actor : String)
+    (binding : Client.SessionBinding) (ask : Client.GuestAsk) : Option Lemma.School.Record :=
+  state.records.find? (fun row => row.kind == "decision" && row.actor == actor &&
+    binding.bindingRecord < row.sequence &&
+    match Lemma.School.field row.data "input" >>= fromJson? (α := Client.AssistInput) with
+    | .ok input => input.school == binding.school && input.actor == binding.actor &&
+        input.session == binding.session && input.course == binding.course &&
+        input.revision == binding.revision && input.policy == binding.policy &&
+        input.generation == binding.generation && input.ask == ask
+    | .error _ => false)
+
+/-- Exact old requests remain attributable across reconnect and later edits of
+the same work. Other known tasks/objects never acquire this work's exposure.
+An unresolved event on the current work remains conservatively uncertain. -/
+def remoteAssistance (state : Lemma.School.State) (actor : String) (envelope : Envelope)
+    (events : Array RemoteExposure) : Bool × Bool × Array Lemma.School.Record × Array Json := Id.run do
+  let mut exposed := false
+  let mut uncertain := false
+  let mut decisions : Array Lemma.School.Record := #[]
+  let mut observations : Array Json := #[]
+  for event in events do
+    let sameWork := event.workObject == (PackageWorkspace.object envelope.page.toUInt64).toNat &&
+      event.documentRevision <= envelope.documentRevision
+    let presentation := if event.scope == 1 then "prepared; presentation uncertain" else
+      "guest raster routine completed; panel visibility unestablished"
+    match remoteContext state actor event with
+    | .error reason =>
+        exposed := exposed || sameWork
+        uncertain := uncertain || sameWork
+        observations := observations.push (Lemma.School.object [("event",toJson event),
+          ("appliesToCurrentWork",toJson sameWork),("contextMatched",toJson false),
+          ("reason",toJson reason),("presentation",toJson presentation)])
+    | .ok (binding,ask) =>
+        let applies := sameWork && binding.course == envelope.course &&
+          binding.revision == envelope.edition && binding.policy == envelope.policy &&
+          ask.task_id == envelope.node
+        let decision := remoteDecision state actor binding ask
+        exposed := exposed || applies
+        uncertain := uncertain || (applies && (event.scope == 1 || decision.isNone))
+        if applies then
+          if let some row := decision then
+            if !decisions.any (fun old => old.sequence == row.sequence) then decisions := decisions.push row
+        observations := observations.push (Lemma.School.object [("event",toJson event),
+          ("appliesToCurrentWork",toJson applies),("contextMatched",toJson true),
+          ("decision",toJson (decision.map (·.key))),
+          ("presentation",toJson presentation)])
+  return (exposed,uncertain,decisions,observations)
 
 
 /-- A durable queue object names one immutable work artifact under its original
@@ -328,7 +458,7 @@ def admit (state : Lemma.School.State) (actor : String) (envelope : Envelope)
     ask.edition == envelope.edition && ask.task_id == envelope.node &&
     ask.revision == envelope.documentRevision &&
     ask.object == (PackageWorkspace.object envelope.page.toUInt64).toNat
-  let decisions := state.records.filter (fun row => currentWork && row.kind == "decision" &&
+  let currentDecisions := state.records.filter (fun row => currentWork && row.kind == "decision" &&
     row.actor == actor && binding.bindingRecord < row.sequence &&
     match Lemma.School.field row.data "input" >>= fromJson? (α := Lemma.School.Client.AssistInput) with
     | .ok input => input.school == binding.school && input.actor == binding.actor &&
@@ -336,11 +466,16 @@ def admit (state : Lemma.School.State) (actor : String) (envelope : Envelope)
         input.revision == binding.revision && input.policy == binding.policy &&
         input.generation == binding.generation && input.ask == ask
     | .error _ => false)
+  let (ordinaryEvents,remoteEvents) ← parseEvents envelope.eventFormat envelope.events
+  let (remoteExposure,remoteUncertain,historicalDecisions,remoteObservations) :=
+    remoteAssistance state actor envelope remoteEvents
+  let decisions := historicalDecisions.foldl (fun rows row =>
+    if rows.any (fun old => old.sequence == row.sequence) then rows else rows.push row) currentDecisions
   let delivery := state.records.filter (fun row => row.kind == "delivery" &&
     decisions.any (fun decision => Lemma.School.optionalStr row.data "decision" == decision.key))
-  let currentHint := envelope.events.any (fun event => event[0]! == envelope.documentRevision && event[1]! % 256 == 2)
-  let unknownHint := envelope.events.any (fun event => event[1]! % 256 == 6)
-  let assisted := !decisions.isEmpty || currentHint || unknownHint
+  let currentHint := ordinaryEvents.any (fun event => event[0]! == envelope.documentRevision && event[1]! % 256 == 2)
+  let unknownHint := ordinaryEvents.any (fun event => event[1]! % 256 == 6)
+  let assisted := !decisions.isEmpty || currentHint || unknownHint || remoteExposure
   require (!(activity.assessment.independent && assisted)) "guest independent assessment contains assistance exposure"
   let reviewId := Lemma.School.optionalStr invitation.data "reviewId"
   let request := Lemma.School.object [("id",toJson id),("course",toJson envelope.course),
@@ -356,6 +491,8 @@ def admit (state : Lemma.School.State) (actor : String) (envelope : Envelope)
     ("origin",toJson "immutable guest submission envelope/1"),("guestEnvelope",toJson envelope),
     ("assistanceDecisions",toJson decisions),("deliveryObservations",toJson delivery),
     ("localHintExposure",toJson currentHint),("legacyHintExposureUnknown",toJson unknownHint),
+    ("remoteAssistance",toJson remoteObservations),("remoteCurrentWorkExposure",toJson remoteExposure),
+    ("remotePresentationUncertain",toJson remoteUncertain),
     ("assistanceScope",toJson "conservative exposure flag; decision and transport acknowledgement alone do not establish visible presentation"),
     ("estimate",toJson "uncertain; no educational-effect claim")]
   let refs := publication.artifacts.push digest

@@ -42,7 +42,8 @@ private def ok (memory : IO.Ref ByteArray) (action : Action) : IO UInt64 := do
   if status != 0 then throw (IO.userError s!"guest fixture Action rejected{status}")
   return value
 
-private def build (package context : ByteArray) (kind node : Nat) : IO ByteArray := do
+private def build (package context : ByteArray) (kind node : Nat)
+    (remote : ByteArray := ByteArray.empty) (edit : Bool := false) : IO ByteArray := do
   if context.size != 104 then throw (IO.userError "fixture context must be104bytes")
   let memory ← IO.mkRef (ByteArray.mk (Array.replicate 131072 0))
   let doc : UInt64 := 0x10000
@@ -56,6 +57,16 @@ private def build (package context : ByteArray) (kind node : Nat) : IO ByteArray
   for (offset,value) in #[(48,2),(120,2),(56,0),(64,1),(72,1),(80,2),(88,1)] do
     memory.modify fun bytes => setWord bytes (doc.toNat+offset) value
   let _ ← ok memory (MathematicsClosure.completeExecution doc 1 2 1 11 8)
+  if remote.size % 64 != 0 || remote.size > 128 then
+    throw (IO.userError "fixture remote groups must be complete and bounded")
+  for group in [:remote.size / 64] do
+    memory.modify fun bytes => (List.range 64).foldl (fun bytes i =>
+      bytes.set! (scratch.toNat+i) remote[group*64+i]!) bytes
+    let _ ← ok memory (Mathematics.appendRemote doc scratch)
+    pure ()
+  if edit then
+    let _ ← ok memory (Mathematics.edit doc 80 1)
+    pure ()
   let _ ← ok memory (PackageWorkspace.create workspace doc 1 1)
   if kind == 1 then
     let _ ← ok memory (PackageWorkspace.captureSelection workspace source package.size.toUInt64 3 scratch)
@@ -78,15 +89,22 @@ private def build (package context : ByteArray) (kind node : Nat) : IO ByteArray
   output := output ++ bytes.extract chunk.toNat (chunk+chunkBytes).toNat
   let w := readWord context
   for (offset,value) in #[(0,Lemma.School.Submission.magic),(8,1),(16,output.size.toUInt64),
-      (24,0x5351000000000012),(32,17),(40,1),(48,1),(56,1),(64,← w 88),(72,← w 96),
+      (24,0x5351000000000012),(32,17),(40,1),(48,1),(56,← readWord bytes (doc.toNat+40)),(64,← w 88),(72,← w 96),
       (80,node.toUInt64),(88,← readWord package 80),(96,← w 72),
-      (104,kind.toUInt64),(112,120),(120,1),(232,256),(240,3712),(248,packedBytes)] do
+      (104,kind.toUInt64),(112,120),(120,← readWord bytes (doc.toNat+96)),(232,256),(240,3712),(248,packedBytes)] do
     output := setWord output offset value
   for i in [:context.size] do output := output.set! (128+i) context[i]!
   return output
 
 def main (args : List String) : IO UInt32 := do
   match args with
+  | [package,context,output,kind,node,remote,edit] =>
+    let bytes ← build (← IO.FS.readBinFile package) (← IO.FS.readBinFile context)
+      (kind.toNat?.getD 2) (node.toNat?.getD 4) (← IO.FS.readBinFile remote) (edit == "edit")
+    let decoded ← IO.ofExcept (Lemma.School.Submission.decode bytes)
+    IO.FS.writeBinFile output bytes
+    IO.println (toJson decoded).compress
+    return 0
   | [package,context,output,kind,node] =>
     let bytes ← build (← IO.FS.readBinFile package) (← IO.FS.readBinFile context) (kind.toNat?.getD 1) (node.toNat?.getD 4)
     let decoded ← IO.ofExcept (Lemma.School.Submission.decode bytes)

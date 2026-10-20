@@ -90,6 +90,7 @@ def main():
             ([sys.executable, "-m", "unittest", "discover", "-s", "tests/school", "-v"], "host.log", args.host_timeout),
             (["lake", "env", "lean", "--run", "tests/school/Client.lean"], "client-validation.log", 120),
             (["lake", "env", "lean", "--run", "tests/school/TutorSelection.lean"], "tutor-selection.log", 120),
+            (["lake", "env", "lean", "--run", "tests/school/RemoteEvents.lean"], "remote-events.log", 120),
         ]
         for command, log_name, timeout in commands:
             began = time.monotonic()

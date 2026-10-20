@@ -189,6 +189,9 @@ class Delivery(unittest.TestCase):
         reviewed=self.client(teacher,'review-work',attempt=captured['attempt'])
         data=reviewed['attempt']['data']
         self.assertEqual(data['deliveryObservations'],[])
+        self.assertEqual(reviewed['assistance'],[])
+        self.assertEqual(reviewed['assistanceScope'],'exact immutable guest-work attribution')
+        self.assertGreater(len(reviewed['activityAssistanceHistory']),0)
         self.assertFalse(data['assisted'])
         self.assertEqual(data['outcome'],4)
         after=json.loads((self.root/'state.json').read_text())['payload']

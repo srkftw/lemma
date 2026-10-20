@@ -664,12 +664,12 @@
       "path": "build/school/task009-submission-v2-prep/legacy-authority-migration.json",
       "sha256": "51ce47d235dacd0b0d977e4fd8558638e2b2f959eb1bc0ac6cba56ebeaa41f12"
     },
-    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1\u21922. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
+    "compatibilityObservation": "Actual earlier native producer committed v1 attempt, then new v2 producer restarted generation1→2. All8 prior record values/artifact remain unchanged; exact retry returned originalcommit8 with reused=true; no old decoded metadata rewritten to add wireVersion, and new uncommitted stale-generation work rejected. Target cold replay of old pending metadata has separate queue evidence.",
     "connectedUpgrade": {
       "path": "build/school/task009-connected-a2/generation6-v2-restart.json",
       "sha256": "5eadd0c002ef9f0910f2ba8bc85eecf8a44c66457af0bf1ca98575380f1bfc94"
     },
-    "connectedObservation": "Normal owned stop/restart generation5\u21926, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
+    "connectedObservation": "Normal owned stop/restart generation5→6, clockEpochSequence3, same23 prior rows and three valid protected credentials. Original absolute live deadline retained; this live readiness check does not complete the Student workflow.",
     "retainedPreparationFailures": [
       {
         "path": "build/school/task009-submission-v2-prep/decoder-elaboration.log",
@@ -766,7 +766,7 @@
         "path": "tests/school/test_delivery.py",
         "sha256": "f5931016bb4f08a1aba13d8a4e5ad56999ff2a89f2f6e16b830e70c20baf9f25"
       },
-      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2\u21923."
+      "observations": "Six content-idempotent records, partial transport, exact original725/724 context, raw controller provenance, cancellation, principal/unknown-visibility/revocation rejection, original decision unchanged and lost-ACK commit11 reused across generation2→3."
     },
     "browserTests": {
       "result": "PASS",
@@ -786,7 +786,7 @@
       "path": "build/school/task009-connected-a2/generation7-delivery-restart.json",
       "sha256": "93e88c0226119932ca2b01ef58ff2852600135624bc926124c058b99db0e38ee"
     },
-    "connectedScope": "All29 prior records unchanged, generation6\u21927/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
+    "connectedScope": "All29 prior records unchanged, generation6→7/clockEpoch3, three credentials valid, original absolute14:58 live deadline retained. Stop-drain/start lock race retained independently.",
     "retainedObserverFailures": [
       {
         "path": "build/school/task009-delivery-prep/protected-tests-a1.log",
@@ -870,20 +870,81 @@
   "currentFinalHostedValidation": {
     "result": "PASS",
     "receipt": {
-      "path": "build/school/task009-host-validation-tutor-a1/validation.json",
-      "sha256": "b82228e62b32e2abbd5af3b91414964ff79b245f61fd7c67c8c52f5e1d65c4b2"
+      "path": "build/school/task009-remote-host-validation-a2/validation.json",
+      "sha256": "d563817f12cc587945a36c7da491e407d628d7ed34bb33fe2999b90bb526f9fa"
     },
-    "production": "build/school/host-task009-tutor-selector-a1/production.json",
-    "productionReceiptSHA256": "8a7d0a20bde8c8398f73941d56bacf3143d4ec8610ed3ebd40f462f2ec9bdc1e",
-    "binarySHA256": "5faffcf0d32d874e84d5eba53854b5af80b8b9af62e0125062079b36b2c1fe4b",
-    "hostTests": 64,
-    "hostSeconds": 275.5356253819773,
-    "clientActionSeconds": 2.0159233319573104,
-    "tutorSelectionActionSeconds": 1.7206276929937303,
-    "wholeSeconds": 279.6007739660563,
-    "command": "nix develop --no-write-lock-file --command env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 python3 scripts/check_school.py --production build/school/host-task009-tutor-selector-a1/production.json --host-timeout 600 --work-dir build/school/task009-host-validation-tutor-a1",
-    "prospectiveBudget": "600s hosted corpus;120s separate Client Action;120s separate TutorSelection Action. Every command completed and owned descendants reaped.",
-    "scope": "Fresh current64-test hosted semantics/admission/delivery/preview/operator/submission corpus plus Client and TutorSelection Action checks. Compiled imports and exact produced host binary reused. Actual RV64 numerical consumer and native/browser/physical execution retain separate receipts."
+    "production": {
+      "path": "build/school/task009-assistance-production-a2/production.json",
+      "sha256": "14984acf1df9de1de3818c6d35dc3561a8af59387a5114dddc58f23c6dd942dc"
+    },
+    "hostTests": 70,
+    "wholeSeconds": 403.9276610361412,
+    "commands": [
+      {
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests/school",
+          "-v"
+        ],
+        "exitCode": 0,
+        "ownership": {
+          "kind": "completed",
+          "returncode": 0
+        },
+        "elapsedSeconds": 398.70922272792086
+      },
+      {
+        "command": [
+          "lake",
+          "env",
+          "lean",
+          "--run",
+          "tests/school/Client.lean"
+        ],
+        "exitCode": 0,
+        "ownership": {
+          "kind": "completed",
+          "returncode": 0
+        },
+        "elapsedSeconds": 2.0714669111184776
+      },
+      {
+        "command": [
+          "lake",
+          "env",
+          "lean",
+          "--run",
+          "tests/school/TutorSelection.lean"
+        ],
+        "exitCode": 0,
+        "ownership": {
+          "kind": "completed",
+          "returncode": 0
+        },
+        "elapsedSeconds": 1.2398383000399917
+      },
+      {
+        "command": [
+          "lake",
+          "env",
+          "lean",
+          "--run",
+          "tests/school/RemoteEvents.lean"
+        ],
+        "exitCode": 0,
+        "ownership": {
+          "kind": "completed",
+          "returncode": 0
+        },
+        "elapsedSeconds": 1.5796298261266202
+      }
+    ],
+    "prospectiveBudget": "600s host corpus; separate120s each Client/TutorSelection/RemoteEvents; existingaction_worker owns/reaps descendants. Original300s failure retained separately.",
+    "sourceScope": "Exact production/source inventory, including Mathematics40bfd7d6 and current hosted consumer; later target LT-only lowering corrections need a new producer binding, not retroactive relabeling."
   },
   "firstOrdinaryNativeCampaign": {
     "result": "FAIL",
@@ -1055,6 +1116,24 @@
       "command": "nix develop --no-write-lock-file --command env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 python3 scripts/check_school.py --production build/school/host-task009-context-a1/production.json --host-timeout 600 --work-dir build/school/task009-host-validation-context-a1",
       "prospectiveBudget": "600seconds hosted corpus,120seconds separate Client Action; every command completed through existing owned action_worker and descendant reaping",
       "scope": "Fresh current64-test hosted semantics/authority/protectedHTTP/source ingestion/preview/operator/typed delivery/exact declared context consumption/complete v2 submission suite and separate Client Action validation; reused exact binary/compiled imports, no fresh native/browser/RTL or physical execution implied. Earlier61/63-test producer gates and failed unrelated-context observation retain their own identities."
+    },
+    {
+      "result": "PASS",
+      "receipt": {
+        "path": "build/school/task009-host-validation-tutor-a1/validation.json",
+        "sha256": "b82228e62b32e2abbd5af3b91414964ff79b245f61fd7c67c8c52f5e1d65c4b2"
+      },
+      "production": "build/school/host-task009-tutor-selector-a1/production.json",
+      "productionReceiptSHA256": "8a7d0a20bde8c8398f73941d56bacf3143d4ec8610ed3ebd40f462f2ec9bdc1e",
+      "binarySHA256": "5faffcf0d32d874e84d5eba53854b5af80b8b9af62e0125062079b36b2c1fe4b",
+      "hostTests": 64,
+      "hostSeconds": 275.5356253819773,
+      "clientActionSeconds": 2.0159233319573104,
+      "tutorSelectionActionSeconds": 1.7206276929937303,
+      "wholeSeconds": 279.6007739660563,
+      "command": "nix develop --no-write-lock-file --command env LEAN_NUM_THREADS=2 LEAN_STACK_SIZE_KB=65536 python3 scripts/check_school.py --production build/school/host-task009-tutor-selector-a1/production.json --host-timeout 600 --work-dir build/school/task009-host-validation-tutor-a1",
+      "prospectiveBudget": "600s hosted corpus;120s separate Client Action;120s separate TutorSelection Action. Every command completed and owned descendants reaped.",
+      "scope": "Fresh current64-test hosted semantics/admission/delivery/preview/operator/submission corpus plus Client and TutorSelection Action checks. Compiled imports and exact produced host binary reused. Actual RV64 numerical consumer and native/browser/physical execution retain separate receipts."
     }
   ],
   "thirdOrdinaryNativeCampaign": {
@@ -1279,7 +1358,7 @@
       "sha256": "c4a73274c4c15b1d8c3cff13c164ffa90ac323a79d6aa66813002551e603efb0"
     },
     "status": "PASS_ORIGINAL_GUEST_ENVELOPE_REPLAY_AFTER_GENERATION_CHANGE",
-    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13\u219214. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
+    "scope": "Protected Alice transport replays4552original guest bytes, fromimmutableartifact7b7a5281, aftergen13→14. Sameattempt/commit43 reused; all49rows unchanged. Not a restoredpendingguest or literal lostACK test."
   },
   "ordinary_live_model_release_cycle": {
     "result": {
@@ -1483,5 +1562,42 @@
     },
     "scope": "Generation20 naturally ended at its original2026-10-20T07:09:34.391511Z deadline. A separate prospective7200-second run started generation21 on the same epoch5/restored root, retained all107 acknowledged rows byte-for-byte, retained private principal admissions and rejected an actual stale RV64 worker completion. Original new deadline2026-10-20T09:13:07.292430Z; no deadline extension, new clock-domain restore or concurrent authoritative copy claimed.",
     "planned_successor": "New protected provenance consumer requires a separately recorded controlled stop/terminal and new generation22. That prepared runner is not an executed restore result."
+  },
+  "durableRemoteAssistanceConsumer": {
+    "implementation": [
+      "Lemma/School/Submission.lean",
+      "Lemma/School/Review.lean"
+    ],
+    "format": "Doc8 eventFormat2 kind7 four-row remote identities; prepared and guest-raster scopes retain exact authority/binding/request/revision/object",
+    "producer": {
+      "path": "build/school/task009-assistance-production-a2/production.json",
+      "sha256": "14984acf1df9de1de3818c6d35dc3561a8af59387a5114dddc58f23c6dd942dc"
+    },
+    "consumerFocused": {
+      "path": "build/school/task009-remote-consumer-a2/result.json",
+      "sha256": "5322a14cf92c5a9072b1b6fbaf122e9ea8c39f797134ecd24087b6a768dec80d"
+    },
+    "fullValidation": {
+      "path": "build/school/task009-remote-host-validation-a2/validation.json",
+      "sha256": "d563817f12cc587945a36c7da491e407d628d7ed34bb33fe2999b90bb526f9fa"
+    },
+    "retainedOriginalTimeout": {
+      "path": "build/school/task009-remote-host-validation-a1/validation.json",
+      "sha256": "4d1857cd40f3f92a9f4f249c39444bb613d66b3a3f39a2f571e3a817a761f868"
+    },
+    "cases": [
+      "original help survives actual protected service restart, new binding/generation and later edit of same work",
+      "prepared/raster completion remains distinct from confirmed panel visibility",
+      "another principal cannot link its decision or delivery history; unresolved current-work identity stays conservatively uncertain",
+      "known advice for another activity does not taint independent response",
+      "payload rows are skipped rather than becoming local hint events; malformed scope pairing/identity rejects",
+      "teacher exact assistance attribution separated from broader activity history"
+    ],
+    "genuineHostedBuildSeconds": 58.90236667601857,
+    "scope": "Hosted maintained guest Actions plus actual principal-derived protected HTTP authority. No new CPU, panel, physical durability or educational qualification claim.",
+    "retainedParserFixtureCompileFailures": [
+      "First fixture rejected missing do/else and missing Inhabited indexed exposure; corrected fixture uses exact Option extraction.",
+      "Second fixture rejected nonexistent Except.isError; corrected fixture retains actual strict Except.isOk assertion. These were test observer compilation errors, not passing parser executions."
+    ]
   }
 }

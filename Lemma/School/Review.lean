@@ -116,15 +116,20 @@ def execute (state : State) (actor : String) (request : Json) (now : Nat) : Exce
     access state actor attempt false
     let (pub,unit,activity) ← original state attempt
     let work := (field attempt.data "request" >>= fun r => str r "observationArtifact").toOption
-    let decisions := state.records.filter (fun r => r.kind == "decision" && r.actor == attempt.actor && r.sequence < attempt.sequence &&
+    let activityDecisions := state.records.filter (fun r => r.kind == "decision" && r.actor == attempt.actor && r.sequence < attempt.sequence &&
       match field r.data "input" with
       | .ok input => optionalNat input "course" == optionalNat attempt.data "course" &&
           optionalNat input "revision" == optionalNat attempt.data "revision" &&
           (field input "ask" |>.toOption).any (fun ask => optionalNat ask "task_id" == activity.node+1)
       | .error _ => false)
+    let linked := field attempt.data "assistanceDecisions" >>= fromJson? (α := Array Record)
+    let decisions := linked.toOption.getD activityDecisions
     return (state,object [("attempt",toJson attempt),("prompt",toJson unit.course.nodes[activity.node]!),
       ("rubric",toJson activity.assessment),("sources",toJson unit.sources),("anchors",toJson unit.anchors),
       ("publication",toJson pub),("workArtifact",toJson work),("assistance",toJson decisions),
+      ("assistanceScope",toJson (if linked.isOk then "exact immutable guest-work attribution" else
+        "legacy activity history; not exact work attribution")),
+      ("activityAssistanceHistory",toJson activityDecisions),
       ("assessments",toJson (state.records.filter (fun r => r.kind == "human-assessment" && r.key == id)))])
   | "human-assess" =>
     let id ← str request "attempt"
