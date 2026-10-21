@@ -553,4 +553,98 @@ def courseService : Action :=
   .bind pump fun s _ => if s = 0 then
   .bind settle fun s _ => if s = 0 then expireStage else failed else failed
 
+
+/-! School queue guard/1 is selected only by ServerSchool.main. The frozen
+metadata prefix5351 is append-only, including tombstones. Historical course
+roots and application dispatchers keep their exact definitions. -/
+def schoolKey (object : UInt64) : UInt64 :=
+  if object >>> 48 = 0x5351 then 1 else 0
+
+def schoolAbsent (ns object : UInt64) : Action :=
+  if ns = 2 then if schoolKey object = 1 then if 0 < (object &&& 0x0000ffffffffffff) then
+  .bind (Engine.field context 104) fun s index => if s = 0 then
+  .bind (Index.find index ns object) fun s slot => if s = 0 then
+  .bind (Memory.read64 (Index.row index slot)) fun s storedNs => if s = 0 then
+  if storedNs = 0 then .done 0 0 else
+  .bind (Memory.read64 (Index.row index slot+8)) fun s storedObject => if s = 0 then
+  if storedNs = ns then if storedObject = object then .done Format.readOnly 0 else .done Format.malformed 0
+  else .done Format.malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done Format.malformed 0 else .done Format.malformed 0 else .done Format.wrongNamespace 0
+
+private def schoolBegin (sender reply ns object transaction count : UInt64) : Action :=
+  .bind (get 48) fun s owner => if s = 0 then
+  if owner = 0 then
+  if count < 4096 then respond reply 2 ns object 0 0 Format.malformed else
+  if 24576 < count then respond reply 2 ns object 0 0 Format.full else
+  .bind (schoolAbsent ns object) fun status _ =>
+  if status = 0 then begin sender reply ns object transaction count
+  else if 220 ≤ status then if status ≤ 233 then respond reply 2 ns object 0 0 status else failed else failed
+  else respond reply 2 ns object 0 0 Protocol.busy else failed
+
+private def schoolMetadataShape (ns object bytes : UInt64) : Action :=
+  .bind (Memory.read64 payload) fun s tag => if s = 0 then
+  .bind (Memory.read64 (payload+8)) fun s version => if s = 0 then
+  .bind (Memory.read64 (payload+16)) fun s total => if s = 0 then
+  .bind (Memory.read64 (payload+24)) fun s queue => if s = 0 then
+  .bind (Memory.read64 (payload+32)) fun s frontier => if s = 0 then
+  .bind (Memory.read64 (payload+40)) fun s actualNs => if s = 0 then
+  .bind (Memory.read64 (payload+232)) fun s header => if s = 0 then
+  .bind (Memory.read64 (payload+240)) fun s workspace => if s = 0 then
+  .bind (Memory.read64 (payload+248)) fun s index => if s = 0 then
+  if tag = 0x31425553534d454c then if (if version = 1 then (1 : UInt64) else if version = 2 then 1 else 0) = 1 then
+  if frontier < 0x0000fffffffffffe then if queue = (0x5351000000000000 ||| (frontier+1)) then
+  if queue = object then if ns = 2 then if Protocol.namespaceValid actualNs = 1 then if header = 256 then if workspace = 3712 then
+  if 128 ≤ index then if index%8 = 0 then if index ≤ (if version = 1 then (8512 : UInt64) else 20608) then
+  if bytes = header+workspace+index then if bytes ≤ total then if total ≤ 262144 then .done 0 0
+  else .done Format.full 0 else .done Format.malformed 0 else .done Format.malformed 0
+  else .done Format.malformed 0 else .done Format.malformed 0 else .done Format.malformed 0
+  else .done Format.malformed 0 else .done Format.malformed 0 else .done Format.malformed 0
+  else .done Format.malformed 0 else .done Format.malformed 0 else .done Format.malformed 0
+  else .done Format.malformed 0 else .done Format.malformed 0 else .done Format.malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def schoolCommit (sender reply ns object transaction : UInt64) : Action :=
+  .bind (stageOwner sender ns object transaction) fun s matched => if s = 0 then
+  if matched = 1 then
+  .bind (get 88) fun s used => if s = 0 then
+  .bind (get 96) fun s desired => if s = 0 then
+  if used = desired then
+  .bind (schoolAbsent ns object) fun status _ => if status = 0 then
+  .bind (schoolMetadataShape ns object used) fun status _ => if status = 0 then
+  commit sender reply ns object transaction
+  else if 220 ≤ status then if status ≤ 233 then respond reply 4 ns object used 0 status else failed else failed
+  else if 220 ≤ status then if status ≤ 233 then respond reply 4 ns object used 0 status else failed else failed
+  else respond reply 4 ns object used 0 Protocol.incomplete
+  else failed else failed
+  else respond reply 4 ns object 0 0 Protocol.wrongOwner else failed
+
+/-- New prefix handling follows the same framing/mode/active precedence, then
+uses the original stage owner and engine Commit. No other object is retargeted. -/
+def schoolApplication (sender reply bytes : UInt64) : Action :=
+  if 64 ≤ bytes then
+  .bind (Protocol.field (incoming+64) 0) fun s magic => if s = 0 then
+  .bind (Protocol.field (incoming+64) 8) fun s version => if s = 0 then
+  .bind (Protocol.field (incoming+64) 16) fun s operation => if s = 0 then
+  .bind (Protocol.field (incoming+64) 24) fun s ns => if s = 0 then
+  .bind (Protocol.field (incoming+64) 32) fun s object => if s = 0 then
+  .bind (Protocol.field (incoming+64) 40) fun s transaction => if s = 0 then
+  .bind (Protocol.field (incoming+64) 48) fun s offset => if s = 0 then
+  .bind (Protocol.field (incoming+64) 56) fun s count => if s = 0 then
+  .bind (get 24) fun s mode => if s = 0 then
+  .bind (Engine.field context 0) fun s active => if s = 0 then
+  if magic = Protocol.magic then if version = Protocol.requestVersion operation then
+  if Protocol.shape operation ns object transaction offset count bytes = 1 then
+  if mode = 1 then if active = 0 then if schoolKey object = 1 then
+    if operation = 2 then schoolBegin sender reply ns object transaction count else
+    if operation = 4 then schoolCommit sender reply ns object transaction else
+    if operation = 6 then respond reply operation ns object 0 0 Format.readOnly
+    else courseApplication sender reply bytes
+  else courseApplication sender reply bytes else courseApplication sender reply bytes else courseApplication sender reply bytes
+  else courseApplication sender reply bytes else courseApplication sender reply bytes else courseApplication sender reply bytes
+  else failed else failed else failed else failed else failed
+  else failed else failed else failed else failed else failed
+  else courseApplication sender reply bytes
+
 end Lemma.Services.Store.Server

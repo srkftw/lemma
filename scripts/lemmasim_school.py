@@ -144,7 +144,7 @@ def execute(args, out):
         artifact = school_call(executable, args.school_root, dict(op='work-put', **common, path=str(work_path), **clock), out, 'work-put',args.school_endpoint)
         checked = {} if receipt is None else {'guestReceipt':receipt}
         response = school_call(executable, args.school_root, dict(op='attempt', **common, **clock,
-            id=args.attempt, activity=args.activity, values=values, **checked,
+            id=args.attempt, activity=args.activity, values=values, **({'reviewId':args.review_id} if args.review_id else {}), **checked,
             observationArtifact=artifact['digest']), out, 'attempt',args.school_endpoint)
         report.update(status='SCHOOL_ATTEMPT_RECORDED', result=response, guest_receipt=receipt,
             work_artifact_sha256=sha(work_path),

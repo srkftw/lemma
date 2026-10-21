@@ -1,0 +1,158 @@
+--- a/sim/rtl/lemma_pen.sv
++++ b/sim/rtl/lemma_pen.sv
+@@ -97,6 +97,11 @@
+   } entry_t;
+   entry_t bank_entry [BANKS];
+   entry_t head_entry, ingress_entry;
++  entry_t visible_head;
++  logic first_head_pending;
++  // Physical first-head bypass is available on the accepted edge. The next
++  // edge copies the previous ingress record into stable storage; a concurrent
++  // new raw capture cannot retarget that prior value under NBA semantics.
+   // Decode the bank before the existing second refill edge. A registered
+   // one-hot choice drives a parallel mask/OR rather than broadcasting four
+   // binary select bits across every bit of the181-bit sixteen-bank mux.
+@@ -109,6 +114,8 @@
+   logic [1:0] refill;
+   logic [PTR-1:0] head, tail;
+   logic [PTR:0] count;
++  assign visible_head = IHP_SRAM ?
++    (count != 0 ? (first_head_pending ? ingress_entry : head_entry) : '0) : head_entry;
+   logic [63:0] epoch, head_epoch, next_sequence, losses;
+   // Invariant after reset and every accepted counter update:
+   // sequence_all_ones[p] == &next_sequence[p*16 +:16].  Four registered
+@@ -138,11 +145,18 @@
+     assign losses_incremented = losses + 64'd1;
+   end
+   logic [63:0] last_time, contact_deadline;
++  logic contact_deadline_valid;
+   logic loss, resync, release_seen, bad_sample;
+   logic access_ok, lose;
+   wire [5:0] range_errors;
+-  wire time_regressed, time_exhausted;
++  wire time_regressed, time_exhausted, watchdog_before;
++  wire watchdog_expired = (IHP_SRAM ? contact_deadline_valid : (contact_deadline != 0)) && !watchdog_before;
++  // Legal accepted known timestamps cannot wrap +10000000 to zero. Preserve
++  // the original vector-add X/Z poison for accepted unknown-time stimuli.
++  wire deadline_known_mask = ~((^sample_time) ^ (^sample_time));
+   if (IHP_SRAM) begin : physical_validation
++    (* keep_hierarchy = 1 *) lemma_pen_timestamp_less watchdog_time(
++      .left(now_ticks), .right(contact_deadline), .less(watchdog_before));
+     (* keep_hierarchy = 1 *) lemma_pen_sample_ranges #(.PRESSURE_MAX(PRESSURE_MAX)) ranges(
+       .x(sample_x), .y(sample_y), .pressure(sample_pressure), .flags(sample_flags),
+       .tool(sample_tool), .buttons(sample_buttons), .invalid(range_errors));
+@@ -151,6 +165,7 @@
+     (* keep_hierarchy = 1 *) lemma_pen_timestamp_less bounded_time(
+       .left(64'hffffffff_ff67697f), .right(sample_time), .less(time_exhausted));
+   end else begin : register_validation
++    assign watchdog_before = now_ticks < contact_deadline;
+     assign range_errors = {sample_x > 65535, sample_y > 65535,
+       sample_pressure > PRESSURE_MAX, sample_flags > 15, sample_tool > 2, sample_buttons > 7};
+     assign time_regressed = sample_time < last_time;
+@@ -210,10 +225,10 @@
+   assign irq = count != 0 || loss || fault != 0;
+   // Serialize external ingress against register mutations; reads never pop.
+   assign sample_ready = ready && !(valid && write) &&
+-                        !(contact_deadline != 0 && now_ticks >= contact_deadline);
++                        !(watchdog_expired);
+   assign bad_sample = time_regressed || time_exhausted ||
+     (|range_errors);
+-  assign lose = (contact_deadline != 0 && now_ticks >= contact_deadline) ||
++  assign lose = (watchdog_expired) ||
+     (sample_valid && sample_ready && !loss &&
+       (bad_sample || sample_flags[3] || sequence_exhausted ||
+        (!resync && count == FIFO_DEPTH)));
+@@ -231,14 +246,14 @@
+       56,64: rdata = 65535;
+       72: rdata = PRESSURE_MAX;
+       80: rdata = PRESSURE_MAX != 0 ? 1 : 0;
+-      256: rdata = head_entry.sequence_id;
+-      264: rdata = head_entry.timestamp;
+-      272: rdata = {48'b0,head_entry.x};
+-      280: rdata = {48'b0,head_entry.y};
+-      288: rdata = {52'b0,head_entry.pressure};
+-      296: rdata = {60'b0,head_entry.flags};
+-      304: rdata = {62'b0,head_entry.tool};
+-      312: rdata = {61'b0,head_entry.buttons};
++      256: rdata = visible_head.sequence_id;
++      264: rdata = visible_head.timestamp;
++      272: rdata = {48'b0,visible_head.x};
++      280: rdata = {48'b0,visible_head.y};
++      288: rdata = {52'b0,visible_head.pressure};
++      296: rdata = {60'b0,visible_head.flags};
++      304: rdata = {62'b0,visible_head.tool};
++      312: rdata = {61'b0,visible_head.buttons};
+       320: rdata = count != 0 ? head_epoch : 0;
+       default: rdata = 0;
+     endcase
+@@ -248,7 +263,7 @@
+     begin
+       count <= count != 0 ? 1 : 0;
+       tail <= head + (count != 0 ? 1'b1 : 1'b0);
+-      contact_deadline <= 0;
++      contact_deadline <= 0; contact_deadline_valid <= 0;
+       loss <= 1;
+       resync <= 1;
+       release_seen <= 0;
+@@ -260,6 +275,8 @@
+ 
+   always @(posedge clk) begin
+     sample_accepted <= 0;
++    first_head_pending <= 0;
++    if (IHP_SRAM && first_head_pending) head_entry <= ingress_entry;
+     // The large storage array sees only registered data/address/enable.  Raw
+     // sample bounds, loss decisions and 64-bit ACK comparisons do not drive
+     // every storage flip-flop's enable in the same cycle.
+@@ -273,11 +290,11 @@
+     ingress_pending <= 0;
+     if (!reset_n) begin
+       head <= 0; tail <= 0; count <= 0;
+-      head_entry <= '0; ingress_entry <= '0; ingress_index <= 0;
++      head_entry <= '0; ingress_entry <= '0; ingress_index <= 0; first_head_pending <= 0;
+       refill <= 0; refill_select <= '0;
+       epoch <= 1; head_epoch <= 1; next_sequence <= 1;
+       sequence_all_ones <= 4'b0000;
+-      losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0;
++      losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0; contact_deadline_valid <= 0;
+       loss <= 0; resync <= 0; release_seen <= 0;
+     end else if (refill == 2) begin
+       refill_select <= {{(BANKS-1){1'b0}},1'b1} << head[BANK_BITS-1:0];
+@@ -291,14 +308,14 @@
+     end else if (valid && write) begin
+       if (!access_ok) fault <= 1;
+       else case (addr)
+-        88: if (count != 0 && head_entry.sequence_id == wdata) begin
++        88: if (count != 0 && visible_head.sequence_id == wdata) begin
+           head <= head + 1'b1; count <= count - 1'b1;
+           if (count > 1) refill <= 2;
+-          else head_entry <= '0;
++          else if (!IHP_SRAM) head_entry <= '0;
+         end else fault <= 2;
+         96: if (loss && wdata == epoch) begin
+           head <= 0; tail <= 0; count <= 0; loss <= 0; fault <= 0;
+-          head_entry <= '0;
++          if (!IHP_SRAM) head_entry <= '0;
+           head_epoch <= epoch;
+         end else fault <= 2;
+         104: if (wdata == 1) mark_loss(); else fault <= 3;
+@@ -308,15 +325,18 @@
+       if (resync && !sample_flags[0]) release_seen <= 1;
+       if (!resync || (release_seen && sample_flags[0])) begin
+         ingress_pending <= 1;
+-        if (count == 0)
+-          head_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
++        if (count == 0) begin
++          if (IHP_SRAM) first_head_pending <= 1;
++          else head_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
+             sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
++        end
+         tail <= tail + 1'b1; count <= count + 1'b1;
+         next_sequence <= sequence_incremented;
+         for (int part = 0; part < 4; part++)
+           sequence_all_ones[part] <= &sequence_incremented[part*16 +:16];
+         head_epoch <= epoch; last_time <= sample_time;
+         contact_deadline <= sample_flags[0] ? sample_time + 10000000 : 0;
++        contact_deadline_valid <= sample_flags[0] & deadline_known_mask;
+         resync <= 0; sample_accepted <= 1;
+       end
+     end

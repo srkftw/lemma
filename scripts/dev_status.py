@@ -270,6 +270,7 @@ def assess_build(root: Path, directory: Path) -> dict:
         if len(admissions) != len(summary["actions"]):
             raise ValueError("command and action inventory counts differ")
         counts = Counter()
+        generated_outputs = {}
         for command, declared in zip(admissions, summary["actions"]):
             receipt_path = bound_path(directory, command["admission"])
             if measured(receipt_path) != command["admission_sha256"]:
@@ -320,6 +321,18 @@ def assess_build(root: Path, directory: Path) -> dict:
                     if not target.is_absolute(): target = root / target
                 elif name.startswith("_export/"):
                     target = bound_path(directory, name[len("_export/"):])
+                elif (action.get("kind"), name) in (("opt", "program.ll"), ("llc", "program.opt.ll")):
+                    # These fixed logical names are relative to the role's
+                    # materialized outputs, not the checkout or build root.
+                    # Require the exact earlier admitted producer edge; a
+                    # same-named file in another role is not a substitute.
+                    parents = {bound_path(directory, path).parent for path in materialized.values()}
+                    if len(parents) != 1:
+                        raise ValueError("ambiguous generated production input scope: " + name)
+                    target = next(iter(parents)) / name
+                    if generated_outputs.get(target) != expected:
+                        row["reasons"].append("unbound generated production input: " + str(target))
+                        continue
                 elif (root / name).is_file():
                     target = bound_path(root, name)
                 else:
@@ -338,6 +351,8 @@ def assess_build(root: Path, directory: Path) -> dict:
                                   "build_admission_sha256": measured(root / "scripts/build_admission.py")}
             if validator != expected_validator:
                 row["reasons"].append("current validator differs; re-audit required")
+            for name, expected in outputs.items():
+                generated_outputs[bound_path(directory, materialized[name])] = expected
             row["actions"].append({"action_key": receipt["action_key"], "status": state,
                                    "producer_receipt_id": receipt["producer_receipt_id"],
                                    "original_producer": producer["provenance"],

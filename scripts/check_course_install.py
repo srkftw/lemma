@@ -12,7 +12,9 @@ def source_inputs(root: Path) -> dict[str, str]:
     files.update({'scripts/check_course_install.py'})
     pending = ['Lemma/Compiler/CourseInstallExport.lean','tests/courses/InstallExport.lean',
                'tests/courses/GuardExport.lean','tests/courses/Install.lean','tests/courses/Guard.lean',
-               'tests/courses/Mount.lean']
+               'tests/courses/Mount.lean','tests/courses/Selection.lean','tests/courses/SelectionExport.lean','tests/courses/Submission.lean',
+               'tests/courses/SubmissionExport.lean','tests/courses/SchoolGuardExport.lean','tests/courses/SchoolGuard.lean',
+               'tests/courses/NotebookSchool.lean','tests/courses/RemoteProvenance.lean','tests/courses/LocalReduction.lean','tests/courses/DocumentEventConsumers.lean']
     while pending:
         name = pending.pop()
         if name in files:
@@ -40,7 +42,9 @@ def source_inputs(root: Path) -> dict[str, str]:
 def main():
     p=argparse.ArgumentParser(description=__doc__,allow_abbrev=False)
     p.add_argument('--output-dir',type=Path,required=True)
-    a=p.parse_args(); root=Path(__file__).resolve().parents[1]; out=a.output_dir.resolve()
+    p.add_argument('--selection',action='store_true',help='also qualify the additive selected-publication v2 root and faults')
+    p.add_argument('--school-submission',action='store_true',help='also qualify notebook ordering/ink Actions, the guest outgoing queue and append-only Store successor')
+    a=p.parse_args(); a.selection |= a.school_submission; root=Path(__file__).resolve().parents[1]; out=a.output_dir.resolve()
     if not out.is_relative_to(root/'build/courses') or out.exists(): p.error('unused build/courses output required')
     out.mkdir(parents=True); started=time.monotonic(); commands=[]
     os.environ['LEAN_NUM_THREADS']='2'
@@ -74,10 +78,33 @@ def main():
             env=dict(os.environ,LEMMA_COURSE_INSTALL_OUT=str(out/'install'),LEMMA_COURSE_GUARD_OUT=str(out/'guard'))
             run('install-export',[tools['lake'],'env','lean','-j2','tests/courses/InstallExport.lean'],env)
             run('guard-export',[tools['lake'],'env','lean','-j2','tests/courses/GuardExport.lean'],env)
+            if a.selection:
+                run('selection-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/Selection.lean'])
+                run('selection-export',[tools['lake'],'env','lean','-j2','tests/courses/SelectionExport.lean'],
+                    dict(env,LEMMA_COURSE_SELECTION_OUT=str(out/'selection')))
+            if a.school_submission:
+                run('notebook-build',[tools['lake'],'build','Lemma.Applications.Notebook'])
+                run('notebook-school-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/NotebookSchool.lean'])
+                run('remote-provenance-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/RemoteProvenance.lean'])
+                run('local-reduction-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/LocalReduction.lean'])
+                run('document-event-consumer-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/DocumentEventConsumers.lean'])
+                run('submission-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/Submission.lean'])
+                run('school-guard-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/SchoolGuard.lean'])
+                run('submission-export',[tools['lake'],'env','lean','-j2','tests/courses/SubmissionExport.lean'],
+                    dict(env,LEMMA_SCHOOL_SUBMISSION_OUT=str(out/'submission')))
+                run('school-guard-export',[tools['lake'],'env','lean','-j2','tests/courses/SchoolGuardExport.lean'],
+                    dict(env,LEMMA_SCHOOL_GUARD_OUT=str(out/'school-guard')))
             if source_inputs(root)!=before: raise Core0Error('consumed source changed during capture')
         qualified={}
-        for role,roots in [('install',['Lemma.Courses.PackageStore.install','Lemma.Courses.PackageInstaller.main']),
-                           ('guard',['Lemma.Services.Store.Server.courseMain'])]:
+        roles=[('install',['Lemma.Courses.PackageStore.install','Lemma.Courses.PackageInstaller.main']),
+                           ('guard',['Lemma.Services.Store.Server.courseMain'])]
+        if a.selection:
+            roles.append(('selection',['Lemma.Courses.PackageInstaller.mainAwaitSelected']))
+        if a.school_submission:
+            roles.extend([('submission',['Lemma.Courses.SchoolSubmission.'+name for name in
+                ('initializeQueue','start','pump','restore','retry','cancel','frontier','writerActive','suspend','resume')]),
+                ('school-guard',['Lemma.Services.Store.ServerSchool.main'])])
+        for role,roots in roles:
             directory=out/role; unit=json.loads((directory/'unit.json').read_text())
             if unit.get('contract_version')!='core0-user-v0.2' or [x['source'] for x in unit.get('roots',[])]!=roots or unit.get('used_device_ops'):
                 raise Core0Error('root/profile closure mismatch:'+role)
@@ -95,7 +122,8 @@ def main():
                 raise Core0Error('RV64IM object provenance mismatch:'+role)
             qualified[role]=dict(function_count=len(unit['functions']),roots=roots,unresolved_boundary=undefined[1:],
                 artifacts={name:sha256(directory/name) for name in ('unit.json','program.ll','program.opt.ll','program.o','normalized.txt')})
-        result.update(status='PASS_COURSE_INSTALL_GUARD_COMPONENTS',components=qualified)
+        result.update(status='PASS_SCHOOL_SUBMISSION_STORE_COMPONENTS' if a.school_submission else
+                      'PASS_COURSE_SELECTION_INSTALL_GUARD_COMPONENTS' if a.selection else 'PASS_COURSE_INSTALL_GUARD_COMPONENTS',components=qualified)
     except BaseException as e:
         result['error']=repr(e); raise
     finally:

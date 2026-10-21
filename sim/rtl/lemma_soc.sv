@@ -232,7 +232,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .uart_rx_ready,.uart_tx_valid,.uart_tx_data,.finish_valid,.finish_code,.timer_ticks,
    .debug_pc,.debug_privilege,.debug_retire,.debug_trap,.debug_cause
  );
- lemma_pen #(.FIFO_DEPTH(int'(PEN_FIFO)),.PRESSURE_MAX(int'(PRESSURE_MAX))) pen(
+ lemma_pen #(.FIFO_DEPTH(int'(PEN_FIFO)),.PRESSURE_MAX(int'(PRESSURE_MAX)),.IHP_SRAM(PEN_IHP_SRAM!=0)) pen(
    .clk,.reset_n(!domain_reset),.valid((dev_valid&&pen_sel)||power_cancel_pen),.write((dev_valid&&pen_sel&&dev_write)||power_cancel_pen),
    .addr(power_cancel_pen?12'd104:(dev_valid&&pen_sel)?dev_addr[11:0]:12'd0),
    .size(power_cancel_pen?3'd3:(dev_valid&&pen_sel)?dev_size:3'd0),.wdata(power_cancel_pen?64'd1:(dev_valid&&pen_sel)?dev_wdata:64'd0),
@@ -259,12 +259,12 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .media_valid(controller_media_valid),.media_kind,.media_sector,.media_wdata,.media_ready,.media_error,.media_rdata
  );
  generate if(MULTIMODAL_ENABLED!=0)begin: multimodal_devices
-   lemma_multimodal #(.DMA_BASE(FRAME_POOL_BASE),.DMA_BYTES(FRAME_POOL_BYTES)) endpoint(
+   lemma_multimodal #(.CONTROLLER_ABI(MULTIMODAL_CONTROLLER_ABI),.DMA_BASE(FRAME_POOL_BASE),.DMA_BYTES(FRAME_POOL_BYTES)) endpoint(
     .clk,.reset(domain_reset),.valid(dev_valid&&mm_sel),.write(dev_write),.addr(13'(dev_addr-MULTIMODAL_BASE)),.size(dev_size),.wdata(dev_wdata),
     .rdata(mm_rdata),.ready(mm_ready),.error(mm_error),.irq(mm_irq),.busy(mm_busy),
     .stimulus(multimodal_stimulus),.reference_input(multimodal_reference),.source_quality(multimodal_quality),
     .pcm_valid(multimodal_pcm_valid),.pcm_data(multimodal_pcm_data),.pcm_position(multimodal_pcm_position),.pcm_tick(multimodal_pcm_tick),
-    .dma_valid(mm_dma_valid),.dma_write(mm_dma_write),.dma_addr(mm_dma_addr),.dma_wdata(mm_dma_wdata),.dma_size(mm_dma_size),.dma_ready(mm_dma_ready),.dma_error(mm_dma_error),.acquisition_tick(mm_tick));
+    .dma_valid(mm_dma_valid),.dma_write(mm_dma_write),.dma_addr(mm_dma_addr),.dma_wdata(mm_dma_wdata),.dma_size(mm_dma_size),.dma_ready(mm_dma_ready),.dma_error(mm_dma_error),.dma_rdata,.acquisition_tick(mm_tick));
  end else begin:no_multimodal_devices
    assign mm_rdata=0;assign mm_ready=1;assign mm_error=0;assign mm_irq=0;assign mm_busy=0;
    assign mm_dma_valid=0;assign mm_dma_write=0;assign mm_dma_addr=0;assign mm_dma_wdata=0;assign mm_dma_size=0;assign mm_tick=0;

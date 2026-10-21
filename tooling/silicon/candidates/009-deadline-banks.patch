@@ -1,0 +1,66 @@
+--- a/lemma_pen.sv
++++ b/lemma_pen.sv
+@@ -137,7 +137,16 @@
+     assign epoch_incremented = epoch + 64'd1;
+     assign losses_incremented = losses + 64'd1;
+   end
+-  logic [63:0] last_time, contact_deadline;
++  logic [63:0] last_time;
++  logic [63:0] contact_deadline_register;
++  logic [63:0] contact_deadline_banks [2];
++  logic contact_deadline_slot, contact_active;
++  // Active bank is stable; each edge writes only the inactive payload. On an
++  // accepted edge the slot changes to that same edge's newly captured value.
++  // The active mask exactly reproduces the old flags ? payload : zero merge.
++  wire [63:0] contact_deadline = IHP_SRAM ?
++    (contact_active ? contact_deadline_banks[contact_deadline_slot] : 64'd0) :
++    contact_deadline_register;
+   logic loss, resync, release_seen, bad_sample;
+   logic access_ok, lose;
+   wire [5:0] range_errors;
+@@ -248,7 +257,8 @@
+     begin
+       count <= count != 0 ? 1 : 0;
+       tail <= head + (count != 0 ? 1'b1 : 1'b0);
+-      contact_deadline <= 0;
++      if (IHP_SRAM) contact_active <= 0;
++      else contact_deadline_register <= 0;
+       loss <= 1;
+       resync <= 1;
+       release_seen <= 0;
+@@ -259,6 +269,12 @@
+   endtask
+ 
+   always @(posedge clk) begin
++    if (IHP_SRAM) begin
++      if (contact_deadline_slot == 1'b0)
++        contact_deadline_banks[1] <= sample_time + 10000000;
++      else
++        contact_deadline_banks[0] <= sample_time + 10000000;
++    end
+     sample_accepted <= 0;
+     // The large storage array sees only registered data/address/enable.  Raw
+     // sample bounds, loss decisions and 64-bit ACK comparisons do not drive
+@@ -277,7 +293,9 @@
+       refill <= 0; refill_select <= '0;
+       epoch <= 1; head_epoch <= 1; next_sequence <= 1;
+       sequence_all_ones <= 4'b0000;
+-      losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0;
++      losses <= 0; fault <= 0; last_time <= 0; contact_deadline_register <= 0;
++      contact_deadline_slot <= 0; contact_active <= 0;
++      contact_deadline_banks[0] <= 0; contact_deadline_banks[1] <= 0;
+       loss <= 0; resync <= 0; release_seen <= 0;
+     end else if (refill == 2) begin
+       refill_select <= {{(BANKS-1){1'b0}},1'b1} << head[BANK_BITS-1:0];
+@@ -316,7 +334,10 @@
+         for (int part = 0; part < 4; part++)
+           sequence_all_ones[part] <= &sequence_incremented[part*16 +:16];
+         head_epoch <= epoch; last_time <= sample_time;
+-        contact_deadline <= sample_flags[0] ? sample_time + 10000000 : 0;
++        if (IHP_SRAM) begin
++          contact_deadline_slot <= ~contact_deadline_slot;
++          contact_active <= sample_flags[0];
++        end else contact_deadline_register <= sample_flags[0] ? sample_time + 10000000 : 0;
+         resync <= 0; sample_accepted <= 1;
+       end
+     end

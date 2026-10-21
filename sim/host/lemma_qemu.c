@@ -17,6 +17,9 @@
 #include "lemma_silicon_fast.h"
 #include "lemma_model.h"
 #include "lemma_multimodal.h"
+#include "lemma_multimodal_v2.h"
+/* Hardware model composition; no target policy. */
+#include "lemma_multimodal_v2.c"
 #include "system/address-spaces.h"
 #ifndef LS_MULTIMODAL_ENABLED
 #define LS_MULTIMODAL_ENABLED 0
@@ -31,6 +34,8 @@ struct LemmaDevices {
     MemoryRegion paper_mmio,pen_mmio,multimodal_mmio;
     qemu_irq multimodal_irq;
     LemmaMM multimodal;
+    LemmaMM2 multimodal_v2;
+    uint32_t multimodal_controller_abi;
     bool multimodal_enabled;
     QEMUTimer *multimodal_timer;
     char *multimodal_audio_path;
@@ -405,7 +410,7 @@ static void lemma_reset_enter(Object *obj,ResetType type)
 {
     LemmaDevices *s=LEMMA_PAPER_PEN(obj);
     timer_del(s->timer);timer_del(s->pen_timer);
-    if(s->multimodal_enabled){timer_del(s->multimodal_timer);lemma_mm_init(&s->multimodal);s->multimodal.tick=(uint64_t)qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)/10;}
+    if(s->multimodal_enabled){timer_del(s->multimodal_timer);if(s->multimodal_controller_abi==2)lemma_mm2_init(&s->multimodal_v2);else lemma_mm_init(&s->multimodal);lemma_mm_core(s)->tick=(uint64_t)qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)/10;}
     if(s->reset_seen && object_dynamic_cast(OBJECT(qdev_get_machine()),MACHINE_TYPE_NAME("lemma-silicon-fast"))) {
         timer_del(s->input_timer);s->external_head=s->external_count=0;s->recorded_next=s->recorded_count;s->input_dirty=false;
     }
@@ -434,10 +439,11 @@ static void lemma_realize(DeviceState *dev,Error **errp)
         s->power_enabled=LS_POWER_ENABLED;lemma_power_init(&s->power);
     }
     lemma_pen_init(&s->pen,65535,65535,s->pressure_max);
+    if(s->multimodal_controller_abi!=1&&s->multimodal_controller_abi!=2){error_setg(errp,"multimodal-controller-abi must be1 or2");return;}
     s->multimodal_enabled=s->fast_binding&&LS_MULTIMODAL_ENABLED;
     if(s->multimodal_enabled){
-        lemma_mm_init(&s->multimodal);
-        memory_region_init_io(&s->multimodal_mmio,OBJECT(s),&multimodal_ops,s,"lemma-multimodal-v1",LS_MULTIMODAL_SPAN);
+        if(s->multimodal_controller_abi==2)lemma_mm2_init(&s->multimodal_v2);else lemma_mm_init(&s->multimodal);
+        memory_region_init_io(&s->multimodal_mmio,OBJECT(s),&multimodal_ops,s,s->multimodal_controller_abi==2?"lemma-multimodal-v2":"lemma-multimodal-v1",LS_MULTIMODAL_SPAN);
         memory_region_add_subregion(get_system_memory(),LS_MULTIMODAL_BASE,&s->multimodal_mmio);
         s->multimodal_timer=timer_new_ns(QEMU_CLOCK_VIRTUAL,lemma_mm_timer,s);
         if(s->multimodal_audio_path){s->multimodal_audio=fopen(s->multimodal_audio_path,"wx");if(!s->multimodal_audio){error_setg(errp,"multimodal-audio-output requires new writable file");return;}fwrite("LMPCM001",1,8,s->multimodal_audio);}
@@ -487,6 +493,7 @@ static const Property lemma_properties[]={
     DEFINE_PROP_UINT32("width",LemmaDevices,width,1650),
     DEFINE_PROP_UINT32("height",LemmaDevices,height,2200),
     DEFINE_PROP_UINT32("pressure-max",LemmaDevices,pressure_max,4095),
+    DEFINE_PROP_UINT32("multimodal-controller-abi",LemmaDevices,multimodal_controller_abi,1),
     DEFINE_PROP_STRING("multimodal-audio-output",LemmaDevices,multimodal_audio_path),
     DEFINE_PROP_STRING("raw-input",LemmaDevices,input_file),
     DEFINE_PROP_STRING("raw-output",LemmaDevices,output_file),

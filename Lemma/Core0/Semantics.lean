@@ -229,6 +229,8 @@ mutual
             program.contractVersion == Profile.kernel_v0_7.contractVersion ||
             program.contractVersion == Profile.kernel_v0_8.contractVersion ||
             program.contractVersion == Profile.kernel_v0_9.contractVersion ||
+            program.contractVersion == Profile.kernel_v0_10.contractVersion ||
+            program.contractVersion == Profile.kernel_v0_11.contractVersion ||
             program.contractVersion == Profile.user_v0_1.contractVersion ||
             program.contractVersion == Profile.user_v0_2.contractVersion ||
             program.contractVersion == Profile.user_v0_3.contractVersion ||

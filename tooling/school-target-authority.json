@@ -1,0 +1,685 @@
+{
+  "configurations": {
+    "lemmasim-silicon-integrated-pcm-school-notebook": {
+      "arithmetic": {
+        "catalog_sha256": "e2a93b727cbf94f0863bc17dce2daa96da151be36a1318c4633d4f2898832870",
+        "post": {
+          "function_count": 184,
+          "sha256": "3c1ef8a2ef50860220d28250320743450bf9ff8eea63751e6d2898c8a83fb3f4"
+        },
+        "pre": {
+          "function_count": 184,
+          "sha256": "5c07cb5b00ba86b594da935659dd328ba7e1d3b3103aa9ef43fd507eb1579a98"
+        }
+      },
+      "course": {
+        "catalog_sha256": "e653f115482a08ee45b2d45fefbb1a415a69f75aba4c9550f390aa3d9209e67c",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "67f137ebd97984df133e77c2208233c53229f6ce9a4ba8c354fe49459500e2f3",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "1f053ff3c9657a29b0b14ed366e7d705d0b90a59aa4c8be5039fd0d56b44d996",
+        "post": {
+          "function_count": 1402,
+          "sha256": "ac0f27ccb8c95f9c523ab71be6f4fc9f34682a49bf59b023039450d35f7616b7"
+        },
+        "pre": {
+          "function_count": 1402,
+          "sha256": "b2639372a5da22d640b786a97c30ca12bbaf8398794d054fed73156554302ff6"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "8de35d125fbe1890e6f0d6233758b9e660df6a9f7e3295c8f3ef0dbc1d159e3b",
+        "post": {
+          "function_count": 1287,
+          "sha256": "4bad6058d0505ac628653d04babb70743f55bc7e8bf9f70215e43d5fe2bc3fc7"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "a9fb85f3b54d42f26ae3a76980464a07363564c1fcc9fdd9741da3a60fd4c1f3"
+        }
+      },
+      "store": {
+        "catalog_sha256": "d49d9e3ab2aae4a83c428c9f96397be5a814f640af5278f0d64274af49b0b075",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    },
+    "lemmasim-silicon-integrated-pcm-school24-notebook": {
+      "arithmetic": {
+        "catalog_sha256": "e95647f4d5b9f725ae0a91ee6fdf1713fddfd9265730008e4e318f10e58d5399",
+        "post": {
+          "function_count": 199,
+          "sha256": "3e5a40fec3faa8b7a3ff4ae602c6d8899ece78642889e5122008883628dc9309"
+        },
+        "pre": {
+          "function_count": 199,
+          "sha256": "9b81fbb55e3f7c66711f7010a481f765d7a1e1ce149b6015eccbb29647b8dea3"
+        }
+      },
+      "course": {
+        "catalog_sha256": "ea47f33a26a448e61cb625484033c712bcf7981a8b1b435e24fb048ad386042d",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "fc75e440d04c5bda07852eaa8e1027e3aedffb112c9b6e7febfd16c1a642845b",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "11db2ca545e3c91fc55fb0be58f0bdaf856dc7aaced00adcb9e17482250e9a5f",
+        "post": {
+          "function_count": 1402,
+          "sha256": "ac0f27ccb8c95f9c523ab71be6f4fc9f34682a49bf59b023039450d35f7616b7"
+        },
+        "pre": {
+          "function_count": 1402,
+          "sha256": "b2639372a5da22d640b786a97c30ca12bbaf8398794d054fed73156554302ff6"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "741f6362d7874de09002c5b58805582888709f7839db8d86df4f0f39b644c235",
+        "post": {
+          "function_count": 1287,
+          "sha256": "753cf75a7fd92c63f7cc132a89386fc939dd9e69e74cb6f88cbcd6482af95a6d"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "9f68fa5067e95f3b96e28b376b0dff8fca747c768553411801c4091130473312"
+        }
+      },
+      "store": {
+        "catalog_sha256": "6b385cadb8045d61db558f3d70ab0c16f296995ed0f2d4fbf33d71f253326cfc",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    },
+    "lemmasim-silicon-integrated-pcm-school25-notebook": {
+      "arithmetic": {
+        "catalog_sha256": "6a258b69618583c5f23ec73254959963f208044b8983122673339f3d7d4e088c",
+        "post": {
+          "function_count": 199,
+          "sha256": "3e5a40fec3faa8b7a3ff4ae602c6d8899ece78642889e5122008883628dc9309"
+        },
+        "pre": {
+          "function_count": 199,
+          "sha256": "9b81fbb55e3f7c66711f7010a481f765d7a1e1ce149b6015eccbb29647b8dea3"
+        }
+      },
+      "course": {
+        "catalog_sha256": "d9127294765f41b88786352bfb40fec4b3fbdbb6278b226df6c34befe78de9d2",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "b0c134724e74c2c351a8204b0616021ec2a7f1bd094489d145892cf14aa7bb51",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "a90f6d573908c060a55a6e2a166e401ab40677b764f960add4b96c1c51f85e52",
+        "post": {
+          "function_count": 1402,
+          "sha256": "ac0f27ccb8c95f9c523ab71be6f4fc9f34682a49bf59b023039450d35f7616b7"
+        },
+        "pre": {
+          "function_count": 1402,
+          "sha256": "b2639372a5da22d640b786a97c30ca12bbaf8398794d054fed73156554302ff6"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "78c02b088b60ca1d72627b06c94a0b8e51c59ba4181f44dea1b60e7e9c8eb238",
+        "post": {
+          "function_count": 1287,
+          "sha256": "391004a6985a0c7cb0104efb13afdfe75d04b39a56cdb3427df7136a21bbaf73"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "37f8859e46c05edb7c15876260035e34386e0b615fe6e68573e0f33c1eee9e95"
+        }
+      },
+      "store": {
+        "catalog_sha256": "b7a69b7abe63deb7cf3d5a6940412ad6ece2747bdcd45db70b4b5061fc53e494",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    },
+    "lemmasim-silicon-integrated-school-notebook": {
+      "arithmetic": {
+        "catalog_sha256": "899af307e60b8e6feaaaa8d73209fc254b35b82273b2386e9c7def7917482ccd",
+        "post": {
+          "function_count": 184,
+          "sha256": "3c1ef8a2ef50860220d28250320743450bf9ff8eea63751e6d2898c8a83fb3f4"
+        },
+        "pre": {
+          "function_count": 184,
+          "sha256": "5c07cb5b00ba86b594da935659dd328ba7e1d3b3103aa9ef43fd507eb1579a98"
+        }
+      },
+      "course": {
+        "catalog_sha256": "1ac2c765a865e41d6ac621bc1b7625aa50b2fd7b48b9234483f65997500ee20e",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "f073434c85eb0612634e6de6760d8eaf312b09f21771926f6a6a54877db8c088",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "b77e22c8683799c87abcb797de417b4a806b10534ece369decb499d67c5a92b2",
+        "post": {
+          "function_count": 1402,
+          "sha256": "ac0f27ccb8c95f9c523ab71be6f4fc9f34682a49bf59b023039450d35f7616b7"
+        },
+        "pre": {
+          "function_count": 1402,
+          "sha256": "b2639372a5da22d640b786a97c30ca12bbaf8398794d054fed73156554302ff6"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "f675805539c13ad41e208cfe75505f09d576e98ea3d082991ea31a5ce6450ff6",
+        "post": {
+          "function_count": 1287,
+          "sha256": "4bad6058d0505ac628653d04babb70743f55bc7e8bf9f70215e43d5fe2bc3fc7"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "a9fb85f3b54d42f26ae3a76980464a07363564c1fcc9fdd9741da3a60fd4c1f3"
+        }
+      },
+      "store": {
+        "catalog_sha256": "759fdca4125ce36789ef9ae8ebd0aeebd574aaef10964981b29bac43a9550c7e",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    },
+    "lemmasim-silicon-school-initialize": {
+      "arithmetic": {
+        "catalog_sha256": "ccffe704f862914b6c89178b2debb82a8cc7c287e954ffcc181f3fb33849a8c8",
+        "post": {
+          "function_count": 184,
+          "sha256": "3c1ef8a2ef50860220d28250320743450bf9ff8eea63751e6d2898c8a83fb3f4"
+        },
+        "pre": {
+          "function_count": 184,
+          "sha256": "5c07cb5b00ba86b594da935659dd328ba7e1d3b3103aa9ef43fd507eb1579a98"
+        }
+      },
+      "course": {
+        "catalog_sha256": "e8eee12064631f001102b78a90c4a5e3845992b35442a2eaf1d0a9a54de7ee53",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "9060b79a31b89d1eaafa4f48781901cae338e5fb04455a22d549a5fba9697858",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "377ed0bf17dc43aa80fb52a643b423bbe6dbd8b7194e8a5fdfab9c97011e0ab5",
+        "post": {
+          "function_count": 1276,
+          "sha256": "0a1e3c4e862e330c8a95139d4367cb96e3ff23ea82a7873a4997d501034d5443"
+        },
+        "pre": {
+          "function_count": 1276,
+          "sha256": "bad61a1d650ccd3605c3ef2bb4b7cd91641d9c2b642e04b3f9bc2cae101c69cb"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "5a6e120be774cca3a005982158f1146bd270b4fa1c964037e8397def6bbc052a",
+        "post": {
+          "function_count": 1287,
+          "sha256": "4bad6058d0505ac628653d04babb70743f55bc7e8bf9f70215e43d5fe2bc3fc7"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "a9fb85f3b54d42f26ae3a76980464a07363564c1fcc9fdd9741da3a60fd4c1f3"
+        }
+      },
+      "store": {
+        "catalog_sha256": "afd94acc7227d9929784f7ca734a10c6051b979f61db2f12b61513a15baff372",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    },
+    "lemmasim-silicon-school-notebook": {
+      "arithmetic": {
+        "catalog_sha256": "ca221130dc3f5933ed6162ddcc2a552f6944d019fa11b094b3de1dea2e8037ee",
+        "post": {
+          "function_count": 184,
+          "sha256": "3c1ef8a2ef50860220d28250320743450bf9ff8eea63751e6d2898c8a83fb3f4"
+        },
+        "pre": {
+          "function_count": 184,
+          "sha256": "5c07cb5b00ba86b594da935659dd328ba7e1d3b3103aa9ef43fd507eb1579a98"
+        }
+      },
+      "course": {
+        "catalog_sha256": "c59392e48db6166dd1ea3f5700d9d299a697a4e8ff38d2ecdba083702b84b82d",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "14814bed76b9dfd67bddcd35440848c924f38c4608fc0cf888bb0cbb6e758560",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "2a235ec029d7d9e8c5625af06f6ed0d125bf189f738bd61f06373ef9286d004a",
+        "post": {
+          "function_count": 1276,
+          "sha256": "e80d76af2896c647ae6467699cd58595ae5c2458f235123f5888a2f857eb014e"
+        },
+        "pre": {
+          "function_count": 1276,
+          "sha256": "dec96a385c8ab5f18ae3743b39d87db5275b7938723b5108a93edcbf8a4774da"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "3497058fc79e934f83164277c17afdf904fb2e8f5b9b4447210cb84802568fcb",
+        "post": {
+          "function_count": 1287,
+          "sha256": "4bad6058d0505ac628653d04babb70743f55bc7e8bf9f70215e43d5fe2bc3fc7"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "a9fb85f3b54d42f26ae3a76980464a07363564c1fcc9fdd9741da3a60fd4c1f3"
+        }
+      },
+      "store": {
+        "catalog_sha256": "f8d554646ac937994c4c2e129d41b8c73d5202160f4b6682ea9b2581b624d3bf",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    },
+    "lemmasim-silicon-school24-initialize": {
+      "arithmetic": {
+        "catalog_sha256": "1f9f6b06ff883699f590f127634b40cd3c2abe23641250bd7679fa4859e9152a",
+        "post": {
+          "function_count": 199,
+          "sha256": "3e5a40fec3faa8b7a3ff4ae602c6d8899ece78642889e5122008883628dc9309"
+        },
+        "pre": {
+          "function_count": 199,
+          "sha256": "9b81fbb55e3f7c66711f7010a481f765d7a1e1ce149b6015eccbb29647b8dea3"
+        }
+      },
+      "course": {
+        "catalog_sha256": "f22c2b0fb8a6dbc419ae0dc7733d55796a1ebf5b47545c56168db26645be293e",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "5c029c00d455c7744372ca6102f7312c1333a49a61192d671567c77357b5b913",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "10773fd96e11611830798749ff2fe4df1751b2e4b0cd8d7326623e8c0ed5fa03",
+        "post": {
+          "function_count": 1276,
+          "sha256": "0a1e3c4e862e330c8a95139d4367cb96e3ff23ea82a7873a4997d501034d5443"
+        },
+        "pre": {
+          "function_count": 1276,
+          "sha256": "bad61a1d650ccd3605c3ef2bb4b7cd91641d9c2b642e04b3f9bc2cae101c69cb"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "a2d2dfc7eb265020951b3d410a116c5c69e1aa18117c668fd9127f2c242fac14",
+        "post": {
+          "function_count": 1287,
+          "sha256": "753cf75a7fd92c63f7cc132a89386fc939dd9e69e74cb6f88cbcd6482af95a6d"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "9f68fa5067e95f3b96e28b376b0dff8fca747c768553411801c4091130473312"
+        }
+      },
+      "store": {
+        "catalog_sha256": "e73f3ca3743c97e563990654b32f5bfcd2d741bf6f344a54d5c8b152c55bfaec",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    },
+    "lemmasim-silicon-school24-notebook": {
+      "arithmetic": {
+        "catalog_sha256": "cd5968082de9688cfc689e2643cad35ef08c5cd880db6b7ef26ef303c94a742d",
+        "post": {
+          "function_count": 199,
+          "sha256": "3e5a40fec3faa8b7a3ff4ae602c6d8899ece78642889e5122008883628dc9309"
+        },
+        "pre": {
+          "function_count": 199,
+          "sha256": "9b81fbb55e3f7c66711f7010a481f765d7a1e1ce149b6015eccbb29647b8dea3"
+        }
+      },
+      "course": {
+        "catalog_sha256": "691211dd5d57590bbe44e36044a20e4d12307587b2f3dcfd4ccb76921b77bf1f",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "3a1c64a9e3a2177867bc63b8275a188d898ec418d4e49d93edb5004c8363adaa",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "710e023560fa3c715845c756f25376225eedca961f41061705dcad7b1cd69578",
+        "post": {
+          "function_count": 1276,
+          "sha256": "e80d76af2896c647ae6467699cd58595ae5c2458f235123f5888a2f857eb014e"
+        },
+        "pre": {
+          "function_count": 1276,
+          "sha256": "dec96a385c8ab5f18ae3743b39d87db5275b7938723b5108a93edcbf8a4774da"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "f3c0e79a78a01be46a9830b57e1a5660b4d22938a203472392bf4b5b49a8d2c7",
+        "post": {
+          "function_count": 1287,
+          "sha256": "753cf75a7fd92c63f7cc132a89386fc939dd9e69e74cb6f88cbcd6482af95a6d"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "9f68fa5067e95f3b96e28b376b0dff8fca747c768553411801c4091130473312"
+        }
+      },
+      "store": {
+        "catalog_sha256": "7736b089186fed79730202fd168b38b805d81cc79f29be1c48b9a532f8e8d142",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    },
+    "lemmasim-silicon-school25-initialize": {
+      "arithmetic": {
+        "catalog_sha256": "4b6ad43e1e17c172c6b5f94a702ed4e67f02e00ef23c38a3d203a393ef371ff2",
+        "post": {
+          "function_count": 199,
+          "sha256": "3e5a40fec3faa8b7a3ff4ae602c6d8899ece78642889e5122008883628dc9309"
+        },
+        "pre": {
+          "function_count": 199,
+          "sha256": "9b81fbb55e3f7c66711f7010a481f765d7a1e1ce149b6015eccbb29647b8dea3"
+        }
+      },
+      "course": {
+        "catalog_sha256": "bd10b283ff465cbd8a637c14a063eee0ba14e55dd970caa49033111e37ce9e53",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "ae578bfde801a039e5b9122f0f4c85b71ac7cd42c46b64d146db4a878860c453",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "171ad36f1a0526603983110fb99d3aed64d790a9f002a1451d378a4fae59b732",
+        "post": {
+          "function_count": 1276,
+          "sha256": "0a1e3c4e862e330c8a95139d4367cb96e3ff23ea82a7873a4997d501034d5443"
+        },
+        "pre": {
+          "function_count": 1276,
+          "sha256": "bad61a1d650ccd3605c3ef2bb4b7cd91641d9c2b642e04b3f9bc2cae101c69cb"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "19b419bcf82e5abca24ebacf6e228677f90bd404ca1473a8b41d82e334fe94f3",
+        "post": {
+          "function_count": 1287,
+          "sha256": "6077a90a00975c05df2f06b3b4bf9a885b186a91205842d875b35493ff9d250f"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "f6b3a821493566701c1574cd6b99aeef260d4d471d5d6ded49556dda0b49c4f1"
+        }
+      },
+      "store": {
+        "catalog_sha256": "d044f8e3ef3144faaf2781b48e9b9b27870d8875105f0dd0425c478cb274b856",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    },
+    "lemmasim-silicon-school25-notebook": {
+      "arithmetic": {
+        "catalog_sha256": "fb76084bf3169b8bbc1744496ae46c8bc44211539cee73a42787b77c1f47bc07",
+        "post": {
+          "function_count": 199,
+          "sha256": "3e5a40fec3faa8b7a3ff4ae602c6d8899ece78642889e5122008883628dc9309"
+        },
+        "pre": {
+          "function_count": 199,
+          "sha256": "9b81fbb55e3f7c66711f7010a481f765d7a1e1ce149b6015eccbb29647b8dea3"
+        }
+      },
+      "course": {
+        "catalog_sha256": "df7448c04c10e6b26ba566b1f17c35cf4f7fa877803fb105e6a85db13232ea0b",
+        "post": {
+          "function_count": 196,
+          "sha256": "9bbfc7c8c5e05da00b4fcda47ab251477c749435958caa2b166929bcc0cb062e"
+        },
+        "pre": {
+          "function_count": 196,
+          "sha256": "3f62ed92b77da9dc973b36b5193f78e1f093b0a3253742c5eb7763ff63389063"
+        }
+      },
+      "firmware": {
+        "catalog_sha256": "b3ef6c446b56e24fc4df637aeacf98294fd1ce3fa71c2f9ead157664ba742a4f",
+        "post": {
+          "function_count": 18,
+          "sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2"
+        },
+        "pre": {
+          "function_count": 18,
+          "sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+        }
+      },
+      "kernel": {
+        "catalog_sha256": "e946bec41b0bf8b7e55a5ff1b43237700f69ee61285aab5c92b30d998560e733",
+        "post": {
+          "function_count": 1276,
+          "sha256": "e80d76af2896c647ae6467699cd58595ae5c2458f235123f5888a2f857eb014e"
+        },
+        "pre": {
+          "function_count": 1276,
+          "sha256": "dec96a385c8ab5f18ae3743b39d87db5275b7938723b5108a93edcbf8a4774da"
+        }
+      },
+      "notebook": {
+        "catalog_sha256": "e0174b6bf3917ae503773aa494e449cfa8423f75a51db846155565e4fb63db57",
+        "post": {
+          "function_count": 1287,
+          "sha256": "6077a90a00975c05df2f06b3b4bf9a885b186a91205842d875b35493ff9d250f"
+        },
+        "pre": {
+          "function_count": 1289,
+          "sha256": "f6b3a821493566701c1574cd6b99aeef260d4d471d5d6ded49556dda0b49c4f1"
+        }
+      },
+      "store": {
+        "catalog_sha256": "2b1185e071fafcc402a5ff3fc0f78e63ef843e534c9dd39e0eaaa2996e0ada47",
+        "post": {
+          "function_count": 305,
+          "sha256": "571f3769e160deddcd95d88244588851637edb875e2613c5bf6e84e32367ef41"
+        },
+        "pre": {
+          "function_count": 305,
+          "sha256": "6099b6999fb44322014adf8f9411e983827b73c18aa1e4de8ca3917ade5ad2e7"
+        }
+      }
+    }
+  },
+  "schema": "lemma-school-target-authority/1"
+}

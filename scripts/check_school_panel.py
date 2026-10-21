@@ -17,7 +17,7 @@ import zlib
 
 from core0_common import Core0Error,repo_root,sha256,write_json
 from check_school_job_worker import check_production
-from lemmasim_school_panel import Connection,Panel,SAMPLE
+from lemmasim_school_panel import Connection,Panel,SAMPLE,review_photo_image
 
 
 def capture(window,path):
@@ -114,10 +114,15 @@ def check(args):
             except Exception:
                 if time.monotonic()>deadline:raise
                 time.sleep(.05)
-        try:connection.command("status")
-        except RuntimeError as error:
-            if "already owned" not in str(error):raise
-        else:raise Core0Error("direct panel transport bypassed active authority mutex")
+        before_runtime=json.loads((connection.school_root/"transport.json").read_text())
+        local_status=connection.command("status")
+        after_runtime=json.loads((connection.school_root/"transport.json").read_text())
+        if local_status["generation"]!=status["generation"] or before_runtime!=after_runtime:
+            raise Core0Error("ordinary local query did not use the existing authority generation")
+        competing=subprocess.run([sys.executable,str(root/"scripts/school_transport.py"),"--binary",str(args.binary.resolve()),
+            str(connection.school_root),"run","--port",str(port)],cwd=root,capture_output=True,timeout=10)
+        if competing.returncode==0 or b"already owned" not in competing.stderr:
+            raise Core0Error("second actual authority bypassed the singleton mutex")
         http_challenge=http.command("interpretation-challenge",id="panel-http-challenge",**choice_fields)["record"]
         choices=http.command("learner-choices")["choices"]
         if choices!=[local_goal,http_challenge] or any(row["data"]["original"]["sequence"]!=attempt["sequence"] for row in choices):
@@ -136,6 +141,18 @@ def check(args):
                 if not select.select([xvfb.stdout],[],[],10)[0]:raise Core0Error("isolated GUI test server timeout")
                 os.environ["DISPLAY"]=":"+xvfb.stdout.readline().decode().strip()
                 window=tk.Tk()
+                # Exercise the actual Tk binary decoder, including sampled
+                # gray4 nibble order; a window alone does not prove ink rendered.
+                packed=bytearray([255])*(825*2200)
+                packed[:7]=bytes((0x0f,0xf0,0xff,0xff,0x7f,0xff,0x00))
+                packed[825:832]=bytes((0xff,0xff,0x0f,0xf0,0xff,0xff,0x00))
+                picture=review_photo_image(tk,dict(width=1650,height=2200,stride=825,gray4Hex=packed.hex()))
+                expected=((191,)*3,)*4+((221,)*3,(255,)*3,(0,)*3)
+                if (picture.width(),picture.height())!=(825,1100) or tuple(picture.get(x,0) for x in range(7))!=expected:
+                    raise Core0Error("actual Tk area reduction lost a source pixel or changed gray4 order")
+                try:review_photo_image(tk,dict(width=1650,height=2200,stride=825,gray4Hex='ff'))
+                except RuntimeError:pass
+                else:raise Core0Error("teacher preview accepted a truncated raster")
                 panel_args=argparse.Namespace(school=connection.school,actor="owner",session_dir=args.session_dir,
                     school_root=connection.school_root,school_executable=args.binary,curriculum_executable=args.curriculum,
                     controlled_now=None,school_endpoint=endpoint,port=port)
@@ -157,6 +174,27 @@ def check(args):
                     deadline=time.monotonic()+10
                     while panel.busy and time.monotonic()<deadline:window.update();time.sleep(.01)
                     if panel.busy:raise Core0Error("actual GUI learner declaration timed out")
+                revision=json.loads(json.dumps(fixture));revision["course"]["edition"]="2"
+                panel.editor.delete("1.0","end");panel.editor.insert("1.0",json.dumps(revision))
+                panel.publication_policy.set("2");panel.unit_action(True);wait_activity()
+                def publications():
+                    stored=json.loads((connection.school_root/"state.json").read_text())["payload"]
+                    return [record for record in stored["records"] if record["kind"]=="publication"]
+                actual_publications=publications()
+                if (len(actual_publications)!=2 or actual_publications[0]!=published["record"] or
+                    actual_publications[1]["data"]["revision"]!=2 or actual_publications[1]["data"]["policy"]!=2):
+                    raise Core0Error("teacher panel lost the selected publication policy or changed the original edition")
+                panel.editor.delete("1.0","end");panel.editor.insert("1.0",json.dumps(fixture))
+                panel.unit_action(True);wait_activity()
+                if "immutable publication conflict" not in panel.output.get("1.0","end") or publications()!=actual_publications:
+                    raise Core0Error("teacher panel silently retargeted an old publication policy")
+                revision["course"]["edition"]="3"
+                panel.editor.delete("1.0","end");panel.editor.insert("1.0",json.dumps(revision))
+                panel.publication_policy.set("0");panel.unit_action(True);wait_activity()
+                if "policy version must be in the admitted signed range" not in panel.output.get("1.0","end") or publications()!=actual_publications:
+                    raise Core0Error("teacher panel bypassed the actual Lean policy-version rejection")
+                panel.editor.delete("1.0","end");panel.editor.insert("1.0",json.dumps(fixture))
+                panel.publication_policy.set("2")
                 panel.choice_kind.set("attempt");panel.choice_reference.set(attempt["key"])
                 panel.choice_policy.set("1");panel.choice_reason.set("I request independent reconstruction of this original work.")
                 panel.choice_goal.set("Reconstruct the distributive coefficients independently.")
@@ -193,6 +231,10 @@ def check(args):
                      "tabScreenshots":screenshots,"authorityResultInsideVisibleWindow":True,
                      "learnerChoiceScreenshot":{"path":"panel-study-choices.png","sha256":sha256(out/"panel-study-choices.png")},
                      "actualGoalChallengeAndHistoryDisplayed":True,"actualAttemptOverrideRejected":True,
+                     "publicationPolicySelection":{"newEdition":2,"newPolicy":2,"originalEditionUnchanged":True,
+                         "oldEditionPolicyConflictRejected":True,"zeroPolicyRejectedByLean":True},
+                     "teacherRasterPresentation":{"pixels":[825,1100],"areaSamplesPreserveAllFourPixelPositions":True,
+                         "gray4OrderPreserved":True,"truncatedImageRejected":True,"decoder":"Tk binary PPM/PGM"},
                      "actualLeanStatusDisplayed":True,"windowPixels":[window.winfo_width(),window.winfo_height()],
                      "scope":"actual Tk rendering and status RPC in isolated Xvfb; guest drawing is a separate maintained client acceptance"}
                 window.destroy()
@@ -209,6 +251,7 @@ def check(args):
     report={"schema":"lemma-school-native-panel-evidence/v1","result":"pass","schoolProductionSha256":sha256(args.school_production),
             "schoolBinarySha256":sha256(args.binary),"curriculumBinarySha256":sha256(args.curriculum),
             "actualNativeAndHttpTransport":True,"scopedEvidenceDenied":True,"activeAuthorityMutexEnforced":True,
+            "ordinaryLocalQueryUsesRunningAuthority":True,"secondActualAuthorityRejected":True,
             "authoringPreview":preview,"publication":published,"gui":gui,"sampleCompilation":compilation,
             "sampleAuthoringSha256":sha256(SAMPLE),"sampleIdentity":[course,1],
             "learnerChoices":{"originalAttempt":attempt,"records":final_choices,

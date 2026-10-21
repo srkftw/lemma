@@ -334,10 +334,12 @@ while True:
                 return raw == self.kernel * 2
             _quiesce_uart(process, capture, time.monotonic()+2, facts,
                           budget=1, boundary_ready=ready)
-            self.assertEqual(seen, [self.kernel, self.kernel*2])
+            # Running readiness is checked again after the fresh stop/drain.
+            self.assertEqual(seen, [self.kernel, self.kernel*2, self.kernel*2])
             self.assertEqual(facts['cycles'], 2)
             self.assertEqual(facts['resumes'], 1)
             self.assertEqual(facts['semantic_checks'], 2)
+            self.assertEqual(facts['semantic_progress_checks'], 1)
             self.assertIs(facts['semantic_ready'], True)
             frozen = bytes(capture.received)
             transport._kill_and_reap(process, capture)
@@ -359,6 +361,80 @@ while True:
                     _quiesce_uart(process,capture,time.monotonic()+2,{},budget=1,boundary_ready=callback)
                 self.assertIsNone(process.poll())
                 self.assertEqual(bytes(capture.received),self.kernel)
+
+    def test_semantic_release_progress_does_not_spend_one_stop_per_byte(self):
+        # A continuous service may release a page after the live milestone.
+        # Its actual confirmation follows scheduler/UART output, without any
+        # new external request. Four real stop attempts must not become a
+        # four-byte progress budget. Every captured frame remains required.
+        count = 96
+        terminal = b"K1" + b" 0000000000000001" * 5 + b"\n"
+        code = """import os, signal, sys, time
+started = False
+def continued(_signal, _frame):
+    global started
+    if started:
+        return
+    started = True
+    for _ in range(int(sys.argv[3])):
+        os.write(1, bytes.fromhex(sys.argv[1]))
+        time.sleep(0.005)
+    os.write(1, bytes.fromhex(sys.argv[2]))
+signal.signal(signal.SIGCONT, continued)
+os.write(1, bytes.fromhex(sys.argv[1]))
+while True:
+    signal.pause()
+"""
+        process = subprocess.Popen((sys.executable, "-c", code, self.kernel.hex(),
+                                    terminal.hex(), str(count)), stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   start_new_session=True, bufsize=0)
+        capture = transport._Capture(pid=process.pid, argv=tuple(process.args))
+        for stream in (process.stdin, process.stdout, process.stderr):
+            os.set_blocking(stream.fileno(), False)
+        try:
+            transport._read_exact(process, len(self.kernel), deadline=time.monotonic()+2,
+                                  capture=capture, context="actual host writer readiness")
+            facts = {}
+            expected = self.kernel * (count + 1) + terminal
+            _quiesce_uart(process, capture, time.monotonic()+4, facts,
+                          budget=3, max_cycles=4,
+                          boundary_ready=lambda raw: raw == expected)
+            self.assertEqual(bytes(capture.received), expected)
+            self.assertEqual(facts["cycles"], 2)
+            self.assertEqual(facts["resumes"], 1)
+            self.assertTrue(facts["semantic_ready"])
+            self.assertGreater(facts["semantic_progress_checks"], facts["cycles"])
+            frozen = bytes(capture.received)
+            transport._kill_and_reap(process, capture)
+            facts.update(post_kill_boundary_unchanged=True, post_kill_stderr_unchanged=True)
+            validate_quiescence({"pid": process.pid, "uart_quiescence": facts},
+                                frozen, bytes(capture.stderr))
+            for invalid in (0, True, None, len(frozen)+1):
+                changed = copy.deepcopy(facts)
+                changed["semantic_progress_checks"] = invalid
+                with self.subTest(invalid=invalid), self.assertRaisesRegex(Core0Error, "progress inventory"):
+                    validate_quiescence({"pid": process.pid, "uart_quiescence": changed},
+                                        frozen, bytes(capture.stderr))
+        finally:
+            if process.poll() is None:
+                transport._kill_and_reap(process, capture)
+            transport._close_process_streams(process)
+            self.assertFalse(Path("/proc", str(process.pid)).exists())
+
+    def test_running_semantic_progress_keeps_raw_errors_and_unconfirmed_release_failed(self):
+        for suffix, callback, message in (
+                (self.kernel, lambda _raw: False, "timed out"),
+                (b"unknown", lambda _raw: False, "unexplained UART"),
+                (self.kernel, lambda raw: False if raw == self.kernel else 1, "actual Boolean")):
+            with self.subTest(message=message), self.native_child([self.kernel, suffix]) as (process, capture):
+                facts = {}
+                with self.assertRaisesRegex(Core0Error, message):
+                    _quiesce_uart(process, capture, time.monotonic()+1, facts,
+                                  budget=0.1, boundary_ready=callback)
+                self.assertNotEqual(facts["status"], "PASS")
+                self.assertEqual(bytes(capture.received), self.kernel + suffix[:len(capture.received)-len(self.kernel)])
+                self.assertIsNone(process.poll())
 
     def test_real_fragmented_kernel_and_binary_frames_need_fresh_refreeze(self):
         binary = BufferTransportTests().output(data=b"\x00\xffK1LMO1")

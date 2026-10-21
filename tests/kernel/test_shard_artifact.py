@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import subprocess
 import sys
 import tarfile
 import tempfile
@@ -88,6 +89,41 @@ class ShardArtifactTests(unittest.TestCase):
         self.assertEqual((original.st_ino,original.st_mode),(current.st_ino,current.st_mode))
         self.assertEqual(restored['manifest_sha256'], artifact.sha256(self.manifest))
         self.assertFalse(self.receipt.is_relative_to(self.source))
+        self.assert_unrelated()
+
+    def test_isolated_cli_needs_no_toolchain_and_rejects_corruption(self):
+        scripts = self.root/'scripts'
+        scripts.mkdir()
+        helper = scripts/'kernel_shard_artifact.py'
+        helper.write_bytes((ROOT/'scripts/kernel_shard_artifact.py').read_bytes())
+        empty_path = self.root/'empty-path'
+        empty_path.mkdir()
+        environment = {**os.environ, 'PATH': str(empty_path), 'PYTHONPATH': str(empty_path)}
+        command = [sys.executable, '-I', str(helper)]
+        packed = subprocess.run(command + ['pack', '--optimization', 'O0',
+                                '--shard-dir', str(self.source), '--archive', str(self.archive),
+                                '--receipt', str(self.manifest)], cwd=self.root,
+                                env=environment, capture_output=True, text=True, timeout=10)
+        self.assertEqual(packed.returncode, 0, packed.stderr)
+        unpack = command + ['unpack', '--optimization', 'O0', '--archive', str(self.archive),
+                            '--manifest', str(self.manifest), '--destination', str(self.destination),
+                            '--receipt', str(self.receipt)]
+        restored = subprocess.run(unpack, cwd=self.root, env=environment,
+                                  capture_output=True, text=True, timeout=10)
+        self.assertEqual(restored.returncode, 0, restored.stderr)
+        self.assertEqual(stat.S_IMODE((self.destination/'bin/image.elf').stat().st_mode), 0o755)
+        self.assertEqual(json.loads(restored.stdout)['helper_sha256'], artifact.sha256(helper))
+        refused_destination = self.destination.parent.parent/'refused/shards/O0'
+        refused_receipt = self.transport/'refused.extract.json'
+        self.archive.write_bytes(b'corruption' + self.archive.read_bytes()[10:])
+        rejected = subprocess.run(command + ['unpack', '--optimization', 'O0',
+                                  '--archive', str(self.archive), '--manifest', str(self.manifest),
+                                  '--destination', str(refused_destination), '--receipt', str(refused_receipt)],
+                                  cwd=self.root, env=environment, capture_output=True, text=True, timeout=10)
+        self.assertEqual(rejected.returncode, 1, rejected.stdout)
+        self.assertIn('archive byte size or SHA256 differs', rejected.stderr)
+        self.assertFalse(refused_destination.exists())
+        self.assertFalse(refused_receipt.exists())
         self.assert_unrelated()
 
     def test_existing_archive_receipt_or_destination_are_never_replaced(self):

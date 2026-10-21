@@ -24,6 +24,17 @@ def discovery_generator(data):
  module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
  return module,module.profile(data['profile']),path
 
+def discovery_view(generator,selected):
+ # Product10 images carry a checked, MAC-bound base DTB. Integrated15 has
+ # additional self-describing endpoints, but deliberately retains that image
+ # ABI. Publishing this explicit compatibility view never rewrites the old
+ # signed image's DTB or claims that its guest consumes the new endpoints.
+ if selected['profile'] not in inputs.INTEGRATED_PROFILES:return selected
+ # This compatibility selection is a new host input, separately bound below;
+ # it is never attributed to an older native compiler's consumed archive.
+ from silicon_profile import profile
+ return profile(inputs.EXECUTED_PROFILE)
+
 def profile_discovery(data,out,dtc):
  generator,profile,path=discovery_generator(data)
  tool=Path(dtc or shutil.which('dtc') or '').resolve()
@@ -31,7 +42,8 @@ def profile_discovery(data,out,dtc):
   raise ValueError('Product preparation requires the pinned Nix dtc; run prepare inside nix develop or pass --dtc')
  version=subprocess.run([str(tool),'--version'],check=True,capture_output=True,text=True,timeout=30).stdout.strip()
  if version!='Version: DTC 1.8.1':raise ValueError('Product discovery requires the pinned dtc1.8.1')
- source=generator.dts(profile);(out/'discovery.dts').write_text(source)
+ view=discovery_view(generator,profile)
+ source=generator.dts(view);(out/'discovery.dts').write_text(source)
  subprocess.run([str(tool),'-I','dts','-O','dtb','-o',str(out/'discovery.dtb'),str(out/'discovery.dts')],check=True,capture_output=True,timeout=30)
  extent=(out/'discovery.dtb').stat().st_size
  if not 40<=extent<=3072:raise ValueError('Profile discovery exceeds the exact boot-ROM discovery envelope')
@@ -40,7 +52,8 @@ def profile_discovery(data,out,dtc):
   'generator_sha256':inputs.sha(path),'dtc':{'path':str(tool),'sha256':inputs.sha(tool),'version':version},
   'dtb_bytes':extent,'dts_sha256':inputs.sha(out/'discovery.dts'),'dtb_sha256':inputs.sha(out/'discovery.dtb'),
   'descriptor_sha256':inputs.sha(out/'descriptor.bin'),
-  'scope':'static profile-bound hardware discovery registers; generated discovery.dtb is never preloaded into guest RAM'}
+  **({'compatibility_view':view['profile'],'compatibility_profile_sha256':inputs.sha(ROOT/'sim/profiles/lemma-silicon-dev-0.10.0.json'),'extension_scope':'Integrated'+profile['profile'].split('/')[1].split('.')[1]+' extra endpoints remain available through versioned MMIO discovery; Product10 guest does not consume them'} if view is not profile else {}),
+  'scope':'static profile-bound base hardware discovery registers; generated discovery.dtb is never preloaded into guest RAM'}
 
 def validate_discovery(data,path):
  row=data['digital_discovery'];generator,profile,source=discovery_generator(data)
@@ -48,7 +61,9 @@ def validate_discovery(data,path):
   raise ValueError('Changed product digital discovery binding')
  for name,key in [('discovery.dts','dts_sha256'),('discovery.dtb','dtb_sha256'),('descriptor.bin','descriptor_sha256')]:
   if inputs.sha(path/name)!=row[key]:raise ValueError('Changed product discovery artifact: '+name)
- if (path/'discovery.dts').read_text()!=generator.dts(profile) or (path/'descriptor.bin').read_bytes()!=generator.descriptor(profile,row['dtb_bytes']):
+ view=discovery_view(generator,profile)
+ if profile['profile'] in inputs.INTEGRATED_PROFILES and (row.get('compatibility_view')!=view['profile'] or row.get('compatibility_profile_sha256')!=inputs.sha(ROOT/'sim/profiles/lemma-silicon-dev-0.10.0.json')):raise ValueError('Changed explicit Integrated base discovery compatibility')
+ if (path/'discovery.dts').read_text()!=generator.dts(view) or (path/'descriptor.bin').read_bytes()!=generator.descriptor(profile,row['dtb_bytes']):
   raise ValueError('Product discovery registers differ from the native profile')
  if not 40<=row['dtb_bytes']<=3072 or (path/'discovery.dtb').stat().st_size!=row['dtb_bytes']:
   raise ValueError('Product discovery extent differs from the pinned profile')
@@ -68,7 +83,7 @@ def prepare(args):
  n=inputs.native(args.native_build,args.native_source_archive,selected)
  r=inputs.rom(args.rom_build,args.rom_source_archive,selected)
  from silicon_guest_bundle import host_dependencies
- data={'schema':'lemma-product-prepared/4' if selected==inputs.EXECUTED_PROFILE else 'lemma-product-prepared/3' if selected==inputs.NEXT_PROFILE else 'lemma-product-prepared/2','profile':selected,
+ data={'schema':'lemma-product-prepared/4' if selected in inputs.EXECUTED_PROFILES else 'lemma-product-prepared/3' if selected==inputs.NEXT_PROFILE else 'lemma-product-prepared/2','profile':selected,
   'boot':'immutable Lean ROM; image and DTB loaded by real BootNV transactions',
   'authentication':'OPEN integrity-only owner-local recovery','anti_rollback':'OPEN',
   'native_build':str(args.native_build.resolve()),'rom_build':str(args.rom_build.resolve()),
@@ -80,8 +95,8 @@ def prepare(args):
   'rom_sha256':r['manifest']['artifacts']['rom.bin'],'host_dependencies':host_dependencies(n['binary']),
   'host_scripts':{str(p.relative_to(ROOT)):inputs.sha(p) for p in (Path(__file__),ROOT/'scripts/product_native.py',ROOT/'scripts/lemmasim_session.py')},
   'qualification':'prepared exact component inputs; product boot/update acceptance separate'}
- if selected in (inputs.NEXT_PROFILE,inputs.EXECUTED_PROFILE):
-  data.update(image_compatibility=inputs.PROFILES[selected][2],rom_configuration=inputs.PROFILES[selected][0],paper_contract=({'version':3,'staging_offset':3584,'staging_bytes':512,'executed_refresh_offsets':[192,200,208,216,224,232]} if selected==inputs.EXECUTED_PROFILE else {'version':2,'staging_offset':3584,'staging_bytes':512}))
+ if selected in (inputs.NEXT_PROFILE,*inputs.EXECUTED_PROFILES):
+  data.update(image_compatibility=inputs.PROFILES[selected][2],rom_configuration=inputs.PROFILES[selected][0],paper_contract=({'version':3,'staging_offset':3584,'staging_bytes':512,'executed_refresh_offsets':[192,200,208,216,224,232]} if selected in inputs.EXECUTED_PROFILES else {'version':2,'staging_offset':3584,'staging_bytes':512}))
  out.mkdir(parents=True);data['digital_discovery']=profile_discovery(data,out,args.dtc);sessions.write_json(out/'prepared.json',data)
  (out/'DEPENDENCIES.txt').write_text('Local path-bound prepared product machine. Requires the exact recorded native build/source archives and Nix loader/libraries; no redistribution license is granted. CVW20f2af74 Apache-2.0 WITH SHL-2.1 and preserved notices; Verilator5.052 LGPL-3.0-only OR Artistic-2.0. All target ROM/image policy is Lean. CRC32 integrity is not authentication or anti-rollback. Physical nonvolatile qualification OPEN.\n')
  return {'prepared':str(out),'rom':data['rom_sha256'],'native':data['binary_sha256']}
@@ -89,9 +104,9 @@ def prepare(args):
 def prepared(path):
  data=json.loads((Path(path)/'prepared.json').read_text())
  selected=data.get('profile')
- if selected not in inputs.PROFILES or data.get('schema')!=('lemma-product-prepared/4' if selected==inputs.EXECUTED_PROFILE else 'lemma-product-prepared/3' if selected==inputs.NEXT_PROFILE else 'lemma-product-prepared/2'):
+ if selected not in inputs.PROFILES or data.get('schema')!=('lemma-product-prepared/4' if selected in inputs.EXECUTED_PROFILES else 'lemma-product-prepared/3' if selected==inputs.NEXT_PROFILE else 'lemma-product-prepared/2'):
   raise ValueError('Unsupported product prepared machine')
- if selected in (inputs.NEXT_PROFILE,inputs.EXECUTED_PROFILE) and (data.get('image_compatibility')!=inputs.PROFILES[selected][2] or data.get('rom_configuration')!=inputs.PROFILES[selected][0] or data.get('paper_contract')!=({'version':3,'staging_offset':3584,'staging_bytes':512,'executed_refresh_offsets':[192,200,208,216,224,232]} if selected==inputs.EXECUTED_PROFILE else {'version':2,'staging_offset':3584,'staging_bytes':512})):
+ if selected in (inputs.NEXT_PROFILE,*inputs.EXECUTED_PROFILES) and (data.get('image_compatibility')!=inputs.PROFILES[selected][2] or data.get('rom_configuration')!=inputs.PROFILES[selected][0] or data.get('paper_contract')!=({'version':3,'staging_offset':3584,'staging_bytes':512,'executed_refresh_offsets':[192,200,208,216,224,232]} if selected in inputs.EXECUTED_PROFILES else {'version':2,'staging_offset':3584,'staging_bytes':512})):
   raise ValueError('Successor Product prepared compatibility or versioned Paper contract differs')
  for key,build in (('native_manifest_sha256','native_build'),('rom_manifest_sha256','rom_build')):
   if inputs.sha(Path(data[build])/'build.json')!=data[key]:raise ValueError('Changed prepared original build manifest')
@@ -111,7 +126,7 @@ class ProductRTL(sessions.RTL):
    'runtime':data['binary_sha256'],'implementation':data['runtime_identity'],'rom':data['rom_sha256'],
    'boot':'ROM/NV-v1','authentication':'integrity-only owner-local',
    'digital_discovery':data['digital_discovery']['descriptor_sha256'],'discovery_bytes':data['digital_discovery']['dtb_bytes']}
-  if data['profile'] in (inputs.NEXT_PROFILE,inputs.EXECUTED_PROFILE):self.identity.update(image_compatibility=data['image_compatibility'],paper_contract=data['paper_contract'])
+  if data['profile'] in (inputs.NEXT_PROFILE,*inputs.EXECUTED_PROFILES):self.identity.update(image_compatibility=data['image_compatibility'],paper_contract=data['paper_contract'])
   self.log=(directory/'machine.log').open('wb');self.boot_lock=None
   medium=args.boot_medium
   if args.restore:
@@ -132,6 +147,7 @@ class ProductRTL(sessions.RTL):
   if args.recovery:
    (directory/'initial-uart').write_bytes(b'R');command+=['--uart-input',str(directory/'initial-uart')]
   self.argv=command;self.timeout=args.timeout;self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'}
+  if data['profile'] in inputs.INTEGRATED_PROFILES:self.input_kinds.add('multimodal')
   self.process=subprocess.Popen(command,cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=self.log,start_new_session=True,bufsize=0)
   self.reader=selectors.DefaultSelector();self.reader.register(self.process.stdout,selectors.EVENT_READ);self.pending=bytearray()
   try:
@@ -141,7 +157,7 @@ class ProductRTL(sessions.RTL):
  def preflight_checkpoint(self,path,expected_cycle):
   path=Path(path)
   with path.open('rb') as f:h=f.read(128)
-  if len(h)!=128 or h[:8]!=b'LMSSRTL1' or int.from_bytes(h[8:16],'little')!=7 or h[16:80]!=self.checkpoint_identity.encode():raise ValueError('Product checkpoint version/runtime mismatch')
+  if len(h)!=128 or h[:8]!=b'LMSSRTL1' or int.from_bytes(h[8:16],'little')!=(12 if self.identity['profile'] in inputs.INTEGRATED_PROFILES else 7) or h[16:80]!=self.checkpoint_identity.encode():raise ValueError('Product checkpoint version/runtime mismatch')
   wrapper=int.from_bytes(h[80:88],'little');model=int.from_bytes(h[88:96],'little')
   if wrapper<16 or not 0<model<=64*1024*1024 or 112+wrapper+model!=path.stat().st_size or int.from_bytes(h[120:128],'little')!=expected_cycle:raise ValueError('Product checkpoint boundary/length mismatch')
  def close(self):

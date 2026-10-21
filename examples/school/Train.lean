@@ -1,4 +1,5 @@
 import Lemma.Numerics.Linear
+import Lemma.School.Store
 
 open Lean Lemma.Numerics Lemma.Numerics.Linear
 
@@ -49,7 +50,9 @@ def readJson [FromJson α] (path : System.FilePath) : IO α := do
 def writeAtomic [ToJson α] (path : System.FilePath) (value : α) : IO Unit := do
   let temporary := path.toString ++ ".pending"
   IO.FS.writeFile temporary ((toJson value).compress ++ "\n")
+  Lemma.School.Store.barrier "file" temporary
   IO.FS.rename temporary path
+  Lemma.School.Store.syncDirectoryAndParent (path.parent.getD ".")
 
 structure Stream where
   handle : IO.FS.Handle
@@ -84,7 +87,14 @@ def parseSample (line : String) : IO Sample := do
   return value
 
 def validateManifest (manifest : Manifest) : Except String Unit := do
-  unless manifest.schema == "lemma-synthetic-risk-dataset/v1" do throw "unsupported dataset schema"
+  unless #["lemma-synthetic-risk-dataset/v1","lemma-permitted-risk-dataset/v1"].contains manifest.schema do
+    throw "unsupported dataset schema"
+  unless !manifest.source.isEmpty && manifest.source.utf8ByteSize <= 2048 &&
+      !manifest.grant.isEmpty && manifest.grant.utf8ByteSize <= 2048 &&
+      !manifest.labelOrigin.isEmpty && manifest.labelOrigin.utf8ByteSize <= 2048 &&
+      manifest.featureOrder == #["recent-independent-error-rate","normalized-review-gap"] &&
+      Lemma.School.Digest.valid manifest.transformationDigest do
+    throw "dataset needs bounded source/grant/label provenance, transformation SHA256 and the supported feature order"
   unless manifest.trainIds.size > 0 && manifest.trainIds.size ≤ 4096 &&
       manifest.evaluationIds.size > 0 && manifest.evaluationIds.size ≤ 4096 do
     throw "dataset split must have 1..4096 rows"
@@ -195,7 +205,29 @@ def evaluate (path : System.FilePath) (manifest : Manifest) (params : Parameters
     baselineMse := baseline/n, quantizedMse := quantizedLoss/n,
     maximumQuantizationDeviation := deviation }
 
-def train (directory checkpointPath output : System.FilePath) (steps delay : Nat) : IO Unit := do
+structure Configuration where
+  schema : String := "lemma-school-linear-training-config/1"
+  modelVersion : Nat
+  learningRate : Float := 0.1
+  momentum : Float := 0.5
+  deriving FromJson, ToJson
+
+def validateConfiguration (configuration : Configuration) : Except String Unit := do
+  unless configuration.schema == "lemma-school-linear-training-config/1" &&
+      configuration.modelVersion > 0 && configuration.modelVersion <= 0x7ffffffffffffffe do
+    throw "training configuration requires supported schema and positive model version"
+  unless configuration.learningRate.isFinite && 0.0 < configuration.learningRate && configuration.learningRate <= 0.25 &&
+      configuration.momentum.isFinite && 0.0 <= configuration.momentum && configuration.momentum <= 0.95 do
+    throw "training configuration requires learningRate (0,0.25] and momentum [0,0.95]"
+
+def train (directory checkpointPath output : System.FilePath) (steps delay : Nat)
+    (configurationPath : Option System.FilePath := none) : IO Unit := do
+  let configuration : Option Configuration ← match configurationPath with
+    | none => pure none
+    | some path => do
+      let configuration : Configuration ← readJson path
+      IO.ofExcept (validateConfiguration configuration)
+      pure (some configuration)
   let manifest : Manifest ← readJson (directory / "manifest.json")
   IO.ofExcept (validateManifest manifest)
   unless (← byteDigest (directory / "train.jsonl")) == manifest.trainDigest &&
@@ -204,10 +236,21 @@ def train (directory checkpointPath output : System.FilePath) (steps delay : Nat
   validateSplit (directory / "train.jsonl") manifest.trainIds manifest.trainGroups "train"
   validateSplit (directory / "evaluation.jsonl") manifest.evaluationIds manifest.evaluationGroups "evaluation"
   let identity ← byteDigest (directory / "manifest.json")
+  let configurationIdentity ← match configurationPath with
+    | none => pure "default/0.1.0"
+    | some path => byteDigest path
   let implementation := (← byteDigest "examples/school/Train.lean") ++
     (← byteDigest "Lemma/Numerics/Linear.lean") ++ (← byteDigest "Lemma/Numerics/Tensor.lean")
+    ++ configurationIdentity
   let mut state : Checkpoint ← if ← checkpointPath.pathExists then readJson checkpointPath
-    else pure { dataset := identity, implementation }
+    else match configuration with
+      | none => pure { dataset := identity, implementation }
+      | some config => pure {
+          dataset := identity
+          implementation := implementation
+          codeVersion := "school-linear-training/0.2.0"
+          learningRate := config.learningRate
+          momentum := config.momentum }
   IO.ofExcept (validateCheckpoint state identity)
   unless state.implementation == implementation &&
       state.nextRecord == (state.step * 4) % manifest.trainIds.size &&
@@ -228,7 +271,8 @@ def train (directory checkpointPath output : System.FilePath) (steps delay : Nat
   IO.FS.createDirAll output
   writeAtomic (output / "parameters.json") (Json.mkObj [
     ("schema", toJson "lemma-linear-parameters/v1"), ("profile", toJson quantizedProfile),
-    ("trainingProfile", toJson profile), ("version", toJson state.step),
+    ("trainingProfile", toJson profile), ("version", toJson (configuration.map (·.modelVersion) |>.getD state.step)),
+    ("trainingConfiguration",toJson configurationIdentity),("datasetSchema",toJson manifest.schema),
     ("dataset", toJson identity), ("parameters", toJson state.parameters),
     ("parameterBits", toJson (state.parameters.values.map Float.toBits)),
     ("quantized", toJson q), ("scale", toJson (1024 : Nat)),
@@ -296,6 +340,15 @@ def main (args : List String) : IO UInt32 := do
       let some steps := steps.toNat? | throw <| IO.userError "steps must be a natural number"
       let some delay := delay.toNat? | throw <| IO.userError "delay must be a natural number"
       Lemma.School.Training.train directory checkpoint output steps delay
+    | ["train-config", directory, checkpoint, output, steps, configuration] =>
+      let some steps := steps.toNat? | throw <| IO.userError "steps must be a natural number"
+      Lemma.School.Training.train directory checkpoint output steps 0 (some configuration)
+    | ["evaluate", directory, checkpoint, output] =>
+      let state : Checkpoint ← Lemma.School.Training.readJson checkpoint
+      Lemma.School.Training.train directory checkpoint output state.step 0
+    | ["evaluate-config", directory, checkpoint, output, configuration] =>
+      let state : Checkpoint ← Lemma.School.Training.readJson checkpoint
+      Lemma.School.Training.train directory checkpoint output state.step 0 (some configuration)
     | _ => throw <| IO.userError "usage: Train.lean fixture DIRECTORY | check | train DATASET CHECKPOINT OUTPUT TOTAL_STEPS DELAY_MS"
     return 0
   catch error =>

@@ -1,8 +1,8 @@
 {
   "schema": "lemma-verification-routes/v1",
-  "comparison_base": "8e75bc6541131189d7a2efe02e9ff77bde61194f",
-  "objective": "Implement school/cloud foundation 0.1.0; preserve inherited Task 007 and machine verification obligations",
-  "historical_checkpoint": "docs/plan/008-session-state.html",
+  "comparison_base": "c6a785478e8212ae476058224d4c9c7e546fb81c",
+  "objective": "Task009: physical implementation corrections and connected machine, school, operator and developer workflows; preserve inherited qualification obligations",
+  "historical_checkpoint": "docs/plan/009-session-state.html",
   "resource_budgets": {
     "status": "Read-only Git/receipt inspection; each Git command at most 15 seconds; no build or execution",
     "host_export": "scripts/lean_export_host.py: two host Lean workers; 65536 KiB worker stack reservation",
@@ -138,6 +138,22 @@
     "school-panel": {
       "kind": "validation",
       "command": "Run scripts/check_school_panel.py with current hosted producer and existing session metadata; native Xvfb smoke does not substitute actual guest workflow"
+    },
+    "native-logical2": {
+      "kind": "execution",
+      "command": "Run scripts/check_native_logical2.py with the source-bound normal logical2 runtime, exact audited native bundle and isolated medium at Ready/blockedUART, converter, pending DMA/PCM/storage cuts; run actual unknown-callback rejection. Finite same-backend continuation, not cold recovery or cross-backend migration."
+    },
+    "multimodal-owned-io": {
+      "kind": "validation",
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_owned_io.py --work-dir build/multimodal/owned-UNUSED; hosted actual Lean ownership, complete-record copying and PCM policy Actions with consequential source negatives; neither guest execution nor controller timing. For controller2/service3 also run nix develop --no-write-lock-file --command python3 scripts/check_multimodal_ring.py --work-dir build/multimodal/ring-UNUSED (owned kernel frame, bounded arbitrary PCM, immediate revocation, EOF and independent counters)."
+    },
+    "multimodal-audio-consumer": {
+      "kind": "validation",
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_audio.py --work-dir build/multimodal/audio-UNUSED; actual maintained User PCM lifecycle Actions with partial consumption, mute, expiry, superseded grants and consequential source negatives. Guest/controller/audio presentation remain separate."
+    },
+    "integrated16-product": {
+      "kind": "execution",
+      "command": "Run scripts/check_integrated_boot.py with --profile lemma-silicon-dev/0.16.0 and exact newly audited Integrated16 package/tag/factory/ROM/runtime inputs; require actual ABI2 controller and inherited15 union, preserving legacy Product10 beacon interpretation. Fast MM2 subset remains separate."
     }
   },
   "boundaries": [
@@ -176,7 +192,11 @@
         "scripts/*_deployment.py",
         "scripts/toolchain_preparation.py",
         "scripts/build_dependencies.py",
-        "scripts/action_worker.py"
+        "scripts/action_worker.py",
+        "scripts/arithmetic_closure_identity.py",
+        "scripts/surface_word_inline.py",
+        "tooling/FactoryBootMain.lean",
+        "scripts/archive_guest_sources.py"
       ],
       "claims": [
         "cache-host",
@@ -241,7 +261,12 @@
         "scripts/lemmasim_readonly.py",
         "tests/kernel/*",
         "tests/core0/*",
-        "scripts/build_admission.py"
+        "scripts/build_admission.py",
+        "scripts/arithmetic_closure_identity.py",
+        "scripts/surface_word_inline.py",
+        "scripts/check_course_install.py",
+        "scripts/archive_guest_sources.py",
+        "tests/boot/test_product_image.py"
       ],
       "claims": [
         "kernel-host",
@@ -274,7 +299,9 @@
         "conformance/lemmasim/inspect_notebook.py",
         "conformance/lemmasim/math_oracle.py",
         "scripts/lemmasim_fast.py",
-        "scripts/check_live_notebook.py"
+        "scripts/check_live_notebook.py",
+        "scripts/check_uart_flow.py",
+        "scripts/lemmasim_course_fast.py"
       ],
       "claims": [
         "notebook-qemu"
@@ -295,7 +322,9 @@
         "tooling/silicon/sim.nix",
         "tests/silicon/*",
         "scripts/silicon_reset_rom.py",
-        "scripts/silicon_profile.py"
+        "scripts/silicon_profile.py",
+        "conformance/silicon/Pen*.sv",
+        "scripts/check_pen_sram.py"
       ],
       "claims": [
         "cache-host",
@@ -331,7 +360,9 @@
         "scripts/check_browser_*.py",
         "scripts/lemmasim_browser_tci.py",
         "sim/browser/tci/*",
-        "tooling/lemmasim/tci/*"
+        "tooling/lemmasim/tci/*",
+        "scripts/check_tci_uart.mjs",
+        "scripts/check_tci_uart_flow.mjs"
       ],
       "claims": [
         "browser",
@@ -361,7 +392,54 @@
         "tooling/silicon/layout.tcl",
         "tooling/silicon/extract.tcl",
         "tooling/silicon/process.tcl",
-        "tooling/silicon/enclosure-inputs-v1.json"
+        "tooling/silicon/enclosure-inputs-v1.json",
+        "conformance/silicon/Pen*.sv",
+        "scripts/check_pen_sram.py",
+        "scripts/silicon_enclosure.py",
+        "scripts/silicon_pen_*.py",
+        "scripts/silicon_lvs_alias.py",
+        "scripts/silicon_power_ports.py",
+        "scripts/silicon_buffered_pins.py",
+        "scripts/silicon_acceptance_launch.py",
+        "scripts/silicon_sram_input_hold.py",
+        "scripts/silicon_control_launch.py",
+        "scripts/silicon_capacity_launch.py",
+        "tests/silicon/test_process_comparator.py",
+        "scripts/silicon_route_enclosure.py",
+        "tooling/silicon/pen-*.tcl",
+        "tooling/silicon/candidates/*.patch",
+        "scripts/silicon_access_metadata.py",
+        "scripts/silicon_access_preference.py",
+        "scripts/silicon_preferred_route.py",
+        "tooling/silicon/opendb-access-export.cpp",
+        "tests/silicon/test_access_preferences.py",
+        "scripts/silicon_access_writer.py",
+        "scripts/silicon_power_margin.py",
+        "scripts/silicon_power_margin_route.py",
+        "scripts/silicon_power_clearance.py",
+        "scripts/silicon_slew_launch.py",
+        "scripts/silicon_decode_launch.py",
+        "tooling/silicon/klayout.nix",
+        "scripts/silicon_geometry_export.py",
+        "scripts/silicon_gds_geometry.py",
+        "scripts/silicon_filler_geometry.py",
+        "scripts/silicon_filler_source.py",
+        "scripts/silicon_row_filler.py",
+        "scripts/silicon_well_fill_route.py",
+        "scripts/silicon_two_load_launch.py",
+        "scripts/silicon_hold_decode.py",
+        "scripts/silicon_fresh_margin.py",
+        "scripts/silicon_fresh_global.py",
+        "tests/silicon/test_filler_source.py",
+        "tests/silicon/test_well_fill_route.py",
+        "tests/silicon/test_two_load_launch.py",
+        "tests/silicon/test_hold_decode.py",
+        "tests/silicon/test_fresh_margin.py",
+        "tests/silicon/test_fresh_global.py",
+        "tooling/silicon/opendb-geometry-export.cpp",
+        "tests/silicon/test_gds_geometry.py",
+        "tests/silicon/test_power_margin.py",
+        "scripts/check_silicon_lvs_connectivity.py"
       ],
       "claims": [
         "physical-flow"
@@ -382,8 +460,10 @@
         "scripts/check_foundation.py",
         "scripts/check_incremental_builds.py",
         "scripts/host_prerequisites.py",
+        "scripts/ci_preflight.py",
         "tests/foundation/test_ci_workflow.py",
-        "tests/ci/test_workflow_policy.py"
+        "tests/ci/test_workflow_policy.py",
+        "tests/ci/test_ci_orchestration.py"
       ],
       "claims": [
         "fresh-qualification-review"
@@ -484,7 +564,15 @@
         "tests/multimodal/*",
         "scripts/check_multimodal_controller.py",
         "scripts/check_multimodal_guest.py",
-        "scripts/check_multimodal_rtl_guest.py"
+        "scripts/check_multimodal_rtl_guest.py",
+        "sim/host/lemma_optical.c",
+        "sim/host/lemma_optical.h",
+        "sim/rtl/lemma_optical.sv",
+        "sim/rtl/tests/optical_tb.cpp",
+        "scripts/check_optical_controller.py",
+        "tests/lemmasim/test_optical_controller.py",
+        "sim/profiles/lemma-silicon-dev-0.17.0.json",
+        "docs/contracts/009-optical-frame-v1.html"
       ],
       "claims": [
         "multimodal-host",
@@ -551,7 +639,11 @@
         "engineering/multimodal/**",
         "scripts/check_multimodal_engineering.py",
         "docs/multimodal-engineering.html",
-        "docs/evidence/007-multimodal-engineering.json"
+        "docs/evidence/007-multimodal-engineering.json",
+        "scripts/check_sg13g2_microphone.py",
+        "scripts/check_sg13g2_comparator.py",
+        "scripts/check_sg13g2_sample_hold.py",
+        "tests/silicon/test_sample_hold.py"
       ],
       "claims": [
         "multimodal-engineering",
@@ -599,7 +691,10 @@
         "scripts/school_transport.py",
         "examples/school/QuickReview.lean",
         "examples/school/*unit.json",
-        "examples/school/*mappings.json"
+        "examples/school/*mappings.json",
+        "scripts/school_develop.py",
+        "scripts/school_fs_barrier.py",
+        "examples/school/FractionEquivalence.lean"
       ],
       "claims": [
         "school-host",
@@ -638,7 +733,9 @@
         "scripts/check_school_job_worker.py",
         "scripts/check_school_load_worker.py",
         "scripts/school_provider_runner.py",
-        "scripts/check_school_worker_lifecycle.py"
+        "scripts/check_school_worker_lifecycle.py",
+        "examples/school/training-config.json",
+        "scripts/check_school_training_workflow.py"
       ],
       "claims": [
         "school-numerics",
@@ -686,6 +783,169 @@
         "school-client"
       ],
       "affects": []
+    },
+    {
+      "id": "school-student-service",
+      "inputs": [
+        "scripts/lemmasim_school_service.py",
+        "scripts/school_wire.py",
+        "sim/browser/school_transport.js",
+        "tests/lemmasim/test_school_service.py",
+        "Lemma/Courses/SchoolSubmission.lean",
+        "Lemma/Services/Store/ServerSchool.lean",
+        "scripts/school_deployment.py",
+        "scripts/school_target.py",
+        "scripts/school_reduction_target.py",
+        "scripts/school_stream_target.py",
+        "tests/lemmasim/test_school_deployment_selection.py",
+        "tests/multimodal/test_school_reduction_source.py",
+        "tests/multimodal/test_school_stream_source.py",
+        "Lemma/Courses/LocalReduction.lean",
+        "Lemma/Courses/DocumentEventRows.lean",
+        "Lemma/Documents/LocalToolEvents.lean",
+        "Lemma/Services/Arithmetic/ReductionV1.lean",
+        "Lemma/Services/Arithmetic/ProtocolV9.lean",
+        "Lemma/Services/Arithmetic/ClientV9.lean",
+        "Lemma/Services/Arithmetic/ServerV9.lean",
+        "docs/contracts/009-school-exact-reduction-v1.html",
+        "docs/contracts/009-school-console-stream-v1.html",
+        "Lemma/Courses/SchoolStream.lean",
+        "tests/courses/LocalReduction.lean",
+        "tests/courses/Submission*.lean",
+        "tests/courses/NotebookSchool.lean",
+        "tests/courses/NotebookPackage.lean",
+        "tests/courses/SchoolGuard*.lean",
+        "tests/courses/Selection.lean",
+        "examples/school/ConsecutiveSquares.lean",
+        "scripts/check_course_install.py",
+        "scripts/lemmasim_course.py",
+        "tests/courses/SelectionExport.lean",
+        "tooling/school-target-authority.json",
+        "scripts/lemmasim_course_fast.py",
+        "tests/courses/DocumentEventConsumers.lean",
+        "tests/courses/RemoteProvenance.lean"
+      ],
+      "claims": [
+        "school-host",
+        "school-client",
+        "school-panel",
+        "browser",
+        "kernel-host",
+        "multimodal-workbook-native",
+        "multimodal-workbook-browser"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation"
+      ]
+    },
+    {
+      "id": "integrated15-product",
+      "inputs": [
+        "Lemma/Platform/LemmaSim/IntegratedKernel.lean",
+        "Lemma/Platform/Silicon/BindingIntegrated.lean",
+        "scripts/integrated_*.py",
+        "scripts/check_integrated_*",
+        "scripts/check_uart_paced.py",
+        "scripts/silicon_sram.py",
+        "sim/profiles/lemma-silicon-dev-0.15.0.json",
+        "tests/silicon/IntegratedAliases.lean",
+        "tests/silicon/test_integrated_profile.py",
+        "tooling/integrated-target-authority.json",
+        "tooling/lemmasim/tci/incremental_uart.py",
+        "sim/browser/tci/uart_arrivals.mjs",
+        "scripts/lemmasim_auth.py",
+        "scripts/lemmasim_product.py",
+        "scripts/package_product_image.py",
+        "tooling/FactoryBootMain.lean",
+        "Lemma/Platform/Silicon/BindingIntegratedPCM.lean",
+        "sim/profiles/lemma-silicon-dev-0.16.0.json",
+        "tests/silicon/test_multimodal_v2_binding.py",
+        "tests/boot/test_product_image.py"
+      ],
+      "claims": [
+        "rtl-devices",
+        "rtl-notebook",
+        "physical-flow",
+        "browser",
+        "kernel-host",
+        "multimodal-host",
+        "multimodal-controller",
+        "multimodal-guest",
+        "integrated16-product"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation",
+        "rtl-backend-or-observer",
+        "qemu-backend-or-observer"
+      ]
+    },
+    {
+      "id": "native-logical2-continuation",
+      "inputs": [
+        "scripts/check_native_logical2.py",
+        "scripts/native_logical_relation.py",
+        "tests/silicon/test_logical2_admission.py",
+        "docs/contracts/009-qemu-logical-softtlb-v2.html",
+        "sim/host/lemma_softtlb2_qemu.inc.c",
+        "sim/host/lemma_multimodal_checkpoint.inc.c",
+        "sim/host/lemma_multimodal_checkpoint_valid.inc.c",
+        "tooling/lemmasim/native_logical2_reuse.py",
+        "tooling/lemmasim/patch_soft_tlb2.py",
+        "tooling/lemmasim/patch_multimodal_checkpoint.py",
+        "tooling/lemmasim/patch_logical2_lifecycle.py",
+        "tooling/lemmasim/qemu_logical2_reuse.nix",
+        "docs/contracts/009-native-mm2-continuation-v1.html",
+        "tests/silicon/test_mm2_checkpoint_admission.py",
+        "tests/silicon/test_native_logical_relation.py",
+        "tests/silicon/test_checkpoint_transaction.py"
+      ],
+      "claims": [
+        "native-logical2",
+        "cache-host"
+      ],
+      "affects": []
+    },
+    {
+      "id": "multimodal-owned-io-actions",
+      "inputs": [
+        "scripts/check_multimodal_owned_io.py",
+        "tests/multimodal/OwnedRecordActions.lean.inc",
+        "Lemma/Platform/LemmaSim/MultimodalService.lean",
+        "scripts/check_multimodal_ring.py",
+        "tests/multimodal/OwnedRingActions.lean.inc",
+        "tests/multimodal/NotebookRingActions.lean.inc",
+        "docs/contracts/009-multimodal-pcm-ring-v1.html"
+      ],
+      "claims": [
+        "multimodal-owned-io",
+        "multimodal-workbook-native",
+        "multimodal-workbook-browser",
+        "kernel-host"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation"
+      ]
+    },
+    {
+      "id": "multimodal-local-audio-consumer",
+      "inputs": [
+        "scripts/check_multimodal_audio.py",
+        "tests/multimodal/NotebookAudioActions.lean.inc",
+        "Lemma/User/Multimodal.lean"
+      ],
+      "claims": [
+        "multimodal-audio-consumer",
+        "multimodal-notebook-ui",
+        "multimodal-workbook-native",
+        "multimodal-workbook-browser"
+      ],
+      "affects": [
+        "artifact-production",
+        "artifact-validation"
+      ]
     }
   ],
   "evidence_paths": [

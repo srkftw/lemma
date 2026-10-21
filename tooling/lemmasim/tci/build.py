@@ -185,11 +185,18 @@ def retained_source_identity(report,inventory,source_root):
 
 def admit(a):
     """Retain exact already-built prototype outputs, with a separate admission receipt."""
+    if read(a.receipt).get('production_mode')=='incremental-mm2-object-and-real-link/1':
+        from incremental_multimodal import admit as admit_pcm
+        return admit_pcm(a)
     initial=sources()
     if shutil.disk_usage(a.output_dir.resolve().parent).free<MIN_FREE+32*1024*1024:raise RuntimeError('2GiB free-space floor plus32MiB retained runtime staging')
     r=read(a.receipt);inventory=a.receipt.parent/'source-inputs.json'
     input_root=retained_producer_input_root(r,a.receipt)
     retained_source_identity(r,inventory,a.source_root)
+    archive=getattr(a,'producer_input_archive',None)
+    if archive is not None:
+        if r.get('production_mode')!='incremental-flow-objects-and-real-link/1':raise ValueError('Producer input archive requires explicit flow producer')
+        input_root=archive.resolve()
     for name,digest in r.get('inputs',{}).items():
         if Path(name).is_absolute() or '..' in Path(name).parts or sha(input_root/name)!=digest:raise ValueError('Recorded host producer input differs:'+name)
     if not r.get('inputs'):raise ValueError('Missing original host producer input closure')
@@ -208,6 +215,25 @@ def admit(a):
         if sha(p)!=item['sha256'] or p.stat().st_size!=item['bytes']:raise ValueError('Retained compiled output differs:'+name)
         shutil.copyfile(p,out/name)
     for name in ('dependencies.json','lemma_browser_control.inc.c','patch_wasm.py','shell.nix','build.py','res_query_unavailable.c','patch_tci_helpers.py','typed_helpers.json','tci-typed-helpers.patch'):shutil.copyfile(HERE/name,out/name)
+    if r.get('production_mode') in ('incremental-controller-object-and-real-link/1','fresh-upstream-objects-and-real-link/1'):shutil.copyfile(HERE/'incremental_uart.py',out/'incremental_uart.py')
+    if r.get('production_mode') == 'incremental-flow-objects-and-real-link/1':
+        # Preserve the exact producer even when admission support has since
+        # advanced. A complete explicit input archive is content-checked above.
+        shutil.copyfile(input_root/'tooling/lemmasim/tci/incremental_flow.py',out/'incremental_flow.py')
+        observation=Path(r['retained_closure_observation']['path'])
+        if sha(observation)!=r['retained_closure_observation']['sha256']:raise ValueError('Retained closure observation differs')
+        shutil.copyfile(observation,out/'retained-closure.json')
+        shutil.copyfile(observation.parent/'observed-inputs.json',out/'retained-closure-inputs.json')
+        for name in ('incremental_flow.py','build.py','shell.nix'):
+            src=observation.parent/'observer-sources'/name
+            expected=next(v['sha256'] for k,v in read(observation)['inputs'].items() if Path(k).name==name)
+            if sha(src)!=expected:raise ValueError('Retained observer source differs:'+name)
+            dest=out/'retained-closure-source'/name;dest.parent.mkdir(exist_ok=True);shutil.copyfile(src,dest)
+        patch=next(Path(k) for k in r['overlay_inputs'] if k.endswith('/tooling/lemmasim/patch_uart_flow.py'))
+        if sha(patch)!=r['overlay_inputs'][str(patch)]['sha256']:raise ValueError('Frozen flow patcher differs')
+        shutil.copyfile(patch,out/'patch_uart_flow.py')
+        for name in ('chardev/char-fe.c','hw/char/serial.c'):
+            dest=out/'flow-source'/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(a.source_root/name,dest)
     shutil.copyfile(inventory,out/'source-inputs.json');shutil.copyfile(a.receipt,out/'original-build.json')
     shutil.copyfile(a.source_root/'COPYING',out/'COPYING.QEMU')
     for name in ('lemma_qemu.c','lemma_silicon_fast.h','lemma_model.c','lemma_model.h','lemma_multimodal.c','lemma_multimodal.h','lemma_multimodal_qemu.inc.c','lemma_fast_block.c','lemma_uart_ingress.h','lemma_uart_qemu.inc.c'):
@@ -220,7 +246,7 @@ def admit(a):
 def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='action',required=True)
     b=sub.add_parser('build');b.add_argument('--work-dir',type=Path,required=True);b.add_argument('--source-cache',type=Path);b.add_argument('--timeout',type=int,default=900);b.add_argument('--direct-helpers',action='store_true',help='Compile exact declared C helper thunks; preserve explicitly identified libffi fallbacks')
-    b=sub.add_parser('admit');b.add_argument('--receipt',type=Path,required=True);b.add_argument('--source-root',type=Path,required=True);b.add_argument('--build-dir',type=Path,required=True);b.add_argument('--output-dir',type=Path,required=True)
+    b=sub.add_parser('admit');b.add_argument('--receipt',type=Path,required=True);b.add_argument('--source-root',type=Path,required=True);b.add_argument('--build-dir',type=Path,required=True);b.add_argument('--output-dir',type=Path,required=True);b.add_argument('--producer-input-archive',type=Path)
     a=p.parse_args()
     if a.action=='build':
         if not 30<=a.timeout<=1800:raise ValueError('Host phase deadline outside30..1800s')

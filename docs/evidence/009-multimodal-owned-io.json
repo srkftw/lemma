@@ -1,0 +1,336 @@
+{
+  "schema": "lemma-task009-multimodal-owned-io-evidence/1",
+  "scope": "Actual hosted Lean service ownership/local User audio/Notebook UI Actions; target and controller execution remain pending",
+  "results": [
+    {
+      "receipt": "build/task009/mm-owned-record-qualified-a2/result.json",
+      "sha256": "8b88452f3a74eb4330a83fc89dfa6366f9546b35ab13fd38225b4a135048cb3e",
+      "status": "PASS_HOSTED_OWNED_IO_ACTIONS",
+      "seconds": 51.45192700601183,
+      "source_inputs": {
+        "Lemma/Platform/LemmaSim/MultimodalService.lean": "0ecc5dad65a59bc9bdfdbb36fe2b04b4cde2fb567d893dfd7e18a869ae74d9ff",
+        "tests/multimodal/OwnedRecordActions.lean.inc": "1ce0a2d011001fcb3ea3b97dd1735a9025a77115c0406d3e8d6da3d806f65504",
+        "scripts/check_multimodal_owned_io.py": "6dc900da7a89052f2fc9fe570f23850e510303a0206b0e654ba1eb054cf743b2"
+      },
+      "child_peak_rss_kib": null
+    },
+    {
+      "receipt": "build/task009/mm-audio-consumer-qualified-a1/result.json",
+      "sha256": "93e512fd9fdacf4e8cb460bc0d71d462c9bf132338d303360b7b07d249e1a184",
+      "status": "PASS_HOSTED_NOTEBOOK_AUDIO_ACTIONS",
+      "seconds": 28.647823370061815,
+      "source_inputs": {
+        "Lemma/User/Multimodal.lean": "3429ed3ffdd1b6d6f6f66951be1db1275e900ca1331055de4a0ff8ee87fdf4cf",
+        "tests/multimodal/NotebookAudioActions.lean.inc": "38e6c0ea73d74d5594db7f2c67da3f119e5595574923d65ee3d9a8a2c2d73c8f",
+        "scripts/lean_export_host.py": "c9e989f302ce176a0467a2837d5108563b0caa59d5c7b5bd089eec35b8469b9d",
+        "scripts/check_multimodal_audio.py": "189964b4817f3059c60e6fba496f97e45af0e928d1e9f25f6d8ceab5e96fff81"
+      },
+      "child_peak_rss_kib": 1611188
+    },
+    {
+      "receipt": "build/task009/mm-audio-ui-qualified-a1/result.json",
+      "sha256": "219a44144bed29da3c4780b15fa7eec447579d45d85ad01d02f637e5d1d74b61",
+      "status": "PASS_HOSTED_LEAN_ACTIONS",
+      "seconds": 136.4221231219126,
+      "source_inputs": {
+        "Lemma/Applications/Notebook.lean": "b7935c1cf06b5d0feb16e10a22f784f2b96470512de02c45a01f6c83b0c14957",
+        "tests/multimodal/NotebookUIActions.lean.inc": "f58d21c99151030bf927b774c6142dc345cab837a67d168a636afb8982d8bcfa",
+        "scripts/lean_export_host.py": "c9e989f302ce176a0467a2837d5108563b0caa59d5c7b5bd089eec35b8469b9d",
+        "scripts/check_multimodal_notebook_ui.py": "4802a865c28318ea314079b1745cc60e6d664401de6fcc4d1029d12a2a4ca5b7"
+      },
+      "child_peak_rss_kib": null
+    },
+    {
+      "receipt": "build/task009/mm-bar-redraw-ui-a1/result.json",
+      "sha256": "6d8be8e8bb55cec80dbadda9c5874b66b6cd8fe7665561d44a15f9332d8d3084",
+      "status": "PASS_HOSTED_LEAN_ACTIONS",
+      "seconds": 160.20849183492828,
+      "source_inputs": {
+        "Lemma/Applications/Notebook.lean": "1a9d489fc6ec533fa9a897e998ee2fd458f3aad5ef2080b6cfe29cddf1e0ee05",
+        "tests/multimodal/NotebookUIActions.lean.inc": "d79979105eb2ac0d4d350d9f8818145d089e55e78e662ff1b6e6cfa01cfd9d4d",
+        "scripts/lean_export_host.py": "c9e989f302ce176a0467a2837d5108563b0caa59d5c7b5bd089eec35b8469b9d",
+        "scripts/check_multimodal_notebook_ui.py": "2239b2d0609a9c557e5b604082f615346ce3b44780e4170366d421506d0875de"
+      },
+      "scope": "Actual Notebook redraw-request/bar Actions, including missing request and premature unallocated access negatives; subsequent MM2 imports and target execution are separate"
+    }
+  ],
+  "genuine_module_build": {
+    "log": "build/task009/mm-audio-consumer-draft-a1/maintained-build.log",
+    "sha256": "026c68a96fb575005333ccae41796071dc00341f95d3ccd5fa5cbbadc54ac1c7",
+    "result": "PASS",
+    "jobs": 85,
+    "changed_UserMM_seconds": 6.2,
+    "changed_Notebook_seconds": 11
+  },
+  "combined_coalescing_regression": {
+    "log": "build/task009/mm-audio-consumer-draft-a1/combined-NotebookSchool.log",
+    "sha256": "bdda49d5cfdbb3f998c39f455565e9e6b00dfe01103a97d1015b0ac3b0d6eccf",
+    "result": "PASS_ACTUAL_ACTIONS",
+    "command": "lake env lean -j2 -M2048 --run tests/courses/NotebookSchool.lean"
+  },
+  "retained_private_development_observations": "build/task009/mm-audio-consumer-draft-a1/development-observations.json",
+  "not_qualified": [
+    "RV64 target compilation and strict audits",
+    "actual controller DMA/PCM in ordinary native/browser guest",
+    "same-backend DMA/audio continuation",
+    "continuous or underrun-free PCM",
+    "physical audibility/sensors/safety",
+    "3,902,720B/s economy or full raw link",
+    "educational benefit"
+  ],
+  "admitted_comparison_successor": {
+    "reason": "Actual target exporter rejected new PropNe comparison. Source conditions now use the existing admitted UInt64 equality helper, preserving predicates without changing compiler admission. Original failed export retained.",
+    "failed_target_receipt": "build/kernel/task009-school23-notebook-a17/action-failure.json",
+    "source_inputs": {
+      "Lemma/Platform/LemmaSim/MultimodalService.lean": "74cac42b9123b0981cf6fdcfecb9e4d4f884a5c1412d1a1da57ceb079854e6e0",
+      "Lemma/User/Multimodal.lean": "dd3500b3d3264c3574f90ef2cbf8a18170b986a302ffa5e51d0b858fae3991f7",
+      "Lemma/Applications/Notebook.lean": "b7935c1cf06b5d0feb16e10a22f784f2b96470512de02c45a01f6c83b0c14957"
+    },
+    "fresh_module_build": {
+      "log": "build/task009/mm-audio-consumer-draft-a1/admitted-comparisons-build.log",
+      "sha256": "276814e8175c1ec085d7b3d8b5bf72ba2e785c1b512f50f809b21735c6a5efff",
+      "result": "PASS_113_JOBS",
+      "changed_Service_seconds": 5.3,
+      "changed_User_seconds": 5.3,
+      "changed_Notebook_seconds": 10
+    },
+    "results": [
+      {
+        "receipt": "build/task009/mm-owned-record-admitted-a1/result.json",
+        "sha256": "8fc0bb1e8b7d2795bd46393f5e5db6b11653d36fed4d8ddb17f80d2454e5d9e7",
+        "status": "PASS_HOSTED_OWNED_IO_ACTIONS",
+        "seconds": 40.431884285993874,
+        "source_inputs": {
+          "Lemma/Platform/LemmaSim/MultimodalService.lean": "74cac42b9123b0981cf6fdcfecb9e4d4f884a5c1412d1a1da57ceb079854e6e0",
+          "tests/multimodal/OwnedRecordActions.lean.inc": "1ce0a2d011001fcb3ea3b97dd1735a9025a77115c0406d3e8d6da3d806f65504",
+          "scripts/check_multimodal_owned_io.py": "49d538a54fd0205b3abc9778f24feb1c6c7ff0e38b90d544bfaa9a7c3af76e6a"
+        }
+      },
+      {
+        "receipt": "build/task009/mm-audio-admitted-a1/result.json",
+        "sha256": "58dc18d91399e95fd812df02f58cb497c491b5be5091fb0b97224aeec7c462cc",
+        "status": "PASS_HOSTED_NOTEBOOK_AUDIO_ACTIONS",
+        "seconds": 25.91386964789126,
+        "source_inputs": {
+          "Lemma/User/Multimodal.lean": "dd3500b3d3264c3574f90ef2cbf8a18170b986a302ffa5e51d0b858fae3991f7",
+          "tests/multimodal/NotebookAudioActions.lean.inc": "38e6c0ea73d74d5594db7f2c67da3f119e5595574923d65ee3d9a8a2c2d73c8f",
+          "scripts/lean_export_host.py": "c9e989f302ce176a0467a2837d5108563b0caa59d5c7b5bd089eec35b8469b9d",
+          "scripts/check_multimodal_audio.py": "0cffea72b72763152871b979c3191b82f688f9819fbd8e0c52cc93a6d672d0e0"
+        }
+      }
+    ],
+    "positive_regressions": [
+      {
+        "log": "build/task009/mm-audio-consumer-draft-a1/admitted-comparisons-NotebookSchool.log",
+        "sha256": "d6fbec6d8599d4e43af4ac271089dd588916c6a8cb653160dfd7999210e8e512",
+        "status": "PASS_ACTUAL_ACTIONS"
+      },
+      {
+        "log": "build/task009/mm-audio-consumer-draft-a1/admitted-comparisons-UI.log",
+        "sha256": "5d5576c87bd07e9201a351d2cb644c6d5ae3af1639efe5c4b5c6e1e682a74fcc",
+        "status": "PASS_ACTUAL_ACTIONS"
+      }
+    ]
+  },
+  "observation_note": "Retained UI campaign console footer says23tiles; its executed assertions check all28 and extent1264. The maintained footer label is subsequently corrected to28 only; the retained producer source/receipt stays unchanged, and no fresh execution is claimed for that label correction. Footer text is not a routing, timing or presentation claim.",
+  "maintained_notebook_school_action_entrypoint": {
+    "command": "nix develop --no-write-lock-file --command python3 scripts/check_course_install.py --school-submission --output-dir build/courses/task009-notebook-submission-actions-a1",
+    "receipt": "build/courses/task009-notebook-submission-actions-a1/result.json",
+    "sha256": "236ce5b59c975434d13243f4328cbe8c1eb225711458b462a7b65d3f18563fb5",
+    "status": "PASS_SCHOOL_SUBMISSION_STORE_COMPONENTS",
+    "source_count": 150,
+    "seconds": 314.26036829699297,
+    "notebook_action_log": "build/courses/task009-notebook-submission-actions-a1/notebook-school-actions.stdout.log",
+    "scope": "Existing school-submission component qualification now actually runs the maintained NotebookSchool Actions with its genuine Notebook dependency build and transitive observer source closure. It also freshly elaborates/lowers the five existing component exports. This is not native, browser, canonical RTL, persistent-medium or educational execution."
+  },
+  "audited_native_browser_successor": {
+    "source_archive": "build/task009/school23-mm-source-a6",
+    "source_count": 541,
+    "source_inventory_sha256": "983c807bb2bee74c7246482b721c9188d53c2ee464a82ec5a24ee6395dfca569",
+    "receipts": {
+      "strict_target_audits": {
+        "path": "build/task009/school23-mm-audit-a4/result.json",
+        "sha256": "7ad0c4f11c0afa77e9f10f79c9a2b9efa3a497a15f66c733326e9906a17df1f0"
+      },
+      "native_bundle": {
+        "path": "build/task009/school23-native-a9/bundle.json",
+        "sha256": "124c02d6389172ae246bc63d805ad71ac00d5f385d4574caa4a5b9fe1b506853"
+      },
+      "browser_bundle": {
+        "path": "build/task009/school23-browser-owned-io-a1/bundle.json",
+        "sha256": "72e250136fd472e5427a36f2e5e257d820b5f2a2228f0afcc92eb2ffe19b004c"
+      },
+      "actual_pcm_continuation": {
+        "path": "build/task009/mm-logical2-pcm-a1/result.json",
+        "sha256": "71871c28aaab37b4c2d2ba5044d12f537eeea76ee1d0649ae126b778b6c45b4d"
+      },
+      "actual_dma_continuation": {
+        "path": "build/task009/mm-logical2-dma-a1/result.json",
+        "sha256": "e3f6f56dd746c207e81c0bac04bde38f17a7d3218b0b4d040e0749392e4c48bf"
+      }
+    },
+    "scope": "All three strict target audits pass. Native actualReady/explicitSave passes. New guest ordinary AUDIO TEST reaches real PCM RUNNING with16 submitted/2 consumed/14 queued at cut; a1ms suffix completes consumption and matches a fresh restored process. Ordinary CAPTURE reaches actual eight-beat DMA atword0/active1, found by deterministic fresh-prefix narrowing; a1ms suffix matches. Both include malformed-candidate rejection and isolate backing. Neither establishes arbitrary continuation, continuous audio, full acquisition economy, physical sensing or educational benefit. Complete new native/browser student workflows remain in progress."
+  },
+  "browser_a12": {
+    "receipt": "build/school/task009-student-browser-a12/terminal-result.json",
+    "sha256": "54cfa093c169d610bcb8431a71cf1a97eb4e2ac42105020b92f76dde9964fe35",
+    "status": "PARTIAL_STUDY_COLD_RECOVERY_PASS",
+    "guest_inventory": "983c807bb2bee74c7246482b721c9188d53c2ee464a82ec5a24ee6395dfca569",
+    "cold_ready_units": 196742891,
+    "cold_elapsed_seconds": 347.4,
+    "cold_simulation_calls_seconds": 117.0,
+    "final_saved": 15,
+    "final_backing_sha256": "266ab1b57643535f037a14dfe19161174b51556cdecf74d76e7479f21e5132b6",
+    "failures": [
+      "changed-view navigation2samples discarded",
+      "intended exact activity not reached",
+      "checkpoint export unsupported but offered"
+    ],
+    "not_executed": [
+      "exact check",
+      "submission",
+      "help",
+      "feedback",
+      "review completion"
+    ],
+    "controller_image": {
+      "path": "docs/evidence/009-browser-cold-local-work.png",
+      "sha256": "85c998c284b99a52f4458c67a0cf4f9e2b020c42275b40ec548f5c506a3ccd53",
+      "scope": "Lossless PNG conversion of actual cold-reopened controller Gray4 export after new local ink and Save15; sensor-disabled synthetic keyboard pen, not canvas reconstruction"
+    }
+  },
+  "owned_ring_service3": {
+    "status": "PASS_HOSTED_ACTIONS_AND_GENUINE_MODULE_BUILD",
+    "result": {
+      "path": "build/task009/mm-ring-actions-a1/result.json",
+      "sha256": "ff193a2178769c2a43e80acd5f9ee78e4634f74bb003da9e867722143a8ea0b8"
+    },
+    "incrementalBuild": {
+      "path": "build/task009/mm-ring-actions-a1/incremental-build.json",
+      "sha256": "35e9af61c0735616d203a1db9182d967a7a2466989361daae7d078b05c01b2f8"
+    },
+    "serviceSHA256": "21dda5464a344b90031db2dfc0c61dd660fbeeb8ff300536395f47a7c04d32cc",
+    "userSHA256": "99ff8f36fe54c606ea9e038931d3a58784382fc26560a4aeee4cbebdf285f03b",
+    "commands": [
+      "nix develop --no-write-lock-file --command lake build Lemma.Platform.LemmaSim.MultimodalService Lemma.User.Multimodal",
+      "nix develop --no-write-lock-file --command python3 scripts/check_multimodal_ring.py --work-dir build/task009/mm-ring-actions-NEW"
+    ],
+    "kernel": "One lifetime-owned privateFrames.allocate1purpose1 page, capacity2048 S16 samples; packet1..512 exactexpectedProducer, atomicpublishafterpermission/controller-epoch recheck;8budgetbytes/sample; EOF exact/idempotent; descriptor+grant-epoch rawstatusafterrevocation; heldreadkind2 includingcancel258 forbidsreuse. No caller DMA pointer or framefree/wipe.",
+    "user": "AUDIO TEST on service3 prefills2048, pumps512-sample packets of4099 arbitrary S16 values, wraps, sends odd3-sampleEOF and waits for actualconsumed completion. Backpressure preservesnextindex. Legacy service2 remains16 samples. No host audio shortcut.",
+    "receipts": {
+      "715": "[testSequence,grantEpoch,totalSamples,period] start",
+      "716": "[testSequence,actualSubmittedDelta,actualConsumedDelta,reason] terminal;0complete/1mute/2expiry/3failure/4superseded",
+      "717": "[testSequence,acceptedRingFrontier,fetchedRingFrontier,actualFIFOsubmittedDelta] afteracceptedpacket",
+      "718": "[testSequence,actualConsumedDelta,gapCounter,heldBusRaw] terminalraw;kindlow8,cancelbit8"
+    },
+    "cases": "Actual legacy+ring Actions positives and10 consequential source negatives PASS67.558322s; wrongDMApointer/heldreadreuse/wirebytecharge/foreignowner/changedcontrollerepoch/postcopyexpiry/accepted-as-consumed/repeatedwave/mutenorevoke/successorrevocation rejected.",
+    "retainedObserverFailures": [
+      "Initial privateAction source had missingnamespaceopen and fixture multiline record syntax errors; correctedsource has separate terminalpositive. Productionmodule elaborations passed."
+    ],
+    "scope": "Finite hosted RAM/MMIO/service fixtures execute actual maintained Lean Actions and real capability/frame/usercopy policy. Target compilation/audit, real controller DMA, canonicalRTL, native/browser CPU playback, exactcontinuation, full economyrate, physical audibility/safety and educational qualification require separate evidence.",
+    "legacyAudioRegression": {
+      "path": "build/task009/mm-ring-legacy-audio-a1/result.json",
+      "sha256": "b9ea93b37a58d37cf9c07f1f7b1d565b439709b4a708bea55c6a235f880aeca3",
+      "status": "PASS_HOSTED_NOTEBOOK_AUDIO_ACTIONS",
+      "seconds": 28.217570800101385,
+      "cases": 7,
+      "observerChange": "The legacy accepted-is-consumed negative now includes the100M expiry context to distinguish its original initialization from the additive500M ring initialization."
+    },
+    "mutePrioritySuccessor": {
+      "result": {
+        "path": "build/task009/mm-ring-actions-a2/result.json",
+        "sha256": "3630847dd4ff1737e320d36d0d0e7367f0301a09593b64281dda60afcb5f8b48"
+      },
+      "legacyRegression": {
+        "path": "build/task009/mm-ring-legacy-audio-a2/result.json",
+        "sha256": "f14585d252ab6fc493c1172ddb6408e1ae6cda80e66f80c80dc992018ce22596"
+      },
+      "userSHA256": "e59569686d35d15f7f2f58ad8289a27d39802478ca593e203eac2fd52f1b2b9f",
+      "change": "After confirming its own grant epoch, MUTE revokes before any ring-status query. Post-revocation raw owned status supplies the final counters. The actual Action fixture asserts operation order11,6,22 and a new consequential negative rejects the previous pre-revoke observation order.",
+      "cases": 13,
+      "seconds": 69.90141175594181,
+      "legacyCases": 7,
+      "legacySeconds": 30.193585064960644,
+      "genuineBuild": {
+        "command": "nix develop --no-write-lock-file --command timeout 120 lake build Lemma.User.Multimodal",
+        "exit_code": 0,
+        "jobs": 15,
+        "newUserBuildSeconds": 3.8,
+        "scope": "Actual final User module rebuilt incrementally; no target export or runtime result inferred."
+      }
+    }
+  },
+  "browser_checkpoint_controls": {
+    "receipt": "build/task009/browser-checkpoint-controls-a1/result.json",
+    "sha256": "8844a2d019624b4e1a39d0974a2a6a76d14ba14a56395a7363bba5bcc44dc122",
+    "status": "PASS_HOST_PROTOCOL",
+    "seconds": 1.897,
+    "scope": "Actual app/worker host fixtures: unsupported exact continuation is disabled/rejected before clock/snapshot/backing effects; durable export remains usable. No fresh guest/browser execution."
+  },
+  "pcm2_wasm_runtime": {
+    "binding": "lemma-silicon-fast-mm2-subset/0.1.0",
+    "controller_abi": 2,
+    "scope": "One actual hardware-object compilation and real Wasm link; original1047-object observation and three-object transport producer retained; no new Lean guest execution yet",
+    "fresh_objects": 1,
+    "retained_object_contributions": 1046,
+    "peak_tree_rss_bytes": 487829504,
+    "wasm_sha256": "eff3f3600f5d3f062aca5f0ab1f7d5498ef7dfdb457bcb6cc0cf5e9f12eb820c",
+    "receipts": [
+      {
+        "path": "build/task009/mm2-tci-a1/build.json",
+        "sha256": "da204d3a096dab515602e87acc93b6e261c7515084ced758dc26a9f2cb66a3fb",
+        "status": "FAIL",
+        "seconds": 18.62934325193055,
+        "error": "ValueError('MM2 overlay changes another source')"
+      },
+      {
+        "path": "build/task009/mm2-tci-a2/build.json",
+        "sha256": "76153e03fd6c25658763781a820bb0c345249ed333546cf056ac2f7277872cf0",
+        "status": "BUILT_WASM64_QEMU_TCI",
+        "seconds": 35.282327517983504,
+        "error": null
+      },
+      {
+        "path": "build/task009/mm2-tci-runtime-a1/runtime.json",
+        "sha256": "46708b6fadb4f74b52d74fae814cd399d4f7cc3b88c9a12fcfcba8a0e6ea14c2",
+        "status": "ADMITTED_RUNTIME_METADATA",
+        "seconds": null,
+        "error": null
+      },
+      {
+        "path": "build/task009/mm2-tci-admission-negatives-a1/report.json",
+        "sha256": "51a0b2d15e6480fa0e15f199849739d29b0ffb41b74fe0850828f48db3acfee3",
+        "status": "PASS",
+        "seconds": 2.000069163972512,
+        "error": null
+      },
+      {
+        "path": "build/task009/tci-legacy-admission-after-mm2-a1/report.json",
+        "sha256": "8e5972c5c367d71eab33563c287e52b929bf13b86c6ee0453677a9f3cce40e68",
+        "status": "PASS",
+        "seconds": 9.610292863915674,
+        "error": null
+      }
+    ],
+    "remaining": [
+      "jointly audited new guest",
+      "native/browser actual controller ring execution and continuation",
+      "complete Integrated16 canonical relation",
+      "continuous permissioned tutor audio session",
+      "admitted full economy performance"
+    ],
+    "maintained_entrypoint": {
+      "source_capture": "build/task009/tci-auto-producer-source-a1/result.json",
+      "overlay_equivalence": "build/task009/tci-maintained-overlay-equivalence-a1/result.json",
+      "scope": "Ordinary producer automatically captures exact tool sources before compilation and freezes maintained overlay by default; actual43248-source identity matches prior compiled eff3 runtime; no second compilation claimed."
+    }
+  },
+  "browser_course_rejection": {
+    "contract": "compiled guest454 receipt only",
+    "host_tests": {
+      "receipt_parser": 4,
+      "actual_app_worker_fixtures": 2
+    },
+    "scope": "Displays recoverable course rejection from complete current-launch guest records, preserving64bit context and storage/checker separation; actual new browser consumption pending"
+  }
+}

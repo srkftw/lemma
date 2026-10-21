@@ -92,7 +92,9 @@ NUMERIC_BROWSE_POLICY='Lemma.Courses.BrowseHistory.location'
 
 def numeric_root(unit):
  from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS, NOTEBOOK_ROOT as MULTIMODAL_ROOT
- if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS:return MULTIMODAL_ROOT
+ from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS
+ if unit.get('configuration') in __import__('school_deployment').ALL_CONFIGURATIONS:return __import__('school_deployment').user_roots_for(unit['configuration'])['notebook'][0]
+ if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS:return MULTIMODAL_ROOT
  from chooser_reader_target import candidate as chooser_candidate
  from chooser_reader_deployment import NOTEBOOK_ROOT as CHOOSER_ROOT
  if chooser_candidate(unit):return CHOOSER_ROOT

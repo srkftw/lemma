@@ -148,9 +148,9 @@ def admits (profile : Profile) (operation : Op) : Bool :=
       .readSupervisorPending =>
       profile.isKernel
   | .deviceRead32 | .deviceWrite32 =>
-      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_9
+      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_9 || profile == .kernel_v0_10 || profile == .kernel_v0_11
   | .deviceRead64 | .deviceWrite64 =>
-      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_9 || profile == .kernel_v0_5 || profile.isBoot
+      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_8 || profile == .kernel_v0_9 || profile == .kernel_v0_10 || profile == .kernel_v0_11 || profile == .kernel_v0_5 || profile.isBoot
 
   | .readMisa | .readMachineCycle | .writeMachineCycle | .readMachineRetired | .writeMachineRetired | .readMachineInhibit | .writeMachineInhibit | .readMachineCounterEnable | .writeMachineCounterEnable => profile == .firmware_v0_2 || profile == .counter_su_v0_1
 
@@ -279,6 +279,23 @@ def deviceRegions (operation : Op) : Array MemoryRegion :=
 /-- Additive interrupt authority: kernel-v0.4 addresses priority14 and
 kernel-v0.5 also addresses priority15; kernel-v0.6 additionally addresses priority16. Every other interval and operation
 retains its inherited semantics and exact exclusive bounds. -/
+private def opticalDeviceRegions (operation : Op) : Array MemoryRegion :=
+  -- Adjacent defined registers share a range; the existing operation-width
+  -- and alignment guards still require exactly one aligned 64-bit register.
+  let globalRead : Array (Nat × Nat) := #[(0, 48), (56, 112), (120, 200), (208, 256)]
+  let globalWrite : Array (Nat × Nat) := #[(40, 72), (96, 120), (184, 208)]
+  let endpointRead : Array (Nat × Nat) := #[(0, 184), (192, 256)]
+  let endpointWrite : Array (Nat × Nat) := #[(24, 32), (48, 136), (184, 192)]
+  let read := operation == .deviceRead64
+  let write := operation == .deviceWrite64
+  if !read && !write then #[] else
+  let globals := (if read then globalRead else globalWrite).map fun interval =>
+    (⟨"optical-frame-register64", 0x10016000 + interval.1, 0x10016000 + interval.2, true⟩ : MemoryRegion)
+  (#[0, 1, 2] : Array Nat).foldl (fun regions endpoint =>
+    regions ++ (if read then endpointRead else endpointWrite).map fun interval =>
+      ⟨"optical-frame-register64", 0x10016100 + endpoint * 256 + interval.1,
+        0x10016100 + endpoint * 256 + interval.2, true⟩) globals
+
 def deviceRegionsFor (profile : Profile) (operation : Op) : Array MemoryRegion :=
   if profile.isBoot then
     if operation == .deviceRead64 || operation == .deviceWrite64 then
@@ -287,6 +304,25 @@ def deviceRegionsFor (profile : Profile) (operation : Op) : Array MemoryRegion :
         nv.push ⟨"boot-trial-power-controller", 0x10010500, 0x100105a0, true⟩
       else nv
     else #[]
+  else if profile == .kernel_v0_11 then
+    let inherited := (deviceRegions operation).map fun region =>
+      if region.name == "plic-priority" then { region with stop := 0x0c000048 } else region
+    if operation == .deviceRead32 || operation == .deviceWrite32 then
+      (inherited.push ⟨"multimodal-priority19", 0x0c00004c, 0x0c000050, true⟩).push
+        ⟨"optical-priority20", 0x0c000050, 0x0c000054, true⟩
+    else if operation == .deviceRead64 || operation == .deviceWrite64 then
+      ((inherited.push ⟨"boot-nv-controller", 0x10012000, 0x10012400, true⟩).push
+        ⟨"multimodal-controller-v1", 0x10014000, 0x10016000, true⟩) ++ opticalDeviceRegions operation
+    else inherited
+  else if profile == .kernel_v0_10 then
+    let inherited := (deviceRegions operation).map fun region =>
+      if region.name == "plic-priority" then { region with stop := 0x0c000048 } else region
+    if operation == .deviceRead32 || operation == .deviceWrite32 then
+      inherited.push ⟨"multimodal-priority19", 0x0c00004c, 0x0c000050, true⟩
+    else if operation == .deviceRead64 || operation == .deviceWrite64 then
+      (inherited.push ⟨"boot-nv-controller", 0x10012000, 0x10012400, true⟩).push
+        ⟨"multimodal-controller-v1", 0x10014000, 0x10016000, true⟩
+    else inherited
   else if profile == .kernel_v0_9 then
     let inherited := (deviceRegions operation).map fun region =>
       if region.name == "plic-priority" then { region with stop := 0x0c00003c } else region
@@ -342,7 +378,7 @@ def memoryRegions : Profile → Array MemoryRegion
   | .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
       Lemma.Platform.LemmaVM.Layout.privateLimit, true⟩]
   | .kernel_v0_1 | .kernel_v0_2 => kernelMemoryRegions
-  | .kernel_v0_7 =>
+  | .kernel_v0_7 | .kernel_v0_10 | .kernel_v0_11 =>
       (kernelMemoryRegions.map fun region =>
         if region.name == "owned-frame-pool" then { region with stop := 0x84000000 } else region).push
         ⟨"boot-private-scratch", 0x81fc0000, 0x81fc4000, true⟩

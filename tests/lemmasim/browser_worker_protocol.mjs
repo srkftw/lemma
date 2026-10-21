@@ -8,12 +8,12 @@ import {webcrypto} from 'node:crypto';
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const MAX=18446744073709551615n;
 const record=(kind,sequence=0n)=>`K1 ${kind.toString(16).padStart(16,'0')} ${sequence.toString(16).padStart(16,'0')} 0000000000000001 0000000000000001 0000000000000000\n`;
-async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false,controlContract='lemma-browser-session-modes/2',courseContract=null,imageContract=null,pixelPlane=new Uint8Array([0]),pixelCount=pixelPlane.length}={}){
+async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false,controlContract='lemma-browser-session-modes/2',courseContract=null,imageContract=null,checkpointContract=null,supportContract=null,pixelPlane=new Uint8Array([0]),pixelCount=pixelPlane.length,opticalManifest={}}={}){
  let now=0,nextTimer=0,generation=0,finished=false,isolated=false,current=cycle,paper={completed:'0',accepted:'0'},uart=initialUART;
  const files=new Map([['/capture.io',encoder.encode('literal captured outcome bytes')]]),messages=[],timers=new Map(),calls=[],events=[];
  const bytes=encoder.encode('hash-validated fake ELF/descriptor/ROM');
  const digest=Buffer.from(await webcrypto.subtle.digest('SHA-256',bytes)).toString('hex');
- const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',session_control_contract:controlContract,course_install_contract:courseContract,controller_image_contract:imageContract,width:pixelPlane.length,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}}};
+ const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',session_control_contract:controlContract,course_install_contract:courseContract,controller_image_contract:imageContract,checkpoint_contract:checkpointContract,support_report_contract:supportContract,width:pixelPlane.length,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}},...opticalManifest};
  const mediumCalls=[];const fault=name=>{mediumCalls.push(name);if(storageFault===name)throw Error('injected '+name+' failure');};
  const medium={read(b){now+=2;return b.length;},write(b){now+=3;return b.length;},flush(){fault('flush');now+=4;},getSize(){fault('getSize');return mediumSize;},close(){mediumCalls.push('close');if(closeFault)throw Error('secondary close failure');},truncate(){fault('truncate');}};
  const mediumNames=new Set(initialize?[]:['test.raw']);
@@ -45,7 +45,7 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
   postMessage:m=>messages.push(m),setTimeout:f=>{const id=++nextTimer;timers.set(id,f);return id;},clearTimeout:id=>timers.delete(id)});
  const modules=new Map();
  async function module(name){if(modules.has(name))return modules.get(name);const code=name==='machine.mjs'?'export default globalThis.fakeCreateMachine;':await fs.readFile('sim/browser/'+name,'utf8');
-  const m=new vm.SourceTextModule(code,{context,identifier:name});modules.set(name,m);await m.link(spec=>module(spec.replace('./','')));return m;}
+  const m=new vm.SourceTextModule(code,{context,identifier:name,importModuleDynamically:async spec=>{const child=await module(spec.replace('./',''));if(child.status==='linked')await child.evaluate();return child;}});modules.set(name,m);await m.link(spec=>module(spec.replace('./','')));return m;}
  context.fakeCreateMachine=async()=>core;
  const worker=await module('worker.js');await worker.evaluate();
  const send=async(action,rest={})=>{await context.onmessage({data:{action,...rest}});await settle();};
@@ -55,6 +55,103 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  const state=()=>messages.filter(m=>m.type==='state').at(-1),exports=()=>messages.filter(m=>m.type==='export');
  await send('open',{name:'test',initialize,paused,mode});if(!paused)await send('pause');
  return {send,tick,drain,state,exports,messages,timers,calls,events,mediumCalls,mediumNames,setStorageFault:x=>{storageFault=x;},cycle:()=>current,advanceWall:n=>{now+=n;},setUART:x=>{uart=x;},setPaper:x=>{paper=x;}};
+}
+// Actual raw optical transport: byte/clock precision, controller rejection,
+// capability refusal and accepted-prefix retention. No controller is modeled.
+const opticalManifest={profile:'lemma-silicon-dev/0.17.0',execution_binding:'lemma-optical17-canonical/1',optical_controller_abi:1,optical_frame_contract:'lemma-optical-frame/1'};
+{
+ const f=await fixture({paused:true,opticalManifest});const before=f.cycle();
+ await f.send('raw',{row:'now optical-frame 1 1 18446744073709551615 8 65535'});
+ assert.equal(f.events.at(-1),'9007199254740993 optical-frame 1 1 18446744073709551615 8 65535');
+ const bytes=new Uint8Array([255,255,255,255,255,255,255,255]);
+ await f.send('optical-frame',{endpoint:'1',bytes:bytes.buffer});
+ assert.deepEqual(f.events.slice(-3),['9007199254740993 optical-frame 1 0 0 0 0','9007199254740993 optical-frame 1 1 18446744073709551615 8 0','9007199254740993 optical-frame 1 2 0 0 0']);
+ assert.equal(f.cycle(),before);assert.equal(f.messages.findLast(m=>m.type==='optical-admission').accepted,3);
+ const count=f.events.length;
+ for(const row of ['now optical-frame 1 1 18446744073709551616 8 0','now optical-frame 0 1 0 8 0','now optical-frame 1 1 0 9 0','now optical-frame 1 1 0 8 65536']){
+  await f.send('raw',{row});assert.equal(f.messages.at(-1).type,'error');assert.equal(f.events.length,count);
+ }
+ await f.send('optical-frame',{endpoint:'1',bytes:new ArrayBuffer(76801)});assert.equal(f.events.length,count);
+}
+{
+ const f=await fixture({paused:true,opticalManifest,onEvent:row=>row.includes(' optical-frame 1 1 ')?1:0});
+ await f.send('optical-frame',{endpoint:'1',bytes:new Uint8Array(8).buffer});
+ assert.deepEqual(f.events,['9007199254740993 optical-frame 1 0 0 0 0']);
+ const outcome=f.messages.findLast(m=>m.type==='optical-admission');assert.equal(outcome.accepted,1);assert.equal(outcome.total,3);assert.match(outcome.error,/prefix retained/);assert.equal(f.cycle(),9007199254740993n);
+}
+for(const options of [{mode:'student',opticalManifest},{mode:'developer'}]){
+ const f=await fixture({paused:true,...options}),before=f.calls.length;
+ await f.send('optical-frame',{endpoint:'1',bytes:new Uint8Array(8).buffer});
+ assert.equal(f.events.length,0);assert.equal(f.cycle(),9007199254740993n);
+ assert.equal(f.calls.slice(before).filter(c=>c[0]==='lemma_event'||c[0]==='lemma_run').length,0);
+}
+for(const fields of [{...opticalManifest,optical_controller_abi:2},{...opticalManifest,profile:'lemma-silicon-dev/0.14.0'},{...opticalManifest,execution_binding:'lemma-optical17-functional-mm2/1'}]){
+ const f=await fixture({paused:true,opticalManifest:fields});assert.equal(f.events.length,0);assert.equal(f.calls.length,0);assert.equal(f.mediumCalls.length,0);assert.match(f.messages.at(-1).error,/optical binding/);
+}
+{
+ const source=await fs.readFile('sim/browser/optical_transport.js');
+ const optical=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+ for(const [endpoint,format,bytes] of [['1','synthetic16-u16',512],['2','eye160-gray8',19200],['3','face320-gray8',76800]]){
+  const plane=optical.syntheticOpticalFrame(endpoint,format),beats=optical.opticalFrameBeats(endpoint,plane);
+  assert.equal(plane.length,bytes);assert.equal(beats.length,bytes/8+2);assert.equal(beats[0][1],'0');assert.equal(beats.at(-1)[1],'2');
+  const reconstructed=new Uint8Array(bytes);let at=0;for(const beat of beats.slice(1,-1)){const word=BigInt(beat[2]);for(let n=0;n<Number(beat[3]);n++)reconstructed[at++]=Number(word>>BigInt(n*8)&255n);}
+  assert.deepEqual(reconstructed,plane);
+ }
+ assert.throws(()=>optical.opticalWords(['1','1',18446744073709551615,'8','0']),/lossless/);
+ assert.throws(()=>optical.syntheticOpticalFrame('3','synthetic16-u16'),/incompatible/);
+}
+// A bounded maintenance observation never copies the pairing structure or
+// arbitrary future input fields into its portable report.
+{
+ const {supportReport,runBudgetFailure}=await import('data:text/javascript;base64,'+Buffer.from(await fs.readFile('sim/browser/diagnostics.js')).toString('base64'));
+ const {RunBudget}=await import('data:text/javascript;base64,'+Buffer.from(await fs.readFile('sim/browser/run_budget.js')).toString('base64'));
+ const budget=new RunBudget('9007199254740993','100000',false,null,0);
+ const before={cycle:'9007199254740993',virtual_ns:'90071992547409925',credential:'private-pairing-token'};
+ const after={cycle:'9007199254840994',virtual_ns:'90071992548409937'};
+ assert.throws(()=>budget.observe(after.cycle,'100000'),/Machine advanced outside/);
+ const boundary=runBudgetFailure(before,after,90071992548409923n,100000n,budget,0.125);
+ assert.equal(boundary.budget.cycle,before.cycle);assert.equal(boundary.budget.used,'0');
+ assert.equal(boundary.observed.cycle,after.cycle);assert.equal(boundary.targetVirtualNs,'90071992548409923');
+ assert.equal(boundary.quantum,'100000');assert.doesNotMatch(JSON.stringify(boundary),/private-pairing-token/);
+ budget.observe('9007199254740994','1');assert.equal(boundary.budget.used,'0');
+ const input={action:'pen',x:123,y:456,credential:{token:'private-pairing-token'}};
+ const report=supportReport({manifest:{schema:'source',privateCredential:'private-pairing-token'},state:{cycle:'9007199254740993'},uart:new Uint8Array([0,255]),guestStart:0,mode:'student',capture:[{ingress:'browser-pointer/1',input}],timing:{},executionBoundary:boundary});
+ assert.equal(report.console.tailHex,'00ff');assert.equal(report.input.tail[0].input.x,123);
+ assert.doesNotMatch(JSON.stringify(report),/private-pairing-token/);
+ assert.equal(input.credential.token,'private-pairing-token');
+ assert.equal(report.executionBoundary.observed.cycle,after.cycle);
+}
+// Ordinary support export observes the paused machine without admitting raw input,
+// changing virtual time, or serializing an executable continuation.
+{
+ const literal='discarded-prefix:'+('x'.repeat(140000))+'literal-current-work';
+ const f=await fixture({mode:'student',paused:true,initialUART:literal,supportContract:'lemma-client-support-report/1'});
+ const before=f.cycle();await f.send('diagnostics');const output=f.exports().at(-1);
+ assert.equal(output.name,'lemma-support.json');const report=JSON.parse(decoder.decode(output.bytes));
+ assert.equal(report.schema,'lemma-client-support-report/1');assert.equal(f.cycle(),before);
+ assert.equal(report.state.cycle,String(before));assert.equal(report.mode,'student');
+ assert.equal(report.console.totalBytes,encoder.encode(literal).length);
+ assert.equal(report.console.tailStart,encoder.encode(literal).length-131072);
+ assert.equal(report.console.tailHex.length,262144);assert.match(report.scope,/Not a checkpoint/);
+ assert.equal(f.events.length,0);await f.send('raw',{row:'now pen 0 0 0 0 0 0 0'});
+ assert.equal(f.events.length,0);assert.match(f.messages.at(-1).error,/Developer or Laboratory/);
+}
+// Student Resume can bound host resource use without admitting raw/run actions.
+// Expiry pauses before executing another actual quantum; malformed replacement
+// limits leave an already admitted budget and machine untouched.
+{
+ const f=await fixture({cycle:0n,paused:true,mode:'student'});
+ await f.send('resume',{hostSeconds:'1'});assert.equal(f.state().running,true);
+ assert.equal(f.state().budget.hostSecondsLimit,1);
+ const budget=JSON.stringify(f.state().budget),timers=[...f.timers.keys()];
+ for(const bad of ['0','7201','1.5',600]){
+  await f.send('resume',{hostSeconds:bad});assert.equal(f.messages.at(-1).type,'error');
+  assert.equal(JSON.stringify(f.state().budget),budget);assert.deepEqual([...f.timers.keys()],timers);
+ }
+ f.advanceWall(1001);await f.drain();assert.equal(f.cycle(),0n);
+ assert.equal(f.state().pauseReason,'host-limit');assert.equal(f.state().running,false);
+ await f.send('raw',{row:'now button 1'});assert.equal(f.messages.at(-1).type,'error');
+ await f.send('run',{cycles:'1'});assert.equal(f.messages.at(-1).type,'error');
 }
 // Controller export reads actual worker plane bytes only, including every
 // Gray4 level and a clock above2^53. It never advances or writes the machine.
@@ -345,7 +442,7 @@ for(const [storageFault,expected] of [['truncate',['truncate','close']],['flush'
  const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},addEventListener(name,callback){(this.listeners??=new Map()).set(name,callback);},getContext:()=>({}),setPointerCapture(){}});return nodes.get(id);};
  const actions=['pause','resume','snapshot','export','capture-outcomes','events','bind','inspect','close'].map(action=>({...node('action-'+action),dataset:{action}}));
  const document={hidden:false,addEventListener:(name,callback)=>documentListeners.set(name,callback),querySelector:node,querySelectorAll:()=>actions,createElement:()=>({click(){downloads.push(this.download);}})};
- const context=vm.createContext({document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{},Worker:class{constructor(){appWorker=this;}postMessage(m){sent.push(m);}},URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console});
+ const context=vm.createContext({fetch:async url=>{assert.equal(url,'./bundle.json');return {ok:true,json:async()=>({backend:'fixture-machine'})};},document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{},Worker:class{constructor(){appWorker=this;}postMessage(m){sent.push(m);}},URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console});
  const app=new vm.SourceTextModule(await fs.readFile('sim/browser/app.js','utf8'),{context});await app.link(()=>{throw Error('unexpected app import');});await app.evaluate();
  assert.equal(typeof viewportListeners.get('resize'),'function');
  assert.equal(typeof documentListeners.get('visibilitychange'),'function');
@@ -410,5 +507,17 @@ for(const [storageFault,expected] of [['truncate',['truncate','close']],['flush'
  await partial.send('course-install',{bytes:packageBytes,transaction:'1'});assert(partial.events.length>2);
  await partial.send('restore',{bytes:encoder.encode('17').buffer});const before=partial.events.length;
  await partial.send('course-install',{bytes:packageBytes,transaction:'1'});assert.equal(partial.events.length,before);
+}
+// A known unsupported checkpoint must reject before pause, machine calls,
+// backing mutation or snapshot bookkeeping. Ordinary execution continues.
+{
+ const reason='UNSUPPORTED: no exact TCI continuation relation is admitted';
+ const f=await fixture({checkpointContract:reason,paused:false});
+ await f.send('resume');assert(f.timers.size>0);
+ const before=f.cycle();await f.send('snapshot');
+ assert.match(f.messages.filter(m=>m.type==='error').at(-1).error,/UNSUPPORTED: no exact TCI continuation/);
+ assert.equal(f.cycle(),before);assert(!f.calls.some(c=>c[0]==='lemma_snapshot'));
+ assert(f.timers.size>0,'unsupported export paused the running guest');
+ await f.send('pause');await f.send('export');assert(f.exports().length>0);
 }
 console.log('PASS host worker protocol: exact budgets, cooperative pause, genuine Ready observation, initializer carry, passive snapshots, single-file exports, timing separation, actual UI handlers');

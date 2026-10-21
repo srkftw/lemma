@@ -68,7 +68,8 @@ def notebook_profile_allowed(unit):
 def recovery_store_profile_allowed(unit):
  from package_companion_deployment import ALL_CONFIGURATIONS as PACKAGE_RECOVERY_CONFIGURATIONS
  from managed_sums import RECOVERY_USB
- return unit.get('role')=='user' and unit.get('image_key')=='store' and unit.get('configuration') in RECOVERY_USB | frozenset(RECOVERY3_CONFIGURATIONS) | frozenset(PACKAGE_RECOVERY_CONFIGURATIONS)
+ from school_deployment import ALL_CONFIGURATIONS as SCHOOL
+ return unit.get('role')=='user' and unit.get('image_key')=='store' and unit.get('configuration') in frozenset(SCHOOL) | RECOVERY_USB | frozenset(RECOVERY3_CONFIGURATIONS) | frozenset(PACKAGE_RECOVERY_CONFIGURATIONS)
 
 def profile_allowed(unit):
  return allowed(unit) or notebook_profile_allowed(unit) or recovery_store_profile_allowed(unit)

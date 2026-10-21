@@ -594,17 +594,22 @@ class ServiceTrace(Trace):
                     if not accepted or accepted["response"] != [0x323, self.server, request, 0, payload_bytes]:
                         raise Core0Error("Fault binary witness lacks its actual final Write/Read replies")
         elif tag == 0x337:
-            if b != state["temporary"] or c != self.epoch or d != state["round"]:
+            if b != state["temporary"] or d != state["round"]:
                 raise Core0Error("Peer temporary destroy identity/epoch/round differs")
-            releases = [r for r in self.actual_buffer_releases if r["server"] == self.server
-                        and r["kind"] == "destroy" and r["owner"] == a and r["handle"] == b
+            # A successful old-server reply may wake Peer after the successor
+            # has published. Bind this witness to its actual release and that
+            # server's published epoch, rather than the latest discovery.
+            releases = [r for r in self.actual_buffer_releases
+                        if r["kind"] == "destroy" and r["owner"] == a and r["handle"] == b
+                        and any(p[1] == r["server"] and p[3] == c for p in self.publications)
                         and not r["confirmed"]]
             if len(releases) != 1:
                 raise Core0Error("Peer destroy lacks its actual page-release witness")
-            accepted = self.accepted_result(self.server, releases[0]["request"], a)
-            if not accepted or accepted["response"] != [0x323, self.server, releases[0]["request"], 0, 64]:
+            release = releases[0]
+            accepted = self.accepted_result(release["server"], release["request"], a)
+            if not accepted or accepted["response"] != [0x323, release["server"], release["request"], 0, 64]:
                 raise Core0Error("Peer destroy lacks its exact authenticated successful response")
-            releases[0]["confirmed"] = True; state["temporary"] = 0
+            release["confirmed"] = True; state["temporary"] = 0
         elif tag in {0x338, 0x343, 0x346}:
             if c != 204 or peer and d != self.epoch: raise Core0Error("actual global quota denial differs")
             accepted = self.accepted_result(self.server, b, a)

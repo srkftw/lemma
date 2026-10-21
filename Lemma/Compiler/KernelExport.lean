@@ -30,13 +30,13 @@ private def roleProfile (role : String) (configuration : String)
     (image? : Option UserImageSpec := none) : Except String Profile :=
   match role with
   | "firmware" => .ok .firmware_v0_1
-  | "kernel" => .ok (if isMultimodalNotebookConfiguration configuration then .kernel_v0_9 else if isWiFiCommonConfiguration configuration then .kernel_v0_8 else if isProductNotebookConfiguration configuration then .kernel_v0_7 else if configuration == "lemmasim-silicon-usb-link-probe" || isUSBNotebookConfiguration configuration then .kernel_v0_6 else
+  | "kernel" => .ok (if isIntegratedNotebookConfiguration configuration then .kernel_v0_10 else if isMultimodalNotebookConfiguration configuration then .kernel_v0_9 else if isWiFiCommonConfiguration configuration then .kernel_v0_8 else if isProductNotebookConfiguration configuration then .kernel_v0_7 else if configuration == "lemmasim-silicon-usb-link-probe" || isUSBNotebookConfiguration configuration then .kernel_v0_6 else
       if configuration == "lemmasim-silicon-ble-link-probe" then .kernel_v0_5 else
       if configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" ||
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
       isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration
       then .kernel_v0_4 else if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
-  | "user" => .ok (if (isUSBPackageRecoveryNotebookConfiguration configuration || isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store") then .user_v0_2 else if (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "arithmetic") then .user_v0_7 else if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
+  | "user" => .ok (if (isSchoolNotebookConfiguration configuration || isUSBPackageRecoveryNotebookConfiguration configuration || isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store") then .user_v0_2 else if (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "arithmetic") then .user_v0_7 else if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
       if ((isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) &&
       image?.any (fun image => image.key == "notebook" || image.key == "arithmetic")) ||
       (image?.any (fun image => image.key == "arithmetic") &&
@@ -83,7 +83,9 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if isMultimodalNotebookConfiguration configuration then
+  | "kernel" => if isIntegratedNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.IntegratedKernel.boot", "Lemma.Platform.LemmaSim.IntegratedKernel.dispatch"]
+    else if isMultimodalNotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
         (if isMultimodalParameterizedConfiguration configuration then
           (if configuration.endsWith "-notebook" then "siliconMultimodalParameterizedBoot" else "siliconMultimodalParameterizedInitializeMedium")
@@ -317,9 +319,58 @@ private def serviceExecutableSource (source : String) : Bool :=
     source.startsWith "Lemma.Services.Buffer.Server." || source == "Lemma.User.Development.BufferFault" ||
     source.startsWith "Lemma.User.Development.BufferFault."
 
+private def schoolArithmeticBorrower (configuration role : String)
+    (image? : Option UserImageSpec) : Bool :=
+  isSchoolNotebookConfiguration configuration && role == "user" && image?.any fun image =>
+    image.key == "arithmetic" && image.id == 3 &&
+      (if isSchoolLocalToolConfiguration configuration then
+        image.moduleName == `Lemma.Services.Arithmetic.ServerV9 && image.root == `Lemma.Services.Arithmetic.ServerV9.main
+      else image.moduleName == `Lemma.Services.Arithmetic.ServerV8 && image.root == `Lemma.Services.Arithmetic.ServerV8.main)
+
+/-- Import headers admit these two exact module names, not their executable
+declarations. Reachable declarations pass the separate helper allowlist. -/
+def schoolArithmeticBorrowedModuleImport (configuration role source : String)
+    (image? : Option UserImageSpec) : Bool :=
+  schoolArithmeticBorrower configuration role image? &&
+    (source == "Lemma.Services.Arithmetic.ServerV7" ||
+      (isSchoolLocalToolConfiguration configuration && source == "Lemma.Services.Arithmetic.ServerV8"))
+
+/-- The copied older engines remain libraries of only these reviewed helpers.
+No sibling main, step or future declaration is admitted by a module import. -/
+def schoolArithmeticBorrowedSource (configuration role source : String)
+    (image? : Option UserImageSpec) : Bool :=
+  schoolArithmeticBorrower configuration role image? &&
+    ((#["incoming", "outgoing", "state", "get", "respondV7", "delayedStep", "delayed", "reclaimed", "processV7", "processCopied"].any
+      (fun suffix => source == "Lemma.Services.Arithmetic.ServerV7." ++ suffix)) ||
+      (isSchoolLocalToolConfiguration configuration &&
+        #["state", "get", "processCopied"].any (fun suffix => source == "Lemma.Services.Arithmetic.ServerV8." ++ suffix)))
+
 private def selectedExecutableSource (configuration role source : String)
     (image? : Option UserImageSpec) : Bool :=
-  if isUSBPackageRecoveryNotebookConfiguration configuration then
+  if isSchoolNotebookConfiguration configuration then
+    let executable := serviceExecutableSource source ||
+      #["ServerV7", "ServerV8", "ServerV9"].any (fun name =>
+        source == "Lemma.Services.Arithmetic." ++ name || source.startsWith ("Lemma.Services.Arithmetic." ++ name ++ ".")) ||
+      source == "Lemma.Services.Store.ServerRecovery" || source.startsWith "Lemma.Services.Store.ServerRecovery." ||
+      source == "Lemma.Services.Store.ServerAwait" || source.startsWith "Lemma.Services.Store.ServerAwait." ||
+      source == "Lemma.Services.Store.ServerSchool" || source.startsWith "Lemma.Services.Store.ServerSchool."
+    if !executable then true else
+    if role != "user" then false else
+    image?.any fun image =>
+      source == image.moduleName.toString || source.startsWith (image.moduleName.toString ++ ".") ||
+      schoolArithmeticBorrowedSource configuration role source image? ||
+      (image.key == "store" && image.moduleName == `Lemma.Services.Store.ServerSchool &&
+        image.root == `Lemma.Services.Store.ServerSchool.main &&
+        (((source == "Lemma.Services.Store.Server" || source.startsWith "Lemma.Services.Store.Server.") &&
+          !#["Lemma.Services.Store.Server.main", "Lemma.Services.Store.Server.step",
+            "Lemma.Services.Store.Server.courseMain", "Lemma.Services.Store.Server.courseStep"].contains source) ||
+         ((source == "Lemma.Services.Store.ServerRecovery" || source.startsWith "Lemma.Services.Store.ServerRecovery.") &&
+          !#["Lemma.Services.Store.ServerRecovery.mainRecoveryCourse", "Lemma.Services.Store.ServerRecovery.step"].contains source) ||
+         source == "Lemma.Services.Store.ServerAwait" ||
+         #["waiterMask", "waiterBase", "waiterBytes", "bad", "row", "word", "put", "respond", "flushStep",
+           "settleWaiters", "freeStep", "retain", "awaitApplication"].any
+             (fun suffix => source == "Lemma.Services.Store.ServerAwait." ++ suffix)))
+  else if isUSBPackageRecoveryNotebookConfiguration configuration then
     let executable := serviceExecutableSource source ||
       source.startsWith "Lemma.Services.Store.ServerRecovery." ||
       source.startsWith "Lemma.Services.Store.ServerAwait."
@@ -512,7 +563,10 @@ private def managedRecordFields (env : Environment) (configuration : String)
     unless entries.isEmpty do throw "Notebook User-v0.2 may not acquire a managed record closure"
     return []
   if ((isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecovery.mainRecoveryCourse)) ||
-      (isUSBPackageRecoveryNotebookConfiguration configuration && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecoveryAwait.mainRecoveryAwait)) then
+      (isUSBPackageRecoveryNotebookConfiguration configuration && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecoveryAwait.mainRecoveryAwait)) ||
+      (isSchoolNotebookConfiguration configuration && image?.any (fun image =>
+        image.key == "store" && image.moduleName == `Lemma.Services.Store.ServerSchool &&
+          image.root == `Lemma.Services.Store.ServerSchool.main)) then
     unless entries.isEmpty do throw "Recovery scalar Store may not acquire managed heap authority"
     return []
   unless entries == #[`Lemma.Mathematics.ManagedRational.compareFiveSix] do
@@ -874,7 +928,8 @@ private def unitManifest (env : Environment) (configuration role : String) (suit
       (← managedStringFields env configuration image? suite lowered) ++
       (← ManagedClosureMetadata.managedClosureFields env (image?.any (·.key == "arithmetic")) suite lowered) ++
       (← ManagedClosureMetadata.executionFields (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration)
-        (image?.any (·.key == "arithmetic")) role suite (isMultimodalNotebookConfiguration configuration)) ++
+        (image?.any (·.key == "arithmetic")) role suite (isMultimodalNotebookConfiguration configuration)
+        (isSchoolLocalToolConfiguration configuration && schoolArithmeticBorrower configuration role image?)) ++
       (← arithmeticArrayExecutionFields configuration role image? suite) ++
       (← arithmeticStringExecutionFields configuration role image? suite) ++
       (← arithmeticBytesExecutionFields configuration role image? suite) ++
@@ -963,7 +1018,8 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   let profile ← IO.ofExcept (roleProfile role configuration image?)
   IO.ofExcept <| validateSelectedRoots configuration role names image?
   for imported in env.header.moduleNames do
-    unless selectedExecutableSource configuration role imported.toString image? do
+    unless selectedExecutableSource configuration role imported.toString image? ||
+        schoolArithmeticBorrowedModuleImport configuration role imported.toString image? do
       throw <| IO.userError s!"{configuration} {role} imports sibling executable module `{imported}`"
     if (configuration == "tasks-fault-development" || (managedPolicyFor configuration).isSome) &&
         (imported.toString == "Lemma.Compiler.Test" || imported.toString.startsWith "Lemma.Compiler.Test.") then
@@ -1263,7 +1319,7 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
   let kernel ← readRootSymbol directory configuration "kernel" 0
   let dispatcher ← readRootSymbol directory configuration "kernel" 1
   let config : Lemma.Platform.RiscV.ExecutionPrimitives.Configuration := {
-    stage, lemmasim := configuration.startsWith "lemmasim-", productBoot := isProductNotebookConfiguration configuration, commonOFDM := isWiFiCommonConfiguration configuration, multimodal := isMultimodalNotebookConfiguration configuration, startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
+    stage, lemmasim := configuration.startsWith "lemmasim-", productBoot := isProductNotebookConfiguration configuration, commonOFDM := isWiFiCommonConfiguration configuration, multimodal := isMultimodalNotebookConfiguration configuration, integrated := isIntegratedNotebookConfiguration configuration, startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
     kernelMain := kernel, firmwareDispatcher := firmware, supervisorDispatcher := dispatcher }
   let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderStartup config
   if isMultiImageConfiguration configuration then

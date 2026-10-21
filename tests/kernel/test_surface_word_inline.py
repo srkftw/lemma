@@ -37,7 +37,7 @@ class SurfaceWordInlineCatalog(unittest.TestCase):
         u=fixture();u.pop(FIELD)
         self.assertIsNone(catalog(u));self.assertEqual(removed_symbols(u),set())
     def test_exact_multimodal_pair_keeps_original_callback_catalog(self):
-        from multimodal_deployment import CONFIGURATIONS as names,SOFTWARE_DEPLOYMENT as software,NOTEBOOK_ROOT as root
+        from multimodal_deployment import LEGACY_CONFIGURATIONS as names,SOFTWARE_DEPLOYMENT as software,NOTEBOOK_ROOT as root
         for cfg in names:
             u=fixture();u.update(configuration=cfg,software_deployment=deepcopy(software))
             u['roots'][0]['source']=root;u['functions'][0]['source']=root
@@ -46,6 +46,25 @@ class SurfaceWordInlineCatalog(unittest.TestCase):
                               ('image_key','arithmetic'),('image_id',3)]:
                 changed=deepcopy(u);changed[key]=value
                 with self.subTest(cfg=cfg,key=key),self.assertRaises(Core0Error):catalog(changed)
+    def test_school_catalog_requires_selected_software_and_school_root(self):
+        from school_deployment import ALL_CONFIGURATIONS,software_deployment_for,user_roots_for
+        for cfg in ALL_CONFIGURATIONS:
+            u=fixture();u.update(configuration=cfg,software_deployment=software_deployment_for(cfg))
+            root=user_roots_for(cfg)['notebook'][0]
+            u['roots'][0]['source']=root;u['functions'][0]['source']=root
+            self.assertEqual(removed_symbols(u),{'word0','word1'})
+            for change in ('legacy-root','legacy-software','wrong-image','unknown-configuration','wrong-school-version'):
+                changed=deepcopy(u)
+                if change=='legacy-root':
+                    changed['roots'][0]['source']='Lemma.Applications.Notebook.mainMultimodal'
+                    changed['functions'][0]['source']='Lemma.Applications.Notebook.mainMultimodal'
+                elif change=='legacy-software':changed['software_deployment']=SOFTWARE_DEPLOYMENT
+                elif change=='wrong-image':changed['image_id']=3
+                elif change=='wrong-school-version':
+                    wrong='Lemma.Applications.Notebook.mainMultimodalSchool' if root.endswith('School24') else 'Lemma.Applications.Notebook.mainMultimodalSchool24'
+                    changed['roots'][0]['source']=wrong;changed['functions'][0]['source']=wrong
+                else:changed['configuration']=cfg+'-unknown'
+                with self.subTest(cfg=cfg,change=change),self.assertRaises(Core0Error):catalog(changed)
     def test_wrong_identity(self):
         for key,value in [('configuration','lemmasim-silicon-array-bulk-notebook'),('role','kernel'),
                           ('contract_version','core0-user-v0.7'),('schema_version',2.0),('schema_version',True),

@@ -6,6 +6,18 @@ import unittest
 ROOT=Path(__file__).resolve().parents[2]
 
 class BrowserWorker(unittest.TestCase):
+    def test_tci_waits_for_actual_stopped_cpu_acknowledgement(self):
+        run=subprocess.run(['node','tests/lemmasim/tci_stop_boundary.mjs'],cwd=ROOT,
+                           capture_output=True,text=True,timeout=15)
+        self.assertEqual(run.returncode,0,run.stdout+run.stderr)
+        self.assertIn('PASS actual CPU stop transport helper',run.stdout)
+
+    def test_tci_pointer_admission_cannot_duplicate_queued_execution(self):
+        run=subprocess.run(['node','--experimental-vm-modules','tests/lemmasim/tci_schedule.mjs'],cwd=ROOT,
+                           capture_output=True,text=True,timeout=15)
+        self.assertEqual(run.returncode,0,run.stdout+run.stderr)
+        self.assertIn('PASS actual TCI scheduler',run.stdout)
+
     def test_actual_worker_with_bounded_machine_and_storage_fixtures(self):
         run=subprocess.run(['node','--experimental-vm-modules',
                             'tests/lemmasim/browser_worker_protocol.mjs'],cwd=ROOT,

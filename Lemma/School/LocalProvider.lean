@@ -169,7 +169,7 @@ def numerical (row : Record) : Bool :=
 
 private def active (state : State) (now : Nat) : Array Record :=
   (state.allLatest "job").filter (fun row => numerical row && optionalStr row.data "status" == "leased" &&
-    optionalNat row.data "generation" == state.generation && optionalNat row.data "expires" > now)
+    state.liveLease row.data now)
 
 private def reportedReady (state : State) (config : Worker) : Except String Record := do
   let health ← (state.latest "provider-health" config.worker).toExcept "local worker has no readiness report"

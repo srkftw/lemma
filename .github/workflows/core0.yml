@@ -492,16 +492,19 @@ jobs:
           set -euo pipefail
           timeout --foreground --signal=TERM --kill-after=30s 10m \
             nix develop --no-write-lock-file --command \
-              python3 -m unittest discover -s tests/silicon -v \
-            2>&1 | tee build/ci/metadata/silicon-host-unittest.log
-          python3 - <<'PY'
-          import re
+              python3 -c '
+          import json
+          import sys
           from pathlib import Path
-          value = Path("build/ci/metadata/silicon-host-unittest.log").read_text()
-          count = re.search(r"Ran ([0-9]+) tests?", value)
-          if not count or int(count[1]) <= 0 or not re.search(r"^OK$", value, re.M):
-              raise RuntimeError("Silicon host suite is missing, empty or failing")
-          PY
+          sys.path.insert(0, "scripts")
+          from ci_preflight import run_suite, SILICON_RETAINED_SKIPS
+          value = run_suite(Path("tests/silicon"), sys.stdout,
+                            allowed_skips=SILICON_RETAINED_SKIPS)
+          Path("build/ci/metadata/silicon-host-result.json").write_text(json.dumps(value, indent=2) + "\n")
+          print(json.dumps(value, indent=2), flush=True)
+          raise SystemExit(0 if value["status"] == "PASS" else 1)
+          ' \
+            2>&1 | tee build/ci/metadata/silicon-host-unittest.log
 
       - name: Produce the source-bound hosted school executables
         run: |
@@ -710,7 +713,7 @@ jobs:
           set -euo pipefail
           timeout --foreground --signal=TERM --kill-after=10s 2m \
             nix develop --no-write-lock-file --command \
-              lake build Lemma.Numerics.Linear Lemma.Compiler.SchoolWorkerExport \
+              lake build Lemma.Numerics.Linear Lemma.School.Store Lemma.Compiler.SchoolWorkerExport \
             2>&1 | tee build/ci/school-worker-preparation.log
           timeout --foreground --signal=TERM --kill-after=10s 1m \
             nix develop --no-write-lock-file --command \
@@ -982,9 +985,24 @@ jobs:
       - name: Restore both exact mode-preserving shard archives
         run: |
           set -euo pipefail
+          python3 -I - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          import sys
+          executable = Path(sys.executable).resolve()
+          digest = hashlib.sha256()
+          with executable.open("rb") as stream:
+              for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                  digest.update(chunk)
+          Path("build/ci/kernel-shard-transport-python.json").write_text(json.dumps({
+              "scope": "stdlib-only retained artifact transport; no target execution or qualification",
+              "executable": str(executable), "executable_sha256": digest.hexdigest(),
+              "version": sys.version, "isolated": sys.flags.isolated,
+          }, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+          PY
           timeout --foreground --signal=TERM --kill-after=30s 2m \
-            nix develop --no-write-lock-file --command \
-              python3 scripts/kernel_shard_artifact.py unpack \
+              python3 -I scripts/kernel_shard_artifact.py unpack \
                 --optimization O0 \
                 --archive build/ci/kernel-shard-artifacts/O0/kernel-AE-shard-O0.tar \
                 --manifest build/ci/kernel-shard-artifacts/O0/kernel-AE-shard-O0.pack.json \
@@ -992,8 +1010,7 @@ jobs:
                 --receipt build/ci/kernel-AE-shard-O0.extract.json \
             2>&1 | tee build/ci/kernel-rv64-shard-O0-unpack.log
           timeout --foreground --signal=TERM --kill-after=30s 2m \
-            nix develop --no-write-lock-file --command \
-              python3 scripts/kernel_shard_artifact.py unpack \
+              python3 -I scripts/kernel_shard_artifact.py unpack \
                 --optimization O2 \
                 --archive build/ci/kernel-shard-artifacts/O2/kernel-AE-shard-O2.tar \
                 --manifest build/ci/kernel-shard-artifacts/O2/kernel-AE-shard-O2.pack.json \
@@ -1124,6 +1141,7 @@ jobs:
             build/kernel/ci-prefix/
             build/ci/kernel-rv64.log
             build/ci/kernel-shard-artifacts/
+            build/ci/kernel-shard-transport-python.json
             build/ci/kernel-AE-shard-O0.extract.json
             build/ci/kernel-AE-shard-O2.extract.json
             build/ci/kernel-rv64-shard-O0-unpack.log

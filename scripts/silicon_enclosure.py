@@ -60,7 +60,10 @@ def read_tech(path):
     v=r[1].split();side=v.pop(0)if v and v[0]in('ABOVE','BELOW')else'BOTH';require(len(v)==2,'unsupported enclosure clause');rules.append((side,dbu(v[0]),dbu(v[1])))
    require(rules,'cut layer with no simple enclosure');layers[name]={'body':body,'rules':rules,'classes':set(),'widths':re.findall(r'\bWIDTH\s+([\d.]+)\s*;',body)}
  vias=[]
- for kind,pattern in [('fixed',r'^VIA\s+(\S+)[^\n]*\n(.*?)^END\s+\1\s*$'),('generated',r'^VIARULE\s+(\S+)[^\n]*\n(.*?)^END\s+\1\s*$')]:
+ # LEF permits indentation on both declaration and END. The original strict
+ # column-zero END pattern silently omitted ordinary Via1_YY/Via4_YX etc.;
+ # fail-closed route consumers require the complete fixed-via library.
+ for kind,pattern in [('fixed',r'^[ \t]*VIA\s+(\S+)[^\n]*\n(.*?)^[ \t]*END\s+\1\s*$'),('generated',r'^[ \t]*VIARULE\s+(\S+)[^\n]*\n(.*?)^[ \t]*END\s+\1\s*$')]:
   for m in re.finditer(pattern,s,re.M|re.S|re.I):
    sections={};current=None;parameters={};pitch=None
    for stmt in m[2].split(';'):

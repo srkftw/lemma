@@ -41,6 +41,7 @@ def main():
     parser.add_argument('--pdk', type=Path, required=True,
                         help='Existing Git repository containing the pinned public PDK objects; no fetch')
     parser.add_argument('--work-dir', type=Path, required=True)
+    parser.add_argument('--candidate',type=Path,help='Explicit isolated controller source under build/; never selected into the product by this command')
     parser.add_argument('--map', action='store_true', help='Also map the same controller to three real SRAMs and pinned standard cells')
     args = parser.parse_args()
     out = args.work_dir.resolve()
@@ -48,6 +49,9 @@ def main():
     # any output or tool action, along with command separators and escapes.
     slang_token(out)
     require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused ignored output required')
+    candidate=args.candidate.resolve() if args.candidate is not None else ROOT/'sim/rtl/lemma_pen.sv'
+    if args.candidate is not None:
+        require(candidate.is_relative_to(ROOT/'build') and candidate.is_file() and candidate.stat().st_size<=262144, 'candidate must be a bounded existing ignored build source')
     out.mkdir(parents=True)
     resource.setrlimit(resource.RLIMIT_AS, (4 << 30, 4 << 30))
     resource.setrlimit(resource.RLIMIT_FSIZE, (1 << 30, 1 << 30))
@@ -57,7 +61,8 @@ def main():
     report = {'status': 'FAIL', 'scope': __doc__, 'commands': [],
               'bounds': {'whole_seconds': 300, 'compile_seconds': 60,
                          'simulation_seconds': 30, 'process_AS_bytes': 4 << 30,
-                         'file_bytes': 1 << 30}, 'reference_commit': REFERENCE}
+                         'file_bytes': 1 << 30}, 'reference_commit': REFERENCE,'candidate_only':args.candidate is not None,
+              'candidate_source':{'path':str(candidate),'sha256':sha(candidate)}}
 
     def invoke(argv, name, seconds):
         record = run(argv, out / (name + '.log'), min(deadline, time.monotonic() + seconds))
@@ -70,8 +75,10 @@ def main():
         require(revision == '5e6d592e4002946a4616f798c357f0f3c06cf3b6', 'unqualified PDK revision')
         inputs = [Path(__file__).resolve(), ROOT / 'sim/rtl/lemma_pen.sv',
                   ROOT / 'conformance/silicon/PenIngress.sv', ROOT / 'conformance/silicon/PenBanks.sv',
+                  ROOT / 'conformance/silicon/PenTimestamp.sv',
                   ROOT / 'tooling/silicon/physical-lock.json', ROOT / 'tooling/silicon/pen-sram.nix',
                   ROOT / 'scripts/silicon_synth.py', ROOT / 'flake.lock']
+        if candidate not in inputs:inputs.append(candidate)
         report['source_inputs'] = {str(p.relative_to(ROOT)): sha(p) for p in inputs}
         report['tools'] = {}
         for name in ('iverilog', 'vvp'):
@@ -94,7 +101,7 @@ def main():
         require(hashlib.sha256(original).hexdigest() == REFERENCE_SHA, 'historical reference differs')
         require(original.count(b'module lemma_pen #(') == 1, 'reference module count')
         (out / 'reference.sv').write_bytes(original.replace(b'module lemma_pen #(', b'module lemma_pen_reference #('))
-        source = (ROOT / 'sim/rtl/lemma_pen.sv').read_text()
+        source = candidate.read_text()
         (out / 'candidate.sv').write_text(source)
         vendor = [str(out / 'pdk' / PDK_BASE / 'verilog' / name) for name in
                   (MACRO + '.v', 'RM_IHPSG13_1P_core_behavioral_bm_bist.v')]
@@ -102,6 +109,13 @@ def main():
         (out / 'plan.json').write_text(json.dumps(report, indent=2) + '\n')
         iv = report['tools']['iverilog']['path']
         vvp = report['tools']['vvp']['path']
+        timestamp = out / 'timestamp.vvp'
+        invoke([iv, '-g2012', '-s', 'PenTimestamp', '-o', str(timestamp),
+                str(out / 'candidate.sv'), str(ROOT / 'conformance/silicon/PenTimestamp.sv')],
+               'timestamp-compile', 60)
+        text = invoke([vvp, str(timestamp)], 'timestamp-simulation', 30)
+        require(text.count('PEN-TIMESTAMP full64 relational boundary randomized XZ PASS') == 1,
+                'missing independent timestamp relation observation')
 
         def simulate(name, top, candidate, fixture, expected_failure=None):
             consumed = {str(p): sha(p) for p in
@@ -122,6 +136,7 @@ def main():
             require(expected_failure is None, 'actual mutant survived public observation')
             markers = (['PEN-INGRESS literal full256 fields high64 sequence/time consecutive/wrap PASS',
                         'PEN-INGRESS first-edge all-fields immediate-next-edge ACK PASS',
+                        'PEN-INGRESS cached full64 predicate carry/equality/exhaustion boundary PASS',
                         'PEN-INGRESS every-edge old/new invalid full ACK reset collision PASS edges']
                        if top == 'PenIngress' else
                        ['PEN-BANKS full-capacity all-fields two-wrap and ingress bypass PASS',
@@ -141,11 +156,13 @@ def main():
         for name, before, after in (
                 ('upper-sequence-zeroed', "wire [191:0] input_words = {{(192-$bits(ingress_entry)){1'b0}},ingress_entry};",
                  "wire [191:0] input_words = {{(192-$bits(ingress_entry)){1'b0}},ingress_entry} & {64'b0,128'hffffffffffffffffffffffffffffffff};"),
+                ('stale-sequence-cache', 'sequence_all_ones[part] <= &sequence_incremented[part*16 +:16];', "sequence_all_ones[part] <= 1'b0;"),
+                ('ignored-sequence-saturation', 'IHP_SRAM ? (&sequence_all_ones)', "IHP_SRAM ? 1'b0"),
                 ('address-alias128', '.A_ADDR(row_address)', ".A_ADDR({1'b0,row_address[6:0]})")):
             require(source.count(before) == 1, 'mutation no longer targets actual storage')
             mutant = out / (name + '.sv')
             mutant.write_text(source.replace(before, after))
-            simulate(name, 'PenIngress', mutant, out / 'PenIngress.sv', 'external-interface difference at edge')
+            simulate(name, 'PenIngress', mutant, out / 'PenIngress.sv', 'cached full64 sequence predicate invariant failed' if name == 'stale-sequence-cache' else 'external-interface difference at edge')
         bad_depth = out / 'bad-depth.sv'
         bad_depth.write_text((out / 'PenIngress.sv').read_text().replace('.IHP_SRAM(1)', '.IHP_SRAM(1),.FIFO_DEPTH(128)'))
         simulate('reject-depth128', 'PenIngress', out / 'candidate.sv', bad_depth, 'IHP SRAM requires full256 FIFO')
@@ -238,6 +255,7 @@ stat -liberty {std} -liberty {macro_lib}
             require(len(depths) == 64 and 0 <= min(depths) <= max(depths) <= 20, 'declared timestamp-to-sequence depth ceiling')
             report['mapping'] = {'cells': len(cells), 'cell_types': types,
                                  'timestamp_to_sequence_D_max_cells': max(depths), 'all64depths': depths,
+                                 'fault_storage_bits':len(top['netnames']['fault']['bits']),
                                  'mapped_verilog_sha256': sha(out / 'mapped.v'), 'mapped_json_sha256': sha(out / 'mapped.json'),
                                  'scope': 'Real physical leaf admission and graph depth only; no timing or route qualification'}
         require(all(sha(ROOT / name) == value for name, value in report['source_inputs'].items()), 'source drift')
@@ -245,6 +263,7 @@ stat -liberty {std} -liberty {macro_lib}
                     for name, value in report['collateral'].items()), 'collateral drift')
         report['status'] = ('PASS_MAINTAINED_PEN_PROTOCOL_AND_THREE_REAL_SRAM_MAPPING' if args.map else
                             'PASS_MAINTAINED_PEN_DEFAULT_AND_REAL_SRAM_FULL256_PROTOCOL_NEGATIVES')
+        if args.candidate is not None:report['status']=report['status'].replace('PASS_MAINTAINED_','PASS_ISOLATED_CANDIDATE_')
     except BaseException as error:
         report.update(status='FAIL', error=repr(error))
     finally:

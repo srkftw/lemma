@@ -1,0 +1,13 @@
+--- tooling/silicon/pen-power-grid.tcl
++++ tooling/silicon/pen-power-grid.tcl
+@@ -19,7 +19,9 @@
+ # Preserve lower-layer signal-pin access: continuousM2straps covered620
+ # actualM1/M2signalpinrectangles; M4straps/localizedstacks covernone.
+ add_pdn_stripe -grid pen_core -layer Metal4 -width 1.2 -pitch 60 -offset 10 -nets {VDDlogic VSS}
+-add_pdn_stripe -grid pen_core -layer Metal5 -width 2.5 -pitch 80 -offset 10 -nets {VDDlogic VDDARRAY VSS}
++add_pdn_stripe -grid pen_core -layer Metal5 -width 2.5 -pitch 80 -offset 10 -nets {VDDlogic}
++add_pdn_stripe -grid pen_core -layer Metal5 -width 2.5 -pitch 80 -offset 36.665 -nets {VDDARRAY}
++add_pdn_stripe -grid pen_core -layer Metal5 -width 2.5 -pitch 80 -offset 65.330 -nets {VSS}
+ add_pdn_stripe -grid pen_core -layer TopMetal1 -width 4 -pitch 120 -offset 20 -nets {VDDlogic VDDARRAY VSS}
+ add_pdn_stripe -grid pen_core -layer TopMetal2 -width 4 -pitch 120 -offset 20 -nets {VDDlogic VDDARRAY VSS}
+ # Default PDN emitted410nm Via1 pitch despite the original generator's480nm.

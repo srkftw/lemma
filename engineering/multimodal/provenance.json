@@ -1,6 +1,9 @@
 {
   "schema": "lemma-multimodal-engineering/1",
-  "units": {"circuit": "SI with SPICE suffixes", "geometry": "mm"},
+  "units": {
+    "circuit": "SI with SPICE suffixes",
+    "geometry": "mm"
+  },
   "first_party_sources_license": "Apache-2.0",
   "public_model": {
     "repository": "https://github.com/IHP-GmbH/IHP-Open-PDK",
@@ -35,5 +38,209 @@
     "physical_closure": "UNVERIFIED",
     "physical_functional_safety_qualification": "UNVERIFIED; no body-connected activation",
     "educational_benefit": "UNVERIFIED by these fixtures"
+  },
+  "process_bound_microphone_first_stage": {
+    "design": "engineering/multimodal/microphone-preamp-sg13g2.cir",
+    "checker": "scripts/check_sg13g2_microphone.py",
+    "public_process_revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "model_closure": {
+      "cornerHBT.lib": {
+        "sha256": "bae3d705445de8d6b8de4aa798a0e3e5e7cab617d6495d9c56473bc5377de462",
+        "bytes": 3975
+      },
+      "sg13g2_hbt_mod_mismatch.lib": {
+        "sha256": "e7b462e4aa4fbcb00d8f618f7780fea87d65918f2faa4e86c1412d6262371357",
+        "bytes": 20486
+      },
+      "sg13g2_hbt_mod.lib": {
+        "sha256": "ae9288f885dd30fab24b07ed1e7e02e69eac9154022a0a6da576985183b0bd79",
+        "bytes": 20057
+      },
+      "sg13g2_hbt_stat.lib": {
+        "sha256": "80d1893eb06a3417d05400335d8e58c8309b9c80061ca96ceff8f8fd68c9a7db",
+        "bytes": 2463
+      }
+    },
+    "scope": "Two real SG13G2 npn13G2 VBIC active devices, resistor-derived bias and nominal external passives; synthetic external microphone voltage, differential converter-input boundary. Not a MEMS capsule, ADC or complete physical microphone channel.",
+    "operating_domain": {
+      "supply_V": [
+        1.1,
+        1.2,
+        1.3
+      ],
+      "temperature_C": [
+        -20,
+        27,
+        85
+      ],
+      "model_corners": [
+        "hbt_typ",
+        "hbt_bcs",
+        "hbt_wcs"
+      ],
+      "post_power_restore_unavailable_seconds": 0.089
+    },
+    "evidence": "docs/evidence/009-physical-integration.json",
+    "qualification": "SIMULATED_ONLY process-model circuit engineering; process/layout/assembly/mismatch and physical/safety qualification remain UNVERIFIED"
+  },
+  "process_bound_clocked_comparator": {
+    "design": "engineering/multimodal/clocked-comparator-sg13g2.cir",
+    "checker": "scripts/check_sg13g2_comparator.py",
+    "public_process_revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "consumer": "Maintained HBTmicrophonepreamp directly drives process-bound clockeddecisionstage with originalsg13g2_inv_1 loads. An additionaloriginal-process CMIM/TG samplehold now has TT-only linked operatingevidence; completeADC/reference/decisionvalid/controller/layout remain unfinished.",
+    "scope": "Eleven real SG13G2 LV PSP MOS transistors plus four original inverter transistors per instance. Clock, microphone voltage and external loads are declared test stimuli. Internal gain and regeneration use actual process transistors.",
+    "port_contract": {
+      "clock_low": "Both decision outputs return low after precharge.",
+      "clock_high": "A positive input difference requires decisionp high and decisionn low; a negative difference requires the opposite. All declared process-model operating cases now satisfy the checked windows. Noise, mismatch and physical operating qualification remain separate."
+    },
+    "models": {
+      "MOS_parameters": "Original cornerMOSlv and recursive parameter includes; Apache-2.0.",
+      "HBT": "Original cornerHBT hbt_typ only. Joint MOS/HBT corner correlation is unqualified.",
+      "PSP_implementation": "Separate original CMC terms apply to PSP103 QS/NQS implementation, rather than the root Apache licence alone. NXP Semiconductors, Delft University of Technology and CEA-Leti notices and acknowledgement requirements remain; the terms restrict charging for the model code itself.",
+      "rights_source": "ihp-sg13g2/libs.tech/verilog-a/psp103/releasenotesPSP103.8.2.txt",
+      "closure": "Seventeen original Verilog-A files, ten original model parameter files, original standard-cell SPICE and PDK licence: twenty-nine immutable Git objects."
+    },
+    "operating_matrix": {
+      "MOS_corners": [
+        "mos_tt",
+        "mos_ss",
+        "mos_ff"
+      ],
+      "HBT_corner": "hbt_typ",
+      "supply_V": [
+        1.1,
+        1.2,
+        1.3
+      ],
+      "temperature_C": [
+        -20,
+        27,
+        85
+      ],
+      "clock_Hz": 10000000,
+      "clock_edge_seconds": 5e-10,
+      "transient_seconds": 2e-06,
+      "maximum_timestep_seconds": 1e-10,
+      "direct_input_differential_V": [
+        0.002,
+        0.01,
+        -0.002,
+        -0.01
+      ],
+      "base_external_load_F": 1e-14,
+      "additional_load_control_F": 1e-13,
+      "actual_seconds": 115.54411397804506,
+      "operating_points": 27,
+      "operating_passes": 27,
+      "functional_limits": 0,
+      "SPICE_convergence_limits": 0,
+      "controls_pass": 3,
+      "result": "PASS_DECLARED_PROCESS_MODEL_TESTS_ONLY"
+    },
+    "retained_failures": [
+      "The original 400-second campaign ended without a circuit pass; its 20-microsecond transient hit the original 20-second phase limit.",
+      "The first original QS compilation lacked a host linker. A separate binding with pinned Clang completed.",
+      "Missing NQS definitions produced strict unknown-model warnings. Compiling the original NQS module and loading both modules removed that dependency.",
+      "The initial short/wide-tail design exhibited nominal inverted decisions and fifteen functional/two convergence failures in its original matrix. Its sources/results remain unchanged.",
+      "A larger input-pair candidate caused three phase timeouts and one functional failure. The weak-tail-only candidate completed all four cases with stable reversed port polarity; restoring the physical buffer inputs then passed all four cases and the full original matrix."
+    ],
+    "evidence": "docs/evidence/009-physical-integration.json",
+    "qualification": "P3 process-model circuit engineering only. ADC precision, noise, mismatch, layout, extraction, manufacturing, physical safety and educational qualification remain UNVERIFIED.",
+    "design_sha256": "35ba47e1114925944ec7e298fe1bbb30d6af138fce6508f6beaadfb7e0dbcda1",
+    "initial_operating_matrix": {
+      "MOS_corners": [
+        "mos_tt",
+        "mos_ss",
+        "mos_ff"
+      ],
+      "HBT_corner": "hbt_typ",
+      "supply_V": [
+        1.1,
+        1.2,
+        1.3
+      ],
+      "temperature_C": [
+        -20,
+        27,
+        85
+      ],
+      "clock_Hz": 10000000,
+      "clock_edge_seconds": 5e-10,
+      "transient_seconds": 2e-06,
+      "maximum_timestep_seconds": 1e-10,
+      "direct_input_differential_V": [
+        0.002,
+        0.01,
+        -0.002,
+        -0.01
+      ],
+      "base_external_load_F": 1e-14,
+      "additional_load_control_F": 1e-13,
+      "actual_seconds": 168.127933138,
+      "operating_points": 27,
+      "operating_passes": 10,
+      "functional_limits": 15,
+      "SPICE_convergence_limits": 2,
+      "controls_pass": 3,
+      "result": "FAIL_NOT_ADMITTED"
+    },
+    "tail_design": "A real long/narrow clocked tail MOS (W0.5um/L2um) limits amplification-phase current; original input devices remain W4um/L0.26um. Fixed original buffer input connections restore the external contract after this bias correction.",
+    "selection_assessment": "build/multimodal/task009-comparator-selection-a1/result.json",
+    "digital_binding": "The selected0.15 profile still declares synthetic-aperture/1; lemma_multimodal.sv defaults exposure to8 core ticks. This10MHz analog decision block is not its ADC. Sample/hold, reference/DAC, conversion state and decision-valid clock/controller binding remain unfinished."
+  },
+  "process_bound_sample_hold": {
+    "design": "engineering/multimodal/differential-sample-hold-sg13g2.cir",
+    "design_sha256": "2b3392a517d7a2d0f59f9a255059bdc775564836ec3543cc26ca5f61c49e910a",
+    "checker": "scripts/check_sg13g2_sample_hold.py",
+    "status": "EXPERIMENTAL_ORIGINAL_PROCESS_NOMINAL_AND_REAL_FAILURE_CONTROLS_ONLY",
+    "consumer": "Actual HBTpreamp→PSPtransmissiongates+originalCMIM→unchangedclockedcomparator, also independent10mV heldinputtest. Reference/decisionvalid/ADCcontroller integration remainsunfinished.",
+    "original_PDK_revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "model_binding": "OriginalQS/NQSPspOSDI compilationexplicitlyreused withproducerreceipts; originalCAPincludechain+26um×26um cap_cmim geometry. CMC compact-model terms remain separate from Apache-2.0 circuit design.",
+    "operating_scope": {
+      "MOS": "tt",
+      "HBT": "typ",
+      "CAP": "typ",
+      "supply_V": 1.2,
+      "temperature_C": 27,
+      "clock_Hz": 10000000,
+      "cycles": 20,
+      "output_load_each_F": 2e-14,
+      "direct_differential_input_V": 0.01
+    },
+    "actual_receipt": {
+      "path": "build/multimodal/task009-sample-hold-pilot-a1/result.json",
+      "sha256": "a9db0034b114eb944de7bed6cad9d9339d18f6271b766c8bd6471d748dbd9c41",
+      "seconds": 15.550805892096832,
+      "peak_owned_RSS_bytes": 111124480
+    },
+    "promotion_assessment": {
+      "path": "build/multimodal/task009-sample-hold-promotion-a1/result.json",
+      "sha256": "c657fd06c27505c5cfce54afec12698e0e82e5bf1de059668054cf6aff0c73b0"
+    },
+    "nominal_measures": {
+      "max_acquisition_error_V": 1.199999999368373e-08,
+      "max_held_differential_error_V": 4.0440999999993496e-05,
+      "peak_supply_current_A": 0.000657418866
+    },
+    "controls": [
+      "continuous-track must fail heldsign and decision",
+      "actual crossed heldpair must fail decision"
+    ],
+    "remaining": [
+      "PVT operating range",
+      "noise/mismatch/reference",
+      "extracted top/bottomplate/switch parasitics",
+      "decision-valid and realADCcontroller/service binding",
+      "ADC resolution/rate specification",
+      "layout/processDRC/LVS",
+      "physical sensor/safety/manufacturing qualification"
+    ],
+    "copied_model_seal_correction": {
+      "path": "build/multimodal/task009-sample-hold-promotion-a2/result.json",
+      "sha256": "3df4b8739e711593b1b6992d80695eeac1d1060160070e0cf38588c79dc4ae3a",
+      "status": "PASS_COMPLETED_COPIED_MODEL_BYTES_AND_EXACT_PHYSICS_PROMOTION_NO_NEW_SPICE",
+      "fresh_SPICE_runs": 0,
+      "historical_scope": "Original actual pilot and promotion did not seal consumed case/models copies. Current retained copies independently equal the sealed adopted models; this closed assessment cannot establish their historical immutability during execution. Maintained producer now seals complete files/directories before use and at final barrier, with changed/missing/extra/directory/symlink negatives."
+    }
   }
 }

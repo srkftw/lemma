@@ -27,7 +27,18 @@ PARAMETERIZED_REGISTRY = {**REGISTRY,
  'contract_version':'lemma-arithmetic-execution-identity-v7',
  'implementation':{'name':'lemma-isolated-arithmetic-parameterized-closure-v1','id':0x0008000100000001},
  'parameterized':{'version':2,'request_bytes':192,'reply_bytes':192,'checker_id':0x0002000000000001}}
+# ServerV9 is a different whole service. The copied V8 checker keeps its wire
+# identity; the bounded advisory has its own service identity and resources.
+LOCAL_REDUCTION_REGISTRY = {**PARAMETERIZED_REGISTRY,
+ 'contract_version':'lemma-arithmetic-execution-identity-v8',
+ 'implementation':{'name':'lemma-isolated-arithmetic-local-reduction-closure-v1','id':0x0009000100000001},
+ 'local_reduction':{'version':1,'request_bytes':144,'reply_bytes':176,
+                     'service_id':0x0001000052444331,'gcd_steps':32,
+                     'maximum_magnitude':1000000,'required_budget':34}}
+from school_deployment import configurations_for as school_configurations_for, software_deployment_for as school_software
+LOCAL_REDUCTION_CONFIGURATIONS = frozenset(school_configurations_for(24)+school_configurations_for(25))
 from multimodal_deployment import CONFIGURATIONS as MULTIMODAL_CONFIGURATIONS
+from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS
 from closure_deployment import ALL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 CONFIGURATIONS = frozenset(CLOSURE_CONFIGURATIONS)
 ROOT = 'Lemma.Services.Arithmetic.ServerV7.main'
@@ -63,10 +74,26 @@ def contract(unit):
   return None
  require(selected(unit) and unit.get('contract_version')=='core0-user-v0.7',
          'Arithmetic execution identity escaped the exact managed isolated deployment')
- registry = PARAMETERIZED_REGISTRY if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS else REGISTRY
+ configuration=unit.get('configuration');sources={canonical(row.get('source','')) for row in rows}
+ local=configuration in LOCAL_REDUCTION_CONFIGURATIONS
+ registry = LOCAL_REDUCTION_REGISTRY if local else PARAMETERIZED_REGISTRY if configuration in MULTIMODAL_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS else REGISTRY
  require(unit.get(FIELD)==registry, 'Arithmetic implementation/lowering/runtime/resource registry differs')
- if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS:
-  require(any(canonical(row.get('source',''))=='Lemma.Services.Arithmetic.ServerV8.main' for row in rows),
+ if local:
+  require(unit.get('image_id')==3 and unit.get('software_deployment')==school_software(configuration) and
+          [(canonical(row.get('source','')),row.get('id'),row.get('args')) for row in unit.get('roots',[])]==
+          [('Lemma.Services.Arithmetic.ServerV9.main',1,['u64'])],
+          'Local reduction whole-service identity escaped its exact School24 root/image/software tuple')
+  required={'Lemma.Services.Arithmetic.ServerV9.main','Lemma.Services.Arithmetic.ServerV9.step',
+            'Lemma.Services.Arithmetic.ServerV9.processCopied','Lemma.Services.Arithmetic.ServerV8.processCopied',
+            'Lemma.Services.Arithmetic.ServerV7.processCopied','Lemma.Services.Arithmetic.ProtocolV9.evaluate',
+            'Lemma.Services.Arithmetic.ProtocolV9.reply','Lemma.Services.Arithmetic.ProtocolV9.serviceIdentity',
+            'Lemma.Services.Arithmetic.ReductionV1.calculate','Lemma.Services.Arithmetic.ProtocolV7.reply',
+            'Lemma.Services.Arithmetic.ProtocolV7.validateRequest','Lemma.Services.Arithmetic.ProtocolV8.reply',
+            'Lemma.Multimodal.Parameterized.evaluate'}
+  require(required<=sources and 'Lemma.Services.Arithmetic.ServerV8.main' not in sources,
+          'Local reduction omitted its exact advisory/delegated checking path or mixed whole service roots')
+ elif configuration in MULTIMODAL_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS:
+  require('Lemma.Services.Arithmetic.ServerV8.main' in sources and 'Lemma.Services.Arithmetic.ServerV9.main' not in sources,
           'Parameterized implementation lacks its genuine ServerV8 root')
  return registry
 
@@ -131,9 +158,10 @@ def llvm_inventory(ir, unit):
 
 def validate(ir, unit, *, optimized):
  if contract(unit) is None:return None
- if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS:
+ if unit.get('configuration') in MULTIMODAL_CONFIGURATIONS + INTEGRATED_CONFIGURATIONS:
+  from integrated_target import validate as validate_integrated
   from multimodal_target import validate as validate_multimodal
-  return validate_multimodal(ir,unit,optimized=optimized)
+  return (validate_integrated if unit.get("configuration") in INTEGRATED_CONFIGURATIONS else validate_multimodal)(ir,unit,optimized=optimized)
  catalog=catalog_inventory(unit)
  require(EXPECTED['catalog'] is not None and catalog==EXPECTED['catalog'],
          'Arithmetic complete genuine source/contract inventory differs from implementation version')

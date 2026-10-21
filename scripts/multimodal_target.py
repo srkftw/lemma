@@ -15,6 +15,7 @@ import re
 from core0_common import Core0Error
 from multimodal_deployment import CONFIGURATIONS, PARAMETERIZED_CONFIGURATIONS, BOOT_ROOTS, NOTEBOOK_ROOT, SOFTWARE_DEPLOYMENT
 from paper_next import canonical
+from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS
 
 ROOT = Path(__file__).resolve().parents[1]
 AUTHORITY = ROOT / 'tooling/multimodal-target-authority.json'
@@ -40,7 +41,8 @@ def digest(value):
 
 
 def selected(unit):
-    return unit.get('configuration') in CONFIGURATIONS
+    from integrated_deployment import CONFIGURATIONS as integrated
+    return unit.get('configuration') in CONFIGURATIONS + integrated
 
 
 def role_key(unit):
@@ -51,6 +53,10 @@ def role_key(unit):
 
 
 def catalog(unit):
+    from school_target import selected as school_selected, catalog as school_catalog
+    if school_selected(unit):return school_catalog(unit)
+    from integrated_target import selected as integrated, catalog as integrated_catalog
+    if integrated(unit):return integrated_catalog(unit)
     require(selected(unit), 'unknown exact configuration')
     key = role_key(unit)
     rows = unit.get('functions')
@@ -120,6 +126,14 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
     Lean verifier or an end-to-end response-latency qualification.
     """
     mm, notebook, backlog = map(_lean_without_comments, (multimodal_source, notebook_source, backlog_source))
+    local_reduction=any(marker in notebook for marker in ('mainMultimodalSchool24','reductionEnabled','LocalReduction.','ClientV9.'))
+    stream_capture=any(marker in notebook for marker in ('mainMultimodalSchoolV3','schoolStreamFlag','multimodalAdvanceCaptured','multimodalIdleInput'))
+    if local_reduction:
+        from school_reduction_target import notebook_source as reduction_source
+        reduction_source(notebook)
+    elif stream_capture:
+        from school_stream_target import notebook_source as stream_source
+        stream_source(notebook)
     compact = lambda value: ' '.join(value.split())
     def definition(source, name):
         matches = list(re.finditer(r'^(?:private )?def '+re.escape(name)+r'(?=\s|\()', source, re.M))
@@ -142,8 +156,11 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
             value(notebook,'schoolContext') == 'Lemma.User.Multimodal.records + 1152' and
             value(notebook,'schoolPacket') == 'Lemma.User.Multimodal.records + 1792',
             'source layout actual tutor consumers differ')
+    warm_submission = (any(re.search(r'^(?:private )?def '+name+r'(?=\s|\()', notebook, re.M)
+                           for name in ('schoolSendSource', 'schoolSendAttempt')) or
+                       re.search(r'\btutor(?:Get|Put) (?:88|96|104|112)\b', notebook) is not None)
     page, page_size = 0x340000, 4096
-    windows = [('samples',0,8*64),('tutor context',1024,11*8),('school context',1152,13*8),('tutor proposal',1536,32*8),('JOIN packet',1792,13*8),
+    windows = [('samples',0,8*64),('tutor context',1024,(15 if warm_submission else 11)*8),('school context',1152,13*8),('tutor proposal',1536,32*8),('JOIN packet',1792,13*8),
                ('state',2048,32*8),('configuration packet',2304,8*8)]
     for index, (name, offset, length) in enumerate(windows):
         require(offset % 8 == 0 and length > 0 and offset+length <= page_size,
@@ -151,6 +168,113 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
         for other, start, size in windows[index+1:]:
             require(offset+length <= start or start+size <= offset, 'source layout windows overlap: '+name+'/'+other)
         require(page+offset >= 0x20d00+32+8*64, 'source layout aliases old control backlog')
+    if warm_submission:
+        ask = definition(notebook, 'multimodalAsk')
+        require(ask.startswith(compact('''private def multimodalAsk : Action :=
+          .bind (tutorPut 112 0) fun s _ => if statusFailed s = true then .done s 0 else''')),
+          'source warm ASK must invalidate the original-source snapshot first')
+        ask_location = definition(notebook, 'multimodalAskLocation')
+        require(compact('''if phase = 2 then
+          .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+          .bind (packageGet 8) fun s ordinal => if statusFailed s = true then .done s 0 else
+          .bind (Lemma.Courses.PackageTarget.select packageBytes length ordinal) fun s entry => if statusFailed s = true then .done s 0 else''') in ask_location and
+          compact('''if identity = 60000 then .done 244 0 else if identity = 60001 then .done 244 0 else
+          .bind (Memory.write64 (packageBindingScratch + 32) crc)''') in ask_location,
+          'source warm ASK requires a validated original package and rejects reserved envelopes')
+        require(all(fragment in ask_location for fragment in (
+                    '(Memory.read64 (packageBytes + 24)) fun s identity',
+                    '(Memory.read64 (packageBytes + 32)) fun s edition',
+                    '(Memory.read64 entry) fun s node',
+                    '(Memory.read64 (packageBytes + 80)) fun s crc')) and
+                all(fragment in ask for fragment in (
+                    '(multimodalAskLocation ns page) fun s binding',
+                    'if binding = 0 then .done 244 0 else',
+                    '(Memory.read64 (binding + 16)) fun s source',
+                    '(Memory.read64 (binding + 24)) fun s edition',
+                    '(Memory.read64 (binding + 40)) fun s task',
+                    '(Memory.read64 (binding + 32)) fun s crc')),
+                'source warm ASK must read its exact validated original source/node/CRC binding')
+        snapshot = compact('''.bind (tutorPut 88 crc) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (tutorPut 96 ns) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (tutorPut 104 page) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (tutorPut 112 1) fun s _ => if statusFailed s = true then .done s 0 else''')
+        require(snapshot in ask and ask.count('tutorPut 112 0') == ask.count('tutorPut 112 1') == 1 and
+          all('tutorPut '+offset+' '+value in ask and
+              ask.index('tutorPut '+offset+' '+value) < ask.index('tutorPut 112 1') for offset,value in
+              (('0','(now + 1)'),('16','revision'),('24','(Lemma.Courses.PackageWorkspace.object page)'),
+               ('48','source'),('56','edition'),('64','task'))),
+          'source warm ASK must publish complete CRC/namespace/page/work/source context last')
+        source = definition(notebook, 'schoolSendSource')
+        require(compact('''.bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+          .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+          .bind (Lemma.Courses.PackageWorkspace.validate packageWorkspace ns page) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (Memory.read64 (packageBytes + 24)) fun s loaded => if statusFailed s = true then .done s 0 else
+          if loaded = 60001 then''') in source,
+          'source warm SEND must validate the current workspace and distinguish only the help overlay')
+        for fragment in (
+            '.bind (tutorGet 112) fun s ready', '.bind (tutorGet 96) fun s expectedNS',
+            '.bind (tutorGet 104) fun s expectedPage', '.bind (tutorGet 24) fun s object',
+            '.bind (tutorGet 16) fun s previousRevision',
+            '.bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision',
+            '.bind (tutorGet 0) fun s session', '.bind (Memory.read64 (schoolContext+80)) fun s joinedSession',
+            '.bind (tutorGet 48) fun s identity', '.bind (tutorGet 56) fun s edition',
+            '.bind (tutorGet 64) fun s node', '.bind (tutorGet 88) fun s crc',
+            '.bind (Memory.read64 (schoolContext+88)) fun s joinedSource',
+            '.bind (Memory.read64 (schoolContext+96)) fun s joinedEdition'):
+            require(fragment in source, 'source warm SEND omitted original/current context read: '+fragment)
+        require(compact('''if ready = 1 then if ns = expectedNS then if page = expectedPage then
+          if object = Lemma.Courses.PackageWorkspace.object page then
+          if 0 < previousRevision then if previousRevision ≤ revision then if session = joinedSession then''') in source and
+          compact('''if identity = joinedSource then if edition = joinedEdition then
+          if identity = 60000 then .done 240 0 else if identity = 60001 then .done 240 0 else''') in source,
+          'source warm SEND lost ready/work/revision/session/original publication guards')
+        require(compact('''.bind (Memory.read64 (packageWorkspace+48)) fun s mask => if statusFailed s = true then .done s 0 else
+          .bind (if (mask >>> 8) &&& 1 = 1 then
+          .bind (Memory.read64 (packageWorkspace+Lemma.Courses.PackageWorkspace.selection+16)) fun s selectedSource => if statusFailed s = true then .done s 0 else
+          .bind (Memory.read64 (packageWorkspace+Lemma.Courses.PackageWorkspace.selection+24)) fun s selectedEdition => if statusFailed s = true then .done s 0 else
+          .bind (Memory.read64 (packageWorkspace+Lemma.Courses.PackageWorkspace.selection+32)) fun s selectedCRC => if statusFailed s = true then .done s 0 else
+          if identity = selectedSource then if edition = selectedEdition then if crc = selectedCRC then .done 0 0 else .done 240 0 else .done 240 0 else .done 240 0''') in source,
+          'source warm SEND lost known-workspace exact source/edition/CRC checks')
+        require(compact('''else .bind (packageGet 0) fun s length => if statusFailed s = true then .done s 0 else
+          .bind (packageGet 8) fun s ordinal => if statusFailed s = true then .done s 0 else
+          .bind (Lemma.Courses.PackageTarget.select packageBytes length ordinal) fun s entry => if statusFailed s = true then .done s 0 else''') in source and
+          'store loaded edition node crc' in source,
+          'source warm SEND normal package path lost full validation or its original identity')
+        scratch = compact('''where store (identity edition node crc : UInt64) : Action :=
+          .bind (Memory.write64 (packageBindingScratch+16) identity) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (Memory.write64 (packageBindingScratch+24) edition) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (Memory.write64 (packageBindingScratch+32) crc) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind (Memory.write64 (packageBindingScratch+40) node) fun s _ => .done s 0''')
+        require(source.endswith(scratch) and source.count('Memory.write64') == 4 and
+          source.count('store identity edition node crc') == 1,
+          'source warm SEND may publish only its local source scratch tuple')
+        kind = definition(notebook, 'schoolWorkKind')
+        require('Lemma.Courses.PackageWorkspace.snapshotSelection packageWorkspace packageBindingScratch' in kind and
+          all(f'Memory.read64 (packageBindingScratch + {offset})) fun s {name}' in kind for offset,name in
+              ((16,'source'),(24,'published'),(32,'checksum'),(40,'task'),(120,'boundRevision'))) and
+          compact('''.done 0 (if source = identity then if published = edition then if task = node then if checksum = crc then
+          if boundRevision = revision then 1 else 2 else 2 else 2 else 2 else 2)''') in kind,
+          'source warm SEND changed the current exact selection/revision requirement for typed work')
+        attempt = definition(notebook, 'schoolSendAttempt')
+        require(compact('''if phase = 26 then Lemma.Courses.SchoolSubmission.retry else if phase = 45 then Lemma.Courses.SchoolSubmission.retry else''') in attempt and
+          all(token in attempt for token in ('.bind schoolSendSource','schoolWorkKind revision identity edition node crc','Lemma.Courses.SchoolSubmission.start')) and
+          attempt.index('Lemma.Courses.SchoolSubmission.retry') < attempt.index('.bind schoolSendSource') and
+          attempt.index('.bind schoolSendSource') < attempt.index('schoolWorkKind revision identity edition node crc') < attempt.index('Lemma.Courses.SchoolSubmission.start') and
+          'packageBytes' not in attempt,
+          'source warm SEND must retry frozen bytes before any new source capture')
+        require(all(f'Memory.read64 (packageBindingScratch+{offset})) fun s {name}' in attempt for offset,name in
+                    ((16,'identity'),(24,'edition'),(32,'crc'),(40,'node'))),
+                'source warm SEND must consume the exact validated local source tuple')
+        for offset,expected_field in ((64,'identity'),(72,'edition'),(80,'node'),(88,'crc'),(104,'kind')):
+            require(f'schoolHeaderPut {offset} {expected_field}' in attempt,
+                    'source warm SEND envelope source/work kind differs')
+        require(definition(notebook, 'schoolSend') == compact('''private def schoolSend : Action :=
+          .bind schoolSendAttempt fun result value =>
+          if statusFailed result = true then
+          .bind (schoolQueueFailure result) fun s _ => if statusFailed s = true then .done s 0 else .done result value
+          else .bind (Memory.write64 schoolQueueError 0) fun s _ => if statusFailed s = true then .done s 0 else .done result value''') and
+          'CapabilityConsole.record console 0x732 status.toUInt64 0 0 0' in definition(notebook,'schoolQueueFailure'),
+          'source warm SEND must report rejection, retain its status and clear errors only on successful start/retry')
     initialize = definition(mm,'«initialize»')
     expected = compact('''def «initialize» (console : UInt64) : Action :=
       .bind (Syscall.allocatePage records) fun s address => if mmFailed s = true then .done s 0 else
@@ -168,14 +292,48 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
     require(definition(notebook,'multimodalBarTile') == compact('''private def multimodalBarTile (i _ : UInt32) (acc width _ _ _ : UInt64) : Action :=
       .bind (markDirtyTile (4 * ((width + 31) / 32) + 12 + i.toUInt64)) fun s _ => .done s acc'''),
       'source toolbar tile row/column/index differs')
-    require(definition(notebook,'multimodalBar') == compact('''private def multimodalBar : Action :=
+    raw_capture = 'private def multimodalRawBase : UInt64 := 0x350000' in notebook
+    owned_pcm = 'private def audioPage : UInt64 := 0x360000' in mm
+    if 'private def requestMultimodalBarAfterRedraw' in notebook:
+        require(definition(notebook,'requestMultimodalBarAfterRedraw') == compact('''private def requestMultimodalBarAfterRedraw : Action :=
+          .bind (Memory.read64 rawCaptureReadyFlag) fun s ready => if statusFailed s = true then .done s 0 else
+          if ready = 1 then Memory.write64 (Lemma.User.Multimodal.state + 32) 1 else .done 0 0'''),
+          'source redraw bar allocation/deferral differs')
+        redraw = definition(notebook,'redraw')
+        require(compact('''.bind (Surface.background width height) fun s _ => if statusFailed s = true then .done s 0 else
+          .bind requestMultimodalBarAfterRedraw fun s _ => if statusFailed s = true then .done s 0 else''') in redraw,
+          'source redraw omitted optional bar request')
+    school = 'private def schoolActivityFlag : UInt64 :=' in notebook
+    require(not owned_pcm or school, 'source toolbar owned PCM requires the selected school layout')
+    extent, packed, tiles = (1264,6480,28) if owned_pcm else (1120,5400,23)
+    school_bar = compact('''.bind (Memory.read64 schoolActivityFlag) fun s school => if mmFailed s = true then .done s 0 else
+      .bind (Memory.read64 (Lemma.User.Multimodal.records+2480)) fun s lost => if mmFailed s = true then .done s 0 else
+      let enabled := enabled ||| (school <<< 8) ||| (lost <<< 16)''') if school else ''
+    expected_bar = compact('''private def multimodalBar : Action :=
       .bind Lemma.User.Multimodal.active fun s enabled => if mmFailed s = true then .done s 0 else
+      SCHOOL_BAR
       .bind (get 32) fun s width => if mmFailed s = true then .done s 0 else
       if width < 1120 then .done 16 0 else
       .boundedFoldU64 5400 multimodalBarStep 5400 0 enabled width 0 0 fun s _ => if mmFailed s = true then .done s 0 else
       .boundedFoldU64 23 multimodalBarTile 23 0 width 0 0 0 fun s _ => if mmFailed s = true then .done s 0 else
-      dirty 400 132 1120 147'''),
-      'source toolbar must bound width and enqueue all twenty-three intersected tiles before dirty')
+      dirty 400 132 1120 147''').replace('SCHOOL_BAR',school_bar).replace('1120',str(extent)).replace('5400',str(packed)).replace('23 multimodalBarTile 23',f'{tiles} multimodalBarTile {tiles}')
+    if local_reduction:
+        require(owned_pcm,'source local tool requires the owned PCM School toolbar')
+        expected_bar=expected_bar.replace('dirty 400 132 1264 147',
+          '.bind (dirty 400 132 1264 147) fun s _ => if statusFailed s = true then .done s 0 else renderReductionControl width')
+    require(definition(notebook,'multimodalBar') == compact(expected_bar),
+      'source toolbar must match its versioned width, raster size and every intersected tile')
+    if owned_pcm:
+        require(value(mm,'audioPage') == '0x360000', 'source toolbar PCM page differs')
+        require('let x := i.toUInt64 % 432 * 2 let y := i.toUInt64 / 432' in definition(notebook,'multimodalBarStep'),
+                'source toolbar packed PCM raster extent differs')
+        require('if operation = 9 then Lemma.User.Multimodal.testAudio' in definition(notebook,'multimodalControl'),
+                'source toolbar PCM action no longer invokes the maintained consumer')
+        input_extent='if 1120 ≤ px then if px < 1264 then multimodalControl 9 else '+(
+          'if 1280 ≤ px then if px < 1352 then multimodalControl 10 else .done 0 0 else .done 0 0 else .done 0 0' if local_reduction else
+          '.done 0 0 else .done 0 0')
+        require(input_extent in definition(notebook,'multimodalApplySample' if raw_capture else 'multimodalInputSample'),
+                'source toolbar PCM input extent differs')
     require(definition(notebook,'multimodalPumpBar') == compact('''private def multimodalPumpBar : Action :=
       .bind (Memory.read64 (Lemma.User.Multimodal.state + 32)) fun s pending => if mmFailed s = true then .done s 0 else
       if pending = 0 then .done 0 0 else
@@ -190,7 +348,8 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
         .bind multimodalBar fun s _ => if mmFailed s = true then .done s 0 else
         Memory.write64 (Lemma.User.Multimodal.state + 32) 0
       else .done 0 0 else .done 0 0 else .done 0 0'''), 'source deferred toolbar lost idle/frame ownership gates')
-    input_ = definition(notebook,'multimodalInputSample')
+    input_ = definition(notebook,'multimodalApplySample' if raw_capture else 'multimodalInputSample')
+    capture = definition(notebook,'multimodalInputSample') if raw_capture else input_
     safety_branch = compact('''if (if 132 ≤ safetyY then if safetyY < 160 then if 544 ≤ safetyX then if safetyX < 832 then true else false else false else false else false) = true then
       multimodalSafety (if safetyX < 640 then 1 else 2)
     else .bind (get 432)''')
@@ -201,6 +360,10 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
       else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0)
       fun s captureActive => if statusFailed s = true then .done s 0 else
       if different captureActive 0 = true then multimodalSafety 0 else''')
+    if school:
+        capture_branch = capture_branch.replace('if different captureActive', compact('''.bind (Memory.read64 schoolActivityFlag) fun s school => if statusFailed s = true then .done s 0 else''')+' if different captureActive')
+        capture_branch += ' '+compact('''if (if school = 1 then if 132 ≤ safetyY then if safetyY < 160 then if 760 ≤ safetyX then if safetyX < 832 then true else false else false else false else false else false) = true then
+          if safetyX < 808 then multimodalQueueTutor 7 else multimodalControl 8 else''')
     require(capture_branch+' '+safety_branch in input_,
             'source CAPTURE may only inhibit an active session before the busy queue')
     require(all(token not in prefix for token in ('queueBookTap','get 160','get 536','ControlBacklog.count','cancelBookmarkWork')),
@@ -210,7 +373,7 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
     require('if different active 0 = true then appendRaw else if flags &&& 1 = 0 then .done 0 0 else if previousContact = 1 then .done 0 0 else' in prefix,
             'source safety bypass changed pen contact/raw-stroke handling')
     for offset in (288,296,304):
-        require('put '+str(offset) in prefix, 'source safety omitted original pen sequence/time/epoch tracking')
+        require('put '+str(offset) in capture if raw_capture else 'put '+str(offset) in prefix, 'source safety omitted original pen sequence/time/epoch tracking')
     require('Geometry.pixel (Geometry.normalized x maxX) width' in prefix and
             'Geometry.pixel (Geometry.normalized y maxY) height' in prefix,
             'source safety coordinates bypass declared pen geometry')
@@ -240,7 +403,11 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
       CapabilityConsole.record console 0x726 operation (if pending = 0 then 1 else if pending = operation then 2 else 3) 0 0'''),
       'source pending intent must retain/coalesce or report bounded Busy without acquiring work')
     pump = definition(notebook,'multimodalPumpTutor')
-    require('if stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then' in pump and
+    deferred = 'private def rawIndexDeferredFlag : UInt64 :=' in notebook
+    pump_gate = ('if deferredIndex ||| captured ||| stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then' if deferred else
+                 'if captured ||| stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then' if school else
+                 'if stroke ||| rawCount ||| rawPending ||| store ||| checking = 0 then if dirtyX = 0xffff then')
+    require(pump_gate in pump and
             '.bind bookmarkBusy' in pump and '.bind Lemma.Notebook.ControlBacklog.count' in pump and
             'if work ||| waiting = 0 then' in pump and '.bind (Surface.status surface)' in pump and
             'if status &&& 1 = 0 then' in pump and
@@ -264,12 +431,35 @@ def notebook_safety_sources(multimodal_source, notebook_source, backlog_source):
           .bind (packagePut 176 0) fun s _ => if statusFailed s = true then .done s 0 else''')
         require(reset+' .bind (beginPackageRead '+str(identity)+' sequence)' in envelope,
                 'source school envelope inherited original reader CRC/node guards')
-    require('.bind multimodalPumpBar' in step and '.bind multimodalPumpTutor' in step and '.bind (drainMultimodalInput input)' in step and
+    tutor_route = ('.bind (if queueOwns = 0 then multimodalPumpTutor else .done 0 0)' if raw_capture else '.bind multimodalPumpTutor')
+    input_route='else multimodalDrainInput input' if stream_capture else '.bind (drainMultimodalInput input)'
+    require('.bind multimodalPumpBar' in step and tutor_route in step and input_route in step and
             'else multimodalInputSample' in step, 'source idle/busy paths do not route new input/deferred redraw')
     drain = definition(notebook,'drainMultimodalInput')
-    require('.bind multimodalInputSample' in drain and 'if s = 175 then .bind cancelBookmarkInput' in drain,
+    loss = ('if s = 175 then .bind (multimodalRawLoss 3)' if raw_capture else 'if s = 175 then .bind cancelBookmarkInput')
+    if raw_capture:
+        require('if resync = 0 then multimodalRawPush else if flags &&& 1 = 0 then rawPut 40 0 else .done 0 0' in capture,
+                'source raw capture lost input/resync ownership')
+        require('if (if flags &&& 1 = 1 then if previousContact = 0 then true else false else false) = true then' in capture and
+                'if 544 ≤ px then if px < 760 then' in capture and
+                'multimodalSafety (if px < 640 then 1 else 2)' in capture and
+                'if school = 1 then if px < 808 then multimodalQueueTutor 7 else multimodalControl 8 else multimodalSafety 2' in capture and
+                'if capture = 1 then multimodalSafety 0 else ordinary resync flags' in capture,
+                'source raw capture lost local inhibition before retained work')
+        require(not any(token in capture for token in ('get 160','get 536','Surface.framebuffer','Surface.status','ControlBacklog.count','multimodalControl 9')),
+                'source raw capture safety waits for work or starts PCM before ordered replay')
+        require('if different sequence (previousSequence+1) = true then true else time < previousTime) = true then multimodalRawLoss 1' in capture,
+                'source raw capture lost sequence/time discontinuity detection')
+        require('Lemma.Services.Store.Format.copy raw row 72' in definition(notebook,'multimodalRawPush') and
+                'Lemma.Services.Store.Format.copy row raw 72' in definition(notebook,'multimodalRawPump') and
+                'multimodalApplySample x y flags' in definition(notebook,'multimodalRawPump'),
+                'source raw capture lost exact record copy or ordered replay')
+    require('.bind multimodalInputSample' in drain and loss in drain,
             'source busy input lost safety routing or lost-contact cancellation')
-    return {'allocated_page':page,'page_bytes':page_size,'disjoint_windows':windows,
+    return {'toolbar_variant': 'school23-owned-pcm2' if owned_pcm else 'school23' if school else 'legacy21',
+            'toolbar_extent':extent,'toolbar_tiles':tiles,'coalesced_index':deferred,'captured_input':raw_capture,
+            'warm_submission':warm_submission,
+            'allocated_page':page,'page_bytes':page_size,'disjoint_windows':windows,
             'historical_backlog':[0x20d00,0x20d00+32+8*64],
             'checks':['allocate/status/exact-address before clear','local inhibition before busy queues',
                       'no framebuffer work in local inhibition','deferred refresh requires idle framebuffer',
@@ -282,10 +472,67 @@ def notebook_safety_source(root=ROOT):
         'Lemma/User/Multimodal.lean','Lemma/Applications/Notebook.lean','Lemma/Notebook/ControlBacklog.lean')))
 
 
+def owned_io_semantics(ir, rows):
+    """Versioned owned I/O: closed source/IR edges and private-frame value flow."""
+    from audit_kernel import _ir_definition_body, _local_call_arguments, _local_checked_result
+    service='Lemma.Platform.LemmaSim.MultimodalService.'
+    version=service+'version'
+    if version not in rows:return None
+    def body(source):
+        require(source in rows,'ownedIO source absent: '+source)
+        return _ir_definition_body(ir,rows[source]['symbol'])
+    def calls(owner,target):
+        require(target in rows,'ownedIO target absent: '+target)
+        return _local_call_arguments(body(owner),rows[target]['symbol'])
+    def value(owner,target,args):return _local_checked_result(body(owner),rows[target]['symbol'],args)[1]
+    marker=re.fullmatch(r'\s*entry:\s*ret i64 ([23])\s*',body(version))
+    require(marker is not None,'ownedIO service version differs')
+    service_version=int(marker[1]);frame_count=3 if service_version==3 else 2
+    allocate='Lemma.Kernel.Memory.Frames.allocate';resolve='Lemma.Kernel.Memory.Frames.resolvePurpose'
+    configure=service+'configure';put=service+'put';get=service+'get'
+    require(calls(configure,allocate)==['i64 1, i64 1']*frame_count,'ownedIO private/metadata allocations differ')
+    allocations=re.findall(r'(%[\w.$-]+) = call \{ i64, i64 \} @'+re.escape(rows[allocate]['symbol'])+r'\(i64 1, i64 1\)',body(configure))
+    handles=[]
+    for call in allocations:
+        matches=re.findall(r'(%[\w.$-]+) = extractvalue \{ i64, i64 \} '+re.escape(call)+r', 1$',body(configure),re.M)
+        require(len(matches)==1,'ownedIO allocation result differs');handles+=matches
+    expected_puts=['i64 0, i64 %arg0','i64 8, i64 '+handles[0],'i64 16, i64 '+handles[1]]
+    if service_version==3:expected_puts.append('i64 640, i64 '+handles[2])
+    require(len(set(handles))==frame_count and calls(configure,put)==expected_puts,'ownedIO frame identities alias or metadata/private slots differ')
+    begin=service+'beginRecord';finish=service+'finishRecord';current=service+'current'
+    require(calls(begin,current)==['i64 %arg1, i64 %arg3, i64 3'],'ownedIO begin current permission differs')
+    require(calls(finish,current)==['i64 %arg1, i64 %arg3, i64 3'],'ownedIO finish current permission differs')
+    handle=value(begin,get,'i64 16');destination=value(begin,resolve,'i64 1, i64 '+handle+', i64 1')
+    require(calls(begin,'Lemma.Kernel.Memory.UserCopy.validateWrite')==['i64 %arg0, i64 %arg2, i64 64'],'ownedIO begin writable logical span differs')
+    require(calls(begin,'Lemma.Drivers.Multimodal.write')==['i64 %arg1, i64 160, i64 '+destination,'i64 %arg1, i64 168, i64 8','i64 %arg1, i64 176, i64 1'],'ownedIO DMA escaped private resolved frame or eight-word command')
+    handle=value(finish,get,'i64 16')
+    require(calls(finish,'Lemma.Kernel.Memory.UserCopy.copyToUser')==['i64 %arg0, i64 %arg2, i64 '+handle+', i64 0, i64 64'],'ownedIO finish logical copy differs')
+    edges=[(service+'call',service+name) for name in ('beginRecord','finishRecord','pcmBatch')]
+    edges += [(begin,service+'reclaimRetiredRecord'),(finish,service+'releaseRecord'),(service+'pcmStep',current)]
+    for owner,target in edges:require(calls(owner,target),'ownedIO actual semantic edge omitted: '+owner+' -> '+target)
+    require(calls(service+'call',begin)==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'] and calls(service+'call',finish)==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'] and calls(service+'call',service+'pcmBatch')==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'],'ownedIO public call substituted owner/stream/logicaldest/epoch')
+    require(calls(service+'pcmBatch',current)==['i64 8, i64 %arg3, i64 64'],'ownedIO batch grant differs')
+    require(calls(service+'pcmStep',current)==['i64 8, i64 %arg4, i64 64'],'ownedIO per-sample live grant differs')
+    ring=None
+    if service_version==3:
+        start=service+'beginRing';handle=value(start,get,'i64 640');physical=value(start,resolve,'i64 1, i64 '+handle+', i64 1')
+        require(calls(start,service+'ringWrite')==['i64 104, i64 '+physical,'i64 112, i64 2048','i64 136, i64 1'],'owned ring DMA escaped its exact private frame/capacity/start')
+        require(calls(start,current)==['i64 8, i64 %arg3, i64 64']*2,'owned ring begin lost both live playback permission checks')
+        ring_edges=[(service+'call',service+name) for name in ('beginRing','enqueueRing','finishRing','ringStatus')]
+        for owner,target in ring_edges:
+            require(calls(owner,target)==['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5'],'owned ring public call substituted owner/stream/logical packet/epoch')
+        edges+=ring_edges
+        ring={'private_frame_slot':640,'owned_bytes':4096,'capacity_samples':2048,'maximum_packet_samples':512,'permission_bits':64,'controller_abi':2}
+    return {'service_version':service_version,**({'ring':ring} if ring else {}),'metadata_frame_slot':8,'private_DMA_frame_slot':16,'record_bytes':64,'DMA_words':8,'actual_edges':edges,'scope':'exact compiled source/call/value binding; operating and fault behavior requires actual execution'}
+
+
 def semantics(ir, unit):
+    from school_target import selected as school_selected, semantics as school_semantics
+    if school_selected(unit):return school_semantics(ir,unit)
     """Connect the complete pinned bodies to actual boot, grants and UI paths."""
     from audit_kernel import _ir_definition_body, _local_call_arguments
     key, rows = catalog(unit)
+    owned_record_pcm=None
     def body(source):
         require(source in rows, 'semantic source absent: ' + source)
         return _ir_definition_body(ir, rows[source]['symbol'])
@@ -369,8 +616,10 @@ def semantics(ir, unit):
                               (service+'call', service+'revoke'), (service+'call', service+'configureStream'),
                               (service+'call', service+'take'), (service+'take', service+'current'),
                               (service+'configureStream', service+'current')):
-            require(len(calls(owner, target)) == 1, 'grant/current-epoch operation edge differs: ' + owner)
+            allocation_count=(3 if re.fullmatch(r'\s*entry:\s*ret i64 3\s*',body(service+'version')) else 2) if service+'version' in rows else 1
+            require(len(calls(owner, target)) == (allocation_count if owner==service+'configure' and target=='Lemma.Kernel.Memory.Frames.allocate' else 1), 'grant/current-epoch operation edge differs: ' + owner)
             checked.append((owner, target))
+        owned_record_pcm=owned_io_semantics(ir,rows)
     elif key == 'arithmetic':
         server = 'Lemma.Services.Arithmetic.ServerV8.'
         for owner, target in ((server+'main', 'Lemma.User.Runtime.Arena.ensure'),
@@ -462,6 +711,7 @@ def semantics(ir, unit):
             require(len(calls(owner,target)) == 1, 'anchored tutor admission/guest context edge differs: '+owner)
             checked.append((owner,target))
     return {'role': key, 'explicit_call_edges': checked,
+            **({'owned_record_pcm':owned_record_pcm} if owned_record_pcm is not None else {}),
             'scope': 'complete source/LLVM authority plus selected direct edges; connected execution remains separate'}
 
 
@@ -484,11 +734,15 @@ def complete(ir, unit, *, optimized=False):
 
 
 def authority(unit):
+    from school_target import selected as school_selected, authority as school_authority
+    if school_selected(unit):return school_authority(unit)
+    from integrated_target import selected as integrated, authority as integrated_authority
+    if integrated(unit):return integrated_authority(unit)
     key, _ = catalog(unit)
     try: data = json.loads(AUTHORITY.read_text())
     except (OSError, ValueError) as exc: raise Core0Error('Multimodal14 genuine artifact authority unavailable: ' + str(exc)) from exc
     require(set(data) == {'schema', 'configurations'} and data['schema'] == VERSION and
-            set(data['configurations']) == set(CONFIGURATIONS), 'authority configuration inventory differs')
+            set(data['configurations']) == set(__import__('multimodal_deployment').LEGACY_CONFIGURATIONS), 'authority configuration inventory differs')
     item = data['configurations'][unit['configuration']]
     require(set(item) == set(ROLES), 'authority role inventory differs')
     pin = item[key]
@@ -501,7 +755,45 @@ def authority(unit):
     return key, pin
 
 
+def ordinary_notebook_scratch_scalars(ir, unit, rows, *, optimized):
+    """Shared ordinary Notebook scratch addresses grant no controller action.
+
+    The historical main also uses the common deferred-save scratch window.
+    Its initializer configuration contains the identical genuine User image.
+    Admit only its two genuine pure address expressions; the ordinary complete
+    source, privilege, memory and object audits still apply independently.
+    """
+    from audit_core0 import _ir_definition_body
+    prefix='Lemma.User.Multimodal.'
+    require(unit.get('configuration') in ('lemmasim-notebook','lemmasim-initialize') and unit.get('role')=='user' and
+            unit.get('image_key')=='notebook' and unit.get('image_id')==2 and
+            unit.get('contract_version')=='core0-user-v0.1' and unit.get('used_device_ops')==[] and
+            [(canonical(r.get('source','')),r.get('id'),r.get('args')) for r in unit.get('roots',[])]==
+            [('Lemma.Applications.Notebook.main',1,['u64'])],
+            'shared scratch scalars escaped the exact ordinary Notebook root/profile')
+    names={canonical(row.get('source','')):row for row in rows}
+    require(len(rows)==len(names)==2 and set(names)=={prefix+'records',prefix+'state'} and
+            all(row.get('args')==[] and row.get('effects')==[] for row in rows),
+            'ordinary Notebook acquired a Multimodal action or changed scalar catalog')
+    def body(name):
+        symbol=names[prefix+name].get('symbol','')
+        require(re.search(r'^define (?:noundef )?i64 @'+re.escape(symbol)+r'\(\)',ir,re.M),
+                'ordinary scratch scalar signature differs')
+        return ' '.join(_ir_definition_body(ir,symbol).split())
+    require(body('records')=='entry: ret i64 3407872','ordinary scratch records address/body differs')
+    variable=r'%[A-Za-z0-9_.$-]+'
+    state=body('state');record=re.escape(names[prefix+'records']['symbol'])
+    expression=(r'entry: ('+variable+r') = call i64 @'+record+r'\(\) ('+variable+
+                r') = add i64 \1, 2048 ret i64 \2')
+    require(re.fullmatch(expression,state) or (optimized and state=='entry: ret i64 3409920'),
+            'ordinary scratch state address/body differs')
+
+
 def validate(ir, unit, *, optimized):
+    from school_target import selected as school_selected, validate as school_validate
+    if school_selected(unit):return school_validate(ir,unit,optimized=optimized)
+    from integrated_target import selected as integrated, validate as integrated_validate
+    if integrated(unit):return integrated_validate(ir,unit,optimized=optimized)
     if not selected(unit):
         hardware_prefixes=('Lemma.User.Multimodal.', 'Lemma.Drivers.Multimodal.',
             'Lemma.Platform.LemmaSim.MultimodalService.', 'Lemma.Platform.Silicon.BindingMultimodal.')
@@ -510,9 +802,14 @@ def validate(ir, unit, *, optimized):
                         PREFIX+'constructCourseMultimodal','Lemma.Kernel.Process.initMultimodal',
                         'Lemma.Kernel.Memory.AddressSpace.addMultimodalAliases',
                         *(PREFIX+name for name in BOOT_ROOTS.values())}
-        require(not any(canonical(r.get('source','')).startswith(hardware_prefixes) or
-                        canonical(r.get('source','')) in hardware_roots for r in unit.get('functions', [])),
-                'multimodal source escaped its exact deployment')
+        escaped=[r for r in unit.get('functions',[]) if
+                 canonical(r.get('source','')).startswith(hardware_prefixes) or
+                 canonical(r.get('source','')) in hardware_roots]
+        if escaped:
+            require({canonical(r.get('source','')) for r in escaped}=={
+                    'Lemma.User.Multimodal.records','Lemma.User.Multimodal.state'},
+                    'multimodal source escaped its exact deployment')
+            ordinary_notebook_scratch_scalars(ir,unit,escaped,optimized=optimized)
         return None
     key, pin = authority(unit)
     phase = 'post' if optimized else 'pre'
@@ -605,10 +902,10 @@ def validate_devices(ir, unit, optimized):
                 row['effects'] == ['checked-access', 'mmio-write' if write else 'mmio-read', 'io-order'],
                 'controller primitive signature/effects differ')
         body = _ir_definition_body(ir, row['symbol'])
-        regions = [(0x10001000, 0x10001200), (0xc000004, 0xc00003c),
+        regions = [(0x10001000, 0x10001200), (0xc000004, 0xc000048 if unit.get("configuration") in INTEGRATED_CONFIGURATIONS else 0xc00003c),
                    (0xc002080, 0xc002084), (0xc201000, 0xc201008),
                    (0xc00004c, 0xc000050)] if width == 4 else [
-                   (0x10010000, 0x10011000), (0x10011000, 0x10012000), (0x10014000, 0x10016000)]
+                   (0x10010000, 0x10011000), (0x10011000, 0x10012000), *([(0x10012000,0x10012400)] if unit.get('configuration') in INTEGRATED_CONFIGURATIONS else []), (0x10014000, 0x10016000)]
         if not optimized:
             require([int(v) for v in re.findall(r'icmp uge i64 %arg0, (\d+)', body)] == [a for a, _ in regions] and
                     [int(v) for v in re.findall(r'icmp ule i64 %arg0, (\d+)', body)] == [b-width for _, b in regions] and
@@ -627,6 +924,11 @@ def validate_devices(ir, unit, optimized):
 
 
 def readonly_lookup(ir, unit, *, optimized):
+    from school_target import selected as school_selected, readonly_lookup as school_readonly_lookup
+    if school_selected(unit):return school_readonly_lookup(ir,unit,optimized=optimized)
+    return _readonly_lookup(ir,unit,optimized=optimized)
+
+def _readonly_lookup(ir, unit, *, optimized):
     """Pin every table and independently require a dominating unsigned index bound.
 
     This is a new exact-corpus authority, not permission for arbitrary readonly
@@ -750,12 +1052,50 @@ JUMP_SPECS = {
 
 
 def jump_spec(ir, unit, source, symbol):
-    if not selected(unit) or source not in JUMP_SPECS: return None
+    spec=JUMP_SPECS.get(source)
+    if source=='Lemma.Platform.LemmaSim.MultimodalService.call':
+        version=[row for row in unit.get('functions',[]) if canonical(row['source'])=='Lemma.Platform.LemmaSim.MultimodalService.version']
+        if version:
+            from audit_kernel import _ir_definition_body
+            require(len(version)==1 and version[0]['args']==[] and version[0]['effects']==[],
+                    'ownedIO jump owner has invalid version source type/effects')
+            marker=re.fullmatch(r'\s*entry:\s*ret i64 ([23])\s*',_ir_definition_body(ir,version[0]['symbol']))
+            require(marker is not None,'ownedIO jump owner lacks exact service version2/3')
+            count=23 if marker[1]=='3' else 19
+            spec=('kernel',count,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(count)))
+    if source=='Lemma.Platform.LemmaSim.MultimodalService.ringStatus':
+        # Observed in the genuine LLVM20 O2 Service3 object, not an extension
+        # of the general service dispatcher. This selector reads ten fixed
+        # counters after ABI and saved-owner checks, including after revoke.
+        # Complete source/IR pins and the ordinary machine table/guard checks
+        # remain mandatory below and in audit_kernel.
+        from audit_kernel import _ir_definition_body, _local_call_arguments
+        prefix='Lemma.Platform.LemmaSim.MultimodalService.'
+        rows={canonical(row['source']):row for row in unit.get('functions',[])}
+        require(prefix+'version' in rows and re.fullmatch(r'\s*entry:\s*ret i64 3\s*',
+            _ir_definition_body(ir,rows[prefix+'version']['symbol'])) is not None,
+            'owned ring status table requires the exact service3 version')
+        require(source in rows and rows[source]['symbol']==symbol,
+                'owned ring status table source/symbol differs')
+        body=_ir_definition_body(ir,symbol)
+        def calls(target):
+            require(target in rows,'owned ring status missing checked reader: '+target)
+            return _local_call_arguments(body,rows[target]['symbol'])
+        require(calls(prefix+'ringABI')==[''] and
+                calls(prefix+'ringOwner')==['i64 %arg0, i64 %arg3'],
+                'owned ring status lost ABI/saved-owner admission')
+        require(calls(prefix+'ringRead')==['i64 '+str(n) for n in (144,120,128,160,168,112)] and
+                calls('Lemma.Drivers.Multimodal.read')==['i64 8, i64 '+str(n) for n in (240,232,16,32)],
+                'owned ring status ten-counter read domain differs')
+        spec=('kernel',10,['u64']*4,['checked-access','mmio-read','io-order','physical-read'],list(range(10)))
+    if unit.get('configuration') in INTEGRATED_CONFIGURATIONS and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepExecuted':
+        spec=('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9])
+    if not selected(unit) or spec is None: return None
     validate(ir, unit, optimized=True)
     rows = [row for row in unit['functions'] if canonical(row['source']) == source]
     require(len(rows) == 1 and rows[0]['symbol'] == symbol and unit['role'] == 'kernel',
             'backend table escaped its actual Kernel9 owner')
-    return JUMP_SPECS[source]
+    return spec
 
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ companion=a.companion_source or r/'sim/companion'
 # Keep this host presentation correction confined to the derived binary.
 f=s/'ui/ui-qmp-cmds.c';text=f.read_text();needle='                                  pixman_image_get_stride(linebuf), errp) < 0) {';assert text.count(needle)==1
 f.write_text(text.replace(needle,'                                  width * 3, errp) < 0) {'))
-for name in ['lemma_qemu.c','lemma_model.c','lemma_model.h','lemma_device_abi.h','lemma_power_abi.h','lemma_fast_block.c','lemma_multimodal.c','lemma_multimodal.h','lemma_multimodal_qemu.inc.c']:
+for name in ['lemma_qemu.c','lemma_model.c','lemma_model.h','lemma_device_abi.h','lemma_power_abi.h','lemma_fast_block.c','lemma_multimodal.c','lemma_multimodal.h','lemma_multimodal_v2.c','lemma_multimodal_v2.h','lemma_multimodal_checkpoint_valid.inc.c','lemma_multimodal_qemu.inc.c']:
     shutil.copyfile(host/name,s/'hw/riscv'/name)
 shutil.copyfile(host/'lemma_durable.c',s/'block/lemma-durable.c')
 for directory,origin,names in [('host',host,['backing_io.h','backing_io.cpp','backing_io_posix.h','backing_io_posix.cpp']),

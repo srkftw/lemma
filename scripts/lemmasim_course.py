@@ -19,7 +19,18 @@ MULTIMODAL_CONFIGURATIONS=('lemmasim-silicon-multimodal-notebook','lemmasim-sili
 CONFIGURATIONS=CANONICAL_CONFIGURATIONS+USB_PACKAGE_CONFIGURATIONS+MULTIMODAL_CONFIGURATIONS
 MAGIC=0x31504b43414d454c
 
+def selection_frame(identity,edition,transaction,crc,node=0):
+    bounded(identity,1,65535,'Package identity');bounded(edition,1,0xffffffff,'Package edition')
+    bounded(transaction,1,(1<<63)-1,'Select transaction');bounded(crc,0,0xffffffff,'Package CRC32')
+    bounded(node,0,15,'Selected node ordinal')
+    return struct.pack('<8Q',MAGIC,4,9,identity,edition,node,transaction,crc)
+
 def frame(operation,identity,edition,count,transaction,crc):
+    if operation==9:
+        bounded(identity,1,65535,'Package identity');bounded(edition,1,0xffffffff,'Package edition')
+        bounded(crc,0,0xffffffff,'Package CRC32');bounded(transaction,1,(1<<63)-1,'Select transaction')
+        if count!=0:raise ValueError('Select has no payload')
+        return struct.pack('<8Q',MAGIC,2,9,identity,edition,0,transaction,crc)
     bounded(operation,1,3,'Course operation'); bounded(identity,1,65535,'Package identity')
     bounded(edition,1,0xffffffff,'Package edition'); bounded(crc,0,0xffffffff,'Package CRC32')
     if operation==1:

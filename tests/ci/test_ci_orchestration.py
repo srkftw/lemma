@@ -173,7 +173,7 @@ class SourceIdentityTests(unittest.TestCase):
 class PreflightSuiteTests(unittest.TestCase):
     sequence = 0
 
-    def run_fixture(self, body):
+    def run_fixture(self, body, *, allowed_skips=None):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
             type(self).sequence += 1
@@ -181,7 +181,8 @@ class PreflightSuiteTests(unittest.TestCase):
             (directory / (name + ".py")).write_text("import unittest\n" + body)
             self.addCleanup(sys.modules.pop, name, None)
             stream = io.StringIO()
-            value = ci_preflight.run_suite(directory, stream)
+            options = {} if allowed_skips is None else {"allowed_skips": allowed_skips(name)}
+            value = ci_preflight.run_suite(directory, stream, **options)
             return value, stream.getvalue()
 
     def test_real_successful_suite_reports_nonempty_execution(self):
@@ -212,6 +213,41 @@ class PreflightSuiteTests(unittest.TestCase):
                 ci_preflight.run_suite(directory, io.StringIO())
             with self.assertRaises((ImportError, ValueError)):
                 ci_preflight.run_suite(directory / "missing", io.StringIO())
+
+    def test_exact_optional_missing_input_is_reported_unavailable(self):
+        value, _ = self.run_fixture(
+            "class Fixture(unittest.TestCase):\n"
+            "    def test_required(self): self.assertEqual(3 + 4, 7)\n"
+            "    @unittest.skip('retained input absent')\n"
+            "    def test_skip(self): pass\n",
+            allowed_skips=lambda module: {f"{module}.Fixture.test_skip": "retained input absent"})
+        self.assertEqual(value["status"], "PASS")
+        self.assertEqual(value["executed"], 1)
+        self.assertEqual(value["unexpected_skips"], [])
+        self.assertEqual(len(value["optional_retained_unavailable"]), 1)
+        self.assertEqual(value["optional_retained_unavailable"][0]["disposition"], "unavailable")
+        self.assertIn("not qualified", value["scope"])
+
+    def test_wrong_optional_identity_reason_or_all_skipped_never_passes(self):
+        body = ("class Fixture(unittest.TestCase):\n"
+                "    def test_required(self): pass\n"
+                "    @unittest.skip('retained input absent')\n"
+                "    def test_skip(self): pass\n")
+        for allowance in (
+            lambda module: {f"{module}.Fixture.test_skip": "different reason"},
+            lambda module: {f"{module}.Fixture.test_other": "retained input absent"},
+            lambda module: {},
+        ):
+            value, _ = self.run_fixture(body, allowed_skips=allowance)
+            self.assertEqual(value["status"], "FAIL")
+            self.assertEqual(len(value["unexpected_skips"]), 1)
+        value, _ = self.run_fixture(
+            "class Fixture(unittest.TestCase):\n"
+            "    @unittest.skip('retained input absent')\n"
+            "    def test_skip(self): pass\n",
+            allowed_skips=lambda module: {f"{module}.Fixture.test_skip": "retained input absent"})
+        self.assertEqual(value["status"], "FAIL")
+        self.assertEqual(value["executed"], 0)
 
     def test_preflight_keeps_exact_host_only_scopes(self):
         self.assertEqual(ci_preflight.SUITES, ("tests/scaffold", "tests/core0", "tests/ci"))

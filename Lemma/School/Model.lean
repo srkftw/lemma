@@ -31,13 +31,19 @@ structure Record where
   deriving Inhabited, FromJson, ToJson
 
 structure State where
-  schema : String := "lemma-school-state/1"
+  schema : String := "lemma-school-state/2"
   school : String
   deployment : String
   operator : String
   generation : Nat := 1
   clock : Nat := 0
   clockModel : String := "monotonic-ms"
+  /-- Logical scheduling time is anchored to one identified host boot. Old
+  records keep their original times; unknown elapsed time across boots freezes. -/
+  clockEpoch : String := ""
+  clockEpochSequence : Nat := 0
+  clockAnchor : Nat := 0
+  clockBase : Nat := 0
   budgets : Budgets := {}
   records : Array Record := #[]
   deriving Inhabited, FromJson, ToJson
@@ -75,6 +81,22 @@ def optionalStr (json : Json) (name : String) (fallback : String := "") : String
 def flag (json : Json) (name : String) : Bool :=
   ((field json name >>= Json.getBool?).toOption).getD false
 def object (fields : List (String × Json)) : Json := Json.mkObj fields
+
+/-- Lease deadlines belong to the current boot's monotonic domain. Logical
+scheduling time remains the independent review/history clock. -/
+def State.bootTime (state : State) (logicalTime : Nat) : Nat :=
+  if state.clockModel == "controlled-ms" then logicalTime
+  else state.clockAnchor + (logicalTime - state.clockBase)
+
+def State.liveLease (state : State) (data : Json) (now : Nat) : Bool :=
+  optionalNat data "generation" == state.generation &&
+  if (field data "leaseBootExpires").isOk then
+    optionalStr data "leaseClockEpoch" == state.clockEpoch &&
+      optionalNat data "leaseBootExpires" > state.bootTime now
+  else
+    -- Historical controlled-clock fixtures remain readable. Migrating an old
+    -- operational state binds a nonempty epoch and fences all its old leases.
+    state.clockEpoch.isEmpty && optionalNat data "expires" > now
 
 def State.add (state : State) (kind key actor : String) (time : Nat)
     (data : Json) (artifacts : Array String := #[]) : Except String State := do

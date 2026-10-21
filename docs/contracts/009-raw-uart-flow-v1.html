@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Lemma raw UART flow/1</title>
+<h1>Lemma raw UART flow/1</h1>
+<p>This opt-in host-controller transport is <code>lemma-raw-uart-flow/1</code>.
+It adapts backpressure after real QEMU 16550 receive capacity is exhausted.
+The guest machine profile, UART registers, IRQ, raw payload bytes and maintained
+Lean packet parser retain their existing meanings. This is a reduced wired
+companion path, not a higher-capacity headband link or raw economy stream claim.</p>
+<p>At virtual time zero, while paused, enable <code>lemma-raw-uart/1</code>, then
+set <code>enable-raw-uart-flow</code> to <code>lemma-raw-uart-flow/1</code>.
+The read-only <code>raw-uart-flow-version</code> property must advertise that exact
+value. A second selection, running selection, or nonempty selection is rejected.
+An older runtime or an unselected flow continues the legacy raw/paced polling
+behavior. Native adapter identity 6 records the selected flow explicitly.</p>
+<p>Each accepted byte retains its declared arrival time and stable equal-time
+order. No byte is presented before its arrival or the preceding delivery plus
+10 ns. Once a due byte finds a full receiver, flow/1 leaves it queued and removes
+the retry timer. The normal frontend acceptance callback following an RBR read,
+or the receive-FIFO reset edge, wakes only the owned <code>serial0</code>
+transport. It arms a timer no earlier than the callback time plus 10 ns, the
+head arrival, and the preceding delivery plus 10 ns. Delivery never occurs
+synchronously inside a register read or FIFO reset.</p>
+<p>This post-backpressure retry rule is a versioned timing adaptation. Legacy
+polling timestamps depend on virtual instruction and timer dispatch boundaries;
+flow/1 does not assert timestamp equality across that changed boundary. Input
+arrival identity, actual delivery time, guest availability, and an application
+commit acknowledgement remain distinct. Backpressure neither discards bytes
+nor proves the guest installed a packet.</p>
+<p>Warm reset cancels queued bytes, clears blocked/timer state, and advances the
+reset epoch while preserving the explicitly selected mode. Accepted, delivered
+and canceled counters remain accountable. Required UART VMState version 2 and
+parent device state version 5 serialize mode, blocked state, counters, byte
+queue, due times and timer. Old microstate files are not admitted as arbitrary
+new-runtime continuation. Current public multimodal exact-continuation admission
+remains separate from this transport change.</p>
+<p><code>raw-uart-state</code> exposes mode, pending count, blocked state,
+poll callbacks, readiness wakes, delivery counters and timer state.
+<code>execution-state</code> is a paused, read-only observation of CPU halted and
+interrupt-request fields, pen IRQ/count, and multimodal DMA/converter/timer
+state. It performs no guest-memory writes, controller synchronization, wake,
+claim-register read, or hidden transport acknowledgement.</p>
+<p>Implementation: <a href="../../sim/host/lemma_uart_qemu.inc.c">host adapter</a>,
+<a href="../../tooling/lemmasim/patch_uart_ingress.py">fresh source patch</a>,
+<a href="../../tooling/lemmasim/patch_uart_flow.py">bounded incremental patch</a>,
+and <a href="../../scripts/check_uart_flow.py">actual native boundary observer</a>.
+Build and execution results belong to
+<a href="../evidence/009-integrated-machine.html">Task009 machine evidence</a>;
+this contract is not a passing execution receipt.</p>
+</html>

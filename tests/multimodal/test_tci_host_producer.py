@@ -1,4 +1,4 @@
-"""Host producer failures only; no RV64 or browser execution is inferred."""
+"""Host producer faults and the actual C observer body; no RV64/browser claim."""
 from pathlib import Path
 import importlib.util
 import io
@@ -6,6 +6,8 @@ import json
 import tarfile
 import tempfile
 import unittest
+import shutil
+import subprocess
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -117,5 +119,51 @@ class TciProducerMetadata(unittest.TestCase):
             builder.retained_producer_input_root({'schema':'lemma-tci-public-build/1','producer_input_root':'/unadmitted'},receipt)
         with self.assertRaisesRegex(ValueError,'Unknown retained'):
             builder.retained_producer_input_root({'schema':'made-up-host-build/1'},receipt)
+
+class TciStoppedCpuObservation(unittest.TestCase):
+    def test_actual_c_body_uses_thread_acknowledgement_even_when_paused_or_wfi(self):
+        body=(ROOT/'tooling/lemmasim/tci/lemma_browser_control.inc.c').read_text()
+        begin=body.index('/* BEGIN lemma-qemu-cpu-stop/1:')
+        end=body.index('/* END lemma-qemu-cpu-stop/1. */',begin)
+        actual=body[begin:end]
+        cc=shutil.which('cc') or shutil.which('clang')
+        if not cc:raise RuntimeError('actual stopped-CPU C observer check requires the pinned host C compiler')
+        prefix=r'''
+#include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+typedef struct { bool stopped,halted; } CPUState;
+typedef struct { uint64_t count,stopped; bool all; } QDict;
+static CPUState cpus[3];static unsigned n;static bool running;
+#define CPU_FOREACH(cpu) for(unsigned i=0;i<n&&((cpu)=&cpus[i],1);i++)
+static bool bql_locked(void){return true;}
+static bool cpu_is_stopped(CPUState *c){return c->stopped||!running;}
+static void qdict_put_str(QDict *d,const char*k,const char*v){(void)d;assert(!strcmp(k,"stop_boundary_contract")&&!strcmp(v,"lemma-qemu-cpu-stop/1"));}
+static void qdict_put_int(QDict *d,const char*k,uint64_t v){if(!strcmp(k,"cpu_count"))d->count=v;else{assert(!strcmp(k,"cpus_stopped"));d->stopped=v;}}
+static void qdict_put_bool(QDict *d,const char*k,bool v){assert(!strcmp(k,"all_cpus_stopped"));d->all=v;}
+'''
+        suffix=r'''
+int main(void){
+ QDict d={0};running=false;n=1;cpus[0]=(CPUState){.stopped=false,.halted=true};
+ lemma_browser_cpu_stop_observation(&d);if(d.count!=1||d.stopped||d.all)return 1;
+ cpus[0].stopped=true;lemma_browser_cpu_stop_observation(&d);if(d.stopped!=1||!d.all)return 2;
+ n=0;lemma_browser_cpu_stop_observation(&d);if(d.count||d.stopped||d.all)return 3;
+ n=3;cpus[1].stopped=false;cpus[2].stopped=true;
+ lemma_browser_cpu_stop_observation(&d);if(d.count!=3||d.stopped!=2||d.all)return 4;
+ cpus[1].stopped=true;lemma_browser_cpu_stop_observation(&d);if(d.stopped!=3||!d.all)return 5;
+ return 0;
+}
+'''
+        mutant=actual.replace('if(cpu->stopped)','if(cpu_is_stopped(cpu))')
+        self.assertNotEqual(actual,mutant)
+        with tempfile.TemporaryDirectory(prefix='lemma-stop-observer-') as tmp:
+            root=Path(tmp)
+            for label,fragment,expected in [('actual',actual,0),('paused-runstate-mutant',mutant,1)]:
+                source=root/(label+'.c');binary=root/label;source.write_text(prefix+fragment+suffix)
+                built=subprocess.run([cc,'-std=c11',str(source),'-o',str(binary)],capture_output=True,timeout=15)
+                self.assertEqual(built.returncode,0,built.stderr.decode())
+                result=subprocess.run([str(binary)],cwd=root,timeout=5)
+                self.assertEqual(result.returncode,expected)
 
 if __name__=='__main__':unittest.main()

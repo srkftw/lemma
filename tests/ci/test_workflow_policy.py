@@ -281,7 +281,10 @@ class WorkflowPolicyTests(unittest.TestCase):
                     self.assertIn("--destination build/kernel/ci-prefix/shards/" + optimization, job)
                     self.assertIn("--receipt build/ci/kernel-AE-shard-" + optimization + ".extract.json", job)
                 self.assertEqual(job.count("--collect-shard "), 2)
-                self.assertEqual(job.count("python3 scripts/kernel_shard_artifact.py unpack"), 2)
+                self.assertEqual(job.count("python3 -I scripts/kernel_shard_artifact.py unpack"), 2)
+                restore = job.split("      - name: Restore both exact mode-preserving shard archives\n", 1)[1].split("      - name:", 1)[0]
+                self.assertNotIn("nix develop", restore)
+                self.assertIn("kernel-shard-transport-python.json", restore)
                 self.assertEqual(job.count("timeout --foreground --signal=TERM --kill-after=30s 2m"), 2)
                 self.assertNotIn("pattern:", job)
                 self.assertNotIn("--clean", job)

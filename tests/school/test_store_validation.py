@@ -19,6 +19,7 @@ class StoreSemanticValidationTests(unittest.TestCase):
         self.assertTrue(checks.pop("empty-valid"))
         self.assertTrue(checks.pop("ordered-valid"))
         self.assertTrue(checks.pop("read-clock-ahead-valid"))
+        self.assertTrue(checks.pop("legacy-decode-valid"))
         self.assertGreaterEqual(len(checks), 10)
         self.assertFalse(any(checks.values()), checks)
 

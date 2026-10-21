@@ -27,6 +27,7 @@ def multimodal_streams : UInt64 := 9
 def multimodal_fifo_records : UInt64 := 16
 def multimodal_record_bytes : UInt64 := 64
 def multimodal_clock_hz : UInt64 := 100000000
+def multimodal_controller_abi : UInt64 := 1
 def paper_sequencer : UInt64 := 1
 def power_enabled : UInt64 := 1
 def power_safety : UInt64 := 0

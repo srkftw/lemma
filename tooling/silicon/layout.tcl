@@ -1,10 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
 # Signal-routing feasibility only, typical standard-cell corner.
-# No SRAM, pad ring, power-grid closure, GDS, process DRC or LVS claim.
+# Optional full-depth pen SRAM uses the original process macro collateral.
+# No pad ring, power-grid closure, GDS, process DRC or LVS claim.
 set_thread_count 4
-read_lef $pdk/lef/sg13g2_tech.lef
+set power_grid_state NOT_IMPLEMENTED
+if {[info exists tech_lef]} {read_lef $tech_lef} else {read_lef $pdk/lef/sg13g2_tech.lef}
 read_lef $pdk/lef/sg13g2_stdcell.lef
 read_liberty $pdk/lib/sg13g2_stdcell_typ_1p20V_25C.lib
+if {[info exists pen_sram]} {
+    read_lef $macro_lef
+    read_liberty $macro_lib
+}
 read_verilog $out/mapped.v
 link_design $top
 # OpenSTA creates logical one_/zero_ nets for unused Verilog don't-care
@@ -21,7 +27,11 @@ foreach name {zero_ one_} {
         odb::dbNet_destroy $net
     }
 }
-initialize_floorplan -utilization 25 -aspect_ratio 1 -core_space 5 -site CoreSite
+if {[info exists pen_sram]} {
+    source $pen_sram
+} else {
+    initialize_floorplan -utilization 25 -aspect_ratio 1 -core_space 5 -site CoreSite
+}
 foreach layer {Metal1 Metal2 Metal3 Metal4 Metal5} {
     make_tracks $layer -x_offset 0.0 -x_pitch 0.48 -y_offset 0.0 -y_pitch 0.42
 }
@@ -42,13 +52,30 @@ set_layer_rc -layer Metal4 -resistance 6.31424e-04 -capacitance 1.66454e-04
 set_layer_rc -layer Metal5 -resistance 6.84051e-04 -capacitance 8.57431e-05
 set_wire_rc -signal -layer Metal2
 set_wire_rc -clock -layer Metal5
+if {[info exists group_button_bus] && $group_button_bus == 1} {source $button_pin_script}
 place_pins -hor_layers Metal3 -ver_layers Metal2
+if {[info exists group_button_bus] && $group_button_bus == 1} {lemma_check_button_pins}
 global_placement -density 0.35
 estimate_parasitics -placement
 repair_design
 detailed_placement
 check_placement -verbose
-clock_tree_synthesis -root_buf sg13g2_buf_16 -buf_list {sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2} -sink_clustering_enable -sink_clustering_size 8 -repair_clock_nets
+if {[info exists center_validation_cones] && $center_validation_cones == 1} {source $validation_region_check_script}
+if {[info exists pen_sram]} {
+    # The SRAM input clock has a stricter slew limit than stdcell clocks.
+    # Cluster each hard macro independently and bound the register clusters.
+    clock_tree_synthesis -root_buf sg13g2_buf_16 -buf_list {sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4} -sink_clustering_enable -sink_clustering_size 4 -macro_clustering_size 1 -macro_clustering_max_diameter 100 -sink_buffer_max_cap_derate 0.5 -repair_clock_nets
+    if {[info exists automatic_clock_wire_length] && $automatic_clock_wire_length == 1} {
+        # Let the pinned resizer choose its actual RC/driver optimum. The
+        # previous100um bound emitted RSZ-0065 and inserted146 extra buffers.
+        # Library slew/cap,10ns clock and all I/O constraints remain active.
+        repair_clock_nets
+    } else {
+        repair_clock_nets -max_wire_length 100
+    }
+} else {
+    clock_tree_synthesis -root_buf sg13g2_buf_16 -buf_list {sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2} -sink_clustering_enable -sink_clustering_size 8 -repair_clock_nets
+}
 set_propagated_clock [get_clocks core]
 # Bound cell/buffer repair, retaining the declared clock and I/O constraints.
 estimate_parasitics -placement
@@ -61,21 +88,42 @@ repair_timing -setup -phases WNS_PATH -max_passes 2 -max_iterations 20 -max_buff
 repair_timing -hold -max_passes 2 -max_iterations 20 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose
-set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
-global_route -guide_file $out/route.guide -congestion_iterations 50
+if {[info exists center_validation_cones] && $center_validation_cones == 1} {source $validation_region_check_script}
+if {[info exists fresh_power_script]} {source $fresh_power_script}
+if {[info exists fresh_native_preflight_script]} {
+    # This is a readback of the actual newly placed/powered database. The
+    # child rejects real supply/BIST/delay/padding mutations and restores them;
+    # it does not import an old layout or create a signal-routing result.
+    puts "Reading back actual fresh PG/pin/padding source before signal routing"
+    exec $fresh_native_openroad -python -exit $fresh_native_preflight_script > $out/fresh-native-prefix.log 2>@1
+    puts "Fresh native PG/pin/padding precursor completed; no signal-route qualification"
+}
+if {![info exists clock_min_routing_layer]} {set clock_min_routing_layer Metal2}
+if {$clock_min_routing_layer ni {Metal2 Metal3}} {error "Unsupported clock routing floor"}
+set_routing_layers -signal Metal2-Metal5 -clock ${clock_min_routing_layer}-Metal5
+global_route -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/global-congestion.rpt -verbose
 # Placement estimates differ from actual global RC. Repair once against live
 # routed parasitics, then regenerate guides and RC after all changed cells.
 estimate_parasitics -global_routing
 report_worst_slack -max -digits 6 > $out/pre-repair-setup-summary.rpt
 report_worst_slack -min -digits 6 > $out/pre-repair-hold-summary.rpt
 report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/pre-repair-electrical.rpt
-global_route -start_incremental
+if {![info exists defer_global_eco] || $defer_global_eco != 1} {
+global_route -start_incremental -congestion_report_file $out/incremental-congestion.rpt -verbose
 repair_design -slew_margin 5 -cap_margin 5
 repair_timing -setup -phases WNS_PATH -setup_margin 0.25 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
 repair_timing -hold -hold_margin 0.03 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose
-global_route -end_incremental -guide_file $out/route.guide -congestion_iterations 50
+if {[info exists center_validation_cones] && $center_validation_cones == 1} {source $validation_region_check_script}
+global_route -end_incremental -guide_file $out/route.guide -congestion_iterations 50 -congestion_report_file $out/final-congestion.rpt -verbose
+} else {
+    # The aligned candidate's global-RC repair invokes a failing incremental
+    # router. Measure its real placement after fresh routing/extraction first;
+    # actual-SPEF ECO is a separate source-bound successor. No timing constraint
+    # or endpoint is removed, and every remaining violation is still reported.
+    puts "Global-RC ECO deferred; all constraints remain for actual extracted assessment"
+}
 # Persist completed global routing before bounded detailed-route refinement.
 write_db $out/global-route.odb
 write_def $out/global-route.def
@@ -98,9 +146,21 @@ set cell_area [expr {$cell_area / ($units * $units)}]
 set core [$block getCoreArea]
 set core_area [expr {[$core dx] * [$core dy] / double($units * $units)}]
 set file [open $out/global-route-summary.json w]
-puts $file "{\"cell_area_um2\": $cell_area, \"core_area_um2\": $core_area, \"utilization_percent\": [expr {100.0 * $cell_area / $core_area}], \"instances\": [llength [$block getInsts]], \"clock_period_ns\": $clock_ns, \"timing_model\": \"global-route RC estimate before detailed signal routing\", \"power_grid\": \"NOT_IMPLEMENTED\", \"process_drc\": \"NOT_RUN\", \"lvs\": \"NOT_RUN\"}"
+puts $file "{\"cell_area_um2\": $cell_area, \"core_area_um2\": $core_area, \"utilization_percent\": [expr {100.0 * $cell_area / $core_area}], \"instances\": [llength [$block getInsts]], \"clock_period_ns\": $clock_ns, \"timing_model\": \"global-route RC estimate before detailed signal routing\", \"power_grid\": \"$power_grid_state\", \"process_drc\": \"NOT_RUN\", \"lvs\": \"NOT_RUN\"}"
 close $file
-detailed_route -output_drc $out/route.drc -output_maze $out/route.maze -droute_end_iter 3 -verbose 1
+if {![info exists detail_route_iterations]} {set detail_route_iterations 3}
+if {$detail_route_iterations ni {3 8}} {error "Unsupported detailed-route repair bound"}
+detailed_route -output_drc $out/route.drc -drc_report_iter_step 1 -output_maze $out/route.maze -droute_end_iter $detail_route_iterations -verbose 1
+if {[info exists fresh_power_script]} {
+    global_connect
+    # Normal global-RC resizer phases legitimately add hold buffers at SRAM
+    # inputs. The Python flow independently proves original-Lib endpoint
+    # chains/ports, then runs the original strict final PG checker. No final
+    # PG or closure claim is made from this intermediate export alone.
+    lemma_check_fresh_power_ports $fresh_power_ports_before
+    lemma_check_power_geometry_clearance $power_geometry_clearance
+    write_verilog -include_pwr_gnd $out/power-connected.v
+}
 set route_violations [detailed_route_num_drvs]
 set drv_file [open $out/router-drc-count.txt w]
 puts $drv_file $route_violations
@@ -118,6 +178,7 @@ report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 >
 write_db $out/routed.odb
 write_def $out/routed.def
 write_verilog $out/routed.v
+if {[info exists pen_sram]} {write_sdc $out/routed.sdc}
 set block [ord::get_db_block]
 set cell_area 0.0
 foreach inst [$block getInsts] {
@@ -129,5 +190,5 @@ set cell_area [expr {$cell_area / ($units * $units)}]
 set core [$block getCoreArea]
 set core_area [expr {[$core dx] * [$core dy] / double($units * $units)}]
 set file [open $out/layout-summary.json w]
-puts $file "{\"cell_area_um2\": $cell_area, \"core_area_um2\": $core_area, \"utilization_percent\": [expr {100.0 * $cell_area / $core_area}], \"instances\": [llength [$block getInsts]], \"clock_period_ns\": $clock_ns, \"timing_model\": \"global-route RC estimate after detailed signal routing\", \"power_grid\": \"NOT_IMPLEMENTED\", \"process_drc\": \"NOT_RUN\", \"lvs\": \"NOT_RUN\"}"
+puts $file "{\"cell_area_um2\": $cell_area, \"core_area_um2\": $core_area, \"utilization_percent\": [expr {100.0 * $cell_area / $core_area}], \"instances\": [llength [$block getInsts]], \"clock_period_ns\": $clock_ns, \"timing_model\": \"global-route RC estimate after detailed signal routing\", \"power_grid\": \"$power_grid_state\", \"process_drc\": \"NOT_RUN\", \"lvs\": \"NOT_RUN\"}"
 close $file

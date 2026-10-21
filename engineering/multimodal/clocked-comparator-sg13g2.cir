@@ -1,0 +1,21 @@
+* SPDX-License-Identifier: Apache-2.0
+* Process-bound differential decision cell; NOT a complete ADC or qualified sensor.
+* SG13G2 LV PSP transistor subcircuits. Reset clock low precharges all latch nodes.
+* Evaluate high resolves inputp>inputn as decisionp high/decisionn low.
+* A long/narrow clocked tail limits current during differential amplification.
+* Fixed output buffers preserve the declared external decision port meanings.
+.subckt lemma_clocked_comparator inputp inputn clock vdd decisionp decisionn vss
+Xtail tail clock vss vss sg13_lv_nmos w=0.5u l=2u
+Xinputp xp inputp tail vss sg13_lv_nmos w=4u l=0.26u
+Xinputn xn inputn tail vss sg13_lv_nmos w=4u l=0.26u
+Xlatchnp outp outn xp vss sg13_lv_nmos w=2u l=0.13u
+Xlatchnn outn outp xn vss sg13_lv_nmos w=2u l=0.13u
+Xlatchpp outp outn vdd vdd sg13_lv_pmos w=2u l=0.13u
+Xlatchpn outn outp vdd vdd sg13_lv_pmos w=2u l=0.13u
+Xresetop outp clock vdd vdd sg13_lv_pmos w=2u l=0.13u
+Xreseton outn clock vdd vdd sg13_lv_pmos w=2u l=0.13u
+Xresetxp xp clock vdd vdd sg13_lv_pmos w=2u l=0.13u
+Xresetxn xn clock vdd vdd sg13_lv_pmos w=2u l=0.13u
+Xloadp decisionp outp vdd vss sg13g2_inv_1
+Xloadn decisionn outn vdd vss sg13g2_inv_1
+.ends lemma_clocked_comparator

@@ -1,0 +1,46 @@
+{
+  "scope": "Actual captured scalar definitions and typed initializer User context only; observer fixture, not target compilation or guest evidence. Complete genuine initializer/ordinary IR equality is independently assessed from retained CI ZIP.",
+  "provenance": {
+    "CI_run": 39495367648,
+    "CI_zip_sha256": "086d849d77b22b9dc8c9dcfccd9061ed8a1ebc65e654ebde14052adba46ee3ae",
+    "artifact_prefix": "kernel/ci-writing-lemmasim-initialize-O2/users/notebook/",
+    "complete_pre_IR_sha256": "334d365fd9341ff00b3bb47416ceab3dd90fb1016c74db7f67e5f95508e224aa",
+    "complete_post_IR_sha256": "ea53a9160b971c9337fd7b4d9d5e67b24e07865300f133b76f8e60ff6474b4ca",
+    "only_unit_difference_from_same_run_ordinary": "configuration",
+    "literal_complete_IR_equal": true
+  },
+  "unit": {
+    "configuration": "lemmasim-initialize",
+    "role": "user",
+    "image_key": "notebook",
+    "image_id": 2,
+    "contract_version": "core0-user-v0.1",
+    "used_device_ops": [],
+    "roots": [
+      {
+        "symbol": "lemma_user_notebook_core0_action_410",
+        "source": "Lemma.Applications.Notebook.main",
+        "id": 1,
+        "args": [
+          "u64"
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "symbol": "lemma_user_notebook_core0_scalar_54",
+        "source": "Lemma.User.Multimodal.records",
+        "effects": [],
+        "args": []
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_scalar_72",
+        "source": "Lemma.User.Multimodal.state",
+        "effects": [],
+        "args": []
+      }
+    ]
+  },
+  "pre_ir": "define i64 @lemma_user_notebook_core0_scalar_54() nounwind noinline \"disable-tail-calls\"=\"true\" {\nentry:\n  ret i64 3407872\n}\n\ndefine i64 @lemma_user_notebook_core0_scalar_72() nounwind noinline \"disable-tail-calls\"=\"true\" {\nentry:\n  %call0 = call i64 @lemma_user_notebook_core0_scalar_54()\n  %bin1 = add i64 %call0, 2048\n  ret i64 %bin1\n}\n",
+  "post_ir": "define noundef i64 @lemma_user_notebook_core0_scalar_54() local_unnamed_addr #1 {\nentry:\n  ret i64 3407872\n}\n\ndefine noundef i64 @lemma_user_notebook_core0_scalar_72() local_unnamed_addr #1 {\nentry:\n  ret i64 3409920\n}\n"
+}

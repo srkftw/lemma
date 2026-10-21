@@ -7,28 +7,42 @@ import vm from 'node:vm';
 const source=await fs.readFile('sim/browser/app.js','utf8');
 const deferred=()=>{let resolve,reject;const promise=new Promise((r,e)=>{resolve=r;reject=e;});return {promise,resolve,reject};};
 const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
-async function appFixture(gpu){
+async function appFixture(gpu,bundle={}){
  const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[],viewportListeners=new Map(),documentListeners=new Map(),audioSources=[];let worker,current,rect={left:0,top:0,width:100,height:100};
- const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},addEventListener(name,callback){(this.listeners??=new Map()).set(name,callback);},setPointerCapture(){},releasePointerCapture(){}});return nodes.get(id);};
+ const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},children:[],selectedIndex:0,replaceChildren(){this.children=[];this.selectedIndex=0;},append(child){this.children.push(child);},get selectedOptions(){return this.children[this.selectedIndex]?[this.children[this.selectedIndex]]:[];},addEventListener(name,callback){(this.listeners??=new Map()).set(name,callback);},setPointerCapture(){},releasePointerCapture(){}});return nodes.get(id);};
  function canvas(){const c={width:3,height:1,style:{},setPointerCapture(){},releasePointerCapture(){},getBoundingClientRect:()=>rect,
   cloneNode:()=>canvas(),replaceWith(next){assert.equal(current,this);current=next;},getContext(kind){if(kind==='2d')return {createImageData:(w,h)=>({data:new Uint8Array(w*h*4)}),putImageData:image=>images.push(Array.from(image.data))};
    if(kind==='webgpu')return {configure(){},getCurrentTexture:()=>({createView:()=>({})})};throw Error('unexpected context');}};canvases.push(c);return c;}
  current=canvas();const actions=['pause','resume','snapshot','export','capture-outcomes','events','bind','inspect','close'].map(action=>({dataset:{action}}));
  node('#session-mode').value='student';
- const document={hidden:false,addEventListener:(name,callback)=>documentListeners.set(name,callback),querySelector:id=>id==='canvas'?current:node(id),querySelectorAll:()=>actions,createElement:()=>({click(){}})};
- const context=vm.createContext({document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,AudioContext:class{constructor(){this.state='running';this.currentTime=0;this.destination={};}async resume(){}createBuffer(_channels,length,rate){return {duration:length/rate,getChannelData:()=>new Float32Array(length)};}createBufferSource(){const source={connect(){},start(){this.started=true;},stop(){this.stopped=true;}};audioSources.push(source);return source;}},GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
- const module=new vm.SourceTextModule(source,{context});await module.link(()=>{throw Error('unexpected app import');});
+ const document={hidden:false,addEventListener:(name,callback)=>documentListeners.set(name,callback),querySelector:id=>id==='canvas'?current:node(id),querySelectorAll:()=>actions,createElement:()=>({dataset:{},click(){}})};
+ const context=vm.createContext({fetch:async url=>{assert.equal(url,'./bundle.json');return {ok:true,json:async()=>({backend:'fixture-machine',...bundle})};},document,window:{addEventListener:(name,callback)=>viewportListeners.set(name,callback)},navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,AudioContext:class{constructor(){this.state='running';this.currentTime=0;this.destination={};}async resume(){}createBuffer(_channels,length,rate){return {duration:length/rate,getChannelData:()=>new Float32Array(length)};}createBufferSource(){const source={connect(){},start(){this.started=true;},stop(){this.stopped=true;}};audioSources.push(source);return source;}},GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
+ const imports=[];
+ const module=new vm.SourceTextModule(source,{context,importModuleDynamically:spec=>{
+  assert.equal(spec,'./optical_transport.js');const pending=(async()=>{const child=new vm.SourceTextModule(await fs.readFile('sim/browser/optical_transport.js','utf8'),{context});await child.link(()=>{throw Error('unexpected optical import');});await child.evaluate();return child;})();imports.push(pending);return pending;
+ }});await module.link(()=>{throw Error('unexpected app import');});
  let watchdog;try{await Promise.race([module.evaluate(),new Promise((_resolve,reject)=>{watchdog=setTimeout(()=>reject(Error('renderer initialization blocked actual app registration')),250);})]);}finally{clearTimeout(watchdog);}
  function exercise(){node('#medium').value='owned';node('#open').onclick();assert.equal(sent.at(-1).action,'open');assert.equal(sent.at(-1).name,'owned');assert.equal(sent.at(-1).mode,'student');
   actions.find(n=>n.dataset.action==='inspect').onclick();assert.equal(sent.at(-1).action,'inspect');
   node('#run-cycles').value='9007199254740993';node('#run-bounded').onclick();assert.equal(sent.at(-1).cycles,'9007199254740993');
   node('#import').onchange({target:{files:[]}});assert.equal(typeof node('#import').onchange,'function');
-  worker.onmessage({data:{type:'state',state:{cycle:'9007199254740993'},running:false,guestObservation:'continuation',readyAt:null,heapBytes:1048576,pauseReason:'cycle-limit',timing:{elapsedSeconds:12,simulationCallSeconds:2,backingCallSecondsDuringRun:1}}});
+  worker.onmessage({data:{type:'state',state:{cycle:'9007199254740993'},running:false,guestObservation:'continuation',guestCourseRejection:{status:'230',page:'1',namespace:'1'},readyAt:null,heapBytes:1048576,pauseReason:'cycle-limit',timing:{elapsedSeconds:12,simulationCallSeconds:2,backingCallSecondsDuringRun:1}}});
   assert.match(node('#status').textContent,/9007199254740993/);
+  assert.match(node('#course-view-status').textContent,/status 230, page 1, namespace 1/);
   worker.onmessage({data:{type:'panel',pixels:new Uint8Array([0,8,15]),width:3,height:1}});
   assert.deepEqual(images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
  }
+ await settle();await Promise.all(imports);await settle();
  exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,actions,setRect:r=>rect=r,resize:()=>viewportListeners.get('resize')?.(),visibility:hidden=>{document.hidden=hidden;documentListeners.get('visibilitychange')?.();},audioSources,trigger:(id,name)=>node(id).listeners?.get(name)?.()};
+}
+{
+ const reason='UNSUPPORTED: no exact TCI continuation relation is admitted';
+ const f=await appFixture(undefined,{checkpoint_contract:reason});await settle();
+ assert.equal(f.node('#checkpoint-export').disabled,true);assert.equal(f.node('#restore').disabled,true);
+ const before=f.sent.length;f.actions.find(n=>n.dataset.action==='snapshot').onclick();
+ assert.equal(f.sent.length,before,'unsupported checkpoint reached the worker');
+ assert.equal(f.node('#status').textContent,reason);
+ f.actions.find(n=>n.dataset.action==='export').onclick();assert.equal(f.sent.at(-1).action,'export','durable cold-recovery export remains usable');
 }
 {
  const f=await appFixture(undefined);
@@ -45,6 +59,25 @@ async function appFixture(gpu){
   timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
  assert.equal(f.node('#session-mode').disabled,true);
  f.worker.onmessage({data:{type:'closed'}});assert.equal(f.node('#session-mode').disabled,false);
+}
+// A real interpreter deadline must retain its measured progress in the error
+// shown to a Student. A new machine launch cannot inherit that failed interval.
+{
+ const f=await appFixture(undefined);
+ f.worker.onmessage({data:{type:'execution-boundary',before:{cycle:'332823721'},observed:{cycle:'333000123'},targetVirtualNs:'3428237203',elapsedSeconds:60.125,result:'Original60s execution quantum deadline'}});
+ f.worker.onmessage({data:{type:'error',error:'Original60s execution quantum deadline'}});
+ assert.match(f.node('#status').textContent,/332823721 to 333000123/);
+ assert.match(f.node('#status').textContent,/60\.1 s/);
+ f.node('#open').onclick();
+ f.worker.onmessage({data:{type:'error',error:'Different launch failure'}});
+ assert.equal(f.node('#status').textContent,'Different launch failure');
+}
+{
+ const f=await appFixture(undefined);f.node('#resume-seconds').value='600';
+ f.actions.find(n=>n.dataset.action==='resume').onclick();
+ assert.equal(f.sent.at(-1).action,'resume');assert.equal(f.sent.at(-1).hostSeconds,'600');
+ f.node('#resume-seconds').value='';f.actions.find(n=>n.dataset.action==='resume').onclick();
+ assert.equal(f.sent.at(-1).hostSeconds,null);
 }
 // Hidden-page notification cancels real queued sink sources in the actual app.
 // Browser DOM/AudioContext fixtures verify host behavior only, not audibility.
@@ -302,6 +335,15 @@ for(const phase of ['adapter','device']){
  assert.match(f.node('#course-admission').textContent,/guest installation result below/);
  const emit=guestCourse=>f.worker.onmessage({data:{type:'state',guestCourse,state:{cycle:'1'},running:false,guestObservation:'boot',readyAt:null,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
  emit(null);assert.match(f.node('#course-result').textContent,/No installation result/);
+ const transfer=uart_ingress=>f.worker.onmessage({data:{type:'state',state:{cycle:'2',uart_ingress},running:false,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ transfer({delivered:'16',pending:'9007199254740993',canceled:'0',accepted:'9007199254741009',blocked:true});
+ assert.match(f.node('#serial-status').textContent,/16 delivered, 9007199254740993 queued/);
+ assert.match(f.node('#serial-status').textContent,/waiting for guest receiver/);
+ assert.match(f.node('#course-result').textContent,/No installation result/);
+ transfer({delivered:'4040',pending:'0',canceled:'0',accepted:'4040',blocked:false});
+ assert.doesNotMatch(f.node('#serial-status').textContent,/waiting/);
+ assert.match(f.node('#serial-status').textContent,/Byte delivery is not an installation receipt/);
+ assert.match(f.node('#course-result').textContent,/No installation result/);
  emit({state:'installed',identity:'1',edition:'2',sequence:'9007199254740993'});
  assert.match(f.node('#course-result').textContent,/Guest reports installed package 1, edition 2, durable sequence 9007199254740993/);
  assert.doesNotMatch(f.node('#course-admission').textContent,/awaiting/);
@@ -310,9 +352,150 @@ for(const phase of ['adapter','device']){
  f.worker.onmessage({data:{type:'course-admission',accepted:2,total:37,bytes:4040,error:'queue exhausted'}});
  assert.match(f.node('#course-admission').textContent,/Admitted 2 of 37/);assert.match(f.node('#course-admission').textContent,/Close and cold-open/);
  f.worker.onmessage({data:{type:'closed'}});assert.match(f.node('#course-result').textContent,/No running guest/);
+ assert.match(f.node('#serial-status').textContent,/No running serial transfer/);
  for(const size of [127,32769]){
   const count=f.sent.length;f.node('#course-package').files=[{size,arrayBuffer:async()=>{throw Error('must not read unbounded file');}}];
   await f.node('#install-course').onclick();assert.equal(f.sent.length,count);
  }
 }
+// A new Saved report covers retained work and must not erase reported loss.
+{
+ const f=await appFixture(undefined),loss={state:'loss',reason:'2',discarded:'129',cumulative:'9007199254740993'};
+ const emit=(guestInkLoss,guestCommit)=>f.worker.onmessage({data:{type:'state',guestInkLoss,guestCommit,state:{cycle:'19'},running:false,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ emit(loss,null);assert.match(f.node('#ink-loss-status').textContent,/129 buffered samples discarded \(9007199254740993 total\)/);
+ emit(loss,{state:'saved',value:'30',page:'1',namespace:'1'});
+ assert.match(f.node('#commit-status').textContent,/Saved 30/);
+ assert.match(f.node('#ink-loss-status').textContent,/Saved covers retained work/);
+ assert.match(f.node('#ink-loss-status').textContent,/Missing controller samples may be additional/);
+ emit({...loss,state:'malformed'},null);assert.match(f.node('#ink-loss-status').textContent,/report invalid/);
+ emit(null,null);assert.match(f.node('#ink-loss-status').textContent,/No input loss reported/);
+}
+// A durable local queue precedes its UART envelope. Do not invite transport
+// until the complete ordered stream has actually been observed.
+{
+ const f=await appFixture(undefined),queue={state:'pending',queue:'6003579778261581866',bytes:'264',streamedBytes:'0',streamComplete:false};
+ const emit=guestQueue=>f.worker.onmessage({data:{type:'state',state:{cycle:'1'},guestQueue,running:false,readyAt:null,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ emit(queue);assert.equal(f.node('#school-submit').disabled,true);assert.match(f.node('#school-outgoing').textContent,/receiving envelope 0\/264 bytes/);
+ emit({...queue,streamedBytes:'16'});assert.match(f.node('#school-outgoing').textContent,/16\/264/);
+ emit({...queue,streamedBytes:'264',streamComplete:true});assert.equal(f.node('#school-submit').disabled,false);
+ assert.match(f.node('#school-outgoing').textContent,/Complete outgoing work 6003579778261581866/);
+ assert.match(f.node('#school-outgoing').textContent,/no guest acknowledgement receipt yet/);
+ emit({state:'acknowledged',queue:queue.queue});assert.match(f.node('#school-outgoing').textContent,/acknowledged/);
+ emit({state:'failed',code:'240'});assert.match(f.node('#school-outgoing').textContent,/failed \(240\); saved paper remains available/);
+ emit(null);assert.match(f.node('#school-outgoing').textContent,/No committed outgoing work/);
+}
+// The actual client presents versioned human judgments and preserves the
+// authority's exact pagination cursor, without promoting a judgment to proof.
+{
+ const f=await appFixture(undefined),next=f.node('#school-feedback-next');
+ f.node('#school-feedback').onclick();assert.equal(f.sent.at(-1).operation,'feedback');assert.equal(f.sent.at(-1).after,0);
+ const row={key:'guest.132.6003579778261581866',actor:'teacher',sequence:147,data:{version:2,previousSequence:137,
+  disposition:'needs-revision',comment:'Explain why t=3 is excluded. <script>untrusted</script>',criteria:['met','unclear'],
+  rubric:{criteria:['Factor the numerator','State the original domain']}}};
+ f.worker.onmessage({data:{type:'school',operation:'feedback',result:{feedback:[row],next:'9007199254740993',more:true}}});
+ const text=f.node('#school-status').textContent;
+ assert.match(text,/assessment 2/);assert.match(text,/Revision requested · teacher/);
+ assert.match(text,/Explain why t=3 is excluded\. <script>untrusted<\/script>/);
+ assert.match(text,/unclear: State the original domain/);assert.match(text,/Reconsiders assessment record 137/);
+ assert.match(text,/Teacher judgment; mathematical checking remains separate/);assert.doesNotMatch(text,/Verified/);
+ assert.equal(next.disabled,false);next.onclick();assert.equal(f.sent.at(-1).after,'9007199254740993');
+ f.worker.onmessage({data:{type:'school',operation:'feedback',result:{feedback:[],next:'9007199254740993',more:false}}});
+ assert.equal(next.disabled,true);assert.equal(f.node('#school-status').textContent,'No teacher feedback on this page.');
+ f.node('#school-feedback').onclick();assert.equal(f.sent.at(-1).after,0);
+ f.worker.onmessage({data:{type:'school',operation:'feedback',result:{feedback:[row],next:147,more:true}}});
+ f.node('#school-disconnect').onclick();assert.equal(next.disabled,true);
+ f.worker.onmessage({data:{type:'school',operation:'feedback',result:{feedback:[row],next:147,more:true}}});
+ f.worker.onmessage({data:{type:'closed'}});assert.equal(next.disabled,true);
+}
+// School transport responses remain inspectable without putting an entire
+// catalogue/receipt object into the live status or moving the paper offscreen.
+{
+ const f=await appFixture(undefined);
+ const emit=(operation,result)=>f.worker.onmessage({data:{type:'school',operation,result}});
+ const exact='9007199254740993';
+ const catalogue={courses:[{course:804,revision:2,title:'Equal fractions',activities:[{id:'exact-sum',title:'Exact sum'}]}],more:true,next:804};
+ emit('catalogue',catalogue);
+ assert.match(f.node('#school-status').textContent,/1 enrolled publications on this page/);
+ assert.match(f.node('#school-status').textContent,/Next courses/);
+ assert.doesNotMatch(f.node('#school-status').textContent,/activities|\{/);
+ assert.deepEqual(JSON.parse(f.node('#school-response-details').textContent),catalogue);
+ assert.equal(f.node('#school-course').children[0].textContent,'Equal fractions · 804/2');
+ assert.equal(f.node('#school-task').children[1].textContent,'Exact sum · exact-sum');
+ emit('reviews',{reviews:[],more:false,next:0});
+ assert.match(f.node('#school-status').textContent,/0 due reviews/);
+ assert.match(f.node('#school-status').textContent,/Opening a task does not complete/);
+ emit('join',{binding:{bindingRecord:exact,actor:'<script>untrusted</script>'},identity:60000,edition:44});
+ assert.match(f.node('#school-status').textContent,/School binding 9007199254740993 received/);
+ assert.doesNotMatch(f.node('#school-status').textContent,/untrusted|\{|Installed|Verified/);
+ assert.equal(JSON.parse(f.node('#school-response-details').textContent).binding.actor,'<script>untrusted</script>');
+ emit('install',{identity:804,edition:2,node:2});
+ assert.match(f.node('#school-status').textContent,/Publication 804\/2 sent to the guest/);
+ assert.match(f.node('#school-status').textContent,/Wait for its installation or selection receipt/);
+ emit('submit',{commitSequence:exact});
+ assert.match(f.node('#school-status').textContent,/School commit 9007199254740993/);
+ assert.match(f.node('#school-status').textContent,/Wait for the guest's durable acknowledgement/);
+ emit('future-operation',{unknown:'retained'});
+ assert.equal(f.node('#school-status').textContent,'School response received. See response details.');
+ assert.equal(JSON.parse(f.node('#school-response-details').textContent).unknown,'retained');
+ f.node('#school-disconnect').onclick();assert.equal(f.node('#school-response-details').textContent,'');
+ emit('receipts',{partial:7});f.worker.onmessage({data:{type:'school',operation:'help',error:'Revoked'}});
+ assert.equal(f.node('#school-status').textContent,'Revoked');assert.equal(f.node('#school-response-details').textContent,'');
+ emit('receipts',{partial:7});f.worker.onmessage({data:{type:'closed'}});
+ assert.equal(f.node('#school-response-details').textContent,'');
+}
+// A validated selection has its own meaning after a refused immutable install.
+// Only the exact full tuple can be described as the matching stored bytes.
+{
+ const f=await appFixture(undefined),failure={authority:'compiled-guest-report',state:'failed',status:'223',identity:'804',edition:'1',sequence:'0',crc32:'123'};
+ const selected={authority:'compiled-guest-report',state:'selected',status:'0',identity:'804',edition:'1',sequence:'9007199254740993',crc32:'123'};
+ const emit=(course,selection)=>f.worker.onmessage({data:{type:'state',state:{cycle:'1'},guestCourse:course,guestCourseSelection:selection,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ emit(failure,selected);let text=f.node('#school-installation').textContent;
+ assert.match(text,/installation failure \(223\)/);assert.match(text,/matching already-stored publication/);
+ assert.match(text,/durable selection sequence 9007199254740993/);assert.match(text,/not a new installation receipt/);
+ assert.doesNotMatch(text,/reports installed package/);
+ emit(failure,{...selected,crc32:'124'});text=f.node('#school-installation').textContent;
+ assert.match(text,/CRCs differ/);assert.doesNotMatch(text,/matching already-stored/);
+ emit(failure,{...selected,identity:'803'});text=f.node('#school-installation').textContent;
+ assert.match(text,/selected stored package 803, edition 1/);assert.doesNotMatch(text,/matching already-stored/);
+ emit(failure,{...selected,edition:'2'});assert.doesNotMatch(f.node('#school-installation').textContent,/matching already-stored/);
+ emit(failure,null);assert.doesNotMatch(f.node('#school-installation').textContent,/selected/);
+ emit(null,selected);assert.match(f.node('#school-installation').textContent,/No installation result/);
+ assert.match(f.node('#school-installation').textContent,/selected stored package 804, edition 1/);
+ emit(failure,{...selected,state:'failed',status:'227',sequence:'0'});assert.match(f.node('#school-installation').textContent,/selection failure \(227\)/);
+ f.worker.onmessage({data:{type:'closed'}});assert.equal(f.node('#school-installation').textContent,'No running guest.');
+}
+// Keyboard pen uses the same raw input boundary, including contact cancellation.
+{
+ const f=await appFixture(undefined),paper=f.canvas();paper.width=1650;paper.height=2200;
+ const images=f.images.length,key=(key,fields={})=>paper.onkeydown({key,repeat:false,preventDefault(){},...fields});
+ key('Home');for(let i=0;i<3;i++)key('ArrowRight',{ctrlKey:true});key('ArrowRight');
+ key('ArrowDown',{ctrlKey:true});key('ArrowDown');key('ArrowDown');for(let i=0;i<5;i++)key('ArrowDown',{shiftKey:true});
+ assert.match(f.node('#keyboard-pen-status').textContent,/320, 145/);key('Enter');
+ const down=f.sent.at(-2),up=f.sent.at(-1);assert.equal(down.action,'pen');assert.equal(down.flags,3);assert.equal(up.flags,2);
+ assert.equal(down.x,Math.round(320*65535/1649));assert.equal(up.y,Math.round(145*65535/2199));
+ key(' ');key('ArrowRight');assert.equal(f.sent.at(-1).flags,3);f.visibility(true);assert.equal(f.sent.at(-1).flags,10);
+ const cancelled=f.sent.length;paper.onblur();assert.equal(f.sent.length,cancelled);
+ key('Insert');assert.equal(f.sent.at(-1).flags,3);
+ paper.onkeyup({key:'Insert'});key('ArrowRight');assert.equal(f.sent.at(-1).flags,3);
+ key('Insert');assert.equal(f.sent.at(-1).flags,2);
+ key('Insert');paper.onblur();assert.equal(f.sent.at(-1).flags,10);
+ key('Insert');key('Escape');assert.equal(f.sent.at(-1).flags,10);
+ assert.equal(f.images.length,images,'keyboard input must not manufacture controller pixels');
+}
 console.log('PASS actual app host fixture: unresolved GPU leaves controls, worker observation and exact Gray4 fallback functional; qualified switch/loss safely cancel contact');
+
+// Actual UI sends raw bytes only under the exact new binding and explicit
+// Developer selection. No guest permission, interpretation or capture receipt.
+{
+ const f=await appFixture(undefined,{profile:'lemma-silicon-dev/0.17.0',execution_binding:'lemma-optical17-functional-mm2/1',optical_controller_abi:1,optical_frame_contract:'lemma-optical-frame/1'});
+ assert.equal(f.node('#optical-controls').hidden,false);
+ const before=f.sent.length;f.node('#optical-frame').onclick();assert.equal(f.sent.length,before);
+ assert.match(f.node('#optical-result').textContent,/Developer or Laboratory/);
+ f.node('#session-mode').value='laboratory';f.node('#session-mode').onchange();
+ f.node('#optical-endpoint').value='3';f.node('#optical-format').value='face320-gray8';f.node('#optical-frame').onclick();
+ const frame=f.sent.at(-1);assert.equal(frame.action,'optical-frame');assert.equal(frame.endpoint,'3');assert.equal(frame.bytes.byteLength,76800);
+ assert(!('captureTime' in frame));assert(!('grant' in frame));assert(!('document' in frame));
+ f.worker.onmessage({data:{type:'optical-admission',accepted:1024,total:9602,bytes:76800,error:'Remainder rejected; accepted prefix retained'}});
+ assert.match(f.node('#optical-result').textContent,/1024 of 9602/);assert.match(f.node('#optical-result').textContent,/prefix retained/);
+ f.node('#optical-endpoint').value='1';const count=f.sent.length;f.node('#optical-frame').onclick();assert.equal(f.sent.length,count);assert.match(f.node('#optical-result').textContent,/incompatible/);
+}

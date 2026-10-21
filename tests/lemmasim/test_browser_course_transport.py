@@ -8,7 +8,7 @@ class CourseTransport(unittest.TestCase):
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const source=await fs.readFile('sim/browser/course_transport.js','utf8');
-const {courseInstallFrame,courseInstallRows}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const {courseInstallFrame,courseInstallRows,courseSchoolFrames,schoolSelectionRequested}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const input=new ArrayBuffer(32768),v=new DataView(input);v.setBigUint64(24,65535n,true);v.setBigUint64(32,4294967295n,true);v.setBigUint64(80,4294967295n,true);
 new Uint8Array(input).fill(0xa5,128);
 const packet=courseInstallFrame(input,'9223372036854775807'),rows=courseInstallRows(packet,'18446744073709551615');
@@ -22,6 +22,16 @@ for(const [offset,value]of [[24,0n],[24,65536n],[32,0n],[32,4294967296n],[80,429
 for(const cycle of ['-1','1.5','18446744073709551616',1n,1])assert.throws(()=>courseInstallRows(packet,cycle));
 // An invalid package checksum is copied unchanged; only the guest checks it.
 v.setBigUint64(80,1n,true);assert.equal(new DataView(courseInstallFrame(input,'1').buffer).getBigUint64(56,true),1n);
+// Invitation/help packages are transport payloads. They must never append a
+// selection command that retargets the guest away from its authored activity.
+for(const operation of ['sample','install','review','join','help','submit','cancel','feedback','unknown']){
+ const explicit=['sample','install','review'].includes(operation);
+ const selected=courseSchoolFrames(input,'8',schoolSelectionRequested(operation,true),4);
+ assert.equal(selected.length,packet.length+(explicit?64:0));
+ assert.deepEqual(selected.subarray(64,32832),new Uint8Array(input));
+ if(explicit){const tail=new DataView(selected.buffer,32832,64);assert.equal(tail.getBigUint64(16,true),9n);assert.equal(tail.getBigUint64(40,true),4n);}
+ assert.equal(schoolSelectionRequested(operation,false),false);
+}
 """
   r=subprocess.run(['node','--input-type=module','-e',script],cwd=ROOT,capture_output=True,text=True,timeout=15)
   self.assertEqual(r.returncode,0,r.stdout+r.stderr)

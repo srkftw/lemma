@@ -1,0 +1,24 @@
+* SPDX-License-Identifier: Apache-2.0
+* Reusable differential microphone first gain stage, supply1.2V nominal.
+* Active devices bind to original SG13G2 npn13G2 VBIC models (not Level1).
+* Input is a declared external AC microphone voltage, never a modeled MEMS
+* capsule. outp-outn feeds a future differential converter input.
+* Passive values are nominal: 100nF input and10nF bias capacitors require board
+* parts; process resistor/capacitor layout and assembly remain unqualified.
+.subckt lemma_mic_preamp input vdd outp outn vss
+Rbiasupper vdd bias 33k
+Rbiaslower bias vss 100k
+* The bias capacitor discharges through the actual divider during loss of
+* supply. The original1uF trial back-fed the outputs during a3ms interruption.
+Cbias bias vss 10n
+Ccouple input bleft 100n
+Rb1 bleft bias 100k
+Rb2 bright bias 100k
+Xleft outn bleft tail vss npn13G2
+Xright outp bright tail vss npn13G2
+Rtail tail vss 10k
+Rleft vdd outn 30k
+Rright vdd outp 30k
+Cloadleft outn vss 10p
+Cloadright outp vss 10p
+.ends lemma_mic_preamp

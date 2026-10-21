@@ -1,0 +1,6 @@
+{
+  "schema": "lemma-school-linear-training-config/1",
+  "modelVersion": 9001,
+  "learningRate": 0.05,
+  "momentum": 0.2
+}

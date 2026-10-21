@@ -19,6 +19,56 @@ RUN_POLICY={'core':'lemma-one-core/0.1.0','binding':'lemmasim-virt/0.1.0',
             'random_seed':'0x4c454d4d413031','media_backend':'lemma-durable/1'}
 class Failure(Exception):pass
 
+def select_school_notebook_version(args):
+    version=getattr(args,'school_notebook_version',23)
+    from school_deployment import configuration_for
+    try:configuration_for(version,'notebook')
+    except ValueError as error:raise Failure(str(error)) from error
+    if version==23:return
+    if getattr(args,'checkpoint_binding',None) is not None:
+        raise Failure(f'School{version} prepared local-tool IPC continuation is not qualified; select regular MM2 and durable cold recovery')
+    if args.command=='build':
+        valid=(args.backend=='qemu' and args.profile=='lemma-silicon-dev/0.14.0' and
+               args.workload in ('school-notebook','school-initializer'))
+    elif args.command=='native-bundle-build':
+        valid=args.profile=='lemma-silicon-dev/0.14.0' and args.school_deployment
+    elif args.command=='browser-build':
+        valid=(args.profile=='lemma-silicon-dev/0.14.0' and args.engine=='qemu-tci' and args.workbook=='school')
+    else:valid=False
+    if not valid:raise Failure(f'School{version} requires an explicit Fast0.14 School preparation or native/TCI School package')
+
+def select_checkpoint_binding(args):
+    """Select one versioned native runtime without changing simulator rights."""
+    if getattr(args,'controller_binding',None) is not None:
+        continuation=getattr(args,'checkpoint_binding',None)
+        if args.controller_binding!='mm2-subset' or continuation not in (None,'native-mm2-logical2') or args.profile!='lemma-silicon-dev/0.14.0':
+            raise Failure('MM2 subset requires Fast0.14 and its separate native-mm2-logical2 continuation contract')
+        if args.command=='build':
+            if args.backend!='qemu' or args.workload not in ('school-notebook','school-initializer'):raise Failure('MM2 subset preparation requires an explicit QEMU School guest')
+        elif args.command=='native-bundle-build':
+            if not args.school_deployment:raise Failure('MM2 subset packaging requires an explicit School pair')
+        else:raise Failure('Unsupported controller binding selection command')
+        os.environ.update(LEMMA_FAST_RAW_UART='1',LEMMA_FAST_LOGICAL2='1',LEMMA_FAST_MM2='1')
+        if continuation is not None:os.environ['LEMMA_FAST_MM2_CHECKPOINT']='1'
+        else:os.environ.pop('LEMMA_FAST_MM2_CHECKPOINT',None)
+        return
+    if getattr(args,'checkpoint_binding',None) is None:return
+    if args.checkpoint_binding!='native-logical2' or args.profile!='lemma-silicon-dev/0.14.0':
+        raise Failure('Native logical2 requires the explicit Fast0.14 profile')
+    if args.command=='build':
+        if args.backend!='qemu' or args.workload not in ('school-notebook','school-initializer'):
+            raise Failure('Native logical2 preparation requires a QEMU School guest')
+    elif args.command=='native-bundle-build':
+        if not args.school_deployment:raise Failure('Native logical2 packaging requires the explicit School deployment')
+    else:raise Failure('Unsupported checkpoint selection command')
+    os.environ.update(LEMMA_FAST_RAW_UART='1',LEMMA_FAST_LOGICAL2='1')
+    if args.command=='build' and 'LEMMA_FAST_LOGICAL2_CACHE' not in os.environ:
+        import lemmasim_fast
+        if Path(lemmasim_fast.LOGICAL2_CACHE_SEED).is_dir():
+            # The maintained producer still independently validates the exact
+            # retained source/object closure and byte-identical baseline link.
+            os.environ['LEMMA_FAST_LOGICAL2_CACHE']='1'
+
 def sha(path):
     digest=hashlib.sha256()
     with Path(path).open('rb') as stream:
@@ -832,16 +882,27 @@ def main():
     sub.add_parser('school-open',help='Native study/teach/operate/develop panel coupled to an actual session and Lean school; use school-open --help')
     sub.add_parser('product',help='Immutable Lean ROM, real NV boot and owner-local recovery; use product --help')
     p=sub.add_parser('browser-build',help='Prepare the shared Lean machine as a source-bound local Wasm bundle')
+    p.add_argument('--school-notebook-version',type=int,choices=(23,24,25),default=23,help='Explicit School guest version; requires the school workbook for versions24/25')
+    p.add_argument('--sample-course',type=Path,help='Explicit actually compiled local sample package for account-free guest installation')
     p.add_argument('--engine',choices=('rtl','qemu-tci'),default='rtl',help='Explicit functional QEMU/TCI or clocked RTL implementation; no timing-equivalence claim')
-    p.add_argument('--workbook',choices=('ordinary','parameterized'),default='ordinary');p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--wasm-build',type=Path,required=True)
+    p.add_argument('--workbook',choices=('ordinary','parameterized','school'),default='ordinary');p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--wasm-build',type=Path,required=True)
     p.add_argument('--output-dir',type=Path,required=True);p.add_argument('--reuse-wasm',action='store_true')
     p.add_argument('--guest-bundle',type=Path,help='Use fully validated immutable genuine guest artifacts; rebuild only the current machine')
     p.add_argument('--wasm-input-bundle',type=Path,help='On --reuse-wasm, validate exact consumed source versions from an immutable native or complete browser archive')
     p.add_argument('--wasm-source-bundle',type=Path,help='Fresh host compilation from this complete original browser RTL/runtime source closure')
+    p.add_argument('--wasm-source-archive',type=Path,help='Complete original portable consumed-source archive for a retained Product15 Wasm producer')
+    p.add_argument('--product-prepared',type=Path,help='Product15: validated development ROM/native component admission')
+    p.add_argument('--boot-medium',type=Path,help='Product15: opaque guest-installed boot/NV seed')
+    p.add_argument('--user-seed',type=Path,help='Product15: optional opaque guest-produced256MiB sample medium')
     p.add_argument('--host-optimization',choices=('scalar','simd-lto'),default='scalar',help='Host compilation preset; real circuit timing and guest work are unchanged')
     p=sub.add_parser('browser-serve',help='Validate and serve an immutable local browser machine on loopback')
     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--port',type=int,default=8767)
     p=sub.add_parser('native-bundle-build',help='Pack exact source-validated native RTL/QEMU development artifacts')
+    p.add_argument('--school-notebook-version',type=int,choices=(23,24,25),default=23,help='Explicit audited School guest version; versions24/25 require --school-deployment')
+    p.add_argument('--checkpoint-binding',choices=('native-logical2','native-mm2-logical2'),help='Fast0.14 School only: explicit same-backend native continuation; MM2 requires its controller binding and excludes cancelled held-read capture')
+    p.add_argument('--controller-binding',choices=('mm2-subset',),help='Fast0.14 MM2 functional controller subset; excludes Integrated16 boot/USB/power union; continuation requires native-mm2-logical2')
+    p.add_argument('--sample-course',type=Path,help='Actually compiled, inventoried account-free local course package')
+    p.add_argument('--school-deployment',action='store_true',help='Explicit School23 publication selection and durable guest queue; preserves legacy notebook bundles')
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--output-dir',type=Path,required=True)
     p.add_argument('--base-bundle',type=Path,help='Validate and retain these immutable backends with freshly audited replacement guests')
     p.add_argument('--refresh-fast',action='store_true',help='Retain the complete audited native bundle and replace only its current prepared fast runtime')
@@ -858,7 +919,7 @@ def main():
     p.add_argument('--usb-companion-reader-deployment',action='store_true',help='Clocked13 only: Reader19/Recovery5 four-role course reader with checked EntryV2 scheduler as schema11; excludes other deployments')
     p=sub.add_parser('session',help='Persistent machine runtime; transport controls and raw input, no rebuild')
     p.add_argument('--backend',choices=('qemu','rtl'),default='rtl');p.add_argument('--profile')
-    p.add_argument('--workload',choices=('service','notebook','initializer','parameterized-notebook','parameterized-initializer','managed-notebook','managed-initializer','devices','power','ble','usb','usb-bulk-notebook','usb-bulk-initializer','usb-next-bulk-notebook','usb-next-bulk-initializer','usb-wire-bulk-notebook','usb-wire-bulk-initializer','usb-clocked-bulk-notebook','usb-clocked-bulk-initializer','usb-clocked-retry-bulk-notebook','usb-clocked-retry-bulk-initializer','usb-clocked-closure-retry-bulk-notebook','usb-clocked-closure-retry-bulk-initializer','usb-clocked-package-retry-bulk-notebook','usb-clocked-package-retry-bulk-initializer','usb-clocked-package-entry2-bulk-notebook','usb-clocked-package-entry2-bulk-initializer','usb-clocked-reader-entry2-bulk-notebook','usb-clocked-reader-entry2-bulk-initializer'),default='notebook')
+    p.add_argument('--workload',choices=('service','notebook','initializer','school-notebook','school-initializer','parameterized-notebook','parameterized-initializer','managed-notebook','managed-initializer','devices','power','ble','usb','usb-bulk-notebook','usb-bulk-initializer','usb-next-bulk-notebook','usb-next-bulk-initializer','usb-wire-bulk-notebook','usb-wire-bulk-initializer','usb-clocked-bulk-notebook','usb-clocked-bulk-initializer','usb-clocked-retry-bulk-notebook','usb-clocked-retry-bulk-initializer','usb-clocked-closure-retry-bulk-notebook','usb-clocked-closure-retry-bulk-initializer','usb-clocked-package-retry-bulk-notebook','usb-clocked-package-retry-bulk-initializer','usb-clocked-package-entry2-bulk-notebook','usb-clocked-package-entry2-bulk-initializer','usb-clocked-reader-entry2-bulk-notebook','usb-clocked-reader-entry2-bulk-initializer'),default='notebook')
     p.add_argument('--mode',choices=('student','developer','laboratory'),default='developer')
     p.add_argument('--session-dir',type=Path,required=True);p.add_argument('--disk',type=Path)
     p.add_argument('--native-bundle',type=Path,help='Validate and execute an immutable native development bundle')
@@ -910,11 +971,13 @@ def main():
     p.add_argument('--session-dir',type=Path,required=True);p.add_argument('--snapshot',type=Path,required=True)
     p.add_argument('--capture',type=Path,required=True)
     end=p.add_mutually_exclusive_group(required=True);end.add_argument('--until-cycle',type=int);end.add_argument('--until-ns',type=int,help='Exact fast-backend virtual clock phase')
-    p=sub.add_parser('build');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','parameterized-notebook','parameterized-initializer','managed-notebook','managed-initializer','devices','power','ble','usb','usb-bulk-notebook','usb-bulk-initializer','usb-next-bulk-notebook','usb-next-bulk-initializer','usb-wire-bulk-notebook','usb-wire-bulk-initializer','usb-clocked-bulk-notebook','usb-clocked-bulk-initializer','usb-clocked-retry-bulk-notebook','usb-clocked-retry-bulk-initializer','usb-clocked-closure-retry-bulk-notebook','usb-clocked-closure-retry-bulk-initializer','usb-clocked-package-retry-bulk-notebook','usb-clocked-package-retry-bulk-initializer','usb-clocked-package-entry2-bulk-notebook','usb-clocked-package-entry2-bulk-initializer','usb-clocked-reader-entry2-bulk-notebook','usb-clocked-reader-entry2-bulk-initializer'));p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.add_argument('--guest-build',type=Path);p.add_argument('--guest-bundle',type=Path,help='QEMU: fully validated archived genuine guest with a freshly built backend');p.add_argument('--rtl-build',type=Path);p.add_argument('--silicon-deps',dest='deps',type=Path,help='RTL only: explicitly selected immutable CVW checkout; all source/tool identities remain validated');p.add_argument('--rtl-source-root',type=Path,help='USB6/8/11/13 RTL: explicit complete native source archive, requires --rtl-build');p.add_argument('--guest-source-root',type=Path,help='USB6/8/11/13 RTL: complete original audited guest source archive, requires --guest-build');p.set_defaults(function=build)
+    p=sub.add_parser('build');p.add_argument('--school-notebook-version',type=int,choices=(23,24,25),default=23,help='Explicit School guest version; versions24/25 require Fast0.14 School workload');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','school-notebook','school-initializer','parameterized-notebook','parameterized-initializer','managed-notebook','managed-initializer','devices','power','ble','usb','usb-bulk-notebook','usb-bulk-initializer','usb-next-bulk-notebook','usb-next-bulk-initializer','usb-wire-bulk-notebook','usb-wire-bulk-initializer','usb-clocked-bulk-notebook','usb-clocked-bulk-initializer','usb-clocked-retry-bulk-notebook','usb-clocked-retry-bulk-initializer','usb-clocked-closure-retry-bulk-notebook','usb-clocked-closure-retry-bulk-initializer','usb-clocked-package-retry-bulk-notebook','usb-clocked-package-retry-bulk-initializer','usb-clocked-package-entry2-bulk-notebook','usb-clocked-package-entry2-bulk-initializer','usb-clocked-reader-entry2-bulk-notebook','usb-clocked-reader-entry2-bulk-initializer'));p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.add_argument('--guest-build',type=Path);p.add_argument('--guest-bundle',type=Path,help='QEMU: fully validated archived genuine guest with a freshly built backend');p.add_argument('--rtl-build',type=Path);p.add_argument('--silicon-deps',dest='deps',type=Path,help='RTL only: explicitly selected immutable CVW checkout; all source/tool identities remain validated');p.add_argument('--rtl-source-root',type=Path,help='USB6/8/11/13 RTL: explicit complete native source archive, requires --rtl-build');p.add_argument('--guest-source-root',type=Path,help='USB6/8/11/13 RTL or School23/v2 Fast: complete original audited source archive, requires --guest-build');p.set_defaults(function=build)
+    p.add_argument('--checkpoint-binding',choices=('native-logical2','native-mm2-logical2'),help='Fast0.14 School only: prepare explicit same-backend native continuation; MM2 requires its separate controller binding')
+    p.add_argument('--controller-binding',choices=('mm2-subset',),help='Fast0.14 MM2 functional controller subset; excludes Integrated16 boot/USB/power union; continuation requires native-mm2-logical2')
     p.add_argument('--fresh',action='store_true',help='Execute target/reset-ROM actions without cache reads; audits remain fresh')
     p.add_argument('--cache-dir',type=Path,help='Local validated action-cache directory')
     p=sub.add_parser('init');p.add_argument('--workload',choices=('initializer','parameterized-initializer'),default='initializer');p.add_argument('--native-bundle',type=Path);p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--disk',type=Path,required=True);p.add_argument('--size-mib',type=int,default=256);p.add_argument('--force',action='store_true');p.add_argument('--session-dir',type=Path);p.add_argument('--timeout',type=int,default=900);p.set_defaults(function=initialize)
-    p=sub.add_parser('run');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','parameterized-notebook','parameterized-initializer','managed-notebook','managed-initializer','devices','power','ble','usb','usb-bulk-notebook','usb-bulk-initializer','usb-next-bulk-notebook','usb-next-bulk-initializer','usb-wire-bulk-notebook','usb-wire-bulk-initializer','usb-clocked-bulk-notebook','usb-clocked-bulk-initializer','usb-clocked-retry-bulk-notebook','usb-clocked-retry-bulk-initializer','usb-clocked-closure-retry-bulk-notebook','usb-clocked-closure-retry-bulk-initializer','usb-clocked-package-retry-bulk-notebook','usb-clocked-package-retry-bulk-initializer','usb-clocked-package-entry2-bulk-notebook','usb-clocked-package-entry2-bulk-initializer','usb-clocked-reader-entry2-bulk-notebook','usb-clocked-reader-entry2-bulk-initializer'));p.add_argument('--cycles',type=int,default=20000000);p.add_argument('--trace-limit',type=int,default=10000);p.add_argument('--uart-input',type=Path);p.add_argument('--events',type=Path);p.add_argument('--uart-stop');p.add_argument('--uart-stop-hex');p.add_argument('--stop-after-panel',type=int);p.add_argument('--fail-flush',type=int);p.add_argument('--observer-cycle',type=int);p.add_argument('--ram-dump',help='RTL only: external RAM address:bytes, at most 1MiB');p.add_argument('--block-trace',action='store_true',default=None,help='RTL only: first4096 literal block MMIO/DMA/media observations');p.add_argument('--disk',type=Path);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
+    p=sub.add_parser('run');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','school-notebook','school-initializer','parameterized-notebook','parameterized-initializer','managed-notebook','managed-initializer','devices','power','ble','usb','usb-bulk-notebook','usb-bulk-initializer','usb-next-bulk-notebook','usb-next-bulk-initializer','usb-wire-bulk-notebook','usb-wire-bulk-initializer','usb-clocked-bulk-notebook','usb-clocked-bulk-initializer','usb-clocked-retry-bulk-notebook','usb-clocked-retry-bulk-initializer','usb-clocked-closure-retry-bulk-notebook','usb-clocked-closure-retry-bulk-initializer','usb-clocked-package-retry-bulk-notebook','usb-clocked-package-retry-bulk-initializer','usb-clocked-package-entry2-bulk-notebook','usb-clocked-package-entry2-bulk-initializer','usb-clocked-reader-entry2-bulk-notebook','usb-clocked-reader-entry2-bulk-initializer'));p.add_argument('--cycles',type=int,default=20000000);p.add_argument('--trace-limit',type=int,default=10000);p.add_argument('--uart-input',type=Path);p.add_argument('--events',type=Path);p.add_argument('--uart-stop');p.add_argument('--uart-stop-hex');p.add_argument('--stop-after-panel',type=int);p.add_argument('--fail-flush',type=int);p.add_argument('--observer-cycle',type=int);p.add_argument('--ram-dump',help='RTL only: external RAM address:bytes, at most 1MiB');p.add_argument('--block-trace',action='store_true',default=None,help='RTL only: first4096 literal block MMIO/DMA/media observations');p.add_argument('--disk',type=Path);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
     p=sub.add_parser('replay');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--session',type=Path,required=True);p.add_argument('--disk-copy',type=Path,required=True);p.add_argument('--timeout',type=float,default=120);p.set_defaults(function=replay)
     p=sub.add_parser('control');p.add_argument('--run-directory',type=Path,required=True);p.add_argument('action',choices=('inspect','pause','resume','reset','power-cut'));p.set_defaults(function=control)
     p=sub.add_parser('archive');g=p.add_mutually_exclusive_group(required=True);g.add_argument('--session',type=Path);g.add_argument('--acceptance',type=Path);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=archive_session)
@@ -927,13 +990,18 @@ def main():
     if getattr(args,'timeout',None) is not None and not 0<args.timeout<=timeout_limit:
         parser.error(f'timeout must be1..{timeout_limit} seconds')
     try:
+        select_school_notebook_version(args)
+        select_checkpoint_binding(args)
         if args.command in ('course-install','course-load','course-delete-probe'):
             import lemmasim_course
             print(json.dumps(lemmasim_course.send(args),indent=2))
             return 0
         if args.command in ('build','run') and getattr(args,'profile',None) in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0','lemma-silicon-dev/0.10.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
         if args.command=='build' and args.rtl_source_root is not None and (args.backend!='rtl' or args.profile not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') or args.rtl_build is None):raise Failure('--rtl-source-root requires USB6/8/11/13 RTL and an explicit --rtl-build')
-        if args.command=='build' and args.guest_source_root is not None and (args.backend!='rtl' or args.profile not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') or args.guest_build is None):raise Failure('--guest-source-root requires USB6/8/11/13 RTL and an explicit --guest-build')
+        if args.command=='build' and args.guest_source_root is not None:
+            frozen_usb=args.backend=='rtl' and args.profile in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0')
+            frozen_school=args.backend=='qemu' and args.profile=='lemma-silicon-dev/0.14.0' and args.workload in ('school-notebook','school-initializer')
+            if args.guest_build is None or not (frozen_usb or frozen_school):raise Failure('--guest-source-root requires explicit audited USB RTL or School23/v2 Fast guest build')
         if args.command=='build' and getattr(args,'deps',None) is not None and args.backend!='rtl':raise Failure('--silicon-deps requires actual RTL preparation')
         if args.command=='build' and args.guest_bundle is not None and (args.backend!='qemu' or args.profile not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0') or args.guest_build is not None):raise Failure('--guest-bundle requires qualified canonical/Power QEMU and excludes --guest-build')
         if args.command=='native-bundle-build':

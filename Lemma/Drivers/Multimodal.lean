@@ -2,7 +2,7 @@ import Lemma.Platform.LemmaSim.IO
 import Lemma.Platform.Silicon.BindingMultimodal
 import Lemma.Kernel.Memory.Frames
 
-/-! Version1 bounded controller driver. It never accepts an application MMIO
+/-! Version1/2 bounded controller driver. It never accepts an application MMIO
 address. Stable queue heads are copied before explicit ACK; reads have no ACK.
 The controller is synthetic converter input, not qualified physical sensors. -/
 namespace Lemma.Drivers.Multimodal
@@ -30,7 +30,7 @@ def discover : Action :=
   .bind (IO.read64 base) fun s magic => if mmFailed s = true then .done s 0 else
   if mmDifferent magic 0x4c4d4d32 = true then .done 2 0 else
   .bind (IO.read64 (base + 8)) fun s version => if mmFailed s = true then .done s 0 else
-  if mmDifferent version 1 = true then .done 2 0 else
+  if (if version = 1 then false else if version = 2 then false else true) = true then .done 2 0 else
   .bind (IO.read64 (base + 16)) fun s features => if mmFailed s = true then .done s 0 else
   if mmDifferent features 511 = true then .done 2 0 else
   .bind (IO.read64 (base + 72)) fun s hz => if mmFailed s = true then .done s 0 else

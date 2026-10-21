@@ -11,6 +11,7 @@
 #include "qobject/qnum.h"
 #include "qobject/qjson.h"
 #include "system/system.h"
+#include "hw/core/cpu.h"
 extern QmpCommandList qmp_commands;
 static QemuMutex lemma_browser_lock;
 static bool lemma_browser_initialized;
@@ -46,6 +47,17 @@ static bool lemma_browser_write_panel(const uint8_t *pixels,size_t bytes)
  if(f){if(fwrite(pixels,1,bytes,f)!=bytes)failed=true;if(fclose(f))failed=true;}
  return !failed;
 }
+/* BEGIN lemma-qemu-cpu-stop/1: pure direct CPU acknowledgement under BQL. */
+static void lemma_browser_cpu_stop_observation(QDict *value)
+{
+ assert(bql_locked());
+ uint64_t count=0,stopped=0;CPUState *cpu;
+ CPU_FOREACH(cpu){count++;if(cpu->stopped)stopped++;}
+ qdict_put_str(value,"stop_boundary_contract","lemma-qemu-cpu-stop/1");
+ qdict_put_int(value,"cpu_count",count);qdict_put_int(value,"cpus_stopped",stopped);
+ qdict_put_bool(value,"all_cpus_stopped",count!=0&&count==stopped);
+}
+/* END lemma-qemu-cpu-stop/1. */
 static QDict *lemma_browser_presentation(QDict *request)
 {
  const char *name=qdict_get_try_str(request,"execute");
@@ -56,6 +68,7 @@ static QDict *lemma_browser_presentation(QDict *request)
  LemmaDevices *s=LEMMA_PAPER_PEN(object);QDict *value=qdict_new();
  uint64_t capture_begin=(uint64_t)qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
  if(!strcmp(name,"lemma-clock")){
+  lemma_browser_cpu_stop_observation(value);
   uint8_t bytes[8];uint64_t ticks=0;
   if(address_space_read(&address_space_memory,LS_TIMER_MTIME,MEMTXATTRS_UNSPECIFIED,bytes,8)!=MEMTX_OK){qobject_unref(value);return lemma_browser_error("actual pure MTIME observation failed");}
   for(unsigned i=0;i<8;i++)ticks|=(uint64_t)bytes[i]<<(i*8);

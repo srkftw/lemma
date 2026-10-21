@@ -1,18 +1,23 @@
+import {supportReport} from './diagnostics.js';
 // SPDX-License-Identifier: Apache-2.0
 import createMachine from './machine.mjs';
-import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState} from './guest_records.js';
-import {courseInstallFrame,courseInstallRows} from './course_transport.js';
-import {RunBudget,uint64} from './run_budget.js';
-let core, handle, running=false, loaded=false, manifest, panelSequence='-1';
+import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState,guestCourseSelectionState,guestCourseRejection,NotebookFaultObserver} from './guest_records.js';
+import {courseInstallFrame,courseInstallRows,courseSchoolFrames,schoolSelectionRequested} from './course_transport.js';
+import {RunBudget,uint64,resumeBudget,hostSecondsLimit} from './run_budget.js';
+import {SchoolTransport,guestSchoolAsk,schoolPackage,guestSchoolSubmission,guestSchoolCapability,guestSchoolQueueState} from './school_transport.js';
+const notebookFault=new NotebookFaultObserver();
+const school=new SchoolTransport();let schoolMachineEpoch=0;
+let core, handle, bootHandle, running=false, loaded=false, manifest, panelSequence='-1';
 let activeMediumName=null;
 let loops=0, capture=[], checkpoints={}, readyAt=null, started=0,initializing=false;
 let busy=false,backingReady=true,replayUntil=null;
 let guestOutputStart=0;
+let opticalTransport=null;
 let guestObservation='boot';
 let sessionMode='student';
 const SESSION_CONTROL_CONTRACT='lemma-browser-session-modes/2';
-const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','export-panel','restore','bind','close']);
-const developerActions=new Set(['replay','run','raw','raw-batch','course-install','inspect','outcomes','events','capture','capture-outcomes']);
+const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','export-panel','diagnostics','restore','bind','close','school']);
+const developerActions=new Set(['replay','run','raw','raw-batch','optical-frame','course-install','inspect','outcomes','events','capture','capture-outcomes']);
 function admission(message){
  if(!message||typeof message!=='object'||typeof message.action!=='string')throw Error('Invalid browser request');
  const opening=['open','replay','import'].includes(message.action);
@@ -22,6 +27,7 @@ function admission(message){
  if(opening&&loaded&&message.mode!==undefined&&message.mode!==sessionMode)
   throw Error('Session mode is fixed until the machine is closed');
  const mode=opening&&!loaded?(message.mode??'student'):sessionMode;
+ if(['snapshot','restore'].includes(message.action)&&typeof manifest?.checkpoint_contract==='string'&&manifest.checkpoint_contract.startsWith('UNSUPPORTED:'))throw Error(manifest.checkpoint_contract);
  if(!['student','developer','laboratory'].includes(mode))throw Error('Unknown browser session mode');
  if(!ordinaryActions.has(message.action)&&!(mode!=='student'&&developerActions.has(message.action)))
   throw Error(developerActions.has(message.action)?'This control requires Developer or Laboratory mode':'Unsupported browser action');
@@ -34,7 +40,8 @@ const hash=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-25
 // bounded geometry, byte lengths and run quanta, never clocks or addresses.
 function state(){return JSON.parse(core.ccall('lemma_inspect','string',[],[]).replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));}
 function check(name,types=[],args=[]){if(core.ccall(name,'number',types,args))throw Error(core.ccall('lemma_error','string',[],[]));}
-function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourse:guestCourseInstallState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
+function observeFault(data=core.FS.readFile('/uart.bin')){const fault=notebookFault.observe(data,guestOutputStart);if(fault)pause('notebook-fault');return fault;}
+function sendState(){const s=state();const fault=observeFault();void school.observeDelivery(core.FS.readFile('/uart.bin'),guestOutputStart,{cycle:s.cycle,completed:s.panel_completed,accepted:s.panel_sequence,busy:s.paper_busy}).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));postMessage({type:'state',state:s,guestFault:fault,guestInkLoss:notebookFault.inkLoss,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourse:guestCourseInstallState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourseSelection:guestCourseSelectionState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourseRejection:guestCourseRejection(core.FS.readFile('/uart.bin'),guestOutputStart),guestQueue:guestSchoolQueueState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
  pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-timing.started)/1000,
  simulationCallSeconds:timing.runSeconds,backingCallSeconds:timing.backingSeconds,backingCallSecondsDuringRun:timing.backingRunSeconds,
  simulationOutsideBackingSeconds:Math.max(0,timing.runSeconds-timing.backingRunSeconds)}});return s;}
@@ -70,7 +77,8 @@ function admit(e){if(replayUntil!==null)throw Error('Offline replay accepts its 
 function admitRaw(text,observe=true){if(replayUntil!==null)throw Error('Offline replay accepts its recorded events only');
  if(typeof text!=='string'||text.length>256||capture.length>=1000000)throw Error('Raw event exceeds its bound');
  const fields=text.trim().split(/\s+/),s=state();
- if(!['pen','button','uart'].includes(fields[1])&&!(manifest.multimodal_contract==='synthetic-aperture/1'&&fields[1]==='multimodal'))throw Error('Raw input endpoint is absent from this bundle');
+ if(fields[1]==='optical-frame'){if(!opticalTransport||fields.length!==7)throw Error('Optical source is absent or malformed');fields.splice(2,5,...opticalTransport.opticalWords(fields.slice(2)));}
+ if(!['pen','button','uart'].includes(fields[1])&&!(opticalTransport&&fields[1]==='optical-frame')&&!(manifest.multimodal_contract==='synthetic-aperture/1'&&fields[1]==='multimodal'))throw Error('Raw input endpoint is absent from this bundle');
  if(fields[0]==='now')fields[0]=s.cycle;if(fields[1]==='pen'&&fields[2]==='now')fields[2]=s.ticks;
  const row=fields.join(' ');check('lemma_event',['string'],[row]);capture.push(row);if(observe)sendState();}
 function admitBatch(text){
@@ -90,13 +98,14 @@ function admitCourseInstall(message){
  if(manifest.course_install_contract!=='lemma-course-console-command/1')throw Error('This bundle does not expose the guest package installer');
  if(courseInputPartial||guestObservation==='continuation')throw Error('Close and cold-open backing before sending another package after a partial admission or restored continuation');
  if(replayUntil!==null)throw Error('Offline replay accepts its recorded events only');
- const packet=courseInstallFrame(message.bytes,message.transaction);
+ const packet=message.schoolSelect?courseSchoolFrames(message.bytes,message.transaction,true,message.node??0):courseInstallFrame(message.bytes,message.transaction);
  const rows=courseInstallRows(packet,state().cycle);
  if(capture.length+rows.length>1000000)throw Error('Course input exceeds the raw capture limit');
  pause('course-input');
  let accepted=0;
  try{for(const row of rows){admitRaw(row,false);accepted++;}}
  catch(e){courseInputPartial=accepted>0;postMessage({type:'course-admission',accepted,total:rows.length,bytes:packet.length-64,error:String(e)});throw e;}
+ finally{if(message.delivery)void school.transportDelivery(packet,accepted).catch(e=>postMessage({type:'school',operation:'receipts',error:String(e)}));}
  sendState();postMessage({type:'course-admission',accepted,total:rows.length,bytes:packet.length-64,error:null});
 }
 function step(){if(!running)return;try{
@@ -116,7 +125,7 @@ function step(){if(!running)return;try{
  const after=state(),periodic=loops%10===0;
  if(budget?.hostExpired(performance.now())){pause('host-limit');panel(true);sendState();return;}
  const data=(periodic||initializing||budget?.stopOnReady)?core.FS.readFile('/uart.bin'):null;
- if(data)observeReady(data);
+ if(data){observeReady(data);if(observeFault(data)){panel(true);sendState();return;}}
  if(budget?.remaining===0n){pause('cycle-limit');panel(true);sendState();return;}
  if(budget?.panelCompleted(after)){pause('panel-complete');panel(true);sendState();return;}
  if(budget?.stopOnReady&&readyAt!==null){pause('guest-ready');panel(true);sendState();return;}
@@ -150,16 +159,45 @@ async function openMedium(name,initialize){
   throw error;
  }
 }
+async function openProductBoot(name){
+ const root=await navigator.storage.getDirectory();let file,fresh=false;
+ try{file=await root.getFileHandle(name+'.boot.raw');}
+ catch(error){if(error.name!=='NotFoundError')throw error;file=await root.getFileHandle(name+'.boot.raw',{create:true});fresh=true;}
+ const next=await file.createSyncAccessHandle();
+ try{
+  if(fresh){const bytes=await getBytes(manifest.boot_medium);if(bytes.length!==33558528)throw Error('Product boot seed extent differs');
+   next.truncate(bytes.length);for(let i=0;i<bytes.length;i+=1048576){const part=bytes.subarray(i,i+1048576);
+    if(next.write(part,{at:i})!==part.length)throw Error('Product boot seed partial transfer');}next.flush();}
+  if(next.getSize()!==33558528)throw Error('Product boot medium extent differs');return next;
+ }catch(error){try{next.close();}catch{}if(fresh)try{await root.removeEntry(name+'.boot.raw');}catch{}throw error;}
+}
+async function seedProductUser(next){
+ const bytes=await getBytes(manifest.user_seed);if(bytes.length!==268435456)throw Error('Product user seed extent differs');
+ for(let i=0;i<bytes.length;i+=1048576){const part=bytes.subarray(i,i+1048576);
+  if(next.write(part,{at:i})!==part.length)throw Error('Product user seed partial transfer');}next.flush();
+}
 async function load(message){if(loaded)throw Error('Close this machine before opening another');
  if(message.paused!==undefined&&typeof message.paused!=='boolean')throw Error('Open paused must be a Boolean');
  manifest=await(await fetch('./bundle.json')).json();if(manifest.schema!=='lemmasim-browser-bundle/1')throw Error('Unsupported bundle');
+ opticalTransport=null;
+ if(manifest.profile==='lemma-silicon-dev/0.17.0'||manifest.optical_controller_abi!==undefined||manifest.optical_frame_contract!==undefined||manifest.execution_binding?.startsWith('lemma-optical17-')){
+  const transport=await import('./optical_transport.js');
+  if(!transport.opticalBinding(manifest)||manifest.execution_binding!=='lemma-optical17-canonical/1')throw Error('Unsupported canonical optical binding');opticalTransport=transport;
+ }
  if(manifest.session_control_contract!==SESSION_CONTROL_CONTRACT)throw Error('Browser control contract differs from this worker');
  if(!navigator.storage?.getDirectory)throw Error('Browser OPFS persistence is required');
+ const product=manifest.product_boot_contract==='lemma-browser-product-nv/1';
+ if(product&&message.replay)throw Error('Product replay requires separate boot/user outcome tapes');
+ if(product&&message.initialize&&!manifest.user_seed)throw Error('Import a guest-produced user medium first; this Product bundle has no initializer image');
  handle=await openMedium(message.name,!!message.initialize);
  activeMediumName=message.name;
- try{timing={started:performance.now(),runSeconds:0,backingSeconds:0,backingRunSeconds:0};core=await createMachine();core.backing=timedBacking(handle);core.FS.mkdir('/forks');
-  const workload=manifest.workloads[message.initialize&&!message.replay?'initializer':'notebook'];
-  for(const [path,item]of [['/image.elf',workload.image],['/machine.dtb',workload.dtb],['/descriptor.bin',workload.descriptor],['/boot.bin',manifest.rom]])core.FS.writeFile(path,await getBytes(item));
+ try{timing={started:performance.now(),runSeconds:0,backingSeconds:0,backingRunSeconds:0};
+  if(product&&message.initialize)await seedProductUser(handle);
+  if(product)bootHandle=await openProductBoot(message.name);
+  core=await createMachine();core.backing=timedBacking(handle);if(product)core.bootBacking=timedBacking(bootHandle);core.FS.mkdir('/forks');
+  const workload=manifest.workloads[product?'notebook':message.initialize&&!message.replay?'initializer':'notebook'];
+  const assets=product?[['/descriptor.bin',workload.descriptor],['/boot.bin',manifest.rom]]:[['/image.elf',workload.image],['/machine.dtb',workload.dtb],['/descriptor.bin',workload.descriptor],['/boot.bin',manifest.rom]];
+  for(const [path,item]of assets)core.FS.writeFile(path,await getBytes(item));
   if(message.replay){
    core.FS.writeFile('/replay.io',new Uint8Array(message.replayLog));check('lemma_create_mode',['number'],[1]);
    await restore(message.checkpoint);
@@ -169,12 +207,12 @@ async function load(message){if(loaded)throw Error('Close this machine before op
    const until=BigInt(log.until);if(until<BigInt(state().cycle)||until>18446744073709551615n)throw Error('Invalid replay end');
    for(const row of log.events.slice(boundary.eventCount)){if(typeof row!=='string'||row.length>256)throw Error('Invalid bounded raw event');const cycle=BigInt(row.split(' ')[0]);if(cycle<BigInt(state().cycle)||cycle>until)throw Error('Replay event outside suffix');check('lemma_event',['string'],[row]);}
    replayUntil=String(until);
-  }else check('lemma_create');courseInputPartial=false;loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay;started=performance.now();running=!message.paused;pauseReason=message.paused?'opened-paused':null;sendState();panel(true);if(running)scheduleStep();
- }catch(e){pause('error');core?.ccall('lemma_destroy',null,[],[]);handle?.close();handle=null;activeMediumName=null;loaded=false;throw e;}}
+  }else check('lemma_create');courseInputPartial=false;loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;notebookFault.reset(guestOutputStart);guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay&&!product;started=performance.now();running=!message.paused;pauseReason=message.paused?'opened-paused':null;sendState();panel(true);if(running)scheduleStep();
+ }catch(e){pause('error');core?.ccall('lemma_destroy',null,[],[]);handle?.close();bootHandle?.close();handle=null;bootHandle=null;activeMediumName=null;loaded=false;throw e;}}
 async function launchNotebook(){busy=true;try{core.ccall('lemma_destroy',null,[],[]);
  const w=manifest.workloads.notebook;
  for(const [path,item]of [['/image.elf',w.image],['/machine.dtb',w.dtb],['/descriptor.bin',w.descriptor]])core.FS.writeFile(path,await getBytes(item));
- check('lemma_create');if(budget)budget.rebase(state().cycle);guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='boot';loops=0;capture=[];checkpoints={};readyAt=null;started=performance.now();sendState();panel(true);running=true;pauseReason=null;scheduleStep();
+ check('lemma_create');if(budget)budget.rebase(state().cycle);guestOutputStart=core.FS.readFile('/uart.bin').length;notebookFault.reset(guestOutputStart);guestObservation='boot';loops=0;capture=[];checkpoints={};readyAt=null;started=performance.now();sendState();panel(true);running=true;pauseReason=null;scheduleStep();
  }finally{busy=false;}}
 async function bindPrivate(){
  // Copy opaque backing bytes, including observed unacknowledged changes.
@@ -201,13 +239,34 @@ async function restore(bytes){
  // is complete. On storage failure, retry binding or export its actual bytes.
  backingReady=false;await bindPrivate();
 }
+async function schoolActivity(message){
+ if(!loaded||manifest.school_service_contract!=='lemma-school-browser-service/1')throw Error('Open a school-capable machine first');
+ const epoch=schoolMachineEpoch;
+ let result;
+ if(message.operation==='sample'){
+  if(!manifest.sample_course)throw Error('This bundle has no compiled sample');
+  const bytes=new Uint8Array(await getBytes(manifest.sample_course));
+  result={package_hex:Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join(''),sample:true};
+ }else {let helpAsk=null;result=await school.operation(message,()=>{const ask=guestSchoolAsk(core.FS.readFile('/uart.bin'),guestOutputStart);if(message.operation==='help')helpAsk=ask;return ask;},()=>guestSchoolSubmission(core.FS.readFile('/uart.bin'),guestOutputStart));
+  if(result.decision)school.beginDelivery(result,helpAsk,core.FS.readFile('/uart.bin').length);}
+ if(epoch!==schoolMachineEpoch)throw Error('Machine changed while school request was pending');
+ if(result.package_hex!==undefined||result.ack_bytes!==undefined){
+  if(busy)throw Error('Machine storage is busy; retry this school activity');
+  const wasRunning=running,transaction=(BigInt(crypto.getRandomValues(new Uint32Array(1))[0])+1n).toString();
+  if(result.ack_bytes){pause('school-ack');for(const row of courseInstallRows(result.ack_bytes,state().cycle))admitRaw(row,false);sendState();}
+  else admitCourseInstall({bytes:schoolPackage(result),transaction,schoolSelect:schoolSelectionRequested(message.operation,guestSchoolCapability(core.FS.readFile('/uart.bin'),guestOutputStart)!==null),node:result.node??0,delivery:!!result.decision});
+  if(wasRunning){running=true;pauseReason=null;scheduleStep();}
+ }
+ const {package_hex,ack_bytes,...view}=result;postMessage({type:'school',operation:message.operation,result:view});
+}
 onmessage=async({data:m})=>{
  // Admission is outside the mutation/error-pause path. A denied control must
  // not cancel scheduled clocks, touch backing storage or alter live state.
- let nextMode;try{nextMode=admission(m);}catch(e){postMessage({type:'error',error:String(e)});return;}
+ let nextMode;try{nextMode=admission(m);if(m.action==='resume')hostSecondsLimit(m.hostSeconds);}catch(e){postMessage({type:'error',error:String(e)});return;}
+ if(m.action==='school'){schoolActivity(m).catch(e=>postMessage({type:'school',operation:m.operation,error:String(e)}));return;}
  if(busy){postMessage({type:'error',error:'A storage or restore operation is pending'});return;}
  busy=true;try{
- if(m.action==='open'||m.action==='replay'){if(loaded)throw Error('Close this machine before opening another');capture=[];checkpoints={};replayUntil=null;backingReady=true;budget=null;readyAt=null;loops=0;panelSequence='-1';
+ if(m.action==='open'||m.action==='replay'){school.disconnect();schoolMachineEpoch++;if(loaded)throw Error('Close this machine before opening another');capture=[];checkpoints={};replayUntil=null;backingReady=true;budget=null;readyAt=null;loops=0;panelSequence='-1';
   sessionMode=nextMode;await load({...m,replay:m.action==='replay',initialize:m.action==='replay'||m.initialize});return;}
  if(m.action==='import'){
   if(loaded)throw Error('Close this machine before importing another medium');
@@ -218,30 +277,43 @@ onmessage=async({data:m})=>{
  }
  if(!loaded)throw Error('Open a machine first');
  if(m.action==='pause'){pause('user');sendState();}
- else if(m.action==='resume'){if(!backingReady)throw Error('Private origin backing is incomplete; retry binding before continuing');budget=null;pauseReason=null;running=true;scheduleStep();}
+ else if(m.action==='resume'){if(!backingReady)throw Error('Private origin backing is incomplete; retry binding before continuing');const observed=state();const next=resumeBudget(observed.cycle,m.hostSeconds);budget=next;pauseReason=null;running=true;sendState();scheduleStep();}
  else if(m.action==='run'){if(!backingReady)throw Error('Private origin backing is incomplete; retry binding before continuing');
   if(m.stopOnPanel!==undefined&&typeof m.stopOnPanel!=='boolean')throw Error('Panel stop must be a boolean');
   const initial=state(),next=new RunBudget(initial.cycle,m.cycles,m.stopOnReady??false,m.hostSeconds??null,performance.now(),m.stopOnPanel?initial.panel_completed:null);pause(null);budget=next;running=true;sendState();scheduleStep();}
  else if(m.action==='pen'||m.action==='button'){admit(m);}
  else if(m.action==='raw'){admitRaw(m.row);}
  else if(m.action==='raw-batch'){admitBatch(m.rows);}
+ else if(m.action==='optical-frame'){
+  if(!opticalTransport)throw Error('Optical source is absent from this bundle');
+  if(!(m.bytes instanceof ArrayBuffer))throw Error('Optical frame requires raw ArrayBuffer bytes');
+  const beats=opticalTransport.opticalFrameBeats(m.endpoint,new Uint8Array(m.bytes));
+  if(capture.length+beats.length>1000000)throw Error('Raw capture bound exhausted');
+  const cycle=state().cycle;let accepted=0;
+  try{for(const beat of beats){admitRaw(`${cycle} optical-frame ${beat.join(' ')}`,false);accepted++;}}
+  finally{postMessage({type:'optical-admission',accepted,total:beats.length,bytes:m.bytes.byteLength,error:accepted===beats.length?null:'Remainder rejected; accepted prefix retained'});}
+  sendState();
+ }
  else if(m.action==='course-install')admitCourseInstall(m);
  else if(m.action==='inspect'){sendState();postMessage({type:'uart',text:new TextDecoder().decode(core.FS.readFile('/uart.bin'))});}
- else if(m.action==='reset'){if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');pause('reset');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='boot';check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}
+ else if(m.action==='reset'){school.disconnect();schoolMachineEpoch++;if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');pause('reset');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;notebookFault.reset(guestOutputStart);guestObservation='boot';check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}
  else if(m.action==='snapshot'){pause('snapshot');const path='/snapshot-'+loops+'.bin';check('lemma_snapshot',['string'],[path]);
   const b=core.FS.readFile(path);core.FS.unlink(path);checkpoints[await hash(b)]={eventCount:capture.length,cycle:state().cycle};
   postMessage({type:'export',name:'lemma-checkpoint.bin',bytes:b},[b.buffer]);sendState();}
  else if(m.action==='export'){pause('export');const path='/durable-'+loops+'.raw';check('lemma_export',['string'],[path]);
   const b=core.FS.readFile(path);core.FS.unlink(path);postMessage({type:'export',name:'lemma-backing.raw',bytes:b},[b.buffer]);sendState();}
+ else if(m.action==='diagnostics'){if(manifest.support_report_contract!=='lemma-client-support-report/1')throw Error('Support report contract unavailable');const report=supportReport({manifest,state:state(),uart:core.FS.readFile('/uart.bin'),guestStart:guestOutputStart,mode:sessionMode,readyAt,timing:{...timing,elapsedSeconds:(performance.now()-started)/1000},capture});const bytes=new TextEncoder().encode(JSON.stringify(report,null,2)+'\n');postMessage({type:'export',name:'lemma-support.json',bytes},[bytes.buffer]);}
  else if(m.action==='export-panel'){
   try{exportPanel();}catch(error){postMessage({type:'error',error:String(error)});return;}
  }
  else if(m.action==='restore'){
+  if(manifest.product_boot_contract==='lemma-browser-product-nv/1')throw Error('Product checkpoint import needs an independent persistent boot backing; finite same-Wasm diagnostic restore is separate');
+  school.disconnect();schoolMachineEpoch++;
   // The machine validates before replacing authoritative state. Reject an
   // incompatible/corrupt archive without cancelling the live run or budget.
   // No asynchronous copy starts until this synchronous acceptance succeeds.
   try{restoreCheckpoint(m.bytes);}catch(error){postMessage({type:'error',error:String(error)});return;}
-  pause('restore');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='continuation';capture=[];checkpoints={};replayUntil=null;readyAt=null;
+  pause('restore');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;notebookFault.reset(guestOutputStart);guestObservation='continuation';capture=[];checkpoints={};replayUntil=null;readyAt=null;
   // Clear launch observations before private backing can fail. The accepted
   // continuation remains paused and retryable, with no prior Ready/save label.
   backingReady=false;await bindPrivate();sendState();panel(true);
@@ -255,6 +327,6 @@ onmessage=async({data:m})=>{
  else if(m.action==='capture'||m.action==='capture-outcomes'){pause('capture');const path=core.ccall('lemma_capture_path','string',[],[]);if(!path)throw Error('This replay instance does not capture live outcomes');
   const b=core.FS.readFile(path);postMessage({type:'export',name:'lemma-backing.io',bytes:b},[b.buffer]);
   if(m.action==='capture')exportEvents();sendState();}
- else if(m.action==='close'){pause('close');core.ccall('lemma_destroy',null,[],[]);handle.close();loaded=false;handle=null;activeMediumName=null;postMessage({type:'closed'});}
+ else if(m.action==='close'){school.disconnect();schoolMachineEpoch++;pause('close');core.ccall('lemma_destroy',null,[],[]);handle.close();bootHandle?.close();loaded=false;handle=null;bootHandle=null;activeMediumName=null;postMessage({type:'closed'});}
  else throw Error('Unsupported browser action');
  }catch(e){pause('error');if(loaded)sendState();postMessage({type:'error',error:String(e)});}finally{busy=false;}};

@@ -1,0 +1,69 @@
+--- a/sim/rtl/lemma_pen.sv
++++ b/sim/rtl/lemma_pen.sv
+@@ -138,11 +138,18 @@
+     assign losses_incremented = losses + 64'd1;
+   end
+   logic [63:0] last_time, contact_deadline;
++  logic contact_deadline_valid;
+   logic loss, resync, release_seen, bad_sample;
+   logic access_ok, lose;
+   wire [5:0] range_errors;
+-  wire time_regressed, time_exhausted;
++  wire time_regressed, time_exhausted, watchdog_before;
++  wire watchdog_expired = (IHP_SRAM ? contact_deadline_valid : (contact_deadline != 0)) && !watchdog_before;
++  // Legal accepted known timestamps cannot wrap +10000000 to zero. Preserve
++  // the original vector-add X/Z poison for accepted unknown-time stimuli.
++  wire deadline_known_mask = ~((^sample_time) ^ (^sample_time));
+   if (IHP_SRAM) begin : physical_validation
++    (* keep_hierarchy = 1 *) lemma_pen_timestamp_less watchdog_time(
++      .left(now_ticks), .right(contact_deadline), .less(watchdog_before));
+     (* keep_hierarchy = 1 *) lemma_pen_sample_ranges #(.PRESSURE_MAX(PRESSURE_MAX)) ranges(
+       .x(sample_x), .y(sample_y), .pressure(sample_pressure), .flags(sample_flags),
+       .tool(sample_tool), .buttons(sample_buttons), .invalid(range_errors));
+@@ -151,6 +158,7 @@
+     (* keep_hierarchy = 1 *) lemma_pen_timestamp_less bounded_time(
+       .left(64'hffffffff_ff67697f), .right(sample_time), .less(time_exhausted));
+   end else begin : register_validation
++    assign watchdog_before = now_ticks < contact_deadline;
+     assign range_errors = {sample_x > 65535, sample_y > 65535,
+       sample_pressure > PRESSURE_MAX, sample_flags > 15, sample_tool > 2, sample_buttons > 7};
+     assign time_regressed = sample_time < last_time;
+@@ -210,10 +218,10 @@
+   assign irq = count != 0 || loss || fault != 0;
+   // Serialize external ingress against register mutations; reads never pop.
+   assign sample_ready = ready && !(valid && write) &&
+-                        !(contact_deadline != 0 && now_ticks >= contact_deadline);
++                        !(watchdog_expired);
+   assign bad_sample = time_regressed || time_exhausted ||
+     (|range_errors);
+-  assign lose = (contact_deadline != 0 && now_ticks >= contact_deadline) ||
++  assign lose = (watchdog_expired) ||
+     (sample_valid && sample_ready && !loss &&
+       (bad_sample || sample_flags[3] || sequence_exhausted ||
+        (!resync && count == FIFO_DEPTH)));
+@@ -248,7 +256,7 @@
+     begin
+       count <= count != 0 ? 1 : 0;
+       tail <= head + (count != 0 ? 1'b1 : 1'b0);
+-      contact_deadline <= 0;
++      contact_deadline <= 0; contact_deadline_valid <= 0;
+       loss <= 1;
+       resync <= 1;
+       release_seen <= 0;
+@@ -277,7 +285,7 @@
+       refill <= 0; refill_select <= '0;
+       epoch <= 1; head_epoch <= 1; next_sequence <= 1;
+       sequence_all_ones <= 4'b0000;
+-      losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0;
++      losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0; contact_deadline_valid <= 0;
+       loss <= 0; resync <= 0; release_seen <= 0;
+     end else if (refill == 2) begin
+       refill_select <= {{(BANKS-1){1'b0}},1'b1} << head[BANK_BITS-1:0];
+@@ -317,6 +325,7 @@
+           sequence_all_ones[part] <= &sequence_incremented[part*16 +:16];
+         head_epoch <= epoch; last_time <= sample_time;
+         contact_deadline <= sample_flags[0] ? sample_time + 10000000 : 0;
++        contact_deadline_valid <= sample_flags[0] & deadline_known_mask;
+         resync <= 0; sample_accepted <= 1;
+       end
+     end

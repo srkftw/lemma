@@ -475,8 +475,15 @@ class Authority(unittest.TestCase):
             explicit = post("status", now=0)
             self.assertFalse(explicit["ok"])
             self.assertIn("controlled-ms", explicit["error"])
-            competing = subprocess.run([sys.executable, str(REPO / "scripts/school_transport.py"),
+            before_runtime = json.loads((real / "transport.json").read_text())
+            routed = subprocess.run([sys.executable, str(REPO / "scripts/school_transport.py"),
                                         "--binary", str(BINARY), str(real), json.dumps(self.command("status"))],
+                                       capture_output=True, timeout=10)
+            self.assertEqual(routed.returncode, 0, routed.stdout + routed.stderr)
+            self.assertEqual(json.loads(routed.stdout)["result"]["generation"], first["result"]["generation"])
+            self.assertEqual(json.loads((real / "transport.json").read_text()), before_runtime)
+            competing = subprocess.run([sys.executable, str(REPO / "scripts/school_transport.py"),
+                                        "--binary", str(BINARY), str(real), "run", "--port", str(port)],
                                        capture_output=True, timeout=10)
             self.assertNotEqual(competing.returncode, 0)
             self.assertIn(b"already owned", competing.stderr)

@@ -1,0 +1,276 @@
+{
+  "provenance": {
+    "scope": "Exact captured optimizedpumpSave definition and owningcompanionassembly from failedCI39479773667; fixturedoesnotclaim freshproduction orfullaudit. Its complete normalizedbody equals genuineSchool25 producer.",
+    "CI_archive": "ci-39479773667-writing.zip",
+    "unit_sha256": "d8220fe31ccf268d44bccb588cc9cb113cf2de70ec9a3e810c3a96f19d72181f",
+    "program_opt_sha256": "ea53a9160b971c9337fd7b4d9d5e67b24e07865300f133b76f8e60ff6474b4ca",
+    "genuine_School25_reference": "task009-school25-notebook-a1/users/notebook",
+    "normalized_body_sha256": "bd61e44e48e40c9d8891a271c32ecba24310ed6fbac68055a15f3c70699806c6"
+  },
+  "unit": {
+    "configuration": "lemmasim-notebook",
+    "role": "user",
+    "image_key": "notebook",
+    "image_id": 2,
+    "contract_version": "core0-user-v0.1",
+    "used_device_ops": [],
+    "roots": [
+      {
+        "symbol": "lemma_user_notebook_core0_action_410",
+        "source": "Lemma.Applications.Notebook.main",
+        "id": 1,
+        "args": [
+          "u64"
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "symbol": "lemma_user_notebook_core0_scalar_0",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.statusFailed",
+        "effects": [],
+        "args": [
+          "u8"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_scalar_122",
+        "source": "Lemma.Applications.Notebook.saveResponseStatus",
+        "effects": [],
+        "args": [
+          "u64",
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_scalar_123",
+        "source": "Lemma.Applications.Notebook.checkpointResponseStatus",
+        "effects": [],
+        "args": [
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_2",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.put",
+        "effects": [
+          "checked-access",
+          "virtual-write"
+        ],
+        "args": [
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_5",
+        "source": "Lemma.User.Syscall.time",
+        "effects": [
+          "io-order",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": []
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_7",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.get",
+        "effects": [
+          "checked-access",
+          "virtual-read"
+        ],
+        "args": [
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_21",
+        "source": "Lemma.Services.Store.Client.responseField",
+        "effects": [
+          "checked-access",
+          "virtual-read"
+        ],
+        "args": [
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_40",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.observeStoreSequence",
+        "effects": [
+          "checked-access",
+          "virtual-read",
+          "virtual-write"
+        ],
+        "args": [
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_45",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.reportCommitState",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": [
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_114",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.issue",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": [
+          "u64",
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_125",
+        "source": "Lemma.Services.Store.Client.pollCall",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": [
+          "u64",
+          "u64",
+          "u64",
+          "u64",
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_127",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.publishStatus",
+        "effects": [
+          "checked-access",
+          "virtual-read",
+          "virtual-write"
+        ],
+        "args": []
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_128",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.saveFailure",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": [
+          "u8"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_129",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.issueNext",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": []
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_137",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.finishRecord",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": []
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_139",
+        "source": "Lemma.Applications.Notebook.failWriting",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": [
+          "u8"
+        ]
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_140",
+        "source": "_private.Lemma.Applications.Notebook.0.Lemma.Applications.Notebook.pumpSave",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": []
+      },
+      {
+        "symbol": "lemma_user_notebook_core0_action_410",
+        "source": "Lemma.Applications.Notebook.main",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition",
+          "may-diverge"
+        ],
+        "args": [
+          "u64"
+        ]
+      }
+    ]
+  },
+  "optimized_ir": "define { i64, i64 } @lemma_user_notebook_core0_action_140() local_unnamed_addr #3 {\nentry:\n  %action.call.result0 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 160)\n  %action.call.status-word1 = extractvalue { i64, i64 } %action.call.result0, 0\n  %action.call.status2 = trunc nuw nsw i64 %action.call.status-word1 to i8\n  %action.call.value3 = extractvalue { i64, i64 } %action.call.result0, 1\n  %call4 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status2)\n  br i1 %call4, label %action.if.merge.2, label %action.if.else.1\n\naction.if.else.1:                                 ; preds = %entry\n  switch i64 %action.call.value3, label %action.if.else.13 [\n    i64 0, label %action.if.merge.2\n    i64 8, label %action.if.then.6\n    i64 5, label %action.if.then.12\n  ]\n\naction.if.then.6:                                 ; preds = %action.if.else.1\n  %action.call.result8 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 216)\n  %action.call.status-word9 = extractvalue { i64, i64 } %action.call.result8, 0\n  %action.call.status10 = trunc nuw nsw i64 %action.call.status-word9 to i8\n  %call12 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status10)\n  br i1 %call12, label %action.if.merge.2, label %action.if.else.10\n\naction.if.else.10:                                ; preds = %action.if.then.6\n  %action.call.value11 = extractvalue { i64, i64 } %action.call.result8, 1\n  %action.call.result14 = call { i64, i64 } @lemma_user_notebook_core0_action_114(i64 2, i64 0, i64 %action.call.value11, i64 0)\n  %action.call.status-word15 = extractvalue { i64, i64 } %action.call.result14, 0\n  br label %action.if.merge.2\n\naction.if.then.12:                                ; preds = %action.if.else.1\n  %action.call.result21 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 504)\n  %action.call.status-word22 = extractvalue { i64, i64 } %action.call.result21, 0\n  %action.call.status23 = trunc nuw nsw i64 %action.call.status-word22 to i8\n  %action.call.value24 = extractvalue { i64, i64 } %action.call.result21, 1\n  %call25 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status23)\n  br i1 %call25, label %action.if.merge.2, label %action.if.else.16\n\naction.if.else.16:                                ; preds = %action.if.then.12\n  %action.call.result27 = call { i64, i64 } @lemma_user_notebook_core0_action_5()\n  %action.call.status-word28 = extractvalue { i64, i64 } %action.call.result27, 0\n  %action.call.status29 = trunc nuw i64 %action.call.status-word28 to i8\n  %call31 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status29)\n  br i1 %call31, label %action.if.merge.2, label %action.if.else.19\n\naction.if.else.19:                                ; preds = %action.if.else.16\n  %action.call.value30 = extractvalue { i64, i64 } %action.call.result27, 1\n  %cmp33 = icmp ult i64 %action.call.value30, %action.call.value24\n  br i1 %cmp33, label %action.if.merge.2, label %action.if.else.22\n\naction.if.else.22:                                ; preds = %action.if.else.19\n  %action.call.result34 = call { i64, i64 } @lemma_user_notebook_core0_action_2(i64 160, i64 4)\n  %action.call.status-word35 = extractvalue { i64, i64 } %action.call.result34, 0\n  %action.call.status36 = trunc nuw nsw i64 %action.call.status-word35 to i8\n  %call38 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status36)\n  br i1 %call38, label %action.if.merge.2, label %action.if.else.25\n\naction.if.else.25:                                ; preds = %action.if.else.22\n  %action.call.result40 = call { i64, i64 } @lemma_user_notebook_core0_action_114(i64 13, i64 0, i64 0, i64 0)\n  %action.call.status-word41 = extractvalue { i64, i64 } %action.call.result40, 0\n  br label %action.if.merge.2\n\naction.if.else.13:                                ; preds = %action.if.else.1\n  %action.call.result52 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 168)\n  %action.call.status-word53 = extractvalue { i64, i64 } %action.call.result52, 0\n  %action.call.status54 = trunc nuw nsw i64 %action.call.status-word53 to i8\n  %action.call.value55 = extractvalue { i64, i64 } %action.call.result52, 1\n  %call56 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status54)\n  br i1 %call56, label %action.if.merge.2, label %action.if.else.28\n\naction.if.else.28:                                ; preds = %action.if.else.13\n  %action.call.result58 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 232)\n  %action.call.status-word59 = extractvalue { i64, i64 } %action.call.result58, 0\n  %action.call.status60 = trunc nuw nsw i64 %action.call.status-word59 to i8\n  %action.call.value61 = extractvalue { i64, i64 } %action.call.result58, 1\n  %call62 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status60)\n  br i1 %call62, label %action.if.merge.2, label %action.if.else.31\n\naction.if.else.31:                                ; preds = %action.if.else.28\n  %action.call.result64 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 72)\n  %action.call.status-word65 = extractvalue { i64, i64 } %action.call.result64, 0\n  %action.call.status66 = trunc nuw nsw i64 %action.call.status-word65 to i8\n  %action.call.value67 = extractvalue { i64, i64 } %action.call.result64, 1\n  %call68 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status66)\n  br i1 %call68, label %action.if.merge.2, label %action.if.else.34\n\naction.if.else.34:                                ; preds = %action.if.else.31\n  %action.call.result70 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 224)\n  %action.call.status-word71 = extractvalue { i64, i64 } %action.call.result70, 0\n  %action.call.status72 = trunc nuw nsw i64 %action.call.status-word71 to i8\n  %action.call.value73 = extractvalue { i64, i64 } %action.call.result70, 1\n  %call74 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status72)\n  br i1 %call74, label %action.if.merge.2, label %action.if.else.37\n\naction.if.else.37:                                ; preds = %action.if.else.34\n  %action.call.result76 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 176)\n  %action.call.status-word77 = extractvalue { i64, i64 } %action.call.result76, 0\n  %action.call.status78 = trunc nuw nsw i64 %action.call.status-word77 to i8\n  %call80 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status78)\n  br i1 %call80, label %action.if.merge.2, label %action.if.else.40\n\naction.if.else.40:                                ; preds = %action.if.else.37\n  %action.call.value79 = extractvalue { i64, i64 } %action.call.result76, 1\n  %action.call.result83 = call { i64, i64 } @lemma_user_notebook_core0_action_125(i64 %action.call.value55, i64 134144, i64 %action.call.value61, i64 %action.call.value67, i64 %action.call.value73, i64 %action.call.value79, i64 0)\n  %action.call.status-word84 = extractvalue { i64, i64 } %action.call.result83, 0\n  %action.call.status85 = trunc nuw i64 %action.call.status-word84 to i8\n  %action.call.value86 = extractvalue { i64, i64 } %action.call.result83, 1\n  %cmp88 = icmp eq i64 %action.call.status-word84, 12\n  br i1 %cmp88, label %action.if.merge.2, label %action.if.else.43\n\naction.if.else.43:                                ; preds = %action.if.else.40\n  %call89 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status85)\n  br i1 %call89, label %action.if.then.45, label %action.if.else.46\n\naction.if.then.45:                                ; preds = %action.if.else.43\n  %action.call.result91 = call { i64, i64 } @lemma_user_notebook_core0_action_128(i8 zeroext %action.call.status85)\n  %action.call.status-word92 = extractvalue { i64, i64 } %action.call.result91, 0\n  br label %action.if.merge.2\n\naction.if.else.46:                                ; preds = %action.if.else.43\n  %cmp95 = icmp eq i64 %action.call.value3, 6\n  br i1 %cmp95, label %action.if.then.48, label %action.if.merge.50\n\naction.if.then.48:                                ; preds = %action.if.else.46\n  %action.call.result96 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 496)\n  %action.call.status-word97 = extractvalue { i64, i64 } %action.call.result96, 0\n  %action.call.status98 = trunc nuw nsw i64 %action.call.status-word97 to i8\n  %action.call.value99 = extractvalue { i64, i64 } %action.call.result96, 1\n  %call100 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status98)\n  br i1 %call100, label %action.if.merge.50, label %action.if.else.52\n\naction.if.else.52:                                ; preds = %action.if.then.48\n  %action.call.result103 = call { i64, i64 } @lemma_user_notebook_core0_action_21(i64 134144, i64 48)\n  %action.call.status-word104 = extractvalue { i64, i64 } %action.call.result103, 0\n  %action.call.status105 = trunc nuw i64 %action.call.status-word104 to i8\n  %call107 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status105)\n  br i1 %call107, label %action.if.merge.50, label %action.if.else.55\n\naction.if.else.55:                                ; preds = %action.if.else.52\n  %action.call.value106 = extractvalue { i64, i64 } %action.call.result103, 1\n  %call109 = call zeroext i8 @lemma_user_notebook_core0_scalar_122(i64 %action.call.value61, i64 %action.call.value106, i64 %action.call.value86, i64 %action.call.value99)\n  br label %action.if.merge.50\n\naction.if.merge.50:                               ; preds = %action.if.else.46, %action.if.then.48, %action.if.else.52, %action.if.else.55\n  %action.if.status114 = phi i8 [ %action.call.status98, %action.if.then.48 ], [ %call109, %action.if.else.55 ], [ %action.call.status105, %action.if.else.52 ], [ 0, %action.if.else.46 ]\n  %call116 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.if.status114)\n  br i1 %call116, label %action.if.then.57, label %action.if.else.58\n\naction.if.then.57:                                ; preds = %action.if.merge.50\n  %action.call.result118 = call { i64, i64 } @lemma_user_notebook_core0_action_128(i8 zeroext %action.if.status114)\n  %action.call.status-word119 = extractvalue { i64, i64 } %action.call.result118, 0\n  br label %action.if.merge.2\n\naction.if.else.58:                                ; preds = %action.if.merge.50\n  %action.call.result122 = call { i64, i64 } @lemma_user_notebook_core0_action_40(i64 %action.call.value86)\n  %action.call.status-word123 = extractvalue { i64, i64 } %action.call.result122, 0\n  %action.call.status124 = trunc nuw nsw i64 %action.call.status-word123 to i8\n  %call126 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status124)\n  br i1 %call126, label %action.if.merge.2, label %action.if.else.61\n\naction.if.else.61:                                ; preds = %action.if.else.58\n  switch i64 %action.call.value3, label %action.if.merge.2 [\n    i64 1, label %action.if.then.63\n    i64 2, label %action.if.then.66\n    i64 3, label %action.if.then.78\n    i64 4, label %action.if.then.84\n    i64 6, label %action.if.then.126\n  ]\n\naction.if.then.63:                                ; preds = %action.if.else.61\n  %action.call.result129 = call { i64, i64 } @lemma_user_notebook_core0_action_129()\n  %action.call.status-word130 = extractvalue { i64, i64 } %action.call.result129, 0\n  br label %action.if.merge.2\n\naction.if.then.66:                                ; preds = %action.if.else.61\n  %action.call.result134 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 184)\n  %action.call.status-word135 = extractvalue { i64, i64 } %action.call.result134, 0\n  %action.call.status136 = trunc nuw nsw i64 %action.call.status-word135 to i8\n  %action.call.value137 = extractvalue { i64, i64 } %action.call.result134, 1\n  %call138 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status136)\n  br i1 %call138, label %action.if.merge.2, label %action.if.else.70\n\naction.if.else.70:                                ; preds = %action.if.then.66\n  %action.call.result140 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 448)\n  %action.call.status-word141 = extractvalue { i64, i64 } %action.call.result140, 0\n  %action.call.status142 = trunc nuw nsw i64 %action.call.status-word141 to i8\n  %call144 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status142)\n  br i1 %call144, label %action.if.merge.2, label %action.if.else.73\n\naction.if.else.73:                                ; preds = %action.if.else.70\n  %action.call.value143 = extractvalue { i64, i64 } %action.call.result140, 1\n  %bin146 = add i64 %action.call.value143, %action.call.value137\n  %action.call.result147 = call { i64, i64 } @lemma_user_notebook_core0_action_2(i64 184, i64 %bin146)\n  %action.call.status-word148 = extractvalue { i64, i64 } %action.call.result147, 0\n  %action.call.status149 = trunc nuw nsw i64 %action.call.status-word148 to i8\n  %call151 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status149)\n  br i1 %call151, label %action.if.merge.2, label %action.if.else.76\n\naction.if.else.76:                                ; preds = %action.if.else.73\n  %action.call.result153 = call { i64, i64 } @lemma_user_notebook_core0_action_129()\n  %action.call.status-word154 = extractvalue { i64, i64 } %action.call.result153, 0\n  br label %action.if.merge.2\n\naction.if.then.78:                                ; preds = %action.if.else.61\n  %action.call.result164 = call { i64, i64 } @lemma_user_notebook_core0_action_137()\n  %action.call.status-word165 = extractvalue { i64, i64 } %action.call.result164, 0\n  %action.call.status166 = trunc nuw i64 %action.call.status-word165 to i8\n  %call168 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status166)\n  br i1 %call168, label %action.if.then.81, label %action.if.merge.2\n\naction.if.then.81:                                ; preds = %action.if.then.78\n  %action.call.result170 = call { i64, i64 } @lemma_user_notebook_core0_action_139(i8 zeroext %action.call.status166)\n  %action.call.status-word171 = extractvalue { i64, i64 } %action.call.result170, 0\n  br label %action.if.merge.2\n\naction.if.then.84:                                ; preds = %action.if.else.61\n  %action.call.result178 = call { i64, i64 } @lemma_user_notebook_core0_action_21(i64 134144, i64 48)\n  %action.call.status-word179 = extractvalue { i64, i64 } %action.call.result178, 0\n  %action.call.status180 = trunc nuw i64 %action.call.status-word179 to i8\n  %action.call.value181 = extractvalue { i64, i64 } %action.call.result178, 1\n  %call182 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status180)\n  br i1 %call182, label %action.if.merge.2, label %action.if.else.88\n\naction.if.else.88:                                ; preds = %action.if.then.84\n  %call184 = call zeroext i8 @lemma_user_notebook_core0_scalar_123(i64 %action.call.value61, i64 %action.call.value181)\n  %cmp185 = icmp eq i8 %call184, -22\n  br i1 %cmp185, label %action.if.then.90, label %action.if.else.91\n\naction.if.then.90:                                ; preds = %action.if.else.88\n  %action.call.result186 = call { i64, i64 } @lemma_user_notebook_core0_action_128(i8 zeroext -22)\n  %action.call.status-word187 = extractvalue { i64, i64 } %action.call.result186, 0\n  br label %action.if.merge.2\n\naction.if.else.91:                                ; preds = %action.if.else.88\n  switch i64 %action.call.value181, label %action.if.else.106 [\n    i64 1, label %action.if.then.93\n    i64 0, label %action.if.then.105\n  ]\n\naction.if.then.93:                                ; preds = %action.if.else.91\n  %action.call.result191 = call { i64, i64 } @lemma_user_notebook_core0_action_5()\n  %action.call.status-word192 = extractvalue { i64, i64 } %action.call.result191, 0\n  %action.call.status193 = trunc nuw i64 %action.call.status-word192 to i8\n  %action.call.value194 = extractvalue { i64, i64 } %action.call.result191, 1\n  %call195 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status193)\n  br i1 %call195, label %action.if.merge.2, label %action.if.else.97\n\naction.if.else.97:                                ; preds = %action.if.then.93\n  %cmp198 = icmp ugt i64 %action.call.value194, -1000001\n  br i1 %cmp198, label %action.if.then.99, label %action.if.else.100\n\naction.if.then.99:                                ; preds = %action.if.else.97\n  %action.call.result199 = call { i64, i64 } @lemma_user_notebook_core0_action_128(i8 zeroext -21)\n  %action.call.status-word200 = extractvalue { i64, i64 } %action.call.result199, 0\n  br label %action.if.merge.2\n\naction.if.else.100:                               ; preds = %action.if.else.97\n  %bin203 = add nuw i64 %action.call.value194, 1000000\n  %action.call.result204 = call { i64, i64 } @lemma_user_notebook_core0_action_2(i64 504, i64 %bin203)\n  %action.call.status-word205 = extractvalue { i64, i64 } %action.call.result204, 0\n  %action.call.status206 = trunc nuw nsw i64 %action.call.status-word205 to i8\n  %call208 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status206)\n  br i1 %call208, label %action.if.merge.2, label %action.if.else.103\n\naction.if.else.103:                               ; preds = %action.if.else.100\n  %action.call.result210 = call { i64, i64 } @lemma_user_notebook_core0_action_2(i64 160, i64 5)\n  %action.call.status-word211 = extractvalue { i64, i64 } %action.call.result210, 0\n  br label %action.if.merge.2\n\naction.if.then.105:                               ; preds = %action.if.else.91\n  %cmp221 = icmp eq i64 %action.call.value61, 13\n  br i1 %cmp221, label %action.if.then.108, label %action.if.else.109\n\naction.if.then.108:                               ; preds = %action.if.then.105\n  %action.call.result222 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 112)\n  %action.call.status-word223 = extractvalue { i64, i64 } %action.call.result222, 0\n  %action.call.status224 = trunc nuw nsw i64 %action.call.status-word223 to i8\n  %action.call.value225 = extractvalue { i64, i64 } %action.call.result222, 1\n  %call226 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status224)\n  br i1 %call226, label %action.if.merge.2, label %action.if.else.112\n\naction.if.else.112:                               ; preds = %action.if.then.108\n  %action.call.result228 = call { i64, i64 } @lemma_user_notebook_core0_action_2(i64 160, i64 0)\n  %action.call.status-word229 = extractvalue { i64, i64 } %action.call.result228, 0\n  %action.call.status230 = trunc nuw nsw i64 %action.call.status-word229 to i8\n  %call232 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status230)\n  br i1 %call232, label %action.if.merge.2, label %action.if.else.115\n\naction.if.else.115:                               ; preds = %action.if.else.112\n  %cmp234 = icmp ne i64 %action.call.value225, 0\n  %. = zext i1 %cmp234 to i64\n  %action.call.result236 = call { i64, i64 } @lemma_user_notebook_core0_action_2(i64 136, i64 %.)\n  %action.call.status-word237 = extractvalue { i64, i64 } %action.call.result236, 0\n  %action.call.status238 = trunc nuw nsw i64 %action.call.status-word237 to i8\n  %call240 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status238)\n  br i1 %call240, label %action.if.merge.2, label %action.if.else.121\n\naction.if.else.121:                               ; preds = %action.if.else.115\n  %action.call.result242 = call { i64, i64 } @lemma_user_notebook_core0_action_45(i64 1057, i64 %action.call.value86, i64 0)\n  %action.call.status-word243 = extractvalue { i64, i64 } %action.call.result242, 0\n  %action.call.status244 = trunc nuw i64 %action.call.status-word243 to i8\n  %call246 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status244)\n  br i1 %call246, label %action.if.merge.2, label %action.if.else.124\n\naction.if.else.124:                               ; preds = %action.if.else.121\n  %action.call.result248 = call { i64, i64 } @lemma_user_notebook_core0_action_127()\n  %action.call.status-word249 = extractvalue { i64, i64 } %action.call.result248, 0\n  br label %action.if.merge.2\n\naction.if.else.109:                               ; preds = %action.if.then.105\n  %action.call.result260 = call { i64, i64 } @lemma_user_notebook_core0_action_128(i8 zeroext -22)\n  %action.call.status-word261 = extractvalue { i64, i64 } %action.call.result260, 0\n  br label %action.if.merge.2\n\naction.if.else.106:                               ; preds = %action.if.else.91\n  %action.call.result266 = call { i64, i64 } @lemma_user_notebook_core0_action_128(i8 zeroext -22)\n  %action.call.status-word267 = extractvalue { i64, i64 } %action.call.result266, 0\n  br label %action.if.merge.2\n\naction.if.then.126:                               ; preds = %action.if.else.61\n  %action.call.result279 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 112)\n  %action.call.status-word280 = extractvalue { i64, i64 } %action.call.result279, 0\n  %action.call.status281 = trunc nuw nsw i64 %action.call.status-word280 to i8\n  %action.call.value282 = extractvalue { i64, i64 } %action.call.result279, 1\n  %call283 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status281)\n  br i1 %call283, label %action.if.merge.2, label %action.if.else.130\n\naction.if.else.130:                               ; preds = %action.if.then.126\n  %action.call.result285 = call { i64, i64 } @lemma_user_notebook_core0_action_7(i64 144)\n  %action.call.status-word286 = extractvalue { i64, i64 } %action.call.result285, 0\n  %action.call.status287 = trunc nuw nsw i64 %action.call.status-word286 to i8\n  %action.call.value288 = extractvalue { i64, i64 } %action.call.result285, 1\n  %call289 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status287)\n  br i1 %call289, label %action.if.merge.2, label %action.if.else.133\n\naction.if.else.133:                               ; preds = %action.if.else.130\n  %action.call.result291 = call { i64, i64 } @lemma_user_notebook_core0_action_2(i64 160, i64 0)\n  %action.call.status-word292 = extractvalue { i64, i64 } %action.call.result291, 0\n  %action.call.status293 = trunc nuw nsw i64 %action.call.status-word292 to i8\n  %call295 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status293)\n  br i1 %call295, label %action.if.merge.2, label %action.if.else.136\n\naction.if.else.136:                               ; preds = %action.if.else.133\n  %bin297 = or i64 %action.call.value288, %action.call.value282\n  %cmp298 = icmp ne i64 %bin297, 0\n  %if.result301 = zext i1 %cmp298 to i64\n  %action.call.result302 = call { i64, i64 } @lemma_user_notebook_core0_action_2(i64 136, i64 %if.result301)\n  %action.call.status-word303 = extractvalue { i64, i64 } %action.call.result302, 0\n  %action.call.status304 = trunc nuw nsw i64 %action.call.status-word303 to i8\n  %call306 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status304)\n  br i1 %call306, label %action.if.merge.2, label %action.if.else.145\n\naction.if.else.145:                               ; preds = %action.if.else.136\n  %if.result312 = select i1 %cmp298, i64 1059, i64 1057\n  %action.call.result313 = call { i64, i64 } @lemma_user_notebook_core0_action_45(i64 %if.result312, i64 %action.call.value86, i64 0)\n  %action.call.status-word314 = extractvalue { i64, i64 } %action.call.result313, 0\n  %action.call.status315 = trunc nuw i64 %action.call.status-word314 to i8\n  %call317 = call zeroext i1 @lemma_user_notebook_core0_scalar_0(i8 zeroext %action.call.status315)\n  br i1 %call317, label %action.if.merge.2, label %action.if.else.154\n\naction.if.else.154:                               ; preds = %action.if.else.145\n  %action.call.result319 = call { i64, i64 } @lemma_user_notebook_core0_action_127()\n  %action.call.status-word320 = extractvalue { i64, i64 } %action.call.result319, 0\n  br label %action.if.merge.2\n\naction.if.merge.2:                                ; preds = %action.if.else.1, %action.if.else.16, %action.if.else.25, %action.if.else.22, %action.if.else.19, %action.if.then.12, %action.if.else.28, %action.if.else.34, %action.if.else.40, %action.if.then.57, %action.if.then.63, %action.if.then.78, %action.if.then.81, %action.if.else.130, %action.if.else.136, %action.if.else.145, %action.if.else.154, %action.if.else.133, %action.if.then.126, %action.if.else.61, %action.if.then.84, %action.if.then.99, %action.if.else.100, %action.if.else.103, %action.if.then.93, %action.if.else.109, %action.if.else.112, %action.if.else.124, %action.if.else.121, %action.if.else.115, %action.if.then.108, %action.if.else.106, %action.if.then.90, %action.if.then.66, %action.if.else.76, %action.if.else.73, %action.if.else.70, %action.if.else.58, %action.if.then.45, %action.if.else.37, %action.if.else.31, %action.if.else.13, %action.if.else.10, %action.if.then.6, %entry\n  %action.if.status367 = phi i64 [ %action.call.status-word1, %entry ], [ %action.call.value3, %action.if.else.1 ], [ %action.call.status-word15, %action.if.else.10 ], [ %action.call.status-word9, %action.if.then.6 ], [ %action.call.status-word22, %action.if.then.12 ], [ %action.call.status-word28, %action.if.else.16 ], [ 0, %action.if.else.19 ], [ %action.call.status-word41, %action.if.else.25 ], [ %action.call.status-word35, %action.if.else.22 ], [ %action.call.status-word53, %action.if.else.13 ], [ %action.call.status-word59, %action.if.else.28 ], [ %action.call.status-word65, %action.if.else.31 ], [ %action.call.status-word71, %action.if.else.34 ], [ %action.call.status-word77, %action.if.else.37 ], [ 0, %action.if.else.40 ], [ %action.call.status-word92, %action.if.then.45 ], [ %action.call.status-word119, %action.if.then.57 ], [ %action.call.status-word123, %action.if.else.58 ], [ %action.call.status-word130, %action.if.then.63 ], [ %action.call.status-word135, %action.if.then.66 ], [ %action.call.status-word141, %action.if.else.70 ], [ %action.call.status-word154, %action.if.else.76 ], [ %action.call.status-word148, %action.if.else.73 ], [ %action.call.status-word171, %action.if.then.81 ], [ 0, %action.if.then.78 ], [ %action.call.status-word179, %action.if.then.84 ], [ %action.call.status-word187, %action.if.then.90 ], [ %action.call.status-word192, %action.if.then.93 ], [ %action.call.status-word200, %action.if.then.99 ], [ %action.call.status-word211, %action.if.else.103 ], [ %action.call.status-word205, %action.if.else.100 ], [ %action.call.status-word267, %action.if.else.106 ], [ %action.call.status-word261, %action.if.else.109 ], [ %action.call.status-word223, %action.if.then.108 ], [ %action.call.status-word229, %action.if.else.112 ], [ %action.call.status-word237, %action.if.else.115 ], [ %action.call.status-word249, %action.if.else.124 ], [ %action.call.status-word243, %action.if.else.121 ], [ %action.call.status-word280, %action.if.then.126 ], [ %action.call.status-word286, %action.if.else.130 ], [ %action.call.status-word292, %action.if.else.133 ], [ %action.call.status-word303, %action.if.else.136 ], [ %action.call.status-word320, %action.if.else.154 ], [ %action.call.status-word314, %action.if.else.145 ], [ 234, %action.if.else.61 ]\n  %action.result.status-word369 = and i64 %action.if.status367, 255\n  %action.result.partial370 = insertvalue { i64, i64 } poison, i64 %action.result.status-word369, 0\n  %action.result.complete371 = insertvalue { i64, i64 } %action.result.partial370, i64 0, 1\n  ret { i64, i64 } %action.result.complete371\n}\n",
+  "assembly": "lemma_user_notebook_core0_action_140:   # @lemma_user_notebook_core0_action_140\n.Lfunc_begin423:\n# %bb.0:                                # %entry\n\taddi\tsp, sp, -64\n\tsd\tra, 56(sp)                      # 8-byte Folded Spill\n\tsd\ts0, 48(sp)                      # 8-byte Folded Spill\n\tsd\ts1, 40(sp)                      # 8-byte Folded Spill\n\tsd\ts2, 32(sp)                      # 8-byte Folded Spill\n\tsd\ts3, 24(sp)                      # 8-byte Folded Spill\n\tsd\ts4, 16(sp)                      # 8-byte Folded Spill\n\tsd\ts5, 8(sp)                       # 8-byte Folded Spill\n\tsd\ts6, 0(sp)                       # 8-byte Folded Spill\n\tli\ta0, 160\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts3, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbeqz\ta0, .LBB423_2\n.LBB423_1:                              # %action.if.merge.2\n\tandi\ta0, s0, 255\n\tli\ta1, 0\n\tld\tra, 56(sp)                      # 8-byte Folded Reload\n\tld\ts0, 48(sp)                      # 8-byte Folded Reload\n\tld\ts1, 40(sp)                      # 8-byte Folded Reload\n\tld\ts2, 32(sp)                      # 8-byte Folded Reload\n\tld\ts3, 24(sp)                      # 8-byte Folded Reload\n\tld\ts4, 16(sp)                      # 8-byte Folded Reload\n\tld\ts5, 8(sp)                       # 8-byte Folded Reload\n\tld\ts6, 0(sp)                       # 8-byte Folded Reload\n\taddi\tsp, sp, 64\n\tret\n.LBB423_2:                              # %action.if.else.1\n\tbeqz\ts3, .LBB423_13\n# %bb.3:                                # %action.if.else.1\n\tli\ta0, 5\n\tbeq\ts3, a0, .LBB423_9\n# %bb.4:                                # %action.if.else.1\n\tli\ta0, 8\n\tbne\ts3, a0, .LBB423_14\n# %bb.5:                                # %action.if.then.6\n\tli\ta0, 216\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts1, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.6:                                # %action.if.else.10\n\tli\ta0, 2\n\tli\ta1, 0\n\tmv\ta2, s1\n.LBB423_7:                              # %action.if.merge.2\n\tli\ta3, 0\n\tcall\tlemma_user_notebook_core0_action_114\n.LBB423_8:                              # %action.if.merge.2\n\tmv\ts0, a0\n\tj\t.LBB423_1\n.LBB423_9:                              # %action.if.then.12\n\tli\ta0, 504\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts1, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.10:                               # %action.if.else.16\n\tcall\tlemma_user_notebook_core0_action_5\n\tmv\ts0, a0\n\tmv\ts2, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.11:                               # %action.if.else.19\n\tbgeu\ts2, s1, .LBB423_25\n.LBB423_12:\n\tli\ts0, 0\n\tj\t.LBB423_1\n.LBB423_13:\n\tmv\ts0, s3\n\tj\t.LBB423_1\n.LBB423_14:                             # %action.if.else.13\n\tli\ta0, 168\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts1, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.15:                               # %action.if.else.28\n\tli\ta0, 232\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts2, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.16:                               # %action.if.else.31\n\tli\ta0, 72\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts4, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.17:                               # %action.if.else.34\n\tli\ta0, 224\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts5, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.18:                               # %action.if.else.37\n\tli\ta0, 176\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts6, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.19:                               # %action.if.else.40\n\tlui\ta0, 33\n\taddiw\ta1, a0, -1024\n\tmv\ta0, s1\n\tmv\ta2, s2\n\tmv\ta3, s4\n\tmv\ta4, s5\n\tmv\ta5, s6\n\tli\ta6, 0\n\tcall\tlemma_user_notebook_core0_action_125\n\tli\ta2, 12\n\tbeq\ta0, a2, .LBB423_12\n# %bb.20:                               # %action.if.else.43\n\tmv\ts1, a1\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_29\n# %bb.21:                               # %action.if.else.46\n\tli\ta0, 6\n\tbne\ts3, a0, .LBB423_27\n# %bb.22:                               # %action.if.then.48\n\tli\ta0, 496\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts4, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_28\n# %bb.23:                               # %action.if.else.52\n\tlui\ta0, 33\n\taddiw\ta0, a0, -1024\n\tli\ta1, 48\n\tcall\tlemma_user_notebook_core0_action_21\n\tmv\ts0, a0\n\tmv\ts5, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_28\n# %bb.24:                               # %action.if.else.55\n\tmv\ta0, s2\n\tmv\ta1, s5\n\tmv\ta2, s1\n\tmv\ta3, s4\n\tcall\tlemma_user_notebook_core0_scalar_122\n\tmv\ts0, a0\n\tj\t.LBB423_28\n.LBB423_25:                             # %action.if.else.22\n\tli\ta0, 160\n\tli\ta1, 4\n\tcall\tlemma_user_notebook_core0_action_2\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.26:                               # %action.if.else.25\n\tli\ta0, 13\n\tli\ta1, 0\n\tli\ta2, 0\n\tj\t.LBB423_7\n.LBB423_27:\n\tli\ts0, 0\n.LBB423_28:                             # %action.if.merge.50\n\tandi\ts0, s0, 255\n\tmv\ta0, s0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbeqz\ta0, .LBB423_30\n.LBB423_29:                             # %action.if.then.45\n\tmv\ta0, s0\n\tcall\tlemma_user_notebook_core0_action_128\n\tj\t.LBB423_8\n.LBB423_30:                             # %action.if.else.58\n\tmv\ta0, s1\n\tcall\tlemma_user_notebook_core0_action_40\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.31:                               # %action.if.else.61\n\taddi\ts3, s3, -1\n\tli\ta0, 5\n\tli\ts0, 234\n\tbltu\ta0, s3, .LBB423_1\n# %bb.32:                               # %action.if.else.61\n\tslli\ts3, s3, 3\n.Lpcrel_hi151:\n\tauipc\ta0, %pcrel_hi(.LJTI423_0)\n\taddi\ta0, a0, %pcrel_lo(.Lpcrel_hi151)\n\tadd\ta0, s3, a0\n\tld\ta0, 0(a0)\n\tjr\ta0\n.LBB423_33:                             # %action.if.then.63\n\tcall\tlemma_user_notebook_core0_action_129\n\tj\t.LBB423_8\n.LBB423_34:                             # %action.if.then.78\n\tcall\tlemma_user_notebook_core0_action_137\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbeqz\ta0, .LBB423_12\n# %bb.35:                               # %action.if.then.81\n\tmv\ta0, s0\n\tcall\tlemma_user_notebook_core0_action_139\n\tj\t.LBB423_8\n.LBB423_36:                             # %action.if.then.66\n\tli\ta0, 184\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts1, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.37:                               # %action.if.else.70\n\tli\ta0, 448\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts2, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.38:                               # %action.if.else.73\n\tadd\ta1, s2, s1\n\tli\ta0, 184\n\tcall\tlemma_user_notebook_core0_action_2\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n\tj\t.LBB423_33\n.LBB423_39:                             # %action.if.then.84\n\tlui\ta0, 33\n\taddiw\ta0, a0, -1024\n\tli\ta1, 48\n\tcall\tlemma_user_notebook_core0_action_21\n\tmv\ts0, a0\n\tmv\ts3, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.40:                               # %action.if.else.88\n\tmv\ta0, s2\n\tmv\ta1, s3\n\tcall\tlemma_user_notebook_core0_scalar_123\n\tli\ta1, 234\n\tbeq\ta0, a1, .LBB423_56\n# %bb.41:                               # %action.if.else.91\n\tbeqz\ts3, .LBB423_52\n# %bb.42:                               # %action.if.else.91\n\tli\ta0, 1\n\tbne\ts3, a0, .LBB423_56\n# %bb.43:                               # %action.if.then.93\n\tcall\tlemma_user_notebook_core0_action_5\n\tmv\ts0, a0\n\tmv\ts1, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.44:                               # %action.if.else.97\n\tlui\ta0, 1048332\n\taddiw\ta0, a0, -576\n\tbltu\ts1, a0, .LBB423_60\n# %bb.45:                               # %action.if.then.99\n\tli\ta0, 235\n\tcall\tlemma_user_notebook_core0_action_128\n\tj\t.LBB423_8\n.LBB423_46:                             # %action.if.then.126\n\tli\ta0, 112\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts2, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.47:                               # %action.if.else.130\n\tli\ta0, 144\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts3, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.48:                               # %action.if.else.133\n\tli\ta0, 160\n\tli\ta1, 0\n\tcall\tlemma_user_notebook_core0_action_2\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.49:                               # %action.if.else.136\n\tor\ts2, s3, s2\n\tsnez\ta1, s2\n\tli\ta0, 136\n\tcall\tlemma_user_notebook_core0_action_2\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.50:                               # %action.if.else.145\n\tbnez\ts2, .LBB423_57\n.LBB423_51:                             # %action.if.else.145\n\tli\ta0, 1057\n\tj\t.LBB423_58\n.LBB423_52:                             # %action.if.then.105\n\tli\ta0, 13\n\tbne\ts2, a0, .LBB423_56\n# %bb.53:                               # %action.if.then.108\n\tli\ta0, 112\n\tcall\tlemma_user_notebook_core0_action_7\n\tmv\ts0, a0\n\tmv\ts2, a1\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.54:                               # %action.if.else.112\n\tli\ta0, 160\n\tli\ta1, 0\n\tcall\tlemma_user_notebook_core0_action_2\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.55:                               # %action.if.else.115\n\tsnez\ta1, s2\n\tli\ta0, 136\n\tcall\tlemma_user_notebook_core0_action_2\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbeqz\ta0, .LBB423_51\n\tj\t.LBB423_1\n.LBB423_56:                             # %action.if.then.90\n\tli\ta0, 234\n\tcall\tlemma_user_notebook_core0_action_128\n\tj\t.LBB423_8\n.LBB423_57:\n\tli\ta0, 1059\n.LBB423_58:                             # %action.if.else.145\n\tmv\ta1, s1\n\tli\ta2, 0\n\tcall\tlemma_user_notebook_core0_action_45\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.59:                               # %action.if.else.154\n\tcall\tlemma_user_notebook_core0_action_127\n\tj\t.LBB423_8\n.LBB423_60:                             # %action.if.else.100\n\tlui\ta0, 244\n\taddiw\ta1, a0, 576\n\tadd\ta1, s1, a1\n\tli\ta0, 504\n\tcall\tlemma_user_notebook_core0_action_2\n\tmv\ts0, a0\n\tcall\tlemma_user_notebook_core0_scalar_0\n\tbnez\ta0, .LBB423_1\n# %bb.61:                               # %action.if.else.103\n\tli\ta0, 160\n\tli\ta1, 5\n\tcall\tlemma_user_notebook_core0_action_2\n\tj\t.LBB423_8\n.Lfunc_end423:\n\t.size\tlemma_user_notebook_core0_action_140, .Lfunc_end423-lemma_user_notebook_core0_action_140\n",
+  "symbol": "lemma_user_notebook_core0_action_140",
+  "targets": [
+    ".LBB423_33",
+    ".LBB423_36",
+    ".LBB423_34",
+    ".LBB423_39",
+    ".LBB423_1",
+    ".LBB423_46"
+  ]
+}

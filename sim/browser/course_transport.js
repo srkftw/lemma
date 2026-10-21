@@ -19,10 +19,27 @@ export function courseInstallFrame(bytes,transaction){
  return packet;
 }
 
+// Additive guest-selected publication command. Old installers keep v1 only.
+export function schoolSelectionRequested(operation,guestSupportsSelection){
+ return guestSupportsSelection&&['sample','install','review'].includes(operation);
+}
+export function courseSelectionFrame(bytes,transaction,node=0){
+ const packet=courseInstallFrame(bytes,transaction).slice(0,64),view=new DataView(packet.buffer);
+ if(!Number.isSafeInteger(node)||node<0||node>15)throw Error('Selected node ordinal exceeds its bound');
+ view.setBigUint64(8,4n,true);view.setBigUint64(16,9n,true);view.setBigUint64(40,BigInt(node),true);
+ return packet;
+}
+export function courseSchoolFrames(bytes,transaction,selected,node=0){
+ const install=courseInstallFrame(bytes,transaction);
+ if(!selected)return install;
+ const selection=courseSelectionFrame(bytes,transaction,node),all=new Uint8Array(install.length+selection.length);
+ all.set(install);all.set(selection,install.length);return all;
+}
+
 // Each event fits the existing raw-device line bound even at UINT64_MAX.
 // All rows have one virtual timestamp; the machine retains their byte order.
 export function courseInstallRows(packet,cycle){
- if(!(packet instanceof Uint8Array)||packet.length<192||packet.length>32832||
+ if(!(packet instanceof Uint8Array)||packet.length<64||packet.length>32896||
     typeof cycle!=='string'||!/^\d+$/.test(cycle)||BigInt(cycle)>(1n<<64n)-1n)
   throw Error('Invalid bounded course transport packet or virtual cycle');
  const rows=[];

@@ -81,6 +81,39 @@ def check(directory: Path):
     run(["train",large,directory/"streaming-checkpoint.json",directory/"streaming-model",2,0],"streaming")
     if (large/"train.jsonl").stat().st_size<=16384:
         raise Core0Error("streaming fixture did not exceed worker fixed ordinary RAM size")
+    # A separately specified, permitted school dataset/configuration exercises
+    # the public entry point; this host fixture supplies data, never gradients.
+    permitted = directory/"permitted-dataset"
+    run(["fixture",permitted],"permitted-fixture")
+    manifest = json.loads((permitted/"manifest.json").read_text())
+    for split in ("train", "evaluation"):
+        path = permitted/f"{split}.jsonl"
+        rows = [json.loads(line) for line in path.read_text().splitlines()]
+        for row in rows:
+            row["target"] = 0.2 + 0.3*row["x"][0] + 0.4*row["x"][1]
+        path.write_text("".join(json.dumps(row,separators=(",",":"))+"\n" for row in rows))
+        manifest["trainDigest" if split == "train" else "evaluationDigest"] = sha256(path)
+    manifest.update(schema="lemma-permitted-risk-dataset/v1", source="independently configured synthetic school numeric fixture",
+                    grant="CC0-1.0 generated numeric rows; no learner or sensor data",
+                    labelOrigin="synthetic independent risk = 0.2 + 0.3*errorRate + 0.4*gap",
+                    transformation="scripts/check_school_training.py:permitted-fixture/1", transformationDigest=sha256(Path(__file__)))
+    write_json(permitted/"manifest.json",manifest)
+    configuration = directory/"school-configuration.json"
+    write_json(configuration,{"schema":"lemma-school-linear-training-config/1","modelVersion":9001,"learningRate":0.05,"momentum":0.2})
+    configured_checkpoint = directory/"configured-checkpoint.json"
+    run(["train-config",permitted,configured_checkpoint,directory/"configured",4,configuration],"configured-first")
+    run(["train-config",permitted,configured_checkpoint,directory/"configured",32,configuration],"configured-resume")
+    full_configured = directory/"configured-full-checkpoint.json"
+    run(["train-config",permitted,full_configured,directory/"configured-full",32,configuration],"configured-full")
+    if configured_checkpoint.read_bytes()!=full_configured.read_bytes():
+        raise Core0Error("configured optimizer resume changed updates or sample order")
+    before_evaluation = configured_checkpoint.read_bytes()
+    run(["evaluate-config",permitted,configured_checkpoint,directory/"configured-evaluation",configuration],"configured-evaluate")
+    if configured_checkpoint.read_bytes()!=before_evaluation or (directory/"configured/evaluation.json").read_bytes()!=(directory/"configured-evaluation/evaluation.json").read_bytes():
+        raise Core0Error("standalone configured evaluation mutated training or changed the fixed split")
+    second_configuration = directory/"school-configuration-v2.json"
+    write_json(second_configuration,{"schema":"lemma-school-linear-training-config/1","modelVersion":9002,"learningRate":0.1,"momentum":0.5})
+    run(["train-config",permitted,directory/"configured-v2-checkpoint.json",directory/"configured-v2",32,second_configuration],"configured-second-release")
     report = {"schema":"lemma-school-training-evidence/v1","result":"pass","environment":"hosted Lean binary64 reference; upstream Lean runtime",
               "datasetManifestSha256":sha256(dataset/"manifest.json"),
               "checkpointSha256":sha256(checkpoint),"parametersSha256":sha256(directory/"full/parameters.json"),
@@ -91,6 +124,14 @@ def check(directory: Path):
               "streaming":{"records":512,"bytes":(large/"train.jsonl").stat().st_size,
                            "maximumReadBytes":512,"maximumRowBytes":2048,"batchSize":4,
                            "wholeDatasetResident":False},
+              "configuredTraining":{"dataset":str(permitted),"manifestSha256":sha256(permitted/"manifest.json"),
+                    "configurationSha256":sha256(configuration),"modelVersion":9001,
+                    "checkpoint":str(configured_checkpoint),"parameters":str(directory/"configured/parameters.json"),
+                    "resumeBitwiseEqual":True,"standaloneEvaluationPreservesCheckpoint":True,
+                    "evaluation":json.loads((directory/"configured/evaluation.json").read_text()),
+                    "secondConfiguration":str(second_configuration),"secondCheckpoint":str(directory/"configured-v2-checkpoint.json"),
+                    "secondParameters":str(directory/"configured-v2/parameters.json"),"secondModelVersion":9002,
+                    "scope":"independently supplied permitted synthetic data/configuration; no measured learning benefit"},
               "sourceInputs":{name:sha256(path) for name,path in lean_source_inputs(root,[root/"examples/school/Train.lean"]).items()},
               "commands":commands,"runnerSha256":sha256(Path(__file__)),
               "claim":"synthetic pipeline behavior only; held-out split used once for reported fixed run, no learning-efficacy conclusion"}

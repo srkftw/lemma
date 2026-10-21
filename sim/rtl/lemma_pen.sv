@@ -2,9 +2,51 @@
 // Circuit implementation of Lemma pen v1. Host input is raw sample transport.
 // Keep arithmetic separate through physical technology mapping. The final
 // netlist is flattened after mapping; this adds no clock or architectural state.
+module lemma_pen_increment_part(input wire [15:0] value, input wire carry,
+  output wire [15:0] incremented);
+  assign incremented = value + {15'b0, carry};
+endmodule
+
 module lemma_pen_sequence_increment(input wire [63:0] value,
   output wire [63:0] incremented);
-  assign incremented = value + 64'd1;
+  wire [3:0] carry;
+  wire [63:0] parts;
+  assign carry[0] = 1;
+  for (genvar part = 1; part < 4; part++) begin : carry_prefix
+    assign carry[part] = &value[part*16-1:0];
+  end
+  for (genvar part = 0; part < 4; part++) begin : increment
+    (* keep_hierarchy = 1 *) lemma_pen_increment_part add_part(
+      .value(value[part*16 +: 16]), .carry(carry[part]),
+      .incremented(parts[part*16 +: 16]));
+  end
+  // Match the original vector arithmetic's all-X result for an X/Z operand.
+  assign incremented = parts ^ {64{(^value) ^ (^value)}};
+endmodule
+
+// Four parallel 16-bit comparisons and a bounded lexicographic combine keep
+// the timestamp input out of ABC's shared 64-bit range/control factoring.
+// No state or cycle is added: acceptance still occurs on the offered edge.
+module lemma_pen_timestamp_part(input wire [15:0] left, right,
+  output wire less, equal);
+  assign less = left < right;
+  assign equal = left == right;
+endmodule
+
+module lemma_pen_timestamp_less(input wire [63:0] left, right,
+  output wire less);
+  wire [3:0] lt, eq;
+  for (genvar part = 0; part < 4; part++) begin : compare
+    (* keep_hierarchy = 1 *) lemma_pen_timestamp_part compare_part(
+      .left(left[part*16 +: 16]), .right(right[part*16 +: 16]),
+      .less(lt[part]), .equal(eq[part]));
+  end
+  wire ordered_less = lt[3] | (eq[3] & lt[2]) |
+    (eq[3] & eq[2] & lt[1]) | (eq[3] & eq[2] & eq[1] & lt[0]);
+  // A Verilog vector relational operator is X when any operand bit is X/Z,
+  // even when a higher chunk decides the comparison. The self-XOR terms are
+  // zero in circuitry and preserve that original four-state model behavior.
+  assign less = ordered_less ^ ((^left) ^ (^left)) ^ ((^right) ^ (^right));
 endmodule
 
 // Keep independent input-validation cones apart during physical mapping.
@@ -67,25 +109,52 @@ module lemma_pen #(
   logic [1:0] refill;
   logic [PTR-1:0] head, tail;
   logic [PTR:0] count;
-  logic [63:0] epoch, head_epoch, next_sequence, losses, fault;
-  wire [63:0] sequence_incremented;
+  logic [63:0] epoch, head_epoch, next_sequence, losses;
+  // Invariant after reset and every accepted counter update:
+  // sequence_all_ones[p] == &next_sequence[p*16 +:16].  Four registered
+  // predicates remove a full64 reduction from the high-fanout acceptance
+  // control path. Counter storage, public sequence width and edge remain.
+  logic [3:0] sequence_all_ones;
+  wire sequence_exhausted = IHP_SRAM ? (&sequence_all_ones) :
+    (next_sequence == 64'hffffffffffffffff);
+  // Post-reset fault codes are exactly0,1,2,3,5. Compact internal storage
+  // removes unreachable upper feedback bits; public MMIO remains full64.
+  logic [2:0] fault;
+  wire [63:0] sequence_incremented, epoch_incremented, losses_incremented;
   if (IHP_SRAM) begin : physical_increment
     (* keep_hierarchy = 1 *) lemma_pen_sequence_increment incrementer(
       .value(next_sequence), .incremented(sequence_incremented));
+    // The first timestamp repair exposed a next_sequence→epoch critical
+    // path: factoring the loss guard into the epoch carry chain made a
+    // saturated counter update depend on a second64-bit reduction. Keep the
+    // arithmetic independent before control muxing, just as for sequence.
+    (* keep_hierarchy = 1 *) lemma_pen_sequence_increment epoch_incrementer(
+      .value(epoch), .incremented(epoch_incremented));
+    (* keep_hierarchy = 1 *) lemma_pen_sequence_increment losses_incrementer(
+      .value(losses), .incremented(losses_incremented));
   end else begin : register_increment
     assign sequence_incremented = next_sequence + 64'd1;
+    assign epoch_incremented = epoch + 64'd1;
+    assign losses_incremented = losses + 64'd1;
   end
   logic [63:0] last_time, contact_deadline;
   logic loss, resync, release_seen, bad_sample;
   logic access_ok, lose;
   wire [5:0] range_errors;
+  wire time_regressed, time_exhausted;
   if (IHP_SRAM) begin : physical_validation
     (* keep_hierarchy = 1 *) lemma_pen_sample_ranges #(.PRESSURE_MAX(PRESSURE_MAX)) ranges(
       .x(sample_x), .y(sample_y), .pressure(sample_pressure), .flags(sample_flags),
       .tool(sample_tool), .buttons(sample_buttons), .invalid(range_errors));
+    (* keep_hierarchy = 1 *) lemma_pen_timestamp_less monotonic_time(
+      .left(sample_time), .right(last_time), .less(time_regressed));
+    (* keep_hierarchy = 1 *) lemma_pen_timestamp_less bounded_time(
+      .left(64'hffffffff_ff67697f), .right(sample_time), .less(time_exhausted));
   end else begin : register_validation
     assign range_errors = {sample_x > 65535, sample_y > 65535,
       sample_pressure > PRESSURE_MAX, sample_flags > 15, sample_tool > 2, sample_buttons > 7};
+    assign time_regressed = sample_time < last_time;
+    assign time_exhausted = sample_time > 64'hffffffff_ff67697f;
   end
 
   if (IHP_SRAM) begin : physical_storage
@@ -142,11 +211,11 @@ module lemma_pen #(
   // Serialize external ingress against register mutations; reads never pop.
   assign sample_ready = ready && !(valid && write) &&
                         !(contact_deadline != 0 && now_ticks >= contact_deadline);
-  assign bad_sample = sample_time < last_time || sample_time > 64'hffffffff_ff67697f ||
+  assign bad_sample = time_regressed || time_exhausted ||
     (|range_errors);
   assign lose = (contact_deadline != 0 && now_ticks >= contact_deadline) ||
     (sample_valid && sample_ready && !loss &&
-      (bad_sample || sample_flags[3] || next_sequence == 64'hffffffffffffffff ||
+      (bad_sample || sample_flags[3] || sequence_exhausted ||
        (!resync && count == FIFO_DEPTH)));
 
   always_comb begin
@@ -155,7 +224,7 @@ module lemma_pen #(
       0: rdata = 1280331854;
       8: rdata = 1;
       16: rdata = {60'b0, fault != 0, resync, loss, count != 0};
-      24: rdata = fault;
+      24: rdata = {61'b0, fault};
       32: rdata = {{(63-PTR){1'b0}},count};
       40: rdata = epoch;
       48: rdata = losses;
@@ -183,9 +252,9 @@ module lemma_pen #(
       loss <= 1;
       resync <= 1;
       release_seen <= 0;
-      if (epoch != 64'hffffffffffffffff) epoch <= epoch + 1;
+      if (epoch != 64'hffffffffffffffff) epoch <= epoch_incremented;
       else fault <= 5;
-      if (losses != 64'hffffffffffffffff) losses <= losses + 1;
+      if (losses != 64'hffffffffffffffff) losses <= losses_incremented;
     end
   endtask
 
@@ -207,6 +276,7 @@ module lemma_pen #(
       head_entry <= '0; ingress_entry <= '0; ingress_index <= 0;
       refill <= 0; refill_select <= '0;
       epoch <= 1; head_epoch <= 1; next_sequence <= 1;
+      sequence_all_ones <= 4'b0000;
       losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0;
       loss <= 0; resync <= 0; release_seen <= 0;
     end else if (refill == 2) begin
@@ -243,6 +313,8 @@ module lemma_pen #(
             sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
         tail <= tail + 1'b1; count <= count + 1'b1;
         next_sequence <= sequence_incremented;
+        for (int part = 0; part < 4; part++)
+          sequence_all_ones[part] <= &sequence_incremented[part*16 +:16];
         head_epoch <= epoch; last_time <= sample_time;
         contact_deadline <= sample_flags[0] ? sample_time + 10000000 : 0;
         resync <= 0; sample_accepted <= 1;

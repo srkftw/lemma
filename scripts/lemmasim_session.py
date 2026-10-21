@@ -30,6 +30,53 @@ MAX_REQUEST = 65536
 MAX_EVENTS = 1000000
 
 
+class NotebookFaultObserver:
+    """Bounded lifecycle/input-loss presentation, never notebook/domain policy."""
+    record = re.compile(rb'K1 (00000000000000f[14]|0000000000000735) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?')
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.tail = b''
+        self.boundary = True
+        self.descriptor = None
+        self.fault = None
+        self.ink_loss = None
+        self.ink_loss_total = 0
+
+    def feed(self, data):
+        for byte in data:
+            if byte == 10:
+                match = self.record.fullmatch(self.tail) if self.boundary else None
+                if match:
+                    kind, descriptor, code, value, cause = match.groups()
+                    if kind == b'0000000000000735':
+                        reason, discarded, cumulative, sequence = (int(x,16) for x in (descriptor,code,value,cause))
+                        valid = 1 <= reason <= 4 and discarded <= cumulative and self.ink_loss_total <= cumulative
+                        self.ink_loss = dict(authority='compiled-guest-report',
+                            contract='lemma-notebook-input-loss/1',
+                            state='loss' if valid else 'malformed',
+                            reason=str(reason),discarded=str(discarded),cumulative=str(cumulative),lastCapturedSequence=str(sequence))
+                        if valid:
+                            self.ink_loss_total = cumulative
+                    if kind.endswith(b'1') and code == b'0000000000000001' and self.descriptor is None:
+                        self.descriptor = descriptor
+                    if (kind.endswith(b'4') and descriptor == self.descriptor and cause != b'0000000000000000'
+                            and not (cause == b'0000000000000008' and code == b'0000000000000000')):
+                        self.fault = dict(authority='compiled-kernel-report', descriptor=descriptor.decode(),
+                            exitCode=code.decode(), data=value.decode(), cause=cause.decode(), record=self.tail.decode())
+                self.tail = b''
+                self.boundary = True
+            elif self.boundary:
+                if len(self.tail) < 89:
+                    self.tail += bytes((byte,))
+                else:
+                    self.tail = b''
+                    self.boundary = False
+        return self.fault
+
+
 def digest(path):
     h = hashlib.sha256()
     with Path(path).open('rb') as stream:
@@ -84,6 +131,38 @@ def checkpoint_inventory(source, manifest):
     return names
 
 
+
+def stage_checkpoint_inputs(source, manifest, destination):
+    """Copy validated bytes into an exclusively owned immutable restore input set.
+
+    Recheck the copied bytes against the already parsed manifest. A concurrent
+    source replacement cannot retarget a verified restore or overwrite a medium.
+    """
+    source,destination=Path(source),Path(destination)
+    for item in manifest['files']:
+        original=source/item['path'];target=destination/item['path']
+        target.parent.mkdir(parents=True,exist_ok=True)
+        fd=os.open(original,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
+        try:
+            info=os.fstat(fd)
+            if not stat.S_ISREG(info.st_mode) or info.st_size!=item['bytes']:
+                raise ValueError('Restore source changed before its immutable copy')
+            with os.fdopen(fd,'rb',closefd=False) as reader, target.open('xb') as writer:
+                count=0
+                while block:=reader.read(1024*1024):
+                    count+=len(block)
+                    if count>item['bytes']:raise ValueError('Restore source grew during copy')
+                    if block.count(0)==len(block):writer.seek(len(block),os.SEEK_CUR)
+                    else:writer.write(block)
+                if count!=item['bytes']:raise ValueError('Restore source shrank during copy')
+                writer.truncate(count);writer.flush();os.fsync(writer.fileno())
+            if digest(target)!=item['sha256']:
+                raise ValueError('Restore source changed during immutable copy')
+        finally:os.close(fd)
+    checkpoint_inventory(destination,manifest)
+    return destination
+
+
 def startup_restore_medium(args):
     """Choose optional fast backing from verified state, never a user disk."""
     if not args.restore:
@@ -114,9 +193,36 @@ def startup_restore_medium(args):
     return 'durable.raw' in names
 
 
+def optical_source_words(words):
+    if not isinstance(words,list) or len(words)!=5:
+        raise ValueError('Optical source requires endpoint,kind,data,bytes,quality')
+    for word,(low,high) in zip(words,((1,3),(0,3),(0,(1<<64)-1),(0,8),(0,65535))):
+        bounded(word,low,high,'Optical source field')
+    return list(words)
+
+
+def optical_source_batch(wire):
+    if not isinstance(wire,str) or not wire.isascii() or not 1<=len(wire)<=65536:
+        raise ValueError('Optical batch requires1..65536 ASCII bytes')
+    rows=wire.split('\n')
+    if not 1<=len(rows)<=1024:raise ValueError('Optical batch requires1..1024 rows')
+    normalized=[]
+    for row in rows:
+        fields=row.split()
+        if len(fields)!=5 or any(re.fullmatch(r'0|[1-9][0-9]{0,19}',word) is None for word in fields):
+            raise ValueError('Optical batch rows require five unsigned decimal words')
+        words=optical_source_words([int(word) for word in fields])
+        normalized.append(' '.join(map(str,words)))
+    return '\n'.join(normalized)
+
+
 def external_command(value, current):
     if not isinstance(value,dict):raise ValueError('External request must be an object')
     if value.get('action') in ('warm-reset','cold-cycle','companion-retry'):return value['action'],dict(value)
+    if value.get('action')=='optical-source-batch':
+        cycle=bounded(value.get('cycle',current),current,current,'Optical batch cycle')
+        wire=optical_source_batch(value.get('rows'))
+        return f'optical-source-batch {cycle} {wire}',dict(value,cycle=cycle,rows=wire)
     if value.get('action')!='inject':raise ValueError('Unsupported external action')
     cycle=bounded(value.get('cycle',current),current,(1<<64)-1,'Event cycle')
     kind=value.get('kind')
@@ -131,11 +237,17 @@ def external_command(value, current):
         if not isinstance(words,list) or len(words)!=4:raise ValueError('Multimodal stimulus needs id,u32-code,u32-reference,quality')
         for word,(low,high) in zip(words,((0,7),(0,(1<<32)-1),(0,(1<<32)-1),(0,65535))):bounded(word,low,high,'Multimodal stimulus')
         command=f'inject {cycle} multimodal '+' '.join(map(str,words))
+    elif kind=='optical-frame':
+        words=optical_source_words(value.get('words'))
+        command=f'inject {cycle} optical-frame '+' '.join(map(str,words))
     elif kind=='uart':
         payload=value.get('hex','')
         if not isinstance(payload,str) or not 2<=len(payload)<=8192 or len(payload)%2 or any(c not in '0123456789abcdefABCDEF' for c in payload):
             raise ValueError('UART requires1..4096 literal hex bytes')
-        command=f'inject {cycle} uart {payload}'
+        if 'byte_interval_ns' in value:
+            interval=bounded(value['byte_interval_ns'],1,1000000000,'UART byte interval')
+            command=f'inject {cycle} uart-paced {interval} {payload}'
+        else:command=f'inject {cycle} uart {payload}'
     elif kind in ('pgood','brownout','ble-rx','ble-coex'):
         level=bounded(value.get('level'),0,1,'Supply digital level')
         command=f'inject {cycle} {kind} {level}'
@@ -514,6 +626,48 @@ class Session:
         self.capture_uncertain = False
         self.presentation_generation = 0
         self.restored_parent = None
+        self.school_service = None
+        self.notebook_lifecycle = NotebookFaultObserver()
+        self.notebook_observation_path = None
+        self.notebook_observation_offset = 0
+        self.observe_notebook_fault = 'notebook' in getattr(args, 'workload', '')
+
+    def notebook_epoch(self):
+        self.notebook_lifecycle.reset()
+        self.notebook_observation_path = None
+        self.notebook_observation_offset = 0
+        path = (getattr(self.machine,'directory',self.directory) if self.machine.identity.get('backend') == 'qemu' else self.directory) / (f'uart-{getattr(self.machine,"generation",0)}.bin'
+            if self.machine.identity.get('backend') == 'qemu' else 'uart.bin')
+        if path.is_file():
+            self.notebook_observation_path = path
+            self.notebook_observation_offset = path.stat().st_size
+            if self.notebook_observation_offset:
+                with path.open('rb') as stream:
+                    stream.seek(self.notebook_observation_offset - 1)
+                    self.notebook_lifecycle.boundary = stream.read(1) == b'\n'
+
+    def observe_notebook(self):
+        if not self.observe_notebook_fault:
+            return
+        path = (getattr(self.machine,'directory',self.directory) if self.machine.identity.get('backend') == 'qemu' else self.directory) / (f'uart-{getattr(self.machine,"generation",0)}.bin'
+            if self.machine.identity.get('backend') == 'qemu' else 'uart.bin')
+        if not path.is_file():
+            return
+        if self.notebook_observation_path != path:
+            self.notebook_observation_path = path
+            self.notebook_observation_offset = 0
+            self.notebook_lifecycle.reset()
+        size = path.stat().st_size
+        if size < self.notebook_observation_offset:
+            raise RuntimeError('Notebook lifecycle UART history was truncated')
+        # At most64KiB per owner interval; retain the offset rather than
+        # repeatedly reading or verifying the full submission/boot history.
+        with path.open('rb') as stream:
+            stream.seek(self.notebook_observation_offset)
+            data = stream.read(65536)
+        self.notebook_observation_offset += len(data)
+        if self.notebook_lifecycle.feed(data) is not None:
+            self.automatic = False
 
     def ensure_capture_certain(self):
         if self.capture_uncertain:
@@ -574,12 +728,15 @@ class Session:
             raise
         self.run_seconds += time.monotonic() - started
         self.run_cycles += result['cycle'] - before
+        self.observe_notebook()
         if result.get('finished'):
             self.automatic = False
         return result
 
     def snapshot(self, destination):
         self.ensure_capture_certain()
+        if hasattr(self.machine,'checkpoint_capture_admission'):self.machine.checkpoint_capture_admission()
+        elif hasattr(self.machine,'checkpoint_admission'):self.machine.checkpoint_admission()
         destination = Path(destination).resolve()
         destination.mkdir(parents=True, exist_ok=False)
         result = self.machine.call('snapshot ' + str(destination / 'machine.chk'))
@@ -601,6 +758,7 @@ class Session:
 
     def restore(self, source):
         self.ensure_capture_certain()
+        if hasattr(self.machine,'checkpoint_admission'):self.machine.checkpoint_admission()
         source = Path(source).resolve()
         if (source / 'snapshot.json').stat().st_size > MAX_REQUEST:
             raise ValueError('Snapshot manifest exceeds its bound')
@@ -622,20 +780,57 @@ class Session:
         names = checkpoint_inventory(source, manifest)
         if names!=getattr(self.machine,'checkpoint_files',{'machine.chk'}):
             raise ValueError('Checkpoint inventory differs from required backend state')
-        if hasattr(self.machine, 'preflight_checkpoint'):
-            self.machine.preflight_checkpoint(source / 'machine.chk', cycle)
-        if self.disconnect_adapter:
-            self.disconnect_adapter()
-        result = (self.machine.restore_checkpoint(source/'machine.chk',phase)
-                  if hasattr(self.machine,'restore_checkpoint') else self.machine.call('restore ' + str(source / 'machine.chk')))
-        if result['cycle']!=cycle:raise ValueError('Snapshot metadata differs from its saved virtual cycle')
+        staged=None;restore_source=source
+        try:
+            if getattr(self.machine,'native_logical2',False):
+                staged=tempfile.TemporaryDirectory(prefix='restore-inputs-',dir=self.directory)
+                restore_source=stage_checkpoint_inputs(source,manifest,Path(staged.name))
+            if hasattr(self.machine, 'preflight_checkpoint'):
+                self.machine.preflight_checkpoint(restore_source / 'machine.chk', cycle)
+            result = (self.machine.restore_checkpoint(restore_source/'machine.chk',phase)
+                      if hasattr(self.machine,'restore_checkpoint') else self.machine.call('restore ' + str(restore_source / 'machine.chk')))
+            if result['cycle']!=cycle:raise ValueError('Snapshot metadata differs from its saved virtual cycle')
+        finally:
+            if staged is not None:staged.cleanup()
         self.automatic = manifest['automatic']
         self.quantum = quantum
         self.event_cursor = cursor
         self.presentation_generation += 1
         self.restored_parent = source
+        # Only successful machine adoption changes interactive transport/domain
+        # authority. Failed manifest, preflight or private load leaves it intact.
+        post_errors=[]
+        metadata_path=self.directory/'session.json'
+        if hasattr(self.machine,'argv') and metadata_path.is_file():
+            try:
+                if metadata_path.stat().st_size>MAX_REQUEST:raise ValueError('live metadata exceeds its bound')
+                metadata=json.loads(metadata_path.read_text())
+                if (not isinstance(metadata,dict) or metadata.get('schema')!='lemmasim-live/1' or
+                        metadata.get('identity')!=self.machine.identity):
+                    raise ValueError('live metadata identity differs after adoption')
+                # Observers must follow the adopted generation's UART/output
+                # files, without restoring credentials or external handles.
+                metadata['argv']=self.machine.argv
+                write_json(metadata_path,metadata)
+            except (OSError,ValueError,TypeError) as error:
+                post_errors.append('live observation metadata unavailable after restore: '+str(error))
+        try:self.notebook_epoch()
+        except OSError as error:
+            post_errors.append('notebook observation unavailable after restore: '+str(error))
+        if getattr(self,'school_service',None) is not None:
+            try:self.school_service.invalidate()
+            except Exception as error:
+                self.school_service=None
+                post_errors.append('school connection detached after restore: '+str(error))
+        if self.disconnect_adapter:
+            try:self.disconnect_adapter()
+            except Exception as error:
+                self.adapter=None;self.disconnect_adapter=None
+                post_errors.append('external adapter detached after restore: '+str(error))
+        if post_errors:self.last_error='; '.join(post_errors)
         return {'restored': str(source), 'machine': result,
-                'medium': 'isolated snapshot fork', 'external_event_cursor': manifest['external_event_cursor']}
+                'medium': 'isolated snapshot fork', 'external_event_cursor': manifest['external_event_cursor'],
+                **({'post_restore_errors':post_errors} if post_errors else {})}
 
     def replay(self, source, capture, until, until_ns=None):
         """Replay admitted external requests at their original owner boundaries."""
@@ -746,7 +941,14 @@ class Session:
         if not isinstance(value, dict):
             raise ValueError('Session request must be an object')
         action = value.get('action')
-        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes','usb-outcomes','export-usb-replay','usb-fault','usb-reconnect'):
+        if action == 'school-service':
+            if self.machine.identity.get('profile') not in ('lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.15.0'):
+                raise ValueError('ordinary school transport requires the admitted notebook device profile')
+            if getattr(self,'school_service',None) is None:
+                from lemmasim_school_service import SchoolService
+                self.school_service=SchoolService(self)
+            return self.school_service.dispatch(value)
+        if action in ('run','resume','inject','optical-source-batch','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes','usb-outcomes','export-usb-replay','usb-fault','usb-reconnect'):
             self.ensure_capture_certain()
         if value.get('source')=='tablet' and (not self.adapter or not self.adapter().get('tablet',{}).get('connected')):
             raise ValueError('Live tablet is disconnected; use recorded replay or reconnect explicitly')
@@ -768,6 +970,8 @@ class Session:
                     'presentation_generation':self.presentation_generation,
                     'capture_uncertain':self.capture_uncertain,
                     'last_failed_operation':self.last_error,
+                    'guest_fault':self.notebook_lifecycle.fault,
+                    'guest_ink_loss':self.notebook_lifecycle.ink_loss,
                     'performance': {'run_seconds': self.run_seconds, 'requested_cycles': self.run_cycles,
                                     'cycles_per_second': self.run_cycles / self.run_seconds if self.run_seconds else None}}
         if action == 'pause':
@@ -785,6 +989,8 @@ class Session:
         if action == 'replay':
             return self.replay(value['snapshot'],value['capture'],value.get('until_cycle'),value.get('until_ns'))
         if action == 'inject':
+            if value.get('kind')=='optical-frame' and self.mode=='student':
+                raise ValueError('Raw optical source injection requires Developer or Laboratory mode')
             if value.get('kind') in ('pgood','brownout','ble-coex') and self.mode!='laboratory':raise ValueError('Supply fault inputs require Laboratory mode')
             # Admission consumes only the exact current cycle and virtual
             # phase. Keep the full post-injection observer returned by call.
@@ -793,10 +999,19 @@ class Session:
             if value.get('kind') not in getattr(self.machine,'input_kinds',{'pen','uart'}):
                 raise ValueError('Input is unsupported by this backend/profile')
             return self.external(actual, state, command)
+        if action == 'optical-source-batch':
+            if self.mode=='student':raise ValueError('Raw optical source injection requires Developer or Laboratory mode')
+            if not getattr(self.machine,'optical',False):raise ValueError('Atomic optical source batches require the admitted native optical controller')
+            state=self.machine.clock()
+            command,actual=external_command(value,state['cycle'])
+            return self.external(actual,state,command)
         if action in ('warm-reset', 'cold-cycle'):
+            if getattr(self,'school_service',None) is not None:self.school_service.invalidate()
             state = self.machine.call('inspect')
             result = self.external(value, state, action)
+            if action=='cold-cycle' and getattr(self,'school_service',None) is not None:self.school_service.partial=False
             self.presentation_generation += 1
+            self.notebook_epoch()
             return result
         if action == 'usb-reconnect':
             if (self.mode not in ('developer', 'laboratory') or self.automatic or
@@ -871,6 +1086,7 @@ class Session:
         raise ValueError('Unsupported lifecycle action')
 
     def close(self):
+        if getattr(self,'school_service',None) is not None:self.school_service.close()
         self.capture.close()
         self.machine.close()
 
@@ -945,6 +1161,7 @@ def serve(args, machine_type=None, session_type=None):
                 viewer = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), 'view', str(directory)])
             clients = {}
             while not session.closed:
+                if getattr(session,'school_service',None) is not None:session.school_service.pump()
                 for key, _ in ready.select(0 if session.automatic else 0.25):
                     if key.fileobj is listener:
                         client, _ = listener.accept()
@@ -1095,6 +1312,102 @@ def _sample_pointer(directory, x, y, contact, width, height, scale):
     return request(directory, {'action': 'inject', 'kind': 'pen', 'words': words})
 
 
+def paper_view_pixels(pixels, width, height, channels, scale):
+    """Minify controller output, retaining the darkest existing pixel per cell.
+
+    This is display resampling only. It does not change controller pixels,
+    pointer coordinates, guest ink, hashes, or delivery evidence. Point sampling
+    can erase a one-pixel stroke at every position except the sampled position.
+    """
+    if (type(width) is not int or type(height) is not int or type(scale) is not int or
+            not 1 <= width <= 4096 or not 1 <= height <= 4096 or
+            not 1 <= scale <= 16 or type(channels) is not int or channels not in (1, 3, 4)):
+        raise ValueError('invalid bounded paper-view geometry')
+    if not isinstance(pixels, bytes) or len(pixels) != width * height * channels:
+        raise ValueError('paper-view pixel length differs from geometry')
+    if scale == 1:
+        return width, height, pixels
+    out_width = (width + scale - 1) // scale
+    out_height = (height + scale - 1) // scale
+    gray = pixels if channels == 1 else pixels[0::channels]
+    monochrome = (channels == 1 or
+                  (gray == pixels[1::channels] == pixels[2::channels] and
+                   (channels != 4 or pixels[3::4] == b'\xff' * (width * height))))
+    if monochrome:
+        # Sliced lanes keep the normal Gray4 presentation bounded and avoid a
+        # Python loop for each source pixel. Missing edge lanes are white.
+        pooled = bytearray()
+        for y in range(0, height, scale):
+            lanes = []
+            for dy in range(min(scale, height - y)):
+                row = gray[(y + dy) * width:(y + dy + 1) * width]
+                for dx in range(min(scale, width)):
+                    lane = row[dx::scale]
+                    lanes.append(lane + b'\xff' * (out_width - len(lane)))
+            pooled.extend(map(min, zip(*lanes)))
+        if channels == 1:
+            return out_width, out_height, bytes(pooled)
+        result = bytearray(out_width * out_height * channels)
+        for c in range(3):
+            result[c::channels] = pooled
+        if channels == 4:
+            result[3::4] = b'\xff' * len(pooled)
+        return out_width, out_height, bytes(result)
+    result = bytearray()
+    for y in range(0, height, scale):
+        for x in range(0, width, scale):
+            choices = (pixels[(yy * width + xx) * channels:(yy * width + xx + 1) * channels]
+                       for yy in range(y, min(height, y + scale))
+                       for xx in range(x, min(width, x + scale)))
+            # Retain a real source RGB(A) tuple; componentwise minima could
+            # invent a color. Transparent RGBA pixels are scored over white.
+            def darkness(pixel):
+                alpha = pixel[3] if channels == 4 else 255
+                return alpha * sum(pixel[:3]) + (255 - alpha) * 765
+            result.extend(min(choices, key=darkness))
+    return out_width, out_height, bytes(result)
+
+
+def paper_view_ppm(data, scale, expected_geometry=None):
+    """Read a bounded binary P5/P6 controller frame and return display PPM."""
+    if not isinstance(data, bytes) or len(data) > 4 * 4096 * 4096 + 4096:
+        raise ValueError('paper-view frame exceeds its byte bound')
+    position = 0
+    tokens = []
+    for _ in range(4):
+        while position < len(data):
+            if data[position] in b' \t\r\n':
+                position += 1
+            elif data[position] == 35:
+                end = data.find(b'\n', position)
+                if end < 0:
+                    raise ValueError('unterminated paper-view header comment')
+                position = end + 1
+            else:
+                break
+            if position > 4096:
+                raise ValueError('paper-view header exceeds its byte bound')
+        begin = position
+        while position < len(data) and data[position] not in b' \t\r\n':
+            position += 1
+            if position > 4096:
+                raise ValueError('paper-view header exceeds its byte bound')
+        tokens.append(data[begin:position])
+    if tokens[0] not in (b'P5', b'P6') or tokens[3] != b'255':
+        raise ValueError('unsupported paper-view pixel encoding')
+    if not tokens[1].isdigit() or not tokens[2].isdigit() or position == len(data):
+        raise ValueError('invalid paper-view frame header')
+    width, height = int(tokens[1]), int(tokens[2])
+    if expected_geometry is not None and (width, height) != expected_geometry:
+        raise ValueError('paper-view frame differs from machine geometry')
+    # Consume only the raster delimiter, never a whitespace-valued first pixel.
+    position += 2 if data[position:position + 2] == b'\r\n' else 1
+    channels = 1 if tokens[0] == b'P5' else 3
+    out_width, out_height, pixels = paper_view_pixels(
+        data[position:], width, height, channels, scale)
+    return tokens[0] + f'\n{out_width} {out_height}\n255\n'.encode() + pixels
+
+
 def view(directory):
     """Raw synthetic pointer bridge + controller-produced pixels, no host ink."""
     import tkinter as tk
@@ -1110,7 +1423,13 @@ def view(directory):
     controls = tk.Frame(window)
     controls.pack(fill='x')
     status = tk.StringVar(value='Virtual time is authoritative; host speed controls pacing')
+    logical2 = metadata['identity'].get('checkpoint_binding') in ('lemma-silicon-fast-softtlb/0.2.0','lemma-silicon-fast-mm2-softtlb/0.1.0')
+    checkpoint_enabled = (metadata['identity'].get('execution_binding')!='lemma-silicon-fast-mm2-subset/0.1.0' or
+                          metadata['identity'].get('checkpoint_admitted') is True)
+    if not checkpoint_enabled:status.set('State export is unavailable for this runtime')
     tk.Label(window, textvariable=status).pack(fill='x')
+    last_operation = tk.StringVar(value='')
+    tk.Label(window, textvariable=last_operation, anchor='w', wraplength=view_width).pack(fill='x')
     canvas = tk.Canvas(window, width=view_width, height=view_height, background='white')
     canvas.pack()
     held = False
@@ -1125,19 +1444,28 @@ def view(directory):
             messagebox.showerror('Machine operation', str(error))
 
     def save():
-        name = filedialog.asksaveasfilename(title='New checkpoint directory')
+        name = filedialog.asksaveasfilename(title='New state directory' if logical2 else 'New checkpoint directory')
         if name:
-            operation({'action': 'snapshot', 'path': name})
+            result=operation({'action': 'snapshot', 'path': name})
+            if result:last_operation.set(f"Exported state at cycle {result['machine']['cycle']} to {result['snapshot']}")
 
     def restore():
         name = filedialog.askdirectory(title='Checkpoint directory')
         if name:
-            operation({'action': 'restore', 'path': name})
+            result=operation({'action': 'restore', 'path': name})
+            if result:last_operation.set(f"Restored state at cycle {result['machine']['cycle']} from {result['restored']}")
 
     for label, action in [('Pause', 'pause'), ('Resume', 'resume'), ('Warm reset', 'warm-reset'), ('Cold cycle', 'cold-cycle')]:
         tk.Button(controls, text=label, command=lambda a=action: operation({'action': a})).pack(side='left')
-    tk.Button(controls, text='Snapshot', command=save).pack(side='left')
-    tk.Button(controls, text='Restore', command=restore).pack(side='left')
+    tk.Button(controls, text='Export state' if logical2 else 'Snapshot', command=save,
+              state='normal' if checkpoint_enabled else 'disabled').pack(side='left')
+    tk.Button(controls, text='Restore', command=restore,
+              state='normal' if checkpoint_enabled else 'disabled').pack(side='left')
+    if metadata['identity']['profile'] in ('lemma-silicon-dev/0.14.0','lemma-silicon-dev/0.15.0'):
+        def study():
+            from lemmasim_school_panel import open_study
+            open_study(window,directory)
+        tk.Button(controls,text='Study',command=study).pack(side='left')
     if metadata['identity']['profile']=='lemma-silicon-dev/0.3.0':
         # A physical-style level bridge. Guest policy decides whether an edge
         # requests suspend, fails Busy, or wakes the retained machine.
@@ -1177,7 +1505,12 @@ def view(directory):
             power_text=(' · power SUSPENDED' if power['state']==1 else ' · power RUN') if power else ''
             if power and power.get('error'):
                 power_text+=' · '+{1:'suspend Busy',2:'invalid power access'}.get(power['error'],'power error '+str(power['error']))
-            status.set(f"cycle {produced['cycle']} · ticks {produced['ticks']} · " + ('running' if state['running'] else 'paused')+power_text)
+            fault=state.get('guest_fault')
+            fault_text=(f" · Notebook fault (kernel cause0x{fault['cause']}, exit0x{fault['exitCode']}). Export the medium before recovery." if fault else '')
+            loss=state.get('guest_ink_loss')
+            loss_text=(' · Input loss report invalid; inspect the retained work.' if loss and loss['state']=='malformed' else
+                f" · Input loss: {loss['discarded']} buffered samples discarded ({loss['cumulative']} total). Saved covers retained work; missing controller samples may be uncounted." if loss else '')
+            status.set(f"cycle {produced['cycle']} · ticks {produced['ticks']} · " + ('running' if state['running'] else 'paused')+power_text+fault_text+loss_text)
             paper=produced.get('devices',{}).get('paper',{})
             panel=(state.get('presentation_generation',0),paper.get('visible_sha256',produced.get('panel_completed')))
             if panel != last_panel:
@@ -1185,9 +1518,8 @@ def view(directory):
                 request(directory, {'action': 'panel', 'path': str(path)})
                 current_hash = digest(path)
                 if current_hash != last_hash:
-                    frame = tk.PhotoImage(file=str(path))
-                    if scale > 1:
-                        frame = frame.subsample(scale, scale)
+                    frame = tk.PhotoImage(data=paper_view_ppm(
+                        path.read_bytes(), scale, (width, height)))
                     canvas.delete('frame')
                     canvas.create_image(0, 0, anchor='nw', image=frame, tags='frame')
                     last_hash = current_hash

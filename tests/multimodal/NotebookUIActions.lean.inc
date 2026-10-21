@@ -66,7 +66,7 @@ def uiCheck (p : Bool) (message : String) : IO Unit :=
 def uiFixture (enabled : UInt64) : UIState := Id.run do
   let mut s : UIState := {}
   for (a,v) in #[(state+32,1650),(state+40,2200),(state+48,65535),(state+56,65535),
-      (state+336,65535),(state+344,65535),(Lemma.User.Multimodal.state,99),
+      (Lemma.User.Multimodal.records+2432,4),(state+336,65535),(state+344,65535),(Lemma.User.Multimodal.state,99),
       (Lemma.User.Multimodal.state+16,enabled),(raw,1),(raw+8,100),(raw+16,17885),
       (raw+24,4173),(raw+40,3),(raw+64,1)] do
     s := uiWrite s a v
@@ -75,16 +75,25 @@ def uiFixture (enabled : UInt64) : UIState := Id.run do
 def uiByte (s : UIState) (a : UInt64) : UInt64 := (uiRead s (a-a%8) >>> (a%8*8)) &&& 255
 
 def uiMain : IO Unit := do
+  -- Early/legacy redraw cannot access the optional allocation; an initialized
+  -- redraw schedules the actual idle bar without acquiring the framebuffer.
+  let legacy ← IO.mkRef (uiFixture 0)
+  uiCheck ((← uiExecute legacy requestMultimodalBarAfterRedraw).1 = 0) "legacy redraw request failed"
+  uiCheck ((← legacy.get).writes = 0) "legacy redraw touched unallocated multimodal memory"
+  let initialized ← IO.mkRef (uiWrite (uiFixture 0) rawCaptureReadyFlag 1)
+  uiCheck ((← uiExecute initialized requestMultimodalBarAfterRedraw).1 = 0) "initialized redraw request failed"
+  uiCheck (uiRead (← initialized.get) (Lemma.User.Multimodal.state+32) = 1) "redraw lost the optional control bar"
+  uiCheck ((← initialized.get).calls.isEmpty) "redraw request acquired controller ownership"
   let bar ← IO.mkRef (uiFixture 1)
   uiCheck ((← uiExecute bar multimodalBar).1 = 0) "actual bar failed"
   let s ← bar.get
-  uiCheck (uiRead s (state+456) = 23) "bar did not enqueue all23 intersecting controller tiles"
-  for i in [:23] do
+  uiCheck (uiRead s (state+456) = 28) "bar did not enqueue all28 intersecting controller tiles"
+  for i in [:28] do
     let index := (220+i).toUInt64
     let word := uiRead s (dirtyQueue+(i/4).toUInt64*8)
     uiCheck (((word >>> ((i%4).toUInt64*16)) &&& 65535) = index) "wrong actual dirty queue tile"
     uiCheck (uiByte s (dirtyBitmap+index/8) &&& ((1:UInt64) <<< (index%8)) ≠ 0) "queued tile lacks bitmap ownership"
-  uiCheck ((uiRead s (state+336),uiRead s (state+344),uiRead s (state+352),uiRead s (state+360)) = (400,132,1120,147)) "wrong actual dirty extent"
+  uiCheck ((uiRead s (state+336),uiRead s (state+344),uiRead s (state+352),uiRead s (state+360)) = (400,132,1264,147)) "wrong actual dirty extent"
   -- Independent row-major3x5 ACTIVE glyph literals, not producer expectations.
   for (i,bits) in ( #[(0,0x2bed),(1,0x7927),(2,0x7492),(3,0x7497),(4,0x5b6a),(5,0x79a7)] : Array (UInt64 × UInt64)) do
     for y in [:15] do
@@ -102,9 +111,29 @@ def uiMain : IO Unit := do
         let actual := (byte >>> (if px%2 = 0 then 4 else 0)) &&& 15
         let expected := if x < 9 && (bits >>> (14-(y/3*3+x/3).toUInt64)) &&& 1 = 1 then 0 else 15
         uiCheck (actual = expected) "JOIN label pixels differ from independent glyph literal"
+  for (i,bits) in (#[(0,0x2bed),(1,0x5b6f),(2,0x6b6e),(3,0x7497),(4,0x7b6f),(5,0),(6,0x7492),(7,0x79a7),(8,0x79cf),(9,0x7492)] : Array (UInt64 × UInt64)) do
+    for y in [:15] do
+      for x in [:12] do
+        let px := 1120+i*12+x.toUInt64
+        let byte := uiByte s (Surface.framebuffer+(132+y.toUInt64)*825+px/2)
+        let actual := (byte >>> (if px%2 = 0 then 4 else 0)) &&& 15
+        let expected := if x < 9 && (bits >>> (14-(y/3*3+x/3).toUInt64)) &&& 1 = 1 then 0 else 15
+        uiCheck (actual = expected) "AUDIO TEST pixels differ from independent glyph literals"
+  let audio ← IO.mkRef (uiFixture 0)
+  audio.modify fun s => uiWrite (uiWrite s (Lemma.User.Multimodal.state+128) 1) 0x360000 1
+  uiCheck ((← uiExecute audio (multimodalApplySample 46074 4173 1)).1 = 0) "actual AUDIO TEST contact dispatch failed"
+  let audioReceipt := "K1 0000000000000712 0000000000000009 0000000000000006 0000000000000000 0000000000000000\n".toUTF8
+  for i in [:audioReceipt.size] do
+    uiCheck (uiByte (← audio.get) (Console.packetAddress+i.toUInt64) = audioReceipt[i]!.toUInt64) "AUDIO TEST did not reach the actual bounded User consumer"
+  let queuedAudio ← IO.mkRef (uiWrite (uiWrite (uiFixture 0) (state+160) 1) (raw+16) 46074)
+  uiCheck ((← uiExecute queuedAudio multimodalInputSample).1 = 0) "busy AUDIO TEST raw admission failed"
+  let queuedAudioState ← queuedAudio.get
+  uiCheck (queuedAudioState.calls.isEmpty && uiRead queuedAudioState (Lemma.User.Multimodal.records+2448) = 1) "busy AUDIO TEST started output or lost its ordered tap"
+  for i in [:9] do
+    uiCheck (uiRead queuedAudioState (0x350000+i.toUInt64*8) = uiRead queuedAudioState (raw+i.toUInt64*8)) "queued AUDIO TEST changed a complete raw field"
   uiCheck ((← uiExecute bar multimodalBar).1 = 0) "repaint failed"
-  uiCheck (uiRead (← bar.get) (state+456) = 23) "bar duplicated already queued tile"
-  let narrow ← IO.mkRef (uiWrite (uiFixture 0) (state+32) 1119)
+  uiCheck (uiRead (← bar.get) (state+456) = 28) "bar duplicated already queued tile"
+  let narrow ← IO.mkRef (uiWrite (uiFixture 0) (state+32) 1263)
   let before ← narrow.get
   uiCheck ((← uiExecute narrow multimodalBar).1 = 16) "undersized framebuffer accepted"
   uiCheck ((← narrow.get).writes = before.writes) "rejected bar modified memory"
@@ -208,10 +237,10 @@ def uiMain : IO Unit := do
     uiCheck (uiRead selected (packageContext+32) = identity && uiRead selected (packageContext+40) = 17 &&
       uiRead selected (packageState+32) = 1) "explicit envelope did not start its requested immutable package"
     uiCheck (uiRead selected tutorState = 17 && uiRead selected (state+160) = 0) "envelope read changed its sequence or Store ownership"
-  let contact ← IO.mkRef (uiWrite (uiFixture 1) (state+408) 1)
+  let contact ← IO.mkRef (uiWrite (uiWrite (uiFixture 1) (state+408) 1) (Lemma.User.Multimodal.records+2456) 1)
   uiCheck ((← uiExecute contact multimodalInputSample).1 = 0) "held contact failed"
   uiCheck ((← contact.get).calls.isEmpty) "held contact repeated control"
-  IO.println "NOTEBOOK21_UI_ACTIONS_PASS actual23tilequeue/bitmap/pixels/coalescing/extent; narrow/owned-negative; busy-stop9revokes/raw-wipe/no-Store-checker-mutation; retained busyASK/coalescedASK/boundedLOAD/owned-paper/exact-once; rejected-view cleanup/fresh-ASK dispatch; inactive/held-contact noacquisition"
+  IO.println "NOTEBOOK21_UI_ACTIONS_PASS actual28tilequeue/bitmap/pixels/coalescing/extent; narrow/owned-negative; busy-stop9revokes/raw-wipe/no-Store-checker-mutation; retained busyASK/coalescedASK/boundedLOAD/owned-paper/exact-once; rejected-view cleanup/fresh-ASK dispatch; inactive/held-contact noacquisition"
 end Lemma.Applications.Notebook
 
 def main : IO Unit := Lemma.Applications.Notebook.uiMain

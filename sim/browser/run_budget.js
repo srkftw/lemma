@@ -6,14 +6,27 @@ export function uint64(value,label='Cycle count'){
   throw Error(label+' must be an exact unsigned decimal string or BigInt');
  const n=BigInt(value);if(n<0n||n>UINT64_MAX)throw Error(label+' exceeds UInt64');return n;
 }
+// Ordinary Resume may limit host resource use without granting raw input or
+// selecting a virtual execution prefix. The limit pauses actual execution.
+export function hostSecondsLimit(value){
+ if(value===null||value===undefined)return null;
+ if(typeof value!=='string'||!/^[1-9][0-9]{0,3}$/.test(value)||BigInt(value)>7200n)
+  throw Error('Host limit must be an integer decimal string from1 through7200 seconds');
+ return Number(value);
+}
+export function resumeBudget(cycle,hostSeconds,now=performance.now(),maximum=UINT64_MAX){
+ if(hostSeconds===null||hostSeconds===undefined)return null;
+ const current=uint64(cycle),limit=uint64(maximum);
+ if(current>=limit)throw Error('No virtual execution range remains');
+ return new RunBudget(current,limit-current,false,hostSeconds,now);
+}
 export class RunBudget{
  constructor(cycle,cycles,stopOnReady=false,hostSeconds=null,now=performance.now(),panelBoundary=null){
   this.requested=uint64(cycles,'Run budget');if(this.requested===0n)throw Error('Run budget must be positive');
   if(typeof stopOnReady!=='boolean')throw Error('Ready stop must be a boolean');
-  if(hostSeconds!==null&&(typeof hostSeconds!=='string'||!/^[1-9][0-9]{0,3}$/.test(hostSeconds)||BigInt(hostSeconds)>7200n))
-   throw Error('Host limit must be an integer decimal string from1 through7200 seconds');
+  const seconds=hostSecondsLimit(hostSeconds);
   if(!Number.isFinite(now)||now<0)throw Error('Invalid monotonic host clock');
-  this.hostSeconds=hostSeconds===null?null:Number(hostSeconds);this.startedAt=now;
+  this.hostSeconds=seconds;this.startedAt=now;
   this.panelBoundary=panelBoundary===null?null:uint64(panelBoundary,'Panel boundary');
   this.used=0n;this.stopOnReady=stopOnReady;this.rebase(cycle);
  }

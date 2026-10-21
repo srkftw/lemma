@@ -6,6 +6,20 @@ import unittest
 ROOT=Path(__file__).resolve().parents[2]
 
 class BrowserGuestRecords(unittest.TestCase):
+    def test_recoverable_course_rejection_needs_complete_current_guest_receipt(self):
+        script=r"""
+import {guestCourseRejection} from './sim/browser/guest_records.js';
+import assert from 'node:assert/strict';
+const encode=x=>new TextEncoder().encode(x);
+const row=(status=175n,page=1n,ns=1n,detail=0n)=>'K1 '+[0x454n,status,page,ns,detail].map(x=>x.toString(16).padStart(16,'0')).join(' ')+'\n';
+const text=row();assert.deepEqual(guestCourseRejection(encode(text),0),{authority:'compiled-guest-report',status:'175',page:'1',namespace:'1'});
+for(const invalid of [text.slice(0,-1),'prefix'+text,row(0n),row(256n),row(1n,0n),row(1n,1n,0n),row(1n,1n,1n,2n)])assert.equal(guestCourseRejection(encode(invalid),0),null);
+assert.equal(guestCourseRejection(encode(text),text.length),null);
+assert.equal(guestCourseRejection(encode(text+row(230n,9007199254740993n)),0).page,'9007199254740993');
+"""
+        run=subprocess.run(['node','--input-type=module','-e',script],cwd=ROOT,capture_output=True,text=True,timeout=15)
+        self.assertEqual(run.returncode,0,run.stdout+run.stderr)
+
     def test_only_complete_current_installation_receipt_can_present_success(self):
         script=r"""
 import {guestCourseInstallState} from './sim/browser/guest_records.js';
@@ -19,6 +33,39 @@ for(const text of [receipt.slice(0,-1),'prefix'+receipt,row(2n),row(1n,0n),row(0
 const failure=guestCourseInstallState(encode(row(0xdf01n,0n)),0);
 assert.equal(failure.state,'failed');assert.equal(failure.status,'223');assert.equal(failure.sequence,'0');
 assert.equal(guestCourseInstallState(encode(receipt+row(0xe301n,0n)),0).status,'227');
+for(const operation of [2n,3n,8n,9n,10n]){
+ const selected=row(operation,4n);
+ assert.deepEqual(guestCourseInstallState(encode(receipt+selected),0),guestCourseInstallState(encode(receipt),0));
+ assert.equal(guestCourseInstallState(encode(receipt+selected),receipt.length),null);
+ assert.equal(guestCourseInstallState(encode(receipt+row(0xe301n,0n)+selected),0).state,'failed');
+}
+assert.equal(guestCourseInstallState(encode(receipt+row(1n,0n)+row(9n)),0),null);
+assert.equal(guestCourseInstallState(encode(receipt+row(9n)+row(1n,7n,0x20323n)),0).identity,'803');
+assert.equal(guestCourseInstallState(encode(receipt+row(1n,7n).slice(0,-1)),0).sequence,'9007199254740993');
+"""
+        run=subprocess.run(['node','--input-type=module','-e',script],cwd=ROOT,capture_output=True,text=True,timeout=15)
+        self.assertEqual(run.returncode,0,run.stdout+run.stderr)
+
+    def test_selected_publication_is_a_separate_validated_guest_receipt(self):
+        script=r"""
+import {guestCourseInstallState,guestCourseSelectionState} from './sim/browser/guest_records.js';
+import assert from 'node:assert/strict';
+const encode=x=>new TextEncoder().encode(x);
+const row=(status=0n,sequence=9007199254740993n,object=0x10324n,crc=0n)=>'K1 '+[0x4b9n,status,sequence,object,crc].map(x=>x.toString(16).padStart(16,'0')).join(' ')+'\n';
+const text=row(),expected={authority:'compiled-guest-report',state:'selected',status:'0',identity:'804',edition:'1',sequence:'9007199254740993',crc32:'0'};
+assert.deepEqual(guestCourseSelectionState(encode(text),0),expected);
+assert.equal(guestCourseSelectionState(encode(text),text.length),null);
+for(const bad of [text.slice(0,-1),'prefix'+text,row(256n),row(0n,0n),row(0n,1n,1n),row(0n,1n,0x10000n),row(0n,1n,1n<<48n),row(0n,1n,0x10324n,1n<<32n),row(0n,0x7fffffffffffffffn)]){
+ assert.equal(guestCourseSelectionState(encode(bad),0),null);
+ if(bad.startsWith('K1 ')&&bad.endsWith('\n'))assert.equal(guestCourseSelectionState(encode(text+bad),0),null,'malformed latest tuple retained older selection');
+}
+assert.equal(guestCourseSelectionState(encode(text+row(223n,0n)),0).state,'failed');
+assert.equal(guestCourseSelectionState(encode(text+row(0n,7n,0x20323n,123n)),0).identity,'803');
+const failure='K1 '+[0x4b1n,0xdf01n,0n,0x10324n,0n].map(x=>x.toString(16).padStart(16,'0')).join(' ')+'\n';
+assert.equal(guestCourseInstallState(encode(failure+text),0).status,'223');
+assert.deepEqual(guestCourseSelectionState(encode(failure+text),0),expected);
+assert.equal(guestCourseSelectionState(encode(failure),0),null);
+assert.throws(()=>guestCourseSelectionState(encode(text),-1));
 """
         run=subprocess.run(['node','--input-type=module','-e',script],cwd=ROOT,capture_output=True,text=True,timeout=15)
         self.assertEqual(run.returncode,0,run.stdout+run.stderr)

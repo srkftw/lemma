@@ -4,7 +4,7 @@
 This does not initialize a boot medium or execute update policy. Installation
 uses actual UART recovery requests; the Lean ROM validates and publishes them.
 """
-import argparse,hashlib,json,struct,zlib
+import argparse,hashlib,importlib.util,json,shutil,struct,subprocess,tempfile,zlib
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -49,9 +49,14 @@ def package(guest,out,identity,source_archive=None):
  build=json.loads((guest/'build.json').read_text());audit=json.loads((guest/'audit.json').read_text())
  binding=json.loads((guest/'binding.json').read_text())
  from product_reader_deployment import ALL_CONFIGURATIONS as PRODUCT_READER_CONFIGURATIONS
- executed_profile=build.get('configuration') in ('lemmasim-silicon-product-executed-bulk-notebook',)+PRODUCT_READER_CONFIGURATIONS
+ from integrated_deployment import CONFIGURATIONS as INTEGRATED_CONFIGURATIONS
+ integrated=build.get('configuration') in INTEGRATED_CONFIGURATIONS
+ executed_profile=integrated or build.get('configuration') in ('lemmasim-silicon-product-executed-bulk-notebook',)+PRODUCT_READER_CONFIGURATIONS
  next_profile=build.get('configuration')==NEXT_CONFIGURATION
- if build.get('status')!='BUILT' or audit.get('status')!='PASS' or (not next_profile and not executed_profile and build.get('configuration') not in CONFIGURATIONS) or audit.get('configuration')!=build['configuration'] or binding.get('profile')!=('lemma-silicon-dev/0.10.0' if executed_profile else 'lemma-silicon-dev/0.9.0' if next_profile else 'lemma-silicon-dev/0.7.0'):raise ValueError('packaging requires a strictly audited selected product7 guest')
+ from silicon_profile import configuration_profile
+ supported=next_profile or executed_profile or build.get('configuration') in CONFIGURATIONS
+ expected_profile=configuration_profile(build['configuration']) if supported else None
+ if build.get('status')!='BUILT' or audit.get('status')!='PASS' or not supported or audit.get('configuration')!=build['configuration'] or binding.get('profile')!=expected_profile:raise ValueError('packaging requires a strictly audited matching product configuration/profile')
  for name in ('image.elf','platform.dtb'):
   if build.get('artifacts',{}).get(name)!=sha(guest/name):raise ValueError('compiled product artifact identity differs: '+name)
  if audit.get('image_sha256')!=sha(guest/'image.elf'):raise ValueError('product ELF audit identity differs')
@@ -68,9 +73,30 @@ def package(guest,out,identity,source_archive=None):
   p=Path(name)
   if p.is_absolute() or '..' in p.parts or (origin/p).is_symlink() or sha(origin/p)!=digest:
    raise ValueError('Changed or missing compiled product source: '+name)
- wire,layout=pack_elf((guest/'image.elf').read_bytes(),(guest/'platform.dtb').read_bytes(),identity,EXECUTED_COMPATIBILITY if executed_profile else NEXT_COMPATIBILITY if next_profile else COMPATIBILITY)
+ dtb=(guest/'platform.dtb').read_bytes();compatibility_view={}
+ if integrated:
+  # Explicit Product10 base discovery is the versioned image ABI. The full
+  # Integrated15 binding remains the audited physical selection, while the
+  # genuine Kernel0.10 independently discovers the converter endpoint.
+  path=origin/'scripts/silicon_profile.py'
+  spec=importlib.util.spec_from_file_location('integrated_package_profile',path)
+  generator=importlib.util.module_from_spec(spec);spec.loader.exec_module(generator)
+  selected=generator.profile('lemma-silicon-dev/0.10.0');source=generator.dts(selected)
+  tool=Path(shutil.which('dtc') or '').resolve()
+  if not str(tool).startswith('/nix/store/') or not tool.is_file():raise ValueError('Integrated package requires pinned Nix dtc')
+  version=subprocess.check_output([str(tool),'--version'],text=True,timeout=30).strip()
+  if version!='Version: DTC 1.8.1':raise ValueError('Integrated package requires pinned dtc1.8.1')
+  with tempfile.TemporaryDirectory(prefix='lemma-integrated-discovery-') as temporary:
+   folder=Path(temporary);(folder/'base.dts').write_text(source)
+   subprocess.run([str(tool),'-I','dts','-O','dtb','-o',str(folder/'base.dtb'),str(folder/'base.dts')],check=True,capture_output=True,timeout=30)
+   dtb=(folder/'base.dtb').read_bytes()
+  compatibility_view={'contract_version':'lemma-product10-image-compatibility/1','profile':selected['profile'],'generator_sha256':sha(path),'profile_sha256':sha(generator.profile_path(selected['profile'])),'dtc':{'path':str(tool),'sha256':sha(tool),'version':version},'dtb_sha256':hashlib.sha256(dtb).hexdigest(),'dts_sha256':hashlib.sha256(source.encode()).hexdigest(),'scope':'MAC-bound legacy base view; full'+expected_profile.split('/')[1].removesuffix('.0')+' selection plus converter MMIO identity checked separately'}
+ wire,layout=pack_elf((guest/'image.elf').read_bytes(),dtb,identity,EXECUTED_COMPATIBILITY if executed_profile else NEXT_COMPATIBILITY if next_profile else COMPATIBILITY)
  out.mkdir(parents=True);(out/'image.bin').write_bytes(wire)
+ if integrated:
+  (out/'compatibility.dts').write_text(source);(out/'compatibility.dtb').write_bytes(dtb)
  receipt={'schema':'lemma-product-image/1','status':'PASS','scope':'opaque compiled image packaging; target installation/boot qualification separate',
+  **({'compatibility_view':compatibility_view,'packager_sha256':sha(Path(__file__))} if integrated else {}),
   'configuration':build['configuration'],'authentication':'OPEN','anti_rollback':'OPEN','image_sha256':sha(out/'image.bin'),
   'source_validation':{'kind':'explicit-consumed-source-archive' if source_archive else 'current-source','inputs':len(provenance['source_inputs']),
    'archive_manifest_sha256':sha(source_archive.parent/'consumed-source-archive.json') if source_archive else None},

@@ -39,3 +39,15 @@ class UARTAdmission(unittest.TestCase):
                 result=course.send(args)
                 self.assertEqual(result['status'],'RAW_COMMAND_ADMITTED')
                 self.assertEqual(request.call_args_list[1].args[1]['kind'],'uart')
+
+    def test_flow_identity_does_not_grant_student_diagnostics(self):
+        with tempfile.TemporaryDirectory() as name:
+            root=Path(name)
+            identity=dict(profile='lemma-silicon-dev/0.14.0',adapter='lemmasim-fast-adapter/6',uart_flow='lemma-raw-uart-flow/1')
+            args=SimpleNamespace(session_dir=root)
+            for mode,flow in [('student','lemma-raw-uart-flow/1'),('developer',None),('developer','lemma-raw-uart-flow/2')]:
+                current={**identity,'uart_flow':flow}
+                (root/'session.json').write_text(json.dumps(dict(schema='lemmasim-live/1',mode=mode,backend='qemu',identity=current,argv=[])))
+                with mock.patch.object(course,'request') as request:
+                    with self.assertRaises(ValueError):course.send(args)
+                    request.assert_not_called()

@@ -1,0 +1,963 @@
+{
+  "schema": "lemma-task009-owned-pcm-ring-evidence/1",
+  "status": "PASS_BOUNDED_PCM_SCOPED_NATIVE_MM2_CONTINUATION_AND_ORDINARY_STUDENT_WORKFLOW_REMAINING_GATES_OPEN",
+  "implementation_commit": "c05808d",
+  "purpose": "Source-bound owned PCM ring, finite native MM2 continuation, and ordinary Student Export/Restore followed by durable ink and completed visible Saved. Historical cohorts and failures retain their original identities. Full sensor/economy/explanation/physical and educational obligations remain.",
+  "bindings": {
+    "full_union": "lemma-silicon-dev/0.16.0",
+    "predecessor_union": "lemma-silicon-dev/0.15.0",
+    "full_union_relation": "All predecessor profile fields unchanged except profile identity; ABI2 and bounded ring metadata added. Actual original03914f full16 ROM/NV Ready, pen/Save and reset is separately bound below; Fast14 native remains an explicit functional subset.",
+    "functional_subset": "lemma-silicon-fast-mm2-subset/0.1.0",
+    "subset_profile": "lemma-silicon-dev/0.14.0",
+    "controller_contract": "lemma-multimodal-converter/2",
+    "service_version": 3,
+    "public_MM2_checkpoint_admitted": true,
+    "ISA": "RV64IM +Zicsr/Zifencei; A/F/D/C disabled",
+    "checkpoint_binding": "lemma-silicon-fast-mm2-softtlb/0.1.0",
+    "checkpoint_contract": "lemma-native-mm2-continuation/1",
+    "checkpoint_observation_relation": "lemma-native-MM2-logical-observation-relation/3"
+  },
+  "target": {
+    "source_archive": "build/task009/school23-mm2-source-a2",
+    "input_count": 544,
+    "inventory_sha256": "f869ec709ac43cf919d8701959dc550b4de5ed0f9e0974a7183901332c585ba1",
+    "genuine_producer": {
+      "path": "build/task009/school23-mm2-producer-a1/result.json",
+      "sha256": "a37bfa9533679a073e8b94188270ca82eaebc3554a31c1dfa9d36bafde2eab8b"
+    },
+    "producer_rows": [
+      {
+        "role": "notebook",
+        "configuration": "lemmasim-silicon-school-notebook",
+        "output": "build/kernel/task009-school23-notebook-a21",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/build_kernel.py",
+          "--stage",
+          "supervisor",
+          "--opt-level",
+          "O2",
+          "--configuration",
+          "lemmasim-silicon-school-notebook",
+          "--output-dir",
+          "build/kernel/task009-school23-notebook-a21",
+          "--timeout",
+          "300"
+        ],
+        "start_unix": 1792475792.3751829,
+        "status": "PASS",
+        "peak_combined_rss_bytes": 3642949632,
+        "returncode": 0,
+        "elapsed_seconds": 233.1420431137085
+      },
+      {
+        "role": "initialize",
+        "configuration": "lemmasim-silicon-school-initialize",
+        "output": "build/kernel/task009-school23-initialize-a20",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/build_kernel.py",
+          "--stage",
+          "supervisor",
+          "--opt-level",
+          "O2",
+          "--configuration",
+          "lemmasim-silicon-school-initialize",
+          "--output-dir",
+          "build/kernel/task009-school23-initialize-a20",
+          "--timeout",
+          "300"
+        ],
+        "start_unix": 1792476025.6018722,
+        "status": "PASS",
+        "peak_combined_rss_bytes": 1883508736,
+        "returncode": 0,
+        "elapsed_seconds": 207.11981296539307
+      },
+      {
+        "role": "integrated",
+        "configuration": "lemmasim-silicon-integrated-school-notebook",
+        "output": "build/kernel/task009-school23-integrated-a18",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/build_kernel.py",
+          "--stage",
+          "supervisor",
+          "--opt-level",
+          "O2",
+          "--configuration",
+          "lemmasim-silicon-integrated-school-notebook",
+          "--output-dir",
+          "build/kernel/task009-school23-integrated-a18",
+          "--timeout",
+          "300"
+        ],
+        "start_unix": 1792476232.7933524,
+        "status": "PASS",
+        "peak_combined_rss_bytes": 1880530944,
+        "returncode": 0,
+        "elapsed_seconds": 205.70777106285095
+      },
+      {
+        "role": "integrated-pcm",
+        "configuration": "lemmasim-silicon-integrated-pcm-school-notebook",
+        "output": "build/kernel/task009-school23-integrated-pcm-a1",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/build_kernel.py",
+          "--stage",
+          "supervisor",
+          "--opt-level",
+          "O2",
+          "--configuration",
+          "lemmasim-silicon-integrated-pcm-school-notebook",
+          "--output-dir",
+          "build/kernel/task009-school23-integrated-pcm-a1",
+          "--timeout",
+          "300"
+        ],
+        "start_unix": 1792476438.58872,
+        "status": "PASS",
+        "peak_combined_rss_bytes": 1899638784,
+        "returncode": 0,
+        "elapsed_seconds": 207.48856830596924
+      }
+    ],
+    "final_receipt_refresh": {
+      "path": "build/task009/school23-mm2-refresh-a1/result.json",
+      "sha256": "26f84fe37744edf0847e94b12ca51b965c94ba93c4a2325ceeb7685005f350e8"
+    },
+    "refresh_scope": "Unchanged admitted compilation Actions reused in newoutputs; original producerreceipts preserved. No freshLLVM execution claim from refresh.",
+    "strict_audit": {
+      "path": "build/task009/school23-mm2-audit-a1/result.json",
+      "sha256": "45105f6bab3fdcfcb8c6a68e1b3f92df953af371dcf4a1f5856ef2fb949475b1"
+    },
+    "audited_outputs": [
+      {
+        "role": "notebook",
+        "directory": "build/kernel/task009-school23-notebook-a22",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/audit_kernel.py",
+          "build/kernel/task009-school23-notebook-a22",
+          "--source-root",
+          "build/task009/school23-mm2-source-a2",
+          "--timeout",
+          "300"
+        ],
+        "status": "PASS",
+        "start_unix": 1792476921.1988883,
+        "returncode": 0,
+        "elapsed_seconds": 302.6429920196533
+      },
+      {
+        "role": "initialize",
+        "directory": "build/kernel/task009-school23-initialize-a21",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/audit_kernel.py",
+          "build/kernel/task009-school23-initialize-a21",
+          "--source-root",
+          "build/task009/school23-mm2-source-a2",
+          "--timeout",
+          "300"
+        ],
+        "status": "PASS",
+        "start_unix": 1792476921.199351,
+        "returncode": 0,
+        "elapsed_seconds": 282.13356494903564
+      },
+      {
+        "role": "integrated",
+        "directory": "build/kernel/task009-school23-integrated-a19",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/audit_kernel.py",
+          "build/kernel/task009-school23-integrated-a19",
+          "--source-root",
+          "build/task009/school23-mm2-source-a2",
+          "--timeout",
+          "300"
+        ],
+        "status": "PASS",
+        "start_unix": 1792476921.199752,
+        "returncode": 0,
+        "elapsed_seconds": 333.41404032707214
+      },
+      {
+        "role": "integrated-pcm",
+        "directory": "build/kernel/task009-school23-integrated-pcm-a2",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/audit_kernel.py",
+          "build/kernel/task009-school23-integrated-pcm-a2",
+          "--source-root",
+          "build/task009/school23-mm2-source-a2",
+          "--timeout",
+          "300"
+        ],
+        "status": "PASS",
+        "start_unix": 1792476921.2001953,
+        "returncode": 0,
+        "elapsed_seconds": 340.74799036979675
+      }
+    ],
+    "audit_seconds": 340.93840169906616,
+    "audit_peak_combined_RSS_bytes": 727236608,
+    "all_audit_processes_reaped": true,
+    "new_table": {
+      "path": "build/task009/mm2-kernel-table-observer-a1/result.json",
+      "sha256": "2b4768bd97015b5bf0a48d1669cdef391a24f7ffdd502ab5290736b37bb2f3a7"
+    },
+    "table_admission": "Exactly10 ringStatus selectors afterABI/saved-owner checks, sixfixedglobal and fourstream8 reads; completeService3 source/IR pins and ordinary object/relocation/unsigned-guard checks remain required."
+  },
+  "component_execution": {
+    "ABI2_C_RTL": {
+      "path": "build/task009/mm2-maintained-controller-a2/report.json",
+      "sha256": "2029584fa853940af4aa2a6f30ba55cfc9e574b76976d8a14d7462186b3ba096"
+    },
+    "ABI2_seconds": 20.556775904027745,
+    "ABI2_observation": "PASS synthetic-aperture/1 checks=1668794 cycles=5854 DMA_beats=9 PCM_observations=1\nPASS MM2 RTL/C ring samples=1027 reads=257 cycles=6412537 EOFtail=3 checks=16713796\nPASS MM2 RTL/C held-owner fairness, mute, exact-expiry and read-failure cuts checks=16767019",
+    "ABI1_regression": {
+      "path": "build/task009/mm2-maintained-legacy-a1/report.json",
+      "sha256": "c84d14a437c8828819c682b57d904f97b885c33e4b97487bbf76f5adfbfabb16"
+    },
+    "ABI1_seconds": 15.045001878985204,
+    "scope": "Separately asserted C/RTL controller tests including longarbitrary samples, wrap/EOF, backpressure/fairness, heldread cancellation, mute/expiry/reset/linkloss and staleowner completion; these are not guest/SoC/physical qualification."
+  },
+  "native_runtime": {
+    "result": {
+      "baseline_reproduced": true,
+      "binary_sha256": "c45a6f3a7db604f772b42b79b8ee527c3dabac6416d0bc044029a2e8d3039e8a",
+      "changed_objects": [
+        "/build/qemu-11.1.1/build/libqemu-riscv64-softmmu.a.p/hw_riscv_lemma_qemu.c.o"
+      ],
+      "checkpoint_scope": "ABI2 state not publicly admitted before real pending ring boundary tests",
+      "commands": [
+        {
+          "argv": [
+            "ninja",
+            "-C",
+            "build",
+            "-n",
+            "qemu-system-riscv64"
+          ],
+          "exit_code": 0,
+          "phase": "baseline-plan",
+          "seconds": 0.3041121879359707
+        },
+        {
+          "argv": [
+            "ninja",
+            "-C",
+            "build",
+            "-j2",
+            "qemu-system-riscv64"
+          ],
+          "exit_code": 0,
+          "phase": "baseline-link",
+          "seconds": 3.533872022992
+        },
+        {
+          "argv": [
+            "python3",
+            "/nix/store/yw7ns1bs2jvdyjzz4aa3lbayygvscmmr-lemmasim-mm2-native-inputs/tooling/lemmasim/patch_multimodal_v2.py",
+            "/build/qemu-11.1.1",
+            "--mode",
+            "native",
+            "--host-source",
+            "/nix/store/yw7ns1bs2jvdyjzz4aa3lbayygvscmmr-lemmasim-mm2-native-inputs/sim/host"
+          ],
+          "exit_code": 0,
+          "phase": "apply-mm2",
+          "seconds": 0.10132059396710247
+        },
+        {
+          "argv": [
+            "ninja",
+            "-C",
+            "build",
+            "-n",
+            "qemu-system-riscv64"
+          ],
+          "exit_code": 0,
+          "phase": "changed-plan",
+          "seconds": 0.20189734897576272
+        },
+        {
+          "argv": [
+            "ninja",
+            "-C",
+            "build",
+            "-j2",
+            "qemu-system-riscv64"
+          ],
+          "exit_code": 0,
+          "phase": "changed-object-link",
+          "seconds": 4.541436299099587
+        }
+      ],
+      "controller_abi_available": [
+        1,
+        2
+      ],
+      "execution_binding": "lemma-silicon-fast-mm2-subset/0.1.0",
+      "fresh_objects": 1,
+      "limits": {
+        "combined_rss_bytes": 1073741824,
+        "minimum_available_bytes": 2147483648,
+        "output_bytes": 12884901888,
+        "whole_seconds": 360
+      },
+      "overlay": {
+        "files": {
+          "lemma_multimodal_checkpoint_valid.inc.c": "ddc5c4633602cc1fc671a951fe2628278a4bc81e36426d1c9b0def49974ff9ee",
+          "lemma_multimodal_qemu.inc.c": "2a7f4362552cf029eb825e60aa2a47c58fd0604c67ac0a12066f49833da4b454",
+          "lemma_multimodal_v2.c": "6e7a568013b33f613a0fe4fc0d5979fcea02d3cd9a02c1f4c89f64bbc2ed2bd8",
+          "lemma_multimodal_v2.h": "b3a783f261bf676f77ba26a905891e17ecf41f6a2a14cd72a07f1a6ec536d463",
+          "lemma_qemu.c": "e5433da4df50311769be709b24b213b3188433dec881ecf260ad587a7150a188"
+        },
+        "mode": "native",
+        "predecessor_main_sha256": "dabf894ff96f811f36417dfdd60d6c3d8d65cf7dfe1f1c77135acd06e09f7057"
+      },
+      "peak_group_rss_bytes": 55279616,
+      "predecessor_sources": {
+        "lemma_multimodal_qemu.inc.c": "10b3a1cbb4f81bfcf682b456ae4eda8d33e110bc033963761c82f8133113a977",
+        "lemma_qemu.c": "dabf894ff96f811f36417dfdd60d6c3d8d65cf7dfe1f1c77135acd06e09f7057"
+      },
+      "profile": "lemma-silicon-dev/0.14.0",
+      "reused_objects_and_archives": 1456,
+      "schema": "lemma-native-mm2-retained-build/1",
+      "seconds": 9.731679909978993,
+      "status": "PASS_MM2_HARDWARE_OBJECT_AND_REAL_LINK"
+    },
+    "receipt": {
+      "path": "build/task009/qemu-mm2-runtime-a3/share/lemma-build/result.json",
+      "sha256": "c8e27dc35eca76548cb8f0e76292654c849b4dd8987f7175038ec8238590c078"
+    },
+    "installed_ELF_sha256": "4f052aaf5497b84046d93c08f475bab4f0665babf5fe1f9cc6ddb7b02398b729",
+    "scope": "One freshhardware object and real link after byte-identical retained baseline;1456 retained objects/archives independently bound. OrdinarynativeMM2 consumer failed as recorded below."
+  },
+  "TCI_runtime": {
+    "producer": {
+      "path": "build/task009/mm2-tci-a2/build.json",
+      "sha256": "76153e03fd6c25658763781a820bb0c345249ed333546cf056ac2f7277872cf0"
+    },
+    "elapsed_seconds": 35.282327517983504,
+    "peak_tree_RSS_bytes": 487829504,
+    "fresh_objects": 1,
+    "reused_objects": 1046,
+    "outputs": {
+      "qemu-system-riscv64.js": {
+        "sha256": "59d0ebfbbcd61d935157bd928e0f196ad313b5be001d124bd5ff24d3b550cb76",
+        "bytes": 404838
+      },
+      "qemu-system-riscv64.wasm": {
+        "sha256": "eff3f3600f5d3f062aca5f0ab1f7d5498ef7dfdb457bcb6cc0cf5e9f12eb820c",
+        "bytes": 18515366
+      }
+    },
+    "retained_runtime": {
+      "path": "build/task009/mm2-tci-runtime-a1/runtime.json",
+      "sha256": "46708b6fadb4f74b52d74fae814cd399d4f7cc3b88c9a12fcfcba8a0e6ea14c2"
+    },
+    "admission_negatives": {
+      "path": "build/task009/mm2-tci-admission-negatives-a1/report.json",
+      "sha256": "51a0b2d15e6480fa0e15f199849739d29b0ffb41b74fe0850828f48db3acfee3"
+    },
+    "scope": "One freshhardware object/real link, preserving validated predecessor and originalindependently observed closure;12 coherently rehashed metadata/source/object corruptions rejected. Actual browserworkflow is a separate consumer receipt."
+  },
+  "native_package": {
+    "admission": {
+      "path": "build/task009/school23-mm2-native-admission-a1/result.json",
+      "sha256": "c2b32857b1e6e91f7ffd1570046e392e1f6d155a0f3ca360b30e01cf84989895"
+    },
+    "bundle": "/home/sreekumaar/Downloads/lemma/build/task009/school23-mm2-native-a1",
+    "manifest_sha256": "ecfe8921ed8b47bd16f14fc2e4d76ee58e8c7fa50d4e07595e08ce707afaf5a7",
+    "files": 1993,
+    "original_observer_failure": {
+      "path": "build/task009/school23-mm2-native-package-a1/result.json",
+      "sha256": "41a06fe637d6ac7280641a24e8f5d22455939f3c7e53241b12d019b9d47ad3a9"
+    },
+    "scope": "Both actualnormalCLIprepare/package exit0; finalwrapperobserver omitted requiredbackend/workload args. A separate correctednormaladmission passed without rebuilding orrepackaging."
+  },
+  "first_ordinary_native": {
+    "receipt": {
+      "path": "build/school/task009-native-mm2-a1/pcm-full-phase.json",
+      "sha256": "adc49230f276bcc83881a707631552ac2c9618942834671a57a7f3ca7c5addff"
+    },
+    "raw_UART": "build/school/task009-native-mm2-a1/session/uart-0.bin",
+    "waveform": "build/school/task009-native-mm2-a1/session/audio-0.bin",
+    "observed": "Student coldReady500M, explicitSaved frontier450 at600M; service3 discovered.4099 testprefilled2048 andstarted, thenstoppedreason3 after3,000,001phaseunits: accepted2048,fetched84,submitted84,consumed70,gaps0/controllererror0.",
+    "result": "FAIL_GUEST_PLAYBACK",
+    "diagnosis": "Sequential counterreads were treated as simultaneous. A separately qualified successor samples consumed\u2192submitted\u2192fetched\u2192accepted under the sameowner/epoch; oldfailedreceipt unchanged.",
+    "continuation": "Not admitted forMM2 pendingring/read state; legacyMM1 native logical2 remains separately qualified.",
+    "terminal": {
+      "path": "build/school/task009-native-mm2-a1/terminal-result.json",
+      "sha256": "8fad13ec315831586dbca8449f8ed2ba38453f460eee0fb09400dd2dca71dbaa"
+    },
+    "independent_waveform_prefix": {
+      "path": "build/school/task009-native-mm2-a1/pcm-failed-prefix-assessment.json",
+      "sha256": "10ab25a547b8f354fe9b68cfbfdc4f19b2fb80063d95880d92ba909a132432e9"
+    },
+    "prefix_scope": "Actual70 samples all match arbitrary waveform and6250tick spacing;1688B capture. Full4099 remainsFAIL."
+  },
+  "host_checks": {
+    "kernel_corpus": {
+      "log": {
+        "path": "build/task009/mm2-kernel-host-a1.log",
+        "sha256": "43d29438c20784de58e7107996c6311b52dba5e15e663df703169bc47662865c"
+      },
+      "tests": 529,
+      "seconds": 40.343
+    },
+    "table_source_guards": {
+      "log": {
+        "path": "build/task009/mm2-table-authority-tests-a1.log",
+        "sha256": "91432c3ef4ec4778aa06bddd5425dcbf7972217893abec3587d56fc58b9e1e66"
+      },
+      "tests": 23,
+      "seconds": 6.507
+    },
+    "binding_CLI_guards": {
+      "log": {
+        "path": "build/task009/mm2-cli-binding-a1.log",
+        "sha256": "8ac2a9a4aae7fbeeae66d30d2ebfcc0f1aa05e9717407461807cf8ded4899aad"
+      },
+      "tests": 15,
+      "seconds": 0.121
+    }
+  },
+  "retained_failures": [
+    "build/task009/qemu-mm2-runtime-a1.log",
+    "build/task009/qemu-mm2-runtime-a2.log",
+    "build/task009/mm2-tci-a1/build.json",
+    "build/task009/mm2-maintained-controller-a1.log",
+    "build/task009/school23-mm2-native-package-a1/result.json",
+    "build/school/task009-native-mm2-a1/pcm-full-phase.json"
+  ],
+  "remaining_scope": [
+    "held_cancel=1 capture is unsupported and refuses before writing state; malformed/cancel1 candidates refuse before adoption. Safe earlier restore is allowed from an unsupported current cut. Actual cancel1 search ended NOT_ENCOUNTERED and does not qualify that cut.",
+    "Exact declared runtime/profile/guest/source binding and finite documented guards are required. Arbitrary cuts, cross-backend migration, browser exact continuation and external companion storage are not admitted.",
+    "Original full16 Ready/pen/Save/reset does not qualify enabled simultaneous economy acquisition, wired/radio service traffic, independent cold reopening or ordinary school workflow on that full union.",
+    "Controller-owned PCM and native paper/raw audit output do not establish speech/explanations, sensors, safety, economy3,902,720B/s, physical closure, fabrication or educational benefit.",
+    "Fast14 MM2 remains a functional subset; BootNV/clockedUSB/power-v2/radio/fullPaper-v3 controllers are not silently supplied.",
+    "Direct C clockUINT64_MAX remains outside admitted QEMU signed-nanosecond/time range; no sentinel-end behavior claim."
+  ],
+  "historical_incomplete_SoC_compile": {
+    "receipt": {
+      "path": "build/task009/integrated16-native-producer-a1/result.json",
+      "sha256": "e4084d52f74f81597dfcc06df144245cc013e6639fcf8b354dc7bc9dc122750f"
+    },
+    "seconds": 87.93178143107798,
+    "peak_combined_RSS_bytes": 1229660160,
+    "inputs": 258,
+    "source_archive": "/home/sreekumaar/Downloads/lemma/build/task009/integrated16-native-producer-a1/source/consumed-source-root",
+    "source_inventory_sha256": "9aa0115a015c3cbf8873464d2db50d1d92ae849f79d13ba61a3a58b7d0edd9c0",
+    "binary_sha256": "aa7f68fff32fb3152120c28b92405ef4a3de9003d1ae1acf896fa7e4187c7305",
+    "runtime_identity": "400d2f1c2231d28d208b3fbf1d44d32b6daaba1d870396998ca90f9fe9e567c8",
+    "physical_lock_sha256": "3c67533606f95ee0577221c04bc6644ea63ee0da459e96d618d07e7257902d4b",
+    "scope": "Real258-input compile succeeded, but normalpreparation rejected its archive because profile16 validation consumed missing predecessor15JSON. Completeclosure claim withdrawn; originalbinary/result retained. No guestexecution.",
+    "prepare_failure_log": {
+      "path": "build/task009/integrated16-auth-prepared-a1.log",
+      "sha256": "9324a2f3971b2ba57c37a046fa0ff0eb5ab5085e12dd3b943de8e89b18272089"
+    }
+  },
+  "full_SoC_compile": {
+    "receipt": {
+      "path": "build/task009/integrated16-native-producer-a2/result.json",
+      "sha256": "e2864fdc5a009c100b68eeab907c674dbd7563f9c05dbe00902e3634feec1c8b"
+    },
+    "seconds": 81.56524594000075,
+    "peak_combined_RSS_bytes": 1224859648,
+    "inputs": 259,
+    "source_archive": "/home/sreekumaar/Downloads/lemma/build/task009/integrated16-native-producer-a2/source/consumed-source-root",
+    "source_inventory_sha256": "a37aeb5f8c9c5099f120871131484bebdb2371ce735b9a9cd72967d1e0c0bd22",
+    "binary_sha256": "514124215706c2c9c070f18acbff8aa3fa038d36a0414977bd63cf8994433340",
+    "runtime_identity": "f0c116ccaf86d789e86c0fb2e6df3ec2e27fe7b3ea93ff949571eca73338ad2d",
+    "physical_lock_sha256": "3923f9988c82bce5977977e2f751dff303702bd94aed4013cd5d734f8d077403",
+    "normal_preparation": {
+      "path": "build/task009/integrated16-auth-prepared-a2/prepared.json",
+      "sha256": "6bd94de983c221ef82f39717e020979322ac63a6333182d3e67b8cb949bdafd8"
+    },
+    "scope": "New actual259-input full16 build adds explicitprofile15 validation dependency. NormaldevelopmentROM/nativepreparation passes. Digitalcompilation/preparation only; no newfull16guest or physicalclosure claim. Frozen115padding-failed lock3923 remains original; newer30selection doesnot relabel thisarchive."
+  },
+  "full16_image_package_probe": {
+    "log": {
+      "path": "build/task009/integrated16-mm2-package-a1.log",
+      "sha256": "82ec51e8b35c92ae5d0a8946c22b3768256fb65e5b2b84ba188ecd08fd2e6caa"
+    },
+    "directory": "build/boot/task009-integrated16-school23-mm2-image-a1",
+    "guest": "build/kernel/task009-school23-integrated-pcm-a2",
+    "descriptor_bytes": 2973,
+    "limit": 3072,
+    "scope": "Actualpackage positivity after rejecting15\u219416 mismatches, using priorf869audited guest with known temporalPCMbug. Packageonly; notexecuted as correctedguest."
+  },
+  "temporal_successor": {
+    "status": "PASS_ACTUAL_4099_PCM_AND_PARTIAL_MUTE",
+    "User_source_sha256": "35f3dad089b539c2efb81fd281c9ee3e5a776950beb964678bd5126e5be7a2ba",
+    "actual_Action_gate": {
+      "path": "build/task009/mm-ring-temporal-actions-a2/result.json",
+      "sha256": "f0bbd18049f01a5214499d2ee0846b308c91e0a60eccd8febf8233e8ee8275e8"
+    },
+    "source_archive": "build/task009/school23-mm2-source-a4",
+    "input_count": 544,
+    "inventory_sha256": "43be9f8470f4386faab107d3195011e1fb2e57a2d457b54fcb87c3b4866a0dc6",
+    "genuine_producer": {
+      "path": "build/task009/school23-mm2-producer-a2/result.json",
+      "sha256": "e0d5cc1b3d7a14c70974bf7dde8b2eabc3e5c9a7750e9e190555ba79e1c10634"
+    },
+    "receipt_refresh": {
+      "path": "build/task009/school23-mm2-refresh-a2/result.json",
+      "sha256": "3776ce662b95c3de87952dabe4f3d28b650da99e13454b621e9b5f9f59fa7eb1"
+    },
+    "fresh_reused": "Only Userbody changed; actual invalidated Actions rebuilt across4configurations, then exact4completebody pins collected. Final12/11/10/10s outputs reuse admitted compilation with originalproducerreceipts; nativeC/TCI/RTLruntime unchanged.",
+    "strict_audit_directory": "build/task009/school23-mm2-audit-a2",
+    "required_execution": "A fresh4099sample guest run and partialMUTE; old70sampleprefix is never promoted.",
+    "strict_audit": {
+      "path": "build/task009/school23-mm2-audit-a2/result.json",
+      "sha256": "974bfdf18bcb833a2eeba83132907dca9f65eb333a087cf0260b597c22219888"
+    },
+    "audited_outputs": [
+      {
+        "role": "notebook",
+        "directory": "build/kernel/task009-school23-notebook-a24",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/audit_kernel.py",
+          "build/kernel/task009-school23-notebook-a24",
+          "--source-root",
+          "build/task009/school23-mm2-source-a4",
+          "--timeout",
+          "300"
+        ],
+        "status": "PASS",
+        "start_unix": 1792479113.2557087,
+        "returncode": 0,
+        "elapsed_seconds": 368.7153995037079
+      },
+      {
+        "role": "initialize",
+        "directory": "build/kernel/task009-school23-initialize-a23",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/audit_kernel.py",
+          "build/kernel/task009-school23-initialize-a23",
+          "--source-root",
+          "build/task009/school23-mm2-source-a4",
+          "--timeout",
+          "300"
+        ],
+        "status": "PASS",
+        "start_unix": 1792479113.256084,
+        "returncode": 0,
+        "elapsed_seconds": 354.77980852127075
+      },
+      {
+        "role": "integrated",
+        "directory": "build/kernel/task009-school23-integrated-a21",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/audit_kernel.py",
+          "build/kernel/task009-school23-integrated-a21",
+          "--source-root",
+          "build/task009/school23-mm2-source-a4",
+          "--timeout",
+          "300"
+        ],
+        "status": "PASS",
+        "start_unix": 1792479113.2564151,
+        "returncode": 0,
+        "elapsed_seconds": 394.43361496925354
+      },
+      {
+        "role": "integrated-pcm",
+        "directory": "build/kernel/task009-school23-integrated-pcm-a4",
+        "command": [
+          "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3",
+          "scripts/audit_kernel.py",
+          "build/kernel/task009-school23-integrated-pcm-a4",
+          "--source-root",
+          "build/task009/school23-mm2-source-a4",
+          "--timeout",
+          "300"
+        ],
+        "status": "PASS",
+        "start_unix": 1792479113.256816,
+        "returncode": 0,
+        "elapsed_seconds": 410.5367102622986
+      }
+    ],
+    "audit_whole_seconds": 412.0659077167511,
+    "audit_peak_combined_RSS_bytes": 638713856,
+    "maintenance_refusal": {
+      "log": {
+        "path": "build/task009/school23-mm2-audit-a2/driver.log",
+        "sha256": "06eeea94d5f49df7d44c432b1dead6e622d3333bc806e543a8c33e14bd708456"
+      },
+      "scope": "Guardrefusal75 whileactualhourlysparse maintenanceownedlock; auditbudgetnotstarted. RetriedonlyafteractualPIDterminated; originalplan/deadlines unchanged."
+    },
+    "native_package": {
+      "path": "build/task009/school23-mm2-native-package-a2/result.json",
+      "sha256": "b2e3298f0bb669fffcbbd471f26478db8546ff5f3a7b7512605d0359df912dd5"
+    },
+    "bundle": "build/task009/school23-mm2-native-a2",
+    "manifest_sha256": "b74bfc0bd75c6e6c6e69e9215715d04432e6b4403a70421328550b11d51310ab",
+    "packaging_seconds": 18.177285693003796,
+    "packaging_files": 1993,
+    "actual_student": {
+      "full_phase": {
+        "path": "build/school/task009-native-mm2-a2/pcm-full-phase.json",
+        "sha256": "f960aeb92689fbdbbe63aa96b1553e5df3bd04628d51aaf18e500884b105524c"
+      },
+      "output_assessment": {
+        "path": "build/school/task009-native-mm2-a2/pcm-output-assessment.json",
+        "sha256": "8f0999fbe42a9b6a31fb97da2fac7324d07192e574279f9588b28bec16bc56f4"
+      },
+      "full_functional_units": 29000007,
+      "full_phase_seconds": 1.525,
+      "full_samples": 4099,
+      "packets": "512\u00d78+3",
+      "ring_samples": 2048,
+      "partial_mute_consumed": 452,
+      "partial_mute_submitted": 468,
+      "gaps": 0,
+      "held_bus": 0,
+      "output_bytes": 109232,
+      "source_binding": "exact43be/a24+init23/nativeb74bfc; sameC4f052 runtime",
+      "scope": "ActualordinaryStudentAUDIO TEST witharbitraryS16controlleroutput. All4551valuesandpositionsmatch,6250tickspacingwithinbothfull+partialsegments; realrefill/wrap/EOF andconcurrentrecordDMA/MUTE. No speech,audibility, sensor,economy, educationalbenefit orMM2exactcheckpointclaim. FinalrepeatSave423/no421retainedseparately; initialSaved450wasobserved.",
+      "terminal": {
+        "path": "build/school/task009-native-mm2-a2/terminal-result.json",
+        "sha256": "4df41e3a8fcff7609bec9bb2c3faa097e3d4342d18fed7a58d7780187b607645"
+      },
+      "whole_functional_units": 746000008,
+      "normal_cleanup_confirmed": true
+    }
+  },
+  "private_MM2_continuation": {
+    "public_guard_enabled": false,
+    "original_probe": {
+      "path": "build/task009/mm2-logical2-ring-probe-a1/execution/result.json",
+      "sha256": "01a66598e97cf3969ce3097387f97249891343345bf4c9cb6507aa6ac94cab3a"
+    },
+    "original_result": "FAIL actualPCMfile offsetobserver before stdioflush; original13.978s observationunchanged",
+    "closed_assessment": {
+      "path": "build/task009/mm2-logical2-ring-probe-a1/closed-output-assessment/result.json",
+      "sha256": "4be3244f28700374bc86a72dc4bc1782395e426d605b940fe6e62581261078c1"
+    },
+    "scope": "Separateindependentassessmentofalreadyretainedsource/forksuffixes +onefreshpausedmalformedcandidate withinoriginal300s; no guest rerun/publiccheckpointpromotion",
+    "actual_cut": {
+      "source": "current43be/35f3normalguestAUDIO TEST",
+      "ring_capacity": 2048,
+      "accepted": 2048,
+      "fetched": 16,
+      "submitted": 16,
+      "consumed": 1,
+      "FIFO_count": 15,
+      "EOF": 0,
+      "held_read": false
+    },
+    "actual_suffix": {
+      "full_consumed": 4099,
+      "PCM_suffix_records_equal": 4098,
+      "VMState_bytes": 27278081,
+      "relation": "lemma-native-MM2-logical-observation-relation/3",
+      "all_VMState_bytes_equal_except": "twoexplicitinheritedhostCPUtimeoffsetfields; allguestclock/CPU/RAM/device/ring/timerfieldschecked",
+      "logical_sidecar_bytes": 56862,
+      "logical_relation": "alltranslation/witnesspayloadsequalandactualfile/integritybindingschecked"
+    },
+    "malformed": "Coherentlyrehashedproducer15<fetch16state rejectedbyactualv2post-loadhook(-22), originalsourcefilesunchanged andcandidate discarded/reaped",
+    "not_qualified": [
+      "publicSessionMM2transactionalrestore",
+      "instruction-boundaryheldread/bus-cancel",
+      "permissionchange/endingcuts beyondthetestedrunning-ring/refill\u2192EOFsuffix",
+      "newtargetsuccessorafterreceipt/exposurefix",
+      "crossbackendmigration"
+    ],
+    "observer_sources": {
+      "probe.py": {
+        "path": "build/task009/mm2-logical2-ring-probe-a1/probe.py",
+        "sha256": "ad5111437d450a8c81c476d878a04e3c8858a4e4ce18b095035406806682083f"
+      },
+      "native_logical_relation.py": {
+        "path": "build/task009/mm2-logical2-ring-probe-a1/native_logical_relation.py",
+        "sha256": "594a62781ff3ff0c613b8346fdce9e84aafd704d15531ddcedf685994ae97f29"
+      },
+      "assess.py": {
+        "path": "build/task009/mm2-logical2-ring-probe-a1/assess.py",
+        "sha256": "286e8b949b8493caff2adde2cb1cc78b295092ac34deaf6b32f13ce26e5e6658"
+      }
+    }
+  },
+  "receipt2_WAL_completion_successor": {
+    "status": "HISTORICAL_03914F_NATIVE_WORKFLOW_4099_PCM_AND_FULL16_FINITE_EXECUTION_PASS",
+    "source_archive": "build/task009/school23-mm2-source-a8",
+    "source_inputs": 545,
+    "source_inventory_sha256": "03914f7cea4a400cc3761f8fe7974f76b300db7a9e14a3abd3c21b1c3aadbcd6",
+    "target_sources": {
+      "Notebook": "8b8783dcd03114599a0777decf5d8308af038626f834ef97397348d36c45ccaf",
+      "Mathematics": "bfef29b1648f4bd9e0885a3f963db635bd92022357afe3ed6343638cf1cf815a",
+      "UserMultimodal": "3559022714096f61e5658791add171d4b6ae3cb411f3b8acb6900d8179b3fc07",
+      "Service": "21dda5464a344b90031db2dfc0c61dd660fbeeb8ff300536395f47a7c04d32cc"
+    },
+    "changes": "Deferred Saved presentation binds the exact acknowledged work/context; remote assistance is durably prepared before rendering; PCM DONE observes a fresh consumed frontier instead of treating sequential reads as simultaneous.",
+    "producer": {
+      "path": "build/task009/school23-mm2-producer-a4/result.json",
+      "sha256": "cb31e5cbb061918c41dad68a7f3ff0deb3f6fe55bf9bd40a64403de614befd7c"
+    },
+    "genuine_builds": [
+      {
+        "role": "notebook",
+        "output": "build/kernel/task009-school23-notebook-a26",
+        "elapsed_seconds": 171.26852750778198,
+        "peak_combined_rss_bytes": 3402178560
+      },
+      {
+        "role": "initialize",
+        "output": "build/kernel/task009-school23-initialize-a25",
+        "elapsed_seconds": 117.26904916763306,
+        "peak_combined_rss_bytes": 1857060864
+      },
+      {
+        "role": "integrated",
+        "output": "build/kernel/task009-school23-integrated-a23",
+        "elapsed_seconds": 126.07964444160461,
+        "peak_combined_rss_bytes": 1875718144
+      },
+      {
+        "role": "integrated-pcm",
+        "output": "build/kernel/task009-school23-integrated-pcm-a6",
+        "elapsed_seconds": 120.65026950836182,
+        "peak_combined_rss_bytes": 1876926464
+      }
+    ],
+    "actual_pre_post_scalar_authority": {
+      "path": "build/task009/school23-mm2-pins-a1/result.json",
+      "sha256": "e0912fc5fb74f5d307e78e111cafac79a574ecc1c4eb961ca7b28ba0713b97df"
+    },
+    "receipt2_intrinsic_gate": {
+      "path": "build/task009/notebook-loss-receipt2-a1/result.json",
+      "sha256": "c6206da59914f65f8bd5511dc638372f2c0cc96cc85fd740d9cd045779097617"
+    },
+    "intrinsic_gate_scope": "Exact versioned receipt2 loss-body hashes and first clear permit the unchanged saturating arithmetic; legacy body remains exact, 16 old/new host tests and all eight actual pre/post corpora pass. No general intrinsic or compiler widening.",
+    "final_cached_receipt_refresh": {
+      "path": "build/task009/school23-mm2-refresh-a4/result.json",
+      "sha256": "e28f967bca2e5b395cb140814f7acc2d7f8a8a2c6b44187e61afb4051e791298"
+    },
+    "refresh_scope": "Final source/audit-contract provenance refresh reuses admitted target compilation and original producer receipts; not fresh LLVM compilation or execution.",
+    "strict_audits": {
+      "path": "build/task009/school23-mm2-audit-a4/result.json",
+      "sha256": "76e46bc5b8860cfe8c0def34fd50d6145d48542d220b371bddf484461bff7f67"
+    },
+    "audit_whole_seconds": 433.9801678657532,
+    "audit_combined_sampled_peak_RSS_bytes": 668999680,
+    "final_builds": {
+      "notebook": "build/kernel/task009-school23-notebook-a28",
+      "initialize": "build/kernel/task009-school23-initialize-a27",
+      "integrated": "build/kernel/task009-school23-integrated-a25",
+      "integrated-pcm": "build/kernel/task009-school23-integrated-pcm-a8"
+    },
+    "retained_failures": [
+      {
+        "path": "build/kernel/task009-school23-notebook-a25/action-failure.json",
+        "scope": "Actual unsupported GT.gt in new Mathematics validation; corrected by typed UInt64 LT operand reversal, preserving the failure."
+      },
+      {
+        "path": "build/task009/school23-mm2-audit-a3/result.json",
+        "scope": "All four strict audits rejected the new receipt2 first-clear body under the legacy saturating-loss hash. A distinct exact-body gate and final source-bound cached refresh precede fresh passing audits; target compilation is reused."
+      }
+    ],
+    "native_package": {
+      "path": "build/task009/school23-mm2-native-package-a4/result.json",
+      "sha256": "6b9eb31683a8625ed7ad101850c30ea74464487d24c20f2ff04172f950d4463f"
+    },
+    "native_bundle": "build/task009/school23-mm2-native-a3",
+    "manifest_sha256": "5041fb9f71b6ab18749d1f438ff26f9199306c6fe7ee53e8c372263c11c97b8b",
+    "files": 1996,
+    "package_seconds": 13.610122418031096,
+    "package_sampled_peak_RSS_bytes": 531890176,
+    "runtime_reuse": {
+      "binding": "lemma-silicon-fast-mm2-subset/0.1.0",
+      "profile": "lemma-silicon-dev/0.14.0",
+      "ELF_sha256": "4f052aaf5497b84046d93c08f475bab4f0665babf5fe1f9cc6ddb7b02398b729",
+      "compilation": "Actual unchanged MM2 C runtime reused; no runtime compilation for this guest successor"
+    },
+    "native_first_Save": {
+      "path": "build/school/task009-native-provenance-a1/initial-save-gate.json",
+      "sha256": "d75f9539cefecc5b25d76579d69e92066fee34fba810f9af3b034e982387fb26"
+    },
+    "native_first_Save_scope": "Actual Student Ready by400M and explicit421 Saved at500000001 functional units, visible Saved header, no guest fault. An initial observer treated normal loader F1 descriptors as faults; assessment of those same retained bytes uses the existing Session decoder, without rerun.",
+    "browser_archive": {
+      "manifest_sha256": "146c9476414dfb32283dddbd0da251a94859e1b4628ef4f1ec794034c8604940",
+      "files": 665,
+      "package_seconds": 22.565,
+      "archive_checks": 24,
+      "archive_check_seconds": 16.477,
+      "scope": "Parent observed actual packaging/admission; ordinary new browser session is a separate in-progress workflow. CPU-stop runtime archive7949a9a6254aaa273cc29d23b2f826361524e0d1b468bf9bb9b6a9f8bc8f1c68; no new compilation is claimed from packaging."
+    },
+    "public_MM2_checkpoint": false,
+    "pending": "This03914f guest predates the warm-SEND repair. Its actual waveform/WAL/continuation/full16 receipts are recorded below. Old bundle public_MM2_checkpoint remains false."
+  },
+  "native_03914f_completion": {
+    "source_archive": "build/task009/school23-mm2-source-a8",
+    "source_inventory_sha256": "03914f7cea4a400cc3761f8fe7974f76b300db7a9e14a3abd3c21b1c3aadbcd6",
+    "ordinary_native": {
+      "path": "build/school/task009-native-provenance-a1/terminal-result.json",
+      "sha256": "6a09af08a495d63d6a9b95f1bb384d47be8f2cdf0f0d937857c6e8a54777285a"
+    },
+    "PCM": {
+      "path": "build/school/task009-native-provenance-a1/cold/pcm-output-assessment.json",
+      "sha256": "3eda03f636b808df078b9055e1ad526355b8ac5bc0e703c6b51bda36fddf79d2"
+    },
+    "PCM_output": {
+      "path": "build/school/task009-native-provenance-a1/cold/session/audio-0.bin",
+      "sha256": "e804dbaf07751e506683fc73e6bc2ed8caeb266655b0c9bc202cc2609f1aa73a"
+    },
+    "PCM_scope": "4099 exact S16 waveform records, positions1..4099,6250-tick spacing; accepted=fetched=submitted=consumed4099,gaps0/held0. Dedicated phase29,000,005units/1.274205s; no repeat run.",
+    "held_read_MUTE": {
+      "path": "build/task009/mm2-logical2-held-read-a1/execution/result.json",
+      "sha256": "d782fcc2935f80e15b599c6ccb7b49c5bb2275b38dfa455e87e2b0c13fb3b394"
+    },
+    "WAL_original_observer_FAILURE": {
+      "path": "build/task009/mm2-logical2-wal-a1/execution/result.json",
+      "sha256": "8d8c4204d8cea1b8c0d38ea2bf064094fdc13ebf70c948937156e3e8c203c142"
+    },
+    "WAL_closed_assessment": {
+      "path": "build/task009/mm2-logical2-wal-a1/closed-assessment-a1/result.json",
+      "sha256": "2e0f46e6d2145e9b1d5dcf7dbf4c1aab247f79318ee4bda839ecd352f161e630"
+    },
+    "maintained_relation_assessment": {
+      "path": "build/task009/mm2-maintained-relation-a2/result.json",
+      "sha256": "995f5368d2d4239c6b666dfec9925c8b5521e8a0acf8747297a7672f945f0a1c"
+    },
+    "full16_actual": {
+      "path": "build/task009/integrated16-school23-receipt-positive-a1/result.json",
+      "sha256": "4c8bb0d2a5a51a79791d60eb8c3f5b94a079160fc55efca04de8020e72abd7a3"
+    },
+    "full16_closed_cleanup": {
+      "path": "build/task009/integrated16-school23-receipt-closed-a1/result.json",
+      "sha256": "1382e40d0ae889a9cfb7689cd8e2aff73da35b3a3212a8219910e401553fae47"
+    },
+    "held_read_scope": "Actual held kind2/cancel0 read; ordinary MUTE suffixes preserve identical logical/VMState/fullRAM/backing/PCM.64.228s; older guest is not relabeled warmd485.",
+    "WAL_scope": "Original53.394s execution retains ABI1-observer FAIL. Pure closed assessment uses exact copied MM2 relation3 over both already-present original1Bns suffixes. Actual remotephase1/request20/floor22, Notebookfrontier21/Savephase2/IPC331,Mathscope1. Exact RAM/VMState/logical/durable/UART suffix; no phase8 held-media claim.",
+    "maintained_relation_scope": "Additive ABI/version-guarded maintained MM2 relation3 applied to retained old03914f WAL/held-read pairs and actual ABI1 bytes, zero guest execution; relation2 preserved.",
+    "full16_scope": "Actual canonical0.16 ROM/NV factory cold authentication, Ready674Mcycles/5925.994290s,pen/Save69M/716.955955s,reset200k;total743.2M/6654.458127s within original1.5B/12000s. Independent linked full9 raw/index/root frontier2\u21925 and exact reset backing. Stale wrapper RUNNING publication preserved; unavailable wrapper exit code not inferred. No warmd485/full16 or enabled economy/transport claim."
+  },
+  "scoped_native_MM2_continuation": {
+    "status": "PUBLIC_EXPLICIT_BINDING_ADMITTED_AND_ACTUAL_ORDINARY_STUDENT_PASS",
+    "contract": "docs/contracts/009-native-mm2-continuation-v1.html",
+    "binding": "lemma-silicon-fast-mm2-softtlb/0.1.0",
+    "execution_binding": "lemma-silicon-fast-mm2-subset/0.1.0",
+    "relation": "lemma-native-MM2-logical-observation-relation/3",
+    "implementation_commits": [
+      "db80bae",
+      "0cba81b",
+      "e7237e2"
+    ],
+    "host_qualification": {
+      "path": "build/task009/mm2-admission-host-a2/result.json",
+      "sha256": "e5e2842077e87772bf0a4d80ea2c9bba6462f8d2cd294753757b63672ad2587d"
+    },
+    "private_guarded_session": {
+      "path": "build/task009/mm2-guarded-session-a1/result.json",
+      "sha256": "1f8de267cb1295040fb9a260c1f837f4904c35d3fb6f56519a83605cd3ec8441"
+    },
+    "cancel_cut_qualification": {
+      "path": "build/task009/mm2-cancel-cut-scope-a3/result.json",
+      "sha256": "ca3990acc7fe4ca4f6f86c818b9a751264220adb28d411a7340ec3f444c6562a"
+    },
+    "actual_cancel_search": {
+      "path": "build/task009/mm2-logical2-cancel-read-a1/execution/result.json",
+      "sha256": "4a2231ad1d90aea6fa5edae48dc325700203d784564db8886ad820f5e7272a01"
+    },
+    "host_scope": "111 nonempty unskipped cases: relation7,new admission11,legacy logical5,transaction7,Session46,MM2binding16,legacyobserver11,Schoolservice8. Exact source hashes retained. Meaningful wrongABI/incomplete/ringmutation/offset-only and coherently rehashed candidate negatives.",
+    "private_scope": "Older false archive refuses normally before process-local private qualification of actual ring2048 and blockedUART4082. Public ordinary UI below uses normal true archive with no override.",
+    "cancel_scope": "Zero guest instructions: held_cancel1 candidate refused before adoption, capture creates nofiles/no clockadvance, prior backing/authority preserved; safe earlier restore succeeds from unsupported current cut. Earlier failed harness retained. Separate actual search NOT_ENCOUNTERED51.682s does not qualify cancel1 continuation.",
+    "transaction": "Candidate validation uses fresh never-run QEMU and isolated backing. Failure retains original PID/backing/authority. Adoption alone invalidates School connection, detaches tablet, increments presentation generation and discards old futures; output metadata then follows adopted generation.",
+    "presentation_scope": "Native viewer presents paper; controller audio is a generation-specific raw PCM audit file. No speaker sink/queued audible presentation/mute preference, microphone/sensor acquisition or external transmission permission is implemented or revived here."
+  },
+  "warm_native_and_MM2_ordinary_UI": {
+    "source_archive": "build/task009/school23-mm2-source-a10",
+    "input_count": 545,
+    "source_inventory_sha256": "a79ae7b47f1a5bea37648486e15b88ab79b869d1526c1bd330276e93e49aa6d4",
+    "Notebook_sha256": "d4855f51de2a6c84e6f18af0c6892270f1999ee7cdc1e52d508b70d13d3cb756",
+    "genuine_target_source_archive": "build/task009/school23-mm2-source-a9",
+    "genuine_target_source_inventory_sha256": "645f0dac26beab9fe4b3b20067bf05385595d3abaf0e21e60846e583cfdaf17a",
+    "genuine_producer": {
+      "path": "build/task009/school23-mm2-producer-a6/result.json",
+      "sha256": "e4a02327e3aa8f1013c117badbc4794759edda4bb66d8950f86caf98c1512143"
+    },
+    "original_pre_action_FAILURE": {
+      "path": "build/task009/school23-mm2-producer-a5/result.json",
+      "sha256": "78157d05b275d87f906d3129d1690a7e9890764e8a2db8a57e1e67cff20b020e"
+    },
+    "original_audit_FAILURE": {
+      "path": "build/task009/school23-mm2-audit-a5/result.json",
+      "sha256": "43b6592ffac231eb02b64b11396cecd3b214bde58aa20d5d2032ee44a8ebc226"
+    },
+    "LLVM_audit_guard_gate": {
+      "path": "build/task009/school23-warm-audit-admission-a2/result.json",
+      "sha256": "0ca3048d9a8016506317744b75537d82065853bb2eb5a0cf70f71cf308ede790"
+    },
+    "cached_provenance_refresh": {
+      "path": "build/task009/school23-mm2-refresh-a5/result.json",
+      "sha256": "cb8fea199a7cd700c603ac6fefdb13d811a733bed5f8b262bc937558d05ba69f"
+    },
+    "strict_audits": {
+      "path": "build/task009/school23-mm2-audit-a6/result.json",
+      "sha256": "0c7e46cdf08e7d21522d7865ede99a7e1ef2546c9675d64f29c49f2e17ea8ddf"
+    },
+    "normal_package": {
+      "path": "build/task009/school23-mm2-native-package-a6/result.json",
+      "sha256": "f975d7b129dfc9a21df293c404919ef3c7e542d462f5c14318816fbb044c72fc"
+    },
+    "explicit_checkpoint_package": {
+      "path": "build/task009/mm2-admitted-native-package-a2/result.json",
+      "sha256": "5c4655cad52d0a6e26e919d8cffbed7401f8607a274a045ca88056d80c0c0cf2"
+    },
+    "ordinary_UI_original_FAILURE": {
+      "path": "build/task009/mm2-student-ui-a1/result.json",
+      "sha256": "0b8218200b8b1c22158a20c94e8c59b12bf47043ca71c906b715fc0c9ded0264"
+    },
+    "ordinary_UI_export_restore": {
+      "path": "build/task009/mm2-student-ui-a2/result.json",
+      "sha256": "f9826fa8b028d93c9369996f00cdfad98c23fd1fb8b8efbc250aaef2fcc39303"
+    },
+    "ordinary_UI_reopen_visible_saved": {
+      "path": "build/task009/mm2-student-ui-a3/result.json",
+      "sha256": "ad01a36b41bfc02c1b532b772cccefb6dc389d77a9b521f3b228b20a42dcb575"
+    },
+    "warm_source_gate": {
+      "path": "build/school/task009-warm-submit-source-a1/result.json",
+      "sha256": "056fd4288a997f7c7705f35b410d7aa3cedc6bffccf3eccd5b8caeb05d3b3258"
+    },
+    "source_audit_guard_gate": {
+      "path": "build/school/task009-warm-source-admission-a3/result.json",
+      "sha256": "f0752a5f1a055d0dad5ebd90d901f8328f06f90a3bbf8d4621bd0732972e1e02"
+    },
+    "warm_Student_school": {
+      "path": "build/school/task009-native-warm-a1/terminal-result.json",
+      "sha256": "7f226389375808d2677a170b9b8713d769e7ea7603b5d99d1d72f4181ea0bcfe"
+    },
+    "genuine_production_scope": "Four genuine Lean/LLVM rows951.464827s whole. Pre-action immutable-Nix failure producer-a5 retained; successor selects original immutable child tool preserving outer guard.",
+    "audit_guard_scope": "Actual4 pre/post corpora and13 missingguard/retarget LLVM mutations; legacy03914f preserved. Source gate10warm+23existing cases; newoffset88/96/104/112 use requires full120B context, genuine legacy88B retained.",
+    "refresh_scope": "a79 differs from645 only multimodal_target.py,school_target.py,typed authority pins. Each20payload artifacts per role equals genuine a6;fresh0/reused39/incremental2 per row. Authority/provenance refresh53.604495s; no target/C compilation.",
+    "strict_audit_scope": "Four strict auditsPASS520.676202s,682,209,280Bcombined sampledRSS; original900s/300sinspection/3GiB/2GiB retained and owners reaped.",
+    "normal_bundle": "build/task009/school23-mm2-native-a4",
+    "normal_bundle_manifest_sha256": "a323d365dffe9a3a88ffc8ba7cb27e653c7fd99a16c0087d25d8aa963a8c5365",
+    "normal_bundle_checkpoint_admitted": false,
+    "explicit_checkpoint_bundle": "build/task009/school23-mm2-native-logical2-a1",
+    "explicit_checkpoint_manifest_sha256": "fed8d8278e727a36e2fbe1aa4067c6655aa2a4f1389dffc2e3a8ec4478cc90a3",
+    "explicit_checkpoint_admitted": true,
+    "runtime_scope": "Both normalCLI packages reuse exactp81 runtimeELF4f052aaf5497b84046d93c08f475bab4f0665babf5fe1f9cc6ddb7b02398b729 and same auditedguest.17.177366sregular/15.659120sexplicit; no compiler or privateoverride.",
+    "warm_Student_scope": "Actual803/2 help remains open60001; CHECK/Save/SEND reaches school146+733pointer36,syntheticteacher147,ordinaryAliceFeedback,explicitSave37,fourfull9raw preserved.2,800,000,004units/574.283508s within12B/3000s;normaldestroy/sourcesunchanged. ExistingVopaqueannotation, no newwrittenproof/browser/full16 claim.",
+    "ordinary_UI_export_restore_scope": "NormalStudentTk CanvasAUDIO TEST +Pause/Export/Resume/Restore. Visibleidlecompletedpaper180,500,071;activeringcut182,700,071;changed600k;exactrestore,oldbackingunchanged;pen/Save43,700,014 and full9durable exact.54.041419s/254,574,592B. Finala2screenshot stillPENDING after421; completedvisibleSaved not claimed froma2.",
+    "ordinary_UI_reopen_scope": "FreshStudentcycle0 restores existinga2export182,700,071. Actualpointerink/Save48,900,021\u2192231,600,092;frontier2\u21925. All9fields including actualcontrollersequence3/4/5+epoch1 matchdurable. LiteralcompletedcontrollerSAVEDfooter24,132,336,16 ANDordinaryviewer exact.28.792419s/254,451,712B;300s/1GiB/3GiB/150Msuffix unchanged;ownersreaped,sourcesunchanged.",
+    "visible_saved_screenshot": {
+      "path": "docs/evidence/009-native-mm2-restored-saved.png",
+      "sha256": "94399738376e84d7bfe087a4be8f0113aea4a99a426c258d2c7f06e59333856f"
+    },
+    "operation_status": "Viewer retains Exported/Restored state at cycle result. UART420 initializes guest before optical firstframe;421 acknowledges durable current work before later header completion. Accepted/target/completed/visible frontiers remain separate. Native status never advertises UART420 as Ready.",
+    "permissions": "Ordinary synthetic pointer and controls only; no Student diagnosticUART injection/privateoverride/host-synthesizedguestwork or speaker/sensor/transmissionauthority."
+  }
+}

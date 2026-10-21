@@ -96,6 +96,31 @@ def lean_source_inputs(root, sources):
     return result
 
 
+def _rollback_added_lake_files(tree, compiled, baseline):
+    """Discard only unadmitted additions if every admitted byte still matches.
+
+    A changed/deleted baseline, symlink or traversal failure refuses rollback.
+    This never accepts compiler output from an interrupted preparation.
+    """
+    if compiled.is_symlink():
+        return False
+    try:
+        paths = list(compiled.rglob("*"))
+        if any(path.is_symlink() for path in paths):
+            return False
+        current = {path.relative_to(tree).as_posix(): sha256(path)
+                   for path in paths if path.is_file()}
+        if not isinstance(baseline, dict) or any(current.get(name) != digest
+                                                for name, digest in baseline.items()):
+            return False
+        for name in current.keys() - baseline.keys():
+            (tree / name).unlink()
+        return {path.relative_to(tree).as_posix(): sha256(path)
+                for path in compiled.rglob("*") if path.is_file()} == baseline
+    except OSError:
+        return False
+
+
 @contextmanager
 def lean_workspace(root, cache_directory, tools, inputs, *, fresh=False):
     """Private source copy, protected Lake tree, byte-checked compiled state.
@@ -103,6 +128,8 @@ def lean_workspace(root, cache_directory, tools, inputs, *, fresh=False):
     Copy from the action's immutable inputs, never the caller's mutable .lake.
     Only this lock owner writes the source copy or Lake state. A damaged state
     inventory discards compiled dependencies, including injected foreign files.
+    An interrupted locked action may roll back only its unadmitted additions;
+    changed/deleted admitted bytes always invalidate the compiled tree.
     """
     from action_cache import tool_identity, write_if_changed
     identity = json.dumps({"root": str(Path(root).resolve()),
@@ -122,6 +149,22 @@ def lean_workspace(root, cache_directory, tools, inputs, *, fresh=False):
             raise Core0Error("private Lean compiled-state metadata must not be a symlink")
         def inventory():
             return {p.relative_to(tree).as_posix(): sha256(p) for p in sorted(compiled.rglob("*")) if p.is_file()}
+        pending = base / "compiled-pending.json"
+        if pending.is_symlink():
+            raise Core0Error("private Lean pending-state metadata must not be a symlink")
+        if pending.exists():
+            # The inherited action lock is acquired before recovery, so a live
+            # compiler cannot race removal. A marker never promotes new bytes.
+            try:
+                transaction = json.loads(pending.read_text())
+                recoverable = (transaction.get("schema") == "lemma-lake-addition-rollback/1"
+                               and transaction.get("metadata_sha256") == sha256(metadata)
+                               and _rollback_added_lake_files(tree, compiled, json.loads(metadata.read_text())))
+            except (OSError, ValueError, AttributeError):
+                recoverable = False
+            if not recoverable:
+                metadata.unlink(missing_ok=True)
+            pending.unlink()
         try:
             previous = json.loads(metadata.read_text())
             valid = (not compiled.is_symlink() and previous == inventory()
@@ -145,16 +188,36 @@ def lean_workspace(root, cache_directory, tools, inputs, *, fresh=False):
             if p.is_file() and relative.as_posix() not in names: p.unlink()
         for name, path in inputs.items():
             write_if_changed(tree / name, Path(path).read_bytes())
+        # A rejected export need not discard its unchanged, previously admitted
+        # compiler dependencies. Never admit new/changed compiled bytes on a
+        # failed action: only the exact inventory validated on entry survives.
+        baseline = inventory() if valid and not fresh else None
+        baseline_metadata = sha256(metadata) if baseline is not None else None
+        if baseline is not None:
+            write_json(pending, {"schema": "lemma-lake-addition-rollback/1",
+                                 "metadata_sha256": baseline_metadata})
         try:
             with action_lease(lock.fileno()):
                 yield tree
         except BaseException:
-            metadata.unlink(missing_ok=True)
+            unchanged = False
+            if baseline is not None and not metadata.is_symlink() and not compiled.is_symlink():
+                try:
+                    unchanged = (sha256(metadata) == baseline_metadata
+                                 and _rollback_added_lake_files(tree, compiled, baseline))
+                except OSError:
+                    pass
+            if not unchanged:
+                # Unlinking a metadata symlink does not follow it or alter its
+                # external target. The next action must rebuild dependencies.
+                metadata.unlink(missing_ok=True)
+            pending.unlink(missing_ok=True)
             raise
         else:
             if metadata.is_symlink():
                 raise Core0Error("private Lean compiled-state metadata must not be a symlink")
             write_json(metadata, inventory())
+            pending.unlink(missing_ok=True)
 
 
 def fresh_requested(fresh=False):
