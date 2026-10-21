@@ -25,6 +25,10 @@ FAILED = ROOT / 'build/silicon/task009-head-bypass-fresh-route-a3'
 MAPPING = ROOT / 'build/silicon/task009-head-bypass-standard-mapping-a2/mapping'
 MACRO = 'RM_IHPSG13_1P_256x64_c2_bm_bist'
 CORE = Path('/nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad')
+# Imports emitted into child Python scripts are not AST imports of this file.
+GENERATED_HELPERS = ('silicon_power_margin', 'silicon_acceptance_launch',
+                     'silicon_fresh_margin', 'silicon_buffered_pins',
+                     'silicon_well_fill_route', 'silicon_power_clearance')
 # Exact completed producer/component identities, added below with the source.
 PINS = {
     "build/silicon/task009-head-bypass-full-GRT-pilot-a2/result.json": "115716cf9ae569e965c9b62cb9908ab51b322ac379597cb995235956486a1ad0",
@@ -155,10 +159,14 @@ from silicon_power_margin import load
 from silicon_acceptance_launch import snapshot
 from silicon_fresh_margin import assess
 from silicon_buffered_pins import assess as endpoints
+from silicon_well_fill_route import master_library_relation
 a,b=load(Path({str(before)!r}));d,nb=load(Path({str(current)!r}))
 assert snapshot(b)==snapshot(nb),'DRT changed source cells/pins/ports/PG/OBS'
+masters=master_library_relation(a,d,Path({str(output.parent/(output.stem+'-masters'))!r}))
 assess(Path({str(current)!r}),Path({str(liberty)!r}),Path({str(output)!r}))
 endpoints(Path({str(FAILED/'post-power/routed.odb')!r}),Path({str(current)!r}),Path({str(liberty)!r}),Path({str(output.with_name(output.stem+'-endpoints.json'))!r}))
+import json
+Path({str(output.with_name(output.stem+'-master-relation.json'))!r}).write_text(json.dumps(masters,indent=2))
 '''
 
 
@@ -202,10 +210,11 @@ def main(args):
         macro_lib = macro / 'lib' / (MACRO + '_typ_1p20V_25C.lib')
         tech = FAILED / 'enclosure/repaired-original.lef'
         inputs = [ROOT / name for name in PINS]
-        inputs += [liberty, macro_lib, tech, CORE, CORE.with_name('.openroad-wrapped')]
+        inputs += [liberty, macro_lib, tech, CORE, CORE.with_name('.openroad-wrapped'),
+                   ROOT / 'tooling/silicon/pen-power-check.tcl']
         inputs += [pdk / ('ihp-sg13g2/libs.tech/librelane/openrcx/ihp-sg13g2.' + rc + '.magic.rules')
                    for rc in ('min', 'nom', 'max')]
-        pending = ['silicon_fresh_global', 'silicon_pen_physical']; seen = set()
+        pending = ['silicon_fresh_global', 'silicon_pen_physical', *GENERATED_HELPERS]; seen = set()
         while pending:
             name = pending.pop()
             if name in seen:

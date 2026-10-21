@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-20T23:17:29.444354+00:00",
+  "written_at": "2026-10-21T00:14:51.617935+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -1118,7 +1118,7 @@
         "Short": 136,
         "Metal Spacing": 79
       },
-      "scope": "Unselected physical-only original0.24um Metal4 boundary-band PGclearance; actual816obstructions/PGstatepreserved. Routeimproves248→215 butsetup/hold/electricalregress; no selectedsourcechange."
+      "scope": "Unselected physical-only original0.24um Metal4 boundary-band PGclearance; actual816obstructions/PGstatepreserved. Routeimproves248\u2192215 butsetup/hold/electricalregress; no selectedsourcechange."
     }
   ],
   "extracted_available_corners": [
@@ -1396,7 +1396,7 @@
     "important_correction": "Public typical and slow SRAM timing libraries exist and are assessed; they are not missing-input blockers."
   },
   "source_boundaries": {
-    "physical_execution": "Selectedunfinished30-marker poweredpen:6short/24spacing, zerooriginal1siteL/Rpaddingviolations,33originalnoninvertingdelaycells on31SRAMinputs and243oldcellmoves. All17,411PGterminals/9SRAMpowerpins/423BIST/668ports/nativePGshapes/OBS/fixedmacros preserved. NominalactualPEX−13.563163setup/−.143290hold/770electrical; all9FAIL. All31targetsholdpositiveacross9 but20newSRAM+136oldcontrol+16otherregister endpoints failhold. FullprocessDRC/transistorLVS/IR/EM andfullnotebookmemoryunfinished. CanonicalRTL504f unchanged; eachruntime keepsitsoriginalsourceidentity.",
+    "physical_execution": "Selectedunfinished30-marker poweredpen:6short/24spacing, zerooriginal1siteL/Rpaddingviolations,33originalnoninvertingdelaycells on31SRAMinputs and243oldcellmoves. All17,411PGterminals/9SRAMpowerpins/423BIST/668ports/nativePGshapes/OBS/fixedmacros preserved. NominalactualPEX\u221213.563163setup/\u2212.143290hold/770electrical; all9FAIL. All31targetsholdpositiveacross9 but20newSRAM+136oldcontrol+16otherregister endpoints failhold. FullprocessDRC/transistorLVS/IR/EM andfullnotebookmemoryunfinished. CanonicalRTL504f unchanged; eachruntime keepsitsoriginalsourceidentity.",
     "process": "Original process/GDS/LEF/deck bytes stay immutable. Removing display expansion exposed full DRC; separate300s export and180s direct extraction attempts remain failed. Direct extraction reached real top-cell geometry. Complete process DRC and connected transistor LVS have not completed; no missing nominal process collateral is invented to excuse these tool/engineering failures. Completed146s transistor extraction and300s directDRC/45s Netgen failures bind the preceding170marker geometry; they are not process qualification for the later129marker variant. The selected powered248geometry has actual connected-PG/signal reference export comparison but no completed process DRC or transistor LVS; earlier process results never qualify it. The new powered248 producer now completes actualtransistorextraction87.667s after originalSRAMimportfix; Netgenfails45.114s and total139.925s, allwarningskept. This removes the powered-geometry extraction predecessor but does not establish processDRC/LVS.",
     "logic_comparison": "Private Yosys zero-delay correspondence trials retain async-FF/commutative-cutpoint/timeout failures; they do not establish connected layout-vs-netlist equivalence.",
     "failure_snapshot_retention": "A corrected Tcl observer retains failed OpenDB/DEF and primary error. The retained grid is a source-bound congestion heatmap, not an isolated physical-track overflow: pinned usage includes blockage and both directions. The original stronger interpretation is corrected separately without rewriting producer receipts."
@@ -1614,7 +1614,7 @@
         "electrical_violations": 1563
       }
     },
-    "selection_tradeoff": "Against prior unconstrained fault3 ECO: route340→170, nominal hold−0.108067→−0.038567ns, electrical818→763; setup regresses−15.191022→−15.433440ns (0.242418ns). Every closure category still FAIL. Center117 strategy remains unselected.",
+    "selection_tradeoff": "Against prior unconstrained fault3 ECO: route340\u2192170, nominal hold\u22120.108067\u2192\u22120.038567ns, electrical818\u2192763; setup regresses\u221215.191022\u2192\u221215.433440ns (0.242418ns). Every closure category still FAIL. Center117 strategy remains unselected.",
     "guide_context_correction": {
       "failed_attempts": [
         {
@@ -1644,8 +1644,8 @@
   },
   "button_bus_pin_question": {
     "status": "FULL64_PIN_PLACEMENT_CONSUMED_BY_SELECTED_POWERED_VARIANT_CLOSURE_FAIL",
-    "cause": "Actual cached pre-ECO sample_buttons[38] two-net path detours bottom→top→bottom:1448.38um/0.942812pF wire and1404.2um/0.975988pF wire, source/deck units unchanged.",
-    "placement": "All64 real input BTerms ordered/grouped top-edge on original Metal2 tracks; every bit and original2ns delay/10ns clock retained. Strict actual pin geometry checks require in-die top boundary, ascending x and ≤128um span. No capacity adaptation.",
+    "cause": "Actual cached pre-ECO sample_buttons[38] two-net path detours bottom\u2192top\u2192bottom:1448.38um/0.942812pF wire and1404.2um/0.975988pF wire, source/deck units unchanged.",
+    "placement": "All64 real input BTerms ordered/grouped top-edge on original Metal2 tracks; every bit and original2ns delay/10ns clock retained. Strict actual pin geometry checks require in-die top boundary, ascending x and \u2264128um span. No capacity adaptation.",
     "probe": {
       "path": "build/silicon/task009-button-edge-probe-a1"
     },
@@ -1690,7 +1690,7 @@
       "nominal_hold_ns": -0.116174,
       "electrical_violations": 1224,
       "seconds": 558.3570532370359,
-      "scope": "Against same cached pre-ECO540/−17.091133/−.038760/1237: routing improves, setup/hold regress. All closureFAIL; new worst sample_time[14]."
+      "scope": "Against same cached pre-ECO540/\u221217.091133/\u2212.038760/1237: routing improves, setup/hold regress. All closureFAIL; new worst sample_time[14]."
     },
     "actual_SPEF_ECO": {
       "path": "build/silicon/task009-sequence-button-edge-actual-eco-a1/result.json",
@@ -1728,7 +1728,7 @@
         "hold_ns": 0.110635,
         "electrical_violations": 1564
       },
-      "next_critical": "contact_deadline[2]→contact_deadline[36] through scalar full64 watchdog/control"
+      "next_critical": "contact_deadline[2]\u2192contact_deadline[36] through scalar full64 watchdog/control"
     },
     "pin_observer_scope": "Original ECO header omitted group enable/script variables; inline checks did not run. A separate read-only source-bound ODB assessment checks both actual prior/final64 BPin shapes and their exact identity, full top/Metal2/order/span rules. First2GiB observer failed OpenBLAS allocation; corrected threadenvironment1 retains samebudget and succeeds0.604s. Future ECO header now supplies variables; no old producer rewritten or rerouted merely to fix observer."
   },
@@ -1872,10 +1872,10 @@
       "sha256": "4a93078b9f166bc51bd295f84bc4296f117f06327db0257693e0eaa94f102f42"
     },
     "invariant": "No new state: same zero-mask and now>=contact_deadline predicate, existing four16-bit four-state-correct comparator; default path remains relational. Full FIFO/timestamps/sequence/reset/ACK/accepted-edge semantics unchanged.",
-    "cases": "396before/equal/after unsigned-wrap seededcases (66deadlines×3×ACK/noACK),5X/Z/maskcases,reset-priority and original public-interface fullcapacity miter; missed-equality mutant rejected",
+    "cases": "396before/equal/after unsigned-wrap seededcases (66deadlines\u00d73\u00d7ACK/noACK),5X/Z/maskcases,reset-priority and original public-interface fullcapacity miter; missed-equality mutant rejected",
     "mapping": "7163cells/809FF/3realSRAM,97morecomb cells and no state vsselectedcache",
-    "initial": "342markers,nominal−16.923426/−0.218996ns,1301electrical; setup improves1.296230ns vs matched313markerpreECO but routing/hold/electrical regress",
-    "matchedECO": "218markers,nominal−14.296591/−0.095914ns,835electrical vs selected129/−14.263388/+0.052187/753; slow125Cnominalsetup improves−30.017660→−28.234806 but all9corners fail; maxRCtypicalhold−0.191571",
+    "initial": "342markers,nominal\u221216.923426/\u22120.218996ns,1301electrical; setup improves1.296230ns vs matched313markerpreECO but routing/hold/electrical regress",
+    "matchedECO": "218markers,nominal\u221214.296591/\u22120.095914ns,835electrical vs selected129/\u221214.263388/+0.052187/753; slow125Cnominalsetup improves\u221230.017660\u2192\u221228.234806 but all9corners fail; maxRCtypicalhold\u22120.191571",
     "canonical_selection": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b remains selected;9df2candidate unselected",
     "corner_launch_observers": [
       {
@@ -1998,7 +1998,7 @@
         "path": "build/silicon/task009-pdn-metal-overlap-a2/result.json",
         "sha256": "a345de0935aa38bad04b81321588b4d5e470cd4ad196238288de98db97d90e3d"
       },
-      "result": "M1→TopMetal1directstack failschannelrepairPDN0179 in7.696s. ContinuousMetal4/localizedM1-M4instead passes3railconnectivity/BISTnegative2.490s; originalcut/pitch/everycutclosure10694viauses/9defs;0of24458signalpins fullyunderanyMetal2PGrectangle;21850powerrectanglesnointersupplyoverlap. Separate completed360.598sroute and14.717s fresh3RCassessment below; all9cornerchecksFAIL. Fullprocess/IR/EM unqualified.",
+      "result": "M1\u2192TopMetal1directstack failschannelrepairPDN0179 in7.696s. ContinuousMetal4/localizedM1-M4instead passes3railconnectivity/BISTnegative2.490s; originalcut/pitch/everycutclosure10694viauses/9defs;0of24458signalpins fullyunderanyMetal2PGrectangle;21850powerrectanglesnointersupplyoverlap. Separate completed360.598sroute and14.717s fresh3RCassessment below; all9cornerchecksFAIL. Fullprocess/IR/EM unqualified.",
       "active_run": {
         "path": "build/silicon/task009-core-power-grid-metal4-route-a1/result.json",
         "sha256": "cb597458fcada77425674b72cd57ece671316dab1669784352d6cc2386e84f5c"
@@ -2100,7 +2100,7 @@
       },
       "corner_seconds": 19.200886041042395,
       "all9corners": "FAIL",
-      "comparison": "Vs unpowered129: router+119; nominalsetup improves.321925ns, electrical753→747, maxRChold−.012314→+.008986. MinRChold now−.006855; setup/electrical/all9cases stillFAIL. Powered implementation retained despite greater routercount."
+      "comparison": "Vs unpowered129: router+119; nominalsetup improves.321925ns, electrical753\u2192747, maxRChold\u2212.012314\u2192+.008986. MinRChold now\u2212.006855; setup/electrical/all9cases stillFAIL. Powered implementation retained despite greater routercount."
     },
     "process_reference_observation": {
       "first_failed_observer": {
@@ -2175,8 +2175,8 @@
         "path": "build/silicon/task009-core-power-edge-corners-a1/result.json",
         "sha256": "4c496859962bb44d04e086775dc121e8dd4031b34179ee82c49e81d365304036"
       },
-      "measured": "417.715s route/3RC,215=136short79spacing,supply8→7; nominal−14.327938/−.072607/774; minhold−.115778,maxhold−.062914. All9cornersFAIL23.100s; matchedslownominal−30.154865/−.073635/1549. Largest50umM2leftbin59short35spacing; selected248unchanged.",
-      "diagnosis": "Boundary-bandonlyclearance movedM4clockcollisioninsidefullPGpinbody, belowprotectededge. Newshort505.44,468.3 liesinsideVSS503.11..505.92×350..468.78; edge-bandstarts468.54. Realfull-PG-pinbodyandPGspecial-viafootprintsneedcoverage; no cause-basedfullrerouteyet.",
+      "measured": "417.715s route/3RC,215=136short79spacing,supply8\u21927; nominal\u221214.327938/\u2212.072607/774; minhold\u2212.115778,maxhold\u2212.062914. All9cornersFAIL23.100s; matchedslownominal\u221230.154865/\u2212.073635/1549. Largest50umM2leftbin59short35spacing; selected248unchanged.",
+      "diagnosis": "Boundary-bandonlyclearance movedM4clockcollisioninsidefullPGpinbody, belowprotectededge. Newshort505.44,468.3 liesinsideVSS503.11..505.92\u00d7350..468.78; edge-bandstarts468.54. Realfull-PG-pinbodyandPGspecial-viafootprintsneedcoverage; no cause-basedfullrerouteyet.",
       "power_footprint_observation": {
         "path": "build/silicon/task009-powered-supply-footprints-a1/result.json",
         "sha256": "4cdaf3a6a93dccc76952bf3f9719f5fce888a921cc18768759ea20b93d3566cf"
@@ -2292,13 +2292,13 @@
       "path": "build/silicon/task009-core-power-body-corners-a1/result.json",
       "sha256": "e61d3d8033d92b097516ebe63c888180ff0209ceb75ca3e0419af6f1194dcad6"
     },
-    "corners": "All9FAIL29.262s; matchedslow125Cnom−30.871729ns/+0.037765ns/1506electrical; publicfastmixedtemperature remainsdiagnostic",
+    "corners": "All9FAIL29.262s; matchedslow125Cnom\u221230.871729ns/+0.037765ns/1506electrical; publicfastmixedtemperature remainsdiagnostic",
     "retained_paths": [
       "build/silicon/task009-core-power-body-route-a2/nom-setup.rpt",
       "build/silicon/task009-core-power-body-route-a2/min-hold.rpt",
       "build/silicon/task009-core-power-body-route-a2/max-hold.rpt"
     ],
-    "critical_cause": "Nominalsample_time[7]→timestamp/acceptcontrol→contact_deadline[36]/D arrival25.894392ns,required10.704312ns. Theunchanged64bitdeadlinehold/controlcone remainsphysicalcritical; bankedcandidatebelowattemptsitsremoval.",
+    "critical_cause": "Nominalsample_time[7]\u2192timestamp/acceptcontrol\u2192contact_deadline[36]/D arrival25.894392ns,required10.704312ns. Theunchanged64bitdeadlinehold/controlcone remainsphysicalcritical; bankedcandidatebelowattemptsitsremoval.",
     "selected_implementation": "UNCHANGEDpowered248; fullbodycandidateisNOTselected",
     "scope": "Actualchangedgeometry, freshroute+3RC+9corners; nofullprocess/LVS/IR/EM/pad/packageclosure",
     "process_drc": {
@@ -2356,7 +2356,7 @@
       "path": "build/silicon/task009-watchdog-banked-timing-a3/result.json",
       "sha256": "c96a0b62a14c2d0bc1d67602a53c255c7e57e576412a7bc5d80ec94f9d468552"
     },
-    "preflight_scope": "Originalrealtyp25Clibraries/10ns/2nsI/O/.25uncertainty/drivers/loads,ZERO INTERCONNECT lowerboundONLY; originalnow→deadlinearrival7.451369ns,candidateNO_PATH,sample→bank7.114247ns;overallWNSstillFAIL−3.964620→−3.758133ns(addrdecodefanout362/1.318880pF). Noactualroutedtiminginferred.",
+    "preflight_scope": "Originalrealtyp25Clibraries/10ns/2nsI/O/.25uncertainty/drivers/loads,ZERO INTERCONNECT lowerboundONLY; originalnow\u2192deadlinearrival7.451369ns,candidateNO_PATH,sample\u2192bank7.114247ns;overallWNSstillFAIL\u22123.964620\u2192\u22123.758133ns(addrdecodefanout362/1.318880pF). Noactualroutedtiminginferred.",
     "retained_observer_failures": [
       {
         "path": "build/silicon/task009-watchdog-banked-projection-a1/result.json",
@@ -2454,9 +2454,9 @@
         "path": "build/silicon/task009-watchdog-banked-powered-corners-a1/result.json",
         "sha256": "f754024041170a1e2dff943105231e24fdbcf0b4afd43bb6793352a6a4a00237"
       },
-      "corner_result": "All9FAIL14.532284s;matchedslow125Cnom−32.039055ns/−.289658ns/2110electrical. Fasttemperaturepairremainsmixeddiagnostic.",
-      "remaining_worst_setup": "sample_time[11]→sequence_all_ones[0]/D arrival26.986847ns,required10.517105ns; oldnow_ticks→64deadlineholdcone removed,but remainingtimestamp/accept-controlfanoutdominates",
-      "remaining_worst_hold": "ingress_entry[173]→hold809→lane2/A_DIN45 arrival1.507084ns,required1.740879ns; minRCslack−.233794ns",
+      "corner_result": "All9FAIL14.532284s;matchedslow125Cnom\u221232.039055ns/\u2212.289658ns/2110electrical. Fasttemperaturepairremainsmixeddiagnostic.",
+      "remaining_worst_setup": "sample_time[11]\u2192sequence_all_ones[0]/D arrival26.986847ns,required10.517105ns; oldnow_ticks\u219264deadlineholdcone removed,but remainingtimestamp/accept-controlfanoutdominates",
+      "remaining_worst_hold": "ingress_entry[173]\u2192hold809\u2192lane2/A_DIN45 arrival1.507084ns,required1.740879ns; minRCslack\u2212.233794ns",
       "host_budget": "Explicitfresh-grid-host-budget/1 hard4GiBAS/floor6GiB,original900/1200sroute/whole; basedprior1.38GiBactualpeak+5%mappedcells; actualnewpeak1.33GiB. Legacy6/8defaultsandoldpreflightFAILremain. Chip10ns/fullwidth/endpoints unchanged.",
       "selection": "REJECTED:retainsselectedpowered248/RTL504f. ZerorouterPGmarkers doesnotreplaceprocessDRC; routing/timing/electricalallFAIL."
     },
@@ -2481,7 +2481,7 @@
     },
     "seconds": 4515.107,
     "cycles": 699200000,
-    "scope": "FreshcanonicalIHP-SRAMSoCexecutionofreusedauditedold540guest/ROM/RTL:factoryROM/NVReady,actualpen3full9-fieldrawsamples,linkedStorefrontier2→5,11newindependentinkpixels,resetpreservesacknowledgedbytes/ROMreentry. Laboratorydiagnostic,notordinaryStudentsession,independentcoldreopen,exactrestore,simultaneousrawstreamorphysicalqualification. PrivatebankedcandidateNOTconsumed."
+    "scope": "FreshcanonicalIHP-SRAMSoCexecutionofreusedauditedold540guest/ROM/RTL:factoryROM/NVReady,actualpen3full9-fieldrawsamples,linkedStorefrontier2\u21925,11newindependentinkpixels,resetpreservesacknowledgedbytes/ROMreentry. Laboratorydiagnostic,notordinaryStudentsession,independentcoldreopen,exactrestore,simultaneousrawstreamorphysicalqualification. PrivatebankedcandidateNOTconsumed."
   },
   "rejected_sequence_lookahead": {
     "assessment": {
@@ -2491,7 +2491,7 @@
     "candidate_RTL_sha256": "d0eb5c55889484f2dc4a5867bb8d42a2a8d29fd7fb8782dc43f48261d7cacab0",
     "base": "Unselected deadline-bank5f candidate; canonical504f and powered248 remain selected.",
     "functional": "Full256 pen protocol, carries/exhaustion, ACK/reset/watchdog and exhaustive16-bit predicate relation pass12.510s. Forgotten upper carry and missing global X poison reject.",
-    "mapping": "Three real SRAMs and876FF preserved;7446→7485cells. Increment-output cone to all4predicateD removed; timestamp acceptance still reaches all4D.",
+    "mapping": "Three real SRAMs and876FF preserved;7446\u21927485cells. Increment-output cone to all4predicateD removed; timestamp acceptance still reaches all4D.",
     "zero_interconnect_original_constraints": {
       "whole_WNS_before_ns": -3.758133,
       "whole_WNS_after_ns": -3.940439,
@@ -2609,7 +2609,7 @@
         "Actual100fF external load passes at nominal tt/27C/1.2V."
       ]
     },
-    "initial_observer_boundary": "The original exact consumed checker remains archived. A separate stronger assessment verifies exact2us endpoints and≤101ps gaps for all13 positive/control cases; no failed transient is promoted. Maintained expiry/endpoint/gap checks have3 regression negatives and no SPICE rerun.",
+    "initial_observer_boundary": "The original exact consumed checker remains archived. A separate stronger assessment verifies exact2us endpoints and\u2264101ps gaps for all13 positive/control cases; no failed transient is promoted. Maintained expiry/endpoint/gap checks have3 regression negatives and no SPICE rerun.",
     "matrix": {
       "path": "build/multimodal/task009-comparator-tail-operating-a1/result.json",
       "sha256": "96741607ce2682f7afa114714af5e143f5b71b0aa11fb2da0bf3a0fa122f70a5"
@@ -2641,7 +2641,7 @@
       "window_us": 2,
       "maximum_timestep_ps": 100,
       "source_seals_equal": true,
-      "full_raw_and_endpoint_checks": "Every actual trace reaches2us with≤101ps gaps, finite samples and unchanged decision/reset windows. The original wrong-wiring, held-low clock and100fF controls all pass their distinct expectations."
+      "full_raw_and_endpoint_checks": "Every actual trace reaches2us with\u2264101ps gaps, finite samples and unchanged decision/reset windows. The original wrong-wiring, held-low clock and100fF controls all pass their distinct expectations."
     },
     "causal_candidates": {
       "task009-comparator-geometry-a1": {
@@ -2666,7 +2666,7 @@
     "digital_boundary": "Current0.15/synthetic-aperture1/exposure8ticks is not this10MHz analog cell. Full converter, decision-valid and clock/controller binding are unimplemented."
   },
   "bounded_detail_route_repair": {
-    "scope": "Changed detailed-route repair input3→8 on exact byte-identical full-PGbody pre-route geometry, netlist and executable SDC. Original900/1200-second limits unchanged. No process DRC or physical closure is inferred.",
+    "scope": "Changed detailed-route repair input3\u21928 on exact byte-identical full-PGbody pre-route geometry, netlist and executable SDC. Original900/1200-second limits unchanged. No process DRC or physical closure is inferred.",
     "producer": {
       "path": "build/silicon/task009-core-power-body-iter8-route-a1/result.json",
       "sha256": "f4bf722922cb98b5363d4132b30ef1b5d72263024d94dc2c3caa8e3d39be7547"
@@ -2697,7 +2697,7 @@
       "sha256": "2791ddc8ffe14fa18dd7c6662827a55d8a44372eedf6bce1636e45ccc9c88e04"
     },
     "all_original8_supply_marker_regions_clear": true,
-    "remaining_supply_marker_scope": "Two new M5clock/VSS spacing markers at x624.740–626.065/y469.240–469.640um. Their existing obstruction is violated by20nm. Router-marker geometry is not full process DRC.",
+    "remaining_supply_marker_scope": "Two new M5clock/VSS spacing markers at x624.740\u2013626.065/y469.240\u2013469.640um. Their existing obstruction is violated by20nm. Router-marker geometry is not full process DRC.",
     "extracted_rc": {
       "min": {
         "status": "EXTRACTED",
@@ -2920,12 +2920,12 @@
       "path": "build/silicon/task009-sram-default-style-leaf-a1/result.json",
       "sha256": "ec4877262bea2bf65c479943ea654bfc8f7d0543b339c35823c96ae5e958c996"
     },
-    "default_style_failure_cause": "Original README-recommended ngspice() emits undefined four-pin MOS subcircuit placeholders (numeric1–4), while original SRAM CDL uses primitive named drain/gate/source/bulk pins. No aliases or parameter waivers applied.",
+    "default_style_failure_cause": "Original README-recommended ngspice() emits undefined four-pin MOS subcircuit placeholders (numeric1\u20134), while original SRAM CDL uses primitive named drain/gate/source/bulk pins. No aliases or parameter waivers applied.",
     "model_property_false_negative": {
       "path": "build/silicon/task009-sram-model-defaults-leaf-a1/result.json",
       "sha256": "8d33423aeb0a524029d041a28f776592762bd522a1028ef09dc289aa84f94f0e"
     },
-    "false_negative": "Original Netgen setup falsely matches one parallel-MOS NRS0→1 mutation; original overall assessment stays FAIL.",
+    "false_negative": "Original Netgen setup falsely matches one parallel-MOS NRS0\u21921 mutation; original overall assessment stays FAIL.",
     "independent_zero_default_relation": {
       "path": "build/silicon/task009-sram-model-default-relation-a1/result.json",
       "sha256": "25fbb18e791b75e3b891c50b8e05ae17c5599125d0f73febdddaf6f3a7fa518b"
@@ -2978,7 +2978,7 @@
       "sha256": "b6a3315d233f16e01a6d7a30279867964cdece162a1839b6bed3e01b735fb38e",
       "maintained_patch": "tooling/silicon/candidates/009-core-vss-clock-grid.patch"
     },
-    "source_relation": "Existing core M5 definition becomes three equivalent one-net definitions. VDDlogic/VDDARRAY phases10/36.665um remain; VSS phase63.330→65.330um. Original80um pitch/2.5um width and all other source bytes stay exact.",
+    "source_relation": "Existing core M5 definition becomes three equivalent one-net definitions. VDDlogic/VDDARRAY phases10/36.665um remain; VSS phase63.330\u219265.330um. Original80um pitch/2.5um width and all other source bytes stay exact.",
     "geometry_relation": "All positive-rail metal, M1/TM2 conductors, all668 physical ports, placements and every original pin binding remain exact. Only source-derived VSS M4 endpoints and eight TM1 lower ends follow the moved VSS M5 boundaries by2um.",
     "actual_window_um": {
       "lower": 469.345,
@@ -3034,8 +3034,8 @@
   },
   "metal_netbreaker_model_boundary": {
     "scope": "Actual source-bound SRAM bitkit extraction and completed-source geometry relation only. No full bitkit/SRAM/controller parameterLVS or process closure.",
-    "original_rule": "Original Magic README documents unnamed ideal metal resistors pending lvsres support; original extract declarations use device resistor None rm1–rm7 in both styles.",
-    "derived_rule": "Exactly14 None→lvsres model-name replacements; all other original deck bytes remain exact. Original PDK untouched.",
+    "original_rule": "Original Magic README documents unnamed ideal metal resistors pending lvsres support; original extract declarations use device resistor None rm1\u2013rm7 in both styles.",
+    "derived_rule": "Exactly14 None\u2192lvsres model-name replacements; all other original deck bytes remain exact. Original PDK untouched.",
     "original_extract_deck_sha256": "1b57f6763dfd4d1ad3c6a897883bf1f62ffe91031a97765a0666bfaf2012be68",
     "derived_extract_deck_sha256": "35a6f98ef09c0e3c54f008fe019a7a43c5e2c13972b4fd6b7fc9ffbd1e17cccc",
     "original_extraction_and_converter_failure": {
@@ -3056,14 +3056,14 @@
       "sha256": "428a813c3d08d912350b0b326abc38b5ab2a27d9346989510654c1d23ed5d318"
     },
     "fresh_reused_boundary": "Original/derived extraction executed freshly. Their completed .ext files are converted separately without GDS reimport/re-extraction. The final source-aware relation reuses both conversions and binds its actual observer source; no rerun of unchanged SPICE or routing.",
-    "dimension_binding": "Original cifinput10nm and saved magscale1/2 give5nm coordinates. Actual rm2/rm3 rectangles120×40 become l=.60µm/w=.20µm; both adjacent same-width metal endpoints are checked. Typed extraction preserves terminal pairs and every other native geometry byte except timestamps.",
+    "dimension_binding": "Original cifinput10nm and saved magscale1/2 give5nm coordinates. Actual rm2/rm3 rectangles120\u00d740 become l=.60\u00b5m/w=.20\u00b5m; both adjacent same-width metal endpoints are checked. Typed extraction preserves terminal pairs and every other native geometry byte except timestamps.",
     "four_negative_cases": [
       "nonzero extracted width change",
       "nonzero extracted length change",
       "actual R2 terminal retargeting",
       "resistor polygon width change"
     ],
-    "blocked_claim": "Original bitkit CDL uses l=.60µm/w=.26µm. Exact parameter binding needs a published dimensional mapping or reconciled original GDS/CDL/model input. No reference dimension change, resistor shorting or parameter waiver is admitted.",
+    "blocked_claim": "Original bitkit CDL uses l=.60\u00b5m/w=.26\u00b5m. Exact parameter binding needs a published dimensional mapping or reconciled original GDS/CDL/model input. No reference dimension change, resistor shorting or parameter waiver is admitted.",
     "selection": "UNSELECTED derived-deck experiment. Current process flow keeps original deck and all failures."
   },
   "previous_selected_powered248": {
@@ -3085,7 +3085,7 @@
     "source_boundary": "Retained route/corner producers bind their original frozen source/lock bytes; new lock selection and fresh remap do not rewrite their producer identities. Canonical RTL504f unchanged; existing native/Wasm keep their own source identities."
   },
   "selected_acceptance_launch_ECO": {
-    "scope": "Actual existing powered-grid implementation with only one original-Lib adjacent noninverting buf8; full256×181 FIFO/allports/10ns unchanged. All old cells and geometry bindings preserved; fresh signalroute/3RC/9corners. No process/fullLVS/IR/EM or fabrication qualification.",
+    "scope": "Actual existing powered-grid implementation with only one original-Lib adjacent noninverting buf8; full256\u00d7181 FIFO/allports/10ns unchanged. All old cells and geometry bindings preserved; fresh signalroute/3RC/9corners. No process/fullLVS/IR/EM or fabrication qualification.",
     "route": {
       "path": "build/silicon/task009-accept-launch-route-a1/result.json",
       "sha256": "deb6721c83874ba0d79e046d69f48c3c7481968c05671b8f856aa69deec9df8d"
@@ -3294,7 +3294,7 @@
         "task009_accept_driver": 2.28
       }
     },
-    "old_targeted_path": "sample_time[7]→contact_deadline[36]/D, arrival25.888391→19.695925ns; slack−15.183435→−8.993661ns",
+    "old_targeted_path": "sample_time[7]\u2192contact_deadline[36]/D, arrival25.888391\u219219.695925ns; slack\u221215.183435\u2192\u22128.993661ns",
     "new_worst_nom_setup": {
       "start": "contact_deadline[2]/Q",
       "end": "next_sequence[18]/D",
@@ -3316,7 +3316,7 @@
       "required_ns": 2.233518,
       "slack_ns": -0.065054
     },
-    "selected_tradeoff": "Versus prior powered248: all nine setup results improve0.203–0.742ns; markers248→115; nominal electrical747→736. Typical max hold+.008986→−.065054ns, slow min−.008674→−.010823; typical min/max electrical590→593/902→904, slow max1824→1869. All nine remainFAIL.",
+    "selected_tradeoff": "Versus prior powered248: all nine setup results improve0.203\u20130.742ns; markers248\u2192115; nominal electrical747\u2192736. Typical max hold+.008986\u2192\u2212.065054ns, slow min\u2212.008674\u2192\u2212.010823; typical min/max electrical590\u2192593/902\u2192904, slow max1824\u21921869. All nine remainFAIL.",
     "fresh_reused": "Original routed placement/netlist/PG inherited as source input; one fresh actual cell change, route, all extractions and corners. Later metadata0.3.0/fresh mapping does not rewrite that producer. Legacy runtime and guest archives retain original identities.",
     "retained_observer_failures": [
       "build/silicon/task009-accept-launch-diagnosis-a1/retained-parser-failure.json",
@@ -3687,7 +3687,7 @@
         "lane2DIN35",
         "lane2DIN39"
       ],
-      "worst_matched": "slowmin ingress_entry167→hold790→lane2DIN39,arrival2.380345required2.584390slack−.204045ns"
+      "worst_matched": "slowmin ingress_entry167\u2192hold790\u2192lane2DIN39,arrival2.380345required2.584390slack\u2212.204045ns"
     },
     "actual_worst_nominal_setup": {
       "from": "now_ticks[54]",
@@ -3944,7 +3944,7 @@
       "bounded_time_A221OI_delay_ns": 4.826688,
       "epoch_control_NAND3_delay_ns": 4.017773
     },
-    "decision": "Retain selected30 unchanged. Three launches remove a measured overloaded path, improve setup/hold in all9 cases and meet31target guardband, but routing30→104 and mixed electrical regressions forbid automatic selection. Next step is source-bound actualmaxcap/placement precursor, not unchanged rerouting or a deadline RTL edit.",
+    "decision": "Retain selected30 unchanged. Three launches remove a measured overloaded path, improve setup/hold in all9 cases and meet31target guardband, but routing30\u2192104 and mixed electrical regressions forbid automatic selection. Next step is source-bound actualmaxcap/placement precursor, not unchanged rerouting or a deadline RTL edit.",
     "limits": [
       "router reports are not process DRC",
       "all9 setup/electrical cases remain FAIL",
@@ -4129,7 +4129,7 @@
       "guide_net_identities": 9700,
       "clock_nets": 312,
       "signal_nets": 9388,
-      "scope": "Before unfinished detailedroute, not actualroutedPEX. ClockM2rectangles2094→1809, long>14.4um330→172; otherlongM2routes remain."
+      "scope": "Before unfinished detailedroute, not actualroutedPEX. ClockM2rectangles2094\u21921809, long>14.4um330\u2192172; otherlongM2routes remain."
     },
     "selection": "Selectedpaddingqualified30 and all9FAIL remain unchanged. No unchangedroute retry/deadlineextension.",
     "owned_processes_reaped": true,
@@ -4218,7 +4218,7 @@
             514710
           ]
         },
-        "fixedVia1_PG_overlap": "Eachpreferredpoint65nmabovePGMetal2clearanceOBS; everyoriginalfixedVia1 overlapsatleast35nm. Allother10preferredpointshaveclearoriginalfixedVia1choices. Legallandingsforthese2exist35–45nmhigherwithoutcellmoves."
+        "fixedVia1_PG_overlap": "Eachpreferredpoint65nmabovePGMetal2clearanceOBS; everyoriginalfixedVia1 overlapsatleast35nm. Allother10preferredpointshaveclearoriginalfixedVia1choices. Legallandingsforthese2exist35\u201345nmhigherwithoutcellmoves."
       },
       "localized_COW_feasibility": {
         "path": "build/silicon/task009-two-pin-AP-COW-feasibility-a1/result.json",
@@ -5627,9 +5627,9 @@
       "all9_machine_timing": "FAIL"
     },
     "regressions": [
-      "Mixed-temperature fast/maxRC hold−.115890→−.136229ns; this is not a matched fast signoff corner.",
-      "The31 delayed SRAM inputs retain positive setup but their minimum margin7.534358→7.471788ns.",
-      "All9 available timing/electrical cases FAIL; matched typical/slow minimumRC each retain lane2DIN39 hold failures−.016500/−.027729ns. Mixed-temperature register hold remains.",
+      "Mixed-temperature fast/maxRC hold\u2212.115890\u2192\u2212.136229ns; this is not a matched fast signoff corner.",
+      "The31 delayed SRAM inputs retain positive setup but their minimum margin7.534358\u21927.471788ns.",
+      "All9 available timing/electrical cases FAIL; matched typical/slow minimumRC each retain lane2DIN39 hold failures\u2212.016500/\u2212.027729ns. Mixed-temperature register hold remains.",
       "Zero router count, independent native420nm margin and via-enclosure subsets do not establish fullprocess DRC, transistor LVS, IR/EM or physical qualification."
     ],
     "remaining": [
@@ -5664,7 +5664,7 @@
       "path": "build/silicon/task009-deadline-add-prep-a1/candidate.patch",
       "sha256": "3465963b8036d6364a11f5a5744e4f498fc107170359607024fb7c603830f77a"
     },
-    "question": "Measuredselectedsample_time10→contact_deadline63 constantadditioncriticalcone; explicitparallel16bitconstantchunks/generate-propagate, full64sum/globalXZpoison and no state/latencychange.",
+    "question": "Measuredselectedsample_time10\u2192contact_deadline63 constantadditioncriticalcone; explicitparallel16bitconstantchunks/generate-propagate, full64sum/globalXZpoison and no state/latencychange.",
     "finite_original_failed_campaign": {
       "path": "build/silicon/task009-deadline-add-qualified-a1/result.json",
       "sha256": "c7be9099571eff1d515137bc368591e964e710acafcb0092e63e1edeaeac1926"
@@ -6218,10 +6218,10 @@
       }
     },
     "regressions": [
-      "Electricalcounts typicalnom165→175, typicalmax243→274, fastmixedmin61→64; all9 casesstillFAIL.",
-      "Targeted31 SRAM minimumsetup margin7.471788→7.383857ns remainspositive.",
+      "Electricalcounts typicalnom165\u2192175, typicalmax243\u2192274, fastmixedmin61\u219264; all9 casesstillFAIL.",
+      "Targeted31 SRAM minimumsetup margin7.471788\u21927.383857ns remainspositive.",
       "Typicalmin globalhold+.008605ns andslowmin+.001817ns remainbelow+.03ns engineeringguardband.",
-      "Fastmixedstd−40C/SRAM−55C hold remainsnegative, worst−.085361ns; no matchedfastsignoffpair.",
+      "Fastmixedstd\u221240C/SRAM\u221255C hold remainsnegative, worst\u2212.085361ns; no matchedfastsignoffpair.",
       "Routerzero/native420/simpleenclosure subsets do not establish fullprocessDRC, transistorLVS, IR/EM or physicalqualification."
     ],
     "remaining": [
@@ -7140,7 +7140,7 @@
     },
     "scope": "40349 original CORE SPACERs fill249350 unused sites across221 rows, outward-rounded3macro exclusions; all9037 old placements/668ports/99128nativePG shapes/18718OBS/9703wire opcode/data streams remain exact.80698 new PG terminals overlap correct row rails. Missing/wrongsite/orientation/supply and detached actual wire controls reject. Physical spacers occupy unused sites; original960nm functional-to-functional padding remains. No process/LVS/RC/timing/IR/EM qualification inferred.",
     "remaining": [
-      "ActualbilateralGDSremovesallnew220nmM1marginanddirectoverlaps. RemainingoldVSS conservative7,564,375nm² and source-net/process context require fullrule/LVS treatment.",
+      "ActualbilateralGDSremovesallnew220nmM1marginanddirectoverlaps. RemainingoldVSS conservative7,564,375nm\u00b2 and source-net/process context require fullrule/LVS treatment.",
       "Matchedoriginalnwell93oldfindings remain:66left240nm and27right560nm macro-to-functional edges. Actualoriginalcellsource/padding/PG and reconstructedroute/PEX/all9corners required before movement/selection.",
       "Complete original main/maximal/density/antenna process checks",
       "Connected transistor LVS",
@@ -7606,7 +7606,7 @@
           "signal_conflict_bbox_nm": "(14505,14680;1029420,801800)"
         }
       ],
-      "scope": "CompleteGDSandoriginalmaster/route-union component passes; wholephysicalsubset remainsFAIL. Directpositivearea and newlyintroduced220nm margins nowzero bothrails. RemainingVSS7,564,375nm² entirelywithinactualoldPGmargin; nofullprocess/netLVSclaim.26oldwitnesscorridorsremain(6right+20left), actualoriginalnwellpairedcheckpending; nofunctionalcellmove/selection."
+      "scope": "CompleteGDSandoriginalmaster/route-union component passes; wholephysicalsubset remainsFAIL. Directpositivearea and newlyintroduced220nm margins nowzero bothrails. RemainingVSS7,564,375nm\u00b2 entirelywithinactualoldPGmargin; nofullprocess/netLVSclaim.26oldwitnesscorridorsremain(6right+20left), actualoriginalnwellpairedcheckpending; nofunctionalcellmove/selection."
     },
     "matched_original_bilateral_nwell": {
       "path": "build/silicon/task009-original-vs-bilateral-deep-nwell-a1/result.json",
@@ -8017,7 +8017,7 @@
           "report_sha256": "75a84eea98eadf2b5757de973db7ecec95b7ad8ed01720ef20c45e914ef14fa5"
         }
       ],
-      "comparison": "Same originalmain/defaultdeep/table/source-manifest/controls as completedselected4557→bilateral93; changed32-move/unrouted+40247spacerGDS now0. Prior3717partialcontext remainsseparate. No fullprocess/LVS/route/PEX/timing or selectedpromotion."
+      "comparison": "Same originalmain/defaultdeep/table/source-manifest/controls as completedselected4557\u2192bilateral93; changed32-move/unrouted+40247spacerGDS now0. Prior3717partialcontext remainsseparate. No fullprocess/LVS/route/PEX/timing or selectedpromotion."
     },
     "unselected_actual_route_consumer_relation": {
       "path": "build/silicon/task009-well-fill-route-relation-a1/result.json",
@@ -8260,7 +8260,7 @@
             "scope": "Completedfilesonly; zero native/core/route/extraction. Originala2wholeRESTOREFAIL remains. Actualpositive outputs equal exactly;4mutants evaluatedbyexactatomicdeltas. Not arbitraryunserializedOpenDBstate/originalGDSmask/LVS/process qualification."
           }
         ],
-        "actual_native_positive": "Exact c851source→5c43routed2libraryLEFfiles equal before mutation;85masters,8349master/MTerm/MPin/shapeproperties",
+        "actual_native_positive": "Exact c851source\u21925c43routed2libraryLEFfiles equal before mutation;85masters,8349master/MTerm/MPin/shapeproperties",
         "consequential_actual_controls": "1nmwidth, Xpinrectangle, OBSrectangle, arbitrarymasterproperty+LEFdefinition; closedexactatomicdeltas qualified, not a rewrittenproducerPASS",
         "restoration_failure": "Original dbBox::destroy explicitly returns forMASTER/MPIN. OnlyprivateRAM mutated; allsourceODBbytessealed andneverwritten. Originala2wholeFAIL remains. Firsta1OpenBLASstartupFAIL andfirstclosedproperty-definitionobserverFAIL remain.",
         "maintained_relation": "silicon_well_fill_route.master_library_relation now performs literal LEF+object-property equality in ordinarynativeassess; fiveunit tests pass. Addedlibrarypropertyrecords strengthen the maintainedfunction but have not yet been independentlyexecuted. No freshnative/processclaim frompromotion.",
@@ -8391,7 +8391,7 @@
       "path": "build/silicon/task009-two-load-launch-preflight-a1/admission-assessment.json",
       "sha256": "1bc4c6b1810807bbe2cd099ea84583ee00e6a160ce4ac80aa12d48a2ba2561e2"
     },
-    "original_failure_cause": "Observer wrongly counted fourtotalpinsperbuf inPGcount. Actualtwo supplypinsperbuf:98571+2*2−2*11+2*5=98563; originalFAILreceiptunchanged.",
+    "original_failure_cause": "Observer wrongly counted fourtotalpinsperbuf inPGcount. Actualtwo supplypinsperbuf:98571+2*2\u22122*11+2*5=98563; originalFAILreceiptunchanged.",
     "actual_geometry": {
       "status": "PASS_TWO_MEASURED_LOAD_LAUNCH_SITE_SPACER_ENDPOINT_PRECURSOR_NOT_ROUTED",
       "source_ODB_sha256": "5c43a20a33fe888af5c6cb683d3bc6e19b6d72396a95f7adaa904527fb9d6a9f",
@@ -9917,9 +9917,9 @@
       "original_RTL_sha256": "504fdda0d2a52547aa5e661bd8ab06d01a31fda05d7fb43980e1f0ce9e77585b",
       "candidate_RTL_sha256": "b0ff2cab1826c3bbd4cb85a08d20cf2715b330148df17faafe02e3fa111bb4d9"
     },
-    "measured_cause": "Actual routed joint candidate contact_deadline[2]→[20] watchdog/control feedback; no finished timing claim for retained joint layout.",
+    "measured_cause": "Actual routed joint candidate contact_deadline[2]\u2192[20] watchdog/control feedback; no finished timing claim for retained joint layout.",
     "implementation": "One derived deadline-nonzero state bit, cleared at reset/mark_loss and updated at each actual accepted edge; original four16bit comparison helper. Full64deadline payload/+10000000, FIFO256x181, acceptededge/order/ACK unchanged. Default-register path retains original predicate.",
-    "invariant": "Known accepted timestamps≤0xffffffff_ff67697f cannot wrap +10000000 to zero; contactflag equals deadline-nonzero. Explicit duplicate parity-X poison preserves original vector-add unknown result for unknown-time samples accepted by original procedural X behavior.",
+    "invariant": "Known accepted timestamps\u22640xffffffff_ff67697f cannot wrap +10000000 to zero; contactflag equals deadline-nonzero. Explicit duplicate parity-X poison preserves original vector-add unknown result for unknown-time samples accepted by original procedural X behavior.",
     "components": [
       {
         "path": "build/silicon/task009-deadline-predicate-finite-a2/result.json",
@@ -10166,7 +10166,7 @@
     ]
   },
   "private_first_head_bypass": {
-    "status": "UNSELECTED_FINITE_MAPPED_AND_POSITIVE_ZERO_WIRE_SETUP_ONLY_HOLD_AND_PHYSICAL_CLOSURE_OPEN",
+    "status": "UNSELECTED_FIRST_ACTUAL_DRT_NATIVE_GEOMETRY_COMPONENTS_PASS_ALL9_EXTRACTED_TIMING_ELECTRICAL_FAIL",
     "patch": {
       "path": "tooling/silicon/candidates/009-first-head-bypass.patch",
       "sha256": "f0ed6a83ff1ebee407d2d96cc2d14cda3ed05541cad73e7c08a5452eb4269303",
@@ -10174,7 +10174,7 @@
       "candidate_RTL_sha256": "97b077796078558fdc84ebcb36bcd7cffc70fd2056653a1269478d250dbedded",
       "includes_prior_deadline_predicate": true
     },
-    "measured_cause": "The predicate-only actual zero-wire addr[2]→head_entry[0] path uses a 362-load/1.318880pF A21OI with 7.681570ns driven delay. The complex accepted/ACK/watchdog control writes the entire181bit head.",
+    "measured_cause": "The predicate-only actual zero-wire addr[2]\u2192head_entry[0] path uses a 362-load/1.318880pF A21OI with 7.681570ns driven delay. The complex accepted/ACK/watchdog control writes the entire181bit head.",
     "implementation": "One first_head_pending state bit selects the existing full181bit ingress register on the first accepted edge. The next edge copies the previous ingress value under nonblocking semantics; simultaneous second raw capture cannot retarget that value. Empty physical head is count-masked to exactzero, including all8MMIO fields, preserving original explicit clears. Default-register path remains literal. Prior derived deadline predicate/comparator is included; full64counter/time/order/ACK/loss/reset and FIFO256x181 unchanged.",
     "components": [
       {
@@ -10452,7 +10452,7 @@
       }
     ],
     "constraints": "Original10ns clock,2ns I/O delays,.006pF outputloads,.25ns uncertainty,.15ns clocktransition,originalBUF4 inputdrive,typ25C standard/SRAMLib. Actual native semantic nets bind133 candidate and130 predicate-only state pins. Ideal clocks/no wireRC/placement/CTS/pad/package; no endpoints masked.",
-    "tradeoffs": "Actual7095cells/811FF versus canonical7066/809 and predicate7025/810. Global unplacedsetup−3.691342→+1.992360ns and headDarrival13.119879→4.852305ns; allFFdeadline feedbackslack−1.367893→+3.946407ns. Exactdeadline2→20 arrival worsens3.856562→4.390675ns and64deadlinefeedback4.906940→5.217794ns, still positive in this ideal model. Holdremains−.653249ns. Positive lowerboundsetup does not establish routed timing.",
+    "tradeoffs": "Actual7095cells/811FF versus canonical7066/809 and predicate7025/810. Global unplacedsetup\u22123.691342\u2192+1.992360ns and headDarrival13.119879\u21924.852305ns; allFFdeadline feedbackslack\u22121.367893\u2192+3.946407ns. Exactdeadline2\u219220 arrival worsens3.856562\u21924.390675ns and64deadlinefeedback4.906940\u21925.217794ns, still positive in this ideal model. Holdremains\u2212.653249ns. Positive lowerboundsetup does not establish routed timing.",
     "selected_RTL_and_physical_lock": "UNCHANGED504f_AND0.6.0",
     "standard_product_mapping_receipt": {
       "path": "build/silicon/task009-head-bypass-standard-mapping-a2/mapping/result.json",
@@ -10488,9 +10488,9 @@
       },
       "scope": "Actual fresh maintained candidate-only protocol/mapping producer; cached compiler/toolchain binaries reused. Prior private producer and failedcaller keep originalidentities. Not placement/RC/routedtiming/processqualification."
     },
-    "fresh_placement_route_PEX_process": "GRT_COMPONENT_QUALIFIED_ORIGINALWHOLEFAIL_FIRST_DRT_3RC_ALL9_PENDING",
+    "fresh_placement_route_PEX_process": "FIRST_DRT_AND_3RC_ALL9_COMPLETE_UNSELECTED_SEVERE_TIMING_REGRESSION_FULL_PROCESS_LVS_NOT_RUN",
     "runtime_rebuild": "NOT_REQUESTED_OR_CLAIMED",
-    "next_physical_dependency": "ActualfirstDRT/3RC/all9 fromexactqualifiedwholeGRT, thenallendpoint/native420/processcomparisons beforecanonicalRTL/physical-lock decision.",
+    "next_physical_dependency": "Actual sample_time[15] to contact_deadline[63] carry path with four serial weak NAND4/NOR4 stages; inspect measured SPEF/fanout/layers and source-matched carry-select/prefix alternatives before any new mapping/route. No unchanged reroute; canonical504f and physical0.6 stay selected.",
     "remaining": [
       "unplacedholdfailure",
       "all9 selectedextractedtiming/electricalFAIL",
@@ -10729,7 +10729,7 @@
           ],
           "scope": "Actual fresh native pins/PG/OBS/padding readback only; no signal native420, routing, timing, process DRC or LVS result."
         },
-        "scope": "ExactretainedfreshpowerODB d806f038… readback only; no repeatedplacement/routing/timing, no originalfailure replacement. OriginaldbBoxAPIfix uses xMax−xMin/yMax−yMin preserving exactwidth/height andorientation; sixfocusedtests pass with coordinate-onlyAPI and sixextent/master/site/orientation negatives."
+        "scope": "ExactretainedfreshpowerODB d806f038\u2026 readback only; no repeatedplacement/routing/timing, no originalfailure replacement. OriginaldbBoxAPIfix uses xMax\u2212xMin/yMax\u2212yMin preserving exactwidth/height andorientation; sixfocusedtests pass with coordinate-onlyAPI and sixextent/master/site/orientation negatives."
       },
       "current_fresh_production": {
         "status": "FAIL",
@@ -10777,7 +10777,7 @@
         "source_seal_equal": true,
         "owned_processes_reaped": true,
         "original_deadline_met": true,
-        "scope": "All68440Metal2–5nativecapacityentriesidentical; oldexactoneM3[125,56]raw19/18excess removed/newnone. Storedusage includesblockage/capacityincludesreductions. InheritedGlobalroutecategoryretainsliteraloldmarker becausepinnedutility.cpp onlyreplacescategorywhennew2Dmarkerlistnonempty. Originalwhole18.336sFAIL stays; no marker deletion/no newroutehere."
+        "scope": "All68440Metal2\u20135nativecapacityentriesidentical; oldexactoneM3[125,56]raw19/18excess removed/newnone. Storedusage includesblockage/capacityincludesreductions. InheritedGlobalroutecategoryretainsliteraloldmarker becausepinnedutility.cpp onlyreplacescategorywhennew2Dmarkerlistnonempty. Originalwhole18.336sFAIL stays; no marker deletion/no newroutehere."
       },
       "maintained_completed_GRT_consumer": {
         "entry": "scripts/silicon_pen_physical.py --completed-fresh-global-from",
@@ -10790,8 +10790,367 @@
           "seconds": 0.504489985993132
         },
         "scope": "Exact97globalODB/guide/SDC/netlist/components. FirstDRT only, no GRT/DPL/resizer replay. Actualpre/postfullsnapshots/RENawareoriginaldriverchains/PG/padding/native420/vias/3RC required. Originalcandidate/test/clock/capacity unchanged; no process/LVS/selection claim. Existingall9cornerproducer follows separately withinwholebudget.",
-        "unit_tests": "14focusedtestsPASS; wholemapcapacity/excess/partial/duplicate/booleanindex/oldfailure negatives; originalREN/inputonlyclock-BIST-supply exclusions andactualREN→WENnegative."
+        "unit_tests": "14focusedtestsPASS; wholemapcapacity/excess/partial/duplicate/booleanindex/oldfailure negatives; originalREN/inputonlyclock-BIST-supply exclusions andactualREN\u2192WENnegative."
       }
+    },
+    "first_detailed_route": {
+      "campaign": {
+        "path": "build/silicon/task009-head-bypass-first-DRT-admission-a3/result.json",
+        "sha256": "9a53c7e8c28b871bd5b3112adbb3a6b48c524bda27095174127914f2303f1ecf"
+      },
+      "route_assessment": {
+        "path": "build/silicon/task009-head-bypass-first-DRT-a1/result.json",
+        "sha256": "8ce8ecab9e306a59309cb49f32731d4a7d30b10461d124acf7988601c97313a3"
+      },
+      "corners": {
+        "path": "build/silicon/task009-head-bypass-first-DRT-corners-a1/result.json",
+        "sha256": "519b184c1325a93604361b0ca4b5aa3e39739bab27d51419cf68194cc527de94"
+      },
+      "actual_routed_ODB": {
+        "path": "build/silicon/task009-head-bypass-first-DRT-a1/routed.odb",
+        "sha256": "4c0afc35611c2bfe1401f729b81f1bed0a66a916a0b2982536675b4b391c348b"
+      },
+      "actual_routed_DEF": {
+        "path": "build/silicon/task009-head-bypass-first-DRT-a1/routed.def",
+        "sha256": "555f2f4d80653ef504972b2f3a1dd8b32048a1810dc9c7072404c8d3caf188a6"
+      },
+      "actual_source_archive": {
+        "path": "build/silicon/task009-head-bypass-first-DRT-admission-a3/source-closure.tar.gz",
+        "sha256": "892bb2dcb568c3d086f1e8dfc39f50118ea023ff731241072494378a91c69e2c"
+      },
+      "status": "ASSESSED_UNSELECTED_HEAD_BYPASS_FIRST_DRT_FROM_COMPLETED_GLOBAL_ALL9_CLOSURE_UNVERIFIED",
+      "whole_seconds": 889.3060595130082,
+      "route_and_3RC_component_seconds": 871.5115201850422,
+      "bounds": {
+        "layout_including_preflight_GRT_DRT_seconds": 900,
+        "whole_including_source_seal_threeRC_all9_seconds": 1200,
+        "extraction_each_seconds": 60,
+        "timing_each_seconds": 30,
+        "combined_owned_RSS_bytes": 3221225472,
+        "AS_bytes": 6442450944,
+        "per_file_bytes": 1073741824,
+        "aggregate_output_bytes": 12884901888,
+        "launch_available_bytes": 12884901888,
+        "continuing_host_available_bytes": 8589934592,
+        "disk_free_bytes": 12884901888,
+        "minimum_free_inodes": 10000,
+        "owned_TERM_to_KILL_seconds": 0.5
+      },
+      "source_seal_equal": true,
+      "owned_processes_reaped": true,
+      "original_deadline_met": true,
+      "peak_owned_RSS_bytes": 1439113216,
+      "aggregate_output_bytes": 104431780,
+      "genuine_resource_handoff": "Previous2.25GiB44-module compiler actually terminated/reaped; one new unchanged12GiB check admitted at13,004,161,024B. No other EDA/compiler/authority/browser owner. Same3GiBown+8GiBhost+1GiBgrowth; no deadline/cap change.",
+      "prior12GiB_refusal": {
+        "path": "build/silicon/task009-head-bypass-first-DRT-admission-a2/result.json",
+        "sha256": "2991d50b7703a9d93dd2c73848b27f9bc131d01351aca00d481d269a4f8e4818",
+        "status": "FAIL",
+        "authoritative_failed_preflight_available_bytes": 12363210752,
+        "commands": [],
+        "seconds": 0.3701151330024004,
+        "preparation_observation_available_bytes": 12590538752,
+        "observation_scope": "Earlier preparation-only handoff value; not the failed preflight value and not a resource admission."
+      },
+      "input_scope": "516 actual physical branch Python/Tcl/pen/Lib/LEF/RC/tool/model/component inputs, excluding unrelated live Optical/Fast/session/browser/Lean sources. Separate generated-import roots+power-Tcl explicit; actual native master-body relation added before this source seal.",
+      "native_master_prefix": {
+        "path": "build/silicon/task009-head-bypass-first-DRT-a1/native-prefix-master-relation.json",
+        "sha256": "357439df185acf337b4d2d17373352705cfe9ce4c554134bfaf6e8d2aeb9383f",
+        "status": "PASS_LITERAL_NATIVE_LIBRARY_LEF_AND_MASTER_OBJECT_PROPERTIES_ONLY",
+        "libraries": 2,
+        "masters": 85,
+        "object_property_records": 8351,
+        "library_LEF_sha256": {
+          "sg13g2_stdcell": "fa92f0824a388458c56c912a6cea0aaf9e881b0e85e0bc445d5502e7c9dffa50",
+          "RM_IHPSG13_1P_256x64_c2_bm_bist": "a16cbcfabbc16b85ca7edbd44762f66c123747b54109824c6e84bfdaca12b33c"
+        },
+        "scope": "Original native library/master LEF pins/OBS bodies plus actuallibrary/master/MTerm/MPin/box properties. No normalization. Access vectors/unserializedOpenDBstate, originalGDSmaskunion, transistorLVS andprocessDRC remain separate."
+      },
+      "native_master_final": {
+        "path": "build/silicon/task009-head-bypass-first-DRT-a1/native-final-master-relation.json",
+        "sha256": "357439df185acf337b4d2d17373352705cfe9ce4c554134bfaf6e8d2aeb9383f",
+        "status": "PASS_LITERAL_NATIVE_LIBRARY_LEF_AND_MASTER_OBJECT_PROPERTIES_ONLY",
+        "libraries": 2,
+        "masters": 85,
+        "object_property_records": 8351,
+        "library_LEF_sha256": {
+          "sg13g2_stdcell": "fa92f0824a388458c56c912a6cea0aaf9e881b0e85e0bc445d5502e7c9dffa50",
+          "RM_IHPSG13_1P_256x64_c2_bm_bist": "a16cbcfabbc16b85ca7edbd44762f66c123747b54109824c6e84bfdaca12b33c"
+        },
+        "scope": "Original native library/master LEF pins/OBS bodies plus actuallibrary/master/MTerm/MPin/box properties. No normalization. Access vectors/unserializedOpenDBstate, originalGDSmaskunion, transistorLVS andprocessDRC remain separate."
+      },
+      "router": {
+        "status": "PASS",
+        "violations": 0,
+        "scope": "Detailed-router geometric checks; separate from process DRC"
+      },
+      "native420": {
+        "path": "build/silicon/task009-head-bypass-first-DRT-a1/native-margin.json",
+        "sha256": "e420e2d72d15a5444404944d8386b8d61a2428fd2c3837b245e5fc6a8d652c4b"
+      },
+      "native420_result": {
+        "status": "PASS_ACTUAL_NATIVE420NM_RECTANGLE_SUBSET_ONLY",
+        "violation_pairs": 0,
+        "native_signal_nets_bound": 9244,
+        "native_wire_via_patch_shapes_checked": 166856,
+        "actual_DEF_RECT_patches_bound": 10694
+      },
+      "simple_via_enclosure": {
+        "status": "PASS_FIXED_VIA_INTRINSIC_ENCLOSURE",
+        "scope": "Cover the demonstrated router fixed-via enclosure gap on actual DEF routes.\n\nChecks intrinsic fixed-via metal/cut unions against the original process simple\nenclosure rules. Additional same-net wire metal can only increase enclosure.\nGenerated DEF arrays require explicit admission against the original generator\nand every individual cut's enclosure. Unfamiliar clauses fail closed. This is\nan independent sufficient check of this subset, never complete process DRC.\n",
+        "technology_sha256": "fb6f0aa5647efc822ad6551a11b57002a278d7d3f98ac20a12cb9f7a65e81d2d",
+        "routed_def_sha256": "555f2f4d80653ef504972b2f3a1dd8b32048a1810dc9c7072404c8d3caf188a6",
+        "routed_nets": 9247,
+        "via_instances": 68933,
+        "via_counts": {
+          "Via2_YX": 26617,
+          "Via1_XY": 10378,
+          "Via1_YY": 14808,
+          "Via3_XY": 4371,
+          "Via4_YX": 2065,
+          "via5_6_4000_2500_2_4_840_840": 443,
+          "via4_5_2810_2500_5_6_480_480": 1772,
+          "via6_7_4000_4000_2_2_1960_1960": 182,
+          "via5_6_2560_2500_2_2_840_840": 6,
+          "via4_5_2810_1295_3_6_480_480": 64,
+          "via4_5_1200_2500_5_2_480_480": 277,
+          "via3_4_1200_330_1_2_480_480": 2650,
+          "via2_3_1200_330_1_2_480_480": 2650,
+          "via1_2_1200_330_1_2_480_480": 2650
+        },
+        "fixed_definition_rule_checks": 364,
+        "violations": [],
+        "generated_array_definitions": 9,
+        "specialnet_geometry_checked": true,
+        "uncovered": [
+          "cell/macro internal cuts",
+          "wire spacing/width/area",
+          "connectivity",
+          "antenna",
+          "all other process rules"
+        ]
+      },
+      "three_supply_status": "CONNECTED_CORE_GRID_ONLY_NO_IR_EM",
+      "actual_3RC": {
+        "min": {
+          "status": "EXTRACTED",
+          "model_sha256": "c4abe1065114e113803639782e01337e6cf50ba560bf1ca63f181fc389176875",
+          "spef_sha256": "568cfd427c94d6707dd5ce1257abe337e2fcbddf7f347e6c34a62093413e2373",
+          "setup_ns": -20.634087,
+          "hold_ns": -0.017437,
+          "electrical_violations": 1054
+        },
+        "nom": {
+          "status": "EXTRACTED",
+          "model_sha256": "479a65fb529a08756b6c91f122b9116f6ccacb6475413677ec654e2ba1a49c6c",
+          "spef_sha256": "055b3d149d21196d747e3d03452e0c1fd667402effd584d48c112a4dac0446bf",
+          "setup_ns": -24.309523,
+          "hold_ns": -0.030228,
+          "electrical_violations": 1369
+        },
+        "max": {
+          "status": "EXTRACTED",
+          "model_sha256": "a0fe0c768b5c4217e12b8d253764a238f43a2cc822b98121ee400ffd9fedc3f9",
+          "spef_sha256": "b445e3270fcffe6c4ad8ec08582a4559f9c922f19d6409b6037b1a89cf2b700d",
+          "setup_ns": -27.563211,
+          "hold_ns": -0.058784,
+          "electrical_violations": 1605
+        }
+      },
+      "all9_available_cases": [
+        {
+          "corner": "typical",
+          "matched_PVT": true,
+          "RC": "min",
+          "setup_ns": -20.634087,
+          "hold_ns": -0.017437,
+          "electrical_violations": 1054,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "typical",
+          "matched_PVT": true,
+          "RC": "nom",
+          "setup_ns": -24.309523,
+          "hold_ns": -0.030228,
+          "electrical_violations": 1369,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "typical",
+          "matched_PVT": true,
+          "RC": "max",
+          "setup_ns": -27.563211,
+          "hold_ns": -0.058784,
+          "electrical_violations": 1605,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "slow",
+          "matched_PVT": true,
+          "RC": "min",
+          "setup_ns": -38.485977,
+          "hold_ns": -0.021209,
+          "electrical_violations": 1955,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "slow",
+          "matched_PVT": true,
+          "RC": "nom",
+          "setup_ns": -44.334473,
+          "hold_ns": 0.06091,
+          "electrical_violations": 2122,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "slow",
+          "matched_PVT": true,
+          "RC": "max",
+          "setup_ns": -49.571232,
+          "hold_ns": 0.077035,
+          "electrical_violations": 2262,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "matched_PVT": false,
+          "RC": "min",
+          "setup_ns": -10.63194,
+          "hold_ns": -0.09076,
+          "electrical_violations": 643,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "matched_PVT": false,
+          "RC": "nom",
+          "setup_ns": -13.056641,
+          "hold_ns": -0.104865,
+          "electrical_violations": 742,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "matched_PVT": false,
+          "RC": "max",
+          "setup_ns": -15.215328,
+          "hold_ns": -0.130782,
+          "electrical_violations": 846,
+          "log_sha256": "d183d9cdefadd213c7c1e64ad6aad2533da991dbe4fa9bb87fa0196962eac9c8",
+          "status": "FAIL"
+        }
+      ],
+      "all9_comparison_against_selected0_6": [
+        {
+          "corner": "typical",
+          "RC": "min",
+          "setup_delta_ns": -17.329052,
+          "hold_delta_ns": -0.026042,
+          "electrical_count_delta": 966
+        },
+        {
+          "corner": "typical",
+          "RC": "nom",
+          "setup_delta_ns": -20.021844,
+          "hold_delta_ns": -0.088226,
+          "electrical_count_delta": 1194
+        },
+        {
+          "corner": "typical",
+          "RC": "max",
+          "setup_delta_ns": -22.337999,
+          "hold_delta_ns": -0.120166,
+          "electrical_count_delta": 1331
+        },
+        {
+          "corner": "slow",
+          "RC": "min",
+          "setup_delta_ns": -29.265178,
+          "hold_delta_ns": -0.023026,
+          "electrical_count_delta": 1698
+        },
+        {
+          "corner": "slow",
+          "RC": "nom",
+          "setup_delta_ns": -33.663636,
+          "hold_delta_ns": -0.038278,
+          "electrical_count_delta": 1783
+        },
+        {
+          "corner": "slow",
+          "RC": "max",
+          "setup_delta_ns": -37.63771,
+          "hold_delta_ns": -0.118013,
+          "electrical_count_delta": 1835
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "RC": "min",
+          "setup_delta_ns": -10.663112,
+          "hold_delta_ns": -0.036348,
+          "electrical_count_delta": 579
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "RC": "nom",
+          "setup_delta_ns": -12.471082,
+          "hold_delta_ns": -0.052602,
+          "electrical_count_delta": 646
+        },
+        {
+          "corner": "fast_mixed_temperature",
+          "RC": "max",
+          "setup_delta_ns": -14.043627,
+          "hold_delta_ns": -0.045421,
+          "electrical_count_delta": 703
+        }
+      ],
+      "actual_nominal_worst_path": {
+        "input": "sample_time[15]",
+        "flipflop": "_09548_",
+        "literal_Q": "contact_deadline[63]",
+        "arrival_ns": 35.213795,
+        "required_ns": 10.904272,
+        "slack_ns": -24.309523,
+        "stages": [
+          {
+            "instance": "_08732_",
+            "master": "sg13g2_nand4_1",
+            "delay_ns": 4.321975
+          },
+          {
+            "instance": "_08734_",
+            "master": "sg13g2_nor4_2",
+            "delay_ns": 5.263898
+          },
+          {
+            "instance": "_08737_",
+            "master": "sg13g2_nand4_1",
+            "delay_ns": 6.292367
+          },
+          {
+            "instance": "_08739_",
+            "master": "sg13g2_nor4_2",
+            "delay_ns": 5.335199
+          }
+        ],
+        "report": {
+          "path": "build/silicon/task009-head-bypass-first-DRT-a1/nom-setup.rpt",
+          "sha256": "2c1e9d54f21e9862fc3a8a7d60f00bb12b79f2cd00e6efe3e59a246df763bd86"
+        },
+        "semantic_binding": "Actual routed Verilog _09548_ Q is literal contact_deadline[63]; no auto-name guess."
+      },
+      "selection": "REJECTED_FOR_SELECTION; all9 setup and electrical results regress versus selected0.6. No canonical/runtime source activation. Zero router/native-margin subset is separate from full process DRC/LVS/NWell/IR-EM/pad/package/functional hardware/safety qualification.",
+      "host_qualification": "Five focused actual host tests PASS1.282s before admission, covering original whole-map controls and complete generated native-script imports/source roots. Actual master/body relation runs under pinned native OpenROAD before and after DRT."
     }
   }
 }

@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from silicon_enclosure import GeometryError
-from silicon_fresh_global import raw_relation, native_script
+from silicon_fresh_global import raw_relation, native_script, GENERATED_HELPERS
 
 
 class CompletedFreshGlobalTests(unittest.TestCase):
@@ -58,8 +58,19 @@ class CompletedFreshGlobalTests(unittest.TestCase):
         compile(script, '<actual emitted native script>', 'exec')
         self.assertIn("snapshot(b)==snapshot(nb)", script)
         self.assertIn('from silicon_buffered_pins import assess as endpoints', script)
+        self.assertIn('master_library_relation(a,d,', script)
         self.assertIn("assess(Path('/current.odb')", script)
         self.assertNotIn('dbInst_destroy', script)
+
+    def test_every_generated_child_import_has_an_explicit_source_inventory_root(self):
+        import ast
+        script = native_script(Path('/source.odb'), Path('/current.odb'),
+                               Path('/report.json'), Path('/source.lib'))
+        emitted = {node.module for node in ast.walk(ast.parse(script))
+                   if isinstance(node, ast.ImportFrom) and
+                   node.module.startswith('silicon_')}
+        self.assertTrue(emitted.issubset(set(GENERATED_HELPERS)))
+        self.assertIn('silicon_power_clearance', GENERATED_HELPERS)
 
 
 if __name__ == '__main__':
