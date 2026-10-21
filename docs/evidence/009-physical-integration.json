@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task009-physical-evidence/1",
   "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_CLOSURE_UNVERIFIED",
-  "written_at": "2026-10-21T00:14:51.617935+00:00",
+  "written_at": "2026-10-21T00:33:11.668525+00:00",
   "scope": "Maintained full256/181bit physical SRAM pen integration, independent fixed-via enclosure coverage, actual route/RC/corner failures, and process-bound microphone first-stage design. Not fabrication, physical/safety or educational qualification.",
   "protocol_and_mapping": {
     "path": "build/silicon/task009-pen-counter-a2/result.json",
@@ -11151,6 +11151,547 @@
       },
       "selection": "REJECTED_FOR_SELECTION; all9 setup and electrical results regress versus selected0.6. No canonical/runtime source activation. Zero router/native-margin subset is separate from full process DRC/LVS/NWell/IR-EM/pad/package/functional hardware/safety qualification.",
       "host_qualification": "Five focused actual host tests PASS1.282s before admission, covering original whole-map controls and complete generated native-script imports/source roots. Actual master/body relation runs under pinned native OpenROAD before and after DRT."
+    },
+    "actual_carry_wireload_diagnosis": {
+      "path": "build/silicon/task009-head-bypass-wireload-file-diagnosis-a2/result.json",
+      "sha256": "b70b99d57d6007d2abf3921aee96dfb32b9726d1b572c37919923deda277f9e8",
+      "status": "OBSERVED_COMPLETED_FILES_CRITICAL_CARRY_WIRE_COUPLING_ONLY",
+      "seconds": 0.3850989919155836,
+      "scope": "No tool/mapping/STA/route replay. Actual DEF stream is independently native-bound by completed native-margin proof. Length is encoded centerline sum (not a new metal-union/extraction proof). Coupling is explicitly retained, not normalized away. Original estimateR1KOHM vs actualR1OHM are separately decoded; same C1PF.",
+      "measured_nets": {
+        "net545": {
+          "actual": {
+            "total_wire_pF": 0.61253,
+            "ground_component_pF": 0.06122347749999999,
+            "coupling_component_pF": 0.5513060739999999,
+            "connections": [
+              {
+                "pin": "_12134_:A",
+                "direction": "I"
+              },
+              {
+                "pin": "_12137_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_12136_:B_N",
+                "direction": "I"
+              },
+              {
+                "pin": "_12385_:B_N",
+                "direction": "I"
+              },
+              {
+                "pin": "_12387_:A",
+                "direction": "I"
+              },
+              {
+                "pin": "_08665_:A1",
+                "direction": "I"
+              },
+              {
+                "pin": "_06058_:A",
+                "direction": "I"
+              },
+              {
+                "pin": "_08924_:C",
+                "direction": "I"
+              },
+              {
+                "pin": "fanout545:X",
+                "direction": "O"
+              }
+            ],
+            "encoded_resistor_segments": 39,
+            "source_R_UNIT": "OHM",
+            "summed_resistor_branches_ohm": 1455.78154
+          },
+          "GRT_estimated": {
+            "total_wire_pF": 0.198592,
+            "ground_component_pF": 0.196182608,
+            "coupling_component_pF": 0.0,
+            "connections": [
+              {
+                "pin": "_06058_:A",
+                "direction": "I"
+              },
+              {
+                "pin": "_08665_:A1",
+                "direction": "I"
+              },
+              {
+                "pin": "_08924_:C",
+                "direction": "I"
+              },
+              {
+                "pin": "_12134_:A",
+                "direction": "I"
+              },
+              {
+                "pin": "_12136_:B_N",
+                "direction": "I"
+              },
+              {
+                "pin": "_12137_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_12385_:B_N",
+                "direction": "I"
+              },
+              {
+                "pin": "_12387_:A",
+                "direction": "I"
+              },
+              {
+                "pin": "fanout545:X",
+                "direction": "O"
+              }
+            ],
+            "encoded_resistor_segments": 35,
+            "source_R_UNIT": "KOHM",
+            "summed_resistor_branches_ohm": 2738.2760999999996
+          },
+          "actual_to_estimated_total_C_ratio": 3.0843639220109575,
+          "DEF_encoded_centerline_length_um": 1143.11,
+          "DEF_encoded_layer_centerline_um": {
+            "Metal2": 471.17,
+            "Metal3": 665.16,
+            "Metal4": 6.78
+          },
+          "actual_distinct_via_uses": 47,
+          "actual_RECT_patches": 3
+        },
+        "_00963_": {
+          "actual": {
+            "total_wire_pF": 0.408138,
+            "ground_component_pF": 0.015426843600000002,
+            "coupling_component_pF": 0.39271143070000003,
+            "connections": [
+              {
+                "pin": "_08706_:B1",
+                "direction": "I"
+              },
+              {
+                "pin": "_07653_:A",
+                "direction": "I"
+              },
+              {
+                "pin": "_06058_:Y",
+                "direction": "O"
+              }
+            ],
+            "encoded_resistor_segments": 14,
+            "source_R_UNIT": "OHM",
+            "summed_resistor_branches_ohm": 580.8353
+          },
+          "GRT_estimated": {
+            "total_wire_pF": 0.0717332,
+            "ground_component_pF": 0.071020068,
+            "coupling_component_pF": 0.0,
+            "connections": [
+              {
+                "pin": "_06058_:Y",
+                "direction": "O"
+              },
+              {
+                "pin": "_07653_:A",
+                "direction": "I"
+              },
+              {
+                "pin": "_08706_:B1",
+                "direction": "I"
+              }
+            ],
+            "encoded_resistor_segments": 14,
+            "source_R_UNIT": "KOHM",
+            "summed_resistor_branches_ohm": 706.5867000000001
+          },
+          "actual_to_estimated_total_C_ratio": 5.689666709417676,
+          "DEF_encoded_centerline_length_um": 493.08,
+          "DEF_encoded_layer_centerline_um": {
+            "Metal3": 178.2,
+            "Metal4": 163.8,
+            "Metal2": 4.68,
+            "Metal5": 146.4
+          },
+          "actual_distinct_via_uses": 18,
+          "actual_RECT_patches": 4
+        },
+        "_02979_": {
+          "actual": {
+            "total_wire_pF": 0.537577,
+            "ground_component_pF": 0.0270348288,
+            "coupling_component_pF": 0.5105417317999998,
+            "connections": [
+              {
+                "pin": "_08788_:B1",
+                "direction": "I"
+              },
+              {
+                "pin": "_08734_:D",
+                "direction": "I"
+              },
+              {
+                "pin": "_08733_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08783_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08732_:Y",
+                "direction": "O"
+              }
+            ],
+            "encoded_resistor_segments": 21,
+            "source_R_UNIT": "OHM",
+            "summed_resistor_branches_ohm": 808.3021
+          },
+          "GRT_estimated": {
+            "total_wire_pF": 0.136123,
+            "ground_component_pF": 0.13471990000000003,
+            "coupling_component_pF": 0.0,
+            "connections": [
+              {
+                "pin": "_08732_:Y",
+                "direction": "O"
+              },
+              {
+                "pin": "_08733_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08734_:D",
+                "direction": "I"
+              },
+              {
+                "pin": "_08783_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08788_:B1",
+                "direction": "I"
+              }
+            ],
+            "encoded_resistor_segments": 25,
+            "source_R_UNIT": "KOHM",
+            "summed_resistor_branches_ohm": 1710.809
+          },
+          "actual_to_estimated_total_C_ratio": 3.9492003555607798,
+          "DEF_encoded_centerline_length_um": 776.88,
+          "DEF_encoded_layer_centerline_um": {
+            "Metal2": 183.6,
+            "Metal3": 593.28
+          },
+          "actual_distinct_via_uses": 23,
+          "actual_RECT_patches": 2
+        },
+        "_02981_": {
+          "actual": {
+            "total_wire_pF": 0.456664,
+            "ground_component_pF": 0.0188833152,
+            "coupling_component_pF": 0.4377803365000001,
+            "connections": [
+              {
+                "pin": "_08736_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08771_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08737_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08734_:Y",
+                "direction": "O"
+              }
+            ],
+            "encoded_resistor_segments": 14,
+            "source_R_UNIT": "OHM",
+            "summed_resistor_branches_ohm": 613.893155
+          },
+          "GRT_estimated": {
+            "total_wire_pF": 0.117586,
+            "ground_component_pF": 0.11694445819999999,
+            "coupling_component_pF": 0.0,
+            "connections": [
+              {
+                "pin": "_08734_:Y",
+                "direction": "O"
+              },
+              {
+                "pin": "_08736_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08737_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08771_:B",
+                "direction": "I"
+              }
+            ],
+            "encoded_resistor_segments": 18,
+            "source_R_UNIT": "KOHM",
+            "summed_resistor_branches_ohm": 1436.3986
+          },
+          "actual_to_estimated_total_C_ratio": 3.883659619342439,
+          "DEF_encoded_centerline_length_um": 657.06,
+          "DEF_encoded_layer_centerline_um": {
+            "Metal3": 486.0,
+            "Metal2": 124.32,
+            "Metal5": 11.46,
+            "Metal4": 35.28
+          },
+          "actual_distinct_via_uses": 16,
+          "actual_RECT_patches": 4
+        },
+        "_02984_": {
+          "actual": {
+            "total_wire_pF": 0.527717,
+            "ground_component_pF": 0.026255156499999995,
+            "coupling_component_pF": 0.5014613858700001,
+            "connections": [
+              {
+                "pin": "_08739_:D",
+                "direction": "I"
+              },
+              {
+                "pin": "_08738_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08759_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08765_:B1",
+                "direction": "I"
+              },
+              {
+                "pin": "_08737_:Y",
+                "direction": "O"
+              }
+            ],
+            "encoded_resistor_segments": 26,
+            "source_R_UNIT": "OHM",
+            "summed_resistor_branches_ohm": 974.9508
+          },
+          "GRT_estimated": {
+            "total_wire_pF": 0.133197,
+            "ground_component_pF": 0.131891667,
+            "coupling_component_pF": 0.0,
+            "connections": [
+              {
+                "pin": "_08737_:Y",
+                "direction": "O"
+              },
+              {
+                "pin": "_08738_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08739_:D",
+                "direction": "I"
+              },
+              {
+                "pin": "_08759_:B",
+                "direction": "I"
+              },
+              {
+                "pin": "_08765_:B1",
+                "direction": "I"
+              }
+            ],
+            "encoded_resistor_segments": 21,
+            "source_R_UNIT": "KOHM",
+            "summed_resistor_branches_ohm": 1632.8238
+          },
+          "actual_to_estimated_total_C_ratio": 3.9619285719648336,
+          "DEF_encoded_centerline_length_um": 743.04,
+          "DEF_encoded_layer_centerline_um": {
+            "Metal3": 555.9,
+            "Metal4": 6.48,
+            "Metal2": 174.9,
+            "Metal5": 5.76
+          },
+          "actual_distinct_via_uses": 32,
+          "actual_RECT_patches": 3
+        },
+        "_02986_": {
+          "actual": {
+            "total_wire_pF": 0.449668,
+            "ground_component_pF": 0.025782299199999997,
+            "coupling_component_pF": 0.42388623519999974,
+            "connections": [
+              {
+                "pin": "_08752_:A",
+                "direction": "I"
+              },
+              {
+                "pin": "_08747_:A2",
+                "direction": "I"
+              },
+              {
+                "pin": "_08748_:A2",
+                "direction": "I"
+              },
+              {
+                "pin": "_08740_:A2",
+                "direction": "I"
+              },
+              {
+                "pin": "_08741_:C",
+                "direction": "I"
+              },
+              {
+                "pin": "_08739_:Y",
+                "direction": "O"
+              }
+            ],
+            "encoded_resistor_segments": 20,
+            "source_R_UNIT": "OHM",
+            "summed_resistor_branches_ohm": 704.4795
+          },
+          "GRT_estimated": {
+            "total_wire_pF": 0.133848,
+            "ground_component_pF": 0.13199633100000002,
+            "coupling_component_pF": 0.0,
+            "connections": [
+              {
+                "pin": "_08739_:Y",
+                "direction": "O"
+              },
+              {
+                "pin": "_08740_:A2",
+                "direction": "I"
+              },
+              {
+                "pin": "_08741_:C",
+                "direction": "I"
+              },
+              {
+                "pin": "_08747_:A2",
+                "direction": "I"
+              },
+              {
+                "pin": "_08748_:A2",
+                "direction": "I"
+              },
+              {
+                "pin": "_08752_:A",
+                "direction": "I"
+              }
+            ],
+            "encoded_resistor_segments": 23,
+            "source_R_UNIT": "KOHM",
+            "summed_resistor_branches_ohm": 1373.9384
+          },
+          "actual_to_estimated_total_C_ratio": 3.359542167234475,
+          "DEF_encoded_centerline_length_um": 724.44,
+          "DEF_encoded_layer_centerline_um": {
+            "Metal2": 8.58,
+            "Metal3": 546.72,
+            "Metal4": 169.14
+          },
+          "actual_distinct_via_uses": 19,
+          "actual_RECT_patches": 1
+        }
+      },
+      "meaning": "Four serial carry drivers have large real extracted coupling loads and weak original NAND4/NOR4 drive. Actual complete router length is shorter than GRT total, so a generic whole-design detour explanation is unsupported; individual physical loads/stages must be corrected. No timing/process/selection pass.",
+      "earlier_unit_observer_failure": {
+        "path": "build/silicon/task009-head-bypass-wireload-file-diagnosis-a1/result.json",
+        "sha256": "f3387318f39e0540a0c172538c7a0ce9664f60f1d10893a019fac878a7ae7426"
+      }
+    },
+    "next_source_only_carry_select": {
+      "proposal": {
+        "path": "build/silicon/task009-deadline-carry-select-prep-a1/proposal.json",
+        "sha256": "fe5aa8cb77fee4b24436af1a0625a8c3da262dd8ad6b47c698b2bf1069456082"
+      },
+      "candidate": {
+        "path": "build/silicon/task009-deadline-carry-select-prep-a1/candidate.sv",
+        "sha256": "9d66091ee91397af8c6a7de37ba0d536b07a8e0dae29333c97c768411c29cbef"
+      },
+      "status": "PREPARED_UNEXECUTED_UNSELECTED",
+      "scope": "Separate kept24low+40highincrement arithmetic; full64 modulo semantics/globalXZ poison/default add, no state/latency/ports/capacity change. Actual known64 formal, four-state arithmetic, fullprotocol and five meaningful RTL mutants prepared but NOT executed. No mapping/STA/route/selection claim;40mux-select load may regress."
     }
+  },
+  "process_bound_phased_capture": {
+    "status": "UNSELECTED_PROCESS_MODEL_TRANSIENT_PROGRESS_BOTH_ORIGINAL_CASE_DEADLINE_FAILURES_NO_OPERATING_QUALIFICATION",
+    "source": {
+      "path": "build/multimodal/task009-phased-decision-prep-a1/phase-capture.cir",
+      "sha256": "dc0a418e63f9b4a2b4ee0ea2a8b32a657cb94bb52f61b31cb6643fbc053feead"
+    },
+    "original_cell_binding": {
+      "path": "build/multimodal/task009-phased-decision-prep-a1/input-binding.json",
+      "sha256": "7720ddc009bf9cbc982a6956372fb9220e7b884c67d7f31ebb15da48c3264a7c"
+    },
+    "prepared_design": "Original408MOS standardcell phase/reset/capture controller, plus original15MOS buffered comparator and4MOS/twoCMIM samplehold. External100MHz input drives all internal phases through actual process cells; no independent ideal phase clocks. HBT wrapper bound but not operated in this directinput phase.",
+    "prepared_contract": "Johnson10phase track0..3/hold4/evaluate5..9/capture8/registeredvalid9/expiry0. Two real reset-release cells; cancellation invalidates capture/valid even with clock stopped. Existing high valid may persist before cancel during stopped clock, so no independent freshness watchdog.",
+    "scope": "TT1.2V27C800ns/100ps maximum observation, direct\u00b110mV differential inputs, same originalloads/circuit/QS+NQS models. No complete waveform, decision/hold/phase/cancel observations or negative-control results. Not HBToperation/PVT/noise/mismatch/ADC/PLL/layout/safety qualification.",
+    "bounds": {
+      "whole_seconds": 120,
+      "per_case_SPICE_seconds": 30,
+      "combined_owned_RSS_bytes": 536870912,
+      "AS_bytes": 1073741824,
+      "aggregate_output_bytes": 134217728,
+      "fresh_launch_bytes": 11274289152,
+      "continuing_host_reserve_bytes": 8589934592
+    },
+    "actual_attempts": [
+      {
+        "path": "build/multimodal/task009-phased-decision-operating-a1/result.json",
+        "sha256": "ea877154076b8e2484de4d550bf8de2172d2dcaaffc370b85582ead72520c772",
+        "status": "FAIL",
+        "seconds": 30.305795386899263,
+        "error": "RuntimeError('original declared command deadline')",
+        "launch_available_bytes": 14006931456,
+        "peak_owned_RSS_bytes": 198291456,
+        "peak_output_bytes": 3285304,
+        "source_seal_equal": true,
+        "resource_errors": [],
+        "owned_processes_reaped": true,
+        "original_whole_deadline_met": true,
+        "actual_transient_progress_seconds": 7.28543e-07,
+        "waveform_completed": false,
+        "completed_case_count": 0,
+        "negative_controls_run": false,
+        "source_archive": {
+          "path": "build/multimodal/task009-phased-decision-operating-a1/source-closure.tar.gz",
+          "sha256": "5a9cc36157caa048b5f49aebb1a8b16e5af5dd1d449345a091ff90b3ef571d1b"
+        }
+      },
+      {
+        "path": "build/multimodal/task009-phased-decision-saved-operating-a1/result.json",
+        "sha256": "71447747e3842567a0c81877d4cad19ae140b407c537b50fb56742c30109213f",
+        "status": "FAIL",
+        "seconds": 30.343014685902745,
+        "error": "RuntimeError('original declared command deadline')",
+        "launch_available_bytes": 14187319296,
+        "peak_owned_RSS_bytes": 90476544,
+        "peak_output_bytes": 3286989,
+        "source_seal_equal": true,
+        "resource_errors": [],
+        "owned_processes_reaped": true,
+        "original_whole_deadline_met": true,
+        "actual_transient_progress_seconds": 6.67452e-07,
+        "waveform_completed": false,
+        "completed_case_count": 0,
+        "negative_controls_run": false,
+        "source_archive": {
+          "path": "build/multimodal/task009-phased-decision-saved-operating-a1/source-closure.tar.gz",
+          "sha256": "0efb70f947e93fd3b922d8af82acaacf80fc7d083a6e51176c866ddfd785d9fe"
+        }
+      }
+    ],
+    "saved_observer_change": "Second attempt changes only explicit save of23 required electrical vectors plus implicittime; all24wrdata columns,408MOScontroller+consumer circuitry/stimuli/800ns/max100ps/windows/controls stay exact. Cachedngspicehelp confirms save support. Original attempt had no actual optimizer overlap; no cause attribution is made to unobserved work.",
+    "conclusion": "Both nominal cases hit their original30s command bound, with cleanup and whole deadline sealed. Saved vectors reduce measuredRSS198291456\u219290476544B but do not produce a completed result. Original30.305795s and30.343015s failures/log progress remain; no timeout extension, unchanged retry or operation promotion. Further Popen held for Gen31/browser initial admission."
   }
 }
