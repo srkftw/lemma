@@ -43,6 +43,7 @@ inductive Profile where
   | kernel_v0_8
   | kernel_v0_9
   | kernel_v0_10
+  | kernel_v0_11
   | user_v0_7
   | boot_v0_2
   deriving BEq, DecidableEq, Inhabited, Repr
@@ -71,6 +72,7 @@ def contractVersion : Profile → String
   | .kernel_v0_8 => "core0-kernel-v0.8"
   | .kernel_v0_9 => "core0-kernel-v0.9"
   | .kernel_v0_10 => "core0-kernel-v0.10"
+  | .kernel_v0_11 => "core0-kernel-v0.11"
   | .boot_v0_1 => "core0-boot-v0.1"
   | .boot_v0_2 => "core0-boot-v0.2"
   | .user_v0_3 => "core0-user-v0.3"
@@ -102,6 +104,7 @@ def ofContractVersion? : String → Option Profile
   | "core0-kernel-v0.8" => some .kernel_v0_8
   | "core0-kernel-v0.9" => some .kernel_v0_9
   | "core0-kernel-v0.10" => some .kernel_v0_10
+  | "core0-kernel-v0.11" => some .kernel_v0_11
   | "core0-boot-v0.1" => some .boot_v0_1
   | "core0-boot-v0.2" => some .boot_v0_2
   | "core0-user-v0.3" => some .user_v0_3
@@ -114,11 +117,11 @@ def ofContractVersion? : String → Option Profile
 
 /-- Production execution profiles have separate authority from the diagnostic profiles. -/
 def isExecution : Profile → Bool
-  | .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 | .boot_v0_1 | .boot_v0_2 => true
+  | .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .kernel_v0_11 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 | .boot_v0_1 | .boot_v0_2 => true
   | _ => false
 
 def isKernel : Profile → Bool
-  | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 => true
+  | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .kernel_v0_11 => true
   | _ => false
 
 /-- An additive firmware successor inherits exactly the existing firmware authority. -/

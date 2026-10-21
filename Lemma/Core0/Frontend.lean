@@ -248,17 +248,17 @@ def primitiveAllowlistFor : Profile → Array PrimitiveSpec
   | .v0_4 => primitiveAllowlistV04
   | .v0_5 => primitiveAllowlistV05
   | .v0_6 => primitiveAllowlistV06
-  | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 | .boot_v0_1 | .boot_v0_2 => primitiveAllowlistV07
+  | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .kernel_v0_11 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 | .boot_v0_1 | .boot_v0_2 => primitiveAllowlistV07
 
 private def profileHasV02Scalars : Profile → Bool
   | .v0_1 => false
   | .v0_2 | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 |
-      .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 | .boot_v0_1 | .boot_v0_2 => true
+      .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .kernel_v0_11 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 | .boot_v0_1 | .boot_v0_2 => true
 
 private def profileHasBoundedFold : Profile → Bool
   | .v0_1 | .v0_2 => false
   | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 |
-      .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 | .boot_v0_1 | .boot_v0_2 => true
+      .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .kernel_v0_11 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 | .boot_v0_1 | .boot_v0_2 => true
 
 private def stripMData : Lean.Expr → Lean.Expr
   | .mdata _ e => stripMData e
@@ -1269,12 +1269,12 @@ private def storeConstructor? (name : Name) : Option Memory.Width :=
   else none
 
 private def actionMaximumBudget : Profile → Nat
-  | .v0_5 | .v0_6 | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 | .boot_v0_1 | .boot_v0_2 =>
+  | .v0_5 | .v0_6 | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .kernel_v0_8 | .kernel_v0_9 | .kernel_v0_10 | .kernel_v0_11 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 | .boot_v0_1 | .boot_v0_2 =>
       Memory.maximumBudgetV05
   | _ => Memory.maximumBudgetV04
 
 private def requireDeviceProfile (ctx : LowerContext) (op : Device.Op) : LowerM Unit := do
-  if op == .uartEnableAndResetFifo14 && ctx.profile != .kernel_v0_2 && ctx.profile != .kernel_v0_3 && ctx.profile != .kernel_v0_4 && ctx.profile != .kernel_v0_5 && ctx.profile != .kernel_v0_6 && ctx.profile != .kernel_v0_7 && ctx.profile != .kernel_v0_8 && ctx.profile != .kernel_v0_9 && ctx.profile != .kernel_v0_10 then
+  if op == .uartEnableAndResetFifo14 && ctx.profile != .kernel_v0_2 && ctx.profile != .kernel_v0_3 && ctx.profile != .kernel_v0_4 && ctx.profile != .kernel_v0_5 && ctx.profile != .kernel_v0_6 && ctx.profile != .kernel_v0_7 && ctx.profile != .kernel_v0_8 && ctx.profile != .kernel_v0_9 && ctx.profile != .kernel_v0_10 && ctx.profile != .kernel_v0_11 then
     fail ctx .unsupportedPrimitive "closed UART trigger14 requires core0-kernel-v0.2"
   unless op.admits ctx.profile do
     fail ctx .unsupportedPrimitive
