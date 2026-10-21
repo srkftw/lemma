@@ -3554,5 +3554,107 @@
       "All existing NotebookSchool capture/coalescing/Save/safety/JOIN/warm-submission cases pass."
     ],
     "limits": "No host99 normalization, suppression, buffer enlargement, target guard loosening, optical build, whole guest/audit, CPU handwriting or improved rate claim. A changed sealed guest and ordinary immediate-JOIN ink consumer remain required."
+  },
+  "bufferedReaderSchool25ProductionAndNormalStop30": {
+    "status": "GENUINE_FAST25_AND_NORMAL_SDK_SEALED_ORDINARY_EXECUTION_PENDING",
+    "fixCommit": "c921807b76e82c8ae524055e01ea2c53674b5f43",
+    "authorityOnlyCommit": "50dd71d",
+    "qualifiedCleanCheckout": "/home/sreekumaar/.codex/worktrees/task009-reader-fix/lemma",
+    "qualifiedCleanHead": "379e16876ded5a47ae83a099df6f2faeea9e6d32",
+    "mainUncommittedOpticalSourcesExcluded": true,
+    "pair": {
+      "receipt": "/home/sreekumaar/.codex/worktrees/task009-reader-fix/lemma/build/task009/buffered-reader-fast-pair-a2/result.json",
+      "sha256": "7e6ad5b20d91e42f52ec84ba4e588181e79fd52173e7b6ed98e0ddb1c3c4659e",
+      "status": "PASS_GENUINE_SCHOOL25_FAST_PAIR",
+      "sourceInputs": 558,
+      "sourceInventorySHA256": "e2248333e760d5ab25b0209d2325da0848b37a5fa151398b3752496fca8a4ae7",
+      "seconds": 342.5367987451609,
+      "roles": [
+        {
+          "role": "notebook",
+          "seconds": 172.97829186613671,
+          "actualActionCounts": {
+            "fresh": 39,
+            "incremental": 2,
+            "reused": 0
+          }
+        },
+        {
+          "role": "initialize",
+          "seconds": 169.3518151070457,
+          "actualActionCounts": {
+            "fresh": 13,
+            "incremental": 2,
+            "reused": 26
+          }
+        }
+      ],
+      "sampledOwnedPeakRSSBytes": 1969811456,
+      "remainingExactStartOwned": [],
+      "clockBoundary": "Original outer Nix1800s horizon includes admission at22:47:38; inner producer starts22:47:41.627931. Actual terminal precedes both original deadlines; no extension."
+    },
+    "independentActualBodyAdmission": {
+      "receipt": "build/school/task009-buffered-reader-independent-review-a1/qualification.json",
+      "sha256": "80877a307e445e4833dcfded6bb4bbf30b6a1842872a11cd595abd8d173d8ae8",
+      "positives": 24,
+      "consequentialNegatives": 12,
+      "scope": "Only bufferedBookInk changes; all1288/1286 shared pre/post Notebook bodies and all five other role bodies/signatures/effects/globals remain exact. Checked reader cancellation precedes first stroke; failed cancellation follows failWriting."
+    },
+    "SDK": {
+      "receipt": "/home/sreekumaar/.codex/worktrees/task009-reader-fix/lemma/build/task009/buffered-reader-sdk-a1/sealed-assessment.json",
+      "sha256": "ea6c961d4b25348064986bc4976dad4c41b4d0c99be1634bbd7b73a689de0a9b",
+      "status": "PASS_SEALED_MAINTAINED_SCHOOL25_SDK",
+      "sourceInputs": 558,
+      "sourceInventorySHA256": "d5f202a97263fe6e3eed7b98c21cfeb4647eb2d7f6ac3c17b07af58fcaf37a42",
+      "normalEntrySeconds": 285.59571884199977,
+      "originalMonitorSeconds": 288.8740700930357,
+      "auditSeconds": {
+        "notebook": 130.39472360583022,
+        "initializer": 120.49445474613458
+      },
+      "validatorSeconds": 2.6520722850691527,
+      "sampledOwnedPeakRSSBytes": 627519488,
+      "native": {
+        "path": "/home/sreekumaar/.codex/worktrees/task009-reader-fix/lemma/build/school/task009-school25-buffered-reader-sdk-a1/native",
+        "manifestSHA256": "d535368c491568690a836f0c4386a419b840bbcf81f2c955e7712b55d3093de9"
+      },
+      "browser": {
+        "path": "/home/sreekumaar/.codex/worktrees/task009-reader-fix/lemma/build/school/task009-school25-buffered-reader-sdk-a1/browser",
+        "manifestSHA256": "187e05f8dbad403bbc977f5815dbb5febf849484fb508f7a85e6f322e650e9ba"
+      },
+      "literalTargetComparisons": 52,
+      "runtime": "Existing p81 QEMU and TCI bytes/derivations reused unchanged; no runtime or compiler-binary rebuild",
+      "allOwnedReaped": true
+    },
+    "normalGeneration30Stop": {
+      "receipt": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation31-transition/result.json",
+      "sha256": "592cf6e8ea66875de601f1be8f6aa375a89e33d2eac3400e736bbbba77f0c6b2",
+      "status": "PASS_ACKNOWLEDGED_BACKUP_AND_NORMAL_STOP_GENERATION30",
+      "acknowledgedRows": 231,
+      "artifacts": 77,
+      "backupSeconds": 7.741949778050184,
+      "stopSeconds": 0.10843864898197353,
+      "wholeSeconds": 9.105637395055965,
+      "sampledOwnedPeakRSSBytes": 101281792,
+      "originalDeadlineUTC": "2026-10-20T23:49:44.491597+00:00",
+      "observedWrapperTerminalUTC": "2026-10-20T23:07:58.052286+00:00",
+      "terminalReceipt": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation30/terminal.json",
+      "terminalSHA256": "3aa55b04f2dd619b1d431b63089ca76a0b84f2098c5f0b61f246c4a78f9a1bd6",
+      "oldPrefixExact": true,
+      "remainingObservedOwnedPIDs": [],
+      "ports8890And8891Closed": true,
+      "nextGenerationStarted": false
+    },
+    "preparedOnlyGeneration31": {
+      "receipt": "build/school/task009-connected-a2/acknowledged90-operation-a1/generation31-preparation/plan-a1.json",
+      "sha256": "5e6fbae3ae68c02b0dc943787d425989f08ac8fcc9f1256ed3d4a4a8720ebccb",
+      "status": "PREPARED_ONLY_NO_AUTHORITY_NO_PAIRING_NO_GUEST_RUN",
+      "complete66CleanSourceAndRetainedProducerEqual": true,
+      "sourceProducerSHA256": "b1cbac4ae188cfb21639f4da05418a258a94207bc03bc71aca61b684bfcf13b5",
+      "wrapperSHA256": "cd5a7d5d5e9d28bca2cd3e2d2d20039ecb61f0f4a5d1ef2805adbe390578915f",
+      "newProspective7200sStartsOnlyAfterRootSignalAndFreshAdmission": true,
+      "freshPairings": "Protected Teacher issues Bob only for the reserved original due196 browser workflow; fresh Alice only if a separately admitted native phase needs it. Prior Bob197/Alice209 revocations and stale-worker rejection are retained; no secrets recorded."
+    },
+    "limits": "The original browser424/99 failure, external Gen29SIGTERM and earlier resource refusals remain failed receipts. No corrected25 CPU/ordinary writing, new complete review, full16/continuation, throughput or educational claim. New26 intent/IRQ/attachment source is unqualified and excluded from these sealed25 inputs."
   }
 }
