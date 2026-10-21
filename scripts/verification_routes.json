@@ -564,7 +564,15 @@
         "tests/multimodal/*",
         "scripts/check_multimodal_controller.py",
         "scripts/check_multimodal_guest.py",
-        "scripts/check_multimodal_rtl_guest.py"
+        "scripts/check_multimodal_rtl_guest.py",
+        "sim/host/lemma_optical.c",
+        "sim/host/lemma_optical.h",
+        "sim/rtl/lemma_optical.sv",
+        "sim/rtl/tests/optical_tb.cpp",
+        "scripts/check_optical_controller.py",
+        "tests/lemmasim/test_optical_controller.py",
+        "sim/profiles/lemma-silicon-dev-0.17.0.json",
+        "docs/contracts/009-optical-frame-v1.html"
       ],
       "claims": [
         "multimodal-host",
